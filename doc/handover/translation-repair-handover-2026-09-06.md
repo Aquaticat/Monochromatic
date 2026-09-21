@@ -4647,7 +4647,34 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASS SEVENTY-FIVE IS FIXED AND CUSPARIAKLSY4 RUNS
+1.  CLASS SEVENTY-SIX IS FIXED AND CUSPARIAKLSY5 RUNS
+    (the pass log's heading dated 2026-09-21 22:40 UTC):
+    `CuspariaKLSY4` (frozen `c5470163d`) SETTLED at 22:24 UTC in 38 minutes,
+    0.22 USD by the meters,
+    class seventy-five live (no double blank line,
+    the publish weight check silent),
+    but the seven present-tense lines of the life shipped as the archive has them:
+    the repair lane left slice 0 unchanged,
+    the contest split 2 to 2 to 1 with one ballot citing
+    "the tense rule that holds narrative in the present",
+    and the unendorsed standing shipped.
+    That ballot read the judge tail's own sentence
+    ("the tense the text being replaced had already chosen")
+    against the house rule's past-tense line;
+    fixed in `d70087757` (both tails in `house-policy.ts` put the house rule's past tense first),
+    guard red first at `20f344da3`,
+    lint and types clean,
+    the full suite green at `d70087757` (exit 0,
+    no FAIL line).
+    `CuspariaKLSY5` (frozen `d70087757`,
+    pid 1687485,
+    launched 22:28 UTC)
+    runs to read it live:
+    the seven lines in the past on the page first,
+    the slice 0 contest ballots and their reasons,
+    then the seven steps and three checks,
+    and record it.
+    CLASS SEVENTY-FIVE IS FIXED
     (the pass log's heading dated 2026-09-21 21:50 UTC):
     `CuspariaKLSY2` (frozen `574fce2d1`) SETTLED at 21:32 UTC in 36 minutes,
     0.20 USD by the meters,
@@ -4668,14 +4695,6 @@ each read off the pass log and the shipped page:
     the full suite green at `c5470163d` (exit 0,
     no FAIL line).
     `CuspariaKLSY3` (frozen `c9e267d3a`) was killed at 21:45 UTC six minutes in.
-    `CuspariaKLSY4` (frozen `c5470163d`,
-    pid 1668324,
-    launched 21:46 UTC)
-    runs to read the fix live:
-    one blank line between the list intro and the list first,
-    the tense held,
-    then the seven steps and three checks,
-    and record it.
     HULICAIJIA9 CONFIRMED THE HEADING EVIDENCE
     (the pass log's heading dated 2026-09-21 21:00 UTC):
     `hulicaijia9` (frozen `574fce2d1`) SETTLED at 20:53 UTC in 82 minutes on one attempt,

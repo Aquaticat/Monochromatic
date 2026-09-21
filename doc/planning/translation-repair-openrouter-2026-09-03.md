@@ -8082,6 +8082,120 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## CuspariaKLSY4 read, 2026-09-21, 22:40 UTC: class seventy-five live, but the archive's present tense shipped on a split contest; class seventy-six (the judge tail named the replaced text's tense as the authority) fixed in d70087757; CuspariaKLSY5 launched
+
+`CuspariaKLSY4` (frozen `c5470163d`,
+pid 1668324,
+overlap 8,
+launched 21:46 UTC on Bedrock and OpenRouter,
+Synthetic and Hyper dry)
+SETTLED at 22:24 UTC on one attempt,
+38 minutes.
+
+Class seventy-five is live:
+the page carries no double blank line
+(22 blank lines,
+the archive's own count),
+the list intro is followed by one blank line,
+and the publish weight check raised nothing
+(no `PublishedPageDisagreesError`,
+no weight-off line).
+
+The tense did not hold.
+Lines 11 to 23 of the page read exactly as the archive,
+in the present
+("She loves Sunflowers",
+"She is persistent",
+"She likes to drink Monster Energy",
+"She often tells me",
+"She thinks",
+"Her first language is Russian",
+"She knows how to play guitar"),
+where `CuspariaKLSY2` had every one in the past.
+The artifact says how.
+Slice 0 (the heading and those seven lines) came out of the repair lane unchanged
+(the log line reads chunk 0 unchanged with none of its accepted issues resolved);
+the translate lane wrote it in the past;
+the lane contest split two ballots for repair,
+two for translate and one for neither,
+settled-neither,
+and the archive stood without endorsement.
+The consolidation slate had four valid proposals and declined the standing
+(`slate-declined-standing`),
+and by the 2026-09-09 addendum the eligible standing shipped,
+recorded as `final-selection-unendorsed (slice 0)`.
+Two of the five contest ballots cited the house rule for the past
+("correctly adopts the past tense for the person's life as per the house rules";
+"the archive and repair break the tense rule by mixing present-tense life narrative with a past-tense final clause");
+one ballot cited a rule that does not exist:
+"The 'translate' candidate renders the memorial's present-tense life in past tense,
+violating the tense rule that holds narrative in the present for a memorial page;
+'repair' matches the archive and the original's present-tense framing."
+That reading comes from the judge policy itself,
+class seventy-six.
+`JUDGE_POLICY_TAIL` in `house-policy.ts` (shared by the select,
+contest,
+slate and gate sheets through `JUDGE_POLICY_BLOCK` and `CONTEST_POLICY`)
+said:
+"WHERE THE FORCED CHOICE IS TENSE,
+the ORIGINAL supports neither reading and the English is the authority instead:
+the tense the rest of the passage holds,
+and the tense the text being replaced had already chosen."
+On a page whose archive tells the life in the present,
+"the text being replaced" is the present,
+so the tail handed the archive's tense the authority the house rule's past-tense line takes away,
+and a judge choosing between the two sentences could pick either.
+`MEASUREMENT_POLICY_TAIL` carried the same sentence
+("the tense the text under review had before the edit").
+Fixed in `d70087757`:
+both tails now put the house rule's past tense for a life that has ended first,
+say that a candidate moving a present-tense line of the life to the past has corrected it
+and that the replaced text's tense is no authority for keeping a life in the present,
+and keep the passage's own tense only for what is still true as the page is read.
+Guard red first at `20f344da3`
+(the select sheet and `CONTEST_POLICY` both refuse the old sentence and carry the new);
+lint and types clean;
+the full suite green at `d70087757` (exit 0,
+no FAIL line).
+`CuspariaKLSY2` had the past tense by the bench's luck:
+its repair lane moved the lines itself and its contest chose translate 4 of 4.
+
+The rest of the read:
+1 of 1 heading,
+1 of 1 tag marker,
+front matter equal,
+no `TA`,
+no `finish_reason=error`,
+`attempts.json` reads 1,
+no gate-kept standing,
+one unendorsed standing (slice 0),
+5 abstention lines with reasons,
+no repeat finding,
+no run-off.
+The list ships with the source's marker spacing this time
+(one space after every marker,
+where the archive has two after three of them);
+both render alike.
+Spend:
+296 calls,
+331 seats asked,
+13 retry rounds,
+4 abandoned streams;
+by the meters Bedrock 119.33 to 119.23 USD and OpenRouter 176.77 to 176.65,
+0.22 USD.
+Seats:
+`glm-5.3` and `hf:Qwen/Qwen3.8-27B` dark (Synthetic dry),
+every other seat whole,
+Jev 10 of 10.
+
+`CuspariaKLSY5` (frozen `d70087757`,
+pid 1687485,
+overlap 8)
+launched at 22:28 UTC to read class seventy-six live:
+the seven lines in the past on the page,
+the slice 0 contest ballots and their reasons,
+then the seven steps and three checks.
+
 ## CuspariaKLSY2 read, 2026-09-21, 21:50 UTC: the life is told in the past tense, class seventy-five (a lane's trailing newline doubles the block separator) fixed in c9e267d3a and c5470163d; CuspariaKLSY3 killed for the second half, CuspariaKLSY4 launched
 
 `CuspariaKLSY2` (frozen `574fce2d1`,
