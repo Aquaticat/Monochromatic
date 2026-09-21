@@ -317,9 +317,106 @@ function signaturePairs(
 }
 
 /**
- Identity-context lines naming how this page renders its people and linked
- titles, read off the archive: a heading and one line per distinct source
- text, empty when the page carries none.
+ Heading texts of a document in order, the markers off.
+
+ @param text - whole document
+
+ @returns Every ATX heading's text
+
+ @example
+ ```ts
+ headingsOf({ text: '## 左右\n\n猫在门口犹豫。', },); // ['左右']
+ ```
+ */
+function headingsOf({ text, }: { readonly text: string; },): readonly string[] {
+  return text
+    .split('\n',)
+    .flatMap(function toHeading(line,): readonly string[] {
+      if (!line.startsWith('#',))
+        return [];
+      for (let depth = 0; depth <= line.length; depth += 1) {
+        if (line.charAt(depth,) === '#')
+          continue;
+        if (line.charAt(depth,) !== ' ')
+          return [];
+        /**
+         Text after the markers.
+         */
+        const heading = line.slice(depth,);
+        return [heading.trim(),];
+      }
+      return [];
+    },);
+}
+
+/**
+ Pairs read off the headings, in order, when both documents carry the same
+ count; a differing count is a section one side never carried, and the order
+ is then no alignment.
+
+ THE JUDGES KEEP DECIDING HEADINGS (owner, 2026-09-21, on 左右 shipped as
+ "Left and Right" over the archive's "Conflict" on two hulicaijia passes):
+ the archive's wording is evidence the sheet carries, not a restore, since
+ the literal reading winning is the judges' world knowledge falling short.
+ Measured over the pinned corpus: 81 of 92 pages carry the same heading
+ count on both sides, 225 pairs.
+
+ @param sourceText - whole original document
+
+ @param targetText - whole archive document
+
+ @returns One pair per Han heading the archive renders otherwise
+
+ @example
+ ```ts
+ const pairs = headingPairs({ sourceText, targetText, },);
+ ```
+ */
+function headingPairs(
+  {
+    sourceText,
+    targetText,
+  }: {
+    readonly sourceText: string;
+    readonly targetText: string;
+  },
+): readonly PageName[] {
+  /**
+   Source headings in order.
+   */
+  const source = headingsOf({ text: sourceText, },);
+  /**
+   Archive headings in order.
+   */
+  const target = headingsOf({ text: targetText, },);
+  if ((source.length === 0) || (source.length !== target.length))
+    return [];
+  return source.flatMap(function toPair(
+    heading,
+    at,
+  ): readonly PageName[] {
+    /**
+     Archive's heading at the same position.
+     */
+    const rendering = target[at];
+    if (rendering === undefined)
+      return [];
+    if ((rendering === '') || (rendering === heading))
+      return [];
+    if (!hasHan({ text: heading, },))
+      return [];
+    return [{
+      source: heading,
+      rendering,
+      evidence: 'heading',
+    },];
+  },);
+}
+
+/**
+ Identity-context lines naming how this page renders its people, linked
+ titles and headings, read off the archive: a heading and one line per
+ distinct source text, empty when the page carries none.
 
  @param sourceText - whole original document
 
@@ -354,6 +451,10 @@ export function pageNameLines(
       targetText,
     },),
     ...signaturePairs({
+      sourceText,
+      targetText,
+    },),
+    ...headingPairs({
       sourceText,
       targetText,
     },),

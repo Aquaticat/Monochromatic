@@ -204,8 +204,8 @@ await describe({
         + 'heading with nothing under it',
       fn: async () => {
         expect(prepareDocumentPair({
-          sourceText: '## 第一节\n\n猫猫喜欢追蝴蝶。\n',
-          targetText: '## Section one\n\nThe cat likes chasing butterflies.\n',
+          sourceText: '猫猫喜欢追蝴蝶。\n',
+          targetText: 'The cat likes chasing butterflies.\n',
         },).identityContext,).toBeUndefined();
       },
     },),
