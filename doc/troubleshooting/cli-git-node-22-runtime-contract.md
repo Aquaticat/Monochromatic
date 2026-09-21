@@ -2,21 +2,18 @@
 
 ## Resolution policy
 
-Issue #429 selects one maintained runtime line:
-the latest published Node LTS line.
-`package/git-policy/cli/package.json` is the source of truth and carries one caret range,
-currently `^24.11.0`,
-where Node 24.11.0 is the release that moved Node 24 into LTS.
-The policy replaces this range when a newer Node line enters LTS;
-it does not append an older-line union.
+Issue #429 aligned cli-git's declared floor with the latest published Node LTS line.
+Issue #475 keeps that exact floor and adds the verified newer Node line.
+`package/git-policy/cli/package.json` is the source of truth and carries one caret branch per supported line,
+currently `^24.11.0 || ^26.0.0`.
+The first branch is the minimum supported runtime and the build derives its `node24.11.0` transform target from it.
 
-`package/git-policy/cli/rolldown.node.config.ts` derives its exact `node24.11.0` transform target from that manifest range.
-`package/git-policy/cli/src/runtime-contract.host-evidence.ts` requires execution at the exact declared floor,
+`package/git-policy/cli/src/runtime-contract.host-evidence.ts` requires execution at the exact floor of any declared line,
 imports the built public MJS without extra output,
 and checks successful help plus invalid-usage behavior.
-`.github/workflows/cli-git-trust.yml` builds and runs unit and host evidence at that floor.
-A separate CI check compares the declared floor with Node's official release index each day,
-so a newly published LTS line makes the stale single range fail visibly.
+`.github/workflows/cli-git-trust.yml` builds and runs unit and host evidence at every declared floor.
+A separate CI check compares the declared branches with Node's official release index each day,
+so a newly published LTS line without a corresponding branch fails visibly.
 
 ### Landed verification
 
@@ -26,14 +23,15 @@ The runtime policy and scoped CI evidence landed in commits `6a43312ff`,
 and `1848ce73a`.
 Node's official release index on 2026-08-28 reported Node 24.20.0 as latest LTS,
 and its first release carrying the Krypton LTS marker was Node 24.11.0.
-The declared `^24.11.0` range therefore identifies current latest LTS line and its exact floor.
+Issue #475 additionally verifies the Node 26 line,
+so the declared range is now `^24.11.0 || ^26.0.0` and CI exercises both exact floors.
 
 The following package-scoped commands passed with `MISE_NODE_VERSION=24.11.0`:
 
 ```sh
 mise run //package/git-policy/cli:build
 mise run //package/git-policy/cli:test:unit
-mise run //package/git-policy/cli:verify:minimum-runtime
+mise run //package/git-policy/cli:verify:supported-runtime
 ```
 
 The build accepted manifest-derived target `node24.11.0`.

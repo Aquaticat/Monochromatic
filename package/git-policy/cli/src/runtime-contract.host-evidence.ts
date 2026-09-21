@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- Built cli-git verification at package's exact minimum Node runtime.
- 
+ Built cli-git verification at package's supported Node runtime floors.
+
  @module
  */
 
@@ -14,42 +14,36 @@ import nanoSpawn, {
 
 import packageMetadata from '../package.json' with { type: 'json', };
 
-//region Runtime contract: Derive one maintained LTS floor from package metadata.
+//region Runtime contract: Derive supported runtime floors from package metadata.
 
 /**
- Engine range form reserved for one maintained Node LTS line.
+ Separator between independently supported Node runtime lines.
  */
-const NODE_LTS_RANGE_PREFIX = '^';
+const NODE_ENGINE_RANGE_SEPARATOR = ' || ';
 /**
- Number of components required by package's exact minimum Node version.
+ Prefix for each exact minimum in the Node engine range.
+ */
+const NODE_ENGINE_RANGE_PREFIX = '^';
+/**
+ Number of components required by an exact Node runtime version.
  */
 const SEMANTIC_VERSION_COMPONENT_COUNT = 3;
 /**
  Consumer runtime contract declared by package manifest.
  */
 const { node: nodeEngineRange, } = packageMetadata.engines;
-
-if (!nodeEngineRange.startsWith(NODE_LTS_RANGE_PREFIX,))
-  throw new Error(`cli-git Node engine must be one caret range, received ${nodeEngineRange}`,);
-
 /**
- Exact minimum runtime extracted from package's single-line LTS range.
+ Supported Node runtime ranges from the package manifest.
  */
-const minimumNodeVersion = nodeEngineRange.slice(NODE_LTS_RANGE_PREFIX.length,);
-/**
- Components used to reject unions,
- aliases,
- and noncanonical versions.
- */
-const minimumNodeVersionComponents = minimumNodeVersion.split('.',);
+const nodeEngineRanges = nodeEngineRange.split(NODE_ENGINE_RANGE_SEPARATOR,);
 
 /**
  Checks whether one version component is an unsigned canonical integer.
- 
+
  @param component - Version component from package engine floor.
- 
+
  @returns Whether component has canonical integer spelling.
- 
+
  @example
  ```ts
  isCanonicalVersionComponent('11');
@@ -61,21 +55,50 @@ function isCanonicalVersionComponent(component: string,): boolean {
   return String(Number(component,)) === component;
 }
 
-if (minimumNodeVersionComponents.length !== SEMANTIC_VERSION_COMPONENT_COUNT) {
-  throw new Error(`cli-git Node engine must contain one canonical version, received ${nodeEngineRange}`,);
+/**
+ Extracts and validates one exact minimum from a caret runtime range.
+
+ @param runtimeRange - One package engine range.
+
+ @returns Exact minimum runtime version.
+
+ @example
+ ```ts
+ extractNodeVersion('^24.11.0');
+ ```
+ */
+function extractNodeVersion(runtimeRange: string,): string {
+  if (!runtimeRange.startsWith(NODE_ENGINE_RANGE_PREFIX,))
+    throw new Error(`cli-git Node engine must contain caret ranges, received ${nodeEngineRange}`,);
+  const version = runtimeRange.slice(NODE_ENGINE_RANGE_PREFIX.length,);
+  const components = version.split('.',);
+  if ((components.length !== SEMANTIC_VERSION_COMPONENT_COUNT)
+    || (!components.every(isCanonicalVersionComponent,))) {
+    throw new Error(`cli-git Node engine must contain canonical versions, received ${nodeEngineRange}`,);
+  }
+  return version;
 }
-if (!minimumNodeVersionComponents.every(isCanonicalVersionComponent,)) {
-  throw new Error(`cli-git Node engine must contain one canonical version, received ${nodeEngineRange}`,);
-}
+
+/**
+ Exact runtime versions supported by the package.
+ */
+const supportedNodeVersions = nodeEngineRanges.map(extractNodeVersion,);
+/**
+ Exact minimum runtime in the declared range.
+ */
+const minimumNodeVersion = supportedNodeVersions[0];
+
+if (minimumNodeVersion === undefined)
+  throw new Error(`cli-git Node engine contains no runtime ranges, received ${nodeEngineRange}`,);
 
 /**
  Node version executing this host-evidence program.
  */
 const { node: currentNodeVersion, } = process.versions;
 
-if (currentNodeVersion !== minimumNodeVersion) {
+if (!supportedNodeVersions.includes(currentNodeVersion,)) {
   throw new Error(
-    `minimum-runtime evidence requires Node ${minimumNodeVersion}, received ${currentNodeVersion}`,
+    `runtime evidence requires Node ${supportedNodeVersions.join(', ')}, received ${currentNodeVersion}`,
   );
 }
 
@@ -217,6 +240,8 @@ if (!invalidUsageStderr.includes('Usage: git cli-git trust [--yes]',)) {
   );
 }
 
-console.log(`cli-git minimum Node ${minimumNodeVersion} runtime contract passed`,);
+console.log(
+  `cli-git Node ${currentNodeVersion} runtime contract passed (minimum ${minimumNodeVersion})`,
+);
 
 //endregion Built consumer evidence

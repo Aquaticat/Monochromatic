@@ -6,39 +6,33 @@ import {
 import packageMetadata from './package.json' with { type: 'json', };
 
 /**
- Engine range form reserved for one maintained Node LTS line.
+ Separator between independently supported Node runtime lines.
  */
-const NODE_LTS_RANGE_PREFIX = '^';
+const NODE_ENGINE_RANGE_SEPARATOR = ' || ';
 /**
- Number of components required by package's exact minimum Node version.
+ Prefix for each exact minimum in the Node engine range.
+ */
+const NODE_ENGINE_RANGE_PREFIX = '^';
+/**
+ Number of components required by an exact Node runtime version.
  */
 const SEMANTIC_VERSION_COMPONENT_COUNT = 3;
 /**
  Canonical package runtime contract.
  */
 const { node: nodeEngineRange, } = packageMetadata.engines;
-
-if (!nodeEngineRange.startsWith(NODE_LTS_RANGE_PREFIX,))
-  throw new Error(`cli-git Node engine must be one caret range, received ${nodeEngineRange}`,);
-
 /**
- Exact minimum runtime extracted from package's single-line LTS range.
+ Supported Node runtime ranges from the package manifest.
  */
-const minimumNodeVersion = nodeEngineRange.slice(NODE_LTS_RANGE_PREFIX.length,);
-/**
- Components used to reject unions,
- aliases,
- and noncanonical versions.
- */
-const minimumNodeVersionComponents = minimumNodeVersion.split('.',);
+const nodeEngineRanges = nodeEngineRange.split(NODE_ENGINE_RANGE_SEPARATOR,);
 
 /**
  Checks whether one version component is an unsigned canonical integer.
- 
+
  @param component - Version component from package engine floor.
- 
+
  @returns Whether component has canonical integer spelling.
- 
+
  @example
  ```ts
  isCanonicalVersionComponent('11');
@@ -50,12 +44,41 @@ function isCanonicalVersionComponent(component: string,): boolean {
   return String(Number(component,)) === component;
 }
 
-if (minimumNodeVersionComponents.length !== SEMANTIC_VERSION_COMPONENT_COUNT) {
-  throw new Error(`cli-git Node engine must contain one canonical version, received ${nodeEngineRange}`,);
+/**
+ Extracts and validates one exact minimum from a caret runtime range.
+
+ @param runtimeRange - One package engine range.
+
+ @returns Exact minimum runtime version.
+
+ @example
+ ```ts
+ extractNodeVersion('^24.11.0');
+ ```
+ */
+function extractNodeVersion(runtimeRange: string,): string {
+  if (!runtimeRange.startsWith(NODE_ENGINE_RANGE_PREFIX,))
+    throw new Error(`cli-git Node engine must contain caret ranges, received ${nodeEngineRange}`,);
+  const version = runtimeRange.slice(NODE_ENGINE_RANGE_PREFIX.length,);
+  const components = version.split('.',);
+  if ((components.length !== SEMANTIC_VERSION_COMPONENT_COUNT)
+    || (!components.every(isCanonicalVersionComponent,))) {
+    throw new Error(`cli-git Node engine must contain canonical versions, received ${nodeEngineRange}`,);
+  }
+  return version;
 }
-if (!minimumNodeVersionComponents.every(isCanonicalVersionComponent,)) {
-  throw new Error(`cli-git Node engine must contain one canonical version, received ${nodeEngineRange}`,);
-}
+
+/**
+ Exact runtime versions supported by the package.
+ */
+const supportedNodeVersions = nodeEngineRanges.map(extractNodeVersion,);
+/**
+ Exact minimum runtime used as the build transform target.
+ */
+const minimumNodeVersion = supportedNodeVersions[0];
+
+if (minimumNodeVersion === undefined)
+  throw new Error(`cli-git Node engine contains no runtime ranges, received ${nodeEngineRange}`,);
 
 /**
  Shared Node flavor before cli-git's package-specific runtime target.
@@ -69,7 +92,7 @@ const baseConfig: NodeFlavorConfig = nodeConfig({
 
 /**
  Node build configuration for shadow bin and authoring API.
- 
+
  Transform target comes from same manifest range used by package managers and
  minimum-runtime CI. Unminified single-chunk output keeps trust diagnostics,
  stack traces,

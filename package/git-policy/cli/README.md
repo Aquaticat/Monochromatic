@@ -5,17 +5,18 @@ The package also exposes a side-effect-free policy authoring API.
 
 ## Runtime
 
-Cli-git supports the latest Node LTS line,
-currently Node `^24.11.0`.
-The single `engines.node` range in `package.json` is canonical:
-the build derives its transform target from that range,
+Cli-git supports the maintained Node LTS lines,
+currently Node `^24.11.0 || ^26.0.0`.
+The `engines.node` range in `package.json` is canonical:
+the build derives its transform target from the lowest supported floor,
 and CI builds,
 tests,
 imports,
-and invokes the package at its exact floor.
+and invokes the package at the exact floor of every declared line.
 CI also compares the range with Node's published latest LTS release each day.
 When a new Node line becomes LTS,
-replace the range with that line's first LTS release instead of adding a historical branch.
+add that line's first LTS release as a caret branch;
+retain older branches while they remain supported.
 
 Installing the package exposes a shadowing `git` executable.
 Put the package's `node_modules/.bin` directory before the real Git directory on `PATH`;
