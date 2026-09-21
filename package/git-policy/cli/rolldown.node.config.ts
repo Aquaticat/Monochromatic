@@ -59,7 +59,13 @@ function isCanonicalVersionComponent(component: string,): boolean {
 function extractNodeVersion(runtimeRange: string,): string {
   if (!runtimeRange.startsWith(NODE_ENGINE_RANGE_PREFIX,))
     throw new Error(`cli-git Node engine must contain caret ranges, received ${nodeEngineRange}`,);
+  /**
+   Exact version text after the caret range prefix.
+   */
   const version = runtimeRange.slice(NODE_ENGINE_RANGE_PREFIX.length,);
+  /**
+   Components used to validate exact version spelling.
+   */
   const components = version.split('.',);
   if ((components.length !== SEMANTIC_VERSION_COMPONENT_COUNT)
     || (!components.every(isCanonicalVersionComponent,))) {
@@ -75,7 +81,7 @@ const supportedNodeVersions = nodeEngineRanges.map(extractNodeVersion,);
 /**
  Exact minimum runtime used as the build transform target.
  */
-const minimumNodeVersion = supportedNodeVersions[0];
+const [minimumNodeVersion,] = supportedNodeVersions;
 
 if (minimumNodeVersion === undefined)
   throw new Error(`cli-git Node engine contains no runtime ranges, received ${nodeEngineRange}`,);
