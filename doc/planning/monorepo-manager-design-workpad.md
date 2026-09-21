@@ -211,8 +211,12 @@ Collapsing these steps would register test data as software merely because it ha
 ## Membership alternatives, worked against both cases
 
 Candidate A:
-use native project and workspace declarations to establish membership;
+starting from a recognized repository package,
+use its native project and workspace declarations to establish membership;
 let the root HCL supply relationships those declarations do not express.
+Finding another workspace file somewhere below that package does not independently enroll it.
+The initial repository-package discovery rule still needs specification;
+this candidate addresses membership inside an already recognized package.
 
 - Android:
   Gradle declares `:app`;
@@ -272,6 +276,26 @@ Recording them here is preferable to pursuing them all before resolving ownershi
   define activation and sampling boundaries before promising how `currentDateTime` behaves.
 - Native applicability:
   do not equate every discoverable build variant with the set the repository intends to maintain automatically.
+
+## Proposed instruction correction
+
+The user's request concerns thinking through written models,
+not just retaining conclusions.
+Proposed replacement for `AGENTS.md` rule `DCK`,
+not applied:
+
+> Think in repo files:
+> sketch cases before branching.
+> Record requirements,
+> hypotheses,
+> corrections,
+> decisions,
+> evidence,
+> rejections,
+> questions,
+> commits,
+> and next action.
+> Docs are canonical.
 
 ## Immediate next working step
 

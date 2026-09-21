@@ -789,11 +789,17 @@ not a cache bypass.
     Q11 A is accepted:
     package-wide concerns cover all applicable owned native parts;
     narrower addresses remain possible.
-    Work through ownership and counterexamples in
-    `doc/planning/monorepo-manager-design-workpad.md`
-    before drafting the next question.
+    `doc/planning/monorepo-manager-design-workpad.md` now contains an ownership sketch,
+    the verified nested pseudo-package counterexample from `oxlint-test-import`,
+    a revised discovery/membership/applicability distinction,
+    and the next membership-default question.
+    Ask whether an otherwise unconnected nested project needs an explicit membership declaration
+    or is enrolled by default until excluded.
+    Keep the remaining branches in the workpad's parking lot until this case is resolved.
     The user's correction is about using writing to solve the problem,
     not merely preserving conclusions or session history.
+    A `DCK` amendment is proposed in the workpad;
+    `AGENTS.md` remains unchanged.
     Task #8 is active;
     #9 remains incomplete and is blocked on #8,
     rather than being marked finished.

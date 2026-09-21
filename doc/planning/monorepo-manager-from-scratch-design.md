@@ -3499,6 +3499,14 @@ Independent result states do not justify eager concurrent execution.
 Acceptance was followed by a request to continue grilling until the 0.x plan is concrete enough to implement.
 Executions are how meow maintains these responsibilities,
 not their common definition.
+Q11 A additionally settles package-wide scope:
+a maintained concern covers all applicable native parts owned by the package,
+not only the native project at its root.
+Narrower addresses remain possible;
+ownership inference and address syntax are still open.
+The [design workpad](monorepo-manager-design-workpad.md)
+works through the Android composition and nested fixture-manifest counterexample before further questions.
+
 The conceptual model is aligned enough to resolve its concrete 0.x contracts.
 Do not reopen the task-name or state-versus-stages questionnaires.
 The [software model exploration](monorepo-manager-software-model.md)
