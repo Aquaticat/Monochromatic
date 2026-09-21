@@ -8082,6 +8082,128 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## CuspariaKLSY2 read, 2026-09-21, 21:50 UTC: the life is told in the past tense, class seventy-five (a lane's trailing newline doubles the block separator) fixed in c9e267d3a and c5470163d; CuspariaKLSY3 killed for the second half, CuspariaKLSY4 launched
+
+`CuspariaKLSY2` (frozen `574fce2d1`,
+pid 1637234,
+overlap 8,
+launched 20:56 UTC on Bedrock and OpenRouter,
+Synthetic and Hyper dry)
+SETTLED at 21:32 UTC on one attempt,
+36 minutes.
+
+The tense line is live.
+The archive and `Cusparia1` both tell four lines of the life in the present
+("She loves sunflowers",
+"She is persistent when it comes to her art",
+"She likes to drink Monster Energy",
+"Her first language is Russian");
+`CuspariaKLSY2` tells all four in the past
+("She loved sunflowers.
+She told me she had a deep connection with sunflowers.",
+"She was very devoted to art.",
+"She liked drinking Monster Energy.",
+"Her first language was Russian."),
+and the two lines `Cusparia1` had already moved
+("She often tells me",
+"She thinks she doesn't have many friends")
+stay in the past.
+The judges cite the rule in their own words:
+35 select reasons name the past tense,
+among them "maintaining the past tense required by the house rules for a life that has ended"
+and "Both correctly use past tense per house rules for deceased individuals".
+No line of the page is in the present.
+
+The seven steps and three checks against `Cusparia1` and the archive:
+1 of 1 heading,
+1 of 1 tag marker (the contributor comment),
+no links,
+no footnotes,
+front matter equal,
+no `TA`,
+no `finish_reason=error`,
+`attempts.json` reads 1,
+no gate-kept or unendorsed standing,
+4 abstention lines with reasons,
+no repeat finding,
+no run-off.
+The ordered list ships with the archive's own marker spacing
+(two spaces after the first,
+third and fourth markers,
+one after the second,
+which is how the archive has it).
+
+One regression,
+class seventy-five.
+The page carries a double blank line between the list-intro paragraph
+("Reasons for taking hormones and transitioning:")
+and the list,
+where the archive,
+the original and `Cusparia1` all carry one.
+The artifact shows why:
+the shipped text for that slice ends in a newline
+(`…transitioning:\n`),
+and `spliceSlices` wrote a content replacement verbatim into its span,
+so the lane's newline landed ahead of the archive's block separator.
+The deterministic floor has no reason to refuse a trailing newline,
+and nothing between the writer and the page trimmed it.
+`mikaela5` carries a double blank line too,
+but its archive carries the same one,
+so that page is faithful and only `CuspariaKLSY2` is the class.
+Fixed in `c9e267d3a`:
+`span-edge-match.ts` (`matchSpanEdges`) drops a replacement's own leading and trailing line-ending runs
+and keeps the replaced span's,
+leaving the interior untouched,
+and `spliceSlices` writes every content edit through it;
+insertions already compose their separators and are unchanged.
+Guard red first at `727fbc171`;
+lint and types clean.
+The full suite was RED at `c9e267d3a` (exit 1,
+two FAIL lines,
+both the publish test):
+`refusePageThatDisagrees` weighs the page as the archive plus every slice's shipped text
+against its incumbent,
+and with the splice now dropping a lane's trailing newline the page came in
+"1 characters off the 168 the archive plus every slice change comes to".
+That would have refused `CuspariaKLSY3` at publish.
+Fixed in `c5470163d`:
+`sliceDelta` in `published-page-check.ts` counts each slice's text through `matchSpanEdges`
+against its incumbent,
+the same edges the splice writes,
+so the accounting and the page agree;
+guard red first at `01b54f2a9`;
+lint and types clean;
+the full suite reruns at `c5470163d` (`scratchpad/full-suite-c5470163d.log`).
+`CuspariaKLSY3` (frozen `c9e267d3a`,
+pid 1651207,
+launched 21:39 UTC)
+was killed at 21:45 UTC six minutes in under always-kill-and-relaunch,
+127 spend lines,
+0.05 USD by the meters.
+
+Spend:
+352 calls,
+423 seats asked,
+27 retry rounds,
+4 abandoned streams;
+by the meters Bedrock 119.45 to 119.36 USD and OpenRouter 176.90 to 176.79,
+0.20 USD.
+Seats:
+`glm-5.3` dark (15 refused,
+Synthetic dry),
+`hf:Qwen/Qwen3.8-27B` 4 usable of 59,
+`hf:moonshotai/Kimi-K3` 3 of 33,
+every other seat whole,
+Jev 13 of 13.
+
+`CuspariaKLSY4` (frozen `c5470163d`,
+pid 1668324,
+overlap 8)
+launched at 21:46 UTC to read the class seventy-five fix live:
+one blank line between the list intro and the list,
+the tense held,
+then the seven steps and three checks.
+
 ## hulicaijia9 read, 2026-09-21, 21:00 UTC: 左右 ships as the archive's Conflict, no candidate proposed the literal heading, SETTLED in 82 minutes; CuspariaKLSY2 launched for the tense line
 
 `hulicaijia9` (frozen `574fce2d1`,

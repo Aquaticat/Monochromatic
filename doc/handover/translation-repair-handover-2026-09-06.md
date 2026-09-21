@@ -4647,7 +4647,36 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA9 CONFIRMED THE HEADING EVIDENCE AND CUSPARIAKLSY2 RUNS
+1.  CLASS SEVENTY-FIVE IS FIXED AND CUSPARIAKLSY4 RUNS
+    (the pass log's heading dated 2026-09-21 21:50 UTC):
+    `CuspariaKLSY2` (frozen `574fce2d1`) SETTLED at 21:32 UTC in 36 minutes,
+    0.20 USD by the meters,
+    and tells the life in the past tense on every line the archive had in the present
+    (35 judge reasons cite the house rule),
+    but shipped a double blank line between the list intro and its list:
+    the slice's shipped text ended in a newline and `spliceSlices` wrote it verbatim
+    ahead of the archive's block separator.
+    Fixed in `c9e267d3a` (`span-edge-match.ts`,
+    `matchSpanEdges`:
+    a content replacement carries the replaced span's line-ending edges),
+    guard red first at `727fbc171`.
+    The full suite was red at `c9e267d3a` on the publish test
+    (the page weight counted the lane's newline the splice no longer writes);
+    fixed in `c5470163d` (`sliceDelta` weighs through `matchSpanEdges`),
+    guard red first at `01b54f2a9`,
+    lint and types clean,
+    the full suite rerunning at `c5470163d` (`scratchpad/full-suite-c5470163d.log`;
+    read it before the next fix).
+    `CuspariaKLSY3` (frozen `c9e267d3a`) was killed at 21:45 UTC six minutes in.
+    `CuspariaKLSY4` (frozen `c5470163d`,
+    pid 1668324,
+    launched 21:46 UTC)
+    runs to read the fix live:
+    one blank line between the list intro and the list first,
+    the tense held,
+    then the seven steps and three checks,
+    and record it.
+    HULICAIJIA9 CONFIRMED THE HEADING EVIDENCE
     (the pass log's heading dated 2026-09-21 21:00 UTC):
     `hulicaijia9` (frozen `574fce2d1`) SETTLED at 20:53 UTC in 82 minutes on one attempt,
     4.10 USD by the meters,
