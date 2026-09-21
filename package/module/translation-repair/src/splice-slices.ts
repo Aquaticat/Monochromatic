@@ -9,6 +9,7 @@ import {
 } from './insertion-separator.ts';
 import { assertPlacementLayout, } from './placement-layout.ts';
 import { assertSliceIndexing, } from './slice-indexing.ts';
+import { matchSpanEdges, } from './span-edge-match.ts';
 
 //region Slice splicing
 // Rebuilding a whole translation from per-slice results.
@@ -467,9 +468,11 @@ export function spliceSlices(
       const tail = text.slice(edit.endOffset,);
 
       /**
-       Text going in. A content span carries its lane's text verbatim, which
-       is what every replacement did before anchors existed. An anchor has no
-       span to sit between, so assembly composes its separators.
+       Text going in. A content span carries its lane's text with the span's
+       own line-ending edges (class seventy-five: a lane's trailing newline
+       written verbatim ahead of the archive's separator doubled the blank
+       line). An anchor has no span to sit between, so assembly composes its
+       separators.
        */
       const written = (edit.kind === 'insertion')
         ? composeInsertion({
@@ -478,7 +481,13 @@ export function spliceSlices(
           after: tail,
           eol,
         },)
-        : edit.text;
+        : matchSpanEdges({
+          replaced: text.slice(
+            edit.startOffset,
+            edit.endOffset,
+          ),
+          text: edit.text,
+        },);
       return head
         + written
         + tail;

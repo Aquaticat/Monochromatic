@@ -315,7 +315,7 @@ await describe({
       name: 'writes a replacement whose lane left a trailing line ending with the '
         + 'span\'s own edges, so the page keeps one block separator where the '
         + 'archive had one (class seventy-five, CuspariaKLSY2: a list-intro '
-        + 'slice shipped "…transitioning:\\n" into a span the archive separator '
+        + 'slice shipped its text with a trailing newline into a span the archive separator '
         + 'already followed, and the page carried a double blank line the '
         + 'archive never had)',
       fn: async () => {
