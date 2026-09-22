@@ -248,19 +248,73 @@ Chord is published by the same scope in lockstep with pi,
  so the pi exclusion already implied accepting same-day chord releases;
  the list now states it.
 
-### Find the offending pick when the error names none
+### Exclude the whole publisher scope (approved, not yet applied)
 
-In a throwaway worktree,
- set `minimumReleaseAgeStrict: false` and run `pnpm update --recursive` without `--no-save`.
-pnpm prints each immature pick as it appends it to `minimumReleaseAgeExclude`.
+The durable form of the chord exclusion is `'@earendil-works/*'` in place of the chord and `pi-*` entries,
+ so the next lockstep sibling Earendil adds cannot reopen this failure.
+The user approved it on 2026-09-22.
+The agent's edit was blocked by the Claude Code auto-mode classifier as a security weakening,
+ so it is waiting for the user to apply it by hand:
+
+```yaml
+# pnpm-workspace.yaml
+minimumReleaseAgeExclude:
+  - '@earendil-works/*'
+```
 
 Tradeoff:
- this rewrites `pnpm-workspace.yaml`,
- `pnpm-lock.yaml`,
- and `node_modules` in that worktree;
- never run it in the main checkout.
+ every package in the scope skips the age gate,
+ including ones not yet published.
+On 2026-09-22 the lockfile's scope members were exactly `chord` and the five `pi-*` packages.
+
+### Run `mise run deps:update` instead of the bare command
+
+`package/dev-script/deps-update` (commits `d4d52e34e`,
+ `02f7448f1`,
+ `cfd65c2fa`) runs `pnpm update --recursive --no-save`.
+On this refusal it resolves a temporary copy of the workspace manifests in loose mode,
+ reads the versions pnpm appends to `minimumReleaseAgeExclude`,
+ and reports each one with its publish time,
+ its maturity time,
+ its direct dependents,
+ and both choices (exclude or wait).
+It also names any later failure the loose resolution hit,
+ such as `ERR_PNPM_PEER_DEP_ISSUES`.
+
+Verified on the throwaway worktree at `f21a6a73b` (pre-fix config):
+
+```text
+pnpm update refused 1 version(s) younger than minimumReleaseAge:
+
+@earendil-works/chord@0.87.1
+  published: 2026-09-22T19:38:00.606Z
+  passes the age gate: 2026-09-23T19:38:00.606Z
+  pulled in by: @earendil-works/pi-agent-core@0.87.1, @earendil-works/pi-coding-agent@0.87.1
+
+Choose one:
+  - Trust the publisher: add the package name (or its scope glob) to
+    minimumReleaseAgeExclude in pnpm-workspace.yaml, then rerun.
+  - Wait: rerun after 2026-09-23T19:38:00.606Z.
+
+The update will then stop on a separate failure the scratch resolution also hit:
+  [ERR_PNPM_PEER_DEP_ISSUES] Unmet peer dependencies
+```
+
+The loose resolution took 1.9s in a measured run
+ because `--lockfile-only` skips fetching and linking.
+
+Tradeoffs:
+ the diagnosis resolves against the registry a second time,
+ so a release published between the two resolutions can appear in the report without having caused the refusal.
+Registry authentication is not sent for publish-time lookups.
 
 ## What does not work
+
+`pnpm view <name>@<version> time --json` for publish times:
+ on pnpm 12.4.2 it returned a `time` map for `@earendil-works/chord` ending at `0.86.0`,
+ while `pnpm view @earendil-works/chord versions --json` in the same shell listed `0.87.0` and `0.87.1`.
+`deps:update` reads the registry packument directly instead.
+The cause was not traced.
 
 Dropping `--no-save` in a non-interactive session:
  strict mode then raises `ERR_PNPM_NO_MATURE_MATCHING_VERSION` instead of prompting
@@ -350,7 +404,49 @@ Constraints,
 
 ### Prototype
 
-PROTOTYPE_RESULT
+Patch:
+ [`pnpm-update-no-save-strict-release-age.patch`](pnpm-update-no-save-strict-release-age.patch),
+ against tag `v12.4.2` (commit `9502f3c457717dae3a4ddbf4315a8c4aee16fdb4`),
+ prepared in a disposable clone whose `origin` was verified as `https://github.com/pnpm/pnpm.git`.
+It turns `StrictRequiresSave` into `StrictRequiresSave { violations: String }`,
+ fills it with the existing `format_violation_error(&immature)`,
+ appends it to the message,
+ and updates the unit test that asserts the message.
+
+It covers the Rust CLI (pnpm 12) only.
+The TypeScript CLI under `pnpm11/` has the same gap and is described in the draft,
+ not prototyped.
+
+Verification ran in a secret-free container with no repository mounts other than the clone
+ (the clone's `.cargo/config.toml` vendored-source block was removed for the run and is not part of the patch):
+
+```shell
+podman run --memory=2g --cpus=2 --rm --volume "$PWD:/work:Z" --workdir /work/pnpm \
+  docker.io/library/rust:1.97.0 \
+  cargo test --package pnpm-package-manager --lib minimum_release_age
+```
+
+Patched:
+
+```text
+test minimum_release_age::tests::strict_no_save_is_rejected_only_once_a_pick_is_immature ... ok
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 687 filtered out
+```
+
+Control,
+ patched test against unpatched `minimum_release_age.rs`:
+
+```text
+test minimum_release_age::tests::strict_no_save_is_rejected_only_once_a_pick_is_immature ... FAILED
+  left: "minimumReleaseAgeStrict cannot be combined with --no-save: ... which --no-save prevents."
+ right: "minimumReleaseAgeStrict cannot be combined with --no-save: ... which --no-save prevents.\n1 version does not meet the minimumReleaseAge constraint:\n  foo@1.0.0 foo@1.0.0 is too new"
+test result: FAILED. 17 passed; 1 failed
+```
+
+All six constraints hold for pnpm 12,
+ so the draft is fileable.
+It has not been filed;
+ filing is an outward-facing action that waits for the user's go-ahead.
 
 ### Draft issue
 
@@ -399,7 +495,34 @@ and append it to the message (patch below, tested with
 gap exists in `pnpm11/installing/commands/src/policyHandlers.ts`, which could
 reuse the list built by `failOnImmature`.
 
-PATCH_PLACEHOLDER
+```diff
+--- a/pnpm/crates/package-manager/src/minimum_release_age.rs
++++ b/pnpm/crates/package-manager/src/minimum_release_age.rs
+@@ -17,15 +17,15 @@
+     #[display(
+-        "minimumReleaseAgeStrict cannot be combined with --no-save: approval would require writing to minimumReleaseAgeExclude in pnpm-workspace.yaml, which --no-save prevents."
++        "minimumReleaseAgeStrict cannot be combined with --no-save: approval would require writing to minimumReleaseAgeExclude in pnpm-workspace.yaml, which --no-save prevents.\n{violations}"
+     )]
+     #[diagnostic(
+         code(ERR_PNPM_STRICT_MIN_RELEASE_AGE_REQUIRES_SAVE),
+         help(
+-            "Drop --no-save so the exclude list can be persisted, or set minimumReleaseAgeStrict: false."
++            "Drop --no-save so the exclude list can be persisted, add these picks to minimumReleaseAgeExclude, or set minimumReleaseAgeStrict: false."
+         )
+     )]
+-    StrictRequiresSave,
++    StrictRequiresSave { violations: String },
+@@ -152,7 +152,9 @@
+     if policy_excludes == PolicyExcludes::Forbidden {
+-        return Err(MinimumReleaseAgeError::StrictRequiresSave);
++        return Err(MinimumReleaseAgeError::StrictRequiresSave {
++            violations: format_violation_error(&immature),
++        });
+     }
+```
+
+The unit test `strict_no_save_is_rejected_only_once_a_pick_is_immature` is updated to match
+(fails before the change, passes after: 18 of 18 in `minimum_release_age`).
 
 Written by an agent (Claude Code, claude-opus-5-5).
 ~~~
