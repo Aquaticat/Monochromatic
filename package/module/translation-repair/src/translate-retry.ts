@@ -25,6 +25,17 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
 // distinct challenge has exhausted these responsibilities.
 // Every further round costs full roster against entry deadline.
 //
+// EXCEPT WHILE A RUN-OFF KEEPS NARROWING (class eighty-two, XingZ621 slice
+// 14, 2026-09-22): eight valid candidates over an ineligible standing split
+// one ballot each four ways, the run-off over the four leaders split 1, 1
+// and 0.5 with one seat declining, and the entry stopped after three hours
+// though that tie had ranked two of the four below the rest. A tie that
+// narrows the finalists is a new, narrower question, the same reason the
+// first run-off exists, so the panel is asked again over the narrowed
+// finalists while each round narrows further; a round that decides, or a
+// tie that narrows nothing, ends it. Each round strictly shrinks the
+// finalists, so the rounds are bounded by the slate's width.
+//
 // A DECLINE LEAVES BY TWO DIFFERENT DOORS and both are handled here. With an
 // incumbent the stage RETURNS, keeping the archive's wording; with none it
 // THROWS, because keeping nothing would ship the empty string as though judges
@@ -118,8 +129,46 @@ function isRetriedDecline({ reason, }: { readonly reason: string; },): boolean {
 }
 
 /**
- Judges one produced slate, asking a declining panel exactly once more.
- 
+ Asks the panel once, carrying a decline out by whichever door it leaves.
+
+ @param judging - everything {@link judgeTranslateSlate} needs
+
+ @returns Decision or the absence it raised
+
+ @throws Anything but an absence, an abort or a transport fault, which
+ belongs to the caller unchanged
+
+ @example
+ ```ts
+ const round = await askJudges({ judging, },);
+ ```
+ */
+async function askJudges(
+  { judging, }: { readonly judging: Parameters<typeof judgeTranslateSlate>[0]; },
+): Promise<JudgeRound> {
+  try {
+    return {
+      kind: 'returned',
+      result: await judgeTranslateSlate(judging,),
+    };
+  }
+  catch (error) {
+    // Only an absence is a decline this can act on. Anything else, an abort
+    // or a transport fault, belongs to the caller unchanged.
+    if (!(error instanceof TranslateAbsenceError))
+      throw error;
+
+    return {
+      kind: 'raised',
+      error,
+    };
+  }
+}
+
+/**
+ Judges one produced slate, asking a declining panel again while each
+ run-off narrows the question, and once more otherwise.
+
  @param judging - everything {@link judgeTranslateSlate} needs, forwarded
  unchanged so this cannot drift from the half it wraps
  
@@ -146,25 +195,7 @@ export async function judgeSlateWithRetry(
   /**
    What the panel said the first time, or the refusal it raised.
    */
-  const first = await (async function askOnce(): Promise<JudgeRound> {
-    try {
-      return {
-        kind: 'returned',
-        result: await judgeTranslateSlate(judging,),
-      };
-    }
-    catch (error) {
-      // Only an absence is a decline this can act on. Anything else, an abort
-      // or a transport fault, belongs to the caller unchanged.
-      if (!(error instanceof TranslateAbsenceError))
-        throw error;
-
-      return {
-        kind: 'raised',
-        error,
-      };
-    }
-  })();
+  const first = await askJudges({ judging, },);
 
   /**
    What the first round reported, whichever door it left by.
@@ -221,54 +252,137 @@ export async function judgeSlateWithRetry(
         },),
       ]),
   ];
-  try {
+  /**
+   Slate the whole stage was offered, which a run-off narrows.
+   */
+  const slate = judging.produced
+    .candidates;
+
+  /**
+   What the next challenge round asks over and what every round so far
+   found, advanced together as each run-off narrows the question (class
+   eighty-two). The whole slate stands where no tie narrowed it.
+   */
+  const cursor: {
+    offered: typeof slate;
+    findings: readonly string[];
+  } = {
+    offered: finalists ?? slate,
+    findings: firstFindings,
+  };
+
+  /**
+   Rounds the run-offs can take at most: each strictly shrinks the finalists
+   and a narrowed run-off keeps at least two, so the slate's width bounds
+   them; the cap is the proof, never reached in practice.
+   */
+  const roundCap = slate.length + 1;
+  for (let round = 2; round <= roundCap; round += 1) {
     /**
-     What the same panel said the second time, about the same candidates or
+     Candidates this round is over.
+     */
+    const { offered, } = cursor;
+
+    /**
+     How many this round is over.
+     */
+    const offeredCount = offered.length;
+
+    /**
+     Whether this round is a run-off over fewer candidates than the slate.
+     */
+    const narrowed = offeredCount < slate.length;
+
+    /**
+     What the same panel said this round, about the same candidates or
      about the finalists of a tie.
      */
-    const second = await judgeTranslateSlate({
-      ...judging,
-      // Conditional spread keeps the whole slate where there is no run-off.
-      ...((finalists === undefined)
-        ? {}
-        : {
-          produced: {
-            ...judging.produced,
-            candidates: finalists,
-          },
-          // The ballot floor decides a run-off between valid finalists
-          // (class seventy-three).
-          runoff: true,
-        }),
-      responsibility: 'decline-challenge',
+    // oxlint-disable-next-line no-await-in-loop -- each round's question is the previous round's tie, so the rounds cannot run in parallel
+    const again = await askJudges({
+      judging: {
+        ...judging,
+        // Conditional spread keeps the whole slate where there is no run-off.
+        ...(narrowed
+          ? {
+            produced: {
+              ...judging.produced,
+              candidates: offered,
+            },
+            // The ballot floor decides a run-off between valid finalists
+            // (class seventy-three).
+            runoff: true,
+          }
+          : {}),
+        responsibility: 'decline-challenge',
+      },
     },);
 
-    // A SECOND DECLINE IS RESTAMPED, a second decision is kept as it stands.
-    // Either way the first round's findings are carried, so the record shows
-    // both asks rather than only the one that answered.
-    return {
-      ...second,
-      ...(isRetriedDecline({ reason: second.decision, },)
-        ? { decision: SETTLED_DECLINE, }
-        : {}),
-      findings: [
-        ...firstFindings,
-        ...second.findings,
-      ],
-    };
-  }
-  catch (error) {
-    if (!(error instanceof TranslateAbsenceError))
-      throw error;
+    // A DECLINE THAT RETURNS IS RESTAMPED, a decision is kept as it stands.
+    // Either way every earlier round's findings are carried, so the record
+    // shows each ask rather than only the one that answered.
+    if (again.kind === 'returned') {
+      /**
+       What the panel returned.
+       */
+      const { result, } = again;
+      return {
+        ...result,
+        ...(isRetriedDecline({ reason: result.decision, },)
+          ? { decision: SETTLED_DECLINE, }
+          : {}),
+        findings: [
+          ...cursor.findings,
+          ...result.findings,
+        ],
+      };
+    }
 
-    throw new TranslateAbsenceError({
-      reason: isRetriedDecline({ reason: error.reason, },) ? SETTLED_DECLINE : error.reason,
-      findings: [
-        ...firstFindings,
-        ...error.findings,
-      ],
-    },);
+    /**
+     Refusal this round raised.
+     */
+    const { error, } = again;
+    if (!isRetriedDecline({ reason: error.reason, },)) {
+      throw new TranslateAbsenceError({
+        reason: error.reason,
+        findings: [
+          ...cursor.findings,
+          ...error.findings,
+        ],
+      },);
+    }
+
+    /**
+     Finalists a tie this round left, when fewer than it was offered.
+     */
+    const next = error.finalists;
+    if ((next === undefined) || (next.length >= offeredCount)) {
+      throw new TranslateAbsenceError({
+        reason: SETTLED_DECLINE,
+        findings: [
+          ...cursor.findings,
+          ...error.findings,
+        ],
+      },);
+    }
+    l.info(
+      `translate stage: run-off tied again over ${String(offeredCount,)} finalists and narrowed to ${
+        String(next.length,)
+      }; asking the same panel over them`,
+    );
+    cursor.findings = [
+      ...cursor.findings,
+      ...error.findings,
+      RETRY_FINDING,
+      runoffFinding({
+        finalists: next.length,
+        offered: offeredCount,
+      },),
+    ];
+    cursor.offered = next;
   }
+  throw new Error(
+    `translate stage: the run-off narrowed more times than the slate of ${String(slate.length,)} allows`,
+  );
 }
 
 //endregion Translate retry

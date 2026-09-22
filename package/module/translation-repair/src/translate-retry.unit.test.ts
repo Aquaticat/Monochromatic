@@ -485,9 +485,9 @@ await describe({
             judging,
             seat,
           ): ScriptedBallot {
-            if (seat === 'hf:cat/Cat-C')
+            if (seat === DISINTERESTED_JUDGES[0])
               return 'dozes';
-            if (seat === 'hf:cat/Cat-F')
+            if (seat === DISINTERESTED_JUDGES[1])
               return (judging === 3) ? 'dozes' : 'naps';
             if (judging === 1)
               return 'curls';

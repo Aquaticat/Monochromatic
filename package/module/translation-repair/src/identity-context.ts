@@ -225,6 +225,14 @@ const SOURCE_PRONOUNS = [
 ] as const;
 
 /**
+ What the pronoun line says where the original writes more than one form:
+ the house rule's as-written sentence, so a sheet reading the line alone
+ cannot take the dominant form as overriding a pronoun the original wrote
+ (class eighty-one).
+ */
+const AS_WRITTEN_CLAUSE = 'each form is rendered as written where it stands (她 is she, 他 is he, TA is singular they), and';
+
+/**
  Compounds that contain a pronoun character without being that pronoun:
  plurals and the "other" words. Removed before counting, longest first so
  其他人 is not left as 人 after 其他 goes.
@@ -478,12 +486,22 @@ function countNeutralPronoun(
  ONE LINE OR NONE. The dominant form is named with its count; a document that
  uses no third-person singular pronoun at all yields nothing, which leaves
  the house rule on neutral pronouns to speak for itself.
- 
+
+ EVERY FORM THE ORIGINAL WRITES, WHERE IT MIXES THEM (class eighty-one,
+ XingZ621 slice 14, 2026-09-22). The line named 她 fifty-one times alone on a
+ ten-part page whose Part One writes TA forty times and discusses the
+ pronoun, and the consolidation bench split between "she" on this line and
+ "they" on the house rule's TA sentence until the entry stopped. The
+ dominant form settles only the subjects the original leaves unstated; a
+ pronoun the original writes is rendered as written where it stands, so the
+ line now names the other forms with their counts and says so.
+
  @param text - whole original document
- 
- @returns Single-line list naming the dominant pronoun and its count, empty
- when the original uses none
- 
+
+ @returns Single-line list naming the dominant pronoun and its count, with
+ every other form the original writes and the as-written rule where there
+ is one, empty when the original uses none
+
  @example
  ```ts
  sourcePronounLines({ text: '她睁开双眼。她笑了。', },);
@@ -523,8 +541,29 @@ export function sourcePronounLines(
   if (dominant.count === 0)
     return [];
 
+  /**
+   How the dominant form is named.
+   */
+  const dominantLine = `- pronoun: ORIGINAL refers to this person as "${dominant.pronoun}" (${
+    String(dominant.count,)
+  } times)`;
+
+  /**
+   Other forms the original writes too, in the fixed order of the forms.
+   */
+  const others = counts
+    .filter(function alsoWritten(candidate,): boolean {
+      return (candidate !== dominant) && (candidate.count > 0);
+    },)
+    .map(function named(candidate,): string {
+      return `"${candidate.pronoun}" (${String(candidate.count,)} times)`;
+    },);
+  if (others.length === 0)
+    return [dominantLine,];
+
   return [
-    `- pronoun: ORIGINAL refers to this person as "${dominant.pronoun}" (${String(dominant.count,)} times)`,
+    `${dominantLine}, and also writes ${others.join(' and ',)}; ${AS_WRITTEN_CLAUSE} "${dominant.pronoun}" `
+    + 'supplies the pronoun only where the ORIGINAL leaves the subject unstated',
   ];
 }
 
