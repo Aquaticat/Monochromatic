@@ -4647,11 +4647,47 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XINGZ621 RUNS (frozen `93b11aef9`,
+1.  XINGZ622 RUNS (frozen `6c701485d`,
+    pid 1996041,
+    launched 09:30 UTC 2026-09-22,
+    waiter `b1xqv6u5h`,
+    meters 112.15 USD Bedrock and 165.84 OpenRouter at launch)
+    to read classes eighty-one and eighty-two live:
+    slice 14 and the other Part One pronoun slices first
+    (the identity line's mixed-form sentence in the prompt payloads,
+    "They once said" on the page,
+    ballots citing the as-written rule,
+    any `run-off tied again` line and the `translate-runoff` findings),
+    then the closing poem (slice 91),
+    classes sixty-five to sixty-nine and seventy-six,
+    then the seven steps and three checks against `XingZ620` and the archive
+    (fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish),
+    the seven-hour deadline and XingZ620's 3h59m as the timing marks;
+    record under a new heading above "## XingZ621 read, 2026-09-22, 09:35 UTC" in the pass log.
+    Then `hulicaijia`, `CuspariaKLSY`, `zheermao`, `yingying`, one at a time.
+    XINGZ621 READ, CLASSES EIGHTY-ONE AND EIGHTY-TWO:
+    INCOMPLETE at 09:14 UTC in 3h02m,
+    one attempt,
+    8.82 USD by the meters,
+    stopped at the consolidation of slice 14 (the tombstone paragraph, TA 曾说):
+    the contest settled on neither, the archive's TA text stood and was withheld,
+    eight valid candidates split one ballot each four ways between "she" and three "they" renderings,
+    the run-off over the four leaders split 1, 1 and 0.5 with gpt-oss declining all,
+    `slate-declined-standing`.
+    Class eighty-one: the house rule's "only where the whole ORIGINAL uses a neutral pronoun" and the identity line's "她 (51 times)"
+    against "never correct a neutral pronoun into a gendered one" and the TA floor,
+    on a ten-part page whose Part One writes TA forty times;
+    fixed in `6c701485d` (a pronoun the ORIGINAL writes is rendered as written where it stands,
+    the identity line names every form the original writes with the as-written sentence,
+    the judge tail says a written TA is not an unstated subject).
+    Class eighty-two: a run-off that tied again among valid finalists settled the decline although it had narrowed the finalists 4 to 2;
+    fixed in `6c701485d` (`judgeSlateWithRetry` asks again while each run-off strictly narrows, bounded by the slate's width).
+    Guards red first at `4cf95e4e6`;
+    lint 0 and 0, types clean, full suite green;
+    details under the pass log heading of 09:35 UTC.
+    THE EARLIER XINGZ621 LAUNCH NOTE: XINGZ621 RAN (frozen `93b11aef9`,
     pid 1949843,
-    launched 06:11 UTC 2026-09-22,
-    waiter `bl1m0bbe9`,
-    meters 115.74 USD Bedrock and 171.10 OpenRouter at launch)
+    launched 06:11 UTC 2026-09-22)
     as the second entry of the resumed queue:
     the verse chunks and the closing poem (slice 91) first (attribution inside the quote, no pair finding in `artifacts/XingZ60.json`),
     classes sixty-five to sixty-nine and seventy-six,

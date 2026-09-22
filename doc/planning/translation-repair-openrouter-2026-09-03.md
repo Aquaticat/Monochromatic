@@ -8082,6 +8082,155 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ621 read, 2026-09-22, 09:35 UTC: INCOMPLETE at slice 14 on a pronoun rule that contradicts itself (class eighty-one) and a run-off that tied again after narrowing (class eighty-two), both fixed in 6c701485d; XingZ622 launched
+
+`XingZ621` (frozen `93b11aef9`,
+pid 1949843,
+overlap 8,
+launched 06:11 UTC on Bedrock and OpenRouter,
+Synthetic wet for part of the run and Hyper dry)
+stopped INCOMPLETE at 09:14 UTC on one attempt,
+3h02m by the tally against `XingZ620`'s 3h59m.
+Seats asked 7,229,
+311 retry rounds,
+6,043 calls,
+23 abandoned streams (0.03 USD),
+Qwen3.8-27B and glm-5.3 dark on the OpenRouter side.
+Meters 115.74 to 112.16 USD on Bedrock and 171.10 to 165.86 on OpenRouter,
+8.82 USD together.
+Repair lane from 06:12 to about 07:24,
+contest from 08:45,
+consolidation from 08:52 (113 contested slices),
+stop at 09:05 on slice 14 with the tally written at 09:14.
+No page was written,
+so the seven steps and three checks against `XingZ620` and the archive wait for `XingZ622`.
+
+### The stop
+
+Slice 14 is the tombstone paragraph of Part One
+(唯武则天立乾陵无字碑 ... TA 曾说，人死了 ... 在 TA 的遗书里 ... TA 邀请了).
+The contest settled on neither (4 of 5 usable),
+so the archive's own paragraph stood,
+and the deterministic floor withheld it from the slate for its untranslated "TA".
+The slate read eight valid candidates,
+six proposals and both lane texts
+(the repair lane's "They once said",
+the translate lane's "She once said"),
+and split one ballot each four ways:
+Mercury on candidate 2 ("respects the house rule on pronouns where the original uses the neutral form TA"),
+gpt-oss on candidate 3 ("the correct pronoun (she) as required by the declared gender"),
+minimax on candidate 6 ("singular they ... the correct rendering of TA per the house rules"),
+gemma-26b on candidate 5 ("Candidates 3, 4, 7, and 8 use she/her, which violates the rule").
+The run-off over the four leaders (class sixty-three) split again:
+gemma-26b at 0.5 on the first,
+gemma-e2b on the fourth,
+Mercury on the third ("correctly resolves the passage's neutral pronoun to 'she', consistent with the declared identity"),
+gpt-oss declining all
+("Candidates 1, 2, and 4 use the plural pronoun 'They' instead of the declared feminine pronoun 'she'").
+Tied at weight 1,
+`no-candidate-backed`,
+`slate-declined-standing`,
+and since the standing was the incumbent the entry stopped.
+
+### Class eighty-one: the pronoun rule contradicted itself on a page that writes both 她 and TA
+
+The house rule said "Only where the whole ORIGINAL uses a neutral pronoun or avoids pronouns entirely does the TRANSLATION preserve that choice rather than resolving it to he or she"
+two sentences before "Never 'correct' a neutral pronoun into a gendered one",
+and the identity line said "ORIGINAL refers to this person as 她 (51 times)" with no mention of the forty TA the original also writes.
+XingZ60 is a ten-part page by several hands;
+Part One writes TA throughout and discusses the pronoun question itself
+(至少有三个人格 ... 一个人格的性别认同为男性，另一个人格的性别认同偏女性),
+and the other parts write 她.
+A judge reading the count and the "whole ORIGINAL" clause resolved TA to she;
+a judge reading the TA sentence rendered it they;
+the bench never agreed and the same split ran through every pronoun slice of Part One
+(the judges' reasons at 08:57, 08:58, 09:01, 09:03 and 09:05 all name one rule or the other).
+`XingZ616`, `619` and `620` shipped "She once said" for this paragraph,
+the same wrong choice by the settled rule,
+unnoticed because the "no TA" check looks for the untranslated word only.
+
+Fixed in 6c701485d:
+
+- `house-policy.ts`:
+  a pronoun the ORIGINAL writes is rendered as written where it stands
+  (她 is she, 他 is he, TA is singular they),
+  on every page including one whose other passages write 她,
+  "since these pages are written by several hands and a writer who chose TA beside a page of 她 chose it";
+  the declared-identity line settles unstated subjects only,
+  never a pronoun the ORIGINAL wrote;
+  the "whole ORIGINAL" clause now governs the neutral rendering of an UNSTATED subject alone.
+- `JUDGE_POLICY_TAIL`:
+  "A TA THE ORIGINAL WRITES IS NOT AN UNSTATED SUBJECT: it is rendered singular they where it stands, whatever pronoun the identity line counts for the rest of the page",
+  a candidate resolving a written TA to she or he has made the WRONG choice,
+  as has one writing they where the ORIGINAL wrote 她 or 他.
+- `sourcePronounLines` (`identity-context.ts`):
+  where the original writes more than one form the line names every form with its count and carries the as-written sentence
+  (`- pronoun: ORIGINAL refers to this person as "她" (51 times), and also writes "TA" (40 times); each form is rendered as written where it stands (她 is she, 他 is he, TA is singular they), and "她" supplies the pronoun only where the ORIGINAL leaves the subject unstated`);
+  a page writing one form keeps the old line.
+
+Guards red first at `4cf95e4e6`
+(`house-policy-reaches-the-judges.unit.test.ts`,
+`identity-context.unit.test.ts` with the three mixed-form expectations of the dominant-form test updated).
+
+### Class eighty-two: a run-off that tied again stopped the entry although it had narrowed the finalists
+
+The class sixty-three run-off offers the tied leaders once;
+a second tie settles the decline.
+Here the first tie ranked four of eight,
+the run-off ranked two of those four (weight 1 each, one at 0.5, one abstention),
+and the stage settled `no-candidate-backed` over a question it had just narrowed to two valid renderings.
+Fixed in 6c701485d:
+`judgeSlateWithRetry` (`translate-retry.ts`) asks the same panel again while each run-off strictly narrows the finalists,
+and settles only on a round that decides or a tie that narrows nothing
+(the whole slate backed, fewer than two backed, or a rejection);
+each round shrinks the finalists and a narrowed run-off keeps at least two,
+so the slate's width bounds the rounds.
+Every round's findings are carried with `translate-declined-retried` and `translate-runoff (finalists N of M)` between them.
+Guard red first at `4cf95e4e6`
+(`translate-retry.unit.test.ts`:
+four renderings,
+three disinterested judges,
+a tie of three of four,
+then two of three,
+then a decision at weight 2 on the third round;
+the rig now takes its translators, judges and renderings as parameters).
+Lint 0 and 0,
+types clean,
+full suite green (`suite-class81-82.log`).
+
+### Checks that could be made without a page
+
+- `attempts.json` reads 1;
+  no `finish_reason=error`;
+  no `PublishedPageDisagrees` or `weight-off`.
+- 10 standings shipped without contest endorsement,
+  1 gate-kept,
+  155 `declined every candidate` lines with reasons,
+  no `translate-runoff` finding in the log (the run-off is named in the artifact, which was never written).
+- The `CORPUS NAMES` line named nobody,
+  as the census predicted.
+- The admission: slice 70 admitted inside the details of slices 67 to 71 on the container deficit (class sixty-one holding),
+  no placement unresolved.
+
+### XingZ622 launched
+
+`XingZ622` (frozen `6c701485d`,
+pid 1996041,
+overlap 8)
+launched 09:30 UTC on Bedrock and OpenRouter
+(meters 112.15 USD Bedrock, 165.84 OpenRouter at launch),
+the `CORPUS NAMES` line naming nobody.
+Read slice 14 and the other Part One pronoun slices first
+(the identity line's mixed-form sentence in the prompt payloads,
+"They once said" on the page,
+ballots citing the as-written rule,
+any `run-off tied again` line and the `translate-runoff` findings),
+then the closing poem (slice 91),
+classes sixty-five to sixty-nine and seventy-six,
+then the seven steps and three checks against `XingZ620` and the archive
+(fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish);
+`XingZ620`'s 3h59m and the seven-hour deadline are the timing marks.
+
 ## mikaela7 read, 2026-09-22, 06:15 UTC: SETTLED, classes seventy to seventy-seven holding on the newest build, the pair bound silent on a slice with no pair; XingZ621 launched
 
 `mikaela7` (frozen `93b11aef9`,
