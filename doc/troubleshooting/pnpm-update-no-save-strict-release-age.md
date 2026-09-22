@@ -189,6 +189,26 @@ The remaining `ERR_PNPM_PEER_DEP_ISSUES` failure is a separate incident:
  which pulls `@luma.gl/gpgpu@9.4.2`,
  whose peer range requires `@luma.gl/webgpu` `~9.4.0`.
 `HEAD`'s lockfile has no `@luma.gl/gpgpu`.
+Its ESM dist references only `@luma.gl/core`,
+ `@luma.gl/engine`,
+ and `@luma.gl/shadertools`:
+
+```shell
+# node_modules/.pnpm/@luma.gl+gpgpu@9.4.2_*/node_modules/@luma.gl/gpgpu
+rg --no-filename --only-matching "[\"']@luma\.gl/[a-z]+[\"']" dist --glob '*.js' | sort | uniq --count
+#      31 '@luma.gl/core'
+#      78 '@luma.gl/engine'
+#       4 '@luma.gl/shadertools'
+```
+
+Commit `418f0d829` marks that peer optional through `packageExtensions`
+ (`'@luma.gl/gpgpu'` → `peerDependenciesMeta` → `'@luma.gl/webgpu'` → `optional: true`).
+With both changes,
+ `pnpm update --recursive --no-save` exits 0 in the throwaway worktree.
+Tradeoff:
+ if a later gpgpu release starts importing `@luma.gl/webgpu`,
+ pnpm no longer flags the missing peer
+ and the failure moves to runtime in `package/dev-script/deps-cube`.
 
 Patterns,
  for this repository's config
