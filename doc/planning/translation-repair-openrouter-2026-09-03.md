@@ -8082,6 +8082,41 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Class eighty-three amended, 2026-09-22, 13:40 UTC: syllable groups, never one joined word (owner's veto); hulicaijia11 killed, hulicaijia12 launched on 4e5cf65e0
+
+The owner vetoed the one-word joining at 13:35 UTC:
+"I want syllable groups. Jie Cheng Tian Zou is fine. Jiecheng Tianzou is fine. Jiechengtianzou is not fine."
+The reading now pairs the syllables,
+each pair capitalised,
+a space between pairs,
+a lone trailing syllable standing by itself
+(锦心 Jinxin, 雨狸 Yuli, 洁澄天奏 Jiecheng Tianzou, 洁澄天奏Official "Jiecheng Tianzou Official"),
+pairs because the corpus's own romanisations pair them ("Baimao suki");
+the house-policy bullet says "in capitalised groups of two syllables ..., never one joined word" with the same examples.
+Guards red first at `790719ea3`
+(`handle-reading.unit.test.ts`, new: two syllables one group, four syllables two groups, a lone trailing syllable, Latin letters kept a space apart, the gloss tolerance;
+the house-policy guard's phrase;
+`handleReading`, `withoutGloss` and `carriesRendering` exported through the readiness barrel for the guard),
+fixed in `4e5cf65e0`,
+lint 0 and 0,
+types clean,
+the three guard suites green,
+full suite in `suite-class83c.log`.
+
+`hulicaijia11` (frozen `fa014fc55`, pid 2057750) was killed at 13:38 UTC,
+ten minutes in,
+still in preparation,
+under always-kill-and-relaunch
+(meters 107.57 to 107.56 USD Bedrock and 157.58 to 157.55 OpenRouter, 0.04 USD).
+`hulicaijia12` (frozen `4e5cf65e0`, pid 2066905, overlap 8)
+launched 13:38 UTC on Bedrock and OpenRouter
+(meters 107.56 USD Bedrock, 157.55 OpenRouter at launch),
+waiter `brc9j43qv`.
+Read by the seven steps and three checks against `hulicaijia9`,
+plus any `contributor-name-restored` line naming the pinyin reading;
+then `CuspariaKLSY`, `zheermao`, `yingying` one at a time,
+then `XingZ60` again for the handles.
+
 ## Class eighty-three built, 2026-09-22, 13:30 UTC: an undeclared handle is pinyin one way across the page, with its literal meaning in parentheses (owner's answer); hulicaijia10 killed, hulicaijia11 launched on fa014fc55
 
 The owner answered the undeclared-handle question of the XingZ622 read at 13:25 UTC:

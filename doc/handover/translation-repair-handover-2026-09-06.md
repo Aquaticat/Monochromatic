@@ -4647,7 +4647,23 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA11 RUNS (frozen `fa014fc55`,
+1.  HULICAIJIA12 RUNS (frozen `4e5cf65e0`,
+    pid 2066905,
+    launched 13:38 UTC 2026-09-22,
+    waiter `brc9j43qv`,
+    meters 107.56 USD Bedrock and 157.55 OpenRouter at launch):
+    read by the seven steps and three checks against `hulicaijia9`
+    (13 headings, 17 tag markers, 18 footnote markers, 9 definitions, 2 links, 3 Sakura, "Conflict" for 左右, front matter equal, no TA, no error finish),
+    plus any `contributor-name-restored` line naming the pinyin reading (class eighty-three);
+    record under a new heading above "## Class eighty-three amended, 2026-09-22, 13:40 UTC" in the pass log.
+    Then `CuspariaKLSY`, `zheermao`, `yingying`, one at a time,
+    then `XingZ60` again to read class eighty-three live
+    (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiecheng Tianzou Official" on the Caged Bird attribution, the gloss at the first appearance).
+    CLASS EIGHTY-THREE AMENDED (owner 2026-09-22 13:35 UTC: syllable groups, "Jiechengtianzou is not fine"):
+    the reading pairs the syllables, capitalised, a lone trailing syllable by itself (Jiecheng Tianzou);
+    guards `790719ea3`, fix `4e5cf65e0`, lint 0/0, types clean, guard suites green, full suite `suite-class83c.log`.
+    HULICAIJIA11 KILLED at 13:38 UTC ten minutes in (preparation, 0.04 USD) under always-kill-and-relaunch.
+    THE EARLIER HULICAIJIA11 LAUNCH NOTE: HULICAIJIA11 RAN (frozen `fa014fc55`,
     pid 2057750,
     launched 13:28 UTC 2026-09-22,
     waiter `bfokdo0kk`,
