@@ -4647,17 +4647,19 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  YINGYING4 RUNS (frozen `40679244d`,
-    pid 2180429,
-    launched 18:07 UTC 2026-09-22,
-    waiter binj7npur,
-    meters 102.81 USD Bedrock and 151.24 OpenRouter at launch, Synthetic dry):
-    read by the seven steps and three checks against `yingying3`
-    (1 heading, 4 markers, 2 definitions, front matter equal, the References line kept, the second-person farewell, no TA, no error finish),
-    plus class eighty-six live: the second definition "[Farewell. I miss you, Yingying.]" with the declared name inside the title;
-    record under a new heading above "## yingying3 read, 2026-09-22, 18:15 UTC" in the pass log.
-    Then `XingZ60` again on `.frozen-dist-40679244d` to read class eighty-three live
-    (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiecheng Tianzou Official" on the Caged Bird attribution, the gloss at the first appearance).
+1.  XINGZ623 RUNS (frozen `40679244d`,
+    pid 2184330,
+    launched 18:31 UTC 2026-09-22,
+    waiter bpl8gb3gq,
+    meters 102.73 USD Bedrock and 151.09 OpenRouter at launch, Synthetic dry):
+    read for class eighty-three live
+    (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiecheng Tianzou Official" on the Caged Bird attribution, the literal gloss in parentheses at each handle's first appearance)
+    beside every check of `XingZ622`
+    (fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, the closing poem's attribution inside the quote, "They once said" on the tombstone paragraph, front matter equal, no TA, no error finish);
+    record under a new heading above "## yingying4 read, 2026-09-22, 18:40 UTC" in the pass log.
+    YINGYING4 READ (frozen `40679244d`): SETTLED at 18:30 UTC in 23 min, 326 seats, 15 retry rounds, 0.23 USD by the meters;
+    class eighty-six live (the second definition "[Farewell. I miss you, Yingying.]", both lanes agreed, a slate ballot citing the glossary line's "declared form inside the title");
+    every check as `yingying3`, no unendorsed or gate-kept standing, 3 abstention lines; the `[^2]` marker on its own line renders as the archive's "world! [^2]".
     YINGYING3 READ (frozen `7ad1b8ec7`): SETTLED at 17:56 UTC in 14 min, 268 seats, 8 retry rounds, 0.16 USD by the meters;
     every check as `yingying2` and the farewell in the second person, but the blog title definition shipped the archive's "Sakura" for the declared "Yingying" (class eighty-six).
     CLASS EIGHTY-SIX FIXED: `linked-title-declared-name.ts` pairs the front matter's declared forms and the page-name glossary line for a linked title that names a declared person says which form the title takes;

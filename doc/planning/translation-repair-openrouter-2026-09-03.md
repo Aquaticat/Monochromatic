@@ -8082,6 +8082,64 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## yingying4 read, 2026-09-22, 18:40 UTC: SETTLED in 23 min, class eighty-six live, the blog title names "Yingying"; XingZ623 launched for class eighty-three
+
+`yingying4` (frozen `40679244d`, pid 2180429) SETTLED at 18:30 UTC,
+23 minutes after its 18:07 launch (TALLY `ms=1384777`),
+one attempt,
+326 seats,
+15 retry rounds,
+279 calls,
+2 abandoned streams (0.01 USD),
+0.23 USD by the meters (Bedrock 102.81 to 102.73, OpenRouter 151.24 to 151.09).
+Synthetic dry, Qwen3.8-27B and glm-5.3 dark.
+
+Class eighty-six live:
+the second definition reads "[^2]: [Farewell. I miss you, Yingying.](https://leohearts.com/archives/farewell-yingying.html)".
+Both lanes wrote "Yingying" into the title this time (slice 3, repair and translate agreed, no contest),
+and a translate slate ballot cites the glossary line by its words:
+"the names glossary states that 樱樱 is declared 'Yingying' and that the declared form is used inside the title,
+so Candidate 2 is the faithful rendering and Candidate 1 alters the name form".
+
+The page against `yingying3`:
+1 of 1 heading,
+4 of 4 markers,
+2 of 2 definitions,
+front matter equal,
+the References line kept,
+no TA,
+no error finish,
+no double blank line,
+no unendorsed, gate-kept or slate-declined standing,
+3 abstention lines (gpt-oss declining every candidate for changing the archive's wording),
+no repeat or run-off finding;
+the farewell in the second person as the original.
+Wording moved where the bench chose:
+"undergone" for "completed",
+"played with digital gadgets and chemistry",
+"burst out laughing",
+the Bilibili sentence reordered into the past perfect,
+"motorcycle riding" again (as `yingying2`; `yingying3` had "bicycle"; the source's 骑车 settles neither),
+the accident sentence joined into one,
+"what you wanted to do" as the archive's tense.
+The `[^2]` marker stands on its own line after "next world!":
+the archive writes "world! [^2]" with a space,
+so the rendered page shows the same space before the superscript;
+`yingying3` had attached it.
+
+`XingZ623` (frozen `40679244d`, pid 2184330, overlap 8)
+launched 18:31 UTC on Bedrock and OpenRouter
+(meters 102.73 USD Bedrock, 151.09 OpenRouter at launch),
+waiter bpl8gb3gq.
+Read for class eighty-three live
+(Part Ten heading and signature "Jinxin",
+the song credits "Yuli" one way,
+"by Jiecheng Tianzou Official" on the Caged Bird attribution,
+the literal gloss in parentheses at each handle's first appearance)
+beside every check of `XingZ622`
+(fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, the closing poem's attribution inside the quote,
+"They once said" on the tombstone paragraph, front matter equal, no TA, no error finish).
+
 ## yingying3 read, 2026-09-22, 18:15 UTC: SETTLED in 14 min, but the blog title names the person "Sakura" against the declared "Yingying" (class eighty-six); fixed in 40679244d, yingying4 launched
 
 `yingying3` (frozen `7ad1b8ec7`, pid 2155878) SETTLED at 17:56 UTC,
