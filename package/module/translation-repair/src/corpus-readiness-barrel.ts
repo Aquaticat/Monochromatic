@@ -7,6 +7,11 @@ export { assertPageFootnotesIntact, } from './corpus-run/page-footnote-integrity
 export { assertPageGuards, } from './corpus-run/pass-page-guards.ts';
 export { guardPageAssembly, } from './corpus-run/page-assembly-guard.ts';
 export { restoreContributorNames, } from './corpus-run/contributor-name-restore.ts';
+export {
+  carriesRendering,
+  handleReading,
+  withoutGloss,
+} from './corpus-run/handle-reading.ts';
 export { unifyHeadingSeries, } from './corpus-run/heading-series-unify.ts';
 export { settledPageArtifact, } from './corpus-run/pass-page-assembly.ts';
 export {

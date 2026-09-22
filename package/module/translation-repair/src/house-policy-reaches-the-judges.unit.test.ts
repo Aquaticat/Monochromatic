@@ -139,7 +139,8 @@ await describe({
         + '"Yu Li" and "雨狸" on one page; the judges filled the gap with "keep the original form")',
       fn: async () => {
         expect(system.includes('romanised as the handle is read',),).toBe(true,);
-        expect(system.includes('one capitalised word',),).toBe(true,);
+        expect(system.includes('capitalised groups of two syllables',),).toBe(true,);
+        expect(system.includes('never one joined word',),).toBe(true,);
         expect(system.includes('literal meaning in parentheses the first time it appears on the page',),).toBe(true,);
         expect(system.includes('never left in Han, never rendered by its meaning alone',),).toBe(true,);
       },
