@@ -4652,7 +4652,8 @@ each read off the pass log and the shipped page:
     launched 21:43 UTC 2026-09-22,
     waiter bmu8s7wec,
     meters 98.03 USD Bedrock and 145.35 OpenRouter at launch, Synthetic dry;
-    the frozen dir is a copy of `dist/final/node`, not of `dist`: a first launch on the wrong layout died at once on `corpus-pass.mjs` not found and spent nothing):
+    the frozen dir is a copy of `dist/final/node`, not of `dist`: a first launch on the wrong layout died at once on `corpus-pass.mjs` not found and spent nothing;
+    admission 22:00 UTC: image0.webp corroborated 4 of 4 at 0.588, tail admitted on the bound (31 slices, expected 15,081 against 173), no container deficit this run, nothing unresolved, 119 slices):
     read for class eighty-seven live
     (the bare TextRing slice: the consolidation line "no standing text to consolidate against; the lane texts alone go to the slate judges", the tag on the page, no `no-standing-text` stop, no naturalness-floor error at publish)
     and class eighty-three live on the page
