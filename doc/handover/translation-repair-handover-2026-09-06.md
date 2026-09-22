@@ -4647,19 +4647,21 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA13 RUNS (frozen `59fe52b51`,
-    pid 2112448,
-    launched 15:08 UTC 2026-09-22,
-    waiter `b6vsy9ha7`,
-    meters 105.39 USD Bedrock and 154.76 OpenRouter at launch):
-    read by the seven steps and three checks against `hulicaijia9`
-    (13 headings, 17 tag markers, 18 footnote markers, 9 definitions, 2 links, 3 Sakura, "Conflict" for 左右, front matter equal, no TA, no error finish),
-    the `[^10]` Nayuki note on the page with its marker,
-    plus the `archive-revision-refused` line naming `unresolved-reference` for its removal (class eighty-four);
-    record under a new heading above "## hulicaijia12 read, 2026-09-22, 15:10 UTC" in the pass log.
-    Then `CuspariaKLSY`, `zheermao`, `yingying`, one at a time,
+1.  CUSPARIAKLSY6 RUNS (frozen `59fe52b51`,
+    pid 2121546,
+    launched 16:22 UTC 2026-09-22,
+    waiter `btbbvt2r4`,
+    meters 103.31 USD Bedrock and 151.94 OpenRouter at launch):
+    read by the seven steps and three checks against `CuspariaKLSY5`
+    (the life in the past tense, 1 heading, 1 marker, front matter equal, no TA, no error finish, no double blank line, publish check silent);
+    record under a new heading above "## hulicaijia13 read, 2026-09-22, 16:25 UTC" in the pass log.
+    Then `zheermao`, `yingying`, one at a time,
     then `XingZ60` again to read class eighty-three live
     (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiecheng Tianzou Official" on the Caged Bird attribution, the gloss at the first appearance).
+    HULICAIJIA13 READ (frozen `59fe52b51`): SETTLED at 16:16 UTC in 68 min, 4,497 seats, 147 retry rounds, 4.90 USD by the meters;
+    class eighty-four live: two removals of the `[^10]` Nayuki note withheld with `unresolved-reference gfm 10`,
+    the one admissible revision ("renamed Naixue", the body's spelling) chosen, the note on the page with its marker;
+    every check as `hulicaijia9` (18 markers, 9 definitions), two unendorsed (3, 58) both gate-kept, 129 abstention lines.
     HULICAIJIA12 READ (frozen `4e5cf65e0`): SETTLED at 14:57 UTC in 79 min, 4,577 seats, 149 retry rounds, 4.96 USD by the meters;
     every check as `hulicaijia9` except 17 markers and 8 definitions:
     the archive block review removed the translator's `[^10]` note (5 of 5 "unsupported by the original") and its marker stayed in the body,

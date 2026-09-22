@@ -8082,6 +8082,58 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## hulicaijia13 read, 2026-09-22, 16:25 UTC: SETTLED in 68 min, class eighty-four live (two removals of the Nayuki note withheld, the note on the page with its marker); CuspariaKLSY6 launched
+
+`hulicaijia13` (frozen `59fe52b51`, pid 2112448) SETTLED at 16:16 UTC,
+68 minutes after its 15:08 launch (TALLY `ms=4068612`),
+one attempt,
+4,497 seats,
+147 retry rounds,
+3,775 calls,
+10 abandoned streams (0.01 USD),
+4.90 USD by the meters (Bedrock 105.39 to 103.31, OpenRouter 154.76 to 151.94).
+glm-5.3 and Qwen3.8-27B dark (Synthetic dry).
+
+Class eighty-four live.
+The archive block review put the relabeled `[^10]` note to its reviewers again;
+deepseek-v4.1-flash and gpt-oss-120b proposed the removal,
+and both were withheld at 15:19:36 UTC with the new finding
+(`archive-revision-refused (...): the revision leaves the page with a footnote defect the archive did not carry (unresolved-reference gfm 10)`).
+The one admissible revision, "Formerly Nayuki, renamed Naixue in 2025." (the archive's "Naìsnow" spelled as the body spells the café),
+was chosen over the incumbent by the selection round
+(gemma-4-e2b and Mercury citing page-wide consistency with the body's "Naixue"),
+so the page carries `Naixue[^10]` on the order line and the definition among the notes.
+Two reviewer voices on that block were lost to the schema guard as the guard intends
+(gemma-4-e2b answered `editorial-context` quoting the English archive,
+minimax-m3 answered `source-supported` with no source quote);
+23 schema-mismatch lines on the run, the same count as `hulicaijia12` and fewer than `hulicaijia9`'s 30.
+
+The page against `hulicaijia9`:
+13 of 13 headings,
+17 of 17 tag markers,
+18 of 18 footnote markers,
+9 of 9 definitions,
+2 of 2 links,
+3 of 3 Sakura,
+"Conflict" for 左右,
+front matter equal,
+no TA,
+no error finish,
+no `contributor-name-restored` line,
+two unendorsed standings (3, 58), both gate-kept,
+no slate-declined,
+129 abstention lines,
+no repeat or run-off finding.
+
+`CuspariaKLSY6` (frozen `59fe52b51`, pid 2121546, overlap 8)
+launched 16:22 UTC on Bedrock and OpenRouter
+(meters 103.31 USD Bedrock, 151.94 OpenRouter at launch),
+waiter `btbbvt2r4`.
+Read by the seven steps and three checks against `CuspariaKLSY5`
+(the life in the past tense, 1 heading, 1 marker, front matter equal, no double blank line, publish check silent);
+then `zheermao`, `yingying` one at a time,
+then `XingZ60` again for the handles.
+
 ## hulicaijia12 read, 2026-09-22, 15:10 UTC: SETTLED in 79 min, but a translator's note removed and its marker left dangling (class eighty-four); fixed in 59fe52b51, hulicaijia13 launched
 
 `hulicaijia12` (frozen `4e5cf65e0`, pid 2066905) SETTLED at 14:57 UTC,
