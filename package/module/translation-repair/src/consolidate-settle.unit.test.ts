@@ -41,6 +41,7 @@ import {
   TRANSLATE_LINE_STRUCTURE_CRITERION,
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  type LaneText,
   type ProposalValidity,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
@@ -209,6 +210,7 @@ function positionOfText(
     texts,
     wanted,
     incumbentText = STANDING,
+    laneTexts = [],
   }: {
     readonly texts: readonly string[];
     readonly wanted: string;
@@ -217,6 +219,11 @@ function positionOfText(
      What the slate offers to keep; empty when the standing is withheld.
      */
     readonly incumbentText?: string;
+
+    /**
+     Lane texts the slate offers beside the proposals (class forty).
+     */
+    readonly laneTexts?: readonly LaneText[];
   },
 ): number {
   const built = buildTranslateCandidates({
@@ -225,6 +232,7 @@ function positionOfText(
     },),
     translatorModelIds: ROSTER,
     incumbentText,
+    laneTexts,
   },);
 
   const entries = describeSlate({
@@ -524,6 +532,7 @@ async function settleWith(
     lineStructured = false,
     standingEligible = true,
     standingRefusal,
+    laneTexts = [],
   }: {
     readonly voices: readonly {
       readonly modelId: FixtureModelId;
@@ -550,6 +559,11 @@ async function settleWith(
      Why the deterministic rule refused the standing, shown to the gate.
      */
     readonly standingRefusal?: string;
+
+    /**
+     Lane texts offered on the slate beside the proposals (class forty).
+     */
+    readonly laneTexts?: readonly LaneText[];
   },
 ) {
   /**
@@ -588,6 +602,7 @@ async function settleWith(
     lineStructured,
     standingEligible,
     ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
+    laneTexts,
     l,
   },);
 
@@ -1001,6 +1016,58 @@ await describe({
         expect(eligible.settled.findings.includes(UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING,),).toBe(false,);
       },
     },),
+    it({
+      name: 'JUDGES THE LANE TEXTS OVER AN EMPTY STANDING (class eighty-seven, XingZ623 slice 89, '
+        + '2026-09-22): the contest declined both lanes at a passage the archive never carried, so nothing '
+        + 'stood, and the no-standing-text exit ran ahead of the class forty offer; the translate lane\'s '
+        + 'text passed the rule and was never put to a judge, the slice shipped nothing and the entry '
+        + 'stopped at publish. With a lane text to offer, the slate is judged and the winner gated',
+      fn: async () => {
+        /**
+         The one lane text the rule admits, the translate lane\'s.
+         */
+        const laneTexts: readonly LaneText[] = [
+          {
+            lane: 'translate',
+            text: FRESH,
+          },
+        ];
+        const { settled, served, } = await settleWith({
+          voices: [],
+          validity: [],
+          standingText: '',
+          standingEligible: false,
+          laneTexts,
+          judgeReply: judgeBallot({
+            best: positionOfText({
+              texts: [],
+              wanted: FRESH,
+              incumbentText: '',
+              laneTexts,
+            },),
+          },),
+          gateReply: gateBallot({ choice: 'consolidated', },),
+        },);
+
+        expect(settled.terminal,).toBe('consolidated',);
+        expect(settled.text.replaceAll('\n', ' ',),).toBe(FRESH,);
+        expect(served.judge,).toBeGreaterThan(0,);
+        expect(served.gate,).toBeGreaterThan(0,);
+
+        /**
+         Without a lane text the empty standing still ends the slice unbought.
+         */
+        const unoffered = await settleWith({
+          voices: [],
+          validity: [],
+          standingText: '',
+          standingEligible: false,
+        },);
+        expect(unoffered.settled.terminal,).toBe('no-standing-text',);
+        expect(unoffered.served.judge,).toBe(0,);
+      },
+    },),
+
     it({
       name: 'CHALLENGES A TIED SLATE ONCE when the standing is ineligible (class fifty-five, XingZ605 '
         + 'slice 13, 2026-09-18): the translate lane\'s run-off challenge of class fifty-three reaches the '
