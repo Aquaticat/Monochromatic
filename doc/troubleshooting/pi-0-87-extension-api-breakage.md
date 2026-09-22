@@ -107,6 +107,12 @@ See [`task-tsc-shared-chunk-silent-pass.md`](task-tsc-shared-chunk-silent-pass.m
   and adds `provider-request.unit.test.ts`,
   which captures real provider-module requests on a local server.
   `BudgetModelAuth.headers` in `package/pi-shared/model-selection/src/types.ts` accepts `null` values.
+- `590014391`:
+  `package/pi-plugin/advisor/src/advisor-client.ts` had the same defect through
+  `ctx.modelRegistry.getProvider(...).streamSimple`,
+  which returns the raw provider and skips the normalization `ModelRegistry.streamSimple` applies.
+  A local capture showed an empty Anthropic `system` field without the fix
+  and the advisor prompt with it.
 
 ## Verification
 
@@ -129,6 +135,30 @@ See [`task-tsc-shared-chunk-silent-pass.md`](task-tsc-shared-chunk-silent-pass.m
 - Throwing on unknown roles as a fail-closed guard:
   omission only removes judge context and cannot fabricate authorization,
   while throwing blocks every tool call and pushes users to disable the guard.
+
+## Remaining type errors after restoring `lint:types`
+
+A sequential sweep of every package `lint:types` task on 2026-09-22,
+after `edd680e89`,
+found these still failing;
+none is in auto-mode or its shared dependencies:
+
+- `package/pi-plugin/advisor`,
+  `package/pi-plugin/guardrail`,
+  `package/pi-plugin/search-fetch`,
+  `package/pi-plugin/thinking-default`:
+  `src/mise.verify-extension.ts` fake `ExtensionAPI.on` and `registerProvider`
+  no longer match Pi 0.87 overloads.
+- `package/pi-plugin/current-time-context`:
+  `src/pi-test-harness.ts` passes `{ cwd }` where Pi 0.87 expects `NormalizedBuildSystemPromptOptions`.
+- `package/pi-plugin/goal`:
+  `src/pi-runtime-verifier-provider.ts` assigns `Readonly<Record<string, unknown>>` to `JsonObject`.
+- `package/pi-plugin/ask-user-question`:
+  `src/answer-channel-auth.ts` needs an explicit annotation under `--isolatedDeclarations`.
+- `package/webapp-productivity/done`:
+  `src/lib/db-migrations.ts` imports `initPromise`,
+  which `@monochromatic-dev/module-logger/ts` no longer exports;
+  unrelated to Pi.
 
 ## Open questions
 
