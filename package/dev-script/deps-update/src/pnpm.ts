@@ -35,37 +35,43 @@ export type RunPnpm = (options: {
  */
 export class PnpmCommandError extends Error {
   /**
-   Builds the error with the command line and pnpm's stderr.
+   pnpm's stdout and stderr interleaved; pnpm prints `ERR_PNPM_*` diagnostics on either stream.
+   */
+  readonly output: string;
+
+  /**
+   Builds the error with the command line and pnpm's output.
 
    @param args - pnpm arguments that failed
 
    @param cwd - directory pnpm ran in
 
-   @param stderr - pnpm's captured standard error
+   @param output - pnpm's interleaved stdout and stderr
 
    @param cause - underlying subprocess error
 
    @example
    ```ts
-   throw new PnpmCommandError({ args: ['why', 'a'], cwd: '/repo', stderr: '', cause });
+   throw new PnpmCommandError({ args: ['why', 'a'], cwd: '/repo', output: '', cause });
    ```
    */
   constructor({
     args,
     cwd,
-    stderr,
+    output,
     cause,
   }: {
     readonly args: readonly string[];
     readonly cwd: string;
-    readonly stderr: string;
+    readonly output: string;
     readonly cause: unknown;
   },) {
     super(
-      `pnpm ${args.join(' ',)} failed in ${cwd}:\n${stderr}`,
+      `pnpm ${args.join(' ',)} failed in ${cwd}:\n${output}`,
       { cause, },
     );
     this.name = 'PnpmCommandError';
+    this.output = output;
   }
 }
 
@@ -122,7 +128,7 @@ export async function runPnpm({
     throw new PnpmCommandError({
       args,
       cwd,
-      stderr: error.stderr,
+      output: error.output,
       cause: error,
     },);
   }

@@ -22,7 +22,10 @@ import {
   readExcludeList,
   readMinimumReleaseAge,
 } from './exclude-list.ts';
-import type { RunPnpm, } from './pnpm.ts';
+import {
+  PnpmCommandError,
+  type RunPnpm,
+} from './pnpm.ts';
 import {
   fetchPublishTime,
   type FetchLike,
@@ -50,6 +53,11 @@ export type Diagnosis = {
    Configured `minimumReleaseAge` in minutes, or its absence sentinel.
    */
   readonly minutes: number | typeof NO_MINIMUM_RELEASE_AGE;
+  /**
+   pnpm diagnostic from a failure the resolution hit after the age check;
+   the real update will stop there once the picks are handled.
+   */
+  readonly followUp?: string;
 };
 
 //endregion Types
@@ -98,6 +106,82 @@ export const LOOSE_RESOLUTION_ARGS = [
   '--lockfile-only',
   '--config.minimum-release-age-strict=false',
 ] as const;
+
+/**
+ Sentinel for a loose resolution that exited 0.
+ */
+const LOOSE_RESOLUTION_SUCCEEDED: unique symbol = Symbol('deps-update/loose-resolution-succeeded',);
+
+/**
+ Runs the loose resolution, returning a pnpm failure instead of throwing it,
+ because pnpm records immature picks before later checks can fail the run.
+
+ @param dir - scratch workspace
+
+ @param runPnpm - pnpm runner
+
+ @returns success sentinel, or pnpm's failure
+
+ @throws Error when running pnpm fails for a reason other than pnpm's exit
+
+ @example
+ ```ts
+ const failure = await runLooseResolution({ dir: '/scratch', runPnpm });
+ ```
+ */
+async function runLooseResolution({
+  dir,
+  runPnpm,
+}: {
+  readonly dir: string;
+  readonly runPnpm: RunPnpm;
+},): Promise<typeof LOOSE_RESOLUTION_SUCCEEDED | PnpmCommandError> {
+  try {
+    await runPnpm({
+      args: LOOSE_RESOLUTION_ARGS,
+      cwd: dir,
+    },);
+    return LOOSE_RESOLUTION_SUCCEEDED;
+  }
+  catch (error) {
+    if (!(error instanceof PnpmCommandError))
+      throw error;
+    l.debug(`loose resolution failed; reading recorded picks anyway`,);
+    return error;
+  }
+}
+
+/**
+ Finds pnpm's first `ERR_PNPM_*` diagnostic line.
+
+ @param output - pnpm output
+
+ @returns trimmed diagnostic line, or pnpm's last nonblank line when it printed no code
+
+ @example
+ ```ts
+ firstDiagnosticLine('x\n[ERR_PNPM_PEER_DEP_ISSUES] Unmet peer dependencies\n');
+ // '[ERR_PNPM_PEER_DEP_ISSUES] Unmet peer dependencies'
+ ```
+ */
+export function firstDiagnosticLine(output: string,): string {
+  /**
+   Nonblank output lines.
+   */
+  const lines = output
+    .split('\n',)
+    .map(function trimLine(line,): string {
+      return line.trim();
+    },)
+    .filter(function isNonblank(line,): boolean {
+      return line !== '';
+    },);
+  return lines.find(function isDiagnostic(line,): boolean {
+    return line.includes('ERR_PNPM_',);
+  },)
+    ?? lines.at(-1,)
+    ?? 'pnpm printed no output';
+}
 
 /**
  Lists every workspace project directory, root included.
@@ -368,9 +452,13 @@ export async function diagnoseImmaturePicks({
     scratchManifest,
     'utf8',
   ),);
-  await runPnpm({
-    args: LOOSE_RESOLUTION_ARGS,
-    cwd: scratch.dir,
+  /**
+   Failure of the loose resolution, if any; pnpm writes the exclude list
+   before later checks (such as strict peers) can still fail the run.
+   */
+  const looseFailure = await runLooseResolution({
+    dir: scratch.dir,
+    runPnpm,
   },);
   /**
    Exclude list after pnpm appended picks.
@@ -392,6 +480,16 @@ export async function diagnoseImmaturePicks({
     return `${left.name}@${left.version}`.localeCompare(`${right.name}@${right.version}`,);
   },);
   dl.info(`found ${String(specs.length,)} immature pick(s)`,);
+  if ((looseFailure !== LOOSE_RESOLUTION_SUCCEEDED) && (specs.length === 0))
+    throw looseFailure;
+  /**
+   First pnpm diagnostic of a loose-resolution failure that happened after the age check.
+   */
+  const followUp = looseFailure === LOOSE_RESOLUTION_SUCCEEDED
+    ? {}
+    : { followUp: firstDiagnosticLine(looseFailure.output,), };
+  if ('followUp' in followUp)
+    dl.warn(`loose resolution also failed after recording picks: ${followUp.followUp}`,);
   /**
    Each pick with its publish time and direct dependents.
    */
@@ -427,6 +525,7 @@ export async function diagnoseImmaturePicks({
   return {
     picks,
     minutes,
+    ...followUp,
   };
 }
 

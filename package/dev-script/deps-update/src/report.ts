@@ -74,6 +74,8 @@ export function matureAt({
 
  @param minutes - configured `minimumReleaseAge`, or its absence sentinel
 
+ @param followUp - pnpm diagnostic the resolution hit after the age check, when it hit one
+
  @returns multi-line report text
 
  @example
@@ -84,9 +86,11 @@ export function matureAt({
 export function formatImmatureReport({
   picks,
   minutes,
+  followUp,
 }: {
   readonly picks: readonly ImmaturePick[];
   readonly minutes: number | typeof NO_MINIMUM_RELEASE_AGE;
+  readonly followUp?: string;
 },): string {
   if (picks.length === 0) {
     return [
@@ -151,6 +155,13 @@ export function formatImmatureReport({
     retryAfter === undefined
       ? '  - Wait until every pick above passes the age gate, then rerun.'
       : `  - Wait: rerun after ${retryAfter.toISOString()}.`,
+    ...(followUp === undefined
+      ? []
+      : [
+        '',
+        'The update will then stop on a separate failure the scratch resolution also hit:',
+        `  ${followUp}`,
+      ]),
   ].join('\n',);
 }
 
