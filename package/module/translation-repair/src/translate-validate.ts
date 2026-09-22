@@ -620,6 +620,7 @@ export function validateTranslatedSlice(
       lineStructured,
       sourceText,
       candidateText,
+      pageText,
     },),
     ...atomFindings({
       page: page.atoms,

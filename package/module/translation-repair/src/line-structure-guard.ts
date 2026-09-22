@@ -1,3 +1,4 @@
+import { pairBoundFindings, } from './bilingual-pair-bound.ts';
 import { isIdeograph, } from './preservation-tokens.ts';
 
 //region Line structure guard
@@ -322,6 +323,10 @@ function repeatedLines(
  
  @param candidateText - proposed translation of it
  
+ @param pageText - translation of the slice as the page stands, which bounds a
+ bilingual pair to one line where it carries the pair so (class eighty,
+ `bilingual-pair-bound.ts`); absent where the slice has none
+ 
  @returns One finding where lines were merged, none otherwise
  
  @example
@@ -334,10 +339,12 @@ export function compareLineCounts(
     lineStructured,
     sourceText,
     candidateText,
+    pageText,
   }: {
     readonly lineStructured: boolean;
     readonly sourceText: string;
     readonly candidateText: string;
+    readonly pageText?: string;
   },
 ): readonly string[] {
   if (!lineStructured)
@@ -349,9 +356,14 @@ export function compareLineCounts(
   const sourceLines = contentLines({ text: sourceText, },);
 
   /**
+   Han lines the original gives with their own English beside them.
+   */
+  const pairs = bilingualPairCount({ lines: sourceLines, },);
+
+  /**
    Lines the original keeps apart, a Han line beside its own English owed once.
    */
-  const owed = sourceLines.length - bilingualPairCount({ lines: sourceLines, },);
+  const owed = sourceLines.length - pairs;
 
   /**
    Content lines of the rendering.
@@ -372,7 +384,16 @@ export function compareLineCounts(
     candidateLines,
   },);
   if (carried >= owed)
-    return repeats;
+    return [
+      ...pairBoundFindings({
+        pairs,
+        owed,
+        carried,
+        ...((pageText === undefined) ? {} : { pageText, }),
+        contentLines,
+      },),
+      ...repeats,
+    ];
 
   return [
     `This slice is LINE-STRUCTURED: every line stands as its own unit, so your `
