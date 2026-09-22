@@ -123,7 +123,15 @@ Provider-only signatures,
 token usage,
 timestamps,
 provider metadata,
+system-prompt messages,
 and hidden custom messages are excluded because they are not visible transcript content.
+
+Session entries become messages through Pi's exported `sessionEntryToContextMessages`,
+the same step Pi's transcript renderer runs,
+so the projection follows the running Pi version.
+A message role this build does not know fails `lint:types` against installed Pi declarations,
+and at runtime is logged and omitted rather than failing guarded tool calls.
+See `doc/troubleshooting/pi-0-87-extension-api-breakage.md`.
 
 ### Shared review infrastructure
 
