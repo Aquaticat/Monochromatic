@@ -11,6 +11,7 @@ import type { TranslateDecision, } from './translate-stage-result.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
 import { NAME_FORM_SCOPE_RULE, } from './name-form-policy.ts';
+import { PAGE_APPARATUS_IS_KEPT, } from './page-apparatus-clause.ts';
 import {
   TRANSLATE_FRONT_MATTER_RULE,
   TRANSLATE_LINE_STRUCTURE_RULE,
@@ -69,13 +70,13 @@ THE ORIGINAL IS THE STANDARD. Judge everything against the Chinese, never agains
 Rules:
 - Say everything the ORIGINAL says: every clause, qualifier, named object and speaker aside.
 - Say nothing the ORIGINAL does not say. Do not strengthen a claim, invent a time period, or characterise anyone the original leaves uncharacterised.
-- Accurate detail the ARCHIVE RENDERING adds and the ORIGINAL does not contradict is KEPT rather than stripped: a name, a spelled-out referent, a contributor credit, a citation's translator. It is correct information a reader benefits from, and the ORIGINAL not carrying it is not a reason to drop it.
+- ${PAGE_APPARATUS_IS_KEPT} Here the EXISTING TRANSLATION is the ARCHIVE RENDERING.
 - DECLARED NAMES from the documents' front matter settle HOW to spell a name this passage already refers to, and they OUTRANK THE ARCHIVE RENDERING where the two spell the same person or place differently. A candidate using a declared form has added nothing, and copying the archive's spelling is not a defence where the front matter declares another. They are not content this passage owes: a passage that does not refer to this person does not gain their name, and a line attributing the passage to someone ELSE never takes it. A line beginning "target contributor:" instead records public identity from existing English attribution. Preserve that spelling exactly on contributor lines; a source-script name or different handle does not override it. ${NAME_FORM_SCOPE_RULE}
 - Where a candidate already renders a clause well, KEEP ITS WORDING. Reaching the same English by different words is not an improvement, and a reader who knows this archive should not see it churn.
 - You may take one clause from one candidate and the next from the other. Neither candidate has to be right about the whole passage, and that is the point of this call.
 - Write English, not a repair of English. The result must read as prose a person wrote, carrying the original's voice: its warmth, grief, humour or anger. A stiff literal rendering that loses the feeling is not a good rendering.
 - KEEP THE SHAPE OF THE PAGE. Every block of the ARCHIVE RENDERING appears in your rendering, of the same kind and in the same order, carrying the same block quotes, list markers, headings, footnote markers and links. Where the Chinese is shaped differently, the page's shape wins: a passage the archive sets as a block quote followed by an attribution line stays a block quote followed by an attribution line. ADD A BLOCK ONLY to carry something the ORIGINAL has and the archive left out.
-- KEEP THE TENSE OF THE PAGE. The Chinese marks no tense, so the ARCHIVE RENDERING is what settles which one this passage is in, and your rendering holds that tense throughout. Moving a passage the archive tells in the past into the present is a change you made, not a reading the ORIGINAL asked for. Never let one sentence start in one tense and finish in another.
+- ONE TENSE, IN THIS ORDER. The Chinese marks no tense, so the English decides: first the past tense the house rule sets for the life of a person who has died (a line of the life the ARCHIVE RENDERING tells in the present is moved to the past, and that move is a correction the house rule asks for, not a change of your own); then the tense the page holds for what is still true as it is read. Moving a passage the archive tells in the past into the present is a change you made. Hold one tense throughout, and never let one sentence start in one tense and finish in another.
 
 THE JUDGE FINDINGS ARE CLAIMS, NOT FACTS. Other models wrote them about these two candidates, and they can be wrong. Check each one against the ORIGINAL before you act on it, and ignore any the ORIGINAL does not support. A finding you obey that the original does not support is a defect you introduced yourself.
 

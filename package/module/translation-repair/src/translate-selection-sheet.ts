@@ -4,6 +4,7 @@ import {
   DECLARED_NAME_REFERENCE_EXEMPTION,
   NAME_FORM_SCOPE_RULE,
 } from './name-form-policy.ts';
+import { PAGE_APPARATUS_IS_KEPT, } from './page-apparatus-clause.ts';
 
 //region Translate selection sheet
 // What the judges of the translate lane are asked, kept apart from the stage
@@ -120,7 +121,7 @@ const SHAPE_IS_JUDGED_WITHIN_THE_CANDIDATE =
  */
 export const TRANSLATE_SELECTION_CRITERIA: readonly string[] = [
   'Complete coverage: every proposition of the ORIGINAL is rendered, nothing left out.',
-  `Faithfulness: nothing added, and no change to who acts, what is referred to, negation, certainty, time, number, or how things relate. ${DECLARED_NAME_IS_NOT_AN_ADDITION}`,
+  `Faithfulness: nothing added, and no change to who acts, what is referred to, negation, certainty, time, number, or how things relate. ${DECLARED_NAME_IS_NOT_AN_ADDITION} ${PAGE_APPARATUS_IS_KEPT}`,
   `${NAME_FORM_SCOPE_RULE} ${DECLARED_NAME_IS_NOT_OWED_CONTENT} ${A_SHARED_SPELLING_CANNOT_SEPARATE_CANDIDATES}`,
   SHAPE_IS_JUDGED_WITHIN_THE_CANDIDATE,
   'Natural, idiomatic English reading as one coherent passage.',

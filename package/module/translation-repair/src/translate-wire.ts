@@ -9,6 +9,7 @@ import { selectFence, } from './prompt-fence.ts';
 import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
 import { sourceBreakDisplay, } from './source-break-display.ts';
 import { NAME_FORM_SCOPE_RULE, } from './name-form-policy.ts';
+import { PAGE_APPARATUS_IS_KEPT, } from './page-apparatus-clause.ts';
 import type {
   IncumbentKind,
   TranslateAbsenceReason,
@@ -56,7 +57,7 @@ Rules:
 - Preserve every Markdown structure the ORIGINAL uses: block quotes, list markers, headings, footnote markers, links, and the paragraph breaks between blocks. WHERE THE EXISTING TRANSLATION SHAPES THE PASSAGE DIFFERENTLY, splitting one block into two, merging two into one, or quoting a line the ORIGINAL runs as prose, KEEP THE EXISTING TRANSLATION'S SHAPE. It is the shape the archive's page already has, and a rendering that drops one of its blocks deletes that block from the page. Where the EXISTING TRANSLATION stands a block of another kind in place of one the ORIGINAL has (a farewell line where the original has a poem in a block quote), keep the existing block and add the original's after it in the original's own kind. The same holds for a link whose destination the EXISTING TRANSLATION renders differently from the ORIGINAL (a moved domain, an article in the reader's language): keep the existing destination, and never carry both.
 - KEEP THE TENSE OF THE EXISTING TRANSLATION where one is shown. The ORIGINAL marks no tense, so it cannot settle the question and the page already has: a passage the EXISTING TRANSLATION tells in the past stays in the past. This is not the shape rule and the verse rule does not displace it. Never let one sentence start in one tense and finish in another.
 - When used to refer to their entities, names, handles and place names already used by the existing translation are authoritative, and you keep them exactly even where they match the original neither phonetically nor semantically. WHERE DECLARED NAMES IS SHOWN AND SPELLS THE SAME PERSON OR PLACE DIFFERENTLY, THE DECLARED SPELLING WINS, because the archive's prose contradicts its own front matter on real pages and the front matter is what the archive declares. Where DECLARED NAMES gives more than one form, any declared form is right. Never invent a third spelling of your own. A DECLARED NAMES line beginning "target contributor:" records a public identity from the existing English attribution. Preserve that spelling exactly on contributor lines; a source-script name or different handle does not override it. ${NAME_FORM_SCOPE_RULE}
-- Accurate detail the existing translation ADDS, a citation's translator or publisher, a contributor credit, a gloss identifying someone the original assumes known, is kept. It is correct information a reader benefits from, and the ORIGINAL not carrying it is not a reason to drop it.
+- ${PAGE_APPARATUS_IS_KEPT}
 - Do not add content the ORIGINAL does not support and the existing translation does not already carry.
 
 ${HOUSE_POLICY_BLOCK}`;

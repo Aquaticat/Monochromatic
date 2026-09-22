@@ -48,7 +48,7 @@ export const CONTEST_POLICY: string = [
   '',
   'UNSUPPORTED: does the candidate state something the Chinese does not say?',
   'An invented time period, an invented characterisation, a strengthened claim: all unsupported.',
-  'A detail the archive supplies that the Chinese does not contradict, such as a name or a spelled-out referent, is NOT unsupported: keeping it is correct.',
+  'A detail the archive supplies that the Chinese does not contradict, such as a name, a spelled-out referent or a gloss of a name or a term, is NOT unsupported: keeping it is correct.',
   '',
   'DROPPED: does the candidate omit something the Chinese does say?',
   'A clause, a qualifier, a named object, a speaker aside: all dropped.',

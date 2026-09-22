@@ -218,8 +218,9 @@ await describe({
         // ARCHIVE RENDERING, which the inherited bullet never says.
         const system = systemOf({ messages: buildConsolidateMessages({ subject: SUBJECT, },), },);
 
-        expect(system,).toContain('KEEP THE TENSE OF THE PAGE.',);
-        expect(system,).toContain('the ARCHIVE RENDERING is what settles which one this passage is in',);
+        expect(system,).toContain('ONE TENSE, IN THIS ORDER.',);
+        expect(system,).toContain('the past tense the house rule sets for the life of a person who has died',);
+        expect(system,).toContain('a line of the life the ARCHIVE RENDERING tells in the present is moved to the past',);
       },
     },),
 
