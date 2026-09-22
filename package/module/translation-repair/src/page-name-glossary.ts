@@ -1,4 +1,8 @@
 import { signaturesOf, } from './corpus-run/attribution-line.ts';
+import {
+  declaredNameNote,
+  type DeclaredNamePair,
+} from './linked-title-declared-name.ts';
 
 //region Page name glossary
 // CLASS SEVENTY-ONE (mikaela_khara, 2026-09-19). The author's handle 铨铨
@@ -38,7 +42,7 @@ const HAN_LAST = '\u{9FFF}';
  Heading of the sheet block.
  */
 const HEADING = 'NAMES AND LINKED TEXT THE ARCHIVE RENDERS ON THIS PAGE '
-  + '(render the same person or title the same way everywhere):';
+  + '(render the same person or title the same way everywhere; a declared name inside a title takes its declared form):';
 
 /**
  One name or title as the source writes it and as the archive renders it.
@@ -433,9 +437,11 @@ export function pageNameLines(
   {
     sourceText,
     targetText,
+    declared = [],
   }: {
     readonly sourceText: string;
     readonly targetText: string;
+    readonly declared?: readonly DeclaredNamePair[];
   },
 ): readonly string[] {
   /**
@@ -469,7 +475,25 @@ export function pageNameLines(
   return [
     HEADING,
     ...pairs.map(function toLine(pair,): string {
-      return `- ${pair.source} (${pair.evidence}): "${pair.rendering}"`;
+      /**
+       Where this pair was read (class eighty-six reads only links).
+       */
+      const { evidence, } = pair;
+      /**
+       Whether that evidence is a link.
+       */
+      const isLink = evidence.startsWith('link text',);
+      /**
+       Note for a linked title, none for a signature or heading.
+       */
+      const note = isLink
+        ? declaredNameNote({
+          source: pair.source,
+          rendering: pair.rendering,
+          declared,
+        },)
+        : '';
+      return `- ${pair.source} (${pair.evidence}): "${pair.rendering}"${note}`;
     },),
   ];
 }

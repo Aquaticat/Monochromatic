@@ -42,7 +42,7 @@ await describe({
           targetText: 'It sleeps.\n\n——Jinmao, February 10, 2025\n\nIt wakes.\n\n——Jinmao, March 1, 2025\n',
         },);
         expect(lines,).toEqual([
-          'NAMES AND LINKED TEXT THE ARCHIVE RENDERS ON THIS PAGE (render the same person or title the same way everywhere):',
+          'NAMES AND LINKED TEXT THE ARCHIVE RENDERS ON THIS PAGE (render the same person or title the same way everywhere; a declared name inside a title takes its declared form):',
           '- 锦猫 (signature): "Jinmao"',
         ],);
       },

@@ -7,6 +7,7 @@ import { archiveContributorNameForms, } from './contributor-name-authority.ts';
 import { declaredNameForms, } from './declared-name-survival.ts';
 import { communityTermLines, } from './community-glossary.ts';
 import { pageNameLines, } from './page-name-glossary.ts';
+import { declaredNamePairs, } from './linked-title-declared-name.ts';
 import { entryNoteLines, } from './entry-notes.ts';
 import {
   collectIdentityLines,
@@ -181,12 +182,16 @@ export function prepareDocumentPair(
    which a declared correspondence reaches them. Empty when neither side
    declares anything.
    */
-  const identityLines = collectIdentityLines({
+  const frontMatterData = {
     sourceData: sourceDocument.frontMatter
       ?.data,
     targetData: targetDocument.frontMatter
       ?.data,
-  },);
+  };
+  /**
+   Declared correspondences as sheet lines.
+   */
+  const identityLines = collectIdentityLines(frontMatterData,);
 
   /**
    Contributor public handles existing English attribution establishes.
@@ -224,6 +229,8 @@ export function prepareDocumentPair(
     ...pageNameLines({
       sourceText,
       targetText,
+      // A linked title that names the declared person says so (class eighty-six).
+      declared: declaredNamePairs(frontMatterData,),
     },),
     ...contextLines,
   ];
