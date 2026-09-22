@@ -8082,6 +8082,50 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## CuspariaKLSY7 read, 2026-09-22, 17:15 UTC: SETTLED in 22 min, class eighty-five live (the gloss on the page and every line of the life in the past); zheermao4 launched
+
+`CuspariaKLSY7` (frozen `7ad1b8ec7`, pid 2147965) SETTLED at 17:08 UTC,
+22 minutes after its 16:46 launch (TALLY `ms=1303584`),
+one attempt,
+405 seats,
+5 retry rounds,
+419 calls,
+no abandoned stream,
+0.12 USD by the meters (Bedrock 103.20 to 103.17, OpenRouter 151.83 to 151.74).
+Synthetic wet at launch and dry again by 17:06 UTC, glm-5.3 dark.
+
+Class eighty-five live.
+Slice 1 settled with no gate-kept and no unendorsed standing on the page (no finding line of either kind on any slice),
+the three lines `CuspariaKLSY6` shipped in the present now read
+"She really valued her friends.", "She was an Eastern Orthodox Christian.", "She didn’t believe in God all that much.",
+and the archive's gloss stands beside the nickname line:
+"She coined her nickname “Ling Shui Yu Yu Zi” while feeding fish. “Ling Shui Yu Yu Zi” means fish in clear water."
+(the archive breaks the gloss onto its own line inside the paragraph; the candidate ran it on;
+a single newline inside a paragraph is a soft break, so the rendered page is the same, per the owner's 2026-09-21 answer on line breaks).
+The first settled CuspariaKLSY page carrying both the gloss and the past tense.
+
+The page against `CuspariaKLSY5`:
+1 of 1 heading,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+publish check silent,
+no unendorsed, gate-kept or slate-declined standing,
+16 abstention lines,
+no repeat or run-off finding;
+wording differs on most lines (a fresh bench each run), every line of the life in the past.
+
+`zheermao4` (frozen `7ad1b8ec7`, pid 2151756, overlap 8, entry `zheermao101`)
+launched 17:08 UTC on Bedrock and OpenRouter
+(meters 103.17 USD Bedrock, 151.74 OpenRouter at launch),
+waiter `bktsyyo1o`.
+A first launch under the run name `zheermao4` at 17:08 UTC named the entry `zheermao` and exited at once with `pending=0` (the corpus directory is `zheermao101`);
+its empty run directory and log were removed before the relaunch.
+Read against `zheermao3` (14 slices, the email label kept, the Arts letter, past tense, one em-dash left per owner, no double blank line, no unendorsed);
+then `yingying`,
+then `XingZ60` again for the handles.
+
 ## CuspariaKLSY6 read, 2026-09-22, 16:50 UTC: SETTLED in 16 min, but slice 1 flipped back to the archive's present tense to keep a translator's gloss line (class eighty-five); fixed in 7ad1b8ec7, CuspariaKLSY7 launched
 
 `CuspariaKLSY6` (frozen `59fe52b51`, pid 2121546) SETTLED at 16:33 UTC,

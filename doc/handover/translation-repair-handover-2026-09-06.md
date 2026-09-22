@@ -4647,19 +4647,22 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CUSPARIAKLSY7 RUNS (frozen `7ad1b8ec7`,
-    pid 2147965,
-    launched 16:46 UTC 2026-09-22,
-    waiter `br3cmmd0a`,
-    meters 103.20 USD Bedrock and 151.83 OpenRouter at launch, Synthetic wet):
-    read by the seven steps and three checks against `CuspariaKLSY5`
-    (1 heading, 1 marker, front matter equal, no TA, no error finish, no double blank line, publish check silent),
-    plus class eighty-five live: the gloss line "“Ling Shui Yu Yu Zi” means fish in clear water." on the page AND every line of the life in the past,
-    slice 1 neither gate-kept nor unendorsed;
-    record under a new heading above "## CuspariaKLSY6 read, 2026-09-22, 16:50 UTC" in the pass log.
-    Then `zheermao`, `yingying`, one at a time,
+1.  ZHEERMAO4 RUNS (frozen `7ad1b8ec7`,
+    pid 2151756,
+    entry `zheermao101`,
+    launched 17:08 UTC 2026-09-22,
+    waiter `bktsyyo1o`,
+    meters 103.17 USD Bedrock and 151.74 OpenRouter at launch, Synthetic dry):
+    read by the seven steps and three checks against `zheermao3`
+    (14 slices, the email label kept, the Arts letter from the transcripts, past tense, one em-dash left per owner, no double blank line, no unendorsed);
+    record under a new heading above "## CuspariaKLSY7 read, 2026-09-22, 17:15 UTC" in the pass log.
+    Then `yingying`,
     then `XingZ60` again to read class eighty-three live
     (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiecheng Tianzou Official" on the Caged Bird attribution, the gloss at the first appearance).
+    THE ENTRY ID FOR ZHEERMAO IS `zheermao101`: a launch naming `zheermao` exits at once with `pending=0`.
+    CUSPARIAKLSY7 READ (frozen `7ad1b8ec7`): SETTLED at 17:08 UTC in 22 min, 405 seats, 5 retry rounds, 0.12 USD by the meters;
+    class eighty-five live: the gloss on the page beside the nickname line and every line of the life in the past, no gate-kept or unendorsed standing on any slice;
+    every check as `CuspariaKLSY5`, 16 abstention lines.
     CUSPARIAKLSY6 READ (frozen `59fe52b51`): SETTLED at 16:33 UTC in 16 min, 413 seats, 14 retry rounds, 0.22 USD by the meters;
     every check as `CuspariaKLSY5` and the gloss line back, but slice 1 gate-kept and unendorsed in the archive's present tense:
     every consolidation dropped the gloss as "nothing added", the slate chose one 4.5 of 6, the gate refused it 3 to 2 for dropping page content (class eighty-five).
