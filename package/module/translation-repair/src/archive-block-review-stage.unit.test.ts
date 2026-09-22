@@ -377,6 +377,51 @@ await describe({
       },
     },),
     it({
+      name: 'WITHHOLDS a revision whose block shape is not the block\'s own, so a one-paragraph label ships as the archive wrote it (class seventy-seven, zheermao2 2026-09-21: a four-block letter replaced the intro line)',
+      fn: async () => {
+        const prompts: string[] = [];
+        /** Label block under review: one paragraph. */
+        const label = 'English translation of the letter the cat sent:';
+        /** Revision a reviewer wrote instead: four blocks of a letter, the third cut mid-sentence. */
+        const letter = 'Good evening,\n\nI just refreshed my inbox. I would like to hug you.\n\nBut please believe me, the stories that are living are much more\n\nWarm wishes\nThe Cat';
+        const outcome = await runArchiveBlockReviewStage({
+          client: scriptedClient({
+            prompts,
+            replyFor: ({ schema, },) => schema === 'archive_block_review'
+              ? {
+                disposition: 'revise',
+                sourceQuote: '',
+                replacementText: letter,
+                finding: 'The block carries no translation.',
+              }
+              : {
+                best: 1,
+                reason: 'Only the letter carries content.',
+              },
+          },),
+          modelIds: ROSTER,
+          sourceText: '猫寄来的信。',
+          targetText: `${label}\n\n> Good evening.`,
+          blockText: label,
+          priorFindings: [],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+
+        expect(outcome.text,).toBe(label);
+        expect(outcome.findings
+          .some(function refusedOnShape(finding,): boolean {
+            return finding.startsWith('archive-revision-refused',)
+              && finding.includes('paragraph',);
+          },),).toBe(true,);
+        // No selection round is bought over a slate the floor emptied.
+        expect(prompts.some(function isSelection(prompt,): boolean {
+          return prompt.includes('CURRENT ARCHIVE BLOCK',);
+        },),).toBe(false,);
+      },
+    },),
+    it({
       name: 'RETAINS the block when every proposed correction drops contributor identity',
       fn: async () => {
         const prompts: string[] = [];
