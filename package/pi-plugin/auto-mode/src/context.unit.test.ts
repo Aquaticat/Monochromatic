@@ -127,6 +127,16 @@ type MockMessage =
     readonly truncated: boolean;
     /** Full output path shown by Pi when output is truncated. */
     readonly fullOutputPath?: string;
+  }
+  | {
+    /** Persisted system-prompt role that Pi does not render. */
+    readonly role: 'system';
+    /** Instruction text. */
+    readonly content: string;
+    /** Named prompt sections. */
+    readonly sections?: Readonly<Record<string, string>>;
+    /** Session timestamp consumed by Pi projection. */
+    readonly timestamp: number;
   };
 
 /** Branch-entry shapes used by the context scanner. */
@@ -636,6 +646,33 @@ await describe({
         expect(context,).toContain('complete compaction summary',);
         expect(context,).toContain('complete branch summary',);
         expect(context.includes('hidden custom content',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'omits persisted system messages that Pi does not render',
+      fn: async function testOmitsSystemMessages(): Promise<void> {
+        /** Context containing Pi 0.87 persisted system-prompt message. */
+        const context = buildContext(
+          contextFromBranch({
+            branch: [
+              {
+                type: 'message',
+                message: {
+                  role: 'system',
+                  content: 'hidden system prompt',
+                  sections: { hiddenSection: 'hidden system section', },
+                  timestamp: 0,
+                },
+              },
+              userMessage('visible request after system prompt',),
+            ],
+          },),
+        );
+
+        expect(context,).toContain('visible request after system prompt',);
+        expect(context.includes('hidden system prompt',),).toBe(false,);
+        expect(context.includes('hidden system section',),).toBe(false,);
       },
     },),
 

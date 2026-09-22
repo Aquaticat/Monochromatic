@@ -114,6 +114,7 @@ function visibleTextOrImageMessageContent(
  token usage,
  timestamps,
  provider identity,
+ system messages,
  and hidden custom messages are omitted because user does not see them.
  
  @param message - Pi session message.
@@ -195,7 +196,17 @@ function visibleMessage(
       tokensBefore: message.tokensBefore,
     };
   }
-  throw new Error('Unsupported Pi session message role.',);
+  // Pi 0.87 persists system prompt and tool loadout as system messages;
+  // interactive transcript renderer draws nothing for them.
+  if (message.role === 'system')
+    return INVISIBLE_MESSAGE;
+  /**
+   Role from newer Pi message union absent from installed type declarations.
+   */
+  const { role: unsupportedRole, } = message as { readonly role?: unknown; };
+  throw new Error(
+    `Unsupported Pi session message role ${JSON.stringify(unsupportedRole,)}; auto-mode cannot build judge context for this session.`,
+  );
 }
 
 /**
