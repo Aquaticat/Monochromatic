@@ -4647,17 +4647,21 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  YINGYING3 RUNS (frozen `7ad1b8ec7`,
-    pid 2155878,
-    launched 17:42 UTC 2026-09-22,
-    waiter `b07ha4fr0`,
-    meters 102.89 USD Bedrock and 151.32 OpenRouter at launch, Synthetic dry):
-    read by the seven steps and three checks against `yingying2`
-    (1 heading, 4 markers, 2 definitions, front matter equal, the References line kept, "Yingying" for the archive's "Sakura", no TA, no error finish);
-    record under a new heading above "## zheermao4 read, 2026-09-22, 17:50 UTC" in the pass log.
-    Then `XingZ60` again to read class eighty-three live
-    (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiecheng Tianzou Official" on the Caged Bird attribution, the gloss at the first appearance),
-    on `.frozen-dist-7ad1b8ec7`.
+1.  YINGYING4 RUNS (frozen `40679244d`,
+    pid 2180429,
+    launched 18:07 UTC 2026-09-22,
+    waiter binj7npur,
+    meters 102.81 USD Bedrock and 151.24 OpenRouter at launch, Synthetic dry):
+    read by the seven steps and three checks against `yingying3`
+    (1 heading, 4 markers, 2 definitions, front matter equal, the References line kept, the second-person farewell, no TA, no error finish),
+    plus class eighty-six live: the second definition "[Farewell. I miss you, Yingying.]" with the declared name inside the title;
+    record under a new heading above "## yingying3 read, 2026-09-22, 18:15 UTC" in the pass log.
+    Then `XingZ60` again on `.frozen-dist-40679244d` to read class eighty-three live
+    (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiecheng Tianzou Official" on the Caged Bird attribution, the gloss at the first appearance).
+    YINGYING3 READ (frozen `7ad1b8ec7`): SETTLED at 17:56 UTC in 14 min, 268 seats, 8 retry rounds, 0.16 USD by the meters;
+    every check as `yingying2` and the farewell in the second person, but the blog title definition shipped the archive's "Sakura" for the declared "Yingying" (class eighty-six).
+    CLASS EIGHTY-SIX FIXED: `linked-title-declared-name.ts` pairs the front matter's declared forms and the page-name glossary line for a linked title that names a declared person says which form the title takes;
+    guards red first `751504ac8`, fix `40679244d`, lint 0/0, types clean, full suite green (`suite-class86.log`).
     ZHEERMAO4 READ (frozen `7ad1b8ec7`, entry `zheermao101`): SETTLED at 17:40 UTC in 32 min, 902 seats, 31 retry rounds, 0.70 USD by the meters;
     no class; the Arts letter kept as the archive and the reply revised from the transcript (the other way round from `zheermao3`, both the review's call on a picture block);
     every check as the archive, one gate-kept unendorsed standing (slice 12, a 2 to 2 gate tie over "still"), 11 abstention lines.

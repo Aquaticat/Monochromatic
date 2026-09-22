@@ -8082,6 +8082,69 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## yingying3 read, 2026-09-22, 18:15 UTC: SETTLED in 14 min, but the blog title names the person "Sakura" against the declared "Yingying" (class eighty-six); fixed in 40679244d, yingying4 launched
+
+`yingying3` (frozen `7ad1b8ec7`, pid 2155878) SETTLED at 17:56 UTC,
+14 minutes after its 17:42 launch (TALLY `ms=854118`),
+one attempt,
+268 seats,
+8 retry rounds,
+234 calls,
+2 abandoned streams (0.00 USD),
+0.16 USD by the meters (Bedrock 102.89 to 102.81, OpenRouter 151.32 to 151.24).
+Synthetic dry, Qwen3.8-27B and glm-5.3 dark.
+
+The page against `yingying2`:
+1 of 1 heading,
+4 of 4 markers,
+2 of 2 definitions,
+front matter equal,
+the References line kept,
+no TA,
+no error finish,
+no double blank line,
+no unendorsed, gate-kept or slate-declined standing,
+2 abstention lines,
+no repeat or run-off finding;
+the farewell in the second person as the original ("May you still have the same cheerfulness") where `yingying2` had "May she";
+"riding her bicycle" as the archive where `yingying2` inferred "motorcycle" from the next paragraph's 摩托骑行 (the sentence itself says 骑车).
+
+But the second definition reads "[^2]: [Farewell. I miss you, Sakura.](https://leohearts.com/archives/farewell-yingying.html)",
+the archive's rendering of the blog title 永别了。我想你了，樱樱。,
+on a page that names the person "Yingying" twice and whose front matter declares 樱樱 as Yingying;
+`yingying1` and `yingying2` had written "Yingying" into the title.
+Both lanes copied the archive's title this run, the slice was never contested, and the definition shipped as the archive wrote it.
+A slice 0 select ballot on the same run shows the judges know the declared form
+("Candidate 5 uses the name 'Sakura' instead of the declared name '樱樱' (Yingying)"),
+so the title was not a judgement but an instruction:
+the page-name glossary (class seventy-one) offers every same-href link title as the archive renders it,
+under a heading that says to render the same person or title the same way everywhere,
+and a title that names the entry's person carries the archive's other rendering of that name into the instruction.
+
+Class eighty-six, fixed in `40679244d`:
+`linked-title-declared-name.ts` (new) pairs the front matter's declared forms
+(name and aliases, source to target by position, a count mismatch pairing nothing)
+and, for a link pair whose source title carries a declared Han name the archive's title renders otherwise,
+appends to the glossary line
+`; names 樱樱, declared "Yingying": the declared form inside the title, the archive's words for the rest`;
+the heading says "a declared name inside a title takes its declared form";
+`document-preparation.ts` passes the declared pairs.
+Probed off the built dist on the real `yingying` pair: the line carries the note.
+Guards red first at `751504ac8`
+(`page-name-glossary.unit.test.ts`: the note on a title the archive renders otherwise, none where the archive already carries the declared form or the title names nobody declared),
+lint 0 and 0,
+types clean,
+full suite green (`suite-class86.log`).
+Mechanically the fix is a sheet instruction at the exact line, not a floor:
+the page's link text cannot be corrected by rule since "Sakura" is not derivable from 樱樱 by anything the pipeline holds.
+
+`yingying4` (frozen `40679244d`, pid 2180429, overlap 8)
+launched 18:07 UTC on Bedrock and OpenRouter
+(meters 102.81 USD Bedrock, 151.24 OpenRouter at launch),
+waiter binj7npur.
+Read for the definition "[Farewell. I miss you, Yingying.]" (class eighty-six live) beside every check of `yingying3`;
+then `XingZ60` again for the handles.
+
 ## zheermao4 read, 2026-09-22, 17:50 UTC: SETTLED in 32 min, no class; the reply email revised from the transcript, the Arts letter kept as the archive; yingying3 launched
 
 `zheermao4` (frozen `7ad1b8ec7`, pid 2151756, entry `zheermao101`) SETTLED at 17:40 UTC,
