@@ -353,7 +353,7 @@ overrides:
   undici: '>=8.5.0'
   ws: '>=8.20.1'
 
-packageExtensionsChecksum: sha256-gD9T//+G7LgmfrdkuAns6+OIpwGt5qZWZRqAB+4BK00=
+packageExtensionsChecksum: sha256-Dh555PLOgwlrAkSQuafiVXQRl9UB1AAYkgeRnuRSYNQ=
 
 pnpmfileChecksum: sha256-j5yFm96r4eLvmMa/RIYwA/SYuEpfI4nJb9VbUVfDilE=
 
@@ -1683,6 +1683,28 @@ importers:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
         version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.4.1
+
+  package/dev-script/deps-update:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
+      yaml:
+        specifier: 'catalog:'
+        version: 3.0.0-1
+    devDependencies:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript

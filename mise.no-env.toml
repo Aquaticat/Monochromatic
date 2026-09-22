@@ -1156,6 +1156,15 @@ run = "node package/dev-script/catalog-tighten/src/index.ts"
 
 #endregion Catalog Tighten
 
+#region Deps Update -- in-range update that explains strict minimumReleaseAge refusals
+
+[tasks."deps:update"]
+description = "pnpm update --recursive --no-save; on a strict minimumReleaseAge refusal, report the too-new versions, when they mature, and who pulls them in"
+# Rationale: doc/troubleshooting/pnpm-update-no-save-strict-release-age.md.
+run = "node package/dev-script/deps-update/src/index.ts"
+
+#endregion Deps Update
+
 #region Page Weight -- audit per-page transfer size (min, max, mean, median) across HTML in a dist directory
 
 [tasks."page:weight"]
