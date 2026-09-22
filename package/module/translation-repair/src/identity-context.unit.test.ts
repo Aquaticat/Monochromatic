@@ -11,6 +11,12 @@ import {
   sourcePronounLines,
 } from '../dist/final/node/index.mjs';
 
+/**
+ Clause the pronoun line carries where the original writes more than one
+ form (class eighty-one, XingZ621 slice 14, 2026-09-22).
+ */
+const AS_WRITTEN = 'each form is rendered as written where it stands (她 is she, 他 is he, TA is singular they), and';
+
 //region Identity context tests
 // Fixtures are cat-themed inventions, never real corpus entries, but they
 // mirror the exact shapes the pinned corpus uses: a top-level `name` with
@@ -250,13 +256,32 @@ await describe({
             + 'corpus; the SS3B_0016 page of 2026-09-04 shipped a bare Ta the counter had not seen)',
           fn: async () => {
             expect(sourcePronounLines({ text: '他来了。他走了。她笑了。', },),)
-              .toEqual(['- pronoun: ORIGINAL refers to this person as "他" (2 times)',],);
+              .toEqual([`- pronoun: ORIGINAL refers to this person as "他" (2 times), and also writes "她" (1 times); ${
+                AS_WRITTEN
+              } "他" supplies the pronoun only where the ORIGINAL leaves the subject unstated`,],);
             expect(sourcePronounLines({ text: '他来了。她笑了。', },),)
-              .toEqual(['- pronoun: ORIGINAL refers to this person as "她" (1 times)',],);
+              .toEqual([`- pronoun: ORIGINAL refers to this person as "她" (1 times), and also writes "他" (1 times); ${
+                AS_WRITTEN
+              } "她" supplies the pronoun only where the ORIGINAL leaves the subject unstated`,],);
             expect(sourcePronounLines({ text: 'TA来了。TA走了。alias: catalog', },),)
               .toEqual(['- pronoun: ORIGINAL refers to this person as "TA" (2 times)',],);
             expect(sourcePronounLines({ text: 'Ta 来了。ta 走了。TA 笑了。她说。', },),)
-              .toEqual(['- pronoun: ORIGINAL refers to this person as "TA" (3 times)',],);
+              .toEqual([`- pronoun: ORIGINAL refers to this person as "TA" (3 times), and also writes "她" (1 times); ${
+                AS_WRITTEN
+              } "TA" supplies the pronoun only where the ORIGINAL leaves the subject unstated`,],);
+          },
+        },),
+
+        it({
+          name: 'NAMES EVERY FORM THE ORIGINAL WRITES with its count where the page mixes them, and says each '
+            + 'is rendered as written where it stands (class eighty-one, XingZ621 slice 14, 2026-09-22: the '
+            + 'line named 她 fifty-one times alone on a page whose Part One writes TA forty times, and the '
+            + 'bench split between "she" on the line and "they" on the TA rule until the entry stopped)',
+          fn: async () => {
+            expect(sourcePronounLines({ text: '她来了。她笑了。她走了。\n\nTA 曾说，猫死了。TA 的遗书。他说。', },),)
+              .toEqual([`- pronoun: ORIGINAL refers to this person as "她" (3 times), and also writes "他" (1 times) and "TA" (2 times); ${
+                AS_WRITTEN
+              } "她" supplies the pronoun only where the ORIGINAL leaves the subject unstated`,],);
           },
         },),
 

@@ -87,6 +87,45 @@ const RENDERINGS: readonly string[] = [
 ];
 
 /**
+ Four translators for a slate wide enough to narrow twice (class
+ eighty-two).
+ */
+const FOUR_TRANSLATORS: readonly RosterModelId[] = [
+  'hf:cat/Cat-A',
+  'hf:cat/Cat-B',
+  'hf:cat/Cat-D',
+  'hf:cat/Cat-E',
+].map(function toId(id,) {
+  return id as unknown as RosterModelId;
+},);
+
+/**
+ Judges who rendered nothing, so every ballot carries a whole weight.
+ */
+const DISINTERESTED_JUDGES: readonly RosterModelId[] = [
+  'hf:cat/Cat-C',
+  'hf:cat/Cat-F',
+  'hf:cat/Cat-G',
+].map(function toId(id,) {
+  return id as unknown as RosterModelId;
+},);
+
+/**
+ Four renderings, each carrying one word the others lack.
+ */
+const FOUR_RENDERINGS: readonly string[] = [
+  ...RENDERINGS,
+  'The cat curls up on the ledge, tail tucked by the warmth.',
+  'The cat yawns on the sill, tail resting against the pipe.',
+];
+
+/**
+ What a scripted judge says: a rejection, or the word only the wanted
+ rendering carries.
+ */
+type ScriptedBallot = 'reject' | 'dozes' | 'naps' | 'curls' | 'yawns';
+
+/**
  Candidate number on a judge sheet whose block carries the needle, zero when
  none does, which is a rejection of the whole slate.
  
@@ -141,7 +180,15 @@ function pickCandidate(
  ```
  */
 function scriptedRig(
-  { ballotFor, }: { readonly ballotFor: (judging: number, seat: RosterModelId) => 'reject' | 'dozes' | 'naps'; },
+  {
+    ballotFor,
+    renderings,
+    judgeCount,
+  }: {
+    readonly ballotFor: (judging: number, seat: RosterModelId) => ScriptedBallot;
+    readonly renderings: readonly string[];
+    readonly judgeCount: number;
+  },
 ): {
   readonly client: SyntheticClient;
   readonly judgeCalls: { count: number; };
@@ -184,7 +231,7 @@ function scriptedRig(
           /**
            Rendering this call gets.
            */
-          const translation = RENDERINGS[served.count % RENDERINGS.length] ?? '';
+          const translation = renderings[served.count % renderings.length] ?? '';
           served.count += 1;
           /**
            Reply as the wire expects it.
@@ -208,7 +255,7 @@ function scriptedRig(
          Which judging this call belongs to, every judge answering once per
          judging.
          */
-        const judging = Math.ceil(judgeCalls.count / JUDGES.length,);
+        const judging = Math.ceil(judgeCalls.count / judgeCount,);
 
         /**
          Sheet text, for finding the wanted candidate.
@@ -267,13 +314,19 @@ async function judgedUnder(
   {
     ballotFor,
     incumbentKind = 'present',
+    translators = TRANSLATORS,
+    judges = JUDGES,
+    renderings = RENDERINGS,
   }: {
     readonly ballotFor: (
       judging: number,
       seat: RosterModelId,
       dozesAuthor: RosterModelId,
-    ) => 'reject' | 'dozes' | 'naps';
+    ) => ScriptedBallot;
     readonly incumbentKind?: 'present' | 'absent';
+    readonly translators?: readonly RosterModelId[];
+    readonly judges?: readonly RosterModelId[];
+    readonly renderings?: readonly string[];
   },
 ): Promise<{
   readonly result: TranslateStageResult;
@@ -292,13 +345,15 @@ async function judgedUnder(
     ballotFor: function withAuthor(
       judging,
       seat,
-    ): 'reject' | 'dozes' | 'naps' {
+    ): ScriptedBallot {
       return ballotFor(
         judging,
         seat,
         author.dozes,
       );
     },
+    renderings,
+    judgeCount: judges.length,
   },);
 
   /**
@@ -306,7 +361,7 @@ async function judgedUnder(
    */
   const produced = await produceTranslateSlate({
     client: rig.client,
-    translatorModelIds: TRANSLATORS,
+    translatorModelIds: translators,
     sourceText: SOURCE_TEXT,
     incumbentText: INCUMBENT_TEXT,
     lineStructured: false,
@@ -334,7 +389,7 @@ async function judgedUnder(
     judging: {
       client: rig.client,
       produced,
-      judgeModelIds: JUDGES,
+      judgeModelIds: judges,
       sourceText: SOURCE_TEXT,
       incumbentText: (incumbentKind === 'present') ? INCUMBENT_TEXT : '',
       incumbentKind,
@@ -411,6 +466,39 @@ await describe({
         expect(result.findings.includes(RETRY_FINDING,),).toBe(true,);
         expect(result.findings.includes('select-runoff-under-minimum',),).toBe(true,);
         expect(judgeCalls,).toBe(JUDGES.length * 2,);
+      },
+    },),
+    it({
+      name: 'ASKS a run-off AGAIN while the tie keeps narrowing the finalists, and seats the round that decides '
+        + '(class eighty-two, XingZ621 slice 14, 2026-09-22: eight valid candidates split 1/1/1/1, the run-off '
+        + 'over the four leaders split 1/1/0.5, and the entry stopped though the tie had narrowed 4 to 2)',
+      fn: async () => {
+        // Judging 1: C dozes, F naps, G curls, yawns unnamed: a tie of three of
+        // four. Judging 2: C dozes, F naps, G rejects: a tie of two of three.
+        // Judging 3: C dozes, F dozes, G naps: dozes at weight 2.
+        const { result, judgeCalls, } = await judgedUnder({
+          incumbentKind: 'absent',
+          translators: FOUR_TRANSLATORS,
+          judges: DISINTERESTED_JUDGES,
+          renderings: FOUR_RENDERINGS,
+          ballotFor: function narrowTwice(
+            judging,
+            seat,
+          ): ScriptedBallot {
+            if (seat === 'hf:cat/Cat-C')
+              return 'dozes';
+            if (seat === 'hf:cat/Cat-F')
+              return (judging === 3) ? 'dozes' : 'naps';
+            if (judging === 1)
+              return 'curls';
+            return (judging === 2) ? 'reject' : 'naps';
+          },
+        },);
+        expect(result.origin,).toBe('fresh',);
+        expect(result.text.includes('dozes',),).toBe(true,);
+        expect(result.findings.includes('translate-runoff (finalists 3 of 4)',),).toBe(true,);
+        expect(result.findings.includes('translate-runoff (finalists 2 of 3)',),).toBe(true,);
+        expect(judgeCalls,).toBe(DISINTERESTED_JUDGES.length * 3,);
       },
     },),
     it({

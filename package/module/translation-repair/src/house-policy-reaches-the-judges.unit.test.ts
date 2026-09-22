@@ -121,6 +121,18 @@ await describe({
       },
     },),
     it({
+      name: 'TELLS a judge that a pronoun the ORIGINAL writes is rendered as written where it stands, and that a '
+        + 'written TA is not an unstated subject (class eighty-one, XingZ621 slice 14, 2026-09-22: Part One '
+        + 'writes TA forty times on a page whose other parts write 她 fifty-one times, and the bench split '
+        + 'between "she" on the identity line and "they" on the TA rule until the entry stopped)',
+      fn: async () => {
+        expect(system.includes('rendered as written where it stands',),).toBe(true,);
+        expect(system.includes('a writer who chose TA beside a page of 她 chose it',),).toBe(true,);
+        expect(system.includes('A TA THE ORIGINAL WRITES IS NOT AN UNSTATED SUBJECT',),).toBe(true,);
+        expect(system.includes('resolving a written TA to she or he has made the WRONG choice',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'TELLS a judge that 那些秋叶 is the site\'s own name and reads One Among Us (SS3B_0016 slice 5, read '
         + '2026-09-04: the gate kept the name 4 to 3 over a literal rendering, arguing from the archive alone; '
         + 'the archives of all five entries naming it agree)',
