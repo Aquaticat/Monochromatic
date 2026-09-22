@@ -8082,6 +8082,129 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## zheermao2 read, 2026-09-22, 00:20 UTC: SETTLED, but the archive block review replaced the email intro label with a four-block letter cut mid-sentence (class seventy-seven, fixed in 0f9cd44da); zheermao3 launched
+
+`zheermao2` (frozen `d70087757`,
+pid 1717905,
+overlap 8,
+launched 23:27 UTC on Bedrock and OpenRouter,
+Synthetic dry at launch and wet at the end,
+Hyper dry)
+SETTLED at 23:59 UTC on one attempt,
+46 minutes.
+
+The page.
+Sixteen slices,
+eleven changed by the translate lane,
+six by the repair lane,
+ten changed on the page.
+The life was already told in the past by the archive,
+and every line stays in the past.
+One em-dash on the page against the archive's none
+(the reply letter's "worry—we'll",
+written by the archive block review's revision of the reply blockquote),
+left as the owner said on 2026-09-21.
+No double blank line,
+no `PublishedPageDisagrees` or weight-off line,
+front matter equal,
+no `TA`,
+no `finish_reason=error`,
+attempts 1,
+headings,
+list items,
+photo components and the contributor comment as the archive,
+no unendorsed standing,
+two gate-kept standings (slices 8 and 13),
+two slate-declined standings (4 and 10),
+22 abstention lines with reasons,
+no repeat or run-off finding.
+Seats asked 979,
+18 retry rounds,
+912 calls,
+10 abandoned streams (0.03 USD),
+glm-5.3 dark all run (70 asked,
+70 threw),
+Kimi-K3 5 of 72 threw;
+Jev 23 asked,
+23 usable.
+Meters:
+Bedrock 119.13 to 118.96,
+OpenRouter 176.51 to 176.17,
+0.51 USD;
+the spend lines say 0.50 USD on OpenRouter.
+
+Class seventy-seven.
+The archive carries,
+under the third photo,
+a label ("English translation of the preceding email conversation:")
+and then the English rendering of the exchange as a nested blockquote;
+neither is in the original,
+whose text for that exchange is the picture.
+The archive block review reviewed the label as its own block.
+Six reviewers were heard;
+one revision was admissible,
+and the selection log says what it was:
+"Candidate 1 provides a complete and accurate translation of the third photo's text (the email conversation).
+Candidate 2 is an empty repeat of the header"
+(gemma-4-26b),
+"Candidate 1 provides the actual email translation content required for the block ...
+Candidate 2 contains only the header and omits the translation entirely"
+(Mercury),
+against deepseek-v4.1-flash,
+which read the block for what it is
+("the current archive block,
+which consists of the line 'English translation of the preceding email conversation:'
+and nothing else.
+Candidate 2 reproduces exactly that line"),
+and gpt-oss,
+which declined both.
+Candidate 1 won at weight 2.5 across five ballots.
+It is a four-block plain-text letter
+(a greeting,
+two paragraphs,
+a sign-off "Warm wishes / Chun Zhi"),
+its third paragraph ending mid-sentence
+("the stories that are living,
+are much more"),
+Zheermao's side of the exchange absent,
+and it shipped where the label stood,
+ahead of the blockquote that already carries the whole exchange.
+`zheermao1` had shipped a revised label
+("English translation of the email exchange with One Among Us:").
+
+The class is the review's admission.
+`replacementCandidates` admitted any revision that kept the contributor identities;
+nothing held a revision to the block's own shape,
+while the lanes hold every candidate to the page's block shape through `translate-validate.ts`.
+Fixed in `0f9cd44da`:
+`archive-revision-shape.ts` reads the block and the revision through `readSliceSkeleton`
+and withholds a revision whose blocks differ in count,
+kind or detail
+(finding `archive-revision-refused (<model>): the block is paragraph and the revision is paragraph, paragraph, paragraph, paragraph; a revision keeps the block's own shape`);
+a removal (an empty revision) stays admissible;
+a block the grammar cannot read holds nothing.
+`replacementCandidates` moved to `archive-replacement-candidates.ts`
+so the stage stays under its line budget,
+and returns the withheld findings,
+which the stage logs and carries into the block's findings.
+Guard red first at `42a6ab2de`
+(the label revised into the letter shipped the letter),
+green at `0f9cd44da` with no selection round bought over the emptied slate;
+lint and types clean;
+the full suite runs in the background.
+The other three archive blocks on this page went as they should:
+the letter from Arts retained (the incumbent won weight 4 of 6),
+its label revised from "preceding letter" to "letter from Arts"
+(five ballots citing the rule against positional references),
+and the reply blockquote revised from the picture transcript
+(deepseek's candidate at weight 2 across 5).
+
+`zheermao3` (frozen `0f9cd44da`,
+pid 1734549)
+launched at 00:12 UTC to read the label standing,
+the same three archive blocks,
+and the seven steps and three checks again.
+
 ## CuspariaKLSY5 read, 2026-09-21, 23:20 UTC: class seventy-six live, the life in the past on every line, the slice 0 contest won by the translate lane 3 of 5 with two ballots citing the house rule
 
 `CuspariaKLSY5` (frozen `d70087757`,

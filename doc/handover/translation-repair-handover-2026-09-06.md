@@ -4647,7 +4647,37 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASS SEVENTY-SIX IS LIVE ON CUSPARIAKLSY5
+1.  CLASS SEVENTY-SEVEN IS FIXED AND ZHEERMAO3 RUNS
+    (the pass log's heading dated 2026-09-22 00:20 UTC):
+    `zheermao2` (frozen `d70087757`) SETTLED at 23:59 UTC in 46 minutes,
+    0.51 USD by the meters,
+    one attempt,
+    979 seats,
+    18 retry rounds,
+    every check as the archive,
+    but the archive block review replaced the label
+    "English translation of the preceding email conversation:"
+    with a four-block plain-text letter cut mid-sentence,
+    chosen 2.5 of 5 as "the actual email translation content required for the block":
+    the review admitted a revision of any shape.
+    Fixed in `0f9cd44da` (`archive-revision-shape.ts`:
+    a revision keeps the block's own blocks by count,
+    kind and detail,
+    a removal stays admissible;
+    `replacementCandidates` moved to `archive-replacement-candidates.ts`),
+    guard red first at `42a6ab2de`,
+    lint and types clean,
+    the full suite running at `0f9cd44da`.
+    `zheermao3` (frozen `0f9cd44da`,
+    pid 1734549,
+    launched 00:12 UTC)
+    runs to read the label standing,
+    the three other archive blocks (Arts letter retained,
+    its label "letter from Arts",
+    the reply blockquote revised from the transcript),
+    then the seven steps and three checks,
+    and record it.
+    CLASS SEVENTY-SIX IS LIVE ON CUSPARIAKLSY5
     (the pass log's heading dated 2026-09-21 23:20 UTC):
     `CuspariaKLSY5` (frozen `d70087757`) SETTLED at 23:08 UTC in 41 minutes,
     0.24 USD by the meters,
@@ -4680,19 +4710,6 @@ each read off the pass log and the shipped page:
     ("means fish in clear water",
     not in the original)
     is dropped as on `CuspariaKLSY4`.
-    `zheermao2` (frozen `d70087757`,
-    pid 1717905,
-    launched 23:27 UTC on Bedrock and OpenRouter)
-    runs next in the one-at-a-time queue:
-    `zheermao101` has run once (`zheermao1`,
-    frozen `bb4bb7556`),
-    before the tense tails and the splice fix,
-    so read the tense of the life on the page,
-    the em-dashes (the owner's "Leave as is"),
-    no double blank line,
-    no publish disagreement,
-    then the seven steps and three checks,
-    and record it.
     CLASS SEVENTY-SIX WAS FOUND ON CUSPARIAKLSY4
     (the pass log's heading dated 2026-09-21 22:40 UTC):
     `CuspariaKLSY4` (frozen `c5470163d`) SETTLED at 22:24 UTC in 38 minutes,
