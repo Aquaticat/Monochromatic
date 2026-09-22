@@ -4,24 +4,29 @@
  @module
  */
 
-import type {
-  Api,
-  Context,
-  Model,
-  SimpleStreamOptions,
-  Tool,
+import {
+  normalizeContext,
+  type Api,
+  type Context,
+  type Model,
+  type SimpleStreamOptions,
+  type Tool,
+  type TranscriptContext,
 } from '@earendil-works/pi-ai';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 /**
  Simple options carrying provider-specific forced selector.
- 
+
+ Pi AI 0.87 narrowed `SimpleStreamOptions.toolChoice` to provider-neutral `'auto' | 'none'`,
+ so provider-specific selectors replace that field instead of intersecting with it.
+
  @example
  ```ts
  const options: ReviewSimpleStreamOptions = { toolChoice: 'required' };
  ```
  */
-type ReviewSimpleStreamOptions = SimpleStreamOptions & {
+type ReviewSimpleStreamOptions = Omit<SimpleStreamOptions, 'toolChoice'> & {
   /**
    Provider-specific forced tool selector.
    */
@@ -134,7 +139,7 @@ function isolateReviewTool(
  */
 function isolateReviewContext(
   context: ForeignBorrowed<Context>,
-): Context {
+): TranscriptContext {
   /**
    Isolated review messages.
    */
@@ -157,13 +162,15 @@ function isolateReviewContext(
   const tools: Tool[] = [];
   for (const tool of context.tools ?? [])
     tools.push(isolateReviewTool(tool,),);
-  return {
+  // Pi AI 0.87 provider modules read prompt and tools only from transcript system messages;
+  // a raw Context reaching them sends neither, while forced toolChoice still names the tool.
+  return normalizeContext({
     ...(context.systemPrompt === undefined
       ? {}
       : { systemPrompt: context.systemPrompt, }),
     messages,
     ...(tools.length === 0 ? {} : { tools, }),
-  };
+  },);
 }
 
 /**
@@ -180,14 +187,24 @@ function isolateReviewContext(
  */
 function isolateReviewOptions(
   options: ForeignBorrowed<ReviewSimpleStreamOptions>,
-): ReviewSimpleStreamOptions {
-  return {
+): SimpleStreamOptions {
+  /**
+   Provider-neutral fields copied into fresh records.
+   */
+  const neutralOptions: SimpleStreamOptions = {
     ...(options.apiKey === undefined ? {} : { apiKey: options.apiKey, }),
     ...(options.headers === undefined ? {} : { headers: { ...options.headers, }, }),
     ...(options.signal === undefined ? {} : { signal: options.signal, }),
     ...(options.maxTokens === undefined ? {} : { maxTokens: options.maxTokens, }),
-    ...(options.toolChoice === undefined ? {} : { toolChoice: options.toolChoice, }),
   };
+  if (options.toolChoice === undefined)
+    return neutralOptions;
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- Pi AI 0.87 types SimpleStreamOptions.toolChoice as provider-neutral, but every provider module's streamSimple still forwards it verbatim (anthropic-messages.js, openai-responses.js, openai-completions.js, bedrock-converse-stream.js); toolChoiceForApi picks the selector each API accepts. */
+  return {
+    ...neutralOptions,
+    toolChoice: options.toolChoice as NonNullable<SimpleStreamOptions['toolChoice']>,
+  };
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
 }
 
 /**
