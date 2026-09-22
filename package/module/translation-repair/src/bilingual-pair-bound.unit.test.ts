@@ -155,14 +155,23 @@ await describe({
       },
     },),
     it({
-      name: 'STAYS SILENT where the rendering reworded the English line, since the block holding the pair can no longer be found',
+      name: 'STAYS SILENT where the rendering reworded both English lines of the quote, since the block holding a pair '
+        + 'can no longer be found; reworded on one line only, the other pair still names the block',
       fn: async () => {
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: BILINGUAL,
+          candidateText: DOUBLED
+            .replace('And in case I don’t see the cat', 'And should I not see the cat',)
+            .replace('From *The Cat Show*', 'Taken from *The Cat Show*',),
+          pageText: PAGE,
+        },).length,).toBe(0,);
         expect(compareLineCounts({
           lineStructured: true,
           sourceText: BILINGUAL,
           candidateText: DOUBLED.replace('And in case I don’t see the cat', 'And should I not see the cat',),
           pageText: PAGE,
-        },).length,).toBe(0,);
+        },).length,).toBe(1,);
       },
     },),
     it({

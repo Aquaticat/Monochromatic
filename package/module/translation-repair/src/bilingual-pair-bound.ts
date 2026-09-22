@@ -1,88 +1,499 @@
 //region Bilingual pair bound
-// CLASS EIGHTY, SECOND ARM (shi_Yumiaoya11, 2026-09-22). The sheet clause of
-// `bilingual-line-clause.ts` reached the translators, the judges and the
-// editors, and the slate still chose the candidate that rendered the film
-// quote's Chinese line a second time in English: deepseek-v4.1-flash called
-// the candidate carrying the English alone "a dropped line ... ineligible"
-// under the line criterion, and gemma-4-26b reasoned that the Chinese line
-// "is a literal translation of the sentiment, which is distinct from the
-// actual English quote". A judge without the film cannot see that the two
-// lines are one, and no wording on a sheet gives it the film.
+// CLASS EIGHTY, SECOND ARM (shi_Yumiaoya11 and 12, 2026-09-22). The sheet
+// clause of `bilingual-line-clause.ts` reached the translators, the judges
+// and the editors, and the slate still chose the candidate that rendered the
+// film quote's Chinese line a second time in English: deepseek-v4.1-flash
+// called the candidate carrying the English alone "a dropped line ...
+// ineligible" under the line criterion, and gemma-4-26b reasoned that the
+// Chinese line "is a literal translation of the sentiment, which is distinct
+// from the actual English quote". A judge without the film cannot see that
+// the two lines are one, and no wording on a sheet gives it the film.
 //
-// THE EXISTING TRANSLATION SETTLES IT. The human translator carried the pair
-// as one line, and that count is on the sheet as the PAGE AS IT STANDS. So
-// where the original carries such a pair and the page carries exactly the
-// lines owed (each pair once), a rendering carrying more has invented a line
-// and is refused before the judges see it, the way class sixty-six withholds
-// a rule-refused candidate. Where there is no page text, or the page itself
-// keeps the adjacent lines apart (Arita, NIGHT81473140, gqt and seven other
-// entries carry a Chinese line followed by an English line of DIFFERENT
-// content, which the pair count cannot tell from a translation pair), nothing
-// is refused and the judges decide on the clause.
+// THE EXISTING TRANSLATION SETTLES IT, BLOCK BY BLOCK. The human translator
+// carried the pair as one line, and that text is on the sheet as the PAGE AS
+// IT STANDS. A first cut compared the whole slice's line count with the lines
+// owed and slept on shi_Yumiaoya12, because the archive writes the slice's
+// closing line as two lines, so the whole-slice count never matched. The
+// bound now finds the pair's English line in the page and in the rendering
+// and compares the block holding it (the quote's lines, or the paragraph's):
+// a rendering whose block carries more lines than the page's has rendered
+// the Chinese half again, and is refused before the judges see it, the way
+// class sixty-six withholds a rule-refused candidate. Where there is no page
+// text, the page does not carry that English line as written, the page
+// carries the Chinese line too, or the rendering reworded the English line,
+// nothing is refused and the judges decide on the clause. Arita,
+// NIGHT81473140, gqt and seven other entries carry a Chinese line followed by
+// an English line of DIFFERENT content, which the pair count cannot tell
+// from a translation pair; their pages carry both lines in the block, so the
+// bound is silent there.
 
 /**
- Content lines of a text, the caller's own reading so this bound counts the
- page the way the floor counts the original and the rendering.
+ One line the original gives in Chinese with its English beside it.
+
+ @example
+ ```ts
+ const pair: BilingualPair = { han: '> 如果再也见不到猫，祝你早安。', english: '> And in case I don’t see the cat, good morning.', };
+ ```
  */
-type ContentLines = (args: { readonly text: string; },) => readonly string[];
+export type BilingualPair = {
+  /**
+   Han line as the original carries it.
+   */
+  readonly han: string;
+
+  /**
+   English line beside it as the original carries it.
+   */
+  readonly english: string;
+};
 
 /**
- Names a governed rendering that carries more lines than the page where the
- original gives a line in Chinese and in English beside it and the page
- carries each such pair once.
+ Block of consecutive lines holding one line: where it starts and how many
+ content lines it carries.
+ */
+type LineBlock = {
+  /**
+   Index of the block's first line.
+   */
+  readonly start: number;
+
+  /**
+   Lines in the block carrying content.
+   */
+  readonly count: number;
+};
+
+/**
+ Straight forms of the quote marks a rendering may curl, so a line matches
+ its page copy through the typography restoration.
+ */
+const STRAIGHT_QUOTES: Readonly<Record<string, string>> = {
+  '‘': '\'',
+  '’': '\'',
+  '“': '"',
+  '”': '"',
+};
+
+/**
+ Whether a line is inside a quote, by its marker.
+
+ @param line - one raw line
+
+ @returns True on a leading quote marker
+
+ @example
+ ```ts
+ isQuoted({ line: '> From *The Cat Show*', },); // true
+ ```
+ */
+function isQuoted({ line, }: { readonly line: string; },): boolean {
+  /**
+   Line without its leading whitespace.
+   */
+  const lead = line.trimStart();
+  return lead.startsWith('>',);
+}
+
+/**
+ Whether a line carries content past its quote markers and whitespace.
+
+ @param line - one raw line
+
+ @returns True on the first content character
+
+ @example
+ ```ts
+ hasContent({ line: '>', },); // false
+ ```
+ */
+function hasContent({ line, }: { readonly line: string; },): boolean {
+  for (const character of line) {
+    if ((character !== '>') && (character.trim() !== ''))
+      return true;
+  }
+  return false;
+}
+
+/**
+ Line past its leading quote markers and whitespace.
+
+ @param line - one raw line
+
+ @returns Rest of the line from its first content character, empty when
+ there is none
+
+ @example
+ ```ts
+ pastQuoteMarkers({ line: '> > cat', },); // 'cat'
+ ```
+ */
+function pastQuoteMarkers({ line, }: { readonly line: string; },): string {
+  for (let at = 0; at < line.length; at += 1) {
+    /**
+     Character at the cursor.
+     */
+    const character = line.charAt(at,);
+    if ((character !== '>') && (character.trim() !== ''))
+      return line.slice(at,);
+  }
+  return '';
+}
+
+/**
+ Wording of a line for matching across page and rendering: quote markers
+ and surrounding whitespace off, inner whitespace collapsed, curled quotes
+ straightened.
+
+ @param line - one raw line
+
+ @returns Wording, empty for a line carrying none
+
+ @example
+ ```ts
+ wordingOf({ line: '>  From *The Cat Show*', },); // 'From *The Cat Show*'
+ ```
+ */
+function wordingOf({ line, }: { readonly line: string; },): string {
+  /**
+   Words of the line past its markers.
+   */
+  const words = pastQuoteMarkers({ line, },)
+    .split(' ',)
+    .map(function trimWord(word,): string {
+      return word.trim();
+    },)
+    .filter(function nonEmpty(word,): boolean {
+      return word !== '';
+    },);
+  return Object
+    .entries(STRAIGHT_QUOTES,)
+    .reduce(
+      function straighten(
+        text,
+        [
+          curled,
+          straight,
+        ],
+      ): string {
+        return text.replaceAll(
+          curled,
+          straight,
+        );
+      },
+      words.join(' ',),
+    );
+}
+
+/**
+ Index of the first line carrying a wording.
+
+ @param lines - raw lines to search
+
+ @param wording - wording to find, as `wordingOf` gives it
+
+ @returns Index, or -1 when no line carries it
+
+ @example
+ ```ts
+ const at = lineAt({ lines, wording: wordingOf({ line: pair.english, },), },);
+ ```
+ */
+function lineAt(
+  {
+    lines,
+    wording,
+  }: {
+    readonly lines: readonly string[];
+    readonly wording: string;
+  },
+): number {
+  return lines.findIndex(function carries(line,): boolean {
+    return wordingOf({ line, },) === wording;
+  },);
+}
+
+/**
+ Whether a line belongs to the block of a quoted or an unquoted line.
+
+ @param line - raw line to test
+
+ @param quoted - whether the block is a quote
+
+ @returns True inside the same block
+
+ @example
+ ```ts
+ belongsToBlock({ line: '>', quoted: true, },); // true
+ ```
+ */
+function belongsToBlock(
+  {
+    line,
+    quoted,
+  }: {
+    readonly line: string;
+    readonly quoted: boolean;
+  },
+): boolean {
+  if (quoted)
+    return isQuoted({ line, },);
+  if (isQuoted({ line, },))
+    return false;
+  return hasContent({ line, },);
+}
+
+/**
+ First index of the block holding a line.
+
+ @param lines - raw lines of the text
+
+ @param at - index of the line
+
+ @param quoted - whether the block is a quote
+
+ @returns Index of the block's first line
+
+ @example
+ ```ts
+ const start = blockStart({ lines, at, quoted, },);
+ ```
+ */
+function blockStart(
+  {
+    lines,
+    at,
+    quoted,
+  }: {
+    readonly lines: readonly string[];
+    readonly at: number;
+    readonly quoted: boolean;
+  },
+): number {
+  for (let start = at; start > 0; start -= 1) {
+    /**
+     Line before the cursor.
+     */
+    const before = lines[start - 1] ?? '';
+    if (!belongsToBlock({
+      line: before,
+      quoted,
+    },))
+      return start;
+  }
+  return 0;
+}
+
+/**
+ Index one past the block holding a line.
+
+ @param lines - raw lines of the text
+
+ @param at - index of the line
+
+ @param quoted - whether the block is a quote
+
+ @returns Index after the block's last line
+
+ @example
+ ```ts
+ const end = blockEnd({ lines, at, quoted, },);
+ ```
+ */
+function blockEnd(
+  {
+    lines,
+    at,
+    quoted,
+  }: {
+    readonly lines: readonly string[];
+    readonly at: number;
+    readonly quoted: boolean;
+  },
+): number {
+  for (let end = at + 1; end < lines.length; end += 1) {
+    /**
+     Line at the cursor.
+     */
+    const here = lines[end] ?? '';
+    if (!belongsToBlock({
+      line: here,
+      quoted,
+    },))
+      return end;
+  }
+  return lines.length;
+}
+
+/**
+ Block holding one line: the run of quoted lines around a quoted line, or
+ the run of unquoted content lines around an unquoted one.
+
+ @param lines - raw lines of the text
+
+ @param at - index of the line whose block is wanted
+
+ @returns Where the block starts and how many content lines it carries
+
+ @example
+ ```ts
+ const block = blockAround({ lines, at, },);
+ ```
+ */
+function blockAround(
+  {
+    lines,
+    at,
+  }: {
+    readonly lines: readonly string[];
+    readonly at: number;
+  },
+): LineBlock {
+  /**
+   Whether the block is a quote.
+   */
+  const quoted = isQuoted({ line: lines[at] ?? '', },);
+  /**
+   First index of the block.
+   */
+  const start = blockStart({
+    lines,
+    at,
+    quoted,
+  },);
+  /**
+   Index one past the block.
+   */
+  const end = blockEnd({
+    lines,
+    at,
+    quoted,
+  },);
+  /**
+   Content lines inside the block.
+   */
+  const counted = lines
+    .slice(
+      start,
+      end,
+    )
+    .filter(function carries(line,): boolean {
+      return hasContent({ line, },);
+    },);
+  return {
+    start,
+    count: counted.length,
+  };
+}
+
+/**
+ Names a governed rendering whose block holding a bilingual pair's English
+ line carries more lines than the page's block holding it.
 
  @param pairs - Han lines the original gives with their own English beside
- them, as the floor counted them
-
- @param owed - lines the rendering owes, the original's less one per pair
-
- @param carried - lines the rendering carries
+ them, as the floor found them
 
  @param pageText - translation of the slice as the page stands, absent or
  empty where the slice has none
 
- @param contentLines - line reader shared with the floor
+ @param candidateText - proposed rendering
 
- @returns One finding where the page bounds the pair and the rendering
- exceeds it, none otherwise
+ @returns One finding per block the rendering widened, none otherwise
 
  @example
  ```ts
- const found = pairBoundFindings({ pairs: 2, owed: 3, carried: 4, pageText, contentLines, },);
+ const found = pairBoundFindings({ pairs, pageText, candidateText, },);
  ```
  */
 export function pairBoundFindings(
   {
     pairs,
-    owed,
-    carried,
     pageText,
-    contentLines,
+    candidateText,
   }: {
-    readonly pairs: number;
-    readonly owed: number;
-    readonly carried: number;
+    readonly pairs: readonly BilingualPair[];
     readonly pageText?: string;
-    readonly contentLines: ContentLines;
+    readonly candidateText: string;
   },
 ): readonly string[] {
-  if ((pairs === 0) || (carried <= owed))
-    return [];
-  if ((pageText === undefined) || (pageText.trim() === ''))
+  if ((pairs.length === 0) || (pageText === undefined))
     return [];
   /**
-   Content lines the page carries for the slice.
+   Page text without its surrounding whitespace.
    */
-  const pageLines = contentLines({ text: pageText, },);
-  if (pageLines.length !== owed)
+  const trimmedPage = pageText.trim();
+  if (trimmedPage === '')
     return [];
-  return [
-    `This slice is LINE-STRUCTURED and the ORIGINAL gives ${String(pairs,)} of its lines twice, `
-      + `once in Chinese and once in English directly beside it; each such pair is ONE line whose English `
-      + `is already its rendering, and the EXISTING TRANSLATION carries it so, ${String(owed,)} lines in all. `
-      + `Yours carries ${String(carried,)}. Drop the second rendering of the pair (the Chinese line, or a `
-      + `second English wording of it), keeping the film's own English line and the wording you chose elsewhere.`,
-  ];
+  /**
+   Raw lines of the page.
+   */
+  const pageLines = pageText.split('\n',);
+  /**
+   Raw lines of the rendering.
+   */
+  const candidateLines = candidateText.split('\n',);
+  /**
+   Starts of rendering blocks already named, so two pairs in one quote name
+   it once.
+   */
+  const named = new Set<number>();
+  return pairs.flatMap(function toFinding(pair,): readonly string[] {
+    /**
+     Wording of the pair's English line.
+     */
+    const english = wordingOf({ line: pair.english, },);
+    /**
+     Where the page carries that line.
+     */
+    const pageAt = lineAt({
+      lines: pageLines,
+      wording: english,
+    },);
+    if (pageAt < 0)
+      return [];
+    /**
+     Where the page carries the Han line, if it kept both.
+     */
+    const pageHanAt = lineAt({
+      lines: pageLines,
+      wording: wordingOf({ line: pair.han, },),
+    },);
+    if (pageHanAt >= 0)
+      return [];
+    /**
+     Where the rendering carries the English line.
+     */
+    const candidateAt = lineAt({
+      lines: candidateLines,
+      wording: english,
+    },);
+    if (candidateAt < 0)
+      return [];
+    /**
+     Page block holding the line.
+     */
+    const pageBlock = blockAround({
+      lines: pageLines,
+      at: pageAt,
+    },);
+    /**
+     Rendering block holding the line.
+     */
+    const candidateBlock = blockAround({
+      lines: candidateLines,
+      at: candidateAt,
+    },);
+    if ((candidateBlock.count <= pageBlock.count) || named.has(candidateBlock.start,))
+      return [];
+    named.add(candidateBlock.start,);
+    return [
+      `This slice is LINE-STRUCTURED and the ORIGINAL gives the line \`${english}\` twice, `
+        + `once in Chinese and once in English directly beside it; that pair is ONE line whose English is `
+        + `already its rendering, and the EXISTING TRANSLATION carries the block holding it as `
+        + `${String(pageBlock.count,)} lines. Yours carries ${String(candidateBlock.count,)}. Drop the second `
+        + `rendering of the pair (the Chinese line, or a second English wording of it), keeping the wording `
+        + `you chose elsewhere.`,
+    ];
+  },);
 }
 
 //endregion Bilingual pair bound

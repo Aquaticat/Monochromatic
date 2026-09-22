@@ -1,4 +1,7 @@
-import { pairBoundFindings, } from './bilingual-pair-bound.ts';
+import {
+  type BilingualPair,
+  pairBoundFindings,
+} from './bilingual-pair-bound.ts';
 import { isIdeograph, } from './preservation-tokens.ts';
 
 //region Line structure guard
@@ -114,18 +117,18 @@ function isOwnEnglish({ line, }: { readonly line: string; },): boolean {
  
  @param lines - content lines of the original
  
- @returns How many such pairs the original carries
+ @returns Each such pair, in order
  
  @example
  ```ts
- const pairs = bilingualPairCount({ lines: contentLines({ text: sourceText, },), },);
+ const pairs = bilingualPairs({ lines: contentLines({ text: sourceText, },), },);
  ```
  */
-function bilingualPairCount({ lines, }: { readonly lines: readonly string[]; },): number {
+function bilingualPairs({ lines, }: { readonly lines: readonly string[]; },): readonly BilingualPair[] {
   /**
    Pairs found so far.
    */
-  let pairs = 0;
+  const pairs: BilingualPair[] = [];
   /**
    Cursor over the lines.
    */
@@ -139,13 +142,19 @@ function bilingualPairCount({ lines, }: { readonly lines: readonly string[]; },)
      Line after it.
      */
     const next = lines[at + 1] ?? '';
-    /**
-     Whether the two are a Han line and its English, either way round.
-     */
-    const paired = (carriesHan({ line: here, },) && isOwnEnglish({ line: next, },))
-      || (isOwnEnglish({ line: here, },) && carriesHan({ line: next, },));
-    if (paired) {
-      pairs += 1;
+    if (carriesHan({ line: here, },) && isOwnEnglish({ line: next, },)) {
+      pairs.push({
+        han: here,
+        english: next,
+      },);
+      at += 2;
+      continue;
+    }
+    if (isOwnEnglish({ line: here, },) && carriesHan({ line: next, },)) {
+      pairs.push({
+        han: next,
+        english: here,
+      },);
       at += 2;
       continue;
     }
@@ -358,12 +367,12 @@ export function compareLineCounts(
   /**
    Han lines the original gives with their own English beside them.
    */
-  const pairs = bilingualPairCount({ lines: sourceLines, },);
+  const pairs = bilingualPairs({ lines: sourceLines, },);
 
   /**
    Lines the original keeps apart, a Han line beside its own English owed once.
    */
-  const owed = sourceLines.length - pairs;
+  const owed = sourceLines.length - pairs.length;
 
   /**
    Content lines of the rendering.
@@ -387,10 +396,8 @@ export function compareLineCounts(
     return [
       ...pairBoundFindings({
         pairs,
-        owed,
-        carried,
         ...((pageText === undefined) ? {} : { pageText, }),
-        contentLines,
+        candidateText,
       },),
       ...repeats,
     ];
