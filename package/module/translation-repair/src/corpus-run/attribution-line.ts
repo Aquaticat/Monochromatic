@@ -1,9 +1,10 @@
 //region Attribution line
 // A SIGNATURE LINE AS THE ORIGINAL AND THE PAGE WRITE IT: a blockquote mark
 // or an HTML tag may open the line, then one or more em dashes, then the
-// signer's name, then a comma and the date. The name is what this module
-// reads and where it stands, so a page-assembly pass can put another
-// rendering in its place without touching the rest of the line.
+// signer's name, then a comma and the date, or (a song credit, class
+// eighty-three) a bracketed work title 【...】 or 《...》. The name is what
+// this module reads and where it stands, so a page-assembly pass can put
+// another rendering in its place without touching the rest of the line.
 
 /**
  Em dash the original opens a signature with, usually doubled.
@@ -11,11 +12,14 @@
 const EM_DASH = '—';
 
 /**
- Commas that end a signer's name.
+ Marks that end a signer's name: the comma before a date, or the bracket
+ opening a work's title in a song credit (—— 雨狸【妄想症】《零重祈愿》).
  */
-const COMMAS: readonly string[] = [
+const NAME_ENDS: readonly string[] = [
   ',',
   '，',
+  '【',
+  '《',
 ];
 
 /**
@@ -136,20 +140,20 @@ function nameStartAt(
 }
 
 /**
- Offset of the earliest comma at or past an offset, -1 for none.
+ Offset of the earliest name-ending mark at or past an offset, -1 for none.
 
  @param line - signature line
 
  @param from - offset the name starts at
 
- @returns Offset of the comma ending the name
+ @returns Offset of the mark ending the name
 
  @example
  ```ts
- commaAt({ line: '——Cat, today', from: 2, },); // 5
+ nameEndAt({ line: '——Cat, today', from: 2, },); // 5
  ```
  */
-function commaAt(
+function nameEndAt(
   {
     line,
     from,
@@ -159,19 +163,19 @@ function commaAt(
   },
 ): number {
   /**
-   Earliest comma so far, -1 for none.
+   Earliest mark so far, -1 for none.
    */
   let earliest = -1;
-  for (const comma of COMMAS) {
+  for (const mark of NAME_ENDS) {
     /**
-     Where this comma stands.
+     Where this mark stands.
      */
     const at = line.indexOf(
-      comma,
+      mark,
       from,
     );
     /**
-     Whether this comma stands before any found so far.
+     Whether this mark stands before any found so far.
      */
     const isEarlier = (earliest === (-1)) || (at < earliest);
     if ((at !== (-1)) && isEarlier)
@@ -212,7 +216,7 @@ export function readSignature({ line, }: { readonly line: string; },): Signature
   /**
    Where the name ends.
    */
-  const nameEnd = commaAt({
+  const nameEnd = nameEndAt({
     line,
     from: nameStart,
   },);

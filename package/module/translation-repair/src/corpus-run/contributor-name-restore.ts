@@ -14,6 +14,11 @@ import {
   type Signature,
   signaturesOf,
 } from './attribution-line.ts';
+import {
+  type Authority,
+  nameAuthorities,
+} from './contributor-name-authorities.ts';
+import { carriesRendering, } from './handle-reading.ts';
 
 //region Contributor name restore
 // CLASS SIXTY-SEVEN (XingZ616, 2026-09-19). A contributor's name in a section
@@ -27,21 +32,20 @@ import {
 // rendering is the authority where the archive carries the signature; else
 // the page's own signature rendering; a name with neither stays as rendered.
 // The archive's own text is never rewritten: only slices a lane replaced.
-
-/**
- Where a name's rendering comes from.
- */
-type Authority = {
-  /**
-   Rendering the page uses everywhere.
-   */
-  readonly rendering: string;
-
-  /**
-   Whose signature rendered it.
-   */
-  readonly origin: 'the archive\'s' | 'the page\'s';
-};
+//
+// CLASS EIGHTY-THREE (XingZ622, 2026-09-22). EVERY SIGNER, HEADED OR NOT,
+// AND A HANDLE LEFT IN HAN READ AS PINYIN. 锦心 shipped as 锦心 in the Part
+// Ten heading and signature (the slate chose "keeps the original form, no
+// declared English" over the lane's "Jinxin", and this pass then wrote the
+// signature's Han into the heading), and 雨狸, whom no heading names, shipped
+// as "Yu Li" on one song credit and 雨狸 on the next. Owner, 2026-09-22:
+// pinyin as one capitalised word, the literal meaning in parentheses. So
+// every signer takes an authority, not only the headed ones, and a page
+// rendering that still carries Han is no rendering, the handle's own
+// reading standing in its place (`contributor-name-authorities.ts`,
+// `handle-reading.ts`); and a heading or signature carrying the rendering
+// with its gloss in parentheses is left as it is, since the gloss belongs
+// at the first appearance.
 
 /**
  What a page line becomes under the authority: rewritten, or left alone.
@@ -139,148 +143,6 @@ function titleNames(
 }
 
 /**
- Signature at one position of a text, when that text signs as often as the
- original does; the archive or the page may split or merge a signature line.
-
- @param text - archive or page text of the slice
-
- @param at - position among the original's signatures
-
- @param count - how many signatures the original writes in the slice
-
- @returns Signatures aligned by position, empty when the counts differ
-
- @example
- ```ts
- const aligned = alignedSignature({ text, at: 0, count: 1, },);
- ```
- */
-function alignedSignature(
-  {
-    text,
-    at,
-    count,
-  }: {
-    readonly text: string;
-    readonly at: number;
-    readonly count: number;
-  },
-): readonly Signature[] {
-  /**
-   Signatures the text writes.
-   */
-  const signatures = signaturesOf({ text, },);
-  if (signatures.length !== count)
-    return [];
-  return signatures.slice(
-    at,
-    at + 1,
-  );
-}
-
-/**
- Authority per name the original both heads a section with and signs.
-
- @param slices - prepared pairs in slice order
-
- @param pageText - page text per slice
-
- @returns Rendering and its origin per original name
-
- @example
- ```ts
- const authorities = nameAuthorities({ slices, pageText, },);
- ```
- */
-function nameAuthorities(
-  {
-    slices,
-    pageText,
-  }: {
-    readonly slices: readonly ChunkPair[];
-    readonly pageText: ReadonlyMap<number, string>;
-  },
-): ReadonlyMap<string, Authority> {
-  /**
-   Every heading title of the original.
-   */
-  const titles = slices.flatMap(function titlesOf(slice,): readonly string[] {
-    return headingTitles({ text: slice.source
-      .text, },);
-  },);
-  /**
-   Authority per name, the first signature's.
-   */
-  const authorities = new Map<string, Authority>();
-  for (const slice of slices) {
-    /**
-     Signatures the original writes in this slice.
-     */
-    const signed = signaturesOf({ text: slice.source
-      .text, },);
-    signed.forEach(function settle(
-      signature,
-      at,
-    ): void {
-      /**
-       Name as the original signs it.
-       */
-      const { name, } = signature;
-      if (authorities.has(name,))
-        return;
-      /**
-       Whether a heading names this signer.
-       */
-      const headed = titles.some(function names(title,): boolean {
-        return titleNames({
-          title,
-          name,
-        },);
-      },);
-      if (!headed)
-        return;
-      /**
-       Archive's rendering at the same position.
-       */
-      const [archive,] = alignedSignature({
-        text: slice.target
-          .text,
-        at,
-        count: signed.length,
-      },);
-      if (archive !== undefined) {
-        authorities.set(
-          name,
-          {
-            rendering: archive.name,
-            origin: 'the archive\'s',
-          },
-        );
-        return;
-      }
-      /**
-       Page's rendering at the same position.
-       */
-      const [page,] = alignedSignature({
-        text: pageText.get(slice.target
-          .sliceIndex,) ?? '',
-        at,
-        count: signed.length,
-      },);
-      if (page !== undefined)
-        authorities.set(
-          name,
-          {
-            rendering: page.name,
-            origin: 'the page\'s',
-          },
-        );
-    },);
-  }
-  return authorities;
-}
-
-/**
  Restores a contributor's rendering into a page heading.
 
  @param line - page heading line
@@ -343,6 +205,20 @@ function restoreHeading(
     colon + 1,
   )} `;
   /**
+   Prefix as it stands in the title, without the space the rewrite adds.
+   */
+  const bare = prefix.trimEnd();
+  /**
+   Name as the page wrote it after the prefix, which may carry its gloss.
+   */
+  const written = pageTitle.slice(bare.length,)
+    .trim();
+  if (carriesRendering({
+    written,
+    rendering: authority.rendering,
+  },))
+    return UNCHANGED;
+  /**
    Heading as the page will carry it.
    */
   const after = `${page.marks} ${prefix}${authority.rendering}`;
@@ -381,6 +257,11 @@ function restoreSignature(
     readonly authority: Authority;
   },
 ): LineRestoration {
+  if (carriesRendering({
+    written: signature.name,
+    rendering: authority.rendering,
+  },))
+    return UNCHANGED;
   /**
    Line as the page will carry it.
    */
@@ -482,7 +363,7 @@ function restoreSlice(
         return line;
       findings.push(
         `contributor-name-restored (slice ${String(sliceIndex,)}: "${line.trim()}" to "${restoration.after
-          .trim()}" in ${restoration.where}; ${restoration.origin} signature rendering)`,
+          .trim()}" in ${restoration.where}; ${restoration.origin})`,
       );
       return restoration.after;
     },);
