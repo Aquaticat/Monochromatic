@@ -9,6 +9,7 @@ import {
   isVerifiableEditorialArchiveBlock,
 } from './archive-block-evidence.ts';
 import { recordArchiveBlockNaturalness, } from './archive-block-naturalness.ts';
+import { replacementCandidates, } from './archive-replacement-candidates.ts';
 import {
   archiveBlockSelectionEvidence,
   withArchiveOriginal,
@@ -19,15 +20,8 @@ import {
   buildArchiveBlockReviewMessages,
   isArchiveBlockReviewWire,
 } from './archive-block-review-wire.ts';
-import {
-  type Candidate,
-  mergeProducers,
-} from './candidate-select-model.ts';
 import { decideBestCandidate, } from './candidate-select.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import { archiveContributorNameForms, } from './contributor-name-authority.ts';
-import { findDroppedDeclaredNames, } from './declared-name-survival.ts';
-import { restoreTypography, } from './restore-typography.ts';
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import { reachableQuorum, } from './stage-reachable-quorum.ts';
@@ -59,97 +53,6 @@ export type ArchiveBlockReviewOutcome = {
   readonly findings: readonly string[];
 };
 
-/**
- Collapses byte-identical replacement proposals while preserving authorship.
- 
- @param voices - review replies eligible to revise
- 
- @returns Distinct replacement candidates
- */
-function replacementCandidates(
-  {
-    voices,
-    blockText,
-    targetText,
-  }: {
-    readonly voices: readonly {
-      readonly modelId: RosterModelId;
-      readonly value: ArchiveBlockReviewWire
-    }[];
-    readonly blockText: string;
-    readonly targetText: string;
-  },
-): readonly Candidate<string>[] {
-  /**
-   Contributor identities current block makes authoritative.
-   */
-  const contributorNames = archiveContributorNameForms({ text: blockText, });
-  /**
-   Distinct candidates accumulated in roster order.
-   */
-  const candidates: Candidate<string>[] = [];
-  for (const voice of voices) {
-    if (voice.value
-      .disposition
-      !== 'revise')
-      continue;
-    if (findDroppedDeclaredNames({
-      forms: contributorNames,
-      baseText: blockText,
-      candidateText: voice.value
-        .replacementText,
-    },)
-      .length
-      > 0)
-      continue;
-    /**
-     Replacement as it will ship, the archive's quote style restored (class
-     thirty-eight, 2026-09-16: a revised chat block shipped fourteen straight
-     apostrophes into a page whose archive has none), so the judges and the
-     gate read the shipped bytes rather than text a later pass alters.
-     */
-    const replacement = restoreTypography({
-      replacement: voice.value
-        .replacementText,
-      replaced: blockText,
-      convention: targetText,
-    },);
-    /**
-     Earlier byte-identical correction.
-     */
-    const existing = candidates.find(function sameReplacement(candidate,): boolean {
-      return candidate.value === replacement;
-    },);
-    if (existing === undefined) {
-      candidates.push({
-        producer: {
-          kind: 'model',
-          modelId: voice.modelId,
-        },
-        value: replacement,
-        rendered: (replacement === '')
-          ? '[REMOVE BLOCK]'
-          : replacement,
-      },);
-      continue;
-    }
-    candidates.splice(
-      candidates.indexOf(existing,),
-      1,
-      {
-      ...existing,
-      producer: mergeProducers({
-        left: existing.producer,
-        right: {
-          kind: 'model',
-          modelId: voice.modelId,
-        },
-      },),
-    },
-    );
-  }
-  return candidates;
-}
 
 /**
  Reviews one archive-only block once and selects a correction when any voice rejects it.
@@ -254,11 +157,26 @@ export async function runArchiveBlockReviewStage(
     return true;
   },);
   /**
+   Revisions earn publication through the independent selector, not through
+   other reviewers' retention anchors. The initial review quorum still holds.
+   */
+  const {
+    candidates: revisions,
+    withheld,
+  } = replacementCandidates({
+    voices: anchoredVoices,
+    blockText,
+    targetText,
+  },);
+  for (const finding of withheld)
+    reviewLog.warn(finding,);
+  /**
    Evidence carried into selection and later strategies.
    */
   const findings = [...new Set([
     ...priorFindings,
     ...gather.findings,
+    ...withheld,
     ...gather.voices
       .map(function recordFinding(voice,): string {
       return voice.value
@@ -329,15 +247,6 @@ export async function runArchiveBlockReviewStage(
    */
   const heardCount = gather.voices
     .length;
-  /**
-   Revisions earn publication through the independent selector, not through
-   other reviewers' retention anchors. The initial review quorum still holds.
-   */
-  const revisions = replacementCandidates({
-    voices: anchoredVoices,
-    blockText,
-    targetText,
-  },);
   if ((anchoredVoices.length < requiredParticipation) && (revisions.length === 0)) {
     return {
       kind: 'retained',
