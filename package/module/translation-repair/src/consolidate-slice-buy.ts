@@ -130,11 +130,14 @@ async function buyConsolidationAttempt(
   }: ForeignBorrowed<ConsolidationBuyInput>,
 ): Promise<ConsolidationSettlement> {
   // NO STANDING TEXT BUYS NO SLATE. Settlement still comes from one stage so
-  // terminal, floor and findings retain their ordinary meanings.
+  // terminal, floor and findings retain their ordinary meanings. The producers
+  // write from the standing text, so with none they are not asked; a lane text
+  // the rule admits still reaches the slate judges through the settlement
+  // (class eighty-seven, XingZ623 slice 89, 2026-09-22).
   if (standingText === '') {
-    l.info(
-      `slice ${String(sliceIndex,)}: no standing text to consolidate against, so no slate is bought`,
-    );
+    l.info((laneTexts.length === 0)
+      ? `slice ${String(sliceIndex,)}: no standing text to consolidate against, so no slate is bought`
+      : `slice ${String(sliceIndex,)}: no standing text to consolidate against; the lane texts alone go to the slate judges`,);
     return await settleConsolidation({
       client,
       roster,

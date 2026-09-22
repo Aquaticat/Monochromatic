@@ -404,7 +404,18 @@ export async function settleConsolidation(
   // which is right for a passage nobody translated and wrong for a contest that
   // declined, so this records the consolidations and stops rather than putting
   // "ship nothing" on the ballot.
-  if (standingText === '') {
+  //
+  // UNLESS A LANE TEXT IS ON OFFER (class eighty-seven, XingZ623 slice 89,
+  // 2026-09-22). A contest that declined both lanes at a passage the archive
+  // never carried leaves the empty string standing, and this exit ran ahead of
+  // the class forty offer: the translate lane's rendering of the bare
+  // `<TextRing/>` tag passed the rule, was never put to a judge, the slice
+  // shipped nothing, and the final naturalness check stopped the entry at
+  // publish. A lane text the rule admits is the slate the owner's rule of
+  // 2026-09-04 asks for (the best valid proposal, else fail at once), so the
+  // empty standing is withheld exactly as an ineligible one is and the lane
+  // texts are judged below.
+  if ((standingText === '') && (laneTexts.length === 0)) {
     sl.warn('consolidation: no standing text to judge against, so the slice keeps what it had',);
     return {
       terminal: 'no-standing-text',
