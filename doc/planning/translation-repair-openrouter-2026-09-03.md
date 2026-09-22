@@ -8082,6 +8082,96 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Class eighty-three built, 2026-09-22, 13:30 UTC: an undeclared handle is pinyin one way across the page, with its literal meaning in parentheses (owner's answer); hulicaijia10 killed, hulicaijia11 launched on fa014fc55
+
+The owner answered the undeclared-handle question of the XingZ622 read at 13:25 UTC:
+"A, and put the literal translation in parens".
+Option A as put to the owner was pinyin as one word, capitalised;
+its example line wrote 洁澄天奏 as "Jiecheng Tianzou",
+which contradicts the label,
+and the rule follows the label
+(one word: Jiechengtianzou),
+since the mechanical restore needs one deterministic form;
+the owner can veto the joining.
+
+### The rule
+
+`house-policy.ts` gained a bullet after the community-vocabulary bullet:
+a person's handle with no declared, archive or corpus rendering
+(a signer, a cited author, an account name the ORIGINAL writes in Han)
+is romanised as the handle is read,
+pinyin for a Chinese handle,
+as one capitalised word (锦心 is Jinxin, 雨狸 is Yuli, 洁澄天奏 is Jiechengtianzou),
+with its literal meaning in parentheses the first time it appears on the page
+(Jinxin (Brocade Heart))
+and the romanisation alone after that;
+never left in Han,
+never rendered by its meaning alone,
+the same way everywhere on the page;
+a handle the person writes in Latin letters keeps their spelling (HiYku, wing, Mikä),
+and Latin letters the ORIGINAL writes against a Han handle stay after the romanisation
+(洁澄天奏Official is Jiechengtianzou Official).
+The bullet reaches every producing and judging sheet through `HOUSE_POLICY_BLOCK`.
+
+### The mechanical half
+
+- `handle-reading.ts` (new):
+  `handleReading` reads a handle through `pinyin-pro` (already a dependency, used by the directory-id check),
+  every run of Han as one capitalised toneless word,
+  everything else as written,
+  a space between a romanised run and Latin letters or digits against it;
+  probed: 锦心 Jinxin, 雨狸 Yuli, 洁澄天奏Official "Jiechengtianzou Official", 白毛 suki "Baimao suki", 空白/引号 "Kongbai/Yinhao", Mikä unchanged.
+  `withoutGloss` strips a trailing parenthetical;
+  `carriesRendering` accepts a written name equal to the rendering or the rendering with its gloss.
+- `contributor-name-authorities.ts` (new, `nameAuthorities` moved out of the restore for the line budget):
+  every signer takes an authority,
+  not only the headed ones (class sixty-seven's restriction):
+  the archive's aligned signature,
+  else the page's aligned signature where it carries no Han (its gloss stripped),
+  else the handle's pinyin reading,
+  the finding naming which
+  (`contributor-name-restored (... ; the pinyin reading of the original's handle)`).
+- `contributor-name-restore.ts`:
+  a heading or signature already carrying the rendering with its gloss is left alone,
+  so the gloss survives at the first appearance and is not copied to the rest.
+- `attribution-line.ts`:
+  a signature's name ends at 【 or 《 as well as at a comma,
+  so a song credit (—— 雨狸【妄想症Paranoia】《零重祈愿》) is a signature the restore reaches;
+  `nameEndAt` replaces `commaAt`.
+
+Guards red first at `3474e062f`
+(`contributor-name-restore.unit.test.ts`: a Han signature romanised in heading and signature with the pinyin finding,
+a glossed heading left alone,
+a twice-signed unheaded name rendered one way;
+`house-policy-reaches-the-judges.unit.test.ts`: the rule's phrases),
+fixed in `fa014fc55`,
+lint 0 and 0,
+types clean,
+full suite green twice (`suite-class83.log` before the split, `suite-class83b.log` after, 1094 PASS lines, exit 0).
+
+### What this does not cover
+
+A handle in running prose or in a link's text ("by 洁澄天奏Official" on the Caged Bird attribution, which is no signature line)
+is covered by the rule on the sheets alone;
+the mechanical restore reaches headings and signature lines.
+The next XingZ60 read checks "by Jiechengtianzou Official" and the song credits.
+
+### hulicaijia10 killed, hulicaijia11 launched
+
+`hulicaijia10` (frozen `6c701485d`, pid 2018636) was killed at 13:28 UTC,
+14 minutes in,
+at chunk 28 of 50 of the repair lane,
+under always-kill-and-relaunch once `fa014fc55` landed
+(meters 107.68 to 107.57 USD Bedrock and 157.75 to 157.58 OpenRouter, 0.28 USD).
+`hulicaijia11` (frozen `fa014fc55`, pid 2057750, overlap 8)
+launched 13:28 UTC on Bedrock and OpenRouter
+(meters 107.57 USD Bedrock, 157.58 OpenRouter at launch),
+waiter `bfokdo0kk`.
+Read by the seven steps and three checks against `hulicaijia9`,
+plus any `contributor-name-restored` line naming the pinyin reading;
+then `CuspariaKLSY`, `zheermao`, `yingying` one at a time,
+then `XingZ60` again for the handles.
+
 ## XingZ622 read, 2026-09-22, 13:40 UTC: SETTLED in 3h39m, class eighty-one live on the page ("They once said"), class eighty-two not exercised; the undeclared-handle question open; hulicaijia10 launched
 
 `XingZ622` (frozen `6c701485d`,

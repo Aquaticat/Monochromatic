@@ -4647,7 +4647,25 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA10 RUNS (frozen `6c701485d`,
+1.  HULICAIJIA11 RUNS (frozen `fa014fc55`,
+    pid 2057750,
+    launched 13:28 UTC 2026-09-22,
+    waiter `bfokdo0kk`,
+    meters 107.57 USD Bedrock and 157.58 OpenRouter at launch):
+    read by the seven steps and three checks against `hulicaijia9`
+    (13 headings, 17 tag markers, 18 footnote markers, 9 definitions, 2 links, 3 Sakura, "Conflict" for 左右, front matter equal, no TA, no error finish),
+    plus any `contributor-name-restored` line naming the pinyin reading (class eighty-three);
+    record under a new heading above "## Class eighty-three built, 2026-09-22, 13:30 UTC" in the pass log.
+    Then `CuspariaKLSY`, `zheermao`, `yingying`, one at a time,
+    then `XingZ60` again to read class eighty-three live
+    (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiechengtianzou Official" on the Caged Bird attribution, the gloss at the first appearance).
+    CLASS EIGHTY-THREE BUILT (owner 2026-09-22 13:25 UTC: "A, and put the literal translation in parens"):
+    a handle with no declared, archive or corpus rendering is pinyin as one capitalised word with its literal meaning in parentheses at its first appearance, never left in Han, one way across the page;
+    the house-policy bullet, `handle-reading.ts` (pinyin-pro), `contributor-name-authorities.ts` (every signer takes an authority: archive, else the page's non-Han signature, else the pinyin reading), the restore tolerating a gloss, `attribution-line.ts` ending a name at 【 or 《;
+    guards red first `3474e062f`, fix `fa014fc55`, lint 0/0, types clean, full suite green;
+    the owner may veto the one-word joining of a multi-character handle (the option's example had written "Jiecheng Tianzou").
+    HULICAIJIA10 KILLED at 13:28 UTC 14 minutes in (repair lane chunk 28 of 50, 0.28 USD) under always-kill-and-relaunch.
+    THE EARLIER HULICAIJIA10 LAUNCH NOTE: HULICAIJIA10 RAN (frozen `6c701485d`,
     pid 2018636,
     launched 13:14 UTC 2026-09-22,
     waiter `bo0aplgcp`,
