@@ -4647,24 +4647,33 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XINGZ622 RUNS (frozen `6c701485d`,
-    pid 1996041,
-    launched 09:30 UTC 2026-09-22,
-    waiter `b1xqv6u5h`,
-    meters 112.15 USD Bedrock and 165.84 OpenRouter at launch)
-    to read classes eighty-one and eighty-two live:
-    slice 14 and the other Part One pronoun slices first
-    (the identity line's mixed-form sentence in the prompt payloads,
-    "They once said" on the page,
-    ballots citing the as-written rule,
-    any `run-off tied again` line and the `translate-runoff` findings),
-    then the closing poem (slice 91),
-    classes sixty-five to sixty-nine and seventy-six,
-    then the seven steps and three checks against `XingZ620` and the archive
-    (fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish),
-    the seven-hour deadline and XingZ620's 3h59m as the timing marks;
-    record under a new heading above "## XingZ621 read, 2026-09-22, 09:35 UTC" in the pass log.
-    Then `hulicaijia`, `CuspariaKLSY`, `zheermao`, `yingying`, one at a time.
+1.  HULICAIJIA10 RUNS (frozen `6c701485d`,
+    pid 2018636,
+    launched 13:14 UTC 2026-09-22,
+    waiter `bo0aplgcp`,
+    meters 107.68 USD Bedrock and 157.75 OpenRouter at launch):
+    read by the seven steps and three checks against `hulicaijia9`
+    (13 headings, 17 tag markers, 18 footnote markers, 9 definitions, 2 links, 3 Sakura, "Conflict" for 左右, front matter equal, no TA, no error finish);
+    record under a new heading above "## XingZ622 read, 2026-09-22, 13:40 UTC" in the pass log.
+    Then `CuspariaKLSY`, `zheermao`, `yingying`, one at a time.
+    OPEN QUESTION TO THE OWNER (asked 2026-09-22 13:40 UTC):
+    the form of a handle with no declared or archive rendering
+    (锦心 shipped in Han on XingZ622 where XingZ619 wrote "Jinxin" and XingZ620 "Jin Xin";
+    洁澄天奏 as "Jiecheng Tianzou" and "洁澄天奏Official" on one page;
+    雨狸 as "Yu Li" and "雨狸");
+    pinyin recommended;
+    build the rule and a page-wide one-form restore once answered
+    (the pass log's "Open: an undeclared handle has no rule" section has the evidence).
+    XINGZ622 READ (SETTLED 13:09 UTC, 3h39m, one attempt, 8,504 seats, 297 retry rounds, 12.54 USD by the meters):
+    class eighty-one live on the page
+    ("They once said" on slice 14 at weight 2.5 on its first slate round, gate 3 of 4;
+    she/her 150 to 99 and they 74 to 111 against XingZ620;
+    the identity line's three forms quoted in a ballot),
+    class eighty-two not exercised (no tie this run),
+    every structural check as XingZ620 (fourteen headings, both links, nine definitions, 3 TextRing, eleven details, front matter equal, no TA, no error finish),
+    three unendorsed standings (6, 42, 68), no gate-kept, 208 abstention lines;
+    the consolidation ran 92 minutes against XingZ620's 69 because deepseek-v4.1-flash (48.8 s a stream against 31.9) and GLM-5.3-Flash (96.7 against 88.2) had only OpenRouter to run on with Synthetic and Hyper dry;
+    recorded under "## XingZ622 read, 2026-09-22, 13:40 UTC" in the pass log.
     XINGZ621 READ, CLASSES EIGHTY-ONE AND EIGHTY-TWO:
     INCOMPLETE at 09:14 UTC in 3h02m,
     one attempt,

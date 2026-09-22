@@ -8082,6 +8082,114 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ622 read, 2026-09-22, 13:40 UTC: SETTLED in 3h39m, class eighty-one live on the page ("They once said"), class eighty-two not exercised; the undeclared-handle question open; hulicaijia10 launched
+
+`XingZ622` (frozen `6c701485d`,
+pid 1996041,
+overlap 8,
+launched 09:30 UTC on Bedrock and OpenRouter,
+Synthetic dry after 33 calls with its five-hour window spent,
+Hyper dry)
+SETTLED at 13:09 UTC on one attempt,
+3h39m by the tally against `XingZ620`'s 3h59m and the seven-hour deadline.
+Seats asked 8,504,
+297 retry rounds,
+7,778 calls,
+88 abandoned streams (0.36 USD),
+Jev 249 of 249,
+glm-5.3 dark (582 asked, 582 thrown),
+Qwen3.8-27B unusable on the naturalness bench.
+Meters 112.15 to 107.68 USD on Bedrock and 165.84 to 157.77 on OpenRouter,
+12.54 USD together against `XingZ620`'s 10.24.
+Phases:
+repair lane 09:44 to 10:22 (38 min against `XingZ620`'s 78),
+translate lane 10:40 to 11:28 (48 against 41),
+contest to 11:34,
+consolidation 11:34 to 13:06 (92 against 69, 110 contested slices at a median of 6.4 minutes a chunk against 4.0),
+page written 13:09.
+
+### Why the consolidation ran slower than XingZ620's
+
+The consolidation is bound by the two slow write-path streams and this run had no Synthetic or Hyper to spread them onto.
+`deepseek-v4.1-flash` streams took 48.8 s mean in the consolidation window against 31.9 on `XingZ620`
+(458 streams, 372 stream-minutes; all 1,270 of its calls through OpenRouter where `XingZ620` sent 177 to Hyper),
+`GLM-5.3-Flash` 96.7 s against 88.2
+(133 streams, 214 stream-minutes; 414 calls through OpenRouter and 33 through Synthetic where `XingZ620` sent 132 to Synthetic).
+Rounds waited on them:
+produce rounds 108 s mean against 70,
+naturalness review 53 s against 27 (grace 9.9 s against 3.5),
+slate judging 41.5 s against 33.4.
+Not a stall and not a class:
+the same roster shape on the same providers,
+with the fast providers dry.
+
+### Class eighty-one on the page
+
+Slice 14 (the tombstone paragraph, TA 曾说) settled at 11:39 UTC on its first slate round:
+the contest settled on neither,
+the archive's TA text stood and was withheld (`ineligible-standing-withheld`),
+the translate lane text was offered beside five valid proposals,
+and the slate chose deepseek's "They once said that when a person dies, all their right and wrong..." at weight 2.5
+(gpt-oss, gemma-26b and deepseek on it, deepseek's ballot "correctly renders the written TA as singular they";
+minimax abstained reading the identity line's three forms as a fault of the candidate),
+the gate 3 of 4 for the consolidated text over the standing
+("Standing is disqualified by the house rule against leaving 'TA' untranslated").
+The identity line reached the sheets as
+`ORIGINAL refers to this person as 她 (51 times), and also writes 他 (19 times) and TA (35 times)`,
+quoted in a judge's ballot on the inheritance paragraph.
+On the page: she/her 150 to 99 and they/them/their 74 to 111 against `XingZ620`,
+65 lines newly carrying they,
+among them "They once said that when a person dies",
+"They said they had at least three personalities",
+"no personal pronoun seems quite right for addressing them",
+"This is also reflected in their last note";
+the 她 passages keep she ("after her death her friends were all deep in grief").
+No `run-off tied again` line and no `translate-runoff` finding:
+no slate tied this run,
+so class eighty-two stays unit-covered only.
+
+### The seven steps and three checks
+
+- Fourteen headings (Introduction, Engagement in Trans Aid, Memories by Friends, Part One to Part Ten, the closing section), both links, nine definitions with nine markers, three TextRing, all eleven details blocks, front matter equal to the archive, no TA, no error finish, `attempts.json` reads 1.
+- The closing section "To the Shooting Star That Once Streaked Across the Night Sky" in the second person as the original; the poem quotes with their attributions inside the details blocks; the Caged Bird attribution with its link ("—From *Caged Bird*, by 洁澄天奏Official").
+- Classes sixty-seven to sixty-nine and seventy-six holding: Ann, HiYku, Baimao Suki restored; ten headings unified as Part One to Part Ten; the memorial's four paragraphs on the page; the life in the past tense.
+- Three standings shipped without contest endorsement (slices 6, 42, 68), no gate-kept, 208 abstention lines with reasons, no repeat finding, one `archive-revision-refused` (minimax's paragraph-for-paragraph revision refused on shape at the block review).
+
+### Open: an undeclared handle has no rule and the bench renders it three ways on one page
+
+The page carries handles the archive never rendered
+(the archive's tenth section is a placeholder and the poem tail is untranslated there):
+锦心 ships as `锦心` in the Part Ten heading and signature
+(the consolidation slate 2.5 to 1 for "keeps '锦心' as written ... there is no declared English form",
+over the translate lane's "Jinxin";
+the contributor restore then rewrote the heading's "Brocade Heart" to the signature's 锦心),
+where `XingZ619` wrote "Jinxin", `XingZ620` "Jin Xin" and `XingZ616` "Brocade Heart";
+洁澄天奏 ships as "Jiecheng Tianzou" on its signature and "洁澄天奏Official" on the Caged Bird attribution;
+雨狸 ships as "Yu Li" on one song attribution and "雨狸" on the next;
+《零重祈愿》 as "Ling Chong Qi Yuan" where `XingZ620` kept the Han.
+`XingZ620` had the same shape (螐, 洁澄天奏, 妄想症, 零重祈愿 in Han; "Yu Li" beside "Yuli").
+The house policy has no sentence on a handle with no declared or archive form,
+and the judges fill the gap with "keep the original form".
+The archive's own practice is split:
+it romanises 白毛 suki as "Baimao suki" on this page,
+and keeps 方方 and 铃木真依 in Han as Twitter link text on `Anilovr`
+(11 of 92 English pages carry Han outside comments, mostly forms under discussion and quoted verse).
+One-way rendering per page is settled (class sixty-seven);
+which form an undeclared handle takes is the owner's call,
+asked 2026-09-22 with pinyin recommended.
+
+### hulicaijia10 launched
+
+`hulicaijia10` (frozen `6c701485d`,
+pid 2018636,
+overlap 8)
+launched 13:14 UTC on Bedrock and OpenRouter
+(meters 107.68 USD Bedrock, 157.75 OpenRouter at launch),
+waiter `bo0aplgcp`.
+Read by the seven steps and three checks against `hulicaijia9`
+(13 headings, 17 tag markers, 18 footnote markers, 9 definitions, 2 links, 3 Sakura, "Conflict" for 左右, front matter equal, no TA, no error finish),
+then `CuspariaKLSY`, `zheermao`, `yingying` one at a time.
+
 ## XingZ621 read, 2026-09-22, 09:35 UTC: INCOMPLETE at slice 14 on a pronoun rule that contradicts itself (class eighty-one) and a run-off that tied again after narrowing (class eighty-two), both fixed in 6c701485d; XingZ622 launched
 
 `XingZ621` (frozen `93b11aef9`,
