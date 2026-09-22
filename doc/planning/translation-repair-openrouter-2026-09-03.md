@@ -8082,6 +8082,133 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## mikaela6 read, 2026-09-22, 01:35 UTC: SETTLED, classes seventy to seventy-seven holding on the mikaela page, three translator additions dropped by the bench as observations; shi_Yumiaoya8 launched
+
+`mikaela6` (frozen `0f9cd44da`,
+pid 1765655,
+overlap 8,
+launched 00:58 UTC on Bedrock and OpenRouter,
+Synthetic and Hyper dry all run)
+SETTLED at 01:29 UTC on one attempt,
+40.0 minutes by the artifact,
+against `mikaela5`'s 27 with Synthetic wet
+(Qwen3.8-27B and glm-5.3 threw all 411 of their calls this run,
+68 retry rounds against 54).
+
+The classes on the page.
+Class seventy holds:
+the closing excerpt line curls its possessive after the link.
+Class seventy-one holds:
+the dialogue line reads 𝓠𝓾𝓪𝓷 and the comment block ships as the archive has it.
+Class seventy-two holds:
+炸柜 ships "Mika was outed" from the translate lane
+(`mikaela5` wrote "outed against her will");
+two abstentions on that round read the glossary meaning as forcible and declined "outed" as short of it,
+gpt-oss read the term as running away,
+and the lane settled on the plain passive.
+Class seventy-three holds:
+slice 28 (the Epilogue) consolidated on its first slate round,
+and the Epilogue ships the source's fourteen lines one to one
+(four prose lines,
+"One night",
+"During a phone call with Mika in a group chat",
+seven quoted lines,
+the XYN origin line,
+the excerpt).
+Class seventy-four:
+no `repeats the line` finding and no doubled attribution.
+Class seventy-five:
+one triple newline on the page,
+the archive's own after "Those were Mika’s last words",
+and the publish weight check silent.
+Class seventy-six:
+the life in the past on every line
+("was a 16-year-old from Beijing",
+"She was a top student",
+"She enjoyed playing").
+Class seventy-seven:
+not exercised,
+the page has no archive-only block
+(no archive block review line in the log).
+
+Three translator additions the bench dropped,
+observations and not classes
+(the same reading as hulicaijia7's two notes and CuspariaKLSY5's gloss line):
+"trans girl" in the opening line,
+where the source line names only her age and Beijing and the repair lane won the slice;
+the dollar conversion gloss after ¥20,000,
+where the source names 两万块钱 alone;
+and the parenthetical after Huai An naming her as 𝓠𝓾𝓪𝓷's high-school classmate,
+which the archive took from its own translator comment
+(the comment ships unchanged among the page's four).
+The 老师 honorific on 怀安老师 is dropped with it.
+The excerpt's magazine title ships in pinyin
+("Mingju,
+Xingliuge,
+Xinghenzhi")
+where the archive wrote "Chronicle" and `mikaela5` a word-for-word rendering;
+bench variance on a title with no glossary form.
+One spaced em-dash enters on the "Love never really goes away" line
+against the archive's ellipsis
+(page 4 em-dashes to the archive's 5),
+left as the owner said on 2026-09-21.
+One abstention cited the reader-protection rule against "Progynon Depot"
+(the HRT purchase on slice 14,
+not the death),
+deepseek-v4.1-flash alone on one repair round;
+the name ships as the archive has it.
+
+The page.
+Thirty-three slices,
+25 changed by the translate lane,
+16 by the repair lane,
+21 changed on the page,
+seven standing as the archive.
+Front matter equal,
+4 of 4 headings,
+2 PhotoScroll,
+2 footnote definitions,
+37 blockquote lines as the archive,
+4 translator comments as the archive,
+no `TA`,
+no `finish_reason=error`,
+no `PublishedPageDisagrees` or weight-off line,
+attempts 1,
+two unendorsed standings as findings
+(slices 0 and 29,
+both settled-neither with the archive declined),
+gate-kept and slate-declined standings as findings,
+52 abstention lines with reasons,
+no repeat or run-off finding.
+
+Seats asked 2062,
+68 retry rounds,
+1822 calls,
+7 abandoned streams (0.0043 USD),
+Qwen3.8-27B dark
+(284 asked,
+284 threw)
+and glm-5.3 dark
+(127 asked,
+127 threw)
+on Synthetic dry,
+GLM-5.3-Flash 7 of 110 threw,
+Jev 59 asked,
+59 usable.
+Meters:
+Bedrock 118.70 to 118.13,
+OpenRouter 175.83 to 174.96,
+1.44 USD;
+the spend lines say 1.41 USD.
+
+Nothing to fix from this read.
+`shi_Yumiaoya8` (frozen `0f9cd44da`,
+pid 1772617,
+overlap 8)
+launched 01:33 UTC as the stalest entry in the queue
+(last read on `364b83557`),
+meters at launch Bedrock 118.13 and OpenRouter 174.96.
+
 ## zheermao3 read, 2026-09-22, 00:55 UTC: SETTLED, class seventy-seven live (the email label revised as a label, a bulleted-list revision refused on shape); the Arts letter revised this time from the photo transcripts; queue continues
 
 `zheermao3` (frozen `0f9cd44da`,

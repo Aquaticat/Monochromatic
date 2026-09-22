@@ -4647,11 +4647,44 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  MIKAELA6 RUNS (frozen `0f9cd44da`,
-    pid 1765655,
-    launched 00:58 UTC 2026-09-22,
-    the first mikaela page since `6a9a7ce27`,
-    so classes seventy-four to seventy-seven are read live on it next).
+1.  SHI_YUMIAOYA8 RUNS (frozen `0f9cd44da`,
+    pid 1772617,
+    launched 01:33 UTC 2026-09-22,
+    the stalest entry in the queue,
+    last read on `364b83557`).
+    MIKAELA6 READ WITH CLASSES SEVENTY TO SEVENTY-SEVEN HOLDING AND NOTHING TO FIX
+    (the pass log's heading dated 2026-09-22 01:35 UTC):
+    `mikaela6` (frozen `0f9cd44da`) SETTLED at 01:29 UTC in 40 minutes,
+    1.44 USD by the meters,
+    one attempt,
+    2062 seats,
+    68 retry rounds.
+    The Epilogue ships the source's fourteen lines one to one,
+    the dialogue line reads 𝓠𝓾𝓪𝓷,
+    the excerpt curls,
+    炸柜 ships "Mika was outed",
+    no double blank line,
+    the life in the past,
+    no archive-only block to review.
+    Three translator additions dropped by the bench as observations
+    ("trans girl",
+    the dollar conversion gloss,
+    the Huai An parenthetical the archive took from its own comment),
+    the magazine title in pinyin,
+    one spaced em-dash left as the owner said.
+    Front matter equal,
+    4 of 4 headings,
+    4 comments,
+    no `TA`,
+    no error finish,
+    two unendorsed standings as findings
+    (slices 0 and 29),
+    52 abstention lines.
+    The queue continues one entry at a time
+    (yingying and XingZ60 last on `364b83557`,
+    hulicaijia on `574fce2d1`,
+    CuspariaKLSY on `d70087757`,
+    zheermao and mikaela on `0f9cd44da`).
     ZHEERMAO3 READ WITH CLASS SEVENTY-SEVEN LIVE AND NOTHING TO FIX
     (the pass log's heading dated 2026-09-22 00:55 UTC):
     `zheermao3` (frozen `0f9cd44da`) SETTLED at 00:43 UTC in 33.5 minutes,
