@@ -8082,6 +8082,154 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya9 read, 2026-09-22, 02:55 UTC: SETTLED, class seventy-eight live, class seventy-nine found (a survived suicide attempt rendered as a death by the reader-protection rule's own sample sentence), fixed in d29feecd5; shi_Yumiaoya10 launched
+
+`shi_Yumiaoya9` (frozen `545bff7b9`,
+pid 1820803,
+overlap 8,
+launched 02:14 UTC on Bedrock and OpenRouter,
+Synthetic and Hyper dry)
+SETTLED at 02:42 UTC on one attempt,
+28 minutes by the artifact,
+the same as `shi_Yumiaoya8`.
+Seats asked 923,
+54 retry rounds,
+819 calls,
+6 abandoned streams (0.0029 USD),
+Qwen3.8-27B and glm-5.3 dark all run (110 and 94 asked,
+all threw,
+the `SEATS DARK` line at the tally),
+GLM-5.3-Flash 48 of 54,
+gemma-4-e2b 134 of 137,
+Jev 22 of 22,
+every other seat whole.
+Meters 117.81 to 117.50 USD on Bedrock and 174.39 to 173.93 on OpenRouter,
+0.77 USD together.
+
+### Checks
+
+- Front matter equal to the archive and to `shi_Yumiaoya8`.
+- 4 of 4 headings,
+  1 photoscroll,
+  1 footnote definition,
+  18 blockquote lines,
+  320 lines against the previous page's 324;
+  no `TA`,
+  no `finish_reason=error`,
+  no double blank line,
+  `attempts.json` reads 1.
+- No `PublishedPageDisagrees` or `weight-off`,
+  no unendorsed standing,
+  no gate-kept or slate-declined standing,
+  no `repeats the line`,
+  no run-off,
+  no `archive-revision-refused`;
+  14 `declined every candidate` lines with reasons.
+- 6 em-dashes,
+  left per the owner's answer of 2026-09-21.
+
+### Class seventy-eight live
+
+The `CORPUS NAMES` line named five people
+(贴贴 for `CutOceanHeyFis1` as "Cuddly", "Affectionate";
+盐田 for `SS3B_0016` as "Yantian", "Metro Line 8";
+紫壑 for `Weideriche_` as "Weideriche_", "Zihe";
+口香糖 for `a2581911655` as "Magic Chewing Gum", "Chewing Gum", "jjlin1219";
+单片 for `interrgned` as "interrgned", "Danpian").
+The ICU paragraph ships
+"Yumiao heard the devastating news that Chewing Gum and Danpian had also passed away, one after the other"
+where `shi_Yumiaoya8` had "Xiaoguantang and Danpian".
+Three of the five translate-slate ballots on that slice name the declared names in their reasons
+(gpt-oss-120b: "uses the declared names (Yumiao, Yantian, Chewing Gum, Danpian)";
+deepseek-v4.1-flash: "All three candidates ... use the declared names (Yumiao, Yantian, Chewing Gum, Danpian)";
+minimax-m3: "all three use the declared spellings Yumiao, Yantian, Chewing Gum, Danpian correctly").
+The hedge held:
+贴贴计划 ships "her cuddling plans",
+the ordinary word,
+not "Cuddly's plans".
+紫壑 ships as "Weideriche_",
+the entry's declared name,
+where `shi_Yumiaoya8` had guessed "Zihe";
+the line offers both forms and the bench chose the handle,
+which is what that entry's own page carries.
+
+### Class seventy-nine: a survived attempt rendered as a death
+
+The January 16 sentence shipped
+"in the early hours of January 16 she ended her life by taking a large amount of medication",
+followed two sentences later by
+"after six days of emergency treatment in the ICU, Yumiao, whose body had been severely damaged, finally woke up".
+The original reads 吞下大量药物自杀。幸运的是，在 ICU 抢救了六天后……终于醒来了:
+an attempt she survived.
+"Ended her life" asserts a death;
+the page contradicts itself,
+and `shi_Yumiaoya8` shipped the same sentence
+("she ended her life by taking medication in the early hours of January 16"),
+where `shi_Yumiaoya7` had "tried to end her life".
+The log carries "ended her life" 12 times and no candidate wrote "attempted" or "tried".
+
+Every ballot approved it as reader protection.
+minimax-m3: "It handles reader protection correctly for the suicide method: 'ended her life by taking a large amount of medication' keeps the general method vague while preserving the act of suicide".
+deepseek-v4.1-flash: "All three candidates ... use the vague method wording required by reader protection. Candidate 1 renders 自杀 with the explicit phrase 'ended her life' ... which is compliant".
+gemma-4-e2b: "'took medication and ended her life' which is too specific per the house rules".
+The rule prescribed the words:
+the reader-protection line in `house-policy.ts` opened "When a death was by suicide"
+and closed its method paragraph with "the page says that she ended her life, and keeps the night, the room and the dress, not the means",
+so 自杀 was written as a death whatever the original went on to say.
+
+Fixed in `d29feecd5`
+(guard red first at `a478ad64f`,
+`survived-attempt-policy.unit.test.ts`,
+three tests: the house policy carries the clause,
+the translate sheet carries it,
+the select sheet carries it;
+`HOUSE_POLICY_BLOCK` exported through the translate barrel for the built-artifact test).
+The rule now continues:
+"自杀 names the act, not its outcome: where the ORIGINAL goes on to a rescue, a waking or a life that continues (抢救, 醒来, 幸存), the person survived the attempt and the page says that she tried to end her life or attempted suicide; 'ended her life' and 'took her own life' assert a death, and on an attempt survived they are a factual error, not vagueness."
+Lint 0 and 0,
+types clean;
+the full suite's result is recorded under the next heading.
+
+### Observations, not classes
+
+- The second `[^1]` marker of `shi_Yumiaoya8` is gone:
+  the page carries one marker and one definition,
+  as the source does.
+- The Han residue of `shi_Yumiaoya8` is gone:
+  补佳乐 ships "Progynova",
+  贴贴 "cuddling",
+  「逆子」 "unfilial child".
+  The Han that remains is the source's own
+  (the Truman Show quote's Chinese line in the bilingual blockquote,
+  as the archive has it,
+  and the camera list inside the source's HTML comment).
+- "three bottles of a certain sedative-hypnotic medication" for 三瓶某种镇静催眠药 in the final-tweet paragraph,
+  where `shi_Yumiaoya8` had "a large amount of a sedative-hypnotic";
+  the substance stays unnamed,
+  the count is the original's,
+  and the archive never carried this paragraph,
+  so the judges own it under the replicability test.
+- "a [movie](...) that they both loved" for the film link where `shi_Yumiaoya8` had "[name of a film]";
+  "let it rot" for 摆烂;
+  the heading "Departure" again.
+- "little yao-niang" with the footnote where `shi_Yumiaoya7` glossed inline;
+  the bench chose the footnote this run and last.
+
+### shi_Yumiaoya10 launched
+
+`shi_Yumiaoya10` (frozen `d29feecd5`,
+pid 1846495,
+overlap 8)
+launched 02:51 UTC on Bedrock and OpenRouter
+(meters 117.48 USD Bedrock,
+173.89 OpenRouter at launch),
+the `CORPUS NAMES` line naming the same five.
+Read the January 16 sentence first
+(an attempt,
+never a death),
+then class seventy-eight again,
+then the seven steps and three checks against `shi_Yumiaoya9` and the archive.
+
 ## shi_Yumiaoya8 read, 2026-09-22, 02:20 UTC: SETTLED, class seventy-eight found (a handle the corpus declares in another entry rendered as a pinyin of nothing), fixed in 545bff7b9; shi_Yumiaoya9 launched
 
 `shi_Yumiaoya8` (frozen `0f9cd44da`,

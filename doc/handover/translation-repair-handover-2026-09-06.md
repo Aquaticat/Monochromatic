@@ -4647,10 +4647,43 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA9 RUNS (frozen `545bff7b9`,
+1.  SHI_YUMIAOYA10 RUNS (frozen `d29feecd5`,
+    pid 1846495,
+    launched 02:51 UTC 2026-09-22)
+    to read class seventy-nine live:
+    the January 16 sentence must read as an attempt
+    ("tried to end her life" or "attempted suicide"),
+    never "ended her life",
+    two sentences before she wakes in the ICU;
+    then class seventy-eight again
+    ("Chewing Gum and Danpian" in the ICU paragraph,
+    贴贴计划 a plan),
+    then the seven steps and three checks against `shi_Yumiaoya9` and the archive.
+    SHI_YUMIAOYA9 READ WITH CLASS SEVENTY-EIGHT LIVE AND CLASS SEVENTY-NINE FOUND AND FIXED
+    (the pass log's heading dated 2026-09-22 02:55 UTC):
+    `shi_Yumiaoya9` (frozen `545bff7b9`) SETTLED at 02:42 UTC in 28 minutes,
+    0.77 USD by the meters,
+    every mechanical check as the archive;
+    the ICU paragraph ships "Chewing Gum and Danpian" with three ballots citing the declared names,
+    贴贴计划 stays "cuddling plans",
+    the second marker and the Han residue of `shi_Yumiaoya8` are gone.
+    Class seventy-nine:
+    "she ended her life by taking a large amount of medication" for an attempt the original says she survived,
+    on two consecutive runs,
+    every candidate and every ballot,
+    because the reader-protection rule's own sample sentence read "the page says that she ended her life".
+    Fixed in `d29feecd5` (`house-policy.ts`:
+    自杀 names the act, not its outcome;
+    a rescue, a waking or a continuing life means an attempt),
+    guard red first at `a478ad64f` (`survived-attempt-policy.unit.test.ts`),
+    lint 0 and 0,
+    types clean,
+    full suite green.
+    THE EARLIER SHI_YUMIAOYA9 LAUNCH NOTE
+    (frozen `545bff7b9`,
     pid 1820803,
     launched 02:14 UTC 2026-09-22)
-    to read class seventy-eight live:
+    read class seventy-eight live:
     the `CORPUS NAMES` line names 口香糖 and 单片 with their entries' renderings,
     so the ICU paragraph should ship "Chewing Gum" (or "Magic Chewing Gum") and "Danpian",
     and 贴贴计划 should stay a plan
