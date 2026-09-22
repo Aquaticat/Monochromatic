@@ -422,6 +422,49 @@ await describe({
       },
     },),
     it({
+      name: 'WITHHOLDS a removal of a footnote definition the page still references, so the note ships as the archive wrote it (class eighty-four, hulicaijia12 2026-09-22: [^10] removed as unsupported, its marker left dangling)',
+      fn: async () => {
+        const prompts: string[] = [];
+        /** Definition block under review: a translator's note the source never carried. */
+        const note = '[^1]: Formerly the Cat Café, renamed the Kitten Café in 2025.';
+        const outcome = await runArchiveBlockReviewStage({
+          client: scriptedClient({
+            prompts,
+            replyFor: ({ schema, },) => schema === 'archive_block_review'
+              ? {
+                disposition: 'revise',
+                sourceQuote: '',
+                replacementText: '',
+                finding: 'The rename is not in the original.',
+              }
+              : {
+                best: 1,
+                reason: 'Removal is the only candidate.',
+              },
+          },),
+          modelIds: ROSTER,
+          sourceText: '到了猫咖，我们坐下等待。',
+          targetText: `At the Cat Café[^1], we sat down to wait.\n\n${note}`,
+          blockText: note,
+          priorFindings: [],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+
+        expect(outcome.text,).toBe(note);
+        expect(outcome.findings
+          .some(function refusedOnFootnotes(finding,): boolean {
+            return finding.startsWith('archive-revision-refused',)
+              && finding.includes('unresolved-reference',);
+          },),).toBe(true,);
+        // No selection round is bought over a slate the floor emptied.
+        expect(prompts.some(function isSelection(prompt,): boolean {
+          return prompt.includes('CURRENT ARCHIVE BLOCK',);
+        },),).toBe(false,);
+      },
+    },),
+    it({
       name: 'RETAINS the block when every proposed correction drops contributor identity',
       fn: async () => {
         const prompts: string[] = [];
