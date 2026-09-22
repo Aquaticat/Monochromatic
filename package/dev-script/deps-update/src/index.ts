@@ -59,15 +59,15 @@ export class PnpmUpdateError extends Error {
   /**
    Builds the error with pnpm's exit code; pnpm's own output was already shown.
 
-   @param exitCode - pnpm exit code, undefined when killed by a signal
+   @param exit - exit code, or a description when a signal ended pnpm
 
    @example
    ```ts
-   throw new PnpmUpdateError(1);
+   throw new PnpmUpdateError('1');
    ```
    */
-  constructor(exitCode: number | undefined,) {
-    super(`pnpm update --recursive --no-save failed (exit ${String(exitCode,)}); see pnpm's output above.`,);
+  constructor(exit: string,) {
+    super(`pnpm update --recursive --no-save failed (exit ${exit}); see pnpm's output above.`,);
     this.name = 'PnpmUpdateError';
   }
 }
@@ -91,8 +91,9 @@ const outcome = await runUpdate({
 },);
 
 if (!outcome.ok) {
-  if (!outcome.stderr.includes(STRICT_REQUIRES_SAVE_CODE,))
-    throw new PnpmUpdateError(outcome.exitCode,);
+  if (!outcome.stderr
+    .includes(STRICT_REQUIRES_SAVE_CODE,))
+    throw new PnpmUpdateError(outcome.exitCode === undefined ? 'by signal' : String(outcome.exitCode,),);
   l.info(`${STRICT_REQUIRES_SAVE_CODE}: diagnosing which versions are too new`,);
   /**
    Blocked picks and configured age.

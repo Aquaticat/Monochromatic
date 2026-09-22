@@ -23,7 +23,10 @@ const l = tagged({ tag: 'deps-update/registry', },);
 /**
  Minimal `fetch` shape used here, injectable for tests.
  */
-export type FetchLike = (url: string, init: RequestInit,) => Promise<Response>;
+export type FetchLike = (
+  url: string,
+  init: RequestInit,
+) => Promise<Response>;
 
 //endregion Types
 
@@ -90,7 +93,10 @@ export function packumentUrl({
    Registry base guaranteed to end in one slash.
    */
   const base = registry.endsWith('/',) ? registry : `${registry}/`;
-  return `${base}${name.replace('/', '%2f',)}`;
+  return `${base}${name.replace(
+    '/',
+    '%2f',
+  )}`;
 }
 
 //endregion URL
@@ -124,7 +130,13 @@ export async function fetchPublishTime({
   readonly spec: PackageSpec;
   readonly fetchImpl: FetchLike;
 },): Promise<Date> {
-  const fl = tagged({ tag: fetchPublishTime.name, l, },);
+  /**
+   Logger tagged with this function.
+   */
+  const fl = tagged({
+    tag: fetchPublishTime.name,
+    l,
+  },);
   /**
    Packument URL for this package.
    */
@@ -136,7 +148,10 @@ export async function fetchPublishTime({
   /**
    Registry response; full packument because abbreviated metadata omits `time`.
    */
-  const response = await fetchImpl(url, { headers: { accept: 'application/json', }, },);
+  const response = await fetchImpl(
+    url,
+    { headers: { accept: 'application/json', }, },
+  );
   if (!response.ok) {
     throw new PublishTimeError({
       spec,
@@ -150,14 +165,18 @@ export async function fetchPublishTime({
   /**
    `time` map when the body carries one.
    */
-  const time: unknown = typeof body === 'object' && body !== null && 'time' in body ? body.time : undefined;
+  const time: unknown = ((typeof body) === 'object') && (body !== null)
+    && ('time' in body) ? body.time : undefined;
   /**
    Raw publish timestamp for this version.
    */
-  const stamp: unknown = typeof time === 'object' && time !== null && spec.version in time
-    ? (time as Record<string, unknown>)[spec.version]
+  const stamp: unknown = ((typeof time) === 'object') && (time !== null)
+    ? Reflect.get(
+      time,
+      spec.version,
+    )
     : undefined;
-  if (typeof stamp !== 'string') {
+  if ((typeof stamp) !== 'string') {
     throw new PublishTimeError({
       spec,
       detail: `packument at ${url} has no time entry for this version`,

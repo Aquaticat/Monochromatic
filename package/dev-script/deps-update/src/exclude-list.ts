@@ -61,20 +61,53 @@ export class WorkspaceManifestShapeError extends Error {
  parseManifest('minimumReleaseAge: 1440\n');
  ```
  */
-function parseManifest(yamlText: string,): Readonly<Record<string, unknown>> {
+function parseManifest(yamlText: string,): object {
   /**
    Parsed document root, untyped until checked.
    */
   const root: unknown = parseYaml(yamlText,);
-  if (root === null || root === undefined)
+  if ((root === null) || (root === undefined))
     return {};
-  if (typeof root !== 'object' || Array.isArray(root,)) {
+  if (((typeof root) !== 'object') || Array.isArray(root,)) {
     throw new WorkspaceManifestShapeError({
       field: '(root)',
       found: typeof root,
     },);
   }
-  return root as Record<string, unknown>;
+  return root;
+}
+
+/**
+ Reads one top-level manifest key without asserting the manifest's shape.
+
+ @param yamlText - `pnpm-workspace.yaml` contents
+
+ @param key - top-level key
+
+ @returns raw value, `undefined` when absent
+
+ @example
+ ```ts
+ readManifestKey({ yamlText: 'a: 1\n', key: 'a' }); // 1
+ ```
+ */
+function readManifestKey({
+  yamlText,
+  key,
+}: {
+  readonly yamlText: string;
+  readonly key: string;
+},): unknown {
+  /**
+   Parsed manifest mapping.
+   */
+  const manifest = parseManifest(yamlText,);
+  return key in manifest
+    ? Reflect.get(
+      manifest,
+      key,
+    )
+    : undefined;
 }
 
 /**
@@ -95,8 +128,11 @@ export function readExcludeList(yamlText: string,): readonly string[] {
   /**
    Raw exclude value before validation.
    */
-  const value = parseManifest(yamlText,).minimumReleaseAgeExclude;
-  if (value === undefined || value === null)
+  const value = readManifestKey({
+    yamlText,
+    key: 'minimumReleaseAgeExclude',
+  },);
+  if ((value === undefined) || (value === null))
     return [];
   if (!Array.isArray(value,)) {
     throw new WorkspaceManifestShapeError({
@@ -105,7 +141,7 @@ export function readExcludeList(yamlText: string,): readonly string[] {
     },);
   }
   return value.map(function requireString(entry: unknown,): string {
-    if (typeof entry !== 'string') {
+    if ((typeof entry) !== 'string') {
       throw new WorkspaceManifestShapeError({
         field: 'minimumReleaseAgeExclude',
         found: `entry of type ${typeof entry}`,
@@ -139,10 +175,14 @@ export function readMinimumReleaseAge(yamlText: string,): number | typeof NO_MIN
   /**
    Raw age value before validation.
    */
-  const value = parseManifest(yamlText,).minimumReleaseAge;
-  if (value === undefined || value === null)
+  const value = readManifestKey({
+    yamlText,
+    key: 'minimumReleaseAge',
+  },);
+  if ((value === undefined) || (value === null))
     return NO_MINIMUM_RELEASE_AGE;
-  if (typeof value !== 'number' || !Number.isFinite(value,) || value < 0) {
+  if (((typeof value) !== 'number') || (!Number.isFinite(value,))
+    || (value < 0)) {
     throw new WorkspaceManifestShapeError({
       field: 'minimumReleaseAge',
       found: JSON.stringify(value,),
@@ -201,8 +241,16 @@ export function addedVersions({
   /**
    Versions already exempted before resolution.
    */
-  const existing = new Set(before.flatMap(expandExcludeEntry,).map(specKey,),);
-  return after.flatMap(expandExcludeEntry,).filter(function isNew(spec,): boolean {
+  const existing = new Set(before.flatMap(function expandBefore(entry,): readonly PackageSpec[] {
+    return expandExcludeEntry(entry,);
+  },)
+    .map(function keyBefore(spec,): string {
+      return specKey(spec,);
+    },),);
+  return after.flatMap(function expandAfter(entry,): readonly PackageSpec[] {
+    return expandExcludeEntry(entry,);
+  },)
+    .filter(function isNew(spec,): boolean {
     return !existing.has(specKey(spec,),);
   },);
 }

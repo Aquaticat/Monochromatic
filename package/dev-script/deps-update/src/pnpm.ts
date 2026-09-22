@@ -61,7 +61,10 @@ export class PnpmCommandError extends Error {
     readonly stderr: string;
     readonly cause: unknown;
   },) {
-    super(`pnpm ${args.join(' ',)} failed in ${cwd}:\n${stderr}`, { cause, },);
+    super(
+      `pnpm ${args.join(' ',)} failed in ${cwd}:\n${stderr}`,
+      { cause, },
+    );
     this.name = 'PnpmCommandError';
   }
 }
@@ -93,13 +96,23 @@ export async function runPnpm({
   readonly args: readonly string[];
   readonly cwd: string;
 },): Promise<string> {
-  const rl = tagged({ tag: runPnpm.name, l, },);
+  /**
+   Logger tagged with this function.
+   */
+  const rl = tagged({
+    tag: runPnpm.name,
+    l,
+  },);
   rl.debug(`pnpm ${args.join(' ',)} (cwd ${cwd})`,);
   try {
     /**
      Completed subprocess result.
      */
-    const result = await spawn('pnpm', [...args,], { cwd, },);
+    const result = await spawn(
+      'pnpm',
+      [...args,],
+      { cwd, },
+    );
     return result.stdout;
   }
   catch (error) {

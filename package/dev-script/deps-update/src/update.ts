@@ -36,9 +36,9 @@ export type UpdateOutcome =
      */
     readonly stderr: string;
     /**
-     Exit code; undefined when a signal ended pnpm or it never started.
+     Exit code; omitted when a signal ended pnpm or it never started.
      */
-    readonly exitCode: number | undefined;
+    readonly exitCode?: number;
   };
 
 //endregion Types
@@ -48,7 +48,11 @@ export type UpdateOutcome =
 /**
  Arguments of the update this task wraps.
  */
-export const UPDATE_ARGS = ['update', '--recursive', '--no-save',] as const;
+export const UPDATE_ARGS = [
+  'update',
+  '--recursive',
+  '--no-save',
+] as const;
 
 /**
  pnpm diagnostic code for the strict-gate refusal under `--no-save`.
@@ -86,16 +90,32 @@ export async function runUpdate({
   readonly command: string;
   readonly commandArgs: readonly string[];
 },): Promise<UpdateOutcome> {
-  const rl = tagged({ tag: runUpdate.name, l, },);
-  rl.info(`${command} ${[...commandArgs, ...UPDATE_ARGS,].join(' ',)} (cwd ${cwd})`,);
+  /**
+   Logger tagged with this function.
+   */
+  const rl = tagged({
+    tag: runUpdate.name,
+    l,
+  },);
+  rl.info(`${command} ${[
+    ...commandArgs,
+    ...UPDATE_ARGS,
+  ].join(' ',)} (cwd ${cwd})`,);
   /**
    Live subprocess; stderr stays piped so it can be both shown and kept.
    */
-  const subprocess = spawn(command, [...commandArgs, ...UPDATE_ARGS,], {
+  const subprocess = spawn(
+    command,
+    [
+      ...commandArgs,
+      ...UPDATE_ARGS,
+    ],
+    {
     cwd,
     stdin: 'inherit',
     stdout: 'inherit',
-  },);
+  },
+  );
   // Streaming lines arrive one at a time; an accumulator is the only way to
   // keep them while forwarding each immediately.
   /**
@@ -118,7 +138,7 @@ export async function runUpdate({
     return {
       ok: false,
       stderr: lines.join('\n',),
-      exitCode: error.exitCode,
+      ...(error.exitCode === undefined ? {} : { exitCode: error.exitCode, }),
     };
   }
 }

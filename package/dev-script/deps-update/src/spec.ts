@@ -72,10 +72,14 @@ export function parsePackageSpec(spec: string,): PackageSpec {
    Index of version separator; 0 or -1 means no separator after a name.
    */
   const separator = spec.lastIndexOf('@',);
-  if (separator <= 0 || separator === spec.length - 1)
+  if ((separator <= 0) || (separator === (spec.length
+    - 1)))
     throw new PackageSpecError(spec,);
   return {
-    name: spec.slice(0, separator,),
+    name: spec.slice(
+      0,
+      separator,
+    ),
     version: spec.slice(separator + 1,),
   };
 }
@@ -111,8 +115,12 @@ export function expandExcludeEntry(entry: string,): readonly PackageSpec[] {
   /**
    Name and possibly merged version list.
    */
-  const { name, version, } = parsePackageSpec(entry,);
-  return version.split(VERSION_UNION_SEPARATOR,).map(function toSpec(part,): PackageSpec {
+  const {
+    name,
+    version,
+  } = parsePackageSpec(entry,);
+  return version.split(VERSION_UNION_SEPARATOR,)
+    .map(function toSpec(part,): PackageSpec {
     /**
      One version with surrounding whitespace removed.
      */

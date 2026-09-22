@@ -115,13 +115,20 @@ async function copyIfPresent({
   readonly from: string;
   readonly to: string;
 },): Promise<boolean> {
-  await mkdir(dirname(to,), { recursive: true, },);
+  await mkdir(
+    dirname(to,),
+    { recursive: true, },
+  );
   try {
-    await copyFile(from, to,);
+    await copyFile(
+      from,
+      to,
+    );
     return true;
   }
   catch (error) {
-    if (Error.isError(error,) && 'code' in error && error.code === 'ENOENT') {
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ENOENT')) {
       l.debug(`skip absent ${from}`,);
       return false;
     }
@@ -152,11 +159,20 @@ export async function createScratchWorkspace({
   readonly root: string;
   readonly projectDirs: readonly string[];
 },): Promise<ScratchWorkspace> {
-  const cl = tagged({ tag: createScratchWorkspace.name, l, },);
+  /**
+   Logger tagged with this function.
+   */
+  const cl = tagged({
+    tag: createScratchWorkspace.name,
+    l,
+  },);
   /**
    Fresh private directory for this run.
    */
-  const dir = await mkdtemp(join(tmpdir(), 'deps-update-',),);
+  const dir = await mkdtemp(join(
+    tmpdir(),
+    'deps-update-',
+  ),);
   cl.debug(`scratch workspace ${dir}`,);
   /**
    Disposal handle, created before copying so a failed copy still cleans up.
@@ -165,10 +181,13 @@ export async function createScratchWorkspace({
     dir,
     [Symbol.asyncDispose]: async function removeScratch(): Promise<void> {
       cl.debug(`removing ${dir}`,);
-      await rm(dir, {
+      await rm(
+        dir,
+        {
         recursive: true,
         force: true,
-      },);
+      },
+      );
     },
   };
   /**
@@ -189,19 +208,38 @@ export async function createScratchWorkspace({
     /**
      Project location relative to root; empty for the root itself.
      */
-    const rel = relative(root, projectDir,);
-    if (rel === '..' || rel.startsWith(`..${sep}`,))
-      throw new ProjectOutsideRootError({ root, projectDir, },);
-    return join(rel, 'package.json',);
+    const rel = relative(
+      root,
+      projectDir,
+    );
+    if ((rel === '..') || rel.startsWith(`..${sep}`,))
+      throw new ProjectOutsideRootError({
+        root,
+        projectDir,
+      },);
+    return join(
+      rel,
+      'package.json',
+    );
   },);
   /**
    Every relative path to mirror, deduplicated (root manifest appears twice).
    */
-  const paths = [...new Set([...ROOT_FILES, ...pnpmfiles, ...manifests,],),];
+  const paths = [...new Set([
+    ...ROOT_FILES,
+    ...pnpmfiles,
+    ...manifests,
+  ],),];
   await Promise.all(paths.map(async function mirror(path,): Promise<void> {
     await copyIfPresent({
-      from: join(root, path,),
-      to: join(dir, path,),
+      from: join(
+        root,
+        path,
+      ),
+      to: join(
+        dir,
+        path,
+      ),
     },);
   },),);
   cl.debug(`copied up to ${String(paths.length,)} files`,);

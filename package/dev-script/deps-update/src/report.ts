@@ -63,7 +63,8 @@ export function matureAt({
   readonly publishedAt: Date;
   readonly minutes: number;
 },): Date {
-  return new Date(publishedAt.getTime() + minutes * MS_PER_MINUTE,);
+  return new Date(publishedAt.getTime() + (minutes
+    * MS_PER_MINUTE),);
 }
 
 /**
@@ -103,16 +104,24 @@ export function formatImmatureReport({
      */
     const maturity = minutes === NO_MINIMUM_RELEASE_AGE
       ? '  passes the age gate: unknown (minimumReleaseAge unset)'
-      : `  passes the age gate: ${matureAt({ publishedAt: pick.publishedAt, minutes, },).toISOString()}`;
+      : `  passes the age gate: ${matureAt({
+        publishedAt: pick.publishedAt,
+        minutes,
+      },)
+        .toISOString()}`;
     /**
      Dependents line; a pick with none is a direct workspace dependency.
      */
-    const pulledBy = pick.dependents.length === 0
+    const pulledBy = pick.dependents
+      .length
+      === 0
       ? '  pulled in by: a workspace package directly'
-      : `  pulled in by: ${pick.dependents.join(', ',)}`;
+      : `  pulled in by: ${pick.dependents
+        .join(', ',)}`;
     return [
       `${pick.name}@${pick.version}`,
-      `  published: ${pick.publishedAt.toISOString()}`,
+      `  published: ${pick.publishedAt
+        .toISOString()}`,
       maturity,
       pulledBy,
     ].join('\n',);
@@ -122,9 +131,15 @@ export function formatImmatureReport({
    */
   const retryAfter = minutes === NO_MINIMUM_RELEASE_AGE
     ? undefined
-    : new Date(Math.max(...picks.map(function pickMaturity(pick,): number {
-      return matureAt({ publishedAt: pick.publishedAt, minutes, },).getTime();
-    },),),);
+    : new Date(
+      Math.max(...picks.map(function pickMaturity(pick,): number {
+      return matureAt({
+        publishedAt: pick.publishedAt,
+        minutes,
+      },)
+        .getTime();
+    },),),
+    );
   return [
     `pnpm update refused ${String(picks.length,)} version(s) younger than minimumReleaseAge:`,
     '',
