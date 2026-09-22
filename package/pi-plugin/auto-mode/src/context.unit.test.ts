@@ -137,6 +137,18 @@ type MockMessage =
     readonly sections?: Readonly<Record<string, string>>;
     /** Session timestamp consumed by Pi projection. */
     readonly timestamp: number;
+  }
+  | {
+    /** Role from a newer Pi runtime than installed declarations describe. */
+    readonly role: 'futureRole';
+    /** Payload whose visibility auto-mode cannot know. */
+    readonly payload: string;
+  }
+  | {
+    /** User-message role as parsed from an older or hand-edited session file. */
+    readonly role: 'user';
+    /** Missing content that Pi's projection normalizes. */
+    readonly content: null;
   };
 
 /** Branch-entry shapes used by the context scanner. */
@@ -178,6 +190,8 @@ type MockBranchEntry =
     readonly firstKeptEntryId: string;
     /** Token count represented by summary. */
     readonly tokensBefore: number;
+    /** System prompt state Pi 0.87 re-emits after compaction. */
+    readonly systemMessage?: MockMessage;
     /** Session timestamp consumed by Pi projection. */
     readonly timestamp: string;
   }
@@ -673,6 +687,84 @@ await describe({
         expect(context,).toContain('visible request after system prompt',);
         expect(context.includes('hidden system prompt',),).toBe(false,);
         expect(context.includes('hidden system section',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'omits system message carried by compaction entry but keeps summary',
+      fn: async function testOmitsCompactionSystemMessage(): Promise<void> {
+        /** Context containing compaction that re-emits system prompt state. */
+        const context = buildContext(
+          contextFromBranch({
+            branch: [
+              {
+                type: 'compaction',
+                summary: 'complete compaction summary',
+                firstKeptEntryId: 'kept',
+                tokensBefore: 42,
+                systemMessage: {
+                  role: 'system',
+                  content: 'hidden compaction system prompt',
+                  timestamp: 0,
+                },
+                timestamp: '2026-09-22T00:00:00.000Z',
+              },
+              userMessage('visible request after compaction',),
+            ],
+          },),
+        );
+
+        expect(context,).toContain('complete compaction summary',);
+        expect(context,).toContain('visible request after compaction',);
+        expect(context.includes('hidden compaction system prompt',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'omits unknown message role from newer Pi instead of throwing',
+      fn: async function testOmitsUnknownRole(): Promise<void> {
+        /** Context containing role absent from installed Pi declarations. */
+        const context = buildContext(
+          contextFromBranch({
+            branch: [
+              userMessage('visible request beside unknown role',),
+              {
+                type: 'message',
+                message: {
+                  role: 'futureRole',
+                  payload: 'unknown role payload',
+                },
+              },
+            ],
+          },),
+        );
+
+        expect(context,).toContain('visible request beside unknown role',);
+        expect(context.includes('unknown role payload',),).toBe(false,);
+        expect(context.includes('futureRole',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'tolerates missing message content from older session files',
+      fn: async function testToleratesMissingContent(): Promise<void> {
+        /** Context containing user message whose content was never written. */
+        const context = buildContext(
+          contextFromBranch({
+            branch: [
+              {
+                type: 'message',
+                message: {
+                  role: 'user',
+                  content: null,
+                },
+              },
+              userMessage('visible request after empty message',),
+            ],
+          },),
+        );
+
+        expect(context,).toContain('visible request after empty message',);
       },
     },),
 
