@@ -1,3 +1,5 @@
+import { BILINGUAL_LINE_CLAUSE, } from './bilingual-line-clause.ts';
+
 //region Line structure addendum
 // Turns the computed line-structure fact into the sentence the editor is given.
 // Split from `repair-chunk` because it is a pure text decision and that file is
@@ -31,7 +33,7 @@
 const LINE_STRUCTURE_RULE = 'This region\'s ORIGINAL IS line-structured: each '
   + 'original line is a unit. Keep every existing line in place and in order, '
   + 'recast only within a line, and never invent a line, drop a line, or fill '
-  + 'one line with content belonging to another.';
+  + `one line with content belonging to another. ${BILINGUAL_LINE_CLAUSE}`;
 
 /**
  Builds the editor rule addendum for one slice.

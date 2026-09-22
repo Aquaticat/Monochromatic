@@ -1,3 +1,4 @@
+import { BILINGUAL_LINE_CLAUSE, } from './bilingual-line-clause.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import {
   DECLARED_NAME_REFERENCE_EXEMPTION,
@@ -151,7 +152,7 @@ export const TRANSLATE_SELECTION_CRITERIA: readonly string[] = [
  would be the same mistake here.
  */
 export const TRANSLATE_LINE_STRUCTURE_CRITERION: string =
-  `The ORIGINAL is line-structured: each original line is a unit, and this criterion OUTRANKS the rule that ${A_SHAPE_THE_ORIGINAL_LACKS_IS_NOT_A_FAULT}, which governs prose and not verse. Count the lines against the ORIGINAL: a candidate that merges two original lines into one, splits one across two, or drops or invents a line is FAULTY here however well it reads, and a candidate carrying one line per original line is correct even where the EXISTING TRANSLATION merged them.`;
+  `The ORIGINAL is line-structured: each original line is a unit, and this criterion OUTRANKS the rule that ${A_SHAPE_THE_ORIGINAL_LACKS_IS_NOT_A_FAULT}, which governs prose and not verse. Count the lines against the ORIGINAL: a candidate that merges two original lines into one, splits one across two, or drops or invents a line is FAULTY here however well it reads, and a candidate carrying one line per original line is correct even where the EXISTING TRANSLATION merged them. ${BILINGUAL_LINE_CLAUSE}`;
 
 /**
  Selection rules for visible YAML metadata.

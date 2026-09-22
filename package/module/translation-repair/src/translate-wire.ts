@@ -1,5 +1,6 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import { BILINGUAL_LINE_CLAUSE, } from './bilingual-line-clause.ts';
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
@@ -109,7 +110,7 @@ export const TRANSLATE_LINE_STRUCTURE_RULE: string = 'The ORIGINAL is line-struc
   + 'Produce one output line per original line, in the '
   + 'same order. Never merge two original '
   + 'lines into one output line, never split one across two, and never invent or '
-  + 'drop a line. Where the EXISTING TRANSLATION has merged lines, unmerge them.';
+  + `drop a line. Where the EXISTING TRANSLATION has merged lines, unmerge them. ${BILINGUAL_LINE_CLAUSE}`;
 
 /**
  Instruction added when the entry attested archive details a cited reference

@@ -132,6 +132,7 @@ export {
   namesOneOf,
   readCandidateNames,
 } from './contest-ballot-wire.ts';
+export { BILINGUAL_LINE_CLAUSE, } from './bilingual-line-clause.ts';
 export { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 export {
   type CoverageAnswer,
