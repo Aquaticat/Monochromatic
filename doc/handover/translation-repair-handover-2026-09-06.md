@@ -4647,11 +4647,32 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  MIKAELA7 RUNS (frozen `93b11aef9`,
+1.  XINGZ621 RUNS (frozen `93b11aef9`,
+    pid 1949843,
+    launched 06:11 UTC 2026-09-22,
+    waiter `bl1m0bbe9`,
+    meters 115.74 USD Bedrock and 171.10 OpenRouter at launch)
+    as the second entry of the resumed queue:
+    the verse chunks and the closing poem (slice 91) first (attribution inside the quote, no pair finding in `artifacts/XingZ60.json`),
+    classes sixty-five to sixty-nine and seventy-six,
+    then the seven steps and three checks against `XingZ620` and the archive,
+    the seven-hour deadline and XingZ620's 3h59m as the timing marks;
+    record under a new heading above "## mikaela7 read, 2026-09-22, 06:15 UTC" in the pass log.
+    Then `hulicaijia`, `CuspariaKLSY`, `zheermao`, `yingying`, one at a time.
+    MIKAELA7 READ, NO CLASS:
+    SETTLED at 06:10 UTC in 47 minutes,
+    one attempt,
+    1.43 USD by the meters;
+    classes seventy to seventy-seven holding (excerpt line curled, 𝓠𝓾𝓪𝓷 seven times, "Mika was outed", the Epilogue one to one, no double blank line, the life in the past),
+    the pair bound silent on an original with no pair,
+    front matter equal,
+    4 headings, 4 comments, 4 markers,
+    two unendorsed standings (2, 30),
+    67 abstention lines;
+    details under the pass log heading of 06:15 UTC.
+    THE EARLIER MIKAELA7 LAUNCH NOTE: MIKAELA7 RAN (frozen `93b11aef9`,
     pid 1944780,
-    launched 05:24 UTC 2026-09-22,
-    waiter `bvvqb71ro`,
-    meters 116.35 USD Bedrock and 171.95 OpenRouter at launch)
+    launched 05:24 UTC 2026-09-22)
     as the first entry of the resumed queue on the newest build:
     the Epilogue (slice 28, nine lines) as regression for the pair bound and the line-rule clause on a slice with no pair,
     classes seventy to seventy-seven and the survived-attempt clause,

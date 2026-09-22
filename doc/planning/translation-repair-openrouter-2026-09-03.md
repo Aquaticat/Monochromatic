@@ -8082,6 +8082,83 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## mikaela7 read, 2026-09-22, 06:15 UTC: SETTLED, classes seventy to seventy-seven holding on the newest build, the pair bound silent on a slice with no pair; XingZ621 launched
+
+`mikaela7` (frozen `93b11aef9`,
+pid 1944780,
+overlap 8,
+launched 05:24 UTC on Bedrock and OpenRouter,
+Synthetic and Hyper dry)
+SETTLED at 06:10 UTC on one attempt,
+47 minutes by the artifact against `mikaela6`'s 40.
+Seats asked 2,210,
+68 retry rounds,
+1,947 calls,
+7 abandoned streams (0.0064 USD),
+Qwen3.8-27B and glm-5.3 dark (294 and 141 asked,
+all threw).
+Meters 116.35 to 115.75 USD on Bedrock and 171.95 to 171.12 on OpenRouter,
+1.43 USD together.
+
+### Checks
+
+- Front matter equal to the archive and to `mikaela6`.
+- 4 of 4 headings,
+  4 of 4 HTML comments,
+  4 of 4 footnote markers,
+  𝓠𝓾𝓪𝓷 seven times as the archive (six on `mikaela6`, none as "Quan"),
+  304 lines against the previous page's 293;
+  no `TA`,
+  no `finish_reason=error`,
+  no double blank line (the archive itself carries one),
+  `attempts.json` reads 1.
+- No `PublishedPageDisagrees` or `weight-off`,
+  two unendorsed standings that are also slate-declined (slices 2 and 30,
+  the archive's wording standing),
+  no gate-kept standing,
+  no `repeats the line`,
+  no run-off,
+  no `archive-revision-refused`;
+  67 `declined every candidate` lines with reasons.
+- 5 em-dashes,
+  left per the owner's answer of 2026-09-21.
+- Classes seventy to seventy-seven holding:
+  the Epilogue's excerpt line curled ("[𝓠𝓾𝓪𝓷](...)'s Chronicle Issue No.33, 2023"),
+  "Mika was outed" on the page,
+  the Epilogue (slice 28) with its source lines one to one
+  (the five quoted lines,
+  "This is the origin of XYN (Tianjin) Technology.",
+  the excerpt line),
+  no repeat finding,
+  no double blank line,
+  the life in the past.
+- The pair bound silent as it should be:
+  no "pair is ONE line" finding in `artifacts/mikaela_khara.json`,
+  since no slice of this original carries a Han line with its own English beside it.
+- The `CORPUS NAMES` line names nobody
+  ("the original names nobody another entry declares"),
+  as the census predicted for this entry.
+
+No class found.
+
+### XingZ621 launched
+
+`XingZ621` (frozen `93b11aef9`,
+pid 1949843,
+overlap 8)
+launched 06:11 UTC on Bedrock and OpenRouter
+(meters 115.74 USD Bedrock,
+171.10 OpenRouter at launch;
+Synthetic and Hyper dry),
+the `CORPUS NAMES` line naming nobody.
+Read the verse chunks and the closing poem (slice 91) first
+(the attribution inside the quote,
+no pair finding in the artifact,
+the line floor's shortfall check unchanged),
+then classes sixty-five to sixty-nine and seventy-six,
+then the seven steps and three checks against `XingZ620` and the archive;
+the seven-hour deadline and `XingZ620`'s 3h59m are the timing marks.
+
 ## shi_Yumiaoya13 read, 2026-09-22, 05:30 UTC: SETTLED, class eighty live (the block bound refused ten candidates and the slate chose the two-line quote on the clause); mikaela7 launched
 
 `shi_Yumiaoya13` (frozen `93b11aef9`,
