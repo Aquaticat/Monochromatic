@@ -132,6 +132,7 @@ export {
   namesOneOf,
   readCandidateNames,
 } from './contest-ballot-wire.ts';
+export { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 export {
   type CoverageAnswer,
   runCoverageStage,
