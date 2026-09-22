@@ -8082,6 +8082,172 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya10 read, 2026-09-22, 03:50 UTC: SETTLED, class seventy-nine live, class eighty found (the bilingual film quote rendered twice in English because every line-structure wording said never drop a line), fixed in 8f5e28ad4; shi_Yumiaoya11 launched
+
+`shi_Yumiaoya10` (frozen `d29feecd5`,
+pid 1846495,
+overlap 8,
+launched 02:51 UTC on Bedrock and OpenRouter with Synthetic wet again at launch,
+Hyper dry)
+SETTLED at 03:33 UTC on one attempt,
+45 minutes by the artifact against `shi_Yumiaoya9`'s 28:
+repair lane 02:54 to 03:00,
+translate lane 03:00 to 03:20 (against 8 minutes on `shi_Yumiaoya9`),
+consolidation 03:20 to 03:33.
+Seats asked 964,
+39 retry rounds,
+888 calls,
+no abandoned stream,
+glm-5.3 dark (75 asked, 75 threw),
+Qwen3.8-27B 56 of 124 and Kimi-K3 42 of 61 through Synthetic until its five-hour window read 2750 of 2750 at 03:30 UTC,
+after which the 19 Kimi and 68 Qwen refusals are `NoProviderForModelError` seat holds inside the consolidation,
+not provider errors.
+Meters 117.48 to 117.28 USD on Bedrock and 173.89 to 173.46 on OpenRouter,
+0.63 USD together.
+
+### Checks
+
+- Front matter equal to the archive and to `shi_Yumiaoya9`.
+- 4 of 4 headings,
+  1 photoscroll,
+  1 footnote definition,
+  16 blockquote lines against the previous page's 18,
+  323 lines against 320;
+  no `TA`,
+  no `finish_reason=error`,
+  no double blank line,
+  `attempts.json` reads 1.
+- No `PublishedPageDisagrees` or `weight-off`,
+  no unendorsed standing,
+  no gate-kept or slate-declined standing,
+  no `repeats the line`,
+  no run-off,
+  no `archive-revision-refused`;
+  23 `declined every candidate` lines with reasons.
+- 7 em-dashes,
+  left per the owner's answer of 2026-09-21.
+
+### Class seventy-nine live
+
+The January 16 sentence ships
+"After celebrating her current partner's birthday with them, in the early hours of January 16, she tried to end her life."
+followed by
+"after six days of rescue efforts in the ICU, Yumiao — her body gravely damaged — finally woke up".
+The log carries "tried to end her life" on three ballots
+("as in the original and house rules";
+one abstention faulting a candidate for "tried to end her life" without the temporal detail,
+which the winner carries)
+and "ended her life" only on the rooftop sentence,
+where she did die,
+and in the rule's own text.
+Class seventy-eight holds:
+the ICU paragraph ships "Magic Chewing Gum and Danpian",
+the entry's declared name,
+where `shi_Yumiaoya9` had the alias "Chewing Gum";
+贴贴计划 ships "her cuddling plan".
+
+### Class eighty: the bilingual film quote rendered twice in English
+
+The closing blockquote's original is four lines:
+如果再也不能见到你，祝你早安，午安，晚安。 then
+"And in case I don't see you……good afternoon, good evening, and good night." then
+出自《楚门的世界》 then
+"From *The Truman Show*".
+The archive carries two lines,
+the film's English line and "From *The Truman Show*".
+`shi_Yumiaoya10` shipped three:
+"If I can never see you again, I wish you good morning, good afternoon, and good night."
+above the film's own line,
+then the attribution once.
+`shi_Yumiaoya4` to `shi_Yumiaoya9` shipped four,
+the two Chinese lines kept in Chinese on the English page
+(the `shi_Yumiaoya9` read under the heading of 02:55 UTC called that "as the archive has it";
+it is not,
+the archive carries the English alone,
+and that note is corrected here).
+
+The bench had no rule for the pair.
+The line floor counts a Han line beside its own English as one line owed
+(class forty-seven, `bilingualPairCount`),
+and the class seventy-four guard catches a wording carried twice,
+but every wording of the line rule on the sheets said the opposite:
+`TRANSLATE_LINE_STRUCTURE_RULE` to the translators and consolidation producers
+("never invent or drop a line"),
+`TRANSLATE_LINE_STRUCTURE_CRITERION` to the slate judges
+("a candidate that ... drops or invents a line is FAULTY"),
+`LINE_STRUCTURE_RULE` to the editors
+("never invent a line, drop a line").
+So every translate candidate rendered the Chinese line
+(deepseek-v4.1-flash: "original has a 4-line blockquote (Chinese quote, English quote, Chinese attribution, English attribution) but the Chinese quote line is absent from every candidate"),
+and the judges split on the ground the rule left open:
+gpt-oss-120b abstained on "All candidates omit the original line 出自《楚门的世界》",
+Qwen3.8-27B on "Candidates 1 and 2 omit the first quoted line",
+gpt-oss-120b in the repair lane on "Both candidates keep the original English line after adding a new translation".
+
+Fixed in `8f5e28ad4`
+(guard red first at `49327e735`,
+`bilingual-line-policy.unit.test.ts`,
+four tests: the translators' rule,
+the judges' criterion and the editors' addendum carry the clause,
+an ungoverned addendum carries none).
+`bilingual-line-clause.ts` holds one wording,
+interpolated into all three:
+"A line the ORIGINAL gives twice, once in Chinese and once in English directly beside it (a quotation in both languages, and its attribution the same way), is ONE line whose English is already its rendering: carry that English line once, as the ORIGINAL has it; a rendering carrying the English line alone for such a pair has dropped nothing, and one carrying the Chinese line, or a second English wording of it, beside the English has invented a line."
+Stated for the models rather than enforced as a surplus bound:
+measured over the pinned corpus
+(`scratchpad/bilingual-census.mjs`,
+every Han line followed by a Latin-only line in the 92 originals),
+`shi_Yumiaoya`'s two pairs are the only Chinese lines with their English beside them,
+while Arita, NIGHT81473140, gqt, zhangyubaka, Y1Ran, luxuanwen3, cheonwoomaeng, hakureico, Susiethegamer and XIEPT2 carry a Chinese line followed by an English line of different content
+(an introduction then a quoted poem,
+a letter then its signature),
+which `bilingualPairCount` cannot tell apart,
+so a mechanical bound would refuse faithful renderings there.
+Lint 0 and 0,
+types clean,
+full suite green (`suite-8f5e28ad4.log`).
+
+### Observations, not classes
+
+- The closing line ships "girl's last tour ended",
+  the archive's own wording,
+  where `shi_Yumiaoya9` had "Girls' Last Tour has ended";
+  the consolidation slate split 2/1/1 over candidates praising the anime title,
+  and the standing stood.
+- "correctional institution" for the source's quoted “矫正”机构 where `shi_Yumiaoya9` kept the quotation marks;
+  "college entrance exam" for gaokao;
+  "gave up on her schoolwork" for the 摆烂 idiom where `shi_Yumiaoya9` had "let it rot".
+- "Yumiao — her body gravely damaged — finally woke up":
+  one more em-dash pair,
+  left per the owner.
+- The `<Banner>` block's title and text and the caution blockquote are re-rendered again
+  ("You may be following a hot event that is currently happening"),
+  differently on every run;
+  the front matter itself is equal.
+  Measured over the pinned corpus,
+  two originals carry a Banner,
+  each with its own text,
+  so it is no shared boilerplate to restore;
+  the judges own the wording.
+
+### shi_Yumiaoya11 launched
+
+`shi_Yumiaoya11` (frozen `8f5e28ad4`,
+pid 1878666,
+overlap 8)
+launched 03:47 UTC on Bedrock and OpenRouter
+(meters 117.28 USD Bedrock,
+173.44 OpenRouter at launch;
+Synthetic and Hyper dry),
+the `CORPUS NAMES` line naming the same five.
+Read the closing blockquote first
+(the film's English line once,
+"From *The Truman Show*" once,
+no Chinese line and no second English wording),
+then the January 16 sentence,
+then class seventy-eight,
+then the seven steps and three checks against `shi_Yumiaoya10` and the archive.
+
 ## shi_Yumiaoya9 read, 2026-09-22, 02:55 UTC: SETTLED, class seventy-eight live, class seventy-nine found (a survived suicide attempt rendered as a death by the reader-protection rule's own sample sentence), fixed in d29feecd5; shi_Yumiaoya10 launched
 
 `shi_Yumiaoya9` (frozen `545bff7b9`,
@@ -8201,7 +8367,8 @@ the full suite's result is recorded under the next heading.
   「逆子」 "unfilial child".
   The Han that remains is the source's own
   (the Truman Show quote's Chinese line in the bilingual blockquote,
-  as the archive has it,
+  which the archive does NOT carry (the archive has the English line and its attribution alone;
+  corrected under the shi_Yumiaoya10 heading of 03:50 UTC, class eighty),
   and the camera list inside the source's HTML comment).
 - "three bottles of a certain sedative-hypnotic medication" for 三瓶某种镇静催眠药 in the final-tweet paragraph,
   where `shi_Yumiaoya8` had "a large amount of a sedative-hypnotic";

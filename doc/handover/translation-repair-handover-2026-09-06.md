@@ -4647,7 +4647,38 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA10 RUNS (frozen `d29feecd5`,
+1.  SHI_YUMIAOYA11 RUNS (frozen `8f5e28ad4`,
+    pid 1878666,
+    launched 03:47 UTC 2026-09-22,
+    waiter `br0ylkkcw`,
+    meters 117.28 USD Bedrock and 173.44 OpenRouter at launch)
+    to read class eighty live:
+    the closing blockquote must carry the film's English line once and "From *The Truman Show*" once,
+    no Chinese line and no second English wording of it;
+    then class seventy-nine (the January 16 sentence an attempt),
+    then class seventy-eight,
+    then the seven steps and three checks against `shi_Yumiaoya10` and the archive;
+    record under a new heading above "## shi_Yumiaoya10 read, 2026-09-22, 03:50 UTC" in the pass log.
+    SHI_YUMIAOYA10 READ WITH CLASS SEVENTY-NINE LIVE AND CLASS EIGHTY FOUND AND FIXED:
+    SETTLED at 03:33 UTC in 45 minutes,
+    one attempt,
+    0.63 USD by the meters;
+    "she tried to end her life" on January 16 (class seventy-nine live);
+    "Magic Chewing Gum and Danpian" (class seventy-eight);
+    every check as the archive,
+    no unendorsed or gate-kept standing,
+    23 abstention lines;
+    class eighty: the bilingual film quote's Chinese line rendered a second time in English beside the film's own line
+    (shi_Yumiaoya4 to 9 had kept it in Chinese),
+    because every line-structure wording said never drop a line while the floor counts the pair once and the archive carries the English alone;
+    fixed in `8f5e28ad4` (`bilingual-line-clause.ts`, one clause interpolated into the translators' rule, the judges' criterion and the editors' addendum;
+    stated for the models, not a surplus bound, since ten other entries carry a Chinese line followed by an English line of different content),
+    guard red first at `49327e735`,
+    lint 0/0,
+    types clean,
+    full suite green;
+    details under the pass log heading of 03:50 UTC.
+    THE EARLIER SHI_YUMIAOYA10 LAUNCH NOTE: SHI_YUMIAOYA10 RAN (frozen `d29feecd5`,
     pid 1846495,
     launched 02:51 UTC 2026-09-22)
     to read class seventy-nine live:
