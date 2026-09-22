@@ -11,6 +11,7 @@ import {
   createEventBus,
   type ExecResult,
   type ExtensionAPI,
+  type MarkdownTransformer,
   type ExtensionFactory,
 } from '@earendil-works/pi-coding-agent';
 
@@ -154,6 +155,10 @@ function fakePiApi(): {
   const api: ExtensionAPI = {
     on(event: string,) {
       registrations.push(`event:${event}`,);
+      // Pi 0.87 `on` returns an unsubscribe callback.
+      return function unsubscribe(): void {
+        registrations.push(`unevent:${event}`,);
+      };
     },
     registerTool(tool: { readonly name: string; },) {
       registrations.push(`tool:${tool.name}`,);
@@ -172,6 +177,9 @@ function fakePiApi(): {
     },
     registerMessageRenderer(customType: string,) {
       registrations.push(`renderer:${customType}`,);
+    },
+    registerMarkdownTransformer(transformer: MarkdownTransformer,) {
+      void transformer;
     },
     registerEntryRenderer(customType: string,) {
       registrations.push(`entry-renderer:${customType}`,);

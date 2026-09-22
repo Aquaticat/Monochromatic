@@ -203,6 +203,10 @@ function fakePiApi(): {
   const api: ExtensionAPI = {
     on(event: string,) {
       registrations.push(`event:${event}`,);
+      // Pi 0.87 `on` returns an unsubscribe callback.
+      return function unsubscribe(): void {
+        registrations.push(`unevent:${event}`,);
+      };
     },
     registerTool(tool: ReadonlyDeep<{
       readonly name: string;
