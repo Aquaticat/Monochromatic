@@ -4647,7 +4647,47 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASS SEVENTY-SEVEN IS FIXED AND ZHEERMAO3 RUNS
+1.  ZHEERMAO3 READ WITH CLASS SEVENTY-SEVEN LIVE AND NOTHING TO FIX
+    (the pass log's heading dated 2026-09-22 00:55 UTC):
+    `zheermao3` (frozen `0f9cd44da`) SETTLED at 00:43 UTC in 33.5 minutes,
+    0.60 USD by the meters,
+    one attempt,
+    850 seats,
+    39 retry rounds.
+    The email label was reviewed as a label:
+    gemma-4-e2b's bulleted-list revision was withheld by the shape floor
+    (warn line "archive-revision-refused (google.gemma-4-e2b):
+    the block is paragraph and the revision is list (bulleted)"),
+    and Mercury's "English translation of the email conversation:"
+    won 3.5 of 5 on the positional-reference rule.
+    The reply blockquote kept the archive's wording with the JSX translator comment rendered;
+    the Arts letter label stood as the archive wrote it
+    (no reviewer revised this run,
+    where `zheermao2` had revised it on five ballots);
+    the Arts letter was revised from the photo transcripts 2.5 of 6 against the incumbent's 2
+    (猫猫 as "cat",
+    the corpus's rendering on every other page,
+    one em-dash left as the owner said).
+    Fourteen slices,
+    front matter equal,
+    no `TA`,
+    no error finish,
+    no double blank line,
+    no unendorsed standing,
+    four gate-kept (1,
+    5,
+    6,
+    9),
+    two slate-declined (11,
+    12),
+    14 abstention lines.
+    The queue continues one entry at a time
+    (mikaela last read on `6a9a7ce27`,
+    shi_Yumiaoya,
+    yingying and XingZ60 on `364b83557`,
+    hulicaijia on `574fce2d1`,
+    CuspariaKLSY on `d70087757`).
+    CLASS SEVENTY-SEVEN IS FIXED
     (the pass log's heading dated 2026-09-22 00:20 UTC):
     `zheermao2` (frozen `d70087757`) SETTLED at 23:59 UTC in 46 minutes,
     0.51 USD by the meters,

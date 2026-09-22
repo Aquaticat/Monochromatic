@@ -8082,6 +8082,148 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## zheermao3 read, 2026-09-22, 00:55 UTC: SETTLED, class seventy-seven live (the email label revised as a label, a bulleted-list revision refused on shape); the Arts letter revised this time from the photo transcripts; queue continues
+
+`zheermao3` (frozen `0f9cd44da`,
+pid 1734549,
+overlap 8,
+launched 00:10 UTC on Bedrock and OpenRouter,
+Synthetic wet at launch and dry from 00:14 UTC,
+Hyper dry)
+SETTLED at 00:43 UTC on one attempt,
+33.5 minutes by the artifact.
+
+Class seventy-seven live.
+The label block ("English translation of the preceding email conversation:")
+was reviewed as its own block again.
+Six reviewers heard,
+two eligible assessments:
+gemma-4-e2b offered a bulleted list for the one-paragraph label,
+and the shape floor withheld it with the warn line
+"archive-revision-refused (google.gemma-4-e2b):
+the block is paragraph and the revision is list (bulleted);
+a revision keeps the block's own shape".
+The slate then held one admissible revision beside the incumbent,
+both labels;
+Mercury's "English translation of the email conversation:"
+won at weight 3.5 across five ballots,
+four of them citing the positional-reference rule against "preceding"
+(gemma-4-26b,
+deepseek-v4.1-flash,
+Mercury,
+GLM-5.3-Flash),
+gemma-4-e2b for the incumbent.
+The label ships as a label;
+the nested blockquote carrying the whole exchange stands behind it as the archive has it.
+No letter was offered this run,
+so the refusal the guard covers
+(a four-block letter for a one-paragraph label)
+was not exercised live;
+the list refusal is the same floor on the same block.
+
+The other three archive blocks.
+The reply blockquote
+(One Among Us's reply inside the exchange):
+five revisions in six candidates,
+GLM-5.3-Flash's won at weight 2.5 across five ballots
+(deepseek-v4.1-flash,
+Mercury and GLM-5.3-Flash for it,
+gemma-4-e2b for a fourth candidate,
+gpt-oss declined all),
+and its one change against the archive is the line the archive left as a JSX translator comment
+(`{/* 可以避开黑暗的锋芒，到那些有光的地方躲一躲。 这句不知道如何翻译 */}`),
+now rendered
+"You can dodge the darkness's sharpest edge and take shelter for a while in the places that hold light."
+`zheermao2` had rewritten the whole reply from the transcript;
+this run the review kept the archive's wording and filled the gap.
+The Arts letter label ("English translation of the preceding letter:"):
+five heard,
+GLM-5.3-Flash lost on a schema mismatch
+(it answered a disposition the sheet does not offer,
+"editorial-context"),
+no reviewer revised,
+so the block stands as the archive wrote it,
+"preceding" and all,
+where `zheermao2` had revised it to "letter from Arts" on five ballots.
+Bench variance on the same rule,
+not a class:
+the review is single-round by design.
+The Arts letter itself
+(the English of the two photographed pages):
+two revisions in three candidates,
+deepseek-v4.1-flash's won at weight 2.5 across six ballots
+against the incumbent's 2
+(gemma-4-26b,
+deepseek at 0.5 and Mercury for it;
+gemma-4-e2b and minimax for the archive's;
+gpt-oss at 0.5 for the third),
+the ballots citing the photo transcripts
+("the corroborated letter text from photo1/photo2")
+and the renderings of 罪恶 and 不会自责.
+`zheermao2` had retained the archive's letter 4 of 6.
+The revision renders 猫猫 as "cat" where the archive wrote "cat-like person";
+the corpus renders 猫猫 as "cat" on every other page that carries it
+(Everythings99,
+Proselyte093,
+Considerate_cat,
+lin10104,
+measured with `rg` over `page.md` and `page.en.md`),
+so no glossary seed follows.
+It carries one em-dash
+(the em-dash ahead of the closing "for example" clause)
+on a page whose archive has none,
+left as the owner said on 2026-09-21.
+
+The page.
+Fourteen slices,
+six changed by the translate lane,
+two by the repair lane,
+eight changed on the page,
+six standing as the archive.
+The life stays in the past on every line.
+Front matter equal,
+2 of 2 headings,
+photo components and the contributor comment as the archive,
+no `TA`,
+no `finish_reason=error`,
+no double blank line,
+no `PublishedPageDisagrees` or weight-off line,
+attempts 1,
+no unendorsed standing,
+four gate-kept standings (slices 1,
+5,
+6,
+9),
+two slate-declined standings (11,
+12),
+14 abstention lines with reasons,
+no repeat or run-off finding.
+The body diffs against `zheermao2` on the ordinary slices
+(the milk-tea line,
+the Zhihu line,
+the Telegram paragraph)
+are the bench choosing differently between valid renderings;
+none crosses a rule.
+
+Seats asked 850,
+39 retry rounds,
+731 calls,
+15 abandoned streams (0.03 USD),
+glm-5.3 dark all run (53 asked,
+53 threw,
+Synthetic dry),
+Kimi-K3 7 of 13 threw,
+Jev 23 asked,
+23 usable.
+Meters:
+Bedrock 118.96 to 118.70,
+OpenRouter 176.17 to 175.83,
+0.60 USD;
+the spend lines say 0.59 USD on OpenRouter.
+
+Nothing to fix from this read.
+The queue continues one entry at a time.
+
 ## zheermao2 read, 2026-09-22, 00:20 UTC: SETTLED, but the archive block review replaced the email intro label with a four-block letter cut mid-sentence (class seventy-seven, fixed in 0f9cd44da); zheermao3 launched
 
 `zheermao2` (frozen `d70087757`,
