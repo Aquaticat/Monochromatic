@@ -6,6 +6,7 @@
 
 import {
   getSupportedThinkingLevels,
+  normalizeContext,
   type Api,
   type AssistantMessage,
   type Context,
@@ -133,9 +134,11 @@ async function defaultCompleteAdvisorModel(
   /**
    Provider stream consumed so cancellation can retain already-received usage.
    */
+  // Pi AI 0.87 provider modules read prompt and tools only from transcript system messages;
+  // registry providers skip the normalization that ModelRegistry.streamSimple applies.
   const stream = provider.streamSimple(
     model,
-    context,
+    normalizeContext(context,),
     providerOptions,
   );
   for await (const event of stream) {
