@@ -141,6 +141,25 @@ await describe({
       },
     },),
     it({
+      name: 'KEEPS a gloss the archive carries and moves the life to the past (class eighty-five, CuspariaKLSY6 2026-09-22: every consolidation dropped the archive gloss line, so the gate kept the standing in the present tense)',
+      fn: async () => {
+        // The producer's KEEP rule listed a name, a referent, a credit and a
+        // citation's translator; a gloss line the Chinese is silent about fell
+        // outside the list, and the gate then refused the candidate for
+        // dropping page content.
+        expect(sheetFor({ subject: bare, },),)
+          .toContain('a gloss of a name or a term',);
+        expect(sheetFor({ subject: bare, },),)
+          .toContain('has dropped page content',);
+        // The tense rule named the archive as the authority, against the house
+        // rule that moves a life to the past (class seventy-six on this sheet).
+        expect(sheetFor({ subject: bare, },),)
+          .toContain('the past tense the house rule sets',);
+        expect(sheetFor({ subject: bare, },),)
+          .not.toContain('the ARCHIVE RENDERING is what settles which one this passage is in',);
+      },
+    },),
+    it({
       name: 'GIVES FRONT MATTER PRODUCER YAML RULE and source-authoritative name precedence',
       fn: async () => {
         const sheet = sheetFor({

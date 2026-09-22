@@ -66,6 +66,25 @@ await describe({
       },
     },),
     it({
+      name: 'KEEPS what the page carries and the original is silent about inside the rule that forbids additions (class eighty-five, CuspariaKLSY6 2026-09-22: the archive gloss line stripped by every consolidation, the gate kept the present-tense standing to keep it)',
+      fn: async () => {
+        /**
+         Criterion carrying the prohibition the slate judges applied to the gloss.
+         */
+        const faithfulness = TRANSLATE_SELECTION_CRITERIA
+          .find(function forbidsAdditions(line,): boolean {
+            return line.includes('nothing added',);
+          },) ?? '';
+        expect(faithfulness,).not.toBe('',);
+        // THE CLAUSE SITS INSIDE THE FAITHFULNESS CRITERION, beside the declared-name
+        // carve-out, because "nothing added" is the rule the judges cited when they
+        // rewarded the candidate without the gloss.
+        expect(faithfulness,).toContain('a gloss of a name or a term',);
+        expect(faithfulness,).toContain('has added nothing',);
+        expect(faithfulness,).toContain('has dropped page content',);
+      },
+    },),
+    it({
       name: 'SCOPES the carve-out to a passage that refers to the person',
       fn: async () => {
         /**
