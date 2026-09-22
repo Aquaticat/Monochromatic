@@ -24,8 +24,11 @@ import { extractDeclaredIdentity, } from './identity-context.ts';
 // translation declares, and the lines name those the entry's source text
 // carries, the entry's own identity left out since the identity block
 // already carries it. Evidence the sheets weigh beside the page's own
-// renderings, not a floor: a two-character handle can be an ordinary word
-// elsewhere, and the judges decide.
+// renderings, not a floor: measured over the pinned corpus, 岁月, 不存在 and
+// 贴贴 are declared handles other pages carry as ordinary words (灰暗岁月里,
+// 不存在的真相, 贴贴图), and Chinese prose marks no word boundary to tell a
+// mention from a word, so the heading says an ordinary word stays a word
+// and the judges decide.
 
 /**
  Longest declared form read as a name, in code points; a longer one is a
@@ -61,8 +64,9 @@ const ALIAS_SEPARATORS = [
 /**
  Heading of the sheet block.
  */
-const HEADING = 'NAMES OF OTHER PEOPLE IN THIS ARCHIVE this entry mentions, as their own entries render them '
-  + '(render the person as their own entry does, never a transliteration):';
+const HEADING = 'NAMES OF OTHER PEOPLE IN THIS ARCHIVE whose declared handle this text carries, as their own '
+  + 'entries render them (where the text means the person, render them as their entry does, never a '
+  + 'transliteration; where the handle is an ordinary word here, it is a word and stays translated):';
 
 /**
  One name as an entry's original declares it and every form its translation
@@ -237,7 +241,10 @@ function declaredForms({ text, }: { readonly text: string; },): readonly string[
 export function corpusNamesOf(
   { entries, }: { readonly entries: readonly CorpusEntryTexts[]; },
 ): readonly CorpusName[] {
-  return entries.flatMap(function toNames(entry,): readonly CorpusName[] {
+  /**
+   Every entry's names, before the shared forms are dropped.
+   */
+  const names = entries.flatMap(function toNames(entry,): readonly CorpusName[] {
     /**
      Forms the translation declares.
      */
@@ -270,6 +277,22 @@ export function corpusNamesOf(
         entryId: entry.id,
       },];
     },);
+  },);
+  // A FORM TWO ENTRIES DECLARE NAMES NOBODY: measured over the pinned corpus,
+  // 猫猫 is declared by two entries and carried by 26 of 92 pages as the
+  // ordinary word, and the corpus cannot say which person a page means.
+  /**
+   Entries declaring each form.
+   */
+  const declaring = new Map<string, number>();
+  for (const name of names) {
+    declaring.set(
+      name.source,
+      (declaring.get(name.source,) ?? 0) + 1,
+    );
+  }
+  return names.filter(function oneEntry(name,): boolean {
+    return declaring.get(name.source,) === 1;
   },);
 }
 

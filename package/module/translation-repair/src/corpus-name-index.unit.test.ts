@@ -46,13 +46,31 @@ const ENTRIES = [
     sourceText: '---\nname: Whiskers\n---\n\n它睡了。\n',
     targetText: '---\nname: Whiskers\n---\n\nIt slept.\n',
   },
+  {
+    id: 'kitty-one',
+    sourceText: '---\nname: 猫猫\n---\n\n猫猫来了。\n',
+    targetText: '---\nname: Kitty One\n---\n\nKitty One came.\n',
+  },
+  {
+    id: 'kitty-two',
+    sourceText: '---\ninfo:\n  alias: 猫猫\n---\n\n猫猫走了。\n',
+    targetText: '---\nname: Kitty Two\n---\n\nKitty Two left.\n',
+  },
 ] as const;
+
+/**
+ Heading the block carries.
+ */
+const HEADING = 'NAMES OF OTHER PEOPLE IN THIS ARCHIVE whose declared handle this text carries, as their own '
+  + 'entries render them (where the text means the person, render them as their entry does, never a '
+  + 'transliteration; where the handle is an ordinary word here, it is a word and stays translated):';
 
 await describe({
   name: 'the corpus names the people an entry mentions as their own entries render them (class seventy-eight, shi_Yumiaoya)',
   children: [
     it({
-      name: 'INDEXES every Han name or alias an entry declares against the English forms its own translation declares',
+      name: 'INDEXES every Han name or alias an entry declares against the English forms its own translation '
+        + 'declares, and DROPS a form two entries declare, since the corpus then cannot say which person a page means',
       fn: async () => {
         const names = corpusNamesOf({ entries: ENTRIES, },);
         expect(names,).toEqual([
@@ -84,8 +102,7 @@ await describe({
           ownId: 'slice',
         },);
         expect(lines,).toEqual([
-          'NAMES OF OTHER PEOPLE IN THIS ARCHIVE this entry mentions, as their own entries render them '
-          + '(render the person as their own entry does, never a transliteration):',
+          HEADING,
           '- 奇妙的猫糖 (entry gum): "Magic Cat Candy", "Cat Candy", "meow1219"',
         ],);
       },
@@ -105,10 +122,10 @@ await describe({
       },
     },),
     it({
-      name: 'STAYS SILENT when the text names nobody the corpus declares',
+      name: 'STAYS SILENT when the text names nobody the corpus declares, a shared form included',
       fn: async () => {
         const lines = corpusNameLines({
-          text: '猫在门口犹豫。\n',
+          text: '猫猫在门口犹豫。\n',
           names: corpusNamesOf({ entries: ENTRIES, },),
           ownId: 'own',
         },);
