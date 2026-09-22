@@ -35,7 +35,7 @@ export const ARCHIVE_TEST_CORRECTION = '> Cat has soft fur and is courageous.';
 /**
  Incomplete proposal the selector must see as a competing proposal.
  */
-export const ARCHIVE_TEST_PARTIAL = 'Cat.';
+export const ARCHIVE_TEST_PARTIAL = '> Cat.';
 /**
  Archive context already available to the review stage.
  */
