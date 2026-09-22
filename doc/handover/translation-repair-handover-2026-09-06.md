@@ -4647,11 +4647,32 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA13 RUNS (frozen `93b11aef9`,
+1.  MIKAELA7 RUNS (frozen `93b11aef9`,
+    pid 1944780,
+    launched 05:24 UTC 2026-09-22,
+    waiter `bvvqb71ro`,
+    meters 116.35 USD Bedrock and 171.95 OpenRouter at launch)
+    as the first entry of the resumed queue on the newest build:
+    the Epilogue (slice 28, nine lines) as regression for the pair bound and the line-rule clause on a slice with no pair,
+    classes seventy to seventy-seven and the survived-attempt clause,
+    then the seven steps and three checks against `mikaela6` and the archive;
+    record under a new heading above "## shi_Yumiaoya13 read, 2026-09-22, 05:30 UTC" in the pass log.
+    Then `XingZ60` (verse chunks, the closing poem), `hulicaijia`, `CuspariaKLSY`, `zheermao`, `yingying`, one at a time.
+    SHI_YUMIAOYA13 READ, CLASS EIGHTY LIVE:
+    SETTLED at 05:22 UTC in 20 minutes,
+    one attempt,
+    0.78 USD by the meters;
+    the block bound refused ten candidates (the finding in `artifacts/shi_Yumiaoya.json`, ten times; the log carries no line for a floor refusal),
+    the slate chose a two-line quote with ballots citing the clause,
+    the closing line freshly written so the win is the bench's and not an unendorsed standing;
+    classes seventy-eight and seventy-nine holding,
+    every check as the archive,
+    no unendorsed or gate-kept standing,
+    9 abstention lines;
+    details under the pass log heading of 05:30 UTC.
+    THE EARLIER SHI_YUMIAOYA13 LAUNCH NOTE: SHI_YUMIAOYA13 RAN (frozen `93b11aef9`,
     pid 1928249,
-    launched 05:01 UTC 2026-09-22,
-    waiter `bda099lmj`,
-    meters 116.65 USD Bedrock and 172.45 OpenRouter at launch)
+    launched 05:01 UTC 2026-09-22)
     to read the block-level pair bound live:
     the log must carry a `LINE-STRUCTURED` finding quoting "once in Chinese and once in English directly beside it; that pair is ONE line"
     and `translate-candidate-refused` on the candidates carrying the Chinese line raw or rendered again;

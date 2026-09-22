@@ -8082,6 +8082,112 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya13 read, 2026-09-22, 05:30 UTC: SETTLED, class eighty live (the block bound refused ten candidates and the slate chose the two-line quote on the clause); mikaela7 launched
+
+`shi_Yumiaoya13` (frozen `93b11aef9`,
+pid 1928249,
+overlap 8,
+launched 05:01 UTC on Bedrock and OpenRouter,
+Synthetic and Hyper dry)
+SETTLED at 05:22 UTC on one attempt,
+20 minutes by the artifact.
+Seats asked 873,
+42 retry rounds,
+773 calls,
+4 abandoned streams (0.0017 USD),
+Qwen3.8-27B and glm-5.3 dark (113 and 79 asked,
+all threw).
+Meters 116.65 to 116.35 USD on Bedrock and 172.45 to 171.97 on OpenRouter,
+0.78 USD together.
+
+### Checks
+
+- Front matter equal to the archive and to `shi_Yumiaoya12`.
+- 4 of 4 headings,
+  1 photoscroll,
+  1 footnote definition,
+  15 blockquote lines,
+  309 lines against the previous page's 319;
+  no `TA`,
+  no `finish_reason=error`,
+  no double blank line,
+  `attempts.json` reads 1.
+- No `PublishedPageDisagrees` or `weight-off`,
+  no unendorsed standing,
+  no gate-kept or slate-declined standing,
+  no `repeats the line`,
+  no run-off,
+  no `archive-revision-refused`;
+  9 `declined every candidate` lines with reasons.
+- 6 em-dashes,
+  left per the owner's answer of 2026-09-21.
+- Class seventy-nine holds
+  ("she took a large amount of medication in the early hours of January 16 in an attempt to end her life",
+  the ICU waking two lines on);
+  class seventy-eight holds ("Magic Chewing Gum and Danpian").
+
+### Class eighty live
+
+The closing blockquote ships two lines,
+"And in case I don't see you……good afternoon, good evening, and good night." and "From *The Truman Show*",
+and this time by the bench's choice,
+not by an unendorsed standing:
+the closing line is freshly written
+("Well, Yumiao, *Girls' Last Tour* is over now, and you can finally get a good night's sleep."),
+so the slate's winner carried the quote.
+The run artifact (`artifacts/shi_Yumiaoya.json`) carries the block finding ten times,
+"gives the line `And in case I don't see you……good afternoon, good evening, and good night.` twice, once in Chinese and once in English directly beside it; that pair is ONE line whose English is already its rendering, and the EXISTING TRANSLATION carries the block holding it as 2 lines",
+one per candidate that kept the Chinese line raw or rendered it again,
+each withheld from the slate at the floor
+(the log carries no line for a floor refusal;
+the artifact does).
+The slate then read two candidates,
+both with the quote as two lines,
+and its ballots cite the clause:
+deepseek-v4.1-flash "the quote block (Chinese line correctly dropped as it is paired with its English rendering, per line-structure rule)",
+minimax-m3 "dropping the explicit Chinese quotation of the Truman Show line (already present in English on the same page as a bilingual quote)",
+the consolidation's deepseek ballot "each pair being one line whose English is already its rendering";
+gpt-oss-120b abstained on "Both candidates omit the first Chinese line",
+the one seat still reading the older rule,
+outvoted.
+
+### Observations, not classes
+
+- The film link ships "[Josee, the Tiger and the Fish](...)" again
+  (two ballots citing the cited reference,
+  one calling *The Truman Show* "a distractor in the surrounding metadata");
+  "the trio's car shows";
+  "gaokao" kept;
+  "in an attempt to end her life" carries the medication where `shi_Yumiaoya10` and `12` had "tried to end her life" alone,
+  the substance still unnamed,
+  which the reader-protection rule leaves to the judges.
+
+### mikaela7 launched
+
+The `shi_Yumiaoya` queue is done for class eighty;
+the queue resumes one entry at a time on the newest build.
+`mikaela7` (frozen `93b11aef9`,
+pid 1944780,
+overlap 8)
+launched 05:24 UTC on Bedrock and OpenRouter
+(meters 116.35 USD Bedrock,
+171.95 OpenRouter at launch;
+Synthetic and Hyper dry),
+the `CORPUS NAMES` line naming nobody
+("the original names nobody another entry declares"),
+chosen as the cheapest line-structured carrier
+(the Epilogue,
+slice 28,
+nine lines)
+to read the pair bound and the line-rule clause as regression on a slice with no pair,
+then classes seventy to seventy-seven and the survived-attempt clause,
+then the seven steps and three checks against `mikaela6` and the archive.
+`XingZ60` (the verse chunks and the closing poem) follows,
+then `hulicaijia`,
+`CuspariaKLSY`,
+`zheermao`,
+`yingying`.
+
 ## shi_Yumiaoya12 read, 2026-09-22, 05:05 UTC: SETTLED with the closing quote as the archive, but by an unendorsed standing, not by the bound; the pair bound rebuilt to compare the block holding the English line, fixed in 93b11aef9; shi_Yumiaoya13 launched
 
 `shi_Yumiaoya12` (frozen `873104d8f`,
