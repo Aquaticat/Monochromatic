@@ -66,7 +66,7 @@ export {
   forbiddenRootContext,
   hasForbiddenRootContext,
   repositoryPolicyPlugin,
-} from './optional/repository-policy.ts';
+} from './optional/repository-policy/index.ts';
 export type {
   ActivePolicySeverity,
   CandidateChange,
@@ -84,4 +84,5 @@ export type {
   PolicySeverity,
   PolicyTrigger,
   RepositoryPath,
+  TrackedFile,
 } from './api/policy-types.ts';

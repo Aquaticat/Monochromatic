@@ -23,11 +23,21 @@ Do not bring tunnel up,
 restart it,
 or mutate live routing without explicit authorization.
 IVPN Desktop split tunneling is currently disabled after its supported `ivpn splittun -off` recovery.
-`/etc/wireguard/mx-que-mx1.conf` now contains `ExemptMark = 8888` under `[Interface]`.
+`/etc/wireguard/mx-que-mx1.conf` now contains `ExemptMark = 100` under `[Interface]`.
 The atomic edit preserved root ownership,
 mode `0600`,
 single-link status,
 and the down physical endpoint route.
+`8888` was the earlier value;
+it carries netavark's masquerade mask `0x2000`,
+which source-NATed every exempted socket including IPv4 loopback,
+and config parsing now rejects it.
+`/etc/wireguard/gb-lon-gb2.conf` carries the same `ExemptMark = 100`,
+and that tunnel was cycled so its watcher and `ip rule` selector use the new mark.
+That file was mode `0644` owned `root:user`;
+both configs are now mode `0600` owned `root:root`,
+matching the `0700 root:root` directory that already blocked other users.
+See `doc/troubleshooting/netavark-masquerade-mask-exempt-mark.md`.
 
 ## Completed tasks
 
@@ -281,7 +291,7 @@ It states that Ghostty,
  Helium,
  Pale Moon,
  and Firefox Nightly will use the tunnel.
-It instructs the user to add `ExemptMark = 8888` under `[Interface]`,
+It instructs the user to add `ExemptMark = 100` under `[Interface]`,
 then bring the interface down and up again so application exemptions attach.
 `down` does not emit this warning.
 
@@ -531,7 +541,7 @@ or unexpected pin remained after final verification.
 - Use `WG_QUICKER_EXEMPT_COMMAND` for an explicit executable;
   launcher resolves it before network mutation.
 - Use root-owned installed artifacts when workspace integrity is not trusted.
-- Use `ExemptMark = 8888` or another positive mark in `[Interface]`.
+- Use `ExemptMark = 100` or another positive mark sharing no bit with a reserved mask in `[Interface]`.
 - Invoke `wg-quicker` normally;
   it uses sudo before config access and preserves original identity through `SUDO_UID`.
 - Set `WG_QUICKER_EXEMPT_UID` explicitly for direct root or service execution.

@@ -35,15 +35,18 @@ extends = "format:oxlint"
 [tasks.'test:unit']
 extends = "test:unit"
 
-[tasks.'verify:minimum-runtime']
-description = "Import built public MJS and exercise representative CLI behavior at exact engines.node floor"
+[tasks.'verify:supported-runtime']
+description = "Import built public MJS and exercise representative CLI behavior at selected engines.node floor"
 run = "node src/runtime-contract.host-evidence.ts"
 
 [tasks.'pack:npm']
 description = "Build and create the unpublished npm tarball"
 depends = ["build"]
+# pnpm 12.3.4 drops --config.dedupe-direct-deps=false without a message; only the environment variable takes effect
+# (doc/troubleshooting/pnpm-pack-dedupe-direct-deps.md).
+env = { pnpm_config_dedupe_direct_deps = "false" }
 run = [
-  "pnpm install --force --config.dedupe-direct-deps=false --filter @monochromatic-dev/git-policy-cli",
+  "pnpm install --force --filter @monochromatic-dev/git-policy-cli",
   "node -e \"const { mkdirSync } = await import('node:fs'); mkdirSync('dist/pack', { recursive: true })\"",
   "pnpm pack --pack-destination dist/pack",
 ]

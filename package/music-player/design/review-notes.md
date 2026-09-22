@@ -633,6 +633,49 @@ line,
  or overlaid boundary;
  every title keeps the full common width.
 
+## 5m. Prepared output outlived its inputs, and embedded rasters were checked as files
+
+The dark matrix form kept a prepared answer visible after the user changed a radio choice
+or the correction text,
+ so a stale answer could be copied as if current.
+ Prepared output
+now hides on any input change until regenerated.
+ Separately,
+ the validator proved each
+source PNG existed but not that the bytes displayed in the form matched it;
+ a swapped
+data URL would have passed.
+ Validation now compares every displayed data URL with its
+named raster byte-for-byte and samples disclosed folder,
+ rail,
+ deck,
+ and current-row
+pixels against resolved role values.
+
+**The rule.**
+ A prepared answer must die with its inputs,
+ and a generated artifact's
+checks must cover the bytes the viewer sees,
+ not only the files on disk.
+
+## 5n. A component was improvised without reading the spec page that owns it
+
+The picker trigger shipped as a 48dp outlined pill-ish box with a caret because the chips,
+menus, and sheets pages had been read but the text-field specs had not.
+ The user asked
+plainly whether the archive had really been read.
+ Against the text-field specs the field
+was wrong in four ways: container height 48dp instead of 56dp, no floating label on the
+outline, uniform 16dp padding instead of 12dp sides with icons plus 16dp between icon and
+text, and an untinted trailing icon.
+
+**The rule.**
+ Before drawing any Material component, read that component's own specs and
+guidelines pages in the local archive (`~/Downloads/m3.material.io`, mirrored in
+`md3-tokens.md`), and list every deviation from the measured values in the form prose with
+its reason.
+ Adjacent component pages are not evidence for the component being drawn.
+
 ## Standing standards for this project
 
 1. **EVERY question form ends with a free-text field.
@@ -797,3 +840,10 @@ line,
      boundary,
      or container while titles retain full row
     width.
+14. **Prepared answers invalidate with their inputs.**
+     Changing any radio group or the
+    free-text correction hides prepared output until it is regenerated.
+15. **Embedded evidence is validated as displayed bytes.**
+     Questionnaire validators
+    compare each data URL with its named source raster and sample disclosed role mappings
+    pixel by pixel.

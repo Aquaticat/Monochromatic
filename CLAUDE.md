@@ -427,6 +427,13 @@ Mechanism choices with data to measure:
  record.
 Ask only for values or authority.
 
+FLG:
+ Flagged user choices (veto-open adoptions,
+ open questions) get asked in the same turn with options;
+ never park them in docs.
+Choices settled requirements determine:
+ close and record.
+
 QVE:
  Visual review starts from the accepted design,
 then names consequential concerns the user did not raise.
@@ -504,6 +511,13 @@ OPI:
  B > A > C,
  because ..." explaining each adjacent step,
  not just top pick.
+
+YKZ:
+ Several options:
+ widen to plausible alternatives,
+ each with its libraries and repo incumbents;
+ design each until disqualifying problems surface.
+Rank only after.
 
 ODM:
  Option examples must demonstrate every concept the question asks the user to compare.
@@ -878,6 +892,12 @@ NMD:
  gitignored,
  and survives `${HOME}/temp` cleanup.
 
+APQ:
+ cli-git auto-push also fires in third-party clones.
+Before committing in one,
+ run `git remote set-url --push origin DISABLED`;
+ a `pnpm/pnpm` prototype commit attempted an upstream push.
+
 BOP:
  `~` in Bash output = display substitution for home dir by `bash-output-filter` hook (display-only).
 Skip filter via blocklist trigger:
@@ -1024,8 +1044,13 @@ Action verbs ("fix",
  "update"...) authorize action.
 
 DRR:
- Recommendation/review questions do not ratify a decision.
-Create/update `doc/decision/` only after user explicitly accepts or delegates final decision;
+ Recommendations,
+ even delegated:
+ brief evidence,
+ ranking,
+ risks;
+ get acceptance before `doc/decision/` or dependent work.
+Review/sub-question answers don't ratify;
  proposals use `doc/planning/`.
 
 IWT:

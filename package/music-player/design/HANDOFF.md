@@ -3945,16 +3945,288 @@ device.
  Unrelated libvirt QEMU guests remain untouched.
  The isolated verifier is closed.
 
-The normal Helium matrix is open at KWin ID
-`{eeeba7bf-2c12-4ca4-8f67-83eef0fb51c3}` on `DP-2`,
- 1080 × 1880.
- It is
-non-minimized but was not active at the last inspection.
- KDE uses `VaporBlack` and the XDG
-appearance portal returned color-scheme value 1,
- which the portal specification defines
-as prefer dark.
- The isolated Chromium probe verified this form's dark media query separately.
-Activate the exact normal Helium window as the final operation,
- then wait for the user's
-R1/R2/R3 and C1/C2 selections.
+The user answered in chat:
+ R1 and C2.
+ Decisions D41 and D42 record the settled dark
+policy:
+ structural surfaces remain stable black while component roles follow Android
+dynamic color,
+ and the current-row soft neutral resolves from Android's
+`surfaceContainerLow`.
+ The captured `stable-dynamic` column is the accepted appearance
+across all six palette environments.
+ The review window is closed and the form remains as
+the round's record.
+ No design question remains open on the unfolded screen.
+ Production
+implementation remains unauthorized:
+ issue #508 tracks the proposed rule that design
+acceptance alone does not authorize production source changes.
+
+## Design-only continuation with a large open backlog
+
+User instruction (2026-09-17):
+ this project remains design-only,
+ and tons of design work
+are still undone.
+ The settled unfolded screen is one settled surface,
+ not a settled product.
+Production implementation is not the current track and stays unauthorized pending an
+explicit request.
+ Open design frontiers from `open-questions.md`:
+
+- Picker presentation within a letter:
+  settled by D31 (pk-g) and carried natively at 48dp
+ row pitch;
+  `open-questions.md` section 10 carried a stale STILL OPEN entry listing
+ pk-e and pk-f,
+  now closed with the D31 citation and native evidence.
+  The next active
+ round is the frontier the user picks next.
+- Command bar surface (D21):
+  hotkey settled,
+  surface never designed.
+- Keyboard map (D25):
+  one revised IntelliJ-aligned map is the design deliverable.
+- Android media notification:
+  never designed.
+- Light theme:
+  unfolded separation settled (D34);
+  the undrawn light surfaces are listed in
+ `open-questions.md` 11d.
+- D10 empty state redrawn for the no-system-library case (8b).
+- Desktop window default size (11c).
+- Custom display templating round (11e).
+- MD3-on-Slint feasibility (A4):
+  developer-owned per user instruction 2026-09-17;
+  not a
+ design round.
+- Fast-scroller drag bubble:
+  confirmed moot per D17 and deleted from section 9.
+
+The active round is the cover screen native round:
+ D14 cover-c is the HTML-era baseline,
+ and the round faces native folded geometry (411 × 923dp,
+ 1080 × 2424px),
+ font scales,
+ the D41/D42 dark inheritance,
+ and the undrawn light cover surface.
+
+## Cover round state and the host loopback SNAT blocker
+
+Research corrected the round's premise before any build:
+ cover-c predates most settled
+decisions.
+ It still shows the rejected ordinal and play glyph (D36),
+ the inline volume slider
+(D20 revised it to icon plus popover),
+ an icon-only Open (D38 requires the explicit label),
+16% seek (settled at 24%),
+ and pre-1B transport circles.
+ The native cover study therefore
+rebuilds the cover in the settled language:
+ outlined dropdown folder chip,
+ tonal labeled
+Open,
+ Settings action,
+ 72dp two-line rows with the D42 generated current row,
+ 24% seek,
+ outlined
+Previous/Next around a filled Pause,
+ trailing volume icon,
+ and the first-fitting mode
+arrangement.
+ D43 (2026-09-17) then removed in-app volume control
+entirely,
+ superseding D20 in-app and D14's cover volume icon,
+ so the cover deck carries no
+volume element and the capture markers no longer expect one.
+ Candidates:
+`cover-dark-wallpaper`, `cover-dark-coral`, `cover-light-l1`,
+`cover-light-l2`, `cover-light-l3`.
+ The light trio is the round's open user choice:
+ ramp with a
+deck-seam hairline,
+ ramp with no hairlines,
+ or one flat surface with hairlines at both
+seams.
+ `capture-cover-round.mjs` and mise task `prototype:capture:cover` exist in the
+prototype worktree;
+ the emulator is folded (`cmd device_state base-state 0`) and the
+cover panel is HWC display 1 at opaque 1080 × 2424px.
+
+Every Gradle build on this host failed at daemon messaging while marked sockets were
+source-NATed on IPv4 loopback:
+ the daemon accepts loopback peers only,
+ and the accepted
+socket reported the Wi-Fi address.
+ The rewrite came from netavark's unrestricted
+`meta mark & 0x2000` masquerade colliding with wg-quicker's then recommended
+`ExemptMark = 8888`,
+ not from a VPN NAT rule as first suspected;
+ the corrected trace,
+the `SO_MARK` probe table,
+ and the retired namespace bridge live in
+`doc/troubleshooting/netavark-masquerade-mask-exempt-mark.md`.
+ Linear AQU-532 and GitHub
+#553 track it;
+ commit `129435218` fixed it by moving `ExemptMark` to 100 with a
+collision guard.
+ After the fix the IPv4 loopback probe prints peer 127.0.0.1 and plain
+`./gradlew help --no-daemon` succeeds,
+ so the namespace bridge is retired.
+ `gh` still
+cannot reach the GitHub API from this session,
+ so Linear remains the tracker here.
+
+## Cover round verification and presentation
+
+The cover questionnaire embeds nine opaque 1080 × 2424 rasters, byte-bound to their
+source files, and shows no page overflow at 1920 × 1080 or 390 × 500 in either color
+scheme.
+ Axe reports zero violations and zero incomplete checks: twenty page passes in each
+scheme and twelve open-dialog passes.
+ The preview settles Fit at 22% on the mobile
+viewport without scrolling, renders native pixels as exactly 1080 × 2424 CSS px inside a
+1225 × 2566 frame with scrolling disclosed, resets to 411 × 923 inside 466 × 977, restores
+focus on Escape, and every one of the nine preview paths matches its title, source, alt
+text, and natural dimensions.
+ The form requires the single radio group, rejects
+whitespace corrections with the "spaces alone" validity message while keeping the previous
+prepared answer, invalidates prepared output on radio change and on correction input, and
+clears on reset.
+ Offline reload keeps all nine rasters with zero network resources.
+
+The cover mutation harness genuinely rejects ten faults: removed ranking, duplicated
+raster, swapped embedded references, clipboard control, painted-over true-black top row,
+fixed-color current row replacing the D42 neutral, an added hairline on L2, a restored
+volume content-desc, a collapsed 200% mode arrangement, and mismatched role-environment
+metadata.
+ Its disposable worktree is removed.
+
+The capture script now folds and unlocks the emulator itself and restores the original
+device state and settings in its finally block; the device was returned to the unfolded
+state after the round.
+
+## Picker opened state and the D44 deck correction
+
+User correction one: the first cover form omitted the subdirectory picker's opened state.
+The round now asks a second decision, K, with three native candidates that all reuse the
+D28 rail and D31 name presentation: K1 full-screen picker page, K2 dropdown panel under
+the chip, K3 modal bottom sheet with scrim.
+ Ranking K1 > K3 > K2: the full page gives the
+name wall its settled room with one scroll region; the sheet is the Material-blessed
+modal container; the dropdown panel leaves neither surface calm.
+ Five more captures
+carry the picker states, including K1 at 200% and K1 in light under L1.
+
+User correction two: the 200% cover capture clipped the segmented mode group's bottom
+border because the deck kept the unfolded 440dp scroll cap.
+ D44 removes the cap on the
+cover only: the deck takes its content height and the list absorbs the remainder, so no
+control clips at any preset while the unfolded deck keeps its accepted cap.
+
+The extended form embeds fourteen opaque rasters with six radios in two fieldsets.
+Re-verification: no page overflow at desktop or 390 × 500 in either scheme, Axe zero
+violations and zero incomplete (twenty page passes per scheme, twelve dialog passes),
+offline reload keeps all fourteen rasters with zero network resources, and the
+twelve-fault mutation harness fails every fault with its intended diagnostic before
+restoring.
+ The questionnaire is re-presented in normal Helium in the current system color
+scheme.
+ That K-round form was superseded: L settled by D45 and K replaced by the P
+prototypes below, so the reply is now one P code plus any correction in chat.
+
+## P prototype iteration and D45
+
+The user rejected K1's back navigation as discouraging and K3's sheet as non-local, asked
+for a refined K2 and more prototypes, and pointed at the Material 3 archive.
+ The archive
+confirms the lone pill chip was the wrong trigger: M3 chips are rounded rectangles that
+appear in sets, menus are the specified temporary surface opening from fields or buttons,
+and sheets are for secondary content only.
+ The round now crosses two triggers (outlined
+exposed-dropdown field versus app-bar title) with two containers (inset floating menu
+panel versus in-slot picker that replaces the list slot while the deck stays visible):
+P1 field plus menu panel, P2 field plus in-slot, P3 title plus menu panel, P4 title plus
+in-slot.
+ Ranking P2 > P4 > P1 > P3: P2's field states the selection semantics a bare title only
+implies; in-slot keeps one calm surface with the deck visible; the floating panel at least
+pairs with a control-like trigger in P1.
+ D45 records the settled light surface: L3 flat
+with hairlines at both seams, chosen because L1's ramp plus deck-seam hairline can make a
+selected first track read as detached from the list.
+
+Capture plumbing learned two emulator facts: the display sleeps mid-run unless woken per
+capture (`input keyevent 224` plus `cmd window dismiss-keyguard`, with
+`stay_on_while_plugged_in` pinned and restored), and uiautomator omits scrolled-out nodes,
+so 200% markers must name visible nodes and 200% pixel samples move into the visible slot
+band.
+ The form embeds eleven rasters with four radios in one fieldset; verification repeats
+the standing battery (overflow, Axe both schemes, eleven preview paths, form invalidation
+and whitespace rejection, offline) and the eleven-fault mutation harness fails every fault
+with its intended diagnostic.
+
+## MD3 text-field correction to the picker trigger
+
+The user challenged the dropdown field as not MD3, correctly: the first pass had read the
+chips, menus, and sheets pages but not the text-field specs where the exposed dropdown
+lives.
+ Against those specs the field deviated in four ways: 48dp instead of the 56dp
+container and target height, no floating label on the outline, uniform 16dp padding
+instead of 12dp sides with icons plus 16dp between icon and text, and an untinted
+trailing icon.
+ The trigger is now an outlined text field in exposed-dropdown form: 56dp container,
+floating Folder label notched into the 1dp outline, 4dp corners, bodyLarge value,
+onSurfaceVariant trailing dropdown icon, spec paddings.
+ The 4dp corners and 1dp outline
+were already correct.
+ One deviation remains by necessity and is disclosed in the form prose: the menu panel
+keeps the baseline 4dp corner but exceeds the 112 to 280dp menu width cap because the D31
+name wall needs the full panel.
+ All picker captures were retaken with the corrected
+field and the standing verification battery plus the eleven-fault harness pass again.
+
+## Current state: awaiting the P decision
+
+The presented form is the P-only round: four radios (P1 field plus floating menu panel,
+P2 field plus in-slot picker, P3 title plus floating menu panel, P4 title plus in-slot
+picker), eleven embedded rasters (five dark inheritance captures, the four prototypes at
+100%, P2 at 200%, and P2 in light under the settled L3), and the settled-light panel as
+context rather than a question.
+ Ranking on offer: P2 > P4 > P1 > P3.
+ Verification after the
+MD3 field correction: no overflow at desktop or 390 × 500 in either scheme, Axe zero
+violations and zero incomplete (twenty page passes per scheme, twelve dialog passes),
+eleven preview paths exact, offline reload keeps all eleven rasters with zero network
+resources, and the eleven-fault mutation harness fails every fault with its intended
+diagnostic.
+ Commits: prototype `4ff352c1b` for the MD3 text-field trigger and main
+`406663175` for the recapture.
+
+After compaction: refresh the presented window before asking again (the open Helium window
+predates the field recapture): close it with the KWin close script after pointing that
+script at the current window id from the window-list script, `gtk-launch helium` on
+`questions/current.html`, activate via the KWin activate script, and confirm active and
+non-minimized.
+ Then wait for one P code plus any correction in chat and record it as the
+next decision (D46).
+
+## Issue tracking moves to Linear for this session
+
+`gh` cannot reach the GitHub API this session:
+ `gh issue view` and `gh api` fail with
+"error connecting to api.github.com" while `curl https://api.github.com/rate_limit`
+returns 200,
+ and `gh auth status` reports a keyring login timeout.
+ The user will inspect
+GitHub themselves later.
+ For the remainder of this session,
+ issue tracking uses Linear
+instead of GitHub.
+
+Option C, codifying the design-acceptance gate in `AGENTS.md`,
+ is already tracked in
+Linear as AQU-487 "docs(agents): gate production work after design acceptance" in Triage,
+with GitHub #508 attached.
+ No duplicate issue was opened.

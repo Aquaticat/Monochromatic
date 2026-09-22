@@ -15,6 +15,8 @@ import {
   convergeDirectFix,
   type DirectFixPolicyOptions,
 } from './direct-fix-convergence.ts';
+import { loadBlobBatch, } from './blob-batch.ts';
+import { CommitTransactionGitError, } from './commit-transaction-git.ts';
 import { initialTransactionFailure, } from './commit-transaction-results.ts';
 import { withFixSummary, } from './fix-summary.ts';
 import {
@@ -22,6 +24,17 @@ import {
   installDirectFix,
 } from './direct-fix-install.ts';
 import type { PolicyEngineResult, } from './types.ts';
+
+/**
+ Creates the private-state error for failed or malformed blob output while reading added-path originals.
+ 
+ @param message - safe failure explanation
+ 
+ @returns private-state failure
+ */
+function addedOriginalError(message: string,): Error {
+  return new CommitTransactionGitError(message,);
+}
 
 /**
  Settled direct-fix operation.
@@ -148,10 +161,39 @@ async function runPreparedDirectFix({
       changedPaths: [],
     };
   }
+  /**
+   `HEAD` bytes of added paths, which convergence verified their worktree copies held.
+   */
+  const addedOriginals = await loadBlobBatch({
+    gitPath: prepared.gitPath,
+    cwd: scope.repositoryRoot,
+    oids: convergence.addedPaths
+      .map(function originalOid(added,) {
+      return added.originalOid;
+    },),
+    createError: addedOriginalError,
+  },);
   await installDirectFix({
     scope,
     changedPaths: convergence.changedPaths,
-    originals,
+    finalCandidates: convergence.finalCandidates,
+    originals: new Map([
+      ...originals,
+      ...convergence.addedPaths
+        .flatMap(function addedOriginal(added,): readonly (readonly [
+          string,
+          Uint8Array,
+        ])[] {
+        /**
+         Verified `HEAD` bytes for this added path.
+         */
+        const bytes = addedOriginals.get(added.originalOid,);
+        return bytes === undefined ? [] : [[
+          added.path,
+          bytes,
+        ],];
+      },),
+    ],),
   },);
   if (convergence.changedPaths
     .length

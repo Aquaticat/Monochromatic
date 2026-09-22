@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Music player design: dark dynamic-color matrix</title>
+  <title>Music player design: folded cover screen round</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -21,7 +21,6 @@
       --color-backdrop: rgb(20 16 24 / 72%);
       --color-device: #242124;
       --color-device-edge: #777177;
-      --color-camera: #080708;
       --color-screen: #000000;
       font-family: system-ui, sans-serif;
       background-color: var(--color-page);
@@ -170,22 +169,6 @@
       padding-inline-start: 1.25rem;
     }
 
-    .assessment {
-      margin-block-start: 0.75rem;
-    }
-
-    .assessment section {
-      padding-block: 0.75rem;
-      padding-inline: 0.75rem;
-      border-radius: 0.75rem;
-      background-color: var(--color-surface);
-    }
-
-    .assessment ul {
-      margin-block: 0.35rem 0;
-      padding-inline-start: 1.25rem;
-    }
-
     .ranking,
     .fixed-note {
       margin-block-start: 1rem;
@@ -205,60 +188,11 @@
       background-color: var(--color-accent-soft);
     }
 
-    .matrix-key {
+    .evidence-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(14rem, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
       gap: 0.75rem;
-      margin-block: 1rem;
-      padding-block: 0.75rem;
-      padding-inline: 0.75rem;
-      border-radius: 0.9rem;
-      background-color: var(--color-surface-strong);
-    }
-
-    .matrix-key strong {
-      color: var(--color-accent);
-    }
-
-    .matrix-row {
-      margin-block-start: 1.5rem;
-      padding-block-start: 1.5rem;
-      border-block-start-color: var(--color-line);
-      border-block-start-style: solid;
-      border-block-start-width: 0.0625rem;
-    }
-
-    .environment-meta {
-      color: var(--color-ink-soft);
-    }
-
-    .matrix-scroll {
-      overflow-x: auto;
-      padding-block-end: 0.75rem;
-      scrollbar-gutter: stable;
-    }
-
-    .matrix-band + .matrix-band {
       margin-block-start: 1rem;
-    }
-
-    .matrix-candidates {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(18rem, 1fr));
-      gap: 0.75rem;
-      min-inline-size: 56rem;
-    }
-
-    .matrix-row-label {
-      display: flex;
-      align-items: center;
-      min-block-size: 3rem;
-      margin-block-end: 0.5rem;
-      padding-block: 0.75rem;
-      padding-inline: 0.75rem;
-      border-radius: 0.75rem;
-      background-color: var(--color-surface-strong);
-      font-weight: 750;
     }
 
     .evidence-card {
@@ -447,13 +381,13 @@
       --preview-scale-x: 1;
       --preview-scale-y: 1;
       position: relative;
-      inline-size: calc(907px * var(--preview-scale-x));
-      block-size: calc(937px * var(--preview-scale-y));
+      inline-size: calc(466px * var(--preview-scale-x));
+      block-size: calc(977px * var(--preview-scale-y));
       margin-inline: auto;
       border-color: var(--color-device-edge);
       border-style: solid;
       border-width: max(0.0625rem, calc(2px * var(--preview-scale-x)));
-      border-radius: calc(48px * var(--preview-scale-x));
+      border-radius: calc(40px * var(--preview-scale-x));
       background-color: var(--color-device);
     }
 
@@ -461,49 +395,17 @@
       position: absolute;
       inset-block-start: calc(27px * var(--preview-scale-y));
       inset-inline-start: calc(27px * var(--preview-scale-x));
-      inline-size: calc(852px * var(--preview-scale-x));
-      block-size: calc(883px * var(--preview-scale-y));
+      inline-size: calc(411px * var(--preview-scale-x));
+      block-size: calc(923px * var(--preview-scale-y));
       overflow: hidden;
-      border-radius: calc(32px * var(--preview-scale-x));
+      border-radius: calc(28px * var(--preview-scale-x));
       background-color: var(--color-screen);
     }
 
     .device-screen img {
       display: block;
-      inline-size: calc(852px * var(--preview-scale-x));
-      block-size: calc(883px * var(--preview-scale-y));
-    }
-
-    .device-camera {
-      position: absolute;
-      z-index: 2;
-      inset-block-start: calc(43.6px * var(--preview-scale-y));
-      inset-inline-start: calc(826.2px * var(--preview-scale-x));
-      inline-size: calc(32.4px * var(--preview-scale-x));
-      block-size: calc(32.4px * var(--preview-scale-y));
-      border-color: var(--color-device-edge);
-      border-style: solid;
-      border-width: max(0.0625rem, calc(1px * var(--preview-scale-x)));
-      border-radius: 999rem;
-      background-color: var(--color-camera);
-    }
-
-    .device-hinge {
-      position: absolute;
-      inset-inline-start: 50%;
-      inline-size: calc(28px * var(--preview-scale-x));
-      block-size: calc(4px * var(--preview-scale-y));
-      border-radius: 999rem;
-      background-color: var(--color-device-edge);
-      transform: translateX(-50%);
-    }
-
-    .device-hinge[data-edge="top"] {
-      inset-block-start: calc(7px * var(--preview-scale-y));
-    }
-
-    .device-hinge[data-edge="bottom"] {
-      inset-block-end: calc(7px * var(--preview-scale-y));
+      inline-size: calc(411px * var(--preview-scale-x));
+      block-size: calc(923px * var(--preview-scale-y));
     }
 
     @media (prefers-color-scheme: dark) {
@@ -522,7 +424,6 @@
         --color-backdrop: rgb(0 0 0 / 78%);
         --color-device: #080708;
         --color-device-edge: #777177;
-        --color-camera: #000000;
         --color-screen: #000000;
       }
     }
@@ -536,10 +437,6 @@
       .panel {
         padding-block: 1rem;
         padding-inline: 0.75rem;
-      }
-
-      .matrix-key {
-        grid-template-columns: 1fr;
       }
 
       .dialog-toolbar {
@@ -572,135 +469,122 @@
 <body>
   <main>
     <header>
-      <span class="status">Design only · native Android dynamic-color evidence</span>
-      <h1>Choose dark dynamic-color behavior</h1>
-      <p class="lede">Dark mode and Android dynamic color are required. This matrix asks separately how far wallpaper-derived roles reach into structural surfaces and whether the soft-neutral current row uses a fixed or generated neutral. It does not authorize production implementation.</p>
+      <span class="status">Design only · native folded cover evidence</span>
+      <h1>Choose the cover light surface</h1>
+      <p class="lede">The folded cover screen is rebuilt natively in the settled language: D14 layout, D36 current row, D38 tonal Open, D43 with no in-app volume, 1B transport, 24% seek, and the strict first-fitting mode arrangement. The dark cover inherits D41 and D42 and is evidence only. One choice remains: which light surface treatment the cover uses. It does not authorize production implementation.</p>
     </header>
 
     <section class="panel" aria-labelledby="fixed-title">
       <h2 id="fixed-title">Fixed requirements</h2>
       <div class="requirement-grid">
         <article class="requirement">
-          <span class="code">Uncontrolled input</span>
-          <h3>Wallpaper can change</h3>
-          <p>Palette rows are stress inputs, not choices. The strategy must survive users changing wallpaper, Android color style, and contrast.</p>
+          <span class="code">Settled baseline</span>
+          <h3>D14 rebuilt, not repeated</h3>
+          <p>HTML-era cover-c kept rejected patterns: ordinal and play glyph, inline volume, icon-only Open, 16% seek, pre-1B circles. The native study carries the settled replacements instead.</p>
         </article>
         <article class="requirement">
-          <span class="code">Standing rule</span>
-          <h3>True black remains visible</h3>
-          <p>Every candidate keeps a pure-black base and track canvas. Generated accents never replace the required black identity.</p>
+          <span class="code">D43</span>
+          <h3>no in-app volume</h3>
+          <p>No volume icon, slider, or popover appears on any capture. Volume belongs to hardware keys and the system media session.</p>
         </article>
         <article class="requirement">
-          <span class="code">Accepted screen</span>
-          <h3>Only color reach changes</h3>
-          <p>3B, transport 1B, tonal Open, full title width, F1 traversal, S1 speech, 24% seek, system bars, and adaptive mode behavior remain fixed.</p>
+          <span class="code">Adaptive rule</span>
+          <h3>First fitting arrangement</h3>
+          <p>One row at 85% and 100% text, 2 × 2 at 150%, four rows at 200%. Measured from the native hierarchies, not assumed.</p>
         </article>
         <article class="requirement">
           <span class="code">Native source</span>
-          <h3>Android supplies dynamic roles</h3>
-          <p>Compose Material 3 1.5.0-alpha27 reads Android 17 dark dynamic resources; each candidate then applies its disclosed fixed-surface overrides. Captures are opaque 2076 × 2152 physical px at 852 × 883dp.</p>
+          <h3>Folded cover panel</h3>
+          <p>Opaque 1080 × 2424 physical px at 411 × 923dp behind real Android system bars and insets, Compose Material 3 1.5.0-alpha27, folded device state with the cover display active.</p>
         </article>
       </div>
-      <div class="fixed-note"><strong>Measured contrast:</strong> selected rendered text combinations have a minimum of 4.63:1. Generated rail outlines have a minimum of 3.80:1 against every adjacent black or generated container sampled by these candidates. Reduced-motion and TalkBack requirements are unchanged.</div>
+      <div class="fixed-note"><strong>Folded face:</strong> the captures show no hinge mark and no camera dot on the cover face, so the preview chassis draws bezel and corners only.</div>
     </section>
 
-    <section class="panel" aria-labelledby="surface-title">
-      <h2 id="surface-title">Decision one: structural surface reach</h2>
+    <section class="panel" aria-labelledby="dark-title">
+      <h2 id="dark-title">Dark cover: inherited policy, evidence only</h2>
+      <p>These captures verify that the D41 and D42 inheritance holds on the cover: true-black window and list canvas, fixed <code>#0A0A0D</code> deck, and an Android-generated <code>surfaceContainerLow</code> current row with bold title. No choice is asked here.</p>
+      <div class="evidence-grid">
+        @@DARK_CARDS@@
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="picker-decision-title">
+      <h2 id="picker-decision-title">Decision: cover subdirectory picker opened state</h2>
+      <p>Tapping the folder trigger opens the subdirectory picker. The first round's K1 back navigation read as discouraging and the K3 sheet placed the choice far from its trigger, so this round crosses two trigger shapes with two containers, grounded in the Material 3 archive: chips appear in sets and are rounded rectangles, so the lone pill chip is gone; menus are the specified temporary surface and open from fields or buttons; sheets are for secondary content only. Every prototype reuses the settled picker presentation: D28 adaptive letter rail, D31 wrapped plain-text names at 48dp with primary plus 2dp indicator on the current folder, no segmentation, nothing truncated. Dark surfaces follow D41 and D42; light follows D45.</p>
       <div class="strategy-grid">
+        <article class="strategy-card">
+          <span class="code">P1</span>
+          <h3>Dropdown field plus floating menu panel</h3>
+          <p>An outlined text field in exposed-dropdown form (56dp container, floating Folder label on the outline, 4dp corners, trailing dropdown icon, 12dp side and 16dp icon padding per the text-field specs) carries the folder name; the picker opens as an inset menu container with 4dp corners over the list, ending above the deck. The menu keeps the baseline 4dp corner but exceeds the 280dp menu width cap because the D31 name wall needs the full panel.</p>
+          <ul class="role-list">
+            <li><strong>Pros:</strong> the field shape says choose one of many, matching the exposed dropdown lineage; the menu container is the specified temporary surface; the panel stays local to its trigger.</li>
+            <li><strong>Cons:</strong> a second surface floats over the list; the list itself disappears behind the panel.</li>
+          </ul>
+        </article>
         <article class="strategy-card" data-recommended>
-          <span class="code">R1 · recommended</span>
-          <h3>Stable black structure</h3>
-          <p>Keep the folder canvas, rail, track canvas, and deck on the accepted fixed black ladder. Android still generates component accents, text, and outlines.</p>
+          <span class="code">P2 · recommended</span>
+          <h3>Dropdown field plus in-slot picker</h3>
+          <p>The same outlined text-field trigger, but the picker replaces the list slot in place: rail and names occupy the list region while the deck stays visible; the caret flips to close.</p>
           <ul class="role-list">
-            <li><strong>Pros:</strong> structural surface colors remain fixed across wallpaper changes; preserves B2 literally.</li>
-            <li><strong>Cons:</strong> generated neutral tint stays out of large structural surfaces.</li>
+            <li><strong>Pros:</strong> one calm surface with no floating layer; the trigger never moves; the deck and its state stay visible; no back step and no scrim.</li>
+            <li><strong>Cons:</strong> the track list is not visible while choosing.</li>
           </ul>
         </article>
         <article class="strategy-card">
-          <span class="code">R2</span>
-          <h3>Zoned dynamic structure</h3>
-          <p>Keep both content canvases black. Use generated <code>surfaceContainerLow</code> for the letter rail and deck.</p>
+          <span class="code">P3</span>
+          <h3>App-bar title plus floating menu panel</h3>
+          <p>The folder name sits as the top row's title with a caret; the menu panel is identical to P1.</p>
           <ul class="role-list">
-            <li><strong>Pros:</strong> adds bounded Material You surface expression without tinting either content canvas.</li>
-            <li><strong>Cons:</strong> wallpaper changes the visual weight of the rail and deck.</li>
+            <li><strong>Pros:</strong> calmest top row; no extra container chrome.</li>
+            <li><strong>Cons:</strong> plain title text is a weak trigger affordance; keeps the floating panel's cons.</li>
           </ul>
         </article>
         <article class="strategy-card">
-          <span class="code">R3</span>
-          <h3>Tonal folder structure</h3>
-          <p>Keep the track canvas black. Apply generated low, standard, and high containers across the folder canvas, rail, and deck.</p>
+          <span class="code">P4</span>
+          <h3>App-bar title plus in-slot picker</h3>
+          <p>The title trigger with the in-slot container from P2.</p>
           <ul class="role-list">
-            <li><strong>Pros:</strong> gives the strongest system-personalized pane hierarchy.</li>
-            <li><strong>Cons:</strong> uncontrolled palette color occupies the complete folder pane and competes with true black.</li>
+            <li><strong>Pros:</strong> calmest chrome overall; local; deck visible.</li>
+            <li><strong>Cons:</strong> weakest trigger affordance of the four; list hidden while open.</li>
           </ul>
         </article>
       </div>
-      <p class="ranking"><strong>Ranking: R1 &gt; R2 &gt; R3.</strong> R1 beats R2 because every meaningful component accent still follows Android while structural surface colors stay stable. R2 beats R3 because it confines generated surfaces to bounded regions instead of letting an uncontrolled palette dominate the folder pane.</p>
+      <p class="ranking"><strong>Ranking: P2 &gt; P4 &gt; P1 &gt; P3.</strong> P2 beats P4 because the outlined field states the selection semantics that a bare title only implies, at the cost of one bordered container. P4 beats P1 because keeping one calm surface in the list slot avoids a floating layer over content the person was just reading. P1 beats P3 because the floating menu at least pairs with a trigger that looks like a control.</p>
+      <div class="evidence-grid">
+        @@PICKER_CARDS@@
+      </div>
     </section>
 
-    <section class="panel" aria-labelledby="current-row-title">
-      <h2 id="current-row-title">Decision two: current-row neutral source</h2>
-      <div class="strategy-grid">
-        <article class="strategy-card" data-recommended>
-          <span class="code">C1 · recommended</span>
-          <h3>Fixed soft neutral</h3>
-          <p>Keep the accepted current row at fixed <code>#0A0A0D</code> plus bold title, independent of structural surface reach.</p>
-          <ul class="role-list">
-            <li><strong>Pros:</strong> preserves one calm current-state treatment under every wallpaper and contrast setting.</li>
-            <li><strong>Cons:</strong> the row container itself does not inherit Android's generated neutral hue.</li>
-          </ul>
-        </article>
-        <article class="strategy-card">
-          <span class="code">C2</span>
-          <h3>Dynamic soft neutral</h3>
-          <p>Use Android-generated <code>surfaceContainerLow</code> plus the same bold title, independent of structural surface reach.</p>
-          <ul class="role-list">
-            <li><strong>Pros:</strong> keeps the semantic Material role synchronized with the user's current palette and contrast.</li>
-            <li><strong>Cons:</strong> gold, magenta, and high-contrast environments visibly change the row's weight and hue.</li>
-          </ul>
-        </article>
+    <section class="panel" aria-labelledby="light-settled-title">
+      <h2 id="light-settled-title">Light surface: settled (D45)</h2>
+      <p>The cover light scheme is L3: one flat <code>surfaceContainerLowest</code> surface with <code>outlineVariant</code> hairlines at the top-row and deck seams. The user chose it because L1's ramp plus deck-seam hairline can make a selected first track read as detached from the list. The card below shows the settled light surface under the recommended picker prototype; every prototype inherits it.</p>
+      <div class="evidence-grid">
+        @@LIGHT_CARDS@@
       </div>
-      <p class="ranking"><strong>Ranking: C1 &gt; C2.</strong> C1 beats C2 because it keeps the accepted current-state weight stable while controls and foregrounds already follow Android. C2 remains neutral, but its generated hue and weight change with the system palette.</p>
-    </section>
-
-    <section class="panel" aria-labelledby="matrix-title">
-      <h2 id="matrix-title">Native matrix</h2>
-      <p>Each environment contains a 2 × 3 matrix. Columns vary structural reach; rows vary only the current-row neutral source. All six candidates share one Android-generated role output, system bars, data, and accepted geometry. Open any candidate for Fit, native pixels, 100% reset, dimensions, and scrolling state.</p>
-      <div class="matrix-key" role="group" aria-label="Matrix columns">
-        <strong>R1 · Stable structure</strong>
-        <strong>R2 · Zoned structure</strong>
-        <strong>R3 · Tonal structure</strong>
-      </div>
-
-      @@MATRIX_ROWS@@
     </section>
 
     <section class="panel" aria-labelledby="analysis-title">
-      <h2 id="analysis-title">Analysis and recommended additions</h2>
+      <h2 id="analysis-title">Analysis</h2>
       <div class="requirement-grid">
-        <article class="requirement"><h3>Wallpaper robustness</h3><p>Every candidate changes controls, selected accents, text, and outlines with Android. R1 alone fixes structural surfaces; R2 and R3 intentionally add generated neutral tint.</p></article>
-        <article class="requirement"><h3>True-black expression</h3><p>R1 keeps the folder canvas, rail, and track canvas black. R2 keeps both content canvases black. R3 keeps the track canvas black but makes the folder canvas dynamic.</p></article>
-        <article class="requirement"><h3>Current state</h3><p>Every candidate retains a neutral current-row container plus bold title. C1 fixes its color; C2 accepts Android's generated neutral hue and contrast response.</p></article>
-        <article class="requirement"><h3>Evidence boundary</h3><p>These captures establish palette-dependent appearance. They do not establish live wallpaper refresh because each debug candidate is relaunched after Android roles settle.</p></article>
-        <article class="requirement"><h3>Implementation follow-through</h3><p>Later implementation should follow system theme changes live, retain a baseline dark fallback below Android 12, use generated <code>outline</code> for the dark rail boundary, and regression-test wallpaper changes without restarting the app.</p></article>
+        <article class="requirement"><h3>Current row on light</h3><p>Every light candidate keeps the D42 generated <code>surfaceContainerLow</code> current row plus bold title on the brightest list canvas, so the settled cue pair carries across schemes.</p></article>
+        <article class="requirement"><h3>Scale behavior</h3><p>The mode control follows the strict first-fitting rule at every preset: one row at 85% and 100%, 2 × 2 at 150%, four rows at 200%. The deck scrolls vertically if it must; nothing truncates.</p></article>
+        <article class="requirement"><h3>Dark inheritance</h3><p>The dark cover keeps the true-black window and list canvas and the fixed deck from D41, with Android-generated accents, foregrounds, and the current-row neutral from D42. The coral seed shows the inheritance under an uncontrolled palette.</p></article>
+        <article class="requirement"><h3>Evidence boundary</h3><p>Each capture relaunches the debug candidate after Android roles settle, so the rasters establish palette-dependent appearance, not live wallpaper refresh.</p></article>
       </div>
     </section>
 
     <section class="panel" aria-labelledby="answer-title">
-      <h2 id="answer-title">Your decisions</h2>
+      <h2 id="answer-title">Your decision</h2>
       <form id="review-form">
         <fieldset>
-          <legend>Choose structural surface reach</legend>
-          <label class="review-choice" data-recommended><input type="radio" name="surfaceReach" value="R1 Stable black structure" required><span><strong>R1 Stable black structure (Recommended).</strong> Pros: dynamic components with fixed structural surfaces and literal B2 preservation. Cons: generated neutral tint stays out of large structural surfaces.</span></label>
-          <label class="review-choice"><input type="radio" name="surfaceReach" value="R2 Zoned dynamic structure" required><span><strong>R2 Zoned dynamic structure.</strong> Pros: bounded Material You surfaces while content canvases stay black. Cons: wallpaper changes the rail and deck weight.</span></label>
-          <label class="review-choice"><input type="radio" name="surfaceReach" value="R3 Tonal folder structure" required><span><strong>R3 Tonal folder structure.</strong> Pros: strongest system-personalized pane hierarchy. Cons: uncontrolled palette color occupies the folder pane and weakens true-black expression.</span></label>
+          <legend>Choose the cover picker opened state</legend>
+          <label class="review-choice"><input type="radio" name="pickerOpenedState" value="P1 Dropdown field plus floating menu panel" required><span><strong>P1 Dropdown field plus floating menu panel.</strong> Pros: field states choose-one-of-many; menu is the specified temporary surface; local to its trigger. Cons: floating layer over the list.</span></label>
+          <label class="review-choice" data-recommended><input type="radio" name="pickerOpenedState" value="P2 Dropdown field plus in-slot picker" required><span><strong>P2 Dropdown field plus in-slot picker (Recommended).</strong> Pros: one calm surface, trigger stays put, deck visible, no back step. Cons: list hidden while choosing.</span></label>
+          <label class="review-choice"><input type="radio" name="pickerOpenedState" value="P3 App-bar title plus floating menu panel" required><span><strong>P3 App-bar title plus floating menu panel.</strong> Pros: calmest top row. Cons: weak trigger affordance plus the floating panel's cons.</span></label>
+          <label class="review-choice"><input type="radio" name="pickerOpenedState" value="P4 App-bar title plus in-slot picker" required><span><strong>P4 App-bar title plus in-slot picker.</strong> Pros: calmest chrome, local, deck visible. Cons: weakest trigger affordance.</span></label>
         </fieldset>
-        <fieldset>
-          <legend>Choose current-row neutral source</legend>
-          <label class="review-choice" data-recommended><input type="radio" name="currentRowSource" value="C1 Fixed soft neutral" required><span><strong>C1 Fixed soft neutral (Recommended).</strong> Pros: current-state weight remains calm and stable. Cons: row container hue does not follow Android.</span></label>
-          <label class="review-choice"><input type="radio" name="currentRowSource" value="C2 Dynamic soft neutral" required><span><strong>C2 Dynamic soft neutral.</strong> Pros: current row follows Android's neutral role and contrast. Cons: wallpaper and style visibly change its hue and weight.</span></label>
-        </fieldset>
-        <label for="other-corrections"><strong>What should change?</strong> Enter “None” if both selections are accepted.</label>
+        <label for="other-corrections"><strong>What should change?</strong> Enter “None” if the selection is accepted.</label>
         <textarea id="other-corrections" name="otherCorrections" required></textarea>
         <div class="actions">
           <button class="action-button" type="submit">Prepare answer</button>
@@ -708,28 +592,25 @@
         </div>
       </form>
       <div id="output" hidden aria-live="polite"></div>
-      <p class="fixed-note"><strong>Response path:</strong> reply in chat with both codes, for example <code>R1, C1</code>, plus any correction.</p>
+      <p class="fixed-note"><strong>Response path:</strong> reply in chat with the light code, for example <code>L1</code>, plus any correction.</p>
     </section>
   </main>
 
   <dialog id="preview-dialog" aria-labelledby="preview-title">
     <div class="dialog-shell">
       <div class="dialog-toolbar">
-        <h2 id="preview-title">Native dark dynamic-color evidence</h2>
+        <h2 id="preview-title">Native folded cover evidence</h2>
         <button class="toolbar-button" id="zoom-out" type="button">Zoom out</button>
         <button class="toolbar-button" id="zoom-in" type="button">Zoom in</button>
         <button class="toolbar-button" id="fit" type="button">Fit</button>
         <button class="toolbar-button" id="native" type="button">Native pixels</button>
         <button class="toolbar-button" id="reset" type="button">Reset 100%</button>
         <button class="toolbar-button" id="preview-close" type="button">Close preview</button>
-        <span id="preview-details">Source 2076 × 2152 physical px · design 852 × 883dp · 100%</span>
+        <span id="preview-details">Source 1080 × 2424 physical px · design 411 × 923dp · 100%</span>
       </div>
       <div class="preview-stage" id="preview-stage">
         <div class="device-shell" id="preview-device">
-          <div class="device-screen"><img id="preview-image" width="852" height="883" alt=""></div>
-          <span class="device-camera" aria-hidden="true"></span>
-          <span class="device-hinge" data-edge="top" aria-hidden="true"></span>
-          <span class="device-hinge" data-edge="bottom" aria-hidden="true"></span>
+          <div class="device-screen"><img id="preview-image" width="411" height="923" alt=""></div>
         </div>
       </div>
     </div>
@@ -742,12 +623,12 @@
     const previewImage = document.querySelector('#preview-image');
     const previewTitle = document.querySelector('#preview-title');
     const previewDetails = document.querySelector('#preview-details');
-    const sourceWidth = 2076;
-    const sourceHeight = 2152;
-    const designWidth = 852;
-    const designHeight = 883;
-    const frameWidth = 907;
-    const frameHeight = 937;
+    const sourceWidth = 1080;
+    const sourceHeight = 2424;
+    const designWidth = 411;
+    const designHeight = 923;
+    const frameWidth = 466;
+    const frameHeight = 977;
     const nativeScaleX = sourceWidth / designWidth;
     const nativeScaleY = sourceHeight / designHeight;
     const maximumUniformScale = Math.min(nativeScaleX, nativeScaleY);
@@ -766,7 +647,7 @@
         ? 'scrolling available'
         : 'no scrolling needed';
       const percent = Math.round(scaleX * 100);
-      const nextText = `Source 2076 × 2152 physical px · design 852 × 883dp · ${percent}% · ${Math.round(screen.width)} × ${Math.round(screen.height)} CSS px screen · ${Math.round(frame.width)} × ${Math.round(frame.height)} CSS px frame · ${scrolling}`;
+      const nextText = `Source 1080 × 2424 physical px · design 411 × 923dp · ${percent}% · ${Math.round(screen.width)} × ${Math.round(screen.height)} CSS px screen · ${Math.round(frame.width)} × ${Math.round(frame.height)} CSS px frame · ${scrolling}`;
       if (previewDetails.textContent !== nextText) {
         previewDetails.textContent = nextText;
       }
@@ -875,8 +756,7 @@
       corrections.setCustomValidity('');
       const data = new FormData(form);
       const preparedAnswer = [
-        `Structural surface reach: ${data.get('surfaceReach')}`,
-        `Current-row neutral source: ${data.get('currentRowSource')}`,
+        `Cover picker opened state: ${data.get('pickerOpenedState')}`,
         `Corrections: ${corrections.value.trim()}`,
       ].join('\n');
       output.textContent = preparedAnswer;

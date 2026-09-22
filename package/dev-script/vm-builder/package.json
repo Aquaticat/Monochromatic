@@ -18,7 +18,7 @@
     "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*"
   },
-  "version": "0.0.1",
+  "version": "0.0.4",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",

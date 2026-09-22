@@ -1,5 +1,14 @@
 # Keep mise, do not build our own toolchain or monorepo manager
 
+Superseded on 2026-09-16 by
+[`doc/decision/monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md).
+This audit asked whether maintainers were disinvesting;
+the later decision rests on documentation the user judged insufficient,
+a market vet in which no candidate passed
+([`tech-monorepo-manager-vet-2026-09-16.md`](tech-monorepo-manager-vet-2026-09-16.md)),
+and a single-file shipping requirement this audit never considered.
+Its reasoning below stands for the question it asked.
+
 Audit date:
  2026-06-02.
 Verdict:

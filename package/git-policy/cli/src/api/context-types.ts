@@ -7,6 +7,7 @@
 import type {
   CandidateFile,
   GitObjectId,
+  TrackedFile,
 } from './policy-types.ts';
 
 /**
@@ -51,6 +52,16 @@ export type LazyPolicyGitFacts = {
    Loads candidate files.
    */
   readonly candidates: () => Promise<readonly CandidateFile[]>;
+  /**
+   Loads current-state tracked files matching Git pathspecs, which may use glob magic.
+   Empty in post-commit and manual-push lifecycles, which have no candidate state to join.
+   */
+  readonly trackedFiles: (request: Readonly<{
+    /**
+     Git pathspecs selecting tracked files.
+     */
+    pathspecs: readonly string[];
+  }>,) => Promise<readonly TrackedFile[]>;
   /**
    Loads HEAD object ID, or absence sentinel before first commit.
    */

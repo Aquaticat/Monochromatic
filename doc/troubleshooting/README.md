@@ -48,14 +48,6 @@ Performance-related issues and optimizations:
 - WSL performance improvements
 - File system vs binary execution trade-offs
 
-### [Configuration Snippets](configuration.md)
-
-Useful configuration examples and snippets:
-
-- GitHub MCP server configuration
-- Caddy build commands with extensions
-- Other tool configurations
-
 ### [Configuration Format Issues](toml.md)
 
 Problems with configuration file formats and why TOML can be problematic:
@@ -266,6 +258,48 @@ GPU and display capability adoption for the labwc migration VM:
   Venus Vulkan,
   native RADV,
   and the existing SPICE resize path
+
+### Comment-preserving structured edits in Rust
+
+Quirks found while choosing TOML,
+JSONC,
+and XML editing crates for the monorepo manager
+(`doc/planning/monorepo-manager-from-scratch-design.md`,
+"Managed file editing"):
+
+- [`toml_edit` 0.25.15 drops or moves comments](toml-edit-comment-loss.md)
+  on index assignment,
+  removal,
+  and `Table::insert`
+- [taplo 0.14.0 rejects TOML 1.1 inline-table trailing commas](taplo-toml-1-1-inline-table-trailing-comma.md)
+- [`json-five` 0.3.1 drops block comments' closing slash](json-five-unterminated-block-comment.md)
+  and panics on multibyte line-comment ends
+- [`jsonc-parser` 0.33.2 parses loose syntax by default](jsonc-parser-json5-defaults.md)
+  and ignores `allow_comments: false` in the CST parser
+- [Biome JSON crates 0.5.7 need exact dependency pins](biome-json-crates-exact-pins.md)
+  after breaking patch releases
+- [XML serializers write literal tabs and newlines into attribute values](xml-attribute-whitespace-serialization.md),
+  which reparse as spaces
+- [`hcl-edit` drops comments inside binary operations](hcl-edit-binary-operator-decor.md)
+- [`hcl-edit` rewrites `<<-` heredoc introducers and body indentation](hcl-edit-heredoc-dedent.md)
+- [`hcl-rs` evaluation diverges from the HCL reference](hcl-rs-eval-arithmetic-and-iteration-order.md)
+  on arithmetic,
+  object iteration order,
+  and `% 0`
+
+### Hash selection and cross-machine probes
+
+Found while choosing meow's cache key hash and measuring it on a second machine:
+
+- [`gxhash` needs the `aes` target feature](gxhash-aes-target-feature.md)
+  and has no software fallback
+- [Rust hash crates hide backends behind features and cfg](rust-hash-crate-build-and-test-quirks.md),
+  and some test suites pass while testing nothing
+- [`rustup` proxies auto-install into the default home](rustup-proxy-auto-install-default-home.md)
+  when a chained remote step drops `RUSTUP_HOME`
+- [macOS `pmset -g thermlog` never returns](macos-pmset-thermlog-never-returns.md);
+  `pmset -g therm` is the one-shot form
+- [`rustix` configures `fs::fadvise` out on Apple targets](rustix-apple-fadvise-gate.md)
 
 ## Quick Links
 

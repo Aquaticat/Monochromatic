@@ -342,10 +342,10 @@ docs.
 9.  Run the test suite cross-platform,
      not just on the dev machine.
      `cargo-publish.yml` builds
-    seven target triples (linux gnu/musl,
+    eight target triples (linux gnu/musl,
      arm gnu/musl,
      macOS x86/arm,
-     windows-msvc) but never
+     windows-msvc x86/arm) but never
     runs `cargo test` on any of them.
      Path canonicalization,
      symlink handling,

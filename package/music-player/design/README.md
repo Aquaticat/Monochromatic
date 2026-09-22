@@ -26,23 +26,44 @@ Read these files in order:
 
 ## Design questionnaire
 
-The active design round applies the standing true-black dark requirement while following
-Android dynamic color.
- It preserves accepted option 3B,
+The most recent design round applied the standing true-black dark requirement while
+following Android dynamic color.
+ It preserved accepted option 3B,
  transport 1B,
- strict adaptive
-mode behavior,
+ strict
+adaptive mode behavior,
  and the completed accessibility decisions.
- The native Compose matrix
-separates three structural surface reaches from two current-row neutral sources across
-six representative Android palette environments at the target's opaque 2076 × 2152px
-panel resolution.
- Wallpaper rows are uncontrolled stress inputs,
+ The native Compose
+matrix separated three structural surface reaches from two current-row neutral sources
+across six representative Android palette environments at the target's opaque 2076 ×
+2152px panel resolution.
+ Wallpaper rows were uncontrolled stress inputs,
  not choices.
+The user settled the round with R1 stable black structure and C2 generated
+`surfaceContainerLow` current row;
+ decisions D41 and D42 record the choices.
  The form
-prepares a visible answer and directs the user to reply in chat;
+prepared a visible answer and directed the user to reply in chat;
  it intentionally has no
 clipboard API or copy button.
+
+The active round re-verifies the cover screen natively with D14 cover-c as the HTML-era
+baseline and iterates the subdirectory picker's opened state as four prototypes: P1
+outlined text-field trigger plus floating menu panel, P2 the same field with an in-slot
+picker that keeps the deck visible, P3 app-bar title trigger plus menu panel, P4 title
+plus in-slot picker.
+ The trigger is an MD3 outlined text field in exposed-dropdown form
+(56dp container, floating Folder label, 4dp corners, spec paddings); the menu panel keeps
+the baseline 4dp corner but exceeds the 280dp menu width cap because the D31 name wall
+needs the full panel, a deviation disclosed in the form.
+ The light surface is settled by
+D45 (L3 flat with hairlines at both seams).
+ The round awaits one P code.
+ The live
+design backlog,
+ its order,
+ and the developer-owned items live in `open-questions.md`
+section 0b.
 
 The preceding accessibility review settled pane-by-pane TalkBack traversal (F1) and
 structured current-track speech (S1).

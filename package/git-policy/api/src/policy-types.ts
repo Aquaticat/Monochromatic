@@ -85,6 +85,40 @@ export type CandidateFile = {
 };
 
 /**
+ Tracked file in the lifecycle's current candidate state, whether or not it is a candidate. @example `const [manifest] = await context.git.trackedFiles({ pathspecs: [':(glob)package/*\/*\/package.json'] });`
+ */
+export type TrackedFile = {
+  /**
+   Invocation-local opaque target ID; a patch naming it on a non-candidate path adds that path to the commit.
+   */
+  readonly targetId: string;
+  /**
+   Repository-relative path.
+   */
+  readonly path: RepositoryPath;
+  /**
+   Current revision ID.
+   */
+  readonly revision: GitObjectId;
+  /**
+   Git file mode.
+   */
+  readonly mode: CandidateFileMode;
+  /**
+   Revision ID at `HEAD`, or shared absence sentinel when `HEAD` lacks the path.
+   */
+  readonly headRevision: GitObjectId | AbsentGitValue;
+  /**
+   Loads current exact bytes.
+   */
+  readonly bytes: () => Promise<Uint8Array>;
+  /**
+   Loads exact `HEAD` bytes, or shared absence sentinel when `HEAD` lacks the path.
+   */
+  readonly headBytes: () => Promise<Uint8Array | AbsentGitValue>;
+};
+
+/**
  Facts about the triggering command. @example `const args = context.command.transformedArgs;`
  */
 export type PolicyCommandFacts = Readonly<{

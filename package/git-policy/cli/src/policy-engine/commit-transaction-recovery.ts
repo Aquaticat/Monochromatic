@@ -18,6 +18,7 @@ import type { GitWorktreeIdentity, } from '../git-worktree-identity.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { isMissingPath, } from '../trust/registry-io.ts';
 import { snapshotFilesEqual, } from './commit-transaction-candidate-snapshot.ts';
+import { installAddedWorktreeFiles, } from './commit-transaction-added-paths.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
 import { createOwnedFileLink, } from './commit-transaction-install-link.ts';
 import {
@@ -365,6 +366,12 @@ export async function recoverCommitTransaction({
       },);
       await rm(lockPath,);
     }
+    await installAddedWorktreeFiles({
+      gitPath,
+      cwd: effectiveCwd,
+      repositoryRoot: journal.repositoryRoot,
+      records: journal.addedPaths,
+    },);
     await removeRecoveryArtifacts({ directory, },);
     return installationMarked ? 'already-installed' : 'index-installed';
   }
@@ -379,6 +386,12 @@ export async function recoverCommitTransaction({
     realIndexPath,
     postIndexPath: stablePostIndexPath,
     journal,
+  },);
+  await installAddedWorktreeFiles({
+    gitPath,
+    cwd: effectiveCwd,
+    repositoryRoot: journal.repositoryRoot,
+    records: journal.addedPaths,
   },);
   await removeRecoveryArtifacts({ directory, },);
   return 'index-installed';

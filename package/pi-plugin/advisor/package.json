@@ -3,7 +3,7 @@
   "description": "Scoped secondary reviewer tool for pi, modelled after Claude Code Advisor",
   "type": "module",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
@@ -24,6 +24,7 @@
     "src"
   ],
   "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
     "@earendil-works/pi-coding-agent": "*",
     "@earendil-works/pi-tui": "*",
     "typebox": "*"

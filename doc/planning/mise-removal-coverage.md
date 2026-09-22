@@ -1,13 +1,89 @@
 # Mise removal coverage
 
 Status:
- draft.
-Full removal is the intended endpoint,
-but is not yet recommended because replacement owners remain unselected and unverified.
+ the replacement is chosen,
+ its design is complete,
+ and no code exists yet.
+Full removal is the endpoint,
+and it happens only when meow supports the full platform matrix,
+at which point Mise is removed entirely rather than kept for provisioning.
 Keeping Mise only for tool provisioning and locking is a transitional checkpoint,
 not the target state.
-Replacement configuration should use TypeScript as its canonical authored format.
+Earlier drafts made TypeScript the canonical authored format for replacement configuration.
+On 2026-09-16 the user stated that the monorepo manager's configuration does not have to be TypeScript,
+so TypeScript is no longer a requirement for that owner.
 Whether generated tool-native adapter files are acceptable remains unresolved.
+
+Later on 2026-09-16 the monorepo manager narrowed to one remaining route:
+a single-file all-Rust tool with file-enforcer rewritten in Rust,
+because a single file carrying Node is too big.
+The user accepted it the same day
+([`doc/decision/monorepo-manager-all-rust.md`](../decision/monorepo-manager-all-rust.md)),
+and the replacement owners were chosen on 2026-09-17:
+
+- Configuration is OpenTofu-shaped HCL,
+   parsed by a patched `hcl-edit` under meow's own evaluator
+   ([`doc/decision/monorepo-manager-hcl-front-end.md`](../decision/monorepo-manager-hcl-front-end.md)).
+- Rules that write outside a repository move to a per-user configuration,
+   with repository proposals the user accepts
+   ([`doc/decision/monorepo-manager-per-user-config.md`](../decision/monorepo-manager-per-user-config.md)).
+- Content hashing is XXH3-128
+   ([`doc/decision/monorepo-manager-cache-key-hash.md`](../decision/monorepo-manager-cache-key-hash.md)).
+- The root `mise.toml` stays generated from `mise.no-env.toml` until Mise is removed,
+   and meow never generates it.
+- Every line meow writes is a JSON object,
+   so consumers of these tasks parse rather than scrape.
+
+Sections that name file-enforcer the canonical TypeScript configuration compiler,
+or that require provisioning Node before file-enforcer can execute,
+describe today's TypeScript implementation,
+which keeps running until meow replaces it.
+
+## Motivation
+
+On 2026-09-16 the user stated that Mise must be migrated away from because it is not documented well enough,
+with no ETA.
+Replacement candidates should therefore be judged partly on documentation quality for the features this repository
+would actually consume.
+Bazel was assessed as a broader alternative the same day;
+see `doc/research/bazel-migration-dx.md`.
+
+## Monorepo manager hard requirements
+
+Stated by the user on 2026-09-16:
+
+- Whatever monorepo manager is chosen must provide every functionality of `@monochromatic-dev/dev-script-file-enforcer`.
+  Cargo manifest enforcement and JetBrains LSP4IJ settings management are pluggable by definition.
+  OS package provisioning and its Repology-derived package index may be replaced by Meta Package Manager.
+- It must provide the watch plus RPC pattern:
+   a watch mode that keeps everything up to date,
+   plus an RPC or IPC mechanism through which people can inspect and control what the running watch process is doing.
+  The user added the control requirement on 2026-09-16,
+   correcting an earlier inference that observation alone was enough.
+- Wildly underdocumented candidates are culled early,
+   including documentation whose structure keeps readers from finding consumed behavior;
+   moon is excluded on that basis.
+  Any confusion or frustration while reading or trying to read a candidate's documentation culls it immediately,
+   with no second chances.
+- Result on 2026-09-16:
+   `doc/audit/tech-monorepo-manager-vet-2026-09-16.md` screened 732 entries and re-screened 21 after the user counted
+   external wrappers as plugging in;
+   no candidate passed,
+   so neither an existing tool nor a plug-in host qualifies.
+- Fallback order:
+   first an existing tool on the market;
+   if none qualifies,
+   plug these functionalities into an existing tool;
+   if that is too hard,
+   build a Bazel replacement.
+
+Recorded inferences,
+open to user correction:
+
+- Inspection means at least observing current and recent activity.
+- Control means at least starting or rerunning work and cancelling running work through the same channel.
+- The inspection interface should be documented,
+  because insufficient documentation is the stated reason for leaving Mise.
 
 ## Trigger and correction
 
@@ -253,19 +329,58 @@ and `doc/decision/mise-task-node-invocations.md`.
 bounded fanout,
 and failure collection inside Node scripts that invoke Mise recursively.
 
-Proposed owner:
- pnpm 12.4+ workspace task orchestration and `pnpm pipeline` are the primary surface candidates.
-File-enforcer can compile canonical TypeScript task definitions into `pnpm-workspace.yaml` relationships and project manifest
-scripts.
-Executable logic should remain TypeScript entry points with ordinary argument-vector and exit-status contracts.
-Nadle or a focused repository task runner remains a fallback if pnpm cannot preserve required semantics.
-Thin Mise adapters may remain during migration.
+Owner,
+selected 2026-09-17:
+ meow.
+Tasks are declared in one root `meow.hcl`,
+packages are selected by tags meow infers from manifests and `package` blocks adjust,
+specialization is most-specific-tag-wins with mandatory `overridden` and `override` markers,
+and a command is an argv list with no shell
+("Configuration authoring" in `monorepo-manager-from-scratch-design.md`).
+Execution reaches a task through `meow run //package/<path>:<task>`,
+which holds the terminal,
+forwards the task's bytes,
+and exits with its code;
+`meow status`,
+`meow pause`,
+`meow resume`,
+`meow end`,
+and `meow priority` control work already scheduled
+("User interface").
+Cross-package edges come from the native manifests,
+and freshness comes from hashing a task's declared reads.
+
+Still open on 2026-09-17,
+so this entry cannot be marked verified:
+which task names meow builds in,
+how a package changes one,
+whether built-ins share a namespace with user-defined tasks,
+and what makes one task run before another
+("Open questions" in the design).
+
+Superseded proposals:
+ pnpm 12.4+ workspace orchestration with `pnpm pipeline`,
+file-enforcer compiling TypeScript task definitions into `pnpm-workspace.yaml` and manifest scripts,
+and Nadle as the fallback.
 
 Selection status:
  blocked on a disposable pnpm 12.4+ pilot,
 source audit,
 and representative runtime validation.
 The pipeline feature is experimental and task execution still depends on project manifest scripts.
+
+Update 2026-09-16:
+pnpm exited the monorepo manager vet at the documentation gate.
+`https://pnpm.io/cli/recursive` says "Even if `--no-bail` is used,
+ all tasks will finish",
+while `https://pnpm.io/workspace-task-orchestration` says that after a task fails,
+dependent tasks are skipped and only independent ready tasks continue under `--no-bail`.
+Nadle,
+the fallback,
+also exited at the documentation gate:
+`https://nadle.dev/docs/getting-started/features/` configures `CopyTask` with `to`,
+while `https://nadle.dev/docs/guides/file-operation-tasks/` uses `into`.
+See `doc/audit/tech-monorepo-manager-vet-2026-09-16.md`.
 
 Parity gate:
  preserve package namespaces,
@@ -658,6 +773,8 @@ or treat it as the same scope-concentration problem motivating Mise removal.
   JSON,
   or other tool-native adapters from canonical TypeScript,
   or require every replacement tool to consume TypeScript directly.
+  For the monorepo manager this is settled:
+  its configuration does not have to be TypeScript.
 - Preserve floating tool requests or replace them with reviewed update automation and exact locks.
 
 Full removal of the Mise binary is the accepted endpoint assumption for candidate discovery.

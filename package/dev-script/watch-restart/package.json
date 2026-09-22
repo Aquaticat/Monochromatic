@@ -3,13 +3,13 @@
   "name": "@monochromatic-dev/dev-script-watch-restart",
   "description": "Watch source files and restart a long-running child process on content change. Replaces watchexec in editord's dev loop; reusable as a library for any workspace dev server.",
   "type": "module",
-  "module": "dist/final/node/index.js",
+  "module": "dist/final/node/index.mjs",
   "exports": {
-    ".": "./dist/final/node/index.js",
+    ".": "./dist/final/node/index.mjs",
     "./ts": "./src/index.ts"
   },
-  "main": "dist/final/node/index.js",
-  "typings": "dist/final/node/index.d.ts",
+  "main": "dist/final/node/index.mjs",
+  "types": "dist/final/node/index.d.mts",
   "bin": {
     "watch-restart": "src/cli.ts"
   },
@@ -37,7 +37,7 @@
     "picomatch": "catalog:",
     "ts-pattern": "catalog:"
   },
-  "version": "0.0.1",
+  "version": "0.0.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",

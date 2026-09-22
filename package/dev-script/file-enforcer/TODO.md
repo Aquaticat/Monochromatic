@@ -43,8 +43,11 @@
    this is wasteful when only one rule's sources changed.
   A future optimization:
    tag rules with their source paths and only re-run affected rules.
-  The current in-memory cache makes full re-runs fast (~2ms warm),
-   so this is low priority.
+  The current in-memory cache makes full re-runs fast (~2ms warm) in a lazy-builder
+   fixture. The root config has no lazy builder and records no manifest entries at
+   all, so warm and cold runs cost the same there; see
+   `doc/troubleshooting/file-enforcer-staleness.md`.
+   Measure the real config before calling this low priority.
 - No dry-run mode.
   Adding `--dry-run` would require switching to a descriptor pattern or wrapping write functions with a no-op.
   The current direct execution model was chosen explicitly to avoid this complexity;

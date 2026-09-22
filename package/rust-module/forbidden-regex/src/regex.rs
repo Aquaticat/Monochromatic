@@ -38,23 +38,30 @@ use crate::ast::node::Node;
 use crate::charset::ByteSet;
 
 /// What:    Imports the rule construction, the seedless fold, and the line-start matcher.
-/// Why:     The code below uses `BuiltRule`, `build_engine`, `build_rule`,
-///          `build_seedless_union`, `line_start_match` directly; importing from `crate/build`
-///          keeps each call site focused on the matcher logic instead of the full Rust path.
+/// Why:     The code below uses `BuiltRule`, `build_engine`, `build_seedless_union`,
+///          `line_start_match` directly; importing from `crate/build` keeps each call site
+///          focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import {
 ///   BuiltRule,
 ///   build_engine,
-///   build_rule,
 ///   build_seedless_union,
 ///   line_start_match,
 /// } from "crate/build";
 /// ```
-use crate::build::{
-    BuiltRule, build_engine, build_rule, build_seedless_union, line_start_match,
-};
+use crate::build::{BuiltRule, build_engine, build_seedless_union, line_start_match};
+
+/// What:    Imports the threaded per-rule builder.
+/// Why:     The code below uses `build_rules` directly; importing from `crate/parallel` keeps
+///          each call site focused on the matcher logic instead of the full Rust path.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { build_rules } from "crate/parallel";
+/// ```
+use crate::parallel::build_rules;
 
 /// What:    Imports the seedless-rule grouping into union DFAs.
 /// Why:     The code below uses `group_seedless` directly; importing from `crate/group` keeps
@@ -604,8 +611,10 @@ impl CheckedFull {
 impl RegexSet {
     /// Compiles a slice of patterns into a `RegexSet`.
     ///
-    /// What: builds a rule per pattern and one union automaton over the literal-free
-    /// ones. Why: seeded rules are gated and literal-free rules share a single pass.
+    /// What: builds a rule per pattern, spread across the available cores, and one union
+    /// automaton over the literal-free ones; on failure, returns the lowest-index rule's
+    /// error. Why: seeded rules are gated and literal-free rules share a single pass, and
+    /// per-rule construction is independent, so threads shorten large ruleset compiles.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -614,9 +623,35 @@ impl RegexSet {
     /// }
     /// ```
     pub fn new<S: AsRef<str>>(patterns: &[S]) -> Result<RegexSet, CompileError> {
+        // What:    `patterns.iter().map(|pattern| return pattern.as_ref())` borrows each input
+        //          as a `&str` (a read-only string view); `.collect()` gathers the views into a
+        //          `Vec<&str>` (a growable array; siblings `&[&str]` and `[&str; N]` are a
+        //          borrowed or fixed-size array).
+        // Why:     Worker threads share plain `&str` views safely, whatever caller type `S`
+        //          is, so `S` needs no thread-safety bound. A `Vec` because the pattern count
+        //          is only known at run time.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const texts: string[] = patterns.map((pattern) => String(pattern));
+        // ```
+        let texts: Vec<&str> = patterns.iter().map(|pattern| return pattern.as_ref()).collect();
         let mut sink = RuleSink::default();
-        for pattern in patterns {
-            sink.push(parse(pattern.as_ref()).and_then(build_rule)?);
+        // What:    `build_rules(&texts, true)` builds every rule and returns `(index, result)`
+        //          pairs sorted by index; `true` lets workers skip rules past the first failure.
+        //          `outcome?` unwraps a built rule or returns its error from `new`.
+        // Why:     Index order keeps rule ids dense, and the first `Err` met in that order is
+        //          the lowest-index failure, the error the one-at-a-time loop returned.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // for (const [, outcome] of build_rules(texts, true)) {
+        //   if (outcome instanceof CompileError) throw outcome;
+        //   sink.push(outcome);
+        // }
+        // ```
+        for (_index, outcome) in build_rules(&texts, true) {
+            sink.push(outcome?);
         }
         return Ok(sink.assemble())
     }
@@ -645,9 +680,10 @@ impl RegexSet {
 
     /// Compiles patterns, skipping any that fail, with the kept input indices.
     ///
-    /// What: builds a rule per pattern, dropping ones that do not compile, plus the
-    /// union automaton; returns the set and the kept original indices. Why: a real
-    /// ruleset has rules this dialect cannot express, so the rest are kept in one pass.
+    /// What: builds a rule per pattern across the available cores, dropping ones that do
+    /// not compile, plus the union automaton; returns the set and the kept original
+    /// indices. Why: a real ruleset has rules this dialect cannot express, so the rest are
+    /// kept in one pass.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -656,10 +692,24 @@ impl RegexSet {
     /// }
     /// ```
     pub fn compile_lenient<S: AsRef<str>>(patterns: &[S]) -> (RegexSet, Vec<usize>) {
+        // What: borrow each input as a `&str` view. Why: the same thread-shareable form `new` uses.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const texts: string[] = patterns.map((pattern) => String(pattern));
+        // ```
+        let texts: Vec<&str> = patterns.iter().map(|pattern| return pattern.as_ref()).collect();
         let mut sink = RuleSink::default();
         let mut kept: Vec<usize> = Vec::new();
-        for (index, pattern) in patterns.iter().enumerate() {
-            if let Ok(built) = parse(pattern.as_ref()).and_then(build_rule) {
+        // What: `false` builds every rule, no early stop. Why: a lenient compile keeps each
+        // rule that builds, in input order.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // for (const [index, outcome] of build_rules(texts, false)) { ... }
+        // ```
+        for (index, outcome) in build_rules(&texts, false) {
+            if let Ok(built) = outcome {
                 sink.push(built);
                 kept.push(index);
             }

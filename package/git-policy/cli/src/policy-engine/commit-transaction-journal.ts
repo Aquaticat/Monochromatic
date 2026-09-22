@@ -18,6 +18,7 @@ import {
   PROCESS_IDENTITY_ABSENT,
   resolveProcessBirthIdentity,
 } from './commit-transaction-process-identity.ts';
+import type { AddedPathRecord, } from './commit-transaction-added-paths.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 
 /**
@@ -95,9 +96,13 @@ export type PreparedTransactionJournal = Readonly<{
    */
   mode: 'explicit-path' | 'index';
   /**
-   Concrete selected repository paths.
+   Concrete selected repository paths, including paths policies added.
    */
   selectedPaths: readonly string[];
+  /**
+   Tracked paths policies added, whose worktree copies receive the landed bytes after the index is installed.
+   */
+  addedPaths: readonly AddedPathRecord[];
   /**
    Exact intended Git tree OID.
    */
@@ -251,6 +256,8 @@ export async function resolveCurrentHead({
  
  @param selectedPaths - concrete selected paths
  
+ @param addedPaths - tracked paths policies added
+ 
  @param intendedTreeOid - exact intended tree
  
  @returns durable journal value
@@ -267,6 +274,7 @@ export async function prepareTransactionJournal({
   mode,
   amend,
   selectedPaths,
+  addedPaths,
   intendedTreeOid,
 }: Readonly<{
   workspace: CommitTransactionWorkspace;
@@ -275,6 +283,7 @@ export async function prepareTransactionJournal({
   mode: 'explicit-path' | 'index';
   amend: boolean;
   selectedPaths: readonly string[];
+  addedPaths: readonly AddedPathRecord[];
   intendedTreeOid: string;
 }>,): Promise<PreparedTransactionJournal> {
   /**
@@ -388,6 +397,7 @@ export async function prepareTransactionJournal({
     expectedParentOids,
     mode,
     selectedPaths,
+    addedPaths,
     intendedTreeOid,
     directoryDevice: String(directoryMetadata.dev,),
     directoryInode: String(directoryMetadata.ino,),

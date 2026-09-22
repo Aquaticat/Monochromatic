@@ -4,7 +4,7 @@
   "private": true,
   "description": "Type-safe hyperscript factories for HTML, CSS, DOM, and XML generation.",
   "type": "module",
-  "module": "dist/final/index.js",
+  "module": "dist/final/neutral/index.mjs",
   "exports": {
     ".": {
       "types": "./dist/final/neutral/index.d.mts",
@@ -26,7 +26,7 @@
     "typescript": "catalog:"
   },
   "dependencies": {},
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",

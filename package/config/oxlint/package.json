@@ -1,5 +1,6 @@
 {
   "name": "@monochromatic-dev/config-oxlint",
+  "version": "0.0.1",
   "private": false,
   "keywords": [
     "oxlint",

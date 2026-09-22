@@ -612,7 +612,7 @@ called "un-balanced."
  The earlier 24dp button gaps and full-width segmented control
 were replaced by the supplied Material component and target-spacing guidance.
 
-### D14. Cover screen = full player (candidate cover-c), volume kept — as an icon since D20
+### D14. Cover screen = full player (candidate cover-c); volume kept until D43 removed it
 Chip + Open on top,
  track list,
  deck at the bottom for thumb reach,
@@ -701,7 +701,7 @@ row treatment,
  deck and visual system stay as built.
  Do not propose artwork again.
 
-### D20. Volume = icon button + vertical popover slider, everywhere
+### D20. Volume = icon button + vertical popover slider, everywhere — superseded in-app by D43
 The YouTube model,
  chosen over the inline full-width slider row.
  Spec:
@@ -1086,6 +1086,107 @@ component structure and deriving speech from visible content.
  S2,
  `Selected. Current track: Another Xronixle, 4:35, −1.2 dBTP. Button.`,
 because its single hand-composed label duplicates visible strings in code.
+
+### D41. Dark structural surfaces remain stable black
+The folder canvas and navigation rail stay true black,
+ the playback deck stays the fixed
+`#0A0A0D` neutral,
+ and only component roles follow Android's generated dynamic color.
+This is structural reach R1 from the native 2 × 3 dark matrix.
+**Why.**
+ The user selected R1.
+ Structural surfaces then read identically under every wallpaper,
+color style,
+ and contrast setting while buttons,
+ chips,
+ seekbar,
+ and text still honor
+Android's resolved roles.
+ The true-black spacer and track canvas keep the screen identity.
+**Rejected.**
+ R2 generated rail and deck,
+ and R3 generated folder canvas,
+ rail,
+ and deck.
+Both let uncontrolled wallpaper hue occupy structural surfaces and move the structural
+contrast boundary with the palette.
+
+### D42. The current row neutral follows Android surfaceContainerLow
+The current track's soft neutral container resolves from Android's generated
+`surfaceContainerLow` role per environment instead of a fixed hex,
+ keeping D36's soft
+container plus bold title with no icon,
+ ordinal,
+ or reserved column.
+ This is current-row
+source C2.
+**Why.**
+ The user selected C2,
+ overriding the C1 > C2 ranking.
+ The row then belongs to
+Android's generated container ramp under every wallpaper,
+ and the captured role evidence
+shows its text pairs meeting the recorded contrast minima in all six environments.
+Combined with D41,
+ the accepted appearance is the captured `stable-dynamic` column:
+fixed black structure carrying a generated current-row neutral.
+**Rejected.**
+ C1 fixed `#0A0A0D` current row,
+ which stays palette-independent but detaches the
+row from the generated container ramp its surrounding text roles follow.
+
+### D43. No in-app volume control (2026-09-17)
+The user removed the in-app volume control functionality.
+ No volume icon,
+ slider,
+ or
+popover remains on any in-app surface:
+ unfolded deck,
+ cover deck,
+ or desktop pane.
+D20's icon plus popover treatment and D14's cover volume icon are superseded.
+ Volume
+adjustment belongs to the system:
+ hardware keys,
+ the system media session,
+ and whatever
+the future media notification round settles for the notification surface.
+**Why.**
+ The user's instruction of 2026-09-17.
+ It removes a control the system already owns and
+frees a deck element on both Android surfaces.
+**Rejected.**
+ Keeping D20's icon button and popover in-app.
+
+### D44. The cover deck takes its content height (2026-09-17)
+The cover deck carries no 440dp height cap:
+ at 200% text the deck takes its content height and
+the track list absorbs the remainder.
+ The unfolded deck keeps its cap and internal scroll.
+**Why.**
+ User correction:
+ the 200% cover capture clipped the segmented mode group's bottom
+border mid-target.
+ On the single-pane cover a nested deck scroll hides control state,
+ while a shrinking list keeps every control visible.
+**Rejected.**
+ Keeping the 440dp cap on the cover,
+ which clips controls at 200% text.
+
+### D45. Cover light surface = flat with hairlines at both seams (L3, 2026-09-17)
+The cover light scheme uses one flat `surfaceContainerLowest` surface with
+`outlineVariant` hairlines at the top-row and deck seams.
+**Why.**
+ The user selected L3.
+ L1's deck-seam hairline plus ramp can make a selected first
+track read as detached from the list,
+ because the current row's generated low container sits
+between two separation cues.
+ L3 keeps every row on one surface and separates structure only at
+the seams.
+**Rejected.**
+ L1 ramp with a deck-seam hairline,
+ and L2 pure ramp without hairlines.
 
 ---
 

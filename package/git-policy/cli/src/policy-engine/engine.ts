@@ -30,6 +30,7 @@ import type {
  */
 const EMPTY_LAZY_GIT_FACTS: LazyPolicyGitFacts = {
   candidates: function candidates() { return Promise.resolve([],); },
+  trackedFiles: function trackedFiles() { return Promise.resolve([],); },
   headOid: function headOid() { return Promise.resolve(ABSENT_GIT_VALUE,); },
   landedCommitOid: function landedCommitOid() { return Promise.resolve(ABSENT_GIT_VALUE,); },
   pushUpdates: function pushUpdates() { return Promise.resolve([],); },

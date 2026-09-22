@@ -1,6 +1,6 @@
 [package]
 name = "forbidden-strings"
-version = "0.4.0"
+version = "0.4.1"
 categories = ["command-line-utilities", "development-tools"]
 edition = "2024"
 homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/cli/forbidden-strings"
@@ -70,7 +70,7 @@ clap = { version = "4", features = ["derive"] }
 # transitive dependency. Depended on by path (the same crate the bench sidecar
 # drives) plus the published version so `cargo publish` resolves it from
 # crates.io; the path wins for local builds.
-forbidden-regex = { path = "../../rust-module/forbidden-regex", version = "0.1.0" }
+forbidden-regex = { path = "../../rust-module/forbidden-regex", version = "0.1.1" }
 gix-hash = { version = "0.25", default-features = false, features = ["sha1", "sha256"] }
 gix-index = { version = "0.51", default-features = false, features = ["sha1"] }
 ignore = "0.4"
@@ -91,7 +91,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # dependency: the path wins for local builds, the version lets `cargo publish`
 # resolve it from crates.io.
 [build-dependencies]
-forbidden-regex = { path = "../../rust-module/forbidden-regex", version = "0.1.0" }
+forbidden-regex = { path = "../../rust-module/forbidden-regex", version = "0.1.1" }
 
 # Why `panic = "unwind"` and `overflow-checks = true` instead of the smaller
 # "abort" plus default-off overflow checks:
@@ -139,6 +139,20 @@ opt-level = 3
 panic = "unwind"
 overflow-checks = true
 strip = true
+
+# Why `build-override` `opt-level = 3`: `build.rs` compiles the embedded baseline
+# through the forbidden-regex build-dependency, and Cargo compiles build scripts and
+# their dependencies at `opt-level = 0` unless told otherwise, in every profile. The
+# baseline compile is the build's dominant step: measured on the 259-rule baseline
+# with the engine building rules one at a time, 390.8s unoptimized vs 98.5s at
+# `opt-level = 3`, with identical serialized output. The dev override matters too,
+# because `cargo check`, clippy, and debug builds all run the build script. Codegen
+# units stay at the build-override default: 16 vs 256 measured within run-to-run noise.
+[profile.release.build-override]
+opt-level = 3
+
+[profile.dev.build-override]
+opt-level = 3
 
 # Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
 # Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).

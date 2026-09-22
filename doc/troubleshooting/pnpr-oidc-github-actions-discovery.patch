@@ -1,0 +1,343 @@
+diff --git a/pnpr/crates/auth/src/oidc.rs b/pnpr/crates/auth/src/oidc.rs
+index 0df3734..8ef2790 100644
+--- a/pnpr/crates/auth/src/oidc.rs
++++ b/pnpr/crates/auth/src/oidc.rs
+@@ -20,7 +20,7 @@ use openidconnect::{
+     OAuth2TokenResponse, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, TokenResponse,
+     core::{
+         CoreAuthenticationFlow, CoreClient, CoreClientAuthMethod, CoreIdToken, CoreIdTokenVerifier,
+-        CoreJwsSigningAlgorithm, CoreProviderMetadata, CoreTokenResponse,
++        CoreJsonWebKeySet, CoreJwsSigningAlgorithm, CoreProviderMetadata, CoreTokenResponse,
+     },
+ };
+ use p256::ecdsa::{
+@@ -73,10 +73,19 @@ struct Provider {
+ 
+ #[derive(Default)]
+ struct MetadataCache {
+-    value: Option<(Instant, CoreProviderMetadata)>,
++    value: Option<(Instant, Discovered)>,
+     attempted_at: Option<Instant>,
+ }
+ 
++/// What discovery fetched for one provider. Workload verification reads only
++/// the signing keys; browser login also needs the provider's endpoints, which
++/// workload-only issuers such as GitHub Actions do not publish.
++#[derive(Clone)]
++struct Discovered {
++    jwks: CoreJsonWebKeySet,
++    login: Option<CoreProviderMetadata>,
++}
++
+ #[derive(Serialize, Deserialize)]
+ struct PendingLogin {
+     provider: String,
+@@ -134,7 +143,7 @@ impl OidcState {
+         if provider.config.login.is_none() {
+             return Err(RegistryError::NotFound);
+         }
+-        let metadata = self.metadata(provider, false).await?;
++        let metadata = self.metadata(provider, false).await?.login.ok_or_else(rejected)?;
+         let client = self.login_client(provider, metadata)?;
+         let (challenge, verifier) = PkceCodeChallenge::new_random_sha256();
+         let (url, state, nonce) = client
+@@ -168,7 +177,7 @@ impl OidcState {
+         let _exchange = self.exchanges.try_acquire().map_err(|_| unavailable())?;
+         self.record_attempt(&login.state_hash)?;
+         let provider = self.providers.get(provider_name).ok_or_else(rejected)?;
+-        let metadata = self.metadata(provider, false).await?;
++        let metadata = self.metadata(provider, false).await?.login.ok_or_else(rejected)?;
+         let response = self
+             .login_client(provider, metadata.clone())?
+             .exchange_code(AuthorizationCode::new(code.to_string()))
+@@ -180,7 +189,7 @@ impl OidcState {
+         let token = response.id_token().ok_or_else(rejected)?;
+         let expiration = self.verified_expiration(
+             provider,
+-            &metadata,
++            metadata.jwks(),
+             &response,
+             token,
+             &Nonce::new(login.nonce),
+@@ -233,14 +242,14 @@ impl OidcState {
+     async fn verified_expiration(
+         &self,
+         provider: &Provider,
+-        metadata: &CoreProviderMetadata,
++        jwks: &CoreJsonWebKeySet,
+         response: &CoreTokenResponse,
+         token: &CoreIdToken,
+         nonce: &Nonce,
+     ) -> Result<i64> {
+-        let mut verifier = token_verifier(&provider.config, metadata)?;
++        let mut verifier = token_verifier(&provider.config, jwks)?;
+         if token.claims(&verifier, nonce).is_err() {
+-            verifier = token_verifier(&provider.config, &self.metadata(provider, true).await?)?;
++            verifier = token_verifier(&provider.config, &self.metadata(provider, true).await?.jwks)?;
+         }
+         let claims = token.claims(&verifier, nonce).map_err(|_| rejected())?;
+         if let Some(expected) = claims.access_token_hash() {
+@@ -333,7 +342,7 @@ impl OidcState {
+         ))
+     }
+ 
+-    async fn metadata(&self, provider: &Provider, refresh: bool) -> Result<CoreProviderMetadata> {
++    async fn metadata(&self, provider: &Provider, refresh: bool) -> Result<Discovered> {
+         let cached = cached_metadata(&*provider.metadata.lock().await, refresh);
+         if let Some(metadata) = cached {
+             return Ok(metadata);
+@@ -350,14 +359,19 @@ impl OidcState {
+             cache.attempted_at = Some(Instant::now());
+         }
+         let issuer = IssuerUrl::new(provider.config.issuer.clone()).map_err(|_| rejected())?;
+-        let metadata =
+-            CoreProviderMetadata::discover_async(issuer, self).await.map_err(|_| unavailable())?;
+-        secure_url(metadata.authorization_endpoint().as_str())?;
+-        if let Some(endpoint) = metadata.token_endpoint() {
+-            secure_url(endpoint.as_str())?;
+-        }
+-        provider.metadata.lock().await.value = Some((Instant::now(), metadata.clone()));
+-        Ok(metadata)
++        let discovered = if provider.config.login.is_some() {
++            let metadata =
++                CoreProviderMetadata::discover_async(issuer, self).await.map_err(|_| unavailable())?;
++            secure_url(metadata.authorization_endpoint().as_str())?;
++            if let Some(endpoint) = metadata.token_endpoint() {
++                secure_url(endpoint.as_str())?;
++            }
++            Discovered { jwks: metadata.jwks().clone(), login: Some(metadata) }
++        } else {
++            Discovered { jwks: self.workload_keys(&issuer).await?, login: None }
++        };
++        provider.metadata.lock().await.value = Some((Instant::now(), discovered.clone()));
++        Ok(discovered)
+     }
+ 
+     async fn http_request(&self, request: HttpRequest) -> Result<HttpResponse> {
+@@ -386,7 +400,7 @@ impl OidcState {
+     }
+ }
+ 
+-fn cached_metadata(cache: &MetadataCache, refresh: bool) -> Option<CoreProviderMetadata> {
++fn cached_metadata(cache: &MetadataCache, refresh: bool) -> Option<Discovered> {
+     let recently_attempted = cache.attempted_at.is_some_and(|at| at.elapsed() < REFRESH_INTERVAL);
+     cache.value
+         .as_ref()
+diff --git a/pnpr/crates/auth/src/oidc/tests.rs b/pnpr/crates/auth/src/oidc/tests.rs
+index b7d2278..37b680a 100644
+--- a/pnpr/crates/auth/src/oidc/tests.rs
++++ b/pnpr/crates/auth/src/oidc/tests.rs
+@@ -78,7 +78,7 @@ fn verifies_signature_issuer_audience_and_times() {
+     let config = config(issuer);
+     let metadata: CoreProviderMetadata = serde_json::from_value(metadata(issuer)).unwrap();
+     let metadata = metadata.set_jwks(serde_json::from_value(jwks(&signing_key())).unwrap());
+-    verify_workload(&config, &metadata, &sign(&payload(issuer), &signing_key())).unwrap();
++    verify_workload(&config, metadata.jwks(), &sign(&payload(issuer), &signing_key())).unwrap();
+     for (claim, value) in [
+         ("iss", json!("https://attacker.example")),
+         ("aud", json!("other")),
+@@ -91,18 +91,18 @@ fn verifies_signature_issuer_audience_and_times() {
+         let mut claims = payload(issuer);
+         claims[claim] = value;
+         assert!(
+-            verify_workload(&config, &metadata, &sign(&claims, &signing_key())).is_err(),
++            verify_workload(&config, metadata.jwks(), &sign(&claims, &signing_key())).is_err(),
+             "accepted {claim}: {claims}",
+         );
+     }
+     let other_key = SigningKey::from_bytes((&[43u8; 32]).into()).unwrap();
+-    assert!(verify_workload(&config, &metadata, &sign(&payload(issuer), &other_key)).is_err());
++    assert!(verify_workload(&config, metadata.jwks(), &sign(&payload(issuer), &other_key)).is_err());
+     let unsigned = format!(
+         "{}.{}.",
+         BASE64_URL_SAFE_NO_PAD.encode(br#"{"alg":"none"}"#),
+         BASE64_URL_SAFE_NO_PAD.encode(serde_json::to_vec(&payload(issuer)).unwrap()),
+     );
+-    assert!(verify_workload(&config, &metadata, &unsigned).is_err());
++    assert!(verify_workload(&config, metadata.jwks(), &unsigned).is_err());
+     for missing in ["iss", "aud", "sub", "exp", "iat"] {
+         let mut claims = payload(issuer);
+         claims
+@@ -110,7 +110,7 @@ fn verifies_signature_issuer_audience_and_times() {
+             .unwrap()
+             .remove(missing);
+         assert!(
+-            verify_workload(&config, &metadata, &sign(&claims, &signing_key())).is_err(),
++            verify_workload(&config, metadata.jwks(), &sign(&claims, &signing_key())).is_err(),
+             "accepted missing {missing}",
+         );
+     }
+@@ -140,6 +140,7 @@ struct MockProvider {
+     token_requests: Mutex<usize>,
+     auth_method: Mutex<String>,
+     discovery: DiscoveryGate,
++    workload_only_document: std::sync::atomic::AtomicBool,
+ }
+ #[derive(Default)]
+ struct DiscoveryGate {
+@@ -159,12 +160,21 @@ async fn mock_provider() -> (Arc<MockProvider>, tokio::task::JoinHandle<()>) {
+         token_requests: Mutex::new(0),
+         auth_method: Mutex::new("client_secret_basic".to_string()),
+         discovery: DiscoveryGate::default(),
++        workload_only_document: std::sync::atomic::AtomicBool::new(false),
+     });
+     let router = Router::new()
+         .route("/.well-known/openid-configuration", get(async |State(state): State<Arc<MockProvider>>| {
+                 state.discovery.wait().await;
+                 let mut document = metadata(&state.issuer);
+                 document["token_endpoint_auth_methods_supported"] = json!([*state.auth_method.lock().unwrap()]);
++                if state.workload_only_document.load(std::sync::atomic::Ordering::Relaxed) {
++                    // GitHub Actions' issuer serves ID tokens only and publishes no login endpoints.
++                    let fields = document.as_object_mut().unwrap();
++                    for field in ["authorization_endpoint", "token_endpoint", "token_endpoint_auth_methods_supported"] {
++                        fields.remove(field);
++                    }
++                    document["response_types_supported"] = json!(["id_token"]);
++                }
+                 Json(document)
+             }))
+         .route("/jwks", get(async |State(state): State<Arc<MockProvider>>| {
+@@ -237,6 +247,26 @@ async fn discovers_caches_and_enforces_workload_bindings() {
+     task.abort();
+ }
+ 
++#[tokio::test]
++async fn workload_discovery_accepts_issuers_without_login_endpoints() {
++    let (provider, task) = mock_provider().await;
++    provider.workload_only_document.store(true, std::sync::atomic::Ordering::Relaxed);
++    let state = OidcState::new(&[config(&provider.issuer)], "https://registry.example").unwrap();
++    let token = sign(&payload(&provider.issuer), &provider.key);
++    assert_eq!(
++        state
++            .workload(&token)
++            .await
++            .unwrap()
++            .unwrap()
++            .identity
++            .username,
++        "ci",
++    );
++    assert_eq!(*provider.key_requests.lock().unwrap(), 1);
++    task.abort();
++}
++
+ #[tokio::test]
+ async fn browser_login_uses_pkce_nonce_cookie_binding_and_single_use_state() {
+     let (provider, task) = mock_provider().await;
+@@ -334,7 +364,7 @@ fn verifies_rs256_workload_tokens() {
+     let signature =
+         key.sign(&CoreJwsSigningAlgorithm::RsaSsaPkcs1V15Sha256, message.as_bytes()).unwrap();
+     let token = format!("{message}.{}", BASE64_URL_SAFE_NO_PAD.encode(signature));
+-    verify_workload(&config(issuer), &metadata, &token).unwrap();
++    verify_workload(&config(issuer), metadata.jwks(), &token).unwrap();
+ }
+ 
+ #[tokio::test]
+diff --git a/pnpr/crates/auth/src/oidc/workload.rs b/pnpr/crates/auth/src/oidc/workload.rs
+index 5ccd3d9..b117f22 100644
+--- a/pnpr/crates/auth/src/oidc/workload.rs
++++ b/pnpr/crates/auth/src/oidc/workload.rs
+@@ -1,17 +1,17 @@
+ use super::{
+-    BASE64_URL_SAFE_NO_PAD, ClientId, CoreIdToken, CoreIdTokenVerifier, CoreJwsSigningAlgorithm,
+-    CoreProviderMetadata, IssuerUrl, Nonce, OidcBinding, OidcProvider, OidcWorkload, Provider,
++    BASE64_URL_SAFE_NO_PAD, ClientId, CoreIdToken, CoreIdTokenVerifier, CoreJsonWebKeySet,
++    CoreJwsSigningAlgorithm, IssuerUrl, Nonce, OidcBinding, OidcProvider, OidcWorkload, Provider,
+     Result, Utc, Value, rejected,
+ };
+ use base64::Engine as _;
+ 
+ pub(super) fn verify_workload(
+     config: &OidcProvider,
+-    metadata: &CoreProviderMetadata,
++    jwks: &CoreJsonWebKeySet,
+     raw: &str,
+ ) -> Result<()> {
+     let token: CoreIdToken = raw.parse().map_err(|_| rejected())?;
+-    let verifier = token_verifier(config, metadata)?;
++    let verifier = token_verifier(config, jwks)?;
+     token
+         .claims(&verifier, |_: Option<&Nonce>| Ok(()))
+         .map_err(|_| rejected())?;
+@@ -31,12 +31,12 @@ pub(super) fn bound_user<'p>(
+ 
+ pub(super) fn token_verifier(
+     config: &OidcProvider,
+-    metadata: &CoreProviderMetadata,
++    jwks: &CoreJsonWebKeySet,
+ ) -> Result<CoreIdTokenVerifier<'static>> {
+     Ok(CoreIdTokenVerifier::new_public_client(
+         ClientId::new(config.audience.clone()),
+         IssuerUrl::new(config.issuer.clone()).map_err(|_| rejected())?,
+-        metadata.jwks().clone(),
++        jwks.clone(),
+     )
+     .set_allowed_algs([
+         CoreJwsSigningAlgorithm::RsaSsaPkcs1V15Sha256,
+diff --git a/pnpr/crates/auth/src/oidc/workload_verification.rs b/pnpr/crates/auth/src/oidc/workload_verification.rs
+index ff6136f..fffe654 100644
+--- a/pnpr/crates/auth/src/oidc/workload_verification.rs
++++ b/pnpr/crates/auth/src/oidc/workload_verification.rs
+@@ -1,7 +1,21 @@
+ use super::{
+-    OidcState, OidcWorkload, Provider, Result, Value, match_workload_binding, rejected,
+-    token_payload, verify_workload,
++    CoreJsonWebKeySet, IssuerUrl, OidcState, OidcWorkload, Provider, Result, Value,
++    match_workload_binding, rejected, token_payload, unavailable, verify_workload,
+ };
++use openidconnect::{
++    JsonWebKeySetUrl,
++    http::{Method, Request, StatusCode, header::ACCEPT},
++};
++use serde::Deserialize;
++
++/// The discovery fields workload verification reads. Full provider metadata
++/// also requires `authorization_endpoint`, which issuers that only mint
++/// workload ID tokens, such as GitHub Actions, do not publish.
++#[derive(Deserialize)]
++struct WorkloadDiscovery {
++    issuer: IssuerUrl,
++    jwks_uri: JsonWebKeySetUrl,
++}
+ 
+ impl OidcState {
+     /// Verifies workload credentials against configured issuers only. The returned restrictions
+@@ -40,10 +54,36 @@ impl OidcState {
+         raw: &str,
+     ) -> Result<bool> {
+         let metadata = self.metadata(provider, false).await?;
+-        if verify_workload(&provider.config, &metadata, raw).is_ok() {
++        if verify_workload(&provider.config, &metadata.jwks, raw).is_ok() {
+             return Ok(true);
+         }
+         let refreshed = self.metadata(provider, true).await?;
+-        Ok(verify_workload(&provider.config, &refreshed, raw).is_ok())
++        Ok(verify_workload(&provider.config, &refreshed.jwks, raw).is_ok())
++    }
++
++    /// Fetches the signing keys of an issuer that has no browser login
++    /// configured, reading only the discovery fields workload tokens need.
++    pub(super) async fn workload_keys(&self, issuer: &IssuerUrl) -> Result<CoreJsonWebKeySet> {
++        let discovery_url = issuer
++            .join(".well-known/openid-configuration")
++            .map_err(|_| unavailable())?;
++        let request = Request::builder()
++            .uri(discovery_url.as_str())
++            .method(Method::GET)
++            .header(ACCEPT, "application/json")
++            .body(Vec::new())
++            .map_err(|_| unavailable())?;
++        let response = self.http_request(request).await?;
++        if response.status() != StatusCode::OK {
++            return Err(unavailable());
++        }
++        let discovery: WorkloadDiscovery =
++            serde_json::from_slice(response.body()).map_err(|_| unavailable())?;
++        if discovery.issuer != *issuer {
++            return Err(unavailable());
++        }
++        CoreJsonWebKeySet::fetch_async(&discovery.jwks_uri, self)
++            .await
++            .map_err(|_| unavailable())
+     }
+ }

@@ -14,6 +14,62 @@ import {
   type PolicyFinding,
 } from '@monochromatic-dev/git-policy-api/ts';
 
+import { dependentVersionBump, } from './dependent-version-bump-policy.ts';
+
+// Re-exported so consumers of the built bundle, including its tests, share the bundle's own absence sentinel.
+export { ABSENT_GIT_VALUE, } from '@monochromatic-dev/git-policy-api/ts';
+export type {
+  CandidateFile as RepositoryCandidateFile,
+  PolicyContext as RepositoryPolicyContext,
+  TrackedFile as RepositoryTrackedFile,
+} from '@monochromatic-dev/git-policy-api/ts';
+
+export {
+  DEPENDENT_VERSION_STALE_CODE,
+  DEPENDENT_VERSION_UNSUPPORTED_CODE,
+  dependentVersionBump,
+  findDependentBumps,
+} from './dependent-version-bump-policy.ts';
+export {
+  patchBumpVersion,
+  planDependentBumps,
+  transitiveDependentNames,
+  UnsupportedVersionError,
+} from './dependent-version-bump.ts';
+export type {
+  PlannedBump,
+  WorkspaceManifest,
+} from './dependent-version-bump.ts';
+export {
+  ManifestShapeError,
+  readManifestDependencyFacts,
+  replaceManifestVersion,
+} from './manifest-text.ts';
+export type { ManifestDependencyFacts, } from './manifest-text.ts';
+export {
+  importsPackage,
+  isNonTestSourcePath,
+} from './source-imports.ts';
+export {
+  PNPR_CONFIG_PATH,
+  readPublishableNames,
+} from './publishable-names.ts';
+export {
+  MANIFEST_PATHSPEC,
+  planWorkspaceBumps,
+} from './dependent-bump-workflow.ts';
+export type {
+  ManifestBump,
+  WorkspaceBumpPlan,
+  WorkspaceFileReader,
+  WorkspaceManifestFile,
+  WorkspaceSourceFile,
+} from './dependent-bump-workflow.ts';
+export {
+  bumpWorktreeDependents,
+  WorktreeBumpConflictError,
+} from './bump-dependents-worktree.ts';
+
 /**
  Candidate fields needed by root-context path decision.
  
@@ -98,9 +154,15 @@ export const forbiddenRootContext: PolicyDefinition<undefined, 'forbidden-root-c
  ```
  */
 export const repositoryPolicyPlugin: PluginDefinition<
-  readonly [typeof forbiddenRootContext],
+  readonly [
+    typeof forbiddenRootContext,
+    typeof dependentVersionBump
+  ],
   'repository'
 > = definePlugin({
   name: 'repository',
-  policies: [forbiddenRootContext,],
+  policies: [
+    forbiddenRootContext,
+    dependentVersionBump,
+  ],
 },);

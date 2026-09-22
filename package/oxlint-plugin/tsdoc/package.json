@@ -9,11 +9,11 @@
     "monochromatic"
   ],
   "dependencies": {
-    "@monochromatic-dev/oxlint-plugin-shared": "workspace:*",
-    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "@oxlint/plugins": "catalog:"
   },
   "devDependencies": {
+    "@monochromatic-dev/oxlint-plugin-shared": "workspace:*",
+    "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "@monochromatic-dev/oxlint-plugin-test-support": "workspace:*",
     "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",

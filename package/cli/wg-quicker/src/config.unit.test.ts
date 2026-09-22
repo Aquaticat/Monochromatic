@@ -67,9 +67,21 @@ await describe({
           fn: async () => {
             const config = parseConfigText({
               interfaceName: 'wg0',
-              text: ['[Interface]', 'PrivateKey = aaaaa', 'ExemptMark = 8888',].join('\n',),
+              text: ['[Interface]', 'PrivateKey = aaaaa', 'ExemptMark = 100',].join('\n',),
             },);
-            expect(config.exemptMark,).toBe(8_888,);
+            expect(config.exemptMark,).toBe(100,);
+          },
+        },),
+
+        it({
+          name: 'rejects an ExemptMark carrying netavark masquerade mask 0x2000',
+          fn: async () => {
+            expect(() => {
+              parseConfigText({
+                interfaceName: 'wg0',
+                text: ['[Interface]', 'PrivateKey = aaaaa', 'ExemptMark = 8888',].join('\n',),
+              },);
+            },).toThrow('0x2000',);
           },
         },),
 

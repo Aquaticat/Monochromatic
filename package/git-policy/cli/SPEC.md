@@ -117,6 +117,16 @@ export type CandidateFile = {
   readonly bytes: () => Promise<Uint8Array>;
 };
 
+export type TrackedFile = {
+  readonly targetId: string;
+  readonly path: RepositoryPath;
+  readonly revision: GitObjectId;
+  readonly mode: CandidateFileMode;
+  readonly headRevision: GitObjectId | AbsentGitValue;
+  readonly bytes: () => Promise<Uint8Array>;
+  readonly headBytes: () => Promise<Uint8Array | AbsentGitValue>;
+};
+
 export type PushUpdate = {
   readonly localOid: GitObjectId | AbsentGitValue;
   readonly remoteOid: GitObjectId | AbsentGitValue;
@@ -135,6 +145,7 @@ export type PolicyCommandFacts = {
 
 export type LazyPolicyGitFacts = {
   readonly candidates: () => Promise<readonly CandidateFile[]>;
+  readonly trackedFiles: (request: Readonly<{ pathspecs: readonly string[] }>) => Promise<readonly TrackedFile[]>;
   readonly headOid: () => Promise<GitObjectId | AbsentGitValue>;
   readonly landedCommitOid: () => Promise<GitObjectId | AbsentGitValue>;
   readonly pushUpdates: () => Promise<readonly PushUpdate[]>;
@@ -382,6 +393,32 @@ A patch is valid only when all conditions hold:
 - applying with Git three-way semantics changes bytes;
 - resulting candidate remains a regular or executable file;
 - direct fix preserves the original file mode.
+
+`trackedFiles` lists index entries of the lifecycle's current candidate state that match Git pathspecs,
+glob magic included,
+with their `HEAD` counterparts.
+Commit transactions read the private commit index,
+add and direct lifecycles read their private projection,
+and post-commit and manual-push lifecycles return no tracked files.
+Bytes load through one lazy batch.
+
+A patch whose target ID names a tracked file that is not a candidate adds that path to the commit.
+It is valid only when,
+in addition to the candidate rules:
+
+- the lifecycle is a commit transaction outside read-only selection;
+- the real index,
+  the private commit index,
+  and `HEAD` hold the same ordinary blob and mode for the path;
+- the worktree copy is a regular file whose bytes and executable bit match that blob.
+
+Otherwise the engine exits `2` with `patch-conflict`,
+naming the path,
+which state differs,
+and the remedies:
+stage the path so the fix applies to the staged copy,
+or restore it to match `HEAD`.
+A tracked target naming a candidate path at the candidate's exact revision applies as that candidate.
 
 A patch that applies but produces identical bytes is invalid rather than a convergence change.
 Patch validation failure exits `2` and identifies the policy and path without echoing patch bytes.
@@ -761,9 +798,11 @@ Emit final findings to stdout.
 
 Use worktree bytes selected by explicit pathspecs or `--all`.
 Apply eligible patches to private candidate state through whole-sequence convergence,
-then atomically replace only changed selected worktree files.
+then atomically replace only changed selected and added worktree files.
 Snapshot the complete real index before and after and fail if any index blob changes.
 Emit final findings and one fix summary to stdout.
+A patch targeting an unselected tracked file adds it under the "Added paths" precondition;
+its original worktree bytes for the concurrent-change check are the verified `HEAD` blob.
 
 ## Policy order and stopping
 
@@ -1381,6 +1420,12 @@ The implementation uses a transaction directory outside the worktree with:
 Never mutate the real index or worktree while evaluating policies.
 Hold the real index lock before deriving transaction state and through final installation or rollback.
 Do not invoke Git with a lock path as `GIT_INDEX_FILE`.
+Every private index copy and every index install carries the source index's access and modification times
+(`index-file-timestamps.ts`):
+Git re-hashes a cached entry only when its mtime is not older than the index file's mtime,
+so a fresh timestamp would hide same-size edits made in the second Git cached their stat
+(`doc/troubleshooting/git-racy-index-copy.md`,
+ #544).
 
 ### Index commit
 
@@ -1411,7 +1456,36 @@ For injected commit-only semantics:
 Merge,
 cherry-pick,
 and revert conclusions use index-commit semantics only.
+
+### Added paths
+
+Paths added by policy patches join the candidate paths of every later pass,
+the explicit-path post-commit index selection,
+and the prepared journal,
+which records each path's mode,
+original blob,
+and intended blob.
+After the resulting index is installed and marked,
+and before cleanup,
+each added path's worktree copy is compared with both blobs:
+intended bytes are left alone,
+original bytes are replaced through a same-directory temporary file and rename with the recorded mode,
+and any other bytes are kept with a warning,
+because the commit has landed and overwriting would discard a concurrent edit.
 Unsupported interactive/include modes use read-only checks and direct-fix guidance when needed.
+
+Direct fix admits added paths under the same precondition,
+`HEAD`,
+real index,
+private index,
+and worktree all holding the target blob,
+through `createAddedPathTracker`,
+which commit transactions share.
+It has no journal or index step:
+converged bytes of added paths join the direct-fix worktree installation.
+Precondition failures are `patch-conflict` with direct-fix remedies
+(select the path,
+ or restore it to `HEAD`).
 
 ### Recovery
 
@@ -1426,6 +1500,8 @@ and intended index bytes without hashes.
 It either installs the intended post-commit index,
 recognizes an already completed install,
 or blocks with a precise manual-recovery diagnostic.
+Once the intended index is installed or recognized,
+recovery completes added-path worktree copies with the same comparison before removing artifacts.
 It never silently guesses after unrelated ref or index changes.
 A prepared journal records expected parent OIDs,
 intended tree,
@@ -1473,7 +1549,29 @@ Concurrent wrapper processes serialize on the real index lock and transaction jo
 - interruption after index install and before journal completion;
 - concurrent wrapper attempts;
 - read-only administrative filesystem failure and healthy next invocation;
-- hk duplicate-separator regression bytes.
+- hk duplicate-separator regression bytes;
+- policy-added path in explicit-path,
+  `--no-only`,
+  and amend commits,
+  with committed,
+  indexed,
+  and worktree bytes and clean status;
+- policy-added path blocked by unstaged worktree changes and by staged changes;
+- policy-added path refused under `--include` selection;
+- policy-added path in merge,
+  cherry-pick,
+  and revert conclusions;
+- policy-added path recovery after interruption before the commit,
+  after the commit before index install,
+  and after index install before worktree completion;
+- racily clean same-size edit kept visible through direct fix,
+  explicit-path and `--no-only` commits that apply a fix,
+  a prepared index install,
+  and a recovery index install;
+- policy-added path in direct fix:
+  clean unselected path rewritten in the worktree with exact real index bytes,
+  dirty unselected path refused,
+  and the same path fixed once selected.
 
 Each fixture asserts exact ref,
 index,

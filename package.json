@@ -29,6 +29,7 @@
     "@monochromatic-dev/cli-wg-quicker": "workspace:*",
     "@monochromatic-dev/config-dprint": "workspace:*",
     "@monochromatic-dev/config-oxlint": "workspace:*",
+    "@monochromatic-dev/config-pnpr": "workspace:*",
     "@monochromatic-dev/config-stylelint": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/dev-script-file-enforcer": "workspace:*",

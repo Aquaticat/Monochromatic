@@ -1,5 +1,15 @@
 # gxhash 3.5.0 requires the `aes` CPU target-feature at build time, has no software fallback, and panics on aarch64 debug builds
 
+Update on 2026-09-17:
+the monorepo manager left `gxhash` after collision findings and now uses XXH3-128
+([`doc/decision/monorepo-manager-cache-key-hash.md`](../decision/monorepo-manager-cache-key-hash.md)),
+so the `+aes` build and its startup check no longer apply there.
+The music player still uses `gxhash`;
+its switch is issue #545,
+and the collision evidence is in
+[`doc/planning/monorepo-manager-route-research/gxhash-owned.md`](../planning/monorepo-manager-route-research/gxhash-owned.md).
+The constraints below still describe `gxhash` itself.
+
 The music-player peak-cache fingerprint hash migrated from hand-written FNV-1a to the
 `gxhash` crate (both flavors:
  `desktop-app/src/peakcache.rs` and the Android native
@@ -10,6 +20,20 @@ FNV-1a did not have.
 hitting a build break,
  a runtime crash,
  or a debug-build panic.
+
+Why gxhash:
+ per the user on 2026-09-16,
+ it benchmarked best among the hashes tried;
+ the benchmark inputs and results were not recorded.
+
+Runtime guard gotcha:
+ in a build with `-C target-feature=+aes`,
+ `is_x86_feature_detected!("aes")` is `true` at compile time,
+ because std's detection macro evaluates `cfg!(target_feature = ...)` before runtime detection
+ (`library/std_detect/src/detect/macros.rs:9-10` in the nightly-2026-09-12 Rust sources).
+A guard that warns instead of crashing on a CPU without AES-NI must call `core::arch::x86_64::__cpuid(1)` directly
+ and read ECX bit 25,
+ the bit std itself uses (`std_detect/src/detect/os/x86.rs:108`).
 
 ## Symptom
 

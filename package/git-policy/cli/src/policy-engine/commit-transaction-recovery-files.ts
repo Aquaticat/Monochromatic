@@ -20,6 +20,7 @@ import {
   assertOwnedLock,
   CommitTransactionRecoveryError,
 } from './commit-transaction-recovery-validation.ts';
+import { applyIndexTimestamps, } from './index-file-timestamps.ts';
 
 /**
  Reads exact regular artifact bytes through no-follow descriptor.
@@ -97,6 +98,10 @@ export async function installRecoveredIndex({
     throw new CommitTransactionRecoveryError(`Index lock identity changed: ${lockPath}`,);
   await lock.truncate(0,);
   await lock.writeFile(bytes,);
+  await applyIndexTimestamps({
+    sourcePath: postIndexPath,
+    handle: lock,
+  },);
   await lock.sync();
   await assertOwnedLock({
     journal,

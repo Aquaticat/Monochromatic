@@ -1,5 +1,6 @@
 {
   "name": "@monochromatic-dev/cli-markdown-lint",
+  "version": "0.0.1",
   "private": true,
   "keywords": [
     "markdown",

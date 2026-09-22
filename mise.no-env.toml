@@ -87,10 +87,12 @@ age = "latest"
 # mise applies components only when it installs the toolchain, so an
 # already-installed nightly needs a one-time
 # `rustup component add <comp> --toolchain nightly`:
-#   rust-src           -- std sources for IDE code insight (RustRover / IntelliJ Rust).
-#   llvm-tools-preview -- llvm-cov / llvm-profdata for `cargo fuzz coverage`.
+#   rust-src    -- std sources for IDE code insight (RustRover / IntelliJ Rust).
+#   llvm-tools  -- rustup alias for llvm-tools-preview; provides llvm-cov / llvm-profdata for fuzz coverage.
+# The alias prevents Mise's false missing-component loop; see
+# doc/troubleshooting/mise-rust-preview-component-reinstall.md.
 # ASAN backtrace symbolization uses the system llvm-symbolizer (not a rustup component).
-rust = { version = "nightly", components = "clippy,rust-src,llvm-tools-preview" }
+rust = { version = "nightly", components = "clippy,rust-src,llvm-tools" }
 cargo-binstall = "latest"
 "cargo:timeout-cli" = "latest"
 
@@ -1197,8 +1199,10 @@ description = "Show what the pending changesets will version"
 run = "changeset status --verbose"
 
 [tasks."changeset:version"]
-description = "Apply pending changesets to package versions and changelogs, then refresh the lockfile"
-run = ["changeset version", "pnpm install --lockfile-only"]
+description = "Apply pending changesets to package versions and changelogs, patch-bump dependents they miss, then refresh the lockfile"
+# The ripple runs between the two: changesets ignores most workspace packages, and the Version Packages commit is authored in CI
+# where the cli-git dependent-version-bump policy never runs (doc/decision/private-npm-registry.md).
+run = ["changeset version", "mise run //package/git-policy/repository:bump:dependents", "pnpm install --lockfile-only"]
 
 [tasks."changeset:build"]
 description = "Build every package the changeset publish plan will publish"

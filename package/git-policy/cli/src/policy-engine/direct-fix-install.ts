@@ -216,33 +216,32 @@ export async function captureDirectFixOriginalBytes(
  
  @param changedPaths - paths changed by converged policy patches
  
+ @param finalCandidates - converged private candidates for selected and added paths
+ 
  @param originals - exact pre-convergence worktree bytes
  
  @throws Error when worktree or index changed concurrently
  
  @example
  ```ts
- await installDirectFix({ scope, changedPaths: [], originals: new Map() });
+ await installDirectFix({ scope, changedPaths: [], finalCandidates: [], originals: new Map() });
  ```
  */
 export async function installDirectFix({
   scope,
   changedPaths,
+  finalCandidates,
   originals,
 }: Readonly<{
   scope: AddPolicyFactsScope;
   changedPaths: readonly string[];
+  finalCandidates: readonly CandidateFile[];
   originals: DirectFixOriginalBytes;
 }>,): Promise<void> {
   /**
    Real index snapshot proving direct fix remains index-neutral.
    */
   const indexBefore = await readIndex(scope.realIndexPath,);
-  /**
-   Final private candidates containing converged bytes.
-   */
-  const finalCandidates = await scope.gitFacts
-    .candidates();
   /**
    Prepared replacement records.
    */

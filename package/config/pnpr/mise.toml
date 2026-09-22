@@ -1,0 +1,41 @@
+[tasks.build]
+extends = "build"
+
+[tasks."build:js"]
+extends = "build:js"
+
+[tasks."build:js:node"]
+extends = "build:js:node"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."format:oxlint"]
+extends = "format:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"
+
+[tasks."test:unit"]
+extends = "test:unit"
+depends = ["build"]
+
+[tasks.publish]
+description = "Publish every configured package version missing from pnpr (CI; needs id-token: write or PNPR_PUBLISH_TOKEN)"
+run = "node src/publish-missing-versions.ts"
+
+[tasks."publish:dry-run"]
+description = "Build and pack every package version missing from pnpr without requesting a token or publishing"
+run = "node src/publish-missing-versions.ts --dry-run"
+
+[tasks."build:image"]
+description = "Build the pnpr registry image locally with bounded podman resources (2 GiB memory, 2 CPUs)"
+run = "podman build --memory=2g --cpu-quota=200000 --tag localhost/config-pnpr:dev --file Containerfile ."
+
+[tasks."start:image"]
+description = "Run the locally built image on 127.0.0.1:17677 with a throwaway secret and bounded resources"
+depends = ["build:image"]
+run = "podman run --rm --init --name config-pnpr --memory=2g --cpus=2 --publish 127.0.0.1:17677:7677 --env PNPR_SECRET=local-throwaway-secret-0123456789abcdef --env PNPR_PUBLIC_URL=http://127.0.0.1:17677 localhost/config-pnpr:dev"

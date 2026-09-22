@@ -127,8 +127,11 @@ export const DEFAULT_CONFIG: Omit<AdvisorConfig, 'source'> = {
 
 Disabling prior results on the raw Task 8 branch reduced the serialized context from `1512228` to
 `1503716` characters.
-This is not the primary inflation source,
- but it adds unrelated reviews by default.
+This is not the primary inflation source.
+The measurement establishes retained review text,
+not whether those reviews are unrelated or whether excluding them improves judgment.
+See the [prior-review policy reassessment](../planning/pi-advisor-prior-review-context.md)
+for the distinction between artifact exclusion and blind assessment.
 
 ### Pi returns terminal provider errors as values
 
@@ -490,7 +493,11 @@ Terminal provider errors and caller cancellation still fail immediately.
 
 - Build Advisor input from `ctx.sessionManager.buildContextEntries()`,
    not `getBranch()`.
-- Default `includePriorAdvisorResults` to `false`.
+- Historical proposal:
+   default `includePriorAdvisorResults` to `false`.
+  Withdrawn at the user's request;
+   issue `#407` is closed as not planned.
+  The [policy reassessment](../planning/pi-advisor-prior-review-context.md) records why the current default remains.
 - Check `stopReason` before checking text.
   Treat `error` as provider failure,
    distinguish caller cancellation from the plugin deadline for `aborted`,
@@ -600,8 +607,8 @@ The user-level `~/.pi/agent/extensions/pi-advisor.json` now carries the same val
 This addresses the Luna wait policy only;
  it does not reinterpret Spark's empty terminal responses or Qwen's transient provider 400 as local timeout failures.
 
-Follow-up findings remain tracked in issues `#407` to `#411`:
- prior-review context defaults,
+The prior-review default proposal in issue `#407` was withdrawn and closed as not planned.
+Other follow-up findings were tracked in issues `#408` to `#411`:
  nested usage accounting,
  model selection,
  input budgeting,

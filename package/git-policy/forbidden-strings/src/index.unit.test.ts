@@ -288,6 +288,7 @@ await describe({
         /** Post-commit policy context over the landed delta. */
         const context: PolicyContext = {
           candidateVersion: 0,
+          canApplyPatches: false,
           trigger: 'post-commit',
           command: {
             rawArgs: ['commit',],
@@ -299,6 +300,7 @@ await describe({
           },
           git: {
             candidates: function candidates() { return Promise.resolve(landed,); },
+            trackedFiles: function trackedFiles() { return Promise.resolve([],); },
             headOid: function headOid() { return Promise.resolve('head',); },
             landedCommitOid: function landedCommitOid() { return Promise.resolve('landed',); },
             pushUpdates: function pushUpdates() { return Promise.resolve([],); },

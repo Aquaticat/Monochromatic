@@ -27,6 +27,7 @@ import {
 } from '../trust/registry-io.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
 import { createOwnedFileLink, } from './commit-transaction-install-link.ts';
+import { applyIndexTimestamps, } from './index-file-timestamps.ts';
 
 /**
  Private file mode restricted to current account.
@@ -337,6 +338,10 @@ export async function createCommitTransactionWorkspace({
         lockInode: String(lockMetadata.ino,),
       },);
       await lockHandle.writeFile(bytes,);
+      await applyIndexTimestamps({
+        sourcePath,
+        handle: lockHandle,
+      },);
       await lockHandle.sync();
       await assertWorkspaceLockIdentity({
         lockPath,

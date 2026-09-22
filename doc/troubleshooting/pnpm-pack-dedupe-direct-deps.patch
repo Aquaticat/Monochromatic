@@ -1,0 +1,171 @@
+diff --git a/.changeset/dedupe-direct-deps-cli-override.md b/.changeset/dedupe-direct-deps-cli-override.md
+new file mode 100644
+index 0000000..8e4d480
+--- /dev/null
++++ b/.changeset/dedupe-direct-deps-cli-override.md
+@@ -0,0 +1,5 @@
++---
++"pacquet": patch
++---
++
++`--config.dedupe-direct-deps=<value>`, `--dedupe-direct-deps`, and `--no-dedupe-direct-deps` now override the `dedupeDirectDeps` setting for a single run. The `--config.` form used to be dropped without a message, so `pnpm install --config.dedupe-direct-deps=false` kept linking a direct dependency shared with the workspace root only at the root, and a later `pnpm pack` failed with `ERR_PNPM_CANNOT_RESOLVE_WORKSPACE_PROTOCOL`.
+diff --git a/pnpm/crates/cli/src/config_overrides.rs b/pnpm/crates/cli/src/config_overrides.rs
+index df94837..f4595bf 100644
+--- a/pnpm/crates/cli/src/config_overrides.rs
++++ b/pnpm/crates/cli/src/config_overrides.rs
+@@ -71,6 +71,7 @@ pub struct ConfigOverrides {
+     registries: BTreeMap<String, String>,
+     child_concurrency: Option<i32>,
+     dangerously_allow_all_builds: Option<bool>,
++    dedupe_direct_deps: Option<bool>,
+     deploy_all_files: Option<bool>,
+     engine_strict: Option<bool>,
+     force_legacy_deploy: Option<bool>,
+@@ -387,6 +388,9 @@ impl ConfigOverrides {
+ 
+     fn set_layout_option(&mut self, key: &str, value: &str) {
+         match key {
++            "dedupe-direct-deps" => {
++                self.dedupe_direct_deps = parse_bool(value);
++            }
+             "global-dir" => {
+                 self.global_dir = Some(value.to_string());
+             }
+diff --git a/pnpm/crates/cli/src/config_overrides/apply.rs b/pnpm/crates/cli/src/config_overrides/apply.rs
+index 433b656..d5980bf 100644
+--- a/pnpm/crates/cli/src/config_overrides/apply.rs
++++ b/pnpm/crates/cli/src/config_overrides/apply.rs
+@@ -192,6 +192,7 @@ impl ConfigOverrides {
+             config,
+             unsafe_perm => "unsafePerm",
+             dangerously_allow_all_builds => "dangerouslyAllowAllBuilds",
++            dedupe_direct_deps => "dedupeDirectDeps",
+             engine_strict => "engineStrict",
+             frozen_store => "frozenStore",
+             ignore_pnpmfile => "ignorePnpmfile",
+diff --git a/pnpm/crates/cli/src/config_overrides/tests.rs b/pnpm/crates/cli/src/config_overrides/tests.rs
+index eeaf421..a990978 100644
+--- a/pnpm/crates/cli/src/config_overrides/tests.rs
++++ b/pnpm/crates/cli/src/config_overrides/tests.rs
+@@ -279,6 +279,30 @@ fn extract_leaves_invalid_allow_unused_patches_values_for_clap() {
+     }
+ }
+ 
++#[test]
++fn extract_applies_dedupe_direct_deps_override() {
++    for (flag, expected) in [
++        ("--dedupe-direct-deps", true),
++        ("--dedupe-direct-deps=true", true),
++        ("--dedupe-direct-deps=false", false),
++        ("--config.dedupe-direct-deps=true", true),
++        ("--config.dedupe-direct-deps=false", false),
++        ("--no-dedupe-direct-deps", false),
++    ] {
++        let (overrides, remaining) = ConfigOverrides::extract(argv(["pacquet", flag, "install"]));
++        assert_eq!(remaining, argv(["pacquet", "install"]), "{flag}");
++
++        let mut config = Config { dedupe_direct_deps: !expected, ..Config::default() };
++        overrides.apply(&mut config, Path::new("/workspace"));
++        assert_eq!(config.dedupe_direct_deps, expected, "{flag}");
++        assert_eq!(
++            config.explicit_settings.get("dedupeDirectDeps"),
++            Some(&serde_json::Value::Bool(expected)),
++            "{flag}",
++        );
++    }
++}
++
+ #[test]
+ fn extract_applies_default_parity_overrides() {
+     let (overrides, remaining) = ConfigOverrides::extract(argv([
+diff --git a/pnpm/crates/cli/src/config_overrides/tokens.rs b/pnpm/crates/cli/src/config_overrides/tokens.rs
+index d7c2806..cc375c7 100644
+--- a/pnpm/crates/cli/src/config_overrides/tokens.rs
++++ b/pnpm/crates/cli/src/config_overrides/tokens.rs
+@@ -156,10 +156,11 @@ pub(super) enum SettingArity {
+ /// setting the invoked command declares as its own option is left for
+ /// clap; a setting that collides with a *global* option would be claimed
+ /// on every command line and so must not appear here at all.
+-pub(super) const BARE_SETTING_FLAGS: [(&str, SettingArity); 39] = [
++pub(super) const BARE_SETTING_FLAGS: [(&str, SettingArity); 40] = [
+     ("allow-unused-patches", SettingArity::Boolean),
+     ("child-concurrency", SettingArity::Parsed(is_i32)),
+     ("dangerously-allow-all-builds", SettingArity::Boolean),
++    ("dedupe-direct-deps", SettingArity::Boolean),
+     ("engine-strict", SettingArity::Boolean),
+     ("force-legacy-deploy", SettingArity::Boolean),
+     ("frozen-store", SettingArity::Boolean),
+diff --git a/pnpm/crates/cli/tests/suite/dedupe_direct_deps.rs b/pnpm/crates/cli/tests/suite/dedupe_direct_deps.rs
+index 66a25ac..5ba5481 100644
+--- a/pnpm/crates/cli/tests/suite/dedupe_direct_deps.rs
++++ b/pnpm/crates/cli/tests/suite/dedupe_direct_deps.rs
+@@ -162,6 +162,69 @@ fn dedupe_direct_deps_disabled_keeps_per_project_symlinks() {
+     drop((root, mock_instance));
+ }
+ 
++/// `--config.dedupe-direct-deps=false` on the command line wins over
++/// `dedupeDirectDeps: true` in the workspace yaml, the same as the
++/// `pnpm_config_dedupe_direct_deps` environment variable does.
++#[test]
++fn dedupe_direct_deps_cli_override_keeps_per_project_symlinks() {
++    let CommandTempCwd {
++        pacquet,
++        root,
++        workspace,
++        npmrc_info,
++        ..
++    } = CommandTempCwd::init().add_mocked_registry();
++    let AddMockedRegistry { mock_instance, .. } = npmrc_info;
++
++    fs::write(
++        workspace.join("package.json"),
++        serde_json::json!({
++            "name": "ws-root",
++            "version": "0.0.0",
++            "private": true,
++            "dependencies": { "@pnpm.e2e/hello-world-js-bin": "1.0.0" },
++        })
++        .to_string(),
++    )
++    .expect("write root package.json");
++
++    let workspace_yaml_path = workspace.join("pnpm-workspace.yaml");
++    let mut workspace_yaml =
++        fs::read_to_string(&workspace_yaml_path).expect("read pnpm-workspace.yaml");
++    if !workspace_yaml.ends_with('\n') {
++        workspace_yaml.push('\n');
++    }
++    workspace_yaml.push_str("packages:\n  - 'packages/*'\ndedupeDirectDeps: true\n");
++    fs::write(&workspace_yaml_path, workspace_yaml).expect("write pnpm-workspace.yaml");
++
++    fs::create_dir_all(workspace.join("packages/dup")).expect("mkdir packages/dup");
++    fs::write(
++        workspace.join("packages/dup/package.json"),
++        serde_json::json!({
++            "name": "@scope/dup",
++            "version": "1.0.0",
++            "dependencies": { "@pnpm.e2e/hello-world-js-bin": "1.0.0" },
++        })
++        .to_string(),
++    )
++    .expect("write packages/dup/package.json");
++
++    pacquet
++        .with_args(["--config.dedupe-direct-deps=false", "install"])
++        .assert()
++        .success();
++
++    let sibling_dep = workspace.join("packages/dup/node_modules/@pnpm.e2e/hello-world-js-bin");
++    let sibling_dep_linked = is_symlink_or_junction(&sibling_dep).expect("query sibling symlink");
++    eprintln!("sibling_dep={sibling_dep:?} linked={sibling_dep_linked}");
++    assert!(
++        sibling_dep_linked,
++        "--config.dedupe-direct-deps=false should keep the sibling direct-dep symlink",
++    );
++
++    drop((root, mock_instance));
++}
++
+ /// A frozen-lockfile install (the headless path) dedupes too,
+ /// producing the same on-disk shape after running through the
+ /// `install_frozen_lockfile` codepath.

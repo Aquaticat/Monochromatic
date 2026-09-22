@@ -36,6 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       minimum_node_version: ${{ steps.contract.outputs.minimum_node_version }}
+      supported_node_versions: ${{ steps.contract.outputs.supported_node_versions }}
     steps:
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -49,25 +50,50 @@ jobs:
         const { appendFileSync, readFileSync } = require('node:fs')
 
         const manifestPath = 'package/git-policy/cli/package.json'
+        const rangeSeparator = ' || '
         const rangePrefix = '^'
         const semanticVersionComponentCount = 3
         const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
         const range = manifest.engines?.node
         const outputPath = process.env.GITHUB_OUTPUT
 
-        if (typeof range !== 'string' || !range.startsWith(rangePrefix))
-          throw new Error(`${manifestPath} engines.node must be one caret range`)
-        const minimumVersion = range.slice(rangePrefix.length)
-        const components = minimumVersion.split('.')
-        const isCanonical = components.length === semanticVersionComponentCount
-          && components.every((component) => component !== '' && String(Number(component)) === component)
-        if (!isCanonical)
-          throw new Error(`${manifestPath} engines.node must contain one canonical version, received ${range}`)
+        if (typeof range !== 'string')
+          throw new TypeError(`${manifestPath} engines.node must be a string`)
+        const versions = range.split(rangeSeparator).map((part) => {
+          if (!part.startsWith(rangePrefix))
+            throw new Error(`${manifestPath} engines.node must contain caret ranges, received ${range}`)
+          const version = part.slice(rangePrefix.length)
+          const components = version.split('.')
+          const isCanonical = components.length === semanticVersionComponentCount
+            && components.every((component) => {
+              const numericComponent = Number(component)
+              return component !== ''
+                && Number.isSafeInteger(numericComponent)
+                && numericComponent >= 0
+                && String(numericComponent) === component
+            })
+          if (!isCanonical)
+            throw new Error(`${manifestPath} engines.node must contain canonical versions, received ${range}`)
+          return version
+        })
+        if (versions.some((version, index) => versions.indexOf(version) !== index))
+          throw new Error(`${manifestPath} engines.node must contain unique runtime ranges, received ${range}`)
         if (outputPath === undefined)
           throw new Error('GitHub did not provide GITHUB_OUTPUT')
 
-        console.log(`cli-git maintained Node range: ${range}`)
+        const minimumVersion = versions.reduce((minimum, version) => {
+          const minimumComponents = minimum.split('.').map(Number)
+          const versionComponents = version.split('.').map(Number)
+          const minimumIsEarlier = versionComponents[0] < minimumComponents[0]
+            || (versionComponents[0] === minimumComponents[0]
+              && (versionComponents[1] < minimumComponents[1]
+                || (versionComponents[1] === minimumComponents[1]
+                  && versionComponents[2] < minimumComponents[2])))
+          return minimumIsEarlier ? version : minimum
+        })
+        console.log(`cli-git supported Node ranges: ${range}`)
         appendFileSync(outputPath, `minimum_node_version=${minimumVersion}\n`)
+        appendFileSync(outputPath, `supported_node_versions=${JSON.stringify(versions)}\n`)
 
   latest-lts-policy:
     name: Latest LTS policy
@@ -107,21 +133,25 @@ jobs:
         const declaredMinimum = process.env.DECLARED_MINIMUM_NODE_VERSION
         if (declaredMinimum !== expectedMinimum) {
           throw new Error(
-            `cli-git must replace its maintained Node range with ^${expectedMinimum}; received ^${declaredMinimum}`,
+            `cli-git must replace its maintained minimum range with ^${expectedMinimum}; received ^${declaredMinimum}`,
           )
         }
         console.log(
           `cli-git tracks Node ${latestLtsMajor} LTS from ${firstLtsRelease.version} through ${latestLtsRelease.version}`,
         )
 
-  minimum-runtime:
-    name: Minimum runtime
+  supported-runtime:
+    name: Supported runtime (${{ matrix.node_version }})
     if: github.event_name != 'schedule'
     needs: runtime-policy
+    strategy:
+      fail-fast: false
+      matrix:
+        node_version: ${{ fromJSON(needs.runtime-policy.outputs.supported_node_versions) }}
     runs-on: ubuntu-latest
     env:
       MISE_AUTO_INSTALL: 'false'
-      MISE_NODE_VERSION: ${{ needs.runtime-policy.outputs.minimum_node_version }}
+      MISE_NODE_VERSION: ${{ matrix.node_version }}
     steps:
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -138,23 +168,23 @@ jobs:
         minimum_release_age: 1d
         install: false
 
-    - name: Install minimum runtime tools
+    - name: Install supported runtime tools
       run: mise install node pnpm
 
     - name: Install cli-git dependency closure
       run: mise exec node pnpm -- pnpm install --frozen-lockfile --filter @monochromatic-dev/git-policy-cli...
 
-    - name: Build at minimum runtime
+    - name: Build at supported runtime
       run: mise run //package/git-policy/cli:build
 
-    - name: Run representative source tests at minimum runtime
+    - name: Run representative source tests at supported runtime
       run: >-
         mise run //package/git-policy/cli:test:unit --
         package/git-policy/cli/src/api.unit.test.ts
         package/git-policy/cli/src/bin.unit.test.ts
 
-    - name: Exercise built package at minimum runtime
-      run: mise run //package/git-policy/cli:verify:minimum-runtime
+    - name: Exercise built package at supported runtime
+      run: mise run //package/git-policy/cli:verify:supported-runtime
 
   trust:
     name: Trust (${{ matrix.os }})

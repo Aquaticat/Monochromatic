@@ -3,7 +3,7 @@
   "description": "Model-aware thinking default extension for pi: GPT models use xhigh, and other models use xhigh when supported and high otherwise",
   "type": "module",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",

@@ -116,6 +116,7 @@ function context({
     },
     git: {
       candidates: function loadCandidates() { return Promise.resolve(candidates,); },
+      trackedFiles: function loadTrackedFiles() { return Promise.resolve([],); },
       headOid: function headOid() { return Promise.resolve(ABSENT_GIT_VALUE,); },
       landedCommitOid: function landedCommitOid() { return Promise.resolve(ABSENT_GIT_VALUE,); },
       pushUpdates: function pushUpdates() { return Promise.resolve([],); },

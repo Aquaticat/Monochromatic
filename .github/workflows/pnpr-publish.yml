@@ -1,0 +1,87 @@
+name: pnpr-publish
+
+# Publishes every configured workspace package version that the private pnpr
+# registry lacks, decided in doc/decision/private-npm-registry.md.
+#
+# - Versions change only by manual bumps, so only a manifest change can create a
+#   missing version; the push filter lists manifests, the generated pnpr config
+#   (a newly trusted package), the publish script, and this workflow.
+# - Authentication is pnpr's OIDC workload credential: the script requests a
+#   GitHub ID token per publish with audience https://pnpr.c.aquati.cat. No token
+#   is stored. pnpr trusts only this file on refs/heads/main
+#   (package/config/pnpr/config.yaml, workflow_ref claim), so renaming the file
+#   or running it from another ref makes every publish fail.
+# - A package that fails to build fails the run and blocks its dependents; fix it
+#   or add it to PNPR_EXCLUDED_PACKAGES in file-enforcer.config.ts.
+# - workflow_dispatch retries; the optional input limits the run to named packages.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/package.json'
+      - 'package/config/pnpr/config.yaml'
+      - 'package/config/pnpr/src/**'
+      - '.github/workflows/pnpr-publish.yml'
+  workflow_dispatch:
+    inputs:
+      only:
+        description: 'Comma-separated package names to publish (empty publishes every missing version)'
+        required: false
+        default: ''
+
+permissions: {}
+
+env:
+  # Same reason as npm-release.yml: the root mise config would otherwise try to
+  # build every heavy dev tool on the runner.
+  MISE_AUTO_INSTALL: 'false'
+  # pnpm pack fails with ERR_PNPM_CANNOT_RESOLVE_WORKSPACE_PROTOCOL when a direct
+  # workspace dependency is deduplicated to the root
+  # (doc/troubleshooting/pnpm-pack-dedupe-direct-deps.md). On pnpm 12.3.4 only this
+  # environment variable disables that; --config.dedupe-direct-deps=false and
+  # npm_config_dedupe_direct_deps are ignored. Job-wide, because build tasks can
+  # re-run pnpm install and would otherwise restore the deduplicated layout.
+  pnpm_config_dedupe_direct_deps: 'false'
+
+concurrency:
+  group: pnpr-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 1
+
+      - name: Set up mise (skip auto-install of all tools)
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          # Resolve "latest" through the GitHub releases API, published releases only,
+          # one day old like pnpm's minimumReleaseAge:
+          # doc/troubleshooting/mise-action-version-ahead-of-release.md
+          minimum_release_age: 1d
+          install: false
+          cache: true
+
+      # uv runs fonttools for typeface-aquaticat's WOFF2 build (#535).
+      - name: Install node, pnpm, and uv
+        run: mise install node pnpm uv
+
+      - name: Expose node, pnpm, and uv to later steps
+        run: printf '%s\n' "$(dirname "$(mise which node)")" "$(dirname "$(mise which pnpm)")" "$(dirname "$(mise which uv)")" >> "$GITHUB_PATH"
+
+      - name: Install dependencies with every direct dependency linked per package
+        run: mise exec node pnpm -- pnpm install --frozen-lockfile
+
+      - name: Publish missing versions to pnpr
+        env:
+          PNPR_PUBLISH_ONLY: ${{ inputs.only }}
+        run: mise run //package/config/pnpr:publish

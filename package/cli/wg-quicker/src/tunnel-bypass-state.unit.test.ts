@@ -20,7 +20,7 @@ import { readBypassStatePath, } from '../dist/final/node/tunnel-bypass.mjs';
 const VALID_STATE = {
   version: 2,
   interfaceName: 'wgtest',
-  mark: 8_888,
+  mark: 100,
   table: 52_000,
   preference: 50,
   ownerId: 'owner',

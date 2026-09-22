@@ -19,6 +19,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { resolveApplicationExemptionCommand, } from './application-exemption-command.ts';
 import { loadConfig, } from './config.ts';
 import { CliUsageError, } from './errors.ts';
+import { RECOMMENDED_EXEMPT_MARK, } from './exempt-mark-reservation.ts';
 import { restorePrivilegeContext, } from './privilege-context.ts';
 import { relaunchWithRootIfNeeded, } from './privilege.ts';
 import {
@@ -116,7 +117,7 @@ async function main(): Promise<void> {
   if (subcommand === 'up') {
     if (config.exemptMark === undefined) {
       l.warn(
-        `Config for ${target} has no ExemptMark; Ghostty, Steam, Helium, Pale Moon, and Firefox Nightly will use the tunnel. Add \`ExemptMark = 8888\` under \`[Interface]\`, then bring this interface down and up again so application exemptions attach.`,
+        `Config for ${target} has no ExemptMark; Ghostty, Steam, Helium, Pale Moon, and Firefox Nightly will use the tunnel. Add \`ExemptMark = ${String(RECOMMENDED_EXEMPT_MARK,)}\` under \`[Interface]\`, then bring this interface down and up again so application exemptions attach.`,
       );
     } else {
       /**

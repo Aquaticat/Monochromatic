@@ -48,6 +48,17 @@ panic = "unwind"
 [profile.dev]
 panic = "unwind"
 
+# The scanner's `build.rs` precompiles its embedded baseline through the
+# forbidden-regex build-dependency, which Cargo builds at `opt-level = 0` by default.
+# Profiles are read only from this workspace root, so the scanner manifest's own
+# build-override does not reach fuzz builds; see ../../cli/forbidden-strings/Cargo.toml
+# for the measurement.
+[profile.release.build-override]
+opt-level = 3
+
+[profile.dev.build-override]
+opt-level = 3
+
 [[bin]]
 name = "fuzz_literal_roundtrip"
 path = "fuzz_targets/fuzz_literal_roundtrip.rs"

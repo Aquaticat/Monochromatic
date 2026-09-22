@@ -1,0 +1,9 @@
+[tasks.format]
+description = "Format Rust source"
+dir = "/work"
+run = "rustfmt --edition 2024 src/plugins/core/rust.rs"
+
+[tasks.test]
+description = "Run focused rust component matcher test"
+dir = "/work"
+run = "cargo test --all-features --bin mise rustup_component_matching_allows_host_suffixes"

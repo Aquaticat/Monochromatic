@@ -811,6 +811,10 @@ commands,
   `from_bytes`,
   never recompiling.
   This trusted embedded path remains separate from the mutable runtime cache envelope.
+  Cargo compiles build scripts' dependencies unoptimized by default,
+  so `Cargo.toml` sets `build-override` `opt-level = 3` for the release and dev profiles,
+  and the engine builds the baseline's rules on one worker thread per core
+  (see [the Cargo build-override write-up](../../../doc/troubleshooting/cargo-build-override-opt-level.md)).
 - **Concurrent load and walk.
   ** Rule loading and `--all` file walking run concurrently via
   `rayon::join` (they share no state);

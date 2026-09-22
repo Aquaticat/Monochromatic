@@ -213,6 +213,15 @@ Value-representation counterexamples:
 - Debugger text is presented as JSON or executable source.
 - A helper's formatting hooks are assumed to be universally side-effect-free.
 
+Control-affordance counterexamples:
+
+- A button whose click would do nothing stays enabled and visually unchanged.
+- A click leaves no trace on the control, in a record, or in the drawn scene.
+- A repeatable action reuses one button whose label cannot tell the first call from the fifth.
+- An interactive analogy inverts its source: the falling object of the source game becomes a
+  stationary agent while the line drops agents instead.
+- A value snapshot present in the lesson is dropped from a redesign of the same section.
+
 The Promise lesson uses literal JSON beside live Showify snapshots,
 with an explicitly recorded native Node inspector comparison.
 Those are tools used by this example, not a prescription that every subject needs these same formatters.

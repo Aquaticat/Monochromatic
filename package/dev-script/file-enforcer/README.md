@@ -133,7 +133,9 @@ Pass `manifestPath` only for throwaway fixtures or benchmarks that should not sh
 
 ## Platform-aware exec
 
-`exec()` accepts an array of `[predicate, command]` tuples for platform-dependent command dispatch.
+`exec()` takes one object.
+The platform-aware form is `{ platformCommands }`,
+ whose value is an array of `[predicate, command]` tuples for platform-dependent command dispatch.
 Predicates are direct commands (no shell involved);
  exit code 0 means the predicate matched.
 Tuples are evaluated top-to-bottom;
@@ -143,11 +145,13 @@ Tuples are evaluated top-to-bottom;
 import { exec, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
 // Install git via the first available package manager
-const output = await exec([
-  [['mise', '--version',], ['mise', 'use', 'git',],],
-  [['brew', '--version',], ['brew', 'install', 'git',],],
-  [['dnf', '--version',], ['dnf', 'install', 'git',],],
-],);
+const output = await exec({
+  platformCommands: [
+    [['mise', '--version',], ['mise', 'use', 'git',],],
+    [['brew', '--version',], ['brew', 'install', 'git',],],
+    [['dnf', '--version',], ['dnf', 'install', 'git',],],
+  ],
+},);
 ```
 
 ### Checking tool capabilities
@@ -162,7 +166,7 @@ const miseCanManageGit = hasMise
   && await evaluatePredicate(['mise', 'registry', 'git',],);
 
 if (miseCanManageGit)
-  await exec('mise', ['use', 'git',],);
+  await exec({ cmd: 'mise', args: ['use', 'git',], },);
 ```
 
 ### Reusable predicates
@@ -172,8 +176,8 @@ Define predicates as constants to share across multiple `exec()` calls:
 ```ts
 const HAS_MISE = ['mise', '--version',] as const;
 
-await exec([[HAS_MISE, ['mise', 'exec', '--', 'git', 'pull',],],],);
-await exec([[HAS_MISE, ['mise', 'exec', '--', 'git', 'status',],],],);
+await exec({ platformCommands: [[HAS_MISE, ['mise', 'exec', '--', 'git', 'pull',],],], },);
+await exec({ platformCommands: [[HAS_MISE, ['mise', 'exec', '--', 'git', 'status',],],], },);
 ```
 
 ### Manual dispatch with `evaluatePredicate()`
@@ -191,9 +195,9 @@ const hasMise = await evaluatePredicate(['mise', '--version',],);
 const hasBrew = await evaluatePredicate(['brew', '--version',],);
 
 if (hasMise)
-  await exec('mise', ['use', 'git',],);
+  await exec({ cmd: 'mise', args: ['use', 'git',], },);
 if (hasBrew)
-  await exec('brew', ['install', 'git',],);
+  await exec({ cmd: 'brew', args: ['install', 'git',], },);
 ```
 
 ### Nested platform dispatch
@@ -202,15 +206,17 @@ The command slot accepts another `PlatformCommands` for multi-level dispatch.
 The first element of the inner array being an array (not a string) triggers recursive evaluation.
 
 ```ts
-await exec([
-  [['mise', '--version',], [
-    [['mise', 'where', 'python@3.12',], ['mise', 'exec', 'python@3.12', '--',
-      'script.py',],],
-    [['mise', 'where', 'python@3.11',], ['mise', 'exec', 'python@3.11', '--',
-      'script.py',],],
-  ],],
-  [['python3', '--version',], ['python3', 'script.py',],],
-],);
+await exec({
+  platformCommands: [
+    [['mise', '--version',], [
+      [['mise', 'where', 'python@3.12',], ['mise', 'exec', 'python@3.12', '--',
+        'script.py',],],
+      [['mise', 'where', 'python@3.11',], ['mise', 'exec', 'python@3.11', '--',
+        'script.py',],],
+    ],],
+    [['python3', '--version',], ['python3', 'script.py',],],
+  ],
+},);
 ```
 
 Nested command literals require `as const` to satisfy the recursive type.
@@ -224,10 +230,12 @@ const miseDispatch = [
     'script.py',],],
 ] as const;
 
-await exec([
-  [['mise', '--version',], miseDispatch,],
-  [['python3', '--version',], ['python3', 'script.py',],],
-],);
+await exec({
+  platformCommands: [
+    [['mise', '--version',], miseDispatch,],
+    [['python3', '--version',], ['python3', 'script.py',],],
+  ],
+},);
 ```
 
 ### Negation via noop fallthrough
@@ -238,10 +246,12 @@ To express "if X is NOT available,
  match the positive case with a noop command and let the negative case fall through:
 
 ```ts
-await exec([
-  [['python3', '--version',], ['true',],], // python found → noop
-  [['true',], installPython,], // fallthrough → install
-],);
+await exec({
+  platformCommands: [
+    [['python3', '--version',], ['true',],], // python found → noop
+    [['true',], installPython,], // fallthrough → install
+  ],
+},);
 ```
 
 For complex negation logic,
@@ -250,7 +260,7 @@ For complex negation logic,
 ```ts
 const hasPython = await evaluatePredicate(['python3', '--version',],);
 if (!hasPython)
-  await exec('apt-get', ['install', '--yes', 'python3',],);
+  await exec({ cmd: 'apt-get', args: ['install', '--yes', 'python3',], },);
 ```
 
 ## Mutation testing
@@ -284,16 +294,19 @@ Designed for packages that mise cannot manage (system libraries,
 
 ### Basic usage
 
+The bundled package index lives at `src/data/packages.ts`,
+which the manifest does not export,
+so a consumer registers its own entries.
+Whether to export that data is issue #554.
+
 ```ts
 import {
-  packages,
-} from '@monochromatic-dev/dev-script-file-enforcer/data/packages.ts';
-import {
   ensurePackage,
+  p,
   registerPackages,
 } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
-registerPackages(packages,);
+registerPackages([p('curl',), p({ bin: 'rg', effname: 'ripgrep', },),],);
 
 await ensurePackage('curl',); // already installed → noop
 await ensurePackage('rg',); // not found → installs ripgrep via detected manager

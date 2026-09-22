@@ -587,6 +587,32 @@ unexpected paths,
 and unsupported binary patches.
 Conflicts remain in temporary state and exit `2`.
 
+A commit normalizer may also add a tracked path the commit did not select
+(owner decision 2026-09-15,
+ recorded in `doc/decision/private-npm-registry.md`):
+policies read current-state tracked files through `trackedFiles`,
+and a patch naming one outside the candidate set adds it.
+The path must be unchanged in the real index,
+the private commit index,
+and the worktree,
+so the commit can take the fix and cli-git can write the landed bytes to the worktree afterwards without discarding local work.
+Otherwise the commit blocks with `patch-conflict` and names the remedies.
+The worktree write happens after the index install and is completed by startup recovery;
+a copy edited during the commit is kept with a warning.
+Rejected alternatives:
+a read-only check plus a separate bump command,
+and adding paths without updating the worktree.
+
+Direct fix adds tracked paths the same way
+(owner decision 2026-09-15):
+a direct-fix patch naming a tracked file outside the selected pathspecs adds it under the same unchanged precondition,
+later passes see it as a candidate,
+and its converged bytes replace only its worktree copy,
+behind the concurrent-change and real-index checks every direct-fix path already has.
+A refused path names the direct-fix remedies:
+include it in the fix pathspecs,
+or restore it to `HEAD`.
+
 ## Automatic and direct fixes
 
 Matching pre-forward commit normalizers automatically apply fixes.
@@ -704,6 +730,20 @@ Auto-push remains fixed behavior later in the staged lifecycle.
 `forbidden-root-context` runs before commit and on direct check.
 It rejects a root `CONTEXT.md` candidate.
 It is the first repo plugin migration and proves the minimal finding path.
+
+### Dependent version bump
+
+`dependent-version-bump` runs before commit,
+on direct check,
+and on direct fix
+(owner decision 2026-09-15:
+ `git cli-git fix` applies the ripple `git cli-git check` reports).
+Before forwarding it reports only for `commit`,
+because `git add` cannot apply the ripple and would refuse a hand bump.
+When a workspace manifest's `version` differs from `HEAD`,
+it patch-bumps every publishable dependent reached through runtime fields or bundled development imports,
+adding their manifests to the commit through tracked targets.
+It is the first policy that adds paths.
 
 ### Forbidden strings
 
