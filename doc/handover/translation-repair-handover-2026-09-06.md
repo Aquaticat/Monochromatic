@@ -4647,17 +4647,25 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XINGZ623 RUNS (frozen `40679244d`,
-    pid 2184330,
-    launched 18:31 UTC 2026-09-22,
-    waiter bpl8gb3gq,
-    meters 102.73 USD Bedrock and 151.09 OpenRouter at launch, Synthetic dry;
-    admission 18:50 UTC as `XingZ622`: image0.webp corroborated 3 of 3 at 0.557, tail admitted on the bound (31 slices, expected 15,318 against 173), slice 70 admitted on the container deficit, nothing unresolved):
-    read for class eighty-three live
+1.  XINGZ624 RUNS (frozen `da02857b1`,
+    pid 2237613,
+    launched 21:43 UTC 2026-09-22,
+    waiter bmu8s7wec,
+    meters 98.03 USD Bedrock and 145.35 OpenRouter at launch, Synthetic dry;
+    the frozen dir is a copy of `dist/final/node`, not of `dist`: a first launch on the wrong layout died at once on `corpus-pass.mjs` not found and spent nothing):
+    read for class eighty-seven live
+    (the bare TextRing slice: the consolidation line "no standing text to consolidate against; the lane texts alone go to the slate judges", the tag on the page, no `no-standing-text` stop, no naturalness-floor error at publish)
+    and class eighty-three live on the page
     (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiecheng Tianzou Official" on the Caged Bird attribution, the literal gloss in parentheses at each handle's first appearance)
     beside every check of `XingZ622`
     (fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, the closing poem's attribution inside the quote, "They once said" on the tombstone paragraph, front matter equal, no TA, no error finish);
-    record under a new heading above "## yingying4 read, 2026-09-22, 18:40 UTC" in the pass log.
+    record under a new heading above "## XingZ623 read, 2026-09-22, 21:55 UTC" in the pass log.
+    XINGZ623 READ (frozen `40679244d`): INCOMPLETE at 21:32 UTC after 3h01m, 8,163 seats, 257 retry rounds, 10.41 USD by the meters, no page and no artifact;
+    `slice 89 did not meet absolute naturalness floor` at publish: the bare `<TextRing/>` slice (an admitted tail slice, no archive text) had its translate rendering accepted 4.5 of 5,
+    the contest declined both lanes 4 of 4 as non-linguistic markup, the declined contest left the empty string standing, and both empty-standing exits ran ahead of the class forty lane-text offer (class eighty-seven).
+    CLASS EIGHTY-SEVEN FIXED: the exits in `consolidate-slice-buy.ts` and `consolidate-settle.ts` apply only with no lane text to offer; with one, the lane texts alone go to the slate judges through the ineligible-standing path;
+    guard red first `daf73f3dc`, fix `da02857b1`, lint 0/0, types clean, full suite green (`suite-class87.log`, 1095 PASS).
+    Class eighty-three live in `XingZ623`'s lane texts ("### No. 10: Jinxin (Brocade Heart)", "——Jinxin, February 10, 2025", "— Yuli (Rain Raccoon)", "by Jiecheng Tianzou Official"); the page never assembled, so its one-way rendering is `XingZ624`'s read.
     YINGYING4 READ (frozen `40679244d`): SETTLED at 18:30 UTC in 23 min, 326 seats, 15 retry rounds, 0.23 USD by the meters;
     class eighty-six live (the second definition "[Farewell. I miss you, Yingying.]", both lanes agreed, a slate ballot citing the glossary line's "declared form inside the title");
     every check as `yingying3`, no unendorsed or gate-kept standing, 3 abstention lines; the `[^2]` marker on its own line renders as the archive's "world! [^2]".

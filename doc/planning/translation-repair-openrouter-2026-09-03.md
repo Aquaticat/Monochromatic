@@ -8082,6 +8082,76 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ623 read, 2026-09-22, 21:55 UTC: INCOMPLETE at publish after 3h01m on the bare TextRing slice, nothing standing behind a declined contest at an absent archive (class eighty-seven); fixed in da02857b1, XingZ624 launched
+
+`XingZ623` (frozen `40679244d`, pid 2184330) ended INCOMPLETE at 21:32 UTC,
+3h01m after its 18:31 launch (TALLY `ms=10862998`),
+one attempt,
+8,163 seats,
+257 retry rounds,
+7,378 calls,
+69 abandoned streams (0.32 USD),
+10.41 USD by the meters (Bedrock 102.73 to 98.04, OpenRouter 151.09 to 145.37).
+Synthetic dry throughout, glm-5.3 dark (asked 585, threw 585).
+No page and no artifact were written;
+the reading below comes from the run log and the slice cache.
+
+The stop: `TALLY ... error=slice 89 did not meet absolute naturalness floor`,
+thrown by `assertFinalNaturalnessComplete` at publish,
+after the page assembly had already run (its contributor-name-restored lines are timestamped 21:32:46, the TALLY 21:32:46).
+Slice 89 this run is the bare `<TextRing text="⊕⊕⊕⊕" fontSize="1.25rem"/>` line alone
+(one mdxJsxFlowElement; `XingZ622` had sliced it together with the `<h3>` heading above it),
+an admitted tail slice with no archive text.
+The repair lane had nothing to repair (`repair-not-applicable chunk 89`);
+the translate lane wrote the tag verbatim and its judges accepted it at weight 4.5 of 5
+("a JSX/HTML component line rather than source-language prose, so preserving it unchanged is faithful");
+the lane contest then declined both lanes 4 of 4
+("both candidates are empty placeholders", "non-linguistic markup ... translation or repair impossible",
+"the candidates are identical (one is blank, the other reproduces the tag verbatim), so neither is more faithful").
+`standingTextFor` turns a declined contest into the incumbent, which is the empty string at an absent archive;
+`readStandingVerdict` refused it (0 blocks against 1) and `laneTextsForSlate` offered the translate text (class forty);
+but `buyConsolidationAttempt` and `settleConsolidation` both exit on `standingText === ''` before the offer is read
+("no standing text to consolidate against, so no slate is bought"; terminal `no-standing-text`),
+so the one valid rendering was never put to a judge, the slice shipped nothing, and the final naturalness check refused the record.
+The 3h01m and 10.41 USD bought no page.
+
+Class eighty-seven, fixed in da02857b1:
+the empty-standing exits in `consolidate-slice-buy.ts` and `consolidate-settle.ts` apply only when no lane text is on offer;
+with one, the producers are still not asked (they write from the standing, and there is none)
+and the settlement runs the class forty path over the lane texts alone:
+the empty standing withheld as an ineligible one is, the slate judged through `judgeSlateWithRetry`, the winner gated and polished,
+a decline failing the slice at once under the owner's rule of 2026-09-04.
+The buy logs "no standing text to consolidate against; the lane texts alone go to the slate judges" on that path.
+Guard red first at daf73f3dc (`consolidate-settle.unit.test.ts`: an empty standing with one lane text is judged and gated, and stays `no-standing-text` without one),
+lint 0 and 0,
+types clean,
+full suite green (`suite-class87.log`).
+Open on the same path: an empty standing with no valid lane text still ends `no-standing-text` and fails the entry at publish rather than at once;
+no run has reached it (a declined contest at an absent archive always has a lane text, and the only way both fail the rule is both being refused).
+
+Class eighty-three live in the lane texts, though no page carried them:
+the Part Ten heading rendered "### No. 10: Jinxin (Brocade Heart)" and its signature "——Jinxin, February 10, 2025" (both lanes' cached texts),
+the song credit "— Yuli (Rain Raccoon) [Paranoia]",
+the Bird in the Cage attribution "by Jiecheng Tianzou Official (...)";
+the assembly's restore lines this run were HiYku (heading and signature, slice 48), Ann (slice 49), Baimao Suki (slice 79) and the memorial ceremony line (slice 88).
+Whether the page carries them one way each is `XingZ624`'s read.
+
+Before the stop, the log carried
+181 abstention lines,
+eight unendorsed standings (5, 11, 15, 38, 52, 54, 63, 82),
+two gate-kept (11, 52),
+five slate-declined (15, 38, 54, 63, 82),
+no repeat, run-off, archive-revision-refused or error-finish line.
+Timing as `XingZ622`: admission 18:50, repair lane 18:50 to 19:22, translate to 20:14, contest to 20:36, consolidation 20:36 to 21:32.
+
+`XingZ624` (frozen `da02857b1`, pid 2237613, overlap 8)
+launched 21:43 UTC on Bedrock and OpenRouter
+(meters 98.03 USD Bedrock, 145.35 OpenRouter at launch),
+waiter bmu8s7wec.
+Read for class eighty-seven live (slice 89 or wherever the bare TextRing slices this run: the "lane texts alone go to the slate judges" line, the tag on the page, no `no-standing-text` stop)
+and class eighty-three live on the page (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiecheng Tianzou Official", the parenthesised gloss at first appearance),
+beside every check of `XingZ622`.
+
 ## yingying4 read, 2026-09-22, 18:40 UTC: SETTLED in 23 min, class eighty-six live, the blog title names "Yingying"; XingZ623 launched for class eighty-three
 
 `yingying4` (frozen `40679244d`, pid 2180429) SETTLED at 18:30 UTC,
