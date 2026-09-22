@@ -6,6 +6,7 @@
 
 import type {
   Api,
+  JsonObject,
   Model,
 } from '@earendil-works/pi-ai';
 
@@ -26,7 +27,8 @@ type ScriptedProvider = {
  */
 type ScriptedToolCall = {
   readonly name: string;
-  readonly arguments: Readonly<Record<string, unknown>>;
+  // Pi AI 0.87 types ToolCall.arguments as JsonObject.
+  readonly arguments: JsonObject;
 };
 
 /**
