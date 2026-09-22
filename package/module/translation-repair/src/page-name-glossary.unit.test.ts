@@ -66,6 +66,39 @@ await describe({
       },
     },),
     it({
+      name: 'SAYS a linked title that names the person takes the declared form inside it (class eighty-six, yingying3 2026-09-22: the archive\'s "Sakura" inside a blog title carried as the title\'s authority against the declared "Yingying")',
+      fn: async () => {
+        const lines = pageNameLines({
+          sourceText: '[永别了，猫猫。](https://example.invalid/farewell)\n',
+          targetText: '[Farewell, Kitty.](https://example.invalid/farewell)\n',
+          declared: [{ source: '猫猫', rendering: 'Maomao', },],
+        },);
+        // The title line still carries the archive's rendering, and now says
+        // which name inside it the declared form settles.
+        expect(lines,).toContain(
+          '- 永别了，猫猫。 (link text, https://example.invalid/farewell): "Farewell, Kitty."; names 猫猫, declared "Maomao": the declared form inside the title, the archive\'s words for the rest',
+        );
+        expect(lines[0],).toContain('a declared name inside a title takes its declared form',);
+      },
+    },),
+    it({
+      name: 'KEEPS a linked title\'s line bare where the archive already renders the declared name inside it, or the title names nobody declared',
+      fn: async () => {
+        const rendered = pageNameLines({
+          sourceText: '[永别了，猫猫。](https://example.invalid/farewell)\n',
+          targetText: '[Farewell, Maomao.](https://example.invalid/farewell)\n',
+          declared: [{ source: '猫猫', rendering: 'Maomao', },],
+        },);
+        expect(rendered,).toContain('- 永别了，猫猫。 (link text, https://example.invalid/farewell): "Farewell, Maomao."',);
+        const nobody = pageNameLines({
+          sourceText: '[永别了，猫猫。](https://example.invalid/farewell)\n',
+          targetText: '[Farewell, Kitty.](https://example.invalid/farewell)\n',
+          declared: [{ source: '橘猫', rendering: 'Ginger', },],
+        },);
+        expect(nobody,).toContain('- 永别了，猫猫。 (link text, https://example.invalid/farewell): "Farewell, Kitty."',);
+      },
+    },),
+    it({
       name: 'LEAVES OUT a link the archive keeps in the same words, a sentence-long link text, an href only one side '
         + 'carries, and signatures whose counts differ between the documents',
       fn: async () => {
