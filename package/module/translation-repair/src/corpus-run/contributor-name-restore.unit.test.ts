@@ -90,6 +90,16 @@ const UNCARRIED = pair({
   target: '',
 });
 
+/**
+ A signer the original never heads a section with, signed twice, whom the
+ archive never rendered (class eighty-three).
+ */
+const SIGNED_TWICE = pair({
+  sliceIndex: 2,
+  source: '它唱了。\n\n<p style="text-align: end;">—— 雨猫【妄想症】《九重现实》</p>\n\n它又唱了。\n\n<p style="text-align: end;">—— 雨猫【妄想症】《零重祈愿》</p>',
+  target: '',
+});
+
 await describe({
   name: 'a contributor name is rendered one way across headings and signatures (class sixty-seven, XingZ616)',
   children: [
@@ -135,6 +145,59 @@ await describe({
         },);
         expect(restored.restored,).toEqual([],);
         expect(restored.findings,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'ROMANISES a handle the archive never rendered when the page leaves it in Han: one capitalised '
+        + 'word of pinyin in the heading and the signature (class eighty-three, XingZ622, 2026-09-22: 锦心 '
+        + 'shipped as 锦心 in the Part Ten heading and signature where XingZ619 wrote Jinxin and XingZ620 Jin Xin; '
+        + 'owner 2026-09-22: pinyin, with the literal translation in parentheses)',
+      fn: async () => {
+        const restored = restoreContributorNames({
+          slices: [UNCARRIED,],
+          replacements: [{
+            sliceIndex: 1,
+            replacementText: '### Ten: 锦猫\n\nIt wakes.\n\n<p style="text-align: end;">— 锦猫, February 10, 2025</p>',
+          },],
+        },);
+        expect(restored.replacements[0]?.replacementText,)
+          .toBe('### Ten: Jinmao\n\nIt wakes.\n\n<p style="text-align: end;">— Jinmao, February 10, 2025</p>',);
+        expect(restored.findings.length,).toBe(2,);
+        expect(restored.findings.every(function namesPinyin(finding,): boolean {
+          return finding.includes('the pinyin reading of the original\'s handle',);
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'LEAVES a heading carrying the rendering with its literal meaning in parentheses, and takes the '
+        + 'rendering without the parenthetical as the page\'s authority (class eighty-three)',
+      fn: async () => {
+        const restored = restoreContributorNames({
+          slices: [UNCARRIED,],
+          replacements: [{
+            sliceIndex: 1,
+            replacementText: '### Ten: Jinmao (Brocade Cat)\n\nIt wakes.\n\n<p style="text-align: end;">—Jinmao, February 10, 2025</p>',
+          },],
+        },);
+        expect(restored.restored,).toEqual([],);
+        expect(restored.findings,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'RENDERS a signer no heading names one way across the page: the second signature takes the first '
+        + 'signature\'s rendering, and a signature left in Han takes the pinyin (class eighty-three, XingZ622: '
+        + '雨狸 shipped as "Yu Li" on one song attribution and 雨狸 on the next)',
+      fn: async () => {
+        const restored = restoreContributorNames({
+          slices: [SIGNED_TWICE,],
+          replacements: [{
+            sliceIndex: 2,
+            replacementText: 'It sang.\n\n<p style="text-align: end;">—— Yu Mao【Paranoia】“Nonuple Reality”</p>\n\nIt sang again.\n\n<p style="text-align: end;">—— 雨猫【Paranoia】《Ling Chong Qi Yuan》</p>',
+          },],
+        },);
+        expect(restored.replacements[0]?.replacementText,)
+          .toBe('It sang.\n\n<p style="text-align: end;">—— Yu Mao【Paranoia】“Nonuple Reality”</p>\n\nIt sang again.\n\n<p style="text-align: end;">—— Yu Mao【Paranoia】《Ling Chong Qi Yuan》</p>',);
+        expect(restored.findings.length,).toBe(1,);
       },
     },),
   ],

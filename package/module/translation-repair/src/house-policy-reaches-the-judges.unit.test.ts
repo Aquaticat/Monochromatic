@@ -133,6 +133,18 @@ await describe({
       },
     },),
     it({
+      name: 'TELLS a judge how a handle with no declared, archive or corpus rendering is written: pinyin as one '
+        + 'capitalised word with its literal meaning in parentheses at its first appearance (class eighty-three, '
+        + 'XingZ622, 2026-09-22: 锦心 shipped in Han, 洁澄天奏 as "Jiecheng Tianzou" and "洁澄天奏Official", 雨狸 as '
+        + '"Yu Li" and "雨狸" on one page; the judges filled the gap with "keep the original form")',
+      fn: async () => {
+        expect(system.includes('romanised as the handle is read',),).toBe(true,);
+        expect(system.includes('one capitalised word',),).toBe(true,);
+        expect(system.includes('literal meaning in parentheses the first time it appears on the page',),).toBe(true,);
+        expect(system.includes('never left in Han, never rendered by its meaning alone',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'TELLS a judge that 那些秋叶 is the site\'s own name and reads One Among Us (SS3B_0016 slice 5, read '
         + '2026-09-04: the gate kept the name 4 to 3 over a literal rendering, arguing from the archive alone; '
         + 'the archives of all five entries naming it agree)',
