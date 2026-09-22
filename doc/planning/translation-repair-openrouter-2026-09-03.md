@@ -8082,6 +8082,83 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## CuspariaKLSY6 read, 2026-09-22, 16:50 UTC: SETTLED in 16 min, but slice 1 flipped back to the archive's present tense to keep a translator's gloss line (class eighty-five); fixed in 7ad1b8ec7, CuspariaKLSY7 launched
+
+`CuspariaKLSY6` (frozen `59fe52b51`, pid 2121546) SETTLED at 16:33 UTC,
+16 minutes after its 16:22 launch (TALLY `ms=934677`),
+one attempt,
+413 seats,
+14 retry rounds,
+361 calls,
+no abandoned stream,
+0.22 USD by the meters (Bedrock 103.31 to 103.20, OpenRouter 151.94 to 151.83).
+Synthetic wet again from 16:27 UTC (five-hour window reset), glm-5.3 dark.
+
+The page against `CuspariaKLSY5`:
+1 of 1 heading,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+publish check silent,
+7 abstention lines,
+no repeat or run-off finding,
+the archive's translator gloss line "“Ling Shui Yu Yu Zi” means fish in clear water." back on the page (dropped on `CuspariaKLSY5`).
+
+But three lines of the life in the present tense
+("She cares about her friends a lot.", "She’s an Eastern Orthodox Christian.", "She doesn’t trust God 100%, though."):
+slice 1 shipped gate-kept and unendorsed, the archive's own text.
+The lane contest settled on neither (5 of 8 usable;
+the translate lane text carried the gloss AND the past tense, and one ballot called the gloss "unsupported explanations",
+another called the past tense "inconsistent with the present-tense life narrative the house rule holds", which no sheet says);
+the consolidation slate chose gpt-oss's seven-line candidate 4.5 of 6, every ballot praising "nothing added or dropped" and the past tense;
+the consolidate gate refused it 3 to 2 (Kimi, deepseek, gemma-e2b for the standing: "consolidated omits the archive line glossing the nickname, which the Chinese is silent about and which the page therefore keeps").
+`CuspariaKLSY5` had gone the other way on the same slice (the gate accepted the consolidation 4 of 5, the gloss lost, recorded then as an observation).
+Neither page carried both.
+
+Class eighty-five:
+what the page carries and the Chinese is silent about had four rules on four sheets.
+`CONTEST_POLICY` (the lane contest and the gate): "DROPPED ALSO COVERS WHAT THE ARCHIVE CARRIES AND THE CHINESE DOES NOT SAY ... keeping it is correct";
+the slate criteria (`translate-selection-sheet.ts`): "Faithfulness: nothing added" with only the declared-name carve-out;
+the consolidation writer (`consolidate-wire.ts`): accurate detail the archive adds is kept, listing a name, a referent, a credit and a citation's translator, not a gloss;
+the translate writer (`translate-wire.ts`): its own list, which did include "a gloss identifying someone".
+A writer told to strip and a judge told to reward the stripping produce a candidate the gate must refuse,
+and the refusal keeps the archive with whatever else the house rules would have changed.
+The consolidation writer's tense rule also still named the archive as the authority
+("KEEP THE TENSE OF THE PAGE ... the ARCHIVE RENDERING is what settles"), class seventy-six's wording on a sheet that fix did not reach.
+Corpus census: the same shape stands on `Futajuhuacha` ("Huacha means flower-scented tea.", archive-only, inside the first paragraph)
+and `Kotori` (the Latin motto's gloss).
+
+Fix (`7ad1b8ec7`):
+`page-apparatus-clause.ts` (new) carries one wording,
+"WHAT THE EXISTING TRANSLATION CARRIES AND THE ORIGINAL IS SILENT ABOUT IS KEPT IN PLACE: a gloss of a name or a term ..., a candidate carrying it has added nothing, and a candidate leaving it out has dropped page content",
+interpolated into the slate's faithfulness criterion beside the declared-name carve-out,
+into the consolidation writer's rules in place of its list,
+into the translate writer's rules in place of its list,
+and a gloss named among `CONTEST_POLICY`'s examples of what is not unsupported;
+the consolidation writer's tense rule now reads "ONE TENSE, IN THIS ORDER: first the past tense the house rule sets for the life of a person who has died ..., then the tense the page holds for what is still true".
+Guards red first at `7e433ff86`
+(`translate-selection-sheet.unit.test.ts`: the clause inside the criterion that says "nothing added";
+`consolidate-wire.unit.test.ts`: the gloss kept and the house rule's past named, the archive no longer the tense authority),
+`tense-authority-reaches-every-sheet.unit.test.ts` moved to the new wording in the fix,
+lint 0 and 0,
+types clean,
+full suite green (`suite-class85.log`).
+
+Observation, not shipped: the repair lane's editors deleted the gloss line and left its blank behind,
+so the repair text carried a run of three newlines inside the slice (`\n\n\n` between "while feeding fish." and "She began ...");
+the repair lane lost the contest, and no floor reads a blank run inside a candidate.
+A candidate's internal blank run collapses to one blank line in the rendered page,
+so this is recorded, not fixed.
+
+`CuspariaKLSY7` (frozen `7ad1b8ec7`, pid 2147965, overlap 8)
+launched 16:46 UTC on Bedrock, OpenRouter and Synthetic
+(meters 103.20 USD Bedrock, 151.83 OpenRouter at launch),
+waiter `br3cmmd0a`;
+read for the gloss line on the page AND every line of the life in the past (slice 1 first), no gate-kept standing on slice 1,
+then `zheermao`, `yingying` one at a time,
+then `XingZ60` again for the handles.
+
 ## hulicaijia13 read, 2026-09-22, 16:25 UTC: SETTLED in 68 min, class eighty-four live (two removals of the Nayuki note withheld, the note on the page with its marker); CuspariaKLSY6 launched
 
 `hulicaijia13` (frozen `59fe52b51`, pid 2112448) SETTLED at 16:16 UTC,

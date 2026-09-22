@@ -4647,17 +4647,27 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CUSPARIAKLSY6 RUNS (frozen `59fe52b51`,
-    pid 2121546,
-    launched 16:22 UTC 2026-09-22,
-    waiter `btbbvt2r4`,
-    meters 103.31 USD Bedrock and 151.94 OpenRouter at launch):
+1.  CUSPARIAKLSY7 RUNS (frozen `7ad1b8ec7`,
+    pid 2147965,
+    launched 16:46 UTC 2026-09-22,
+    waiter `br3cmmd0a`,
+    meters 103.20 USD Bedrock and 151.83 OpenRouter at launch, Synthetic wet):
     read by the seven steps and three checks against `CuspariaKLSY5`
-    (the life in the past tense, 1 heading, 1 marker, front matter equal, no TA, no error finish, no double blank line, publish check silent);
-    record under a new heading above "## hulicaijia13 read, 2026-09-22, 16:25 UTC" in the pass log.
+    (1 heading, 1 marker, front matter equal, no TA, no error finish, no double blank line, publish check silent),
+    plus class eighty-five live: the gloss line "“Ling Shui Yu Yu Zi” means fish in clear water." on the page AND every line of the life in the past,
+    slice 1 neither gate-kept nor unendorsed;
+    record under a new heading above "## CuspariaKLSY6 read, 2026-09-22, 16:50 UTC" in the pass log.
     Then `zheermao`, `yingying`, one at a time,
     then `XingZ60` again to read class eighty-three live
     (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiecheng Tianzou Official" on the Caged Bird attribution, the gloss at the first appearance).
+    CUSPARIAKLSY6 READ (frozen `59fe52b51`): SETTLED at 16:33 UTC in 16 min, 413 seats, 14 retry rounds, 0.22 USD by the meters;
+    every check as `CuspariaKLSY5` and the gloss line back, but slice 1 gate-kept and unendorsed in the archive's present tense:
+    every consolidation dropped the gloss as "nothing added", the slate chose one 4.5 of 6, the gate refused it 3 to 2 for dropping page content (class eighty-five).
+    CLASS EIGHTY-FIVE FIXED: `page-apparatus-clause.ts` (one wording: what the page carries and the original is silent about is kept, carrying it adds nothing, leaving it out drops page content)
+    on the slate faithfulness criterion, the consolidation and translate writers and `CONTEST_POLICY`;
+    the consolidation writer's tense rule names the house rule's past first;
+    guards red first `7e433ff86`, fix `7ad1b8ec7`, lint 0/0, types clean, full suite green (`suite-class85.log`, 1095 PASS).
+    OBSERVATION: the repair lane's editors left a three-newline run where they deleted the gloss line; the lane lost, no floor reads an internal blank run; recorded in the pass log, not fixed.
     HULICAIJIA13 READ (frozen `59fe52b51`): SETTLED at 16:16 UTC in 68 min, 4,497 seats, 147 retry rounds, 4.90 USD by the meters;
     class eighty-four live: two removals of the `[^10]` Nayuki note withheld with `unresolved-reference gfm 10`,
     the one admissible revision ("renamed Naixue", the body's spelling) chosen, the note on the page with its marker;
