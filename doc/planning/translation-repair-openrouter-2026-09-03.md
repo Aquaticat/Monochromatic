@@ -8082,6 +8082,80 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## hulicaijia12 read, 2026-09-22, 15:10 UTC: SETTLED in 79 min, but a translator's note removed and its marker left dangling (class eighty-four); fixed in 59fe52b51, hulicaijia13 launched
+
+`hulicaijia12` (frozen `4e5cf65e0`, pid 2066905) SETTLED at 14:57 UTC,
+79 minutes after its 13:38 launch (TALLY `ms=4721721`),
+one attempt,
+4,577 seats,
+149 retry rounds,
+3,869 calls,
+15 abandoned streams (0.02 USD),
+4.96 USD by the meters (Bedrock 107.56 to 105.39, OpenRouter 157.55 to 154.76).
+glm-5.3 and Qwen3.8-27B dark (Synthetic dry).
+
+The page against `hulicaijia9`:
+13 of 13 headings,
+17 of 17 tag markers,
+2 of 2 links,
+3 of 3 Sakura,
+"Conflict" for 左右,
+front matter equal,
+no TA,
+no error finish,
+no `contributor-name-restored` line (the page's signers are archive-rendered, so class eighty-three had nothing to restore here),
+six unendorsed standings (3, 12, 18, 34, 50, 55),
+four gate-kept (3, 18, 50, 55),
+two slate-declined (12, 34),
+129 abstention lines,
+no repeat or run-off finding,
+no `archive-revision-refused` line.
+
+But 17 footnote markers and 8 definitions against `hulicaijia9`'s 18 and 9:
+the archive's translator note `[^7]: Formerly Nayuki, renamed Naìsnow in 2025.`,
+relabeled `[^10]` by the class nineteen relabel (the original carries 8 notes, this one is the translator's),
+went to the archive block review as an archive-only block;
+five of five reviewers called the rename a factual claim the original does not carry
+("criterion 1 requires such claims to be removed"),
+the selection chose the removal candidate at weight 4 across 5 ballots,
+and the definition left the archive text.
+The marker `Naixue[^10]` stood in the body,
+where no reviewer was asked about it,
+so the page ships a reference to a note that is not there.
+`hulicaijia7` had dropped both translator notes the same way (recorded then as an observation);
+`hulicaijia8` and `hulicaijia9` kept them because the reviewers happened to retain the block.
+
+Class eighty-four:
+the archive block review's revision is spliced into the archive text (`archive-block-repair.ts`)
+every later stage reads as the incumbent,
+including the page footnote guard (`page-footnote-integrity.ts`),
+which reads its defects AGAINST the archive so a defect the archive already carried is never blamed on the page;
+a defect the review itself introduces is therefore inherited and blamed on nobody.
+A footnote is a relation between blocks and a revision of one block is judged against the whole page it would leave:
+`archive-revision-footnotes.ts` (new) replaces the block in the archive text,
+runs `introducedFootnoteFindings` against the unrevised archive,
+and withholds a revision that introduces an unresolved reference, an orphan definition or a duplicate,
+under the `archive-revision-refused` prefix with the defect spelled the way the page guard spells it;
+`archive-replacement-candidates.ts` applies it after the shape floor (class seventy-seven),
+so a removal of a referenced definition empties the slate and the note ships as the archive wrote it.
+Guard red first at `27845568a`
+(`archive-block-review-stage.unit.test.ts`: a definition block removed while its marker stands, retained with the finding, no selection round bought),
+fixed in `59fe52b51`,
+lint 0 and 0,
+types clean,
+stage suite green,
+full suite green (`suite-class84.log`, 1095 PASS, exit 0).
+
+`hulicaijia13` (frozen `59fe52b51`, pid 2112448, overlap 8)
+launched 15:08 UTC on Bedrock and OpenRouter
+(meters 105.39 USD Bedrock, 154.76 OpenRouter at launch),
+waiter `b6vsy9ha7`.
+Read by the seven steps and three checks against `hulicaijia9`
+(18 markers and 9 definitions again, the `[^10]` note on the page),
+plus the `archive-revision-refused` line naming `unresolved-reference` for the removal;
+then `CuspariaKLSY`, `zheermao`, `yingying` one at a time,
+then `XingZ60` again for the handles.
+
 ## Class eighty-three amended, 2026-09-22, 13:40 UTC: syllable groups, never one joined word (owner's veto); hulicaijia11 killed, hulicaijia12 launched on 4e5cf65e0
 
 The owner vetoed the one-word joining at 13:35 UTC:

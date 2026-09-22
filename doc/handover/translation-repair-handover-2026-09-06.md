@@ -4647,18 +4647,27 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA12 RUNS (frozen `4e5cf65e0`,
-    pid 2066905,
-    launched 13:38 UTC 2026-09-22,
-    waiter `brc9j43qv`,
-    meters 107.56 USD Bedrock and 157.55 OpenRouter at launch):
+1.  HULICAIJIA13 RUNS (frozen `59fe52b51`,
+    pid 2112448,
+    launched 15:08 UTC 2026-09-22,
+    waiter `b6vsy9ha7`,
+    meters 105.39 USD Bedrock and 154.76 OpenRouter at launch):
     read by the seven steps and three checks against `hulicaijia9`
     (13 headings, 17 tag markers, 18 footnote markers, 9 definitions, 2 links, 3 Sakura, "Conflict" for 左右, front matter equal, no TA, no error finish),
-    plus any `contributor-name-restored` line naming the pinyin reading (class eighty-three);
-    record under a new heading above "## Class eighty-three amended, 2026-09-22, 13:40 UTC" in the pass log.
+    the `[^10]` Nayuki note on the page with its marker,
+    plus the `archive-revision-refused` line naming `unresolved-reference` for its removal (class eighty-four);
+    record under a new heading above "## hulicaijia12 read, 2026-09-22, 15:10 UTC" in the pass log.
     Then `CuspariaKLSY`, `zheermao`, `yingying`, one at a time,
     then `XingZ60` again to read class eighty-three live
     (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiecheng Tianzou Official" on the Caged Bird attribution, the gloss at the first appearance).
+    HULICAIJIA12 READ (frozen `4e5cf65e0`): SETTLED at 14:57 UTC in 79 min, 4,577 seats, 149 retry rounds, 4.96 USD by the meters;
+    every check as `hulicaijia9` except 17 markers and 8 definitions:
+    the archive block review removed the translator's `[^10]` note (5 of 5 "unsupported by the original") and its marker stayed in the body,
+    the page footnote guard reading against the revised archive (class eighty-four);
+    six unendorsed (3, 12, 18, 34, 50, 55), four gate-kept, two slate-declined, 129 abstention lines, no restore line.
+    CLASS EIGHTY-FOUR FIXED: `archive-revision-footnotes.ts` judges each revision against the whole page it would leave
+    (`introducedFootnoteFindings` against the unrevised archive) and withholds one that introduces a footnote defect;
+    guard red first `27845568a`, fix `59fe52b51`, lint 0/0, types clean, full suite green (`suite-class84.log`).
     CLASS EIGHTY-THREE AMENDED (owner 2026-09-22 13:35 UTC: syllable groups, "Jiechengtianzou is not fine"):
     the reading pairs the syllables, capitalised, a lone trailing syllable by itself (Jiecheng Tianzou);
     guards `790719ea3`, fix `4e5cf65e0`, lint 0/0, types clean, guard suites green, full suite `suite-class83c.log`.
