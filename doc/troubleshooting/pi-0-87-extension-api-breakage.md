@@ -136,29 +136,30 @@ See [`task-tsc-shared-chunk-silent-pass.md`](task-tsc-shared-chunk-silent-pass.m
   omission only removes judge context and cannot fabricate authorization,
   while throwing blocks every tool call and pushes users to disable the guard.
 
-## Remaining type errors after restoring `lint:types`
+## Type errors surfaced by restoring `lint:types`
 
 A sequential sweep of every package `lint:types` task on 2026-09-22,
 after `edd680e89`,
-found these still failing;
-none is in auto-mode or its shared dependencies:
+found further failures outside auto-mode and its shared dependencies.
+These are fixed,
+and every `package/pi-plugin` and `package/pi-shared` package now passes `lint:types`:
 
-- `package/pi-plugin/advisor`,
-  `package/pi-plugin/guardrail`,
-  `package/pi-plugin/search-fetch`,
-  `package/pi-plugin/thinking-default`:
-  `src/mise.verify-extension.ts` fake `ExtensionAPI.on` and `registerProvider`
-  no longer match Pi 0.87 overloads.
-- `package/pi-plugin/current-time-context`:
-  `src/pi-test-harness.ts` passes `{ cwd }` where Pi 0.87 expects `NormalizedBuildSystemPromptOptions`.
-- `package/pi-plugin/goal`:
-  `src/pi-runtime-verifier-provider.ts` assigns `Readonly<Record<string, unknown>>` to `JsonObject`.
-- `package/pi-plugin/ask-user-question`:
-  `src/answer-channel-auth.ts` needs an explicit annotation under `--isolatedDeclarations`.
-- `package/webapp-productivity/done`:
-  `src/lib/db-migrations.ts` imports `initPromise`,
-  which `@monochromatic-dev/module-logger/ts` no longer exports;
-  unrelated to Pi.
+- `e8f76b7d2`:
+  `src/mise.verify-extension.ts` fakes in advisor, guardrail, search-fetch, and thinking-default
+  return an unsubscribe callback from `on`,
+  accept the complete-provider `registerProvider` overload,
+  and implement `registerMarkdownTransformer`.
+- `c5d262a7b`:
+  `package/pi-plugin/current-time-context/src/pi-test-harness.ts` supplies collection-complete
+  `NormalizedBuildSystemPromptOptions`,
+  since Pi does not export `normalizeBuildSystemPromptOptions`.
+- `856330f26`:
+  goal scripted tool calls use Pi AI `JsonObject` arguments,
+  and ask-user-question annotates an exported constant for `--isolatedDeclarations`.
+
+Still failing and unrelated to Pi:
+`package/webapp-productivity/done/src/lib/db-migrations.ts` imports `initPromise`,
+which `@monochromatic-dev/module-logger/ts` no longer exports.
 
 ## Open questions
 
