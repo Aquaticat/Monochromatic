@@ -165,12 +165,12 @@ hoistWorkspacePackages: false
 lockfileIncludeTarballUrl: true
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
-  # Pi releases in lockstep with chord: each pi-* release requires the
-  # same-day chord (`^<same version>`), so excluding pi-* without chord makes
-  # every update within the cutoff fail. See
+  # Pi releases in lockstep with its scope siblings: each pi-* release requires
+  # the same-day chord (`^<same version>`). Excluding only part of the scope
+  # makes every update within the cutoff fail on the rest, so the whole
+  # publisher scope is trusted (user-approved 2026-09-22). See
   # doc/troubleshooting/pnpm-update-no-save-strict-release-age.md.
-  - '@earendil-works/chord'
-  - '@earendil-works/pi-*'
+  - '@earendil-works/*'
   - 'cidr-tools@12.1.3'
   - 'ip-bigint@9.0.7'
 minimumReleaseAgeIgnoreMissingTime: false
