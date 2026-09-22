@@ -7,8 +7,9 @@ import { pinyin, } from 'pinyin-pro';
 // 雨狸 as "Yu Li" on one song attribution and 雨狸 on the next. The house
 // rules had no sentence on a handle with no declared, archive or corpus
 // form, and the judges filled the gap with "keep the original form".
-// Owner, 2026-09-22: pinyin as one capitalised word, with the literal
-// translation in parentheses. The rule reaches every sheet through the
+// Owner, 2026-09-22: pinyin in capitalised syllable groups (never one joined
+// word), with the literal translation in parentheses. The rule reaches every
+// sheet through the
 // house policy; this module is the deterministic half the page assembly
 // applies where a rendering still carries Han: the reading of the handle,
 // and the tolerance for a rendering that carries its gloss.
@@ -91,11 +92,40 @@ function isLatinOrDigit({ character, }: { readonly character: string; },): boole
 }
 
 /**
- Pinyin of one run of Han as one capitalised word.
+ Syllables one capitalised group holds. Owner, 2026-09-22: syllable groups,
+ never one joined word ("Jiecheng Tianzou" or "Jie Cheng Tian Zou", not
+ "Jiechengtianzou"); pairs, since the corpus's own romanisations pair them
+ ("Baimao suki").
+ */
+const GROUP = 2;
+
+/**
+ Capitalises a word.
+
+ @param word - lower-case syllables joined
+
+ @returns Word with its first letter upper-case
+
+ @example
+ ```ts
+ capitalised({ word: 'jinxin', },); // 'Jinxin'
+ ```
+ */
+function capitalised({ word, }: { readonly word: string; },): string {
+  return `${word.slice(
+    0,
+    1,
+  )
+    .toUpperCase()}${word.slice(1,)}`;
+}
+
+/**
+ Pinyin of one run of Han in capitalised groups of two syllables, a lone
+ trailing syllable standing by itself.
 
  @param run - consecutive Han characters
 
- @returns Their toneless syllables joined and capitalised
+ @returns Their toneless syllables paired, capitalised and spaced
 
  @example
  ```ts
@@ -114,21 +144,24 @@ function romanisedRun({ run, }: { readonly run: string; },): string {
     },
   );
   /**
-   Syllables joined into one word.
+   Capitalised groups in order.
    */
-  const word = syllables.join('',);
-  return `${word.slice(
-    0,
-    1,
-  )
-    .toUpperCase()}${word.slice(1,)}`;
+  const groups: string[] = [];
+  for (let at = 0; at < syllables.length; at += GROUP) {
+    groups.push(capitalised({ word: syllables.slice(
+      at,
+      at + GROUP,
+    )
+      .join('',), },),);
+  }
+  return groups.join(' ',);
 }
 
 /**
- Reads a handle the archive never rendered: every run of Han becomes one
- capitalised word of pinyin, everything else stays as written, and a
- romanised run is kept a space apart from Latin letters or digits the
- original wrote against it (洁澄天奏Official reads "Jiechengtianzou Official").
+ Reads a handle the archive never rendered: every run of Han becomes pinyin
+ in capitalised groups of two syllables, everything else stays as written,
+ and a romanised run is kept a space apart from Latin letters or digits the
+ original wrote against it (洁澄天奏Official reads "Jiecheng Tianzou Official").
 
  @param name - handle as the original signs it
 
