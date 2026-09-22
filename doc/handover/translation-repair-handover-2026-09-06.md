@@ -4647,11 +4647,40 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA12 RUNS (frozen `873104d8f`,
+1.  SHI_YUMIAOYA13 RUNS (frozen `93b11aef9`,
+    pid 1928249,
+    launched 05:01 UTC 2026-09-22,
+    waiter `bda099lmj`,
+    meters 116.65 USD Bedrock and 172.45 OpenRouter at launch)
+    to read the block-level pair bound live:
+    the log must carry a `LINE-STRUCTURED` finding quoting "once in Chinese and once in English directly beside it; that pair is ONE line"
+    and `translate-candidate-refused` on the candidates carrying the Chinese line raw or rendered again;
+    the closing quote two lines on the page;
+    then classes seventy-nine and seventy-eight,
+    then the seven steps and three checks against `shi_Yumiaoya12` and the archive;
+    record under a new heading above "## shi_Yumiaoya12 read, 2026-09-22, 05:05 UTC" in the pass log.
+    SHI_YUMIAOYA12 READ, THE QUOTE RIGHT BY LUCK, THE BOUND REBUILT BLOCK BY BLOCK:
+    SETTLED at 04:53 UTC in 29 minutes,
+    one attempt,
+    0.76 USD by the meters;
+    classes seventy-eight and seventy-nine holding,
+    every check as the archive,
+    16 abstention lines;
+    the closing quote shipped as the archive's two lines because slice 16 stood unendorsed
+    (the translate slate split between the raw-Chinese candidate and the rendered-again candidate,
+    the consolidation slate split again),
+    and the whole-slice bound of `873104d8f` never fired,
+    since the archive writes the closing line as two lines and the page never carried exactly the lines owed;
+    rebuilt in `93b11aef9`:
+    `bilingualPairs` returns the pairs, `pairBoundFindings` finds each pair's English line in the page and the rendering and compares the block holding it,
+    guard red first at `e06ac2945`,
+    lint 0/0,
+    types clean,
+    full suite green;
+    details under the pass log heading of 05:05 UTC.
+    THE EARLIER SHI_YUMIAOYA12 LAUNCH NOTE: SHI_YUMIAOYA12 RAN (frozen `873104d8f`,
     pid 1903793,
-    launched 04:24 UTC 2026-09-22,
-    waiter `b88bw07kc`,
-    meters 116.96 USD Bedrock and 172.92 OpenRouter at launch)
+    launched 04:24 UTC 2026-09-22)
     to read class eighty's second arm live:
     the closing blockquote must carry two lines,
     the film's English line and "From *The Truman Show*",

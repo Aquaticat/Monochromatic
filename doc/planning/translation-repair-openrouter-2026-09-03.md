@@ -8082,6 +8082,119 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya12 read, 2026-09-22, 05:05 UTC: SETTLED with the closing quote as the archive, but by an unendorsed standing, not by the bound; the pair bound rebuilt to compare the block holding the English line, fixed in 93b11aef9; shi_Yumiaoya13 launched
+
+`shi_Yumiaoya12` (frozen `873104d8f`,
+pid 1903793,
+overlap 8,
+launched 04:24 UTC on Bedrock and OpenRouter,
+Synthetic and Hyper dry)
+SETTLED at 04:53 UTC on one attempt,
+29 minutes by the artifact.
+Seats asked as the SEAT lines,
+769 calls,
+5 abandoned streams (0.0045 USD),
+Qwen3.8-27B and glm-5.3 dark (115 and 73 asked,
+all threw).
+Meters 116.96 to 116.65 USD on Bedrock and 172.92 to 172.47 on OpenRouter,
+0.76 USD together.
+
+### Checks
+
+- Front matter equal to the archive and to `shi_Yumiaoya11`.
+- 4 of 4 headings,
+  1 photoscroll,
+  1 footnote definition,
+  15 blockquote lines against the previous page's 12,
+  319 lines against 328;
+  no `TA`,
+  no `finish_reason=error`,
+  no double blank line,
+  `attempts.json` reads 1.
+- No `PublishedPageDisagrees` or `weight-off`,
+  one unendorsed standing (slice 16,
+  the closing quote and its lines,
+  the archive's own wording standing without contest endorsement),
+  no gate-kept or slate-declined standing,
+  no `repeats the line`,
+  no run-off,
+  no `archive-revision-refused`;
+  16 `declined every candidate` lines with reasons.
+- 11 em-dashes,
+  left per the owner's answer of 2026-09-21.
+- Class seventy-nine holds ("she tried to end her life in the early hours of January 16");
+  class seventy-eight holds ("Magic Chewing Gum and Danpian").
+
+### The closing quote as the archive, by luck
+
+The page carries the quote as two lines,
+the film's English and "From *The Truman Show*",
+and the closing line in the archive's two-line form
+("Well, Yumiao, girl's last tour ended. / And you can finally get a good sleep.").
+That is slice 16 standing unendorsed:
+the translate slate split between candidate 1,
+which kept both Chinese lines raw
+(gpt-oss-120b and minimax-m3: "preserves every original line (including the Chinese quote and citation)"),
+and candidate 3,
+which rendered the Chinese line again in English
+(deepseek-v4.1-flash and gemma-4-26b: "the only one that provides a translation for the first line");
+the repair lane's editors kept the archive
+(three ballots against candidates that "awkwardly retain" the Chinese lines or "duplicate the final line");
+the consolidation slate split again with minimax abstaining on "all candidates fail the line-structure criterion",
+and the standing stood.
+No `translate-candidate-refused` finding and no `LINE-STRUCTURED` pair finding in the log:
+the bound of `873104d8f` never fired,
+because it compared the whole slice's line count with the lines owed,
+and the archive writes the closing line as two lines where the original has one,
+so the page carried one line more than owed and the bound read the page as keeping the pair apart.
+
+Rebuilt in `93b11aef9`
+(guard red first at `e06ac2945`,
+two cases added to `bilingual-pair-bound.unit.test.ts`:
+the page splitting another line of the slice,
+and a rendering that reworded the English line).
+`bilingualPairs` in `line-structure-guard.ts` now returns the pairs themselves,
+and `pairBoundFindings` finds each pair's English line in the page and in the rendering
+(quote markers off,
+whitespace collapsed,
+curled quotes straightened)
+and compares the block holding it,
+the run of quoted lines or the paragraph:
+a rendering whose block is wider than the page's has rendered the Chinese half again and is refused at the floor.
+Silent without page text,
+where the page does not carry the English line as written,
+where the page carries the Han line too,
+or where the rendering reworded every English line of the block.
+Lint 0 and 0,
+types clean,
+full suite green (`suite-93b11aef9.log`).
+
+### Observations, not classes
+
+- The film link back to "[movie](...)" where `shi_Yumiaoya11` had "Josee, the Tiger and the Fish" from the cited reference;
+  the reference is on the sheet and the bench chose otherwise this run.
+- "little yao-niang" again,
+  "Three Musketeers" in quotation marks for 三剑客,
+  "gaokao" kept,
+  "correctional institution" again.
+
+### shi_Yumiaoya13 launched
+
+`shi_Yumiaoya13` (frozen `93b11aef9`,
+pid 1928249,
+overlap 8)
+launched 05:01 UTC on Bedrock and OpenRouter
+(meters 116.65 USD Bedrock,
+172.45 OpenRouter at launch;
+Synthetic and Hyper dry),
+the `CORPUS NAMES` line naming the same five.
+Read the log for the block finding first
+(a `LINE-STRUCTURED` finding quoting "once in Chinese and once in English directly beside it; that pair is ONE line" on the translate floor,
+and `translate-candidate-refused` on the four-line and three-line candidates),
+then the closing quote on the page,
+then classes seventy-nine and seventy-eight,
+then the seven steps and three checks against `shi_Yumiaoya12` and the archive.
+
 ## shi_Yumiaoya11 read, 2026-09-22, 04:30 UTC: SETTLED, the class eighty clause on every sheet and the judges still chose the second English wording; the page's own line count now bounds the pair, fixed in 873104d8f; shi_Yumiaoya12 launched
 
 `shi_Yumiaoya11` (frozen `8f5e28ad4`,
