@@ -368,6 +368,14 @@ packageExtensions:
   mitata:
     optionalDependencies:
       '@mitata/counters': 'catalog:'
+  # @luma.gl/gpgpu 9.4.2 (pulled in by @deck.gl/core 9.4) declares
+  # @luma.gl/webgpu as a required peer, but its dist imports only
+  # @luma.gl/{core,engine,shadertools}. deps-cube renders with WebGL, so mark the
+  # peer optional instead of installing an unused backend.
+  '@luma.gl/gpgpu':
+    peerDependenciesMeta:
+      '@luma.gl/webgpu':
+        optional: true
 packageImportMethod: clone-or-copy
 packages:
   - 'package/*/*'
