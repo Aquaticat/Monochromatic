@@ -3,6 +3,7 @@ import {
   mergeProducers,
 } from './candidate-select-model.ts';
 import type { ArchiveBlockReviewWire, } from './archive-block-review-wire.ts';
+import { revisionFootnoteFindings, } from './archive-revision-footnotes.ts';
 import { revisionShapeFindings, } from './archive-revision-shape.ts';
 import { archiveContributorNameForms, } from './contributor-name-authority.ts';
 import { findDroppedDeclaredNames, } from './declared-name-survival.ts';
@@ -19,7 +20,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 /**
  Collapses byte-identical replacement proposals while preserving authorship,
  withholding every revision whose shape is not the block's own (class
- seventy-seven).
+ seventy-seven) or that leaves the page a footnote defect (class eighty-four).
  
  @param voices - review replies eligible to revise
  
@@ -96,6 +97,21 @@ export function replacementCandidates(
     },);
     if (shapeFindings.length > 0) {
       withheld.push(...shapeFindings,);
+      continue;
+    }
+    /**
+     Why the revision cannot stand for the block, when the page it would
+     leave carries a footnote defect the archive did not (class eighty-four:
+     a translator's note removed while its marker stood in the body).
+     */
+    const footnoteFindings = revisionFootnoteFindings({
+      modelId: voice.modelId,
+      blockText,
+      replacementText: replacement,
+      targetText,
+    },);
+    if (footnoteFindings.length > 0) {
+      withheld.push(...footnoteFindings,);
       continue;
     }
     /**
