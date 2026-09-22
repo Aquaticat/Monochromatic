@@ -229,7 +229,7 @@ Fails with `ERR_PNPM_STRICT_MIN_RELEASE_AGE_REQUIRES_SAVE`:
 
 ## Verified workarounds
 
-### Exclude chord alongside pi (applied)
+### Exclude chord alongside pi (superseded by the scope exclusion)
 
 ```yaml
 # pnpm-workspace.yaml
@@ -248,19 +248,24 @@ Chord is published by the same scope in lockstep with pi,
  so the pi exclusion already implied accepting same-day chord releases;
  the list now states it.
 
-### Exclude the whole publisher scope (approved, not yet applied)
+### Exclude the whole publisher scope (applied)
 
 The durable form of the chord exclusion is `'@earendil-works/*'` in place of the chord and `pi-*` entries,
  so the next lockstep sibling Earendil adds cannot reopen this failure.
-The user approved it on 2026-09-22.
-The agent's edit was blocked by the Claude Code auto-mode classifier as a security weakening,
- so it is waiting for the user to apply it by hand:
+The user approved it on 2026-09-22;
+ committed as `35d60172f`.
 
 ```yaml
 # pnpm-workspace.yaml
 minimumReleaseAgeExclude:
   - '@earendil-works/*'
 ```
+
+Verified in a scratch copy of the workspace manifests and lockfile:
+ `pnpm update --recursive --no-save --lockfile-only` exits 0 with the scope glob,
+ and the same copy with only `'@earendil-works/pi-*'` fails with `ERR_PNPM_STRICT_MIN_RELEASE_AGE_REQUIRES_SAVE`.
+
+Filing the upstream diagnostic fix is tracked in [Aquaticat/Monochromatic#557][issue-557].
 
 Tradeoff:
  every package in the scope skips the age gate,
@@ -531,3 +536,4 @@ Written by an agent (Claude Code, claude-opus-5-5).
 [issue-14835]: https://github.com/pnpm/pnpm/issues/14835
 [issue-15091]: https://github.com/pnpm/pnpm/issues/15091
 [pr-14842]: https://github.com/pnpm/pnpm/pull/14842
+[issue-557]: https://github.com/Aquaticat/Monochromatic/issues/557
