@@ -4647,19 +4647,20 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  ZHEERMAO4 RUNS (frozen `7ad1b8ec7`,
-    pid 2151756,
-    entry `zheermao101`,
-    launched 17:08 UTC 2026-09-22,
-    waiter `bktsyyo1o`,
-    meters 103.17 USD Bedrock and 151.74 OpenRouter at launch, Synthetic dry):
-    read by the seven steps and three checks against `zheermao3`
-    (14 slices, the email label kept, the Arts letter from the transcripts, past tense, one em-dash left per owner, no double blank line, no unendorsed);
-    record under a new heading above "## CuspariaKLSY7 read, 2026-09-22, 17:15 UTC" in the pass log.
-    Then `yingying`,
-    then `XingZ60` again to read class eighty-three live
-    (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiecheng Tianzou Official" on the Caged Bird attribution, the gloss at the first appearance).
-    THE ENTRY ID FOR ZHEERMAO IS `zheermao101`: a launch naming `zheermao` exits at once with `pending=0`.
+1.  YINGYING3 RUNS (frozen `7ad1b8ec7`,
+    pid 2155878,
+    launched 17:42 UTC 2026-09-22,
+    waiter `b07ha4fr0`,
+    meters 102.89 USD Bedrock and 151.32 OpenRouter at launch, Synthetic dry):
+    read by the seven steps and three checks against `yingying2`
+    (1 heading, 4 markers, 2 definitions, front matter equal, the References line kept, "Yingying" for the archive's "Sakura", no TA, no error finish);
+    record under a new heading above "## zheermao4 read, 2026-09-22, 17:50 UTC" in the pass log.
+    Then `XingZ60` again to read class eighty-three live
+    (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiecheng Tianzou Official" on the Caged Bird attribution, the gloss at the first appearance),
+    on `.frozen-dist-7ad1b8ec7`.
+    ZHEERMAO4 READ (frozen `7ad1b8ec7`, entry `zheermao101`): SETTLED at 17:40 UTC in 32 min, 902 seats, 31 retry rounds, 0.70 USD by the meters;
+    no class; the Arts letter kept as the archive and the reply revised from the transcript (the other way round from `zheermao3`, both the review's call on a picture block);
+    every check as the archive, one gate-kept unendorsed standing (slice 12, a 2 to 2 gate tie over "still"), 11 abstention lines.
     CUSPARIAKLSY7 READ (frozen `7ad1b8ec7`): SETTLED at 17:08 UTC in 22 min, 405 seats, 5 retry rounds, 0.12 USD by the meters;
     class eighty-five live: the gloss on the page beside the nickname line and every line of the life in the past, no gate-kept or unendorsed standing on any slice;
     every check as `CuspariaKLSY5`, 16 abstention lines.

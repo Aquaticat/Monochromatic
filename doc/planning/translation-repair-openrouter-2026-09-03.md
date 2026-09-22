@@ -8082,6 +8082,56 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## zheermao4 read, 2026-09-22, 17:50 UTC: SETTLED in 32 min, no class; the reply email revised from the transcript, the Arts letter kept as the archive; yingying3 launched
+
+`zheermao4` (frozen `7ad1b8ec7`, pid 2151756, entry `zheermao101`) SETTLED at 17:40 UTC,
+32 minutes after its 17:08 launch (TALLY `ms=1898177`),
+one attempt,
+902 seats,
+31 retry rounds,
+786 calls,
+16 abandoned streams (0.04 USD),
+0.70 USD by the meters (Bedrock 103.17 to 102.89, OpenRouter 151.74 to 151.32).
+Synthetic dry throughout, Qwen3.8-27B and glm-5.3 dark.
+
+The page against `zheermao3`:
+15 slices,
+2 of 2 headings,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+publish check silent,
+one em-dash (bench-written this time, in the revised reply: "Please don’t worry—we will"; the archive's own em-dash on the Arts letter is gone with the block the review replaced on `zheermao3`),
+one unendorsed standing, gate-kept (slice 12),
+no slate-declined,
+11 abstention lines,
+no repeat or run-off finding.
+
+The two picture blocks went the other way from `zheermao3`.
+The Arts letter stands as the archive wrote it ("Actually, Arts is also a cat-like person." and the twelve lines that follow, the "Good night, ArtsEpiphany" close)
+where `zheermao3` had revised it from the transcript;
+the One Among Us reply is revised from the transcript
+(six longer lines and a "Sincerely, wishing you a happy spring." close where the archive has fifteen short lines,
+the archive's untranslated line and its JSX translator comment "这句不知道如何翻译" rendered as "you can avoid the edge of the darkness and hide for a while somewhere with light")
+where `zheermao3` had kept it.
+Both are the archive block review's call on a picture block, one transcript per picture (the owner's 2026-09-16 decision), and each run's bench drew the line differently.
+The email label reads "English translation of this email conversation:" (class seventy-seven holding).
+
+Slice 12 ("Despite this, she insisted on her decision... and ultimately chose to leave."):
+the contest settled on neither (two ballots naming the dropped 仍然, one each way);
+the consolidation carried "still" and "own" and the gate tied 2 to 2
+(two ballots calling "still" and "own" embellishments the Chinese lacks, against 仍然 and 自己的 in the ORIGINAL),
+so the standing shipped by the tie rule.
+A wrong ballot, not a class: the gate's rule is stated, the tie rule is the owner's, and the standing is a faithful sentence short of one adverb.
+
+`yingying3` (frozen `7ad1b8ec7`, pid 2155878, overlap 8)
+launched 17:42 UTC on Bedrock and OpenRouter
+(meters 102.89 USD Bedrock, 151.32 OpenRouter at launch),
+waiter `b07ha4fr0`.
+Read against `yingying2` (1 heading, 4 markers, 2 definitions, front matter equal, the References line kept, "Yingying" for the archive's "Sakura");
+then `XingZ60` again for the handles.
+
 ## CuspariaKLSY7 read, 2026-09-22, 17:15 UTC: SETTLED in 22 min, class eighty-five live (the gloss on the page and every line of the life in the past); zheermao4 launched
 
 `CuspariaKLSY7` (frozen `7ad1b8ec7`, pid 2147965) SETTLED at 17:08 UTC,
