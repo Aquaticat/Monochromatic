@@ -8190,8 +8190,14 @@ which the stage logs and carries into the block's findings.
 Guard red first at `42a6ab2de`
 (the label revised into the letter shipped the letter),
 green at `0f9cd44da` with no selection round bought over the emptied slate;
-lint and types clean;
-the full suite runs in the background.
+lint and types clean.
+The full suite was red at `0f9cd44da` on one older guard,
+`archive-selection-boundary.unit.test.ts`,
+whose competing partial proposal was a bare paragraph offered for a blockquote block,
+exactly what the floor refuses;
+the fixture now keeps the block's shape (`8c2dc7e74`),
+and the full suite is green at `8c2dc7e74` (exit 0,
+no FAIL line).
 The other three archive blocks on this page went as they should:
 the letter from Arts retained (the incumbent won weight 4 of 6),
 its label revised from "preceding letter" to "letter from Arts"

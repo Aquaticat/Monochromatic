@@ -4667,7 +4667,11 @@ each read off the pass log and the shipped page:
     `replacementCandidates` moved to `archive-replacement-candidates.ts`),
     guard red first at `42a6ab2de`,
     lint and types clean,
-    the full suite running at `0f9cd44da`.
+    the full suite red at `0f9cd44da` on the selection-boundary fixture
+    (a paragraph partial for a blockquote block),
+    the fixture given the block's shape in `8c2dc7e74`,
+    the full suite green at `8c2dc7e74` (exit 0,
+    no FAIL line).
     `zheermao3` (frozen `0f9cd44da`,
     pid 1734549,
     launched 00:12 UTC)
