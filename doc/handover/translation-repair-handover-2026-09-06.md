@@ -4647,11 +4647,43 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA11 RUNS (frozen `8f5e28ad4`,
+1.  SHI_YUMIAOYA12 RUNS (frozen `873104d8f`,
+    pid 1903793,
+    launched 04:24 UTC 2026-09-22,
+    waiter `b88bw07kc`,
+    meters 116.96 USD Bedrock and 172.92 OpenRouter at launch)
+    to read class eighty's second arm live:
+    the closing blockquote must carry two lines,
+    the film's English line and "From *The Truman Show*",
+    and the translate floor must name the pair on any three-line candidate
+    (a `LINE-STRUCTURED` finding quoting "once in Chinese and once in English");
+    then class seventy-nine,
+    class seventy-eight,
+    then the seven steps and three checks against `shi_Yumiaoya11` and the archive;
+    record under a new heading above "## shi_Yumiaoya11 read, 2026-09-22, 04:30 UTC" in the pass log.
+    SHI_YUMIAOYA11 READ, THE CLAUSE OVERRULED, THE PAGE-BOUNDED PAIR BUILT:
+    SETTLED at 04:17 UTC in 30 minutes,
+    one attempt,
+    0.82 USD by the meters;
+    classes seventy-eight and seventy-nine holding,
+    every check as the archive,
+    one unendorsed standing (slice 1, the caution blockquote),
+    14 abstention lines;
+    the closing blockquote shipped three lines again with the clause on every sheet
+    (deepseek: the English-alone candidate "drops a line ... ineligible";
+    gemma-26b: the Chinese line "is distinct from the actual English quote"),
+    so the existing translation's own line count now bounds the pair:
+    `bilingual-pair-bound.ts`, called from `compareLineCounts` with the page text threaded from `translate-validate.ts`,
+    refuses a rendering carrying more lines than owed where the original carries a Han line with its English beside it and the page carries the pair once;
+    fixed in `873104d8f`,
+    guard red first at `c630bfb7d` (five tests),
+    lint 0/0,
+    types clean,
+    full suite green;
+    details under the pass log heading of 04:30 UTC.
+    THE EARLIER SHI_YUMIAOYA11 LAUNCH NOTE: SHI_YUMIAOYA11 RAN (frozen `8f5e28ad4`,
     pid 1878666,
-    launched 03:47 UTC 2026-09-22,
-    waiter `br0ylkkcw`,
-    meters 117.28 USD Bedrock and 173.44 OpenRouter at launch)
+    launched 03:47 UTC 2026-09-22)
     to read class eighty live:
     the closing blockquote must carry the film's English line once and "From *The Truman Show*" once,
     no Chinese line and no second English wording of it;

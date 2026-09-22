@@ -8082,6 +8082,141 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya11 read, 2026-09-22, 04:30 UTC: SETTLED, the class eighty clause on every sheet and the judges still chose the second English wording; the page's own line count now bounds the pair, fixed in 873104d8f; shi_Yumiaoya12 launched
+
+`shi_Yumiaoya11` (frozen `8f5e28ad4`,
+pid 1878666,
+overlap 8,
+launched 03:47 UTC on Bedrock and OpenRouter,
+Synthetic and Hyper dry)
+SETTLED at 04:17 UTC on one attempt,
+30 minutes by the artifact.
+Seats asked 926,
+43 retry rounds,
+830 calls,
+5 abandoned streams (0.0030 USD),
+Qwen3.8-27B and glm-5.3 dark (114 and 82 asked,
+all threw),
+every other seat whole or within five.
+Meters 117.28 to 116.97 USD on Bedrock and 173.44 to 172.93 on OpenRouter,
+0.82 USD together.
+
+### Checks
+
+- Front matter equal to the archive and to `shi_Yumiaoya10`.
+- 4 of 4 headings,
+  1 photoscroll,
+  1 footnote definition,
+  12 blockquote lines against the previous page's 16,
+  328 lines against 323;
+  no `TA`,
+  no `finish_reason=error`,
+  no double blank line,
+  `attempts.json` reads 1.
+- No `PublishedPageDisagrees` or `weight-off`,
+  one unendorsed standing (slice 1,
+  the caution blockquote,
+  the archive's own wording standing without contest endorsement),
+  no gate-kept or slate-declined standing,
+  no `repeats the line`,
+  no run-off,
+  no `archive-revision-refused`;
+  14 `declined every candidate` lines with reasons.
+- 6 em-dashes,
+  left per the owner's answer of 2026-09-21.
+- Class seventy-nine holds ("she attempted to end her life in the early hours of January 16",
+  the ICU waking two lines on);
+  class seventy-eight holds ("Chewing Gum and Danpian",
+  "her cuddling plans").
+
+### Class eighty, second arm: the clause reached the judges and they overruled it
+
+The closing blockquote shipped three lines again:
+"If I should never see you again, I wish you good morning, good afternoon, and good night."
+above the film's own line,
+then "From *The Truman Show*".
+The frozen build carries the clause
+(`bilingual-line-clause-DLHhNPE9.mjs` in the frozen dist),
+so every translator,
+judge and editor on that slice read that the pair is one line whose English is already its rendering.
+The translate slate's ballots on the slice:
+deepseek-v4.1-flash chose the three-line candidate at weight 1,
+"Candidate 2 drops the original Chinese line of the bilingual Truman Show quotation ... leaving only the English line; under criterion 4 this is a dropped line and makes it ineligible";
+gemma-4-26b at weight 0.5,
+"The Chinese line ... is a literal translation of the sentiment, which is distinct from the actual English quote provided in the next line";
+minimax-m3 abstained on both grounds at once,
+"Candidate 1 adds an English line ... that does not correspond to any line in the ORIGINAL ... This invents a line. Candidate 2 drops the Chinese quotation line entirely".
+In the repair lane the editors' candidate that added the line lost 4 to 1
+("Candidate 2 adds an English translation of the preceding Truman Show quote",
+"incorrectly duplicates the Truman Show quote that already appears in the surrounding text"),
+so the archive's two lines stood there;
+the contest then preferred the translate lane's three.
+A judge without the film cannot see that the two lines are one,
+and one that can still reads "drops a line" as the nearer rule.
+
+The evidence the judges lack is on the sheet:
+the EXISTING TRANSLATION,
+a human's,
+carried the pair as one line.
+Fixed in `873104d8f`
+(guard red first at `c630bfb7d`,
+`bilingual-pair-bound.unit.test.ts`,
+five tests: refused where the page carries the pair once,
+accepted where the rendering does too,
+silent without page text,
+silent where the page keeps the adjacent lines apart,
+silent on a slice with no pair however long the rendering runs).
+`bilingual-pair-bound.ts` names a rendering carrying more lines than owed on a slice whose original carries a Han line with its own English beside it,
+where the page carries exactly the lines owed;
+`compareLineCounts` calls it with the page text `translate-validate.ts` now threads through,
+so the candidate is refused at the floor and withheld from the slate as class sixty-six withholds a rule-refused candidate.
+Without page text,
+or where the page itself keeps the two adjacent lines apart
+(the ten entries of the census under the 03:50 UTC heading),
+nothing is refused and the judges decide on the clause.
+The shortfall check's own blind spot,
+a longer rendering on a slice with no pair,
+is untouched and pinned by the fifth test.
+Lint 0 and 0,
+types clean,
+full suite green (`suite-873104d8f.log`).
+
+### Observations, not classes
+
+- The caution blockquote ships the archive's own wording this run
+  ("Tips",
+  "doesn't correspond to fact, while other parts still may require fact check"),
+  the unendorsed standing of slice 1,
+  where `shi_Yumiaoya9` and `shi_Yumiaoya10` re-rendered it;
+  the `<Banner>` text is re-rendered again.
+- The film link ships "[Josee, the Tiger and the Fish](...)",
+  the title the cited Wikipedia reference establishes,
+  where `shi_Yumiaoya10` had "[movie]" and `shi_Yumiaoya8` "[name of a film]";
+  two ballots cite the web lookup,
+  one of them confusing itself mid-reason and recovering.
+- "xiaoyao-niang" with the footnote where `shi_Yumiaoya10` had "little yao-niang";
+  "the trio's car shows" for the source's 三剑客;
+  "*Girls' Last Tour* has ended" italicised,
+  where `shi_Yumiaoya10` had the archive's "girl's last tour ended".
+
+### shi_Yumiaoya12 launched
+
+`shi_Yumiaoya12` (frozen `873104d8f`,
+pid 1903793,
+overlap 8)
+launched 04:24 UTC on Bedrock and OpenRouter
+(meters 116.96 USD Bedrock,
+172.92 OpenRouter at launch;
+Synthetic and Hyper dry),
+the `CORPUS NAMES` line naming the same five.
+Read the closing blockquote first
+(two lines,
+the film's English and its attribution,
+and a `LINE-STRUCTURED` finding naming the pair on the translate floor),
+then class seventy-nine,
+then class seventy-eight,
+then the seven steps and three checks against `shi_Yumiaoya11` and the archive.
+
 ## shi_Yumiaoya10 read, 2026-09-22, 03:50 UTC: SETTLED, class seventy-nine live, class eighty found (the bilingual film quote rendered twice in English because every line-structure wording said never drop a line), fixed in 8f5e28ad4; shi_Yumiaoya11 launched
 
 `shi_Yumiaoya10` (frozen `d29feecd5`,
