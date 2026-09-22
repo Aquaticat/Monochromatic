@@ -7,7 +7,12 @@ import {
   prepareDocumentPairWithRoster,
 } from '../prepare-with-pairing.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
+import {
+  corpusNameLines,
+  readCorpusNames,
+} from '../corpus-name-index.ts';
 import { lookupCacheDir, } from '../lookup-cache.ts';
+import { RUN_CORPUS_PIN, } from './run-config.ts';
 import { workTitleLookupLines, } from '../work-title-lookup.ts';
 import { EXA_API_KEY_VAR, } from '../work-title-search.ts';
 import { citedReferenceBlock, } from '../cited-reference-lookup.ts';
@@ -158,7 +163,7 @@ export async function preparePassEntry(
    for both preparations so a corrected archive does not change what the
    sheets are told about a title.
    */
-  const contextLines = await workTitleLookupLines({
+  const workTitleLines = await workTitleLookupLines({
     sourceText,
     apiKey: process.env[EXA_API_KEY_VAR] ?? '',
     dir: lookupCacheDir({ env: process.env, },),
@@ -167,6 +172,36 @@ export async function preparePassEntry(
     now: wallClock,
     logger: l,
   },);
+  /**
+   How the corpus renders the people of other entries this original names
+   (class seventy-eight, `corpus-name-index.ts`), read off every entry's
+   front matter at the pin, so a handle another entry declares is never
+   transliterated by guess.
+   */
+  const corpusNameContext = corpusNameLines({
+    text: sourceText,
+    names: await readCorpusNames({ pin: RUN_CORPUS_PIN, },),
+    ownId: entryId,
+  },);
+  /**
+   Name lines under the heading, none when the block is empty.
+   */
+  const corpusNameEntries = corpusNameContext.slice(1,);
+  l.info(
+    `CORPUS NAMES entry=${entryId} named=${corpusNameEntries.length}: ${
+      (corpusNameEntries.length === 0)
+        ? 'the original names nobody another entry declares'
+        : corpusNameEntries.join('; ',)
+    }`,
+  );
+  /**
+   Evidence lines bought or read outside preparation, the same for both
+   preparations.
+   */
+  const contextLines = [
+    ...workTitleLines,
+    ...corpusNameContext,
+  ];
   /**
    What the pages the original links say (class thirty-five, the owner's
    decision of 2026-09-16), bought once per page and cached durably, the

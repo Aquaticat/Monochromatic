@@ -140,6 +140,12 @@ export {
   type RenderingCandidate,
 } from './community-glossary.ts';
 export { pageNameLines, } from './page-name-glossary.ts';
+export {
+  type CorpusName,
+  corpusNameLines,
+  corpusNamesOf,
+  readCorpusNames,
+} from './corpus-name-index.ts';
 export { rosterQuorumSize, } from './roster-quorum-size.ts';
 export type { RunClient, } from './corpus-run/run-client-contract.ts';
 export {
