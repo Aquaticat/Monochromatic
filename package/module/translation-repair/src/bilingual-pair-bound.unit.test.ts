@@ -134,6 +134,38 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES the doubled quote even where the page splits another line of the slice (shi_Yumiaoya12: the '
+        + 'archive writes the closing line as two, so the whole-slice count never matched and the bound slept)',
+      fn: async () => {
+        const found = compareLineCounts({
+          lineStructured: true,
+          sourceText: BILINGUAL,
+          candidateText: DOUBLED,
+          pageText: [
+            '> And in case I don’t see the cat, good morning.',
+            '>',
+            '> From *The Cat Show*',
+            '',
+            'All right, cat.',
+            'Sleep now.',
+          ].join('\n',),
+        },);
+        expect(found.length,).toBe(1,);
+        expect(found[0],).toContain('once in Chinese and once in English',);
+      },
+    },),
+    it({
+      name: 'STAYS SILENT where the rendering reworded the English line, since the block holding the pair can no longer be found',
+      fn: async () => {
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: BILINGUAL,
+          candidateText: DOUBLED.replace('And in case I don’t see the cat', 'And should I not see the cat',),
+          pageText: PAGE,
+        },).length,).toBe(0,);
+      },
+    },),
+    it({
       name: 'STAYS SILENT on a slice with no pair however long the rendering runs, the shortfall check\'s own blind spot kept',
       fn: async () => {
         expect(compareLineCounts({
