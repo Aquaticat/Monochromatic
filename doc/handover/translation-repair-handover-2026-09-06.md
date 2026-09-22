@@ -4647,7 +4647,12 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  ZHEERMAO3 READ WITH CLASS SEVENTY-SEVEN LIVE AND NOTHING TO FIX
+1.  MIKAELA6 RUNS (frozen `0f9cd44da`,
+    pid 1765655,
+    launched 00:58 UTC 2026-09-22,
+    the first mikaela page since `6a9a7ce27`,
+    so classes seventy-four to seventy-seven are read live on it next).
+    ZHEERMAO3 READ WITH CLASS SEVENTY-SEVEN LIVE AND NOTHING TO FIX
     (the pass log's heading dated 2026-09-22 00:55 UTC):
     `zheermao3` (frozen `0f9cd44da`) SETTLED at 00:43 UTC in 33.5 minutes,
     0.60 USD by the meters,
