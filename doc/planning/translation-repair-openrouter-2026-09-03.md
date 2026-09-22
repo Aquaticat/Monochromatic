@@ -8082,6 +8082,141 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya8 read, 2026-09-22, 02:20 UTC: SETTLED, class seventy-eight found (a handle the corpus declares in another entry rendered as a pinyin of nothing), fixed in 545bff7b9; shi_Yumiaoya9 launched
+
+`shi_Yumiaoya8` (frozen `0f9cd44da`,
+pid 1772617,
+overlap 8,
+launched 01:33 UTC on Bedrock and OpenRouter,
+Synthetic and Hyper dry)
+SETTLED at 02:01 UTC on one attempt,
+28 minutes by the artifact,
+against `shi_Yumiaoya7`'s 62.
+Seats asked 921,
+52 retry rounds,
+812 calls,
+3 abandoned streams (0.0012 USD),
+Qwen3.8-27B and glm-5.3 dark all run (118 and 78 asked,
+all threw,
+Synthetic dry),
+Jev 24 of 24.
+Meters:
+Bedrock 118.13 to 117.81,
+OpenRouter 174.96 to 174.39,
+0.89 USD;
+the spend lines say 0.86 USD on OpenRouter.
+
+The checks.
+Front matter equal,
+4 of 4 headings,
+the photo component as the source,
+the death paragraphs (slice 13) on the page,
+the closing quote's attribution once (`From *The Truman Show*`,
+class seventy-four holding),
+no `TA`,
+no `finish_reason=error`,
+no double blank line,
+no `PublishedPageDisagrees` or weight-off line,
+attempts 1,
+no unendorsed,
+gate-kept or slate-declined standing,
+13 abstention lines with reasons,
+no repeat or run-off finding,
+7 em-dashes on a page whose archive has none
+(`shi_Yumiaoya7` 6),
+left as the owner said on 2026-09-21.
+Eighteen slices,
+14 changed by the translate lane,
+2 by the repair lane.
+
+Class seventy-eight.
+The paragraph after the ICU names two people who died in the same month,
+口香糖 and 单片,
+and the page ships "the successive deaths of Xiaoguantang and Danpian".
+"Xiaoguantang" is the pinyin of nothing
+(口香糖 reads kouxiangtang;
+`shi_Yumiaoya7` wrote "Kouxiangtang").
+The corpus itself declares both people:
+entry `a2581911655` carries `name: 奇妙的口香糖`,
+`alias: 口香糖` and its English page `name: Magic Chewing Gum`,
+`alias: Chewing Gum, jjlin1219`;
+entry `interrgned` carries `name: 单片` and `alias: Danpian`.
+The class seventy-one glossary reads names off the page's own archive,
+which never carried this paragraph,
+so nothing told the bench.
+Three of five consolidation candidates transliterated,
+one wrote "Chewing Gum",
+one left the Han,
+and the judges weighed "a phonetic transliteration" against "a translation of a form"
+(minimax:
+"The declared names section does not specify how 口香糖 and 单片";
+gemma-4-26b:
+"there is no declared name for 口香糖,
+all candidates are somewhat guessing")
+and chose candidate 5,
+the transliteration.
+Fixed in `1cdbeea75` and `545bff7b9`,
+guard red first at `e284a6ebc`:
+`corpus-name-index.ts` reads every entry's `page.md` and `page.en.md` front matter at the pin
+(1.6 s over 92 entries,
+148 names),
+pairs each Han name or alias with every form the entry's translation declares,
+and `pass-prepare.ts` joins the names this original carries to the identity context beside the page's own renderings,
+with a `CORPUS NAMES entry=<id> named=<n>` line.
+Measured over the pinned corpus before shipping:
+猫猫 is declared by two entries and carried by 26 of 92 pages as the ordinary word,
+so a form two entries declare names nobody and is dropped;
+岁月,
+不存在 and 贴贴 are declared handles other pages carry inside ordinary words
+(灰暗岁月里,
+不存在的真相,
+贴贴图),
+and Chinese prose marks no word boundary,
+so the heading says a handle that is an ordinary word here stays a word and the judges decide.
+After the drop 22 of 92 pages carry lines.
+On `shi_Yumiaoya` the line names 贴贴 (the cuddle plan,
+an ordinary word here),
+盐田,
+紫壑,
+口香糖 and 单片;
+`shi_Yumiaoya9` reads whether the bench renders the two handles as their entries do and leaves 贴贴计划 a plan.
+Lint 0 and 0,
+types clean,
+full suite green on both commits.
+
+Observations,
+not classes.
+The January 16 sentence ships "she ended her life by taking medication in the early hours of January 16"
+for 吞下大量药物自杀,
+two sentences before she wakes in the ICU;
+`shi_Yumiaoya7` wrote "she tried to end her life".
+The source says 自杀 and the ballots chose the "safe 'taking medication' phrasing" on the reader-protection rule;
+English asserts the death the source's next sentence denies.
+The judges keep deciding wording,
+as the owner said of headings on 2026-09-21,
+and the read of `shi_Yumiaoya9` watches the sentence.
+The source's one `[^1]` on 小药娘 ships as a footnote this run
+(`shi_Yumiaoya6` kept it,
+`shi_Yumiaoya7` glossed it inline),
+and the bench added a second `[^1]` on the 药娘 line the source leaves bare
+(2 markers against the source's 1,
+one definition,
+which itself says the term applies throughout),
+with the term in italics;
+a judge praised "'minor yaoniang [1]' exactly as the house rules prescribe".
+Han residue in the English:
+"estradiol valerate tablet (补佳乐)",
+"贴贴 (cuddling) plans",
+"insulted as a 「逆子」";
+`shi_Yumiaoya7` rendered all three.
+The film link ships "[name of a film](...)" for the source's 一部电影 where `shi_Yumiaoya7` named the film;
+the third heading ships "Departure" for 关于鱼喵的离世 where `shi_Yumiaoya7` wrote "About Yumiao's Departure".
+
+`shi_Yumiaoya9` (frozen `545bff7b9`,
+pid 1820803)
+launched 02:14 UTC;
+its log carries the `CORPUS NAMES` line with the five names.
+
 ## mikaela6 read, 2026-09-22, 01:35 UTC: SETTLED, classes seventy to seventy-seven holding on the mikaela page, three translator additions dropped by the bench as observations; shi_Yumiaoya8 launched
 
 `mikaela6` (frozen `0f9cd44da`,
