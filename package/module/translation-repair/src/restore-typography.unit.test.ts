@@ -262,6 +262,33 @@ await describe({
       },
     },),
     it({
+      name: 'RESTORES a possessive apostrophe after a letter outside the Basic Multilingual Plane, a '
+        + 'mathematical-script handle (class ninety-six, mikaela_khara, 2026-09-23: the archive curls '
+        + '\u{1D4E0}\u{1D4FE}\u{1D4EA}\u{1D4F7}\u2019s and the bench wrote it straight)',
+      fn: async () => {
+        /**
+         A handle set in mathematical script, every letter a surrogate pair.
+         */
+        const handle = '\u{1D4DC}\u{1D4F2}\u{1D4EA}\u{1D4F8}';
+        const convention = `Every other line here reads didn${APOSTROPHE}t.`;
+        expect(restoreTypography({
+          replacement: `Whiskers (${handle}'s classmate in school) and I got off the train.`,
+          replaced: 'Whiskers and I got off the train.',
+          convention,
+        },),).toBe(`Whiskers (${handle}${APOSTROPHE}s classmate in school) and I got off the train.`,);
+        expect(restoreTypography({
+          replacement: `It was ${handle}'${handle} all along.`,
+          replaced: 'It was the pair all along.',
+          convention,
+        },),).toBe(`It was ${handle}${APOSTROPHE}${handle} all along.`,);
+        expect(restoreTypography({
+          replacement: `She said '${handle}' and left.`,
+          replaced: 'She said the name and left.',
+          convention,
+        },),).toBe(`She said '${handle}' and left.`,);
+      },
+    },),
+    it({
       name: 'RESTORES three dots where the document writes three dots, collapsing the doubled '
         + 'U+2026 Chinese carries, and leaves a tag alone (yulianNyanner, 2026-09-07)',
       fn: async () => {
