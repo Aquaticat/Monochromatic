@@ -4647,17 +4647,28 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XINGZ629 RUNS (frozen `e78515f56`,
-    pid 2793259,
-    launched 17:49 UTC 2026-09-23,
-    waiter bx0plxmpk,
-    Bedrock and OpenRouter wet, Synthetic spent, Hyper dry;
+1.  XINGZ630 RUNS (frozen `2c3a80370`,
+    pid 2844294,
+    launched 18:59 UTC 2026-09-23,
+    waiter boqkmvcsw,
+    meters 62.51 USD Bedrock and 107.96 OpenRouter at launch, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class ninety-seven on the wire (the "drops the address in the second person" refusal lines in the artifact; the original's 你 passages in the second person on the page),
+    read for class ninety-eight live
+    (the "leaves the title" refusal lines in `artifacts/XingZ60.json`; both song credits and the Bird in a Cage link in English on the page, no 《》 title in Han outside the album's own bilingual name),
+    class ninety-seven again on the meteor address (slices 111 and 115 in the second person),
     classes eighty-eight to ninety-four holding,
-    beside every check of `XingZ628`
-    (14 headings, 2 links, 9 definitions, 3 TextRing, 11 details, front matter equal, no TA, no error finish, no double blank line);
-    record under a new heading above "## yingying6 read, 2026-09-23, 17:52 UTC" in the pass log.
+    beside every check of `XingZ629`
+    (fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish, no double blank line, ten section headings by name alone, Jinxin glossed once);
+    record under a new heading above "## XingZ629 read, 2026-09-23, 19:03 UTC" in the pass log.
+    XINGZ629 READ (frozen `e78515f56`): SETTLED at 18:39 UTC 2026-09-23 in 50 min, one attempt, 8,350 seats, 286 retry rounds, 8.70 USD by the meters;
+    class ninety-seven on the wire (two minimax-m3 translate candidates refused on the meteor address, slices 111 and 115, the page addressing her in the second person),
+    classes eighty-eight to ninety-three holding, class ninety-four not exercised (the review revised the placeholder into an under-construction warning instead of removing it, the third treatment in four runs; the placeholder question stays open for the owner),
+    every structural check as `XingZ628`, eight unendorsed (three gate-kept, five slate-declined), 183 abstention lines;
+    but the second song credit shipped its title in Han, "《零重祈愿》", where `XingZ627` and `XingZ628` wrote "《Zero-Layer Prayer》" (class ninety-eight), the same flip as the Bird in a Cage link text on `XingZ619` and `XingZ628`;
+    an observation beside it: the first credit dropped the album name 【妄想症Paranoia】 the original carries (one run, not built).
+    CLASS NINETY-EIGHT FIXED: `hanTitleFindings` (`translate-han-title.ts`, `han-only-text.ts`) refuses before any judge a candidate that leaves a 《》-bracketed Han-only title standing bare (no English gloss in parentheses beside it) on a page that never wrote it, reading a 《[title](url)》 bracket by its link text;
+    the marker, address and title floors fold into `sourceCarryFindings` (`translate-source-carry.ts`); the policy's work-title bullet says a title is never left in Han as the work's name;
+    guards red first 5d58ca85c and 051e7b060, fixed 012cec9a1 and 2c3a80370, lint 0/0, types clean, full suite green (`suite-class98b.log`, 1101 PASS), replayed over the real `XingZ629` slice 101 and `XingZ628` slice 95 shipped texts (both refused) and the translated credits (accepted).
     YINGYING6 READ (frozen `e78515f56`): SETTLED at 17:49 UTC 2026-09-23 in 4 min, one attempt, 327 seats, 9 retry rounds, 0.13 USD by the meters;
     class ninety-seven live (the repair lane's "May she" won the contest and was refused by the floor, the standing withheld, the translate lane's "May you" shipped through the class forty offer, gate 3 to 1), class eighty-six holding, every check as `yingying4`; no class.
     CUSPARIAKLSY8 READ (frozen `e78515f56`): SETTLED at 17:44 UTC 2026-09-23 in 10 min, one attempt, 383 seats, 11 retry rounds, 0.17 USD by the meters;

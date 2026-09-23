@@ -8082,6 +8082,79 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ629 read, 2026-09-23, 19:03 UTC: SETTLED in 50 min, class ninety-seven live on the meteor address, classes eighty-eight to ninety-three holding, but the second song credit shipped its title in Han (class ninety-eight); fixed in 2c3a80370, XingZ630 launched
+
+`XingZ629` (frozen `e78515f56`, pid 2793259) SETTLED at 18:39 UTC,
+50 min after its 17:49 launch (TALLY `ms=3007748`),
+one attempt,
+8,350 seats,
+286 retry rounds,
+7,377 calls,
+1 abandoned stream (0.004 USD),
+8.70 USD by the meters (Bedrock 67.38 to 62.52, OpenRouter 111.86 to 108.02),
+on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry; glm-5.3 asked 577 and threw 577, Qwen3.8-27B asked 1,164 and threw 1,164, both Hyper-only seats dark by design).
+Stages: repair from 17:55, translate from 18:11, contest from 18:17, consolidation 18:20 to 18:39.
+Endpoints: deepseek on Morph 1,203 streams at 7.2 s (2 CoreWeave fallbacks, 1 Fireworks), GLM-5.3-Flash on Wafer 424 at 5.3 s, minimax-m3 on CoreWeave 1,041 at 6.5 s and Together 110 at 4.5 s, Mercury on Inception 881 at 7.8 s; no cap cut; Jev 273 of 273.
+
+Class ninety-seven on the wire.
+Two minimax-m3 translate candidates were refused on slices 111 and 115, the closing address to the meteor
+("the ORIGINAL passage writes 你 or 您 6 times, and your translation carries no "you" but "she", "her", "they" in its place");
+both slices were lane-won by the translate lane
+(111 stood slate-declined, 115 consolidated with two ballots for the consolidation and three for neither),
+and the page addresses her: "You tried going deep into virtual worlds." and "You thought of becoming a boy," where the original writes 你.
+No contest winner failed the floor this run, so the withheld-standing path of yingying6 was not exercised.
+
+Classes eighty-eight to ninety-three holding:
+one `handle-gloss-placed` line (slice 108: "### Jinxin (Brocade Heart)" in the heading, "——Jinxin, February 10, 2025" bare on the signature; Yuli never glossed by the bench),
+seven `heading-series-unified` lines and the ten section headings by name alone (Irako to Jinxin),
+six contributor-name restores,
+nine definitions with no trim line (class ninety-two),
+Morph and Wafer serving (class ninety-three).
+Class ninety-four not exercised: the archive block review did not remove the placeholder this run but revised it,
+"**Come back later!**" to "[!Warning] This page is still under construction. Please check back later." (minimax's revision 3.5 of 5, gemma-4-e2b alone keeping the archive's line),
+the third treatment of that block in four runs (kept on `XingZ626`, removed on `XingZ627` and `XingZ628`);
+the placeholder's status as apparatus stays the open question for the owner.
+Every structural check as `XingZ628`:
+fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish, no double blank line;
+eight unendorsed standings (9, 18, 49, 59, 73, 78, 82, 83), three of them gate-kept (49, 59, 82) and five slate-declined;
+183 abstention lines with reasons.
+The opening quote now wraps at semantic boundaries where `XingZ628` shipped it on one line (the owner's 2026-09-19 answer: line breaks are fine).
+
+Class ninety-eight.
+The second song credit shipped "— Yuli 【妄想症Paranoia】《零重祈愿》" with the song's title in Han,
+where `XingZ627` and `XingZ628` had written "《Zero-Layer Prayer》" for it and every run wrote the first credit's 《九重现实》 as "Nonuple Reality";
+the translate lane won slice 101 and the slate endorsed it,
+one ballot calling the Han title "consistent with the presence of a series name" while another abstention on the footnote slice cited the web lookup's English for the same title.
+The house rule already says a work the ORIGINAL names is called by its official English title where one exists and by a translation where none does;
+no floor asked for it.
+`XingZ619` and `XingZ628` had shipped the Bird in a Cage link text the same way ("《[笼中之鸟](…)》"), the observation left open since 2026-09-19.
+A Han census over the seven latest read pages (`hulicaijia15`, `mikaela10`, `shi_Yumiaoya14`, `yingying6`, `zheermao6`, `CuspariaKLSY8`, `XingZ629`) found the rest of this page's Han legitimate:
+a JSX attribute (`<DottedNumber n="五"/>`), the Japanese lyric line, the coined 螐 with its footnote, "Werewolf (狼人杀)" glossed, the album's own bilingual name 【妄想症Paranoia】;
+`shi_Yumiaoya14` carries 「逆子」 with a dash gloss and the other five carry no Han the archive lacks.
+An observation beside it: the first credit dropped the album name the original carries ("—— Yuli《Nonuple Reality》" for "—— 雨狸【妄想症Paranoia】《九重现实》"), an omission the judges did not see; one run, recorded, not built.
+
+Class ninety-eight fixed in 2c3a80370 (012cec9a1 and 2c3a80370):
+`hanTitleFindings` (`translate-han-title.ts`) refuses before any judge a candidate that leaves a title the ORIGINAL brackets in 《》 standing in Han,
+where the title carries a Han ideograph and no Latin letter (`han-only-text.ts`, the unified block as the name index reads it),
+the occurrence has no English gloss in parentheses after it and stands in none,
+and the page the candidate would replace never wrote it;
+a 《[title](url)》 bracket is read by its link text, so a Han link text is refused too;
+comments are cut on both sides.
+The marker, address and title floors fold into `sourceCarryFindings` (`translate-source-carry.ts`) so `translate-validate.ts` keeps its line budget;
+the policy's work-title bullet now ends "A title is never left in Han as the work's name: the Han may follow the English title in parentheses the first time it appears, and never stands alone."
+Guards red first at 5d58ca85c and 051e7b060 (`han-title.unit.test.ts`: the Han title refused, the translated, glossed, Latin-bearing, page-kept and comment-only forms accepted, the link text refused and its translation accepted),
+lint 0 and 0, types clean, full suite green twice (`suite-class98.log` and `suite-class98b.log`, 1101 PASS).
+Replayed off the built dist over the real slices: `XingZ629` slice 101's shipped text refused ("leaves the title 《零重祈愿》 in Han"), `XingZ628` slice 95's shipped text refused ("leaves the title 《笼中之鸟》 in Han"), `XingZ629` slice 95 (English link text) and both runs' slice 98 (the translated first credit) accepted.
+
+`XingZ630` (frozen `2c3a80370`, pid 2844294, overlap 8)
+launched 18:59 UTC on Bedrock and OpenRouter
+(meters 62.51 USD Bedrock, 107.96 OpenRouter at launch),
+waiter boqkmvcsw.
+Read for class ninety-eight live (the "leaves the title" refusal lines in `artifacts/XingZ60.json`; both song credits and the Bird in a Cage link in English on the page, no Han title outside the album name),
+class ninety-seven again on the meteor address,
+classes eighty-eight to ninety-four holding,
+beside every check of `XingZ629`.
+
 ## yingying6 read, 2026-09-23, 17:52 UTC: SETTLED in 4 min, class ninety-seven live (the third-person contest winner refused by the floor, the second-person translate text shipped through the ineligible-standing path), every check as yingying4; no class, XingZ629 launched
 
 `yingying6` (frozen `e78515f56`, pid 2791373) SETTLED at 17:49 UTC,
