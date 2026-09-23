@@ -81,7 +81,7 @@ const COMMENT_CLOSE = '-->';
  withoutComments({ text: '<!-- 你 --> 猫', },); // ' 猫'
  ```
  */
-function withoutComments({ text, }: { readonly text: string; },): string {
+export function withoutComments({ text, }: { readonly text: string; },): string {
   /**
    Kept pieces, in order.
    */

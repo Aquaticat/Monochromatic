@@ -12,8 +12,7 @@ import { atomFindings, } from './translate-atom-rendering.ts';
 import { neutralPronounFindings, } from './translate-neutral-pronoun.ts';
 import { definitionLeakFindings, } from './translate-definition-leak.ts';
 import { leakedEscapeFindings, } from './translate-escape-leak.ts';
-import { droppedAddressFindings, } from './translate-address-drop.ts';
-import { droppedMarkerFindings, } from './translate-marker-drop.ts';
+import { sourceCarryFindings, } from './translate-source-carry.ts';
 import { sheetLeakFindings, } from './translate-sheet-leak.ts';
 import { untranslatedFindings, } from './translate-untranslated.ts';
 import {
@@ -500,32 +499,20 @@ export function validateTranslatedSlice(
     };
   }
   /**
-   A footnote marker the original passage carries that the candidate dropped
-   (class ninety-two), refused before the assembly trims its note as an
-   orphan.
+   What the original carries that the candidate must carry too: its footnote
+   markers (class ninety-two), its second-person address (class
+   ninety-seven) and its bracketed work titles in English (class
+   ninety-eight).
    */
-  const markerFindings = droppedMarkerFindings({
+  const carryFindings = sourceCarryFindings({
     sourceText,
     candidateText,
+    pageText,
   },);
-  if (markerFindings.length > 0) {
+  if (carryFindings.length > 0) {
     return {
       kind: 'invalid',
-      findings: markerFindings,
-    };
-  }
-  /**
-   A second-person address the original carries that the candidate turned
-   into the third person (class ninety-seven).
-   */
-  const addressFindings = droppedAddressFindings({
-    sourceText,
-    candidateText,
-  },);
-  if (addressFindings.length > 0) {
-    return {
-      kind: 'invalid',
-      findings: addressFindings,
+      findings: carryFindings,
     };
   }
   /**
