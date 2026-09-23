@@ -141,7 +141,7 @@ export function referenceLabels(
  One claim that an archive label is an original label, and where it was
  read.
  */
-type LabelCorrespondence = {
+export type LabelCorrespondence = {
   /**
    Label as the archive spells it.
    */
@@ -178,7 +178,7 @@ type LabelCorrespondence = {
  mapLabels({ correspondences: [ { from: '1', to: '2', where: 'slice 3', unit: 'slice', }, ], skipped: [], },);
  ```
  */
-function mapLabels(
+export function mapLabels(
   {
     correspondences,
     skipped,

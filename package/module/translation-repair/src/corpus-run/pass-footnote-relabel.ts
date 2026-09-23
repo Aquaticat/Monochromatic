@@ -9,28 +9,21 @@ import {
 import { FootnoteRewriteError, } from '../footnote-rewrite-error.ts';
 
 import {
-  closeFootnoteRelabel,
-  documentLabels,
-} from '../archive-footnote-closure.ts';
-import {
   definitionLabelOrder,
   reorderFootnoteDefinitions,
 } from '../archive-footnote-order.ts';
-import {
-  applyFootnoteRelabel,
-  footnoteRelabelOf,
-  footnoteRelabelOfDefinitions,
-  type FootnoteRelabelReading,
-} from '../archive-footnote-relabel.ts';
+import { applyFootnoteRelabel, } from '../archive-footnote-relabel.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { DefinitionLabelPair, } from '../pair-definition-order.ts';
 import { normalizeFootnoteIdentifier, } from '../footnote-identifier.ts';
+import { readClosedRelabel, } from './pass-footnote-relabel-read.ts';
 
 //region Pass footnote relabel
 // How the pass makes the archive's footnotes the original's
 // (`archive-footnote-relabel.ts`, `archive-footnote-order.ts`): read the
-// label map off the definitions the roster paired by content, or off the
-// paired slices when it paired none, rewrite the archive's labels, move its
+// label map off the definitions the roster paired by content, off the
+// paired slices when it paired none, or off both where the definitions alone
+// do not close (class ninety-five, `pass-footnote-relabel-read.ts`), rewrite the archive's labels, move its
 // definitions into the original's order, and let the caller prepare again
 // over the rewritten text. Split out of `pass-prepare.ts` so that file keeps
 // to its shape and its line budget.
@@ -67,56 +60,6 @@ export type RelabelledArchive = {
    */
   readonly withheld?: 'correspondence' | 'protected-original' | 'rewrite-validation';
 };
-
-/**
- Reads the label map off the paired definitions, or off the paired slices
- where the roster paired no definition.
- 
- @param definitionPairs - definitions the roster paired, by label
- 
- @param slices - first preparation's slices
- 
- @param sourceText - complete source backing the slices
- 
- @param archiveText - complete archive backing the slices
- 
- @returns The reading and what it was read off
- 
- @example
- ```ts
- const { reading, basis, } = readRelabel({ definitionPairs, slices, sourceText, archiveText, },);
- ```
- */
-function readRelabel(
-  {
-    definitionPairs,
-    slices,
-    sourceText,
-    archiveText,
-  }: {
-    readonly definitionPairs: readonly DefinitionLabelPair[];
-    readonly slices: readonly ChunkPair[];
-    readonly sourceText: string;
-    readonly archiveText: string;
-  },
-): {
-  readonly reading: FootnoteRelabelReading;
-  readonly basis: string;
-} {
-  if (definitionPairs.length > 0)
-    return {
-      reading: footnoteRelabelOfDefinitions({ pairs: definitionPairs, },),
-      basis: 'the definitions the roster paired',
-    };
-  return {
-    reading: footnoteRelabelOf({
-      slices,
-      sourceText,
-      targetText: archiveText,
-    },),
-    basis: 'the paired slices',
-  };
-}
 
 /**
  Rewrites the archive's footnote labels to the original's and moves its
@@ -160,28 +103,36 @@ function attemptArchiveFootnoteRelabel(
   },
 ): RelabelledArchive {
   /**
-   What the evidence says about the labels, and which evidence.
+   What the evidence says about the labels, which evidence, and the map
+   closed over the archive's labels.
    */
-  const {
-    reading,
-    basis,
-  } = readRelabel({
+  const read = readClosedRelabel({
+    entryId,
     definitionPairs,
     slices,
     sourceText,
     archiveText,
+    l,
   },);
-  if (reading.kind === 'ambiguous') {
+  if (read.kind === 'ambiguous') {
     l.warn(
-      `FOOTNOTES entry=${entryId} archive labels stand, since ${basis} disagree: ${reading.detail}`,
+      `FOOTNOTES entry=${entryId} archive labels stand, since ${read.basis} disagree: ${read.detail}`,
     );
     return {
       archiveText,
       changed: false,
-      findings: [ `footnotes: archive labels stand, since ${basis} disagree: ${reading.detail}`, ],
+      findings: [ `footnotes: archive labels stand, since ${read.basis} disagree: ${read.detail}`, ],
       withheld: 'correspondence',
     };
   }
+  /**
+   The reading, its evidence and its closure.
+   */
+  const {
+    reading,
+    basis,
+    closure,
+  } = read;
   /**
    Findings for the slices the reading left out, each logged as it is.
    */
@@ -190,15 +141,6 @@ function attemptArchiveFootnoteRelabel(
       l.warn(`FOOTNOTES entry=${entryId} left out of the relabel reading: ${detail}`,);
       return `footnotes: left out of the relabel reading: ${detail}`;
     },);
-  /**
-   The map closed over the archive's labels, completed by elimination where
-   that is forced; an empty map where the labels already agree.
-   */
-  const closure = closeFootnoteRelabel({
-    map: reading.correspondences,
-    archiveLabels: documentLabels({ text: archiveText, },),
-    originalLabels: documentLabels({ text: sourceText, },),
-  },);
   if (closure.kind === 'open') {
     l.warn(`FOOTNOTES entry=${entryId} archive labels stand, since the map read off ${basis} does not close: ${closure.detail}`,);
     return {

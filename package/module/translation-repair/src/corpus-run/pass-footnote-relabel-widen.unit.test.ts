@@ -41,6 +41,12 @@ const TARGET_TEXT = '## Life\n\nThe cat[^2] slept on the sill.\n\nThe bird[^3] s
   + '[^1]: Translator\'s note: the sill faces east.\n\n[^2]: Her favourite spot.\n\n[^3]: A sparrow.\n';
 
 /**
+ Slice budget at which each paragraph is its own slice, so the body
+ paragraphs pair one to one.
+ */
+const SLICE_BUDGET = 40;
+
+/**
  Test logger.
  */
 const l = tagged({ tag: 'footnote-relabel-widen-test', },);
@@ -62,6 +68,7 @@ await describe({
         const prepared = prepareDocumentPair({
           sourceText: SOURCE_TEXT,
           targetText: TARGET_TEXT,
+          sliceCharBudget: SLICE_BUDGET,
         },);
         /**
          The roster paired the sparrow's definitions alone.
@@ -106,6 +113,7 @@ await describe({
         const prepared = prepareDocumentPair({
           sourceText: SOURCE_TEXT,
           targetText: archiveText,
+          sliceCharBudget: SLICE_BUDGET,
         },);
         /**
          The roster paired the sparrow's definitions alone.
