@@ -8082,6 +8082,74 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ624 read, 2026-09-23, 02:25 UTC: SETTLED in 4h23m, class eighty-seven live on the bare TextRing slice, class eighty-three live but the gloss on the second appearance (class eighty-eight) and every ordinal dropped from the ten headings (class eighty-nine); both fixed in d8f847e3c, XingZ625 launched
+
+`XingZ624` (frozen `da02857b1`, pid 2237613) SETTLED at 02:06 UTC,
+4h23m after its 21:43 launch (TALLY `ms=15774160`),
+one attempt,
+8,302 seats,
+331 retry rounds,
+7,465 calls,
+140 abandoned streams (0.66 USD),
+11.12 USD by the meters (Bedrock 98.03 to 93.29, OpenRouter 145.35 to 138.97).
+Synthetic dry throughout, glm-5.3 dark (asked 554, threw 554), Jev 249 of 249.
+Slower than `XingZ623` at every stage on the same two providers:
+admission to 22:00, repair lane to 22:57 (57 min against 32), translate to 00:01 (64 against 52), contest to 00:35 (34 against 22), consolidation 00:41 to 02:06 (85 against 56).
+
+Class eighty-seven live.
+The bare `<TextRing text="⊕⊕⊕⊕" fontSize="1.25rem"/>` line sliced alone again (slice 88 this run);
+the repair lane had nothing to repair, the translate lane wrote the tag verbatim,
+the contest declined it, the empty standing was withheld,
+and at 01:39 UTC the buy logged "slice 88: no standing text to consolidate against; the lane texts alone go to the slate judges",
+the settlement "lane texts offered on the slate beside the proposals: translate",
+the slate chose the translate text, the gate confirmed it ("reproduces the original TextRing element exactly", the standing dropped),
+terminal `consolidated`, the tag on the page (3 TextRing lines), no `no-standing-text` stop and no naturalness-floor error at publish.
+
+Every structural check as `XingZ622`:
+fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks,
+the closing poem's attribution inside the quote, "They once said" on the tombstone paragraph,
+front matter equal, no TA, no error finish, no double blank line.
+Six unendorsed standings (10, 31, 38, 48, 68, 81), all slate-declined, none gate-kept;
+301 abstention lines with reasons;
+no repeat, run-off or archive-revision-refused line.
+Four restore lines: Ann into the Part Four heading and signature (the archive's rendering), Shinonome into the Part Five signature ("Dongyun" written by the bench), Baimao Suki into the Part Eight heading.
+
+Class eighty-three live on the page, with two page-level faults the slices could not see.
+锦心 is "Jinxin" in the Part Ten heading and signature,
+雨狸 is "Yuli" on both song credits,
+洁澄天奏 is "Jiecheng Tianzou" on the epigraph, "Jiecheng Tianzou Official" on the Bird in a Cage attribution and "Jiecheng Tianzou" in the note (three appearances, one reading; `XingZ622` had "Jiecheng Tianzou" beside "洁澄天奏Official");
+no handle left in Han.
+But the gloss stands on the second appearance, not the first:
+"### Jinxin" bare and "—— Jinxin (Brocade Heart), February 10, 2025" below it,
+"—— Yuli [Paranoia] “Nonuple Reality”" bare and "— Yuli (Rain Fox) [Paranoia] “Zero-Layer Prayer”" on the next credit.
+The house rule puts the literal meaning at the first appearance on the page, and every slice is written on its own with no writer seeing the page (class eighty-eight).
+And the ten section headings shipped by name alone ("### Irako" to "### Jinxin"):
+the class sixty-eight unifier counted the renderings' styles (three bare, "The Fourth:", "Part Five:", "Six:", "No. 7:", "VIII:", "Nine:", "Ten:"), the plurality was none, and it dropped every ordinal,
+where `XingZ622` had written "Part One:" to "Part Ten:" on a plurality of the other kind;
+both runs over the same archive, which heads the sections by name alone.
+The page's heading style moved run to run on a three-of-ten plurality while the archive's own convention was on hand every run (class eighty-nine).
+
+Classes eighty-eight and eighty-nine, fixed in d8f847e3c:
+`placeHandleGlosses` (`corpus-run/handle-gloss-place.ts`) runs after the contributor-name restore and before the heading unifier;
+for each signer the archive never rendered it finds every whole-word appearance of the rendering among the replaced slices,
+puts the gloss the bench wrote first at the first appearance and strips it from the later ones (finding `handle-gloss-placed`);
+a handle the bench never glossed is left as it is, the archive's own text is never rewritten.
+`unifyHeadingSeries` takes the archive's style where the archive heads two or more of the series in one style (finding suffix "the archive's own style"), the renderings' plurality deciding only where the archive never headed it.
+Guards red first at b90c29132 (`handle-gloss-place.unit.test.ts`; `heading-series-unify.unit.test.ts` fixtures given an archive with no heading for the plurality cases, a new case for the archive's style both ways),
+lint 0 and 0,
+types clean,
+full suite green (`suite-class88-89.log`, 1096 PASS).
+Replayed in the guards, not over the page: the next `XingZ60` read carries the live check.
+
+`XingZ625` (frozen `d8f847e3c`, pid 2506867, overlap 8)
+launched 02:21 UTC on Bedrock and OpenRouter
+(meters 93.28 USD Bedrock, 138.96 OpenRouter at launch),
+waiter bq59587sx.
+Read for class eighty-eight live (the `handle-gloss-placed` lines; "### Jinxin (Brocade Heart)" or the gloss wherever Jinxin first appears and bare after; Yuli glossed on the first credit alone)
+and class eighty-nine live (the `heading-series-unified` lines ending "the archive's own style"; ten headings by name alone whatever the renderings wrote),
+class eighty-seven again on the bare TextRing slice,
+beside every check of `XingZ624`.
+
 ## XingZ623 read, 2026-09-22, 21:55 UTC: INCOMPLETE at publish after 3h01m on the bare TextRing slice, nothing standing behind a declined contest at an absent archive (class eighty-seven); fixed in da02857b1, XingZ624 launched
 
 `XingZ623` (frozen `40679244d`, pid 2184330) ended INCOMPLETE at 21:32 UTC,
