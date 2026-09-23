@@ -140,16 +140,14 @@ const HAN_TEN = '十';
 const TEN = 10;
 
 /**
- Words that lead a number in a heading ("Part Six", "The Fifth").
+ Leader written "No." whichever way the heading spelled it.
  */
-const LEADERS: ReadonlySet<string> = new Set([
-  'part',
-  'chapter',
-  'section',
-  'the',
-  'no.',
-  'no',
-],);
+const NUMBER_SIGN = 'no';
+
+/**
+ Leader written "No." with its stop.
+ */
+const NUMBER_SIGN_STOPPED = 'no.';
 
 /**
  How a heading spells its number: a bare form, or a leader word before one;
@@ -295,9 +293,15 @@ function formOf({ word, }: { readonly word: string; },): OrdinalStyle['form'] {
 /**
  Reads the style of the number a heading title opens with, before its colon.
 
+ CLASS NINETY (XingZ625, 2026-09-23). A table of leader words ("Part",
+ "Chapter", "The", "No.") let "Poem Ten:" escape the series: the tenth
+ heading shipped with its ordinal beside nine the archive's bare style had
+ stripped. The heading stands where the original numbers one, so whatever
+ words precede the number word are its leader; no table.
+
  @param prefix - title text before the first colon, trimmed
 
- @returns Style, `NO_NUMBER` when the prefix is no number
+ @returns Style, `NO_NUMBER` when the prefix ends in no number word
 
  @example
  ```ts
@@ -313,35 +317,28 @@ export function readOrdinalStyle({ prefix, }: { readonly prefix: string; },): Or
       return word !== '';
     },);
   /**
-   First and second words, absent on a short prefix.
+   Last word, the number itself when the prefix numbers the heading.
    */
-  const [first, second,] = words;
-  if (first === undefined)
-    return NO_NUMBER;
-  if (words.length === 1) {
-    /**
-     Form of the one word.
-     */
-    const form = formOf({ word: first, },);
-    return (form === 'none') ? NO_NUMBER : {
-      leader: '',
-      form,
-    };
-  }
-  if ((words.length !== 2) || (second === undefined))
+  const last = words.at(-1,);
+  if (last === undefined)
     return NO_NUMBER;
   /**
-   Leader word, lowered.
+   Form of the last word.
    */
-  const leader = first.toLowerCase();
-  if (!LEADERS.has(leader,))
+  const form = formOf({ word: last, },);
+  if (form === 'none')
     return NO_NUMBER;
   /**
-   Form of the word after the leader.
+   Words before the number, lowered, as the leader.
    */
-  const form = formOf({ word: second, },);
-  return (form === 'none') ? NO_NUMBER : {
-    leader,
+  const leader = words.slice(
+    0,
+    -1,
+  )
+    .join(' ',)
+    .toLowerCase();
+  return {
+    leader: (leader === NUMBER_SIGN_STOPPED) ? NUMBER_SIGN : leader,
     form,
   };
 }
@@ -449,10 +446,17 @@ export function renderOrdinal(
   },);
   if (style.leader === '')
     return number;
+  if (style.leader === NUMBER_SIGN)
+    return `No. ${number}`;
   /**
-   Leader as written: "No." keeps its stop, the rest are capitalised.
+   Leader as written: every word of it capitalised.
    */
-  const leader = (style.leader === 'no') ? 'No.' : capitalised({ word: style.leader, },);
+  const leader = style.leader
+    .split(' ',)
+    .map(function capitalise(word,): string {
+      return capitalised({ word, },);
+    },)
+    .join(' ',);
   return `${leader} ${number}`;
 }
 

@@ -251,9 +251,20 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       // served by Morph alone, was the fastest XingZ60 run at 4h08m. Same
       // shape as class twenty-four (2026-09-10): route by the measured
       // endpoint. Slugs from the gateway's providers listing of 2026-09-18.
+      //
+      // OPENINFERENCE JOINED THEM (class ninety-one, XingZ624 and XingZ625,
+      // 2026-09-23). Once DeepInfra and Wafer were off the wire the price
+      // sort fell to OpenInference: XingZ624 served 324 streams there at
+      // 137 s mean beside Morph's 579 at 11.5 s, XingZ625 738 at 116 s
+      // beside Morph's 23 at 3.4 s. OpenInference also reasons past the
+      // completion cap: 450 cap-cut replies on XingZ625 against 150 on
+      // XingZ624 (93 in the editor seat, where 87 of 164 rounds heard
+      // nobody), and the entry took 6h54m against XingZ608's 2h16m on
+      // Morph. Slug from the same listing.
       ignoredEndpoints: [
         'deepinfra',
         'wafer',
+        'open-inference',
       ],
       rawCharsPerToken: 'unmeasured',
     },
