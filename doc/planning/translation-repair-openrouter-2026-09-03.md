@@ -8082,7 +8082,7 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
-## hulicaijia15 read, 2026-09-23, 16:20 UTC: SETTLED in 37 min, the relabel closed on the definitions alone, no trim or revert, every check as hulicaijia13; no class, mikaela8 launched
+## hulicaijia15 read, 2026-09-23, 16:20 UTC: SETTLED in 37 min, the relabel closed on the definitions alone, no trim or revert, every check as hulicaijia13; no class, mikaela9 launched
 
 `hulicaijia15` (frozen `b26ea1990`, pid 2723733) SETTLED at 16:15 UTC,
 37 min after its 15:38 launch,
@@ -8111,8 +8111,9 @@ Four unendorsed standings (1, 8, 29, 47), one gate-kept (29), three slate-declin
 155 abstention lines with reasons.
 The `[^3]` definition is reworded against `hulicaijia13`'s ("Now part of the Liangjiang New Area commercial district" for "Now one of the commercial districts of Chongqing's Liangjiang"), the bench's choice on the same note.
 
-`mikaela8` (frozen `b26ea1990`, pid 2730119, overlap 8)
-launched 16:22 UTC on Bedrock and OpenRouter
+`mikaela9` (frozen `b26ea1990`, pid 2731285, overlap 8)
+launched 16:26 UTC on Bedrock and OpenRouter
+(`mikaela8`, launched 16:22 UTC with the entry id `mikaela`, exited at once with `pending=0` and spent nothing: the entry id is `mikaela_khara`, as `zheermao101` is for `zheermao`)
 (meters 69.84 USD Bedrock, 113.90 OpenRouter at launch),
 the oldest read of the seven entries (`mikaela7` ran on `93b11aef9`).
 Read for classes seventy to seventy-seven, ninety-two and ninety-five holding

@@ -4647,9 +4647,9 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  MIKAELA8 RUNS (frozen `b26ea1990`,
-    pid 2730119,
-    launched 16:22 UTC 2026-09-23,
+1.  MIKAELA9 RUNS (frozen `b26ea1990`,
+    pid 2731285,
+    launched 16:26 UTC 2026-09-23 with entry id `mikaela_khara` (a launch naming `mikaela` exits at once with pending=0, as `mikaela8` did),
     Bedrock and OpenRouter wet, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
     read for classes seventy to seventy-seven, ninety-two and ninety-five holding
