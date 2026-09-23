@@ -3,6 +3,7 @@ import { guardFootnoteAssembly, } from '../assembly-integrity.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
 import { restoreContributorNames, } from './contributor-name-restore.ts';
+import { placeHandleGlosses, } from './handle-gloss-place.ts';
 import { restoreCollidingHeadings, } from './heading-collision-restore.ts';
 import { unifyHeadingSeries, } from './heading-series-unify.ts';
 import { shippableReplacements, } from './publish-fixed.ts';
@@ -98,12 +99,20 @@ export function guardPageAssembly(
     replacements: restoration.replacements,
   },);
   /**
+   Every romanised handle's literal meaning at its first appearance alone
+   (class eighty-eight).
+   */
+  const glosses = placeHandleGlosses({
+    slices,
+    replacements: names.replacements,
+  },);
+  /**
    The original's numbered heading series rendered in one style (class
    sixty-eight).
    */
   const series = unifyHeadingSeries({
     slices,
-    replacements: names.replacements,
+    replacements: glosses.replacements,
   },);
   /**
    Rows the page-assembly passes rewrote, the latest pass's text per slice.
@@ -111,6 +120,7 @@ export function guardPageAssembly(
   const restoredRows = new Map<number, SliceReplacement>([
     ...restoration.restored,
     ...names.restored,
+    ...glosses.restored,
     ...series.restored,
   ].map(function bySlice(row,): readonly [
     number,
@@ -164,6 +174,7 @@ export function guardPageAssembly(
       ...halves.findings,
       ...restoration.findings,
       ...names.findings,
+      ...glosses.findings,
       ...series.findings,
       ...guarded.findings,
     ],

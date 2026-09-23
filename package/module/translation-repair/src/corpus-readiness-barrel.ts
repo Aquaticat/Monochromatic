@@ -7,6 +7,7 @@ export { assertPageFootnotesIntact, } from './corpus-run/page-footnote-integrity
 export { assertPageGuards, } from './corpus-run/pass-page-guards.ts';
 export { guardPageAssembly, } from './corpus-run/page-assembly-guard.ts';
 export { restoreContributorNames, } from './corpus-run/contributor-name-restore.ts';
+export { placeHandleGlosses, } from './corpus-run/handle-gloss-place.ts';
 export {
   carriesRendering,
   handleReading,

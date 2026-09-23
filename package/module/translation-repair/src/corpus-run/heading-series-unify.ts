@@ -27,6 +27,15 @@ import {
 // numbered headings takes the style most of its renderings took, the
 // earliest style on a tie, and drops the ordinals where most renderings
 // dropped them, which is the archive's own convention on this page.
+//
+// CLASS EIGHTY-NINE (XingZ624, 2026-09-23). The plurality moved run to run:
+// XingZ622 shipped "Part One:" to "Part Ten:" on a plurality of "part
+// cardinal" renderings and XingZ624 dropped every ordinal on a plurality of
+// three bare headings, both over the same archive, which heads the sections
+// by name alone. Where the archive renders the series itself (two or more
+// of its headings, all in one style) the page takes the archive's style; the
+// renderings' plurality decides only where the archive never headed the
+// series.
 
 /**
  Mark the original's numbered headings open with.
@@ -167,6 +176,101 @@ function readRendered({ line, }: { readonly line: string; },): Pick<SeriesHeadin
 }
 
 /**
+ What the archive says about the series' style: one style, or nothing to
+ read.
+ */
+type ArchiveSeriesStyle =
+  | {
+    readonly rendered: true;
+
+    /**
+     Style every archive heading of the series shares.
+     */
+    readonly style: OrdinalStyle;
+  }
+  | { readonly rendered: false; };
+
+/**
+ The archive heads fewer than two of the series, or in more than one style.
+ */
+const ARCHIVE_SILENT: ArchiveSeriesStyle = { rendered: false, };
+
+/**
+ Style the archive renders the series in: the one style shared by every
+ archive heading standing where the original numbers one; silent where the
+ archive heads fewer than two of them or heads them in more than one style.
+
+ @param slices - prepared pairs in slice order
+
+ @returns The archive's style, or that there is none to read
+
+ @example
+ ```ts
+ const archived = archiveStyle({ slices, },);
+ ```
+ */
+function archiveStyle({ slices, }: { readonly slices: readonly ChunkPair[]; },): ArchiveSeriesStyle {
+  /**
+   Style of every archive heading at a numbered position.
+   */
+  const styles: OrdinalStyle[] = [];
+  for (const slice of slices) {
+    /**
+     Numbers of the original's headings here, in heading order.
+     */
+    const values = seriesValues({ text: slice.source
+      .text, },);
+    if (values.every(function unnumbered(value,): boolean {
+      return value === 0;
+    },))
+      continue;
+    /**
+     Archive heading lines of this slice, in order.
+     */
+    const lines = slice.target
+      .text
+      .split('\n',)
+      .filter(function heading(line,): boolean {
+        return isHeadingLine({ line, },);
+      },);
+    values.forEach(function readArchive(
+      value,
+      at,
+    ): void {
+      /**
+       Archive heading at this position, if the archive carries one.
+       */
+      const line = lines[at];
+      if ((value === 0) || (line === undefined))
+        return;
+      /**
+       Archive heading as rendered.
+       */
+      const { style, } = readRendered({ line, },);
+      styles.push(style,);
+    },);
+  }
+  /**
+   Earliest archive style, if the archive heads the series at all.
+   */
+  const [first,] = styles;
+  if ((styles.length < 2) || (first === undefined))
+    return ARCHIVE_SILENT;
+  /**
+   Distinct style keys the archive used.
+   */
+  const keys = new Set(styles.map(function keyOf(style,): string {
+    return styleKey({ style, },);
+  },),);
+  return (keys.size === 1)
+    ? {
+      rendered: true,
+      style: first,
+    }
+    : ARCHIVE_SILENT;
+}
+
+/**
  Style most headings took, the earliest on a tie; `NO_NUMBER` when most
  carry no number.
 
@@ -300,9 +404,17 @@ export function unifyHeadingSeries(
       findings: [],
     };
   /**
-   Style the series takes.
+   Style the archive renders the series in, if it renders it.
    */
-  const style = majorityStyle({ headings, },);
+  const archived = archiveStyle({ slices: slicesInOrder({ slices, },), },);
+  /**
+   Style the series takes: the archive's, else most renderings'.
+   */
+  const style = archived.rendered ? archived.style : majorityStyle({ headings, },);
+  /**
+   Whose style it is, for the finding.
+   */
+  const whose = archived.rendered ? 'the archive\'s own style' : 'most renderings\' style';
   /**
    Page text per slice after the rewrites.
    */
@@ -344,7 +456,7 @@ export function unifyHeadingSeries(
     );
     findings.push(
       `heading-series-unified (slice ${String(heading.sliceIndex,)}: "${before}" to "${unified}"; `
-        + `${String(headings.length,)} numbered headings in the style of "${styleKey({ style, },)}")`,
+        + `${String(headings.length,)} numbered headings in the style of "${styleKey({ style, },)}", ${whose})`,
     );
   }
   /**
