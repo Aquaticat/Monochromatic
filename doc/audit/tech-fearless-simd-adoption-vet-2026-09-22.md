@@ -93,3 +93,33 @@ Candidates and discovery sources:
 - Scoring, sensitivity, pros/cons ranking: not applicable yet. Do not infer a winner from publication or README claims.
 - Current decision: no adoption authorization, no product changes, and no recommendation until discovery, audit, and consumer-boundary comparisons are complete.
 - Next actions: finish registry and GitHub discovery, audit each serious alternative, inspect execution trees, run upstream and bounded throwaway consumer tests, compare both real kernels against existing behavior and noise-banded timing, then score and perform sensitivity analysis.
+
+## Proposed forbidden-regex worktree trial, not an adoption decision
+
+User asked on 2026-09-22 whether to try an isolated comparison and how to establish strict improvement.
+A disposable worktree is suitable for the experiment; this question does not authorize product edits in the main worktree.
+The comparison below is a proposed protocol, not evidence of improved safety or performance.
+
+### Frozen variants and integration boundary
+
+- A: untouched incumbent from one pinned commit, with separate disposable baseline build outputs.
+- B: use the core `fearless_simd` crate for a narrowly scoped safety-boundary adaptation while preserving the existing 16-byte broadcast state and algorithm if its token contract permits this. If it does not, record that as a failed equivalence variant, not an unsafe token fabrication.
+- C: independently replace the lookup with Fearless SIMD's portable `u8x64::swizzle_dyn` and retain a reachable incumbent fallback when needed. This tests portability as distinct from safety wrapping. The optional `fearless_simd_macros` crate is not assumed necessary; audit its transitive surface only if this variant uses it.
+- Preserve the exact x86 F/BW/VBMI capability path if the candidate can do so safely. Upstream `fearless_simd/src/generated/avx512.rs:35-51` requires the full Ice Lake feature bundle for its proof token. Never create that token from the incumbent's narrower CPU check. Lower-tier and NEON behavior must also be exercised.
+- Hold input corpus, compiler and flags, optimization settings, crate artifact checksums, host CPU, and package revisions fixed. B and C each get one change class; do not conflate a rewrite with a safe-intrinsics wrapper.
+
+### Correctness and reachability gate
+
+- Compare per-line verdicts and `(line, rule)` attribution plus CLI exit status, not just the total hit count measured by the existing `forbidden-regex.bench/README.md:21-27`. A security scanner cannot accept any new false negative or false positive.
+- Exercise the public route in `src/engine.rs:318-329`: seeded versus seedless, table versus counting, batches just below and at `SHENG_BATCH_FLOOR` (512), one-byte Sheng, two-byte Sheng, scalar fallback, and host-feature branches. Existing `src/regex/batch_tests.rs:86-102` exercises the large seedless route, while the explicit hooks in `src/dfa/sheng_tests.rs` and `sheng2_tests.rs` can exercise qualifying and falling-back shapes. Verify which kernel actually ran rather than inferring it from a passing result.
+- Differentially compare against the incumbent and an independent semantic oracle on adversarial inputs: empty lines, odd pair tails, matches ending at either byte position, acceptance/context boundaries, 16/64/65-state eligibility, out-of-range shuffle indices, long and short lines, and Unicode encoded as bytes. Fuzz and mutation controls must fail when the changed kernel deliberately returns a wrong verdict; a clean null result without this positive control is inconclusive.
+- Compile/run on native supported CPU feature tiers, including arm64 NEON, x86 SSE2/AVX2, and an x86 AVX-512VBMI host; use bounded emulation for a narrow F/BW/VBMI-only CPU if native access is unavailable. Emulation establishes dispatch/correctness, not native throughput. Baseline-target compilation must not globally enable features absent on the emulated CPU.
+
+### Performance and engineering gate
+
+- Validate first that the microbenchmark observes a deliberate, known slower alternative. Measure the unchanged baseline's run-to-run spread before A/B comparisons. Interleave A/B runs on identical hardware and input, with resource bounds and no ambient credentials, to limit drift. Record distributions and confidence intervals; absence of a statistically detected slowdown alone is not equivalence.
+- Use `package/rust-module/forbidden-regex.bench/src/kernels.rs:73-114` for explicit Sheng and Sheng2 microbenchmarks, including their table-build cost, then measure the real ruleset and caller boundary using `src/kernels.rs:131-145,201-237`. The latter spends time outside these kernels, so both measurements are necessary. Include per-feature-tier checks; an x86 dev host without AVX-512 cannot establish AVX-512 speed.
+- Inspect the generated loop, not just the presence of `vpermb` or `vqtbl4q`. The upstream `generated/neon.rs:6383-6404` portable 64-byte shuffle performs four table lookups; the incumbent `src/dfa/sheng.rs:326-343` uses one for its replicated 16-byte state. Note spills, loads, code size, vector-width conversion, and fallback behavior.
+- Freeze a zero-regression performance aim for each consumed native tier before looking at candidate timings, with an explicit **inconclusive** outcome whenever intervals cannot exclude a slowdown. A material advantage must be demonstrated in at least one predeclared dimension, such as measured throughput or a removed safety obligation, without a verified loss in correctness, platform coverage, other tested throughput, maintainability, or operational/dependency surface. Finite tests cannot prove universal dominance over all CPUs and inputs.
+- A safety win means identifying exact feature, pointer, bounds, alignment, and target-feature proof obligations eliminated from this package, which remain, and which move into the new dependency. Count the audit burden of generated code and any transitive procedural macros actually used. Less `unsafe` text by itself does not prove greater safety.
+- Even if the trial passes, upstream source, issue/PR, security, provenance, platform, and consumer-boundary gates in this report remain prerequisites to recommending adoption. The experiment is not permission to merge the trial.
