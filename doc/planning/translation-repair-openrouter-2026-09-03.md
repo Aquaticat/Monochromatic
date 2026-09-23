@@ -8082,6 +8082,87 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ625 read, 2026-09-23, 09:40 UTC: SETTLED in 6h54m, classes eighty-eight and eighty-nine live, the tenth heading kept "Poem Ten:" past the leader table (class ninety) and deepseek's OpenRouter seat ran on OpenInference at 116 s a stream (class ninety-one); both fixed in 5fd39cdcc, XingZ626 launched
+
+`XingZ625` (frozen `d8f847e3c`, pid 2506867) SETTLED at 09:12 UTC,
+6h54m after its 02:21 launch (TALLY `ms=24873175`),
+one attempt,
+8,812 seats,
+521 retry rounds,
+8,073 calls,
+206 abandoned streams (0.92 USD),
+10.08 USD by the meters (Bedrock 93.28 to 88.71, OpenRouter 138.96 to 133.45).
+Hyper read wet from 02:36 to 08:12 UTC (its daily allowance 250 at the first wet reading, 3 at the last; 1,331 Hyper calls),
+Synthetic dry, glm-5.3 asked 586 and threw 310, Kimi-K3 asked 814 and threw 578, Jev 231 of 234.
+Every stage slower than `XingZ624`:
+admission 03:06 (45 min after launch against 17), repair lane to 05:46 (2h34m against 57 min), translate to 07:02 (76 min against 64), contest to 07:10 (9 min against 34), consolidation 07:10 to 09:12 (2h02m against 1h25m).
+
+Class eighty-eight live.
+Two `handle-gloss-placed` lines at page assembly:
+slice 103 "Jinxin" to "Jinxin (Brocade Heart)" (the literal meaning at the handle's first appearance, the Part Ten heading)
+and slice 107 "Jinxin (Brocade Heart)" to "Jinxin" (the romanisation alone after it, the signature).
+The bench never glossed Yuli this run ("—— Yuli【妄想症Paranoia】"Nonuple Reality"", "— Yuli 【Paranoia】 "Ling Chong Qi Yuan""),
+so the pass left the handle as it was, by design;
+the source itself writes 【妄想症Paranoia】, so the Han beside the English on the first credit is the source's own form, not residue.
+Jiecheng Tianzou one reading on all three appearances, no handle left in Han.
+
+Class eighty-nine live.
+Nine `heading-series-unified` lines ending "the archive's own style", every one to the bare name
+("### One: Irako", "### Part Two: Lingyu", "### Part Three: HiYku", "### Part Four: Ann", "### The Fifth: Shinonome", "### Part Six: Mikä", "### Seven: wing", "### Part Eight: Baimao Suki", "### IX: Blank"),
+where the renderings' plurality would have been "part cardinal".
+Five `contributor-name-restored` lines (Huidu to HiYku in the Part Three heading and signature, Impermanence to Ann, Dongyun (East Cloud) to Shinonome, Baimao suki to Baimao Suki).
+
+Class eighty-seven not exercised:
+the bare TextRing slice (88 again) had its tag endorsed this run,
+terminal `slate-unjudged-standing` on a sole candidate, shipped unchanged, the polish settled on the tag,
+no `no-standing-text` line and no naturalness-floor error;
+3 TextRing lines on the page.
+
+Every structural check as `XingZ624`:
+fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks,
+the closing poem's attribution inside the quote, "They once said" on the tombstone paragraph,
+front matter equal (md5 equal to `XingZ624`'s), no TA, no error finish, no double blank line.
+Four unendorsed standings (2, 31, 42, 75): two gate-kept (2, 42), two slate-declined (31, 75);
+264 abstention lines with reasons;
+one translate run-off ("tied again over 4 finalists and narrowed to 2", class eighty-two live in the translate stage);
+no repeat or archive-revision-refused line.
+
+Class ninety, on the page.
+The tenth heading shipped "### Poem Ten: Jinxin (Brocade Heart)" beside nine bare headings:
+`readOrdinalStyle` knew a table of leader words (part, chapter, section, the, no.), "Poem" was not in it,
+so the prefix read as no number, the heading as unnumbered, and the archive's bare style had nothing to strip.
+`XingZ624`'s tenth had been "Ten:" and was stripped;
+the bench's choice of leader word decided whether the series unified.
+Fixed in 5fd39cdcc: the table is gone;
+a prefix whose last word is a number word (cardinal, ordinal, arabic, roman) is that number,
+whatever words precede it are its leader, lowered, and `renderOrdinal` capitalises every leader word ("No." keeps its stop).
+Guard red first at 488f50a49 (`heading-series-unify.unit.test.ts`: "Poem One: Ginger (Orange Cat)" over the bare archive drops to "Ginger (Orange Cat)"; a plurality of "Song" writes "Song One" to "Song Three" where the archive never headed the series).
+
+Class ninety-one, on the clock.
+With DeepInfra and Wafer off the wire since XingZ607 the price sort fell to OpenInference for deepseek-v4.1-flash:
+`XingZ624` served 324 streams there at 137 s mean beside Morph's 579 at 11.5 s,
+`XingZ625` 738 at 115.6 s beside Morph's 23 at 3.4 s (23.7 h of stream time on one seat).
+OpenInference also reasons past the completion cap:
+450 cap-cut deepseek replies on `XingZ625` (93 in the editor seat, 87 translate, 84 critic, 51 select, 50 refiner) against about 150 on `XingZ624`,
+each cut reply "0 content chars" after 12,000 to 16,500 reasoning chars, so 87 of 164 editor rounds heard nobody and the repair lane ran 2h34m.
+Fixed in 5fd39cdcc: `open-inference` joins the seat's `ignoredEndpoints` in `model-cards.ts` with the measurement beside it;
+guard red first at 488f50a49 (`openrouter-client.unit.test.ts` asserts the wire body's ignore list),
+the admission and catalog assertions pinned in 9a011f9d8.
+Lint 0 and 0, types clean, full suite green after the assertion update (`suite-class90-91b.log`).
+Hyper's wet window is not the cause and not touched:
+its seats ran minimax-m3 at 32 s, kimi-k3 at 31 s, glm-5.3 at 21 s, 9.6 h of stream time on free daily allowance;
+the provider order (Bedrock, Hyper, OpenRouter) stands on the owner's bleed instruction.
+
+`XingZ626` (frozen `5fd39cdcc`, pid 2574294, overlap 8)
+launched 09:23 UTC on Synthetic (wet again, weekly 2 percent), Bedrock and OpenRouter
+(meters 88.71 USD Bedrock, 133.44 OpenRouter at launch, Hyper dry),
+waiter btbg6r2uz.
+Its first three deepseek streams were served by Morph at 2.4 to 4.1 s (class ninety-one live on the wire).
+Read for class ninety live (ten headings by name alone, the tenth "### Jinxin (Brocade Heart)" or the gloss wherever Jinxin first appears, whatever leader the bench writes),
+class ninety-one on the clock (deepseek served by Morph, Krea or Makora alone, cap cuts near `XingZ624`'s 150, editor rounds hearing two or three, the entry well under `XingZ625`'s 6h54m),
+classes eighty-eight and eighty-nine again,
+beside every check of `XingZ625`.
+
 ## XingZ624 read, 2026-09-23, 02:25 UTC: SETTLED in 4h23m, class eighty-seven live on the bare TextRing slice, class eighty-three live but the gloss on the second appearance (class eighty-eight) and every ordinal dropped from the ten headings (class eighty-nine); both fixed in d8f847e3c, XingZ625 launched
 
 `XingZ624` (frozen `da02857b1`, pid 2237613) SETTLED at 02:06 UTC,

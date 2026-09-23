@@ -4647,20 +4647,29 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XINGZ625 RUNS (frozen `d8f847e3c`,
-    pid 2506867,
-    launched 02:21 UTC 2026-09-23,
-    waiter bq59587sx,
-    meters 93.28 USD Bedrock and 138.96 OpenRouter at launch, Synthetic dry;
+1.  XINGZ626 RUNS (frozen `5fd39cdcc`,
+    pid 2574294,
+    launched 09:23 UTC 2026-09-23,
+    waiter btbg6r2uz,
+    meters 88.71 USD Bedrock and 133.44 OpenRouter at launch, Synthetic wet again (weekly 2 percent), Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class eighty-eight live
-    (the `handle-gloss-placed` page-assembly lines; the gloss at each romanised handle's first appearance alone: "Jinxin (Brocade Heart)" where Jinxin first appears and bare after, Yuli glossed on the first song credit alone)
-    and class eighty-nine live
-    (the `heading-series-unified` lines ending "the archive's own style"; the ten section headings by name alone as the archive heads them, whatever the renderings wrote),
-    class eighty-seven again on the bare TextRing slice,
-    beside every check of `XingZ624`
+    read for class ninety live
+    (ten section headings by name alone whatever leader word the bench writes; the tenth "### Jinxin (Brocade Heart)" or the gloss wherever Jinxin first appears)
+    and class ninety-one on the clock
+    (every deepseek-v4.1-flash stream served by Morph, Krea or Makora, none by OpenInference; cap-cut deepseek replies near `XingZ624`'s 150, not `XingZ625`'s 450; editor rounds hearing two or three; the entry well under `XingZ625`'s 6h54m),
+    classes eighty-eight and eighty-nine again (`handle-gloss-placed`, `heading-series-unified` ending "the archive's own style"),
+    beside every check of `XingZ625`
     (fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, the closing poem's attribution inside the quote, "They once said" on the tombstone paragraph, front matter equal, no TA, no error finish, no double blank line);
-    record under a new heading above "## XingZ624 read, 2026-09-23, 02:25 UTC" in the pass log.
+    record under a new heading above "## XingZ625 read, 2026-09-23, 09:40 UTC" in the pass log.
+    XINGZ625 READ (frozen `d8f847e3c`): SETTLED at 09:12 UTC 2026-09-23 in 6h54m, one attempt, 8,812 seats, 521 retry rounds, 10.08 USD by the meters;
+    class eighty-eight live (Jinxin glossed in the Part Ten heading, bare on the signature; Yuli never glossed by the bench so left alone),
+    class eighty-nine live (nine headings unified to the archive's bare style), class eighty-seven not exercised (the TextRing tag endorsed, sole candidate, shipped unchanged);
+    every structural check as `XingZ624`, four unendorsed standings (2, 31, 42, 75), 264 abstention lines;
+    class ninety (the tenth heading kept "Poem Ten:" because the ordinal reader's leader table lacked "Poem")
+    and class ninety-one (deepseek-v4.1-flash on OpenInference at 116 s a stream, 738 of 761 streams, 450 cap-cut replies, 87 of 164 editor rounds hearing nobody; `XingZ624` had 324 streams there at 137 s).
+    CLASSES NINETY AND NINETY-ONE FIXED in 5fd39cdcc: `readOrdinalStyle` reads any words before a number word as the leader (no table), `renderOrdinal` capitalises every leader word;
+    `open-inference` on deepseek-v4.1-flash's `ignoredEndpoints` with the two-run measurement beside it;
+    guards red first 488f50a49, assertions pinned 9a011f9d8, lint 0/0, types clean, full suite green (`suite-class90-91b.log`).
     XINGZ624 READ (frozen `da02857b1`): SETTLED at 02:06 UTC 2026-09-23 in 4h23m, one attempt, 8,302 seats, 331 retry rounds, 11.12 USD by the meters;
     class eighty-seven live (the bare TextRing slice 88: "the lane texts alone go to the slate judges", the translate text chosen and gated, terminal consolidated, the tag on the page, no stop);
     every structural check as `XingZ622`, six unendorsed standings all slate-declined, none gate-kept, 301 abstention lines;
