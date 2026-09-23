@@ -4647,19 +4647,30 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XINGZ630 RUNS (frozen `2c3a80370`,
-    pid 2844294,
-    launched 18:59 UTC 2026-09-23,
-    waiter boqkmvcsw,
-    meters 62.51 USD Bedrock and 107.96 OpenRouter at launch, Synthetic spent, Hyper dry;
+1.  XINGZ631 RUNS (frozen `5e21134ee`,
+    pid 2893880,
+    launched 20:39 UTC 2026-09-23,
+    waiter b9ywlheib,
+    meters 57.75 USD Bedrock and 103.65 OpenRouter at launch, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class ninety-eight live
-    (the "leaves the title" refusal lines in `artifacts/XingZ60.json`; both song credits and the Bird in a Cage link in English on the page, no 《》 title in Han outside the album's own bilingual name),
-    class ninety-seven again on the meteor address (slices 111 and 115 in the second person),
-    classes eighty-eight to ninety-four holding,
-    beside every check of `XingZ629`
-    (fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish, no double blank line, ten section headings by name alone, Jinxin glossed once);
-    record under a new heading above "## XingZ629 read, 2026-09-23, 19:03 UTC" in the pass log.
+    read for classes ninety-nine and one hundred live
+    (`jsx-attribute-restored` and `title-reference-unified` lines in the log; the six `DottedNumber` markers `II` to `VII` on the page; the linked credit, the two song credits and footnote 6 carrying the headings' own renderings),
+    class ninety-eight again on the credits,
+    classes eighty-eight to ninety-seven holding,
+    beside every check of `XingZ630`
+    (fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish, no double blank line, ten section headings by name alone, Jinxin and Yuli glossed once each);
+    record under a new heading above "## XingZ630 read, 2026-09-23, 20:45 UTC" in the pass log.
+    XINGZ630 READ (frozen `2c3a80370`): SETTLED at 20:15 UTC 2026-09-23 in 76 min, one attempt, 8,436 seats, 326 retry rounds, 8.98 USD by the meters;
+    class ninety-eight live (one gemma-4-e2b candidate refused for 《九重现实》 in Han; both credits and the linked title in English, the second credit's Han in parentheses after the English),
+    class ninety-seven on the wire again (thirteen refusals, the page in the second person),
+    classes eighty-eight to ninety-three holding, class ninety-four not exercised (the review kept the placeholder this run, the fourth treatment in five runs; the placeholder question stays open for the owner),
+    every structural check as `XingZ629`, five unendorsed (17, 18, 27, 31, 40), 207 abstention lines;
+    but the marker series shipped `n="II"`, `n="5"` and `n="七"` where the archive writes Roman numerals (class ninety-nine) and 笼中之鸟 and 零重祈愿 reached the page in two English renderings each, the heading against the linked credit and the heading against footnote 6 (class one hundred; `XingZ629` had the same split on the Bird in a Cage link);
+    an observation beside them: the coined 螐 shipped as "A wu[^7] bird" where `XingZ629` kept the character (one run, not built).
+    CLASSES NINETY-NINE AND ONE HUNDRED FIXED: two page-assembly passes after the heading series pass;
+    `restoreJsxAttributes` (`corpus-run/jsx-attribute-restore.ts`, `tag-attributes.ts`) takes the archive's value of every quoted attribute where the page carries the archive slice's tags in order;
+    `unifyTitleReferences` (`corpus-run/title-reference-unify.ts`, `heading-title-lines.ts`, `title-reference-locate.ts`, `title-reference-scope.ts`) pairs every Han heading with its page rendering and rewrites each bracketed reference in a replaced slice to it, located by link destination, Han gloss, title brackets or quotes, the search held to the footnote's own line where the reference stands in a definition, reporting an ambiguous slice rather than guessing;
+    guards red first a86a3757e and a1ce2c580, fixed 2f8bcfe93 and 5e21134ee, lint 0/0, types clean, full suite green twice (`suite-class99-100b.log`, 1103 PASS), replayed over the real `XingZ629` and `XingZ630` artifacts (the markers to `V` and `VII`, the link, the Han credit and the footnote to their headings).
     XINGZ629 READ (frozen `e78515f56`): SETTLED at 18:39 UTC 2026-09-23 in 50 min, one attempt, 8,350 seats, 286 retry rounds, 8.70 USD by the meters;
     class ninety-seven on the wire (two minimax-m3 translate candidates refused on the meteor address, slices 111 and 115, the page addressing her in the second person),
     classes eighty-eight to ninety-three holding, class ninety-four not exercised (the review revised the placeholder into an under-construction warning instead of removing it, the third treatment in four runs; the placeholder question stays open for the owner),

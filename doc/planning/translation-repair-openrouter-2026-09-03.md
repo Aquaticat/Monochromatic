@@ -8082,6 +8082,71 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ630 read, 2026-09-23, 20:45 UTC: SETTLED in 76 min, class ninety-eight live on both song credits and the linked title, but the marker series shipped in three numeral styles (class ninety-nine) and two section titles in two renderings each (class one hundred); fixed in 5e21134ee, XingZ631 launched
+
+`XingZ630` (frozen `2c3a80370`, pid 2844294) SETTLED at 20:15 UTC,
+76 min after its 18:59 launch (TALLY `ms=4572808`),
+one attempt,
+8,436 seats,
+326 retry rounds,
+7,560 calls,
+7 abandoned streams (0.04 USD),
+8.98 USD by the meters (Bedrock 62.51 to 57.78, OpenRouter 107.96 to 103.71),
+on Bedrock and OpenRouter alone (Synthetic read wet on one meter reading at 19:20 UTC, `syntheticWeekly=2%`, and served no completed stream; Hyper dry; glm-5.3 and Qwen3.8-27B dark by design).
+Stages: repair from 19:06, translate from 19:38, contest from 19:51, consolidation 19:54 to 20:15;
+the repair lane took 32 min against `XingZ629`'s 16 and the translate lane 13 against 6.
+Endpoints: deepseek on Morph 1,221 streams at 9.2 s (3 CoreWeave fallbacks at 35.6 s), GLM-5.3-Flash on Wafer 384 at 8.5 s (5 InferenceNet fallbacks at 77.6 s, 2 Morph at 25.4 s), minimax-m3 on CoreWeave 782 at 7.2 s and Together 368 at 2.3 s, Mercury on Inception 879 at 6.8 s; no cap cut; Jev 235 of 244 usable, 9 threw.
+The slower run is the endpoints' own latency (Morph 9.2 s against 7.2, Wafer 8.5 against 5.3), the preferred endpoints holding (class ninety-three).
+
+Class ninety-eight live.
+The floor refused one gemma-4-e2b translate candidate on slice 94 for leaving 《九重现实》 in Han (three `translate-invalid` and `translate-candidate-refused` pairs in `artifacts/XingZ60.json`);
+the first credit shipped "—— Yuli (Rain Fox) 【妄想症Paranoia】《Nonuple Reality》", the second "—— Yuli, from “Paranoia,” Zero-Layer Prayer (零重祈愿)" with the Han in parentheses after the English as the policy bullet allows,
+and the Bird in a Cage credit links "[The Caged Bird](…)" in English;
+the Han census over the page against the archive finds only the album's own name, that parenthetical gloss and the JSX ordinal 七 (class ninety-nine).
+The first credit now carries the album name `XingZ629` had dropped.
+Class ninety-seven on the wire again: thirteen `carries no "you"` refusals across the artifact, the page addressing her ("You tried to delve deep into virtual worlds.", "You thought of becoming a boy,").
+Classes eighty-eight to ninety-three holding:
+three `handle-gloss-placed` lines (Jinxin glossed in the Part Ten heading and bare on the signature; Yuli glossed on the first credit, bare on the second),
+ten `heading-series-unified` lines and the ten section headings by name alone,
+five contributor-name restores,
+nine definitions with no trim line,
+Morph and Wafer serving.
+Class ninety-four not exercised: the archive block review kept "**Come back later!**" this run (the fourth treatment in five runs: kept, removed, removed, revised, kept), no double blank line.
+Every structural check as `XingZ629`:
+fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish, no double blank line;
+five unendorsed standings (17, 18, 27, 31, 40), 29 gate-kept, 34 slate-declined, one incumbent-only (87, the memorial attribution line with its rule and details close), 207 abstention lines with reasons.
+
+Class ninety-nine.
+The original's dotted section markers `<DottedNumber n="二"/>` to `<DottedNumber n="七"/>` shipped as `n="II"`, `n="III"`, `n="IV"`, `n="5"`, `n="VI"` and `n="七"` where the archive writes Roman numerals throughout (`II` to `VII`);
+`XingZ629` had shipped `n="五"` in the same series.
+The translate lane wrote `n="5"` on slice 34 and `n="VII"` on slice 41, the repair lane's `n="七"` won slice 41;
+a tag's string attribute is apparatus no judge weighs and every slice is judged alone, so the numeral style moves slice to slice.
+Class one hundred.
+The original heads a section 笼中之鸟 and credits the song as 《[笼中之鸟](…)》, heads another 零重祈愿, credits it as 《零重祈愿》 and points footnote 6 at 「零重祈愿」篇;
+the page headed "Bird in a Cage" over the linked credit "The Caged Bird" and "Zero-Layer Prayer" over the footnote's "Zero-Degree Prayer" (零重 read as a degree),
+and `XingZ629` had headed "The Bird in the Cage" over the link "Bird in a Cage".
+The archive renders none of these three headings, so the heading's rendering is the bench's each run and no judge sees the heading beside the reference.
+An observation beside them, not built: the coined 螐 with its footnote shipped as "A wu[^7] bird" where `XingZ629` kept the character; the note "It can be read either as an insect or as a bird" now explains a syllable.
+
+Classes ninety-nine and one hundred fixed in 5e21134ee (2f8bcfe93 and 5e21134ee), two page-assembly passes after the heading series pass:
+`restoreJsxAttributes` (`corpus-run/jsx-attribute-restore.ts`, tags read by index scan in `tag-attributes.ts`) takes the archive's value of every quoted attribute where the page carries the archive slice's tags in order, leaving a slice whose tag sequence differs and a slice the archive never carried;
+`unifyTitleReferences` (`corpus-run/title-reference-unify.ts`) pairs every Han heading, ATX or `<hN>` (`heading-title-lines.ts`), with its page rendering by position and rewrites each bracketed reference in a replaced slice to the heading's rendering,
+located by the link's destination, by the Han gloss after the English, by title brackets or by quotes (`title-reference-locate.ts`), the bracket and quote searches held to the page's definition line where the original references the title on a footnote line (`title-reference-scope.ts`),
+reporting `title-reference-ambiguous` where a slice offers two spans of one shape rather than guessing;
+findings `jsx-attribute-restored` and `title-reference-unified`, both passes exported through the readiness barrel.
+Guards red first at a86a3757e and a1ce2c580 (`jsx-attribute-restore.unit.test.ts`, `title-reference-unify.unit.test.ts`), lint 0 and 0, types clean, full suite green twice (`suite-class99-100.log` 1103 PASS, `suite-class99-100b.log`).
+Replayed off the built dist over the real artifacts: `XingZ630` slice 34 `n="5"` to `n="V"` and slice 41 `n="七"` to `n="VII"`, slice 94 "The Caged Bird" to "Bird in a Cage", slice 117 "Zero-Degree Prayer" to "Zero-Layer Prayer";
+`XingZ629` slice 95 "Bird in a Cage" to its heading's "The Bird in the Cage" and slice 101's Han credit to "Zero-Layer Prayer".
+
+`XingZ631` (frozen `5e21134ee`, pid 2893880, overlap 8)
+launched 20:39 UTC on Bedrock and OpenRouter
+(meters 57.75 USD Bedrock, 103.65 OpenRouter at launch),
+waiter b9ywlheib.
+Read for classes ninety-nine and one hundred live (`jsx-attribute-restored` and `title-reference-unified` lines in the log; the six markers `II` to `VII`; the linked credit, the two song credits and footnote 6 carrying the headings' own renderings),
+class ninety-eight again on the credits,
+classes eighty-eight to ninety-seven holding,
+beside every check of `XingZ630`.
+
 ## XingZ629 read, 2026-09-23, 19:03 UTC: SETTLED in 50 min, class ninety-seven live on the meteor address, classes eighty-eight to ninety-three holding, but the second song credit shipped its title in Han (class ninety-eight); fixed in 2c3a80370, XingZ630 launched
 
 `XingZ629` (frozen `e78515f56`, pid 2793259) SETTLED at 18:39 UTC,
