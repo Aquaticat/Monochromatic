@@ -194,6 +194,31 @@ await describe({
 
     it({
       name:
+        'FINDS NOTHING MISSING for an inserted wording whose lane text ends in the two spaces the '
+        + 'insertion composer cuts (class one hundred one, shi_Yumiaoya15, 2026-09-23): the page '
+        + 'carries the body the splice wrote, and the check reads the wording the same way',
+      fn: async () => {
+        const check = pageCarriesEveryWording({
+          artifact: artifactOver([
+            {
+              incumbent: FIRST_NAP,
+              ships: FIRST_NAP,
+            },
+            {
+              incumbent: '',
+              ships: `\n${SECOND_NAP}  `,
+            },
+          ],),
+          pageText: `# Mittens\n\n${FIRST_NAP}\n\n${SECOND_NAP}\n`,
+        },);
+
+        expect(check.missing,).toEqual([],);
+        expect(check.wordings,).toBe(2,);
+      },
+    },),
+
+    it({
+      name:
         'NAMES THE SLICE AND ITS SIZE for a wording the page lost, and quotes neither. A run '
         + 'directory holds unlicensed corpus wording, so a finding a reader can paste anywhere has to '
         + 'be an index and a count',
