@@ -104,6 +104,11 @@ const SLICES: readonly ChunkPair[] = [
     source: '—— 雨猫【梦】《零重猫愿》',
     target: '',
   },),
+  pair({
+    sliceIndex: 6,
+    source: '[^5]: 出自《猫经》。\n\n[^6]: 见后文「零重猫愿」篇开头。',
+    target: '',
+  },),
 ];
 
 /**
@@ -124,7 +129,7 @@ await describe({
   name: 'a reference to a section heading (class one hundred)',
   children: [
     it({
-      name: 'UNIFIES a linked, a quoted, a bracketed and a glossed reference to the heading\'s rendering',
+      name: 'UNIFIES a linked, a quoted, a bracketed, a glossed and a footnote-tail reference to the heading\'s rendering',
       fn: async () => {
         /**
          Pass over a page whose references each rendered the title afresh.
@@ -149,6 +154,10 @@ await describe({
               sliceIndex: 5,
               replacementText: '—— Yumao, from “Dream,” Zero-Degree Cat Prayer (零重猫愿)',
             },
+            {
+              sliceIndex: 6,
+              replacementText: '[^5]: From “The Cat Sutra”.\n\n[^6]: See the section “Zero-Degree Cat Prayer”.',
+            },
           ],
         },);
         expect(unified.replacements.map(function textOf(row,): string {
@@ -160,8 +169,9 @@ await describe({
           '[^6]: See the beginning of the section “Zero-Layer Cat Prayer”.',
           '—— Yumao 《Zero-Layer Cat Prayer》',
           '—— Yumao, from “Dream,” Zero-Layer Cat Prayer (零重猫愿)',
+          '[^5]: From “The Cat Sutra”.\n\n[^6]: See the section “Zero-Layer Cat Prayer”.',
         ],);
-        expect(unified.restored.length,).toBe(4,);
+        expect(unified.restored.length,).toBe(5,);
         expect(unified.findings.join('\n',),).toContain(
           'title-reference-unified (slice 3: "Zero-Degree Cat Prayer" to "Zero-Layer Cat Prayer"',
         );
@@ -185,7 +195,10 @@ await describe({
               source: '[^6]: 见后文「零重猫愿」篇开头。',
               target: '[^6]: See the section “Zero-Degree Cat Prayer”.',
             },),
-            ...SLICES.slice(4,),
+            ...SLICES.slice(
+              4,
+              6,
+            ),
           ],
           replacements: [
             ...HEADINGS,
