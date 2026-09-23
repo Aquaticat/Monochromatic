@@ -8082,6 +8082,51 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ631 read, 2026-09-23, 21:50 UTC: SETTLED in 43 min, classes ninety-nine and one hundred live on the markers, the linked credit and both song credits; the quote search read a tag attribute's quotes and stood aside once, fixed in 0f685f551, hulicaijia16 launched
+
+`XingZ631` (frozen `5e21134ee`, pid 2893880) SETTLED at 21:22 UTC,
+43 min after its 20:39 launch (TALLY `ms=2607181`),
+one attempt,
+8,077 seats,
+244 retry rounds,
+7,246 calls,
+1 abandoned stream (0.004 USD),
+8.59 USD by the meters (Bedrock 57.75 to 52.99, OpenRouter 103.65 to 99.82),
+on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry; glm-5.3 and Qwen3.8-27B dark by design).
+Stages: repair from 20:44, translate from 20:57, contest from 21:05, consolidation 21:08 to 21:22, the fastest XingZ60 run to date.
+Endpoints: deepseek on Morph 1,194 streams at 5.1 s (4 CoreWeave fallbacks), GLM-5.3-Flash on Wafer 426 at 5.9 s, minimax-m3 on CoreWeave 865 at 5.8 s and Together 281 at 3.5 s, Mercury on Inception 847 at 7.1 s; 2 cap cuts; Jev 248 of 248.
+
+Class ninety-nine live: one `jsx-attribute-restored` line (slice 12, `<DottedNumber n="二"/>` to `<DottedNumber n="II"/>`, the bench having left the Han this run) and the six markers on the page read `II` to `VII` as the archive writes them.
+Class one hundred live: one `title-reference-unified` line (slice 101, the second song credit's pinyin "Ling Chong Qi Yuan" to the heading's "Zero-Layer Prayer", a form no floor names and the judges had endorsed),
+the linked credit "[Bird in a Cage](…)" and the heading "Bird in a Cage" one rendering, the first credit “Nonuple Reality” and its heading one rendering, footnote 6 "the piece “Zero-Layer Prayer”" and its heading one rendering.
+Class ninety-eight on the wire again (one refusal for a Han title).
+Class ninety-seven on the wire (seventeen refusals, the page in the second person).
+Classes eighty-eight to ninety-three holding (two `handle-gloss-placed`, eight `heading-series-unified`, four contributor-name restores, nine definitions and no trim, Morph and Wafer serving);
+class ninety-four not exercised (the placeholder kept again, the fifth treatment in six runs).
+Every structural check as `XingZ630`:
+fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish, no double blank line, the ten section headings by name alone;
+five unendorsed standings (18, 27, 54, 57, 65), 30 gate-kept, 36 slate-declined, 196 abstention lines with reasons.
+The Han census over the page against the archive finds only 妄想症 in the album's own name and 螐儿.
+
+One `title-reference-ambiguous` line on slice 98, the first credit:
+the credit already quoted the heading, "—— Yuli 【Paranoia】 "Nonuple Reality"", but the slice also carries the `<TextRing text="☿☿☿☿☿☿" fontSize="1.25rem"/>` tag whose two quoted attribute values the quote search read as spans,
+so the search stood aside without comparing; the page was right by the bench's own choice, not by the pass.
+Fixed in 0f685f551 (`corpus-run/title-reference-marks.ts`, the mark search split out of the locator): a quote span that follows an attribute's equals sign is skipped,
+and among several spans the one that already carries the heading's rendering settles the reading;
+guard red first at 1c67cb139, lint 0 and 0, types clean, full suite green (`suite-class100b.log`), replayed over the `XingZ631` artifact with slice 98 read as consistent and the two rewrites unchanged.
+Observations, not built:
+the coined 螐 shipped as "A little wun[^7]" on the cage line and "螐儿's last words" two lines later, two treatments of one coined character on one page where `XingZ630` wrote "A wu[^7] bird" and `XingZ629` kept the character (three runs, three treatments; the footnote explains a character the page no longer shows on the first line);
+the album 【妄想症Paranoia】 shipped as "【Paranoia】" on the first credit and in full on the second, a Latin-bearing title the judges own.
+
+`hulicaijia16` (frozen `0f685f551`, pid 2917545, overlap 8)
+launched 21:29 UTC on Bedrock and OpenRouter
+(meters 52.98 USD Bedrock, 99.75 OpenRouter at launch),
+waiter bz8xt9q42,
+the first entry other than XingZ60 on the two page-assembly passes.
+Read for `jsx-attribute-restored` and `title-reference-unified` lines (none expected on a page whose archive renders every heading; any line is read against the archive),
+classes eighty-four, ninety-two, ninety-five and ninety-six holding,
+beside every check of `hulicaijia15` (13 headings, 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no double blank line).
+
 ## XingZ630 read, 2026-09-23, 20:45 UTC: SETTLED in 76 min, class ninety-eight live on both song credits and the linked title, but the marker series shipped in three numeral styles (class ninety-nine) and two section titles in two renderings each (class one hundred); fixed in 5e21134ee, XingZ631 launched
 
 `XingZ630` (frozen `2c3a80370`, pid 2844294) SETTLED at 20:15 UTC,

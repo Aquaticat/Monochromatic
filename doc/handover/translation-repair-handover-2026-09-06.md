@@ -4647,19 +4647,25 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XINGZ631 RUNS (frozen `5e21134ee`,
-    pid 2893880,
-    launched 20:39 UTC 2026-09-23,
-    waiter b9ywlheib,
-    meters 57.75 USD Bedrock and 103.65 OpenRouter at launch, Synthetic spent, Hyper dry;
+1.  HULICAIJIA16 RUNS (frozen `0f685f551`,
+    pid 2917545,
+    launched 21:29 UTC 2026-09-23,
+    waiter bz8xt9q42,
+    meters 52.98 USD Bedrock and 99.75 OpenRouter at launch, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for classes ninety-nine and one hundred live
-    (`jsx-attribute-restored` and `title-reference-unified` lines in the log; the six `DottedNumber` markers `II` to `VII` on the page; the linked credit, the two song credits and footnote 6 carrying the headings' own renderings),
-    class ninety-eight again on the credits,
-    classes eighty-eight to ninety-seven holding,
-    beside every check of `XingZ630`
-    (fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish, no double blank line, ten section headings by name alone, Jinxin and Yuli glossed once each);
-    record under a new heading above "## XingZ630 read, 2026-09-23, 20:45 UTC" in the pass log.
+    the first entry other than XingZ60 on the two page-assembly passes of classes ninety-nine and one hundred;
+    read for `jsx-attribute-restored` and `title-reference-unified` lines (none expected on a page whose archive renders every heading; any line is read against the archive),
+    classes eighty-four, ninety-two, ninety-five and ninety-six holding,
+    beside every check of `hulicaijia15`
+    (13 headings, 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish, no double blank line);
+    record under a new heading above "## XingZ631 read, 2026-09-23, 21:50 UTC" in the pass log.
+    XINGZ631 READ (frozen `5e21134ee`): SETTLED at 21:22 UTC 2026-09-23 in 43 min, one attempt, 8,077 seats, 244 retry rounds, 8.59 USD by the meters;
+    classes ninety-nine and one hundred live (one marker restored to `II`, the six markers `II` to `VII`; the pinyin credit "Ling Chong Qi Yuan" unified to "Zero-Layer Prayer"; the link, the first credit and footnote 6 already carrying their headings' renderings),
+    classes eighty-eight to ninety-eight holding, class ninety-four not exercised (the placeholder kept, the fifth treatment in six runs; the placeholder question stays open for the owner),
+    every structural check as `XingZ630`, five unendorsed (18, 27, 54, 57, 65), 196 abstention lines;
+    but the quote search read a TextRing tag's two quoted attributes as spans on slice 98 and stood aside without comparing (the page was right by the bench's own choice);
+    fixed in 0f685f551 (`title-reference-marks.ts`: a quote span after an attribute's equals sign is skipped, and among several spans the one already carrying the heading settles the reading), guard red first 1c67cb139, lint 0/0, types clean, full suite green (`suite-class100b.log`, 1103 PASS), replayed over the `XingZ631` artifact;
+    observations beside it, not built: the coined 螐 in two treatments on one page ("A little wun[^7]" and "螐儿", three runs, three treatments), the album 【妄想症Paranoia】 as "【Paranoia】" on the first credit and in full on the second.
     XINGZ630 READ (frozen `2c3a80370`): SETTLED at 20:15 UTC 2026-09-23 in 76 min, one attempt, 8,436 seats, 326 retry rounds, 8.98 USD by the meters;
     class ninety-eight live (one gemma-4-e2b candidate refused for 《九重现实》 in Han; both credits and the linked title in English, the second credit's Han in parentheses after the English),
     class ninety-seven on the wire again (thirteen refusals, the page in the second person),
