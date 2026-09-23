@@ -3,12 +3,11 @@
 ## Symptom
 
 [Issue #130](https://github.com/Aquaticat/Monochromatic/issues/130) proposed changing function-entry
-`trace` calls to `debug` because trace allegedly captures a stack on every call,
- even with the
-console sink disabled.
- The former version of this file claimed a 5 to 20 times improvement
-without a runnable measurement.
- That claim confused the logger call with console emission.
+`trace` calls to `debug` because it expected an advantage even with the console sink disabled;
+the issue specifically mentioned caller-side string formatting.
+The former version of this file separately claimed that every trace call captures a stack
+and asserted a 5 to 20 times improvement without a runnable measurement.
+That claim confused the logger call with console emission.
 
 The production entry call is `parseCss` in `package/module/css-edit/src/parse.ts:42-48`.
 The other production trace in `package/module/jsonc-edit/src/parse-jsonc.ts:42-52` reports
@@ -196,10 +195,11 @@ The verbose console output and its diagnostic stack would change too.
 
 ## Verification
 
-At repository commit `a43e52f03bb3021f2b085f480bcde27364cc14b8`,
- build the logger
-with `mise run //package/module/logger:build:js:node`.
- The repeatable fixture is
+The logger source was inspected at `a43e52f03bb3021f2b085f480bcde27364cc14b8`.
+The fixture first appears in `e205c9e42`;
+ check out that commit or a descendant,
+then build the unchanged logger with `mise run //package/module/logger:build:js:node`.
+The repeatable fixture is
 [performance.logging.bench.mjs](performance.logging.bench.mjs).
  It calls a tagged logger
 with the same message construction as `parseCss`,
@@ -249,6 +249,35 @@ The emitted mode drains each record in its own microtask so console stack costs 
 it does not model bursts grouped into one console call.
 The redirect discards the benchmark's diagnostic console output,
  not its timing JSON or process exit code.
+Before trusting that redirected output,
+ a separate integration probe initialized the same console sink in the same bounded Node image,
+logged one tagged trace and one tagged debug record,
+ and flushed both.
+Its stdout was empty;
+ its stderr held both entries,
+ trace stack frames,
+ and no logger-internal error.
+Both methods emitted to stderr in this Node runtime,
+ so the observed difference is not a change of output stream.
+Reproduce the output check without redirecting stderr:
+
+```bash
+# From the repository root: verify both enabled console paths
+podman run --rm --memory=2g --cpus=2 --pids-limit=128 --network=none \
+  --security-opt=label=disable \
+  --volume="$PWD/package/module/logger/dist/final/node:/logger:ro" \
+  --env=MONOCHROMATIC_VERBOSE=true docker.io/library/node:26-slim \
+  node --input-type=module -e '
+    import { createLogger, sinks, tagged } from "/logger/index.mjs";
+    const { logger, initPromise } = createLogger({ sinks: [sinks.createConsoleSink()] });
+    await initPromise;
+    const entry = tagged({ tag: "probe", l: logger });
+    entry.trace("trace entry");
+    await logger.flush();
+    entry.debug("debug entry");
+    await logger.flush();
+  '
+```
 
 On Node 26.8.2 in `node:26-slim`,
  the ten samples per level were:
@@ -269,7 +298,7 @@ On Node 26.8.2 in `node:26-slim`,
    trace 7.357 to 8.039 µs/call;
   debug 3.475 to 4.130 µs/call.
    This comparison changes the emitted stack and
-  channel,
+  recorded level,
    so it does not establish an equivalent-output speedup.
 
 These numbers cover logger-entry calls,

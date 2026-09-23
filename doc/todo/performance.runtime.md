@@ -31,6 +31,9 @@
  See [logging performance findings](../troubleshooting/performance.logging.md)
  for the reproduction and limits of the measurement.
 
+- [ ] Assess conditional logging guards for production builds separately;
+  eager message formatting remains even when console output is suppressed.
+
 #### Memory Management
 
 **Status**:
