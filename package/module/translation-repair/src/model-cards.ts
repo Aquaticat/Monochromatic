@@ -50,6 +50,15 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       promptUsdPerMillion: 0.075,
       completionUsdPerMillion: 0.25,
       ignoredEndpoints: [],
+      // WAFER AHEAD OF THE PRICE SORT (class ninety-three, XingZ626,
+      // 2026-09-23). The price sort lands this seat on endpoints that reason
+      // at length by default: Together served 187 streams at 91 s and 23,666
+      // characters a reply, Parasail 38 at 99 s and 22,050, InferenceNet 52
+      // at 114 s and 14,247, while Wafer served 40 at 14.5 s and 651 (XingZ624
+      // and XingZ625 the same shape: Together 73 s and 82 s, Wafer 6.4 s and
+      // 9 s). The pipeline sends no reasoning parameter by the owner's rule,
+      // so the seat names the measured endpoint instead.
+      preferredEndpoints: ['wafer',],
       rawCharsPerToken: 297,
     },
     // Hyper p99 over 886 calls; Synthetic 16,342 over 4,775; OpenRouter
@@ -105,6 +114,7 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       promptUsdPerMillion: 3,
       completionUsdPerMillion: 15,
       ignoredEndpoints: [],
+      preferredEndpoints: [],
       rawCharsPerToken: 137,
     },
     // Hyper p99 over 2,777 calls; OpenRouter 8,254 over 488; Synthetic
@@ -140,6 +150,7 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       promptUsdPerMillion: 0.037,
       completionUsdPerMillion: 0.17,
       ignoredEndpoints: [],
+      preferredEndpoints: [],
       rawCharsPerToken: 137,
     },
     bedrock: {
@@ -177,6 +188,7 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
         'parasail',
         'modelrun',
       ],
+      preferredEndpoints: [],
       rawCharsPerToken: 137,
     },
     // Hyper p99 over 27,361 calls; OpenRouter 718 over 6,657.
@@ -196,6 +208,7 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       promptUsdPerMillion: 0.07,
       completionUsdPerMillion: 0.34,
       ignoredEndpoints: [],
+      preferredEndpoints: [],
       rawCharsPerToken: 137,
     },
     bedrock: {
@@ -261,11 +274,29 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       // XingZ624 (93 in the editor seat, where 87 of 164 rounds heard
       // nobody), and the entry took 6h54m against XingZ608's 2h16m on
       // Morph. Slug from the same listing.
+      //
+      // DEKALLM AND SAIL RESEARCH FOLLOWED, AND THE SEAT NOW NAMES MORPH
+      // (class ninety-three, XingZ626, 2026-09-23). With OpenInference off
+      // the wire the price sort fell to DekaLLM, 432 streams at 54 s beside
+      // Morph's 847 at 6.2 s, and Sail Research, 58 at 40 s. Neither is slow
+      // at generating (186 and 219 characters a second after the first byte
+      // against Morph's 168): they reason at length by default, 8,813 and
+      // 8,355 characters a reply against Morph's 514, and the pipeline sends
+      // no reasoning parameter by the owner's rule. DekaLLM also answered 22
+      // in-stream 502s. Ignoring the next cheapest endpoint each run chases
+      // the listing (DeepInfra, Wafer, OpenInference, now these two, Relace
+      // next and unmeasured), so the seat names Morph ahead of the price
+      // sort (`provider.order`, fallbacks allowed): 11.1 s, 11.5 s, 3.4 s
+      // and 6.2 s a stream over XingZ608, 624, 625 and 626. Slugs from the
+      // listing of 2026-09-23.
       ignoredEndpoints: [
         'deepinfra',
         'wafer',
         'open-inference',
+        'dekallm',
+        'sail-research',
       ],
+      preferredEndpoints: ['morph',],
       rawCharsPerToken: 'unmeasured',
     },
     // Approved 2026-09-11; no completed-call distribution of its own yet.
@@ -317,6 +348,7 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       promptUsdPerMillion: 0.04,
       completionUsdPerMillion: 0.15,
       ignoredEndpoints: [],
+      preferredEndpoints: [],
       rawCharsPerToken: 137,
     },
     // Own p99 3,063 over 136 OpenRouter calls, under the pooled 90th.

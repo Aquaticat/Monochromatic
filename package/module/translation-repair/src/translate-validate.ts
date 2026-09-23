@@ -11,6 +11,8 @@ import {
 import { atomFindings, } from './translate-atom-rendering.ts';
 import { neutralPronounFindings, } from './translate-neutral-pronoun.ts';
 import { definitionLeakFindings, } from './translate-definition-leak.ts';
+import { leakedEscapeFindings, } from './translate-escape-leak.ts';
+import { droppedMarkerFindings, } from './translate-marker-drop.ts';
 import { sheetLeakFindings, } from './translate-sheet-leak.ts';
 import { untranslatedFindings, } from './translate-untranslated.ts';
 import {
@@ -497,6 +499,21 @@ export function validateTranslatedSlice(
     };
   }
   /**
+   A footnote marker the original passage carries that the candidate dropped
+   (class ninety-two), refused before the assembly trims its note as an
+   orphan.
+   */
+  const markerFindings = droppedMarkerFindings({
+    sourceText,
+    candidateText,
+  },);
+  if (markerFindings.length > 0) {
+    return {
+      kind: 'invalid',
+      findings: markerFindings,
+    };
+  }
+  /**
    Shape the original carries.
    */
   const source = readSliceSkeleton({ text: sourceText, },);
@@ -639,57 +656,6 @@ export function validateTranslatedSlice(
     kind: 'invalid',
     findings,
   };
-}
-
-/**
- A backslash before a double quotation mark, which is how a JSON string
- escapes the mark and never how a page writes one.
- */
-const LEAKED_ESCAPE = String.raw`\"`;
-
-/**
- Findings for JSON escapes that leaked into a candidate as text.
- 
- WHY. A model answering in JSON sometimes escapes the quotation marks inside
- its string twice, and the decoded text then carries a literal backslash
- before each mark. The Carena0442 page published on 2026-09-02 shipped
- `so-called \"common sense.\"` that way: the consolidation producer's text
- carried it, every structural guard passed it, and the polish kept it. The
- pinned corpus carries no such sequence in any page, so a candidate carrying
- one where neither the original nor the page does is a leak, not a rendering.
- 
- @param sourceText - original slice
- 
- @param pageText - page slice the candidate would replace
- 
- @param candidateText - candidate under validation
- 
- @returns One finding when the candidate alone carries the sequence
- 
- @example
- ```ts
- leakedEscapeFindings({ sourceText: '“常识”', pageText: '“common sense”', candidateText: '\\"common sense\\"', },);
- ```
- */
-export function leakedEscapeFindings(
-  {
-    sourceText,
-    pageText,
-    candidateText,
-  }: {
-    readonly sourceText: string;
-    readonly pageText: string;
-    readonly candidateText: string;
-  },
-): readonly string[] {
-  if (!candidateText.includes(LEAKED_ESCAPE,))
-    return [];
-  if (sourceText.includes(LEAKED_ESCAPE,) || pageText.includes(LEAKED_ESCAPE,))
-    return [];
-  return [
-    `Your translation carries a backslash before a quotation mark (${LEAKED_ESCAPE}), which is a JSON `
-    + 'escape leaked into the text; write the quotation marks themselves, with nothing before them.',
-  ];
 }
 
 //endregion Translate validation

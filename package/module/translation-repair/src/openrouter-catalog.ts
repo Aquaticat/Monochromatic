@@ -114,6 +114,12 @@ export type OpenRouterProviderPreferences = typeof OPENROUTER_PROVIDER_PREFERENC
    Provider slugs OpenRouter must not route this model to.
    */
   readonly ignore: readonly string[];
+
+  /**
+   Provider slugs OpenRouter tries first, in order, with fallbacks allowed;
+   absent where the row names none (class ninety-three).
+   */
+  readonly order?: readonly string[];
 };
 
 
@@ -170,6 +176,16 @@ export type OpenRouterModelInfo = {
    test checks every slug here against a snapshot of that listing.
    */
   readonly ignoredEndpoints: readonly string[];
+
+  /**
+   Provider slugs measured as serving this model well, sent as
+   `provider.order` ahead of the price sort with fallbacks allowed; empty
+   where the price sort alone decides. The routing page (read 2026-09-23)
+   says the router tries the listed providers one at a time and proceeds to
+   the others if none is operational, and that `sort` or `order` disables
+   load balancing. Checked against the same listing snapshot.
+   */
+  readonly preferredEndpoints: readonly string[];
 };
 
 /**
@@ -201,6 +217,7 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
       promptUsdPerMillion: openrouter.promptUsdPerMillion,
       completionUsdPerMillion: openrouter.completionUsdPerMillion,
       ignoredEndpoints: openrouter.ignoredEndpoints,
+      preferredEndpoints: openrouter.preferredEndpoints,
     };
   },
 },);
@@ -208,13 +225,15 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
 /**
  The `provider` field for one served model.
  
- COPIES THE IGNORE LIST rather than aliasing the catalog's array, so the body
- builder can never hand the catalog's own row to `JSON.stringify` callers
- that might be tempted to push onto it.
+ COPIES THE IGNORE AND ORDER LISTS rather than aliasing the catalog's
+ arrays, so the body builder can never hand the catalog's own row to
+ `JSON.stringify` callers that might be tempted to push onto it. `order` is
+ left off the wire where the row names no endpoint, so the gateway's own
+ reading of an empty list never enters into it.
  
  @param servedId - OpenRouter slug the request will name
  
- @returns Shared preferences plus that model's ignored endpoints
+ @returns Shared preferences plus that model's ignored and named endpoints
  
  @example
  ```ts
@@ -228,9 +247,20 @@ export function openRouterProviderPreferencesFor(
    Catalog row for this slug.
    */
   const row = OPENROUTER_MODELS[servedId];
+  /**
+   Endpoints the row names ahead of the price sort.
+   */
+  const { preferredEndpoints, } = row;
+  if (preferredEndpoints.length === 0) {
+    return {
+      ...OPENROUTER_PROVIDER_PREFERENCES,
+      ignore: [...row.ignoredEndpoints,],
+    };
+  }
   return {
     ...OPENROUTER_PROVIDER_PREFERENCES,
     ignore: [...row.ignoredEndpoints,],
+    order: [...preferredEndpoints,],
   };
 }
 

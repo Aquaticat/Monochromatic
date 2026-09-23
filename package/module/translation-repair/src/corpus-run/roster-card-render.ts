@@ -463,6 +463,7 @@ export function renderProviderCard(
         says: 'the listing\'s pricing',
       },),
       '      ignoredEndpoints: [],',
+      '      preferredEndpoints: [],',
       `      rawCharsPerToken: 'unmeasured',`,
     ],
     bedrock: [

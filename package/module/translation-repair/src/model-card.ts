@@ -178,7 +178,7 @@ export type SyntheticCard = ServedCard<SyntheticServedId> & {
 
  @example
  ```ts
- const card: OpenRouterCard = { id: 'minimax/minimax-m3', readsImages: true, maxOutputLength: 512_000, promptUsdPerMillion: 0.3, completionUsdPerMillion: 1.2, ignoredEndpoints: ['parasail',], rawCharsPerToken: 137, };
+ const card: OpenRouterCard = { id: 'minimax/minimax-m3', readsImages: true, maxOutputLength: 512_000, promptUsdPerMillion: 0.3, completionUsdPerMillion: 1.2, ignoredEndpoints: ['parasail',], preferredEndpoints: [], rawCharsPerToken: 137, };
  ```
  */
 export type OpenRouterCard = ServedCard<OpenRouterServedId> & {
@@ -198,6 +198,15 @@ export type OpenRouterCard = ServedCard<OpenRouterServedId> & {
    `provider.ignore`; slugs as `GET /api/v1/providers` lists them.
    */
   readonly ignoredEndpoints: readonly string[];
+
+  /**
+   Endpoint slugs measured as serving this model well, sent as
+   `provider.order` ahead of the price sort with fallbacks allowed, for a
+   seat whose cheapest endpoints reason at length by default (class
+   ninety-three); empty where the price sort alone decides. Slugs as
+   `GET /api/v1/providers` lists them.
+   */
+  readonly preferredEndpoints: readonly string[];
 
   /**
    Raw stream characters per completion token, the median over completed
