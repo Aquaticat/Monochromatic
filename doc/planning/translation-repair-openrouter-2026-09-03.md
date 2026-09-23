@@ -8082,6 +8082,54 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## mikaela9 read, 2026-09-23, 16:40 UTC: SETTLED in 18 min, classes seventy to seventy-seven holding, but the mathematical-script handle's possessive shipped straight (class ninety-six, fixed in c62ce70b3); mikaela10 launched
+
+`mikaela9` (frozen `b26ea1990`, pid 2731285, entry id `mikaela_khara`) SETTLED at 16:35 UTC,
+18.5 min after its 16:17 launch (TALLY `ms=1113750`),
+one attempt,
+2,673 seats,
+135 retry rounds,
+2,271 calls,
+no abandoned stream,
+1.23 USD by the meters (Bedrock 69.84 to 69.14, OpenRouter 113.90 to 113.37);
+Synthetic read wet at launch (0.7 percent of the weekly allowance) and dry by the end, Hyper dry.
+`mikaela8`, launched 16:16 UTC with the entry id `mikaela`, exited at once with `pending=0` and spent nothing: the entry id is `mikaela_khara`, as `zheermao101` is for `zheermao`.
+Endpoints: deepseek on Morph 399, GLM-5.3-Flash on Wafer 110, Mercury 270, minimax on CoreWeave 256 and Together 100;
+95 abstention lines with reasons.
+
+Classes seventy to seventy-seven holding:
+the closing excerpt line curled ("Excerpt from [𝓠𝓾𝓪𝓷](...)’s"), 𝓠𝓾𝓪𝓷 six times as the archive and never "Quan",
+"Mika was outed.", the Epilogue one to one, the life in the past, no archive-only block to review.
+Every check as `mikaela7`: front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions as the archive, no TA, no error finish;
+one unendorsed standing (17), slate-declined.
+The one double blank line on the page stands before the `<details>` block and is the archive's own (the archive carries it at the same place), so class seventy-five is not in play.
+
+But one straight apostrophe the archive curls:
+line 153 reads "Huai An (𝓠𝓾𝓪𝓷's classmate in high school)" where the archive and `mikaela7` read "𝓠𝓾𝓪𝓷’s".
+The bench wrote the possessive straight and the typography restoration left it:
+`restore-typography.ts` read the character before a quote with `charAt(index - 1)`, one UTF-16 unit,
+and the handle's last letter (𝓷, U+1D4F7) is a surrogate pair, so the unit before the apostrophe was a lone low surrogate, which binds nothing,
+and the quote was read as an opening quote with a space before it (class ninety-six).
+The same reading would have missed the handle after a quote and the span closer test alike;
+`bindsWord` also tested letters by case mapping (`toLowerCase() !== toUpperCase()`), and the mathematical script letters have none.
+
+Class ninety-six, fixed in c62ce70b3:
+`codePointBefore` and `codePointAt` read the neighbours of a quote as whole code points (a pair where `codePointAt` two units back exceeds the Basic Multilingual Plane),
+every neighbour read in the convention scan and the rebuild goes through them,
+and `bindsWord` tests a cased letter by general category (`\p{Lu}`, `\p{Ll}`, `\p{Lt}`) or an ASCII digit, so the script letters bind and Han still does not.
+Guard red first at d8b284bf9 (`restore-typography.unit.test.ts`: the possessive after a script handle curls, the handle on both sides of an apostrophe curls, a quoted handle stays a quote),
+lint 0 and 0,
+types clean,
+full suite green (`suite-class96.log`, 1099 PASS).
+
+`mikaela10` (frozen `c62ce70b3`, pid 2742636, overlap 8)
+launched 16:40 UTC on Bedrock and OpenRouter
+(meters 69.14 USD Bedrock, 113.37 OpenRouter at launch).
+Read for class ninety-six live (no straight apostrophe on the page beyond the archive's own four JSX path literals; "𝓠𝓾𝓪𝓷’s" wherever the bench writes the possessive),
+classes seventy to seventy-seven, ninety-two and ninety-five holding,
+beside every check of `mikaela9`
+(front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish).
+
 ## hulicaijia15 read, 2026-09-23, 16:17 UTC: SETTLED in 37 min, the relabel closed on the definitions alone, no trim or revert, every check as hulicaijia13; no class, mikaela9 launched
 
 `hulicaijia15` (frozen `b26ea1990`, pid 2723733) SETTLED at 16:15 UTC,

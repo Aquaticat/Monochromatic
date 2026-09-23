@@ -4647,16 +4647,22 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  MIKAELA9 RUNS (frozen `b26ea1990`,
-    pid 2731285,
-    launched 16:17 UTC 2026-09-23 with entry id `mikaela_khara` (a launch naming `mikaela` exits at once with pending=0, as `mikaela8` did),
+1.  MIKAELA10 RUNS (frozen `c62ce70b3`,
+    pid 2742636,
+    launched 16:40 UTC 2026-09-23 with entry id `mikaela_khara`,
     Bedrock and OpenRouter wet, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for classes seventy to seventy-seven, ninety-two and ninety-five holding
-    (the excerpt line curled, 𝓠𝓾𝓪𝓷 on every appearance, "Mika was outed", the Epilogue one to one, no double blank line, the life in the past, 4 markers with their definitions, the relabel line),
-    beside every check of `mikaela7`
-    (front matter equal, 4 headings, 4 comments, 4 markers, no TA, no error finish);
-    record under a new heading above "## hulicaijia15 read, 2026-09-23, 16:17 UTC" in the pass log.
+    read for class ninety-six live
+    (no straight apostrophe on the page beyond the archive's four JSX path literals; "𝓠𝓾𝓪𝓷’s" wherever the bench writes the possessive),
+    classes seventy to seventy-seven, ninety-two and ninety-five holding,
+    beside every check of `mikaela9`
+    (front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish);
+    record under a new heading above "## mikaela9 read, 2026-09-23, 16:40 UTC" in the pass log.
+    MIKAELA9 READ (frozen `b26ea1990`): SETTLED at 16:35 UTC 2026-09-23 in 18 min, one attempt, 2,673 seats, 135 retry rounds, 1.23 USD by the meters;
+    classes seventy to seventy-seven holding, every check as `mikaela7`, one unendorsed (17);
+    but "𝓠𝓾𝓪𝓷's classmate" shipped with a straight apostrophe where the archive curls it: the restoration read the neighbour of a quote by UTF-16 unit and saw a lone surrogate (class ninety-six).
+    CLASS NINETY-SIX FIXED: `restore-typography.ts` reads the neighbours of a quote as whole code points (`codePointBefore`, `codePointAt`) and tests letters by general category;
+    guard red first `d8b284bf9`, fix `c62ce70b3`, lint 0/0, types clean, full suite green (`suite-class96.log`, 1099 PASS).
     HULICAIJIA15 READ (frozen `b26ea1990`): SETTLED at 16:15 UTC 2026-09-23 in 37 min, one attempt, 4,697 seats, 125 retry rounds, 4.06 USD by the meters;
     the roster paired 15 of 15 so the relabel closed on the definitions alone (class ninety-five not exercised live; its unit guards stand), no trim or revert, no marker-drop refusal;
     every check as `hulicaijia13` (13 headings, 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no double blank), four unendorsed (1, 8, 29, 47), one gate-kept; no class.
