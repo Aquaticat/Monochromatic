@@ -59,6 +59,7 @@ export {
   type ChunkRepairOutcome,
   ProducerRosterError,
   type RepairModels,
+  type RepairSliceSeating,
 } from './repair-contract.ts';
 export {
   type CheckerStageResult,

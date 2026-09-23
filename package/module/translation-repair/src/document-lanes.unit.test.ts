@@ -34,6 +34,7 @@ import {
   type ChatJsonRequest,
   type ChunkRepairOutcome,
   type RepairModels,
+  type RepairSliceSeating,
   type RosterModelId,
   type SliceCache,
   type SyntheticClient,
@@ -425,7 +426,7 @@ async function runLanes(
     readonly reseatTranslate?: () => Promise<TranslateModels>;
     readonly beforeSlice?: (
       args: { readonly lane: 'repair' | 'translate'; },
-    ) => Promise<RepairModels | undefined>;
+    ) => Promise<RepairSliceSeating>;
     readonly askedBy?: AskedLog;
   },
 ) {
@@ -532,9 +533,9 @@ await describe({
         const asked: string[] = [];
         const lanes = await runLanes({
           served,
-          beforeSlice: async ({ lane, },): Promise<undefined> => {
+          beforeSlice: async ({ lane, },): Promise<RepairSliceSeating> => {
             asked.push(lane,);
-            return undefined;
+            return {};
           },
         },);
         /**
@@ -603,9 +604,8 @@ await describe({
         await runLanes({
           served,
           askedBy,
-          beforeSlice: async ({ lane, },): Promise<RepairModels | undefined> => {
-            return (lane === 'repair') ? reseated : undefined;
-          },
+          beforeSlice: async ({ lane, },): Promise<RepairSliceSeating> =>
+            (lane === 'repair') ? { repairModels: reseated, } : {},
         },);
         /**
          Seats the critic stage ran on.

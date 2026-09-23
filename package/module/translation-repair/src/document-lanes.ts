@@ -17,6 +17,7 @@ import { preparationIdentity, } from './preparation-identity.ts';
 import type {
   ChunkRepairOutcome,
   RepairModels,
+  RepairSliceSeating,
 } from './repair-contract.ts';
 import type { RepairTranslationResult, } from './repair-result.ts';
 import { repairPreparedDocument, } from './repair-translation.ts';
@@ -218,7 +219,10 @@ function laneDelivery(
  
  @param beforeSlice - awaited before each slice of either lane starts, told
  which lane, so a caller can hold the slice back while a named provider hold
- keeps that lane's bench from quorum (the thirteenth class's second face)
+ keeps that lane's bench from quorum (the thirteenth class's second face);
+ a roster it returns for the repair lane seats that slice (class one hundred
+ three, where the checker bench read at the lanes boundary ran on one voice
+ after a dry-out inside the lane)
  
  
  @param adjudicationConfig - tally thresholds and weights for the repair lane
@@ -285,7 +289,9 @@ export async function runDocumentLanes(
     readonly repairModels: RepairModels;
     readonly translateModels: TranslateModels;
     readonly reseatTranslate?: () => Promise<TranslateModels>;
-    readonly beforeSlice?: (args: { readonly lane: 'repair' | 'translate'; },) => Promise<void>;
+    readonly beforeSlice?: (
+      args: { readonly lane: 'repair' | 'translate'; },
+    ) => Promise<RepairSliceSeating>;
     readonly adjudicationConfig?: AdjudicationConfig;
 
     /**
@@ -369,8 +375,8 @@ export async function runDocumentLanes(
     ...((beforeSlice === undefined)
       ? {}
       : {
-        beforeSlice: async function beforeRepairSlice(): Promise<void> {
-          await beforeSlice({ lane: 'repair', },);
+        beforeSlice: async function beforeRepairSlice(): Promise<RepairSliceSeating> {
+          return await beforeSlice({ lane: 'repair', },);
         },
       }),
     parentLogger: dl,

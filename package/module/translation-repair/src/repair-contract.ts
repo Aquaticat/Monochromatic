@@ -104,6 +104,31 @@ export type RepairModels = {
 };
 
 /**
+ What a caller hands the repair driver before one slice starts: the roster
+ to seat that slice with, or nothing, when the roster the driver was given
+ still stands.
+ 
+ A SEATING RATHER THAN A ROSTER OR NOTHING because the repair lane's bench
+ is read once at the lanes boundary and a provider can run dry inside the
+ lane (class one hundred three, zheermao7, 2026-09-23: the checker bench ran
+ on one voice for ten of twelve rounds while the substitute a dry reading
+ seats sat idle); the per-chunk hook re-reads the seats under a hold and
+ hands them over here.
+ 
+ @example
+ ```ts
+ const seating: RepairSliceSeating = { repairModels: reseated, };
+ const unchanged: RepairSliceSeating = {};
+ ```
+ */
+export type RepairSliceSeating = {
+  /**
+   Roster read since the lane started, absent while the given one stands.
+   */
+  readonly repairModels?: RepairModels;
+};
+
+/**
  Thrown when a roster could not decide a round however its judges voted.
  
  NAMED FOR THE ROLE IT ACTUALLY GUARDS. It was `EditorRosterError` while the

@@ -17,6 +17,7 @@ import { assembleRepair, } from './repair-assemble.ts';
 import type {
   ChunkRepairOutcome,
   RepairModels,
+  RepairSliceSeating,
 } from './repair-contract.ts';
 import { refineSettledSlices, } from './repair-refine-step.ts';
 import type { RepairTranslationResult, } from './repair-result.ts';
@@ -121,9 +122,12 @@ export async function repairPreparedDocument(
 
     /**
      Awaited before each slice starts, so a caller can hold the slice back
-     while a named provider hold keeps the bench from quorum.
+     while a named provider hold keeps the bench from quorum; a roster it
+     returns seats that slice, since a bench read once at the lane's start
+     ran ten of twelve checker rounds on one voice after a provider ran dry
+     inside the lane (class one hundred three, zheermao7, 2026-09-23).
      */
-    readonly beforeSlice?: () => Promise<void>;
+    readonly beforeSlice?: () => Promise<RepairSliceSeating>;
     readonly parentLogger?: Logger;
   }>,
 ): Promise<RepairTranslationResult> {
@@ -211,12 +215,14 @@ export async function repairPreparedDocument(
       item: slice,
       position: slicePosition,
     },) {
-      if (beforeSlice !== undefined)
-        await beforeSlice();
+      /**
+       Seating the caller read for this slice, empty when the given roster stands.
+       */
+      const seating: RepairSliceSeating = (beforeSlice === undefined) ? {} : await beforeSlice();
       return await settleRepairSlice({
         client,
         prepared,
-        models,
+        models: seating.repairModels ?? models,
         ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
         slice,
         slicePosition,

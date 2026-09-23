@@ -29,6 +29,7 @@ import {
   type ChatJsonRequest,
   type ChunkRepairOutcome,
   type RepairModels,
+  type RepairSliceSeating,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -1193,8 +1194,9 @@ Meow meow meow meow.
           prepared,
           models: MODELS,
           signal: new AbortController().signal,
-          beforeSlice: async (): Promise<void> => {
+          beforeSlice: async (): Promise<RepairSliceSeating> => {
             before.calls += 1;
+            return {};
           },
         },);
         expect(before.calls,).toBe(prepared.slices.length,);
@@ -1244,7 +1246,7 @@ Meow meow meow meow.
           prepared,
           models: MODELS,
           signal: new AbortController().signal,
-          beforeSlice: async (): Promise<RepairModels> => reseated,
+          beforeSlice: async (): Promise<RepairSliceSeating> => ({ repairModels: reseated, }),
         },);
         expect(asked.length,).toBeGreaterThan(0,);
         expect(asked,).toContain(OPENROUTER_CHECKER_SUBSTITUTE,);

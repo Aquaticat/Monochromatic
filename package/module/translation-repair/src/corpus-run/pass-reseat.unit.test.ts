@@ -115,10 +115,10 @@ await describe({
         /**
          Roster the hook hands the driver for the next chunk.
          */
-        const models = await hooks.beforeSlice({ lane: 'repair', },);
-        expect(models,).toBeDefined();
-        expect(models?.checkerModelIds,).toContain(OPENROUTER_CHECKER_SUBSTITUTE,);
-        expect(models?.checkerModelIds,).not.toContain(SEAT_SYNTHETIC_VISION_WITHHELD,);
+        const seating = await hooks.beforeSlice({ lane: 'repair', },);
+        expect(seating.repairModels,).toBeDefined();
+        expect(seating.repairModels?.checkerModelIds,).toContain(OPENROUTER_CHECKER_SUBSTITUTE,);
+        expect(seating.repairModels?.checkerModelIds,).not.toContain(SEAT_SYNTHETIC_VISION_WITHHELD,);
         expect(rig.counter.reads,).toBe(1,);
       },
     },),
@@ -132,7 +132,7 @@ await describe({
           signal: new AbortController().signal,
           entryId: 'mittens',
         },);
-        expect(await hooks.beforeSlice({ lane: 'repair', },),).toBeUndefined();
+        expect(await hooks.beforeSlice({ lane: 'repair', },),).toEqual({},);
         expect(rig.counter.reads,).toBe(0,);
       },
     },),
@@ -156,6 +156,7 @@ await describe({
          Roster handed over once the hold has ended.
          */
         const afterHold = await hooks.beforeSlice({ lane: 'repair', },);
+        expect(afterHold.repairModels,).toBeDefined();
         expect(afterHold,).toEqual(underHold,);
         expect(rig.counter.reads,).toBe(1,);
       },
@@ -169,7 +170,7 @@ await describe({
           signal: new AbortController().signal,
           entryId: 'mittens',
         },);
-        expect(await hooks.beforeSlice({ lane: 'translate', },),).toBeUndefined();
+        expect(await hooks.beforeSlice({ lane: 'translate', },),).toEqual({},);
         expect(rig.counter.reads,).toBe(0,);
       },
     },),
