@@ -24,6 +24,21 @@ import { proseMask, } from './typography-prose-mask.ts';
 // opening quote.
 
 /**
+ Highest code point one UTF-16 unit can carry; anything above it is a
+ surrogate pair.
+ */
+const BMP_MAX = 0xFF_FF;
+
+/**
+ Whether one code point is a cased letter or an ASCII digit. Cased letters by
+ general category, not by case mapping: the mathematical script letters the
+ corpus writes handles in are cased letters with no case mapping, and Han is
+ neither cased nor a word an apostrophe binds into (class ninety-six).
+ */
+// oxlint-disable-next-line no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends, so the test is bounded and cannot backtrack; the Unicode general categories have no string API
+const WORD_CODE_POINT = /^(?:\p{Lu}|\p{Ll}|\p{Lt}|[0-9])$/u;
+
+/**
  Right single quotation mark, used as an apostrophe in the corpus.
  */
 const CURLY_APOSTROPHE = '\u{2019}';
@@ -58,8 +73,82 @@ function bindsWord({ character, }: { readonly character: string; },): boolean {
   if (character === '')
     return false;
 
-  return (character.toLowerCase() !== character.toUpperCase())
-    || ((character >= '0') && (character <= '9'));
+  return WORD_CODE_POINT.test(character,);
+}
+
+// CLASS NINETY-SIX (mikaela_khara, 2026-09-23). The archive writes a handle
+// in mathematical script, every letter a surrogate pair, and the bench wrote
+// its possessive with a straight apostrophe. The neighbours of a quote were
+// read by UTF-16 unit, so the unit before the apostrophe was the low half of
+// the last letter, which is no letter at all, and the apostrophe stayed
+// straight on a curly page. THE NEIGHBOURS ARE WHOLE CODE POINTS.
+
+/**
+ Whole code point ending just before an offset, empty at the text's start.
+
+ @param text - text being read
+
+ @param at - offset of the character whose predecessor is wanted
+
+ @returns The code point before, as a string of one or two units
+
+ @example
+ ```ts
+ const before = codePointBefore({ text: 'ab', at: 1, },); // 'a'
+ ```
+ */
+function codePointBefore({
+  text,
+  at,
+}: {
+  readonly text: string;
+  readonly at: number;
+},): string {
+  if (at <= 0)
+    return '';
+  /**
+   Code point starting two units back, which ends just before the offset
+   when it is a surrogate pair.
+   */
+  const paired = (at >= 2) ? text.codePointAt(at - 2,) : undefined;
+  if ((paired !== undefined) && (paired > BMP_MAX))
+    return text.slice(
+      at - 2,
+      at,
+    );
+  return text.charAt(at - 1,);
+}
+
+/**
+ Whole code point starting at an offset, empty past the text's end.
+
+ @param text - text being read
+
+ @param at - offset of the code point wanted
+
+ @returns The code point there, as a string of one or two units
+
+ @example
+ ```ts
+ const after = codePointAt({ text: 'ab', at: 1, },); // 'b'
+ ```
+ */
+function codePointAt({
+  text,
+  at,
+}: {
+  readonly text: string;
+  readonly at: number;
+},): string {
+  if (at >= text.length)
+    return '';
+  /**
+   Code point there, read by the string's own decoding.
+   */
+  const point = text.codePointAt(at,);
+  if (point === undefined)
+    return '';
+  return String.fromCodePoint(point,);
 }
 
 /**
@@ -131,7 +220,10 @@ function possessiveClitic(
     .toLowerCase();
   if (clitic !== 's')
     return false;
-  return !bindsWord({ character: text.charAt(at + 1,), },);
+  return !bindsWord({ character: codePointAt({
+    text,
+    at: at + 1,
+  },), },);
 }
 
 /**
@@ -213,12 +305,18 @@ function countOpeningSingles(
       /**
        Whether a word character precedes it.
        */
-      const boundBefore = bindsWord({ character: text.charAt(index - 1,), },);
+      const boundBefore = bindsWord({ character: codePointBefore({
+        text,
+        at: index,
+      },), },);
 
       /**
        Whether a word character follows it.
        */
-      const boundAfter = bindsWord({ character: text.charAt(index + 1,), },);
+      const boundAfter = bindsWord({ character: codePointAt({
+        text,
+        at: index + 1,
+      },), },);
       if (boundBefore)
         continue;
       if (boundAfter)
@@ -357,17 +455,26 @@ export function restoreTypography(
         /**
          Whether the character before binds this quote into a word.
          */
-        const boundBefore = bindsWord({ character: replacement.charAt(index - 1,), },);
+        const boundBefore = bindsWord({ character: codePointBefore({
+          text: replacement,
+          at: index,
+        },), },);
 
         /**
          Whether the character after does.
          */
-        const boundAfter = bindsWord({ character: replacement.charAt(index + 1,), },);
+        const boundAfter = bindsWord({ character: codePointAt({
+          text: replacement,
+          at: index + 1,
+        },), },);
 
         /**
          Whether a closed inline span stands before the quote.
          */
-        const spanBefore = closesSpan({ character: replacement.charAt(index - 1,), },);
+        const spanBefore = closesSpan({ character: codePointBefore({
+          text: replacement,
+          at: index,
+        },), },);
 
         /**
          Whether the quote reads as an apostrophe inside or trailing a word:
