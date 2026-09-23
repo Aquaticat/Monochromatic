@@ -12,6 +12,7 @@ import { atomFindings, } from './translate-atom-rendering.ts';
 import { neutralPronounFindings, } from './translate-neutral-pronoun.ts';
 import { definitionLeakFindings, } from './translate-definition-leak.ts';
 import { leakedEscapeFindings, } from './translate-escape-leak.ts';
+import { droppedAddressFindings, } from './translate-address-drop.ts';
 import { droppedMarkerFindings, } from './translate-marker-drop.ts';
 import { sheetLeakFindings, } from './translate-sheet-leak.ts';
 import { untranslatedFindings, } from './translate-untranslated.ts';
@@ -511,6 +512,20 @@ export function validateTranslatedSlice(
     return {
       kind: 'invalid',
       findings: markerFindings,
+    };
+  }
+  /**
+   A second-person address the original carries that the candidate turned
+   into the third person (class ninety-seven).
+   */
+  const addressFindings = droppedAddressFindings({
+    sourceText,
+    candidateText,
+  },);
+  if (addressFindings.length > 0) {
+    return {
+      kind: 'invalid',
+      findings: addressFindings,
     };
   }
   /**
