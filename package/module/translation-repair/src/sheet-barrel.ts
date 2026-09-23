@@ -117,6 +117,12 @@ export {
   type SeatReadingClient,
 } from './corpus-run/run-seats-read.ts';
 export {
+  lanesHooksFor,
+  type LanesHooks,
+  readLanesSeats,
+  translateReseatFor,
+} from './corpus-run/pass-reseat.ts';
+export {
   type BenchName,
   type JudgeSeatPhase,
   phaseBenches,

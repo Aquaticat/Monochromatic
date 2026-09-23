@@ -137,6 +137,12 @@ const REPAIR_MODELS: RepairModels = {
 type SchemaLog = string[];
 
 /**
+ Every call the script served with the seat that asked, so a case can say
+ which roster a stage ran on.
+ */
+type AskedLog = { readonly schema: string; readonly modelId: RosterModelId; }[];
+
+/**
  Successful model calls in flight for one stage.
  */
 type StageConcurrency = {
@@ -178,11 +184,13 @@ function lanesClient(
     controller,
     abortAfterCriticCalls,
     activity,
+    askedBy,
   }: {
     readonly served: SchemaLog;
     readonly controller: AbortController;
     readonly abortAfterCriticCalls?: number;
     readonly activity?: LaneConcurrency;
+    readonly askedBy?: AskedLog;
   },
 ): SyntheticClient {
   return {
@@ -209,6 +217,10 @@ function lanesClient(
         },)
         .join('\n',);
       served.push(schema,);
+      askedBy?.push({
+        schema,
+        modelId: request.modelId,
+      },);
 
       /**
        Instrument for this lane's entry stage, when requested.
@@ -403,6 +415,7 @@ async function runLanes(
     activity,
     reseatTranslate,
     beforeSlice,
+    askedBy,
   }: {
     readonly served: SchemaLog;
     readonly abortAfterCriticCalls?: number;
@@ -410,7 +423,10 @@ async function runLanes(
     readonly overlap?: number;
     readonly activity?: LaneConcurrency;
     readonly reseatTranslate?: () => Promise<TranslateModels>;
-    readonly beforeSlice?: (args: { readonly lane: 'repair' | 'translate'; },) => Promise<void>;
+    readonly beforeSlice?: (
+      args: { readonly lane: 'repair' | 'translate'; },
+    ) => Promise<RepairModels | undefined>;
+    readonly askedBy?: AskedLog;
   },
 ) {
   /**
@@ -421,6 +437,7 @@ async function runLanes(
     client: lanesClient({
       served,
       controller,
+      ...((askedBy === undefined) ? {} : { askedBy, }),
       ...((abortAfterCriticCalls === undefined)
         ? {}
         : { abortAfterCriticCalls, }),
@@ -515,8 +532,9 @@ await describe({
         const asked: string[] = [];
         const lanes = await runLanes({
           served,
-          beforeSlice: async ({ lane, },): Promise<void> => {
+          beforeSlice: async ({ lane, },): Promise<undefined> => {
             asked.push(lane,);
+            return undefined;
           },
         },);
         /**
@@ -555,6 +573,53 @@ await describe({
           'translate',
           'translateDelivery',
         ],);
+      },
+    },),
+
+    it({
+      name: 'SEATS THE REPAIR LANE ON THE ROSTER ITS HOOK RETURNS, so a bench re-seated after a provider '
+        + 'dry-out inside the lane is the one the next chunk asks (class one hundred three, zheermao7, '
+        + '2026-09-23)',
+      fn: async () => {
+        /**
+         Schemas the run served, in order.
+         */
+        const served: SchemaLog = [];
+        /**
+         Every call with the seat that asked.
+         */
+        const askedBy: AskedLog = [];
+        /**
+         Roster the repair lane's hook hands back: critics re-seated, since
+         the critics are the one repair stage this script always asks.
+         */
+        const reseated: RepairModels = {
+          ...REPAIR_MODELS,
+          criticModelIds: ROSTER.slice(
+            3,
+            6,
+          ),
+        };
+        await runLanes({
+          served,
+          askedBy,
+          beforeSlice: async ({ lane, },): Promise<RepairModels | undefined> => {
+            return (lane === 'repair') ? reseated : undefined;
+          },
+        },);
+        /**
+         Seats the critic stage ran on.
+         */
+        const critics = askedBy
+          .filter(function isCritic(call,): boolean {
+            return call.schema === 'critic_report';
+          },)
+          .map(function toSeat(call,): RosterModelId {
+            return call.modelId;
+          },);
+        expect(critics.length,).toBeGreaterThan(0,);
+        for (const seat of critics)
+          expect(reseated.criticModelIds,).toContain(seat,);
       },
     },),
 

@@ -1,11 +1,11 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { TranslateModels, } from '../translate-document-contract.ts';
-import type { RunClient, } from './run-client-contract.ts';
 import type { JudgeSeats, } from './run-seats.ts';
 import {
   awaitBenchQuorum,
   readJudgeSeats,
+  type SeatReadingClient,
 } from './run-seats-read.ts';
 import type { JudgeSeatPhase, } from './run-seats-wait.ts';
 
@@ -42,7 +42,7 @@ export function translateReseatFor(
     signal,
     entryId,
   }: {
-    readonly client: RunClient;
+    readonly client: SeatReadingClient;
     readonly signal: AbortSignal;
     readonly entryId: string;
   },
@@ -106,7 +106,7 @@ export function lanesHooksFor(
     signal,
     entryId,
   }: {
-    readonly client: RunClient;
+    readonly client: SeatReadingClient;
     readonly signal: AbortSignal;
     readonly entryId: string;
   },
@@ -157,7 +157,7 @@ export async function readLanesSeats(
     signal,
     entryId,
   }: {
-    readonly client: RunClient;
+    readonly client: SeatReadingClient;
     readonly signal: AbortSignal;
     readonly entryId: string;
   },

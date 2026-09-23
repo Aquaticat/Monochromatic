@@ -20,6 +20,7 @@ import {
   prepareDocumentPair,
   repairPreparedDocument,
   repairTranslation,
+  OPENROUTER_CHECKER_SUBSTITUTE,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -1198,6 +1199,56 @@ Meow meow meow meow.
         },);
         expect(before.calls,).toBe(prepared.slices.length,);
         expect(prepared.slices.length,).toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
+      name: 'SEATS THE ROSTER THE HOOK RETURNS on the slice that follows, so a checker bench re-seated '
+        + 'after a provider dry-out is the one asked (class one hundred three, zheermao7, 2026-09-23: '
+        + 'the bench seated at the lanes boundary asked for the rest of the lane)',
+      fn: async () => {
+        const prepared = prepareDocumentPair({
+          sourceText: SOURCE_TWO_SECTIONS,
+          targetText: TARGET_TWO_SECTIONS,
+        },);
+        /**
+         Checkers asked, in the order asked.
+         */
+        const asked: string[] = [];
+        /**
+         The scripted client with its checker calls recorded.
+         */
+        const scripted = scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },);
+        /**
+         Roster the hook hands back, its checker bench re-seated.
+         */
+        const reseated: RepairModels = {
+          ...MODELS,
+          checkerModelIds: [
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+            OPENROUTER_CHECKER_SUBSTITUTE,
+          ],
+        };
+        await repairPreparedDocument({
+          client: {
+            ...scripted,
+            chatJson: async <ValueT,>(
+              request: ChatJsonRequest<ValueT>,
+            ): Promise<ChatJsonOutcome<ValueT>> => {
+              if (request.responseFormat?.json_schema.name === 'resolution_report')
+                asked.push(request.modelId,);
+              return await scripted.chatJson(request,);
+            },
+          },
+          prepared,
+          models: MODELS,
+          signal: new AbortController().signal,
+          beforeSlice: async (): Promise<RepairModels> => reseated,
+        },);
+        expect(asked.length,).toBeGreaterThan(0,);
+        expect(asked,).toContain(OPENROUTER_CHECKER_SUBSTITUTE,);
+        expect(asked,).not.toContain(SEAT_SYNTHETIC_VISION_WITHHELD,);
       },
     },),
 
