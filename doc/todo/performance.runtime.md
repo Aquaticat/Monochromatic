@@ -17,18 +17,17 @@
 - [ ] Optimize algorithm complexity in core utilities
 - [ ] Implement performance-focused coding patterns
 
-#### Logging Performance Optimization
+#### Logging performance
 
 **Status**:
- High priority,
- function tracing performance
-
-- [ ] Migrate function entry tracing from `l.trace()` to `l.debug()`
-- [ ] Replace all function-start `l.trace()` calls across codebase
-- [ ] Verify performance improvement in function-heavy code paths
-- [ ] Update logging documentation with performance guidelines
-- [ ] Consider conditional logging guards for production builds
-- [ ] Profile logging overhead reduction after migration
+ Migration rejected after source inspection and a bounded level comparison.
+ The logger constructs the same record for `trace` and `debug`, and the
+ console sink suppresses both levels when verbose output is off.
+ The only production function-entry trace is `parseCss`; changing its level
+ would discard a diagnostic stack in verbose console output without a
+ demonstrated suppressed-console speedup.
+ See [logging performance findings](../troubleshooting/performance.logging.md)
+ for the reproduction and limits of the measurement.
 
 #### Memory Management
 

@@ -22,16 +22,12 @@ Why tsdown builds take 360+ms despite benchmarks showing 36ms
 - JS event loop serialization of NAPI callbacks during the DTS second pass
 - Packages that are not libraries should set `dts: false`
 
-### [Logging Performance](performance.logging.md)
+### [Logging performance](performance.logging.md)
 
-Runtime logging performance issues
-
-- Function entry tracing migration (l.
-  trace → l.
-  debug)
-- Stack trace generation overhead
-- Performance impact benchmarks
-- Migration strategies and alternatives
+The proposed function-entry `trace` to `debug` migration was rejected after
+source inspection and bounded measurements.
+The console suppresses both levels by default; verbose `console.trace`
+emits a diagnostic stack. The linked report records the benchmark and limits.
 
 ---
 
@@ -42,8 +38,8 @@ Runtime logging performance issues
 1. **WSL Environments**:
     Avoid executing binaries when file system checks suffice
 2. **Logging**:
-    Use `l.debug()` for function entry,
-    reserve `l.trace()` only when stack traces are needed
+    Do not migrate entry `trace` calls to `debug` for a presumed
+    suppressed-console speedup; use the diagnostic level the call requires
 3. **Build Scripts**:
     Replace shell commands with TypeScript scripts for better performance and cross-platform compatibility
 4. **Caching**:
