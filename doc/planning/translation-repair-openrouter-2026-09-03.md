@@ -8082,6 +8082,47 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya16 read, 2026-09-23, 22:45 UTC: SETTLED in 6 min, class one hundred one live, but the closing quote shipped its Chinese line beside the English because the lane offer's floor ran without the line-structured flag (class one hundred two); fixed in 6361d74d0, shi_Yumiaoya17 launched
+
+`shi_Yumiaoya16` (frozen `314ca4b8c`, pid 2942500) SETTLED at 22:29 UTC,
+6 min after its 22:26 launch (TALLY `ms=368514`),
+one attempt,
+880 seats,
+32 retry rounds,
+799 calls,
+no abandoned stream,
+0.60 USD by the meters (Bedrock 49.98 to 49.67, OpenRouter 97.30 to 97.01),
+on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry; glm-5.3 and Qwen3.8-27B dark by design).
+Stages: repair from 22:24, contest from 22:26, consolidation 22:26 to 22:29; Jev 20 of 20; 13 abstention lines with reasons;
+terminals: slate-endorsed 0, 1, 10, 17; consolidated 3, 4, 16; slate-declined 6, 7, 8, 11, 13; gate-kept 9, 12, 15; one unendorsed standing (0).
+
+Class one hundred one live: the page written past the wording check with the source's `[^1]` definition as its last line, ending "below." with no trailing space (the composer's body), and both `[^1]` markers the source carries on the page (line 29 and the bullying sentence; `shi_Yumiaoya14` had carried one).
+The two page-assembly passes silent (no `page assembly:` line).
+Classes seventy-eight and seventy-nine holding ("Chewing Gum and Danpian had both", "she attempted to end her life by swallowing a large amount of medication" before the ICU waking),
+classes ninety-two, ninety-five and ninety-six fine (marker and definition on the page, the six straight double quotes the archive's own JSX path literals),
+every structural check as `shi_Yumiaoya14` (4 headings, front matter equal, no TA, no error finish, no double blank line).
+Han residue as `shi_Yumiaoya14`: "an underage 药娘[^1]" on the bullying sentence (the same line in Han on 14), the archive's own 尼康 D200 caption and comments.
+
+Class one hundred two.
+The closing quote shipped three lines, the source's Chinese line 如果再也不能见到你 above the film's English and the attribution, where the archive carries the English and the attribution alone and `shi_Yumiaoya13` and `14` had shipped the archive's two lines.
+The repair lane won the contest with that three-line text; at the consolidation the standing failed the deterministic rule on the class eighty pair bound
+("the EXISTING TRANSLATION carries the block holding it as 2 lines. Yours carries 3"), the incumbent stood in,
+and the class forty lane offer (`consolidate-lane-offer.ts`) put the same repair text on the slate: its `validateTranslatedSlice` call carried no `lineStructured`, so the line floor and the pair bound inside it never ran, the text read valid, the judges chose it, the gate confirmed it 3 of 4 ("preserves the Chinese greeting"), the polish validated against its own base, and the page carried what the standing check had refused.
+Replayed off the built dist: the shipped text invalid under `lineStructured: true` and valid without it; the offer over the run's real slice 16 data returns `repair` without the flag and nothing with it.
+Fixed in 6361d74d0: `laneTextsForSlate` takes `lineStructured` and passes it to the rule; `consolidate-driver.ts` passes the slice's flag it already holds for the proposals;
+guard red first at 404b5dada (`consolidate-lane-offer.unit.test.ts`: a line-structured slice whose repair text carries the Chinese line of a bilingual pair is left out and the two-line translate text offered; positive control run through the floor first),
+lint 0 and 0, types clean, full suite green (`suite-class102.log`, 1103 PASS, exit 0).
+Open beside it, not built: the repair lane itself shipped the three-line text into the contest, so the lane's own floor does not read the pair bound either; the consolidation refuses it now at both doors.
+
+`shi_Yumiaoya17` (frozen `6361d74d0`, pid 2953486, overlap 8)
+launched 22:36 UTC on Bedrock and OpenRouter
+(meters 49.64 USD Bedrock, 96.97 OpenRouter at launch),
+waiter bpts8jr04.
+Read for class one hundred two live (the closing quote as the archive's two lines, no lane text carrying the Chinese line on the slate; the `lane texts offered` line on slice 16 naming no lane, or the slice settled another way),
+class one hundred one holding (the `[^1]` definition on the page whatever whitespace its candidate ends in),
+classes seventy-eight to eighty, ninety-two, ninety-five and ninety-six holding,
+beside every check of `shi_Yumiaoya14` (4 headings, front matter equal, no TA, no error finish, no double blank line).
+
 ## shi_Yumiaoya15 read, 2026-09-23, 22:30 UTC: TALLY ERROR twice at publish, the footnote definition's wording "not in the page" because the insertion composer cuts the two spaces its lane text ended in while the wording check searched them (class one hundred one); fixed in 314ca4b8c, shi_Yumiaoya16 launched
 
 `shi_Yumiaoya15` (frozen `0f685f551`, pid 2923082) stopped ERROR at 22:14 UTC,

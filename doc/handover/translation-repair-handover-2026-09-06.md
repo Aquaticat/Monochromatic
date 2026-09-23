@@ -4647,18 +4647,24 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA16 RUNS (frozen `314ca4b8c`,
-    pid 2942500,
-    launched 22:26 UTC 2026-09-23,
-    waiter bxei53tuc,
-    meters 49.98 USD Bedrock and 97.30 OpenRouter at launch, Synthetic spent, Hyper dry;
+1.  SHI_YUMIAOYA17 RUNS (frozen `6361d74d0`,
+    pid 2953486,
+    launched 22:36 UTC 2026-09-23,
+    waiter bpts8jr04,
+    meters 49.64 USD Bedrock and 96.97 OpenRouter at launch, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class one hundred one live (a page written past the wording check with the `[^1]` definition on it, whatever whitespace its candidate ends in),
+    read for class one hundred two live (the closing quote as the archive's two lines; no lane text carrying the Chinese line offered on slice 16),
+    class one hundred one holding (the `[^1]` definition on the page whatever whitespace its candidate ends in),
     the two page-assembly passes of classes ninety-nine and one hundred (none expected; any line read against the archive),
-    classes seventy-eight to eighty, ninety-two, ninety-five and ninety-six holding ("Chewing Gum" and "Danpian", the attempt survived on January 16, the closing quote as the archive's two lines, the marker and definition on the page, the four JSX path literals the only straight quotes),
+    classes seventy-eight to eighty, ninety-two, ninety-five and ninety-six holding ("Chewing Gum" and "Danpian", the attempt survived on January 16, the marker and definition on the page, the JSX path literals the only straight quotes),
     beside every check of `shi_Yumiaoya14` (4 headings, front matter equal, no TA, no error finish, no double blank line);
-    record under a new heading above "## shi_Yumiaoya15 read, 2026-09-23, 22:30 UTC" in the pass log;
+    record under a new heading above "## shi_Yumiaoya16 read, 2026-09-23, 22:45 UTC" in the pass log;
     then rotate yingying, zheermao101 and CuspariaKLSY on the same dist.
+    SHI_YUMIAOYA16 READ (frozen `314ca4b8c`): SETTLED at 22:29 UTC 2026-09-23 in 6 min, one attempt, 880 seats, 32 retry rounds, 0.60 USD by the meters;
+    class one hundred one live (the `[^1]` definition the page's last line, both source markers on the page), the two page-assembly passes silent, classes seventy-eight, seventy-nine, ninety-two, ninety-five and ninety-six holding, every check as `shi_Yumiaoya14`, one unendorsed (0), 13 abstention lines, Jev 20 of 20;
+    but the closing quote shipped its Chinese line beside the English (three lines against the archive's two): the repair lane text was refused as the standing on the class eighty pair bound and re-entered through the class forty lane offer, whose rule ran without `lineStructured` (class one hundred two);
+    fixed in 6361d74d0 (`consolidate-lane-offer.ts` takes the flag, `consolidate-driver.ts` passes it), guard red first 404b5dada, lint 0/0, types clean, full suite green (`suite-class102.log`, 1103 PASS), replayed over the run's real slice 16 data;
+    open, not built: the repair lane's own floor let the three-line text into the contest.
     SHI_YUMIAOYA15 READ (frozen `0f685f551`): TALLY ERROR at 22:14 UTC 2026-09-23 in 7 min, two attempts, 1,020 seats, 39 retry rounds, 0.53 USD by the meters, no page or artifact;
     "1 wording(s) the artifact says would ship are not in the page in slice order, at slices 17 (237 characters)": the source's `[^1]` definition, inserted, whose winning candidate ended in two spaces the insertion composer cuts while the wording check searched the raw text (class one hundred one);
     fixed in 314ca4b8c (`published-page-check.ts`: the scan searches the fragment body both splice paths leave on the page), guard red first 4c36039b0, lint 0/0, types clean, full suite green (`suite-class101.log`, 1103 PASS), replayed over the run's real wording through `composeInsertion`;
