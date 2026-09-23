@@ -882,7 +882,7 @@ Default to mount-free;
  bake in inputs.
 Mount only disposable fixtures.
 State bounds;
- recheck authorization for each run.
+ authorize each run.
 
 DCB:
  Never execute or have agents execute catastrophic commands (`sudo rm -rf /`,
