@@ -8082,6 +8082,53 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ627 read, 2026-09-23, 14:30 UTC: SETTLED in 56 min, classes ninety-two and ninety-three live, but the archive block review's removal of the placeholder line left three blank lines after the front matter (class ninety-four); fixed in 7295b33ab, XingZ628 launched
+
+`XingZ627` (frozen `9c83fb5f7`, pid 2629556) SETTLED at 14:09 UTC,
+56 min after its 13:13 launch (TALLY `ms=3314899`),
+one attempt,
+8,948 seats,
+447 retry rounds,
+7,552 calls,
+4 abandoned streams (0.03 USD),
+9.08 USD by the meters (Bedrock 83.69 to 78.81, OpenRouter 126.15 to 121.95).
+Synthetic wet at launch (weekly 1.25 percent) and spent to 0 by the end, Hyper dry, glm-5.3 dark as on `XingZ626`.
+Stages: repair from 13:22, translate from 13:43, contest from 13:51, consolidation 13:53 to 14:09.
+
+Class ninety-three on the wire.
+Every deepseek-v4.1-flash stream but four served by Morph (1,276 at 5.0 s a stream; the four fell back to CoreWeave at 23.5 s),
+every GLM-5.3-Flash stream but two by Wafer (385 at 8.5 s; two on Morph),
+3 cap-cut replies,
+and every round under 27 s mean: refiner 9.5 s against 101 s, editor 8.4 against 63, translate 5.4 against 63, select 10.2 against 34, lane contest 8.0 against 43.
+The entry took 56 min against `XingZ626`'s 3h30m and `XingZ625`'s 6h54m on the same page.
+
+Class ninety-two live.
+Nine definitions on the page and the song line carries its marker ("Transcend Lights[^3]." on its own quote line, the definition "[^3]: That is, Transcend Lights");
+the translate lane refused two marker-less candidates (slices 44 and 92, findings "drops footnote 3");
+the repair lane's slice 44 text, written from the archive without the marker, lost the contest 4 of 4 with every ballot naming the omitted note ("dropped: repair");
+no `assembly-footnote-trimmed` line.
+Classes eighty-eight to ninety-one again (the gloss at the Part Ten heading, eight headings unified to the archive's bare style, three restores).
+Every structural check as `XingZ626` but one:
+fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish;
+seven unendorsed standings (2, 48, 61, 62, 66, 82, 83), two gate-kept, four slate-declined;
+228 abstention lines with reasons.
+But a double blank line, at line 8 to 10.
+
+Class ninety-four.
+The archive opens, after its front matter, with the maintainers' placeholder "**Come back later!**" and then two alert lines ("[!Warning] This version is NOT the formal version...", "[!Caution] This is an unfinished version...").
+All three are archive-only blocks (the original has nothing where they stand), so the archive block review reads them; on `XingZ627` it removed the placeholder 5 of 6 (gpt-oss: "a translation-side placeholder not present in the Chinese source"; minimax declined every candidate) and kept the two alert lines, where `XingZ626` had kept all three.
+The removal itself is the review's call under its own sheet, which names "editorial-context" as the disposition for translation-side apparatus; the placeholder's status is a question for the owner (recorded in the handover), not a class.
+The class is mechanical: `repairArchiveBlocks` spliced the removal as an empty replacement between the block's own offsets, so the blank line before the block, the block's line and the blank line after it collapsed into three blank lines, and the page shipped that way (`preparation.archiveText` already carries "---\n\n\n\n[!Warning]").
+Fixed in 7295b33ab: a removal takes the line endings that follow the block (or, for a block that ends the document, the line endings before it), so one separator stands between the neighbours and nothing trails.
+Guard red first at 64cda7e31 (the existing removal case's expectation and a new case with a removal after the front matter and one between two blocks), lint 0 and 0, types clean, full suite green (`suite-class94.log`, 1097 PASS).
+
+`XingZ628` (frozen `7295b33ab`, pid 2675240, overlap 8)
+launched 14:19 UTC on Bedrock and OpenRouter (Synthetic spent, Hyper dry),
+waiter set.
+Read for class ninety-four live (no double blank line; whatever the review does with the placeholder, one blank line between the front matter and what follows),
+classes ninety-two and ninety-three again,
+beside every check of `XingZ627`.
+
 ## XingZ626 read, 2026-09-23, 13:20 UTC: SETTLED in 3h30m, classes ninety and ninety-one live, but the song line lost its footnote marker and the note was trimmed (class ninety-two) and the price sort fell to two more endpoints that reason at length (class ninety-three); both fixed in 9c83fb5f7, XingZ627 launched
 
 `XingZ626` (frozen `5fd39cdcc`, pid 2574294) SETTLED at 12:53 UTC,

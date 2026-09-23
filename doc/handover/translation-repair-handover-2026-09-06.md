@@ -4647,20 +4647,26 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XINGZ627 RUNS (frozen `9c83fb5f7`,
-    pid 2629556,
-    launched 13:13 UTC 2026-09-23,
-    waiter bpkc5sv3j,
-    meters 83.69 USD Bedrock and 126.15 OpenRouter at launch, Synthetic wet (weekly 1.25 percent), Hyper dry;
+1.  XINGZ628 RUNS (frozen `7295b33ab`,
+    pid 2675240,
+    launched 14:19 UTC 2026-09-23,
+    Bedrock and OpenRouter wet, Synthetic spent (weekly 0 percent), Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class ninety-two live
-    (nine definitions on the page; the song line carries `[^3]`; no `assembly-footnote-trimmed` line; the repair lane's slice 44 text refused at the contest for the dropped marker, or carrying it)
-    and class ninety-three on the wire
-    (every deepseek-v4.1-flash stream served by Morph, every GLM-5.3-Flash stream by Wafer; refiner rounds well under `XingZ626`'s 101 s mean; the entry under 3h30m),
-    classes eighty-eight to ninety-one again,
-    beside every check of `XingZ626`
-    (fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish, no double blank line);
-    record under a new heading above "## XingZ626 read, 2026-09-23, 13:20 UTC" in the pass log.
+    read for class ninety-four live
+    (no double blank line on the page; one blank line between the front matter and the first body block whatever the archive block review does with the placeholder)
+    and classes ninety-two and ninety-three again
+    (nine definitions, the song line carrying `[^3]`; deepseek on Morph, GLM-5.3-Flash on Wafer, the entry about an hour),
+    beside every check of `XingZ627`
+    (fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish);
+    record under a new heading above "## XingZ627 read, 2026-09-23, 14:30 UTC" in the pass log.
+    OPEN QUESTION FOR THE OWNER: the archive block review removed the archive's placeholder line "**Come back later!**" 5 of 6 on `XingZ627` (kept on `XingZ626`) while keeping the two alert lines beside it;
+    the review's sheet lets reviewers class translation-side apparatus as "editorial-context" and keep it, so whether the maintainers' placeholder counts as apparatus is the owner's call.
+    XINGZ627 READ (frozen `9c83fb5f7`): SETTLED at 14:09 UTC 2026-09-23 in 56 min, one attempt, 8,948 seats, 447 retry rounds, 9.08 USD by the meters;
+    class ninety-two live (nine definitions, "Transcend Lights[^3]" on the page, two marker-less candidates refused, the repair text lost the contest 4 of 4 for the omitted note),
+    class ninety-three on the wire (deepseek on Morph 1,276 streams at 5.0 s, GLM-5.3-Flash on Wafer 385 at 8.5 s, refiner rounds 9.5 s against 101, the entry 56 min against 3h30m);
+    classes eighty-eight to ninety-one again; every structural check as `XingZ626` but a double blank line after the front matter where the review removed the placeholder line (class ninety-four).
+    CLASS NINETY-FOUR FIXED: `repairArchiveBlocks` cuts a removed block with the line endings that follow it (or precede it at the document's end);
+    guard red first `64cda7e31`, fix `7295b33ab`, lint 0/0, types clean, full suite green (`suite-class94.log`, 1097 PASS).
     XINGZ626 READ (frozen `5fd39cdcc`): SETTLED at 12:53 UTC 2026-09-23 in 3h30m, one attempt, 9,277 seats, 507 retry rounds, 12.30 USD by the meters;
     classes ninety and ninety-one live (ten headings by name whatever leader the bench wrote; deepseek on Morph 847 streams at 6.2 s, 2 cap cuts against 450);
     classes eighty-eight and eighty-nine again; every structural check as `XingZ625` but eight definitions:
