@@ -246,8 +246,44 @@ await describe({
           l,
         },);
 
-        expect(repaired.targetText,).toBe('The cat sleeps.\n\n');
+        // CLASS NINETY-FOUR: a removal takes its own separator with it, so
+        // the document does not end in the blank line the removed block owned.
+        expect(repaired.targetText,).toBe('The cat sleeps.');
         expect(repaired.findings,).toHaveLength(2);
+      },
+    },),
+    it({
+      name: 'LEAVES ONE BLANK LINE where a removed block stood between two others, and none where it '
+        + 'opened the body (class ninety-four, XingZ627, 2026-09-23: the archive\'s placeholder line was '
+        + 'removed and the page shipped three blank lines after its front matter)',
+      fn: async () => {
+        const front = '---\nname: Mittens\n---';
+        const placeholder = '**Come back later!**';
+        const kept = 'The cat sleeps.';
+        const targetText = `${front}\n\n${placeholder}\n\n${kept}\n\n[REMOVE MIDDLE]\n\nThe cat wakes.`;
+        const blocks = [
+          blockAt({ targetText, blockText: placeholder, blockId: 'block/0', }),
+          blockAt({ targetText, blockText: '[REMOVE MIDDLE]', blockId: 'block/1', }),
+        ];
+        const sourceContexts = new Map(blocks.map(function context(block,): readonly [string, string] {
+          return [archiveBlockIdentity({ block, targetText, }), '猫在睡觉。',] as const;
+        },),);
+        const repaired = await repairArchiveBlocks({
+          client: correctionClient({
+            replacementFor: function replacement(): string {
+              return '';
+            },
+          },),
+          modelIds: ROSTER,
+          targetText,
+          sourceContexts,
+          blocks,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+
+        expect(repaired.targetText,).toBe(`${front}\n\n${kept}\n\nThe cat wakes.`);
       },
     },),
     it({
