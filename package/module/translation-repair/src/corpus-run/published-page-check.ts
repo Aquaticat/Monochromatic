@@ -5,6 +5,7 @@ import {
   wouldShipTextPerSlice,
 } from './would-ship-text.ts';
 import { matchSpanEdges, } from '../span-edge-match.ts';
+import { fragmentBody, } from '../insertion-separator.ts';
 import { PublishedPageDisagreesError, } from './published-page-disagreement.ts';
 
 //region Published page check
@@ -445,10 +446,16 @@ export function pageCarriesEveryWording(
         return state;
 
       /**
-       Wording this slice contributes, named so neither the search nor the
-       cursor arithmetic below has to walk the reading again.
+       Wording this slice contributes AS THE SPLICE WRITES IT, not as the
+       stage recorded it. An inserted slice goes through the insertion
+       composer, which cuts the blank lines around a fragment and the spaces
+       at its end (class one hundred one: a footnote definition whose lane
+       text ended in two spaces was reported missing from a page that carried
+       every word of it); a content span keeps its interior and takes the
+       archive span's line-ending edges. The body is inside both, so the scan
+       asks for what either path leaves on the page and stays one-sided.
        */
-      const wording = reading.text;
+      const wording = fragmentBody({ fragment: reading.text, },);
 
       /**
        Where this wording sits, or that the page does not carry it here.
