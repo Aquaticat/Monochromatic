@@ -1,6 +1,12 @@
+import { locateMarked, } from './title-reference-marks.ts';
 import {
   referenceScope,
-  type Span,
+  type TitleLocation,
+} from './title-reference-scope.ts';
+
+export type {
+  LocatedTitle,
+  TitleLocation,
 } from './title-reference-scope.ts';
 
 //region Title reference locate
@@ -96,31 +102,6 @@ const RUN_BOUNDARIES: ReadonlySet<string> = new Set([
   '–',
   LINE_END,
 ],);
-
-/**
- One rendering located in the page text.
- */
-export type LocatedTitle = {
-  /**
-   Shape the rendering stands in.
-   */
-  readonly kind: 'link' | 'gloss' | 'bracket' | 'quote';
-
-  /**
-   Offset of the rendering's first character.
-   */
-  readonly start: number;
-
-  /**
-   Offset just past the rendering.
-   */
-  readonly end: number;
-};
-
-/**
- Outcome of a search: a located rendering, an ambiguous slice, or none.
- */
-export type TitleLocation = LocatedTitle | { readonly kind: 'ambiguous'; } | { readonly kind: 'none'; };
 
 /**
  Destination of the link the original wraps a title in, empty where the
@@ -373,131 +354,6 @@ function boundaryBefore(
 }
 
 /**
- Every span between an opening and a closing mark on one line.
-
- @param pageText - page text of the slice
-
- @param open - opening mark
-
- @param close - closing mark
-
- @returns Inner spans in order
-
- @example
- ```ts
- spansBetween({ pageText: '《Cat》', open: '《', close: '》', },); // [{ start: 1, end: 4, }]
- ```
- */
-function spansBetween(
-  {
-    pageText,
-    open,
-    close,
-  }: {
-    readonly pageText: string;
-    readonly open: string;
-    readonly close: string;
-  },
-): readonly Span[] {
-  /**
-   Spans read so far.
-   */
-  const spans: Span[] = [];
-  for (
-    let at = pageText.indexOf(open,);
-    at !== (-1);
-    at = pageText.indexOf(
-      open,
-      at + 1,
-    )
-  ) {
-    /**
-     Offset of the closing mark, -1 for none.
-     */
-    const closeAt = pageText.indexOf(
-      close,
-      at + open.length,
-    );
-    if (closeAt === (-1))
-      break;
-    /**
-     Inner span.
-     */
-    const inner = pageText.slice(
-      at + open.length,
-      closeAt,
-    );
-    if (!inner.includes(LINE_END,))
-      spans.push({
-        start: at + open.length,
-        end: closeAt,
-      },);
-    at = closeAt;
-  }
-  return spans;
-}
-
-/**
- Where the page renders the title inside one kind of marks: the one span
- where there is one, ambiguous where there are more.
-
- @param pageText - page text of the slice
-
- @param pairs - opening and closing marks to read
-
- @param kind - shape to report
-
- @returns Located span, ambiguous, or none
-
- @example
- ```ts
- locateMarked({ pageText: '《Cat》', pairs: [['《', '》']], kind: 'bracket', },);
- ```
- */
-function locateMarked(
-  {
-    pageText,
-    pairs,
-    kind,
-  }: {
-    readonly pageText: string;
-    readonly pairs: readonly (readonly [
-      string,
-      string,
-    ])[];
-    readonly kind: 'bracket' | 'quote';
-  },
-): TitleLocation {
-  /**
-   Every span of every pair.
-   */
-  const spans = pairs.flatMap(function spansOf([
-    open,
-    close,
-  ],): readonly Span[] {
-    return spansBetween({
-      pageText,
-      open,
-      close,
-    },);
-  },);
-  if (spans.length === 0)
-    return { kind: 'none', };
-  if (spans.length > 1)
-    return { kind: 'ambiguous', };
-  /**
-   The one span.
-   */
-  const [span,] = spans;
-  if (span === undefined)
-    return { kind: 'none', };
-  return {
-    kind,
-    ...span,
-  };
-}
-
-/**
  Location moved by an offset, so a span found inside a scope is reported
  against the whole text.
 
@@ -543,6 +399,8 @@ function shifted(
 
  @param title - Han title as the original writes it
 
+ @param rendering - heading's rendering the reference should carry
+
  @returns Located rendering, ambiguous, or none
 
  @example
@@ -555,10 +413,12 @@ export function locateTitleRendering(
     sourceText,
     pageText,
     title,
+    rendering,
   }: {
     readonly sourceText: string;
     readonly pageText: string;
     readonly title: string;
+    readonly rendering: string;
   },
 ): TitleLocation {
   /**
@@ -615,6 +475,7 @@ export function locateTitleRendering(
       ],
     ],
     kind: 'bracket',
+    rendering,
   },);
   if (bracketed.kind !== 'none')
     return shifted({
@@ -626,6 +487,7 @@ export function locateTitleRendering(
       pageText: scoped,
       pairs: QUOTE_PAIRS,
       kind: 'quote',
+      rendering,
     },),
     by: scope.start,
   },);

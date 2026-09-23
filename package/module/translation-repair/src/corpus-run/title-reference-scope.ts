@@ -160,4 +160,29 @@ export function referenceScope(
   };
 }
 
+/**
+ One rendering located in the page text.
+ */
+export type LocatedTitle = {
+  /**
+   Shape the rendering stands in.
+   */
+  readonly kind: 'link' | 'gloss' | 'bracket' | 'quote';
+
+  /**
+   Offset of the rendering's first character.
+   */
+  readonly start: number;
+
+  /**
+   Offset just past the rendering.
+   */
+  readonly end: number;
+};
+
+/**
+ Outcome of a search: a located rendering, an ambiguous slice, or none.
+ */
+export type TitleLocation = LocatedTitle | { readonly kind: 'ambiguous'; } | { readonly kind: 'none'; };
+
 //endregion Title reference scope

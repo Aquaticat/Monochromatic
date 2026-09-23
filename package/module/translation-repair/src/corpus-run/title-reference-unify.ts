@@ -454,6 +454,7 @@ export function unifyTitleReferences(
         sourceText,
         pageText: text,
         title: heading.title,
+        rendering: heading.rendering,
       },);
       /**
        Whose rendering the reference takes, for the findings.
