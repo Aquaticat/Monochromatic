@@ -123,7 +123,9 @@ await describe({
     it({
       name: 'IGNORES the measured endpoints and no others: Parasail and ModelRun for MiniMax M3 '
         + '(2026-09-03 and 2026-09-04 measurements beside the row), DeepInfra and Wafer for DeepSeek V4.1 '
-        + 'Flash (XingZ607, 2026-09-18: 45 s and 26 s median against Morph\'s 11 s, 97 of 97 cut streams), '
+        + 'Flash (XingZ607, 2026-09-18: 45 s and 26 s median against Morph\'s 11 s, 97 of 97 cut streams) '
+        + 'joined by OpenInference (XingZ624 and XingZ625, 2026-09-23: 137 s and 116 s a stream against '
+        + 'Morph\'s 11.5 s and 3.4 s, 450 cap-cut replies against 150; class ninety-one), '
         + 'while every other row ignores no endpoint; Qwen3.8-27B and GLM-5.3 left the catalog on '
         + '2026-09-09, DeepSeek V4 Flash and V4 Pro on 2026-09-16',
       fn: async () => {
@@ -134,6 +136,7 @@ await describe({
         expect(OPENROUTER_MODELS['deepseek/deepseek-v4.1-flash'].ignoredEndpoints,).toEqual([
           'deepinfra',
           'wafer',
+          'open-inference',
         ],);
         /**
          Rows with a measured endpoint on them.
