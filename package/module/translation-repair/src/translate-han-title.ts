@@ -46,6 +46,53 @@ const GLOSS_CLOSE = ')';
 const LINE_END = '\n';
 
 /**
+ Opening of a Markdown link's text.
+ */
+const LINK_OPEN = '[';
+
+/**
+ Separator between a Markdown link's text and its destination.
+ */
+const LINK_MIDDLE = '](';
+
+/**
+ Closing of a Markdown link's destination.
+ */
+const LINK_CLOSE = ')';
+
+/**
+ Title as it names the work: the link text where the brackets hold a
+ Markdown link, the bracketed text itself otherwise.
+
+ @param bracketed - text between 《 and 》
+
+ @returns Text that names the work
+
+ @example
+ ```ts
+ titleText({ bracketed: '[猫猫摇篮曲](https://example.test/song)', },); // '猫猫摇篮曲'
+ ```
+ */
+function titleText({ bracketed, }: { readonly bracketed: string; },): string {
+  /**
+   Whether the brackets hold a link's shape end to end.
+   */
+  const linkShaped = bracketed.startsWith(LINK_OPEN,) && bracketed.endsWith(LINK_CLOSE,);
+  if (!linkShaped)
+    return bracketed;
+  /**
+   Where the link text ends, -1 for no link.
+   */
+  const middle = bracketed.indexOf(LINK_MIDDLE,);
+  if (middle === (-1))
+    return bracketed;
+  return bracketed.slice(
+    LINK_OPEN.length,
+    middle,
+  );
+}
+
+/**
  Whether a bracketed title is one the floor reads: on one line, in Han
  alone, and not read already.
 
@@ -112,12 +159,12 @@ function hanTitles({ text, }: { readonly text: string; },): readonly string[] {
     if (close === (-1))
       break;
     /**
-     Title between the brackets.
+     Title between the brackets, the link text where they hold a link.
      */
-    const title = text.slice(
+    const title = titleText({ bracketed: text.slice(
       open + 1,
       close,
-    );
+    ), },);
     if (isFreshHanTitle({
       title,
       titles,
