@@ -140,6 +140,39 @@ await describe({
     },),
 
     it({
+      name: 'LEAVES OUT, on a line-structured slice, a lane text carrying the Chinese line of a bilingual '
+        + 'pair beside its English (class one hundred two, shi_Yumiaoya16, 2026-09-23): the standing was '
+        + 'refused for that very shape and the offer must read the same rule',
+      fn: async () => {
+        /**
+         Original giving the cat's greeting twice, in Chinese and in English.
+         */
+        const sourceText = '> 猫说：早安，午安，晚安。\n>\n> The cat said: good morning, good afternoon, and good night.'
+          + '\n>\n> 出自《猫经》\n>\n> From *The Cat Sutra*';
+        /**
+         The archive carries the pair once.
+         */
+        const incumbentText = '> The cat said: good morning, good afternoon, and good night.\n>\n> From *The Cat Sutra*';
+        expect(laneTextsForSlate({
+          sourceText,
+          incumbentText,
+          repairText: '> 猫说：早安，午安，晚安。\n>\n> The cat said: good morning, good afternoon, and good night.'
+            + '\n>\n> From *The Cat Sutra*',
+          translateText: '> The cat said: good morning, good afternoon, and good night.\n>\n> From *The Cat Sutra*.',
+          standingText: incumbentText,
+          standingMayShip: false,
+          standingEligible: true,
+          lineStructured: true,
+        },),).toEqual([
+          {
+            lane: 'translate',
+            text: '> The cat said: good morning, good afternoon, and good night.\n>\n> From *The Cat Sutra*.',
+          },
+        ],);
+      },
+    },),
+
+    it({
       name: 'LEAVES OUT a blank lane text, which is a lane that proposed nothing',
       fn: async () => {
         expect(laneTextsForSlate({
