@@ -4647,18 +4647,22 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA16 RUNS (frozen `0f685f551`,
-    pid 2917545,
-    launched 21:29 UTC 2026-09-23,
-    waiter bz8xt9q42,
-    meters 52.98 USD Bedrock and 99.75 OpenRouter at launch, Synthetic spent, Hyper dry;
+1.  MIKAELA11 RUNS (frozen `0f685f551`,
+    pid 2920908,
+    entry id `mikaela_khara`,
+    launched 21:56 UTC 2026-09-23,
+    waiter boq6zxv1i,
+    meters 50.95 USD Bedrock and 97.95 OpenRouter at launch, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    the first entry other than XingZ60 on the two page-assembly passes of classes ninety-nine and one hundred;
-    read for `jsx-attribute-restored` and `title-reference-unified` lines (none expected on a page whose archive renders every heading; any line is read against the archive),
-    classes eighty-four, ninety-two, ninety-five and ninety-six holding,
-    beside every check of `hulicaijia15`
-    (13 headings, 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish, no double blank line);
-    record under a new heading above "## XingZ631 read, 2026-09-23, 21:50 UTC" in the pass log.
+    read for the two page-assembly passes of classes ninety-nine and one hundred (none expected; any `jsx-attribute-restored` or `title-reference-` line read against the archive),
+    classes seventy to seventy-seven and ninety-six holding (the excerpt line curled, 𝓠𝓾𝓪𝓷 as the archive, "Mika was outed", the Epilogue one to one, the life in the past, "𝓠𝓾𝓪𝓷’s" curled),
+    beside every check of `mikaela10`
+    (front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish);
+    record under a new heading above "## hulicaijia16 read, 2026-09-23, 22:00 UTC" in the pass log;
+    then rotate shi_Yumiaoya, yingying, zheermao101 and CuspariaKLSY on the same dist.
+    HULICAIJIA16 READ (frozen `0f685f551`): SETTLED at 21:55 UTC 2026-09-23 in 27 min, one attempt, 4,482 seats, 144 retry rounds, 3.81 USD by the meters;
+    the two page-assembly passes silent by design (the archive renders every heading, no rewritten tag attribute), classes eighty-four, ninety-two, ninety-five and ninety-six holding,
+    every check as `hulicaijia15` (13 headings, 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish, no double blank line), one unendorsed (35), 130 abstention lines; no class.
     XINGZ631 READ (frozen `5e21134ee`): SETTLED at 21:22 UTC 2026-09-23 in 43 min, one attempt, 8,077 seats, 244 retry rounds, 8.59 USD by the meters;
     classes ninety-nine and one hundred live (one marker restored to `II`, the six markers `II` to `VII`; the pinyin credit "Ling Chong Qi Yuan" unified to "Zero-Layer Prayer"; the link, the first credit and footnote 6 already carrying their headings' renderings),
     classes eighty-eight to ninety-eight holding, class ninety-four not exercised (the placeholder kept, the fifth treatment in six runs; the placeholder question stays open for the owner),

@@ -8082,6 +8082,37 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## hulicaijia16 read, 2026-09-23, 22:00 UTC: SETTLED in 27 min, the two page-assembly passes silent on a page whose archive renders every heading, no class; mikaela11 launched
+
+`hulicaijia16` (frozen `0f685f551`, pid 2917545) SETTLED at 21:55 UTC,
+27 min after its 21:29 launch (TALLY `ms=1596637`),
+one attempt,
+4,482 seats,
+144 retry rounds,
+3,722 calls,
+no abandoned stream,
+3.81 USD by the meters (Bedrock 52.98 to 50.95, OpenRouter 99.75 to 97.97),
+on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry).
+Stages: repair from 21:32, translate from 21:45, contest from 21:47, consolidation 21:49 to 21:55, the fastest hulicaijia run to date (37 min on `hulicaijia15`, 68 on `hulicaijia13`).
+Endpoints: deepseek on Morph 646 streams at 3.4 s (1 CoreWeave fallback), GLM-5.3-Flash on Wafer 220 at 4.4 s, minimax-m3 on CoreWeave 600 at 1.8 s, Mercury on Inception 444 at 6.5 s; Jev 132 of 132.
+
+Classes ninety-nine and one hundred silent by design:
+no `jsx-attribute-restored` and no `title-reference-` line, the archive rendering every heading of this page and carrying no tag attribute the bench rewrote;
+the passes ran over the page (the guard logs every finding) and found nothing to change, the first entry other than XingZ60 through them.
+Classes eighty-four, ninety-two, ninety-five and ninety-six holding: 18 markers and 9 definitions with no trim, revert or marker-drop refusal, no straight apostrophe in a word.
+Every check as `hulicaijia15`:
+13 headings (the archive's "Conflict" for 左右), 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish, no double blank line;
+one unendorsed standing (35), 15 gate-kept, 19 slate-declined, 130 abstention lines with reasons.
+No class.
+
+`mikaela11` (frozen `0f685f551`, pid 2920908, overlap 8, entry id `mikaela_khara`)
+launched 21:56 UTC on Bedrock and OpenRouter
+(meters 50.95 USD Bedrock, 97.95 OpenRouter at launch),
+waiter boq6zxv1i.
+Read for the two page-assembly passes (none expected; any line read against the archive),
+classes seventy to seventy-seven and ninety-six holding (the excerpt line curled, 𝓠𝓾𝓪𝓷 as the archive, "Mika was outed", the Epilogue one to one, the life in the past, "𝓠𝓾𝓪𝓷’s" curled),
+beside every check of `mikaela10` (front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish).
+
 ## XingZ631 read, 2026-09-23, 21:50 UTC: SETTLED in 43 min, classes ninety-nine and one hundred live on the markers, the linked credit and both song credits; the quote search read a tag attribute's quotes and stood aside once, fixed in 0f685f551, hulicaijia16 launched
 
 `XingZ631` (frozen `5e21134ee`, pid 2893880) SETTLED at 21:22 UTC,
