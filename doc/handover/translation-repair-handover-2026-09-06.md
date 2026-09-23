@@ -4647,17 +4647,18 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  ZHEERMAO6 RUNS (frozen `e78515f56`,
-    pid 2784441,
-    launched 17:21 UTC 2026-09-23,
+1.  CUSPARIAKLSY8 RUNS (frozen `e78515f56`,
+    pid 2788469,
+    launched 17:34 UTC 2026-09-23,
     Bedrock and OpenRouter wet, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class ninety-seven on the wire (any "drops the address in the second person" refusal in the artifact; any 你 line of the reply in the second person),
-    classes seventy-seven and ninety-six holding,
-    beside every check of `zheermao4`
-    (2 headings, front matter equal, no TA, no error finish, no double blank line, the email label as the archive);
-    record under a new heading above "## yingying5 read, 2026-09-23, 17:22 UTC" in the pass log.
-    ZHEERMAO5 (frozen `c62ce70b3`) killed at 17:21 UTC 9 min in at the translate lane under ALWAYS KILL AND RELAUNCH once class ninety-seven landed (566 seats, about 0.25 USD).
+    read for class ninety-seven on the wire (the original's 你 lines in the second person; any "drops the address in the second person" refusal in the artifact),
+    classes seventy-five, seventy-six, eighty-five and ninety-six holding,
+    beside every check of `CuspariaKLSY7`
+    (1 heading, 1 marker, the gloss beside the nickname line, the life in the past, front matter equal, no TA, no error finish, no double blank line);
+    record under a new heading above "## zheermao6 read, 2026-09-23, 17:35 UTC" in the pass log.
+    ZHEERMAO6 READ (frozen `e78515f56`): SETTLED at 17:33 UTC 2026-09-23 in 12 min, one attempt, 958 seats, 34 retry rounds, 0.31 USD by the meters;
+    class ninety-seven not exercised (the bench kept "Thank you ... I'll treat you" itself, no refusal), classes seventy-seven and ninety-six holding, every check as `zheermao4`, the email conversation as the archive this run; no class.
     YINGYING5 READ (frozen `c62ce70b3`): SETTLED at 17:11 UTC 2026-09-23 in 6 min, one attempt, 298 seats, 11 retry rounds, 0.21 USD by the meters;
     classes eighty-six, ninety-two, ninety-five and ninety-six holding, every check as `yingying4`;
     but the farewell shipped in the archive's third person ("May she still have...") where the original writes 你 and `yingying1` to `4` wrote "May you": the contest tied 2 to 2, the consolidation proposed "you", the gate kept the standing 2 to 1 on a ballot reading 你 as "she" (class ninety-seven).

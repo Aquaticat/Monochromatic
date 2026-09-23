@@ -8082,6 +8082,45 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## zheermao6 read, 2026-09-23, 17:35 UTC: SETTLED in 12 min on the class ninety-seven build, class ninety-seven not exercised (the bench kept the address itself), every check as zheermao4; no class, CuspariaKLSY8 launched
+
+`zheermao6` (frozen `e78515f56`, pid 2784441, entry `zheermao101`) SETTLED at 17:33 UTC,
+12 min after its 17:21 launch (TALLY `ms=726839`),
+one attempt,
+958 seats,
+34 retry rounds,
+827 calls,
+16 abandoned streams (0.04 USD),
+0.31 USD by the meters (Bedrock 67.88 to 67.58, OpenRouter 112.34 to 112.03),
+on Bedrock and OpenRouter (Synthetic spent, Hyper dry; Qwen3.8-27B and glm-5.3 dark, 186 throws, by design).
+Endpoints: minimax on CoreWeave 142, deepseek on Morph 131, Mercury on Inception 91, GLM-5.3-Flash on Wafer 59, Together 1.
+
+Class ninety-seven not exercised live:
+no "drops the address in the second person" refusal in the artifact.
+The original addresses the deceased twice (the front matter description and the opening quote 谢谢你和我聊了这么多……请你喝奶茶),
+the page carries "Thank you for talking with me so much. ... I'll treat you to some milk tea." in the second person,
+so the floor had nothing to refuse; the unit guards (`address-drop.unit.test.ts`) stand for the yingying shape.
+
+Every check as `zheermao4`:
+2 headings, front matter equal, no TA, no error finish, no double blank line,
+the four JSX path literals the only straight apostrophes (class ninety-six holding),
+two em-dashes left per the owner,
+both labels as the archive ("English translation of the letter from Arts:", "English translation of the preceding email conversation:"; class seventy-seven holding),
+the email conversation as the archive's own text this run (the review's 3-of-4-candidate split reached no revision; the Arts letter reviewed on one admissible revision and kept),
+the body rewritten by the lanes in the ordinary way (the wish line split as the original's two lines, "deeply starved of love", the galgame title completed to *Mystery Lover 2: Forgotten Truth*).
+Terminals: 2 consolidated, 3 slate-endorsed, 3 slate-declined (0, 9, 12), 1 slate-unjudged (1), 1 gate-kept (5, gate 2 to 2 consolidated against standing);
+19 abstention lines with reasons.
+No class.
+
+`CuspariaKLSY8` (frozen `e78515f56`, pid 2788469, overlap 8)
+launched 17:34 UTC on Bedrock and OpenRouter
+(meters 67.57 USD Bedrock, 112.01 OpenRouter at launch),
+waiter bjkt19eib.
+Read for class ninety-seven on the wire (the original's 你 lines, if any, in the second person; any refusal line in the artifact),
+classes seventy-five, seventy-six, eighty-five and ninety-six holding,
+beside every check of `CuspariaKLSY7`
+(1 heading, 1 marker, the gloss "Ling Shui Yu Yu Zi means fish in clear water" beside the nickname line, every line of the life in the past, front matter equal, no TA, no error finish, no double blank line).
+
 ## yingying5 read, 2026-09-23, 17:22 UTC: SETTLED in 6 min, classes eighty-six, ninety-two, ninety-five and ninety-six holding, but the farewell in the third person (class ninety-seven); fixed in e78515f56, zheermao5 killed, zheermao6 launched
 
 `yingying5` (frozen `c62ce70b3`, pid 2760848) SETTLED at 17:11 UTC,
