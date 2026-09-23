@@ -1,3 +1,8 @@
+import {
+  referenceScope,
+  type Span,
+} from './title-reference-scope.ts';
+
 //region Title reference locate
 // WHERE A RENDERING OF A BRACKETED TITLE STANDS IN A SLICE'S PAGE TEXT. The
 // original brackets a section title as a link (`《[title](url)》`), in
@@ -91,21 +96,6 @@ const RUN_BOUNDARIES: ReadonlySet<string> = new Set([
   '–',
   LINE_END,
 ],);
-
-/**
- One span of the page text.
- */
-export type Span = {
-  /**
-   Offset of the span's first character.
-   */
-  readonly start: number;
-
-  /**
-   Offset just past the span.
-   */
-  readonly end: number;
-};
 
 /**
  One rendering located in the page text.
@@ -508,9 +498,44 @@ function locateMarked(
 }
 
 /**
+ Location moved by an offset, so a span found inside a scope is reported
+ against the whole text.
+
+ @param location - location inside the scope
+
+ @param by - offset of the scope's first character
+
+ @returns Location against the whole text
+
+ @example
+ ```ts
+ shifted({ location: { kind: 'quote', start: 1, end: 4, }, by: 10, },); // 11 to 14
+ ```
+ */
+function shifted(
+  {
+    location,
+    by,
+  }: {
+    readonly location: TitleLocation;
+    readonly by: number;
+  },
+): TitleLocation {
+  if ((location.kind === 'none') || (location.kind === 'ambiguous'))
+    return location;
+  return {
+    kind: location.kind,
+    start: location.start + by,
+    end: location.end + by,
+  };
+}
+
+/**
  Where a slice's page text renders a title the original brackets: by the
  link's destination first, then by the Han gloss after the English, then
- by title brackets, then by quotes.
+ by title brackets, then by quotes, the bracket and quote searches held to
+ the page's definition line where the original references the title in a
+ footnote definition.
 
  @param sourceText - original text of the slice, comments cut
 
@@ -564,10 +589,25 @@ export function locateTitleRendering(
   if (glossed.kind !== 'none')
     return glossed;
   /**
+   Span the bracket and quote searches read.
+   */
+  const scope = referenceScope({
+    sourceText,
+    pageText,
+    title,
+  },);
+  /**
+   Page text inside the scope.
+   */
+  const scoped = pageText.slice(
+    scope.start,
+    scope.end,
+  );
+  /**
    Title-bracketed span, where the page brackets.
    */
   const bracketed = locateMarked({
-    pageText,
+    pageText: scoped,
     pairs: [
       [
         TITLE_OPEN,
@@ -577,11 +617,17 @@ export function locateTitleRendering(
     kind: 'bracket',
   },);
   if (bracketed.kind !== 'none')
-    return bracketed;
-  return locateMarked({
-    pageText,
-    pairs: QUOTE_PAIRS,
-    kind: 'quote',
+    return shifted({
+      location: bracketed,
+      by: scope.start,
+    },);
+  return shifted({
+    location: locateMarked({
+      pageText: scoped,
+      pairs: QUOTE_PAIRS,
+      kind: 'quote',
+    },),
+    by: scope.start,
   },);
 }
 
