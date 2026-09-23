@@ -4647,19 +4647,20 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA17 RUNS (frozen `6361d74d0`,
-    pid 2953486,
-    launched 22:36 UTC 2026-09-23,
-    waiter bpts8jr04,
-    meters 49.64 USD Bedrock and 96.97 OpenRouter at launch, Synthetic spent, Hyper dry;
+1.  YINGYING7 RUNS (frozen `6361d74d0`,
+    pid 2969122,
+    launched 22:47 UTC 2026-09-23,
+    waiter bnvb061ax,
+    meters 49.32 USD Bedrock and 96.69 OpenRouter at launch, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class one hundred two live (the closing quote as the archive's two lines; no lane text carrying the Chinese line offered on slice 16),
-    class one hundred one holding (the `[^1]` definition on the page whatever whitespace its candidate ends in),
+    read for classes eighty-six, ninety-seven, one hundred one and one hundred two holding (the `[^2]` definition naming Yingying, the farewell in the second person, both definitions on the page, no lane text carrying a Chinese line),
     the two page-assembly passes of classes ninety-nine and one hundred (none expected; any line read against the archive),
-    classes seventy-eight to eighty, ninety-two, ninety-five and ninety-six holding ("Chewing Gum" and "Danpian", the attempt survived on January 16, the marker and definition on the page, the JSX path literals the only straight quotes),
-    beside every check of `shi_Yumiaoya14` (4 headings, front matter equal, no TA, no error finish, no double blank line);
-    record under a new heading above "## shi_Yumiaoya16 read, 2026-09-23, 22:45 UTC" in the pass log;
-    then rotate yingying, zheermao101 and CuspariaKLSY on the same dist.
+    beside every check of `yingying6` (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, no TA, no error finish, no double blank line);
+    record under a new heading above "## shi_Yumiaoya17 read, 2026-09-23" in the pass log;
+    then zheermao101 and CuspariaKLSY on the same dist.
+    SHI_YUMIAOYA17 READ (frozen `6361d74d0`): SETTLED at 22:42 UTC 2026-09-23 in 6 min, one attempt, 879 seats, 33 retry rounds, 0.49 USD by the meters;
+    the closing quote as the archive's two lines (class one hundred two not exercised live: no lane text refused on slice 16 this run, the eligible standing shipped unjudged), class one hundred one holding (the `[^1]` definition the page's last line, the source's one marker), the two page-assembly passes silent,
+    classes seventy-eight, seventy-nine, ninety-two, ninety-five and ninety-six holding, every check as `shi_Yumiaoya14`, five slate-declined, three gate-kept, 16 abstention lines, Jev 22 of 22; no class.
     SHI_YUMIAOYA16 READ (frozen `314ca4b8c`): SETTLED at 22:29 UTC 2026-09-23 in 6 min, one attempt, 880 seats, 32 retry rounds, 0.60 USD by the meters;
     class one hundred one live (the `[^1]` definition the page's last line, both source markers on the page), the two page-assembly passes silent, classes seventy-eight, seventy-nine, ninety-two, ninety-five and ninety-six holding, every check as `shi_Yumiaoya14`, one unendorsed (0), 13 abstention lines, Jev 20 of 20;
     but the closing quote shipped its Chinese line beside the English (three lines against the archive's two): the repair lane text was refused as the standing on the class eighty pair bound and re-entered through the class forty lane offer, whose rule ran without `lineStructured` (class one hundred two);

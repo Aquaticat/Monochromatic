@@ -8082,6 +8082,36 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya17 read, 2026-09-23, 22:43 UTC: SETTLED in 6 min, the closing quote as the archive's two lines, class one hundred one holding, no class; yingying7 launched
+
+`shi_Yumiaoya17` (frozen `6361d74d0`, pid 2953486) SETTLED at 22:42 UTC,
+6 min after its 22:36 launch (TALLY `ms=360484`),
+one attempt,
+879 seats,
+33 retry rounds,
+799 calls,
+no abandoned stream,
+0.49 USD by the meters (Bedrock 49.64 to 49.35, OpenRouter 96.97 to 96.77),
+on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry; glm-5.3 and Qwen3.8-27B dark by design).
+Stages: repair from 22:36, contest from 22:39, consolidation 22:39 to 22:42; Jev 22 of 22; 16 abstention lines with reasons;
+terminals: slate-endorsed 6, 12, 15; consolidated 7, 8, 17; slate-declined 0, 4, 10, 11, 13; gate-kept 1, 3, 9; slice 16 slate-unjudged (the contest winner eligible on the rule this run, no lane text offered, the standing shipped).
+
+The closing quote as the archive's two lines (the film's English and the attribution, no Chinese line above them): class one hundred two not exercised live (no lane text was refused on slice 16 this run; the unit guard stands), the page right.
+Class one hundred one holding (the `[^1]` definition the page's last line, "below." then the file's line ending; the source's one marker on the page where `shi_Yumiaoya16` had carried a second the source lacks).
+The two page-assembly passes silent.
+Classes seventy-eight and seventy-nine holding ("Chewing Gum and Danpian had both", "she swallowed a large amount of medication in an attempt to end her life" on January 16),
+classes ninety-two, ninety-five and ninety-six fine (the six straight double quotes the archive's own JSX path literals),
+every structural check as `shi_Yumiaoya14` (4 headings, front matter equal, no TA, no error finish, no double blank line).
+Han residue as `shi_Yumiaoya14`: “逆子” on the father sentence, the archive's own 尼康 D200 caption and comments.
+No class.
+
+`yingying7` (frozen `6361d74d0`, pid 2969122, overlap 8)
+launched 22:47 UTC on Bedrock and OpenRouter
+(meters 49.32 USD Bedrock, 96.69 OpenRouter at launch),
+waiter bnvb061ax.
+Read for classes eighty-six, ninety-seven, one hundred one and one hundred two holding (the `[^2]` definition naming Yingying, the farewell in the second person, both definitions on the page, no lane text carrying a Chinese line),
+beside every check of `yingying6` (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, no TA, no error finish, no double blank line).
+
 ## shi_Yumiaoya16 read, 2026-09-23, 22:45 UTC: SETTLED in 6 min, class one hundred one live, but the closing quote shipped its Chinese line beside the English because the lane offer's floor ran without the line-structured flag (class one hundred two); fixed in 6361d74d0, shi_Yumiaoya17 launched
 
 `shi_Yumiaoya16` (frozen `314ca4b8c`, pid 2942500) SETTLED at 22:29 UTC,
