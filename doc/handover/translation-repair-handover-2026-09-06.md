@@ -4647,19 +4647,21 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  ZHEERMAO7 RUNS (frozen `6361d74d0`,
-    pid 2972518,
-    entry id `zheermao101`,
-    launched 23:05 UTC 2026-09-23,
-    waiter b0uacp5b5,
-    meters 49.30 USD Bedrock and 96.63 OpenRouter at launch, Synthetic wet again since 22:42 UTC, Hyper dry;
+1.  CUSPARIAKLSY9 RUNS (frozen `334c02f23`,
+    pid 2992337,
+    launched 23:37 UTC 2026-09-23,
+    waiter boykpqz98,
+    meters 49.06 USD Bedrock and 96.34 OpenRouter at launch, Synthetic's five-hour window spent (2,750 of 2,750), Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for classes seventy-seven, ninety-six, one hundred one and one hundred two holding (the email label as the archive, no lane text carrying a Chinese line),
-    the two page-assembly passes of classes ninety-nine and one hundred (none expected; any line read against the archive),
-    beside every check of `zheermao6` (2 headings, front matter equal, no TA, no error finish, no double blank line),
-    and for the Synthetic latency (grace per round against `zheermao6`'s);
-    record under a new heading above "## yingying7 read, 2026-09-23" in the pass log;
-    then CuspariaKLSY on the same dist.
+    read for class one hundred three's "JUDGE SEATS phase=lanes chunk re-seated under a hold" line if any hold runs (none expected with Synthetic dry from the start),
+    classes seventy-five, seventy-six, eighty-five and ninety-six holding,
+    beside every check of `CuspariaKLSY8` (1 heading, front matter equal, no TA, no error finish, no double blank line, the life in the past, the nickname gloss "Ling Shui Yu Yu Zi (Fish in Clear Water)");
+    record under a new heading above "## zheermao7 read, 2026-09-23" in the pass log;
+    then yingying or zheermao on the same dist, reading whichever pass meets a mid-lane dry-out for the re-seat line and checker rounds at 2 of 3.
+    ZHEERMAO7 READ (frozen `6361d74d0`): SETTLED at 23:20 UTC 2026-09-23 in 17 min, one attempt, 972 seats, 32 retry rounds, 0.52 USD by the meters;
+    classes seventy-seven, ninety-six, one hundred one and one hundred two holding, every check as `zheermao6`, five slate-declined, one gate-kept, 32 abstention lines, Jev 28 of 28;
+    but Synthetic's window ran out at 23:15:27 UTC two minutes into the repair lane and the checker bench read once at the lanes boundary (two Synthetic-only seats) ran ten of twelve checker rounds and probes on gpt-oss alone, short of quorum, while the substitute a dry reading seats sat idle (class one hundred three);
+    fixed in 334c02f23 (the repair lane's per-chunk hook re-reads the seats under a hold and hands the driver a `RepairSliceSeating`, kept once read; `pass-reseat.ts`, `repair-contract.ts`, `document-lanes.ts`, `repair-translation.ts`), guards red first c036471c3, lint 0/0, types clean, full suite `suite-class103.log`.
     YINGYING7 READ (frozen `6361d74d0`): SETTLED at 23:01 UTC 2026-09-23 in 19 min against yingying6's 4, one attempt, 365 seats, 1 retry round, 0.08 USD by the meters;
     classes eighty-six and ninety-seven holding, classes one hundred one and one hundred two fine, every check as `yingying6`, one gate-kept (2), 3 abstention lines, Jev 8 of 8; no class;
     the time is Synthetic's (wet again from 22:42 UTC, GLM-5.3-Flash 19 streams at 50 s mean there, 1,270 s of grace across 80 rounds against 91 s), the standing latency observation.

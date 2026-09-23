@@ -8082,6 +8082,57 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## zheermao7 read, 2026-09-23, 23:40 UTC: SETTLED in 17 min, classes seventy-seven, ninety-six, one hundred one and one hundred two holding, every check as zheermao6; but Synthetic ran dry two minutes into the repair lane and the checker bench ran ten of twelve rounds on one voice (class one hundred three); fixed in 334c02f23, CuspariaKLSY9 launched
+
+`zheermao7` (frozen `6361d74d0`, pid 2972518, entry `zheermao101`) SETTLED at 23:20 UTC,
+17 min after its 23:05 launch (TALLY `ms=1019223`),
+one attempt,
+972 seats,
+32 retry rounds,
+852 calls,
+18 abandoned streams (0.05 USD),
+0.52 USD by the meters (Bedrock 49.30 to 49.07, OpenRouter 96.63 to 96.37),
+on Synthetic, Bedrock and OpenRouter until 23:15:27 UTC and on Bedrock and OpenRouter after (Synthetic's five-hour window read 2,747 of 2,750 at launch and 2,750 of 2,750 from 23:15; Hyper dry; glm-5.3 dark by design).
+Stages: archive block review from 23:08, lanes from 23:13, contest 23:18, consolidation 23:18 to 23:20.
+Endpoints: minimax on CoreWeave 126 streams at 3.4 s, deepseek on Morph 122 at 3.4 s, Mercury on Inception 91 at 6.9 s, GLM-5.3-Flash on Wafer 41 at 5.6 s;
+on Synthetic before the dry-out Qwen3.8-27B 41 at 22.0 s, Kimi-K3 41 at 9.0 s, gpt-oss 39 at 4.8 s, GLM-5.3-Flash 14 at 30.8 s;
+Jev 28 of 28.
+Grace: 236 rounds at 4.0 s mean against `zheermao6`'s 234 at 1.5 s, three rounds over 60 s, the Synthetic latency observation again while Synthetic served.
+
+Classes seventy-seven, ninety-six, one hundred one and one hundred two holding:
+both labels a single line ("English translation of Arts’s letter:" revised by the review this run, "English translation of the preceding email conversation:" as the archive),
+the three JSX path literals the only straight apostrophes,
+no wording check, no lane text carrying a Chinese line (the original carries no bilingual pair),
+the two page-assembly passes silent (no `jsx-attribute-restored` or `title-reference-unified` line, the page carrying no rewritten tag attribute or Han-headed section).
+Every check as `zheermao6`: 2 headings, front matter equal, no TA, no error finish, no double blank line, two em-dashes left per the owner,
+the Han census over the page against the archive finding only the archive's own JSX translator comment;
+the email conversation as the archive's own text this run (the reply block with the translator comment kept), the body rewritten by the lanes in the ordinary way.
+Terminals: 2 consolidated (0, 1), 2 slate-endorsed (3, 8), 5 slate-declined (4, 5, 9, 11, 12), 1 gate-kept (6), four slices uncontested; 32 abstention lines with reasons.
+
+Class one hundred three.
+Synthetic refused a call at 23:15:27 UTC with its meter reading dry ("refused us while its meter reads dry and bedrock wet, hyper dry, openrouter wet; held out for 300000ms"), two minutes into the repair lane.
+The repair lane's benches had been read once at the lanes boundary (23:13:36, Synthetic wet: checkers Qwen3.8-27B, Kimi-K3 and gpt-oss),
+and the benches the lanes phase waits on (`BENCHES_BY_PHASE.lanes`: wide, editors, refiners, translators) never named the checkers,
+so from chunk 11 on both Synthetic-only checker seats answered `NoProviderForModelError` and the checker and introduced-defect-probe stages closed on gpt-oss alone:
+21 "bench short of quorum, reachable 1 of 3; closing on 2 voices" warn lines, ten of twelve checker rounds at 1 of 3 heard.
+`zheermao6`, with Synthetic dry from the start, had seated the substitute (gemma-4-26b beside gpt-oss, `OPENROUTER_CHECKER_SUBSTITUTE`) and heard 2 of 3 on every checker round with no shortfall line.
+The class-thirteen per-chunk hook (`awaitBenchQuorum`) only waits out a named hold for the benches the phase lists; it never re-derives the roster, and the translate lane's re-seat runs once, before that lane starts.
+
+Fixed in 334c02f23 (`corpus-run/pass-reseat.ts`, `repair-contract.ts`, `document-lanes.ts`, `repair-translation.ts`):
+the repair lane's per-chunk hook reads the seats again through `readJudgeSeats` (phase `lanes`) while a hold is running, which is the signal a dry-out leaves, and hands the driver a `RepairSliceSeating` whose `repairModels` the next chunk runs on, kept once read so the chunks after the hold never fall back to the roster read before it;
+a "JUDGE SEATS phase=lanes chunk re-seated under a hold: checkers=…" line names the bench each time; it still costs nothing while nothing is held (one synchronous read of the holds).
+Guards red first at c036471c3 (`pass-reseat.unit.test.ts` four cases, the driver seating the returned roster in `repair-translation.unit.test.ts`, the lanes driver handing it on in `document-lanes.unit.test.ts`; `lanesHooksFor` exported through the sheet barrel, its client narrowed to `SeatReadingClient`),
+lint 0 and 0 (the first shape, `RepairModels | undefined`, refused by `no-nullish-union`; the seating object took its place), types clean, full suite green (`suite-class103.log`, 1104 PASS, exit 0).
+Not exercised live yet: a dry-out inside a lane cannot be scheduled; the next pass on which Synthetic's window runs out mid-lane is read for the re-seat line and checker rounds at 2 of 3.
+
+`CuspariaKLSY9` (frozen `334c02f23`, pid 2992337, overlap 8)
+launched 23:37 UTC on Bedrock and OpenRouter
+(meters 49.06 USD Bedrock, 96.34 OpenRouter at launch; Synthetic's window spent, 2,750 of 2,750; Hyper dry),
+waiter boykpqz98.
+Read for class one hundred three's re-seat line if any hold runs (none expected with Synthetic dry from the start: the checkers seat the substitute at the boundary),
+classes seventy-five, seventy-six, eighty-five and ninety-six holding,
+beside every check of `CuspariaKLSY8` (1 heading, front matter equal, no TA, no error finish, no double blank line, the life in the past, the nickname gloss).
+
 ## yingying7 read, 2026-09-23, 23:03 UTC: SETTLED in 19 min, every check as yingying6, classes eighty-six and ninety-seven holding, no class; Synthetic wet again with GLM-5.3-Flash at 50 s a stream; zheermao7 launched
 
 `yingying7` (frozen `6361d74d0`, pid 2969122) SETTLED at 23:01 UTC,
