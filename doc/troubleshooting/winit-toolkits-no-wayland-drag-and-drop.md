@@ -18,6 +18,66 @@ which toolkits share it,
  so the toolkit choice is
 made once with the evidence in view.
 
+## Status update (2026-09-23)
+
+The winit gap this doc describes is closing upstream,
+ and the framing shifts from
+"winit has no Wayland DnD" to "toolkits pinned to winit 0.30.x have no Wayland DnD".
+
+- Winit pull request
+  [#4571](https://github.com/rust-windowing/winit/pull/4571) merged 2026-07-16 and
+  shipped in the pre-release `v0.31.0-beta.3` (published 2026-09-04).
+   It implements
+  both receiving and initiating drags on Wayland,
+   macOS,
+   and Windows.
+- X11 is still incoming-only:
+   `winit-x11` overrides `data_transfer`,
+  `fetch_data_transfer`,
+   and `set_valid_dnd_actions`,
+   but not `start_drag`,
+   and its
+  incoming path reports `Copy` only.
+   Upstream called X11 outgoing out of scope for
+  that pull request.
+- The latest stable release is still `v0.30.13` (2026-03-02),
+   so every toolkit in the
+  survey inherits the gap until it migrates to a `0.31` release.
+- [winit#1881](https://github.com/rust-windowing/winit/issues/1881) closed as completed
+  2026-08-03;
+   [#720](https://github.com/rust-windowing/winit/issues/720) and
+  [#1499](https://github.com/rust-windowing/winit/issues/1499) remain open.
+
+The hand-rolled `wl_data_device` workaround recorded here stays correct for winit
+0.30.x builds,
+ and the KWin first-device rule still applies to any client that binds
+two devices.
+ Once a toolkit migrates to winit 0.31,
+ winit owns the data device,
+ and a
+second hand-rolled binding becomes the thing that breaks drops.
+
+One path in this doc is stale.
+ The hand-rolled adapter it names,
+`package/desktop-app/file-manager/src/dnd_wayland.rs`,
+ belonged to the retired Slint
+implementation;
+ it was added as `packages/desktop-app/file-manager/src/dnd_wayland.rs`
+in commit `0540a43a3`,
+ before the `packages/` to `package/` directory rename.
+ The file
+manager is now GTK4,
+ and its drag-and-drop wiring lives in
+`package/desktop-app/file-manager/src/dnd.rs`.
+
+For the Xilem/Masonry side,
+ including the event-routing trace,
+ the removal history of
+Masonry's file-drop events,
+ and what adoption would require,
+ see
+[xilem-dolphin-drag-and-drop.md](xilem-dolphin-drag-and-drop.md).
+
 ## Symptom
 
 - Dragging a file from a file manager onto the app on a native Wayland session
@@ -49,7 +109,10 @@ emit `DroppedFile`/`HoveredFile`,
  which is why the same app works on X11 and
 macOS but not Wayland.
  The upstream tracking issue is
-[winit#1881](https://github.com/rust-windowing/winit/issues/1881) (open),
+[winit#1881](https://github.com/rust-windowing/winit/issues/1881) (open when this was
+written;
+ closed as completed 2026-08-03,
+ per the "Status update (2026-09-23)" section),
  with
 [winit#1499](https://github.com/rust-windowing/winit/issues/1499) as related
 history.
@@ -115,7 +178,9 @@ compositor-integrated widget toolkits with first-class drag-and-drop:
 - Upstream tracking:
    [winit#1881](https://github.com/rust-windowing/winit/issues/1881)
   ("Support drag and drop on wayland"),
-   open at time of writing.
+   open at time of writing;
+   closed as
+  completed 2026-08-03.
 - Bevy:
    [Bevy Cheat Book, Drag-and-Drop (Files)](https://bevy-cheatbook.github.io/input/dnd.html)
   states Wayland is unsupported;
