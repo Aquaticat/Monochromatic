@@ -59,6 +59,133 @@ export function archiveBlockIdentity(
 }
 
 /**
+ Line-ending characters, the only thing a block separator is made of.
+ */
+const LINE_ENDINGS: ReadonlySet<string> = new Set([
+  '\n',
+  '\r',
+]);
+
+/**
+ Offset just past the run of line endings starting at an offset.
+
+ @param text - document scanned
+
+ @param offset - where the run may start
+
+ @returns Offset of the first character that is no line ending, or the text's length
+
+ @example
+ ```ts
+ pastLineEndings({ text: 'A\n\nB', offset: 1, },); // 3
+ ```
+ */
+function pastLineEndings(
+  {
+    text,
+    offset,
+  }: {
+    readonly text: string;
+    readonly offset: number;
+  },
+): number {
+  for (let at = offset; at < text.length; at += 1) {
+    if (!LINE_ENDINGS.has(text[at] ?? '',))
+      return at;
+  }
+  return text.length;
+}
+
+/**
+ Offset where the run of line endings ending at an offset starts.
+
+ @param text - document scanned
+
+ @param offset - offset just past the run
+
+ @returns Offset of the run's first line ending, or the offset itself where none precedes it
+
+ @example
+ ```ts
+ beforeLineEndings({ text: 'A\n\nB', offset: 3, },); // 1
+ ```
+ */
+function beforeLineEndings(
+  {
+    text,
+    offset,
+  }: {
+    readonly text: string;
+    readonly offset: number;
+  },
+): number {
+  for (let at = offset; at > 0; at -= 1) {
+    if (!LINE_ENDINGS.has(text[at - 1] ?? '',))
+      return at;
+  }
+  return 0;
+}
+
+/**
+ Span to cut when a review removes a block outright.
+
+ CLASS NINETY-FOUR (XingZ627, 2026-09-23). A removal spliced as an empty
+ replacement left the block's own separators standing on both sides, so the
+ archive's placeholder line after the front matter left three blank lines
+ behind it and the page shipped with a double blank line. The removed block
+ takes the line endings that follow it, which leaves the separator before
+ it to stand between its neighbours; a block that ends the document takes
+ the line endings before it instead, so nothing trails.
+
+ @param text - document the block sits in
+
+ @param startOffset - where the block starts
+
+ @param endOffset - offset just past the block
+
+ @returns Span covering the block and one run of line endings beside it
+
+ @example
+ ```ts
+ const span = removalSpan({ text: 'A\n\nB\n\nC', startOffset: 3, endOffset: 4, },);
+ ```
+ */
+function removalSpan(
+  {
+    text,
+    startOffset,
+    endOffset,
+  }: {
+    readonly text: string;
+    readonly startOffset: number;
+    readonly endOffset: number;
+  },
+): {
+  readonly startOffset: number;
+  readonly endOffset: number;
+} {
+  /**
+   Offset just past the line endings that follow the block.
+   */
+  const after = pastLineEndings({
+    text,
+    offset: endOffset,
+  },);
+  if (after > endOffset)
+    return {
+      startOffset,
+      endOffset: after,
+    };
+  return {
+    startOffset: beforeLineEndings({
+      text,
+      offset: startOffset,
+    },),
+    endOffset,
+  };
+}
+
+/**
  Reviews unclaimed blocks in reverse offset order and applies selected revisions.
  
  @param client - provider client
@@ -163,10 +290,24 @@ export async function repairArchiveBlocks(
       findings.push(`archive block revision repeated its original wording and was retained: ${identity}`);
       continue;
     }
+    /**
+     Span the revision replaces: the block alone, or the block with one of
+     its separators when the revision removes it (class ninety-four).
+     */
+    const span = (outcome.text === '')
+      ? removalSpan({
+        text: revisedText,
+        startOffset: block.startOffset,
+        endOffset: block.endOffset,
+      },)
+      : {
+        startOffset: block.startOffset,
+        endOffset: block.endOffset,
+      };
     revisedText = `${revisedText.slice(
       0,
-      block.startOffset,
-    )}${outcome.text}${revisedText.slice(block.endOffset,)}`;
+      span.startOffset,
+    )}${outcome.text}${revisedText.slice(span.endOffset,)}`;
     findings.push(`archive block reviewed and revised: ${identity}`);
   }
   return {
