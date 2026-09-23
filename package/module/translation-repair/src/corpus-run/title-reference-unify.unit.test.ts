@@ -217,5 +217,53 @@ await describe({
         expect(unified.findings.length,).toBe(1,);
       },
     },),
+    it({
+      name: 'READS past a tag attribute\'s quotes and past a second quoted span that already carries the heading',
+      fn: async () => {
+        /**
+         Pass over a credit slice that also carries a tag with quoted
+         attributes, and over one that quotes the heading beside another
+         quoted title.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            ...SLICES.slice(
+              0,
+              3,
+            ),
+            pair({
+              sliceIndex: 3,
+              source: '—— 雨猫《零重猫愿》\n\n<Ring text="☿☿" size="1rem"/>',
+              target: '',
+            },),
+            pair({
+              sliceIndex: 4,
+              source: '—— 雨猫《零重猫愿》，出自《猫经》',
+              target: '',
+            },),
+          ],
+          replacements: [
+            ...HEADINGS,
+            {
+              sliceIndex: 3,
+              replacementText: '—— Yumao "Zero Cat Prayer"\n\n<Ring text="☿☿" size="1rem"/>',
+            },
+            {
+              sliceIndex: 4,
+              replacementText: '—— Yumao “Zero-Layer Cat Prayer”, from “The Cat Sutra”',
+            },
+          ],
+        },);
+        expect(unified.replacements.map(function textOf(row,): string {
+          return row.replacementText;
+        },),).toEqual([
+          '<h3 align = "center">Cat in a Cage</h3>',
+          '### Zero-Layer Cat Prayer',
+          '—— Yumao "Zero-Layer Cat Prayer"\n\n<Ring text="☿☿" size="1rem"/>',
+          '—— Yumao “Zero-Layer Cat Prayer”, from “The Cat Sutra”',
+        ],);
+        expect(unified.findings.length,).toBe(1,);
+      },
+    },),
   ],
 },);
