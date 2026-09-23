@@ -45,6 +45,12 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
 
  @param syntax - syntax role of the slice, when it has one
 
+ @param lineStructured - whether the original is verse or another
+ line-structured passage, which the rule reads the same way for a lane text
+ as it read for the standing (class one hundred two: a lane text carrying
+ the Chinese line of a bilingual pair was refused as the standing and offered
+ anyway because the offer's rule ran without this flag)
+
  @returns Lane texts to put on the slate, repair before translate; none when
  the standing is an endorsed eligible lane
 
@@ -63,6 +69,7 @@ export function laneTextsForSlate(
     standingMayShip,
     standingEligible,
     syntax,
+    lineStructured = false,
   }: {
     readonly sourceText: string;
     readonly incumbentText: string;
@@ -72,6 +79,7 @@ export function laneTextsForSlate(
     readonly standingMayShip: boolean;
     readonly standingEligible: boolean;
     readonly syntax?: SliceSyntax;
+    readonly lineStructured?: boolean;
   },
 ): readonly LaneText[] {
   if (standingMayShip && standingEligible)
@@ -106,6 +114,7 @@ export function laneTextsForSlate(
       candidateText: laneText.text,
       pageText: incumbentText,
       ...((syntax === undefined) ? {} : { syntax, }),
+      lineStructured,
     },);
     return validation.kind === 'valid';
   },);

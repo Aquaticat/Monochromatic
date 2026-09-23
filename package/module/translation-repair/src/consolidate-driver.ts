@@ -394,6 +394,7 @@ export async function consolidateDocument(
       standingMayShip,
       standingEligible: standingValid,
       ...((syntax === undefined) ? {} : { syntax, }),
+      lineStructured,
     },);
 
     /**
