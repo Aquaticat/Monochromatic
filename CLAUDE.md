@@ -877,10 +877,12 @@ Includes:
  stress/bench/load runs.
 
 BOX:
- Isolate via `podman run --memory=2g --cpus=2 --rm --volume $PWD:/work --workdir /work <image>` or `mvm` CLI;
- state bounds explicitly.
-Authorization doesn't transfer;
- isolate each heavy run.
+ Isolate heavy runs with `podman run --memory=2g --cpus=2 --rm <image>` or `mvm`.
+Default to mount-free;
+ bake in inputs.
+Mount only disposable fixtures.
+State bounds;
+ recheck authorization for each run.
 
 DCB:
  Never execute or have agents execute catastrophic commands (`sudo rm -rf /`,
