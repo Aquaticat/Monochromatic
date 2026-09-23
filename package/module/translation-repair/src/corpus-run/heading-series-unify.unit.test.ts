@@ -323,6 +323,58 @@ await describe({
       },
     },),
     it({
+      name: 'READS A LEADER WORD THE TABLE NEVER LISTED (class ninety, XingZ625, 2026-09-23): "Poem Ten:" '
+        + 'escaped the series and shipped beside nine bare headings; any word before a number word is its '
+        + 'leader, so the archive\'s bare style drops it and a plurality of "Song" writes it on every heading',
+      fn: async () => {
+        const dropped = unifyHeadingSeries({
+          slices: ARCHIVED,
+          replacements: [
+            rendered({
+              sliceIndex: 0,
+              heading: '### Poem One: Ginger (Orange Cat)',
+            },),
+            rendered({
+              sliceIndex: 1,
+              heading: '### Sooty',
+            },),
+            rendered({
+              sliceIndex: 2,
+              heading: '### Snowy',
+            },),
+          ],
+        },);
+        expect(headingsOf({ replacements: dropped.replacements, },),).toEqual([
+          '### Ginger (Orange Cat)',
+          '### Sooty',
+          '### Snowy',
+        ],);
+        expect(dropped.findings.length,).toBe(1,);
+        const sung = unifyHeadingSeries({
+          slices: SLICES,
+          replacements: [
+            rendered({
+              sliceIndex: 0,
+              heading: '### Song One: Ginger',
+            },),
+            rendered({
+              sliceIndex: 1,
+              heading: '### Song Two: Sooty',
+            },),
+            rendered({
+              sliceIndex: 2,
+              heading: '### Snowy',
+            },),
+          ],
+        },);
+        expect(headingsOf({ replacements: sung.replacements, },),).toEqual([
+          '### Song One: Ginger',
+          '### Song Two: Sooty',
+          '### Song Three: Snowy',
+        ],);
+      },
+    },),
+    it({
       name: 'LEAVES a page with fewer than two numbered headings alone',
       fn: async () => {
         const unified = unifyHeadingSeries({

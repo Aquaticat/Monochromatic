@@ -195,10 +195,12 @@ await describe({
             zdr: true,
             require_parameters: true,
             sort: 'price',
-            // DeepInfra and Wafer ignored for this seat since 2026-09-18 (XingZ607).
+            // DeepInfra and Wafer ignored for this seat since 2026-09-18 (XingZ607),
+            // OpenInference since 2026-09-23 (XingZ624 and XingZ625, class ninety-one).
             ignore: [
               'deepinfra',
               'wafer',
+              'open-inference',
             ],
           },
           response_format: {
