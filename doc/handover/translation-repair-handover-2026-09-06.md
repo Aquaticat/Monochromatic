@@ -4647,19 +4647,19 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  MIKAELA11 RUNS (frozen `0f685f551`,
-    pid 2920908,
-    entry id `mikaela_khara`,
-    launched 21:56 UTC 2026-09-23,
-    waiter boq6zxv1i,
-    meters 50.95 USD Bedrock and 97.95 OpenRouter at launch, Synthetic spent, Hyper dry;
+1.  SHI_YUMIAOYA15 RUNS (frozen `0f685f551`,
+    pid 2923082,
+    launched 22:07 UTC 2026-09-23,
+    waiter bx91ra6hw,
+    meters 50.29 USD Bedrock and 97.52 OpenRouter at launch, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for the two page-assembly passes of classes ninety-nine and one hundred (none expected; any `jsx-attribute-restored` or `title-reference-` line read against the archive),
-    classes seventy to seventy-seven and ninety-six holding (the excerpt line curled, 𝓠𝓾𝓪𝓷 as the archive, "Mika was outed", the Epilogue one to one, the life in the past, "𝓠𝓾𝓪𝓷’s" curled),
-    beside every check of `mikaela10`
-    (front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish);
-    record under a new heading above "## hulicaijia16 read, 2026-09-23, 22:00 UTC" in the pass log;
-    then rotate shi_Yumiaoya, yingying, zheermao101 and CuspariaKLSY on the same dist.
+    read for the two page-assembly passes of classes ninety-nine and one hundred (none expected; any line read against the archive),
+    classes seventy-eight to eighty, ninety-two, ninety-five and ninety-six holding ("Chewing Gum" and "Danpian", the attempt survived on January 16, the closing quote as the archive's two lines, the marker and definition on the page),
+    beside every check of `shi_Yumiaoya14` (4 headings, front matter equal, no TA, no error finish, no double blank line);
+    record under a new heading above "## mikaela11 read, 2026-09-23, 22:10 UTC" in the pass log;
+    then rotate yingying, zheermao101 and CuspariaKLSY on the same dist.
+    MIKAELA11 READ (frozen `0f685f551`): SETTLED at 22:07 UTC 2026-09-23 in 11 min, one attempt, 2,124 seats, 60 retry rounds, 1.07 USD by the meters;
+    the two page-assembly passes silent, classes seventy to seventy-seven and ninety-six holding, every check as `mikaela10`, four unendorsed (0, 7, 12, 29), 67 abstention lines; no class.
     HULICAIJIA16 READ (frozen `0f685f551`): SETTLED at 21:55 UTC 2026-09-23 in 27 min, one attempt, 4,482 seats, 144 retry rounds, 3.81 USD by the meters;
     the two page-assembly passes silent by design (the archive renders every heading, no rewritten tag attribute), classes eighty-four, ninety-two, ninety-five and ninety-six holding,
     every check as `hulicaijia15` (13 headings, 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish, no double blank line), one unendorsed (35), 130 abstention lines; no class.

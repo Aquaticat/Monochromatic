@@ -8082,6 +8082,32 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## mikaela11 read, 2026-09-23, 22:10 UTC: SETTLED in 11 min, the two page-assembly passes silent, classes seventy to seventy-seven and ninety-six holding, no class; shi_Yumiaoya15 launched
+
+`mikaela11` (frozen `0f685f551`, pid 2920908, entry id `mikaela_khara`) SETTLED at 22:07 UTC,
+11 min after its 21:56 launch (TALLY `ms=644898`),
+one attempt,
+2,124 seats,
+60 retry rounds,
+1,848 calls,
+1 abandoned stream (0.002 USD),
+1.07 USD by the meters (Bedrock 50.95 to 50.30, OpenRouter 97.95 to 97.53),
+on Bedrock and OpenRouter alone; Jev 75 of 75.
+No `jsx-attribute-restored` and no `title-reference-` line (the archive renders every heading).
+Classes seventy to seventy-seven and ninety-six holding:
+𝓠𝓾𝓪𝓷 eight times as the archive with the possessive "𝓠𝓾𝓪𝓷’s" curled, no straight apostrophe in a word, "Mika was outed", the Epilogue section as `mikaela10` line for line, the life in the past.
+Every check as `mikaela10`: front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish, the page's one double blank line the archive's own before the details block;
+four unendorsed standings (0, 7, 12, 29), 67 abstention lines with reasons.
+No class.
+
+`shi_Yumiaoya15` (frozen `0f685f551`, pid 2923082, overlap 8)
+launched 22:07 UTC on Bedrock and OpenRouter
+(meters 50.29 USD Bedrock, 97.52 OpenRouter at launch),
+waiter bx91ra6hw.
+Read for the two page-assembly passes (none expected),
+classes seventy-eight to eighty, ninety-two, ninety-five and ninety-six holding ("Chewing Gum" and "Danpian", the attempt survived on January 16, the closing quote as the archive's two lines, the marker and definition on the page),
+beside every check of `shi_Yumiaoya14` (4 headings, front matter equal, no TA, no error finish, no double blank line).
+
 ## hulicaijia16 read, 2026-09-23, 22:00 UTC: SETTLED in 27 min, the two page-assembly passes silent on a page whose archive renders every heading, no class; mikaela11 launched
 
 `hulicaijia16` (frozen `0f685f551`, pid 2917545) SETTLED at 21:55 UTC,
