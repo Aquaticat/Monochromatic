@@ -8082,6 +8082,50 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## yingying6 read, 2026-09-23, 17:52 UTC: SETTLED in 4 min, class ninety-seven live (the third-person contest winner refused by the floor, the second-person translate text shipped through the ineligible-standing path), every check as yingying4; no class, XingZ629 launched
+
+`yingying6` (frozen `e78515f56`, pid 2791373) SETTLED at 17:49 UTC,
+4 min after its 17:45 launch (TALLY `ms=239557`),
+one attempt,
+327 seats,
+9 retry rounds,
+290 calls,
+no abandoned stream,
+0.13 USD by the meters (Bedrock 67.47 to 67.39, OpenRouter 111.94 to 111.89),
+on Bedrock and OpenRouter (Synthetic spent, Hyper dry).
+Endpoints: deepseek on Morph 47, minimax on CoreWeave 38 and Together 10, Mercury on Inception 33, GLM-5.3-Flash on Wafer 18.
+
+Class ninety-seven live, on slice 2 (the accident sentence and the closing wish):
+the repair lane wrote "May she still have the same cheerfulness and passion to do what she wanted to do in her next world!" (the archive's third person),
+the translate lane wrote "May you still have the same cheerfulness and passion to do what you want to do in your next world!" after the floor refused three of its candidates (minimax-m3 among them) with
+"Your translation drops the address in the second person the ORIGINAL carries: the ORIGINAL passage writes 你 or 您 3 times, and your translation carries no "you" but ...";
+the contest chose the repair lane (the judges again preferring the third person),
+the floor refused the contest winner ("contest winner fails publication invariants and remains retryable"),
+the consolidation standing was withheld from the slate ("ineligible-standing-withheld ... only valid proposals"),
+the translate lane text was offered beside five valid proposals (class forty),
+and the gate confirmed the consolidated text 3 to 1
+(ballots: "The standing version replaces the original second-person address with a third-person one", "The ORIGINAL addresses the person in the second person (你)", "Candidate 'standing' drops the second-person address present in the original";
+the one dissent "'standing' correctly preserves..." read 你 the other way).
+Terminal `consolidated`; the page reads "May you still have the same cheerfulness and passion to do what you want to do in your next world!" with the `[^2]` marker,
+where `yingying5` shipped "May she".
+Nine refusal findings in the artifact, all on the translate lane's slice 2 and the consolidation standing.
+
+Every check as `yingying4`:
+1 heading, 4 markers, 2 definitions (the `[^2]` definition "[Farewell. I miss you, Yingying.]", class eighty-six holding),
+front matter equal, References line kept, no TA, no error finish, no double blank line, no straight apostrophe (class ninety-six holding).
+Terminals: 2 consolidated (0, 2), 1 slate-endorsed (1), 1 slate-unjudged (3); no gate-kept or slate-declined standing;
+5 abstention lines with reasons.
+No class.
+
+`XingZ629` (frozen `e78515f56`, pid 2793259, overlap 8)
+launched 17:49 UTC on Bedrock and OpenRouter
+(meters 67.38 USD Bedrock, 111.86 OpenRouter at launch),
+waiter bx0plxmpk.
+Read for class ninety-seven on the wire (the refusal lines in the artifact; the original's 你 passages, the letters to the deceased among them, in the second person on the page),
+classes eighty-eight to ninety-four holding,
+beside every check of `XingZ628`
+(14 headings, 2 links, 9 definitions, 3 TextRing, 11 details, front matter equal, no TA, no error finish, no double blank line, the ten section headings in the archive's bare style, Jinxin glossed once).
+
 ## CuspariaKLSY8 read, 2026-09-23, 17:46 UTC: SETTLED in 10 min on the class ninety-seven build, classes seventy-five, seventy-six, eighty-five and ninety-six holding; no class, yingying6 launched
 
 `CuspariaKLSY8` (frozen `e78515f56`, pid 2788469) SETTLED at 17:44 UTC,

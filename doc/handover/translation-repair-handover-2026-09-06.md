@@ -4647,16 +4647,19 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  YINGYING6 RUNS (frozen `e78515f56`,
-    pid 2791373,
-    launched 17:45 UTC 2026-09-23,
+1.  XINGZ629 RUNS (frozen `e78515f56`,
+    pid 2793259,
+    launched 17:49 UTC 2026-09-23,
+    waiter bx0plxmpk,
     Bedrock and OpenRouter wet, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class ninety-seven live on the farewell slice (the "drops the address in the second person" refusal on any third-person candidate in the artifact; "May you still have..." on the page where `yingying5` shipped "May she"),
-    class eighty-six holding (the `[^2]` definition "[Farewell. I miss you, Yingying.]"),
-    beside every check of `yingying4`
-    (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, no TA, no error finish, no double blank line);
-    record under a new heading above "## CuspariaKLSY8 read, 2026-09-23, 17:46 UTC" in the pass log.
+    read for class ninety-seven on the wire (the "drops the address in the second person" refusal lines in the artifact; the original's 你 passages in the second person on the page),
+    classes eighty-eight to ninety-four holding,
+    beside every check of `XingZ628`
+    (14 headings, 2 links, 9 definitions, 3 TextRing, 11 details, front matter equal, no TA, no error finish, no double blank line);
+    record under a new heading above "## yingying6 read, 2026-09-23, 17:52 UTC" in the pass log.
+    YINGYING6 READ (frozen `e78515f56`): SETTLED at 17:49 UTC 2026-09-23 in 4 min, one attempt, 327 seats, 9 retry rounds, 0.13 USD by the meters;
+    class ninety-seven live (the repair lane's "May she" won the contest and was refused by the floor, the standing withheld, the translate lane's "May you" shipped through the class forty offer, gate 3 to 1), class eighty-six holding, every check as `yingying4`; no class.
     CUSPARIAKLSY8 READ (frozen `e78515f56`): SETTLED at 17:44 UTC 2026-09-23 in 10 min, one attempt, 383 seats, 11 retry rounds, 0.17 USD by the meters;
     class ninety-seven silent by design (no 你 in the original), classes seventy-five, seventy-six, eighty-five and ninety-six holding (the gloss in the parenthetical form this run), every check as `CuspariaKLSY7`; no class.
     ZHEERMAO6 READ (frozen `e78515f56`): SETTLED at 17:33 UTC 2026-09-23 in 12 min, one attempt, 958 seats, 34 retry rounds, 0.31 USD by the meters;
