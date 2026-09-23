@@ -26,8 +26,10 @@ Why tsdown builds take 360+ms despite benchmarks showing 36ms
 
 The proposed function-entry `trace` to `debug` migration was rejected after
 source inspection and bounded measurements.
-The console suppresses both levels by default; verbose `console.trace`
-emits a diagnostic stack. The linked report records the benchmark and limits.
+The console suppresses both levels by default;
+ verbose `console.trace`
+emits a diagnostic stack.
+ The linked report records the benchmark and limits.
 
 ---
 
@@ -39,7 +41,8 @@ emits a diagnostic stack. The linked report records the benchmark and limits.
     Avoid executing binaries when file system checks suffice
 2. **Logging**:
     Do not migrate entry `trace` calls to `debug` for a presumed
-    suppressed-console speedup; use the diagnostic level the call requires
+    suppressed-console speedup;
+    use the diagnostic level the call requires
 3. **Build Scripts**:
     Replace shell commands with TypeScript scripts for better performance and cross-platform compatibility
 4. **Caching**:

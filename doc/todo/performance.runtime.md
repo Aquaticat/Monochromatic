@@ -21,9 +21,11 @@
 
 **Status**:
  Migration rejected after source inspection and a bounded level comparison.
- The logger constructs the same record for `trace` and `debug`, and the
+ The logger constructs the same record for `trace` and `debug`,
+ and the
  console sink suppresses both levels when verbose output is off.
- The only production function-entry trace is `parseCss`; changing its level
+ The only production function-entry trace is `parseCss`;
+ changing its level
  would discard a diagnostic stack in verbose console output without a
  demonstrated suppressed-console speedup.
  See [logging performance findings](../troubleshooting/performance.logging.md)
