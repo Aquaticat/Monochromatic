@@ -8082,6 +8082,39 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## mikaela10 read, 2026-09-23, 16:57 UTC: SETTLED in 15 min, class ninety-six live, classes seventy to seventy-seven holding; no class, shi_Yumiaoya14 launched
+
+`mikaela10` (frozen `c62ce70b3`, pid 2742636, entry id `mikaela_khara`) SETTLED at 16:55 UTC,
+15 min after its 16:40 launch,
+one attempt,
+2,336 seats,
+65 retry rounds,
+2,036 calls,
+1 abandoned stream (0.002 USD),
+1.21 USD by the meters (Bedrock 69.14 to 68.45, OpenRouter 113.37 to 112.85),
+on Bedrock and OpenRouter (Synthetic spent, Hyper dry).
+Endpoints: deepseek on Morph 335, GLM-5.3-Flash on Wafer 105, Mercury 254, minimax on CoreWeave 172 and Together 158;
+72 abstention lines with reasons.
+
+Class ninety-six live:
+"Huai An (𝓠𝓾𝓪𝓷’s classmate in high school)" curled as the archive,
+and the page's only straight single quotes are the archive's own four JSX path literals.
+Classes seventy to seventy-seven holding:
+the closing excerpt line curled, 𝓠𝓾𝓪𝓷 six times as the archive and never "Quan", "Mika was outed.", the Epilogue one to one, the life in the past.
+Every check as `mikaela9`: front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish;
+two unendorsed standings (12, 19), both slate-declined.
+No class.
+
+`shi_Yumiaoya14` (frozen `c62ce70b3`, pid 2758225, overlap 8)
+launched 16:56 UTC on Bedrock and OpenRouter
+(meters 68.45 USD Bedrock, 112.85 OpenRouter at launch),
+the oldest read of the seven entries (`shi_Yumiaoya13` ran on `93b11aef9`).
+Read for classes seventy-eight to eighty holding
+("Magic Chewing Gum and Danpian" on the ICU paragraph, "she tried to end her life" on January 16, the film quote as two lines with the block bound's refusals in the artifact),
+classes ninety-two, ninety-five and ninety-six on a page with one footnote and curly quotes,
+beside every check of `shi_Yumiaoya13`
+(4 headings, the death paragraphs on the page, the attribution once, front matter equal, no TA, no error finish, no double blank line).
+
 ## mikaela9 read, 2026-09-23, 16:40 UTC: SETTLED in 18 min, classes seventy to seventy-seven holding, but the mathematical-script handle's possessive shipped straight (class ninety-six, fixed in c62ce70b3); mikaela10 launched
 
 `mikaela9` (frozen `b26ea1990`, pid 2731285, entry id `mikaela_khara`) SETTLED at 16:35 UTC,

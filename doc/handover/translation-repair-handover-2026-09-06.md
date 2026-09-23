@@ -4647,17 +4647,19 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  MIKAELA10 RUNS (frozen `c62ce70b3`,
-    pid 2742636,
-    launched 16:40 UTC 2026-09-23 with entry id `mikaela_khara`,
+1.  SHI_YUMIAOYA14 RUNS (frozen `c62ce70b3`,
+    pid 2758225,
+    launched 16:56 UTC 2026-09-23,
     Bedrock and OpenRouter wet, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class ninety-six live
-    (no straight apostrophe on the page beyond the archive's four JSX path literals; "𝓠𝓾𝓪𝓷’s" wherever the bench writes the possessive),
-    classes seventy to seventy-seven, ninety-two and ninety-five holding,
-    beside every check of `mikaela9`
-    (front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish);
-    record under a new heading above "## mikaela9 read, 2026-09-23, 16:40 UTC" in the pass log.
+    read for classes seventy-eight to eighty holding
+    ("Magic Chewing Gum and Danpian", "she tried to end her life", the film quote as two lines),
+    classes ninety-two, ninety-five and ninety-six on a page with one footnote and curly quotes,
+    beside every check of `shi_Yumiaoya13`
+    (4 headings, the death paragraphs on the page, the attribution once, front matter equal, no TA, no error finish, no double blank line);
+    record under a new heading above "## mikaela10 read, 2026-09-23, 16:57 UTC" in the pass log.
+    MIKAELA10 READ (frozen `c62ce70b3`): SETTLED at 16:55 UTC 2026-09-23 in 15 min, one attempt, 2,336 seats, 65 retry rounds, 1.21 USD by the meters;
+    class ninety-six live ("𝓠𝓾𝓪𝓷’s classmate" curled, only the archive's four JSX path literals straight), classes seventy to seventy-seven holding, every check as `mikaela9`, two unendorsed (12, 19); no class.
     MIKAELA9 READ (frozen `b26ea1990`): SETTLED at 16:35 UTC 2026-09-23 in 18 min, one attempt, 2,673 seats, 135 retry rounds, 1.23 USD by the meters;
     classes seventy to seventy-seven holding, every check as `mikaela7`, one unendorsed (17);
     but "𝓠𝓾𝓪𝓷's classmate" shipped with a straight apostrophe where the archive curls it: the restoration read the neighbour of a quote by UTF-16 unit and saw a lone surrogate (class ninety-six).
