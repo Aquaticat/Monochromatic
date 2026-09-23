@@ -877,12 +877,11 @@ Includes:
  stress/bench/load runs.
 
 BOX:
- Isolate heavy runs with `podman run --memory=2g --cpus=2 --rm <image>` or `mvm`.
-Default to mount-free;
+ Isolate each heavy run via `podman run --memory=2g --cpus=2 --rm <image>` or `mvm`;
+ state bounds.
+Third-party benchmarks default to mount-free;
  bake in inputs.
-Mount only disposable fixtures.
-State bounds;
- authorize each run.
+Authorization does not transfer.
 
 DCB:
  Never execute or have agents execute catastrophic commands (`sudo rm -rf /`,
