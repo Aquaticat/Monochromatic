@@ -1283,6 +1283,7 @@ _.path = [
   "package/desktop-app/electron-counter/node_modules/.bin",
   "package/desktop-app/electron-infra/node_modules/.bin",
   "package/desktop-app/file-manager-electron/node_modules/.bin",
+  "package/dev-script/deps-update/node_modules/.bin",
   "package/dev-script/file-enforcer/node_modules/.bin",
   "package/git-policy/cli/node_modules/.bin",
   "package/kwin/key-helper/node_modules/.bin",
