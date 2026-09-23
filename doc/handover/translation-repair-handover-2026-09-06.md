@@ -4649,14 +4649,14 @@ each read off the pass log and the shipped page:
 
 1.  MIKAELA9 RUNS (frozen `b26ea1990`,
     pid 2731285,
-    launched 16:26 UTC 2026-09-23 with entry id `mikaela_khara` (a launch naming `mikaela` exits at once with pending=0, as `mikaela8` did),
+    launched 16:17 UTC 2026-09-23 with entry id `mikaela_khara` (a launch naming `mikaela` exits at once with pending=0, as `mikaela8` did),
     Bedrock and OpenRouter wet, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
     read for classes seventy to seventy-seven, ninety-two and ninety-five holding
     (the excerpt line curled, 𝓠𝓾𝓪𝓷 on every appearance, "Mika was outed", the Epilogue one to one, no double blank line, the life in the past, 4 markers with their definitions, the relabel line),
     beside every check of `mikaela7`
     (front matter equal, 4 headings, 4 comments, 4 markers, no TA, no error finish);
-    record under a new heading above "## hulicaijia15 read, 2026-09-23, 16:20 UTC" in the pass log.
+    record under a new heading above "## hulicaijia15 read, 2026-09-23, 16:17 UTC" in the pass log.
     HULICAIJIA15 READ (frozen `b26ea1990`): SETTLED at 16:15 UTC 2026-09-23 in 37 min, one attempt, 4,697 seats, 125 retry rounds, 4.06 USD by the meters;
     the roster paired 15 of 15 so the relabel closed on the definitions alone (class ninety-five not exercised live; its unit guards stand), no trim or revert, no marker-drop refusal;
     every check as `hulicaijia13` (13 headings, 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no double blank), four unendorsed (1, 8, 29, 47), one gate-kept; no class.
