@@ -1142,12 +1142,14 @@ await describe({
       name: 'WITHDRAWS a replacement that would break a footnote spanning two '
         + 'slices, and counts what SHIPPED rather than what the judges chose. '
         + 'Each slice validated on its own: the sentence reads well, and the '
-        + 'marker it lost belongs to a line the judges never saw',
+        + 'marker it lost belongs to a line the judges never saw. The note is '
+        + 'the page\'s own (the original never cites it), since a marker the '
+        + 'ORIGINAL carries is refused at the slice floor first (class ninety-two)',
       fn: async () => {
         const { result, } = await runDriver({
           sourceText: `## 第一节
 
-猫猫在窗台上打盹〔1〕。
+猫猫在窗台上打盹。
 
 ## 第二节
 
