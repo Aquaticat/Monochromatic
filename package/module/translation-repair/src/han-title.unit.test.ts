@@ -50,9 +50,44 @@ const LATIN_NAMED = '她最爱的专辑是《Nyan物语》。';
  */
 const LATIN_KEPT = 'Her favourite album was 《Nyan物语》.';
 
+/**
+ Original naming the song through a link inside the brackets.
+ */
+const LINKED = '她唱了《[猫猫摇篮曲](https://example.test/song)》。';
+
+/**
+ Rendering that kept the link text in Han.
+ */
+const LINK_LEFT = 'She sang 《[猫猫摇篮曲](https://example.test/song)》.';
+
+/**
+ Rendering that translated the link text.
+ */
+const LINK_TRANSLATED = 'She sang *[Kitten Lullaby](https://example.test/song)*.';
+
 await describe({
   name: 'a work title the original brackets in 《》 (class ninety-eight)',
   children: [
+    it({
+      name: 'REFUSES a candidate that leaves a linked title\'s text in Han and ACCEPTS it translated',
+      fn: async () => {
+        /**
+         Verdict on the rendering that kept the Han link text.
+         */
+        const verdict = validateTranslatedSlice({
+          sourceText: LINKED,
+          candidateText: LINK_LEFT,
+        },);
+        expect(verdict.kind,).toBe('invalid',);
+        if (verdict.kind !== 'invalid')
+          throw new Error('unreachable',);
+        expect(verdict.findings.join('\n',),).toContain('leaves the title 《猫猫摇篮曲》',);
+        expect(validateTranslatedSlice({
+          sourceText: LINKED,
+          candidateText: LINK_TRANSLATED,
+        },).kind,).toBe('valid',);
+      },
+    },),
     it({
       name: 'REFUSES a candidate that leaves the title in Han where the page never wrote it',
       fn: async () => {
