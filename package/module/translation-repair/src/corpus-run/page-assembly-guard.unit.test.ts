@@ -116,6 +116,78 @@ function consolidating({ notes, }: { readonly notes: string; },): WouldShipSourc
 }
 
 /**
+ Original naming her nickname once.
+ */
+const GLOSS_SOURCE = '她打盹时给自己起了“云团咪”这个昵称。\n';
+/**
+ Archive carrying the nickname sentence and, on the next line of the same
+ paragraph, the translator's gloss of the name the Chinese is silent about.
+ */
+const GLOSS_TARGET = 'She got her nickname “Mittens the Cloud” while napping.\n'
+  + '“Mittens the Cloud” means a cat like a cloud.\n';
+/**
+ One content slice over the nickname paragraph.
+ */
+const GLOSS_SLICES: readonly ChunkPair[] = [{
+  source: {
+    kind: 'content',
+    sliceIndex: 0,
+    nodes: [],
+    startOffset: 0,
+    endOffset: GLOSS_SOURCE.length,
+    text: GLOSS_SOURCE,
+  },
+  target: {
+    kind: 'content',
+    sliceIndex: 0,
+    nodes: [],
+    startOffset: 0,
+    endOffset: GLOSS_TARGET.length,
+    text: GLOSS_TARGET,
+  },
+},];
+/**
+ Builds a source whose consolidation shipped the nickname sentence afresh.
+ @param text - what the consolidation shipped at slice 0
+ @returns Narrow artifact source read by the publication assembler
+ @example
+ ```ts
+ const artifact = shippingGlossless({ text: 'Her handle was coined while she napped.', },);
+ ```
+ */
+function shippingGlossless(
+  { text = 'Her handle “Mittens the Cloud” was coined while she napped.', }: { readonly text?: string; } = {},
+): WouldShipSource {
+  return {
+    comparison: [{
+      sliceIndex: 0,
+      incumbentKind: 'present',
+      incumbentText: GLOSS_TARGET,
+      repairText: GLOSS_TARGET,
+      translateText: text,
+      laneRelation: 'both-kept',
+      repairOutcome: { kind: 'decided', acceptedText: GLOSS_TARGET, },
+      translateOutcome: { kind: 'decided', acceptedText: text, },
+      decisionComparison: { kind: 'comparable', verdict: 'differ', },
+      repairDelivery: { kind: 'incumbent-retained', },
+      translateDelivery: { kind: 'delivered', },
+    },],
+    consolidation: {
+      kind: 'settled',
+      slices: [{
+        sliceIndex: 0,
+        terminal: 'consolidated',
+        shipped: { kind: 'consolidated', text, },
+        rewrapped: false,
+        demoted: false,
+        verdicts: [],
+        gate: { kind: 'not-asked', },
+      },],
+    },
+    laneSelection: { kind: 'contested', slices: [], },
+  } as unknown as WouldShipSource;
+}
+/**
  Archive carrying one paragraph and none of the disclosure block after it.
  */
 const HALVES_TARGET = 'The cat naps on the windowsill.\n\n';
@@ -290,6 +362,55 @@ await describe({
         expect(assembly.findings,).toEqual([
           'assembly-footnote-trimmed orphan-definition gfm 2 (slice 1)',
         ],);
+      },
+    },),
+    it({
+      name: 'RESTORES THE ARCHIVE\'S GLOSS LINE OF A NAME the shipped text carries without any gloss '
+        + '(class one hundred five, CuspariaKLSY9, 2026-09-23: "“Ling Shui Yu Yu Zi” means fish in clear '
+        + 'water" dropped for the third time on the judges\' call)',
+      fn: async () => {
+        const assembly = guardPageAssembly({
+          artifact: shippingGlossless(),
+          slices: GLOSS_SLICES,
+          sourceText: GLOSS_SOURCE,
+          targetText: GLOSS_TARGET,
+        },);
+        expect(assembly.withdrawn,).toEqual([],);
+        expect(assembly.trimmed,).toEqual([{
+          sliceIndex: 0,
+          replacementText: 'Her handle “Mittens the Cloud” was coined while she napped.\n'
+            + '“Mittens the Cloud” means a cat like a cloud.',
+        },],);
+        expect(assembly.findings,).toEqual([
+          'name-gloss-restored (slice 0: "“Mittens the Cloud” means a cat like a cloud.")',
+        ],);
+      },
+    },),
+    it({
+      name: 'LEAVES a shipped text that glosses the name in its own way, and one that never carries the name',
+      fn: async () => {
+        /**
+         The bench's parenthetical gloss, the house rule's form.
+         */
+        const parenthetical = guardPageAssembly({
+          artifact: shippingGlossless({ text: 'Her handle, Mittens the Cloud (a cat like a cloud), was coined while she napped.', },),
+          slices: GLOSS_SLICES,
+          sourceText: GLOSS_SOURCE,
+          targetText: GLOSS_TARGET,
+        },);
+        expect(parenthetical.trimmed,).toEqual([],);
+        expect(parenthetical.findings,).toEqual([],);
+        /**
+         A rendering that never names her.
+         */
+        const nameless = guardPageAssembly({
+          artifact: shippingGlossless({ text: 'Her handle was coined while she napped.', },),
+          slices: GLOSS_SLICES,
+          sourceText: GLOSS_SOURCE,
+          targetText: GLOSS_TARGET,
+        },);
+        expect(nameless.trimmed,).toEqual([],);
+        expect(nameless.findings,).toEqual([],);
       },
     },),
     it({

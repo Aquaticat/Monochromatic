@@ -104,6 +104,53 @@ await describe({
     },),
 
     it({
+      name: 'TELLS THE GATE THE HOUSE RULES in both modes, so a polish moving the life of a person who has '
+        + 'died into the past tense is the rule applied and not an unsupported change (class one hundred '
+        + 'four, CuspariaKLSY9, 2026-09-23: the gate refused the past-tense polish 4 of 4 as "an unsupported '
+        + 'change" about "a living person")',
+      fn: async () => {
+        /**
+         Subject shared by both modes.
+         */
+        const subject = {
+          sourceText: '猫猫喜欢向日葵。',
+          archiveText: 'The cat loves sunflowers.',
+          baseText: 'The cat loves sunflowers.',
+          polishedText: 'The cat loved sunflowers.',
+        };
+        /**
+         System half of the comparative sheet.
+         */
+        const comparative = buildConsolidationPolishGateMessages({
+          subject: {
+            ...subject,
+            mode: { kind: 'comparative', },
+          },
+        },).at(0,)?.content ?? '';
+        /**
+         System half of the required-correction sheet.
+         */
+        const correction = buildConsolidationPolishGateMessages({
+          subject: {
+            ...subject,
+            mode: {
+              kind: 'required-naturalness-correction',
+              findings: [{
+                paragraph: 1,
+                problem: 'stiff',
+              },],
+            },
+          },
+        },).at(0,)?.content ?? '';
+        for (const system of [comparative, correction,]) {
+          expect(system,).toContain('Tense is chosen once and held',);
+          expect(system,).toContain('WHERE THE FORCED CHOICE IS TENSE',);
+          expect(system,).toContain('Reader protection outranks completeness',);
+        }
+      },
+    },),
+
+    it({
       name: 'TREATS REJECTED BASE AS EVIDENCE rather than an approved fallback during required correction',
       fn: async () => {
         const messages = buildConsolidationPolishGateMessages({
