@@ -8082,6 +8082,38 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## yingying7 read, 2026-09-23, 23:03 UTC: SETTLED in 19 min, every check as yingying6, classes eighty-six and ninety-seven holding, no class; Synthetic wet again with GLM-5.3-Flash at 50 s a stream; zheermao7 launched
+
+`yingying7` (frozen `6361d74d0`, pid 2969122) SETTLED at 23:01 UTC,
+19 min after its 22:42 launch (TALLY `ms=1142400`) against `yingying6`'s 4,
+one attempt,
+365 seats,
+1 retry round,
+368 calls,
+no abandoned stream,
+0.08 USD by the meters (Bedrock 49.32 to 49.30, OpenRouter 96.69 to 96.63),
+on Bedrock, OpenRouter and Synthetic (Synthetic read wet again from the launch, `syntheticFiveHour=2713`; Hyper dry).
+Stages: repair 22:43 to 22:54, contest from 22:54, consolidation 22:55 to 23:01; Jev 8 of 8; 3 abstention lines with reasons;
+terminals: consolidated 0, 1; gate-kept 2; slices 3 and 4 as the archive.
+
+Classes eighty-six and ninety-seven holding (the `[^2]` definition "[Farewell. I miss you, Yingying.]", "May you still have the same cheerfulness and passion" in the second person),
+classes one hundred one and one hundred two fine (both definitions on the page, no lane text offered, no `page assembly:` line),
+every check as `yingying6` (1 heading, 2 markers and 2 definitions by the scan that counts a marker outside a definition line, front matter equal, References line kept, no TA, no error finish, no double blank line).
+No class.
+
+The 19 minutes are Synthetic's: with its window open again the GLM-5.3-Flash seat ran there (19 streams at 50.0 s mean, 112 s max, no OpenRouter endpoint named)
+and the rounds waited in grace for it, 1,270 s of grace across 80 rounds against `yingying6`'s 91 s across 81 (the six longest rounds 61 to 106 s in grace, a select, three refiner and a translate round);
+the OpenRouter and Bedrock seats ran at 1.6 to 6.3 s a stream.
+The standing Synthetic-latency observation (`shi_Yumiaoya6`, `XingZ620`), not a class; glm-5.3 still refused as no provider (17 lines) with Synthetic wet.
+
+`zheermao7` (frozen `6361d74d0`, pid 2972518, entry id `zheermao101`, overlap 8)
+launched 23:05 UTC on Bedrock, OpenRouter and Synthetic
+(meters 49.30 USD Bedrock, 96.63 OpenRouter at launch),
+waiter b0uacp5b5.
+Read for classes seventy-seven, ninety-six, one hundred one and one hundred two holding (the email label as the archive, no lane text carrying a Chinese line, the archive's Arts and reply blocks kept or revised from the transcript),
+beside every check of `zheermao6` (2 headings, front matter equal, no TA, no error finish, no double blank line),
+and for the Synthetic latency again (grace per round against `zheermao6`'s).
+
 ## shi_Yumiaoya17 read, 2026-09-23, 22:43 UTC: SETTLED in 6 min, the closing quote as the archive's two lines, class one hundred one holding, no class; yingying7 launched
 
 `shi_Yumiaoya17` (frozen `6361d74d0`, pid 2953486) SETTLED at 22:42 UTC,

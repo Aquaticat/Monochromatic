@@ -4647,17 +4647,22 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  YINGYING7 RUNS (frozen `6361d74d0`,
-    pid 2969122,
-    launched 22:47 UTC 2026-09-23,
-    waiter bnvb061ax,
-    meters 49.32 USD Bedrock and 96.69 OpenRouter at launch, Synthetic spent, Hyper dry;
+1.  ZHEERMAO7 RUNS (frozen `6361d74d0`,
+    pid 2972518,
+    entry id `zheermao101`,
+    launched 23:05 UTC 2026-09-23,
+    waiter b0uacp5b5,
+    meters 49.30 USD Bedrock and 96.63 OpenRouter at launch, Synthetic wet again since 22:42 UTC, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for classes eighty-six, ninety-seven, one hundred one and one hundred two holding (the `[^2]` definition naming Yingying, the farewell in the second person, both definitions on the page, no lane text carrying a Chinese line),
+    read for classes seventy-seven, ninety-six, one hundred one and one hundred two holding (the email label as the archive, no lane text carrying a Chinese line),
     the two page-assembly passes of classes ninety-nine and one hundred (none expected; any line read against the archive),
-    beside every check of `yingying6` (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, no TA, no error finish, no double blank line);
-    record under a new heading above "## shi_Yumiaoya17 read, 2026-09-23" in the pass log;
-    then zheermao101 and CuspariaKLSY on the same dist.
+    beside every check of `zheermao6` (2 headings, front matter equal, no TA, no error finish, no double blank line),
+    and for the Synthetic latency (grace per round against `zheermao6`'s);
+    record under a new heading above "## yingying7 read, 2026-09-23" in the pass log;
+    then CuspariaKLSY on the same dist.
+    YINGYING7 READ (frozen `6361d74d0`): SETTLED at 23:01 UTC 2026-09-23 in 19 min against yingying6's 4, one attempt, 365 seats, 1 retry round, 0.08 USD by the meters;
+    classes eighty-six and ninety-seven holding, classes one hundred one and one hundred two fine, every check as `yingying6`, one gate-kept (2), 3 abstention lines, Jev 8 of 8; no class;
+    the time is Synthetic's (wet again from 22:42 UTC, GLM-5.3-Flash 19 streams at 50 s mean there, 1,270 s of grace across 80 rounds against 91 s), the standing latency observation.
     SHI_YUMIAOYA17 READ (frozen `6361d74d0`): SETTLED at 22:42 UTC 2026-09-23 in 6 min, one attempt, 879 seats, 33 retry rounds, 0.49 USD by the meters;
     the closing quote as the archive's two lines (class one hundred two not exercised live: no lane text refused on slice 16 this run, the eligible standing shipped unjudged), class one hundred one holding (the `[^1]` definition the page's last line, the source's one marker), the two page-assembly passes silent,
     classes seventy-eight, seventy-nine, ninety-two, ninety-five and ninety-six holding, every check as `shi_Yumiaoya14`, five slate-declined, three gate-kept, 16 abstention lines, Jev 22 of 22; no class.
