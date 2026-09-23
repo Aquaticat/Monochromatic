@@ -4647,20 +4647,28 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XINGZ626 RUNS (frozen `5fd39cdcc`,
-    pid 2574294,
-    launched 09:23 UTC 2026-09-23,
-    waiter btbg6r2uz,
-    meters 88.71 USD Bedrock and 133.44 OpenRouter at launch, Synthetic wet again (weekly 2 percent), Hyper dry;
+1.  XINGZ627 RUNS (frozen `9c83fb5f7`,
+    pid 2629556,
+    launched 13:13 UTC 2026-09-23,
+    waiter bpkc5sv3j,
+    meters 83.69 USD Bedrock and 126.15 OpenRouter at launch, Synthetic wet (weekly 1.25 percent), Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class ninety live
-    (ten section headings by name alone whatever leader word the bench writes; the tenth "### Jinxin (Brocade Heart)" or the gloss wherever Jinxin first appears)
-    and class ninety-one on the clock
-    (every deepseek-v4.1-flash stream served by Morph, Krea or Makora, none by OpenInference; cap-cut deepseek replies near `XingZ624`'s 150, not `XingZ625`'s 450; editor rounds hearing two or three; the entry well under `XingZ625`'s 6h54m),
-    classes eighty-eight and eighty-nine again (`handle-gloss-placed`, `heading-series-unified` ending "the archive's own style"),
-    beside every check of `XingZ625`
-    (fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, the closing poem's attribution inside the quote, "They once said" on the tombstone paragraph, front matter equal, no TA, no error finish, no double blank line);
-    record under a new heading above "## XingZ625 read, 2026-09-23, 09:40 UTC" in the pass log.
+    read for class ninety-two live
+    (nine definitions on the page; the song line carries `[^3]`; no `assembly-footnote-trimmed` line; the repair lane's slice 44 text refused at the contest for the dropped marker, or carrying it)
+    and class ninety-three on the wire
+    (every deepseek-v4.1-flash stream served by Morph, every GLM-5.3-Flash stream by Wafer; refiner rounds well under `XingZ626`'s 101 s mean; the entry under 3h30m),
+    classes eighty-eight to ninety-one again,
+    beside every check of `XingZ626`
+    (fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish, no double blank line);
+    record under a new heading above "## XingZ626 read, 2026-09-23, 13:20 UTC" in the pass log.
+    XINGZ626 READ (frozen `5fd39cdcc`): SETTLED at 12:53 UTC 2026-09-23 in 3h30m, one attempt, 9,277 seats, 507 retry rounds, 12.30 USD by the meters;
+    classes ninety and ninety-one live (ten headings by name whatever leader the bench wrote; deepseek on Morph 847 streams at 6.2 s, 2 cap cuts against 450);
+    classes eighty-eight and eighty-nine again; every structural check as `XingZ625` but eight definitions:
+    the song line's `[^3]` dropped by the repair lane's text, chosen at the contest and kept by the gate, the tail-translated note trimmed as an orphan (class ninety-two);
+    the price sort on DekaLLM and Sail Research for deepseek and on Together for GLM-5.3-Flash, endpoints that reason at length by default (class ninety-three).
+    CLASSES NINETY-TWO AND NINETY-THREE FIXED: `translate-marker-drop.ts` refuses a candidate citing fewer notes than the ORIGINAL passage (wired into `validateTranslatedSlice`);
+    OpenRouter cards carry `preferredEndpoints` sent as `provider.order` with fallbacks (deepseek-v4.1-flash names Morph, `dekallm` and `sail-research` ignored too; GLM-5.3-Flash names Wafer);
+    guards red first `78e67b8c5`, fix `9c83fb5f7`, fixture `feee49cb9`, lint 0/0, types clean, full suite green (`suite-class92-93b.log`).
     XINGZ625 READ (frozen `d8f847e3c`): SETTLED at 09:12 UTC 2026-09-23 in 6h54m, one attempt, 8,812 seats, 521 retry rounds, 10.08 USD by the meters;
     class eighty-eight live (Jinxin glossed in the Part Ten heading, bare on the signature; Yuli never glossed by the bench so left alone),
     class eighty-nine live (nine headings unified to the archive's bare style), class eighty-seven not exercised (the TextRing tag endorsed, sole candidate, shipped unchanged);

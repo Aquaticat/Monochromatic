@@ -8082,6 +8082,66 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ626 read, 2026-09-23, 13:20 UTC: SETTLED in 3h30m, classes ninety and ninety-one live, but the song line lost its footnote marker and the note was trimmed (class ninety-two) and the price sort fell to two more endpoints that reason at length (class ninety-three); both fixed in 9c83fb5f7, XingZ627 launched
+
+`XingZ626` (frozen `5fd39cdcc`, pid 2574294) SETTLED at 12:53 UTC,
+3h30m after its 09:23 launch (TALLY `ms=12600158`),
+one attempt,
+9,277 seats,
+507 retry rounds,
+7,945 calls,
+105 abandoned streams (0.60 USD),
+12.30 USD by the meters (Bedrock 88.71 to 83.69, OpenRouter 133.44 to 126.16).
+Synthetic wet (weekly 2 percent to 1.28), Hyper dry, glm-5.3 dark (asked 585, threw 585: the seat is Hyper-only since 2026-09-09, so a Hyper-dry day leaves it nothing, by design).
+Stages: repair from 09:32, translate from 10:33, contest from 11:19, consolidation 11:33 to 12:53.
+
+Class ninety live: the bench wrote "### The Ninth: Blank" and "### The Tenth: Jinxin (Brocade Heart)" and both unified to the archive's bare style ("the archive's own style", nine `heading-series-unified` lines), ten headings by name alone.
+Class ninety-one on the clock: deepseek-v4.1-flash's OpenRouter seat served by Morph for 847 streams at 6.2 s, 2 cap-cut replies against 450, 74 of 85 editor rounds heard two of three, the entry 3h30m against 6h54m.
+Classes eighty-eight and eighty-nine live again (the gloss on the heading, stripped from the signature at slice 108; nine headings to the archive's style); three `contributor-name-restored` lines as before.
+Every structural check as `XingZ625` but one:
+fourteen headings, both links, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish, no double blank line;
+eight unendorsed standings (0, 2, 17, 34, 48, 61, 65, 69), all slate-declined, none gate-kept;
+246 abstention lines with reasons;
+no repeat, run-off or archive-revision-refused line.
+But eight definitions where `XingZ625` had nine.
+
+Class ninety-two.
+The original's line about the rhythm-game song carries `[^3]` ("叫什么 Trans 什么之光[^3]") and the archive never rendered that note ("It's called something like Trans or something."), as it rendered none of the page's nine.
+The repair lane wrote slice 44 from the archive's text ("It's called something like Trans... Light.") without the marker;
+the contest chose repair (`XingZ625` had chosen translate, whose text is written from the original and carried "Transcend Lights[^3]");
+on the consolidation slate gpt-oss's proposal was refused for defining the note inline (class forty-nine) and the gate kept the standing 2 to 1 over a consolidated text that carried the marker, one keeping ballot noting the standing "drops it".
+The definition, translated in the admitted tail (slice 118), was then trimmed as an orphan at both assemblies (`assembly-footnote-trimmed orphan-definition gfm 3`) and the note left the page.
+No floor asked for the marker: replayed through the frozen dist, the repair text is valid with and without the page text, and so is a plain "猫在窗台上打盹[^3]。" rendered without its marker; the atom floor's footnote kind never protected a bare reference.
+Fixed in 9c83fb5f7:
+`translate-marker-drop.ts` refuses a candidate that cites fewer notes than the ORIGINAL passage cites (identifiers folded across both conventions), wired into `validateTranslatedSlice` after the definition-leak floor, so the contest's lane eligibility, the translate slate, the consolidation standing, proposals and polish all read it;
+a marker the candidate carries beyond the original's is left alone (the page's own apparatus, class eighty-five).
+The escape-leak helper moved to `translate-escape-leak.ts` for the line budget.
+The withdrawal fixture in `translate-document.unit.test.ts` keeps its marker on the page side alone, where the slice floor cannot see it.
+Consequence to watch: on shi_Yumiaoya the consolidate gate once rendered the source's 小药娘 note as an inline gloss (shi_Yumiaoya7); that rendering is now ineligible and the note stays a footnote as the source has it, which is what shi_Yumiaoya6 and 8 to 13 shipped.
+
+Class ninety-three.
+With OpenInference ignored, the price sort fell to DekaLLM (432 streams at 54.0 s a stream) and Sail Research (58 at 40.1 s) beside Morph's 847 at 6.2 s;
+GLM-5.3-Flash's seat ran on Together (187 at 91 s), InferenceNet (52 at 114 s) and Parasail (38 at 99 s) beside Wafer's 40 at 14.5 s and Morph's 14 at 15 s.
+Measured off the stream lines, none of these endpoints is slow at generating (DekaLLM 186 characters a second after the first byte, Sail Research 219, Morph 168; Together 329):
+they write 8,813, 8,355 and 23,666 characters a reply against Morph's 514 and Wafer's 651, that is, they reason at length by default, and the pipeline sends no reasoning parameter by the owner's rule.
+Refiner rounds averaged 101 s with 83 s in grace, translate rounds 63 s, editor rounds 63 s.
+DekaLLM also answered 22 in-stream 502s and lists at status -2.
+Ignoring the next cheapest endpoint each run chases the listing (DeepInfra, Wafer, OpenInference, now these two, Relace next and unmeasured), so the fix names the measured endpoint instead:
+the OpenRouter card gains `preferredEndpoints`, sent as `provider.order` (the routing page, read 2026-09-23: the router tries the listed providers in order and proceeds to the others if none is operational; `sort` or `order` disables load balancing), left off the wire where a row names none;
+deepseek-v4.1-flash names Morph (11.1 s, 11.5 s, 3.4 s and 6.2 s a stream over XingZ608, 624, 625 and 626) with `dekallm` and `sail-research` ignored too;
+GLM-5.3-Flash names Wafer (6.4 s, 9.0 s and 14.5 s over the three runs).
+Slugs from the providers listing of 2026-09-23 (`dekallm`, `sail-research`, `morph`), added to the catalog test's snapshot, which now checks named slugs as well as ignored ones.
+Guards red first at 78e67b8c5 (six suites), fixed 9c83fb5f7, fixture feee49cb9, lint 0 and 0, types clean, full suite green (`suite-class92-93b.log`).
+
+`XingZ627` (frozen `9c83fb5f7`, pid 2629556, overlap 8)
+launched 13:13 UTC on Bedrock, OpenRouter and Synthetic
+(meters 83.69 USD Bedrock, 126.15 OpenRouter at launch, Synthetic weekly 1.25 percent, Hyper dry),
+waiter bpkc5sv3j; its first seven deepseek streams served by Morph at 1.6 to 2.6 s.
+Read for class ninety-two live (nine definitions, the song line carrying `[^3]`, no `assembly-footnote-trimmed` line, the repair lane's slice 44 text refused at the contest or carrying the marker),
+class ninety-three on the wire (deepseek served by Morph alone, GLM-5.3-Flash by Wafer, refiner rounds well under 101 s, the entry under 3h30m),
+classes eighty-eight to ninety-one again,
+beside every check of `XingZ626`.
+
 ## XingZ625 read, 2026-09-23, 09:40 UTC: SETTLED in 6h54m, classes eighty-eight and eighty-nine live, the tenth heading kept "Poem Ten:" past the leader table (class ninety) and deepseek's OpenRouter seat ran on OpenInference at 116 s a stream (class ninety-one); both fixed in 5fd39cdcc, XingZ626 launched
 
 `XingZ625` (frozen `d8f847e3c`, pid 2506867) SETTLED at 09:12 UTC,
