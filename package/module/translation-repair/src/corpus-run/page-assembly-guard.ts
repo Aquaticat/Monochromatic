@@ -6,8 +6,10 @@ import { restoreContributorNames, } from './contributor-name-restore.ts';
 import { placeHandleGlosses, } from './handle-gloss-place.ts';
 import { restoreCollidingHeadings, } from './heading-collision-restore.ts';
 import { unifyHeadingSeries, } from './heading-series-unify.ts';
+import { restoreJsxAttributes, } from './jsx-attribute-restore.ts';
 import { shippableReplacements, } from './publish-fixed.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
+import { unifyTitleReferences, } from './title-reference-unify.ts';
 import type { WouldShipSource, } from './would-ship-text.ts';
 
 //region Page assembly guard
@@ -115,6 +117,21 @@ export function guardPageAssembly(
     replacements: glosses.replacements,
   },);
   /**
+   Every tag attribute at the archive's value (class ninety-nine).
+   */
+  const attributes = restoreJsxAttributes({
+    slices,
+    replacements: series.replacements,
+  },);
+  /**
+   Every reference to a section title as the heading renders it (class one
+   hundred).
+   */
+  const titles = unifyTitleReferences({
+    slices,
+    replacements: attributes.replacements,
+  },);
+  /**
    Rows the page-assembly passes rewrote, the latest pass's text per slice.
    */
   const restoredRows = new Map<number, SliceReplacement>([
@@ -122,6 +139,8 @@ export function guardPageAssembly(
     ...names.restored,
     ...glosses.restored,
     ...series.restored,
+    ...attributes.restored,
+    ...titles.restored,
   ].map(function bySlice(row,): readonly [
     number,
     SliceReplacement,
@@ -137,7 +156,7 @@ export function guardPageAssembly(
   const guarded = guardFootnoteAssembly({
     targetText,
     slices,
-    replacements: series.replacements
+    replacements: titles.replacements
       .filter(function stillChanges(replacement,): boolean {
         // A restoration that brings a slice back to the archive's exact wording
         // is no change for the assembler; its override row below still says
@@ -176,6 +195,8 @@ export function guardPageAssembly(
       ...names.findings,
       ...glosses.findings,
       ...series.findings,
+      ...attributes.findings,
+      ...titles.findings,
       ...guarded.findings,
     ],
   };

@@ -14,6 +14,8 @@ export {
   withoutGloss,
 } from './corpus-run/handle-reading.ts';
 export { unifyHeadingSeries, } from './corpus-run/heading-series-unify.ts';
+export { restoreJsxAttributes, } from './corpus-run/jsx-attribute-restore.ts';
+export { unifyTitleReferences, } from './corpus-run/title-reference-unify.ts';
 export { settledPageArtifact, } from './corpus-run/pass-page-assembly.ts';
 export {
   assertDestinationsComplete,
