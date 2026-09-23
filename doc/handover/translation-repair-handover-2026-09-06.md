@@ -4647,18 +4647,25 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA14 RUNS (frozen `7295b33ab`,
-    pid 2695022,
-    launched 15:13 UTC 2026-09-23,
+1.  HULICAIJIA15 RUNS (frozen `b26ea1990`,
+    pid 2723733,
+    launched 15:38 UTC 2026-09-23,
     Bedrock and OpenRouter wet, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class ninety-two on a page whose archive carries the markers
-    (18 markers, 9 definitions as `hulicaijia13`; no `assembly-footnote-trimmed` line; the [^10] Nayuki note on the page under class eighty-four),
+    read for class ninety-five live
+    (the "reading the paired slices beside them" line if the roster pairs one definition short again, else the closed relabel as `hulicaijia13`; either way `relabelled [^8]->[^7], [^9]->[^8]` and `[^7]->[^10]` retained; no `assembly-footnote-trimmed` or `assembly-footnote-reverted` line; no slice 41 stop),
+    class ninety-two on a page whose archive carries the markers
+    (18 markers, 9 definitions as `hulicaijia13`; the [^10] Nayuki note on the page under class eighty-four),
     class ninety-four where the review removes an archive-only block (one blank line between neighbours),
     class ninety-three on the clock (`hulicaijia13` ran 68 min),
     beside every check of `hulicaijia13`
     (13 headings, 17 tag markers, 18 footnote markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish);
-    record under a new heading above "## XingZ628 read, 2026-09-23, 15:15 UTC" in the pass log.
+    record under a new heading above "## hulicaijia14 read, 2026-09-23, 15:45 UTC" in the pass log.
+    HULICAIJIA14 READ (frozen `7295b33ab`): INCOMPLETE at 15:36 UTC 2026-09-23 in 22 min, one attempt, 4,111 seats, 135 retry rounds, 3.70 USD by the meters, no page;
+    stopped at slice 41 (the amantadine paragraph) slate-declined-standing: the roster's definition round paired 14 of 15 blocks, the map read off the definitions alone stayed open, the archive's labels stood while every lane wrote the original's,
+    the assemblies trimmed and reverted `[^7]` to `[^9]` as orphans and the class ninety-two floor refused the archive's own `[^8]` paragraph as a drop of the original's `[^7]` (class ninety-five).
+    CLASS NINETY-FIVE FIXED: `readClosedRelabel` (`corpus-run/pass-footnote-relabel-read.ts`) closes the definitions' map and, where it stays open, reads the paired slices beside them through `widenFootnoteRelabel` (`archive-footnote-relabel-widen.ts`), every relation through the one consistency check;
+    guard red first `9de98e427`, fix `b26ea1990`, lint 0/0, types clean, full suite green (`suite-class95.log`, 1099 PASS).
     XINGZ628 READ (frozen `7295b33ab`): SETTLED at 15:10 UTC 2026-09-23 in 51 min, one attempt, 8,487 seats, 256 retry rounds, 9.06 USD by the meters;
     class ninety-four live (the placeholder removed again, one blank line after the front matter), classes ninety-two and ninety-three again, class eighty-two exercised live (a translate run-off narrowed 3 to 2, no stop);
     every structural check as `XingZ627`, three unendorsed (7, 19, 26), no gate-kept; no class.

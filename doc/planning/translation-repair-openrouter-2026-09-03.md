@@ -8082,6 +8082,62 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## hulicaijia14 read, 2026-09-23, 15:45 UTC: INCOMPLETE at 22 min on slice 41 after the footnote relabel stayed open (class ninety-five, fixed in b26ea1990), hulicaijia15 launched
+
+`hulicaijia14` (frozen `7295b33ab`, pid 2695022) INCOMPLETE at 15:36 UTC,
+22.5 min after its 15:13 launch (TALLY `ms=1352891`),
+one attempt,
+4,111 seats,
+135 retry rounds,
+3,510 calls,
+no abandoned stream,
+3.70 USD by the meters (Bedrock 73.73 to 71.82, OpenRouter 117.77 to 115.98),
+on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry);
+no page and no artifact.
+Endpoints as `XingZ628`: deepseek on Morph 611 with two CoreWeave fallbacks, GLM-5.3-Flash on Wafer 209, Mercury 411, minimax on CoreWeave 408 and Together 153;
+95 abstention lines with reasons.
+
+The stop:
+"slice 41: the standing text failed the deterministic publication rule and the consolidation left nothing valid to ship (slate-declined-standing)".
+Slice 41 is the amantadine paragraph, whose original cites `[^7]` and whose archive cites `[^8]`.
+The archive's own paragraph stood at the consolidation, the class ninety-two floor refused it
+("Your translation drops footnote 7: the ORIGINAL passage carries the marker [^7] and your translation does not"),
+the withheld standing left the slate to the proposals and the translate lane text, and the judges declined them all.
+Upstream, at 15:11 UTC, the relabel had logged
+"FOOTNOTES entry=hulicaijia archive labels stand, since the map read off the definitions the roster paired does not close: the map lands on [^8] while original correspondence remains incomplete (1 original labels unaccounted for)":
+the roster's definition round paired 14 of 15 original blocks (15 of 15 on `hulicaijia13`), leaving the original's `[^7]` definition unpaired,
+so the map read off the definitions alone carried `[^9]->[^8]` and the identities but not `[^8]->[^7]`;
+with archive `[^7]` (the translator's Nayuki note) and `[^8]` both unplaced against one unaccounted original label, elimination could not close it.
+The archive's labels stood while every lane rendered the original's, so the translate assembly trimmed `[^9]` as an orphan (15:23 UTC),
+the repair assembly reverted `[^9]`, `[^8]` and `[^7]` as orphans over three rounds (15:19 UTC),
+and the archive's `[^8]` paragraph read as a marker drop against the original's `[^7]` (class ninety-five).
+On `hulicaijia12` and `13` the same roster closed the map (`[^8]->[^7]`, `[^9]->[^8]`, `[^7]` retained as `[^10]`); the difference is one model vote on one definition pair.
+
+Class ninety-five, fixed in b26ea1990:
+`readClosedRelabel` (`corpus-run/pass-footnote-relabel-read.ts`) reads the definitions the roster paired and closes them as before;
+where the closure is open it logs "the map read off the definitions the roster paired does not close (...); reading the paired slices beside them"
+and reads the paired slices beside the definitions through `widenFootnoteRelabel` (`archive-footnote-relabel-widen.ts`),
+every relation through the one consistency check (`mapLabels`, now exported), the definitions' claims first;
+a slice contradicting a definition pair still leaves the archive standing, and a reading that stays open after both still stands.
+The pass reads through the helper (basis "the definitions the roster paired and the paired slices" on the relabelled line); `readRelabel` is gone.
+Guard red first at 9de98e427 (`corpus-run/pass-footnote-relabel-widen.unit.test.ts`: a cat-themed pair whose roster paired one definition short closes to `[^3]->[^2], [^2]->[^1]` with the translator's note retained as `[^4]`; a pair no slice can place stays standing),
+`archive-footnote-relabel-widen.unit.test.ts` (the merged reading, the contradiction, the ambiguous pass-through),
+lint 0 and 0,
+types clean,
+full suite green (`suite-class95.log`, 1099 PASS).
+
+`hulicaijia15` (frozen `b26ea1990`, pid 2723733, overlap 8)
+launched 15:38 UTC on Bedrock and OpenRouter
+(meters 71.82 USD Bedrock, 115.98 OpenRouter at launch),
+waiter bqga8hys0.
+Read for class ninety-five live
+(the "reading the paired slices beside them" line if the roster pairs short again, else the closed relabel as `hulicaijia13`; either way `relabelled [^8]->[^7], [^9]->[^8]`, `[^7]->[^10]` retained, no `assembly-footnote-trimmed` or `assembly-footnote-reverted` line, no slice 41 stop),
+class ninety-two on a page whose archive carries the markers,
+class ninety-four where the review removes an archive-only block,
+class ninety-three on the clock (`hulicaijia13` ran 68 min),
+beside every check of `hulicaijia13`
+(13 headings, 17 tag markers, 18 footnote markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish).
+
 ## XingZ628 read, 2026-09-23, 15:15 UTC: SETTLED in 51 min, class ninety-four live, classes ninety-two and ninety-three again, class eighty-two exercised live; no class, hulicaijia14 launched
 
 `XingZ628` (frozen `7295b33ab`, pid 2675240) SETTLED at 15:10 UTC,
