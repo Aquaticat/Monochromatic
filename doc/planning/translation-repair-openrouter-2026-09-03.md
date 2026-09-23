@@ -8082,6 +8082,41 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## CuspariaKLSY8 read, 2026-09-23, 17:46 UTC: SETTLED in 10 min on the class ninety-seven build, classes seventy-five, seventy-six, eighty-five and ninety-six holding; no class, yingying6 launched
+
+`CuspariaKLSY8` (frozen `e78515f56`, pid 2788469) SETTLED at 17:44 UTC,
+10 min after its 17:34 launch (TALLY `ms=593557`),
+one attempt,
+383 seats,
+11 retry rounds,
+345 calls,
+no abandoned stream,
+0.17 USD by the meters (Bedrock 67.57 to 67.47, OpenRouter 112.01 to 111.94),
+on Bedrock and OpenRouter (Synthetic spent, Hyper dry).
+Endpoints: minimax on CoreWeave 60, deepseek on Morph 51, Mercury on Inception 38, GLM-5.3-Flash on Wafer 18.
+
+Class ninety-seven silent by design: the original carries no 你 or 您, so the floor had nothing to read; no refusal in the artifact.
+
+Every check as `CuspariaKLSY7`:
+1 heading, no footnote marker (as the archive), front matter equal, no TA, no error finish, no double blank line, no straight apostrophe (class ninety-six holding), publish weight check silent (class seventy-five holding),
+every line of the life in the past (class seventy-six holding),
+the nickname's gloss on the page (class eighty-five holding), this run in the house rule's parenthetical form,
+"Her circle name, Ling Shui Yu Yu Zi (Fish in Clear Water), was given while she was feeding fish."
+where `CuspariaKLSY7` kept the archive's two sentences; the meaning is on the page either way.
+Terminals: 2 consolidated (0, 3), 2 slate-declined standings (1, 2), no gate-kept;
+12 abstention lines with reasons.
+No class.
+
+`yingying6` (frozen `e78515f56`, pid 2791373, overlap 8)
+launched 17:45 UTC on Bedrock and OpenRouter
+(meters 67.47 USD Bedrock, 111.94 OpenRouter at launch),
+waiter (see the task list).
+Read for class ninety-seven live on the farewell slice
+(the "drops the address in the second person" refusal on any third-person candidate in the artifact; "May you still have..." on the page where `yingying5` shipped "May she"),
+class eighty-six holding (the `[^2]` definition "[Farewell. I miss you, Yingying.]"),
+beside every check of `yingying4`
+(1 heading, 4 markers, 2 definitions, front matter equal, References line kept, no TA, no error finish, no double blank line).
+
 ## zheermao6 read, 2026-09-23, 17:35 UTC: SETTLED in 12 min on the class ninety-seven build, class ninety-seven not exercised (the bench kept the address itself), every check as zheermao4; no class, CuspariaKLSY8 launched
 
 `zheermao6` (frozen `e78515f56`, pid 2784441, entry `zheermao101`) SETTLED at 17:33 UTC,
