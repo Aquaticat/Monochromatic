@@ -8082,6 +8082,47 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya15 read, 2026-09-23, 22:30 UTC: TALLY ERROR twice at publish, the footnote definition's wording "not in the page" because the insertion composer cuts the two spaces its lane text ended in while the wording check searched them (class one hundred one); fixed in 314ca4b8c, shi_Yumiaoya16 launched
+
+`shi_Yumiaoya15` (frozen `0f685f551`, pid 2923082) stopped ERROR at 22:14 UTC,
+7 min after its 22:07 launch (first attempt TALLY `ms=415307`, the second resumed from the caches and stopped again in `ms=1521`),
+two attempts,
+1,020 seats,
+39 retry rounds,
+794 calls,
+no abandoned stream,
+0.53 USD by the meters (Bedrock 50.29 to 49.98, OpenRouter 97.52 to 97.30),
+on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry; glm-5.3 and Qwen3.8-27B dark by design).
+Stages: repair from 22:08, translate from 22:10, contest from 22:11, consolidation 22:12 to 22:14; Jev 25 of 25; 24 abstention lines with reasons; one unendorsed standing (16, the closing quote, slate-declined).
+No page and no artifact were written: `refusePageThatDisagrees` refused the composed page before the write with
+"1 wording(s) the artifact says would ship are not in the page in slice order, at slices 17 (237 characters)".
+
+Class one hundred one.
+Slice 17 is the source's own `[^1]` footnote definition (the 小药娘 note), admitted as an insertion (`coverage=absent`) since the archive glosses the term inline and carries no definition;
+the translate lane's winning candidate (GLM-5.3-Flash, chosen at weight 3 of 5 ballots) ended in two spaces after its full stop, 237 characters with them,
+and the consolidation shipped it as the standing.
+The splice writes an inserted slice through `composeInsertion`, whose `fragmentBody` cuts the blank lines around a fragment and the spaces at its end (documented there since e2c624fa9: safe because fragments are joined by a blank line),
+so the page carried every word of the definition and ended "below.\n";
+`pageCarriesEveryWording` (`corpus-run/published-page-check.ts`) searched the raw would-ship wording, "below.  ", found no such stretch, and the entry stopped ERROR.
+The two page-assembly passes of classes ninety-nine and one hundred were silent (no `page assembly:` line), so the class is the check's, not theirs;
+class seventy-five had taught the weight check to read through `matchSpanEdges` (c5470163d) and left the wording check reading the stage's text.
+`shi_Yumiaoya1` to `14` never met it because no chosen candidate on an inserted slice had ended in spaces; the check has been one-sided in the wrong direction since #194 whenever one does.
+
+Fixed in 314ca4b8c: the wording scan searches `fragmentBody({ fragment: reading.text })`, the body both splice paths leave on the page
+(an inserted slice writes exactly that body; a content span keeps its interior with the archive span's line-ending edges, and the body is inside it), so the check stays one-sided and can still refuse a lost or reordered passage;
+guard red first at 4c36039b0 (`published-page-check.unit.test.ts`: an inserted wording ending in the two spaces the composer cuts, reported missing on the old dist with 39 characters),
+lint 0 and 0, types clean, full suite green (`suite-class101.log`, 1103 PASS, exit 0),
+replayed off the built dist over the real 237-character wording of the run's translate cache through `composeInsertion` and `pageCarriesEveryWording`: nothing missing.
+
+`shi_Yumiaoya16` (frozen `314ca4b8c`, pid 2942500, overlap 8)
+launched 22:26 UTC on Bedrock and OpenRouter
+(meters 49.98 USD Bedrock, 97.30 OpenRouter at launch),
+waiter bxei53tuc.
+Read for class one hundred one live (the page written past the wording check with the `[^1]` definition on it, whatever whitespace its candidate ends in),
+the two page-assembly passes (none expected),
+classes seventy-eight to eighty, ninety-two, ninety-five and ninety-six holding,
+beside every check of `shi_Yumiaoya14` (4 headings, front matter equal, no TA, no error finish, no double blank line).
+
 ## mikaela11 read, 2026-09-23, 22:10 UTC: SETTLED in 11 min, the two page-assembly passes silent, classes seventy to seventy-seven and ninety-six holding, no class; shi_Yumiaoya15 launched
 
 `mikaela11` (frozen `0f685f551`, pid 2920908, entry id `mikaela_khara`) SETTLED at 22:07 UTC,

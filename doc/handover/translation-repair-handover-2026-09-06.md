@@ -4647,17 +4647,22 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA15 RUNS (frozen `0f685f551`,
-    pid 2923082,
-    launched 22:07 UTC 2026-09-23,
-    waiter bx91ra6hw,
-    meters 50.29 USD Bedrock and 97.52 OpenRouter at launch, Synthetic spent, Hyper dry;
+1.  SHI_YUMIAOYA16 RUNS (frozen `314ca4b8c`,
+    pid 2942500,
+    launched 22:26 UTC 2026-09-23,
+    waiter bxei53tuc,
+    meters 49.98 USD Bedrock and 97.30 OpenRouter at launch, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for the two page-assembly passes of classes ninety-nine and one hundred (none expected; any line read against the archive),
-    classes seventy-eight to eighty, ninety-two, ninety-five and ninety-six holding ("Chewing Gum" and "Danpian", the attempt survived on January 16, the closing quote as the archive's two lines, the marker and definition on the page),
+    read for class one hundred one live (a page written past the wording check with the `[^1]` definition on it, whatever whitespace its candidate ends in),
+    the two page-assembly passes of classes ninety-nine and one hundred (none expected; any line read against the archive),
+    classes seventy-eight to eighty, ninety-two, ninety-five and ninety-six holding ("Chewing Gum" and "Danpian", the attempt survived on January 16, the closing quote as the archive's two lines, the marker and definition on the page, the four JSX path literals the only straight quotes),
     beside every check of `shi_Yumiaoya14` (4 headings, front matter equal, no TA, no error finish, no double blank line);
-    record under a new heading above "## mikaela11 read, 2026-09-23, 22:10 UTC" in the pass log;
+    record under a new heading above "## shi_Yumiaoya15 read, 2026-09-23, 22:30 UTC" in the pass log;
     then rotate yingying, zheermao101 and CuspariaKLSY on the same dist.
+    SHI_YUMIAOYA15 READ (frozen `0f685f551`): TALLY ERROR at 22:14 UTC 2026-09-23 in 7 min, two attempts, 1,020 seats, 39 retry rounds, 0.53 USD by the meters, no page or artifact;
+    "1 wording(s) the artifact says would ship are not in the page in slice order, at slices 17 (237 characters)": the source's `[^1]` definition, inserted, whose winning candidate ended in two spaces the insertion composer cuts while the wording check searched the raw text (class one hundred one);
+    fixed in 314ca4b8c (`published-page-check.ts`: the scan searches the fragment body both splice paths leave on the page), guard red first 4c36039b0, lint 0/0, types clean, full suite green (`suite-class101.log`, 1103 PASS), replayed over the run's real wording through `composeInsertion`;
+    the two page-assembly passes silent, one unendorsed (16), 24 abstention lines, Jev 25 of 25.
     MIKAELA11 READ (frozen `0f685f551`): SETTLED at 22:07 UTC 2026-09-23 in 11 min, one attempt, 2,124 seats, 60 retry rounds, 1.07 USD by the meters;
     the two page-assembly passes silent, classes seventy to seventy-seven and ninety-six holding, every check as `mikaela10`, four unendorsed (0, 7, 12, 29), 67 abstention lines; no class.
     HULICAIJIA16 READ (frozen `0f685f551`): SETTLED at 21:55 UTC 2026-09-23 in 27 min, one attempt, 4,482 seats, 144 retry rounds, 3.81 USD by the meters;
