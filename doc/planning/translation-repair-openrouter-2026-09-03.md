@@ -8082,6 +8082,39 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ628 read, 2026-09-23, 15:15 UTC: SETTLED in 51 min, class ninety-four live, classes ninety-two and ninety-three again, class eighty-two exercised live; no class, hulicaijia14 launched
+
+`XingZ628` (frozen `7295b33ab`, pid 2675240) SETTLED at 15:10 UTC,
+51 min after its 14:19 launch (TALLY `ms=3032284`),
+one attempt,
+8,487 seats,
+256 retry rounds,
+7,493 calls,
+2 abandoned streams (0.01 USD),
+9.06 USD by the meters (Bedrock 78.77 to 73.76, OpenRouter 121.90 to 117.85),
+on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry).
+Stages: repair from 14:21, translate from 14:37, contest from 14:45, consolidation 14:48 to 15:10.
+
+Class ninety-four live: the archive block review removed the placeholder line again (the two alert lines kept, as on `XingZ627`) and the page carries one blank line between the front matter and "[!Warning]", no double blank line anywhere.
+Class ninety-two again: nine definitions, the song line "It's called something like Trans-something Lights[^3]." with its marker, no trim line.
+Class ninety-three on the wire: deepseek on Morph 1,212 streams at 5.7 s (13 CoreWeave fallbacks at 11.8 s), GLM-5.3-Flash on Wafer 418 at 10.7 s (7 InferenceNet fallbacks at 47.8 s).
+Class eighty-two exercised live for the first time: a translate run-off tied again over three finalists and narrowed to two, the same panel asked again, no stop.
+Classes eighty-eight to ninety-one again (the gloss at the heading, eight headings unified to the archive's bare style, eight restores: Huidu and Impermanence to HiYku and Ann, Dongyun to Shinonome, Baimao suki to Baimao Suki, and the signatures).
+Every structural check as `XingZ627`:
+fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish;
+three unendorsed standings (7, 19, 26), no gate-kept, two slate-declined;
+219 abstention lines with reasons.
+No class.
+
+`hulicaijia14` (frozen `7295b33ab`, pid 2695022, overlap 8)
+launched 15:13 UTC on Bedrock and OpenRouter
+(meters 73.73 USD Bedrock, 117.77 OpenRouter at launch),
+the first footnote carrier on the class ninety-two floor.
+Read for class ninety-two on a page whose archive carries the markers (18 markers, 9 definitions as `hulicaijia13`; no `assembly-footnote-trimmed` line; the [^10] Nayuki note on the page under class eighty-four),
+class ninety-four where the review removes an archive-only block,
+class ninety-three on the clock (`hulicaijia13` ran 68 min),
+beside every check of `hulicaijia13`.
+
 ## XingZ627 read, 2026-09-23, 14:30 UTC: SETTLED in 56 min, classes ninety-two and ninety-three live, but the archive block review's removal of the placeholder line left three blank lines after the front matter (class ninety-four); fixed in 7295b33ab, XingZ628 launched
 
 `XingZ627` (frozen `9c83fb5f7`, pid 2629556) SETTLED at 14:09 UTC,

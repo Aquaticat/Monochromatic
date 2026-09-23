@@ -4647,18 +4647,21 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XINGZ628 RUNS (frozen `7295b33ab`,
-    pid 2675240,
-    launched 14:19 UTC 2026-09-23,
-    Bedrock and OpenRouter wet, Synthetic spent (weekly 0 percent), Hyper dry;
+1.  HULICAIJIA14 RUNS (frozen `7295b33ab`,
+    pid 2695022,
+    launched 15:13 UTC 2026-09-23,
+    Bedrock and OpenRouter wet, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class ninety-four live
-    (no double blank line on the page; one blank line between the front matter and the first body block whatever the archive block review does with the placeholder)
-    and classes ninety-two and ninety-three again
-    (nine definitions, the song line carrying `[^3]`; deepseek on Morph, GLM-5.3-Flash on Wafer, the entry about an hour),
-    beside every check of `XingZ627`
-    (fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish);
-    record under a new heading above "## XingZ627 read, 2026-09-23, 14:30 UTC" in the pass log.
+    read for class ninety-two on a page whose archive carries the markers
+    (18 markers, 9 definitions as `hulicaijia13`; no `assembly-footnote-trimmed` line; the [^10] Nayuki note on the page under class eighty-four),
+    class ninety-four where the review removes an archive-only block (one blank line between neighbours),
+    class ninety-three on the clock (`hulicaijia13` ran 68 min),
+    beside every check of `hulicaijia13`
+    (13 headings, 17 tag markers, 18 footnote markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish);
+    record under a new heading above "## XingZ628 read, 2026-09-23, 15:15 UTC" in the pass log.
+    XINGZ628 READ (frozen `7295b33ab`): SETTLED at 15:10 UTC 2026-09-23 in 51 min, one attempt, 8,487 seats, 256 retry rounds, 9.06 USD by the meters;
+    class ninety-four live (the placeholder removed again, one blank line after the front matter), classes ninety-two and ninety-three again, class eighty-two exercised live (a translate run-off narrowed 3 to 2, no stop);
+    every structural check as `XingZ627`, three unendorsed (7, 19, 26), no gate-kept; no class.
     OPEN QUESTION FOR THE OWNER: the archive block review removed the archive's placeholder line "**Come back later!**" 5 of 6 on `XingZ627` (kept on `XingZ626`) while keeping the two alert lines beside it;
     the review's sheet lets reviewers class translation-side apparatus as "editorial-context" and keep it, so whether the maintainers' placeholder counts as apparatus is the owner's call.
     XINGZ627 READ (frozen `9c83fb5f7`): SETTLED at 14:09 UTC 2026-09-23 in 56 min, one attempt, 8,948 seats, 447 retry rounds, 9.08 USD by the meters;
