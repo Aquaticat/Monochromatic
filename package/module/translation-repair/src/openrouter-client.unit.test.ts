@@ -196,12 +196,17 @@ await describe({
             require_parameters: true,
             sort: 'price',
             // DeepInfra and Wafer ignored for this seat since 2026-09-18 (XingZ607),
-            // OpenInference since 2026-09-23 (XingZ624 and XingZ625, class ninety-one).
+            // OpenInference since 2026-09-23 (XingZ624 and XingZ625, class ninety-one),
+            // DekaLLM and Sail Research the same day (XingZ626, class ninety-three),
+            // which also named Morph ahead of the price sort.
             ignore: [
               'deepinfra',
               'wafer',
               'open-inference',
+              'dekallm',
+              'sail-research',
             ],
+            order: ['morph',],
           },
           response_format: {
             type: 'json_schema',

@@ -110,6 +110,7 @@ await describe({
         for (const card of cardsServing({ provider: 'openrouter', },)) {
           expect(OPENROUTER_MODELS[card.openrouter.id].sharedWith,).toBe(card.id,);
           expect(OPENROUTER_MODELS[card.openrouter.id].ignoredEndpoints,).toEqual(card.openrouter.ignoredEndpoints,);
+          expect(OPENROUTER_MODELS[card.openrouter.id].preferredEndpoints,).toEqual(card.openrouter.preferredEndpoints,);
         }
         for (const card of cardsServing({ provider: 'bedrock', },)) {
           expect(BEDROCK_MODELS[card.bedrock.id].sharedWith,).toBe(card.id,);

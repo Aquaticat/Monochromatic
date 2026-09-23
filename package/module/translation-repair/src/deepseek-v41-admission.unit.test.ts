@@ -46,7 +46,8 @@ await describe({
         const openrouter = Object.values(OPENROUTER_MODELS).find(info => info.id === `deepseek/${MODEL}`);
         expect(hyper).toMatchObject({ maxOutputLength: 26_214, readsImages: true });
         expect(openrouter).toMatchObject({ maxOutputLength: 384_000, readsImages: true,
-          promptUsdPerMillion: 0.3, completionUsdPerMillion: 1.2, ignoredEndpoints: ['deepinfra', 'wafer', 'open-inference'] });
+          promptUsdPerMillion: 0.3, completionUsdPerMillion: 1.2, ignoredEndpoints: ['deepinfra', 'wafer', 'open-inference', 'dekallm', 'sail-research'],
+          preferredEndpoints: ['morph'] });
       },
     }),
     it({

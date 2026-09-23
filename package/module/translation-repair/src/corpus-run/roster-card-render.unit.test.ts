@@ -177,7 +177,7 @@ await describe({
         expect(rendered,).toContain(`    openrouter: {\n      id: 'whiskers/mittens-9',\n      readsImages: true,\n      maxOutputLength: 64000,`,);
         expect(rendered,).toContain('      promptUsdPerMillion: 0.3,',);
         expect(rendered,).toContain('      completionUsdPerMillion: /* not in the listing:',);
-        expect(rendered,).toContain(`      rawCharsPerToken: 'unmeasured',\n    },`,);
+        expect(rendered,).toContain(`      ignoredEndpoints: [],\n      preferredEndpoints: [],\n      rawCharsPerToken: 'unmeasured',\n    },`,);
         /**
          Rendered Bedrock side, whose listing says nothing a card needs.
          */

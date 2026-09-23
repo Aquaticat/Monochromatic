@@ -126,6 +126,8 @@ await describe({
         + 'Flash (XingZ607, 2026-09-18: 45 s and 26 s median against Morph\'s 11 s, 97 of 97 cut streams) '
         + 'joined by OpenInference (XingZ624 and XingZ625, 2026-09-23: 137 s and 116 s a stream against '
         + 'Morph\'s 11.5 s and 3.4 s, 450 cap-cut replies against 150; class ninety-one), '
+        + 'then DekaLLM and Sail Research (XingZ626, 2026-09-23: 54 s and 40 s a stream against Morph\'s '
+        + '6.2 s, 8,813 and 8,355 characters a reply against 514; class ninety-three), '
         + 'while every other row ignores no endpoint; Qwen3.8-27B and GLM-5.3 left the catalog on '
         + '2026-09-09, DeepSeek V4 Flash and V4 Pro on 2026-09-16',
       fn: async () => {
@@ -137,6 +139,8 @@ await describe({
           'deepinfra',
           'wafer',
           'open-inference',
+          'dekallm',
+          'sail-research',
         ],);
         /**
          Rows with a measured endpoint on them.
@@ -159,7 +163,30 @@ await describe({
     },),
 
     it({
-      name: 'SPELLS EVERY IGNORED SLUG AS THE GATEWAY LISTS IT, since a slug the gateway does not '
+      name: 'NAMES THE MEASURED ENDPOINT AHEAD OF THE PRICE SORT where the cheapest endpoints reason at '
+        + 'length by default (class ninety-three, XingZ626, 2026-09-23): Morph for DeepSeek V4.1 Flash '
+        + '(847 streams at 6.2 s and 514 characters a reply against DekaLLM\'s 432 at 54 s and 8,813), '
+        + 'Wafer for GLM-5.3-Flash (40 at 14.5 s and 651 characters against Together\'s 187 at 91 s and '
+        + '23,666), sent as `provider.order` with fallbacks allowed; every other row names none',
+      fn: async () => {
+        expect(OPENROUTER_MODELS['deepseek/deepseek-v4.1-flash'].preferredEndpoints,).toEqual(['morph',],);
+        expect(OPENROUTER_MODELS['z-ai/glm-5.3-flash'].preferredEndpoints,).toEqual(['wafer',],);
+        /**
+         Rows with a measured endpoint named on them.
+         */
+        const named: ReadonlySet<string> = new Set([
+          'deepseek/deepseek-v4.1-flash',
+          'z-ai/glm-5.3-flash',
+        ],);
+        for (const info of Object.values(OPENROUTER_MODELS,)) {
+          if (!named.has(info.id,))
+            expect(info.preferredEndpoints,).toEqual([],);
+        }
+      },
+    },),
+
+    it({
+      name: 'SPELLS EVERY IGNORED OR NAMED SLUG AS THE GATEWAY LISTS IT, since a slug the gateway does not '
         + 'know is ignored silently: `openinference` kept OpenInference on the wire for a day because '
         + 'the listing spells it `open-inference`',
       fn: async () => {
@@ -167,28 +194,32 @@ await describe({
          Provider slugs from `GET https://openrouter.ai/api/v1/providers`, read
          2026-09-04 (`~/temp/agent/providers-20260904.json`), for every
          upstream a run log of that day named for a roster model. Extend it
-         from the same listing when a new slug is ignored: `wafer` read from
-         the listing on 2026-09-18 for deepseek-v4.1-flash.
+         from the same listing when a new slug is ignored or named: `wafer` read
+         from the listing on 2026-09-18 for deepseek-v4.1-flash; `dekallm`,
+         `morph` and `sail-research` on 2026-09-23 (class ninety-three).
          */
         const listed: ReadonlySet<string> = new Set([
           'akashml',
           'coreweave',
           'deepinfra',
+          'dekallm',
           'io-net',
           'ionstream',
           'makora',
           'modal',
           'modelrun',
+          'morph',
           'open-inference',
           'parasail',
           'phala',
           'reka',
+          'sail-research',
           'together',
           'venice',
           'wafer',
         ],);
         for (const info of Object.values(OPENROUTER_MODELS,)) {
-          for (const slug of info.ignoredEndpoints)
+          for (const slug of [...info.ignoredEndpoints, ...info.preferredEndpoints,])
             expect(listed.has(slug,),).toBe(true,);
         }
       },
@@ -201,7 +232,8 @@ await describe({
   children: [
     it({
       name: 'ADDS the row\'s ignore list to the shared preferences, as a copy the caller may not '
-        + 'write back into the catalog',
+        + 'write back into the catalog, and the row\'s named endpoints as `order` only where it names '
+        + 'one (class ninety-three)',
       fn: async () => {
         /**
          Preferences for the one row with an ignored endpoint.
@@ -217,6 +249,19 @@ await describe({
           ],
         },);
         expect(minimax.ignore,).not.toBe(OPENROUTER_MODELS['minimax/minimax-m3'].ignoredEndpoints,);
+        expect(openRouterProviderPreferencesFor({ servedId: 'deepseek/deepseek-v4.1-flash', },),).toEqual({
+          zdr: true,
+          require_parameters: true,
+          sort: 'price',
+          ignore: [
+              'deepinfra',
+              'wafer',
+              'open-inference',
+              'dekallm',
+              'sail-research',
+            ],
+          order: ['morph',],
+        },);
         expect(openRouterProviderPreferencesFor({ servedId: 'openai/gpt-oss-120b', },),).toEqual({
           zdr: true,
           require_parameters: true,
