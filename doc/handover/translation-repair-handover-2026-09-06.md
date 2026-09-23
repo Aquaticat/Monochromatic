@@ -4647,20 +4647,19 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA15 RUNS (frozen `b26ea1990`,
-    pid 2723733,
-    launched 15:38 UTC 2026-09-23,
+1.  MIKAELA8 RUNS (frozen `b26ea1990`,
+    pid 2730119,
+    launched 16:22 UTC 2026-09-23,
     Bedrock and OpenRouter wet, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class ninety-five live
-    (the "reading the paired slices beside them" line if the roster pairs one definition short again, else the closed relabel as `hulicaijia13`; either way `relabelled [^8]->[^7], [^9]->[^8]` and `[^7]->[^10]` retained; no `assembly-footnote-trimmed` or `assembly-footnote-reverted` line; no slice 41 stop),
-    class ninety-two on a page whose archive carries the markers
-    (18 markers, 9 definitions as `hulicaijia13`; the [^10] Nayuki note on the page under class eighty-four),
-    class ninety-four where the review removes an archive-only block (one blank line between neighbours),
-    class ninety-three on the clock (`hulicaijia13` ran 68 min),
-    beside every check of `hulicaijia13`
-    (13 headings, 17 tag markers, 18 footnote markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish);
-    record under a new heading above "## hulicaijia14 read, 2026-09-23, 15:45 UTC" in the pass log.
+    read for classes seventy to seventy-seven, ninety-two and ninety-five holding
+    (the excerpt line curled, 𝓠𝓾𝓪𝓷 on every appearance, "Mika was outed", the Epilogue one to one, no double blank line, the life in the past, 4 markers with their definitions, the relabel line),
+    beside every check of `mikaela7`
+    (front matter equal, 4 headings, 4 comments, 4 markers, no TA, no error finish);
+    record under a new heading above "## hulicaijia15 read, 2026-09-23, 16:20 UTC" in the pass log.
+    HULICAIJIA15 READ (frozen `b26ea1990`): SETTLED at 16:15 UTC 2026-09-23 in 37 min, one attempt, 4,697 seats, 125 retry rounds, 4.06 USD by the meters;
+    the roster paired 15 of 15 so the relabel closed on the definitions alone (class ninety-five not exercised live; its unit guards stand), no trim or revert, no marker-drop refusal;
+    every check as `hulicaijia13` (13 headings, 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no double blank), four unendorsed (1, 8, 29, 47), one gate-kept; no class.
     HULICAIJIA14 READ (frozen `7295b33ab`): INCOMPLETE at 15:36 UTC 2026-09-23 in 22 min, one attempt, 4,111 seats, 135 retry rounds, 3.70 USD by the meters, no page;
     stopped at slice 41 (the amantadine paragraph) slate-declined-standing: the roster's definition round paired 14 of 15 blocks, the map read off the definitions alone stayed open, the archive's labels stood while every lane wrote the original's,
     the assemblies trimmed and reverted `[^7]` to `[^9]` as orphans and the class ninety-two floor refused the archive's own `[^8]` paragraph as a drop of the original's `[^7]` (class ninety-five).

@@ -8082,6 +8082,44 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## hulicaijia15 read, 2026-09-23, 16:20 UTC: SETTLED in 37 min, the relabel closed on the definitions alone, no trim or revert, every check as hulicaijia13; no class, mikaela8 launched
+
+`hulicaijia15` (frozen `b26ea1990`, pid 2723733) SETTLED at 16:15 UTC,
+37 min after its 15:38 launch,
+one attempt,
+4,697 seats,
+125 retry rounds,
+3,983 calls,
+no abandoned stream,
+4.06 USD by the meters (Bedrock 71.82 to 69.84, OpenRouter 115.98 to 113.90),
+on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry);
+the fastest `hulicaijia` yet (`hulicaijia13` 68 min, `hulicaijia9` 82).
+Endpoints: deepseek on Morph 662, GLM-5.3-Flash on Wafer 200, Mercury 472, minimax on Together 321 and CoreWeave 318.
+
+Class ninety-five not exercised live:
+the roster's definition round paired 15 of 15 this run (14 of 15 on `hulicaijia14`),
+so the relabel closed on the definitions alone as on `hulicaijia13`
+(`relabelled [^8]->[^7], [^9]->[^8]`, `[^7]` retained as `[^10]`, definitions moved into the original's order);
+the widening line never printed, and its unit guards stand for it.
+No `assembly-footnote-trimmed` or `assembly-footnote-reverted` line, no marker-drop refusal, no slice 41 stop.
+
+Every check as `hulicaijia13`:
+13 headings, 18 footnote markers, 9 definitions (`[^1]` to `[^8]` and the `[^10]` Nayuki note under class eighty-four), 2 links, 3 Sakura,
+front matter equal, no TA, no error finish, no double blank line.
+The review removed no archive block, so class ninety-four had nothing to do here.
+Four unendorsed standings (1, 8, 29, 47), one gate-kept (29), three slate-declined;
+155 abstention lines with reasons.
+The `[^3]` definition is reworded against `hulicaijia13`'s ("Now part of the Liangjiang New Area commercial district" for "Now one of the commercial districts of Chongqing's Liangjiang"), the bench's choice on the same note.
+
+`mikaela8` (frozen `b26ea1990`, pid 2730119, overlap 8)
+launched 16:22 UTC on Bedrock and OpenRouter
+(meters 69.84 USD Bedrock, 113.90 OpenRouter at launch),
+the oldest read of the seven entries (`mikaela7` ran on `93b11aef9`).
+Read for classes seventy to seventy-seven, ninety-two and ninety-five holding
+(the excerpt line curled, 𝓠𝓾𝓪𝓷 on every appearance, "Mika was outed", the Epilogue one to one, no double blank line, the life in the past, 4 markers with their definitions, the relabel line),
+beside every check of `mikaela7`
+(front matter equal, 4 headings, 4 comments, 4 markers, no TA, no error finish).
+
 ## hulicaijia14 read, 2026-09-23, 15:45 UTC: INCOMPLETE at 22 min on slice 41 after the footnote relabel stayed open (class ninety-five, fixed in b26ea1990), hulicaijia15 launched
 
 `hulicaijia14` (frozen `7295b33ab`, pid 2695022) INCOMPLETE at 15:36 UTC,
