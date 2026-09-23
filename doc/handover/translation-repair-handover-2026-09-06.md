@@ -4647,17 +4647,18 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA14 RUNS (frozen `c62ce70b3`,
-    pid 2758225,
-    launched 16:56 UTC 2026-09-23,
+1.  YINGYING5 RUNS (frozen `c62ce70b3`,
+    pid 2760848,
+    launched 17:05 UTC 2026-09-23,
     Bedrock and OpenRouter wet, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for classes seventy-eight to eighty holding
-    ("Magic Chewing Gum and Danpian", "she tried to end her life", the film quote as two lines),
-    classes ninety-two, ninety-five and ninety-six on a page with one footnote and curly quotes,
-    beside every check of `shi_Yumiaoya13`
-    (4 headings, the death paragraphs on the page, the attribution once, front matter equal, no TA, no error finish, no double blank line);
-    record under a new heading above "## mikaela10 read, 2026-09-23, 16:57 UTC" in the pass log.
+    read for class eighty-six holding (the `[^2]` definition "[Farewell. I miss you, Yingying.]"),
+    classes ninety-two, ninety-five and ninety-six on a page with two footnotes,
+    beside every check of `yingying4`
+    (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, the second-person farewell, no TA, no error finish, no double blank line);
+    record under a new heading above "## shi_Yumiaoya14 read, 2026-09-23, 17:06 UTC" in the pass log.
+    SHI_YUMIAOYA14 READ (frozen `c62ce70b3`): SETTLED at 17:05 UTC 2026-09-23 in 9 min, one attempt, 880 seats, 38 retry rounds, 0.54 USD by the meters;
+    classes seventy-eight to eighty holding, every check as `shi_Yumiaoya13`, no unendorsed standing; no class.
     MIKAELA10 READ (frozen `c62ce70b3`): SETTLED at 16:55 UTC 2026-09-23 in 15 min, one attempt, 2,336 seats, 65 retry rounds, 1.21 USD by the meters;
     class ninety-six live ("𝓠𝓾𝓪𝓷’s classmate" curled, only the archive's four JSX path literals straight), classes seventy to seventy-seven holding, every check as `mikaela9`, two unendorsed (12, 19); no class.
     MIKAELA9 READ (frozen `b26ea1990`): SETTLED at 16:35 UTC 2026-09-23 in 18 min, one attempt, 2,673 seats, 135 retry rounds, 1.23 USD by the meters;

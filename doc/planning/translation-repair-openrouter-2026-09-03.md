@@ -8082,6 +8082,39 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya14 read, 2026-09-23, 17:06 UTC: SETTLED in 9 min, classes seventy-eight to eighty holding on the class ninety-six build; no class, yingying5 launched
+
+`shi_Yumiaoya14` (frozen `c62ce70b3`, pid 2758225) SETTLED at 17:05 UTC,
+9 min after its 16:56 launch,
+one attempt,
+880 seats,
+38 retry rounds,
+786 calls,
+no abandoned stream,
+0.54 USD by the meters (Bedrock 68.45 to 68.16, OpenRouter 112.85 to 112.60),
+on Bedrock and OpenRouter (Synthetic spent, Hyper dry).
+Endpoints: deepseek on Morph 134, GLM-5.3-Flash on Wafer 54, Mercury 102, minimax on Together 77 and CoreWeave 42;
+17 abstention lines with reasons.
+
+Classes seventy-eight to eighty holding:
+the ICU paragraph reads "Chewing Gum’s and Danpian’s successive deaths" (both declared forms; `shi_Yumiaoya13` wrote "Magic Chewing Gum and Danpian"),
+January 16 reads "she attempted suicide in the early hours of January 16 by taking a large amount of medication" (an attempt, as the rule says),
+and the closing quote ships as the archive's two lines (the English line and "From *The Truman Show*"), the slate ballots naming the bilingual clause as they weighed it.
+Classes ninety-two, ninety-five and ninety-six on a page with one footnote and curly quotes: the marker and its definition on the page, the relabel with nothing to move,
+the page's only straight single quotes the archive's own four JSX path literals.
+Every check as `shi_Yumiaoya13`: 4 headings, 2 markers, 1 definition, the death paragraphs on the page, the attribution once, front matter equal, no TA, no error finish, no double blank line;
+no unendorsed, gate-kept or slate-declined standing.
+No class.
+
+`yingying5` (frozen `c62ce70b3`, pid 2760848, overlap 8)
+launched 17:05 UTC on Bedrock and OpenRouter
+(meters 68.16 USD Bedrock, 112.60 OpenRouter at launch),
+the oldest read left (`yingying4` ran on `40679244d`).
+Read for class eighty-six holding (the `[^2]` definition "[Farewell. I miss you, Yingying.]"),
+classes ninety-two, ninety-five and ninety-six on a page with two footnotes,
+beside every check of `yingying4`
+(1 heading, 4 markers, 2 definitions, front matter equal, References line kept, the second-person farewell, no TA, no error finish, no double blank line).
+
 ## mikaela10 read, 2026-09-23, 16:57 UTC: SETTLED in 15 min, class ninety-six live, classes seventy to seventy-seven holding; no class, shi_Yumiaoya14 launched
 
 `mikaela10` (frozen `c62ce70b3`, pid 2742636, entry id `mikaela_khara`) SETTLED at 16:55 UTC,
