@@ -8082,6 +8082,73 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## yingying5 read, 2026-09-23, 17:22 UTC: SETTLED in 6 min, classes eighty-six, ninety-two, ninety-five and ninety-six holding, but the farewell in the third person (class ninety-seven); fixed in e78515f56, zheermao5 killed, zheermao6 launched
+
+`yingying5` (frozen `c62ce70b3`, pid 2760848) SETTLED at 17:11 UTC,
+6 min after its 17:05 launch (TALLY `ms=336854`),
+one attempt,
+298 seats,
+11 retry rounds,
+258 calls,
+no abandoned stream,
+0.21 USD by the meters (Bedrock 68.16 to 68.06, OpenRouter 112.60 to 112.49),
+on Bedrock and OpenRouter (Synthetic spent, Hyper dry).
+Endpoints: deepseek on Morph 42, Mercury 29, minimax on CoreWeave 26 and Together 16, GLM-5.3-Flash on Wafer 16.
+
+Every check as `yingying4`:
+1 heading, 4 markers, 2 definitions (the `[^2]` definition "[Farewell. I miss you, Yingying.]", class eighty-six holding),
+front matter equal, References line kept, no TA, no error finish, no double blank line,
+no straight apostrophe (classes ninety-two, ninety-five and ninety-six fine on a two-footnote page),
+two unendorsed standings (0 slate-declined, 2 gate-kept),
+7 abstention lines with reasons.
+
+But the closing wish shipped in the third person.
+The original writes 愿在你的下一个世界，你还有同样的开朗去追你想追的蝴蝶吧, addressing the deceased;
+`yingying1` to `yingying4` shipped "May you still have...";
+`yingying5` shipped the archive's "May she still have the same cheer to chase the butterflies she wanted to chase in her next world!".
+Slice 2's repair lane wrote "May you ... what you want to do in your next world!",
+the translate lane copied the archive's "she" text,
+the contest tied 2 to 2 and settled on neither with the archive declined,
+the consolidation proposed "you",
+and the gate kept the standing 2 to 1
+(one ballot: "Consolidated adds an unsupported 'you' (愿…你) where the Chinese reads 'she'", a misreading of 你;
+another called the person switch a fault and lost).
+Class eighty-one's rule ("a pronoun the ORIGINAL writes is rendered as written where it stands") was on every sheet and a judge still read 你 as "she";
+no deterministic floor asked for the address (class ninety-seven).
+
+Corpus census (`census-you.mjs`, 2026-09-23) backing the floor's narrow shape:
+67 of 92 archive pages carry 你;
+3 pages have no "you" at all (Mizuki_Yuuki "I hope they have found...", Rentable_A, XIEPT2);
+of 31 aligned 你-blocks 6 lack "you":
+two 你好 greetings rendered "Hello" (LCG_Akiball), 干干你的 as "wanna play?" (BI4PBV, no pronoun), Mizuki's person switch, one misaligned block, one front matter.
+So the floor refuses only a rendering that carries no second-person pronoun and a third-person one in its place;
+a greeting (你好, 您好) is exempt, HTML comments are cut, and a rendering with no pronoun at all stays with the judges.
+
+Class ninety-seven, fixed in e78515f56:
+`translate-address-drop.ts` (`droppedAddressFindings`) counts 你 and 您 outside a greeting in the original with its comments cut,
+scans the candidate's Latin words linearly,
+and refuses it where no word is you, your, yours, yourself or yourselves and one is she, he, her, him, his, hers, they, them, their, theirs, herself, himself or themselves,
+with a finding naming the count and the pronouns found;
+wired into `validateTranslatedSlice` after the class ninety-two marker floor, so it runs before any judge on every lane, contest, consolidation and gate candidate.
+Guard red first at 8598cfaeb (`address-drop.unit.test.ts`: the refusal, and acceptance of the address kept, a greeting rendered as a greeting, a pronoun-free rendering and a comment-only 你),
+lint 0 and 0,
+types clean,
+full suite green (`suite-class97.log`, 1100 PASS).
+
+`zheermao5` (frozen `c62ce70b3`, pid 2762969, launched 17:11 UTC) killed at 17:21 UTC under ALWAYS KILL AND RELAUNCH once e78515f56 landed,
+9 min in at the translate lane,
+566 seats, 17 retry rounds, 463 calls, 11 abandoned streams (0.03 USD),
+about 0.25 USD by the meters (Bedrock 68.05 to 67.90, OpenRouter 112.47 to 112.38).
+
+`zheermao6` (frozen `e78515f56`, pid 2784441, overlap 8)
+launched 17:21 UTC on Bedrock and OpenRouter
+(meters 67.88 USD Bedrock, 112.34 OpenRouter at launch),
+waiter bx3eo9p1o.
+Read for class ninety-seven on the wire (any "drops the address in the second person" refusal in the artifact; the reply's 你 lines, if any, in the second person),
+classes seventy-seven and ninety-six holding,
+beside every check of `zheermao4`
+(2 headings, front matter equal, no TA, no error finish, no double blank line, the email label as the archive).
+
 ## shi_Yumiaoya14 read, 2026-09-23, 17:06 UTC: SETTLED in 9 min, classes seventy-eight to eighty holding on the class ninety-six build; no class, yingying5 launched
 
 `shi_Yumiaoya14` (frozen `c62ce70b3`, pid 2758225) SETTLED at 17:05 UTC,

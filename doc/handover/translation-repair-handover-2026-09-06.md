@@ -4647,16 +4647,22 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  YINGYING5 RUNS (frozen `c62ce70b3`,
-    pid 2760848,
-    launched 17:05 UTC 2026-09-23,
+1.  ZHEERMAO6 RUNS (frozen `e78515f56`,
+    pid 2784441,
+    launched 17:21 UTC 2026-09-23,
     Bedrock and OpenRouter wet, Synthetic spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class eighty-six holding (the `[^2]` definition "[Farewell. I miss you, Yingying.]"),
-    classes ninety-two, ninety-five and ninety-six on a page with two footnotes,
-    beside every check of `yingying4`
-    (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, the second-person farewell, no TA, no error finish, no double blank line);
-    record under a new heading above "## shi_Yumiaoya14 read, 2026-09-23, 17:06 UTC" in the pass log.
+    read for class ninety-seven on the wire (any "drops the address in the second person" refusal in the artifact; any 你 line of the reply in the second person),
+    classes seventy-seven and ninety-six holding,
+    beside every check of `zheermao4`
+    (2 headings, front matter equal, no TA, no error finish, no double blank line, the email label as the archive);
+    record under a new heading above "## yingying5 read, 2026-09-23, 17:22 UTC" in the pass log.
+    ZHEERMAO5 (frozen `c62ce70b3`) killed at 17:21 UTC 9 min in at the translate lane under ALWAYS KILL AND RELAUNCH once class ninety-seven landed (566 seats, about 0.25 USD).
+    YINGYING5 READ (frozen `c62ce70b3`): SETTLED at 17:11 UTC 2026-09-23 in 6 min, one attempt, 298 seats, 11 retry rounds, 0.21 USD by the meters;
+    classes eighty-six, ninety-two, ninety-five and ninety-six holding, every check as `yingying4`;
+    but the farewell shipped in the archive's third person ("May she still have...") where the original writes 你 and `yingying1` to `4` wrote "May you": the contest tied 2 to 2, the consolidation proposed "you", the gate kept the standing 2 to 1 on a ballot reading 你 as "she" (class ninety-seven).
+    CLASS NINETY-SEVEN FIXED: `translate-address-drop.ts` refuses, before any judge, a candidate carrying no second-person pronoun and a third-person one where the original writes 你 or 您 outside a greeting (comments cut; a pronoun-free rendering stays with the judges);
+    wired into `validateTranslatedSlice` after the marker floor; guard red first `8598cfaeb`, fix `e78515f56`, lint 0/0, types clean, full suite green (`suite-class97.log`, 1100 PASS).
     SHI_YUMIAOYA14 READ (frozen `c62ce70b3`): SETTLED at 17:05 UTC 2026-09-23 in 9 min, one attempt, 880 seats, 38 retry rounds, 0.54 USD by the meters;
     classes seventy-eight to eighty holding, every check as `shi_Yumiaoya13`, no unendorsed standing; no class.
     MIKAELA10 READ (frozen `c62ce70b3`): SETTLED at 16:55 UTC 2026-09-23 in 15 min, one attempt, 2,336 seats, 65 retry rounds, 1.21 USD by the meters;
