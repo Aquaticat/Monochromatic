@@ -7,6 +7,7 @@ import {
   namesOneOf,
   readCandidateNames,
 } from './contest-ballot-wire.ts';
+import { POLISH_GATE_HOUSE_RULES, } from './polish-gate-house-rules.ts';
 import { selectFence, } from './prompt-fence.ts';
 import type { RefineStageMode, } from './refine-selection-context.ts';
 
@@ -311,9 +312,7 @@ export function buildConsolidationPolishGateMessages(
   return [
     {
       role: 'system',
-      content: comparative
-        ? COMPARATIVE_POLISH_POLICY
-        : REQUIRED_CORRECTION_POLISH_POLICY,
+      content: `${comparative ? COMPARATIVE_POLISH_POLICY : REQUIRED_CORRECTION_POLISH_POLICY}\n\n${POLISH_GATE_HOUSE_RULES}`,
     },
     {
       role: 'user',

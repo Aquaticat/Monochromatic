@@ -7,6 +7,7 @@ import { placeHandleGlosses, } from './handle-gloss-place.ts';
 import { restoreCollidingHeadings, } from './heading-collision-restore.ts';
 import { unifyHeadingSeries, } from './heading-series-unify.ts';
 import { restoreJsxAttributes, } from './jsx-attribute-restore.ts';
+import { restoreNameGlossLines, } from './name-gloss-restore.ts';
 import { shippableReplacements, } from './publish-fixed.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import { unifyTitleReferences, } from './title-reference-unify.ts';
@@ -132,6 +133,14 @@ export function guardPageAssembly(
     replacements: attributes.replacements,
   },);
   /**
+   The archive's gloss line of a name wherever the shipped text carries the
+   name unglossed (class one hundred five).
+   */
+  const glossLines = restoreNameGlossLines({
+    slices,
+    replacements: titles.replacements,
+  },);
+  /**
    Rows the page-assembly passes rewrote, the latest pass's text per slice.
    */
   const restoredRows = new Map<number, SliceReplacement>([
@@ -141,6 +150,7 @@ export function guardPageAssembly(
     ...series.restored,
     ...attributes.restored,
     ...titles.restored,
+    ...glossLines.restored,
   ].map(function bySlice(row,): readonly [
     number,
     SliceReplacement,
@@ -156,7 +166,7 @@ export function guardPageAssembly(
   const guarded = guardFootnoteAssembly({
     targetText,
     slices,
-    replacements: titles.replacements
+    replacements: glossLines.replacements
       .filter(function stillChanges(replacement,): boolean {
         // A restoration that brings a slice back to the archive's exact wording
         // is no change for the assembler; its override row below still says
@@ -197,6 +207,7 @@ export function guardPageAssembly(
       ...series.findings,
       ...attributes.findings,
       ...titles.findings,
+      ...glossLines.findings,
       ...guarded.findings,
     ],
   };
