@@ -183,7 +183,7 @@ depends = ["prototype:install"]
 run = "node capture-search-page.mjs"
 
 [tasks."prototype:capture:layout"]
-description = "Capture coherent docked, full-width list, and two-column Search studies on both Fold panels"
+description = "Recapture rejected deck-hiding Search studies for historical diagnosis only"
 dir = "{{config_root}}"
 depends = ["prototype:install"]
 run = "node capture-search-layout.mjs"

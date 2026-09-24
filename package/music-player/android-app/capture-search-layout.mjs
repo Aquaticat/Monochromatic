@@ -2,7 +2,8 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-// Capture design-only compositions, not a working index or the rejected all-pixel-strip guard.
+// Reproduce rejected Search compositions whose unfolded variants hide the deck.
+// D50 supersedes this capture task; no frame from it is an active design choice.
 const sdk = process.env.ANDROID_HOME;
 if (!sdk) throw new Error('ANDROID_HOME is unset; run through the prototype mise task.');
 const adb = join(sdk, 'platform-tools', 'adb');

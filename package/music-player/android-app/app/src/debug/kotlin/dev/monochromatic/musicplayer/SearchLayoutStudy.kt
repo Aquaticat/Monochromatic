@@ -1,6 +1,6 @@
-// Debug-only comparison, not a production Search implementation.
-// Question: which coherent unfolded Search composition survives the 7.5mm physical dent?
-// Docked context, continuous list and two-column categories are distinct alternatives.
+// Rejected debug-only Search comparison, not a production implementation.
+// D50 superseded all three variants: they hide the unfolded playback deck.
+// Retain only as historical evidence; new candidates must reserve the deck.
 package dev.monochromatic.musicplayer
 
 // What:     BackHandler maps system Back to the temporary Search destination.
