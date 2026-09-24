@@ -1330,10 +1330,18 @@ The user corrected the desktop Search-page round:
  all visual decisions follow the
 Pixel 9 Pro Fold's **folded cover** and **unfolded inner** screens.
  The cover is
-1080 × 2424 physical px (about 411 × 923dp),
- and the inner panel is 2076 × 2152
-physical px (about 852 × 883dp),
- as recorded in `device-metrics.md`.
+1080 × 2424 physical px,
+ and the inner panel is 2076 × 2152 physical px.
+The original cover estimate of about 411 × 923dp was derived from published
+pixel density,
+ not device configuration.
+ Direct AVD probing reports 390dpi on
+both panels,
+ making its captured cover about 443 × 994dp and its inner display
+about 852 × 883dp;
+ see `device-metrics.md`.
+ This corrects the review scale,
+not the user's physical-panel choice.
  Desktop
 inherits those treatments even where that is less optimal for a desktop window.
 Do not substitute 360 × 640,
