@@ -879,8 +879,8 @@ that opens a separate page (D47).
  The first page prototype stacked a "Search" app
 bar over a query bar;
  the user removed that redundancy (D48).
- The active page
-instead uses the baseline full-content Search layout:
+ The desktop-sized prototype
+then used baseline full-content Search anatomy:
  one 72px header contains Back,
 query and Clear,
  a 1px `outline` divider separates results,
@@ -934,6 +934,35 @@ verification.
  D21's former global command hotkey and Settings row are not copied
 to Search;
  D25's Ctrl+F reservation awaits its separate keyboard-map round.
+
+## D49: native Fold geometry replaces desktop-size Search evidence
+
+The user corrected the round's target:
+ all visual design follows the Pixel 9 Pro Fold
+cover panel (1080 × 2424 physical px,
+ about 411 × 923dp) and unfolded inner panel
+(2076 × 2152 physical px,
+ about 852 × 883dp),
+ as measured in `device-metrics.md`.
+Desktop implementation inherits these treatments even if a distinct desktop layout
+would appear more efficient.
+ The 360 × 640,
+ 480 × 600 and 1100 × 640px Slint
+images,
+ their normalized Search header comparison,
+ and the browser walkthrough
+verify a previous desktop-sized experiment only.
+ None measures the D47/D48 page on
+either target panel.
+ The next designer-owned artifact is a debug-only native Compose
+study at both real panel resolutions in both schemes,
+ including the player Search
+button,
+ one integrated header,
+ sample results and no-result/unavailable states.
+ Do
+not call a Slint-native capture a device-native Android proof or ask for a desktop
+window size as a design input.
 
 [search-bar-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SearchBarTokens.kt
 [search-view-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SearchViewTokens.kt
