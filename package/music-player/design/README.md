@@ -64,26 +64,23 @@ at both seams).
  P4 remains provisional and a better picker may be explored before 1.x,
  without a promised replacement.
 
-D47 supersedes the desktop command-bar presentation:
- the user rejected all I/G/R
-variants and directed a **Search button that opens a separate search page**.
-The active self-contained review at `questions/current.html` now shows only the
-Search-button-to-page direction.
+D47 replaces the command-bar presentation with a **Search button opening a separate
+page**.
  D48 merges Back,
- input and Clear into one
-72px full-content baseline MD3 header with a divider,
- rather than stacking two
-search bars.
- Native Slint captures show the player trigger,
- open/empty page,
-illustrative results,
- no results and unavailable library in both schemes at
-360px and 480px;
- the 1100px stress viewport shows the trigger,
- empty page and
-results only.
- The HTML walkthrough exercises the intended
-open/back sequence without claiming the static native captures prove click delivery.
+ input and Clear into one baseline MD3 Search header.
+D49 corrects the design target:
+ every platform follows the Pixel 9 Pro Fold cover
+(1080 × 2424px,
+ about 411 × 923dp) and unfolded inner display (2076 × 2152px,
+about 852 × 883dp).
+ The earlier 360,
+ 480 and 1100px desktop Slint scenes are
+not design evidence for these screens.
+ `questions/current.html` still shows that
+obsolete review and must be replaced with native Fold captures in both schemes
+before requesting another answer.
+ Desktop implementation inherits the Fold visual
+choices even if its own proportions would suggest a different layout.
 The rejected command review remains at `questions/archive/command-igr-rejected.html`.
 D21's configurable global hotkey and extra Settings row belonged to the command bar;
 they do not silently move to Search.
