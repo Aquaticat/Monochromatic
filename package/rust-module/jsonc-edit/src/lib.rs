@@ -325,3 +325,13 @@ mod edit_comment_tests;
 /// ```
 #[cfg(test)]
 mod api_tests;
+
+/// What:     Shared-fixture tests read from the same corpus the TypeScript conformance suite uses.
+/// Why:      One language-neutral contract keeps both maintained implementations from drifting.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import './fixtures.test';
+/// ```
+#[cfg(test)]
+mod fixture_tests;

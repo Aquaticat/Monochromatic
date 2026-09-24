@@ -8,6 +8,7 @@ edition = "2024"
 homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/rust-module/jsonc-edit"
 include = [
   "src/**/*.rs",
+  "fixtures/*.json",
   "Cargo.toml",
   "Cargo.lock",
   "README.md",
