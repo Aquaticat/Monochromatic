@@ -202,20 +202,34 @@ component PlayerBackdrop inherits Rectangle {
     Rectangle { y: 92px; width: parent.width; height: 1px; background: root.dark ? #464850 : #b0b1bc; }
     Rectangle {
         y: 93px; width: root.compact ? parent.width : 330px;
-        height: root.compact ? 150px : parent.height - 93px;
+        height: root.compact ? 180px : parent.height - 93px;
         background: root.dark ? #000000 : #ffffff;
         Text { x: 20px; y: 13px; text: "Another Xronixle"; font-size: 16px; font-weight: 600; color: root.dark ? #e4e5f0 : #30323b; }
         Text { x: 20px; y: 41px; text: "1 of 16 · −1.2 dBTP"; font-size: 14px; color: root.dark ? #a9aab5 : #5d5f68; }
         Rectangle { x: 20px; y: 80px; width: parent.width - 40px; height: 4px; border-radius: 2px; background: root.dark ? #353b4d : #dde2f9; }
         Rectangle { x: 20px; y: 80px; width: (parent.width - 40px) * 0.24; height: 4px; border-radius: 2px; background: root.dark ? #bac5ee : #4e5e8b; }
-        MaterialGlyph { x: 22px; y: 106px; glyph: @image-url("command-icons/play.svg"); ink: root.dark ? #e4e5f0 : #30323b; }
-        MaterialGlyph { x: 88px; y: 106px; glyph: @image-url("command-icons/pause.svg"); ink: root.dark ? #bac5ee : #4e5e8b; }
-        MaterialGlyph { x: 154px; y: 106px; glyph: @image-url("command-icons/play.svg"); ink: root.dark ? #e4e5f0 : #30323b; }
+        Rectangle {
+            x: (parent.width - 168px) / 2; y: 100px; width: 48px; height: 48px;
+            border-radius: 24px; border-width: 1px;
+            border-color: root.dark ? #73757f : #797a84;
+            MaterialGlyph { x: 12px; y: 12px; glyph: @image-url("command-icons/skip_previous.svg"); ink: root.dark ? #e4e5f0 : #30323b; }
+        }
+        Rectangle {
+            x: (parent.width - 168px) / 2 + 60px; y: 100px; width: 48px; height: 48px;
+            border-radius: 24px; background: root.dark ? #bac5ee : #4e5e8b;
+            MaterialGlyph { x: 12px; y: 12px; glyph: @image-url("command-icons/pause.svg"); ink: root.dark ? #30323b : #ffffff; }
+        }
+        Rectangle {
+            x: (parent.width - 168px) / 2 + 120px; y: 100px; width: 48px; height: 48px;
+            border-radius: 24px; border-width: 1px;
+            border-color: root.dark ? #73757f : #797a84;
+            MaterialGlyph { x: 12px; y: 12px; glyph: @image-url("command-icons/skip_next.svg"); ink: root.dark ? #e4e5f0 : #30323b; }
+        }
     }
     Rectangle {
-        x: root.compact ? 0px : 330px; y: root.compact ? 243px : 93px;
+        x: root.compact ? 0px : 330px; y: root.compact ? 273px : 93px;
         width: root.compact ? parent.width : parent.width - 330px;
-        height: root.compact ? parent.height - 243px : parent.height - 93px;
+        height: root.compact ? parent.height - 273px : parent.height - 93px;
         background: root.dark ? #000000 : #ffffff;
         Text { x: 16px; y: 18px; text: "Tracks in Camellia"; font-size: 14px; color: root.dark ? #a9aab5 : #5d5f68; }
         Rectangle {
