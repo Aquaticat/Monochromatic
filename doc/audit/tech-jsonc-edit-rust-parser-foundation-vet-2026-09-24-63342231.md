@@ -2,16 +2,16 @@
 
 ## Status and fingerprint
 
-- Status: Superseded by [regex-gated report](tech-jsonc-edit-rust-parser-foundation-vet-2026-09-24-63342231.md); original fingerprint is retained for audit history.
+- Status: Discovery and targeted source screening, incomplete. No candidate is recommended or adopted.
 - Subject: jsonc-edit Rust parser foundation.
 - Scope: Choose a parser and token source for the published native Rust comment-as-data JSONC editor.
 - Started and last updated: 2026-09-24.
 - Owner: current coding-agent session.
 - Governing skill: `.agents/skills/choosing-technology/SKILL.md` at `a05818ad7`, SHA-256 `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
-- Fingerprint, RFC 8785 canonicalized schema version 1: `acd1bc3d942bc4ac634ce588bd9b3d25fed39229e99c76133a4febd34e52fb4e`.
+- Fingerprint, RFC 8785 canonicalized schema version 1: `63342231cc8d34fcdb2effc92f9c276181ddde482f704a397f3eb0b25fe8cf26`.
 - No compatible prior parser-foundation report was found by a `rg --files doc/audit` search for JSONC or Rust parser.
 - Category: inspectable open-source local technology, including a repository-owned translation as baseline. Overlays: native, multi-platform and untrusted parsing input. No browser, credential, or CI-execution overlay for the library itself. The maintained TypeScript library is a behavior reference, not removed.
-- Hard constraints: strict JSONC-only container roots, original numeric and quoted-string lexemes, escaped unpaired UTF-16 surrogate support, separately queryable normalized comments on keys and values after adaptation, inspectable source and reproducible validation, and compatible licensing.
+- Hard constraints: strict JSONC-only container roots, original numeric and quoted-string lexemes, escaped unpaired UTF-16 surrogate support, separately queryable normalized comments on keys and values after adaptation, inspectable source and reproducible validation, compatible licensing, and no regex-backed production parsing or lexing in required dependencies.
 - Deployment: native Rust crate on Linux, macOS and Windows, crates.io release.
 - Criteria, frozen before candidate rating with default weight 1 each: source auditability, API clarity for the comment model, dependency and build surface, maintenance evidence, and measured parse performance. Ratings and sensitivity remain pending.
 
@@ -117,6 +117,12 @@ Web searches discovered `jwc`, `hifijson`, `fjson`, `tokora`, and lexer-only `an
 - `jsonc` 0.1.0 has no repository URL in registry metadata; the published source in the local Cargo cache (`jsonc_document.rs:2-4,62-73,107-119`) wraps `jsonc-parser` and projects through `serde_json::Value`. It inherits the upstream scanner's surrogate constraint and cannot provide the full contract as-is.
 - `jsonc_tools` 0.0.1 published source (`src/lib.rs:1-18`, `src/parser/parser.rs:1-13`) is a scaffold with no JSONC parser implementation. Category mismatch.
 - `jsontape`, `hifijson`, `tokora`, `purrdf-json`, and `momoa` remain discovery leads requiring category screening; none is yet recommended or rejected on registry description alone.
+
+## Regex screening, 2026-09-24
+
+The user explicitly excludes production regex. The original TypeScript scanner in `package/module/jsonc-edit/src/scan.ts` uses direct character scans. `edikt-jsonc` 0.4.0 is now **excluded**: `crates/edikt-jsonc/src/lexer.rs:47-69` uses repeated `#[regex(...)]` patterns through `logos::Logos` (`:23`), not merely a dev-only regex dependency. See [versioned lexer source](https://docs.rs/crate/edikt-jsonc/0.4.0/source/src/lexer.rs). Stop its audit at this hard gate.
+
+`json-five` 0.3.1 lists `regex = "1"` only under `[dev-dependencies]` in `Cargo.toml:30-32`; its inspected production `src/` has no `regex::`, `Regex::`, `#[regex]`, or `logos` use. Do not cull on test-only dependencies. Direct source/manifests for `fjson`, `jsonc-parser`, `biome_json_parser`, `jwc`, and `hifijson` yielded no matching regex calls or macros under the same targeted search, but their required transitive production paths still need audit. This is **pending**, not a claim of global absence.
 
 ## Evidence and validation still required
 
