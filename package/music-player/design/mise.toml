@@ -433,3 +433,13 @@ run = "{{vars.validate_question}}"
 description = "Mask notification status content in native Fold Search review images"
 dir = "{{config_root}}"
 run = "node sanitize-search-review.mjs"
+
+[tasks."prototype:build:search-review"]
+description = "Build the self-contained provisional Fold Search questionnaire from sanitized captures"
+dir = "{{config_root}}"
+run = "node build-search-review.mjs build"
+
+[tasks."prototype:lint:search-review"]
+description = "Validate the self-contained Fold Search questionnaire against sanitized captures"
+dir = "{{config_root}}"
+run = "node build-search-review.mjs validate"
