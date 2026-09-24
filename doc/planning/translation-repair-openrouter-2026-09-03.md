@@ -8082,6 +8082,61 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## mikaela13 read, 2026-09-24, 04:50 UTC: INCOMPLETE carried-evidence-lost in 15 min again, class one hundred eleven (the carried passage rendered across both neighbours), fixed in 0ab0abdd8; mikaela14 launched
+
+`mikaela13` (entry `mikaela_khara`, frozen `457765221`, pid 344865) stopped INCOMPLETE at 04:33 UTC 2026-09-24,
+15 min after its 04:18 start (TALLY `ms=903894`, `error=translation repair interrupted: carried-evidence-lost`),
+one attempt,
+2,093 seats,
+63 retry rounds,
+1,678 calls,
+0.75 USD by the meters (Bedrock 47.86 to 47.60, OpenRouter 94.68 to 94.19),
+on Bedrock and OpenRouter alone (Synthetic dry for the week, Hyper dry),
+roster 8 (`wide=6 select=7 late=7 slate=7 checkers=3 translators=7 readers=5 writers=8`).
+Stages: admission at 04:19:34, repair lane from 04:19:34, translate lane to 04:25, contest 24 of 34 slices differ, consolidation from 04:28 to 04:33; Jev 68 of 68; 56 abstention lines with reasons; all 16 checker rounds heard 2 of 3, no hold inside the lane (class one hundred nine not exercised).
+Class one hundred seven live on five slices (2, 10, 12, 22, 24).
+No page, no artifact: the entry stopped at the publish guard,
+`INTERRUPTED mikaela_khara: carried-insertion-evidence-lost slice 11`.
+
+Class one hundred ten was not exercised in mikaela12's shape.
+This run's pairing (12 of 12 original and 9 of 9 translation blocks in the section, against mikaela12's) carried slice 11 alone,
+the fold printed nothing,
+and the same guard stopped the entry on a different passage.
+
+Class one hundred eleven, the stop.
+The original writes three paragraphs:
+"8 月下旬的某天，Mika 炸柜了。" (slice 10, 18 code points),
+"原本只是非常正常的一件事情：家庭矛盾，家长不想让孩子 HRT，然后 Mika 离家出走结果被报警抓回来，最后在派出所协商调解矛盾。" (slice 11),
+"很正常的一件事情。" (slice 12).
+The archive renders them as two:
+"In late August, she tried coming out but ended up facing serious opposition.
+What started as a typical situation—family conflict, her parents not wanting her to undergo hormone replacement therapy (HRT).
+So Mika ran away from home only to be brought back by the police—ended in conflict resolution at the local police station."
+and "That was originally just a typical thing."
+The pairing gave the first paragraph to slice 10 and the second to slice 12,
+so slice 11 was source-only and the coverage round found it carried:
+its one ballot quoted the HRT sentences out of slice 10's span and the "originally just a typical thing" line out of slice 12's,
+one region across both neighbours (the archive's second paragraph renders 原本只是 from slice 11 and 很正常的一件事情 from slice 12 in one line).
+The class one hundred ten fold asked for a single holder of the whole region, found two, and stood aside without a word in the log.
+Then class one hundred seven disputed both neighbours:
+slice 10's archive paragraph against its 18-code-point source ("keeping the archive text, 326 code points against a source of 18" on the translate lane; the repair lane's text stood in),
+slice 12's line for adding "originally" and "just" (two critics, "importing the nearby context's 原本只是非常正常的一件事情 framing"),
+and the stand-ins, written from each slice's own source, carried nothing of slice 11.
+The guard at publish was right again.
+
+Fix (0ab0abdd8, guard red first 2925802e1 with the flanked fixture, replayed over the real corpus texts of slices 10 to 12 with the ballot's region: `insertion-carried-folded (slice 11 into slice 10)`, the carrier's source both paragraphs, slice 12's source untouched):
+the fold places the evidence block by block (`corpus-run/insertion-carried-anchor.ts`, `anchorRegion`: one holder per block the quote touches, with its share in code points);
+every block must sit in a paired slice next to the carried one,
+the carrier is the neighbour holding the larger share (the earlier on a tie),
+and the sources must abut across blank space alone (`corpus-run/insertion-carried-decide.ts`, `decideFold`, split out for the line budget).
+The other neighbour keeps its own source: the words of the passage it rendered are the carrier's to write now, and its class one hundred seven dispute over "originally" is answered by the carrier rendering 原本只是.
+Every stand-aside names its reason (`foldCarriedInsertions` returns `asides`), and `pass-entry.ts` logs them at warn beside one line per still-carried passage with its evidence regions,
+so the next carried-evidence-lost stop can be read against the admission without the artifact.
+Lint 0/0, types clean, the fold suite green, full suite `suite-class111.log`.
+Frozen `.frozen-dist-0ab0abdd8`.
+
+`mikaela14` launched on it (the rest of the read set follows).
+
 ## mikaela12 read, 2026-09-24, 04:20 UTC: INCOMPLETE carried-evidence-lost in 15 min, class one hundred ten (a carried passage inside the neighbour's archive span), fixed in 457765221; mikaela13 launched
 
 `mikaela12` (entry `mikaela_khara`, frozen `21ea25993`, pid 125750) stopped INCOMPLETE at 03:54 UTC 2026-09-24,

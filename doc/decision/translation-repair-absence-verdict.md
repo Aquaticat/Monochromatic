@@ -325,6 +325,25 @@ a source gap that is not blank.
 The publish guard reads only what stays carried.
 
 
+## Addendum 2026-09-24, second: a carried passage the archive rendered across both neighbours folds into the one holding most of it
+
+`mikaela13` (2026-09-24 04:33 UTC) stopped `carried-evidence-lost` on slice 11 with the class one hundred ten fold in place:
+the archive rendered the carried source across the two paired slices around it
+(the HRT sentences inside the earlier slice's paragraph, "That was originally just a typical thing." as the later slice's own line, which also renders 很正常的一件事情),
+the one coverage ballot quoted both spans as one region,
+the fold asked for a single holder and stood aside without a word,
+and the class one hundred seven stand-ins on both neighbours, written from their own sources, carried nothing of the passage (class one hundred eleven).
+
+The fold now places the evidence block by block.
+Every block of every region must sit inside a paired slice next to the carried one;
+the carrier is the neighbour holding the larger share of the quoted text in code points, the earlier on a tie;
+the two sources must abut across blank space alone.
+The other neighbour keeps its own source: the words of the passage it rendered are the carrier's to write, so its "adds originally" dispute is answered by the carrier rendering 原本只是.
+Every stand-aside names its reason (no region, a region the locator cannot place, a block in no paired slice, a block held by a slice that is not a neighbour, the recorded insertion missing, the sources apart),
+and the pass logs each at warn beside one line per still-carried passage with its evidence regions,
+so the next `carried-evidence-lost` stop is readable from the log alone.
+
+
 ## What this supersedes
 
 `doc/planning/translation-repair-open-decisions.md` question 28, whose ranking was A > C > B > D

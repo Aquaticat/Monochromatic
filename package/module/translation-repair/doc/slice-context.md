@@ -208,6 +208,21 @@ or whose source does not abut the carrier's stays carried as before,
 and the publish guard still reads it.
 
 
+## A carried passage the archive rendered across both neighbours
+
+Class one hundred eleven (`mikaela13`, 2026-09-24):
+the archive may render a source-only passage partly inside the earlier paired neighbour's span and partly inside the later one's
+(the HRT sentences in slice 10's paragraph, the "originally just" clause on slice 12's own line).
+The fold (`corpus-run/insertion-carried-anchor.ts`, `corpus-run/insertion-carried-decide.ts`) places each quoted region block by block:
+every block must sit in a paired slice next to the carried one,
+the carrier is the neighbour holding the larger share of the quoted text (the earlier on a tie),
+and the sources must abut.
+The other neighbour keeps its own source and writes its own line;
+the carrier renders the passage.
+A stand-aside names its reason in a `stays carried:` warn line,
+and every passage still carried prints its evidence regions at the admission.
+
+
 ## What the consolidate gate is told about an ineligible standing
 
 Since class fifty-six (2026-09-18) a gate over a standing the deterministic publication rule refused is told so on its sheet,

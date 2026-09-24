@@ -215,7 +215,8 @@ A different rule protects a source-only passage:
 whole-document coverage must call it absent,
 then page shortfall or a destination missing from target admits translation.
 A source-only passage the coverage round finds carried inside the neighbouring paired slice's archive span
-is folded into that neighbour at the admission (`corpus-run/insertion-carried-fold.ts`),
+is folded into that neighbour at the admission (`corpus-run/insertion-carried-fold.ts`;
+where the archive spread it over both neighbours, into the one holding the larger share),
 so both lanes write it as part of the slice that carries it and the publish guard has nothing to find.
 
 Any source passage still unfilled fails entry before contest,

@@ -2218,7 +2218,6 @@ the pass log carries the evidence under the read that found each.
 - An empty standing with no valid lane text still fails at publish rather than at once
   (noted with class eighty-seven,
   never reached).
-- The coverage admission logs `coverage=carried` without the evidence regions;
-  a class one hundred ten fold that stands aside cannot be judged from the log.
-  To add after mikaela13 exits (a logging change,
-  not a design question).
+- The coverage admission logged `coverage=carried` without the evidence regions;
+  built in 0ab0abdd8 (class one hundred eleven): every stand-aside of the fold names its reason at warn,
+  and every passage still carried prints its evidence regions at the admission.

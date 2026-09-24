@@ -4766,21 +4766,32 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  MIKAELA13 RUNS (entry `mikaela_khara`,
-    frozen `457765221`,
-    pid 344865,
-    launched 04:18 UTC 2026-09-24,
-    waiter wait-m13 (background bash),
-    meters 47.86 USD Bedrock and 94.68 OpenRouter at launch, Synthetic dry for the week since 02:56 UTC, Hyper dry;
+1.  MIKAELA14 RUNS (entry `mikaela_khara`,
+    frozen `0ab0abdd8`,
+    pid 691210,
+    launched 04:58 UTC 2026-09-24,
+    waiter wait-m14 (background bash),
+    meters 47.60 USD Bedrock and 94.19 OpenRouter at launch, Synthetic dry for the week since 02:56 UTC, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    the first run on class one hundred ten;
-    read for the `insertion-carried-folded (slice 14 into slice 15)` line at the admission,
-    the carrier's widened source rendered on the page (the September sentence inside the neighbour's paragraph),
+    the first run on class one hundred eleven;
+    read for the `insertion-carried-folded (slice N into slice M)` line at the admission (mikaela13's shape folds slice 11 into slice 10),
+    any `stays carried:` warn line and the `carried on N region(s)` lines,
+    the carrier's widened source rendered on the page (the HRT paragraph written from both source paragraphs, "originally just" answered by the carrier),
     no carried-evidence-lost stop,
     then classes seventy to seventy-seven, ninety-six, one hundred one and one hundred two beside every check of `mikaela11`
     (𝓠𝓾𝓪𝓷 as the archive, "𝓠𝓾𝓪𝓷’s" curled, "Mika was outed", the Epilogue one to one, the life in the past, front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish);
     then `yingying` or `zheermao101`, beside every check of the last read of each;
-    record each under a new heading above "## mikaela12 read, 2026-09-24" in the pass log.
+    record each under a new heading above "## mikaela13 read, 2026-09-24" in the pass log.
+    MIKAELA13 READ (frozen `457765221`): INCOMPLETE at 04:33 UTC 2026-09-24 in 15 min, one attempt, 2,093 seats, 1,678 calls, 0.75 USD by the meters, no page or artifact;
+    stopped at publish on `carried-insertion-evidence-lost slice 11` again: this pairing carried slice 11 alone (class one hundred ten not exercised in mikaela12's shape),
+    the archive renders slices 10 to 12 as two paragraphs, the second ("That was originally just a typical thing.") rendering slice 11's opening clause and slice 12's line together,
+    the one coverage ballot quoted both spans, the fold wanted one holder and stood aside silently, class one hundred seven disputed both neighbours and their stand-ins dropped the passage (class one hundred eleven);
+    class one hundred nine not exercised (all 16 checker rounds heard 2 of 3), class one hundred seven live on slices 2, 10, 12, 22 and 24, contest 24 of 34 differ, 56 abstention lines, Jev 68 of 68.
+    CLASS ONE HUNDRED ELEVEN BUILT (0ab0abdd8, guard red first 2925802e1, full suite `suite-class111.log` 1115 PASS, replayed over the real corpus texts of slices 10 to 12: `insertion-carried-folded (slice 11 into slice 10)`):
+    the fold places each evidence region block by block (`corpus-run/insertion-carried-anchor.ts`, `anchorRegion`, one holder per block with its code-point share);
+    every block must sit in a paired slice next to the carried one, the carrier is the neighbour holding the larger share (the earlier on a tie), the sources must abut (`corpus-run/insertion-carried-decide.ts`);
+    every stand-aside names its reason and `pass-entry.ts` logs it at warn beside one `carried on N region(s)` line per still-carried passage.
+    Not exercised live yet.
     MIKAELA12 READ (frozen `21ea25993`): INCOMPLETE at 03:54 UTC 2026-09-24 in 15 min, one attempt, 2,196 seats, 1,744 calls, 0.71 USD by the meters, no page or artifact;
     stopped at publish on `carried-insertion-evidence-lost slice 14`: the September sentence the roster anchored sits inside slice 15's archive span (the archive merged two source paragraphs into one rendering),
     the translate lane wrote slice 15 from its own source alone, the slate chose the candidate without the passage, the contest and gate kept it (class one hundred ten);
