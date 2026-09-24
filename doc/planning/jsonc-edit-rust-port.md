@@ -29,6 +29,7 @@ Design interview in progress. No implementation is authorized until the user con
 - Q9: Port supported behavior, not necessarily the TypeScript parser algorithm. Vetted Rust parser components are allowed only if they preserve the attached-comment and edit contract; no dependency is selected yet.
 - Q10: Publish the native Rust crate as part of this port, rather than keeping it private or only publication-ready.
 - Q11: Name the published crate `monochromatic-jsonc-edit`, not `jsonc-edit`.
+- Q12: Preserve support for escaped unpaired UTF-16 surrogates in Rust string values. Provide a representation that retains the code units and a fallible conversion to Rust `String` for values that cannot be expressed in UTF-8.
 
 ## Working baseline
 
@@ -39,16 +40,15 @@ A port retains the documented identity of the TypeScript library: JSONC containe
 - First-publish authentication and workflow path, without asking for or exposing secrets. A local Cargo credential file exists, and `gh api user --jq .login` returned `Aquaticat`; neither proves crates.io publication rights or token validity.
 - Native dependency foundation is a research and verification task, subject to the repository's choosing-technology gates rather than another user preference.
 - Recheck name availability immediately before publish; registry lookup does not reserve names.
-- Decide whether escaped unpaired surrogate values remain supported through a Rust UTF-16-capable value representation or become an explicit language exception.
 
 ## Implementation baseline for confirmation
 
 - Place the standalone crate in `package/rust-module/jsonc-edit`, with package name `monochromatic-jsonc-edit`, using the repository's Rust package tasks and license precedent. Use `0.1.0` for its first release, following existing Rust-library versions; preserve the current library's LGPL-3.0-or-later license. These are repository defaults, not separate changes to the user's requirements.
-- Port the public parser, emitter, edit, navigation, errors, node and comment capabilities. Internal artifact-test helpers need tests, not identical public Rust exports. Preserve container-root JSONC syntax and canonical formatting. Edits are immutable. Document and test the exact-number divergence.
+- Port the public parser, emitter, edit, navigation, errors, node and comment capabilities. Internal artifact-test helpers need tests, not identical public Rust exports. Preserve container-root JSONC syntax, escaped UTF-16 code units, and canonical formatting. Edits are immutable. Document and test the exact-number divergence.
 - Reuse the existing TypeScript conformance and property cases through language-neutral fixtures, adding focused differential tests for comments, edits, and output. When a supported-behavior defect is confirmed with a failing test, fix both maintained implementations, with documented exceptions for exact Rust numbers.
 - Evaluate parser or numeric dependencies under the choosing-technology gates. Present the evidence, ranking, and risks; get explicit adoption of the foundation before dependent implementation or a decision record. Do not adopt meow's selected editor merely because it exists, and do not replace meow's editor as part of this port.
 - Verify the packaged crate by building and calling it from a disposable Rust consumer, then publish the checked artifact using an authorized token route. Extend the existing release workflow for subsequent releases only after the first publication, when the crate can be configured for trusted publishing.
 
 ## Next action
 
-Ask the user to decide the Rust string-value domain, then confirm the complete requirements before implementation or publication. After confirmation, evaluate the foundation and request adoption of a vetted recommendation before implementation depends on it. Verify and publish only after those gates pass.
+Ask the user to confirm the complete requirements before implementation or publication. After confirmation, evaluate the foundation and request adoption of a vetted recommendation before implementation depends on it. Verify and publish only after those gates pass.
