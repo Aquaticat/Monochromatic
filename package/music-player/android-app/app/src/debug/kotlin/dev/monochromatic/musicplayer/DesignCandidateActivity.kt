@@ -950,6 +950,71 @@ internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: (()
     }
 }
 
+/**
+ * What:     Resolve the accepted palette behind a persistent unfolded deck.
+ * Why:      Search variants must not reimplement the settled deck colors.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function paletteForSearchDeck(light: boolean): CandidatePalette;
+ * ```
+ */
+@Composable
+private fun paletteForSearchDeck(light: Boolean): CandidatePalette = paletteFor(
+    candidate = if (light) "cue-container-tonal" else "dark-stable-wallpaper-dynamic",
+    scheme = MaterialTheme.colorScheme,
+)
+
+/**
+ * What:     Keep the accepted deck beneath a caller-owned upper-left region.
+ * Why:      D50 requires the deck in every unfolded Search destination.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function SearchFoldDeckHost({ topContent }: { topContent: (size: Size) => UIElement }): UIElement;
+ * ```
+ */
+@Composable
+internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier, topContent: @Composable (Modifier) -> Unit) {
+    val palette = paletteForSearchDeck(light)
+    Column(modifier = modifier.fillMaxSize().background(palette.picker)) {
+        Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
+        topContent(Modifier.weight(1f))
+        Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.sectionDivider))
+        TransportBlock(modifier = Modifier.fillMaxWidth(), candidate = "dark-stable-wallpaper-dynamic", palette = palette)
+    }
+}
+
+/**
+ * What:     Reuse the accepted folder browser in a Search comparison's left slot.
+ * Why:      A right-side Search should retain browse context above the persistent deck.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function SearchFoldFolders({ inset }: { inset: number }): UIElement;
+ * ```
+ */
+@Composable
+internal fun SearchFoldFolders(light: Boolean, modifier: Modifier) {
+    val palette = paletteForSearchDeck(light)
+    FolderPicker(modifier = modifier, candidate = "dark-stable-wallpaper-dynamic", palette = palette)
+}
+
+/**
+ * What:     Reuse the accepted track pane without a redundant Search action.
+ * Why:      A left-side Search may preserve readable player context to its right.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function SearchFoldTracks(): UIElement;
+ * ```
+ */
+@Composable
+internal fun SearchFoldTracks(light: Boolean, modifier: Modifier) {
+    val palette = paletteForSearchDeck(light)
+    TrackPane(modifier = modifier, candidate = "dark-stable-wallpaper-dynamic", palette = palette, onSearch = null)
+}
+
 /** Renders the cover subdirectory picker opened state as one of four prototypes. */
 @Composable
 private fun CoverPickerStudy(candidate: String, palette: CandidatePalette) {
