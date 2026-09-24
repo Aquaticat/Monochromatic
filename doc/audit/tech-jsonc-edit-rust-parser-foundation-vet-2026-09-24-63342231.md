@@ -256,6 +256,11 @@ The public [issue #7728](https://github.com/biomejs/biome/issues/7728) reports a
  and dropped the syntax tree without an abort.
  These positive cleanup results are specific to the direct library path and that one fixture;
  they do not establish a cause or resolution for the newer Biome application CLI/worker incident.
+ A second fixture test now calls the scratch `parse_for_editor` consumer wrapper,
+ which also formats diagnostics before returning an error;
+ the execution manifest was updated before that test was run.
+ Its result is not yet claimed,
+ and a direct parser pass must not be substituted for wrapper cleanup evidence.
 
 ## Current source checks, not a recommendation
 
