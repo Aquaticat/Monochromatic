@@ -1498,13 +1498,14 @@ this section is the readiness reading of it.
   The rule of this document holds:
   a class found on a read page is fixed before the next launch,
   and a page is read before the next entry is launched.
-  Classes twenty-six to one hundred sixteen were found that way between 2026-09-16 and 2026-09-24,
-  one hundred sixteen in all,
+  Classes twenty-six to one hundred eighteen were found that way between 2026-09-16 and 2026-09-24,
+  one hundred eighteen in all,
   and the rate has not fallen to zero:
-  of the last fourteen reads (yingying8 at 00:31 UTC to zheermao12 at 08:42 UTC 2026-09-24),
-  four found no class and ten found one each
+  of the last fifteen reads (yingying8 at 00:31 UTC to CuspariaKLSY13 at 09:15 UTC 2026-09-24),
+  four found no class, ten found one each
   (one hundred eight to one hundred sixteen,
-  with the chain arm of one hundred eleven found on its own read).
+  with the chain arm of one hundred eleven found on its own read)
+  and CuspariaKLSY13 found two (one hundred seventeen, list spacing, and one hundred eighteen, GLM-5.3-Flash's latency on Synthetic).
   The eight reads before zheermao12 each found one,
   five of them on `mikaela_khara`,
   where the carried-insertion fold and the pairing met new shapes in a row,
@@ -1512,6 +1513,8 @@ this section is the readiness reading of it.
   and zheermao11's on the clock (a translate lane of 616 s against 77, the page itself clean).
   zheermao12 found none,
   the class one hundred sixteen rule taking the translate lane to 62 s with the Hyper seats still asked.
+  CuspariaKLSY13's page was faithful in wording, the death paragraph complete for the first time;
+  its two classes are a spacing the archive keeps and a seat's latency, not a mistranslation.
 - What "ready" would rest on now:
   a rotation over every entry in the read set
   (`XingZ60`,

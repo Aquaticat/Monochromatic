@@ -4766,17 +4766,27 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CUSPARIAKLSY13 RUNS (entry `CuspariaKLSY`,
-    frozen `3bb47c918`,
-    pid 3051768,
-    launched 08:43 UTC 2026-09-24,
-    waiter wait-c13 (background bash),
-    meters 46.41 USD Bedrock and 92.73 OpenRouter at launch, Synthetic dry, Hyper wet;
+1.  CUSPARIAKLSY14 RUNS (entry `CuspariaKLSY`,
+    frozen `0d8e463ef`,
+    corpus-pass pid 3557762 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
+    launched 09:44 UTC 2026-09-24,
+    waiter wait-c14 (background bash),
+    meters 46.37 USD Bedrock and 92.71 OpenRouter at launch, every provider wet;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    the rotation on the class one hundred sixteen build;
-    read it by every CuspariaKLSY12 check (1 heading, front matter equal, the life in the past, the gloss line after the nickname, slice 3 with no medication detail, no TA, no error finish, no double blank line) and the translate lane's span;
+    confirms classes one hundred seventeen and one hundred eighteen live;
+    read it by every CuspariaKLSY13 check (1 heading, front matter equal, the life in the past, the gloss line after the nickname, slice 3 with no medication detail, no TA, no error finish, no double blank line),
+    the life list loose with blank lines as the archive (a `list-spread-restored` finding if the bench wrote it tight),
+    and no GLM-5.3-Flash stream on Synthetic (`SPEND provider=synthetic model=hf:zai-org/GLM-5.3-Flash` absent);
     then `shi_Yumiaoya`, `hulicaijia`, `XingZ60`, `mikaela_khara` and `yingying` on the same build if each reads clean;
-    record each under a new heading above "## zheermao12 read, 2026-09-24" in the pass log.
+    record each under a new heading above "## CuspariaKLSY13 read, 2026-09-24" in the pass log.
+    CUSPARIAKLSY13 READ (frozen `3bb47c918`): SETTLED 09:15 UTC 2026-09-24 in 31.9 min, 367 seats, 363 calls, 0.06 USD by the meters;
+    every CuspariaKLSY12 check holds and the death paragraph carries 双方情绪爆发, 又, 抢救 and 再次得到消息 with no medication detail;
+    but the archive's loose life list shipped tight (class one hundred seventeen),
+    and one editor round plus its recovery round waited 355 s on GLM-5.3-Flash's cap-cut runaway on Synthetic (class one hundred eighteen).
+    CLASS ONE HUNDRED SEVENTEEN BUILT (c796c5085, guard red first f0fe179c7, replayed over the real slice):
+    `restoreListSpread` (`corpus-run/list-spread-restore.ts`), a page-assembly pass after the gloss lines, respaces a replaced slice's list to the archive's spacing when ordering and item count match, never tightening a list with spread items; finding `list-spread-restored`.
+    CLASS ONE HUNDRED EIGHTEEN BUILT (0d8e463ef, guard red first 7cf6ec12b, full suite `suite-class118b.log` 1119 PASS with the load-sensitive lane-contest grace case failing under the parallel run and passing alone):
+    GLM-5.3-Flash withheld from Synthetic on measured latency (74.5 s mean over 892 streams there against 8.6 s over 305 on Hyper) through the `synthetic-withheld` card hold and `SYNTHETIC_WITHHELD` in `reachOf`; Qwen3.8-27B and Kimi-K3 stay on Synthetic, faster there; the recovery round stays (67 percent of recoveries heard someone).
     ZHEERMAO12 READ (frozen `3bb47c918`): SETTLED 08:42 UTC 2026-09-24 in 21.6 min, 917 seats, 916 calls, 0.24 USD by the meters;
     class one hundred sixteen live (1 translate overrun against 22, the translate lane 62 s against 616 with Kimi-K3 and glm-5.3 still asked), every zheermao11 check holds; no class.
     ZHEERMAO11 READ (frozen `c958640fb`): SETTLED 08:10 UTC 2026-09-24 in 30 min, 857 seats, 834 calls, 7 retry rounds, 0.19 USD by the meters;

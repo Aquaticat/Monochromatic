@@ -8082,6 +8082,61 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## CuspariaKLSY13 read, 2026-09-24, 09:45 UTC: SETTLED in 31.9 min with the death paragraph faithful; the archive's loose list shipped tight (class one hundred seventeen, built in c796c5085) and GLM-5.3-Flash on Synthetic cost two grace windows (class one hundred eighteen, built in 0d8e463ef)
+
+`CuspariaKLSY13` (frozen `3bb47c918`, pid 3051768) was launched at 08:43 UTC 2026-09-24
+and SETTLED at 09:15 UTC,
+31.9 min (TALLY `ms=1913593`),
+one attempt,
+367 seats,
+363 calls,
+2 retry rounds,
+0.06 USD by the meters
+(Bedrock 46.41 to 46.37, OpenRouter 92.73 to 92.71),
+Synthetic wet again at launch.
+Jev 17 of 17; 3 abstention lines with reasons.
+
+The page is faithful on every check:
+front matter equal,
+1 heading,
+no TA,
+no error finish,
+no double blank line.
+The death paragraph reads
+"While trying to console her friend, a conflict ensued and emotions erupted on both sides. She argued with her father again after waking up, and later, having attempted suicide, she was sent to the hospital for emergency treatment; when word came again, she was confirmed to be brain dead"
+for 在劝慰朋友时发生矛盾，双方情绪爆发，醒来后又和其父亲发生争吵，后因尝试自杀送往医院抢救，再次得到消息时已确认脑死亡:
+no medication detail, and 双方情绪爆发, 又, 抢救 and 再次得到消息 all carried, the omissions CuspariaKLSY10 left.
+Two `translate-archive-disputed` lines (class one hundred seven) and no `checker stage re-seated` line.
+
+Class one hundred seventeen:
+the archive writes the four-item life list loose (a blank line between items) and the page shipped it tight.
+Every rendering of the list slice wrote the items on consecutive lines and no sheet or floor reads list spacing.
+The corpus census (92 entries) finds 4 source lists, all loose, and 9 archive lists, 4 loose;
+on the 2 entries whose source and archive carry the same lists, the spacing agrees,
+so the archive's spacing is the page's convention and follows the source where both have the list.
+Built in `c796c5085` (guard red first `f0fe179c7`):
+`restoreListSpread` in `corpus-run/list-spread-restore.ts` runs as a page-assembly pass after the gloss lines,
+respaces a replaced slice's top-level list to the archive's loose or tight spacing
+when the archive's list in that span has the same ordering and item count,
+never tightens a list whose items are themselves spread,
+and prints `list-spread-restored`.
+Replayed over this run's slice: the page's list loosened to the archive's four blank-line gaps.
+
+Class one hundred eighteen:
+the two longest gaps in the log (179 s and 175 s, 08:49 and 08:52) are one editor round
+that waited 175 s in grace for GLM-5.3-Flash's 230 s cap-cut runaway on Synthetic,
+then a recovery round that waited 180 s more for nothing, with no other chunk in flight.
+Over every log since 2026-09-21, GLM-5.3-Flash streamed 74.5 s mean on Synthetic across 892 streams (p50 51.9 s, 43 empty)
+against 8.6 s on Hyper across 305 (p50 6.5 s, none empty).
+Qwen3.8-27B and Kimi-K3 are faster on Synthetic than on Hyper and stay.
+The recovery round stays: re-asking length-cut voices heard someone on 67 percent of recoveries in the same census.
+Built in `0d8e463ef` (guard red first `7cf6ec12b`):
+a `synthetic-withheld` card hold feeds `SYNTHETIC_WITHHELD`,
+which `reachOf` and the picture reach honour, so GLM-5.3-Flash routes to Hyper and OpenRouter;
+the roster fixture's `SEAT_SYNTHETIC_VISION_EDITOR` became `SEAT_HYPER_OPENROUTER_VISION_EDITOR`.
+Full suite 1119 PASS with the load-sensitive lane-contest grace case failing under the parallel run and passing alone, as on `suite-class110.log`.
+`CuspariaKLSY14` launched at 09:44 UTC on `.frozen-dist-0d8e463ef` (pid 3557762).
+
 ## zheermao12 read, 2026-09-24, 08:45 UTC: SETTLED in 21.6 min, class one hundred sixteen live (1 translate overrun against 22, the translate lane 62 s against 616), every zheermao11 check holding; no class
 
 `zheermao12` (entry `zheermao101`, frozen `3bb47c918`, pid 2782250) was launched at 08:21 UTC 2026-09-24
