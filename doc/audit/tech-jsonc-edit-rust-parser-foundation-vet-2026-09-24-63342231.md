@@ -435,6 +435,14 @@ The published `biome_json_parser` 0.5.7 archive SHA-256
  `biome_json_parser-0.5.7/src/token_source.rs:31-60` classifies trivia around newlines,
  while `biome_parser-0.5.7/src/tree_sink.rs:123-145` attaches it to syntax tokens.
  A consumer must still map grammar-delimiter trivia to the accepted key/value ownership policy.
+ The bounded debug suite also passed 512-level array and record parse/syntax/drop,
+ cleanup after a deep syntax error,
+ and the adapter's 512-accepted/513-rejected depth controls.
+ Upstream accepted a 513-level array without diagnostics;
+ `biome_json_parser-0.5.7/src/syntax.rs:152-230` uses an explicit sequence stack without this editor's depth ceiling.
+ The tested postparse guard rejects the extra opener and scalar roots;
+ it does not cap upstream allocations before parsing.
+ See [`biome-json-parser-nesting-limit.md`](../troubleshooting/biome-json-parser-nesting-limit.md).
  This validates a raw-syntax candidate,
  not key/value attachment,
  exact-value projection,
