@@ -557,8 +557,14 @@ Most value survivors are kind checks redundant with strict value equality on rea
  or a nonfinite `> 0` boundary where only positive/negative infinity reaches it after NaN is handled.
 The tagged integer branch returned the same `String(value)` as the default branch,
  so it was removed.
-The package build and unit suite passed after those changes;
- focused mutation rechecks are pending.
+The package build and unit suite,
+ type check,
+ oxlint,
+ and bounded sidecar properties passed after those changes.
+Focused rechecks are running on the same source revision:
+ `/var/home/user/temp/agent/toml-mutation-synthetic-comment.json` (`proc_1ef3`)
+ and `/var/home/user/temp/agent/toml-mutation-tagged-encoder.json` (`proc_fa85`).
+Do not edit runtime source until both complete.
 TOML 1.0 and 1.1 conformance passed after the shared value-assembly refactor.
 Do not claim a full-runtime verdict before those campaigns and survivor rechecks finish.
 
