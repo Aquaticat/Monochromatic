@@ -401,11 +401,12 @@ Source leads for that screening include `jsonc_lexer` from [richplastow/jsonc-le
  [`fracturedjson` 0.1.1](https://crates.io/crates/fracturedjson/0.1.1),
  [`json-with-comments` 0.1.5](https://github.com/hayas1/json-with-comments),
  and [`json5format` 0.2.6](https://crates.io/crates/json5format/0.2.6).
- The delegated source reading reports raw tokens in the first two,
- a surrogate-unsafe unchecked character conversion in the third,
- and a regex-tokenized production parser in the fourth.
- The `json5format` and `fracturedjson` exits were confirmed against their published archives;
- `jsonc_lexer` and `json-with-comments` still need independent source screening.
+ Versioned source checks have now classified all four leads:
+ a Git-only lexer primitive,
+ a published formatter-only interface,
+ a Git-only parser with a proven surrogate-safety failure,
+ and a published regex-backed parser.
+ None has been adopted as this port's foundation.
  Candidate metadata alone is not a recommendation.
  The research transcript is retained at `~/temp/agent/` through its subagent output,
  while this report remains the owned audit artifact.
@@ -557,6 +558,44 @@ The published `src/lib.rs:123-139` keeps `tokenizer`,
  A targeted search of its published `src/` and manifest found no direct production regex use;
  its as-is exit here is the public API boundary.
  No candidate code was executed.
+
+### Git-only `jsonc_lexer` 1.0.0 primitive
+
+The `richplastow/jsonc-lexer` checkout at `0d40eff67f985e5ecb7ba8c1565afb4f1206edc3`
+ identifies `jsonc_lexer` 1.0.0 and `rlib`/`cdylib` in `wasm/jsonc_lexer/Cargo.toml:1-15`.
+ Its `wasm/jsonc_lexer/src/lib.rs:42-60` exports native `jsonc_lexer_native(&str) -> TokenizeResult`;
+ `src/types.rs:7-36` returns raw tokens for numbers,
+ strings,
+ comments and punctuation,
+ not a parsed key/value ownership tree.
+ Its line-comment scanner stops at CR or LF (`src/consume_line_comment.rs:13-28`),
+ which is compatible with the required line termination at this source-screening level.
+ The crate's own license file states MIT.
+ Official crates.io exact-name lookups and package searches yielded no verified release under its manifest name;
+ a Git version string is not a published registry artifact.
+ A separately written parser and vendoring/fork packaging could use this lexer,
+ but neither composition nor its selected normal/build dependencies have been audited.
+ No production regex call was observed in its directly inspected lexer source,
+ and no candidate code was executed.
+
+### Git-only `json-with-comments` v0.1.5 safety exit
+
+The tag `v0.1.5` at `6584e3495fecca3a1d73a14b8f0f11794faf5e0e` declares
+ `json-with-comments` 0.1.5 in its manifest,
+ but exact-name crates.io API and search found no verified published crate.
+ `src/de.rs:61-65` invokes `StrTokenizer` from the public `from_str` entry;
+ `src/de/token.rs:144-178` accepts four hexadecimal escape digits and passes their value to
+ `unsafe { char::from_u32_unchecked(hex) }` without excluding `0xD800..=0xDFFF`.
+ `from_str_raw` also reaches the shared escape parser (`src/de/token/raw.rs:23-28`).
+ An escaped lone surrogate therefore reaches a source-proven undefined-behavior path;
+ the original unsafe code was **not** run on this input.
+ The bounded disposable [checked prototype](../troubleshooting/json-with-comments-surrogate-escape.md)
+ passed 86 upstream unit tests,
+ three new surrogate tests and 64 upstream integration tests,
+ but it safely **rejects** unpaired surrogates,
+ so it does not provide this port's accepted string domain.
+ Exclude the upstream parser as-is on safety and semantic hard gates;
+ a redesigned source fork is a separate custom candidate.
 
 ### `nojson` 0.3.15 as-is contract exit
 
