@@ -291,13 +291,16 @@ record and role-based guards.
    **prototype player spacer**,
  not a mandatory text-exclusion band or
    accepted final player gap.
+    The user supplied about 10mm for the visible dent,
+ approximately
+   147px or 60dp around center x 1038 at this panel scale.
     Readable text,
- results and other meaning-bearing marks
-   must not sit on the crease itself;
- surfaces,
- dividers,
- backgrounds and
-   hit regions may span it.
+   results and other meaning-bearing marks must stay outside that
+   approximate band;
+    surfaces,
+    dividers,
+    backgrounds and hit regions
+   may span it.
     Evaluate visual clearance using native
    captures,
  not the obsolete all-pixel-strip guard.
@@ -318,41 +321,54 @@ captured as rendered,
 
 ---
 
-## Crease width and pending player gap
+## Crease width and player gap
 
-The Pixel_9_Pro_Fold AVD's `config.ini` contains
+The user set the **visible dent width to about 10mm for this design**.
+From the published 8-inch diagonal and 2076 × 2152px aspect,
+ the active
+inner panel width is about 141.08mm.
+ At this AVD's 390dpi,
+ 10mm is
+approximately `10 / 141.08 × 2076 = 147px`,
+ or `147 / 2.4375 ≈ 60dp`.
+Centered at physical x 1038,
+ the approximate information-free band is
+x `[964,1112)`px,
+ or dp `[396,456)`.
+ Its endpoints are approximate,
+ not
+pixel-perfect physical crease boundaries.
+
+The required **player** gap is `max(min_padding, crease_width)`.
+ Thus it
+must be at least about 60dp for this target;
+ if the applicable minimum
+padding is at most 60dp,
+ the gap is about 60dp and two equal panes are
+approximately `(852 - 60) / 2 = 396dp` each.
+ The existing 12dp rule
+belongs to mode-button horizontal content padding,
+ not necessarily pane
+separation.
+ Do not restore the old fixed 24dp gap or claim final pane width
+until the minimum and native fit have been verified.
+
+The Pixel_9_Pro_Fold AVD's `config.ini` separately contains
 `hw.sensor.hinge.areas=1038-0-0-2152`.
- Google's emulator hardware-property
-schema defines this form as `x-y-width-height`,
- so the emulated hinge-area
-width is **0 physical px** at x 1038.
- It does not measure the real handset's
-visible crease width.
- Source:
+ Google's emulator schema defines
+this as `x-y-width-height`,
+ so the **emulated occlusion area** has width 0.
+That sensor model does **not** negate the user's visible 10mm crease.
+Source:
  [Google emulator hardware properties][emulator-hardware-properties],
 `hw.sensor.hinge.areas`.
-
-The user's required player gap is **`max(min_padding, crease_width)`**.
-On this AVD the reported hinge-area width is 0,
- so the formula reduces to
-`min_padding` for the emulator.
- The applicable numeric minimum padding has
-not yet been established for the pane separation;
- the existing 12dp rule
-belongs to **mode-button horizontal content padding**,
- not automatically to
-this gap.
- Do not invent a replacement width or call the old 24dp spacer
-accepted while that value remains unresolved.
- A physical handset could have
-a measurable nonzero crease width and therefore a different maximum.
 
 ## Viewport sizes to design and test at
 
 ```text
 443 × 994    measured AVD cover screen (folded, 390dpi; physical 1080 × 2424px)
 852 × 883    measured AVD inner display (unfolded, 390dpi; physical 2076 × 2152px)
-426 × 883    right half of the inner display, including 12dp of connector
+426 × 883    physical right half; about 30dp is crease when using the 10mm width
 Desktop      inherits Fold visual decisions; its window size is not a design frame (D49)
 ```
 
