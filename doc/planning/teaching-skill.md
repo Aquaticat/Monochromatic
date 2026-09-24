@@ -1167,6 +1167,25 @@ A future `AGENTS.md` rule could require evidence-backed questions rather than op
 requests for the user to invent counterexamples, but the user's no-`AGENTS.md` instruction
 precludes applying it here.
 
+## Learner-result probe after the research
+
+A fresh owned browser session ran `mise run probe:learner-feedback` against the generated
+Promise lesson without touching the user's presented tab.
+The “Handle rejection” starter displayed `Waiting…` plus an unhandled-rejection diagnostic;
+its task and hint explicitly directed the learner to handle the error,
+and the worked comparison showed a useful reason. This is existing feedback, not a found
+regression or evidence that a learner used the hint.
+Two separate disposable learner-code variations displayed the same `Waiting…` with no
+error: one Promise remained unresolved; the other received `"Hello Ada"` without
+updating the page. Learner-visible records of handler and resolver calls distinguished
+those variations while the result text stayed unchanged.
+[The research note](teaching-skill-research-feedback.md) records the sourced cooking
+contrast, controls, and exact measured limits. The proposed skill check now asks for
+an available criterion and bounded next action when the learner's own consequential
+result differs from an expected one. This is not an order to add more controls to the
+current lesson or to claim an adult-teaching effect from school research.
+No non-measurable choice emerged from that probe, so no interview question follows it.
+
 ## Next action
 
 The correction handover records the completed lesson repair and verification boundary.
@@ -1181,9 +1200,11 @@ The [transfer probe](teaching-skill-transfer-probe.md) separates working cross-d
 rules from JavaScript-specific controls and from unobserved cooking-timeline hypotheses.
 Do not repeat the withdrawn broad Q1 or ask for checklist approval.
 The [research note](teaching-skill-research-feedback.md) contrasts a sourced food-safety
-check with a hypothetical Promise preview mismatch. The proposed acceptance checks now
-name a learner-owned criterion, bounded mismatch interpretation, and recovery or stop
-at consequential steps. This is an inference to test, not final skill confirmation.
+check with measured and hypothetical Promise preview mismatches. The proposed acceptance
+checks now name a learner-owned criterion, bounded mismatch interpretation, and recovery
+or stop at consequential steps. The current lesson already handles the rejection starter;
+its two disposable Waiting variations show why display text alone is not a diagnosis.
+This supports the planning refinement, not a claim of learner failure or final skill confirmation.
 No preference question survived this evidence review, so report the finding without
 asking another question. Do not infer learner mastery from artifact tests.
 The original request covers live teaching and authored materials; do not reopen that split

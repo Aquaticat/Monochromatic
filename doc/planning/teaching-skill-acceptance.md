@@ -369,15 +369,21 @@ Counterexamples this candidate should reject:
 - A recipe with quantities, units, and a time instruction tells a novice to serve poultry
   without a verified food-safety check. Existing source-check requirements already count
   against this; the proposed refinement makes the learner's check explicit.
-- A working Promise reference and raw preview error are treated as sufficient instruction
-  when the learner's own preview still says Waiting or reports an unhandled rejection.
-  A generic “try again” does not distinguish operation start, settlement, and observation.
+- A working Promise reference or raw preview error is treated as a diagnosis of the
+  learner's own result. “Try again” does not distinguish operation start, settlement,
+  and observation when the preview still says Waiting.
+- Identical Waiting text and an empty error record are taken as proof that a Promise
+  remains pending. Disposable learner-code probes produced those same visible signals
+  both without a resolver call and after a literal value was resolved but never rendered.
 
 Do not add an artificial checkpoint after every sentence,
 force deliberately erroneous examples into every subject,
 or make a learner study a prerequisite for using or improving material.
-The current Promise lesson has exercise hints and visible error diagnostics;
-this proposal does not assert that its learner has been observed struggling.
+The current Promise lesson's rejection starter explicitly names the unhandled failure,
+provides a `try`/`catch` hint, and its worked comparison shows the error reason.
+An instrumented disposable variation recorded handler and resolver-call boundaries;
+this is a demonstration of how to gather evidence, not a published lesson change.
+No learner has been observed struggling in either case.
 
 ### Scope proposed for confirmation
 
