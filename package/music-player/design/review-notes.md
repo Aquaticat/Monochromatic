@@ -750,6 +750,15 @@ cues,
 connector band in native captures,
  including the Search header and results.
 A button-only clearance test cannot prove the whole region is empty.
+ The new capture
+guard also caught the first light recapture:
+ its old `light-b` palette painted the
+connector `#FAF8FE` instead of D34 white,
+ despite no app node crossing it.
+ Guard
+the accepted fill **and** content bounds,
+ with an earlier full-width screenshot as a
+known failing control.
 
 ## Standing standards for this project
 
