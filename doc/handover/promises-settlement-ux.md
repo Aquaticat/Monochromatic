@@ -406,12 +406,15 @@ prototype variants and the generated lesson use the same controller and wording.
 orders, no premature receipt before the observer's microtask, exact live/print lists
 before and after ignored calls and Create, and the actual PDF after Promise 2 settles.
 A separate generated-lesson test observes all five Promises and verifies five ordered
-receipts in the live belt, print list, and PDF without needing a sixth Create action;
-late ignored calls do not duplicate them. The older `probe-ux-settlement.mjs` addresses
+receipts in the live belt, print list, and exact extracted PDF receipt section without
+needing a sixth Create action; late ignored calls do not duplicate them.
+A complementary same-task Reject/Resolve guard captures empty live and print receipts
+before the rejection observer runs, then one identical receipt afterwards. The older `probe-ux-settlement.mjs` addresses
 the preserved rejected pudding matrix, not the current ticket controller.
-The headed presenter now distinguishes the old open lesson tab from the corrected file
-by its belt label, and must open the corrected build in a separate tab without reloading
-the prior learner tab. This presentation remains pending.
+The builder now embeds a SHA-256 identity of the complete lesson before the identity
+marker. The headed presenter compares the identity from disk against each open tab,
+not merely a label that could survive a later rebuild. It must open a corrected build
+in a separate tab without reloading the prior learner tab. Presentation is pending.
 The current artifact is provisionally 693,920 bytes; the final combined suite is pending.
 The single-current-Promise toy rule, native calls, original values, and capture timing
 are unchanged.
@@ -431,8 +434,10 @@ that error with a pending ticket and failed before the fix. `build.mjs` now remo
 obsolete resolver call and makes the remaining lifecycle comment accurately describe
 the timed experiment. The ticket has no timer or I/O to cancel on page exit;
 its pending Promise is discarded with the departing document. The same generated test
-passes after rebuilding. The Firefox checks then passed again without another lesson
-code change.
+passes after rebuilding. Its strengthened version starts a pending timed trace and
+proves pagehide still completes it while leaving the ticket pending with no invented
+receipt. The Firefox checks then passed again without another lesson code change;
+a final generated-lesson Firefox assertion for receipt timing and pagehide errors is pending.
 
 ## Superseded designs (do not revive without the user asking)
 
