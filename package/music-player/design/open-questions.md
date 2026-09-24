@@ -110,6 +110,11 @@ rounds (2026-09-17):
   and results together;
   this is one candidate,
   not an adopted layout.
+  A user-opened YouTube
+  screenshot places thumbnail time and video title lettering near the crease;
+  at the supplied 10mm width their edges fall in the approximate dent band,
+  so treat that as a negative text-clearance example,
+  not an endorsement.
   Keep Search results,
   no-result/unavailable states,
   and open/back behavior visibly
@@ -126,6 +131,26 @@ rounds (2026-09-17):
   Cover-specific accessibility remains open;
   D39/D40 settled only the unfolded
   screen.
+- **OPEN: unfolded player pane gap under E2.**
+  The user corrected the
+  previous fixed 24dp:
+  use `max(min_padding, crease_width)`.
+  The user supplied **about 10mm** as the visible crease width,
+  equivalent
+  to roughly 147px or 60dp on this inner panel.
+  The AVD's zero-width hinge
+  sensor area is only an occlusion model,
+  not the visible dent.
+  The numeric
+  minimum for **pane separation** is not established by the existing 12dp
+  mode-button text padding rule;
+  the 10mm crease already sets a roughly
+  60dp floor for the gap.
+  Compare plausible minimums in native player context,
+  retain
+  D34/D41 color treatments,
+  and do not silently keep 414dp panes or the
+  old 24dp spacer.
 - **OPEN: keyboard map revision (section 6):**
   one revised IntelliJ-aligned map,
   including what ↑/↓ does after D43 removed the volume popover.
