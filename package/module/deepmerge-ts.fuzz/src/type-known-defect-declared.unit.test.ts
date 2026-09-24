@@ -55,6 +55,20 @@ await describe({
       },
     },),
     it({
+      name: 'unsound: a union-of-objects input with no shared key, merged with keyless inputs, is typed never',
+      // Cause: the same keyof-of-a-union reading leaves RecordKeysOf empty, and DeepMergeRecordsDefaultHKT in
+      // src/types/defaults.ts returns never when IsNever<RecordKeysOf<Ts>>, so any assertion on the result passes.
+      fn: async () => {
+        const later = target.deepmerge(widen<{ a: 1; } | { b: 2; }>({ a: 1, },), widen<{}>({},),);
+        expectTypeOf(later,).toBeNever();
+        expect(later,).toEqual({ a: 1, },);
+
+        const earlier = target.deepmerge(widen<{}>({},), widen<{ a: 1; } | { b: 2; }>({ b: 2, },),);
+        expectTypeOf(earlier,).toBeNever();
+        expect(earlier,).toEqual({ b: 2, },);
+      },
+    },),
+    it({
       name: 'unsound: a key optional in a later input is typed by PreciseOrUnion instead of the merge',
       // Cause: DeepMergeRecordPropertyMetaDefaultHKTGetValuesHelper in src/types/defaults.ts folds values after an
       // optional one with PreciseOrUnion (the narrower type when assignable, else a union), while the runtime merges.
@@ -86,6 +100,38 @@ await describe({
         const numbered = target.deepmerge(widen<{ a: 1; [key: number]: string; }>({ a: 1, 0: 'z', },), { b: 2, },);
         expectTypeOf(numbered,).toEqualTypeOf<{ a: 1; b: number; }>();
         expect(Reflect.get(numbered, '0',),).toBe('z',);
+      },
+    },),
+    it({
+      name: 'imprecise: mutually assignable inputs are typed as the first one, dropping later optional keys',
+      // Cause: DeepMergeSameTypeShortcut in src/types/merging.ts tests sameness with AllSameTypes, which is mutual
+      // assignability, and a type is mutually assignable with the same type plus optional keys; the shortcut then
+      // returns the first input's type, at the root and for each property value.
+      fn: async () => {
+        const root = target.deepmerge(widen<{ a: number; }>({ a: 1, },), widen<{ a: number; b?: string; }>({ a: 2, b: 's', },),);
+        expectTypeOf(root,).toEqualTypeOf<{ a: number; }>();
+        expect(root,).toEqual({ a: 2, b: 's', },);
+
+        const nested = target.deepmerge(widen<{ x: {}; y: 1; }>({ x: {}, y: 1, },), widen<{ x: { b?: 1; }; z: 2; }>({ x: { b: 1, }, z: 2, },),);
+        expectTypeOf(nested,).toEqualTypeOf<{ x: {}; y: 1; z: 2; }>();
+        expect(nested.x,).toEqual({ b: 1, },);
+      },
+    },),
+    it({
+      name: 'unsound: deepmergeInto keeps the target type when every source is assignable to it, so tuples grow unseen',
+      // Cause: the first deepmergeInto overload in src/deepmerge-into.ts, (target: T, ...objects: ReadonlyArray<T>)
+      // returning void, wins whenever the sources fit the target type, so the Target & Merged assertion never runs.
+      fn: async () => {
+        const tuples = widen<{ a: [number]; }>({ a: [1,], },);
+        target.deepmergeInto(tuples, widen<{ a: [number]; }>({ a: [2,], },),);
+        expectTypeOf(tuples,).toEqualTypeOf<{ a: [number]; }>();
+        expect(tuples.a,).toEqual([1, 2,],);
+
+        // Imprecise variant: an empty target type absorbs every source key.
+        const empty = widen<{}>({},);
+        target.deepmergeInto(empty, widen<{ b: 1; }>({ b: 1, },),);
+        expectTypeOf(empty,).toEqualTypeOf<{}>();
+        expect(empty,).toEqual({ b: 1, },);
       },
     },),
     it({

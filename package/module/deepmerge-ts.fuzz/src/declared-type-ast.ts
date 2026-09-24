@@ -62,7 +62,10 @@ export type PropNode = {
  */
 export type IndexNode =
   | { readonly keyKind: 'none'; }
-  | { readonly keyKind: 'number' | 'string' | 'symbol' | 'template'; readonly value: TypeNode; };
+  | {
+    readonly keyKind: 'number' | 'string' | 'symbol' | 'template';
+    readonly value: TypeNode
+  };
 
 /**
  Object type with an optional utility wrapper.
@@ -81,19 +84,54 @@ export type TypeNode =
   | LeafNode
   | LiteralNode
   | ObjectNode
-  | { readonly kind: 'array'; readonly element: TypeNode; readonly readonly: boolean; }
-  | { readonly kind: 'box'; readonly inner: TypeNode; }
-  | { readonly kind: 'intersection'; readonly left: ObjectNode; readonly right: ObjectNode; }
-  | { readonly kind: 'map'; readonly keyKind: 'number' | 'string'; readonly value: TypeNode; readonly readonly: boolean; }
-  | { readonly kind: 'record'; readonly keys: readonly string[]; readonly value: TypeNode; }
-  | { readonly kind: 'set'; readonly element: TypeNode; readonly readonly: boolean; }
-  | { readonly kind: 'tuple'; readonly elements: readonly TypeNode[]; readonly readonly: boolean; }
-  | { readonly kind: 'union'; readonly members: readonly TypeNode[]; };
+  | {
+    readonly kind: 'array';
+    readonly element: TypeNode;
+    readonly readonly: boolean
+  }
+  | {
+    readonly kind: 'box';
+    readonly inner: TypeNode
+  }
+  | {
+    readonly kind: 'intersection';
+    readonly left: ObjectNode;
+    readonly right: ObjectNode
+  }
+  | {
+    readonly kind: 'map';
+    readonly keyKind: 'number' | 'string';
+    readonly value: TypeNode;
+    readonly readonly: boolean
+  }
+  | {
+    readonly kind: 'record';
+    readonly keys: readonly string[];
+    readonly value: TypeNode
+  }
+  | {
+    readonly kind: 'set';
+    readonly element: TypeNode;
+    readonly readonly: boolean
+  }
+  | {
+    readonly kind: 'tuple';
+    readonly elements: readonly TypeNode[];
+    readonly readonly: boolean
+  }
+  | {
+    readonly kind: 'union';
+    readonly members: readonly TypeNode[]
+  };
 
 /**
  Symbol constants the generated file declares as `unique symbol`s.
  */
-export const SYMBOL_NAMES: readonly string[] = ['SYM_A', 'SYM_B', 'SYM_INDEX',];
+export const SYMBOL_NAMES: readonly string[] = [
+  'SYM_A',
+  'SYM_B',
+  'SYM_INDEX',
+];
 
 //endregion AST
 
@@ -103,6 +141,7 @@ export const SYMBOL_NAMES: readonly string[] = ['SYM_A', 'SYM_B', 'SYM_INDEX',];
  Emit one property's key and modifiers.
 
  @param prop - Declared property.
+ 
  @param wrapper - Enclosing utility wrapper, which overrides optionality.
 
  @returns Source such as `readonly "a"?: number`.
@@ -112,7 +151,13 @@ export const SYMBOL_NAMES: readonly string[] = ['SYM_A', 'SYM_B', 'SYM_INDEX',];
  emitProp({ prop, wrapper: 'none', });
  ```
  */
-function emitProp({ prop, wrapper, }: { readonly prop: PropNode; readonly wrapper: ObjectNode['wrapper']; },): string {
+function emitProp({
+  prop,
+  wrapper,
+}: {
+  readonly prop: PropNode;
+  readonly wrapper: ObjectNode['wrapper']
+},): string {
   /**
    Key source: computed symbol constant or quoted string.
    */
@@ -142,7 +187,8 @@ function emitIndex(node: ObjectNode,): string {
   /**
    Properties the signature constrains, whose types must fit its value type.
    */
-  const covered = node.props.filter(function constrainedBy(prop,) {
+  const covered = node.props
+    .filter(function constrainedBy(prop,) {
     if (index.keyKind === 'symbol')
       return prop.symbolKey;
     if (index.keyKind === 'string')
@@ -152,9 +198,13 @@ function emitIndex(node: ObjectNode,): string {
   /**
    Value type union of the declared value and every constrained property.
    */
-  const value = [index.value, ...covered.map(function propType(prop,) {
+  const value = [
+    index.value,
+    ...covered.map(function propType(prop,) {
     return prop.type;
-  },),].map(emitType,).join(' | ',);
+  },),
+  ].map(emitType,)
+    .join(' | ',);
   /**
    Key parameter source per signature kind.
    */
@@ -188,26 +238,35 @@ export function emitType(node: TypeNode,): string {
     return 'Date';
   if (node.kind === 'regexp')
     return 'RegExp';
-  if ((node.kind === 'boolean') || (node.kind === 'null') || (node.kind === 'number') || (node.kind === 'string') || (node.kind === 'undefined'))
+  if ((node.kind === 'boolean') || (node.kind === 'null')
+    || (node.kind === 'number')
+    || (node.kind === 'string')
+    || (node.kind === 'undefined'))
     return node.kind;
   if (node.kind === 'array')
     return `${node.readonly ? 'readonly ' : ''}(${emitType(node.element,)})[]`;
   if (node.kind === 'tuple')
-    return `${node.readonly ? 'readonly ' : ''}[${node.elements.map(emitType,).join(', ',)}]`;
+    return `${node.readonly ? 'readonly ' : ''}[${node.elements
+      .map(emitType,)
+      .join(', ',)}]`;
   if (node.kind === 'set')
     return `${node.readonly ? 'ReadonlySet' : 'Set'}<${emitType(node.element,)}>`;
   if (node.kind === 'map')
     return `${node.readonly ? 'ReadonlyMap' : 'Map'}<${node.keyKind}, ${emitType(node.value,)}>`;
   if (node.kind === 'union')
-    return node.members.map(function member(child,) {
+    return node.members
+      .map(function member(child,) {
       return `(${emitType(child,)})`;
-    },).join(' | ',);
+    },)
+      .join(' | ',);
   if (node.kind === 'intersection')
     return `(${emitType(node.left,)}) & (${emitType(node.right,)})`;
   if (node.kind === 'record')
-    return `Record<${node.keys.map(function quote(key,) {
+    return `Record<${node.keys
+      .map(function quote(key,) {
       return JSON.stringify(key,);
-    },).join(' | ',)}, ${emitType(node.value,)}>`;
+    },)
+      .join(' | ',)}, ${emitType(node.value,)}>`;
   if (node.kind === 'box')
     return `Box<${emitType(node.inner,)}>`;
   if (node.kind !== 'object')
@@ -215,9 +274,16 @@ export function emitType(node: TypeNode,): string {
   /**
    Member list of the object literal type.
    */
-  const members = [...node.props.map(function member(prop,) {
-    return emitProp({ prop, wrapper: node.wrapper, },);
-  },), emitIndex(node,),].filter(function present(member,) {
+  const members = [
+    ...node.props
+      .map(function member(prop,) {
+    return emitProp({
+      prop,
+      wrapper: node.wrapper,
+    },);
+  },),
+    emitIndex(node,),
+  ].filter(function present(member,) {
     return member !== '';
   },);
   /**
@@ -261,8 +327,19 @@ const leafTypeArbitrary: Arbitrary<TypeNode> = oneof(
     { kind: 'date', },
     { kind: 'regexp', },
   ),
-  constantFrom<boolean | number | string>(0, 1, 'a', 'b', true, false,).map(function toLiteral(value,): TypeNode {
-    return { kind: 'literal', value, };
+  constantFrom<boolean | number | string>(
+    0,
+    1,
+    'a',
+    'b',
+    true,
+    false,
+  )
+    .map(function toLiteral(value,): TypeNode {
+    return {
+      kind: 'literal',
+      value,
+    };
   },),
 );
 
@@ -279,44 +356,170 @@ const leafTypeArbitrary: Arbitrary<TypeNode> = oneof(
  const scope = typeScopeFor({ unions: false, });
  ```
  */
-function typeScopeFor({ unions, }: { readonly unions: boolean; },): { readonly type: Arbitrary<TypeNode>; readonly object: Arbitrary<ObjectNode>; } {
-  return letrec<{ type: TypeNode; object: ObjectNode; }>(function build(tie,) {
+function typeScopeFor({ unions, }: { readonly unions: boolean; },): {
+  readonly type: Arbitrary<TypeNode>;
+  readonly object: Arbitrary<ObjectNode>
+} {
+  return letrec<{
+    type: TypeNode;
+    object: ObjectNode
+  }>(function build(tie,) {
   return {
     type: oneof(
-      { maxDepth: MAX_TYPE_DEPTH, depthIdentifier: 'declared-type', },
+      {
+        maxDepth: MAX_TYPE_DEPTH,
+        depthIdentifier: 'declared-type',
+      },
       leafTypeArbitrary,
       tie('object',),
-      record({ element: tie('type',), readonly: boolean(), },).map(function toArray({ element, readonly, },): TypeNode {
-        return { kind: 'array', element, readonly, };
+      record({
+        element: tie('type',),
+        readonly: boolean(),
+      },)
+        .map(function toArray({
+          element,
+          readonly,
+        },): TypeNode {
+        return {
+          kind: 'array',
+          element,
+          readonly,
+        };
       },),
-      record({ elements: array(tie('type',), { maxLength: MAX_CHILDREN, },), readonly: boolean(), },).map(function toTuple({ elements, readonly, },): TypeNode {
-        return { kind: 'tuple', elements, readonly, };
+      record({
+        elements: array(
+          tie('type',),
+          { maxLength: MAX_CHILDREN, },
+        ),
+        readonly: boolean(),
+      },)
+        .map(function toTuple({
+          elements,
+          readonly,
+        },): TypeNode {
+        return {
+          kind: 'tuple',
+          elements,
+          readonly,
+        };
       },),
-      record({ element: tie('type',), readonly: boolean(), },).map(function toSet({ element, readonly, },): TypeNode {
-        return { kind: 'set', element, readonly, };
+      record({
+        element: tie('type',),
+        readonly: boolean(),
+      },)
+        .map(function toSet({
+          element,
+          readonly,
+        },): TypeNode {
+        return {
+          kind: 'set',
+          element,
+          readonly,
+        };
       },),
-      record({ keyKind: constantFrom<'number' | 'string'>('number', 'string',), value: tie('type',), readonly: boolean(), },).map(function toMap({ keyKind, value, readonly, },): TypeNode {
-        return { kind: 'map', keyKind, value, readonly, };
+      record({
+        keyKind: constantFrom<'number' | 'string'>(
+          'number',
+          'string',
+        ),
+        value: tie('type',),
+        readonly: boolean(),
+      },)
+        .map(function toMap({
+          keyKind,
+          value,
+          readonly,
+        },): TypeNode {
+        return {
+          kind: 'map',
+          keyKind,
+          value,
+          readonly,
+        };
       },),
       unions
-        ? array(tie('type',), { minLength: 2, maxLength: MAX_CHILDREN, },).map(function toUnion(members,): TypeNode {
-          return { kind: 'union', members, };
+        ? array(
+          tie('type',),
+          {
+            minLength: 2,
+            maxLength: MAX_CHILDREN,
+          },
+        )
+          .map(function toUnion(members,): TypeNode {
+          return {
+            kind: 'union',
+            members,
+          };
         },)
         : leafTypeArbitrary,
-      record({ keys: uniqueArray(constantFrom('a', 'b', 'c',), { minLength: 1, maxLength: MAX_CHILDREN, },), value: tie('type',), },).map(function toRecord({ keys, value, },): TypeNode {
-        return { kind: 'record', keys, value, };
+      record({
+        keys: uniqueArray(
+          constantFrom(
+            'a',
+            'b',
+            'c',
+          ),
+          {
+            minLength: 1,
+            maxLength: MAX_CHILDREN,
+          },
+        ),
+        value: tie('type',),
+      },)
+        .map(function toRecord({
+          keys,
+          value,
+        },): TypeNode {
+        return {
+          kind: 'record',
+          keys,
+          value,
+        };
       },),
-      tie('type',).map(function toBox(inner,): TypeNode {
-        return { kind: 'box', inner, };
+      tie('type',)
+        .map(function toBox(inner,): TypeNode {
+        return {
+          kind: 'box',
+          inner,
+        };
       },),
-      record({ left: tie('object',), right: tie('object',), },).map(function toIntersection({ left, right, },): TypeNode {
-        return { kind: 'intersection', left: withKeys({ node: left, keys: ['a', 'b',], },), right: withKeys({ node: right, keys: ['c', 'd',], },), };
+      record({
+        left: tie('object',),
+        right: tie('object',),
+      },)
+        .map(function toIntersection({
+          left,
+          right,
+        },): TypeNode {
+        return {
+          kind: 'intersection',
+          left: withKeys({
+            node: left,
+            keys: [
+              'a',
+              'b',
+            ],
+          },),
+          right: withKeys({
+            node: right,
+            keys: [
+              'c',
+              'd',
+            ],
+          },),
+        };
       },),
     ),
     object: record({
       props: uniqueArray(
         record({
-          key: constantFrom('a', 'b', 'c', 'SYM_A', 'SYM_B',),
+          key: constantFrom(
+            'a',
+            'b',
+            'c',
+            'SYM_A',
+            'SYM_B',
+          ),
           optional: boolean(),
           readonly: boolean(),
           type: tie('type',),
@@ -329,15 +532,44 @@ function typeScopeFor({ unions, }: { readonly unions: boolean; },): { readonly t
         },
       ),
       index: oneof(
-        { weight: 3, arbitrary: constant<IndexNode>({ keyKind: 'none', },), },
-        { weight: 1, arbitrary: record({ keyKind: constantFrom<'number' | 'string' | 'symbol' | 'template'>('number', 'string', 'symbol', 'template',), value: tie('type',), },), },
+        {
+          weight: 3,
+          arbitrary: constant<IndexNode>({ keyKind: 'none', },),
+        },
+        {
+          weight: 1,
+          arbitrary: record({
+            keyKind: constantFrom<'number' | 'string' | 'symbol' | 'template'>(
+              'number',
+              'string',
+              'symbol',
+              'template',
+            ),
+            value: tie('type',),
+          },),
+        },
       ),
-      wrapper: constantFrom<ObjectNode['wrapper']>('none', 'none', 'partial', 'readonly', 'required',),
-    },).map(function toObject({ props, index, wrapper, },): ObjectNode {
+      wrapper: constantFrom<ObjectNode['wrapper']>(
+        'none',
+        'none',
+        'partial',
+        'readonly',
+        'required',
+      ),
+    },)
+      .map(function toObject({
+        props,
+        index,
+        wrapper,
+      },): ObjectNode {
       return {
         kind: 'object',
         props: props.map(function toProp(prop,): PropNode {
-          return { ...prop, symbolKey: prop.key.startsWith('SYM_',), };
+          return {
+            ...prop,
+            symbolKey: prop.key
+              .startsWith('SYM_',),
+          };
         },),
         index,
         wrapper,
@@ -352,6 +584,7 @@ function typeScopeFor({ unions, }: { readonly unions: boolean; },): { readonly t
  never share a key.
 
  @param node - Object to rename.
+ 
  @param keys - Pool for this half.
 
  @returns Object whose string keys come from `keys`, symbol keys dropped.
@@ -361,7 +594,13 @@ function typeScopeFor({ unions, }: { readonly unions: boolean; },): { readonly t
  withKeys({ node, keys: ['a', 'b',], });
  ```
  */
-function withKeys({ node, keys, }: { readonly node: ObjectNode; readonly keys: readonly string[]; },): ObjectNode {
+function withKeys({
+  node,
+  keys,
+}: {
+  readonly node: ObjectNode;
+  readonly keys: readonly string[]
+},): ObjectNode {
   /**
    String-keyed properties that fit the pool.
    */
@@ -369,17 +608,33 @@ function withKeys({ node, keys, }: { readonly node: ObjectNode; readonly keys: r
     .filter(function stringKeyed(prop,) {
       return !prop.symbolKey;
     },)
-    .slice(0, keys.length,)
-    .map(function rename(prop, position,): PropNode {
-      return { ...prop, key: keys[position] ?? prop.key, };
+    .slice(
+      0,
+      keys.length,
+    )
+    .map(function rename(
+      prop,
+      position,
+    ): PropNode {
+      return {
+        ...prop,
+        key: keys[position] ?? prop.key,
+      };
     },);
-  return { ...node, index: { keyKind: 'none', }, props, };
+  return {
+    ...node,
+    index: { keyKind: 'none', },
+    props,
+  };
 }
 
 /**
  Generators of declared type trees and object types, with and without unions.
  */
-export const DECLARED_TYPE_SCOPES: Readonly<Record<'noUnions' | 'unions', { readonly type: Arbitrary<TypeNode>; readonly object: Arbitrary<ObjectNode>; }>> = {
+export const DECLARED_TYPE_SCOPES: Readonly<Record<'noUnions' | 'unions', {
+  readonly type: Arbitrary<TypeNode>;
+  readonly object: Arbitrary<ObjectNode>
+}>> = {
   noUnions: typeScopeFor({ unions: false, },),
   unions: typeScopeFor({ unions: true, },),
 };
@@ -387,6 +642,9 @@ export const DECLARED_TYPE_SCOPES: Readonly<Record<'noUnions' | 'unions', { read
 /**
  Small integers for leaf values; exported so the sampler shares the range.
  */
-export const LEAF_INTEGER: Arbitrary<number> = integer({ min: -2, max: 9, },);
+export const LEAF_INTEGER: Arbitrary<number> = integer({
+  min: -2,
+  max: 9,
+},);
 
 //endregion Generator

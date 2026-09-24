@@ -31,7 +31,10 @@ import {
 /**
  One emitted case with its runtime result.
  */
-export type RunCase = { readonly drawn: DrawnCase; readonly result: unknown; };
+export type RunCase = {
+  readonly drawn: DrawnCase;
+  readonly result: unknown
+};
 
 /**
  Diagnostics attributed to one case.
@@ -47,13 +50,18 @@ export type CaseFailure = {
  */
 export type EmittedModule = {
   readonly source: string;
-  readonly spans: readonly { readonly id: number; readonly first: number; readonly last: number; }[];
+  readonly spans: readonly {
+    readonly id: number;
+    readonly first: number;
+    readonly last: number
+  }[];
 };
 
 /**
  Emit a whole case module and record where each case landed.
 
  @param cases - Cases in emission order; `id` is the array position.
+ 
  @param exportName - Name of the exported case array.
 
  @returns Module source and case line spans.
@@ -64,7 +72,13 @@ export type EmittedModule = {
  ```
  */
 export function emitModule(
-  { cases, exportName, }: { readonly cases: readonly RunCase[]; readonly exportName: string; },
+  {
+    cases,
+    exportName,
+  }: {
+    readonly cases: readonly RunCase[];
+    readonly exportName: string
+  },
 ): EmittedModule {
   /**
    Header lines, which precede every case.
@@ -73,22 +87,62 @@ export function emitModule(
   /**
    Case bodies with their ids.
    */
-  const bodies = cases.map(function body({ drawn, result, }, id,) {
-    return { id, lines: emitCase({ drawn, id, result, },), };
+  const bodies = cases.map(function body(
+    {
+      drawn,
+      result,
+    },
+    id,
+  ) {
+    return {
+      id,
+      lines: emitCase({
+        drawn,
+        id,
+        result,
+      },),
+    };
   },);
   /**
    Line spans computed from cumulative body lengths.
    */
-  const spans = bodies.reduce<{ readonly next: number; readonly spans: EmittedModule['spans']; }>(
-    function place(acc, { id, lines, },) {
-      return { next: acc.next + lines.length, spans: [...acc.spans, { first: acc.next, id, last: acc.next + lines.length - 1, },], };
+  const {spans} = bodies.reduce<{
+    readonly next: number;
+    readonly spans: EmittedModule['spans']
+  }>(
+    function place(
+      acc,
+      {
+        id,
+        lines,
+      },
+    ) {
+      return {
+        next: acc.next + lines.length,
+        spans: [
+          ...acc.spans,
+          {
+            first: acc.next,
+            id,
+            last: (acc.next + lines.length) - 1,
+          },
+        ],
+      };
     },
-    { next: header.length + 1, spans: [], },
-  ).spans;
+    {
+      next: header.length + 1,
+      spans: [],
+    },
+  );
   return {
-    source: [...header, ...bodies.flatMap(function lines({ lines: caseLines, },) {
+    source: [
+      ...header,
+      ...bodies.flatMap(function lines({ lines: caseLines, },) {
       return caseLines;
-    },), '];', '',].join('\n',),
+    },),
+      '];',
+      '',
+    ].join('\n',),
     spans,
   };
 }
@@ -109,22 +163,55 @@ async function runTsc(dir: string,): Promise<string> {
   /**
    Workspace compiler, the same one `lint:types` resolves.
    */
-  const tsc = resolve(import.meta.dirname, '../../../../node_modules/.bin/tsc',);
+  const tsc = resolve(
+    import.meta.dirname,
+    '../../../../node_modules/.bin/tsc',
+  );
   /**
    Compiler process.
    */
-  const child = spawn(tsc, ['--project', join(dir, 'tsconfig.json',), '--pretty', 'false',], { cwd: dir, stdio: ['ignore', 'pipe', 'pipe',], },);
+  const child = spawn(
+    tsc,
+    [
+      '--project',
+      join(
+        dir,
+        'tsconfig.json',
+      ),
+      '--pretty',
+      'false',
+    ],
+    {
+      cwd: dir,
+      stdio: [
+        'ignore',
+        'pipe',
+        'pipe',
+      ],
+    },
+  );
   /**
    Collected output chunks.
    */
   const chunks: string[] = [];
-  child.stdout.on('data', function collect(chunk: Buffer,) {
+  child.stdout
+    .on(
+      'data',
+      function collect(chunk: Buffer,) {
     chunks.push(chunk.toString('utf8',),);
-  },);
-  child.stderr.on('data', function collect(chunk: Buffer,) {
+  },
+    );
+  child.stderr
+    .on(
+      'data',
+      function collect(chunk: Buffer,) {
     chunks.push(chunk.toString('utf8',),);
-  },);
-  await once(child, 'close',);
+  },
+    );
+  await once(
+    child,
+    'close',
+  );
   return chunks.join('',);
 }
 
@@ -132,6 +219,7 @@ async function runTsc(dir: string,): Promise<string> {
  Type-check cases and attribute diagnostics to cases.
 
  @param dir - Scratch directory to write into (created if missing).
+ 
  @param cases - Cases to check.
 
  @returns Failing cases with their diagnostics, plus diagnostics outside any case.
@@ -142,36 +230,83 @@ async function runTsc(dir: string,): Promise<string> {
  ```
  */
 export async function checkCases(
-  { dir, cases, }: { readonly dir: string; readonly cases: readonly RunCase[]; },
-): Promise<{ readonly failures: readonly CaseFailure[]; readonly stray: readonly string[]; }> {
-  await mkdir(dir, { recursive: true, },);
+  {
+    dir,
+    cases,
+  }: {
+    readonly dir: string;
+    readonly cases: readonly RunCase[]
+  },
+): Promise<{
+  readonly failures: readonly CaseFailure[];
+  readonly stray: readonly string[]
+}> {
+  await mkdir(
+    dir,
+    { recursive: true, },
+  );
   /**
    Emitted module and its case spans.
    */
-  const emitted = emitModule({ cases, exportName: 'DECLARED_TYPE_CASES', },);
-  await writeFile(join(dir, 'cases.ts',), emitted.source,);
-  await writeFile(join(dir, 'tsconfig.json',), `${JSON.stringify({
-    compilerOptions: { composite: false, declaration: false, incremental: false, isolatedDeclarations: false, noEmit: true, },
-    extends: resolve(import.meta.dirname, '../../../config/typescript/tsconfig.dom.json',),
+  const emitted = emitModule({
+    cases,
+    exportName: 'DECLARED_TYPE_CASES',
+  },);
+  await writeFile(
+    join(
+      dir,
+      'cases.ts',
+    ),
+    emitted.source,
+  );
+  await writeFile(
+    join(
+      dir,
+      'tsconfig.json',
+    ),
+    `${JSON.stringify(
+      {
+    compilerOptions: {
+      composite: false,
+      declaration: false,
+      incremental: false,
+      isolatedDeclarations: false,
+      noEmit: true,
+    },
+    extends: resolve(
+      import.meta.dirname,
+      '../../../config/typescript/tsconfig.dom.json',
+    ),
     include: ['cases.ts',],
-  }, undefined, 2,)}\n`,);
+  },
+      undefined,
+      2,
+    )}\n`,
+  );
   /**
    Diagnostic lines naming the cases file.
    */
   const diagnostics = (await runTsc(dir,))
     .split('\n',)
-    .reduce<string[]>(function group(acc, line,) {
+    .reduce<string[]>(
+      function group(
+        acc,
+        line,
+      ) {
       // Continuation lines are indented and belong to the preceding diagnostic.
       if (line.includes('error TS',))
         acc.push(line,);
       else if (line.startsWith(' ',) && (acc.length > 0))
         acc[acc.length - 1] = `${acc.at(-1,) ?? ''}\n${line}`;
       return acc;
-    }, [],);
+    },
+      [],
+    );
   /**
    Source lines, for quoting each failing case.
    */
-  const sourceLines = emitted.source.split('\n',);
+  const sourceLines = emitted.source
+    .split('\n',);
   /**
    Diagnostics grouped by case id.
    */
@@ -184,18 +319,31 @@ export async function checkCases(
     /**
      1-based line number of the diagnostic.
      */
-    const line = diagnostic.startsWith('cases.ts(',) ? Number(diagnostic.slice('cases.ts('.length, diagnostic.indexOf(',',),),) : 0;
+    const line = diagnostic.startsWith('cases.ts(',) ? Number(diagnostic.slice(
+      'cases.ts('.length,
+      diagnostic.indexOf(',',),
+    ),) : 0;
     /**
      Case whose span contains the line.
      */
-    const span = emitted.spans.find(function contains({ first, last, },) {
+    const span = emitted.spans
+      .find(function contains({
+        first,
+        last,
+      },) {
       return (line >= first) && (line <= last);
     },);
     if (span === undefined) {
       stray.push(diagnostic,);
       continue;
     }
-    byCase.set(span.id, [...(byCase.get(span.id,) ?? []), diagnostic,],);
+    byCase.set(
+      span.id,
+      [
+        ...(byCase.get(span.id,) ?? []),
+        diagnostic,
+      ],
+    );
   }
   return {
     failures: [...byCase,].map(function toFailure([id, messages,],) {
@@ -206,7 +354,11 @@ export async function checkCases(
       return {
         diagnostics: messages,
         id,
-        source: span === undefined ? '' : sourceLines.slice(span.first - 1, span.last,).join('\n',),
+        source: span === undefined ? '' : sourceLines.slice(
+          span.first - 1,
+          span.last,
+        )
+          .join('\n',),
       };
     },),
     stray,

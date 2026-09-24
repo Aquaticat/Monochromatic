@@ -92,6 +92,7 @@ const RUNTIME_OPTIONS: Readonly<Record<string, object>> = {
  Draw types first, then values conforming to them.
 
  @param head - Generator of the first input's type.
+ 
  @param rest - Generator of the remaining inputs' types.
 
  @returns Arbitrary of types paired with conforming values.
@@ -102,15 +103,38 @@ const RUNTIME_OPTIONS: Readonly<Record<string, object>> = {
  ```
  */
 function typesAndValues(
-  { head, rest, }: { readonly head: Arbitrary<TypeNode>; readonly rest: Arbitrary<TypeNode>; },
-): Arbitrary<{ readonly types: readonly TypeNode[]; readonly values: readonly unknown[]; readonly sources: readonly string[]; }> {
-  return tuple(head, array(rest, { minLength: 1, maxLength: MAX_INPUTS - 1, },),)
+  {
+    head,
+    rest,
+  }: {
+    readonly head: Arbitrary<TypeNode>;
+    readonly rest: Arbitrary<TypeNode>
+  },
+): Arbitrary<{
+  readonly types: readonly TypeNode[];
+  readonly values: readonly unknown[];
+  readonly sources: readonly string[]
+}> {
+  return tuple(
+    head,
+    array(
+      rest,
+      {
+        minLength: 1,
+        maxLength: MAX_INPUTS - 1,
+      },
+    ),
+  )
     .chain(function drawValues([first, rest,],) {
       /**
        All input types in call order.
        */
-      const types = [first, ...rest,];
-      return tuple(...types.map(sampleValue,),).map(function pair(samples,) {
+      const types = [
+        first,
+        ...rest,
+      ];
+      return tuple(...types.map(sampleValue,),)
+        .map(function pair(samples,) {
         return {
           sources: samples.map(function sourceOf(sample,) {
             return sample.source;
@@ -144,21 +168,63 @@ export function caseArbitraryFor({ unions, }: { readonly unions: boolean; },): A
   /**
    Inputs of any declared type.
    */
-  const anyInputs = typesAndValues({ head: scope.type, rest: scope.type, },);
+  const anyInputs = typesAndValues({
+    head: scope.type,
+    rest: scope.type,
+  },);
   return oneof(
-    { weight: 4, arbitrary: anyInputs.map(function merge(drawn,): DrawnCase {
-      return { ...drawn, kind: 'merge', option: 'empty', };
-    },), },
-    { weight: 1, arbitrary: anyInputs.map(function fast(drawn,): DrawnCase {
-      return { ...drawn, kind: 'fast', option: 'empty', };
-    },), },
+    {
+      weight: 4,
+      arbitrary: anyInputs.map(function merge(drawn,): DrawnCase {
+      return {
+        ...drawn,
+        kind: 'merge',
+        option: 'empty',
+      };
+    },),
+    },
+    {
+      weight: 1,
+      arbitrary: anyInputs.map(function fast(drawn,): DrawnCase {
+      return {
+        ...drawn,
+        kind: 'fast',
+        option: 'empty',
+      };
+    },),
+    },
     // Object sources only: a non-object source is the pinned root-level kind mismatch.
-    { weight: 2, arbitrary: typesAndValues({ head: scope.object, rest: scope.object, },).map(function into(drawn,): DrawnCase {
-      return { ...drawn, kind: 'into', option: 'empty', };
-    },), },
-    { weight: 2, arbitrary: record({ drawn: anyInputs, option: constantFrom(...Object.keys(CUSTOM_OPTIONS,),), },).map(function custom({ drawn, option, },): DrawnCase {
-      return { ...drawn, kind: 'custom', option, };
-    },), },
+    {
+      weight: 2,
+      arbitrary: typesAndValues({
+        head: scope.object,
+        rest: scope.object,
+      },)
+        .map(function into(drawn,): DrawnCase {
+      return {
+        ...drawn,
+        kind: 'into',
+        option: 'empty',
+      };
+    },),
+    },
+    {
+      weight: 2,
+      arbitrary: record({
+        drawn: anyInputs,
+        option: constantFrom(...Object.keys(CUSTOM_OPTIONS,),),
+      },)
+        .map(function custom({
+          drawn,
+          option,
+        },): DrawnCase {
+      return {
+        ...drawn,
+        kind: 'custom',
+        option,
+      };
+    },),
+    },
   );
 }
 
@@ -180,7 +246,8 @@ function symbolName(symbol: symbol,): string {
   /**
    Matching constant, when the symbol is one of ours.
    */
-  const found = Object.entries(RUNTIME_SYMBOLS,).find(function matches([, candidate,],) {
+  const found = Object.entries(RUNTIME_SYMBOLS,)
+    .find(function matches([, candidate,],) {
     return candidate === symbol;
   },);
   if (found === undefined)
@@ -200,6 +267,7 @@ function symbolName(symbol: symbol,): string {
  type is not a Set or Map yields `never` arguments, which fail as they should.
 
  @param value - Runtime result or a part of it.
+ 
  @param typeExpression - Static type at this position.
 
  @returns Expression source.
@@ -212,10 +280,18 @@ function symbolName(symbol: symbol,): string {
  // 'new Set<SetElem<typeof merged>>([1])'
  ```
  */
-export function emitValue({ value, typeExpression, }: { readonly value: unknown; readonly typeExpression: string; },): string {
+export function emitValue({
+  value,
+  typeExpression,
+}: {
+  readonly value: unknown;
+  readonly typeExpression: string
+},): string {
   if (value === undefined)
     return 'undefined';
-  if ((value === null) || ((typeof value) === 'boolean') || ((typeof value) === 'number') || ((typeof value) === 'string'))
+  if ((value === null) || ((typeof value) === 'boolean')
+    || ((typeof value) === 'number')
+    || ((typeof value) === 'string'))
     return JSON.stringify(value,);
   if (value instanceof Date)
     return `new Date(${String(value.getTime(),)})`;
@@ -224,38 +300,74 @@ export function emitValue({ value, typeExpression, }: { readonly value: unknown;
   if (Array.isArray(value,)) {
     // Position as two counter tuples (index from the start, distance from the end), so ElemAt can
     // resolve both fixed prefixes and fixed tails around a rest element.
-    return `[${value.map(function element(item: unknown, index: number,) {
+    return `[${value.map(function element(
+      item: unknown,
+      index: number,
+    ) {
       /**
        Counter tuple of a given length.
        */
       const counter = function counterOf(length: number,): string {
-        return `[${Array.from({ length, }, function slot() {
+        return `[${Array.from(
+          { length, },
+          function slot() {
           return 'unknown';
-        },).join(', ',)}]`;
+        },
+        )
+          .join(', ',)}]`;
       };
-      return emitValue({ typeExpression: `ElemAt<${typeExpression}, ${counter(index,)}, ${counter(value.length - index - 1,)}>`, value: item, },);
+      return emitValue({
+        typeExpression: `ElemAt<${typeExpression}, ${counter(index,)}, ${counter(value.length - index
+          - 1,)}>`,
+        value: item,
+      },);
     },).join(', ',)}]`;
   }
   if (value instanceof Set) {
     return `new Set<SetElem<${typeExpression}>>([${[...value,].map(function element(item,) {
-      return emitValue({ typeExpression: `SetElem<${typeExpression}>`, value: item, },);
-    },).join(', ',)}])`;
+      return emitValue({
+        typeExpression: `SetElem<${typeExpression}>`,
+        value: item,
+      },);
+    },)
+      .join(', ',)}])`;
   }
   if (value instanceof Map) {
     return `new Map<MapKey<${typeExpression}>, MapValue<${typeExpression}>>([${[...value,].map(function entry([key, entryValue,],) {
-      return `[${emitValue({ typeExpression: `MapKey<${typeExpression}>`, value: key, },)}, ${emitValue({ typeExpression: `MapValue<${typeExpression}>`, value: entryValue, },)}]`;
-    },).join(', ',)}])`;
+      return `[${emitValue({
+        typeExpression: `MapKey<${typeExpression}>`,
+        value: key,
+      },)}, ${emitValue({
+        typeExpression: `MapValue<${typeExpression}>`,
+        value: entryValue,
+      },)}]`;
+    },)
+      .join(', ',)}])`;
   }
   if (((typeof value) === 'object') && (value !== null)) {
-    return `{ ${Reflect.ownKeys(value,).map(function property(key,) {
+    return `{ ${Reflect.ownKeys(value,)
+      .map(function property(key,) {
       /**
        Key source and key type: computed symbol constant or quoted string.
        */
       const [keySource, keyType,] = (typeof key) === 'symbol'
-        ? [`[${symbolName(key as symbol,)}]`, `typeof ${symbolName(key as symbol,)}`,]
-        : [JSON.stringify(key,), JSON.stringify(key,),];
-      return `${keySource}: ${emitValue({ typeExpression: `PropOf<${typeExpression}, ${keyType}>`, value: Reflect.get(value, key,), },)}`;
-    },).join(', ',)} }`;
+        ? [
+          `[${symbolName(key as symbol,)}]`,
+          `typeof ${symbolName(key as symbol,)}`,
+        ]
+        : [
+          JSON.stringify(key,),
+          JSON.stringify(key,),
+        ];
+      return `${keySource}: ${emitValue({
+        typeExpression: `PropOf<${typeExpression}, ${keyType}>`,
+        value: Reflect.get(
+          value,
+          key,
+        ),
+      },)}`;
+    },)
+      .join(', ',)} }`;
   }
   throw new TypeError(`emitValue: no literal form for ${typeof value}`,);
 }
@@ -283,7 +395,11 @@ export function runCase(drawn: DrawnCase,): unknown {
    Private copy of the target, so the drawn value stays untouched.
    */
   const intoTarget = snapshotObject(drawn.values[0] as object,);
-  target.deepmergeInto(intoTarget, ...drawn.values.slice(1,),);
+  target.deepmergeInto(
+    intoTarget,
+    ...drawn.values
+      .slice(1,),
+  );
   return intoTarget;
 }
 
@@ -292,7 +408,9 @@ export function runCase(drawn: DrawnCase,): unknown {
  checked literal.
 
  @param drawn - Case to emit.
+ 
  @param result - Its runtime result.
+ 
  @param id - Case number, echoed in a comment for triage.
 
  @returns Source lines of the case.
@@ -303,12 +421,24 @@ export function runCase(drawn: DrawnCase,): unknown {
  ```
  */
 export function emitCase(
-  { drawn, result, id, }: { readonly drawn: DrawnCase; readonly result: unknown; readonly id: number; },
+  {
+    drawn,
+    result,
+    id,
+  }: {
+    readonly drawn: DrawnCase;
+    readonly result: unknown;
+    readonly id: number
+  },
 ): readonly string[] {
   /**
    Inputs as `widen<T>(value)` so declared types drive inference.
    */
-  const inputs = drawn.types.map(function input(type, position,) {
+  const inputs = drawn.types
+    .map(function input(
+      type,
+      position,
+    ) {
     return `widen<${emitType(type,)}>(${drawn.sources[position] ?? 'undefined'})`;
   },);
   if (drawn.kind === 'into') {
@@ -316,9 +446,13 @@ export function emitCase(
       `  // case ${String(id,)} into`,
       '  () => {',
       `    const intoTarget = ${inputs[0] ?? ''};`,
-      `    deepmergeInto(intoTarget, ${inputs.slice(1,).join(', ',)});`,
+      `    deepmergeInto(intoTarget, ${inputs.slice(1,)
+        .join(', ',)});`,
       '    const after = intoTarget;',
-      `    const check: typeof after = ${emitValue({ typeExpression: 'typeof after', value: result, },)};`,
+      `    const check: typeof after = ${emitValue({
+        typeExpression: 'typeof after',
+        value: result,
+      },)};`,
       '    return { merged: after, value: check, };',
       '  },',
     ];
@@ -335,7 +469,10 @@ export function emitCase(
     `  // case ${String(id,)} ${drawn.kind} ${drawn.option}`,
     '  () => {',
     `    const merged = ${call};`,
-    `    const check: typeof merged = ${emitValue({ typeExpression: 'typeof merged', value: result, },)};`,
+    `    const check: typeof merged = ${emitValue({
+      typeExpression: 'typeof merged',
+      value: result,
+    },)};`,
     '    return { merged, value: check, };',
     '  },',
   ];
@@ -395,7 +532,9 @@ export function emitHeader(exportName: string,): readonly string[] {
  Draw and run cases from a seed.
 
  @param seed - fast-check seed.
+ 
  @param size - Number of cases.
+ 
  @param unions - Whether declared types may contain unions.
 
  @returns Drawn cases with their runtime results; draws whose run throws are dropped.
@@ -406,11 +545,32 @@ export function emitHeader(exportName: string,): readonly string[] {
  ```
  */
 export function drawCases(
-  { seed, size, unions, }: { readonly seed: number; readonly size: number; readonly unions: boolean; },
-): readonly { readonly drawn: DrawnCase; readonly result: unknown; }[] {
-  return sample(caseArbitraryFor({ unions, },), { numRuns: size, seed, },).flatMap(function run(drawn,) {
+  {
+    seed,
+    size,
+    unions,
+  }: {
+    readonly seed: number;
+    readonly size: number;
+    readonly unions: boolean
+  },
+): readonly {
+  readonly drawn: DrawnCase;
+  readonly result: unknown
+}[] {
+  return sample(
+    caseArbitraryFor({ unions, },),
+    {
+      numRuns: size,
+      seed,
+    },
+  )
+    .flatMap(function run(drawn,) {
     try {
-      return [{ drawn, result: runCase(drawn,), },];
+      return [{
+        drawn,
+        result: runCase(drawn,),
+      },];
     } catch (error) {
       // A throwing merge is a runtime finding for other suites, not a type case.
       console.warn(`declared-type-generate: dropped a ${drawn.kind} case whose run threw: ${String(error,)}`,);
