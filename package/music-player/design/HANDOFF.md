@@ -4661,8 +4661,11 @@ not the target geometry.
 desktop-sized review.
  It has since been replaced by native Fold-panel evidence;
 see the current section of this handover.
-D49 records cover 1080 × 2424 physical px (about 411 × 923dp) and unfolded inner
-2076 × 2152 physical px (about 852 × 883dp) as the only design frames.
+D49 records cover 1080 × 2424 physical px and unfolded inner 2076 × 2152
+physical px as the only design frames.
+ The original 411 × 923dp cover estimate
+was not measured on the AVD;
+ the current section records its 390dpi correction.
 Desktop window sizing is a developer-owned frame around the inherited treatment,
 not a fresh visual design question.
  D47's Search button and separate page and D48's
@@ -4748,7 +4751,8 @@ trigger this failure;
 switches that wrapper to the accepted white-spacer light treatment.
  The fresh
 managed capture (`proc_ca57`) completed all cover and inner states in both schemes
-and at 100%/200% text.
+at 100% text,
+ plus player/results at 200% text.
  E2,
  `device-metrics.md` and `review-notes.md` 5q require
 the exact black/white spacer fill as well as no content bounds crossing it.
@@ -4763,51 +4767,78 @@ interrupted capture was not recorded;
 
 ## Current native Fold Search review (2026-09-23)
 
-Main commit `d983482ed` preserves all 28 guarded opaque PNG captures,
- paired XML
-hierarchies and four Android role JSONs under `questions/{render,evidence}/`.
-The 72dp header and divider stay inside the unfolded left 414dp pane,
- while
+Main commit `d983482ed` first preserved the guarded native captures;
+ `1cba72beb`
+recaptured all 28 PNGs with per-frame panel,
+ font-scale,
+ night-mode and
+390dpi metadata,
+ paired XML hierarchies and four Android role JSONs under
+`questions/{render,evidence}/`.
+ Direct `wm density` and `dumpsys display`
+probes report 390dpi on **both** AVD panels:
+ the physical 1080 × 2424px
+cover is about 443 × 994dp,
+ not the old 411 × 923dp published-ppi
+estimate.
+ The 72dp header/divider stay inside the unfolded left 414dp pane;
 results and empty-state messages occupy the right 414dp pane.
  The centered
 24dp connector is physically empty with D41 black/D34 white fill.
- Review
-validator `search-page-question.mjs` checks native dimensions,
+ Prototype
+commit `896ca78fd` and review validator `search-page-question.mjs` scan every
+RGBA pixel in physical x `[1009,1068)`,
+ y `[136,2074)` and reject semantic or
+clickable app nodes crossing it.
+ The validator also checks native dimensions,
+per-frame provenance,
  stage labels,
-roles,
- header/divider/body samples,
- 15 connector pixel points on every inner
-frame and visible app node bounds.
- In a disposable copy,
- one mutated XML hit
-target crossing the connector and one recolored dark connector both made the
-validator fail as intended.
- The inner 200% player's last mode target ends at
-physical y=2074,
- the measured start of the navigation-bar frame;
- the right
-track list scrolls.
+ roles and header/divider/body samples.
+Disposable red controls reject a crossing target,
+ a dark tonal band and a
+single unsampled near-white pixel on light.
 
-`questions/current.html` now embeds both panel families and both schemes,
- with
-100% dp chassis previews,
+At 200% text the initial inner player's last mode row has only 94px visible
+before the navigation inset y=2074,
+ so do not call that frame full fit.
+ A
+native swipe in the deck moved the row to `[73,1904][936,2035]`,
+ showing its
+full 131px target above the nav bar;
+ the scrolled dark PNG/XML are supplementary
+evidence at `questions/render/fold-search-inner-player-dark-s200-scrolled.png`
+and its `questions/evidence/` XML pair.
+ Right track rows scroll independently.
+
+`questions/current.html` embeds both panel families and schemes,
+ with cover
+preview at about 443 × 994 CSS px and inner at 852 × 883 CSS px for 100% AVD
+dp,
  a panel-switching player-to-Search walkthrough,
-200% player/results stress captures,
+ 200% player/results stress
+captures,
  and free-text correction.
  `mise run
 //package/music-player/design:build`,
  `:lint` and `:test:unit` passed.
  Browser
-verification exercised all flow controls,
- both panel paths,
- preview
-fit/reset/zoom/close and returned focus,
- the response form and an offline reload;
-axe found zero violations in light and dark chrome,
- and no browser console/page
-errors were reported.
- Refresh the browser after the small final 200% wording
-correction before presenting.
+checks exercised each flow control,
+ previews including fit/reset/zoom,
+ scene
+top reset,
+ keyboard panning,
+ Escape and returned focus,
+ plus response output.
+An online fetch from the self-contained page to a local test endpoint succeeded;
+when the browser was set offline,
+ the same fetch failed while a file reload
+still decoded every embedded image.
+ Axe found no violations in light/dark
+review chrome or the open dialog after its scroll region became keyboard
+focusable;
+ geometry stayed exact with a 20px root font.
+ The browser
+reported no page/console errors.
  No KWin automation was used.
 
 Next:
