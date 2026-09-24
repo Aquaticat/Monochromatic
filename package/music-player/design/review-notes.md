@@ -760,6 +760,47 @@ the accepted fill **and** content bounds,
  with an earlier full-width screenshot as a
 known failing control.
 
+## 5r. The Fold-native Search review was verified at the device boundary
+
+The corrected capture contains opaque 1080 × 2424px cover and 2076 × 2152px
+inner screenshots of the player and Search page in both schemes,
+ plus paired
+hierarchies and four Android role records.
+ The native connector guard passed
+all unfolded scenes at 100% text and player/results at 200%,
+ checking semantic
+and clickable bounds along with sampled black/white pixels.
+ Separate red
+controls against a disposable copy of `search-page-question.mjs validate` rejected
+both a target extended into the connector and a near-white fill in the dark
+connector.
+ The inner 200% player's last mode target ends at physical y=2074,
+where the measured navigation inset begins;
+ the right track list scrolls.
+ A
+static screenshot does not establish navigation,
+ focus,
+ TalkBack or result
+execution.
+
+The new self-contained `questions/current.html` pairs both native panels with
+measured chassis frames,
+ shows the viewer's system light/dark scheme,
+ starts at
+the player Search target,
+ exercises Back and canned query/unavailable states,
+and ends in free-text correction.
+ Browser interaction checks exercised both
+panel paths,
+ preview fit/reset/zoom/close,
+ return focus,
+ form output and offline
+reload.
+ Axe reported no violations in either chrome scheme;
+ the browser
+reported no console or page errors.
+ No KWin automation was used.
+
 ## Standing standards for this project
 
 1. **EVERY question form ends with a free-text field.
