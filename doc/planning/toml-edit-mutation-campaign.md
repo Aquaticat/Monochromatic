@@ -281,10 +281,17 @@ A prior test also exposed a stale TSDoc claim about `toml-eslint-parser@1.0.3`:
 The test now selects 1.0 explicitly and checks the current default;
  `doc/troubleshooting/toml-eslint-parser-default-version.md` traces the installed and tagged source.
 
-Both parser/build and materialization rechecks are running on the same source revision.
-The reports will be `/var/home/user/temp/agent/toml-mutation-parser-builder-recheck.json`
- and `/var/home/user/temp/agent/toml-mutation-materialization-recheck.json`.
-Do not edit runtime source until both complete,
+The materialization recheck completed on the shared revision with 59 killed,
+ seven confirmed survivors,
+ 119 compile errors,
+ and no infrastructure errors.
+Its report is `/var/home/user/temp/agent/toml-mutation-materialization-recheck.json`.
+Parsed-string style tests killed every `emit-value-string.ts` mutant that compiled.
+Array-index bounds tests killed the actionable `document-materialize.ts` bounds mutants.
+The remaining `emit-value-node.ts` clean-node block mutant warrants an unchanged-sibling raw-style test.
+The parser/build recheck is still running;
+ its report will be `/var/home/user/temp/agent/toml-mutation-parser-builder-recheck.json`.
+Do not edit runtime source until it completes,
  since each shard copies the current tree.
 After triage,
  scan editing,
