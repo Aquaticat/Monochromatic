@@ -355,22 +355,40 @@ The clean-sibling `emit-value-node.ts` recheck reported five killed,
  26 compile errors,
  and no infrastructure errors;
  its former clean-node block survivor was killed.
-The parser/build recheck is still running at
- `/var/home/user/temp/agent/toml-mutation-parser-guard-final.json` (`proc_40f8`).
-Do not edit runtime sources until it finishes.
-The remaining edit paths are now being scanned in two bounded container campaigns:
+The parser/build recheck completed at
+ `/var/home/user/temp/agent/toml-mutation-parser-guard-final.json`.
+The edit-path campaigns completed on the same source snapshot:
 
 - `delete-value.ts`,
   `resolve-document.ts`,
   `toml-delete.ts`,
-  and `toml-set.ts` write `/var/home/user/temp/agent/toml-mutation-edit-a.json` (`proc_27ab`).
+  and `toml-set.ts` wrote `/var/home/user/temp/agent/toml-mutation-edit-a.json`:
+  65 killed,
+  55 confirmed survivors,
+  274 compile errors,
+  no infrastructure errors.
 - `set-aot.ts`,
   `set-create.ts`,
   `set-replace.ts`,
   `set-value-inline.ts`,
-  and `set-value.ts` write `/var/home/user/temp/agent/toml-mutation-edit-b.json` (`proc_809c`).
+  and `set-value.ts` wrote `/var/home/user/temp/agent/toml-mutation-edit-b.json`:
+  95 killed,
+  85 confirmed survivors,
+  302 compile errors,
+  no infrastructure errors.
 
-Do not edit runtime source until both campaigns complete.
+A built-artifact test demonstrated that `tomlGetValue` resolves clean indexed array-of-tables paths
+ while `tomlGetNode` and `tomlGetRaw` incorrectly threw `TomlPathNotFoundError`.
+`resolve-document.ts` now selects the indexed table and descends its body.
+The package build and tests passed after the change,
+ and tests cover indexed node/raw/comment views and out-of-range rejection.
+Additional deletion and set tests cover indexed instances,
+ nested table/inline-table edits,
+ AOT replacement among siblings,
+ implicit dotted-key replacement,
+ path-create placement,
+ and exact rejection diagnostics.
+The edit-path mutation recheck is still pending.
 After edit-path triage,
  scan the remaining comment API and value-encoding files.
 Do not claim a full-runtime verdict before those campaigns and survivor rechecks finish.
