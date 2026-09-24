@@ -703,7 +703,8 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
 @Composable
 private fun DesignCandidatePrototype(candidate: String) {
     val context = LocalContext.current
-    val scheme = if ((candidate.startsWith("cover-picker") || candidate.startsWith("search-page")) && !candidate.endsWith("-light")) {
+    val searchCandidate = candidate.startsWith("search-page") || candidate.startsWith("search-layout")
+    val scheme = if ((candidate.startsWith("cover-picker") || searchCandidate) && !candidate.endsWith("-light")) {
         darkDynamicSchemeFor(context = context, candidate = "dark-stable-wallpaper-dynamic")
     } else if (candidate.startsWith("cover-dark")) {
         darkDynamicSchemeFor(
@@ -721,11 +722,13 @@ private fun DesignCandidatePrototype(candidate: String) {
         val palette = paletteFor(candidate = candidate, scheme = MaterialTheme.colorScheme)
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = if (candidate.startsWith("search-page")) {
+            color = if (searchCandidate) {
                 if (candidate.endsWith("-light")) scheme.surfaceContainerLowest else TrueBlack
             } else palette.window,
         ) {
-            if (candidate.startsWith("search-page")) {
+            if (candidate.startsWith("search-layout")) {
+                SearchLayoutStudy(candidate = candidate)
+            } else if (candidate.startsWith("search-page")) {
                 SearchPageStudy(candidate = candidate)
             } else if (candidate.startsWith("cover-picker")) {
                 CoverPickerStudy(candidate = candidate, palette = palette)
