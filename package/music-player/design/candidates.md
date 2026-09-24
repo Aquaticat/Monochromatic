@@ -63,7 +63,7 @@ which were left as historical style comparisons.
 <tr>
 <td>**light-c**</td>
 <td>852×fill</td>
-<td>D34 final light baseline: tonal panes, `outlineVariant` rail line, white 24dp center spacer, and white 16dp picker/transport divider.</td>
+<td>D34 light colors: tonal panes, `outlineVariant` rail line, white center surface and white 16dp picker/transport divider. Its depicted 24dp empty center gap is obsolete under clarified E2; only informative material must clear the user's 7.5mm physical dent.</td>
 </tr>
 <tr>
 <td>**dbtp-a**</td>
