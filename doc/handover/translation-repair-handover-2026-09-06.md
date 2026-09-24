@@ -4766,22 +4766,27 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  MIKAELA16 RUNS (entry `mikaela_khara`,
-    frozen `a43c5d88d`,
-    pid 1173176,
-    launched 05:40 UTC 2026-09-24,
-    waiter wait-m16 (background bash),
-    meters 47.09 USD Bedrock and 93.42 OpenRouter at launch, Synthetic dry for the week since 02:56 UTC, Hyper dry;
+1.  YINGYING9 RUNS (entry `yingying`,
+    frozen `6dec56b0b`,
+    pid 1811157,
+    launched 06:48 UTC 2026-09-24,
+    waiter wait-y9 (background bash),
+    meters 46.78 USD Bedrock and 92.97 OpenRouter at launch, Synthetic dry since 05:47:59 UTC, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    the first run on class one hundred twelve;
-    read the section 2 pairing steps for one merge over sources 3 to 7 and targets 3 to 6 (no insertions at 3 to 7, no target-only run riding into the next slice),
-    the HRT passage shipped once on the page,
-    any `insertion-carried-folded`, `stays carried:` and `carried on N region(s)` lines,
-    "That night, 𝓠𝓾𝓪𝓷, Spring, and Mika" (mikaela15 wrote 𝓠𝓾𝓪𝓷 for 泉 where the archive has Spring; class or glossary effect, undecided),
-    then classes seventy to seventy-seven, ninety-six, one hundred one and one hundred two beside every check of `mikaela11`
-    (𝓠𝓾𝓪𝓷 as the archive, "𝓠𝓾𝓪𝓷’s" curled, "Mika was outed", the Epilogue one to one, the life in the past, front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish);
-    then `yingying` or `zheermao101`, beside every check of the last read of each;
-    record each under a new heading above "## mikaela15 read, 2026-09-24" in the pass log.
+    the first run on class one hundred thirteen;
+    read for any `checker stage re-seated` line and refine rechecks hearing 2 of 3 after a dry-out (the class needs a hold that begins inside the repair lane; with Synthetic dry from the start it may not be exercised),
+    then every check of `yingying8`
+    (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, "Farewell. I miss you, Yingying.", "May you still have", no TA, no error finish, no double blank line);
+    then `zheermao101`, `CuspariaKLSY`, `shi_Yumiaoya`, `hulicaijia` and `XingZ60` on the same build if each reads clean;
+    record each under a new heading above "## mikaela16 read, 2026-09-24" in the pass log.
+    MIKAELA16 READ (frozen `a43c5d88d`): SETTLED 05:58 UTC 2026-09-24 in 20.6 min, 2,483 seats, 2,051 calls, 0.74 USD by the meters;
+    class one hundred twelve not exercised (the roster placed every block, section 2 merging sources 2 and 3 into target 2), the HRT passage on the page once, "That night, Spring, Mika, and I" as the archive;
+    every mikaela11 check holds (the classmate line reads "a classmate of mine" so no possessive to curl);
+    class one hundred nine live (eight re-seated proof rounds at 2 of 3 after Synthetic dried out at 05:47:59), class one hundred seven on slices 11, 13, 17, 23, contest 26 of 33 differ, one unendorsed (9), 60 abstention lines, Jev 78 of 78.
+    CLASS ONE HUNDRED THIRTEEN BUILT (375a9b3e8 over 6dec56b0b; phase guards red first 24b9ab623, which withdrew the settle guard e003d4c1d; full suite `suite-class113b.log` 1116 PASS):
+    ten refine rechecks from 05:51:51 heard 1 of 3 on the chunk's bench because the refine stage never read the re-seat hook;
+    `settleRefinedSlice` now reads the bench through `checkerBenchAtStage` right before the recheck (after the unchanged exit, so a slice whose rewrite changed nothing asks no hook) and runs the recheck and the rewrite probe on it, the hook threaded from the lane driver through `refineSettledSlices`, `runRefinePhase` and `settleRefinePhaseSlice`.
+    Not exercised live yet.
     MIKAELA15 READ (frozen `caac222a6`): SETTLED 05:19 UTC 2026-09-24 in 10.5 min, 2,116 seats, 1,687 calls, 0.75 USD by the meters;
     class one hundred eleven live end to end (`insertion-carried-folded (slice 11 into slice 10)`, no carried-evidence-lost stop, every mikaela11 check holds),
     but the HRT passage shipped twice: slice 10's stand-in through the fold and slice 13's span keeping the archive's "That was originally just a typical thing." (class one hundred twelve);

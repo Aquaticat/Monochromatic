@@ -8082,6 +8082,81 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## mikaela16 read, 2026-09-24, 06:50 UTC: SETTLED with the HRT passage once, class one hundred twelve not exercised, class one hundred thirteen found and built in 375a9b3e8; yingying9 launched
+
+`mikaela16` (entry `mikaela_khara`, frozen `a43c5d88d`, pid 1173176) was launched at 05:37 UTC 2026-09-24
+and SETTLED at 05:58 UTC,
+20.6 min,
+one attempt,
+2,483 seats,
+2,051 calls,
+91 retry rounds,
+0.74 USD by the meters (Bedrock 47.09 to 46.78, OpenRouter 93.40 to 92.97);
+Synthetic wet at launch and dry from 05:47:59 UTC, Hyper dry.
+The lanes disagreed on 26 of 33 slices;
+the consolidation endorsed 8 standings, consolidated 5, kept 5 at the gate, declined 7 at the slate and left 1 unjudged,
+with one unendorsed standing (slice 9);
+class one hundred seven live on slices 11, 13, 17 and 23;
+60 abstention lines;
+Jev 78 of 78.
+
+Class one hundred twelve not exercised:
+this run's roster placed every block in every section (12 of 12, 8 of 8, 18 of 18, 30 of 30),
+section 2 merging sources 2 and 3 into target 2,
+so there was no interior gap, no insertion and no fold.
+The HRT passage is on the page once,
+as "It was originally just a very normal occurrence:" and the four lines after it, one per source line.
+The unit guard (0c5ee4b6c) and the replay over mikaela15's real section 2 pairing remain the evidence for the gap pass.
+
+The mikaela15 observation did not repeat:
+the page reads "That night, / Spring, / Mika, / and I" with Spring as the archive.
+It is read as that run's rendering, not a class.
+
+Every check of `mikaela11` holds:
+front matter equal,
+4 headings,
+4 comments,
+markers and definitions as the archive (2 and 2),
+"Mika was outed.",
+the Epilogue one to one (15 lines against the source's 15),
+no TA,
+no error finish,
+no double blank line.
+𝓠𝓾𝓪𝓷 appears six times against the archive's seven:
+the classmate line reads "Huai'an (a classmate of mine from high school)" where the archive writes "𝓠𝓾𝓪𝓷’s classmate",
+and the narrator is 𝓠𝓾𝓪𝓷,
+so the curled-possessive check had nothing to bind this run.
+
+Class one hundred nine live:
+eight `checker stage re-seated` lines from 05:48:15 to 05:51:31 UTC after Synthetic dried out,
+each proof round then hearing 2 of 3 on Qwen, gemma-26b and gemma-4-e2b.
+
+Class one hundred thirteen:
+ten refine rechecks from 05:51:51 to 05:52:08 UTC heard 1 of 3
+(`checker: bench short of quorum, reachable 1 of 3`),
+asking Qwen and Kimi with no provider.
+The refine stage's recheck and its rewrite probe seated `models.checkerModelIds`,
+the bench the chunk was seated with,
+and never read the re-seat hook the proof stage reads.
+First built in 6dec56b0b (settle-level guard red first e003d4c1d):
+`settleRefinedSlice` (`refine-slice-settle.ts`) read the bench through `checkerBenchAtStage` before the refine stage,
+the recheck (`retainsResolvedIssues` now takes the checker ids) and the rewrite probe ran on it,
+and the lane driver passes the same `beforeSlice` hook through `refineSettledSlices`, `runRefinePhase` and `settleRefinePhaseSlice`.
+Without a hook the standing seating keeps the chunk's bench.
+The full suite (`suite-class113.log`) then turned the document-lanes case "ASKS BEFORE EVERY SLICE" red:
+the eager read asked the hook once more per refined slice, including slices whose rewrite never changed the text.
+375a9b3e8 moves the read to right after the `if (!refined.changed) return` exit, immediately before the recheck,
+which also narrows the gap a hold can open between the read and the checkers.
+The settle-level guard went vacuous under the lazy read and was withdrawn in 24b9ab623,
+replaced by phase-level guards in `refine-phase.unit.test.ts` (region "Checker bench at the refine stage"):
+the re-seated bench is asked by both the probe and the recheck, an empty re-seat keeps the chunk bench (control), and a re-seat below the checker floor throws `CheckerQuorumError`;
+proven red on `.frozen-dist-a43c5d88d` (the two guards red, the control green).
+Lint 0/0, types clean, full suite `suite-class113b.log` 1116 PASS, 0 FAIL.
+`yingying9` ran on the eager `.frozen-dist-6dec56b0b`, whose checker seating matches 375a9b3e8; only the hook's call count differs.
+Not exercised live yet: it needs a provider hold that begins inside the repair lane.
+
+`yingying9` launched on it.
+
 ## mikaela15 read, 2026-09-24, 05:45 UTC: SETTLED with the fold live, the HRT passage shipped twice, class one hundred twelve found and built in a43c5d88d; mikaela16 launched
 
 `mikaela15` (entry `mikaela_khara`, frozen `caac222a6`, pid 876937) was launched at 05:09 UTC 2026-09-24
