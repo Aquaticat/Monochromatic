@@ -45,6 +45,14 @@ await describe({
       },
     },),
     it({
+      name: 'does not delete the same key under a different table header',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: '[a]\nx=1\n[b]\nx=2\n', },);
+        const deleted = tomlDelete({ edit, path: ['b', 'x',], },);
+        expect(tomlStringify({ edit: deleted, },),).toBe('[a]\nx=1\n[b]\n',);
+      },
+    },),
+    it({
       name: 'descends through an inline-table entry before removing a nested field',
       fn: async () => {
         const edit = parseTomlEdit({ source: 'foo = { a = { b = 1, c = 2 }, d = 3 }\n', },);
@@ -54,6 +62,17 @@ await describe({
           d: 3,
         },);
         expect(tomlStringify({ edit: deleted, },),).toBe('foo = { a = { c = 2, }, d = 3, }\n',);
+      },
+    },),
+    it({
+      name: 'leaves a sibling inline-table entry intact during nested deletion',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'foo = { a = { x = 1 }, b = { x = 2 } }\n', },);
+        const deleted = tomlDelete({ edit, path: ['foo', 'b', 'x',], },);
+        expect(tomlGetValue({ edit: deleted, path: ['foo',], },),).toEqual({
+          a: { x: 1, },
+          b: {},
+        },);
       },
     },),
     it({
