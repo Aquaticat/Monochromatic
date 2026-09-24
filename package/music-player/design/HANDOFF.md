@@ -5336,6 +5336,10 @@ unfolded and cover raster within each gallery thumbnail,
  including the
 keyboard region;
  no rejected layout is shown.
+ A 390 × 844 CSS-pixel
+browser viewport had no horizontal overflow,
+ and the cover device preview's
+Fit control scaled it within that viewport.
  A preview-dialog scale label produced an
 axe `color-contrast` **incomplete** rather than a violation;
  manual
