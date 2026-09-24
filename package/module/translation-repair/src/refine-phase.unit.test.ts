@@ -18,8 +18,12 @@ import {
   OverlapRefusedError,
   persistRefinePhaseSlice,
   runRefinePhase,
+  CheckerQuorumError,
+  SEAT_BEDROCK_ONLY_TEXT,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
+  SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
@@ -30,6 +34,7 @@ import {
   type IssueAuthorship,
   type RefinedSliceSettlement,
   type RepairModels,
+  type RepairSliceSeating,
   type RosterModelId,
   type SliceCache,
   type SyntheticClient,
@@ -1239,3 +1244,160 @@ await describe({
     },),
   ],
 },);
+
+//region Checker bench at the refine stage
+
+/**
+ Checkers a hold that began inside the lane re-seats onto, disjoint from the
+ chunk's own bench and from every writer, so a call reaching either bench is
+ attributable.
+ */
+const RESEATED_CHECKERS: readonly RosterModelId[] = [
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_OPENROUTER_ONLY,
+];
+
+/**
+ One call a checking stage made: which stage, and which model it asked.
+ */
+type CheckingCall = {
+  /**
+   Structured-output schema the call answered.
+   */
+  readonly stage: string;
+
+  /**
+   Model the call went to.
+   */
+  readonly modelId: RosterModelId;
+};
+
+/**
+ Runs the phase over one slice whose rewrite ships and whose confirmed issue
+ the recheck must re-prove, recording every checking call.
+
+ @param reseat - reads the seating at the stage
+
+ @returns The phase result and the checking calls, in order
+
+ @example
+ ```ts
+ const { calls, } = await runReseatedPhase({ reseat, },);
+ ```
+ */
+async function runReseatedPhase(
+  { reseat, }: { readonly reseat: () => Promise<RepairSliceSeating>; },
+): Promise<{
+  readonly phase: Awaited<ReturnType<typeof runRefinePhase>>;
+  readonly calls: readonly CheckingCall[];
+}> {
+  /**
+   Checking calls, in the order made.
+   */
+  const calls: CheckingCall[] = [];
+  /**
+   Client the phase would have used, answering every stage.
+   */
+  const inner = scriptedPhase({ checkerVerdict: 'fixed', },);
+  const phase = await runRefinePhase({
+    declaredNames: [],
+    client: {
+      chatText: inner.chatText,
+      chatJson: async (request,) => {
+        /**
+         Stage name from the structured-output constraint.
+         */
+        const stage = request.responseFormat
+          ?.json_schema
+          .name
+          ?? '';
+        if ((stage !== 'refine_report') && (stage !== 'candidate_ballot'))
+          calls.push({
+            stage,
+            modelId: request.modelId,
+          },);
+        return await inner.chatJson(request,);
+      },
+      quotas: inner.quotas,
+    },
+    targetText: REPAIRED_TEXT,
+    slices: SLICES,
+    outcomes: [settledOutcome({
+      resolvedIssueIds: ['adjudicated/one',],
+      authorship: NO_MODEL_WROTE_THE_FIXTURE,
+    },),],
+    models: MODELS,
+    reseat,
+    signal: new AbortController().signal,
+    perCallTimeoutMs: 1_000,
+    l,
+  },);
+  return {
+    phase,
+    calls,
+  };
+}
+
+await describe({
+  name: `${runRefinePhase.name} checker bench at the stage`,
+  children: [
+    it({
+      name: 'ASKS THE RE-SEATED BENCH for the recheck and the rewrite probe, never the bench the chunk '
+        + 'was seated with (class one hundred thirteen, mikaela16: ten rechecks after Synthetic dried '
+        + 'out heard 1 of 3 on the chunk bench while the proof stage, re-seated, heard 2 of 3)',
+      fn: async () => {
+        const { phase, calls, } = await runReseatedPhase({
+          reseat: async (): Promise<RepairSliceSeating> => ({
+            repairModels: {
+              ...MODELS,
+              checkerModelIds: RESEATED_CHECKERS,
+            },
+          }),
+        },);
+        // The rewrite shipped, so both checking stages ran; a case where
+        // neither ran would pass the membership checks below vacuously.
+        expect(phase.outcomes[0]?.repairedText,).toBe(SMOOTH_TEXT,);
+        expect(calls.some(function isProbe(call,): boolean {
+          return call.stage === 'introduced_defect_report';
+        },),).toBe(true,);
+        expect(calls.some(function isRecheck(call,): boolean {
+          return call.stage !== 'introduced_defect_report';
+        },),).toBe(true,);
+        expect(calls.every(function onReseatedBench(call,): boolean {
+          return RESEATED_CHECKERS.includes(call.modelId,);
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'KEEPS THE CHUNK BENCH when the reading seats nothing new, the control showing the case '
+        + 'above reports the hook and not a fixture that never asks the chunk bench',
+      fn: async () => {
+        const { calls, } = await runReseatedPhase({
+          reseat: async (): Promise<RepairSliceSeating> => ({}),
+        },);
+        expect(calls.length,).toBeGreaterThan(0,);
+        expect(calls.every(function onChunkBench(call,): boolean {
+          return MODELS.checkerModelIds.includes(call.modelId,);
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'REFUSES a re-seated bench below the checker floor at the recheck rather than running a '
+        + 'stage the contract refuses',
+      fn: async () => {
+        await expect(runReseatedPhase({
+          reseat: async (): Promise<RepairSliceSeating> => ({
+            repairModels: {
+              ...MODELS,
+              checkerModelIds: [SEAT_OPENROUTER_ONLY,],
+            },
+          }),
+        },),).rejects
+          .toThrow(CheckerQuorumError,);
+      },
+    },),
+  ],
+},);
+
+//endregion Checker bench at the refine stage
