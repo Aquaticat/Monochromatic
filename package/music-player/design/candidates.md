@@ -1113,9 +1113,9 @@ questions;
 The debug-only Compose study on `prototype/music-player-theme-compose` captured
 the D47/D48 player trigger and separate one-header Search page on the cover
 (1080 × 2424px,
- 411 × 923dp) and inner display (2076 × 2152px,
- 852 × 883dp)
-in both schemes.
+ approximately 443 × 994dp at the measured AVD 390dpi) and inner
+display (2076 × 2152px,
+ approximately 852 × 883dp) in both schemes.
  `questions/render/fold-search-{cover,inner}-*.png` contains opaque
 Android system bars and target-sized results,
  empty,
@@ -1124,7 +1124,11 @@ states at 100% text;
  player and results at 200% text are fit checks.
  Each PNG
 has a paired XML hierarchy in `questions/evidence/` and each panel/scheme has a
-native role JSON.
+native role JSON;
+ each frame now has measured panel,
+ density,
+ night-mode and
+font-scale metadata in `questions/evidence/`.
  The app-owned unfolded header is bounded by the left 414dp
 pane,
  results by the right 414dp pane,
@@ -1144,6 +1148,10 @@ player-to-page walkthrough,
 frames,
  100% dp preview,
  and free-text correction.
+ The cover chassis preview uses approximately 443 ×
+994 CSS px at 100% AVD dp;
+ the old 411 × 923dp sizing was an unmeasured
+published-ppi estimate.
  Canned rows and the HTML
 walkthrough do not prove an actual index,
  result execution,
