@@ -260,6 +260,7 @@ export async function scanCandidates({
       [...scannerArguments,],
       {
         cwd: repositoryRoot,
+        env: { ...environment, },
         signal: abortRelay.signal,
       },
     );
