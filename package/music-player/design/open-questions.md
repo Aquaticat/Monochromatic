@@ -70,7 +70,16 @@ rounds (2026-09-17):
   `questions/current.html` still shows those obsolete desktop scenes and must be
   replaced with native Compose captures of the actual Fold panels in both schemes
   before requesting feedback.
-  Do not ask for I/G/R codes or a desktop window size.
+  The first unfolded Compose Search draft incorrectly
+  spanned its center 24dp connector with a full-width header and result rows;
+  that
+  capture run was stopped.
+  E2 now excludes **all app content** from `[414,438)`dp,
+  not just controls.
+  Build two bounded panes with a neutral empty connector and
+  verify visible-node bounds plus connector pixels before recapturing.
+  Do not ask
+  for I/G/R codes or a desktop window size.
   Keep Search results,
   no-result/unavailable states,
   and open/back behavior visibly
