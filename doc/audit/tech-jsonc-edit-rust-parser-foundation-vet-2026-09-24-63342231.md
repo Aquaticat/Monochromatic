@@ -361,6 +361,46 @@ Web searches discovered `jwc`,
  This completes the broad `jsonc` query's **pagination**,
  not screening of every record or saturation of every required discovery source.
 
+### Delegated repository and broader-registry enumeration
+
+A research-only agent searched GitHub repositories with `language:Rust`,
+ best-match order,
+ `per_page=100` and no explicit negative filter.
+ Literal queries returned:
+ `jsonc` 41,
+ `json5` 39,
+ `json lexer` 24,
+ `lossless json` 12,
+ `json syntax tree` 1,
+ `jsonc lexer` 1,
+ `json with comments` 12,
+ `topic:jsonc` 6,
+ `json cst` 2,
+ and `json tokenizer` 157 across pages of 100 and 57.
+ Each completed response reported `incomplete_results:false`;
+ an extra narrow `json5 parser` call was blocked by its guardrail and is not counted.
+
+Additional crates.io API terms yielded `jsonc lexer` eight results with no next page,
+ `json-with-comments` four with no next page,
+ and `comment preserving json` with a reported total of 1212.
+ Pages 1 through 3 of the last query returned ten each;
+ its first page produced new source leads,
+ while the next two added no plausible parser under the delegated metadata screening.
+ This does not prove that the other registry pages lack a candidate:
+ the full broad `jsonc` page records are being screened independently under `~/temp/agent/jsonc-registry-full-pages/jsonc/`.
+
+Source leads for that screening include `jsonc_lexer` from [richplastow/jsonc-lexer](https://github.com/richplastow/jsonc-lexer),
+ [`fracturedjson` 0.1.1](https://crates.io/crates/fracturedjson/0.1.1),
+ [`json-with-comments` 0.1.5](https://github.com/hayas1/json-with-comments),
+ and [`json5format` 0.2.6](https://crates.io/crates/json5format/0.2.6).
+ The delegated source reading reports raw tokens in the first two,
+ a surrogate-unsafe unchecked character conversion in the third,
+ and a regex-tokenized production parser in the fourth.
+ Those exits require versioned source confirmation before entering the hard-gate ledger;
+ candidate metadata alone is not a recommendation.
+ The research transcript is retained at `~/temp/agent/` through its subagent output,
+ while this report remains the owned audit artifact.
+
 ### `fjson` 0.3.1
 
 **Source correction:**

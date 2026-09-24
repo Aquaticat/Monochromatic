@@ -443,7 +443,40 @@ Page 2 and page 3 of the initial `exact decimal`,
  source screening recorded limitations for several.
  The three initial Cargo searches each advertised more results after their first 100,
  so their initial response alone was not saturation.
- No candidate is recommended from these partial pages.
+ No candidate is recommended from metadata pages alone.
+
+### Delegated comparable-number leads
+
+A research-only agent used paginable crates.io alphabetical searches for `unbounded decimal`
+ (100 and 55 records,
+ total 155) and `decimal exponent` (100 and 78,
+ total 178),
+ both ending at `next_page=null`.
+ Its GitHub repository queries with `language:Rust`,
+ default best-match,
+ `per_page=100` and no negative filter returned 15 for `decimal arbitrary precision`,
+ zero for `json number exact`,
+ and zero for `decimal exponent`;
+ all reported `incomplete_results:false`.
+ Two broader-web queries each returned ten sources without a total or cursor,
+ so web completeness is not established by those responses.
+ These were additional evidence probes,
+ not a second recursively expanding taxonomy schedule.
+
+New source leads include [`aequa`](https://github.com/Xqhare/aequa),
+ [`bignumber` 0.1.1](https://docs.rs/bignumber/0.1.1/bignumber/),
+ [`puremp` 0.2.4](https://docs.rs/puremp/0.2.4/puremp/decimal/struct.Decimal.html),
+ [`bigfixed` 0.0.0](https://docs.rs/bigfixed/0.0.0/bigfixed/),
+ [`qubit-json` 0.10.0](https://docs.rs/qubit-json/0.10.0/qubit_json/),
+ and [`postgres-jsonb-canonical` 0.1.0](https://docs.rs/postgres-jsonb-canonical/0.1.0/postgres_jsonb_canonical/).
+ The delegated source reading suggests limited exponents,
+ finite-precision rounding,
+ binary rather than decimal scaling,
+ or floating-point projection in several leads;
+ those candidate-specific exits await pinned source confirmation.
+ Full unfiltered registry pages now exist under `~/temp/agent/jsonc-registry-full-pages/`,
+ and independent screening of that data remains in progress.
+ No discovery saturation or recommendation follows from the lead list.
 
 ## Rust owned-number prototype, not an adopted foundation
 
