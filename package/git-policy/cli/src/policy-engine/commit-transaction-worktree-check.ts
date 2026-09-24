@@ -22,6 +22,15 @@ const EXECUTE_BIT = 0o100n;
  POSIX permissions without inode type flags.
  */
 const FILE_PERMISSION_BITS = 0o777n;
+/**
+ Filesystem changes that leave user worktree state outside safe completion.
+ */
+const WORKTREE_CONFLICT_CODES: ReadonlySet<string> = new Set([
+  'ENOENT',
+  'ENOTDIR',
+  'ELOOP',
+  'EACCES',
+],);
 
 /**
  Identity of an unchanged original worktree file.
@@ -130,13 +139,10 @@ export async function inspectWorktreeFile({
     };
   }
   catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error)) {
-      if ((error.code === 'ENOENT')
-        || (error.code === 'ENOTDIR')
-        || (error.code === 'ELOOP')
-        || (error.code === 'EACCES'))
-        return { kind: 'conflict', };
-    }
+    if (Error.isError(error,) && ('code' in error)
+      && ((typeof error.code) === 'string')
+      && WORKTREE_CONFLICT_CODES.has(error.code,))
+      return { kind: 'conflict', };
     throw error;
   }
 }

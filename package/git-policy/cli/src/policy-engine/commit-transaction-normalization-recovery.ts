@@ -10,6 +10,7 @@ import {
 } from 'node:fs/promises';
 import { isMissingPath, } from '../trust/registry-io.ts';
 import { installAddedWorktreeFiles, } from './commit-transaction-added-paths.ts';
+import { runTransactionGit, } from './commit-transaction-git.ts';
 import {
   installRecoveredIndex,
   removeRecoveryArtifacts,
@@ -23,6 +24,14 @@ import type {
   OriginalHead,
   PreparedTransactionJournal,
 } from './commit-transaction-journal.ts';
+
+/**
+ Strict committed tree decoder.
+ */
+const DECODER = new TextDecoder(
+  'utf-8',
+  { fatal: true, },
+);
 
 /**
  Tests lock presence without treating unrelated filesystem errors as absence.
@@ -95,8 +104,28 @@ export async function recoverNormalization({
   if ((!headsEqual({
     expected: journal.originalHead,
     current: currentHead,
-  },)) || ((!realIsOriginal) && (!realIsIntended)))
+  },)) || (currentHead.kind !== 'oid')
+    || ((!realIsOriginal) && (!realIsIntended)))
     throw new CommitTransactionRecoveryError(`Normalization-only transaction conflicts with HEAD or index; recovery retained at ${directory}`,);
+  /**
+   Exact committed tree must still equal the operation's intended tree.
+   */
+  const currentTree = await runTransactionGit({
+    gitPath,
+    cwd,
+    args: [
+      'rev-parse',
+      '--verify',
+      `${currentHead.oid}^{tree}`,
+    ],
+  },);
+  /**
+   Decoded current tree for journal comparison.
+   */
+  const currentTreeOid = DECODER.decode(currentTree.stdout,)
+    .trim();
+  if (currentTreeOid !== journal.intendedTreeOid)
+    throw new CommitTransactionRecoveryError(`Normalization-only transaction tree differs from HEAD; recovery retained at ${directory}`,);
   /**
    Lock whose identity is bound to prepared journal when still present.
    */

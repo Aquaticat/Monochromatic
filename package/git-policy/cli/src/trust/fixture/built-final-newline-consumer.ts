@@ -14,6 +14,7 @@ import {
 import { verifyFinalNewlineExclusions, } from './built-final-newline-exclusions-consumer.ts';
 import { verifyFinalNewlinePartialCommit, } from './built-final-newline-partial-consumer.ts';
 import { verifyFinalNewlineReconciliation, } from './built-final-newline-reconciliation-consumer.ts';
+import { verifyNormalizationRecovery, } from './built-final-newline-normalization-recovery.ts';
 import {
   assertFixtureEqual,
   initializeBareRemote,
@@ -360,5 +361,6 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
   },);
   await verifyFinalNewlinePartialCommit({ env, },);
   await verifyFinalNewlineReconciliation({ env, },);
+  await verifyNormalizationRecovery({ env, },);
   await verifyFinalNewlineExclusions({ env, },);
 }
