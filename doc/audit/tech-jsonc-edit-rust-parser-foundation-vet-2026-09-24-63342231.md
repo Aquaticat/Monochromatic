@@ -710,7 +710,7 @@ A later bounded debug run and optimized release run each reported 18 passing uni
  and malformed-string cases.
  These are selected syntax and attachment checks,
  not a full semantic comparison of the TypeScript conformance or property corpus.
- A subsequent bounded debug run also passed adversarial edited comment bodies on both key and value owners,
+ Subsequent bounded debug and optimized release runs also passed adversarial edited comment bodies on both key and value owners,
  including block terminators,
  quotes,
  escapes,
