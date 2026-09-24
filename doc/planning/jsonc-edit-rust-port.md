@@ -10,6 +10,9 @@ Design interview in progress. No implementation is authorized until the user con
 - `doc/decision/jsonc-edit-parser-foundation.md` accepts the comment-as-data model, canonical serialization, and browser availability without WebAssembly for the TypeScript package.
 - The TypeScript package has unit, property, conformance, and benchmark sidecars. A search of package and workflow source found no production import outside those sidecars; this does not establish that external consumers do not exist.
 - The separate monorepo-manager design selects a Rust `jsonc-parser` wrapper for meow in `doc/planning/monorepo-manager-from-scratch-design.md`, under "Managed file editing". This port does not silently change that decision.
+- `package/rust-module/forbidden-regex/Cargo.toml` is a standalone, published Rust-library precedent, while `.github/workflows/cargo-publish.yml` currently handles only the named crates in its dispatch and push paths.
+- `mise exec rust -- cargo info jsonc-edit` and the same probe for `monochromatic-jsonc-edit` both reported that the package could not be found in the registry; neither name is reserved by that probe. `cargo search serde_json --limit 2` returned results as a positive control for registry queries.
+- The [Cargo publishing guide](https://doc.rust-lang.org/cargo/reference/publishing.html) says published versions cannot be overwritten or deleted. The [crates.io Trusted Publishing guide](https://crates.io/docs/trusted-publishing) says initial publication requires an API token before trusted publishing can be configured for the crate. Existing workflow comments on the library's first release describe manual bootstrap.
 
 ## Decisions from the user
 
@@ -31,7 +34,8 @@ A port retains the documented identity of the TypeScript library: JSONC containe
 ## Open decisions
 
 - Exact public API surface, including low-level parse and emit capabilities, and whether internal artifact-test helpers remain public.
-- Public crate name, release version, license and registry publication path, after measuring available names and repository release precedent.
+- Public crate name; probe names again at release because availability can change.
+- Initial publication credentials and workflow path, without asking for or exposing secrets.
 - Native dependency foundation, subject to the repository's choosing-technology gates.
 - Validation and publication boundaries after the semantic contract is settled.
 
