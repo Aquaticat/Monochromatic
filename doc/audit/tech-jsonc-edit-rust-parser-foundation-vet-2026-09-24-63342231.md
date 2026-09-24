@@ -426,6 +426,25 @@ Besides already-ledgered parsers,
  not serious alternatives or hard-gate exits solely on registry text.
  Source and API screening remains necessary before assigning survivor counts or source-class saturation.
 
+### `fig` 4.1.0 as-is contract exit
+
+The published `fig` 4.1.0 source in the local Cargo registry exposes an editor whose public comment operations take `&mut self`
+ (`src/editor.rs:342-423`) and a value model with `Int(i64)`,
+ `Uint(u64)` and `Float(f64)` (`src/value.rs:85-116`).
+ `src/value.rs:493-522` converts numeric literals that exceed its integer variants or are fractional into `f64`.
+ This cannot be the required exact mathematical number value model as-is,
+ and its edit API is not the requested immutable-state contract as-is.
+ Its leading/trailing comment API is positional and restricts edits on one-line flow items,
+ unlike independently queryable normalized comments on every key and value.
+
+`fig` depends on `fig-sys` 4.1.0,
+ whose `build.rs:18-40,104-148` links target-specific prebuilt native archives for default features or invokes Zig for source builds.
+ The target packages and Zig build/source-to-artifact mapping would require a separate native safety and provenance audit for any proposed raw-token adapter.
+ A targeted scan of its production Zig/Rust source found regex words in sample strings and comments,
+ not an observed production regex lexer;
+ regex is **not** the as-is exit reason.
+ No candidate code or binary was executed for this screening.
+
 ### `fjson` 0.3.1
 
 **Source correction:**
