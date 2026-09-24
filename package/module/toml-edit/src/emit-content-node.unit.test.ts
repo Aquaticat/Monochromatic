@@ -10,6 +10,7 @@ import {
   emptyTomlEdit,
   parseTomlEdit,
   tomlGetNode,
+  tomlGetValue,
 } from '@monochromatic-dev/module-toml-edit';
 
 /**
@@ -87,6 +88,21 @@ await describe({
           options: { arrayInlineThreshold: 1, arrayInlineMaxColumns: 9, },
           depth: 1,
         },),).toBe('[\n    [\n      1,\n      2,\n    ],\n    [ 3, ],\n  ]',);
+      },
+    },),
+    it({
+      name: 'keeps dotted keys and nested array depth inside inline tables',
+      fn: async () => {
+        const emitted = renderProbe({
+          value: '{ a.b = 1, xs = [1,2] }',
+          options: { arrayInlineThreshold: 1, arrayInlineMaxColumns: 9, },
+          depth: 1,
+        },);
+        expect(emitted,).toBe('{ a.b = 1, xs = [\n      1,\n      2,\n    ], }',);
+        expect(tomlGetValue({
+          edit: parseTomlEdit({ source: `probe = ${emitted}\n`, },),
+          path: ['probe',],
+        },),).toEqual({ a: { b: 1, }, xs: [1, 2,], },);
       },
     },),
     it({
