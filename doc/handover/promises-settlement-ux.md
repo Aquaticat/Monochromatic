@@ -179,6 +179,9 @@ They have not been integrated into `doc/planning/promises-teaching.local.html`.
   state-colored cells and `rgb(234, 241, 238)` in neutral cells.
   The B card background also differs. Paper and code surfaces are grayscale in both themes,
   matching `neutral-reading.css`; the bounded drawn factory keeps its illustration colors.
+  The neutral column is now named "Outcome-neutral cues" rather than "One neutral accent":
+  factory colors remain, but they are not success-or-failure codes.
+  Its copy was patched in the active form without reloading or altering form inputs.
 - Snapshot grids now shrink without child-document horizontal scrolling at a 279 px iframe
   viewport inside a 390 px parent. Control sublabels measure 12.8 px there.
   Drawn buttons have a 3 rem minimum target, a visible `:focus-visible` rule,
