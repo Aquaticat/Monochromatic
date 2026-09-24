@@ -223,10 +223,13 @@ export function matchTableSection(
   },);
   if (indexed !== undefined) {
     /**
-     Path offset after the selected array instance's numeric segment.
+     Segment count of the selected instance header.
      */
     const headerLength = indexed.headerSegments
       .length;
+    /**
+     Body path starts after the header and numeric instance segment.
+     */
     const bodyStart = headerLength + 1;
     if (path.length === bodyStart)
       return {
