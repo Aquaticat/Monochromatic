@@ -28,6 +28,14 @@ Next actions, in order:
      pinned in `known-defect-alias.unit.test.ts`,
      with the source-mutation property narrowed by node identity (`src/alias-rewire.ts`)
      and a positive control failing at the same test number with the exclusion removed.
+     The next campaign run (seed 1831879258) found the same rewrite one node further in,
+     on a source node the target reaches only through the stored one;
+     pinned beside it (commit `07f01a556`),
+     with the property now skipping every source node the target reaches after the call
+     and a helper test showing writes into unreached source nodes are still reported.
+     Issue section 6 carries both repros, each checked on 8.0.2.
+     `lint:oxlint` passes but prints plugin warnings (`effect-summary-omission`, `readonly-source-evidence`)
+     for `src/declared-type-sample.ts`; not yet investigated.
      Pending: the mutation fork,
      then `format:oxlint` once no fork is editing,
      and `fuzz:coverage --write`.
