@@ -720,47 +720,44 @@ captures at the measured cover and inner panel physical resolution in both schem
 Keep desktop porting and window-size choices subordinate to those visual decisions;
 never relabel a desktop-native screenshot as target-device evidence.
 
-## 5q. The full-page Search mock painted across the Fold connector
+## 5q. The first connector correction banned too much
 
-The first unfolded Compose Search page used `fillMaxWidth()` for its 72dp header and
+The first unfolded Compose Search page used `fillMaxWidth()` for its header and
 `ListItem`s.
- Its Back/Clear buttons avoided the centre,
- but the query field,
-divider and result rows traversed the 24dp connector.
- E2 had said "nothing
-interactive" rather than plainly excluding **all app content**;
- the user caught
-the missing constraint in the native visual.
+ Their surfaces,
+ divider and row hit regions crossed the centred
+24dp connector.
+ I treated the user's objection as a ban on **all app-owned
+pixels and hit regions**,
+ without distinguishing readable information from
+structural paint.
+ The resulting all-black/all-white strip rule forced a
+left-header/right-results split that the user rejected.
+ The user then
+clarified that connector "content" means informational material such as text.
 
-**The rule.**
- Every unfolded page,
- even a destination described as full-page,
- is built
-from two content panes separated by the empty centred 24dp connector.
- Background
-fill can continue through it;
- text,
- rows,
- icons,
- dividers,
- selection and focus
-cues,
- and app hit regions cannot.
- Verify visible node bounds and sample the
-connector band in native captures,
- including the Search header and results.
-A button-only clearance test cannot prove the whole region is empty.
- The new capture
-guard also caught the first light recapture:
- its old `light-b` palette painted the
-connector `#FAF8FE` instead of D34 white,
- despite no app node crossing it.
- Guard
-the accepted fill **and** content bounds,
- with an earlier full-width screenshot as a
-known failing control.
+**The corrected rule.**
+ Inspect where readable text,
+ results,
+ labels and
+meaning-bearing marks actually appear.
+ Such information must stay clear of
+the connector;
+ background,
+ input/row surfaces,
+ dividers and hit regions can
+cross it.
+ Do not derive a two-pane Search composition or a mandatory strip
+color from E2.
+ The original full-width mock is not thereby accepted;
+ it
+still needs a compositional review and native evidence under the corrected
+rule.
+ The old full-strip pixel guard and its successful red controls remain
+historical tests of a superseded constraint,
+ not product acceptance criteria.
 
-## 5r. The Fold-native Search review was verified at the device boundary
+## 5r. The withdrawn Fold study passed mechanical checks only
 
 The corrected capture contains opaque 1080 × 2424px cover and 2076 × 2152px
 inner screenshots of the player and Search page in both schemes,
@@ -782,11 +779,16 @@ passed all unfolded scenes at 100% and player/results at 200%,
  checking
 semantic/clickable bounds and **every RGBA pixel** in physical x `[1009,1068)`,
 y `[136,2074)` against D41 black or D34 white.
+ These checks enforced the
+obsolete blanket-strip rule,
+ not the clarified E2.
  Separate red controls in a
-disposable copy of `search-page-question.mjs validate` rejected a target crossing
-the connector,
- a dark tonal band,
- and one unsampled near-white pixel on light.
+disposable copy rejected a crossing target,
+ a dark tonal band and one
+near-white pixel;
+ they establish only that the old validator could detect those
+changes,
+ not that the design was appropriate.
 
 The inner 200% player's last mode target is only 94px visible in the initial
 frame (`[73,1980][936,2074]`),
