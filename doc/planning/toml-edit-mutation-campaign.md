@@ -106,8 +106,25 @@ Most `emit-value.ts` survivors in the former AST-only functions cannot be killed
 
 ## In progress
 
-- Triage actionable emitter survivors after removing the unconsumed helpers.
-  The report is at `/var/home/user/temp/agent/toml-mutation-emitter.json`.
+- Removed `emitArrayWithoutIndex`,
+  `emitArrayWithSkipPath`,
+  and `emitInlineTableWithExtra` from `emit-value.ts` after the coverage ledger.
+  The package build,
+  unit suite,
+  type check,
+  and oxlint passed after removal.
+- Added built-artifact tests for parsed boolean values,
+  inclusive array layout thresholds,
+  nested multiline indentation,
+  empty containers,
+  quoted inline-table keys,
+  exact multi-line headers,
+  and trailing comments at EOF.
+- A mutation recheck on `emit-document.ts` and `emit-value.ts` is running as process `proc_7e5d`.
+  Inspect `/var/home/user/temp/agent/toml-mutation-emitter-recheck.json` after it exits.
+- The deterministic coverage gate currently reports `emit-value.ts` falling from 191 to 133 covered lines
+  after removing the unconsumed helper bodies.
+  Refreeze only after inspecting any further runtime edits and recording this intentional code removal.
 - Additional tests now pin empty and header-only canonical output,
   multiple terminal newlines,
   multiline string contents,
@@ -121,7 +138,7 @@ Most `emit-value.ts` survivors in the former AST-only functions cannot be killed
 
 ## Next action
 
-Remove the unconsumed AST-only emitter helpers,
+Inspect the emitter mutation recheck,
  then add assertions or production fixes for surviving live behavior,
  then rerun the affected mutation files and package/sidecar verification.
 Commit only explicit paths in scope.
