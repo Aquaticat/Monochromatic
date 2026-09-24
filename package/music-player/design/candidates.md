@@ -1031,8 +1031,8 @@ baseline expanded docked Search container (28dp outer corners,
  the sharp full-content variant (72dp header,
  divider),
  and baseline
-square list rows with a custom outline plus state-layer fill for the current
-keyboard result.
+72dp two-line square list rows with a custom outline plus state-layer fill for the
+current keyboard result.
  The collapsed 56dp pill is not incorrectly nested inside the
 expanded view.
  All color roles are sampled from the documented wallpaper-role
@@ -1041,7 +1041,8 @@ evidence.
 `questions/render/command-md3-{i,g,r,e}*` contains each light/dark native scene
 at the desktop app's preferred 480 × 600px size;
  I1 to I3 also cover 1100 × 640px,
-and I1 reflows to full-content with larger text at 360 × 640px.
+and the I1 360 × 640px probe draws a proposed full-content larger-text fallback;
+its static `stress` input does not verify width-driven responsive behavior.
  E1 no-result and E2
 unavailable-action scenes remain contextual probes,
  not independent choices.
