@@ -334,6 +334,18 @@ Web searches discovered `jwc`,
  `tokora`,
  and lexer-only `any-lexer` as leads;
  most lack evidence of the attached JSONC comment model.
+ A delegated broader `jsonc` registry query exposed a first page but its 100-result web response was truncated;
+ this is not a saturation result.
+ The [crates.io data-access policy](https://crates.io/data-access) permits an identifying user-agent with at most one API request per second.
+ A direct `curl --head` with this repository's identifying user-agent returned HTTP 200 for the `jsonc` alphabetical page.
+ Before fetching the rest,
+ `~/temp/agent/jsonc-registry-enumeration.mjs` fixed the query list,
+ serial request delay,
+ page ceiling,
+ and full unfiltered private scratch output.
+ The added broad query is an enumeration cross-check,
+ not a recursive taxonomy expansion or an endorsement of any result.
+ No full-page outcome from that script is claimed yet.
 
 ### `fjson` 0.3.1
 

@@ -290,6 +290,18 @@ Notable new leads include `fpdec`,
  `ordecimal`,
  and `decimal-bytes`.
 No saturation conclusion follows until each page's candidates are screened and the two-page condition holds.
+ The [crates.io data-access policy](https://crates.io/data-access) documents an identifying user-agent and no more than one API request per second.
+ The delegated query `exact decimal` reached alphabetical page 11 with 100 records,
+ `meta.total=1239` and a next-page link;
+ the earlier `cargo search` cap is not an API pagination limit.
+ A direct identified `curl --head` request to a `jsonc` page returned HTTP 200 as a transport control.
+ `~/temp/agent/jsonc-registry-enumeration.mjs` now fixes the original and expansion registry terms,
+ alphabetical sort,
+ serial delay,
+ page ceiling,
+ and private storage for **unfiltered** complete responses before requesting them.
+ Its outcome remains unverified;
+ full-page candidate screening and source-class saturation are still open.
 
 ## Repository-owned equality prototype and limits
 
