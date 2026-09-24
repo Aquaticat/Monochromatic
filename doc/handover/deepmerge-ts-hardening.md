@@ -58,8 +58,10 @@ Next actions, in order:
      so that one callable goes unanalyzed by that rule, not a finding in this package.
      `format:oxlint`, `lint:oxlint` (0 warnings, 0 errors), `lint:types`, and `test:unit` pass;
      coverage baseline ratcheted to 1765 of 1772 lines.
-3.   Campaign restarted with the widened generators (log `campaign-8.log` in the session scratchpad);
-     triage any counterexample per `Campaign`.
+3.   Campaign with the widened generators stopped on the user's call after about 2 hours:
+     580 rounds of 10000 runs per property file passed with no counterexample.
+     Rerun it after any generator widening, upstream release, or fork fix,
+     and triage any counterexample per `Campaign`.
 4.   Ask the user to review and post the updated drafts,
      then open PRs from the fork branches if the maintainer wants them,
      and follow `After upstream responds`.
