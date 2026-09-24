@@ -612,7 +612,9 @@ The default neutral logger now verifies its console sink there and routes
  missing level methods to `console.log`.
 QuickJS-ng's `console.log` writes to stdout;
  callers requiring stderr must supply their own sink or host adapter.
-The internal reporter prefers `console.warn`, then `console.error`, then `console.log`,
+The internal reporter prefers `console.warn`,
+ then `console.error`,
+ then `console.log`,
  and skips reporting when none exists rather than throwing because a method is absent.
 
 Logger timeouts require both global timer primitives.
