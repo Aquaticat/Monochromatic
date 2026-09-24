@@ -169,6 +169,12 @@ A disposable, dependency-free Rust library at `~/temp/agent/jsonc-exact-number-p
 
 The core operates on ASCII tokens of finite in-memory length, scans each character through grammar and coefficient normalization, and adds or subtracts exponent digit strings without expanding `10^E`. This suggests work bounded by input length, but the full crate's complexity and error contracts have not been measured. Candidate validation remains incomplete until its public value type retains raw spellings, edited inputs preserve exactness, and the port runs through the JSONC comment and serializer surfaces.
 
+## Prototype review correction and expanded verification
+
+An independent review found that the first Rust prototype exposed mutable-invariant `Identity` fields and compared `Result` values directly, so some purportedly valid fixtures could have passed through matching parse errors. The scratch `Identity` fields are now private. Equality and inequality tests unwrap each valid input before comparing, and every generated source is validated before sampled pair comparisons. A `HashSet` test checks equal spellings hash and compare consistently, including signed zero. The bounded rational oracle remains independently computed rather than using the normalizer.
+
+Additional targeted cases exercise an uppercase exponent marker and leading zeros, malformed number tokens, multi-digit fraction and trailing-zero adjustments, and signed carry/borrow over 256 exponent digits. `mise run lint:clippy` passed with warnings denied; `mise run test` passed the expanded Rust unit suite. The disposable consuming crate's `mise run test` also passed again after those changes. The earlier exponent-omission mutation demonstrated test sensitivity but was run before these additions; do not claim it killed every arithmetic fault. Public raw-token storage, serialization, full parser integration, runtime scaling measurements, and release consumer tests remain open.
+
 ## Pending evidence and validation
 
 - Finish required discovery saturation or report a blocked terminal outcome; record exact expansion queries and pagination attempts.
