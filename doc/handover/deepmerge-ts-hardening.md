@@ -10,7 +10,21 @@ Do not ask the user to post the advisory or issue drafts until the widening pass
 
 Next actions, in order:
 
-1.   Mutation-testing fork: launched 2026-09-24, running.
+1.   Mutation-testing fork: done 2026-09-24
+     (report `doc/audit/deepmerge-ts-mutation-2026-09-24.md`;
+     upstream suite 800 of 1098 Stryker mutants, sidecar now 1017, the other 81 argued equivalent).
+     Its four public findings were reproduced independently on 8.0.2 and added to issue sections 2, 8, 10, 11, and 13;
+     `fix/into-first-value-typing` was built and leaves the `filterValues` empty-seed case unchanged.
+     No new security candidates.
+     User decision 2026-09-24: make the run reproducible as a Stryker image task in this package
+     (chosen over extending `package/cli/mutation-test`, which cannot run upstream's Vitest suite,
+     and over leaving it documented only).
+     Porting the scratch image, sweep, and differential harness from `~/temp/agent/deepmerge-mutation-image/`: in progress.
+     Generator-widening fork (the report's generator gaps): done, commits `1d2cc683f` to `035805aa8`;
+     its new divergence (into never passes a target-only Map entry to a custom function)
+     and a slot-written `actions.defaultMerge` ignored by into array, Set, and Map functions
+     are pinned in `known-defect-options.unit.test.ts` and in issue section 8.
+     Campaign failure at 05:58 (seed 297866779) came from its half-edited files: the seed passes on the committed files.
 2.   Integrate each widening fork's report per `Widening pass`.
      Done for the exotic, options, scale, and aliasing forks
      (findings reproduced independently and added to the local drafts;
@@ -39,7 +53,7 @@ Next actions, in order:
      the `prefer-readonly-parameter-type` plugin's deliberate omission record for a TypeScript tuple-serialization panic
      (`doc/handover/prefer-readonly-parameter-types-issue-review.md`, "Verified controls"),
      so that one callable goes unanalyzed by that rule, not a finding in this package.
-     Pending: the mutation fork,
+     Pending: the Stryker port,
      then `format:oxlint` once no fork is editing,
      and `fuzz:coverage --write`.
 3.   Restart the campaign (`mise run //package/module/deepmerge-ts.fuzz:fuzz`) with the widened generators.
