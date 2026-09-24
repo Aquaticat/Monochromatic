@@ -5,8 +5,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
-const templatePath = join(root, 'questions', 'current.template.html');
-const outputPath = join(root, 'questions', 'current.html');
+const templatePath = join(root, 'questions', 'archive', 'search-rejected-fold-review.template.html');
+const outputPath = join(root, 'questions', 'archive', 'search-rejected-fold-review.html');
 const renderPath = join(root, 'questions', 'render');
 const evidencePath = join(root, 'questions', 'evidence');
 const stages = ['player', 'open-empty', 'open-results', 'open-none', 'open-unavailable'];

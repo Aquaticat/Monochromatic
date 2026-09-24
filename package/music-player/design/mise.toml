@@ -379,17 +379,27 @@ console.log("Folded cover questionnaire is valid.")
 '''
 
 [tasks.build]
-description = "Rebuild withdrawn Fold Search artifact for historical inspection"
+description = "Rebuild selected D51/D52 Fold Search review from sanitized captures"
+dir = "{{config_root}}"
+run = "node selected-search-question.mjs build"
+
+[tasks.lint]
+description = "Validate the active A-only Fold Search review"
+dir = "{{config_root}}"
+run = "node selected-search-question.mjs validate"
+
+[tasks."test:unit"]
+description = "Check the selected Fold Search artifact against its sanitized captures"
+dir = "{{config_root}}"
+run = "node selected-search-question.mjs validate"
+
+[tasks."build:search:historical"]
+description = "Rebuild the archived rejected Fold Search artifact for historical inspection"
 dir = "{{config_root}}"
 run = "node search-page-question.mjs build"
 
-[tasks.lint]
-description = "Check historical rejected Fold Search capture integrity"
-dir = "{{config_root}}"
-run = "node search-page-question.mjs validate"
-
-[tasks."test:unit"]
-description = "Check withdrawn Search artifact against its captured fixtures"
+[tasks."lint:search:historical"]
+description = "Check archived rejected Fold Search capture integrity"
 dir = "{{config_root}}"
 run = "node search-page-question.mjs validate"
 
