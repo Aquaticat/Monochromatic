@@ -423,10 +423,28 @@ The expanded package build,
  unit suite,
  types,
  and oxlint passed after these changes.
-The edit-path mutation rechecks are running on the same source revision:
- `/var/home/user/temp/agent/toml-mutation-edit-a-final.json` (`proc_3709`)
- and `/var/home/user/temp/agent/toml-mutation-edit-b-final.json` (`proc_4cbf`).
-Do not edit runtime source until both complete.
+The edit-path rechecks completed without infrastructure errors:
+
+- `/var/home/user/temp/agent/toml-mutation-edit-a-final.json`:
+  111 killed,
+  23 confirmed survivors,
+  292 compile errors.
+- `/var/home/user/temp/agent/toml-mutation-edit-b-final.json`:
+  156 killed,
+  34 confirmed survivors,
+  301 compile errors.
+
+Built-artifact clean-reader tests now cover nested standard tables,
+ array elements,
+ inline-table values,
+ and nested indexed array-of-tables paths.
+Edit tests cover reversed parent/table declaration order,
+ deeper nested AOT headers,
+ implicit-parent comment fillers,
+ root replacement diagnostics,
+ mixed-parent rejection,
+ and numeric path-create diagnostics.
+The next edit-path mutation recheck is pending after the expanded package suite.
 The indexed array-of-tables read fix passed the rebuilt package suite,
  types,
  oxlint,
