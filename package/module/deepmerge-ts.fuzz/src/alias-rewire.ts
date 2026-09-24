@@ -3,9 +3,9 @@
  into, by identity rather than by shape.
 
  `./alias-graph.property.unit.test.ts` uses them to tell apart the known
- defect (a merge writing into a source node the target stores by reference,
- pinned in `./known-defect-alias.unit.test.ts`) from any other source
- mutation.
+ defect (a merge writing into source nodes the target shares after storing
+ one by reference, pinned in `./known-defect-alias.unit.test.ts`) from any
+ other source mutation.
 
  @module
  */
@@ -83,21 +83,22 @@ export function snapshotEdges(nodes: ReadonlySet<object>,): EdgeSnapshot {
 }
 
 /**
- Watched containers that a container outside the snapshot stores directly:
- the input nodes a merge result or into target holds by reference.
+ Watched containers reachable from `root` after the merge: the input nodes a
+ merge result or into target shares, whether it stores them directly or
+ reaches them through a node it stores.
 
  @param edges - Snapshot of the input containers.
 
  @param root - Merge result or into target after the merge.
 
- @returns Input containers referenced from a result-owned container.
+ @returns Input containers that are also part of the result's graph.
 
  @example
  ```ts
- const stored = storedByReference({ edges, root: intoTarget, });
+ const shared = sharedWithRoot({ edges, root: intoTarget, });
  ```
  */
-export function storedByReference(
+export function sharedWithRoot(
   {
     edges,
     root,
@@ -107,17 +108,8 @@ export function storedByReference(
   },
 ): ReadonlySet<object> {
   return new Set([...reachableContainers([root,],),]
-    .filter(function ownedByResult(node,) {
-      return !edges.has(node,);
-    },)
-    .flatMap(function storedChildren(node,) {
-      return childrenOf(node,)
-        .map(function childOf([, child,],) {
-          return child;
-        },)
-        .filter(function isWatched(child,): child is object {
-          return isContainer(child,) && edges.has(child,);
-        },);
+    .filter(function isWatched(node,) {
+      return edges.has(node,);
     },),);
 }
 

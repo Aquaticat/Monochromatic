@@ -14,8 +14,9 @@
  the false-cycle region (a value identical to an ancestor on another input's
  path only), deepmergeInto targets that are not trees (in-place mutation of a
  container reached twice), `undefined` or date leaves in into inputs, and
- writes into a source container the into target stores by reference (checked
- per node by identity, `./alias-rewire.ts`).
+ writes into source containers the into target reaches after the call, which
+ it shares by storing one by reference (checked per node by identity,
+ `./alias-rewire.ts`).
  The divergence of upstream's cycle rule from unfolding semantics is an
  intent question, pinned there too, not asserted here.
 
@@ -49,7 +50,7 @@ import {
   reachableContainers,
   rewiredNodes,
   snapshotEdges,
-  storedByReference,
+  sharedWithRoot,
 } from './alias-rewire.ts';
 import { fuzzRunPlan, } from './fuzz-budget.ts';
 import { target, } from './target.ts';
@@ -194,11 +195,11 @@ await describe({
             const intoTarget = cloneGraph({ copies: new Map(), value: first, },) as object;
             target.deepmergeInto(intoTarget, ...sources,);
             /**
-             Source containers the target stores directly; writes into them are the pinned defect.
+             Source containers the target reaches after the call; writes into them are the pinned defect.
              */
-            const stored = storedByReference({ edges, root: intoTarget, },);
+            const shared = sharedWithRoot({ edges, root: intoTarget, },);
             expect(rewiredNodes(edges,).filter(function unexplained(node,) {
-              return !stored.has(node,);
+              return !shared.has(node,);
             },),).toEqual([],);
           },),
           RUN.params,
