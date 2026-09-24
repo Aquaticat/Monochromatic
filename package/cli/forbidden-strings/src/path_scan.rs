@@ -119,6 +119,19 @@ pub(crate) fn scan_path(path: &str, loaded: &LoadedRules) -> PathScan {
     // Git paths use `/`; native external paths use the platform separator.
     let normalized = if cfg!(windows) { path.replace('\\', "/") } else { path.to_string() };
     let components: Vec<&str> = normalized.split('/').collect();
+    // A native Windows drive or UNC prefix names a volume, not directories.
+    let mut prefix_parts = if cfg!(windows) {
+        match Path::new(path).components().next() {
+            Some(std::path::Component::Prefix(prefix)) => prefix.as_os_str()
+                .to_string_lossy()
+                .split(|ch| return ch == '\\' || ch == '/')
+                .filter(|part| return !part.is_empty())
+                .count(),
+            _ => 0,
+        }
+    } else {
+        0
+    };
     let mut displayed: Vec<String> = Vec::with_capacity(components.len());
     let mut matches: Vec<(usize, Vec<String>)> = Vec::new();
     let mut position = 0;
@@ -133,9 +146,10 @@ pub(crate) fn scan_path(path: &str, loaded: &LoadedRules) -> PathScan {
             displayed.push(safe_component(component));
             continue;
         }
-        // The native drive or network root is not a directory name.
-        if cfg!(windows) && position == 0 && component.len() == 2
-            && component.as_bytes()[1] == b':' && component.as_bytes()[0].is_ascii_alphabetic() {
+        // Skip every component of the native volume prefix, including UNC
+        // server and share names. The root separator was already skipped.
+        if prefix_parts > 0 {
+            prefix_parts -= 1;
             displayed.push(safe_component(component));
             continue;
         }

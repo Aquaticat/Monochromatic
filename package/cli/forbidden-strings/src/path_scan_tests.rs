@@ -38,6 +38,24 @@ fn clean_names_remain_readable() {
     assert!(hit.findings.is_empty());
 }
 
+/// Short literals keep their existing word-byte boundary behavior in names.
+#[test]
+fn short_literal_respects_word_boundaries() {
+    let loaded = load_rules("cat\n");
+    assert!(scan_path("educate.txt", &loaded).findings.is_empty());
+    let hit = scan_path("cat.txt", &loaded);
+    assert_eq!(hit.findings, vec!["[REDACTED]:name:1 rule=0"]);
+}
+
+/// Named anchored regexes match one entire component and retain rule identity.
+#[test]
+fn named_anchored_rule_matches_one_name() {
+    let loaded = load_rules("==> qqq-name <==\n/^VAULTTOKEN_LONG$/\n");
+    assert!(scan_path("prefixVAULTTOKEN_LONG", &loaded).findings.is_empty());
+    let hit = scan_path("src/VAULTTOKEN_LONG", &loaded);
+    assert_eq!(hit.findings, vec!["src/[REDACTED]:name:2 rule=qqq-name"]);
+}
+
 /// Duplicate matches in one component yield one finding per rule and segment.
 #[test]
 fn repeated_name_match_is_deduplicated() {
@@ -105,4 +123,17 @@ fn symlink_name_is_not_replaced_by_target() {
 #[test]
 fn external_name_keeps_supplied_segments() {
     assert_eq!(logical_path("/external/private/file.txt", None), "/external/private/file.txt");
+    let root = std::path::Path::new("/repository");
+    assert_eq!(logical_path("/external/private/file.txt", Some(root)), "/external/private/file.txt");
+}
+
+/// Native Windows volume markers are not searchable directory-name segments.
+#[test]
+#[cfg(windows)]
+fn windows_volume_prefix_is_not_name_segment() {
+    let loaded = load_rules("VAULTTOKEN_LONG\n");
+    let drive = scan_path("C:\\VAULTTOKEN_LONG\\clean.txt", &loaded);
+    assert_eq!(drive.findings, vec!["C\\x3a/[REDACTED]/clean.txt:name:1 rule=0"]);
+    let network = scan_path("\\\\server\\share\\VAULTTOKEN_LONG\\clean.txt", &loaded);
+    assert_eq!(network.findings, vec!["//server/share/[REDACTED]/clean.txt:name:1 rule=0"]);
 }
