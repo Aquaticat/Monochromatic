@@ -1421,6 +1421,33 @@ port or window-size selection does not overrule the chosen Fold geometry or crea
 parallel design vote.
  Production implementation remains unauthorized.
 
+### D50. The unfolded control deck remains visible (2026-09-24)
+The user requires the playback/control deck to **never be hidden while the
+Fold is unfolded**.
+ This includes the D47 Search destination,
+ regardless
+of whether Search occupies one side or more of the display.
+ A Search layout
+may replace folder or track content,
+ use a temporary pane,
+ or span a
+surface,
+ but it must reserve visible space for the existing deck instead
+of drawing over it or replacing the whole player view.
+ D47's separate-page
+interaction does not supersede this persistent control region.
+
+**Rejected evidence.**
+ The debug-only `search-layout-docked` study overlays
+the deck;
+ `search-layout-wide-list` and `search-layout-wide-grid` replace
+the view containing it.
+ Their native captures do not qualify as review
+choices,
+ regardless of their query/result placement.
+ No production change
+is authorized.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)
