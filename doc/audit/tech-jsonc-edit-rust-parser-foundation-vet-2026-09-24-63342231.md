@@ -426,6 +426,10 @@ Besides already-ledgered parsers,
  These are **leads**,
  not serious alternatives or hard-gate exits solely on registry text.
  Source and API screening remains necessary before assigning survivor counts or source-class saturation.
+ An **as-is interface exit** is not automatically a foundation-composition exit:
+ source spans or raw values can sometimes supply an adapter with information absent from the public editor value.
+ Such compositions remain pending until information recovery and adapter cost are checked,
+ using the same rule applied to the Biome projection.
 
 ### `fig` 4.1.0 as-is contract exit
 
@@ -484,7 +488,8 @@ The published `src/lib.rs:123-139` keeps `tokenizer`,
  and `model` modules private,
  exposing `Formatter`,
  error and configuration types rather than a consumable syntax tree.
- Its `src/formatter.rs:11-31` documents reformat/minify text as the public workflow.
+ Its `src/formatter.rs:127,166,200,253` exposes text reformat/minify and Serde-value serialization methods,
+ not a public parse-to-syntax method.
  Although internal scanning sees comment tokens,
  the public formatter cannot supply independently queryable comments on keys and values or immutable edit state.
  A fork exposing and adapting its internal tokenizer would be a separate custom candidate.
@@ -518,8 +523,8 @@ The published `jsontape.rs:310-400` offers a JSONC preset with comments and trai
  for an escaped high surrogate without a following low half or for an isolated low half.
  Both owned and view parsing use that scanner,
  so the published crate cannot accept the required escaped UTF-16 input as-is.
- A fork changing the scanner **and** decoded string representation would be a separate custom candidate,
- not a wrapper around a successful upstream parse.
+ A fork changing the scanner or an independently validated token path would be a separate composition candidate;
+ a raw/view adapter's escape-decoding requirements have not been established.
  Its manifest names `allocator-api2` as a normal dependency and does not identify a production regex lexer;
  this as-is exit is about the supported string domain.
  No candidate code was executed.
@@ -540,16 +545,17 @@ The published `serde_jsonc` 1.0.108 and `serde_jsonc2` 0.1.2 parse line and bloc
 
 ### `babbel_json` 0.2.2 as-is grammar and comment-model exit
 
-The published `src/parser/json5.rs:1-11,104-149` exposes a JSON5/JSONC parse entry that also admits JSON5-only syntax
- and defaults to a recursive-descent depth ceiling of 256.
- `src/parser/json5.rs:29-103` includes a comment-stripping helper,
- while the public `src/nodes/types.rs:10-29` projects to strings,
+The published `src/parser/json5.rs:104-152,222-239` exposes a JSON5/JSONC parse entry that also admits JSON5-only syntax
+ and fixes a private recursive-descent depth ceiling at 256 with no public setter.
+ The maintained TypeScript structured parser accepts 512 containers (`package/module/jsonc-edit/src/parse.ts:21,54`).
+ The selected JSON5 parser's `skip_whitespace_and_comments` consumes trivia without retaining it (`src/parser/json5.rs:176-220`);
+ the separate `strip_comments` helper is **not** evidence that this parse entry calls it.
+ The public `src/nodes/types.rs:10-29` projects to strings,
  numbers,
  arrays and unordered objects without attached key/value comments.
- The as-is parser therefore does not preserve this port's strict JSONC-only grammar,
- accepted 512-depth domain,
- ordered comment-bearing keys and values.
- A separately strict tokenizer/owner adapter would be custom code,
+ As-is it therefore misses the strict JSONC-only grammar,
+ accepted 512-depth domain and separate comment queries.
+ An independently strict token/owner parser or a fork is a distinct composition candidate,
  not that public projection.
  A targeted source/manifest search found no production regex call in this JSON5 parser path;
  its exits here are semantic rather than regex-based.
@@ -557,18 +563,20 @@ The published `src/parser/json5.rs:1-11,104-149` exposes a JSON5/JSONC parse ent
 
 ### `jqf-codec-json` 0.1.1 as-is comment-query exit
 
-The published codec has an actual JSONC grammar with comments and trailing commas,
- source-preserving edit splice and an exact-decimal value model (`src/jsonc/mod.rs:1-44`).
+The published codec documents a JSONC grammar with comments and trailing commas,
+ source-preserving edit splice and a shared exact-decimal number model (`src/jsonc/mod.rs:1-44`).
+ The number representation and conversion path have not been independently verified against this port's exactness cases.
  Its documented `jsonc.comment@1` fact is **leading comments on the value node only**;
  the same module says inline,
  trailing and inner comments survive byte-wise edits but cannot be read through the comment query.
  That differs from this port's separately queryable normalized comment on **every key and value**,
  including trailing value comments.
- `src/edit.rs:1-19` describes a splice verified by re-decoding rather than the required public immutable-state edit model.
- An added key/trailing-comment interpretation and canonical emitter would be a distinct adapter,
- not this codec as-is.
- A targeted direct-source search found no regex invocation in its JSONC path,
- but transitive source and normal/build graph remain uninspected because the comment-query gate already fails.
+ `src/edit.rs:1-19` describes splice verification by re-decoding;
+ it does **not** prove a conflict with an immutable wrapper.
+ Retained authored bytes and spans could support a key/trailing-comment interpretation and canonical emitter,
+ so this potential composition needs targeted source and consumer tests before exclusion or promotion.
+ A targeted direct-source search found no regex invocation in its JSONC path;
+ transitive source and normal/build graph remain uninspected.
  No candidate code was executed.
 
 ### `subc-jsonc` 0.1.1 as-is span/normalizer exit
