@@ -8082,6 +8082,61 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## CuspariaKLSY11 read, 2026-09-24, 02:20 UTC: SETTLED in 5 min, class one hundred seven live on slices 1 and 3, the stand-in still carrying "took medication that night"; class one hundred eight built (the dispute note on every sheet), CuspariaKLSY12 launched
+
+`CuspariaKLSY11` (frozen `a40c28cad`) SETTLED at 01:55 UTC 2026-09-24,
+5 min after its 01:49 launch (TALLY `ms=323459`),
+one attempt,
+327 seats,
+13 retry rounds,
+256 calls,
+0.10 USD by the meters (Bedrock 48.50 to 48.46, OpenRouter 95.88 to 95.80),
+on Bedrock and OpenRouter alone (Synthetic's window spent, Hyper dry),
+the roster 8 after the gpt-oss-120b cull.
+Jev 11 of 11; 5 abstention lines with reasons.
+
+Class one hundred seven live:
+`translate-archive-disputed` on slices 1 and 3 in the lanes and again in the consolidation (two accepted `accuracy/addition` claims each),
+the repair text the incumbent on both,
+slice 3 (the death paragraph) shipped as `{kind: incumbent}` gate-kept,
+and the archive's "swallowed lots of her meds" nowhere on the page.
+Classes one hundred four and five holding (the life in the past; the gloss inline as "(Cold Water Fishy)" on the name's first appearance, so the restore stood aside by design).
+Every check as `CuspariaKLSY10`: 1 heading, front matter equal, no TA, no error finish, no double blank line.
+
+Class one hundred eight, found on slice 3: the stand-in still reads "She took medication that night" where 服药 is nowhere in the original
+(在劝慰朋友时发生矛盾，双方情绪爆发，醒来后又和其父亲发生争吵，后因尝试自杀送往医院抢救).
+The repair lane softened the accepted critical addition instead of removing it;
+the contest split 2 repair to 2 translate with one ballot calling the detail "from the original";
+the consolidated proposal dropped it;
+the gate heard 4 of 5 and split 2 to 2 (standing, consolidated, standing, consolidated) and kept the standing,
+the first standing ballot citing "dropped page content ... which the Chinese does not contradict",
+the class eighty-five apparatus clause read over a text that stands in precisely because that detail was an accepted addition.
+Nothing on any sheet said the slice was disputed or which claims had been accepted.
+
+Built as class one hundred eight (guards red first `65d159d2a`, built `85ed2881f`):
+`archiveDisputeNote` (`archive-dispute.ts`) writes one block per disputed slice,
+"ARCHIVE RENDERING DISPUTED: the repair lane's adjudicators accepted N accuracy/addition claim(s) that the archive rendering says what the ORIGINAL never states; the claims: (1) ...; (2) .... A detail those claims name is not page content and not the page's apparatus, in the archive's wording or any softer one: a candidate leaving it out has dropped nothing, and a candidate keeping it carries an accepted addition. Judge such a detail against the ORIGINAL alone.",
+and every sheet that judges or writes against the stand-in carries it:
+the consolidation writer, slate judge and gate sheets (`consolidate-wire.ts`, `consolidate-settle-context.ts`, `consolidate-gate-wire.ts`),
+the translate writer and slate judge sheets (`translate-wire.ts`, `translate-judge.ts`, threaded through `translate-slice-input.ts`, `translate-stage.ts` and `translate-stage-repair.ts`),
+and the lane contest sheet (`lane-contest-wire.ts`, in the slice key through `lane-contest-key.ts`, the notes read off the repair chunks in `corpus-run/pass-contest.ts` through `archiveDisputeNotesOf`).
+`ArchiveDispute` now carries `acceptedClaims`.
+The wording names no sheet's own incumbent because the lane contest shows the real archive while the consolidation and translate sheets show the stand-in.
+Not built: the repair lane's own sheets are unchanged, so the lane may still soften an accepted addition rather than remove it; the note reaches the contest and everything after it.
+Lint 0 and 0, types clean, twelve touched suites green, full suite green (`suite-class108.log`, 1113 PASS);
+replayed offline over the real `CuspariaKLSY11` artifact: slices 1 and 3 disputed, the slice 3 note naming both accepted claims, the gate sheet carrying it after CANDIDATE "standing".
+Ninth ineligible-standing addendum in the docs commit.
+Not exercised live yet.
+
+`CuspariaKLSY12` (frozen `85ed2881f`, pid 3947732, overlap 8)
+launched 02:17 UTC on Bedrock and OpenRouter
+(meters 48.46 USD Bedrock, 95.80 OpenRouter at launch),
+waiter buax5c511,
+the first pass on class one hundred eight.
+Read slice 3 first: the ARCHIVE RENDERING DISPUTED block on the contest, slate and gate sheets in the artifact, the death paragraph without "took medication", `translate-archive-disputed` on slices 1 and 3 again;
+then classes one hundred four, five and seven, beside every check of `CuspariaKLSY11`.
+Then `zheermao101` (slice 9 for class one hundred six), then `shi_Yumiaoya` or `mikaela_khara`.
+
 ## yingying8 read, 2026-09-24, 01:30 UTC: SETTLED in 5 min, every check as yingying7; then gpt-oss-120b culled from every role, every critic claim logged with its filers, class one hundred six built on the owner's answer, class one hundred seven next; no pass running
 
 `yingying8` (frozen `d2e39e095`, pid 3077650) SETTLED at 00:31 UTC 2026-09-24,

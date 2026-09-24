@@ -189,6 +189,50 @@ and the decline named `slate-declined-standing`.
 - Guard shown to fail first (`c6ec06788`),
     fixed in `adca69d4e`.
 
+## Addendum 2026-09-24, ninth: the dispute note travels with the stand-in
+
+Taken after CuspariaKLSY11,
+the first pass on the eighth addendum,
+shipped its slice 3 with the stand-in reading "She took medication that night":
+the repair lane had softened the accepted addition (a named overdose) into a detail the original still never states,
+the contest split 2 to 2 with one ballot calling the detail "from the original",
+the consolidated proposal dropped it,
+and the gate split 2 to 2 and kept the stand-in on "dropped page content ... which the Chinese does not contradict",
+the apparatus clause of 2026-09-22 (class eighty-five) read over a text that stands in precisely because that detail was an accepted addition.
+
+- The stand-in is judged as the incumbent on every sheet (eighth addendum),
+    so every sheet's protection of page content and page apparatus covers it as well,
+    and a softened accepted addition survives as page content the Chinese does not contradict.
+    Nothing on any sheet said the slice was disputed or which claims had been accepted.
+- `archiveDisputeNote` (`archive-dispute.ts`) writes one block per disputed slice,
+    headed ARCHIVE RENDERING DISPUTED,
+    naming how many `accuracy/addition` claims the repair lane's adjudicators accepted and each claim's category, severity and summary,
+    and saying that a detail those claims name is not page content and not the page's apparatus,
+    in the archive's wording or any softer one:
+    a candidate leaving it out has dropped nothing,
+    a candidate keeping it carries an accepted addition,
+    and such a detail is judged against the ORIGINAL alone.
+    `ArchiveDispute` carries the accepted claims (`acceptedClaims`) for it.
+- The block is carried wherever the stand-in or the archive is judged or written against:
+    the consolidation writer, slate judge and gate sheets (`consolidate-wire.ts`, `consolidate-settle-context.ts`, `consolidate-gate-wire.ts`),
+    the translate writer and slate judge sheets (`translate-wire.ts`, `translate-judge.ts`),
+    and the lane contest sheet (`lane-contest-wire.ts`, in the slice key too, the notes read off the repair chunks in `corpus-run/pass-contest.ts`).
+    The wording names no sheet's own incumbent,
+    because the lane contest shows the real archive while the consolidation and translate sheets show the stand-in.
+- Not built: the repair lane's own sheets are unchanged,
+    so the lane may still soften an accepted addition rather than remove it;
+    the note reaches the contest and everything after it,
+    where the softened detail is weighed as an addition rather than as page content.
+- Guards shown to fail first (`65d159d2a`):
+    `archive-dispute.unit.test.ts` (the note's wording and the accepted claims),
+    `consolidate-wire.unit.test.ts`,
+    `consolidate-gate-wire.unit.test.ts`,
+    `translate-wire.unit.test.ts`,
+    `lane-contest-wire.unit.test.ts`,
+    `translate-slice-input.unit.test.ts`,
+    `translate-judge.unit.test.ts`.
+    Fixed in `85ed2881f`.
+
 ## Addendum 2026-09-24, eighth: a disputed archive rendering stands aside for the repair text
 
 Taken on the owner's second answer of 2026-09-24

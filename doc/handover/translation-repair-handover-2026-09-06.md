@@ -4647,14 +4647,25 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  NO PASS RUNNING (last frozen dir `.frozen-dist-d2e39e095`, now four commits stale: the gpt-oss-120b cull, the claim-filer record `9a6327de5`, class one hundred six `2a872bbed`, addendum `7c729d339`;
-    meters 48.50 USD Bedrock and 95.88 OpenRouter at the last read, Synthetic's five-hour window spent since 23:15:27 UTC 2026-09-23, Hyper dry).
-    Build class one hundred seven (owner, 2026-09-24: "Not eligible; fall back to the repair text"; guards red first, then the addendum),
-    then lint, types, full suite, freeze `dist/final/node` to `node_modules/.frozen-dist-<commit>` (remove `.frozen-dist-d2e39e095`),
-    launch `CuspariaKLSY` first (slice 3 for class one hundred seven: the archive's fabricated overdose detail must not ship; the repair text stands where nobody wins),
+1.  CUSPARIAKLSY12 RUNS (frozen `85ed2881f`,
+    pid 3947732,
+    launched 02:17 UTC 2026-09-24,
+    waiter buax5c511,
+    meters 48.46 USD Bedrock and 95.80 OpenRouter at launch, Synthetic's five-hour window spent since 23:15:27 UTC 2026-09-23, Hyper dry;
+    the frozen dir is a copy of `dist/final/node`, not of `dist`):
+    the first pass on class one hundred eight;
+    read slice 3 first (the ARCHIVE RENDERING DISPUTED block on the contest, slate and gate sheets in the artifact; the death paragraph without "took medication"; `translate-archive-disputed` on slices 1 and 3 again),
+    then classes one hundred four, five and seven, beside every check of `CuspariaKLSY11` (1 heading, front matter equal, no TA, no error finish, no double blank line, the life in the past);
     then `zheermao101` (slice 9 for class one hundred six: a `translate-declined-retried` finding on a consolidation slice after a contest with the archive flawed on every ballot; the reply label rendering plural members that same night),
     then `shi_Yumiaoya` or `mikaela_khara`, beside every check of the last read of each;
-    record each under a new heading above "## yingying8 read, 2026-09-24" in the pass log.
+    record each under a new heading above "## CuspariaKLSY11 read, 2026-09-24" in the pass log.
+    CUSPARIAKLSY11 READ (frozen `a40c28cad`): SETTLED at 01:55 UTC 2026-09-24 in 5 min, one attempt, 327 seats, 13 retry rounds, 256 calls, 0.10 USD by the meters;
+    class one hundred seven live (`translate-archive-disputed` on slices 1 and 3 in the lanes and the consolidation, the stand-in the incumbent, slice 3 shipped as `{kind: incumbent}` gate-kept, the archive's "swallowed lots of her meds" never on the page),
+    classes one hundred four and five holding, every check as `CuspariaKLSY10`, 5 abstention lines, Jev 11 of 11;
+    but the death paragraph still reads "She took medication that night" (服药 nowhere in the original): the repair lane softened the accepted addition, the contest split 2 to 2, the consolidated proposal dropped it, the gate split 2 to 2 and kept the stand-in on "dropped page content ... which the Chinese does not contradict": class one hundred eight, built (the line below).
+    CLASS ONE HUNDRED EIGHT BUILT: `archiveDisputeNote` (`archive-dispute.ts`) writes the ARCHIVE RENDERING DISPUTED block naming the accepted claims and saying a detail they name is neither page content nor apparatus, in the archive's wording or any softer one; carried on the consolidation writer, slate judge and gate sheets, the translate writer and slate judge sheets, and the lane contest sheet and key; the repair lane's own sheets unchanged;
+    guards red first `65d159d2a`, built `85ed2881f`, lint 0/0, types clean, full suite green (`suite-class108.log`, 1113 PASS), replayed over the `CuspariaKLSY11` artifact, ninth ineligible-standing addendum; running on `CuspariaKLSY12`.
+    CLASS ONE HUNDRED SEVEN BUILT (owner Q2: "Not eligible; fall back to the repair text"): `archiveDisputesOf` (`archive-dispute.ts`) off the repair chunks, the repair text standing in for a disputed archive rendering as the translate slate's and the consolidation's incumbent (`consolidate-archive-stand-in.ts`), finding `translate-archive-disputed`; guards red first `fba338dc1`, built `a452db225`, full suite green (`suite-class107.log`, 1109 PASS), eighth addendum `a40c28cad`; live on `CuspariaKLSY11`.
     YINGYING8 READ (frozen `d2e39e095`): SETTLED at 00:31 UTC 2026-09-24 in 5 min, one attempt, 310 seats, 13 retry rounds, 266 calls, 0.07 USD by the meters;
     class one hundred four on the wire (one polish gate run, 4 of 7 usable, settled on neither, base shipped), class one hundred five silent by design,
     classes eighty-six, ninety-seven, one hundred one and one hundred two holding, every check as `yingying7` (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, "[Farewell. I miss you, Yingying.]", "May you still have", no TA, no error finish, no double blank line), 8 abstention lines, Jev 12 of 12;
@@ -4663,7 +4674,6 @@ each read off the pass log and the shipped page:
     CLAIM FILERS LOGGED (owner: "we're not logging enough then. Refine how we log."): `claim-filers.ts` logs every resolved claim with its filers at the critic stage and every adjudicated issue with each claim's filers, and the artifact's adjudicated issues carry `filedBy`; `SLICE_CACHE_VERSION` 31; guard red first `f049298ac`, built `9a6327de5`, full suite green (`suite-filers2.log`, 1107 PASS).
     CLASS ONE HUNDRED SIX BUILT (owner Q1: "Run-off only when every contest ballot called the archive flawed"): `archiveFlawedByAll` (`consolidate-archive-flawed.ts`) on the contest ballots, `runoffOverStanding` through `consolidate-driver.ts`, `consolidate-slice-buy.ts` and `consolidate-settle.ts` into `judgeSlateWithRetry`; `translate-judge.ts` names `runoffFinalists` on a decline over an incumbent and `translate-retry.ts` narrows and reruns; an undecided run-off still ships the standing;
     guards red first `200bf7a53`, built `2a872bbed`, lint 0/0, types clean, full suite green (`suite-class106.log`, 1108 PASS), seventh ineligible-standing addendum `7c729d339`; not exercised live yet.
-    CLASS ONE HUNDRED SEVEN NEXT (owner Q2: "Not eligible; fall back to the repair text"): an archive rendering against which the repair lane's adjudicators accepted an `accuracy/addition` claim is not an eligible standing for the translate slate; the slate runs the run-off path; where nobody wins the repair lane's text for that slice stands instead of the archive; guards red first, addendum.
     ZHEERMAO8 READ (frozen `d2e39e095`): SETTLED at 00:23 UTC 2026-09-24 in 14 min, one attempt, 859 seats, 33 retry rounds, 0.25 USD by the meters;
     class one hundred four on the wire (the polish gate on seven slices, ballots reading the house rules, no tense called a change of meaning), class one hundred five silent by design,
     classes seventy-seven, ninety-six, one hundred one and one hundred two holding, every check as `zheermao7`, 15 abstention lines, Jev 25 of 25;
