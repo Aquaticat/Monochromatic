@@ -379,12 +379,12 @@ console.log("Folded cover questionnaire is valid.")
 '''
 
 [tasks.build]
-description = "Embed native Slint player and separate Search-page states into the active review"
+description = "Embed paired native Fold-panel Search states into the active design review"
 dir = "{{config_root}}"
 run = "node search-page-question.mjs build"
 
 [tasks.lint]
-description = "Validate the active one-bar Search-page design review"
+description = "Validate native Fold frames, hierarchies and the empty connector"
 dir = "{{config_root}}"
 run = "node search-page-question.mjs validate"
 
