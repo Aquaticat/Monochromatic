@@ -288,11 +288,23 @@ The materialization recheck completed on the shared revision with 59 killed,
 Its report is `/var/home/user/temp/agent/toml-mutation-materialization-recheck.json`.
 Parsed-string style tests killed every `emit-value-string.ts` mutant that compiled.
 Array-index bounds tests killed the actionable `document-materialize.ts` bounds mutants.
-The remaining `emit-value-node.ts` clean-node block mutant warrants an unchanged-sibling raw-style test.
-The parser/build recheck is still running;
- its report will be `/var/home/user/temp/agent/toml-mutation-parser-builder-recheck.json`.
-Do not edit runtime source until it completes,
- since each shard copies the current tree.
+A new test now checks unchanged hexadecimal array siblings after another element is set,
+ targeting the remaining `emit-value-node.ts` clean-node block mutant.
+The parser/build recheck completed with 111 killed,
+ 39 confirmed survivors,
+ two timeouts,
+ 178 compile errors,
+ and no infrastructure errors.
+Its report is `/var/home/user/temp/agent/toml-mutation-parser-builder-recheck.json`.
+A previous review mistakenly treated `parse-toml-edit.ts:53`'s `<` to `>=` mutant as a survivor.
+The actual final report and raw singleton shard record both classify it as a confirmed timeout;
+ there is no verdict mismatch.
+Built-artifact state tests now assert nested array-of-tables indices,
+ EOF and adjacent comment metadata,
+ synthetic scalar kinds,
+ precise nested-input errors,
+ and preservation of clean array-sibling spelling.
+These tests have not yet been mutation-rechecked.
 After triage,
  scan editing,
  comment API,
