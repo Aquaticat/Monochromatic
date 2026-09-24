@@ -765,20 +765,42 @@ known failing control.
 The corrected capture contains opaque 1080 × 2424px cover and 2076 × 2152px
 inner screenshots of the player and Search page in both schemes,
  plus paired
-hierarchies and four Android role records.
- The native connector guard passed
-all unfolded scenes at 100% text and player/results at 200%,
- checking semantic
-and clickable bounds along with sampled black/white pixels.
- Separate red
-controls against a disposable copy of `search-page-question.mjs validate` rejected
-both a target extended into the connector and a near-white fill in the dark
-connector.
- The inner 200% player's last mode target ends at physical y=2074,
-where the measured navigation inset begins;
- the right track list scrolls.
- A
-static screenshot does not establish navigation,
+hierarchies,
+ four Android role records and per-frame state metadata.
+ Direct
+`wm density` and `dumpsys display` probes corrected the cover's unmeasured
+411 × 923dp estimate:
+ this AVD uses 390dpi on **both** panels,
+ so its cover is
+approximately 443 × 994dp.
+ The new capture asserts density,
+ font scale,
+mode,
+ panel and frame dimensions before recording metadata.
+ Its connector guard
+passed all unfolded scenes at 100% and player/results at 200%,
+ checking
+semantic/clickable bounds and **every RGBA pixel** in physical x `[1009,1068)`,
+y `[136,2074)` against D41 black or D34 white.
+ Separate red controls in a
+disposable copy of `search-page-question.mjs validate` rejected a target crossing
+the connector,
+ a dark tonal band,
+ and one unsampled near-white pixel on light.
+
+The inner 200% player's last mode target is only 94px visible in the initial
+frame (`[73,1980][936,2074]`),
+ so that frame alone cannot prove 48dp
+reachability.
+ A native swipe in its independently scrollable deck moved it to
+`[73,1904][936,2035]`,
+ showing the full 131px target and border above the
+navigation inset that starts at y=2074.
+ The scrolled PNG/XML is kept as
+supplementary evidence;
+ the right track list scrolls independently.
+ A static
+screenshot does not establish Search navigation,
  focus,
  TalkBack or result
 execution.
@@ -793,10 +815,20 @@ and ends in free-text correction.
  Browser interaction checks exercised both
 panel paths,
  preview fit/reset/zoom/close,
- return focus,
- form output and offline
-reload.
- Axe reported no violations in either chrome scheme;
+ top reset when switching scenes,
+return focus,
+ keyboard panning/Escape,
+ and form output.
+ An online fetch to a
+local test endpoint succeeded;
+ with browser offline mode enabled,
+ the same
+fetch failed while the self-contained file reloaded and every embedded image
+decoded.
+ Axe reported no violations in either chrome scheme or in the open
+preview dialog after its scrollable region gained keyboard focus.
+ The preview
+frame retained measured pixel geometry at a 20px root font;
  the browser
 reported no console or page errors.
  No KWin automation was used.
