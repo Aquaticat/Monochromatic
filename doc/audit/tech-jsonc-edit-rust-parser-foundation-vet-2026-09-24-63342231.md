@@ -504,6 +504,26 @@ A separate scratch consumer `~/temp/agent/jsonc-foundation-diff/` depends on bot
  This is prototype reuse,
  not a dependency or product API decision.
 
+### Biome semantic projection preparation
+
+A separate scratch package under `~/temp/agent/biome-projection-probe/` consumes Biome's typed syntax slots,
+ the owned JSONC value model and canonical emitter,
+ and the exact-number prototype.
+ The package manager generated its Cargo.lock at SHA-256
+ `9bc50be429ba207de2ce50e52195115a878af7c63a4d31a9a6d695e0cf377ac9`.
+ `~/temp/agent/biome-projection-execution-manifest.md` records the inspected command tree,
+ resource bounds,
+ expected reads/writes,
+ and semantic success/stop conditions before the first execution.
+ The planned tests assert expected key/value comment owner,
+ text,
+ kind and order,
+ exact number equality,
+ raw spelling,
+ UTF-16 code units,
+ and accepted-depth emission/reparse.
+ No projection result is yet claimed.
+
 ## Existing-parser contract exits
 
 These are outcomes for published implementations **as-is**,
