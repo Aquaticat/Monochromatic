@@ -59,6 +59,16 @@ export function emitContentNode(
 }
 
 /**
+ Array node preserving the foreign provenance of {@link emitContentNode}'s input.
+
+ @example
+ ```ts
+ const array: ParsedArrayNode = parsedArray;
+ ```
+ */
+type ParsedArrayNode = Parameters<typeof emitContentNode>[0]['node'] & AST.TOMLArray;
+
+/**
  Emit a primitive leaf (`string` / `integer` / `float` / `boolean` / date kinds).
  
  @returns Computed string.
@@ -88,7 +98,7 @@ function emitArray(
     options,
     depth,
   }: {
-    readonly node: AST.TOMLArray;
+    readonly node: ParsedArrayNode;
     readonly options: CanonicalOptions;
     readonly depth: number;
   },
@@ -97,7 +107,7 @@ function emitArray(
    Per-element text so the assembler can join into inline or multi-line form.
    */
   const parts = node.elements
-    .map(function each(el: AST.TOMLNode,) {
+    .map(function each(el,) {
     return emitContentNode({
       node: el,
       options,
@@ -199,7 +209,7 @@ export function emitArrayWithSkipPath(
     options,
     depth,
   }: {
-    readonly array: AST.TOMLArray;
+    readonly array: ParsedArrayNode;
     readonly skipPath: readonly number[];
     readonly options: CanonicalOptions;
     readonly depth: number;
@@ -236,7 +246,7 @@ export function emitArrayWithSkipPath(
    */
   const parts = array.elements
     .map(function each(
-    el: AST.TOMLNode,
+    el,
     i,
   ) {
     if (i !== head) {
