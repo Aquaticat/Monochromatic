@@ -1,7 +1,9 @@
 # Biome JSON 0.5.7: an unterminated `"` makes the public `inner_string_text` helper panic
 
 Status:
- **source-proven panic, reproduced through a consuming crate, and closed by a verified minimal patch prototype**.
+ **source-proven panic,
+ reproduced through a consuming crate,
+ and closed by a verified minimal patch prototype**.
  Upstream already fixed the cause in its lexer
  ([PR 2621](https://github.com/biomejs/biome/pull/2621)),
  but no published `biome_json_parser` release contains that fix.
