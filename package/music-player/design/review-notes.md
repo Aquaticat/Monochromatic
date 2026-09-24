@@ -843,7 +843,7 @@ applies to the **left-header/right-results composition**,
  not to D47's separate
 page,
  D48's single header,
- or E2's empty connector.
+ or E2's restriction on information in the connector.
  The inspected native
 `questions/render/fold-search-inner-open-results-light-s100.png` shows a tonal
 Back/query/Clear header above a completely blank left body,
@@ -891,9 +891,8 @@ space is needlessly reserved while content is constrained,
 200% text.
  Reject a candidate that fails this review before labeling it
 "active" or requesting user feedback.
- An empty connector is a boundary
-constraint,
- not a mandate to split Search into two independent halves.
+ Keeping informative material off the connector is a boundary constraint,
+not a mandate to split Search into two independent halves.
  Preserve
 the rejected images as evidence,
  not as the current design.
