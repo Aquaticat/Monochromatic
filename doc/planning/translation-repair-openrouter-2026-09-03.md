@@ -8082,6 +8082,45 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## CuspariaKLSY10 read, 2026-09-24, 00:15 UTC: SETTLED in 7 min, classes one hundred four and five live (the life in the past past the polish gate, the gloss line restored at page assembly); the death paragraph shipped the repair lane's minimal edit with the archive's own omissions, unendorsed; zheermao8 launched
+
+`CuspariaKLSY10` (frozen `d2e39e095`, pid 3035347) SETTLED at 00:06 UTC 2026-09-24,
+7 min after its 23:59 launch (TALLY `ms=425863`),
+one attempt,
+375 seats,
+12 retry rounds,
+320 calls,
+0.18 USD by the meters (Bedrock 48.96 to 48.85, OpenRouter 96.27 to 96.20),
+on Bedrock and OpenRouter alone (Synthetic's window spent, Hyper dry); no hold, so class one hundred three not exercised again.
+Grace 1.4 s mean over 92 rounds; Jev 13 of 13; 13 abstention lines with reasons.
+
+Class one hundred four live.
+Slice 0 (the life) ships every line in the past tense; the consolidation polish gate on slice 0 settled on base 4 of 5 with a ballot citing "the past tense house rule for the life of the deceased" and no ballot calling the tense a change of meaning (the polished candidate lost on wording, "deeply devoted" for 执着, not on tense);
+the slice 1 gate chose the polished text 5 of 7 with "without altering meaning, tense, pronouns, or structure".
+Class one hundred five live.
+The bench dropped the gloss line again (the shipped slice 1 read "She coined her nickname “Ling Shui Yu Yu Zi” while feeding fish." alone),
+the page assembly printed `name-gloss-restored (slice 1: "“Ling Shui Yu Yu Zi” means fish in clear water.")`,
+and the page carries the archive's gloss line after the nickname line.
+Classes seventy-five, seventy-six, eighty-five and ninety-six holding: 1 heading, front matter equal, no TA, no error finish, no double blank line, three curly apostrophes and six curly double quotes as the archive, the one full-width colon the archive's own contributor comment;
+terminals consolidated (0, 1), slate-endorsed (2), slate-declined (3); the absolute naturalness review 3 of 8 usable on its first round (quorum-not-met) and 4 of 8 on the second.
+
+Observation, not a class: the death paragraph (slice 3) shipped as the repair lane's minimal edit of the archive:
+the fabricated "She swallowed lots of her meds that night" removed (four accepted claims) and "dead" corrected to "brain-dead" (two accepted claims),
+but the archive's own omissions kept (双方情绪爆发, 抢救, 又, 再次得到消息, and 于 rendered "by August 1st" for "on"), which `CuspariaKLSY8` and `9` had rendered from fresh translate candidates.
+No critic filed the emotions clause as an omission; the "rescue" claim went needs-human and the "two events collapsed" claim was rejected.
+The translate lane's slate over six candidates (four ballots, one abstention, one self-vote) backed none at the minimum, so the archive stood as the translate text by the eligible-standing single round;
+the contest chose repair 3 of 4 ("omits several phrases but avoids inventing methods");
+the consolidation slate tied 1/1/0.5 across three proposals and kept the standing (eligible, single round).
+An open question for the owner, not built: whether an archive rendering the repair lane's adjudicators found to fabricate a suicide method is still an eligible standing for the translate slate's single round, or whether an accepted fabrication should send the slate to the class eighty-two run-off.
+Smaller observations: "Taking hormones, the reason she became transgender:" for 服用激素，成为跨性别的原因： (a literal rendering where `CuspariaKLSY8` wrote "Reasons for taking hormones and transitioning:"), the bench's call.
+
+`zheermao8` (frozen `d2e39e095`, pid 3041616, entry `zheermao101`, overlap 8)
+launched 00:09 UTC on Bedrock and OpenRouter
+(meters 48.84 USD Bedrock, 96.19 OpenRouter at launch),
+waiter binlnnzie.
+Read for the polish gate ballots under the house rules (class one hundred four on an entry with gate-kept slices), class one hundred five silent by design (no gloss line in the archive), classes seventy-seven, ninety-six, one hundred one and one hundred two holding,
+beside every check of `zheermao7` (2 headings, front matter equal, no TA, no error finish, no double blank line, both labels one line, the email conversation as the archive).
+
 ## CuspariaKLSY9 read, 2026-09-23, 23:55 UTC: SETTLED in 4 min, no hold so class one hundred three not exercised, but the polish gate refused the house tense on slice 0 (class one hundred four) and the gloss line lost a third time on slice 1 (class one hundred five); both fixed in d2e39e095, CuspariaKLSY10 launched
 
 `CuspariaKLSY9` (frozen `334c02f23`, pid 2992337) SETTLED at 23:41 UTC,

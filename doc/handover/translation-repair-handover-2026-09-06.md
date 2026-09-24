@@ -4647,18 +4647,27 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CUSPARIAKLSY10 RUNS (frozen `d2e39e095`,
-    pid 3035347,
-    launched 23:59 UTC 2026-09-23,
-    waiter b553g3h0x,
-    meters 48.96 USD Bedrock and 96.27 OpenRouter at launch, Synthetic's five-hour window spent, Hyper dry;
+1.  ZHEERMAO8 RUNS (frozen `d2e39e095`,
+    pid 3041616,
+    entry `zheermao101`,
+    launched 00:09 UTC 2026-09-24,
+    waiter binlnnzie,
+    meters 48.84 USD Bedrock and 96.19 OpenRouter at launch, Synthetic's five-hour window spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class one hundred four live (the life in the past on slice 0, polish gate ballots citing the house rule rather than "unsupported change of meaning")
-    and class one hundred five live (a `name-gloss-restored` line in the log and the gloss “Ling Shui Yu Yu Zi” means fish in clear water on the page after the nickname line),
-    classes seventy-five, seventy-six, eighty-five and ninety-six holding,
-    beside every check of `CuspariaKLSY8` (1 heading, front matter equal, no TA, no error finish, no double blank line, the life in the past, the nickname gloss);
-    record under a new heading above "## CuspariaKLSY9 read, 2026-09-23" in the pass log;
-    then yingying or zheermao on the same dist, reading whichever pass meets a mid-lane dry-out for class one hundred three's re-seat line.
+    read for the polish gate ballots under the house rules (class one hundred four on an entry with gate-kept slices),
+    class one hundred five silent by design (no gloss line in the archive),
+    classes seventy-seven, ninety-six, one hundred one and one hundred two holding,
+    beside every check of `zheermao7` (2 headings, front matter equal, no TA, no error finish, no double blank line, both labels one line, the email conversation as the archive);
+    record under a new heading above "## CuspariaKLSY10 read, 2026-09-24" in the pass log;
+    then yingying on the same dist.
+    CUSPARIAKLSY10 READ (frozen `d2e39e095`): SETTLED at 00:06 UTC 2026-09-24 in 7 min, one attempt, 375 seats, 12 retry rounds, 0.18 USD by the meters;
+    class one hundred four live (the life in the past, the slice 0 polish gate citing the house tense rule and no ballot calling the tense a change of meaning),
+    class one hundred five live (the bench dropped the gloss line again, `name-gloss-restored` printed, the gloss on the page after the nickname line),
+    classes seventy-five, seventy-six, eighty-five and ninety-six holding, every check as `CuspariaKLSY8`, 13 abstention lines, Jev 13 of 13;
+    observation, not built: the death paragraph shipped the repair lane's minimal edit (the fabricated method removed, brain-dead restored) with the archive's own omissions (双方情绪爆发, 抢救, 又, 再次得到消息, "by" for 于), unendorsed;
+    the translate slate backed no candidate so the archive stood by the eligible-standing single round, the contest chose repair 3 of 4, the consolidation slate tied 1/1/0.5 and kept the standing;
+    open question for the owner: whether an archive rendering the adjudicators found to fabricate a suicide method stays an eligible standing for the translate slate's single round.
+    CUSPARIAKLSY9 READ (frozen `334c02f23`): SETTLED at 23:41 UTC 2026-09-23 in 4 min, one attempt, 357 seats, 11 retry rounds, 0.16 USD by the meters;
     CUSPARIAKLSY9 READ (frozen `334c02f23`): SETTLED at 23:41 UTC 2026-09-23 in 4 min, one attempt, 357 seats, 11 retry rounds, 0.16 USD by the meters;
     no hold ran, so class one hundred three not exercised (checkers 2 of 3 on the substitute and gpt-oss by the dry reading at the lanes boundary);
     1 heading, front matter equal, no TA, no error finish, no double blank line, 7 abstention lines, Jev 14 of 14;
