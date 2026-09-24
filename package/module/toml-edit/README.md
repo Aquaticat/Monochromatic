@@ -24,8 +24,11 @@ The task always passes `--full-suite` because tests are organized across API and
  not one test file per source file.
 It runs the package's `*.unit.test.ts` tests against each mutant;
  the fuzz sidecar and conformance runner are separate campaigns.
-The CLI writes `mutation-report.json` in the working directory by default and reports survivors without failing the task.
+The CLI writes `mutation-report.json` at the repository root by default and reports survivors without failing the task.
 Use `--report` to choose another report path.
+The default source scan includes the `src/conformance/` adapters,
+ but the package unit suite does not run the upstream conformance runner;
+ inspect those survivors separately rather than treating them as runtime-library coverage.
 
 Preview mutant and test selection without starting containers,
  or limit the run to a package-relative source file:
