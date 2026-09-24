@@ -270,31 +270,33 @@ record and role-based guards.
    not a landscape tablet.
     Every mockup drawn at 924×600 was wrong in structure.
 2. **The hinge is vertical in portrait.**
-    The 852dp expanded layout uses two 414dp
-   panes around Material's required centered 24dp spacer.
-    Each physical screen half is
-   **426dp × 883dp**:
-    12dp of spacer plus one 414dp pane.
-    Each pane is narrow and tall,
-   closer to a phone column than a landscape tablet pane.
-3. **No app content may occupy the connected fold region** (decisions.md E2).
+    The accepted unfolded player uses
+two 414dp panes around the 24dp centered connector.
+    Each physical screen
+half is **426dp × 883dp**:
+    12dp of connector plus one 414dp pane.
+    This
+is the player's arrangement,
+ not a rule that Search must divide its query and
+results between two columns.
+3. **Informational material stays off the connected fold region** (E2).
     The
-   center 24dp spacer is `[414,438)`dp across the 852dp inner width,
-    about
-   `[1009,1068)` physical px at 390dpi.
-    This is background only:
-    text,
-   rows,
-   controls,
-   decorations,
-   focus cues and hit regions all stay inside their
-   respective 414dp panes.
-    The accepted fill is true black under D41 in
-   dark and white under D34 in unfolded light,
-    not a merely near-white tonal role.
-    A full-width Search page does not exempt its 72dp header or result list.
-    Android-owned system bars are captured as rendered,
-   not repositioned by the app.
+center 24dp region is `[414,438)`dp across the 852dp inner width,
+ about
+`[1009,1068)` physical px at 390dpi.
+    Do not put readable text,
+ result
+data,
+ labels or other meaning-bearing marks there.
+    A surface,
+ divider,
+background or hit region may cross it without placing information there.
+D34 white and D41 true black describe the **accepted player spacer**,
+ not
+mandatory Search-page connector colors.
+    Android-owned system bars are
+captured as rendered,
+ not repositioned by the app.
 4. **The physical cover is taller and narrower than the older 390 × 844dp
    phone mock.**
     On this AVD its 1080 × 2424px active panel is about 443 ×
