@@ -100,6 +100,24 @@ and open items:
    (custom merge functions, cycle resolution, record paths, custom metadata),
    each naming the mutant ids it kills;
    method and results in `doc/audit/deepmerge-ts-mutation-2026-09-24.md`.
+- `src/recall-*.ts`:
+   historical recall,
+   the positive control for the whole method:
+   a ledger of every bug upstream shipped and fixed,
+   rebuilt buggy and fixed,
+   with the sidecar run against both
+   (runtime bundles, result types against each npm release, and six ways of loading each release);
+   `src/recall-known-defect-union-depth.unit.test.ts` pins the result-type defect found on the way;
+   method and results in `doc/audit/deepmerge-ts-recall-2026-09-24.md`.
+- `src/surface-*.ts`:
+   surfaces no other layer loads:
+   every documented example and claim run literally
+   (`surface-docs-example`, `surface-docs-claim`, `surface-docs-type`),
+   export, collection-view, spread, and interface result types (`surface-known-defect`),
+   and container scripts for the TypeScript 4.7 to 7.0 flag matrix,
+   type-checker cost sweeps,
+   and Bun and Deno runs;
+   method and results in `doc/audit/deepmerge-ts-surface-2026-09-24.md`.
 
 Machine-local files matching `*.local.*` (gitignored) hold embargoed security findings until upstream publishes an advisory.
 
@@ -147,6 +165,50 @@ mise run //package/module/deepmerge-ts.fuzz:mutation:sweep --checkout /absolute/
 # Compare swept bundles with the baseline on fixed-seed generated cases;
 # fails unless the baseline matches itself and the control mutant differs
 mise run //package/module/deepmerge-ts.fuzz:mutation:differential --control 34 283 449
+```
+
+Historical recall
+(inputs live under `~/temp/agent`, outside this repo;
+the runtime and packaging runs use the mutation image,
+and every run except setup and report is capped at 2 GiB / 2 CPUs with this repo read-only and only its `dist/recall/<area>/` writable):
+
+```bash
+# Every npm release and the upstream trees the ledger names (host; downloads and git archive only)
+mise run //package/module/deepmerge-ts.fuzz:recall:setup --clone /absolute/path/to/full-history/deepmerge-ts
+
+# Runtime rows: control per row, then every sidecar file on the buggy and fixed bundles;
+# one line per row in dist/recall/runtime/runtime.jsonl
+mise run //package/module/deepmerge-ts.fuzz:recall:runtime undefined-middle
+
+# Result-type rows: a fresh declared-type draw, the sidecar against releases, or one row's control
+mise run //package/module/deepmerge-ts.fuzz:recall:types corpus 20260930 1500
+mise run //package/module/deepmerge-ts.fuzz:recall:types check 6.0.1 6.0.2
+mise run //package/module/deepmerge-ts.fuzz:recall:types control empty-record
+
+# Six ways of loading each release; dist/recall/packaging/results.json
+mise run //package/module/deepmerge-ts.fuzz:recall:packaging 7.1.5 8.0.2
+
+# Summaries over files present when the audit started (--baseline-commit, default e4237dc8f)
+mise run //package/module/deepmerge-ts.fuzz:recall:report
+```
+
+Unsearched surfaces
+(the toolchain installs into `dist/surface/scratch`, never this workspace;
+every run is capped at 2 GiB / 2 CPUs with this repo read-only and only `dist/surface/` writable):
+
+```bash
+# TypeScript 4.7 to 7.0 and probe tools
+mise run //package/module/deepmerge-ts.fuzz:surface:install
+
+# Type tests per release and flag set
+mise run //package/module/deepmerge-ts.fuzz:surface:types --configs base,isolated,no-strict-null ts60 ts70
+
+# Instantiations and check time per case family; measure the band with --repeat first
+mise run //package/module/deepmerge-ts.fuzz:surface:cost --alias ts60 --prefix wide --repeat 7
+
+# Every sidecar unit file under Bun or Deno (DEEPMERGE_FUZZ_TARGET passes through)
+mise run //package/module/deepmerge-ts.fuzz:surface:runtime --runtime bun
+mise run //package/module/deepmerge-ts.fuzz:surface:runtime --runtime deno
 ```
 
 Replay a campaign record on the host:

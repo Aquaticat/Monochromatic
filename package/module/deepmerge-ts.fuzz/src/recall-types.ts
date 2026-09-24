@@ -84,6 +84,16 @@ if (import.meta.main) {
       },);
     }
   } else if (mode === 'control') {
+    /**
+     Requested ids that name no row with a control, which would otherwise run nothing silently.
+     */
+    const unmatched = args.filter(function noControl(id,) {
+      return !TYPE_BUGS.some(function hasControl(row,) {
+        return (row.id === id) && (row.control !== '');
+      },);
+    },);
+    if (unmatched.length > 0)
+      throw new RecallTypesError(`no type ledger row with a control for: ${unmatched.join(', ',)}`,);
     for (const bug of TYPE_BUGS.filter(function wanted(row,) {
       return (row.control !== '') && ((args.length === 0) || args.includes(row.id,));
     },)) {
