@@ -187,6 +187,9 @@ Merge overlapping rules;
 EPR:
  Naming or technology brainstorming that could benefit from ecosystem precedent:
  research it before offering options.
+Model system named ("think in X"):
+ list its features,
+ ask which to omit.
 
 ### Proactivity calibration
 
