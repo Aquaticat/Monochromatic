@@ -401,6 +401,31 @@ Source leads for that screening include `jsonc_lexer` from [richplastow/jsonc-le
  The research transcript is retained at `~/temp/agent/` through its subagent output,
  while this report remains the owned audit artifact.
 
+### Full broad `jsonc` metadata screen
+
+The delegated subagent could not read the saved pages under its security guardrail and screened none of them.
+ A direct main-session `mise run audit:registry-page` pass then displayed the name,
+ version and first 240 description characters for **every** saved `jsonc` result on pages 1 through 6,
+ with explicit truncation flags rather than a negative filter.
+ The unabridged records remain in private scratch;
+ clipped descriptions and metadata alone can still hide a candidate's actual behavior.
+
+Besides already-ledgered parsers,
+ metadata raises `fig` 4.1.0 (comment-preserving multi-format editor),
+ `dprint-plugin-jsonc` 0.7.4,
+ `prim-fmt` 0.9.1,
+ `jcfmt` 0.1.2,
+ `jsontape` 0.1.4,
+ `nojson` 0.3.15,
+ `babbel_json` 0.2.2,
+ `jqf-codec-json` 0.1.1,
+ and `serde_jsonc2` 0.1.2 for category/source checks.
+ The later page also includes `subc-jsonc` 0.1.1,
+ described as JSONC-to-JSON normalization rather than a raw comment owner.
+ These are **leads**,
+ not serious alternatives or hard-gate exits solely on registry text.
+ Source and API screening remains necessary before assigning survivor counts or source-class saturation.
+
 ### `fjson` 0.3.1
 
 **Source correction:**
