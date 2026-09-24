@@ -429,6 +429,12 @@ The published `biome_json_parser` 0.5.7 archive SHA-256
  After reading trivia pieces,
  the same offline container passed all focused tests,
  including the escaped `\uD800` string and preserved `1e0` token.
+ A further bounded test located a key-side comment on `{`'s trailing trivia,
+ a value-side comment on `:`'s trailing trivia,
+ and an after-comma inline comment on `,`'s trailing trivia;
+ `biome_json_parser-0.5.7/src/token_source.rs:31-60` classifies trivia around newlines,
+ while `biome_parser-0.5.7/src/tree_sink.rs:123-145` attaches it to syntax tokens.
+ A consumer must still map grammar-delimiter trivia to the accepted key/value ownership policy.
  This validates a raw-syntax candidate,
  not key/value attachment,
  exact-value projection,
