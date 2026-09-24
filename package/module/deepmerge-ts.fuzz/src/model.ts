@@ -28,6 +28,12 @@
  @module
  */
 
+import {
+  isAnyMap,
+  isAnySet,
+  isObjectPrototype,
+} from './realm.ts';
+
 /**
  Merge category of a value, mirroring the documented type buckets.
  */
@@ -41,6 +47,8 @@ export const DEFAULT_MAX_DEPTH = 1_000;
 /**
  Classify a value into its documented merge bucket. Plain and null-prototype
  objects are records; class instances, dates, and other objects are leaves.
+ Buckets are realm-independent (`./realm.ts`): a Set or plain object from
+ `node:vm` classifies like a local one.
 
  @param value - Any merge input or output, inspected by prototype only.
 
@@ -60,11 +68,11 @@ export function kindOf(value: unknown,): ValueKind {
    Prototype deciding whether an object counts as a plain record.
    */
   const prototype: unknown = Object.getPrototypeOf(value,);
-  if ((prototype === null) || (prototype === Object.prototype))
+  if ((prototype === null) || isObjectPrototype(prototype,))
     return 'record';
-  if (value instanceof Set)
+  if (isAnySet(value,))
     return 'set';
-  if (value instanceof Map)
+  if (isAnyMap(value,))
     return 'map';
   return 'other';
 }

@@ -14,6 +14,10 @@
  */
 
 import { kindOf, } from './model.ts';
+import {
+  isAnyMap,
+  isAnySet,
+} from './realm.ts';
 
 /**
  Describe the key at one step of a mismatch path.
@@ -136,7 +140,7 @@ export function shapeMismatch(
     return `${path}: expected ${String(expected,)}, got ${String(actual,)}`;
   if (Object.getPrototypeOf(actual,) !== Object.getPrototypeOf(expected,))
     return `${path}: prototype differs`;
-  if ((actual instanceof Set) && (expected instanceof Set)) {
+  if (isAnySet(actual,) && isAnySet(expected,)) {
     return sameKeys({
       left: [...actual,],
       right: [...expected,],
@@ -144,7 +148,7 @@ export function shapeMismatch(
       ? NO_MISMATCH
       : `${path}: Set elements or order differ`;
   }
-  if ((actual instanceof Map) && (expected instanceof Map)) {
+  if (isAnyMap(actual,) && isAnyMap(expected,)) {
     if (!sameKeys({
       left: [...actual.keys(),],
       right: [...expected.keys(),],
@@ -215,27 +219,36 @@ export function snapshot(value: unknown,): unknown {
   if ((kind === 'other') || ((typeof value) !== 'object')
     || (value === null))
     return value;
-  if (value instanceof Set)
-    return new Set(value,);
-  if (value instanceof Map)
-    return new Map([...value,].map(function copyEntry([
-      key,
-      entry,
-    ],): readonly [
-      unknown,
-      unknown,
-    ] {
-      return [
-        key,
-        snapshot(entry,),
-      ];
-    },),);
   /**
-   Prototype the copy inherits.
+   Prototype the copy inherits, so subclasses and other realms survive.
    */
   const prototype: unknown = Object.getPrototypeOf(value,);
   if ((prototype !== null) && ((typeof prototype) !== 'object'))
     throw new Error('snapshot: prototype is neither null nor an object',);
+  if (isAnySet(value,) || isAnyMap(value,)) {
+    /**
+     Fresh collection: Set elements by identity, Map values snapshotted.
+     */
+    const collection = isAnySet(value,)
+      ? new Set(value,)
+      : new Map([...value,].map(function copyEntry([
+        key,
+        entry,
+      ],): readonly [
+        unknown,
+        unknown,
+      ] {
+        return [
+          key,
+          snapshot(entry,),
+        ];
+      },),);
+    Reflect.setPrototypeOf(
+      collection,
+      prototype,
+    );
+    return collection;
+  }
   /**
    Fresh container with the same prototype as the original.
    */
