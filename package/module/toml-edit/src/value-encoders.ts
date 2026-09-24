@@ -27,12 +27,8 @@ export function encodeWrapped(
   { wrapped, }: { readonly wrapped: TomlWrappedInput; },
 ): string {
   if (wrapped.tomlKind
-    === 'integer') {
-    return (typeof wrapped.value) === 'bigint'
-      ? wrapped.value
-        .toString()
-      : String(wrapped.value,);
-  }
+    === 'integer')
+    return String(wrapped.value,);
   if (wrapped.tomlKind
     === 'float') {
     /**
