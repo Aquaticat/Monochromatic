@@ -62,6 +62,25 @@ await describe({
       },
     },),
     it({
+      name: 'replaces implicit dotted keys before an unrelated table',
+      fn: async () => {
+        const edit = parseTomlEdit({
+          source: 'title="x"\na.x=1\na.y=2\nother=3\n[sibling]\nz=4\n',
+        },);
+        const updated = tomlSet({ edit, path: ['a',], value: { q: 9, r: 10, }, },);
+        expect(tomlStringify({ edit: updated, },),)
+          .toBe('title="x"\nother=3\na.q = 9\na.r = 10\n[sibling]\nz=4\n',);
+      },
+    },),
+    it({
+      name: 'preserves a partial-prefix sibling during implicit replacement',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'a.b.x=1\na.c.y=2\n', },);
+        const updated = tomlSet({ edit, path: ['a', 'b',], value: { z: 9, }, },);
+        expect(tomlStringify({ edit: updated, },),).toBe('a.c.y=2\na.b.z = 9\n',);
+      },
+    },),
+    it({
       name: 'separates a created key from an unterminated final source line',
       fn: async () => {
         const edit = parseTomlEdit({ source: 'a = 1', },);
