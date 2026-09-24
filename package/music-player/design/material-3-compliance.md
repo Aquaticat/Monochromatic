@@ -41,6 +41,24 @@ buttons remain available even where Material 3 Expressive recommends newer varia
 The questionnaire must therefore satisfy baseline component guidance without silently
 switching the product to Material 3 Expressive.
 
+**Geometry supersession.**
+ Several historical sections of this audit prescribe
+a 24dp blank pane spacer for the unfolded player.
+ Those describe an older
+prototype,
+ not the current E2 boundary:
+ the user specified about **7.5mm
+of physical visible dent**,
+ and `max(min_padding, crease_width)` separates
+**informational material** in physical coordinates.
+ Pane backgrounds,
+borders,
+ padding and hit regions may cross;
+ a fixed 24dp empty visual gap is
+not required.
+ Do not let baseline M3 pane spacing override this explicit
+device-specific correction.
+
 ## Violations in prototype commit `6e8f248c5`
 
 ### Adaptive layout and scaffold
