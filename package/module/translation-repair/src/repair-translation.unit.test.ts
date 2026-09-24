@@ -1199,7 +1199,8 @@ Meow meow meow meow.
             return {};
           },
         },);
-        expect(before.calls,).toBe(prepared.slices.length,);
+        // AT LEAST ONCE PER SLICE: the checker stage asks again (class one hundred nine).
+        expect(before.calls,).toBeGreaterThanOrEqual(prepared.slices.length,);
         expect(prepared.slices.length,).toBeGreaterThan(0,);
       },
     },),

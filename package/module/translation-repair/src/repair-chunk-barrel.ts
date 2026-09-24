@@ -31,6 +31,13 @@ export {
   notApplicableRepair,
 } from './repair-not-applicable.ts';
 export { unchangedChunkOutcome, } from './repair-unchanged-outcome.ts';
+export {
+  assertCheckerBench,
+  checkerBenchAtStage,
+  standingSeating,
+} from './repair-checker-reseat.ts';
+export { chunkEvidence, } from './repair-chunk-evidence.ts';
+export { proveRepairedChunk, } from './repair-chunk-proof.ts';
 export { foldStageFindings, } from './repair-stage-findings.ts';
 
 //endregion Repair chunk barrel

@@ -21,6 +21,7 @@ import {
 import {
   checkerBenchAtStage,
   CheckerQuorumError,
+  standingSeating,
   OPENROUTER_CHECKER_SUBSTITUTE,
   type RepairModels,
   type RepairSliceSeating,
@@ -63,9 +64,13 @@ await describe({
   name: checkerBenchAtStage.name,
   children: [
     it({
-      name: 'KEEPS THE CHUNK\'S BENCH without a hook, and where the hook says the given roster still stands',
+      name: 'KEEPS THE CHUNK\'S BENCH where the hook says the given roster still stands',
       fn: async () => {
-        expect(await checkerBenchAtStage({ models: SEATED, l, },),).toEqual(SEATED.checkerModelIds,);
+        expect(await checkerBenchAtStage({
+          models: SEATED,
+          reseat: standingSeating,
+          l,
+        },),).toEqual(SEATED.checkerModelIds,);
         expect(await checkerBenchAtStage({
           models: SEATED,
           reseat: async (): Promise<RepairSliceSeating> => ({}),

@@ -223,6 +223,7 @@ export async function repairPreparedDocument(
         client,
         prepared,
         models: seating.repairModels ?? models,
+        ...((beforeSlice === undefined) ? {} : { reseat: beforeSlice, }),
         ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
         slice,
         slicePosition,

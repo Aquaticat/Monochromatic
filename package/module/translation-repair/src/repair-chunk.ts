@@ -14,18 +14,18 @@ import {
 import { dedupeAcceptedIssues, } from './dedupe-issues.ts';
 import { buildEditorAddendum, } from './line-structure-addendum.ts';
 import { deriveEditableEnvelopes, } from './patch-model.ts';
-import { parseDocument, } from './parse-document.ts';
-import { collectRepairRegions, } from './repair-region.ts';
+import { chunkEvidence, } from './repair-chunk-evidence.ts';
 import { unchangedChunkOutcome, } from './repair-unchanged-outcome.ts';
-import {
-  assertCheckerIndependence,
-  assertCheckerQuorumReachable,
-  type ChunkRepairOutcome,
-  type RepairModels,
+import type {
+  ChunkRepairOutcome,
+  RepairModels,
+  RepairSliceSeating,
 } from './repair-contract.ts';
-import { runCheckerStage, } from './repair-edit-stages.ts';
-import { runIntroducedDefectProbe, } from './introduced-defect-probe.ts';
-import { PRODUCTION_PRIOR_ISSUE_DISCLOSURE, } from './introduced-defect-wire.ts';
+import {
+  assertCheckerBench,
+  standingSeating,
+} from './repair-checker-reseat.ts';
+import { proveRepairedChunk, } from './repair-chunk-proof.ts';
 import { runEditorStage, } from './repair-editor-stage.ts';
 import { foldStageFindings, } from './repair-stage-findings.ts';
 import { runPanelStage, } from './repair-stages.ts';
@@ -61,6 +61,10 @@ import {
  decide it on; see `buildEditorAddendum`
  
  @param models - role roster
+ 
+ @param reseat - reads the seating again at the checker stage, so a chunk
+ in flight when a provider runs dry asks the bench a fresh reading seats
+ (class one hundred nine)
  
  @param adjudicationConfig - tally thresholds and weights
  
@@ -114,6 +118,7 @@ export async function repairChunk(
     targetText,
     lineStructured,
     models,
+    reseat = standingSeating,
     adjudicationConfig,
     identityContext,
     referenceContext,
@@ -132,6 +137,7 @@ export async function repairChunk(
     readonly targetText: string;
     readonly lineStructured: boolean;
     readonly models: RepairModels;
+    readonly reseat?: () => Promise<RepairSliceSeating>;
     readonly adjudicationConfig?: AdjudicationConfig;
     readonly identityContext?: string;
     readonly referenceContext?: string;
@@ -145,34 +151,20 @@ export async function repairChunk(
     readonly l: Logger;
   }>,
 ): Promise<ChunkRepairOutcome> {
-  assertCheckerIndependence({
-    editorModelIds: models.editorModelIds,
-    checkerModelIds: models.checkerModelIds,
-    selfCertificationPermitted: models.checkerSelfCertificationPermitted ?? false,
-  },);
-  assertCheckerQuorumReachable({ checkerModelIds: models.checkerModelIds, },);
+  assertCheckerBench({ models, },);
 
   /**
-   Neighbouring evidence, spread into every stage that has to reason about it.
-   
-   BUILT ONCE RATHER THAN PASSED THREE TIMES. The critic, the panel and the
-   editor must see the SAME window or they contradict each other: a critic that
-   can see next door raises a relocation claim, and a panel that cannot see it
-   rejects that claim as unfounded. Three call sites spreading one value cannot
-   drift the way three separate arguments can.
+   Window and parsed pair every stage of this chunk reads (`chunkEvidence`).
    */
-  const windowFragment = {
+  const {
+    windowFragment,
+    documents,
+  } = chunkEvidence({
+    sourceText,
+    targetText,
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
-  };
-
-  /**
-   Parsed chunk pair claims anchor against.
-   */
-  const documents = {
-    source: parseDocument({ text: sourceText, },),
-    target: parseDocument({ text: targetText, },),
-  };
+  },);
 
   /**
    Critics plus the deterministic screen over their non-translation votes.
@@ -387,52 +379,24 @@ export async function repairChunk(
   },);
 
   /**
-   Checker proof over the patched candidate.
+   Checker proof and the shadow probe over the patched candidate, on the
+   bench as seated at the stage (class one hundred nine).
    */
-  const checker = await runCheckerStage({
+  const {
+    checker,
+    repairRegions,
+    introducedDefects,
+  } = await proveRepairedChunk({
     client,
-    checkerModelIds: models.checkerModelIds,
+    models,
+    reseat,
     sourceText,
-    patchedText: editor.patch
-      .patchedText,
-    issues: acceptedIssues,
-    authorship: appliedEnvelopes.authorship,
-    signal,
-    perCallTimeoutMs,
-    l,
-  },);
-
-  /**
-   Regions the accuracy stage replaced.
-   */
-  const repairRegions = collectRepairRegions({
+    targetText,
     envelopes,
-    applied: editor.patch
-      .applied,
-  },);
-
-  /**
-   Shadow-mode audit of damage the edit itself caused.
-   
-   Nothing downstream reads this to decide what ships, on purpose: see
-   `introduced-defect-probe.ts` for why an unmeasured probe must not gate.
-   */
-  const introducedDefects = await runIntroducedDefectProbe({
-    client,
-    proberModelIds: models.checkerModelIds,
-    sourceText,
-    baselineText: targetText,
-    regions: repairRegions,
-    issues: acceptedIssues,
-    // The auditor gets the same window as the stages it audits. Without it,
-    // `#66` measured this probe reporting nothing about a duplication whose
-    // other half sits in the slice next door, which no setting could have
-    // fixed.
+    editor,
+    acceptedIssues,
+    authorship: appliedEnvelopes.authorship,
     ...windowFragment,
-    // Withheld on purpose: rendering the accepted issues into the prompt was
-    // measured to silence this stage, and `introduced-defect-screen.ts` now
-    // dismisses a claim that merely restates one.
-    disclosure: PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
     signal,
     perCallTimeoutMs,
     l,

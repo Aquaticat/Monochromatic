@@ -14,6 +14,7 @@ import { cacheRefusalsOf, } from './repair-cache-gate.ts';
 import type {
   ChunkRepairOutcome,
   RepairModels,
+  RepairSliceSeating,
 } from './repair-contract.ts';
 import { notApplicableRepair, } from './repair-not-applicable.ts';
 import { buyRepairSlice, } from './repair-slice-buy.ts';
@@ -92,6 +93,10 @@ function storedOutcome(
  
  @param models - repair role roster
  
+ @param reseat - reads the seating again at the checker stage, so a chunk
+ in flight when a provider runs dry asks the bench a fresh reading seats
+ (class one hundred nine)
+ 
  @param adjudicationConfig - tally thresholds and weights
  
  @param slice - slice being settled
@@ -125,6 +130,7 @@ export async function settleRepairSlice(
     client,
     prepared,
     models,
+    reseat,
     adjudicationConfig,
     slice,
     slicePosition,
@@ -138,6 +144,7 @@ export async function settleRepairSlice(
     readonly client: SyntheticClient;
     readonly prepared: PreparedDocumentPair;
     readonly models: RepairModels;
+    readonly reseat?: () => Promise<RepairSliceSeating>;
     readonly adjudicationConfig?: AdjudicationConfig;
     readonly slice: ChunkPair;
     readonly slicePosition: number;
@@ -274,6 +281,7 @@ export async function settleRepairSlice(
         client,
         prepared,
         models,
+        ...((reseat === undefined) ? {} : { reseat, }),
         ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
         slice,
         key,

@@ -11,6 +11,7 @@ import { repairChunk, } from './repair-chunk.ts';
 import type {
   ChunkRepairOutcome,
   RepairModels,
+  RepairSliceSeating,
 } from './repair-contract.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import { assertSettledRecordAgrees, } from './slice-record-agreement.ts';
@@ -34,6 +35,10 @@ import { assertSettledRecordAgrees, } from './slice-record-agreement.ts';
  @param prepared - document slice belongs to
  
  @param models - repair role roster
+ 
+ @param reseat - reads the seating again at the checker stage, so a chunk
+ in flight when a provider runs dry asks the bench a fresh reading seats
+ (class one hundred nine)
  
  @param adjudicationConfig - tally thresholds and weights
  
@@ -70,6 +75,7 @@ export async function buyRepairSlice(
     client,
     prepared,
     models,
+    reseat,
     adjudicationConfig,
     slice,
     key,
@@ -84,6 +90,7 @@ export async function buyRepairSlice(
     readonly client: SyntheticClient;
     readonly prepared: PreparedDocumentPair;
     readonly models: RepairModels;
+    readonly reseat?: () => Promise<RepairSliceSeating>;
     readonly adjudicationConfig?: AdjudicationConfig;
     readonly slice: ChunkPair;
     readonly key: string;
@@ -134,6 +141,7 @@ export async function buyRepairSlice(
         neighbouringSourceText,
         ...(documentSourceText === '' ? {} : { documentSourceText, }),
         models,
+        ...((reseat === undefined) ? {} : { reseat, }),
         ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
         ...((prepared.identityContext === undefined)
           ? {}
