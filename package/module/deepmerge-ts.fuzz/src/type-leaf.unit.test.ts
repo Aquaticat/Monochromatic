@@ -54,7 +54,9 @@ await describe({
     it({
       name: 'regular expressions and errors are leaves',
       fn: async () => {
+        // oxlint-disable-next-line no-restricted-syntax/no-regex -- a RegExp object is the leaf input under test; it never matches anything here.
         const pattern = /deepmerge/gu;
+        // oxlint-disable-next-line no-restricted-syntax/no-regex -- RegExp objects are leaf inputs under test; they never match anything here.
         const merged = target.deepmerge({ p: /other/u, e: new Error('first',), }, { p: pattern, e: new TypeError('second',), },);
         expectTypeOf(merged,).toEqualTypeOf<{ p: RegExp; e: TypeError; }>();
         expect(merged.p,).toBe(pattern,);
@@ -100,6 +102,7 @@ await describe({
     it({
       name: 'a later scalar-or-undefined value widens instead of replacing',
       fn: async () => {
+        // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- the nullable input type is the case under test.
         const maybeString = widen<string | undefined>(undefined,);
         const merged = target.deepmerge({ a: 1, }, { a: maybeString, },);
         expectTypeOf(merged,).toEqualTypeOf<{ a: string | number; }>();

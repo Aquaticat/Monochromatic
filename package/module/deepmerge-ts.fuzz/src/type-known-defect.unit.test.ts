@@ -48,14 +48,15 @@ await describe({
       fn: async () => {
         const dictionary: Record<string, number> = { a: 1, };
         const merged = target.deepmerge(dictionary, { b: 'b', },);
-        expectTypeOf(merged,).toEqualTypeOf<{ [x: string]: number; }>();
+        expectTypeOf(merged,).toEqualTypeOf<Record<string, number>>();
         // Typed number, holds a string.
-        expect(merged['b'],).toBe('b',);
+        expect(merged.b,).toBe('b',);
       },
     },),
     it({
       name: 'unsound: a union-typed array value is replaced in the type but concatenated at runtime',
       fn: async () => {
+        // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- the nullable input type is the case under test.
         const maybeNumbers = widen<number[] | undefined>([1,],);
         const merged = target.deepmerge({ a: maybeNumbers, }, { a: ['s',], },);
         expectTypeOf(merged,).toEqualTypeOf<{ a: string[]; }>();
@@ -70,11 +71,13 @@ await describe({
     it({
       name: 'unsound: a union-typed Set or nested record value is replaced in the type but merged at runtime',
       fn: async () => {
+        // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- the nullable input type is the case under test.
         const maybeSet = widen<Set<number> | undefined>(new Set([1,],),);
         const sets = target.deepmerge({ a: maybeSet, }, { a: new Set(['s',],), },);
         expectTypeOf(sets,).toEqualTypeOf<{ a: Set<string>; }>();
         expect([...sets.a,],).toEqual([1, 's',],);
 
+        // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- the nullable input type is the case under test.
         const maybeRecord = widen<{ x: number[]; } | undefined>({ x: [1,], },);
         const records = target.deepmerge({ a: maybeRecord, }, { a: { x: ['s',], }, },);
         expectTypeOf(records,).toEqualTypeOf<{ a: { x: string[]; }; }>();
@@ -123,9 +126,7 @@ await describe({
     it({
       name: 'unsound: an any input yields the other input\'s concrete type',
       fn: async () => {
-        // oxlint-disable-next-line typescript/no-explicit-any -- any is the input type under test.
         const loose: any = 5;
-        // oxlint-disable-next-line typescript/no-unsafe-assignment -- the result type is what is pinned.
         const merged = target.deepmerge({ a: 1, }, loose,);
         expectTypeOf(merged,).toEqualTypeOf<{ a: number; }>();
         expect(merged,).toBe(5,);
@@ -141,7 +142,7 @@ await describe({
 
         const concatenated = { list: [1,], };
         target.deepmergeInto(concatenated, { list: ['s',], },);
-        expectTypeOf(concatenated.list[1],).toEqualTypeOf<number | undefined>();
+        expectTypeOf(concatenated.list,).items.toEqualTypeOf<number>();
         // Elements read as number (or absent), yet index 1 holds a string.
         expect(concatenated.list,).toEqual([1, 's',],);
       },

@@ -36,6 +36,7 @@ import {
   type Arbitrary,
 } from 'fast-check';
 
+import { keyOfEntry, } from './arbitraries.ts';
 import { target, } from './target.ts';
 
 /**
@@ -64,52 +65,120 @@ const MAX_ENTRIES = 3;
 const MAX_ARGUMENTS = 3;
 
 /**
- Emittable literal values: JSON scalars, `undefined`, dates, and containers.
+ Recursive generator scope for emittable literals.
  */
-const literalArbitrary: Arbitrary<unknown> = letrec<{ value: unknown; container: unknown; }>(function build(tie,) {
+const literalScope = letrec<{
+  value: unknown;
+  container: unknown
+}>(function build(tie,) {
   return {
     value: oneof(
-      { maxDepth: MAX_NESTING, depthIdentifier: 'literal', },
+      {
+        maxDepth: MAX_NESTING,
+        depthIdentifier: 'literal',
+      },
       constant(undefined,),
       constant(null,),
       boolean(),
-      integer({ min: -2, max: 9, },),
-      string({ maxLength: 2, unit: constantFrom('a', 'b', 'z',), },),
-      integer({ min: 0, max: 9, },).map(function toDate(offset,) {
+      integer({
+        min: -2,
+        max: 9,
+      },),
+      string({
+        maxLength: 2,
+        unit: constantFrom(
+          'a',
+          'b',
+          'z',
+        ),
+      },),
+      integer({
+        min: 0,
+        max: 9,
+      },)
+        .map(function toDate(offset,) {
         return new Date(offset,);
       },),
       tie('container',),
     ),
     container: oneof(
       { depthIdentifier: 'literal', },
-      uniqueArray(tuple(constantFrom('a', 'b', 'c', '__proto__', 'constructor',), tie('value',),), {
+      uniqueArray(
+        tuple(
+          constantFrom(
+            'a',
+            'b',
+            'c',
+            '__proto__',
+            'constructor',
+          ),
+          tie('value',),
+        ),
+        {
         maxLength: MAX_ENTRIES,
-        selector: function keyOf([key,],) {
-          return key;
-        },
-      },).map(function toRecord(entries,) {
-        return Object.defineProperties({}, Object.fromEntries(entries.map(function toDescriptor([key, value,],) {
-          return [key, { configurable: true, enumerable: true, value, writable: true, },];
-        },),),);
+        selector: keyOfEntry,
+      },
+      )
+        .map(function toRecord(entries,) {
+        return Object.defineProperties(
+          {},
+          Object.fromEntries(entries.map(function toDescriptor([key, value,],) {
+          return [
+            key,
+            {
+              configurable: true,
+              enumerable: true,
+              value,
+              writable: true,
+            },
+          ];
+        },),),
+        );
       },),
-      array(tie('value',), { maxLength: MAX_ENTRIES, },),
-      array(tie('value',), { maxLength: MAX_ENTRIES, },).map(function toSet(items,) {
+      array(
+        tie('value',),
+        { maxLength: MAX_ENTRIES, },
+      ),
+      array(
+        tie('value',),
+        { maxLength: MAX_ENTRIES, },
+      )
+        .map(function toSet(items,) {
         return new Set(items,);
       },),
       // One key family per Map: TypeScript infers a Map's key type from its first entry.
-      ...[constantFrom<unknown>('k', 'm',), constantFrom<unknown>(1, 2,),].map(function mapOf(keyFamily,) {
-        return uniqueArray(tuple(keyFamily, tie('value',),), {
+      ...[
+        constantFrom<unknown>(
+          'k',
+          'm',
+        ),
+        constantFrom<unknown>(
+          1,
+          2,
+        ),
+      ].map(function mapOf(keyFamily,) {
+        return uniqueArray(
+          tuple(
+            keyFamily,
+            tie('value',),
+          ),
+          {
           maxLength: MAX_ENTRIES,
-          selector: function keyOf([key,],) {
-            return key;
-          },
-        },).map(function toMap(entries,) {
+          selector: keyOfEntry,
+        },
+        )
+          .map(function toMap(entries,) {
           return new Map(entries,);
         },);
       },),
     ),
   };
-},).value;
+},);
+
+/**
+ Emittable literal values: JSON scalars, `undefined`, dates, and containers.
+ */
+const literalArbitrary: Arbitrary<unknown> = literalScope.value;
 
 /**
  Write a value as a TypeScript expression whose inferred type matches what a
@@ -128,32 +197,42 @@ const literalArbitrary: Arbitrary<unknown> = letrec<{ value: unknown; container:
 export function emitLiteral(value: unknown,): string {
   if (value === undefined)
     return 'undefined';
-  if ((value === null) || ((typeof value) === 'boolean') || ((typeof value) === 'number') || ((typeof value) === 'string'))
+  if ((value === null) || ((typeof value) === 'boolean')
+    || ((typeof value) === 'number')
+    || ((typeof value) === 'string'))
     return JSON.stringify(value,);
   if (value instanceof Date)
     return `new Date(${String(value.getTime(),)})`;
   if (Array.isArray(value,)) {
     return value.length === 0
       ? '([] as never[])'
-      : `[${value.map(emitLiteral,).join(', ',)}]`;
+      : `[${value.map(emitLiteral,)
+        .join(', ',)}]`;
   }
   if (value instanceof Set) {
     return value.size === 0
       ? 'new Set<never>()'
-      : `new Set([${[...value,].map(emitLiteral,).join(', ',)}])`;
+      : `new Set([${[...value,].map(emitLiteral,)
+        .join(', ',)}])`;
   }
   if (value instanceof Map) {
     return value.size === 0
       ? 'new Map<never, never>()'
       : `mapOf([${[...value,].map(function entry([key, entryValue,],) {
         return `[${emitLiteral(key,)}, ${emitLiteral(entryValue,)}]`;
-      },).join(', ',)}])`;
+      },)
+        .join(', ',)}])`;
   }
   if (((typeof value) === 'object') && (value !== null)) {
     // `__proto__` must be a computed key, or the literal sets the prototype instead.
-    return `{ ${Object.keys(value,).map(function property(key,) {
-      return `${key === '__proto__' ? '["__proto__"]' : JSON.stringify(key,)}: ${emitLiteral(Reflect.get(value, key,),)}`;
-    },).join(', ',)} }`;
+    return `{ ${Object.keys(value,)
+      .map(function property(key,) {
+      return `${key === '__proto__' ? '["__proto__"]' : JSON.stringify(key,)}: ${emitLiteral(Reflect.get(
+        value,
+        key,
+      ),)}`;
+    },)
+      .join(', ',)} }`;
   }
   throw new TypeError(`emitLiteral: no literal form for ${typeof value}`,);
 }
@@ -172,10 +251,19 @@ export function emitCorpus(): string {
   /**
    Fixed-seed argument lists.
    */
-  const draws = sample(array(literalArbitrary, { minLength: 1, maxLength: MAX_ARGUMENTS, },), {
+  const draws = sample(
+    array(
+      literalArbitrary,
+      {
+        minLength: 1,
+        maxLength: MAX_ARGUMENTS,
+      },
+    ),
+    {
     numRuns: CORPUS_SIZE,
     seed: CORPUS_SEED,
-  },);
+  },
+  );
   /**
    One case per draw.
    */
@@ -186,7 +274,8 @@ export function emitCorpus(): string {
     const result: unknown = target.deepmerge(...values,);
     return [
       '  () => {',
-      `    const merged = deepmerge(${values.map(emitLiteral,).join(', ',)});`,
+      `    const merged = deepmerge(${values.map(emitLiteral,)
+        .join(', ',)});`,
       `    const value = ${emitLiteral(result,)};`,
       '    const check: typeof merged = value;',
       '    return { merged, value: check, };',
@@ -215,4 +304,10 @@ export function emitCorpus(): string {
 }
 
 if (import.meta.main)
-  await writeFile(new URL('type-soundness.generated.ts', import.meta.url,), emitCorpus(),);
+  await writeFile(
+    new URL(
+      'type-soundness.generated.ts',
+      import.meta.url,
+    ),
+    emitCorpus(),
+  );

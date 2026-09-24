@@ -298,7 +298,7 @@ function buildRecord(plan: RecordPlan,): object {
  keyOfEntry(['a', 1,]); // 'a'
  ```
  */
-function keyOfEntry<const TKey,>(entry: readonly [
+export function keyOfEntry<const TKey,>(entry: readonly [
   TKey,
   ...unknown[],
 ],): TKey {

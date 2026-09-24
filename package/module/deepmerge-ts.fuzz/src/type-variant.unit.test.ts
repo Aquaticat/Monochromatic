@@ -29,7 +29,7 @@ import { target, } from './target.ts';
  */
 declare module 'deepmerge-ts' {
   // oxlint-disable-next-line typescript/consistent-type-definitions -- declaration merging needs an interface.
-  interface DeepMergeFunctionURItoKind<Ts extends ReadonlyArray<unknown>, Fs extends DeepMergeFunctionsURIs, in out M> {
+  interface DeepMergeFunctionURItoKind<Ts extends readonly unknown[], Fs extends DeepMergeFunctionsURIs, in out M> {
     /**
      Last value wins, used by the custom `mergeArrays` case.
      */
