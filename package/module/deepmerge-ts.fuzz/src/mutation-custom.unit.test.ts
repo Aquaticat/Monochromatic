@@ -275,18 +275,24 @@ await describe({
       },
     },),
     it({
-      name: 'utils.mergeFunctions exposes only the merge functions, not other options',
-      // Kills 559 (defaults/general.ts).
+      name: 'utils.mergeFunctions exposes only the merge functions, not other or unset options',
+      // Kills 559 and 572 (defaults/general.ts).
       fn: async () => {
         /**
-         Keys a custom mergeOthers sees on utils.mergeFunctions.
+         Options with a non-function option and a merge function explicitly set to undefined, as a spread of
+         partial options produces.
          */
-        const keys: unknown = target.deepmergeCustom({
+        const options = {
           maxDepth: 5,
+          mergeArrays: undefined,
           mergeOthers: function listKeys(_values: readonly unknown[], utils: { readonly mergeFunctions: object; },) {
             return Object.keys(utils.mergeFunctions,).toSorted();
           },
-        },)(1, 2,);
+        };
+        /**
+         Keys a custom mergeOthers sees on utils.mergeFunctions.
+         */
+        const keys: unknown = target.deepmergeCustom(options as never,)(1, 2,);
         expect(keys,).toEqual([
           'mergeArrays',
           'mergeCircularReferences',
