@@ -239,15 +239,21 @@ export async function scanCandidates({
     === 0)
     return [];
   /**
-   Scanner argv: the opt-in embedded-baseline flag (when configured) before
-   explicit temporary-file positionals.
+   Each logical candidate name pairs with a synthetic content operand by
+   position, without recreating repository path grammar in the temp filesystem.
    */
-  const scannerArguments = builtinRules
-    ? [
-      '--builtin-rules',
-      ...materialized.paths,
-    ]
-    : materialized.paths;
+  const nameArguments = materialized.namePaths.flatMap(function nameOperand(name,): readonly string[] {
+    return ['--name-path', name,];
+  },);
+  /**
+   Scanner argv: optional embedded baseline, real logical names, then exact
+   temporary content files in the same order.
+   */
+  const scannerArguments = [
+    ...(builtinRules ? ['--builtin-rules',] : []),
+    ...nameArguments,
+    ...materialized.paths,
+  ];
   try {
     await nanoSpawn(
       executable,
@@ -265,14 +271,13 @@ export async function scanCandidates({
     if (error.exitCode === 1)
       return parseScannerOutput({
         stderr: error.stderr,
-        candidateForPath: function candidateForPath(path,): CandidateFile {
+        candidateForIndex: function candidateForIndex(index,): CandidateFile {
           /**
-           Exact mapped candidate.
+           Exact candidate aligned with the scanner's opaque operand index.
            */
-          const candidate = materialized.candidatesByPath
-            .get(path,);
+          const candidate = materialized.candidates[index];
           if (candidate === undefined)
-            throw new ForbiddenStringsPluginError(`Forbidden-strings scanner reported unknown candidate: ${path}`,);
+            throw new ForbiddenStringsPluginError('Forbidden-strings scanner reported an unknown operand index.',);
           return candidate;
         },
       },);
