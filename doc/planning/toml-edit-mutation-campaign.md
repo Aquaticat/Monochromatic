@@ -476,8 +476,18 @@ The indexed array-of-tables read fix passed the rebuilt package suite,
  oxlint,
  and the deterministic fuzz coverage gate.
 TOML 1.0 and 1.1 conformance and the sidecar bounded property suite passed after that change.
-After edit-path triage,
- scan the remaining comment API and value-encoding files.
+The remaining runtime comment API and value-encoding files are now being scanned
+ in bounded containers on the same source revision:
+
+- `toml-get-comment-after.ts`,
+  `toml-get-comments-before.ts`,
+  `toml-insert-comment-after.ts`,
+  and `toml-insert-comment-before.ts` write
+  `/var/home/user/temp/agent/toml-mutation-comment-api.json` (`proc_b6db`).
+- `value-encoders.ts` and `values.ts` write
+  `/var/home/user/temp/agent/toml-mutation-value-encoders.json` (`proc_1ab6`).
+
+Do not edit runtime source until both complete.
 Do not claim a full-runtime verdict before those campaigns and survivor rechecks finish.
 
 ## Remaining scope
