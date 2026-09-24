@@ -88,6 +88,12 @@ The repo recommends the library in `doc/decision/cli-git-policies-platform.md`
 and uses its semantics as the reference for rule-settings merging in `doc/handover/unified-linter.md`;
 no workspace package depends on it at runtime.
 
+Purpose stated by the user 2026-09-24:
+settle deepmerge-ts so it can serve as the oracle for the user's upcoming Rust fork of it.
+So every behaviour the fork will be compared against must be characterized,
+each open intent question in the issue draft is an unsettled oracle region until upstream answers,
+and the JSON-serializable corpus in `src/json-case.ts` (Q13) is the likely hand-off format.
+
 ## Evidence
 
 Upstream audit run 2026-09-23 against `main` at `17fc99cb` (v8.0.2),
