@@ -56,46 +56,38 @@ rounds (2026-09-17):
   chosen as the working baseline, not banned from exploration.
   K1's discouraging back
   navigation and K3's non-local sheet remain rejected.
-- **ACTIVE: separate search page, opened by a Search button (D47).**
+- **ACTIVE: one-bar Search page review (D47/D48), awaiting correction.**
   The user
-  rejected every I/G/R candidate and directed a page instead of any command-bar
-  appearance.
-  The current `questions/current.html` is the rejected comparison and
-  must be replaced before another review;
-  do not ask for I/G/R codes.
-  Draw the
-  visible button in its player context,
-  then the destination as a page with query,
-  results,
-  Back,
-  no-results and unavailable/error states in both schemes.
-  D48
-  settles one integrated 72dp page header for Back,
-  query and Clear;
-  no second
-  in-app title/search bar stack.
-  Native Slint captures of player,
-  open-empty,
-  illustrative results,
-  no-result and unavailable states now exist in both schemes
-  at 360,
-  480 and 1100px desktop widths (`questions/render/search-page-*`).
+  rejected all command-bar variants and then corrected the first Search-page
+  prototype's double bar.
+  `questions/current.html` now shows the active direction
+  only:
+  a player Search icon button,
+  a separate page with a single 72px
+  Back/query/Clear header and divider,
+ illustrative results,
+ no-result and
+  unavailable states.
+  Native Slint rasters in both schemes cover 360,
+  480 and
+  1100px desktop widths (`questions/render/search-page-*`),
+ and the HTML walkthrough
+  demonstrates player → page → player without claiming native click/focus evidence.
   The
-  captured `current.html` still contains the rejected I/G/R form until the one-design
-  Search page review replaces it.
-  Use the
-  local baseline M3 Search component evidence in `material-3-compliance.md` without
-  mixing in Expressive treatments.
+  rejected comparison is archived in `questions/archive/command-igr-rejected.html`;
+  do not ask for I/G/R codes.
+  Baseline M3 Search component evidence is in
+  `material-3-compliance.md`.
   Search targets,
   result actions/ranking,
-  the
-  button's platform-specific position,
-  and page empty/error behavior need evidence;
-  D47 has not chosen them.
-  D21's global hotkey and Settings row belonged to the
-  superseded command bar and do not automatically move to Search.
-  D25 still reserves
-  Ctrl+F for future search and Ctrl+O for the picker,
+  button placement
+  beyond this desktop study,
+  and empty/error semantics remain open.
+  D21's global
+  hotkey and Settings row belonged to the superseded command bar and do not
+  automatically move to Search.
+  D25 reserves Ctrl+F for future search and Ctrl+O for
+  the picker,
   pending the whole keyboard map.
   Cover-specific accessibility remains open;
   D39/D40 settled only the unfolded
