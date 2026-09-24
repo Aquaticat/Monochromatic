@@ -118,7 +118,11 @@ Web searches discovered `jwc`, `hifijson`, `fjson`, `tokora`, and lexer-only `an
 
 - `jsonc` 0.1.0 has no repository URL in registry metadata; the published source in the local Cargo cache (`jsonc_document.rs:2-4,62-73,107-119`) wraps `jsonc-parser` and projects through `serde_json::Value`. It inherits the upstream scanner's surrogate constraint and cannot provide the full contract as-is.
 - `jsonc_tools` 0.0.1 published source (`src/lib.rs:1-18`, `src/parser/parser.rs:1-13`) is a scaffold with no JSONC parser implementation. Category mismatch.
-- `jsontape`, `hifijson`, `tokora`, `purrdf-json`, and `momoa` remain discovery leads requiring category screening; none is yet recommended or rejected on registry description alone.
+- `jsontape`, `hifijson`, `tokora`, and `purrdf-json` remain discovery leads requiring category screening; `momoa` has a separate source-proven safety hard-gate failure recorded next.
+
+### `momoa` 3.2.6 safety exit
+
+The published Rust parser is excluded as-is on a safety hard gate, not on regex. In `rust/src/readers.rs:79-113`, four hex digits after `\u` are accepted without excluding surrogates; `rust/src/tokens.rs:119-140` produces a string token; and `rust/src/parse.rs:326-351` feeds the decoded `0xD800` to `unsafe { char::from_u32_unchecked(char_code) }`. The source in private clone `~/temp/agent/momoa-2026-09-24` at `8dfb563` matched the published 3.2.6 `parse.rs` and `readers.rs` SHA-256 hashes. [Rust documentation](https://doc.rust-lang.org/std/primitive.char.html#method.from_u32_unchecked) says a surrogate is not a valid `char`, and constructing it is undefined behavior. Full source trace, safe checked pre-fix control, bounded patched prototype, targeted public-entry checks, upstream Rust suite output, and reproducible patch are in [`momoa-rust-unpaired-surrogate.md`](../troubleshooting/momoa-rust-unpaired-surrogate.md). The original unsafe parser was never run on this input. The patched prototype rejects isolated surrogates, while this port explicitly requires retaining them as UTF-16 values; it is a safety workaround, not a semantic foundation for the port.
 
 ## Regex screening, 2026-09-24
 
