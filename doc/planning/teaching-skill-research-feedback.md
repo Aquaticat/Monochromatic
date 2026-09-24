@@ -134,6 +134,28 @@ These paired completions test whether the proposed checks notice a usable criter
 interpretation, and next move. They are not a new recipe, a verified repair to the
 existing Promise lesson, or evidence of learner performance.
 
+## Local probe of the existing Promise workshop
+
+`mise run probe:learner-feedback` exercised the generated local lesson in an owned,
+disposable browser session; it did not reload the user's presented tab.
+The authored “Handle rejection” starter leaves the result at `Waiting…` and reports
+`Unhandled rejection: Permission denied. Retrying unchanged inputs will not repair this.`
+The actual exercise task names that mismatch and asks for a local error handler.
+Its hint says to put the awaited call inside `try` and show `error.message` in `catch`.
+The worked comparison instead displays `Could not reply: Permission denied...`
+with no preview error. This is a positive control for feedback already present;
+the research must not claim that the lesson provides no recovery guidance.
+
+Two separate disposable learner-code variations then produced identical preview text,
+`Waiting…`, and an empty error record.
+In one, `Promise.withResolvers()` was never resolved;
+in the other, `resolve("Hello Ada")` had run but no observer updated the result element.
+The probe itself tracked the resolver call and awaited the second Promise to confirm
+its value. It proves that this display alone does not identify the underlying state;
+it does not prove a real learner wrote either variation or that the lesson needs a new UI.
+A candidate teaching check can require evidence gathering across operation start,
+settlement, and display observation when a learner's own result differs from the worked case.
+
 A direct falsifier of **newness** would be a reading of the current acceptance checks showing
 that they already require the learner's own step-local criterion, mismatch interpretation,
 and recovery or stop action, not only a working artifact, observable demo, or independent task.
