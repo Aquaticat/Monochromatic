@@ -3,13 +3,15 @@ import { droppedAddressFindings, } from './translate-address-drop.ts';
 import { declaredLinkNameFindings, } from './translate-declared-link-name.ts';
 import { hanTitleFindings, } from './translate-han-title.ts';
 import { droppedMarkerFindings, } from './translate-marker-drop.ts';
+import { unwrappedLinkFindings, } from './translate-unwrapped-link.ts';
 
 //region Source carry floors
 // What the original passage carries that every candidate must carry too,
 // read before any judge: its footnote markers (class ninety-two), its
 // second-person address (class ninety-seven), its bracketed work titles
-// in English (class ninety-eight) and a declared name inside a linked title
-// in its declared form (class one hundred fourteen). The floors run in that order and the
+// in English (class ninety-eight), its worded links as links (class one
+// hundred fifteen) and a declared name inside a linked title in its
+// declared form (class one hundred fourteen). The floors run in that order and the
 // first one that speaks decides, so a candidate is refused for one thing at
 // a time.
 
@@ -75,6 +77,15 @@ export function sourceCarryFindings(
   },);
   if (titleFindings.length > 0)
     return titleFindings;
+  /**
+   Worded links the candidate unwrapped while keeping the destination.
+   */
+  const linkFindings = unwrappedLinkFindings({
+    sourceText,
+    candidateText,
+  },);
+  if (linkFindings.length > 0)
+    return linkFindings;
   return declaredLinkNameFindings({
     sourceText,
     candidateText,
