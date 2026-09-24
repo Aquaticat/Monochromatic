@@ -47,7 +47,7 @@ function card({ panel, stage, text }) {
     <h3>${label}</h3>
     <picture><source media="(prefers-color-scheme: dark)" srcset="${dark}"><img src="${light}" width="${width}" height="${height}" alt="Native Pixel 9 Pro Fold ${label}; displayed scheme follows system setting"></picture>
     <figcaption class="small">${width} × ${height} physical px, native Compose with Android system bars. Preview with device chassis at design dp.</figcaption>
-    <div class="preview-actions"><button type="button" data-scheme="dark">Preview dark</button><button type="button" data-scheme="light">Preview light</button></div>
+    <div class="preview-actions"><button type="button" data-scheme="dark" aria-label="Preview ${label} in dark mode">Preview dark</button><button type="button" data-scheme="light" aria-label="Preview ${label} in light mode">Preview light</button></div>
   </figure>`;
 }
 
@@ -121,7 +121,8 @@ function assertRoles() {
   for (const panel of panels) for (const mode of modes) {
     const { android, roles } = JSON.parse(readFileSync(join(evidencePath, `fold-search-${panel}-roles-${mode}.json`), 'utf8'));
     if (android.api !== 37 || android.deviceState !== (panel === 'inner' ? '2' : '0') ||
-      android.night !== mode || android.displayPixels.join('x') !== dimensions[panel].join('x') ||
+      android.night !== mode || android.densityDpi !== 390 ||
+      android.displayPixels.join('x') !== dimensions[panel].join('x') ||
       roles.surface_container_lowest !== (mode === 'dark' ? '#000000' : '#FFFFFF')) {
       throw new Error(`${panel}/${mode}: Android device state, screen size or accepted connector role differs from the native capture.`);
     }
@@ -159,6 +160,13 @@ function validate() {
         embedded.readUInt32BE(16) !== width || embedded.readUInt32BE(20) !== height) {
         throw new Error(`${basename({ ...scene, mode })}: review image does not match its opaque native frame.`);
       }
+      const metadata = JSON.parse(readFileSync(join(evidencePath, `${basename({ ...scene, mode })}.meta.json`), 'utf8'));
+      if (metadata.deviceState !== (scene.panel === 'inner' ? '2' : '0') ||
+        metadata.physicalPixels.join('x') !== dimensions[scene.panel].join('x') ||
+        metadata.densityDpi !== 390 || metadata.night !== mode ||
+        metadata.fontScale !== (scene.text === '200' ? 2 : 1)) {
+        throw new Error(`${basename({ ...scene, mode })}: capture metadata does not prove its panel, scheme and font scale.`);
+      }
       const xml = readFileSync(join(evidencePath, `${basename({ ...scene, mode })}.xml`), 'utf8');
       if (!xml.includes('package="dev.monochromatic.musicplayer"') || !xml.includes('content-desc="Search music"')) {
         throw new Error(`${basename({ ...scene, mode })}: native hierarchy lost the Search control.`);
@@ -184,7 +192,7 @@ function validate() {
   }
   for (const text of ['D47', 'D48', 'D49', '24dp connector', 'id="panel"', 'id="open-page"', 'id="back-player"', 'id="sample-query"',
     'id="unavailable"', 'id="correction"', 'preview.showModal()', 'Reset 100%', 'width="1080" height="2424"',
-    'frameWidth: 907', 'frameWidth: 466', 'showStage(\'open-empty\')', 'showStage(\'player\')', 'backPlayer.focus()', 'openPage.focus()']) {
+    'frameWidth: 907', 'frameWidth: 502.4', 'showStage(\'open-empty\')', 'showStage(\'player\')', 'backPlayer.focus()', 'openPage.focus()']) {
     if (!html.includes(text)) throw new Error(`Fold Search review is missing ${text}.`);
   }
   console.log('Fold-native Search review, paired hierarchies, and empty black/white connector are valid.');
