@@ -1015,7 +1015,7 @@ do not prove keyboard operation,
 search indexing,
  or real second-window behavior.
 
-## Baseline MD3 divided Search command round (current, awaiting visual review)
+## Baseline MD3 divided Search command round (rejected by D47)
 
 The independent I1 to I3,
  G1 to G2 and R1 to R2 roles remain as documented for the
@@ -1046,9 +1046,10 @@ its static `stress` input does not verify width-driven responsive behavior.
  E1 no-result and E2
 unavailable-action scenes remain contextual probes,
  not independent choices.
-The active questionnaire is `questions/current.html`,
- with a normalized 56px
-baseline-spec versus native header comparison at
+The rejected questionnaire remains temporarily at `questions/current.html` only until
+the separate Search page replaces it.
+ Its normalized 56px baseline-spec versus native
+header comparison is at
 `questions/evidence/command-md3-baseline-header-comparison.png`.
  None of these
 alternatives has been selected by the user.
@@ -1060,3 +1061,25 @@ verify working shortcuts,
 ownership,
  result execution,
  or search indexing.
+
+## Search button to separate search page (D47, active design work)
+
+The user rejected all I/G/R command-bar presentations.
+ The next prototype has one
+active direction rather than an option matrix:
+ show a Search button in the player,
+its activation to a separate search page,
+ a page-level query field,
+ typed results,
+Back to the player,
+ and empty/unavailable states.
+ Both color schemes and compact/
+expanded desktop widths must be drawn natively before replacing the rejected form.
+D21's global hotkey and Settings row are not inherited by the Search page.
+D25's Ctrl+F reservation remains open with the whole keyboard map.
+ The exact search
+targets,
+ result effects/ranking,
+ and button position on each platform remain design
+questions;
+ none was decided by D47.
