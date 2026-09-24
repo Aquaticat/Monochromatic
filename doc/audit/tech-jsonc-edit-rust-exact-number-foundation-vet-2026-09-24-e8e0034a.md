@@ -2,17 +2,17 @@
 
 ## Status and fingerprint
 
-- Status: Superseded by [regex-gated report](tech-jsonc-edit-rust-exact-number-foundation-vet-2026-09-24-e8e0034a.md); original fingerprint is retained for audit history.
+- Status: Discovery, incomplete. No candidate is recommended or adopted.
 - Subject: jsonc-edit Rust exact-number foundation.
 - Scope: Choose exact JSON numeric value representation for the native published `monochromatic-jsonc-edit` crate.
 - Started and last updated: 2026-09-24.
 - Owner: current coding-agent session.
 - Governing skill: `.agents/skills/choosing-technology/SKILL.md` at `a05818ad7`, SHA-256 `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
-- Fingerprint, RFC 8785 canonicalized schema version 1: `1fd8b19bb0a656cca8a01b1360a4e7225c8cc529f0888dcd46e530655c6570a4`.
+- Fingerprint, RFC 8785 canonicalized schema version 1: `e8e0034aeb9c0f9b86aa17cd701ca3a0886ff81b49bc2c552004a2ec33138876`.
 - No prior compatible report was found under `doc/audit/` by a `rg --files` search for JSONC, Rust parser, or structured edits.
 - Base category: inspectable open-source local technology, including repository-owned implementation as the baseline.
 - Overlays: native Rust library, multi-platform. No credential or CI execution in the candidate library; untrusted JSONC text crosses the parser boundary. No replacement of the TypeScript library, which stays maintained.
-- Hard constraints: exact equality over admitted JSON numbers, original spelling for unedited literals, no silent rounding, LGPL-3.0-or-later compatible licensing, inspectable source and reproducible validation.
+- Hard constraints: exact equality over admitted JSON numbers, original spelling for unedited literals, no silent rounding, LGPL-3.0-or-later compatible licensing, inspectable source and reproducible validation, and no regex-backed production number parsing in required dependencies.
 - Deployment: native Rust on Linux, macOS and Windows, published to crates.io. Browser and Wasm not required.
 - Preference weights: none beyond the confirmed requirements in `doc/planning/jsonc-edit-rust-port.md`.
 
@@ -141,6 +141,10 @@ It retains the raw spelling separately in its call site. This is an algorithm pr
 - Remaining failure risks: the prototype uses JavaScript `BigInt` to adjust exponents, while the Rust implementation needs a bounded-by-input, sign-aware decimal-exponent representation without machine-integer overflow. Exact equality and hashing must share normalized identity; `-0` equals `0` while retaining original spelling. The scratch probe cannot establish Rust ergonomics, linear time, parser integration, or published crate behavior.
 
 Further source screening: `fpdec` 0.14.1, `~/temp/agent/fpdec-2026-09-24` at `b9ac6e5`, `src/lib.rs:98-131` stores `coeff: i128` and restricts fractional digits to `MAX_N_FRAC_DIGITS`; it cannot be the only representation for arbitrary JSON numbers. Its `LICENSE.TXT:1-3` identifies BSD 3-Clause despite registry `cargo info` reporting `license: unknown` (manifest uses `license-file`, not a license identifier). `fraction` 0.17.0 at `~/temp/agent/fraction-2026-09-24` uses `BigInt`-backed rationals but does not by itself preserve a raw JSON number token or provide unbounded exponents without magnitude-sized denominator/numerator expansion; a custom exponent layer would still be needed. The latter is an architectural inference, not a verified execution result.
+
+## Regex screening, 2026-09-24
+
+The user explicitly excludes production regex. The inspected direct source and manifest for `json-number` 0.4.10 at `~/temp/agent/json-number-2026-09-24` contains no `regex::`, `Regex::`, `#[regex]`, `logos`, or direct regex dependency; `src/lib.rs:117-195` validates number grammar with a state machine. Its required `lexical` dependency and other composed alternatives still need transitive production-path screening before claiming they are regex-free. The repository-owned token/normalization prototype uses direct scans; it remains an incomplete JavaScript proof, not Rust validation.
 
 ## Pending evidence and validation
 
