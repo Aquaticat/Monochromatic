@@ -66,20 +66,26 @@ rounds (2026-09-17):
   The desktop-width
   Slint screenshots in `questions/render/search-page-*` are historical experiments,
   not a live review or a basis for desktop-specific design.
-  The current
-  `questions/current.html` still shows those obsolete desktop scenes and must be
-  replaced with native Compose captures of the actual Fold panels in both schemes
-  before requesting feedback.
-  The first unfolded Compose Search draft incorrectly
-  spanned its center 24dp connector with a full-width header and result rows;
-  that
-  capture run was stopped.
+  The first unfolded Compose Search draft incorrectly spanned its centered 24dp
+  connector with a full-width header and result rows;
+  its capture run was
+  stopped.
   E2 now excludes **all app content** from `[414,438)`dp,
-  not just controls.
-  Build two bounded panes with a neutral empty connector and
-  verify visible-node bounds plus connector pixels before recapturing.
-  Do not ask
-  for I/G/R codes or a desktop window size.
+  not just
+  controls.
+  The corrected debug-only Compose study uses two bounded 414dp
+  panes with an empty connector at accepted black/white fill.
+  Native captures,
+  paired hierarchies and roles from both panels/schemes are embedded in the active
+  `questions/current.html` review.
+  A build validator checks state identity,
+  dimensions,
+  visible-node bounds and physical connector pixels;
+  red controls
+  fail for both a crossing target and a wrong tonal fill.
+  Seek free-text
+  correction on this active direction,
+  never I/G/R codes or a desktop width.
   Keep Search results,
   no-result/unavailable states,
   and open/back behavior visibly
