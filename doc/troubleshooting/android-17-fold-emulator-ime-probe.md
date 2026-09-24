@@ -102,6 +102,18 @@ That correction is in throwaway prototype commit `60e01dfab`.
   The mirrored candidate,
   `search-deck-inner-mirrored-empty-light`, also passes this visible-state
   check with Search on the left and the deck on the right.
+  The committed
+  throwaway matrix task `prototype:capture:choices` captured right,
+  mirrored and IME-lifted placements in both schemes at 100% and 200%.
+  At 200%, `dumpsys window windows` reported `InputMethod` frame
+  `[0,1421][2076,2152]`, or 731px on the 390dpi inner panel.
+  The task restored Gboard as the selected method and disabled the probe.
+- A separate cover-panel check at 200% inserted `cam` while the same input
+  method occupied `[0,1693][1080,2424]`.
+  The query and both sample results
+  remained visible above its input surface.
+  The cover returned to the
+  unfolded state and original 100% text setting after this check.
 - The previously bottom-anchored right candidate, captured with the same
   initial probe before moving the deck, displayed its lower mode controls
   behind the input window at 200% text.
