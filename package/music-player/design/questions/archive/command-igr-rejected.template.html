@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Music player design: desktop command bar round</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --page: #f6f7fc;
+  --panel: #ffffff;
+  --raised: #e7e7f1;
+  --ink: #30323b;
+  --muted: #5d5f68;
+  --line: #b0b1bc;
+  --accent: #4e5e8b;
+  --accent-fill: #e1e6f7;
+  --scrim: #30323b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #0d0e13;
+    --panel: #17181f;
+    --raised: #1e1f26;
+    --ink: #e4e5f0;
+    --muted: #a9aab5;
+    --line: #464850;
+    --accent: #bac5ee;
+    --accent-fill: #303a54;
+    --scrim: #000000;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin-block: 0;
+  margin-inline: 0;
+  background-color: var(--page);
+  color: var(--ink);
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+button, textarea, input { font: inherit; }
+button {
+  min-inline-size: 3rem;
+  min-block-size: 3rem;
+  padding-inline: 0.8rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--line);
+  border-radius: 0.5rem;
+  background-color: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+}
+button:hover { background-color: var(--raised); }
+button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible {
+  outline: 0.1875rem solid var(--accent);
+  outline-offset: 0.1875rem;
+}
+main {
+  max-inline-size: 84rem;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+  padding-block: 2rem 5rem;
+  margin-inline: auto;
+}
+h1 { font-size: clamp(1.9rem, 4vw, 2.8rem); line-height: 1.15; }
+h2 { margin-block-start: 2.5rem; }
+p { max-inline-size: 80ch; }
+.small { color: var(--muted); font-size: 0.9rem; }
+.banner {
+  padding-inline: 1rem;
+  padding-block: 0.75rem;
+  border-inline-start-width: 0.25rem;
+  border-inline-start-style: solid;
+  border-inline-start-color: var(--accent);
+  background-color: var(--panel);
+}
+fieldset {
+  margin-block: 1.5rem;
+  padding-inline: 1rem;
+  padding-block: 1.25rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--line);
+  border-radius: 0.75rem;
+  background-color: var(--panel);
+}
+legend { padding-inline: 0.5rem; font-size: 1.25rem; font-weight: 700; }
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.choice-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.choice {
+  display: block;
+  padding-inline: 1rem;
+  padding-block: 1rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--line);
+  border-radius: 0.65rem;
+  cursor: pointer;
+}
+.choice:has(input:checked) { border-color: var(--accent); background-color: var(--accent-fill); }
+.choice input { inline-size: 1.25rem; block-size: 1.25rem; accent-color: var(--accent); }
+.choice strong { display: block; margin-block: 0.4rem; font-size: 1.12rem; }
+.choice p { margin-block: 0.5rem; }
+.pro, .con { display: block; font-size: 0.9rem; }
+.pro::before { content: "Pro: "; font-weight: 700; }
+.con::before { content: "Con: "; font-weight: 700; }
+.matrix {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+.capture {
+  margin: 0;
+  min-inline-size: 0;
+  padding-inline: 0.75rem;
+  padding-block: 0.75rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--line);
+  border-radius: 0.75rem;
+  background-color: var(--panel);
+}
+.capture h3 { margin-block: 0 0.5rem; }
+.capture picture { display: block; }
+.capture img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--line);
+}
+.capture figcaption { margin-block-start: 0.6rem; }
+.preview-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-block-start: 0.75rem; }
+.wide { max-inline-size: 70rem; }
+.wide img { max-inline-size: 100%; inline-size: auto; }
+.source-check {
+  max-inline-size: 60rem;
+  margin-inline: 0;
+  margin-block: 1rem 2rem;
+  padding-inline: 0.75rem;
+  padding-block: 0.75rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--line);
+  border-radius: 0.75rem;
+  background-color: var(--panel);
+}
+.source-check img { display: block; max-inline-size: 100%; block-size: auto; }
+textarea {
+  display: block;
+  inline-size: 100%;
+  min-block-size: 8rem;
+  padding-inline: 0.75rem;
+  padding-block: 0.75rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--line);
+  border-radius: 0.5rem;
+  background-color: var(--panel);
+  color: var(--ink);
+}
+output {
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin-block-start: 1rem;
+  padding-inline: 1rem;
+  padding-block: 1rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--line);
+  border-radius: 0.5rem;
+  background-color: var(--raised);
+}
+dialog {
+  max-inline-size: min(96vw, 90rem);
+  max-block-size: 94vh;
+  padding-inline: 1rem;
+  padding-block: 1rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--line);
+  border-radius: 0.75rem;
+  background-color: var(--panel);
+  color: var(--ink);
+}
+dialog::backdrop { background-color: var(--scrim); opacity: 0.72; }
+.dialog-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.dialog-bar h2 { margin-block: 0.5rem; margin-inline-end: auto; font-size: 1.15rem; }
+.preview-scroll {
+  overflow: auto;
+  inline-size: min(80vw, 80rem);
+  block-size: min(70vh, 40rem);
+  margin-block-start: 0.75rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--line);
+}
+.preview-scroll img { display: block; max-inline-size: none; }
+@media (max-width: 64rem) {
+  .matrix { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 48rem) {
+  .choice-grid, .choice-grid.two, .matrix { grid-template-columns: minmax(0, 1fr); }
+  .wide img { inline-size: 100%; }
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <p class="small">Music player design-only review · native Slint study · 2026-09-23</p>
+  <h1>Three separate command-bar questions</h1>
+  <p>D21 settles that a command bar exists. Its optional global hotkey is configurable and <strong>off by default</strong>; an in-app binding remains available when global registration is off. D25 reserves Ctrl+F for future search and Ctrl+O for the folder picker, but does not decide whether search shares the command surface. Exact shortcut assignment and any visible in-app entry still need their own design pass.</p>
+  <p class="banner">Reply with <strong>one I code, one G code, and one R code</strong>, plus corrections. In-app placement and global invocation can coexist; R decides only whether Ctrl+F uses a separate search destination or an explicit search mode in the same command surface. G1 illustrates a raised I1-style player and R2 illustrates a floating I2-style view; choosing G or R never fixes your I placement. R2 with I3 can use the same full-content room as R1.</p>
+  <p class="small">The captures are native, nonfunctional Slint at the desktop app’s current preferred 480 × 600px size, in light and dark. A2 keeps this project on <strong>baseline MD3</strong>: the expanded docked Search view has a 28px outer shape, flat 56px header and divider; the full-content version has sharp outer corners and a 72px header. The 56px full pill belongs to the collapsed Search bar, not another pill nested inside the expanded view. Baseline two-line list rows are square and 72px high; the drawn keyboard-current outline is a custom desktop focus cue, not a persistent selection or proof of actual input focus. Roboto and official Material icons render the native study.</p>
+  <p class="small">The 1100 × 640px samples are stress viewports, not a default-window-size choice. The 360px stress scene illustrates a proposed full-content fallback for I1, rather than an implemented responsive transition or below-minimum dock. Global scenes draw a second-window concept inside one Slint scene, not an actual OS overlay or hotkey implementation. Static rasters do not validate keyboard interaction, screen-reader semantics, window focus restoration, search indexing, or action execution. Compact desktop docking and keeping the player header in the full-content variant are stated adaptations from Android’s default full-screen focused search.</p>
+  <figure class="source-check"><img src="__MD3_REFERENCE__" width="924" height="108" alt="Baseline MD3 docked Search header from the local spec compared at 56 logical pixels with the native Slint header"><figcaption class="small">Reference check: local baseline divided Search spec (pink measurement marks) beside the native light Slint header. The two palettes differ; compare shape, header height, icon slots and divider, not wallpaper color.</figcaption></figure>
+</header>
+<form id="answer-form">
+  <fieldset>
+    <legend>I · In-app command surface, player already focused</legend>
+    <div class="choice-grid">
+      <label class="choice"><input type="radio" name="inapp" value="I1" required><strong>I1 · Docked below the header</strong><p>Action matches attach to the folder row and scrim the content underneath.</p><span class="pro">Keeps a visible relationship to the player and its current folder.</span><span class="con">Covers the track list at narrow width.</span></label>
+      <label class="choice"><input type="radio" name="inapp" value="I2" required><strong>I2 · Floating in the player</strong><p>A centered, rounded palette overlays a scrimmed player.</p><span class="pro">Makes the temporary keyboard task prominent.</span><span class="con">Hides more context and is less locally anchored.</span></label>
+      <label class="choice"><input type="radio" name="inapp" value="I3" required><strong>I3 · Replace the content region</strong><p>The command destination fills the player below the header.</p><span class="pro">Most room for long results and compact widths.</span><span class="con">Hides the playback context while it is open.</span></label>
+    </div>
+    <p><strong>In-app ranking: I1 &gt; I2 &gt; I3.</strong> I1 retains a clearer source anchor than I2; I2 keeps more of the player visually present than I3.</p>
+  </fieldset>
+  <fieldset>
+    <legend>G · When the optional global hotkey is enabled and another app was active</legend>
+    <div class="choice-grid two">
+      <label class="choice"><input type="radio" name="global" value="G1" required><strong>G1 · Raise the player</strong><p>Bring the player forward and show its in-app command surface; close returns to the player.</p><span class="pro">Retains folder, track and deck context.</span><span class="con">Interrupts the previous app; returning there takes another step.</span></label>
+      <label class="choice"><input type="radio" name="global" value="G2" required><strong>G2 · Detached quick surface</strong><p>Show only a command window above the previously active app; close returns there.</p><span class="pro">Does not force a jump to the player for a quick command.</span><span class="con">Less player context; real second-window behavior remains developer-owned feasibility.</span></label>
+    </div>
+    <p><strong>Global ranking: G2 &gt; G1.</strong> G2 protects the ongoing task; G1 is more contextual but takes over the screen.</p>
+  </fieldset>
+  <fieldset>
+    <legend>R · Relationship to the future Ctrl+F search surface</legend>
+    <div class="choice-grid two">
+      <label class="choice"><input type="radio" name="search" value="R1" required><strong>R1 · Distinct search destination</strong><p>Ctrl+F replaces the content region with a search view; the command palette remains actions-only.</p><span class="pro">Results have room and their purpose is unambiguous.</span><span class="con">Requires a separate search presentation.</span></label>
+      <label class="choice"><input type="radio" name="search" value="R2" required><strong>R2 · Search mode in the same surface</strong><p>Ctrl+F enters an explicit search mode in the command surface; actions remain another mode.</p><span class="pro">One learned container can serve both tasks.</span><span class="con">Mode switching needs clear focus and exit behavior.</span></label>
+    </div>
+    <p><strong>Search relationship ranking: R1 &gt; R2.</strong> R1 assigns navigation a distinct purpose; R2 reuses the command surface but adds a mode to track. Result space depends on your independent I choice, so this ranking does not claim R2 must be smaller. D25 itself does not settle either choice.</p>
+  </fieldset>
+  <section aria-labelledby="inapp-title">
+    <h2 id="inapp-title">In-app comparison at the preferred desktop size</h2>
+    <p>All I variants show the same typed action query, <code>open</code>, and the same selected result. The thumbnail follows your system scheme; preview either native capture at 100%.</p>
+    <div class="matrix">__IN_APP_CARDS__</div>
+  </section>
+  <section aria-labelledby="global-title">
+    <h2 id="global-title">Out-of-app invocation concepts</h2>
+    <p>Both G variants start from the same previous app and the same typed action query. Their window and focus behavior is proposed, not tested by these screenshots.</p>
+    <div class="matrix">__GLOBAL_CARDS__</div>
+  </section>
+  <section aria-labelledby="search-title">
+    <h2 id="search-title">Search invoked by Ctrl+F</h2>
+    <p>Both R variants show the same illustrative query and result types. Folder results open a folder; track results reveal a track. Whether folder paths match queries, which media types are indexed, and result ranking are separate open questions; the D31 picker remains the browsing route.</p>
+    <div class="matrix">__SEARCH_CARDS__</div>
+  </section>
+  <section aria-labelledby="stress-title">
+    <h2 id="stress-title">Fit and state probes, not additional choices</h2>
+    <p>I variants also appear at 1100 × 640px; I1’s 360 × 640px probe draws a full-content fallback with larger text and a long action (96px rows are a stress adaptation, not the baseline 72px token). Separate I1 captures show no results and an explicitly unavailable action. All are native Slint in both schemes.</p>
+    <div class="matrix">__WIDE_CARDS____STRESS_CARDS____EDGE_CARDS__</div>
+  </section>
+  <section aria-labelledby="notes-title">
+    <h2 id="notes-title">Correction or a better idea</h2>
+    <label for="correction">What would you change? Name any visible entry-point, search-target or accessibility concern separately from your I, G and R picks.</label>
+    <textarea id="correction" name="correction"></textarea>
+    <p><button type="submit">Prepare my reply</button></p>
+    <output id="reply" aria-live="polite" for="correction"></output>
+    <p class="small">This prepares visible text only. Reply in chat; this form makes no network request and uses no clipboard API.</p>
+  </section>
+</form>
+</main>
+<dialog id="preview" aria-labelledby="preview-title">
+  <div class="dialog-bar">
+    <h2 id="preview-title">Native preview</h2>
+    <button id="fit" type="button">Fit</button>
+    <button id="native" type="button">100%</button>
+    <button id="zoom-out" type="button">Zoom out</button>
+    <button id="zoom-in" type="button">Zoom in</button>
+    <button id="close-preview" type="button">Close</button>
+  </div>
+  <p id="scale-label" class="small" aria-live="polite"></p>
+  <div class="preview-scroll"><img id="preview-image" alt="Native Slint command-bar capture" width="480" height="600"></div>
+</dialog>
+<script>
+const preview = document.querySelector('#preview');
+const previewImage = document.querySelector('#preview-image');
+const previewTitle = document.querySelector('#preview-title');
+const scrollRegion = document.querySelector('.preview-scroll');
+const scaleLabel = document.querySelector('#scale-label');
+let returnTarget;
+let scale = 1;
+let fitting = true;
+function fitScale() {
+  return Math.min(1, scrollRegion.clientWidth / previewImage.naturalWidth, scrollRegion.clientHeight / previewImage.naturalHeight);
+}
+function showScale() {
+  const displayScale = fitting ? fitScale() : scale;
+  previewImage.style.inlineSize = `${previewImage.naturalWidth * displayScale}px`;
+  previewImage.style.blockSize = `${previewImage.naturalHeight * displayScale}px`;
+  scaleLabel.textContent = `${previewImage.naturalWidth} × ${previewImage.naturalHeight} native px · ${Math.round(displayScale * 100)}% shown${fitting ? ' (fit)' : ''}`;
+}
+document.querySelectorAll('.preview-actions button').forEach(button => {
+  button.addEventListener('click', async () => {
+    const figure = button.closest('figure');
+    const selectedImage = button.dataset.scheme === 'dark' ? figure.querySelector('source').srcset : figure.querySelector('picture img').src;
+    returnTarget = button;
+    previewTitle.textContent = `${figure.dataset.label} · ${button.dataset.scheme} · native Slint`;
+    previewImage.src = selectedImage;
+    previewImage.alt = previewTitle.textContent;
+    await previewImage.decode();
+    fitting = true;
+    scale = 1;
+    preview.showModal();
+    showScale();
+    document.querySelector('#close-preview').focus();
+  });
+});
+document.querySelector('#fit').addEventListener('click', () => { fitting = true; showScale(); });
+document.querySelector('#native').addEventListener('click', () => { fitting = false; scale = 1; showScale(); });
+function stepZoom(delta) {
+  scale = Math.max(0.25, Math.min(3, (fitting ? fitScale() : scale) + delta));
+  fitting = false;
+  showScale();
+}
+document.querySelector('#zoom-out').addEventListener('click', () => stepZoom(-0.25));
+document.querySelector('#zoom-in').addEventListener('click', () => stepZoom(0.25));
+document.querySelector('#close-preview').addEventListener('click', () => preview.close());
+preview.addEventListener('close', () => returnTarget?.focus());
+window.addEventListener('resize', () => { if (preview.open && fitting) showScale(); });
+document.querySelectorAll('input[type=radio]').forEach(input => {
+  input.addEventListener('change', () => { document.querySelector('#reply').textContent = ''; });
+});
+document.querySelector('#correction').addEventListener('input', () => { document.querySelector('#reply').textContent = ''; });
+document.querySelector('#answer-form').addEventListener('submit', event => {
+  event.preventDefault();
+  if (!event.currentTarget.reportValidity()) return;
+  const inapp = document.querySelector('input[name=inapp]:checked').value;
+  const global = document.querySelector('input[name=global]:checked').value;
+  const search = document.querySelector('input[name=search]:checked').value;
+  const correction = document.querySelector('#correction').value.trim();
+  document.querySelector('#reply').textContent = `${inapp}, ${global}, ${search}${correction ? `\nCorrection: ${correction}` : ''}`;
+});
+</script>
+</body>
+</html>
