@@ -84,14 +84,23 @@ function assertConnector({ xml, scene, mode }) {
       node.includes('clickable="true"') || node.includes('focusable="true"') || node.includes('scrollable="true"')))
     .find((node) => {
       const bounds = node.match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);
-      return bounds && Number(bounds[1]) < 1068 && Number(bounds[3]) > 1009;
+      if (!bounds) throw new Error(`${basename({ ...scene, mode })}: semantic app node has no parseable bounds: ${node.slice(0, 350)}`);
+      return Number(bounds[1]) < 1068 && Number(bounds[3]) > 1009;
     });
   if (crossing) throw new Error(`${basename({ ...scene, mode })}: app content or hit target crosses Fold connector: ${crossing.slice(0, 350)}`);
-  const points = [200, 400, 900, 1500, 1900].flatMap((y) => [1015, 1038, 1060].map((x) => [x, y]));
-  const expected = mode === 'dark' ? '000000FF' : 'FFFFFFFF';
-  const actual = pixels({ scene, mode, points });
-  if (actual.some((pixel) => pixel !== expected)) {
-    throw new Error(`${basename({ ...scene, mode })}: connector x=[1009,1068) is not the accepted ${mode} fill; measured ${actual.join(',')}.`);
+  const width = 59;
+  const top = 136;
+  const height = 1938;
+  const path = join(renderPath, `${basename({ ...scene, mode })}.png`);
+  const rgba = execFileSync('magick', [path, '-crop', `${width}x${height}+1009+${top}`, '+repage', '-depth', '8', 'rgba:-'],
+    { maxBuffer: 1_000_000 });
+  if (rgba.length !== width * height * 4) throw new Error(`${basename({ ...scene, mode })}: incomplete connector pixels.`);
+  const expected = mode === 'dark' ? 0 : 255;
+  for (let offset = 0; offset < rgba.length; offset += 4) {
+    if (rgba[offset] !== expected || rgba[offset + 1] !== expected || rgba[offset + 2] !== expected || rgba[offset + 3] !== 255) {
+      const pixel = offset / 4;
+      throw new Error(`${basename({ ...scene, mode })}: connector x=[1009,1068) is not the accepted ${mode} fill at (${1009 + pixel % width},${top + Math.floor(pixel / width)}).`);
+    }
   }
 }
 
