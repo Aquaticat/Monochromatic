@@ -1046,8 +1046,8 @@ its static `stress` input does not verify width-driven responsive behavior.
  E1 no-result and E2
 unavailable-action scenes remain contextual probes,
  not independent choices.
-The rejected questionnaire remains temporarily at `questions/current.html` only until
-the separate Search page replaces it.
+The rejected command questionnaire was archived at
+`questions/archive/command-igr-rejected.html` when D47 replaced it.
  Its normalized 56px baseline-spec versus native
 header comparison is at
 `questions/evidence/command-md3-baseline-header-comparison.png`.
@@ -1072,9 +1072,10 @@ opens a separate page,
  whose single 72px baseline MD3 header merges Back,
  query
 and Clear (D48).
- The search page replaces the player entirely;
- no second in-app
-title row remains.
+ That retired desktop-sized Search experiment replaced the player entirely;
+D50/D51 later required a persistent unfolded deck.
+ No second in-app
+title row remains in the selected Search destination.
  The throwaway Slint `search-page-study.slint` on the prototype
 branch is committed at `1ecb1f3f7`,
  with top-bar geometry correction `773c8fc11`
@@ -1094,19 +1095,17 @@ themselves prove click delivery or focus restoration.
  The rejected I/G/R form is now archived at
 `questions/archive/command-igr-rejected.html`;
  The formerly active desktop walkthrough is now retired;
-`questions/current.html` embeds the native Fold-panel review.
- The old HTML
+`questions/current.html` now embeds the selected A-only native Fold review.
+The old HTML
 flow was exercised,
  but it neither proves the native TouchAreas were activated nor
 measures the target phone geometry.
 D21's global hotkey and Settings row are not inherited by the Search page.
 D25's Ctrl+F reservation remains open with the whole keyboard map.
- The exact search
-targets,
- result effects/ranking,
- and button position on each platform remain design
-questions;
- none was decided by D47.
+ Search targets and result effects/ranking remain design questions;
+D49 makes the Fold the visual source for every platform,
+ and D51 later
+selected A's unfolded pane placement.
 
 ## Rejected native Fold Search-page composition (D49)
 
@@ -1140,8 +1139,12 @@ new design acceptance gate.
  The captures are historical diagnostic evidence,
 not a candidate for endorsement.
 
-`questions/current.html` now announces withdrawal and hides the old walkthrough,
-gallery and feedback form.
+The withdrawn split study is archived at
+`questions/archive/search-rejected-fold-review.html`.
+The active `questions/current.html` now shows selected A only,
+ not that old
+walkthrough,
+ gallery or feedback form.
  The cover chassis preview uses approximately 443 ×
 994 CSS px at 100% AVD dp;
  the old 411 × 923dp sizing was an unmeasured
@@ -1154,3 +1157,23 @@ baseline are contextual only;
  the desktop Slint captures are history,
  not a
 matrix to choose from.
+
+## Selected Fold Search A after D52
+
+The three-way keyboard-visible comparison is archived at
+`questions/archive/search-three-way-before-a.html`.
+The user selected A (D51):
+ Search query and results stay together on the unfolded
+right pane,
+ and the existing bottom-left deck lifts above the keyboard while
+typing.
+ D52 removes the duplicate `Results for “cam”` heading from positive
+results on the inner and cover panels.
+ The current A-only rasters in
+`questions/render/search-selected-review-*` are sanitized native captures
+at 100% and 200% text in light/dark.
+ The self-contained
+`questions/current.html` shows the selected state,
+ not a new choice menu.
+Native query input was exercised with a measured 300dp debug-only system IME;
+Gboard geometry and production implementation remain unverified.
