@@ -402,10 +402,18 @@ logged ignored calls; those calls do not create another receipt. All three curre
 prototype variants and the generated lesson use the same controller and wording.
 `mise run test:ticket-boundaries`, `test:ux-choice`, `test:ux-clarity-review`, and
 `test:ux-print` pass after the change. The generated-lesson test checks both resolver
-orders, no duplicate on ignored call or Create, and the actual PDF after Promise 2
-settles. The current artifact is provisionally 694,011 bytes; full verification and
-headed presentation of the new version remain pending. The single-current-Promise toy
-rule, native calls, original values, and capture timing are unchanged.
+orders, no premature receipt before the observer's microtask, exact live/print lists
+before and after ignored calls and Create, and the actual PDF after Promise 2 settles.
+A separate generated-lesson test observes all five Promises and verifies five ordered
+receipts in the live belt, print list, and PDF without needing a sixth Create action;
+late ignored calls do not duplicate them. The older `probe-ux-settlement.mjs` addresses
+the preserved rejected pudding matrix, not the current ticket controller.
+The headed presenter now distinguishes the old open lesson tab from the corrected file
+by its belt label, and must open the corrected build in a separate tab without reloading
+the prior learner tab. This presentation remains pending.
+The current artifact is provisionally 694,011 bytes; combined and Firefox verification
+remain pending. The single-current-Promise toy rule, native calls, original values,
+and capture timing are unchanged.
 
 ## Superseded designs (do not revive without the user asking)
 
