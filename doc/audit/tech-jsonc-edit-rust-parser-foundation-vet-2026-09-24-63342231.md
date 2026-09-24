@@ -419,7 +419,22 @@ The published `biome_json_parser` 0.5.7 archive SHA-256
  The scratch test will probe surrogate and raw token acceptance,
  JSON5 rejection,
  and 512-level parse/syntax/drop only;
- no runtime result is yet claimed.
+ the bounded first run completed 512-level array parsing,
+ syntax-text access and destruction,
+ and rejected JSON5-only forms.
+ Its token-only comment assertion failed because comments are trivia attached to syntax tokens,
+ not independent grammar tokens;
+ the source-backed diagnosis and verified consumer correction are in
+ [`biome-json-parser-token-trivia.md`](../troubleshooting/biome-json-parser-token-trivia.md).
+ After reading trivia pieces,
+ the same offline container passed all focused tests,
+ including the escaped `\uD800` string and preserved `1e0` token.
+ This validates a raw-syntax candidate,
+ not key/value attachment,
+ exact-value projection,
+ canonical emission,
+ immutable edits,
+ or a consuming published crate.
 
 ## Existing-parser contract exits
 
