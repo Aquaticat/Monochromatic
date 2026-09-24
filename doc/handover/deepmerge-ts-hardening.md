@@ -120,10 +120,31 @@ Details:
 ## Open questions
 
 Asked 2026-09-23, awaiting answers:
-reference-model stance on silent truncation past `maxDepth`,
-sparse-array holes,
-getter flattening,
-and whether to export a JSON fixture corpus for the Rust unified linter now.
+whether to offer upstream the property suite,
+whether to propose enforced coverage thresholds upstream,
+and whether the sidecar keeps a V8 coverage-reachability gate like `package/module/logger.fuzz`.
+
+## Answered 2026-09-23 (round 4)
+
+- Q10:
+   the model accepts the silent last-value-wins fallback past `maxDepth`;
+   a local draft issue asks upstream to document it.
+- Q11:
+   sparse-array holes are neither defect nor accepted yet;
+   a local draft issue asks upstream for the intended behaviour.
+   Until answered,
+   model-equality properties generate dense arrays only,
+   and one characterization test pins current hole-dropping so an upstream change is noticed.
+- Q12:
+   getters are accepted as read-and-flatten,
+   matching object spread;
+   a throwing getter propagating is expected behaviour.
+- Q13:
+   the Rust fixture export waits for the merge-crate vet named in `doc/handover/unified-linter.md`;
+   model cases are written JSON-serializable now.
+- Settled (veto open):
+   the embargoed advisory draft is written first,
+   because its disclosure clock starts only once the user files it.
 
 ## Rejected ideas
 
