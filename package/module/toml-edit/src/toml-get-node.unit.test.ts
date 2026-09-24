@@ -46,6 +46,8 @@ await describe({
         if ((!('type' in name)) || (name.type !== 'TOMLValue') || (name.kind !== 'string'))
           throw new Error('Expected nested string value node',);
         expect(name.value,).toBe('b',);
+        expect(() => tomlGetNode({ edit, path: ['foo', 2,], },),)
+          .toThrow(TomlPathNotFoundError,);
       },
     },),
 

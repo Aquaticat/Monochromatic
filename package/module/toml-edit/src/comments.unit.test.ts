@@ -40,6 +40,20 @@ await describe({
     },),
 
     it({
+      name: 'locates comments on an indexed array-of-tables header',
+      fn: async () => {
+        const edit = parseTomlEdit({
+          source: '[[foo]]\nname="a"\n# note\n[[foo]]\nname="b"\n',
+        },);
+        const comments = tomlGetCommentsBefore({ edit, path: ['foo', 1,], },);
+        expect(comments.map(function valueOf(comment,) {
+          return comment.value;
+        },),).toStrictEqual([' note',],);
+        expect(tomlGetCommentsBefore({ edit, path: ['foo', 0,], },),).toStrictEqual([],);
+      },
+    },),
+
+    it({
       name: 'a blank line between comment and key breaks attachment',
       fn: async () => {
         const source = '# header\n\nkey = 1\n';

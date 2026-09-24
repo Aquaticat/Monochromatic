@@ -64,6 +64,17 @@ await describe({
     },),
 
     it({
+      name: 'reads a clean indexed array-of-tables header and its child value',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: '[[foo]]\nname="a"\n[[foo]]\nname="b"\n', },);
+        expect(tomlGetRaw({ edit, path: ['foo', 1,], },),).toBe('[[foo]]\n',);
+        expect(tomlGetRaw({ edit, path: ['foo', 1, 'name',], },),).toBe('"b"',);
+        expect(() => tomlGetRaw({ edit, path: ['foo', 2,], },),)
+          .toThrow(TomlPathNotFoundError,);
+      },
+    },),
+
+    it({
       name: 'throws TomlPathNotFoundError for missing path',
       fn: async () => {
         const edit = parseTomlEdit({ source: 'foo = 1\n', },);
