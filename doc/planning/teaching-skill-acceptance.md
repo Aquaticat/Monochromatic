@@ -221,6 +221,8 @@ Control-affordance counterexamples:
 - A fresh numbered button is disabled after settlement even though it could call the resolver
   and visibly log the ignored attempt that teaches first-settlement-wins.
 - A repeatable action reuses one button whose label cannot tell the first call from the fifth.
+- Every numbered control repeats a full call-history sentence, obscuring the ready control;
+  the current Promise status appears only after that crowded control surface.
 - An interactive analogy inverts its source: the falling object of the source game becomes a
   stationary agent while the line drops agents instead.
 - A value snapshot present in the lesson is dropped from a redesign of the same section.

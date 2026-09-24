@@ -1,11 +1,73 @@
 # Settlement experiment UX redesign
 
-Status: the choice matrix implements the user's decision that a fresh one-shot button may call
-a resolver after settlement when the ignored attempt is logged.
-Chromium, Firefox ESR, keyboard/pointer, native resolver-call, and PDF text checks pass.
-The corrected matrix is open for the user's layout-by-cue-color choice.
-The lesson file is untouched by this work.
+Status: the user supplied a later screenshot of the shared factory scene and said it remained
+very confusing. The scene has been redesigned in the scratch prototypes and a focused,
+self-contained review is open in a separate tab. The matrix cell choice is deferred until the
+user can inspect this repair. Chromium, Firefox ESR, keyboard/pointer, native resolver-call,
+and PDF text checks pass for the repaired prototype. The lesson file is untouched.
 No skill design has been confirmed; this redesign feeds the Promise toy, not the teaching skill.
+
+## Latest screenshot-driven clarity repair
+
+User screenshot: `/var/home/user/Pictures/Screenshots/Screenshot_20260923_221217.png`
+(1889 by 1482 physical pixels). OCR exposed repeated multiline `used: called...` captions
+under the numbered controls. Direct image attachment was unavailable to this agent,
+so the visual analysis used OCR, browser geometry, and matched-viewport captures;
+do not claim a fresh human-quality bitmap inspection from that evidence.
+
+`mise run probe:ux-clarity-before` exercised the preserved before-version at a 944 by 741 CSS
+viewport with three released puddings, two settled belt chips, and ignored calls.
+Its red assertion and measured state:
+
+- Factory scene 581 CSS px tall; whole stage 820 CSS px tall.
+- Every one of the 15 button captions wrapped; the longest held 78 characters.
+- Release rail had no visible action title; current state card sat below the scene.
+- The screenshot text gave the same repeated-call and numbering pattern.
+
+Ranked causes were repeated call histories inside the buttons, unnamed release rail and
+late state card, then lack of one contextual next-action instruction.
+The corrected shared scene now:
+
+- Shows the current pudding/Promise identity and fixed status before the controls;
+  keeps this existing card sticky while the learner scrolls the stage.
+- Names Release as creating a new Promise, Hand as fulfilling, Laser as rejecting,
+  and explains that button numbers count calls within their own action row.
+  The conveyor names earlier Promises separately.
+- Replaces long per-button histories with `Used`, `Later`, `Wait`, `Drop`, `Settle`, or `Try`;
+  the full reason remains in the accessible name and the chronological log.
+- Gives one contextual guide recommending the *opposite* resolver after settlement,
+  which discriminates first-call-wins from repeating the same value.
+  Before releasing a pudding with no tools left, the guide visibly warns that it will remain pending.
+- Adds one latest-event card inside the scene: an ignored call is acknowledged next to the
+  controls while the current Promise's face and marking remain fixed.
+- Keeps the current pudding's resolver bundle and inner Promise cards visible.
+  Additional current views and earlier views are grouped in native disclosures;
+  `beforeprint` expands them and `afterprint` restores their on-screen state.
+  The 24-view bound retains the current bundle and Promise even if earlier entries rotate out.
+
+`mise run test:ux-clarity` went green on the screenshot-state path:
+scene 471 CSS px, stage 735 CSS px, no multiline control captions, visible rail title,
+current state before the scene, and nearby latest-event card.
+At 944 by 741 CSS px, an ignored Laser 3 click kept the face at y=8
+and the event card within the viewport; at 390 by 741 CSS px, a later ignored Laser 4 click
+kept the sticky face, clicked button, and event card visible without horizontal overflow.
+`mise run review:ux-clarity-comparison` captured preserved before and revised after scenes at
+matching 944 by 741 CSS viewports in `ux-variants/clarity-side-by-side-944-dark.local.png`.
+OCR of the revised capture reads the state, next-action guide, short button statuses,
+latest event, and earlier Promise labels in that order.
+
+Focused user review: `ux-variants/settlement-scene-clarity-review.local.html` is a
+self-contained HTML document (not a screenshot). It pre-runs the user's three-pudding state;
+Laser 3 remains live for the discriminating ignored-call test.
+The artifact states what changed, what to inspect, and asks for any still-confusing row,
+label, or relationship in chat; no A/B/C cell choice is needed yet.
+`mise run test:ux-clarity-review` exercised Laser 3, two native value disclosures,
+light/dark mobile/desktop captures, and a PDF whose text retained hidden-on-screen history.
+`mise run test:firefox-ux` passed on Firefox ESR 140.16.0 for both the standalone scene
+and the focused self-contained review.
+`present-ux-clarity-review.mjs` opened a separate headed Helium tab,
+retaining the tabs observed immediately before presentation; its handoff JSON records the
+current URL, example state, and system dark mode.
 
 ## Origin and measured defects
 
@@ -64,8 +126,8 @@ every press gets expressive feedback; a manager line explains each event.
 - When the next pudding drops, the settled one rides the conveyor as a chip
   (pudding cone plus marking plus text), which is the visible form of "settlements are not revised".
 - The robot face gives timing-display feedback (flat waiting, smile caught, frown etched);
-  the accessible `#bot-face` card below the scene mirrors glyph and sentence for screen readers,
-  and print hides the scene while keeping that card and the call log.
+  the accessible `#bot-face` card precedes the scene and stays visible while the learner scrolls it.
+  Print hides the drawn scene but keeps that card, the contextual guide, and the call log.
 - Controls are five numbered one-shot buttons per row (release, fulfill, reject), drawn inside the
   scene as lever, mitt, and eye-beam. Availability reasons: used, would do nothing, future, live;
   drawn states are faded, dashed case, empty hook, and swaying; pressing squashes the hook.
@@ -267,9 +329,12 @@ This decision is not a selection of matrix layout or cue colors.
 
 ## Open choices (user's, gating implementation)
 
-- Matrix cell: layout (A reference rows, B kept card grid, C definition list)
-  by cue color (state-colored, neutral). The corrected live form is open in a separate tab;
-  ask the user for the cell value and any free-text changes.
+- First get targeted feedback on the focused scene repair, especially whether the current Promise,
+  the numbered action rows, and the ignored-call response now read clearly.
+  Do not treat the latest screenshot as a matrix-cell selection.
+- After the shared scene is accepted, ask for a matrix cell: layout (A reference rows,
+  B kept card grid, C definition list) by cue color (state-colored, neutral).
+  The choice form remains a separate prototype; ask for the cell value and any free-text changes.
   My ranking, with adjacent-pair reasons in the form:
   a-state, a-neutral, b-state, b-neutral, c-state, c-neutral.
 - Free-text changes to the chosen cell.

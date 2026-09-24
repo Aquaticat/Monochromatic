@@ -28,10 +28,13 @@ and the restored resolver-bundle snapshots.
 The user then clarified that an unused one-shot button remains actionable after settlement
 if it calls the real resolving function and visibly logs the ignored attempt.
 The Promise outcome stays fixed; used buttons and genuinely inert controls stay disabled.
-The corrected prototypes pass browser, Firefox ESR, and PDF text checks.
-A matrix of layout-by-cue-color cells awaits the user's choice;
-[the settlement-UX handover](../handover/promises-settlement-ux.md) records the measured
-defects, the research, superseded models, and the next actions.
+The user later supplied a screenshot of the shared factory scene and still found it confusing.
+A focused repair shortens the repeated control captions, names each row and current Promise,
+and keeps the fixed outcome and latest ignored-call feedback visible near the controls.
+The scene has browser, Firefox ESR, and PDF text checks; the user has not reviewed this repair yet.
+The layout-by-cue-color choice remains deferred;
+[the settlement-UX handover](../handover/promises-settlement-ux.md) records the evidence,
+superseded models, current artifact, and next actions.
 Earlier critiques rejected a detached opening and forced chat turn-taking.
 The shop opening, reference chat, and reading backgrounds have since been corrected and operationally checked.
 The quick scan is not learner-performance evidence or approval of the final skill.
