@@ -165,6 +165,10 @@ Both local delegated `rg` queries were blocked by its security guardrail,
    but runtime acceptance of lone surrogates,
    raw-node projection,
    deep tree lifecycle and full validation remain unproven.
+   `cargo info biome_json_parser` resolved published 0.5.7 on 2026-09-24,
+   while the shallow upstream checkout at `2f629c5` has `version = "0.7.0"` in root `Cargo.toml:7`.
+   Release cadence and whether relevant fixes have reached crates.io need a maintenance audit;
+   a repository version alone is not published-package evidence.
 
 ### `jwc` 0.1.0
 
@@ -435,7 +439,7 @@ The published `biome_json_parser` 0.5.7 archive SHA-256
  `biome_json_parser-0.5.7/src/token_source.rs:31-60` classifies trivia around newlines,
  while `biome_parser-0.5.7/src/tree_sink.rs:123-145` attaches it to syntax tokens.
  A consumer must still map grammar-delimiter trivia to the accepted key/value ownership policy.
- The bounded debug suite also passed 512-level array and record parse/syntax/drop,
+ Bounded debug and optimized release suites each passed 512-level array and record parse/syntax/drop,
  cleanup after a deep syntax error,
  and the adapter's 512-accepted/513-rejected depth controls.
  Upstream accepted a 513-level array without diagnostics;

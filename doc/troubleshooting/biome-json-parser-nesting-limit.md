@@ -60,7 +60,7 @@ The published parser archive SHA-256 is
  matching the scratch Cargo.lock checksum.
  Run `mise run test:isolated` from `~/temp/agent/jsonc-regex-audit/biome/` to repeat the public-API tests
  under the offline 2 GiB/2 CPU execution manifest `~/temp/agent/biome-execution-manifest.md`.
- The bounded debug suite passed all focused tests after the consumer guard was added.
+ Bounded debug and optimized release suites passed all focused tests after the consumer guard was added.
 
 - Accepted case:
    `"[".repeat(512) + "0" + "]".repeat(512)` parses upstream and through the editor guard.

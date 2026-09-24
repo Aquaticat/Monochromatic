@@ -77,7 +77,7 @@ The published `biome_json_parser` archive SHA-256 is
  read-only 2 GiB/2 CPU container.
  The first bounded run failed the token-only assertion while its deep-array and JSON5-rejection controls passed.
  After changing only the comment lookup,
- the bounded run passed all focused tests.
+ bounded debug and optimized release runs passed the focused tests.
 
 - Working pattern:
    `parsed.syntax().text().to_string() == source` preserved the complete input,
