@@ -266,11 +266,6 @@ custom `maxDepth` / `mergeRecords: false` / `filterValues: false` / `mergeArrays
 `any` inputs,
 plus two sound imprecisions.
 
-Disclosure note:
-one advisory finding was described as a plain correctness bug in this document's first commit
-(pushed 2026-09-23, before its security impact was assessed);
-the advisory draft says so.
-
 ## After upstream responds
 
 - When a fix ships in a release:
