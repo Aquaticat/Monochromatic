@@ -533,9 +533,35 @@ A direct call through the current TypeScript neutral bundle (`package/module/jso
 
 ### Iterative parser after-state, lifecycle checks still open
 
-The scratch Rust `parse.rs` was rewritten to use an explicit `Vec<Frame>` with separate item-or-close, awaiting-child, and separator-or-close phases. The parser now rejects an opener when 512 containers are already open, rather than recursing between `parse_value` and container functions. `mise run lint:clippy` passed with warnings denied. `mise run test:isolated` then ran the full scratch unit suite in the same offline, read-only Podman image under 2 GiB memory, 2 CPUs, 128 PIDs and a 600-second cap. It exited 0: the valid 512-level array case, the rejected 513-level array case, and the other parser tests passed. The 512-level test explicitly drops the returned node, so this measured case no longer aborts during parse or basic drop. This is after-state evidence, not a prediction from the rewrite.
+The scratch Rust `parse.rs` was rewritten to use an explicit `Vec<Frame>` with separate item-or-close,
+ awaiting-child,
+ and separator-or-close phases.
+ The parser now rejects an opener when 512 containers are already open,
+ rather than recursing between `parse_value` and container functions.
+ `mise run lint:clippy` passed with warnings denied.
+ `mise run test:isolated` then ran the full scratch unit suite in the same offline,
+ read-only Podman image under 2 GiB memory,
+ 2 CPUs,
+ 128 PIDs and a 600-second cap.
+ It exited 0:
+ the valid 512-level array case,
+ the rejected 513-level array case,
+ and the other parser tests passed.
+ The 512-level test explicitly drops the returned node,
+ so this measured case no longer aborts during parse or basic drop.
+ This is after-state evidence,
+ not a prediction from the rewrite.
 
-The result does **not** yet prove stack-safe emission, reparse, clone/equality, nested records, error cleanup after a deep completed subtree, or all comment ownership after canonical output. The parser remains a disposable incomplete candidate, not a selected foundation or product crate. The earlier isolated stack-overflow logs are retained as before-state evidence, not erased by the new pass.
+The result does **not** yet prove stack-safe emission,
+ reparse,
+ clone/equality,
+ nested records,
+ error cleanup after a deep completed subtree,
+ or all comment ownership after canonical output.
+ The parser remains a disposable incomplete candidate,
+ not a selected foundation or product crate.
+ The earlier isolated stack-overflow logs are retained as before-state evidence,
+ not erased by the new pass.
 
 ## Evidence and validation still required
 

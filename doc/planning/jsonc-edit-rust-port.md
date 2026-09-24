@@ -276,7 +276,8 @@ source-level transitive clearance remains open where required.
    the observed overflow occurs during parse execution.
    Merely checking depth before recursive descent cannot preserve the accepted input domain.
    A scratch rewrite with explicit container frames then passed both boundary cases
-   in the same bounded container; the valid 512-level test also dropped its parsed node.
+   in the same bounded container;
+   the valid 512-level test also dropped its parsed node.
    Emission,
    reparse,
    nested-record cleanup,
