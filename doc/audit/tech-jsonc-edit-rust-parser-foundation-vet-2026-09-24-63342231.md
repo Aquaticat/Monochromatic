@@ -462,6 +462,12 @@ The published `biome_json_parser` 0.5.7 archive SHA-256
  `:268-289,315-350` advances non-ASCII text by UTF-8 character length,
  and `biome_unicode_table-0.5.7/src/bytes.rs:103-125` declares a 256-entry dispatch table indexed by a byte.
  The scratch probe parsed and rejected selected multibyte strings and comments in bounded debug and optimized release runs.
+ Additional bounded debug and optimized release tests exercised truncated escapes,
+ multibyte invalid digits,
+ unterminated strings and comments,
+ and invalid Unicode placement through diagnostics,
+ syntax-token and trivia-range traversal,
+ and destruction without a crash.
  These checks support the inspected invariants but do not establish safety for every lexer and transitive-code path.
  Separately,
  `biome_json_parser-0.5.7/src/lexer/mod.rs:91-96` converts the source offset to `TextSize` with an `expect` for inputs beyond its representable range;
@@ -493,6 +499,10 @@ A separate scratch consumer `~/temp/agent/jsonc-foundation-diff/` depends on bot
  key/value comment parity,
  or value equality.
  Consumer-level comment projection remains unverified.
+ The owned scratch crate now exposes its tested UTF-16 quoted-token decoder and ordered comment merger for a separate Biome-to-value projection experiment;
+ `mise run lint:clippy` and its bounded debug suite passed after that extraction.
+ This is prototype reuse,
+ not a dependency or product API decision.
 
 ## Existing-parser contract exits
 
