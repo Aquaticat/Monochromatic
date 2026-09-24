@@ -8082,6 +8082,50 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## zheermao12 read, 2026-09-24, 08:45 UTC: SETTLED in 21.6 min, class one hundred sixteen live (1 translate overrun against 22, the translate lane 62 s against 616), every zheermao11 check holding; no class
+
+`zheermao12` (entry `zheermao101`, frozen `3bb47c918`, pid 2782250) was launched at 08:21 UTC 2026-09-24
+and SETTLED at 08:42 UTC,
+21.6 min (TALLY `ms=1298089`) against zheermao11's 30,
+one attempt,
+917 seats,
+916 calls,
+0.24 USD by the meters
+(Bedrock 46.57 to 46.41, OpenRouter 92.81 to 92.73),
+Synthetic dry, Hyper wet as on zheermao11.
+Jev 32 of 32; 12 abstention lines with reasons.
+
+Class one hundred sixteen live.
+The stages ran archive block review 08:25 to 08:31, repair 08:31 to 08:36, translate 08:36:35 to 08:37:37 and consolidation 08:38 to 08:42:
+the translate lane took 62 s against zheermao11's 616 and zheermao9's 77 with Hyper dry.
+One `StreamOverrunError` in the whole log against 22:
+gemma-4-26b-a4b-it on `produceTranslateSlate`, 1,362 characters against a bound of 1,344, 18 over.
+Kimi-K3 (95 seats) and glm-5.3 (72) were asked throughout, so the saving is the rule's and not a dry Hyper.
+The longest gaps between log lines (74 s, 69 s) fall in the archive block review, none in the translate lane.
+
+Every zheermao11 check holds:
+front matter equal,
+2 headings,
+no TA,
+no error finish,
+no double blank line.
+Both labels one line each and accurate:
+"English translation of Arts’s letter:" and "English translation of the email conversation:" (class seventy-seven holding).
+The reply label reads "One Among Us members sent her a reply that very night:" for 那些秋叶的成员在看到后连夜给她发送了一份回信, plural and 连夜 carried,
+and the Telegram paragraph after the thread now reads "One Among Us members contacted her" for 那些秋叶的成员 where the archive wrote "that member".
+The archive's "we’ll" sentence was reworded by the bench ("Please don’t worry; we will do our best to record the stories we can remember."), curly throughout.
+The archive's untranslated JSX translator comment in the reply (可以避开黑暗的锋芒…这句不知道如何翻译) is now rendered as the line it annotates.
+"If I succeed in dying" is the photo's own 成功死去了, read in the transcripts and cited by the slate ballots.
+No `translate incumbent excluded by deterministic source floor:` line,
+no unwrapped-link refusal,
+no `checker stage re-seated` line,
+no `translate-archive-disputed` line:
+classes one hundred seven, nine, fourteen and fifteen silent by design.
+Terminals: consolidated on 4, 5, 6 and 9, slate-endorsed on 0, 3, 8 and 13, slate-declined on 2, 11 and 12, slate-unjudged on 1;
+the contest won a lane on eight slices and settled on neither on 6, 8, 12 and 13.
+No class.
+`CuspariaKLSY13` launched at 08:43 UTC on `.frozen-dist-3bb47c918` (pid 3051768), waiter wait-c13.
+
 ## zheermao11 read, 2026-09-24, 08:30 UTC: SETTLED in 30 min, every zheermao9 check holding, classes one hundred fourteen and fifteen silent by design; the translate lane 616 s against 77 on picture transcripts cut by the volume bound (class one hundred sixteen, built in 3bb47c918)
 
 `zheermao11` (entry `zheermao101`, frozen `c958640fb`, pid 2456306) was launched at 07:40 UTC 2026-09-24

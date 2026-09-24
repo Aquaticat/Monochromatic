@@ -4766,18 +4766,19 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  ZHEERMAO12 RUNS (entry `zheermao101`,
+1.  CUSPARIAKLSY13 RUNS (entry `CuspariaKLSY`,
     frozen `3bb47c918`,
-    pid 2782250,
-    launched 08:21 UTC 2026-09-24,
-    waiter wait-z12 (background bash),
-    meters 46.57 USD Bedrock and 92.81 OpenRouter at launch, Synthetic dry, Hyper wet;
+    pid 3051768,
+    launched 08:43 UTC 2026-09-24,
+    waiter wait-c13 (background bash),
+    meters 46.41 USD Bedrock and 92.73 OpenRouter at launch, Synthetic dry, Hyper wet;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    the first pass on class one hundred sixteen;
-    read the `StreamOverrunError` count on `produceTranslateSlate` (22 on zheermao11) and the translate lane's span (616 s on zheermao11, 77 on zheermao9 with Hyper dry; `probe-z11e.mjs` in the scratchpad prints the stage windows),
-    then every zheermao11 check (2 headings, front matter equal, both labels one line and accurate, the reply label carrying the plural members and 连夜, curly "we’ll", no TA, no error finish, no double blank line);
-    then `CuspariaKLSY`, `shi_Yumiaoya`, `hulicaijia`, `XingZ60`, `mikaela_khara` and `yingying` on the same build if each reads clean;
-    record each under a new heading above "## zheermao11 read, 2026-09-24" in the pass log.
+    the rotation on the class one hundred sixteen build;
+    read it by every CuspariaKLSY12 check (1 heading, front matter equal, the life in the past, the gloss line after the nickname, slice 3 with no medication detail, no TA, no error finish, no double blank line) and the translate lane's span;
+    then `shi_Yumiaoya`, `hulicaijia`, `XingZ60`, `mikaela_khara` and `yingying` on the same build if each reads clean;
+    record each under a new heading above "## zheermao12 read, 2026-09-24" in the pass log.
+    ZHEERMAO12 READ (frozen `3bb47c918`): SETTLED 08:42 UTC 2026-09-24 in 21.6 min, 917 seats, 916 calls, 0.24 USD by the meters;
+    class one hundred sixteen live (1 translate overrun against 22, the translate lane 62 s against 616 with Kimi-K3 and glm-5.3 still asked), every zheermao11 check holds; no class.
     ZHEERMAO11 READ (frozen `c958640fb`): SETTLED 08:10 UTC 2026-09-24 in 30 min, 857 seats, 834 calls, 7 retry rounds, 0.19 USD by the meters;
     every zheermao9 check holds, the labels reworded by the archive block review to name the letter and the email thread, classes one hundred nine, fourteen and fifteen silent by design;
     but the translate lane took 616 s against 77: 22 translate streams wrote a neighbouring picture's transcript into a picture-only passage and were cut by the produced volume bound, the Hyper reasoning seats (Kimi-K3 55.1 s mean, 171 s longest) thinking 60 to 170 s first (class one hundred sixteen).

@@ -1501,15 +1501,17 @@ this section is the readiness reading of it.
   Classes twenty-six to one hundred sixteen were found that way between 2026-09-16 and 2026-09-24,
   one hundred sixteen in all,
   and the rate has not fallen to zero:
-  of the last thirteen reads (yingying8 at 00:31 UTC to zheermao11 at 08:10 UTC 2026-09-24),
-  three found no class and ten found one each
+  of the last fourteen reads (yingying8 at 00:31 UTC to zheermao12 at 08:42 UTC 2026-09-24),
+  four found no class and ten found one each
   (one hundred eight to one hundred sixteen,
   with the chain arm of one hundred eleven found on its own read).
-  The last eight reads each found one,
-  yingying10's on the translate slate rather than the page
-  and zheermao11's on the clock (a translate lane of 616 s against 77, the page itself clean),
+  The eight reads before zheermao12 each found one,
   five of them on `mikaela_khara`,
-  where the carried-insertion fold and the pairing met new shapes in a row.
+  where the carried-insertion fold and the pairing met new shapes in a row,
+  yingying10's on the translate slate rather than the page
+  and zheermao11's on the clock (a translate lane of 616 s against 77, the page itself clean).
+  zheermao12 found none,
+  the class one hundred sixteen rule taking the translate lane to 62 s with the Hyper seats still asked.
 - What "ready" would rest on now:
   a rotation over every entry in the read set
   (`XingZ60`,
