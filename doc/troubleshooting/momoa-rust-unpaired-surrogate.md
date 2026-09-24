@@ -335,6 +335,10 @@ backslash.
  It also inspected the parsed string and asserted the valid pair
 decodes to `😀`. This does not prove every JSON string or escape path works;
 the repair targets invalid `char` construction only.
+In particular,
+ the unchanged `rust/src/parse.rs:327` uses
+`text.trim_matches('"')`; this prototype does not test trailing escaped
+quotes or claim general string-decoder correctness.
  No original unchecked
 parser invocation occurred in any run.
  The prototype uses the generic
