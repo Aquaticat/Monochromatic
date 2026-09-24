@@ -316,7 +316,8 @@ source-level transitive clearance remains open where required.
    bounded debug and optimized regressions,
    Clippy,
    and a separate consumer's parse/emit/reparse for both endings passed.
-   The optimized Biome fixture remains pending.
+   The Biome CR fixture also passed its bounded optimized run.
+   Maintained TypeScript changes still wait for foundation adoption.
 - A separate published `biome_json_parser` 0.5.7 syntax probe passed bounded debug and optimized release runs for
    escaped lone surrogate text,
    raw number tokens,

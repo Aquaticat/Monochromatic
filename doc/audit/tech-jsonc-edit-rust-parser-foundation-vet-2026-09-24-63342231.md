@@ -558,7 +558,8 @@ A direct TypeScript bundle probe parsed a CRLF-separated object but returned a l
  exercised both line endings across parse,
  emit and reparse,
  and printed `JSONC consumer parse and emit passed`.
- The optimized Biome fixture remains pending.
+ The Biome projection fixture passed in both bounded debug and optimized release runs,
+ retaining the same comment body and owner through canonical emission and reparse.
  TypeScript production behavior remains unchanged pending foundation adoption.
 
 ## Existing-parser contract exits
