@@ -4851,18 +4851,70 @@ launched with `gtk-launch helium file:///var/home/user/Monochromatic/package/mus
  the launcher exit alone does not prove the
 user has inspected the tab.
 
-Next:
- ask for corrections to
-the Search button and separate one-header page,
- and record the user's answer.
-Do not ask for I/G/R codes or desktop window dimensions.
- Static native evidence
-does not prove a live index,
+This earlier request for correction has been superseded by the user's rejection.
+Static native evidence does not prove a live index,
  result actions,
- TalkBack focus,
- or native Back
-restoration.
- Design acceptance still cannot authorize production implementation.
+ TalkBack
+focus,
+ or native Back restoration.
+ Design acceptance still cannot authorize
+production implementation.
+
+## Current correction: rejected unfolded Search composition (2026-09-23)
+
+The user called the unfolded page obviously bad and asked why it had been
+presented as acceptable.
+ The inspected
+`questions/render/fold-search-inner-open-results-light-s100.png` shows why:
+ a
+left Back/query/Clear header implies its body is the page's content area,
+ but
+that area is empty;
+ the results heading and rows are isolated across the
+connector in the right pane.
+ The empty-state instruction is similarly remote
+from its query.
+ I saw the native screenshots and failed to reject this
+composition;
+ geometric,
+ provenance,
+ HTML interaction and Axe checks answered
+different questions.
+ No coherent replacement has been designed or accepted.
+
+The user further clarified that "content" in the connector rule means
+**informational material** such as text,
+ not every app-owned surface and hit
+region.
+ The old full-strip black/white pixel guard was my interpretation,
+not the user's requirement;
+ it imposed a false two-pane premise.
+ Preserve its
+capture and test history,
+ but do not use it as a visual acceptance gate.
+The published D47 separate page,
+ D48 one integrated header,
+ and D49 physical
+panel targets remain settled.
+ `review-notes.md` 5s records the failure.
+`questions/current.template.html` and `questions/current.html` now show a
+withdrawn notice and hide the old feedback form/gallery;
+ do not present them
+as an active design review.
+
+Next:
+ correct E2 and every dependent package-local statement about the
+connector,
+ then inspect how installed apps actually arrange Search on the
+folded/unfolded emulator and compare the local baseline M3 adaptive/search
+reference.
+ Only then build distinct design-only candidates with meaningful
+content kept clear of the connector,
+ assess composition in both panels and at
+200% text,
+ and present options with tradeoffs.
+ No KWin automation and no
+production edits.
 
 ## Issue tracking moves to Linear for this session
 
