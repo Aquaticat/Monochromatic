@@ -14,6 +14,7 @@ import {
   emptyTomlEdit,
   parseTomlEdit,
   tomlGetRaw,
+  tomlSet,
   TomlPathNotFoundError,
   TomlSpliceUnavailableError,
 } from '@monochromatic-dev/module-toml-edit';
@@ -38,6 +39,31 @@ await describe({
     },),
 
     it({
+      name: 'returns only the clean standard table header bytes',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'root = 0\n[tbl]\nx = 1\n[other]\ny = 2\n', },);
+        expect(tomlGetRaw({ edit, path: ['tbl',], },),).toBe('[tbl]\n',);
+      },
+    },),
+
+    it({
+      name: 'spans every clean array-of-tables header in a collection',
+      fn: async () => {
+        const edit = parseTomlEdit({
+          source: 'root = 0\n[[foo]]\na = 1\n[[foo]]\na = 2\n[[foo]]\na = 3\n',
+        },);
+        const raw = tomlGetRaw({ edit, path: ['foo',], },);
+        /**
+         Every array-of-tables instance contributes its own header.
+         */
+        const EXPECTED_HEADERS = 3;
+        expect(raw.startsWith('[[foo]]',),).toBe(true,);
+        expect(raw.split('[[foo]]',).length - 1,).toBe(EXPECTED_HEADERS,);
+        expect(raw.includes('root = 0',),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'throws TomlPathNotFoundError for missing path',
       fn: async () => {
         const edit = parseTomlEdit({ source: 'foo = 1\n', },);
@@ -56,6 +82,8 @@ await describe({
           tomlGetRaw({ edit, path: ['foo',], },);
         },)
           .toThrow(TomlSpliceUnavailableError,);
+        expect(() => tomlGetRaw({ edit, path: ['foo',], },),)
+          .toThrow('tomlGetRaw requires splice mode; current state is canonical',);
       },
     },),
 
@@ -63,7 +91,6 @@ await describe({
       name: 'throws for an edited path (no clean source slice after tomlSet)',
       fn: async () => {
         const e0 = parseTomlEdit({ source: "key = 'literal'\nother = 1\n", },);
-        const { tomlSet, } = await import('./toml-set.ts');
         const e1 = tomlSet({ edit: e0, path: ['key',], value: 'new', },);
         // The edited value is synthetic, so no original bytes back it.
         expect(function lookup() {
