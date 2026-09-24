@@ -534,8 +534,14 @@ The comment recheck's remaining synthetic-header cases are now covered by a test
 Direct built-artifact value tests now distinguish equal versus changed literal/numeric spelling,
  finite float markers,
  and nested array depth.
-The package build and unit suite passed after these assertions;
- targeted comment/value mutation rechecks follow.
+The package build,
+ unit suite,
+ types,
+ and oxlint passed after these assertions.
+Final comment/value mutation rechecks are running on this source revision:
+ `/var/home/user/temp/agent/toml-mutation-comment-api-final.json` (`proc_2b74`)
+ and `/var/home/user/temp/agent/toml-mutation-value-final.json` (`proc_7bac`).
+Do not edit runtime source until both complete.
 Do not claim a full-runtime verdict before those campaigns and survivor rechecks finish.
 
 ## Shared value assembly refactor
