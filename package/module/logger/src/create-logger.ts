@@ -1,5 +1,5 @@
-import { withTimeout, } from '@monochromatic-dev/module-async-time/ts';
 import { reportLoggerInternalError, } from './error-format.ts';
+import { withHostTimeout, } from './with-host-timeout.ts';
 
 import type {
   Level,
@@ -348,7 +348,7 @@ export function createLogger(
        */
       const entry = getSinkEntry({ entryIndex, },);
       setEntryAvailability({
-        available: await withTimeout({
+        available: await withHostTimeout({
           label: `sink ${entryIndex} verify`,
           ms: verifyTimeoutMs,
           promise: entry.sink
@@ -557,7 +557,7 @@ export function createLogger(
    */
   async function flushAll(): Promise<void> {
     try {
-      await withTimeout({
+      await withHostTimeout({
         label: 'logger flush',
         ms: flushDeadlineMs,
         promise: drainEverything(),

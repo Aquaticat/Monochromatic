@@ -37,7 +37,16 @@ export function reportLoggerInternalError(
     readonly error: unknown;
   },
 ): void {
-  console.warn(
-    `logger internal error: ${context}: ${caughtValueText(error,)}`,
-  );
+  if ((typeof console) === 'undefined')
+    return;
+
+  // Internal failures cannot go through a sink; use whatever host console
+  // method is available without assuming a browser-style `console.warn`.
+  const report = (typeof console.warn) === 'function'
+    ? console.warn
+    : ((typeof console.error) === 'function' ? console.error : console.log);
+  if ((typeof report) !== 'function')
+    return;
+
+  report.call(console, `logger internal error: ${context}: ${caughtValueText(error,)}`,);
 }
