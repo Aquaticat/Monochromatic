@@ -76,8 +76,10 @@ This is a reading of the current documents, not an empirical verdict on the less
 - **Cooking near miss:** After the dish and equipment are clarified, a hypothetical recipe
   supplies sourced ingredients, measured seasoning, an oven unit, and a valid shopping route.
   It then says “cook for the stated time and serve” without a check of the food itself.
-  The present quantity, unit, access, and target probes could pass;
-  the proposed check fails because time or appearance does not supply the cited safety observation
+  A surface scan for quantity, unit, access, and target might miss this;
+  the existing requirement to check food-safety sources already counts against it.
+  The proposed refinement makes the learner's own safety observation explicit because
+  time or appearance does not supply the cited criterion
   ([Extension thermometer guidance][thermometer]).
   A contrasting lesson identifies the appropriate sourced internal-temperature criterion,
   teaches how the available thermometer is used and what to do if the reading is not yet adequate,
@@ -86,18 +88,51 @@ This is a reading of the current documents, not an empirical verdict on the less
   If no thermometer or applicable safety source is available, the teacher cannot claim
   that appearance proves safe completion; the task needs a verified safe path first.
 - **Promise near miss:** A novice follows an executable reference showing a successful send,
-  but their independent exercise produces a rejection or remains pending.
-  A status label and correct reference trace satisfy the observable-scene checks;
-  “try again” without distinguishing failure from still-pending work fails this candidate check.
-  A contrasting exercise gives a fixture-specific expected observation, asks the learner to
-  inspect their own send and observer wiring, interprets the relevant mismatch,
-  and offers a bounded next step or a request for help if the signal is inconclusive.
+  but their independent preview stays at “Waiting…” or reports an unhandled rejection.
+  Neither display alone proves whether the underlying operation is still pending.
+  A status label and correct reference trace do not explain the learner's own different result;
+  “try again” without distinguishing operation start, settlement, and UI observation fails
+  this candidate check. A contrasting exercise gives a fixture-specific expected observation,
+  guides inspection of those separate boundaries, and offers a bounded next step or a request
+  for help when the signal cannot diagnose the cause.
   This is a proposed teaching case, not a claim that the current Promise lesson lacks those aids.
 - **Countercase:** A short explanation of what an unfamiliar term means, with no learner
   action or consequential decision, needs no fabricated sensor reading, error tree, or retry.
   A self-check becomes useful when it bears on a real action or inference;
   forcing one after every sentence would not follow the EEF's subject-embedded strategy
   ([EEF metacognition toolkit][eef-metacognition]).
+
+## Applying the contrast without inventing a learner failure
+
+The generated Promise lesson already has per-exercise hints and a preview that reports
+JavaScript errors and unhandled rejections (`doc/planning/promises-teaching.local.html`,
+`exercises` and `installPreviewDiagnostics`).
+Those are real supports; their existence does not establish that every wrong result is
+explained, nor that a particular learner was stuck.
+The proposed skill distinction is narrower: a reference trace, raw diagnostic, and generic
+hint can coexist with an independent task whose unexpected result lacks a usable decision path.
+
+- **Hypothetical cooking completion A:** A clarified recipe names ingredients,
+  units, access, and cooking duration, then instructs the novice to serve when time elapses.
+  That may look complete under a surface scan for specifics, but it conflicts with
+  [Extension thermometer guidance][thermometer] and the existing transfer probe's
+  requirement to check food-safety sources. The refinement makes a learner-usable
+  criterion for their own result explicit, not a new permission to ignore safety.
+- **Hypothetical cooking completion B:** The same recipe adds a sourced internal-temperature
+  criterion, thermometer placement for the applicable food, and a safe next step when its
+  reading has not met that criterion. No numerical endpoint is supplied in this comparison.
+- **Hypothetical Promise completion A:** “The reference worked; if your preview still says
+  Waiting or shows an error, try again.” It treats display text as an explanation of the
+  underlying Promise and supplies no comparison with the learner's attempt.
+- **Hypothetical Promise completion B:** Give the exercise's expected observation;
+  if its display still says Waiting, inspect whether Send started an operation, whether it
+  settled, and whether the observer rendered the outcome. For an unhandled rejection,
+  inspect the reason and catch boundary. None of these display symptoms alone identifies
+  the cause. If evidence is inconclusive, identify what to report for help.
+
+These paired completions test whether the proposed checks notice a usable criterion,
+interpretation, and next move. They are not a new recipe, a verified repair to the
+existing Promise lesson, or evidence of learner performance.
 
 A direct falsifier of **newness** would be a reading of the current acceptance checks showing
 that they already require the learner's own step-local criterion, mismatch interpretation,
