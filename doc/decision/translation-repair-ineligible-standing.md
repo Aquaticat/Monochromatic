@@ -189,6 +189,56 @@ and the decline named `slate-declined-standing`.
 - Guard shown to fail first (`c6ec06788`),
     fixed in `adca69d4e`.
 
+## Addendum 2026-09-24, eighth: a disputed archive rendering stands aside for the repair text
+
+Taken on the owner's second answer of 2026-09-24
+("Not eligible; fall back to the repair text")
+after CuspariaKLSY10 shipped its slice 3,
+the death paragraph,
+as the repair lane's minimal edit only because the contest chose that lane:
+the archive rendering named a suicide method the original never states,
+the repair lane's adjudicators accepted four `accuracy/addition` claims against it and removed the detail,
+the translate slate backed nobody,
+and the archive stood as the translate lane's text because an eligible standing keeps its single round.
+
+- The deterministic floor reads the archive's shape,
+    not its truth;
+    a rendering the adjudicators found to add what the original never states passes it.
+    The rule of 2026-09-09 (keep the incumbent where the standing is ineligible) would have kept that rendering as well,
+    since it is the incumbent.
+    A rendering carrying an accepted addition claim is therefore not an incumbent at all on that slice.
+- `archiveDisputesOf` (`archive-dispute.ts`) reads the repair lane's chunks once the lane returns:
+    a chunk with an accepted issue carrying an `accuracy/addition` claim is a dispute,
+    and its repair text (whatever the repair lane decided,
+    the archive's own where unchanged won) is the stand-in.
+    A rejected or needs-human claim,
+    or any other category,
+    leaves the archive as it was;
+    the mistranslation claims beside the addition on CuspariaKLSY10 do not dispute on their own.
+- On the translate lane (`document-lanes.ts` to `translate-slice-input.ts`) the stand-in is judged as the incumbent:
+    a candidate on the slate and the fallback where the judges keep it,
+    the archive rendering neither.
+    The slice key names the stand-in,
+    the record ships against the archive's own bytes (`changed` where the stand-in differs),
+    and the finding `translate-archive-disputed` names the slice and the accepted claims.
+    The lane ledger still reports the archive as the incumbent,
+    so the contest compares the two lanes as before.
+- On the consolidation (`pass-entry.ts`,
+    `consolidate-archive-stand-in.ts`) the same reading makes the stand-in the incumbent of every sheet and key,
+    and where the contest chose neither lane the stand-in is the standing;
+    a kept standing there ships as the `incumbent` record so the page is written with it rather than left as the contest found it.
+- Not built: a repair chunk the assembly withdrew still supplies its stand-in,
+    and the repair lane's own floor is unchanged;
+    the second answer's run-off runs through the first answer's path (seventh addendum) where the contest ballots call the archive flawed,
+    and through the single round elsewhere.
+- Guards shown to fail first (`fba338dc1`):
+    `archive-dispute.unit.test.ts`,
+    `translate-slice-input.unit.test.ts`,
+    `translate-document.unit.test.ts` (the translator sheets carry the stand-in and never the archive phrase,
+    the record ships changed with the finding),
+    `consolidate-driver.unit.test.ts` (a settled-neither contest ships the stand-in as the standing).
+    Fixed in `a452db225`.
+
 ## Addendum 2026-09-24, seventh: a tied slate over an eligible standing is run off when every contest ballot called the archive flawed
 
 Taken on the owner's answer of 2026-09-24
