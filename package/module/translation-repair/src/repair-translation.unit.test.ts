@@ -1255,6 +1255,66 @@ Meow meow meow meow.
     },),
 
     it({
+      name: 'SEATS THE CHECKER STAGE FROM THE HOOK AT THE STAGE ITSELF, not only at the chunk\'s start, so a '
+        + 'chunk in flight when a provider runs dry asks the re-seated bench a minute later (class one '
+        + 'hundred nine, zheermao9, 2026-09-24: seven of eight checker rounds asked the two Synthetic-only '
+        + 'seats after the dry-out and heard one voice, while the re-seat had landed on chunks not yet started)',
+      fn: async () => {
+        const prepared = prepareDocumentPair({
+          sourceText: SOURCE_TWO_SECTIONS,
+          targetText: TARGET_TWO_SECTIONS,
+        },);
+        /**
+         Checkers asked, in the order asked.
+         */
+        const asked: string[] = [];
+        /**
+         The scripted client with its checker calls recorded.
+         */
+        const scripted = scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },);
+        /**
+         Roster the hook hands back once the provider has run dry.
+         */
+        const reseated: RepairModels = {
+          ...MODELS,
+          checkerModelIds: [
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+            OPENROUTER_CHECKER_SUBSTITUTE,
+          ],
+        };
+        /**
+         How often the hook has been asked: the first reading, at the first
+         chunk's start, still finds the given roster standing.
+         */
+        const hook = { calls: 0, };
+        await repairPreparedDocument({
+          client: {
+            ...scripted,
+            chatJson: async <ValueT,>(
+              request: ChatJsonRequest<ValueT>,
+            ): Promise<ChatJsonOutcome<ValueT>> => {
+              if (request.responseFormat?.json_schema.name === 'resolution_report')
+                asked.push(request.modelId,);
+              return await scripted.chatJson(request,);
+            },
+          },
+          prepared,
+          models: MODELS,
+          signal: new AbortController().signal,
+          beforeSlice: async (): Promise<RepairSliceSeating> => {
+            hook.calls += 1;
+            return (hook.calls === 1) ? {} : { repairModels: reseated, };
+          },
+        },);
+        expect(asked.length,).toBeGreaterThan(0,);
+        expect(asked,).toContain(OPENROUTER_CHECKER_SUBSTITUTE,);
+        expect(asked,).not.toContain(SEAT_SYNTHETIC_VISION_WITHHELD,);
+        expect(hook.calls,).toBeGreaterThan(prepared.slices.length,);
+      },
+    },),
+
+    it({
       name: 'repairs a pair PREPARED BY THE CALLER, and reaches the same result '
         + 'as preparing it itself. This is what lets both lanes run over one '
         + 'preparation: two lanes slicing separately would drift the moment '
