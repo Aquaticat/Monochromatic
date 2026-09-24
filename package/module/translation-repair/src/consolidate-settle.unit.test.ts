@@ -533,6 +533,7 @@ async function settleWith(
     standingEligible = true,
     standingRefusal,
     laneTexts = [],
+    runoffOverStanding = false,
   }: {
     readonly voices: readonly {
       readonly modelId: FixtureModelId;
@@ -564,6 +565,12 @@ async function settleWith(
      Lane texts offered on the slate beside the proposals (class forty).
      */
     readonly laneTexts?: readonly LaneText[];
+
+    /**
+     Whether every contest ballot called the archive flawed, so a tied slate
+     over an eligible standing is run off (class one hundred six).
+     */
+    readonly runoffOverStanding?: boolean;
   },
 ) {
   /**
@@ -603,6 +610,7 @@ async function settleWith(
     standingEligible,
     ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
     laneTexts,
+    runoffOverStanding,
     l,
   },);
 
@@ -1127,6 +1135,74 @@ await describe({
         expect(eligible.judgeSheets.some(function challenged(sheet,): boolean {
           return sheet.includes(CHALLENGE_MARKER,);
         },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'RUNS THE RUN-OFF OVER AN ELIGIBLE STANDING when every contest ballot called the archive '
+        + 'flawed (class one hundred six, zheermao8 slice 9, 2026-09-24): the tie is challenged and a '
+        + 'round that decides ships its choice; a run-off that stays undecided ships the standing '
+        + 'rather than stopping the slice',
+      fn: async () => {
+        /**
+         Second proposal, so a slate of two can tie.
+         */
+        const OTHER = 'The cat naps on the sill each afternoon.';
+        /**
+         Wording the challenge round's task carries and the first round's does not.
+         */
+        const CHALLENGE_MARKER = 'A prior panel declined this exact slate';
+        /**
+         Ballots: the first round splits one voice each way and a third declines,
+         the challenge round backs candidate 1 unanimously.
+         */
+        function tiedThenSettled(sent: string, call: number,): string {
+          if (sent.includes(CHALLENGE_MARKER,))
+            return judgeBallot({ best: 1, },);
+          return judgeBallot({ best: [1, 2, 0,][call % 3] ?? 0, },);
+        }
+        const decided = await settleWith({
+          voices: [
+            voiceOf({ modelId: ROSTER[0], translation: FRESH, },),
+            voiceOf({ modelId: ROSTER[1], translation: OTHER, },),
+          ],
+          validity: [
+            validityOf({ modelId: ROSTER[0], valid: true, },),
+            validityOf({ modelId: ROSTER[1], valid: true, },),
+          ],
+          judgeReply: tiedThenSettled,
+          gateReply: gateBallot({ choice: 'consolidated', },),
+          runoffOverStanding: true,
+        },);
+        expect(decided.settled.terminal,).toBe('consolidated',);
+        expect(decided.settled.findings.includes('translate-declined-retried',),).toBe(true,);
+        expect(decided.judgeSheets.some(function challenged(sheet,): boolean {
+          return sheet.includes(CHALLENGE_MARKER,);
+        },),).toBe(true,);
+
+        /**
+         Ballots that tie on every round: one voice each way, a third declining.
+         */
+        function tiedThroughout(_sent: string, call: number,): string {
+          return judgeBallot({ best: [1, 2, 0,][call % 3] ?? 0, },);
+        }
+        const undecided = await settleWith({
+          voices: [
+            voiceOf({ modelId: ROSTER[0], translation: FRESH, },),
+            voiceOf({ modelId: ROSTER[1], translation: OTHER, },),
+          ],
+          validity: [
+            validityOf({ modelId: ROSTER[0], valid: true, },),
+            validityOf({ modelId: ROSTER[1], valid: true, },),
+          ],
+          judgeReply: tiedThroughout,
+          gateReply: gateBallot({ choice: 'consolidated', },),
+          runoffOverStanding: true,
+        },);
+        expect(undecided.settled.terminal,).toBe('slate-declined-standing',);
+        expect(undecided.settled.text,).toBe(STANDING,);
+        expect(undecided.judgeSheets.some(function challenged(sheet,): boolean {
+          return sheet.includes(CHALLENGE_MARKER,);
+        },),).toBe(true,);
       },
     },),
     it({
