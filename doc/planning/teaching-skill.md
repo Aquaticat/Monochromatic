@@ -45,8 +45,9 @@ A-neutral was generated into the local lesson; its combined suite, Firefox ESR,
 actual downloads, native print, and independent PDF text inventory passed.
 The user then found that an observed outcome entered the belt only after a later Create action.
 The corrected lesson records each outcome when its observer reports it, including the current
-Promise, while leaving the ticket available for ignored calls. Targeted checks pass;
-the corrected version's full verification is pending.
+Promise, while leaving the ticket available for ignored calls. The corrected build's
+combined suite, native print, Firefox ESR, actual downloads, and PDF inventory pass;
+the lesson is open in a separate headed tab without reloading the tab observed beforehand.
 [The settlement-UX handover](../handover/promises-settlement-ux.md) records the evidence,
 superseded models, artifact versions, and verification status.
 Earlier critiques rejected a detached opening and forced chat turn-taking.

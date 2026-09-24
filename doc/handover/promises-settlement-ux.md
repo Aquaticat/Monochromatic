@@ -4,11 +4,10 @@ Status: the user authorized correction of a delayed outcome receipt in the A-neu
 A regression went red because the belt was empty after Promise 1's rejection observer ran;
 receipts now appear when the observer reports, including for the current Promise.
 The manual `Promise.withResolvers()` experiment retains `"Hello Ada"` and `Error("No reply")`;
-Yum-Bot supplies artwork only, not game rules. Targeted browser, prototype, and print
-and real-download checks pass. Firefox ESR also passes on the generated lesson's
-receipt timing and pagehide, plus the prototype and other chapters; the final
-build-identity version's combined native-print suite is still pending. The older headed tab has not been reloaded.
-The before-ticket and before-belt local artifacts are retained.
+Yum-Bot supplies artwork only, not game rules. The final combined suite, native print,
+generated-lesson and prototype tests, Firefox ESR, actual downloads, and PDF inventory pass.
+The corrected lesson is presented in a separate headed tab without reloading the tab
+observed before presentation. Before-ticket and before-belt local artifacts are retained.
 No teaching-skill design has been confirmed or implemented.
 
 ## Latest screenshot-driven clarity repair
@@ -409,14 +408,26 @@ A separate generated-lesson test observes all five Promises and verifies five or
 receipts in the live belt, print list, and exact extracted PDF receipt section without
 needing a sixth Create action; late ignored calls do not duplicate them.
 A complementary same-task Reject/Resolve guard captures empty live and print receipts
-before the rejection observer runs, then one identical receipt afterwards. The older `probe-ux-settlement.mjs` addresses
-the preserved rejected pudding matrix, not the current ticket controller.
-The builder now embeds a SHA-256 identity of the complete lesson before the identity
-marker. The headed presenter compares the identity from disk against each open tab,
-not merely a label that could survive a later rebuild. It must open a corrected build
-in a separate tab without reloading the prior learner tab. Presentation is pending.
-The current build-identity artifact is provisionally 694,025 bytes; the final combined
-suite is pending.
+before the rejection observer runs, then one identical receipt afterwards.
+The older `probe-ux-settlement.mjs` addresses the preserved rejected pudding matrix,
+not the current ticket controller.
+The builder embeds a SHA-256 identity of the complete lesson before the identity marker.
+The headed presenter compares that identity from disk against each open tab, not merely
+a label that could survive a later rebuild. `proc_add8` presented the final build with
+identity `ee3c710fff9769ea1b6d3fe392935f71bc3ebdf0ad3768c352b08add2e264040`.
+`ticket-lesson-handoff.json` recorded one observed tab before and two after, with the
+new lesson active in dark mode, its new belt label present, and zero browser errors.
+No observed tab was reloaded or closed. Tabs from the earlier presentation were not
+present in this session at preflight, so their later fate cannot be inferred from this run.
+
+The final `doc/planning/promises-teaching.local.html` is 694,025 bytes, SHA-256
+`fb4631d86bd99bb532b142372e61aaaabe985a0d324cf61993f8d36900dc4875`.
+The final PDF is 126 Letter pages and measured 2,475,591 bytes. Its independent
+inventory has 793 teaching entries and 66 appendix entries; PDF text comparison passed.
+`proc_6c66` passed `mise run test:all` after the identity and pagehide changes,
+including all ticket-boundary guards and native print. `proc_e3d3` passed real offline
+download verification against a positively tested rejecting proxy. Firefox ESR 140.16.0
+passed generated receipt timing, pagehide, prototype, and other chapter checks.
 The single-current-Promise toy rule, native calls, original values, and capture timing
 are unchanged.
 
