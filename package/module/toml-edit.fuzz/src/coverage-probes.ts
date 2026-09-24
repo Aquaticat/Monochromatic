@@ -68,6 +68,23 @@ function deleteRootOp(): void {
 }
 
 /**
+ Reach canonical final-newline handling for synthetic and parsed documents.
+ */
+function canonicalNewlineOps(): void {
+  tomlStringify({ edit: tomlSet({
+    edit: emptyTomlEdit({ canonical: { trailingNewline: false, }, },),
+    path: ['x',],
+    value: 1,
+  },), },);
+  tomlStringify({ edit: parseTomlEdit({ source: 'x = 1', mode: 'canonical', },), },);
+  tomlStringify({ edit: parseTomlEdit({
+    source: 'x = 1\n',
+    mode: 'canonical',
+    canonical: { trailingNewline: false, },
+  },), },);
+}
+
+/**
  Set two sibling pending insertions under an implicit parent, then read
  sub-paths on the same non-materialized state, reaching the pending-insertion
  projection arms of the effective resolver.
@@ -258,6 +275,7 @@ function pendingProjectionOps(): void {
 export function exerciseEmptyBase(): void {
   exerciseEditSequence({ base: emptyTomlEdit(), },);
   attempt({ thunk: deleteRootOp, },);
+  canonicalNewlineOps();
 }
 
 /**
