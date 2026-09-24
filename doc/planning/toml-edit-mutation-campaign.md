@@ -308,10 +308,14 @@ The package build and unit suite,
  types,
  oxlint,
  and deterministic fuzz coverage gate passed after these changes.
-Focused container rechecks are running:
- `/var/home/user/temp/agent/toml-mutation-parser-guard-final.json` (`proc_40f8`)
- and `/var/home/user/temp/agent/toml-mutation-clean-sibling.json` (`proc_a3b4`).
-Do not edit runtime sources until both finish.
+The clean-sibling `emit-value-node.ts` recheck reported five killed,
+ no survivors,
+ 26 compile errors,
+ and no infrastructure errors;
+ its former clean-node block survivor was killed.
+The parser/build recheck is still running at
+ `/var/home/user/temp/agent/toml-mutation-parser-guard-final.json` (`proc_40f8`).
+Do not edit runtime sources until it finishes.
 After triage,
  scan editing,
  comment API,
