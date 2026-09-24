@@ -17,6 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import type { IntoActionUtils, } from './mutation-helper.ts';
 import { target, } from './target.ts';
 
 /**
@@ -246,6 +247,59 @@ await describe({
           { m: new Map(), },
         ) as { readonly m: ReadonlyMap<string, unknown>; };
         expect(merged.m.get('x',),).toBe('custom',);
+      },
+    },),
+    it({
+      name: 'intent question: an into array, Set, or Map function writing actions.defaultMerge into the slot leaves the symbol',
+      // Not generated: `slotDefault` in ./options-plan.ts is offered to into mergeOthers only. Cause:
+      // mergeOthersInto and mergeCircularReferencesInto (src/deepmerge-into.ts) also honour the action written
+      // into the slot, while mergeArraysInto, mergeSetsInto, and mergeMapsInto only honour a returned action.
+      fn: async () => {
+        /**
+         Into merge functions that request the default by writing the action into the slot.
+         */
+        const slotDefaults = (['mergeArrays', 'mergeSets', 'mergeMaps',] as const).map(function slotDefault(name,) {
+          return {
+            [name]: function writeDefault(slot: { value: unknown; }, _values: unknown, utils: IntoActionUtils,): void {
+              slot.value = utils.actions.defaultMerge;
+            },
+          };
+        },);
+        /**
+         Targets after each call, keyed like the functions.
+         */
+        const results = slotDefaults.map(function mergeWith(options,) {
+          /**
+           Target holding one container of each kind.
+           */
+          const into: Record<string, unknown> = {
+            a: [1,],
+            m: new Map([[1, 1,],],),
+            s: new Set([1,],),
+          };
+          target.deepmergeIntoCustom(options,)(
+            into,
+            {
+              a: [2,],
+              m: new Map([[2, 2,],],),
+              s: new Set([2,],),
+            },
+          );
+          return into;
+        },);
+        expect(results.map(function kept(into, index,) {
+          return typeof into[['a', 's', 'm',][index] ?? ''];
+        },),).toEqual(['symbol', 'symbol', 'symbol',],);
+        /**
+         mergeOthers honours the same slot write.
+         */
+        const others: Record<string, unknown> = { a: 1, };
+        target.deepmergeIntoCustom({
+          mergeOthers: function writeDefault(slot: { value: unknown; }, _values: unknown, utils: IntoActionUtils,): void {
+            slot.value = utils.actions.defaultMerge;
+          },
+        },)(others, { a: 2, },);
+        expect(others.a,).toBe(2,);
       },
     },),
   ],
