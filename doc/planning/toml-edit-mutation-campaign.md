@@ -129,8 +129,35 @@ Most `emit-value.ts` survivors in the former AST-only functions cannot be killed
   quoted inline-table keys,
   exact multi-line headers,
   and trailing comments at EOF.
-- A mutation recheck on `emit-document.ts` and `emit-value.ts` is running as process `proc_7e5d`.
-  Inspect `/var/home/user/temp/agent/toml-mutation-emitter-recheck.json` after it exits.
+- The post-removal emitter recheck produced 113 killed,
+  14 confirmed survivors,
+  one timeout,
+  and 117 compile errors.
+  A further `emit-value.ts` run after adding built-artifact formatting tests produced
+  41 killed,
+  one confirmed survivor,
+  and 57 compile errors.
+  The two live dotted-key and nested-depth mutations were killed.
+- A package-produced `TOMLTable` passed to the exposed `_emitContentNode` seam reaches the remaining invalid-node diagnostic.
+  Added a built-artifact test for its error class and exact message;
+  a final `emit-value.ts` mutation run is pending as process `proc_695c`.
+- Remaining `emit-document.ts` survivors were traced to construction invariants:
+  `build-document.ts` creates parsed key-values and tables with clean origins,
+  so `emit-document.ts` returns their original source before synthetic comment rendering.
+  `set-create.ts`,
+  `build-input.ts`,
+  and `set-aot.ts` create synthetic nodes with empty `commentsBefore` and no `commentAfter`;
+  `tomlInsertCommentBefore` inserts filler blocks instead,
+  and `tomlInsertCommentAfter` uses `trailingCommentAppend`.
+  `set-value.ts`,
+  `set-replace.ts`,
+  and `delete-value.ts` preserve enclosing key-value/header origins when replacing nested values.
+  `set-aot.ts` is the only synthetic table-header constructor and makes array tables,
+  so the standard synthetic bracket spelling is unreachable.
+  Forcing the `trailingCommentAppend` guard false passes `append: undefined`,
+  which `appendTrailing` handles identically to an omitted field.
+  The two surviving loop-bound changes still stop when `text[-1]` is `undefined`;
+  the forced-true entire loop condition times out and is not a survivor.
 - The deterministic coverage gate currently reports `emit-value.ts` falling from 191 to 133 covered lines
   after removing the unconsumed helper bodies.
   Refreeze only after inspecting any further runtime edits and recording this intentional code removal.
@@ -147,8 +174,9 @@ Most `emit-value.ts` survivors in the former AST-only functions cannot be killed
 
 ## Next action
 
-Inspect the emitter mutation recheck,
- then add assertions or production fixes for surviving live behavior,
+Inspect the final invalid-node emitter mutation result,
+ then refreeze and verify the coverage baseline for retired helper lines,
+ add assertions or production fixes for any further live survivor,
  then rerun the affected mutation files and package/sidecar verification.
 Commit only explicit paths in scope.
 The full runtime scan was not run:
