@@ -273,8 +273,10 @@ record and role-based guards.
    decorations,
    focus cues and hit regions all stay inside their
    respective 414dp panes.
-    A full-width Search page does not exempt its 72dp
-   header or result list.
+    The accepted fill is true black under D41 in
+   dark and white under D34 in unfolded light,
+    not a merely near-white tonal role.
+    A full-width Search page does not exempt its 72dp header or result list.
     Android-owned system bars are captured as rendered,
    not repositioned by the app.
 4. **The cover screen is taller and narrower than a normal phone frame** (411×923
