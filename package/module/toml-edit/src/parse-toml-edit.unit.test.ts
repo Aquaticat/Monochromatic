@@ -71,10 +71,12 @@ await describe({
       name: 'forwards the selected TOML version to the parser',
       fn: async () => {
         const source = 'key = {foo="value"\n  , bar="value"}\n';
-        expect(parseFailure(source,).cause,).toBeInstanceOf(ParseError,);
-        expect(parseFailure(source,).name,).toBe('TomlEditError',);
+        expect(() => parseTomlEdit({ source, tomlVersion: '1.0', },),)
+          .toThrow(TomlEditError,);
         const edit = parseTomlEdit({ source, tomlVersion: '1.1', },);
+        const defaultEdit = parseTomlEdit({ source, },);
         expect(tomlGetValue({ edit, path: ['key', 'bar',], },),).toBe('value',);
+        expect(tomlGetValue({ edit: defaultEdit, path: ['key', 'bar',], },),).toBe('value',);
       },
     },),
   ],
