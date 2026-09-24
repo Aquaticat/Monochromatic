@@ -476,6 +476,21 @@ The published `jcfmt` manifest declares only a `[[bin]]` target at `src/main.rs`
  Its `nojson` dependency is a distinct potential parsing component and remains subject to separate source screening.
  No command was executed.
 
+### `nojson` 0.3.15 as-is contract exit
+
+The published Rust library does expose `RawJson::parse_jsonc` and comment byte ranges (`src/lib.rs:12-18`,
+ `src/parse.rs:30-42,80-110`),
+ with no declared runtime dependency or unsafe code in its advertised crate surface.
+ Its parser sets `MAX_NESTING_DEPTH` to 128 (`src/parse.rs:7-24`),
+ below the supported 512-container boundary.
+ More decisively,
+ `src/parse.rs:376-403` explicitly rejects an escaped unpaired high or low UTF-16 surrogate before a `RawJson` value exists.
+ The comment-range formatter cannot recover that required accepted string domain from a rejected parse.
+ The published parser therefore fails both hard constraints as-is;
+ a fork or own string scanner/parser is a separate custom candidate.
+ This exit is **not** a regex finding.
+ No candidate code was executed.
+
 ### `fjson` 0.3.1
 
 **Source correction:**
