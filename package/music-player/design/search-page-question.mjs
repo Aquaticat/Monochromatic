@@ -130,6 +130,11 @@ function validate() {
   for (const text of ['D47', 'D48', 'one</strong> top bar', 'id="open-page"', 'id="back-player"', 'id="sample-query"', '<option value="cam">cam</option>', '<option value="zzq">zzq</option>', 'sampleQuery.addEventListener(\'change\'', 'id="unavailable"', 'showStage(\'open-empty\')', 'showStage(\'player\')', 'backPlayer.focus()', 'openPage.focus()', 'preview.showModal()', 'await previewImage.decode()', 'returnTarget?.focus()', 'Math.min(0.25, fitScale() / 2)', 'stepZoom(-0.25)', 'id="correction"']) {
     if (!html.includes(text)) throw new Error(`Search-page review is missing ${text}.`);
   }
+  if (html.includes('<input id="sample-query"') ||
+    !html.includes('Sample query (canned states)') ||
+    !html.includes("unavailable.addEventListener('click', () => {\n  sampleQuery.value = '';\n  showStage('open-unavailable');")) {
+    throw new Error('Search-page walkthrough allows a query that disagrees with its canned native capture.');
+  }
   if ((html.match(/class="capture"/g) ?? []).length !== scenes.length || (html.match(/data-scheme="dark"/g) ?? []).length !== scenes.length || (html.match(/data-scheme="light"/g) ?? []).length !== scenes.length) {
     throw new Error('Search-page review must show every native state in both schemes.');
   }
