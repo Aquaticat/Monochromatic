@@ -203,6 +203,40 @@ a named countercase prevents converting the condition into an unconditional scri
 - **Countercase:** Lack of a learner study need not prevent using or improving the artifact;
   the user already declined that as an approval gate.
 
+## Dry run against the recorded cooking fragments
+
+The only recorded learner prompt is “Teach me to make rotated chicken”.
+The recorded assistant fragments include “A little bit of salt”,
+“Get raw chicken from grocery store”, and “Set oven to 300degrees”.
+The quote is not a full recipe, so this dry run scores only the faults it exposes.
+[The rotisserie definition][rotisserie-definition] makes that term a plausible interpretation:
+it names an appliance that rotates food on a spit before or over heat.
+It does not establish the dish the learner intended or their equipment.
+
+- **Observed-fragment verdict:** The salt instruction lacks usable calibration,
+  the oven setting lacks a scale, and the shopping instruction offers no actual access path.
+  Proceeding as though “rotated chicken” names a settled dish leaves the target unresolved.
+  There is no evidence here about a printed artifact, learner performance, or a cooking timeline.
+- **Bounded first-turn repair candidate:** “I suspect you mean rotisserie chicken,
+  but I don't want to give you steps for the wrong preparation.
+  Is rotisserie chicken the dish you want to make?”
+  This demonstrates a reasoned interpretation and a consequential clarification,
+  not a complete cooking lesson or a verified recipe.
+- **Verdict on that candidate:** It passes the target-disambiguation move and does not
+  invent equipment, quantities, food-safety facts, or procurement access.
+  It cannot yet pass the actionability probe: the intended dish, learner's equipment,
+  recipe facts, and delivery-versus-trip preference still need to be established or checked.
+- **Near-miss control:** Filling the original response with precise-looking amounts,
+  a temperature scale, and a genuine but unusable product link would not repair an
+  unverified dish or inaccessible shopping route. A rule that rewarded numbers or links
+  alone would incorrectly pass that response.
+- **Promise contrast:** The preserved before-belt scene fails the event-record probe;
+  the corrected lesson passes the observed-receipt guard in browser, Firefox, and print.
+  Neither result supplies evidence that cooking needs an event log.
+
+This is a dry run of proposed checks against recorded excerpts,
+not a test of a completed skill or proof that the candidate reply teaches the learner.
+
 ## Current interview frontier
 
 The original request already covers live teaching and authored materials.
@@ -214,3 +248,5 @@ The remaining user-sourced evidence question is whether a concrete teaching fail
 still escapes this comparison.
 Ask for a falsifying example or critique of the probes,
 not approval of the whole skill or a generic choice between more questions and implementation.
+
+[rotisserie-definition]: https://www.merriam-webster.com/dictionary/rotisserie
