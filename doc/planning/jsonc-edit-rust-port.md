@@ -311,8 +311,10 @@ source-level transitive clearance remains open where required.
    Isolated scratch Rust tests also failed independently:
    CRLF kept `" x\r"` instead of `" x"`,
    and CR-only returned `ParseError` at byte offset 18 rather than the next member.
-   A bounded debug Biome adapter fixture accepted both endings with comment text `" x"` and reparsed its canonical output;
-   an optimized run and owned scratch correction remain pending.
+   A bounded debug Biome adapter fixture accepted both endings with comment text `" x"` and reparsed its canonical output.
+   The owned scratch scanner now stops at either CR or LF;
+   both isolated regressions and Clippy passed after the change.
+   Optimized and separate-consumer checks remain pending.
 - A separate published `biome_json_parser` 0.5.7 syntax probe passed bounded debug and optimized release runs for
    escaped lone surrogate text,
    raw number tokens,

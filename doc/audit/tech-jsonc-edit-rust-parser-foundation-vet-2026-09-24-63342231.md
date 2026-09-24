@@ -550,8 +550,12 @@ A direct TypeScript bundle probe parsed a CRLF-separated object but returned a l
  The Biome adapter's bounded debug fixture accepted both CRLF and CR-only,
  returned a line-comment body `" x"` for each,
  and retained that value after canonical emission and reparse.
- Its optimized fixture and the owned scratch correction remain unverified;
- treat the two prior failures as separate symptoms until each boundary is tested.
+ Its optimized fixture remains unverified.
+ The owned scratch scanner now stops at either CR or LF;
+ a bounded debug run passed both independent regression tests,
+ the remaining parser suite,
+ and Clippy with warnings denied.
+ The optimized owned run and separate consumer check remain pending.
  TypeScript production behavior remains unchanged pending foundation adoption.
 
 ## Existing-parser contract exits
