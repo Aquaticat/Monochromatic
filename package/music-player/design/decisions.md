@@ -636,30 +636,37 @@ See device-metrics.md for real dimensions.
  The hinge is **vertical** in portrait.
 
 ### E2. Keep information off the fold connector (clarified 2026-09-23)
-On the 852dp unfolded display,
- the central 24dp region is `[414,438)`dp.
-The accepted player uses it as the spacer between 414dp panes;
- D34 specifies
-white there in light and D41 true black in dark.
- This **player treatment does
-not require every other page to become two separate panes**.
+The accepted player has a 24dp spacer `[414,438)`dp between two 414dp panes
+on the 852dp inner display;
+ D34 makes it white in light and D41 true black
+in dark.
+ That pane spacing is **not a universal no-text band** or a mandate
+that every other page become two panes.
+ The physical crease is centered at
+about 426dp (physical x 1038 on this AVD).
 
 Here "content" means **information the user must perceive**:
  keep readable
 text,
  result data,
- labels and other meaning-bearing marks out of that region.
-A continuous page or input surface,
+ labels and other meaning-bearing marks visibly clear of the
+crease itself.
+ A continuous page or input surface,
  row background,
- divider or interaction
-region may cross it when its informative text or marks remain clear of the
-connector.
- A hit region crossing the centre does not by itself violate E2.
-Do not demand an entirely blank pixel strip,
- force every surface to the
-player's spacer color,
- or strand a Search query and its results in different
-halves merely to satisfy this rule.
+ divider
+or interaction region may cross the centre.
+ A hit region crossing it does
+not by itself violate E2.
+ Do not infer a fixed 24dp text exclusion from
+the player's spacer,
+ force every surface to its black/white colors,
+ or
+strand a Search query and results in different halves to clear the crease.
+Judge information placement in native panel captures at design scale;
+ the
+user pointed to YouTube's thumbnail timestamp ending on one side and title
+lettering beginning on the other as an example of close placement without
+putting readable characters on the fold.
  Android's system-owned bars are outside
 this app-content requirement.
  The earlier "no app-owned paint or hit region"
