@@ -300,8 +300,20 @@ No saturation conclusion follows until each page's candidates are screened and t
  serial delay,
  page ceiling,
  and private storage for **unfiltered** complete responses before requesting them.
- Its outcome remains unverified;
- full-page candidate screening and source-class saturation are still open.
+ The identified API run stored unfiltered complete alphabetical pages for `exact decimal` (1240 records through page 13),
+ `bigint` (1034 through page 11),
+ and `arbitrary precision json` (509 through page 6),
+ each ending with `next_page=null`.
+ It then stored pages 1 through 50 of `json number`,
+ whose `meta.total=10460` still linked page 51;
+ the scratch script stopped at its **self-imposed 50-page ceiling** before reaching `decimal arbitrary exponent`.
+ This is not a provider cap or discovery saturation.
+ The ceiling is now 120 pages,
+ justified by the measured total requiring 105 pages for `json number`;
+ the script validates and reuses saved unfiltered pages rather than requesting them again,
+ maintaining the official one-request-per-second policy for new pages.
+ The resumed outcome,
+ candidate screening of full records and source-class saturation remain open.
 
 ## Repository-owned equality prototype and limits
 

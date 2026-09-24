@@ -345,7 +345,14 @@ Web searches discovered `jwc`,
  and full unfiltered private scratch output.
  The added broad query is an enumeration cross-check,
  not a recursive taxonomy expansion or an endorsement of any result.
- No full-page outcome from that script is claimed yet.
+ The identified API fetched and stored every broad `jsonc` alphabetical page:
+ five pages of 100 and a final page of 32,
+ with `meta.total=532` and `next_page=null` on page 6.
+ This completes pagination for that query,
+ not screening of every record or saturation of every source class.
+ The same script later stopped on a **self-imposed** numeric-query page ceiling,
+ not a crates.io provider limit;
+ a measured finite-resume plan is recorded in the exact-number audit.
 
 ### `fjson` 0.3.1
 
