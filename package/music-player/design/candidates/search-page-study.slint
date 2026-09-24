@@ -1,0 +1,313 @@
+// THROWAWAY DESIGN PROTOTYPE FOR D47: Search button -> separate page.
+// This is not a command palette, global hotkey, or production implementation.
+// Baseline M3: 64px small app bar, 56px Search bar (full pill), 72px two-line lists.
+// At widths below 384px the query field becomes a flat 72px focused header.
+// The small 'cam' result set and library-unavailable state are illustrative stubs.
+import "command-fonts/Roboto-Regular.ttf";
+
+component MaterialGlyph inherits Image {
+    in property <image> glyph;
+    in property <color> ink;
+    width: 24px; height: 24px;
+    source: root.glyph;
+    colorize: root.ink;
+    image-fit: contain;
+    accessible-role: none;
+}
+
+component SearchResult inherits Rectangle {
+    in property <bool> dark;
+    in property <image> glyph;
+    in property <string> title;
+    in property <string> detail;
+    in property <string> kind;
+    height: 72px;
+    background: #00000000;
+    MaterialGlyph { x: 16px; y: 24px; glyph: root.glyph; ink: root.dark ? #a9aab5 : #5d5f68; }
+    Text {
+        x: 56px; y: 14px; height: 24px; width: parent.width - 150px;
+        text: root.title; font-size: 16px; overflow: elide;
+        color: root.dark ? #e4e5f0 : #30323b;
+    }
+    Text {
+        x: 56px; y: 40px; height: 20px; width: parent.width - 150px;
+        text: root.detail; font-size: 14px; overflow: elide;
+        color: root.dark ? #a9aab5 : #5d5f68;
+    }
+    Text {
+        x: parent.width - 88px; y: 24px; width: 72px; height: 24px;
+        text: root.kind; font-size: 12px; horizontal-alignment: right;
+        color: root.dark ? #a9aab5 : #5d5f68;
+    }
+}
+
+export component SearchPageStudy inherits Window {
+    in-out property <bool> search-open: false;
+    in-out property <string> query: "";
+    in property <bool> library-unavailable: false;
+    in property <bool> dark: true;
+    in property <bool> compact: true;
+    in property <bool> stress: false;
+    private property <bool> narrow: root.width < 384px;
+    private property <int> result-state: root.library-unavailable ? 3 :
+        (root.query == "" ? 0 : (root.query == "cam" ? 1 : 2));
+    title: root.search-open ? "Search · Music Player" : "Music Player";
+    default-font-family: "Roboto";
+    preferred-width: root.stress ? 360px : (root.compact ? 480px : 1100px);
+    preferred-height: root.stress ? 640px : (root.compact ? 600px : 640px);
+    background: root.dark ? #000000 : #ffffff;
+
+    // Desktop window context remains stable while its page content changes.
+    Rectangle {
+        width: parent.width; height: 34px;
+        background: root.dark ? #121318 : #f4f3fa;
+        Text {
+            x: 16px; y: 8px; height: 20px;
+            text: root.search-open ? "Music Player · Search" : "Music Player";
+            font-size: 14px; font-weight: 600;
+            color: root.dark ? #e4e5f0 : #30323b;
+        }
+    }
+
+    if !root.search-open: Rectangle {
+        x: 0px; y: 34px; width: parent.width; height: parent.height - 34px;
+        background: root.dark ? #000000 : #ffffff;
+        Rectangle {
+            width: parent.width; height: 64px;
+            background: root.dark ? #000000 : #ffffff;
+            Text {
+                x: 16px; y: 18px; width: parent.width - 248px; height: 30px;
+                text: "Camellia"; font-size: 20px; font-weight: 600; overflow: elide;
+                color: root.dark ? #e4e5f0 : #30323b;
+            }
+            search-button := Rectangle {
+                x: parent.width - 232px; y: 8px; width: 48px; height: 48px;
+                background: #00000000; border-radius: 24px;
+                accessible-role: button; accessible-label: "Search music";
+                MaterialGlyph {
+                    x: 12px; y: 12px; glyph: @image-url("command-icons/search.svg");
+                    ink: root.dark ? #e4e5f0 : #30323b;
+                }
+                TouchArea {
+                    width: parent.width; height: parent.height;
+                    clicked => { root.search-open = true; root.query = ""; }
+                }
+            }
+            Rectangle {
+                x: parent.width - 176px; y: 8px; width: 112px; height: 48px;
+                border-radius: 24px;
+                background: root.dark ? #303a54 : #e1e6f7;
+                MaterialGlyph {
+                    x: 16px; y: 12px; glyph: @image-url("command-icons/folder.svg");
+                    ink: root.dark ? #bac5ee : #4e5e8b;
+                }
+                Text {
+                    x: 48px; y: 14px; text: "Open"; font-size: 14px; font-weight: 600;
+                    color: root.dark ? #bac5ee : #4e5e8b;
+                }
+            }
+            Rectangle {
+                x: parent.width - 56px; y: 8px; width: 48px; height: 48px;
+                MaterialGlyph {
+                    x: 12px; y: 12px; glyph: @image-url("command-icons/settings.svg");
+                    ink: root.dark ? #e4e5f0 : #30323b;
+                }
+            }
+        }
+        Rectangle {
+            y: 64px; width: parent.width; height: 1px;
+            background: root.dark ? #464850 : #b0b1bc;
+        }
+        Rectangle {
+            x: 12px; y: 80px; width: parent.width - 24px; height: 72px;
+            background: root.dark ? #121318 : #f4f3fa;
+            Text {
+                x: 16px; y: 9px; text: "Another Xronixle";
+                font-size: 16px; font-weight: 600;
+                color: root.dark ? #e4e5f0 : #30323b;
+            }
+            Text {
+                x: 16px; y: 39px; text: "1 of 16 · −1.2 dBTP";
+                font-size: 14px; color: root.dark ? #a9aab5 : #5d5f68;
+            }
+        }
+        Text {
+            x: 16px; y: 174px; text: "Tracks in Camellia";
+            font-size: 14px; color: root.dark ? #a9aab5 : #5d5f68;
+        }
+        Text {
+            x: 28px; y: 216px; text: "Another Xronixle";
+            font-size: 16px; font-weight: 600; color: root.dark ? #e4e5f0 : #30323b;
+        }
+        Text { x: 28px; y: 270px; text: "Burning Aquamarine"; font-size: 16px; color: root.dark ? #e4e5f0 : #30323b; }
+        Text { x: 28px; y: 324px; text: "Dokuhebi"; font-size: 16px; color: root.dark ? #e4e5f0 : #30323b; }
+        Rectangle {
+            x: 16px; y: parent.height - 147px; width: parent.width - 32px; height: 4px;
+            border-radius: 2px; background: root.dark ? #353b4d : #dde2f9;
+        }
+        Rectangle {
+            x: 16px; y: parent.height - 147px; width: (parent.width - 32px) * 0.24; height: 4px;
+            border-radius: 2px; background: root.dark ? #bac5ee : #4e5e8b;
+        }
+        Rectangle {
+            x: (parent.width - 168px) / 2; y: parent.height - 112px; width: 48px; height: 48px;
+            border-radius: 24px; border-width: 1px; border-color: root.dark ? #73757f : #797a84;
+            MaterialGlyph { x: 12px; y: 12px; glyph: @image-url("command-icons/skip_previous.svg"); ink: root.dark ? #e4e5f0 : #30323b; }
+        }
+        Rectangle {
+            x: (parent.width - 168px) / 2 + 60px; y: parent.height - 112px; width: 48px; height: 48px;
+            border-radius: 24px; background: root.dark ? #bac5ee : #4e5e8b;
+            MaterialGlyph { x: 12px; y: 12px; glyph: @image-url("command-icons/pause.svg"); ink: root.dark ? #30323b : #ffffff; }
+        }
+        Rectangle {
+            x: (parent.width - 168px) / 2 + 120px; y: parent.height - 112px; width: 48px; height: 48px;
+            border-radius: 24px; border-width: 1px; border-color: root.dark ? #73757f : #797a84;
+            MaterialGlyph { x: 12px; y: 12px; glyph: @image-url("command-icons/skip_next.svg"); ink: root.dark ? #e4e5f0 : #30323b; }
+        }
+    }
+
+    if root.search-open: Rectangle {
+        x: 0px; y: 34px; width: parent.width; height: parent.height - 34px;
+        background: root.dark ? #000000 : #ffffff;
+        // Page identity is separate from the search input; no player controls remain.
+        Rectangle {
+            width: parent.width; height: 64px;
+            background: root.dark ? #000000 : #ffffff;
+            back-button := Rectangle {
+                x: 16px; y: 8px; width: 48px; height: 48px;
+                accessible-role: button; accessible-label: "Back to player";
+                MaterialGlyph {
+                    x: 12px; y: 12px; glyph: @image-url("command-icons/back.svg");
+                    ink: root.dark ? #e4e5f0 : #30323b;
+                }
+                TouchArea {
+                    width: parent.width; height: parent.height;
+                    clicked => { root.search-open = false; root.query = ""; }
+                }
+            }
+            Text {
+                x: 80px; y: 16px; height: 32px;
+                text: "Search"; font-size: 22px; font-weight: 500;
+                color: root.dark ? #e4e5f0 : #30323b;
+            }
+        }
+        if root.narrow: Rectangle {
+            x: 0px; y: 64px; width: parent.width; height: 72px;
+            background: root.dark ? #1e1f26 : #e7e7f1;
+            MaterialGlyph {
+                x: 24px; y: 24px; glyph: @image-url("command-icons/search.svg");
+                ink: root.dark ? #a9aab5 : #5d5f68;
+            }
+            if root.query == "": Text {
+                x: 72px; y: 23px; text: "Search library";
+                font-size: 16px; color: root.dark ? #a9aab5 : #5d5f68;
+            }
+            search-input-narrow := TextInput {
+                x: 72px; y: 22px; width: parent.width - 136px; height: 30px;
+                text <=> root.query; input-type: search;
+                font-size: root.stress ? 20px : 16px;
+                color: root.dark ? #e4e5f0 : #30323b;
+                accessible-label: "Search music library";
+            }
+            if root.query != "": Rectangle {
+                x: parent.width - 56px; y: 12px; width: 48px; height: 48px;
+                MaterialGlyph { x: 12px; y: 12px; glyph: @image-url("command-icons/close.svg"); ink: root.dark ? #a9aab5 : #5d5f68; }
+                TouchArea { width: parent.width; height: parent.height; clicked => { root.query = ""; } }
+            }
+            Rectangle { y: 71px; width: parent.width; height: 1px; background: root.dark ? #73757f : #797a84; }
+        }
+        if !root.narrow: Rectangle {
+            x: (parent.width - min(720px, parent.width - 32px)) / 2;
+            y: 80px; width: min(720px, parent.width - 32px); height: 56px;
+            background: root.dark ? #1e1f26 : #e7e7f1;
+            border-radius: 28px;
+            MaterialGlyph {
+                x: 16px; y: 16px; glyph: @image-url("command-icons/search.svg");
+                ink: root.dark ? #a9aab5 : #5d5f68;
+            }
+            if root.query == "": Text {
+                x: 56px; y: 15px; text: "Search library";
+                font-size: 16px; color: root.dark ? #a9aab5 : #5d5f68;
+            }
+            search-input := TextInput {
+                x: 56px; y: 14px; width: parent.width - 112px; height: 30px;
+                text <=> root.query; input-type: search;
+                font-size: 16px;
+                color: root.dark ? #e4e5f0 : #30323b;
+                accessible-label: "Search music library";
+            }
+            if root.query != "": Rectangle {
+                x: parent.width - 48px; y: 4px; width: 48px; height: 48px;
+                MaterialGlyph { x: 12px; y: 12px; glyph: @image-url("command-icons/close.svg"); ink: root.dark ? #a9aab5 : #5d5f68; }
+                TouchArea { width: parent.width; height: parent.height; clicked => { root.query = ""; } }
+            }
+        }
+        if root.result-state == 0: Rectangle {
+            x: (parent.width - min(720px, parent.width - 32px)) / 2;
+            y: 210px; width: min(720px, parent.width - 32px); height: 180px;
+            MaterialGlyph {
+                x: (parent.width - 24px) / 2; y: 0px;
+                glyph: @image-url("command-icons/search.svg");
+                ink: root.dark ? #a9aab5 : #5d5f68;
+            }
+            Text {
+                y: 49px; width: parent.width; text: "Search your music";
+                font-size: 20px; font-weight: 600; horizontal-alignment: center;
+                color: root.dark ? #e4e5f0 : #30323b;
+            }
+            Text {
+                y: 86px; width: parent.width; text: "Type a name to explore your library.";
+                font-size: 14px; horizontal-alignment: center;
+                color: root.dark ? #a9aab5 : #5d5f68;
+            }
+        }
+        if root.result-state == 1: Rectangle {
+            x: (parent.width - min(720px, parent.width - 32px)) / 2;
+            y: root.narrow ? 162px : 168px;
+            width: min(720px, parent.width - 32px); height: 248px;
+            Text {
+                x: 0px; y: 8px; text: "Results for “cam”";
+                font-size: 14px; font-weight: 600;
+                color: root.dark ? #e4e5f0 : #30323b;
+            }
+            SearchResult {
+                y: 40px; width: parent.width; dark: root.dark;
+                glyph: @image-url("command-icons/folder.svg");
+                title: "Camellia"; detail: "Folder · opens this folder"; kind: "Folder";
+            }
+            SearchResult {
+                y: 112px; width: parent.width; dark: root.dark;
+                glyph: @image-url("command-icons/music.svg");
+                title: "Another Xronixle"; detail: "Track · Camellia · reveals track"; kind: "Track";
+            }
+        }
+        if root.result-state == 2: Rectangle {
+            x: (parent.width - min(720px, parent.width - 32px)) / 2;
+            y: 215px; width: min(720px, parent.width - 32px); height: 150px;
+            Text {
+                width: parent.width; text: "No results for “" + root.query + "”";
+                font-size: 20px; font-weight: 600; horizontal-alignment: center;
+                color: root.dark ? #e4e5f0 : #30323b;
+            }
+            Text {
+                y: 40px; width: parent.width; text: "Try another name.";
+                font-size: 14px; horizontal-alignment: center;
+                color: root.dark ? #a9aab5 : #5d5f68;
+            }
+        }
+        if root.result-state == 3: Rectangle {
+            x: (parent.width - min(720px, parent.width - 32px)) / 2;
+            y: 215px; width: min(720px, parent.width - 32px); height: 150px;
+            Text {
+                width: parent.width; text: "Library unavailable";
+                font-size: 20px; font-weight: 600; horizontal-alignment: center;
+                color: root.dark ? #e4e5f0 : #30323b;
+            }
+            Text {
+                y: 40px; width: parent.width; text: "Search will return when the library is available.";
+                font-size: 14px; horizontal-alignment: center;
+                color: root.dark ? #a9aab5 : #5d5f68;
+            }
+        }
+    }
+}
