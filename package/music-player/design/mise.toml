@@ -430,9 +430,14 @@ shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
 
 [tasks."prototype:sanitize:search"]
-description = "Mask notification status content in native Fold Search review images"
+description = "Mask notification status content in the historical three-way Fold Search review images"
 dir = "{{config_root}}"
 run = "node sanitize-search-review.mjs"
+
+[tasks."prototype:sanitize:selected"]
+description = "Mask notification content in native D51/D52 selected Search captures"
+dir = "{{config_root}}"
+run = "node sanitize-search-selected.mjs"
 
 [tasks."prototype:build:search-review"]
 description = "Build the self-contained provisional Fold Search questionnaire from sanitized captures"
