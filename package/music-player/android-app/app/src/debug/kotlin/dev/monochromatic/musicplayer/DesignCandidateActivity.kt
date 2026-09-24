@@ -282,6 +282,15 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 
+// What:     `LaunchedEffect` runs a Compose-owned action after an observed state changes.
+// Why:      Returning focus after the picker closes must happen after the list slot redraws.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// useEffect(() => { if (!pickerOpen) trigger.current?.focus(); }, [pickerOpen]);
+// ```
+import androidx.compose.runtime.LaunchedEffect
+
 // What:     `mutableStateOf` and `remember` retain a value and redraw Compose when it changes.
 // Why:      A measured label overflow must reflow the connected control to its next row count.
 //
@@ -870,9 +879,9 @@ private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePal
     // This study does not switch the library: selecting a name only tests dismissal and focus.
     var pickerOpen by remember { mutableStateOf(false) }
     val triggerFocusRequester = remember { FocusRequester() }
-    val closePicker = {
-        pickerOpen = false
-        triggerFocusRequester.requestFocus()
+    val closePicker = { pickerOpen = false }
+    LaunchedEffect(pickerOpen) {
+        if (!pickerOpen) triggerFocusRequester.requestFocus()
     }
     BackHandler(enabled = pickerOpen) { closePicker() }
     Column(modifier = Modifier.fillMaxSize().background(palette.window)) {
@@ -1044,7 +1053,10 @@ private fun CoverPickerTopRow(
                         if (onToggle == null) Modifier else Modifier
                             .defaultMinSize(minHeight = 48.dp)
                             .clickable(role = Role.Button, onClick = onToggle)
-                            .semantics { stateDescription = if (pickerOpen) "Expanded" else "Collapsed" },
+                            .semantics {
+                                contentDescription = "Folder: $CURRENT_SUBDIRECTORY"
+                                stateDescription = if (pickerOpen) "Expanded" else "Collapsed"
+                            },
                     ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
