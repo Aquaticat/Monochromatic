@@ -150,6 +150,34 @@ function isTypeLevelFile(name: string,): boolean {
 }
 
 /**
+ Suffix of this repo's unit test files, which `test:unit` collects anywhere
+ outside `node_modules`, including under `dist/`.
+ */
+const UNIT_TEST_SUFFIX = '.unit.test.ts';
+
+/**
+ Name of a file's copy: unit test files lose their suffix so `test:unit` never
+ collects the copies from the scratch directory.
+
+ @param name - Source file name.
+
+ @returns Copy name, such as `type-leaf.types.ts`.
+
+ @example
+ ```ts
+ copyName('type-leaf.unit.test.ts',); // 'type-leaf.types.ts'
+ ```
+ */
+function copyName(name: string,): string {
+  return name.endsWith(UNIT_TEST_SUFFIX,)
+    ? `${name.slice(
+      0,
+      -UNIT_TEST_SUFFIX.length,
+    )}.types.ts`
+    : name;
+}
+
+/**
  Copy the type-level files into `<scratch>/sidecar/`, rewriting imports.
 
  @param scratch - Scratch directory.
@@ -208,7 +236,7 @@ async function copySidecar(scratch: string,): Promise<readonly string[]> {
     await writeFile(
       join(
         destination,
-        name,
+        copyName(name,),
       ),
       text,
     );
@@ -226,7 +254,7 @@ async function copySidecar(scratch: string,): Promise<readonly string[]> {
   ].map(function relative(name,) {
     return join(
       'sidecar',
-      name,
+      copyName(name,),
     );
   },);
 }
