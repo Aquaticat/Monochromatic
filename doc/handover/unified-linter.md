@@ -564,25 +564,34 @@ Round 10 answer (user,
    settings come only from a configuration file,
    and a temporary `--config` covers one-off changes.
 
-Round 11,
-asked 2026-09-23,
-about the deepmerge-ts port:
+Round 11 answers about the deepmerge-ts port (user,
+2026-09-23,
+"All A"):
 
 - Scope:
-   default merge only,
-   or also `deepmergeCustom` customizers.
+   the default merge only;
+   `deepmergeCustom` customizers wait for a consumer.
 - Value model:
    a trait the caller implements for its own tree,
-   the port's own value type,
-   or `serde_json::Value`.
-- Crate name and location.
+   so the linter merges `hcl-edit` values and keeps positions.
+- Name and location:
+   `monochromatic-deepmerge` in `package/rust-module/monochromatic-deepmerge`.
 - Licence:
    BSD-3-Clause like upstream,
-   or the repository's LGPL-3.0-or-later with upstream's notice kept.
-- Adoptions open to veto:
-   deepmerge-ts's test suite plus the vet's 33 probe cases as the port's specification;
-   published through `cargo-publish.yml` like the linter;
-   the Rust port of markdownlint-derived rules carries markdownlint's MIT notice.
+   with both copyright lines.
+- Publishing through `cargo-publish.yml`,
+   and markdownlint's MIT notice in the Rust port of its rules,
+   were accepted.
+- The specification is not upstream's test suite:
+   "I'm looking through it and found its own test suite very insufficient.
+   I'm working on building a more sufficient fork."
+
+Round 12,
+asked 2026-09-23:
+
+- Where the user's deepmerge-ts fork lives,
+   whether it or upstream 8.0.2 defines the semantics,
+   and whether the port waits for the fork's tests.
 
 Waiting on research:
 the Markdown parser crate.
