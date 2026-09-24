@@ -63,6 +63,31 @@ Both local delegated `rg` queries were blocked by its security guardrail, so tar
 - Category: inspectable open-source Rust parser with native and multi-platform overlays.
 - Screening: key and value trivia are distinguished, but its parser rejects unpaired surrogate escapes according to source in the delegated research. It cannot parse the required domain as-is. Numeric values use approximate `f64` beyond bounded integers, so an exact adapter would also be needed.
 
+## Current source checks, not a recommendation
+
+- `jsonc-parser` 0.33.2, private clone `~/temp/agent/jsonc-parser-2026-09-24` at `e6e3837` (`Cargo.toml:3` names the version): `src/scanner.rs:175-201` calls the string decoder for escaped tokens, and `src/string.rs:214-261` explicitly returns `InvalidUnicodeEscapeSequence` for an unpaired high or low surrogate. The existing crate cannot parse `{"s":"\uD800"}` in its required JSONC grammar. Using its scanner would require an upstream fork, which is a distinct custom candidate.
+
+  ```rust
+  // src/scanner.rs:199-201
+  crate::string::parse_string_with_char_provider(self)
+    .map(Token::String)
+    .map_err(|err| self.create_error_for_start(err.byte_index, ParseErrorKind::String(err.kind)))
+  ```
+
+- `edikt-jsonc` 0.4.0, private clone `~/temp/agent/edikt-2026-09-24` at `c87295c` (`crates/edikt-jsonc/Cargo.toml:3`): its `project.rs:122-131` converts a large integer to `f64`, and its `project.rs:140-185` unescapes `\u` via `char::from_u32`. An unpaired surrogate has no Rust `char` and falls through without appending a code unit. A compliant adapter must bypass that projection, read raw lexer tokens, decode to UTF-16, and implement the library's own comment attachment. `crates/edikt-jsonc/Cargo.toml:9-15` lists `edikt-core`, `edikt-syntax`, `logos`, `rowan` and `thiserror` as direct dependencies. License, CI, tests and full transitive tree remain to be checked.
+
+  ```rust
+  // crates/edikt-jsonc/src/project.rs:172-175
+  let hex: String = chars.by_ref().take(4).collect();
+  if let Some(ch) = u32::from_str_radix(&hex, 16).ok().and_then(char::from_u32) {
+      out.push(ch);
+  }
+  ```
+
+- `json-five` 0.3.1, private clone `~/temp/agent/json-five-rs-2026-09-24` at `650be6a` (`Cargo.toml:3`): `src/rt/parser.rs:94-145` stores number and quoted-string lexemes verbatim; `src/rt/parser.rs:21` calls whitespace/comment context `Wsc = String`. It needs strict JSONC validation and a separate attached-comment parser and canonical emitter. Its `Cargo.toml:14-24` lists `unicode-general-category` and optional `serde` as production dependencies. Unpaired-surrogate acceptance in the round-trip parser remains to be probed.
+
+`edikt-jsonc` and `json-five` remain serious composed candidates, not validated finalists. The repository-owned parser translation remains a baseline. `biome_json_parser` and other discovered candidates remain unscreened against the exact surrogate and comment boundary; no elimination or ranking is justified yet.
+
 ## Evidence and validation still required
 
 - Finish the scheduled registry, repository-host and broader-web discovery with pagination saturation and an expansion round. Log every query, filters, result counts and newly discovered survivor.
