@@ -1034,11 +1034,15 @@ Every rebuilt file **pins its scheme inline on its own root** — the host sets
 Use the `1c` tonal structure.
  The vertical spacer between panes and the
 16dp horizontal divider between the folder picker and transport are white.
-The original 24dp vertical width was later superseded by E2's
-`max(min_padding, crease_width)` rule;
- D34 settles the spacer color,
- not
-its final width.
+The original 24dp vertical width does not establish safe placement of
+information across the user's 10mm crease.
+ E2 applies
+`max(min_padding, crease_width)` to informative material in physical space;
+borders,
+ backgrounds and padding may cross.
+ D34 settles spacer color where
+that surface is used,
+ not a mandatory blank width.
  Keep the 1dp
 letter-rail boundary in dynamic `outlineVariant`;
  keep pane and track-row outlines
