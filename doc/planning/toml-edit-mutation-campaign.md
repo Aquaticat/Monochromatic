@@ -396,6 +396,7 @@ The indexed array-of-tables read fix passed the rebuilt package suite,
  types,
  oxlint,
  and the deterministic fuzz coverage gate.
+TOML 1.0 and 1.1 conformance and the sidecar bounded property suite passed after that change.
 After edit-path triage,
  scan the remaining comment API and value-encoding files.
 Do not claim a full-runtime verdict before those campaigns and survivor rechecks finish.
