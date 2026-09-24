@@ -1,8 +1,9 @@
 # Momoa 3.2.6: an unpaired `\u` surrogate in Rust JSONC parsing reaches undefined behavior
 
-Status: **incomplete investigation**. The source-level unsafe path is established, but no
-Momoa parse was run. An attempted fresh prototype setup was blocked before cloning,
-container execution, or a scoped commit. Do not file the upstream draft as-is.
+Status: **source diagnosis and isolated prototype verified**. The original unsafe
+parser was never executed on surrogate input. A checked pre-fix instrument and
+patched parser were exercised in a bounded container; the patch and tests are
+local evidence, not an upstream release. No external filing was sent.
 
 ## Symptom
 
@@ -190,13 +191,17 @@ the public JSONC parse interface. The original unsafe call is **not** executed.
   subprocess or network endpoint was found. Release workflows, npm tasks,
   benchmarks, and third-party test scripts are not invoked.
 
-The upstream Rust suite is separately prepared as `mise run test:upstream`
+The upstream Rust suite was separately run as `mise run test:upstream`
 with the same container image, mounts, network policy, and bounds, invoking
 `cargo test --locked --offline`. `rust/tests/parse_test.rs:500-506` reads
 fixture files under the disposable clone; a search of `rust/tests` found no
 other process or network path. The test dependency graph adds `glob`,
 `test-case`, and its proc macros, with no new build scripts in the inspected
-resolved graph. The full suite result is still pending.
+resolved graph. The bounded full Rust suite then passed: the parser integration
+suite reported 52 passes and token suite 41 passes; no test failed. The
+`should_parse_json_files` glob is not empty in this checkout (the primary agent
+measured 51 matching `.txt` fixtures). The separate public-entry example was
+run via `cargo run --example surrogate_safety`, not by `cargo test`.
 
 The checked pre-fix instrumentation was run through
 `mise run test:safe-instrumented` in this container. It exited 101 after
@@ -206,7 +211,7 @@ asserted that a valid pair parses, and failed at
 `assertion failed: momoa::jsonc::parse(r#"{"s":"\uD83D\uDE00"}"#).is_ok()`.
 The checked instrumentation returns an ordinary error on the high half;
 **this is a safe positive control, not execution of the original undefined behavior**.
-A complete fix must make this case pass while retaining safe errors for isolated halves.
+This is the safe failing control for the patched result that follows.
 
 The disposable clone was then changed to decode a high/low `\u` pair into
 one checked scalar and return `MomoaError::UnexpectedElement` for isolated
@@ -214,23 +219,26 @@ halves. Running the same bounded `mise run test:safe-instrumented` command
 exited 0 and printed `safe surrogate consumer cases passed`.
 The example was expanded and rerun in the same bounded container.
 It exited 0 and printed `safe surrogate consumer cases passed` after checking
-isolated high/low errors in values and keys, a high half followed by a
+isolated high/low errors in values and an isolated high key, a high half followed by a
 non-low escape, a valid pair in a key, `\u0041`, and a literal escaped
 backslash. It also inspected the parsed string and asserted the valid pair
-decodes to `😀`. The full upstream suite remains unrun.
-No original unchecked parser invocation occurred in either run.
+decodes to `😀`. This does not prove every JSON string or escape path works;
+the repair targets invalid `char` construction only. No original unchecked
+parser invocation occurred in any run. The prototype uses the generic
+`UnexpectedElement` error at the string token's start, not a diagnostic naming
+the surrogate or its exact escape offset.
 
-### Patterns that avoid the unsafe conversion (source-derived, not Momoa-run)
+### Patterns that avoid the unsafe conversion (source-derived; patched subset tested)
 
 - `r#"{"s":"plain"}"#`: no Unicode escape enters the `u` arm of
   `rust/src/parse.rs:326-348`.
 - `r#"{"s":"\u0041"}"#`: the escape represents scalar `A`; the
-  std-only control checked its scalar value, not Momoa's behavior.
+  patched public-entry example accepted it; the unpatched parser was not run.
 - `r#"{"s":"\\uD800"}"#`: two JSON-source backslashes encode a literal
   backslash before `uD800`; the escaped-backslash arm is distinct from the
   Unicode arm in `rust/src/parse.rs:324-351`.
 
-### Patterns unsafe to pass to the unpatched parser (source-derived, not run)
+### Patterns unsafe to pass to the unpatched parser (source-derived; original not run)
 
 - `r#"{"s":"\uD800"}"#`: isolated high surrogate in a value.
 - `r#"{"s":"\uDFFF"}"#`: isolated low surrogate in a value.
@@ -253,8 +261,8 @@ has no reliable diagnostic. No unsafe reproducer was executed on the host.
 The following conservative guard was compiled and exercised in the std-only
 `~/temp/agent/momoa-surrogate-control.rs` harness. Call it at every consumer
 entry point **before** any Momoa parse call; no other path may bypass it.
-No end-to-end Momoa parse was run, so integration of this guard with Momoa
-remains unverified.
+The guard was not wired to an unpatched Momoa parser; that integration remains
+unverified. Only the separate patched parser was run inside the container.
 
 ```rust
 // Consumer-side guard; does not import or execute Momoa.
@@ -336,24 +344,25 @@ No duplicate was found in the inspected queries; source and tracker state can ch
    found in the checked materials; that is not proof no other policy exists.
 5. **Likely fix: soft yes.** No comparable won't-fix signal was found.
    [Parser history][parse-history] and [reader history][reader-history]
-   show work in these paths, but neither a release-delta check nor a
-   successful `gh` tracker query was performed in this session.
-6. **Minimal architecture-compatible prototype: pending.** A background
-   agent's private scratch setup and Git commands were blocked; its trust
-   request could not open an approval UI. The primary agent can run those
-   commands but has not yet created a fresh prototype clone or executed
-   Momoa code. The minimal complete fix must decode a paired high and low
-   `\u` escape as one scalar and return a normal error for isolated
-   surrogates. A diff and isolated pre/post test output remain absent.
+   show work in these paths; `gh` tracker queries found no matching report,
+   but release deltas were not independently reviewed.
+6. **Minimal architecture-compatible prototype: yes, isolated.** A fresh
+   private clone of commit `8dfb563` was origin-checked and had its push URL
+   disabled. The [prototype patch](momoa-rust-unpaired-surrogate.patch)
+   replaces unchecked scalar construction, decodes valid surrogate pairs,
+   and errors on isolated halves. `git apply --check` succeeded against the
+   clean 3.2.6 clone. A safe checked pre-fix instrument failed the valid-pair
+   assertion (exit 101); the patched public-entry example passed in the
+   bounded offline container (exit 0), including the decoded `😀` value.
+   The bounded upstream Rust suite also passed. The original unsafe branch
+   was not executed on the suspect input, even in the container.
 
-Because constraint 6 is unmet, the audit and this document remain
-**incomplete**. Reopen only when a fresh, private, origin-checked clone
-and a credential-free container with a 2 GiB memory and 2 CPU cap can run
-a targeted pre-patch and post-patch harness (with the unsafe pre-patch
-execution isolated to that container). Inspect its command tree first;
-record the output and inline diff or adjacent patch before filing.
+All filing constraints have supporting evidence, with the stated limitation
+that the pre-fix result is a **checked instrument**, not observed undefined
+behavior. Default policy is not to file; posting externally still requires
+the user's authorization. The following draft is kept locally, not sent.
 
-### New-issue draft (do not file as-is)
+### New-issue draft (not sent)
 
 ~~~md
 # Rust 3.2.6 JSON/JSONC parser constructs a surrogate `char` with unchecked conversion
@@ -362,8 +371,10 @@ Labels: bug, needs repro
 
 In momoa Rust 3.2.6, `jsonc::parse` of `r#"{"s":"\uD800"}"#` (one
 JSON-source backslash) reaches undefined behavior by source inspection.
-Do not run this on an unsandboxed host. A std-only control confirms
-`char::from_u32(0xD800) == None`. No Momoa execution is claimed.
+Do not run the original unsafe parse on any host. A std-only control
+confirms `char::from_u32(0xD800) == None`. A checked pre-fix instrument
+failed on the valid surrogate-pair case, and the patched parser accepted
+the pair while rejecting isolated halves in a bounded container.
 
 Source trace: `rust/src/readers.rs:91-113` accepts the four ASCII hex
 digits following `\u` with `Some(nc) if nc.is_ascii_hexdigit() => len += 1`.
@@ -387,8 +398,11 @@ of constructing an invalid `char`. Add tests for ASCII escapes, valid
 pairs, isolated high/low halves, escaped backslashes, and object keys.
 Maintain documented Rust/JS behavior parity where possible.
 
-A container-isolated pre/post prototype and complete duplicate search
-are still required before this draft is fileable.
+The local prototype patch is recorded in the repository troubleshooting
+document. `cargo run --locked --offline --example surrogate_safety` passed
+after the patch; `cargo test --locked --offline` passed the Rust integration
+and token suites. Repository-scoped duplicate searches found no matching
+issue or PR. No upstream issue or PR has been sent.
 ~~~
 
 [rust-char]: https://doc.rust-lang.org/std/primitive.char.html#method.from_u32_unchecked
