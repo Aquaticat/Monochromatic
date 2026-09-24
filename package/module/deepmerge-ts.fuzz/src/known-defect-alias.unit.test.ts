@@ -81,6 +81,59 @@ await describe({
       },
     },),
     it({
+      name: 'one deepmergeInto call rewires a cyclic source node it stored in the target by reference',
+      // Cause: the same single-source reference sharing, within one call: `a` exists only in the source, so
+      // the target stores the source's node there, and cycle resolution later in the call writes the
+      // target's nodes into it. Found by the campaign (seed 1395258848) in "deepmergeInto never mutates
+      // its graph sources within one call"; that property now skips mutations of source nodes the target
+      // references. Not closed by fix/false-cycle-detection.
+      fn: async () => {
+        /**
+         Four-node cyclic graph from the campaign counterexample; `n2` is reached from `n1` via `c.a`.
+
+         @returns Fresh nodes of one graph.
+         */
+        function graph(): Readonly<Record<'n0' | 'n1' | 'n2' | 'n4', Record<string, unknown>>> {
+          /**
+           Node reached from `n1` through `c`.
+           */
+          const n0: Record<string, unknown> = {};
+          /**
+           Source root.
+           */
+          const n1: Record<string, unknown> = {};
+          /**
+           Target root shape; the node the call rewires in the source.
+           */
+          const n2: Record<string, unknown> = {};
+          /**
+           Node shared by `n1.b` and `n2.c`.
+           */
+          const n4: Record<string, unknown> = {};
+          n0.a = n2;
+          n1.c = n0;
+          n1.b = n4;
+          n2.c = n4;
+          n2.b = n1;
+          n4.b = n0;
+          return { n0, n1, n2, n4, };
+        }
+        /**
+         Graph whose `n2` is the target root.
+         */
+        const into = graph();
+        /**
+         Graph whose `n1` is the source root.
+         */
+        const source = graph();
+        target.deepmergeInto(into.n2, source.n1,);
+        // Documented: sources are never written. Actual: the target holds source `n2` at `c.a` and rewired it.
+        expect(at({ key: 'a', value: into.n4, },),).toBe(source.n2,);
+        expect(source.n2.c,).toBe(into.n1,);
+        expect(source.n2.b,).toBe(into.n2,);
+      },
+    },),
+    it({
       name: 'false cycle: an input\'s value that is another input\'s ancestor or descendant resolves to an ancestor merge',
       // Cause: getCyclicReferenceDepth (src/utils.ts) matches any input's parents. Excluded region:
       // falseCycle in ./alias-bisim.ts. Closed by fix/false-cycle-detection.
