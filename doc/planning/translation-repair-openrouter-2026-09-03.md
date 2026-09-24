@@ -8082,6 +8082,55 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya18 read, 2026-09-24, 03:45 UTC: SETTLED in 7 min, the first page on class one hundred nine (not exercised: no hold began inside the lane), every check as shi_Yumiaoya17, no class; mikaela12 launched
+
+`shi_Yumiaoya18` (frozen `21ea25993`, pid 91959) SETTLED at 03:35 UTC 2026-09-24,
+7 min after the pass's 03:28 start (TALLY `ms=423317`; the launch command ran at 03:23),
+one attempt,
+865 seats,
+38 retry rounds,
+686 calls,
+no abandoned stream,
+0.38 USD by the meters (Bedrock 48.27 to 48.14, OpenRouter 95.44 to 95.19),
+on Bedrock and OpenRouter alone (Synthetic dry for the week, Hyper dry; Qwen3.8-27B 99 asked 99 threw and glm-5.3 79 asked 79 threw, both dark by design).
+Stages: repair from 03:28:50, translate lane from 03:30:08, contest from 03:32:38, consolidation 03:32:55 to 03:35:28; Jev 24 of 24; 9 abstention lines with reasons.
+
+Class one hundred nine not exercised live, as expected:
+no hold began inside the repair lane (every JUDGE SEATS line reads `synthetic=dry bedrock=wet hyper=dry openrouter=wet`, `waited=0ms`),
+so no "checker stage re-seated" line printed;
+the only `re-seated` line is the translate lane's usual "re-seated before starting".
+Both checker rounds of the run heard 2 of 3 (gemma-26b and the dry reading's gemma-4-e2b for the withheld Kimi) in 819 ms and 909 ms with no grace;
+the run wrote one repaired chunk (`repairChanged=1`), so the checker stage ran twice.
+The class one hundred filers log is live (34 "filed by" lines).
+Class one hundred seven silent this run: no accepted addition claim against the archive, no `translate-archive-disputed` line.
+
+The lanes agreed on six slices (0, 2, 5, 9, 14, 16), so the closing quote (slice 16) never reached the contest or the consolidation and shipped as the archive's two lines
+("And in case I don't see you……good afternoon, good evening, and good night." then "From *The Truman Show*", no Chinese line above them): classes eighty and one hundred two fine.
+Class one hundred one holding (the `[^1]` definition the page's last line, "below." then the file's line ending; one marker, one definition).
+The contest chose the translate lane on all twelve differing slices;
+terminals: consolidated 1, 4, 8, 10, 17; slate-endorsed 3, 6, 7, 11, 15; slate-declined 12; gate-kept 13.
+The two page-assembly passes silent (nothing trimmed, nothing withdrawn, no finding).
+Class seventy-eight holding ("Chewing Gum and Danpian had each passed away as well").
+Class seventy-nine holding ("she attempted to end her life in the early hours of January 16", an attempt, not a death;
+the bench dropped the 吞下大量药物 clause this run as `shi_Yumiaoya14` did, where `shi_Yumiaoya17` had "swallowed a large amount of medication").
+The final-tweet paragraph reads "three bottles of a certain sedative-hypnotic" for 三瓶某种镇静催眠药, the count the original's and the substance unnamed, as `shi_Yumiaoya9` shipped and the reading of that run accepted;
+minimax-m3 abstained on every slate carrying it under the reader-protection rule, and the other judges chose against the abstention.
+Classes ninety-two, ninety-five and ninety-six fine (the six straight double quotes the archive's own JSX path literals; the marker and definition on the page).
+Every structural check as `shi_Yumiaoya17`: 4 headings, front matter equal to the archive, no TA, no error finish, no double blank line, 5 em-dashes (as `shi_Yumiaoya17`, left per owner).
+Han residue as `shi_Yumiaoya17` except the father sentence, which reads 「逆子」—a disgrace (the source's own corner brackets, the gloss appended) where `shi_Yumiaoya17` wrote “逆子”; the archive's own 尼康 D200 caption and comments as before.
+The nickname line reads "little yaoniang[^1]" where `shi_Yumiaoya17` wrote "little HRT girl[^1]"; the footnote explains the term either way, the archive's comment says it needs no translation.
+No class.
+
+`mikaela12` (entry `mikaela_khara`, frozen `21ea25993`, pid 125750, overlap 8)
+launched 03:38 UTC on Bedrock and OpenRouter
+(meters 48.14 USD Bedrock, 95.19 OpenRouter at launch; Synthetic dry for the week, Hyper dry),
+waiter byun3a1z8.
+Read for any "checker stage re-seated" line (none expected without a hold beginning inside the lane),
+the checker rounds hearing 2 of 3 on the dry reading,
+then classes seventy to seventy-seven, ninety-six, one hundred one and one hundred two beside every check of `mikaela11`
+(𝓠𝓾𝓪𝓷 as the archive, "𝓠𝓾𝓪𝓷’s" curled, "Mika was outed", the Epilogue one to one, the life in the past, front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish).
+Then `yingying` or `zheermao101`.
+
 ## zheermao9 read, 2026-09-24, 03:20 UTC: SETTLED in 20 min, class one hundred three live under Synthetic's weekly dry-out, class one hundred six not exercised (the contest chose the repair lane 5 of 5), class one hundred seven live on slice 0; but the chunks in flight kept the bench read at their start, so seven of eight checker rounds after the dry-out heard 1 of 3 (class one hundred nine, fixed in 21ea25993); shi_Yumiaoya18 launched
 
 `zheermao9` (entry `zheermao101`, frozen `85ed2881f`, pid 4089371) SETTLED at 03:04 UTC 2026-09-24,

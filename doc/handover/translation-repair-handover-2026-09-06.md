@@ -4647,18 +4647,26 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA18 RUNS (frozen `21ea25993`,
-    pid 91959,
-    launched 03:23 UTC 2026-09-24,
-    waiter wait-s18 (background bash),
-    meters 48.28 USD Bedrock and 95.47 OpenRouter at launch, Synthetic dry for the week since 02:56 UTC (`syntheticWeekly=0%`), Hyper dry;
+1.  MIKAELA12 RUNS (entry `mikaela_khara`,
+    frozen `21ea25993`,
+    pid 125750,
+    launched 03:38 UTC 2026-09-24,
+    waiter wait-m12 (background bash),
+    meters 48.14 USD Bedrock and 95.19 OpenRouter at launch, Synthetic dry for the week since 02:56 UTC, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    the first run on class one hundred nine;
-    read for any "checker stage re-seated" line (none expected without a hold beginning inside the lane) and the checker rounds hearing 2 of 3 on the dry reading (gemma-26b and gemma-4-e2b),
-    then classes seventy-eight, seventy-nine, ninety-two, ninety-five, ninety-six, one hundred one and one hundred two beside every check of `shi_Yumiaoya17`
-    (4 headings, front matter equal, the death paragraphs on the page, the closing quote as the archive's two lines, no TA, no error finish, no double blank line);
-    then `mikaela_khara`, beside every check of `mikaela11`;
-    record each under a new heading above "## zheermao9 read, 2026-09-24" in the pass log.
+    the second run on class one hundred nine;
+    read for any "checker stage re-seated" line (none expected without a hold beginning inside the lane),
+    the checker rounds hearing 2 of 3 on the dry reading,
+    then classes seventy to seventy-seven, ninety-six, one hundred one and one hundred two beside every check of `mikaela11`
+    (𝓠𝓾𝓪𝓷 as the archive, "𝓠𝓾𝓪𝓷’s" curled, "Mika was outed", the Epilogue one to one, the life in the past, front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish);
+    then `yingying` or `zheermao101`, beside every check of the last read of each;
+    record each under a new heading above "## shi_Yumiaoya18 read, 2026-09-24" in the pass log.
+    SHI_YUMIAOYA18 READ (frozen `21ea25993`): SETTLED at 03:35 UTC 2026-09-24 in 7 min, one attempt, 865 seats, 686 calls, 0.38 USD by the meters;
+    class one hundred nine not exercised (no hold began inside the lane, no "checker stage re-seated" line; both checker rounds heard 2 of 3 on gemma-26b and gemma-4-e2b),
+    class one hundred seven silent (no accepted addition claim against the archive), the filers log live (34 lines),
+    the lanes agreed on six slices including the closing quote, which shipped as the archive's two lines (classes eighty and one hundred two fine),
+    classes seventy-eight, seventy-nine, ninety-two, ninety-five, ninety-six and one hundred one holding, every check as `shi_Yumiaoya17` (4 headings, front matter equal, no TA, no error finish, no double blank line),
+    the two page-assembly passes silent, slice 12 slate-declined, slice 13 gate-kept, 9 abstention lines, Jev 24 of 24; no class.
     CLASS ONE HUNDRED NINE BUILT (21ea25993, guards red first 1ab453219, full suite green `suite-class109.log` 1114 PASS):
     the checker stage re-reads the seating at the stage itself (`repair-checker-reseat.ts` `checkerBenchAtStage`, threaded as `reseat` from `repairPreparedDocument` to `proveRepairedChunk` in `repair-chunk-proof.ts`),
     since the class one hundred three re-seat lands only at a chunk's start and with overlap 8 the chunks in flight kept a stale bench through their checker stage;
