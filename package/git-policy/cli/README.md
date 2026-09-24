@@ -326,7 +326,9 @@ If setup stopped before writing a journal,
 an empty directory has no snapshots to recover,
 but its emptiness does not prove its owner has exited (including when another index location is in use).
 The wrapper preserves it and reports an empty pre-journal diagnostic rather than deleting a possibly active transaction.
-A failed exclusive index-lock acquisition does not create a transaction directory.
+Exclusive index-lock acquisition precedes recovery-directory creation,
+so `EEXIST` cannot leave a new empty directory.
+A preexisting empty directory still fails closed until its ownership has been checked.
 
 Use the namespaced cli-git management commands:
 
