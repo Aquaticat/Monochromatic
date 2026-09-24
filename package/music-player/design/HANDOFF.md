@@ -4451,11 +4451,19 @@ keyboard-focus outline `#BAC5EE` / `#4E5E8B`.
 contrast measures 10.50:1 dark and 8.84:1 light;
  focus outline to row measures
 7.71:1 and 4.41:1.
- The 360px larger-text scene reflows I1 to full content and
-keeps the long action legible on two lines.
+ The 360px larger-text scene depicts a proposed I1 full-content fallback and
+keeps the long action legible on two lines;
+ the prototype's explicit `stress` input
+chooses that layout,
+ so no width-driven runtime transition has been verified.
+The baseline two-line row height was corrected to 72px from AndroidX
+`ListTokens.ItemTwoLineContainerHeight` in prototype `c88786448` and the main native
+captures were refreshed in `98d83561a`.
+ Its 96px stress rows are an explicit
+larger-text adaptation,
+ not a baseline token.
  These are design-study checks,
- not
-production or screen-reader claims.
+not production or screen-reader claims.
 
 The rejected `questions/current.html` form has been replaced by a self-contained
 baseline MD3 I/G/R questionnaire (`dd194daf4`).
