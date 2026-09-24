@@ -209,18 +209,22 @@ export function matchTableSection(
    Array-of-tables instance selected by the numeric segment after its header.
    */
   const indexed = blocks.find(function isIndexedAot(b,): b is TableNode {
-    if ((b.kind !== 'table') || (b.tableKind !== 'array') || (!isStrictPrefix({
+    if ((b.kind
+      !== 'table') || (b.tableKind
+        !== 'array') || (!isStrictPrefix({
       candidate: b.headerSegments,
       path,
     },)))
       return false;
-    return path[b.headerSegments.length] === b.aotIndex;
+    return path[b.headerSegments
+      .length] === b.aotIndex;
   },);
   if (indexed !== undefined) {
     /**
      Path offset after the selected array instance's numeric segment.
      */
-    const bodyStart = indexed.headerSegments.length + 1;
+    const bodyStart = indexed.headerSegments
+      .length + 1;
     if (path.length === bodyStart)
       return {
         kind: 'table',
