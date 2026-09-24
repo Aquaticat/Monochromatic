@@ -23,6 +23,12 @@ await describe({
             message: 'Cannot set numeric segment 0 in foo[0].bar',
           },
           {
+            source: '',
+            path: ['foo', 0, 'bar',],
+            value: 3,
+            message: 'Cannot path-create at numeric segment 0 in foo[0].bar',
+          },
+          {
             source: 'foo = { a.b.c = 1 }\n',
             path: ['foo', 'a', 'b',],
             value: 3,
