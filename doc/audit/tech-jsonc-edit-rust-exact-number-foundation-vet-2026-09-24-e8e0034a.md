@@ -144,7 +144,7 @@ Further source screening: `fpdec` 0.14.1, `~/temp/agent/fpdec-2026-09-24` at `b9
 
 ## Regex screening, 2026-09-24
 
-The user explicitly excludes production regex. The inspected direct source and manifest for `json-number` 0.4.10 at `~/temp/agent/json-number-2026-09-24` contains no `regex::`, `Regex::`, `#[regex]`, `logos`, or direct regex dependency; `src/lib.rs:117-195` validates number grammar with a state machine. Its required `lexical` dependency and other composed alternatives still need transitive production-path screening before claiming they are regex-free. The repository-owned token/normalization prototype uses direct scans; it remains an incomplete JavaScript proof, not Rust validation.
+The user requested early regex culling. Our operational screening interprets this as production parsing or lexing and required normal/build dependencies, not upstream dev-only usage. The inspected direct source and manifest for `json-number` 0.4.10 at `~/temp/agent/json-number-2026-09-24` contains no `regex::`, `Regex::`, `#[regex]`, `logos`, or direct regex dependency; `src/lib.rs:117-195` validates number grammar with a state machine. Its required `lexical` dependency and other composed alternatives still need transitive production-path screening before claiming they are regex-free. The repository-owned token/normalization prototype uses direct scans; it remains an incomplete JavaScript proof, not Rust validation.
 
 ## Pending evidence and validation
 
