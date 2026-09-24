@@ -34,7 +34,7 @@ import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type AuditMemberClaim,
@@ -408,7 +408,7 @@ await describe({
          Claim about the negation, far from either count.
          */
         const polarity = claimOf({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           category: 'altered-polarity',
           sourceLocator: '她们不吃罐头',
           sourceFocus: '不吃',
@@ -441,7 +441,7 @@ await describe({
          Third voice quoting a span that contains the other two.
          */
         const wider = claimOf({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           category: 'altered-number',
           sourceLocator: COUNT_SENTENCE_SOURCE,
           sourceFocus: '两只猫睡在窗台上',

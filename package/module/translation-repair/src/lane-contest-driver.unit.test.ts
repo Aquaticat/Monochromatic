@@ -24,7 +24,7 @@ import {
   contestDocumentLanes,
   createSyntheticClient,
   persistLaneContestOutcome,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type ArtifactComparisonRow,
@@ -40,7 +40,7 @@ import {
  Roster of three, the smallest that can produce a two-to-one split.
  */
 const ROSTER = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 ] as const;

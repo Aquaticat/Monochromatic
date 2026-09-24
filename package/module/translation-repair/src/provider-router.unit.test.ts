@@ -19,7 +19,7 @@ import {
   SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SyntheticHttpError,
   type BudgetView,
   type ProviderName,
@@ -289,8 +289,8 @@ function isNapSpot(value: unknown,): value is { readonly spot: string; } {
 }
 
 /**
- Routes one text call for GLM-5.3-Flash, which every provider but Bedrock
- serves and the run buys from each, and reports what happened.
+ Routes one text call for Qwen3.8-27B by default, which Synthetic and Hyper
+ serve and the run buys from each, and reports what happened.
  
  @param client - router under test
  
@@ -306,7 +306,7 @@ function isNapSpot(value: unknown,): value is { readonly spot: string; } {
 async function ask(
   {
     client,
-    modelId = SEAT_SYNTHETIC_VISION_EDITOR,
+    modelId = SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   }: {
     readonly client: ReturnType<typeof createRoutingClient>;
     readonly modelId?: Parameters<ReturnType<typeof createRoutingClient>['chatText']>[0]['modelId'];
@@ -382,6 +382,7 @@ await describe({
         const { budgets, } = stubBudgets({
           dry: {
             synthetic: true,
+            bedrock: true,
             hyper: true,
           },
         },);
@@ -390,7 +391,13 @@ await describe({
           budgets,
         },);
 
-        expect(await ask({ client, },),).toEqual({ text: '{"spot":"laundry basket"}', },);
+        // The one routed Synthetic seat OpenRouter also serves since GLM-5.3-Flash
+        // was withheld from Synthetic (class one hundred eighteen); Bedrock
+        // serves it too, so Bedrock reads dry here.
+        expect(await ask({
+          client,
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+        },),).toEqual({ text: '{"spot":"laundry basket"}', },);
         await ask({
           client,
           modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
@@ -454,13 +461,18 @@ await describe({
             hyper: 402,
           },
         },);
-        const { budgets, refused, } = stubBudgets({},);
+        // Bedrock serves the three-provider seat too and reads dry, so the
+        // refusals walk Synthetic, Hyper and OpenRouter.
+        const { budgets, refused, } = stubBudgets({ dry: { bedrock: true, }, },);
         const client = createRoutingClient({
           callers,
           budgets,
         },);
 
-        expect(await ask({ client, },),).toEqual({ text: '{"spot":"laundry basket"}', },);
+        expect(await ask({
+          client,
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+        },),).toEqual({ text: '{"spot":"laundry basket"}', },);
         expect(called,).toEqual(['synthetic', 'hyper', 'openrouter',],);
         expect(refused,).toEqual(['synthetic', 'hyper',],);
 
@@ -474,10 +486,15 @@ await describe({
         },);
         const all = createRoutingClient({
           callers: everyone.callers,
-          budgets: stubBudgets({},).budgets,
+          budgets: stubBudgets({ dry: { bedrock: true, }, },).budgets,
         },);
-        const outcome = await ask({ client: all, },);
-        expect(('thrown' in outcome) && (outcome.thrown instanceof SyntheticHttpError),).toBe(true,);
+        const outcome = await ask({
+          client: all,
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+        },);
+        // Every provider serving the seat is now out (Bedrock dry, the other
+        // three refused), so the run ends rather than looping.
+        expect(('thrown' in outcome) && (outcome.thrown instanceof EveryProviderDryError),).toBe(true,);
         expect(everyone.called,).toEqual(['synthetic', 'hyper', 'openrouter',],);
       },
     },),
@@ -490,6 +507,7 @@ await describe({
         const { budgets, refused, } = stubBudgets({
           dry: {
             synthetic: true,
+            bedrock: true,
             hyper: true,
           },
         },);
@@ -498,7 +516,10 @@ await describe({
           budgets,
         },);
 
-        const outcome = await ask({ client, },);
+        const outcome = await ask({
+          client,
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+        },);
         // A subscription reports exhaustion as a rate limit and a balance
         // reports it as payment due; both mark the provider.
         expect(refused,).toEqual(['openrouter',],);
@@ -653,7 +674,7 @@ await describe({
     },),
 
     it({
-      name: 'sends GLM-5.3-Flash pictures and text through the first provider that reads them',
+      name: 'sends Qwen3.8-27B pictures and text through the first provider that reads them',
       fn: async () => {
         const { callers, called, } = stubProviders({},);
         const { budgets, } = stubBudgets({},);
@@ -663,14 +684,14 @@ await describe({
         },);
 
         await client.chatText({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           messages: PICTURE_MESSAGES,
           signal: SIGNAL,
         },);
         expect(called,).toEqual(['synthetic',],);
 
         await client.chatText({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           messages: MESSAGES,
           signal: SIGNAL,
         },);
@@ -803,7 +824,7 @@ await describe({
           budgets,
         },);
         const outcome = await client.chatJson({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
@@ -824,13 +845,18 @@ await describe({
         + 'is the second opinion, wherever it sits in the order',
       fn: async () => {
         const { callers, called, } = stubProviders({ text: { synthetic: 'I will not do that.', }, },);
-        const { budgets, } = stubBudgets({ dry: { hyper: true, }, },);
+        const { budgets, } = stubBudgets({
+          dry: {
+            bedrock: true,
+            hyper: true,
+          },
+        },);
         const client = createRoutingClient({
           callers,
           budgets,
         },);
         const outcome = await client.chatJson({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
@@ -902,13 +928,13 @@ await describe({
         // fix that re-ask released a slot nothing had taken.
         await Promise.all([
           client.chatJson({
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             messages: MESSAGES,
             signal: SIGNAL,
             validate: isNapSpot,
           },),
           client.chatJson({
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             messages: MESSAGES,
             signal: SIGNAL,
             validate: isNapSpot,
@@ -966,7 +992,7 @@ await describe({
         },);
 
         const outcome = await client.chatJson({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
@@ -993,7 +1019,7 @@ await describe({
           budgets,
         },);
         const outcome = await client.chatJson({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,
@@ -1016,7 +1042,7 @@ await describe({
           budgets,
         },);
         const outcome = await client.chatJson({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           messages: MESSAGES,
           signal: SIGNAL,
           validate: isNapSpot,

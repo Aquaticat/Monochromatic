@@ -4,7 +4,7 @@ import {
   readBlockPairingOutcomes,
   SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type BlockPair,
@@ -12,7 +12,7 @@ import {
   type RoundOutcome,
 } from '../dist/final/node/index.mjs';
 
-const roster = [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_VISION_EDITOR,] as const;
+const roster = [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_HYPER_OPENROUTER_VISION_EDITOR,] as const;
 const l = tagged({ tag: 'pairing-recipe-reading-test', },);
 
 await describe({

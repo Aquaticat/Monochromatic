@@ -65,9 +65,16 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     // 13,070 over 1,853.
     completionCap: 18_316,
     // Owner, 2026-09-02: "Unseat GLM-5.3-Flash as a judge, keep it as editor".
+    // Off Synthetic since 2026-09-24 (class one hundred eighteen): over the
+    // runs from 2026-09-21 it averaged 74.5 s a stream there (892 streams,
+    // p50 51.9 s, 43 with no content) against 8.6 s on Hyper (305, p50 6.5 s,
+    // none empty), and on CuspariaKLSY13 one editor round waited 175 s in
+    // grace for its 230 s cap-cut runaway and the recovery round 180 s more
+    // for nothing, with no other chunk in flight.
     holds: [
       'wide-seat-dropped',
       'late-judge-dropped',
+      'synthetic-withheld',
     ],
   },
   'hf:Qwen/Qwen3.8-27B': {

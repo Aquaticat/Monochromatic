@@ -29,7 +29,7 @@ import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   selectBestCandidate,
@@ -171,7 +171,7 @@ const STRING_CANDIDATES: readonly Candidate<string>[] = [
   {
     producer: {
       kind: 'model',
-      modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+      modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
     },
     value: 'first',
     rendered: 'The cat chases butterflies.',
@@ -238,7 +238,7 @@ function dryBenchJudges(
  Whole roster selection draws judges from.
  */
 const JUDGES: readonly RosterModelId[] = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
@@ -478,7 +478,7 @@ await describe({
         /** GLM-5.3-Flash backs its own text at half weight, Qwen backs it at full, gpt-oss declines. */
         const outcome = await runShortBench({
           ballots: {
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
             [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
             [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
           },
@@ -514,7 +514,7 @@ await describe({
           },
           unreachable: [
             ...DRY_SEATS,
-            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           ],
         },);
         expect(outcome.kind,).toBe('declined',);
@@ -536,7 +536,7 @@ await describe({
         /** The same ballots on a bench every provider serves. */
         const outcome = await runShortBench({
           ballots: {
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
             [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
           },
           unreachable: [],
@@ -571,7 +571,7 @@ await describe({
         // take candidate 2.
         const { outcome, calls, } = await runSelection({
           ballots: {
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
             [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 2,
             [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
@@ -608,7 +608,7 @@ await describe({
       fn: async () => {
         const { outcome, } = await runCollapsedSelection({
           contributors: [
-            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             SEAT_SYNTHETIC_VISION_WITHHELD,
             SEAT_HYPER_OPENROUTER_UNMEASURED,
@@ -629,7 +629,7 @@ await describe({
       fn: async () => {
         const { outcome, } = await runCollapsedSelection({
           contributors: [
-            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             SEAT_SYNTHETIC_VISION_WITHHELD,
           ],
@@ -648,7 +648,7 @@ await describe({
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
             [SEAT_HYPER_OPENROUTER_UNMEASURED]: 1,
             [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 1,
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
             [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
           },
           fanOut: 'window',
@@ -671,7 +671,7 @@ await describe({
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
             [SEAT_HYPER_OPENROUTER_UNMEASURED]: 0,
             [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 0,
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 0,
             [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 0,
           },
         },);
@@ -784,7 +784,7 @@ await describe({
       fn: async () => {
         const { outcome, } = await runSelection({
           ballots: {
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
             [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 1,
           },
@@ -855,7 +855,7 @@ await describe({
           },),
           candidates: [
             candidateFor({
-              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               newText: 'The cat chases butterflies.',
             },),
           ],
@@ -871,7 +871,7 @@ await describe({
         expect(selection.soleCount,).toBe(1,);
         expect(selection.judgedCount,).toBe(0,);
         expect(selection.operations.length,).toBe(1,);
-        expect([...selection.contributors,],).toEqual([SEAT_SYNTHETIC_VISION_EDITOR,],);
+        expect([...selection.contributors,],).toEqual([SEAT_HYPER_OPENROUTER_VISION_EDITOR,],);
         // Recorded as a round of its own kind, so the author survives into
         // the attribution instead of vanishing with the vote that never was.
         expect(selection.rounds.length,).toBe(1,);
@@ -880,7 +880,7 @@ await describe({
         expect(selection.rounds[0]?.slate.length,).toBe(1,);
         expect(selection.rounds[0]?.slate[0]?.producer,).toEqual({
           kind: 'model',
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
         },);
       },
     },),
@@ -900,7 +900,7 @@ await describe({
           },),
           candidates: [
             candidateFor({
-              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               newText: 'The cat chases butterflies.',
             },),
             candidateFor({
@@ -934,7 +934,7 @@ await describe({
       fn: async () => {
         /** Repair kept when judges cannot converge, named for its author. */
         const indecisionFallback: Candidate<PatchOutcome> = chunkCandidateOf(candidateFor({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           newText: 'The cat chases butterflies.',
         },),);
 
@@ -967,7 +967,7 @@ await describe({
               value: candidateFor({
                 modelId: candidate.producer.kind === 'model'
                   ? candidate.producer.modelId
-                  : SEAT_SYNTHETIC_VISION_EDITOR,
+                  : SEAT_HYPER_OPENROUTER_VISION_EDITOR,
                 newText: `Replacement ${String(index + 1,)}.`,
               },).patch,
               rendered: candidate.rendered,
@@ -989,7 +989,7 @@ await describe({
         // editor that wrote this text certify its own work at full weight.
         expect(shippedProducer,).toEqual({
           kind: 'model',
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
         },);
       },
     },),
@@ -1000,7 +1000,7 @@ await describe({
       fn: async () => {
         /** Repair that must NOT ship over an outright rejection. */
         const indecisionFallback: Candidate<PatchOutcome> = chunkCandidateOf(candidateFor({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           newText: 'The cat chases butterflies.',
         },),);
 
@@ -1029,7 +1029,7 @@ await describe({
               value: candidateFor({
                 modelId: candidate.producer.kind === 'model'
                   ? candidate.producer.modelId
-                  : SEAT_SYNTHETIC_VISION_EDITOR,
+                  : SEAT_HYPER_OPENROUTER_VISION_EDITOR,
                 newText: `Replacement ${String(index + 1,)}.`,
               },).patch,
               rendered: candidate.rendered,
@@ -1057,7 +1057,7 @@ await describe({
 
         /** Text every proposal agreed on. */
         const agreed = candidateFor({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           newText: 'The cat chases butterflies.',
         },).patch;
 
@@ -1069,7 +1069,7 @@ await describe({
           producer: {
             kind: 'composite',
             contributors: [
-              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             ],
           },
@@ -1116,7 +1116,7 @@ await describe({
         // the absolute minimum of 2. That is mikaela4's slice 28 run-off.
         /** Ballots the run-off heard. */
         const ballots = {
-          [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+          [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
           [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
           [SEAT_HYPER_OPENROUTER_UNMEASURED]: 2,
           [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
@@ -1144,7 +1144,7 @@ await describe({
         const messages: string[] = [];
         await runSelection({
           ballots: {
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 1,
             [SEAT_HYPER_OPENROUTER_UNMEASURED]: 0,
             [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
@@ -1165,7 +1165,7 @@ await describe({
       fn: async () => {
         const { outcome, } = await runSelection({
           ballots: {
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 1,
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 0,
             [SEAT_HYPER_OPENROUTER_UNMEASURED]: 0,
             [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,

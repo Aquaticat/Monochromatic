@@ -43,7 +43,7 @@ import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SEATED_BEDROCK_JUDGES,
@@ -114,7 +114,7 @@ await describe({
         expect(dry.repairModels.panelModelIds,).toEqual(dry.wideSeats,);
         expect(dry.repairModels.judgeModelIds,).toEqual(dry.selectJudges,);
         expect(dry.translateModels.judgeModelIds,).toEqual(dry.selectJudges,);
-        expect(dry.wideSeats.includes(SEAT_SYNTHETIC_VISION_EDITOR,),).toBe(false,);
+        expect(dry.wideSeats.includes(SEAT_HYPER_OPENROUTER_VISION_EDITOR,),).toBe(false,);
         expect(dry.withheld.includes(QWEN,),).toBe(true,);
 
         const wet = judgeSeatsFor({ dry: ALL_WET, },);
@@ -128,7 +128,7 @@ await describe({
         expect(wet.roster,).toEqual(RUN_ROSTER,);
         expect(wet.translateModels.translatorModelIds,).toEqual(RUN_TRANSLATORS,);
         expect(wet.withheld,).toEqual([],);
-        expect(wet.wideSeats.includes(SEAT_SYNTHETIC_VISION_EDITOR,),).toBe(false,);
+        expect(wet.wideSeats.includes(SEAT_HYPER_OPENROUTER_VISION_EDITOR,),).toBe(false,);
       },
     },),
 

@@ -272,7 +272,10 @@ export {
   ModelNotServedError,
 } from './hyper-client.ts';
 
-export { syntheticServes, } from './synthetic-catalog.ts';
+export {
+  SYNTHETIC_WITHHELD,
+  syntheticServes,
+} from './synthetic-catalog.ts';
 export { SyntheticModelNotServedError, } from './synthetic-client.ts';
 export {
   createSeatTally,

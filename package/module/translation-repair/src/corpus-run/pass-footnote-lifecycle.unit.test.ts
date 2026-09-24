@@ -11,14 +11,14 @@ import {
   parseDocument,
   prepareDocumentPair,
   preparePassEntry,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   translateSliceInput,
   type PairedSectionRecord,
   workTitlesOf,
 } from '../../dist/final/node/index.mjs';
 
-const roster = [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER] as const;
+const roster = [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER] as const;
 const l = tagged({ tag: 'pass-footnote-lifecycle-test' });
 const sourceText = 'Alpha[^10]  \nBeta[^200]  \nGamma.\n\n[^10]: First source note.\n\n[^200]: Second source note.';
 const archiveBody = 'Alpha archive[^2]  \nBeta archive[^1]  \nGamma archive.';

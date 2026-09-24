@@ -40,7 +40,7 @@ import {
   makeInsertionChunk,
   NO_PAGE_ASSEMBLY,
   preparationIdentity,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ChunkPair,
   type DocumentLanesResult,
   type PipelineDigest,
@@ -266,7 +266,7 @@ function kittenLanes(): DocumentLanesResult {
       sliceCritics: [
         {
           sliceIndex: 0,
-          heardCriticIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+          heardCriticIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           claimAttributions: [],
         },
       ],

@@ -28,7 +28,7 @@ import {
 import {
   buildEditorCandidates,
   hashContent,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type EditableEnvelope,
@@ -76,7 +76,7 @@ const ENVELOPES: readonly EditableEnvelope[] = [
  rather than by roster position would be visible.
  */
 const ROSTER = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;

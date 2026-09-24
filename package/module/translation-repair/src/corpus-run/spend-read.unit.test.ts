@@ -32,7 +32,7 @@ import {
   reportSpend,
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   tallySpend,
 } from '../../dist/final/node/index.mjs';
 
@@ -215,7 +215,7 @@ await describe({
         )
           .toEqual({
             provider: 'synthetic',
-            model: SEAT_SYNTHETIC_VISION_EDITOR,
+            model: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             prompt: 1,
             completion: 2,
             costUsd: 'unreported',

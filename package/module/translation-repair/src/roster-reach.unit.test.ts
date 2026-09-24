@@ -36,7 +36,7 @@ import {
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   syntheticEntryFor,
@@ -145,7 +145,7 @@ await describe({
     it({
       name: 'REPLACES GLM-5.2 rather than double-seating predecessor and successor',
       fn: async () => {
-        expect(ROSTER_MODEL_IDS.includes(SEAT_SYNTHETIC_VISION_EDITOR,),).toBe(true,);
+        expect(ROSTER_MODEL_IDS.includes(SEAT_HYPER_OPENROUTER_VISION_EDITOR,),).toBe(true,);
         expect(ROSTER_MODEL_IDS.includes('hf:zai-org/GLM-5.2' as never,),).toBe(false,);
         expect(ROSTER_MODEL_IDS.includes('glm-5.2' as never,),).toBe(false,);
       },
@@ -207,7 +207,7 @@ await describe({
         // Unserved on Hyper until 2026-09-01, when the provider began listing
         // glm-5.3-flash; the claim that matters is unchanged: the seat must
         // never inherit the retired glm-5.2 spelling.
-        expect(hyperIdFor({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),)
+        expect(hyperIdFor({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, },),)
           .toEqual({
             served: true,
             id: 'glm-5.3-flash',
@@ -260,9 +260,10 @@ await describe({
       fn: async () => {
         // No Synthetic-only seat exists since 2026-09-01: glm-5.3-flash gave
         // the last single-route Synthetic seat its Hyper twin, and OpenRouter
-        // serves the whole roster since 2026-09-03.
-        expect(reachOf({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),).toEqual({
-          synthetic: true,
+        // serves the whole roster since 2026-09-03. Since 2026-09-24 that seat
+        // is withheld from Synthetic on latency (class one hundred eighteen).
+        expect(reachOf({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, },),).toEqual({
+          synthetic: false,
           hyper: true,
           bedrock: false,
           openrouter: true,
@@ -309,16 +310,16 @@ await describe({
         // The Hyper side comes from glm-5.3-flash's own 2026-09-01 catalog
         // entry, never from the retired glm-5.2 spelling this test predates.
         // Synthetic still lists the model; the run does not route it there.
-        expect(syntheticServes(SEAT_SYNTHETIC_VISION_EDITOR,),).toBe(true,);
+        expect(syntheticServes(SEAT_HYPER_OPENROUTER_VISION_EDITOR,),).toBe(true,);
 
-        expect(visionReachOf({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),).toEqual({
+        expect(visionReachOf({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, },),).toEqual({
           synthetic: false,
           hyper: true,
           bedrock: false,
           openrouter: true,
         },);
 
-        expect(reachOf({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),).toEqual({
+        expect(reachOf({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, },),).toEqual({
           synthetic: false,
           hyper: true,
           bedrock: false,
@@ -390,7 +391,7 @@ await describe({
           SEAT_BEDROCK_ONLY_VISION_UNSEATED,
           SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           SEAT_SYNTHETIC_VISION_WITHHELD,
-          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           SEAT_HYPER_VISION,
         ],);
       },
@@ -399,7 +400,7 @@ await describe({
     it({
       name: 'ANSWERS true for a model that reads on either provider, not only on both',
       fn: async () => {
-        expect(readsImages({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),).toBe(true,);
+        expect(readsImages({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, },),).toBe(true,);
       },
     },),
   ],

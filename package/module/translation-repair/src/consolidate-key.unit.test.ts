@@ -26,7 +26,7 @@ import {
 import {
   consolidateRunShape,
   consolidateSliceKey,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type LaneContestBallot,
@@ -36,7 +36,7 @@ import {
  Roster this run seats.
  */
 const ROSTER = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;
 
@@ -44,7 +44,7 @@ const ROSTER = [
  One contest ballot as the judges record them.
  */
 const BALLOT: LaneContestBallot = {
-  modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+  modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   choice: 'repair',
   unsupported: [],
   unsupportedRaw: [],

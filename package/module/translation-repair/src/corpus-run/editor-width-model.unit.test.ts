@@ -15,7 +15,7 @@ import {
 import {
   classifyWidths,
   readHeadToHead,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   summarizeWidths,
   type HeadToHeadVerdict,
   type WidthComparison,
@@ -76,8 +76,8 @@ function rowWith(
     narrowRepeatAgreed,
     verdict,
     usableBallots: 0,
-    narrowProducers: [SEAT_SYNTHETIC_VISION_EDITOR,],
-    wideProducers: [SEAT_SYNTHETIC_VISION_EDITOR,],
+    narrowProducers: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+    wideProducers: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
   };
 }
 

@@ -27,7 +27,7 @@ import {
 
 import {
   countCandidateWeights,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type SelectionBallot,
 } from '../dist/final/node/index.mjs';
@@ -95,7 +95,7 @@ await describe({
               selfVote: false,
             },),
             ballotOf({
-              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               best: 1,
               weight: 0,
               selfVote: true,
@@ -130,7 +130,7 @@ await describe({
               selfVote: false,
             },),
             ballotOf({
-              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               best: 2,
               weight: 1 / 2,
               selfVote: true,

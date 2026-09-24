@@ -29,7 +29,7 @@ import {
   collectClaimAttributions,
   retainAttributions,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type ClaimEmission,
 } from '../dist/final/node/index.mjs';
@@ -42,7 +42,7 @@ const TABBY = SEAT_SYNTHETIC_TEXT_EVERYWHERE;
 /**
  Second critic, for independent-support cases.
  */
-const CALICO = SEAT_SYNTHETIC_VISION_EDITOR;
+const CALICO = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 
 /**
  Third critic, ordered before both by model id so sorting is observable.

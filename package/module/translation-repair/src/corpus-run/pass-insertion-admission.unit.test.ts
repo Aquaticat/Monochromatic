@@ -20,7 +20,7 @@ import {
   decidePassInsertionAdmission,
   makeInsertionChunk,
   messageText,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   TranslationRepairInterruptedError,
@@ -37,7 +37,7 @@ import {
  Production-shaped test roster.
  */
 const ROSTER: readonly RosterModelId[] = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 ];

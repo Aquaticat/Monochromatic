@@ -32,7 +32,7 @@ import {
   SEAT_HYPER_VISION,
   SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
@@ -217,7 +217,7 @@ function dryBenchClient(
  The eleven-seat roster of 2026-09-09, in roster order.
  */
 const ELEVEN_SEATS: readonly RosterModelId[] = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -234,7 +234,7 @@ const ELEVEN_SEATS: readonly RosterModelId[] = [
  The seven of those seats a Bedrock-alone day cannot serve.
  */
 const DRY_SEVEN: readonly RosterModelId[] = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SEAT_HYPER_VISION,
@@ -499,7 +499,7 @@ await describe({
         /** Gather over a fully healthy roster. */
         const gather = await gatherStageVoices({
           client: flakyClient({ failuresByModel: {}, calls, },),
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -511,7 +511,7 @@ await describe({
         expect(gather.voices,).toHaveLength(3,);
         expect(gather.quorumMet,).toBe(true,);
         expect(gather.findings,).toHaveLength(0,);
-        expect(calls[SEAT_SYNTHETIC_VISION_EDITOR],).toBe(1,);
+        expect(calls[SEAT_HYPER_OPENROUTER_VISION_EDITOR],).toBe(1,);
       },
     },),
 
@@ -526,7 +526,7 @@ await describe({
             drySeats: [SEAT_HYPER_ONLY,],
             failingSeat: SEAT_SYNTHETIC_VISION_WITHHELD,
           },),
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_HYPER_ONLY,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_HYPER_ONLY,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -617,7 +617,7 @@ await describe({
             failuresByModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: 99, },
             calls,
           },),
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -697,7 +697,7 @@ await describe({
 
         const gather = await gatherStageVoices({
           client,
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -759,7 +759,7 @@ await describe({
         };
         const gather = await gatherStageVoices({
           client,
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -789,7 +789,7 @@ await describe({
             calls,
           },),
           modelIds: [
-            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             SEAT_SYNTHETIC_VISION_WITHHELD,
             SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -839,7 +839,7 @@ await describe({
             failuresByModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: 99, },
             calls,
           },),
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -863,7 +863,7 @@ await describe({
         /** Gather over a fully healthy roster. */
         const gather = await gatherStageVoices({
           client: flakyClient({ failuresByModel: {}, calls, },),
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -892,7 +892,7 @@ await describe({
             calls,
           },),
           modelIds: [
-            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             SEAT_SYNTHETIC_VISION_WITHHELD,
             SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -920,7 +920,7 @@ await describe({
         const calls: Record<string, number> = {};
         /** Full six-model roster where five fail once then answer. */
         const roster: readonly RosterModelId[] = [
-          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           SEAT_HYPER_VISION,
           SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           SEAT_SYNTHETIC_VISION_WITHHELD,
@@ -950,7 +950,7 @@ await describe({
         expect(gather.voices.length,).toBeGreaterThanOrEqual(3,);
         expect(gather.voices.length,).toBeLessThanOrEqual(6,);
         // The healthy seat answers on its first ask wherever the rotation put it.
-        expect(calls[SEAT_SYNTHETIC_VISION_EDITOR],).toBe(1,);
+        expect(calls[SEAT_HYPER_OPENROUTER_VISION_EDITOR],).toBe(1,);
         /**
          Every call the gather made, whichever seats the rotation asked first.
          */
@@ -975,7 +975,7 @@ await describe({
         const calls: Record<string, number> = {};
         /** Full six-model roster, everyone answering at once. */
         const roster: readonly RosterModelId[] = [
-          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           SEAT_HYPER_VISION,
           SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           SEAT_SYNTHETIC_VISION_WITHHELD,
@@ -1017,7 +1017,7 @@ await describe({
             },
             calls,
           },),
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -1050,7 +1050,7 @@ await describe({
             failuresByModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: 99, },
             calls,
           },),
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -1084,7 +1084,7 @@ await describe({
             failuresByModel: { [SEAT_SYNTHETIC_VISION_WITHHELD]: 1, },
             calls,
           },),
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -1117,7 +1117,7 @@ await describe({
             silentModel: SEAT_SYNTHETIC_VISION_WITHHELD,
             calls,
           },),
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -1153,7 +1153,7 @@ await describe({
             stallingModel: SEAT_SYNTHETIC_VISION_WITHHELD,
             calls,
           },),
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: STALLING_DEADLINE_MS,
@@ -1186,10 +1186,10 @@ await describe({
         /** Editor-style gather over a roster of one. */
         const gather = await gatherStageVoices({
           client: flakyClient({
-            failuresByModel: { [SEAT_SYNTHETIC_VISION_EDITOR]: 2, },
+            failuresByModel: { [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 2, },
             calls,
           },),
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 1_000,
@@ -1200,7 +1200,7 @@ await describe({
         },);
         expect(gather.voices,).toHaveLength(1,);
         expect(gather.quorumMet,).toBe(true,);
-        expect(calls[SEAT_SYNTHETIC_VISION_EDITOR],).toBe(3,);
+        expect(calls[SEAT_HYPER_OPENROUTER_VISION_EDITOR],).toBe(3,);
       },
     },),
 
@@ -1223,7 +1223,7 @@ await describe({
             hangingModelId: SEAT_SYNTHETIC_VISION_WITHHELD,
             cut,
           },),
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           // Far longer than the grace, so a gather that waited for the call
@@ -1262,7 +1262,7 @@ await describe({
             cut,
             lateMs: 20,
           },),
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
           exchangeTimeoutMs: 60_000,

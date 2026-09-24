@@ -26,7 +26,7 @@ import {
 
 import {
   runCheckerStage,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type AdjudicatedIssue,
@@ -56,7 +56,7 @@ const PATCHED_TEXT = 'The cat sleeps on the windowsill.';
  Checker roster, larger than a majority so quorum arithmetic is visible.
  */
 const CHECKERS = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;

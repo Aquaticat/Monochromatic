@@ -31,7 +31,7 @@ import {
 import {
   createSyntheticClient,
   SCHEMA_BLOCK_HEADING,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ModelTransport,
   type TransportExchange,
 } from '../dist/final/node/index.mjs';
@@ -167,7 +167,7 @@ await describe({
           apiKey: 'test-key',
           transport,
         },).chatText({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
           responseFormat: NAP_FORMAT,
@@ -197,7 +197,7 @@ await describe({
           apiKey: 'test-key',
           transport,
         },).chatText({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
         },);

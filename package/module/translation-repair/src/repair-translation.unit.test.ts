@@ -22,7 +22,7 @@ import {
   repairTranslation,
   OPENROUTER_CHECKER_SUBSTITUTE,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
@@ -59,10 +59,10 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
  which made it model a roster production would refuse.
  */
 const MODELS: RepairModels = {
-  criticModelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
-  panelModelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
-  editorModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
-  judgeModelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+  criticModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+  panelModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+  editorModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+  judgeModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
   checkerModelIds: [
     SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
     SEAT_SYNTHETIC_VISION_WITHHELD,
@@ -1131,7 +1131,7 @@ Meow meow meow meow.
          */
         const refiningModels: RepairModels = {
           ...MODELS,
-          refinerModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+          refinerModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
         };
 
         /**
@@ -1662,7 +1662,7 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
          */
         const refining: RepairModels = {
           ...MODELS,
-          refinerModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+          refinerModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
         };
         await expect(repairTranslation({
           client: steeringClient({

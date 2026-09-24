@@ -28,7 +28,7 @@ import {
   compareLanes,
   parseSettledTwoLaneArtifact,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type ArtifactDeliveryRow,
 } from '../../dist/final/node/index.mjs';
@@ -1608,7 +1608,7 @@ await describe({
               hash: 'hash-without-alias',
               producer: {
                 kind: 'model',
-                modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+                modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               },
             },
           ],

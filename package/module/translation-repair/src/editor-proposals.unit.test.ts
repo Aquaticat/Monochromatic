@@ -18,7 +18,7 @@ import {
 import {
   collectEnvelopeProposals,
   hashContent,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type CandidateProducer,
   type EditableEnvelope,
@@ -54,7 +54,7 @@ const ENVELOPE: EditableEnvelope = {
  
  @example
  ```ts
- const candidate = proposing({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, newText: 'The cat sleeps.', },);
+ const candidate = proposing({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, newText: 'The cat sleeps.', },);
  ```
  */
 function proposing(
@@ -114,7 +114,7 @@ await describe({
         const proposals = collectEnvelopeProposals({
           candidates: [
             proposing({
-              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               newText: 'The cat sleeps on the windowsill.',
             },),
             proposing({
@@ -129,7 +129,7 @@ await describe({
         expect([...creditedTo({ producer: proposals[0]?.producer ?? { kind: 'incumbent', matched: [], }, },),]
           .toSorted(),).toEqual([
           SEAT_SYNTHETIC_VISION_WITHHELD,
-          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
         ],);
       },
     },),
@@ -140,7 +140,7 @@ await describe({
         const proposals = collectEnvelopeProposals({
           candidates: [
             proposing({
-              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               newText: 'The cat sleeps on the windowsill.',
             },),
             proposing({
@@ -160,7 +160,7 @@ await describe({
         expect(proposals.map(function toProducer(proposal,): readonly string[] {
           return creditedTo({ producer: proposal.producer, },);
         },),).toEqual([
-          [SEAT_SYNTHETIC_VISION_EDITOR,],
+          [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           [SEAT_SYNTHETIC_VISION_WITHHELD,],
         ],);
       },
@@ -171,7 +171,7 @@ await describe({
       fn: async () => {
         const proposals = collectEnvelopeProposals({
           candidates: [
-            proposing({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),
+            proposing({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, },),
             proposing({
               modelId: SEAT_SYNTHETIC_VISION_WITHHELD,
               newText: 'The cat naps on the windowsill.',

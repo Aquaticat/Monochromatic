@@ -102,6 +102,11 @@ export type SeatHold =
    */
   | 'openrouter-dropped'
   /**
+   Synthetic serves it and the run does not route it there: measured slower
+   there than on another provider serving the same model.
+   */
+  | 'synthetic-withheld'
+  /**
    Too slow in the select seats alone while Hyper serves it.
    */
   | 'hyper-slow-select'

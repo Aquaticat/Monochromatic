@@ -34,7 +34,7 @@ import {
   INELIGIBLE_STANDING_WITHHELD_FINDING,
   UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING,
   rotateCandidates,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   settleConsolidation,
@@ -55,7 +55,7 @@ const l = tagged({ tag: 'consolidate-settle-test', },);
  Roster of three, the smallest that can produce a two-to-one split.
  */
 const ROSTER = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 ] as const;

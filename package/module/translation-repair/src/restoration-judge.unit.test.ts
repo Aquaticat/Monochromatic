@@ -15,7 +15,7 @@ import {
   isRestorationJudgeWire,
   resolveRestorationJudgment,
   runRestorationJudge,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
@@ -109,7 +109,7 @@ function judgingClient(
  Three-judge roster for the stage tests.
  */
 const JUDGES: readonly RosterModelId[] = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 ];
@@ -170,7 +170,7 @@ await describe({
         const judgments = await runRestorationJudge({
           client: judgingClient({
             verdictsByModel: {
-              [SEAT_SYNTHETIC_VISION_EDITOR]: ['restored', 'restored',],
+              [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['restored', 'restored',],
               [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['partial', 'restored',],
               [SEAT_SYNTHETIC_VISION_WITHHELD]: ['absent', 'restored',],
             },
@@ -197,7 +197,7 @@ await describe({
         const judgments = await runRestorationJudge({
           client: judgingClient({
             verdictsByModel: {
-              [SEAT_SYNTHETIC_VISION_EDITOR]: ['restored', 'restored',],
+              [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['restored', 'restored',],
               [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['absent', 'restored',],
             },
             silent: new Set([SEAT_SYNTHETIC_VISION_WITHHELD,],),
@@ -222,7 +222,7 @@ await describe({
         /** Only one of three judges answers: quorum unmet. */
         const judgments = await runRestorationJudge({
           client: judgingClient({
-            verdictsByModel: { [SEAT_SYNTHETIC_VISION_EDITOR]: ['restored', 'restored',], },
+            verdictsByModel: { [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['restored', 'restored',], },
             silent: new Set([SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],),
           },),
           judgeModelIds: JUDGES,

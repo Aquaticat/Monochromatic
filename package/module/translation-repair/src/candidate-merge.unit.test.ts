@@ -21,7 +21,7 @@ import {
   mergeIdenticalCandidates,
   producerModelIds,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type Candidate,
@@ -83,7 +83,7 @@ await describe({
         const merged = mergeIdenticalCandidates({
           candidates: [
             from({
-              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               text: SHARED,
             },),
             from({
@@ -99,7 +99,7 @@ await describe({
             modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           },),)
           .toEqual([
-            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           ],);
       },
@@ -113,7 +113,7 @@ await describe({
         const merged = mergeIdenticalCandidates({
           candidates: [
             from({
-              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               text: OTHER,
             },),
             from({

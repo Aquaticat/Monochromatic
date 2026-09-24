@@ -23,7 +23,7 @@ import {
   createSyntheticClient,
   isSectionPairingWire,
   parseDocument,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../dist/final/node/index.mjs';
 
@@ -124,7 +124,7 @@ function storedRoundOf(serialized: string,): StoredRound {
  Roster of two, which is the smallest that can agree or disagree.
  */
 const ROSTER = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;
 

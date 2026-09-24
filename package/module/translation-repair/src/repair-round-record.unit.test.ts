@@ -24,7 +24,7 @@ import {
   describeRepairSlate,
   hashContent,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../dist/final/node/index.mjs';
 
@@ -56,7 +56,7 @@ const KEEPER = {
 const DROPPER = {
   producer: {
     kind: 'model' as const,
-    modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+    modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   },
   value: { note: 'drops', },
   rendered: DROPS_ALIAS,

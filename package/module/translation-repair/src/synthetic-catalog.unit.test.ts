@@ -11,7 +11,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   estimateRequestWeight,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN,
   SYNTHETIC_MODELS,
 } from '../dist/final/node/index.mjs';
@@ -54,9 +54,9 @@ await describe({
     it({
       name: 'RECORDS THE LIVE GLM-5.3-FLASH WIRE FACTS and leaves retiring GLM-5.2 uncallable',
       fn: async () => {
-        const replacement = SYNTHETIC_MODELS[SEAT_SYNTHETIC_VISION_EDITOR];
+        const replacement = SYNTHETIC_MODELS[SEAT_HYPER_OPENROUTER_VISION_EDITOR];
         expect(replacement,).toEqual({
-          id: SEAT_SYNTHETIC_VISION_EDITOR,
+          id: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           readsImages: true,
           family: 'zai',
           contextLength: 524_288,

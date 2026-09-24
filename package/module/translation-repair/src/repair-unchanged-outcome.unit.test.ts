@@ -32,7 +32,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChunkCriticPhase,
@@ -65,7 +65,7 @@ const CRITIC_PHASE = {
   heardCriticIds: [
     SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
     SEAT_SYNTHETIC_VISION_WITHHELD,
-    SEAT_SYNTHETIC_VISION_EDITOR,
+    SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   ],
   claimAttributions: [{
     claimId: CLAIM_ID,
@@ -75,7 +75,7 @@ const CRITIC_PHASE = {
         emissionCount: 2,
       },
       {
-        modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+        modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
         emissionCount: 1,
       },
     ],
@@ -109,7 +109,7 @@ await describe({
         expect(outcome.heardCriticIds,).toEqual([
           SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           SEAT_SYNTHETIC_VISION_WITHHELD,
-          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
         ],);
         expect(outcome.claimAttributions,).toEqual([{
           claimId: CLAIM_ID,
@@ -119,7 +119,7 @@ await describe({
               emissionCount: 2,
             },
             {
-              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               emissionCount: 1,
             },
           ],

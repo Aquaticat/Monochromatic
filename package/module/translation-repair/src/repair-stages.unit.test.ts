@@ -27,7 +27,7 @@ import {
 import {
   hashContent,
   runPanelStage,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type AggregatedClaim,
@@ -56,7 +56,7 @@ const TARGET_TEXT = 'The cat sleeps on the windowsill.';
  Panel roster large enough for a majority to be visible.
  */
 const PANELISTS = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;

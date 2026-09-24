@@ -10,7 +10,7 @@ import {
   repairSliceKey,
   runEditorStage,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   selectChunkPatch,
@@ -28,7 +28,7 @@ const TARGET = 'She greeted her friend.';
 /** Whole sentence is the fixture's editable region. */
 const ENVELOPE: EditableEnvelope = { envelopeId: 'envelope/greeting', startOffset: 0, endOffset: TARGET.length, baseText: TARGET, baseHash: hashContent({ content: TARGET, }), issueIds: [], };
 /** Independent fixture electorate retains ordinary author weighting. */
-const JUDGES: readonly RosterModelId[] = [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE,];
+const JUDGES: readonly RosterModelId[] = [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE,];
 
 /**
  Builds an applied candidate rather than an unverified raw replacement.
@@ -69,7 +69,7 @@ function judges(): { readonly client: SyntheticClient; readonly prompts: string[
 
 /** Already-applied repairs differ in the event's actor. */
 const CANDIDATES = [
-  proposed({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, text: 'She greeted her friend warmly.', }),
+  proposed({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, text: 'She greeted her friend warmly.', }),
   proposed({ modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, text: 'Her friend greeted her.', }),
 ];
 
@@ -101,7 +101,7 @@ await describe({
         };
         let caught: unknown;
         try {
-          await repairPreparedDocument({ client, prepared, models: { criticModelIds: JUDGES, panelModelIds: JUDGES, editorModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,], judgeModelIds: JUDGES, checkerModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE,], }, signal: controller.signal, perCallTimeoutMs: 5_000, });
+          await repairPreparedDocument({ client, prepared, models: { criticModelIds: JUDGES, panelModelIds: JUDGES, editorModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,], judgeModelIds: JUDGES, checkerModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE,], }, signal: controller.signal, perCallTimeoutMs: 5_000, });
         }
         catch (error) {
           caught = error;
@@ -117,7 +117,7 @@ await describe({
         const fixture = judges();
         const client: SyntheticClient = { ...fixture.client, chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> => {
           if (request.responseFormat?.json_schema.name !== 'editor_report') return await fixture.client.chatJson(request);
-          const value = { edits: [{ region: 1, newText: request.modelId === SEAT_SYNTHETIC_VISION_EDITOR ? 'She greeted her friend warmly.' : 'Her friend greeted her.', },], };
+          const value = { edits: [{ region: 1, newText: request.modelId === SEAT_HYPER_OPENROUTER_VISION_EDITOR ? 'She greeted her friend warmly.' : 'Her friend greeted her.', },], };
           if (!request.validate(value)) throw new Error('Invalid fixture editor reply');
           return { kind: 'ok', value, rawText: JSON.stringify(value), };
         }, };

@@ -24,7 +24,7 @@ import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   seatJudges,
@@ -34,7 +34,7 @@ import {
  Roster the seatings run against, which is the shipped one.
  */
 const ROSTER = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
@@ -76,7 +76,7 @@ await describe({
         const seating = seatJudges({
           proposers: [
             SEAT_SYNTHETIC_VISION_WITHHELD,
-            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           ],
           roster: ROSTER,
@@ -127,11 +127,11 @@ await describe({
         expect(seatJudges({
           proposers: [
             SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           ],
           roster: ROSTER,
         },).barred,).toStrictEqual([
-          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           SEAT_SYNTHETIC_TEXT_EVERYWHERE,
         ],);
       },

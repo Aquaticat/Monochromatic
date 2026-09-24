@@ -23,7 +23,7 @@ import {
 import {
   rankStandings,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   standingLine,
@@ -45,7 +45,7 @@ import {
  
  @example
  ```ts
- const standing = standingOf({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, candidates: 4, disinterestedBallots: 8, disinterestedVotes: 6, },);
+ const standing = standingOf({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, candidates: 4, disinterestedBallots: 8, disinterestedVotes: 6, },);
  ```
  */
 function standingOf(
@@ -73,7 +73,7 @@ function standingOf(
  Model that won most of the ballots cast over its candidates.
  */
 const LEADER = standingOf({
-  modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+  modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   candidates: 4,
   disinterestedBallots: 8,
   disinterestedVotes: 6,
@@ -181,7 +181,7 @@ await describe({
         },).map(function idOf(standing,): string {
           return standing.modelId;
         },),).toEqual([
-          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           SEAT_SYNTHETIC_VISION_WITHHELD,
         ],);
@@ -235,7 +235,7 @@ await describe({
           return standing.modelId;
         },),).toEqual([
           SEAT_SYNTHETIC_VISION_WITHHELD,
-          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
         ],);
       },
     },),

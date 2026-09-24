@@ -24,7 +24,7 @@ import {
   pickFallbackCandidate,
   producerModelIds,
   ProducerRosterError,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type CandidateProducer,
@@ -64,7 +64,7 @@ const ENVELOPE: EditableEnvelope = {
  
  @example
  ```ts
- const candidate = candidateFor({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, newText, },);
+ const candidate = candidateFor({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, newText, },);
  ```
  */
 function candidateFor(
@@ -113,7 +113,7 @@ await describe({
         const both = mergeProducers({
           left: {
             kind: 'model',
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           },
           right: {
             kind: 'model',
@@ -122,7 +122,7 @@ await describe({
         },);
         expect(both.kind,).toBe('composite',);
         expect([...producerModelIds(both,),],).toEqual([
-          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
         ],);
 
@@ -131,22 +131,22 @@ await describe({
         const same = mergeProducers({
           left: {
             kind: 'model',
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           },
           right: {
             kind: 'model',
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           },
         },);
         expect(same.kind,).toBe('model',);
-        expect([...producerModelIds(same,),],).toEqual([SEAT_SYNTHETIC_VISION_EDITOR,],);
+        expect([...producerModelIds(same,),],).toEqual([SEAT_HYPER_OPENROUTER_VISION_EDITOR,],);
 
         /** Composite absorbing a model already among its contributors. */
         const widened = mergeProducers({
           left: {
             kind: 'composite',
             contributors: [
-              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             ],
           },
@@ -156,7 +156,7 @@ await describe({
           },
         },);
         expect([...producerModelIds(widened,),],).toEqual([
-          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           SEAT_SYNTHETIC_VISION_WITHHELD,
         ],);
@@ -170,7 +170,7 @@ await describe({
         const producer: CandidateProducer = {
           kind: 'composite',
           contributors: [
-            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           ],
         };
@@ -180,9 +180,9 @@ await describe({
         expect(
           describeProducer({
             kind: 'model',
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           },),
-        ).toBe(SEAT_SYNTHETIC_VISION_EDITOR,);
+        ).toBe(SEAT_HYPER_OPENROUTER_VISION_EDITOR,);
       },
     },),
   ],
@@ -198,7 +198,7 @@ await describe({
         const set = buildChunkCandidates({
           candidates: [
             candidateFor({
-              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               newText: 'The cat chases butterflies.',
             },),
             candidateFor({
@@ -222,7 +222,7 @@ await describe({
         const set = buildChunkCandidates({
           candidates: [
             candidateFor({
-              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               newText: 'The cat chases butterflies.',
             },),
           ],
@@ -266,7 +266,7 @@ await describe({
         const set = buildChunkCandidates({
           candidates: [
             candidateFor({
-              modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+              modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               newText: agreed,
             },),
           ],
@@ -290,7 +290,7 @@ await describe({
         // Both the editor whose candidate survived and the composite's
         // contributor must stay barred; dropping either lets that model judge
         // text it wrote.
-        expect(stakes.has(SEAT_SYNTHETIC_VISION_EDITOR,),).toBe(true,);
+        expect(stakes.has(SEAT_HYPER_OPENROUTER_VISION_EDITOR,),).toBe(true,);
         expect(stakes.has(SEAT_SYNTHETIC_VISION_NO_OPENROUTER,),).toBe(true,);
       },
     },),
@@ -305,7 +305,7 @@ await describe({
       fn: async () => {
         /** Editor landing nothing, because its replacement was a no-op. */
         const idle = candidateFor({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           newText: ENVELOPE.baseText,
         },);
 
@@ -342,7 +342,7 @@ await describe({
       fn: async () => {
         /** Two editors each landing exactly one operation. */
         const first = candidateFor({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           newText: 'The cat chases butterflies.',
         },);
 
@@ -386,7 +386,7 @@ await describe({
           editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
           judgeModelIds: [
             SEAT_SYNTHETIC_VISION_WITHHELD,
-            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           ],
         },);
@@ -403,11 +403,11 @@ await describe({
           assertJudgeableEditorRoster({
             editorModelIds: [
               SEAT_SYNTHETIC_VISION_WITHHELD,
-              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             ],
             judgeModelIds: [
               SEAT_SYNTHETIC_VISION_WITHHELD,
-              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             ],
           },);
@@ -431,11 +431,11 @@ await describe({
           assertJudgeableEditorRoster({
             editorModelIds: [
               SEAT_SYNTHETIC_VISION_WITHHELD,
-              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             ],
             judgeModelIds: [
               SEAT_SYNTHETIC_VISION_WITHHELD,
-              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             ],
           },);
         },).toThrow(ProducerRosterError,);
@@ -453,7 +453,7 @@ await describe({
               SEAT_SYNTHETIC_VISION_WITHHELD,
             ],
             judgeModelIds: [
-              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             ],
           },);
@@ -463,7 +463,7 @@ await describe({
           assertJudgeableEditorRoster({
             editorModelIds: [],
             judgeModelIds: [
-              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             ],
           },);
@@ -482,7 +482,7 @@ await describe({
         assertCheckerIndependence({
           editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
           checkerModelIds: [
-            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
           ],
         },);
@@ -491,7 +491,7 @@ await describe({
           assertCheckerIndependence({
             editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
             checkerModelIds: [
-              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               SEAT_SYNTHETIC_VISION_WITHHELD,
             ],
           },);

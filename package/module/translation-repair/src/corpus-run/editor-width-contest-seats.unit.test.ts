@@ -34,7 +34,7 @@ import {
 import {
   bothOrders,
   messageText,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ArmOutcome,
   type ChatJsonOutcome,
   type ChatJsonRequest,
@@ -182,7 +182,7 @@ async function ballotSheets(): Promise<readonly string[]> {
     input: INPUT,
     narrow: armShipping({ text: NARROW_TEXT, },),
     wide: armShipping({ text: WIDE_TEXT, },),
-    judgeModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+    judgeModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
     signal: AbortSignal.timeout(120_000,),
     l,
   },);

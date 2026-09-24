@@ -17,7 +17,7 @@ import {
   ProducerRosterError,
   runRefineStage,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
@@ -52,7 +52,7 @@ const SMOOTH_TEXT =
  Roster judges are drawn from.
  */
 const JUDGES: readonly RosterModelId[] = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
@@ -61,7 +61,7 @@ const JUDGES: readonly RosterModelId[] = [
 /**
  Refiners proposing rewrites.
  */
-const REFINERS: readonly RosterModelId[] = [SEAT_SYNTHETIC_VISION_EDITOR,];
+const REFINERS: readonly RosterModelId[] = [SEAT_HYPER_OPENROUTER_VISION_EDITOR,];
 
 /**
  Envelopes and definitions of the repaired fixture slice.
@@ -228,7 +228,7 @@ await describe({
         },),);
         expect(result.changed,).toBe(true,);
         expect(result.refinedText,).toBe(SMOOTH_TEXT,);
-        expect([...result.contributors,],).toEqual([SEAT_SYNTHETIC_VISION_EDITOR,],);
+        expect([...result.contributors,],).toEqual([SEAT_HYPER_OPENROUTER_VISION_EDITOR,],);
       },
     },),
 
@@ -503,11 +503,11 @@ await describe({
             sliceIndex: 0,
             client: scriptedRefiner({ ballot: 1, },),
             refinerModelIds: [
-              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             ],
             judgeModelIds: [
-              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             ],
             sourceText: SOURCE_TEXT,

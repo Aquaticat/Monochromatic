@@ -7,7 +7,7 @@ import {
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
@@ -18,7 +18,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /** Fixture electorate remains unchanged across packets. */
-const MODELS: readonly RosterModelId[] = [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE, SEAT_HYPER_VISION, SEAT_HYPER_TEXT_BEDROCK,];
+const MODELS: readonly RosterModelId[] = [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE, SEAT_HYPER_VISION, SEAT_HYPER_TEXT_BEDROCK,];
 /** Distinct clusters include a merge proposal whose members must stay together. */
 const CLUSTERS: readonly ClaimCluster[] = [
   { clusterId: 'first', position: 0, members: [

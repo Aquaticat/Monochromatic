@@ -13,7 +13,7 @@ import {
 import {
   ArtifactParseError,
   parseConsolidationPolish,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -25,8 +25,8 @@ const SETTLED = {
   proposedText: 'The cat maintained a positive outlook on life.',
   text: 'The cat maintained a positive outlook on life.',
   changed: true,
-  refinersHeard: [SEAT_SYNTHETIC_VISION_EDITOR,],
-  contributors: [SEAT_SYNTHETIC_VISION_EDITOR,],
+  refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+  contributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
   roundCount: 1,
   gate: {
     choice: 'polished',

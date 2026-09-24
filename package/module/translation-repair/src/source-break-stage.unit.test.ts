@@ -13,7 +13,7 @@ import {
   SEAT_HYPER_VISION,
   SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type SyntheticClient,
@@ -64,7 +64,7 @@ await describe({
         /** Both halves use canonical source and the real writer and judge builders. */
         const result = await runTranslateStage({
           client,
-          translatorModelIds: [SEAT_OPENROUTER_ONLY, SEAT_SYNTHETIC_VISION_EDITOR,],
+          translatorModelIds: [SEAT_OPENROUTER_ONLY, SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           judgeModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE, SEAT_HYPER_VISION,],
           sourceText: SOURCE,
           incumbentText: '',

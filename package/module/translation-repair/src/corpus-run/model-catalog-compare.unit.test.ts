@@ -24,7 +24,7 @@ import {
   CATALOG_MODEL_IDS,
   compareCatalog,
   decodeModelList,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SYNTHETIC_MODELS,
 } from '../../dist/final/node/index.mjs';
@@ -47,7 +47,7 @@ await describe({
  Catalog the comparisons run against.
  */
 const CATALOG: readonly string[] = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 ];
 
@@ -61,7 +61,7 @@ await describe({
         + 'per call while nothing said why',
       fn: async () => {
         expect(compareCatalog({
-          served: [{ id: SEAT_SYNTHETIC_VISION_EDITOR, huggingFaceId: 'zai-org/GLM-5.3-Flash', },],
+          served: [{ id: SEAT_HYPER_OPENROUTER_VISION_EDITOR, huggingFaceId: 'zai-org/GLM-5.3-Flash', },],
           catalog: CATALOG,
         },).missing,).toStrictEqual([SEAT_SYNTHETIC_VISION_WITHHELD,],);
       },
@@ -78,7 +78,7 @@ await describe({
         const comparison = compareCatalog({
           served: [
             {
-              id: SEAT_SYNTHETIC_VISION_EDITOR,
+              id: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               huggingFaceId: 'zai-org/GLM-5.3-Flash',
             },
             {
@@ -110,7 +110,7 @@ await describe({
         expect(compareCatalog({
           served: [
             {
-              id: SEAT_SYNTHETIC_VISION_EDITOR,
+              id: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               huggingFaceId: 'zai-org/GLM-5.3-Flash',
             },
             {
@@ -168,7 +168,7 @@ await describe({
         const comparison = compareCatalog({
           served: [
             {
-              id: SEAT_SYNTHETIC_VISION_EDITOR,
+              id: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               huggingFaceId: 'zai-org/GLM-5.3-Flash',
             },
             {

@@ -25,7 +25,7 @@ import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../../dist/final/node/index.mjs';
@@ -34,7 +34,7 @@ import {
  Roster the census seats judges from, which is the shipped one.
  */
 const ROSTER = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
@@ -51,7 +51,7 @@ const ROSTER = [
  
  @example
  ```ts
- const chunk = chunkWith({ claims: [['issue/whisker', [SEAT_SYNTHETIC_VISION_EDITOR,],],], },);
+ const chunk = chunkWith({ claims: [['issue/whisker', [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],],], },);
  ```
  */
 function chunkWith(
@@ -91,7 +91,7 @@ await describe({
               sliceCritics: [
                 chunkWith({
                   claims: [
-                    ['issue/mackerel', [SEAT_SYNTHETIC_VISION_EDITOR,],],
+                    ['issue/mackerel', [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],],
                     ['issue/sardine', [SEAT_SYNTHETIC_TEXT_EVERYWHERE,],],
                   ],
                 },),
@@ -121,8 +121,8 @@ await describe({
         // The author is barred and the other five are seated, which is the
         // common case: sole authorship covered 298 of 299 attributed claims.
         expect(accepted?.judges.length,).toBe(ROSTER.length - 1,);
-        expect(accepted?.judges.includes(SEAT_SYNTHETIC_VISION_EDITOR,),).toBe(false,);
-        expect(accepted?.barred,).toEqual([SEAT_SYNTHETIC_VISION_EDITOR,],);
+        expect(accepted?.judges.includes(SEAT_HYPER_OPENROUTER_VISION_EDITOR,),).toBe(false,);
+        expect(accepted?.barred,).toEqual([SEAT_HYPER_OPENROUTER_VISION_EDITOR,],);
       },
     },),
 
@@ -224,7 +224,7 @@ await describe({
             {
               id: 'Calico',
               sliceCritics: [
-                chunkWith({ claims: [['issue/known', [SEAT_SYNTHETIC_VISION_EDITOR,],],], },),
+                chunkWith({ claims: [['issue/known', [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],],], },),
               ],
               issues: [
                 {

@@ -6,13 +6,13 @@ import {
   createSyntheticClient,
   parseDocument,
   prepareBlockPairing,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type PairedSectionRecord,
   type SliceCache,
 } from '../dist/final/node/index.mjs';
 
-const roster = [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER,] as const;
+const roster = [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER,] as const;
 const l = tagged({ tag: 'one-parent-preparation-test', },);
 const complete = '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}';
 type Fixture = {

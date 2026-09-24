@@ -19,7 +19,7 @@ import {
 
 import {
   requireProducer,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
 } from '../dist/final/node/index.mjs';
 
 await describe({
@@ -32,13 +32,13 @@ await describe({
           value: {
             kind: 'lane',
             lane: 'translate',
-            matched: [SEAT_SYNTHETIC_VISION_EDITOR,],
+            matched: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           },
           path: 'slate[1].producer',
         },),).toEqual({
           kind: 'lane',
           lane: 'translate',
-          matched: [SEAT_SYNTHETIC_VISION_EDITOR,],
+          matched: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
         },);
       },
     },),

@@ -28,7 +28,7 @@ import {
 
 import {
   buildTranslateCandidates,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type HeardVoice,
   type RosterModelId,
@@ -41,7 +41,7 @@ import {
  Two seated translators, in roster order.
  */
 const TRANSLATORS = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const satisfies readonly RosterModelId[];
 

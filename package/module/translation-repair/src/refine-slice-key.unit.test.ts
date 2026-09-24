@@ -37,7 +37,7 @@ import {
   refineRunShape,
   refineSliceKey,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type AdjudicatedIssue,
@@ -47,7 +47,7 @@ import {
  Roster this run asks, as the phase assembles one.
  */
 const RUN_SHAPE = refineRunShape({
-  refinerModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+  refinerModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
   judgeModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
   checkerModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
 },);
@@ -235,7 +235,7 @@ await describe({
       fn: async () => {
         expect(
           refineRunShape({
-            refinerModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+            refinerModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
             judgeModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
             checkerModelIds: [SEAT_HYPER_OPENROUTER_UNMEASURED,],
           },),
@@ -250,7 +250,7 @@ await describe({
       fn: async () => {
         expect(
           refineRunShape({
-            refinerModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+            refinerModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
             judgeModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
             checkerModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
             identityContext: 'Mimi is the cat.',
@@ -327,7 +327,7 @@ await describe({
       fn: async () => {
         expect(
           refineRunShape({
-            refinerModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+            refinerModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
             judgeModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
             checkerModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
             identityContext: '',

@@ -26,7 +26,7 @@ import {
   ROSTER_MODEL_IDS,
   SEAT_HYPER_ONLY,
   SEAT_HYPER_VISION,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   visionReachOf,
@@ -287,7 +287,7 @@ await describe({
           served: true,
           id: 'minimax/minimax-m3',
         },);
-        expect(openRouterIdFor({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),).toEqual({
+        expect(openRouterIdFor({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, },),).toEqual({
           served: true,
           id: 'z-ai/glm-5.3-flash',
         },);

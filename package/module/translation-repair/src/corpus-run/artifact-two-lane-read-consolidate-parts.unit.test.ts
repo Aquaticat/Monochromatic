@@ -40,7 +40,7 @@ import {
   parseGateBallot,
   parseShipped,
   parseVerdict,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ArtifactConsolidationTerminal,
 } from '../../dist/final/node/index.mjs';
 
@@ -69,7 +69,7 @@ const KEPT_STANDING: ArtifactConsolidationTerminal = 'slate-endorsed-standing';
 /**
  Model that wrote a verdict, from the roster rather than invented.
  */
-const VERDICT_MODEL = SEAT_SYNTHETIC_VISION_EDITOR;
+const VERDICT_MODEL = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 
 /**
  Ballot every gate case departs from one field at a time.

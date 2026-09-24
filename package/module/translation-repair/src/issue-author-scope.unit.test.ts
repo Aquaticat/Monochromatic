@@ -13,7 +13,7 @@ import {
 
 import {
   collectIssueAuthors,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type CandidateProducer,
   type EditableEnvelope,
@@ -32,7 +32,7 @@ const WHISKER = 'adjudicated/whisker';
 /**
  Model that wins the envelope rounds below unless a case says otherwise.
  */
-const AUTHOR: RosterModelId = SEAT_SYNTHETIC_VISION_EDITOR;
+const AUTHOR: RosterModelId = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 
 /**
  Second model, for composites and for candidates that lose.

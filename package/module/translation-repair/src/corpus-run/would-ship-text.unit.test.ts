@@ -26,7 +26,7 @@ import {
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type WouldShipReading,
   type WouldShipSource,
   UnansweredContestSliceError,
@@ -255,8 +255,8 @@ await describe({
                   proposedText: polished,
                   text: polished,
                   changed: true,
-                  refinersHeard: [SEAT_SYNTHETIC_VISION_EDITOR,],
-                  contributors: [SEAT_SYNTHETIC_VISION_EDITOR,],
+                  refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+                  contributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
                   roundCount: 1,
                   findings: [],
                 },

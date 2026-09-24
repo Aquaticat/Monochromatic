@@ -20,7 +20,7 @@ import {
   MIN_DISPATCH_BUDGET_MS,
   runCriticBenchmark,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SyntheticHttpError,
@@ -94,7 +94,7 @@ const CANNED: Readonly<Record<string, {
   readonly kind: 'ok' | 'refusal' | 'mismatch' | 'http';
   readonly json?: string;
 }>> = {
-  [SEAT_SYNTHETIC_VISION_EDITOR]: {
+  [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: {
     kind: 'ok',
     json: HIT_REPORT,
   },
@@ -175,7 +175,7 @@ await describe({
             seeds: [BUTTERFLY_SEED,],
           },],
           modelIds: [
-            SEAT_SYNTHETIC_VISION_EDITOR,
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             SEAT_SYNTHETIC_TEXT_EVERYWHERE,
             SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             SEAT_SYNTHETIC_VISION_WITHHELD,
@@ -187,7 +187,7 @@ await describe({
 
         /** Record of the model that found the seed. */
         const hit = nonNullishOrThrow(result.attempts.find(function byModel(attempt,) {
-          return attempt.modelId === SEAT_SYNTHETIC_VISION_EDITOR;
+          return attempt.modelId === SEAT_HYPER_OPENROUTER_VISION_EDITOR;
         },),);
         expect(hit.outcomeKind,).toBe('ok',);
         expect(hit.resolvedClaimCount,).toBe(1,);
@@ -213,7 +213,7 @@ await describe({
 
         /** Scorecard row of the hitting model. */
         const hitRow = nonNullishOrThrow(result.scorecard.rows.find(function byModel(row,) {
-          return row.modelId === SEAT_SYNTHETIC_VISION_EDITOR;
+          return row.modelId === SEAT_HYPER_OPENROUTER_VISION_EDITOR;
         },),);
         expect(hitRow.seededRecall,).toBe(1,);
         expect(hitRow.schemaOkRate,).toBe(1,);
@@ -251,7 +251,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           signal: new AbortController().signal,
         },);
         expect(survived.attempts[0]?.outcomeKind,).toBe('http-error',);
@@ -271,7 +271,7 @@ await describe({
               targetText: TARGET_TEXT,
               seeds: [BUTTERFLY_SEED,],
             },],
-            modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+            modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
             signal: aborted.signal,
           },);
         }
@@ -322,7 +322,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           signal: new AbortController().signal,
         },);
 
@@ -370,7 +370,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           signal: new AbortController().signal,
         },);
 
@@ -411,7 +411,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           signal: new AbortController().signal,
         },);
 
@@ -453,7 +453,7 @@ await describe({
               seeds: [BUTTERFLY_SEED,],
             };
           },),
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           signal: new AbortController().signal,
           runBudgetMs: MIN_DISPATCH_BUDGET_MS + (BUDGET_CALL_DELAY_MS / 2),
         },);
@@ -506,7 +506,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           signal: new AbortController().signal,
           runBudgetMs: MIN_DISPATCH_BUDGET_MS + (BUDGET_CALL_DELAY_MS / 2),
         },);
@@ -564,7 +564,7 @@ await describe({
             targetText: TARGET_TEXT,
             seeds: [BUTTERFLY_SEED,],
           },],
-          modelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           signal: new AbortController().signal,
           perCallTimeoutMs: 50,
         },);

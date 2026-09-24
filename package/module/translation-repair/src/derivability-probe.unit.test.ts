@@ -15,7 +15,7 @@ import {
   isDerivabilityVerdict,
   resolveDerivabilityJudgment,
   runDerivabilityProbe,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
@@ -109,7 +109,7 @@ function probingClient(
  Three-judge roster for the stage tests.
  */
 const JUDGES: readonly RosterModelId[] = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 ];
@@ -167,7 +167,7 @@ await describe({
         const derivability = await runDerivabilityProbe({
           client: probingClient({
             verdictsByModel: {
-              [SEAT_SYNTHETIC_VISION_EDITOR]: ['derivable', 'derivable',],
+              [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['derivable', 'derivable',],
               [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['partially-derivable', 'derivable',],
               [SEAT_SYNTHETIC_VISION_WITHHELD]: ['not-derivable', 'derivable',],
             },
@@ -193,7 +193,7 @@ await describe({
         const derivability = await runDerivabilityProbe({
           client: probingClient({
             verdictsByModel: {
-              [SEAT_SYNTHETIC_VISION_EDITOR]: ['derivable', 'derivable',],
+              [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['derivable', 'derivable',],
               [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: ['not-derivable', 'derivable',],
             },
             silent: new Set([SEAT_SYNTHETIC_VISION_WITHHELD,],),
@@ -218,7 +218,7 @@ await describe({
         /** Only one of three judges answers: quorum unmet. */
         const derivability = await runDerivabilityProbe({
           client: probingClient({
-            verdictsByModel: { [SEAT_SYNTHETIC_VISION_EDITOR]: ['not-derivable', 'not-derivable',], },
+            verdictsByModel: { [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: ['not-derivable', 'not-derivable',], },
             silent: new Set([SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],),
           },),
           judgeModelIds: JUDGES,

@@ -14,7 +14,7 @@ import {
   COMPLETION_TOKEN_CEILING,
   isRetryableAttempt,
   isTruncatedAttempt,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type CriticAttemptRecord,
 } from '../dist/final/node/index.mjs';
 
@@ -22,7 +22,7 @@ import {
  Baseline schema-mismatch record corruptions derive from.
  */
 const MISMATCH_RECORD: CriticAttemptRecord = {
-  modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+  modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   entryId: 'whiskers',
   outcomeKind: 'schema-mismatch',
   detail: 'content parsed as JSON but failed the caller schema guard',

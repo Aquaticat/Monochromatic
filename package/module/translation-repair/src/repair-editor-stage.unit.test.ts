@@ -32,7 +32,7 @@ import {
   ProducerRosterError,
   runEditorStage,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type AdjudicatedIssue,
@@ -88,7 +88,7 @@ const ISSUES: readonly AdjudicatedIssue[] = [
  Editors that propose candidates.
  */
 const EDITORS = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 ] as const;
 

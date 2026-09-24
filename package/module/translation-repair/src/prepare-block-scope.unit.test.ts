@@ -6,7 +6,7 @@ import {
   parseDocument,
   prepareBlockPairing,
   prepareDocumentPair,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   subdivideChunkPair,
   validateTranslatedSlice,
@@ -37,7 +37,7 @@ await describe({
           calls += 1;
           return { status: 200, bodyText: `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content: JSON.stringify({ pairs: relations }) } }] })}\n\ndata: [DONE]\n\n` };
         } });
-        const acquired = await prepareBlockPairing({ client, modelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER],
+        const acquired = await prepareBlockPairing({ client, modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER],
           pair, pairIndex: 0, targetContainers: target.containers, signal: new AbortController().signal, exchangeTimeoutMs: 5_000, l });
         expect(calls).toBe(2);
         if ((acquired.kind !== 'paired') || (acquired.evidence.kind !== 'queried')) throw new Error('fixture requires current acquired relations');

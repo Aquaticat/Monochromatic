@@ -24,7 +24,7 @@ import {
 
 import {
   computeScorecard,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type CriticAttemptRecord,
 } from '../dist/final/node/index.mjs';
@@ -32,7 +32,7 @@ import {
 /**
  One model of the roster, used wherever a row's identity does not matter.
  */
-const MODEL_A = SEAT_SYNTHETIC_VISION_EDITOR;
+const MODEL_A = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 
 /**
  Second model, for ensemble cases where two models see the same entry.

@@ -30,7 +30,7 @@ import {
   parseDocument,
   runCriticStage,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type SyntheticClient,
@@ -64,7 +64,7 @@ const DOCUMENTS = {
  */
 const CRITICS = [
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
 ] as const;
 
 /**

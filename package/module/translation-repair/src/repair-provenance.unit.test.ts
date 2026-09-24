@@ -32,7 +32,7 @@ import {
   parseSettledArtifact,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type AdjudicatedIssue,
   type ChunkRepairOutcome,
@@ -109,7 +109,7 @@ const PANEL_TALLY = {
 const PANEL_READING = {
   ballots: [
     {
-      panelistId: SEAT_SYNTHETIC_VISION_EDITOR,
+      panelistId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
       vote: 'supported' as const,
       weight: 1,
     },

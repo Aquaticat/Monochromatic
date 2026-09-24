@@ -35,7 +35,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   StatedRefusalError,
   type BenchSlice,
   type SyntheticClient,
@@ -157,7 +157,7 @@ await describe({
               ONE_SENTENCE,
               ALSO_ONE_SENTENCE,
             ],
-            judgeModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+            judgeModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
             signal: AbortSignal.timeout(120_000,),
             l,
           },);

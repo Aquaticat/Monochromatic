@@ -6,7 +6,7 @@ import {
   PairingEvidenceError,
   readBlockPairingOutcomes,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type BlockPairingWire,
@@ -14,7 +14,7 @@ import {
   type RoundOutcome,
 } from '../dist/final/node/index.mjs';
 
-const roster = [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_VISION_EDITOR,] as const;
+const roster = [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_HYPER_OPENROUTER_VISION_EDITOR,] as const;
 const l = tagged({ tag: 'pairing-evidence-identity-test', },);
 const wire: BlockPairingWire = { pairs: [{ source: 0, target: 0, },], };
 const heard = (modelId: RosterModelId): RoundOutcome<BlockPairingWire> => ({ modelId, voice: { heard: true, value: wire, }, });

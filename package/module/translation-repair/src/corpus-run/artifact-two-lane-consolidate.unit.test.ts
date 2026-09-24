@@ -28,7 +28,7 @@ import {
   describeConsolidateSlice,
   hashContent,
   parseConsolidationPolish,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type ConsolidationSettlement,
   type ConsolidationTerminal,
@@ -193,7 +193,7 @@ await describe({
             paragraphDigests: [hashContent({ content: text, },),],
             seats: [
               {
-                modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+                modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
                 status: acceptable ? 'acceptable' as const : 'unacceptable' as const,
                 findings: rejectedFindings,
                 reason: acceptable ? 'ready' : 'material defect remains',
@@ -225,8 +225,8 @@ await describe({
             proposedText: texts[2],
             text: texts[2],
             changed: true,
-            refinersHeard: [SEAT_SYNTHETIC_VISION_EDITOR,],
-            contributors: [SEAT_SYNTHETIC_VISION_EDITOR,],
+            refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+            contributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
             rounds: [],
             gate: {
               choice: 'polished',

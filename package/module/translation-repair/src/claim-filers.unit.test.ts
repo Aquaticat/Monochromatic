@@ -22,7 +22,7 @@ import {
   claimFilersOf,
   describeClaimFiling,
   describeIssueFiling,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type AdjudicatedIssue,
   type ClaimAttribution,
@@ -51,7 +51,7 @@ const ATTRIBUTIONS: readonly ClaimAttribution[] = [
   {
     claimId: SHARED_CLAIM_ID,
     proposers: [
-      { modelId: SEAT_SYNTHETIC_VISION_EDITOR, emissionCount: 1, },
+      { modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, emissionCount: 1, },
       { modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, emissionCount: 2, },
     ],
   },
@@ -92,7 +92,7 @@ await describe({
       name: 'NAMES every filer of a claim, sorted, from the attribution',
       fn: async () => {
         expect(claimFilersOf({ attributions: ATTRIBUTIONS, },),).toEqual({
-          [SHARED_CLAIM_ID]: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
+          [SHARED_CLAIM_ID]: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
           [LONE_CLAIM_ID]: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
         },);
       },

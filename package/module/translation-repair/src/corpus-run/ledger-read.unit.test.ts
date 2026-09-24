@@ -37,7 +37,7 @@ import {
   LedgerShapeError,
   parseLedgerRound,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   summariseLedger,
@@ -73,7 +73,7 @@ const JOINT_TWO = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
 /**
  Seat writing the third candidate, and the one read in full.
  */
-const THIRD = SEAT_SYNTHETIC_VISION_EDITOR;
+const THIRD = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 
 /**
  Judge with no candidate of its own in any fixture.

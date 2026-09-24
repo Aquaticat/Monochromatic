@@ -24,7 +24,7 @@ import {
   type ProviderName,
   type ProviderRecord,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
 
@@ -102,7 +102,7 @@ function stubProviders(): {
          Whether this is the first provider's first call for the model whose
          upstream rate-limits it.
          */
-        const limited = (provider === 'synthetic') && (modelId === SEAT_SYNTHETIC_VISION_EDITOR) && (!refused.once);
+        const limited = (provider === 'synthetic') && (modelId === SEAT_SYNTHETIC_VISION_NO_OPENROUTER) && (!refused.once);
         if (limited) {
           refused.once = true;
           throw new SyntheticHttpError({
@@ -185,7 +185,7 @@ function stubBudgets(): {
 
  @example
  ```ts
- const outcome = await ask({ client, modelId: SEAT_SYNTHETIC_VISION_EDITOR, },);
+ const outcome = await ask({ client, modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, },);
  ```
  */
 async function ask(
@@ -231,7 +231,7 @@ await describe({
 
         const first = await ask({
           client,
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
         },);
         // The passed-on limit is the seat's loss for the round, not a
         // re-route and not the provider's budget (class sixty-two).
@@ -240,12 +240,12 @@ await describe({
 
         const held = await ask({
           client,
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
         },);
         // Inside the hold the model is refused at call time without a call,
         // which is what lets a round leave the seat out instead of waiting.
         expect(('thrown' in held) && (held.thrown instanceof NoProviderForModelError),).toBe(true,);
-        expect(asked,).toEqual([`synthetic:${SEAT_SYNTHETIC_VISION_EDITOR}`,],);
+        expect(asked,).toEqual([`synthetic:${SEAT_SYNTHETIC_VISION_NO_OPENROUTER}`,],);
 
         const other = await ask({
           client,
@@ -257,7 +257,7 @@ await describe({
         clock.now = HOLD_MS + 1;
         const again = await ask({
           client,
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
         },);
         expect(('text' in again) && (again.text === 'synthetic answers'),).toBe(true,);
         expect(asked.length,).toBe(3,);

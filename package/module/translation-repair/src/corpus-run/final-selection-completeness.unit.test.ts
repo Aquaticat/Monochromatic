@@ -14,7 +14,7 @@ import {
 
 import {
   finalSelectionFindings,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ArtifactContestVerdict,
   type WouldShipSource,
 } from '../../dist/final/node/index.mjs';
@@ -112,8 +112,8 @@ function sourceWith(
             proposedText: 'The cat rested.',
             text: 'The cat rested.',
             changed: true,
-            refinersHeard: [SEAT_SYNTHETIC_VISION_EDITOR,],
-            contributors: [SEAT_SYNTHETIC_VISION_EDITOR,],
+            refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+            contributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
             roundCount: 1,
             findings: [],
           },

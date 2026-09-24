@@ -39,7 +39,7 @@ import {
   fixedPagePath,
   messageText,
   parseSettledTwoLaneArtifact,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   settleEntry,
   type ChatJsonOutcome,
@@ -1065,7 +1065,7 @@ await describe({
               kind: 'corroborated',
               readings: [
                 { modelId: SEAT_SYNTHETIC_VISION_WITHHELD, text: archivePictureSupport, },
-                { modelId: SEAT_SYNTHETIC_VISION_EDITOR, text: archivePictureSupport, },
+                { modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, text: archivePictureSupport, },
               ],
               overlap: 1,
             },],]);
@@ -1108,7 +1108,7 @@ await describe({
                 kind: 'corroborated',
                 readings: [
                   { modelId: SEAT_SYNTHETIC_VISION_WITHHELD, text: 'Mittens 555-0134', },
-                  { modelId: SEAT_SYNTHETIC_VISION_EDITOR, text: 'Mittens 555-0134', },
+                  { modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, text: 'Mittens 555-0134', },
                 ],
                 overlap: 1,
               },

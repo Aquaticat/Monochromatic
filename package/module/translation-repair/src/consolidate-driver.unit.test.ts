@@ -45,7 +45,7 @@ import {
   firstRoundWindow,
   persistConsolidationSettlement,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SLICE_COST_MARKER,
@@ -105,7 +105,7 @@ function capturingLogger({ messages, }: { readonly messages: string[]; },): Logg
 /**
  Roster this run seats.
  */
-const ROSTER = [SEAT_SYNTHETIC_VISION_EDITOR,] as const;
+const ROSTER = [SEAT_HYPER_OPENROUTER_VISION_EDITOR,] as const;
 
 /** Roster wide enough for independent recovery selection. */
 const RECOVERY_ROSTER = [
@@ -737,8 +737,8 @@ await describe({
             proposedText: 'polished wording for slice 0',
             text: 'polished wording for slice 0',
             changed: true,
-            refinersHeard: [SEAT_SYNTHETIC_VISION_EDITOR,],
-            contributors: [SEAT_SYNTHETIC_VISION_EDITOR,],
+            refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+            contributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
             rounds: [],
             review: {
               correctionCount: 0,
@@ -1719,8 +1719,8 @@ await describe({
               proposedText: 'The cat maintained a positive outlook on life.',
               text: 'The cat maintained a positive outlook on life.',
               changed: true,
-              refinersHeard: [SEAT_SYNTHETIC_VISION_EDITOR,],
-              contributors: [SEAT_SYNTHETIC_VISION_EDITOR,],
+              refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+              contributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
               rounds: [],
               review: {
                 correctionCount: 0,
@@ -1746,7 +1746,7 @@ await describe({
               kind: 'unsettled',
               baseText: 'The cat actively faced the day.',
               proposedText: 'The cat actively faced the day.',
-              refinersHeard: [SEAT_SYNTHETIC_VISION_EDITOR,],
+              refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
               contributors: [],
               rounds: [],
               review: {

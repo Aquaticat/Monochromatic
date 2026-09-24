@@ -28,7 +28,7 @@ import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type RosterModelId,
@@ -39,7 +39,7 @@ import {
  */
 const WRITERS: readonly RosterModelId[] = [
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_HYPER_VISION,
 ];
 
@@ -123,9 +123,9 @@ await describe({
         expect(function refinerChecks() {
           assertCheckerIndependence({
             editorModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
-            refinerModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+            refinerModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
             checkerModelIds: [
-              SEAT_SYNTHETIC_VISION_EDITOR,
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
               SEAT_SYNTHETIC_TEXT_EVERYWHERE,
             ],
@@ -194,7 +194,7 @@ await describe({
         /** Two writers checking their own work, which passes independence under the switch. */
         const twoWriters: readonly RosterModelId[] = [
           SEAT_SYNTHETIC_VISION_WITHHELD,
-          SEAT_SYNTHETIC_VISION_EDITOR,
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
         ];
         assertCheckerIndependence({
           editorModelIds: WRITERS,

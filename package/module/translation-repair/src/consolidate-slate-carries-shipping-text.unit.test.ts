@@ -35,7 +35,7 @@ import {
   createSyntheticClient,
   describeSlate,
   rotateCandidates,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   settleConsolidation,
@@ -53,7 +53,7 @@ const l = tagged({ tag: 'consolidate-proposal-wrap-test', },);
  Roster of three, matching the sibling settle tests.
  */
 const ROSTER = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 ] as const;

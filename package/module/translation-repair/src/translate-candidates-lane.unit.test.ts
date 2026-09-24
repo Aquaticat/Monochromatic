@@ -29,7 +29,7 @@ import {
   describeProducer,
   mergeProducers,
   producerModelIds,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type CandidateProducer,
   type HeardVoice,
@@ -43,7 +43,7 @@ import {
  Two seated translators, in roster order.
  */
 const TRANSLATORS = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const satisfies readonly RosterModelId[];
 

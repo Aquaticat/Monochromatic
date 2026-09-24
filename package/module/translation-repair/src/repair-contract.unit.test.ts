@@ -41,7 +41,7 @@ import {
   ProducerRosterError,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../dist/final/node/index.mjs';
@@ -49,7 +49,7 @@ import {
 /**
  Model that produces candidates in most cases below.
  */
-const PRODUCER_ONE = SEAT_SYNTHETIC_VISION_EDITOR;
+const PRODUCER_ONE = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 
 /**
  Second producer, for repeat and overlap cases.

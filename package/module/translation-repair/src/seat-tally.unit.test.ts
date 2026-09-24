@@ -25,7 +25,7 @@ import {
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   seatReportLines,
   seatTallyClient,
   type ChatJsonOutcome,
@@ -182,8 +182,8 @@ await describe({
         const tally = createSeatTally();
         tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'threw', },);
         tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'unusable', },);
-        tally.record({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, outcome: 'unusable', },);
-        tally.record({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, outcome: 'usable', },);
+        tally.record({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, outcome: 'unusable', },);
+        tally.record({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, outcome: 'usable', },);
         tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
 
         expect(tally.dark().map(function toId(count,): string {

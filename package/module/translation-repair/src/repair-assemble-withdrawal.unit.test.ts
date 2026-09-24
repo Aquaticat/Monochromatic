@@ -30,7 +30,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   assembleRepair,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ChunkPair,
   type ChunkRepairOutcome,
 } from '../dist/final/node/index.mjs';
@@ -191,7 +191,7 @@ function outcomeOf(
     // NAMED, not just counted: the lane refuses a slice it heard nobody about
     // that carries anything but the archive's wording, and it reads the id list
     // rather than the count.
-    heardCriticIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
+    heardCriticIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
     claimAttributions: [],
     findings: [],
   };

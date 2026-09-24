@@ -21,7 +21,7 @@ import {
 import {
   createSyntheticClient,
   produceConsolidations,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ConsolidateSubject,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
@@ -34,7 +34,7 @@ const l = tagged({ tag: 'consolidate-produce-test', },);
 /**
  One producer.
  */
-const ROSTER = [SEAT_SYNTHETIC_VISION_EDITOR,] as const;
+const ROSTER = [SEAT_HYPER_OPENROUTER_VISION_EDITOR,] as const;
 
 /**
  Two-line page, the structural standard a line-structured slice is held to.

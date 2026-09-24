@@ -15,6 +15,7 @@ import {
 import type { RosterModelId, } from './roster-id.ts';
 import {
   SYNTHETIC_MODELS,
+  SYNTHETIC_WITHHELD,
   type SyntheticModelInfo,
 } from './synthetic-catalog.ts';
 import { PROVIDER_ORDER, } from './provider-name.ts';
@@ -328,7 +329,10 @@ export function reachOf(
   const bedrock = bedrockIdFor({ modelId, },);
 
   return {
-    synthetic: synthetic.served,
+    // SERVED AND ROUTED. A seat withheld from Synthetic on measured latency
+    // (class one hundred eighteen, 2026-09-24) is one this provider does not
+    // serve as far as the router is concerned (`SYNTHETIC_WITHHELD`).
+    synthetic: synthetic.served && (!SYNTHETIC_WITHHELD.has(modelId,)),
     hyper: hyper.served,
     bedrock: bedrock.served,
     // SERVED AND BOUGHT. A seat the owner withheld from OpenRouter on cost
@@ -358,7 +362,7 @@ function syntheticShowsPictures(
    */
   const entry = syntheticEntryFor({ modelId, },);
 
-  if (!entry.served)
+  if ((!entry.served) || SYNTHETIC_WITHHELD.has(modelId,))
     return false;
 
   /**

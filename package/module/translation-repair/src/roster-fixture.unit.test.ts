@@ -29,7 +29,7 @@ import {
   SEAT_OPENROUTER_DECISIONS,
   SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../dist/final/node/index.mjs';
@@ -44,9 +44,8 @@ const CLAIMS: readonly {
   readonly holds: readonly string[];
 }[] = [
   {
-    seat: SEAT_SYNTHETIC_VISION_EDITOR,
+    seat: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
     reach: [
-      'synthetic',
       'hyper',
       'openrouter',
     ],
@@ -54,6 +53,7 @@ const CLAIMS: readonly {
     holds: [
       'wide-seat-dropped',
       'late-judge-dropped',
+      'synthetic-withheld',
     ],
   },
   {

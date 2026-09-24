@@ -22,7 +22,7 @@ import {
   NOT_ON_SLATE,
   positionOf,
   rotateCandidates,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type Candidate,
@@ -62,7 +62,7 @@ const CANDIDATES: readonly Candidate<TranslateCandidateValue>[] = [
   {
     producer: {
       kind: 'model',
-      modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+      modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
     },
     value: {
       text: FRESH_ONE,

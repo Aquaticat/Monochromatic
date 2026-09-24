@@ -27,7 +27,7 @@ import {
   createSyntheticClient,
   prepareDocumentPairWithRoster,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type PairedSectionRecord,
@@ -48,7 +48,7 @@ const TARGET_TEXT = 'The cat slept in the box.\n\nShe did not move all afternoon
  Roster of two, which is the smallest that can agree.
  */
 const ROSTER = [
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 ] as const;
 

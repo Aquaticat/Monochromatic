@@ -19,7 +19,7 @@ import {
   ROSTER_MODEL_IDS,
   SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SYNTHETIC_MODELS,
@@ -135,7 +135,7 @@ await describe({
         expect(blocklistVerdictFor({ id: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, },),).toEqual({ blocked: false, },);
         expect(blocklistVerdictFor({ id: SEAT_HYPER_ONLY, },),).toEqual({ blocked: false, },);
         expect(blocklistVerdictFor({ id: 'glm-5.3-flash', },),).toEqual({ blocked: false, },);
-        expect(blocklistVerdictFor({ id: SEAT_SYNTHETIC_VISION_EDITOR, },),).toEqual({ blocked: false, },);
+        expect(blocklistVerdictFor({ id: SEAT_HYPER_OPENROUTER_VISION_EDITOR, },),).toEqual({ blocked: false, },);
         expect(blocklistVerdictFor({ id: SEAT_SYNTHETIC_VISION_WITHHELD, },),).toEqual({ blocked: false, },);
         expect(blocklistVerdictFor({ id: 'kimi-k2.8', },),).toEqual({ blocked: false, },);
       },

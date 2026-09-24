@@ -21,7 +21,7 @@ import {
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   stripCodeFence,
@@ -428,7 +428,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);
@@ -479,7 +479,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             messages: [{ role: 'user' as const, content: wide, },],
             signal: new AbortController().signal,
           },);
@@ -519,7 +519,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);
@@ -551,7 +551,7 @@ await describe({
         },);
         /** Reply that survived one transient failure. */
         const reply = await client.chatText({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
         },);
@@ -573,7 +573,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);
@@ -628,12 +628,12 @@ await describe({
          */
         const replies = await Promise.all([
           client.chatText({
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },),
           client.chatText({
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
             exchangeTimeoutMs: SLOW_TRANSPORT_MS + DEADLINE_MARGIN_MS,
@@ -682,7 +682,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
             exchangeTimeoutMs: 50,
@@ -692,7 +692,7 @@ await describe({
           caught = error;
         }
         expect(String(caught,),).toContain('Timeout',);
-        expect(String(caught,),).toContain(SEAT_SYNTHETIC_VISION_EDITOR,);
+        expect(String(caught,),).toContain(SEAT_HYPER_OPENROUTER_VISION_EDITOR,);
       },
     },),
 
@@ -729,7 +729,7 @@ await describe({
         },);
         /** Reply that survived one dropped connection. */
         const reply = await client.chatText({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
         },);
@@ -773,7 +773,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);
@@ -825,7 +825,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             messages: MESSAGES,
             signal: aborted.signal,
           },);
@@ -852,7 +852,7 @@ await describe({
         let caught: unknown;
         try {
           await client.chatText({
-            modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+            modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
             messages: MESSAGES,
             signal: new AbortController().signal,
           },);
@@ -876,7 +876,7 @@ await describe({
         /** Controller whose signal identity must survive the plumbing. */
         const controller = new AbortController();
         await client.chatText({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           messages: MESSAGES,
           signal: controller.signal,
         },);
@@ -940,7 +940,7 @@ await describe({
         );
         /** Cross-model call proving slots are keyed by model identity. */
         const crossModelCall = client.chatText({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
         },);
@@ -950,7 +950,7 @@ await describe({
           return id === SEAT_SYNTHETIC_TEXT_EVERYWHERE;
         },),).toHaveLength(EXPECTED_DEFAULT_WIDTH,);
         expect(entered.filter(function glm(id,) {
-          return id === SEAT_SYNTHETIC_VISION_EDITOR;
+          return id === SEAT_HYPER_OPENROUTER_VISION_EDITOR;
         },),).toHaveLength(1,);
 
         gate.resolve();
@@ -1073,7 +1073,7 @@ await describe({
         const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
         /** Outcome of the deliberated exchange. */
         const outcome = await client.chatJson({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
           validate: isCatVerdict,
@@ -1101,7 +1101,7 @@ await describe({
         const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
         /** Outcome of the truncated exchange. */
         const outcome = await client.chatJson({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
           validate: isCatVerdict,
@@ -1194,7 +1194,7 @@ await describe({
         const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
         /** Outcome of the guard-rejected exchange. */
         const outcome = await client.chatJson({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
           validate: isCatVerdict,
@@ -1216,7 +1216,7 @@ await describe({
         const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
         /** Outcome of the prose exchange. */
         const outcome = await client.chatJson({
-          modelId: SEAT_SYNTHETIC_VISION_EDITOR,
+          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           messages: MESSAGES,
           signal: new AbortController().signal,
           validate: isCatVerdict,

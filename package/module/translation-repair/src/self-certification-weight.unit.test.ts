@@ -20,7 +20,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   tallyResolutionChecks,
@@ -46,7 +46,7 @@ const PAW = 'adjudicated/paw';
 /**
  Model cast as the one that wrote the text under check.
  */
-const AUTHOR: RosterModelId = SEAT_SYNTHETIC_VISION_EDITOR;
+const AUTHOR: RosterModelId = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 
 /**
  Model that wrote none of it.
@@ -79,7 +79,7 @@ const WROTE_THE_CHUNK: IssueAuthorship = {
  
  @example
  ```ts
- const entry: CheckerBallot = [SEAT_SYNTHETIC_VISION_EDITOR, { verdicts: {}, findings: [], },];
+ const entry: CheckerBallot = [SEAT_HYPER_OPENROUTER_VISION_EDITOR, { verdicts: {}, findings: [], },];
  ```
  */
 type CheckerBallot = readonly [

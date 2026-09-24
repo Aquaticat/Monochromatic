@@ -15,13 +15,13 @@ import {
 import {
   consolidationFailureEvidence,
   consolidationNeedsRecovery,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type ConsolidationSettlement,
 } from '../dist/final/node/index.mjs';
 
 /** Provider identity that must never enter recovery producer prompt. */
-const MODEL_ID = SEAT_SYNTHETIC_VISION_EDITOR;
+const MODEL_ID = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 
 /** Judge identity absent from producer provenance but still requiring alias. */
 const JUDGE_ID = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;

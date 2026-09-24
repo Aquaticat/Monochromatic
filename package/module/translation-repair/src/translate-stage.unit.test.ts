@@ -33,7 +33,7 @@ import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   TRANSLATE_LINE_STRUCTURE_CRITERION,
@@ -66,7 +66,7 @@ const INCUMBENT_TEXT = 'The cat is doing the sleeping on the windowsill, with ta
  */
 const TRANSLATORS: readonly RosterModelId[] = [
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_HYPER_VISION,
 ];
 
@@ -419,7 +419,7 @@ await describe({
         const { result, } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -444,7 +444,7 @@ await describe({
         const { result, } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'is doing the sleeping',
@@ -469,7 +469,7 @@ await describe({
         const { result, } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: fresh,
-            [SEAT_SYNTHETIC_VISION_EDITOR]: fresh,
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: fresh,
             [SEAT_HYPER_VISION]: fresh,
           },
           needle: 'cat-record',
@@ -493,7 +493,7 @@ await describe({
           translations: {
             // Kimi is absent from the script, so its reply arrives wrapped
             // in prose and fails the wire guard.
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'naps on the sill',
@@ -516,7 +516,7 @@ await describe({
         const { result, } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: '   \n  ',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'naps on the sill',
@@ -543,7 +543,7 @@ await describe({
         const { result, calls, } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: '',
@@ -570,7 +570,7 @@ await describe({
         const { result, calls, } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: '',
@@ -593,7 +593,7 @@ await describe({
         const { result, calls, } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -616,7 +616,7 @@ await describe({
         const { result, calls, } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: INCUMBENT_TEXT,
-            [SEAT_SYNTHETIC_VISION_EDITOR]: INCUMBENT_TEXT,
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: INCUMBENT_TEXT,
             [SEAT_HYPER_VISION]: INCUMBENT_TEXT,
           },
           needle: 'is doing the sleeping',
@@ -642,7 +642,7 @@ await describe({
         const present = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -653,7 +653,7 @@ await describe({
         const absent = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -687,7 +687,7 @@ await describe({
         const { result, } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -724,7 +724,7 @@ await describe({
         await expect(runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: '',
@@ -740,12 +740,12 @@ await describe({
         const { result, calls, } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'A cat rests at the window.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat rests beside the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat rests beside the heater.',
             [SEAT_HYPER_VISION]: 'The cat is near a window.',
           },
           followupTranslations: [{
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The repaired cat dozes on the windowsill, tail beside the radiator.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A repaired cat naps on the sill, its tail beside the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A repaired cat naps on the sill, its tail beside the heater.',
             [SEAT_HYPER_VISION]: 'The repaired cat sleeps by the radiator.',
           },],
           needle: 'repaired',
@@ -769,18 +769,18 @@ await describe({
         await expect(runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The first cat rests.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'The first cat waits.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'The first cat waits.',
             [SEAT_HYPER_VISION]: 'The first cat sits.',
           },
           followupTranslations: [
             {
               [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The second cat rests.',
-              [SEAT_SYNTHETIC_VISION_EDITOR]: 'The second cat waits.',
+              [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'The second cat waits.',
               [SEAT_HYPER_VISION]: 'The second cat sits.',
             },
             {
               [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The final repaired cat dozes.',
-              [SEAT_SYNTHETIC_VISION_EDITOR]: 'The final repaired cat naps.',
+              [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'The final repaired cat naps.',
               [SEAT_HYPER_VISION]: 'The final repaired cat sleeps.',
             },
           ],
@@ -802,7 +802,7 @@ await describe({
           await runLane({
             translations: {
               [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
-              [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+              [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
               [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
             },
             needle: '',
@@ -835,7 +835,7 @@ await describe({
         const { result, calls, } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: '',
@@ -867,7 +867,7 @@ await describe({
         const { judgeSheets, } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -889,7 +889,7 @@ await describe({
         const { judgeSheets, } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -918,7 +918,7 @@ await describe({
         const { judgeSheets, } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',
@@ -943,7 +943,7 @@ await describe({
         const { judgeSheets, } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
-            [SEAT_SYNTHETIC_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
             [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
           },
           needle: 'dozes',

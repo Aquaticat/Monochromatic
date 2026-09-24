@@ -14,7 +14,7 @@ import {
 import {
   collectRefinedAuthors,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
@@ -27,7 +27,7 @@ const WHISKER = 'adjudicated/whisker';
 /**
  Model that repaired the text the refiners rewrote.
  */
-const AUTHOR: RosterModelId = SEAT_SYNTHETIC_VISION_EDITOR;
+const AUTHOR: RosterModelId = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 
 /**
  Second repairing model, for the case where nothing was rewritten at all.

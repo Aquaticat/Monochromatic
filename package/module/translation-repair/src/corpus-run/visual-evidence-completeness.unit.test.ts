@@ -12,7 +12,7 @@ import {
 
 import {
   assertVisualEvidenceComplete,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChunkPair,
   VisualEvidenceInterruptedError,
@@ -48,7 +48,7 @@ await describe({
               kind: 'corroborated',
               readings: [
                 { modelId: SEAT_SYNTHETIC_VISION_WITHHELD, text: 'Mittens 555-0134', },
-                { modelId: SEAT_SYNTHETIC_VISION_EDITOR, text: 'Mittens 555-0134', },
+                { modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, text: 'Mittens 555-0134', },
               ],
               overlap: 1,
             },

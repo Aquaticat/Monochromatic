@@ -1,4 +1,7 @@
-import { servedRecord, } from './model-card-derive.ts';
+import {
+  holdSet,
+  servedRecord,
+} from './model-card-derive.ts';
 import type { SyntheticVendorFamily, } from './model-card.ts';
 import type {
   RosterModelId,
@@ -253,5 +256,22 @@ export function estimateRequestWeight(
    */
   return modelPrice / SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN;
 }
+
+/**
+ Roster seats this provider serves and the run does not route here, on
+ measured latency (class one hundred eighteen, 2026-09-24).
+
+ HONOURED BY THE REACH, the way `OPENROUTER_WITHHELD` is: `reachOf` and
+ `visionReachOf` say Synthetic does not serve a withheld model, so the router
+ sends it to the next wet provider in `PROVIDER_ORDER` and never re-routes it
+ here mid-phase. The catalog row stays, since Synthetic still lists the model
+ and `syntheticServes` answers what the provider serves, not what the run buys.
+
+ @example
+ ```ts
+ const withheld = SYNTHETIC_WITHHELD.has('hf:zai-org/GLM-5.3-Flash',);
+ ```
+ */
+export const SYNTHETIC_WITHHELD: ReadonlySet<RosterModelId> = holdSet({ hold: 'synthetic-withheld', },);
 
 //endregion Synthetic model catalog

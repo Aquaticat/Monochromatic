@@ -25,7 +25,7 @@ import {
 
 import {
   attemptStageCall,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type JsonSchemaResponseFormat,
@@ -40,7 +40,7 @@ const l = tagged({ tag: 'stage-call-test', },);
 /**
  Model the exchanges address.
  */
-const MODEL_ID = SEAT_SYNTHETIC_VISION_EDITOR;
+const MODEL_ID = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 
 /**
  Trivial reply payload the scripted clients emit.

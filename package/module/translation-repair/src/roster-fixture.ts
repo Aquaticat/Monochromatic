@@ -16,10 +16,11 @@
 // fixture object built from it keeps the id's literal type.
 
 /**
- Synthetic, Hyper and OpenRouter serve it; reads pictures; holds the first
- editor seat and is out of the wide and late judge seats.
+ Hyper and OpenRouter serve it (Synthetic lists it and is withheld on measured
+ latency, class one hundred eighteen); reads pictures; holds the first editor
+ seat and is out of the wide and late judge seats.
  */
-export const SEAT_SYNTHETIC_VISION_EDITOR = 'hf:zai-org/GLM-5.3-Flash' as const;
+export const SEAT_HYPER_OPENROUTER_VISION_EDITOR = 'hf:zai-org/GLM-5.3-Flash' as const;
 
 /**
  Synthetic and Hyper serve it, OpenRouter dropped it; reads pictures.

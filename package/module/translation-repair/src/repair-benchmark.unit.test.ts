@@ -21,7 +21,7 @@ import {
   measureSeedRestoration,
   parseDocument,
   runRepairBenchmark,
-  SEAT_SYNTHETIC_VISION_EDITOR,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   subdivideChunkPair,
@@ -66,10 +66,10 @@ const SEEDED_TEXT = 'The cat naps in the sun. The bowl stays full.';
  Role roster; identities only matter as distinct voices.
  */
 const MODELS: RepairModels = {
-  criticModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
-  panelModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
-  editorModelIds: [SEAT_SYNTHETIC_VISION_EDITOR,],
-  judgeModelIds: [SEAT_SYNTHETIC_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
+  criticModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+  panelModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+  editorModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+  judgeModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
   checkerModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
 };
 
