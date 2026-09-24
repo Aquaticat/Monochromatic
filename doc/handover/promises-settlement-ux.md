@@ -113,7 +113,12 @@ every press gets expressive feedback; a manager line explains each event.
   `ux-variants/shot-*.png` and `settlement-ux-current-1008-dark.png`.
   An earlier invocation of agent-browser 0.38.1 emitted "Daemon version mismatch detected,
   restarting..." and saw only `about:blank`; preservation of any tab that existed before
-  that restart is unknown. Do not claim such a draft survived without evidence.
+  that restart is unknown.
+  [The daemon-version troubleshooting note](../troubleshooting/agent-browser-daemon-version-restart.md)
+  traces the restart and the verified consumer preflight.
+  `present-ux-choice.mjs` now checks a named daemon's version sidecar before contacting it
+  and chooses a separate version-qualified session on mismatch.
+  Do not claim a pre-restart draft survived without evidence.
 
 ## Fresh audit after compaction
 
