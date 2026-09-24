@@ -51,6 +51,8 @@ await describe({
           .toBe('[\n  1,\n  2,\n]',);
         expect(_jsValueToTomlText({ input: { xs: [1, 2,], }, options: multiline, },),)
           .toBe('{ xs = [\n    1,\n    2,\n  ], }',);
+        expect(_jsValueToTomlText({ input: [[1, 2,], [3,],], options: multiline, },),)
+          .toBe('[\n  [\n    1,\n    2,\n  ],\n  [ 3, ],\n]',);
       },
     },),
     it({
