@@ -574,7 +574,19 @@ The separate scratch differential consumer now imports the Biome-to-value adapte
  A deliberately moved value comment is checked first so owner-blind comparisons cannot produce a trusted null result.
  Explicit expected values in the separate projection suite remain the independent control;
  comparing two prototypes with shared scalar/emitter helpers alone would not establish correctness.
- No semantic differential result is yet claimed.
+ The bounded debug differential passed named semantic fixtures and both positive controls,
+ but its generated corpus found one semantic difference among shared accepted inputs:
+ for `{"a":1\n, //inline\n"b":2}`,
+ the owned parser attaches `inline` to the following key `b`,
+ while the Biome prototype placed it on the previous value `a`.
+ Separate bounded named tests for object and array separators on a later line both failed the Biome adapter's owner assertion.
+ The maintained TypeScript structured parser rejects the object source due its separately measured comma-after-trivia defect;
+ its documented same-line trailing rule and the owned parser's continuation support the following-key reading.
+ The prototype's `src/children.rs:108-113,148,202` currently routes every comma's trailing comment to the preceding value.
+ This is an adapter ownership defect under the selected policy,
+ not evidence that Biome's raw syntax tree lost the comment.
+ Correction,
+ optimized validation and a rerun of the positive-controlled differential remain pending.
 
 ## Existing-parser contract exits
 
