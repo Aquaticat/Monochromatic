@@ -395,10 +395,12 @@ function verifyConsole(): Promise<boolean> {
       },))
         return Promise.resolve(false,);
 
-      if (!hasProcessStderr()) {
-        if ((typeof console.debug) !== 'function')
-          return Promise.resolve(false,);
-      }
+      /**
+       Debug needs either a console method or a process stream.
+       */
+      const hasDebugOutput = (typeof console.debug) === 'function' || hasProcessStderr();
+      if (!hasDebugOutput)
+        return Promise.resolve(false,);
     }
 
     if ((typeof queueMicrotask) !== 'function')

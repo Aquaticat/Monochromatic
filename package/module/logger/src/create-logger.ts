@@ -575,7 +575,8 @@ export function createLogger(
        Whether the timeout utility's own deadline caused this failure.
        */
       const deadlineElapsed = Error.isError(error)
-        && error.message === `Timed out after ${flushDeadlineMs}ms: logger flush`;
+        ? error.message === `Timed out after ${flushDeadlineMs}ms: logger flush`
+        : false;
       reportLoggerInternalError({
         context: deadlineElapsed
           ? `flush deadline of ${flushDeadlineMs}ms elapsed; abandoning in-flight sink work`
