@@ -152,11 +152,13 @@ await describe({
       },
     },),
     it({
-      name: 'rejects null with the path-specific outer diagnostic',
+      name: 'rejects nullish values with the path-specific outer diagnostic',
       fn: async () => {
         const edit = parseTomlEdit({ source: '', },);
         expect(() => tomlSet({ edit, path: ['x',], value: null, },),)
           .toThrow('Cannot set x to null; use tomlDelete',);
+        expect(() => tomlSet({ edit, path: ['x',], value: undefined, },),)
+          .toThrow('Cannot set x to undefined; use tomlDelete',);
       },
     },),
   ],
