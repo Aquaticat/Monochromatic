@@ -283,6 +283,18 @@ not vetoed in round 3:
   The third-party discovery agent was stopped.
 - The agent predicted Rust rules on snippets would be noise;
    the user wants them enforced.
+- Round 6's block-merge description was framed as ESLint's semantics and was not.
+  Checked against `eslint-rewrite` `packages/config-array/src/config-array.js:1020-1245`,
+   `eslint` `lib/config/flat-config-schema.js:453-500`,
+   and `lib/config/default-config.js`:
+   ESLint's built-in configuration turns on no rule;
+   a block without `files` applies to every file another block matches;
+   `**`-style patterns count only beside a specific match;
+   a file no block specifically matches is left unlinted ("unconfigured");
+   and a later severity-only setting keeps earlier options.
+  The description had instead assumed compiled-in rule defaults,
+   linting by extension,
+   and whole-setting replacement.
 
 ## Rejected
 
@@ -443,19 +455,30 @@ not vetoed in round 3:
 
 ## Open questions
 
-Round 6,
+Round 6 answers (user,
+2026-09-23):
+
+- Configuration lookup stays nearest-file-per-linted-file (B):
+   "It's not necessarily more effort than A."
+- Declarative pattern rules,
+   the suggestion and dangerous fix levels,
+   `--fix-suggestions`,
+   and `--fix-dangerously` wait until a consumer exists (A).
+- The merge question was withdrawn for a corrected restatement
+   (see "Corrections").
+
+Round 7,
 asked 2026-09-23:
 
-- Block merge semantics:
-   the last applying block that names a rule replaces its severity and options together,
-   or ESLint's option-keeping merge.
-- Configuration lookup,
-   reopened because `extends` is gone:
-   nearest file per linted file,
-   or one configuration file found upward from the working directory.
-- Declarative pattern rules and the suggestion and dangerous fix levels,
-   which have no consumers:
-   build now or later.
+- Built-in rule defaults:
+   none,
+   as in ESLint,
+   or today's rules on without configuration.
+- Which files get linted:
+   ESLint's specific-match rule,
+   and whether blocks may omit `files`.
+- Rule-setting merge:
+   ESLint's option-keeping merge or whole replacement.
 
 Waiting on research:
 the Markdown parser crate.
