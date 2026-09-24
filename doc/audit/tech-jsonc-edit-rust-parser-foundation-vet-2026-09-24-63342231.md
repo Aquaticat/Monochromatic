@@ -504,7 +504,7 @@ A separate scratch consumer `~/temp/agent/jsonc-foundation-diff/` depends on bot
  This is prototype reuse,
  not a dependency or product API decision.
 
-### Biome semantic projection preparation
+### Biome semantic projection prototype
 
 A separate scratch package under `~/temp/agent/biome-projection-probe/` consumes Biome's typed syntax slots,
  the owned JSONC value model and canonical emitter,
@@ -515,14 +515,27 @@ A separate scratch package under `~/temp/agent/biome-projection-probe/` consumes
  resource bounds,
  expected reads/writes,
  and semantic success/stop conditions before the first execution.
- The planned tests assert expected key/value comment owner,
- text,
- kind and order,
- exact number equality,
- raw spelling,
- UTF-16 code units,
- and accepted-depth emission/reparse.
- No projection result is yet claimed.
+ The bounded debug suite passed tests of distinct key/value comment owner,
+ text and source kind;
+ multiline value-comment ownership after canonical emission and reparse;
+ after-comma,
+ document and empty-container comments;
+ escaped unpaired UTF-16 units on a key and value;
+ exact equality of differently spelled numbers while retaining both raw literals;
+ and 512-level array/record projection,
+ emission,
+ reparse,
+ equality and cleanup with 513 rejected.
+ These tests use explicit expected values rather than only the owned parser as oracle.
+ The adapter shares the owned scratch emitter,
+ comment merger,
+ scalar decoder,
+ and exact-number model;
+ it does not establish independent correctness for those shared parts.
+ Mixed-style comment kinds after emission,
+ wider syntax and whitespace parity,
+ optimized projection,
+ package style lint and non-Linux targets remain unverified.
 
 ## Existing-parser contract exits
 
