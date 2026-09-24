@@ -10,8 +10,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseTomlEdit, } from './parse-toml-edit.ts';
-import { tomlKeys, } from './toml-keys.ts';
+import {
+  parseTomlEdit,
+  tomlKeys,
+} from '@monochromatic-dev/module-toml-edit';
 
 await describe({
   name: tomlKeys.name,
@@ -47,6 +49,14 @@ await describe({
           source: '[[fruits]]\nname = "a"\n\n[[fruits]]\nname = "b"\n',
         },);
         expect(tomlKeys({ edit, path: ['fruits',], },),).toStrictEqual([0, 1,],);
+      },
+    },),
+
+    it({
+      name: 'returns empty array for a scalar path',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'title = "ok"\n', },);
+        expect(tomlKeys({ edit, path: ['title',], },),).toStrictEqual([],);
       },
     },),
 

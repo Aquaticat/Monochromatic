@@ -36,6 +36,16 @@ await describe({
     },),
 
     it({
+      name: 'canonical overrides retain an empty source',
+      fn: async () => {
+        const edit = emptyTomlEdit({ canonical: { indent: 4, }, },);
+        expect(edit.source,).toBe('',);
+        expect(edit.mode,).toBe('canonical',);
+        expect(edit.canonical.indent,).toBe(4,);
+      },
+    },),
+
+    it({
       name: 'multiple sets accumulate in the output',
       fn: async () => {
         const e0 = emptyTomlEdit();
