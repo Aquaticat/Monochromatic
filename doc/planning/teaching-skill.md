@@ -25,6 +25,10 @@ confusing layout, silent buttons, disabled-when-no-effect plus numbered one-shot
 the Rhythm Heaven Groove Yum-Bot Simulator model, a drawn factory scene with the controls
 inside it, the game-faithful remap where the pudding is the Promise,
 and the restored resolver-bundle snapshots.
+The user then clarified that an unused one-shot button remains actionable after settlement
+if it calls the real resolving function and visibly logs the ignored attempt.
+The Promise outcome stays fixed; used buttons and genuinely inert controls stay disabled.
+The corrected prototypes pass browser, Firefox ESR, and PDF text checks.
 A matrix of layout-by-cue-color cells awaits the user's choice;
 [the settlement-UX handover](../handover/promises-settlement-ux.md) records the measured
 defects, the research, superseded models, and the next actions.

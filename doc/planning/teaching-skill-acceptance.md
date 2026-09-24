@@ -215,8 +215,11 @@ Value-representation counterexamples:
 
 Control-affordance counterexamples:
 
-- A button whose click would do nothing stays enabled and visually unchanged.
+- A button whose click would neither invoke a useful operation nor produce an observable trace
+  stays enabled and visually unchanged.
 - A click leaves no trace on the control, in a record, or in the drawn scene.
+- A fresh numbered button is disabled after settlement even though it could call the resolver
+  and visibly log the ignored attempt that teaches first-settlement-wins.
 - A repeatable action reuses one button whose label cannot tell the first call from the fifth.
 - An interactive analogy inverts its source: the falling object of the source game becomes a
   stationary agent while the line drops agents instead.
