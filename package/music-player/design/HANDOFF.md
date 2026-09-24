@@ -5126,7 +5126,7 @@ viable choices.
 recorded in the next section.
  No KWin automation and no production edits.
 
-## Provisional deck-visible Fold Search review (2026-09-24)
+## Historical three-way deck-visible Fold Search review (2026-09-24)
 
 The throwaway branch `prototype/music-player-theme-compose` captures three
 inner-panel arrangements in light/dark at 100% keyboard-closed and 200%
@@ -5173,12 +5173,12 @@ to Gboard selected,
  the probe disabled,
  inner device state 2 and 100% text.
 
-The self-contained provisional comparison is now
-`package/music-player/design/questions/current.html`.
- The former withdrawn
-artifact and template are archived as
-`questions/archive/search-rejected-fold-review.html` and its template.
-The current review embeds sanitized physical-pixel rasters with a generic
+The self-contained provisional comparison was archived after D51 as
+`questions/archive/search-three-way-before-a.html` with its template.
+ The
+former rejected split study is archived at
+`questions/archive/search-rejected-fold-review.html`.
+That comparison embedded sanitized physical-pixel rasters with a generic
 status clock and a Fold chassis at cited dp size;
  it does not show a blank
 unpainted crease band.
@@ -5207,14 +5207,12 @@ B (Search right,
  A preserves the accepted resting deck location
 better than B;
  B preserves the deck's accepted side better than C.
-See the pros,
+The pros,
  cons,
- and full ranking in the active artifact.
- No user choice
-has landed.
- The question remains open,
- and the HTML asks for consequential
-corrections rather than authorizing production.
+ and full ranking remain in the archived three-way artifact.
+The user subsequently chose A (D51) and removed the repeated positive-results
+heading (D52).
+ The old form no longer asks for a choice.
  Gboard-specific behavior and
 keyboard heights greater than the measured probe remain unverified.
  An
@@ -5229,6 +5227,91 @@ names and full result-list scrolling still need native follow-up.
 KWin automation,
  production implementation,
  or `AGENTS.md` edit is allowed.
+
+## Selected A after removing the positive-results heading (D51/D52)
+
+The user answered `I pick A` and directed removal of the redundant
+`Results for “cam”` text.
+ D51 records the right Search pane with the deck
+bottom-left when closed and lifted above the system keyboard while typing.
+D52 starts positive folder/track results directly beneath the integrated
+Back/query/Clear header on **both** panels.
+ No-results and unavailable
+explanations remain distinct.
+ B and C are archived comparison evidence,
+not live visual choices.
+ Production implementation is still unauthorized.
+
+The debug-only prototype commit `38d601830` leaves historical
+`SearchLayoutStudy` defaults unchanged;
+ the selected cover route passes
+`hidePositiveHeading = true`,
+ and `PersistentSearchPane` omits the heading
+for the selected unfolded route.
+ `capture-search-selected.mjs` from commit
+`970a7dde1` ran on state 2 inner and state 0 cover at 390dpi,
+ in light and
+dark at 100%/200% text.
+ Each panel has empty,
+ keyboard-visible typed
+results,
+ and keyboard-closed result PNG/XML/metadata pairs.
+ The capture
+checks the actual input-method frame and rejects a repeated positive heading;
+for the unfolded pane it also bounds the deck controls above the keyboard.
+The resulting images show the query in its one header,
+ a folder followed by
+a track,
+ and the unfolded deck above the measured probe.
+ The AVD returned
+to its original Gboard selection,
+ inner state and font scale.
+ Gboard's own
+rendering and taller keyboard geometries are not verified by this probe.
+
+The active,
+ self-contained `package/music-player/design/questions/current.html`
+shows only selected A,
+ across both panels and system light/dark modes,
+ with
+100% results,
+ 200% typing and an empty state.
+ Its source template is
+`questions/current.template.html`;
+ the throwaway branch owns
+`sanitize-search-selected.mjs` and `build-search-selected.mjs`.
+ Status
+notification content is masked before embedding.
+ The validator confirmed
+physical PNG sizes and exact embedded sources.
+ `agent-browser` verified the
+rendered panel images,
+ state/scheme controls,
+ both native device-frame
+previews,
+ fit/reset/zoom/close and focus return.
+ WCAG 2A/AA checks returned
+no violations in light or dark.
+ A preview-dialog scale label produced an
+axe `color-contrast` **incomplete** rather than a violation;
+ manual
+computed foreground/background checks gave 7.32:1 in light and 9.37:1 in
+dark (see `doc/troubleshooting/axe-modal-dialog-contrast.md` for this
+conservative modal overlap path).
+ Browser verification was closed.
+
+Remaining design work is limited to behaviors the selection did not settle:
+result activation/ranking,
+ long result names and scrolling,
+ Gboard-specific
+geometry,
+ taller keyboards,
+ and the independent minimum information
+clearance at the crease.
+ The user was not asked to vote again on B or C.
+No KWin automation,
+ production implementation,
+ or `AGENTS.md` change.
 
 ## Issue tracking moves to Linear for this session
 

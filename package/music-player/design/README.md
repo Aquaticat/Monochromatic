@@ -92,14 +92,20 @@ passed a superseded geometric guard but did not make the page usable.
 D50 additionally requires the unfolded playback deck to stay visible during
 Search,
  including with a keyboard in view.
- `questions/current.html` is now a
-**provisional** self-contained comparison of deck-visible placements on both
-panels,
- at 100% and 200% text in light/dark.
- A system-managed 300dp debug
-keyboard verifies bounded occlusion and input routing;
+ The user selected A (D51):
+ Search stays on the unfolded right,
+ and the
+bottom-left playback deck rises above the keyboard while typing.
+D52 removes the redundant positive-results `Results for “cam”` heading on
+both panels.
+ The former three-way matrix remains at
+`questions/archive/search-three-way-before-a.html`.
+`questions/current.html` now shows only the selected design in light/dark
+at 100% and 200% text.
+ A system-managed 300dp debug keyboard verified
+bounded occlusion and input routing;
  it is not Gboard.
-No replacement has been selected.
+Selection does not authorize production implementation.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.
 The rejected command review remains at `questions/archive/command-igr-rejected.html`.
@@ -107,8 +113,8 @@ D21's configurable global hotkey and extra Settings row belonged to the command 
 they do not silently move to Search.
  D25's Ctrl+F reservation remains pending the
 whole keyboard-map pass.
- Fold Search placement,
- result actions/ranking,
+ Search result actions/ranking,
+ tall-keyboard fit,
  and final empty/error
 behavior remain to be designed;
  the

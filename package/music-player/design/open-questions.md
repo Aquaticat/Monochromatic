@@ -59,7 +59,7 @@ rounds (2026-09-17):
   chosen as the working baseline, not banned from exploration.
   K1's discouraging back
   navigation and K3's non-local sheet remain rejected.
-- **OPEN: replace rejected unfolded Search composition (D47/D48/D49).**
+- **SETTLED: Fold Search composition A and result heading (D47 to D52).**
   D47 chooses a Search
   button opening a separate page;
   D48 puts Back,
@@ -93,26 +93,21 @@ rounds (2026-09-17):
   hierarchy XML and role records remain historical evidence;
   the withdrawn artifact is archived in
   `questions/archive/search-rejected-fold-review.html`.
-  The current
-  `questions/current.html` is a new provisional deck-visible comparison,
-  not an acceptance or production instruction.
-  The validator's pixel,
-  bounds and provenance checks did not establish a
-  coherent relationship between the query and its content.
-  Before proposing a
-  replacement,
-  observe real foldable Search behaviors on the available emulator
-  and compare the local baseline M3 adaptive/search guidance.
-  Keep the
-  replacement design-only and E2-safe;
-  do not infer that E2 requires the
-  header on one side and content on the other.
-  The user explicitly permits a
-  Search screen occupying only one half of the unfolded display,
-  with query
-  and results together;
-  this is one candidate,
-  not an adopted layout.
+  That mechanical validator did not establish a coherent query/result
+  relationship.
+  The resulting three-way keyboard-visible comparison is archived at
+  `questions/archive/search-three-way-before-a.html`.
+  The user selected A:
+  query and results together on the right,
+  with a bottom-left deck that lifts
+  above the keyboard (D51).
+  D52 removes the redundant `Results for “cam”`
+  heading from positive results on both panels;
+  the no-results state keeps
+  its explanation.
+  The selected-only `questions/current.html` is design
+  evidence,
+  not a production implementation.
   A user-opened YouTube
   screenshot places thumbnail time and video title lettering near the crease;
   at the corrected 7.5mm width their edges fall in the approximate dent band,
@@ -125,34 +120,27 @@ rounds (2026-09-17):
   both full-width variants replaced its
   parent screen),
   so their captures are rejected and not a review matrix.
-  The throwaway branch has provisional top-left,
-  top-right and IME-lifted bottom-left deck placements.
-  A focused query,
-  result insertion and all deck controls were visually checked with a
-  **debug-only system IME**, at 200% text on the inner panel;
-  Gboard-specific
-  keyboard behavior is not established.
-  A preceding bottom deck failed even
-  under the smaller input probe.
-  The three current placements are not user
-  selections.
-  A native light/dark keyboard-visible matrix and a separate
-  cover-panel typing probe now back a provisional review at
-  `questions/current.html`.
-  The measured 300dp test IME is not Gboard;
-  actual Gboard geometry remains unverified.
-  A long query at 200% was tested under the visible probe in the
-  IME-lifted variant without hiding the deck or moving query text into the
-  crease.
+  D51's chosen A was recaptured in light and dark on both physical panels
+  at 100% and 200% text.
+  An actual system-managed 300dp **debug-only** IME
+  kept the unfolded controls visible while typing,
+  with folder and track
+  results starting directly below the one header.
+  The current test does
+  not establish Gboard-specific geometry or taller keyboard behavior.
+  A
+  200% long query remained in the right input region without hiding the deck.
   Long **result** names and result-list scrolling are still open.
-  Keep Search results,
-  no-result/unavailable states,
-  and open/back behavior visibly
-  distinguished without claiming the static capture proves interaction.
-  Baseline
-  M3 Search component evidence is in `material-3-compliance.md`.
-  Search targets and
-  result effects/ranking remain open;
+- **OPEN: remaining Search behavior after D51/D52.**
+  Keep positive results,
+  no-results/unavailable states and open/back behavior distinct;
+  do not
+  treat static captures as proof of activation,
+  keyboard focus restoration
+  or TalkBack.
+  Baseline M3 Search evidence is in
+  `material-3-compliance.md`.
+  Search targets and result effects/ranking remain open;
   D21's global command hotkey and Settings row
   do not transfer to Search.
   D25 still reserves Ctrl+F for search and Ctrl+O for the
