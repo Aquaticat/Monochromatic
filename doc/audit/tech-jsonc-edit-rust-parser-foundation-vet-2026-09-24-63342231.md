@@ -267,6 +267,81 @@ The public [issue #7728](https://github.com/biomejs/biome/issues/7728) reports a
  Bounded debug and optimized release wrapper tests each returned an error and dropped the result without an abort.
  Neither direct nor wrapper result establishes a cause or resolution for the separate newer CLI/worker incident.
 
+## Terminal discovery result
+
+- **Registry class:
+   finished.**
+   Every frozen and expansion query was paginated to provider exhaustion (`next_page=null`) and validated for
+   contiguous pages,
+   matching totals and duplicate-free crate ids.
+   Full-record metadata screens were displayed for `jsonc` (532 records) and
+   `comment preserving json` (1214 records),
+   plus the complete `jsonc lexer` (8) and `json-with-comments` (4) result sets.
+   Limitation recorded rather than hidden:
+   lead extraction used inclusive keyword predicates,
+   so a crate whose name and description avoid both term families could have been passed over.
+- **Repository-host class:
+   finished.**
+   The two frozen `gh search repos` queries returned no records.
+   The comparable broadening ran three more literal queries,
+   each returning fewer than its 100-result limit (provider exhaustion):
+   `json5 parser language:Rust` (8 results:
+   `json5-nodes`,
+   a Git-only `json5_parser`,
+   `JsonTape`,
+   `jsonrepair-rs`,
+   plus Lua,
+   conversion and multi-format configuration projects),
+   `json comments preserve language:Rust` (4 results:
+   `google/json5format` at the regex gate,
+   `AlexisTM/jwc` at the surrogate gate,
+   `zoosky/yqr` YAML-only,
+   `q5n/jsonsh` written in Go),
+   and `lossless json editor language:Rust` (0 results).
+   No new Rust JSONC parser candidate emerged from the broadening.
+- **Broader-web class:
+   frozen schedule finished,
+   completeness not provable.**
+   The recorded web queries returned source and documentation leads without totals or cursors,
+   so that class cannot demonstrate enumeration the way the registry and host classes can.
+- **In-repo class:
+   finished.**
+   The maintained TypeScript package,
+   `doc/decision/jsonc-edit-parser-foundation.md` and the prior structured-edits research were read.
+   Meow's selected editor stays out of scope:
+   this port neither adopts nor replaces it.
+
+Terminal outcome for the frozen schedule:
+ **saturated with two survivors.**
+
+1. The repository-owned parser and emitter translation,
+   validated through the bounded suites,
+   independent oracle controls,
+   external consumer lifecycle,
+   conformance corpus and workload-shape timings recorded in this report.
+2. The `biome_json_parser` 0.5.7 syntax source plus the scratch projection adapter,
+   validated at the same depth,
+   with the preparse depth preflight,
+   diagnostics gate and unsafe-surface findings recorded here.
+
+Every other candidate either failed a hard gate as published
+ (surrogate rejection,
+ regex-defined lexing,
+ depth ceilings,
+ comment-model or formatter-only interfaces,
+ memory-safety gaps)
+ or remains an **unvalidated composition** that would still require writing this port's parser:
+ `fjson` scanner-only,
+ `hifijson` primitives,
+ the Git-only `jsonc_lexer`,
+ and the Serde byte/raw-token routes.
+ Those compositions are not separately validated finalists;
+ each would inherit the owned-parser work rather than replace it,
+ and each adds an unaudited third-party surface.
+
+Saturation here means the frozen schedule and page rule completed.
+ It is not a claim that no suitable crate exists anywhere outside those queries.
+
 ## Current source checks, not a recommendation
 
 - `jsonc-parser` 0.33.2,
@@ -337,7 +412,7 @@ For the second,
 These registry queries are exhausted,
  not evidence that every library is viable or that the broader discovery is complete.
 The two frozen `gh search repos` queries returned no records;
- broaden to comparable linked upstream repositories before calling the repository-host class saturated.
+ the comparable broadening queries and the resulting class status are recorded in the terminal discovery result.
 Web searches discovered `jwc`,
  `hifijson`,
  `fjson`,
