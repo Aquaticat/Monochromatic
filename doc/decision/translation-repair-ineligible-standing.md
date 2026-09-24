@@ -189,6 +189,49 @@ and the decline named `slate-declined-standing`.
 - Guard shown to fail first (`c6ec06788`),
     fixed in `adca69d4e`.
 
+## Addendum 2026-09-24, seventh: a tied slate over an eligible standing is run off when every contest ballot called the archive flawed
+
+Taken on the owner's answer of 2026-09-24
+("Run-off only when every contest ballot called the archive flawed")
+after zheermao8 shipped its slice 9,
+the reply label,
+in the archive's wording "one member ... immediately" for 那些秋叶的成员…连夜:
+the contest 2 to 2 with every ballot calling the archive flawed,
+the slate 1 to 1 to 1 with both lane texts on offer,
+and the eligible standing keeping its single round under the second addendum.
+
+- The second addendum kept the single round over an eligible standing because a decline there keeps text the contest endorsed.
+    On zheermao8 the contest had endorsed nothing:
+    every usable ballot called the archive flawed and the lanes split,
+    so the slate's decline kept a text every judge had refused.
+- `archiveFlawedByAll` (`consolidate-archive-flawed.ts`) reads the contest:
+    settled on neither,
+    at least one ballot,
+    every ballot's `archive` set to `flawed`.
+    A ballot that did not say,
+    a ballot that would publish the archive,
+    a contest that chose a lane or missed quorum all leave the single round.
+- `consolidate-driver.ts` raises `runoffOverStanding` from that reading;
+    `settleConsolidation` then routes the slate through `judgeSlateWithRetry` as it does over an ineligible standing,
+    the same panel on the narrowed finalists,
+    each run-off strictly narrowing (fourth and sixth addenda).
+- The judge stage now names the run-off finalists on a declined round even over an incumbent
+    (`runoffFinalists` on `TranslateStageResult`),
+    so the retry can narrow without the absence error the ineligible path raises.
+- A run-off that ends undecided still ships the standing:
+    the exit stays `slate-declined-standing`,
+    never a stop,
+    because the standing is eligible.
+    The owner's second answer of the same day,
+    an archive rendering carrying an accepted fabrication claim,
+    is class one hundred seven and its own addendum.
+- Guards shown to fail first (`200bf7a53`):
+    `consolidate-archive-flawed.unit.test.ts`
+    and `consolidate-settle.unit.test.ts`
+    (the run-off chooses over an eligible standing;
+    a run-off tied throughout ships the standing).
+    Fixed in `2a872bbed`.
+
 ## Addendum 2026-09-19, sixth: a run-off is decided on the ballot floor
 
 Taken under the same rule after mikaela4 stopped INCOMPLETE at 24 min on slice 28,
