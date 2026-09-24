@@ -379,19 +379,19 @@ console.log("Folded cover questionnaire is valid.")
 '''
 
 [tasks.build]
-description = "Embed native Slint evidence into the self-contained command-bar questionnaire"
+description = "Embed native Slint player and separate Search-page states into the active review"
 dir = "{{config_root}}"
-run = "node command-question.mjs build"
+run = "node search-page-question.mjs build"
 
 [tasks.lint]
-description = "Validate the active desktop command-bar questionnaire"
+description = "Validate the active one-bar Search-page design review"
 dir = "{{config_root}}"
-run = "node command-question.mjs validate"
+run = "node search-page-question.mjs validate"
 
 [tasks."test:unit"]
-description = "Exercise the desktop command-bar questionnaire completion contract"
+description = "Exercise the Search-page review evidence and completion contract"
 dir = "{{config_root}}"
-run = "node command-question.mjs validate"
+run = "node search-page-question.mjs validate"
 
 [tasks."build:cover"]
 description = "Rebuild the historical folded-cover P questionnaire in questions/archive"
