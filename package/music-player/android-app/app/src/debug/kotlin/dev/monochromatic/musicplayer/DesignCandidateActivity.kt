@@ -987,7 +987,8 @@ internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier,
         if (includeTopInset) Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
         if (deckFirst) {
             // Keep playback controls above the system keyboard while the lower browser can scroll.
-            TransportBlock(modifier = Modifier.fillMaxWidth(), candidate = "dark-stable-wallpaper-dynamic", palette = palette)
+            TransportBlock(modifier = Modifier.fillMaxWidth(), candidate = "dark-stable-wallpaper-dynamic",
+                palette = palette, deckHeightCap = false)
             Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.sectionDivider))
             topContent(Modifier.weight(1f))
         } else {
