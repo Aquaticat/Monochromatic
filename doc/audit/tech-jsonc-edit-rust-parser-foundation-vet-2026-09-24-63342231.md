@@ -491,6 +491,23 @@ The published Rust library does expose `RawJson::parse_jsonc` and comment byte r
  This exit is **not** a regex finding.
  No candidate code was executed.
 
+### `jsontape` 0.1.4 as-is surrogate exit
+
+The published `jsontape.rs:310-400` offers a JSONC preset with comments and trailing commas,
+ and its owned-document option can preserve comment trivia (`:345-347,439-454`).
+ It also exposes raw source spans and configurable depth,
+ so registry metadata alone understated this candidate's behavior.
+ However,
+ the shared string-escape scanner at `jsontape.rs:2269-2287` returns `SyntaxKind::LoneSurrogate`
+ for an escaped high surrogate without a following low half or for an isolated low half.
+ Both owned and view parsing use that scanner,
+ so the published crate cannot accept the required escaped UTF-16 input as-is.
+ A fork changing the scanner **and** decoded string representation would be a separate custom candidate,
+ not a wrapper around a successful upstream parse.
+ Its manifest names `allocator-api2` as a normal dependency and does not identify a production regex lexer;
+ this as-is exit is about the supported string domain.
+ No candidate code was executed.
+
 ### `fjson` 0.3.1
 
 **Source correction:**
