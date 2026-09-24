@@ -1339,9 +1339,9 @@ Do not substitute 360 × 640,
  480 × 600,
  or 1100 × 640 desktop mock windows as
 visual decision targets.
- The unfolded centre connector also remains empty of
-**all app content** under E2,
- not merely interactive controls.
+ The unfolded centre connector keeps **informational material** clear
+under clarified E2;
+ this does not ban continuous surfaces or hit regions.
  Those native Slint experiments are historical only.
 
 **Effect.**
