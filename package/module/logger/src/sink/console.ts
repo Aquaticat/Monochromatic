@@ -281,7 +281,10 @@ function emitRun(
      */
     const consoleFn = console[method];
     if ((typeof consoleFn) === 'function') {
-      consoleFn.call(console, text,);
+      consoleFn.call(
+        console,
+        text,
+      );
       return;
     }
 
@@ -377,13 +380,17 @@ function verifyConsole(): Promise<boolean> {
 
     // A console with only `log` (QuickJS-ng) can route every level there.
     // Without `log`, every mapped method must exist or records would vanish.
-    if ((typeof console.log) !== 'function'
-      && !((typeof console.info) === 'function'
-        && (typeof console.warn) === 'function'
-        && (typeof console.error) === 'function'
-        && (typeof console.trace) === 'function'
-        && (hasProcessStderr() || (typeof console.debug) === 'function')))
-      return Promise.resolve(false,);
+    if ((typeof console.log) !== 'function') {
+      /** Console methods required to cover all non-debug severities. */
+      const required = [console.info, console.warn, console.error, console.trace,];
+      if (!required.every(function isCallable(method: unknown,): boolean {
+        return (typeof method) === 'function';
+      },))
+        return Promise.resolve(false,);
+
+      if (!hasProcessStderr() && ((typeof console.debug) !== 'function'))
+        return Promise.resolve(false,);
+    }
 
     if ((typeof queueMicrotask) !== 'function')
       return Promise.resolve(false,);

@@ -6,6 +6,7 @@ import {
 import {
   createLogger,
   sinks,
+  type LogRecord,
 } from '../dist/final/neutral/index.mjs';
 
 /**
@@ -18,7 +19,7 @@ import {
  makeRecord({ level: 'info' });
  ```
  */
-function makeRecord({ level, }: { readonly level: 'error' | 'fatal' | 'info' | 'warn'; },) {
+function makeRecord({ level, }: { readonly level: 'error' | 'fatal' | 'info' | 'warn'; },): LogRecord {
   return {
     level,
     message: 'QuickJS console fallback',
@@ -41,8 +42,11 @@ await describe({
         sinon.stub(console, 'debug').value(undefined);
         const sink = sinks.createConsoleSink();
         expect(await sink.verify(),).toBe(true,);
-        for (const level of ['info', 'warn', 'error', 'fatal',] as const)
-          await sink.write(makeRecord({ level, },),);
+        await Promise.all(
+          (['info', 'warn', 'error', 'fatal',] as const).map(function writeLevel(level,) {
+            return sink.write(makeRecord({ level, },),);
+          },),
+        );
         await sink.flush?.();
         expect(log.callCount,).toBe(4,);
         expect(log.getCalls().map(function firstArg(call,) {
@@ -77,6 +81,7 @@ await describe({
       fn: async ({ sinon, },) => {
         const log = sinon.stub(console, 'log');
         sinon.stub(console, 'warn').value(undefined);
+        sinon.stub(console, 'error').value(undefined);
         const { initPromise, } = createLogger({
           sinks: [{
             verify: function failedVerify(): Promise<boolean> {

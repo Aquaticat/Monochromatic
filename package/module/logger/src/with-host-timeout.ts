@@ -8,10 +8,15 @@ import { withTimeout, } from '@monochromatic-dev/module-async-time/ts';
  never settles. In hosts with timers the original deadline remains intact.
 
  @param promise - Sink operation to await.
+
  @param ms - Deadline used when the host exposes timers.
+
  @param label - Operation named in a timeout diagnostic.
+
  @returns Sink operation's result.
+
  @throws Error when a host with timers reaches the deadline.
+
  @example
  ```ts
  await withHostTimeout({ promise: sink.verify(), ms: 5_000, label: 'sink verify' });
@@ -29,5 +34,9 @@ export async function withHostTimeout<const Result>({
   if ((typeof globalThis.setTimeout) !== 'function')
     return await promise;
 
-  return await withTimeout({ label, ms, promise, },);
+  return await withTimeout({
+    label,
+    ms,
+    promise,
+  },);
 }

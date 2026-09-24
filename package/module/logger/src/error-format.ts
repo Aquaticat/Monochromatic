@@ -42,11 +42,15 @@ export function reportLoggerInternalError(
 
   // Internal failures cannot go through a sink; use whatever host console
   // method is available without assuming a browser-style `console.warn`.
+  /** Available console method for reporting the internal failure. */
   const report = (typeof console.warn) === 'function'
     ? console.warn
     : ((typeof console.error) === 'function' ? console.error : console.log);
   if ((typeof report) !== 'function')
     return;
 
-  report.call(console, `logger internal error: ${context}: ${caughtValueText(error,)}`,);
+  report.call(
+    console,
+    `logger internal error: ${context}: ${caughtValueText(error,)}`,
+  );
 }
