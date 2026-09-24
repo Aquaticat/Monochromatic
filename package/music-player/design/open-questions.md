@@ -56,28 +56,27 @@ rounds (2026-09-17):
   chosen as the working baseline, not banned from exploration.
   K1's discouraging back
   navigation and K3's non-local sheet remain rejected.
-- **ACTIVE: redraw the desktop command-bar round against MD3 visual sources.**
-  The
-  I/G/R decision axes remain independent:
-  in-app placement,
-  optional global
-  invocation,
+- **ACTIVE: baseline MD3 command-bar visual review, awaiting correction or I/G/R codes.**
+  The independent I/G/R axes remain in-app placement,
+  optional global invocation,
   and the Ctrl+F search-surface relationship.
-  But the first S/C matrix
-  was withdrawn for conflating axes,
-  and the second native Slint I/G/R form was
-  rejected by the user as visibly non-MD3.
-  `questions/current.html` still holds that
-  rejected form while the replacement is being built;
-  **do not ask for I/G/R codes from
-  it**.
-  The correction must follow the local Search bar/view images and measured
-  AndroidX tokens documented in `material-3-compliance.md`,
-  compare the rerender at
-  matching scale,
-  then revalidate and present without KWin automation.
-  D25 reserves
-  bindings but does not force separate surfaces.
+  The first S/C draft conflated axes;
+  the second I/G/R scenes were rejected as visibly non-MD3;
+  neither is active.
+  The
+  current `questions/current.html` now embeds native Slint scenes based on baseline
+  divided Search (28dp docked outer,
+  56dp docked header and divider,
+  72dp
+  full-content header and divider,
+  square baseline list items),
+  Roboto and official
+  Material icons.
+  It includes a normalized spec-versus-native header comparison;
+  all
+  27 images are self-contained.
+  No user decision has been received from this redraw.
+  D25 reserves bindings but does not force separate surfaces.
   Search target scope and result
   ranking,
   the in-app visible entry and exact binding,
