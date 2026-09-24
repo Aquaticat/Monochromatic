@@ -275,7 +275,13 @@ source-level transitive clearance remains open where required.
    An uncaptured stage marker printed before parsing but not after;
    the observed overflow occurs during parse execution.
    Merely checking depth before recursive descent cannot preserve the accepted input domain.
-   The candidate is **not validated**.
+   A scratch rewrite with explicit container frames then passed both boundary cases
+   in the same bounded container; the valid 512-level test also dropped its parsed node.
+   Emission,
+   reparse,
+   nested-record cleanup,
+   and error cleanup remain unverified at that depth,
+   so the candidate is **not yet validated**.
 - A separate TypeScript source probe found that clean `[1\n,2]` parses through the `JSON.parse` fast path,
    but `[1\n,2,]` fails in the structured path with `JsoncParseError: expected , or ] in array (at offset 3)`;
    a commented input and object with a newline before the comma fail analogously.
@@ -287,9 +293,12 @@ source-level transitive clearance remains open where required.
 
 ## Next action
 
-Replace recursive container descent with an explicit work stack;
- test accepted 512-level input and rejected 513-level input inside a bounded container.
- Measure emission and tree cleanup at the accepted depth separately before relying on them.
+Exercise the iterative parser at the accepted depth across emission,
+ reparse,
+ clone/equality,
+ nested records,
+ and both success and error cleanup,
+ all within resource bounds.
  Add comma-after-trivia fixtures and correct the source-syntax divergence in Rust and TypeScript at the appropriate adoption stage.
  Then rerun parser syntax,
  comment,
