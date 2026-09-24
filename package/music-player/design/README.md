@@ -64,30 +64,25 @@ at both seams).
  P4 remains provisional and a better picker may be explored before 1.x,
  without a promised replacement.
 
-The active design-only desktop command-bar questionnaire at `questions/current.html`
-now uses baseline Material 3 **divided Search** anatomy in native Slint:
- a 28dp
-docked outer container with a 56dp header and divider,
- or a sharp full-content
-container with a 72dp header and divider.
- It shows independent I/G/R in-app,
-optional global,
- and future Ctrl+F search-surface choices.
- The user rejected the generic draft as non-MD3;
- the Expressive-mixed redraw was
-withdrawn after source review without being shown for a choice.
- No selection has
-been made from this baseline redesign.
- Its native light/dark captures and the local-spec header comparison
-are self-contained,
- but the static prototype does not prove hotkeys,
- keyboard
-interaction,
- screen-reader semantics,
- a real OS quick window,
- or search indexing.
-D25 settles only shortcut reservations,
- not surface separation.
+D47 supersedes the desktop command-bar presentation:
+ the user rejected all I/G/R
+variants and directed a **Search button that opens a separate search page**.
+The current `questions/current.html` still contains the rejected comparison until its
+replacement is built;
+ it is not a live vote.
+ The active design work is to draw the
+player button and the full search destination in native Slint under the project's
+baseline Material 3 policy,
+ then verify and present that one active design.
+D21's configurable global hotkey and extra Settings row belonged to the command bar;
+they do not silently move to Search.
+ D25's Ctrl+F reservation remains pending the
+whole keyboard-map pass.
+ Search targets,
+ result actions/ranking,
+ button placement on
+each platform,
+ and empty/error states remain to be designed.
  The live backlog and developer-owned items are in
 `open-questions.md` section 0b.
 
