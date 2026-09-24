@@ -4246,6 +4246,42 @@ at `open-questions.md` 0b.
  The user's "What next?"
 asked for a recommendation, not authorization for production changes.
 
+## Command-bar round, first draft withdrawn (2026-09-23)
+
+After P4 visual and keyboard-interaction verification,
+ the next design-only round began
+with a native Slint command study on the prototype branch.
+ Its first matrix (S1 docked,
+S2 floating inside player,
+ S3 detached concept crossed with C1 actions,
+ C2 scopes,
+C3 mixed results) generated twenty rasters,
+ archived in `questions/render/command-round-s*-c*`.
+ No user choice was solicited.
+ An independent review found consequential faults:
+ S3 is complementary to in-app placement,
+ not an exclusive choice;
+ D25 reserves
+shortcuts but does not require separate surfaces;
+ result states differed between C
+variants;
+ wide S1 was anchored into the folder header;
+ selected supporting text
+contrasted only 3.38:1 dark and 3.53:1 light;
+ and the HTML preview used stale image
+dimensions when switching compact and wide.
+ The first questionnaire in `current.html`
+was never presented and must not be used as an active decision form.
+ Its prior-art note
+now marks the ranking withdrawn.
+ Rebuild as separable in-app placement,
+ global
+invocation,
+ and search-surface relationship questions,
+ with comparable native states and
+browser verification before presenting.
+ Production code remains untouched.
+
 ## Issue tracking moves to Linear for this session
 
 `gh` cannot reach the GitHub API this session:
