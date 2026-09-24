@@ -207,8 +207,28 @@ A further container run is now active on read,
  `types.ts`,
  `wrappers.ts`,
  and `comments.ts`.
-Its report is `/var/home/user/temp/agent/toml-mutation-remaining-a.json` (process `proc_a45d`).
-After triage,
+The batch reported 96 killed,
+ 46 confirmed survivors,
+ 172 compile errors,
+ and no infrastructure errors.
+Its report is `/var/home/user/temp/agent/toml-mutation-remaining-a.json`.
+New package tests cover named and unnamed basic-string escapes,
+ key alphabet endpoints,
+ error names,
+ raw table/header slices,
+ and the canonical key-creation default.
+A targeted recheck on the survivor-bearing files is running as `proc_a434`;
+ its report will be `/var/home/user/temp/agent/toml-mutation-read-recheck.json`.
+
+A direct consumer probe of `key = 1#tail` found a real defect:
+ `tomlGetCommentAfter` returned no comment because `comments.ts` required the hash offset to be strictly greater than the value end.
+A regression test failed before the change;
+ changing that comparison to inclusive made the package build and unit suite pass.
+The sidecar bounded property suite,
+ types,
+ and package oxlint also passed after the fix.
+
+After this recheck,
  scan the remaining parser,
  document,
  editing,
