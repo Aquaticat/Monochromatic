@@ -114,8 +114,21 @@ Round 2 answers (user,
 - No `AGENTS.md` rule for the round 1 misread:
    the user attributed it to their own phrasing.
 
+Round 3 answers (user,
+2026-09-23):
+
+- `MD025` is off inside rustdoc (A),
+   against the agent's recommendation to keep it on.
+  An item may carry several level-1 sections,
+   as `line_matches` in `package/rust-module/forbidden-regex/src/regex/batch.rs:337-356` does;
+   repository Markdown files keep `MD025`.
+- `MD040`'s fix inserts `rust` inside rustdoc (A),
+   because rustdoc compiles an unlabeled fence as a doc test
+   and inserting `text` would silently stop it.
+  Markdown files keep the `text` fix.
+
 Adopted by the agent from settled answers,
-open to veto (round 3):
+not vetoed in round 3:
 
 - HCL shape follows meow:
    OpenTofu's one-label block form,
@@ -193,6 +206,10 @@ open to veto (round 3):
    5;
    `#[doc = ...]` attributes:
    0.
+- The Rust linter never reads parse errors:
+   `package/rust-module/rust-linter-core/src/context.rs:141-153` keeps only `parse.syntax_node()`,
+   and no linter crate calls `parse.errors()`.
+  Syntax errors in `compile_fail` fences therefore stay non-findings.
 - `monochromatic-rust-linter` is not on crates.io
    (API answer "crate `monochromatic-rust-linter` does not exist",
    2026-09-23).
@@ -243,8 +260,8 @@ asked 2026-09-23:
    and unlabeled fences inside rustdoc.
 - Nested processing:
    whether Rust fences inside rustdoc are linted by the Rust rules.
-- `MD025` inside rustdoc,
-   where rustdoc's section convention uses level-1 headings.
+
+Those three were asked again after the user answered only `MD025` and `MD040`.
 
 Waiting on research:
 evolve `rust-linter-core` or start a new core,
