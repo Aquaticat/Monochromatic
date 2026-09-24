@@ -45,7 +45,8 @@ match stack.pop() {
 
 A search over the published parser's `src/` for a maximum nesting option or limit found `parse_sequence` calls,
  but no depth-setting branch.
- This is a **contract difference**, not evidence of a defect in Biome.
+ This is a **contract difference**,
+ not evidence of a defect in Biome.
  The editor's existing structured parser uses a 512-depth boundary at
  `package/module/jsonc-edit/src/parse.ts:21,54`.
  The upstream clone `~/temp/agent/biome-source-2026-09-24` at `2f629c5` still has the explicit-stack path in
@@ -106,7 +107,8 @@ The syntax-error check runs **before** the token walk,
  This is a consumer-side acceptance gate,
  not an upstream parser configuration.
 
-**Tradeoff:** This gate runs after Biome has allocated the parsed syntax tree.
+**Tradeoff:**
+ This gate runs after Biome has allocated the parsed syntax tree.
  It establishes the editor's accepted/rejected boundary at the tested depths,
  but is not an early resource limit for arbitrary adversarial nesting.
  A separately validated lexical preflight or an input-size policy would be needed if early resource rejection is required.
@@ -117,7 +119,7 @@ The syntax-error check runs **before** the token walk,
 ## What does not work
 
 - Setting `JsonParserOptions` cannot select a maximum depth in version 0.5.7;
-   its published fields are limited to comments and trailing commas (`src/parser.rs:16-30`).
+   its published fields are limited to comments and trailing commas (`biome_json_parser-0.5.7/src/parser.rs:16-30`).
 - Counting raw `[` and `{` bytes treats delimiters inside quoted strings or comments as containers.
    The verified guard uses grammar-token text instead.
 - Recursing through every nested syntax node for a postparse guard could reintroduce a stack risk at the accepted depth.
