@@ -135,6 +135,13 @@ calls construction of an invalid `char` immediate undefined behavior. This is a 
   }
   ```
 
+- The safe control was expanded to compile and exercise a source-wide `\u`
+  guard. `mise run test:momoa-surrogate:control` now prints
+  `checked scalar and conservative escape guard: pass`.
+  The guard rejects actual JSON Unicode escapes (`\uD800`, `\u0041`),
+  a harmless escaped backslash, and a comment containing `\u`;
+  it accepts plain text and raw Unicode. This checks the guard predicate,
+  not an end-to-end Momoa parse.
 - **Do not run** a Momoa parse of the surrogate samples on the real host.
   A pre-patch failure and post-patch success must be established only in
   a private, credential-free container bounded to 2 GiB and 2 CPUs, after
@@ -170,31 +177,31 @@ has no reliable diagnostic. No unsafe reproducer was executed on the host.
 
 ## Verified workarounds
 
-No end-to-end workaround was run in this session. A conservative,
-**source-audited but runtime-unverified** consumer boundary is to reject
-*every* input containing the two source characters `\u` before any Momoa
-parse method sees it:
+The following conservative guard was compiled and exercised in the std-only
+`~/temp/agent/momoa-surrogate-control.rs` harness. Call it at every consumer
+entry point **before** any Momoa parse call; no other path may bypass it.
+No end-to-end Momoa parse was run, so integration of this guard with Momoa
+remains unverified.
 
 ```rust
-// Consumer-side example, not a patch to Momoa
-fn guarded_jsonc_parse(
-    source: &str,
-) -> Result<momoa::ast::Node, Box<dyn std::error::Error>> {
+// Consumer-side guard; does not import or execute Momoa.
+fn guard_unicode_escapes(source: &str) -> Result<(), &'static str> {
     if source.contains(r"\u") {
-        return Err("Unicode escapes are not accepted by this Momoa boundary".into());
+        return Err("Unicode escapes refused at this boundary");
     }
-    Ok(momoa::jsonc::parse(source)?)
+    Ok(())
 }
 ```
 
-This blocks every syntactically valid `\uXXXX` path to the unchecked
-conversion in `rust/src/parse.rs:326-348`, including property names and
-pairs. It also rejects harmless `\u0041`, literal escaped backslashes,
-comments containing `\u`, and invalid text that would already fail parsing.
+The harness verified that this predicate rejects every input containing
+`\u`, including `\uD800`, and accepts examples without that sequence.
+Source inspection of `rust/src/parse.rs:326-348` shows the guard removes all
+syntactically valid Unicode escape paths to unchecked scalar construction
+when it is applied before parsing. It also rejects harmless `\u0041`,
+literal escaped backslashes, comments containing `\u`, and invalid text that
+would already fail parsing. This over-rejection is deliberate.
 Callers needing Unicode escape support or exact acceptance semantics must
-choose a different parser or implement and validate a full JSONC-aware guard
-before parsing. This wrapper has not been compiled or run here; do not
-interpret it as behavioral verification.
+choose a different parser or implement and validate a full JSONC-aware guard.
 
 ## What does not work
 
