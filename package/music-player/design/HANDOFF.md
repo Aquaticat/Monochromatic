@@ -4656,8 +4656,11 @@ screens**;
 640,
  480 × 600 and 1100 × 640px Slint Search rasters are historical experiments,
 not the target geometry.
- `questions/current.html` still embeds that obsolete
-desktop-sized review and must not be used to request feedback until replaced.
+ At that correction point,
+ `questions/current.html` still embedded the obsolete
+desktop-sized review.
+ It has since been replaced by native Fold-panel evidence;
+see the current section of this handover.
 D49 records cover 1080 × 2424 physical px (about 411 × 923dp) and unfolded inner
 2076 × 2152 physical px (about 852 × 883dp) as the only design frames.
 Desktop window sizing is a developer-owned frame around the inherited treatment,
@@ -4675,22 +4678,15 @@ The existing Pixel_9_Pro_Fold AVD was reprobed:
  It was started in the verified
 windowed host-GPU mode;
  no KWin scripting was used.
- Next design-only step:
- add a
-throwaway debug-only Compose Search study to the existing prototype worktree,
- capture
-player trigger,
- opened page,
- results and empty/unavailable states on both folded
-cover and unfolded inner panels in light and dark,
- with actual Android status/navigation
-bars and measured frame.
- Then replace the active HTML form with those native
-opaque captures,
- reverify interaction/form/accessibility/offline behavior,
- and present
-without KWin.
- Never call the old Slint pixels target-native proof.
+ The subsequent design-only step added the
+throwaway debug-only Compose Search study,
+ captured player trigger and opened page
+states on both panels in light and dark,
+ and rebuilt the HTML review with those
+opaque native frames.
+ The old Slint pixels remain historical,
+ not target-native
+proof.
 
 ## Fold connector correction and native guard (2026-09-23)
 
@@ -4729,12 +4725,8 @@ The capture script guard at `df4debbd6` checks pixels across that band and every
 visible app text/action node for overlap;
  a button-only clearance check is
 insufficient.
- The corrected capture is running under the managed process
-`fold-search-connector-safe-capture` (`proc_e3b5`).
- Do not call the unfolded page
-validated until its real captures and guard pass in both schemes and at 100%/200%
-text;
- then rebuild the review against those images.
+ The first guarded capture (`proc_e3b5`) passed dark unfolded states but failed
+at the light player because the previous light palette used a near-white spacer.
 
 The stopped capture left the emulator unfolded in dark mode with `stay_on_while_plugged_in=7`;
 its pre-stop 2.0 font scale was restored after measuring it at 1.0.
@@ -4753,20 +4745,84 @@ trigger this failure;
  the light player wrapper had incorrectly selected the old
 `light-b` palette whose spacer is `scheme.surface`.
  Prototype commit `73155c653`
-switches that wrapper to the accepted white-spacer light treatment,
- and a fresh
-managed capture (`proc_ca57`,
- `fold-search-connector-capture-light-retry`) is
-running.
+switches that wrapper to the accepted white-spacer light treatment.
+ The fresh
+managed capture (`proc_ca57`) completed all cover and inner states in both schemes
+and at 100%/200% text.
  E2,
- `device-metrics.md` and `review-notes.md` 5q now require the exact
-black/white spacer fill as well as no content bounds crossing it.
- Do not present
-partial dark-only evidence as round completion.
- The capture will restore the
-state it measures at start;
- inspect and settle the AVD's stay-on setting before
-ending the round.
+ `device-metrics.md` and `review-notes.md` 5q require
+the exact black/white spacer fill as well as no content bounds crossing it.
+After capture,
+ `adb` measured unfolded state 2,
+ night mode yes,
+ font scale 2.0
+and `stay_on_while_plugged_in=7`.
+ The original stay-on value before the first
+interrupted capture was not recorded;
+ do not claim it was restored.
+
+## Current native Fold Search review (2026-09-23)
+
+Main commit `d983482ed` preserves all 28 guarded opaque PNG captures,
+ paired XML
+hierarchies and four Android role JSONs under `questions/{render,evidence}/`.
+The 72dp header and divider stay inside the unfolded left 414dp pane,
+ while
+results and empty-state messages occupy the right 414dp pane.
+ The centered
+24dp connector is physically empty with D41 black/D34 white fill.
+ Review
+validator `search-page-question.mjs` checks native dimensions,
+ stage labels,
+roles,
+ header/divider/body samples,
+ 15 connector pixel points on every inner
+frame and visible app node bounds.
+ In a disposable copy,
+ one mutated XML hit
+target crossing the connector and one recolored dark connector both made the
+validator fail as intended.
+ The inner 200% player's last mode target ends at
+physical y=2074,
+ the measured start of the navigation-bar frame;
+ the right
+track list scrolls.
+
+`questions/current.html` now embeds both panel families and both schemes,
+ with
+100% dp chassis previews,
+ a panel-switching player-to-Search walkthrough,
+200% player/results stress captures,
+ and free-text correction.
+ `mise run
+//package/music-player/design:build`,
+ `:lint` and `:test:unit` passed.
+ Browser
+verification exercised all flow controls,
+ both panel paths,
+ preview
+fit/reset/zoom/close and returned focus,
+ the response form and an offline reload;
+axe found zero violations in light and dark chrome,
+ and no browser console/page
+errors were reported.
+ Refresh the browser after the small final 200% wording
+correction before presenting.
+ No KWin automation was used.
+
+Next:
+ present the active review in Helium without KWin,
+ ask for corrections to
+the Search button and separate one-header page,
+ and record the user's answer.
+Do not ask for I/G/R codes or desktop window dimensions.
+ Static native evidence
+does not prove a live index,
+ result actions,
+ TalkBack focus,
+ or native Back
+restoration.
+ Design acceptance still cannot authorize production implementation.
 
 ## Issue tracking moves to Linear for this session
 
