@@ -313,8 +313,10 @@ source-level transitive clearance remains open where required.
    and CR-only returned `ParseError` at byte offset 18 rather than the next member.
    A bounded debug Biome adapter fixture accepted both endings with comment text `" x"` and reparsed its canonical output.
    The owned scratch scanner now stops at either CR or LF;
-   both isolated regressions and Clippy passed after the change.
-   Optimized and separate-consumer checks remain pending.
+   bounded debug and optimized regressions,
+   Clippy,
+   and a separate consumer's parse/emit/reparse for both endings passed.
+   The optimized Biome fixture remains pending.
 - A separate published `biome_json_parser` 0.5.7 syntax probe passed bounded debug and optimized release runs for
    escaped lone surrogate text,
    raw number tokens,

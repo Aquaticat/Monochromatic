@@ -552,10 +552,13 @@ A direct TypeScript bundle probe parsed a CRLF-separated object but returned a l
  and retained that value after canonical emission and reparse.
  Its optimized fixture remains unverified.
  The owned scratch scanner now stops at either CR or LF;
- a bounded debug run passed both independent regression tests,
- the remaining parser suite,
- and Clippy with warnings denied.
- The optimized owned run and separate consumer check remain pending.
+ bounded debug and optimized release suites passed both independent regressions and the remaining parser tests,
+ with Clippy warnings denied.
+ A separate scratch Rust consumer rebuilt the parser,
+ exercised both line endings across parse,
+ emit and reparse,
+ and printed `JSONC consumer parse and emit passed`.
+ The optimized Biome fixture remains pending.
  TypeScript production behavior remains unchanged pending foundation adoption.
 
 ## Existing-parser contract exits
