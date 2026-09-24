@@ -304,6 +304,11 @@ description = "Render candidate rasters through Helium CDP at Pixel 9 Pro Fold p
 shell = "node --input-type=module-typescript -e"
 run = ["{{vars.render_candidates}}", "{{vars.build_question}}"]
 
+[tasks."prototype:command:check"]
+description = "Type-check the nonfunctional desktop command-bar Slint study"
+dir = "{{config_root}}"
+run = "slint-viewer --check candidates/command-study.slint"
+
 [tasks.build]
 description = "Embed exact candidate renders into the self-contained questionnaire"
 shell = "node --input-type=module-typescript -e"
