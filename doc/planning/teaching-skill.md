@@ -60,6 +60,9 @@ That is positive feedback on this artifact, not a learner-mastery finding or fin
 [A working cross-domain probe](teaching-skill-transfer-probe.md) now contrasts the user's
 rotated-chicken critique, apples explanation, and Promise corrections.
 Its passing and near-miss cases are hypotheses for critique, not a cooking lesson or final skill.
+[A decision-time outline](teaching-skill-decision-outline.md) and
+[a static replay](teaching-skill-outline-replay.md) now test whether a future skill
+could catch the recorded failures without extending review verbs or assuming mastery.
 No skill design has been confirmed or implemented.
 
 ## Evidence from the user
@@ -1186,6 +1189,24 @@ result differs from an expected one. This is not an order to add more controls t
 current lesson or to claim an adult-teaching effect from school research.
 No non-measurable choice emerged from that probe, so no interview question follows it.
 
+## Candidate decision outline and static replay
+
+[The planning-only outline](teaching-skill-decision-outline.md) places the candidate
+process at decisions about authorized mode, learner goal, causal sequence,
+actionability, independent practice, learner-owned checks, medium, and evidence claims.
+[The replay ledger](teaching-skill-outline-replay.md) applies those branches to the
+quoted cooking failures, apples and callbacks, the rejected API-specification and
+open-ended interview questions, manual resolver semantics, identical Waiting displays,
+print parity, and design praise versus learner mastery.
+An independent review found false passes in the first outline: a cosmetic greeting edit
+could masquerade as independent chat construction, a later Create could masquerade as
+observation, and a review could silently become a rewrite.
+The revised exit criteria require the applicable branch obligations, a destination-level
+learner task, accepted semantic contracts, and evidence sufficient for each claim.
+This is a static specification replay, not evidence of automatic skill invocation or
+compliance by an agent. The model-invocation choice and cross-domain feedback rule
+remain proposed; the user has not confirmed the whole process or asked for implementation.
+
 ## Next action
 
 The correction handover records the completed lesson repair and verification boundary.
@@ -1205,8 +1226,10 @@ checks now name a learner-owned criterion, bounded mismatch interpretation, and 
 or stop at consequential steps. The current lesson already handles the rejection starter;
 its two disposable Waiting variations show why display text alone is not a diagnosis.
 This supports the planning refinement, not a claim of learner failure or final skill confirmation.
-No preference question survived this evidence review, so report the finding without
-asking another question. Do not infer learner mastery from artifact tests.
+The decision outline and static replay are ready for concrete critique;
+do not present them as a finished skill or claim they have been executed by an agent.
+No preference question survived the evidence review, so do not manufacture one.
+Do not infer learner mastery from artifact tests.
 The original request covers live teaching and authored materials; do not reopen that split
 or the confirmed default HTML and complete-print requirements without new evidence.
 Write additions in chunks no larger than the requested 200 to 500 lines.

@@ -9,6 +9,9 @@ The local Promises page is a source of counterexamples, not an accepted teaching
 The user marked the independent review's `Concerns that require real learner observation` section as fine.
 Do not turn that section into a learner-study requirement or an approval gate.
 The [implemented review corrections](../handover/promises-review-corrections.md) supply additional concrete evidence.
+A [planning-only decision outline](teaching-skill-decision-outline.md) and
+[static counterexample replay](teaching-skill-outline-replay.md) exercise this draft;
+neither is an implemented agent skill or final confirmation.
 
 ## Learner framing and prerequisite sequencing
 
