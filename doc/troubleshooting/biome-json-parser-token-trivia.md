@@ -86,7 +86,9 @@ The published `biome_json_parser` archive SHA-256 is
    `token.trailing_trivia().pieces()` yielded a piece with `kind().is_comment()` and `text() == "// c"`.
 - Working pattern:
    `comment_trivia_positions` parsed `{/*key*/"a":/*value*/1, //inline\n"b":2}` and found comments on
-   the trailing trivia of `{`, `:`, and `,` respectively.
+   the trailing trivia of `{`,
+   `:`,
+   and `,` respectively.
    The raw trivia location is not the editor's key/value owner.
 - Failing pattern:
    `descendants_tokens(...).any(|token| token.text() == "// c")` did not find an independent comment token.
