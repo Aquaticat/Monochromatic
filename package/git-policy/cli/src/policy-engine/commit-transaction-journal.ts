@@ -104,6 +104,14 @@ export type PreparedTransactionJournal = Readonly<{
    */
   addedPaths: readonly AddedPathRecord[];
   /**
+   Selected newline corrections whose matching worktree copies receive the settled bytes.
+   */
+  selectedWorktreePaths?: readonly AddedPathRecord[];
+  /**
+   Present for normalization without a commit; absence means legacy commit transaction.
+   */
+  operation?: 'normalize-only';
+  /**
    Exact intended Git tree OID.
    */
   intendedTreeOid: string;
@@ -258,6 +266,10 @@ export async function resolveCurrentHead({
  
  @param addedPaths - tracked paths policies added
  
+ @param selectedWorktreePaths - safely matched selected newline corrections
+ 
+ @param operation - normalization-only operation when no commit can be made
+ 
  @param intendedTreeOid - exact intended tree
  
  @returns durable journal value
@@ -275,6 +287,8 @@ export async function prepareTransactionJournal({
   amend,
   selectedPaths,
   addedPaths,
+  selectedWorktreePaths = [],
+  operation,
   intendedTreeOid,
 }: Readonly<{
   workspace: CommitTransactionWorkspace;
@@ -284,6 +298,8 @@ export async function prepareTransactionJournal({
   amend: boolean;
   selectedPaths: readonly string[];
   addedPaths: readonly AddedPathRecord[];
+  selectedWorktreePaths?: readonly AddedPathRecord[];
+  operation?: 'normalize-only';
   intendedTreeOid: string;
 }>,): Promise<PreparedTransactionJournal> {
   /**
@@ -398,6 +414,8 @@ export async function prepareTransactionJournal({
     mode,
     selectedPaths,
     addedPaths,
+    selectedWorktreePaths,
+    ...(operation === undefined ? {} : { operation, }),
     intendedTreeOid,
     directoryDevice: String(directoryMetadata.dev,),
     directoryInode: String(directoryMetadata.ino,),

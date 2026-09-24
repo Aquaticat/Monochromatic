@@ -65,6 +65,7 @@ const DECODER = new TextDecoder(
 export type CommitTransactionRecoveryResult =
   | 'none'
   | 'commit-not-created'
+  | 'normalization-installed'
   | 'index-installed'
   | 'already-installed';
 
@@ -302,6 +303,39 @@ export async function recoverCommitTransaction({
    Current lock path.
    */
   const lockPath = `${realIndexPath}.lock`;
+  /**
+   Completion records for added and selected worktree files.
+   */
+  const worktreeRecords = [
+    ...journal.addedPaths,
+    ...(journal.selectedWorktreePaths ?? []),
+  ];
+  if (journal.operation === 'normalize-only') {
+    if (!headsEqual({ expected: journal.originalHead, current: currentHead, })
+      || ((!realIsOriginal) && (!realIsIntended)))
+      throw new CommitTransactionRecoveryError(`Normalization-only transaction conflicts with HEAD or index; recovery retained at ${directory}`,);
+    if (!realIsIntended) {
+      await assertOwnedLock({ journal, lockPath, },);
+      await installRecoveredIndex({
+        lockPath,
+        realIndexPath,
+        postIndexPath: stablePostIndexPath,
+        journal,
+      },);
+    }
+    else if (await pathExists(lockPath,)) {
+      await assertOwnedLock({ journal, lockPath, },);
+      await rm(lockPath,);
+    }
+    await installAddedWorktreeFiles({
+      gitPath,
+      cwd: effectiveCwd,
+      repositoryRoot: journal.repositoryRoot,
+      records: worktreeRecords,
+    },);
+    await removeRecoveryArtifacts({ directory, },);
+    return 'normalization-installed';
+  }
   if (headsEqual({
     expected: journal.originalHead,
     current: currentHead,
@@ -370,7 +404,7 @@ export async function recoverCommitTransaction({
       gitPath,
       cwd: effectiveCwd,
       repositoryRoot: journal.repositoryRoot,
-      records: journal.addedPaths,
+      records: worktreeRecords,
     },);
     await removeRecoveryArtifacts({ directory, },);
     return installationMarked ? 'already-installed' : 'index-installed';
@@ -391,7 +425,7 @@ export async function recoverCommitTransaction({
     gitPath,
     cwd: effectiveCwd,
     repositoryRoot: journal.repositoryRoot,
-    records: journal.addedPaths,
+    records: worktreeRecords,
   },);
   await removeRecoveryArtifacts({ directory, },);
   return 'index-installed';

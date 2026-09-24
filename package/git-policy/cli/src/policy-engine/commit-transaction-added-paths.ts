@@ -13,6 +13,7 @@ import type { Stats, } from 'node:fs';
 import {
   lstat,
   readFile,
+  realpath,
   rename,
   rm,
   writeFile,
@@ -45,16 +46,6 @@ const REGULAR_GIT_MODE = '100644';
  Git mode of an executable file.
  */
 const EXECUTABLE_GIT_MODE = '100755';
-
-/**
- Worktree permission bits for an ordinary file.
- */
-const REGULAR_FILE_MODE = 0o644;
-
-/**
- Worktree permission bits for an executable file.
- */
-const EXECUTABLE_FILE_MODE = 0o755;
 
 /**
  Owner-execute permission bit, which Git uses to decide the executable mode.
@@ -374,16 +365,16 @@ export async function assertAddablePath({
 
  @param bytes - intended content
 
- @param gitMode - Git mode deciding permission bits
+ @param mode - original worktree permission bits
  */
 async function replaceWorktreeFile({
   destination,
   bytes,
-  gitMode,
+  mode,
 }: Readonly<{
   destination: string;
   bytes: Uint8Array;
-  gitMode: AddedPathRecord['gitMode'];
+  mode: number;
 }>,): Promise<void> {
   /**
    Same-directory temporary path, so rename stays on one filesystem.
@@ -397,7 +388,7 @@ async function replaceWorktreeFile({
       prepared,
       bytes,
       {
-        mode: gitMode === EXECUTABLE_GIT_MODE ? EXECUTABLE_FILE_MODE : REGULAR_FILE_MODE,
+        mode,
         flag: 'wx',
       },
     );
@@ -502,6 +493,22 @@ export async function installAddedWorktreeFiles({
       record.path,
     );
     /**
+     Current worktree entry, without following a final symlink or a redirected parent.
+     */
+    // oxlint-disable-next-line no-await-in-loop -- Each selected path has independent worktree ownership.
+    const metadata = await lstat(destination,);
+    // oxlint-disable-next-line no-await-in-loop -- Canonical parent prevents writing through a changed directory symlink.
+    const parent = await realpath(dirname(destination,));
+    const safe = parent === dirname(destination,)
+      && metadata.isFile()
+      && (metadata.nlink === 1)
+      && (((metadata.mode & OWNER_EXECUTE_BIT) !== 0) === (record.gitMode === EXECUTABLE_GIT_MODE));
+    if (!safe) {
+      l.warn(`Worktree copy of ${record.path} is no longer an ordinary file with its original mode; the commit or normalization finished but this copy was kept. Compare it with HEAD (git diff HEAD -- ${record.path}).`,);
+      conflicted.push(record.path,);
+      continue;
+    }
+    /**
      Current worktree bytes.
      */
     // oxlint-disable-next-line no-await-in-loop -- Each path is compared and replaced before the next, so a conflict stops with earlier paths already complete.
@@ -527,7 +534,7 @@ export async function installAddedWorktreeFiles({
     await replaceWorktreeFile({
       destination,
       bytes: intended,
-      gitMode: record.gitMode,
+      mode: metadata.mode & 0o777,
     },);
     rewritten.push(record.path,);
   }

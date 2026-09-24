@@ -270,7 +270,7 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
   },);
   assertFixtureEqual({
     actual: await readBase64(`${repository}/commit.txt`,),
-    expected: Buffer.from('commit missing',)
+    expected: Buffer.from('commit missing\n',)
       .toString('base64',),
     context: 'packed commit worktree bytes',
   },);

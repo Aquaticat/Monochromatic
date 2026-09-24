@@ -25,6 +25,10 @@ import {
   preparePostIndex,
   writePrivateTree,
 } from './commit-transaction-index.ts';
+import {
+  completeNoChangeTransaction,
+  NO_CHANGE_NOT_APPLICABLE,
+} from './commit-transaction-no-change.ts';
 import { executePreparedCommit, } from './commit-transaction-finalize.ts';
 import { prepareTransactionJournal, } from './commit-transaction-journal.ts';
 import {
@@ -39,6 +43,10 @@ import {
   resolvePrivateCommitArgs,
 } from './commit-transaction-selection.ts';
 import { createCommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
+import {
+  selectedWorktreeRecords,
+  selectedWorktreeRoot,
+} from './commit-transaction-selected-worktree.ts';
 import { runPolicyEngine, } from './engine.ts';
 import { withFixSummary, } from './fix-summary.ts';
 import type {
@@ -206,6 +214,17 @@ export async function runCommitTransaction({
     snapshotPath: initialSnapshot,
   },);
   /**
+   Original selected blobs remain bound to the pre-fix private index.
+   */
+  const initialCandidates = await initialFacts.candidates();
+  /**
+   Canonical worktree root for safe selected-file completion.
+   */
+  const repositoryRoot = await selectedWorktreeRoot({
+    gitPath,
+    cwd: layout.effectiveCwd,
+  },);
+  /**
    Ordered private paths for previously visited exact states.
    */
   const visited: string[] = [initialSnapshot,];
@@ -238,9 +257,20 @@ export async function runCommitTransaction({
    Paths changed by at least one provisional patch.
    */
   const changedPaths = new Set<string>();
+  /**
+   Selected paths actually corrected by the core final-newline policy.
+   */
+  const newlinePaths = new Set<string>();
   while (pass.patches
     .length
     > 0) {
+    pass.events.forEach(function recordNewlineCorrection(event,) {
+      if ((event.type === 'finding')
+        && (event.policyId === 'final-newline')
+        && (event.fix === 'available')
+        && (event.path !== undefined))
+        newlinePaths.add(event.path,);
+    },);
     if (pass.exitCode === 2)
       return {
         policyResult: pass,
@@ -278,7 +308,7 @@ export async function runCommitTransaction({
       trigger: 'pre-forward',
       // Read-only selection never reaches here with patches; every other mode may add unchanged tracked paths.
       addedPathContext: {
-        repositoryRoot: layout.effectiveCwd,
+        repositoryRoot,
         realIndexPath: workspace.originalIndexPath,
         lifecycle: 'commit',
       },
@@ -363,6 +393,17 @@ export async function runCommitTransaction({
     pending: addedPaths.pending(),
   },);
   /**
+   Selected corrected files whose worktree still equals their original staged blob.
+   */
+  const selectedWorktreePaths = await selectedWorktreeRecords({
+    gitPath,
+    cwd: layout.effectiveCwd,
+    repositoryRoot,
+    indexPath: workspace.commitIndexPath,
+    initialCandidates,
+    newlinePaths,
+  },);
+  /**
    Selected and added paths the commit carries.
    */
   const committedPaths = addedPaths.candidatePaths();
@@ -375,6 +416,26 @@ export async function runCommitTransaction({
     intendedTreeOid,
   },);
   /**
+   A correction can remove every selected difference from HEAD.
+   */
+  const noChange = await completeNoChangeTransaction({
+    workspace,
+    gitPath,
+    cwd: layout.effectiveCwd,
+    repositoryRoot,
+    mode,
+    eligible: !region.hasAllowEmptyFlag && !region.hasAmendFlag && !concludesSequencer,
+    intendedTreeOid,
+    selectedPaths: committedPaths,
+    addedPaths: addedPathRecords,
+    selectedWorktreePaths,
+    pass,
+    changedPasses,
+    changedPaths: [...changedPaths,],
+  },);
+  if (noChange !== NO_CHANGE_NOT_APPLICABLE)
+    return noChange;
+  /**
    Durable prepared metadata used to detect interrupted ref advancement.
    */
   const journal = await prepareTransactionJournal({
@@ -385,6 +446,7 @@ export async function runCommitTransaction({
     amend: region.hasAmendFlag,
     selectedPaths: committedPaths,
     addedPaths: addedPathRecords,
+    selectedWorktreePaths,
     intendedTreeOid,
   },);
   /**
@@ -404,8 +466,9 @@ export async function runCommitTransaction({
     commitArgs,
     intendedTreeOid,
     originalHead: journal.originalHead,
-    repositoryRoot: layout.effectiveCwd,
+    repositoryRoot,
     addedPaths: addedPathRecords,
+    selectedWorktreePaths,
   },);
   return {
     policyResult: withFixSummary({
