@@ -137,8 +137,27 @@ Round 3 answers (user,
 - Doc tests are linted:
    Rust fences inside rustdoc go through the Rust rules,
    two processor levels deep ("Yes.").
-- Rust fence preparation is pending:
-   the user asked for examples.
+- Rust fences are prepared the way rustdoc prepares doc tests (A,
+   after examples):
+   the `# ` hidden-line marker is stripped,
+   and a fragment without `fn main` is wrapped in a synthetic one
+   that is never reported or counted.
+  Precedent:
+   `package/rust-module/rust-linter-pattern/src/fragment.rs:70-72` already wraps statements in a function body to parse them.
+- Every snippet needs a `//!` opening line (A),
+   the same file-level `require-rustdoc` requirement as real files.
+
+Round 4 answers so far (user,
+2026-09-23):
+
+- HCL front end:
+   reuse meow's vet,
+   [`doc/audit/tech-meow-hcl-front-end-vet-2026-09-17.md`](../audit/tech-meow-hcl-front-end-vet-2026-09-17.md)
+   (`hcl-edit` 0.9.7 with two local patches).
+- Language server framework:
+   reuse meow's vet,
+   [`doc/audit/tech-meow-language-server-framework-vet-2026-09-17.md`](../audit/tech-meow-language-server-framework-vet-2026-09-17.md)
+   (`lsp-server` 0.10.0 with `gen-lsp-types` 0.11.0).
 
 Adopted by the agent from settled answers,
 not vetoed in round 3:
@@ -247,47 +266,60 @@ not vetoed in round 3:
 - Incumbent coverage ledger:
    done,
    recorded in [`doc/planning/unified-linter-coverage-ledger.md`](../planning/unified-linter-coverage-ledger.md).
-- ESLint's current model in detail,
-   plus the `satteri` Rust crate API:
-   research agent running.
+- ESLint's current model and the Sätteri Rust API:
+   done,
+   recorded in [`doc/research/unified-linter-eslint-model.md`](../research/unified-linter-eslint-model.md).
+  It found a live offset bug in the incumbent,
+   filed as <https://github.com/Aquaticat/Monochromatic/issues/559>
+   and reproduced by the parent session
+   (`a` + U+1FA90 + `b [x](...)` puts the link at offset 6 instead of 5).
 - Naming precedent and candidate names:
-   research agent running.
+   done,
+   recorded in [`doc/research/unified-linter-naming.md`](../research/unified-linter-naming.md).
 - Processor backlog:
    what the incumbent rules report today on extracted Rust fences and rustdoc blocks,
    measured in a throwaway worktree:
    agent running.
+- Markdown parser crate:
+   `choosing-technology` vet running,
+   with a parity probe against the npm Sätteri tree over the 137 unit-test sources;
+   report due at `doc/audit/tech-unified-linter-markdown-parser-vet-2026-09-23.md`.
 
 ## Open questions
 
-Round 3,
+Round 4,
 asked 2026-09-23:
 
-- Rust fence preprocessing:
-   rustdoc doctest semantics
-   (hidden `# ` lines,
-   `fn main` wrapping)
-   or the raw fence body.
-- Which fences are Rust:
-   `rust` and `rs` with any attributes,
-   including `compile_fail`,
-   and unlabeled fences inside rustdoc.
-- Nested processing:
-   whether Rust fences inside rustdoc are linted by the Rust rules.
-
-Those three were asked again after the user answered only `MD025` and `MD040`.
+- Name
+   (research ranking `sumilint` > `monolint` > `monochromatic-lint`).
+- Configuration lookup:
+   ESLint v10 nearest-file-only,
+   one root file only,
+   or today's outermost-first merge.
+- Default output formatter:
+   `stylish` or `jsonl`.
+- Core:
+   evolve `rust-linter-core` in place or start a new core.
+- Inline rule configuration comments (`/* <name> rule: off */`):
+   adopt,
+   adopt except for non-suppressible rules,
+   or leave out.
+- Issue #559:
+   fix the TypeScript linter now or leave it until cutover.
+- Adoptions open to veto:
+   plugin crates per language,
+   virtual file paths usable in `files` globs,
+   categories becoming plugin configurations,
+   directive semantics with mandatory justification in core,
+   and ESLint's `warn` default for unused directives.
 
 Waiting on research:
-evolve `rust-linter-core` or start a new core,
-configuration lookup semantics,
-output formats and the default,
-directive spelling,
-how cli-git finds the binary,
 the Markdown parser crate,
-the name,
+how cli-git finds the binary (needs the backlog agent's build timing),
 and how to roll out processor findings that exist today.
 
 ## Next action
 
-Collect round 3 answers and the research results,
+Collect round 4 answers and the remaining research,
 record them here,
-then ask round 4.
+then ask round 5.
