@@ -5055,6 +5055,28 @@ candidate;
 context hides its duplicate Search action.
  A fresh native screenshot shows
 the icons in place.
+ The completed native matrix contained 44 PNG/XML pairs across cover/inner,
+light/dark,
+ states and 200% results.
+ I inspected the result and empty
+states,
+ but the user then set D50:
+ **the unfolded playback/control deck
+must never be hidden**.
+ Every matrix variant violates it:
+ docked Search
+overlays the deck,
+ while the full-width list and card layouts replace the
+screen containing it.
+ These images are rejected diagnostic evidence in
+the throwaway worktree,
+ not presentable review choices;
+ none was copied
+to main or opened for feedback.
+ Rebuild the alternatives around the
+existing `TransportBlock` ownership boundary,
+ retaining the deck at
+100% and 200%.
  No candidate is accepted.
  Assess
 composition on both panels at 100%/200% text,
