@@ -99,7 +99,10 @@ await describe({
         },);
         expect(alone.length,).toBeLessThan(RUN_WIDE_SEATS.length,);
         expect(alone.includes(SEAT_HYPER_TEXT_BEDROCK,),).toBe(true,);
-        expect(alone.includes(SEAT_SYNTHETIC_TEXT_EVERYWHERE,),).toBe(true,);
+        // The four-provider seat left every bench on 2026-09-24 (owner cull),
+        // so Bedrock alone no longer reaches it through the wide seats.
+        expect(RUN_WIDE_SEATS.includes(SEAT_SYNTHETIC_TEXT_EVERYWHERE,),).toBe(false,);
+        expect(alone.includes(SEAT_SYNTHETIC_TEXT_EVERYWHERE,),).toBe(false,);
         expect(alone.includes(SEAT_HYPER_ONLY,),).toBe(false,);
       },
     },),

@@ -86,7 +86,12 @@ const CLAIMS: readonly {
       'bedrock',
     ],
     reads: false,
-    holds: ['translator-dropped',],
+    // Culled from every role by the owner on 2026-09-24; the card stays for
+    // this fixture and the catalogs.
+    holds: [
+      'owner-culled',
+      'translator-dropped',
+    ],
   },
   {
     seat: SEAT_HYPER_VISION,

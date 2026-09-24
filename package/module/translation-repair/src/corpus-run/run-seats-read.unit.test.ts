@@ -20,6 +20,7 @@ import {
 
 import {
   awaitBenchQuorum,
+  reachableSeats,
   readJudgeSeats,
   rosterQuorumSize,
   RUN_TRANSLATORS,
@@ -286,7 +287,8 @@ await describe({
     it({
       name: 'SAYS SO when a bench the phase leans on is short of quorum and no provider has named its '
         + 'return, seating what it read without a wait: the seventh hakureico launch, Bedrock alone, whose '
-        + 'seats lines read roster=10 withheld=none with three seats reachable',
+        + 'seats lines read roster=10 withheld=none with three seats reachable (two since the owner culled '
+        + 'gpt-oss-120b on 2026-09-24)',
       fn: async () => {
         const script = scriptedViews({ views: [BEDROCK_ALONE,], },);
         const { logger, lines, } = capturingLogger();
@@ -303,7 +305,9 @@ await describe({
          The line that names the shortfall, if the reading said so.
          */
         const said = lines.find(function namesShortfall(line: string,): boolean {
-          return line.includes(`JUDGE SEATS phase=preparation short of quorum: wide 3 of ${
+          return line.includes(`JUDGE SEATS phase=preparation short of quorum: wide ${
+            String(reachableSeats({ seats: RUN_WIDE_SEATS, dry: BEDROCK_ALONE, },).length,)
+          } of ${
             String(RUN_WIDE_SEATS.length,)
           } reachable, quorum ${String(rosterQuorumSize({ rosterSize: RUN_WIDE_SEATS.length, },),)}`,);
         },);
