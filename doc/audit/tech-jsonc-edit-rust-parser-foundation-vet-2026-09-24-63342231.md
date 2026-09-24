@@ -382,12 +382,20 @@ A research-only agent searched GitHub repositories with `language:Rust`,
 
 Additional crates.io API terms yielded `jsonc lexer` eight results with no next page,
  `json-with-comments` four with no next page,
- and `comment preserving json` with a reported total of 1212.
- Pages 1 through 3 of the last query returned ten each;
- its first page produced new source leads,
- while the next two added no plausible parser under the delegated metadata screening.
- This does not prove that the other registry pages lack a candidate:
- the full broad `jsonc` page records are being screened independently under `~/temp/agent/jsonc-registry-full-pages/jsonc/`.
+ and `comment preserving json` with a delegated-time reported total of 1212.
+ The delegated request viewed its first three pages of ten;
+ its metadata screen cannot establish outcomes on the rest.
+ A later main-session alphabetical query with 100 results per page fetched all 13 pages under
+ `~/temp/agent/jsonc-registry-full-pages/comment-preserving-json/`.
+ The live index now reports 1214 records;
+ `mise run audit:registry-validate` confirmed 1214 distinct IDs,
+ contiguous pages,
+ stable totals in the saved response and terminal `next_page=null`.
+ An inclusive metadata lead display surfaced `zetch`,
+ `jsonrepair-rs` and `zoko-parser` for source screening,
+ but its keyword predicate can miss uninformative descriptions.
+ **Pagination**, not full candidate screening or saturation,
+ is established for this secondary query.
 
 Source leads for that screening include `jsonc_lexer` from [richplastow/jsonc-lexer](https://github.com/richplastow/jsonc-lexer),
  [`fracturedjson` 0.1.1](https://crates.io/crates/fracturedjson/0.1.1),
@@ -430,6 +438,31 @@ Besides already-ledgered parsers,
  source spans or raw values can sometimes supply an adapter with information absent from the public editor value.
  Such compositions remain pending until information recovery and adapter cost are checked,
  using the same rule applied to the Biome projection.
+
+### Secondary registry source leads
+
+The published `zetch` 0.1.0 JSON path calls `fjson::ast::parse`
+ (`src/read_write/langs/manager.rs:12-26`,
+ `src/read_write/langs/json.rs:245`),
+ and its reading path converts compact formatted data through `serde_json::Value` (`src/read_write/langs/json.rs:20-32`).
+ Its YAML path uses `nondestructive`;
+ that dependency is not an independent JSONC parser in this implementation.
+ `zetch` therefore adds a mutable editor wrapper over the separately evaluated `fjson` parser,
+ not a new parser foundation with a different accepted string/number/comment domain.
+
+The published `jsonrepair-rs` 0.2.1 public API (`src/lib.rs:35-64,144-284`) returns repaired JSON text
+ or an optional Serde value;
+ strict mode rejects inputs requiring repair,
+ including JSONC comments.
+ Neither mode returns owned key/value comment data as-is.
+ Its parser path merits no finalist promotion solely on a repair API.
+
+The published `zoko-parser` 0.2.0 selects `regex` as a normal dependency (`Cargo.toml:55-57`);
+ `src/lib.rs:14,263,464-479` invokes `Regex::new` from the parser's string-processing route.
+ Exclude it at the production-regex gate without executing its parser.
+ Zoko's own JSON-like grammar also admits non-JSONC string forms,
+ but this does not change the earlier regex exit.
+ These source screens do not settle the rest of the secondary query's metadata records.
 
 ### `fig` 4.1.0 as-is contract exit
 
