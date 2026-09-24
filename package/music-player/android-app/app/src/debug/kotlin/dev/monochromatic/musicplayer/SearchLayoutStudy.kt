@@ -57,8 +57,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 // `statusBars` positions the one header below native status UI.
 import androidx.compose.foundation.layout.statusBars
-// `weight` is a Row/Column scope modifier for flexible space.
-import androidx.compose.foundation.layout.weight
+// Row and Column scopes supply `weight` to flexible children without a separate import.
 // `windowInsetsPadding` applies measured bottom safe space.
 import androidx.compose.foundation.layout.windowInsetsPadding
 // `windowInsetsTopHeight` reserves the top system-bar region.
@@ -243,13 +242,13 @@ private fun SearchLayoutHeader(query: String, onQueryChange: (String) -> Unit,
         .background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
         val narrow = halfClearance != null && maxWidth < 600.dp
         val endPadding = if (narrow) halfClearance!! + 8.dp else 16.dp
+        val safeInputWidth = if (halfClearance != null) (maxWidth / 2 - halfClearance - 72.dp).coerceAtLeast(120.dp) else 120.dp
         Row(modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = endPadding),
             verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack, modifier = Modifier.size(48.dp)) {
                 Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back to player")
             }
             if (halfClearance != null && !narrow) {
-                val safeInputWidth = (maxWidth / 2 - halfClearance - 72.dp).coerceAtLeast(120.dp)
                 SearchLayoutInput(query = query, onQueryChange = onQueryChange,
                     modifier = Modifier.width(safeInputWidth))
                 Spacer(modifier = Modifier.weight(1f))
