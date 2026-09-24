@@ -949,10 +949,21 @@ covered (`questions/evidence/cover-round-cover-picker-p4-interaction.json`).
 P1/P3 deviation: the floating menu panel exceeds the baseline menu's 112 to 280dp width
 cap because the D31 name wall needs the full panel.
 
-## Desktop command-bar design round (native Slint study, awaiting I/G/R codes)
+## Desktop command-bar visual drafts, withdrawn pending MD3 redraw
 
-Three independent questions,
- no selection yet:
+The I/G/R questions are independent,
+ and no choice was made.
+ The first S/C matrix
+conflated in-app and global relationships;
+ the second I/G/R native Slint form was
+rejected as visibly non-MD3.
+ The candidates recorded here are historical design
+probes,
+ not current response options.
+ The replacement must use the Search bar/view
+visual and token evidence in `material-3-compliance.md`.
+
+The withdrawn I/G/R variant roles were:
 
 - **I1** dock the action surface below the player header (recommended);
   **I2** float
@@ -988,12 +999,15 @@ I1 has a 360 × 640px larger-text/long-label stress capture.
  E1 no-results and E2
 unavailable-action captures are contextual probes,
  not options.
- The form is
-`questions/current.html`;
- the native rasters are `questions/render/command-round-{i,g,r,e}*`.
-The discarded S × C first draft was not shown to the user;
- its evidence is marked
-historical in `questions/evidence/command-round-prior-art.md`.
+ The rejected form remains temporarily at
+`questions/current.html` only until replacement;
+ do not solicit codes from it.
+ The
+withdrawn native rasters are `questions/render/command-round-{i,g,r,e}*`.
+ The
+first S × C draft was not shown to the user;
+ its evidence is also historical in
+`questions/evidence/command-round-prior-art.md`.
  Native static rasters
 do not prove keyboard operation,
  accessible semantics,

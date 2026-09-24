@@ -64,32 +64,27 @@ at both seams).
  P4 remains provisional and a better picker may be explored before 1.x,
  without a promised replacement.
 
-The active round compares a design-only native Slint desktop command-bar study in
-`questions/current.html`.
- It asks three independent questions:
- I1 to I3 for the in-app
-placement,
- G1 or G2 for what the optional global invocation shows when another app was
-active,
- and R1 or R2 for whether future Ctrl+F search uses its own destination or an
-explicit mode in the same surface.
- Each is captured in both schemes at the current
-desktop app's preferred 480 × 600px size;
- wide,
- 360px larger-text,
- no-results and
-unavailable-action probes are contextual evidence,
- not extra choices.
- D25 settles the
-reserved shortcuts,
- not the surface relationship.
- The static prototype does not
-implement or verify hotkeys,
+The active work is redrawing the design-only desktop command-bar round against
+Material 3 Search bar/view visuals and tokens.
+ The native Slint I/G/R study in
+`questions/current.html` was rejected as visibly non-MD3;
+ **it is not an open vote**.
+The separate in-app placement,
+ optional global invocation,
+ and future Ctrl+F
+search-surface questions remain open until a corrected native comparison is built,
+checked against the local archive at matching scale,
+ and re-presented.
+ D25 settles
+only reserved shortcuts,
+ not surface separation.
+ Prototype rasters do not prove
+hotkeys,
  keyboard interaction,
  screen-reader semantics,
- a real OS
-quick window,
- or search indexing.
+ a real OS quick window,
+ or
+search indexing.
  The live backlog and developer-owned items are in
 `open-questions.md` section 0b.
 

@@ -137,14 +137,17 @@ could coexist with either in-app surface;
   C3 finds everything in one place but makes result relevance
   and Enter's effect less predictable.
 
-## Corrected active study, independent questions
+## Second study, independent axes but visually rejected
 
-The rebuilt throwaway Slint source is committed on the prototype branch as
+The second throwaway Slint source is committed on the prototype branch as
 `ee1b2d59c`,
  with native-fit fixes in `dbbf5116e` and `6d533f740`.
- Its new
-`questions/render/command-round-{i,g,r,e}*` captures replace the first matrix for
-review.
+ Its
+`questions/render/command-round-{i,g,r,e}*` captures separated the decision axes,
+but the user rejected the visible component as non-MD3.
+ These captures are also
+historical evidence,
+ not a live comparison.
  Every proposed state has an opaque light and dark Slint raster:
 
 - **I (in-app placement):** I1 docked below the header,
@@ -194,15 +197,14 @@ screenshot.
  not a measured
 OS UI-font preset.
 
-Current questionnaire rankings are **I1 > I2 > I3** (source anchor over floating,
+Withdrawn questionnaire rankings were **I1 > I2 > I3** (source anchor over floating,
 context retention over full replacement),
  **G2 > G1** (keep the previous task visible
 over raising the player),
  and **R1 > R2** (dedicated navigation room over mode
 switching).
- These are recommendations for separately selectable choices,
- not settled
-decisions.
+ They are neither settled decisions nor recommendations to carry into the MD3 redraw
+without a new visual review.
  Search targets,
  result ranking,
  a discoverable in-app entry and the exact

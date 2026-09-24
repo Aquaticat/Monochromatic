@@ -56,25 +56,42 @@ rounds (2026-09-17):
   chosen as the working baseline, not banned from exploration.
   K1's discouraging back
   navigation and K3's non-local sheet remain rejected.
-- **ACTIVE: desktop command-bar design round (D21/D25), awaiting one I, G and R code.**
-  Native Slint captures in light and dark compare in-app placement (I1 docked, I2
-  floating, I3 content replacement), optional global invocation (G1 raise player, G2
-  detached quick-window concept), and the relationship to future Ctrl+F search (R1
-  distinct destination, R2 explicit mode in the same surface).
-  These are independent
-  choices;
-  D25 reserves bindings but does not force separate surfaces.
-  The form is
-  `questions/current.html`;
-  none of these alternatives is settled yet.
-  Native static
-  frames do not prove keyboard behavior, screen-reader semantics, actual second-window
-  focus restoration, hotkey feasibility, action execution or search indexing.
-  Search
-  target scope and result ranking, the in-app visible entry and exact binding, and the
-  D21 Settings row remain open.
-  Cover-specific accessibility remains to be checked;
-  D39/D40 settled only the unfolded screen.
+- **ACTIVE: redraw the desktop command-bar round against MD3 visual sources.**
+  The
+  I/G/R decision axes remain independent:
+  in-app placement,
+  optional global
+  invocation,
+  and the Ctrl+F search-surface relationship.
+  But the first S/C matrix
+  was withdrawn for conflating axes,
+  and the second native Slint I/G/R form was
+  rejected by the user as visibly non-MD3.
+  `questions/current.html` still holds that
+  rejected form while the replacement is being built;
+  **do not ask for I/G/R codes from
+  it**.
+  The correction must follow the local Search bar/view images and measured
+  AndroidX tokens documented in `material-3-compliance.md`,
+  compare the rerender at
+  matching scale,
+  then revalidate and present without KWin automation.
+  D25 reserves
+  bindings but does not force separate surfaces.
+  Search target scope and result
+  ranking,
+  the in-app visible entry and exact binding,
+  and the D21 Settings row remain
+  open.
+  Native static frames do not prove keyboard behavior,
+  screen-reader semantics,
+  second-window focus restoration,
+  hotkey feasibility,
+  action execution or search
+  indexing.
+  Cover-specific accessibility remains open;
+  D39/D40 settled only the
+  unfolded screen.
 - **OPEN: keyboard map revision (section 6):**
   one revised IntelliJ-aligned map,
   including what ↑/↓ does after D43 removed the volume popover.

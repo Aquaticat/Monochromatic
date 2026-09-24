@@ -676,6 +676,29 @@ guidelines pages in the local archive (`~/Downloads/m3.material.io`, mirrored in
 its reason.
  Adjacent component pages are not evidence for the component being drawn.
 
+## 5o. A native raster was mistaken for Material 3 visual evidence
+
+The desktop command-bar study used real Slint captures and a validated offline form,
+but drew a generic outlined palette rather than MD3's fully rounded 56dp Search bar,
+28dp docked Search view,
+ official icons,
+ BodyLarge typography and list treatment.
+The user rejected the comparison at sight.
+ Passing screenshot dimensions,
+ color
+samples and Axe on the questionnaire did not establish component lineage.
+
+**The rule.**
+ Before presenting a Material-based visual round,
+ inspect its own local
+archive images and tokens,
+ apply the visible anatomy to the native prototype,
+ and
+compare the rendered component with that reference at the same logical scale.
+Record each intentional platform adaptation and keep prototype renderability,
+form accessibility,
+ and actual visual fidelity as separate verification claims.
+
 ## Standing standards for this project
 
 1. **EVERY question form ends with a free-text field.
