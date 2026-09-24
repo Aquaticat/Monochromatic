@@ -192,6 +192,12 @@ export function prepareDocumentPair(
    Declared correspondences as sheet lines.
    */
   const identityLines = collectIdentityLines(frontMatterData,);
+  /**
+   Declared name pairs, source form beside declared rendering, for the
+   glossary note (class eighty-six) and the publication rule's floor (class
+   one hundred fourteen).
+   */
+  const declaredPairs = declaredNamePairs(frontMatterData,);
 
   /**
    Contributor public handles existing English attribution establishes.
@@ -230,7 +236,7 @@ export function prepareDocumentPair(
       sourceText,
       targetText,
       // A linked title that names the declared person says so (class eighty-six).
-      declared: declaredNamePairs(frontMatterData,),
+      declared: declaredPairs,
     },),
     ...contextLines,
   ];
@@ -546,6 +552,7 @@ export function prepareDocumentPair(
     // Omitted when nothing was attested, for the same reason.
     ...((attestedDetails.length === 0) ? {} : { attestedDetails, }),
     declaredNames,
+    ...((declaredPairs.length === 0) ? {} : { declaredNamePairs: declaredPairs, }),
     alignmentFindings: [
       ...sectionFindings,
       ...declinedFindings,

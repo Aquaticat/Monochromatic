@@ -1,4 +1,5 @@
 import type { SliceSyntax, } from './chunk-document.ts';
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import {
   type LaneContestOutcome,
   settleLaneContestBallots,
@@ -280,6 +281,10 @@ export type LaneContestChoiceVerdict = {
  
  @param syntax - explicit syntax role, absent for ordinary prose
  
+ @param declared - name pairs the front matter declares, which the rule
+ reads for a linked title naming a declared person (class one hundred
+ fourteen); none leaves that floor silent
+ 
  @returns Whether the choice may ship, and why not when it may not
  
  @example
@@ -295,6 +300,7 @@ export function laneContestChoiceVerdict(
     repairText,
     translateText,
     syntax,
+    declared = [],
   }: {
     readonly outcome: LaneContestOutcome;
     readonly sourceText: string;
@@ -302,6 +308,7 @@ export function laneContestChoiceVerdict(
     readonly repairText: string;
     readonly translateText: string;
     readonly syntax?: SliceSyntax;
+    readonly declared?: readonly DeclaredNamePair[];
   },
 ): LaneContestChoiceVerdict {
   if (outcome.choice === 'neither') {
@@ -337,6 +344,7 @@ export function laneContestChoiceVerdict(
     candidateText,
     pageText: incumbentText,
     ...((syntax === undefined) ? {} : { syntax, }),
+    declared,
   },);
   if (validation.kind === 'valid')
     return {
@@ -375,6 +383,10 @@ export function laneContestChoiceVerdict(
  
  @param syntax - explicit syntax role, absent for ordinary prose
  
+ @param declared - name pairs the front matter declares, which the rule
+ reads for a linked title naming a declared person (class one hundred
+ fourteen); none leaves that floor silent
+ 
  @returns Whether selected lane is structurally publishable
  
  @example
@@ -390,6 +402,7 @@ export function laneContestChoiceMayShip(
     repairText,
     translateText,
     syntax,
+    declared = [],
   }: {
     readonly outcome: LaneContestOutcome;
     readonly sourceText: string;
@@ -397,6 +410,7 @@ export function laneContestChoiceMayShip(
     readonly repairText: string;
     readonly translateText: string;
     readonly syntax?: SliceSyntax;
+    readonly declared?: readonly DeclaredNamePair[];
   },
 ): boolean {
   /**
@@ -409,6 +423,7 @@ export function laneContestChoiceMayShip(
     repairText,
     translateText,
     ...((syntax === undefined) ? {} : { syntax, }),
+    declared,
   },);
   return verdict.mayShip;
 }

@@ -1,4 +1,5 @@
 import type { ArchiveDispute, } from './archive-dispute.ts';
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import { archiveStandInFor, } from './consolidate-archive-stand-in.ts';
 import {
   type Logger,
@@ -23,21 +24,21 @@ import {
   type ArtifactConsolidateSlice,
   describeConsolidateSlice,
 } from './corpus-run/artifact-two-lane-consolidate.ts';
-import type {
-  ArtifactContestSlice,
-  ArtifactContestVerdict,
-} from './corpus-run/artifact-two-lane-contest.ts';
+import type { ArtifactContestSlice, } from './corpus-run/artifact-two-lane-contest.ts';
 import type { ProjectedLanes, } from './corpus-run/artifact-two-lane-derive.ts';
 import { indexConsolidationInputs, } from './consolidate-driver-index.ts';
+import {
+  type BoughtConsolidation,
+  laneChoiceOf,
+  storedConsolidationOf,
+} from './consolidate-driver-records.ts';
 import type { SliceNeighbourContext, } from './fidelity-window.ts';
-import type { LaneChoice, } from './lane-contest-wire.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import { armSliceCost, } from './slice-cost-log.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
   reuseTwinOrBuy,
   type TwinMemo,
-  type TwinStored,
 } from './twin-memo.ts';
 import { mapOverlapped, } from './overlapped-map.ts';
 import { ConsolidationLedgerGapError, } from './consolidation-ledger-gap.ts';
@@ -63,69 +64,6 @@ import { NaturalnessCompletenessError, } from './naturalness-completeness-error.
 // names everything the stages see, while `ConsolidationSettlement` carries no
 // slice index needing restamp. An unsettled panel is neither persisted nor
 // memoized, so its twin asks again exactly as a warm run would.
-
-/**
- Fresh consolidation beside whether it became warm-run evidence.
- 
- @example
- ```ts
- const bought: BoughtConsolidation = { settlement, persisted: true, };
- ```
- */
-type BoughtConsolidation = {
-  readonly settlement: ConsolidationSettlement;
-  readonly persisted: boolean;
-};
-
-/**
- Reads cache-eligible record from fresh consolidation.
- 
- @param bought - fresh result beside persistence status
- 
- @returns Record a twin may reuse, or deliberate nothing
- 
- @example
- ```ts
- const stored = storedConsolidationOf({ settlement, persisted: true, },);
- ```
- */
-function storedConsolidationOf(
-  bought: BoughtConsolidation,
-): TwinStored<ConsolidationSettlement> {
-  return bought.persisted
-    ? {
-      kind: 'stored',
-      record: bought.settlement,
-    }
-    : { kind: 'nothing', };
-}
-
-/**
- Reads which lane the contest backed out of the verdict it recorded.
- 
- BOTH WAYS OF NOT SETTLING READ AS `neither`, deliberately. The record keeps
- `settled-neither` apart from `quorum-not-met` because they are different
- facts about the run, but this function asks which LANE stood. Neither did.
- `standingTextFor` then uses archive as comparison baseline so consolidation
- can recover, while final-selection guard prevents that unendorsed baseline
- from becoming publication fallback.
- 
- @param verdict - what the contest recorded for this slice
- 
- @returns Lane the contest backed, or the refusal
- 
- @example
- ```ts
- const choice = laneChoiceOf({ verdict, },);
- ```
- */
-function laneChoiceOf(
-  { verdict, }: { readonly verdict: ArtifactContestVerdict; },
-): LaneChoice {
-  if (verdict.kind === 'lane-won')
-    return verdict.lane;
-  return 'neither';
-}
 
 /**
  Asks the roster for a third rendering at every slice the contest was asked
@@ -203,6 +141,7 @@ export async function consolidateDocument(
     overlap = 1,
     beforeSlice,
     archiveDisputes,
+    declaredNamePairs = [],
     l,
   }: {
     readonly client: SyntheticClient;
@@ -214,6 +153,12 @@ export async function consolidateDocument(
      where the contest chose neither lane (class one hundred seven).
      */
     readonly archiveDisputes?: ReadonlyMap<number, ArchiveDispute>;
+    /**
+     Name pairs the front matter declares, which the publication rule reads
+     for a linked title naming a declared person (class one hundred
+     fourteen); none leaves that floor silent.
+     */
+    readonly declaredNamePairs?: readonly DeclaredNamePair[];
     readonly contests: readonly ArtifactContestSlice[];
     readonly modelIds: readonly RosterModelId[];
     readonly judgeModelIds?: readonly RosterModelId[];
@@ -389,6 +334,7 @@ export async function consolidateDocument(
       contestVerdict: contest.verdict,
       sliceIndex: row.sliceIndex,
       l: dl,
+      declared: declaredNamePairs,
     },);
 
     /**
@@ -407,6 +353,7 @@ export async function consolidateDocument(
       standingEligible: standingValid,
       ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
+      declared: declaredNamePairs,
     },);
 
     /**
@@ -443,6 +390,7 @@ export async function consolidateDocument(
       ballots: contest.ballots,
       ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
+      declared: declaredNamePairs,
       ...((identityContext === undefined) ? {} : { identityContext, }),
       ...((referenceContext === undefined) ? {} : { referenceContext, }),
       ...((disputeNote === undefined) ? {} : { archiveDisputeNote: disputeNote, }),

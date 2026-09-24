@@ -1,4 +1,5 @@
 import type { SliceSyntax, } from './chunk-document.ts';
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
@@ -38,6 +39,10 @@ const REFUSED_FINDING = 'translate-candidate-refused';
 
  @param lineStructured - whether the slice owes one line per line
 
+ @param declared - name pairs the front matter declares, which the rule
+ reads for a linked title naming a declared person (class one hundred
+ fourteen); none leaves that floor silent
+
  @returns Candidates the rule accepts, with a finding per candidate withheld
 
  @example
@@ -52,12 +57,14 @@ export function floorTranslateVoices(
     incumbentText,
     syntax,
     lineStructured,
+    declared = [],
   }: {
     readonly voices: readonly HeardVoice<TranslateReportWire>[];
     readonly sourceText: string;
     readonly incumbentText: string;
     readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
+    readonly declared?: readonly DeclaredNamePair[];
   },
 ): {
   readonly voices: readonly HeardVoice<TranslateReportWire>[];
@@ -81,6 +88,7 @@ export function floorTranslateVoices(
       pageText: incumbentText,
       ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
+      declared,
     },);
     // A RULE THAT CANNOT SAY keeps the candidate: only a refusal withholds.
     if (validation.kind !== 'invalid')

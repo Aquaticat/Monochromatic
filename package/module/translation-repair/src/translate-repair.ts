@@ -4,6 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import { CONTRIBUTOR_AUTHORITY_FINDING, } from './contributor-translation-guard.ts';
 import { producedVolumeBound, } from './produced-volume-bound.ts';
 import { attemptStageCall, } from './stage-call.ts';
@@ -79,6 +80,10 @@ export type RepairOutcome = {
  @param lineStructured - whether the line-structure rule governs this slice,
  which makes merging its lines a fault the author is sent back to fix
  
+ @param declared - name pairs the front matter declares, which the
+ publication rule reads for a linked title naming a declared person (class
+ one hundred fourteen)
+ 
  @param l - stage logger
  
  @returns Final voice for this model plus what was recorded
@@ -97,6 +102,7 @@ async function repairOneCandidate(
     pageText,
     syntax,
     lineStructured,
+    declared = [],
     priorMessages,
     signal,
     perCallTimeoutMs,
@@ -109,6 +115,7 @@ async function repairOneCandidate(
     readonly pageText: string;
     readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
+    readonly declared?: readonly DeclaredNamePair[];
     readonly priorMessages: readonly ChatMessage[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -139,6 +146,7 @@ async function repairOneCandidate(
     pageText,
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
+    declared,
   },);
   if (validation.kind === 'valid')
     return {
@@ -246,6 +254,7 @@ async function repairOneCandidate(
     pageText,
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
+    declared,
   },);
 
   // A revision that still fails is NOT taken. The model was asked to fix these
@@ -304,6 +313,10 @@ async function repairOneCandidate(
  @param lineStructured - whether the line-structure rule governs this slice,
  which makes merging its lines a fault the author is sent back to fix
  
+ @param declared - name pairs the front matter declares, which the
+ publication rule reads for a linked title naming a declared person (class
+ one hundred fourteen)
+ 
  @param l - stage logger
  
  @returns Final voices in the order given, plus every finding
@@ -322,6 +335,7 @@ export async function repairInvalidCandidates(
     pageText = incumbentText,
     syntax,
     lineStructured = false,
+    declared = [],
     priorMessages,
     signal,
     perCallTimeoutMs,
@@ -334,6 +348,7 @@ export async function repairInvalidCandidates(
     readonly pageText?: string;
     readonly syntax?: SliceSyntax;
     readonly lineStructured?: boolean;
+    readonly declared?: readonly DeclaredNamePair[];
     readonly priorMessages: readonly ChatMessage[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -356,6 +371,7 @@ export async function repairInvalidCandidates(
         pageText,
         ...((syntax === undefined) ? {} : { syntax, }),
         lineStructured,
+        declared,
         priorMessages,
         signal,
         perCallTimeoutMs,

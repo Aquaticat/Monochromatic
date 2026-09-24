@@ -413,6 +413,9 @@ async function runEntryPipeline(
       ...((prepared.referenceContext === undefined)
         ? {}
         : { referenceContext: prepared.referenceContext, }),
+      ...((prepared.declaredNamePairs === undefined)
+        ? {}
+        : { declaredNamePairs: prepared.declaredNamePairs, }),
       entryCacheDir,
       pipelineDigest,
       signal: deadline.callSignal,

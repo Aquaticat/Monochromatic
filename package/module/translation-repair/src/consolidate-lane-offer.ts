@@ -1,4 +1,5 @@
 import type { SliceSyntax, } from './chunk-document.ts';
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import type { LaneText, } from './translate-candidates.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
 
@@ -51,6 +52,10 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
  the Chinese line of a bilingual pair was refused as the standing and offered
  anyway because the offer's rule ran without this flag)
 
+ @param declared - name pairs the front matter declares, which the rule
+ reads for a linked title naming a declared person (class one hundred
+ fourteen); none leaves that floor silent
+
  @returns Lane texts to put on the slate, repair before translate; none when
  the standing is an endorsed eligible lane
 
@@ -70,6 +75,7 @@ export function laneTextsForSlate(
     standingEligible,
     syntax,
     lineStructured = false,
+    declared = [],
   }: {
     readonly sourceText: string;
     readonly incumbentText: string;
@@ -80,6 +86,7 @@ export function laneTextsForSlate(
     readonly standingEligible: boolean;
     readonly syntax?: SliceSyntax;
     readonly lineStructured?: boolean;
+    readonly declared?: readonly DeclaredNamePair[];
   },
 ): readonly LaneText[] {
   if (standingMayShip && standingEligible)
@@ -115,6 +122,7 @@ export function laneTextsForSlate(
       pageText: incumbentText,
       ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
+      declared,
     },);
     return validation.kind === 'valid';
   },);

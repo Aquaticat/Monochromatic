@@ -3,6 +3,7 @@ import { contributorAuthorityFindings, } from './contributor-translation-guard.t
 import { EMPTY_SLICE_SKELETON, } from './empty-slice-skeleton.ts';
 import { validateFrontMatterTranslation, } from './front-matter-translation.ts';
 import { compareLineCounts, } from './line-structure-guard.ts';
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import type { ProtectedAtom, } from './protected-atom.ts';
 import {
   sourceOnlyBreakFindings,
@@ -409,6 +410,10 @@ function compareBlocks(
  alone: the decision is a union over the slice AND its enclosing chunk, and
  the slice half alone covers 55 slices where the union covers 211
  
+ @param declared - name pairs the front matter declares, so a linked title
+ naming a declared person is held to the declared form (class one hundred
+ fourteen). Defaults to none, which leaves that floor silent
+ 
  @returns Verdict, with findings written for the model that wrote it
  
  @example
@@ -423,12 +428,14 @@ export function validateTranslatedSlice(
     pageText = '',
     syntax,
     lineStructured = false,
+    declared = [],
   }: {
     readonly sourceText: string;
     readonly candidateText: string;
     readonly pageText?: string;
     readonly syntax?: SliceSyntax;
     readonly lineStructured?: boolean;
+    readonly declared?: readonly DeclaredNamePair[];
   },
 ): SliceValidation {
   if (syntax === 'front-matter') {
@@ -501,13 +508,15 @@ export function validateTranslatedSlice(
   /**
    What the original carries that the candidate must carry too: its footnote
    markers (class ninety-two), its second-person address (class
-   ninety-seven) and its bracketed work titles in English (class
-   ninety-eight).
+   ninety-seven), its bracketed work titles in English (class
+   ninety-eight) and a declared name inside a linked title (class one
+   hundred fourteen).
    */
   const carryFindings = sourceCarryFindings({
     sourceText,
     candidateText,
     pageText,
+    declared,
   },);
   if (carryFindings.length > 0) {
     return {

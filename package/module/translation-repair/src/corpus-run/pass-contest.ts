@@ -1,4 +1,5 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import type { DeclaredNamePair, } from '../linked-title-declared-name.ts';
 
 import type { DocumentLanesResult, } from '../document-lanes.ts';
 import type { RunClient, } from './run-client-contract.ts';
@@ -65,6 +66,7 @@ export async function runPassContest(
     frontMatterSlices,
     identityContext,
     referenceContext,
+    declaredNamePairs,
     entryCacheDir,
     pipelineDigest,
     signal,
@@ -77,6 +79,7 @@ export async function runPassContest(
     readonly frontMatterSlices: ReadonlySet<number>;
     readonly identityContext?: string;
     readonly referenceContext?: string;
+    readonly declaredNamePairs?: readonly DeclaredNamePair[];
     readonly entryCacheDir: string;
     readonly pipelineDigest: PipelineDigest;
     readonly signal: AbortSignal;
@@ -112,6 +115,9 @@ export async function runPassContest(
     },),
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
+    // A linked title naming a declared person takes the declared form on the
+    // contest winner too (class one hundred fourteen).
+    ...((declaredNamePairs === undefined) ? {} : { declaredNamePairs, }),
     cache: await openLaneContestCache({
       dir: entryCacheDir,
       generation: pipelineDigest,

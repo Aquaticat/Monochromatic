@@ -74,6 +74,7 @@ export function consolidationPolishConfiguration(
       judgeModelIds: models.judgeModelIds,
       gateModelIds,
       declaredNames: prepared.declaredNames,
+      ...((prepared.declaredNamePairs === undefined) ? {} : { declaredNamePairs: prepared.declaredNamePairs, }),
       definitions: collectDefinitions({
         document: parseDocument({ text: prepared.targetText, },),
       },),

@@ -176,6 +176,7 @@ export async function produceConsolidations(
         pageText: subject.incumbentText,
         ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
         lineStructured: subject.lineStructured,
+        ...((subject.declared === undefined) ? {} : { declared: subject.declared, }),
       },),
     };
   }

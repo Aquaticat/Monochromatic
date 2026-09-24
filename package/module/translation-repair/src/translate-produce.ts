@@ -7,6 +7,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { Candidate, } from './candidate-select-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import { producedVolumeBound, } from './produced-volume-bound.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
@@ -101,6 +102,10 @@ export type ProducedSlate = {
  @param lineStructured - whether the enclosing chunk's original is
  line-structured, decided by the caller
  
+ @param declared - name pairs the front matter declares, which the
+ publication rule reads for a linked title naming a declared person (class
+ one hundred fourteen)
+ 
  @param signal - caller abort honored by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -128,6 +133,7 @@ export async function produceTranslateSlate(
     syntax,
     followupEvidence,
     lineStructured,
+    declared = [],
     signal,
     perCallTimeoutMs,
     l,
@@ -144,6 +150,7 @@ export async function produceTranslateSlate(
     readonly syntax?: SliceSyntax;
     readonly followupEvidence?: TranslateFollowupEvidence;
     readonly lineStructured: boolean;
+    readonly declared?: readonly DeclaredNamePair[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -212,6 +219,7 @@ export async function produceTranslateSlate(
     incumbentText,
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
+    declared,
     priorMessages: plan.messages,
     signal,
     perCallTimeoutMs,
@@ -229,6 +237,7 @@ export async function produceTranslateSlate(
     incumbentText,
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
+    declared,
   },);
   /**
    Slate of distinct proposals with the incumbent among them.

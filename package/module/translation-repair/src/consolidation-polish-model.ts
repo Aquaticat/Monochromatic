@@ -1,4 +1,5 @@
 import type { AbsoluteNaturalnessReviewOutcome, } from './absolute-naturalness-review-stage.ts';
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import type { ConsolidationPolishGateOutcome, } from './consolidation-polish-gate-stage.ts';
 import type { RepairJudgedRound, } from './repair-round-record.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -33,6 +34,12 @@ export type ConsolidationPolishConfig = {
    Declared target name forms protected from deletion.
    */
   readonly declaredNames: readonly string[];
+
+  /**
+   Name pairs the front matter declares, read by the publication rule a
+   polish is validated under (class one hundred fourteen).
+   */
+  readonly declaredNamePairs?: readonly DeclaredNamePair[];
 
   /**
    Link and footnote definitions used by rewrite guards.

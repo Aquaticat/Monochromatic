@@ -136,6 +136,9 @@ export async function runPassConsolidation(
     ...((polish.kind === 'configured') ? { polishConfig: polish.config, } : {}),
     frontMatterSlices,
     lineStructuredSlices: prepared.lineStructuredSliceIndices,
+    // A linked title naming a declared person takes the declared form on
+    // every text the consolidation validates (class one hundred fourteen).
+    ...((prepared.declaredNamePairs === undefined) ? {} : { declaredNamePairs: prepared.declaredNamePairs, }),
     pictureContextBySlice: slicePictureContexts({
       slices: prepared.slices,
       readings: pictureReadings,

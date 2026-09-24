@@ -1,5 +1,6 @@
 import type { ArchiveOriginalSpan, } from './archive-original-note.ts';
 import type { ChunkPair, } from './chunk-document.ts';
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import type { SectionPair, } from './pair-sections-wire.ts';
 import type { AttestedDetail, } from './reference-attest-match.ts';
 import type { SectionBlockPairing, } from './section-pairing.ts';
@@ -178,6 +179,16 @@ export type PreparedDocumentPair = {
    TRANSLATION SIDE ONLY, because the text being guarded is English.
    */
   readonly declaredNames: readonly string[];
+
+  /**
+   Name pairs the front matter declares on both sides, source form beside
+   its declared rendering, read by the publication rule's declared-name floor
+   (class one hundred fourteen) wherever a candidate is validated.
+   
+   OPTIONAL so a pair built before the floor existed, or by a caller with no
+   front matter, reads as declaring nothing and leaves the floor silent.
+   */
+  readonly declaredNamePairs?: readonly DeclaredNamePair[];
 
   /**
    Alignment findings in scorecard-stable wording.

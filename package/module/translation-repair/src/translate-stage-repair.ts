@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
   TranslateAbsenceError,
@@ -42,6 +43,7 @@ type TranslateRoundInput = ForeignBorrowed<{
   readonly pictureContext?: string;
   readonly syntax?: SliceSyntax;
   readonly lineStructured: boolean;
+  readonly declared?: readonly DeclaredNamePair[];
   readonly signal: AbortSignal;
   readonly perCallTimeoutMs: number;
   readonly l: Logger;
@@ -95,6 +97,7 @@ async function produceAndJudgeOnce(
     ...((input.syntax === undefined) ? {} : { syntax: input.syntax, }),
     ...((followupEvidence === undefined) ? {} : { followupEvidence, }),
     lineStructured: input.lineStructured,
+    ...((input.declared === undefined) ? {} : { declared: input.declared, }),
     signal: input.signal,
     perCallTimeoutMs: input.perCallTimeoutMs,
     l: input.l,
@@ -216,6 +219,7 @@ export async function runTranslateRepairs(
     pictureContext,
     syntax,
     lineStructured,
+    declared,
     signal,
     perCallTimeoutMs,
     l,
@@ -236,6 +240,7 @@ export async function runTranslateRepairs(
     readonly pictureContext?: string;
     readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
+    readonly declared?: readonly DeclaredNamePair[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -261,6 +266,7 @@ export async function runTranslateRepairs(
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
+    ...((declared === undefined) ? {} : { declared, }),
     signal,
     perCallTimeoutMs,
     l,

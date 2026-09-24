@@ -1,4 +1,5 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 
 import type { SliceSyntax, } from './chunk-document.ts';
 import { renderConsolidationBrief, } from './consolidate-brief.ts';
@@ -269,6 +270,12 @@ export type ConsolidateSubject = {
    a writer; a required one can, and the type checker collects.
    */
   readonly lineStructured: boolean;
+
+  /**
+   Name pairs the front matter declares, which the publication rule reads for
+   a linked title naming a declared person (class one hundred fourteen).
+   */
+  readonly declared?: readonly DeclaredNamePair[];
 };
 
 /**

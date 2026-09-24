@@ -1,4 +1,5 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import {
   describeStandingVerdict,
@@ -86,6 +87,10 @@ export type StandingVerdict = {
  
  @param l - logger a refusal is written through
  
+ @param declared - name pairs the front matter declares, which the rule
+ reads for a linked title naming a declared person (class one hundred
+ fourteen); none leaves that floor silent
+ 
  @returns Deterministic eligibility and contest endorsement of the wording
  the settlement runs against, that wording, and the replacement finding
  when the incumbent stands in
@@ -108,6 +113,7 @@ export function readStandingVerdict(
     contestVerdict,
     sliceIndex,
     l,
+    declared = [],
   }: {
     readonly sourceText: string;
     readonly standingText: string;
@@ -118,6 +124,7 @@ export function readStandingVerdict(
     readonly contestVerdict: ArtifactContestVerdict;
     readonly sliceIndex: number;
     readonly l: Logger;
+    readonly declared?: readonly DeclaredNamePair[];
   },
 ): StandingVerdict {
   /**
@@ -129,6 +136,7 @@ export function readStandingVerdict(
     pageText: incumbentText,
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
+    declared,
   },);
   /**
    Whether standing text itself passes syntax-bearing publication rules.
@@ -175,6 +183,7 @@ export function readStandingVerdict(
       pageText: incumbentText,
       ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
+      declared,
     },);
   if (incumbentValidation?.kind === 'valid') {
     l.warn(

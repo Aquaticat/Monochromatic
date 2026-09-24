@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import { assertJudgeableProducerRoster, } from './repair-contract.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
@@ -82,6 +83,10 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
  @param lineStructured - whether the enclosing CHUNK's original is
  line-structured, decided by the caller
  
+ @param declared - name pairs the front matter declares, which the
+ publication rule reads for a linked title naming a declared person (class
+ one hundred fourteen)
+ 
  @param signal - caller abort honored by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -123,6 +128,7 @@ export async function runTranslateStage(
     pictureContext,
     syntax,
     lineStructured,
+    declared = [],
     signal,
     perCallTimeoutMs,
     l,
@@ -142,6 +148,7 @@ export async function runTranslateStage(
     readonly pictureContext?: string;
     readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
+    readonly declared?: readonly DeclaredNamePair[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -166,6 +173,7 @@ export async function runTranslateStage(
       pageText: incumbentText,
       ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
+      declared,
     },)
       .kind
       === 'valid');
@@ -191,6 +199,7 @@ export async function runTranslateStage(
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
+    declared,
     signal,
     perCallTimeoutMs,
     l,

@@ -339,6 +339,7 @@ export async function runConsolidationPolishRound(
     pageText: baseText,
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
+    ...((config.declaredNamePairs === undefined) ? {} : { declared: config.declaredNamePairs, }),
   },);
   if (validation.kind !== 'valid') {
     return {

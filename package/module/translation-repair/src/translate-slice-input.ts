@@ -4,6 +4,7 @@ import type {
 } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import { attestedDetailLines, } from './reference-attest-match.ts';
 import { splitTargetOnlyRun, } from './target-only-run.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
@@ -72,6 +73,11 @@ export type TranslateSliceStageInput = {
    Production child-level governance, including inherited parent treatment.
    */
   readonly lineStructured: boolean;
+  /**
+   Name pairs the front matter declares, for the publication rule's
+   declared-name floor (class one hundred fourteen).
+   */
+  readonly declared?: readonly DeclaredNamePair[];
 };
 
 /**
@@ -196,6 +202,7 @@ export function translateSliceInput(
       ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
       ...((pictureContext === undefined) ? {} : { pictureContext, }),
       ...((slice.syntax === undefined) ? {} : { syntax: slice.syntax, }),
+      declared: prepared.declaredNamePairs ?? [],
     },
   };
 }

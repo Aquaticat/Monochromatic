@@ -3,6 +3,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import {
@@ -237,6 +238,7 @@ export async function contestDocumentLanes(
     cache,
     damageClaimsBySlice = new Map<number, readonly string[]>(),
     disputeNotesBySlice = new Map<number, string>(),
+    declaredNamePairs = [],
     signal,
     perCallTimeoutMs,
     overlap = 1,
@@ -260,6 +262,12 @@ export async function contestDocumentLanes(
      judges as evidence (class one hundred eight).
      */
     readonly disputeNotesBySlice?: ReadonlyMap<number, string>;
+    /**
+     Name pairs the front matter declares, which the publication rule reads
+     for a linked title naming a declared person (class one hundred
+     fourteen); none leaves that floor silent.
+     */
+    readonly declaredNamePairs?: readonly DeclaredNamePair[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly overlap?: number;
@@ -475,6 +483,7 @@ export async function contestDocumentLanes(
               repairText: row.repairText,
               translateText: row.translateText,
               ...((syntax === undefined) ? {} : { syntax, }),
+              declared: declaredNamePairs,
             },);
             /**
              Whether selected lane can cross final publication boundary.

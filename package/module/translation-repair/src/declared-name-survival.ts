@@ -99,7 +99,7 @@ function isNameCharacter({ character, }: { readonly character: string; },): bool
  const key = nameProjection({ text: 'Mittens\_the\_Cat', },);
  ```
  */
-function nameProjection({ text, }: { readonly text: string; },): string {
+export function nameProjection({ text, }: { readonly text: string; },): string {
   /**
    Same text composed and folded, so one spelling of a diacritic cannot
    project differently from another.

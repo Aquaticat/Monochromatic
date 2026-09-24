@@ -67,7 +67,7 @@ type PageName = {
 /**
  One inline link.
  */
-type Link = {
+export type Link = {
   /**
    Link text.
    */
@@ -136,7 +136,7 @@ function codePoints({ text, }: { readonly text: string; },): number {
  linksOf({ text: 'see [Maomao](https://example.invalid/maomao)', },);
  ```
  */
-function linksOf({ text, }: { readonly text: string; },): readonly Link[] {
+export function linksOf({ text, }: { readonly text: string; },): readonly Link[] {
   /**
    Links found.
    */
