@@ -96,6 +96,15 @@ import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
+
+// What:     `Search` is Google's Material magnifying-glass vector.
+// Why:      The Fold player needs one native 48dp Search trigger instead of text glyphs.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { SearchIcon } from 'material-icons';
+// ```
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 
@@ -444,7 +453,8 @@ class DesignCandidateActivity : ComponentActivity() {
         if (requestedCandidate != null) {
             candidate = requestedCandidate
         }
-        if (candidate.startsWith("dark-") || candidate.startsWith("cover-dark")) {
+        if (candidate.startsWith("dark-") || candidate.startsWith("cover-dark") ||
+            (candidate.startsWith("search-page") && !candidate.endsWith("-light"))) {
             enableEdgeToEdge(
                 statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
                 navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
@@ -693,7 +703,7 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
 @Composable
 private fun DesignCandidatePrototype(candidate: String) {
     val context = LocalContext.current
-    val scheme = if (candidate.startsWith("cover-picker") && !candidate.endsWith("-light")) {
+    val scheme = if ((candidate.startsWith("cover-picker") || candidate.startsWith("search-page")) && !candidate.endsWith("-light")) {
         darkDynamicSchemeFor(context = context, candidate = "dark-stable-wallpaper-dynamic")
     } else if (candidate.startsWith("cover-dark")) {
         darkDynamicSchemeFor(
@@ -711,9 +721,13 @@ private fun DesignCandidatePrototype(candidate: String) {
         val palette = paletteFor(candidate = candidate, scheme = MaterialTheme.colorScheme)
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = palette.window,
+            color = if (candidate.startsWith("search-page")) {
+                if (candidate.endsWith("-light")) scheme.surfaceContainerLowest else TrueBlack
+            } else palette.window,
         ) {
-            if (candidate.startsWith("cover-picker")) {
+            if (candidate.startsWith("search-page")) {
+                SearchPageStudy(candidate = candidate)
+            } else if (candidate.startsWith("cover-picker")) {
                 CoverPickerStudy(candidate = candidate, palette = palette)
             } else if (candidate.startsWith("cover-")) {
                 CoverStudy(candidate = candidate, palette = palette)
@@ -746,7 +760,7 @@ private fun Modifier.accessibilityTraversalGroup(candidate: String, area: String
 
 /** Renders two equal 414dp panes around Material's centered 24dp expanded-layout spacer. */
 @Composable
-private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette) {
+private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette, onSearch: (() -> Unit)? = null) {
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -783,6 +797,7 @@ private fun FullUnfoldedStudy(candidate: String, palette: CandidatePalette) {
                 "dbtp-a"
             },
             palette = palette,
+            onSearch = onSearch,
         )
     }
 }
@@ -875,7 +890,7 @@ private fun CoverTrackList(modifier: Modifier, candidate: String, palette: Candi
 
 /** Exercises the persistent P4 trigger through opening, Back, and same-folder selection. */
 @Composable
-private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePalette) {
+private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePalette, onSearch: (() -> Unit)? = null) {
     // This study does not switch the library: selecting a name only tests dismissal and focus.
     var pickerOpen by remember { mutableStateOf(false) }
     val triggerFocusRequester = remember { FocusRequester() }
@@ -891,6 +906,7 @@ private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePal
             onToggle = { if (pickerOpen) closePicker() else pickerOpen = true },
             pickerOpen = pickerOpen,
             triggerModifier = Modifier.focusRequester(triggerFocusRequester),
+            onSearch = onSearch,
         )
         if (palette.railDivider) {
             Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(palette.railDividerColor))
@@ -905,6 +921,28 @@ private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePal
         }
         Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(palette.sectionDivider))
         TransportBlock(modifier = Modifier.fillMaxWidth(), candidate = candidate, palette = palette, deckHeightCap = false)
+    }
+}
+
+/** Reuses the accepted Fold player context while exposing a Search trigger to the page study. */
+@Composable
+internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: () -> Unit) {
+    val palette = paletteFor(
+        candidate = if (isCover) {
+            if (light) "cover-picker-p4-light" else "cover-picker-p4"
+        } else {
+            if (light) "light-b" else "dark-stable-wallpaper-dynamic"
+        },
+        scheme = MaterialTheme.colorScheme,
+    )
+    if (isCover) {
+        CoverPickerInteractiveStudy(
+            candidate = if (light) "cover-picker-p4-interactive-light" else "cover-picker-p4-interactive",
+            palette = palette,
+            onSearch = onSearch,
+        )
+    } else {
+        FullUnfoldedStudy(candidate = "dark-stable-wallpaper-dynamic", palette = palette, onSearch = onSearch)
     }
 }
 
@@ -990,6 +1028,7 @@ private fun CoverPickerTopRow(
     onToggle: (() -> Unit)? = null,
     pickerOpen: Boolean = true,
     triggerModifier: Modifier = Modifier,
+    onSearch: (() -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier
@@ -1070,6 +1109,11 @@ private fun CoverPickerTopRow(
                     imageVector = Icons.Filled.ArrowDropDown,
                     contentDescription = null,
                 )
+            }
+        }
+        if (onSearch != null) {
+            IconButton(onClick = onSearch, modifier = Modifier.size(48.dp)) {
+                Icon(imageVector = Icons.Filled.Search, contentDescription = "Search music")
             }
         }
         OpenAction(candidate = "cover-tonal")
@@ -1828,7 +1872,7 @@ private fun ModeControl() {
 /** Builds one edge-to-edge track surface with a real app bar and list inside native insets. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidatePalette) {
+private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidatePalette, onSearch: (() -> Unit)? = null) {
     Box(modifier = modifier.fillMaxSize().background(color = palette.tracks)) {
         Row(modifier = Modifier.fillMaxSize()) {
             if (palette.paneDivider) {
@@ -1851,6 +1895,11 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
                         Text(text = CURRENT_SUBDIRECTORY)
                     },
                     actions = {
+                        if (onSearch != null) {
+                            IconButton(onClick = onSearch, modifier = Modifier.size(48.dp)) {
+                                Icon(imageVector = Icons.Filled.Search, contentDescription = "Search music")
+                            }
+                        }
                         IconButton(onClick = {}) {
                             Icon(imageVector = Icons.Filled.Settings, contentDescription = "Settings")
                         }
