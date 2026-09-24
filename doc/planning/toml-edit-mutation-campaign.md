@@ -28,8 +28,9 @@ The targeted campaigns here name runtime source files explicitly.
   `MISSING` is a symbol (`document-materialize.ts`),
   so the same input falls through to the final empty-array return.
   Keep the explicit guard as documentation of missing-path handling.
-- A direct built-artifact probe found that `trailingNewline: false` did not remove final newlines from canonical output,
-  and canonical parsed output without a newline did not gain one when enabled.
+- A direct built-artifact probe found that `trailingNewline: false`
+  did not remove final newlines from canonical output.
+  Canonical parsed output without a newline also did not gain one when enabled.
   Added red tests in `canonical.unit.test.ts`,
   fixed the final-output boundary in `emit-document.ts`,
   and verified through `buildAndTest` and a built-artifact call.
@@ -185,7 +186,8 @@ Most `emit-value.ts` survivors in the former AST-only functions cannot be killed
   multiline string contents,
   empty-source splice behavior,
   and edited nonempty splice preservation.
-  `emit.property.unit.test.ts` compares reparsed nested array and inline-table contents through the built `_emitContentNode` seam.
+  `emit.property.unit.test.ts` compares reparsed nested array and inline-table contents
+  through the built `_emitContentNode` seam.
   The targeted tests passed;
   rerun full scoped verification after triaging emitter mutants.
 - Never delete or stage unrelated changes under other packages;
@@ -242,7 +244,8 @@ The remaining comparisons are equivalent only for parser-produced,
 Package type and oxlint checks and the fuzz coverage gate passed after the comment fix.
 
 A direct consumer probe of `key = 1#tail` found a real defect:
- `tomlGetCommentAfter` returned no comment because `comments.ts` required the hash offset to be strictly greater than the value end.
+ `tomlGetCommentAfter` returned no comment because `comments.ts` required the hash offset
+ to be strictly greater than the value end.
 A regression test failed before the change;
  changing that comparison to inclusive made the package build and unit suite pass.
 The sidecar bounded property suite,
@@ -268,7 +271,8 @@ The parser/build batch completed with 59 killed,
  178 compile errors,
  and no infrastructure errors.
 Its report is `/var/home/user/temp/agent/toml-mutation-parser-builder.json`.
-A structural-state test for `key = 1#tail` failed before `build-comments.ts` adopted the same inclusive boundary as the read accessor;
+A structural-state test for `key = 1#tail` failed before `build-comments.ts`
+ adopted the same inclusive boundary as the read accessor;
  the package build and unit suite passed after the change.
 Additional tests now cover parsed block metadata,
  array navigation bounds,
@@ -568,7 +572,8 @@ The focused rechecks completed without infrastructure errors:
   two confirmed survivors,
   29 compile errors.
   The synthetic key-value offset mutant was killed;
-  the remaining sentinel mutants require an impossible factory-produced AST mismatch or a caller-bypassed not-located state.
+  the remaining sentinel mutants require an impossible factory-produced AST mismatch
+  or a caller-bypassed not-located state.
 - `/var/home/user/temp/agent/toml-mutation-tagged-encoder.json`:
   61 killed,
   one confirmed survivor,
