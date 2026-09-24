@@ -310,7 +310,7 @@ dir = "{{config_root}}"
 run = "slint-viewer --check candidates/command-study.slint"
 
 [tasks."prototype:command:render"]
-description = "Render the native Slint command-bar study in both schemes at compact and wide desktop widths"
+description = "Render separate in-app, global, search, and edge scenes in native Slint for both schemes"
 dir = "{{config_root}}"
 depends = ["prototype:command:check"]
 shell = "node --input-type=module-typescript -e"
@@ -322,27 +322,31 @@ const output = 'questions/render'
 const temp = 'target/command-study'
 mkdirSync(output, { recursive: true })
 mkdirSync(temp, { recursive: true })
+const modes = ['dark', 'light']
 const scenes = [
-  ...[1, 2, 3].flatMap(surface =>
-    [1, 2, 3].flatMap(content =>
-      ['dark', 'light'].map(mode => ({ surface, content, mode, compact: true })))),
-  ...['dark', 'light'].map(mode => ({ surface: 1, content: 1, mode, compact: false })),
+  ...[1, 2, 3].flatMap(variant => modes.map(mode => ({ study: 1, variant, mode, compact: true, stress: false }))),
+  ...[1, 2, 3].flatMap(variant => modes.map(mode => ({ study: 1, variant, mode, compact: false, stress: false }))),
+  ...modes.map(mode => ({ study: 1, variant: 1, mode, compact: true, stress: true })),
+  ...[2, 3, 4].flatMap(study => [1, 2].flatMap(variant =>
+    modes.map(mode => ({ study, variant, mode, compact: true, stress: false })))),
 ]
+const labels = ['i', 'g', 'r', 'e']
 for (const scene of scenes) {
-  const name = `command-round-s${scene.surface}-c${scene.content}-${scene.mode}-${scene.compact ? 'compact' : 'wide'}`
+  const name = `command-round-${labels[scene.study - 1]}${scene.variant}-${scene.mode}-${scene.stress ? 'stress' : (scene.compact ? 'compact' : 'wide')}`
   const dataPath = join(temp, `${name}.json`)
   const imagePath = join(output, `${name}.png`)
   writeFileSync(dataPath, JSON.stringify({
-    'surface-mode': scene.surface,
-    'content-mode': scene.content,
+    'study-mode': scene.study,
+    variant: scene.variant,
     dark: scene.mode === 'dark',
     compact: scene.compact,
+    stress: scene.stress,
   }))
   execFileSync('slint-viewer', [
     '--load-data', dataPath, '--screenshot', imagePath, 'candidates/command-study.slint',
   ], { stdio: 'inherit', env: { ...process.env, SLINT_BACKEND: 'software' } })
   const dimensions = execFileSync('magick', ['identify', '-format', '%wx%h %[opaque]', imagePath], { encoding: 'utf8' })
-  const expected = scene.compact ? '480x600 True' : '1100x640 True'
+  const expected = scene.stress ? '360x640 True' : (scene.compact ? '480x600 True' : '1100x640 True')
   if (dimensions !== expected) throw new Error(`${name}: expected ${expected}, got ${dimensions}`)
   console.log(`${name}.png ${dimensions}`)
 }
