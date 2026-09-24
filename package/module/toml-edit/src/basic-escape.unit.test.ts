@@ -42,7 +42,7 @@ await describe({
       fn: async () => {
         const value = '\b\t\n\f\r';
         const emitted = emitAssignedString(value,);
-        expect(emitted,).toBe(`${String.raw`value = "\b\t\n\f\r"`}\n`,);
+        expect(emitted,).toBe(`value = """\n${String.raw`\b\t\n\f\r`}"""\n`,);
         expect(tomlGetValue({
           edit: parseTomlEdit({ source: emitted, },),
           path: ['value',],
