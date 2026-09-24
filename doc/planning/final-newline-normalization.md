@@ -315,6 +315,43 @@ Hosted run `29171565809` passed while invoking cli-git's direct checker through 
 disposable clone without loading unrelated hk or Pkl tooling.
 Issues `#356` and `#357` completed the independent CI gate and hk/Pkl retirement.
 
+## Issue #520 evidence and resolution
+
+A disposable foreign repository exercised the installed `node_modules/.bin/git` shim.
+A canonical file produced no `final-newline/noncanonical-final-newline` warning or fix summary.
+A file missing its final LF warned on `git add -- file.txt`;
+the former pathspec commit fixed only the private index and landed canonical `HEAD` bytes,
+but left the worktree missing that LF (`git status --short` showed ` M file.txt`).
+Adding it again staged the old bytes,
+then normalization removed the entire selected tree difference from `HEAD`,
+so Git reported `no changes added to commit` while leaving staged bytes behind.
+The original pre-fix worktree bytes of most files in the issue were not recorded.
+Canonical committed blobs therefore do not establish that their pre-add worktree bytes were canonical;
+the reported doubled and relocated LF patterns have not been reproduced or assigned a cause.
+
+The selected-path fix now records only paths changed by the core final-newline policy,
+compares initial staged and worktree bytes,
+and reconciles matching worktree copies after commit installation.
+The worktree copy of a partially staged file remains byte-identical.
+If the settled tree equals `HEAD`,
+the transaction installs the selected canonical index and eligible worktree copies without creating a commit;
+it emits `commit-normalization/no-change` with exit `1` instead of forwarding an empty commit to Git.
+A journal distinguishes that operation from an interrupted real commit for startup recovery.
+The wrapper remains repository-agnostic,
+including repositories without cli-git config.
+
+`package/git-policy/cli/src/trust/fixture/built-final-newline-reconciliation-consumer.ts` verifies canonical input,
+missing and repeated LF,
+index/worktree cleanup,
+concurrent edits,
+permissions,
+interrupted real commits,
+and explicit `--allow-empty`.
+`built-final-newline-partial-consumer.ts` verifies partial staging preserves its unstaged tail.
+`built-final-newline-normalization-recovery.ts` exercises normalization-only recovery with differing and byte-identical
+index snapshots.
+Neither fixture claims a reproduction of the original doubled or relocated LF incident.
+
 ## Limitations
 
 - Clients that bypass the PATH-shadowed executable also bypass local cli-git policy enforcement;
@@ -328,6 +365,7 @@ Issues `#356` and `#357` completed the independent CI gate and hk/Pkl retirement
   then synchronizes selected worktree files only when their initial bytes matched the staged candidate and still match
   immediately before installation.
   Partial staging remains untouched.
+  A noncooperating filesystem writer may still change a path after the final check and before its pathname replacement.
   Direct fix changes selected worktree files only after exact concurrency and real-index checks.
 - Generated license normalization stays attached to file-enforcer's canonical source.
 - Tsdown's `dist/final/node` tree is a deliberate compact-output exception;
