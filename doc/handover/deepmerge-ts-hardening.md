@@ -35,7 +35,10 @@ Next actions, in order:
      and a helper test showing writes into unreached source nodes are still reported.
      Issue section 6 carries both repros, each checked on 8.0.2.
      `lint:oxlint` passes but prints plugin warnings (`effect-summary-omission`, `readonly-source-evidence`)
-     for `src/declared-type-sample.ts`; not yet investigated.
+     for `src/declared-type-sample.ts`:
+     the `prefer-readonly-parameter-type` plugin's deliberate omission record for a TypeScript tuple-serialization panic
+     (`doc/handover/prefer-readonly-parameter-types-issue-review.md`, "Verified controls"),
+     so that one callable goes unanalyzed by that rule, not a finding in this package.
      Pending: the mutation fork,
      then `format:oxlint` once no fork is editing,
      and `fuzz:coverage --write`.
