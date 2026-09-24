@@ -76,6 +76,14 @@ const HERE = import.meta.dirname;
 const JUDGE_UNMEASURED: ReadonlySet<RosterModelId> = holdSet({ hold: 'judge-unmeasured', },);
 
 /**
+ Models the owner culled from every role (`owner-culled` on the card): off
+ the run roster, every derived bench, the readers and the static checker
+ bench, while the card keeps the identity typed for the catalogs and the
+ unit fixture. `hf:openai/gpt-oss-120b` since 2026-09-24.
+ */
+export const OWNER_CULLED: ReadonlySet<RosterModelId> = holdSet({ hold: 'owner-culled', },);
+
+/**
  Bedrock-only models seated on the judge fidelity probe of 2026-09-07 under
  the rule pre-registered in the planning log before the seated roster was
  measured: a candidate joins critic, panel and judge when, over the same
@@ -195,6 +203,11 @@ export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = holdSet({ hold: 'wr
 export const RUN_ROSTER: readonly RosterModelId[] = ROSTER_MODEL_IDS
   .filter(function measured(modelId,): boolean {
     return !UNMEASURED_UNTIL_SEATED.has(modelId,);
+  },)
+  // THE OWNER'S CULL EMPTIES EVERY BENCH, so it is applied where every bench
+  // derives from rather than on each bench in turn.
+  .filter(function notCulled(modelId,): boolean {
+    return !OWNER_CULLED.has(modelId,);
   },)
   // A DECISION-ONLY SEAT TAKES NO COMPLETION, so it is on no chat bench
   // however it measures; it reaches the select judges through
@@ -648,11 +661,20 @@ export const RUN_MODELS: RepairModels = {
   // both helped write one refined result, their combined weight would have
   // been 1.0, equal to disinterested GPT-OSS alone, unable to resolve an issue
   // against that independent vote.
+  //
+  // GPT-OSS LEFT EVERY ROLE on 2026-09-24 at the owner's instruction (the
+  // card's own note has the two misreadings). `gemma-4-26b-a4b-it` takes the
+  // third checker seat rather than shrinking below the floor of three: it was
+  // the substitute checker since 2026-09-03 for holding no editor or refiner
+  // seat, sat as the third checker on every Synthetic-dry reading since, and
+  // is still PROVISIONAL, since no checker-side measurement exists for any
+  // model. `google.gemma-4-e2b` becomes the substitute on the same ground
+  // (`run-seats.ts`).
   checkerSelfCertificationPermitted: true,
   checkerModelIds: [
     'hf:Qwen/Qwen3.8-27B',
     'hf:moonshotai/Kimi-K3',
-    'hf:openai/gpt-oss-120b',
+    'gemma-4-26b-a4b-it',
   ],
 };
 
@@ -739,7 +761,9 @@ const READER_UNMEASURED: ReadonlySet<RosterModelId> = holdSet({ hold: 'reader-un
  */
 export const RUN_READER_MODELS: readonly RosterModelId[] = ROSTER_MODEL_IDS
   .filter(function reads(modelId,): boolean {
-    return readsImages({ modelId, },) && (!READER_UNMEASURED.has(modelId,));
+    return readsImages({ modelId, },)
+      && (!READER_UNMEASURED.has(modelId,))
+      && (!OWNER_CULLED.has(modelId,));
   },);
 
 /**

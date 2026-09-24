@@ -26,6 +26,7 @@ import {
   judgeSeatsFor,
   OPENROUTER_CHECKER_SUBSTITUTE,
   OPENROUTER_WITHHELD,
+  OWNER_CULLED,
   ROSTER_MODEL_IDS,
   RUN_LATE_JUDGES,
   RUN_MODELS,
@@ -194,6 +195,9 @@ await describe({
         },).toSorted(),).toEqual([
           SEAT_BEDROCK_ONLY_VISION_UNSEATED,
           SEAT_OPENROUTER_DECISIONS,
+          // Culled from every role by the owner on 2026-09-24; its card
+          // stays for the catalogs and this fixture.
+          SEAT_SYNTHETIC_TEXT_EVERYWHERE,
         ].toSorted(),);
         expect(wet.writers,).toEqual(RUN_WRITERS,);
         expect(RUN_WRITERS,).toEqual(RUN_ROSTER.filter(function measuredWriter(modelId,): boolean {
@@ -207,12 +211,16 @@ await describe({
 
     it({
       name: 'KEEPS EVERY WRITER A PRODUCER CALIBRATION MEASURED OUT OF THE TRANSLATOR SEAT in its judge seats '
-        + 'and the consolidation seat: gpt-oss-120b (2026-09-01, z -4.5); the two DeepSeek V4 models measured '
+        + 'and the consolidation seat, unless the owner culled it from every role: gpt-oss-120b (2026-09-01, '
+        + 'z -4.5) held those seats until the cull of 2026-09-24; the two DeepSeek V4 models measured '
         + 'out beside it left the roster on 2026-09-16',
       fn: async function keepsDroppedWritersElsewhere(): Promise<void> {
         const wet = judgeSeatsFor({ dry: ALL_WET, },);
         expect(TRANSLATOR_DROPPED.has(SEAT_SYNTHETIC_TEXT_EVERYWHERE,),).toBe(true,);
-        for (const dropped of TRANSLATOR_DROPPED) {
+        expect(OWNER_CULLED.has(SEAT_SYNTHETIC_TEXT_EVERYWHERE,),).toBe(true,);
+        for (const dropped of [...TRANSLATOR_DROPPED,].filter(function stillSeated(modelId,): boolean {
+          return !OWNER_CULLED.has(modelId,);
+        },)) {
           expect(wet.translators.includes(dropped,),).toBe(false,);
           expect(wet.writers.includes(dropped,),).toBe(true,);
           expect(wet.wideSeats.includes(dropped,),).toBe(true,);

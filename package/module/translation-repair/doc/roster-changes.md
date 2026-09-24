@@ -131,3 +131,16 @@ while current Synthetic rate-limit documentation names Kimi-K3 as one-request ba
 Planning denominator now follows Kimi-K3 input price and has GFP coverage;
 live `/quotas` remains authoritative.
 See `doc/troubleshooting/synthetic-rate-limit-default-drift.md`.
+
+`hf:openai/gpt-oss-120b` left every role on 2026-09-24 at the owner's instruction
+("That particular model got cause and effect wrong. Cull it.",
+then "cull it from every role"):
+its card carries the hold `owner-culled`,
+`RUN_ROSTER` and the readers filter it,
+`gemma-4-26b-a4b-it` takes its static checker seat
+and `google.gemma-4-e2b` becomes the substitute checker,
+both PROVISIONAL.
+The card stays for the catalogs and the unit fixture seat `SEAT_SYNTHETIC_TEXT_EVERYWHERE`,
+so the blocklist is untouched
+(the 2026-09-24 addendum of the seating decision).
+The roster is eleven chat seats plus the decision-only seat.

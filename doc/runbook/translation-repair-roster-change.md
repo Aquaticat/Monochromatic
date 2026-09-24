@@ -137,6 +137,24 @@ gets a card with a `decisions` side instead of provider sides.
     and each names what it measured.
 5.  Record the removal as an addendum of the seating decision.
 
+## Cull a model from every role while its card stays
+
+When the owner culls a model that the unit fixture seats
+(`src/roster-fixture.ts` names one identity per reach shape,
+and a four-provider identity has no stand-in),
+keep the card and empty the seats instead of deleting it:
+
+1.  Add `owner-culled` to the card's `holds` with the owner's words and the evidence beside it.
+2.  `RUN_ROSTER` and `RUN_READER_MODELS` already filter `OWNER_CULLED`,
+    so every derived bench loses the seat;
+    pass any static seat it held (editor, refiner, checker) in `src/corpus-run/run-config.ts` on the evidence recorded there.
+3.  Leave the blocklist alone:
+    it labels ids the catalogs do not carry,
+    and its guard refuses a compiled catalog that seats a blocked id.
+4.  Run the package checks;
+    `src/corpus-run/owner-cull.unit.test.ts` holds the culled seat out of every bench on every reading.
+5.  Record the cull as an addendum of the seating decision.
+
 ## Change a model's facts
 
 Edit the card.

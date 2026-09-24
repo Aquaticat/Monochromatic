@@ -97,16 +97,20 @@ export const HYPER_SLOW_SELECT_JUDGES: ReadonlySet<RosterModelId> = holdSet({ ho
 
 /**
  Checker seated in place of a withheld one, so the roster keeps its floor.
- 
- `gemma-4-26b-a4b-it`, chosen because it holds no editor or refiner seat
- (a checker judging text it helped write counts half), answered 40 of 40
- writer rounds with zero cuts and threw 5 of 289 asks on the stub-fix XIEPT2
- run, and sat above the pooled null as a writer where
- `deepseek-v4-flash-0731`, the other disinterested candidate, sat below it in
- both writing measurements. PROVISIONAL: no checker-side measurement exists
- for any model, and the owner may veto it.
+
+ `gemma-4-26b-a4b-it` held this seat from 2026-09-03 (no editor or refiner
+ seat, so a checker judging text it helped write never arose; 40 of 40 writer
+ rounds with zero cuts and 5 of 289 asks thrown on the stub-fix XIEPT2 run;
+ above the pooled null as a writer) and took the third static checker seat on
+ 2026-09-24 when the owner culled gpt-oss-120b from every role.
+ `google.gemma-4-e2b` takes the substitute seat on the same ground: no editor
+ or refiner seat, seated as a judge by the Bedrock fidelity probe of
+ 2026-09-07 and as a writer by the producer calibration of 2026-09-08, and
+ served by Bedrock alone, the provider the withheld Synthetic-served checkers
+ never sit on. PROVISIONAL: no checker-side measurement exists for any model,
+ and the owner may veto it.
  */
-export const OPENROUTER_CHECKER_SUBSTITUTE: RosterModelId = 'gemma-4-26b-a4b-it';
+export const OPENROUTER_CHECKER_SUBSTITUTE: RosterModelId = 'google.gemma-4-e2b';
 
 /**
  Every bench one entry runs with, derived from one reading.

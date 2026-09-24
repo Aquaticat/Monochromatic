@@ -168,7 +168,20 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     completionCap: 'pooled-p90',
     // Producer calibration of 2026-09-01: 5 of 207 disinterested ballots,
     // z -4.53 against the pooled null.
-    holds: ['translator-dropped',],
+    //
+    // CULLED FROM EVERY ROLE ON 2026-09-24 by the owner ("That particular
+    // model got cause and effect wrong. Cull it." and then "cull it from every
+    // role"): on CuspariaKLSY10 slice 1 it filed, alone, the accepted
+    // omission claim reading 服用激素，成为跨性别的原因 as hormones being the
+    // reason for transitioning, and on zheermao8 slice 9 it declined every
+    // slate candidate over "quoted lines in present tense" on a slice with no
+    // quoted line. The card stays: it is the one four-provider identity the
+    // unit fixture seats as SEAT_SYNTHETIC_TEXT_EVERYWHERE, and the catalogs
+    // still type it; `owner-culled` empties every bench.
+    holds: [
+      'translator-dropped',
+      'owner-culled',
+    ],
   },
   'minimax-m3': {
     hyper: {

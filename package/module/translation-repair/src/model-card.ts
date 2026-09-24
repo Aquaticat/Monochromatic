@@ -104,7 +104,12 @@ export type SeatHold =
   /**
    Too slow in the select seats alone while Hyper serves it.
    */
-  | 'hyper-slow-select';
+  | 'hyper-slow-select'
+  /**
+   Out of every seat by the owner's decision, the card kept for the catalogs
+   and the unit fixture: the seats go, the identity stays typed.
+   */
+  | 'owner-culled';
 
 /**
  Completion cap for a model whose own calls were never measured: the pooled

@@ -1136,3 +1136,46 @@ so the standing among them holds.
 Mercury's ten wins over 108 ballots are a reading of one calibration;
 the v4-pro exit waited for a second reading because its first fell short of the threshold,
 and this one does not.
+
+## Addendum 2026-09-24: `hf:openai/gpt-oss-120b` leaves every role at the owner's instruction
+
+The owner, 2026-09-24, on reading the CuspariaKLSY10 artifact:
+"That particular model got cause and effect wrong. Cull it."
+and then "cull it from every role".
+
+The evidence.
+On CuspariaKLSY10 slice 1 the critic `hf:openai/gpt-oss-120b` filed,
+as the sole proposer,
+the claim "Translation omits the detail 服用激素 (taking hormones) as the reason for transitioning"
+against the original's 服用激素，成为跨性别的原因：,
+which lists taking hormones beside the reasons rather than as one of them;
+the panel accepted it as a major omission.
+On zheermao8 slice 9 the same seat declined every consolidation candidate
+because "all candidates render the quoted lines in present tense"
+on a slice that quotes no line.
+
+What changed.
+The card gains the hold `owner-culled`
+("out of every seat by the owner's decision"),
+`RUN_ROSTER` and `RUN_READER_MODELS` filter it,
+so every derived bench (wide, late, select, slate, translators, writers, readers) loses the seat,
+and the static checker bench passes its third seat to `gemma-4-26b-a4b-it`,
+the substitute checker since 2026-09-03 and the third checker on every Synthetic-dry reading since;
+`google.gemma-4-e2b` becomes the substitute on the same ground
+(no editor or refiner seat; a judge by the Bedrock fidelity probe of 2026-09-07;
+a writer by the producer calibration of 2026-09-08;
+Bedrock alone serves it, the provider the withheld Synthetic checkers never sit on).
+Both checker seatings stay PROVISIONAL:
+no checker-side measurement exists for any model.
+
+Why the card stays.
+`hf:openai/gpt-oss-120b` is the one identity every provider serves,
+and the unit fixture seats it as `SEAT_SYNTHETIC_TEXT_EVERYWHERE` in that role;
+deleting the card would re-point or delete that seat across the reach, router and catalog suites for no gain in production,
+where the hold already empties every bench
+(`src/corpus-run/owner-cull.unit.test.ts`).
+The blocklist is not touched:
+it labels ids the catalogs do not carry,
+and its guard refuses a compiled catalog that seats a blocked id,
+which a kept card would trip.
+The roster is eleven chat seats plus the decision-only seat.
