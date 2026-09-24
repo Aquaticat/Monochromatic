@@ -1,5 +1,5 @@
-// Build and validate the active D47 to D49 Search review from guarded native Fold captures.
-// The rejected desktop Slint studies remain historical, never active review evidence.
+// Preserve and validate historical captures of the rejected unfolded Search split.
+// Its blank-strip checks reproduce a withdrawn interpretation of E2, not a design gate.
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -76,8 +76,8 @@ function pixels({ scene, mode, points }) {
     { encoding: 'utf8' }).trim().split(' ');
 }
 
-/** Rejects every app text or target crossing the unfolded 24dp connector. */
-function assertConnector({ xml, scene, mode }) {
+/** Checks only the rejected study's obsolete blank-strip premise for historical integrity. */
+function assertHistoricalBlankConnector({ xml, scene, mode }) {
   const nodes = [...xml.matchAll(/<node\b[^>]*>/g)].map((match) => match[0]);
   const crossing = nodes.filter((node) => node.includes('package="dev.monochromatic.musicplayer"') &&
     (/text="[^"]+"/.test(node) || /content-desc="[^"]+"/.test(node) ||
@@ -182,7 +182,7 @@ function validate() {
         (['open-results', 'open-none'].includes(scene.stage) && !xml.includes('content-desc="Clear search"'))) {
         throw new Error(`${basename({ ...scene, mode })}: native hierarchy does not show its labelled page state.`);
       }
-      if (scene.panel === 'inner') assertConnector({ xml, scene, mode });
+      if (scene.panel === 'inner') assertHistoricalBlankConnector({ xml, scene, mode });
       assertHeader({ scene, mode });
     }
   }
@@ -195,7 +195,7 @@ function validate() {
     'frameWidth: 907', 'frameWidth: 502.4', 'previewStage.scrollTop = 0', 'previewStage.scrollLeft = 0', 'showStage(\'open-empty\')', 'showStage(\'player\')', 'backPlayer.focus()', 'openPage.focus()']) {
     if (!html.includes(text)) throw new Error(`Fold Search review is missing ${text}.`);
   }
-  console.log('Fold-native Search review, paired hierarchies, and empty black/white connector are valid.');
+  console.log('Withdrawn Fold Search artifact matches its historical captures; no design acceptance implied.');
 }
 
 if (process.argv[2] === 'build') build();
