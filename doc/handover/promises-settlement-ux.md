@@ -9,6 +9,9 @@ generated-lesson and prototype tests, Firefox ESR, actual downloads, and PDF inv
 The corrected lesson is presented in a separate headed tab without reloading the tab
 observed before presentation. Before-ticket and before-belt local artifacts are retained.
 No teaching-skill design has been confirmed or implemented.
+The user responded “This is great. What next?” to the corrected lesson.
+No additional settlement defect was specified; resume teaching-skill discovery without
+interpreting this praise as learner mastery or final skill approval.
 
 ## Latest screenshot-driven clarity repair
 

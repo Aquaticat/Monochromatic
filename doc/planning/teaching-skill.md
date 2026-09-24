@@ -55,7 +55,10 @@ The shop opening, reference chat, and reading backgrounds have since been correc
 The quick scan is not learner-performance evidence or approval of the final skill.
 The shared-understanding checkpoint was premature and is withdrawn.
 [Proposed acceptance checks](teaching-skill-acceptance.md) are only a working hypothesis.
-The user requires an updated Promise toy before continuing to weed out failure modes.
+The corrected Promise toy is built and the user responded, “This is great. What next?”
+That is positive feedback on this artifact, not a learner-mastery finding or final skill approval.
+Continue discovery by checking whether candidate rules transfer to the user's contrasting
+rotated-chicken teaching example before confirming the skill design.
 No skill design has been confirmed or implemented.
 
 ## Evidence from the user
@@ -1150,8 +1153,11 @@ No final skill confirmation has been requested.
 Independent sending and neutral surfaces are implemented and operationally checked;
 those checks do not establish teaching acceptance, learner independence, or mastery.
 The final teaching skill remains unconfirmed and unimplemented.
-Continue discovery from the user's critique of the visibly revised Promise toy.
-Do not replace that critique with another acceptance checklist or an inference from passing tests.
+The user liked the corrected Promise toy; no further concrete failure has been named in it.
+Next, contrast this toy's observed failures with the user's rotated-chicken example to
+separate transferable teaching rules from JavaScript-specific interaction requirements.
+Do not infer learner mastery from tests or replace the user's critique with a checklist.
+Clarify remaining non-measurable scope only when the contrasting evidence makes it necessary.
 Write additions in chunks no larger than the requested 200 to 500 lines.
 Do not write the final skill or ask for final confirmation yet.
 Do not edit `AGENTS.md`.
