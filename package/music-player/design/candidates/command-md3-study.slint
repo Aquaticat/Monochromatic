@@ -27,20 +27,20 @@ component Md3Result inherits Rectangle {
     in property <string> label;
     in property <string> supporting;
     in property <string> end-label;
-    height: root.large ? 96px : 64px;
+    height: root.large ? 96px : 72px;
     background: root.active ? (root.dark ? #2e3038 : #d5d6e2) : #00000000;
     border-radius: root.active ? 4px : 0px;
     border-width: root.active ? 2px : 0px;
     border-color: root.dark ? #bac5ee : #4e5e8b;
     MaterialGlyph {
-        x: 16px; y: root.large ? 20px : 20px;
+        x: 16px; y: root.large ? 20px : 24px;
         glyph: root.glyph;
         ink: root.active ? (root.dark ? #e4e5f0 : #30323b) : (root.dark ? #a9aab5 : #5d5f68);
     }
     Text {
-        x: 56px; y: root.large ? 8px : 9px;
+        x: 56px; y: root.large ? 8px : 14px;
         width: parent.width - (root.large ? 150px : 154px);
-        height: root.large ? 56px : 26px;
+        height: root.large ? 56px : 24px;
         text: root.label;
         font-size: root.large ? 20px : 16px;
         font-weight: 400;
@@ -50,16 +50,16 @@ component Md3Result inherits Rectangle {
             (root.unavailable ? (root.dark ? #a9aab5 : #5d5f68) : (root.dark ? #e4e5f0 : #30323b));
     }
     Text {
-        x: 56px; y: root.large ? 67px : 36px;
+        x: 56px; y: root.large ? 67px : 40px;
         width: parent.width - 154px;
         height: 22px;
         text: root.supporting;
-        font-size: root.large ? 14px : 14px;
+        font-size: 14px;
         overflow: elide;
         color: root.active ? (root.dark ? #e4e5f0 : #30323b) : (root.dark ? #a9aab5 : #5d5f68);
     }
     Text {
-        x: parent.width - 90px; y: root.large ? 19px : 19px;
+        x: parent.width - 90px; y: root.large ? 19px : 24px;
         width: 74px; height: 25px;
         text: root.end-label;
         font-size: 12px;
@@ -123,34 +123,34 @@ component Md3SearchSurface inherits Rectangle {
     }
     if root.state == 1: Rectangle {
         x: 12px; y: (root.full-content ? 112px : 100px) + (root.show-owner ? 24px : 0px);
-        width: parent.width - 24px; height: root.large ? 224px : 196px;
+        width: parent.width - 24px; height: root.large ? 192px : 216px;
         Md3Result {
             x: 0px; y: 0px; width: parent.width; dark: root.dark; active: true; large: root.large;
             glyph: @image-url("command-icons/folder.svg"); label: "Open folder picker";
             supporting: "Shows the folder selector"; end-label: "Ctrl+O";
         }
         Md3Result {
-            x: 0px; y: root.large ? 100px : 66px; width: parent.width; dark: root.dark; large: root.large;
+            x: 0px; y: root.large ? 96px : 72px; width: parent.width; dark: root.dark; large: root.large;
             glyph: @image-url("command-icons/settings.svg");
             label: root.large ? "Open system library settings" : "Open settings";
             supporting: root.large ? "Opens library settings" : "Opens player settings"; end-label: "";
         }
         if !root.large: Md3Result {
-            x: 0px; y: 132px; width: parent.width; dark: root.dark;
+            x: 0px; y: 144px; width: parent.width; dark: root.dark;
             glyph: @image-url("command-icons/music.svg"); label: "Open system music library";
             supporting: "Navigates to the system library"; end-label: "";
         }
     }
     if root.state == 2: Rectangle {
         x: 12px; y: (root.full-content ? 112px : 100px) + (root.shared-search ? 47px : 0px);
-        width: parent.width - 24px; height: 136px;
+        width: parent.width - 24px; height: 144px;
         Md3Result {
             x: 0px; y: 0px; width: parent.width; dark: root.dark; active: true;
             glyph: @image-url("command-icons/folder.svg"); label: "Camellia";
             supporting: "Folder · opens this folder"; end-label: "Folder";
         }
         Md3Result {
-            x: 0px; y: 66px; width: parent.width; dark: root.dark;
+            x: 0px; y: 72px; width: parent.width; dark: root.dark;
             glyph: @image-url("command-icons/music.svg"); label: "Another Xronixle";
             supporting: "Track · Camellia · reveals track"; end-label: "Track";
         }
@@ -297,7 +297,8 @@ export component CommandMd3Study inherits Window {
             ((root.study-mode == 1 && root.variant == 3) || (root.study-mode == 3 && root.variant == 1) ? (root.compact ? parent.width : parent.width - 100px) :
             (root.study-mode == 1 && root.variant == 1 ? (root.compact ? parent.width - 24px : 640px) : (root.compact ? 400px : 640px)));
         height: root.stress ? parent.height - 93px :
-            ((root.study-mode == 1 && root.variant == 3) || (root.study-mode == 3 && root.variant == 1) ? (root.compact ? parent.height - 93px : parent.height - 133px) : 374px);
+            ((root.study-mode == 1 && root.variant == 3) || (root.study-mode == 3 && root.variant == 1) ? (root.compact ? parent.height - 93px : parent.height - 133px) :
+            (root.study-mode == 2 && root.variant == 2 ? 400px : 374px));
         x: root.stress ? 0px : (root.study-mode == 1 && root.variant == 1 ? (root.compact ? 12px : 62px) :
             ((root.study-mode == 1 && root.variant == 3) || (root.study-mode == 3 && root.variant == 1) ? (root.compact ? 0px : 50px) : (parent.width - self.width) / 2));
         y: root.stress ? 93px : (root.study-mode == 1 && root.variant == 2 ? (root.compact ? 120px : 182px) :
