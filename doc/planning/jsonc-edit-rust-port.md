@@ -270,17 +270,20 @@ source-level transitive clearance remains open where required.
    UTF-16,
    Clippy,
    and consuming-crate probes.
-   A new 513-level nested-array case then aborted its 2 GiB/2 CPU isolated test process with a stack overflow before the intended 512-depth error.
-   The candidate is **not validated**;
-   the structural descent must be made stack-safe and retested before a foundation recommendation.
+   A new 513-level nested-array case aborted its 2 GiB/2 CPU isolated test process with a stack overflow before the intended 512-depth error.
+   A separate positive control with **valid 512-level nesting** also aborted with a stack overflow in the same bounds.
+   Merely checking depth before recursive descent cannot preserve the accepted input domain.
+   The candidate is **not validated**.
 - Current reports are `doc/audit/tech-jsonc-edit-rust-parser-foundation-vet-2026-09-24-63342231.md` and `doc/audit/tech-jsonc-edit-rust-exact-number-foundation-vet-2026-09-24-e8e0034a.md`.
    Their no-regex predecessors are superseded.
    Other worktree changes are concurrent and out of scope.
 
 ## Next action
 
-Replace the scratch parser's recursive container descent with a measured stack-safe design,
- then rerun the bounded depth check and the parser's syntax,
+Replace recursive container descent with an explicit work stack;
+ test accepted 512-level input and rejected 513-level input inside a bounded container.
+ Measure emission and tree cleanup at the accepted depth separately before relying on them.
+ Then rerun parser syntax,
  comment,
  UTF-16,
  numeric,
