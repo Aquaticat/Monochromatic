@@ -53,7 +53,8 @@ and open items:
    `expectTypeOf` pins of result types beside runtime values;
    `src/type-known-defect.unit.test.ts` pins result types the runtime contradicts.
 - `src/type-soundness.generated.ts`:
-   600 generated calls whose runtime results must type-check against their static result types;
+   1000 generated calls (600 on widened literals, 400 on `as const` literals checked for exact literal and tuple types)
+   whose runtime results must type-check against their static result types;
    `src/type-soundness.unit.test.ts` replays them at runtime.
 
 Machine-local files matching `*.local.*` (gitignored) hold embargoed security findings until upstream publishes an advisory.

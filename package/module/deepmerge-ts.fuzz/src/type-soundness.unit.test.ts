@@ -18,7 +18,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { TYPE_CASES, } from './type-soundness.generated.ts';
+import {
+  CONST_TYPE_CASES,
+  TYPE_CASES,
+} from './type-soundness.generated.ts';
 
 await describe({
   name: 'type-level soundness corpus',
@@ -26,8 +29,13 @@ await describe({
     it({
       name: 'every generated call still returns the literal its type was checked against',
       fn: async () => {
+        /**
+         Both corpora: widened literals and `as const` literals.
+         */
+        const allCases = [...TYPE_CASES, ...CONST_TYPE_CASES,];
         expect(TYPE_CASES.length,).toBeGreaterThan(0,);
-        for (const [index, run,] of TYPE_CASES.entries()) {
+        expect(CONST_TYPE_CASES.length,).toBeGreaterThan(0,);
+        for (const [index, run,] of allCases.entries()) {
           /**
            Fresh call result and the literal recorded at generation time.
            */
