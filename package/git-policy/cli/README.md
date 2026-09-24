@@ -251,7 +251,8 @@ a conflict blocks with exit `2` while its unmerged state remains private.
 Explicit-path mode builds the intended tree from `HEAD` plus selected worktree paths,
 then reconciles only those landed entries into a copy of the original index.
 Explicit `--no-only` mode patches a copy of the complete real index.
-For a commit that changes the tree, the completed index is installed atomically only after real Git succeeds,
+For a commit that changes the tree,
+ the completed index is installed atomically only after real Git succeeds,
 so policy failures,
 patch conflicts,
 and failed commit hooks leave real index and worktree bytes unchanged by cli-git.
