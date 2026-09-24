@@ -4929,17 +4929,55 @@ inventory and both capture validators are marked accordingly.
 guard is historical evidence integrity only,
  not a gate for new designs.
 
+The user declined signing into Photos and explicitly authorized generating
+synthetic photo and message fixtures.
+ I placed three synthetic PNGs in
+`/sdcard/Pictures/FoldPrecedent/` and sent three **emulator-simulated** SMS from
+reserved-looking `5550101`/`5550102` senders.
+ Photos displayed the PNGs but
+its signed-out Search tab only offered backup Settings,
+ so no Photos search
+layout was observed.
+ My first Files `dummy` query was incorrectly scoped to
+Downloads while the images were in Pictures;
+ the user caught this.
+ Copies
+were added to `/sdcard/Download/`,
+ Files was restarted,
+ and the query then
+returned the synthetic image grid.
+
+Direct AVD results are recorded in
+`evidence/fold-search-emulator-precedents.md`:
+ Messages moves from a
+list/detail inbox to a centered unified query/results page on the inner panel;
+Maps keeps query/suggestions/results together on the left with map context on
+the right;
+ Android DocumentsUI keeps a full-width query and results grid under
+it.
+ Cover layouts reflow to one full-width Search column or sheet.
+ These are
+observed patterns,
+ not accepted music-player variants.
+ Search in YouTube
+Music's unsigned local mode was absent;
+ Chrome was stopped at first-run
+consent and no terms were accepted.
+ A background precedent researcher is
+independently checking official app and local baseline M3 sources without
+operating the emulator.
+
 Next:
- inspect how installed apps actually arrange Search on the
-folded/unfolded emulator and compare the local baseline M3 adaptive/search
-reference.
- Only then build distinct design-only candidates with informational
-material kept clear of the connector,
- assess composition in both panels and at
-200% text,
- and present options with tradeoffs.
- No KWin automation and no
-production edits.
+ integrate that primary-source research,
+ then build distinct design-only
+candidates with informational material kept clear of the connector.
+ Assess
+composition on both panels at 100%/200% text,
+ present genuinely different
+options with tradeoffs,
+ and do not promote a technically passing but visually
+disconnected page.
+ No KWin automation and no production edits.
 
 ## Issue tracking moves to Linear for this session
 
