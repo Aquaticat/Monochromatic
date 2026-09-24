@@ -145,11 +145,12 @@ and its duration near the left side of the physical center,
 beginning immediately to the right.
  I first interpreted the closeness as
 safe-placement praise.
- The user's later **about 10mm visible dent** corrects
-that reading:
- on the approximately 141.08mm-wide inner panel,
- the dent spans
-roughly physical x `[964,1112)`px around center x 1038.
+ The user's **corrected about 7.5mm visible dent** (superseding an initial
+10mm estimate) overturns that reading:
+ on the approximately 141.08mm-wide
+inner panel,
+ the dent spans roughly physical x `[983,1093)`px around center
+x 1038.
  In the private
 native screenshot,
  the duration's right edge is near x 1000 and OCR placed
@@ -167,14 +168,13 @@ time/title glyph placement.
  No user screenshot was copied into the repo.
 
 The crease width is physical.
- Converting 147px to about 60dp is valid only
-at the emulator's current 390dpi configuration;
- Android display scaling
-changes dp size without changing the physical 10mm.
- `max(min_padding,
-crease_width)` describes clearance between informative material,
- not a
-blank 60dp surface gutter.
+ Converting about 110px to about 45dp is valid
+only at the emulator's current 390dpi configuration;
+ Android display
+scaling changes dp size without changing the physical 7.5mm.
+`max(min_padding, crease_width)` describes clearance between informative
+material,
+ not a blank 45dp surface gutter.
 
 ## Apps that did not supply Search evidence
 
