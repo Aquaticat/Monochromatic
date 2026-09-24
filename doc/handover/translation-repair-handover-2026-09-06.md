@@ -4647,20 +4647,30 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  MIKAELA12 RUNS (entry `mikaela_khara`,
-    frozen `21ea25993`,
-    pid 125750,
-    launched 03:38 UTC 2026-09-24,
-    waiter wait-m12 (background bash),
-    meters 48.14 USD Bedrock and 95.19 OpenRouter at launch, Synthetic dry for the week since 02:56 UTC, Hyper dry;
+1.  MIKAELA13 RUNS (entry `mikaela_khara`,
+    frozen `457765221`,
+    pid 344865,
+    launched 04:18 UTC 2026-09-24,
+    waiter wait-m13 (background bash),
+    meters 47.86 USD Bedrock and 94.68 OpenRouter at launch, Synthetic dry for the week since 02:56 UTC, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    the second run on class one hundred nine;
-    read for any "checker stage re-seated" line (none expected without a hold beginning inside the lane),
-    the checker rounds hearing 2 of 3 on the dry reading,
+    the first run on class one hundred ten;
+    read for the `insertion-carried-folded (slice 14 into slice 15)` line at the admission,
+    the carrier's widened source rendered on the page (the September sentence inside the neighbour's paragraph),
+    no carried-evidence-lost stop,
     then classes seventy to seventy-seven, ninety-six, one hundred one and one hundred two beside every check of `mikaela11`
     (𝓠𝓾𝓪𝓷 as the archive, "𝓠𝓾𝓪𝓷’s" curled, "Mika was outed", the Epilogue one to one, the life in the past, front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish);
     then `yingying` or `zheermao101`, beside every check of the last read of each;
-    record each under a new heading above "## shi_Yumiaoya18 read, 2026-09-24" in the pass log.
+    record each under a new heading above "## mikaela12 read, 2026-09-24" in the pass log.
+    MIKAELA12 READ (frozen `21ea25993`): INCOMPLETE at 03:54 UTC 2026-09-24 in 15 min, one attempt, 2,196 seats, 1,744 calls, 0.71 USD by the meters, no page or artifact;
+    stopped at publish on `carried-insertion-evidence-lost slice 14`: the September sentence the roster anchored sits inside slice 15's archive span (the archive merged two source paragraphs into one rendering),
+    the translate lane wrote slice 15 from its own source alone, the slate chose the candidate without the passage, the contest and gate kept it (class one hundred ten);
+    class one hundred nine not exercised (no hold inside the lane; all 16 checker rounds heard 2 of 3), class one hundred seven live on slices 2, 15, 19, 20 and 26, 49 abstention lines, Jev 78 of 78.
+    CLASS ONE HUNDRED TEN BUILT (457765221, guard red first 750e87978, full suite `suite-class110.log` 1114 PASS with the load-sensitive `lane-contest-stage` grace-window case failing under the parallel run and passing alone):
+    `foldCarriedInsertions` (`corpus-run/insertion-carried-fold.ts`) runs after the coverage admission in `pass-entry.ts`;
+    where every evidence region of a carried insertion sits inside exactly one adjacent paired slice's target span and the two sources abut, the carrier's source widens over both, the carried slice moves to `admission.folded`, the lanes skip it, and the finding `insertion-carried-folded` prints;
+    every other shape stands aside and stays carried.
+    Not exercised live yet.
     SHI_YUMIAOYA18 READ (frozen `21ea25993`): SETTLED at 03:35 UTC 2026-09-24 in 7 min, one attempt, 865 seats, 686 calls, 0.38 USD by the meters;
     class one hundred nine not exercised (no hold began inside the lane, no "checker stage re-seated" line; both checker rounds heard 2 of 3 on gemma-26b and gemma-4-e2b),
     class one hundred seven silent (no accepted addition claim against the archive), the filers log live (34 lines),

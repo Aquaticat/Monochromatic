@@ -8082,6 +8082,72 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## mikaela12 read, 2026-09-24, 04:20 UTC: INCOMPLETE carried-evidence-lost in 15 min, class one hundred ten (a carried passage inside the neighbour's archive span), fixed in 457765221; mikaela13 launched
+
+`mikaela12` (entry `mikaela_khara`, frozen `21ea25993`, pid 125750) stopped INCOMPLETE at 03:54 UTC 2026-09-24,
+15 min after its 03:38 start (TALLY `ms=905150`, `error=translation repair interrupted: carried-evidence-lost`),
+one attempt,
+2,196 seats,
+78 retry rounds,
+1,744 calls,
+0.71 USD by the meters (Bedrock 48.13 to 47.86, OpenRouter 95.13 to 94.69),
+on Bedrock and OpenRouter alone (Synthetic dry for the week, Hyper dry).
+Stages: repair lane from 03:39:31, translate lane from 03:42:38, contest from 03:44:28 (27 of 36 slices differ), consolidation 03:45:17 to 03:54; Jev 78 of 78; 49 abstention lines with reasons.
+No page, no artifact: the entry stopped at the publish guard.
+
+Class one hundred nine not exercised, as expected:
+no hold began inside the repair lane (every JUDGE SEATS line reads `synthetic=dry bedrock=wet hyper=dry openrouter=wet`),
+no "checker stage re-seated" line;
+all 16 checker rounds heard 2 of 3 (gemma-26b and the dry reading's gemma-4-e2b for the withheld Kimi) with no grace.
+Class one hundred seven live on five slices (2, 15, 19, 20, 26: `translate-archive-disputed`, the repair lane's text standing in for the archive in the lanes and the consolidation).
+The filers log live.
+
+Class one hundred ten, the stop.
+The coverage admission found slices 12 and 14 `coverage=carried, missingDestinations=0`:
+source-only paragraphs the roster said the page already renders.
+Slice 14's evidence, quoted by every voice, was the September sentence
+("By September, I started noticing cracks in their relationship due to their financial strain and Mika’s dependency on Spring."),
+which sits inside slice 15's archive span:
+the archive merged two source paragraphs (the September paragraph and its neighbour) into one rendering, and the pairing paired that rendering with the neighbour's source alone, leaving slice 14 source-only.
+The translate lane, writing slice 15 from its own source alone, wrote the neighbour without the September sentence;
+the translate slate chose the candidate without "the surrounding passage" (the judges' words);
+the contest chose translate;
+the consolidation gate kept it;
+and at publish `assertCarriedInsertionsRemain` (class twenty) found the carried region gone and stopped the entry
+(`INTERRUPTED mikaela_khara: carried-insertion-evidence-lost slice 14`).
+The guard was right and the lanes were blind:
+nothing told the writer of slice 15 that its archive span also renders slice 14's source.
+
+Fix (457765221, guard red first 750e87978 with "does not provide an export named 'CARRIED_FOLDED_FINDING'"):
+`foldCarriedInsertions` (`corpus-run/insertion-carried-fold.ts`) runs right after `decidePassInsertionAdmission` in `pass-entry.ts`.
+Where every evidence region of a carried insertion locates (through `locateQuote`) inside exactly one paired slice's target span,
+that slice stands one position away,
+the carried slice is the insertion the admission names,
+and the two sources abut with nothing but whitespace between them,
+the carrier's source widens over both sources (`widenCarrier`), the carried slice leaves the carried list as `folded` (`FoldedInsertion` on `InsertionAdmission`),
+and the finding `insertion-carried-folded (slice 14 into slice 15)` prints.
+Both lanes then write the carrier from the widened source, so the September sentence is owed by the rule, not remembered by the guard;
+`translateDocument` skips folded positions as it skips carried ones;
+the publish guard reads only what stays carried.
+Only the unambiguous case folds: evidence in a non-adjacent slice, evidence the page never carried, evidence straddling two slices, or a source gap that is not blank all stand aside and the insertion stays carried as before.
+Two unit cases (`insertion-carried-fold.unit.test.ts`, cat-themed): FOLDS and STANDS ASIDE.
+Lint 0/0 on the touched files, types clean, `mise run build`, the guard PASS, full suite `suite-class110.log` 1114 PASS
+with one load-sensitive failure (`lane-contest-stage` "RECORDS RAW HALF-QUORUM BALLOTS", a grace-window timing case: expected 2 usable, saw 4 under the parallel run; PASS alone; `suite-class109.log` had no failure).
+Not replayed over the real mikaela12 texts (the run left no artifact; the fixture reproduces the shape).
+Frozen `.frozen-dist-457765221`.
+
+Reading the rest was moot: no page shipped.
+
+`mikaela13` (entry `mikaela_khara`, frozen `457765221`, pid 344865, overlap 8)
+launched 04:18 UTC on Bedrock and OpenRouter
+(meters 47.86 USD Bedrock, 94.68 OpenRouter at launch; Synthetic dry for the week, Hyper dry),
+waiter bvhf624bc.
+Read for the `insertion-carried-folded (slice 14 into slice 15)` line and the carrier's widened source rendered on the page (the September sentence inside the neighbour's paragraph),
+no carried-evidence-lost stop,
+then classes seventy to seventy-seven, ninety-six, one hundred one and one hundred two beside every check of `mikaela11`
+(𝓠𝓾𝓪𝓷 as the archive, "𝓠𝓾𝓪𝓷’s" curled, "Mika was outed", the Epilogue one to one, the life in the past, front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish).
+Then `yingying` or `zheermao101`.
+
 ## shi_Yumiaoya18 read, 2026-09-24, 03:45 UTC: SETTLED in 7 min, the first page on class one hundred nine (not exercised: no hold began inside the lane), every check as shi_Yumiaoya17, no class; mikaela12 launched
 
 `shi_Yumiaoya18` (frozen `21ea25993`, pid 91959) SETTLED at 03:35 UTC 2026-09-24,
