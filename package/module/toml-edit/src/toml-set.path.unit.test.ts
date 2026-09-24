@@ -105,6 +105,14 @@ await describe({
       },
     },),
     it({
+      name: 'updates the matching table without changing another table with the same key',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: '[a]\nx=1\n[b]\nx=2\n', },);
+        const updated = tomlSet({ edit, path: ['b', 'x',], value: 9, },);
+        expect(tomlStringify({ edit: updated, },),).toBe('[a]\nx=1\n[b]\nx=9\n',);
+      },
+    },),
+    it({
       name: 'replaces a nested inline-table value without changing siblings',
       fn: async () => {
         const edit = parseTomlEdit({ source: 'foo = { a = { b = 1, c = 2 }, d = 3 }\n', },);
