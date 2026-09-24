@@ -10,6 +10,10 @@ const destination = resolve(output);
 const fontPath = execFileSync('fc-match', ['sans-serif', '--format', '%{file}'], { encoding: 'utf8' }).trim();
 if (!fontPath) throw new Error('No installed sans-serif font for the anonymized system clock.');
 mkdirSync(destination, { recursive: true });
+const coverTyping = [process.env.MUSIC_PLAYER_COVER_IME_LIGHT, process.env.MUSIC_PLAYER_COVER_IME_DARK];
+if (coverTyping.filter(Boolean).length === 1) {
+  throw new Error('Supply both light and dark cover IME captures, or neither.');
+}
 const captures = [
   ...['right', 'right-lift', 'mirrored'].flatMap((candidate) =>
     ['light', 'dark'].flatMap((mode) => [
@@ -19,6 +23,10 @@ const captures = [
   ...['light', 'dark'].flatMap((mode) => ['100', '200'].map((scale) => ({
     source: `search-deck-cover-left-results-${mode}-s${scale}.png`, panel: 'cover', mode, scale,
   }))),
+  ...(coverTyping[0] && coverTyping[1] ? coverTyping.map((sourcePath, index) => ({
+    sourcePath, outputName: `search-review-cover-typing-${index === 0 ? 'light' : 'dark'}-s200.png`,
+    panel: 'cover', mode: index === 0 ? 'light' : 'dark', scale: '200',
+  })) : []),
 ];
 for (const capture of captures) {
   const inner = capture.panel === 'inner';
@@ -29,8 +37,8 @@ for (const capture of captures) {
   const fontSize = capture.scale === '200' ? 57 : 37;
   const baseline = capture.scale === '200' ? 93 : 81;
   const start = inner ? 149 : 61;
-  const file = join(destination, `search-review-${capture.source}`);
-  execFileSync('magick', [join(prototype, capture.source),
+  const file = join(destination, capture.outputName ?? `search-review-${capture.source}`);
+  execFileSync('magick', [capture.sourcePath ?? join(prototype, capture.source),
     '-fill', surface, '-draw', `rectangle 0,0 ${maskRight},${upperBand}`,
     '-font', fontPath, '-pointsize', String(fontSize),
     '-fill', ink, '-annotate', `+${start}+${baseline}`, '9:41',
