@@ -1207,31 +1207,31 @@ This is a static specification replay, not evidence of automatic skill invocatio
 compliance by an agent. The model-invocation choice and cross-domain feedback rule
 remain proposed; the user has not confirmed the whole process or asked for implementation.
 
+## Continuation correction and confirmation gate
+
+After the planning outline and static replay, the agent stopped on a status report
+while the skill design still awaited shared-understanding confirmation.
+The user replied: “Why are you stopping? Continue working. If you're waiting on me
+for something, ask me.” This supersedes the earlier deferral of that confirmation.
+The [existing `PXQ` rule](../../AGENTS.md) already says a finished item is not a
+finished queue and forbids a status report that requires “continue”.
+This was a failure to follow that rule, not evidence that the skill was approved.
+The user reiterated, “No need to update AGENTS.md for now.”
+The existing `PXQ` rule covers this failure; no `AGENTS.md` change is planned.
+
+The research, corrected Promise artifact, proposed acceptance checks,
+[decision outline](teaching-skill-decision-outline.md), and
+[static replay](teaching-skill-outline-replay.md) now supply a concrete contract
+for a shared-understanding question. Present the settled scope and the still-proposed
+model invocation and learner-owned check explicitly; invite correction of a named
+clause rather than asking for another failure the assistant has not researched.
+No final `SKILL.md` exists. The user's answer gates implementation.
+Do not reopen the learner-observation veto or treat a working artifact as mastery.
+
 ## Next action
 
-The correction handover records the completed lesson repair and verification boundary.
-Resume teaching-skill discovery from these concrete failures when that discussion continues.
-Do not reopen the vetoed learner-observation concerns as approval gates.
-No final skill confirmation has been requested.
-Independent sending and neutral surfaces are implemented and operationally checked;
-those checks do not establish teaching acceptance, learner independence, or mastery.
-The final teaching skill remains unconfirmed and unimplemented.
-The user liked the corrected Promise toy; no further concrete failure has been named in it.
-The [transfer probe](teaching-skill-transfer-probe.md) separates working cross-domain
-rules from JavaScript-specific controls and from unobserved cooking-timeline hypotheses.
-Do not repeat the withdrawn broad Q1 or ask for checklist approval.
-The [research note](teaching-skill-research-feedback.md) contrasts a sourced food-safety
-check with measured and hypothetical Promise preview mismatches. The proposed acceptance
-checks now name a learner-owned criterion, bounded mismatch interpretation, and recovery
-or stop at consequential steps. The current lesson already handles the rejection starter;
-its two disposable Waiting variations show why display text alone is not a diagnosis.
-This supports the planning refinement, not a claim of learner failure or final skill confirmation.
-The decision outline and static replay are ready for concrete critique;
-do not present them as a finished skill or claim they have been executed by an agent.
-No preference question survived the evidence review, so do not manufacture one.
-Do not infer learner mastery from artifact tests.
-The original request covers live teaching and authored materials; do not reopen that split
-or the confirmed default HTML and complete-print requirements without new evidence.
-Write additions in chunks no larger than the requested 200 to 500 lines.
-Do not write the final skill or ask for final confirmation yet.
-Do not edit `AGENTS.md`.
+Ask the user to confirm or correct the concrete teaching-skill contract.
+If they confirm it, settle packaging and invocation mechanics that still depend on
+their preference, then implement and verify the skill against the recorded failures.
+If they correct it, update the planning contract and rerun the relevant static cases.
+Until then, keep the final skill unimplemented and leave `AGENTS.md` unchanged.
