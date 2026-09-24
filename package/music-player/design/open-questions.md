@@ -122,7 +122,18 @@ rounds (2026-09-17):
   both full-width variants replaced its
   parent screen),
   so their captures are rejected and not a review matrix.
-  Rebuild around the persistent deck before presenting any alternative.
+  The throwaway branch has provisional top-left,
+  top-right and IME-lifted bottom-left deck placements.
+  A focused query,
+  result insertion and all deck controls were visually checked with a
+  **debug-only system IME**, at 200% text on the inner panel;
+  Gboard-specific
+  keyboard behavior is not established.
+  A preceding bottom deck failed even
+  under the smaller input probe.
+  The three current placements are not user
+  selections;
+  recapture with final source before presenting alternatives.
   Keep Search results,
   no-result/unavailable states,
   and open/back behavior visibly

@@ -5083,17 +5083,63 @@ existing `TransportBlock` ownership boundary,
  right Search,
  and a
 full-width header/two-result composition above the pinned deck.
- Its build
-is running;
- no replacement is validated yet.
+ The initial deck-persistent capture run finished,
+ but its entire inner
+matrix predates keyboard testing and is not an active review.
+ With Android's
+query focused at 200% text,
+ Gboard later reported an IME without drawing keys,
+including in Messages;
+ its cause is unresolved.
+ A throwaway debug-only
+`FoldProbeInputMethod` in the same branch instead draws a measured 300dp
+system-managed input window and inserts `cam` through the input connection.
+See `doc/troubleshooting/android-17-fold-emulator-ime-probe.md` for the
+framework source trace,
+ limits,
+ and restoration steps.
+ The first bottom-anchored deck was partially covered;
+ never infer D50 from a
+keyboard-closed capture or that failed layout.
+ The branch now includes a
+right Search with top-left deck,
+ a mirrored left Search with top-right deck,
+and an IME-lifted right Search with the deck bottom-left when closed.
+ Native
+2076 × 2152px manual captures of each with the focused query,
+ `cam`
+results,
+ a visibly rendered probe at 200% text,
+ and all deck controls
+showing have been inspected.
+ The IME-lifted layout also showed controls at
+100% with the probe visible.
+ These are provisional checks,
+ not a Gboard
+simulation or user acceptance.
+ The old left Search and wide results study
+still place the deck below content without IME avoidance;
+ they are not
+viable choices.
  No candidate is accepted.
- Assess
-composition on both panels at 100%/200% text,
- present genuinely different
-options with tradeoffs,
- and do not promote a technically passing but visually
-disconnected page.
- No KWin automation and no production edits.
+ Next:
+ recapture live variants
+in both schemes and both panels with measured input insets and bound guards;
+inspect 100% and 200% empty,
+ results,
+ no-results,
+ Back,
+ Clear,
+ and long
+query states;
+ check real Search entry,
+ keyboard dismissal and folded cover;
+then build a new review with side,
+ location,
+ and compositional tradeoffs.
+The withdrawn `questions/current.html` is still not a live form.
+ No KWin
+automation and no production edits.
 
 ## Issue tracking moves to Linear for this session
 
