@@ -4738,7 +4738,6 @@ then the log's last TALLY and METERS lines once)
 run as a background Bash task;
 the owner dropped the cron fallback on 2026-09-19 ("You don't need a cron job"),
 and the session still starts with `CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1`.
-and a 25-minute `CronCreate` job is the fallback wake.
 
 ## The three checks
 
