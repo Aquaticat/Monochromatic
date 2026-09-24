@@ -7,6 +7,7 @@ import { placeHandleGlosses, } from './handle-gloss-place.ts';
 import { restoreCollidingHeadings, } from './heading-collision-restore.ts';
 import { unifyHeadingSeries, } from './heading-series-unify.ts';
 import { restoreJsxAttributes, } from './jsx-attribute-restore.ts';
+import { restoreListSpread, } from './list-spread-restore.ts';
 import { restoreNameGlossLines, } from './name-gloss-restore.ts';
 import { shippableReplacements, } from './publish-fixed.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
@@ -141,6 +142,14 @@ export function guardPageAssembly(
     replacements: titles.replacements,
   },);
   /**
+   Every list at the archive's spacing between its items (class one hundred
+   seventeen).
+   */
+  const lists = restoreListSpread({
+    slices,
+    replacements: glossLines.replacements,
+  },);
+  /**
    Rows the page-assembly passes rewrote, the latest pass's text per slice.
    */
   const restoredRows = new Map<number, SliceReplacement>([
@@ -151,6 +160,7 @@ export function guardPageAssembly(
     ...attributes.restored,
     ...titles.restored,
     ...glossLines.restored,
+    ...lists.restored,
   ].map(function bySlice(row,): readonly [
     number,
     SliceReplacement,
@@ -166,7 +176,7 @@ export function guardPageAssembly(
   const guarded = guardFootnoteAssembly({
     targetText,
     slices,
-    replacements: glossLines.replacements
+    replacements: lists.replacements
       .filter(function stillChanges(replacement,): boolean {
         // A restoration that brings a slice back to the archive's exact wording
         // is no change for the assembler; its override row below still says
@@ -208,6 +218,7 @@ export function guardPageAssembly(
       ...attributes.findings,
       ...titles.findings,
       ...glossLines.findings,
+      ...lists.findings,
       ...guarded.findings,
     ],
   };
