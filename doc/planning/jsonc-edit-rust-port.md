@@ -18,6 +18,9 @@ Design interview in progress. No implementation is authorized until the user con
 - Q3: Expose an idiomatic Rust API with the equivalent public capabilities, rather than copying TypeScript call syntax.
 - Q4: Expose exact JSON numeric values rather than JavaScript-number semantics. Preserve source number spelling for unedited literals as part of the established serialization contract.
 - Q5: Duplicate object keys are user error and outside the supported behavioral contract. Interpret "undefined behavior" as unspecified library results for unsupported input, never permission for Rust memory unsafety or an unsafe-language contract; do not promise a particular parse or edit result for duplicates.
+- Q6: Exact numeric values compare mathematically: `1`, `1.0`, and `1e0` compare equal. An unedited number retains its source spelling on output.
+- Q7: Each edit returns a new state; the previous state remains usable. Do not make in-place mutation the public editing contract.
+- Q8: Share supported-behavior fixtures across Rust and TypeScript, and fix confirmed unintended discrepancies in both during the port. The exact Rust number API is an explicit, tested exception to JavaScript-number parity.
 
 ## Working baseline
 
@@ -26,11 +29,10 @@ A port retains the documented identity of the TypeScript library: JSONC containe
 ## Open decisions
 
 - Exact public API surface, including low-level parse and emit capabilities, and whether internal artifact-test helpers remain public.
-- Whether equal-valued JSON number spellings compare equal in the exact Rust value API, while retaining original spelling when unedited.
-- Whether edits return new immutable states, mutate a Rust state, or expose both.
-- How maintained TypeScript and Rust implementations share conformance checks and fixes for supported behavior, except the explicit numeric difference.
+- Whether the Rust hand-written parser itself must be ported or only its supported behavior must be reproduced with a vetted foundation.
+- Whether the Rust crate is private to this repository or prepared as a publishable crate.
 - Validation and release boundaries after the semantic contract is settled.
 
 ## Next action
 
-Continue the design-tree interview on numeric representation, duplicate-key guarantees, and any independent public-surface decisions. Do not implement the crate before the user confirms the complete design.
+Continue the design-tree interview on parser ownership and distribution boundaries. Do not implement the crate before the user confirms the complete design.
