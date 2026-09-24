@@ -467,6 +467,15 @@ The published `prim-fmt` library exposes file classification and `format()` at `
  Its private formatter parser would be a separate adapter/fork candidate rather than the published interface as-is.
  No candidate code was executed for this screen.
 
+### `jcfmt` 0.1.2 category exit
+
+The published `jcfmt` manifest declares only a `[[bin]]` target at `src/main.rs`,
+ not a consumable Rust library (`Cargo.toml:18-35`).
+ It is a JSONC formatting command,
+ so calling it as a subprocess would not expose independently queryable key/value comments or a native immutable edit-state API.
+ Its `nojson` dependency is a distinct potential parsing component and remains subject to separate source screening.
+ No command was executed.
+
 ### `fjson` 0.3.1
 
 **Source correction:**
