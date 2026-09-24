@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Withdrawn music-player Search study</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --color-page: #f6f7fc;
+  --color-panel: #ffffff;
+  --color-raised: #e7e7f1;
+  --color-ink: #30323b;
+  --color-muted: #555760;
+  --color-line: #777984;
+  --color-accent: #405481;
+  --color-device: #111218;
+  --color-edge: #656771;
+  --color-backdrop: rgb(0 0 0 / 76%);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-page: #0d0e13;
+    --color-panel: #17181f;
+    --color-raised: #252631;
+    --color-ink: #e4e5f0;
+    --color-muted: #b9bac6;
+    --color-line: #777984;
+    --color-accent: #bac5ee;
+    --color-device: #090a0e;
+    --color-edge: #999ba7;
+    --color-backdrop: rgb(0 0 0 / 82%);
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin-inline: 0;
+  margin-block: 0;
+  background-color: var(--color-page);
+  color: var(--color-ink);
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+button, textarea, select { font: inherit; }
+button, select {
+  min-inline-size: 3rem;
+  min-block-size: 3rem;
+  padding-inline: 0.8rem;
+  padding-block: 0.4rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-line);
+  border-radius: 0.65rem;
+  background-color: var(--color-panel);
+  color: var(--color-ink);
+}
+button { cursor: pointer; }
+button:hover { background-color: var(--color-raised); }
+button:focus-visible, select:focus-visible, textarea:focus-visible, .preview-stage:focus-visible {
+  outline: 0.1875rem solid var(--color-accent);
+  outline-offset: 0.1875rem;
+}
+[hidden] { display: none !important; }
+main {
+  max-inline-size: 92rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 3vw, 3rem);
+  padding-block: 2rem 5rem;
+}
+h1 { font-size: clamp(1.8rem, 3.5vw, 2.8rem); line-height: 1.2; }
+h2 { margin-block-start: 2.5rem; }
+p { max-inline-size: 85ch; }
+.small { color: var(--color-muted); font-size: 0.94rem; }
+.banner, .flow, .capture {
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-line);
+  border-radius: 0.8rem;
+  background-color: var(--color-panel);
+}
+.banner { max-inline-size: 85ch; padding-inline: 1rem; padding-block: 0.8rem; }
+.flow { padding-inline: 1rem; padding-block: 1rem; }
+.flow h2 { margin-block-start: 0; }
+.controls, .preview-actions, .dialog-bar { display: flex; flex-wrap: wrap; gap: 0.55rem; align-items: center; }
+.controls label { display: inline-flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.flow-visual { overflow: auto; max-block-size: 52rem; margin-block-start: 1rem; }
+.flow-visual picture { display: block; }
+.flow-visual img { display: block; max-inline-size: min(100%, 40rem); block-size: auto; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: 1rem; }
+.capture { min-inline-size: 0; margin-inline: 0; margin-block: 0; padding-inline: 0.8rem; padding-block: 0.8rem; }
+.capture h3 { margin-block: 0 0.5rem; }
+.capture picture { display: block; }
+.capture img { display: block; inline-size: auto; max-inline-size: 100%; max-block-size: 25rem; block-size: auto; }
+.capture figcaption { margin-block: 0.6rem; }
+.preview-actions { margin-block-start: 0.75rem; }
+textarea {
+  display: block;
+  inline-size: 100%;
+  min-block-size: 9rem;
+  padding-inline: 0.8rem;
+  padding-block: 0.8rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-line);
+  border-radius: 0.6rem;
+  background-color: var(--color-panel);
+  color: var(--color-ink);
+}
+output:empty { display: none; }
+output {
+  display: block;
+  max-inline-size: 75ch;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding-inline: 1rem;
+  padding-block: 1rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-line);
+  border-radius: 0.6rem;
+  background-color: var(--color-raised);
+}
+dialog {
+  inline-size: min(97vw, 95rem);
+  max-inline-size: none;
+  max-block-size: 96vh;
+  padding-inline: 0;
+  padding-block: 0;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-line);
+  border-radius: 0.9rem;
+  background-color: var(--color-panel);
+  color: var(--color-ink);
+}
+dialog::backdrop { background-color: var(--color-backdrop); }
+.dialog-bar { padding-inline: 1rem; padding-block: 0.6rem; }
+.dialog-bar h2 { flex: 1 1 15rem; margin-block: 0; font-size: 1.2rem; }
+.dialog-bar .details { flex-basis: 100%; margin-block: 0; }
+.preview-stage {
+  overflow: auto;
+  block-size: min(75vh, 65rem);
+  padding-inline: 1rem;
+  padding-block: 1rem;
+  background-color: var(--color-raised);
+}
+.device {
+  --scale: 1;
+  --screen-inline: 443.0769px;
+  --screen-block: 994.4615px;
+  --frame-inline: 502.4px;
+  --frame-block: 1053.2px;
+  --screen-inset: 29.1px;
+  --outer-radius: 43.1px;
+  --inner-radius: 30.18px;
+  position: relative;
+  inline-size: calc(var(--frame-inline) * var(--scale));
+  block-size: calc(var(--frame-block) * var(--scale));
+  margin-inline: auto;
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: calc(var(--outer-radius) * var(--scale));
+  background-color: var(--color-device);
+}
+.device[data-panel='inner'] {
+  --screen-inline: 852px;
+  --screen-block: 883px;
+  --frame-inline: 907px;
+  --frame-block: 937px;
+  --screen-inset: 27px;
+  --outer-radius: 72px;
+  --inner-radius: 42px;
+}
+.device-screen {
+  position: absolute;
+  inset-inline-start: calc(var(--screen-inset) * var(--scale));
+  inset-block-start: calc(var(--screen-inset) * var(--scale));
+  inline-size: calc(var(--screen-inline) * var(--scale));
+  block-size: calc(var(--screen-block) * var(--scale));
+  overflow: hidden;
+  border-radius: calc(var(--inner-radius) * var(--scale));
+  background-color: var(--color-device);
+}
+.device-screen img { display: block; inline-size: 100%; block-size: 100%; }
+.camera, .hinge { display: none; position: absolute; background-color: var(--color-device); }
+.device[data-panel='inner'] .camera {
+  display: block;
+  inset-inline-end: calc(48.41px * var(--scale));
+  inset-block-start: calc(43.62px * var(--scale));
+  inline-size: calc(32.41px * var(--scale));
+  block-size: calc(32.41px * var(--scale));
+  border-radius: 50%;
+}
+.device[data-panel='inner'] .hinge {
+  display: block;
+  inset-inline-start: calc(431.5px * var(--scale));
+  inline-size: calc(44px * var(--scale));
+  block-size: calc(8.8px * var(--scale));
+  border-radius: calc(4.8px * var(--scale));
+}
+.hinge[data-end='start'] { inset-block-start: 0; }
+.hinge[data-end='end'] { inset-block-end: 0; }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <p class="small">Music player · design-only Search review · Pixel 9 Pro Fold · 2026-09-23</p>
+  <h1>Withdrawn: unfolded Search study</h1>
+  <p>D47 puts a Search button on the player and opens a separate page. D48 gives that page one Back/query/Clear header, without a second in-app title bar. D49 makes the folded cover and unfolded inner panel the source for desktop too.</p>
+  <p class="banner"><strong>This review is withdrawn.</strong> Its unfolded query header sits over an empty left pane while the results and empty-state instructions are isolated in the right pane. Passing the connector checks did not make that composition acceptable. Do not use this page to request design feedback or production implementation. The captures remain historical evidence only; no replacement has been chosen.</p>
+  <p class="small">These are opaque debug-only Compose screenshots from the Pixel 9 Pro Fold emulator, with native Android status/navigation bars and both color schemes. Cover: 1080 × 2424 physical px at approximately 443 × 994dp on this 390dpi AVD. Inner: 2076 × 2152 physical px at approximately 852 × 883dp. The earlier 411 × 923dp cover estimate came from published panel ppi, not the AVD's measured Android density. The unfolded 24dp connector is empty, true black in dark and white in light; the header stays in the left pane and results in the right pane. The full-content header uses baseline MD3, not Expressive. Search indexing, actions and focus restoration remain illustrative or unverified. The HTML changes images only.</p>
+</header>
+<section class="flow" aria-labelledby="flow-title" hidden>
+  <h2 id="flow-title">Walk from player to Search and back</h2>
+  <p id="flow-state" aria-live="polite">Cover player. Search is next to Open in the app bar.</p>
+  <div class="controls">
+    <label for="panel">Fold panel<select id="panel"><option value="cover">Folded cover</option><option value="inner">Unfolded inner</option></select></label>
+    <button id="open-page" type="button">Open Search page</button>
+    <button id="back-player" type="button" hidden>Back to player</button>
+    <label id="query-label" for="sample-query" hidden>Canned query<select id="sample-query" hidden><option value="">Empty</option><option value="cam">cam</option><option value="zzq">zzq</option></select></label>
+    <button id="unavailable" type="button" hidden>Library unavailable</button>
+  </div>
+  <div class="flow-visual"><picture id="flow-picture"><source media="(prefers-color-scheme: dark)" srcset="__FLOW_DARK__"><img id="flow-image" src="__FLOW_LIGHT__" width="1080" height="2424" alt="Folded cover player with Search beside Open"></picture></div>
+  <p class="small">This walkthrough uses prerecorded app states; it does not prove native query entry, result activation or keyboard focus after Back. The screenshot is scaled for the walkthrough. Use each card's preview for the measured device chassis and 100% dp display.</p>
+</section>
+<section aria-labelledby="cover-title" hidden>
+  <h2 id="cover-title">Folded cover · 443 × 994dp on this AVD</h2>
+  <p>Search trigger, empty page, sample results, no results and unavailable library in both schemes. Preview each native raster with the cover chassis.</p>
+  <div class="gallery">__COVER_CARDS__</div>
+</section>
+<section aria-labelledby="inner-title" hidden>
+  <h2 id="inner-title">Unfolded inner · 852 × 883dp</h2>
+  <p>The header and divider occupy only the left pane, with results or empty-state message in the right pane. All app content and hit targets stay outside the centered 24dp connector. Desktop inherits this treatment.</p>
+  <div class="gallery">__INNER_CARDS__</div>
+</section>
+<section aria-labelledby="stress-title" hidden>
+  <h2 id="stress-title">Android 200% text check</h2>
+  <p>Player trigger and sample Search results on both panels at 200% text. These captures are a fit check, not evidence for native TalkBack focus or completed result actions. The initial unfolded player frame clips the last mode row. A native swipe reveals its full 131px target above the navigation inset; the right track list scrolls independently. Do not mistake the initial static frame for proof of full fit.</p>
+  <div class="gallery">__STRESS_CARDS__</div>
+</section>
+<form id="response-form" hidden>
+  <h2>What would you correct?</h2>
+  <label for="correction">Describe a consequential concern with Search's placement, one-bar page, the two-panel layout, result meaning or empty states.</label>
+  <textarea id="correction" name="correction"></textarea>
+  <p><button type="submit">Prepare my response</button></p>
+  <output id="reply" aria-live="polite" for="correction"></output>
+  <p class="small">Your prepared text stays on this page. Reply in chat; no network request or clipboard API is used.</p>
+</form>
+</main>
+<dialog id="preview" aria-labelledby="preview-title">
+  <div class="dialog-bar">
+    <h2 id="preview-title">Fold preview</h2>
+    <button id="fit" type="button">Fit</button>
+    <button id="reset" type="button">Reset 100%</button>
+    <button id="zoom-out" type="button">Zoom out</button>
+    <button id="zoom-in" type="button">Zoom in</button>
+    <button id="close-preview" type="button">Close</button>
+    <p id="scale-label" class="small details" aria-live="polite"></p>
+  </div>
+  <div class="preview-stage" id="preview-stage" tabindex="0" role="region" aria-label="Scrollable native Fold screen preview"><div class="device" id="device" data-panel="cover"><div class="device-screen"><img id="preview-image" alt="Native Fold Search capture" width="1080" height="2424"></div><span class="camera" aria-hidden="true"></span><span class="hinge" data-end="start" aria-hidden="true"></span><span class="hinge" data-end="end" aria-hidden="true"></span></div></div>
+</dialog>
+<script>
+const preview = document.querySelector('#preview');
+const device = document.querySelector('#device');
+const previewImage = document.querySelector('#preview-image');
+const previewTitle = document.querySelector('#preview-title');
+const previewStage = document.querySelector('#preview-stage');
+const scaleLabel = document.querySelector('#scale-label');
+let returnTarget;
+let scale = 1;
+function geometry() {
+  return device.dataset.panel === 'inner' ? { width: 852, height: 883, frameWidth: 907, frameHeight: 937, physicalWidth: 2076, physicalHeight: 2152 } :
+    { width: 443.0769, height: 994.4615, frameWidth: 502.4, frameHeight: 1053.2, physicalWidth: 1080, physicalHeight: 2424 };
+}
+function showScale() {
+  device.style.setProperty('--scale', scale);
+  const panel = geometry();
+  scaleLabel.textContent = `Source ${panel.physicalWidth} × ${panel.physicalHeight} physical px · design approximately ${Math.round(panel.width)} × ${Math.round(panel.height)}dp · ${Math.round(scale * 100)}% of dp · screen ${Math.round(panel.width * scale)} × ${Math.round(panel.height * scale)} CSS px`;
+}
+function fitScale() {
+  const panel = geometry();
+  return Math.min(1, (previewStage.clientWidth - 32) / panel.frameWidth, (previewStage.clientHeight - 32) / panel.frameHeight);
+}
+document.querySelectorAll('.preview-actions button').forEach(button => {
+  button.addEventListener('click', async () => {
+    const figure = button.closest('figure');
+    const image = button.dataset.scheme === 'dark' ? figure.querySelector('source').srcset : figure.querySelector('picture img').src;
+    returnTarget = button;
+    previewTitle.textContent = `${figure.dataset.label} · ${button.dataset.scheme}`;
+    device.dataset.panel = figure.dataset.panel;
+    previewImage.src = image;
+    previewImage.alt = previewTitle.textContent;
+    await previewImage.decode();
+    scale = 1;
+    preview.showModal();
+    showScale();
+    previewStage.scrollTop = 0;
+    previewStage.scrollLeft = 0;
+    document.querySelector('#close-preview').focus();
+  });
+});
+document.querySelector('#fit').addEventListener('click', () => { scale = fitScale(); showScale(); });
+document.querySelector('#reset').addEventListener('click', () => { scale = 1; showScale(); });
+document.querySelector('#zoom-out').addEventListener('click', () => { scale = Math.max(0.25, scale - 0.25); showScale(); });
+document.querySelector('#zoom-in').addEventListener('click', () => { scale = Math.min(2, scale + 0.25); showScale(); });
+document.querySelector('#close-preview').addEventListener('click', () => preview.close());
+preview.addEventListener('close', () => returnTarget?.focus());
+window.addEventListener('resize', () => { if (preview.open) showScale(); });
+const flowImage = document.querySelector('#flow-image');
+const flowSource = document.querySelector('#flow-picture source');
+const flowState = document.querySelector('#flow-state');
+const panelSelect = document.querySelector('#panel');
+const openPage = document.querySelector('#open-page');
+const backPlayer = document.querySelector('#back-player');
+const sampleQuery = document.querySelector('#sample-query');
+const queryLabel = document.querySelector('#query-label');
+const unavailable = document.querySelector('#unavailable');
+let stage = 'player';
+function showStage(next) {
+  stage = next;
+  const panel = panelSelect.value;
+  const figure = document.querySelector(`figure.capture[data-stage="${stage}"][data-panel="${panel}"][data-text="100"]`);
+  flowSource.srcset = figure.querySelector('source').srcset;
+  flowImage.src = figure.querySelector('picture img').src;
+  flowImage.width = panel === 'inner' ? 2076 : 1080;
+  flowImage.height = panel === 'inner' ? 2152 : 2424;
+  flowImage.alt = figure.querySelector('picture img').alt;
+  const descriptions = {
+    player: 'player with Search beside Open',
+    'open-empty': 'separate Search page with one Back/query header',
+    'open-results': 'sample results for cam',
+    'open-none': 'no results for zzq',
+    'open-unavailable': 'library unavailable',
+  };
+  flowState.textContent = `${panel === 'cover' ? 'Folded cover' : 'Unfolded inner'}: ${descriptions[stage]}.`;
+}
+panelSelect.addEventListener('change', () => showStage(stage));
+openPage.addEventListener('click', () => {
+  openPage.hidden = true;
+  backPlayer.hidden = false;
+  queryLabel.hidden = false;
+  sampleQuery.hidden = false;
+  unavailable.hidden = false;
+  sampleQuery.value = '';
+  showStage('open-empty');
+  backPlayer.focus();
+});
+backPlayer.addEventListener('click', () => {
+  backPlayer.hidden = true;
+  queryLabel.hidden = true;
+  sampleQuery.hidden = true;
+  unavailable.hidden = true;
+  openPage.hidden = false;
+  sampleQuery.value = '';
+  showStage('player');
+  openPage.focus();
+});
+sampleQuery.addEventListener('change', () => {
+  showStage(sampleQuery.value === 'cam' ? 'open-results' : sampleQuery.value === 'zzq' ? 'open-none' : 'open-empty');
+});
+unavailable.addEventListener('click', () => {
+  sampleQuery.value = '';
+  showStage('open-unavailable');
+});
+document.querySelector('#correction').addEventListener('input', () => { document.querySelector('#reply').textContent = ''; });
+document.querySelector('#response-form').addEventListener('submit', event => {
+  event.preventDefault();
+  const correction = document.querySelector('#correction').value.trim();
+  document.querySelector('#reply').textContent = correction ? `Correction: ${correction}` : 'No correction entered. Reply in chat with what you would change, or say the Search direction is clear.';
+});
+</script>
+</body>
+</html>
