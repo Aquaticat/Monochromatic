@@ -180,3 +180,14 @@ pub use parse::parse_jsonc;
 /// export { decodeQuoted, encodeQuoted, unitsToString } from './textUnits';
 /// ```
 pub use text_units::{decode_quoted, encode_quoted, units_to_string};
+
+/// What:     Parser and emitter conformance tests over the public crate interface.
+/// Why:      Comment ownership, depth limits, UTF-16 escapes and exact numbers must survive a parse,
+///           emit and reparse cycle, which compilation alone cannot show.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import './parse.test';
+/// ```
+#[cfg(test)]
+mod parse_tests;
