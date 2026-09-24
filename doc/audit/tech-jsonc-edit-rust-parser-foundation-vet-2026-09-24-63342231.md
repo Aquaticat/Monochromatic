@@ -170,8 +170,10 @@ Both local delegated `rg` queries were blocked by its security guardrail,
    The [crates.io version record](https://crates.io/api/v1/crates/biome_json_parser) dates the latest published 0.5.7 to 2024-03-12.
    The separate GitHub release `@biomejs/biome@2.5.14` was published 2026-09-16 according to the repository releases API;
    that application release is not a publication of this Rust crate.
-   Release cadence,
-   maintainer responses and whether relevant fixes reach crates.io still need a package-specific audit.
+   A GitHub commits API query filtered to `crates/biome_json_parser` since 2025-09-24 returned 18 path-touching commits,
+   including `chore(tooling): publish crates` at `9dcc25547` on 2026-09-19.
+   Source activity does not establish a released Rust artifact;
+   that publishing change and maintainer response history still need inspection.
 
 ### `jwc` 0.1.0
 
@@ -623,9 +625,14 @@ The scratch differential consumer now has `src/bin/bench.rs` and a `mise run ben
  The Biome projection ranged from 98452 to 116553 nanoseconds per call.
  These measured bands do not overlap on this document,
  so the owned path had the lower measured parse-to-editor-value time for this run.
+ A second unchanged-source optimized container run used the same document and sample counts.
+ Its owned baseline ranged from 21578 to 22258 nanoseconds per call before Biome
+ and 21296 to 22660 afterward;
+ the Biome projection ranged from 98076 to 100724.
+ The bands remained non-overlapping in both measured runs for this fixed parse-to-editor-value workload.
  This is not a claim about other document shapes,
  machine targets or the cost of future product integration.
- A separate unchanged-source run remains to be checked before assigning performance ratings.
+ Performance ratings still await the remaining finalist and rubric evidence.
 
 ## Existing-parser contract exits
 
