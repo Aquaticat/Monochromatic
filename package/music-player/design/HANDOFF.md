@@ -4967,6 +4967,47 @@ consent and no terms were accepted.
 independently checking official app and local baseline M3 sources without
 operating the emulator.
 
+The user then opened a YouTube search result on the unfolded AVD and pointed
+to the thumbnail timestamp and adjacent title lettering at the fold.
+ I
+initially praised the placement,
+ but that misread their warning.
+ The user
+first estimated a 10mm visible dent,
+ then corrected it to **about 7.5mm**.
+Using the published 8-inch panel geometry (active width about 141.08mm),
+7.5mm is approximately 110 physical px on the 2076px inner panel,
+ centered
+at x 1038 with approximate bounds `[983,1093)`px.
+ The screenshot's
+near-center timestamp and title lettering enter that band;
+ YouTube is a
+negative text-clearance example,
+ not a model to copy.
+
+The user also corrected my use of dp:
+ **physical crease width must not be
+stored as fixed dp** because Android display scaling changes dp without
+changing the dent.
+ About 45dp is only this 390dpi AVD configuration's
+conversion of 110px.
+ `max(min_padding, crease_width)` defines separation
+of **informational material**, not a visually blank gap between two halves.
+Borders,
+ padding,
+ background surfaces and hit regions may cross.
+ The AVD's
+zero-width hinge-area config is an occlusion model and does not override
+the user's physical dent.
+ E2,
+ D34,
+ `device-metrics.md`,
+ the open backlog
+and the direct app-evidence note now reflect the corrected 7.5mm figure.
+The numeric minimum padding for this particular information boundary is
+still open;
+ do not borrow the unrelated 12dp mode-button text floor.
+
 Next:
  integrate that primary-source research,
  then build distinct design-only
