@@ -118,11 +118,11 @@ export function trailingCommentAt(
    */
   const limit = newlineAfter === (-1) ? source.length : newlineAfter;
   /**
-   First comment starting after `from` and before the line break.
+   First comment starting at or after `from` and before the line break.
    */
   const match = comments.find(function inLine(c,) {
     return (c.range[0]
-      > from) && (c.range[0]
+      >= from) && (c.range[0]
         < limit);
   },);
   return match === undefined ? {} : { comment: match, };
