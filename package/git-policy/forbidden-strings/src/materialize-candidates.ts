@@ -12,6 +12,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import type { CandidateFile, } from '@monochromatic-dev/git-policy-api/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import { ForbiddenStringsPluginError, } from './errors.ts';
 
 /**
  Maximum simultaneous candidate reads and temporary-file writes.
@@ -189,7 +190,25 @@ export async function materializeCandidates(
   const laneWrites: Promise<void>[] = [];
   for (const lane of lanes)
     laneWrites.push(writeLane(lane,),);
-  await Promise.all(laneWrites,);
+  /**
+   Wait for every lane before cleanup; a rejected lane must not leave another
+   writer racing temporary-root removal.
+   */
+  const writes = await Promise.allSettled(laneWrites,);
+  if (writes.some(function failedWrite(result,): boolean {
+    return result.status === 'rejected';
+  },)) {
+    await rm(
+      directory,
+      {
+        recursive: true,
+        force: true,
+      },
+    );
+    // A candidate byte-loader exception may contain the original forbidden
+    // pathname or content. Never propagate its message or cause to host events.
+    throw new ForbiddenStringsPluginError('Forbidden-strings candidate bytes could not be materialized.',);
+  }
   return {
     paths,
     namePaths: contentCandidates.map(function candidateName(candidate,): string {

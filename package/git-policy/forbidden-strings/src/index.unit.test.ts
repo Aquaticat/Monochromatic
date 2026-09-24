@@ -509,6 +509,29 @@ await describe({
       },
     },),
     it({
+      name: 'does not relay sensitive candidate loader errors into host diagnostics',
+      fn: async function testPrivateMaterializationFailure() {
+        await using directory = await createTestDirectory();
+        const named: CandidateFile = {
+          ...candidate('PRIVATE_LONG.txt',),
+          bytes: function failedBytes(): Promise<Uint8Array> {
+            throw new Error('PRIVATE_LONG.txt contained secret candidate data',);
+          },
+        };
+        const failure = await capturePluginError(async function scanFailedBytes() {
+          await scanCandidates({
+            executable: join(directory.path, 'missing-scanner',),
+            builtinRules: false,
+            repositoryRoot: directory.path,
+            candidates: [named,],
+            signal: new AbortController().signal,
+          },);
+        },);
+        expect(failure.message,).toBe('Forbidden-strings candidate bytes could not be materialized.',);
+        expect(failure.message,).not.toContain('PRIVATE_LONG',);
+      },
+    },),
+    it({
       name: 'classifies missing executable and scanner status separately',
       fn: async function testProcessFailures() {
         await using directory = await createTestDirectory();
