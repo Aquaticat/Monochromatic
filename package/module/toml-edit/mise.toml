@@ -47,7 +47,8 @@ usage = 'arg "[args]" var=#true help="Optional mutation-test flags and package-r
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.dispatch_workspace_node}}
-const args = (process.env.usage_args ?? '').trim().split(' ').filter(Boolean)
+{{vars.parse_usage_args}}
+const args = parseUsageArgs(process.env.usage_args ?? '')
 // The CLI resolves --package from cwd; mise runs package tasks from the package directory.
 process.chdir(monorepoRoot)
 runWorkspaceNode('package/cli/mutation-test', 'cli', ['--package', 'package/module/toml-edit', '--full-suite', ...args])
