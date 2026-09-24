@@ -216,6 +216,42 @@ export const RUNTIME_BUGS: readonly RuntimeBug[] = [
       buggyTree: '2cd7824-parent',
       fixedTree: '2cd7824',
       kind: 'parent',
+      shimFastUnsafe: false,
+    },
+    version: '8.0.0',
+  },
+  {
+    broke: 'a cyclic input recursed until the stack overflowed (published as GHSA-ggr8-5vv4-36mx)',
+    commit: '3984927',
+    id: 'cycle-stack-exhaustion',
+    issue: '#707, #715',
+    regressionTest: 'tests/deepmerge-circular.test.ts "merging simple circular objects" and siblings (3984927)',
+    reproduces: function cycleOverflowsStack(library,) {
+      /**
+       Record that holds itself.
+       */
+      const looped: Record<string, unknown> = {};
+      looped.self = looped;
+      /**
+       Second self-holding record, so the merge recurses at `self`.
+       */
+      const other: Record<string, unknown> = { x: 1, };
+      other.self = other;
+      try {
+        library.deepmerge(
+          looped,
+          other,
+        );
+        return false;
+      } catch (error) {
+        return error instanceof RangeError;
+      }
+    },
+    source: {
+      buggyTree: '3984927-parent',
+      fixedTree: '3984927',
+      kind: 'parent',
+      shimFastUnsafe: true,
     },
     version: '8.0.0',
   },

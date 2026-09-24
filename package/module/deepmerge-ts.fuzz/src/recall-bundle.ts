@@ -13,6 +13,7 @@
 
 import {
   cp,
+  mkdir,
   readFile,
   rm,
   writeFile,
@@ -131,6 +132,74 @@ export type BundlePair = {
 };
 
 /**
+ Source directory for one side of a `parent` row. Trees older than the
+ FastUnsafe entry points get a shim `index.ts` that re-exports the
+ default entry points under the FastUnsafe names, so the sidecar's target
+ check loads them; both sides get the same shim, so it cancels out.
+
+ @param tree - Tree name under `/trees`.
+
+ @param shim - Whether to add the FastUnsafe aliases.
+
+ @returns Directory whose `index.ts` is the bundle entry.
+
+ @example
+ ```ts
+ await parentSource({ shim: true, tree: '3984927-parent', });
+ ```
+ */
+async function parentSource(
+  {
+    tree,
+    shim,
+  }: {
+    readonly tree: string;
+    readonly shim: boolean;
+  },
+): Promise<string> {
+  /**
+   The tree's own source.
+   */
+  const src = join(
+    TREES,
+    tree,
+    'src',
+  );
+  if (!shim)
+    return src;
+  /**
+   Shim directory.
+   */
+  const dir = join(
+    '/tmp/recall/shim',
+    tree,
+  );
+  await mkdir(
+    dir,
+    { recursive: true, },
+  );
+  /**
+   The tree's entry module.
+   */
+  const entry = JSON.stringify(join(
+    src,
+    'index.ts',
+  ),);
+  await writeFile(
+    join(
+      dir,
+      'index.ts',
+    ),
+    [
+      `export * from ${entry};`,
+      `export { deepmerge as deepmergeFastUnsafe, deepmergeCustom as deepmergeFastUnsafeCustom, deepmergeInto as deepmergeIntoFastUnsafe, deepmergeIntoCustom as deepmergeIntoFastUnsafeCustom } from ${entry};`,
+      '',
+    ].join('\n',),
+  );
+  return dir;
+}
+
+/**
  Build a row's bundles.
 
  @param bug - Ledger row.
@@ -162,19 +231,17 @@ export async function buildPair(bug: RuntimeBug,): Promise<BundlePair> {
     );
     await bundle({
       outfile: buggy,
-      srcDir: join(
-        TREES,
-        bug.source.buggyTree,
-        'src',
-      ),
+      srcDir: await parentSource({
+        shim: bug.source.shimFastUnsafe,
+        tree: bug.source.buggyTree,
+      },),
     },);
     await bundle({
       outfile: fixed,
-      srcDir: join(
-        TREES,
-        bug.source.fixedTree,
-        'src',
-      ),
+      srcDir: await parentSource({
+        shim: bug.source.shimFastUnsafe,
+        tree: bug.source.fixedTree,
+      },),
     },);
     return {
       buggy,

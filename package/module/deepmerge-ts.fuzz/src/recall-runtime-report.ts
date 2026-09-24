@@ -1,0 +1,140 @@
+/**
+ Summarize the runtime recall results (`./recall-runtime.ts`) per ledger
+ row: which sidecar files detected the bug in the bounded layer, split into
+ files that specify behaviour and files that pin current behaviour. Runs on
+ the host over `dist/recall/runtime/runtime.jsonl`; prints JSON.
+
+ Only files listed in `dist/recall/baseline-files.txt` (the sidecar as it
+ stood when the audit started) count, so files added during the audit, and
+ machine-local files, never inflate recall.
+
+ @module
+ */
+
+import { readFile, } from 'node:fs/promises';
+import { resolve, } from 'node:path';
+
+import { isPinningFile, } from './mutation-mutant.ts';
+
+/**
+ Recall output directory.
+ */
+const RECALL = resolve(
+  import.meta.dirname,
+  '..',
+  'dist',
+  'recall',
+);
+
+/**
+ One detection entry as `./recall-runtime.ts` writes it.
+ */
+type Detection = {
+  readonly file: string;
+  readonly failures: readonly string[];
+};
+
+/**
+ Whether a parsed value is a detection entry.
+
+ @param value - Parsed JSON.
+
+ @returns True for an object with a string `file` and a `failures` array.
+
+ @example
+ ```ts
+ isDetection({ failures: [], file: 'src/a.ts', }); // true
+ ```
+ */
+function isDetection(value: unknown,): value is Detection {
+  return ((typeof Reflect.get(
+    Object(value,),
+    'file',
+  )) === 'string') && Array.isArray(Reflect.get(
+    Object(value,),
+    'failures',
+  ),);
+}
+
+if (import.meta.main) {
+  /**
+   Baseline sidecar files.
+   */
+  const baseline = new Set((await readFile(
+    resolve(
+      RECALL,
+      'baseline-files.txt',
+    ),
+    'utf8',
+  ))
+    .split('\n',)
+    .filter(function nonEmpty(line,) {
+      return line !== '';
+    },),);
+  /**
+   Rows in run order.
+   */
+  const rows = (await readFile(
+    resolve(
+      RECALL,
+      'runtime',
+      'runtime.jsonl',
+    ),
+    'utf8',
+  ))
+    .split('\n',)
+    .filter(function nonEmpty(line,) {
+      return line !== '';
+    },)
+    .map(function summarize(line,) {
+      /**
+       Parsed record.
+       */
+      const record: unknown = JSON.parse(line,);
+      /**
+       Bounded-layer detections in baseline files.
+       */
+      const bounded = [Reflect.get(
+        Object(record,),
+        'bounded',
+      ),]
+        .flat()
+        .filter(isDetection,)
+        .filter(function inBaseline(entry,) {
+          return baseline.has(entry.file,);
+        },);
+      /**
+       Test names in one detection, without the suite rollup.
+       */
+      const tests = function testsOf(entry: Detection,): readonly string[] {
+        return entry.failures.filter(function isTest(name,) {
+          return name.includes('] [',);
+        },);
+      };
+      return {
+        control: Reflect.get(
+          Object(record,),
+          'control',
+        ),
+        id: Reflect.get(
+          Object(record,),
+          'id',
+        ),
+        pinning: bounded
+          .filter(function pins(entry,) {
+            return isPinningFile(entry.file,);
+          },)
+          .flatMap(tests,),
+        specifying: bounded
+          .filter(function specifies(entry,) {
+            return !isPinningFile(entry.file,);
+          },)
+          .flatMap(tests,),
+      };
+    },);
+  console.log(JSON.stringify(
+    rows,
+    undefined,
+    2,
+  ),);
+}

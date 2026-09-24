@@ -31,6 +31,7 @@ export type RuntimeSource = {
   readonly kind: 'parent';
   readonly buggyTree: string;
   readonly fixedTree: string;
+  readonly shimFastUnsafe: boolean;
 };
 
 /**

@@ -4,6 +4,11 @@
  diagnostics only against the buggy release. Runs on the host over
  `dist/recall/types/results/*.json`; prints JSON.
 
+ Only files listed in `dist/recall/baseline-files.txt` (the sidecar as it
+ stood when the audit started, from `git ls-tree`) and the fresh
+ declared-type draw count, so files the audit itself added never inflate
+ recall.
+
  @module
  */
 
@@ -118,6 +123,22 @@ async function readJob(job: string,): Promise<{
 
 if (import.meta.main) {
   /**
+   Sidecar files present when the audit started, relative to the package.
+   */
+  const baseline = new Set((await readFile(
+    join(
+      RESULTS,
+      '..',
+      '..',
+      'baseline-files.txt',
+    ),
+    'utf8',
+  ))
+    .split('\n',)
+    .filter(function nonEmpty(line,) {
+      return line !== '';
+    },),);
+  /**
    One summary per row.
    */
   const rows = await Promise.all(TYPE_BUGS.map(async function summarize(bug,) {
@@ -141,7 +162,14 @@ if (import.meta.main) {
     const only = attributable({
       buggy: sidecar.buggy.diagnostics,
       fixed: sidecar.fixed.diagnostics,
-    },);
+    },)
+      .filter(function inBaseline(key,) {
+        /**
+         File part of the key.
+         */
+        const file = key.split('(',)[0] ?? '';
+        return baseline.has(file,) || file.endsWith('fresh/cases.ts',);
+      },);
     /**
      Buggy-only diagnostic count per layer.
      */
