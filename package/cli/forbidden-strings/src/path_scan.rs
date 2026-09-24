@@ -74,15 +74,20 @@ pub(crate) fn logical_path(path: &str, root: Option<&Path>) -> String {
 
 /// Escapes reserved protocol colons and control characters in visible names.
 ///
-/// A literal `:name:` must never be confused with the finding-kind separator,
+/// No literal colon remains in a display path, so `:name:` cannot be mistaken
+/// for the finding-kind separator even if a filename ends with `:name`.
 /// and a newline must never inject another protocol record.
 fn safe_component(component: &str) -> String {
     let mut safe = String::new();
     for ch in component.chars() {
         if ch == ':' {
-            safe.push_str("\\:");
+            safe.push_str("\\x3a");
+        } else if ch == '\\' {
+            safe.push_str("\\\\");
+        } else if ch.is_control() {
+            safe.push_str(&format!("\\u{{{:x}}}", ch as u32));
         } else {
-            safe.extend(ch.escape_debug());
+            safe.push(ch);
         }
     }
     return safe;

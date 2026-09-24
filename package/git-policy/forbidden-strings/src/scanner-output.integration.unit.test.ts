@@ -22,9 +22,6 @@ import {
   scanCandidates,
 } from '@monochromatic-dev/git-policy-forbidden-strings';
 
-/** Candidate type owned by built parser interface under test. */
-type CandidateFile = ReturnType<Parameters<typeof parseScannerOutput>[0]['candidateForIndex']>;
-
 /**
  Release scanner built by the sibling `package/cli/forbidden-strings` crate;
  the same binary the repository commit gate executes, so its stderr is the
@@ -237,19 +234,10 @@ await describe({
             candidatePath,
             cwd: directory.path,
           },),
-          candidateForIndex: function candidateForIndex(index,): CandidateFile {
+          nameForIndex: function nameForIndex(index,): string {
             if (index !== 0)
               throw new Error('Unexpected scanner operand.',);
-            return {
-              targetId: `target:${CANDIDATE_PATH}`,
-              path: CANDIDATE_PATH,
-              revision: 'fixture',
-              mode: 'regular',
-              change: 'added',
-              bytes: function bytes(): Promise<Uint8Array> {
-                return Promise.resolve(new Uint8Array(),);
-              },
-            };
+            return CANDIDATE_PATH;
           },
         },);
         expect(findings.length,).toBeGreaterThan(0,);
@@ -291,19 +279,10 @@ await describe({
         expect(stderr,).toContain('"type":"forbidden-strings/cache-warning"',);
         expect(parseScannerOutput({
           stderr,
-          candidateForIndex: function candidateForIndex(index,): CandidateFile {
+          nameForIndex: function nameForIndex(index,): string {
             if (index !== 0)
               throw new Error('Unexpected scanner operand.',);
-            return {
-              targetId: `target:${CANDIDATE_PATH}`,
-              path: CANDIDATE_PATH,
-              revision: 'fixture',
-              mode: 'regular',
-              change: 'added',
-              bytes: function bytes(): Promise<Uint8Array> {
-                return Promise.resolve(new Uint8Array(),);
-              },
-            };
+            return CANDIDATE_PATH;
           },
         },),).toEqual([{
           code: 'forbidden-string',

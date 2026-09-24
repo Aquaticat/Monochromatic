@@ -159,10 +159,10 @@ await describe({
       fn: async function testOutputMapping() {
         expect(parseScannerOutput({
           stderr: 'src/[REDACTED]:2 rule=4 input=0',
-          candidateForIndex: function candidateForIndex(index,): CandidateFile {
+          nameForIndex: function nameForIndex(index,): string {
             if (index !== 0)
               throw new Error('Unexpected scanner operand.',);
-            return candidate('src/sensitive-value.ts',);
+            return 'src/sensitive-value.ts';
           },
         },),).toEqual([{
           code: 'forbidden-string',
@@ -174,26 +174,36 @@ await describe({
     it({
       name: 'distinguishes component findings from content in escaped paths',
       fn: async function testNameFinding() {
-        const lookup = function candidateForIndex(index: number,): CandidateFile {
+        const lookup = function nameForIndex(index: number,): string {
           if (index !== 0)
             throw new Error('Unexpected scanner operand.',);
-          return candidate('[REDACTED]:name/secret.ts',);
+          return '[REDACTED]:name/secret.ts';
         };
         expect(parseScannerOutput({
-          stderr: '[REDACTED]\\:name/[REDACTED]:name:2 rule=github-pat input=0',
-          candidateForIndex: lookup,
+          stderr: '[REDACTED]\\x3aname/[REDACTED]:name:2 rule=github-pat input=0',
+          nameForIndex: lookup,
         },),).toEqual([{
           code: 'forbidden-string',
           message: 'Forbidden string matched in pathname segment 2 (rule github-pat).',
-          path: '[REDACTED]\\:name/[REDACTED]',
+          path: '[REDACTED]\\x3aname/[REDACTED]',
         },],);
         expect(parseScannerOutput({
-          stderr: '[REDACTED]\\:name/[REDACTED]:1 rule=0 input=0',
-          candidateForIndex: lookup,
+          stderr: '[REDACTED]\\x3aname/[REDACTED]:1 rule=0 input=0',
+          nameForIndex: lookup,
         },),).toEqual([{
           code: 'forbidden-string',
           message: 'Forbidden string matched at line 1 (rule 0).',
-          path: '[REDACTED]\\:name/[REDACTED]',
+          path: '[REDACTED]\\x3aname/[REDACTED]',
+        },],);
+        expect(parseScannerOutput({
+          stderr: 'src/note\\x3aname:1 rule=0 input=0',
+          nameForIndex: function noteName(): string {
+            return 'src/note:name';
+          },
+        },),).toEqual([{
+          code: 'forbidden-string',
+          message: 'Forbidden string matched at line 1 (rule 0).',
+          path: 'src/note\\x3aname',
         },],);
       },
     },),
@@ -203,15 +213,15 @@ await describe({
         /**
          Lookup shared by both parses.
          */
-        function lookup(index: number,): CandidateFile {
+        function lookup(index: number,): string {
           if (index !== 0)
             throw new Error('Unexpected scanner operand.',);
-          return candidate('src/value.ts',);
+          return 'src/value.ts';
         }
         // A section name (the 0.3.0 scanner's finding identity) relays verbatim.
         expect(parseScannerOutput({
           stderr: 'src/value.ts:7 rule=github-pat input=0',
-          candidateForIndex: lookup,
+          nameForIndex: lookup,
         },),).toEqual([{
           code: 'forbidden-string',
           message: 'Forbidden string matched at line 7 (rule github-pat).',
@@ -220,11 +230,52 @@ await describe({
         // Legacy numeric ids are 0-based: rule=0 is the first rule, not malformed.
         expect(parseScannerOutput({
           stderr: 'src/value.ts:1 rule=0 input=0',
-          candidateForIndex: lookup,
+          nameForIndex: lookup,
         },),).toEqual([{
           code: 'forbidden-string',
           message: 'Forbidden string matched at line 1 (rule 0).',
           path: 'src/value.ts',
+        },],);
+      },
+    },),
+    it({
+      name: 'rejects unmasked or invented scanner labels without repeating their bytes',
+      fn: async function testUntrustedLabels() {
+        /**
+         Scanner labels whose operand is valid but the display path is not.
+         */
+        const invalid = [
+          'PRIVATE_LONG/[REDACTED]:name:1 rule=0 input=0',
+          'invented/clean.ts:1 rule=0 input=0',
+          'PRIVATE_LONG/clean.ts:name:3 rule=0 input=0',
+        ];
+        for (const stderr of invalid) {
+          const failure = await capturePluginError(async function parseUntrusted() {
+            parseScannerOutput({
+              stderr,
+              nameForIndex: function originalName(): string {
+                return 'PRIVATE_LONG/clean.ts';
+              },
+            },);
+          },);
+          expect(failure.message,).toContain('Malformed',);
+          expect(failure.message,).not.toContain('PRIVATE_LONG',);
+          expect(failure.message,).not.toContain('invented',);
+        }
+      },
+    },),
+    it({
+      name: 'does not interpret ordinary filename words as infrastructure errors',
+      fn: async function testErrorWordsInFilename() {
+        expect(parseScannerOutput({
+          stderr: 'src/an engine error.txt:1 rule=0 input=0',
+          nameForIndex: function originalName(): string {
+            return 'src/an engine error.txt';
+          },
+        },),).toEqual([{
+          code: 'forbidden-string',
+          message: 'Forbidden string matched at line 1 (rule 0).',
+          path: 'src/an engine error.txt',
         },],);
       },
     },),
@@ -241,7 +292,7 @@ await describe({
           return await capturePluginError(async function parseOne() {
             parseScannerOutput({
               stderr: `src/value.ts:1 ${bad} input=0`,
-              candidateForIndex: function noCandidate(): never {
+              nameForIndex: function noCandidate(): never {
                 throw new Error('Candidate lookup must not run.',);
               },
             },);
@@ -255,7 +306,7 @@ await describe({
       name: 'rejects malformed and scanner infrastructure output',
       fn: async function testMalformedOutput() {
         const malformed = await capturePluginError(async function parseMalformed() {
-          parseScannerOutput({ stderr: 'not-a-hit', candidateForIndex: function noCandidate(): never {
+          parseScannerOutput({ stderr: 'not-a-hit', nameForIndex: function noCandidate(): never {
             throw new Error('Candidate lookup must not run.',);
           }, },);
         },);
@@ -264,7 +315,7 @@ await describe({
         const readFailure = await capturePluginError(async function parseReadFailure() {
           parseScannerOutput({
             stderr: '/tmp/candidate: read error: denied',
-            candidateForIndex: function noCandidate(): never {
+            nameForIndex: function noCandidate(): never {
               throw new Error('Candidate lookup must not run.',);
             },
           },);
@@ -419,6 +470,39 @@ await describe({
           ],
           signal: new AbortController().signal,
         },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'rejects invalid candidate paths before reading bytes or spawning',
+      fn: async function testInvalidCandidateNames() {
+        await using directory = await createTestDirectory();
+        const invalidNames = [
+          '',
+          '../outside.txt',
+          '/other-repository/file.txt',
+          'src//file.txt',
+          'src/./file.txt',
+          'src/line\nbreak.txt',
+          'src/zero\0byte.txt',
+        ];
+        for (const path of invalidNames) {
+          const selected: CandidateFile = {
+            ...candidate(path,),
+            bytes: function unreadCandidate(): Promise<Uint8Array> {
+              throw new Error('Invalid candidate bytes were read.',);
+            },
+          };
+          const failure = await capturePluginError(async function rejectInvalidPath() {
+            await scanCandidates({
+              executable: join(directory.path, 'missing-scanner',),
+              builtinRules: false,
+              repositoryRoot: directory.path,
+              candidates: [selected,],
+              signal: new AbortController().signal,
+            },);
+          },);
+          expect(failure.message,).toBe('Invalid forbidden-strings candidate repository path.',);
+        }
       },
     },),
     it({

@@ -62,8 +62,8 @@ fn line_break_in_name_is_rejected_without_leaking_it() {
 fn colons_in_visible_path_are_encoded() {
     let loaded = load_rules("VAULTTOKEN_LONG\n");
     let hit = scan_path("[REDACTED]:name/VAULTTOKEN_LONG", &loaded);
-    assert_eq!(hit.display, "[REDACTED]\\:name/[REDACTED]");
-    assert_eq!(hit.findings, vec!["[REDACTED]\\:name/[REDACTED]:name:2 rule=0"]);
+    assert_eq!(hit.display, "[REDACTED]\\x3aname/[REDACTED]");
+    assert_eq!(hit.findings, vec!["[REDACTED]\\x3aname/[REDACTED]:name:2 rule=0"]);
 }
 
 /// Navigation markers do not count as directory names in locator positions.

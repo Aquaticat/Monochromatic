@@ -75,10 +75,6 @@ export type MaterializedCandidates = Readonly<{
    */
   namePaths: readonly string[];
   /**
-   Exact policy candidates aligned with scanner operand indexes.
-   */
-  candidates: readonly CandidateFile[];
-  /**
    Removes plugin-owned files.
    */
   [Symbol.asyncDispose]: () => Promise<void>;
@@ -199,7 +195,6 @@ export async function materializeCandidates(
     namePaths: contentCandidates.map(function candidateName(candidate,): string {
       return candidate.path;
     },),
-    candidates: contentCandidates,
     async [Symbol.asyncDispose](): Promise<void> {
       await rm(
         directory,
