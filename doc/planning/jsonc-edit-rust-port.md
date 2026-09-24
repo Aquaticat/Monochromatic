@@ -17,7 +17,7 @@ Design interview in progress. No implementation is authorized until the user con
 - Q2: Maintain the TypeScript package alongside the Rust implementation. Do not freeze or retire it as part of this port.
 - Q3: Expose an idiomatic Rust API with the equivalent public capabilities, rather than copying TypeScript call syntax.
 - Q4: Expose exact JSON numeric values rather than JavaScript-number semantics. Preserve source number spelling for unedited literals as part of the established serialization contract.
-- Q5: Duplicate object keys are user error and outside the supported behavioral contract. Rust must remain memory-safe; the phrase "undefined behavior" here needs clarification as an API guarantee, not Rust language-level undefined behavior.
+- Q5: Duplicate object keys are user error and outside the supported behavioral contract. Interpret "undefined behavior" as unspecified library results for unsupported input, never permission for Rust memory unsafety or an unsafe-language contract; do not promise a particular parse or edit result for duplicates.
 
 ## Working baseline
 
@@ -26,8 +26,9 @@ A port retains the documented identity of the TypeScript library: JSONC containe
 ## Open decisions
 
 - Exact public API surface, including low-level parse and emit capabilities, and whether internal artifact-test helpers remain public.
-- Exact numeric representation and operations on large integers, decimal fractions, and exponent notation.
-- Meaning of duplicate-key user error in the Rust API: reject, preserve without guarantees, or another memory-safe policy.
+- Whether equal-valued JSON number spellings compare equal in the exact Rust value API, while retaining original spelling when unedited.
+- Whether edits return new immutable states, mutate a Rust state, or expose both.
+- How maintained TypeScript and Rust implementations share conformance checks and fixes for supported behavior, except the explicit numeric difference.
 - Validation and release boundaries after the semantic contract is settled.
 
 ## Next action
