@@ -954,15 +954,32 @@ images,
 verify a previous desktop-sized experiment only.
  None measures the D47/D48 page on
 either target panel.
- The next designer-owned artifact is a debug-only native Compose
-study at both real panel resolutions in both schemes,
- including the player Search
-button,
- one integrated header,
- sample results and no-result/unavailable states.
- Do
-not call a Slint-native capture a device-native Android proof or ask for a desktop
-window size as a design input.
+ The debug-only Compose study now provides opaque captures at both real panel
+resolutions in both schemes,
+ with the player Search target,
+ one integrated
+72dp Back/query/Clear header,
+ divider,
+ sample results and no-result/unavailable
+states.
+ On the unfolded panel,
+ the header is bounded by the left 414dp pane and
+the result content by the right 414dp pane;
+ the centered 24dp connector contains
+neither app visuals nor hit regions.
+ Paired hierarchy XML and pixel samples prove
+those static bounds;
+ a crossing text target and wrong light fill both fail the
+review validator.
+ The one-header layout is a baseline MD3-guided adaptation to
+this Fold geometry,
+ not a claim that an unmodified Compose `SearchView` supplies
+these panes or that a static capture proves live search,
+ accessibility focus,
+ or
+results execution.
+ Do not call a Slint-native capture a device-native Android
+proof or ask for a desktop window size as a design input.
 
 [search-bar-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SearchBarTokens.kt
 [search-view-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SearchViewTokens.kt
