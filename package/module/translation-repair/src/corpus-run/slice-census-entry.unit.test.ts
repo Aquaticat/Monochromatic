@@ -472,8 +472,14 @@ await describe({
         },);
 
         /**
-         Carve through a recipe that declines the middle block, recorded
-         without a section decider.
+         Carve through a recipe that places every original of the four blocks
+         (the heading and three paragraphs; the last two paragraphs merged
+         into the third translation block) and so declines the last
+         translation block, recorded without a section decider.
+
+         A gap left unplaced on both sides is not a decline: since class one
+         hundred twelve (mikaela15) it reads as a merge and stays in the slice,
+         and a pairing leaving any original unplaced declines nothing.
          */
         const settled = await censusEntry({
           entryId: ENTRY_ID,
@@ -487,7 +493,15 @@ await describe({
                   target: 0,
                 },
                 {
+                  source: 1,
+                  target: 1,
+                },
+                {
                   source: 2,
+                  target: 2,
+                },
+                {
+                  source: 3,
                   target: 2,
                 },
               ],
