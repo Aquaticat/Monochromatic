@@ -64,6 +64,15 @@ import androidx.activity.SystemBarStyle
 // ```
 import androidx.activity.compose.setContent
 
+// What:     `BackHandler` handles Android Back inside this disposable picker study.
+// Why:      Back must close the in-slot picker before leaving the cover screen.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// onBack(() => closePicker());
+// ```
+import androidx.activity.compose.BackHandler
+
 // What:     `enableEdgeToEdge` lets app pixels continue behind transparent Android system bars.
 // Why:      Native status and gesture-navigation bars must appear over the candidate screenshot.
 //
@@ -292,6 +301,17 @@ import androidx.compose.runtime.remember
 // ```
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+
+// What:     `FocusRequester` points to a Compose focus target; `focusRequester` attaches it.
+// Why:      Closing a picker must return keyboard focus to its persistent trigger.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const trigger = useRef<HTMLElement>(null);
+// trigger.current?.focus();
+// ```
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -797,32 +817,7 @@ private fun CoverStudy(candidate: String, palette: CandidatePalette) {
                     .background(palette.railDividerColor),
             )
         }
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .background(palette.tracks)
-                .verticalScroll(rememberScrollState()),
-        ) {
-            val tracks = listOf(
-                PrototypeTrack("Another Xronixle", "4:35", "−1.2 dBTP"),
-                PrototypeTrack("Burning Aquamarine", "5:12", "−0.8 dBTP"),
-                PrototypeTrack("Dokuhebi", "4:01", "−1.4 dBTP"),
-                PrototypeTrack("ENÛMA∇ELIŠ", "9:47", "−0.3 dBTP"),
-                PrototypeTrack("Ghost", "3:22", "−1.1 dBTP"),
-                PrototypeTrack("Hyperflux", "4:44", "−0.9 dBTP"),
-                PrototypeTrack("Idol Corruption", "5:31", "−0.6 dBTP"),
-                PrototypeTrack("KillerToy", "4:12", "−1.0 dBTP"),
-                PrototypeTrack("Nacreous Snowmelt", "6:03", "−0.7 dBTP"),
-            )
-            for (index in tracks.indices) {
-                TrackRow(
-                    index = index,
-                    track = tracks[index],
-                    candidate = candidate,
-                    palette = palette,
-                )
-            }
-        }
+        CoverTrackList(modifier = Modifier.weight(1f), candidate = candidate, palette = palette)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -838,9 +833,69 @@ private fun CoverStudy(candidate: String, palette: CandidatePalette) {
     }
 }
 
+/** Keeps the closed cover's track list identical in the static and interactive studies. */
+@Composable
+private fun CoverTrackList(modifier: Modifier, candidate: String, palette: CandidatePalette) {
+    Column(modifier = modifier.background(palette.tracks).verticalScroll(rememberScrollState())) {
+        val tracks = listOf(
+            PrototypeTrack("Another Xronixle", "4:35", "−1.2 dBTP"),
+            PrototypeTrack("Burning Aquamarine", "5:12", "−0.8 dBTP"),
+            PrototypeTrack("Dokuhebi", "4:01", "−1.4 dBTP"),
+            PrototypeTrack("ENÛMA∇ELIŠ", "9:47", "−0.3 dBTP"),
+            PrototypeTrack("Ghost", "3:22", "−1.1 dBTP"),
+            PrototypeTrack("Hyperflux", "4:44", "−0.9 dBTP"),
+            PrototypeTrack("Idol Corruption", "5:31", "−0.6 dBTP"),
+            PrototypeTrack("KillerToy", "4:12", "−1.0 dBTP"),
+            PrototypeTrack("Nacreous Snowmelt", "6:03", "−0.7 dBTP"),
+        )
+        for (index in tracks.indices) {
+            TrackRow(index = index, track = tracks[index], candidate = candidate, palette = palette)
+        }
+    }
+}
+
+/** Exercises the persistent P4 trigger through opening, Back, and same-folder selection. */
+@Composable
+private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePalette) {
+    // This study does not switch the library: selecting a name only tests dismissal and focus.
+    var pickerOpen by remember { mutableStateOf(false) }
+    val triggerFocusRequester = remember { FocusRequester() }
+    val closePicker = {
+        pickerOpen = false
+        triggerFocusRequester.requestFocus()
+    }
+    BackHandler(enabled = pickerOpen) { closePicker() }
+    Column(modifier = Modifier.fillMaxSize().background(palette.window)) {
+        CoverPickerTopRow(
+            palette = palette,
+            triggerIsField = false,
+            onToggle = { if (pickerOpen) closePicker() else pickerOpen = true },
+            pickerOpen = pickerOpen,
+            triggerModifier = Modifier.focusRequester(triggerFocusRequester),
+        )
+        if (palette.railDivider) {
+            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(palette.railDividerColor))
+        }
+        if (pickerOpen) {
+            Row(modifier = Modifier.weight(1f)) {
+                LetterRail(palette = palette)
+                FolderNames(background = palette.tracks, onFolderSelected = { closePicker() })
+            }
+        } else {
+            CoverTrackList(modifier = Modifier.weight(1f), candidate = candidate, palette = palette)
+        }
+        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(palette.sectionDivider))
+        TransportBlock(modifier = Modifier.fillMaxWidth(), candidate = candidate, palette = palette, deckHeightCap = false)
+    }
+}
+
 /** Renders the cover subdirectory picker opened state as one of four prototypes. */
 @Composable
 private fun CoverPickerStudy(candidate: String, palette: CandidatePalette) {
+    if (candidate == "cover-picker-p4-interactive") {
+        CoverPickerInteractiveStudy(candidate = candidate, palette = palette)
+        return
+    }
     val variant = candidate
         .removePrefix("cover-picker-")
         .removeSuffix("-light")
@@ -910,7 +965,13 @@ private fun CoverPickerStudy(candidate: String, palette: CandidatePalette) {
 
 /** Draws the opened picker's trigger row as a dropdown field or an app-bar title. */
 @Composable
-private fun CoverPickerTopRow(palette: CandidatePalette, triggerIsField: Boolean) {
+private fun CoverPickerTopRow(
+    palette: CandidatePalette,
+    triggerIsField: Boolean,
+    onToggle: (() -> Unit)? = null,
+    pickerOpen: Boolean = true,
+    triggerModifier: Modifier = Modifier,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -966,7 +1027,15 @@ private fun CoverPickerTopRow(palette: CandidatePalette, triggerIsField: Boolean
             }
         } else {
             Row(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .then(triggerModifier)
+                    .then(
+                        if (onToggle == null) Modifier else Modifier
+                            .defaultMinSize(minHeight = 48.dp)
+                            .clickable(role = Role.Button, onClick = onToggle)
+                            .semantics { stateDescription = if (pickerOpen) "Expanded" else "Collapsed" },
+                    ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
@@ -1180,7 +1249,10 @@ private fun LetterRail(palette: CandidatePalette, background: Color = palette.ra
 /** Packs filtered folder names as plain selectable 48dp text targets with no chip styling. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun RowScope.FolderNames(background: Color = Color.Transparent) {
+private fun RowScope.FolderNames(
+    background: Color = Color.Transparent,
+    onFolderSelected: (String) -> Unit = {},
+) {
     val folders = listOf(
         CURRENT_SUBDIRECTORY, "C418", "Carpenter Brut", "Casiopea", "Celldweller", "Chicane",
         "CHON", "Clark", "Clown Core", "Coaltar of the Deepers", "Com Truise", "Cornelius",
@@ -1209,7 +1281,7 @@ private fun RowScope.FolderNames(background: Color = Color.Transparent) {
                         .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                         .selectable(
                             selected = selectedFolder,
-                            onClick = {},
+                            onClick = { onFolderSelected(folder) },
                             role = Role.RadioButton,
                         ),
                     contentAlignment = Alignment.Center,
