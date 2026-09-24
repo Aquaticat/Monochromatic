@@ -33,6 +33,9 @@ import type { TomlEditState, } from './types.ts';
  ```
  */
 function finalContentEnd(text: string,): number {
+  /**
+   Cursor walking left from the first position after the text.
+   */
   let end = text.length;
   while ((end > 0) && (text[end - 1] === '\n'))
     end -= 1;

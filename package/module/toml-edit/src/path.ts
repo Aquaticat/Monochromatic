@@ -15,8 +15,14 @@ import type { TomlPath, } from './types.ts';
  ```
  */
 type TomlKeySegmentView =
-  | { readonly type: 'TOMLBare'; readonly name: string; }
-  | { readonly type: 'TOMLQuoted'; readonly value: string; };
+  | {
+    readonly type: 'TOMLBare';
+    readonly name: string;
+  }
+  | {
+    readonly type: 'TOMLQuoted';
+    readonly value: string;
+  };
 
 /**
  Dotted key segments viewed as read-only path data.
