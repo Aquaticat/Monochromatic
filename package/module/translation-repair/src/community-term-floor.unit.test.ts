@@ -7,8 +7,9 @@
  English: the page says "trans woman" or "trans girl". The glossary seeds
  the term with those renderings, and a candidate that keeps a glossary
  term in Han, or writes a form the entry refuses (the pinyin), is refused
- before any judge reads it. A rendering in English, a term the page itself
- keeps, and a term standing inside an HTML comment are left alone.
+ before any judge reads it. The owner added the same day that the term is
+ refused even where the existing translation keeps it. A rendering in
+ English and a term standing inside an HTML comment are left alone.
  Cat-themed invention throughout; no corpus content appears here.
 
  @module
@@ -85,6 +86,16 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES the term in Han even where the existing translation keeps it (owner, 2026-09-24)',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: NAMED,
+          candidateText: LEFT,
+          pageText: LEFT,
+        },).kind,).toBe('invalid',);
+      },
+    },),
+    it({
       name: 'REFUSES a candidate that writes a refused form of the term, in any casing',
       fn: async () => {
         expect(validateTranslatedSlice({
@@ -102,16 +113,11 @@ await describe({
       },
     },),
     it({
-      name: 'ACCEPTS the term rendered, kept by the page, standing in a comment, or absent from the source',
+      name: 'ACCEPTS the term rendered, standing in a comment, or absent from the source',
       fn: async () => {
         expect(validateTranslatedSlice({
           sourceText: NAMED,
           candidateText: RENDERED,
-        },).kind,).toBe('valid',);
-        expect(validateTranslatedSlice({
-          sourceText: NAMED,
-          candidateText: LEFT,
-          pageText: LEFT,
         },).kind,).toBe('valid',);
         expect(validateTranslatedSlice({
           sourceText: '<!-- 小药娘 -->猫睡了。',
