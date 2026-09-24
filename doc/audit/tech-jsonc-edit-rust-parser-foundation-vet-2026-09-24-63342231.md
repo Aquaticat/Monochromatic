@@ -128,6 +128,18 @@ The user requested early regex culling. Our operational screening interprets thi
 
 A disposable set of exact-version manifests under `~/temp/agent/jsonc-regex-audit/` ran `mise run audit:regex-deps`, which invokes Cargo `tree --edges normal,build --target all --format {p}` without compiling upstream code. The individual graphs are saved as `tree.txt` in each case directory. `fjson` 0.3.1, `json-five` 0.3.1 with and without default features, `biome_json_parser` 0.5.7 with the exact companion pins, `hifijson` 0.5.0, `jsonc-parser` 0.33.2 with `cst`, and `jwc` 0.1.0 showed no package named `regex`, `logos`, `pest`, `regex-automata`, `regex-syntax`, `onig`, or `fancy-regex` in normal/build dependency graphs. Positive control `edikt-jsonc` 0.4.0 showed `logos`, `logos-codegen`, `regex`, `regex-automata`, and `regex-syntax`; the probe can reveal the unwanted dependencies. This verifies package names under the selected versions/features, not every line of transitive source or a future resolution. Keep source-level regex clearance pending where required.
 
+## Existing-parser contract exits
+
+These are outcomes for published implementations **as-is**, not proof that every possible fork, token adapter, or new parser implementation is impossible.
+
+- `jsonc-parser` 0.33.2: `src/scanner.rs:175-201` calls `parse_string_with_char_provider` for escapes and `src/string.rs:214-261` rejects an unpaired high or low surrogate. This is a hard failure for the required accepted string domain. It also does not supply the normalized, attached-comment model as-is.
+- `jwc` 0.1.0: the published `src/single_pass_parser.rs:201-222` explicitly errors on a low surrogate or a high surrogate not followed by a low one. It fails the string-domain hard gate as-is, regardless of its regex-free production dependency graph.
+- `fjson` 0.3.1: `src/ast.rs:64,83` limits container nesting to 128. The TypeScript structured parser permits depth through 512 (`package/module/jsonc-edit/src/parse.ts:21,55`), and its comment-free fast path delegates to `JSON.parse`; the published `fjson` parser cannot preserve the supported depth domain as-is. `src/scanner.rs:335-339` also skips non-JSON Unicode whitespace. A scanner-only use paired with our own grammar/parser is a distinct composition, not an as-is editor.
+- `json-five` 0.3.1: [prior corpus probes](../planning/monorepo-manager-route-research/rust-structured-edits.md) show JSON5-only syntax and scalar roots accepted, where the TypeScript JSONC conformance tests reject them; it is not a strict JSONC parser as-is. Its round-trip printer's block-comment closing-slash defect is recorded in `doc/troubleshooting/json-five-unterminated-block-comment.md`. An independently strict validator and canonical emitter would be repository code.
+- `hifijson` 0.5.0: [official crate documentation](https://docs.rs/hifijson/0.5.0/hifijson/) describes JSON token and value lexers, not JSONC comment tokens or separately attached key/value comments. It is not a ready-to-use implementation of this editor; coupling its scalar lexer to an owned comment scanner is a distinct composition.
+
+The documented hard exits make the owned-parser translation eligible for serious evaluation under the existing-tools-first rule; they do not establish it as a validated winner. `biome_json_parser` 0.5.7, `fjson` scanner-only, `json-five` raw-token adapter, and a repository-owned parser remain different unvalidated compositions. Regex-free dependency screening does not imply semantic parity.
+
 ## Evidence and validation still required
 
 - Finish the scheduled registry, repository-host and broader-web discovery with pagination saturation and an expansion round. Log every query, filters, result counts and newly discovered survivor.
