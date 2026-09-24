@@ -379,17 +379,17 @@ console.log("Folded cover questionnaire is valid.")
 '''
 
 [tasks.build]
-description = "Embed paired native Fold-panel Search states into the active design review"
+description = "Rebuild withdrawn Fold Search artifact for historical inspection"
 dir = "{{config_root}}"
 run = "node search-page-question.mjs build"
 
 [tasks.lint]
-description = "Validate native Fold frames, hierarchies and the empty connector"
+description = "Check historical rejected Fold Search capture integrity"
 dir = "{{config_root}}"
 run = "node search-page-question.mjs validate"
 
 [tasks."test:unit"]
-description = "Exercise the Search-page review evidence and completion contract"
+description = "Check withdrawn Search artifact against its captured fixtures"
 dir = "{{config_root}}"
 run = "node search-page-question.mjs validate"
 
