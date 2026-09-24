@@ -86,6 +86,29 @@ function validate() {
       if (image.readUInt32BE(16) !== expected[0] || image.readUInt32BE(20) !== expected[1]) throw new Error(`${key}: wrong native dimensions.`);
     }
   }
+  const figures = html.split('<figure class="capture').slice(1).map((chunk) => chunk.split('</figure>')[0]);
+  if (figures.length !== scenes.length) throw new Error('Command questionnaire lost a native comparison card.');
+  for (const [index, scene] of scenes.entries()) {
+    const figure = figures[index];
+    const expectedCode = `${scene.kind.toUpperCase()}${scene.variant}`;
+    const captures = [...figure.matchAll(/data:image\/png;base64,([A-Za-z0-9+/=]+)/g)].map((match) => match[1]);
+    const expectedWidth = scene.size === 'wide' ? 1100 : (scene.size === 'stress' ? 360 : 480);
+    const expectedHeight = scene.size === 'compact' ? 600 : 640;
+    if (!figure.includes(`data-label="${expectedCode} ·`) || captures.length !== 2 ||
+      captures[0] !== encodedImage({ ...scene, mode: 'dark' }) || captures[1] !== encodedImage({ ...scene, mode: 'light' }) ||
+      !figure.includes(`width="${expectedWidth}" height="${expectedHeight}" alt="Native Slint`) ||
+      !figure.includes('data-scheme="dark"') || !figure.includes('data-scheme="light"')) {
+      throw new Error(`${expectedCode} ${scene.size}: the card does not disclose its matching native dark/light captures.`);
+    }
+  }
+  for (const [name, values] of Object.entries({ inapp: ['I1', 'I2', 'I3'], global: ['G1', 'G2'], search: ['R1', 'R2'] })) {
+    for (const value of values) {
+      if (html.split(`name="${name}" value="${value}" required`).length !== 2) {
+        throw new Error(`Command questionnaire lost required ${name}/${value} choice.`);
+      }
+    }
+  }
+  if (/<input[^>]*type="radio"[^>]*checked/.test(html)) throw new Error('Command questionnaire must not preselect a choice.');
   for (const text of ['name="inapp"', 'name="global"', 'name="search"', 'name="correction"', 'In-app ranking: I1 &gt; I2 &gt; I3', 'Global ranking: G2 &gt; G1', 'Search relationship ranking: R1 &gt; R2', 'D21', 'D25', 'off by default', 'preview.showModal()', 'await previewImage.decode()', 'returnTarget?.focus()', 'stepZoom(-0.25)']) {
     if (!html.includes(text)) throw new Error(`Command questionnaire is missing ${text}.`);
   }
