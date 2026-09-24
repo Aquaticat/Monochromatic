@@ -958,30 +958,30 @@ images,
 verify a previous desktop-sized experiment only.
  None measures the D47/D48 page on
 either target panel.
- The debug-only Compose study now provides opaque captures at both real panel
+ The withdrawn debug-only Compose study has opaque captures at both real panel
 resolutions in both schemes,
- with the player Search target,
- one integrated
-72dp Back/query/Clear header,
- divider,
- sample results and no-result/unavailable
-states.
- On the unfolded panel,
- the header is bounded by the left 414dp pane and
-the result content by the right 414dp pane;
- the centered 24dp connector contains
-neither app visuals nor hit regions.
- Paired hierarchy XML and pixel samples prove
-those static bounds;
- a crossing text target and wrong light fill both fail the
-review validator.
- The one-header layout is a baseline MD3-guided adaptation to
-this Fold geometry,
- not a claim that an unmodified Compose `SearchView` supplies
-these panes or that a static capture proves live search,
- accessibility focus,
- or
-results execution.
+ with a player Search target,
+ one 72dp
+Back/query/Clear header,
+ sample results and empty states.
+ It placed the
+unfolded header above a blank left pane and all Search content in the right
+pane.
+ The user rejected that composition.
+ Its pixel and hierarchy checks
+established conformity to an **obsolete** all-paint/all-hit-region connector
+ban,
+ not to the user's clarified E2.
+ Baseline M3 full-content Search guidance
+does not prescribe that disconnected pane allocation;
+ the withdrawn study
+must not be presented as an MD3-endorsed adaptation.
+ The one-header direction
+D48 remains,
+ but a replacement visual design is open.
+ A static capture also
+does not prove live search,
+ accessibility focus or result execution.
  Do not call a Slint-native capture a device-native Android
 proof or ask for a desktop window size as a design input.
 
