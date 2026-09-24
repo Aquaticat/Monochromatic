@@ -124,8 +124,16 @@ A port retains the documented identity of the TypeScript library:
    A local Cargo credential file exists,
    and `gh api user --jq .login` returned `Aquaticat`;
    neither proves crates.io publication rights or token validity.
-- Native dependency foundation is a research and verification task,
-   subject to the repository's choosing-technology gates rather than another user preference.
+- Native dependency foundation: research and verification are **complete** under the repository's
+   choosing-technology gates.
+   Both vet reports record saturated discovery for their frozen schedules, equal-depth validation of every
+   survivor, frozen-rubric scores, sensitivity reruns, full rankings and recommendations:
+   `doc/audit/tech-jsonc-edit-rust-parser-foundation-vet-2026-09-24-63342231.md` and
+   `doc/audit/tech-jsonc-edit-rust-exact-number-foundation-vet-2026-09-24-e8e0034a.md`.
+   Both recommend the repository-owned parser/emitter translation plus the repository-owned raw-token and
+   mathematical-identity number representation.
+   What remains open is the **adoption decision itself**, which this plan reserves to the user;
+   no dependency, product crate, decision record or publication exists yet.
 - Recheck name availability immediately before publish;
    registry lookup does not reserve names.
 
