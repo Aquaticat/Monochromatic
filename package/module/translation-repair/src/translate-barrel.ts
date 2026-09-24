@@ -119,6 +119,7 @@ export {
   isTranslateReportWire,
   TRANSLATE_ATTESTED_RULE,
   TRANSLATE_LINE_STRUCTURE_RULE,
+  TRANSLATE_PICTURE_SCOPE_RULE,
   TRANSLATE_RESPONSE_FORMAT,
   type TranslateFollowupEvidence,
   type TranslatePromptPlan,

@@ -135,6 +135,29 @@ export const TRANSLATE_ATTESTED_RULE: string = 'ATTESTED DETAILS lists details t
   + 'what neither the ORIGINAL nor the existing translation carries.';
 
 /**
+ Instruction added whenever the sheet shows the pictures block.
+
+ THE ONE HUNDRED SIXTEENTH CLASS (zheermao11, 2026-09-24). The block carries
+ the pictures in and beside the passage, one slice each way, and the sheet
+ never said what it was for, so the writers rendered a neighbouring picture's
+ transcript into a passage whose ORIGINAL is a picture component or the
+ sentence introducing it. Every such candidate ran past the produced volume
+ bound and was cut: 22 translate streams on that run and 31 to 43 on every
+ earlier zheermao run, and with the reasoning seats reachable each cut came
+ after 60 to 170 seconds of thinking, so the translate lane took 616 seconds
+ against zheermao9's 77. A passage whose archive rendering does carry a
+ transcript (the archive translated the picture in that slice's span) keeps
+ it, which is why the scope names the existing translation.
+ */
+export const TRANSLATE_PICTURE_SCOPE_RULE: string = 'WHAT THE PICTURES HERE SAY transcribes the pictures in and '
+  + 'beside this passage so that words about them read right; it is not part of the ORIGINAL passage. Render a '
+  + 'picture\'s words only where the ORIGINAL passage itself writes them out or the EXISTING TRANSLATION of this '
+  + 'passage already carries them. Render a picture component (a tag naming picture files) exactly as the ORIGINAL '
+  + 'has it, with no transcript added beside it: a transcript neither the passage nor its existing translation '
+  + 'carries is an addition, and where the page translates that picture in a block of its own it would stand on '
+  + 'the page twice.';
+
+/**
  Instruction for visible YAML page metadata.
  */
 export const TRANSLATE_FRONT_MATTER_RULE: string = 'The passage is complete YAML front matter, including its '
@@ -287,6 +310,7 @@ export function buildTranslateMessages(
     syntax === 'front-matter' ? TRANSLATE_FRONT_MATTER_RULE : '',
     lineStructured ? TRANSLATE_LINE_STRUCTURE_RULE : '',
     (attestedLines.length === 0) ? '' : TRANSLATE_ATTESTED_RULE,
+    (pictureContext === '') ? '' : TRANSLATE_PICTURE_SCOPE_RULE,
     renderedBreakPrompt({
       sourceText,
       archiveText: existingText,

@@ -39,7 +39,7 @@ const PICTURE_SCOPE =
 /**
  Original passage: a picture component and nothing else.
  */
-const SOURCE = "<PhotoScroll photos={[\n    '${path}/photos/cat-note.webp',\n]} />";
+const SOURCE = `<PhotoScroll photos={[\n    '\${path}/photos/cat-note.webp',\n]} />`;
 
 /**
  What the readers transcribed from the picture.
@@ -67,7 +67,7 @@ function systemOf({ pictureContext, }: { readonly pictureContext: string; },): s
     existingText: SOURCE,
     pictureContext,
   },).messages;
-  return String(first?.content ?? '',);
+  return first?.content ?? '';
 }
 
 await describe({
