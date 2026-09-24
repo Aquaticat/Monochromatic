@@ -280,6 +280,77 @@ function flankedCarriedOn({ evidence, }: { readonly evidence: readonly string[];
   };
 }
 
+/**
+ Closing paragraph of the chained shape, paired with a span that also renders
+ the two carried passages before it.
+ */
+const PLAY_SOURCE = '猫追着毛线玩。';
+
+/**
+ Archive's rendering of the play.
+ */
+const PLAY_TARGET = 'The cat chased the yarn.';
+
+/**
+ Original of the chained shape: the homecoming, the nap, the bath, the play.
+ */
+const CHAINED_SOURCE_TEXT = `${HEADING_SOURCE}\n\n${HOME_SOURCE}\n\n${NAP_SOURCE}\n\n${BATH_SOURCE}\n\n${PLAY_SOURCE}\n`;
+
+/**
+ Archive of the chained shape: the play's span carries the nap and the bath
+ ahead of it.
+ */
+const CHAINED_TARGET_TEXT = `${HEADING_TARGET}\n\n${HOME_TARGET}\n\n${NAP_TARGET}\n\n${BATH_TARGET}\n\n${PLAY_TARGET}\n`;
+
+/**
+ The prepared pair where two carried passages stand in a row between the
+ homecoming and the play, both rendered inside the play's span.
+
+ @returns Prepared pair with five slices, the nap at 2 and the bath at 3
+
+ @example
+ ```ts
+ const prepared = chainedPair();
+ ```
+ */
+function chainedPair(): PreparedDocumentPair {
+  return {
+    sourceText: CHAINED_SOURCE_TEXT,
+    targetText: CHAINED_TARGET_TEXT,
+    lineStructuredSliceIndices: new Set(),
+    declaredNames: [],
+    alignmentFindings: [],
+    unclaimedTargetBlocks: [],
+    alignmentPairCount: 5,
+    slices: [
+      {
+        source: contentOver({ sliceIndex: 0, text: CHAINED_SOURCE_TEXT, fragment: HEADING_SOURCE, },),
+        target: contentOver({ sliceIndex: 0, text: CHAINED_TARGET_TEXT, fragment: HEADING_TARGET, },),
+      },
+      {
+        source: contentOver({ sliceIndex: 1, text: CHAINED_SOURCE_TEXT, fragment: HOME_SOURCE, },),
+        target: contentOver({ sliceIndex: 1, text: CHAINED_TARGET_TEXT, fragment: HOME_TARGET, },),
+      },
+      {
+        source: contentOver({ sliceIndex: 2, text: CHAINED_SOURCE_TEXT, fragment: NAP_SOURCE, },),
+        target: makeInsertionChunk({ sliceIndex: 2, offset: CHAINED_TARGET_TEXT.indexOf(NAP_TARGET,), },),
+      },
+      {
+        source: contentOver({ sliceIndex: 3, text: CHAINED_SOURCE_TEXT, fragment: BATH_SOURCE, },),
+        target: makeInsertionChunk({ sliceIndex: 3, offset: CHAINED_TARGET_TEXT.indexOf(BATH_TARGET,), },),
+      },
+      {
+        source: contentOver({ sliceIndex: 4, text: CHAINED_SOURCE_TEXT, fragment: PLAY_SOURCE, },),
+        target: contentOver({
+          sliceIndex: 4,
+          text: CHAINED_TARGET_TEXT,
+          fragment: `${NAP_TARGET}\n\n${BATH_TARGET}\n\n${PLAY_TARGET}`,
+        },),
+      },
+    ],
+  };
+}
+
 await describe({
   name: foldCarriedInsertions.name,
   children: [
@@ -426,6 +497,60 @@ await describe({
         expect(unfound.asides.length,).toBe(1,);
         expect(unfound.asides[0],).toContain('slice 2',);
         expect(unfound.asides[0],).toContain('quote-not-found',);
+      },
+    },),
+    it({
+      name: 'FOLDS a chain of carried passages through a carried neighbour into the paired slice beyond it, whatever the admission order',
+      fn: async () => {
+        /**
+         The nap listed first: on the first pass the bath's source still
+         stands between the nap and the play, so the nap waits; the bath
+         folds, the play's source widens, and the nap folds on the next pass.
+         */
+        const chained = foldCarriedInsertions({
+          prepared: chainedPair(),
+          admission: {
+            positions: new Set(),
+            carried: [
+              { position: 2, sliceIndex: 2, sourceText: NAP_SOURCE, evidence: [NAP_TARGET,], },
+              { position: 3, sliceIndex: 3, sourceText: BATH_SOURCE, evidence: [BATH_TARGET,], },
+            ],
+            findings: [],
+          },
+        },);
+        expect(chained.prepared.slices[4]?.source.text,).toBe(`${NAP_SOURCE}\n\n${BATH_SOURCE}\n\n${PLAY_SOURCE}`,);
+        expect(chained.prepared.slices[1]?.source.text,).toBe(HOME_SOURCE,);
+        expect(chained.admission.carried,).toEqual([],);
+        expect(chained.admission.folded,).toEqual([
+          { position: 3, sliceIndex: 3, carrierSliceIndex: 4, },
+          { position: 2, sliceIndex: 2, carrierSliceIndex: 4, },
+        ],);
+        expect(chained.findings,).toEqual([
+          `${CARRIED_FOLDED_FINDING} (slice 3 into slice 4)`,
+          `${CARRIED_FOLDED_FINDING} (slice 2 into slice 4)`,
+        ],);
+        expect(chained.asides,).toEqual([],);
+
+        /**
+         The bath still carried and not folding (its evidence nowhere): the
+         nap's source does not abut the play's, so it stays carried with the
+         bath's source named as the gap.
+         */
+        const blocked = foldCarriedInsertions({
+          prepared: chainedPair(),
+          admission: {
+            positions: new Set(),
+            carried: [
+              { position: 2, sliceIndex: 2, sourceText: NAP_SOURCE, evidence: [NAP_TARGET,], },
+              { position: 3, sliceIndex: 3, sourceText: BATH_SOURCE, evidence: ['The dog barked.',], },
+            ],
+            findings: [],
+          },
+        },);
+        expect(blocked.prepared.slices[4]?.source.text,).toBe(PLAY_SOURCE,);
+        expect(blocked.admission.carried?.length,).toBe(2,);
+        expect(blocked.asides.length,).toBe(2,);
+        expect(blocked.asides[0],).toContain('blank space',);
       },
     },),
   ],
