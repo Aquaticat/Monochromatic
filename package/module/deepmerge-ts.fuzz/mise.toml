@@ -139,3 +139,97 @@ const [code] = await once(child, 'exit')
 if (code !== 0) throw new Error(`fork build container exited with ${String(code)}`)
 console.log(`built ${join(out, 'index.mjs')}`)
 """
+
+# Declared-type fuzzing (src/declared-type-campaign.ts): generated declared
+# types (unions, optional keys, index signatures, tuples) whose runtime
+# results tsc must accept. Each draw spawns tsc, so every mode runs inside the
+# podman caps with the repo read-only and only dist/declared-type/ writable
+# (plus the generated corpus file for `corpus`).
+[tasks."fuzz:declared-types"]
+description = "Declared-type campaign in a 2 GiB / 2 CPU podman container; writes failing cases and diagnostic counts to dist/declared-type/<seed>/report.json"
+usage = '''
+flag "--seed <seed>" required=#true help="fast-check seed for the draws"
+flag "--size <size>" default="1500" help="Number of cases to draw"
+flag "--no-unions" help="Skip union types, to reach other classes without the known union defects"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync } = await import('node:fs')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'declared-type')
+mkdirSync(out, { recursive: true })
+const nodeMajor = process.versions.node.split('.')[0]
+const noUnions = (process.env.usage_no_unions === 'true') ? ['no-unions'] : []
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:${out}:rw`,
+  '--workdir', packageRoot,
+  `docker.io/library/node:${nodeMajor}-slim`,
+  'node', 'src/declared-type-campaign.ts', 'campaign',
+  (process.env.usage_seed ?? '').trim(), (process.env.usage_size ?? '1500').trim(), ...noUnions,
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`declared-type campaign container exited with ${String(code)}`)
+"""
+
+[tasks."generate:declared-type-cases"]
+description = "Regenerate src/declared-type-soundness.generated.ts from the fixed-seed draw, dropping cases in pinned classes, in a 2 GiB / 2 CPU podman container"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync } = await import('node:fs')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'declared-type')
+const corpus = join(packageRoot, 'src', 'declared-type-soundness.generated.ts')
+mkdirSync(out, { recursive: true })
+const nodeMajor = process.versions.node.split('.')[0]
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:${out}:rw`,
+  '--volume', `${corpus}:${corpus}:rw`,
+  '--workdir', packageRoot,
+  `docker.io/library/node:${nodeMajor}-slim`,
+  'node', 'src/declared-type-campaign.ts', 'corpus',
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`declared-type corpus container exited with ${String(code)}`)
+"""
+
+# Proves the declared-type check can fail: tampers one value per clean case to
+# another kind and requires tsc to reject it, with no stray diagnostics.
+[tasks."fuzz:declared-types:control"]
+description = "Positive control for the declared-type check in a 2 GiB / 2 CPU podman container"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync } = await import('node:fs')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'declared-type')
+mkdirSync(out, { recursive: true })
+const nodeMajor = process.versions.node.split('.')[0]
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:${out}:rw`,
+  '--workdir', packageRoot,
+  `docker.io/library/node:${nodeMajor}-slim`,
+  'node', 'src/declared-type-positive-control.ts',
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`declared-type positive control container exited with ${String(code)}`)
+"""

@@ -86,6 +86,15 @@ and open items:
    1000 generated calls (600 on widened literals, 400 on `as const` literals checked for exact literal and tuple types)
    whose runtime results must type-check against their static result types;
    `src/type-soundness.unit.test.ts` replays them at runtime.
+- `src/declared-type-*.ts`:
+   the same soundness check over generated declared types
+   (unions,
+   optional keys,
+   index signatures,
+   tuples,
+   `deepmergeInto` targets);
+   `src/declared-type-soundness.generated.ts` keeps the fixed-seed draws outside pinned classes,
+   and `src/type-known-defect-declared.unit.test.ts` pins the classes it found.
 
 Machine-local files matching `*.local.*` (gitignored) hold embargoed security findings until upstream publishes an advisory.
 
@@ -107,6 +116,12 @@ mise run //package/module/deepmerge-ts.fuzz:fuzz:coverage
 
 # Regenerate the type-level soundness corpus after a generator or version change
 mise run //package/module/deepmerge-ts.fuzz:generate:type-cases
+
+# Declared-type campaign, positive control, and fixed-seed corpus, each in a 2 GiB / 2 CPU podman container;
+# the campaign report lands in dist/declared-type/<seed>/report.json
+mise run //package/module/deepmerge-ts.fuzz:fuzz:declared-types --seed 11 --size 1500
+mise run //package/module/deepmerge-ts.fuzz:fuzz:declared-types:control
+mise run //package/module/deepmerge-ts.fuzz:generate:declared-type-cases
 ```
 
 Replay a campaign record on the host:
