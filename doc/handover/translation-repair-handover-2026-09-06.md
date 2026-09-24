@@ -4766,15 +4766,23 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XINGZ6010 RUNS (entry `XingZ60`,
-    frozen `d73cb46b9`,
-    corpus-pass pid 1911378 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
-    launched 22:30 UTC 2026-09-24,
-    waiter wait-x10 (background bash);
+1.  MIKAELA17 RUNS (entry `mikaela_khara`,
+    frozen `9ec838a01`,
+    corpus-pass pid 2024094 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
+    launched 23:41 UTC 2026-09-24,
+    waiter wait-m17 (background bash);
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read it by every XingZ631 check (14 headings, 2 links, 9 definitions, 3 TextRing, 11 details, front matter equal, no TA, no error finish, no double blank line, the DottedNumber series in Roman numerals, one rendering per song title, Jinxin glossed once);
-    then `mikaela_khara` and `yingying` on the same build, one entry at a time, each read before the next is launched;
-    record each under a new heading above "## shi_Yumiaoya22 read, 2026-09-24" in the pass log.
+    read it by every mikaela16 check (front matter equal, 4 headings, 4 comments, markers and definitions as the archive, 𝓠𝓾𝓪𝓷 as the archive with "𝓠𝓾𝓪𝓷’s" curled, "Mika was outed", the HRT passage once, the life in the past, no TA, no error finish);
+    then `yingying` on the same build;
+    record each under a new heading above "## XingZ6010 read, 2026-09-24" in the pass log.
+    DEVPASS (owner, 2026-09-24): LLM Gateway DevPass is left out of the pipeline, the owner's choice after reading its terms (no apps, scripts or batch pipelines; translation named as excluded from 2026-10-15; no ZDR; no provider pinning);
+    `LLMGATEWAY_DEVPASS_API_KEY` sits in the sops file unused (addendum in `doc/decision/translation-repair-openrouter-fallback.md`, `aff37b34b`).
+    SYNTHETIC reset by the owner on 2026-09-24; the running XingZ6010 picked it up by its meters (151 Synthetic calls).
+    XINGZ6010 READ (frozen `d73cb46b9`): SETTLED at 23:35 UTC 2026-09-24 in 64.9 min, one attempt, 6,870 calls, 2.49 USD Bedrock and 3.78 OpenRouter by the meters;
+    every XingZ631 check holds (14 headings, 2 links, 9 definitions, 3 TextRing, 11 details, front matter equal, no TA, no error finish, no double blank line, DottedNumber II to VII, Jinxin glossed once);
+    but `<h3 align = "Nonuple Reality">` (class one hundred twenty): the title unify wrote slice 98's credit title into a heading attribute spaced around its equals sign.
+    CLASS ONE HUNDRED TWENTY BUILT (9ec838a01, guard red first c303b0287, full suite `suite-class120.log` 1121 PASS, no FAIL, replayed over the XingZ6010 artifact):
+    `title-reference-marks.ts` reads back past blanks to an attribute's equals sign before taking a quoted span as prose.
     SHI_YUMIAOYA22 READ (frozen `d73cb46b9`): SETTLED at 22:29 UTC 2026-09-24 in 31.9 min, one attempt, 1,011 seats, 5 retry rounds, 938 calls, 0.13 USD Bedrock and 0.28 OpenRouter by the meters;
     class one hundred nineteen live on the page ("Yumiao was a very ordinary trans girl[^1]", "mentally bullied by an underage trans girl", no Han or pinyin outside the archive's comment);
     the floor did not fire (no candidate kept the Han), the glossary line did the work;

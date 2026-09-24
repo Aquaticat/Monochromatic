@@ -1521,6 +1521,9 @@ this section is the readiness reading of it.
   settled by the owner's answer of 2026-09-24 as "trans girl" or "trans woman" and built as a glossary entry with a floor.
   shi_Yumiaoya22 found none:
   both lines read "trans girl" on the page, with no Han and no pinyin outside the archive's comment.
+  XingZ6010 found one (one hundred twenty):
+  a page-assembly pass wrote a song title into a heading's `align` attribute because the tag spaces its equals sign,
+  a broken page the bench did not cause; fixed and replayed over the run.
 - What "ready" would rest on now:
   a rotation over every entry in the read set
   (`XingZ60`,
