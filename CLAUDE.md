@@ -353,13 +353,15 @@ Unvalidated null result means nothing.
 
 QIV:
  Validate scope,
- caches,
- and harness before trusting a null.
-Single-file lint,
- stale cache,
- contract-silenced fixture,
+ cache,
+ harness,
+ generator reach before trusting a null or count;
+ list unexercised surfaces.
+Stale cache,
+ one-file lint,
+ narrow fuzzer,
  wrong assertion:
- each answers a different question than asked.
+ each answers another question.
 
 QNB:
  Comparing timings:
