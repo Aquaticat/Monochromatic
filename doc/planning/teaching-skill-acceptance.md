@@ -347,6 +347,38 @@ Counterexamples this must catch:
 These distinctions govern what a report can claim.
 They do not reopen the learner-observation concerns that the user accepted as fine.
 
+### Candidate refinement: check the learner's own result
+
+This is a proposed addition, not a user-confirmed requirement or a claim that the
+current Promise lesson lacks feedback.
+[The primary-source research note](teaching-skill-research-feedback.md) distinguishes
+school feedback and metacognition guidance from the food-safety criterion owned by
+University of Minnesota Extension. Transfer to adult or AI teaching remains an inference.
+
+Passing behavior at a consequential learner action or inference:
+
+- Give an observable criterion for the learner's own result using an available,
+  appropriate check. Do not assume a displayed reference result proves their attempt.
+- Distinguish a mismatch from its possible causes. Explain what the observed signal can
+  and cannot establish; do not diagnose an underlying state from a label alone.
+- Offer a bounded next action, a safe stop boundary, or what to report for help when
+  the evidence cannot identify a cause. Give a chance to act on useful feedback.
+
+Counterexamples this candidate should reject:
+
+- A recipe with quantities, units, and a time instruction tells a novice to serve poultry
+  without a verified food-safety check. Existing source-check requirements already count
+  against this; the proposed refinement makes the learner's check explicit.
+- A working Promise reference and raw preview error are treated as sufficient instruction
+  when the learner's own preview still says Waiting or reports an unhandled rejection.
+  A generic “try again” does not distinguish operation start, settlement, and observation.
+
+Do not add an artificial checkpoint after every sentence,
+force deliberately erroneous examples into every subject,
+or make a learner study a prerequisite for using or improving material.
+The current Promise lesson has exercise hints and visible error diagnostics;
+this proposal does not assert that its learner has been observed struggling.
+
 ### Scope proposed for confirmation
 
 The skill would guide both teaching conversations and authored teaching materials across subjects.

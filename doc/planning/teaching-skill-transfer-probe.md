@@ -245,8 +245,12 @@ veto are settled; do not ask the user to ratify them again.
 No full cooking lesson has been requested or verified,
 and these working probes have not been run against a finalized skill.
 The broad Q1 that asked the user to invent a failure escaping this comparison was rejected.
-Research a specific missing mechanism, make the contrasting responses visible,
-and identify whether any remaining decision actually depends on the user's preference.
+[The primary-source research note](teaching-skill-research-feedback.md) now tests a
+possible specificity gap: reference output and raw errors do not necessarily tell the
+learner how to check their own result, interpret a mismatch, and recover or stop.
+Its cooking and Promise contrasts are proposed cases, not observed learner failures.
+The cited evidence supports making this a bounded candidate refinement in the
+acceptance draft; no preference question is needed to decide that drafting step.
 Do not ask for a generic falsifying example, checklist approval,
 or a choice between more questions and implementation.
 

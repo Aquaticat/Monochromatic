@@ -1154,8 +1154,14 @@ The question supplied no researched missing mechanism or consequential choice;
 it delegated discovery of a failure to the user.
 This repeats the previously rejected move of asking the user to diagnose a teaching defect
 before the assistant shows its own reasoned interpretation.
-Retract Q1. Investigate primary teaching sources, build a concrete contrast,
-and ask only if the evidence leaves a user-dependent decision.
+Q1 is retracted. [Primary-source research](teaching-skill-research-feedback.md)
+now identifies a bounded hypothesis: at a consequential action,
+a learner may need a way to check their own result, interpret a mismatch,
+and choose a safe next step or stop boundary.
+A source-backed cooking criterion and a hypothetical Promise preview mismatch make
+that distinction concrete without claiming an observed learner failure.
+No user-dependent choice is necessary to record this as a candidate refinement;
+asking another question merely to fulfill the earlier promise would repeat the error.
 The settled learner-observation veto remains in force.
 A future `AGENTS.md` rule could require evidence-backed questions rather than open-ended
 requests for the user to invent counterexamples, but the user's no-`AGENTS.md` instruction
@@ -1174,9 +1180,12 @@ The user liked the corrected Promise toy; no further concrete failure has been n
 The [transfer probe](teaching-skill-transfer-probe.md) separates working cross-domain
 rules from JavaScript-specific controls and from unobserved cooking-timeline hypotheses.
 Do not repeat the withdrawn broad Q1 or ask for checklist approval.
-Research a specific possible failure and contrast its remedies before asking a question;
-if the issue can be settled from evidence, answer it without asking.
-Do not infer learner mastery from artifact tests.
+The [research note](teaching-skill-research-feedback.md) contrasts a sourced food-safety
+check with a hypothetical Promise preview mismatch. The proposed acceptance checks now
+name a learner-owned criterion, bounded mismatch interpretation, and recovery or stop
+at consequential steps. This is an inference to test, not final skill confirmation.
+No preference question survived this evidence review, so report the finding without
+asking another question. Do not infer learner mastery from artifact tests.
 The original request covers live teaching and authored materials; do not reopen that split
 or the confirmed default HTML and complete-print requirements without new evidence.
 Write additions in chunks no larger than the requested 200 to 500 lines.
