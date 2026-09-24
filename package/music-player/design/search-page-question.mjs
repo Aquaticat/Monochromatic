@@ -1,5 +1,5 @@
-// Build and verify the one-design D47/D48 Search page review.
-// The rejected I/G/R questionnaire remains archived and is never rebuilt here.
+// Build and validate the active D47 to D49 Search review from guarded native Fold captures.
+// The rejected desktop Slint studies remain historical, never active review evidence.
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -8,145 +8,177 @@ const root = process.cwd();
 const templatePath = join(root, 'questions', 'current.template.html');
 const outputPath = join(root, 'questions', 'current.html');
 const renderPath = join(root, 'questions', 'render');
-const referencePath = join(root, 'questions', 'evidence', 'search-page-header-comparison.png');
-const modes = ['dark', 'light'];
+const evidencePath = join(root, 'questions', 'evidence');
 const stages = ['player', 'open-empty', 'open-results', 'open-none', 'open-unavailable'];
+const panels = ['cover', 'inner'];
+const modes = ['dark', 'light'];
 const groups = {
-  COMPACT: stages.map((stage) => ({ stage, size: 'compact' })),
-  WIDE: stages.slice(0, 3).map((stage) => ({ stage, size: 'wide' })),
-  STRESS: stages.map((stage) => ({ stage, size: 'stress' })),
+  COVER: stages.map((stage) => ({ stage, panel: 'cover', text: '100' })),
+  INNER: stages.map((stage) => ({ stage, panel: 'inner', text: '100' })),
+  STRESS: panels.flatMap((panel) => ['player', 'open-results'].map((stage) => ({ stage, panel, text: '200' }))),
 };
+const scenes = Object.values(groups).flat();
 const titles = {
   player: 'Player · Search button',
-  'open-empty': 'Search page · empty',
+  'open-empty': 'Search page · empty query',
   'open-results': 'Search page · sample results',
   'open-none': 'Search page · no results',
   'open-unavailable': 'Search page · library unavailable',
 };
+const dimensions = { cover: [1080, 2424], inner: [2076, 2152] };
 
-/** Names one native Slint state without a positional screenshot index. */
-function basename({ stage, mode, size }) {
-  return `search-page-${stage}-${mode}-${size}`;
+/** Names one exact captured frame without a positional screenshot index. */
+function basename({ panel, stage, mode, text }) {
+  return `fold-search-${panel}-${stage}-${mode}-s${text}`;
 }
 
-/** Reads the exact native image for one state and scheme. */
-function encodedImage(scene) {
-  return readFileSync(join(renderPath, `${basename(scene)}.png`)).toString('base64');
+/** Reads an opaque native screenshot for the requested panel, state and scheme. */
+function image({ panel, stage, mode, text }) {
+  return readFileSync(join(renderPath, `${basename({ panel, stage, mode, text })}.png`));
 }
 
-/** Embeds both schemes for one state while keeping every card's label specific. */
-function cardHtml({ stage, size }) {
-  const dark = `data:image/png;base64,${encodedImage({ stage, mode: 'dark', size })}`;
-  const light = `data:image/png;base64,${encodedImage({ stage, mode: 'light', size })}`;
-  const width = size === 'wide' ? 1100 : (size === 'stress' ? 360 : 480);
-  const height = size === 'compact' ? 600 : 640;
-  const label = `${titles[stage]} · ${width} × ${height}px`;
-  return `<figure class="capture" data-stage="${stage}" data-size="${size}" data-label="${label}">
+/** Embeds both native color schemes in one active-design card. */
+function card({ panel, stage, text }) {
+  const [width, height] = dimensions[panel];
+  const light = `data:image/png;base64,${image({ panel, stage, mode: 'light', text }).toString('base64')}`;
+  const dark = `data:image/png;base64,${image({ panel, stage, mode: 'dark', text }).toString('base64')}`;
+  const label = `${panel === 'cover' ? 'Folded cover' : 'Unfolded inner'} · ${titles[stage]} · ${text}% text`;
+  return `<figure class="capture" data-panel="${panel}" data-stage="${stage}" data-text="${text}" data-label="${label}">
     <h3>${label}</h3>
-    <picture><source media="(prefers-color-scheme: dark)" srcset="${dark}"><img src="${light}" width="${width}" height="${height}" alt="Native Slint ${label}, scheme follows system setting"></picture>
-    <figcaption class="small">Native Slint · light and dark · ${size} desktop study.</figcaption>
+    <picture><source media="(prefers-color-scheme: dark)" srcset="${dark}"><img src="${light}" width="${width}" height="${height}" alt="Native Pixel 9 Pro Fold ${label}; displayed scheme follows system setting"></picture>
+    <figcaption class="small">${width} × ${height} physical px, native Compose with Android system bars. Preview with device chassis at design dp.</figcaption>
     <div class="preview-actions"><button type="button" data-scheme="dark">Preview dark</button><button type="button" data-scheme="light">Preview light</button></div>
   </figure>`;
 }
 
-/** Replaces native-state and reference slots without external resources. */
+/** Produces a self-contained file with no network, font, script or image dependencies. */
 function build() {
   const template = readFileSync(templatePath, 'utf8');
-  const filled = Object.entries(groups).reduce((markup, [name, scenes]) => {
-    const slot = `__${name}_CARDS__`;
-    if (!markup.includes(slot)) throw new Error(`Search-page template lost ${slot}.`);
-    return markup.replace(slot, scenes.map(cardHtml).join('\n'));
+  const filled = Object.entries(groups).reduce((markup, [group, entries]) => {
+    const placeholder = `__${group}_CARDS__`;
+    if (!markup.includes(placeholder)) throw new Error(`Fold Search template lost ${placeholder}.`);
+    return markup.replace(placeholder, entries.map(card).join('\n'));
   }, template);
-  const playerDark = encodedImage({ stage: 'player', mode: 'dark', size: 'compact' });
-  const playerLight = encodedImage({ stage: 'player', mode: 'light', size: 'compact' });
-  const reference = readFileSync(referencePath).toString('base64');
-  const placeholders = ['__FLOW_DARK__', '__FLOW_LIGHT__', '__SEARCH_REFERENCE__', '__REFERENCE_WIDTH__', '__REFERENCE_HEIGHT__'];
-  if (placeholders.some((slot) => !filled.includes(slot))) throw new Error('Search-page template lost a flow or reference slot.');
-  const html = filled
-    .replace('__FLOW_DARK__', `data:image/png;base64,${playerDark}`)
-    .replace('__FLOW_LIGHT__', `data:image/png;base64,${playerLight}`)
-    .replace('__SEARCH_REFERENCE__', `data:image/png;base64,${reference}`)
-    .replace('__REFERENCE_WIDTH__', '948')
-    .replace('__REFERENCE_HEIGHT__', '124');
-  writeFileSync(outputPath, html);
-  console.log('Built self-contained Search button to page review.');
+  const dark = image({ panel: 'cover', stage: 'player', mode: 'dark', text: '100' }).toString('base64');
+  const light = image({ panel: 'cover', stage: 'player', mode: 'light', text: '100' }).toString('base64');
+  if (!filled.includes('__FLOW_DARK__') || !filled.includes('__FLOW_LIGHT__')) {
+    throw new Error('Fold Search template lost its native player starting state.');
+  }
+  writeFileSync(outputPath, filled.replace('__FLOW_DARK__', `data:image/png;base64,${dark}`)
+    .replace('__FLOW_LIGHT__', `data:image/png;base64,${light}`));
+  console.log('Built self-contained Fold-native Search review.');
 }
 
-/** Samples a native header, divider, and page-body pixel. */
-function sample({ mode, point }) {
-  const file = join(renderPath, `${basename({ stage: 'open-results', mode, size: 'compact' })}.png`);
-  return execFileSync('magick', [file, '-format', `%[pixel:p{${point}}]`, 'info:'], { encoding: 'utf8' }).trim();
+/** Reads physical pixels at specified points without scaling the screenshot. */
+function pixels({ scene, mode, points }) {
+  const path = join(renderPath, `${basename({ ...scene, mode })}.png`);
+  return execFileSync('magick', [path, '-format', points.map(([x, y]) => `%[hex:p{${x},${y}}]`).join(' '), 'info:'],
+    { encoding: 'utf8' }).trim().split(' ');
 }
 
-/** Checks the active-only flow, exact native evidence, and one integrated page header. */
+/** Rejects every app text or target crossing the unfolded 24dp connector. */
+function assertConnector({ xml, scene, mode }) {
+  const nodes = [...xml.matchAll(/<node\b[^>]*>/g)].map((match) => match[0]);
+  const crossing = nodes.filter((node) => node.includes('package="dev.monochromatic.musicplayer"') &&
+    (/text="[^"]+"/.test(node) || /content-desc="[^"]+"/.test(node) ||
+      node.includes('clickable="true"') || node.includes('focusable="true"') || node.includes('scrollable="true"')))
+    .find((node) => {
+      const bounds = node.match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);
+      return bounds && Number(bounds[1]) < 1068 && Number(bounds[3]) > 1009;
+    });
+  if (crossing) throw new Error(`${basename({ ...scene, mode })}: app content or hit target crosses Fold connector: ${crossing.slice(0, 350)}`);
+  const points = [200, 400, 900, 1500, 1900].flatMap((y) => [1015, 1038, 1060].map((x) => [x, y]));
+  const expected = mode === 'dark' ? '000000FF' : 'FFFFFFFF';
+  const actual = pixels({ scene, mode, points });
+  if (actual.some((pixel) => pixel !== expected)) {
+    throw new Error(`${basename({ ...scene, mode })}: connector x=[1009,1068) is not the accepted ${mode} fill; measured ${actual.join(',')}.`);
+  }
+}
+
+/** Checks the captured native header, divider, and distinct body. */
+function assertHeader({ scene, mode }) {
+  if (scene.stage === 'player') return;
+  const dividerY = scene.panel === 'inner' ? 312 : 329;
+  const [header, divider, body] = pixels({ scene, mode, points: [[200, 200], [200, dividerY], [scene.panel === 'inner' ? 200 : 800, 420]] });
+  const expectedHeader = mode === 'dark' ? '1A1A1FFF' : 'E7E7F1FF';
+  const expectedBody = mode === 'dark' ? '000000FF' : 'FFFFFFFF';
+  if (header !== expectedHeader || divider === header || divider === body || body !== expectedBody) {
+    throw new Error(`${basename({ ...scene, mode })}: native one-bar header, divider or page body changed: ${[header, divider, body].join(',')}.`);
+  }
+}
+
+/** Verifies captured roles and Android state before treating rasters as native evidence. */
+function assertRoles() {
+  for (const panel of panels) for (const mode of modes) {
+    const { android, roles } = JSON.parse(readFileSync(join(evidencePath, `fold-search-${panel}-roles-${mode}.json`), 'utf8'));
+    if (android.api !== 37 || android.deviceState !== (panel === 'inner' ? '2' : '0') ||
+      android.night !== mode || android.displayPixels.join('x') !== dimensions[panel].join('x') ||
+      roles.surface_container_lowest !== (mode === 'dark' ? '#000000' : '#FFFFFF')) {
+      throw new Error(`${panel}/${mode}: Android device state, screen size or accepted connector role differs from the native capture.`);
+    }
+  }
+}
+
+/** Checks every embedded image, role record, visible hierarchy and connector pixel. */
 function validate() {
   const html = readFileSync(outputPath, 'utf8');
-  if (['__FLOW_DARK__', '__FLOW_LIGHT__', '__SEARCH_REFERENCE__', '__REFERENCE_WIDTH__', '__REFERENCE_HEIGHT__', '__COMPACT_CARDS__', '__WIDE_CARDS__', '__STRESS_CARDS__'].some((slot) => html.includes(slot))) {
-    throw new Error('Search-page review retains a placeholder.');
+  if (['__FLOW_DARK__', '__FLOW_LIGHT__', '__COVER_CARDS__', '__INNER_CARDS__', '__STRESS_CARDS__'].some((placeholder) => html.includes(placeholder))) {
+    throw new Error('Fold Search review still has a placeholder.');
   }
   if (/<script\s+[^>]*src=|<link\s+[^>]*href=/i.test(html) || /navigator\.clipboard|clipboardData|execCommand\(\s*['"]copy/.test(html)) {
-    throw new Error('Search-page review depends on an external resource or clipboard API.');
+    throw new Error('Fold Search review depends on external resources or a clipboard API.');
   }
-  const scenes = Object.values(groups).flat();
-  const urls = [...html.matchAll(/data:image\/png;base64,([A-Za-z0-9+/=]+)/g)].map((match) => match[1]);
-  if (urls.length !== scenes.length * 2 + 3 || new Set(urls).size !== scenes.length * 2 + 1) {
-    throw new Error(`Search-page review carries ${urls.length} image references and ${new Set(urls).size} distinct rasters; expected ${scenes.length * 2 + 3} and ${scenes.length * 2 + 1}.`);
+  if (html.includes('Slint design captures') || html.includes('Expanded desktop window') || html.includes('Narrow desktop width') || html.includes('I/G/R choices to make')) {
+    throw new Error('Obsolete desktop-sized Search review resurfaced as target evidence.');
   }
-  const reference = readFileSync(referencePath);
-  if (urls.filter((url) => url === reference.toString('base64')).length !== 1 ||
-    reference.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
-    reference.readUInt32BE(16) !== 948 || reference.readUInt32BE(20) !== 124 ||
-    !html.includes('width="948" height="124" alt="Local baseline MD3 full-content Search header')) {
-    throw new Error('Search-page review lost the exact normalized one-bar reference.');
-  }
-  const figures = html.split('<figure class="capture"').slice(1).map((chunk) => chunk.split('</figure>')[0]);
-  if (figures.length !== scenes.length) throw new Error('Search-page review lost a native state card.');
+  const figures = html.split('<figure class="capture"').slice(1).map((part) => part.split('</figure>')[0]);
+  if (figures.length !== scenes.length) throw new Error('Fold Search review lost an active native state.');
+  assertRoles();
   for (const [index, scene] of scenes.entries()) {
     const figure = figures[index];
-    const width = scene.size === 'wide' ? 1100 : (scene.size === 'stress' ? 360 : 480);
-    const height = scene.size === 'compact' ? 600 : 640;
-    const data = [...figure.matchAll(/data:image\/png;base64,([A-Za-z0-9+/=]+)/g)].map((match) => match[1]);
-    if (!figure.includes(`data-stage="${scene.stage}" data-size="${scene.size}"`) || data.length !== 2 ||
-      data[0] !== encodedImage({ ...scene, mode: 'dark' }) || data[1] !== encodedImage({ ...scene, mode: 'light' }) ||
-      !figure.includes(`width="${width}" height="${height}" alt="Native Slint`) ||
-      !figure.includes('data-scheme="dark"') || !figure.includes('data-scheme="light"')) {
-      throw new Error(`${scene.stage}/${scene.size}: wrong native state or color-scheme pairing.`);
+    const [width, height] = dimensions[scene.panel];
+    if (!figure.includes(`data-panel="${scene.panel}" data-stage="${scene.stage}" data-text="${scene.text}"`) ||
+      !figure.includes(`width="${width}" height="${height}"`) || !figure.includes('data-scheme="dark"') || !figure.includes('data-scheme="light"')) {
+      throw new Error(`${scene.panel}/${scene.stage}/${scene.text}: review card has the wrong panel, scheme or physical frame.`);
     }
-    for (const encoded of data) {
-      const image = Buffer.from(encoded, 'base64');
-      if (image.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' || image.readUInt32BE(16) !== width || image.readUInt32BE(20) !== height) {
-        throw new Error(`${scene.stage}/${scene.size}: invalid native PNG dimensions.`);
+    const urls = [...figure.matchAll(/data:image\/png;base64,([A-Za-z0-9+/=]+)/g)].map((match) => match[1]);
+    if (urls.length !== 2) throw new Error(`${scene.panel}/${scene.stage}: expected both native schemes.`);
+    for (const [mode, encoded] of modes.map((mode, offset) => [mode, urls[offset]])) {
+      const raw = image({ ...scene, mode });
+      const embedded = Buffer.from(encoded, 'base64');
+      if (!embedded.equals(raw) || embedded.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
+        embedded.readUInt32BE(16) !== width || embedded.readUInt32BE(20) !== height) {
+        throw new Error(`${basename({ ...scene, mode })}: review image does not match its opaque native frame.`);
       }
+      const xml = readFileSync(join(evidencePath, `${basename({ ...scene, mode })}.xml`), 'utf8');
+      if (!xml.includes('package="dev.monochromatic.musicplayer"') || !xml.includes('content-desc="Search music"')) {
+        throw new Error(`${basename({ ...scene, mode })}: native hierarchy lost the Search control.`);
+      }
+      const stateText = {
+        player: 'content-desc="Search music"',
+        'open-empty': 'text="Search your music"',
+        'open-results': 'text="Results for “cam”"',
+        'open-none': 'text="No results for “zzq”"',
+        'open-unavailable': 'text="Library unavailable"',
+      }[scene.stage];
+      if (!xml.includes(stateText) || (scene.stage !== 'player' && !xml.includes('content-desc="Back to player"')) ||
+        (['open-results', 'open-none'].includes(scene.stage) && !xml.includes('content-desc="Clear search"'))) {
+        throw new Error(`${basename({ ...scene, mode })}: native hierarchy does not show its labelled page state.`);
+      }
+      if (scene.panel === 'inner') assertConnector({ xml, scene, mode });
+      assertHeader({ scene, mode });
     }
   }
-  const hero = html.slice(html.indexOf('<picture id="flow-picture">'), html.indexOf('</picture>', html.indexOf('<picture id="flow-picture">')));
-  if (!hero.includes(`srcset="data:image/png;base64,${encodedImage({ stage: 'player', mode: 'dark', size: 'compact' })}"`) ||
-    !hero.includes(`src="data:image/png;base64,${encodedImage({ stage: 'player', mode: 'light', size: 'compact' })}"`)) {
-    throw new Error('Search-page flow does not start at the native player Search trigger.');
+  const urls = [...html.matchAll(/data:image\/png;base64,([A-Za-z0-9+/=]+)/g)].map((match) => match[1]);
+  if (urls.length !== scenes.length * 2 + 2 || new Set(urls).size !== scenes.length * 2) {
+    throw new Error('Fold Search review lost its exact native player flow or repeated a state.');
   }
-  if (html.includes('name="inapp"') || html.includes('name="global"') || html.includes('name="search"') || html.includes('I/G/R choices to make.</strong>')) {
-    throw new Error('Rejected command-bar choice structure resurfaced in the Search page.');
+  for (const text of ['D47', 'D48', 'D49', '24dp connector', 'id="panel"', 'id="open-page"', 'id="back-player"', 'id="sample-query"',
+    'id="unavailable"', 'id="correction"', 'preview.showModal()', 'Reset 100%', 'width="1080" height="2424"',
+    'frameWidth: 907', 'frameWidth: 466', 'showStage(\'open-empty\')', 'showStage(\'player\')', 'backPlayer.focus()', 'openPage.focus()']) {
+    if (!html.includes(text)) throw new Error(`Fold Search review is missing ${text}.`);
   }
-  for (const text of ['D47', 'D48', 'one</strong> top bar', 'id="open-page"', 'id="back-player"', 'id="sample-query"', '<option value="cam">cam</option>', '<option value="zzq">zzq</option>', 'sampleQuery.addEventListener(\'change\'', 'id="unavailable"', 'showStage(\'open-empty\')', 'showStage(\'player\')', 'backPlayer.focus()', 'openPage.focus()', 'preview.showModal()', 'await previewImage.decode()', 'returnTarget?.focus()', 'Math.min(0.25, fitScale() / 2)', 'stepZoom(-0.25)', 'id="correction"']) {
-    if (!html.includes(text)) throw new Error(`Search-page review is missing ${text}.`);
-  }
-  if (html.includes('<input id="sample-query"') ||
-    !html.includes('Sample query (canned states)') ||
-    !html.includes("unavailable.addEventListener('click', () => {\n  sampleQuery.value = '';\n  showStage('open-unavailable');")) {
-    throw new Error('Search-page walkthrough allows a query that disagrees with its canned native capture.');
-  }
-  if ((html.match(/class="capture"/g) ?? []).length !== scenes.length || (html.match(/data-scheme="dark"/g) ?? []).length !== scenes.length || (html.match(/data-scheme="light"/g) ?? []).length !== scenes.length) {
-    throw new Error('Search-page review must show every native state in both schemes.');
-  }
-  for (const [mode, header, divider, body] of [
-    ['dark', 'srgba(30,31,38,1)', 'srgba(115,117,127,1)', 'srgba(0,0,0,1)'],
-    ['light', 'srgba(231,231,241,1)', 'srgba(121,122,132,1)', 'srgba(255,255,255,1)'],
-  ]) {
-    if (sample({ mode, point: '200,30' }) !== header || sample({ mode, point: '200,71' }) !== divider || sample({ mode, point: '200,105' }) !== body) {
-      throw new Error(`${mode} Search page lost its one-bar header, divider or separate body.`);
-    }
-  }
-  console.log('One-bar Search page review is valid.');
+  console.log('Fold-native Search review, paired hierarchies, and empty black/white connector are valid.');
 }
 
 if (process.argv[2] === 'build') build();
