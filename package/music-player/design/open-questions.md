@@ -59,7 +59,7 @@ rounds (2026-09-17):
   chosen as the working baseline, not banned from exploration.
   K1's discouraging back
   navigation and K3's non-local sheet remain rejected.
-- **ACTIVE: native Fold Search-page round (D47/D48/D49).**
+- **OPEN: replace rejected unfolded Search composition (D47/D48/D49).**
   D47 chooses a Search
   button opening a separate page;
   D48 puts Back,
@@ -80,19 +80,27 @@ rounds (2026-09-17):
   E2 now excludes **all app content** from `[414,438)`dp,
   not just
   controls.
-  The corrected debug-only Compose study uses two bounded 414dp
-  panes with an empty connector at accepted black/white fill.
-  Native captures,
-  paired hierarchies and roles from both panels/schemes are embedded in the active
-  `questions/current.html` review.
-  A build validator checks state identity,
-  dimensions,
-  visible-node bounds and physical connector pixels;
-  red controls
-  fail for both a crossing target and a wrong tonal fill.
-  Seek free-text
-  correction on this active direction,
-  never I/G/R codes or a desktop width.
+  The second debug-only Compose study kept that connector empty,
+  but put the
+  entire header over a blank left body and confined all results or empty-state
+  instructions to the right body.
+  The user rejected the composition.
+  Its
+  captures,
+  hierarchy XML and role records remain historical evidence;
+  `questions/current.html` now shows a withdrawal notice,
+  not a feedback form.
+  The validator's pixel,
+  bounds and provenance checks did not establish a
+  coherent relationship between the query and its content.
+  Before proposing a
+  replacement,
+  observe real foldable Search behaviors on the available emulator
+  and compare the local baseline M3 adaptive/search guidance.
+  Keep the
+  replacement design-only and E2-safe;
+  do not infer that E2 requires the
+  header on one side and content on the other.
   Keep Search results,
   no-result/unavailable states,
   and open/back behavior visibly

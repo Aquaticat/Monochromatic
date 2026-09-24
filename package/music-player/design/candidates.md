@@ -1108,7 +1108,7 @@ targets,
 questions;
  none was decided by D47.
 
-## Native Fold Search-page round (D49, awaiting correction)
+## Rejected native Fold Search-page composition (D49)
 
 The debug-only Compose study on `prototype/music-player-theme-compose` captured
 the D47/D48 player trigger and separate one-header Search page on the cover
@@ -1129,34 +1129,26 @@ native role JSON;
  density,
  night-mode and
 font-scale metadata in `questions/evidence/`.
- The app-owned unfolded header is bounded by the left 414dp
-pane,
- results by the right 414dp pane,
- and the 24dp connector is blank at D41
-black or D34 white.
- The capture guard and `search-page-question.mjs validate`
-check semantic/hit bounds and sampled pixels;
- red controls confirmed both a
-crossing target and a near-white fill are rejected.
+ The rejected unfolded study put Back/query/Clear over an empty left body and
+isolated results or instructions in the right body.
+ The user rejected the
+composition despite the old guard passing.
+ That guard also enforced a mistaken
+reading of connector "content" as all pixels and hit regions;
+ it is not the
+new design acceptance gate.
+ The captures are historical diagnostic evidence,
+not a candidate for endorsement.
 
-`questions/current.html` is the self-contained active review.
- It shows the
-player-to-page walkthrough,
- two native panels,
- both schemes,
- measured device
-frames,
- 100% dp preview,
- and free-text correction.
+`questions/current.html` now announces withdrawal and hides the old walkthrough,
+gallery and feedback form.
  The cover chassis preview uses approximately 443 ×
 994 CSS px at 100% AVD dp;
  the old 411 × 923dp sizing was an unmeasured
 published-ppi estimate.
- Canned rows and the HTML
-walkthrough do not prove an actual index,
- result execution,
- native Back focus or
-TalkBack speech.
+ The archived canned rows and HTML walkthrough never proved an actual index,
+result execution,
+ native Back focus or TalkBack speech.
  D46's provisional P4 cover picker and accepted unfolded
 baseline are contextual only;
  the desktop Slint captures are history,
