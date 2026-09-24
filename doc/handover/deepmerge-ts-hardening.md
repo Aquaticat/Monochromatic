@@ -530,6 +530,26 @@ Three structural doubts remain:
    then runs them against 8.0.2,
    so expectations cannot inherit the model's reading of the implementation.
 
+### Clean-room result
+
+Report `doc/audit/deepmerge-ts-cleanroom-2026-09-24.md` (commit `c86573cfd`):
+1329 runtime cases, 35 type expectations, and runtime, harness, mutation, and type controls that all failed as required.
+Its 3 defects are known:
+M1 and M2 are issue section 2
+(a class instance's own fields are copied like the `Date` symptom, added there;
+a plain `new Error("m")` copies nothing here because `message` is not enumerable),
+M3 is issue section 12.
+Its embargoed item is issue section 6, already public;
+its `deepmerge`-then-`deepmergeInto` variant and the 8.0.0 changelog claim were added there.
+Its 2 docs errors are new, reproduced on 8.0.2, and added to issue section 11:
+the `deepmergeCustom` TSDoc example customizes the default,
+and `ObjectType` is documented as a utility but ships only as a `const enum`.
+Its ambiguities (null-prototype records, root `actions.skip`, into root kind change) are issue sections 4 and 5 or accepted.
+Reading:
+an oracle written from the docs alone found no runtime defect the sidecar had missed,
+which is recall evidence for runtime values against documented behaviour,
+not for the surfaces the other two workstreams search.
+
 ### Campaign
 
 The run started 2026-09-24 had passed 363 rounds without a counterexample before the widening pass;
