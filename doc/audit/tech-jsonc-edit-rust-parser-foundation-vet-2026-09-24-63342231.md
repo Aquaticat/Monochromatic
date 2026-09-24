@@ -194,6 +194,54 @@ Both local delegated `rg` queries were blocked by its security guardrail,
    Numeric values use approximate `f64` beyond bounded integers,
    so an exact adapter would also be needed.
 
+## Biome maintenance snapshot
+
+The package-specific registry record dates `biome_json_parser` 0.5.7 to 2024-03-12.
+ The current upstream `RELEASES.md:33-39` says internal Rust crates publish on demand;
+ active application releases do not imply a newer published library.
+ A GitHub path-filtered commits query returned 18 changes to `crates/biome_json_parser`
+ since 2025-09-24,
+ including repository maintenance and an embedded-JSON parser feature.
+
+The literal GitHub issue query `json parser` with repository and updated-since-2025-09-24 filters returned 16 issues.
+ Their titles and opening body text were screened for parser relevance;
+ relevant threads and their comments were then read in full.
+ a separate title-only `JSONC` query returned two issues.
+ Relevant threads show different boundaries:
+
+- [#11504](https://github.com/biomejs/biome/issues/11504) concerned application configuration discovery,
+   not direct parser value projection.
+   A maintainer confirmed it on 2026-09-23,
+   assigned it,
+   and merged [#11910](https://github.com/biomejs/biome/pull/11910) the same day;
+   that PR had a maintainer approval and CLI/service regression tests.
+- [#8451](https://github.com/biomejs/biome/issues/8451) concerned JSONC settings-file configuration.
+   A maintainer asked for a reduced reproduction,
+   traced the final case to another tool's override configuration,
+   and the reporter agreed.
+- [#11426](https://github.com/biomejs/biome/issues/11426) combined JSON recovery diagnostics with editor refresh behavior.
+   A maintainer responded,
+   but the issue was automatically closed for lack of the requested reproduction;
+   it does not prove a fix to the published parser.
+- [#7728](https://github.com/biomejs/biome/issues/7728) remains open and confirmed for a malformed JSON file causing a Biome worker stack overflow.
+   A contributor suggested recursive syntax-node destruction as a theory,
+   not a verified root cause.
+   The reported Biome application version and worker boundary differ from the published 0.5.7 parser probe;
+   the bounded successful 512-depth cases do not resolve that incident.
+- [#10684](https://github.com/biomejs/biome/issues/10684) reported a formatter worker overflow around 2000 nested arrays.
+   The issue was closed with a contributor response rather than a source fix in that thread.
+   This formatter boundary is distinct from the library parser and this port's emitter;
+   do not transfer either the failure or the closure to those surfaces.
+
+The [crate-publishing PR #11850](https://github.com/biomejs/biome/pull/11850) was approved and merged on 2026-09-19;
+ its workflow opens a version-bump PR and publishes only after that PR merges.
+ No open `automated-release/crates` PR appeared in the recorded query.
+ The issue and PR samples establish active upstream code and some responsive investigation,
+ but do not yet supply an equal-depth upstream CI,
+ platform,
+ or package-release validation for version 0.5.7.
+ No soft maintenance rating is assigned yet.
+
 ## Current source checks, not a recommendation
 
 - `jsonc-parser` 0.33.2,
