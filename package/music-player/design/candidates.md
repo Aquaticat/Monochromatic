@@ -1062,10 +1062,10 @@ ownership,
  result execution,
  or search indexing.
 
-## Search button to separate search page (D47, active design work)
+## Search button to separate search page (D47/D48, desktop-size experiment retired by D49)
 
 The user rejected all I/G/R command-bar presentations.
- The active prototype has one
+ This earlier Slint prototype has one
 direction rather than an option matrix:
  a 48px Search button target with a 24px official icon in the player
 opens a separate page,
@@ -1093,14 +1093,12 @@ TouchAreas are wired in the design prototype;
 themselves prove click delivery or focus restoration.
  The rejected I/G/R form is now archived at
 `questions/archive/command-igr-rejected.html`;
- `questions/current.html` is an
-active-only review with an HTML player → Search → player walkthrough,
- native
-light/dark gallery,
- and free-text correction.
- That walkthrough was exercised in
-a browser;
- it does not prove the native TouchAreas were activated.
+ `questions/current.html` is a
+desktop-sized walkthrough awaiting replacement with Fold-panel evidence.
+ The HTML
+flow was exercised,
+ but it neither proves the native TouchAreas were activated nor
+measures the target phone geometry.
 D21's global hotkey and Settings row are not inherited by the Search page.
 D25's Ctrl+F reservation remains open with the whole keyboard map.
  The exact search
@@ -1109,3 +1107,17 @@ targets,
  and button position on each platform remain design
 questions;
  none was decided by D47.
+
+## Native Fold Search-page round (D49, in progress)
+
+The definitive design evidence must show the D47/D48 Search button and one-header
+page on the Pixel 9 Pro Fold cover at 1080 × 2424 physical px and unfolded inner
+panel at 2076 × 2152 physical px,
+ in both schemes.
+ Use a throwaway Compose debug
+candidate and opaque panel captures with hierarchy evidence;
+ preserve D46's
+provisional P4 cover picker and the accepted unfolded pane treatments as context.
+The desktop Slint captures are history,
+ not a matrix to choose from or a reason to
+optimize this treatment for an independently chosen window width.
