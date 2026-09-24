@@ -56,7 +56,7 @@ button, select {
 }
 button { cursor: pointer; }
 button:hover { background-color: var(--color-raised); }
-button:focus-visible, select:focus-visible, textarea:focus-visible {
+button:focus-visible, select:focus-visible, textarea:focus-visible, .preview-stage:focus-visible {
   outline: 0.1875rem solid var(--color-accent);
   outline-offset: 0.1875rem;
 }
@@ -259,7 +259,7 @@ dialog::backdrop { background-color: var(--color-backdrop); }
     <button id="close-preview" type="button">Close</button>
     <p id="scale-label" class="small details" aria-live="polite"></p>
   </div>
-  <div class="preview-stage" id="preview-stage"><div class="device" id="device" data-panel="cover"><div class="device-screen"><img id="preview-image" alt="Native Fold Search capture" width="1080" height="2424"></div><span class="camera" aria-hidden="true"></span><span class="hinge" data-end="start" aria-hidden="true"></span><span class="hinge" data-end="end" aria-hidden="true"></span></div></div>
+  <div class="preview-stage" id="preview-stage" tabindex="0" role="region" aria-label="Scrollable native Fold screen preview"><div class="device" id="device" data-panel="cover"><div class="device-screen"><img id="preview-image" alt="Native Fold Search capture" width="1080" height="2424"></div><span class="camera" aria-hidden="true"></span><span class="hinge" data-end="start" aria-hidden="true"></span><span class="hinge" data-end="end" aria-hidden="true"></span></div></div>
 </dialog>
 <script>
 const preview = document.querySelector('#preview');
