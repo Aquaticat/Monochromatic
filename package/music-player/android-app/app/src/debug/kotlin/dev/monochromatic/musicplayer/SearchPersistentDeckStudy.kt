@@ -135,7 +135,8 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
     if (cover) {
         val state = if (candidate.contains("-player")) "player" else if (candidate.contains("-results")) "results"
             else if (candidate.contains("-none")) "none" else if (candidate.contains("-unavailable")) "unavailable" else "empty"
-        SearchLayoutStudy(candidate = "search-layout-docked-$state${if (light) "-light" else ""}")
+        SearchLayoutStudy(candidate = "search-layout-docked-$state${if (light) "-light" else ""}",
+            hidePositiveHeading = true)
         return
     }
     val startsOpen = !candidate.contains("-player")
@@ -283,8 +284,6 @@ private fun PersistentSearchPane(query: String, onQueryChange: (String) -> Unit,
             .windowInsetsPadding(WindowInsets.navigationBars)
             .padding(start = startSafe, end = endSafe)) {
             if (query == "cam" && !unavailable) {
-                Text("Results for “cam”", modifier = Modifier.padding(top = 20.dp, bottom = 8.dp),
-                    style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 PersistentResultLine(title = "Camellia", detail = "Folder · opens this folder", kind = "Folder")
                 PersistentResultLine(title = "Another Xronixle", detail = "Track · Camellia · reveals track", kind = "Track")
             } else {

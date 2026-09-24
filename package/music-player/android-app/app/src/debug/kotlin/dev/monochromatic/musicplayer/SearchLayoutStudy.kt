@@ -127,7 +127,7 @@ import androidx.compose.ui.unit.dp
  *  ```
  */
 @Composable
-internal fun SearchLayoutStudy(candidate: String) {
+internal fun SearchLayoutStudy(candidate: String, hidePositiveHeading: Boolean = false) {
     val light = candidate.endsWith("-light")
     val cover = LocalConfiguration.current.screenWidthDp < 600
     val variant = if (candidate.contains("-docked-")) "docked" else if (candidate.contains("-wide-list-")) "wide-list" else "wide-grid"
@@ -151,7 +151,7 @@ internal fun SearchLayoutStudy(candidate: String) {
     val pageColor = if (light) MaterialTheme.colorScheme.surfaceContainerLowest else Color.Black
     if (cover) {
         SearchLayoutCover(query = query, onQueryChange = { query = it }, onBack = onBack,
-            unavailable = unavailable, pageColor = pageColor)
+            unavailable = unavailable, pageColor = pageColor, hidePositiveHeading = hidePositiveHeading)
         return
     }
     // What:     110px is this panel's approximation of the user's physical 7.5mm dent.
@@ -177,7 +177,7 @@ internal fun SearchLayoutStudy(candidate: String) {
 /** Keeps the folded design shared while unfolded alternatives answer the open layout question. */
 @Composable
 private fun SearchLayoutCover(query: String, onQueryChange: (String) -> Unit,
-    onBack: () -> Unit, unavailable: Boolean, pageColor: Color) {
+    onBack: () -> Unit, unavailable: Boolean, pageColor: Color, hidePositiveHeading: Boolean) {
     Column(modifier = Modifier.fillMaxSize().background(pageColor)) {
         Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
         SearchLayoutHeader(query = query, onQueryChange = onQueryChange, onBack = onBack,
@@ -185,7 +185,8 @@ private fun SearchLayoutCover(query: String, onQueryChange: (String) -> Unit,
         HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
         SearchLayoutRows(query = query, unavailable = unavailable,
             modifier = Modifier.fillMaxWidth().weight(1f).windowInsetsPadding(WindowInsets.navigationBars),
-            halfClearance = null, fullWidth = false, pageColor = pageColor)
+            halfClearance = null, fullWidth = false, pageColor = pageColor,
+            hidePositiveHeading = hidePositiveHeading)
     }
 }
 
@@ -288,15 +289,18 @@ private fun SearchLayoutInput(query: String, onQueryChange: (String) -> Unit, mo
 /** Shows compact list states directly under the input in cover, docked, or wide-list form. */
 @Composable
 private fun SearchLayoutRows(query: String, unavailable: Boolean, modifier: Modifier,
-    halfClearance: androidx.compose.ui.unit.Dp?, fullWidth: Boolean, pageColor: Color) {
+    halfClearance: androidx.compose.ui.unit.Dp?, fullWidth: Boolean, pageColor: Color,
+    hidePositiveHeading: Boolean = false) {
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         if (query != "cam" || unavailable) {
             SearchLayoutEmpty(query = query, unavailable = unavailable,
                 halfClearance = halfClearance, fullWidth = fullWidth)
             return@Column
         }
-        Text("Results for “cam”", modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 8.dp),
-            style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        if (!hidePositiveHeading) {
+            Text("Results for “cam”", modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 8.dp),
+                style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        }
         SearchLayoutRow(title = "Camellia", detail = "Folder · opens this folder", kind = "Folder",
             halfClearance = halfClearance, fullWidth = fullWidth, pageColor = pageColor)
         if (fullWidth) Spacer(modifier = Modifier.height(8.dp))
