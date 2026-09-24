@@ -5248,10 +5248,14 @@ The debug-only prototype commit `38d601830` leaves historical
 `hidePositiveHeading = true`,
  and `PersistentSearchPane` omits the heading
 for the selected unfolded route.
- `capture-search-selected.mjs` from commit
-`970a7dde1` ran on state 2 inner and state 0 cover at 390dpi,
- in light and
-dark at 100%/200% text.
+ `capture-search-selected.mjs` was introduced in commit `970a7dde1` and
+strengthened in `56b800941` to require results in the correct pane,
+ finite
+keyboard bounds and real IME dismissal after Back.
+ Its native run covered
+state 2 inner and state 0 cover at 390dpi,
+ in light and dark at 100%/200%
+text.
  Each panel has empty,
  keyboard-visible typed
 results,
@@ -5263,9 +5267,31 @@ The resulting images show the query in its one header,
  a folder followed by
 a track,
  and the unfolded deck above the measured probe.
- The AVD returned
-to its original Gboard selection,
- inner state and font scale.
+ The selected
+hierarchy and metadata pairs are durable in throwaway branch commit
+`36f8a8b8e`,
+ while sanitized selected PNGs are committed in the main
+design evidence folder;
+ raw status/notification pixels were not copied to
+main.
+ At 200% in dark,
+ a matched before/after hierarchy comparison found
+the first folder and track results each moved up 172 physical px on both
+panels;
+ Back,
+ Clear and the unfolded final mode control retained identical
+bounds.
+ This is a positive control that the removed heading affected result
+placement without moving the header or deck.
+ After recapture,
+ device state
+2,
+ font scale 1.0,
+ Night mode yes,
+ Gboard selected,
+ the custom IME
+disabled,
+ and stay-on setting 7 were measured.
  Gboard's own
 rendering and taller keyboard geometries are not verified by this probe.
 
@@ -5277,13 +5303,26 @@ shows only selected A,
 100% results,
  200% typing and an empty state.
  Its source template is
-`questions/current.template.html`;
- the throwaway branch owns
-`sanitize-search-selected.mjs` and `build-search-selected.mjs`.
- Status
-notification content is masked before embedding.
- The validator confirmed
-physical PNG sizes and exact embedded sources.
+`questions/current.template.html`.
+ The main design package now owns
+`selected-search-question.mjs`:
+ `mise run //package/music-player/design:build`,
+`lint` and `test:unit` target the **selected** artifact,
+ not the rejected
+one.
+ `search-page-question.mjs` now targets the archived rejected artifact;
+`lint:search:historical` passed against it.
+ The throwaway branch retains
+the screenshot sanitizer and native capture runner.
+ The validator matched
+physical PNG sizes and exact embedded sources,
+ with status notification
+content masked.
+ Historical prototype scripts `capture-search-choices.mjs`
+and `capture-search-deck.mjs` still require the pre-D52 results heading;
+reproduce them only from their pre-D52 source revisions
+(`406b4523a` and `eb1fee1e2`),
+ not from the selected prototype commit.
  `agent-browser` verified the
 rendered panel images,
  state/scheme controls,
@@ -5292,6 +5331,11 @@ previews,
  fit/reset/zoom/close and focus return.
  WCAG 2A/AA checks returned
 no violations in light or dark.
+ Browser geometry checks showed the entire
+unfolded and cover raster within each gallery thumbnail,
+ including the
+keyboard region;
+ no rejected layout is shown.
  A preview-dialog scale label produced an
 axe `color-contrast` **incomplete** rather than a violation;
  manual
