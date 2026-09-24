@@ -13,6 +13,7 @@ import {
 import {
   emptyTomlEdit,
   parseTomlEdit,
+  tomlGetValue,
   tomlSet,
   tomlSetHeaderComment,
   tomlStringify,
@@ -75,6 +76,53 @@ await describe({
     },),
 
     it({
+      name: 'keeps empty canonical output empty',
+      fn: async () => {
+        expect(tomlStringify({ edit: emptyTomlEdit(), },),).toBe('',);
+        expect(tomlStringify({
+          edit: emptyTomlEdit({ canonical: { trailingNewline: false, }, },),
+        },),).toBe('',);
+      },
+    },),
+
+    it({
+      name: 'omits terminal newlines in a header-only canonical document',
+      fn: async () => {
+        const edit = tomlSetHeaderComment({
+          edit: emptyTomlEdit({ canonical: { trailingNewline: false, }, },),
+          comment: 'Generated',
+        },);
+        expect(tomlStringify({ edit, },),).toBe('# Generated',);
+      },
+    },),
+
+    it({
+      name: 'omits multiple terminal newlines without changing multiline string content',
+      fn: async () => {
+        const edit = parseTomlEdit({
+          source: 'note = """\nhello\nworld\n"""\n\n',
+          mode: 'canonical',
+          canonical: { trailingNewline: false, },
+        },);
+        const text = tomlStringify({ edit, },);
+        expect(text.endsWith('\n',),).toBe(false,);
+        expect(tomlGetValue({
+          edit: parseTomlEdit({ source: text, },),
+          path: ['note',],
+        },),).toBe(tomlGetValue({ edit, path: ['note',], },),);
+      },
+    },),
+
+    it({
+      name: 'honors the newline preference in an empty-source splice state',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: '', canonical: { trailingNewline: false, }, },);
+        const updated = tomlSet({ edit, path: ['title',], value: 'Demo', },);
+        expect(tomlStringify({ edit: updated, },),).toBe('title = "Demo"',);
+      },
+    },),
+
+    it({
       name: 'preserves the final newline in an untouched splice document',
       fn: async () => {
         const edit = parseTomlEdit({
@@ -82,6 +130,18 @@ await describe({
           canonical: { trailingNewline: false, },
         },);
         expect(tomlStringify({ edit, },),).toBe('title = "Demo"\n',);
+      },
+    },),
+
+    it({
+      name: 'preserves the final newline after editing a nonempty splice document',
+      fn: async () => {
+        const edit = parseTomlEdit({
+          source: 'title = "Old"\n',
+          canonical: { trailingNewline: false, },
+        },);
+        const updated = tomlSet({ edit, path: ['title',], value: 'New', },);
+        expect(tomlStringify({ edit: updated, },),).toBe('title = "New"\n',);
       },
     },),
 
