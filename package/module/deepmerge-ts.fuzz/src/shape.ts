@@ -36,81 +36,159 @@ function segment(key: unknown,): string {
 }
 
 /**
+ Returned by {@link shapeMismatch} when the trees match; every real mismatch
+ report starts with a path, so it is never empty.
+ */
+export const NO_MISMATCH = '';
+
+/**
  Compare two ordered key lists by `Object.is`.
 
  @param left - Keys of the actual value.
+
  @param right - Keys of the expected value.
 
  @returns Whether both lists hold the same keys in the same order.
 
  @example
  ```ts
- sameKeys(['a',], ['a',]); // true
+ sameKeys({ left: ['a',], right: ['a',], }); // true
  ```
  */
-function sameKeys(left: readonly unknown[], right: readonly unknown[],): boolean {
-  return (left.length === right.length) && left.every((key, index,) => Object.is(key, right[index],));
+function sameKeys(
+  {
+    left,
+    right,
+  }: {
+    readonly left: readonly unknown[];
+    readonly right: readonly unknown[];
+  },
+): boolean {
+  return (left.length === right.length) && left.every(function sameAt(
+    key,
+    index,
+  ) {
+    return Object.is(
+      key,
+      right[index],
+    );
+  },);
+}
+
+/**
+ Whether a child comparison reported a mismatch.
+
+ @param mismatch - Child report.
+
+ @returns Whether the report is not {@link NO_MISMATCH}.
+
+ @example
+ ```ts
+ isMismatch('$.a: prototype differs'); // true
+ ```
+ */
+function isMismatch(mismatch: string,): boolean {
+  return mismatch !== NO_MISMATCH;
 }
 
 /**
  Find the first structural difference between two trees.
 
  @param actual - Value produced by the implementation under test.
+
  @param expected - Value predicted by the model or captured by `snapshot`.
+
  @param path - Location of this pair, for the report.
 
- @returns Human-readable mismatch location and reason, or `undefined` when
-   the trees match.
+ @returns Human-readable mismatch location and reason, or {@link NO_MISMATCH}
+   when the trees match.
 
  @example
  ```ts
- shapeMismatch({ actual: [1,], expected: [1,], }); // undefined
+ shapeMismatch({ actual: [1,], expected: [1,], }); // ''
  ```
  */
 export function shapeMismatch(
-  { actual, expected, path = '$', }: {
+  {
+    actual,
+    expected,
+    path = '$',
+  }: {
     readonly actual: unknown;
     readonly expected: unknown;
     readonly path?: string;
   },
-): string | undefined {
-  if (Object.is(actual, expected,))
-    return undefined;
+): string {
+  if (Object.is(
+    actual,
+    expected,
+  ))
+    return NO_MISMATCH;
   /**
    Bucket of the actual value; the expected one must match it.
    */
   const kind = kindOf(actual,);
-  if ((kind === 'other') || (kind !== kindOf(expected,)))
+  if ((kind === 'other') || (kind !== kindOf(expected,))
+    || ((typeof actual) !== 'object')
+    || ((typeof expected) !== 'object')
+    || (actual === null)
+    || (expected === null))
     return `${path}: expected ${String(expected,)}, got ${String(actual,)}`;
   if (Object.getPrototypeOf(actual,) !== Object.getPrototypeOf(expected,))
     return `${path}: prototype differs`;
   if ((actual instanceof Set) && (expected instanceof Set)) {
-    return sameKeys([...actual,], [...expected,],)
-      ? undefined
+    return sameKeys({
+      left: [...actual,],
+      right: [...expected,],
+    },)
+      ? NO_MISMATCH
       : `${path}: Set elements or order differ`;
   }
   if ((actual instanceof Map) && (expected instanceof Map)) {
-    if (!sameKeys([...actual.keys(),], [...expected.keys(),],))
+    if (!sameKeys({
+      left: [...actual.keys(),],
+      right: [...expected.keys(),],
+    },))
       return `${path}: Map keys or order differ`;
     return [...actual.keys(),]
-      .map((key,) => shapeMismatch({ actual: actual.get(key,), expected: expected.get(key,), path: `${path}${segment(key,)}`, },))
-      .find((mismatch,) => mismatch !== undefined);
+      .map(function compareEntry(key,) {
+        return shapeMismatch({
+          actual: actual.get(key,),
+          expected: expected.get(key,),
+          path: `${path}${segment(key,)}`,
+        },);
+      },)
+      .find(isMismatch,)
+      ?? NO_MISMATCH;
   }
   /**
    Own keys including holes' absence and non-enumerable properties.
    */
-  const actualKeys = Reflect.ownKeys(actual as object,);
-  if (!sameKeys(actualKeys, Reflect.ownKeys(expected as object,),))
-    return `${path}: own keys differ (${actualKeys.map(String,).join(', ',)})`;
+  const actualKeys = Reflect.ownKeys(actual,);
+  if (!sameKeys({
+    left: actualKeys,
+    right: Reflect.ownKeys(expected,),
+  },)) {
+    return `${path}: own keys differ (${actualKeys
+      .map(String,)
+      .join(', ',)})`;
+  }
   return actualKeys
-    .map((key,) =>
-      shapeMismatch({
-        actual: Reflect.get(actual as object, key,),
-        expected: Reflect.get(expected as object, key,),
+    .map(function compareProperty(key,) {
+      return shapeMismatch({
+        actual: Reflect.get(
+          actual,
+          key,
+        ),
+        expected: Reflect.get(
+          expected,
+          key,
+        ),
         path: `${path}${segment(key,)}`,
-      },)
-    )
-    .find((mismatch,) => mismatch !== undefined);
+      },);
+    },)
+    .find(isMismatch,)
+    ?? NO_MISMATCH;
 }
 
 /**
@@ -129,35 +207,95 @@ export function shapeMismatch(
  const copy = snapshot({ a: [1,], });
  ```
  */
-export function snapshot<const T,>(value: T,): T {
+export function snapshot(value: unknown,): unknown {
   /**
    Bucket deciding how to copy this node.
    */
   const kind = kindOf(value,);
-  if (kind === 'other')
+  if ((kind === 'other') || ((typeof value) !== 'object')
+    || (value === null))
     return value;
   if (value instanceof Set)
-    return new Set(value,) as T;
+    return new Set(value,);
   if (value instanceof Map)
-    return new Map([...value,].map(([key, entry,],) => [key, snapshot(entry,),]),) as T;
+    return new Map([...value,].map(function copyEntry([
+      key,
+      entry,
+    ],): readonly [
+      unknown,
+      unknown,
+    ] {
+      return [
+        key,
+        snapshot(entry,),
+      ];
+    },),);
+  /**
+   Prototype the copy inherits.
+   */
+  const prototype: unknown = Object.getPrototypeOf(value,);
+  if ((prototype !== null) && ((typeof prototype) !== 'object'))
+    throw new Error('snapshot: prototype is neither null nor an object',);
   /**
    Fresh container with the same prototype as the original.
    */
-  const copy: object = Array.isArray(value,) ? [] : Object.create(Object.getPrototypeOf(value,),);
-  for (const key of Reflect.ownKeys(value as object,)) {
+  const copy: object = Array.isArray(value,) ? [] : {};
+  Reflect.setPrototypeOf(
+    copy,
+    prototype,
+  );
+  for (const key of Reflect.ownKeys(value,)) {
     /**
      Original descriptor; data values are copied recursively.
      */
-    const descriptor = Reflect.getOwnPropertyDescriptor(value as object, key,);
+    const descriptor = Reflect.getOwnPropertyDescriptor(
+      value,
+      key,
+    );
     if (descriptor === undefined)
       throw new Error(`snapshot: own key ${String(key,)} vanished during the copy`,);
+    /**
+     Data value to copy, absent for accessors.
+     */
+    const inner: unknown = descriptor.value;
     Reflect.defineProperty(
       copy,
       key,
-      ('value' in descriptor) ? { ...descriptor, value: snapshot(descriptor.value,), } : descriptor,
+      ('value' in descriptor)
+        ? {
+          ...descriptor,
+          value: snapshot(inner,),
+        }
+        : descriptor,
     );
   }
   if (Object.isFrozen(value,))
     Object.freeze(copy,);
-  return copy as T;
+  return copy;
+}
+
+/**
+ {@link snapshot} for callers that hold an object and must keep one, such as
+ a `deepmergeInto` target.
+
+ @param value - Object tree to copy.
+
+ @returns Copy of `value`, narrowed back to an object.
+
+ @throws When the copy is not an object, which {@link snapshot} never does
+   for object input.
+
+ @example
+ ```ts
+ const target = snapshotObject({ a: [1,], });
+ ```
+ */
+export function snapshotObject(value: object,): object {
+  /**
+   Copy, typed `unknown` by {@link snapshot}.
+   */
+  const copy = snapshot(value,);
+  if (((typeof copy) !== 'object') || (copy === null))
+    throw new Error('snapshotObject: copy of an object is not an object',);
+  return copy;
 }

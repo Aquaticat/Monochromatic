@@ -73,42 +73,73 @@ export type FuzzRunPlan = {
 export class FuzzPlanError extends Error {
   /**
    @param name - Offending environment variable, named so the fix is obvious.
+   
    @param raw - Offending value, echoed for the same reason.
    */
-  constructor({ name, raw, }: { readonly name: string; readonly raw: string; },) {
+  constructor({
+    name,
+    raw,
+  }: {
+    readonly name: string;
+    readonly raw: string
+  },) {
     super(`${name} must be an integer, got ${JSON.stringify(raw,)}`,);
     this.name = 'FuzzPlanError';
   }
 }
 
 /**
+ One campaign variable's reading: unset selects the bounded layer.
+ */
+type EnvInteger =
+  | {
+    readonly set: false;
+  }
+  | {
+    readonly set: true;
+    readonly value: number;
+  };
+
+/**
+ Reading of a variable that is unset or empty.
+ */
+const UNSET: EnvInteger = { set: false, };
+
+/**
  Read one integer campaign variable.
 
  @param name - Variable to read; absence selects the bounded layer.
 
- @returns Parsed integer, or `undefined` when the variable is unset or empty.
+ @returns Parsed integer, or {@link UNSET} when the variable is unset or empty.
 
- @throws {FuzzPlanError} When set to a non-integer.
+ @throws {@link FuzzPlanError} When set to a non-integer.
 
  @example
  ```ts
  const seed = readIntegerEnv('DEEPMERGE_FUZZ_SEED');
  ```
  */
-function readIntegerEnv(name: string,): number | undefined {
+function readIntegerEnv(name: string,): EnvInteger {
   /**
    Raw value from the environment.
    */
   const raw = process.env[name];
   if ((raw === undefined) || (raw === ''))
-    return undefined;
+    return UNSET;
   /**
    Numeric reading of the raw value.
    */
   const parsed = Number(raw,);
-  if (!Number.isInteger(parsed,))
-    throw new FuzzPlanError({ name, raw, },);
-  return parsed;
+  if (!Number.isInteger(parsed,)) {
+    throw new FuzzPlanError({
+      name,
+      raw,
+    },);
+  }
+  return {
+    set: true,
+    value: parsed,
+  };
 }
 
 /**
@@ -118,7 +149,7 @@ function readIntegerEnv(name: string,): number | undefined {
  @returns Bounded fixed-seed plan when no campaign variables are set,
    otherwise the campaign round's plan.
 
- @throws {FuzzPlanError} When a campaign variable is malformed.
+ @throws {@link FuzzPlanError} When a campaign variable is malformed.
 
  @example
  ```ts
@@ -135,14 +166,20 @@ export function fuzzRunPlan(): FuzzRunPlan {
    Campaign run count, when a campaign round is running.
    */
   const numRuns = readIntegerEnv(NUM_RUNS_ENV_NAME,);
-  if ((seed === undefined) || (numRuns === undefined)) {
+  if ((!seed.set) || (!numRuns.set)) {
     return {
-      params: { numRuns: BOUNDED_NUM_RUNS, seed: BOUNDED_SEED, },
+      params: {
+        numRuns: BOUNDED_NUM_RUNS,
+        seed: BOUNDED_SEED,
+      },
       timeout: BOUNDED_TIMEOUT_MS,
     };
   }
   return {
-    params: { numRuns, seed, },
+    params: {
+      numRuns: numRuns.value,
+      seed: seed.value,
+    },
     timeout: CAMPAIGN_TIMEOUT_MS,
   };
 }

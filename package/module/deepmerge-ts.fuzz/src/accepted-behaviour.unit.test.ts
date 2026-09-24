@@ -59,7 +59,7 @@ await describe({
   children: [
     it({
       name: 'the default maxDepth merges up to depth 1000 and then lets the last value win',
-      fn: () => {
+      fn: async () => {
         /**
          Bottom record of the later input, reached at the default limit.
          */
@@ -85,7 +85,7 @@ await describe({
     },),
     it({
       name: 'getters are read once per merge and flattened into data properties',
-      fn: () => {
+      fn: async () => {
         /**
          Number of getter invocations observed.
          */
@@ -114,7 +114,7 @@ await describe({
     },),
     it({
       name: 'a throwing getter propagates its error',
-      fn: () => {
+      fn: async () => {
         /**
          Error raised from the getter, compared by identity.
          */
@@ -132,7 +132,7 @@ await describe({
     },),
     it({
       name: 'deepmergeInto rejects a frozen target and accepts frozen sources',
-      fn: () => {
+      fn: async () => {
         expect(() => target.deepmergeInto(Object.freeze({ a: 1, },), { b: 2, },),).toThrow(TypeError,);
         /**
          Writable target merged from a frozen source.
@@ -140,7 +140,9 @@ await describe({
         const writable: Record<string, unknown> = { a: 1, };
         target.deepmergeInto(writable, Object.freeze({ b: Object.freeze({ c: 3, },), },),);
         expect(writable,).toEqual({ a: 1, b: { c: 3, }, },);
-        expect(Object.isFrozen(target.deepmerge(Object.freeze({ a: 1, },), Object.freeze({ b: 2, },),),),).toBe(false,);
+        expect(
+          Object.isFrozen(target.deepmerge(Object.freeze({ a: 1, },), Object.freeze({ b: 2, },),),),
+        ).toBe(false,);
       },
     },),
   ],

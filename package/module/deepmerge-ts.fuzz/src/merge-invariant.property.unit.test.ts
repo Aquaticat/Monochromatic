@@ -42,8 +42,10 @@ import {
 } from './arbitraries.ts';
 import { fuzzRunPlan, } from './fuzz-budget.ts';
 import {
+  NO_MISMATCH,
   shapeMismatch,
   snapshot,
+  snapshotObject,
 } from './shape.ts';
 import { target, } from './target.ts';
 
@@ -102,10 +104,10 @@ function cyclicRecord({ depth, extra, }: { readonly depth: number; readonly extr
        Next link of the chain.
        */
       const next: Record<string, unknown> = {};
-      node['self'] = next;
+      node.self = next;
       return next;
     }, root,);
-  tail['self'] = root;
+  tail.self = root;
   return root;
 }
 
@@ -117,7 +119,7 @@ await describe({
     it({
       name: 'deepmerge never mutates its arguments',
       timeout: RUN.timeout,
-      fn: () => {
+      fn: async () => {
         assert(
           property(exoticArguments, function argumentsUnchanged(values,) {
             /**
@@ -125,7 +127,7 @@ await describe({
              */
             const before = values.map((value,) => snapshot(value,));
             target.deepmerge(...values,);
-            expect(shapeMismatch({ actual: values, expected: before, },),).toBeUndefined();
+            expect(shapeMismatch({ actual: values, expected: before, },),).toBe(NO_MISMATCH,);
           },),
           RUN.params,
         );
@@ -134,7 +136,7 @@ await describe({
     it({
       name: 'deepmergeInto never mutates its sources',
       timeout: RUN.timeout,
-      fn: () => {
+      fn: async () => {
         assert(
           property(
             treeArbitraries({ exotic: false, objectLeaves: false, undefinedLeaves: false, },).record,
@@ -147,9 +149,9 @@ await describe({
               /**
                Private target this run may mutate.
                */
-              const mutableTarget = snapshot(generated,);
+              const mutableTarget = snapshotObject(generated,);
               target.deepmergeInto(mutableTarget, ...sources,);
-              expect(shapeMismatch({ actual: sources, expected: before, },),).toBeUndefined();
+              expect(shapeMismatch({ actual: sources, expected: before, },),).toBe(NO_MISMATCH,);
             },
           ),
           RUN.params,
@@ -159,14 +161,14 @@ await describe({
     it({
       name: 'no entry point without FastUnsafe pollutes Object.prototype',
       timeout: RUN.timeout,
-      fn: () => {
+      fn: async () => {
         assert(
           property(exoticArguments, function prototypeUntouched(values,) {
             target.deepmerge(...values,);
             target.deepmergeCustom({ maxDepth: 2, },)(...values,);
             target.deepmergeInto({}, ...values,);
             expect(shapeMismatch({ actual: Reflect.ownKeys(Object.prototype,), expected: OBJECT_PROTOTYPE_KEYS, },),)
-              .toBeUndefined();
+              .toBe(NO_MISMATCH,);
           },),
           RUN.params,
         );
@@ -175,7 +177,7 @@ await describe({
     it({
       name: 'undefined arguments are neutral',
       timeout: RUN.timeout,
-      fn: () => {
+      fn: async () => {
         assert(
           property(
             exoticArguments,
@@ -189,7 +191,7 @@ await describe({
                 values,
               );
               expect(shapeMismatch({ actual: target.deepmerge(...padded,), expected: target.deepmerge(...values,), },),)
-                .toBeUndefined();
+                .toBe(NO_MISMATCH,);
             },
           ),
           RUN.params,
@@ -199,7 +201,7 @@ await describe({
     it({
       name: 'inputs cyclic along the same shallow chain merge into a result with that cycle',
       timeout: RUN.timeout,
-      fn: () => {
+      fn: async () => {
         assert(
           property(
             integer({ min: 0, max: MAX_CYCLE_DEPTH, },),

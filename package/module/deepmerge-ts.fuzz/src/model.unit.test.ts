@@ -20,44 +20,70 @@ import {
   kindOf,
   modelMerge,
 } from './model.ts';
-import { shapeMismatch, } from './shape.ts';
+import {
+  NO_MISMATCH,
+  shapeMismatch,
+} from './shape.ts';
 import { target, } from './target.ts';
 
 await describe({
   name: 'reference model',
   children: [
     it({
+      name: 'every JSON corpus case survives a JSON round trip unchanged',
+      fn: async () => {
+        for (const jsonCase of JSON_CASES) {
+          /**
+           Serialized case; JSON.stringify drops or rejects non-JSON values.
+           */
+          const text = JSON.stringify(jsonCase,);
+          /**
+           Case parsed back from its JSON text.
+           */
+          const reparsed: unknown = JSON.parse(text,);
+          expect(
+            shapeMismatch({
+              actual: reparsed,
+              expected: jsonCase,
+              path: jsonCase.name,
+            },),
+          )
+            .toBe(NO_MISMATCH,);
+        }
+      },
+    },),
+    it({
       name: 'model matches every JSON corpus case',
-      fn: () => {
+      fn: async () => {
         for (const jsonCase of JSON_CASES) {
           expect(
             shapeMismatch({ actual: modelMerge({ values: jsonCase.inputs, },), expected: jsonCase.expected, path: jsonCase.name, },),
           )
-            .toBeUndefined();
+            .toBe(NO_MISMATCH,);
         }
       },
     },),
     it({
       name: 'build under test matches every JSON corpus case',
-      fn: () => {
+      fn: async () => {
         for (const jsonCase of JSON_CASES) {
           expect(
             shapeMismatch({ actual: target.deepmerge(...jsonCase.inputs,), expected: jsonCase.expected, path: jsonCase.name, },),
           )
-            .toBeUndefined();
+            .toBe(NO_MISMATCH,);
         }
       },
     },),
     it({
       name: 'undefined is filtered, and an all-undefined position stays undefined',
-      fn: () => {
+      fn: async () => {
         expect(modelMerge({ values: [{ a: 1, }, { a: undefined, b: undefined, },], },),).toEqual({ a: 1, b: undefined, },);
         expect(modelMerge({ values: [undefined, undefined,], },),).toBeUndefined();
       },
     },),
     it({
       name: 'Sets union and Maps merge per key',
-      fn: () => {
+      fn: async () => {
         expect(modelMerge({ values: [new Set([1, 2,],), new Set([2, 3,],),], },),).toEqual(new Set([1, 2, 3,],),);
         expect(
           modelMerge({ values: [new Map([['k', { a: 1, },],],), new Map([['k', { b: 2, },],],),], },),
@@ -67,7 +93,7 @@ await describe({
     },),
     it({
       name: 'maxDepth stops merging and the last value wins',
-      fn: () => {
+      fn: async () => {
         /**
          Later nested record that must win outright below the limit.
          */
@@ -81,7 +107,7 @@ await describe({
     },),
     it({
       name: 'a single value and a mismatched last value keep their identity',
-      fn: () => {
+      fn: async () => {
         /**
          Record passed through untouched.
          */
@@ -92,11 +118,11 @@ await describe({
     },),
     it({
       name: '__proto__ becomes an own key, never the prototype',
-      fn: () => {
+      fn: async () => {
         /**
          Input whose own `__proto__` key must survive as data.
          */
-        const input: object = JSON.parse('{"__proto__":{"polluted":true}}',);
+        const input: unknown = JSON.parse('{"__proto__":{"polluted":true}}',);
         /**
          Merged result carrying the own key.
          */
@@ -107,13 +133,21 @@ await describe({
     },),
     it({
       name: 'kindOf classifies by prototype',
-      fn: () => {
-        expect(kindOf(Object.create(null,),),).toBe('record',);
+      fn: async () => {
+        expect(
+          kindOf(Object.create(null,),),
+        ).toBe('record',);
         expect(kindOf({},),).toBe('record',);
         expect(kindOf([],),).toBe('array',);
-        expect(kindOf(new Set(),),).toBe('set',);
-        expect(kindOf(new Map(),),).toBe('map',);
-        expect(kindOf(new Date(),),).toBe('other',);
+        expect(
+          kindOf(new Set(),),
+        ).toBe('set',);
+        expect(
+          kindOf(new Map(),),
+        ).toBe('map',);
+        expect(
+          kindOf(new Date(),),
+        ).toBe('other',);
         expect(kindOf(null,),).toBe('other',);
       },
     },),

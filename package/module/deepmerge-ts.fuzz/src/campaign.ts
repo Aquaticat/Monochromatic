@@ -15,9 +15,14 @@
  @module
  */
 
-import { spawnSync, } from 'node:child_process';
+import { spawn, } from 'node:child_process';
 import { randomInt, } from 'node:crypto';
-import { glob, mkdir, writeFile, } from 'node:fs/promises';
+import { once, } from 'node:events';
+import {
+  glob,
+  mkdir,
+  writeFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 /**
@@ -26,26 +31,21 @@ import { join, } from 'node:path';
 const DEFAULT_ROUND_RUNS = 10_000;
 
 /**
- Exclusive upper bound of drawn seeds, the positive 32-bit range fast-check
- accepts.
+ Exclusive upper bound of drawn seeds (2^31), the positive 32-bit range
+ fast-check accepts.
  */
-const SEED_BOUND = 2 ** 31;
-
-/**
- Largest child output kept in memory and in the replay record.
- */
-const MAX_OUTPUT_BYTES = 64 * 1024 * 1024;
+const SEED_BOUND = 2_147_483_648;
 
 /**
  Error ending the campaign at its first counterexample.
  */
-export class CampaignFailure extends Error {
+export class CampaignFailureError extends Error {
   /**
    @param recordPath - Replay record written for the failure.
    */
   constructor(recordPath: string,) {
     super(`Counterexample found; replay record written to ${recordPath}`,);
-    this.name = 'CampaignFailure';
+    this.name = 'CampaignFailureError';
   }
 }
 
@@ -56,7 +56,7 @@ export class CampaignFailure extends Error {
 
  @returns Its non-empty value.
 
- @throws {Error} When the variable is missing, meaning the driver ran outside
+ @throws When the variable is missing, meaning the driver ran outside
    the task.
 
  @example
@@ -78,36 +78,96 @@ function requiredEnv(name: string,): string {
  Run one property file for one round.
 
  @param file - Property file path relative to the package root.
+ 
  @param seed - Round seed.
+ 
  @param numRuns - Runs per property.
 
- @returns Exit status and combined output of the child process.
+ @returns Whether the file passed, how it exited, and its combined output.
 
  @example
  ```ts
  const outcome = runFile({ file: 'src/x.property.unit.test.ts', seed: 1, numRuns: 10, });
  ```
  */
-function runFile(
-  { file, seed, numRuns, }: { readonly file: string; readonly seed: number; readonly numRuns: number; },
-): { readonly status: number | null; readonly output: string; } {
+async function runFile(
+  {
+    file,
+    seed,
+    numRuns,
+  }: {
+    readonly file: string;
+    readonly seed: number;
+    readonly numRuns: number;
+  },
+): Promise<{
+  readonly passed: boolean;
+  readonly exit: string;
+  readonly output: string;
+}> {
   /**
-   Completed child process.
+   Running child process.
    */
-  const child = spawnSync('node', [file,], {
-    encoding: 'utf8',
-    env: { ...process.env, DEEPMERGE_FUZZ_NUM_RUNS: String(numRuns,), DEEPMERGE_FUZZ_SEED: String(seed,), },
-    maxBuffer: MAX_OUTPUT_BYTES,
-  },);
-  if (child.error !== undefined)
-    throw child.error;
-  return { output: `${child.stdout}${child.stderr}`, status: child.status, };
+  const child = spawn(
+    'node',
+    [file,],
+    {
+      env: {
+        ...process.env,
+        DEEPMERGE_FUZZ_NUM_RUNS: String(numRuns,),
+        DEEPMERGE_FUZZ_SEED: String(seed,),
+      },
+      stdio: [
+        'ignore',
+        'pipe',
+        'pipe',
+      ],
+    },
+  );
+  /**
+   Output chunks in arrival order, stdout and stderr interleaved.
+   */
+  const chunks: Buffer[] = [];
+  child.stdout
+    .on(
+    'data',
+    function collectStdout(chunk: Buffer,) {
+      chunks.push(chunk,);
+    },
+  );
+  child.stderr
+    .on(
+    'data',
+    function collectStderr(chunk: Buffer,) {
+      chunks.push(chunk,);
+    },
+  );
+  /**
+   Exit code and signal once both streams closed.
+   */
+  const closed: readonly unknown[] = await once(
+    child,
+    'close',
+  );
+  /**
+   Exit code (`null` when a signal ended the child) and ending signal name.
+   */
+  const [
+    code,
+    signal,
+  ] = closed;
+  return {
+    exit: ((typeof code) === 'number') ? `code ${String(code,)}` : `signal ${(typeof signal) === 'string' ? signal : 'unknown'}`,
+    output: Buffer.concat(chunks,)
+      .toString('utf8',),
+    passed: code === 0,
+  };
 }
 
 /**
  Run rounds until a property file fails.
 
- @throws {CampaignFailure} At the first counterexample, after writing its
+ @throws {@link CampaignFailureError} At the first counterexample, after writing its
    replay record.
 
  @example
@@ -123,15 +183,20 @@ export async function runCampaign(): Promise<never> {
   /**
    Runs per property per round.
    */
-  const numRuns = Number(process.env['DEEPMERGE_FUZZ_ROUND_RUNS'] ?? DEFAULT_ROUND_RUNS,);
-  if (!Number.isInteger(numRuns,) || (numRuns <= 0))
+  const numRuns = Number(process.env
+    .DEEPMERGE_FUZZ_ROUND_RUNS
+    ?? DEFAULT_ROUND_RUNS,);
+  if ((!Number.isInteger(numRuns,)) || (numRuns <= 0))
     throw new Error(`DEEPMERGE_FUZZ_ROUND_RUNS must be a positive integer, got ${String(numRuns,)}`,);
   /**
    Property files, sorted so rounds are comparable.
    */
   const files = (await Array.fromAsync(glob('src/**/*.property.unit.test.ts',),)).toSorted();
   console.log(`Campaign over ${String(files.length,)} property files, ${String(numRuns,)} runs each per round; Ctrl-C to stop`,);
-  await mkdir(failureDir, { recursive: true, },);
+  await mkdir(
+    failureDir,
+    { recursive: true, },
+  );
   for (let round = 1; round <= Number.MAX_SAFE_INTEGER; round += 1) {
     /**
      Seed shared by every file this round.
@@ -141,15 +206,44 @@ export async function runCampaign(): Promise<never> {
       /**
        Outcome of this file's round.
        */
-      const outcome = runFile({ file, numRuns, seed, },);
-      if (outcome.status !== 0) {
+      // Files run one at a time on purpose: the container has two CPUs, and a
+      // counterexample must stop the campaign before later files run.
+      // oxlint-disable-next-line eslint/no-await-in-loop -- sequential by design, see the comment above.
+      const outcome = await runFile({
+        file,
+        numRuns,
+        seed,
+      },);
+      if (!outcome.passed) {
         /**
          Replay record location, unique per failure.
          */
-        const recordPath = join(failureDir, `${new Date().toISOString().replaceAll(':', '-',)}-seed-${String(seed,)}.json`,);
-        await writeFile(recordPath, `${JSON.stringify({ file, numRuns, output: outcome.output, round, seed, status: outcome.status, }, undefined, 2,)}\n`,);
+        const recordPath = join(
+          failureDir,
+          `${new Date().toISOString()
+            .replaceAll(
+              ':',
+              '-',
+            )}-seed-${String(seed,)}.json`,
+        );
+        // oxlint-disable-next-line eslint/no-await-in-loop -- runs once, right before the campaign throws.
+        await writeFile(
+          recordPath,
+          `${JSON.stringify(
+            {
+              file,
+              numRuns,
+              output: outcome.output,
+              round,
+              seed,
+              exit: outcome.exit,
+            },
+            undefined,
+            2,
+          )}\n`,
+        );
         console.error(outcome.output,);
-        throw new CampaignFailure(recordPath,);
+        throw new CampaignFailureError(recordPath,);
       }
     }
     console.log(`round ${String(round,)} passed (seed ${String(seed,)})`,);

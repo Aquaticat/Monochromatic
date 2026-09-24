@@ -10,7 +10,10 @@
  @module
  */
 
-import { isAbsolute, resolve, } from 'node:path';
+import {
+  isAbsolute,
+  resolve,
+} from 'node:path';
 import { pathToFileURL, } from 'node:url';
 
 import type * as DeepmergeTs from 'deepmerge-ts';
@@ -43,10 +46,53 @@ export function targetSpecifier(): string {
   const override = process.env[TARGET_ENV_NAME];
   if ((override === undefined) || (override === ''))
     return 'deepmerge-ts';
-  return pathToFileURL(isAbsolute(override,) ? override : resolve(override,),).href;
+  return pathToFileURL(isAbsolute(override,) ? override : resolve(override,),)
+    .href;
 }
+
+/**
+ Entry points every property and known-defect test calls on the target.
+ */
+const REQUIRED_EXPORTS = [
+  'deepmerge',
+  'deepmergeCustom',
+  'deepmergeFastUnsafe',
+  'deepmergeInto',
+  'deepmergeIntoCustom',
+  'deepmergeIntoFastUnsafe',
+] as const;
+
+/**
+ Whether a loaded module provides the entry points the tests call.
+
+ @param loaded - Module namespace from the dynamic import.
+
+ @returns Whether every required export is a function.
+
+ @example
+ ```ts
+ isDeepmergeTarget(await import('deepmerge-ts')); // true
+ ```
+ */
+function isDeepmergeTarget(loaded: unknown,): loaded is DeepmergeTarget {
+  return ((typeof loaded) === 'object')
+    && (loaded !== null)
+    && REQUIRED_EXPORTS.every(function isExportedFunction(name,) {
+      return (typeof Reflect.get(
+        loaded,
+        name,
+      )) === 'function';
+    },);
+}
+
+/**
+ Module namespace of the configured build, before its shape is checked.
+ */
+const loadedTarget: unknown = await import(targetSpecifier());
+if (!isDeepmergeTarget(loadedTarget,))
+  throw new Error(`${targetSpecifier()} does not export the deepmerge-ts entry points the tests call`,);
 
 /**
  Loaded build under test, shared by every test file.
  */
-export const target: DeepmergeTarget = await import(targetSpecifier());
+export const target: DeepmergeTarget = loadedTarget;

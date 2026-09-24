@@ -37,8 +37,9 @@ import {
 import { fuzzRunPlan, } from './fuzz-budget.ts';
 import { modelMerge, } from './model.ts';
 import {
+  NO_MISMATCH,
   shapeMismatch,
-  snapshot,
+  snapshotObject,
 } from './shape.ts';
 import { target, } from './target.ts';
 
@@ -104,11 +105,11 @@ await describe({
     it({
       name: 'deepmerge matches the model on exotic trees',
       timeout: RUN.timeout,
-      fn: () => {
+      fn: async () => {
         assert(
           property(exoticArguments, function deepmergeMatchesModel(values,) {
             expect(shapeMismatch({ actual: target.deepmerge(...values,), expected: modelMerge({ values, },), },),)
-              .toBeUndefined();
+              .toBe(NO_MISMATCH,);
           },),
           RUN.params,
         );
@@ -117,7 +118,7 @@ await describe({
     it({
       name: 'deepmergeCustom({ maxDepth }) falls back to the last value at the limit',
       timeout: RUN.timeout,
-      fn: () => {
+      fn: async () => {
         assert(
           property(
             exoticArguments,
@@ -127,7 +128,7 @@ await describe({
                 actual: target.deepmergeCustom({ maxDepth, },)(...values,),
                 expected: modelMerge({ values, maxDepth, },),
               },),)
-                .toBeUndefined();
+                .toBe(NO_MISMATCH,);
             },
           ),
           RUN.params,
@@ -137,20 +138,20 @@ await describe({
     it({
       name: 'deepmergeInto leaves the target equal to the model merge',
       timeout: RUN.timeout,
-      fn: () => {
+      fn: async () => {
         assert(
           property(intoArguments({ protoKey: true, },), function deepmergeIntoMatchesModel([generated, sources,],) {
             // fast-check may replay one generated value while shrinking, so mutate a copy.
             /**
              Private target this run may mutate.
              */
-            const mutableTarget = snapshot(generated,);
+            const mutableTarget = snapshotObject(generated,);
             /**
              Model prediction from the untouched target.
              */
             const expected = modelMerge({ values: [generated, ...sources,], },);
             target.deepmergeInto(mutableTarget, ...sources,);
-            expect(shapeMismatch({ actual: mutableTarget, expected, },),).toBeUndefined();
+            expect(shapeMismatch({ actual: mutableTarget, expected, },),).toBe(NO_MISMATCH,);
           },),
           RUN.params,
         );
@@ -159,11 +160,11 @@ await describe({
     it({
       name: 'deepmergeFastUnsafe matches the model without __proto__ keys',
       timeout: RUN.timeout,
-      fn: () => {
+      fn: async () => {
         assert(
           property(fastArguments, function fastMatchesModel(values,) {
             expect(shapeMismatch({ actual: target.deepmergeFastUnsafe(...values,), expected: modelMerge({ values, },), },),)
-              .toBeUndefined();
+              .toBe(NO_MISMATCH,);
           },),
           RUN.params,
         );
@@ -172,19 +173,19 @@ await describe({
     it({
       name: 'deepmergeIntoFastUnsafe matches the model without __proto__ keys',
       timeout: RUN.timeout,
-      fn: () => {
+      fn: async () => {
         assert(
           property(intoArguments({ protoKey: false, },), function fastIntoMatchesModel([generated, sources,],) {
             /**
              Private target this run may mutate.
              */
-            const mutableTarget = snapshot(generated,);
+            const mutableTarget = snapshotObject(generated,);
             /**
              Model prediction from the untouched target.
              */
             const expected = modelMerge({ values: [generated, ...sources,], },);
             target.deepmergeIntoFastUnsafe(mutableTarget, ...sources,);
-            expect(shapeMismatch({ actual: mutableTarget, expected, },),).toBeUndefined();
+            expect(shapeMismatch({ actual: mutableTarget, expected, },),).toBe(NO_MISMATCH,);
           },),
           RUN.params,
         );

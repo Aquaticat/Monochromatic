@@ -55,13 +55,17 @@ export type V8Script = {
 export function isCoverageFile(value: unknown,): value is { readonly result: readonly V8Script[]; } {
   return ((typeof value) === 'object')
     && (value !== null)
-    && Array.isArray(Reflect.get(value, 'result',),);
+    && Array.isArray(Reflect.get(
+      value,
+      'result',
+    ),);
 }
 
 /**
  Covered line numbers (0-based) of one script entry.
 
  @param source - Text of the target file.
+ 
  @param script - One process's coverage of that file.
 
  @returns Lines holding at least one covered non-whitespace character.
@@ -72,33 +76,62 @@ export function isCoverageFile(value: unknown,): value is { readonly result: rea
  ```
  */
 export function coveredLines(
-  { source, script, }: { readonly source: string; readonly script: V8Script; },
+  {
+    source,
+    script,
+  }: {
+    readonly source: string;
+    readonly script: V8Script
+  },
 ): ReadonlySet<number> {
   /**
    Every range of the script, longest first so inner ranges paint last.
    */
   const ranges = script.functions
-    .flatMap((entry,) => entry.ranges)
-    .toSorted((left, right,) => (right.endOffset - right.startOffset) - (left.endOffset - left.startOffset));
+    .flatMap(function rangesOf(entry,) {
+      return entry.ranges;
+    },)
+    .toSorted(function longestFirst(
+      left,
+      right,
+    ) {
+      return (right.endOffset - right.startOffset) - (left.endOffset - left.startOffset);
+    },);
   /**
    Per-character covered flag after painting.
    */
   const painted = ranges.reduce(
-    (bitmap, range,) => bitmap.fill(range.count > 0 ? 1 : 0, range.startOffset, range.endOffset,),
+    function paint(
+      bitmap,
+      range,
+    ) {
+      return bitmap.fill(
+        range.count > 0 ? 1 : 0,
+        range.startOffset,
+        range.endOffset,
+      );
+    },
     new Uint8Array(source.length,),
   );
   /**
-   Covered line numbers, filled in one pass over the lines.
+   Covered line numbers, filled in one pass over the characters.
    */
   const covered = new Set<number>();
   /**
-   Offset of the current line's first character.
+   Line number of the character being scanned.
    */
-  let offset = 0;
-  for (const [line, text,] of source.split('\n',).entries()) {
-    if ([...text,].some((character, column,) => (character.trim() !== '') && (painted[offset + column] === 1)))
+  let line = 0;
+  // V8 offsets index UTF-16 code units, so the scan walks code units with
+  // charAt rather than splitting the text into code points.
+  for (let index = 0; index < source.length; index += 1) {
+    /**
+     Code unit at this offset.
+     */
+    const character = source.charAt(index,);
+    if (character === '\n')
+      line += 1;
+    else if ((character.trim() !== '') && (painted[index] === 1))
       covered.add(line,);
-    offset += text.length + 1;
   }
   return covered;
 }
@@ -116,7 +149,12 @@ export function coveredLines(
  ```
  */
 export function codeLineCount(source: string,): number {
-  return source.split('\n',).filter((line,) => line.trim() !== '').length;
+  return source
+    .split('\n',)
+    .filter(function isCode(line,) {
+      return line.trim() !== '';
+    },)
+    .length;
 }
 
 /**
@@ -135,17 +173,30 @@ export function uncalledFunctions(scripts: readonly V8Script[],): readonly strin
   /**
    Names entered at least once in some process.
    */
-  const called = new Set(
-    scripts.flatMap((script,) =>
-      script.functions.filter((entry,) => (entry.ranges[0]?.count ?? 0) > 0).map((entry,) => entry.functionName)
-    ),
-  );
+  const called = new Set(scripts.flatMap(function calledIn(script,) {
+    return script.functions
+      .filter(function wasEntered(entry,) {
+        return (entry.ranges[0]
+          ?.count
+          ?? 0) > 0;
+      },)
+      .map(function nameOf(entry,) {
+        return entry.functionName;
+      },);
+  },),);
+  /**
+   Every named function across processes.
+   */
+  const named = scripts.flatMap(function namesIn(script,) {
+    return script.functions
+      .map(function nameOf(entry,) {
+      return entry.functionName;
+    },);
+  },);
   return [
-    ...new Set(
-      scripts.flatMap((script,) => script.functions.map((entry,) => entry.functionName)).filter((name,) =>
-        (name !== '') && !called.has(name,)
-      ),
-    ),
+    ...new Set(named.filter(function neverCalled(name,) {
+      return (name !== '') && (!called.has(name,));
+    },),),
   ]
     .toSorted();
 }

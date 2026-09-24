@@ -36,7 +36,7 @@ export type ValueKind = 'array' | 'map' | 'other' | 'record' | 'set';
 /**
  Default `maxDepth` documented in `docs/API.md`.
  */
-export const DEFAULT_MAX_DEPTH = 1000;
+export const DEFAULT_MAX_DEPTH = 1_000;
 
 /**
  Classify a value into its documented merge bucket. Plain and null-prototype
@@ -69,6 +69,39 @@ export function kindOf(value: unknown,): ValueKind {
   return 'other';
 }
 
+
+/**
+ Whether a record holds `key` as an own enumerable property, the merge's
+ membership test.
+
+ @param record - Record to probe.
+
+ @param key - Key to look up.
+
+ @returns Whether the merge visits `key` on `record`.
+
+ @example
+ ```ts
+ hasEnumerable({ record: { a: 1, }, key: 'a', }); // true
+ ```
+ */
+function hasEnumerable(
+  {
+    record,
+    key,
+  }: {
+    readonly record: object;
+    readonly key: PropertyKey;
+  },
+): boolean {
+  return Object.prototype
+    .propertyIsEnumerable
+    .call(
+    record,
+    key,
+  );
+}
+
 /**
  Own enumerable keys of a record in documented merge order: string keys as
  `Object.keys` lists them, then enumerable symbols.
@@ -88,25 +121,45 @@ export function recordKeys(record: object,): readonly PropertyKey[] {
    */
   const symbols = Object
     .getOwnPropertySymbols(record,)
-    .filter((symbol,) => Object.prototype.propertyIsEnumerable.call(record, symbol,));
-  return [...Object.keys(record,), ...symbols,];
+    .filter(function isEnumerableSymbol(symbol,) {
+      return hasEnumerable({
+        record,
+        key: symbol,
+      },);
+    },);
+  return [
+    ...Object.keys(record,),
+    ...symbols,
+  ];
 }
 
 /**
  Read one property the way a merge reads it: through `[[Get]]`, so getters run.
 
  @param record - Record holding the key.
+
  @param key - Key known to be an own enumerable property.
 
  @returns Current value, flattened from any accessor.
 
  @example
  ```ts
- readKey({ a: 1, }, 'a'); // 1
+ readKey({ record: { a: 1, }, key: 'a', }); // 1
  ```
  */
-function readKey(record: object, key: PropertyKey,): unknown {
-  return Reflect.get(record, key,);
+function readKey(
+  {
+    record,
+    key,
+  }: {
+    readonly record: object;
+    readonly key: PropertyKey;
+  },
+): unknown {
+  return Reflect.get(
+    record,
+    key,
+  );
 }
 
 /**
@@ -114,23 +167,38 @@ function readKey(record: object, key: PropertyKey,): unknown {
  `__proto__` setter that plain assignment would.
 
  @param target - Fresh result record being filled.
+
  @param key - Key to define.
+
  @param value - Merged value to store.
 
  @example
  ```ts
- defineData({}, '__proto__', 1);
+ defineData({ target: {}, key: '__proto__', value: 1, });
  ```
  */
-function defineData(target: object, key: PropertyKey, value: unknown,): void {
-  Object.defineProperty(target, key, {
-    configurable: true,
-    enumerable: true,
+function defineData(
+  {
+    target,
+    key,
     value,
-    writable: true,
-  },);
+  }: {
+    readonly target: object;
+    readonly key: PropertyKey;
+    readonly value: unknown;
+  },
+): void {
+  Object.defineProperty(
+    target,
+    key,
+    {
+      configurable: true,
+      enumerable: true,
+      value,
+      writable: true,
+    },
+  );
 }
-
 
 /**
  Merges the values found at one child position (a record key or Map key);
@@ -142,49 +210,84 @@ type MergeChild = (values: readonly unknown[],) => unknown;
  Merge records key-wise into a fresh plain object.
 
  @param records - Same-bucket inputs, already filtered.
+
  @param mergeChild - Merges each key's values one level deeper.
 
  @returns Fresh plain object with every visited key.
 
  @example
  ```ts
- mergeRecords({ records: [{ a: 1, }, { a: 2, },], mergeChild: (values) => values.at(-1), });
+ mergeRecords({ records: [{ a: 1, }, { a: 2, },], mergeChild: function last(values) { return values.at(-1); }, });
  ```
  */
 function mergeRecords(
-  { records, mergeChild, }: { readonly records: readonly object[]; readonly mergeChild: MergeChild; },
+  {
+    records,
+    mergeChild,
+  }: {
+    readonly records: readonly object[];
+    readonly mergeChild: MergeChild;
+  },
 ): object {
   /**
    Union of merge keys in first-seen order.
    */
-  const keys = [...new Set(records.flatMap((record,) => recordKeys(record,)),),];
-  return keys.reduce<object>((result, key,) => {
-    /**
-     Values of this key from every record that has it enumerably.
-     */
-    const keyValues = records
-      .filter((record,) => Object.prototype.propertyIsEnumerable.call(record, key,))
-      .map((record,) => readKey(record, key,));
-    defineData(result, key, mergeChild(keyValues,),);
-    return result;
-  }, {},);
+  const keys = [
+    ...new Set(records.flatMap(function keysOf(record,) {
+      return recordKeys(record,);
+    },),),
+  ];
+  return keys.reduce<object>(
+    function addKey(
+      result,
+      key,
+    ) {
+      /**
+       Values of this key from every record that has it enumerably.
+       */
+      const keyValues = records
+        .filter(function holdsKey(record,) {
+          return hasEnumerable({
+            record,
+            key,
+          },);
+        },)
+        .map(function valueOf(record,) {
+          return readKey({
+            record,
+            key,
+          },);
+        },);
+      defineData({
+        target: result,
+        key,
+        value: mergeChild(keyValues,),
+      },);
+      return result;
+    },
+    {},
+  );
 }
 
 /**
  Merge Maps per key into a fresh Map, keys in first-seen order.
 
  @param maps - Same-bucket inputs, already filtered.
+
  @param mergeChild - Merges each key's values one level deeper.
 
  @returns Fresh Map holding each key's merged value.
 
  @example
  ```ts
- mergeMaps({ maps: [new Map([[1, 'a',],]),], mergeChild: (values) => values.at(-1), });
+ mergeMaps({ maps: [new Map([[1, 'a',],]),], mergeChild: function last(values) { return values.at(-1); }, });
  ```
  */
 function mergeMaps(
-  { maps, mergeChild, }: {
+  {
+    maps,
+    mergeChild,
+  }: {
     readonly maps: readonly ReadonlyMap<unknown, unknown>[];
     readonly mergeChild: MergeChild;
   },
@@ -192,62 +295,125 @@ function mergeMaps(
   /**
    Union of Map keys in first-seen order.
    */
-  const keys = [...new Set(maps.flatMap((map,) => [...map.keys(),]),),];
-  return new Map(keys.map((key,) => [
-    key,
-    mergeChild(maps.filter((map,) => map.has(key,)).map((map,) => map.get(key,)),),
-  ]),);
+  const keys = [
+    ...new Set(maps.flatMap(function keysOf(map,) {
+      return [...map.keys(),];
+    },),),
+  ];
+  return new Map(keys.map(function entryOf(key,): readonly [
+    unknown,
+    unknown,
+  ] {
+    /**
+     Values of this key from every Map holding it.
+     */
+    const keyValues = maps
+      .filter(function holdsKey(map,) {
+        return map.has(key,);
+      },)
+      .map(function valueOf(map,) {
+        return map.get(key,);
+      },);
+    return [
+      key,
+      mergeChild(keyValues,),
+    ];
+  },),);
 }
 
 /**
  Same-bucket inputs tagged by bucket, so each merge step receives its own
- element type without an assertion.
+ element type without an assertion; `mixed` means the last value wins.
  */
 type Bucket =
-  | { readonly kind: 'array'; readonly items: readonly (readonly unknown[])[]; }
-  | { readonly kind: 'map'; readonly items: readonly ReadonlyMap<unknown, unknown>[]; }
-  | { readonly kind: 'record'; readonly items: readonly object[]; }
-  | { readonly kind: 'set'; readonly items: readonly ReadonlySet<unknown>[]; };
+  | {
+    readonly kind: 'array';
+    readonly items: readonly (readonly unknown[])[];
+  }
+  | {
+    readonly kind: 'map';
+    readonly items: readonly ReadonlyMap<unknown, unknown>[];
+  }
+  | {
+    readonly kind: 'mixed';
+  }
+  | {
+    readonly kind: 'record';
+    readonly items: readonly object[];
+  }
+  | {
+    readonly kind: 'set';
+    readonly items: readonly ReadonlySet<unknown>[];
+  };
 
 /**
- Group inputs into one mergeable bucket, or report that the last value wins.
+ Bucket meaning the inputs share no mergeable kind.
+ */
+const MIXED: Bucket = { kind: 'mixed', };
+
+/**
+ Group inputs into one mergeable bucket.
 
  @param values - Filtered inputs, at least two.
 
- @returns Bucket when every input shares one mergeable kind, else `undefined`.
+ @returns Bucket when every input shares one mergeable kind, else {@link MIXED}.
 
  @example
  ```ts
  bucketOf([[1,], [2,],]); // { kind: 'array', items: [[1], [2]] }
  ```
  */
-function bucketOf(values: readonly unknown[],): Bucket | undefined {
+function bucketOf(values: readonly unknown[],): Bucket {
   /**
    Kind every input must share.
    */
   const kind = kindOf(values[0],);
-  if (values.some((value,) => kindOf(value,) !== kind))
-    return undefined;
-  if (kind === 'array')
-    return { kind, items: values.filter((value,) => Array.isArray(value,)), };
-  if (kind === 'set')
-    return { kind, items: values.filter((value,) => value instanceof Set), };
-  if (kind === 'map')
-    return { kind, items: values.filter((value,) => value instanceof Map), };
+  if (values.some(function differs(value,) {
+    return kindOf(value,) !== kind;
+  },))
+    return MIXED;
+  if (kind === 'array') {
+    return {
+      kind,
+      items: values.filter(function isArray(value,) {
+        return Array.isArray(value,);
+      },),
+    };
+  }
+  if (kind === 'set') {
+    return {
+      kind,
+      items: values.filter(function isSet(value,) {
+        return value instanceof Set;
+      },),
+    };
+  }
+  if (kind === 'map') {
+    return {
+      kind,
+      items: values.filter(function isMap(value,) {
+        return value instanceof Map;
+      },),
+    };
+  }
   if (kind === 'record') {
     return {
       kind,
-      items: values.filter((value,): value is object => ((typeof value) === 'object') && (value !== null)),
+      items: values.filter(function isObject(value,): value is object {
+        return ((typeof value) === 'object') && (value !== null);
+      },),
     };
   }
-  return undefined;
+  return MIXED;
 }
 
 /**
  Recursive merge step shared by every bucket.
 
  @param values - Inputs at this position, unfiltered.
+
  @param depth - Nesting depth of this position; the root is `0`.
+
  @param maxDepth - Depth at which merging stops and the last value wins.
 
  @returns Merged value for this position.
@@ -258,7 +424,11 @@ function bucketOf(values: readonly unknown[],): Bucket | undefined {
  ```
  */
 function mergeAt(
-  { values, depth, maxDepth, }: {
+  {
+    values,
+    depth,
+    maxDepth,
+  }: {
     readonly values: readonly unknown[];
     readonly depth: number;
     readonly maxDepth: number;
@@ -267,7 +437,9 @@ function mergeAt(
   /**
    Inputs left after the default `undefined` filter.
    */
-  const present = values.filter((value,) => value !== undefined);
+  const present = values.filter(function isPresent(value,) {
+    return value !== undefined;
+  },);
   if (present.length === 0)
     return undefined;
   /**
@@ -277,23 +449,47 @@ function mergeAt(
   if ((depth >= maxDepth) || (present.length === 1))
     return last;
   /**
-   Shared bucket of every input, when they share one.
+   Shared bucket of every input.
    */
   const bucket = bucketOf(present,);
-  if (bucket === undefined)
+  if (bucket.kind === 'mixed')
     return last;
   /**
    Child merge one level deeper, shared by records and Maps.
+
+   @param childValues - Values found at one record key or Map key.
+
+   @returns Merged value for that child position.
    */
-  const mergeChild: MergeChild = (childValues,) =>
-    mergeAt({ values: childValues, depth: depth + 1, maxDepth, },);
-  if (bucket.kind === 'record')
-    return mergeRecords({ records: bucket.items, mergeChild, },);
-  if (bucket.kind === 'map')
-    return mergeMaps({ maps: bucket.items, mergeChild, },);
-  if (bucket.kind === 'array')
-    return bucket.items.flatMap((array,) => [...array,]);
-  return new Set(bucket.items.flatMap((set,) => [...set,]),);
+  function mergeChild(childValues: readonly unknown[],): unknown {
+    return mergeAt({
+      values: childValues,
+      depth: depth + 1,
+      maxDepth,
+    },);
+  }
+  if (bucket.kind === 'record') {
+    return mergeRecords({
+      records: bucket.items,
+      mergeChild,
+    },);
+  }
+  if (bucket.kind === 'map') {
+    return mergeMaps({
+      maps: bucket.items,
+      mergeChild,
+    },);
+  }
+  if (bucket.kind === 'array') {
+    return bucket.items
+      .flatMap(function elementsOf(array,) {
+      return [...array,];
+    },);
+  }
+  return new Set(bucket.items
+    .flatMap(function elementsOf(set,) {
+    return [...set,];
+  },),);
 }
 
 /**
@@ -301,6 +497,7 @@ function mergeAt(
  inputs.
 
  @param values - Inputs in argument order.
+
  @param maxDepth - Stop depth; defaults to the documented `1000`.
 
  @returns Predicted merge result.
@@ -311,10 +508,17 @@ function mergeAt(
  ```
  */
 export function modelMerge(
-  { values, maxDepth = DEFAULT_MAX_DEPTH, }: {
+  {
+    values,
+    maxDepth = DEFAULT_MAX_DEPTH,
+  }: {
     readonly values: readonly unknown[];
     readonly maxDepth?: number;
   },
 ): unknown {
-  return mergeAt({ values, depth: 0, maxDepth, },);
+  return mergeAt({
+    values,
+    depth: 0,
+    maxDepth,
+  },);
 }
