@@ -177,7 +177,7 @@ depends = ["prototype:install"]
 run = "node capture-cover-round.mjs"
 
 [tasks."prototype:capture:search"]
-description = "Capture D47 to D49 Search on the Fold cover and inner panels in both schemes"
+description = "Recapture rejected historical split Search study, not a new design"
 dir = "{{config_root}}"
 depends = ["prototype:install"]
 run = "node capture-search-page.mjs"

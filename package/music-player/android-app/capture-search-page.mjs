@@ -2,7 +2,9 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-// Capture the D47 to D49 Search study on both physical Pixel 9 Pro Fold panels.
+// Reproduce the rejected D47 to D49 split Search study on both Fold panels.
+// Its blank-pixel and hit-region connector checks implement a withdrawn E2 reading.
+// Do not reuse them as acceptance criteria for a new Search composition.
 const sdk = process.env.ANDROID_HOME;
 if (!sdk) throw new Error('ANDROID_HOME is unset; run through the Android prototype mise task.');
 const adb = join(sdk, 'platform-tools', 'adb');
@@ -110,8 +112,8 @@ try {
           const pngPath = join(renderDirectory, `${base}.png`);
           writeFileSync(pngPath, png);
           if (screen.name === 'inner') {
-            // E2's [414,438)dp connector covers physical x [1009,1068) on this display.
-            // Inspect every pixel between the measured safe top 136px and navigation start 2074px.
+            // Historical candidate's blank [414,438)dp strip covers physical x [1009,1068).
+            // This full-pixel check is NOT the current E2 informational-content rule.
             // A pixel-only check misses transparent clickable rows, so inspect native nodes too.
             const connectorWidth = 59;
             const connectorTop = 136;
