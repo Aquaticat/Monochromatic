@@ -732,28 +732,40 @@ ranking are historical experiments,
 corrected I/G/R questionnaire built from those scenes was also withdrawn before any
 user choice.
 
-The deciding visual sources are the user's local Material archive at
-`~/Downloads/m3.material.io/components/search/guidelines/index.html` (especially
-`images/20.png`,
- `images/28.png`,
- and `images/37.png`) and
-`components/search/specs/index.html`.
- The Search specs place a 56dp high field in a
-360 to 720dp wide search container;
- docked height starts at 240dp and can rise to
-two-thirds of the viewport.
- The guidelines show a filled,
- fully rounded search bar
-with a leading Back icon in its focused state,
- a trailing clear action for entered
-text,
- and labeled result rows underneath.
- Docked results are for medium and expanded
-layouts;
+The user's local Material archive at
+`~/Downloads/m3.material.io/components/search/specs/index.html` distinguishes
+**baseline divided** from **M3 Expressive contained** Search.
+ A2 retains baseline
+Material 3,
+ so the guidelines' contained screenshots
+(`components/search/guidelines/images/20.png`,
+ `28.png`,
+ and `37.png`) are a
+visual contrast,
+ not permission to switch styles.
+ The archive's
+`components/search/specs/manifest.json` records original high-resolution URLs for
+`images/34.png` and `images/35.png`;
+ replacing only the archived `=w40` image
+request with `=w1200` exposes the baseline divided measurements at readable size.
+The baseline collapsed field is a filled,
+ 56dp fully rounded bar.
+ On expansion,
+ the
+docked **whole container** is rounded 28dp with a 56dp header and a divider before
+results;
+ the header is not another pill drawn inside that container.
+ The baseline
+full-screen search has sharp outer corners,
+ a 72dp header,
+ and a divider.
+ Leading
+Back and trailing Clear occupy their measured icon slots.
+ Docked results are for
+medium and expanded layouts;
  compact focused search is full-screen by default.
- A compact desktop dock
-is an explicit adaptation,
- not MD3 compliance by assertion.
+A compact desktop dock is an explicit adaptation,
+ not compliance by assertion.
 
 AndroidX Material3 source makes the shape and colors explicit:
 `SearchBarDefaults` in
@@ -776,6 +788,10 @@ reads `SearchBarTokens.ContainerHeight`,
  `FullScreenContainerShape` is `CornerNone`,
  and
 header heights are 56dp docked and 72dp full-screen.
+ The baseline
+`ExpandedDockedSearchBar` and `ExpandedFullScreenSearchBar` in
+`SearchBar.kt` draw a `HorizontalDivider` between their header and results,
+whereas the contained style is structurally different.
  AndroidX
 [shape tokens][shape-tokens] assign 28dp to `CornerExtraLarge` and a circle to
 `CornerFull`.
@@ -783,30 +799,38 @@ header heights are 56dp docked and 72dp full-screen.
 values,
  not inferred from the blurred token thumbnails.
  The archive's list specs
-recommend expressive list items with 16dp selected corners;
- baseline list padding
-is 16dp and targets are at least 48dp.
+say baseline list items have square corners,
+ 16dp label padding and 48dp minimum
+targets;
+ the 16dp selected-item corner belongs to **Expressive** lists and must not
+be silently combined with the baseline Search choice.
+ The command palette's
+keyboard-current row is a custom focus state,
+ not a persistent selected folder;
+its redundant cues must be identified as a desktop adaptation.
 
-A new throwaway Slint study must use those actual visual roles and assets:
- Android's
-Roboto face copied only into the prototype branch,
- official Google Material icons
-for Search,
- Back,
- Clear,
- Folder,
- Music and actions,
- a filled 56px pill rather
-than the previous outlined rectangle,
- a 28px docked container,
- MD3 list spacing
-and selected shape,
- and the measured light/dark role pairs in
+The first MD3 redraw in prototype commit `c5b3fa31f` also mixed the Expressive
+contained pill and rounded selected rows with A2's baseline requirement;
+ it is an
+intermediate experiment,
+ not presentation evidence.
+ The next redraw keeps the
+Roboto font and official Material icon assets on the prototype branch while adopting
+**baseline divided** anatomy:
+ 56px header,
+ 28px docked outer shape,
+ 1px divider,
+72px full-content header with sharp outer corners,
+ square baseline list rows with
+16px start padding and a disclosed custom keyboard-focus cue.
+ Color roles come from
 `questions/evidence/cover-round-wallpaper-roles-{light,dark}.json` as study input.
-Compare the rerendered field,
+Compare the *entire* field,
+ divider,
  container,
- icons and row hierarchy with the local
-archive at the same logical height before re-presenting.
+ icons,
+ and row hierarchy with
+the readable baseline spec images at the same logical height before re-presenting.
  Document every desktop
 adaptation rather than labelling it compliant by resemblance.
  Slint snapshots still
