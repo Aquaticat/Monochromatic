@@ -4715,9 +4715,12 @@ query text bounds `[156,166][1920,283]` and a result target
  not
 an inference from code.
 
-E2 in `decisions.md` now forbids **all app-owned content** across the centered 24dp
-connector (`[414,438)`dp),
- while allowing only a neutral structural fill there.
+At that time I incorrectly rewrote E2 to forbid **all app-owned paint and
+hit regions** across the centered 24dp connector (`[414,438)`dp).
+ The user's
+later clarification retracts that blanket ban;
+ current E2 protects
+informational material only.
 `device-metrics.md` records approximate physical x `[1009,1068)` at 390dpi;
 `review-notes.md` 5q and `open-questions.md` preserve the failure and guard.
 The prototype branch correction `a0c811d09` splits the unfolded Search page into
@@ -4908,8 +4911,8 @@ connector,
  then inspect how installed apps actually arrange Search on the
 folded/unfolded emulator and compare the local baseline M3 adaptive/search
 reference.
- Only then build distinct design-only candidates with meaningful
-content kept clear of the connector,
+ Only then build distinct design-only candidates with informational
+material kept clear of the connector,
  assess composition in both panels and at
 200% text,
  and present options with tradeoffs.
