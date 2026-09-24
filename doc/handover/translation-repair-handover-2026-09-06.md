@@ -4766,22 +4766,31 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  MIKAELA14 RUNS (entry `mikaela_khara`,
-    frozen `0ab0abdd8`,
-    pid 691210,
-    launched 04:58 UTC 2026-09-24,
-    waiter wait-m14 (background bash),
-    meters 47.60 USD Bedrock and 94.19 OpenRouter at launch, Synthetic dry for the week since 02:56 UTC, Hyper dry;
+1.  MIKAELA15 RUNS (entry `mikaela_khara`,
+    frozen `caac222a6`,
+    pid 876937,
+    launched 05:09 UTC 2026-09-24,
+    waiter wait-m15 (background bash),
+    meters 47.37 USD Bedrock and 93.85 OpenRouter at launch, Synthetic dry for the week since 02:56 UTC, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    the first run on class one hundred eleven;
-    read for the `insertion-carried-folded (slice N into slice M)` line at the admission (mikaela13's shape folds slice 11 into slice 10),
+    the first run on the chain arm of class one hundred eleven;
+    read for the `insertion-carried-folded` lines at the admission (mikaela14's shape folds slice 12 into slice 13 and slice 11 into slice 10; mikaela13's folds slice 11 into slice 10),
     any `stays carried:` warn line and the `carried on N region(s)` lines,
-    the carrier's widened source rendered on the page (the HRT paragraph written from both source paragraphs, "originally just" answered by the carrier),
+    the carrier's widened source rendered on the page (the HRT paragraph written from both source paragraphs),
     no carried-evidence-lost stop,
     then classes seventy to seventy-seven, ninety-six, one hundred one and one hundred two beside every check of `mikaela11`
     (𝓠𝓾𝓪𝓷 as the archive, "𝓠𝓾𝓪𝓷’s" curled, "Mika was outed", the Epilogue one to one, the life in the past, front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish);
     then `yingying` or `zheermao101`, beside every check of the last read of each;
-    record each under a new heading above "## mikaela13 read, 2026-09-24" in the pass log.
+    record each under a new heading above "## mikaela14 read, 2026-09-24" in the pass log.
+    MIKAELA14 READ (frozen `0ab0abdd8`): launched 04:53 UTC, killed 05:05 UTC 2026-09-24 12 min in at consolidation chunk 26 under always-kill-and-relaunch, no tally, 1,471 calls, 0.57 USD by the meters;
+    class one hundred eleven live at the admission (`insertion-carried-folded (slice 12 into slice 13)`, the warn line `slice 11 stays carried: evidence sits in slice at position 13, not a neighbour`, the `carried on 3 region(s)` line),
+    which showed the chain arm: two carried slices in a row, the neighbour rule counting positions instead of paired slices, slice 11 doomed to the same publish stop;
+    class one hundred seven live on slices 13, 14, 18 and 24, contest 25 of 34 differ, all 15 checker rounds 2 of 3, 48 abstention lines.
+    CHAIN ARM BUILT (caac222a6, guard red first 9bb99bf9f, full suite `suite-class111b.log` 1115 PASS, replayed over the real corpus slices 10 to 13: `slice 12 into slice 13`, `slice 11 into slice 10`):
+    `pairedNeighbours` (`corpus-run/insertion-carried-decide.ts`) looks past insertions to the nearest paired slice on each side,
+    the abutting check still refuses a fold across a source the carrier has not absorbed,
+    and `foldPass` (`corpus-run/insertion-carried-fold.ts`) repeats at most once per carried passage until nothing more folds.
+    Not exercised live yet.
     MIKAELA13 READ (frozen `457765221`): INCOMPLETE at 04:33 UTC 2026-09-24 in 15 min, one attempt, 2,093 seats, 1,678 calls, 0.75 USD by the meters, no page or artifact;
     stopped at publish on `carried-insertion-evidence-lost slice 11` again: this pairing carried slice 11 alone (class one hundred ten not exercised in mikaela12's shape),
     the archive renders slices 10 to 12 as two paragraphs, the second ("That was originally just a typical thing.") rendering slice 11's opening clause and slice 12's line together,

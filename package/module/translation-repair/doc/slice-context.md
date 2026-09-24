@@ -223,6 +223,12 @@ A stand-aside names its reason in a `stays carried:` warn line,
 and every passage still carried prints its evidence regions at the admission.
 
 
+Two carried passages in a row (`mikaela14`):
+a passage's neighbours are the nearest paired slices on each side, looking past insertions,
+the abutting check refuses a fold across a source the carrier has not absorbed,
+and the fold passes repeat until nothing more folds, at most once per carried passage.
+
+
 ## What the consolidate gate is told about an ineligible standing
 
 Since class fifty-six (2026-09-18) a gate over a standing the deterministic publication rule refused is told so on its sheet,

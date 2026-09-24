@@ -8082,6 +8082,39 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## mikaela14 read, 2026-09-24, 05:15 UTC: class one hundred eleven live at the admission, its chain arm found and built in caac222a6; killed at 05:05 UTC; mikaela15 launched
+
+`mikaela14` (entry `mikaela_khara`, frozen `0ab0abdd8`, pid 691210) was launched at 04:53 UTC 2026-09-24 and killed at 05:05 UTC
+under always-kill-and-relaunch once the chain arm below landed,
+12 min in, in the consolidation at chunk 26 of 34,
+no tally,
+1,471 calls,
+50 retry rounds,
+0.57 USD by the meters (Bedrock 47.60 to 47.37, OpenRouter 94.19 to 93.85),
+on Bedrock and OpenRouter alone;
+the lanes disagreed on 25 of 34 slices, class one hundred seven live on slices 13, 14, 18 and 24, all 15 checker rounds heard 2 of 3, 48 abstention lines.
+
+Class one hundred eleven live at the admission, and its second arm.
+This run's pairing carried two slices in a row, 11 (原本只是…) and 12 (很正常的一件事情),
+and paired slice 13 (当晚…) with the archive's "That was originally just a typical thing." and "That night…" paragraphs together.
+The log now reads:
+`insertion-carried-folded (slice 12 into slice 13)` (the fold on the first arm),
+`slice 11 stays carried: evidence sits in slice at position 13, not a neighbour` (the new warn line),
+and `slice 11 carried on 3 region(s): …` (the new evidence line, the ballots' regions running from the HRT sentences through "That night…").
+Slice 11's evidence sat in slice 10's paragraph and in slice 13's span,
+and slice 13 was two positions away because the carried slice 12 stood between:
+the fold's neighbour rule counted positions, not paired slices.
+The run was doomed to the same publish stop (slice 13's stand-in, written from 很正常 and 当晚, carries nothing of slice 11), so it was killed.
+
+Chain arm (caac222a6, guard red first 9bb99bf9f with the chained fixture, replayed over the real corpus texts of slices 10 to 13 with the ballots' regions: `slice 12 into slice 13`, `slice 11 into slice 10`, no aside):
+a carried passage's neighbours are the nearest paired slices on each side, looking past insertions (`pairedNeighbours` in `corpus-run/insertion-carried-decide.ts`);
+the abutting check still refuses a fold across a source the carrier has not absorbed;
+and the passes repeat, at most one per carried passage, so a passage refused for a carried neighbour in the way folds once that neighbour has folded (`foldPass` in `corpus-run/insertion-carried-fold.ts`).
+Lint 0/0, types clean, the fold suite green, full suite `suite-class111b.log`.
+Frozen `.frozen-dist-caac222a6`.
+
+`mikaela15` launched on it.
+
 ## mikaela13 read, 2026-09-24, 04:50 UTC: INCOMPLETE carried-evidence-lost in 15 min again, class one hundred eleven (the carried passage rendered across both neighbours), fixed in 0ab0abdd8; mikaela14 launched
 
 `mikaela13` (entry `mikaela_khara`, frozen `457765221`, pid 344865) stopped INCOMPLETE at 04:33 UTC 2026-09-24,

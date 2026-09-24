@@ -344,6 +344,14 @@ and the pass logs each at warn beside one line per still-carried passage with it
 so the next `carried-evidence-lost` stop is readable from the log alone.
 
 
+The chain arm (`mikaela14`, 2026-09-24 04:56 UTC, caac222a6):
+where two carried passages stand in a row, a passage's neighbours are the nearest paired slices on each side, looking past insertions;
+the abutting check still refuses a fold across a source the carrier has not absorbed,
+so a passage behind an unfolded carried neighbour waits,
+and the passes repeat, at most one per carried passage, until nothing more folds.
+On mikaela14 slice 12 folded into slice 13 and slice 11, whose evidence sat in slice 10's paragraph and slice 13's span, then folded into slice 10.
+
+
 ## What this supersedes
 
 `doc/planning/translation-repair-open-decisions.md` question 28, whose ranking was A > C > B > D
