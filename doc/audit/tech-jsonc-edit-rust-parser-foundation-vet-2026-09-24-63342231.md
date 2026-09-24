@@ -251,12 +251,11 @@ The public [issue #7728](https://github.com/biomejs/biome/issues/7728) reports a
  The issue's recursive-drop explanation is a contributor hypothesis,
  not a confirmed source diagnosis.
  The revised `~/temp/agent/biome-execution-manifest.md` recorded the read-only fixture mount and stop conditions before execution.
- A bounded **debug** run of the published 0.5.7 parser library reported syntax errors on the input,
+ Bounded debug and optimized release runs of the published 0.5.7 parser library both reported syntax errors on the input,
  traversed 236856 syntax tokens,
  and dropped the syntax tree without an abort.
- Its optimized run remains pending.
- This positive cleanup result is specific to the direct library path;
- it does not establish a cause or resolution for the newer Biome application CLI/worker incident.
+ These positive cleanup results are specific to the direct library path and that one fixture;
+ they do not establish a cause or resolution for the newer Biome application CLI/worker incident.
 
 ## Current source checks, not a recommendation
 
