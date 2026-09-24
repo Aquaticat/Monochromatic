@@ -975,10 +975,11 @@ private fun paletteForSearchDeck(light: Boolean): CandidatePalette = paletteFor(
  * ```
  */
 @Composable
-internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier, topContent: @Composable (Modifier) -> Unit) {
+internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier,
+    includeTopInset: Boolean = true, topContent: @Composable (Modifier) -> Unit) {
     val palette = paletteForSearchDeck(light)
     Column(modifier = modifier.fillMaxSize().background(palette.picker)) {
-        Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
+        if (includeTopInset) Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
         topContent(Modifier.weight(1f))
         Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.sectionDivider))
         TransportBlock(modifier = Modifier.fillMaxWidth(), candidate = "dark-stable-wallpaper-dynamic", palette = palette)
