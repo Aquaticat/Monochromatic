@@ -1,5 +1,6 @@
 import type { AggregatedClaim, } from './aggregate-claims.ts';
 import type { IssueSeverity, } from './issue-taxonomy.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 // TYPE-ONLY AND DELIBERATELY CIRCULAR: `panel-reading.ts` names two types from
 // here. Both directions are erased before anything runs, so the cycle costs
 // nothing, and the alternative is a third file holding two type aliases.
@@ -236,6 +237,21 @@ export type AdjudicatedIssue = {
    which would say "no panel voted" where the truth is "I am not the panel".
    */
   readonly readings?: Readonly<Record<string, ClaimPanelReading>>;
+
+  /**
+   Which critics FILED each member claim, keyed by claim id, sorted by model
+   id (owner, 2026-09-24: "we're not logging enough then. Refine how we
+   log."). Attached AFTER the panel spoke, from the critic phase's attribution
+   record, so the panel stays provenance-blind and the artifact's reader no
+   longer joins `sliceCritics[].claimAttributions` by hand to learn who
+   filed a claim the panel accepted.
+   
+   OPTIONAL WITH ONE MEANING: absent where no filer is on record, which is an
+   issue rebuilt from an older artifact, a probe fixture, or a claim the
+   reference screen filed itself. A claim on record always names at least
+   one filer; an empty list is never written.
+   */
+  readonly filedBy?: Readonly<Record<string, readonly RosterModelId[]>>;
 };
 
 /**

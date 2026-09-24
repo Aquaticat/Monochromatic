@@ -284,8 +284,16 @@ import type { RepairModels, } from './repair-contract.ts';
  while uncontested identical text matches translate lane already floored by
  `TRANSLATE_SLICE_CACHE_VERSION` 9.
  Main consolidation candidates are independently floored before settlement.
+ 
+ Version 31 is telemetry, on the same reasoning as version 10: every
+ adjudicated issue now carries `filedBy`, the critics that filed each member
+ claim (owner, 2026-09-24: "we're not logging enough then. Refine how we
+ log."). No claim changes fate and no text changes, but a slice resumed from
+ a version-30 file would carry issues naming nobody, so an entry would mix
+ attributed and unattributed issues, which is the confusion the field exists
+ to end.
  */
-export const SLICE_CACHE_VERSION = 30;
+export const SLICE_CACHE_VERSION = 31;
 /**
  Everything about a repair run that changes what the models are ASKED, folded
  into every cache key.

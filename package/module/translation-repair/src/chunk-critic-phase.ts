@@ -4,6 +4,10 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import {
+  claimFilersOf,
+  describeClaimFiling,
+} from './claim-filers.ts';
+import {
   type ClaimAttribution,
   retainAttributions,
 } from './critic-attribution.ts';
@@ -204,6 +208,31 @@ export async function runChunkCriticPhase(
     },),
   );
 
+  /**
+   Surviving attribution, the filers the log lines and the artifact name.
+   */
+  const claimAttributions = retainAttributions({
+    attributions: critic.claimAttributions,
+    claimIds: survivingClaimIds,
+  },);
+
+  /**
+   Filers per surviving claim id.
+   */
+  const filers = claimFilersOf({ attributions: claimAttributions, },);
+  // ONE LINE PER CLAIM, WITH ITS FILERS (owner, 2026-09-24). The stage's
+  // summary line counts claims; a reader chasing one claim needs the critic
+  // that filed it, its category, severity and summary, and had to join the
+  // artifact's attribution record by claim id to get there.
+  for (const claim of screening.claims) {
+    l.info(describeClaimFiling({
+      sliceIndex,
+      claimId: computeIssueClaimId({ claim, },),
+      claim,
+      filers,
+    },),);
+  }
+
   return {
     claims: screening.claims,
     nonTranslationVotes: critic.nonTranslationVotes,
@@ -214,10 +243,7 @@ export async function runChunkCriticPhase(
     },),
     heardCritics: critic.heardCritics,
     heardCriticIds: critic.heardCriticIds,
-    claimAttributions: retainAttributions({
-      attributions: critic.claimAttributions,
-      claimIds: survivingClaimIds,
-    },),
+    claimAttributions,
     findings: [
       ...critic.findings,
       ...screening.findings,

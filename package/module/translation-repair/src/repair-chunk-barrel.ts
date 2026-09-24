@@ -10,6 +10,14 @@ export {
   type ChunkCriticPhase,
   runChunkCriticPhase,
 } from './chunk-critic-phase.ts';
+export {
+  attachClaimFilers,
+  type ClaimFilers,
+  claimFilersOf,
+  describeClaimFiling,
+  describeIssueFiling,
+  recordIssuesWithFilers,
+} from './claim-filers.ts';
 export { repairChunk, } from './repair-chunk.ts';
 export { frontMatterRepairOutcome, } from './front-matter-repair.ts';
 export {
@@ -23,5 +31,6 @@ export {
   notApplicableRepair,
 } from './repair-not-applicable.ts';
 export { unchangedChunkOutcome, } from './repair-unchanged-outcome.ts';
+export { foldStageFindings, } from './repair-stage-findings.ts';
 
 //endregion Repair chunk barrel

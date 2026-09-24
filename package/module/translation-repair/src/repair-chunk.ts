@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
+import { recordIssuesWithFilers, } from './claim-filers.ts';
 import { aggregateClaims, } from './aggregate-claims.ts';
 import { declaredNameRefusalReport, } from './declared-name-survival.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
@@ -26,6 +27,7 @@ import { runCheckerStage, } from './repair-edit-stages.ts';
 import { runIntroducedDefectProbe, } from './introduced-defect-probe.ts';
 import { PRODUCTION_PRIOR_ISSUE_DISCLOSURE, } from './introduced-defect-wire.ts';
 import { runEditorStage, } from './repair-editor-stage.ts';
+import { foldStageFindings, } from './repair-stage-findings.ts';
 import { runPanelStage, } from './repair-stages.ts';
 import { screenAttestedAdditions, } from './reference-attest-claims.ts';
 import type { AttestedDetail, } from './reference-attest-match.ts';
@@ -280,32 +282,28 @@ export async function repairChunk(
   const deduped = dedupeAcceptedIssues({ issues: panel.issues, },);
 
   /**
-   Every issue this chunk records: the reference screen's rejections first,
-   then the panel's.
+   Every issue this chunk records with its filers attached and logged: the
+   reference screen's rejections first, then the panel's.
    */
-  const recordedIssues = [
-    ...screened.issues,
-    ...deduped.issues,
-  ];
+  const recordedIssues = recordIssuesWithFilers({
+    sliceIndex,
+    issues: [
+      ...screened.issues,
+      ...deduped.issues,
+    ],
+    attributions: critic.claimAttributions,
+    l,
+  },);
 
   /**
    Findings across the stages so far.
    */
-  const stageFindings = [
-    ...critic.findings,
-    ...screened.findings,
-    ...panel.findings,
-    ...deduped.findings,
-    // NAMED ON THE PROCEEDING PATH, since the exit that used to name it is gone.
-    // The wording says what now happens: the votes stood AND the slice was
-    // repaired anyway. The old finding said "slice unchanged", which would be a
-    // false statement about this path.
-    ...(critic.votesStand
-      ? [`non-translation votes stand (${
-        String(critic.nonTranslationVotes,)
-      }/${String(critic.heardCritics,)} heard); repaired anyway, votes are evidence`,]
-      : []),
-  ];
+  const stageFindings = foldStageFindings({
+    critic,
+    screened: screened.findings,
+    panel: panel.findings,
+    deduped: deduped.findings,
+  },);
 
   /**
    Envelopes cut from accepted issues.
