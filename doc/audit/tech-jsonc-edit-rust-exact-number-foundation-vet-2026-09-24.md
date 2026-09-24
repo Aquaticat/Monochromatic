@@ -68,6 +68,69 @@ The literal numeric query schedule was frozen in `doc/planning/jsonc-edit-rust-p
 - Category: inspectable open-source local crate, native and multi-platform overlays.
 - Screening: pending proof of full JSON-number exponent and coefficient domain. Not recommended.
 
+## Targeted source screening, still incomplete
+
+All clones sit under private `~/temp/agent/`; these reads did not execute upstream command trees.
+A dependency plus repository-owned adapter remains distinct from the dependency used alone.
+None has yet passed the full vet gates.
+
+- `json-number` 0.4.10 at `283af83`, `src/lib.rs:110-120` describes lexical comparison and derives `PartialEq` and `Eq` on the raw bytes:
+
+  ```rust
+  /// All the comparison operations are done on this *lexical* representation,
+  /// meaning that `1` is actually greater than `0.1e+80` for instance.
+  #[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
+  pub struct Number {
+      data: [u8],
+  }
+  ```
+
+  As a complete value model this fails `1 = 1.0 = 1e0`.
+  As a grammar validator and token holder combined with our exact comparator it remains eligible for targeted validation.
+  Its `src/lib.rs:178-210` uses a checked scan followed by an unsafe cast; audit this boundary if used.
+- `serde_json` 1.0.151 at `afdf6fc`, `src/number.rs:20-25,72-73` derives equality on `Number` and sets its arbitrary-precision inner type to `String`:
+
+  ```rust
+  #[derive(Clone, PartialEq, Eq, Hash)]
+  pub struct Number {
+      n: N,
+  }
+  #[cfg(feature = "arbitrary_precision")]
+  type N = String;
+  ```
+
+  That built-in equality is lexical, so the feature alone is not an exact semantic value model.
+  A custom equality adapter remains a possible composition, not yet validated.
+- `jstrict` 0.15.0 at `18700a1`, `src/number/mod.rs:105-119` explicitly documents lexical ordering and derives `PartialEq` on bytes.
+  It is a strict JSON parser, not an attached-comment JSONC implementation.
+- `reliakit-json` 1.0.0 at `7a7f574`, `crates/reliakit-json/src/number.rs:7-20` says equality is structural and `1`, `1.0`, `1e0` differ; it preserves raw spelling but fails exact numeric identity alone.
+- `bigdecimal` 0.4.10 at tag `v0.4.10`, commit `ea0803e`, `src/impl_num.rs:47-55,92-104` parses exponents into `i128` then checks resulting scale fits `i64`:
+
+  ```rust
+  (base, i128::from_str(&e_exp[1..])?)
+  // ...
+  .and_then(|scale| scale.to_i64())
+  .ok_or_else(|| ParseBigDecimalError::Other(format!("Exponent overflow when parsing '{}'", s)))?
+  ```
+
+  This cannot serve as the only representation for the full JSON number grammar, whose exponent has no specified digit cap.
+- `scientific` 0.6.0 at `6e75628`, `scientific/src/types/scientific.rs:83` stores `exponent: isize`; `b10` 1.0.0 at `c039e3f`, `src/lib.rs:59-69` declares a base exponent constrained by an `i8` generic. Neither covers arbitrary exponent tokens as the only value representation.
+- `ordecimal` 0.3.1 at `916c565`, `src/decimal.rs:113-130` parses `exp_str` into `i64`, so its advertised decimalInfinite encoding does not imply an unbounded input exponent.
+  Its parser also accepts a leading plus and trims input (`src/decimal.rs:66-98`), so it would require a strict JSON grammar wrapper.
+- `decimal-bytes` 0.6.0 at `677a792`, `src/encoding.rs:86-90,350-416` bounds the exponent to `MIN_EXPONENT` through `MAX_EXPONENT`, with `MAX_EXPONENT = 131_072`. It does not cover the admitted JSON-number grammar alone.
+
+The grammar-valid raw-token representation with custom exact normalization remains a serious **candidate**, not an adoption.
+Compare it with `json-number` plus that normalization after inspecting the latter's license, transitive dependencies, CI, issue history, and full test path.
+
+## Registry pagination progress
+
+The first pages of the registry searches returned 100 entries each and advertised more hits.
+The crates.io API was read via `web_fetch` for pages 2 and 3 of the original three queries; each returned 100 entries.
+The full metadata and a transparent keyword filter are saved in `~/temp/agent/jsonc-registry-pages.json`.
+The keyword filter can hide numerically relevant crates whose name and description omit its keywords, so the full page data is retained.
+Notable new leads include `fpdec`, `fraction`, `dashu-int`, `arbi`, `b10`, `scientific`, `ordecimal`, and `decimal-bytes`.
+No saturation conclusion follows until each page's candidates are screened and the two-page condition holds.
+
 ## Pending evidence and validation
 
 - Finish required discovery saturation or report a blocked terminal outcome; record exact expansion queries and pagination attempts.
