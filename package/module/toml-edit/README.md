@@ -197,6 +197,8 @@ For paths created by `tomlSet` that did not exist at parse time,
 
 The package re-exports a few internal encoders and emitters with an underscore prefix:
 `_encodeKey`,
+ `_formatPath`,
+ `_isStrictPrefix`,
  `_isAttachedGap`,
  `_jsValueToTomlText`,
  `_emitContentNode`,

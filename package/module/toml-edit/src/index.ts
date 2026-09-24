@@ -110,6 +110,26 @@ export {
 export { encodeKey as _encodeKey, } from './keys.ts';
 
 /**
+ Unstable path formatter exported for built-artifact tests.
+
+ @example
+ ```ts
+ _formatPath({ path: ['a', 0,], }); // 'a[0]'
+ ```
+ */
+export { formatPath as _formatPath, } from './path.ts';
+
+/**
+ Unstable strict-prefix predicate exported for built-artifact tests.
+
+ @example
+ ```ts
+ _isStrictPrefix({ candidate: ['a',], path: ['a', 'b',], }); // true
+ ```
+ */
+export { isStrictPrefix as _isStrictPrefix, } from './path-prefix.ts';
+
+/**
  Unstable comment-gap classifier exported for built-artifact tests.
 
  @example

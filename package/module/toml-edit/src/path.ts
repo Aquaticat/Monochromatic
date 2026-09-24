@@ -96,26 +96,3 @@ export function formatPath({ path, }: { readonly path: TomlPath; },): string {
     },)
     .join('',);
 }
-
-/**
- True when a path segment matches a TOML key string (bare or quoted).
- 
- @returns Resulting boolean.
- 
- @example
- ```ts
- keyMatchesSegment({ keyName: 'foo', segment: 'foo', },); // true
- keyMatchesSegment({ keyName: 'foo', segment: 0, },);     // false
- ```
- */
-export function keyMatchesSegment(
-  {
-    keyName,
-    segment,
-  }: {
-    readonly keyName: string;
-    readonly segment: string | number;
-  },
-): boolean {
-  return ((typeof segment) === 'string') && (segment === keyName);
-}
