@@ -91,8 +91,11 @@ rounds (2026-09-17):
   Its
   captures,
   hierarchy XML and role records remain historical evidence;
-  `questions/current.html` now shows a withdrawal notice,
-  not a feedback form.
+  the withdrawn artifact is archived in
+  `questions/archive/search-rejected-fold-review.html`.
+  The current
+  `questions/current.html` is a new provisional deck-visible comparison,
+  not an acceptance or production instruction.
   The validator's pixel,
   bounds and provenance checks did not establish a
   coherent relationship between the query and its content.
@@ -132,8 +135,14 @@ rounds (2026-09-17):
   A preceding bottom deck failed even
   under the smaller input probe.
   The three current placements are not user
-  selections;
-  recapture with final source before presenting alternatives.
+  selections.
+  A native light/dark keyboard-visible matrix and a separate
+  cover-panel typing probe now back a provisional review at
+  `questions/current.html`.
+  The measured 300dp test IME is not Gboard;
+  actual Gboard geometry remains unverified.
+  Long names and result-list
+  scrolling are still open.
   Keep Search results,
   no-result/unavailable states,
   and open/back behavior visibly

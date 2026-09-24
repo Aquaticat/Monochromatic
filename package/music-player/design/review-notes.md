@@ -807,8 +807,9 @@ screenshot does not establish Search navigation,
  TalkBack or result
 execution.
 
-The new self-contained `questions/current.html` pairs both native panels with
-measured chassis frames,
+The now-withdrawn self-contained review,
+ archived at `questions/archive/search-rejected-fold-review.html`,
+paired both native panels with measured chassis frames,
  shows the viewer's system light/dark scheme,
  starts at
 the player Search target,

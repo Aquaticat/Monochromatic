@@ -5122,24 +5122,101 @@ still place the deck below content without IME avoidance;
  they are not
 viable choices.
  No candidate is accepted.
- Next:
- recapture live variants
-in both schemes and both panels with measured input insets and bound guards;
-inspect 100% and 200% empty,
- results,
- no-results,
- Back,
- Clear,
- and long
-query states;
- check real Search entry,
- keyboard dismissal and folded cover;
-then build a new review with side,
- location,
- and compositional tradeoffs.
-The withdrawn `questions/current.html` is still not a live form.
- No KWin
-automation and no production edits.
+ The ensuing design-only matrix and review are
+recorded in the next section.
+ No KWin automation and no production edits.
+
+## Provisional deck-visible Fold Search review (2026-09-24)
+
+The throwaway branch `prototype/music-player-theme-compose` captures three
+inner-panel arrangements in light/dark at 100% keyboard-closed and 200%
+typed-results with a debug-only system IME.
+`package/music-player/android-app/capture-search-choices.mjs` checks the
+2076 × 2152px HWC display,
+ Android's 390dpi,
+ the selected input method,
+queried results,
+ and seven deck-control bounds.
+ `dumpsys window windows`
+measured the input window at `[0,1421][2076,2152]` (731px or approximately
+300dp).
+ Every checked mode and transport control in all three inner layouts
+sat above this window.
+ The seven-label guard alone does not prove the seek
+bar,
+ times,
+ target hit regions or text clearance;
+ manual screenshots and a
+separate hierarchy inspection covered those remaining visible marks.
+ No
+meaning-bearing app nodes crossed the approximate x `[983,1093)` band in
+the inspected 100% closed or 200% typing states.
+ The independent minimum
+padding remains unresolved.
+
+The folded cover has a single full-width Search destination in both schemes
+at 100%/200%.
+ A second manual probe inserted `cam` at 200% with an actual
+system input window `[0,1693][1080,2424]`;
+ query and both results remained
+readable.
+ That is probe evidence,
+ not Gboard geometry.
+ The AVD was restored
+to Gboard selected,
+ the probe disabled,
+ inner device state 2 and 100% text.
+
+The self-contained provisional comparison is now
+`package/music-player/design/questions/current.html`.
+ The former withdrawn
+artifact and template are archived as
+`questions/archive/search-rejected-fold-review.html` and its template.
+The current review embeds sanitized physical-pixel rasters with a generic
+status clock and a Fold chassis at cited dp size;
+ it does not show a blank
+unpainted crease band.
+ Native source and the sanitizer/build tasks remain
+on the throwaway branch (`capture-search-choices.mjs`,
+`sanitize-search-review.mjs`,
+ `build-search-review.mjs`).
+ The build validator
+matched embedded PNGs to the scrubbed source files.
+ `agent-browser` loaded
+the self-contained artifact,
+ exercised state/scheme selects,
+ all device
+previews,
+ scale controls,
+ radio response and free text,
+ and reported zero
+WCAG 2A/AA axe violations in both review chrome schemes.
+
+My provisional order is A (Search right,
+ bottom-left deck lifted above IME),
+B (Search right,
+ fixed upper-left deck),
+ C (Search left,
+ fixed upper-right deck).
+ A preserves the accepted resting deck location
+better than B;
+ B preserves the deck's accepted side better than C.
+See the pros,
+ cons,
+ and full ranking in the active artifact.
+ No user choice
+has landed.
+ The question remains open,
+ and the HTML asks for consequential
+corrections rather than authorizing production.
+ Gboard-specific behavior and
+keyboard heights greater than the measured probe remain unverified;
+ long
+query/result names and full result scrolling still need native follow-up.
+ No
+KWin automation,
+ production implementation,
+ or `AGENTS.md` edit is allowed.
 
 ## Issue tracking moves to Linear for this session
 
