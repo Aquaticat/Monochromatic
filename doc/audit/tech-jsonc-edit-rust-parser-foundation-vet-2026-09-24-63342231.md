@@ -396,8 +396,9 @@ Source leads for that screening include `jsonc_lexer` from [richplastow/jsonc-le
  The delegated source reading reports raw tokens in the first two,
  a surrogate-unsafe unchecked character conversion in the third,
  and a regex-tokenized production parser in the fourth.
- Those exits require versioned source confirmation before entering the hard-gate ledger;
- candidate metadata alone is not a recommendation.
+ The `json5format` regex exit was confirmed against its published 0.2.6 archive;
+ the other leads still need individual versioned source screening.
+ Candidate metadata alone is not a recommendation.
  The research transcript is retained at `~/temp/agent/` through its subagent output,
  while this report remains the owned audit artifact.
 
@@ -656,6 +657,11 @@ The user requested early regex culling.
  number and string tokens;
  exclude that example as a proposed foundation,
  not the combinator crate in every possible configuration.
+ The published `json5format` 0.2.6 `Cargo.toml:24-25` declares a production `regex` dependency,
+ and `src/parser.rs:9,100-166` constructs `Regex` matchers for tokens,
+ comments and quoted strings.
+ Exclude that parser/formatter as-is at the user's production regex gate;
+ no upstream code was executed.
 
 `json-five` 0.3.1 lists `regex = "1"` only under `[dev-dependencies]` in `Cargo.toml:30-32`;
  its inspected production `src/` has no `regex::`,
