@@ -135,7 +135,8 @@ await describe({
     },),
     it({
       name: 'into merge functions run the default only on request',
-      // Kills 175, 180, and 181 (deepmerge-into-fast.ts: mergeOthers) and 324 (deepmerge-into.ts: mergeMaps).
+      // Kills 175, 180, and 181 (deepmerge-into-fast.ts: mergeOthers) and 324 (deepmerge-into.ts: mergeSets);
+      // the Map case guards the matching mergeMaps wrapper.
       fn: async () => {
         /**
          Target whose leaf the custom mergeOthers overwrites itself.
@@ -167,6 +168,16 @@ await describe({
           },
         },)(maps, { m: new Map([['b', 2,],],), },);
         expect([...maps.m.keys(),],).toEqual(['a',],);
+        /**
+         Target whose Set a no-op custom mergeSets leaves untouched.
+         */
+        const sets = { s: new Set(['a',],), };
+        target.deepmergeIntoCustom({
+          mergeSets: function leaveSet() {
+            // Deliberately does nothing and requests nothing.
+          },
+        },)(sets, { s: new Set(['b',],), },);
+        expect([...sets.s,],).toEqual(['a',],);
       },
     },),
     it({
