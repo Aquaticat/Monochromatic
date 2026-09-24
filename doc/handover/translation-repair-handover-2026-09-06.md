@@ -4766,18 +4766,26 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA17 RUNS (entry `hulicaijia`,
-    frozen `0d8e463ef`,
-    corpus-pass pid 3979105 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
-    launched 10:32 UTC 2026-09-24,
-    waiter wait-h17 (background bash),
-    meters 46.21 USD Bedrock and 92.61 OpenRouter at launch;
+1.  SHI_YUMIAOYA20 RUNS (entry `shi_Yumiaoya`,
+    frozen `79972da3d`,
+    corpus-pass pid 1802613 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
+    launched 21:38 UTC 2026-09-24,
+    waiter wait-s20 (background bash);
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read it by every hulicaijia16 check (13 headings, 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish, no double blank line) and no GLM-5.3-Flash stream on Synthetic;
-    then `XingZ60`, `mikaela_khara` and `yingying` on the same build if each reads clean;
-    record each under a new heading above "## shi_Yumiaoya19 read, 2026-09-24" in the pass log.
+    read it by every shi_Yumiaoya19 check first, then class one hundred nineteen:
+    the Description line and the Departure line carry "trans girl" or "trans woman" for 小药娘 and 药娘, no Han and no pinyin form outside a comment, and the `translate-candidate-refused` findings name the community term where a candidate kept it;
+    then `XingZ60`, `mikaela_khara` and `yingying` on the same build, one entry at a time, each read before the next is launched;
+    record each under a new heading above "## hulicaijia17 read, 2026-09-24" in the pass log.
+    CLASS ONE HUNDRED NINETEEN BUILT (79972da3d, guard red first 2f7dd5190, full suite `suite-class119.log` 1121 PASS, no FAIL):
+    owner answer 2026-09-24 on 小药娘 and 药娘: "This term is pretty disrespectful though currently being used by some people in the community in a neutral way. We shouldn't assume that neutralness carries over to English. The best thing we can do here is just to say "trans woman" or "trans girl"."
+    `COMMUNITY_GLOSSARY` seeds 药娘 with the renderings "trans girl", "trans woman", "trans women" and the refused forms yaoniang, yao-niang, yao niang (entries gain `refusedForms`);
+    `communityTermFindings` (`translate-community-term.ts`), a source-carry floor after the title floor, refuses before any judge a candidate that keeps a glossary term the original carries in Han or writes a refused form in any casing, comments cut on every side, a term the page itself keeps left to the judges.
+    HULICAIJIA17 READ (frozen `0d8e463ef`): SETTLED at about 11:00 UTC 2026-09-24 in 28.4 min, one attempt, 4,326 seats, 154 retry rounds, 3,477 calls, 1.03 USD Bedrock and 1.63 OpenRouter by the meters;
+    every hulicaijia16 check holds (13 headings, markers and 9 definitions as the archive, 2 links, 3 Sakura, front matter equal, no TA, no error finish, no double blank line), 75 abstention lines, Jev 127 of 127;
+    class one hundred eighteen holding (GLM-5.3-Flash 231 of 231 off Synthetic), the class ninety-seven floor excluded the archive's third-person incumbent once;
+    Qwen3.8-27B 0 usable of 578 and glm-5.3 7 of 277 are router refusals with Synthetic and Hyper spent, not model failures; no class.
     SHI_YUMIAOYA19 READ (frozen `0d8e463ef`): SETTLED 10:29 UTC 2026-09-24 in 20.9 min, 812 seats, 811 calls, 0.19 USD by the meters; every shi_Yumiaoya18 check holds;
-    OPEN OWNER QUESTION: 小药娘 and 药娘 shipped in Han (judges following the archive translator's "needn't be translated" comment), the third rendering in three runs after "little HRT girl" (shi17) and "little yaoniang" / "yao-niang (gloss)" (shi18); no glossary entry exists; the fix is a glossary entry once the owner picks the rendering.
+    OWNER ANSWERED the 小药娘 question on 2026-09-24; built as class one hundred nineteen.
     CUSPARIAKLSY14 READ (frozen `0d8e463ef`): SETTLED 10:05 UTC 2026-09-24 in 21.6 min, 401 seats, 400 calls, 0 retry rounds, 0.07 USD by the meters;
     class one hundred eighteen live (no GLM-5.3-Flash stream on Synthetic, its first streams on Hyper while Synthetic read wet, longest gap 89 s against 179), class one hundred seventeen not exercised (the bench wrote the list loose), every CuspariaKLSY13 check holds; observation: 又 dropped before the argument with her father; no class.
     CUSPARIAKLSY13 READ (frozen `3bb47c918`): SETTLED 09:15 UTC 2026-09-24 in 31.9 min, 367 seats, 363 calls, 0.06 USD by the meters;

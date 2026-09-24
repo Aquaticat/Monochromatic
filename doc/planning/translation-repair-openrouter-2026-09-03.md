@@ -8082,6 +8082,52 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## hulicaijia17 read, 2026-09-24, 11:00 UTC: SETTLED in 28.4 min, every hulicaijia16 check holding; no class; class one hundred nineteen built on the owner's answer about 小药娘
+
+hulicaijia17 ran on frozen `0d8e463ef`
+(launched 10:32 UTC, `TALLY hulicaijia status=SETTLED slices=72`, 1,702,727 ms),
+one attempt, 4,326 seats, 154 retry rounds, 3,477 calls,
+Bedrock 46.20 to 45.17 and OpenRouter 92.61 to 90.98 USD by the meters.
+
+- The page against the archive:
+  13 headings of 13 by the archive's words,
+  footnote markers and 9 definitions as the archive,
+  2 links, 3 Sakura, front matter equal,
+  no TA, no error finish, no double blank line.
+- Class one hundred eighteen held:
+  GLM-5.3-Flash asked 231 times, 231 usable, none on Synthetic.
+- The class ninety-seven floor excluded the archive's translate incumbent once
+  (the ORIGINAL writes 你 twice, the archive "she" and "her").
+- Qwen3.8-27B asked 578, usable 0, and glm-5.3 asked 277, usable 7:
+  every one a `NoProviderForModelError` with Synthetic's weekly allowance and Hyper's daily allowance spent,
+  refused at call time at no cost and left out of each stage's quorum by the class twenty-six rule;
+  not a model failure.
+- 75 abstention lines with reasons, Jev 127 of 127, longest gap between log lines 39 s.
+
+### Class one hundred nineteen: 药娘 renders as "trans girl" or "trans woman"
+
+shi_Yumiaoya19 shipped 小药娘 and 药娘 in Han,
+the third rendering in three runs after "little HRT girl" and "little yaoniang".
+The owner answered on 2026-09-24:
+"This term is pretty disrespectful though currently being used by some people in the community in a neutral way.
+We shouldn't assume that neutralness carries over to English.
+The best thing we can do here is just to say "trans woman" or "trans girl"."
+
+Built in `79972da3d` (guard red first `2f7dd5190`):
+
+- `COMMUNITY_GLOSSARY` seeds 药娘 with the renderings "trans girl", "trans woman" and "trans women";
+  every entry gains `refusedForms`, and this one refuses yaoniang, yao-niang and yao niang.
+- `communityTermFindings` (`translate-community-term.ts`) runs among the source-carry floors after the title floor.
+  It refuses, before any judge reads it,
+  a candidate that keeps a glossary term the original carries in Han
+  or writes one of the entry's refused forms in any casing.
+  Comments are cut on every side,
+  and a term the page itself keeps outside a comment is left to the judges.
+  The renderings are listed but not required,
+  since a rendering inflects and the judges still choose among renderings.
+- Lint 0/0, types clean, full suite `suite-class119.log` 1121 PASS, no FAIL.
+- shi_Yumiaoya20 launched 21:38 UTC on `.frozen-dist-79972da3d` to read it live.
+
 ## shi_Yumiaoya19 read, 2026-09-24, 10:32 UTC: SETTLED in 20.9 min, every shi_Yumiaoya18 check holding; 小药娘 and 药娘 shipped in Han, the third rendering of the term in three runs (open question for the owner)
 
 `shi_Yumiaoya19` (frozen `0d8e463ef`, corpus-pass pid 3826911) was launched at 10:08 UTC 2026-09-24

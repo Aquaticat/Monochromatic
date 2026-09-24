@@ -1498,8 +1498,8 @@ this section is the readiness reading of it.
   The rule of this document holds:
   a class found on a read page is fixed before the next launch,
   and a page is read before the next entry is launched.
-  Classes twenty-six to one hundred eighteen were found that way between 2026-09-16 and 2026-09-24,
-  one hundred eighteen in all,
+  Classes twenty-six to one hundred nineteen were found that way between 2026-09-16 and 2026-09-24,
+  one hundred nineteen in all,
   and the rate has not fallen to zero:
   of the last fifteen reads (yingying8 at 00:31 UTC to CuspariaKLSY13 at 09:15 UTC 2026-09-24),
   four found no class, ten found one each
@@ -1515,6 +1515,10 @@ this section is the readiness reading of it.
   the class one hundred sixteen rule taking the translate lane to 62 s with the Hyper seats still asked.
   CuspariaKLSY13's page was faithful in wording, the death paragraph complete for the first time;
   its two classes are a spacing the archive keeps and a seat's latency, not a mistranslation.
+  CuspariaKLSY14 and hulicaijia17 found no class.
+  shi_Yumiaoya19 found one (one hundred nineteen):
+  小药娘 shipped in Han, a third rendering in three runs,
+  settled by the owner's answer of 2026-09-24 as "trans girl" or "trans woman" and built as a glossary entry with a floor.
 - What "ready" would rest on now:
   a rotation over every entry in the read set
   (`XingZ60`,
