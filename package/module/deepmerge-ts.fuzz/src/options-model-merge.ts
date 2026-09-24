@@ -13,10 +13,11 @@ import {
 import { SKIP, } from './options-model-choice.ts';
 
 /**
- Whether a position is the target's own value, a key the target lacks, or
- part of a returning merge.
+ Whether a position is the target's own value, a Map entry only the target
+ holds (which the into merge never visits), a key the target lacks, or part
+ of a returning merge.
  */
-export type Slot = 'none' | 'seeded' | 'target';
+export type Slot = 'none' | 'seeded' | 'target' | 'targetMapOnly';
 
 /**
  One child position to merge one level deeper.
@@ -55,7 +56,7 @@ function childSlot({
 },): Slot {
   if (slot === 'none')
     return 'none';
-  return (slot === 'target') && targetHasKey ? 'target' : 'seeded';
+  return ((slot === 'target') || (slot === 'targetMapOnly')) && targetHasKey ? 'target' : 'seeded';
 }
 
 /**
@@ -129,20 +130,26 @@ function mergeMapsModel(
     unknown,
   ])[] {
     /**
+     Maps holding this key.
+     */
+    const holders = maps.filter(function hasKey(map,) {
+      return map.has(key,);
+    },);
+    /**
+     Slot of the entry; a `target` Map's own entry no source holds is never visited.
+     */
+    const entrySlot = childSlot({
+      slot,
+      targetHasKey: (first !== undefined) && first.has(key,),
+    },);
+    /**
      Merged value for this key.
      */
     const merged = mergeChild({
-      slot: childSlot({
-        slot,
-        targetHasKey: (first !== undefined) && first.has(key,),
+      slot: (entrySlot === 'target') && (holders.length === 1) ? 'targetMapOnly' : entrySlot,
+      values: holders.map(function valueOf(map,) {
+        return map.get(key,);
       },),
-      values: maps
-        .filter(function hasKey(map,) {
-          return map.has(key,);
-        },)
-        .map(function valueOf(map,) {
-          return map.get(key,);
-        },),
     },);
     return merged === SKIP ? [] : [[
       key,

@@ -19,11 +19,13 @@
  The into variants mutate the target, so the into model tracks whether each
  position is the target's own value (`target`) or a key the target lacks
  (`seeded`). When the filter removes every value at a key the target has,
- the target keeps its value (`./mutation-custom.unit.test.ts`). Two filter
- regions are known defects and reported as excluded rather than predicted
- (`./known-defect-mutation.unit.test.ts`, `./known-defect.unit.test.ts`):
- every value removed at a key the target lacks, and the first value removed
- while a later one survives.
+ the target keeps its value (`./mutation-custom.unit.test.ts`). Known
+ regions reported as excluded rather than predicted: every value removed at
+ a key the target lacks, and the first value removed while a later one
+ survives (`./known-defect-mutation.unit.test.ts`,
+ `./known-defect.unit.test.ts`); a Map entry only the target holds, which
+ the into merge never visits, when a custom function would change it
+ (`./known-defect-options.unit.test.ts`).
 
  @module
  */
@@ -324,6 +326,25 @@ function mergeAt(position: Position,): unknown {
     slot,
     values,
   } = position;
+  if (slot === 'targetMapOnly') {
+    /**
+     What the merge would make of the entry if it visited it; its events never happen.
+     */
+    const visited = mergeAt({
+      ...position,
+      context: {
+        ...context,
+        observe: ignoreEvent,
+      },
+      slot: 'target',
+    },);
+    if (!Object.is(
+      visited,
+      values[0],
+    ))
+      throw new ExcludedRegionError('deepmergeInto never visits a Map entry only the target holds',);
+    return visited;
+  }
   /**
    Values after the plan's filter.
    */
