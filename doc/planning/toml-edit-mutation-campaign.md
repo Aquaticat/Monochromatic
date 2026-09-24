@@ -448,10 +448,29 @@ The expanded package build,
  unit suite,
  types,
  and oxlint passed.
-The last edit-path mutation rechecks are running on this source revision:
- `/var/home/user/temp/agent/toml-mutation-edit-a-last.json` (`proc_b6cc`)
- and `/var/home/user/temp/agent/toml-mutation-edit-b-last.json` (`proc_993a`).
-Do not edit runtime source until both finish.
+The last edit-path mutation rechecks completed with no infrastructure errors:
+
+- `/var/home/user/temp/agent/toml-mutation-edit-a-last.json`:
+  124 killed,
+  10 confirmed survivors,
+  292 compile errors.
+- `/var/home/user/temp/agent/toml-mutation-edit-b-last.json`:
+  166 killed,
+  24 confirmed survivors,
+  301 compile errors.
+
+Remaining survivors include sentinel descriptions exposed by source subpaths;
+ guards rendered redundant by earlier dispatch,
+ valid-path type or length invariants,
+ and `tomlDelete`'s missing-path state identity.
+A forced-true implicit-parent check may return a fresh but value-equivalent no-op state;
+ identity was not promised as a stable contract.
+`set-aot.ts`'s length check still short-circuits on an out-of-bounds segment,
+ and the first-instance fallback is unreachable after the caller selected an existing AOT.
+`set-create.ts`'s deepest-table scan has defensive checks for a missing best block that
+ cannot arise from the factory-produced block list.
+These are conditional classifications over package-created states,
+ not universal claims for caller-composed `TomlEditState` or direct `/ts/*` imports.
 The indexed array-of-tables read fix passed the rebuilt package suite,
  types,
  oxlint,
