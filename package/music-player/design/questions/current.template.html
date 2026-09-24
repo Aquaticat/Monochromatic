@@ -3,23 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Selected Fold Search design update in progress</title>
+<title>Selected Fold Search with playback visible</title>
 <style>
 :root {
   color-scheme: light dark;
   --color-page: #f5f6fa;
   --color-panel: #ffffff;
+  --color-raised: #e9eaf0;
   --color-ink: #282b34;
+  --color-muted: #525663;
   --color-edge: #646877;
+  --color-accent: #364e82;
+  --color-device: #17191f;
+  --color-backdrop: rgb(0 0 0 / 78%);
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --color-page: #0d0f14;
     --color-panel: #1a1d25;
+    --color-raised: #292d38;
     --color-ink: #e8eaf2;
+    --color-muted: #bdc1ce;
     --color-edge: #9ea4b2;
+    --color-accent: #b9c9ff;
+    --color-device: #080a0d;
+    --color-backdrop: rgb(0 0 0 / 85%);
   }
 }
+* { box-sizing: border-box; }
 body {
   margin-inline: 0;
   margin-block: 0;
@@ -28,26 +39,253 @@ body {
   font-family: system-ui, sans-serif;
   line-height: 1.5;
 }
-main { max-inline-size: 65rem; margin-inline: auto; padding-inline: 1.5rem; padding-block: 2rem; }
-.notice {
-  padding-inline: 1rem;
-  padding-block: 0.5rem;
+main {
+  max-inline-size: 100rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 3vw, 3rem);
+  padding-block: 1rem 5rem;
+}
+h1 { font-size: clamp(1.9rem, 3vw, 2.8rem); line-height: 1.2; }
+h2 { margin-block: 2rem 0.6rem; }
+p { max-inline-size: 90ch; }
+button, select { font: inherit; }
+button, select {
+  min-inline-size: 3rem;
+  min-block-size: 3rem;
+  padding-inline: 0.8rem;
+  padding-block: 0.35rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.55rem;
+  background-color: var(--color-panel);
+  color: var(--color-ink);
+}
+button { cursor: pointer; }
+button:hover { background-color: var(--color-raised); }
+button:focus-visible, select:focus-visible, .preview-stage:focus-visible {
+  outline: 0.1875rem solid var(--color-accent);
+  outline-offset: 0.1875rem;
+}
+.note, .capture {
   border-width: 0.0625rem;
   border-style: solid;
   border-color: var(--color-edge);
   border-radius: 0.8rem;
   background-color: var(--color-panel);
 }
+.note { padding-inline: 1rem; padding-block: 0.35rem; }
+.muted { color: var(--color-muted); }
+.controls { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: end; margin-block: 1rem; }
+.controls label { display: grid; gap: 0.3rem; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 1rem; }
+.capture { min-inline-size: 0; padding-inline: 1rem; padding-block: 1rem; }
+.capture h2 { margin-block: 0 0.5rem; }
+.capture picture { display: block; overflow: hidden; max-block-size: 38rem; }
+.capture img { display: block; max-inline-size: 100%; block-size: auto; }
+.capture[data-panel='cover'] img { inline-size: min(100%, 25rem); block-size: auto; }
+.capture button { margin-block-start: 0.75rem; }
+dialog {
+  inline-size: min(98vw, 96rem);
+  max-inline-size: none;
+  max-block-size: 97vh;
+  padding-inline: 0;
+  padding-block: 0;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.8rem;
+  background-color: var(--color-panel);
+  color: var(--color-ink);
+}
+dialog::backdrop { background-color: var(--color-backdrop); }
+.dialog-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; padding-inline: 0.8rem; padding-block: 0.6rem; }
+.dialog-bar h2 { flex: 1 1 14rem; margin-block: 0; font-size: 1.1rem; }
+.dialog-bar .details { flex-basis: 100%; margin-block: 0; }
+.preview-stage {
+  overflow: auto;
+  block-size: min(73vh, 65rem);
+  padding-inline: 0.8rem;
+  padding-block: 0.8rem;
+  background-color: var(--color-raised);
+}
+.device {
+  --scale: 1;
+  --screen-inline: 852px;
+  --screen-block: 883px;
+  --frame-inline: 907px;
+  --frame-block: 937px;
+  --screen-inset: 27px;
+  --outer-radius: 72px;
+  --inner-radius: 42px;
+  position: relative;
+  inline-size: calc(var(--frame-inline) * var(--scale));
+  block-size: calc(var(--frame-block) * var(--scale));
+  margin-inline: auto;
+  border-width: 0.125rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: calc(var(--outer-radius) * var(--scale));
+  background-color: var(--color-device);
+}
+.device[data-panel='cover'] {
+  --screen-inline: 443.0769px;
+  --screen-block: 994.4615px;
+  --frame-inline: 502.4px;
+  --frame-block: 1053.2px;
+  --screen-inset: 29.1px;
+  --outer-radius: 43.1px;
+  --inner-radius: 30.18px;
+}
+.device-screen {
+  position: absolute;
+  inset-inline-start: calc(var(--screen-inset) * var(--scale));
+  inset-block-start: calc(var(--screen-inset) * var(--scale));
+  inline-size: calc(var(--screen-inline) * var(--scale));
+  block-size: calc(var(--screen-block) * var(--scale));
+  overflow: hidden;
+  border-radius: calc(var(--inner-radius) * var(--scale));
+  background-color: var(--color-device);
+}
+.device-screen img { display: block; inline-size: 100%; block-size: 100%; }
+.camera, .hinge { display: none; position: absolute; background-color: var(--color-device); }
+.device[data-panel='inner'] .camera {
+  display: block;
+  inset-inline-end: calc(48.41px * var(--scale));
+  inset-block-start: calc(43.62px * var(--scale));
+  inline-size: calc(32.41px * var(--scale));
+  block-size: calc(32.41px * var(--scale));
+  border-radius: 50%;
+}
+.device[data-panel='inner'] .hinge {
+  display: block;
+  inset-inline-start: calc(431.5px * var(--scale));
+  inline-size: calc(44px * var(--scale));
+  block-size: calc(8.8px * var(--scale));
+  border-radius: calc(4.8px * var(--scale));
+}
+.hinge[data-end='start'] { inset-block-start: 0; }
+.hinge[data-end='end'] { inset-block-end: 0; }
 </style>
 </head>
 <body>
 <main>
-  <h1>Selected Search layout A</h1>
-  <div class="notice">
-    <p>The unfolded Search pane stays on the right. The bottom-left playback deck rises above the keyboard while typing. The folded cover keeps one full-width Search destination.</p>
-    <p>The redundant positive-results heading, <code>Results for “cam”</code>, is being removed on both panels. The query remains in the integrated Back/query/Clear header.</p>
-    <p><strong>Updated native captures are in progress.</strong> The earlier three-way comparison is archived; it is not the active design or a request to choose again. Production implementation is not authorized.</p>
+<header>
+  <p class="muted">Music player · selected design review · Pixel 9 Pro Fold</p>
+  <h1>Search A, without a repeated results heading</h1>
+  <p>The user selected A (D51). On the unfolded panel, Search stays in the right pane and the bottom-left playback deck lifts above the keyboard. The folded cover has one full-width Search destination. The separate <code>Results for “cam”</code> heading is gone on both panels (D52); the query appears once in the Back/query/Clear header, with folder and track results directly beneath it.</p>
+  <div class="note"><p><strong>Design only.</strong> The keyboard shown in the 200% captures is a measured 300dp system-managed test input method, not Gboard. The selected layout remains subject to D50 when a real keyboard is present; Gboard-specific height and split geometry remain unverified. No production implementation was made.</p></div>
+  <p class="muted">Native source: unfolded 2076 × 2152 physical px (approximately 852 × 883dp) and cover 1080 × 2424px (approximately 443 × 994dp) at this AVD's 390dpi. Meaning-bearing app marks stay clear of the approximate 7.5mm physical crease at inner-panel x[983,1093); surfaces may cross it. Minimum informational padding remains open. Status notification content is replaced with a generic clock.</p>
+</header>
+<section aria-labelledby="states-title">
+  <h2 id="states-title">Inspect the selected design on both panels</h2>
+  <p><strong>Changed detail:</strong> The first folder result now starts where the redundant heading was. Inspect whether this transition from header to results reads clearly, especially at 200% text with the keyboard present. Switch to the empty state to see its explanation, which was not removed.</p>
+  <div class="controls">
+    <label for="state">Native state<select id="state"><option value="results">Results, keyboard closed, 100% text</option><option value="typing">Typing “cam”, 200% text</option><option value="empty">Empty Search, 100% text</option></select></label>
+    <label for="scheme">Screenshot scheme<select id="scheme"><option value="system">Follow system</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
   </div>
+  <div class="gallery">
+    <article class="capture" data-panel="inner">
+      <h2>Unfolded: deck stays visible</h2>
+      <picture><img width="2076" height="2152" alt="Selected A: Search results on right and playback deck bottom-left"></picture>
+      <p>When the keyboard appears, the deck moves above the measured input window. Folder browsing yields while typing; the query and results remain together.</p>
+      <button type="button" data-preview="inner">Inspect unfolded at device size</button>
+    </article>
+    <article class="capture" data-panel="cover">
+      <h2>Folded: one Search page</h2>
+      <picture><img width="1080" height="2424" alt="Selected cover Search results directly under the integrated header"></picture>
+      <p>The same query/result relationship uses the full cover width. D50's unfolded-deck constraint does not impose an additional cover deck in Search.</p>
+      <button type="button" data-preview="cover">Inspect cover at device size</button>
+    </article>
+  </div>
+</section>
+<section aria-labelledby="response-title">
+  <h2 id="response-title">Correction path</h2>
+  <p>A is selected. Reply in this chat with any remaining visual correction; please identify the panel and state. The comparison with B and C is archived, not an active choice. Long result names, tall real keyboards, result-list scrolling and the exact minimum information clearance still need follow-up before production.</p>
+</section>
 </main>
+<dialog id="preview" aria-labelledby="preview-title">
+  <div class="dialog-bar">
+    <h2 id="preview-title">Selected Fold Search preview</h2>
+    <button id="fit" type="button">Fit</button>
+    <button id="reset" type="button">Reset 100%</button>
+    <button id="zoom-out" type="button">Zoom out</button>
+    <button id="zoom-in" type="button">Zoom in</button>
+    <button id="close-preview" type="button">Close</button>
+    <p id="scale-label" class="details muted" aria-live="polite"></p>
+  </div>
+  <div class="preview-stage" id="preview-stage" tabindex="0" role="region" aria-label="Scrollable native Fold screen at physical source resolution"><div class="device" id="device" data-panel="inner"><div class="device-screen"><img id="preview-image" alt="Selected Search screen" width="2076" height="2152"></div><span class="camera" aria-hidden="true"></span><span class="hinge" data-end="start" aria-hidden="true"></span><span class="hinge" data-end="end" aria-hidden="true"></span></div></div>
+</dialog>
+<script>
+const captures = __SELECTED_CAPTURES__;
+const state = document.querySelector('#state');
+const scheme = document.querySelector('#scheme');
+const media = window.matchMedia('(prefers-color-scheme: dark)');
+const dialog = document.querySelector('#preview');
+const device = document.querySelector('#device');
+const stage = document.querySelector('#preview-stage');
+const previewImage = document.querySelector('#preview-image');
+const previewTitle = document.querySelector('#preview-title');
+const scaleLabel = document.querySelector('#scale-label');
+let selectedPanel = 'inner';
+let scale = 1;
+let returnTarget;
+function currentScheme() { return scheme.value === 'system' ? (media.matches ? 'dark' : 'light') : scheme.value; }
+function sourceFor(panel) { return captures[panel][state.value][currentScheme()]; }
+function render() {
+  document.querySelectorAll('.capture').forEach(card => {
+    card.querySelector('img').src = sourceFor(card.dataset.panel);
+  });
+  if (dialog.open) updatePreview();
+}
+function geometry() {
+  return device.dataset.panel === 'cover' ?
+    { width: 443.0769, height: 994.4615, frameWidth: 502.4, frameHeight: 1053.2, pixels: [1080, 2424] } :
+    { width: 852, height: 883, frameWidth: 907, frameHeight: 937, pixels: [2076, 2152] };
+}
+function showScale() {
+  device.style.setProperty('--scale', scale);
+  const panel = geometry();
+  scaleLabel.textContent = `Source ${panel.pixels[0]} × ${panel.pixels[1]} physical px · approximately ${Math.round(panel.width)} × ${Math.round(panel.height)}dp at 390dpi · ${Math.round(scale * 100)}% of design dp · reset returns to 100%`;
+}
+function updatePreview() {
+  const panel = geometry();
+  previewImage.src = sourceFor(selectedPanel);
+  previewImage.width = panel.pixels[0];
+  previewImage.height = panel.pixels[1];
+  previewImage.alt = previewTitle.textContent;
+  showScale();
+}
+state.addEventListener('change', render);
+scheme.addEventListener('change', render);
+media.addEventListener('change', () => { if (scheme.value === 'system') render(); });
+document.querySelectorAll('[data-preview]').forEach(button => {
+  button.addEventListener('click', async () => {
+    returnTarget = button;
+    selectedPanel = button.dataset.preview;
+    device.dataset.panel = selectedPanel;
+    previewTitle.textContent = `${selectedPanel === 'cover' ? 'Folded cover' : 'Unfolded inner'} · ${state.options[state.selectedIndex].textContent} · ${currentScheme()}`;
+    updatePreview();
+    await previewImage.decode();
+    scale = 1;
+    dialog.showModal();
+    showScale();
+    stage.scrollTop = 0;
+    stage.scrollLeft = 0;
+    document.querySelector('#close-preview').focus();
+  });
+});
+document.querySelector('#fit').addEventListener('click', () => {
+  const panel = geometry();
+  scale = Math.min(1, (stage.clientWidth - 32) / panel.frameWidth, (stage.clientHeight - 32) / panel.frameHeight);
+  showScale();
+});
+document.querySelector('#reset').addEventListener('click', () => { scale = 1; showScale(); });
+document.querySelector('#zoom-out').addEventListener('click', () => { scale = Math.max(0.25, scale - 0.25); showScale(); });
+document.querySelector('#zoom-in').addEventListener('click', () => { scale = Math.min(2, scale + 0.25); showScale(); });
+document.querySelector('#close-preview').addEventListener('click', () => dialog.close());
+dialog.addEventListener('close', () => returnTarget?.focus());
+render();
+</script>
 </body>
 </html>
