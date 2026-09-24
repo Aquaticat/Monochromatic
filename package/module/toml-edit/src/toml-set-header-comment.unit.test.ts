@@ -38,8 +38,16 @@ await describe({
         const e1 = tomlSetHeaderComment({ edit: e0, comment: ['one', 'two',], },);
         const e2 = tomlSet({ edit: e1, path: ['title',], value: 'Demo', },);
         const out = tomlStringify({ edit: e2, },);
-        expect(out,).toContain('# one\n',);
-        expect(out,).toContain('# two\n',);
+        expect(out,).toBe('# one\n# two\n\ntitle = "Demo"\n',);
+      },
+    },),
+
+    it({
+      name: 'empty comment omits a synthetic header',
+      fn: async () => {
+        const edit = tomlSetHeaderComment({ edit: emptyTomlEdit(), comment: '', },);
+        const updated = tomlSet({ edit, path: ['title',], value: 'Demo', },);
+        expect(tomlStringify({ edit: updated, },),).toBe('title = "Demo"\n',);
       },
     },),
 
