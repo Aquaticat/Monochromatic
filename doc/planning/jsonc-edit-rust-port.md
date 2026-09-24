@@ -263,18 +263,29 @@ source-level transitive clearance remains open where required.
    strict valid-fixture checks,
    long-exponent tests,
    and a hash/equality check.
-   No full JSONC crate was built or published.
+   No product crate was built or published.
+- An owned parser/emitter scratch crate passed initial syntax,
+   comment,
+   exact-number,
+   UTF-16,
+   Clippy,
+   and consuming-crate probes.
+   A new 513-level nested-array case then aborted its 2 GiB/2 CPU isolated test process with a stack overflow before the intended 512-depth error.
+   The candidate is **not validated**;
+   the structural descent must be made stack-safe and retested before a foundation recommendation.
 - Current reports are `doc/audit/tech-jsonc-edit-rust-parser-foundation-vet-2026-09-24-63342231.md` and `doc/audit/tech-jsonc-edit-rust-exact-number-foundation-vet-2026-09-24-e8e0034a.md`.
    Their no-regex predecessors are superseded.
    Other worktree changes are concurrent and out of scope.
 
 ## Next action
 
-Validate an owned parser/emitter prototype against the accepted syntax,
+Replace the scratch parser's recursive container descent with a measured stack-safe design,
+ then rerun the bounded depth check and the parser's syntax,
+ comment,
  UTF-16,
- comments,
- and numeric contract;
- finish candidate comparison and present a vetted foundation recommendation for adoption.
+ numeric,
+ and consumer tests.
+ Finish candidate comparison and present a vetted foundation recommendation for adoption.
  Only then implement the product crate,
  align TypeScript behavior,
  verify through a consuming project,
