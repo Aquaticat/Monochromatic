@@ -349,7 +349,7 @@ function encodeInlineTable(
     options,
     depth,
   }: {
-    readonly input: Record<string, unknown>;
+    readonly input: Readonly<Record<string, unknown>>;
     readonly options: CanonicalOptions;
     readonly depth: number;
   },

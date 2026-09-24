@@ -201,7 +201,7 @@ export function navigate(
     root,
     path,
   }: {
-    readonly root: Record<string, unknown>;
+    readonly root: Readonly<Record<string, unknown>>;
     readonly path: TomlPath;
   },
 ): unknown {

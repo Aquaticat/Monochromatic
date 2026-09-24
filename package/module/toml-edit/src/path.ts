@@ -4,9 +4,29 @@
  @module
  */
 
-import type { AST, } from 'toml-eslint-parser';
-
 import type { TomlPath, } from './types.ts';
+
+/**
+ Decoded key segment fields needed by path readers, without parser ownership.
+
+ @example
+ ```ts
+ const segment: TomlKeySegmentView = { type: 'TOMLBare', name: 'title', };
+ ```
+ */
+type TomlKeySegmentView =
+  | { readonly type: 'TOMLBare'; readonly name: string; }
+  | { readonly type: 'TOMLQuoted'; readonly value: string; };
+
+/**
+ Dotted key segments viewed as read-only path data.
+
+ @example
+ ```ts
+ const key: TomlKeyView = { keys: [{ type: 'TOMLBare', name: 'title', },], };
+ ```
+ */
+type TomlKeyView = { readonly keys: readonly TomlKeySegmentView[]; };
 
 /**
  Surface the string form of a key fragment.
@@ -22,7 +42,7 @@ import type { TomlPath, } from './types.ts';
  keyNameOf({ key: { type: 'TOMLBare', name: 'foo' } as never, },); // 'foo'
  ```
  */
-export function keyNameOf({ key, }: { readonly key: AST.TOMLBare | AST.TOMLQuoted; },): string {
+export function keyNameOf({ key, }: { readonly key: TomlKeySegmentView; },): string {
   return key.type
     === 'TOMLBare' ? key.name : key.value;
 }
@@ -39,9 +59,9 @@ export function keyNameOf({ key, }: { readonly key: AST.TOMLBare | AST.TOMLQuote
  keysOf({ key: tomlKeyForABC, },); // ['a', 'b', 'c']
  ```
  */
-export function keysOf({ key, }: { readonly key: AST.TOMLKey; },): readonly string[] {
+export function keysOf({ key, }: { readonly key: TomlKeyView; },): readonly string[] {
   return key.keys
-    .map(function nameOf(k: AST.TOMLBare | AST.TOMLQuoted,) {
+    .map(function nameOf(k: TomlKeySegmentView,) {
     return keyNameOf({ key: k, },);
   },);
 }
