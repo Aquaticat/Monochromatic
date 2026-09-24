@@ -636,14 +636,25 @@ See device-metrics.md for real dimensions.
  The hinge is **vertical** in portrait.
 
 ### E2. Keep information off the fold connector (clarified 2026-09-23)
-The accepted player has a 24dp spacer `[414,438)`dp between two 414dp panes
-on the 852dp inner display;
- D34 makes it white in light and D41 true black
-in dark.
- That pane spacing is **not a universal no-text band** or a mandate
-that every other page become two panes.
- The physical crease is centered at
-about 426dp (physical x 1038 on this AVD).
+On the 852dp inner display,
+ the physical crease is centered at about
+426dp (physical x 1038 on this AVD).
+ The user corrected the player's pane
+gap:
+ **`gap = max(min_padding, crease_width)`**.
+ The earlier fixed 24dp
+spacer and two fixed 414dp panes are withdrawn as player geometry.
+ D34's
+white light spacer and D41's black dark structure remain color treatments,
+not width requirements.
+ AVD `hw.sensor.hinge.areas=1038-0-0-2152` reports a
+zero-pixel hinge area width in the emulator's `x-y-width-height` grammar;
+this does not measure a real handset's visible crease.
+ The applicable
+`min_padding` must be established before assigning a new player gap or pane
+width.
+ No fixed pane spacing is a universal no-text band or a mandate for
+other pages to become two panes.
 
 Here "content" means **information the user must perceive**:
  keep readable
