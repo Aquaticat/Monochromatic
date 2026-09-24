@@ -358,11 +358,22 @@ The clean-sibling `emit-value-node.ts` recheck reported five killed,
 The parser/build recheck is still running at
  `/var/home/user/temp/agent/toml-mutation-parser-guard-final.json` (`proc_40f8`).
 Do not edit runtime sources until it finishes.
-After triage,
- scan editing,
- comment API,
- and value-encoding files not named in completed batches.
-Do not claim a full-runtime verdict before those campaigns and their survivor rechecks finish.
+The remaining edit paths are now being scanned in two bounded container campaigns:
+
+- `delete-value.ts`,
+  `resolve-document.ts`,
+  `toml-delete.ts`,
+  and `toml-set.ts` write `/var/home/user/temp/agent/toml-mutation-edit-a.json` (`proc_27ab`).
+- `set-aot.ts`,
+  `set-create.ts`,
+  `set-replace.ts`,
+  `set-value-inline.ts`,
+  and `set-value.ts` write `/var/home/user/temp/agent/toml-mutation-edit-b.json` (`proc_809c`).
+
+Do not edit runtime source until both campaigns complete.
+After edit-path triage,
+ scan the remaining comment API and value-encoding files.
+Do not claim a full-runtime verdict before those campaigns and survivor rechecks finish.
 
 ## Remaining scope
 
