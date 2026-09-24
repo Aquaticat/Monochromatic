@@ -1434,6 +1434,11 @@ may replace folder or track content,
 surface,
  but it must reserve visible space for the existing deck instead
 of drawing over it or replacing the whole player view.
+ Verify its visibility
+while the query is focused and Android's keyboard is present,
+ not only in
+keyboard-closed screenshots;
+ "never" includes typing.
  D47's separate-page
 interaction does not supersede this persistent control region.
 
