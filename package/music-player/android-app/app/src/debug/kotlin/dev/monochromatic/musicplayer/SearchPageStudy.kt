@@ -56,8 +56,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 // `statusBars` keeps the top bar below real status icons.
 import androidx.compose.foundation.layout.statusBars
-// `weight` lets the query own the remaining bar width.
-import androidx.compose.foundation.layout.weight
+// `RowScope` and `ColumnScope` expose weight within their layout lambdas.
 // `windowInsetsPadding` consumes only Android's measured navigation inset.
 import androidx.compose.foundation.layout.windowInsetsPadding
 // `windowInsetsTopHeight` reserves the actual status-bar height on each panel.
