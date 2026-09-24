@@ -523,13 +523,35 @@ compiled set) and the engine's own static reason;
 
 ## Output
 
-For each violation:
+For each content violation:
 
 ```text
 PATH:LINE rule=<token>
 ```
 
-- `LINE` is the 1-based line number.
+For each pathname violation:
+
+```text
+PATH:name:SEGMENT rule=<token>
+```
+
+- `LINE` is the 1-based content line number.
+- `SEGMENT` is the 1-based position of the directory name or filename within
+  the logical path. The root and navigation markers (`.`, `..`) are not names.
+  Each segment is matched separately, so a rule cannot match across a `/` boundary.
+  Pathname scanning is always on for every selected file, with no disable flag.
+  It can make previously clean paths fail with exit code 1.
+- An offending segment is replaced in full with `[REDACTED]` in every finding,
+  including content findings and read errors for the same file.
+  Other segments stay visible; no column range is reported.
+- The ordinary file-selection and exclusion rules still apply.
+  Repository files use repository-relative names.
+  Explicit external paths or standalone scans check all segments of the supplied pathname.
+- `--name-path PATH` pairs each positional content file with a logical name,
+  in argument order, for integrations reading a historical or staged file from a
+  private temporary location. This form cannot accompany `--all` and requires
+  one name per file. Its findings append `input=N` (0-based operand index) to
+  correlate a redacted path with its candidate without disclosing the name.
 - The rule token is the rule's **section name** for tail-format rules (and the
   betterleaks id for baseline rules),
    or the 0-based numeric engine id for unnamed
@@ -543,7 +565,8 @@ PATH:LINE rule=<token>
    not spans,
    so no
   `COL_START..COL_END` segment appears.
-- One finding is emitted per `(line, rule)` pair.
+- One content finding is emitted per `(line, rule)` pair; one name finding per
+  `(segment, rule)` pair.
 - **The matched substring,
    the line content,
    and the rule pattern are never printed.
