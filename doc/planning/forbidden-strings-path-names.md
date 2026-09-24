@@ -35,5 +35,29 @@ No match-span API is needed for the updated behavior.
 - `package/git-policy/forbidden-strings/src/materialize-candidates.ts` uses synthetic filenames.
 - `package/git-policy/forbidden-strings/src/scanner-output.ts` currently relays original candidate paths.
 
-Implement the scanner path-name contract, then the adapter and consumer verification.
-Keep unrelated worktree edits intact.
+## Implemented transport
+
+The cli-git materializer retains synthetic private `candidate-N` content files.
+For each file operand the adapter supplies one `--name-path` with its validated real repository-relative name.
+The scanner emits `PATH:name:SEGMENT rule=TOKEN input=N` for name hits and
+`PATH:LINE rule=TOKEN input=N` for content hits in this mode.
+The operand index preserves candidate identity when multiple names mask to the same display path.
+The parser compares every displayed segment against the indexed original name and
+rejects an unmasked offending segment without repeating scanner-supplied text.
+It emits the redacted path to the policy host rather than the original `CandidateFile.path`.
+
+Colons in unmasked segments are encoded as `\\x3a`,
+so filename text cannot impersonate a `:name:` marker.
+Embedded CR/LF names fail closed rather than alter the engine's single-line anchor semantics.
+A link's selected name is preserved by lexical repository-relative path handling,
+not replaced by its resolved target name.
+
+Recreating real candidate directory trees under the temporary root was rejected:
+several historical states can share a path but differ in bytes,
+and physical path grammar would weaken the existing synthetic-file isolation.
+The scanner's paired logical-name option preserves both identities separately.
+
+## Verification still needed
+
+Run the rebuilt scanner, adapter, and host-policy boundary tests.
+Review the final outputs for token leakage and keep unrelated worktree edits intact.
