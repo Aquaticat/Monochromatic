@@ -10,13 +10,13 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { emptyTomlEdit, } from './empty-toml-edit.ts';
 import {
+  emptyTomlEdit,
+  parseTomlEdit,
+  tomlGetRaw,
   TomlPathNotFoundError,
   TomlSpliceUnavailableError,
-} from './errors.ts';
-import { parseTomlEdit, } from './parse-toml-edit.ts';
-import { tomlGetRaw, } from './toml-get-raw.ts';
+} from '@monochromatic-dev/module-toml-edit';
 
 await describe({
   name: tomlGetRaw.name,

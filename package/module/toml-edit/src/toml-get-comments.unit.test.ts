@@ -10,8 +10,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseTomlEdit, } from './parse-toml-edit.ts';
-import { tomlGetComments, } from './toml-get-comments.ts';
+import {
+  parseTomlEdit,
+  tomlGetComments,
+} from '@monochromatic-dev/module-toml-edit';
 
 await describe({
   name: tomlGetComments.name,

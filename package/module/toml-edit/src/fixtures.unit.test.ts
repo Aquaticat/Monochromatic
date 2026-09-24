@@ -24,7 +24,7 @@ import {
   parseTomlEdit,
   TomlEditError,
   tomlStringify,
-} from './index.ts';
+} from '@monochromatic-dev/module-toml-edit';
 
 /** Root directory for shared TOML edit fixture data. */
 const fixturesRootDir = fileURLToPath(

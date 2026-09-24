@@ -10,9 +10,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { TomlPathNotFoundError, } from './errors.ts';
-import { parseTomlEdit, } from './parse-toml-edit.ts';
-import { tomlGetNode, } from './toml-get-node.ts';
+import {
+  parseTomlEdit,
+  tomlGetNode,
+  TomlPathNotFoundError,
+} from '@monochromatic-dev/module-toml-edit';
 
 await describe({
   name: tomlGetNode.name,
