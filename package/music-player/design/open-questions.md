@@ -56,41 +56,36 @@ rounds (2026-09-17):
   chosen as the working baseline, not banned from exploration.
   K1's discouraging back
   navigation and K3's non-local sheet remain rejected.
-- **ACTIVE: baseline MD3 command-bar visual review, awaiting correction or I/G/R codes.**
-  The independent I/G/R axes remain in-app placement,
-  optional global invocation,
-  and the Ctrl+F search-surface relationship.
-  The first S/C draft conflated axes;
-  the second I/G/R scenes were rejected as visibly non-MD3;
-  neither is active.
-  The
-  current `questions/current.html` now embeds native Slint scenes based on baseline
-  divided Search (28dp docked outer,
-  56dp docked header and divider,
-  72dp
-  full-content header and divider,
-  square baseline list items),
-  Roboto and official
-  Material icons.
-  It includes a normalized spec-versus-native header comparison;
-  all
-  27 images are self-contained.
-  No user decision has been received from this redraw.
-  D25 reserves bindings but does not force separate surfaces.
-  Search target scope and result
-  ranking,
-  the in-app visible entry and exact binding,
-  and the D21 Settings row remain
-  open.
-  Native static frames do not prove keyboard behavior,
-  screen-reader semantics,
-  second-window focus restoration,
-  hotkey feasibility,
-  action execution or search
-  indexing.
+- **ACTIVE: separate search page, opened by a Search button (D47).**
+  The user
+  rejected every I/G/R candidate and directed a page instead of any command-bar
+  appearance.
+  The current `questions/current.html` is the rejected comparison and
+  must be replaced before another review;
+  do not ask for I/G/R codes.
+  Draw the
+  visible button in its player context,
+  then the destination as a page with query,
+  results,
+  Back,
+  no-results and unavailable/error states in both schemes.
+  Use the
+  local baseline M3 Search component evidence in `material-3-compliance.md` without
+  mixing in Expressive treatments.
+  Search targets,
+  result actions/ranking,
+  the
+  button's platform-specific position,
+  and page empty/error behavior need evidence;
+  D47 has not chosen them.
+  D21's global hotkey and Settings row belonged to the
+  superseded command bar and do not automatically move to Search.
+  D25 still reserves
+  Ctrl+F for future search and Ctrl+O for the picker,
+  pending the whole keyboard map.
   Cover-specific accessibility remains open;
-  D39/D40 settled only the
-  unfolded screen.
+  D39/D40 settled only the unfolded
+  screen.
 - **OPEN: keyboard map revision (section 6):**
   one revised IntelliJ-aligned map,
   including what ↑/↓ does after D43 removed the volume popover.
@@ -341,14 +336,11 @@ Open:
 
 - **Volume icon + vertical popover** — historical D20 treatment, superseded by D43.
    No in-app volume control remains; the ↑/↓ keyboard question remains open in section 6.
-- **Command bar** — existence and the configurable,
-  off-by-default global hotkey are
-  settled by D21.
-  Native surface prototypes and the separate search relationship
-  question are now active in section 0b;
-  search targets,
-  ranking and keyboard behavior
-  remain unbuilt.
+- **Command bar** — historical D21 decision superseded by D47's Search button and
+  separate page.
+  Do not carry the old global hotkey or Settings row onto Search
+  without a new decision;
+  see section 0b.
 - **Picker names not as a wall of chips** — settled by D31: wrapped plain-text names,
   with the current folder marked by primary color and a bottom-edge indicator.
 
@@ -478,7 +470,7 @@ of decisions.md.
    tag track number,
    filename fallback (D24).
 - **Command bar surface.**
-   Native design alternatives built and awaiting a verdict;
+   D47 supersedes it with a Search page;
    see section 0b.
 
 ---
@@ -506,9 +498,9 @@ of decisions.md.
    pk-e and pk-f are rejected rows-again patterns
   (review-notes 5d),
    not live candidates.
-- **Command bar surface** (D21) — hotkey settled,
-   native surface candidates now built;
-   see section 0b.
+- **Command bar surface** (D21) — superseded by D47;
+   the Search page is active in
+   section 0b.
 - **Keyboard map / IntelliJ alignment pass** (D25):
    see section 6;
    one revised map is the
@@ -617,10 +609,13 @@ The earlier recommendation was cover screen,
 Cover structure and unfolded-screen accessibility now have D41 to D45 and D39/D40
 respectively;
  D46
-sets a provisional cover picker baseline that still needs 200% and L3 evidence.
- The next
-recommended surface round is the command bar; the P4 evidence check can happen first
-without making it a prerequisite for unrelated design work.
+sets a provisional cover picker baseline with 200% and L3 captures;
+ TalkBack focus
+remains unmeasured.
+ The command-bar recommendation led to rejected I/G/R prototypes;
+ D47 replaces that
+surface with a Search button and page.
+ The page design is now active in section 0b.
  Reconsidering the picker
 remains a separate pre-1.x question, not a promise to replace it;
  the keyboard-map pass,
@@ -632,8 +627,8 @@ media notification,
 ### 11d. Light-theme surfaces remaining to be drawn
 D45 settles the cover's flat L3 surface with hairlines at both seams, and the P2 picker
 was captured in that scheme.
- P4, the provisional D46 choice, still needs its own L3
-captures.
+ P4, the provisional D46 choice, now has its own L3
+captures at 100% and 200% text.
  The error bar, undo toast, settings pane, context menu, first-run prompt and
 scan bar remain undrawn in light; do not credit the cover decision as evidence for them.
 
@@ -689,9 +684,8 @@ The user accepted the final strict-12dp adaptive review on 2026-09-08.
 question remains in this round.
 
 No absent control or future feature is part of this round.
- The command bar,
- cover
-screen,
+ The Search page (formerly the command-bar frontier),
+ cover screen,
  notification,
  custom display templating,
  and every other unbuilt item remain
