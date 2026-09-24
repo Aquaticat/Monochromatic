@@ -288,6 +288,17 @@ The materialization recheck completed on the shared revision with 59 killed,
 Its report is `/var/home/user/temp/agent/toml-mutation-materialization-recheck.json`.
 Parsed-string style tests killed every `emit-value-string.ts` mutant that compiled.
 Array-index bounds tests killed the actionable `document-materialize.ts` bounds mutants.
+Its remaining survivor changes only the `MISSING` symbol's description,
+ not sentinel identity or root API results;
+ source-subpath consumers can inspect that description.
+`value-materialize.ts` retains five survivors in null classification,
+ empty-path `updateDeep`,
+ and `Object.hasOwn` guards.
+Package constructors reject null and supply nonempty header/value paths;
+ direct source-subpath calls,
+ caller-composed states,
+ or prototype hooks could distinguish those mutations,
+ so they are not claimed universally equivalent.
 A new test now checks unchanged hexadecimal array siblings after another element is set,
  targeting the remaining `emit-value-node.ts` clean-node block mutant.
 The parser/build recheck completed with 111 killed,
