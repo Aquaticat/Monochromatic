@@ -4341,7 +4341,7 @@ scheme-to-scene mapping,
 focus restoration,
  no clipboard/external resources,
  and dark/light panel roles.
-An eleven-fault disposable-worktree mutation harness
+A fourteen-fault disposable-worktree mutation harness
 (`/home/user/temp/agent/verify-command-guards.mjs`) fails every fault with its intended
 diagnostic and restores to passing.
  Browser verification of the corrected form:
@@ -4466,8 +4466,10 @@ larger-text adaptation,
 not production or screen-reader claims.
 
 The rejected `questions/current.html` form has been replaced by a self-contained
-baseline MD3 I/G/R questionnaire (`dd194daf4`).
- It embeds 26 new native rasters
+baseline MD3 I/G/R questionnaire (`dd194daf4`),
+ refreshed with the 72px row
+captures and corrected scope prose in `096814d39`.
+ It embeds 26 native rasters
 and the exact header comparison as a 27th image,
  while preserving the independent
 I/G/R question structure,
