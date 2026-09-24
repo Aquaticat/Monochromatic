@@ -3,8 +3,13 @@
 ## Status
 
 Shared understanding confirmed 2026-09-23;
-implementation authorized.
-Track progress in `Planned sequence`.
+implementation done 2026-09-24 (see `Outcomes`).
+Waiting on the user:
+review and post the combined advisory draft (privately) and the combined issue draft,
+both in gitignored `doc/handover/*.local.md` files.
+Next action after posting:
+open PRs from the fork branches in `Outcomes` if the maintainer wants them,
+and follow `After upstream responds`.
 
 User constraints from confirmation:
 all security findings go into one combined private advisory draft,
@@ -201,3 +206,83 @@ confirmed by the user the same day.
 - Porting upstream's Vitest suite into `module-test` (Q7 V2):
    duplicates passing tests and drifts every release.
 - Committing embargoed repro publicly (Q8 C).
+- Associativity as an invariant (`deepmerge(a, b, c)` equals `deepmerge(deepmerge(a, b), c)`):
+   false under the documented n-ary rule;
+   `deepmerge(null, [x], [])` is `[]` while the pairwise nesting is `[x]`.
+- Fixing the type-level defects in fix branches:
+   they touch upstream's HKT design, so the issue draft asks for a direction first.
+
+## Outcomes
+
+Sidecar package `package/module/deepmerge-ts.fuzz` (README there lists every layer):
+
+- Model properties for all eight entry points,
+   invariant properties,
+   known-defect and accepted-behaviour tests,
+   helper unit tests,
+   about 60 hand-written `expectTypeOf` assertions,
+   and a generated type-level soundness corpus of 1000 cases
+   (600 widened literals, 400 `as const`),
+   each asserting that the runtime result fits the static result type.
+- Coverage-reachability baseline over the npm `dist`:
+   1676 of 1772 lines (95%) for `deepmerge-ts@8.0.2`,
+   up from 1569 when first frozen.
+- Unbounded campaign (`fuzz` task) in a 2 GiB / 2 CPU podman container;
+   the run started 2026-09-24 had passed 363 rounds of 10000 runs per property
+   with no counterexample at the time of writing.
+- `fork:build` builds a checkout with source maps;
+   `fuzz:coverage` with `DEEPMERGE_FUZZ_TARGET` reports per `src/*.ts` file.
+
+Fork <https://github.com/Aquaticat/deepmerge-ts>
+(local checkouts under `~/temp/agent/deepmerge-ts-fork` plus one worktree per branch;
+`upstream` push URL is `DISABLED`;
+cli-git auto-push sends commits to the fork,
+so embargoed work must never be committed there):
+
+- `fix/false-cycle-detection`:
+   cycle detection only counts an ancestor on the value's own path.
+   Upstream suite 288/288;
+   new guards fail without the fix;
+   against its build the sidecar's false-cycle known-defect test turns red and nothing else does.
+- `fix/into-first-value-typing`:
+   `deepmergeInto` and `deepmergeIntoFastUnsafe` type each merge by the first filtered value.
+   Upstream suite 293/293;
+   8 new guards fail without the fix;
+   the sidecar's two into known-defect tests turn red;
+   5000 runs of the into model properties with object leaves and `undefined` restored pass on the fix and fail on 8.0.2.
+
+Public runtime findings (in the issue draft):
+false cycle detection,
+`deepmergeInto` first-value typing (three symptoms),
+two intent questions (array holes, deeper single-input cycles passed through),
+and a docs request for the `maxDepth` fallback.
+Type-level findings (in the issue draft):
+index signatures absorbing known keys,
+union-typed mergeable values,
+optional-then-required records,
+custom `maxDepth` / `mergeRecords: false` / `filterValues: false` / `mergeArrays: false`,
+`deepmergeInto`'s `Target & Merged` intersection,
+`deepmergeIntoCustom` leaving the target type unchanged,
+`any` inputs,
+plus two sound imprecisions.
+
+Disclosure note:
+one advisory finding was described as a plain correctness bug in this document's first commit
+(pushed 2026-09-23, before its security impact was assessed);
+the advisory draft says so.
+
+## After upstream responds
+
+- When a fix ships in a release:
+   bump the catalog entry,
+   let the matching known-defect test fail,
+   delete it,
+   re-include its excluded generator region,
+   regenerate the type corpus,
+   and refreeze the coverage baseline.
+- When the advisory is published (or 90 days pass without response):
+   move the `*.local.*` embargo test into a committed known-defect test
+   and lift the depth caps on public cycle generators.
+- Rust unified-linter merge (Q13):
+   once the merge-crate vet lands,
+   export `src/json-case.ts` as a fixture file.
