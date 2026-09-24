@@ -91,7 +91,10 @@ look like a harness bug) is written up in `doc/troubleshooting/stryker-survivor-
    edit,
    and write,
    and are addressable as data by path.
-- A native `JSON.parse` fast-path handles clean (comment-free) regions for speed.
+- Every document parses structurally,
+   so clean and commented input keep the same number
+  spellings,
+   comment ownership and nesting limit.
 - Runs in every modern environment:
   zero runtime dependencies,
    no WebAssembly.
@@ -134,22 +137,28 @@ exported for callers that do not need the edit state.
 The `mise run //package/module/jsonc-edit.bench:bench` task compares parsing against
 microsoft `jsonc-parser` and `jsonc-eslint-parser`.
 On a representative run (300 entries,
- 3000 iterations):
+ 3000 iterations,
+ jsonc-edit parsing both inputs structurally):
 
-- Clean input,
-   where jsonc-edit takes the native `JSON.parse` fast-path:
-   jsonc-edit is
-  roughly four times faster than microsoft `jsonc-parser` and roughly twenty times faster
-  than `jsonc-eslint-parser`.
-- Commented input,
-   where jsonc-edit uses the structured parser:
-   jsonc-edit is competitive
-  with microsoft `jsonc-parser` and several times faster than `jsonc-eslint-parser`,
-   while
-  also retaining comments as queryable data the other two do not model.
+- Clean input:
+   jsonc-edit runs at roughly 2794 ops/s,
+  about level with microsoft `jsonc-parser` (2733 ops/s) and roughly six times faster than
+  `jsonc-eslint-parser` (479 ops/s).
+- Commented input:
+   jsonc-edit runs at roughly 3591 ops/s,
+  against microsoft `jsonc-parser` at 4193 ops/s and `jsonc-eslint-parser` at 876 ops/s,
+  while also retaining comments as queryable data the other two do not model.
 
-Numbers are machine-dependent;
- run the task to reproduce them locally.
+An earlier revision took a native `JSON.parse` shortcut for comment-free documents and
+measured roughly 11055 ops/s on clean input.
+That shortcut was removed because it dropped unedited number spellings (`1e0` emitted as
+`1`) and bypassed the 512-container nesting limit,
+   both of which the supported behavior
+requires.
+The roughly fourfold clean-input cost is the measured price of that correctness;
+ run the task
+to reproduce the numbers locally,
+ since they are machine-dependent.
 
 ## Comment model
 
@@ -159,7 +168,9 @@ A parsed JSONC value is a discriminated union covering string,
  null,
  array,
 record,
- and a `plainJson` fast-path leaf.
+ and a `plainJson` leaf that a caller may build from native JSON.
+The parser itself always produces structured nodes;
+the edit API normalizes a `plainJson` leaf before editing it.
 Every node may carry a `comment` of type `inline`,
  `block`,
  or `mixed`.
@@ -170,5 +181,8 @@ Duplicate keys are malformed input:
  the behavior is undefined and not a supported
 contract.
  Correctly handling malformed JSON or JSONC is not a design goal,
- so the
-structured parser and the `JSON.parse` fast-path may treat duplicate keys differently.
+ so which member a read,
+ edit or delete resolves to when a key repeats is unspecified.
+Every document takes the same structured parse path,
+ so clean and commented input cannot
+diverge.

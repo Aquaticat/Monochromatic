@@ -140,6 +140,18 @@ await describe({
             expect(scanLineComment({ source: '// hi', index: 0, },),).toEqual({ text: ' hi', end: 5, },);
           },
         },),
+        it({
+          name: 'ends a line comment at a bare carriage return',
+          fn: async () => {
+            expect(scanLineComment({ source: '// hi\r"b":2', index: 0, },),).toEqual({ text: ' hi', end: 5, },);
+          },
+        },),
+        it({
+          name: 'ends a line comment at the carriage return of a CRLF pair',
+          fn: async () => {
+            expect(scanLineComment({ source: '// hi\r\nx', index: 0, },),).toEqual({ text: ' hi', end: 5, },);
+          },
+        },),
       ],
     },),
     describe({

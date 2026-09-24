@@ -1,6 +1,7 @@
 /**
- Tests for the JSONC parser: the fast-path, comment attachment to keys and
- values, merged stacked comments, trailing-comma tolerance, and error cases.
+ Tests for the JSONC parser: structured parsing of clean and commented input,
+ comment attachment to keys and values, merged stacked comments, trailing-comma
+ tolerance, separators that follow trivia on a later line, and error cases.
  
  @module
  */
@@ -17,6 +18,7 @@ import {
   jsoncGetComment,
   jsoncGetKeyComment,
   jsoncGetValue,
+  jsoncStringify,
   parseJsonc,
   parseJsoncEdit,
 } from '../dist/final/neutral/index.mjs';
@@ -27,25 +29,125 @@ const nestArrays = (depth: number,): string => `${'['.repeat(depth,)}${']'.repea
 
 const nestObjects = (depth: number,): string => `${'{"a":'.repeat(depth,)}1${'}'.repeat(depth,)} // x`;
 
+/**
+ Builds a comment-free nested array document, so the depth limit is exercised on
+ input that a native-JSON shortcut would also accept.
+ 
+ @param depth - Number of nested containers.
+ 
+ @returns Clean JSON array source.
+ */
+const cleanNestArrays = (depth: number,): string => `${'['.repeat(depth,)}0${']'.repeat(depth,)}`;
+
 await describe({
   name: parseJsonc.name,
   children: [
     describe({
-      name: 'fast-path',
+      name: 'structured parsing',
       children: [
         it({
-          name: 'clean object parses to a plainJson leaf',
+          name: 'clean object parses to a structured record',
           fn: async () => {
             const result = parseJsonc({ source: asJsonc('{"a":1,"b":[1,2,3]}',), },);
-            expect(result.kind,).toBe('plainJson',);
-            if (result.kind === 'plainJson')
-              expect(result.json,).toEqual({ a: 1, b: [1, 2, 3,], },);
+            expect(result.kind,).toBe('record',);
+            if (result.kind === 'record') {
+              expect(result.entries.length,).toBe(2,);
+              expect(jsoncGetValue({ state: { root: result, }, path: ['b', 1,], },),).toBe(2,);
+            }
           },
         },),
         it({
-          name: 'clean array parses to a plainJson leaf',
+          name: 'clean array parses to a structured array',
           fn: async () => {
-            expect(parseJsonc({ source: asJsonc('[1,2,3]',), },).kind,).toBe('plainJson',);
+            expect(parseJsonc({ source: asJsonc('[1,2,3]',), },).kind,).toBe('array',);
+          },
+        },),
+        it({
+          name: 'an unedited number keeps its source spelling on output',
+          fn: async () => {
+            const state = parseJsoncEdit({ source: asJsonc('{"n":1e0,"m":1.500,"z":-0}',), },);
+            const text = jsoncStringify({ state, },);
+            expect(text.includes('1e0'),).toBe(true,);
+            expect(text.includes('1.500'),).toBe(true,);
+            expect(text.includes('-0'),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'a clean document is subject to the same nesting limit',
+          fn: async () => {
+            expect(parseJsonc({ source: asJsonc(cleanNestArrays(512,),), },).kind,).toBe('array',);
+            expect(() => {
+              parseJsonc({ source: asJsonc(cleanNestArrays(513,),), },);
+            },).toThrow('nesting too deep',);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'separator after trivia',
+      children: [
+        it({
+          name: 'accepts a comma on a later line in an array',
+          fn: async () => {
+            const result = parseJsonc({ source: asJsonc('[1\n,2,]',), },);
+            expect(result.kind,).toBe('array',);
+            if (result.kind === 'array')
+              expect(result.elements.length,).toBe(2,);
+          },
+        },),
+        it({
+          name: 'accepts a comma on a later line in an object',
+          fn: async () => {
+            const state = parseJsoncEdit({ source: asJsonc('{"a":1\n,"b":2}',), },);
+            expect(jsoncGetValue({ state, path: ['b',], },),).toBe(2,);
+          },
+        },),
+        it({
+          name: 'gives a comment before a later-line comma to the preceding value',
+          fn: async () => {
+            const state = parseJsoncEdit({ source: asJsonc('{"a":1\n/* why */,"b":2}',), },);
+            expect(jsoncGetComment({ state, path: ['a',], },),).toEqual({ type: 'block', text: ' why ', },);
+            expect(jsoncGetKeyComment({ state, path: ['b',], },),).toBe(COMMENT_ABSENT,);
+          },
+        },),
+        it({
+          name: 'gives a comment after a later-line comma to the following key',
+          fn: async () => {
+            const state = parseJsoncEdit({ source: asJsonc('{"a":1\n, //inline\n"b":2}',), },);
+            expect(jsoncGetKeyComment({ state, path: ['b',], },),).toEqual({ type: 'inline', text: 'inline', },);
+            expect(jsoncGetComment({ state, path: ['a',], },),).toBe(COMMENT_ABSENT,);
+          },
+        },),
+        it({
+          name: 'still rejects a value that follows without a separator',
+          fn: async () => {
+            expect(() => {
+              parseJsonc({ source: asJsonc('[1\n2]',), },);
+            },).toThrow('expected , or ] in array',);
+            expect(() => {
+              parseJsonc({ source: asJsonc('{"a":1\n"b":2}',), },);
+            },).toThrow('expected , or } in object',);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'line endings',
+      children: [
+        it({
+          name: 'a carriage return ends a line comment',
+          fn: async () => {
+            const state = parseJsoncEdit({ source: asJsonc('{"a":1,// x\r"b":2}',), },);
+            expect(jsoncGetComment({ state, path: ['a',], },),).toEqual({ type: 'inline', text: ' x', },);
+            expect(jsoncGetValue({ state, path: ['b',], },),).toBe(2,);
+          },
+        },),
+        it({
+          name: 'a CRLF pair leaves no carriage return in the comment body',
+          fn: async () => {
+            const state = parseJsoncEdit({ source: asJsonc('{"a":1,// x\r\n"b":2}',), },);
+            expect(jsoncGetComment({ state, path: ['a',], },),).toEqual({ type: 'inline', text: ' x', },);
+            expect(jsoncGetValue({ state, path: ['b',], },),).toBe(2,);
           },
         },),
       ],
@@ -240,9 +342,9 @@ await describe({
           },
         },),
         it({
-          name: 'a clean document takes the fast-path leaf',
+          name: 'a clean document parses structurally',
           fn: async () => {
-            expect(parseJsonc({ source: asJsonc('{"a":1}',), },).kind,).toBe('plainJson',);
+            expect(parseJsonc({ source: asJsonc('{"a":1}',), },).kind,).toBe('record',);
           },
         },),
         it({

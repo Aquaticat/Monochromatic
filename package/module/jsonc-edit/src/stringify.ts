@@ -133,16 +133,14 @@ function emitEntry({
     .comment;
   if ((valComment !== undefined) && isSingleLineComment(valComment,))
     return `${keyLead}${pad}${keyText}: ${valText}, ${trailingComment({ comment: valComment, },)}`;
-  /**
-   Leading lines for a multi-line value comment placed before the entry.
-   */
-  const valLead = (valComment === undefined)
-    ? ''
-    : leadingComment({
-      comment: valComment,
-      indent,
-    },);
-  return `${keyLead}${valLead}${pad}${keyText}: ${valText},`;
+  if (valComment === undefined)
+    return `${keyLead}${pad}${keyText}: ${valText},`;
+  // A multi-line value comment must follow the colon: emitted before the key it
+  // would reparse as that key's comment and silently change owner.
+  return `${keyLead}${pad}${keyText}:\n${leadingComment({
+    comment: valComment,
+    indent,
+  },)}${pad}${valText},`;
 }
 
 /**

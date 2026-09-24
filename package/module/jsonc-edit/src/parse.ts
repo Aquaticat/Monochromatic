@@ -174,12 +174,32 @@ function parseArray({
     );
     if (!trailing.commaSeen) {
       /**
-       Lookahead confirming only a close may follow when no comma was seen.
+       Lookahead past trivia: a comma may follow the element on a later line, and
+       only a comma or the close may appear here.
        */
       const peek = skipTrivia({
         source,
         index: cursor,
       },);
+      if (source[peek.end] === ',') {
+        /**
+         Element the trailing comments describe, if the array is not empty.
+         */
+        const last = elements.at(-1,);
+        /**
+         Comments that appeared before the later-line separator.
+         */
+        const beforeSeparator = peek.comments;
+        // Comments before a later-line comma belong to the element that precedes
+        // them, not to whatever follows the comma.
+        if ((last !== undefined) && (beforeSeparator.length > 0))
+          elements[elements.length - 1] = appendComments({
+            node: last,
+            comments: beforeSeparator,
+          },);
+        cursor = peek.end + 1;
+        continue;
+      }
       if (source[peek.end] !== ']')
         throw new JsoncParseError({
           message: 'expected , or ] in array',
@@ -270,12 +290,35 @@ function parseRecord({
     },);
     if (!entry.commaSeen) {
       /**
-       Lookahead confirming only a close may follow when no comma was seen.
+       Lookahead past trivia: a comma may follow the member on a later line, and
+       only a comma or the close may appear here.
        */
       const peek = skipTrivia({
         source,
         index: cursor,
       },);
+      if (source[peek.end] === ',') {
+        /**
+         Member the trailing comments describe, if the record is not empty.
+         */
+        const last = entries.at(-1,);
+        /**
+         Comments that appeared before the later-line separator.
+         */
+        const beforeSeparator = peek.comments;
+        // Comments before a later-line comma belong to the value that precedes
+        // them, not to the key that follows the comma.
+        if ((last !== undefined) && (beforeSeparator.length > 0))
+          entries[entries.length - 1] = {
+            key: last.key,
+            value: appendComments({
+              node: last.value,
+              comments: beforeSeparator,
+            },),
+          };
+        cursor = peek.end + 1;
+        continue;
+      }
       if (source[peek.end] !== '}')
         throw new JsoncParseError({
           message: 'expected , or } in object',
