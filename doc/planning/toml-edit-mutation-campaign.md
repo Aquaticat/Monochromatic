@@ -138,9 +138,13 @@ Most `emit-value.ts` survivors in the former AST-only functions cannot be killed
   one confirmed survivor,
   and 57 compile errors.
   The two live dotted-key and nested-depth mutations were killed.
-- A package-produced `TOMLTable` passed to the exposed `_emitContentNode` seam reaches the remaining invalid-node diagnostic.
-  Added a built-artifact test for its error class and exact message;
-  a final `emit-value.ts` mutation run is pending as process `proc_695c`.
+- A package-produced `TOMLTable` passed to the exposed `_emitContentNode` seam reaches the invalid-node diagnostic.
+  A built-artifact test now checks its error class and exact message.
+  The final `emit-value.ts` run reported 42 killed,
+  no survivors,
+  57 compile errors,
+  and no infrastructure errors;
+  the diagnostic mutant was killed.
 - Remaining `emit-document.ts` survivors were traced to construction invariants:
   `build-document.ts` creates parsed key-values and tables with clean origins,
   so `emit-document.ts` returns their original source before synthetic comment rendering.
@@ -158,9 +162,10 @@ Most `emit-value.ts` survivors in the former AST-only functions cannot be killed
   which `appendTrailing` handles identically to an omitted field.
   The two surviving loop-bound changes still stop when `text[-1]` is `undefined`;
   the forced-true entire loop condition times out and is not a survivor.
-- The deterministic coverage gate currently reports `emit-value.ts` falling from 191 to 133 covered lines
+- The deterministic coverage gate reported `emit-value.ts` falling from 191 to 133 covered lines
   after removing the unconsumed helper bodies.
-  Refreeze only after inspecting any further runtime edits and recording this intentional code removal.
+  The baseline was refrozen with `fuzz:coverage --write` after inspecting that change;
+  the surviving file now has 133 covered lines out of 218 code lines.
 - Additional tests now pin empty and header-only canonical output,
   multiple terminal newlines,
   multiline string contents,
@@ -174,10 +179,10 @@ Most `emit-value.ts` survivors in the former AST-only functions cannot be killed
 
 ## Next action
 
-Inspect the final invalid-node emitter mutation result,
- then refreeze and verify the coverage baseline for retired helper lines,
- add assertions or production fixes for any further live survivor,
- then rerun the affected mutation files and package/sidecar verification.
+Run the coverage gate in check mode and the package/sidecar suites after the final emitter tests.
+Keep the remaining `emit-document.ts` equivalent and out-of-domain survivors distinct from killed mutants.
+No full-runtime campaign was run,
+ so the completion claim is limited to the named files and documented branches.
 Commit only explicit paths in scope.
 The full runtime scan was not run:
  the initial dry run enumerated 2,675 mutants over 45 runtime files,
