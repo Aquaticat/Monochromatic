@@ -45,8 +45,19 @@ export function emitContentNode(
     return emitValueLeaf({ node, },);
   if (node.type
     === 'TOMLArray') {
-    return emitArray({
-      node,
+    /**
+     Per-element text so the assembler can join into inline or multi-line form.
+     */
+    const parts = node.elements
+      .map(function each(el,) {
+      return emitContentNode({
+        node: el,
+        options,
+        depth: depth + 1,
+      },);
+    },);
+    return assembleArrayParts({
+      parts,
       options,
       depth,
     },);
@@ -57,16 +68,6 @@ export function emitContentNode(
     depth,
   },);
 }
-
-/**
- Array node preserving the foreign provenance of {@link emitContentNode}'s input.
-
- @example
- ```ts
- const array: ParsedArrayNode = parsedArray;
- ```
- */
-type ParsedArrayNode = Parameters<typeof emitContentNode>[0]['node'] & AST.TOMLArray;
 
 /**
  Emit a primitive leaf (`string` / `integer` / `float` / `boolean` / date kinds).
@@ -88,45 +89,11 @@ function emitValueLeaf({ node, }: { readonly node: AST.TOMLValue; },): string {
 }
 
 /**
- Emit a `TOMLArray`, inline or multiline per `arrayInline*` options.
- 
- @returns Computed string.
- */
-function emitArray(
-  {
-    node,
-    options,
-    depth,
-  }: {
-    readonly node: ParsedArrayNode;
-    readonly options: CanonicalOptions;
-    readonly depth: number;
-  },
-): string {
-  /**
-   Per-element text so the assembler can join into inline or multi-line form.
-   */
-  const parts = node.elements
-    .map(function each(el,) {
-    return emitContentNode({
-      node: el,
-      options,
-      depth: depth + 1,
-    },);
-  },);
-  return assembleArrayParts({
-    parts,
-    options,
-    depth,
-  },);
-}
-
-/**
  Emit a `TOMLArray` with the element at `skipIndex` omitted.
  
  Used by {@link tomlDelete} on an array element: re-emits the parent array
  via canonical formatting, applying the same inline-vs-multiline
- thresholds as {@link emitArray}.
+ thresholds as {@link emitContentNode}.
  
  @returns Computed string.
  
@@ -209,7 +176,7 @@ export function emitArrayWithSkipPath(
     options,
     depth,
   }: {
-    readonly array: ParsedArrayNode;
+    readonly array: ForeignBorrowed<AST.TOMLArray>;
     readonly skipPath: readonly number[];
     readonly options: CanonicalOptions;
     readonly depth: number;
