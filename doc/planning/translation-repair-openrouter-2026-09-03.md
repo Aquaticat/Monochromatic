@@ -8082,6 +8082,89 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## yingying10 read, 2026-09-24, 07:40 UTC: SETTLED with "Yingying" in the [^2] title, class one hundred fourteen live, class one hundred fifteen found and built in a7b7f3934
+
+`yingying10` (entry `yingying`, frozen `f4d554838`, pid 2023934) was launched at 07:15 UTC 2026-09-24
+and SETTLED at 07:26 UTC,
+682 s,
+one attempt,
+307 seats,
+307 calls,
+0 retry rounds,
+about 0.06 USD by the meters
+(Bedrock 46.74 to 46.70, OpenRouter 92.89 to 92.87),
+Synthetic dry, Hyper wet.
+The time against yingying9's 185 s is Hyper's:
+Kimi-K3, minimax-m3, glm-5.3 and deepseek-v4.1-flash streamed there at 15 to 49 s each,
+where yingying9 ran with Hyper dry;
+no log gap exceeds 22 s.
+
+Class one hundred fourteen live:
+the [^2] definition reads "[Farewell. I miss you, Yingying.](https://leohearts.com/archives/farewell-yingying.html)".
+The translate stage excluded the archive's "Sakura" title from slice 3's slate
+(`translate incumbent excluded by deterministic source floor`);
+a replay of the frozen build's validator over the artifact's texts names the finding,
+"The link text for https://leohearts.com/archives/farewell-yingying.html names 樱樱",
+so the class one hundred fourteen floor did the refusing.
+The log did not say which floor it was,
+and the read could not tell without the replay;
+c958640fb now logs the refusing findings on that line at warn.
+In the repair lane three critics filed the declared-name claim
+(Kimi-K3 and gemma-4-26b as wrong-term, minimax-m3 as inconsistent rendering),
+the editor wrote "Yingying",
+and the introduced-defect probe heard 3 of 3 and found nothing this time,
+so both lanes carried the declared form and the floor refused nothing downstream.
+No `checker stage re-seated` line (class one hundred thirteen not exercised).
+
+Every yingying9 check holds:
+front matter equal,
+1 heading,
+2 markers,
+2 definitions,
+the References line kept,
+"May you still have",
+"the hardcore-video Bilibili account “Geek Lab”",
+no TA,
+no error finish,
+no double blank line,
+1 abstention line,
+Jev 7 of 7.
+
+Class one hundred fifteen, found on the slate rather than the page:
+gemma-4-e2b's candidate for slice 3, after its repair turn, was
+"[^2]: Farewell. I miss you, Yingying. (https://leohearts.com/archives/farewell-yingying.html)",
+the title as plain words and the destination bare after it,
+and every floor passed it:
+the destination floor reads a bare URL as an autolink, so `link-url` survived,
+and the class one hundred fourteen floor is silent where the rendering carries no link under the href.
+It drew gemma-4-e2b's own ballot twice at 0.5,
+the first round declined on indecision (1 against 0.5),
+and Mercury's disinterested ballot settled it for the linked candidate.
+A census over the corpus at the pin found 141 worded source links:
+119 kept under the same href by the archive,
+none unwrapped,
+22 dropped outright (the destination floor's case).
+Built in a7b7f3934 (guard red first 5db1cc723, `unwrapped-link.unit.test.ts`):
+`unwrappedLinkFindings` (`translate-unwrapped-link.ts`) joins the source-carry floors before the declared-link-name floor.
+Where the original carries more worded links under an href than the rendering does
+while the rendering still carries the href,
+the link was unwrapped;
+a worded link is `[words](href)` whose words are neither empty nor the href itself.
+Lint 0/0,
+types clean,
+full suite `suite-class115.log` 1118 PASS, no FAIL.
+Replayed over the real slice 3:
+the unwrapped candidate refused,
+every other text keeping its verdict.
+
+`zheermao10` was launched at 07:36 UTC on `.frozen-dist-a7b7f3934` (pid 2400843)
+and killed 28 calls in under always-kill-and-relaunch once c958640fb landed,
+the meters unmoved.
+
+`zheermao11` launched at 07:40 UTC on `.frozen-dist-c958640fb` (pid 2456306),
+meters 46.70 USD Bedrock and 92.87 OpenRouter,
+Synthetic dry, Hyper wet.
+
 ## yingying9 read, 2026-09-24, 07:15 UTC: SETTLED with the [^2] title in the archive's "Sakura", class one hundred fourteen found and built in 645ed9d62
 
 `yingying9` (entry `yingying`, frozen `6dec56b0b`, pid 1811157) was launched at 06:48 UTC 2026-09-24

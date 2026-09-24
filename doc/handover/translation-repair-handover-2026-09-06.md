@@ -4766,20 +4766,26 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  YINGYING10 RUNS (entry `yingying`,
-    frozen `f4d554838`,
-    pid 2023934,
-    launched 07:15 UTC 2026-09-24,
-    waiter wait-y10 (background bash),
-    meters 46.74 USD Bedrock and 92.89 OpenRouter at launch, Synthetic dry, Hyper wet;
+1.  ZHEERMAO11 RUNS (entry `zheermao101`,
+    frozen `c958640fb`,
+    pid 2456306,
+    launched 07:40 UTC 2026-09-24,
+    waiter wait-z11 (background bash),
+    meters 46.70 USD Bedrock and 92.87 OpenRouter at launch, Synthetic dry, Hyper wet;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    the first run on class one hundred fourteen;
-    read the [^2] definition first ("Farewell. I miss you, Yingying.") and count the declared-link-name refusals (the finding text opens "The link text for"),
-    then every check of `yingying9`
-    (1 heading, 2 markers, 2 definitions, front matter equal, References line kept, "May you still have", "Geek Lab" with the hardcore video, no TA, no error finish, no double blank line),
-    and any `checker stage re-seated` line (class one hundred thirteen, not yet exercised);
-    then `zheermao101`, `CuspariaKLSY`, `shi_Yumiaoya`, `hulicaijia`, `XingZ60` and `mikaela_khara` on the same build if each reads clean;
-    record each under a new heading above "## yingying9 read, 2026-09-24" in the pass log.
+    the first rotation entry on classes one hundred fourteen and fifteen;
+    read every zheermao9 check (2 headings, front matter equal, both labels as the archive, the reply label, no TA, no error finish, no double blank line),
+    any `translate incumbent excluded by deterministic source floor:` line (it now names the refusing findings),
+    any unwrapped-link refusal ("links words to") and any `checker stage re-seated` line;
+    then `CuspariaKLSY`, `shi_Yumiaoya`, `hulicaijia`, `XingZ60`, `mikaela_khara` and `yingying` on the same build if each reads clean;
+    record each under a new heading above "## yingying10 read, 2026-09-24" in the pass log.
+    YINGYING10 READ (frozen `f4d554838`): SETTLED 07:26 UTC 2026-09-24 in 682 s (Hyper wet, its latency), 307 seats, 307 calls, 0 retry rounds, about 0.06 USD by the meters;
+    class one hundred fourteen live (the [^2] title "Yingying", the archive's "Sakura" excluded from the slate by the floor, confirmed by replay), every yingying9 check holds;
+    class one hundred fifteen found on the slate: gemma-4-e2b's candidate unwrapped the title link into words and a bare URL and passed every floor.
+    CLASS ONE HUNDRED FIFTEEN BUILT (a7b7f3934, guard red first 5db1cc723, full suite `suite-class115.log` 1118 PASS, no FAIL, replayed over the real slice 3):
+    `unwrappedLinkFindings` (`translate-unwrapped-link.ts`) joins the source-carry floors; the corpus census found no archive unwrapping a worded source link (119 of 141 kept, 22 dropped).
+    EXCLUSION LOGGED (c958640fb, suite `suite-log115.log`): the translate stage logs the findings that keep the archive off the slate.
+    zheermao10 (a7b7f3934) killed 28 calls in under always-kill-and-relaunch.
     YINGYING9 READ (frozen `6dec56b0b`): SETTLED 06:52 UTC 2026-09-24 in 185 s, 304 seats, 241 calls, 10 retry rounds, about 0.05 USD by the meters;
     class one hundred thirteen not exercised (all four checker rounds 2 of 3), every yingying8 check holds and "Geek Lab" now carries the hardcore video;
     but the [^2] title shipped the archive's "Sakura" for the declared "Yingying": two of three translate slate judges chose the archive's own text as "the archive's established rendering", and the repair lane's rewrite was reverted by the introduced-defect probe (class one hundred fourteen).
