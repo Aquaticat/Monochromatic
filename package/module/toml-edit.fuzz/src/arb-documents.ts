@@ -162,6 +162,21 @@ function standardTableBlockArbitrary({ owner, }: { readonly owner: string; },): 
  @returns Arbitrary block text ending in a newline.
  */
 function arrayOfTablesBlockArbitrary({ owner, }: { readonly owner: string; },): Arbitrary<string> {
+  /**
+   Render one instance for this array-of-tables owner.
+
+   @returns Arbitrary section text.
+
+   @example
+   ```ts
+   instance();
+   ```
+   */
+  function instance(): Arbitrary<string> {
+    return tableBodyArbitrary.map(function render(body,) {
+      return body.length === 0 ? `[[${owner}]]\n` : `[[${owner}]]\n${body}\n`;
+    },);
+  }
   return uniqueArray(
     keySegmentArbitrary,
     {
@@ -173,11 +188,7 @@ function arrayOfTablesBlockArbitrary({ owner, }: { readonly owner: string; },): 
     .chain(function instances(markers: readonly KeySegment[],) {
     return drawEach({
       items: markers,
-      make: function instance() {
-        return tableBodyArbitrary.map(function render(body,) {
-          return body.length === 0 ? `[[${owner}]]\n` : `[[${owner}]]\n${body}\n`;
-        },);
-      },
+      make: instance,
     },)
       .map(function join(blocks,) { return blocks.join('',); },);
   },);
@@ -201,10 +212,12 @@ type Block = {
 /**
  Build one decorated, category-tagged block for `owner`, choosing its kind
  uniformly.
- 
+
+ @param owner - Key used to name generated blocks.
+
  @returns Arbitrary block including its category and optional prefix decoration.
  */
-function blockArbitrary({ owner, }: { readonly owner: string; },): Arbitrary<Block> {
+function blockArbitrary(owner: string,): Arbitrary<Block> {
   return oneof(
     keyValueBlockArbitrary({ owner, },)
       .map(function tag(text,) {
@@ -263,7 +276,7 @@ export const documentArbitrary: Arbitrary<string> = uniqueArray(
   .chain(function build(owners: readonly string[],) {
   return drawEach({
     items: owners,
-    make: function block(owner,) { return blockArbitrary({ owner, },); },
+    make: blockArbitrary,
   },)
     .map(function join(blocks,) {
     /**

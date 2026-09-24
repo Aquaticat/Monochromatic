@@ -76,7 +76,10 @@ function canonicalNewlineOps(): void {
     path: ['x',],
     value: 1,
   },), },);
-  tomlStringify({ edit: parseTomlEdit({ source: 'x = 1', mode: 'canonical', },), },);
+  tomlStringify({ edit: parseTomlEdit({
+    source: 'x = 1',
+    mode: 'canonical',
+  },), },);
   tomlStringify({ edit: parseTomlEdit({
     source: 'x = 1\n',
     mode: 'canonical',
