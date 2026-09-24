@@ -131,26 +131,32 @@ rounds (2026-09-17):
   Cover-specific accessibility remains open;
   D39/D40 settled only the unfolded
   screen.
-- **OPEN: unfolded player pane gap under E2.**
-  The user corrected the
-  previous fixed 24dp:
-  use `max(min_padding, crease_width)`.
-  The user supplied **about 10mm** as the visible crease width,
-  equivalent
-  to roughly 147px or 60dp on this inner panel.
-  The AVD's zero-width hinge
-  sensor area is only an occlusion model,
-  not the visible dent.
-  The numeric
-  minimum for **pane separation** is not established by the existing 12dp
-  mode-button text padding rule;
-  the 10mm crease already sets a roughly
-  60dp floor for the gap.
-  Compare plausible minimums in native player context,
-  retain
-  D34/D41 color treatments,
-  and do not silently keep 414dp panes or the
-  old 24dp spacer.
+- **OPEN: player information clearance across the crease (E2).**
+  The user
+  corrected the fixed 24dp unpainted gap:
+  keep opposing **informational
+  material** apart by `max(min_padding, crease_width)` in physical units.
+  The
+  visible dent is about 10mm,
+  approximately 147 panel pixels at 2076px
+  unfolded width.
+  It is about 60dp **only at this AVD's present 390dpi**;
+  the
+  dp value changes with Android display scaling while 10mm does not.
+  The
+  zero-width emulator hinge-area sensor is an occlusion model,
+  not the
+  visible dent.
+  The numeric `min_padding` for this boundary remains open;
+  the 12dp mode-button text rule is unrelated.
+  Borders,
+  paddings,
+  input/row
+  surfaces and hit regions may cross.
+  Compare native player arrangements
+  with information clear of the dent,
+  preserve D34/D41 color treatments,
+  and do not silently retain fixed 414dp content panes or a blank 24dp stripe.
 - **OPEN: keyboard map revision (section 6):**
   one revised IntelliJ-aligned map,
   including what ↑/↓ does after D43 removed the volume popover.
