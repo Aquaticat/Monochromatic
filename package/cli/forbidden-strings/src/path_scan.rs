@@ -126,9 +126,12 @@ pub(crate) fn scan_path(path: &str, loaded: &LoadedRules) -> PathScan {
         }
     }
     let display = displayed.join("/");
-    let findings = matches.into_iter().flat_map(|(segment, rules)| {
-        return rules.into_iter().map(|rule| return format!("{}:name:{} rule={}", display, segment, rule));
-    }).collect();
+    let mut findings: Vec<String> = Vec::new();
+    for (segment, rules) in matches {
+        for rule in rules {
+            findings.push(format!("{}:name:{} rule={}", display, segment, rule));
+        }
+    }
     return PathScan { display, findings };
 }
 
