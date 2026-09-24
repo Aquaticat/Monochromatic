@@ -30,7 +30,7 @@ Requirements confirmed by the user on 2026-09-24 ("Do it."). Implementation is a
 - Q10: Publish the native Rust crate as part of this port, rather than keeping it private or only publication-ready.
 - Q11: Name the published crate `monochromatic-jsonc-edit`, not `jsonc-edit`.
 - Q12: Preserve support for escaped unpaired UTF-16 surrogates in Rust string values. Provide a representation that retains the code units and a fallible conversion to Rust `String` for values that cannot be expressed in UTF-8.
-- Q13: Cull foundations whose production parser or lexer uses regular expressions. The original TypeScript parser scans characters directly, and regex is unnecessary for this port. A test-only or dev-only regex dependency does not itself make a production parser regex-based; inspect actual dependency paths before clearing a candidate.
+- Q13: The user directed us to cull anything using regex early. Operational interpretation: reject regex-defined production parsers or lexers, including generated lexers and required production/build dependencies. Dev-only usage does not itself prove production regex use. This boundary is our screening interpretation, not a separate user endorsement.
 
 ## Working baseline
 
@@ -72,7 +72,16 @@ The delegated parser survey froze and ran its initial queries before source read
 - Web: `Rust JSONC lossless CST raw token UTF-16 unpaired surrogate crate` and `Rust JSON with comments lexer preserve raw escape JSONC parser alternative`.
 - In-repo taxonomy: `doc/decision/jsonc-edit-parser-foundation.md`, `package/module/jsonc-edit/src/`, and `doc/planning/monorepo-manager-route-research/rust-structured-edits.md`.
 
-Later taxonomy terms are recorded without scheduling recursive expansion. Discovery metadata is not a library recommendation. As an early hard gate, reject regex-backed production lexers: `edikt-jsonc` uses `logos` with `#[regex(...)]` token patterns ([`edikt-jsonc` 0.4.0 lexer](https://docs.rs/crate/edikt-jsonc/0.4.0/source/src/lexer.rs), lines 47 to 69) and is culled. `tokora`'s [JSON CST example](https://docs.rs/crate/tokora/0.11.0/source/examples/json_cst.rs) also uses `logos` with `#[regex(...)]` for its lexer; cull that example as a foundation. `json-five` lists `regex` only under dev-dependencies and has no regex use in its inspected runtime `src/`; this alone does not cull it. Source searches over `fjson`, `jsonc-parser`, `biome_json_parser`, `jwc`, `hifijson`, and `json-number` found no direct regex calls or macros; transitive production paths still require inspection before clearing them.
+Later taxonomy terms are recorded without scheduling recursive expansion.
+Discovery metadata is not a library recommendation.
+The early regex gate excludes `edikt-jsonc`: its [0.4.0 lexer](https://docs.rs/crate/edikt-jsonc/0.4.0/source/src/lexer.rs)
+uses `logos` with `#[regex(...)]` token patterns at lines 47 to 69.
+The [JSON CST example](https://docs.rs/crate/tokora/0.11.0/source/examples/json_cst.rs) for `tokora`
+also uses `logos` regex patterns and is excluded as an approach, not proof that the combinator library requires regex.
+`json-five` lists `regex` only under dev-dependencies and has no regex use in its inspected runtime `src/`;
+this alone does not cull it.
+Direct source searches of `fjson`, `jsonc-parser`, `biome_json_parser`, `jwc`, `hifijson`, and `json-number`
+found no regex calls or macros, but selected normal/build dependencies remain to be inspected before clearance.
 
 ## Next action
 
