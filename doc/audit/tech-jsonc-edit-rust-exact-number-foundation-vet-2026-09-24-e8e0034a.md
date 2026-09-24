@@ -144,7 +144,11 @@ Further source screening: `fpdec` 0.14.1, `~/temp/agent/fpdec-2026-09-24` at `b9
 
 ## Regex screening, 2026-09-24
 
-The user requested early regex culling. Our operational screening interprets this as production parsing or lexing and required normal/build dependencies, not upstream dev-only usage. The inspected direct source and manifest for `json-number` 0.4.10 at `~/temp/agent/json-number-2026-09-24` contains no `regex::`, `Regex::`, `#[regex]`, `logos`, or direct regex dependency; `src/lib.rs:117-195` validates number grammar with a state machine. Its required `lexical` dependency and other composed alternatives still need transitive production-path screening before claiming they are regex-free. The repository-owned token/normalization prototype uses direct scans; it remains an incomplete JavaScript proof, not Rust validation.
+The user requested early regex culling. Our operational screening interprets this as production parsing or lexing and required normal/build dependencies, not upstream dev-only usage. The inspected direct source and manifest for `json-number` 0.4.10 at `~/temp/agent/json-number-2026-09-24` contains no `regex::`, `Regex::`, `#[regex]`, `logos`, or direct regex dependency; `src/lib.rs:117-195` validates number grammar with a state machine. Its exact-version normal/build Cargo dependency graph contains no regex-named package, while full transitive source screening remains pending. The repository-owned token/normalization prototype uses direct scans; it remains an incomplete JavaScript proof, not Rust validation.
+
+### Resolved production dependency graph
+
+`~/temp/agent/jsonc-regex-audit/json-number/tree.txt` records `mise run audit:regex-deps`, using Cargo `tree --edges normal,build --target all --format {p}` for `json-number = "=0.4.10"`. Neither `lexical` nor its selected `lexical-core` family brought a package named `regex`, `logos`, `pest`, `regex-automata`, `regex-syntax`, `onig`, or `fancy-regex`. The same script's `edikt-jsonc` positive control found all of `logos`, `regex`, `regex-automata` and `regex-syntax`; an empty result is meaningful for package-name screening. Source-level checks of transitive production code remain open, and the graph does not establish numeric correctness.
 
 ## Pending evidence and validation
 
