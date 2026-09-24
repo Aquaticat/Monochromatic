@@ -638,6 +638,38 @@ The published single-file `src/lib.rs:3-68` exports JSONC-to-JSON normalization 
  Its inspected source has no direct regex call;
  no candidate code was executed.
 
+### Other registry JSONC consumers and normalizers
+
+`c4-config` 0.5.0 calls `jsonc_parser::parse_to_value` behind its JSONC feature,
+ then converts raw numbers to `i64`,
+ `u64` or `f64` and discards comments (`src/format/jsonc.rs:7-59`).
+ `formatforge` 1.0.5 exposes conversion through `serde_json::Value` and calls
+ `jsonc_parser::parse_to_serde_value` (`src/lib.rs:14-66`,
+ `src/formats/jsonc.rs:1-14`).
+ `lintel-validate` 0.0.12 likewise exposes JSONC schema validation through
+ `jsonc_parser::parse_to_serde_value` (`src/parsers/jsonc.rs:1-38`).
+ These wrappers introduce no distinct exposed comment-bearing parser foundation;
+ do not transfer the separately audited 0.33.2 `jsonc-parser` surrogate verdict to an unverified older dependency version.
+
+`jsonc-to-json` 0.1.1 exports a JSONC-to-JSON transformation and iterator
+ (`src/lib.rs:151,207,238`),
+ while `zpl_toolchain_jsonc_strip` 0.1.0 exports `strip_jsonc` (`src/lib.rs:13`).
+ Their public transformations remove the comment data required for an editor as-is;
+ independent re-tokenization would be a different composition.
+
+`hana_rubric` 0.1.0 parses domain-specific keymaps through
+ `serde_json_lenient::from_str::<WireDocument>` and a private source index
+ (`src/keymap/document.rs:1-97`),
+ not a public generic JSONC editor tree.
+ Its underlying `serde_json_lenient` 0.2.4 is a distinct component lead:
+ `src/de.rs:35-68,302-345` allows comments by default but consumes them as whitespace;
+ `:1684-1754` documents escaped lone-surrogate bytes through `deserialize_bytes`.
+ The default depth budget is 128;
+ the optional unbounded setting (`:202-236`) does not by itself establish safe 512-depth lifecycle.
+ Its custom byte-key/value visitor and raw-number composition remain pending,
+ not a proven as-is editor.
+ No candidate code was executed for these screens.
+
 ### `fjson` 0.3.1
 
 **Source correction:**
