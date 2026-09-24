@@ -1,0 +1,85 @@
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."format:oxlint"]
+extends = "format:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"
+
+[tasks."test:unit"]
+extends = "test:unit"
+
+# Unbounded by design (doc/handover/deepmerge-ts-hardening.md, Q4 and Q5):
+# rounds of every property file with a fresh seed, forever, until a
+# counterexample or Ctrl-C. Time is unbounded; memory and CPU are not
+# (AGENTS.md RXI and BOX), so the loop runs inside a capped podman container.
+# The repo is mounted read-only at its host path so pnpm's symlinks resolve,
+# with `label=disable` instead of `:Z` so SELinux never relabels the whole
+# checkout; only the failure directory is writable.
+[tasks.fuzz]
+description = "Unbounded fast-check campaign in a 2 GiB / 2 CPU podman container; stops at the first counterexample and writes its seed and path under dist/fuzz-failure/"
+usage = '''
+flag "--round-runs <runs>" help="fast-check runs per property per round (default 10000)"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync } = await import('node:fs')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const failureDir = join(packageRoot, 'dist', 'fuzz-failure')
+mkdirSync(failureDir, { recursive: true })
+const roundRuns = (process.env.usage_round_runs ?? '10000').trim()
+const nodeMajor = process.versions.node.split('.')[0]
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${failureDir}:${failureDir}:rw`,
+  '--workdir', packageRoot,
+  '--env', `DEEPMERGE_FUZZ_ROUND_RUNS=${roundRuns}`,
+  '--env', `DEEPMERGE_FUZZ_FAILURE_DIR=${failureDir}`,
+  `docker.io/library/node:${nodeMajor}-slim`,
+  'node', 'src/campaign.ts',
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`Fuzz campaign container exited with ${String(code)}; see ${failureDir}`)
+"""
+
+# Deterministic because the bounded layer uses a fixed seed: the gate reruns
+# the public unit files under NODE_V8_COVERAGE and projects V8 block coverage
+# onto the installed deepmerge-ts dist file. `*.local.*` files are excluded so
+# the committed baseline never depends on embargoed, machine-local tests.
+[tasks."fuzz:coverage"]
+description = "V8 line-coverage reachability gate over the installed deepmerge-ts dist; --write refreezes the baseline"
+usage = '''
+flag "--write" help="Refreeze the committed baseline from this run instead of checking against it"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { mkdtempSync, rmSync } = await import('node:fs')
+const { glob } = await import('node:fs/promises')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+const root = process.cwd()
+const mode = (process.env.usage_write === 'true') ? 'write' : 'check'
+const dir = mkdtempSync(join(tmpdir(), 'deepmerge-ts-cov-'))
+try {
+  const files = []
+  for await (const file of glob('src/**/*.unit.test.ts')) { if (!file.includes('.local.')) files.push(file) }
+  files.sort()
+  for (const file of files) {
+    execFileSync('node', [file], { stdio: 'inherit', env: { ...process.env, NODE_V8_COVERAGE: dir } })
+  }
+  execFileSync('node', [`${root}/src/coverage-report.ts`, mode, dir, `${root}/coverage-baseline.json`], { stdio: 'inherit' })
+} finally {
+  rmSync(dir, { recursive: true, force: true })
+}
+"""

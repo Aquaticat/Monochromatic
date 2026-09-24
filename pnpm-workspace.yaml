@@ -75,6 +75,8 @@ catalog:
   'css-tree': '>=3.2.1'
   'csstype': '>=3.2.3'
   'decircular': '>=1.0.0'
+  # deepmerge-ts.fuzz subject under test; not a runtime dependency anywhere.
+  'deepmerge-ts': '>=8.0.2'
   'dot-prop': '>=10.2.0'
   'electron': '>=43.4.1'
   'execa': '>=10.0.1'

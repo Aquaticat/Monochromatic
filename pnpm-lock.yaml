@@ -156,6 +156,9 @@ catalogs:
     decircular:
       specifier: '>=1.0.0'
       version: 1.0.0
+    deepmerge-ts:
+      specifier: '>=8.0.2'
+      version: 8.0.2
     dot-prop:
       specifier: '>=10.2.0'
       version: 10.2.0
@@ -2467,6 +2470,27 @@ importers:
       postcss:
         specifier: '>=8.5.26'
         version: 8.5.28
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/module/deepmerge-ts.fuzz:
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.2
+      deepmerge-ts:
+        specifier: 'catalog:'
+        version: 8.0.2
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -6358,6 +6382,10 @@ packages:
   decode-named-character-reference@1.3.0:
     resolution: {integrity: sha512-GtpQYB283KrPp6nRw50q3U9/VfOutZOe103qlN7BPP6Ad27xYnOIWv4lPzo8HCAL+mMZofJ9KEy30fq6MfaK6Q==, tarball: https://registry.npmjs.org/decode-named-character-reference/-/decode-named-character-reference-1.3.0.tgz}
 
+  deepmerge-ts@8.0.2:
+    resolution: {integrity: sha512-uqbvqLUMrc6p0MO+WBRtTxY55hmyh94WRwI5a++PZe54X+bfVh59FSN7uWCBCW1CCVjzjnrwzfI8zidE2obMMw==, tarball: https://registry.npmjs.org/deepmerge-ts/-/deepmerge-ts-8.0.2.tgz}
+    engines: {node: '>=16.9.0'}
+
   dequal@2.0.3:
     resolution: {integrity: sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==, tarball: https://registry.npmjs.org/dequal/-/dequal-2.0.3.tgz}
     engines: {node: '>=6'}
@@ -9477,6 +9505,8 @@ snapshots:
   decode-named-character-reference@1.3.0:
     dependencies:
       character-entities: 2.0.2
+
+  deepmerge-ts@8.0.2: {}
 
   dequal@2.0.3: {}
 
