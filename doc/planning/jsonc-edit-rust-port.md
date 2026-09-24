@@ -21,6 +21,8 @@ Design interview in progress. No implementation is authorized until the user con
 - Q6: Exact numeric values compare mathematically: `1`, `1.0`, and `1e0` compare equal. An unedited number retains its source spelling on output.
 - Q7: Each edit returns a new state; the previous state remains usable. Do not make in-place mutation the public editing contract.
 - Q8: Share supported-behavior fixtures across Rust and TypeScript, and fix confirmed unintended discrepancies in both during the port. The exact Rust number API is an explicit, tested exception to JavaScript-number parity.
+- Q9: Port supported behavior, not necessarily the TypeScript parser algorithm. Vetted Rust parser components are allowed only if they preserve the attached-comment and edit contract; no dependency is selected yet.
+- Q10: Publish the native Rust crate as part of this port, rather than keeping it private or only publication-ready.
 
 ## Working baseline
 
@@ -29,10 +31,10 @@ A port retains the documented identity of the TypeScript library: JSONC containe
 ## Open decisions
 
 - Exact public API surface, including low-level parse and emit capabilities, and whether internal artifact-test helpers remain public.
-- Whether the Rust hand-written parser itself must be ported or only its supported behavior must be reproduced with a vetted foundation.
-- Whether the Rust crate is private to this repository or prepared as a publishable crate.
-- Validation and release boundaries after the semantic contract is settled.
+- Public crate name, release version, license and registry publication path, after measuring available names and repository release precedent.
+- Native dependency foundation, subject to the repository's choosing-technology gates.
+- Validation and publication boundaries after the semantic contract is settled.
 
 ## Next action
 
-Continue the design-tree interview on parser ownership and distribution boundaries. Do not implement the crate before the user confirms the complete design.
+Measure release precedent and available registry names, then continue the design-tree interview on publication choices and any remaining behavior contract. Do not implement or publish the crate before the user confirms the complete design.
