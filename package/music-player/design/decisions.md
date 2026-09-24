@@ -1204,10 +1204,10 @@ representing P4 as the ideal solution.
 **Why.**
  P4 is the user's selected working variant from the P1 to P4 native comparison.
 The form's P4 evidence covers dark at 100% text;
- P4 at 200% and in the accepted L3
-light scheme were not captured (those captures depict P2).
- Verify the selected variant
-at those states before claiming the cover picker is validated there.
+ its dark 200%, L3 light 100%, and L3
+light 200% states were not captured (the available 200% and light captures depict P2).
+Check the selected variant in those states before claiming corresponding visual coverage;
+validate focus and return behavior through native interaction, not screenshots alone.
  The comparison's
 recommendation was P2;
  the user's P4 selection takes precedence.
