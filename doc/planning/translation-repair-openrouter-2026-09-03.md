@@ -8082,6 +8082,58 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ6010 read, 2026-09-24, 23:35 UTC: SETTLED in 64.9 min; class one hundred twenty
+
+XingZ6010 ran on frozen `d73cb46b9`
+(launched 22:30 UTC, `TALLY XingZ60 status=SETTLED slices=120`, 3,895,578 ms),
+one attempt, 6,870 calls
+(Bedrock 2,633, OpenRouter 4,086, Synthetic 151 once the owner's weekly reset reached the running pass),
+Bedrock 44.92 to 42.43 and OpenRouter 90.45 to 86.67 USD by the meters;
+Hyper read dry throughout.
+
+Every XingZ631 check holds:
+14 headings,
+2 links,
+9 definitions,
+3 TextRing,
+11 details,
+front matter byte-equal to the archive's,
+no TA,
+no error finish,
+no double blank line,
+the DottedNumber series II to VII in Roman numerals
+(`jsx-attribute-restored` turned slice 34's n="五" into V),
+Jinxin glossed once ("### Jinxin (Brocade Heart)", bare on the signature),
+footnote 6 carrying "Zero-Layer Prayer".
+Terminals: 22 slate-endorsed, 30 slate-declined, 33 gate-kept, 22 consolidated, 6 unjudged;
+two unendorsed (56, 73);
+162 abstention lines.
+The placeholder "**Come back later!**" kept.
+
+Class one hundred twenty:
+the page shipped `<h3 align = "Nonuple Reality">Zero-Layer Prayer</h3>`,
+a broken heading attribute where every earlier run had `align = "center"`.
+The log names it:
+`title-reference-unified (slice 98: "center" to "Nonuple Reality"; 「九重现实」 rendered by the heading of slice 95 as "Nonuple Reality")`.
+Slice 98 carries both the first song credit (《九重现实》) and the next heading's tag;
+the bench rendered the credit's title bare ("—— Yuli 【妄想症Paranoia】 Nonuple Reality"),
+so the only quoted span left in the slice was the tag's attribute value.
+The class one hundred skip for attribute values (`0f685f551`) read only the character before the quote,
+and this tag writes a blank on each side of its equals sign,
+so the value read as prose and took the title.
+Guard red first `c303b0287`
+(`title-reference-unify.unit.test.ts`, "LEAVES a tag attribute spaced around its equals sign where the credit renders the title bare"),
+fixed in `9ec838a01`
+(`title-reference-marks.ts`: `offsetPastBlanks` and `opensAttributeValue` read back past spaces and tabs to the equals sign),
+lint 0/0, types clean,
+replayed over the XingZ6010 artifact:
+slice 98 now reads `title-reference-unplaced` and the attribute stands.
+
+Observations, not classes:
+the second credit keeps the source's bilingual album label 【妄想症Paranoia】 with its Han
+(XingZ631 had it too; the source writes the label that way);
+the ninth section's summary line opens with the handle 空白 in Han, as the source's summary does.
+
 ## shi_Yumiaoya22 read, 2026-09-24, 22:29 UTC: SETTLED in 31.9 min, class one hundred nineteen live on the page; no class
 
 shi_Yumiaoya22 ran on frozen `d73cb46b9`
