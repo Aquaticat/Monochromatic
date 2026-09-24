@@ -1,7 +1,9 @@
 # Candidate teaching-skill decision outline
 
-Status: planning-only process sketch, not `SKILL.md`, a confirmed requirement,
-or permission to implement the final skill.
+Status: planning-only process sketch, not `SKILL.md` or permission to implement the final skill.
+Its overall sequence and invocation remain proposed; confirmed presentation requirements,
+the refusal to require a learner study, and the current lesson's manual fixture remain settled.
+Every applicable branch obligation **and** its local completion criterion must hold.
 Its examples and falsifiers live in [the working acceptance checks](teaching-skill-acceptance.md),
 [the cross-domain probe](teaching-skill-transfer-probe.md),
 and [the learner-result research note](teaching-skill-research-feedback.md).
@@ -23,7 +25,8 @@ The trigger and its tradeoff remain a planning hypothesis, not a package decisio
   The same standards can inform each mode, but the requested verb controls the action.
   A review reports evidence and recommendations; it does not silently rewrite the lesson.
 - For live teaching or authoring, establish what the user actually requested before
-  building a new artifact or changing an existing one.
+  building a new artifact or changing an existing one. A live turn within an authored
+  lesson does not silently opt out of the user's confirmed HTML default or print parity.
 - **Completion criterion:** the mode, deliverable, and mutation authority are explicit;
   no review has been treated as an implementation request.
 
@@ -37,10 +40,11 @@ The trigger and its tradeoff remain a planning hypothesis, not a package decisio
   audience, or explanatory goal. A demonstration-only fixture belongs to the teacher;
   an actual integration contract belongs to the requested real task.
   Research discoverable contract facts instead of asking a novice to specify them.
-- Before asking, name the unresolved decision and how the answer changes the next step.
-  Researching first does not redeem an open-ended “what failure did I miss?” question.
+- Before asking, name a goal-critical unresolved decision and show the concrete paths
+  selected by its possible answers. Researching first does not redeem an open-ended
+  “what failure did I miss?” question or a teacher-owned fixture choice.
 - **Completion criterion:** the target and capabilities select the next teachable action;
-  each unanswered question changes that action and cannot be settled by available evidence.
+  every question names a goal-critical fork that evidence cannot settle for the user.
 
 The “rotated chicken” request tests target ambiguity.
 The rejected AI-service setup question tests fixture ownership.
@@ -58,9 +62,10 @@ research before asking the user to diagnose a defect.
   This is not a demand for a failure experience before every fact.
 - Keep an operation separate from its representation and from a fixture policy.
   Verify source-backed claims when analogies, runtime ordering, or external tools matter.
-- **Completion criterion:** prerequisites appear before use and the next concept has
-  a grounded purpose. The learner can trace who registers, starts, observes, and handles
-  the relevant operation, rather than merely recognizing developer vocabulary.
+- **Completion criterion:** prerequisites appear before use. If this path needs a
+  predecessor, its concrete limit is visible **before** the new abstraction or table.
+  The learner can explain how they register a handler, start work, observe its result,
+  and handle it where those are developer-owned actions, not merely repeat those words.
 
 The apples-to-multiplication progression and callback-to-Promise comparison test the
 abstraction branch. Listener registration tests the developer-role branch.
@@ -73,12 +78,15 @@ The manual resolver ticket tests the operation-versus-observation boundary.
   actual availability or open an in-person map when that is the promised route.
   A genuine link alone does not prove usable access.
   Do not fill missing dish, location, equipment, or safety facts with guesses.
-- Choose a subject-appropriate demonstration and check its semantic contract
-  independently of its labels. Controls must perform their advertised native action;
+- Carry forward applicable user requirements and accepted decisions before choosing
+  the demonstration contract. Verify its semantics independently of its labels;
+  a self-consistent replacement is not parity with the requested operation.
+  Controls must perform their advertised native action;
   an event record must update at the event it claims to represent.
-- **Completion criterion:** the learner can attempt the next step with available resources;
-  the promised access action and underlying demonstration effect are verified,
-  or consequential uncertainty is explicitly resolved.
+- **Completion criterion:** consequential uncertainty is resolved before the action;
+  the learner can then attempt the next step with available resources **and**
+  the promised access action, safety check, and underlying effect are verified
+  wherever each applies.
 
 The quoted salt, oven, and grocery instructions test actionability;
 the Promise Send, Stop, and delayed belt cases test operation and event boundaries.
@@ -86,11 +94,14 @@ A receipt label alone does not prove native resolver calls or correct observer t
 
 ## Decide what the learner performs independently
 
-- Choose a task requiring the learner to construct, adapt, or explain a relevant result.
-  Provide taught prerequisites, then withdraw supplied answers or scaffolding where the
-  destination requires independent work. Keep the worked comparison accessible afterward.
-- **Completion criterion:** a learner-owned attempt and explanation are possible without
-  merely copying a supplied solution; providing that opportunity does not claim it occurred.
+- Choose a task requiring the learner to construct or adapt a result that exercises the
+  destination's consequential responsibilities, and explain the choices involved.
+  Separate intermediate practice from an independent attempt at the destination.
+  Provide taught prerequisites, then withdraw supplied answers or scaffolding;
+  keep the worked comparison accessible afterward.
+- **Completion criterion:** the lesson offers a learner-owned attempt and explanation
+  of the destination capability, not just a cosmetic edit or a supplied solution.
+  Offering that opportunity does not claim the learner performed it.
 
 ## Decide how the learner checks their own result
 
@@ -119,10 +130,11 @@ hint, and diagnostic support, plus distinct underlying operations behind the sam
   neither medium justifies stripping depth from the other.
   For a live exchange, establish the next learner action in the requested channel;
   do not use that mode to waive an authored artifact the user requested.
-- **Completion criterion:** every promised presentation preserves the necessary code,
-  examples, explanations, state order, and current-versus-example labeling.
-  Verify browser behavior, printed content, print restoration, and continued interaction
-  where applicable; text presence alone is not semantic parity.
+- **Completion criterion:** every promised presentation preserves necessary code,
+  examples, explanations, and current-versus-example labels.
+  Where a printout claims to reproduce an event record, preserve each event's identity,
+  multiplicity, and order. Verify browser behavior, printed content, print restoration,
+  and continued interaction where applicable; text presence alone is not parity.
 
 Code highlighting belongs to code teaching when useful, not every recipe.
 A printed Promise lab needs source, trace, and explanation even though its controls cannot run.
@@ -136,12 +148,14 @@ A printed Promise lab needs source, trace, and explanation even though its contr
   from learner independence.
 - Report observed learner performance only if it occurred. A working reference,
   completed browser suite, or positive design reaction is not proof of learner mastery.
-- **Completion criterion:** every completion claim names its evidence layer and no
-  absent learner observation is turned into a study or approval gate.
+- **Completion criterion:** each claim has evidence sufficient for **that claim**;
+  naming browser tests cannot support learner mastery. An absent learner observation
+  is not turned into a study or approval gate.
 
 ## Design gate before a real skill
 
-Test this process sketch against the recorded counterexamples and near misses,
+Use [the static replay ledger](teaching-skill-outline-replay.md) to test applicable
+obligations and exit criteria against recorded counterexamples and near misses,
 including a precisely worded but wrong cooking procedure, the rejected API-specification
 question, a working Promise reference with an unhandled learner error,
 and a result display that hides an already-settled Promise.

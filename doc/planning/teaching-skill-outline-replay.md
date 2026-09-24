@@ -1,9 +1,10 @@
 # Teaching outline replay against recorded failures
 
-Status: planning-only test of [the decision outline](teaching-skill-decision-outline.md),
-not a finished skill or evidence that a learner has mastered a subject.
-The proposed criteria are in [the acceptance draft](teaching-skill-acceptance.md).
-This replay names a deciding branch and an observable false pass for each case.
+Status: static specification replay of [the decision outline](teaching-skill-decision-outline.md),
+not a demonstrated agent run, a finished skill, or evidence of learner mastery.
+The working criteria are in [the acceptance draft](teaching-skill-acceptance.md).
+Each verdict must fail an applicable branch obligation or its local exit test;
+merely naming a historical failure does not prove the outline would catch it.
 
 ## Review is not authorization to rewrite
 
@@ -45,6 +46,18 @@ This replay names a deciding branch and an observable false pass for each case.
 - **Legitimate countercase:** Teaching a basic fact need not manufacture a failure
   or march through a historical predecessor.
 
+## Developer vocabulary without a registration relationship
+
+- **Input:** A click lesson says “register a listener; the browser calls your function”
+  but never shows which button receives which event handler or the function supplied.
+- **Deciding branch:** Teach the causal model for the learner's developer role.
+- **Required evidence:** The learner can connect the chosen element,
+  `addEventListener("click", handler)`, and the handler's code to the observed result;
+  “register” is not merely vocabulary placed before a click animation.
+- **Verdict:** Correct terms without a developer-owned relationship fail the role criterion.
+- **Legitimate countercase:** Teaching an ordinary browser user how to use a button
+  need not teach event-listener registration.
+
 ## Product architecture asked of a novice learning Promises
 
 - **Input:** The learner wants to build a browser AI chat as a destination;
@@ -55,7 +68,8 @@ This replay names a deciding branch and an observable false pass for each case.
 - **Required evidence:** The requested lesson is about Promises;
   an offline controllable reply fixture can demonstrate the behavior;
   the learner has not requested production integration or shown the knowledge to
-  specify an API contract. An open question must change the next teaching action.
+  specify an API contract. A question needs a goal-critical fork outside the teacher's
+  own demonstration choice, not merely an answer that changes a possible plan.
 - **Verdict:** The API-specification interview fails even if the eventual application
   might use a service.
 - **Legitimate countercase:** A request to teach or integrate a specified real API
@@ -68,8 +82,9 @@ This replay names a deciding branch and an observable false pass for each case.
   “What concrete failure did I miss?”
 - **Deciding branch:** Name the unresolved decision and how its answer changes
   the next step before asking the user.
-- **Required evidence:** A specific researched contrast leaves an unresolved
-  user-dependent preference, not a knowledge gap the agent could investigate.
+- **Required evidence:** A specific researched contrast names an unresolved
+  user-dependent decision and shows what the plausible answers would change;
+  this is not a knowledge gap the agent could investigate.
 - **Verdict:** Generic background research does not make this question useful;
   the user is still being asked to invent the failure.
 - **Legitimate countercase:** A demonstrated fork depends on the learner's intended
@@ -77,30 +92,37 @@ This replay names a deciding branch and an observable false pass for each case.
 
 ## A plausible Promise belt with no native call
 
-- **Input:** A Resolve control logs “called; ignored” after a rejection,
-  but a mutant suppresses the native resolver invocation.
-  Another variant appends the current result at the next Create rather than observation.
+- **Input:** The accepted manual ticket uses `"Hello Ada"` and `Error("No reply")`,
+  keeps bundle and inner-Promise snapshots, and records an observed-outcome receipt
+  for the current Promise when the observer runs.
+  A mutant Resolve control logs “called; ignored” without calling its native function;
+  another variant delays the current receipt until Create. A self-consistent rewrite
+  silently substitutes a service result or drops the required snapshots.
 - **Deciding branches:** Establish the manual experiment's semantic contract,
   then check native action and event-time representation independently of the UI text.
-- **Required evidence:** The first call fixes the literal string or Error outcome;
-  every fresh resolving control actually calls its function;
-  no receipt appears before the observer, one appears when it reports without a later Create,
-  and ignored calls or Create never duplicate it. The last Promise also has a receipt.
+- **Required evidence:** The user's accepted contract survives the redesign:
+  manual fixture values, native resolving-function calls, and both core snapshots.
+  The first call fixes the literal string or Error outcome;
+  no receipt appears before the observer, one appears when it reports without another
+  Create, and ignored calls or Create never duplicate it. The last Promise has a receipt.
 - **Verdict:** Attractive logs, correct-looking labels, and a later record do not prove
   the promised native calls or temporal model.
 - **Legitimate countercase:** An explicitly captured historical snapshot may remain
-  frozen; it must not claim to be a live observation of the original Promise.
+  frozen. A clearly labeled archive of prior tickets may update on replacement
+  when its actual task is prior-ticket history, but cannot substitute for the accepted
+  current observed-outcome receipt in this lesson.
 
 ## Complete reference with no independent learner task
 
-- **Input:** A source-complete chat application works and explains its own behavior,
-  but the learner never constructs, adapts, or explains a result without supplied code.
+- **Input:** A source-complete chat application works and explains its behavior,
+  but the learner's only independent task changes `"Hello"` to `"Welcome"`.
 - **Deciding branch:** Choose a learner-owned attempt and withdraw enough scaffolding
   to test the destination capability, while retaining a comparison afterward.
-- **Required evidence:** A task asks the learner to make or explain a relevant change;
-  taught prerequisites and a way to inspect the result exist.
-- **Verdict:** Operationally perfect reference code still fails the opportunity criterion.
-  It also does not prove the learner performed that task.
+- **Required evidence:** The offered task reaches the destination's consequential
+  responsibilities: independently coordinate a send, handle a failure, and explain
+  the ownership and outcome decisions after taught prerequisites and scaffold removal.
+- **Verdict:** A cosmetic edit does not exercise building the specified chat app.
+  Operationally perfect reference code does not prove the learner performed that task.
 - **Legitimate countercase:** An answer to a short factual question need not add
   an artificial independent application-building project.
 
@@ -127,19 +149,32 @@ This replay names a deciding branch and an observable false pass for each case.
   reorders them, or leaves browser disclosures expanded after printing.
 - **Deciding branches:** Preserve both authored presentations and verify their transition.
 - **Required evidence:** The browser interaction still works, the print counterpart
-  preserves source and explanation with exact event order, and print or cancellation
-  restores the learner's open/closed choices for continued interaction.
+  preserves source and explanation with exact event identity, count, and order,
+  and print or cancellation restores the learner's disclosure choices.
 - **Verdict:** Text presence alone does not satisfy print completeness or state preservation.
 - **Legitimate countercase:** A user-selected quick Markdown answer without a browser
   interaction does not need an artificial PDF print controller.
+
+## Live exchange used to waive a requested lesson artifact
+
+- **Input:** The user requests a teachable, interactive, printable lesson while also
+  discussing the material in a live conversation. The agent classifies the current turn
+  as live tutoring and supplies only a text reply, dropping the requested artifact.
+- **Deciding branches:** Determine deliverable authority, then preserve each promised medium.
+- **Required evidence:** The confirmed HTML default and full print substance remain
+  in scope when an authored lesson is requested; a chat turn can establish goals
+  without silently cancelling that deliverable.
+- **Verdict:** Calling the request live tutoring is not an opt-out from the lesson.
+- **Legitimate countercase:** A short factual answer or an expressly requested
+  Markdown alternative does not require inventing a browser interaction.
 
 ## Positive design feedback mistaken for learner mastery
 
 - **Input:** The user says the corrected Promise lesson is great and browser tests pass.
 - **Deciding branch:** Separate artifact behavior, content review, design feedback,
   and observed learner performance when reporting the result.
-- **Required evidence:** Any claim of independent skill names a learner's actual
-  attempt and explanation, not an authored solution or the user's design approval.
+- **Required evidence:** A claim of independent skill is supported by the learner's
+  actual attempt and explanation, not by naming browser-test results as its evidence.
 - **Verdict:** “A novice can now build the app alone” fails without that evidence.
 - **Legitimate countercase:** The artifact can be shipped or revised without a new
   learner study; the user's settled veto is not an approval gate.
