@@ -77,11 +77,14 @@ rounds (2026-09-17):
   with header and row surfaces;
   its capture run was stopped under an
   overbroad reading of E2.
-  The user clarified that only **informational
-  material** such as text must avoid `[414,438)`dp.
+  The user clarified that only **informational material** such as text must
+  avoid the visible physical dent,
+  approximately x `[983,1093)` at this
+  2076px panel width.
   Surfaces,
-  dividers
-  and hit regions can cross while readable material stays clear.
+  dividers and hit regions may cross;
+  do not
+  preserve the superseded fixed `[414,438)`dp assumption.
   The second
   debug-only Compose study kept the whole region visually empty,
   but put the
