@@ -1490,7 +1490,7 @@ and the components no read page has met.
 The sections after this one are the 2026-09-09 and 2026-09-10 readings and stay as evidence.
 The current state is in the handover
 ([`translation-repair-handover-2026-09-06.md`](../handover/translation-repair-handover-2026-09-06.md),
-"2026-09-24, 04:30 UTC")
+"What to do next")
 and the pass log;
 this section is the readiness reading of it.
 
@@ -1498,16 +1498,16 @@ this section is the readiness reading of it.
   The rule of this document holds:
   a class found on a read page is fixed before the next launch,
   and a page is read before the next entry is launched.
-  Classes twenty-six to one hundred ten were found that way between 2026-09-16 and 2026-09-24,
-  one hundred ten in all,
+  Classes twenty-six to one hundred fourteen were found that way between 2026-09-16 and 2026-09-24,
+  one hundred fourteen in all,
   and the rate has not fallen to zero:
-  of the last twelve reads (2026-09-23 22:00 UTC to 2026-09-24 04:00 UTC),
-  seven found no class and five found one each
-  (one hundred one to one hundred three,
-  one hundred four and five together,
-  one hundred six to eight from owner answers,
-  one hundred nine,
-  one hundred ten).
+  of the last twelve reads (zheermao8 at 00:23 UTC to yingying9 at 06:52 UTC 2026-09-24),
+  four found no class and eight found one each
+  (one hundred eight to one hundred fourteen,
+  with the chain arm of one hundred eleven found on its own read).
+  The last six reads each found one,
+  five of them on `mikaela_khara`,
+  where the carried-insertion fold and the pairing met new shapes in a row.
 - What "ready" would rest on now:
   a rotation over every entry in the read set
   (`XingZ60`,
@@ -1533,7 +1533,7 @@ this section is the readiness reading of it.
   "We never ever need a all 92 entries launch";
   readiness is claimed on the read set and the classes it stopped finding.
 - Money is not the constraint:
-  Bedrock 47.86 USD and OpenRouter 94.68 USD at 04:18 UTC,
+  Bedrock 46.74 USD and OpenRouter 92.89 USD at 07:15 UTC,
   a full rotation of the read set about 16 USD on Bedrock and OpenRouter alone.
 
 

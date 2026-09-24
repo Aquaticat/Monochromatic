@@ -4766,19 +4766,27 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  YINGYING9 RUNS (entry `yingying`,
-    frozen `6dec56b0b`,
-    pid 1811157,
-    launched 06:48 UTC 2026-09-24,
-    waiter wait-y9 (background bash),
-    meters 46.78 USD Bedrock and 92.97 OpenRouter at launch, Synthetic dry since 05:47:59 UTC, Hyper dry;
+1.  YINGYING10 RUNS (entry `yingying`,
+    frozen `f4d554838`,
+    pid 2023934,
+    launched 07:15 UTC 2026-09-24,
+    waiter wait-y10 (background bash),
+    meters 46.74 USD Bedrock and 92.89 OpenRouter at launch, Synthetic dry, Hyper wet;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    the first run on class one hundred thirteen;
-    read for any `checker stage re-seated` line and refine rechecks hearing 2 of 3 after a dry-out (the class needs a hold that begins inside the repair lane; with Synthetic dry from the start it may not be exercised),
-    then every check of `yingying8`
-    (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, "Farewell. I miss you, Yingying.", "May you still have", no TA, no error finish, no double blank line);
-    then `zheermao101`, `CuspariaKLSY`, `shi_Yumiaoya`, `hulicaijia` and `XingZ60` on the same build if each reads clean;
-    record each under a new heading above "## mikaela16 read, 2026-09-24" in the pass log.
+    the first run on class one hundred fourteen;
+    read the [^2] definition first ("Farewell. I miss you, Yingying.") and count the declared-link-name refusals (the finding text opens "The link text for"),
+    then every check of `yingying9`
+    (1 heading, 2 markers, 2 definitions, front matter equal, References line kept, "May you still have", "Geek Lab" with the hardcore video, no TA, no error finish, no double blank line),
+    and any `checker stage re-seated` line (class one hundred thirteen, not yet exercised);
+    then `zheermao101`, `CuspariaKLSY`, `shi_Yumiaoya`, `hulicaijia`, `XingZ60` and `mikaela_khara` on the same build if each reads clean;
+    record each under a new heading above "## yingying9 read, 2026-09-24" in the pass log.
+    YINGYING9 READ (frozen `6dec56b0b`): SETTLED 06:52 UTC 2026-09-24 in 185 s, 304 seats, 241 calls, 10 retry rounds, about 0.05 USD by the meters;
+    class one hundred thirteen not exercised (all four checker rounds 2 of 3), every yingying8 check holds and "Geek Lab" now carries the hardcore video;
+    but the [^2] title shipped the archive's "Sakura" for the declared "Yingying": two of three translate slate judges chose the archive's own text as "the archive's established rendering", and the repair lane's rewrite was reverted by the introduced-defect probe (class one hundred fourteen).
+    CLASS ONE HUNDRED FOURTEEN BUILT (645ed9d62 and f4d554838, guard red first 98f24d35b, full suite `suite-class114b.log` 1117 PASS, no FAIL, replayed over the real slice 3):
+    `declaredLinkNameFindings` (`translate-declared-link-name.ts`) joins the source-carry floors: where the original's link text carries a declared source name, the rendering's link text under the same href must carry the declared form (name projection);
+    the pairs ride on the prepared document as `declaredNamePairs` into every validator call (translate incumbent, slate floor, repair turn, contest winner, standing verdict, lane offer, producers, polish).
+    Open, not built: the repair lane's introduced-defect probe still reads a declared-name correction as a defect; the floor refuses its reverted text downstream.
     MIKAELA16 READ (frozen `a43c5d88d`): SETTLED 05:58 UTC 2026-09-24 in 20.6 min, 2,483 seats, 2,051 calls, 0.74 USD by the meters;
     class one hundred twelve not exercised (the roster placed every block, section 2 merging sources 2 and 3 into target 2), the HRT passage on the page once, "That night, Spring, Mika, and I" as the archive;
     every mikaela11 check holds (the classmate line reads "a classmate of mine" so no possessive to curl);

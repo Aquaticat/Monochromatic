@@ -8082,6 +8082,98 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## yingying9 read, 2026-09-24, 07:15 UTC: SETTLED with the [^2] title in the archive's "Sakura", class one hundred fourteen found and built in 645ed9d62
+
+`yingying9` (entry `yingying`, frozen `6dec56b0b`, pid 1811157) was launched at 06:48 UTC 2026-09-24
+and SETTLED at 06:52 UTC,
+185 s,
+one attempt,
+304 seats,
+241 calls,
+10 retry rounds,
+about 0.05 USD by the meters
+(Bedrock 46.77 to 46.75, OpenRouter 92.96 to 92.93),
+Synthetic and Hyper dry.
+
+Class one hundred thirteen not exercised:
+no hold began inside the repair lane,
+no `checker stage re-seated` line,
+all four checker rounds heard 2 of 3.
+
+Every yingying8 check holds:
+front matter equal,
+1 heading,
+2 markers,
+2 definitions,
+the References line kept,
+no TA,
+no error finish,
+no double blank line,
+the farewell in the second person ("may you still have", class ninety-seven holding),
+1 abstention line,
+Jev 6 of 6.
+The yingying8 observation is gone:
+the Bilibili sentence carries "the hardcore video Bilibili account “Geek Lab”".
+
+Regression, class one hundred fourteen:
+the [^2] definition shipped "[Farewell. I miss you, Sakura.](https://leohearts.com/archives/farewell-yingying.html)"
+where yingying4 to 8 wrote "Yingying",
+the front matter's declared name.
+The class eighty-six glossary line was on every sheet
+("; names 樱樱, declared "Yingying": the declared form inside the title, the archive's words for the rest"),
+and the bench overruled it twice:
+
+- In the translate lane the archive's own text sat on the slate as candidate 1.
+  inception/mercury-2.5 and minimax-m3 (weight 1 each) chose it as "the archive's established rendering for this link text";
+  google.gemma-4-e2b (weight 0.5) chose the "Yingying" candidate as the declared name.
+- In the repair lane the claims of gemma-4-26b and deepseek-v4.1-flash were accepted (major),
+  the editor rewrote the title to "Yingying",
+  and the introduced-defect probe reverted the rewrite as
+  "The AFTER text changes the name from 'Sakura' to 'Yingying', while the ORIGINAL explicitly uses '樱樱'";
+  the log reads `chunk 3: unchanged, 0/1 served accepted issues resolved`.
+
+Both lanes then carried the archive's title,
+so slice 3 was never contested and shipped uncontested.
+
+A rule the judges read and overrule is a floor,
+the step classes eighty and ninety-seven took.
+Built in 645ed9d62 (guard red first 98f24d35b, `declared-link-name.unit.test.ts`):
+`declaredLinkNameFindings` (`translate-declared-link-name.ts`) joins the source-carry floors after the Han-title floor.
+Where the original's link text carries a name the front matter declares,
+the rendering's link text under the same href must carry the declared form,
+compared on the declared-name survival guard's letters-and-digits projection;
+silent without declared pairs,
+where the link names nobody declared,
+and where the rendering carries no link under that href.
+The pairs (`declaredNamePairs`, class eighty-six) now ride on the prepared document as `declaredNamePairs`
+and reach every validator call:
+the translate stage's incumbent check,
+the slate floor and the writers' repair turn,
+the lane contest's winner,
+the consolidation's standing verdict,
+its lane offer,
+its producers' proposals
+and the polish.
+`consolidate-driver-records.ts` was split out of `consolidate-driver.ts` for the line budget.
+Lint 0/0,
+types clean,
+full suite `suite-class114b.log` 1117 PASS, no FAIL (`suite-class114.log` had two red cases in `translate-slice-input.unit.test.ts`, which expected the stage input to omit `declared` when the page declares nothing, and f4d554838 omits it rather than sending an empty list).
+Replayed over the real slice 3:
+the archive,
+the repair text,
+the translate text
+and slate candidate 1 refused,
+slate candidate 2 ("Farewell. I miss you, Yingying.") valid.
+
+Open, not built:
+the repair lane's introduced-defect probe still reads a declared-name correction as an introduced defect;
+the floor now refuses the probe's reverted text at the contest,
+so the probe's call no longer reaches the page.
+
+`yingying10` launched at 07:15 UTC on `.frozen-dist-f4d554838` (pid 2023934),
+meters 46.74 USD Bedrock and 92.89 OpenRouter,
+Synthetic dry, Hyper wet.
+
 ## mikaela16 read, 2026-09-24, 06:50 UTC: SETTLED with the HRT passage once, class one hundred twelve not exercised, class one hundred thirteen found and built in 375a9b3e8; yingying9 launched
 
 `mikaela16` (entry `mikaela_khara`, frozen `a43c5d88d`, pid 1173176) was launched at 05:37 UTC 2026-09-24
