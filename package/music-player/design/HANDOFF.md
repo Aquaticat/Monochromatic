@@ -4435,25 +4435,84 @@ The first redraw (`c5b3fa31f`,
  rendered via `b1caaa373`) used these assets but
 mixed Expressive contained Search and expressive selected-list corners with A2;
 it is also **not** a presentation candidate.
- Next design-only steps:
- redraw the
-I/G/R prototypes around baseline divided Search anatomy and baseline list states,
- render both
-schemes and 360/480/wide sizes,
- compare at the same logical scale with the local
-archive,
- then replace the rejected `questions/current.html` form and rerun native,
-browser,
- and mutation verification.
- Keep the independent decisions separate and
-explicitly label every desktop adaptation.
- Update `candidates.md`,
-`open-questions.md`,
- and this handover as corrections land.
- Present in Helium
-without KWin automation;
- no response codes should be requested until corrected
-visuals are ready.
+ The baseline redraw in prototype commits `0e9624dd2` and `7adafa092` now follows
+the divided Search anatomy;
+ its render task at `b1caaa373` produced the 26 opaque
+`questions/render/command-md3-{i,g,r,e}*` scenes committed in main at `f48e533f7`.
+A normalized 56px docked-header comparison with the baseline spec is stored at
+`questions/evidence/command-md3-baseline-header-comparison.png` (`0efdb4e17`).
+Native I1 pixel checks at 480 × 600px:
+ high-container header `#1E1F26` dark /
+`#E7E7F1` light,
+ 1px outline divider `#73757F` / `#797A84`,
+ and the custom
+keyboard-focus outline `#BAC5EE` / `#4E5E8B`.
+ Foreground to focused-row
+contrast measures 10.50:1 dark and 8.84:1 light;
+ focus outline to row measures
+7.71:1 and 4.41:1.
+ The 360px larger-text scene reflows I1 to full content and
+keeps the long action legible on two lines.
+ These are design-study checks,
+ not
+production or screen-reader claims.
+
+The rejected `questions/current.html` form has been replaced by a self-contained
+baseline MD3 I/G/R questionnaire (`dd194daf4`).
+ It embeds 26 new native rasters
+and the exact header comparison as a 27th image,
+ while preserving the independent
+I/G/R question structure,
+ pro/con rankings,
+ and free-text correction.
+ The command
+validator now checks exact raster-to-card scheme mapping,
+ required choices,
+no clipboard/external resources,
+ baseline header/divider/focus pixels,
+ and the
+reference image.
+ The design package build,
+ lint,
+ unit validator,
+ and historical
+cover validator pass.
+ Fourteen faults in the disposable-worktree mutation harness
+(`/home/user/temp/agent/verify-command-guards.mjs`) each failed with the intended
+diagnostic;
+ the fixture was removed.
+ Browser verification of the new form:
+ zero
+horizontal overflow at desktop and 390 × 500px in both schemes;
+ Axe zero
+violations and zero incomplete for page and modal;
+ all 26 dark/light preview
+paths,
+ compact/wide source switches,
+ Fit/100%/zoom direction,
+ Escape and focus
+return;
+ all 12 I × G × R answers,
+ required-field rejection,
+ whitespace and
+reply invalidation;
+ offline reload decodes all 13 scene thumbnails plus the
+reference with zero network resources in either scheme;
+ no console or page errors.
+
+No user choice has been made from this baseline redesign.
+ Next,
+ open
+`questions/current.html` in Helium without KWin scripting,
+ and present the new
+visual purpose,
+ changes from the rejected generic form,
+ and response path of
+one I,
+ one G,
+ one R plus corrections.
+ Do not ratify any ranking before the user
+answers.
  Production code remains untouched.
 
 Search target scope,
