@@ -469,6 +469,10 @@ and they generalize to the next target.
 
 ## Deferred
 
-- Mutation testing remains a follow-up.
+- Mutation testing is available as an opt-in `mise run //package/module/toml-edit:test:mutation` task.
+  It uses the repository's container-isolated mutation tester and the package unit suite;
+  neither the fuzz sidecar nor the upstream conformance runner participates.
+  The default source scan includes conformance adapters,
+  whose surviving mutants need separate interpretation.
 - A differential parser oracle against a stable reference implementation (not
   BurntSushi v1.6.0) remains possible future work.
