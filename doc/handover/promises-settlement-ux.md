@@ -1,10 +1,10 @@
 # Settlement experiment UX redesign
 
-Status: the user supplied a later screenshot of the shared factory scene and said it remained
-very confusing. The scene has been redesigned in the scratch prototypes and a focused,
-self-contained review is open in a separate tab. The matrix cell choice is deferred until the
-user can inspect this repair. Chromium, Firefox ESR, keyboard/pointer, native resolver-call,
-and PDF text checks pass for the repaired prototype. The lesson file is untouched.
+Status: the user then questioned the factory scene's logic. A source-and-browser audit found
+that the prototype's "game-faithful" mapping is false, despite passing Promise-call and UI tests.
+The logic mapping needs a user decision before any more scene or matrix implementation.
+The focused clarity review remains a preserved prototype, not an accepted design.
+The lesson file is untouched.
 No skill design has been confirmed; this redesign feeds the Promise toy, not the teaching skill.
 
 ## Latest screenshot-driven clarity repair
@@ -102,22 +102,27 @@ Later user rounds added requirements, each implemented in the prototypes:
 6. "Drops a new bot" was off-model; the pudding is the Promise (game-faithful remap).
 7. The resolver-bundle and inner-Promise snapshot cards must not be omitted; they are restored.
 
-## Research: Yum-Bot Simulator
+## Research: Yum-Bot Simulator (corrected reading)
 
-Source: RHWiki page for Yum-Bot Simulator (Rhythm Heaven Groove, Stage 5, 23rd game;
-Japanese Sotto Catch), supplied by the user in chat. Facts used:
+Source: [RHWiki's Yum-Bot Simulator gameplay and timing-display descriptions][yum-bot]
+(Rhythm Heaven Groove, Stage 5, 23rd game; Japanese Sotto Catch).
+The earlier reading omitted consequences that change the mapping:
 
-- The player runs robot S-CATCH-01 under a production line; puddings fall from ceiling containers.
-- Normal puddings follow a high-low-high buzzer and are caught with the hand on the fourth beat;
-  defective puddings with suspicious eyes follow a descending buzzer and are lasered.
-- The robot's screen face reports every outcome: green smile, yellow neutral, red sad.
-- The line manager's results text judges decisions: "Only make essential moves. You could overheat!"
+- The game supplies *already normal or defective* puddings with different audio/visual cues.
+  The player responds to that supplied type; choosing a tool does not make a pudding defective.
+- A correctly caught normal pudding is placed automatically onto the conveyor immediately.
+  A correctly lasered defective pudding is obliterated, not sent down the belt intact.
+- The robot's green smile means a correctly timed catch **or** laser; yellow and red grade
+  early/late or missed actions. The face does not encode fulfilled versus rejected Promise state.
+- The line manager judges the robot's decisions, not the eventual Promise value.
 
-Carried-over rules: one object on stage whose face is the state; the line drops the objects;
-finished objects ride a conveyor with their outcomes; actions exist only while an object is present;
-every press gets expressive feedback; a manager line explains each event.
+The production-line artwork remains useful evidence for layout and feedback,
+but its timing, routing, and physical-object semantics cannot be claimed by the current prototype.
 
-## Current model (game-faithful)
+## Current prototype mapping (disputed, not game-faithful)
+
+The assistant introduced pudding-as-Promise after the user asked where the pudding was.
+That question did not ratify this mapping.
 
 - The pudding is the Promise: a numbered lever on the rail releases it (creates the Promise),
   it falls from the hatch and sits at the station plate pending.
@@ -126,8 +131,10 @@ every press gets expressive feedback; a manager line explains each event.
   The first tool press settles; fresh tools may call a resolver again and log the ignored attempt.
   The marking (cherry dot or exclamation etch) never changes again.
 - When the next pudding drops, the settled one rides the conveyor as a chip
-  (pudding cone plus marking plus text), which is the visible form of "settlements are not revised".
-- The robot face gives timing-display feedback (flat waiting, smile caught, frown etched);
+  (pudding cone plus marking plus text). This is a history queue, not the game's conveyor:
+  a catch does not move immediately, and a lasered pudding remains intact before joining it.
+- The drawn robot face reflects pending/fulfilled/rejected (flat/smile/frown),
+  not the game's timing/decision grade;
   the accessible `#bot-face` card precedes the scene and stays visible while the learner scrolls it.
   Print hides the drawn scene but keeps that card, the contextual guide, and the call log.
 - Controls are five numbered one-shot buttons per row (release, fulfill, reject), drawn inside the
@@ -136,11 +143,90 @@ every press gets expressive feedback; a manager line explains each event.
 - Value snapshots: the resolver bundle and the Promise inside it render as cards with
   `JSON.stringify(value)` and `show(value) from showify`, using the audited showify 0.2.8 bundle.
 
+## Factory logic audit (unresolved)
+
+The user said the scene's logic seemed wrong and requested a double-check, not an implementation.
+No prototype or lesson behavior was changed during this audit.
+`mise run probe:factory-logic` opens fresh hand-first and laser-first routes in a disposable browser.
+Its game-faithfulness assertion is intentionally red:
+
+- Neither route has a supplied normal/defective kind or cue before the choice.
+  The code's `perform` branch creates an untyped `Promise.withResolvers()` bundle;
+  the action decides which resolver is called.
+- After Hand 1, the pudding remains visible at the station, the belt count is zero,
+  and the face says fulfilled. Release 2 alone moves that pudding onto the belt.
+  The source game moves a correctly caught normal pudding immediately.
+- After Laser 1, the pudding remains visible with an etch, the belt count is zero,
+  and the face says rejected. Release 2 then puts the intact rejected pudding on the belt.
+  The source game obliterates a correctly lasered defective pudding.
+- A green smile for fulfillment and a frown for rejection grade the Promise outcome,
+  whereas the source game grades both correctly executed actions with a green smile.
+- Fresh tools can call resolving functions again on the processed pudding.
+  That is useful and accepted for the Promise experiment, but the game description supplies
+  no second physical processing step for the same departed or destroyed pudding.
+
+The probe reports the separate authored policy that Release 2 is disabled while Promise 1 is pending.
+It is not evidence of a Promise restriction or, alone, a game contradiction.
+The actual JavaScript experiment still calls native resolvers:
+`verify-ux-resolver-calls.mjs` recorded Reject, Resolve, Reject on one bundle,
+while its native observer reported only Rejected. For the fixed string and Error fixtures,
+that correctly demonstrates the first outcome staying fixed.
+[MDN's `Promise.withResolvers()` reference][withresolvers-mdn] confirms the bundle exposes
+one Promise with resolving functions retained in scope.
+Correct Promise calls do not make the physical analogy correct.
+
+The deeper issue is one drawn pudding representing the Promise identity,
+the physical material the robot catches or destroys, and the outcome marking.
+Those roles need not share a lifetime. A rejected Promise still exists for observation;
+a correctly destroyed defective pudding does not.
+An ignored resolver call does not prevent other code from doing physical work.
+The prior claim that a consumed game pudding makes repeated Promise calls impossible was too strong:
+the resolver functions can target a durable record after a physical pudding has departed.
+
+### Proposed mappings, not accepted decisions
+
+1.  **Physical pudding plus durable Promise ticket (recommended for game fidelity).**
+    The pudding is a supplied job with a normal/defective cue; the Promise is a separate ticket
+    tracking its processing or delivery. Catch sends a normal pudding to the belt immediately;
+    laser destroys a defective pudding; a correct action can show a green performance face
+    even when the ticket rejects under a clearly declared delivery contract.
+    Later numbered resolver probes target the ticket, not another physical strike.
+    **Pros:** keeps the game choreography and Promise identity distinct.
+    **Cons:** adds a ticket, explicit contract, and a distinction between physical controls
+    and resolver probes; wrong-tool and timing behavior need separately authored rules.
+2.  **Promise-first factory with Yum-Bot artwork only.**
+    Keep the current direct resolver experiment but stop claiming game fidelity;
+    the belt is outcome history, the face is a Promise-state display, and Hand/Laser are
+    resolver controls, not physical catch/destruction.
+    **Pros:** retains the lesson's first-settlement-wins focus and existing interaction.
+    **Cons:** sacrifices the game's causal mechanics and needs honest relabeling of artwork.
+3.  **Separate game depiction and Promise experiment.**
+    Show the real game choreography as inspiration alongside an independent Promise trace.
+    **Pros:** both models can be accurate without forcing object identity across them.
+    **Cons:** two parallel systems increase the teaching load and occupy more content space.
+4.  **Promise of a game turn's correct execution.**
+    Correct Hand and correct Laser both fulfill with tagged results;
+    misses or wrong actions reject, and resolver probes target the retained turn record.
+    **Pros:** aligns the robot face's success grade with the Promise contract.
+    **Cons:** abandons Hand = fulfill and Laser = reject and introduces classification/timing
+    into a lesson intended to focus on Promises.
+
+Ranking: ticket mapping > honest factory metaphor > separated depictions > turn-success Promise.
+The ticket mapping retains both game choreography and durable Promise identity better than
+artwork-only; artwork-only keeps the Promise lesson more direct than two parallel systems;
+separated depictions avoid changing the central resolver mapping more than a turn-success model.
+No mapping is authorized for implementation by this audit.
+
+The user's logged-ignored-attempt decision remains settled.
+Two independent preferences remain: what operation the Promise represents,
+and whether game classification/routing/timing should be simulated or only visually referenced.
+Ask these separately before the layout/color matrix.
+
 ## Superseded designs (do not revive without the user asking)
 
 - Embedding screenshots as base64 images in the choice form; replaced by live `srcdoc` iframes.
 - The inverted mapping where the bot was the Promise ("drops a new bot", buckets holding outcome
-  puddings); replaced by pudding-as-Promise.
+  puddings); replaced by pudding-as-Promise, which is now also under audit.
 - A plain slot-grid rack outside the scene; replaced by drawn controls inside the scene.
 - Reusable buttons with a dashed "spent" style; replaced by numbered one-shot buttons per user rule.
 - Global call-slot numbering with a "skipped" state; replaced by per-row numbering.
@@ -313,8 +399,9 @@ for the lesson file itself; this UX work has not modified it yet.
   card into inline text.
 - agent-browser tab selection takes tab ids like `t1`, not positional integers;
   select then `reload`.
-- A call's effect must follow the Promise's synchronous first-settlement-wins rule,
-  not the microtask-late observer bookkeeping.
+- For the fixed string and Error fixtures, the first resolver call fixes the outcome before
+  observer bookkeeping runs in a microtask. General resolution with a pending thenable may
+  lock out later calls while the Promise remains pending; do not generalize the fixture trace.
 
 ## Settled first-settlement-wins interaction
 
@@ -331,20 +418,26 @@ This decision is not a selection of matrix layout or cue colors.
 
 ## Open choices (user's, gating implementation)
 
-- First get targeted feedback on the focused scene repair, especially whether the current Promise,
-  the numbered action rows, and the ignored-call response now read clearly.
-  Do not treat the latest screenshot as a matrix-cell selection.
-- After the shared scene is accepted, ask for a matrix cell: layout (A reference rows,
+- Decide what the Promise represents: a durable ticket for a physical pudding's processing or
+  delivery (recommended for game fidelity), the pudding itself in a merely game-themed factory,
+  or another explicit operation. This is independent of how much timing/gameplay to reproduce.
+- Decide whether to simulate the game's supplied normal/defective cues, immediate normal-pudding
+  conveyor routing, defective-pudding destruction, and separate action-grade face;
+  or keep these as visual inspiration only and label the scene honestly.
+  Real-time rhythm timing is a separate optional choice, not entailed by a physical ticket.
+- The focused clarity repair remains unaccepted as a final design while the logic mapping is open.
+  Do not treat the user's logic challenge as a matrix-cell selection.
+- Only after mapping acceptance, revisit the matrix cell: layout (A reference rows,
   B kept card grid, C definition list) by cue color (state-colored, neutral).
-  The choice form remains a separate prototype; ask for the cell value and any free-text changes.
-  My ranking, with adjacent-pair reasons in the form:
-  a-state, a-neutral, b-state, b-neutral, c-state, c-neutral.
+  The choice form is a preserved prototype, not an approved design.
+  Its previous ranking was a-state, a-neutral, b-state, b-neutral, c-state, c-neutral;
+  redo that ranking if the chosen mapping changes the scene.
 - Free-text changes to the chosen cell.
-- Implementation afterwards (task 35 in the session task list): apply the chosen cell to
-  `promise-sequence.html` and the lesson CSS, including the global pressed-state rule,
-  the drawn station, the numbered one-shot rack with disabled-with-reason availability,
-  the restored snapshot cards, and the print counterpart (scene hidden, face and log kept);
-  then re-run the combined suite, exports, PDF inventory, and the Firefox ESR pass,
+- Implementation afterwards (task 35 in the session task list): only after both mapping and
+  layout/cue decisions, apply the approved design to `promise-sequence.html` and lesson CSS.
+  Preserve the actual ignored resolver calls, disabled-with-reason one-shot controls,
+  value snapshots, print counterpart, and achromatic reading backgrounds;
+  then re-run the combined suite, exports, PDF inventory, and Firefox ESR pass,
   and commit with scoped pathspecs.
 
 ## Constraints carried from earlier work
@@ -356,3 +449,6 @@ This decision is not a selection of matrix layout or cue colors.
 - Firefox ESR 140 remains the baseline; opaque iframe isolation stays.
 - Headless verification is valid; there is no visible-window completion gate.
 - Preserve the user's open tabs, windows, and drafts during any presentation.
+
+[yum-bot]: https://rhwiki.net/wiki/Yum-Bot_Simulator#Gameplay
+[withresolvers-mdn]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers

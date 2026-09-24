@@ -23,7 +23,7 @@ including browser, Firefox ESR, print, and export checks.
 The user then critiqued the settlement experiment's UI/UX across seven rounds:
 confusing layout, silent buttons, disabled-when-no-effect plus numbered one-shot buttons,
 the Rhythm Heaven Groove Yum-Bot Simulator model, a drawn factory scene with the controls
-inside it, the game-faithful remap where the pudding is the Promise,
+inside it, an attempted pudding-as-Promise mapping,
 and the restored resolver-bundle snapshots.
 The user then clarified that an unused one-shot button remains actionable after settlement
 if it calls the real resolving function and visibly logs the ignored attempt.
@@ -31,8 +31,10 @@ The Promise outcome stays fixed; used buttons and genuinely inert controls stay 
 The user later supplied a screenshot of the shared factory scene and still found it confusing.
 A focused repair shortens the repeated control captions, names each row and current Promise,
 and keeps the fixed outcome and latest ignored-call feedback visible near the controls.
-The scene has browser, Firefox ESR, and PDF text checks; the user has not reviewed this repair yet.
-The layout-by-cue-color choice remains deferred;
+The scene has browser, Firefox ESR, and PDF text checks, but these do not prove its analogy.
+The user then challenged the factory logic. A source-and-browser audit found that the current
+pudding-as-Promise scene is not faithful to the game's cues, conveyor, laser disposal, or face grading.
+No replacement mapping has been accepted; the layout-by-cue-color choice remains deferred;
 [the settlement-UX handover](../handover/promises-settlement-ux.md) records the evidence,
 superseded models, current artifact, and next actions.
 Earlier critiques rejected a detached opening and forced chat turn-taking.

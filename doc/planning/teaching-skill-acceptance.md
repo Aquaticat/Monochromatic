@@ -225,6 +225,11 @@ Control-affordance counterexamples:
   the current Promise status appears only after that crowded control surface.
 - An interactive analogy inverts its source: the falling object of the source game becomes a
   stationary agent while the line drops agents instead.
+- A factory analogy claims game fidelity while omitting the source's supplied normal/defective
+  cues, delaying a caught pudding's conveyor placement, sending a destroyed defective pudding
+  onto the belt, or treating a performance-grade face as a Promise-outcome indicator.
+- One drawn object is simultaneously the processed material, the durable Promise identity,
+  and the public-looking outcome marking without explaining the distinct lifetimes.
 - A value snapshot present in the lesson is dropped from a redesign of the same section.
 
 The Promise lesson uses literal JSON beside live Showify snapshots,
