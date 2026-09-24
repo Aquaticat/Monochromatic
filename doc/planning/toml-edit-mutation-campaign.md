@@ -262,7 +262,28 @@ That batch reported 44 killed,
  22 confirmed survivors,
  119 compile errors,
  and no infrastructure errors.
-The parser/build batch is still running.
+The parser/build batch completed with 59 killed,
+ 91 confirmed survivors,
+ two timeouts,
+ 178 compile errors,
+ and no infrastructure errors.
+Its report is `/var/home/user/temp/agent/toml-mutation-parser-builder.json`.
+A structural-state test for `key = 1#tail` failed before `build-comments.ts` adopted the same inclusive boundary as the read accessor;
+ the package build and unit suite passed after the change.
+Additional tests now cover parsed block metadata,
+ array navigation bounds,
+ nested input and wrapper reads,
+ parsed string styles,
+ and synthetic array/inline-table indentation.
+A prior test also exposed a stale TSDoc claim about `toml-eslint-parser@1.0.3`:
+ upstream defaults to TOML 1.1,
+ not 1.0.
+The test now selects 1.0 explicitly and checks the current default;
+ `doc/troubleshooting/toml-eslint-parser-default-version.md` traces the installed and tagged source.
+
+Both parser/build and materialization rechecks are running on the same source revision.
+The reports will be `/var/home/user/temp/agent/toml-mutation-parser-builder-recheck.json`
+ and `/var/home/user/temp/agent/toml-mutation-materialization-recheck.json`.
 Do not edit runtime source until both complete,
  since each shard copies the current tree.
 After triage,
