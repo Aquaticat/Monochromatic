@@ -23,12 +23,10 @@ const VALID_CACHE_WARNING_LINES: ReadonlySet<string> = new Set([
 /**
  Throws fail-closed malformed-output diagnostic.
  
- @param line - Complete scanner stderr line.
- 
- @throws Always, because unknown scanner output cannot be ignored.
+ @throws Always, because unknown scanner output cannot be ignored or echoed.
  */
-function malformedWarning(line: string,): never {
-  throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
+function malformedWarning(): never {
+  throw new ForbiddenStringsPluginError('Malformed forbidden-strings scanner output.',);
 }
 
 /**
@@ -53,6 +51,6 @@ export function parseCacheWarning(line: string,): boolean {
   if ((!line.startsWith('{',)) || (!line.endsWith('}',)))
     return false;
   if (!VALID_CACHE_WARNING_LINES.has(line,))
-    malformedWarning(line,);
+    malformedWarning();
   return true;
 }

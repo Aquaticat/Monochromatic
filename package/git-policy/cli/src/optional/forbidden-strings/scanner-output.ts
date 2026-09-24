@@ -1,7 +1,7 @@
 // Generated from `package/git-policy/forbidden-strings/src/scanner-output.ts` by file-enforcer; edit canonical source owner.
 /**
  Redacted forbidden-strings scanner output parser.
- 
+
  @module
  */
 import type {
@@ -11,162 +11,195 @@ import type {
 import { parseCacheWarning, } from './cache-warning.ts';
 import { ForbiddenStringsPluginError, } from './errors.ts';
 
+//region Finding fields
+
 /**
- Parsed redacted scanner hit.
+ Parsed scanner finding with opaque operand identity.
  */
 type ScannerHit = Readonly<{
   /**
-   One-based line number.
+   Fully masked logical pathname, never temporary content location.
    */
-  line: number;
+  displayPath: string;
   /**
-   Opaque rule identity token: a tail-format section name over `[a-z0-9.-]`,
-   or a numeric index for legacy unnamed rules (digits sit inside that same
-   alphabet). Relayed verbatim; rule text never appears here.
+   Zero-based index into candidate operands.
+   */
+  input: number;
+  /**
+   Name component or content line.
+   */
+  kind: 'name' | 'content';
+  /**
+   One-based segment or line number.
+   */
+  position: number;
+  /**
+   Validated opaque rule identity.
    */
   rule: string;
-  /**
-   Plugin-owned materialized path.
-   */
-  scannerPath: string;
 }>;
 
 /**
- Parses positive decimal integer without accepting suffixes.
- 
- @param value - scanner field
- 
- @param line - complete scanner line for diagnostic
- 
- @returns parsed positive integer
+ Fails closed without relaying untrusted scanner text that could contain a secret.
+
+ @returns infrastructure error without scanner-provided bytes
  */
-function parsePositiveInteger({
+function malformedOutput(): ForbiddenStringsPluginError {
+  return new ForbiddenStringsPluginError('Malformed forbidden-strings scanner output.',);
+}
+
+/**
+ Parses a canonical integer field without admitting suffixes or leading zeros.
+
+ @param value - scanner field, treated as untrusted text
+ @param allowZero - whether operand index zero is valid
+ @returns parsed integer
+ */
+function parseInteger({
   value,
-  line,
+  allowZero,
 }: Readonly<{
   value: string;
-  line: string;
-}>): number {
+  allowZero: boolean;
+}>,): number {
   /**
    Parsed numeric field.
    */
   const parsed = Number(value,);
-  if ((!Number.isSafeInteger(parsed,)) || (parsed < 1)
+  if ((!Number.isSafeInteger(parsed,)) || (parsed < (allowZero ? 0 : 1))
     || (String(parsed,) !== value))
-    throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
+    throw malformedOutput();
   return parsed;
 }
 
 /**
- Validates a rule identity token against the scanner's name alphabet.
- 
- Accepts a tail-format section name (`[a-z0-9.-]`, non-empty) or a legacy
- numeric index, which the same alphabet covers; anything else means the
- scanner output drifted and the gate must fail closed rather than relay it.
- 
+ Validates a rule token against the strict section-name alphabet.
+
  @param value - scanner rule field
- 
- @param line - complete scanner line for diagnostic
- 
  @returns validated token
  */
-function parseRuleToken({
-  value,
-  line,
-}: Readonly<{
-  value: string;
-  line: string;
-}>): string {
+function parseRuleToken(value: string,): string {
   if (value.length === 0)
-    throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
-  // Indexed UTF-16 walk instead of string spread: the alphabet is pure ASCII,
-  // so any surrogate half fails the range checks and rejects correctly.
+    throw malformedOutput();
   for (let index = 0; index < value.length; index += 1) {
     /**
-     Single UTF-16 unit under the cursor.
+     Single ASCII unit under the cursor.
      */
     const ch = value.charAt(index,);
     /**
-     Whether the unit sits inside the strict section-name alphabet.
+     Whether this byte fits named rules or unnamed numeric IDs.
      */
-    const isNameChar = ((ch >= 'a') && (ch <= 'z'))
+    const valid = ((ch >= 'a') && (ch <= 'z'))
       || ((ch >= '0') && (ch <= '9'))
       || (ch === '.')
       || (ch === '-');
-    if (!isNameChar)
-      throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
+    if (!valid)
+      throw malformedOutput();
   }
   return value;
 }
 
+//endregion Finding fields
+
+//region Finding protocol
+
 /**
- Parses one redacted hit line without interpreting candidate paths as syntax.
- 
- @param line - complete scanner stderr line
- 
- @returns parsed scanner hit
+ Parses a finding framed by its trailing operand index and rule token.
+
+ Every literal colon in the display path is escaped by the scanner, so a
+ `:name:` marker cannot be confused with a pathname. The operand index
+ maps even identical masked names to distinct historical candidate states.
+
+ @param line - untrusted scanner line
+ @returns parsed masked finding
  */
 function parseHit(line: string,): ScannerHit {
   /**
-   Rule suffix separator.
+   Opaque input field always present when adapter supplies logical names.
    */
-  const ruleSeparator = line.lastIndexOf(' rule=',);
+  const inputSeparator = line.lastIndexOf(' input=',);
+  if (inputSeparator === (-1))
+    throw malformedOutput();
+  /**
+   Canonical zero-based operand index.
+   */
+  const input = parseInteger({
+    value: line.slice(inputSeparator + ' input='.length,),
+    allowZero: true,
+  },);
+  /**
+   Last rule marker before the operand field.
+   */
+  const ruleSeparator = line.lastIndexOf(' rule=', inputSeparator,);
   if (ruleSeparator === (-1))
-    throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
+    throw malformedOutput();
   /**
-   Line-number separator; the last colon before the rule suffix keeps
-   candidate paths that themselves embed colons out of the numeric field.
+   Opaque rule id, never the matched text.
    */
-  const lineSeparator = line.lastIndexOf(
-    ':',
-    ruleSeparator,
-  );
-  if (lineSeparator === (-1))
-    throw new ForbiddenStringsPluginError(`Malformed forbidden-strings scanner output: ${line}`,);
+  const rule = parseRuleToken(line.slice(ruleSeparator + ' rule='.length, inputSeparator,),);
   /**
-   Complete parsed hit.
+   Data preceding rule identity holds display path and position.
    */
-  const hit: ScannerHit = {
-    scannerPath: line.slice(
-      0,
-      lineSeparator,
-    ),
-    line: parsePositiveInteger({
-      value: line.slice(
-        lineSeparator + 1,
-        ruleSeparator,
-      ),
-      line,
-    },),
-    rule: parseRuleToken({
-      value: line.slice(ruleSeparator + ' rule='.length,),
-      line,
-    },),
+  const locator = line.slice(0, ruleSeparator,);
+  /**
+   Reserved name marker cannot occur in an escaped display path.
+   */
+  const nameSeparator = locator.lastIndexOf(':name:',);
+  /**
+   Whether this finding names a path component instead of a content line.
+   */
+  const kind = nameSeparator === (-1) ? 'content' : 'name';
+  /**
+   Last content colon, or explicit pathname-kind marker.
+   */
+  const positionSeparator = kind === 'name'
+    ? nameSeparator
+    : locator.lastIndexOf(':',);
+  if (positionSeparator <= 0)
+    throw malformedOutput();
+  /**
+   Matched segment position or content line number.
+   */
+  const position = parseInteger({
+    value: locator.slice(positionSeparator + (kind === 'name' ? ':name:'.length : 1),),
+    allowZero: false,
+  },);
+  /**
+   Masked logical path supplied by scanner after it checks every component.
+   */
+  const displayPath = locator.slice(0, positionSeparator,);
+  if ((kind === 'name') && (!displayPath.split('/',).includes('[REDACTED]',)))
+    throw malformedOutput();
+  return {
+    displayPath,
+    input,
+    kind,
+    position,
+    rule,
   };
-  return hit;
 }
 
+//endregion Finding protocol
+
 /**
- Parses scanner findings and rejects scanner-owned infrastructure diagnostics.
- 
- @param stderr - redacted scanner stderr
- 
- @param candidateForPath - materialized path lookup
- 
- @returns policy findings mapped to original candidates
- 
+ Parses redacted findings and rejects scanner-owned infrastructure diagnostics.
+
+ @param stderr - scanner stderr, containing findings and cache warnings
+ @param candidateForIndex - candidate lookup through opaque operand position
+ @returns policy findings with masked logical paths
+
  @example
  ```ts
- parseScannerOutput({ stderr: '/tmp/candidate:1 rule=3', candidateForPath: () => candidate });
+ parseScannerOutput({ stderr: 'src/a.ts:1 rule=3 input=0', candidateForIndex: () => candidate });
  ```
  */
 export function parseScannerOutput({
   stderr,
-  candidateForPath,
-}: {
-  readonly stderr: string;
-  readonly candidateForPath: (path: string) => CandidateFile;
-}): readonly PolicyFinding[] {
+  candidateForIndex,
+}: Readonly<{
+  stderr: string;
+  candidateForIndex: (index: number) => CandidateFile;
+}>,): readonly PolicyFinding[] {
   return stderr.split('\n',)
     .filter(function isOutputLine(line,): boolean {
       return line.length > 0;
@@ -175,20 +208,24 @@ export function parseScannerOutput({
       return !parseCacheWarning(line,);
     },)
     .map(function toFinding(line,): PolicyFinding {
-      if (line.includes(': read error:',) || line.includes(' engine error',))
-        throw new ForbiddenStringsPluginError(`Forbidden-strings scanner infrastructure failure: ${line}`,);
+      if (line.includes(': read error:',)
+        || line.includes(' engine error',)
+        || line.includes(': unsupported pathname line break',))
+        throw new ForbiddenStringsPluginError('Forbidden-strings scanner reported an infrastructure failure.',);
       /**
-       Parsed redacted scanner hit.
+       Parsed scanner hit, with safe output label and opaque operand index.
        */
       const hit = parseHit(line,);
       /**
-       Exact candidate owning scanner path.
+       Verifies that the reported index belongs to a candidate in this invocation.
        */
-      const candidate = candidateForPath(hit.scannerPath,);
+      candidateForIndex(hit.input,);
       return {
         code: 'forbidden-string',
-        message: `Forbidden string matched at line ${String(hit.line)} (rule ${hit.rule}).`,
-        path: candidate.path,
+        message: hit.kind === 'name'
+          ? `Forbidden string matched in pathname segment ${String(hit.position,)} (rule ${hit.rule}).`
+          : `Forbidden string matched at line ${String(hit.position,)} (rule ${hit.rule}).`,
+        path: hit.displayPath,
       };
     },);
 }
