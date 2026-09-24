@@ -4640,11 +4640,57 @@ window automation.
 
 Search target scope,
  result ranking/effects,
- exact button placement on other
-platforms,
  keyboard bindings,
- media notification and the remaining design backlog
-stay open.
+ media notification
+and the remaining design backlog stay open.
+
+## Current correction: Fold panels govern desktop too (D49, 2026-09-23)
+
+The user asked what "expanded desktop window" and "narrow desktop width" meant and
+corrected the premise:
+ **everything follows the Pixel 9 Pro Fold cover and unfolded
+screens**;
+ if that is suboptimal on desktop,
+ desktop still inherits.
+ The 360 ×
+640,
+ 480 × 600 and 1100 × 640px Slint Search rasters are historical experiments,
+not the target geometry.
+ `questions/current.html` still embeds that obsolete
+desktop-sized review and must not be used to request feedback until replaced.
+D49 records cover 1080 × 2424 physical px (about 411 × 923dp) and unfolded inner
+2076 × 2152 physical px (about 852 × 883dp) as the only design frames.
+Desktop window sizing is a developer-owned frame around the inherited treatment,
+not a fresh visual design question.
+ D47's Search button and separate page and D48's
+one Back/query/Clear header remain settled directions;
+ no production work is
+licensed.
+ Package-local `review-notes.md` 5p and
+`material-3-compliance.md` D49 record the failure and evidence boundary.
+
+The existing Pixel_9_Pro_Fold AVD was reprobed:
+ `emulator-5554` reports `device`,
+`sys.boot_completed=1` and unfolded device state 2.
+ It was started in the verified
+windowed host-GPU mode;
+ no KWin scripting was used.
+ Next design-only step:
+ add a
+throwaway debug-only Compose Search study to the existing prototype worktree,
+ capture
+player trigger,
+ opened page,
+ results and empty/unavailable states on both folded
+cover and unfolded inner panels in light and dark,
+ with actual Android status/navigation
+bars and measured frame.
+ Then replace the active HTML form with those native
+opaque captures,
+ reverify interaction/form/accessibility/offline behavior,
+ and present
+without KWin.
+ Never call the old Slint pixels target-native proof.
 
 ## Issue tracking moves to Linear for this session
 
