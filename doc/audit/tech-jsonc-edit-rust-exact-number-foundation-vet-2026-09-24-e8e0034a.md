@@ -150,6 +150,14 @@ The user requested early regex culling. Our operational screening interprets thi
 
 `~/temp/agent/jsonc-regex-audit/json-number/tree.txt` records `mise run audit:regex-deps`, using Cargo `tree --edges normal,build --target all --format {p}` for `json-number = "=0.4.10"`. Neither `lexical` nor its selected `lexical-core` family brought a package named `regex`, `logos`, `pest`, `regex-automata`, `regex-syntax`, `onig`, or `fancy-regex`. The same script's `edikt-jsonc` positive control found all of `logos`, `regex`, `regex-automata` and `regex-syntax`; an empty result is meaningful for package-name screening. Source-level checks of transitive production code remain open, and the graph does not establish numeric correctness.
 
+## Discovery expansion progress
+
+The frozen expansion in `doc/planning/jsonc-edit-rust-port.md` ran `cargo search 'json number' --limit 100`, `cargo search 'decimal arbitrary exponent' --limit 100`, `gh search repos 'rust json number' --limit 100 --json fullName,url,description,updatedAt`, and a web query for `Rust lexical JSON number numeric equality arbitrary exponent crate`. The repository-host query returned no matches; its narrower wording cannot prove comparable projects absent. The web query returned source/docs leads for `json-number`, `json-syntax`, `reliakit-json`, and lexical parsing tools.
+
+The crates.io API was paged through `web_fetch` for pages 2 and 3 of `json number` (100 records each), and page 2 of `decimal arbitrary exponent` (empty, with `next_page: null`). A name/description filter over the `json number` pages surfaced `rust_decimal` and `dashu` on page 2, neither newly discovered; page 3 surfaced none under that filter. `rust_decimal` is described by its [docs](https://docs.rs/rust_decimal/latest/rust_decimal/) as fixed precision; `dashu`'s [crate metadata](https://crates.io/crates/dashu) is an arithmetic family, not a lossless JSON number token and exact decimal-exponent identity on its own. These are category readings, not execution results. The full page records must be inspected before two-page saturation is claimed because filtering could hide a less obvious candidate.
+
+Page 2 and page 3 of the initial `exact decimal`, `bigint`, and `arbitrary precision json` registry searches were also retrieved earlier. Their obvious leads include `fpdec`, `fraction`, `bigdecimal`, `ordecimal`, `decimal-bytes`, `arbi` and `dashu`; source screening recorded limitations for several. The three initial Cargo searches each advertised more results after their first 100, so their initial response alone was not saturation. No candidate is recommended from these partial pages.
+
 ## Pending evidence and validation
 
 - Finish required discovery saturation or report a blocked terminal outcome; record exact expansion queries and pagination attempts.
