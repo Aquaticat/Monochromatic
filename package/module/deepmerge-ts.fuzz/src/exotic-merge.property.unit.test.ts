@@ -2,7 +2,11 @@
  Model and invariant properties over exotic inputs from
  `./exotic-arbitraries.ts`: typed arrays, buffers, boxed primitives, errors,
  weak collections, promises, functions with own properties, Proxy-wrapped
- records and arrays, foreign-realm arrays, and Array/Set/Map subclasses.
+ records and arrays, foreign-realm arrays, Array/Set/Map subclasses, and
+ record-like objects over non-plain prototypes, whose kind the accepted
+ characterization pins (`./exotic-record-like.ts`); the `deepmerge` property
+ requires record-likes to meet other values often enough for that kind to
+ decide results.
 
  - `deepmerge` and `deepmergeFastUnsafe` agree with `./model.ts`: exotic
    leaves resolve to the last value by identity, and containers merge by
@@ -36,11 +40,16 @@ import {
   exoticArgumentsArbitrary,
   exoticRecordArbitrary,
 } from './exotic-arbitraries.ts';
+import { meetsRecordLike, } from './exotic-record-like.ts';
 import {
   fingerprint,
   identityTable,
 } from './exotic-fingerprint.ts';
 import { fuzzRunPlan, } from './fuzz-budget.ts';
+import {
+  minimumReach,
+  reachTally,
+} from './reach-tally.ts';
 import { modelMerge, } from './model.ts';
 import {
   NO_MISMATCH,
@@ -53,6 +62,11 @@ import { target, } from './target.ts';
  Run plan resolved once for every property in this file.
  */
 const RUN = fuzzRunPlan();
+
+/**
+ Runs in which a record-like object must meet another value, so its kind decides the result.
+ */
+const MINIMUM_REACH = minimumReach(RUN.params.numRuns,);
 
 /**
  Writable plain targets for `deepmergeInto`, free of the known into regions.
@@ -72,10 +86,17 @@ await describe({
       name: 'deepmerge matches the model on exotic trees',
       timeout: RUN.timeout,
       fn: async () => {
+        /**
+         Record-like meetings this property must reach.
+         */
+        const tally = reachTally(['recordLikeMet',],);
         assert(
           property(
             exoticArgumentsArbitrary,
             function deepmergeMatchesModel(values,) {
+              if (meetsRecordLike(values,))
+                tally.hit('recordLikeMet',);
+              tally.endRun();
               expect(shapeMismatch({
                 actual: target.deepmerge(...values,),
                 expected: modelMerge({ values, },),
@@ -85,6 +106,7 @@ await describe({
           ),
           RUN.params,
         );
+        expect(tally.shortfalls(MINIMUM_REACH,),).toEqual([],);
       },
     },),
     it({

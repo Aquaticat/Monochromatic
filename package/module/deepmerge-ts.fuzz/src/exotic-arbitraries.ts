@@ -5,7 +5,9 @@
  Leaves: typed arrays, `ArrayBuffer`, `DataView`, boxed primitives, errors,
  weak collections, promises, and functions carrying own properties.
  Containers: Proxy-wrapped records and arrays, arrays from another realm
- (holding primitives only), and subclass instances of Array, Set, and Map.
+ (holding primitives only), subclass instances of Array, Set, and Map, and
+ record-like objects over non-plain prototypes (`./exotic-record-like.ts`),
+ which merge as records or leaves by deepmerge-ts's record heuristic.
 
  Deliberately absent, each pinned elsewhere instead:
  cross-realm records (the model classifies them as leaves, deepmerge-ts as
@@ -38,6 +40,7 @@ import {
 } from 'fast-check';
 
 import { keyOfEntry, } from './arbitraries.ts';
+import { recordLikeArbitrary, } from './exotic-record-like.ts';
 
 //region Realms and subclasses
 
@@ -308,6 +311,7 @@ const exoticScope = letrec<{
   value: unknown;
   container: unknown;
   record: object;
+  recordLike: object;
 }>(function build(tie,) {
   /**
    Record entries shared by the plain and Proxy-wrapped record shapes.
@@ -342,6 +346,9 @@ const exoticScope = letrec<{
     container: oneof(
       { depthIdentifier: 'exotic', },
       tie('record',),
+      // Record-likes merge as records or leaves; never a root record, where a leaf-kind source
+      // would hit the known deepmergeInto root no-op (`./known-defect-exotic.unit.test.ts`).
+      tie('recordLike',),
       items,
       items.map(taggedArray,),
       items.map(function toProxyArray(values,) {
@@ -397,6 +404,7 @@ const exoticScope = letrec<{
         );
       },),
     ),
+    recordLike: recordLikeArbitrary(entries,),
   };
 },);
 
@@ -411,7 +419,14 @@ export const exoticTreeArbitrary: Arbitrary<unknown> = exoticScope.value;
 export const exoticRecordArbitrary: Arbitrary<object> = exoticScope.record;
 
 /**
- Argument lists: records most of the time, otherwise any exotic trees.
+ Record-like objects over non-plain prototypes (`./exotic-record-like.ts`).
+ */
+export const exoticRecordLikeArbitrary: Arbitrary<object> = exoticScope.recordLike;
+
+/**
+ Argument lists: records most of the time, otherwise any exotic trees, or
+ records and record-likes side by side, where a record-like's kind decides
+ between merging and taking the last value.
  */
 export const exoticArgumentsArbitrary: Arbitrary<readonly unknown[]> = oneof(
   {
@@ -430,6 +445,19 @@ export const exoticArgumentsArbitrary: Arbitrary<readonly unknown[]> = oneof(
       exoticTreeArbitrary,
       {
         minLength: 1,
+        maxLength: 3,
+      },
+    ),
+  },
+  {
+    weight: 1,
+    arbitrary: array(
+      oneof(
+        exoticRecordArbitrary,
+        exoticRecordLikeArbitrary,
+      ),
+      {
+        minLength: 2,
         maxLength: 3,
       },
     ),

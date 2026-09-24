@@ -29,6 +29,10 @@
  */
 
 import {
+  expectedKindOf,
+  NO_EXPECTED_KIND,
+} from './expected-kind.ts';
+import {
   isAnyMap,
   isAnySet,
   isObjectPrototype,
@@ -48,7 +52,8 @@ export const DEFAULT_MAX_DEPTH = 1_000;
  Classify a value into its documented merge bucket. Plain and null-prototype
  objects are records; class instances, dates, and other objects are leaves.
  Buckets are realm-independent (`./realm.ts`): a Set or plain object from
- `node:vm` classifies like a local one.
+ `node:vm` classifies like a local one. Objects with other prototypes that a
+ generator registered (`./expected-kind.ts`) take the registered kind.
 
  @param value - Any merge input or output, inspected by prototype only.
 
@@ -64,6 +69,12 @@ export function kindOf(value: unknown,): ValueKind {
     return 'other';
   if (Array.isArray(value,))
     return 'array';
+  /**
+   Kind a generator registered for this object, if any.
+   */
+  const expected = expectedKindOf(value,);
+  if (expected !== NO_EXPECTED_KIND)
+    return expected;
   /**
    Prototype deciding whether an object counts as a plain record.
    */
