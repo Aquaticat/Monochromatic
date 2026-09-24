@@ -408,8 +408,22 @@ That is not a TOML mutant verdict.
  oxlint,
  and a disposable rsync copy probe passed.
 `doc/troubleshooting/mutation-test-rsync-cache-churn.md` records the source trace.
-A clean rerun of `src/set-replace.ts` is pending as `proc_97f9`.
-Do not edit runtime source until it completes.
+The clean `src/set-replace.ts` rerun completed with 21 killed,
+ four confirmed survivors,
+ 57 compile errors,
+ and no infrastructure errors.
+Its report is `/var/home/user/temp/agent/toml-mutation-set-replace-infra-recheck.json`.
+A package-root test then exposed an unnamed empty-path error (`tomlSet at  requires ...`);
+ `set-replace.ts` now reports `document root` and `document body` for root replacement.
+Additional tests pin sibling isolation for set/delete,
+ indexed and nested AoT read views,
+ implicit replacement under mixed parents,
+ and synthetic inline-entry comment state.
+The expanded package build,
+ unit suite,
+ types,
+ and oxlint passed after these changes.
+Another edit-path mutation recheck is pending.
 The indexed array-of-tables read fix passed the rebuilt package suite,
  types,
  oxlint,
