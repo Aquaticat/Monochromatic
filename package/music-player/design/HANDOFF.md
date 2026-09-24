@@ -4581,11 +4581,18 @@ measurement marks retained and metadata stripped.
 It replaces the rejected command review archived at
 `questions/archive/command-igr-rejected.html`.
  The artifact's Open Search,
- sample
-query,
- unavailable and Back controls change its native screenshot and restore browser
-focus;
+ canned
+`cam`/`zzq` selection,
+ unavailable and Back controls change its native screenshot
+and restore browser focus;
  they do not trigger the Slint runtime.
+ An independent
+review caught free-form HTML input showing a mismatched fixed `zzq` screenshot;
+commit `c1bdaed4f` replaced it with explicit canned choices and resets the query
+before showing the unavailable capture.
+ The generated form was refreshed at
+`0f426f575`;
+ validator `7b5b9b0bf` guards the synchronization.
  Gallery previews expose both native
 schemes and exact 100% pixels.
  No answer code or clipboard control remains;
@@ -4594,12 +4601,12 @@ free-text correction field prepares visible text for a chat reply.
  The native builder,
 package lint and unit validator pass;
  the historical cover validator also passes.
-Sixteen faults in `/home/user/temp/agent/verify-search-page-guards.mjs` failed with
-their intended diagnostics in a disposable worktree,
+Eighteen faults in `/home/user/temp/agent/verify-search-page-guards.mjs` failed
+with their intended diagnostics in a disposable worktree,
  which was removed.
  Browser
-verification covered the five flow states and focus return,
- 26 preview paths,
+verification covered the five synchronized canned flow states and focus return,
+26 preview paths,
  all
 images decoded offline with zero network resources,
  both schemes,
