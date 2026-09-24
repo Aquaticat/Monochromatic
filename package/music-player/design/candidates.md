@@ -1091,8 +1091,16 @@ illustrative `cam` results,
 TouchAreas are wired in the design prototype;
  the static captures do not by
 themselves prove click delivery or focus restoration.
- The rejected I/G/R form in
-`questions/current.html` must be replaced by an active-design review.
+ The rejected I/G/R form is now archived at
+`questions/archive/command-igr-rejected.html`;
+ `questions/current.html` is an
+active-only review with an HTML player → Search → player walkthrough,
+ native
+light/dark gallery,
+ and free-text correction.
+ That walkthrough was exercised in
+a browser;
+ it does not prove the native TouchAreas were activated.
 D21's global hotkey and Settings row are not inherited by the Search page.
 D25's Ctrl+F reservation remains open with the whole keyboard map.
  The exact search
