@@ -200,6 +200,15 @@ The checked instrumentation returns an ordinary error on the high half;
 **this is a safe positive control, not execution of the original undefined behavior**.
 A complete fix must make this case pass while retaining safe errors for isolated halves.
 
+The disposable clone was then changed to decode a high/low `\u` pair into
+one checked scalar and return `MomoaError::UnexpectedElement` for isolated
+halves. Running the same bounded `mise run test:safe-instrumented` command
+exited 0 and printed `safe surrogate consumer cases passed`.
+The example checked isolated high/low errors, valid-pair acceptance,
+ordinary `\u0041`, and a literal escaped backslash. It did not yet assert
+the decoded string's value or exercise the full upstream suite.
+No original unchecked parser invocation occurred in either run.
+
 ### Patterns that avoid the unsafe conversion (source-derived, not Momoa-run)
 
 - `r#"{"s":"plain"}"#`: no Unicode escape enters the `u` arm of
