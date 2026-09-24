@@ -73,10 +73,11 @@ container with a 72dp header and divider.
  It shows independent I/G/R in-app,
 optional global,
  and future Ctrl+F search-surface choices.
- The user rejected the
-previous generic and Expressive-mixed drafts;
- no selection has been made from this
-baseline redraw.
+ The user rejected the generic draft as non-MD3;
+ the Expressive-mixed redraw was
+withdrawn after source review without being shown for a choice.
+ No selection has
+been made from this baseline redesign.
  Its native light/dark captures and the local-spec header comparison
 are self-contained,
  but the static prototype does not prove hotkeys,
