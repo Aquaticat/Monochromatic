@@ -1205,7 +1205,9 @@ representing P4 as the ideal solution.
  P4 is the user's selected working variant from the P1 to P4 native comparison.
 The form's P4 evidence covers dark at 100% text;
  its dark 200%, L3 light 100%, and L3
-light 200% states were not captured (the available 200% and light captures depict P2).
+light 200% states were not captured.
+ The dark 200% and L3 light 100% captures depict
+P2; no L3 light 200% picker capture exists.
 Check the selected variant in those states before claiming corresponding visual coverage;
 validate focus and return behavior through native interaction, not screenshots alone.
  The comparison's
