@@ -258,24 +258,31 @@ or unpatched primitive-wrapper `Symbol.toStringTag`.
 - `shouldFallbackToDefault` forced to fall back when the function is the default (555):
    the default runs again on the same values and returns the same value.
 
-## Requested shared-file changes
+## Follow-up integration
 
-- `mise.toml`: a `mutation` task to reproduce this run.
-   The image definition, Stryker config, sweep driver, and differential harness are scratch files
-   under `~/temp/agent/deepmerge-mutation-image/` and are not committed;
-   porting them to lint-clean package files needs that task first.
-- `README.md`: list the `mutation-*.unit.test.ts` files, `known-defect-mutation.unit.test.ts`,
-   and the machine-local test.
-- `coverage-baseline.json`: refreeze with `fuzz:coverage --write` after integrating.
-- Generators (owned by other forks' files):
-   option plans never drop every value at a key, never write the into value slot,
-   never enable implicit default merging for `mergeSets`, `mergeMaps`, or `mergeCircularReferences`,
-   never supply `rootMetaData`, a custom `mergeCircularReferences`, or a custom `metaDataUpdater`;
-   alias graphs never merge cyclic sources into a target that lacks the key,
-   which is the only place into remaps differ from their first input;
-   exotic generators never build Module-tagged prototypes or constructors whose prototype is not Object-tagged.
-- Combined issue draft: the `filterValues` seed defect, the into `maxDepth` question,
-   the array-resolution characterization, and the metadata `result` question from `Findings`.
+- Reproducible from the repo (user decision recorded in `doc/handover/deepmerge-ts-hardening.md`):
+   the image, Stryker config, sweep driver, and differential harness are now
+   `package/module/deepmerge-ts.fuzz/container/` plus `src/mutation-{score,sweep,sidecar,canon,differential,differential-case}.ts`,
+   run by the `mutation`, `mutation:sweep`, and `mutation:differential` tasks (commands in the package `README.md`).
+   Rerun from a `v8.0.2` checkout: 800 of 1098 detected (782 killed and 18 timed out, against 783 and 17 in the original run, a timing difference),
+   238 survived, 60 without coverage, with mutant ids matching this report.
+   The sweep's baseline control passes all 36 sidecar files on this machine,
+   and a sweep of mutants 34, 226, 283, and 511 reproduces their verdicts here
+   (detected; machine-local only; survived; `known-defect-mutation` only).
+   The differential task's controls hold at 1000 cases per category (baseline stable, mutant 34 separated);
+   it finds no difference for 283, as argued, and none for 511 either,
+   which the pinned test detects: its six categories never draw a drop-all filter at a key the target lacks,
+   so a "no difference" there is bounded by those generators, not proof of equivalence.
+- Coverage gate refrozen after the widened generators: 1765 of 1772 dist lines (was 1676);
+   `defaultMetaDataUpdaterFast` is still never called.
+- `README.md` lists the `mutation-*` tests and tasks.
+- Generators: the listed gaps were closed by a follow-up fork (commits `1d2cc683f` to `035805aa8`),
+   each new branch with a reach count and a control that must fail.
+   It found one more intent question (into never passes a target-only Map entry to a custom function);
+   a probe of the still-unexercised into slot writes found another
+   (`actions.defaultMerge` written into the slot is ignored by the array, Set, and Map functions).
+   Both are pinned in `known-defect-options.unit.test.ts`.
+- Combined issue draft: all four findings in `Findings`, plus both intent questions, added after independent reproduction on 8.0.2.
 
 ## Not exercised
 
