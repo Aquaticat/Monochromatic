@@ -10,19 +10,17 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { emptyTomlEdit, } from './empty-toml-edit.ts';
 import {
+  emptyTomlEdit,
+  parseTomlEdit,
+  tomlFloat,
+  tomlGetValue,
+  tomlInteger,
+  tomlSet,
+  tomlStringify,
   TomlImmutableNodeError,
   TomlTypeError,
-} from './errors.ts';
-import { parseTomlEdit, } from './parse-toml-edit.ts';
-import { tomlGetValue, } from './toml-get-value.ts';
-import { tomlSet, } from './toml-set.ts';
-import { tomlStringify, } from './toml-stringify.ts';
-import {
-  tomlFloat,
-  tomlInteger,
-} from './wrappers.ts';
+} from '@monochromatic-dev/module-toml-edit';
 
 await describe({
   name: tomlSet.name,

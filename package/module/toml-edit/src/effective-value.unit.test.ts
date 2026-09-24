@@ -12,10 +12,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseTomlEdit, } from './parse-toml-edit.ts';
-import { tomlDelete, } from './toml-delete.ts';
-import { tomlGetValue, } from './toml-get-value.ts';
-import { tomlSet, } from './toml-set.ts';
+import {
+  parseTomlEdit,
+  tomlDelete,
+  tomlGetValue,
+  tomlSet,
+} from '@monochromatic-dev/module-toml-edit';
 
 await describe({
   name: 'effective-value (read-through-edits)',
