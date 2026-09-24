@@ -4692,6 +4692,60 @@ opaque captures,
 without KWin.
  Never call the old Slint pixels target-native proof.
 
+## Fold connector correction and native guard (2026-09-23)
+
+The user caught a second scope error:
+ the first debug-only Compose Search page filled
+the unfolded panel and let its 72dp header,
+ divider and result rows traverse the
+connected centre.
+ E2 had only said "nothing interactive";
+ that wording missed
+visible text and row surfaces.
+ I stopped the in-progress capture before copying
+its invalid inner-panel rasters to main.
+ The before-state unfolded dark XML contains
+four semantic or clickable nodes spanning physical x `[1009,1068)`,
+ including
+query text bounds `[156,166][1920,283]` and a result target
+`[39,422][2037,598]`;
+ its connector pixel at `(1038,200)` was
+`#1A1A1F`,
+ not neutral black.
+ This is a red-capable positive control,
+ not
+an inference from code.
+
+E2 in `decisions.md` now forbids **all app-owned content** across the centered 24dp
+connector (`[414,438)`dp),
+ while allowing only a neutral structural fill there.
+`device-metrics.md` records approximate physical x `[1009,1068)` at 390dpi;
+`review-notes.md` 5q and `open-questions.md` preserve the failure and guard.
+The prototype branch correction `a0c811d09` splits the unfolded Search page into
+414dp left query/header pane,
+ empty 24dp connector,
+ and right results pane.
+The capture script guard at `df4debbd6` checks pixels across that band and every
+visible app text/action node for overlap;
+ a button-only clearance check is
+insufficient.
+ The corrected capture is running under the managed process
+`fold-search-connector-safe-capture` (`proc_e3b5`).
+ Do not call the unfolded page
+validated until its real captures and guard pass in both schemes and at 100%/200%
+text;
+ then rebuild the review against those images.
+
+The stopped capture left the emulator unfolded in dark mode with `stay_on_while_plugged_in=7`;
+its pre-stop 2.0 font scale was restored after measuring it at 1.0.
+ The prior
+stay-on value was not logged,
+ so do not claim it was restored.
+ The current capture
+will restore the state it measures at its start;
+ inspect and settle the AVD setting
+before ending this round.
+
 ## Issue tracking moves to Linear for this session
 
 `gh` cannot reach the GitHub API this session:
