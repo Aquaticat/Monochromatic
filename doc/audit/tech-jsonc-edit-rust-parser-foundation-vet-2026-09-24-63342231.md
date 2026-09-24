@@ -1093,6 +1093,12 @@ Remaining validation includes full TypeScript conformance and property cases,
  full immutable edit/navigation interface,
  and performance on stable-band measurements.
  The chosen foundation is still an unadopted scratch prototype.
+ A later `deep_record_clone_and_equality` test added an independent 512-record clone,
+ equality and drop lifecycle to the earlier array-only clone control.
+ The complete scratch suite and explicit post-operation markers passed in both bounded debug and optimized release runs,
+ with Clippy warnings denied before the debug run.
+ This checks the current tree shape,
+ not the public immutable edit API that has yet to be built.
 
 ## Evidence and validation still required
 
