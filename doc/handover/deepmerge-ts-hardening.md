@@ -119,10 +119,51 @@ Details:
 
 ## Open questions
 
-Asked 2026-09-23, awaiting answers:
-whether to offer upstream the property suite,
-whether to propose enforced coverage thresholds upstream,
-and whether the sidecar keeps a V8 coverage-reachability gate like `package/module/logger.fuzz`.
+None.
+Frontier empty on 2026-09-23;
+awaiting the user's confirmation of shared understanding before implementation.
+
+## Answered 2026-09-23 (round 5)
+
+- Q14:
+   a local draft issue proposes contributing the property suite upstream
+   (fast-check under their Vitest);
+   contribute only if the maintainer agrees.
+- Q15:
+   do not propose enforced coverage thresholds upstream.
+- Q16:
+   the sidecar keeps a V8 coverage-reachability gate with a committed baseline,
+   mirroring `package/module/logger.fuzz` `fuzz:coverage`;
+   the baseline refreezes when the pinned deepmerge-ts version changes.
+- Settled (veto open):
+   known unfixed defects never leave `test:unit` red (`PKG`).
+   Model-equality properties exclude each known-defect region,
+   and a paired known-defect test asserts the defect still reproduces,
+   citing its draft issue,
+   so an upstream fix flips it and forces re-inclusion.
+- Settled (veto open):
+   public generators cap cyclic-input depth below the embargoed threshold;
+   the deep cyclic region is exercised only by the `*.local.*` property until the embargo lifts.
+
+## Planned sequence
+
+1. Local advisory draft for the embargoed findings, for the user to file privately.
+2. Sidecar `package/module/deepmerge-ts.fuzz`:
+   reference model,
+   invariants,
+   fixed-seed `test:unit`,
+   unbounded containerized `fuzz`,
+   `fuzz:coverage` gate,
+   `README.md`.
+3. Fork `Aquaticat/deepmerge-ts`,
+   local checkout under `~/temp/agent` with pushes only to the fork,
+   and sidecar support for targeting a fork build.
+4. Public fix branches with Vitest regression tests for non-embargoed defects.
+5. Local drafts:
+   defect issues and PR bodies,
+   `maxDepth` fallback docs issue,
+   sparse-hole intent question,
+   property-suite proposal.
 
 ## Answered 2026-09-23 (round 4)
 
