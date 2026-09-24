@@ -1237,6 +1237,42 @@ The two Rust projections share `jsonc_parser_probe::decode_quoted`,
  this validates those measured examples,
  not all malformed inputs or the shared emitter's implementation in isolation.
 
+### Shared TypeScript conformance corpus
+
+Both candidates were run against the maintained corpus in
+ `package/module/jsonc-edit.conformance/src/jsonc.conformance.unit.test.ts`
+ (10 valid and 11 invalid sources),
+ from the external differential consumer rather than from either parser crate.
+ Every valid source was accepted by both,
+ and every invalid source was rejected by both:
+ JSON5-only forms (`{ 'a': 1 }`,
+ `{ a: 1 }`,
+ `{ "a": 0x1F }`),
+ scalar roots (`42`,
+ `"bare string"`),
+ a missing comma,
+ a doubled separator (`{ "a": 1, , }`),
+ an unterminated object and an unterminated block comment.
+
+Expectations were asserted **per candidate** rather than by mutual agreement:
+ the number `-1.5e3` kept its spelling and compared mathematically equal to a separately parsed `-1500`;
+ `"x\u0041"` decoded to units `[120, 65]` while retaining its raw spelling;
+ boolean and null kinds matched;
+ and comment ownership matched for a root trailing line comment,
+ a root leading line comment,
+ a key block comment and a same-line value comment.
+ Bounded debug and optimized release suites each passed nine tests.
+
+This corpus is the maintained TypeScript contract **as written today**.
+ Where that contract has separately confirmed defects
+ (a comma before trivia on a later line,
+ multi-line value-comment emission,
+ CR-only line comments,
+ clean-input number spelling loss,
+ and the clean fast-path depth bypass),
+ matching it is not the acceptance criterion;
+ those defects are tracked for correction in both implementations after foundation adoption.
+
 ### External consumer depth lifecycle and comment-style correction
 
 A separate scratch project at `~/temp/agent/jsonc-foundation-diff/`
