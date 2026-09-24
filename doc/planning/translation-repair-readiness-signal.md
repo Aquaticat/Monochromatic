@@ -1519,6 +1519,8 @@ this section is the readiness reading of it.
   shi_Yumiaoya19 found one (one hundred nineteen):
   小药娘 shipped in Han, a third rendering in three runs,
   settled by the owner's answer of 2026-09-24 as "trans girl" or "trans woman" and built as a glossary entry with a floor.
+  shi_Yumiaoya22 found none:
+  both lines read "trans girl" on the page, with no Han and no pinyin outside the archive's comment.
 - What "ready" would rest on now:
   a rotation over every entry in the read set
   (`XingZ60`,

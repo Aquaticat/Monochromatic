@@ -8082,6 +8082,43 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya22 read, 2026-09-24, 22:29 UTC: SETTLED in 31.9 min, class one hundred nineteen live on the page; no class
+
+shi_Yumiaoya22 ran on frozen `d73cb46b9`
+(launched 21:57 UTC, `TALLY shi_Yumiaoya status=SETTLED slices=18`, 1,911,021 ms),
+one attempt, 1,011 seats, 5 retry rounds, 938 calls,
+Bedrock 45.05 to 44.92 and OpenRouter 90.74 to 90.46 USD by the meters.
+shi_Yumiaoya20 (`79972da3d`) and shi_Yumiaoya21 (`5fd7d3dea`) were killed under always-kill-and-relaunch
+as the owner's two same-day refinements of class one hundred nineteen landed.
+
+- Class one hundred nineteen live on the page:
+  the Description line reads "Yumiao was a very ordinary trans girl[^1]"
+  and the Departure line "was mentally bullied by an underage trans girl";
+  no 药娘 in Han and no pinyin form outside the archive translator's comment,
+  which stays as the archive has it.
+- The floor itself did not fire:
+  no candidate kept the Han or wrote a refused form,
+  so the glossary line on the sheets did the work and the floor stood by;
+  the unit guards in `community-term-floor.unit.test.ts` stand for it.
+- Observation, not built:
+  one consolidate gate ballot (minimax-m3) called the standing's "trans women" forbidden by the community term rule,
+  a misreading, since "trans women" is one of the entry's renderings;
+  the gate chose the consolidated text anyway and the page is right.
+  The glossary's `why` names only "trans girl" and "trans woman", the plural an inflection the sheet's rendering list carries.
+- The source's footnote ships as the source writes it:
+  "[^1]: This is the narrow sense of the term here, referring to transgender people who undergo feminizing hormone replacement therapy;
+  it is common usage within the community and carries no derogatory meaning here, and the same applies throughout."
+  It glosses the word the page now renders "trans girl".
+- Every shi_Yumiaoya19 check holds:
+  4 headings of 4 (Description, Experience, Departure, Memorial),
+  front matter equal, no TA, no error finish, no double blank line,
+  the death paragraphs on the page, the attribution "From *The Truman Show*" once,
+  the closing quote as the archive's two lines,
+  "Magic Chewing Gum and Danpian", "she attempted suicide by taking medication in the early hours of January 16";
+  em-dashes left as the owner said.
+- Two gate-kept, 24 slate-declined lines, 17 abstention lines, Jev 30 of 30.
+- glm-5.3 threw on all 71 calls with Hyper dry, its only provider (by design, not a class).
+
 ## hulicaijia17 read, 2026-09-24, 11:00 UTC: SETTLED in 28.4 min, every hulicaijia16 check holding; no class; class one hundred nineteen built on the owner's answer about 小药娘
 
 hulicaijia17 ran on frozen `0d8e463ef`

@@ -4766,18 +4766,21 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA22 RUNS (entry `shi_Yumiaoya`,
+1.  XINGZ6010 RUNS (entry `XingZ60`,
     frozen `d73cb46b9`,
-    corpus-pass pid 1861590 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
-    launched 21:57 UTC 2026-09-24,
-    waiter wait-s22 (background bash);
-    shi_Yumiaoya21 on `5fd7d3dea` was killed at 21:57 UTC, 2 min in, once `d73cb46b9` put the owner's reason into the glossary's why;
-    shi_Yumiaoya20 on `79972da3d` was killed at 21:55 UTC, 17 min in, under always-kill-and-relaunch once `5fd7d3dea` landed;
+    corpus-pass pid 1911378 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
+    launched 22:30 UTC 2026-09-24,
+    waiter wait-x10 (background bash);
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read it by every shi_Yumiaoya19 check first, then class one hundred nineteen:
-    the Description line and the Departure line carry "trans girl" or "trans woman" for 小药娘 and 药娘, no Han and no pinyin form outside a comment, and the `translate-candidate-refused` findings name the community term where a candidate kept it;
-    then `XingZ60`, `mikaela_khara` and `yingying` on the same build, one entry at a time, each read before the next is launched;
-    record each under a new heading above "## hulicaijia17 read, 2026-09-24" in the pass log.
+    read it by every XingZ631 check (14 headings, 2 links, 9 definitions, 3 TextRing, 11 details, front matter equal, no TA, no error finish, no double blank line, the DottedNumber series in Roman numerals, one rendering per song title, Jinxin glossed once);
+    then `mikaela_khara` and `yingying` on the same build, one entry at a time, each read before the next is launched;
+    record each under a new heading above "## shi_Yumiaoya22 read, 2026-09-24" in the pass log.
+    SHI_YUMIAOYA22 READ (frozen `d73cb46b9`): SETTLED at 22:29 UTC 2026-09-24 in 31.9 min, one attempt, 1,011 seats, 5 retry rounds, 938 calls, 0.13 USD Bedrock and 0.28 OpenRouter by the meters;
+    class one hundred nineteen live on the page ("Yumiao was a very ordinary trans girl[^1]", "mentally bullied by an underage trans girl", no Han or pinyin outside the archive's comment);
+    the floor did not fire (no candidate kept the Han), the glossary line did the work;
+    every shi_Yumiaoya19 check holds; observation: one gate ballot misread the listed rendering "trans women" as forbidden, the gate chose right anyway; no class.
+    shi_Yumiaoya21 on `5fd7d3dea` was killed at 21:57 UTC, 2 min in, once `d73cb46b9` put the owner's reason into the glossary's why;
+    shi_Yumiaoya20 on `79972da3d` was killed at 21:55 UTC, 17 min in, under always-kill-and-relaunch once `5fd7d3dea` landed.
     CLASS ONE HUNDRED NINETEEN BUILT (79972da3d, guard red first 2f7dd5190, full suite `suite-class119.log` 1121 PASS, no FAIL):
     owner answer 2026-09-24 on 小药娘 and 药娘: "This term is pretty disrespectful though currently being used by some people in the community in a neutral way. We shouldn't assume that neutralness carries over to English. The best thing we can do here is just to say "trans woman" or "trans girl"."
     `COMMUNITY_GLOSSARY` seeds 药娘 with the renderings "trans girl", "trans woman", "trans women" and the refused forms yaoniang, yao-niang, yao niang (entries gain `refusedForms`);
