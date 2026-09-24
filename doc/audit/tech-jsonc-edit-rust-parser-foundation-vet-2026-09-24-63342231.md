@@ -787,9 +787,20 @@ The published single-file `src/lib.rs:3-68` exports JSONC-to-JSON normalization 
  `:1684-1754` documents escaped lone-surrogate bytes through `deserialize_bytes`.
  The default depth budget is 128;
  the optional unbounded setting (`:202-236`) does not by itself establish safe 512-depth lifecycle.
- Its custom byte-key/value visitor and raw-number composition remain pending,
- not a proven as-is editor.
- No candidate code was executed for these screens.
+ More decisively,
+ `src/de.rs:302-327` ends a `//` comment only on LF,
+ although CR is otherwise recognized as whitespace.
+ An independent bounded consuming crate using published 0.2.4 admitted LF and CRLF cases,
+ but rejected a CR-only JSONC member with `EOF while parsing an object at line 1 column 18`.
+ A fresh upstream [red/green prototype](../troubleshooting/serde-json-lenient-cr-line-comment.md)
+ matched the published source at commit `111dd4522`;
+ its CR tests failed before the scanner patch,
+ passed afterward,
+ and the patched upstream all-target suite passed.
+ The published parser fails this port's CR-only comment contract as-is.
+ Even a patched fork would still discard comment ownership and need an independently audited
+ 512-depth byte-key/value and exact-number adapter.
+ The other wrapper source screens did not execute their candidate code.
 
 ### `fjson` 0.3.1
 
