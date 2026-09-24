@@ -389,6 +389,8 @@ await describe({
             edit: parseTomlEdit({ source, },),
             path: ['probe',],
           },);
+          if ((!('type' in node)) || (node.type !== 'TOMLArray'))
+            throw new Error('Expected array node from array-valued probe',);
           const emitted = _emitContentNode({ node, options: CANONICAL, },);
           expect(semanticEquals({
             left: semanticModel({ source, },),
