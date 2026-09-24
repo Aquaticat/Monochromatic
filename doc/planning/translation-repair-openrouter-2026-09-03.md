@@ -8082,6 +8082,49 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## zheermao9 read, 2026-09-24, 03:20 UTC: SETTLED in 20 min, class one hundred three live under Synthetic's weekly dry-out, class one hundred six not exercised (the contest chose the repair lane 5 of 5), class one hundred seven live on slice 0; but the chunks in flight kept the bench read at their start, so seven of eight checker rounds after the dry-out heard 1 of 3 (class one hundred nine, fixed in 21ea25993); shi_Yumiaoya18 launched
+
+`zheermao9` (entry `zheermao101`, frozen `85ed2881f`, pid 4089371) SETTLED at 03:04 UTC 2026-09-24,
+20 min after its 02:44 launch (TALLY `ms=1191927`),
+one attempt,
+988 seats asked,
+759 calls,
+0.37 USD by the meters (Bedrock 48.41 to 48.28, OpenRouter 95.71 to 95.47),
+Synthetic wet at the launch and dry from 02:56:03 UTC (`syntheticWeekly=0%`, the weekly allowance, not the five-hour window, which read 2734 of 2750), Bedrock and OpenRouter wet, Hyper dry.
+glm-5.3 dark (59 asked, 59 threw; the Hyper-only seat, by design).
+Jev 29 of 29; 10 abstention lines with reasons.
+
+Class one hundred six not exercised: slice 9's contest chose the repair lane 5 of 5 with every ballot calling the archive flawed (`lane-won`, not `settled-neither`, so the run-off predicate stood aside by design),
+and the page's reply label reads "One Among Us members sent her a reply that very night:" for 那些秋叶的成员…连夜, the `zheermao8` observation resolved by the contest itself.
+Class one hundred seven live on slice 0 (`translate-archive-disputed`, two accepted `accuracy/addition` claims; the contest chose translate 3 of 4; the page's opening quote comes from the translate lane).
+Consolidation terminals: slate-declined-standing on slices 0 and 9, slate-unjudged on 1, slate-endorsed on 3, 6, 13 and 14, gate-kept on 4 and 5, consolidated on 11; no unendorsed-standing line.
+Every check as `zheermao8`: 2 headings, front matter equal, no TA, no error finish, no double blank line;
+the email label "English translation of the email conversation:" one line (class seventy-seven holding; the archive writes "English translation of the preceding email conversation:" and "English translation of the preceding letter:"), curly "we'll" (class ninety-six holding), classes one hundred one, two and four holding.
+The page differs from `zheermao8`'s by 75 diff lines, the reply label and the opening quote among them.
+
+Class one hundred three live for the first time: Synthetic dried at 02:56:03 UTC eleven minutes into the repair lane,
+and five chunks starting after it logged "chunk re-seated under a hold: checkers=hf:Qwen/Qwen3.8-27B,gemma-4-26b-a4b-it,google.gemma-4-e2b" (02:56:16 to 02:56:34), the dry reading keeping the unreachable Qwen seat and substituting the withheld Kimi with `google.gemma-4-e2b`.
+
+Class one hundred nine: seven of the eight checker rounds after the dry-out still heard 1 of 3 (chunks 5, 9, 4, 3 and 0 "stage-quorum-unmet (checker 1/3)", the introduced-defect probe the same, "checker: bench short of quorum, reachable 1 of 3; closing on 2 voices"),
+asking the static bench Qwen3.8-27B and Kimi-K3 (both `NoProviderForModelError`; SEAT Qwen 133 asked 116 threw, Kimi 51 asked 34 threw) beside gemma-26b.
+The class one hundred three re-seat lands only at a chunk's start; with overlap 8 the chunks already in flight kept the bench read at their start while their checker stage ran a minute or more later, after the dry-out.
+Fixed in 21ea25993: the checker stage re-reads the seating at the stage itself
+(`repair-checker-reseat.ts`: `checkerBenchAtStage` asks the lane's `beforeSlice` hook again, keeps the chunk's bench when the hook names no checkers or the same ones, and asserts quorum on a fresh bench before logging "checker stage re-seated: <fresh> (the chunk was seated with <old>)";
+`standingSeating` is the default for callers without a hook; `assertCheckerBench` holds the two bench assertions);
+threaded as `reseat` from `repairPreparedDocument` through `settleRepairSlice`, `buyRepairSlice` and `repairChunk` to `proveRepairedChunk` (`repair-chunk-proof.ts`, the checker stage, the region collection and the introduced-defect probe on the stage's bench; `repair-chunk-evidence.ts` holds the parse and the neighbour window, both split out of `repair-chunk.ts` for the line budget).
+Guards red first at 1ab453219 (`repair-checker-reseat.unit.test.ts`: keeps the chunk's bench, asks the bench read at the stage, refuses a bench below the floor; `repair-translation.unit.test.ts`: the hook answering `{}` at the chunk's start and the substitute roster at the stage seats the substitute on the checker round),
+lint 0 and 0, types clean, full suite green (`suite-class109.log`, 1114 PASS);
+the class thirteen "asks before every slice" guard now reads at least once per slice, since the checker stage asks again.
+Not exercised live yet: it needs a provider to dry out inside the repair lane; Synthetic is dry for the week, so the next runs verify no regression only.
+
+`shi_Yumiaoya18` (frozen `21ea25993`, pid 91959, overlap 8)
+launched 03:23 UTC on Bedrock and OpenRouter
+(meters 48.28 USD Bedrock, 95.47 OpenRouter at launch; Synthetic dry for the week, Hyper dry),
+waiter wait-s18.
+Read for any "checker stage re-seated" line (none expected without a hold beginning inside the lane), the checker rounds hearing 2 of 3 on the dry reading (gemma-26b and gemma-4-e2b),
+then classes seventy-eight, seventy-nine, ninety-two, ninety-five, ninety-six, one hundred one and one hundred two beside every check of `shi_Yumiaoya17` (4 headings, front matter equal, the death paragraphs on the page, the closing quote as the archive's two lines, no TA, no error finish, no double blank line).
+Then `mikaela_khara`.
+
 ## CuspariaKLSY12 read, 2026-09-24, 02:50 UTC: SETTLED in 25 min, class one hundred eight live on slice 3 (the softened detail refused on the translate slate, the contest and the gate), no class; zheermao9 launched
 
 `CuspariaKLSY12` (frozen `85ed2881f`, pid 3947732) SETTLED at 02:42 UTC 2026-09-24,

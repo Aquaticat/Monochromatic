@@ -4647,18 +4647,27 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  ZHEERMAO9 RUNS (entry `zheermao101`,
-    frozen `85ed2881f`,
-    pid 4089371,
-    launched 02:44 UTC 2026-09-24,
-    waiter bhdypi1ya,
-    meters 48.41 USD Bedrock and 95.71 OpenRouter at launch, Synthetic wet again since at least 02:17 UTC, Hyper dry;
+1.  SHI_YUMIAOYA18 RUNS (frozen `21ea25993`,
+    pid 91959,
+    launched 03:23 UTC 2026-09-24,
+    waiter wait-s18 (background bash),
+    meters 48.28 USD Bedrock and 95.47 OpenRouter at launch, Synthetic dry for the week since 02:56 UTC (`syntheticWeekly=0%`), Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read slice 9 first for class one hundred six (a `translate-declined-retried` finding on a consolidation slice after a contest with the archive flawed on every ballot; the reply label rendering plural members that same night),
-    any `translate-archive-disputed` line and its ARCHIVE RENDERING DISPUTED block (classes one hundred seven and eight),
-    then classes seventy-seven, ninety-six, one hundred one, one hundred two and one hundred four beside every check of `zheermao8` (2 headings, front matter equal, both labels as the archive, no TA, no error finish, no double blank line);
-    then `shi_Yumiaoya` or `mikaela_khara`, beside every check of the last read of each;
-    record each under a new heading above "## CuspariaKLSY12 read, 2026-09-24" in the pass log.
+    the first run on class one hundred nine;
+    read for any "checker stage re-seated" line (none expected without a hold beginning inside the lane) and the checker rounds hearing 2 of 3 on the dry reading (gemma-26b and gemma-4-e2b),
+    then classes seventy-eight, seventy-nine, ninety-two, ninety-five, ninety-six, one hundred one and one hundred two beside every check of `shi_Yumiaoya17`
+    (4 headings, front matter equal, the death paragraphs on the page, the closing quote as the archive's two lines, no TA, no error finish, no double blank line);
+    then `mikaela_khara`, beside every check of `mikaela11`;
+    record each under a new heading above "## zheermao9 read, 2026-09-24" in the pass log.
+    CLASS ONE HUNDRED NINE BUILT (21ea25993, guards red first 1ab453219, full suite green `suite-class109.log` 1114 PASS):
+    the checker stage re-reads the seating at the stage itself (`repair-checker-reseat.ts` `checkerBenchAtStage`, threaded as `reseat` from `repairPreparedDocument` to `proveRepairedChunk` in `repair-chunk-proof.ts`),
+    since the class one hundred three re-seat lands only at a chunk's start and with overlap 8 the chunks in flight kept a stale bench through their checker stage;
+    not exercised live yet (needs a provider drying out inside the repair lane).
+    ZHEERMAO9 READ (entry `zheermao101`, frozen `85ed2881f`): SETTLED at 03:04 UTC 2026-09-24 in 20 min, one attempt, 988 seats, 759 calls, 0.37 USD by the meters;
+    class one hundred three live (Synthetic's weekly allowance ran out at 02:56 UTC inside the repair lane, five chunks re-seated under the hold to Qwen, gemma-26b and gemma-4-e2b),
+    class one hundred six not exercised (slice 9's contest chose the repair lane 5 of 5; the reply label reads "One Among Us members sent her a reply that very night:"),
+    class one hundred seven live on slice 0 (two accepted addition claims, the contest chose translate 3 of 4), classes seventy-seven, ninety-six, one hundred one, two and four holding, every check as `zheermao8`, 10 abstention lines, Jev 29 of 29;
+    but seven of eight checker rounds after the dry-out heard 1 of 3 on the stale static bench (class one hundred nine, built as read).
     CUSPARIAKLSY12 READ (frozen `85ed2881f`): SETTLED at 02:42 UTC 2026-09-24 in 25 min (Synthetic's latency), one attempt, 437 seats, 420 calls, 0.13 USD by the meters;
     class one hundred eight live on slice 3 (the repair lane softened the accepted addition into "She fell asleep"; with the ARCHIVE RENDERING DISPUTED block on the sheets the translate slate ran off and chose the candidate without it, the contest chose translate 4 of 5 with every ballot calling the archive flawed, the gate kept the contest winner with a ballot writing "both omit the rejected medication detail"; the page reads "She then attempted suicide and was sent to the hospital for emergency treatment" with no medication detail),
     class one hundred seven live on slice 3 (three accepted claims; slice 1 undisputed this run), classes one hundred four and five holding, every check as `CuspariaKLSY11`, slice 1 gate-kept, slice 2 slate-declined, 10 abstention lines, Jev 12 of 12, glm-5.3 dark on Hyper dry; no class.
