@@ -948,3 +948,56 @@ covered (`questions/evidence/cover-round-cover-picker-p4-interaction.json`).
  Documented
 P1/P3 deviation: the floating menu panel exceeds the baseline menu's 112 to 280dp width
 cap because the D31 name wall needs the full panel.
+
+## Desktop command-bar design round (native Slint study, awaiting I/G/R codes)
+
+Three independent questions,
+ no selection yet:
+
+- **I1** dock the action surface below the player header (recommended);
+  **I2** float
+  within the player;
+  **I3** replace the content region.
+  In-app ranking: I1 > I2 >
+  I3,
+  based on source anchoring and retained context.
+- **G1** raise the player when the optional D21 global hotkey is used from another
+  app;
+  **G2** show a detached quick-window concept above that app (recommended).
+  Global
+  ranking: G2 > G1,
+  for preserving the previous task.
+  The OS second window and
+  hotkey are not implemented by this study.
+- **R1** give future Ctrl+F a distinct search destination (recommended);
+  **R2** enter
+  explicit search mode in the command surface.
+  Search relationship ranking: R1 >
+  R2,
+  for dedicated result room rather than mode switching.
+  D25 settles the shortcut
+  reservation only,
+  not this choice.
+
+All in-app variants depict the same typed action query and selected result.
+ Each
+candidate has opaque native Slint captures in both schemes at the current desktop
+app's preferred 480 × 600px size;
+ I1 to I3 also appear at exploratory 1100 × 640px.
+I1 has a 360 × 640px larger-text/long-label stress capture.
+ E1 no-results and E2
+unavailable-action captures are contextual probes,
+ not options.
+ The form is
+`questions/current.html`;
+ the native rasters are `questions/render/command-round-{i,g,r,e}*`.
+The discarded S × C first draft was not shown to the user;
+ its evidence is marked
+historical in `questions/evidence/command-round-prior-art.md`.
+ Native static rasters
+do not prove keyboard operation,
+ accessible semantics,
+ focus return,
+ hotkey feasibility,
+search indexing,
+ or real second-window behavior.
