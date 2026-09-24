@@ -6,6 +6,7 @@
 import {
   access,
   lstat,
+  readdir,
   realpath,
   rm,
 } from 'node:fs/promises';
@@ -48,6 +49,7 @@ import {
   headsEqual,
   parsePreparedJournal,
   parseRefUpdated,
+  processIsAlive,
 } from './commit-transaction-recovery-validation.ts';
 
 export { CommitTransactionRecoveryError, } from './commit-transaction-recovery-validation.ts';
@@ -84,29 +86,6 @@ async function pathExists(path: string,): Promise<boolean> {
   }
   catch (error: unknown) {
     if (isMissingPath(error,))
-      return false;
-    throw error;
-  }
-}
-
-/**
- Reports whether journal owner process is still alive.
- 
- @param pid - recorded wrapper process ID
- 
- @returns whether signal-zero probe succeeds
- */
-function processIsAlive(pid: number,): boolean {
-  try {
-    process.kill(
-      pid,
-      0,
-    );
-    return true;
-  }
-  catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error)
-      && (error.code === 'ESRCH'))
       return false;
     throw error;
   }
@@ -164,6 +143,8 @@ export async function recoverCommitTransaction({
   );
   if ((!directoryMetadata.isDirectory()) || directoryMetadata.isSymbolicLink())
     throw new CommitTransactionRecoveryError(`Unsafe transaction recovery directory: ${directory}`,);
+  if ((await readdir(directory,)).length === 0)
+    throw new CommitTransactionRecoveryError(`Empty pre-journal transaction directory: ${directory}. Setup may still be active; retry after its owner exits. If no owner remains, inspect the empty directory before removing it.`,);
   /**
    Required prepared journal path.
    */

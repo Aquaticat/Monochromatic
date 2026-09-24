@@ -37,6 +37,34 @@ export class CommitTransactionRecoveryError extends Error {
 }
 
 /**
+ Reports whether journal owner process is still alive.
+
+ @param pid - recorded wrapper process ID
+
+ @returns whether signal-zero probe succeeds
+
+ @example
+ ```ts
+ processIsAlive(process.pid);
+ ```
+ */
+export function processIsAlive(pid: number,): boolean {
+  try {
+    process.kill(
+      pid,
+      0,
+    );
+    return true;
+  }
+  catch (error: unknown) {
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ESRCH'))
+      return false;
+    throw error;
+  }
+}
+
+/**
  Parses original HEAD discriminated value.
  
  @param value - untrusted journal field

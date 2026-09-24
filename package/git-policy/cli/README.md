@@ -322,6 +322,11 @@ or filesystem identity produces exit `2` without discarding evidence.
 Do not remove the retained directory merely to silence that diagnostic;
 the preserved snapshots and journal are the evidence needed to distinguish an unlanded commit from a landed commit
 whose index installation was interrupted.
+If setup stopped before writing a journal,
+an empty directory has no snapshots to recover,
+but its emptiness does not prove its owner has exited (including when another index location is in use).
+The wrapper preserves it and reports an empty pre-journal diagnostic rather than deleting a possibly active transaction.
+A failed exclusive index-lock acquisition does not create a transaction directory.
 
 Use the namespaced cli-git management commands:
 

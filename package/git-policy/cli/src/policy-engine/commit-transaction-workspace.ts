@@ -13,6 +13,7 @@ import {
   realpath,
   rename,
   rm,
+  rmdir,
 } from 'node:fs/promises';
 import {
   dirname,
@@ -22,6 +23,7 @@ import {
 } from 'node:path';
 import {
   DIRECTORY_MODE,
+  isMissingPath,
   protectPath,
   syncDirectory,
 } from '../trust/registry-io.ts';
@@ -248,27 +250,71 @@ export async function createCommitTransactionWorkspace({
     TRANSACTION_DIRECTORY_NAME,
   ) !== resolve(directory,))
     throw new TypeError('Git transaction path has a noncanonical administrative parent.',);
-  await mkdir(
-    directory,
-    { mode: DIRECTORY_MODE, },
-  );
-  await protectPath({
-    path: directory,
-    directory: true,
-  },);
-  await syncDirectory(canonicalParent,);
   /**
    Real Git lock path.
    */
   const lockPath = `${realIndexPath}.lock`;
   /**
-   Exclusive real-index lock.
+   Exclusive real-index lock acquired before creating any recovery state.
    */
   const lockHandle = await open(
     lockPath,
     'wx',
     PRIVATE_FILE_MODE,
   );
+  /**
+   Whether ownership has transferred to the returned workspace.
+   */
+  const ready = new Set<'ready'>();
+  /**
+   Closes an acquired descriptor even when setup fails before metadata is read.
+   */
+  await using setupHandle = {
+    [Symbol.asyncDispose]: async function closeFailedSetupHandle(): Promise<void> {
+      if (ready.size === 0)
+        await lockHandle.close();
+    },
+  };
+  /**
+   Whether this invocation created a directory it can remove while still holding its lock.
+   */
+  const created = new Set<'created'>();
+  /**
+   Releases only setup artifacts owned by this invocation on any pre-return failure.
+   */
+  await using setup = {
+    [Symbol.asyncDispose]: async function disposeFailedSetup(): Promise<void> {
+      if (ready.size > 0)
+        return;
+      if (created.size > 0)
+        await rmdir(directory,);
+      try {
+        /**
+         Current lock metadata, never followed across a replaced path.
+         */
+        const current = await lstat(
+          lockPath,
+          { bigint: true, },
+        );
+        /**
+         Owned lock metadata from still-open descriptor.
+         */
+        const owned = await lockHandle.stat({ bigint: true, },);
+        if ((current.dev === owned.dev) && (current.ino === owned.ino))
+          await rm(lockPath,);
+      }
+      catch (error: unknown) {
+        if (!isMissingPath(error,))
+          throw error;
+      }
+      if (created.size > 0)
+        await syncDirectory(canonicalParent,);
+    },
+  };
+  /**
+   Exact owned lock object metadata.
+   */
+  const lockMetadata = await lockHandle.stat({ bigint: true, },);
   await protectPath({
     path: lockPath,
     directory: false,
@@ -280,10 +326,16 @@ export async function createCommitTransactionWorkspace({
     path: lockPath,
     emitDiagnostics: false,
   },);
-  /**
-   Exact owned lock object metadata.
-   */
-  const lockMetadata = await lockHandle.stat({ bigint: true, },);
+  await mkdir(
+    directory,
+    { mode: DIRECTORY_MODE, },
+  );
+  created.add('created',);
+  await protectPath({
+    path: directory,
+    directory: true,
+  },);
+  await syncDirectory(canonicalParent,);
   /**
    Installation marker populated only after atomic replacement.
    */
@@ -296,6 +348,7 @@ export async function createCommitTransactionWorkspace({
    Closed-handle marker preventing duplicate close after partial installation.
    */
   const closed = new Set<'closed'>();
+  ready.add('ready',);
   return {
     directory,
     commitIndexPath: join(
