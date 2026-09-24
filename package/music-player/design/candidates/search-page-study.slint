@@ -1,7 +1,7 @@
 // THROWAWAY DESIGN PROTOTYPE FOR D47: Search button -> separate page.
 // This is not a command palette, global hotkey, or production implementation.
-// Baseline M3: 64px small app bar, 56px Search bar (full pill), 72px two-line lists.
-// At widths below 384px the query field becomes a flat 72px focused header.
+// Baseline M3: one full-page 72px Search header with Back/input/Clear and a divider;
+// two-line result rows use the 72px baseline list token. No second app bar is drawn.
 // The small 'cam' result set and library-unavailable state are illustrative stubs.
 import "command-fonts/Roboto-Regular.ttf";
 
@@ -48,7 +48,6 @@ export component SearchPageStudy inherits Window {
     in property <bool> dark: true;
     in property <bool> compact: true;
     in property <bool> stress: false;
-    private property <bool> narrow: root.width < 384px;
     private property <int> result-state: root.library-unavailable ? 3 :
         (root.query == "" ? 0 : (root.query == "cam" ? 1 : 2));
     title: root.search-open ? "Search · Music Player" : "Music Player";
@@ -57,20 +56,9 @@ export component SearchPageStudy inherits Window {
     preferred-height: root.stress ? 640px : (root.compact ? 600px : 640px);
     background: root.dark ? #000000 : #ffffff;
 
-    // Desktop window context remains stable while its page content changes.
-    Rectangle {
-        x: 0px; y: 0px; width: parent.width; height: 34px;
-        background: root.dark ? #121318 : #f4f3fa;
-        Text {
-            x: 16px; y: 8px; height: 20px;
-            text: root.search-open ? "Music Player · Search" : "Music Player";
-            font-size: 14px; font-weight: 600;
-            color: root.dark ? #e4e5f0 : #30323b;
-        }
-    }
-
+    // The OS window title is native; no extra in-app title strip is painted.
     if !root.search-open: Rectangle {
-        x: 0px; y: 34px; width: parent.width; height: parent.height - 34px;
+        x: 0px; y: 0px; width: parent.width; height: parent.height;
         background: root.dark ? #000000 : #ffffff;
         Rectangle {
             x: 0px; y: 0px; width: parent.width; height: 64px;
@@ -167,14 +155,14 @@ export component SearchPageStudy inherits Window {
     }
 
     if root.search-open: Rectangle {
-        x: 0px; y: 34px; width: parent.width; height: parent.height - 34px;
+        x: 0px; y: 0px; width: parent.width; height: parent.height;
         background: root.dark ? #000000 : #ffffff;
-        // Page identity is separate from the search input; no player controls remain.
+        // One full-page baseline Search header carries Back, query, and Clear.
         Rectangle {
-            x: 0px; y: 0px; width: parent.width; height: 64px;
-            background: root.dark ? #000000 : #ffffff;
+            x: 0px; y: 0px; width: parent.width; height: 72px;
+            background: root.dark ? #1e1f26 : #e7e7f1;
             back-button := Rectangle {
-                x: 16px; y: 8px; width: 48px; height: 48px;
+                x: 16px; y: 12px; width: 48px; height: 48px;
                 accessible-role: button; accessible-label: "Back to player";
                 MaterialGlyph {
                     x: 12px; y: 12px; glyph: @image-url("command-icons/back.svg");
@@ -185,66 +173,34 @@ export component SearchPageStudy inherits Window {
                     clicked => { root.search-open = false; root.query = ""; }
                 }
             }
-            Text {
-                x: 80px; y: 16px; height: 32px;
-                text: "Search"; font-size: 22px; font-weight: 500;
-                color: root.dark ? #e4e5f0 : #30323b;
-            }
-        }
-        if root.narrow: Rectangle {
-            x: 0px; y: 64px; width: parent.width; height: 72px;
-            background: root.dark ? #1e1f26 : #e7e7f1;
-            MaterialGlyph {
-                x: 24px; y: 24px; glyph: @image-url("command-icons/search.svg");
-                ink: root.dark ? #a9aab5 : #5d5f68;
-            }
             if root.query == "": Text {
-                x: 72px; y: 23px; text: "Search library";
-                font-size: 16px; color: root.dark ? #a9aab5 : #5d5f68;
-            }
-            search-input-narrow := TextInput {
-                x: 72px; y: 22px; width: parent.width - 136px; height: 30px;
-                text <=> root.query; input-type: search;
-                font-size: root.stress ? 20px : 16px;
-                color: root.dark ? #e4e5f0 : #30323b;
-                accessible-label: "Search music library";
-            }
-            if root.query != "": Rectangle {
-                x: parent.width - 56px; y: 12px; width: 48px; height: 48px;
-                MaterialGlyph { x: 12px; y: 12px; glyph: @image-url("command-icons/close.svg"); ink: root.dark ? #a9aab5 : #5d5f68; }
-                TouchArea { width: parent.width; height: parent.height; clicked => { root.query = ""; } }
-            }
-            Rectangle { y: 71px; width: parent.width; height: 1px; background: root.dark ? #73757f : #797a84; }
-        }
-        if !root.narrow: Rectangle {
-            x: (parent.width - min(720px, parent.width - 32px)) / 2;
-            y: 80px; width: min(720px, parent.width - 32px); height: 56px;
-            background: root.dark ? #1e1f26 : #e7e7f1;
-            border-radius: 28px;
-            MaterialGlyph {
-                x: 16px; y: 16px; glyph: @image-url("command-icons/search.svg");
-                ink: root.dark ? #a9aab5 : #5d5f68;
-            }
-            if root.query == "": Text {
-                x: 56px; y: 15px; text: "Search library";
+                x: 80px; y: 23px; text: "Search music";
                 font-size: 16px; color: root.dark ? #a9aab5 : #5d5f68;
             }
             search-input := TextInput {
-                x: 56px; y: 14px; width: parent.width - 112px; height: 30px;
+                x: 80px; y: 21px; width: parent.width - 160px; height: 32px;
                 text <=> root.query; input-type: search;
-                font-size: 16px;
+                font-size: root.stress ? 20px : 16px;
                 color: root.dark ? #e4e5f0 : #30323b;
-                accessible-label: "Search music library";
+                accessible-label: "Search music";
             }
             if root.query != "": Rectangle {
-                x: parent.width - 48px; y: 4px; width: 48px; height: 48px;
-                MaterialGlyph { x: 12px; y: 12px; glyph: @image-url("command-icons/close.svg"); ink: root.dark ? #a9aab5 : #5d5f68; }
+                x: parent.width - 64px; y: 12px; width: 48px; height: 48px;
+                accessible-role: button; accessible-label: "Clear search";
+                MaterialGlyph {
+                    x: 12px; y: 12px; glyph: @image-url("command-icons/close.svg");
+                    ink: root.dark ? #a9aab5 : #5d5f68;
+                }
                 TouchArea { width: parent.width; height: parent.height; clicked => { root.query = ""; } }
+            }
+            Rectangle {
+                x: 0px; y: 71px; width: parent.width; height: 1px;
+                background: root.dark ? #73757f : #797a84;
             }
         }
         if root.result-state == 0: Rectangle {
             x: (parent.width - min(720px, parent.width - 32px)) / 2;
-            y: 210px; width: min(720px, parent.width - 32px); height: 180px;
+            y: 170px; width: min(720px, parent.width - 32px); height: 180px;
             MaterialGlyph {
                 x: (parent.width - 24px) / 2; y: 0px;
                 glyph: @image-url("command-icons/search.svg");
@@ -263,7 +219,7 @@ export component SearchPageStudy inherits Window {
         }
         if root.result-state == 1: Rectangle {
             x: (parent.width - min(720px, parent.width - 32px)) / 2;
-            y: root.narrow ? 162px : 168px;
+            y: 90px;
             width: min(720px, parent.width - 32px); height: 248px;
             Text {
                 x: 0px; y: 8px; text: "Results for “cam”";
@@ -283,7 +239,7 @@ export component SearchPageStudy inherits Window {
         }
         if root.result-state == 2: Rectangle {
             x: (parent.width - min(720px, parent.width - 32px)) / 2;
-            y: 215px; width: min(720px, parent.width - 32px); height: 150px;
+            y: 180px; width: min(720px, parent.width - 32px); height: 150px;
             Text {
                 x: 0px; y: 0px; width: parent.width; height: 30px;
                 text: "No results for “" + root.query + "”";
@@ -299,7 +255,7 @@ export component SearchPageStudy inherits Window {
         }
         if root.result-state == 3: Rectangle {
             x: (parent.width - min(720px, parent.width - 32px)) / 2;
-            y: 215px; width: min(720px, parent.width - 32px); height: 150px;
+            y: 180px; width: min(720px, parent.width - 32px); height: 150px;
             Text {
                 x: 0px; y: 0px; width: parent.width; height: 30px;
                 text: "Library unavailable";
