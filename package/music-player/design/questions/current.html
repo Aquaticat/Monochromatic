@@ -92,7 +92,7 @@ button:focus-visible, select:focus-visible, textarea:focus-visible, input:focus-
 .cover-card img { inline-size: min(100%, 25rem); block-size: auto; }
 fieldset { margin-block: 1rem; padding-inline: 1rem; padding-block: 1rem; }
 fieldset legend { padding-inline: 0.4rem; font-weight: 700; }
-.choice { display: flex; gap: 0.65rem; align-items: start; margin-block: 0.7rem; }
+.choice { display: flex; gap: 0.65rem; align-items: center; min-block-size: 3rem; margin-block: 0.7rem; }
 .choice input { min-inline-size: 1.5rem; min-block-size: 1.5rem; margin-block: 0.2rem; }
 textarea {
   display: block;
@@ -344,7 +344,7 @@ document.querySelector('#response-form').addEventListener('submit', event => {
   event.preventDefault();
   const choice = document.querySelector('input[name="composition"]:checked').value;
   const correction = document.querySelector('#correction').value.trim();
-  document.querySelector('#reply').textContent = `Search composition: ${choice}.\nCorrection: ${correction || 'none stated'}.\nCrease minimum padding: still open unless specified in correction.`;
+  document.querySelector('#reply').textContent = `Search composition: ${choice}.\nCorrection: ${correction || 'none stated'}\nCrease minimum padding: still open unless specified in correction.`;
 });
 render();
 </script>
