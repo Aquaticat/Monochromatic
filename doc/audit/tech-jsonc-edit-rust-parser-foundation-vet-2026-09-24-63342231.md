@@ -562,6 +562,20 @@ A direct TypeScript bundle probe parsed a CRLF-separated object but returned a l
  retaining the same comment body and owner through canonical emission and reparse.
  TypeScript production behavior remains unchanged pending foundation adoption.
 
+### Semantic differential preparation
+
+The separate scratch differential consumer now imports the Biome-to-value adapter,
+ with a package-manager-regenerated Cargo.lock SHA-256
+ `6568ac62ea949cb295e2a472840da3b13cbb534b120446d2609c411434f26a87`.
+ Its updated `~/temp/agent/jsonc-differential-execution-manifest.md` records the added read-only source mount,
+ unchanged third-party build graph,
+ and the new semantic comparison **before execution**.
+ The same bounded mutation corpus will compare fully projected editor nodes when both grammars admit an input.
+ A deliberately moved value comment is checked first so owner-blind comparisons cannot produce a trusted null result.
+ Explicit expected values in the separate projection suite remain the independent control;
+ comparing two prototypes with shared scalar/emitter helpers alone would not establish correctness.
+ No semantic differential result is yet claimed.
+
 ## Existing-parser contract exits
 
 These are outcomes for published implementations **as-is**,
