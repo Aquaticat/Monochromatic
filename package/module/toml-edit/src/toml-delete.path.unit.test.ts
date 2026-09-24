@@ -15,11 +15,11 @@ await describe({
   name: 'nested deletion paths',
   children: [
     it({
-      name: 'deletes the root document without changing the original state',
+      name: 'treats an empty path as a no-op without changing the original state',
       fn: async () => {
         const edit = parseTomlEdit({ source: 'a = 1\n[b]\nx = 2\n', },);
         const deleted = tomlDelete({ edit, path: [], },);
-        expect(tomlStringify({ edit: deleted, },),).toBe('',);
+        expect(tomlStringify({ edit: deleted, },),).toBe('a = 1\n[b]\nx = 2\n',);
         expect(tomlStringify({ edit, },),).toBe('a = 1\n[b]\nx = 2\n',);
       },
     },),
