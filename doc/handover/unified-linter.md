@@ -479,18 +479,34 @@ Round 7 answers (user,
 - Rule settings merge with deepmerge-ts semantics
    (<https://github.com/RebeccaStevens/deepmerge-ts>):
    "I assume there is such a crate in Rust too."
-  deepmerge-ts's README states records merge recursively,
-   arrays concatenate,
-   Sets union,
-   Maps merge by key,
-   `undefined` overwrites,
-   and other values are replaced by the later one.
-  crates.io search for "deepmerge" (2026-09-23) returned `deepmerge` 0.1.0
-   (497 downloads,
-   one release on 2025-09-10)
-   and `deepmerge-derive` 0.1.0.
-  A `choosing-technology` vet of merge crates against an in-linter baseline is running,
-   report due at `doc/audit/tech-unified-linter-config-deep-merge-vet-2026-09-23.md`.
+  Semantics verified in deepmerge-ts 8.0.2 source
+   ([`doc/audit/tech-unified-linter-config-deep-merge-vet-2026-09-23.md`](../audit/tech-unified-linter-config-deep-merge-vet-2026-09-23.md)):
+   all inputs merge in one call;
+   when any value's type differs from the first,
+   the last value wins outright;
+   records merge own keys recursively;
+   arrays concatenate one level deep;
+   `null` is an ordinary value;
+   `undefined` never overwrites (since 6.0.0,
+   correcting this handover's earlier README-based line);
+   Sets union and Maps merge recursively,
+   neither of which HCL has.
+  No Rust crate reproduces the one-call semantics:
+   `deepmerge` 0.1.0,
+   `figment` 0.10.19 (`admerge`),
+   `cfgmatic-merge`,
+   and `rskit-codec` each fail the same 3 of 33 probe cases,
+   because they merge two blocks at a time;
+   the rest fail more.
+  A roughly 77-line function over `hcl-edit` values in the linter matched all 33 cases,
+   keeps source positions,
+   and adds no dependency;
+   the crates add 2.59 s to 9.68 s of CPU time to a clean dev build.
+  Agent adoption,
+   open to veto in round 11:
+   the in-linter function with deepmerge-ts's one-call semantics,
+   since the user chose deepmerge-ts and prioritizes compile speed;
+   `null` and duplicate keys are rejected as configuration errors.
 
 Round 8 answer (user,
 2026-09-23):
