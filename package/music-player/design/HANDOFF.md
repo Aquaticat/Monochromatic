@@ -4216,13 +4216,20 @@ were carried to the design evidence in `1c33fc833`.
  The opaque 1080 × 2424px rasters
 keep the 200% mode-group bottom border visible, with the L3 hairlines at both seams and
 the selected-folder indicator inside the picker.
- These static frames do not verify
-opening, closing, focus return or cover-specific accessibility.
- An interactive P4 study
-is being built in the prototype worktree for those checks.
+ A separate interactive P4 study in the prototype worktree (commits `c4e75cfd8`,
+`2341294f0`, `1ccb8a027`) was installed on the folded cover at 200%.
+ The hierarchy
+snapshots and checked summary in
+`questions/evidence/cover-round-cover-picker-p4-interaction.json` show title open/close,
+Back closing, same-folder selection dismissal, and keyboard input focus retained on the
+trigger after Back.
+ Touch dismissal leaves keyboard focus unset in touch mode.
+ This
+prototype does not select a different library and its tests do not establish TalkBack
+accessibility focus; keep cover-specific accessibility open.
+ The AVD's original unfolded
+state was restored after the interaction check.
 
-Recommended next design-only sequence: exercise P4 native open, close, and focus return.
-This interaction check need not block an independent design round.
 The next recommended surface round is the command bar's content and actions (D21), with
 search targets/results and its relationship to the folder picker (D25) treated as
 separate questions.

@@ -1225,7 +1225,17 @@ of 2424, with its bottom border visible above the navigation bar.
  L3's top-row and
 deck hairlines remain separate from the selected folder indicator.
  These are visual
-checks of the opened state, not native open/close or focus-return evidence.
+checks of the opened state.
+ A separate debug-only interactive P4 study on the folded
+cover at 200% verified closed to open via the title, open to closed via the title and
+Android Back, and dismissal by selecting the current folder.
+ Keyboard activation and
+Back preserved input focus on the trigger; touch dismissal left it unfocused in touch
+mode.
+ `questions/evidence/cover-round-cover-picker-p4-interaction.json` links the native
+hierarchies.
+ TalkBack accessibility focus was not measured.
+ D46 remains provisional.
 
 **Not selected for the temporary baseline.**
  P1 and P3 use a floating panel;

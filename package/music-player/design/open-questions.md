@@ -37,10 +37,13 @@ rounds (2026-09-17):
   The 200% mode
   group border remains visible, and L3's two seams remain distinct from the folder
   selection cue.
-  Native open, close and focus-return interactions are not yet verified;
-  static captures cannot establish those behaviors or accessibility.
-  This remaining
-  interaction check need not block an independent design round.
+  An interactive debug-only P4 study at 200% subsequently verified title open/close,
+  Android Back, same-folder selection dismissal, and keyboard focus retained on the
+  trigger after Back (see D46 and the interaction evidence JSON).
+  Touch dismissal
+  leaves keyboard focus unset in touch mode.
+  TalkBack accessibility focus remains
+  unmeasured; do not infer it from the keyboard-focus check or static captures.
   The cover geometry is 411 × 923dp (1080 × 2424px), with D41/D42 dark
   structure and D45 light seams.
   Selection does not authorize production work.

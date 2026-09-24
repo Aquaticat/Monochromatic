@@ -56,7 +56,9 @@ believes a better picker exists.
  Post-decision native P4 captures now cover dark at 200% and accepted L3 light at
 100% and 200%, in addition to dark at 100%; the opened-state visuals fit without mode
 border clipping.
- Native open/close and focus return still need interaction evidence.
+ A debug-only native interaction study verifies title open/close, Back, same-folder
+dismissal, and keyboard focus retained after Back at 200%; TalkBack focus remains
+unmeasured.
  The light surface itself is settled by D45 (flat with hairlines
 at both seams).
  The next recommended surface round is the command bar's content and

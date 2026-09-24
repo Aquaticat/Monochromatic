@@ -942,8 +942,9 @@ in `questions/render`, dark at 100%, P2 at 200%, and P2 in light under the settl
 (D45). Post-decision P4 captures now cover dark 200%, L3 light 100%, and L3 light 200%
 under the same folded native geometry; the original P form remains historical and does
 not contain those later rasters.
- Native opening, closing, and focus return still require
-interaction evidence.
+ A separate debug-only interactive P4 study at 200% verified title open/close, Android
+Back, selection dismissal, and keyboard focus retained after Back; TalkBack focus is not
+covered (`questions/evidence/cover-round-cover-picker-p4-interaction.json`).
  Documented
 P1/P3 deviation: the floating menu panel exceeds the baseline menu's 112 to 280dp width
 cap because the D31 name wall needs the full panel.
