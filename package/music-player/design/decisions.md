@@ -635,14 +635,39 @@ borderless text index (unf-e) — see open-questions.md #1.
 See device-metrics.md for real dimensions.
  The hinge is **vertical** in portrait.
 
-### E2. Nothing interactive crosses the crease (revised 2026-09-04)
-A **24dp spacer** runs down the centre of the unfolded 852dp expanded layout.
+### E2. No app content occupies the fold connector (revised 2026-09-23)
+A **24dp centered spacer** runs down the 852dp unfolded inner display between two
+414dp content panes:
+ left `[0,414)`dp,
+ connector `[414,438)`dp,
+ right `[438,852)`dp.
+The Material expanded-pane guidance supplies this width.
+ The connector is a
+structural surface fill only,
+ never a third content region.
+ **No app-owned content
+may paint or claim a target there**:
+ no text,
+ icon,
+ control,
+ list row,
+ progress
+track,
+ divider,
+ badge,
+ focus outline,
+ or accessibility hit region.
+ Clip every
+page,
+ including a full-page Search destination and its header,
+ to the pane bounds;
+do not merely keep buttons away while allowing text or results to cross.
  The
-supplied Material breakpoint guidance requires a 24dp spacer between expanded panes.
-The spacer remains visually centred and contains nothing interactive.
- This invalidated
-an earlier design that put the play button directly on the crease and supersedes the
-older 16dp gutter.
+uniform dark/light spacer fill remains allowed,
+ and Android's system-owned status
+and navigation bars are outside this app-content rule.
+ This supersedes the older
+16dp gutter and the weaker "nothing interactive" phrasing.
 
 ### E3. Tabletop posture = candidate tabletop-c
 The user’s own proposal,
@@ -1310,6 +1335,9 @@ Do not substitute 360 × 640,
  480 × 600,
  or 1100 × 640 desktop mock windows as
 visual decision targets.
+ The unfolded centre connector also remains empty of
+**all app content** under E2,
+ not merely interactive controls.
  Those native Slint experiments are historical only.
 
 **Effect.**
