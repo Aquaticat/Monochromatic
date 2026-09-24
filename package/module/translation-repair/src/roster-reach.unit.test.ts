@@ -302,19 +302,24 @@ await describe({
   name: visionReachOf.name,
   children: [
     it({
-      name: 'SENDS GLM-5.3-FLASH PICTURES TO BOTH PROVIDERS without inheriting GLM-5.2 Hyper reach',
+      name: 'SENDS GLM-5.3-FLASH TO HYPER AND OPENROUTER and not to Synthetic, which lists it and is '
+        + 'withheld on measured latency (class one hundred eighteen, CuspariaKLSY13), without inheriting '
+        + 'GLM-5.2 Hyper reach',
       fn: async () => {
         // The Hyper side comes from glm-5.3-flash's own 2026-09-01 catalog
         // entry, never from the retired glm-5.2 spelling this test predates.
+        // Synthetic still lists the model; the run does not route it there.
+        expect(syntheticServes(SEAT_SYNTHETIC_VISION_EDITOR,),).toBe(true,);
+
         expect(visionReachOf({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),).toEqual({
-          synthetic: true,
+          synthetic: false,
           hyper: true,
           bedrock: false,
           openrouter: true,
         },);
 
         expect(reachOf({ modelId: SEAT_SYNTHETIC_VISION_EDITOR, },),).toEqual({
-          synthetic: true,
+          synthetic: false,
           hyper: true,
           bedrock: false,
           openrouter: true,
