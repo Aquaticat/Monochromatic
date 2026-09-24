@@ -48,6 +48,8 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.dispatch_workspace_node}}
 const args = (process.env.usage_args ?? '').trim().split(' ').filter(Boolean)
+// The CLI resolves --package from cwd; mise runs package tasks from the package directory.
+process.chdir(monorepoRoot)
 runWorkspaceNode('package/cli/mutation-test', 'cli', ['--package', 'package/module/toml-edit', '--full-suite', ...args])
 """
 
