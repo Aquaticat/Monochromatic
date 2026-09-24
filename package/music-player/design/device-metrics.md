@@ -275,13 +275,14 @@ record and role-based guards.
     Each physical screen half is
    **426 × 883dp** at the measured AVD density.
     The previous player
-   prototype placed two 414dp panes around a fixed 24dp connector.
+   prototype placed two 414dp panes around a fixed 24dp blank stripe.
     E2
-   supersedes that width with `max(min_padding, crease_width)`;
-    each
-   symmetric pane would be `(852dp - gap) / 2`.
-    Search need not divide
-   its query and results between those halves.
+   replaces that mistaken **informational clearance** with
+   `max(min_padding, crease_width)` in physical space.
+    It does not require
+   a blank surface gap or force symmetric visual pane widths;
+    Search need
+   not divide its query and results between the halves.
 3. **Informational material stays visibly clear of the physical crease**
    (E2).
     Its center is about 426dp,
@@ -293,7 +294,11 @@ record and role-based guards.
    accepted final player gap.
     The user supplied about 10mm for the visible dent,
  approximately
-   147px or 60dp around center x 1038 at this panel scale.
+   147 **physical px** around center x 1038 on this panel.
+    A conversion
+   to roughly 60dp holds only at the current 390dpi setting;
+    it changes
+   with Android display scaling and is not a design constant.
     Readable text,
    results and other meaning-bearing marks must stay outside that
    approximate band;
@@ -321,37 +326,49 @@ captured as rendered,
 
 ---
 
-## Crease width and player gap
+## Physical crease and informational clearance
 
 The user set the **visible dent width to about 10mm for this design**.
 From the published 8-inch diagonal and 2076 × 2152px aspect,
  the active
 inner panel width is about 141.08mm.
- At this AVD's 390dpi,
- 10mm is
-approximately `10 / 141.08 × 2076 = 147px`,
- or `147 / 2.4375 ≈ 60dp`.
-Centered at physical x 1038,
- the approximate information-free band is
-x `[964,1112)`px,
- or dp `[396,456)`.
- Its endpoints are approximate,
- not
-pixel-perfect physical crease boundaries.
+ Ten physical millimeters cover
+approximately `10 / 141.08 × 2076 = 147` **panel pixels**.
+ Centered at
+physical x 1038,
+ the approximate information-free interval is
+x `[964,1112)`px.
+ These endpoints inherit the uncertainty of the
+published diagonal and the user's "about 10mm" estimate.
 
-The required **player** gap is `max(min_padding, crease_width)`.
- Thus it
-must be at least about 60dp for this target;
- if the applicable minimum
-padding is at most 60dp,
- the gap is about 60dp and two equal panes are
-approximately `(852 - 60) / 2 = 396dp` each.
- The existing 12dp rule
-belongs to mode-button horizontal content padding,
- not necessarily pane
-separation.
- Do not restore the old fixed 24dp gap or claim final pane width
-until the minimum and native fit have been verified.
+Express `max(min_padding, crease_width)` in a common **physical** coordinate
+system before positioning opposing information-bearing regions.
+ The
+crease term is 10mm (about 147 panel px here),
+ not a hard-coded dp
+constant.
+ At the AVD's **current** 390dpi scaling,
+ it corresponds to
+about 60dp;
+ changing display scaling changes that dp number but not the
+physical dent.
+ Compose may convert the current physical clearance to
+layout units at rendering time.
+ The numeric `min_padding` for this boundary
+is not yet established;
+ the existing 12dp rule applies to mode-button
+horizontal content padding and cannot be transplanted silently.
+
+This formula is **not** a mandatory unpainted gap between visible panes.
+Borders,
+ padding,
+ backgrounds,
+ input/row surfaces and hit regions can cross
+the crease;
+ their readable text and other informative marks must stay
+clear.
+ Do not derive final player pane widths by subtracting 147px from the
+whole screen unless a candidate actually chooses symmetric content columns.
 
 The Pixel_9_Pro_Fold AVD's `config.ini` separately contains
 `hw.sensor.hinge.areas=1038-0-0-2152`.
@@ -368,7 +385,7 @@ Source:
 ```text
 443 × 994    measured AVD cover screen (folded, 390dpi; physical 1080 × 2424px)
 852 × 883    measured AVD inner display (unfolded, 390dpi; physical 2076 × 2152px)
-426 × 883    physical right half; about 30dp is crease when using the 10mm width
+426 × 883    right half at current AVD density; physical crease is about 147px wide
 Desktop      inherits Fold visual decisions; its window size is not a design frame (D49)
 ```
 
