@@ -61,6 +61,22 @@ await describe({
     },),
 
     it({
+      name: 'trailing comment attaches when the hash immediately follows a value',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'key = 1#tail\n', },);
+        expect(tomlGetCommentAfter({ edit, path: ['key',], },).comment?.value,).toBe('tail',);
+      },
+    },),
+
+    it({
+      name: 'trailing comment attaches at end of file without a newline',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'key = 1 #tail', },);
+        expect(tomlGetCommentAfter({ edit, path: ['key',], },).comment?.value,).toBe('tail',);
+      },
+    },),
+
+    it({
       name: 'trailing inline comment absent yields no comment field',
       fn: async () => {
         const source = 'key = 1\n';
