@@ -191,6 +191,31 @@ Most `emit-value.ts` survivors in the former AST-only functions cannot be killed
 - Never delete or stage unrelated changes under other packages;
   concurrent agents have been editing `deepmerge-ts.fuzz` and other areas.
 
+## Continuing runtime scan
+
+The initial named campaigns did not exhaust the runtime source list.
+A further container run is now active on read,
+ error,
+ and comment sources:
+ `basic-escape.ts`,
+ `keys.ts`,
+ `errors.ts`,
+ `toml-get-node.ts`,
+ `toml-get-raw.ts`,
+ `toml-get-comments.ts`,
+ `toml-get.ts`,
+ `types.ts`,
+ `wrappers.ts`,
+ and `comments.ts`.
+Its report is `/var/home/user/temp/agent/toml-mutation-remaining-a.json` (process `proc_a45d`).
+After triage,
+ scan the remaining parser,
+ document,
+ editing,
+ comment API,
+ and value-encoding files not named in completed batches.
+Do not claim a full-runtime verdict before those campaigns and their survivor rechecks finish.
+
 ## Remaining scope
 
 The `emit-document.ts` recheck retains equivalent or factory-state-unreachable mutants,
