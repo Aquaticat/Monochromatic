@@ -1,0 +1,74 @@
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import {
+  parseTomlEdit,
+  tomlGetValue,
+  tomlSet,
+  tomlStringify,
+  TomlImmutableNodeError,
+} from '@monochromatic-dev/module-toml-edit';
+
+await describe({
+  name: 'indexed and nested set paths',
+  children: [
+    it({
+      name: 'updates only the addressed array-of-tables instance',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: '[[foo]]\nname="a"\n[[foo]]\nname="b"\n', },);
+        const updated = tomlSet({ edit, path: ['foo', 1, 'name',], value: 'new', },);
+        expect(tomlStringify({ edit: updated, },),).toBe('[[foo]]\nname="a"\n[[foo]]\nname="new"\n',);
+        expect(tomlGetValue({ edit: updated, path: ['foo', 0, 'name',], },),).toBe('a',);
+        expect(tomlGetValue({ edit: updated, path: ['foo', 1, 'name',], },),).toBe('new',);
+      },
+    },),
+    it({
+      name: 'rejects an absent array-of-tables index instead of editing a sibling',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: '[[foo]]\nname="a"\n[[foo]]\nname="b"\n', },);
+        expect(() => tomlSet({ edit, path: ['foo', 2, 'name',], value: 'wrong', },),)
+          .toThrow(TomlImmutableNodeError,);
+        expect(tomlStringify({ edit, },),).toBe('[[foo]]\nname="a"\n[[foo]]\nname="b"\n',);
+      },
+    },),
+    it({
+      name: 'creates under the deepest matching standard-table header',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: '[a.b]\nx=1\n[a.c]\nz=2\n', },);
+        const updated = tomlSet({ edit, path: ['a', 'b', 'new',], value: 3, },);
+        expect(tomlStringify({ edit: updated, },),).toBe('[a.b]\nx=1\nnew = 3\n[a.c]\nz=2\n',);
+      },
+    },),
+    it({
+      name: 'separates a created key from an unterminated final source line',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'a = 1', },);
+        const updated = tomlSet({ edit, path: ['b',], value: 2, },);
+        expect(tomlStringify({ edit: updated, },),).toBe('a = 1\nb = 2\n',);
+      },
+    },),
+    it({
+      name: 'replaces a nested inline-table value without changing siblings',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'foo = { a = { b = 1, c = 2 }, d = 3 }\n', },);
+        const updated = tomlSet({ edit, path: ['foo', 'a', 'b',], value: 9, },);
+        expect(tomlGetValue({ edit: updated, path: ['foo',], },),).toEqual({
+          a: { b: 9, c: 2, },
+          d: 3,
+        },);
+        expect(tomlStringify({ edit: updated, },),).toBe('foo = { a = { b = 9, c = 2, }, d = 3, }\n',);
+      },
+    },),
+    it({
+      name: 'rejects null with the path-specific outer diagnostic',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: '', },);
+        expect(() => tomlSet({ edit, path: ['x',], value: null, },),)
+          .toThrow('Cannot set x to null; use tomlDelete',);
+      },
+    },),
+  ],
+},);
