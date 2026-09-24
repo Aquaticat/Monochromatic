@@ -401,6 +401,26 @@ A disposable set of exact-version manifests under `~/temp/agent/jsonc-regex-audi
  not every line of transitive source or a future resolution.
  Keep source-level regex clearance pending where required.
 
+### Biome bounded execution preparation
+
+The published `biome_json_parser` 0.5.7 archive SHA-256
+ `9c6d23fb9b683e6356c094b4a0cb38f8aa0acee60ce9c3ef24628d21a204de4d` matches its generated scratch Cargo.lock entry.
+ `~/temp/agent/biome-execution-manifest.md` records the intended offline container command,
+ source and checksum,
+ build-script and proc-macro inventory,
+ expected compiler and `emcc` probes,
+ allowed read/write paths,
+ resource ceilings,
+ and stop conditions **before candidate execution**.
+ The resolved graph inventory under `~/temp/agent/biome-execution-inventory.mjs` found 82 unique dependency names,
+ 16 build scripts and 9 procedural-macro packages across all target configurations;
+ these are audit-surface measurements,
+ not timing or proof of candidate behavior.
+ The scratch test will probe surrogate and raw token acceptance,
+ JSON5 rejection,
+ and 512-level parse/syntax/drop only;
+ no runtime result is yet claimed.
+
 ## Existing-parser contract exits
 
 These are outcomes for published implementations **as-is**,
