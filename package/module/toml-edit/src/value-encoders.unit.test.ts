@@ -27,6 +27,8 @@ await describe({
       name: 'spells integer and every nonfinite float explicitly',
       fn: async () => {
         expect(_jsValueToTomlText({ input: tomlInteger(42n,), options: OPTIONS, },),).toBe('42',);
+        expect(_jsValueToTomlText({ input: tomlFloat(1.5,), options: OPTIONS, },),).toBe('1.5',);
+        expect(_jsValueToTomlText({ input: tomlFloat(1e21,), options: OPTIONS, },),).toBe('1e+21',);
         expect(_jsValueToTomlText({ input: tomlFloat(Number.NaN,), options: OPTIONS, },),).toBe('nan',);
         expect(_jsValueToTomlText({ input: tomlFloat(Infinity,), options: OPTIONS, },),).toBe('inf',);
         expect(_jsValueToTomlText({ input: tomlFloat(-Infinity,), options: OPTIONS, },),).toBe('-inf',);
