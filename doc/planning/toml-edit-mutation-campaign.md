@@ -52,8 +52,11 @@ The targeted campaigns here name runtime source files explicitly.
   That was too broad:
   `TomlEditState.blocks` exposes the parsed entry structure,
   so a caller can distinguish the extra comment directly.
-  Added `inline-entry-state.unit.test.ts` to assert the public state has no phantom comments;
-  the `build-value.ts` mutation recheck is pending.
+  Added `inline-entry-state.unit.test.ts` to assert the public state has no phantom comments.
+  The recheck killed that mutant and reported no surviving `build-value.ts` mutants
+  (one killed,
+  34 compile errors,
+  no infrastructure errors).
 - Package wrappers named in the unit tests were missing from the published entrypoint.
   A package-root import failed for `tomlLocalDate` before `index.ts` exported the wrappers.
   Unit tests now import the built package,
@@ -199,6 +202,8 @@ These are not counted as killed assertions.
 The `emit-value.ts` final recheck has no survivors.
 No full-runtime campaign was run,
  so the evidence applies only to the named files and documented branches.
+The final coverage gate was run without a pipeline so its exit status was checked directly;
+ it passed.
 Commit only explicit paths in scope.
 The full runtime scan was not run:
  the initial dry run enumerated 2,675 mutants over 45 runtime files,
