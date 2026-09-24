@@ -833,6 +833,69 @@ frame retained measured pixel geometry at a 20px root font;
 reported no console or page errors.
  No KWin automation was used.
 
+## 5s. Connector compliance was mistaken for an acceptable Search composition
+
+The user rejected the unfolded Search page as obviously bad.
+ This correction
+applies to the **left-header/right-results composition**,
+ not to D47's separate
+page,
+ D48's single header,
+ or E2's empty connector.
+ The inspected native
+`questions/render/fold-search-inner-open-results-light-s100.png` shows a tonal
+Back/query/Clear header above a completely blank left body,
+ while the results
+heading and two rows sit alone in the right pane.
+ The header visually promises
+content under it,
+ but governs empty space instead.
+ The right pane carries all
+result information at half the screen width;
+ in the 200% capture its supporting
+text wraps while the left body is unused.
+ The empty state makes the split more
+obvious:
+ the query bounds `[156,166][970,283]` are separated from the
+instruction bounds `[1351,1184][1793,1253]` horizontally and vertically
+(`questions/evidence/fold-search-inner-open-empty-dark-s100.xml`).
+
+I saw these screenshots and still called the page ready.
+ I treated E2 as if it
+required the header on one side and content on the other,
+ then verified that
+invented layout for connector pixels,
+ semantics,
+ density,
+ accessibility of
+the HTML wrapper and screenshot provenance.
+ Those checks did not measure
+whether the query and its content read as one page.
+ The failure was not a
+missing screenshot;
+ it was failing to make a visual judgment from the screenshot
+before asking the user to correct it.
+
+**The package-specific gate.**
+ After geometric and accessibility checks,
+ inspect
+every target-panel state as a composition:
+ which region the header appears to
+govern,
+ whether instructions and results visibly belong to their query,
+ whether
+space is needlessly reserved while content is constrained,
+ and what changes at
+200% text.
+ Reject a candidate that fails this review before labeling it
+"active" or requesting user feedback.
+ An empty connector is a boundary
+constraint,
+ not a mandate to split Search into two independent halves.
+ Preserve
+the rejected images as evidence,
+ not as the current design.
+
 ## Standing standards for this project
 
 1. **EVERY question form ends with a free-text field.
