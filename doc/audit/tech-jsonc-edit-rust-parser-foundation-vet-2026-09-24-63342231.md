@@ -396,8 +396,8 @@ Source leads for that screening include `jsonc_lexer` from [richplastow/jsonc-le
  The delegated source reading reports raw tokens in the first two,
  a surrogate-unsafe unchecked character conversion in the third,
  and a regex-tokenized production parser in the fourth.
- The `json5format` regex exit was confirmed against its published 0.2.6 archive;
- the other leads still need individual versioned source screening.
+ The `json5format` and `fracturedjson` exits were confirmed against their published archives;
+ `jsonc_lexer` and `json-with-comments` still need independent source screening.
  Candidate metadata alone is not a recommendation.
  The research transcript is retained at `~/temp/agent/` through its subagent output,
  while this report remains the owned audit artifact.
@@ -476,6 +476,21 @@ The published `jcfmt` manifest declares only a `[[bin]]` target at `src/main.rs`
  so calling it as a subprocess would not expose independently queryable key/value comments or a native immutable edit-state API.
  Its `nojson` dependency is a distinct potential parsing component and remains subject to separate source screening.
  No command was executed.
+
+### `fracturedjson` 0.1.1 as-is formatter-interface exit
+
+The published `src/lib.rs:123-139` keeps `tokenizer`,
+ `parser`,
+ and `model` modules private,
+ exposing `Formatter`,
+ error and configuration types rather than a consumable syntax tree.
+ Its `src/formatter.rs:11-31` documents reformat/minify text as the public workflow.
+ Although internal scanning sees comment tokens,
+ the public formatter cannot supply independently queryable comments on keys and values or immutable edit state.
+ A fork exposing and adapting its internal tokenizer would be a separate custom candidate.
+ A targeted search of its published `src/` and manifest found no direct production regex use;
+ its as-is exit here is the public API boundary.
+ No candidate code was executed.
 
 ### `nojson` 0.3.15 as-is contract exit
 
