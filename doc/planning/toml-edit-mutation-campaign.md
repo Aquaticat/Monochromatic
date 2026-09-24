@@ -217,8 +217,18 @@ New package tests cover named and unnamed basic-string escapes,
  error names,
  raw table/header slices,
  and the canonical key-creation default.
-A targeted recheck on the survivor-bearing files is running as `proc_a434`;
- its report will be `/var/home/user/temp/agent/toml-mutation-read-recheck.json`.
+The survivor-bearing recheck reported 133 killed,
+ eight confirmed survivors confined to `comments.ts`,
+ 91 compile errors,
+ and no infrastructure errors.
+The other rechecked files (`basic-escape.ts`,
+ `errors.ts`,
+ `keys.ts`,
+ `toml-get-raw.ts`,
+ `types.ts`) had no survivors.
+Adding a parsed adjacent-hash case also exposed the real trailing-comment defect.
+A subsequent `comments.ts` recheck after preceding-line and following-line guards is running as `proc_ba8a`;
+ its report will be `/var/home/user/temp/agent/toml-mutation-comment-boundaries.json`.
 
 A direct consumer probe of `key = 1#tail` found a real defect:
  `tomlGetCommentAfter` returned no comment because `comments.ts` required the hash offset to be strictly greater than the value end.
