@@ -93,7 +93,7 @@ const fastArguments = mergeArgumentsArbitrary({ exotic: true, protoKey: false, }
 function intoArguments({ protoKey, }: { readonly protoKey: boolean; },) {
   return tuple(
     treeArbitraries({ exotic: false, objectLeaves: false, protoKey, undefinedLeaves: false, },).record.filter((record,) => Object.getPrototypeOf(record,) === Object.prototype),
-    array(treeArbitraries({ exotic: true, objectLeaves: false, protoKey, undefinedLeaves: false, },).record, { minLength: 1, maxLength: MAX_INTO_SOURCES, },),
+    array(treeArbitraries({ exotic: true, objectLeaves: false, protoKey, undefinedLeaves: false, },).record, { minLength: 0, maxLength: MAX_INTO_SOURCES, },),
   );
 }
 

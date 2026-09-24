@@ -374,7 +374,7 @@ export const CASES: readonly DifferentialCase[] = [
   },),
   defineCase({
     arbitrary: tuple(
-      mergeArgumentsArbitrary({ exotic: true, },),
+      mergeArgumentsArbitrary({ edgeCalls: false, exotic: true, },),
       optionsPlanArbitrary({ fast: true, },),
     ),
     call: function treeFastCustom({
