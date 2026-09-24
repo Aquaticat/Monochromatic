@@ -62,6 +62,56 @@ pub mod path;
 /// ```
 pub mod value;
 
+/// What:     The byte scanner for JSONC tokens, strings, numbers and comment trivia.
+/// Why:      Scanning is linear over borrowed source, with no regular expression and no recursion, so
+///           malformed input produces a positioned error instead of a stack or backtracking cost.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // private module: the scanner the parser drives.
+/// ```
+mod scan;
+
+/// What:     Quoted-string conversion between JSON tokens and UTF-16 code units.
+/// Why:      Escaped unpaired surrogates must survive parsing, and replacement values must be written
+///           back as legal JSON text.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { decodeQuoted, encodeQuoted, unitsToString } from './textUnits';
+/// ```
+pub mod text_units;
+
+/// What:     Comment attachment, merging and canonical rendering helpers.
+/// Why:      Stacked comments merge into one normalized comment per key or value, and emission needs
+///           the same style rules the parser recorded.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { mergeComments } from './mergeComments';
+/// ```
+mod comment_merge;
+
+/// What:     The iterative, depth-bounded JSONC parser.
+/// Why:      Valid 512-container documents must parse without exhausting the call stack, and a 513th
+///           opener must be rejected before deeper state exists.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { parseJsonc } from './parse';
+/// ```
+mod parse;
+
+/// What:     The canonical JSONC emitter.
+/// Why:      Output is normalized rather than byte-preserving, so comments stay attached to the same
+///           key or value across an emit-and-reparse cycle.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { emitJsoncValue } from './stringify';
+/// ```
+mod emit;
+
 /// What:     Re-export the failure types at the crate root.
 /// Why:      Callers name `monochromatic_jsonc_edit::JsoncParseError` in signatures without importing
 ///           a module path.
@@ -95,3 +145,38 @@ pub use path::{jsonc_key_path, JsoncPathSegment};
 /// export type { JsoncValue, JsoncKind, JsoncEntry, JsoncKey, JsoncComment } from './value';
 /// ```
 pub use value::{JsoncComment, JsoncCommentKind, JsoncEntry, JsoncKey, JsoncKind, JsoncValue};
+
+/// What:     Re-export comment merging and the parse and emit entry points.
+/// Why:      These three functions are the whole document lifecycle a caller needs before the edit
+///           surface is added.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { mergeComments, parseJsonc, emitJsoncValue } from './index';
+/// ```
+pub use comment_merge::attach as merge_comments;
+/// What:     Re-export the canonical emitter.
+/// Why:      Writing a document is half of the lifecycle, and callers should not name a private module.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { emitJsoncValue } from './stringify';
+/// ```
+pub use emit::emit_jsonc_value;
+/// What:     Re-export the JSONC parser entry point.
+/// Why:      Parsing is the other half of the lifecycle and the only way to obtain a document value.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { parseJsonc } from './parse';
+/// ```
+pub use parse::parse_jsonc;
+/// What:     Re-export the quoted-string conversions.
+/// Why:      Callers that hold a raw token or stored code units need the same decoding and encoding
+///           rules the parser and emitter use.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { decodeQuoted, encodeQuoted, unitsToString } from './textUnits';
+/// ```
+pub use text_units::{decode_quoted, encode_quoted, units_to_string};
