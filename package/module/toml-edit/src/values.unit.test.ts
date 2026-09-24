@@ -10,15 +10,15 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { TomlTypeError, } from './errors.ts';
-import { parseTomlEdit, } from './parse-toml-edit.ts';
-import { tomlSet, } from './toml-set.ts';
-import { tomlStringify, } from './toml-stringify.ts';
 import {
+  parseTomlEdit,
   tomlLocalDate,
   tomlLocalDateTime,
   tomlLocalTime,
-} from './wrappers.ts';
+  tomlSet,
+  tomlStringify,
+  TomlTypeError,
+} from '@monochromatic-dev/module-toml-edit';
 
 await describe({
   name: 'JS-to-TOML value coercion',
