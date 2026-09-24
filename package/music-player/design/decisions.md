@@ -663,8 +663,13 @@ page,
  to the pane bounds;
 do not merely keep buttons away while allowing text or results to cross.
  The
-uniform dark/light spacer fill remains allowed,
- and Android's system-owned status
+uniform spacer fill remains allowed only at its accepted theme value:
+ D41 true
+black in dark,
+ D34 white in unfolded light.
+ Another tonal surface in this band is
+not an acceptable substitute for an empty connector.
+ Android's system-owned status
 and navigation bars are outside this app-content rule.
  This supersedes the older
 16dp gutter and the weaker "nothing interactive" phrasing.
