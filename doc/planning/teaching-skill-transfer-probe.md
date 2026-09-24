@@ -14,8 +14,9 @@ No cooking instructions, product links, or safety claims are being prescribed by
 ### Resolve the intended target before teaching a procedure
 
 - **Cooking observation:** The learner asked about “rotated chicken”.
-  The user said this was not the dish name and that the response showed insufficient cooking knowledge.
-  The intended dish and equipment cannot be determined from that phrase alone.
+  The user said this was not the dish name and regarded the wording as a sign of missing
+  cooking knowledge. The recorded teacher failure is proceeding without resolving the term;
+  the intended dish and equipment cannot be determined from the phrase alone.
 - **Promise observation:** Early lesson openings named Promises and chat machinery before establishing
   what the learner was trying to build or why the abstraction mattered.
   The Yum-Bot physical metaphor later mislabeled the causal role of the Promise.
@@ -23,7 +24,9 @@ No cooking instructions, product links, or safety claims are being prescribed by
   then clarify consequential ambiguity instead of building steps around an unexamined name.
   Connect the resulting teaching path to the learner's actual destination.
 - **Limit:** This is not an instruction to demand confirmation of every term.
-  Ask only when plausible interpretations would change the procedure or explanation.
+  Ask a target-disambiguation question when plausible interpretations change the procedure.
+  This does not replace the user's separate requirement to confirm shared understanding
+  before a final skill design; that checkpoint has not been reached.
 
 ### Make each learner action usable at its own boundary
 
@@ -49,7 +52,8 @@ No cooking instructions, product links, or safety claims are being prescribed by
   An ambiguous oven instruction assumes the novice can infer the intended scale.
 - **Promise observation:** “Click and something happens” explained a browser user's observation,
   not how the developer registers a listener.
-  A resolver button was called a service request even though it only supplied a manual outcome;
+  “A service request” was used for an experiment that waited for learner intervention,
+  though its resolver button supplied only a manual outcome;
   a game-performance face was treated as a Promise outcome.
 - **Transfer candidate:** Explain the decisions and causal links that the learner must perform,
   construct, or diagnose, not merely the effect an observer notices.
@@ -95,3 +99,105 @@ No cooking instructions, product links, or safety claims are being prescribed by
 - The original cooking critique must not be “repaired” by inventing a dish, location,
   temperature scale, or food-safety endpoint.
   Those details must be established or checked before an actionable recipe is written.
+
+## Discriminating probes for a candidate skill
+
+These are proposed tests of response decisions, not a completed recipe, a new Promise lesson,
+or confirmation of the skill. A passing response must meet the stated condition;
+a named countercase prevents converting the condition into an unconditional script.
+
+### Probe: ambiguity changes the method
+
+- **Input:** The learner says, “Teach me to make rotated chicken,” with no dish or equipment clarified.
+- **Fail:** The teacher silently chooses a dish and issues oven or rotisserie steps,
+  or asks the novice to choose a vendor before understanding the intended dish.
+- **Pass condition:** The teacher identifies the ambiguity as consequential to the method,
+  explains its current interpretation as tentative, and asks a targeted question about the
+  intended result or method before issuing a procedure.
+- **Countercase:** Once the intended dish is already explicit, asking that same question again
+  delays teaching without reducing uncertainty. The rule is not “always ask a question first.”
+
+### Probe: specificity cannot repair an unverified premise
+
+- **Input:** The quoted instructions say “A little bit of salt,” “300degrees,”
+  and “Get raw chicken from grocery store.”
+- **Fail:** The teacher patches each with invented numbers, a guessed temperature scale,
+  or an unrelated shopping link before establishing the dish, equipment, source,
+  and procurement preference.
+- **Pass condition:** The teacher identifies the missing calibration, unit, and access path;
+  obtains or checks the particulars needed for the actual recipe;
+  then supplies usable instructions with a specific deliverable product link or an opened
+  in-person map, matched to the learner's available tools, location, and preference.
+- **Near miss:** Precise quantities and a genuine product link still fail if the product
+  cannot be delivered to the learner or the promised map has not been opened.
+- **Countercase:** A definition or conceptual explanation that asks the learner to perform
+  no measured step need not manufacture quantities. The rule is about action boundaries.
+
+### Probe: establish the need before naming the new abstraction
+
+- **Input:** A learner can count aligned groups of apples with addition;
+  the Promise learner can build a greeting page but has not established callback knowledge.
+- **Fail:** A multiplication table appears first and the apples merely decorate it.
+  Or a Promise API list appears before a meaningful callback coordination or failure problem.
+- **Pass condition:** The apple arrangement keeps equal rows visible as repeated addition;
+  increasing the same arrangement makes counting unwieldy before multiplication and its table
+  are introduced. The Promise example teaches the relevant callback mechanism,
+  develops a real coordination or failure problem with it, and compares Promise-based
+  handling of that same problem before `Promise.withResolvers()` is taught.
+- **Near miss:** Merely placing grouped apples next to an unexplained table,
+  or callbacks next to a Promise API inventory, preserves the early abstraction failure.
+- **Countercase:** No novice must fail at seasoning, shopping, or a hazardous task to learn
+  a fact. Failure-driven scaling applies when a new abstraction answers an existing method's limit.
+
+### Probe: the learner's role determines the causal model
+
+- **Input:** A developer learner can independently build a single-file greeting page
+  and is learning to make a browser chat interface respond to Send.
+  This capability evidence does not mean every learner wrote one particular greeting page.
+- **Fail:** “The browser calls your function when clicked” replaces listener registration,
+  or the teacher asks the novice to specify an AI vendor and credentials as if that were
+  required to learn the event or Promise mechanism.
+- **Pass condition:** Teach the listener-registration and handler relationship first.
+  When the lesson reaches reply coordination, show the send operation and its Promise;
+  choose the offline reply fixture for that application-building exercise.
+  Keep the destination visible without making production integration a prerequisite.
+- **Near miss:** Showing the listener, send, Promise, and fixture in one untaught block
+  names the pieces but still skips the learner's prerequisite sequence.
+- **Countercases:** A listener-only step need not introduce a Promise yet.
+  The manual `Promise.withResolvers()` experiment supplies an outcome without a service request.
+  A novice cook needs a usable ingredient and equipment path, not listener registration.
+  The shared rule selects the learner's causal responsibility, not identical subject matter.
+
+### Probe: records update when their named event happens
+
+- **Input:** In the preserved before-belt lesson, the Promise observer reports rejection
+  while an “observed outcomes” belt is empty; another Create later reveals that result.
+- **Fail:** A teacher describes the belt as current observation even though Create causes
+  the update, or adds a receipt at the resolver call before the observer reports.
+- **Pass condition:** Before the observer runs, the live and print lists gain no receipt.
+  When it reports, add exactly one for the current Promise, even if no later Create occurs.
+  Ignored calls and later Create leave both ordered lists unchanged.
+- **Countercases:** A clearly labeled historical snapshot need not update live.
+  The cooking critique supplies no need for a timeline or belt.
+  These are transfer boundaries, not evidence of a cooking-timeline failure.
+
+### Probe: a format promise does not override the teaching goal
+
+- **Input:** The user requests an interactive and printable lesson.
+- **Fail:** “Printable” is used to remove useful browser interactions,
+  or an attractive browser artifact prints without its relevant examples and explanations.
+- **Pass condition:** Keep interactions that expose the concept and supply complete static
+  counterparts in print. Choose subject-appropriate visuals rather than copying the
+  Promise factory, code highlighting, or controls into cooking by default.
+- **Countercase:** A quick Markdown alternative requested by the user need not acquire
+  artificial browser controls. The confirmed default medium is conditional on the request.
+
+### Probe: verification claims do not outrun evidence
+
+- **Input:** The Promise lesson passes browser and PDF checks and the user likes the result.
+- **Fail:** “The novice can now build the chat application independently” is inferred
+  from working reference code, artifact tests, or the user's design feedback.
+- **Pass condition:** Report the artifact's tested behavior and the user's feedback;
+  withhold claims about independent learner performance unless it was actually observed.
+- **Countercase:** Lack of a learner study need not prevent using or improving the artifact;
+  the user already declined that as an approval gate.
