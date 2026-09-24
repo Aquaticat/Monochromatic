@@ -30,7 +30,7 @@ component ResultRow inherits Rectangle {
         font-size: root.stress ? 20px : 15px;
         font-weight: root.chosen ? 600 : 400;
         wrap: root.stress ? word-wrap : no-wrap;
-        overflow: elide;
+        overflow: root.stress ? clip : elide;
     }
     Text {
         x: 14px; y: root.stress ? 62px : 34px;
@@ -108,7 +108,7 @@ component PlayerBackdrop inherits Rectangle {
 component OtherApp inherits Rectangle {
     in property <bool> dark;
     background: root.dark ? #10151a : #f0f3f6;
-    Text { x: 16px; y: 13px; text: "Notes · another app has focus"; font-size: 16px; font-weight: 600; color: root.dark ? #e4e5f0 : #30323b; }
+    Text { x: 16px; y: 13px; text: "Notes · previously active app"; font-size: 16px; font-weight: 600; color: root.dark ? #e4e5f0 : #30323b; }
     Rectangle { x: 16px; y: 58px; width: parent.width - 32px; height: 1px; background: root.dark ? #464850 : #b0b1bc; }
     Text { x: 24px; y: 85px; text: "Working notes"; font-size: 20px; font-weight: 600; color: root.dark ? #e4e5f0 : #30323b; }
     Text { x: 24px; y: 130px; text: "A thought about the next album…"; font-size: 14px; color: root.dark ? #a9aab5 : #5d5f68; }
@@ -130,7 +130,7 @@ component CommandPanel inherits Rectangle {
     }
     if root.kind == 3: Text {
         x: 18px; y: root.detached ? 33px : 9px;
-        text: "←  SEARCH MODE     ·     Actions stay available as a separate mode";
+        text: "←  Search mode · Actions";
         font-size: 12px; color: root.dark ? #a9aab5 : #5d5f68;
         overflow: elide; width: parent.width - 36px;
     }
@@ -154,7 +154,7 @@ component CommandPanel inherits Rectangle {
         width: parent.width - 24px; height: parent.height - 148px;
         Text { x: 10px; y: 0px; text: "ACTIONS MATCHING ‘OPEN’"; font-size: 12px; color: root.dark ? #a9aab5 : #5d5f68; }
         ResultRow { x: 0px; y: 23px; width: parent.width; dark: root.dark; chosen: true; stress: root.stress; label: "Open folder picker"; detail: "Shows the D31 folder selector"; tail: "Ctrl+O"; }
-        ResultRow { x: 0px; y: root.stress ? 113px : 83px; width: parent.width; dark: root.dark; stress: root.stress; label: root.stress ? "Open system music library settings" : "Open settings"; detail: "Opens player settings"; tail: ""; }
+        ResultRow { x: 0px; y: root.stress ? 113px : 83px; width: parent.width; dark: root.dark; stress: root.stress; label: root.stress ? "Open system library settings" : "Open settings"; detail: root.stress ? "Opens library settings" : "Opens player settings"; tail: ""; }
         if !root.stress: ResultRow { x: 0px; y: 143px; width: parent.width; dark: root.dark; label: "Open system music library"; detail: "Navigates to the system library"; tail: ""; }
     }
     if root.kind == 2 || root.kind == 3: Rectangle {
@@ -165,14 +165,14 @@ component CommandPanel inherits Rectangle {
         ResultRow { x: 0px; y: 83px; width: parent.width; dark: root.dark; label: "Another Xronixle"; detail: "Track · Camellia · reveals track"; tail: "Track"; }
     }
     if root.kind == 4: Rectangle {
-        x: 24px; y: 110px; width: parent.width - 48px;
-        Text { text: "No matching actions"; font-size: 17px; font-weight: 600; color: root.dark ? #e4e5f0 : #30323b; }
-        Text { y: 35px; text: "Try a shorter action name."; font-size: 14px; color: root.dark ? #a9aab5 : #5d5f68; }
+        x: 24px; y: 116px; width: parent.width - 48px; height: 90px;
+        Text { x: 0px; y: 0px; height: 28px; text: "No matching actions"; font-size: 17px; font-weight: 600; color: root.dark ? #e4e5f0 : #30323b; }
+        Text { x: 0px; y: 36px; height: 24px; text: "Try a shorter action name."; font-size: 14px; color: root.dark ? #a9aab5 : #5d5f68; }
     }
     if root.kind == 5: Rectangle {
-        x: 12px; y: 88px; width: parent.width - 24px;
-        Text { x: 10px; text: "ACTIONS MATCHING ‘SCAN’"; font-size: 12px; color: root.dark ? #a9aab5 : #5d5f68; }
-        ResultRow { y: 24px; width: parent.width; dark: root.dark; unavailable: true; label: "Scan system music library"; detail: "Unavailable while a scan is running"; tail: "Unavailable"; }
+        x: 12px; y: 88px; width: parent.width - 24px; height: 116px;
+        Text { x: 10px; y: 0px; height: 18px; text: "ACTIONS MATCHING ‘SCAN’"; font-size: 12px; color: root.dark ? #a9aab5 : #5d5f68; }
+        ResultRow { x: 0px; y: 24px; width: parent.width; dark: root.dark; unavailable: true; label: "Scan system music library"; detail: "Unavailable while a scan is running"; tail: "Unavailable"; }
     }
     Text {
         x: 20px; y: parent.height - 32px;
@@ -203,30 +203,30 @@ export component CommandStudy inherits Window {
         dark: root.dark;
         compact: root.compact || root.stress || root.study-mode == 2;
     }
-    if (root.study-mode == 1 && root.variant == 2) || (root.study-mode == 3 && root.variant == 2) || (root.study-mode == 2 && root.variant == 1): Rectangle {
+    if (root.study-mode == 1 && root.variant != 3) || (root.study-mode == 3 && root.variant == 2) || (root.study-mode == 2 && root.variant == 1): Rectangle {
         x: 0px; y: root.study-mode == 2 ? 66px : 34px;
         width: parent.width; height: parent.height - self.y;
         background: root.dark ? #00000099 : #30323b66;
     }
-    if root.study-mode == 1 && root.variant == 3: Rectangle {
+    if (root.study-mode == 1 && root.variant == 3) || (root.study-mode == 3 && root.variant == 1): Rectangle {
         x: root.compact ? 0px : 50px;
         y: root.compact ? 92px : 112px;
         width: root.compact ? parent.width : parent.width - 100px;
         height: root.compact ? parent.height - 92px : parent.height - 132px;
         background: root.dark ? #000000 : #ffffff;
-        Text { x: 20px; y: 17px; text: "COMMANDS"; font-size: 13px; color: root.dark ? #a9aab5 : #5d5f68; }
+        Text { x: 20px; y: 17px; text: root.study-mode == 3 ? "SEARCH MUSIC" : "COMMANDS"; font-size: 13px; color: root.dark ? #a9aab5 : #5d5f68; }
     }
     CommandPanel {
         kind: root.study-mode == 3 ? (root.variant == 1 ? 2 : 3) : (root.study-mode == 4 ? (root.variant == 1 ? 4 : 5) : 1);
         dark: root.dark;
         stress: root.stress;
         detached: root.study-mode == 2 && root.variant == 2;
-        width: root.study-mode == 1 && root.variant == 3 ? (root.compact ? parent.width - 24px : 700px) :
+        width: ((root.study-mode == 1 && root.variant == 3) || (root.study-mode == 3 && root.variant == 1)) ? (root.compact ? parent.width - 24px : 700px) :
             (root.study-mode == 1 && root.variant == 1 ? (root.stress ? parent.width : (root.compact ? parent.width : 640px)) : (root.compact ? 400px : 600px));
-        height: root.stress ? 440px : (root.study-mode == 1 && root.variant == 3 ? 392px : 340px);
+        height: root.stress ? 440px : (((root.study-mode == 1 && root.variant == 3) || (root.study-mode == 3 && root.variant == 1)) ? (root.compact ? 480px : 490px) : 374px);
         x: root.study-mode == 1 && root.variant == 1 ? (root.compact || root.stress ? 0px : 62px) :
-            (root.study-mode == 1 && root.variant == 3 ? (root.compact ? 12px : 68px) : (parent.width - self.width) / 2);
-        y: root.study-mode == 1 && root.variant == 2 ? (root.compact ? 172px : 200px) :
+            (((root.study-mode == 1 && root.variant == 3) || (root.study-mode == 3 && root.variant == 1)) ? (root.compact ? 12px : 68px) : (parent.width - self.width) / 2);
+        y: root.study-mode == 1 && root.variant == 2 ? (root.compact ? 120px : 182px) :
             (root.study-mode == 2 ? (root.variant == 1 ? 158px : 126px) : (root.compact || root.stress ? 92px : 112px));
     }
 }
