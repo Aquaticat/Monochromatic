@@ -70,9 +70,13 @@ page**.
  input and Clear into one baseline MD3 Search header.
 D49 corrects the design target:
  every platform follows the Pixel 9 Pro Fold cover
-(1080 × 2424px,
- about 411 × 923dp) and unfolded inner display (2076 × 2152px,
-about 852 × 883dp).
+(1080 × 2424px) and unfolded inner display (2076 × 2152px).
+ This AVD reports
+390dpi on both panels,
+ so its native captures represent approximately 443 ×
+994dp on the cover and 852 × 883dp on the inner display.
+ The older 411 × 923dp
+cover estimate was not measured on the AVD.
  The earlier 360,
  480 and 1100px desktop Slint scenes are
 not design evidence for these screens.
