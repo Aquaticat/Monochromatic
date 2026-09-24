@@ -83,6 +83,13 @@ this alone does not cull it.
 Direct source searches of `fjson`, `jsonc-parser`, `biome_json_parser`, `jwc`, `hifijson`, and `json-number`
 found no regex calls or macros, but selected normal/build dependencies remain to be inspected before clearance.
 
+## Current gate status
+
+- Regex culling is applied before further candidate validation. `edikt-jsonc` and the regex-backed `tokora` JSON CST example are excluded. Disposable, pinned Cargo dependency trees of `fjson`, `json-five` (lean and default), `biome_json_parser` (with required pins), `hifijson`, `jsonc-parser`, `jwc`, and `json-number` showed no regex-named normal/build dependency; the `edikt-jsonc` positive control exposed `logos`, `regex`, and related crates. Source audit for hidden regex use in mandatory dependencies remains open.
+- `jsonc-parser` and `jwc` reject unpaired surrogate escapes in their existing parser paths. `fjson` and `json-five` expose raw tokens but still need adapters for the required comment model. Biome transitive source screening is delegated and pending. The current audit reports are `doc/audit/tech-jsonc-edit-rust-parser-foundation-vet-2026-09-24-63342231.md` and `doc/audit/tech-jsonc-edit-rust-exact-number-foundation-vet-2026-09-24-e8e0034a.md`; predecessor reports without the regex constraint are marked superseded.
+- The `momoa` Rust parser has a separate potential Unicode-scalar safety issue in the published 3.2.6 source. A source trace and safe standard-library control exist; a troubleshooting document and isolated verification are in progress. Do not execute its unsafe parse on the reported input.
+- No Rust port product code, dependency adoption, or crates.io publication has occurred. Other worktree changes are concurrent and out of scope.
+
 ## Next action
 
-Evaluate parser and numeric foundations against the confirmed contract and choosing-technology gates. Present the evidenced ranking and obtain adoption before implementation depends on the selected component. Then implement, test at the consumer boundary, and publish with an authorized credential route. No crate code or publication has occurred yet.
+Finish source and consumer-boundary evaluation of regex-free parser and number candidates, including any required troubleshooting document, then present an evidenced ranking for foundation adoption. Implement only after adoption, validate against the maintained TypeScript behavior, and publish with an authorized credential route.
