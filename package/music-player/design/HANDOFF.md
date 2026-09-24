@@ -5372,6 +5372,15 @@ WindowManager measurement, not a bottom IME inset.
 These observations **do not overturn D51's selected A** but reveal that
 the currently selected prototype does not meet D50 with the tested real
 floating Gboard arrangement.
+ On the cover panel at 100% text,
+real Gboard key taps entered `cam` but the floating key surface at
+x `[0,830)`, y `[304,1025)` covered both the matching folder label
+`[127,374][286,433]` and track label `[127,569][432,628]`.
+ The
+cover query remained visible, but its results could not be read while
+that keyboard stayed in place.
+ This is a separate result-visibility
+failure from the unfolded deck occlusion.
  The device's original Gboard preferences
 (off for `Show on-screen keyboard`, on for `Show toolbar`), font scale
 1.0, framework hardware-keyboard setting 0, and selected Gboard were

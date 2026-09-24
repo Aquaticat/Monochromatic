@@ -1484,6 +1484,8 @@ A later real Gboard floating-keyboard probe at 200% text obscured part of
 the deck title; moving that keyboard lower obscured more controls.
 This is a validation failure against D50 in the tested floating mode,
 not a change to the user's A selection.
+On the folded cover, the same real floating mode covered both matching
+result labels while a focused `cam` query remained visible.
 Docked and split Gboard geometry and taller input methods are still unverified.
 This is a **design choice only**;
  it does not authorize production changes.

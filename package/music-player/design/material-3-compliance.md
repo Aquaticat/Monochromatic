@@ -909,8 +909,11 @@ outer corners.
 no player controls persisted inside **that retired desktop-sized experiment**.
 This was superseded by D50/D51:
  the unfolded deck must stay visible,
-and selected A lifts it above a visible keyboard while Search remains on the
-right.
+and selected A lifts it above the measured bottom debug keyboard while Search
+remains on the right.
+ A later real floating Gboard occluded part of that
+deck title at 200% text and both cover result labels at 100% text;
+the bottom-keyboard result does not establish Gboard compliance.
  The separate destination is still visually distinct from a command
 palette or modal overlay.
 

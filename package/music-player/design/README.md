@@ -107,6 +107,8 @@ bounded bottom-keyboard occlusion and input routing;
  it is not Gboard.
 A later real floating Gboard at 200% text obscured part of the deck title,
 so D50 is not fully met in this tested mode.
+ On the cover at 100% text,
+the floating keyboard obscured both matching result labels while typing.
  The user's A selection is unchanged;
 docked and split Gboard require separate verification.
 Selection does not authorize production implementation.

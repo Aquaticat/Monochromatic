@@ -188,6 +188,18 @@ that floating overlays are impossible to avoid by other means.
   this was **not** a successful docking test.
   These observations are a counterexample to assuming the selected layout
   meets D50 under every real Gboard mode.
+- The cover-panel fresh-focus probe also showed only the toolbar:
+  touchable x `[19,157)`, y `[944,1590)` plus the navigation area.
+  Its toolbar-menu action exposed real floating keys at approximately
+  x `[0,830)`, y `[304,1025)`.
+  Tapping the real keys entered `cam` in a focused cover Search field.
+  The UI hierarchy placed the matching folder label `Camellia` at
+  `[127,374][286,433]` and track title `Another Xronixle` at
+  `[127,569][432,628]`, both fully under Gboard's key surface.
+  The captured Search screenshot showed the query but no visible result
+  data until the floating keyboard was dismissed or moved.
+  This is a separate cover Search result-visibility defect,
+  not the unfolded deck-title overlap.
 
 The debug input method is deliberately synthetic, **not Gboard**.
 Its measured overlap tests bottom-window occlusion and text input integration;
