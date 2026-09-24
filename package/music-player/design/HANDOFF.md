@@ -4741,10 +4741,32 @@ its pre-stop 2.0 font scale was restored after measuring it at 1.0.
  The prior
 stay-on value was not logged,
  so do not claim it was restored.
- The current capture
-will restore the state it measures at its start;
- inspect and settle the AVD setting
-before ending this round.
+
+The next guarded run passed every dark unfolded scene at 100% and 200% text,
+ then
+stopped at `fold-search-inner-player-light-s100`:
+ the connector sampled
+`#FAF8FE`,
+ while D34 requires white `#FFFFFF`.
+ No semantic node was needed to
+trigger this failure;
+ the light player wrapper had incorrectly selected the old
+`light-b` palette whose spacer is `scheme.surface`.
+ Prototype commit `73155c653`
+switches that wrapper to the accepted white-spacer light treatment,
+ and a fresh
+managed capture (`proc_ca57`,
+ `fold-search-connector-capture-light-retry`) is
+running.
+ E2,
+ `device-metrics.md` and `review-notes.md` 5q now require the exact
+black/white spacer fill as well as no content bounds crossing it.
+ Do not present
+partial dark-only evidence as round completion.
+ The capture will restore the
+state it measures at start;
+ inspect and settle the AVD's stay-on setting before
+ending the round.
 
 ## Issue tracking moves to Linear for this session
 
