@@ -1,3 +1,5 @@
+import type { ArchiveDispute, } from './archive-dispute.ts';
+import { archiveStandInFor, } from './consolidate-archive-stand-in.ts';
 import {
   type Logger,
   tagged,
@@ -26,6 +28,7 @@ import type {
   ArtifactContestVerdict,
 } from './corpus-run/artifact-two-lane-contest.ts';
 import type { ProjectedLanes, } from './corpus-run/artifact-two-lane-derive.ts';
+import { indexConsolidationInputs, } from './consolidate-driver-index.ts';
 import type { SliceNeighbourContext, } from './fidelity-window.ts';
 import type { LaneChoice, } from './lane-contest-wire.ts';
 import type { SliceCache, } from './slice-cache.ts';
@@ -199,10 +202,18 @@ export async function consolidateDocument(
     perCallTimeoutMs,
     overlap = 1,
     beforeSlice,
+    archiveDisputes,
     l,
   }: {
     readonly client: SyntheticClient;
     readonly projected: ProjectedLanes;
+
+    /**
+     Slices whose archive rendering the repair lane's adjudicators disputed;
+     the repair text stands in for the archive here too, as the standing
+     where the contest chose neither lane (class one hundred seven).
+     */
+    readonly archiveDisputes?: ReadonlyMap<number, ArchiveDispute>;
     readonly contests: readonly ArtifactContestSlice[];
     readonly modelIds: readonly RosterModelId[];
     readonly judgeModelIds?: readonly RosterModelId[];
@@ -235,32 +246,16 @@ export async function consolidateDocument(
   },);
 
   /**
-   Original of each slice, which only the repair ledger carries.
+   Original of each slice (the repair ledger alone carries it) and the
+   contest record of each slice the contest answered.
    */
-  const sourceTexts = new Map(projected.delivery
-    .repair
-    .map(function nameSource(row,): readonly [
-      number,
-      string,
-    ] {
-      return [
-        row.sliceIndex,
-        row.sourceText,
-      ];
-    },),);
-
-  /**
-   Contest record for each slice it answered.
-   */
-  const contestBySlice = new Map(contests.map(function nameSlice(slice,): readonly [
-    number,
-    ArtifactContestSlice,
-  ] {
-    return [
-      slice.sliceIndex,
-      slice,
-    ];
-  },),);
+  const {
+    sourceTexts,
+    contestBySlice,
+  } = indexConsolidationInputs({
+    projected,
+    contests,
+  },);
 
   /**
    What this run asks, folded into every key.
@@ -330,6 +325,21 @@ export async function consolidateDocument(
      */
     const choice = laneChoiceOf({ verdict: contest.verdict, },);
     /**
+     Archive wording as this settlement takes it, the repair lane's text on
+     a disputed slice (class one hundred seven), and whether a kept standing
+     is that stand-in.
+     */
+    const {
+      incumbentText,
+      standInShips,
+    } = archiveStandInFor({
+      ...((archiveDisputes === undefined) ? {} : { archiveDisputes, }),
+      sliceIndex: row.sliceIndex,
+      incumbentText: row.incumbentText,
+      choice,
+      l: dl,
+    },);
+    /**
      Wording the contest left standing, which ships without this stage
      where the gate passes it.
      */
@@ -337,7 +347,7 @@ export async function consolidateDocument(
       choice,
       repairText: row.repairText,
       translateText: row.translateText,
-      incumbentText: row.incumbentText,
+      incumbentText,
     },);
     /**
      Whether the line-structure rule governs this slice.
@@ -371,7 +381,7 @@ export async function consolidateDocument(
     } = readStandingVerdict({
       sourceText,
       standingText: laneStanding,
-      incumbentText: row.incumbentText,
+      incumbentText,
       ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
       choice,
@@ -388,7 +398,7 @@ export async function consolidateDocument(
      */
     const laneTexts = laneTextsForSlate({
       sourceText,
-      incumbentText: row.incumbentText,
+      incumbentText,
       repairText: row.repairText,
       translateText: row.translateText,
       standingText,
@@ -426,7 +436,7 @@ export async function consolidateDocument(
      */
     const subject = {
       sourceText,
-      incumbentText: row.incumbentText,
+      incumbentText,
       repairText: row.repairText,
       translateText: row.translateText,
       ballots: contest.ballots,
@@ -454,7 +464,7 @@ export async function consolidateDocument(
     const key = consolidateSliceKey({
       runShape,
       sourceText,
-      incumbentText: row.incumbentText,
+      incumbentText,
       ...((syntax === undefined) ? {} : { syntax, }),
       repairText: row.repairText,
       translateText: row.translateText,
@@ -573,7 +583,7 @@ export async function consolidateDocument(
     return describeConsolidateSlice({
       sliceIndex: row.sliceIndex,
       settlement,
-      incumbentStandsIn,
+      incumbentStandsIn: incumbentStandsIn || standInShips,
     },);
     },
   },);

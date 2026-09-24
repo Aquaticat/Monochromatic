@@ -1,4 +1,5 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import type { ArchiveDispute, } from '../archive-dispute.ts';
 
 import { consolidateDocument, } from '../consolidate-driver.ts';
 import type { RunClient, } from './run-client-contract.ts';
@@ -37,6 +38,10 @@ import {
  
  @param projected - both lane ledgers and comparison
  
+ @param archiveDisputes - slices whose archive rendering the repair lane's
+ adjudicators disputed, whose repair text stands in for the archive (class
+ one hundred seven)
+ 
  @param contests - lane contest records
  
  @param frontMatterSlices - syntax-bearing metadata positions
@@ -72,9 +77,11 @@ export async function runPassConsolidation(
     pipelineDigest,
     signal,
     overlap,
+    archiveDisputes,
     l,
   }: {
     readonly client: RunClient;
+    readonly archiveDisputes?: ReadonlyMap<number, ArchiveDispute>;
     readonly prepared: PreparedDocumentPair;
     readonly projected: ProjectedLanes;
     readonly contests: readonly ArtifactContestSlice[];
@@ -146,6 +153,7 @@ export async function runPassConsolidation(
       dir: entryCacheDir,
       generation: pipelineDigest,
     },),
+    ...((archiveDisputes === undefined) ? {} : { archiveDisputes, }),
     signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     overlap,

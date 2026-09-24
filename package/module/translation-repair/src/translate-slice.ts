@@ -22,6 +22,10 @@ import {
 } from './translate-document-contract.ts';
 import { runTranslateStage, } from './translate-stage.ts';
 import { translateSliceInput, } from './translate-slice-input.ts';
+import {
+  type ArchiveDispute,
+  describeArchiveDispute,
+} from './archive-dispute.ts';
 
 //region Translate slice
 // One slice from prepared pair to settled record: translate it, judge it, and
@@ -63,6 +67,10 @@ import { translateSliceInput, } from './translate-slice-input.ts';
  carried into the record so a run says which pictures went unread rather than
  leaving their absence indistinguishable from a slice showing none
  
+ @param archiveDispute - dispute over this slice's archive rendering (class
+ one hundred seven), whose repair text is judged as the incumbent in the
+ archive's place and ships where the judges keep it
+ 
  @param signal - caller abort honored by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -89,12 +97,14 @@ export async function settleTranslateSlice(
     neighbouringSourceText,
     pictureContext,
     pictureFindings = [],
+    archiveDispute,
     signal,
     perCallTimeoutMs,
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly slice: ChunkPair;
+    readonly archiveDispute?: ArchiveDispute;
     readonly prepared: PreparedDocumentPair;
     readonly models: TranslateModels;
     readonly neighbouringIncumbentText?: string;
@@ -109,7 +119,10 @@ export async function settleTranslateSlice(
   /**
    Global slice index every record and replacement names.
    */
-  const { sliceIndex, } = slice.target;
+  const {
+    sliceIndex,
+    text: pageWording,
+  } = slice.target;
 
   /**
    Shared pre-stage protection and governance, without publication-disposition decisions.
@@ -124,6 +137,7 @@ export async function settleTranslateSlice(
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
+    ...((archiveDispute === undefined) ? {} : { archiveStandIn: archiveDispute.standIn, }),
   },);
   /**
    The exact staged surface is also what later publication guards compare.
@@ -133,6 +147,13 @@ export async function settleTranslateSlice(
     incumbentText,
     incumbentKind,
   } = stageInput;
+  /**
+   Whether a stand-in differing from the archive's own bytes is on the slice,
+   so a kept or refused surface still changes the page (class one hundred
+   seven).
+   */
+  const standInDiffers = (archiveDispute !== undefined)
+    && (archiveText !== pageWording);
 
   if (protectedText !== '')
     l.info(
@@ -167,6 +188,7 @@ export async function settleTranslateSlice(
   const findings: readonly string[] = [
     ...stageResult.findings,
     ...pictureFindings,
+    ...((archiveDispute === undefined) ? [] : [describeArchiveDispute({ dispute: archiveDispute, },),]),
   ];
 
   /**
@@ -232,7 +254,7 @@ export async function settleTranslateSlice(
       stageResult,
       // The whole archive, for the reason the alignment refusal gives.
       outputText: archiveText,
-      changed: false,
+      changed: standInDiffers,
       disposition: 'refused-quote-loss',
       alignment,
       findings,
@@ -287,7 +309,7 @@ export async function settleTranslateSlice(
       stageResult,
       // The whole archive, for the reason the alignment refusal gives.
       outputText: archiveText,
-      changed: false,
+      changed: standInDiffers,
       disposition: 'refused-declared-name',
       droppedDeclaredNames,
       alignment,
@@ -309,7 +331,7 @@ export async function settleTranslateSlice(
       // A retention has to leave the document byte-identical, and the judged
       // part is a slice of the archive rather than the archive.
       outputText: archiveText,
-      changed: false,
+      changed: standInDiffers,
       disposition: 'refused-alignment',
       alignment,
       // NOT the refusal sentence, which names a slice by its index. This record
@@ -357,7 +379,7 @@ export async function settleTranslateSlice(
     sliceIndex,
     stageResult,
     outputText,
-    changed: wantsReplacement,
+    changed: wantsReplacement || standInDiffers,
     disposition: 'stage-result',
     alignment,
     findings,

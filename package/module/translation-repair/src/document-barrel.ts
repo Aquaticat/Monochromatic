@@ -35,6 +35,13 @@ export {
   runDocumentLanes,
 } from './document-lanes.ts';
 export {
+  type ArchiveDispute,
+  archiveDisputesOf,
+  describeArchiveDispute,
+  type DisputableChunk,
+  logArchiveDisputes,
+} from './archive-dispute.ts';
+export {
   assertSliceIndexing,
   indexingSentence,
   reindexSlicePair,

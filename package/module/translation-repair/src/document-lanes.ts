@@ -1,4 +1,8 @@
 import {
+  archiveDisputesOf,
+  logArchiveDisputes,
+} from './archive-dispute.ts';
+import {
   type Logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
@@ -398,6 +402,17 @@ export async function runDocumentLanes(
   }
 
   /**
+   Slices whose archive rendering the repair lane's adjudicators found to
+   add what the original never states; the repair text stands in for the
+   archive on the translate lane (class one hundred seven).
+   */
+  const archiveDisputes = archiveDisputesOf({ chunks: repair.chunks, },);
+  logArchiveDisputes({
+    disputes: archiveDisputes,
+    l: dl,
+  },);
+
+  /**
    Translate lane's answer: every slice rendered afresh, with the archive's
    own English standing as one candidate.
    */
@@ -405,6 +420,7 @@ export async function runDocumentLanes(
     client,
     prepared,
     models: translateSeats,
+    ...((archiveDisputes.size === 0) ? {} : { archiveDisputes, }),
     ...((pictureReadings === undefined)
       ? {}
       : { pictureReadings, }),

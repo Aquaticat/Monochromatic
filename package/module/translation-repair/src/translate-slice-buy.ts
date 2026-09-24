@@ -1,4 +1,5 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import type { ArchiveDispute, } from './archive-dispute.ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
@@ -67,6 +68,8 @@ export type BoughtSlice = {
  
  @param pictureFindings - which nearby pictures nobody could read
  
+ @param archiveDispute - dispute over this slice's archive rendering, passed on
+ 
  @param sliceCache - where a heard record is persisted
  
  @param signal - entry deadline and caller abort
@@ -96,12 +99,14 @@ export async function buyTranslateSlice(
     neighbouringSourceText,
     pictureContext,
     pictureFindings,
+    archiveDispute,
     sliceCache,
     signal,
     perCallTimeoutMs,
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
+    readonly archiveDispute?: ArchiveDispute;
     readonly slice: ChunkPair;
     readonly prepared: PreparedDocumentPair;
     readonly models: TranslateModels;
@@ -139,6 +144,7 @@ export async function buyTranslateSlice(
     neighbouringSourceText,
     pictureContext,
     pictureFindings,
+    ...((archiveDispute === undefined) ? {} : { archiveDispute, }),
     signal,
     perCallTimeoutMs,
     l,

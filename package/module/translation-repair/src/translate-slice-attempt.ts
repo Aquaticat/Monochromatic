@@ -1,4 +1,5 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import type { ArchiveDispute, } from './archive-dispute.ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
@@ -80,6 +81,8 @@ export type SliceAttempt = {
  
  @param models - translator and judge rosters
  
+ @param archiveDispute - dispute over this slice's archive rendering, passed on
+ 
  @param signal - entry abort honored by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -106,6 +109,7 @@ export async function attemptTranslateSlice(
     neighbouringSourceText,
     pictureContext,
     pictureFindings,
+    archiveDispute,
     signal,
     perCallTimeoutMs,
     l,
@@ -114,6 +118,7 @@ export async function attemptTranslateSlice(
     readonly slice: ChunkPair;
     readonly prepared: PreparedDocumentPair;
     readonly models: TranslateModels;
+    readonly archiveDispute?: ArchiveDispute;
 
     /**
      Archive English either side of this slice, computed once by the driver so
@@ -154,6 +159,7 @@ export async function attemptTranslateSlice(
         neighbouringSourceText,
         pictureContext,
         pictureFindings,
+        ...((archiveDispute === undefined) ? {} : { archiveDispute, }),
         signal,
         perCallTimeoutMs,
         l,

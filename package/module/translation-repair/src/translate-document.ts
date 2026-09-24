@@ -1,3 +1,4 @@
+import type { ArchiveDispute, } from './archive-dispute.ts';
 import {
   type Logger,
   tagged,
@@ -112,11 +113,19 @@ export async function translateDocument(
     insertionAdmission,
     overlap = 1,
     beforeSlice,
+    archiveDisputes,
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly prepared: PreparedDocumentPair;
     readonly models: TranslateModels;
+
+    /**
+     Slices whose archive rendering the repair lane's adjudicators disputed,
+     keyed by slice index; each carries the repair text that stands in for
+     the archive as this lane's incumbent (class one hundred seven).
+     */
+    readonly archiveDisputes?: ReadonlyMap<number, ArchiveDispute>;
     readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -220,6 +229,11 @@ export async function translateDocument(
        Whether source-only passage needs no local rendering.
        */
       const insertionCarried = carriedPositions.has(slicePosition,);
+      /**
+       Dispute over this slice's archive rendering, absent for most slices.
+       */
+      const archiveDispute = archiveDisputes?.get(slice.target
+        .sliceIndex,);
       return await settleTranslateSlice({
         client,
         prepared,
@@ -232,6 +246,7 @@ export async function translateDocument(
         runShape,
         ...((sliceCache === undefined) ? {} : { sliceCache, }),
         twins,
+        ...((archiveDispute === undefined) ? {} : { archiveDispute, }),
         signal,
         perCallTimeoutMs,
         l: tl,

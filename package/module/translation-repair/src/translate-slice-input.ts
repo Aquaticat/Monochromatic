@@ -108,6 +108,10 @@ export type TranslateSliceInput = {
  
  @param pictureContext - already-acquired corroborated picture context passed through unchanged
  
+ @param archiveStandIn - repair lane's text standing in for a disputed archive
+ rendering (class one hundred seven), judged and restored as though it were
+ the archive so the disputed wording is neither a candidate nor the fallback
+ 
  @returns Stage surface and protected archive material without changing the operation being measured
  
  @example
@@ -122,9 +126,11 @@ export function translateSliceInput(
     neighbouringSourceText,
     neighbouringIncumbentText,
     pictureContext,
+    archiveStandIn,
   }: {
     readonly slice: ChunkPair;
     readonly prepared: PreparedDocumentPair;
+    readonly archiveStandIn?: string;
     readonly neighbouringSourceText?: string;
     readonly neighbouringIncumbentText?: string;
     readonly pictureContext?: string;
@@ -133,8 +139,13 @@ export function translateSliceInput(
   /**
    Complete archive wording before target-only protection.
    */
-  const archiveText = slice.target
+  const pageWording = slice.target
     .text;
+  /**
+   Wording the stage judges as the archive: the stand-in on a disputed slice
+   (class one hundred seven), the archive's own elsewhere.
+   */
+  const archiveText = archiveStandIn ?? pageWording;
   /**
    Canonical original this slice renders.
    */

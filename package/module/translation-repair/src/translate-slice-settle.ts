@@ -1,4 +1,5 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import type { ArchiveDispute, } from './archive-dispute.ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
@@ -168,6 +169,9 @@ export type TranslateSliceSettlement = {
  @param sliceCache - resumable per-slice cache, absent when a caller wants no
  resumption
  
+ @param archiveDispute - dispute over this slice's archive rendering (class
+ one hundred seven), whose stand-in keys the question in the archive's place
+ 
  @param twins - memo of purchases in this run, shared by every slice
  
  @param signal - entry deadline and caller abort
@@ -199,12 +203,14 @@ export async function settleTranslateSlice(
     runShape,
     sliceCache,
     twins,
+    archiveDispute,
     signal,
     perCallTimeoutMs,
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly prepared: PreparedDocumentPair;
+    readonly archiveDispute?: ArchiveDispute;
     readonly models: TranslateModels;
     readonly slice: ChunkPair;
     readonly slicePosition: number;
@@ -315,14 +321,26 @@ export async function settleTranslateSlice(
   },);
 
   /**
+   Archive wording of this slice.
+   */
+  const pageWording = slice.target
+    .text;
+  /**
+   Repair lane's text standing in for a disputed archive rendering, absent
+   on the rest (class one hundred seven).
+   */
+  const standIn = archiveDispute?.standIn;
+  /**
    Cross-run key for it.
    */
   const key = translateSliceKey({
     runShape,
     sourceText: slice.source
       .text,
-    incumbentText: slice.target
-      .text,
+    // THE STAND-IN WHERE THE ARCHIVE IS DISPUTED: a different incumbent is a
+    // different question, and a record judged over the archive must not
+    // answer for one judged over the repair text (class one hundred seven).
+    incumbentText: standIn ?? pageWording,
     incumbentKind,
     ...((slice.syntax === undefined) ? {} : { syntax: slice.syntax, }),
     lineStructured: prepared.lineStructuredSliceIndices
@@ -408,6 +426,7 @@ export async function settleTranslateSlice(
         neighbouringSourceText,
         pictureContext: pictures.context,
         pictureFindings: pictures.findings,
+        ...((archiveDispute === undefined) ? {} : { archiveDispute, }),
         ...((sliceCache === undefined) ? {} : { sliceCache, }),
         signal,
         perCallTimeoutMs,
