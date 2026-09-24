@@ -52,6 +52,12 @@ await describe({
             value: 42,
             message: 'tomlSet at foo requires a plain object to replace a table body',
           },
+          {
+            source: 'a=1\n',
+            path: [],
+            value: 42,
+            message: 'tomlSet at document root requires a plain object to replace document body',
+          },
         ] as const;
         for (const { source, path, value, message, } of cases) {
           const edit = parseTomlEdit({ source, },);
