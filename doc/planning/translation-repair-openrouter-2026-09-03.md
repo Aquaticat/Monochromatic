@@ -8082,6 +8082,48 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## yingying8 read, 2026-09-24, 01:30 UTC: SETTLED in 5 min, every check as yingying7; then gpt-oss-120b culled from every role, every critic claim logged with its filers, class one hundred six built on the owner's answer, class one hundred seven next; no pass running
+
+`yingying8` (frozen `d2e39e095`, pid 3077650) SETTLED at 00:31 UTC 2026-09-24,
+5 min after its 00:26 launch,
+one attempt,
+310 seats,
+13 retry rounds,
+266 calls,
+0.07 USD by the meters (Bedrock 48.57 to 48.50, OpenRouter 95.93 to 95.88),
+on Bedrock and OpenRouter alone (Synthetic's window spent, Hyper dry); no hold, so class one hundred three not exercised.
+Jev 12 of 12; 8 abstention lines with reasons.
+
+Class one hundred four on the wire: the polish gate ran once (4 of 7 usable ballots, settled on neither, the base shipped), its ballots reading the house rules.
+Class one hundred five silent by design (the archive carries no gloss line).
+Classes eighty-six, ninety-seven, one hundred one and one hundred two holding, every check as `yingying7`:
+1 heading, 4 markers, 2 definitions, front matter equal, References line kept, the [^2] definition "[Farewell. I miss you, Yingying.]", the farewell "May you still have", no TA, no error finish, no double blank line;
+terminals slate-endorsed 0, slate-declined 1, gate-kept 2.
+Observation, not a class: slice 1's repair text dropped 硬核视频 ("hardcore video") before "Geek Lab" and shipped unendorsed.
+
+No pass is running: the source changed four times after `yingying8` (the cull, the claim-filer record, class one hundred six), and class one hundred seven is next before a freeze.
+
+The owner's answers of 2026-09-24, in order:
+
+- On the `CuspariaKLSY10` slice 1 claim "omits 服用激素 (taking hormones) as the reason for transitioning" (the original writes 服用激素，成为跨性别的原因, hormones as the cause): "who is the model that said this? That particular model got cause and effect wrong. Cull it." then "cull it from every role".
+    The sole proposer was `hf:openai/gpt-oss-120b`, the same seat that declined every candidate on `zheermao8` slice 9 for "quoted lines in present tense" on a slice with no quoted line.
+    Off `RUN_ROSTER` and the static checker bench by the roster-change runbook, blocklisted with the owner's words, the checker seat passed on the recorded evidence, seating-decision addendum; commits through `bc10e3b70`, full suite green (`suite-cull2.log`, 1106 PASS).
+- "we're not logging enough then. Refine how we log." (the reader had to join `sliceCritics[].claimAttributions` by claim id to learn who filed the claim):
+    `claim-filers.ts` logs every resolved claim at the critic stage with its filers, category, severity and summary (`chunk N: claim <id> filed by <models>: ...`), every adjudicated issue with its status and each member claim's filers, and attaches `filedBy` to the artifact's adjudicated issues beside the claims;
+    `SLICE_CACHE_VERSION` 31 (telemetry only);
+    guard red first `f049298ac`, built `9a6327de5`, pins `aa39dcf1c` and `8e2c52ef5`, full suite green (`suite-filers2.log`, 1107 PASS).
+- Q1, a tied slate over an eligible standing: "Run-off only when every contest ballot called the archive flawed."
+    Class one hundred six: `archiveFlawedByAll` (`consolidate-archive-flawed.ts`) reads a contest settled on neither with every ballot's `archive` set to `flawed`;
+    `consolidate-driver.ts` raises `runoffOverStanding` from it, `settleConsolidation` then routes the slate through `judgeSlateWithRetry` (the same panel, narrowing finalists) as over an ineligible standing;
+    the judge stage names the run-off finalists on a declined round even over an incumbent (`runoffFinalists` on `TranslateStageResult`) and the retry loop narrows and reruns on such a decline;
+    an undecided run-off still ships the standing (`slate-declined-standing`, never a stop).
+    Guards red first `200bf7a53` (`consolidate-archive-flawed.unit.test.ts`; `consolidate-settle.unit.test.ts`: the run-off chooses over an eligible standing, a run-off tied throughout ships the standing), built `2a872bbed`, lint 0 and 0, types clean, full suite green (`suite-class106.log`, 1108 PASS);
+    seventh ineligible-standing addendum `7c729d339`.
+    Not exercised live yet: read the next `zheermao101` for a `translate-declined-retried` finding on a consolidation slice after a contest with the archive flawed on every ballot.
+- Q2, an archive rendering carrying an accepted fabrication claim: "Not eligible; fall back to the repair text."
+    Class one hundred seven, next: a slice whose repair `ChunkRepairOutcome.issues` carry an accepted `accuracy/addition` claim makes the archive rendering ineligible for the translate slate (a candidate and the fallback no longer), the slate runs the run-off path, and where nobody wins the repair lane's text for that slice (which removed the addition) stands instead of the archive (`CuspariaKLSY10` slice 3: four accepted claims that the overdose detail was invented, the translate slate backed nobody, the archive stood).
+    Guards red first, then an addendum; then freeze, launch `CuspariaKLSY` to read it live, then `zheermao101` for class one hundred six.
+
 ## zheermao8 read, 2026-09-24, 00:30 UTC: SETTLED in 14 min, the polish gate reading the house rules on seven slices (class one hundred four), every check as zheermao7; the reply label kept the archive's "one member" on a tied contest and a tied slate with both lane texts on offer; yingying8 launched
 
 `zheermao8` (frozen `d2e39e095`, pid 3041616, entry `zheermao101`) SETTLED at 00:23 UTC 2026-09-24,

@@ -4647,23 +4647,27 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  YINGYING8 RUNS (frozen `d2e39e095`,
-    pid 3077650,
-    launched 00:26 UTC 2026-09-24,
-    waiter bm2t3byvd,
-    meters 48.57 USD Bedrock and 95.93 OpenRouter at launch, Synthetic's five-hour window spent, Hyper dry;
-    the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for the polish gate under the house rules (class one hundred four), class one hundred five silent by design,
-    classes eighty-six, ninety-seven, one hundred one and one hundred two holding,
-    beside every check of `yingying7` (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, "Farewell. I miss you, Yingying.", "May you still have", no TA, no error finish, no double blank line);
-    record under a new heading above "## zheermao8 read, 2026-09-24" in the pass log;
-    then shi_Yumiaoya or mikaela on the same dist.
+1.  NO PASS RUNNING (last frozen dir `.frozen-dist-d2e39e095`, now four commits stale: the gpt-oss-120b cull, the claim-filer record `9a6327de5`, class one hundred six `2a872bbed`, addendum `7c729d339`;
+    meters 48.50 USD Bedrock and 95.88 OpenRouter at the last read, Synthetic's five-hour window spent since 23:15:27 UTC 2026-09-23, Hyper dry).
+    Build class one hundred seven (owner, 2026-09-24: "Not eligible; fall back to the repair text"; guards red first, then the addendum),
+    then lint, types, full suite, freeze `dist/final/node` to `node_modules/.frozen-dist-<commit>` (remove `.frozen-dist-d2e39e095`),
+    launch `CuspariaKLSY` first (slice 3 for class one hundred seven: the archive's fabricated overdose detail must not ship; the repair text stands where nobody wins),
+    then `zheermao101` (slice 9 for class one hundred six: a `translate-declined-retried` finding on a consolidation slice after a contest with the archive flawed on every ballot; the reply label rendering plural members that same night),
+    then `shi_Yumiaoya` or `mikaela_khara`, beside every check of the last read of each;
+    record each under a new heading above "## yingying8 read, 2026-09-24" in the pass log.
+    YINGYING8 READ (frozen `d2e39e095`): SETTLED at 00:31 UTC 2026-09-24 in 5 min, one attempt, 310 seats, 13 retry rounds, 266 calls, 0.07 USD by the meters;
+    class one hundred four on the wire (one polish gate run, 4 of 7 usable, settled on neither, base shipped), class one hundred five silent by design,
+    classes eighty-six, ninety-seven, one hundred one and one hundred two holding, every check as `yingying7` (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, "[Farewell. I miss you, Yingying.]", "May you still have", no TA, no error finish, no double blank line), 8 abstention lines, Jev 12 of 12;
+    observation, not a class: slice 1's repair text dropped 硬核视频 ("hardcore video") before "Geek Lab", unendorsed.
+    GPT-OSS-120B CULLED from every role (owner, 2026-09-24, on the `CuspariaKLSY10` slice 1 claim inverting cause and effect: "That particular model got cause and effect wrong. Cull it." then "cull it from every role"): off `RUN_ROSTER` and the static checker bench, blocklisted with the owner's words, seating-decision addendum, through `bc10e3b70`, full suite green (`suite-cull2.log`, 1106 PASS).
+    CLAIM FILERS LOGGED (owner: "we're not logging enough then. Refine how we log."): `claim-filers.ts` logs every resolved claim with its filers at the critic stage and every adjudicated issue with each claim's filers, and the artifact's adjudicated issues carry `filedBy`; `SLICE_CACHE_VERSION` 31; guard red first `f049298ac`, built `9a6327de5`, full suite green (`suite-filers2.log`, 1107 PASS).
+    CLASS ONE HUNDRED SIX BUILT (owner Q1: "Run-off only when every contest ballot called the archive flawed"): `archiveFlawedByAll` (`consolidate-archive-flawed.ts`) on the contest ballots, `runoffOverStanding` through `consolidate-driver.ts`, `consolidate-slice-buy.ts` and `consolidate-settle.ts` into `judgeSlateWithRetry`; `translate-judge.ts` names `runoffFinalists` on a decline over an incumbent and `translate-retry.ts` narrows and reruns; an undecided run-off still ships the standing;
+    guards red first `200bf7a53`, built `2a872bbed`, lint 0/0, types clean, full suite green (`suite-class106.log`, 1108 PASS), seventh ineligible-standing addendum `7c729d339`; not exercised live yet.
+    CLASS ONE HUNDRED SEVEN NEXT (owner Q2: "Not eligible; fall back to the repair text"): an archive rendering against which the repair lane's adjudicators accepted an `accuracy/addition` claim is not an eligible standing for the translate slate; the slate runs the run-off path; where nobody wins the repair lane's text for that slice stands instead of the archive; guards red first, addendum.
     ZHEERMAO8 READ (frozen `d2e39e095`): SETTLED at 00:23 UTC 2026-09-24 in 14 min, one attempt, 859 seats, 33 retry rounds, 0.25 USD by the meters;
     class one hundred four on the wire (the polish gate on seven slices, ballots reading the house rules, no tense called a change of meaning), class one hundred five silent by design,
     classes seventy-seven, ninety-six, one hundred one and one hundred two holding, every check as `zheermao7`, 15 abstention lines, Jev 25 of 25;
-    observation, not built: the reply label kept the archive's "one member ... immediately" for 那些秋叶的成员…连夜 on a 2 to 2 contest (every ballot calling the archive flawed) and a 1/1/1 slate with both lane texts on offer through the class forty path, the eligible standing keeping its single round;
-    open question for the owner beside the `CuspariaKLSY10` one: whether the class eighty-two run-off should also run over an eligible standing when the slate ties or falls short (changes the "eligible standing keeps its single round" addendum).
-    CUSPARIAKLSY10 READ (frozen `d2e39e095`): SETTLED at 00:06 UTC 2026-09-24 in 7 min, one attempt, 375 seats, 12 retry rounds, 0.18 USD by the meters;
+    the reply label kept the archive's "one member ... immediately" for 那些秋叶的成员…连夜 on a 2 to 2 contest (every ballot calling the archive flawed) and a 1/1/1 slate with both lane texts on offer through the class forty path, the eligible standing keeping its single round: class one hundred six, built (see the line above).
     CUSPARIAKLSY10 READ (frozen `d2e39e095`): SETTLED at 00:06 UTC 2026-09-24 in 7 min, one attempt, 375 seats, 12 retry rounds, 0.18 USD by the meters;
     class one hundred four live (the life in the past, the slice 0 polish gate citing the house tense rule and no ballot calling the tense a change of meaning),
     class one hundred five live (the bench dropped the gloss line again, `name-gloss-restored` printed, the gloss on the page after the nickname line),
@@ -4672,7 +4676,6 @@ each read off the pass log and the shipped page:
     the translate slate backed no candidate so the archive stood by the eligible-standing single round, the contest chose repair 3 of 4, the consolidation slate tied 1/1/0.5 and kept the standing;
     open question for the owner: whether an archive rendering the adjudicators found to fabricate a suicide method stays an eligible standing for the translate slate's single round.
     CUSPARIAKLSY9 READ (frozen `334c02f23`): SETTLED at 23:41 UTC 2026-09-23 in 4 min, one attempt, 357 seats, 11 retry rounds, 0.16 USD by the meters;
-    CUSPARIAKLSY9 READ (frozen `334c02f23`): SETTLED at 23:41 UTC 2026-09-23 in 4 min, one attempt, 357 seats, 11 retry rounds, 0.16 USD by the meters;
     no hold ran, so class one hundred three not exercised (checkers 2 of 3 on the substitute and gpt-oss by the dry reading at the lanes boundary);
     1 heading, front matter equal, no TA, no error finish, no double blank line, 7 abstention lines, Jev 14 of 14;
     but slice 0 shipped the archive's present tense because the polish gate refused GLM-5.3-Flash's past-tense polish 4 of 4 as "an unsupported change of meaning" with no house rule on its sheet (class one hundred four; the slate before it split 1.5/1/1 with an eligible standing keeping its single round by the owner's addenda),
@@ -4680,7 +4683,6 @@ each read off the pass log and the shipped page:
     CLASSES ONE HUNDRED FOUR AND FIVE FIXED in d2e39e095: `POLISH_GATE_HOUSE_RULES` (`polish-gate-house-rules.ts`, "a tense the house rules set is not a change of meaning" plus `JUDGE_POLICY_BLOCK`) on the polish gate's sheet in both modes;
     `restoreNameGlossLines` (`corpus-run/name-gloss-restore.ts`, after the titles pass in `page-assembly-guard.ts`) restores the archive's “name” means … line after the name's first appearance in a replaced slice that carries the name unglossed, finding `name-gloss-restored`;
     guards red first 487cb2681, lint 0/0, types clean, full suite green (`suite-class104-105.log`, 1105 PASS), replayed over the real `CuspariaKLSY9` slice 1.
-    ZHEERMAO7 READ (frozen `6361d74d0`): SETTLED at 23:20 UTC 2026-09-23 in 17 min, one attempt, 972 seats, 32 retry rounds, 0.52 USD by the meters;
     ZHEERMAO7 READ (frozen `6361d74d0`): SETTLED at 23:20 UTC 2026-09-23 in 17 min, one attempt, 972 seats, 32 retry rounds, 0.52 USD by the meters;
     classes seventy-seven, ninety-six, one hundred one and one hundred two holding, every check as `zheermao6`, five slate-declined, one gate-kept, 32 abstention lines, Jev 28 of 28;
     but Synthetic's window ran out at 23:15:27 UTC two minutes into the repair lane and the checker bench read once at the lanes boundary (two Synthetic-only seats) ran ten of twelve checker rounds and probes on gpt-oss alone, short of quorum, while the substitute a dry reading seats sat idle (class one hundred three);
