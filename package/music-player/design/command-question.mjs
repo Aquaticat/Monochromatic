@@ -22,7 +22,7 @@ const modes = ['dark', 'light'];
 
 /** Names one native Slint raster from its decision axis and viewport. */
 function basename({ kind, variant, mode, size }) {
-  return `command-round-${kind}${variant}-${mode}-${size}`;
+  return `command-md3-${kind}${variant}-${mode}-${size}`;
 }
 
 /** Reads the exact native PNG that will be embedded in one picture source. */
@@ -120,6 +120,18 @@ function validate() {
   }
   if (panelPixel('dark') !== 'srgba(30,31,38,1)' || panelPixel('light') !== 'srgba(231,231,241,1)') {
     throw new Error('Command native panels lost the measured high-container reference.');
+  }
+  const sample = ({ mode, point }) => {
+    const file = join(renderPath, `${basename({ kind: 'i', variant: 1, mode, size: 'compact' })}.png`);
+    return execFileSync('magick', [file, '-format', `%[pixel:p{${point}}]`, 'info:'], { encoding: 'utf8' }).trim();
+  };
+  for (const [mode, divider, focus] of [
+    ['dark', 'srgba(115,117,127,1)', 'srgba(186,197,238,1)'],
+    ['light', 'srgba(121,122,132,1)', 'srgba(78,94,139,1)'],
+  ]) {
+    if (sample({ mode, point: '200,148' }) !== divider || sample({ mode, point: '24,223' }) !== focus) {
+      throw new Error(`${mode} command study lost its baseline divider or keyboard-focus boundary.`);
+    }
   }
   console.log('Separable desktop command-bar questionnaire is valid.');
 }
