@@ -70,9 +70,13 @@ await describe({
     it({
       name: 'rejects unsupported JS inputs with a named type error',
       fn: async () => {
-        expect(() => _jsValueToTomlText({ input: Symbol('no'), options: OPTIONS, },),)
+        /**
+         Unsupported JS symbol supplied as a TOML value.
+         */
+        const unsupported = Symbol('unsupported symbol passed as TOML value',);
+        expect(() => _jsValueToTomlText({ input: unsupported, options: OPTIONS, },),)
           .toThrow(TomlTypeError,);
-        expect(() => _jsValueToTomlText({ input: Symbol('no'), options: OPTIONS, },),)
+        expect(() => _jsValueToTomlText({ input: unsupported, options: OPTIONS, },),)
           .toThrow('Cannot encode symbol as TOML',);
       },
     },),
