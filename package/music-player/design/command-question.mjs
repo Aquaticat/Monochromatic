@@ -53,7 +53,9 @@ function build() {
     if (!markup.includes(placeholder)) throw new Error(`Command template lost ${placeholder}.`);
     return markup.replace(placeholder, groups[slot].map(cardHtml).join('\n'));
   }, template);
-  writeFileSync(outputPath, html);
+  if (!html.includes('__MD3_REFERENCE__')) throw new Error('Command template lost the baseline header reference.');
+  const reference = readFileSync(join(root, 'questions', 'evidence', 'command-md3-baseline-header-comparison.png')).toString('base64');
+  writeFileSync(outputPath, html.replace('__MD3_REFERENCE__', `data:image/png;base64,${reference}`));
   console.log('Built self-contained separable command-bar questionnaire.');
 }
 
@@ -66,14 +68,22 @@ function panelPixel(mode) {
 /** Rejects stale rasters, missing schemes, clipboard use, and collapsed decision axes. */
 function validate() {
   const html = readFileSync(outputPath, 'utf8');
-  if (slots.some((slot) => html.includes(`__${slot}_CARDS__`))) throw new Error('Command questionnaire retains a capture placeholder.');
+  if (slots.some((slot) => html.includes(`__${slot}_CARDS__`)) || html.includes('__MD3_REFERENCE__')) throw new Error('Command questionnaire retains a capture placeholder.');
   if (/<script\s+[^>]*src=|<link\s+[^>]*href=/i.test(html) || /navigator\.clipboard|clipboardData|execCommand\(\s*['"]copy/.test(html)) {
     throw new Error('Command questionnaire depends on an external resource or clipboard API.');
   }
   const scenes = Object.values(groups).flat();
   const urls = [...html.matchAll(/data:image\/png;base64,([A-Za-z0-9+/=]+)/g)].map((match) => match[1]);
-  if (urls.length !== scenes.length * 2 || new Set(urls).size !== scenes.length * 2) {
-    throw new Error(`Command questionnaire carries ${urls.length} data URLs and ${new Set(urls).size} distinct rasters; expected ${scenes.length * 2} each.`);
+  const reference = readFileSync(join(root, 'questions', 'evidence', 'command-md3-baseline-header-comparison.png')).toString('base64');
+  if (urls.length !== scenes.length * 2 + 1 || new Set(urls).size !== scenes.length * 2 + 1) {
+    throw new Error(`Command questionnaire carries ${urls.length} data URLs and ${new Set(urls).size} distinct rasters; expected ${scenes.length * 2 + 1} each.`);
+  }
+  const referenceImage = Buffer.from(reference, 'base64');
+  if (urls.filter((url) => url === reference).length !== 1 ||
+    referenceImage.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
+    referenceImage.readUInt32BE(16) !== 924 || referenceImage.readUInt32BE(20) !== 108 ||
+    !html.includes('width="924" height="108" alt="Baseline MD3 docked Search header')) {
+    throw new Error('Command questionnaire lost its exact baseline header comparison.');
   }
   for (const scene of scenes) {
     for (const mode of modes) {
@@ -109,7 +119,7 @@ function validate() {
     }
   }
   if (/<input[^>]*type="radio"[^>]*checked/.test(html)) throw new Error('Command questionnaire must not preselect a choice.');
-  for (const text of ['name="inapp"', 'name="global"', 'name="search"', 'name="correction"', 'In-app ranking: I1 &gt; I2 &gt; I3', 'Global ranking: G2 &gt; G1', 'Search relationship ranking: R1 &gt; R2', 'D21', 'D25', 'off by default', 'preview.showModal()', 'await previewImage.decode()', 'returnTarget?.focus()', 'stepZoom(-0.25)']) {
+  for (const text of ['name="inapp"', 'name="global"', 'name="search"', 'name="correction"', 'In-app ranking: I1 &gt; I2 &gt; I3', 'Global ranking: G2 &gt; G1', 'Search relationship ranking: R1 &gt; R2', 'D21', 'D25', 'off by default', 'baseline MD3', '28px outer shape', '56px header and divider', '72px header', 'preview.showModal()', 'await previewImage.decode()', 'returnTarget?.focus()', 'stepZoom(-0.25)']) {
     if (!html.includes(text)) throw new Error(`Command questionnaire is missing ${text}.`);
   }
   if ((html.match(/type="radio"/g) ?? []).length !== 7 || (html.match(/<fieldset>/g) ?? []).length !== 3) {
