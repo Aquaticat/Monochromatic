@@ -126,6 +126,19 @@ Round 3 answers (user,
    because rustdoc compiles an unlabeled fence as a doc test
    and inserting `text` would silently stop it.
   Markdown files keep the `text` fix.
+- Rust fences are every `rust` or `rs` fence with any rustdoc attribute
+   (`ignore`,
+   `no_run`,
+   `should_panic`,
+   `compile_fail`,
+   `edition20xx`),
+   plus unlabeled fences inside rustdoc ("All").
+  Syntax errors stay non-findings.
+- Doc tests are linted:
+   Rust fences inside rustdoc go through the Rust rules,
+   two processor levels deep ("Yes.").
+- Rust fence preparation is pending:
+   the user asked for examples.
 
 Adopted by the agent from settled answers,
 not vetoed in round 3:
