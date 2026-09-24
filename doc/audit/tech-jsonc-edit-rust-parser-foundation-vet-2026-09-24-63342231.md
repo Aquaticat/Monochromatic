@@ -683,6 +683,10 @@ The published `jsontape.rs:310-400` offers a JSONC preset with comments and trai
 
 The published `serde_jsonc` 1.0.108 and `serde_jsonc2` 0.1.2 parse line and block comments as whitespace
  (`src/de.rs:248-320` in both archives).
+ Both published versions also reject a trailing array or object comma with `ErrorCode::TrailingComma`
+ (`serde_jsonc/src/de.rs:1123-1151`,
+ `serde_jsonc2/src/de.rs:1125-1152`).
+ That fails the accepted JSONC grammar **before** the comment/value projection can be adapted as-is.
  Their `Value` projection follows Serde's JSON value model,
  without distinct comment-bearing object keys and values;
  consuming comments as whitespace cannot supply the required query/edit API as-is.
