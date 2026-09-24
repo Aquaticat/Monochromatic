@@ -1601,6 +1601,29 @@ The user requested supported behavior rather than parser-algorithm imitation.
  clone/equality and cleanup.
  Do not claim Rust parity solely from the TypeScript structured path's source guard.
 
+## Cross-target compilation of both parser consumers
+
+The current machine reports Linux x86_64 and only the
+ `x86_64-unknown-linux-gnu` Rust target installed.
+ Rather than equating Linux consumer tests with all native platforms,
+ a secret-free 2 GiB/2 CPU Rust 1.97.1 container fetched the
+ `x86_64-pc-windows-gnu` and `aarch64-apple-darwin` standard-library targets in separate runs.
+ From `~/temp/agent/jsonc-foundation-diff/`,
+ `mise run check:windows` and `mise run check:macos` both completed
+ `cargo check --locked --target <triple>` with exit status 0.
+ The checked graph included the owned parser,
+ exact-number prototype,
+ published Biome 0.5.7 parser and syntax dependencies,
+ Biome projection,
+ and the external differential consumer.
+ Sources were mounted read-only;
+ Cargo target data lived in container-local `/target` under a 1 GiB tmpfs.
+ The local image ID was `a0635962c16d5f26400703edd4317175cf9531f3285d632613f9da227f9c71d1`.
+ This verifies type/build compatibility for those targets,
+ **not** executable runtime behavior on Windows or macOS,
+ ABI safety in Biome's unsafe code,
+ or packaging of an adopted product crate.
+
 ## Evidence and validation still required
 
 - Finish the scheduled registry,
