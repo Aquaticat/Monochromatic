@@ -2,7 +2,7 @@
   "src/basic-escape.ts": 155,
   "src/build-comments.ts": 191,
   "src/build-document.ts": 315,
-  "src/build-input.ts": 130,
+  "src/build-input.ts": 128,
   "src/build-value.ts": 104,
   "src/comments.ts": 118,
   "src/delete-value.ts": 101,
