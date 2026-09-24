@@ -138,7 +138,7 @@ await describe({
             return [input,];
           },
         },);
-        expect(mutated,).toContain('"input":0',);
+        expect(mutated,).toContain('"origin":"input:0"',);
         expect(mutated,).toContain('string:b',);
       },
     },),

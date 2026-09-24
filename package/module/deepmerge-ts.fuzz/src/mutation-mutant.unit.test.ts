@@ -114,7 +114,9 @@ await describe({
          Mutants in report order.
          */
         const selected = selectMutants({ ids: [], report: parseMutationReport(REPORT_TEXT,), statuses: ['Survived', 'Killed',], },);
-        expect(selected.map(applyMutant,),).toEqual([
+        expect(selected.map(function apply(entry,) {
+          return applyMutant(entry,);
+        },),).toEqual([
           'const a = b || c;\nreturn a;\n',
           'const a = b && c;\n\n',
         ],);

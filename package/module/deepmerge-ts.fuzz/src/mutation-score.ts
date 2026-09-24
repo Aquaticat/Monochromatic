@@ -32,12 +32,25 @@ import {
 export async function runScore(): Promise<void> {
   await stageCheckout();
   await copyFile(
-    join(import.meta.dirname, '..', 'container', 'stryker.config.json',),
-    join(UPSTREAM, 'stryker.config.json',),
+    join(
+      import.meta.dirname,
+      '..',
+      'container',
+      'stryker.config.json',
+    ),
+    join(
+      UPSTREAM,
+      'stryker.config.json',
+    ),
   );
   await runStep({
     args: ['run',],
-    command: join(UPSTREAM, 'node_modules', '.bin', 'stryker',),
+    command: join(
+      UPSTREAM,
+      'node_modules',
+      '.bin',
+      'stryker',
+    ),
     cwd: UPSTREAM,
   },);
 }

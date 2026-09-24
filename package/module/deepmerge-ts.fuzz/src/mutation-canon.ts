@@ -19,7 +19,7 @@
  */
 type CanonNode = {
   readonly id: number;
-  readonly input: number | null;
+  readonly origin: string;
   readonly detail: unknown;
 };
 
@@ -60,14 +60,34 @@ function prototypeLabel(value: object,): string {
    Built-in prototypes by name.
    */
   const named = new Map<unknown, string>([
-    [null, 'null',],
-    [Object.prototype, 'Object',],
-    [Array.prototype, 'Array',],
-    [Map.prototype, 'Map',],
-    [Set.prototype, 'Set',],
-    [Date.prototype, 'Date',],
+    [
+      null,
+      'null',
+    ],
+    [
+      Object.prototype,
+      'Object',
+    ],
+    [
+      Array.prototype,
+      'Array',
+    ],
+    [
+      Map.prototype,
+      'Map',
+    ],
+    [
+      Set.prototype,
+      'Set',
+    ],
+    [
+      Date.prototype,
+      'Date',
+    ],
   ],);
-  return named.get(prototype,) ?? `other:${Object.prototype.toString.call(prototype,)}`;
+  return named.get(prototype,) ?? `other:${Object.prototype
+    .toString
+    .call(prototype,)}`;
 }
 
 /**
@@ -87,17 +107,20 @@ function heldValues(value: object,): readonly unknown[] {
   /**
    Map entries flattened to key, value, key, value.
    */
-  const entries = (value instanceof Map) ? [...value,].flat() : [];
+  const entries: readonly unknown[] = (value instanceof Map) ? [...(value as ReadonlyMap<unknown, unknown>),].flat() : [];
   /**
    Set items.
    */
-  const items = (value instanceof Set) ? [...value,] : [];
+  const items: readonly unknown[] = (value instanceof Set) ? [...(value as ReadonlySet<unknown>),] : [];
   /**
    Own data property values.
    */
   const properties = Reflect.ownKeys(value,)
     .map(function descriptorOf(key,) {
-      return Object.getOwnPropertyDescriptor(value, key,);
+      return Object.getOwnPropertyDescriptor(
+        value,
+        key,
+      );
     },)
     .filter(function isData(descriptor,) {
       return (descriptor !== undefined) && ('value' in descriptor);
@@ -105,7 +128,11 @@ function heldValues(value: object,): readonly unknown[] {
     .map(function valueOf(descriptor,): unknown {
       return descriptor?.value;
     },);
-  return [...entries, ...items, ...properties,];
+  return [
+    ...entries,
+    ...items,
+    ...properties,
+  ];
 }
 
 /**
@@ -129,13 +156,13 @@ export function labelInputs(inputs: readonly unknown[],): ReadonlyMap<object, nu
    Values still to visit, in order.
    */
   const pending: unknown[] = [...inputs,];
-  for (let cursor = 0; cursor < pending.length; cursor += 1) {
-    /**
-     Value at the cursor.
-     */
-    const value = pending[cursor];
-    if (hasIdentity(value,) && !labels.has(value,)) {
-      labels.set(value, labels.size,);
+  // A for...of over an array visits elements pushed during the loop, so this is a breadth-first walk.
+  for (const value of pending) {
+    if (hasIdentity(value,) && (!labels.has(value,))) {
+      labels.set(
+        value,
+        labels.size,
+      );
       try {
         pending.push(...heldValues(value,),);
       }
@@ -177,7 +204,10 @@ function describeObject(
     return {
       entries: (value instanceof Map)
         ? [...value,].map(function entry([key, entryValue,],) {
-          return [walk(key,), walk(entryValue,),];
+          return [
+            walk(key,),
+            walk(entryValue,),
+          ];
         },)
         : null,
       items: (value instanceof Set) ? [...value,].map(function item(held,) {
@@ -188,7 +218,10 @@ function describeObject(
           /**
            Own descriptor of `key`.
            */
-          const descriptor = Object.getOwnPropertyDescriptor(value, key,);
+          const descriptor = Object.getOwnPropertyDescriptor(
+            value,
+            key,
+          );
           return [
             walk(key,),
             [
@@ -202,13 +235,31 @@ function describeObject(
           ];
         },),
       proto: prototypeLabel(value,),
-      tag: Object.prototype.toString.call(value,),
+      tag: Object.prototype
+        .toString
+        .call(value,),
       time: (value instanceof Date) ? value.getTime() : null,
     };
   }
   catch (error) {
-    return { error: (error instanceof Error) ? error.name : typeof error, };
+    return { error: (Error.isError(error,)) ? error.name : typeof error, };
   }
+}
+
+/**
+ Origin label of one object.
+
+ @param label - Its input position, when it was an input node.
+
+ @returns `input:<position>` for input nodes, `fresh` otherwise.
+
+ @example
+ ```ts
+ originOf(labels.get(value,),);
+ ```
+ */
+function originOf(label?: number,): string {
+  return (label === undefined) ? 'fresh' : `input:${String(label,)}`;
 }
 
 /**
@@ -253,7 +304,10 @@ export function canonicalize(
   function walk(value: unknown,): unknown {
     if ((typeof value) === 'symbol')
       return `symbol:${String(value.description,)}`;
-    if (Object.is(value, -0,))
+    if (Object.is(
+      value,
+      -0,
+    ))
       return 'number:-0';
     if (!hasIdentity(value,))
       return `${typeof value}:${String(value,)}`;
@@ -267,11 +321,17 @@ export function canonicalize(
      Id of this visit, fixed before its children are visited.
      */
     const id = seen.size;
-    seen.set(value, id,);
-    return {
-      detail: describeObject({ value, walk, },),
+    seen.set(
+      value,
       id,
-      input: labels.get(value,) ?? null,
+    );
+    return {
+      detail: describeObject({
+        value,
+        walk,
+      },),
+      id,
+      origin: originOf(labels.get(value,),),
     } satisfies CanonNode;
   }
   return JSON.stringify(roots.map(walk,),);
@@ -311,6 +371,6 @@ export function outcomeOf(
     },);
   }
   catch (error) {
-    return `throw:${(error instanceof Error) ? error.name : typeof error}`;
+    return `throw:${(Error.isError(error,)) ? error.name : typeof error}`;
   }
 }

@@ -22,7 +22,8 @@
  ```
  */
 function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
-  return ((typeof value) === 'object') && (value !== null) && !Array.isArray(value,);
+  return ((typeof value) === 'object') && (value !== null)
+    && (!Array.isArray(value,));
 }
 
 /**
@@ -110,11 +111,15 @@ function parsePosition(value: unknown,): MutantPosition {
    Column field.
    */
   const column: unknown = isRecord(value,) ? value.column : undefined;
-  if ((!Number.isInteger(line,)) || (!Number.isInteger(column,)) || ((line as number) < 1) || ((column as number) < 1))
+  if (((typeof line) !== 'number') || ((typeof column) !== 'number')
+    || (!Number.isInteger(line,))
+    || (!Number.isInteger(column,))
+    || (line < 1)
+    || (column < 1))
     throw new MutationReportError(`malformed mutant position ${JSON.stringify(value,)}`,);
   return {
-    column: column as number,
-    line: line as number,
+    column,
+    line,
   };
 }
 
@@ -133,19 +138,31 @@ function parsePosition(value: unknown,): MutantPosition {
  ```
  */
 function parseMutant(value: unknown,): Mutant {
-  if (!isRecord(value,) || !isRecord(value.location,))
+  if ((!isRecord(value,)) || (!isRecord(value.location,)))
     throw new MutationReportError(`malformed mutant ${JSON.stringify(value,)}`,);
-  if (((typeof value.id) !== 'string') || ((typeof value.mutatorName) !== 'string') || ((typeof value.status) !== 'string'))
+  /**
+   Fields read once so the checks narrow them.
+   */
+  const {
+    id,
+    mutatorName,
+    replacement,
+    status,
+  } = value;
+  if (((typeof id) !== 'string') || ((typeof mutatorName) !== 'string')
+    || ((typeof status) !== 'string'))
     throw new MutationReportError(`mutant without id, mutatorName, or status: ${JSON.stringify(value,)}`,);
   return {
-    id: value.id as string,
+    id,
     location: {
-      end: parsePosition(value.location.end,),
-      start: parsePosition(value.location.start,),
+      end: parsePosition(value.location
+        .end,),
+      start: parsePosition(value.location
+        .start,),
     },
-    mutatorName: value.mutatorName as string,
-    replacement: ((typeof value.replacement) === 'string') ? value.replacement as string : '',
-    status: value.status as string,
+    mutatorName,
+    replacement: ((typeof replacement) === 'string') ? replacement : '',
+    status,
   };
 }
 
@@ -168,18 +185,29 @@ export function parseMutationReport(text: string,): MutationReport {
    Parsed JSON.
    */
   const raw: unknown = JSON.parse(text,);
-  if (!isRecord(raw,) || !isRecord(raw.files,))
+  if ((!isRecord(raw,)) || (!isRecord(raw.files,)))
     throw new MutationReportError('report has no files object',);
   return {
     files: Object.fromEntries(Object.entries(raw.files,)
       .map(function parseFile([file, entry,],) {
-        if (!isRecord(entry,) || ((typeof entry.source) !== 'string') || !Array.isArray(entry.mutants,))
+        if (!isRecord(entry,))
+          throw new MutationReportError(`report entry ${file} is not an object`,);
+        /**
+         Fields read once so the checks narrow them.
+         */
+        const {
+          mutants,
+          source,
+        } = entry;
+        if (((typeof source) !== 'string') || (!Array.isArray(mutants,)))
           throw new MutationReportError(`report entry ${file} has no source or mutants`,);
         return [
           file,
           {
-            mutants: entry.mutants.map(parseMutant,),
-            source: entry.source as string,
+            mutants: mutants.map(function parseEntry(mutant: unknown,) {
+              return parseMutant(mutant,);
+            },),
+            source,
           },
         ] as const;
       },),),
@@ -212,19 +240,30 @@ export function offsetOf(
   },
 ): number {
   /**
-   Start of the current line while scanning.
+   Source lines; the position's line must be one of them.
    */
-  let lineStart = 0;
-  for (let line = 1; line < position.line; line += 1) {
-    /**
-     End of the current line.
-     */
-    const newline = source.indexOf('\n', lineStart,);
-    if (newline === -1)
-      throw new MutationReportError(`line ${String(position.line,)} is past the end of the source`,);
-    lineStart = newline + 1;
-  }
-  return lineStart + position.column - 1;
+  const lines = source.split('\n',);
+  if (position.line > lines.length)
+    throw new MutationReportError(`line ${String(position.line,)} is past the end of the source`,);
+  /**
+   Offset where the position's line starts: every earlier line plus its newline.
+   */
+  const lineStart = lines
+    .slice(
+      0,
+      position.line - 1,
+    )
+    .reduce(
+      function addLine(
+        sum,
+        line,
+      ) {
+      return sum + line.length
+        + 1;
+    },
+      0,
+    );
+  return (lineStart + position.column) - 1;
 }
 
 /**
@@ -244,17 +283,27 @@ export function applyMutant(selected: SelectedMutant,): string {
    Start of the replaced span.
    */
   const start = offsetOf({
-    position: selected.mutant.location.start,
+    position: selected.mutant
+      .location
+      .start,
     source: selected.source,
   },);
   /**
    End of the replaced span.
    */
   const end = offsetOf({
-    position: selected.mutant.location.end,
+    position: selected.mutant
+      .location
+      .end,
     source: selected.source,
   },);
-  return `${selected.source.slice(0, start,)}${selected.mutant.replacement}${selected.source.slice(end,)}`;
+  return `${selected.source
+    .slice(
+      0,
+      start,
+    )}${selected.mutant
+      .replacement}${selected.source
+        .slice(end,)}`;
 }
 
 /**

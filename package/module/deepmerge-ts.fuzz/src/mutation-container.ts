@@ -65,8 +65,14 @@ export class MutationStepError extends Error {
 export async function stageCheckout(): Promise<void> {
   await Promise.all(STAGED_ENTRIES.map(async function stage(entry,) {
     await cp(
-      join(CHECKOUT, entry,),
-      join(UPSTREAM, entry,),
+      join(
+        CHECKOUT,
+        entry,
+      ),
+      join(
+        UPSTREAM,
+        entry,
+      ),
       {
         force: true,
         recursive: true,
