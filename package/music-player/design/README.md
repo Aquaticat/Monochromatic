@@ -67,13 +67,22 @@ at both seams).
 D47 supersedes the desktop command-bar presentation:
  the user rejected all I/G/R
 variants and directed a **Search button that opens a separate search page**.
-The current `questions/current.html` still contains the rejected comparison until its
-replacement is built;
- it is not a live vote.
- The active design work is to draw the
-player button and the full search destination in native Slint under the project's
-baseline Material 3 policy,
- then verify and present that one active design.
+The active self-contained review at `questions/current.html` now shows only the
+Search-button-to-page direction.
+ D48 merges Back,
+ input and Clear into one
+72px full-content baseline MD3 header with a divider,
+ rather than stacking two
+search bars.
+ Native Slint captures show the player trigger,
+ open/empty page,
+illustrative results,
+ no results and unavailable library in both schemes at
+360px,
+ 480px and 1100px widths.
+ The HTML walkthrough exercises the intended
+open/back sequence without claiming the static native captures prove click delivery.
+The rejected command review remains at `questions/archive/command-igr-rejected.html`.
 D21's configurable global hotkey and extra Settings row belonged to the command bar;
 they do not silently move to Search.
  D25's Ctrl+F reservation remains pending the
