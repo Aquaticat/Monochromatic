@@ -720,6 +720,37 @@ captures at the measured cover and inner panel physical resolution in both schem
 Keep desktop porting and window-size choices subordinate to those visual decisions;
 never relabel a desktop-native screenshot as target-device evidence.
 
+## 5q. The full-page Search mock painted across the Fold connector
+
+The first unfolded Compose Search page used `fillMaxWidth()` for its 72dp header and
+`ListItem`s.
+ Its Back/Clear buttons avoided the centre,
+ but the query field,
+divider and result rows traversed the 24dp connector.
+ E2 had said "nothing
+interactive" rather than plainly excluding **all app content**;
+ the user caught
+the missing constraint in the native visual.
+
+**The rule.**
+ Every unfolded page,
+ even a destination described as full-page,
+ is built
+from two content panes separated by the empty centred 24dp connector.
+ Background
+fill can continue through it;
+ text,
+ rows,
+ icons,
+ dividers,
+ selection and focus
+cues,
+ and app hit regions cannot.
+ Verify visible node bounds and sample the
+connector band in native captures,
+ including the Search header and results.
+A button-only clearance test cannot prove the whole region is empty.
+
 ## Standing standards for this project
 
 1. **EVERY question form ends with a free-text field.
