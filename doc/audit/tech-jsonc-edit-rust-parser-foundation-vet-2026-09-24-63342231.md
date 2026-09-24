@@ -43,7 +43,7 @@ Both local delegated `rg` queries were blocked by its security guardrail, so tar
 
 - Discovery: [crates.io entry](https://crates.io/crates/edikt-jsonc) and [lexer source](https://docs.rs/crate/edikt-jsonc/0.4.0/source/src/lexer.rs).
 - Category: inspectable open-source Rust lexer/CST with native and multi-platform overlays.
-- Screening: raw comments, strings, and numbers are available. [Comment projection](https://docs.rs/crate/edikt-jsonc/0.4.0/source/src/comments.rs) puts key-side and value-side comments together on the value, so an attachment layer is still needed. [Value projection](https://docs.rs/crate/edikt-jsonc/0.4.0/source/src/project.rs) uses `f64` for some numbers and Rust `String`; bypassing it may allow a compliant projection from raw tokens. JSON5 and malformed-input acceptance requires strict validation. Pin clone and probe before any conclusion.
+- Screening: raw comments, strings, and numbers are available. [Comment projection](https://docs.rs/crate/edikt-jsonc/0.4.0/source/src/comments.rs) puts key-side and value-side comments together on the value, so an attachment layer is still needed. [Value projection](https://docs.rs/crate/edikt-jsonc/0.4.0/source/src/project.rs) uses `f64` for some numbers and Rust `String`; bypassing it may allow a compliant projection from raw tokens. JSON5 and malformed-input acceptance requires strict validation. Excluded at the regex hard gate: `lexer.rs:47-69` uses Logos `#[regex(...)]` patterns in production. Stop candidate validation.
 
 ### `json-five` 0.3.1
 
@@ -86,7 +86,7 @@ Both local delegated `rg` queries were blocked by its security guardrail, so tar
 
 - `json-five` 0.3.1, private clone `~/temp/agent/json-five-rs-2026-09-24` at `650be6a` (`Cargo.toml:3`): `src/rt/parser.rs:94-145` stores number and quoted-string lexemes verbatim; `src/rt/parser.rs:21` calls whitespace/comment context `Wsc = String`. It needs strict JSONC validation and a separate attached-comment parser and canonical emitter. Its `Cargo.toml:14-24` lists `unicode-general-category` and optional `serde` as production dependencies. Unpaired-surrogate acceptance in the round-trip parser remains to be probed.
 
-`edikt-jsonc` and `json-five` remain serious composed candidates, not validated finalists. The repository-owned parser translation remains a baseline. `biome_json_parser` and other discovered candidates remain unscreened against the exact surrogate and comment boundary; no elimination or ranking is justified yet.
+`json-five` remains a serious composed candidate, not a validated finalist; `edikt-jsonc` is excluded by the regex hard gate. The repository-owned parser translation remains a baseline. `biome_json_parser` and other discovered candidates remain unscreened against the exact surrogate and comment boundary; no elimination or ranking is justified yet.
 
 ## Parser expansion findings and registry pages
 
@@ -120,7 +120,7 @@ Web searches discovered `jwc`, `hifijson`, `fjson`, `tokora`, and lexer-only `an
 
 ## Regex screening, 2026-09-24
 
-The user explicitly excludes production regex. The original TypeScript scanner in `package/module/jsonc-edit/src/scan.ts` uses direct character scans. `edikt-jsonc` 0.4.0 is now **excluded**: `crates/edikt-jsonc/src/lexer.rs:47-69` uses repeated `#[regex(...)]` patterns through `logos::Logos` (`:23`), not merely a dev-only regex dependency. See [versioned lexer source](https://docs.rs/crate/edikt-jsonc/0.4.0/source/src/lexer.rs). Stop its audit at this hard gate.
+The user requested early regex culling. Our operational screening interprets this as production parsing or lexing and required normal/build dependencies, not upstream dev-only usage. The original TypeScript scanner in `package/module/jsonc-edit/src/scan.ts` uses direct character scans. `edikt-jsonc` 0.4.0 is now **excluded**: `crates/edikt-jsonc/src/lexer.rs:47-69` uses repeated `#[regex(...)]` patterns through `logos::Logos` (`:23`), not merely a dev-only regex dependency. See [versioned lexer source](https://docs.rs/crate/edikt-jsonc/0.4.0/source/src/lexer.rs). Stop its audit at this hard gate. The `tokora` 0.11.0 [JSON CST example](https://docs.rs/crate/tokora/0.11.0/source/examples/json_cst.rs) likewise uses `logos` with `#[regex(...)]` for whitespace, number and string tokens; exclude that example as a proposed foundation, not the combinator crate in every possible configuration.
 
 `json-five` 0.3.1 lists `regex = "1"` only under `[dev-dependencies]` in `Cargo.toml:30-32`; its inspected production `src/` has no `regex::`, `Regex::`, `#[regex]`, or `logos` use. Do not cull on test-only dependencies. Direct source/manifests for `fjson`, `jsonc-parser`, `biome_json_parser`, `jwc`, and `hifijson` yielded no matching regex calls or macros under the same targeted search, but their required transitive production paths still need audit. This is **pending**, not a claim of global absence.
 
