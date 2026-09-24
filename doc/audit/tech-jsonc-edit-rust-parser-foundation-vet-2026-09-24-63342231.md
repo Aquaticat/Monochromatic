@@ -1250,6 +1250,29 @@ A separate scratch project at `~/temp/agent/jsonc-foundation-diff/`
  including this external-consumer boundary case for **both** candidates.
  These results do not validate memory safety of Biome's unsafe upstream implementation by themselves.
 
+### Malformed overdepth lifecycle
+
+A common malformed source of 2048 array openers followed by an incomplete `{"a":`
+ was tested within 2 GiB/2 CPU containers.
+ The owned parser checks its frame count **before** opening container 513
+ (`~/temp/agent/jsonc-parser-probe-2026-09-24/src/parse.rs:218-229`);
+ its new test returned `JSONC nesting too deep` at byte offset 512.
+ The owned bounded debug and optimized release suites each passed 23 tests.
+
+The Biome wrapper calls `biome_json_parser::parse_json` **before** scanning tokens for depth
+ (`~/temp/agent/jsonc-regex-audit/biome/lib.rs:31-54`).
+ Its new fixture produced upstream error diagnostics,
+ preserved source text through syntax traversal,
+ dropped the upstream parse and returned an editor error without a crash.
+ Bounded debug and optimized release wrapper suites each passed 16 tests with stage markers
+ before/after parse,
+ drop and editor rejection.
+ This demonstrates cleanup on that malformed 2048-container source;
+ it does **not** establish a general allocation,
+ stack or CPU budget before Biome's postparse depth guard.
+ A prospective Biome composition still needs a preparse admission/resource boundary
+ or a deciding source proof that its upstream behavior bounds all required workloads.
+
 ### Bounded parse-performance preparation
 
 The scratch differential consumer now has `src/bin/bench.rs` and a `mise run bench:isolated` task,
