@@ -76,11 +76,18 @@ about 852 × 883dp).
  The earlier 360,
  480 and 1100px desktop Slint scenes are
 not design evidence for these screens.
- `questions/current.html` still shows that
-obsolete review and must be replaced with native Fold captures in both schemes
-before requesting another answer.
- Desktop implementation inherits the Fold visual
-choices even if its own proportions would suggest a different layout.
+ `questions/current.html` now embeds
+native Compose captures of both Fold panels in light and dark,
+ including native
+status/navigation bars,
+ a one-header Search page,
+ results and empty states,
+ and
+200% text stress captures.
+ The unfolded page keeps the 24dp center connector
+empty and uses accepted true black or white fill.
+ Desktop implementation inherits
+the Fold visual choices even if its own proportions would suggest a different layout.
 The rejected command review remains at `questions/archive/command-igr-rejected.html`.
 D21's configurable global hotkey and extra Settings row belonged to the command bar;
 they do not silently move to Search.
@@ -90,7 +97,10 @@ whole keyboard-map pass.
  result actions/ranking,
  button placement on
 each platform,
- and empty/error states remain to be designed.
+ and final empty/error behavior remain to be designed;
+ the
+canned captures are a design review,
+ not a running search index.
  The live backlog and developer-owned items are in
 `open-questions.md` section 0b.
 
