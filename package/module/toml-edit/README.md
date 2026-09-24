@@ -12,6 +12,29 @@ Wraps [`toml-eslint-parser`](https://github.com/ota-meshi/toml-eslint-parser) an
 pnpm add @monochromatic-dev/module-toml-edit
 ```
 
+## Mutation testing
+
+Run the repository's container-isolated mutation tester from the repository root:
+
+```sh
+mise run //package/module/toml-edit:test:mutation
+```
+
+The task always passes `--full-suite` because tests are organized across API and cross-path files,
+ not one test file per source file.
+It runs the package's `*.unit.test.ts` tests against each mutant;
+ the fuzz sidecar and conformance runner are separate campaigns.
+The CLI writes `mutation-report.json` in the working directory by default and reports survivors without failing the task.
+Use `--report` to choose another report path.
+
+Preview mutant and test selection without starting containers,
+ or limit the run to a package-relative source file:
+
+```sh
+mise run //package/module/toml-edit:test:mutation -- --dry-run src/toml-has.ts
+mise run //package/module/toml-edit:test:mutation -- src/toml-has.ts
+```
+
 ## API shape
 
 Free-function API over an immutable `TomlEditState`.
