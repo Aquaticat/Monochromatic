@@ -280,11 +280,16 @@ podman run \
   cargo run --locked --offline --example surrogate_safety
 ```
 
-The checked patch should fail **only** the valid-pair expectation,
-without constructing an invalid `char`. The final patch should pass the
-example; the same container command with `cargo test --locked --offline`
-then runs the upstream Rust suite. These are verification instructions for
-an agent, not a request for the user to supply credentials or execute them.
+The checked patch was rerun on its separate disposable clone with the
+expanded example: the earlier invalid cases returned expected errors,
+then `decoded_value` failed at `rust/examples/surrogate_safety.rs:52`
+with `valid JSONC: Unexpected element found. (1:6)` (exit 101).
+This is a safe valid-pair control; it did not construct an invalid `char`.
+The final patch passed the expanded example (exit 0).
+The same container command with `cargo test --locked --offline` ran the
+upstream Rust suite successfully on the final patch.
+These are verification instructions for an agent, not a request for the
+user to supply credentials or execute them.
 
 ### Patterns that avoid the unsafe conversion (source-derived; patched subset tested)
 
