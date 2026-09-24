@@ -1,6 +1,6 @@
-// This file is a debug-only visual and interaction prototype for D47 to D49.
-// Folded cover and unfolded inner panel geometry come from the Android emulator,
-// never from an invented desktop viewport. No result hits a real media library.
+// This debug-only D47 to D49 Search composition was rejected by the user.
+// Its split header and results came from an obsolete reading of E2; do not
+// reuse the unfolded layout as precedent. No result hits a real media library.
 package dev.monochromatic.musicplayer
 
 // What:     `BackHandler` consumes Android Back only while the Search page is open.
@@ -182,7 +182,8 @@ internal fun SearchPageStudy(candidate: String) {
         }
         return
     }
-    // E2: only neutral paint, never header, divider, text, rows or targets in [414,438)dp.
+    // Historical rejected layout: this blank-strip rule is NOT current E2.
+    // Current E2 excludes informational material, not continuous surfaces or hit regions.
     Row(modifier = Modifier.fillMaxSize().background(windowColor)) {
         Column(modifier = Modifier.width(414.dp).fillMaxHeight().background(windowColor)) {
             Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
