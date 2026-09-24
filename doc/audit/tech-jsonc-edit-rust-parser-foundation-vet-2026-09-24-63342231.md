@@ -508,6 +508,20 @@ The published `jsontape.rs:310-400` offers a JSONC preset with comments and trai
  this as-is exit is about the supported string domain.
  No candidate code was executed.
 
+### `serde_jsonc` and `serde_jsonc2` as-is comment-model exits
+
+The published `serde_jsonc` 1.0.108 and `serde_jsonc2` 0.1.2 parse line and block comments as whitespace
+ (`src/de.rs:248-320` in both archives).
+ Their `Value` projection follows Serde's JSON value model,
+ without distinct comment-bearing object keys and values;
+ consuming comments as whitespace cannot supply the required query/edit API as-is.
+ `serde_jsonc2` offers `raw_value` and `arbitrary_precision` features,
+ but those do not add normalized attached comments by themselves.
+ An adapter that independently reparses trivia would be a separate custom parser,
+ not the published deserializer interface.
+ No surrogate or regex claim is inferred from this comment-model exit,
+ and no candidate code was executed.
+
 ### `fjson` 0.3.1
 
 **Source correction:**
