@@ -1,8 +1,8 @@
 # Settlement experiment UX redesign
 
-Status: the choice matrix exists; objective rendering and bookkeeping defects found in a fresh audit
-have been corrected in the scratch prototypes and reverified.
-The first-settlement-wins interaction still needs the user's decision before a cell is chosen.
+Status: the choice matrix exists, and the user has resolved the first-settlement-wins interaction:
+a fresh one-shot button may call a resolver after settlement when the ignored attempt is logged.
+Implementation and verification of that decision are in progress in the scratch prototypes.
 The lesson file is untouched by this work.
 No skill design has been confirmed; this redesign feeds the Promise toy, not the teaching skill.
 
@@ -218,15 +218,20 @@ for the lesson file itself; this UX work has not modified it yet.
 - A call's effect must follow the Promise's synchronous first-settlement-wins rule,
   not the microtask-late observer bookkeeping.
 
+## Settled first-settlement-wins interaction
+
+The user chose **yes**: a fresh numbered hand or laser button counts as doing something
+when it calls a resolver after the Promise has settled and visibly logs
+"attempt ignored; original outcome unchanged".
+The Promise itself remains fixed. The clicked one-shot button becomes used.
+Buttons before a pudding exists remain disabled; available unspent buttons may make later calls
+against a settled pudding. The button log and face must distinguish calls from the handler's
+observed outcome, including two calls in one browser task.
+The staged two-call run and automatic second-call alternatives were not selected.
+This decision is not a selection of matrix layout or cue colors.
+
 ## Open choices (user's, gating implementation)
 
-- First decide what counts as "would do nothing" for a second resolver call on an already-settled
-  Promise. A visible log of an ignored attempt is a meaningful teaching result,
-  but the Promise itself cannot change. The current factory disables this control,
-  so it does not teach the heading's promised attempt. Alternatives include letting a fresh
-  one-shot control make and log the ignored call, staging a two-call sequence before running it,
-  or automatically making a second call as part of a first-action scenario.
-  Do not infer the user's preference from the earlier prohibition on no-op buttons.
 - Matrix cell: layout (A reference rows, B kept card grid, C definition list)
   by cue color (state-colored, neutral). My ranking, with adjacent-pair reasons in the form:
   a-state, a-neutral, b-state, b-neutral, c-state, c-neutral.
