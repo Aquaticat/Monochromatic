@@ -1295,6 +1295,32 @@ The player continues to expose a distinct Search button that opens the page
  This is a design decision,
  not a production implementation instruction.
 
+### D49. Pixel 9 Pro Fold is the visual source for every platform (2026-09-23)
+The user corrected the desktop Search-page round:
+ all visual decisions follow the
+Pixel 9 Pro Fold's **folded cover** and **unfolded inner** screens.
+ The cover is
+1080 × 2424 physical px (about 411 × 923dp),
+ and the inner panel is 2076 × 2152
+physical px (about 852 × 883dp),
+ as recorded in `device-metrics.md`.
+ Desktop
+inherits those treatments even where that is less optimal for a desktop window.
+Do not substitute 360 × 640,
+ 480 × 600,
+ or 1100 × 640 desktop mock windows as
+visual decision targets.
+ Those native Slint experiments are historical only.
+
+**Effect.**
+ Redraw D47/D48's Search button and one-header Search page on both real
+Fold panels in a debug-only native Android prototype,
+ in light and dark.
+ A desktop
+port or window-size selection does not overrule the chosen Fold geometry or create a
+parallel design vote.
+ Production implementation remains unauthorized.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)
