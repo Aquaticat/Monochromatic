@@ -64,7 +64,9 @@ Next actions, in order:
      and triage any counterexample per `Campaign`.
 4.   Method audit (see `Method audit`), started 2026-09-24 after the user rejected the drafts as too thin:
      "This can't be it. I expected many more findings. Maybe we're not looking for findings correctly?"
-     Integrate its three reports, then ask the user again to review and post the drafts.
+     All three reports integrated (see `Integration after the three reports`);
+     campaign restarted on the widened generators (log `campaign-9.log` in the session scratchpad).
+     Next: ask the user again to review and post the drafts.
 5.   Open PRs from the fork branches if the maintainer wants them,
      and follow `After upstream responds`.
 
@@ -573,6 +575,54 @@ generator changes (zero-argument calls, `undefined` between 3+ records, 50+ memb
 are applied from this session because no other workstream touches those files;
 exported-type, documented-example, packaging, and `engines` checks wait for the surfaces report,
 which covers the same ground, so both land in one integration pass.
+
+### Surface result
+
+Report `doc/audit/deepmerge-ts-surface-2026-09-24.md` (commits `4d8ca3694` to `02c6e8c62`):
+every documented runtime result held,
+and packaging (publint, attw 0.18.5 with a control), Node 16.9 to 26, CJS, Bun, and Deno found nothing.
+Reproduced independently here before entering the drafts
+(runtime and types in `src/verify-surface.local.ts`, the embargoed repro in a capped container,
+200-argument TS2589 in a scratch file;
+the docs-snippet type errors rest on `src/surface-docs-type.unit.test.ts`, whose `@ts-expect-error` pins pass `lint:types`):
+
+- Issue section 11 (docs):
+   `ObjectType` consequences per toolchain,
+   four documented TypeScript snippets the declarations reject,
+   `objectHasProperty`, the FastUnsafe circular statement, and FastUnsafe custom `meta`.
+- Issue section 12 (types):
+   spread after a fixed argument, interface-typed inputs, `ReadonlySet`/`ReadonlyMap` views,
+   and two questions (`strictNullChecks: false` filters `null`; argument-count cost about N^2.6 with TS2589 at 200).
+- Advisory finding 2:
+   the documented `metaDataUpdater`s also disable cycle handling (two cyclic inputs exhaust the stack).
+
+### Integration after the three reports
+
+- Generators:
+   zero-argument and `undefined`-between calls (`src/argument-arbitraries.ts`, commit `9ff6f5c3f`);
+   both rebuilt recall bugs now fail the model property directly.
+   The shifted draws dropped coverage to 1763 (`src/deepmerge.ts` 302 to 303, the custom array fallback);
+   parallel arrays and an `implicitArray` reach tally restored 1765 by construction (commit `204f9f08b`).
+- Exported types:
+   `src/type-export.unit.test.ts` references all 31 exported types,
+   and `src/type-export-name.unit.test.ts` fails when the declaration file exports one it does not (commit `2e0b605bf`).
+- Default-function delegation (`src/type-default-function.unit.test.ts`) found a new declaration defect:
+   `utils.defaultMergeFunctions.mergeArrays`, `mergeSets`, and `mergeOthers` reject the `utils` their optional parameter declares (TS2345);
+   pinned there and added to issue section 12.
+- Literal-union cost families (`src/surface-type-cost-family.ts`, commit `5db24c179`):
+   default, FastUnsafe, into, and three-input paths stay near-linear to 400 members;
+   no-filter and custom filter URIs grow about quadratically (1420365 instantiations and 22 s at 400) with TS2589 from 50;
+   added to issue section 12.
+- Tasks `recall:*` and `surface:*` with README entries (commit `26ac6cedf`, each run for real);
+   `recall-setup.ts` moved to async APIs; the recall report counts each id once (commit `f4db75cc9`).
+- Checks after integration:
+   `format:oxlint`, `lint:oxlint` (0 warnings, 0 errors), `lint:types`, `test:unit`, and `fuzz:coverage` (1765 of 1772) pass.
+
+Method verdict:
+runtime search has measured recall (8 of 8 historical runtime bugs, and a docs-only oracle found no runtime defect the sidecar missed),
+so the low runtime count reflects the library, within the fault classes measured.
+The misses and most new findings were on surfaces never searched before: result types under real consumer shapes,
+declarations of the customization API, documentation, and type-checker cost.
 
 ### Campaign
 
