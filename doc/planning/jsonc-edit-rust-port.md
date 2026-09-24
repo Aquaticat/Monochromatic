@@ -300,10 +300,10 @@ source-level transitive clearance remains open where required.
    but the Biome prototype places it on value `a`.
    Named object and array tests independently failed that ownership case.
    The scratch Biome adapter now routes a later-line comma's following comment to the next child;
-   both named debug regressions passed.
-   A positive-controlled debug differential then found no node difference within its 5635 generated inputs,
+   both named regressions passed in bounded debug and optimized release runs.
+   Positive-controlled debug and optimized differentials found no syntax or node difference within the 5635 generated inputs,
    of which both parsers admitted 1577.
-   An optimized rerun remains pending.
+   This corpus result does not prove parity for every JSONC input.
    The TypeScript structured path still rejects this input today;
    the accepted same-line trailing rule guides the scratch correction,
    not an assertion that TypeScript already parses it.

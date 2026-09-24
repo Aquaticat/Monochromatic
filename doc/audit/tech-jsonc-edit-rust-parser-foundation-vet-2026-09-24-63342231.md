@@ -586,12 +586,17 @@ The separate scratch differential consumer now imports the Biome-to-value adapte
  Biome's raw syntax tree had retained the comment.
  The scratch adapter now checks for a line break between the value and comma
  (`src/children.rs:105-136`) and carries the comma's following comments to the next key or element when present.
- Both named owner regressions passed in the bounded debug suite.
- A rerun of the positive-controlled debug differential admitted 1577 of the 5635 generated inputs in both parsers
+ Both named owner regressions passed in bounded debug and optimized release suites.
+ Reruns of the positive-controlled debug and optimized release differential each admitted 1577 of the 5635 generated inputs in both parsers
  and found no syntax or editor-node difference within that corpus.
- The intentionally mismatching BOM and moved-comment controls passed before interpreting that null result.
- This does not prove semantic equality outside the corpus;
- optimized projection and differential reruns remain pending.
+ The intentionally mismatching BOM and moved-comment controls passed before interpreting either null result.
+ This does not prove semantic equality outside the corpus.
+ `package/module/jsonc-edit/src/emit-comment.ts:42-79` deliberately emits a trailing single-line comment as `//`;
+ mixed-style comment kind may normalize after emission even when its body and owner survive.
+ The named owner tests therefore assert body and owner after reparse,
+ not an unsupported lexical-style identity promise.
+ Full conformance,
+ platform and upstream validation remain open.
 
 ## Existing-parser contract exits
 
