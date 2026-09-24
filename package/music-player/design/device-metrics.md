@@ -292,11 +292,9 @@ record and role-based guards.
    **prototype player spacer**,
  not a mandatory text-exclusion band or
    accepted final player gap.
-    The user supplied about 10mm for the visible dent,
- approximately
-   147 **physical px** around center x 1038 on this panel.
-    A conversion
-   to roughly 60dp holds only at the current 390dpi setting;
+    The user corrected the visible dent estimate from 10mm to about 7.5mm,
+   approximately 110 **physical px** around center x 1038 on this panel.
+    A conversion to roughly 45dp holds only at the current 390dpi setting;
     it changes
    with Android display scaling and is not a design constant.
     Readable text,
@@ -328,28 +326,28 @@ captured as rendered,
 
 ## Physical crease and informational clearance
 
-The user set the **visible dent width to about 10mm for this design**.
+The user corrected their first estimate to **about 7.5mm of visible dent**.
 From the published 8-inch diagonal and 2076 × 2152px aspect,
  the active
 inner panel width is about 141.08mm.
- Ten physical millimeters cover
-approximately `10 / 141.08 × 2076 = 147` **panel pixels**.
- Centered at
-physical x 1038,
- the approximate information-free interval is
-x `[964,1112)`px.
+ At this physical resolution,
+ the
+dent covers approximately `7.5 / 141.08 × 2076 = 110` **panel pixels**.
+Centered at physical x 1038,
+ the approximate information-free interval
+is x `[983,1093)`px.
  These endpoints inherit the uncertainty of the
-published diagonal and the user's "about 10mm" estimate.
+published diagonal and the user's "about 7.5mm" estimate.
 
 Express `max(min_padding, crease_width)` in a common **physical** coordinate
 system before positioning opposing information-bearing regions.
  The
-crease term is 10mm (about 147 panel px here),
+crease term is 7.5mm (about 110 panel px here),
  not a hard-coded dp
 constant.
  At the AVD's **current** 390dpi scaling,
  it corresponds to
-about 60dp;
+about 45dp;
  changing display scaling changes that dp number but not the
 physical dent.
  Compose may convert the current physical clearance to
@@ -367,7 +365,7 @@ Borders,
 the crease;
  their readable text and other informative marks must stay
 clear.
- Do not derive final player pane widths by subtracting 147px from the
+ Do not derive final player pane widths by subtracting 110px from the
 whole screen unless a candidate actually chooses symmetric content columns.
 
 The Pixel_9_Pro_Fold AVD's `config.ini` separately contains
@@ -375,7 +373,7 @@ The Pixel_9_Pro_Fold AVD's `config.ini` separately contains
  Google's emulator schema defines
 this as `x-y-width-height`,
  so the **emulated occlusion area** has width 0.
-That sensor model does **not** negate the user's visible 10mm crease.
+That sensor model does **not** negate the user's visible 7.5mm crease.
 Source:
  [Google emulator hardware properties][emulator-hardware-properties],
 `hw.sensor.hinge.areas`.
@@ -385,7 +383,7 @@ Source:
 ```text
 443 × 994    measured AVD cover screen (folded, 390dpi; physical 1080 × 2424px)
 852 × 883    measured AVD inner display (unfolded, 390dpi; physical 2076 × 2152px)
-426 × 883    right half at current AVD density; physical crease is about 147px wide
+426 × 883    right half at current AVD density; physical crease is about 110px wide
 Desktop      inherits Fold visual decisions; its window size is not a design frame (D49)
 ```
 
