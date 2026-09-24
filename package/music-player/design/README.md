@@ -47,23 +47,24 @@ prepared a visible answer and directed the user to reply in chat;
  it intentionally has no
 clipboard API or copy button.
 
-The active round re-verifies the cover screen natively with D14 cover-c as the HTML-era
-baseline and iterates the subdirectory picker's opened state as four prototypes: P1
-outlined text-field trigger plus floating menu panel, P2 the same field with an in-slot
-picker that keeps the deck visible, P3 app-bar title trigger plus menu panel, P4 title
-plus in-slot picker.
- The trigger is an MD3 outlined text field in exposed-dropdown form
-(56dp container, floating Folder label, 4dp corners, spec paddings); the menu panel keeps
-the baseline 4dp corner but exceeds the 280dp menu width cap because the D31 name wall
-needs the full panel, a deviation disclosed in the form.
- The light surface is settled by
-D45 (L3 flat with hairlines at both seams).
- The round awaits one P code.
- The live
-design backlog,
- its order,
- and the developer-owned items live in `open-questions.md`
-section 0b.
+The folded-cover screen round compared four native subdirectory-picker prototypes:
+P1 outlined text field plus floating menu panel, P2 the same field plus in-slot picker,
+P3 app-bar title plus floating panel, and P4 title plus in-slot picker.
+ D46 selects P4
+as a **temporary pre-1.x decision**: it is the current design baseline, but the user
+believes a better picker exists.
+ Only P4 dark at 100% was captured;
+ dark 200% and accepted L3 light 100% and 200%
+remain unverified for P4.
+ The light surface itself is settled by D45 (flat with hairlines
+at both seams).
+ The next recommended surface round is the command bar's content and
+actions (D21), with search behavior and the picker relationship (D25) examined separately;
+P4's missing-state checks need not block unrelated design work.
+ Reconsidering the picker
+remains an open pre-1.x question, without a promised replacement.
+ The live backlog and developer-owned
+items are in `open-questions.md` section 0b.
 
 The preceding accessibility review settled pane-by-pane TalkBack traversal (F1) and
 structured current-track speech (S1).

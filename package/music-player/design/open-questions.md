@@ -18,34 +18,43 @@ sections are history for the next round,
  Rejected patterns live
 only in the NO lists of `decisions.md`;
  they never reappear here as candidates.
-**DEVELOPER-OWNED** marks work the user assigned to developers instead of design rounds
-(2026-09-17):
+**PROVISIONAL** marks a usable design baseline with a stated revisit point, not a final
+choice.
+ **DEVELOPER-OWNED** marks work the user assigned to developers instead of design
+rounds (2026-09-17):
  feasibility and porting studies,
  and implementation of settled designs.
 
-## 0b. Live design backlog (2026-09-17)
+## 0b. Live design backlog (2026-09-23)
 
-- **ACTIVE: cover screen native round, one open axis, awaiting one P code.**
-  The picker
-  opened state iterates as P1 to P4: an MD3 outlined text-field trigger (56dp container,
-  floating Folder label, 4dp corners, spec paddings) or an app-bar title trigger, crossed
-  with a floating menu panel or an in-slot picker that keeps the deck visible.
-  The user
-  rejected K1's back navigation as discouraging and K3's sheet as non-local, and caught the
-  first field as not MD3 before the text-field specs were read.
-  The menu panel keeps the
-  baseline 4dp corner but exceeds the 280dp menu width cap for the D31 name wall, disclosed
-  in the form.
-  L is settled: D45 chose L3 flat with hairlines at both seams.
-  D14 cover-c
-  is the HTML-era baseline;
-  native folded
- geometry (411 × 923dp,
-  1080 × 2424px),
-  font scales,
-  the D41/D42 dark inheritance,
- and the undrawn light surface (11d) are what this round faces.
-- **OPEN: command bar surface (D21) plus reserved search / type-to-narrow (D25).**
+- **PROVISIONAL: folded-cover picker P4 (D46).**
+  The app-bar folder title and caret
+  open the picker in the list slot while the deck remains visible.
+  The P comparison
+  captured P4 only in dark at 100% text; its dark 200% and L3 light 100% captures show
+  P2 instead, and there is no L3 light 200% picker capture.
+  To establish P4's own coverage, capture those three states
+  and exercise native open, close and focus-return interactions before making fit,
+  separation, or accessibility claims.
+  This evidence task need not block an independent
+  design round.
+  The cover geometry is 411 × 923dp (1080 × 2424px), with D41/D42 dark
+  structure and D45 light seams.
+  Selection does not authorize production work.
+- **OPEN: revisit the folded-cover picker before 1.x (D46).**
+  The user chose P4 while
+  believing a better solution exists.
+  Explore alternatives at a future design round,
+  without assuming an improved replacement must be found or adopted.
+  P1 to P3 were not
+  chosen as the working baseline, not banned from exploration.
+  K1's discouraging back
+  navigation and K3's non-local sheet remain rejected.
+- **NEXT RECOMMENDED: command bar surface (D21) with the reserved search behavior (D25).**
+  Design the bar's own content and actions, then separately examine search targets,
+  results, and how search and the folder picker relate.
+  Cover-specific accessibility
+  remains to be checked; D39/D40 settled only the unfolded screen.
 - **OPEN: keyboard map revision (section 6):**
   one revised IntelliJ-aligned map,
   plus the
@@ -296,10 +305,8 @@ Open:
 
 ## 3c. Reviewer feedback, 2026-09-03 — decided, now needing build
 
-- **Volume icon + vertical popover** — SETTLED (D20).
-   Built into unf-i;
-   the cover
-  screen and the keyboard map's ↑/↓ still need updating to match.
+- **Volume icon + vertical popover** — historical D20 treatment, superseded by D43.
+   No in-app volume control remains; the ↑/↓ keyboard question remains open in section 6.
 - **Command bar** — SETTLED as a configurable global hotkey,
    off by default (D21).
   The surface itself has never been designed:
@@ -307,9 +314,8 @@ Open:
    tracks?
   commands?),
    and what it does once search exists (D25) are both unbuilt.
-- **Picker names not as a wall of chips** — unanswered;
-   candidates pk-a / pk-b / pk-c
-  are built and awaiting a verdict against the current chips.
+- **Picker names not as a wall of chips** — settled by D31: wrapped plain-text names,
+  with the current folder marked by primary color and a bottom-edge indicator.
 
 ## 4. Desktop toolkit — SETTLED: Slint, hand-porting accepted (D19 section, A4)
 
@@ -567,34 +573,32 @@ Candidates `dbtp-a` / `dbtp-b` / `dbtp-c` (and `dbtp-abc`).
   - CONS · peaks cannot be compared across a folder if only one row shows one.
   - MY READ · reject.
 
-### 11c. Order of the remaining work — not chosen
-My recommended order,
- twice offered and not answered:
- cover screen (the last stale
-survivor,
- blocks nothing),
- then the accessibility pass (focus order changes markup and
-is cheaper before more surfaces exist),
- then the command bar surface.
- Also waiting:
-keyboard map IntelliJ pass,
- desktop window (needs a size),
- Android media notification,
-error bar + settings in light.
+### 11c. Order of the remaining work — recommendation, not a user decision
+The earlier recommendation was cover screen,
+ accessibility pass,
+ then command bar.
+Cover structure and unfolded-screen accessibility now have D41 to D45 and D39/D40
+respectively;
+ D46
+sets a provisional cover picker baseline that still needs 200% and L3 evidence.
+ The next
+recommended surface round is the command bar; the P4 evidence check can happen first
+without making it a prerequisite for unrelated design work.
+ Reconsidering the picker
+remains a separate pre-1.x question, not a promise to replace it;
+ the keyboard-map pass,
+ desktop window size,
+ Android
+media notification,
+ and undrawn light surfaces remain open.
 
-### 11d. Light-theme work not yet drawn at all
-The theme decision only covers the unfolded screen and the track list.
- Untouched in
-light:
- the cover screen,
- the error bar,
- the undo toast,
- the settings pane,
- the context
-menu,
- the first-run prompt and the scan bar.
- Every one of them currently hard-codes
-dark values.
+### 11d. Light-theme surfaces remaining to be drawn
+D45 settles the cover's flat L3 surface with hairlines at both seams, and the P2 picker
+was captured in that scheme.
+ P4, the provisional D46 choice, still needs its own L3
+captures.
+ The error bar, undo toast, settings pane, context menu, first-run prompt and
+scan bar remain undrawn in light; do not credit the cover decision as evidence for them.
 
 ### 11e. Custom display templating — stated, not designed
 The product will allow users to set a custom display through templating.

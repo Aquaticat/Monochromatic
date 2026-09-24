@@ -927,15 +927,21 @@ chips, menus, sheets, and text-field specs.
 
 - **P1** — outlined MD3 text-field trigger (56dp, floating Folder label, 4dp corners) plus
   an inset floating menu container (4dp corners, fixed high step in dark) over the list,
-  ending above the deck. Awaiting decision.
+  ending above the deck. Not selected for the provisional baseline.
 - **P2** — same field trigger; the picker replaces the list slot in place while the deck
-  stays visible; caret flips to close. Recommended. Awaiting decision.
-- **P3** — app-bar title plus caret trigger with the P1 floating menu container. Awaiting
-  decision.
-- **P4** — app-bar title trigger with the P2 in-slot container. Awaiting decision.
+  stays visible; caret flips to close. The comparison recommended P2, but the user chose
+  P4 for the provisional baseline.
+- **P3** — app-bar title plus caret trigger with the P1 floating menu container. Not
+  selected for the provisional baseline.
+- **P4** — app-bar title trigger with the P2 in-slot container. Selected by D46 as a
+  **temporary pre-1.x decision**; the user believes a better solution exists.
 
 All four reuse the D28 adaptive rail and the D31 wrapped plain-text names at 48dp with
 primary plus 2dp indicator on the current folder. Captures: `cover-round-cover-picker-*`
 in `questions/render`, dark at 100%, P2 at 200%, and P2 in light under the settled L3
-(D45). Documented deviation: the menu panel exceeds the baseline menu's 112 to 280dp
-width cap because the D31 name wall needs the full panel.
+(D45). P4 itself has only the dark 100% capture;
+ its 200% and L3 light states still need
+native capture before those states can be credited to the provisional choice.
+ Documented
+P1/P3 deviation: the floating menu panel exceeds the baseline menu's 112 to 280dp width
+cap because the D31 name wall needs the full panel.

@@ -4134,8 +4134,8 @@ twelve-fault mutation harness fails every fault with its intended diagnostic bef
 restoring.
  The questionnaire is re-presented in normal Helium in the current system color
 scheme.
- That K-round form was superseded: L settled by D45 and K replaced by the P
-prototypes below, so the reply is now one P code plus any correction in chat.
+ That K-round form was superseded: L settled by D45 and K was replaced by the
+P prototypes; D46 records the subsequent provisional P4 choice.
 
 ## P prototype iteration and D45
 
@@ -4150,9 +4150,11 @@ exposed-dropdown field versus app-bar title) with two containers (inset floating
 panel versus in-slot picker that replaces the list slot while the deck stays visible):
 P1 field plus menu panel, P2 field plus in-slot, P3 title plus menu panel, P4 title plus
 in-slot.
- Ranking P2 > P4 > P1 > P3: P2's field states the selection semantics a bare title only
-implies; in-slot keeps one calm surface with the deck visible; the floating panel at least
-pairs with a control-like trigger in P1.
+ The comparison ranked P2 > P4 > P1 > P3: P2's field states the selection semantics a
+bare title only implies; in-slot keeps one calm surface with the deck visible; the
+floating panel at least pairs with a control-like trigger in P1.
+ The user subsequently
+chose P4 as the temporary pre-1.x baseline (D46), superseding this recommendation.
  D45 records the settled light surface: L3 flat
 with hairlines at both seams, chosen because L1's ramp plus deck-seam hairline can make a
 selected first track read as detached from the list.
@@ -4187,30 +4189,48 @@ name wall needs the full panel.
  All picker captures were retaken with the corrected
 field and the standing verification battery plus the eleven-fault harness pass again.
 
-## Current state: awaiting the P decision
+## Current state: P4 provisional, better picker still open (D46, 2026-09-23)
 
-The presented form is the P-only round: four radios (P1 field plus floating menu panel,
-P2 field plus in-slot picker, P3 title plus floating menu panel, P4 title plus in-slot
-picker), eleven embedded rasters (five dark inheritance captures, the four prototypes at
-100%, P2 at 200%, and P2 in light under the settled L3), and the settled-light panel as
-context rather than a question.
- Ranking on offer: P2 > P4 > P1 > P3.
- Verification after the
-MD3 field correction: no overflow at desktop or 390 × 500 in either scheme, Axe zero
-violations and zero incomplete (twenty page passes per scheme, twelve dialog passes),
-eleven preview paths exact, offline reload keeps all eleven rasters with zero network
-resources, and the eleven-fault mutation harness fails every fault with its intended
-diagnostic.
+The user chose P4 (app-bar title and caret opening an in-slot picker with the deck visible)
+while explicitly believing a better solution exists.
+ D46 makes it the temporary pre-1.x
+design baseline, not final acceptance or permission to implement production UI.
+ Do not
+ask for the P choice again.
+ The P-only comparison form is historical evidence: eleven
+rasters include all four options at dark 100%, but dark 200% and L3 light 100% depict
+P2, not P4; no L3 light 200% picker capture exists.
+ The form's P2 > P4 > P1 > P3 ranking is superseded by the user's
+selection.
+ The form itself passed its verification battery after the MD3 field fix:
+no overflow at desktop or 390 × 500 in either scheme, Axe zero violations and zero
+incomplete, eleven preview paths exact, offline reload keeps all eleven rasters with zero
+network resources, and eleven mutation faults fail with their intended diagnostics.
+Those tests validate the historical form, not P4 at the missing font-scale and light
+states or its native focus behavior.
  Commits: prototype `4ff352c1b` for the MD3 text-field trigger and main
-`406663175` for the recapture.
+`406663175` for the recapture; D46 is in `decisions.md`.
 
-After compaction: refresh the presented window before asking again (the open Helium window
-predates the field recapture): close it with the KWin close script after pointing that
-script at the current window id from the window-list script, `gtk-launch helium` on
-`questions/current.html`, activate via the KWin activate script, and confirm active and
-non-minimized.
- Then wait for one P code plus any correction in chat and record it as the
-next decision (D46).
+Recommended next design-only sequence: capture P4 in dark at 200% and in L3 light at
+100% and 200% on the folded cover for fit and row/deck separation, and exercise native
+open, close and focus-return behavior separately.
+ This check is necessary before
+claiming those states are validated but need not block an independent design round.
+The next recommended surface round is the command bar's content and actions (D21), with
+search targets/results and its relationship to the folder picker (D25) treated as
+separate questions.
+ Revisit the picker before 1.x to explore alternatives; no improved
+replacement is guaranteed or required for this provisional choice to be meaningful.
+Do not quietly promote the temporary baseline to final.
+ The existing P questionnaire
+is comparison evidence, not an unanswered question; subsequent visual reviews show only
+active P4 unless the user explicitly requests the rejected comparison (RVC).
+ The
+keyboard map, cover-specific accessibility, Android media notification, remaining
+light surfaces, desktop size, empty state and display templating stay in the live backlog
+at `open-questions.md` 0b.
+ The user's "What next?"
+asked for a recommendation, not authorization for production changes.
 
 ## Issue tracking moves to Linear for this session
 
