@@ -20,10 +20,10 @@ import {
 
 import {
   keyOfEntry,
-  mergeArgumentsArbitrary,
   treeArbitraries,
   type TreeOptions,
 } from './arbitraries.ts';
+import { mergeArgumentsArbitrary, } from './argument-arbitraries.ts';
 import type {
   CustomChoice,
   FilterChoice,

@@ -37,9 +37,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  mergeArgumentsArbitrary,
   treeArbitraries,
 } from './arbitraries.ts';
+import { mergeArgumentsArbitrary, } from './argument-arbitraries.ts';
 import { fuzzRunPlan, } from './fuzz-budget.ts';
 import {
   NO_MISMATCH,

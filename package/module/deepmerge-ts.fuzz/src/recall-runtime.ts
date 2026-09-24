@@ -50,7 +50,10 @@ const FIRST_CAMPAIGN_SEED = 11;
  */
 const CAMPAIGN_SEEDS: readonly number[] = Array.from(
   { length: 5, },
-  function seedAt(_unused: unknown, index: number,) {
+  function seedAt(
+    _unused: unknown,
+    index: number,
+  ) {
     return FIRST_CAMPAIGN_SEED + index;
   },
 );
@@ -281,7 +284,9 @@ async function recallOne(bug: RuntimeBug,): Promise<void> {
     control,
     fixedFailing: fixedRuns
       .filter(function failed(run,) {
-        return run.failures.length > 0;
+        return run.failures
+          .length
+          > 0;
       },)
       .map(function fileOf(run,) {
         return run.file;
@@ -299,7 +304,8 @@ async function recallOne(bug: RuntimeBug,): Promise<void> {
   );
   console.log(`${bug.id}\tbounded ${String(bounded.length,)} file(s)\tspecified ${String(specified,)}\tcampaign ${campaign
     .map(function countOf(entry,) {
-      return `${String(entry.seed,)}:${String(entry.detections.length,)}`;
+      return `${String(entry.seed,)}:${String(entry.detections
+        .length,)}`;
     },)
     .join(' ',)}`,);
 }
@@ -308,7 +314,8 @@ if (import.meta.main) {
   /**
    Row ids to run; empty runs every row.
    */
-  const ids = process.argv.slice(2,);
+  const ids = process.argv
+    .slice(2,);
   await mkdir(
     join(
       OUT,

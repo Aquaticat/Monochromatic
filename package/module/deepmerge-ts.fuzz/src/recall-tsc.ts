@@ -94,7 +94,8 @@ function npmDir(): string {
   /**
    Configured directory.
    */
-  const dir = process.env.RECALL_NPM_DIR;
+  const dir = process.env
+    .RECALL_NPM_DIR;
   if ((dir === undefined) || (dir === ''))
     throw new RecallTypesError('RECALL_NPM_DIR is not set',);
   return dir;
@@ -441,6 +442,7 @@ export async function checkJob(
       2,
     )}\n`,
   );
-  console.log(`${job}\t${String(outcome.diagnostics.length,)} diagnostic(s)\t${String(outcome.ms,)} ms${outcome.timedOut ? '\ttimed out' : ''}`,);
+  console.log(`${job}\t${String(outcome.diagnostics
+    .length,)} diagnostic(s)\t${String(outcome.ms,)} ms${outcome.timedOut ? '\ttimed out' : ''}`,);
   return outcome;
 }

@@ -240,7 +240,9 @@ async function installConsumer(version: string,): Promise<string> {
   );
   await cp(
     join(
-      process.env.RECALL_NPM_DIR ?? '',
+      process.env
+        .RECALL_NPM_DIR
+        ?? '',
       version,
       'package',
     ),
@@ -261,7 +263,9 @@ async function installConsumer(version: string,): Promise<string> {
   // 1.x releases depend on is-plain-object; its tarball sits under deps/.
   await cp(
     join(
-      process.env.RECALL_NPM_DIR ?? '',
+      process.env
+        .RECALL_NPM_DIR
+        ?? '',
       'deps',
       'is-plain-object',
       'package',
@@ -341,7 +345,10 @@ async function probeRelease(version: string,): Promise<Readonly<Record<string, s
     /**
      Probe exit and output.
      */
-    const { code, output, } = await runProbe({
+    const {
+      code,
+      output,
+    } = await runProbe({
       args: entry.args(dir,),
       command: entry.command,
       cwd: dir,
@@ -358,7 +365,8 @@ async function probeRelease(version: string,): Promise<Readonly<Record<string, s
     const reason = output.split('\n',)
       .find(function isError(line,) {
         return line.includes('error',) || line.includes('Error',);
-      },) ?? output.slice(
+      },)
+      ?? output.slice(
       0,
       FAILURE_EXCERPT,
     );
@@ -374,7 +382,8 @@ if (import.meta.main) {
   /**
    Releases to probe.
    */
-  const versions = process.argv.slice(2,);
+  const versions = process.argv
+    .slice(2,);
   /**
    Outcomes per release, filled one release at a time inside the 2 GiB cap.
    */

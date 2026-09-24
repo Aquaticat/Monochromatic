@@ -45,7 +45,9 @@ function occurrences(
     readonly find: string;
   },
 ): number {
-  return text.split(find,).length - 1;
+  return text.split(find,)
+    .length
+    - 1;
 }
 
 /**

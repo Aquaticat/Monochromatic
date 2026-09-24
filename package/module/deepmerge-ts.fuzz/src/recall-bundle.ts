@@ -220,7 +220,9 @@ export async function buildPair(bug: RuntimeBug,): Promise<BundlePair> {
     'bundles',
     `${bug.id}.mjs`,
   );
-  if (bug.source.kind === 'parent') {
+  if (bug.source
+    .kind
+    === 'parent') {
     /**
      Fixed bundle path.
      */
@@ -232,15 +234,19 @@ export async function buildPair(bug: RuntimeBug,): Promise<BundlePair> {
     await bundle({
       outfile: buggy,
       srcDir: await parentSource({
-        shim: bug.source.shimFastUnsafe,
-        tree: bug.source.buggyTree,
+        shim: bug.source
+          .shimFastUnsafe,
+        tree: bug.source
+          .buggyTree,
       },),
     },);
     await bundle({
       outfile: fixed,
       srcDir: await parentSource({
-        shim: bug.source.shimFastUnsafe,
-        tree: bug.source.fixedTree,
+        shim: bug.source
+          .shimFastUnsafe,
+        tree: bug.source
+          .fixedTree,
       },),
     },);
     return {
@@ -373,7 +379,8 @@ export async function controlOn(
   /**
    Bundle namespace.
    */
-  const loaded: unknown = await import(pathToFileURL(path,).href);
+  const loaded: unknown = await import(pathToFileURL(path,)
+    .href);
   if (!isLibrary(loaded,))
     throw new RecallRunError(`${path} does not export the deepmerge-ts entry points`,);
   try {

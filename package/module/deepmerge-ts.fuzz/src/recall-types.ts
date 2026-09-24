@@ -35,7 +35,8 @@ if (import.meta.main) {
   /**
    Mode and its arguments.
    */
-  const [mode, ...args] = process.argv.slice(2,);
+  const [mode, ...args] = process.argv
+    .slice(2,);
   /**
    Fresh corpus file.
    */
@@ -61,7 +62,8 @@ if (import.meta.main) {
           unions: true,
         },),
         exportName: 'RECALL_CASES',
-      },).source,
+      },)
+        .source,
     );
   } else if (mode === 'check') {
     for (const version of args) {

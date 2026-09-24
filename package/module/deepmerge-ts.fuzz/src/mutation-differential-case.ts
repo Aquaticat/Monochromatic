@@ -16,7 +16,7 @@ import {
   graphSpecArbitrary,
   materialize,
 } from './alias-graph.ts';
-import { mergeArgumentsArbitrary, } from './arbitraries.ts';
+import { mergeArgumentsArbitrary, } from './argument-arbitraries.ts';
 import { exoticArgumentsArbitrary, } from './exotic-arbitraries.ts';
 import { MutationStepError, } from './mutation-container.ts';
 import {
@@ -374,7 +374,10 @@ export const CASES: readonly DifferentialCase[] = [
   },),
   defineCase({
     arbitrary: tuple(
-      mergeArgumentsArbitrary({ edgeCalls: false, exotic: true, },),
+      mergeArgumentsArbitrary({
+        edgeCalls: false,
+        exotic: true,
+      },),
       optionsPlanArbitrary({ fast: true, },),
     ),
     call: function treeFastCustom({

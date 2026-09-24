@@ -68,7 +68,10 @@ const RECORD_A = 'const a = { foo: "abc", baz: { quux: ["def", "ghi"] }, garply:
  */
 const BIG_UNION = Array.from(
   { length: 120, },
-  function member(_unused: unknown, index: number,) {
+  function member(
+    _unused: unknown,
+    index: number,
+  ) {
     return JSON.stringify(`m${String(index,)}`,);
   },
 )

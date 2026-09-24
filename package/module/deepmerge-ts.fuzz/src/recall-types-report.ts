@@ -111,7 +111,9 @@ async function readJob(job: string,): Promise<{
       },) === true) ? 'timeout' : 'ran',
     };
   } catch (error) {
-    if (Error.isError(error,) && error.message.includes('ENOENT',)) {
+    if (Error.isError(error,)
+      && error.message
+      .includes('ENOENT',)) {
       return {
         diagnostics: [],
         ms: 0,
@@ -161,8 +163,10 @@ if (import.meta.main) {
      Buggy-only diagnostics.
      */
     const only = attributable({
-      buggy: sidecar.buggy.diagnostics,
-      fixed: sidecar.fixed.diagnostics,
+      buggy: sidecar.buggy
+        .diagnostics,
+      fixed: sidecar.fixed
+        .diagnostics,
     },)
       .filter(function inBaseline(key,) {
         /**
@@ -186,13 +190,27 @@ if (import.meta.main) {
     );
     return {
       buggy: bug.buggy,
-      control: (bug.control === '') ? 'none' : (((control.buggy.diagnostics.length > 0) && (control.fixed.diagnostics.length === 0)) ? 'separates' : 'does not separate'),
+      control: (bug.control === '') ? 'none' : (((control.buggy
+        .diagnostics
+        .length
+        > 0) && (control.fixed
+          .diagnostics
+          .length
+          === 0)) ? 'separates' : 'does not separate'),
       fixed: bug.fixed,
       id: bug.id,
       layers,
       sidecar: {
-        buggy: `${sidecar.buggy.state} ${String(sidecar.buggy.diagnostics.length,)} in ${String(sidecar.buggy.ms,)} ms`,
-        fixed: `${sidecar.fixed.state} ${String(sidecar.fixed.diagnostics.length,)} in ${String(sidecar.fixed.ms,)} ms`,
+        buggy: `${sidecar.buggy
+          .state} ${String(sidecar.buggy
+            .diagnostics
+            .length,)} in ${String(sidecar.buggy
+              .ms,)} ms`,
+        fixed: `${sidecar.fixed
+          .state} ${String(sidecar.fixed
+            .diagnostics
+            .length,)} in ${String(sidecar.fixed
+              .ms,)} ms`,
       },
     };
   },),);

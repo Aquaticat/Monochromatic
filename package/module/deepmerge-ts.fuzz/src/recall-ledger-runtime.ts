@@ -214,7 +214,9 @@ export const RUNTIME_BUGS: readonly RuntimeBug[] = [
         source,
         { a: [2,], },
       );
-      return source.a.length !== 1;
+      return source.a
+        .length
+        !== 1;
     },
     source: {
       buggyTree: '2cd7824-parent',
