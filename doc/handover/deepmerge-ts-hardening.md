@@ -62,8 +62,10 @@ Next actions, in order:
      580 rounds of 10000 runs per property file passed with no counterexample.
      Rerun it after any generator widening, upstream release, or fork fix,
      and triage any counterexample per `Campaign`.
-4.   Ask the user to review and post the updated drafts,
-     then open PRs from the fork branches if the maintainer wants them,
+4.   Method audit (see `Method audit`), started 2026-09-24 after the user rejected the drafts as too thin:
+     "This can't be it. I expected many more findings. Maybe we're not looking for findings correctly?"
+     Integrate its three reports, then ask the user again to review and post the drafts.
+5.   Open PRs from the fork branches if the maintainer wants them,
      and follow `After upstream responds`.
 
 User constraints from confirmation:
@@ -484,6 +486,43 @@ report `doc/audit/deepmerge-ts-mutation-2026-09-24.md`.
    security candidates into `doc/handover/deepmerge-ts-advisory.local.md`
    (one combined advisory, one combined issue, per the user's constraint).
 - Record new findings and counts in `Outcomes` with the surfaces still unexercised.
+
+## Method audit
+
+### Why
+
+Nothing so far measured whether the search method can find defects at all.
+Mutation testing measured upstream's suite and the sidecar's example tests against single-token mutants;
+the campaign's 580 quiet rounds measure only its generators,
+which exclude every known-defect region.
+Three structural doubts remain:
+
+- Oracle independence:
+   `src/model.ts` and the accepted-behaviour tests were written after reading upstream source and probing it,
+   so wherever the model copies observed behaviour, a defect there reads as the specification.
+- Surface choice:
+   every layer checks runtime values or result types under one tsconfig;
+   docs conformance, compiler-flag and TypeScript-version variation, type-checker cost,
+   packaging (exports map, CJS, declaration files), and other runtimes were never searched.
+- Recall:
+   no positive control for the method as a whole,
+   so a quiet campaign cannot be told apart from a blind one.
+
+### Workstreams launched 2026-09-24
+
+- Historical recall (prefix `recall-`, report `doc/audit/deepmerge-ts-recall-2026-09-24.md`):
+   bundle upstream `src` at the parent of each past bug-fix commit that fits the current API,
+   run the sidecar and a bounded campaign against it through `DEEPMERGE_FUZZ_TARGET`,
+   and classify each miss (generator reach, excluded region, oracle copies the bug, surface never checked).
+- Unsearched surfaces (prefix `surface-`, report `doc/audit/deepmerge-ts-surface-2026-09-24.md`):
+   every upstream docs example run literally against its stated result,
+   result types under strictness flags and the supported TypeScript range,
+   type-checker cost for wide, deep, and many-argument merges,
+   packaging checks, and CJS consumption.
+- Clean-room oracle (prefix `cleanroom-`, report `doc/audit/deepmerge-ts-cleanroom-2026-09-24.md`):
+   a fresh agent without this session's context writes expected results from upstream docs alone,
+   then runs them against 8.0.2,
+   so expectations cannot inherit the model's reading of the implementation.
 
 ### Campaign
 
