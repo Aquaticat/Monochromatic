@@ -41,3 +41,7 @@ export {
   CONTAINER_DEFICIT_ADMITTED_FINDING,
   SPLIT_IN_CONTAINER_DEFICIT_FINDING,
 } from './corpus-run/insertion-container-deficit.ts';
+export {
+  CARRIED_FOLDED_FINDING,
+  foldCarriedInsertions,
+} from './corpus-run/insertion-carried-fold.ts';

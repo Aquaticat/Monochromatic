@@ -108,7 +108,7 @@ function contentOver(
    Where the fragment starts.
    */
   const startOffset = text.indexOf(fragment,);
-  if (startOffset < 0)
+  if (startOffset === (-1))
     throw new Error(`fixture fragment missing: ${fragment}`,);
   return {
     kind: 'content',
@@ -135,6 +135,11 @@ function preparedPair(): PreparedDocumentPair {
   return {
     sourceText: SOURCE_TEXT,
     targetText: TARGET_TEXT,
+    lineStructuredSliceIndices: new Set(),
+    declaredNames: [],
+    alignmentFindings: [],
+    unclaimedTargetBlocks: [],
+    alignmentPairCount: 4,
     slices: [
       {
         source: contentOver({ sliceIndex: 0, text: SOURCE_TEXT, fragment: HEADING_SOURCE, },),
@@ -205,8 +210,8 @@ await describe({
         /**
          The carrier after the fold.
          */
-        const carrier = folded.prepared
-          .slices[2];
+        const { 2: carrier, } = folded.prepared
+          .slices;
         expect(carrier?.source.text,).toBe(`${NAP_SOURCE}\n\n${HOME_SOURCE}`,);
         expect(carrier?.source.startOffset,).toBe(SOURCE_TEXT.indexOf(NAP_SOURCE,),);
         expect(carrier?.source.endOffset,).toBe(SOURCE_TEXT.indexOf(HOME_SOURCE,) + HOME_SOURCE.length,);

@@ -35,6 +35,7 @@ export {
 export {
   admitInsertions,
   type CarriedInsertion,
+  type FoldedInsertion,
   type InsertionAdmission,
 } from './insertion-admission.ts';
 export {

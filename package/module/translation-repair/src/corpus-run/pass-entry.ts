@@ -20,6 +20,7 @@ import type {
   CorpusPair,
   EntryOutcome,
 } from './pass-entry-contract.ts';
+import { foldCarriedInsertions, } from './insertion-carried-fold.ts';
 import { decidePassInsertionAdmission, } from './pass-insertion-admission.ts';
 import { runPassConsolidation, } from './pass-consolidate.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
@@ -228,7 +229,7 @@ async function runEntryPipeline(
      input. A section the roster cannot pair keeps the scorer and says so.
      */
     const {
-      prepared,
+      prepared: paired,
       findings: pairingFindings,
     } = await preparePassEntry({
       client,
@@ -248,14 +249,14 @@ async function runEntryPipeline(
     /**
      Archive after preparation-stage review corrections.
      */
-    const settledArchiveText = prepared.targetText;
+    const settledArchiveText = paired.targetText;
 
     /**
      Complete reviewed visual evidence required before insertion and lanes,
      read by the readers the meters seat (`pass-seated-pictures.ts`): a model
      withheld on the provider that would serve it reads no picture either.
      */
-    const pictureReadings = await readPictures({ slices: prepared.slices, },);
+    const pictureReadings = await readPictures({ slices: paired.slices, },);
 
     /**
      The lanes' judge benches, read off Synthetic's meter (`run-seats.ts`).
@@ -279,15 +280,36 @@ async function runEntryPipeline(
      whole target, independent of pairing;
      page shortfall or a missing destination supplies second corroboration.
      */
-    const translateInsertionAdmission = await decidePassInsertionAdmission({
+    const admissionAsRead = await decidePassInsertionAdmission({
       client,
-      prepared,
+      prepared: paired,
       modelIds: seats.roster,
       overlap,
       signal: deadline.callSignal,
       perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
       l: tagged({ tag: entry.id, },),
     },);
+
+    /**
+     The slicing with every carried passage folded into the neighbour whose
+     archive span renders it (class one hundred ten, mikaela12): both lanes
+     then write that neighbour from the source it actually renders, instead
+     of dropping the passage the archive merged in.
+     */
+    const {
+      prepared,
+      admission: translateInsertionAdmission,
+      findings: foldFindings,
+    } = foldCarriedInsertions({
+      prepared: paired,
+      admission: admissionAsRead,
+    },);
+    /**
+     Entry logger the fold findings print under.
+     */
+    const foldLogger = tagged({ tag: entry.id, },);
+    for (const finding of foldFindings)
+      foldLogger.info(finding,);
 
     /**
      What both lanes made of that slicing, with neither preferred.

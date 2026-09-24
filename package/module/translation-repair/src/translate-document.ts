@@ -195,9 +195,13 @@ export async function translateDocument(
     findings: [],
   };
   /**
-   Prepared positions whose source is fully rendered elsewhere.
+   Prepared positions whose source is fully rendered elsewhere, including
+   those folded into the neighbour that renders them (class one hundred ten).
    */
-  const carriedPositions = new Set((admission.carried ?? [])
+  const carriedPositions = new Set([
+    ...(admission.carried ?? []),
+    ...(admission.folded ?? []),
+  ]
     .map(function carriedPosition(carried,): number {
       return carried.position;
     },),);

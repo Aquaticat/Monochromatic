@@ -60,8 +60,35 @@ export type CarriedInsertion = {
 };
 
 /**
+ Source-only passage folded into the neighbouring slice whose archive span
+ renders it (class one hundred ten): the lanes skip it as carried, and the
+ carrier's widened source is what renders it.
+
+ @example
+ ```ts
+ const folded: FoldedInsertion = { position: 1, sliceIndex: 1, carrierSliceIndex: 2, };
+ ```
+ */
+export type FoldedInsertion = {
+  /**
+   Position in prepared slice order.
+   */
+  readonly position: number;
+
+  /**
+   Stable slice index used by lane reports.
+   */
+  readonly sliceIndex: number;
+
+  /**
+   Stable index of the slice whose source now covers the passage.
+   */
+  readonly carrierSliceIndex: number;
+};
+
+/**
  Authoritative insertion outcomes beside evidence explaining each.
- 
+
  @example
  ```ts
  const admission: InsertionAdmission = { positions: new Set([1,]), findings: [], };
@@ -77,6 +104,11 @@ export type InsertionAdmission = {
    Source-only passages proven fully rendered elsewhere.
    */
   readonly carried?: readonly CarriedInsertion[];
+
+  /**
+   Source-only passages folded into the slice that renders them.
+   */
+  readonly folded?: readonly FoldedInsertion[];
 
   /**
    Count-only semantic and deterministic evidence for every candidate.
