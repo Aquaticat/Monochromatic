@@ -467,24 +467,45 @@ Round 6 answers (user,
 - The merge question was withdrawn for a corrected restatement
    (see "Corrections").
 
-Round 7,
+Round 7 answers (user,
+2026-09-23):
+
+- No built-in rule defaults (A):
+   the repository's `monochromatic-lint.config.hcl` turns on every rule
+   and carries the exemptions `default.toml` compiles in today.
+- A file is linted only when some block's `files` matches it;
+   its extension picks the language;
+   every block except an ignores-only block needs `files` (A).
+- Rule settings merge with deepmerge-ts semantics
+   (<https://github.com/RebeccaStevens/deepmerge-ts>):
+   "I assume there is such a crate in Rust too."
+  deepmerge-ts's README states records merge recursively,
+   arrays concatenate,
+   Sets union,
+   Maps merge by key,
+   `undefined` overwrites,
+   and other values are replaced by the later one.
+  crates.io search for "deepmerge" (2026-09-23) returned `deepmerge` 0.1.0
+   (497 downloads,
+   one release on 2025-09-10)
+   and `deepmerge-derive` 0.1.0.
+  A `choosing-technology` vet of merge crates against an in-linter baseline is running,
+   report due at `doc/audit/tech-unified-linter-config-deep-merge-vet-2026-09-23.md`.
+
+Round 8,
 asked 2026-09-23:
 
-- Built-in rule defaults:
-   none,
-   as in ESLint,
-   or today's rules on without configuration.
-- Which files get linted:
-   ESLint's specific-match rule,
-   and whether blocks may omit `files`.
-- Rule-setting merge:
-   ESLint's option-keeping merge or whole replacement.
+- Rule setting shape under deep merge:
+   always an object,
+   an object plus a normalized string shorthand,
+   or ESLint's array form.
 
 Waiting on research:
-the Markdown parser crate.
+the Markdown parser crate
+and the deep-merge crate.
 
 ## Next action
 
-Collect round 6 answers and the parser vet,
+Collect round 8 answers and both vets,
 record them here,
-then ask round 7.
+then ask round 9.
