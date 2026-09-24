@@ -21,10 +21,14 @@ use libfuzzer_sys::fuzz_target;
 
 use forbidden_strings::fuzz_api::{load_from_text, scan_file, scan_path_for_fuzzing};
 use forbidden_strings_fuzz::generators::{redacted_fingerprint, RuleFileAndContent};
+use std::sync::OnceLock;
 
 // The fixed path handed to `scan_file`; findings must interpolate exactly this and two
 // integers, nothing else.
 const PATH: &str = "fuzz.txt";
+
+// A fixed positive control proves the masked-path assertion can catch a real hit.
+static NAME_CONTROL: OnceLock<forbidden_strings::fuzz_api::LoadedRules> = OnceLock::new();
 
 // What:  parse one finding and assert the columnless format, returning its line index.
 // Why:   the redaction check is the reconstruction at the end: a finding equal to the
@@ -116,6 +120,12 @@ fuzz_target!(|input: RuleFileAndContent| {
     // Apply the same compiled rules to a generated pathname with actual segment
     // separators and adversarial content bytes; all name findings must use the
     // shared masked label and carry a valid one-based component position.
+    let control = NAME_CONTROL.get_or_init(|| return load_from_text("VAULTTOKEN_LONG\n")
+        .expect("compile name positive control"));
+    let (masked, positive_hits) = scan_path_for_fuzzing("prefix/VAULTTOKEN_LONG/tail", control);
+    assert_eq!(masked, "prefix/[REDACTED]/tail", "positive control failed");
+    assert_eq!(positive_hits, vec!["prefix/[REDACTED]/tail:name:2 rule=0"], "positive control missed hit");
+
     let generated_name = format!("prefix/{}/tail", String::from_utf8_lossy(content));
     let (display, name_hits) = scan_path_for_fuzzing(&generated_name, &loaded);
     assert!(!display.contains('\n'), "pathname injected newline ({})", redacted_fingerprint(content));
