@@ -231,14 +231,17 @@ BodyLarge text,
 `ExpandedDockedSearchBar` and `ExpandedFullScreenSearchBar` both draw the header
 divider in `SearchBar.kt`.
  Baseline list items remain square with 16dp label padding;
-16dp selected corners belong to Expressive lists and were removed.
+AndroidX `ListTokens.ItemTwoLineContainerHeight` fixes their two-line height at
+72dp (via `ListItem.kt:1148-1150`).
+ 16dp selected corners belong to Expressive
+lists and were removed.
 
 The throwaway prototype source on branch `prototype/music-player-theme-compose` is
 `package/music-player/design/candidates/command-md3-study.slint`.
  The baseline
 redraw is committed in `0e9624dd2`,
  with accepted-player transport backdrop
-correction at `7adafa092`.
+correction at `7adafa092` and baseline two-line row pitch in `c88786448`.
  Rendered rasters at
 `questions/render/command-md3-{i,g,r,e}*` are opaque native Slint in both schemes.
 The 56px logical-height comparison at
@@ -259,11 +262,21 @@ folder.
 New visual rankings remain **I1 > I2 > I3** for app context,
  **G2 > G1** for
 preserving the previous task,
- and **R1 > R2** for dedicated search room.
+ and **R1 > R2** for keeping search a distinct navigation task rather than adding
+palette mode switching.
+ R1 and R2 can have the same room if I3 is chosen;
+ the R2
+illustration uses I2 placement and G1 uses I1 placement without deciding I.
 The form asks these axes separately;
  none is a user decision yet.
- At 360px I1
-reflows to full-content rather than shrinking below the focused Search minimum.
+ The I1 360px
+stress capture proposes a full-content fallback to preserve 12px margins and the
+360dp docked minimum;
+ a static `stress` property chooses it,
+ so a runtime responsive
+transition was not verified.
+ The 96px larger-text row is a documented adaptation,
+not a baseline token.
 No runtime hotkey,
  OS quick window,
  search index,
