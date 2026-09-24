@@ -7,6 +7,8 @@ const output = process.env.MUSIC_PLAYER_REVIEW_OUTPUT;
 if (!output) throw new Error('Set MUSIC_PLAYER_REVIEW_OUTPUT to the target design/questions/render directory.');
 const prototype = resolve('questions/render');
 const destination = resolve(output);
+const fontPath = execFileSync('fc-match', ['sans-serif', '--format', '%{file}'], { encoding: 'utf8' }).trim();
+if (!fontPath) throw new Error('No installed sans-serif font for the anonymized system clock.');
 mkdirSync(destination, { recursive: true });
 const captures = [
   ...['right', 'right-lift', 'mirrored'].flatMap((candidate) =>
@@ -30,7 +32,7 @@ for (const capture of captures) {
   const file = join(destination, `search-review-${capture.source}`);
   execFileSync('magick', [join(prototype, capture.source),
     '-fill', surface, '-draw', `rectangle 0,0 ${maskRight},${upperBand}`,
-    '-font', 'DejaVu-Sans', '-pointsize', String(fontSize),
+    '-font', fontPath, '-pointsize', String(fontSize),
     '-fill', ink, '-annotate', `+${start}+${baseline}`, '9:41',
     '-strip', file], { stdio: 'inherit' });
   console.log(file);
