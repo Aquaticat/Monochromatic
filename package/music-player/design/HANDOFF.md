@@ -4889,6 +4889,16 @@ The user further clarified that "content" in the connector rule means
 **informational material** such as text,
  not every app-owned surface and hit
 region.
+ The user also clarified that a Search screen need not occupy the
+entire unfolded display:
+ one half is allowed as a possible layout,
+ not a
+selected answer.
+ D47's separate page is an interaction destination,
+ not a
+full-width mandate;
+ D48 keeps query and results together under one integrated
+header within whichever Search region is eventually chosen.
  The old full-strip black/white pixel guard was my interpretation,
 not the user's requirement;
  it imposed a false two-pane premise.
