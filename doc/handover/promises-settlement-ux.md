@@ -1,9 +1,10 @@
 # Settlement experiment UX redesign
 
-Status: the user then questioned the factory scene's logic. A source-and-browser audit found
-that the prototype's "game-faithful" mapping is false, despite passing Promise-call and UI tests.
-The logic mapping needs a user decision before any more scene or matrix implementation.
-The focused clarity review remains a preserved prototype, not an accepted design.
+Status: after the source-and-browser audit, the user delegated the best remedy.
+The chosen direction keeps the existing manual `Promise.withResolvers()` experiment and its
+reply-shaped values, using Yum-Bot only as bounded visual inspiration.
+No separate faithful game panel or new physical pudding-delivery contract is planned.
+The old focused clarity review remains a preserved prototype; the mapping redesign is in progress.
 The lesson file is untouched.
 No skill design has been confirmed; this redesign feeds the Promise toy, not the teaching skill.
 
@@ -230,7 +231,8 @@ physical ticket contract rewrite > game-turn-success contract rewrite.
 The honest factory keeps one coherent Promise experiment better than two parallel systems;
 separating the game is less invasive than changing the established values and operation;
 a physical ticket retains more of the existing resolver pairing than a turn-success Promise.
-No direction is authorized for implementation by this audit.
+The audit itself authorized no implementation. The subsequent user instruction
+"Do whatever is the best" delegated the choice; the chosen direction is recorded next.
 
 The user's logged-ignored-attempt decision remains settled.
 The already authored manual experiment determines its reply-shaped values and no-service boundary.
@@ -238,6 +240,36 @@ Ask whether the user wants literal game behavior kept in a separate illustration
 or the game used only as visual inspiration for the unchanged experiment.
 Real-time rhythm timing is not entailed by either choice and should not be added unasked.
 Only then revisit layout and cue color.
+
+## Chosen boundary after the user's delegation
+
+The manual settlement section at
+`/home/user/temp/agent/promises-revision/promise-sequence.html:84-99` is the fixed contract:
+no service request, one `Promise.withResolvers()` bundle, learner-controlled `resolve("Hello Ada")`
+and `reject(new Error("No reply"))`, then an actual ignored later call.
+The Promise is a durable handle for that toy result, not an edible pudding or a quality grade.
+
+The redesigned scene will use Yum-Bot's visual vocabulary only:
+
+- A stable, numbered **Promise ticket** is the workpiece representing object identity.
+  It does not acquire a publicly readable outcome mark.
+- The separate **observer display** reports the lesson-owned state and value/reason.
+  The robot's decorative face stays neutral rather than calling rejection a missed game action.
+- The belt is labeled **earlier Promise records**, not the game's conveyor of caught pudding.
+  Rejecting cannot destroy a Promise; neither outcome waits for a new release to "become real".
+- The hand/laser-shaped controls are explicitly resolving-function controls.
+  They invoke `delivery.resolve` or `delivery.reject`, not physical catching or obliteration.
+  Fresh numbered tools can make real ignored calls on the same retained bundle;
+  clicked tools become used and genuinely inert controls stay disabled.
+- Pudding art may remain as a static motif, but it is not the Promise, the `"Hello Ada"` value,
+  the `Error("No reply")` reason, or an input classified as normal/defective.
+  No rhythm timing or game grading is simulated.
+- Keep core bundle/inner-Promise value views, full print substance,
+  achromatic reading backgrounds, and the Firefox ESR baseline.
+
+This is a design choice for the shared scene, not selection of A/B/C layout or cue color.
+The prior color ranking justified by the game's timing faces is invalid and must be recomputed
+for Promise outcome cues if a final lesson layout is chosen.
 
 ## Superseded designs (do not revive without the user asking)
 
@@ -433,22 +465,18 @@ a later click preserves the face and marking as well.
 The staged two-call run and automatic second-call alternatives were not selected.
 This decision is not a selection of matrix layout or cue colors.
 
-## Open choices (user's, gating implementation)
+## Open choices and remaining work
 
-- Decide whether to keep the existing manual reply-shaped Promise experiment and use Yum-Bot
-  only as explicitly bounded visual inspiration (recommended), or show the game's supplied cues,
-  catch/obliteration, conveyor routing, and action-grade face in a separate faithful illustration.
-  Both retain the accepted real ignored resolver calls in the Promise experiment.
-- A physical pudding-delivery ticket or Promise of game-turn success would require an explicit
-  redesign of the operation and payloads. The user has not authorized that design change.
-  Do not ask for rhythm timing by default; the lesson focuses on Promises.
-- The focused clarity repair remains unaccepted as a final design while the logic mapping is open.
-  Do not treat the user's logic challenge as a matrix-cell selection.
-- Only after mapping acceptance, revisit the matrix cell: layout (A reference rows,
-  B kept card grid, C definition list) by cue color (state-colored, neutral).
-  The choice form is a preserved prototype, not an approved design.
-  Its previous ranking was a-state, a-neutral, b-state, b-neutral, c-state, c-neutral;
-  redo that ranking if the chosen mapping changes the scene.
+- The bounded-visual-inspiration direction is settled by the user's delegation.
+  Do not ask the user to reapprove the same mapping or reopen the logged-attempt decision.
+- Build and verify the Promise-ticket scene in the scratch prototypes.
+  Treat the old focused clarity review as rejected evidence, not the active design.
+- The A/B/C layout and cue-color matrix has not been selected.
+  The previous a-state ranking relied on game timing-face colors and is invalid.
+  Reassess presentation choices against Promise teaching after the scene is coherent.
+- A physical pudding-delivery ticket or Promise of game-turn success remains outside scope;
+  either requires a new operation/payload design request.
+  Do not add rhythm timing by default.
 - Free-text changes to the chosen cell.
 - Implementation afterwards (task 35 in the session task list): only after both mapping and
   layout/cue decisions, apply the approved design to `promise-sequence.html` and lesson CSS.

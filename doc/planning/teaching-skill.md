@@ -34,7 +34,9 @@ and keeps the fixed outcome and latest ignored-call feedback visible near the co
 The scene has browser, Firefox ESR, and PDF text checks, but these do not prove its analogy.
 The user then challenged the factory logic. A source-and-browser audit found that the current
 pudding-as-Promise scene is not faithful to the game's cues, conveyor, laser disposal, or face grading.
-No replacement mapping has been accepted; the layout-by-cue-color choice remains deferred;
+The user delegated the remedy: keep the manual reply-shaped Promise experiment and use Yum-Bot
+as visual inspiration only, without adding a second game or changing the example values.
+The shared scene redesign is in progress; the layout-by-cue-color choice remains deferred;
 [the settlement-UX handover](../handover/promises-settlement-ux.md) records the evidence,
 superseded models, current artifact, and next actions.
 Earlier critiques rejected a detached opening and forced chat turn-taking.
