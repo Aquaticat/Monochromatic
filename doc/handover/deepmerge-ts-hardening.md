@@ -19,9 +19,17 @@ Next actions, in order:
      291 upstream tests pass, its new test fails 5 of 6 cases on unfixed `src`,
      and the sidecar run against its build turns only the cross-realm known-defect test red.
      The other new defects wait for an upstream design choice (throw or document), so they have no branch.
-     Pending: declared-type and mutation forks,
-     then `README.md` listing of the new file families,
-     `format:oxlint` once no fork is editing,
+     Declared-type fork integrated too
+     (7 new type classes; issue snippet type-checked verbatim in a local file;
+     capped `fuzz:declared-types`, `fuzz:declared-types:control`, and `generate:declared-type-cases` tasks,
+     the control catching 42 of 45 tampered cases and the corpus regenerating byte-identical).
+     The restarted campaign found a new defect on its own
+     (one `deepmergeInto` call rewrites a cyclic source node it stored by reference, seed 1395258848);
+     pinned in `known-defect-alias.unit.test.ts`,
+     with the source-mutation property narrowed by node identity (`src/alias-rewire.ts`)
+     and a positive control failing at the same test number with the exclusion removed.
+     Pending: the mutation fork,
+     then `format:oxlint` once no fork is editing,
      and `fuzz:coverage --write`.
 3.   Restart the campaign (`mise run //package/module/deepmerge-ts.fuzz:fuzz`) with the widened generators.
 4.   Ask the user to review and post the updated drafts,
