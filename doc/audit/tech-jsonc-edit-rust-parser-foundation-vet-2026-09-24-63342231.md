@@ -651,6 +651,14 @@ The disposable parser and exact-number crates were rebuilt in the same pinned,
  This is a local path dependency,
  not published-crate validation.
 
+A later bounded debug run and optimized release run each reported 18 passing unit tests after adding
+ the maintained TypeScript corpus's inline-comment-after-comma syntax,
+ direct value-comment ownership checks,
+ more escaped JSON string forms,
+ and malformed-string cases.
+ These are selected syntax and attachment checks,
+ not a full semantic comparison of the TypeScript conformance or property corpus.
+
 Remaining validation includes full TypeScript conformance and property cases,
  wider comment-placement and syntax-boundary coverage,
  mandatory package style lint,
