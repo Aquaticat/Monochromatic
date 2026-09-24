@@ -120,6 +120,19 @@ await describe({
     },),
 
     it({
+      name: 'coerces a structurally tagged float string to a numeric read',
+      fn: async () => {
+        const edit = tomlSet({
+          edit: emptyTomlEdit(),
+          path: ['ratio',],
+          value: { tomlKind: 'float', value: '1.5', },
+        },);
+        expect(tomlGetValue({ edit, path: ['ratio',], },),).toBe(1.5,);
+        expect(tomlStringify({ edit, },),).toBe('ratio = 1.5\n',);
+      },
+    },),
+
+    it({
       name: 'null and undefined throw TomlTypeError',
       fn: async () => {
         const edit = parseTomlEdit({ source: '', },);
