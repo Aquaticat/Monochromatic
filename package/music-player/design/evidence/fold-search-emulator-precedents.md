@@ -135,6 +135,47 @@ screenshots as reviewed design candidates.
   The app's
   visual geometry still needs E2 adaptation rather than direct copying.
 
+## YouTube's near-crease lettering is a warning
+
+The user opened YouTube `com.google.android.youtube` version `20.10.41` on
+the unfolded emulator at a `dokibird` result page.
+ A row placed a thumbnail
+and its duration near the left side of the physical center,
+ and a title
+beginning immediately to the right.
+ I first interpreted the closeness as
+safe-placement praise.
+ The user's later **about 10mm visible dent** corrects
+that reading:
+ on the approximately 141.08mm-wide inner panel,
+ the dent spans
+roughly physical x `[964,1112)`px around center x 1038.
+ In the private
+native screenshot,
+ the duration's right edge is near x 1000 and OCR placed
+a second-line title word start near x 1056;
+ both are within that estimated
+band.
+ OCR positions are approximate,
+ but the image is a clear **negative
+example for our information-clearance rule**,
+ not a positive one.
+ Its
+thumbnail and row surfaces can cross the center;
+ the problem is readable
+time/title glyph placement.
+ No user screenshot was copied into the repo.
+
+The crease width is physical.
+ Converting 147px to about 60dp is valid only
+at the emulator's current 390dpi configuration;
+ Android display scaling
+changes dp size without changing the physical 10mm.
+ `max(min_padding,
+crease_width)` describes clearance between informative material,
+ not a
+blank 60dp surface gutter.
+
 ## Apps that did not supply Search evidence
 
 - Google Photos `7.67.0.882706237` showed the generated local PNGs in Photos.
