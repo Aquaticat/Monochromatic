@@ -127,7 +127,11 @@ The literal numeric query schedule was frozen in `doc/planning/jsonc-edit-rust-p
    inspectable open-source local crate,
    native and multi-platform overlays.
 - Screening:
-   pending source proof of numeric equality semantics and JSON grammar.
+   lexical equality is source-proven,
+   and a separate [layout portability audit](../troubleshooting/json-number-unsized-layout.md)
+   found no documented representation guarantee for its checked constructor's unsafe slice-to-wrapper conversion.
+   The published crate fails this port's mandatory portable safety-proof gate as-is;
+   a corrected fork is a separate unvetted candidate.
    Not recommended.
 
 ### `bigdecimal` 0.4.10
@@ -209,19 +213,22 @@ None has yet passed the full vet gates.
   ```
 
   As a complete value model this fails `1 = 1.0 = 1e0`.
-  As a grammar validator and token holder combined with our exact comparator it remains eligible for targeted validation.
-  Its `src/lib.rs:178-210` uses a checked scan followed by an unsafe cast;
-   audit this boundary if used.
   The published 0.4.10 archive SHA-256 `479dfd2ad8e4b4ae076b031f72ef2f3791f65e2a0f51e5f3408dbf716c4c2f82`
    matches the generated scratch Cargo.lock checksum.
   Published `src/lib.rs` and private clone `283af83` both hash to
    `467186254f8695eba06e5065759056c48b6b832c89dbe39d43d52b73981deff0`.
   Its selected normal/build graph contains the `lexical` family but no regex-named package or build script in the inspected crate roots.
-  A composed candidate would consume only checked `Number::new`,
-   retain `as_str()` spelling,
-   and delegate equality and hashing to the owned decimal identity;
-   the library's own lexical `Eq` must not leak as public mathematical equality.
-  That composed runtime and its consumer boundary remain unverified.
+  The checked `Number::new` path calls `new_unchecked` and transmutes `&[u8]` to `&Number`
+   (`src/lib.rs:188-210`),
+   while `Number` has no `#[repr(transparent)]` (`:110-120`).
+  The [Rust Reference](https://doc.rust-lang.org/reference/type-layout.html#the-rust-representation)
+   gives no field-offset guarantee for default Rust representation;
+   a successful build or consumer test cannot supply that missing cross-platform safety proof.
+  The detailed [source audit](../troubleshooting/json-number-unsized-layout.md) does **not** claim observed undefined behavior.
+  The proposed checked-token plus owned-identity composition was deliberately not executed
+   because even its safe API reaches the unproved conversion.
+  Exclude the published component as-is on the mandatory portable safety-proof gate.
+  A fork with a documented transparent layout and pointer conversion would be a distinct candidate requiring its own safety and consumer validation.
 - `serde_json` 1.0.151 at `afdf6fc`,
    `src/number.rs:20-25,72-73` derives equality on `Number` and sets its arbitrary-precision inner type to `String`:
 
