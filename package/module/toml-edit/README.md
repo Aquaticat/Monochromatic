@@ -197,13 +197,16 @@ For paths created by `tomlSet` that did not exist at parse time,
 
 The package re-exports a few internal encoders and emitters with an underscore prefix:
 `_encodeKey`,
+ `_isAttachedGap`,
  `_jsValueToTomlText`,
  `_emitContentNode`,
  `_emitStringValue`,
  and `_emitDocument`.
 
 These carry no compatibility promise.
-They exist for observability and the property-based fuzz suite,
+They exist for built-artifact test coverage,
+ observability,
+ and the property-based fuzz suite,
  which exercises them through the built artifact.
 Their signatures may change without a major version bump,
  so application code must not depend on them.
