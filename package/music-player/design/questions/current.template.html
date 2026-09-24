@@ -32,7 +32,8 @@
 }
 * { box-sizing: border-box; }
 body {
-  margin: 0;
+  margin-block: 0;
+  margin-inline: 0;
   background-color: var(--page);
   color: var(--ink);
   font-family: system-ui, sans-serif;
@@ -90,6 +91,7 @@ legend { padding-inline: 0.5rem; font-size: 1.25rem; font-weight: 700; }
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
+.choice-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .choice {
   display: block;
   padding-inline: 1rem;
@@ -180,8 +182,8 @@ dialog::backdrop { background-color: var(--scrim); opacity: 0.72; }
 .dialog-bar h2 { margin-block: 0.5rem; margin-inline-end: auto; font-size: 1.15rem; }
 .preview-scroll {
   overflow: auto;
-  max-inline-size: 88vw;
-  max-block-size: 76vh;
+  inline-size: min(80vw, 80rem);
+  block-size: min(70vh, 40rem);
   margin-block-start: 0.75rem;
   border-width: 1px;
   border-style: solid;
@@ -192,7 +194,7 @@ dialog::backdrop { background-color: var(--scrim); opacity: 0.72; }
   .matrix { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 48rem) {
-  .choice-grid, .matrix { grid-template-columns: minmax(0, 1fr); }
+  .choice-grid, .choice-grid.two, .matrix { grid-template-columns: minmax(0, 1fr); }
   .wide img { inline-size: 100%; }
 }
 </style>
@@ -200,44 +202,61 @@ dialog::backdrop { background-color: var(--scrim); opacity: 0.72; }
 <body>
 <main>
 <header>
-  <p class="small">Music player design-only review · desktop Slint study · 2026-09-23</p>
-  <h1>Where does the command bar live, and what belongs in it?</h1>
-  <p>D21 settles that a command bar exists. Its global hotkey is configurable and <strong>off by default</strong>. D25 reserves Ctrl+F for future search and Ctrl+O for the folder picker. No choice on this page authorizes production work or settles the keyboard map.</p>
-  <p class="banner">Reply with <strong>one S code and one C code</strong>, plus any correction. The axes are independent. Track and folder result examples do not decide what future search indexes; that question stays open.</p>
-  <p class="small">The captures are native, nonfunctional Slint at the desktop app’s current preferred 480 × 600px size, in light and dark. The 1100 × 640px sample is a stress viewport, not a default-window-size choice. S3 is a detached-window <em>concept drawing</em> inside one Slint window, not an operating-system overlay or a hotkey feasibility demonstration. The simplified player scene applies accepted design treatments rather than copying the current production desktop UI.</p>
+  <p class="small">Music player design-only review · native Slint study · 2026-09-23</p>
+  <h1>Three separate command-bar questions</h1>
+  <p>D21 settles that a command bar exists. Its optional global hotkey is configurable and <strong>off by default</strong>; an in-app binding remains available when global registration is off. D25 reserves Ctrl+F for future search and Ctrl+O for the folder picker, but does not decide whether search shares the command surface. Exact shortcut assignment and any visible in-app entry still need their own design pass.</p>
+  <p class="banner">Reply with <strong>one I code, one G code, and one R code</strong>, plus corrections. In-app placement and global invocation can coexist; R decides only whether Ctrl+F uses a separate search destination or an explicit search mode in the same command surface.</p>
+  <p class="small">The captures are native, nonfunctional Slint at the desktop app’s current preferred 480 × 600px size, in light and dark. The 1100 × 640px samples are stress viewports, not a default-window-size choice. Global scenes draw a second-window concept inside one Slint scene, not an actual OS overlay or hotkey implementation. Static rasters do not validate keyboard interaction, screen-reader semantics, window focus restoration, search indexing, or action execution. MD3’s compact focused search defaults to full-screen; desktop docked and floating options here are deliberate adaptations, not compliance claims.</p>
 </header>
 <form id="answer-form">
   <fieldset>
-    <legend>S · Surface relationship to the player</legend>
+    <legend>I · In-app command surface, player already focused</legend>
     <div class="choice-grid">
-      <label class="choice"><input type="radio" name="surface" value="S1" required><strong>S1 · Docked under the player header</strong><p>Results cover the player’s content below the folder row, with a scrim behind them.</p><span class="pro">Anchored to the invoking app; closest to MD3 docked focused search.</span><span class="con">Covers the list at compact desktop width.</span></label>
-      <label class="choice"><input type="radio" name="surface" value="S2" required><strong>S2 · Floating inside the player</strong><p>Centered panel over the scrimmed player window.</p><span class="pro">Familiar keyboard palette, with clear visual priority.</span><span class="con">Less tied to a local anchor; hides more of the player.</span></label>
-      <label class="choice"><input type="radio" name="surface" value="S3" required><strong>S3 · Detached quick-window concept</strong><p>Separate-looking palette in front of the player for invocation while the player is unfocused.</p><span class="pro">Makes the out-of-app hotkey goal visually explicit.</span><span class="con">Less contextual; the second OS window is not proven by this prototype.</span></label>
+      <label class="choice"><input type="radio" name="inapp" value="I1" required><strong>I1 · Docked below the header</strong><p>Action matches attach to the folder row and scrim the content underneath.</p><span class="pro">Keeps a visible relationship to the player and its current folder.</span><span class="con">Covers the track list at narrow width.</span></label>
+      <label class="choice"><input type="radio" name="inapp" value="I2" required><strong>I2 · Floating in the player</strong><p>A centered, rounded palette overlays a scrimmed player.</p><span class="pro">Makes the temporary keyboard task prominent.</span><span class="con">Hides more context and is less locally anchored.</span></label>
+      <label class="choice"><input type="radio" name="inapp" value="I3" required><strong>I3 · Replace the content region</strong><p>The command destination fills the player below the header.</p><span class="pro">Most room for long results and compact widths.</span><span class="con">Hides the playback context while it is open.</span></label>
     </div>
-    <p><strong>Surface ranking: S1 &gt; S2 &gt; S3.</strong> S1 is more local than S2; S2 retains app context that S3 loses.</p>
+    <p><strong>In-app ranking: I1 &gt; I2 &gt; I3.</strong> I1 retains a clearer source anchor than I2; I2 keeps more of the player visually present than I3.</p>
   </fieldset>
   <fieldset>
-    <legend>C · Relationship between actions and future search</legend>
-    <div class="choice-grid">
-      <label class="choice"><input type="radio" name="content" value="C1" required><strong>C1 · Actions only</strong><p>The command bar runs player actions; Ctrl+F leads to a separate future media-search surface.</p><span class="pro">Commands, search and the folder picker keep distinct purposes.</span><span class="con">Another search surface remains to design.</span></label>
-      <label class="choice"><input type="radio" name="content" value="C2" required><strong>C2 · Explicit scopes</strong><p>Actions, Tracks and Folders share a surface but occupy separate modes; the sample shows Tracks.</p><span class="pro">One entry point with predictable result type.</span><span class="con">Consumes a mode row; Folders may duplicate the picker.</span></label>
-      <label class="choice"><input type="radio" name="content" value="C3" required><strong>C3 · Grouped mixed results</strong><p>Folders, tracks and actions appear together under group labels.</p><span class="pro">One query can reach different destinations.</span><span class="con">Ranking and Enter behavior become harder to predict.</span></label>
+    <legend>G · When the optional global hotkey is enabled and another app was active</legend>
+    <div class="choice-grid two">
+      <label class="choice"><input type="radio" name="global" value="G1" required><strong>G1 · Raise the player</strong><p>Bring the player forward and show its in-app command surface; close returns to the player.</p><span class="pro">Retains folder, track and deck context.</span><span class="con">Interrupts the previous app; returning there takes another step.</span></label>
+      <label class="choice"><input type="radio" name="global" value="G2" required><strong>G2 · Detached quick surface</strong><p>Show only a command window above the previously active app; close returns there.</p><span class="pro">Does not force a jump to the player for a quick command.</span><span class="con">Less player context; real second-window behavior remains developer-owned feasibility.</span></label>
     </div>
-    <p><strong>Content ranking: C1 &gt; C2 &gt; C3.</strong> C1 honors D25’s separation; C2 distinguishes modes that C3 interleaves.</p>
+    <p><strong>Global ranking: G2 &gt; G1.</strong> G2 protects the ongoing task; G1 is more contextual but takes over the screen.</p>
   </fieldset>
-  <section aria-labelledby="matrix-title">
-    <h2 id="matrix-title">Native 480 × 600px cross-product</h2>
-    <p>Each cell is the same player scene with one surface and one content treatment. The thumbnail follows your system scheme; both native captures are available in the preview buttons. Preview at 100% to inspect actual desktop pixels.</p>
-    <div class="matrix">__COMMAND_GRID__</div>
+  <fieldset>
+    <legend>R · Relationship to the future Ctrl+F search surface</legend>
+    <div class="choice-grid two">
+      <label class="choice"><input type="radio" name="search" value="R1" required><strong>R1 · Distinct search destination</strong><p>Ctrl+F replaces the content region with a search view; the command palette remains actions-only.</p><span class="pro">Results have room and their purpose is unambiguous.</span><span class="con">Requires a separate search presentation.</span></label>
+      <label class="choice"><input type="radio" name="search" value="R2" required><strong>R2 · Search mode in the same surface</strong><p>Ctrl+F enters an explicit search mode in the command surface; actions remain another mode.</p><span class="pro">One learned container can serve both tasks.</span><span class="con">Mode switching needs clear focus and exit behavior.</span></label>
+    </div>
+    <p><strong>Search relationship ranking: R1 &gt; R2.</strong> R1 gives navigation a dedicated space; R2 reuses the palette but asks people to track modes. D25 itself does not settle either choice.</p>
+  </fieldset>
+  <section aria-labelledby="inapp-title">
+    <h2 id="inapp-title">In-app comparison at the preferred desktop size</h2>
+    <p>All I variants show the same typed action query, <code>open</code>, and the same selected result. The thumbnail follows your system scheme; preview either native capture at 100%.</p>
+    <div class="matrix">__IN_APP_CARDS__</div>
   </section>
-  <section aria-labelledby="wide-title">
-    <h2 id="wide-title">Expanded-window stress view</h2>
-    <p>S1 × C1 in both schemes at 1100 × 640px. This tests anchoring without deciding the desktop default-window-size question.</p>
-    <div class="matrix">__COMMAND_WIDE__</div>
+  <section aria-labelledby="global-title">
+    <h2 id="global-title">Out-of-app invocation concepts</h2>
+    <p>Both G variants start from the same previous app and the same typed action query. Their window and focus behavior is proposed, not tested by these screenshots.</p>
+    <div class="matrix">__GLOBAL_CARDS__</div>
+  </section>
+  <section aria-labelledby="search-title">
+    <h2 id="search-title">Search invoked by Ctrl+F</h2>
+    <p>Both R variants show the same illustrative query and result types. Folder results open a folder; track results reveal a track. Whether folder paths match queries, which media types are indexed, and result ranking are separate open questions; the D31 picker remains the browsing route.</p>
+    <div class="matrix">__SEARCH_CARDS__</div>
+  </section>
+  <section aria-labelledby="stress-title">
+    <h2 id="stress-title">Fit and state probes, not additional choices</h2>
+    <p>I variants also appear at 1100 × 640px; I1 is checked at 360 × 640px with larger text and a long action. Separate I1 captures show no results and an explicitly unavailable action. All are native Slint in both schemes.</p>
+    <div class="matrix">__WIDE_CARDS____STRESS_CARDS____EDGE_CARDS__</div>
   </section>
   <section aria-labelledby="notes-title">
     <h2 id="notes-title">Correction or a better idea</h2>
-    <label for="correction">What would you change? Include any search-target or invocation concern separately from your S and C picks.</label>
+    <label for="correction">What would you change? Name any visible entry-point, search-target or accessibility concern separately from your I, G and R picks.</label>
     <textarea id="correction" name="correction"></textarea>
     <p><button type="submit">Prepare my reply</button></p>
     <output id="reply" aria-live="polite" for="correction"></output>
@@ -266,23 +285,24 @@ const scaleLabel = document.querySelector('#scale-label');
 let returnTarget;
 let scale = 1;
 let fitting = true;
-const naturalWidth = () => previewImage.naturalWidth || Number(previewImage.getAttribute('width'));
-const naturalHeight = () => previewImage.naturalHeight || Number(previewImage.getAttribute('height'));
+function fitScale() {
+  return Math.min(1, scrollRegion.clientWidth / previewImage.naturalWidth, scrollRegion.clientHeight / previewImage.naturalHeight);
+}
 function showScale() {
-  const fitted = Math.min(1, scrollRegion.clientWidth / naturalWidth(), scrollRegion.clientHeight / naturalHeight());
-  const displayScale = fitting ? fitted : scale;
-  previewImage.style.inlineSize = `${naturalWidth() * displayScale}px`;
-  previewImage.style.blockSize = `${naturalHeight() * displayScale}px`;
-  scaleLabel.textContent = `${naturalWidth()} × ${naturalHeight()} native px · ${Math.round(displayScale * 100)}% shown${fitting ? ' (fit)' : ''}`;
+  const displayScale = fitting ? fitScale() : scale;
+  previewImage.style.inlineSize = `${previewImage.naturalWidth * displayScale}px`;
+  previewImage.style.blockSize = `${previewImage.naturalHeight * displayScale}px`;
+  scaleLabel.textContent = `${previewImage.naturalWidth} × ${previewImage.naturalHeight} native px · ${Math.round(displayScale * 100)}% shown${fitting ? ' (fit)' : ''}`;
 }
 document.querySelectorAll('.preview-actions button').forEach(button => {
-  button.addEventListener('click', () => {
+  button.addEventListener('click', async () => {
     const figure = button.closest('figure');
     const selectedImage = button.dataset.scheme === 'dark' ? figure.querySelector('source').srcset : figure.querySelector('picture img').src;
     returnTarget = button;
     previewTitle.textContent = `${figure.dataset.label} · ${button.dataset.scheme} · native Slint`;
     previewImage.src = selectedImage;
     previewImage.alt = previewTitle.textContent;
+    await previewImage.decode();
     fitting = true;
     scale = 1;
     preview.showModal();
@@ -292,8 +312,13 @@ document.querySelectorAll('.preview-actions button').forEach(button => {
 });
 document.querySelector('#fit').addEventListener('click', () => { fitting = true; showScale(); });
 document.querySelector('#native').addEventListener('click', () => { fitting = false; scale = 1; showScale(); });
-document.querySelector('#zoom-out').addEventListener('click', () => { fitting = false; scale = Math.max(0.25, scale - 0.25); showScale(); });
-document.querySelector('#zoom-in').addEventListener('click', () => { fitting = false; scale = Math.min(3, scale + 0.25); showScale(); });
+function stepZoom(delta) {
+  scale = Math.max(0.25, Math.min(3, (fitting ? fitScale() : scale) + delta));
+  fitting = false;
+  showScale();
+}
+document.querySelector('#zoom-out').addEventListener('click', () => stepZoom(-0.25));
+document.querySelector('#zoom-in').addEventListener('click', () => stepZoom(0.25));
 document.querySelector('#close-preview').addEventListener('click', () => preview.close());
 preview.addEventListener('close', () => returnTarget?.focus());
 window.addEventListener('resize', () => { if (preview.open && fitting) showScale(); });
@@ -304,10 +329,11 @@ document.querySelector('#correction').addEventListener('input', () => { document
 document.querySelector('#answer-form').addEventListener('submit', event => {
   event.preventDefault();
   if (!event.currentTarget.reportValidity()) return;
-  const surface = document.querySelector('input[name=surface]:checked').value;
-  const content = document.querySelector('input[name=content]:checked').value;
+  const inapp = document.querySelector('input[name=inapp]:checked').value;
+  const global = document.querySelector('input[name=global]:checked').value;
+  const search = document.querySelector('input[name=search]:checked').value;
   const correction = document.querySelector('#correction').value.trim();
-  document.querySelector('#reply').textContent = `${surface}, ${content}${correction ? `\nCorrection: ${correction}` : ''}`;
+  document.querySelector('#reply').textContent = `${inapp}, ${global}, ${search}${correction ? `\nCorrection: ${correction}` : ''}`;
 });
 </script>
 </body>
