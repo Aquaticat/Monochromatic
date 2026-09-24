@@ -2,6 +2,20 @@
 
 This is design evidence,
  not a production specification.
+ The first S × C matrix was an
+internal draft and has been withdrawn from review:
+ it treated in-app placement and
+global invocation as exclusive,
+ treated D25's shortcut reservation as a requirement for
+separate surfaces,
+ and compared different input/result states.
+ Its native captures remain
+historical experiment evidence only;
+ no option has been put to the user or selected.
+The active round is being reframed around independent in-app placement,
+ global
+invocation,
+ and search-surface relationship decisions.
  D21 already settles a command bar
 with a configurable global hotkey off by default.
  D25 reserves Ctrl+F for future
@@ -101,21 +115,23 @@ The independent axes are:
 C2 and C3 use tracks and folders as illustrative result types,
  not a decision on the
 future search index or ranking.
- The user can choose an S code and a C code
-independently.
+ The draft incorrectly asked for one S code when S3
+could coexist with either in-app surface;
+ the user was never asked to choose these codes.
 
-## Current design ranking for the questionnaire
+## Historical first-draft ranking (withdrawn)
 
-- **Surface:** S1 > S2 > S3.
-  S1 keeps the bar local to its player context and follows
-  the docked-search precedent;
-  S2 is a recognizable keyboard palette but occludes
-  more context;
-  S3 fits an out-of-app hotkey concept yet loses local context and
-  remains untested as a real operating-system window.
+- **Surface:** S1 > S2 > S3 was not a valid exclusive ranking.
+  S1 and S2 address
+  in-app placement;
+  S3 addresses a globally invoked window relationship that may
+  coexist with either.
+  The draft did not depict another app in focus or an actual
+  detached OS window.
 - **Content:** C1 > C2 > C3.
-  C1 preserves D25's clean distinction between commands,
-  search and picker;
+  The claimed D25 justification was incorrect:
+  D25 reserves shortcuts but does not require separate surfaces.
+  C1 might still have a useful separation tradeoff;
   C2 makes the distinction explicit but spends a row on modes and may
   duplicate the picker;
   C3 finds everything in one place but makes result relevance
