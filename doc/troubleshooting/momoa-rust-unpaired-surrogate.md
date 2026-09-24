@@ -204,9 +204,12 @@ The disposable clone was then changed to decode a high/low `\u` pair into
 one checked scalar and return `MomoaError::UnexpectedElement` for isolated
 halves. Running the same bounded `mise run test:safe-instrumented` command
 exited 0 and printed `safe surrogate consumer cases passed`.
-The example checked isolated high/low errors, valid-pair acceptance,
-ordinary `\u0041`, and a literal escaped backslash. It did not yet assert
-the decoded string's value or exercise the full upstream suite.
+The example was expanded and rerun in the same bounded container.
+It exited 0 and printed `safe surrogate consumer cases passed` after checking
+isolated high/low errors in values and keys, a high half followed by a
+non-low escape, a valid pair in a key, `\u0041`, and a literal escaped
+backslash. It also inspected the parsed string and asserted the valid pair
+decodes to `😀`. The full upstream suite remains unrun.
 No original unchecked parser invocation occurred in either run.
 
 ### Patterns that avoid the unsafe conversion (source-derived, not Momoa-run)
