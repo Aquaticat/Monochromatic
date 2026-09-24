@@ -1245,6 +1245,38 @@ the MD3 outlined text-field trigger with the in-slot picker.
 alternatives,
  not permanent prohibitions on exploring a better pre-1.x solution.
 
+### D47. Search button opens a separate search page (2026-09-23)
+The user rejected every I/G/R command-bar candidate and directed the design to a
+**separate search page opened by a Search button**.
+ Do not restyle a command palette
+or offer a docked/floating command bar as another option in this round.
+ Show the
+button in the player context,
+ then the complete search destination with its own
+page identity,
+ query entry,
+ results,
+ and Back path.
+ This is a design-only direction,
+not an authorization for production implementation.
+
+**Supersession.**
+ D21's user-facing command-bar surface is superseded by this page.
+Its configurable global hotkey and extra Settings row applied to that command bar;
+do not transfer them to Search or silently keep them as settled page requirements.
+Whether a global invocation exists for the new page is open if the user raises it.
+D25's reservation of Ctrl+F for future search and Ctrl+O for the folder picker remains,
+but the full keyboard map is still a separate unfinished round.
+
+**Still open.**
+ Search targets,
+ result actions/ranking,
+ the search button's exact
+placement on each platform,
+ and page empty/error behavior need visual and interaction
+evidence.
+ These details are not determined merely by choosing a page.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)
