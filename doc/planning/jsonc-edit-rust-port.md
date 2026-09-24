@@ -284,8 +284,8 @@ source-level transitive clearance remains open where required.
    clone/equality,
    nested-record lifecycle,
    and error cleanup at the accepted depth.
-   The container suite passed with explicit phase markers;
-   release and non-Linux builds,
+   The bounded debug and optimized release suites both passed with explicit phase markers.
+   Non-Linux builds,
    full conformance,
    fuzzing,
    and the public edit interface remain unverified.
@@ -309,8 +309,7 @@ source-level transitive clearance remains open where required.
 
 ## Next action
 
-Repeat the iterative parser's depth and lifecycle matrix in a bounded release build.
- Compare its syntax and comment behavior against the maintained TypeScript conformance corpus,
+Compare the iterative parser's syntax and comment behavior against the maintained TypeScript conformance corpus,
  including the measured comma and value-comment cases.
  Add comma-after-trivia and comment-owner fixtures to the maintained TypeScript implementation at the appropriate adoption stage;
  its value-comment emitter remains unfixed.

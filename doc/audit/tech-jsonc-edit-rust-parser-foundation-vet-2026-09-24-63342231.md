@@ -628,6 +628,12 @@ The same bounded suite covered valid comma-after-newline JSONC,
  full conformance campaign,
  or publication-ready crate.
 
+### Bounded optimized-build after-state
+
+The disposable parser and exact-number crates were rebuilt in the same pinned, offline 2 GiB/2 CPU container using `mise run test:isolated:release` (`cargo test --release --locked --offline`). The optimized suite reported 17 passing unit tests and no failures, including 512-level array/record parse, canonical emission, reparse, clone/equality, success and error cleanup, and 513th-opener rejection. Stage markers printed after each deep operation. This complements the earlier debug run; it is not a timing comparison, a macOS/Windows result, or a consumer test of a published crate.
+
+Remaining validation includes full TypeScript conformance and property cases, wider comment-placement and syntax-boundary coverage, mandatory package style lint, native target matrix, full immutable edit/navigation interface, and performance on stable-band measurements. The chosen foundation is still an unadopted scratch prototype.
+
 ## Evidence and validation still required
 
 - Finish the scheduled registry,
