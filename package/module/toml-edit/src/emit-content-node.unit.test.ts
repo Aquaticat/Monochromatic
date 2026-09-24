@@ -6,11 +6,11 @@ import {
 
 import {
   _emitContentNode,
+  type CanonicalOptionsOverride,
   emptyTomlEdit,
   parseTomlEdit,
   tomlGetNode,
 } from '@monochromatic-dev/module-toml-edit';
-import type { CanonicalOptionsOverride, } from '@monochromatic-dev/module-toml-edit';
 
 /**
  Render a parsed value through the built package's unstable emitter seam.
