@@ -228,6 +228,17 @@ parser invocation occurred in any run. The prototype uses the generic
 `UnexpectedElement` error at the string token's start, not a diagnostic naming
 the surrogate or its exact escape offset.
 
+A further rerun of the patched example in the same bounded container exited 0
+and printed `safe surrogate consumer cases passed`. It asserted the specific
+`UnexpectedElement` variant for isolated high and low halves in values and
+keys, interrupted or mismatched pairs, and a pair followed by a lone low
+half. It checked decoded boundary pairs `U+10000` and `U+10FFFF`, neighboring
+BMP scalars, `U+0000`, mixed-case hexadecimal, adjacent pairs with surrounding
+text, an object key, ASCII `\u0041`, and a literal escaped backslash. Truncated
+and nonhex escapes returned errors without panic. The original unsafe parser
+was not executed on any surrogate input. The [updated patch](momoa-rust-unpaired-surrogate.patch)
+passed `git apply --check` against the clean clone again.
+
 ### Patterns that avoid the unsafe conversion (source-derived; patched subset tested)
 
 - `r#"{"s":"plain"}"#`: no Unicode escape enters the `u` arm of
@@ -344,8 +355,10 @@ No duplicate was found in the inspected queries; source and tracker state can ch
    found in the checked materials; that is not proof no other policy exists.
 5. **Likely fix: soft yes.** No comparable won't-fix signal was found.
    [Parser history][parse-history] and [reader history][reader-history]
-   show work in these paths; `gh` tracker queries found no matching report,
-   but release deltas were not independently reviewed.
+   show work in these paths; `gh` tracker queries found no matching report.
+   The [3.2.6 release notes][release-326] name provenance publication only;
+   the [3.2.5 notes][release-325] name dependency and whitespace fixes.
+   Neither states a refusal to fix surrogate handling.
 6. **Minimal architecture-compatible prototype: yes, isolated.** A fresh
    private clone of commit `8dfb563` was origin-checked and had its push URL
    disabled. The [prototype patch](momoa-rust-unpaired-surrogate.patch)
@@ -416,5 +429,7 @@ issue or PR. No upstream issue or PR has been sent.
 [pr-unicode]: https://github.com/humanwhocodes/momoa/pulls?q=is%3Apr+unicode
 [pr-unpaired]: https://github.com/humanwhocodes/momoa/pulls?q=is%3Apr+unpaired
 [pr-offsets]: https://github.com/humanwhocodes/momoa/pull/204
+[release-326]: https://github.com/humanwhocodes/momoa/releases/tag/momoa-rs-v3.2.6
+[release-325]: https://github.com/humanwhocodes/momoa/releases/tag/momoa-rs-v3.2.5
 [parse-history]: https://github.com/humanwhocodes/momoa/commits/main/rust/src/parse.rs/
 [reader-history]: https://github.com/humanwhocodes/momoa/commits/main/rust/src/readers.rs/
