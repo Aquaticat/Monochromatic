@@ -65,8 +65,10 @@ Next actions, in order:
 4.   Method audit (see `Method audit`), started 2026-09-24 after the user rejected the drafts as too thin:
      "This can't be it. I expected many more findings. Maybe we're not looking for findings correctly?"
      All three reports integrated (see `Integration after the three reports`);
-     campaign restarted on the widened generators (log `campaign-9.log` in the session scratchpad).
-     Next: ask the user again to review and post the drafts.
+     The campaign on the widened generators was stopped on the user's call after about a day:
+     4326 rounds of 10000 runs per property file passed with no new counterexample
+     (the only failure record is the earlier, already-pinned seed 1831879258).
+     User decision 2026-09-24: the user reviews and posts both drafts personally.
 5.   Open PRs from the fork branches if the maintainer wants them,
      and follow `After upstream responds`.
 
