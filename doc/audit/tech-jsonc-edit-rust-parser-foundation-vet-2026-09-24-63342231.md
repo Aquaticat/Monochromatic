@@ -454,6 +454,20 @@ The published `biome_json_parser` 0.5.7 archive SHA-256
  immutable edits,
  or a consuming published crate.
 
+### Syntax differential preparation
+
+A separate scratch consumer `~/temp/agent/jsonc-foundation-diff/` depends on both disposable foundations.
+ Its `Cargo.lock` was generated with `mise run lock:update` and SHA-256
+ `33461c55d80be4ad511b16d593869e198fc9e9954b09b43aae536457ad15d550`.
+ `~/temp/agent/jsonc-differential-execution-manifest.md` records the same pinned offline container,
+ inspected Biome command tree,
+ bounded source mutations,
+ positive mismatch control,
+ and stop conditions before execution.
+ This test will compare syntax admission only;
+ a matching syntax result would not prove key/value comment parity or value equality.
+ No differential outcome is yet claimed.
+
 ## Existing-parser contract exits
 
 These are outcomes for published implementations **as-is**,
