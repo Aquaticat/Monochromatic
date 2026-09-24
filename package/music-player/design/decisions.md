@@ -1273,11 +1273,17 @@ The user rejected every I/G/R command-bar candidate and directed the design to a
 or offer a docked/floating command bar as another option in this round.
  Show the
 button in the player context,
- then the complete search destination with its own
-page identity,
+ then a coherent Search destination with its own
+identity,
  query entry,
- results,
- and Back path.
+ results and Back path.
+ "Separate page" names the
+navigation/interaction destination,
+ **not** a requirement to occupy the whole
+unfolded display.
+ The user explicitly allows a one-half Search screen as one
+possible layout;
+ other layouts remain open.
  This is a design-only direction,
 not an authorization for production implementation.
 
@@ -1307,8 +1313,12 @@ app bar and query bar.
  and Clear into **one page-level
 search header**,
  with results directly beneath it.
- The opened page must not
-retain the player header or add another in-app title strip.
+ The Search region must not
+stack a player header above the query or add another in-app title strip.
+Context outside a bounded Search region may remain visible if a candidate uses
+only part of the unfolded display;
+ that layout is permitted,
+ not selected.
  A baseline M3
 full-content Search header (72dp with a divider) supplies the visual anatomy.
 The player continues to expose a distinct Search button that opens the page
