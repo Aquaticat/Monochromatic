@@ -167,8 +167,11 @@ Both local delegated `rg` queries were blocked by its security guardrail,
    deep tree lifecycle and full validation remain unproven.
    `cargo info biome_json_parser` resolved published 0.5.7 on 2026-09-24,
    while the shallow upstream checkout at `2f629c5` has `version = "0.7.0"` in root `Cargo.toml:7`.
-   Release cadence and whether relevant fixes have reached crates.io need a maintenance audit;
-   a repository version alone is not published-package evidence.
+   The [crates.io version record](https://crates.io/api/v1/crates/biome_json_parser) dates the latest published 0.5.7 to 2024-03-12.
+   The separate GitHub release `@biomejs/biome@2.5.14` was published 2026-09-16 according to the repository releases API;
+   that application release is not a publication of this Rust crate.
+   Release cadence,
+   maintainer responses and whether relevant fixes reach crates.io still need a package-specific audit.
 
 ### `jwc` 0.1.0
 
@@ -613,8 +616,16 @@ The scratch differential consumer now has `src/bin/bench.rs` and a `mise run ben
  then the owned path again to show timing drift.
  This measures complete parse-to-editor-value paths,
  not Biome syntax parsing alone.
- No timing band or winner is yet claimed;
- overlapping sample bands cannot justify an advantage.
+ The first optimized container run measured one fixed 1065-byte JSONC document,
+ with 256 parse-to-value calls per sample and seven samples per candidate.
+ The owned baseline before Biome ranged from 22234 to 22409 nanoseconds per call;
+ after Biome it ranged from 21851 to 26607.
+ The Biome projection ranged from 98452 to 116553 nanoseconds per call.
+ These measured bands do not overlap on this document,
+ so the owned path had the lower measured parse-to-editor-value time for this run.
+ This is not a claim about other document shapes,
+ machine targets or the cost of future product integration.
+ A separate unchanged-source run remains to be checked before assigning performance ratings.
 
 ## Existing-parser contract exits
 
