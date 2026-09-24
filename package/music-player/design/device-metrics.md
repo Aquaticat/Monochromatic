@@ -55,23 +55,39 @@ Physical:
 ## Converted to dp (what you design against)
 
 ```text
-Cover screen   1080 / 2.625  ×  2424 / 2.625   =   ~411 × 923 dp   (density 420dpi)
-Inner display  2076 / 2.4375 ×  2152 / 2.4375  =   ~852 × 883 dp   (density ~390dpi)
+Published-pixel-density estimate for cover: 1080 / 2.625 × 2424 / 2.625 ≈ 411 × 923dp at 420dpi.
+Measured Pixel_9_Pro_Fold AVD cover:     1080 / 2.4375 × 2424 / 2.4375 ≈ 443 × 994dp at 390dpi.
+Measured Pixel_9_Pro_Fold AVD inner:     2076 / 2.4375 × 2152 / 2.4375 ≈ 852 × 883dp at 390dpi.
 ```
 
-The density buckets are inferred from the panel ppi in the usual Android way;
- if you
-need exactness,
- read `Configuration.densityDpi` on the device.
- The **shape** is what
-matters for layout and it is not in doubt.
+The original 411 × 923dp cover estimate came from published panel ppi,
+ not Android
+configuration.
+ Direct `adb shell wm density` and both panel entries in
+`dumpsys display` report **390dpi for both emulator displays**.
+ The current
+opaque Compose captures therefore render at approximately 443 × 994dp on the
+cover,
+ not 411 × 923dp.
+ D49's physical resolutions remain unchanged.
+ Do not
+call an AVD capture 411dp wide or present it at 411 CSS px as "100% dp".
+ An
+unprobed physical handset could use a different logical density;
+ this evidence
+specifically describes the current AVD.
 
 ## Questionnaire frame geometry
 
 Google's current hardware specification confirms an 8-inch inner display at
 2076 × 2152px and an unfolded body measuring 150.2 × 155.2mm in width-first order.
-The questionnaire frame uses those figures rather than treating the active display as
-the outside of the phone.
+The inner questionnaire frame uses those figures rather than treating the active
+display as the outside of the phone.
+ The cover frame originally used 411 × 923
+dp for the same relative chassis proportions;
+ its 100% AVD preview must scale
+that cover body and screen to the measured 443 × 994dp while retaining the
+published physical-pixel screenshot unmodified.
 
 Distributing the 203.2mm display diagonal by the panel's pixel aspect gives an active
 area of approximately 141.08 × 146.24mm.
