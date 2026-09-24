@@ -249,10 +249,19 @@ The sidecar bounded property suite,
  types,
  and package oxlint also passed after the fix.
 
-After this recheck,
- scan the remaining parser,
- document,
- editing,
+The parser/document batch is now running in bounded containers:
+ `build-comments.ts`,
+ `build-document.ts`,
+ `build-input.ts`,
+ and `parse-toml-edit.ts` write `/var/home/user/temp/agent/toml-mutation-parser-builder.json` (`proc_8259`);
+ `document-materialize.ts`,
+ `value-materialize.ts`,
+ `emit-value-node.ts`,
+ and `emit-value-string.ts` write `/var/home/user/temp/agent/toml-mutation-materialization.json` (`proc_d9eb`).
+Do not edit runtime source until both complete,
+ since each shard copies the current tree.
+After triage,
+ scan editing,
  comment API,
  and value-encoding files not named in completed batches.
 Do not claim a full-runtime verdict before those campaigns and their survivor rechecks finish.
