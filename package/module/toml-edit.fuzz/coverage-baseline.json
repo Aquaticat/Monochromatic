@@ -10,7 +10,7 @@
   "src/emit-document.ts": 327,
   "src/emit-value-node.ts": 94,
   "src/emit-value-string.ts": 38,
-  "src/emit-value.ts": 191,
+  "src/emit-value.ts": 133,
   "src/empty-toml-edit.ts": 45,
   "src/errors.ts": 131,
   "src/index.ts": 121,
