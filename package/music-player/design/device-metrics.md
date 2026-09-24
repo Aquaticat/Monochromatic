@@ -295,11 +295,13 @@ record and role-based guards.
     A full-width Search page does not exempt its 72dp header or result list.
     Android-owned system bars are captured as rendered,
    not repositioned by the app.
-4. **The cover screen is taller and narrower than a normal phone frame** (411×923
-   versus the 390×844 that was wrongly assumed).
-    At 72dp rows,
-    roughly six track rows
-   fit under a full deck.
+4. **The physical cover is taller and narrower than the older 390 × 844dp
+   phone mock.**
+    On this AVD its 1080 × 2424px active panel is about 443 ×
+   994dp at 390dpi;
+    judge visible row count from the native captures,
+    not the
+   earlier 411dp estimate.
 5. **Tabletop posture** is detectable on Android only (decisions.md E3).
 
 ---
@@ -307,14 +309,20 @@ record and role-based guards.
 ## Viewport sizes to design and test at
 
 ```text
-411 × 923    cover screen (folded)
-852 × 883    inner display (unfolded)
-426 × 883    physical right half of the inner display
-Desktop      inherits the Fold layouts; its window size is not a design frame (D49)
+443 × 994    measured AVD cover screen (folded, 390dpi; physical 1080 × 2424px)
+852 × 883    measured AVD inner display (unfolded, 390dpi; physical 2076 × 2152px)
+426 × 883    right half of the inner display, including 12dp of connector
+Desktop      inherits Fold visual decisions; its window size is not a design frame (D49)
 ```
 
-Set these as the Design Component preview size so the file is always judged at the
-right dimensions.
+Use the emulator's opaque panel captures at physical resolution.
+ For a review
+scaled to 100% Android dp,
+ display the cover at approximately 443 × 994 CSS px
+and the inner display at approximately 852 × 883 CSS px.
+ Older Design Component
+preview sizes are historical,
+ not substitutes for these native results.
 
 ---
 
