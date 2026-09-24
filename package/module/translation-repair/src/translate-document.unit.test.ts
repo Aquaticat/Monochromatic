@@ -33,6 +33,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
   translateDocument,
   TranslationRepairInterruptedError,
+  type ArchiveDispute,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type InsertionAdmission,
@@ -301,9 +302,11 @@ function laneClient(
     silentTranslators = false,
     silentForSource = SILENT_FOR_NOTHING,
     translateConcurrency,
+    sheets,
   }: {
     readonly calls: CallLog;
     readonly controller: AbortController;
+    readonly sheets?: string[];
     readonly abortAfterTranslateCalls?: number;
     readonly silentTranslators?: boolean;
     readonly silentForSource?: string;
@@ -360,6 +363,7 @@ function laneClient(
           translateConcurrency.now -= 1;
         }
         calls.translate += 1;
+        sheets?.push(content,);
 
         /**
          Wire reply carrying scripted rendering.
@@ -463,9 +467,13 @@ async function runDriver(
       selectAttempts: 0,
     },
     beforeSlice,
+    archiveDisputes,
+    sheets,
   }: {
     readonly sourceText?: string;
     readonly targetText?: string;
+    readonly archiveDisputes?: ReadonlyMap<number, ArchiveDispute>;
+    readonly sheets?: string[];
     readonly resumed?: ReadonlyMap<string, TranslateSliceRecord>;
     readonly abortAfterTranslateCalls?: number;
     readonly silentTranslators?: boolean;
@@ -537,9 +545,11 @@ async function runDriver(
       ...((translateConcurrency === undefined)
         ? {}
         : { translateConcurrency, }),
+      ...((sheets === undefined) ? {} : { sheets, }),
     },),
     prepared,
     models: MODELS,
+    ...((archiveDisputes === undefined) ? {} : { archiveDisputes, }),
     signal: controller.signal,
     perCallTimeoutMs: 1_000,
     overlap,
@@ -570,6 +580,51 @@ async function runDriver(
 await describe({
   name: translateDocument.name,
   children: [
+    it({
+      name: 'JUDGES THE REPAIR LANE\'S TEXT AS THE INCUMBENT on a disputed slice, so the archive rendering is '
+        + 'neither a candidate nor the fallback and the lane ships what it chose over that stand-in '
+        + '(class one hundred seven, CuspariaKLSY10 slice 3, 2026-09-24)',
+      fn: async () => {
+        /**
+         Repair lane's text for the first section, the invented detail removed.
+         */
+        const standIn = '## Section one\n\nThe cat slept on the windowsill.';
+        /**
+         Archive wording of the first section, which the dispute withholds.
+         */
+        const archivePhrase = 'is doing the sleeping on the windowsill';
+        const sheets: string[] = [];
+        const { result, } = await runDriver({
+          archiveDisputes: new Map([[0, { sliceIndex: 0, standIn, acceptedAdditions: 1, },],],),
+          sheets,
+        },);
+        /**
+         Translator sheets for the first section.
+         */
+        const firstSection = sheets.filter(function ofFirst(sheet,): boolean {
+          return sheet.includes('## 第一节',);
+        },);
+        expect(firstSection.length,).toBeGreaterThan(0,);
+        for (const sheet of firstSection) {
+          expect(sheet,).toContain('The cat slept on the windowsill.',);
+          expect(sheet,).not.toContain(archivePhrase,);
+        }
+        /**
+         Record for the disputed slice.
+         */
+        const [record,] = result.slices;
+        expect(record?.sliceIndex,).toBe(0,);
+        expect(record?.findings.some(function isDispute(finding,): boolean {
+          return finding.startsWith('translate-archive-disputed (slice 0)',);
+        },),).toBe(true,);
+        // The judges chose the fresh rendering over the stand-in, and the
+        // record says so against the archive's own bytes.
+        expect(record?.outputText,).toContain(FRESH,);
+        expect(record?.changed,).toBe(true,);
+        expect(result.translatedText,).not.toContain(archivePhrase,);
+      },
+    },),
+
     it({
       name: 'visits EVERY slice, which is the whole reason this lane exists: '
         + 'the repair driver returns early on exactly the slices translation is '

@@ -57,6 +57,19 @@ await describe({
       },
     },),
     it({
+      name: 'JUDGES THE REPAIR LANE\'S TEXT AS THE INCUMBENT where the archive rendering is disputed, so the archive is neither a candidate nor the fallback (class one hundred seven, CuspariaKLSY10 slice 3, 2026-09-24)',
+      fn: async () => {
+        const prepared = prepareDocumentPair({ sourceText: '猫睡了。', targetText: 'The cat slept after swallowing its pills.' });
+        const slice = first(prepared);
+        const standIn = 'The cat slept.';
+        const surface = translateSliceInput({ slice, prepared, archiveStandIn: standIn });
+        expect(surface.archiveText).toBe(standIn);
+        expect(surface.protectedText).toBe('');
+        expect(surface.stageInput.incumbentText).toBe(standIn);
+        expect(surface.stageInput.incumbentKind).toBe('present');
+      },
+    },),
+    it({
       name: 'distinguishes an insertion anchor from an existing blank content span',
       fn: async () => {
         const prepared = prepareDocumentPair({ sourceText: '猫睡了。', targetText: 'The cat slept.' });

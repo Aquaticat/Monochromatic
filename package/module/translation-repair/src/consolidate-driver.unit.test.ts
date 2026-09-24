@@ -52,6 +52,7 @@ import {
   SLICE_START_MARKER,
   TRANSLATE_LINE_STRUCTURE_RULE,
   TranslationRepairInterruptedError,
+  type ArchiveDispute,
   type ArtifactContestSlice,
   type ConsolidationSettlement,
   type ConsolidationTerminal,
@@ -607,8 +608,10 @@ async function driveWith(
     messages,
     writes,
     signal = AbortSignal.timeout(CALL_TIMEOUT_MS,),
+    archiveDisputes,
   }: {
     readonly contests: readonly ArtifactContestSlice[];
+    readonly archiveDisputes?: ReadonlyMap<number, ArchiveDispute>;
     readonly resumed?: ReadonlyMap<string, ConsolidationSettlement>;
     readonly projected?: ProjectedLanes;
     readonly client?: SyntheticClient;
@@ -679,6 +682,7 @@ async function driveWith(
     lineStructuredSlices,
     pictureContextBySlice,
     neighbourContextBySlice,
+    ...((archiveDisputes === undefined) ? {} : { archiveDisputes, }),
     l: (messages === undefined) ? l : capturingLogger({ messages, },),
   },);
 
@@ -871,6 +875,34 @@ await describe({
         // An unendorsed standing settlement is not worth resuming, so nothing
         // is persisted and a warm run asks again.
         expect(written,).toHaveLength(0);
+      },
+    },),
+    it({
+      name: 'SHIPS THE REPAIR LANE\'S TEXT AS THE STANDING at a settled-neither contest on a disputed slice, so the '
+        + 'archive rendering the adjudicators found to invent a detail never stands (class one hundred seven, '
+        + 'CuspariaKLSY10 slice 3, 2026-09-24)',
+      fn: async () => {
+        /**
+         Repair lane's text for slice 0, standing in for the archive.
+         */
+        const standIn = 'repair wording for slice 0';
+        const { client, } = recoveringClient();
+        const { slices, } = await driveWith({
+          client,
+          modelIds: RECOVERY_ROSTER,
+          contests: [{
+            sliceIndex: 0,
+            verdict: { kind: 'settled-neither', },
+            ballots: [],
+            usable: RECOVERY_ROSTER.length,
+          },],
+          archiveDisputes: new Map([[0, { sliceIndex: 0, standIn, acceptedAdditions: 2, },],],),
+        },);
+        expect(slices[0]?.terminal,).toBe('gate-kept-standing',);
+        expect(slices[0]?.shipped,).toEqual({
+          kind: 'incumbent',
+          text: standIn,
+        },);
       },
     },),
     it({
