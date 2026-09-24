@@ -10,9 +10,15 @@ Do not ask the user to post the advisory or issue drafts until the widening pass
 
 Next actions, in order:
 
-1.   Launch the mutation-testing fork (prompt in `Widening pass`) once a subagent slot frees
-     (the harness caps concurrent subagents at 5).
+1.   Mutation-testing fork: launched 2026-09-24, running.
 2.   Integrate each widening fork's report per `Widening pass`.
+     Done for the exotic, options, scale, and aliasing forks
+     (findings reproduced independently and added to the local drafts;
+     model and snapshot made realm-independent in `src/realm.ts`, commit `fa548bf15`).
+     Pending: declared-type and mutation forks,
+     then `README.md` listing of the new file families,
+     `format:oxlint` once no fork is editing,
+     and `fuzz:coverage --write`.
 3.   Restart the campaign (`mise run //package/module/deepmerge-ts.fuzz:fuzz`) with the widened generators.
 4.   Ask the user to review and post the updated drafts,
      then open PRs from the fork branches if the maintainer wants them,
