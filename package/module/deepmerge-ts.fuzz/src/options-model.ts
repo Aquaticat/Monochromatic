@@ -229,6 +229,8 @@ function dispatch(
   const implicitFallback = (!context.into)
     && plan.implicit
     && (result === undefined);
+  if (implicitFallback && (kind === 'array'))
+    observe('implicitArray',);
   if (implicitFallback && ((kind === 'set') || (kind === 'map')))
     observe(kind === 'set' ? 'implicitSet' : 'implicitMap',);
   if ((result === DEFAULT) || implicitFallback) {

@@ -132,9 +132,9 @@ function intoMergeOf(plan: OptionsPlan,): (
 }
 
 /**
- Plans whose Set and Map functions return `undefined` under implicit default
- merging, drawn together with parallel collections so the fallback runs in
- most draws instead of about one in a hundred.
+ Plans whose array, Set, and Map functions return `undefined` under implicit
+ default merging, drawn together with parallel collections so the fallback
+ runs in most draws instead of about one in a hundred.
 
  @param fast - Whether the plan is for `deepmergeFastUnsafeCustom`.
 
@@ -150,7 +150,7 @@ function implicitCollectionCases({ fast, }: { readonly fast: boolean; },) {
     parallelCollectionsArbitrary({ exotic: true, protoKey: !fast, },),
     optionsPlanArbitrary({ fast, },)
       .map(function deferCollections(plan,): OptionsPlan {
-        return { ...plan, implicit: true, mergeMaps: 'undefined', mergeSets: 'undefined', };
+        return { ...plan, implicit: true, mergeArrays: 'undefined', mergeMaps: 'undefined', mergeSets: 'undefined', };
       },),
   );
 }
@@ -258,13 +258,14 @@ await describe({
       },
     },),
     it({
-      name: 'implicit default merging falls back for custom Set and Map functions, with and without FastUnsafe',
+      name: 'implicit default merging falls back for custom array, Set, and Map functions, with and without FastUnsafe',
       timeout: RUN.timeout,
       fn: async () => {
         /**
          Fallback branches this property must reach, per entry point.
          */
         const implicitTally = reachTally([
+          'implicitArray',
           'implicitMap',
           'implicitSet',
         ],);

@@ -38,8 +38,8 @@ export type MetaState = 'none' | 'root' | 'tagged';
    position of a returning merge.
  - `intoDropAllKept`: the filter removed every value at a key the into
    target already had, which keeps the target's value.
- - `implicitSet`, `implicitMap`: a custom Set or Map function returned
-   `undefined` under implicit default merging.
+ - `implicitArray`, `implicitSet`, `implicitMap`: a custom array, Set, or
+   Map function returned `undefined` under implicit default merging.
  - `rootMetaProbe`, `taggedMetaProbe`: a `metaProbe` function recognized
    the root or tagged metadata.
  - `nestedSkip`: a `skipNested` function skipped a nested position.
@@ -48,6 +48,7 @@ export type MetaState = 'none' | 'root' | 'tagged';
  */
 export type ModelEvent =
   | 'filterDroppedAll'
+  | 'implicitArray'
   | 'implicitMap'
   | 'implicitSet'
   | 'intoDropAllKept'

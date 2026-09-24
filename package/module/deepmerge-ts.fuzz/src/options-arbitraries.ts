@@ -43,10 +43,12 @@ const MAX_PLANNED_DEPTH = 5;
 const MAX_PARALLEL = 3;
 
 /**
- Records that each hold a Set, or each hold a Map, under the key `k`: the
- only inputs where two collections of one kind meet, so a plan's Set and Map
- functions run instead of `mergeOthers`. The general tree arguments almost
- never line up that way.
+ Records that each hold a Set, each hold a Map, or each hold an array, under
+ the key `k`: the only inputs where two collections of one kind reliably
+ meet, so a plan's Set, Map, and array functions run instead of
+ `mergeOthers`. The general tree arguments rarely line up that way; arrays
+ joined after the recall audit's edge shapes shifted the fixed-seed draws off
+ the `deepmergeCustom` array fallback.
 
  @param options - Leaf and key switches, as for the tree generators.
 
@@ -91,13 +93,30 @@ export function parallelCollectionsArbitrary(options: TreeOptions,): Arbitrary<r
     .map(function toMap(pairs,): unknown {
       return new Map(pairs,);
     },);
+  /**
+   One array of trees.
+   */
+  const list = array(
+    tree,
+    { maxLength: MAX_PARALLEL, },
+  )
+    .map(function toArray(items,): unknown {
+      return items;
+    },);
   return oneof(
     set,
     map,
+    list,
   )
     .chain(function sameKind(first,) {
+      /**
+       Generator for the rest, of the first collection's kind.
+       */
+      const sameKindArbitrary = (first instanceof Set)
+        ? set
+        : ((first instanceof Map) ? map : list);
       return array(
-        first instanceof Set ? set : map,
+        sameKindArbitrary,
         {
           minLength: 1,
           maxLength: MAX_PARALLEL - 1,
