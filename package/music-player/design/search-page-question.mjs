@@ -192,7 +192,7 @@ function validate() {
   }
   for (const text of ['D47', 'D48', 'D49', '24dp connector', 'id="panel"', 'id="open-page"', 'id="back-player"', 'id="sample-query"',
     'id="unavailable"', 'id="correction"', 'preview.showModal()', 'Reset 100%', 'width="1080" height="2424"',
-    'frameWidth: 907', 'frameWidth: 502.4', 'showStage(\'open-empty\')', 'showStage(\'player\')', 'backPlayer.focus()', 'openPage.focus()']) {
+    'frameWidth: 907', 'frameWidth: 502.4', 'previewStage.scrollTop = 0', 'previewStage.scrollLeft = 0', 'showStage(\'open-empty\')', 'showStage(\'player\')', 'backPlayer.focus()', 'openPage.focus()']) {
     if (!html.includes(text)) throw new Error(`Fold Search review is missing ${text}.`);
   }
   console.log('Fold-native Search review, paired hierarchies, and empty black/white connector are valid.');
