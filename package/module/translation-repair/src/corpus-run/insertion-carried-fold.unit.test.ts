@@ -425,7 +425,7 @@ await describe({
         expect(unfound.admission.carried?.length,).toBe(1,);
         expect(unfound.asides.length,).toBe(1,);
         expect(unfound.asides[0],).toContain('slice 2',);
-        expect(unfound.asides[0],).toContain('not found',);
+        expect(unfound.asides[0],).toContain('quote-not-found',);
       },
     },),
   ],

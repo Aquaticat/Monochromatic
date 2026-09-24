@@ -300,6 +300,7 @@ async function runEntryPipeline(
       prepared,
       admission: translateInsertionAdmission,
       findings: foldFindings,
+      asides: foldAsides,
     } = foldCarriedInsertions({
       prepared: paired,
       admission: admissionAsRead,
@@ -310,6 +311,32 @@ async function runEntryPipeline(
     const foldLogger = tagged({ tag: entry.id, },);
     for (const finding of foldFindings)
       foldLogger.info(finding,);
+    // A passage that stays carried says why (class one hundred eleven,
+    // mikaela13): the log reader can tell a scattered rendering from one the
+    // fold could not place.
+    for (const aside of foldAsides)
+      foldLogger.warn(aside,);
+    // Every passage still carried prints the regions its coverage rests on,
+    // so a carried-evidence-lost stop at publish can be read against the
+    // admission without the artifact.
+    for (const carried of translateInsertionAdmission.carried ?? []) {
+      /**
+       Regions the coverage voices quoted, one JSON string each.
+       */
+      const regions = carried.evidence
+        .map(function preview(region,): string {
+          return JSON.stringify(region,);
+        },)
+        .join(' | ',);
+      /**
+       How many regions the voices quoted.
+       */
+      const regionCount = carried.evidence
+        .length;
+      foldLogger.info(
+        `slice ${String(carried.sliceIndex,)} carried on ${String(regionCount,)} region(s): ${regions}`,
+      );
+    }
 
     /**
      What both lanes made of that slicing, with neither preferred.
