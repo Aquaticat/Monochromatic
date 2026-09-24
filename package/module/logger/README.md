@@ -57,7 +57,15 @@ logger.error('unexpected shutdown',);
 Node 24 or newer (the build calls `Error.isError`),
  plus current browsers,
  Deno,
- and Bun for the sinks whose `verify` finds a backend there.
+ Bun,
+ and QuickJS-ng 0.16.2 for the sinks whose `verify` finds a backend there.
+QuickJS-ng provides only `console.log` and no global timers:
+ its default console sink sends all unsuppressed levels to stdout,
+ not to stderr.
+Call `await logger.flush()` before an explicit `std.exit()` so batched records
+ are emitted before process termination.
+For stderr output,
+ supply a QuickJS-specific sink or keep a host-specific adapter.
 ### Global-scope-restricted runtimes
 
 Cloudflare Workers (and any runtime that forbids timers,
@@ -113,9 +121,9 @@ already provides its own log-level filtering.
 ## Sinks
 
 The default logger writes to **all** available sinks simultaneously.
-Availability is verified at module load,
+Availability is verified at first log or flush,
  every sink concurrently,
- each under its own time limit (`verifyTimeoutMs`,
+ each under its own time limit when host timers exist (`verifyTimeoutMs`,
  default `DEFAULT_VERIFY_TIMEOUT_MS`,
  5000 ms);
  a sink that does not answer in time counts as unavailable,
@@ -130,7 +138,8 @@ That startup buffer holds at most `STARTUP_BUFFER_CAP` records (10000,
 - **console**:
    formats as `[level] [ISO timestamp] message`;
   maps levels to corresponding `console.*` methods,
-  except `debug` writes to `process.stderr` when `process.stderr.write` is available
+  falls back to `console.log` for a missing level method,
+  and writes `debug` to `process.stderr` when `process.stderr.write` is available
 - **file**:
    Node.
   js only;
@@ -282,19 +291,24 @@ File,
 - `logger.flush()` awaits startup verification,
    pending sink writes,
    and sink-owned flush hooks,
-   all under one deadline (`flushDeadlineMs`,
+   all under one deadline when the host provides `setTimeout` and
+   `clearTimeout` (`flushDeadlineMs`,
    default `DEFAULT_FLUSH_DEADLINE_MS`,
    5000 ms).
-   When the deadline elapses the logger reports one `console.warn` breadcrumb,
+   When the deadline elapses the logger reports one console breadcrumb,
    drops the in-flight writes from its view (sinks expose no cancellation,
    so the work continues in the background),
    and resolves,
-   so a wedged backend cannot hang a shutdown
+   so a wedged backend cannot hang a shutdown in hosts with timers.
+   Without both timer primitives,
+   the logger awaits operations directly;
+   a custom sink that never settles can prevent verification or flush from finishing
 - Throws at log time once initialization has completed with no available backend.
-   The console sink verifies wherever `console` and `queueMicrotask` exist,
+   The console sink verifies wherever `queueMicrotask` and usable
+   `console.log` or all required level methods exist,
    so this is reachable only through `createLogger` with sinks that all fail verification
 - A sink is dropped when its `verify` reports unavailable,
-   runs past `verifyTimeoutMs`,
+   runs past `verifyTimeoutMs` in hosts with timers,
    or its flush hook rejects;
    remaining sinks continue,
    and a late verify answer after the limit is ignored

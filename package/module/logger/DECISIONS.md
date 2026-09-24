@@ -604,6 +604,26 @@ Accepted consequences:
    as `kv-store` and `pipe` already have.
 - A types gate for subpaths (`attw --pack .`) in the release workflow is deferred to a separate change.
 
+## Console-only hosts and timerless verification (2026-09-24)
+
+QuickJS-ng 0.16.2 exposes `console.log` and `queueMicrotask`,
+ but no other console methods and no global `setTimeout` or `clearTimeout`.
+The default neutral logger now verifies its console sink there and routes
+ missing level methods to `console.log`.
+QuickJS-ng's `console.log` writes to stdout;
+ callers requiring stderr must supply their own sink or host adapter.
+The internal reporter prefers `console.warn`, then `console.error`, then `console.log`,
+ and skips reporting when none exists rather than throwing because a method is absent.
+
+Logger timeouts require both global timer primitives.
+When either is missing,
+ verification and flush await their actual work with no deadline.
+This allows the default console sink to work without a QuickJS-only build,
+ but a never-settling custom sink can hold initialization or flush forever.
+Hosts with timers keep the existing bounded behavior.
+This tradeoff avoids making every timerless sink unavailable or silently inventing
+ an elapsed deadline based on microtask count.
+
 ## Default logger is built on first use, and no readiness promise is exported (2026-09-06)
 
 Issue #493:
