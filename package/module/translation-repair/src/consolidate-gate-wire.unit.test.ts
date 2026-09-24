@@ -29,6 +29,12 @@ import {
 type GateSubject = Parameters<typeof buildConsolidateGateMessages>[0]['subject'];
 
 /**
+ Sheet note a disputed slice carries (class one hundred eight).
+ */
+const DISPUTE_NOTE = 'ARCHIVE RENDERING DISPUTED: the repair lane\'s adjudicators accepted 1 accuracy/addition claim(s) that the archive rendering says what the ORIGINAL never states; (1) accuracy/addition major: The translation adds that the cat climbed the drainpipe. A detail those claims name is not page content.';
+
+
+/**
  One gated slice, standing in for a corpus passage.
  */
 const SUBJECT: GateSubject = {
@@ -409,6 +415,31 @@ await describe({
         expect(shown,).toContain('- CANDIDATE "consolidated" carries none of the community\'s renderings of 自切',);
         expect(shown.includes('CANDIDATE "standing" carries none',),).toBe(false,);
         expect(shown.includes('ARCHIVE RENDERING carries none',),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'consolidate gate wire dispute note (class one hundred eight, CuspariaKLSY11 slice 3, 2026-09-24)',
+  children: [
+    it({
+      name: 'SHOWS the dispute note after the candidates on a disputed slice, so keeping the stand-in\'s softened addition is not the safe choice',
+      fn: async () => {
+        const shown = shownFor({
+          subject: {
+            ...SUBJECT,
+            archiveDisputeNote: DISPUTE_NOTE,
+          },
+        },);
+        expect(shown,).toContain(DISPUTE_NOTE,);
+        expect(shown.indexOf('ARCHIVE RENDERING DISPUTED',),).toBeGreaterThan(shown.indexOf('CANDIDATE "standing"',),);
+      },
+    },),
+    it({
+      name: 'SHOWS no dispute heading on an ordinary slice',
+      fn: async () => {
+        expect(shownFor({ subject: SUBJECT, },).includes('ARCHIVE RENDERING DISPUTED',),).toBe(false,);
       },
     },),
   ],

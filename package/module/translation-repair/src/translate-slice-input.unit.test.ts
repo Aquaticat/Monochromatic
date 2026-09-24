@@ -70,6 +70,16 @@ await describe({
       },
     },),
     it({
+      name: 'CARRIES THE DISPUTE NOTE into the stage input beside the stand-in, so the translators and judges read why the archive is not shown (class one hundred eight, 2026-09-24)',
+      fn: async () => {
+        const prepared = prepareDocumentPair({ sourceText: '猫睡了。', targetText: 'The cat slept after swallowing its pills.' });
+        const slice = first(prepared);
+        const surface = translateSliceInput({ slice, prepared, archiveStandIn: 'The cat slept.', archiveDisputeNote: 'ARCHIVE RENDERING DISPUTED: (1) the pills.' });
+        expect(surface.stageInput.archiveDisputeNote).toBe('ARCHIVE RENDERING DISPUTED: (1) the pills.');
+        expect(translateSliceInput({ slice, prepared }).stageInput.archiveDisputeNote).toBe(undefined);
+      },
+    },),
+    it({
       name: 'distinguishes an insertion anchor from an existing blank content span',
       fn: async () => {
         const prepared = prepareDocumentPair({ sourceText: '猫睡了。', targetText: 'The cat slept.' });

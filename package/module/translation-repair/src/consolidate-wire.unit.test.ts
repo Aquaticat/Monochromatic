@@ -25,6 +25,12 @@ import {
   type ConsolidateSubject,
 } from '../dist/final/node/index.mjs';
 
+
+/**
+ Sheet note a disputed slice carries (class one hundred eight).
+ */
+const DISPUTE_NOTE = 'ARCHIVE RENDERING DISPUTED: the repair lane\'s adjudicators accepted 1 accuracy/addition claim(s) that the archive rendering says what the ORIGINAL never states; (1) accuracy/addition major: The translation adds that the cat climbed the drainpipe. A detail those claims name is not page content.';
+
 /**
  Subject with only what every call must carry.
  */
@@ -353,6 +359,30 @@ await describe({
       fn: async () => {
         const shown = shownFor({ subject: bare, },);
         expect(shown.includes('ARCHIVE RENDERING unchanged',),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'consolidate wire dispute note (class one hundred eight, CuspariaKLSY11 slice 3, 2026-09-24)',
+  children: [
+    it({
+      name: 'SHOWS the dispute note beside the archive rendering on a disputed slice, so the producer does not carry the accepted addition as page content',
+      fn: async () => {
+        const shown = shownFor({
+          subject: {
+            ...bare,
+            archiveDisputeNote: DISPUTE_NOTE,
+          },
+        },);
+        expect(shown,).toContain(DISPUTE_NOTE,);
+      },
+    },),
+    it({
+      name: 'SHOWS no dispute heading on an ordinary slice',
+      fn: async () => {
+        expect(shownFor({ subject: bare, },).includes('ARCHIVE RENDERING DISPUTED',),).toBe(false,);
       },
     },),
   ],

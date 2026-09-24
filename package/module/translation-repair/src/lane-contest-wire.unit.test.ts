@@ -170,6 +170,35 @@ await describe({
   name: buildLaneContestMessages.name,
   children: [
     it({
+      name: 'SHOWS THE DISPUTE NOTE after both candidates on a disputed slice, and no such heading elsewhere (class one hundred eight, CuspariaKLSY11 slice 3, 2026-09-24)',
+      fn: async () => {
+        // THE FAILURE THIS CLOSES. CuspariaKLSY11 slice 3: a contest ballot
+        // preferred the repair candidate for carrying "the medication she
+        // took that night", which the original never states and the repair
+        // lane's own adjudicators had accepted as an invented addition.
+        const subject = {
+          sourceText: '猫睡了。',
+          incumbentText: 'The cat slept after swallowing its pills.',
+          repairText: 'The cat took its pills and slept.',
+          translateText: 'The cat slept.',
+        };
+        const bare = buildLaneContestMessages({ subject, },)
+          .at(1,)
+          ?.content ?? '';
+        expect(bare.includes('ARCHIVE RENDERING DISPUTED',),).toBe(false,);
+        const asked = buildLaneContestMessages({
+          subject: {
+            ...subject,
+            archiveDisputeNote: 'ARCHIVE RENDERING DISPUTED: the repair lane\'s adjudicators accepted 1 accuracy/addition claim(s); (1) accuracy/addition critical: The translation invents the pills.',
+          },
+        },)
+          .at(1,)
+          ?.content ?? '';
+        expect(asked,).toContain('The translation invents the pills.',);
+        expect(asked.indexOf('ARCHIVE RENDERING DISPUTED',),).toBeGreaterThan(asked.indexOf('CANDIDATE "translate"',),);
+      },
+    },),
+    it({
       name: 'SHOWS the declared names, so an attested one is not read as an invention',
       fn: async () => {
         // THE FAILURE THIS CLOSES. Front matter is document-level and this

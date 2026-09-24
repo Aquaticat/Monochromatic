@@ -20,6 +20,12 @@ import {
 import { buildTranslateMessages, } from '../dist/final/node/index.mjs';
 
 /**
+ Sheet note a disputed slice carries (class one hundred eight).
+ */
+const DISPUTE_NOTE = 'ARCHIVE RENDERING DISPUTED: the repair lane\'s adjudicators accepted 1 accuracy/addition claim(s) that the archive rendering says what the ORIGINAL never states; (1) accuracy/addition major: The translation adds that the cat climbed the drainpipe. A detail those claims name is not page content.';
+
+
+/**
  Cat-themed passage standing in for a source, since the sheet does not vary
  with what it is given.
  */
@@ -229,6 +235,47 @@ await describe({
       fn: async () => {
         expect(unattestedMessages.includes('ATTESTED DETAILS',),).toBe(false,);
         expect(unattestedMessages.includes('carry every one',),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'translate wire dispute note (class one hundred eight, CuspariaKLSY11 slice 3, 2026-09-24)',
+  children: [
+    it({
+      name: 'SHOWS the dispute note beside the existing translation on a disputed slice, so the translator does not keep the accepted addition as wording worth keeping',
+      fn: async () => {
+        const shown = buildTranslateMessages({
+          sourceText: SOURCE_TEXT,
+          existingText: EXISTING_TEXT,
+          archiveDisputeNote: DISPUTE_NOTE,
+        },)
+          .messages
+          .filter(function isUser(message,): boolean {
+            return message.role === 'user';
+          },)
+          .map(function toContent(message,): string {
+            return message.content;
+          },)
+          .join('\n',);
+        expect(shown,).toContain(DISPUTE_NOTE,);
+        expect(shown.indexOf('ARCHIVE RENDERING DISPUTED',),).toBeGreaterThan(shown.indexOf('EXISTING TRANSLATION',),);
+      },
+    },),
+    it({
+      name: 'SHOWS no dispute heading on an ordinary slice',
+      fn: async () => {
+        const shown = buildTranslateMessages({
+          sourceText: SOURCE_TEXT,
+          existingText: EXISTING_TEXT,
+        },)
+          .messages
+          .map(function toContent(message,): string {
+            return message.content;
+          },)
+          .join('\n',);
+        expect(shown.includes('ARCHIVE RENDERING DISPUTED',),).toBe(false,);
       },
     },),
   ],

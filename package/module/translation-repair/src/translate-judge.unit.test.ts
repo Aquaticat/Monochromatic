@@ -213,7 +213,13 @@ function driftingClient(): {
  ```
  */
 async function judgeSheetFor(
-  { lineStructured, }: { readonly lineStructured: boolean; },
+  {
+    lineStructured,
+    archiveDisputeNote,
+  }: {
+    readonly lineStructured: boolean;
+    readonly archiveDisputeNote?: string;
+  },
 ): Promise<string> {
   const rig = driftingClient();
 
@@ -245,6 +251,7 @@ async function judgeSheetFor(
     sourceText: SOURCE_TEXT,
     incumbentText: INCUMBENT_TEXT,
     incumbentKind: 'present',
+    ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
     lineStructured,
     signal: AbortSignal.timeout(30_000,),
     perCallTimeoutMs: 5_000,
@@ -796,6 +803,25 @@ await describe({
         // list, so a caller reading the failure sees the evidence gathered
         // before the winner came back blank.
         expect((caught as BlankSelectionError).findings,).toContain('translate-blank-fixture-marker',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'translate judge dispute note (class one hundred eight, CuspariaKLSY11 slice 3, 2026-09-24)',
+  children: [
+    it({
+      name: 'SHOWS the dispute note to the slate judges on a disputed slice, and nothing of it elsewhere',
+      fn: async () => {
+        const disputed = await judgeSheetFor({
+          lineStructured: false,
+          archiveDisputeNote: 'ARCHIVE RENDERING DISPUTED: (1) accuracy/addition critical: The translation invents the pills.',
+        },);
+        expect(disputed,).toContain('The translation invents the pills.',);
+        expect(disputed,).toContain('ARCHIVE RENDERING DISPUTED',);
+        const ordinary = await judgeSheetFor({ lineStructured: false, },);
+        expect(ordinary.includes('ARCHIVE RENDERING DISPUTED',),).toBe(false,);
       },
     },),
   ],

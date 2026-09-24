@@ -18,6 +18,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  archiveDisputeNote,
   archiveDisputesOf,
   describeArchiveDispute,
   type AdjudicatedIssue,
@@ -110,6 +111,7 @@ await describe({
           sliceIndex: 3,
           standIn: REPAIRED,
           acceptedAdditions: 1,
+          acceptedClaims: [`accuracy/addition major: ${INVENTED.summary}`,],
         },);
       },
     },),
@@ -151,11 +153,39 @@ await describe({
             sliceIndex: 3,
             standIn: REPAIRED,
             acceptedAdditions: 2,
+            acceptedClaims: [],
           },
         },),).toBe(
           'translate-archive-disputed (slice 3): the repair lane\'s adjudicators accepted 2 accuracy/addition '
             + 'claim(s) against the archive rendering, so the repair lane\'s text stands in for it (class one hundred seven)',
         );
+      },
+    },),
+    it({
+      name: 'WRITES THE SHEET NOTE naming every accepted claim and saying a detail they name is not page content in any wording (class one hundred eight, CuspariaKLSY11 slice 3, 2026-09-24)',
+      fn: async () => {
+        // THE FAILURE THIS CLOSES. CuspariaKLSY11: the repair lane softened
+        // the archive's invented method to "She took medication that night",
+        // the consolidation dropped it, and the gate kept the stand-in 2 to 1
+        // as "dropped page content ... which the Chinese does not contradict".
+        const note = archiveDisputeNote({
+          dispute: {
+            sliceIndex: 3,
+            standIn: REPAIRED,
+            acceptedAdditions: 2,
+            acceptedClaims: [
+              `accuracy/addition critical: ${INVENTED.summary}`,
+              'accuracy/addition major: The translation adds an unverified detail about the roof.',
+            ],
+          },
+        },);
+        expect(note.startsWith('ARCHIVE RENDERING DISPUTED',),).toBe(true,);
+        expect(note,).toContain(`(1) accuracy/addition critical: ${INVENTED.summary}`,);
+        expect(note,).toContain('(2) accuracy/addition major: The translation adds an unverified detail about the roof.',);
+        expect(note,).toContain('not page content and not the page\'s apparatus',);
+        expect(note,).toContain('in the archive\'s wording or any softer one',);
+        expect(note,).toContain('has dropped nothing',);
+        expect(note,).toContain('carries an accepted addition',);
       },
     },),
   ],
