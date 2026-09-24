@@ -77,6 +77,21 @@ await describe({
       },
     },),
     it({
+      name: 'without console.log, a partial console does not verify',
+      fn: async ({ sinon, },) => {
+        sinon.stub(console, 'log').value(undefined);
+        sinon.stub(console, 'warn').value(undefined);
+        expect(await sinks.createConsoleSink().verify(),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'without console.log, complete level methods still verify',
+      fn: async ({ sinon, },) => {
+        sinon.stub(console, 'log').value(undefined);
+        expect(await sinks.createConsoleSink().verify(),).toBe(true,);
+      },
+    },),
+    it({
       name: 'internal failures use console.log when console.warn is missing',
       fn: async ({ sinon, },) => {
         const log = sinon.stub(console, 'log');
@@ -95,6 +110,48 @@ await describe({
         await initPromise;
         expect(log.callCount,).toBe(1,);
         expect(String(log.firstCall.args[0],),).toContain('probe failed',);
+      },
+    },),
+    it({
+      name: 'internal failures use console.error when warn is missing',
+      fn: async ({ sinon, },) => {
+        const error = sinon.stub(console, 'error');
+        sinon.stub(console, 'warn').value(undefined);
+        const { initPromise, } = createLogger({
+          sinks: [{
+            verify: function failedVerify(): Promise<boolean> {
+              throw new Error('error channel probe failed',);
+            },
+            write: function unusedWrite(): Promise<void> {
+              return Promise.resolve();
+            },
+          },],
+        },);
+        await initPromise;
+        expect(error.callCount,).toBe(1,);
+        expect(String(error.firstCall.args[0],),).toContain('error channel probe failed',);
+      },
+    },),
+    it({
+      name: 'absent console methods do not throw during internal reporting',
+      fn: async ({ sinon, },) => {
+        sinon.stub(console, 'log').value(undefined);
+        sinon.stub(console, 'warn').value(undefined);
+        sinon.stub(console, 'error').value(undefined);
+        const { initPromise, logger, } = createLogger({
+          sinks: [{
+            verify: function failedVerify(): Promise<boolean> {
+              throw new Error('no diagnostic channel',);
+            },
+            write: function unusedWrite(): Promise<void> {
+              return Promise.resolve();
+            },
+          },],
+        },);
+        await initPromise;
+        expect(function logWithoutBackend(): void {
+          logger.info('no backend',);
+        },).toThrow('No logging backends available',);
       },
     },),
   ],

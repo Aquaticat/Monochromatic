@@ -3,9 +3,10 @@ import { withTimeout, } from '@monochromatic-dev/module-async-time/ts';
 /**
  Awaits a sink operation under a deadline when the host has timers.
  QuickJS-ng exposes `queueMicrotask` but no global `setTimeout`, so a timer
- cannot be scheduled there. In timerless hosts the operation is awaited
- directly: this preserves working sinks but cannot bound a custom sink that
- never settles. In hosts with timers the original deadline remains intact.
+ cannot be scheduled there. When either timer primitive is missing, the
+ operation is awaited directly: this preserves working sinks but cannot
+ bound a custom sink that never settles. When both primitives exist, the
+ original deadline remains intact.
 
  @param promise - Sink operation to await.
 
@@ -32,6 +33,8 @@ export async function withHostTimeout<const Result>({
   readonly promise: Promise<Result>;
 },): Promise<Result> {
   if ((typeof globalThis.setTimeout) !== 'function')
+    return await promise;
+  if ((typeof globalThis.clearTimeout) !== 'function')
     return await promise;
 
   return await withTimeout({
