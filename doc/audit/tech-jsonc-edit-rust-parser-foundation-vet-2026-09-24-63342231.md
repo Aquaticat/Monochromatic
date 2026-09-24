@@ -515,7 +515,7 @@ A separate scratch package under `~/temp/agent/biome-projection-probe/` consumes
  resource bounds,
  expected reads/writes,
  and semantic success/stop conditions before the first execution.
- The bounded debug suite passed tests of distinct key/value comment owner,
+ Bounded debug and optimized release suites passed tests of distinct key/value comment owner,
  text and source kind;
  multiline value-comment ownership after canonical emission and reparse;
  after-comma,
@@ -534,8 +534,22 @@ A separate scratch package under `~/temp/agent/biome-projection-probe/` consumes
  it does not establish independent correctness for those shared parts.
  Mixed-style comment kinds after emission,
  wider syntax and whitespace parity,
- optimized projection,
  package style lint and non-Linux targets remain unverified.
+
+### Carriage-return line-comment divergence
+
+A direct TypeScript bundle probe parsed a CRLF-separated object but returned a line-comment body ending in `\r`;
+ the CR-only form threw `JsoncParseError: unterminated object (at offset 0)`.
+ `package/module/jsonc-edit/src/scan.ts:340-359` searches only for `\n`.
+ Separate isolated scratch Rust tests failed:
+ the CRLF comment body was `" x\r"` rather than `" x"`,
+ and the CR-only source returned `ParseError` at byte offset 18 before its next member.
+ The scratch scanner also stops only on `\n` at `~/temp/agent/jsonc-parser-probe-2026-09-24/src/scan.rs:143-151`.
+ Microsoft's JSONC scanner at `~/temp/agent/node-jsonc-parser-2026-09-24/src/impl/scanner.ts:251-261,399-401`
+ (checkout `dba4356`) terminates a line comment at either CR or LF.
+ The Biome adapter's fixture has not yet run;
+ treat the two measured failures as separate symptoms until its boundary and both scratch corrections are verified.
+ TypeScript production behavior remains unchanged pending foundation adoption.
 
 ## Existing-parser contract exits
 

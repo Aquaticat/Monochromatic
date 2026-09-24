@@ -308,8 +308,10 @@ source-level transitive clearance remains open where required.
    Microsoft's `node-jsonc-parser` scanner treats both CR and LF as line breaks
    (`~/temp/agent/node-jsonc-parser-2026-09-24/src/impl/scanner.ts:251-261,399-401`,
    checkout `dba4356`).
-   An isolated scratch Rust test also failed the CRLF comment-body assertion with `left: " x\r"` versus `right: " x"`.
-   Separate CR-only and Biome adapter fixtures remain to be measured before changing maintained packages.
+   Isolated scratch Rust tests also failed independently:
+   CRLF kept `" x\r"` instead of `" x"`,
+   and CR-only returned `ParseError` at byte offset 18 rather than the next member.
+   The Biome adapter fixture remains to be measured before changing maintained packages.
 - A separate published `biome_json_parser` 0.5.7 syntax probe passed bounded debug and optimized release runs for
    escaped lone surrogate text,
    raw number tokens,
