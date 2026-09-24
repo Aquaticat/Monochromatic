@@ -279,21 +279,28 @@ half is **426dp × 883dp**:
 is the player's arrangement,
  not a rule that Search must divide its query and
 results between two columns.
-3. **Informational material stays off the connected fold region** (E2).
-    The
-center 24dp region is `[414,438)`dp across the 852dp inner width,
- about
-`[1009,1068)` physical px at 390dpi.
-    Do not put readable text,
- result
-data,
- labels or other meaning-bearing marks there.
-    A surface,
- divider,
-background or hit region may cross it without placing information there.
-D34 white and D41 true black describe the **accepted player spacer**,
- not
-mandatory Search-page connector colors.
+3. **Informational material stays visibly clear of the physical crease**
+   (E2).
+    Its center is about 426dp,
+ physical x 1038 on the 2076px inner
+   panel.
+    The surrounding 24dp `[414,438)`dp or `[1009,1068)`px is the
+   **accepted player's pane spacer**,
+ not a mandatory text-exclusion band
+   for every page.
+    Readable text,
+ results and other meaning-bearing marks
+   must not sit on the crease itself;
+ surfaces,
+ dividers,
+ backgrounds and
+   hit regions may span it.
+    Evaluate visual clearance using native
+   captures,
+ not the obsolete all-pixel-strip guard.
+    D34 white and D41
+   true black describe the player spacer,
+ not mandatory Search colors.
     Android-owned system bars are
 captured as rendered,
  not repositioned by the app.
