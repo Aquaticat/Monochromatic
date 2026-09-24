@@ -231,3 +231,85 @@ impl std::fmt::Display for JsoncTypeError {
 /// // TS needs no marker: extending Error is enough.
 /// ```
 impl std::error::Error for JsoncTypeError {}
+
+/// What:     Any failure an edit, read or comment operation can return.
+/// Why:      A caller addressing a document can hit a missing address or a wrong-shaped target, and
+///           both are ordinary outcomes rather than panics, so one enum keeps signatures short.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type JsoncEditError = JsoncPathNotFoundError | JsoncTypeError;
+/// ```
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum JsoncEditError {
+    /// The addressed key or element does not exist in the document.
+    ///
+    /// What:     holds the not-found failure with the address that named nothing.
+    /// Why:      callers can report or recover from an absent address without string matching.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: 'path-not-found', error: JsoncPathNotFoundError }
+    /// ```
+    PathNotFound {
+        /// What:    The underlying not-found failure.
+        /// Why:     `error` stores the address, so a caller can echo exactly what was requested.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// error: JsoncPathNotFoundError;
+        /// ```
+        error: JsoncPathNotFoundError,
+    },
+    /// The addressed value or segment has the wrong shape for the requested operation.
+    ///
+    /// What:     holds the shape failure.
+    /// Why:      indexing an object with a number is a caller mistake, not an absent address.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: 'type', error: JsoncTypeError }
+    /// ```
+    Type {
+        /// What:    The underlying shape failure.
+        /// Why:     `error` stores the explanation naming the mismatched input.
+        ///
+        /// In TS you'd write (pseudocode):
+        /// ```ts
+        /// error: JsoncTypeError;
+        /// ```
+        error: JsoncTypeError,
+    },
+}
+
+/// What:     Print whichever underlying failure this edit error carries.
+/// Why:      A caller logging the error should see the same text the underlying type produces.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// toString(): string { return this.error.message; }
+/// ```
+impl std::fmt::Display for JsoncEditError {
+    /// What:     Delegate to the wrapped failure's own rendering.
+    /// Why:      The wrapper adds no information, so duplicating the text would risk divergence.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// toString(): string { return String(this.error); }
+    /// ```
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        return match self {
+            JsoncEditError::PathNotFound { error } => write!(formatter, "{error}"),
+            JsoncEditError::Type { error } => write!(formatter, "{error}"),
+        };
+    }
+}
+
+/// What:     Register the edit failure as a standard-library error type.
+/// Why:      `?` and error chains then carry it without a custom wrapper.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // TS needs no marker: extending Error is enough.
+/// ```
+impl std::error::Error for JsoncEditError {}

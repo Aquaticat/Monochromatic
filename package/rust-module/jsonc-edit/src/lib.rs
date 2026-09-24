@@ -120,7 +120,7 @@ mod emit;
 /// ```ts
 /// export { JsoncParseError, JsoncPathNotFoundError, JsoncTypeError } from './errors';
 /// ```
-pub use error::{JsoncNumberError, JsoncParseError, JsoncPathNotFoundError, JsoncTypeError};
+pub use error::{JsoncEditError, JsoncNumberError, JsoncParseError, JsoncPathNotFoundError, JsoncTypeError};
 /// What:     Re-export the exact-number identity.
 /// Why:      It appears inside the public value model, so it is part of the API surface.
 ///
@@ -213,3 +213,75 @@ mod number_tests;
 /// ```
 #[cfg(test)]
 mod text_units_tests;
+
+/// What:     The immutable edit state plus its parse and serialize entry points.
+/// Why:      A caller holds a state, derives new states from edits, and writes any of them out.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { parseJsoncEdit, jsoncStringify, type JsoncEditState } from './editState';
+/// ```
+mod edit_state;
+
+/// What:     Address resolution for reads, existence checks and key listing.
+/// Why:      Every surface walks addresses with the same last-duplicate and bounds rules.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { jsoncGetValue, jsoncHas, jsoncKeys } from './editNavigate';
+/// ```
+mod navigate;
+
+/// What:     Immutable value replacement, insertion and deletion.
+/// Why:      Structural edits return a new document and leave the input state usable.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { jsoncSet, jsoncDelete } from './editSet';
+/// ```
+mod edit_apply;
+
+/// What:     The comment-as-data query and edit surface.
+/// Why:      A value's comment and its key's comment are separate data, and both are editable.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { jsoncGetComment, jsoncSetComment, jsoncGetKeyComment, jsoncSetKeyComment } from './editComment';
+/// ```
+mod edit_comment;
+
+/// What:     Re-export the edit state and its lifecycle functions.
+/// Why:      These are the entry points a consumer needs to hold and serialize a document.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { parseJsoncEdit, jsoncStringify, type JsoncEditState } from './index';
+/// ```
+pub use edit_state::{jsonc_state_from_value, jsonc_stringify, parse_jsonc_edit, JsoncEditState};
+
+/// What:     Re-export the read surface.
+/// Why:      Reads answer what a document holds without deriving a new one.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { jsoncGetValue, jsoncHas, jsoncKeys } from './index';
+/// ```
+pub use navigate::{jsonc_has, jsonc_keys, jsonc_lookup};
+
+/// What:     Re-export the structural edit surface.
+/// Why:      Setting and deleting are the two operations that change document shape.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { jsoncSet, jsoncDelete } from './index';
+/// ```
+pub use edit_apply::{jsonc_delete, jsonc_set};
+
+/// What:     Re-export the comment surface.
+/// Why:      Comments are queryable and editable data, not output decoration.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export { jsoncGetComment, jsoncSetComment, jsoncGetKeyComment, jsoncSetKeyComment } from './index';
+/// ```
+pub use edit_comment::{jsonc_comment, jsonc_key_comment, jsonc_set_comment, jsonc_set_key_comment};

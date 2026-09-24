@@ -9,6 +9,15 @@
 //! // module value: type JsoncValue = { kind: JsoncKind; comment?: JsoncComment };
 //! ```
 
+/// What:     Import the failures a constructor can report.
+/// Why:      Building a value from a raw token can hit malformed text or a malformed number, and both are
+///           ordinary results rather than panics.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import type { JsoncNumberError, JsoncParseError } from './error';
+/// ```
+use crate::error::{JsoncNumberError, JsoncParseError};
 /// What:     Import the exact mathematical identity used by number values.
 /// Why:      A number value must compare by value while its token text stays available for output.
 ///
@@ -17,6 +26,15 @@
 /// import type { JsoncNumberIdentity } from './number';
 /// ```
 use crate::number::JsoncNumberIdentity;
+/// What:     Import the quoted-text conversions the string constructors need.
+/// Why:      A constructed string value must hold decoded code units and a legal quoted spelling that
+///           agree with each other.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { decodeQuoted, encodeQuoted } from './textUnits';
+/// ```
+use crate::text_units::{decode_quoted, encode_quoted};
 
 /// What:     How one attached comment was written in the source.
 /// Why:      Canonical emission keeps a single-line comment trailing its value and moves a
@@ -240,5 +258,177 @@ impl JsoncValue {
             return Some(elements.as_slice());
         }
         return None;
+    }
+}
+
+/// What:     Constructors for the document model.
+/// Why:      An edit replaces a value with a new one, and building that value by hand would force every
+///           caller to repeat escape decoding, number validation and comment-slot initialization.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class JsoncValue { static null(): JsoncValue; static text(raw: string): JsoncValue }
+/// ```
+impl JsoncValue {
+    /// What:     Build a `null` value with no comment.
+    /// Why:      Callers set absent values explicitly rather than reaching into the payload enum.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static null(): JsoncValue { return { kind: { kind: 'null' } }; }
+    /// ```
+    pub fn null() -> JsoncValue {
+        return JsoncValue { kind: JsoncKind::Null, comment: None };
+    }
+
+    /// What:     Build a boolean value with no comment.
+    /// Why:      A replacement value must carry the same shape the parser would have produced.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static boolean(value: boolean): JsoncValue;
+    /// ```
+    pub fn boolean(value: bool) -> JsoncValue {
+        return JsoncValue { kind: JsoncKind::Boolean { value }, comment: None };
+    }
+
+    /// What:     Build a string value from one already-quoted JSON token.
+    /// Why:      Keeping the caller's spelling preserves escapes exactly, including a lone surrogate.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static textFromToken(raw: string): JsoncValue;
+    /// ```
+    ///
+    /// # Errors
+    /// Returns the scanner's failure when the token is not one complete quoted JSON string.
+    pub fn text_from_token(raw: &str) -> Result<JsoncValue, JsoncParseError> {
+        let units = decode_quoted(raw)?;
+        return Ok(JsoncValue {
+            kind: JsoncKind::Text { units, raw: String::from(raw) },
+            comment: None,
+        });
+    }
+
+    /// What:     Build a string value from decoded code units, deriving its quoted spelling.
+    /// Why:      A caller holding text (possibly with a lone surrogate) should not have to write JSON
+    ///           escapes by hand.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static textFromUnits(units: number[]): JsoncValue;
+    /// ```
+    pub fn text_from_units(units: Vec<u16>) -> JsoncValue {
+        let raw = encode_quoted(&units);
+        return JsoncValue { kind: JsoncKind::Text { units, raw }, comment: None };
+    }
+
+    /// What:     Build a number value from one JSON number token.
+    /// Why:      The token is validated and normalized once, so an edited document cannot hold a number
+    ///           that compares inconsistently or emits as invalid JSON.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static numberFromToken(token: string): JsoncValue;
+    /// ```
+    ///
+    /// # Errors
+    /// Returns which grammar part the token violates.
+    pub fn number_from_token(token: &str) -> Result<JsoncValue, JsoncNumberError> {
+        let identity = JsoncNumberIdentity::from_token(token)?;
+        return Ok(JsoncValue {
+            kind: JsoncKind::Number { raw: String::from(token), identity },
+            comment: None,
+        });
+    }
+
+    /// What:     Build an array value from its elements.
+    /// Why:      Element order and per-element comments are document data, so the caller supplies them
+    ///           already assembled.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static array(elements: JsoncValue[]): JsoncValue;
+    /// ```
+    pub fn array(elements: Vec<JsoncValue>) -> JsoncValue {
+        return JsoncValue { kind: JsoncKind::Array { elements }, comment: None };
+    }
+
+    /// What:     Build a record value from its members.
+    /// Why:      Members keep their own key and value comments, which a plain map could not express.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static record(entries: JsoncEntry[]): JsoncValue;
+    /// ```
+    pub fn record(entries: Vec<JsoncEntry>) -> JsoncValue {
+        return JsoncValue { kind: JsoncKind::Record { entries }, comment: None };
+    }
+
+    /// What:     Read a string value's decoded code units.
+    /// Why:      A caller that wants Rust text needs the units first, because they may hold a lone
+    ///           surrogate that `String` cannot represent.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// textUnits(): number[] | undefined;
+    /// ```
+    pub fn text_units(&self) -> Option<&[u16]> {
+        if let JsoncKind::Text { units, .. } = &self.kind {
+            return Some(units.as_slice());
+        }
+        return None;
+    }
+
+    /// What:     Read a number value's original token text.
+    /// Why:      Unedited literals are emitted exactly as written, so callers need that spelling.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// numberToken(): string | undefined;
+    /// ```
+    pub fn number_token(&self) -> Option<&str> {
+        if let JsoncKind::Number { raw, .. } = &self.kind {
+            return Some(raw.as_str());
+        }
+        return None;
+    }
+}
+
+/// What:     Constructors for one object member key.
+/// Why:      A key carries decoded units, its quoted spelling and its own comment, and an edit that
+///           inserts a member must build all three consistently.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class JsoncKey { static fromText(text: string): JsoncKey }
+/// ```
+impl JsoncKey {
+    /// What:     Build a key from one already-quoted JSON token.
+    /// Why:      An existing document's spelling survives, including escapes and lone surrogates.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static fromToken(raw: string): JsoncKey;
+    /// ```
+    ///
+    /// # Errors
+    /// Returns the scanner's failure when the token is not one complete quoted JSON string.
+    pub fn from_token(raw: &str) -> Result<JsoncKey, JsoncParseError> {
+        let units = decode_quoted(raw)?;
+        return Ok(JsoncKey { units, raw: String::from(raw), comment: None });
+    }
+
+    /// What:     Build a key from ordinary Rust text, deriving its quoted spelling.
+    /// Why:      Inserting a member by name is the common case, and escaping should not be manual.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// static fromText(text: string): JsoncKey;
+    /// ```
+    pub fn from_text(text: &str) -> JsoncKey {
+        let units: Vec<u16> = text.encode_utf16().collect();
+        let raw = encode_quoted(&units);
+        return JsoncKey { units, raw, comment: None };
     }
 }
