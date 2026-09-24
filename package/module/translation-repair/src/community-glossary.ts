@@ -96,8 +96,10 @@ export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
     // wrote "little HRT girl" and "little yaoniang". The owner answered on
     // 2026-09-24: the word is disrespectful, used neutrally by only some of
     // the community, and that neutrality does not carry into English, so
-    // the page says "trans woman" or "trans girl". 小药娘 carries 药娘, so
-    // one entry covers both.
+    // the page says "trans woman" or "trans girl". The owner added the same
+    // day that the term is not kept even where the existing translation keeps
+    // it, because the term itself can read as derogatory. 小药娘 carries
+    // 药娘, so one entry covers both.
     term: '药娘',
     renderings: [
       'trans girl',
@@ -110,8 +112,9 @@ export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
       'yao niang',
     ],
     why: 'a disrespectful word for trans women on hormone therapy that some of the community use neutrally; '
-      + 'the neutrality does not carry into English, so the page says "trans girl" or "trans woman", never the '
-      + 'Han and never a pinyin form, whatever a translator\'s note on the page asks',
+      + 'the term itself can read as derogatory and the neutrality does not carry into English, so the page '
+      + 'says "trans girl" or "trans woman", never the Han and never a pinyin form, even where the existing '
+      + 'translation or a translator\'s note on the page keeps it',
   },
 ];
 
