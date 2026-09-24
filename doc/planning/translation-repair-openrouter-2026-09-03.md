@@ -8082,6 +8082,46 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## CuspariaKLSY9 read, 2026-09-23, 23:55 UTC: SETTLED in 4 min, no hold so class one hundred three not exercised, but the polish gate refused the house tense on slice 0 (class one hundred four) and the gloss line lost a third time on slice 1 (class one hundred five); both fixed in d2e39e095, CuspariaKLSY10 launched
+
+`CuspariaKLSY9` (frozen `334c02f23`, pid 2992337) SETTLED at 23:41 UTC,
+4 min after its 23:37 launch,
+one attempt,
+357 seats,
+11 retry rounds,
+315 calls,
+0.16 USD by the meters (Bedrock 49.06 to 48.96, OpenRouter 96.34 to 96.28),
+on Bedrock and OpenRouter alone (Synthetic's five-hour window spent since 23:15 UTC, Hyper dry).
+No hold ran and no "chunk re-seated under a hold" line printed, so class one hundred three was not exercised live (its guards stand);
+the checker rounds ran 2 of 3 on gemma-4-26b (the substitute) and gpt-oss, as a dry reading at the lanes boundary seats them.
+Classes seventy-five, seventy-six, eighty-five and ninety-six holding at the page level: 1 heading, front matter equal, no TA, no error finish, no double blank line;
+terminals slate-declined (0), slate-endorsed (1, 2), gate-kept (3); 7 abstention lines with reasons; Jev 14 of 14.
+
+Class one hundred four (slice 0, the life).
+The repair lane and the contest left the archive's present tense standing; the consolidation slate split 1.5/1/1 among three past-tense proposals against the minimum of 2 with an eligible standing, which keeps its single round by the owner's addenda (no run-off);
+the comparative polish then chose GLM-5.3-Flash's past-tense rewrite 3 of 5 and the polish gate refused it 4 of 4 for "base":
+"shifts all present-tense statements about a living person into the past tense, an unsupported change of meaning".
+The gate's sheet (`consolidation-polish-gate-wire.ts`) carried the polish policy alone and no house rule, so a polish applying the house tense rule read as a change of meaning.
+Fixed in d2e39e095: `POLISH_GATE_HOUSE_RULES` (`polish-gate-house-rules.ts`) states that a tense the house rules set is not a change of meaning and appends `JUDGE_POLICY_BLOCK`; the gate's system sheet carries it in both modes.
+Guard red first at 487cb2681 (`consolidation-polish-gate.unit.test.ts`).
+
+Class one hundred five (slice 1, the nickname).
+The archive's gloss line “Ling Shui Yu Yu Zi” means fish in clear water dropped a third time (after `CuspariaKLSY5` and `6`) with the class eighty-five clause on every sheet:
+the contest chose the gloss-less translate text 4 to 1, one ballot calling the gloss unsupported against `CONTEST_POLICY`, and the slate endorsed that standing 4 of 5.
+Fixed in d2e39e095 mechanically at page assembly: `restoreNameGlossLines` (`corpus-run/name-gloss-restore.ts`, after the titles pass in `page-assembly-guard.ts`) reads every archive line of the form “name” means … whose name the archive text carries twice or more,
+and where a replaced slice carries the name with no gloss (no archive line, no "means" on the name's line, no parenthetical after it) inserts the archive's line after the line carrying the name's first appearance, finding `name-gloss-restored`.
+Guard red first at 487cb2681 (`page-assembly-guard.unit.test.ts`, `name-gloss-restore.unit.test.ts`), lint 0 and 0, types clean, full suite green (`suite-class104-105.log`, 1105 PASS);
+replayed over the real slice 1: `name-gloss-restored (slice 1: "“Ling Shui Yu Yu Zi” means fish in clear water.")`, the line restored after "Her handle “Ling Shui Yu Yu Zi” was coined while she was feeding fish.".
+Observation beside them: Synthetic's grace while it served (4.0 s mean on `zheermao7` against 1.5 s), the standing latency note.
+
+`CuspariaKLSY10` (frozen `d2e39e095`, pid 3035347, overlap 8)
+launched 23:59 UTC on Bedrock and OpenRouter
+(meters 48.96 USD Bedrock, 96.27 OpenRouter at launch),
+waiter b553g3h0x.
+Read for class one hundred four (the life in the past on slice 0, polish gate ballots citing the house rule) and class one hundred five (a `name-gloss-restored` line and the gloss on the page),
+classes seventy-five, seventy-six, eighty-five and ninety-six holding,
+beside every check of `CuspariaKLSY8` (1 heading, front matter equal, no TA, no error finish, no double blank line, the life in the past, the nickname gloss).
+
 ## zheermao7 read, 2026-09-23, 23:40 UTC: SETTLED in 17 min, classes seventy-seven, ninety-six, one hundred one and one hundred two holding, every check as zheermao6; but Synthetic ran dry two minutes into the repair lane and the checker bench ran ten of twelve rounds on one voice (class one hundred three); fixed in 334c02f23, CuspariaKLSY9 launched
 
 `zheermao7` (frozen `6361d74d0`, pid 2972518, entry `zheermao101`) SETTLED at 23:20 UTC,

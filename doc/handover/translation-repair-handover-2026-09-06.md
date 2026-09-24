@@ -4647,17 +4647,27 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CUSPARIAKLSY9 RUNS (frozen `334c02f23`,
-    pid 2992337,
-    launched 23:37 UTC 2026-09-23,
-    waiter boykpqz98,
-    meters 49.06 USD Bedrock and 96.34 OpenRouter at launch, Synthetic's five-hour window spent (2,750 of 2,750), Hyper dry;
+1.  CUSPARIAKLSY10 RUNS (frozen `d2e39e095`,
+    pid 3035347,
+    launched 23:59 UTC 2026-09-23,
+    waiter b553g3h0x,
+    meters 48.96 USD Bedrock and 96.27 OpenRouter at launch, Synthetic's five-hour window spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for class one hundred three's "JUDGE SEATS phase=lanes chunk re-seated under a hold" line if any hold runs (none expected with Synthetic dry from the start),
+    read for class one hundred four live (the life in the past on slice 0, polish gate ballots citing the house rule rather than "unsupported change of meaning")
+    and class one hundred five live (a `name-gloss-restored` line in the log and the gloss “Ling Shui Yu Yu Zi” means fish in clear water on the page after the nickname line),
     classes seventy-five, seventy-six, eighty-five and ninety-six holding,
-    beside every check of `CuspariaKLSY8` (1 heading, front matter equal, no TA, no error finish, no double blank line, the life in the past, the nickname gloss "Ling Shui Yu Yu Zi (Fish in Clear Water)");
-    record under a new heading above "## zheermao7 read, 2026-09-23" in the pass log;
-    then yingying or zheermao on the same dist, reading whichever pass meets a mid-lane dry-out for the re-seat line and checker rounds at 2 of 3.
+    beside every check of `CuspariaKLSY8` (1 heading, front matter equal, no TA, no error finish, no double blank line, the life in the past, the nickname gloss);
+    record under a new heading above "## CuspariaKLSY9 read, 2026-09-23" in the pass log;
+    then yingying or zheermao on the same dist, reading whichever pass meets a mid-lane dry-out for class one hundred three's re-seat line.
+    CUSPARIAKLSY9 READ (frozen `334c02f23`): SETTLED at 23:41 UTC 2026-09-23 in 4 min, one attempt, 357 seats, 11 retry rounds, 0.16 USD by the meters;
+    no hold ran, so class one hundred three not exercised (checkers 2 of 3 on the substitute and gpt-oss by the dry reading at the lanes boundary);
+    1 heading, front matter equal, no TA, no error finish, no double blank line, 7 abstention lines, Jev 14 of 14;
+    but slice 0 shipped the archive's present tense because the polish gate refused GLM-5.3-Flash's past-tense polish 4 of 4 as "an unsupported change of meaning" with no house rule on its sheet (class one hundred four; the slate before it split 1.5/1/1 with an eligible standing keeping its single round by the owner's addenda),
+    and slice 1 lost the archive's gloss line a third time on the judges' call, the contest 4 to 1 for the gloss-less translate text and the slate endorsing it 4 of 5 (class one hundred five).
+    CLASSES ONE HUNDRED FOUR AND FIVE FIXED in d2e39e095: `POLISH_GATE_HOUSE_RULES` (`polish-gate-house-rules.ts`, "a tense the house rules set is not a change of meaning" plus `JUDGE_POLICY_BLOCK`) on the polish gate's sheet in both modes;
+    `restoreNameGlossLines` (`corpus-run/name-gloss-restore.ts`, after the titles pass in `page-assembly-guard.ts`) restores the archive's “name” means … line after the name's first appearance in a replaced slice that carries the name unglossed, finding `name-gloss-restored`;
+    guards red first 487cb2681, lint 0/0, types clean, full suite green (`suite-class104-105.log`, 1105 PASS), replayed over the real `CuspariaKLSY9` slice 1.
+    ZHEERMAO7 READ (frozen `6361d74d0`): SETTLED at 23:20 UTC 2026-09-23 in 17 min, one attempt, 972 seats, 32 retry rounds, 0.52 USD by the meters;
     ZHEERMAO7 READ (frozen `6361d74d0`): SETTLED at 23:20 UTC 2026-09-23 in 17 min, one attempt, 972 seats, 32 retry rounds, 0.52 USD by the meters;
     classes seventy-seven, ninety-six, one hundred one and one hundred two holding, every check as `zheermao6`, five slate-declined, one gate-kept, 32 abstention lines, Jev 28 of 28;
     but Synthetic's window ran out at 23:15:27 UTC two minutes into the repair lane and the checker bench read once at the lanes boundary (two Synthetic-only seats) ran ten of twelve checker rounds and probes on gpt-oss alone, short of quorum, while the substitute a dry reading seats sat idle (class one hundred three);
