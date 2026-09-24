@@ -227,8 +227,19 @@ The other rechecked files (`basic-escape.ts`,
  `toml-get-raw.ts`,
  `types.ts`) had no survivors.
 Adding a parsed adjacent-hash case also exposed the real trailing-comment defect.
-A subsequent `comments.ts` recheck after preceding-line and following-line guards is running as `proc_ba8a`;
- its report will be `/var/home/user/temp/agent/toml-mutation-comment-boundaries.json`.
+The final `comments.ts` recheck reported 25 killed,
+ four confirmed survivors,
+ 15 compile errors,
+ and no infrastructure errors.
+Its report is `/var/home/user/temp/agent/toml-mutation-comment-boundaries.json`.
+The remaining comparisons are equivalent only for parser-produced,
+ non-overlapping comment ranges:
+ an attached comment ends strictly before its key,
+ a prior comment ends strictly before the retreating cursor,
+ and a trailing comment cannot start at the newline byte delimiting its line.
+`TomlEditState.comments` is structural,
+ so caller-composed overlapping or zero-gap ranges were not established as equivalent.
+Package type and oxlint checks and the fuzz coverage gate passed after the comment fix.
 
 A direct consumer probe of `key = 1#tail` found a real defect:
  `tomlGetCommentAfter` returned no comment because `comments.ts` required the hash offset to be strictly greater than the value end.
