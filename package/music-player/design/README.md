@@ -80,16 +80,18 @@ cover estimate was not measured on the AVD.
  The earlier 360,
  480 and 1100px desktop Slint scenes are
 not design evidence for these screens.
- `questions/current.html` now embeds
-native Compose captures of both Fold panels in light and dark,
- including native
-status/navigation bars,
- a one-header Search page,
- results and empty states,
- and
-200% text stress captures.
- The unfolded page keeps the 24dp center connector
-empty and uses accepted true black or white fill.
+ The native Compose Search study captured both Fold panels,
+ but its unfolded
+page placed the Back/query/Clear header above an empty left pane and isolated
+results in the right pane.
+ The user rejected that composition.
+`questions/current.html` is now a withdrawn notice,
+ not an active feedback form;
+its embedded captures are historical evidence only.
+ The connector stayed empty,
+but geometric compliance did not make the page usable.
+ A replacement has not
+been selected.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.
 The rejected command review remains at `questions/archive/command-igr-rejected.html`.
