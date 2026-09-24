@@ -1,0 +1,134 @@
+# Self-review of the Promise lesson artifact
+
+Status: the primary agent's own review of the generated local lesson,
+`doc/planning/promises-teaching.local.html` (694,025 bytes, SHA-256 `fb4631d8…`).
+It records what was exercised, what measured well, what measured badly, and what remains
+uncertain. It is not learner evidence, not a skill decision, and not approval.
+All browser work ran in disposable owned sessions (`promises-review-own-teaching-review-*`);
+the human's presented tab was never reloaded. Scratch drivers:
+`/home/user/temp/agent/promises-revision/review-promise-lesson-own{,-2,-3,-4,-5}.mjs`.
+
+## Good
+
+- The opening shop demonstrates the property the lesson later needs: sending stays enabled
+  while replies wait. Measured in the frame after two sends: history holds both questions,
+  the composer keeps an unsent draft, `Simulated replies waiting: 2`, and `#send` is not
+  disabled. The reply control is labelled lesson equipment and the prose states real
+  conversations may reorder, combine, or omit replies.
+- The listener lab lets the learner remove the connection and observe the consequence.
+  Measured: before attach, `No greeting yet.` and `No greeting listener attached`;
+  after attach, `Hello Ada`; after removal with a new name, the result stays `Hello Ada`
+  and the connection line reports no listener. The removal does not fake an undo.
+- The callback batch lab produces the demonstrated need for Promises rather than asserting it.
+  Measured monitor tail after settling: `One operation completed with index: 1`, then `0`,
+  with the starter's `finishBatch` claim contradicted by the actual completed count.
+  The repair is presented as a valid callback solution, not as a strawman.
+- Broken starters fail visibly and differently from their repairs. Measured in the ownership
+  exercise: the starter ends at `Pending sends: 0` with `Held replies: 1` and Stop disabled,
+  while the repair holds `Pending sends: 1` with Stop enabled. The rejection starter leaves
+  `Waiting…` plus `Unhandled rejection: Permission denied…` and its task and hint name the
+  repair; the worked comparison shows `Could not reply: Permission denied…` with no error.
+- The settlement toy keeps its boundaries honest. Measured: the ticket stays `01` through
+  settlement and an ignored call, the receipt appears when the observer reports,
+  the ignored call adds no second receipt, and the artwork disclaimer states that no pudding
+  is processed and that one-current-Promise plus one-shot controls are toy policies.
+- Value views distinguish representation from state. Measured in the settled run: the bundle
+  renders `{"promise":{}}` and the inner Promise renders `Promise { <state unknown> }`,
+  with the lesson stating that showify's marker is not the pending state.
+- Print keeps teaching substance and restores learner state. Measured: the host controller
+  expands all 15 `details` on `beforeprint` and restores the prior 0 open on `afterprint`;
+  a direct headless PDF (110 pages) carries the reference fixture, policy, and interface
+  source headings, capstone checkpoints, interview questions, settlement receipts, and the
+  MDN source list. Interactive control labels are absent from print by design, with static
+  counterparts present.
+- Independent practice is real, not nominal: 11 workshop exercises, eight capstone
+  checkpoints, and a transfer test that changes attempt counts and pause timings and asks
+  which Promise represents one attempt versus the whole send.
+
+## Bad
+
+- Six of nine example frames show a panel headed `Program result` reading `No greeting yet.`
+  after their program has already reported completion. Measured with a 2,000 ms settle:
+  `callback-batch` (6 monitor entries), `promise-batch` (monitor ends
+  `Every reply in start order: ["Reply 0", …]`), and `adoption`
+  (monitor ends `Outer resolved with inner`) all keep `No greeting yet.`;
+  `function`, `listener`, and `data` also keep it before their first interaction.
+  Cause: `exampleHtml` in `/home/user/temp/agent/promises-revision/labs.mjs` emits
+  `<h2>Program result</h2><p id="result">No greeting yet.</p>` for every non-shop lab,
+  while those examples write only to the monitor.
+  Why it matters: a novice reading `Program result: No greeting yet.` beside a monitor full
+  of completions gets contradictory evidence about whether their program worked.
+  Repair direction: label the panel per lab (`This example reports to the monitor`),
+  or omit it when the example never assigns `#result`.
+- Orientation arrives after the first large artifact. Measured at a 944 by 741 CSS px
+  viewport: the shop lab spans y 402 to 1669 (1,267 px tall); `Starting profile` begins at
+  1693; `Destination` at 1784; `What to do here` at 1940; the learning-path `nav` at 2279;
+  the first chapter at 2527. A learner therefore scrolls about three viewports of shop
+  before learning who the lesson is for, where it goes, or what the path is.
+  Repair direction: move the profile, destination, and path above or beside the shop,
+  or shrink the first artifact's initial height.
+- Review-era scaffolding ships inside the learner artifact and its printout. Measured on
+  screen and in the extracted PDF text: `This revision is for critique. Tell me in Pi where
+  the explanation still assumes knowledge or teaches the wrong model.` and
+  `There is no submission endpoint. Reply in Pi with your critique.` The masthead kicker
+  reads `A browser-programming workshop · revised teaching prototype`.
+  A learner who opens this file outside that chat has no `Pi` to reply in, and the sentence
+  invites them to address a person who is not present. Repair direction: keep critique
+  instructions generic (the notes field and download already work offline) and drop
+  prototype framing from the learner's reading surface.
+
+## Ugly
+
+- Reading load is large and unannounced. Measured: 23,598 words in `main`, 14 chapters,
+  39 `pre code` blocks, 15 `details`, and 11 `iframe` previews. A direct headless PDF with
+  disclosures closed measured 110 and 111 pages across two passes (the loaded workshop draft
+  differs); the earlier verified print run, which expands disclosures through the lesson's own
+  `beforeprint` path, measured 126 Letter pages. The masthead states no time expectation and offers no
+  short path, so a learner cannot tell whether this is one sitting or several.
+  The 12-link nav is the only structural aid.
+- The capstone worked comparison is 8,668 characters that the learner is asked to paste into
+  one editor and run. That is a legitimate way to inspect a complete policy plus interface,
+  but its size makes the "try your own build first" instruction easy to skip and hard to
+  compare against, since the editor holds both attempts.
+- The settlement scene needs a full disclaimer paragraph to keep its artwork from implying a
+  physical mapping. That paragraph is accurate, but a design whose correctness depends on a
+  long caveat is fragile: the same robot, belt, and ticket vocabulary invites the reading the
+  caveat denies.
+
+## Things tried
+
+- Opened the generated lesson in four disposable sessions at 944 by 741 (dark), read the
+  chapter sequence, and enumerated labs, workshops, and disclosures from the DOM.
+- Drove the shop frame: two sends before any reply, an unsent draft, one revealed reply;
+  recorded history, draft, waiting count, and Send availability.
+- Drove the listener frame through attach, greet, remove, rename, greet; recorded result and
+  connection text at each step.
+- Drove the settlement ticket: Create 1, Reject 1, waited for the `rejected` state, then a
+  later Resolve 1; recorded face text, belt receipts, bundle JSON, and inner-Promise view.
+- Loaded the `failure`, `ownership`, `threads`, and `capstone` workshop exercises, ran the
+  starters and the worked comparisons in the opaque frame, and compared visible outcomes,
+  task text, and hints.
+- Settled every non-shop lab for 2,000 ms (longer than the lesson's largest 1,200 ms timer)
+  and recorded `#result`, its heading, monitor entry count, and the last monitor lines.
+- Dispatched `beforeprint` and `afterprint` to measure disclosure expansion and restoration;
+  produced a direct headless PDF and searched its normalized text for source, checkpoint,
+  hint, interview, receipt, and scaffolding strings.
+- Checked page errors after each pass: empty in every session used here.
+
+## Unease (judgment, not measurement)
+
+- The lesson may be teaching two audiences at once: a novice who needs the greeting,
+  listener, and data chapters, and an interview candidate who needs rate limits, jitter,
+  idempotency, and cancellation ownership. Both are in the confirmed destination, but the
+  single linear path makes the early chapters feel slow for one reader and the later
+  chapters feel steep for the other. I have no learner evidence for where the seam hurts.
+- The shop's manually revealed replies are labelled teaching equipment, yet the first
+  interactive thing a learner touches is a chat whose timing they control. I am unsure
+  whether that primes "replies arrive when I click" before the lesson says otherwise.
+- The `Waiting…` ambiguity I measured in disposable learner code (unresolved Promise versus
+  resolved-but-unrendered) is a real novice trap. The lesson explains awaiting and rendering
+  separately, but I did not find a place where the learner practices telling those two apart
+  in their own code. That may be a gap or may already be covered by an exercise I did not run.
+- Whether 23,598 words with 11 previews is the right size for this destination is a value
+  judgment I cannot settle from the artifact. It depends on how the user intends the lesson
+  to be consumed: one long read, a reference, or a paced course.
