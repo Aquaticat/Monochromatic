@@ -600,9 +600,33 @@ The scratch emitter was changed to write a multi-line value comment **after the 
 
 ### Accepted-depth lifecycle after-state
 
-The scratch parser's explicit frame stack passed the full `mise run test:isolated` suite in a pinned offline Rust container with 2 GiB memory, 2 CPUs, 128 PIDs, and a 600-second ceiling. The run reported 17 passing unit tests and no failures. Explicit stage markers in separate tests confirmed a 512-container array and record parsed, emitted, reparsed, and dropped; a 512-array clone and equality check returned and both values dropped; malformed input after a deep completed child and after a deep root returned errors without an abort. A 513th opener was rejected with `JSONC nesting too deep` for scalar- and empty-container cases, while many shallow sibling containers remained accepted. These checks used the debug build; release and non-Linux targets remain unmeasured.
+The scratch parser's explicit frame stack passed the full `mise run test:isolated` suite in a pinned offline Rust container with 2 GiB memory,
+ 2 CPUs,
+ 128 PIDs,
+ and a 600-second ceiling.
+ The run reported 17 passing unit tests and no failures.
+ Explicit stage markers in separate tests confirmed a 512-container array and record parsed,
+ emitted,
+ reparsed,
+ and dropped;
+ a 512-array clone and equality check returned and both values dropped;
+ malformed input after a deep completed child and after a deep root returned errors without an abort.
+ A 513th opener was rejected with `JSONC nesting too deep` for scalar- and empty-container cases,
+ while many shallow sibling containers remained accepted.
+ These checks used the debug build;
+ release and non-Linux targets remain unmeasured.
 
-The same bounded suite covered valid comma-after-newline JSONC, key/value comment queries, empty-container comment order, exact raw numbers, and UTF-16 lone surrogate strings. A previous failing `multiline_value_comment_stays_on_value` test became passing only after the scratch emitter moved the multi-line value comment after its key's colon. The TypeScript production package remains unfixed on the independently measured comma and comment-owner incidents. This is still a feasibility prototype, not an immutable edit API, full conformance campaign, or publication-ready crate.
+The same bounded suite covered valid comma-after-newline JSONC,
+ key/value comment queries,
+ empty-container comment order,
+ exact raw numbers,
+ and UTF-16 lone surrogate strings.
+ A previous failing `multiline_value_comment_stays_on_value` test became passing only after the scratch emitter moved the multi-line value comment after its key's colon.
+ The TypeScript production package remains unfixed on the independently measured comma and comment-owner incidents.
+ This is still a feasibility prototype,
+ not an immutable edit API,
+ full conformance campaign,
+ or publication-ready crate.
 
 ## Evidence and validation still required
 
