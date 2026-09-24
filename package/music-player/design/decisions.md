@@ -635,44 +635,35 @@ borderless text index (unf-e) — see open-questions.md #1.
 See device-metrics.md for real dimensions.
  The hinge is **vertical** in portrait.
 
-### E2. No app content occupies the fold connector (revised 2026-09-23)
-A **24dp centered spacer** runs down the 852dp unfolded inner display between two
-414dp content panes:
- left `[0,414)`dp,
- connector `[414,438)`dp,
- right `[438,852)`dp.
-The Material expanded-pane guidance supplies this width.
- The connector is a
-structural surface fill only,
- never a third content region.
- **No app-owned content
-may paint or claim a target there**:
- no text,
- icon,
- control,
- list row,
- progress
-track,
- divider,
- badge,
- focus outline,
- or accessibility hit region.
- Clip every
-page,
- including a full-page Search destination and its header,
- to the pane bounds;
-do not merely keep buttons away while allowing text or results to cross.
- The
-uniform spacer fill remains allowed only at its accepted theme value:
- D41 true
-black in dark,
- D34 white in unfolded light.
- Another tonal surface in this band is
-not an acceptable substitute for an empty connector.
- Android's system-owned status
-and navigation bars are outside this app-content rule.
- This supersedes the older
-16dp gutter and the weaker "nothing interactive" phrasing.
+### E2. Keep information off the fold connector (clarified 2026-09-23)
+On the 852dp unfolded display,
+ the central 24dp region is `[414,438)`dp.
+The accepted player uses it as the spacer between 414dp panes;
+ D34 specifies
+white there in light and D41 true black in dark.
+ This **player treatment does
+not require every other page to become two separate panes**.
+
+Here "content" means **information the user must perceive**:
+ keep readable
+text,
+ result data,
+ labels and other meaning-bearing marks out of that region.
+A continuous page or input surface,
+ row background,
+ divider or interaction
+region may cross it when its informative text or marks remain clear of the
+connector.
+ A hit region crossing the centre does not by itself violate E2.
+Do not demand an entirely blank pixel strip,
+ force every surface to the
+player's spacer color,
+ or strand a Search query and its results in different
+halves merely to satisfy this rule.
+ Android's system-owned bars are outside
+this app-content requirement.
+ The earlier "no app-owned paint or hit region"
+version of E2 was an erroneous interpretation and is withdrawn.
 
 ### E3. Tabletop posture = candidate tabletop-c
 The user’s own proposal,
