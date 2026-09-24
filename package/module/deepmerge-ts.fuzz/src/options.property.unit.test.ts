@@ -42,8 +42,8 @@ import {
 import {
   buildIntoOptions,
   buildOptions,
-  modelMergeWithOptions,
-} from './options-model.ts';
+} from './options-build.ts';
+import { modelMergeWithOptions, } from './options-model.ts';
 import {
   NO_MISMATCH,
   shapeMismatch,

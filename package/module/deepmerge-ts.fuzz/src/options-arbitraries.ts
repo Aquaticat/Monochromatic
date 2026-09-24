@@ -19,7 +19,7 @@ import type {
   FilterChoice,
   MaxDepthChoice,
   OptionsPlan,
-} from './options-model.ts';
+} from './options-plan.ts';
 
 /**
  Largest valid `maxDepth` drawn; generated trees nest at most four containers.
@@ -40,7 +40,14 @@ const MAX_PLANNED_DEPTH = 5;
  ```
  */
 function choiceArbitrary({ skip, }: { readonly skip: boolean; },): Arbitrary<CustomChoice> {
-  return constantFrom<CustomChoice>('absent', 'false', 'defaultMerge', 'undefined', 'first', ...(skip ? ['skipNested',] as const : []),);
+  return constantFrom<CustomChoice>(
+    'absent',
+    'false',
+    'defaultMerge',
+    'undefined',
+    'first',
+    ...(skip ? ['skipNested',] as const : []),
+  );
 }
 
 /**
@@ -62,11 +69,23 @@ export function optionsPlanArbitrary({ fast, }: { readonly fast: boolean; },): A
    */
   const choice = choiceArbitrary({ skip: !fast, },);
   return record({
-    filter: constantFrom<FilterChoice>('absent', 'false', 'dropNull',),
+    filter: constantFrom<FilterChoice>(
+      'absent',
+      'false',
+      'dropNull',
+    ),
     implicit: boolean(),
     maxDepth: oneof(
-      constantFrom<MaxDepthChoice>('absent', 'invalidNaN', 'invalidNegative', 'invalidString',),
-      integer({ min: 0, max: MAX_PLANNED_DEPTH, },),
+      constantFrom<MaxDepthChoice>(
+        'absent',
+        'invalidNaN',
+        'invalidNegative',
+        'invalidString',
+      ),
+      integer({
+        min: 0,
+        max: MAX_PLANNED_DEPTH,
+      },),
     ),
     mergeArrays: choice,
     mergeMaps: choice,
@@ -99,20 +118,38 @@ export function intoPlanArbitrary({ fast, }: { readonly fast: boolean; },): Arbi
   /**
    Choice generator for every function except `mergeRecords`.
    */
-  const choice = constantFrom<CustomChoice>('absent', 'false', 'defaultMerge',);
+  const choice = constantFrom<CustomChoice>(
+    'absent',
+    'false',
+    'defaultMerge',
+  );
   return record({
-    filter: constantFrom<FilterChoice>('absent', 'false',),
+    filter: constantFrom<FilterChoice>(
+      'absent',
+      'false',
+    ),
     implicit: boolean(),
     maxDepth: fast
       ? constantFrom<MaxDepthChoice>('absent',)
       : oneof(
-        constantFrom<MaxDepthChoice>('absent', 'invalidNaN', 'invalidNegative', 'invalidString',),
-        integer({ min: 1, max: MAX_PLANNED_DEPTH, },),
+        constantFrom<MaxDepthChoice>(
+          'absent',
+          'invalidNaN',
+          'invalidNegative',
+          'invalidString',
+        ),
+        integer({
+          min: 1,
+          max: MAX_PLANNED_DEPTH,
+        },),
       ),
     mergeArrays: choice,
     mergeMaps: choice,
     mergeOthers: choice,
-    mergeRecords: constantFrom<CustomChoice>('absent', 'defaultMerge',),
+    mergeRecords: constantFrom<CustomChoice>(
+      'absent',
+      'defaultMerge',
+    ),
     mergeSets: choice,
   },);
 }
