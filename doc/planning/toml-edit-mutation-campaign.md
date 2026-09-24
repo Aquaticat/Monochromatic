@@ -75,27 +75,36 @@ The timeout is a forced-true loop condition at `emit-document.ts:40`,
 The remaining loop-bound mutants forcing `end > 0` to true or changing `>` to `>=`
  are equivalent because an out-of-range index is `undefined` and fails the newline comparison.
 
-Searches of `package/module/toml-edit/src` found no callers of these exports outside `emit-value.ts` itself:
+A repository-wide symbol and subpath search found no callers of these exports outside `emit-value.ts` itself.
+`package/module/toml-edit/package.json` still exposes `./ts/*` and ships `src`,
+ so these helpers were reachable through source-subpath imports despite not being root exports.
+The unauthenticated public npm registry returned `E404` for this package on 2026-09-24;
+ that alone does not prove that no authenticated or Git-based consumer exists.
+Their removal is a deliberate source-API design change,
+ not proof of backwards compatibility.
 
 - `emitArrayWithoutIndex`:
   previously described array-element omission from a parser AST.
   Live owner is `delete-value.ts`'s immutable tree update followed by
   `renderValueNode` in `emit-value-node.ts` and `assembleArrayParts` in `emit-value.ts`.
-  The nested-array deletion cases in `toml-delete.unit.test.ts` and the new array-content property cover the live path.
-  Retire the unused AST-only helper and its behavior.
+  The nested-array deletion cases in `toml-delete.unit.test.ts` cover the live edit path.
+  The array-content property separately covers re-emission,
+  but the mutation runner does not include that sidecar as a killer.
+  Retire the direct AST-helper contract,
+  including its array-input and index behavior.
 - `emitArrayWithSkipPath`:
   previously described recursive nested-array omission,
   with no non-recursive callers.
   The same live tree-update and rendering path owns nested deletion;
   `toml-delete.unit.test.ts` covers nested deletion,
   including deeper nesting and inline-table elements.
-  Retire the unused helper and its empty-path/non-array diagnostics.
+  Retire the direct AST-helper contract and its empty-path/non-array diagnostics.
 - `emitInlineTableWithExtra`:
   previously described adding an entry to a parser AST inline table.
   Live owner is `set-value-inline.ts`'s immutable entry append,
   rendered by `renderValueNode` and `assembleInlineTableParts`.
   `toml-set.unit.test.ts` covers inline-table extension and conflicts.
-  Retire the unused AST-only helper and its error diagnostic.
+  Retire the direct AST-helper contract and its error diagnostic.
 
 `assembleArrayParts`,
  `assembleInlineTableParts`,
