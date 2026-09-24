@@ -209,12 +209,14 @@ export function matchTableSection(
    Array-of-tables instance selected by the numeric segment after its header.
    */
   const indexed = blocks.find(function isIndexedAot(b,): b is TableNode {
-    if ((b.kind
-      !== 'table') || (b.tableKind
-        !== 'array') || (!isStrictPrefix({
+    if (b.kind !== 'table')
+      return false;
+    if (b.tableKind !== 'array')
+      return false;
+    if (!isStrictPrefix({
       candidate: b.headerSegments,
       path,
-    },)))
+    },))
       return false;
     return path[b.headerSegments
       .length] === b.aotIndex;
@@ -223,8 +225,9 @@ export function matchTableSection(
     /**
      Path offset after the selected array instance's numeric segment.
      */
-    const bodyStart = indexed.headerSegments
-      .length + 1;
+    const headerLength = indexed.headerSegments
+      .length;
+    const bodyStart = headerLength + 1;
     if (path.length === bodyStart)
       return {
         kind: 'table',
