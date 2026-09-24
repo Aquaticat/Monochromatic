@@ -4963,9 +4963,15 @@ observed patterns,
 Music's unsigned local mode was absent;
  Chrome was stopped at first-run
 consent and no terms were accepted.
- A background precedent researcher is
-independently checking official app and local baseline M3 sources without
-operating the emulator.
+ A scoped precedent researcher found first-party Google foldable examples
+but its isolated worktree could not read the local M3 archive and its
+uncommitted note was removed with that worktree.
+ I read the local extracted
+M3 Search,
+ pane and list-detail pages directly and verified the Google
+foldable-app article;
+ `evidence/fold-search-primary-guidance.md` now records
+those primary provisions and their limits.
 
 The user then opened a YouTube search result on the unfolded AVD and pointed
 to the thumbnail timestamp and adjacent title lettering at the fold.
@@ -5009,9 +5015,18 @@ still open;
  do not borrow the unrelated 12dp mode-button text floor.
 
 Next:
- integrate that primary-source research,
- then build distinct design-only
-candidates with informational material kept clear of the connector.
+ build and inspect distinct design-only candidates with informational
+material kept clear of the physical 7.5mm crease.
+ The throwaway Compose
+prototype branch now has `SearchLayoutStudy.kt` with docked left Search plus
+player context,
+ a continuous full-width result list,
+ and two-column
+result cards;
+ its debug build and emulator install succeeded.
+ First native
+visual inspection is pending;
+ do not infer acceptance from build/install.
  Assess
 composition on both panels at 100%/200% text,
  present genuinely different
