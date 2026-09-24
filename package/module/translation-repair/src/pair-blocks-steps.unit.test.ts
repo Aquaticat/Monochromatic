@@ -310,5 +310,67 @@ await describe({
         },).get(1,),).toBe(1,);
       },
     },),
+    it({
+      name: 'PAIRS an interior gap the roster left unplaced on both sides as one merge (class one hundred twelve)',
+      fn: async () => {
+        // THE ROSTER PAIRED THE BLOCKS AROUND A PASSAGE AND NOTHING INSIDE IT.
+        // Read as bare steps, the originals become insertions and the
+        // translation blocks ride into the next paired slice, so the page
+        // renders the passage once through the fold and keeps the archive's
+        // rendering beside it (mikaela15, 2026-09-24). Between two paired
+        // steps, unplaced originals and unplaced translation blocks belong to
+        // each other: the first pair opens the rendering and the rest ride
+        // along on both sides.
+        const steps = blockPairingToSteps({
+          pairs: [
+            { source: 0, target: 0, },
+            { source: 4, target: 3, },
+          ],
+          sourceCount: 5,
+          targetCount: 4,
+        },);
+        expect(steps,).toEqual([
+          { kind: 'paired', sourceIndex: 0, targetIndex: 0, },
+          { kind: 'paired', sourceIndex: 1, targetIndex: 1, },
+          { kind: 'source-only', sourceIndex: 2, continuesPairing: true, },
+          { kind: 'source-only', sourceIndex: 3, continuesPairing: true, },
+          { kind: 'target-only', targetIndex: 2, continuesPairing: true, },
+          { kind: 'paired', sourceIndex: 4, targetIndex: 3, },
+        ],);
+
+        /**
+         A leading gap stays bare: nothing paired stands before it.
+         */
+        const leading = blockPairingToSteps({
+          pairs: [{ source: 2, target: 2, },],
+          sourceCount: 3,
+          targetCount: 3,
+        },);
+        expect(leading,).toEqual([
+          { kind: 'source-only', sourceIndex: 0, },
+          { kind: 'source-only', sourceIndex: 1, },
+          { kind: 'target-only', targetIndex: 0, },
+          { kind: 'target-only', targetIndex: 1, },
+          { kind: 'paired', sourceIndex: 2, targetIndex: 2, },
+        ],);
+
+        /**
+         A gap with originals alone stays bare: they are insertions.
+         */
+        const sourcesOnly = blockPairingToSteps({
+          pairs: [
+            { source: 0, target: 0, },
+            { source: 2, target: 1, },
+          ],
+          sourceCount: 3,
+          targetCount: 2,
+        },);
+        expect(sourcesOnly,).toEqual([
+          { kind: 'paired', sourceIndex: 0, targetIndex: 0, },
+          { kind: 'source-only', sourceIndex: 1, },
+          { kind: 'paired', sourceIndex: 2, targetIndex: 1, },
+        ],);
+      },
+    },),
   ],
 },);
