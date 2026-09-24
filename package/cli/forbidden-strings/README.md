@@ -640,11 +640,11 @@ it:
    The compiler builds through `RegexSet::new` / `RegexSet::from_bytes`,
   neither of which logs the pattern.
 - **Scan path.
-  ** Findings are formatted as `PATH:LINE rule=N` in `src/frx_scan.rs`;
-   the
-  matched bytes and the line content are never included.
-   The fail-closed `catch_unwind`
-  boundary emits only `PATH: engine error`.
+  ** Content findings use `PATH:LINE rule=N` in `src/frx_scan.rs`;
+   name findings use `PATH:name:SEGMENT rule=N` in `src/path_scan.rs`.
+   The matched content and line text are never included.
+   A name matching any rule is masked in the shared pathname before either finding is formatted.
+   The fail-closed `catch_unwind` boundary emits only a masked-path engine error.
 
 Keep sensitive rule bodies out of tracked files:
 use the gitignored `forbidden-strings.append.local.txt` or the CI-only
