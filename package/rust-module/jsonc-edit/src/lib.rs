@@ -191,3 +191,25 @@ pub use text_units::{decode_quoted, encode_quoted, units_to_string};
 /// ```
 #[cfg(test)]
 mod parse_tests;
+
+/// What:     Exact-number identity tests, including an independent rational oracle.
+/// Why:      Equality across spellings and rejection of malformed tokens are the crate's numeric
+///           contract, and an oracle cross-checks the normalizer rather than itself.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import './number.test';
+/// ```
+#[cfg(test)]
+mod number_tests;
+
+/// What:     Quoted-string conversion tests.
+/// Why:      Lone surrogates, control characters and escape spellings must survive decode, convert and
+///           re-encode without changing the code units.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import './textUnits.test';
+/// ```
+#[cfg(test)]
+mod text_units_tests;
