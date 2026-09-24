@@ -5361,6 +5361,14 @@ its screenshot showed the title partially covered.
 toward the bottom moved it over additional deck controls, not into a
 docked keyboard.
  A fresh Search launch returned to the toolbar-only state.
+Repeating the menu action after restoring the original Gboard preferences
+still produced floating keys.
+ `dumpsys window` reported a visible but
+zero-height IME insets source with bottom hint 0;
+Android SDK `InsetsSource.calculateInsets` therefore supplies no bottom
+inset for that source.
+ The floating key touch region is a separate
+WindowManager measurement, not a bottom IME inset.
 These observations **do not overturn D51's selected A** but reveal that
 the currently selected prototype does not meet D50 with the tested real
 floating Gboard arrangement.

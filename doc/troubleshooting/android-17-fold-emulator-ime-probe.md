@@ -34,7 +34,13 @@ Neither setting combination, nor a Gboard restart, made keys appear on
 fresh Search focus.
 The separate **toolbar-menu action** did make keys appear, but the next
 fresh-focus probe returned to the side toolbar.
+Repeating that action after restoring the original off/on preference switches
+again produced the floating keys, so the preference changes were unnecessary
+for this workaround.
 Do not equate the preference switch with the per-editor action.
+Google's [Pixel Tablet keyboard guidance](https://support.google.com/googlepixeltablet/answer/13555948?hl=en)
+describes a Gboard toolbar with a physical keyboard and a Floating keyboard
+mode; it does not establish which layout this Fold emulator should choose.
 
 Android's public framework does establish why a replacement IME is a valid
 occlusion probe.
@@ -82,6 +88,32 @@ our first probe the requested 300dp height; the rendered window was shorter.
 Setting `minimumHeight` on the returned view made the dark input surface fill
 approximately 300dp on this 390dpi AVD.
 That correction is in throwaway prototype commit `60e01dfab`.
+
+The floating Gboard also explains why the selected deck did not lift in that
+probe.
+`adb -s emulator-5554 shell dumpsys window` reported a visible IME
+`InsetsSource` frame `[0,2152][2076,2152]` and an IME bottom-inset hint
+of `0`, despite its separately reported keyboard touchable region.
+`/home/user/Android/Sdk/sources/android-37.0/android/view/InsetsSource.java:441-457`
+returns no inset without an intersection, and otherwise maps IME intersection
+height to a bottom inset:
+
+```java
+final boolean hasIntersection = relativeFrame.isEmpty()
+        ? getIntersection(frame, relativeFrame, mTmpFrame)
+        : mTmpFrame.setIntersect(frame, relativeFrame);
+if (!hasIntersection) {
+    return Insets.NONE;
+}
+if (getType() == WindowInsets.Type.ime()) {
+    return Insets.of(0, 0, 0, mTmpFrame.height());
+}
+```
+
+The zero-height server source and the unlifted deck agree for this device
+state.
+This is not a measurement of every app-observable keyboard API or proof
+that floating overlays are impossible to avoid by other means.
 
 ## Verification
 
@@ -143,6 +175,8 @@ That correction is in throwaway prototype commit `60e01dfab`.
   A tap on one letter changed the focused query to `x` and produced the
   corresponding no-results state.
   A fresh app launch and focus returned to the toolbar-only state.
+  Repeating the toolbar-menu action with Gboard's original off/on physical
+  keyboard preferences also produced real floating keys.
 - At 200% text, the same menu action at approximately `(515,1080)` displayed
   floating Gboard keys over x `[274,1180)`, y `[310,1081)`.
   The deck title `Another Xronixle` occupied
