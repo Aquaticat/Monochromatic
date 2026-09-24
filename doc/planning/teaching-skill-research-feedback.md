@@ -156,6 +156,14 @@ it does not prove a real learner wrote either variation or that the lesson needs
 A candidate teaching check can require evidence gathering across operation start,
 settlement, and display observation when a learner's own result differs from the worked case.
 
+A positive control repeated both disposable variations with a learner-visible `#output`
+record while leaving the result at `Waiting…` and the error record empty.
+The unresolved variation recorded `handler ran`; the resolved-but-unrendered one also
+recorded `resolver called`. The probe separately observed `"Hello Ada"` from that
+second Promise. This trace narrows the next investigation but does not itself prove
+that every resolver call immediately fulfills a Promise or that the display observer ran.
+The temporary learner code, not the published lesson, generated these records.
+
 A direct falsifier of **newness** would be a reading of the current acceptance checks showing
 that they already require the learner's own step-local criterion, mismatch interpretation,
 and recovery or stop action, not only a working artifact, observable demo, or independent task.
