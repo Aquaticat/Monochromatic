@@ -5142,6 +5142,12 @@ measured the input window at `[0,1421][2076,2152]` (731px or approximately
 300dp).
  Every checked mode and transport control in all three inner layouts
 sat above this window.
+ A positive-control comparison used the rejected
+bottom-deck XML:
+ its last mode bounds `[73,1980][965,2074]` exceed the
+1421px IME top,
+ while A's corresponding bounds `[73,1251][965,1382]`
+clear it.
  The seven-label guard alone does not prove the seek
 bar,
  times,
