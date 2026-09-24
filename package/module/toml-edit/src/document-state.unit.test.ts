@@ -13,7 +13,9 @@ await describe({
       name: 'tiles adjacent key-values without empty filler blocks',
       fn: async () => {
         const edit = parseTomlEdit({ source: 'a = 1\nb = 2\n', },);
-        expect(edit.blocks.map(function kindOf(block,) { return block.kind; },),)
+        expect(edit.blocks.map(function kindOf(block,) {
+          return block.kind;
+        },),)
           .toStrictEqual(['keyvalue', 'keyvalue',],);
         const [first, second,] = edit.blocks;
         if ((first?.kind !== 'keyvalue') || (second?.kind !== 'keyvalue'))
@@ -31,7 +33,9 @@ await describe({
           throw new Error('Expected parsed table',);
         expect(table.commentAfter,).toBe(' note',);
         expect(Object.hasOwn(table, 'commentAfter',),).toBe(true,);
-        expect(table.body.map(function kindOf(block,) { return block.kind; },),)
+        expect(table.body.map(function kindOf(block,) {
+          return block.kind;
+        },),)
           .toStrictEqual(['keyvalue',],);
       },
     },),
