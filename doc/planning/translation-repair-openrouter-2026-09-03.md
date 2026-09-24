@@ -8112,7 +8112,7 @@ the originals became insertions (the coverage round then called them carried),
 and the target-only run, undeclined because the pairing placed no original, rode into the next paired slice's span (`group-merge.ts mergeOneSidedRuns`).
 `mikaela12` and `mikaela13` lost the passage through the same shape; `mikaela15` rendered it twice because the fold now works.
 
-Class one hundred twelve built (a43c5d88d, guard red first 0c5ee4b6c, lint 0/0, types clean, full suite `suite-class112.log`, replayed over mikaela15's section 2 pairing: `P2:2 P3:3 S4+ S5+ S6+ S7+ T4+ T5+ T6+ P8:7`):
+Class one hundred twelve built (a43c5d88d, guard red first 0c5ee4b6c, lint 0/0, types clean, full suite `suite-class112.log` (1115 PASS; the one red case was the census decline fixture, itself the class one hundred twelve shape, re-paired in 14336a1c2), replayed over mikaela15's section 2 pairing: `P2:2 P3:3 S4+ S5+ S6+ S7+ T4+ T5+ T6+ P8:7`):
 `pairUnpartneredGaps` (`unpartnered-gap-steps.ts`) reads an interior gap unplaced on both sides as one merge,
 the first source and target paired and the rest continuing on both sides,
 so the grouper keeps it as one run, the anchor reader gives it no insertion, and the decline reader declines none of it;

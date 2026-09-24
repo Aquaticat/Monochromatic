@@ -4786,7 +4786,7 @@ each read off the pass log and the shipped page:
     class one hundred eleven live end to end (`insertion-carried-folded (slice 11 into slice 10)`, no carried-evidence-lost stop, every mikaela11 check holds),
     but the HRT passage shipped twice: slice 10's stand-in through the fold and slice 13's span keeping the archive's "That was originally just a typical thing." (class one hundred twelve);
     class one hundred seven live on slices 13 and 24, contest 25 of 34 differ, all 15 checker rounds 2 of 3, slices 5 and 14 unendorsed, 51 abstention lines, Jev 68 of 69.
-    CLASS ONE HUNDRED TWELVE BUILT (a43c5d88d, guard red first 0c5ee4b6c, full suite `suite-class112.log`, replayed over mikaela15's section 2 pairing: `P3:3 S4+ S5+ S6+ S7+ T4+ T5+ T6+`):
+    CLASS ONE HUNDRED TWELVE BUILT (a43c5d88d, guard red first 0c5ee4b6c, full suite `suite-class112.log` (1115 PASS; the one red case was the census decline fixture, itself the class one hundred twelve shape, re-paired in 14336a1c2), replayed over mikaela15's section 2 pairing: `P3:3 S4+ S5+ S6+ S7+ T4+ T5+ T6+`):
     the roster had paired sources 0 to 2 and 8 onward and left sources 3 to 7 and targets 3 to 6 unplaced on both sides, which slicing read as insertions plus an undeclined target-only run riding into slice 13 (mikaela12 and 13 lost the passage the same way);
     `pairUnpartneredGaps` (`unpartnered-gap-steps.ts`) reads such an interior gap as one merge (first pair, the rest `continuesPairing` on both sides), applied by `blockPairingToSteps`; leading, trailing and one-sided gaps unchanged.
     Not exercised live yet.
