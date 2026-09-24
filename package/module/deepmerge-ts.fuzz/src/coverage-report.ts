@@ -159,7 +159,7 @@ async function installedTarget(): Promise<{
  const scripts = await targetScripts({ coverageDir, targetUrl, });
  ```
  */
-async function targetScripts(
+export async function targetScripts(
   {
     coverageDir,
     targetUrl,

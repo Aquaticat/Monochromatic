@@ -88,8 +88,18 @@ DEEPMERGE_FUZZ_SEED=<seed> DEEPMERGE_FUZZ_NUM_RUNS=<runs> node <file>
 
 ## Testing another build
 
-Set `DEEPMERGE_FUZZ_TARGET` to a module path,
-for example a local fork's built `dist/index.mjs`,
+Set `DEEPMERGE_FUZZ_TARGET` to a module path
 to run every runtime test and the campaign against it instead of the npm release.
 Relative paths resolve against this package directory.
-The coverage gate and the type-level tests always use the installed npm release.
+The type-level tests always use the installed npm release's types.
+
+For a deepmerge-ts checkout (the fork lives at <https://github.com/Aquaticat/deepmerge-ts>),
+`fork:build` builds a read-only copy with source maps inside a capped container,
+and `fuzz:coverage` then reports coverage per `src/*.ts` file with uncovered line ranges
+instead of gating the npm baseline:
+
+```bash
+mise run //package/module/deepmerge-ts.fuzz:fork:build --checkout /absolute/path/to/deepmerge-ts
+DEEPMERGE_FUZZ_TARGET=dist/fork-build/index.mjs mise run //package/module/deepmerge-ts.fuzz:test:unit
+DEEPMERGE_FUZZ_TARGET=dist/fork-build/index.mjs mise run //package/module/deepmerge-ts.fuzz:fuzz:coverage
+```

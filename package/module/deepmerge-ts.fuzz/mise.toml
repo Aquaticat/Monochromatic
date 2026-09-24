@@ -64,7 +64,7 @@ if (code !== 0) throw new Error(`Fuzz campaign container exited with ${String(co
 # onto the installed deepmerge-ts dist file. `*.local.*` files are excluded so
 # the committed baseline never depends on embargoed, machine-local tests.
 [tasks."fuzz:coverage"]
-description = "V8 line-coverage reachability gate over the installed deepmerge-ts dist; --write refreezes the baseline"
+description = "V8 line-coverage reachability gate over the installed deepmerge-ts dist (--write refreezes the baseline); with DEEPMERGE_FUZZ_TARGET, a source-mapped per-file report instead"
 usage = '''
 flag "--write" help="Refreeze the committed baseline from this run instead of checking against it"
 '''
@@ -85,7 +85,14 @@ try {
   for (const file of files) {
     execFileSync('node', [file], { stdio: 'inherit', env: { ...process.env, NODE_V8_COVERAGE: dir } })
   }
-  execFileSync('node', [`${root}/src/coverage-report.ts`, mode, dir, `${root}/coverage-baseline.json`], { stdio: 'inherit' })
+  // A DEEPMERGE_FUZZ_TARGET build (e.g. fork:build output) gets a source-mapped report
+  // instead of the baseline gate, which only describes the npm release.
+  const override = process.env.DEEPMERGE_FUZZ_TARGET
+  if (override !== undefined && override !== '') {
+    execFileSync('node', [`${root}/src/coverage-source.ts`, dir, override], { stdio: 'inherit' })
+  } else {
+    execFileSync('node', [`${root}/src/coverage-report.ts`, mode, dir, `${root}/coverage-baseline.json`], { stdio: 'inherit' })
+  }
 } finally {
   rmSync(dir, { recursive: true, force: true })
 }
@@ -96,3 +103,39 @@ try {
 [tasks."generate:type-cases"]
 description = "Regenerate src/type-soundness.generated.ts; lint:types then proves each runtime result fits its static type"
 run = "node src/type-case-generate.ts"
+
+# Builds a deepmerge-ts checkout (for example the Aquaticat/deepmerge-ts fork)
+# with source maps inside a capped container, from a read-only mount, into
+# dist/fork-build/. Point DEEPMERGE_FUZZ_TARGET at dist/fork-build/index.mjs to
+# run the tests and campaign against it, and fuzz:coverage then reports per
+# TypeScript source file through the map.
+[tasks."fork:build"]
+description = "Build a deepmerge-ts checkout with source maps into dist/fork-build/ in a 2 GiB / 2 CPU podman container"
+usage = '''
+flag "--checkout <dir>" required=#true help="Absolute path of the deepmerge-ts checkout to build"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync, rmSync } = await import('node:fs')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const checkout = resolve(process.env.usage_checkout ?? '')
+const out = join(packageRoot, 'dist', 'fork-build')
+rmSync(out, { recursive: true, force: true })
+mkdirSync(out, { recursive: true })
+const nodeMajor = process.versions.node.split('.')[0]
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${checkout}:/checkout:ro`,
+  '--volume', `${out}:/out:rw`,
+  '--volume', `${join(packageRoot, 'src', 'fork-build.ts')}:/fork-build.ts:ro`,
+  `docker.io/library/node:${nodeMajor}-slim`,
+  'node', '/fork-build.ts',
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`fork build container exited with ${String(code)}`)
+console.log(`built ${join(out, 'index.mjs')}`)
+"""

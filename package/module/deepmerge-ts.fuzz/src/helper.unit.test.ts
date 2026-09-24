@@ -21,6 +21,14 @@ import {
   uncalledFunctions,
 } from './coverage-v8.ts';
 import {
+  firstNonBlankColumn,
+  ranges,
+} from './coverage-source.ts';
+import {
+  ForkBuildError,
+  replaceOnce,
+} from './fork-build.ts';
+import {
   FuzzPlanError,
   fuzzRunPlan,
 } from './fuzz-budget.ts';
@@ -159,6 +167,22 @@ await describe({
         expect(isCoverageFile({ result: 'no', },),).toBe(false,);
         expect(uncalledFunctions([{ url: 'u', functions: [{ functionName: 'idle', ranges: [{ startOffset: 0, endOffset: 1, count: 0, },], },], },],),)
           .toEqual(['idle',],);
+      },
+    },),
+    it({
+      name: 'source report helpers collapse ranges and find the first code column',
+      fn: async () => {
+        expect(ranges([7, 1, 3, 2, 9, 10,],),).toBe('1-3, 7, 9-10',);
+        expect(ranges([],),).toBe('',);
+        expect(firstNonBlankColumn('   x = 1;',),).toBe(3,);
+        expect(firstNonBlankColumn('  \t ',),).toBe(-1,);
+      },
+    },),
+    it({
+      name: 'replaceOnce edits the fork config or fails loudly when it drifted',
+      fn: async () => {
+        expect(replaceOnce({ from: 'sourcemap: false', text: 'a sourcemap: false b', to: 'sourcemap: true', },),).toBe('a sourcemap: true b',);
+        expect(() => replaceOnce({ from: 'absent', text: 'config', to: 'x', },),).toThrow(ForkBuildError,);
       },
     },),
     it({
