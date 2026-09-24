@@ -77,6 +77,22 @@ await describe({
     },),
 
     it({
+      name: 'does not mistake a preceding comment for a trailing comment',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: '# before\nkey = 1\n', },);
+        expect(tomlGetCommentAfter({ edit, path: ['key',], },).comment,).toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'does not attach a comment on the following line',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'key = 1\n# after\n', },);
+        expect(tomlGetCommentAfter({ edit, path: ['key',], },).comment,).toBe(undefined,);
+      },
+    },),
+
+    it({
       name: 'trailing inline comment absent yields no comment field',
       fn: async () => {
         const source = 'key = 1\n';
