@@ -265,5 +265,49 @@ await describe({
         expect(unified.findings.length,).toBe(1,);
       },
     },),
+    it({
+      // CLASS ONE HUNDRED TWENTY (XingZ6010, 2026-09-24). The credit rendered
+      // the title bare, the only quoted span left was the next heading's
+      // `align = "center"`, spaced around its equals sign, and the pass wrote
+      // the title into the attribute.
+      name: 'LEAVES a tag attribute spaced around its equals sign where the credit renders the title bare',
+      fn: async () => {
+        /**
+         Pass over a slice whose credit carries no marks and whose heading
+         tag spaces its attribute.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            pair({
+              sliceIndex: 0,
+              source: '<h3 align = "center">九重猫</h3>',
+              target: '',
+            },),
+            pair({
+              sliceIndex: 1,
+              source: '—— 雨猫【梦】《九重猫》\n\n<h3 align = "center">零重猫愿</h3>',
+              target: '',
+            },),
+          ],
+          replacements: [
+            {
+              sliceIndex: 0,
+              replacementText: '<h3 align = "center">Nonuple Cat</h3>',
+            },
+            {
+              sliceIndex: 1,
+              replacementText: '—— Yumao 【Dream】 Nonuple Cat\n\n<h3 align = "center">Zero-Layer Cat Prayer</h3>',
+            },
+          ],
+        },);
+        expect(unified.replacements.map(function textOf(row,): string {
+          return row.replacementText;
+        },),).toEqual([
+          '<h3 align = "center">Nonuple Cat</h3>',
+          '—— Yumao 【Dream】 Nonuple Cat\n\n<h3 align = "center">Zero-Layer Cat Prayer</h3>',
+        ],);
+        expect(unified.restored,).toEqual([],);
+      },
+    },),
   ],
 },);
