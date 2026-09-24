@@ -209,6 +209,14 @@ export async function completeNoChangeTransaction({
   },);
   workspace.finishTransaction();
   /**
+   Worktree paths whose later edits were retained.
+   */
+  const { conflicted, } = completion;
+  /**
+   Whether completion retained later worktree edits.
+   */
+  const hasConflicts = conflicted.length > 0;
+  /**
    Final stable pass plus accurate fix summary.
    */
   const summary = withFixSummary({
@@ -228,9 +236,9 @@ export async function completeNoChangeTransaction({
             .length,
           coreId: 'commit-normalization',
           code: 'no-change',
-          message: completion.conflicted.length === 0
-            ? 'No commit created: normalization removed every selected change; matching worktree and index copies were reconciled.'
-            : `No commit created: normalization removed every selected change; index copies were reconciled, but worktree copies changed and were kept: ${JSON.stringify(completion.conflicted,)}. Compare them with HEAD before retrying.`,
+          message: hasConflicts
+            ? `No commit created: normalization removed every selected change; index copies were reconciled, but worktree copies changed and were kept: ${JSON.stringify(conflicted,)}. Compare them with HEAD before retrying.`
+            : 'No commit created: normalization removed every selected change; matching worktree and index copies were reconciled.',
         },),
       ],
       exitCode: 1,
