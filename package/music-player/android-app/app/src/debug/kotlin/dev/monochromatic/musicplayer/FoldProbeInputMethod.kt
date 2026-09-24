@@ -93,7 +93,8 @@ class FoldProbeInputMethod : InputMethodService() {
         val pane = LinearLayout(this)
         pane.orientation = LinearLayout.VERTICAL
         pane.setBackgroundColor(Color.rgb(36, 40, 48))
-        pane.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, heightPx)
+        // InputMethodService supplies WRAP_CONTENT parent parameters, so enforce height on the view itself.
+        pane.minimumHeight = heightPx
         val label = TextView(this)
         label.text = "Debug keyboard probe, 300dp system IME window"
         label.setTextColor(Color.WHITE)
