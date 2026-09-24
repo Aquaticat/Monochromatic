@@ -439,7 +439,7 @@ The published `biome_json_parser` 0.5.7 archive SHA-256
  `biome_json_parser-0.5.7/src/token_source.rs:31-60` classifies trivia around newlines,
  while `biome_parser-0.5.7/src/tree_sink.rs:123-145` attaches it to syntax tokens.
  A consumer must still map grammar-delimiter trivia to the accepted key/value ownership policy.
- A bounded `typed_member_comment_projection` test reached the member name,
+ Bounded debug and optimized release `typed_member_comment_projection` tests reached the member name,
  colon,
  value and trailing separator via `biome_json_syntax-0.5.7/src/generated/nodes.rs:110-143`
  and `biome_rowan-0.5.7/src/ast/mod.rs:565-590`;
