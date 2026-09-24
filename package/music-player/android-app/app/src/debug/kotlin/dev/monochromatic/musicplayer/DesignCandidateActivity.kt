@@ -931,7 +931,7 @@ internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: () 
         candidate = if (isCover) {
             if (light) "cover-picker-p4-light" else "cover-picker-p4"
         } else {
-            if (light) "light-b" else "dark-stable-wallpaper-dynamic"
+            if (light) "cue-container-tonal" else "dark-stable-wallpaper-dynamic"
         },
         scheme = MaterialTheme.colorScheme,
     )
