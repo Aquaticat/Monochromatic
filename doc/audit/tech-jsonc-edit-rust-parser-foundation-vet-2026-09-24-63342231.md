@@ -458,6 +458,15 @@ The published `biome_json_parser` 0.5.7 archive SHA-256
  The lexer uses `from_utf8_unchecked` and `unreachable_unchecked` at `biome_json_parser-0.5.7/src/lexer/mod.rs:205-228`;
  the character-boundary and non-EOF invariants require a source and release-path safety audit.
  The presence of unsafe blocks alone does not prove a memory-safety failure.
+ `src/lexer/mod.rs:67-90` gates token dispatch on a present byte,
+ `:268-289,315-350` advances non-ASCII text by UTF-8 character length,
+ and `biome_unicode_table-0.5.7/src/bytes.rs:103-125` declares a 256-entry dispatch table indexed by a byte.
+ The scratch probe parsed and rejected selected multibyte strings and comments in bounded debug and optimized release runs.
+ These checks support the inspected invariants but do not establish safety for every lexer and transitive-code path.
+ Separately,
+ `biome_json_parser-0.5.7/src/lexer/mod.rs:91-96` converts the source offset to `TextSize` with an `expect` for inputs beyond its representable range;
+ a published adapter would need an early input-length check.
+ That oversized-input branch was not exercised under the resource bound.
  This validates a raw-syntax candidate,
  not key/value attachment,
  exact-value projection,
