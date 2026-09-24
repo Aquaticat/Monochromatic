@@ -76,8 +76,8 @@ const fastArguments = mergeArgumentsArbitrary({ exotic: true, protoKey: false, }
  Dates and class instances are left out: when the target lacks a key,
  `deepmergeInto` seeds it from the first value as a plain object and then
  merges later records into it instead of letting the last value win. The
- target holds no `undefined` values: a target key holding `undefined` makes
- `deepmergeInto` replace instead of merge the sources at that key. Both are
+ inputs hold no `undefined` values: when the first value at a key is
+ `undefined`, `deepmergeInto` replaces instead of merging at that key. Both are
  known defects, see `./known-defect.unit.test.ts`.
 
  @param protoKey - Whether records may use the `__proto__` key.
@@ -92,7 +92,7 @@ const fastArguments = mergeArgumentsArbitrary({ exotic: true, protoKey: false, }
 function intoArguments({ protoKey, }: { readonly protoKey: boolean; },) {
   return tuple(
     treeArbitraries({ exotic: false, objectLeaves: false, protoKey, undefinedLeaves: false, },).record.filter((record,) => Object.getPrototypeOf(record,) === Object.prototype),
-    array(treeArbitraries({ exotic: true, objectLeaves: false, protoKey, },).record, { minLength: 1, maxLength: MAX_INTO_SOURCES, },),
+    array(treeArbitraries({ exotic: true, objectLeaves: false, protoKey, undefinedLeaves: false, },).record, { minLength: 1, maxLength: MAX_INTO_SOURCES, },),
   );
 }
 

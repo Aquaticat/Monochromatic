@@ -88,25 +88,19 @@ export function coveredLines(
     new Uint8Array(source.length,),
   );
   /**
-   Start offset of each line.
+   Covered line numbers, filled in one pass over the lines.
    */
-  const lineStarts = source.split('\n',).reduce<readonly number[]>(
-    (starts, line,) => [...starts, (starts.at(-1,) ?? 0) + line.length + 1,],
-    [0,],
-  );
-  return new Set(
-    lineStarts
-      .slice(0, -1,)
-      .flatMap((start, line,) => {
-        /**
-         Text of this line.
-         */
-        const text = source.slice(start, (lineStarts[line + 1] ?? source.length) - 1,);
-        return [...text,].some((character, column,) => (character.trim() !== '') && (painted[start + column] === 1))
-          ? [line,]
-          : [];
-      },),
-  );
+  const covered = new Set<number>();
+  /**
+   Offset of the current line's first character.
+   */
+  let offset = 0;
+  for (const [line, text,] of source.split('\n',).entries()) {
+    if ([...text,].some((character, column,) => (character.trim() !== '') && (painted[offset + column] === 1)))
+      covered.add(line,);
+    offset += text.length + 1;
+  }
+  return covered;
 }
 
 /**

@@ -93,10 +93,12 @@ await describe({
       },
     },),
     it({
-      name: 'deepmergeInto replaces instead of merging sources at a target key holding undefined',
-      // Excluded region: deepmergeInto targets use undefinedLeaves: false (src/merge-model.property.unit.test.ts).
-      // Cause: mergeRecordsInto seeds an existing key from the target's own value (undefined) in
-      // src/defaults/into.ts, and mergeUnknownsInto types the merge by that value, so it falls to mergeOthers.
+      name: 'deepmergeInto replaces instead of merging when the first value at a key is undefined',
+      // Excluded region: deepmergeInto targets and sources use undefinedLeaves: false
+      // (src/merge-model.property.unit.test.ts). Found by the campaign (seeds 1256317701, 655631496).
+      // Cause: mergeRecordsInto in src/defaults/into.ts (and into-fast.ts) seeds the key from the target's
+      // value or emptyLike(first value) before undefined is filtered; mergeUnknownsInto types the merge by
+      // that undefined seed, so it falls to mergeOthers and only the last value survives.
       fn: () => {
         expect(target.deepmerge({ a: undefined, }, { a: { x: 1, }, }, { a: { y: 2, }, },),).toEqual({ a: { x: 1, y: 2, }, },);
         /**
@@ -111,6 +113,13 @@ await describe({
         const fastTarget: Record<string, unknown> = { a: undefined, };
         target.deepmergeIntoFastUnsafe(fastTarget, { a: [0,], }, { a: [1,], },);
         expect(fastTarget,).toEqual({ a: [1,], },);
+        /**
+         Target lacking the key, whose first source holds `undefined` there.
+         */
+        const absentTarget: Record<string, unknown> = {};
+        target.deepmergeInto(absentTarget, { a: undefined, }, { a: [0,], }, { a: [1,], },);
+        expect(absentTarget,).toEqual({ a: [1,], },);
+        expect(target.deepmerge({}, { a: undefined, }, { a: [0,], }, { a: [1,], },),).toEqual({ a: [0, 1,], },);
       },
     },),
     it({
