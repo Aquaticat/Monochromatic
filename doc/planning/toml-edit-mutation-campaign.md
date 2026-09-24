@@ -554,11 +554,17 @@ The comment/value rechecks completed with no infrastructure errors:
   141 compile errors.
 
 The comment survivors are confined to synthetic-node offset sentinels,
- source-subpath symbol descriptions,
+ private `NOT_FOUND` symbol descriptions in the insertion modules,
  and AoT body descent guards.
+Those symbols are module-local and never leave the exported insertion functions;
+ the `/ts/*` source subpaths do not export them.
 A test now asserts that a synthetic key-value cannot borrow an earlier trailing comment.
-Most value survivors are kind checks redundant with strict value equality on real parsed nodes,
- or a nonfinite `> 0` boundary where only positive/negative infinity reaches it after NaN is handled.
+The five surviving `values.ts` mutants consist of four kind checks
+ (`e4b52b79592e2b76`, `b992d0d0b8bcf9a8`, `0d8050ba970c0c31`, `c37fdfd7a39e0b8c`)
+ redundant with strict value equality on parser-produced string or numeric nodes,
+ plus `33ed844fb684807c`, a nonfinite `> 0` boundary.
+After NaN is handled,
+ only positive or negative infinity reaches that boundary.
 The tagged integer branch returned the same `String(value)` as the default branch,
  so it was removed.
 The package build and unit suite,
@@ -629,6 +635,10 @@ These runs were not one atomic full-package campaign at a single final revision;
  only the changed and survivor-bearing files were rechecked after edits.
 Conformance adapters under `src/conformance/` were not included as mutant targets,
  and sidecar properties were not mutant killers in the current CLI.
+The `values.ts` coverage baseline fell from 332 to 304 covered lines.
+The `6a1852183` source diff deletes its duplicate finite-number check and array/inline-table formatting branches,
+ replacing the latter with shared assembler calls;
+ the retained input-coercion and recursive paths are unchanged.
 The final coverage gate was run without a pipeline so its exit status was checked directly;
  it passed after the intentional baseline refreeze.
 Commit only explicit paths in scope.
