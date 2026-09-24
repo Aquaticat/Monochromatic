@@ -45,5 +45,16 @@ await describe({
         },),).toEqual([1, 2,],);
       },
     },),
+    it({
+      name: 'keeps a clean array sibling in its original numeric spelling',
+      fn: async () => {
+        const edit = tomlSet({
+          edit: parseTomlEdit({ source: 'arr = [0x10, 0x20]\n', },),
+          path: ['arr', 1,],
+          value: 99,
+        },);
+        expect(tomlStringify({ edit, },),).toBe('arr = [ 0x10, 99, ]\n',);
+      },
+    },),
   ],
 },);
