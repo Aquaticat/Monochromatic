@@ -81,9 +81,10 @@ button:focus-visible, select:focus-visible, .preview-stage:focus-visible {
 .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 1rem; }
 .capture { min-inline-size: 0; padding-inline: 1rem; padding-block: 1rem; }
 .capture h2 { margin-block: 0 0.5rem; }
-.capture picture { display: block; overflow: hidden; max-block-size: 38rem; }
+.capture picture { display: block; overflow: hidden; max-block-size: 45rem; }
 .capture img { display: block; max-inline-size: 100%; block-size: auto; }
-.capture[data-panel='cover'] img { inline-size: min(100%, 25rem); block-size: auto; }
+.capture[data-panel='inner'] img { inline-size: min(100%, 42rem); }
+.capture[data-panel='cover'] img { inline-size: min(100%, 20rem); }
 .capture p { background-color: var(--color-panel); }
 .capture button { margin-block-start: 0.75rem; }
 dialog {
