@@ -158,6 +158,47 @@ Round 4 answers so far (user,
    reuse meow's vet,
    [`doc/audit/tech-meow-language-server-framework-vet-2026-09-17.md`](../audit/tech-meow-language-server-framework-vet-2026-09-17.md)
    (`lsp-server` 0.10.0 with `gen-lsp-types` 0.11.0).
+- Name:
+   `monochromatic-lint`,
+   against the research ranking's `sumilint`.
+- Configuration lookup (A):
+   ESLint v10,
+   the nearest configuration file to each linted file used alone,
+   with `extends` for sharing.
+- Default output format (B):
+   `jsonl`,
+   "It's easiest for the current stage."
+- Core (B):
+   a new core,
+   "because our rust-linter-core was written in such a hurry that none of its architectural choices can be trusted."
+- Inline rule configuration comments (A):
+   left out.
+- Issue #559 (B):
+   not fixed in the TypeScript linter;
+   the port replaces it.
+  Decision commented on the issue.
+- Snippet backlog (B):
+   cut over with the snippet rules at `warn`,
+   auto-fix the rustdoc blocks at cutover,
+   work through the rest,
+   then switch to `error`.
+- Binary for cli-git:
+   "Mise-managed installed in workspace."
+  Mise's `cargo` backend installs only from crates.io or Git
+   (<https://mise.jdx.dev/dev-tools/backends/cargo.html>,
+   fetched 2026-09-23),
+   so a mise task has to build and place the binary.
+  The user added:
+   "mise's sources/outputs support is not to be trusted",
+   so freshness comes from cargo's own up-to-date check,
+   not from mise task `sources` and `outputs`.
+- Round 4 adoptions:
+   accepted,
+   except that the user asked to "Prioritize faster compile and iteration times during this early stage",
+   read as one crate with modules instead of per-language plugin crates
+   (confirmation asked in round 5).
+- The user asked to be asked which parts of ESLint not to replicate:
+   "eslint is a huge project and we don't need every knob it does."
 
 Adopted by the agent from settled answers,
 not vetoed in round 3:
@@ -305,8 +346,43 @@ not vetoed in round 3:
      `fuzz/`,
      and so on).
   - A from-scratch release build of the Rust linter took about 26 s.
-- Whole-repository status of both incumbents as one root task would see it:
-   agent running.
+- Whole-repository status at `0299ab679`,
+   one root walk per incumbent:
+  - Rust:
+     151 findings in 9 files,
+     exit 1,
+     all outside the 17 packages with `lint:rust` tasks,
+     so today's `mise run lint:rust` is green.
+    `doc/audit/resharp-fuzz-2026-06-19/tool/anchor_denot.rs`:
+     1 `max-lines` (541 code lines)
+     and 89 `require-rustdoc`.
+    `package/rust-module/forbidden-regex.fuzz`:
+     61 `require-rustdoc`.
+  - Rust exemptions are matched relative to the working directory:
+     `package/fuzz/forbidden-strings` reports 0 from the root and 30 from inside it.
+  - The built-in exemptions hide 1,132 Rust findings,
+     including 4 more files over the line budget.
+  - Markdown:
+     46,460 findings in 95 files,
+     exit 1,
+     so `mise run lint` is already red;
+     44,769 `semantic-line-breaks`,
+     1,683 `MD034`,
+     5 `MD001`,
+     2 `MD054`,
+     1 `no-pipe-tables`;
+     46,455 auto-fixable.
+    `doc/audit` holds 38,725 of them.
+    Issue #559 hides 556 more in 6 files.
+    Existing debt is tracked in #294.
+  - Walkers differ:
+     the Rust walker skips hidden directories and honours `.ignore`,
+     `.git/info/exclude`,
+     and the global gitignore,
+     while the Markdown walker lints hidden directories such as `.agents/`
+     and skips `package-paused`,
+     `package-deprecated`,
+     and `.out-of-scope`.
 - Markdown parser crate:
    `choosing-technology` vet running,
    with a parity probe against the npm Sätteri tree over the 137 unit-test sources;
@@ -314,39 +390,33 @@ not vetoed in round 3:
 
 ## Open questions
 
-Round 4,
+Round 5,
 asked 2026-09-23:
 
-- Name
-   (research ranking `sumilint` > `monolint` > `monochromatic-lint`).
-- Configuration lookup:
-   ESLint v10 nearest-file-only,
-   one root file only,
-   or today's outermost-first merge.
-- Default output formatter:
-   `stylish` or `jsonl`.
-- Core:
-   evolve `rust-linter-core` in place or start a new core.
-- Inline rule configuration comments (`/* <name> rule: off */`):
-   adopt,
-   adopt except for non-suppressible rules,
-   or leave out.
-- Issue #559:
-   fix the TypeScript linter now or leave it until cutover.
-- Adoptions open to veto:
-   plugin crates per language,
-   virtual file paths usable in `files` globs,
-   categories becoming plugin configurations,
-   directive semantics with mandatory justification in core,
-   and ESLint's `warn` default for unused directives.
+- ESLint features to leave out,
+   by area:
+   configuration,
+   command line,
+   rule interface,
+   output,
+   processors and directives,
+   extensibility.
+- One crate for compile speed.
+- Walker semantics for the single walk.
+- Rust outside packages:
+   `*.fuzz` crates and `doc/audit` Rust.
+- Package path,
+   configuration file name,
+   and directive prefix for `monochromatic-lint`.
+- Mise install mechanism.
+- Incumbent tests ported as behavior specifications only.
+- Proposed `AGENTS.md` rule about asking what to leave out of a model system.
 
 Waiting on research:
-the Markdown parser crate,
-how cli-git finds the binary (needs the backlog agent's build timing),
-and how to roll out processor findings that exist today.
+the Markdown parser crate.
 
 ## Next action
 
-Collect round 4 answers and the remaining research,
+Collect round 5 answers and the parser vet,
 record them here,
-then ask round 5.
+then ask round 6.
