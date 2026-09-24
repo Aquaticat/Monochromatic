@@ -2,7 +2,7 @@
 
 ## Status
 
-Design interview in progress. No implementation is authorized until the user confirms shared understanding.
+Requirements confirmed by the user on 2026-09-24 ("Do it."). Implementation is authorized, subject to a separate foundation-adoption gate before work depends on an unselected external component. Crates.io publication is explicitly requested.
 
 ## Existing boundaries
 
@@ -51,4 +51,4 @@ A port retains the documented identity of the TypeScript library: JSONC containe
 
 ## Next action
 
-Ask the user to confirm the complete requirements before implementation or publication. After confirmation, evaluate the foundation and request adoption of a vetted recommendation before implementation depends on it. Verify and publish only after those gates pass.
+Evaluate parser and numeric foundations against the confirmed contract and choosing-technology gates. Present the evidenced ranking and obtain adoption before implementation depends on the selected component. Then implement, test at the consumer boundary, and publish with an authorized credential route. No crate code or publication has occurred yet.
