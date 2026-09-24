@@ -228,7 +228,7 @@ function checkedDisplayPath({
   if (displayed.length !== original.length)
     throw malformedOutput();
   if ((hit.kind === 'name')
-    && ((hit.position > original.length) || (displayed[hit.position - 1] !== '[REDACTED]',)))
+    && ((hit.position > original.length) || (displayed[hit.position - 1] !== '[REDACTED]')))
     throw malformedOutput();
   for (let index = 0; index < original.length; index += 1) {
     /**
