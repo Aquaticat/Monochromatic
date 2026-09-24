@@ -8,7 +8,10 @@
    scored with sensitivity,
    and a recommendation recorded.
    **Not adopted**:
-   adoption is a separate user decision, and no product code, dependency, decision record or publication followed.
+   adoption is a separate user decision,
+   and no product code,
+   dependency,
+   decision record or publication followed.
 - Subject:
    jsonc-edit Rust parser foundation.
 - Scope:
@@ -54,7 +57,9 @@
    dependency and build surface,
    maintenance evidence,
    and measured parse performance.
-   Ratings, totals, sensitivity checks and the full ranking are recorded in the scoring section.
+   Ratings,
+   totals,
+   sensitivity checks and the full ranking are recorded in the scoring section.
 
 ## Discovery schedule and limits
 
