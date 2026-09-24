@@ -195,10 +195,16 @@ depends = ["prototype:install"]
 run = "node capture-search-deck.mjs"
 
 [tasks."prototype:capture:choices"]
-description = "Capture design-only inner Fold Search choices with measured debug keyboard occlusion"
+description = "Capture the historical pre-D51 three-way inner Fold Search comparison"
 dir = "{{config_root}}"
 depends = ["prototype:install"]
 run = "node capture-search-choices.mjs"
+
+[tasks."prototype:capture:selected"]
+description = "Capture selected D51 Search without the D52 positive-results heading on both Fold panels"
+dir = "{{config_root}}"
+depends = ["prototype:install"]
+run = "node capture-search-selected.mjs"
 
 [tasks."prototype:capture"]
 description = "Install and capture accepted screen 3B at every user-facing Android text scale"
