@@ -5077,6 +5077,15 @@ to main or opened for feedback.
 existing `TransportBlock` ownership boundary,
  retaining the deck at
 100% and 200%.
+ The throwaway branch now exposes a debug-only
+`SearchFoldDeckHost` around that actual transport component and routes
+`SearchPersistentDeckStudy.kt` with left Search,
+ right Search,
+ and a
+full-width header/two-result composition above the pinned deck.
+ Its build
+is running;
+ no replacement is validated yet.
  No candidate is accepted.
  Assess
 composition on both panels at 100%/200% text,
