@@ -242,6 +242,22 @@ The [crate-publishing PR #11850](https://github.com/biomejs/biome/pull/11850) wa
  or package-release validation for version 0.5.7.
  No soft maintenance rating is assigned yet.
 
+### Malformed external fixture control
+
+The public [issue #7728](https://github.com/biomejs/biome/issues/7728) reports a worker stack overflow on malformed JSON in a Biome 2.2.5 application run.
+ The reporter's fixture repository `gc/biome-crash` was cloned read-only at `bea9583`;
+ `src/evil.json` is 665123 bytes of log-like invalid JSON,
+ SHA-256 `8490581e9b29f474beedf09c72a9930d0103a694bc430a8408828c53a4340109`.
+ The issue's recursive-drop explanation is a contributor hypothesis,
+ not a confirmed source diagnosis.
+ A disposable test of the **published 0.5.7 parser library** will parse,
+ inspect diagnostics,
+ traverse syntax tokens,
+ and drop this input inside the existing 2 GiB/2 CPU offline container.
+ The revised `~/temp/agent/biome-execution-manifest.md` records its new read-only fixture mount and stop conditions before execution.
+ No result is yet claimed;
+ the application CLI/worker incident and direct library path remain separate until a matching failure boundary is measured.
+
 ## Current source checks, not a recommendation
 
 - `jsonc-parser` 0.33.2,
