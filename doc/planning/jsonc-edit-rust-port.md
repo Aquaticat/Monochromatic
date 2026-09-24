@@ -49,6 +49,17 @@ A port retains the documented identity of the TypeScript library: JSONC containe
 - Evaluate parser or numeric dependencies under the choosing-technology gates. Present the evidence, ranking, and risks; get explicit adoption of the foundation before dependent implementation or a decision record. Do not adopt meow's selected editor merely because it exists, and do not replace meow's editor as part of this port.
 - Verify the packaged crate by building and calling it from a disposable Rust consumer, then publish the checked artifact using an authorized token route. Extend the existing release workflow for subsequent releases only after the first publication, when the crate can be configured for trusted publishing.
 
+## Foundation evaluation queries
+
+Freeze this numeric-foundation discovery schedule before running it:
+
+- Registry: `cargo search exact decimal --limit 100`, `cargo search bigint --limit 100`, `cargo search arbitrary precision json --limit 100` and `cargo info` for identified serious candidates. Record result counts and incomplete registry enumeration honestly.
+- Repository host: GitHub repository searches for `rust arbitrary precision decimal json` and `rust bigint`.
+- Web: `Rust exact JSON number decimal exponent arbitrary precision source crate` and `Rust JSON number lexeme exact comparison library`.
+- In-repo: inspect existing Cargo dependencies and `doc/planning/monorepo-manager-route-research/rust-structured-edits.md` for number equality and raw-token precedents.
+
+Compare a verified raw-token representation owned by the crate with available exact-decimal components. A component must support exact value comparison over the admitted JSON-number grammar, preserve original literal spelling on unedited output, and avoid silent rounding or unbounded recursion. Maintain the parser-foundation query record separately when its research returns. No candidate is recommended from these queries alone.
+
 ## Next action
 
 Evaluate parser and numeric foundations against the confirmed contract and choosing-technology gates. Present the evidenced ranking and obtain adoption before implementation depends on the selected component. Then implement, test at the consumer boundary, and publish with an authorized credential route. No crate code or publication has occurred yet.
