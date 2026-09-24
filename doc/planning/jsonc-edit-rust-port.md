@@ -58,6 +58,8 @@ Freeze this numeric-foundation discovery schedule before running it:
 - Web: `Rust exact JSON number decimal exponent arbitrary precision source crate` and `Rust JSON number lexeme exact comparison library`.
 - In-repo: inspect existing Cargo dependencies and `doc/planning/monorepo-manager-route-research/rust-structured-edits.md` for number equality and raw-token precedents.
 
+One de-duplicated expansion round after initial taxonomy findings: registry `cargo search 'json number' --limit 100` and `cargo search 'decimal arbitrary exponent' --limit 100`; repository host `gh search repos 'rust json number' --limit 100 --json fullName,url,description,updatedAt`; web `Rust lexical JSON number numeric equality arbitrary exponent crate`. Freeze after this round. Registry pagination uses the crates.io API through the rendered web-fetch transport when direct `curl` cannot read it; inspect whole pages until two consecutive pages add no screening survivor or the provider is exhausted.
+
 Compare a verified raw-token representation owned by the crate with available exact-decimal components. A component must support exact value comparison over the admitted JSON-number grammar, preserve original literal spelling on unedited output, and avoid silent rounding or unbounded recursion. Maintain the parser-foundation query record separately when its research returns. No candidate is recommended from these queries alone.
 
 ## Next action
