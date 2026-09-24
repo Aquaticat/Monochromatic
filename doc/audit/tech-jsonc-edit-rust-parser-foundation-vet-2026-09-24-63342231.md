@@ -1462,6 +1462,72 @@ The scratch differential consumer now has `src/bin/bench.rs` and a `mise run ben
  machine targets or the cost of future product integration.
  Performance ratings still await the remaining finalist and rubric evidence.
 
+### Workload-shape performance measurement
+
+The single 1065-byte document left the ranking sensitive to one shape,
+ so `src/bin/bench.rs` now measures six fixed shapes chosen from source-level cost differences:
+ the historical mixed baseline (comments,
+ nesting,
+ an escaped lone surrogate and exact-number spellings),
+ 64 nested records,
+ a 512-element wide array,
+ a comment-dense record with a key block comment and a same-line value comment on every member,
+ 32 long escaped strings,
+ and 32 numbers with 40-digit exponents.
+ Each shape first asserts that both candidates return **identical** editor values,
+ then warms both paths,
+ then samples the owned path,
+ the Biome projection and the owned path again on one unchanged optimized binary
+ (7 trials per sample set,
+ 64 to 256 parse-to-value calls per trial,
+ inside the same 2 GiB/2 CPU offline container).
+
+Measured nanoseconds per parse-to-editor-value call,
+ as minimum to maximum of the seven trials:
+
+- mixed baseline,
+   1065 bytes:
+   owned 16145 to 18559 before and 20950 to 21954 after;
+   Biome projection 100092 to 104812.
+- 64 nested records,
+   385 bytes:
+   owned 13119 to 15509;
+   Biome 89029 to 95055.
+- 512-element wide array,
+   1939 bytes:
+   owned 96153 to 107462;
+   Biome 350888 to 379546.
+- comment-dense 64 members,
+   2395 bytes:
+   owned 24303 to 26672;
+   Biome 112099 to 114478.
+- 32 long escaped strings,
+   1837 bytes:
+   owned 11763 to 12976;
+   Biome 53115 to 54820.
+- 32 numbers with 40-digit exponents,
+   1667 bytes:
+   owned 12739 to 13427;
+   Biome 51336 to 54559.
+
+The owned band is below the Biome band in every shape,
+ with no overlap,
+ at roughly 3.5 times (wide array) to 7 times (nested records) slower for the projection path.
+ The baseline shape also shows why bracketing matters:
+ the owned band after the Biome samples (20950 to 21954) does not overlap its own earlier band
+ (16145 to 18559),
+ a drift of about 25 percent on an unchanged binary,
+ yet that drift is far smaller than the cross-candidate gap.
+
+Scope limits:
+ these are scratch prototypes rather than a product crate,
+ they measure parse-to-editor-value only (not immutable edit operations,
+ emission,
+ or peak allocation),
+ they ran on one Linux x86-64 host in a shared container,
+ and the Biome path includes the adapter cost that a product composition would also pay.
+ No memory-footprint measurement was taken.
+
 ## Existing-parser contract exits
 
 These are outcomes for published implementations **as-is**,
