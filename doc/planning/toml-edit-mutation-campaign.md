@@ -482,8 +482,13 @@ The remaining runtime comment API and value-encoding files are now being scanned
 - `toml-get-comment-after.ts`,
   `toml-get-comments-before.ts`,
   `toml-insert-comment-after.ts`,
-  and `toml-insert-comment-before.ts` write
-  `/var/home/user/temp/agent/toml-mutation-comment-api.json` (`proc_b6db`).
+  and `toml-insert-comment-before.ts` wrote
+  `/var/home/user/temp/agent/toml-mutation-comment-api.json`:
+  14 killed,
+  34 confirmed survivors,
+  148 compile errors,
+  no infrastructure errors.
+  Missing-path diagnostics and comment insertion inside standard tables need tests.
 - `value-encoders.ts` and `values.ts` write
   `/var/home/user/temp/agent/toml-mutation-value-encoders.json` (`proc_1ab6`).
 
