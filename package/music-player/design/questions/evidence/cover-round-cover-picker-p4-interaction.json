@@ -1,0 +1,49 @@
+{
+  "android": {
+    "device": "Pixel_9_Pro_Fold",
+    "serial": "emulator-5554",
+    "foldedState": 0,
+    "displayPixels": [
+      1080,
+      2424
+    ],
+    "fontScale": 2,
+    "night": true
+  },
+  "candidate": "cover-picker-p4-interactive",
+  "limitation": "Keyboard focus verified via uiautomator focused attribute. Touch dismissal does not restore keyboard focus in touch mode; TalkBack accessibility focus not evaluated.",
+  "states": [
+    {
+      "stage": "initial-closed",
+      "folderTrigger": true,
+      "pickerName": false,
+      "trackName": true,
+      "keyboardFocused": true,
+      "evidence": "cover-round-cover-picker-p4-interaction-initial-closed.xml"
+    },
+    {
+      "stage": "keyboard-open",
+      "folderTrigger": true,
+      "pickerName": true,
+      "trackName": false,
+      "keyboardFocused": true,
+      "evidence": "cover-round-cover-picker-p4-interaction-keyboard-open.xml"
+    },
+    {
+      "stage": "back-closed",
+      "folderTrigger": true,
+      "pickerName": false,
+      "trackName": true,
+      "keyboardFocused": true,
+      "evidence": "cover-round-cover-picker-p4-interaction-back-closed.xml"
+    },
+    {
+      "stage": "selection-closed",
+      "folderTrigger": true,
+      "pickerName": false,
+      "trackName": true,
+      "keyboardFocused": false,
+      "evidence": "cover-round-cover-picker-p4-interaction-selection-closed.xml"
+    }
+  ]
+}
