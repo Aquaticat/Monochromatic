@@ -71,16 +71,29 @@ const visibleKeyboardTop = (panel) => {
   const frame = window.indexOf('frame=[', frames);
   if (frames < 0 || frame < 0) throw new Error('Input-method window has no frame.');
   const top = Number(window.slice(frame + 'frame=['.length, window.indexOf(']', frame)).split(',')[1]);
-  if (Math.abs(top - panel.keyboardTop) > 24) {
+  if (!Number.isFinite(top) || Math.abs(top - panel.keyboardTop) > 24) {
     throw new Error(`${panel.name}: 300dp probe did not settle: y=${top}.`);
   }
   return top;
 };
 const verifyResults = ({ panel, xml, keyboardTop }) => {
-  for (const required of ['text="cam"', 'text="Camellia"', 'text="Another Xronixle"']) {
-    if (!xml.includes(required)) throw new Error(`${panel.name}: missing ${required}.`);
-  }
+  if (!xml.includes('text="cam"')) throw new Error(`${panel.name}: query is not in the header.`);
   if (xml.includes('Results for “cam”')) throw new Error(`${panel.name}: repeated query heading returned.`);
+  const minimumX = panel.name === 'inner' ? 1093 : 0;
+  const nodes = xml.split('<node ').slice(1);
+  for (const text of ['Camellia', 'Folder · opens this folder',
+    'Another Xronixle', 'Track · Camellia · reveals track']) {
+    const node = nodes.find((entry) => {
+      if (!entry.includes(`text="${text}"`)) return false;
+      const bounds = entry.split('bounds="')[1]?.split('"')[0];
+      return bounds !== undefined && JSON.parse(bounds.replace('][', ','))[0] >= minimumX;
+    });
+    if (!node) throw new Error(`${panel.name}: right-side result ${text} is absent.`);
+    const bounds = JSON.parse(node.split('bounds="')[1].split('"')[0].replace('][', ','));
+    if (keyboardTop !== null && bounds[3] >= keyboardTop - 8) {
+      throw new Error(`${panel.name}: result ${text} extends beneath keyboard.`);
+    }
+  }
   if (panel.name !== 'inner') return;
   for (const description of ['Track position', 'Previous track', 'Pause', 'Next track',
     'Repeat track', 'Play in order', 'Shuffle Camellia', 'Shuffle all folders']) {
@@ -167,6 +180,15 @@ mkdirSync(evidence, { recursive: true });
         capture({ panel, displayId, mode, scale, stage: 'typing', xml: results, keyboardTop: actualTop });
         shell(['input', 'keyevent', '4']);
         const closed = hierarchy(['text="cam"', 'text="Camellia"', 'text="Another Xronixle"']);
+        const windowDump = shell(['dumpsys', 'window', 'windows']);
+        const imeAt = windowDump.indexOf(' u0 InputMethod}:');
+        if (imeAt >= 0) {
+          const end = windowDump.indexOf('  Window #', imeAt);
+          const window = windowDump.slice(imeAt, end < 0 ? undefined : end);
+          if (window.includes('isOnScreen=true') && window.includes('isVisible=true')) {
+            throw new Error(`${panel.name}: keyboard remains over the results-closed capture.`);
+          }
+        }
         capture({ panel, displayId, mode, scale, stage: 'results', xml: closed, keyboardTop: null });
       }
     }
