@@ -4647,19 +4647,23 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  ZHEERMAO8 RUNS (frozen `d2e39e095`,
-    pid 3041616,
-    entry `zheermao101`,
-    launched 00:09 UTC 2026-09-24,
-    waiter binlnnzie,
-    meters 48.84 USD Bedrock and 96.19 OpenRouter at launch, Synthetic's five-hour window spent, Hyper dry;
+1.  YINGYING8 RUNS (frozen `d2e39e095`,
+    pid 3077650,
+    launched 00:26 UTC 2026-09-24,
+    waiter bm2t3byvd,
+    meters 48.57 USD Bedrock and 95.93 OpenRouter at launch, Synthetic's five-hour window spent, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read for the polish gate ballots under the house rules (class one hundred four on an entry with gate-kept slices),
-    class one hundred five silent by design (no gloss line in the archive),
-    classes seventy-seven, ninety-six, one hundred one and one hundred two holding,
-    beside every check of `zheermao7` (2 headings, front matter equal, no TA, no error finish, no double blank line, both labels one line, the email conversation as the archive);
-    record under a new heading above "## CuspariaKLSY10 read, 2026-09-24" in the pass log;
-    then yingying on the same dist.
+    read for the polish gate under the house rules (class one hundred four), class one hundred five silent by design,
+    classes eighty-six, ninety-seven, one hundred one and one hundred two holding,
+    beside every check of `yingying7` (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, "Farewell. I miss you, Yingying.", "May you still have", no TA, no error finish, no double blank line);
+    record under a new heading above "## zheermao8 read, 2026-09-24" in the pass log;
+    then shi_Yumiaoya or mikaela on the same dist.
+    ZHEERMAO8 READ (frozen `d2e39e095`): SETTLED at 00:23 UTC 2026-09-24 in 14 min, one attempt, 859 seats, 33 retry rounds, 0.25 USD by the meters;
+    class one hundred four on the wire (the polish gate on seven slices, ballots reading the house rules, no tense called a change of meaning), class one hundred five silent by design,
+    classes seventy-seven, ninety-six, one hundred one and one hundred two holding, every check as `zheermao7`, 15 abstention lines, Jev 25 of 25;
+    observation, not built: the reply label kept the archive's "one member ... immediately" for 那些秋叶的成员…连夜 on a 2 to 2 contest (every ballot calling the archive flawed) and a 1/1/1 slate with both lane texts on offer through the class forty path, the eligible standing keeping its single round;
+    open question for the owner beside the `CuspariaKLSY10` one: whether the class eighty-two run-off should also run over an eligible standing when the slate ties or falls short (changes the "eligible standing keeps its single round" addendum).
+    CUSPARIAKLSY10 READ (frozen `d2e39e095`): SETTLED at 00:06 UTC 2026-09-24 in 7 min, one attempt, 375 seats, 12 retry rounds, 0.18 USD by the meters;
     CUSPARIAKLSY10 READ (frozen `d2e39e095`): SETTLED at 00:06 UTC 2026-09-24 in 7 min, one attempt, 375 seats, 12 retry rounds, 0.18 USD by the meters;
     class one hundred four live (the life in the past, the slice 0 polish gate citing the house tense rule and no ballot calling the tense a change of meaning),
     class one hundred five live (the bench dropped the gloss line again, `name-gloss-restored` printed, the gloss on the page after the nickname line),

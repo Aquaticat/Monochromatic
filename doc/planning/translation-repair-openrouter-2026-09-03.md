@@ -8082,6 +8082,41 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## zheermao8 read, 2026-09-24, 00:30 UTC: SETTLED in 14 min, the polish gate reading the house rules on seven slices (class one hundred four), every check as zheermao7; the reply label kept the archive's "one member" on a tied contest and a tied slate with both lane texts on offer; yingying8 launched
+
+`zheermao8` (frozen `d2e39e095`, pid 3041616, entry `zheermao101`) SETTLED at 00:23 UTC 2026-09-24,
+14 min after its 00:09 launch (TALLY `ms=831400`),
+one attempt,
+859 seats,
+33 retry rounds,
+716 calls,
+19 abandoned streams (0.05 USD; 12 minimax-m3, 7 deepseek-v4.1-flash),
+0.25 USD by the meters (Bedrock 48.84 to 48.59, OpenRouter 96.19 to 95.95),
+on Bedrock and OpenRouter alone (Synthetic's window spent, Hyper dry); no hold, so class one hundred three not exercised.
+Grace 0.9 s mean over 210 rounds; Jev 25 of 25; 15 abstention lines with reasons.
+
+Class one hundred four on the wire: the polish gate ran on seven slices (base 1, polished 4, neither 2), its ballots reading the house rules ("hold the same tense", "without changing the meaning or violating any house rules"); no ballot called a tense a change of meaning.
+Class one hundred five silent by design (the archive carries no gloss line).
+Classes seventy-seven, ninety-six, one hundred one and one hundred two holding, every check as `zheermao7`:
+2 headings, front matter equal, no TA, no error finish, no double blank line, both labels one line as the archive ("English translation of the preceding letter:", "English translation of the preceding email conversation:"), the email conversation as the archive,
+26 curly apostrophes and 6 curly double quotes against the archive's 27 and 6, six three-dot ellipses against seven (the bench's line);
+terminals consolidated (1, 4, 12), gate-kept (3, 11), slate-declined (0, 5, 6, 9), 14 slices, 9 contested.
+The read script's one "refusal" hit is the archive's own letter line "Although I cannot comprehend what you've been through", not a model refusal.
+The One Among Us reply's untranslated JSX comment (可以避开黑暗的锋芒…) rendered into the reply this run ("You can avoid the sharpest edges of the darkness and find refuge where there is light.") where `zheermao7` kept the comment; the archive block review's call on a picture block, as on `zheermao3` and `4`.
+
+Observation, not a class: slice 9 (the reply label) shipped the archive's "Upon seeing it, one member sent her a reply immediately:" for 那些秋叶的成员在看到后连夜给她发送了一份回信 (plural members, that same night), which `zheermao7` rendered "When the members saw it, they stayed up that night to send her a reply:".
+Both lanes corrected it (repair "When the members saw it, they stayed up through the night", translate "the members of One Among Us sent her a reply that same night"), the contest tied 2 to 2 with every ballot calling the archive flawed, so the archive stood;
+the class forty offer put both lane texts on the consolidation slate ("lane texts offered on the slate beside the proposals: repair, translate"), the slate split 1/1/1 with gpt-oss declining all on a misread ("the quoted lines in present tense" on a slice with no quoted line), and the eligible standing kept its single round.
+This is the second slice tonight (with `CuspariaKLSY10`'s death paragraph) where an archive defect every judge named shipped because the slate over an eligible standing tied at its single round; the census over the last six read runs finds tied contests with the archive flawed on every ballot on 5 slices (`XingZ631` 3, `XingZ628` 1, `zheermao8` 1), one of them shipped unendorsed here.
+Open question for the owner, beside the `CuspariaKLSY10` one: whether the class eighty-two run-off (the same panel again while the finalists narrow) should also run over an eligible standing when the slate ties or falls short, so a tie among texts that all correct the archive is decided rather than defaulted; that changes the "an eligible standing keeps its single round" addendum, so it is not built.
+
+`yingying8` (frozen `d2e39e095`, pid 3077650, overlap 8)
+launched 00:26 UTC on Bedrock and OpenRouter
+(meters 48.57 USD Bedrock, 95.93 OpenRouter at launch),
+waiter bm2t3byvd.
+Read for the polish gate under the house rules, class one hundred five silent by design, classes eighty-six, ninety-seven, one hundred one and one hundred two holding,
+beside every check of `yingying7` (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, "Farewell. I miss you, Yingying.", "May you still have", no TA, no error finish, no double blank line).
+
 ## CuspariaKLSY10 read, 2026-09-24, 00:15 UTC: SETTLED in 7 min, classes one hundred four and five live (the life in the past past the polish gate, the gloss line restored at page assembly); the death paragraph shipped the repair lane's minimal edit with the archive's own omissions, unendorsed; zheermao8 launched
 
 `CuspariaKLSY10` (frozen `d2e39e095`, pid 3035347) SETTLED at 00:06 UTC 2026-09-24,
