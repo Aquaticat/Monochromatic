@@ -296,6 +296,8 @@ document.querySelectorAll('.preview-actions button').forEach(button => {
     scale = 1;
     preview.showModal();
     showScale();
+    previewStage.scrollTop = 0;
+    previewStage.scrollLeft = 0;
     document.querySelector('#close-preview').focus();
   });
 });
