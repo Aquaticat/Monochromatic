@@ -8082,6 +8082,42 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## CuspariaKLSY14 read, 2026-09-24, 10:08 UTC: SETTLED in 21.6 min, GLM-5.3-Flash on Hyper with Synthetic wet (class one hundred eighteen live), the life list loose as the archive; no class
+
+`CuspariaKLSY14` (frozen `0d8e463ef`, corpus-pass pid 3557762) was launched at 09:44 UTC 2026-09-24
+and SETTLED at 10:05 UTC,
+21.6 min (TALLY `ms=1298653`) against CuspariaKLSY13's 31.9,
+one attempt,
+401 seats,
+400 calls,
+0 retry rounds,
+0.07 USD by the meters
+(Bedrock 46.37 to 46.33, OpenRouter 92.71 to 92.68).
+Synthetic read wet at launch and dry by the end.
+Jev 10 of 10; no abstention line.
+
+Class one hundred eighteen live:
+no `SPEND provider=synthetic model=hf:zai-org/GLM-5.3-Flash` line;
+its first streams went to Hyper at 09:44 while Synthetic still read wet, and 15 of 15 GLM-5.3-Flash seats were usable.
+The longest log gap is 89 s against CuspariaKLSY13's 179 s and 175 s.
+Class one hundred seventeen not exercised:
+the bench wrote the life list loose this time (items 1 and 2 reworded, 3 and 4 the archive's words),
+so no `list-spread-restored` finding; the four blank-line gaps are on the page.
+
+Every CuspariaKLSY13 check holds:
+front matter equal,
+1 heading,
+no TA,
+no error finish,
+no double blank line,
+the life in the past,
+the gloss line “Ling Shui Yu Yu Zi” means fish in clear water after the nickname.
+The death paragraph carries 双方情绪爆发 ("tempers flared on both sides"), 抢救 and 再次得到消息 with no medication detail;
+又 before 和其父亲发生争吵 is dropped ("She later woke up and argued with her father"), an observation, not a class.
+One `translate-archive-disputed` line.
+No class.
+`shi_Yumiaoya19` launched at 10:08 UTC on `.frozen-dist-0d8e463ef` (corpus-pass pid 3826911).
+
 ## CuspariaKLSY13 read, 2026-09-24, 09:45 UTC: SETTLED in 31.9 min with the death paragraph faithful; the archive's loose list shipped tight (class one hundred seventeen, built in c796c5085) and GLM-5.3-Flash on Synthetic cost two grace windows (class one hundred eighteen, built in 0d8e463ef)
 
 `CuspariaKLSY13` (frozen `3bb47c918`, pid 3051768) was launched at 08:43 UTC 2026-09-24

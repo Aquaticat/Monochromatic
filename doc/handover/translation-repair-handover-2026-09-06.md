@@ -4766,19 +4766,19 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CUSPARIAKLSY14 RUNS (entry `CuspariaKLSY`,
+1.  SHI_YUMIAOYA19 RUNS (entry `shi_Yumiaoya`,
     frozen `0d8e463ef`,
-    corpus-pass pid 3557762 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
-    launched 09:44 UTC 2026-09-24,
-    waiter wait-c14 (background bash),
-    meters 46.37 USD Bedrock and 92.71 OpenRouter at launch, every provider wet;
+    corpus-pass pid 3826911 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
+    launched 10:08 UTC 2026-09-24,
+    waiter wait-s19 (background bash),
+    meters 46.33 USD Bedrock and 92.68 OpenRouter at launch, Synthetic dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    confirms classes one hundred seventeen and one hundred eighteen live;
-    read it by every CuspariaKLSY13 check (1 heading, front matter equal, the life in the past, the gloss line after the nickname, slice 3 with no medication detail, no TA, no error finish, no double blank line),
-    the life list loose with blank lines as the archive (a `list-spread-restored` finding if the bench wrote it tight),
-    and no GLM-5.3-Flash stream on Synthetic (`SPEND provider=synthetic model=hf:zai-org/GLM-5.3-Flash` absent);
-    then `shi_Yumiaoya`, `hulicaijia`, `XingZ60`, `mikaela_khara` and `yingying` on the same build if each reads clean;
-    record each under a new heading above "## CuspariaKLSY13 read, 2026-09-24" in the pass log.
+    the rotation on the class one hundred eighteen build;
+    read it by every shi_Yumiaoya18 check (4 headings, front matter equal, the death paragraphs, "Magic Chewing Gum and Danpian", the survived attempt as an attempt, the closing quote as the archive's two lines, the [^1] definition, no TA, no error finish, no double blank line) and no GLM-5.3-Flash stream on Synthetic;
+    then `hulicaijia`, `XingZ60`, `mikaela_khara` and `yingying` on the same build if each reads clean;
+    record each under a new heading above "## CuspariaKLSY14 read, 2026-09-24" in the pass log.
+    CUSPARIAKLSY14 READ (frozen `0d8e463ef`): SETTLED 10:05 UTC 2026-09-24 in 21.6 min, 401 seats, 400 calls, 0 retry rounds, 0.07 USD by the meters;
+    class one hundred eighteen live (no GLM-5.3-Flash stream on Synthetic, its first streams on Hyper while Synthetic read wet, longest gap 89 s against 179), class one hundred seventeen not exercised (the bench wrote the list loose), every CuspariaKLSY13 check holds; observation: 又 dropped before the argument with her father; no class.
     CUSPARIAKLSY13 READ (frozen `3bb47c918`): SETTLED 09:15 UTC 2026-09-24 in 31.9 min, 367 seats, 363 calls, 0.06 USD by the meters;
     every CuspariaKLSY12 check holds and the death paragraph carries 双方情绪爆发, 又, 抢救 and 再次得到消息 with no medication detail;
     but the archive's loose life list shipped tight (class one hundred seventeen),
