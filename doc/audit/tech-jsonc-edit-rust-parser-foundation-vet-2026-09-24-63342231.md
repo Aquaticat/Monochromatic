@@ -439,6 +439,14 @@ The published `biome_json_parser` 0.5.7 archive SHA-256
  `biome_json_parser-0.5.7/src/token_source.rs:31-60` classifies trivia around newlines,
  while `biome_parser-0.5.7/src/tree_sink.rs:123-145` attaches it to syntax tokens.
  A consumer must still map grammar-delimiter trivia to the accepted key/value ownership policy.
+ A bounded `typed_member_comment_projection` test reached the member name,
+ colon,
+ value and trailing separator via `biome_json_syntax-0.5.7/src/generated/nodes.rs:110-143`
+ and `biome_rowan-0.5.7/src/ast/mod.rs:565-590`;
+ it retrieved the key-side,
+ value-side and after-comma pieces without a second syntax parse.
+ This tests accessible source slots,
+ not general ownership rules or immutable projection.
  Bounded debug and optimized release suites each passed 512-level array and record parse/syntax/drop,
  cleanup after a deep syntax error,
  and the adapter's 512-accepted/513-rejected depth controls.
@@ -447,6 +455,9 @@ The published `biome_json_parser` 0.5.7 archive SHA-256
  The tested postparse guard rejects the extra opener and scalar roots;
  it does not cap upstream allocations before parsing.
  See [`biome-json-parser-nesting-limit.md`](../troubleshooting/biome-json-parser-nesting-limit.md).
+ The lexer uses `from_utf8_unchecked` and `unreachable_unchecked` at `biome_json_parser-0.5.7/src/lexer/mod.rs:205-228`;
+ the character-boundary and non-EOF invariants require a source and release-path safety audit.
+ The presence of unsafe blocks alone does not prove a memory-safety failure.
  This validates a raw-syntax candidate,
  not key/value attachment,
  exact-value projection,
