@@ -112,7 +112,7 @@ rounds (2026-09-17):
   not an adopted layout.
   A user-opened YouTube
   screenshot places thumbnail time and video title lettering near the crease;
-  at the supplied 10mm width their edges fall in the approximate dent band,
+  at the corrected 7.5mm width their edges fall in the approximate dent band,
   so treat that as a negative text-clearance example,
   not an endorsement.
   Keep Search results,
@@ -137,12 +137,12 @@ rounds (2026-09-17):
   keep opposing **informational
   material** apart by `max(min_padding, crease_width)` in physical units.
   The
-  visible dent is about 10mm,
-  approximately 147 panel pixels at 2076px
-  unfolded width.
-  It is about 60dp **only at this AVD's present 390dpi**;
-  the
-  dp value changes with Android display scaling while 10mm does not.
+  visible dent is about 7.5mm (superseding an initial 10mm estimate),
+  approximately 110 panel pixels at 2076px unfolded width.
+  It is about
+  45dp **only at this AVD's present 390dpi**;
+  the dp value changes with
+  Android display scaling while the physical 7.5mm does not.
   The
   zero-width emulator hinge-area sensor is an occlusion model,
   not the
