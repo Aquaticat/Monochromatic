@@ -45,5 +45,24 @@ await describe({
         expect(block.value.entries[0]?.commentsBefore,).toStrictEqual([],);
       },
     },),
+    it({
+      name: 'does not attach comments to an appended inline-table entry',
+      fn: async () => {
+        const edit = tomlSet({
+          edit: parseTomlEdit({ source: 'foo = { a = 1 }\n', },),
+          path: ['foo', 'b',],
+          value: 2,
+        },);
+        const [block,] = edit.blocks;
+        if (block?.kind !== 'keyvalue')
+          throw new Error('Expected edited key-value block',);
+        if (block.value.kind !== 'inline-table')
+          throw new Error('Expected edited inline-table value',);
+        const entry = block.value.entries.find(function isAdded(candidate,) {
+          return candidate.keySegments[0] === 'b';
+        },);
+        expect(entry?.commentsBefore,).toStrictEqual([],);
+      },
+    },),
   ],
 },);
