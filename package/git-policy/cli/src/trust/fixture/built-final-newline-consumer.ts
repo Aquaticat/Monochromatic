@@ -13,6 +13,7 @@ import {
 } from './built-consumer-helpers.ts';
 import { verifyFinalNewlineExclusions, } from './built-final-newline-exclusions-consumer.ts';
 import { verifyFinalNewlinePartialCommit, } from './built-final-newline-partial-consumer.ts';
+import { verifyFinalNewlineReconciliation, } from './built-final-newline-reconciliation-consumer.ts';
 import {
   assertFixtureEqual,
   initializeBareRemote,
@@ -358,5 +359,6 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     context: 'manual-push committed blob bytes',
   },);
   await verifyFinalNewlinePartialCommit({ env, },);
+  await verifyFinalNewlineReconciliation({ env, },);
   await verifyFinalNewlineExclusions({ env, },);
 }
