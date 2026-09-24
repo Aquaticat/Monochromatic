@@ -522,6 +522,23 @@ The published `serde_jsonc` 1.0.108 and `serde_jsonc2` 0.1.2 parse line and bloc
  No surrogate or regex claim is inferred from this comment-model exit,
  and no candidate code was executed.
 
+### `babbel_json` 0.2.2 as-is grammar and comment-model exit
+
+The published `src/parser/json5.rs:1-11,104-149` exposes a JSON5/JSONC parse entry that also admits JSON5-only syntax
+ and defaults to a recursive-descent depth ceiling of 256.
+ `src/parser/json5.rs:29-103` includes a comment-stripping helper,
+ while the public `src/nodes/types.rs:10-29` projects to strings,
+ numbers,
+ arrays and unordered objects without attached key/value comments.
+ The as-is parser therefore does not preserve this port's strict JSONC-only grammar,
+ accepted 512-depth domain,
+ ordered comment-bearing keys and values.
+ A separately strict tokenizer/owner adapter would be custom code,
+ not that public projection.
+ A targeted source/manifest search found no production regex call in this JSON5 parser path;
+ its exits here are semantic rather than regex-based.
+ No candidate code was executed.
+
 ### `fjson` 0.3.1
 
 **Source correction:**
