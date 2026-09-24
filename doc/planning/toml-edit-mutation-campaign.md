@@ -561,10 +561,20 @@ The package build and unit suite,
  type check,
  oxlint,
  and bounded sidecar properties passed after those changes.
-Focused rechecks are running on the same source revision:
- `/var/home/user/temp/agent/toml-mutation-synthetic-comment.json` (`proc_1ef3`)
- and `/var/home/user/temp/agent/toml-mutation-tagged-encoder.json` (`proc_fa85`).
-Do not edit runtime source until both complete.
+The focused rechecks completed without infrastructure errors:
+
+- `/var/home/user/temp/agent/toml-mutation-synthetic-comment.json`:
+  12 killed,
+  two confirmed survivors,
+  29 compile errors.
+  The synthetic key-value offset mutant was killed;
+  the remaining sentinel mutants require an impossible factory-produced AST mismatch or a caller-bypassed not-located state.
+- `/var/home/user/temp/agent/toml-mutation-tagged-encoder.json`:
+  61 killed,
+  one confirmed survivor,
+  26 compile errors.
+  The remaining `>` to `>=` change has the same result on the reachable nonfinite values
+  after NaN and finite numbers are handled.
 TOML 1.0 and 1.1 conformance passed after the shared value-assembly refactor.
 Do not claim a full-runtime verdict before those campaigns and survivor rechecks finish.
 
@@ -596,8 +606,8 @@ Before replacing it,
   so it can be removed while the nonfinite branch stays.
   The direct built-artifact tests pin finite and nonfinite outputs.
 
-This is a parity-preserving owner change in an unpublished package,
- not evidence that formatting did not need tests.
+This is a parity-preserving owner change over the tested formatter paths,
+ not evidence that formatting did not need tests or that source-subpath consumers are unchanged.
 
 ## Remaining scope
 
@@ -608,11 +618,12 @@ The `emit-document.ts` recheck retains equivalent or factory-state-unreachable m
 The campaign does not claim universal equivalence for such inputs.
 These are not counted as killed assertions.
 The `emit-value.ts` final recheck has no survivors.
-No full-runtime campaign was run,
- so the evidence applies only to the named files and documented branches.
+A current dry run selected 45 runtime files with mutants,
+ and a comparison against the saved targeted reports found all 45 represented.
+These runs were not one atomic full-package campaign at a single final revision;
+ only the changed and survivor-bearing files were rechecked after edits.
+Conformance adapters under `src/conformance/` were not included as mutant targets,
+ and sidecar properties were not mutant killers in the current CLI.
 The final coverage gate was run without a pipeline so its exit status was checked directly;
- it passed.
+ it passed after the intentional baseline refreeze.
 Commit only explicit paths in scope.
-The full runtime scan was not run:
- the initial dry run enumerated 2,675 mutants over 45 runtime files,
- so conclusions here apply only to the named campaigns.
