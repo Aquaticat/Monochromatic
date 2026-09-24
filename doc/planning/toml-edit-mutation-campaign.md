@@ -538,10 +538,27 @@ The package build,
  unit suite,
  types,
  and oxlint passed after these assertions.
-Final comment/value mutation rechecks are running on this source revision:
- `/var/home/user/temp/agent/toml-mutation-comment-api-final.json` (`proc_2b74`)
- and `/var/home/user/temp/agent/toml-mutation-value-final.json` (`proc_7bac`).
-Do not edit runtime source until both complete.
+The comment/value rechecks completed with no infrastructure errors:
+
+- `/var/home/user/temp/agent/toml-mutation-comment-api-final.json`:
+  35 killed,
+  13 confirmed survivors,
+  149 compile errors.
+- `/var/home/user/temp/agent/toml-mutation-value-final.json`:
+  116 killed,
+  seven confirmed survivors,
+  141 compile errors.
+
+The comment survivors are confined to synthetic-node offset sentinels,
+ source-subpath symbol descriptions,
+ and AoT body descent guards.
+A test now asserts that a synthetic key-value cannot borrow an earlier trailing comment.
+Most value survivors are kind checks redundant with strict value equality on real parsed nodes,
+ or a nonfinite `> 0` boundary where only positive/negative infinity reaches it after NaN is handled.
+The tagged integer branch returned the same `String(value)` as the default branch,
+ so it was removed.
+The package build and unit suite passed after those changes;
+ focused mutation rechecks are pending.
 TOML 1.0 and 1.1 conformance passed after the shared value-assembly refactor.
 Do not claim a full-runtime verdict before those campaigns and survivor rechecks finish.
 
