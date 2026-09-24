@@ -539,6 +539,22 @@ The published `src/parser/json5.rs:1-11,104-149` exposes a JSON5/JSONC parse ent
  its exits here are semantic rather than regex-based.
  No candidate code was executed.
 
+### `jqf-codec-json` 0.1.1 as-is comment-query exit
+
+The published codec has an actual JSONC grammar with comments and trailing commas,
+ source-preserving edit splice and an exact-decimal value model (`src/jsonc/mod.rs:1-44`).
+ Its documented `jsonc.comment@1` fact is **leading comments on the value node only**;
+ the same module says inline,
+ trailing and inner comments survive byte-wise edits but cannot be read through the comment query.
+ That differs from this port's separately queryable normalized comment on **every key and value**,
+ including trailing value comments.
+ `src/edit.rs:1-19` describes a splice verified by re-decoding rather than the required public immutable-state edit model.
+ An added key/trailing-comment interpretation and canonical emitter would be a distinct adapter,
+ not this codec as-is.
+ A targeted direct-source search found no regex invocation in its JSONC path,
+ but transitive source and normal/build graph remain uninspected because the comment-query gate already fails.
+ No candidate code was executed.
+
 ### `fjson` 0.3.1
 
 **Source correction:**
