@@ -267,9 +267,58 @@ The redesigned scene will use Yum-Bot's visual vocabulary only:
 - Keep core bundle/inner-Promise value views, full print substance,
   achromatic reading backgrounds, and the Firefox ESR baseline.
 
-This is a design choice for the shared scene, not selection of A/B/C layout or cue color.
-The prior color ranking justified by the game's timing faces is invalid and must be recomputed
-for Promise outcome cues if a final lesson layout is chosen.
+The choice form's color ranking has been recomputed for Promise-outcome cues rather than game grades.
+Its current prototype ranking is a-neutral, a-state, b-neutral, b-state, c-neutral, c-state.
+This is not yet a final lesson layout implementation.
+
+### Scratch implementation and verification
+
+The rejected pudding-as-Promise files were preserved under `ux-variants/*-before-ticket.local.*`,
+including the previous self-contained focused review.
+The new `ux-variants/ux-variant-ticket-experiment.js` is the manual resolver controller;
+`ux-variant-a.html`, `ux-variant-b.html`, and `ux-variant-c.html` now draw a stable numbered
+`#promise-ticket`. The observer display carries the result separately; the robot's mouth stays
+neutral; the belt shows earlier Promise records without pudding icons.
+No physical catch, laser destruction, normal/defective cue, or game timing grade is simulated.
+
+The current Promise's resolver bundle and inner Promise remain visible as value cards;
+other event views and earlier records stay in disclosures that expand for print.
+A rejected observer reports `Error(“No reply”)`, not a bare string that could be mistaken
+for the rejection reason. Before any observer has fired, pending is labeled as known from
+creation, not as an observed fulfillment/rejection state.
+A fresh later resolver control still calls the native function and logs the ignored attempt.
+The single-current-Promise and numbered one-shot rules are explicitly identified as toy policy.
+If every resolver control is spent, Create visibly warns that another Promise would stay pending.
+
+The new self-contained `ux-variants/promise-ticket-review.local.html` starts with
+Promise 3 observed fulfilled, two older Promise records, and a live Reject 3 control.
+Its purpose and response path are written in the document; no matrix cell choice is requested
+by that focused review. `present-ux-clarity-review.mjs` opened it in a new headed Helium tab,
+retaining the three tabs observed immediately beforehand (four afterwards).
+The active title is "Promise ticket: bounded factory artwork";
+`ux-ticket-review-handoff.json` records the actual URL and rendered state.
+The old focused review tab was not reloaded or closed.
+
+- `mise run test:ux-choice` passes for all six current ticket cells, including state/neutral
+  cues, stable ticket identity, same-task calls, observer wording, 390 px mobile fit,
+  one-shot availability, an exhausted-tool pending Promise, and zero browser errors.
+- `mise run test:ux-resolver-calls` records three native calls on one bundle while the observer
+  reports only the first result; a suppressed-call mutant fails the same guard.
+- `mise run test:ux-trusted` passes pointer and Enter/Space keyboard activation on actual
+  controls with visible focus, retained ticket identity, and logged ignored calls.
+- `mise run test:ux-clarity-review` checks the focused self-contained document,
+  desktop/mobile light/dark captures, disclosure persistence, PDF text including
+  historical snapshots, and restoration of disclosures after print.
+- `mise run test:ux-print` confirms the standalone PDF text keeps the manual experiment,
+  actual rejection reason, first-outcome trace, and core representations without the
+  nonfunctional drawing.
+- `mise run test:firefox-ux` passes on Firefox ESR 140.16.0 for the standalone scene and
+  focused review, including the Error reason, ticket identity, ignored call, and value views.
+
+The original red `mise run probe:factory-logic` now reads the preserved
+`ux-variant-a-before-ticket.local.html`, not the active prototype.
+Its red game-faithfulness result remains historical evidence of why the mapping changed.
+The original lesson file is still unchanged; these are prototype checks, not final lesson integration.
 
 ## Superseded designs (do not revive without the user asking)
 
