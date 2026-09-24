@@ -940,10 +940,14 @@ to Search;
 The user corrected the round's target:
  all visual design follows the Pixel 9 Pro Fold
 cover panel (1080 × 2424 physical px,
- about 411 × 923dp) and unfolded inner panel
-(2076 × 2152 physical px,
- about 852 × 883dp),
+ approximately 443 × 994dp on this
+390dpi AVD) and unfolded inner panel (2076 × 2152 physical px,
+ about 852 ×
+883dp),
  as measured in `device-metrics.md`.
+ The former 411 × 923dp cover
+value came from published ppi,
+ not the emulator's Android density.
 Desktop implementation inherits these treatments even if a distinct desktop layout
 would appear more efficient.
  The 360 × 640,
