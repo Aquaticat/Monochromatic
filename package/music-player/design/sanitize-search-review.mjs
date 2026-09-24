@@ -38,7 +38,8 @@ for (const capture of captures) {
   const baseline = capture.scale === '200' ? 93 : 81;
   const start = inner ? 149 : 61;
   const file = join(destination, capture.outputName ?? `search-review-${capture.source}`);
-  execFileSync('magick', [capture.sourcePath ?? join(prototype, capture.source),
+  // Treat any missing font or decoder warning as a failed, not silently degraded, review capture.
+  execFileSync('magick', ['-regard-warnings', capture.sourcePath ?? join(prototype, capture.source),
     '-fill', surface, '-draw', `rectangle 0,0 ${maskRight},${upperBand}`,
     '-font', fontPath, '-pointsize', String(fontSize),
     '-fill', ink, '-annotate', `+${start}+${baseline}`, '9:41',
