@@ -292,6 +292,16 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 
+// What:     `getValue` and `setValue` let a Compose state object back a Kotlin `var`.
+// Why:      Opening and closing the prototype picker must recompose the list slot.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const [pickerOpen, setPickerOpen] = useState(false);
+// ```
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
 // What:     `Alignment` names child alignment positions and `Modifier` carries layout operations.
 // Why:      Controls need centered glyphs and explicit placement without imperative coordinates.
 //
