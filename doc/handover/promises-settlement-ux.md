@@ -5,8 +5,9 @@ A regression went red because the belt was empty after Promise 1's rejection obs
 receipts now appear when the observer reports, including for the current Promise.
 The manual `Promise.withResolvers()` experiment retains `"Hello Ada"` and `Error("No reply")`;
 Yum-Bot supplies artwork only, not game rules. Targeted browser, prototype, and print
-and real-download checks pass; the corrected lesson's combined, Firefox ESR, and
-native-print checks are still pending. The older headed tab has not been reloaded.
+and real-download checks pass. Firefox ESR also passes after the pagehide cleanup
+and verifier navigation repair; the final corrected build's combined native-print suite
+is still pending. The older headed tab has not been reloaded.
 The before-ticket and before-belt local artifacts are retained.
 No teaching-skill design has been confirmed or implemented.
 
@@ -411,9 +412,27 @@ the preserved rejected pudding matrix, not the current ticket controller.
 The headed presenter now distinguishes the old open lesson tab from the corrected file
 by its belt label, and must open the corrected build in a separate tab without reloading
 the prior learner tab. This presentation remains pending.
-The current artifact is provisionally 694,011 bytes; combined and Firefox verification
-remain pending. The single-current-Promise toy rule, native calls, original values,
-and capture timing are unchanged.
+The current artifact is provisionally 693,920 bytes; the final combined suite is pending.
+The single-current-Promise toy rule, native calls, original values, and capture timing
+are unchanged.
+
+### Pagehide cleanup surfaced during Firefox verification
+
+The first Firefox sequence ran the ticket prototype before `verify-firefox-values.mjs`.
+That verifier assumed the lesson was already open, so `findRealm` found no matching realm
+while the focused review page was active. `verify-firefox-values.mjs` and
+`verify-firefox-review.mjs` now navigate to the generated lesson explicitly; both pass
+along with `verify-firefox-ux.mjs` on Firefox ESR 140.16.0 in either order.
+
+The Firefox fixture also emitted `ReferenceError: settlement is not defined` at line 4500
+of the generated lesson during `pagehide`: the builder had replaced the old controller
+but retained its lifecycle reference. A new `mise run test:ticket-pagehide` reproduced
+that error with a pending ticket and failed before the fix. `build.mjs` now removes the
+obsolete resolver call and makes the remaining lifecycle comment accurately describe
+the timed experiment. The ticket has no timer or I/O to cancel on page exit;
+its pending Promise is discarded with the departing document. The same generated test
+passes after rebuilding. The Firefox checks then passed again without another lesson
+code change.
 
 ## Superseded designs (do not revive without the user asking)
 
