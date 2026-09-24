@@ -11,7 +11,12 @@ import { runRefineStage, } from './refine-stage.ts';
 import type {
   ChunkRepairOutcome,
   RepairModels,
+  RepairSliceSeating,
 } from './repair-contract.ts';
+import {
+  checkerBenchAtStage,
+  standingSeating,
+} from './repair-checker-reseat.ts';
 import type { IssueCheckerReading, } from './checker-reading.ts';
 import { collectRefinedAuthors, } from './issue-authors.ts';
 import { runCheckerStage, } from './repair-edit-stages.ts';
@@ -108,6 +113,10 @@ export type RefinedSliceOutcome = RefinedSliceSettlement & {
  
  @param models - role roster
  
+ @param reseat - reads the checker seating as of now, so the recheck and the
+ rewrite probe run on the bench a hold that began inside the lane re-seats
+ (class one hundred thirteen); the standing seating when absent
+ 
  @param refinerModelIds - rewriters, already known non-empty
  
  @param identityContext - declared names and handles, when any
@@ -145,6 +154,7 @@ export async function settleRefinedSlice(
     incumbentText,
     definitions,
     models,
+    reseat = standingSeating,
     refinerModelIds,
     identityContext,
     referenceContext,
@@ -161,6 +171,7 @@ export async function settleRefinedSlice(
     readonly incumbentText: string;
     readonly definitions: string;
     readonly models: RepairModels;
+    readonly reseat?: () => Promise<RepairSliceSeating>;
     readonly refinerModelIds: readonly RosterModelId[];
     readonly identityContext?: string;
     readonly referenceContext?: string;
@@ -197,6 +208,18 @@ export async function settleRefinedSlice(
   const asked = slice.envelopes
     .length
     > 0;
+
+  /**
+   Checkers for this slice's recheck and rewrite probe, on the bench as seated
+   at the stage (class one hundred thirteen): the proof stage re-seats under
+   a hold that began inside the lane (class one hundred nine) and this stage
+   must not keep the bench the chunk was seated with.
+   */
+  const stageCheckers = await checkerBenchAtStage({
+    models,
+    reseat,
+    l,
+  },);
 
   /**
    What refinement decided for this slice.
@@ -256,7 +279,7 @@ export async function settleRefinedSlice(
    */
   const retained = await retainsResolvedIssues({
     client,
-    models,
+    checkerModelIds: stageCheckers,
     // BOTH STAGES' AUTHORS. The recheck reads text the editors repaired and the
     // refiners then rewrote, so a checker that had a hand in either is judging
     // its own work and must be discounted for it. The outcome carries the
@@ -305,7 +328,7 @@ export async function settleRefinedSlice(
    */
   const refinementDefects = await runIntroducedDefectProbe({
     client,
-    proberModelIds: models.checkerModelIds,
+    proberModelIds: stageCheckers,
     sourceText,
     baselineText: outcome.repairedText,
     regions: [
@@ -408,7 +431,7 @@ export async function settleRefinedSlice(
  
  @param client - injected model client
  
- @param models - role roster
+ @param checkerModelIds - checkers as seated at the stage
  
  @param outcome - settled accuracy outcome for this slice, carrying who wrote
  the repaired text this rewrote
@@ -429,13 +452,13 @@ export async function settleRefinedSlice(
  
  @example
  ```ts
- const retained = await retainsResolvedIssues({ client, models, outcome, sourceText, refinedText, signal, perCallTimeoutMs, l, },);
+ const retained = await retainsResolvedIssues({ client, checkerModelIds, outcome, sourceText, refinedText, signal, perCallTimeoutMs, l, },);
  ```
  */
 async function retainsResolvedIssues(
   {
     client,
-    models,
+    checkerModelIds,
     outcome,
     refineContributors,
     sourceText,
@@ -445,7 +468,7 @@ async function retainsResolvedIssues(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly models: RepairModels;
+    readonly checkerModelIds: readonly RosterModelId[];
     readonly outcome: ChunkRepairOutcome;
     readonly refineContributors: readonly RosterModelId[];
     readonly sourceText: string;
@@ -489,7 +512,7 @@ async function retainsResolvedIssues(
    */
   const checker = await runCheckerStage({
     client,
-    checkerModelIds: models.checkerModelIds,
+    checkerModelIds,
     sourceText,
     patchedText: refinedText,
     issues: confirmed,

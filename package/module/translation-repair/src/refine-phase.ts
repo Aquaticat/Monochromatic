@@ -13,6 +13,7 @@ import {
   assertCheckerQuorumReachable,
   type ChunkRepairOutcome,
   type RepairModels,
+  type RepairSliceSeating,
 } from './repair-contract.ts';
 import { repairReplacements, } from './repair-replacements.ts';
 import { collectDefinitions, } from './refine-envelope.ts';
@@ -80,6 +81,10 @@ export type RefinePhaseResult = {
  
  @param models - role roster; absent refiners turn lane off
  
+ @param reseat - reads the checker seating as of now, so the recheck and the
+ rewrite probe run on the bench a hold that began inside the lane re-seats
+ (class one hundred thirteen); the standing seating when absent
+ 
  @param identityContext - declared names and handles model prompts preserve
  
  @param referenceContext - what the pages the original cites say, with
@@ -129,6 +134,7 @@ export async function runRefinePhase(
     slices,
     outcomes,
     models,
+    reseat,
     identityContext,
     referenceContext,
     declaredNames,
@@ -143,6 +149,7 @@ export async function runRefinePhase(
     readonly slices: readonly ChunkPair[];
     readonly outcomes: readonly ChunkRepairOutcome[];
     readonly models: RepairModels;
+    readonly reseat?: () => Promise<RepairSliceSeating>;
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly declaredNames: readonly string[];
@@ -212,6 +219,7 @@ export async function runRefinePhase(
         outcome,
         slices,
         models,
+        ...((reseat === undefined) ? {} : { reseat, }),
         refinerModelIds,
         runShape,
         definitions,

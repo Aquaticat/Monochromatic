@@ -299,6 +299,10 @@ export async function repairPreparedDocument(
     slices,
     outcomes,
     models,
+    // THE SAME HOOK THE PROOF STAGE READS (class one hundred thirteen), so a
+    // hold that began inside the lane re-seats the recheck and the rewrite
+    // probe too.
+    ...((beforeSlice === undefined) ? {} : { reseat: beforeSlice, }),
     declaredNames: prepared.declaredNames,
     ...identityFragment,
     ...referenceFragment,

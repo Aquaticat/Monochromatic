@@ -10,6 +10,7 @@ import {
 import type {
   ChunkRepairOutcome,
   RepairModels,
+  RepairSliceSeating,
 } from './repair-contract.ts';
 import {
   type refineRunShape,
@@ -136,6 +137,10 @@ export async function persistRefinePhaseSlice(
  
  @param models - stage rosters deciding rewrite and checks
  
+ @param reseat - reads the checker seating as of now, so the recheck and the
+ rewrite probe run on the bench a hold that began inside the lane re-seats
+ (class one hundred thirteen); the standing seating when absent
+ 
  @param refinerModelIds - already-validated non-empty rewriter roster
  
  @param runShape - model-facing governance folded into cache key
@@ -188,6 +193,7 @@ export async function settleRefinePhaseSlice(
     outcome,
     slices,
     models,
+    reseat,
     refinerModelIds,
     runShape,
     definitions,
@@ -203,6 +209,7 @@ export async function settleRefinePhaseSlice(
     readonly outcome: ChunkRepairOutcome;
     readonly slices: readonly ChunkPair[];
     readonly models: RepairModels;
+    readonly reseat?: () => Promise<RepairSliceSeating>;
     readonly refinerModelIds: readonly RosterModelId[];
     readonly runShape: ReturnType<typeof refineRunShape>;
     readonly definitions: string;
@@ -294,6 +301,7 @@ export async function settleRefinePhaseSlice(
     incumbentText,
     definitions,
     models,
+    ...((reseat === undefined) ? {} : { reseat, }),
     refinerModelIds,
     ...(identityContext === undefined ? {} : { identityContext, }),
     ...(referenceContext === undefined ? {} : { referenceContext, }),
