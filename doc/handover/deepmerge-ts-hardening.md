@@ -15,6 +15,10 @@ Next actions, in order:
      Done for the exotic, options, scale, and aliasing forks
      (findings reproduced independently and added to the local drafts;
      model and snapshot made realm-independent in `src/realm.ts`, commit `fa548bf15`).
+     New fork branch `fix/cross-realm-collections` (worktree `~/temp/agent/deepmerge-ts-fix-cross-realm`):
+     291 upstream tests pass, its new test fails 5 of 6 cases on unfixed `src`,
+     and the sidecar run against its build turns only the cross-realm known-defect test red.
+     The other new defects wait for an upstream design choice (throw or document), so they have no branch.
      Pending: declared-type and mutation forks,
      then `README.md` listing of the new file families,
      `format:oxlint` once no fork is editing,
