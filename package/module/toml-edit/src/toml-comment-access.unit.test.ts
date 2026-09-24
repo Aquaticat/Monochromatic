@@ -10,6 +10,7 @@ import {
   tomlGetCommentsBefore,
   tomlInsertCommentAfter,
   tomlInsertCommentBefore,
+  tomlSet,
   tomlStringify,
   TomlPathNotFoundError,
 } from '@monochromatic-dev/module-toml-edit';
@@ -58,6 +59,18 @@ await describe({
         const edit = parseTomlEdit({ source: 'first=1\nsecond=2\n', },);
         const updated = tomlInsertCommentBefore({ edit, path: ['second',], comment: 'note', },);
         expect(tomlStringify({ edit: updated, },),).toBe('first=1\n# note\nsecond=2\n',);
+      },
+    },),
+    it({
+      name: 'does not borrow an unrelated comment for a synthetic array-table header',
+      fn: async () => {
+        const edit = tomlSet({
+          edit: parseTomlEdit({ source: 'a=1 # original\n[[foo]]\nx=2\n', },),
+          path: ['foo',],
+          value: [{ x: 3, },],
+        },);
+        expect(tomlGetCommentAfter({ edit, path: ['foo',], },).comment,).toBe(undefined,);
+        expect(tomlGetCommentsBefore({ edit, path: ['foo',], },),).toStrictEqual([],);
       },
     },),
     it({
