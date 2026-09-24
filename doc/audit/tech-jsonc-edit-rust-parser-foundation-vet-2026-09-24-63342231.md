@@ -348,11 +348,13 @@ Web searches discovered `jwc`,
  The identified API fetched and stored every broad `jsonc` alphabetical page:
  five pages of 100 and a final page of 32,
  with `meta.total=532` and `next_page=null` on page 6.
- This completes pagination for that query,
- not screening of every record or saturation of every source class.
- The same script later stopped on a **self-imposed** numeric-query page ceiling,
- not a crates.io provider limit;
- a measured finite-resume plan is recorded in the exact-number audit.
+ The scratch `mise run audit:registry-validate` task checked contiguous pages,
+ summed 532 records matching `meta.total`,
+ and found 532 distinct crate ids with no duplicate.
+ The numeric-query run initially stopped on a self-imposed page ceiling,
+ then resumed from saved pages and finished without a provider cap.
+ This completes the broad `jsonc` query's **pagination**,
+ not screening of every record or saturation of every required discovery source.
 
 ### `fjson` 0.3.1
 
