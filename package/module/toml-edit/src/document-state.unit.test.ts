@@ -52,5 +52,17 @@ await describe({
         expect(Object.hasOwn(second, 'commentAfter',),).toBe(false,);
       },
     },),
+    it({
+      name: 'tracks nested array-of-tables indices after every header segment',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: '[[a.b]]\nx = 1\n[[a.b]]\nx = 2\n', },);
+        const [first, second,] = edit.blocks;
+        if ((first?.kind !== 'table') || (second?.kind !== 'table'))
+          throw new Error('Expected nested array-of-tables blocks',);
+        expect(first.headerSegments,).toStrictEqual(['a', 'b',],);
+        expect(first.aotIndex,).toBe(0,);
+        expect(second.aotIndex,).toBe(1,);
+      },
+    },),
   ],
 },);
