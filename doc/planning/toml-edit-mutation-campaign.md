@@ -393,8 +393,22 @@ The delete/resolve recheck completed with 106 killed,
  292 compile errors,
  and no infrastructure errors.
 Its report is `/var/home/user/temp/agent/toml-mutation-edit-a-recheck.json`.
-The set-internals recheck is still running at
- `/var/home/user/temp/agent/toml-mutation-edit-b-recheck.json` (`proc_ec79`).
+The set-internals recheck wrote `/var/home/user/temp/agent/toml-mutation-edit-b-recheck.json`
+ with 142 killed,
+ 38 confirmed survivors,
+ 302 compile errors,
+ and one infrastructure error.
+The CLI exited nonzero because `rsync` code 24 reported a vanishing
+ `deepmerge-ts.fuzz/.cache/typescript/tsconfig.tsbuildinfo` file while copying a shard.
+That is not a TOML mutant verdict.
+`package/cli/mutation-test` now excludes `**/.cache` from shard copies and image context;
+ its unit test was red before this fix,
+ then build/tests,
+ types,
+ oxlint,
+ and a disposable rsync copy probe passed.
+`doc/troubleshooting/mutation-test-rsync-cache-churn.md` records the source trace.
+A clean rerun of `src/set-replace.ts` is pending as `proc_97f9`.
 Do not edit runtime source until it completes.
 The indexed array-of-tables read fix passed the rebuilt package suite,
  types,
