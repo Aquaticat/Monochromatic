@@ -4511,19 +4511,23 @@ reference with zero network resources in either scheme;
  no console or page errors.
 
 No user choice has been made from this baseline redesign.
- Next,
- open
-`questions/current.html` in Helium without KWin scripting,
- and present the new
-visual purpose,
- changes from the rejected generic form,
- and response path of
-one I,
- one G,
- one R plus corrections.
- Do not ratify any ranking before the user
-answers.
- Production code remains untouched.
+ The revised
+`questions/current.html` was handed to normal Helium with `gtk-launch helium` on its
+file URL;
+ the launcher returned successfully.
+ No KWin script was used for this presentation,
+per the user's instruction.
+ The artifact itself was exercised in `agent-browser`;
+Helium tab activation was not separately measured.
+ The response path is one I,
+one G,
+ one R,
+ plus any correction in chat.
+ A new visual objection supersedes the
+ranking;
+ do not ratify a recommendation without the user's answer.
+ Production
+code remains untouched.
 
 Search target scope,
  result ranking,
