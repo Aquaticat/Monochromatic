@@ -4519,23 +4519,64 @@ file URL;
 per the user's instruction.
  The artifact itself was exercised in `agent-browser`;
 Helium tab activation was not separately measured.
- The response path is one I,
+ The proposed response path was one I,
 one G,
  one R,
- plus any correction in chat.
- A new visual objection supersedes the
-ranking;
- do not ratify a recommendation without the user's answer.
- Production
-code remains untouched.
+ but the user subsequently rejected every choice.
+ The I/G/R ranking and
+response request are now superseded by D47.
+ Production code remains untouched.
+
+## Current direction: Search button opens a separate page (D47, 2026-09-23)
+
+The user replied "None" to the I/G/R command-bar review and directed a design that
+does not look like a command bar:
+ a Search button opens a separate search page.
+This is a structural replacement,
+ not another theme for the docked/floating palette.
+D47 records the direction in `decisions.md`.
+ The existing
+`questions/current.html` is the rejected baseline-MD3 command comparison and must not
+be presented as a live vote or used to ask for I/G/R codes.
+
+D21's command-bar surface has been superseded.
+ Its global hotkey and extra Settings
+row were coupled to that surface;
+ do not automatically attach either to Search.
+D25's Ctrl+F reservation for search and Ctrl+O for the picker remain pending the whole
+keyboard-map revision.
+ Draw the Search button in the player context,
+ its opened
+page with page identity,
+ query,
+ results and Back,
+ plus no-result/unavailable states.
+Use baseline MD3 Search components from the local archive;
+ do not mix Expressive
+contained anatomy under A2.
+ Build a native design-only Slint prototype with the
+button and a stateful open/back interaction,
+ both schemes,
+ compact and expanded
+desktop widths.
+ The full page replaces the command palette as the only active visual
+candidate.
+ After native and browser verification,
+ replace the current HTML
+questionnaire with a self-contained active-design review and free-text correction;
+no I/G/R radio matrix.
+ Update package-local docs and this handover after each change.
+The user explicitly said no `AGENTS.md` edit for this narrow lesson and no KWin
+window-management automation.
+ Do not reintroduce production app changes.
 
 Search target scope,
- result ranking,
- the visible in-app entry,
- exact key binding,
-Settings row,
- full keyboard map,
- media notification and other backlog items remain open.
+ result ranking/effects,
+ exact button placement on other
+platforms,
+ keyboard bindings,
+ media notification and the remaining design backlog
+stay open.
 
 ## Issue tracking moves to Linear for this session
 
