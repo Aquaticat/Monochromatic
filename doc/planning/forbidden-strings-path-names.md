@@ -57,7 +57,22 @@ several historical states can share a path but differ in bytes,
 and physical path grammar would weaken the existing synthetic-file isolation.
 The scanner's paired logical-name option preserves both identities separately.
 
-## Verification still needed
+## Verification
 
-Run the rebuilt scanner, adapter, and host-policy boundary tests.
-Review the final outputs for token leakage and keep unrelated worktree edits intact.
+- `mise run //package/cli/forbidden-strings:test` exercises the release CLI with
+  name-only findings, content and name redaction, external paths, empty files,
+  multiple operand indexes, and unchanged content behavior.
+- `mise run //package/cli/forbidden-strings:lint:clippy` and
+  `mise run //package/cli/forbidden-strings:lint:rust` check Rust code and item documentation.
+- `mise run //package/git-policy/forbidden-strings:test:unit` exercises real scanner
+  output through the adapter, including exact historical bytes and a clean working-tree file.
+- `mise run //package/git-policy/forbidden-strings:lint:types` and
+  `mise run //package/git-policy/forbidden-strings:lint:oxlint` check the policy source.
+- `mise run //package/git-policy/cli:test:built:trust` checks packed host events in a
+  disposable container; its name-finding fixture asserts that the offending name
+  does not appear in host JSON output.
+- `mise run //package/fuzz/forbidden-strings:lint:clippy` checks the expanded fuzz target.
+  A coverage-guided fuzz campaign was not run.
+
+Windows-specific pathname-prefix tests are compiled but not executed on this Linux host.
+No unrelated worktree edits were included in this change.
