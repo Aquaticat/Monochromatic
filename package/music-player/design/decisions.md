@@ -1277,6 +1277,24 @@ placement on each platform,
 evidence.
  These details are not determined merely by choosing a page.
 
+### D48. One integrated top bar on the Search page (2026-09-23)
+The user corrected the first Search-page prototype:
+ it had a separate "Search"
+app bar and query bar.
+ Merge Back,
+ query input,
+ and Clear into **one page-level
+search header**,
+ with results directly beneath it.
+ The opened page must not
+retain the player header or add another in-app title strip.
+ A baseline M3
+full-content Search header (72dp with a divider) supplies the visual anatomy.
+The player continues to expose a distinct Search button that opens the page
+(D47).
+ This is a design decision,
+ not a production implementation instruction.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)
