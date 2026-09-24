@@ -127,7 +127,7 @@ function validate() {
   if (html.includes('name="inapp"') || html.includes('name="global"') || html.includes('name="search"') || html.includes('I/G/R choices to make.</strong>')) {
     throw new Error('Rejected command-bar choice structure resurfaced in the Search page.');
   }
-  for (const text of ['D47', 'D48', 'one</strong> top bar', 'id="open-page"', 'id="back-player"', 'id="sample-query"', 'id="unavailable"', 'showStage(\'open-empty\')', 'showStage(\'player\')', 'backPlayer.focus()', 'openPage.focus()', 'preview.showModal()', 'await previewImage.decode()', 'returnTarget?.focus()', 'Math.min(0.25, fitScale() / 2)', 'stepZoom(-0.25)', 'id="correction"']) {
+  for (const text of ['D47', 'D48', 'one</strong> top bar', 'id="open-page"', 'id="back-player"', 'id="sample-query"', '<option value="cam">cam</option>', '<option value="zzq">zzq</option>', 'sampleQuery.addEventListener(\'change\'', 'id="unavailable"', 'showStage(\'open-empty\')', 'showStage(\'player\')', 'backPlayer.focus()', 'openPage.focus()', 'preview.showModal()', 'await previewImage.decode()', 'returnTarget?.focus()', 'Math.min(0.25, fitScale() / 2)', 'stepZoom(-0.25)', 'id="correction"']) {
     if (!html.includes(text)) throw new Error(`Search-page review is missing ${text}.`);
   }
   if ((html.match(/class="capture"/g) ?? []).length !== scenes.length || (html.match(/data-scheme="dark"/g) ?? []).length !== scenes.length || (html.match(/data-scheme="light"/g) ?? []).length !== scenes.length) {

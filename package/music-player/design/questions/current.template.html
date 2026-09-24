@@ -37,7 +37,7 @@ body {
   font-family: system-ui, sans-serif;
   line-height: 1.5;
 }
-button, textarea, input { font: inherit; }
+button, textarea, input, select { font: inherit; }
 button {
   min-inline-size: 3rem;
   min-block-size: 3rem;
@@ -52,7 +52,7 @@ button {
   cursor: pointer;
 }
 button:hover { background-color: var(--raised); }
-button:focus-visible, input:focus-visible, textarea:focus-visible {
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 0.1875rem solid var(--accent);
   outline-offset: 0.1875rem;
 }
@@ -88,7 +88,7 @@ p { max-inline-size: 82ch; }
 .flow-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: end; }
 .flow-controls label { display: block; }
 .flow-controls [hidden] { display: none; }
-.flow-controls input {
+.flow-controls select {
   min-block-size: 3rem;
   padding-inline: 0.75rem;
   border-width: 1px;
@@ -219,7 +219,7 @@ dialog::backdrop { background-color: var(--scrim); opacity: 0.72; }
   <div class="flow-controls">
     <button id="open-page" type="button">Open Search page</button>
     <button id="back-player" type="button" hidden>Back to player</button>
-    <label id="query-label" for="sample-query" hidden>Try <code>cam</code> or <code>zzq</code><input id="sample-query" type="search" hidden autocomplete="off"></label>
+    <label id="query-label" for="sample-query" hidden>Sample query (canned states)<select id="sample-query" hidden><option value="">Empty query</option><option value="cam">cam</option><option value="zzq">zzq</option></select></label>
     <button id="unavailable" type="button" hidden>Inspect unavailable state</button>
   </div>
   <picture id="flow-picture"><source media="(prefers-color-scheme: dark)" srcset="__FLOW_DARK__"><img id="flow-image" src="__FLOW_LIGHT__" width="480" height="600" alt="Player with a Search icon button next to Open"></picture>
@@ -324,7 +324,7 @@ function showStage(stage) {
   flowState.textContent = stage === 'player' ? 'Player. The Search icon is beside Open in the app bar.' :
     stage === 'open-empty' ? 'Separate Search page. One top bar contains Back and the empty query.' :
     stage === 'open-results' ? 'Search page: illustrative results for cam.' :
-    stage === 'open-none' ? 'Search page: no results for this stub query.' :
+    stage === 'open-none' ? 'Search page: no results for zzq.' :
     'Search page: library unavailable.';
 }
 openPage.addEventListener('click', () => {
@@ -347,11 +347,13 @@ backPlayer.addEventListener('click', () => {
   showStage('player');
   openPage.focus();
 });
-sampleQuery.addEventListener('input', () => {
-  const term = sampleQuery.value.trim().toLowerCase();
-  showStage(term === '' ? 'open-empty' : term === 'cam' ? 'open-results' : 'open-none');
+sampleQuery.addEventListener('change', () => {
+  showStage(sampleQuery.value === 'cam' ? 'open-results' : sampleQuery.value === 'zzq' ? 'open-none' : 'open-empty');
 });
-unavailable.addEventListener('click', () => showStage('open-unavailable'));
+unavailable.addEventListener('click', () => {
+  sampleQuery.value = '';
+  showStage('open-unavailable');
+});
 document.querySelector('#correction').addEventListener('input', () => { document.querySelector('#reply').textContent = ''; });
 document.querySelector('#response-form').addEventListener('submit', event => {
   event.preventDefault();
