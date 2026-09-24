@@ -190,8 +190,15 @@ the public JSONC parse interface. The original unsafe call is **not** executed.
   subprocess or network endpoint was found. Release workflows, npm tasks,
   benchmarks, and third-party test scripts are not invoked.
 
-At this point the container run and resulting output are pending.
-A missing failure or success must not be inferred from this manifest.
+The checked pre-fix instrumentation was run through
+`mise run test:safe-instrumented` in this container. It exited 101 after
+compiling the pinned crate and its dependencies. The public-entry example
+asserted that a valid pair parses, and failed at
+`rust/examples/surrogate_safety.rs:36`:
+`assertion failed: momoa::jsonc::parse(r#"{"s":"\uD83D\uDE00"}"#).is_ok()`.
+The checked instrumentation returns an ordinary error on the high half;
+**this is a safe positive control, not execution of the original undefined behavior**.
+A complete fix must make this case pass while retaining safe errors for isolated halves.
 
 ### Patterns that avoid the unsafe conversion (source-derived, not Momoa-run)
 
