@@ -314,6 +314,13 @@ source-level transitive clearance remains open where required.
    Comment trivia lives on punctuation tokens,
    so mapping it to separately queryable key and value owners remains unvalidated.
    This is an unadopted alternative with a larger build dependency surface.
+   A separate bounded debug and release syntax comparison exercised 5635 fixed mutations,
+   confirmed a deliberately mismatching BOM control first,
+   and found no admission difference within that corpus;
+   both boundaries admitted 1577 inputs.
+   This does not validate general comment attachment,
+   exact-value projection,
+   or the published package integration.
 - Current reports are `doc/audit/tech-jsonc-edit-rust-parser-foundation-vet-2026-09-24-63342231.md` and `doc/audit/tech-jsonc-edit-rust-exact-number-foundation-vet-2026-09-24-e8e0034a.md`.
    Their no-regex predecessors are superseded.
    Other worktree changes are concurrent and out of scope.
