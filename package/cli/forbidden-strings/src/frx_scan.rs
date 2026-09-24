@@ -44,6 +44,18 @@ fn line_starts(buf: &[u8]) -> Vec<usize> {
     return starts
 }
 
+/// Renders the stable opaque identity of one matching rule.
+///
+/// Named rules use their section name; unnamed rules use the set's base offset.
+/// This shared formatter keeps content and pathname findings consistent.
+pub(crate) fn rule_token(base: usize, names: &[Option<String>], rule_id: usize) -> String {
+    // A borrowed name is copied only when a finding is emitted.
+    if let Some(name) = names.get(rule_id).and_then(|name| return name.as_deref()) {
+        return name.to_string();
+    }
+    return (base + rule_id).to_string();
+}
+
 /// Runs one set's batch matcher under a fail-closed unwind boundary.
 ///
 /// On a normal return the `(line index, rule id)` pairs become findings: a named
@@ -66,10 +78,7 @@ where
             return pairs
                 .into_iter()
                 .map(|(line_index, rule_id)| {
-                    return match names.get(rule_id).and_then(|name| return name.as_deref()) {
-                        Some(name) => format!("{}:{} rule={}", path, line_index + 1, name),
-                        None => format!("{}:{} rule={}", path, line_index + 1, base + rule_id),
-                    }
+                    return format!("{}:{} rule={}", path, line_index + 1, rule_token(base, names, rule_id));
                 })
                 .collect()
         }

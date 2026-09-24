@@ -236,6 +236,14 @@ pub struct Cli {
     )]
     pub builtin_rules: bool,
 
+    /// Logical repository path for each positional file, in matching order.
+    ///
+    /// Allows clients scanning historical candidate bytes from temporary files
+    /// to name-scan the actual path without exposing their temporary path.
+    /// Each occurrence pairs with one positional file; no `--all` combination.
+    #[arg(long = "name-path", value_name = "PATH", allow_hyphen_values = true)]
+    pub name_paths: Vec<String>,
+
     /// Files to scan when `--all` is absent.
     // What:     `Vec<String>` is an owned, growable array of owned UTF-8 strings.
     //           Siblings: `&[String]` (borrowed slice) and `[String; N]`

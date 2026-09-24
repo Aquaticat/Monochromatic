@@ -35,6 +35,8 @@ mod walk;
 mod frx_load;
 /// Registers the `frx_scan` child module: the forbidden-regex line scan.
 mod frx_scan;
+/// Registers component-level pathname matching and masked display labels.
+mod path_scan;
 /// Registers runtime cache envelope, path, warning, and publication implementation.
 mod runtime_cache;
 /// Registers hybrid exact-literal and restricted-regex runtime matcher.
@@ -654,6 +656,12 @@ pub fn run_cli_from_env() -> Result<i32> {
     // let files = cli.files;
     // ```
     let mut files = cli.files;
+    // Logical path overrides pair one-for-one with explicit content file operands.
+    let name_paths = cli.name_paths;
+    if !name_paths.is_empty() && (all || name_paths.len() != files.len()) {
+        eprintln!("forbidden-strings: --name-path requires one value per positional file and cannot accompany --all");
+        return Ok(2);
+    }
 
     // Run `load_ruleset` and `list_files` concurrently when --all is
     // set: rules loading is CPU-bound (regex compile + AC build);
@@ -820,10 +828,13 @@ pub fn run_cli_from_env() -> Result<i32> {
     //           files at the repo root, in both --all and explicit-arg modes.
     // Why:      Resolve symlinks once here rather than per file.
     let cwd_canonical = std::fs::canonicalize(".").ok();
+    // A present `.git` at an ancestor identifies repository-relative name labels.
+    let repository_root = path_scan::repository_root();
 
     let hits: Vec<String> = files
         .par_iter()
-        .flat_map_iter(|p| {
+        .enumerate()
+        .flat_map_iter(|(index, p)| {
             // Always skip the scanner's own ruleset files at cwd
             // (forbidden-strings.*.txt), regardless of --all vs explicit
             // args: they hold literal rule bodies that self-match.
@@ -900,10 +911,19 @@ pub fn run_cli_from_env() -> Result<i32> {
             // try { content = await readFile(p); }
             // catch (e) { return [`${p}: read error: ${e}`]; }
             // ```
+            // Overrides name historical candidate paths while keeping temporary
+            // content files isolated. Without an override, use the real file's
+            // repository-relative name or all supplied external path segments.
+            let logical = name_paths.get(index).cloned().unwrap_or_else(|| {
+                return path_scan::logical_path(p, repository_root.as_deref());
+            });
+            let pathname = path_scan::scan_path(&logical, &loaded);
+            let mut findings = pathname.findings;
             let content = match read_with_binary_check(p) {
-                Ok(c) => c,
+                Ok(c) => Some(c),
                 Err(e) => {
-                    return vec![format!("{}: read error: {}", p, e)];
+                    findings.push(format!("{}: read error: {}", pathname.display, e));
+                    None
                 }
             };
             // What:     `frx_scan::scan_file(p, &content, &loaded)` splits the file
@@ -919,7 +939,15 @@ pub fn run_cli_from_env() -> Result<i32> {
             // ```ts
             // return scanFile(p, content, loaded);
             // ```
-            return frx_scan::scan_file(p, &content, &loaded)
+            if let Some(content) = content {
+                findings.extend(frx_scan::scan_file(&pathname.display, &content, &loaded));
+            }
+            // An opaque operand index lets policy clients recover candidate
+            // identity even when several paths redact to the same label.
+            if !name_paths.is_empty() {
+                return findings.into_iter().map(|hit| return format!("{} input={}", hit, index)).collect();
+            }
+            return findings
         })
         .collect();
 
