@@ -62,6 +62,22 @@ await describe({
       },
     },),
     it({
+      name: 'replaces a standard table following a top-level key',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'a=1\n[foo]\nx=2\n', },);
+        const updated = tomlSet({ edit, path: ['foo',], value: { y: 9, }, },);
+        expect(tomlStringify({ edit: updated, },),).toBe('a=1\n[foo]\ny = 9\n',);
+      },
+    },),
+    it({
+      name: 'rejects replacing a mixed dotted-key and table parent',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'a.x=1\n[a.b]\nc=2\n', },);
+        expect(() => tomlSet({ edit, path: ['a',], value: { y: 9, }, },),)
+          .toThrow('tomlSet on the sibling tables at a is not supported',);
+      },
+    },),
+    it({
       name: 'replaces implicit dotted keys before an unrelated table',
       fn: async () => {
         const edit = parseTomlEdit({
