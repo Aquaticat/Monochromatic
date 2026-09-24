@@ -1270,19 +1270,130 @@ A common malformed source of 2048 array openers followed by an incomplete `{"a":
  its new test returned `JSONC nesting too deep` at byte offset 512.
  The owned bounded debug and optimized release suites each passed 23 tests.
 
-The Biome wrapper calls `biome_json_parser::parse_json` **before** scanning tokens for depth
- (`~/temp/agent/jsonc-regex-audit/biome/lib.rs:31-54`).
- Its new fixture produced upstream error diagnostics,
+The Biome wrapper at the time of that measurement called `biome_json_parser::parse_json`
+ **before** scanning tokens for depth,
+ so its guard was postparse only.
+ The fixture produced upstream error diagnostics,
  preserved source text through syntax traversal,
- dropped the upstream parse and returned an editor error without a crash.
- Bounded debug and optimized release wrapper suites each passed 16 tests with stage markers
+ dropped the upstream parse and returned an editor error without a crash;
+ bounded debug and optimized wrapper suites each passed 16 tests with stage markers
  before/after parse,
  drop and editor rejection.
- This demonstrates cleanup on that malformed 2048-container source;
- it does **not** establish a general allocation,
- stack or CPU budget before Biome's postparse depth guard.
- A prospective Biome composition still needs a preparse admission/resource boundary
- or a deciding source proof that its upstream behavior bounds all required workloads.
+ That result bounds cleanup for one 2048-container malformed source,
+ not the work Biome performs before a postparse guard.
+
+A dedicated bounded process then measured the unbounded case.
+ With 8192 nested arrays and a scalar leaf,
+ upstream parsing succeeded,
+ and **dropping** that `JsonParse` aborted the test process with
+ `thread 'tests::very_deep_before_guard_lifecycle' has overflowed its stack`
+ (SIGABRT,
+ exit 101) inside the 2 GiB/2 CPU debug container,
+ before the wrapper's postparse token walk could run.
+ The 2048-container malformed source and the 512/513 boundary cases did not overflow in the same bounds,
+ so this is a depth-dependent destruction failure rather than a general parse failure,
+ and it is a separate incident from the Biome CLI/worker reports in the maintenance snapshot.
+ The source mechanism matches the measurement:
+ green nodes own children inline
+ (`biome_rowan-0.5.7/src/green/node.rs:35-49,63-82`),
+ `Drop for ThinArc` rewraps into `Arc` (`src/arc.rs:445-453`),
+ and `Arc::drop_slow` frees that allocation through `Box::from_raw` (`src/arc.rs:79-83`),
+ so each nesting level adds a destructor frame even though parsing itself uses an explicit stack
+ (`biome_json_parser-0.5.7/src/syntax.rs:152-230`).
+
+The scratch wrapper now runs a **preparse** depth preflight
+ (`~/temp/agent/jsonc-regex-audit/biome/depth.rs`) that scans quoted strings,
+ both comment forms and container delimiters in one byte pass,
+ rejecting a 513th opener,
+ a mismatched closer,
+ or an unterminated string or comment before `parse_json` is called
+ (`lib.rs:40-46`).
+ Controls passed in bounded debug and optimized runs:
+ quoted and commented delimiter text does not consume budget,
+ `[}` and an unterminated block comment are rejected,
+ the previously fatal 8192-container source now returns `JSONC nesting too deep`
+ from a dedicated bounded process in both profiles,
+ and the wrapper suites passed 18 tests each
+ (the one ignored test is that dedicated deep process).
+ After the change the Biome projection suites passed 9 tests and the differential suites 8 tests in both profiles.
+ This preflight bounds **container depth only**:
+ it is not a general allocation,
+ CPU or malformed-input budget,
+ and it repeats trivia scanning the parser also performs.
+ A product Biome adapter needs this gate,
+ or an upstream depth policy,
+ before it can be called stack-safe against adversarial nesting.
+
+### Unterminated-string helper hazard behind the projection boundary
+
+Published 0.5.7 lexes an unterminated quoted string as an ordinary `JSON_STRING_LITERAL`
+ (`biome_json_parser-0.5.7/src/lexer/mod.rs:619-629`)
+ and completes a well-typed `JSON_STRING_VALUE` from it (`src/syntax.rs:55-59`).
+ The public helper `biome_json_syntax::inner_string_text` then strips one byte from each end
+ (`biome_json_syntax-0.5.7/src/lib.rs:116-125`),
+ so the one-byte source `"` produces an inverted range and panics in
+ `TextRange::new` (`biome_text_size-0.5.8/src/range.rs:64-68`).
+ Full trace,
+ red/green consumer evidence and the minimal clamp prototype are in
+ [`biome-json-syntax-unterminated-string-range.md`](../troubleshooting/biome-json-syntax-unterminated-string-range.md).
+
+The scratch adapter is not exposed:
+ its diagnostics gate (`~/temp/agent/jsonc-regex-audit/biome/lib.rs:46`) rejects error trees before any typed
+ string helper runs,
+ and a new bounded test asserts both that rejection and the raw helper's panic under `catch_unwind`.
+ Upstream fixed the cause in its lexer ([PR 2621](https://github.com/biomejs/biome/pull/2621),
+ closing [issue 2357](https://github.com/biomejs/biome/issues/2357)),
+ but the latest published `biome_json_parser` is still 0.5.7,
+ `biome_json_syntax` 0.7.0 keeps the same unguarded helper,
+ and parser 0.5.7 requires the 0.5.7 syntax line
+ (`biome_json_parser-0.5.7/Cargo.toml:44-51`).
+ Any Biome composition therefore inherits a version-pinned hazard that only a diagnostics-first
+ consumer discipline (or a fork) neutralizes.
+ This is a panic,
+ not demonstrated memory unsafety.
+
+### Published Biome unsafe-path audit
+
+`biome_json_syntax::JsonSyntaxKind` is `#[repr(u16)]` with consecutive variants ending at `__LAST`
+ (`src/generated/kind.rs:6-49`),
+ and its `From<u16>` asserts `d <= __LAST` before `transmute` (`src/lib.rs:15-20`),
+ so that conversion cannot create an out-of-range discriminant;
+ an invalid raw kind panics instead.
+
+The JSON lexer's `current_char_unchecked` reads through `get_unchecked` and ends with
+ `unreachable_unchecked` (`biome_json_parser-0.5.7/src/lexer/mod.rs:204-227`),
+ guarded only by `debug_assert!` boundary checks (`:242-246`).
+ Its advance discipline keeps the cursor on character boundaries:
+ `advance_byte_or_char` moves one byte for ASCII and a whole character otherwise (`:273-279`),
+ `advance_char_unchecked` adds `len_utf8` (`:287-290`),
+ and the string and identifier loops advance by whole characters for non-ASCII bytes (`:581,693-706`).
+ All seven `current_char_unchecked` call sites
+ (`:287,322,344,545,654,693,700`) were read and each is reached with the cursor at a character start
+ under that discipline;
+ the malformed-escape and control-character arms change lexer state so the following iteration advances,
+ which is why they do not spin.
+ This is an inspection result on published 0.5.7,
+ **not** a proof:
+ release builds disable those assertions,
+ and any future call site that advances by a single non-ASCII byte would break the invariant silently.
+
+`biome_rowan` manages green nodes through refcounted raw pointers
+ (`src/arc.rs:57-83,174-208,445-453`;
+ `src/green/node.rs:35-49,63-82,293-296`),
+ and its destruction recurses per nesting level,
+ which the measured 8192-container overflow confirms at runtime.
+ No use-after-free or aliasing violation was demonstrated in the inspected paths.
+
+By contrast,
+ a targeted search of the owned scratch parser and exact-number prototype sources
+ (`~/temp/agent/jsonc-parser-probe-2026-09-24/src`,
+ `~/temp/agent/jsonc-exact-number-probe/src`) found **no** `unsafe` block at all.
+ The two finalists therefore differ in kind,
+ not merely in degree,
+ on the mandatory memory-safety constraint:
+ one has no unsafe surface,
+ and the other requires an argument about invariants that release builds do not check.
+ That difference belongs in the scoring rubric and in any adoption rationale.
 
 ### Bounded parse-performance preparation
 
