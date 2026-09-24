@@ -164,3 +164,38 @@ the running pass was killed and relaunched under the kill-and-relaunch rule.
 Rollback:
 swap the two names in `provider-name.ts`;
 the routing arithmetic walks the list and names no provider by position.
+
+## Addendum 2026-09-24: LLM Gateway DevPass stays out of the pipeline
+
+The owner subscribed to LLM Gateway DevPass on 2026-09-24,
+added `LLMGATEWAY_DEVPASS_API_KEY` to the sops file,
+and asked for it to sit ahead of OpenRouter.
+Read before wiring,
+the DevPass Supplemental Terms of Use
+(`https://devpass.llmgateway.io/legal/terms`, last updated 2026-09-18) say:
+
+- Section 1 and section 4, in force today:
+  the key may not be used "directly from your own applications, backends, products, services, scripts,
+  batch pipelines, or any other integration outside of an approved coding or agent tool".
+- Section 1 and section 4, from billing periods starting on or after 2026-10-15:
+  translation is named among the excluded non-coding uses,
+  and API, automation or non-coding use can ban the account without a refund.
+- Provider-prefixed model ids are refused with HTTP 403 on DevPass
+  (`https://docs.llmgateway.io/learn/model-categories`),
+  so the `preferredEndpoints` routing of class ninety-three cannot be sent.
+- Nothing promises zero data retention upstream;
+  the only upstream control is the "No AI training" setting.
+  This decision's standing rule is ZDR on every request,
+  and dropping it needs an explicit owner decision.
+
+Asked on 2026-09-24,
+the owner chose to leave DevPass out.
+The key stays in the sops file unused;
+nothing in `package/module/translation-repair` reads it.
+The terms allow a self-service refund within 14 days of purchase while usage stays under 20 percent of the allowance.
+Rejected alternatives:
+wiring DevPass in anyway (terms, no ZDR, no endpoint pinning);
+LLM Gateway pay-as-you-go,
+the general product that does allow apps,
+unmeasured on price and ZDR,
+so it is not a candidate until both are measured.
