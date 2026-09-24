@@ -5210,9 +5210,15 @@ has landed.
  and the HTML asks for consequential
 corrections rather than authorizing production.
  Gboard-specific behavior and
-keyboard heights greater than the measured probe remain unverified;
- long
-query/result names and full result scrolling still need native follow-up.
+keyboard heights greater than the measured probe remain unverified.
+ An
+additional 200% native probe typed a long query into A with the keyboard
+visible:
+ the query stayed bounded to the right header,
+ its multiline
+no-results message and all deck controls remained visible.
+ Long **result**
+names and full result-list scrolling still need native follow-up.
  No
 KWin automation,
  production implementation,

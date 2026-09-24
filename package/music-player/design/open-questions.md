@@ -141,8 +141,10 @@ rounds (2026-09-17):
   `questions/current.html`.
   The measured 300dp test IME is not Gboard;
   actual Gboard geometry remains unverified.
-  Long names and result-list
-  scrolling are still open.
+  A long query at 200% was tested under the visible probe in the
+  IME-lifted variant without hiding the deck or moving query text into the
+  crease.
+  Long **result** names and result-list scrolling are still open.
   Keep Search results,
   no-result/unavailable states,
   and open/back behavior visibly
