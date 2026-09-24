@@ -115,6 +115,14 @@ rounds (2026-09-17):
   at the corrected 7.5mm width their edges fall in the approximate dent band,
   so treat that as a negative text-clearance example,
   not an endorsement.
+  D50 additionally requires the unfolded playback/control deck to remain
+  visible throughout Search.
+  The first coherent-layout studies still hid
+  it (the docked overlay covered it;
+  both full-width variants replaced its
+  parent screen),
+  so their captures are rejected and not a review matrix.
+  Rebuild around the persistent deck before presenting any alternative.
   Keep Search results,
   no-result/unavailable states,
   and open/back behavior visibly
