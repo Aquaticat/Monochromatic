@@ -1,6 +1,7 @@
 import {
   mkdir,
   mkdtemp,
+  readFile,
   rm,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -23,6 +24,7 @@ import {
   GIT_MARKER_DIRECTORIES,
   GIT_MARKER_FILES,
   materialiseGitMarker,
+  RSYNC_EXCLUDES,
 } from '../../dist/final/node/index.mjs';
 
 //region Fixtures
@@ -93,6 +95,26 @@ async function walkRejection(fs: RootFilesystem,): Promise<unknown> {
 }
 
 //endregion Fixtures
+
+await describe({
+  name: 'shard copy exclusions',
+  children: [
+    it({
+      name: 'omits generated caches from both rsync and the baked image',
+      fn: async () => {
+        /**
+         Image build exclusions resolved from the checked-in runtime recipe.
+         */
+        const ignore = await readFile(
+          new URL('../../runtime/containerignore', import.meta.url),
+          'utf8',
+        );
+        expect(RSYNC_EXCLUDES,).toContain('**/.cache',);
+        expect(ignore.split('\n',),).toContain('**/.cache',);
+      },
+    },),
+  ],
+},);
 
 await describe({
   name: materialiseGitMarker.name,
