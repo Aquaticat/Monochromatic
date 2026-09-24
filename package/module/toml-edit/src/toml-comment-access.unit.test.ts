@@ -74,6 +74,17 @@ await describe({
       },
     },),
     it({
+      name: 'does not borrow a prior comment for a synthetic key-value',
+      fn: async () => {
+        const edit = tomlSet({
+          edit: parseTomlEdit({ source: 'a=1 # original\n', },),
+          path: ['new',],
+          value: 2,
+        },);
+        expect(tomlGetCommentAfter({ edit, path: ['new',], },).comment,).toBe(undefined,);
+      },
+    },),
+    it({
       name: 'reads an attached block and same-line comment on a standard table header',
       fn: async () => {
         const edit = parseTomlEdit({ source: '# before\n[table] # after\nx = 1\n', },);
