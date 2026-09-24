@@ -1222,6 +1222,30 @@ The two Rust projections share `jsonc_parser_probe::decode_quoted`,
  this validates those measured examples,
  not all malformed inputs or the shared emitter's implementation in isolation.
 
+### External consumer depth lifecycle and comment-style correction
+
+A separate scratch project at `~/temp/agent/jsonc-foundation-diff/`
+ now imports each parser candidate,
+ parses 512-level arrays and records with an innermost `/*deep*/` value comment,
+ drops the source string,
+ emits,
+ reparses through the same candidate,
+ clones and compares the deep value,
+ then drops every owned tree.
+ An initial assertion comparing the whole pre-emission and post-emission tree **failed**:
+ the canonical emitter writes this single-line block comment as a `//` trailing comment,
+ so reparsing changes `CommentKind::Block` to `CommentKind::Line` while preserving its value owner and body
+ (`~/temp/agent/jsonc-parser-probe-2026-09-24/src/emit.rs:95-97,130-132`,
+ `src/comment.rs:114-115`).
+ It was not evidence of value-to-key comment migration.
+ The corrected test walks the full depth without recursion,
+ asserts no container or key acquired the scalar comment,
+ checks the innermost number and comment body separately,
+ and checks clone equality before dropping.
+ Both bounded debug and optimized release suites passed seven tests,
+ including this external-consumer boundary case for **both** candidates.
+ These results do not validate memory safety of Biome's unsafe upstream implementation by themselves.
+
 ### Bounded parse-performance preparation
 
 The scratch differential consumer now has `src/bin/bench.rs` and a `mise run bench:isolated` task,
