@@ -103,3 +103,83 @@ fn name_override_count_must_equal_content_file_count() {
     assert_eq!(output.status.code(), Some(2));
     fs::remove_dir_all(root).expect("remove fixture");
 }
+
+/// A real filename is scanned even when no content bytes exist.
+#[test]
+fn actual_filename_matches_in_empty_file() {
+    let root = fixture("empty-filename");
+    fs::create_dir(root.join(".git")).expect("create repository marker");
+    fs::write(root.join("rules.txt"), "VAULTTOKEN_LONG\n").expect("write rules");
+    let file = root.join("VAULTTOKEN_LONG.txt");
+    fs::write(&file, b"").expect("create empty file");
+    let output = scanner(&root)
+        .current_dir(&root)
+        .args(["--rules", "rules.txt"])
+        .arg(&file)
+        .output()
+        .expect("run scanner");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(output.status.code(), Some(1), "{stderr}");
+    assert!(stderr.contains("[REDACTED]:name:1 rule=0"), "{stderr}");
+    assert!(!stderr.contains("VAULTTOKEN_LONG"), "filename leaked: {stderr}");
+    fs::remove_dir_all(root).expect("remove fixture");
+}
+
+/// Distinct candidate operands remain attributable after identical masking.
+#[test]
+fn masked_override_paths_keep_separate_operand_indexes() {
+    let root = fixture("identical-masks");
+    fs::write(root.join("rules.txt"), "VAULTTOKEN_LONG\n\nSECOND_SECRET_LONG\n")
+        .expect("write rules");
+    let first = root.join("first");
+    let second = root.join("second");
+    fs::write(&first, "clean").expect("write first");
+    fs::write(&second, "clean").expect("write second");
+    let output = scanner(&root)
+        .current_dir(&root)
+        .args(["--rules", "rules.txt", "--name-path", "VAULTTOKEN_LONG", "--name-path", "SECOND_SECRET_LONG"])
+        .arg(&first)
+        .arg(&second)
+        .output()
+        .expect("run scanner");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(output.status.code(), Some(1), "{stderr}");
+    assert!(stderr.contains("[REDACTED]:name:1 rule=0 input=0"), "{stderr}");
+    assert!(stderr.contains("[REDACTED]:name:1 rule=1 input=1"), "{stderr}");
+    assert!(!stderr.contains("VAULTTOKEN_LONG"), "first name leaked: {stderr}");
+    assert!(!stderr.contains("SECOND_SECRET_LONG"), "second name leaked: {stderr}");
+    fs::remove_dir_all(root).expect("remove fixture");
+}
+
+/// A missing input still reports the forbidden name without printing it.
+#[test]
+fn unreadable_named_input_fails_closed_and_redacts_both_findings() {
+    let root = fixture("missing-named-input");
+    fs::write(root.join("rules.txt"), "VAULTTOKEN_LONG\n").expect("write rules");
+    let output = scanner(&root)
+        .current_dir(&root)
+        .args(["--rules", "rules.txt", "--name-path", "VAULTTOKEN_LONG.txt"])
+        .arg(root.join("missing"))
+        .output()
+        .expect("run scanner");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(output.status.code(), Some(1), "{stderr}");
+    assert!(stderr.contains("[REDACTED]:name:1 rule=0 input=0"), "{stderr}");
+    assert!(stderr.contains("[REDACTED]: read error:"), "{stderr}");
+    assert!(!stderr.contains("VAULTTOKEN_LONG"), "missing name leaked: {stderr}");
+    fs::remove_dir_all(root).expect("remove fixture");
+}
+
+/// A synthetic logical path and `--all` cannot be combined.
+#[test]
+fn override_is_rejected_in_walker_mode() {
+    let root = fixture("mapping-walker");
+    fs::write(root.join("rules.txt"), "VAULTTOKEN_LONG\n").expect("write rules");
+    let output = scanner(&root)
+        .current_dir(&root)
+        .args(["--rules", "rules.txt", "--all", "--name-path", "one.txt"])
+        .output()
+        .expect("run scanner");
+    assert_eq!(output.status.code(), Some(2));
+    fs::remove_dir_all(root).expect("remove fixture");
+}
