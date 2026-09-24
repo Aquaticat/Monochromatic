@@ -41,7 +41,7 @@ a separate observer display, and earlier Promise records; its browser, Firefox E
 and PDF text checks pass. The lesson itself is unchanged.
 A-neutral was then selected for lesson integration under the user's delegated design choice;
 full-width code and neutral observed-outcome cues avoid the old grid and game-grade confusion.
-Lesson integration is in progress;
+A-neutral is now generated into the local lesson; the final combined verification remains in progress;
 [the settlement-UX handover](../handover/promises-settlement-ux.md) records the evidence,
 superseded models, current artifact, and next actions.
 Earlier critiques rejected a detached opening and forced chat turn-taking.

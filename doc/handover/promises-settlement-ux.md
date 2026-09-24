@@ -6,8 +6,10 @@ reply-shaped values, with Yum-Bot only as visual inspiration.
 Chromium, native-call, Firefox ESR, and PDF checks passed on the prototype.
 The agent then selected A-neutral for integration: full-width reference code and one neutral
 observer display avoid a competing highlighted state map and misleading game-grade colors.
-Lesson integration and its own boundary verification are in progress; the original lesson
-has not yet been replaced.
+The A-neutral section is now generated into the local lesson; full-suite verification is
+running with its required offline fixture and isolated native-print browser.
+The older local lesson is preserved separately. Do not claim the final lesson is verified
+until the combined suite and final Firefox/export/print checks finish.
 No skill design has been confirmed; this redesign feeds the Promise toy, not the teaching skill.
 
 ## Latest screenshot-driven clarity repair
@@ -323,7 +325,50 @@ The old focused review tab was not reloaded or closed.
 The original red `mise run probe:factory-logic` now reads the preserved
 `ux-variant-a-before-ticket.local.html`, not the active prototype.
 Its red game-faithfulness result remains historical evidence of why the mapping changed.
-The original lesson file is still unchanged; these are prototype checks, not final lesson integration.
+At this prototype stage the lesson was still unchanged; the later A-neutral integration
+and its separate verification are recorded in the next section.
+
+## Integrated A-neutral lesson (verification in progress)
+
+`promise-sequence.html` now delegates its settlement section to
+`/home/user/temp/agent/promises-revision/settlement-section.html`.
+`build.mjs` replaces the old settlement controller, retains the surrounding await and chat code,
+and injects the Promise-ticket controller after the other value-view instrumentation.
+When `window.lessonValues.captureValue` is available, its audited JSON/showify capture is reused;
+the standalone prototype retains a local formatter fallback.
+The lesson owns one global print lifecycle, so the builder omits only the prototype's duplicate
+print listeners. A print-only counterpart supplies the hidden scene's control labels,
+latest event, and earlier Promise records, alongside the static first-call traces and value cards.
+The value disclosures preserve mixed open/closed states through two PDF cycles and another call.
+
+Preserved before-state artifact:
+`doc/planning/promises-teaching-before-ticket.local.html`, SHA-256
+`5401b0df5d9b1eee7f987086e1cef6d60d4e109b63c7bd61d818ed7ef8a05002`.
+Current provisional artifact: `doc/planning/promises-teaching.local.html`, 693,749 bytes,
+SHA-256 `e90aa8feecad370e5a77c9d2b37a4a9c65fee1e6eca98885c82208fa2484bd28`.
+The most recent complete PDF inventory was 126 Letter pages, 2,475,134 bytes.
+Re-measure after the final build; before-state facts are not after-state evidence.
+
+The new generated-lesson guard failed against the preserved old interface and passed against
+this ticket build. `mise run test:ticket-lesson` exercised Create, Reject, real later Resolve,
+new Promise identity, bundle/inner-Promise views, native Error wording, responsive layout,
+print disclosure restoration and full historical snapshot text.
+`mise run test:ticket-lesson-resolvers` instrumented the *generated artifact*:
+three native calls to Promise 1 yielded one rejection observation;
+two calls to the distinct Promise 2 yielded one fulfillment observation.
+Suppressing later native calls left a plausible log but failed the guard.
+`mise run test:value-views`, foundation checks, PDF content inventory,
+`mise run test:exports`, `mise run test:reference-sending`, neutral-surface checks,
+and Firefox ESR value/ownership checks passed in targeted sessions.
+`mise run test:native-print` passed after its off-screen Helium fixture was started;
+the first combined run failed only because that fixture's `DevToolsActivePort` was absent.
+The rerun with both owned fixtures running is `proc_de51` and had not finished at this edit.
+
+A PDF extraction check displaced literal `✓` characters in printed reference JavaScript.
+The authored UI source now spells those characters as `\u2713` in JavaScript string literals,
+which preserves runtime checkmarks while the complete PDF source inventory passes.
+[The print extraction note](../troubleshooting/agent-browser-pdf-checkmark-extraction.md)
+records the evidence without attributing the positioning cause to one upstream tool.
 
 ## Superseded designs (do not revive without the user asking)
 
@@ -336,10 +381,11 @@ The original lesson file is still unchanged; these are prototype checks, not fin
 
 ## Artifacts and paths
 
-- Lesson artifact, unchanged by this work:
-  `/var/home/user/Monochromatic/doc/planning/promises-teaching.local.html`,
-  655,250 bytes, SHA-256 `5401b0df5d9b1eee7f987086e1cef6d60d4e109b63c7bd61d818ed7ef8a05002`;
-  its PDF is 121 Letter pages. The pre-value-view copy keeps hash `319ffcb2…`.
+- The old lesson artifact had 655,250 bytes and SHA-256
+  `5401b0df5d9b1eee7f987086e1cef6d60d4e109b63c7bd61d818ed7ef8a05002`;
+  that exact file is preserved as `promises-teaching-before-ticket.local.html`.
+  The older PDF was 121 Letter pages; the pre-value-view copy keeps hash `319ffcb2…`.
+  Current provisional artifact and PDF measurements are in the integration section.
 - Authoring workspace: `/home/user/temp/agent/promises-revision`.
 - Variant prototypes: `ux-variants/ux-variant-a.html` (reference rows),
   `ux-variant-b.html` (kept card grid as live map), `ux-variants/ux-variant-c.html`
@@ -415,8 +461,8 @@ post-decision implementation. Do not silently apply any cell to the lesson.
 
 ## Scratch corrections after the audit
 
-The source changes are in `/home/user/temp/agent/promises-revision`, outside the repository.
-They have not been integrated into `doc/planning/promises-teaching.local.html`.
+These earlier prototype corrections were authored in `/home/user/temp/agent/promises-revision`.
+The accepted ticket design has since been integrated into `doc/planning/promises-teaching.local.html`.
 
 - The audit's first fix gated the second control synchronously at the first resolver call.
   The user's subsequent decision superseded that restriction. `ux-variant-experiment.js` now
@@ -469,7 +515,8 @@ the actual error/value snapshots, and ignored resolver calls.
 its extracted text keeps state explanations, the ignored call, fixed outcome, and value snapshots
 while the nonfunctional scene is omitted. This is text inventory, not final visual print approval.
 The latest prototype artifacts are outside Git, in the authoring workspace.
-The lesson remains at SHA-256 `5401b0df5d9b1eee7f987086e1cef6d60d4e109b63c7bd61d818ed7ef8a05002`.
+At that point the lesson still matched the before-ticket hash; see the integration section
+for the newer generated artifact.
 
 ## Earlier verification evidence (superseded)
 
