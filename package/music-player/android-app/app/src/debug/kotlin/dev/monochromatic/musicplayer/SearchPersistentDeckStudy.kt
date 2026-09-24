@@ -153,7 +153,10 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
     }
     val halfDent = with(LocalDensity.current) { (55f / density).dp }
     val pageColor = if (light) MaterialTheme.colorScheme.surfaceContainerLowest else Color.Black
-    if (candidate.contains("-left-")) {
+    if (candidate.contains("-mirrored-")) {
+        SearchDeckMirrored(query = query, onQueryChange = { query = it }, onBack = onBack,
+            unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor)
+    } else if (candidate.contains("-left-")) {
         SearchDeckLeft(query = query, onQueryChange = { query = it }, onBack = onBack,
             unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor)
     } else if (candidate.contains("-right-")) {
@@ -185,12 +188,35 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, halfDent: Dp, light: Boolean, pageColor: Color) {
     Row(modifier = Modifier.fillMaxSize().background(pageColor)) {
         SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f), deckFirst = true) { slot ->
-            SearchFoldFolders(light = light, modifier = slot.padding(end = halfDent + 8.dp))
+            BoxWithConstraints(modifier = slot.fillMaxSize()) {
+                if (maxHeight >= 250.dp) {
+                    SearchFoldFolders(light = light, modifier = Modifier.padding(end = halfDent + 8.dp))
+                }
+            }
         }
         PersistentSearchPane(query = query, onQueryChange = onQueryChange, onBack = onBack,
             unavailable = unavailable, modifier = Modifier.weight(1f),
             startSafe = halfDent + 16.dp, endSafe = 16.dp,
             includeTopInset = true, pageColor = pageColor)
+    }
+}
+
+/** Moves the unified Search pane left and anchors the crease-safe deck on the right. */
+@Composable
+private fun SearchDeckMirrored(query: String, onQueryChange: (String) -> Unit,
+    onBack: () -> Unit, unavailable: Boolean, halfDent: Dp, light: Boolean, pageColor: Color) {
+    Row(modifier = Modifier.fillMaxSize().background(pageColor)) {
+        PersistentSearchPane(query = query, onQueryChange = onQueryChange, onBack = onBack,
+            unavailable = unavailable, modifier = Modifier.weight(1f),
+            startSafe = 16.dp, endSafe = halfDent + 16.dp,
+            includeTopInset = true, pageColor = pageColor)
+        SearchFoldDeckHost(light = light,
+            modifier = Modifier.weight(1f).padding(start = halfDent + 8.dp),
+            deckFirst = true) { slot ->
+            BoxWithConstraints(modifier = slot.fillMaxSize()) {
+                if (maxHeight >= 250.dp) SearchFoldTracks(light = light, modifier = Modifier)
+            }
+        }
     }
 }
 
