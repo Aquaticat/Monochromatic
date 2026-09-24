@@ -40,6 +40,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 // `WindowInsets` reads actual Android system insets from the target panel.
 import androidx.compose.foundation.layout.WindowInsets
+// `fillMaxHeight` keeps the neutral connector empty over the whole inner panel.
+import androidx.compose.foundation.layout.fillMaxHeight
 // `fillMaxSize` preserves target display dimensions.
 import androidx.compose.foundation.layout.fillMaxSize
 // `fillMaxWidth` spans the current Fold panel instead of a desktop mock.
@@ -61,6 +63,8 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 // `windowInsetsTopHeight` reserves the actual status-bar height on each panel.
 import androidx.compose.foundation.layout.windowInsetsTopHeight
+// `width` fixes each unfolded content pane and the 24dp neutral connector.
+import androidx.compose.foundation.layout.width
 
 // What:     `Icons` provides official Material vectors at 24dp.
 // Why:      Search, Back, Clear, Folder and Track must not be text glyphs.
@@ -164,23 +168,50 @@ internal fun SearchPageStudy(candidate: String) {
         })
         return
     }
-    Column(modifier = Modifier.fillMaxSize().background(windowColor)) {
-        Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
-        SearchHeader(query = query, onQueryChange = { query = it }, onBack = {
-            pageOpen = false
-            query = ""
-        })
-        HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
-        Box(modifier = Modifier.fillMaxWidth().weight(1f).windowInsetsPadding(WindowInsets.navigationBars)) {
-            if (unavailable) {
-                SearchPageMessage(title = "Library unavailable", detail = "Search returns when the library is available.")
-            } else if (query.isEmpty()) {
-                SearchPageMessage(title = "Search your music", detail = "Type a name to explore your library.")
-            } else if (query == "cam") {
-                SearchExampleResults()
-            } else {
-                SearchPageMessage(title = "No results for “$query”", detail = "Try another name.")
-            }
+    val onBack = {
+        pageOpen = false
+        query = ""
+    }
+    if (cover) {
+        Column(modifier = Modifier.fillMaxSize().background(windowColor)) {
+            Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
+            SearchHeader(query = query, onQueryChange = { query = it }, onBack = onBack)
+            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
+            SearchBody(query = query, unavailable = unavailable,
+                modifier = Modifier.fillMaxWidth().weight(1f).windowInsetsPadding(WindowInsets.navigationBars))
+        }
+        return
+    }
+    // E2: only neutral paint, never header, divider, text, rows or targets in [414,438)dp.
+    Row(modifier = Modifier.fillMaxSize().background(windowColor)) {
+        Column(modifier = Modifier.width(414.dp).fillMaxHeight().background(windowColor)) {
+            Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
+            SearchHeader(query = query, onQueryChange = { query = it }, onBack = onBack)
+            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
+            Box(modifier = Modifier.fillMaxWidth().weight(1f))
+        }
+        Box(modifier = Modifier.width(24.dp).fillMaxHeight().background(windowColor))
+        Column(modifier = Modifier.weight(1f).fillMaxHeight().background(windowColor)) {
+            Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
+            Box(modifier = Modifier.fillMaxWidth().height(73.dp))
+            SearchBody(query = query, unavailable = unavailable,
+                modifier = Modifier.fillMaxWidth().weight(1f).windowInsetsPadding(WindowInsets.navigationBars))
+        }
+    }
+}
+
+/** Keeps the same result or message state in one bounded pane on either posture. */
+@Composable
+private fun SearchBody(query: String, unavailable: Boolean, modifier: Modifier) {
+    Box(modifier = modifier) {
+        if (unavailable) {
+            SearchPageMessage(title = "Library unavailable", detail = "Search returns when the library is available.")
+        } else if (query.isEmpty()) {
+            SearchPageMessage(title = "Search your music", detail = "Type a name to explore your library.")
+        } else if (query == "cam") {
+            SearchExampleResults()
+        } else {
+            SearchPageMessage(title = "No results for “$query”", detail = "Try another name.")
         }
     }
 }
