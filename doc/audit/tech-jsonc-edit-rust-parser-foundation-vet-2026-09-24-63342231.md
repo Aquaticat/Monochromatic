@@ -493,6 +493,51 @@ The published `zoko-parser` 0.2.0 selects `regex` as a normal dependency (`Cargo
  but this does not change the earlier regex exit.
  These source screens do not settle the rest of the secondary query's metadata records.
 
+### Secondary registry metadata screen
+
+A direct `mise run audit:registry-page` pass displayed the name,
+ version,
+ first 240 description characters and clipping flag of **every** saved
+ `comment preserving json` result across pages 1 through 13.
+ The validated saved response has 1214 distinct records;
+ this is an inspected metadata set,
+ not evidence that each registry crate's source was audited.
+ Most records advertise other domains,
+ such as issue trackers,
+ YAML-only editors and OpenAPI generators.
+ The full-page pass uncovered `agent-first-data`,
+ `patchloom` and `qubit-json`,
+ which the earlier keyword lead display missed.
+ All three received targeted source checks before treating the secondary query's visible metadata as screened.
+ A description with no relevant terms is not proof of source behavior;
+ full source-class saturation and surviving composition counts remain open.
+
+- `agent-first-data` 0.34.0 has a byte-span JSON editor,
+   but its JSON backend explicitly says that JSON has no comments
+   (`rust/src/document/format/json.rs:5-42`),
+   and `Parser::skip_ws` accepts only JSON whitespace (`:590-598`).
+   Its comment-preserving backends are separate YAML/TOML paths.
+   It cannot supply JSONC comment queries as-is;
+   adding a comment lexer is a distinct composition.
+- `patchloom` 0.36.0 strips JSONC comments and trailing commas for Serde JSON
+   (`src/ops/doc/jsonc.rs:1-10,19-53`),
+   rather than returning attached key/value comments.
+   More decisively,
+   its selected normal `regex` dependency is unconditional (`Cargo.toml:198-199`),
+   and production search/replace code constructs regexes (`src/lib.rs:406-425`,
+   `src/ops/replace.rs:7,54`).
+   Exclude this published package at the user's selected-dependency regex gate,
+   not merely because its JSONC edit path uses string scans.
+- `qubit-json` 0.10.0 accepts `jsonc` only as a Markdown fence label:
+   its documented fenced content must remain strict JSON without comments or trailing commas
+   (`src/decode/markdown_fence_policy.rs:34-39`).
+   Its syntax error model explicitly rejects unpaired Unicode surrogates
+   (`src/decode/json_syntax_error_reason.rs:45-51`).
+   That is a JSON processing component,
+   not an as-is JSONC source foundation.
+
+No candidate code was executed for these source screens.
+
 ### `fig` 4.1.0 as-is contract exit
 
 The published `fig` 4.1.0 source in the local Cargo registry exposes an editor whose public comment operations take `&mut self`
