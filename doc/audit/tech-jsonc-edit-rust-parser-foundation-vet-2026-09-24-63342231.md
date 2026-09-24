@@ -158,7 +158,13 @@ Both local delegated `rg` queries were blocked by its security guardrail,
    lossless trivia and raw scalar ranges may support an adapter.
    [Prior repository research](../planning/monorepo-manager-route-research/rust-structured-edits.md) corrected its build pin count to three exact companion crates.
    Strict container-root validation and the attached-comment layer remain repository work.
-   Token support for unpaired escapes must be probed.
+   The published `src/lexer/mod.rs:494-607,635-683` scans an escaped `\uXXXX` as four hex digits without decoding it into a Rust `char`;
+   `src/syntax.rs:151-230` parses nested sequences with an explicit `Vec` stack.
+   `src/parser.rs:16-29` exposes comment and trailing-comma options.
+   This source shape is a promising raw-syntax adapter,
+   but runtime acceptance of lone surrogates,
+   raw-node projection,
+   deep tree lifecycle and full validation remain unproven.
 
 ### `jwc` 0.1.0
 
@@ -227,7 +233,8 @@ Both local delegated `rg` queries were blocked by its security guardrail,
  not a validated finalist;
  `edikt-jsonc` is excluded by the regex hard gate.
  The repository-owned parser translation remains a baseline.
- `biome_json_parser` and other discovered candidates remain unscreened against the exact surrogate and comment boundary;
+ `biome_json_parser` has source-level lexical and grammar evidence but still lacks a runtime surrogate and comment-boundary probe;
+ other discovered candidates remain unscreened against those requirements;
  no elimination or ranking is justified yet.
 
 ## Parser expansion findings and registry pages
