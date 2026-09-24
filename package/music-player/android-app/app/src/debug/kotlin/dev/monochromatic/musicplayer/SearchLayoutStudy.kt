@@ -185,7 +185,7 @@ private fun SearchLayoutCover(query: String, onQueryChange: (String) -> Unit,
         HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
         SearchLayoutRows(query = query, unavailable = unavailable,
             modifier = Modifier.fillMaxWidth().weight(1f).windowInsetsPadding(WindowInsets.navigationBars),
-            halfClearance = null, fullWidth = false)
+            halfClearance = null, fullWidth = false, pageColor = pageColor)
     }
 }
 
@@ -204,7 +204,7 @@ private fun SearchLayoutDocked(query: String, onQueryChange: (String) -> Unit,
                 HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
                 SearchLayoutRows(query = query, unavailable = unavailable,
                     modifier = Modifier.fillMaxWidth().weight(1f).windowInsetsPadding(WindowInsets.navigationBars),
-                    halfClearance = halfClearance, fullWidth = false)
+                    halfClearance = halfClearance, fullWidth = false, pageColor = pageColor)
             }
             Box(modifier = Modifier.weight(1f).fillMaxHeight().background(
                 if (light) Color.White.copy(alpha = 0.35f) else Color.Black.copy(alpha = 0.35f)))
@@ -225,11 +225,11 @@ private fun SearchLayoutWide(query: String, onQueryChange: (String) -> Unit,
         if (cards) {
             SearchLayoutCards(query = query, unavailable = unavailable,
                 modifier = Modifier.fillMaxWidth().weight(1f).windowInsetsPadding(WindowInsets.navigationBars),
-                halfClearance = halfClearance)
+                halfClearance = halfClearance, pageColor = pageColor)
         } else {
             SearchLayoutRows(query = query, unavailable = unavailable,
                 modifier = Modifier.fillMaxWidth().weight(1f).windowInsetsPadding(WindowInsets.navigationBars),
-                halfClearance = halfClearance, fullWidth = true)
+                halfClearance = halfClearance, fullWidth = true, pageColor = pageColor)
         }
     }
 }
@@ -288,7 +288,7 @@ private fun SearchLayoutInput(query: String, onQueryChange: (String) -> Unit, mo
 /** Shows compact list states directly under the input in cover, docked, or wide-list form. */
 @Composable
 private fun SearchLayoutRows(query: String, unavailable: Boolean, modifier: Modifier,
-    halfClearance: androidx.compose.ui.unit.Dp?, fullWidth: Boolean) {
+    halfClearance: androidx.compose.ui.unit.Dp?, fullWidth: Boolean, pageColor: Color) {
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         if (query != "cam" || unavailable) {
             SearchLayoutEmpty(query = query, unavailable = unavailable,
@@ -298,17 +298,20 @@ private fun SearchLayoutRows(query: String, unavailable: Boolean, modifier: Modi
         Text("Results for “cam”", modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 8.dp),
             style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         SearchLayoutRow(title = "Camellia", detail = "Folder · opens this folder", kind = "Folder",
-            halfClearance = halfClearance, fullWidth = fullWidth)
+            halfClearance = halfClearance, fullWidth = fullWidth, pageColor = pageColor)
+        if (fullWidth) Spacer(modifier = Modifier.height(8.dp))
         SearchLayoutRow(title = "Another Xronixle", detail = "Track · Camellia · reveals track", kind = "Track",
-            halfClearance = halfClearance, fullWidth = fullWidth)
+            halfClearance = halfClearance, fullWidth = fullWidth, pageColor = pageColor)
     }
 }
 
 /** Puts result details in a safe leading region while the row surface may cross the dent. */
 @Composable
 private fun SearchLayoutRow(title: String, detail: String, kind: String,
-    halfClearance: androidx.compose.ui.unit.Dp?, fullWidth: Boolean) {
-    BoxWithConstraints(modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp)) {
+    halfClearance: androidx.compose.ui.unit.Dp?, fullWidth: Boolean, pageColor: Color) {
+    val rowColor = if (pageColor == Color.Black) Color(0xFF1A1A1F) else MaterialTheme.colorScheme.surfaceContainerLow
+    val surface = if (fullWidth) Modifier.fillMaxWidth().background(rowColor) else Modifier.fillMaxWidth()
+    BoxWithConstraints(modifier = surface.heightIn(min = 80.dp)) {
         val safeEnd = if (halfClearance != null) maxWidth / 2 - halfClearance - 16.dp else maxWidth - 24.dp
         val labelWidth = if (fullWidth) safeEnd - 88.dp else maxWidth - (halfClearance ?: 0.dp) - 88.dp
         Row(modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp)
@@ -359,7 +362,7 @@ private fun SearchLayoutEmpty(query: String, unavailable: Boolean,
 /** Arranges a folder result and a track result as two bounded information groups. */
 @Composable
 private fun SearchLayoutCards(query: String, unavailable: Boolean, modifier: Modifier,
-    halfClearance: androidx.compose.ui.unit.Dp) {
+    halfClearance: androidx.compose.ui.unit.Dp, pageColor: Color) {
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         if (query != "cam" || unavailable) {
             SearchLayoutEmpty(query = query, unavailable = unavailable,
@@ -370,19 +373,20 @@ private fun SearchLayoutCards(query: String, unavailable: Boolean, modifier: Mod
             style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
             SearchLayoutCard(title = "Camellia", detail = "Folder · opens this folder",
-                kind = "Folder", modifier = Modifier.weight(1f).padding(start = 16.dp, end = halfClearance + 8.dp))
+                kind = "Folder", pageColor = pageColor,
+                modifier = Modifier.weight(1f).padding(start = 16.dp, end = halfClearance + 8.dp))
             SearchLayoutCard(title = "Another Xronixle", detail = "Track · Camellia · reveals track",
-                kind = "Track", modifier = Modifier.weight(1f).padding(start = halfClearance + 8.dp, end = 16.dp))
+                kind = "Track", pageColor = pageColor,
+                modifier = Modifier.weight(1f).padding(start = halfClearance + 8.dp, end = 16.dp))
         }
     }
 }
 
 /** A tonal card is structural paint; its complete text remains outside the central dent. */
 @Composable
-private fun SearchLayoutCard(title: String, detail: String, kind: String, modifier: Modifier) {
+private fun SearchLayoutCard(title: String, detail: String, kind: String, pageColor: Color, modifier: Modifier) {
     Surface(modifier = modifier.heightIn(min = 180.dp),
-        color = if (MaterialTheme.colorScheme.background == Color.Black) Color(0xFF1A1A1F)
-            else MaterialTheme.colorScheme.surfaceContainerLow,
+        color = if (pageColor == Color.Black) Color(0xFF1A1A1F) else MaterialTheme.colorScheme.surfaceContainerLow,
         shape = MaterialTheme.shapes.medium) {
         Column(modifier = Modifier.padding(16.dp)) {
             Icon(imageVector = if (kind == "Folder") Icons.Filled.FolderOpen else Icons.Filled.MusicNote,
