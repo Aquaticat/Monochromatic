@@ -492,13 +492,35 @@ Round 7 answers (user,
   A `choosing-technology` vet of merge crates against an in-linter baseline is running,
    report due at `doc/audit/tech-unified-linter-config-deep-merge-vet-2026-09-23.md`.
 
-Round 8,
+Round 8 answer (user,
+2026-09-23):
+
+- A rule setting is always an object,
+   such as `"rust/max-lines" = { severity = "error", max = 300 }` (A),
+   so a later `{ severity = "warn" }` keeps `max` under deep merge.
+
+Round 9,
 asked 2026-09-23:
 
-- Rule setting shape under deep merge:
-   always an object,
-   an object plus a normalized string shorthand,
-   or ESLint's array form.
+- How the commit policy runs one rule:
+   a non-ESLint `--only-rule <id>` reading that rule's settings from the configuration file,
+   or another mechanism.
+- Adoptions open to veto:
+   JSONL records keep today's Rust linter shape with the rule id as `code`
+   and real-file positions for virtual findings;
+   one root lint task and one root format task replace `lint:rust`,
+   `lint:markdown`,
+   `format:markdown`,
+   and the 17 package `lint:rust` tasks;
+   `AGENTS.md` MXR and RDC updated at cutover;
+   the incumbent packages and their registrations deleted at cutover;
+   unpatched `hcl-edit` 0.9.7,
+   because meow's two patches fix write-back defects and the linter only reads;
+   literal-only configuration values;
+   `--rule` values in the configuration file's HCL attribute syntax,
+   applying to every file some configuration block matches;
+   the 556 findings #559 hides treated as expected differential differences;
+   `Edition::CURRENT` for Rust parsing.
 
 Waiting on research:
 the Markdown parser crate
@@ -506,6 +528,6 @@ and the deep-merge crate.
 
 ## Next action
 
-Collect round 8 answers and both vets,
+Collect round 9 answers and both vets,
 record them here,
-then ask round 9.
+then ask round 10.
