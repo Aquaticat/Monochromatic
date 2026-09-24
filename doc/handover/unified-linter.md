@@ -586,12 +586,25 @@ Round 11 answers about the deepmerge-ts port (user,
    "I'm looking through it and found its own test suite very insufficient.
    I'm working on building a more sufficient fork."
 
-Round 12,
-asked 2026-09-23:
+Round 12 answers (user,
+2026-09-23):
 
-- Where the user's deepmerge-ts fork lives,
-   whether it or upstream 8.0.2 defines the semantics,
-   and whether the port waits for the fork's tests.
+- The fork is not ready or published yet
+   (no fork under `Aquaticat` on GitHub or among upstream's recent forks,
+   checked 2026-09-23).
+- Upstream deepmerge-ts 8.0.2 defines the port's semantics (A);
+   a fork test that disagrees with upstream is decided case by case.
+- The port waits for the fork's tests (B).
+  Consequence:
+   the linter's configuration merging lands with the port;
+   linter parts that do not merge
+   (walker,
+   parsers,
+   rules,
+   processors,
+   output)
+   can proceed first,
+   and no interim merge code is written.
 
 Waiting on research:
 the Markdown parser crate.
