@@ -1,0 +1,19 @@
+{
+  "buildCommit": "56b8009415462162c95cee3fba689bf907e9ea90",
+  "panel": "cover",
+  "physicalPixels": [
+    1080,
+    2424
+  ],
+  "densityDpi": 390,
+  "dentPxApprox": null,
+  "deviceState": "0",
+  "fontScale": 2,
+  "night": "Night mode: yes",
+  "selectedIme": "dev.monochromatic.musicplayer/.FoldProbeInputMethod",
+  "imeTopPx": 1693,
+  "layout": "D51 A",
+  "positiveHeadingRemoved": true,
+  "stage": "typing",
+  "probeOnly": true
+}
