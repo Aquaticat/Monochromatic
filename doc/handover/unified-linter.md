@@ -200,6 +200,59 @@ Round 4 answers so far (user,
 - The user asked to be asked which parts of ESLint not to replicate:
    "eslint is a huge project and we don't need every knob it does."
 
+Round 5 answers (user,
+2026-09-23):
+
+- No suppression directives at all:
+   "no rules needs to be suppressed,
+   ever."
+  The agent's check:
+   true for every current rule
+   (the two Rust rules were already non-suppressible,
+   the Markdown linter never had directives,
+   and the repository holds no directive outside the Rust linter's own crates);
+   the exception is future declarative pattern rules with legitimate per-site exceptions,
+   such as the README's `no-unwrap` example or issue #469.
+  Unused-directive reporting,
+   the invalid-directive finding,
+   and their flags go with it.
+- "a later block wins" was ambiguous;
+   precise merge semantics were restated in round 6.
+- No `extends` now:
+   "There are no consumers for it."
+  The categories-as-built-in-configurations adoption depended on it and is dropped too.
+- Command line (30b):
+   agreed as listed,
+   minus the flags made moot by later answers.
+- Output (30d):
+   JSONL only;
+   no readable format,
+   so no `--format` flag.
+- Language server (30f):
+   not built now,
+   "as there is currently no consumers for it";
+   `--lsp` goes with it.
+- Rule interface (30c) and processors (30e):
+   no objection,
+   minus the directive items.
+- One crate with modules (Q31 A).
+- Walker as proposed (Q32).
+- `**/*.fuzz/**` joins the fuzz exemption,
+   and Rust under `doc/audit/**` is exempt from `max-lines` and `require-rustdoc` (Q33 A and A).
+- Descriptive rule ids such as `markdown/heading-increment` (Q34 A).
+- Configuration file:
+   `monochromatic-lint.config.hcl`.
+- Binary:
+   "mise supports cargo-binstall",
+   so the linter is published like `forbidden-strings`
+   (crates.io plus GitHub release assets in cargo-binstall's default naming,
+   through `.github/workflows/cargo-publish.yml`)
+   and pinned in root `mise.toml` as a `cargo:` tool.
+  The first publish claims the crates.io name and needs the user's go-ahead at that step.
+- Incumbent tests of user-visible behavior become the specification;
+   tests of internal structure are not ported (Q37).
+- The model-system gap was folded into `AGENTS.md` EPR (`dc5b8a263`).
+
 Adopted by the agent from settled answers,
 not vetoed in round 3:
 
@@ -390,33 +443,25 @@ not vetoed in round 3:
 
 ## Open questions
 
-Round 5,
+Round 6,
 asked 2026-09-23:
 
-- ESLint features to leave out,
-   by area:
-   configuration,
-   command line,
-   rule interface,
-   output,
-   processors and directives,
-   extensibility.
-- One crate for compile speed.
-- Walker semantics for the single walk.
-- Rust outside packages:
-   `*.fuzz` crates and `doc/audit` Rust.
-- Package path,
-   configuration file name,
-   and directive prefix for `monochromatic-lint`.
-- Mise install mechanism.
-- Incumbent tests ported as behavior specifications only.
-- Proposed `AGENTS.md` rule about asking what to leave out of a model system.
+- Block merge semantics:
+   the last applying block that names a rule replaces its severity and options together,
+   or ESLint's option-keeping merge.
+- Configuration lookup,
+   reopened because `extends` is gone:
+   nearest file per linted file,
+   or one configuration file found upward from the working directory.
+- Declarative pattern rules and the suggestion and dangerous fix levels,
+   which have no consumers:
+   build now or later.
 
 Waiting on research:
 the Markdown parser crate.
 
 ## Next action
 
-Collect round 5 answers and the parser vet,
+Collect round 6 answers and the parser vet,
 record them here,
-then ask round 6.
+then ask round 7.
