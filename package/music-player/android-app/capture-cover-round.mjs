@@ -61,7 +61,10 @@ const captures = [
   { candidate: 'cover-picker-p2', scale: '1.0', scaleKey: 's100', night: true, environment: 'wallpaper', markers: ['text="Cult of Luna"', 'content-desc="Pause"'] },
   { candidate: 'cover-picker-p3', scale: '1.0', scaleKey: 's100', night: true, environment: 'wallpaper', markers: ['text="Cult of Luna"', 'text="Open"'] },
   { candidate: 'cover-picker-p4', scale: '1.0', scaleKey: 's100', night: true, environment: 'wallpaper', markers: ['text="Cult of Luna"', 'content-desc="Pause"'] },
+  { candidate: 'cover-picker-p4', scale: '2.0', scaleKey: 's200', night: true, environment: 'wallpaper', markers: ['text="Camellia"', 'content-desc="Pause"'] },
   { candidate: 'cover-picker-p2-light', scale: '1.0', scaleKey: 's100', night: false, environment: 'wallpaper', markers: ['text="Cult of Luna"', 'content-desc="Pause"'] },
+  { candidate: 'cover-picker-p4-light', scale: '1.0', scaleKey: 's100', night: false, environment: 'wallpaper', markers: ['text="Cult of Luna"', 'content-desc="Pause"'] },
+  { candidate: 'cover-picker-p4-light', scale: '2.0', scaleKey: 's200', night: false, environment: 'wallpaper', markers: ['text="Camellia"', 'content-desc="Pause"'] },
   { candidate: 'cover-picker-p2', scale: '2.0', scaleKey: 's200', night: true, environment: 'wallpaper', markers: ['text="Camellia"', 'content-desc="Pause"'] },
 ];
 const coverMappings = {
