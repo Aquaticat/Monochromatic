@@ -4,10 +4,7 @@
 
  @module
  */
-import type {
-  CandidateFile,
-  PolicyFinding,
-} from '../../api/index.ts';
+import type { PolicyFinding, } from '../../api/index.ts';
 import { parseCacheWarning, } from './cache-warning.ts';
 import { ForbiddenStringsPluginError, } from './errors.ts';
 
@@ -181,24 +178,96 @@ function parseHit(line: string,): ScannerHit {
 
 //endregion Finding protocol
 
+//region Path validation
+
+/**
+ Encodes one nonmatching component exactly as the scanner's visible label does.
+
+ @param name - candidate pathname component
+ @returns protocol-safe visible spelling
+ */
+function visibleComponent(name: string,): string {
+  return Array.from(name, function encodeCharacter(ch,): string {
+    if (ch === ':')
+      return '\\x3a';
+    if (ch === '\\')
+      return '\\\\';
+    /**
+     Unicode scalar for a control byte in the name.
+     */
+    const code = ch.codePointAt(0,);
+    if (code === undefined)
+      throw malformedOutput();
+    if ((code < 32) || ((code >= 127) && (code <= 159)))
+      return `\\u{${code.toString(16,)}}`;
+    return ch;
+  },).join('',);
+}
+
+/**
+ Checks every displayed segment against the indexed candidate's real name.
+
+ @param hit - parsed scanner finding
+ @param name - repository-relative candidate path
+ @returns safe path, with reported offending segment masked
+ */
+function checkedDisplayPath({
+  hit,
+  name,
+}: Readonly<{
+  hit: ScannerHit;
+  name: string;
+}>,): string {
+  /**
+   Original Git components and scanner-rendered components must align.
+   */
+  const original = name.split('/',);
+  /**
+   Displayed components, some replaced in full by scanner mask.
+   */
+  const displayed = hit.displayPath.split('/',);
+  if (displayed.length !== original.length)
+    throw malformedOutput();
+  if ((hit.kind === 'name')
+    && ((hit.position > original.length) || (displayed[hit.position - 1] !== '[REDACTED]',)))
+    throw malformedOutput();
+  for (let index = 0; index < original.length; index += 1) {
+    /**
+     Indexed real name component from validated repository path.
+     */
+    const component = original[index];
+    /**
+     Indexed printed component from scanner output.
+     */
+    const shown = displayed[index];
+    if ((component === undefined) || (shown === undefined))
+      throw malformedOutput();
+    if ((shown !== '[REDACTED]') && (shown !== visibleComponent(component,)))
+      throw malformedOutput();
+  }
+  return hit.displayPath;
+}
+
+//endregion Path validation
+
 /**
  Parses redacted findings and rejects scanner-owned infrastructure diagnostics.
 
  @param stderr - scanner stderr, containing findings and cache warnings
- @param candidateForIndex - candidate lookup through opaque operand position
+ @param nameForIndex - repository-relative name lookup through opaque operand position
  @returns policy findings with masked logical paths
 
  @example
  ```ts
- parseScannerOutput({ stderr: 'src/a.ts:1 rule=3 input=0', candidateForIndex: () => candidate });
+ parseScannerOutput({ stderr: 'src/a.ts:1 rule=3 input=0', nameForIndex: () => 'src/a.ts' });
  ```
  */
 export function parseScannerOutput({
   stderr,
-  candidateForIndex,
+  nameForIndex,
 }: Readonly<{
   stderr: string;
-  candidateForIndex: (index: number) => CandidateFile;
+  nameForIndex: (index: number) => string;
 }>,): readonly PolicyFinding[] {
   return stderr.split('\n',)
     .filter(function isOutputLine(line,): boolean {
@@ -209,7 +278,7 @@ export function parseScannerOutput({
     },)
     .map(function toFinding(line,): PolicyFinding {
       if (line.includes(': read error:',)
-        || line.includes(' engine error',)
+        || line.includes(': engine error',)
         || line.includes(': unsupported pathname line break',))
         throw new ForbiddenStringsPluginError('Forbidden-strings scanner reported an infrastructure failure.',);
       /**
@@ -217,15 +286,18 @@ export function parseScannerOutput({
        */
       const hit = parseHit(line,);
       /**
-       Verifies that the reported index belongs to a candidate in this invocation.
+       Verifies both opaque candidate identity and every emitted pathname segment.
        */
-      candidateForIndex(hit.input,);
+      const displayPath = checkedDisplayPath({
+        hit,
+        name: nameForIndex(hit.input,),
+      },);
       return {
         code: 'forbidden-string',
         message: hit.kind === 'name'
           ? `Forbidden string matched in pathname segment ${String(hit.position,)} (rule ${hit.rule}).`
           : `Forbidden string matched at line ${String(hit.position,)} (rule ${hit.rule}).`,
-        path: hit.displayPath,
+        path: displayPath,
       };
     },);
 }
