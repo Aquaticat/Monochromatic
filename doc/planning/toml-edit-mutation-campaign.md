@@ -423,7 +423,10 @@ The expanded package build,
  unit suite,
  types,
  and oxlint passed after these changes.
-Another edit-path mutation recheck is pending.
+The edit-path mutation rechecks are running on the same source revision:
+ `/var/home/user/temp/agent/toml-mutation-edit-a-final.json` (`proc_3709`)
+ and `/var/home/user/temp/agent/toml-mutation-edit-b-final.json` (`proc_4cbf`).
+Do not edit runtime source until both complete.
 The indexed array-of-tables read fix passed the rebuilt package suite,
  types,
  oxlint,
