@@ -4386,23 +4386,36 @@ window management again.
 The earlier study painted a generic outlined 8px-corner palette with text glyphs and
 Noto fallback;
  that is the wrong component anatomy despite using native Slint.
-The user's local MD3 archive now has been examined visually,
- not only extracted as
-text:
- `components/search/guidelines/images/20.png` shows the light focused search
-view,
- `images/28.png` the dark focused view,
- and `images/37.png` the contained
-docked/full-screen comparison.
- The component source confirms a 56dp fully rounded
-search field in `surfaceContainerHigh`,
- docked container 28dp corner,
- full-screen
-sharp corners,
- 56dp docked / 72dp full-screen header,
- BodyLarge input,
- 16dp list
-padding and a selected expressive list item with 16dp corners.
+The user's local MD3 archive has been examined visually,
+ not only as extracted
+text.
+ My first reading of `components/search/guidelines/images/{20,28,37}.png`
+was incomplete:
+ those images show the **Expressive contained** treatment,
+ while A2
+keeps the project on **baseline** M3.
+ Full-resolution baseline divided diagrams
+are recoverable from `components/search/specs/manifest.json`:
+ ask the original
+`images/{34,35}.png` URL for `=w1200` instead of the archived 40px thumb.
+They show a 56dp *collapsed* full-pill field,
+ then a docked expanded container
+rounded 28dp with a 56dp header and divider,
+ or a full-content sharp container
+with a 72dp header and divider.
+ AndroidX `SearchBar.kt` confirms the divider for
+baseline ExpandedDocked/FullScreen Search;
+ SearchBar and SearchView token sources
+supply `surfaceContainerHigh`,
+ BodyLarge text,
+ and the 28dp docked shape.
+The baseline list has square item corners,
+ 16dp padding and 48dp targets;
+ a
+16dp selected-list corner is Expressive and does not belong in this round.
+A current keyboard-result focus treatment is custom desktop behavior,
+ not a
+persistently selected folder state.
 
 The package-local canonical correction is in `material-3-compliance.md` under
 "Command-bar study correction".
@@ -4418,11 +4431,13 @@ Material SVGs (Search,
  Play,
  More)
 and the AVD's Roboto TrueType face were committed at `2f4fc8b89`.
- They have not
-yet been applied to the Slint scenes.
+The first redraw (`c5b3fa31f`,
+ rendered via `b1caaa373`) used these assets but
+mixed Expressive contained Search and expressive selected-list corners with A2;
+it is also **not** a presentation candidate.
  Next design-only steps:
- redraw the I/G/R
-prototypes around the actual MD3 Search bar/view anatomy and list states,
+ redraw the
+I/G/R prototypes around baseline divided Search anatomy and baseline list states,
  render both
 schemes and 360/480/wide sizes,
  compare at the same logical scale with the local
