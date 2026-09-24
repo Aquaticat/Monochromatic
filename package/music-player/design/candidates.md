@@ -999,11 +999,10 @@ I1 has a 360 × 640px larger-text/long-label stress capture.
  E1 no-results and E2
 unavailable-action captures are contextual probes,
  not options.
- The rejected form remains temporarily at
-`questions/current.html` only until replacement;
- do not solicit codes from it.
- The
-withdrawn native rasters are `questions/render/command-round-{i,g,r,e}*`.
+ The rejected form was replaced in `questions/current.html` before another review;
+ do not solicit codes from the withdrawn rasters.
+ The withdrawn native rasters are
+`questions/render/command-round-{i,g,r,e}*`.
  The
 first S × C draft was not shown to the user;
  its evidence is also historical in
@@ -1015,3 +1014,48 @@ do not prove keyboard operation,
  hotkey feasibility,
 search indexing,
  or real second-window behavior.
+
+## Baseline MD3 divided Search command round (current, awaiting visual review)
+
+The independent I1 to I3,
+ G1 to G2 and R1 to R2 roles remain as documented for the
+withdrawn draft,
+ but all active scenes have been redrawn under A2's baseline MD3
+policy.
+ The native prototype on branch `prototype/music-player-theme-compose` uses
+`command-md3-study.slint` with Roboto and official Material SVGs.
+ It renders the
+baseline expanded docked Search container (28dp outer corners,
+ 56dp flat header,
+1dp divider),
+ the sharp full-content variant (72dp header,
+ divider),
+ and baseline
+square list rows with a custom outline plus state-layer fill for the current
+keyboard result.
+ The collapsed 56dp pill is not incorrectly nested inside the
+expanded view.
+ All color roles are sampled from the documented wallpaper-role
+evidence.
+
+`questions/render/command-md3-{i,g,r,e}*` contains each light/dark native scene
+at the desktop app's preferred 480 × 600px size;
+ I1 to I3 also cover 1100 × 640px,
+and I1 reflows to full-content with larger text at 360 × 640px.
+ E1 no-result and E2
+unavailable-action scenes remain contextual probes,
+ not independent choices.
+The active questionnaire is `questions/current.html`,
+ with a normalized 56px
+baseline-spec versus native header comparison at
+`questions/evidence/command-md3-baseline-header-comparison.png`.
+ None of these
+alternatives has been selected by the user.
+ The Slint surfaces are static and do not
+verify working shortcuts,
+ input focus,
+ screen-reader semantics,
+ real OS window
+ownership,
+ result execution,
+ or search indexing.
