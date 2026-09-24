@@ -11,7 +11,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  emptyTomlEdit,
   parseTomlEdit,
+  tomlFloat,
+  tomlGetValue,
+  tomlInteger,
   tomlLocalDate,
   tomlLocalDateTime,
   tomlLocalTime,
@@ -85,6 +89,37 @@ await describe({
     },),
 
     it({
+      name: 'array re-set preserves the raw spelling of equal parsed elements',
+      fn: async () => {
+        const edit = tomlSet({
+          edit: parseTomlEdit({ source: 'arr = [0x10, 0x20]\n', },),
+          path: ['arr',],
+          value: [16, 32,],
+        },);
+        expect(tomlStringify({ edit, },),).toBe('arr = [ 0x10, 0x20, ]\n',);
+        expect(tomlGetValue({ edit, path: ['arr',], },),).toEqual([16, 32,],);
+      },
+    },),
+
+    it({
+      name: 'wrapped scalar reads expose plain JS values',
+      fn: async () => {
+        const base = emptyTomlEdit();
+        const count = tomlSet({ edit: base, path: ['count',], value: tomlInteger(42n,), },);
+        const ratio = tomlSet({ edit: count, path: ['ratio',], value: tomlFloat(1,), },);
+        const meeting = tomlSet({
+          edit: ratio,
+          path: ['meeting',],
+          value: tomlLocalDateTime('2026-05-14T10:00:00',),
+        },);
+        expect(tomlGetValue({ edit: meeting, path: ['count',], },),).toBe(42,);
+        expect(tomlGetValue({ edit: meeting, path: ['ratio',], },),).toBe(1,);
+        expect(tomlGetValue({ edit: meeting, path: ['meeting',], },),).toBe('2026-05-14T10:00:00',);
+        expect(tomlStringify({ edit: meeting, },),).toContain('ratio = 1.0',);
+      },
+    },),
+
+    it({
       name: 'null and undefined throw TomlTypeError',
       fn: async () => {
         const edit = parseTomlEdit({ source: '', },);
@@ -95,6 +130,16 @@ await describe({
         expect(function setUndefined() {
           tomlSet({ edit, path: ['x',], value: undefined, },);
         },)
+          .toThrow(TomlTypeError,);
+      },
+    },),
+    it({
+      name: 'rejects null and undefined nested inside arrays and tables',
+      fn: async () => {
+        const edit = emptyTomlEdit();
+        expect(() => tomlSet({ edit, path: ['values',], value: [null,], },),)
+          .toThrow(TomlTypeError,);
+        expect(() => tomlSet({ edit, path: ['table',], value: { child: undefined, }, },),)
           .toThrow(TomlTypeError,);
       },
     },),
