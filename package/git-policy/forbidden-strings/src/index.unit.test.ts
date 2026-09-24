@@ -174,11 +174,11 @@ await describe({
     it({
       name: 'distinguishes component findings from content in escaped paths',
       fn: async function testNameFinding() {
-        const lookup = function nameForIndex(index: number,): string {
+        function lookup(index: number,): string {
           if (index !== 0)
             throw new Error('Unexpected scanner operand.',);
           return '[REDACTED]:name/secret.ts';
-        };
+        }
         expect(parseScannerOutput({
           stderr: '[REDACTED]\\x3aname/[REDACTED]:name:2 rule=github-pat input=0',
           nameForIndex: lookup,
@@ -249,8 +249,8 @@ await describe({
           'invented/clean.ts:1 rule=0 input=0',
           'PRIVATE_LONG/clean.ts:name:3 rule=0 input=0',
         ];
-        for (const stderr of invalid) {
-          const failure = await capturePluginError(async function parseUntrusted() {
+        const failures = await Promise.all(invalid.map(async function rejectUntrusted(stderr,) {
+          return await capturePluginError(async function parseUntrusted() {
             parseScannerOutput({
               stderr,
               nameForIndex: function originalName(): string {
@@ -258,6 +258,8 @@ await describe({
               },
             },);
           },);
+        },),);
+        for (const failure of failures) {
           expect(failure.message,).toContain('Malformed',);
           expect(failure.message,).not.toContain('PRIVATE_LONG',);
           expect(failure.message,).not.toContain('invented',);
@@ -485,14 +487,14 @@ await describe({
           'src/line\nbreak.txt',
           'src/zero\0byte.txt',
         ];
-        for (const path of invalidNames) {
+        const failures = await Promise.all(invalidNames.map(async function rejectInvalidName(path,) {
           const selected: CandidateFile = {
             ...candidate(path,),
             bytes: function unreadCandidate(): Promise<Uint8Array> {
               throw new Error('Invalid candidate bytes were read.',);
             },
           };
-          const failure = await capturePluginError(async function rejectInvalidPath() {
+          return await capturePluginError(async function rejectInvalidPath() {
             await scanCandidates({
               executable: join(directory.path, 'missing-scanner',),
               builtinRules: false,
@@ -501,8 +503,9 @@ await describe({
               signal: new AbortController().signal,
             },);
           },);
+        },),);
+        for (const failure of failures)
           expect(failure.message,).toBe('Invalid forbidden-strings candidate repository path.',);
-        }
       },
     },),
     it({

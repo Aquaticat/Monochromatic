@@ -9,6 +9,15 @@ import { ForbiddenStringsPluginError, } from './errors.ts';
 
 //region Finding fields
 
+/** First codepoint outside ASCII C0 controls. */
+const C0_END = 32;
+/** First codepoint in C1 controls. */
+const C1_START = 127;
+/** Last codepoint in C1 controls. */
+const C1_END = 159;
+/** Radix used for scanner's control-code escape sequences. */
+const CONTROL_HEX_RADIX = 16;
+
 /**
  Parsed scanner finding with opaque operand identity.
  */
@@ -48,7 +57,9 @@ function malformedOutput(): ForbiddenStringsPluginError {
  Parses a canonical integer field without admitting suffixes or leading zeros.
 
  @param value - scanner field, treated as untrusted text
+
  @param allowZero - whether operand index zero is valid
+
  @returns parsed integer
  */
 function parseInteger({
@@ -72,6 +83,7 @@ function parseInteger({
  Validates a rule token against the strict section-name alphabet.
 
  @param value - scanner rule field
+
  @returns validated token
  */
 function parseRuleToken(value: string,): string {
@@ -107,6 +119,7 @@ function parseRuleToken(value: string,): string {
  maps even identical masked names to distinct historical candidate states.
 
  @param line - untrusted scanner line
+
  @returns parsed masked finding
  */
 function parseHit(line: string,): ScannerHit {
@@ -126,17 +139,30 @@ function parseHit(line: string,): ScannerHit {
   /**
    Last rule marker before the operand field.
    */
-  const ruleSeparator = line.lastIndexOf(' rule=', inputSeparator,);
+  const ruleSeparator = line.lastIndexOf(
+    ' rule=',
+    inputSeparator,
+  );
   if (ruleSeparator === (-1))
     throw malformedOutput();
   /**
    Opaque rule id, never the matched text.
    */
-  const rule = parseRuleToken(line.slice(ruleSeparator + ' rule='.length, inputSeparator,),);
+  const token = line.slice(
+    ruleSeparator + ' rule='.length,
+    inputSeparator,
+  );
+  /**
+   Rule identity validated before it reaches a user-facing message.
+   */
+  const rule = parseRuleToken(token,);
   /**
    Data preceding rule identity holds display path and position.
    */
-  const locator = line.slice(0, ruleSeparator,);
+  const locator = line.slice(
+    0,
+    ruleSeparator,
+  );
   /**
    Reserved name marker cannot occur in an escaped display path.
    */
@@ -163,8 +189,15 @@ function parseHit(line: string,): ScannerHit {
   /**
    Masked logical path supplied by scanner after it checks every component.
    */
-  const displayPath = locator.slice(0, positionSeparator,);
-  if ((kind === 'name') && (!displayPath.split('/',).includes('[REDACTED]',)))
+  const displayPath = locator.slice(
+    0,
+    positionSeparator,
+  );
+  /**
+   A name finding cannot be emitted unless some component was masked.
+   */
+  const shownSegments = displayPath.split('/',);
+  if ((kind === 'name') && (!shownSegments.includes('[REDACTED]',)))
     throw malformedOutput();
   return {
     displayPath,
@@ -183,31 +216,36 @@ function parseHit(line: string,): ScannerHit {
  Encodes one nonmatching component exactly as the scanner's visible label does.
 
  @param name - candidate pathname component
+
  @returns protocol-safe visible spelling
  */
 function visibleComponent(name: string,): string {
-  return Array.from(name, function encodeCharacter(ch,): string {
-    if (ch === ':')
-      return '\\x3a';
-    if (ch === '\\')
-      return '\\\\';
-    /**
-     Unicode scalar for a control byte in the name.
-     */
-    const code = ch.codePointAt(0,);
-    if (code === undefined)
-      throw malformedOutput();
-    if ((code < 32) || ((code >= 127) && (code <= 159)))
-      return `\\u{${code.toString(16,)}}`;
-    return ch;
-  },).join('',);
+  return Array.from(name,)
+    .map(function encodeCharacter(ch,): string {
+      if (ch === ':')
+        return String.raw`\x3a`;
+      if (ch === '\\')
+        return String.raw`\\`;
+      /**
+       Unicode scalar for a control byte in the name.
+       */
+      const code = ch.codePointAt(0,);
+      if (code === undefined)
+        throw malformedOutput();
+      if ((code < C0_END) || ((code >= C1_START) && (code <= C1_END)))
+        return String.raw`\u{${code.toString(CONTROL_HEX_RADIX,)}}`;
+      return ch;
+    },)
+    .join('',);
 }
 
 /**
  Checks every displayed segment against the indexed candidate's real name.
 
  @param hit - parsed scanner finding
+
  @param name - repository-relative candidate path
+
  @returns safe path, with reported offending segment masked
  */
 function checkedDisplayPath({
@@ -224,7 +262,8 @@ function checkedDisplayPath({
   /**
    Displayed components, some replaced in full by scanner mask.
    */
-  const displayed = hit.displayPath.split('/',);
+  const displayed = hit.displayPath
+    .split('/',);
   if (displayed.length !== original.length)
     throw malformedOutput();
   if ((hit.kind === 'name')
@@ -253,7 +292,9 @@ function checkedDisplayPath({
  Parses redacted findings and rejects scanner-owned infrastructure diagnostics.
 
  @param stderr - scanner stderr, containing findings and cache warnings
+
  @param nameForIndex - repository-relative name lookup through opaque operand position
+
  @returns policy findings with masked logical paths
 
  @example
