@@ -3,34 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Music-player Fold Search composition review</title>
+<title>Selected Fold Search design update in progress</title>
 <style>
 :root {
   color-scheme: light dark;
   --color-page: #f5f6fa;
   --color-panel: #ffffff;
-  --color-raised: #e9eaf0;
   --color-ink: #282b34;
-  --color-muted: #525663;
   --color-edge: #646877;
-  --color-accent: #364e82;
-  --color-device: #17191f;
-  --color-backdrop: rgb(0 0 0 / 78%);
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --color-page: #0d0f14;
     --color-panel: #1a1d25;
-    --color-raised: #292d38;
     --color-ink: #e8eaf2;
-    --color-muted: #bdc1ce;
     --color-edge: #9ea4b2;
-    --color-accent: #b9c9ff;
-    --color-device: #080a0d;
-    --color-backdrop: rgb(0 0 0 / 85%);
   }
 }
-* { box-sizing: border-box; }
 body {
   margin-inline: 0;
   margin-block: 0;
@@ -39,314 +28,26 @@ body {
   font-family: system-ui, sans-serif;
   line-height: 1.5;
 }
-main {
-  max-inline-size: 100rem;
-  margin-inline: auto;
-  padding-inline: clamp(1rem, 3vw, 3rem);
-  padding-block: 1rem 5rem;
-}
-h1 { font-size: clamp(1.9rem, 3vw, 2.8rem); line-height: 1.2; }
-h2 { margin-block: 2.4rem 0.7rem; }
-h3 { margin-block: 0 0.5rem; }
-p { max-inline-size: 90ch; }
-a { color: var(--color-accent); }
-button, select, textarea { font: inherit; }
-button, select {
-  min-inline-size: 3rem;
-  min-block-size: 3rem;
-  padding-inline: 0.8rem;
-  padding-block: 0.35rem;
-  border-width: 0.0625rem;
-  border-style: solid;
-  border-color: var(--color-edge);
-  border-radius: 0.55rem;
-  background-color: var(--color-panel);
-  color: var(--color-ink);
-}
-button { cursor: pointer; }
-button:hover { background-color: var(--color-raised); }
-button:focus-visible, select:focus-visible, textarea:focus-visible, input:focus-visible, .preview-stage:focus-visible {
-  outline: 0.1875rem solid var(--color-accent);
-  outline-offset: 0.1875rem;
-}
-.note, .option, .cover-card, fieldset {
+main { max-inline-size: 65rem; margin-inline: auto; padding-inline: 1.5rem; padding-block: 2rem; }
+.notice {
+  padding-inline: 1rem;
+  padding-block: 0.5rem;
   border-width: 0.0625rem;
   border-style: solid;
   border-color: var(--color-edge);
   border-radius: 0.8rem;
   background-color: var(--color-panel);
 }
-.note { padding-inline: 1rem; padding-block: 0.3rem; }
-.muted { color: var(--color-muted); }
-.controls { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: end; margin-block: 1rem; }
-.controls label { display: grid; gap: 0.3rem; }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr)); gap: 1rem; }
-.option { min-inline-size: 0; padding-inline: 1rem; padding-block: 1rem; }
-.option[data-recommended='true'] { border-width: 0.18rem; border-color: var(--color-accent); }
-.option picture, .cover-card picture { display: block; overflow: hidden; max-block-size: 29rem; }
-.option img, .cover-card img { display: block; max-inline-size: 100%; block-size: auto; }
-.option ul { padding-inline-start: 1.4rem; }
-.option li { margin-block: 0.35rem; }
-.option button { margin-block-start: 0.5rem; }
-.cover-card { padding-inline: 1rem; padding-block: 1rem; }
-.cover-card img { inline-size: min(100%, 25rem); block-size: auto; }
-fieldset { margin-block: 1rem; padding-inline: 1rem; padding-block: 1rem; }
-fieldset legend { padding-inline: 0.4rem; font-weight: 700; }
-.choice { display: flex; gap: 0.65rem; align-items: center; min-block-size: 3rem; margin-block: 0.7rem; }
-.choice input { min-inline-size: 1.5rem; min-block-size: 1.5rem; margin-block: 0.2rem; }
-textarea {
-  display: block;
-  inline-size: 100%;
-  min-block-size: 8rem;
-  padding-inline: 0.75rem;
-  padding-block: 0.75rem;
-  border-width: 0.0625rem;
-  border-style: solid;
-  border-color: var(--color-edge);
-  border-radius: 0.5rem;
-  background-color: var(--color-panel);
-  color: var(--color-ink);
-}
-output { display: block; white-space: pre-wrap; padding-block: 0.8rem; }
-dialog {
-  inline-size: min(98vw, 96rem);
-  max-inline-size: none;
-  max-block-size: 97vh;
-  padding-inline: 0;
-  padding-block: 0;
-  border-width: 0.0625rem;
-  border-style: solid;
-  border-color: var(--color-edge);
-  border-radius: 0.8rem;
-  background-color: var(--color-panel);
-  color: var(--color-ink);
-}
-dialog::backdrop { background-color: var(--color-backdrop); }
-.dialog-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; padding-inline: 0.8rem; padding-block: 0.6rem; }
-.dialog-bar h2 { flex: 1 1 14rem; margin-block: 0; font-size: 1.1rem; }
-.dialog-bar .details { flex-basis: 100%; margin-block: 0; }
-.preview-stage {
-  overflow: auto;
-  block-size: min(73vh, 65rem);
-  padding-inline: 0.8rem;
-  padding-block: 0.8rem;
-  background-color: var(--color-raised);
-}
-.device {
-  --scale: 1;
-  --screen-inline: 852px;
-  --screen-block: 883px;
-  --frame-inline: 907px;
-  --frame-block: 937px;
-  --screen-inset: 27px;
-  --outer-radius: 72px;
-  --inner-radius: 42px;
-  position: relative;
-  inline-size: calc(var(--frame-inline) * var(--scale));
-  block-size: calc(var(--frame-block) * var(--scale));
-  margin-inline: auto;
-  border-width: 0.125rem;
-  border-style: solid;
-  border-color: var(--color-edge);
-  border-radius: calc(var(--outer-radius) * var(--scale));
-  background-color: var(--color-device);
-}
-.device[data-panel='cover'] {
-  --screen-inline: 443.0769px;
-  --screen-block: 994.4615px;
-  --frame-inline: 502.4px;
-  --frame-block: 1053.2px;
-  --screen-inset: 29.1px;
-  --outer-radius: 43.1px;
-  --inner-radius: 30.18px;
-}
-.device-screen {
-  position: absolute;
-  inset-inline-start: calc(var(--screen-inset) * var(--scale));
-  inset-block-start: calc(var(--screen-inset) * var(--scale));
-  inline-size: calc(var(--screen-inline) * var(--scale));
-  block-size: calc(var(--screen-block) * var(--scale));
-  overflow: hidden;
-  border-radius: calc(var(--inner-radius) * var(--scale));
-  background-color: var(--color-device);
-}
-.device-screen img { display: block; inline-size: 100%; block-size: 100%; }
-.camera, .hinge { display: none; position: absolute; background-color: var(--color-device); }
-.device[data-panel='inner'] .camera {
-  display: block;
-  inset-inline-end: calc(48.41px * var(--scale));
-  inset-block-start: calc(43.62px * var(--scale));
-  inline-size: calc(32.41px * var(--scale));
-  block-size: calc(32.41px * var(--scale));
-  border-radius: 50%;
-}
-.device[data-panel='inner'] .hinge {
-  display: block;
-  inset-inline-start: calc(431.5px * var(--scale));
-  inline-size: calc(44px * var(--scale));
-  block-size: calc(8.8px * var(--scale));
-  border-radius: calc(4.8px * var(--scale));
-}
-.hinge[data-end='start'] { inset-block-start: 0; }
-.hinge[data-end='end'] { inset-block-end: 0; }
 </style>
 </head>
 <body>
 <main>
-<header>
-  <p class="muted">Music player · provisional visual review · Pixel 9 Pro Fold</p>
-  <h1>Search while playback stays in view</h1>
-  <p>Compare three native, debug-only placements. D47 opens a separate Search destination; D48 keeps Back, query and Clear together; D50 keeps the full unfolded playback deck visible while typing. The cover has one common full-width Search page. Desktop inherits the chosen Fold treatment.</p>
-  <div class="note"><p><strong>What changed:</strong> The rejected Search layouts hid the unfolded deck. These captures retain it. The dark strip with a single “Type cam” key is a measured 300dp <strong>test input method</strong>, not Gboard. Gboard did not reliably draw keys on this AVD, so its exact geometry remains unverified. These are layouts to correct, not an accepted production design.</p></div>
-  <p class="muted">Inner source: 2076 × 2152 physical px, approximately 852 × 883dp at this AVD's 390dpi. Cover: 1080 × 2424px, approximately 443 × 994dp. About 7.5mm of visible crease is roughly x[983,1093) on the inner panel; readable app marks avoid it, surfaces may cross. The numeric minimum padding remains open. Status notification content is replaced with a generic clock.</p>
-</header>
-<section aria-labelledby="compare-title">
-  <h2 id="compare-title">Compare the unfolded Search placements</h2>
-  <p>Start in <strong>typing at 200% text</strong> to inspect the deck above the input method, then switch to the resting 100% state. Open a frame to see the original capture at 100% of design dp. The two color schemes share the same structure.</p>
-  <div class="controls">
-    <label for="scene">Capture state<select id="scene"><option value="typing">Typing “cam”, 200% text</option><option value="empty">Search opened, 100% text</option></select></label>
-    <label for="scheme">Screenshot scheme<select id="scheme"><option value="system">Follow system</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+  <h1>Selected Search layout A</h1>
+  <div class="notice">
+    <p>The unfolded Search pane stays on the right. The bottom-left playback deck rises above the keyboard while typing. The folded cover keeps one full-width Search destination.</p>
+    <p>The redundant positive-results heading, <code>Results for “cam”</code>, is being removed on both panels. The query remains in the integrated Back/query/Clear header.</p>
+    <p><strong>Updated native captures are in progress.</strong> The earlier three-way comparison is archived; it is not the active design or a request to choose again. Production implementation is not authorized.</p>
   </div>
-  <div class="grid" id="options">
-    <article class="option" data-variant="lift" data-recommended="true">
-      <h3>A. Deck rises above the keyboard (recommended)</h3>
-      <p>Search and results use the right pane. The deck stays bottom-left when the keyboard is closed and lifts when it opens.</p>
-      <picture><img width="2076" height="2152" alt="A: Search and results right, playback deck bottom-left lifted above a test keyboard"></picture>
-      <ul><li><strong>Pros:</strong> Preserves the accepted deck side and resting position; the measured IME does not cover any control.</li><li><strong>Cons:</strong> The deck moves vertically while typing; folder context yields to the keyboard, leaving open space near the top.</li></ul>
-      <button type="button" data-preview="lift">Inspect A at device size</button>
-    </article>
-    <article class="option" data-variant="right">
-      <h3>B. Deck stays at the upper left</h3>
-      <p>Search and results use the right pane. Playback remains in one fixed upper-left position; folders live underneath when space permits.</p>
-      <picture><img width="2076" height="2152" alt="B: Search and results right, playback deck fixed at upper left above a test keyboard"></picture>
-      <ul><li><strong>Pros:</strong> The deck does not jump as the keyboard opens; Search stays coherent next to it.</li><li><strong>Cons:</strong> Entering Search moves the accepted bottom deck to the top and relegates folder browsing.</li></ul>
-      <button type="button" data-preview="right">Inspect B at device size</button>
-    </article>
-    <article class="option" data-variant="mirrored">
-      <h3>C. Search left, deck upper right</h3>
-      <p>Search and results stay together in the left pane. Playback moves to a crease-cleared upper-right zone.</p>
-      <picture><img width="2076" height="2152" alt="C: Search and results left, playback deck upper right above a test keyboard"></picture>
-      <ul><li><strong>Pros:</strong> Search takes the familiar browsing side while all deck controls remain in view.</li><li><strong>Cons:</strong> Playback moves across the crease; the track list underneath competes with Search when the keyboard is closed.</li></ul>
-      <button type="button" data-preview="mirrored">Inspect C at device size</button>
-    </article>
-  </div>
-  <p><strong>Ranking:</strong> A &gt; B &gt; C. A retains the player's settled deck location when not typing, unlike B. B keeps playback on its settled side, unlike C. If vertical motion feels worse than top relocation, prefer B and say why.</p>
-  <p><strong>Recommended refinements before adoption:</strong> Test a taller real keyboard and long query/result names; keep the focused result list scrollable above it; restore a useful empty state without filling the crease with text. No result action or production Search code is included in this study.</p>
-</section>
-<section aria-labelledby="cover-title">
-  <h2 id="cover-title">Folded cover: one shared Search destination</h2>
-  <p>The cover does not inherit the inner pane choice. Compare its full-width result page, including the focused 200% state, in the same device frame.</p>
-  <div class="cover-card"><picture><img id="cover-image" width="1080" height="2424" alt="Folded cover Search results with query in the same header"></picture><button type="button" data-preview="cover">Inspect cover at device size</button></div>
-</section>
-<section aria-labelledby="response-title">
-  <h2 id="response-title">What should change?</h2>
-  <form id="response-form">
-    <fieldset>
-      <legend>Which whole composition should guide the next round?</legend>
-      <label class="choice"><input type="radio" name="composition" value="A: IME-lifted left deck" checked>A. IME-lifted left deck, recommended for continuity</label>
-      <label class="choice"><input type="radio" name="composition" value="B: fixed upper-left deck">B. Fixed upper-left deck</label>
-      <label class="choice"><input type="radio" name="composition" value="C: left Search and upper-right deck">C. Left Search and upper-right deck</label>
-      <label class="choice"><input type="radio" name="composition" value="None; revise the composition">None of these yet</label>
-    </fieldset>
-    <label for="correction">What consequential correction matters most? Please name any information near the crease that needs more clearance. Its numeric padding is not decided by this form.</label>
-    <textarea id="correction" name="correction"></textarea>
-    <p><button type="submit">Prepare response</button></p>
-    <output id="reply" aria-live="polite" for="correction"></output>
-    <p class="muted">The response stays on this page. Reply in this chat with the prepared text or your own correction. No network or clipboard access is used.</p>
-  </form>
-</section>
 </main>
-<dialog id="preview" aria-labelledby="preview-title">
-  <div class="dialog-bar">
-    <h2 id="preview-title">Fold Search preview</h2>
-    <button id="fit" type="button">Fit</button>
-    <button id="reset" type="button">Reset 100%</button>
-    <button id="zoom-out" type="button">Zoom out</button>
-    <button id="zoom-in" type="button">Zoom in</button>
-    <button id="close-preview" type="button">Close</button>
-    <p id="scale-label" class="details muted" aria-live="polite"></p>
-  </div>
-  <div class="preview-stage" id="preview-stage" tabindex="0" role="region" aria-label="Scrollable Fold preview at physical source resolution"><div class="device" id="device" data-panel="inner"><div class="device-screen"><img id="preview-image" alt="Fold Search comparison" width="2076" height="2152"></div><span class="camera" aria-hidden="true"></span><span class="hinge" data-end="start" aria-hidden="true"></span><span class="hinge" data-end="end" aria-hidden="true"></span></div></div>
-</dialog>
-<script>
-const captures = __CAPTURES__;
-const scene = document.querySelector('#scene');
-const scheme = document.querySelector('#scheme');
-const media = window.matchMedia('(prefers-color-scheme: dark)');
-const dialog = document.querySelector('#preview');
-const device = document.querySelector('#device');
-const stage = document.querySelector('#preview-stage');
-const previewImage = document.querySelector('#preview-image');
-const previewTitle = document.querySelector('#preview-title');
-const scaleLabel = document.querySelector('#scale-label');
-let scale = 1;
-let returnTarget;
-let selectedPreview = 'lift';
-function currentScheme() { return scheme.value === 'system' ? (media.matches ? 'dark' : 'light') : scheme.value; }
-function sourceFor(key) { return captures[key][scene.value][currentScheme()]; }
-function render() {
-  document.querySelectorAll('.option').forEach(option => {
-    option.querySelector('img').src = sourceFor(option.dataset.variant);
-  });
-  document.querySelector('#cover-image').src = sourceFor('cover');
-  if (dialog.open) updatePreview();
-}
-function geometry() {
-  return device.dataset.panel === 'cover' ?
-    { width: 443.0769, height: 994.4615, frameWidth: 502.4, frameHeight: 1053.2, pixels: [1080, 2424] } :
-    { width: 852, height: 883, frameWidth: 907, frameHeight: 937, pixels: [2076, 2152] };
-}
-function showScale() {
-  device.style.setProperty('--scale', scale);
-  const panel = geometry();
-  scaleLabel.textContent = `Source ${panel.pixels[0]} × ${panel.pixels[1]} physical px · approximately ${Math.round(panel.width)} × ${Math.round(panel.height)}dp at 390dpi · ${Math.round(scale * 100)}% of design dp · reset returns to 100%`;
-}
-function updatePreview() {
-  const panel = geometry();
-  previewImage.src = sourceFor(selectedPreview);
-  previewImage.width = panel.pixels[0];
-  previewImage.height = panel.pixels[1];
-  previewImage.alt = previewTitle.textContent;
-  showScale();
-}
-scene.addEventListener('change', render);
-scheme.addEventListener('change', render);
-media.addEventListener('change', () => { if (scheme.value === 'system') render(); });
-document.querySelectorAll('[data-preview]').forEach(button => {
-  button.addEventListener('click', async () => {
-    returnTarget = button;
-    selectedPreview = button.dataset.preview;
-    device.dataset.panel = selectedPreview === 'cover' ? 'cover' : 'inner';
-    const stateName = selectedPreview === 'cover' ? (scene.value === 'typing' ? 'typing at 200% text' : 'results at 100% text') : scene.options[scene.selectedIndex].textContent;
-    previewTitle.textContent = `${selectedPreview === 'cover' ? 'Folded cover' : button.closest('.option').querySelector('h3').textContent} · ${stateName} · ${currentScheme()}`;
-    updatePreview();
-    await previewImage.decode();
-    scale = 1;
-    dialog.showModal();
-    showScale();
-    stage.scrollTop = 0;
-    stage.scrollLeft = 0;
-    document.querySelector('#close-preview').focus();
-  });
-});
-document.querySelector('#fit').addEventListener('click', () => {
-  const panel = geometry();
-  scale = Math.min(1, (stage.clientWidth - 32) / panel.frameWidth, (stage.clientHeight - 32) / panel.frameHeight);
-  showScale();
-});
-document.querySelector('#reset').addEventListener('click', () => { scale = 1; showScale(); });
-document.querySelector('#zoom-out').addEventListener('click', () => { scale = Math.max(0.25, scale - 0.25); showScale(); });
-document.querySelector('#zoom-in').addEventListener('click', () => { scale = Math.min(2, scale + 0.25); showScale(); });
-document.querySelector('#close-preview').addEventListener('click', () => dialog.close());
-dialog.addEventListener('close', () => returnTarget?.focus());
-document.querySelector('#correction').addEventListener('input', () => { document.querySelector('#reply').textContent = ''; });
-document.querySelector('#response-form').addEventListener('submit', event => {
-  event.preventDefault();
-  const choice = document.querySelector('input[name="composition"]:checked').value;
-  const correction = document.querySelector('#correction').value.trim();
-  document.querySelector('#reply').textContent = `Search composition: ${choice}.\nCorrection: ${correction || 'none stated'}\nCrease minimum padding: still open unless specified in correction.`;
-});
-render();
-</script>
 </body>
 </html>
