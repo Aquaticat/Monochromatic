@@ -161,9 +161,15 @@ function repositoryCandidateName({
   const segments = name.split('/',);
   if ((name.length === 0) || isAbsolute(name,)
     || segments.some(function invalidSegment(segment,): boolean {
-      if ((segment.length === 0) || (segment === '.') || (segment === '..'))
+      if (segment.length === 0)
         return true;
-      if (segment.includes('\0',) || segment.includes('\n',) || segment.includes('\r',))
+      if ((segment === '.') || (segment === '..'))
+        return true;
+      if (segment.includes('\0',))
+        return true;
+      if (segment.includes('\n',))
+        return true;
+      if (segment.includes('\r',))
         return true;
       return false;
     },))

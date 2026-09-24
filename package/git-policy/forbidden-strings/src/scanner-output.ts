@@ -9,13 +9,21 @@ import { ForbiddenStringsPluginError, } from './errors.ts';
 
 //region Finding fields
 
-/** First codepoint outside ASCII C0 controls. */
+/**
+ First codepoint outside ASCII C0 controls.
+ */
 const C0_END = 32;
-/** First codepoint in C1 controls. */
+/**
+ First codepoint in C1 controls.
+ */
 const C1_START = 127;
-/** Last codepoint in C1 controls. */
+/**
+ Last codepoint in C1 controls.
+ */
 const C1_END = 159;
-/** Radix used for scanner's control-code escape sequences. */
+/**
+ Radix used for scanner's control-code escape sequences.
+ */
 const CONTROL_HEX_RADIX = 16;
 
 /**
@@ -220,23 +228,32 @@ function parseHit(line: string,): ScannerHit {
  @returns protocol-safe visible spelling
  */
 function visibleComponent(name: string,): string {
-  return Array.from(name,)
-    .map(function encodeCharacter(ch,): string {
-      if (ch === ':')
-        return String.raw`\x3a`;
-      if (ch === '\\')
-        return String.raw`\\`;
-      /**
-       Unicode scalar for a control byte in the name.
-       */
-      const code = ch.codePointAt(0,);
-      if (code === undefined)
-        throw malformedOutput();
-      if ((code < C0_END) || ((code >= C1_START) && (code <= C1_END)))
-        return String.raw`\u{${code.toString(CONTROL_HEX_RADIX,)}}`;
-      return ch;
-    },)
-    .join('',);
+  /**
+   Encoded characters accumulated in the same order as the original name.
+   */
+  const parts: string[] = [];
+  for (const ch of name) {
+    if (ch === ':') {
+      parts.push(String.raw`\x3a`,);
+      continue;
+    }
+    if (ch === '\\') {
+      parts.push(String.raw`\\`,);
+      continue;
+    }
+    /**
+     Unicode scalar for a control byte in the name.
+     */
+    const code = ch.codePointAt(0,);
+    if (code === undefined)
+      throw malformedOutput();
+    if ((code < C0_END) || ((code >= C1_START) && (code <= C1_END))) {
+      parts.push(String.raw`\u{${code.toString(CONTROL_HEX_RADIX,)}}`,);
+      continue;
+    }
+    parts.push(ch,);
+  }
+  return parts.join('',);
 }
 
 /**
