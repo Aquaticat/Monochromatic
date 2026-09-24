@@ -27,9 +27,6 @@ export function encodeWrapped(
   { wrapped, }: { readonly wrapped: TomlWrappedInput; },
 ): string {
   if (wrapped.tomlKind
-    === 'integer')
-    return String(wrapped.value,);
-  if (wrapped.tomlKind
     === 'float') {
     /**
      Numeric form so finiteness and NaN can be checked.
