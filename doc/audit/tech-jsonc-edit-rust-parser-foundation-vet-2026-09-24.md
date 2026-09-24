@@ -88,6 +88,36 @@ Both local delegated `rg` queries were blocked by its security guardrail, so tar
 
 `edikt-jsonc` and `json-five` remain serious composed candidates, not validated finalists. The repository-owned parser translation remains a baseline. `biome_json_parser` and other discovered candidates remain unscreened against the exact surrogate and comment boundary; no elimination or ranking is justified yet.
 
+## Parser expansion findings and registry pages
+
+The frozen expansion searched crates.io using `jsonc comments` and `lossless json parser`.
+For the first query, page 1 and page 2 each returned 100 records, and page 3 was empty (page 2 metadata reported total 200).
+For the second, pages 1 and 2 each returned 100, and page 3 returned 86 with no next page (total 286).
+These registry queries are exhausted, not evidence that every library is viable or that the broader discovery is complete.
+The two frozen `gh search repos` queries returned no records; broaden to comparable linked upstream repositories before calling the repository-host class saturated.
+Web searches discovered `jwc`, `hifijson`, `fjson`, `tokora`, and lexer-only `any-lexer` as leads; most lack evidence of the attached JSONC comment model.
+
+### `fjson` 0.3.1
+
+- Discovery: crates.io `jsonc comments` page 1, [registry](https://crates.io/crates/fjson/0.3.1), private clone `~/temp/agent/fjson-2026-09-24` at `fe5a04a`, `Cargo.toml:3` confirms 0.3.1 and `:13-15` names `arrayvec` and `unicode-width` as runtime dependencies.
+- Screening: `src/scanner.rs:142-181,186-215,223-271` returns raw JSON numbers, quoted strings (without outer quotes) and C-style comments. Its `src/ast.rs:12-60` holds same-line value comments but keeps most comments as separate `Metadata` objects, not distinct key/value comment fields. An attachment and merge layer, UTF-16 decoder and canonical writer are still needed. `src/ast.rs:64,83` caps parser recursion at 128 levels, while the TypeScript structured parser allows 512 (`package/module/jsonc-edit/src/parse.ts:21,54`). Its scanner also skips Unicode whitespace outside strings (`src/scanner.rs:335-339`), whereas strict JSONC uses JSON whitespace. These are source observations, not a completed upstream-behavior diagnosis or a validated workaround.
+
+  ```rust
+  // src/scanner.rs:335-339
+  fn skip_whitespace(&mut self) {
+      while let Some(c) = self.peek_char() {
+          if c.1.is_whitespace() && c.1 != '\n' {
+              self.skip_char();
+  ```
+
+- Source quality lead: `src/lib.rs:151` forbids unsafe code. `.github/workflows/test.yml` runs Cargo fmt, build, clippy and test, with no build script in this crate's manifest; transitive command trees are not yet audited. This is a serious lexer/AST candidate, not a finalist.
+
+### Other registry leads
+
+- `jsonc` 0.1.0 has no repository URL in registry metadata; the published source in the local Cargo cache (`jsonc_document.rs:2-4,62-73,107-119`) wraps `jsonc-parser` and projects through `serde_json::Value`. It inherits the upstream scanner's surrogate constraint and cannot provide the full contract as-is.
+- `jsonc_tools` 0.0.1 published source (`src/lib.rs:1-18`, `src/parser/parser.rs:1-13`) is a scaffold with no JSONC parser implementation. Category mismatch.
+- `jsontape`, `hifijson`, `tokora`, `purrdf-json`, and `momoa` remain discovery leads requiring category screening; none is yet recommended or rejected on registry description alone.
+
 ## Evidence and validation still required
 
 - Finish the scheduled registry, repository-host and broader-web discovery with pagination saturation and an expansion round. Log every query, filters, result counts and newly discovered survivor.
