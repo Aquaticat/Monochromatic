@@ -62,6 +62,17 @@ One de-duplicated expansion round after initial taxonomy findings: registry `car
 
 Compare a verified raw-token representation owned by the crate with available exact-decimal components. A component must support exact value comparison over the admitted JSON-number grammar, preserve original literal spelling on unedited output, and avoid silent rounding or unbounded recursion. Maintain the parser-foundation query record separately when its research returns. No candidate is recommended from these queries alone.
 
+## Parser foundation discovery expansion
+
+The delegated parser survey froze and ran its initial queries before source reads; their exact text and blocked local searches are recorded in `doc/audit/tech-jsonc-edit-rust-parser-foundation-vet-2026-09-24.md`. Freeze this single de-duplicated expansion before running it:
+
+- Registry: crates.io search `jsonc comments` and `lossless json parser` with full pagination until the two-page survivor condition or exhaustion.
+- Repository host: `gh search repos 'jsonc rust lossless' --limit 100 --json fullName,url,description,updatedAt` and `gh search repos 'rust json comments parser' --limit 100 --json fullName,url,description,updatedAt`.
+- Web: `Rust JSONC lossless CST raw token UTF-16 unpaired surrogate crate` and `Rust JSON with comments lexer preserve raw escape JSONC parser alternative`.
+- In-repo taxonomy: `doc/decision/jsonc-edit-parser-foundation.md`, `package/module/jsonc-edit/src/`, and `doc/planning/monorepo-manager-route-research/rust-structured-edits.md`.
+
+Later taxonomy terms are recorded without scheduling recursive expansion. Discovery metadata is not a library recommendation.
+
 ## Next action
 
 Evaluate parser and numeric foundations against the confirmed contract and choosing-technology gates. Present the evidenced ranking and obtain adoption before implementation depends on the selected component. Then implement, test at the consumer boundary, and publish with an authorized credential route. No crate code or publication has occurred yet.
