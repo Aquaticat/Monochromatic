@@ -304,7 +304,14 @@ Built-artifact state tests now assert nested array-of-tables indices,
  synthetic scalar kinds,
  precise nested-input errors,
  and preservation of clean array-sibling spelling.
-These tests have not yet been mutation-rechecked.
+The package build and unit suite,
+ types,
+ oxlint,
+ and deterministic fuzz coverage gate passed after these changes.
+Focused container rechecks are running:
+ `/var/home/user/temp/agent/toml-mutation-parser-guard-final.json` (`proc_40f8`)
+ and `/var/home/user/temp/agent/toml-mutation-clean-sibling.json` (`proc_a3b4`).
+Do not edit runtime sources until both finish.
 After triage,
  scan editing,
  comment API,
