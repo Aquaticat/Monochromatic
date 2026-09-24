@@ -1002,8 +1002,13 @@ Every rebuilt file **pins its scheme inline on its own root** — the host sets
 
 ### D34. Light uses 1c with white pane spacers and a visible rail line
 Use the `1c` tonal structure.
- The 24dp vertical spacer between panes and the 16dp
-horizontal divider between the folder picker and transport are white.
+ The vertical spacer between panes and the
+16dp horizontal divider between the folder picker and transport are white.
+The original 24dp vertical width was later superseded by E2's
+`max(min_padding, crease_width)` rule;
+ D34 settles the spacer color,
+ not
+its final width.
  Keep the 1dp
 letter-rail boundary in dynamic `outlineVariant`;
  keep pane and track-row outlines
