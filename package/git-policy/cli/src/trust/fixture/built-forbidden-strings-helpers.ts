@@ -48,20 +48,32 @@ export async function writeForbiddenScanner(): Promise<void> {
     SCANNER_PATH,
     `#!${process.execPath}
 const { readFileSync, writeFileSync, existsSync } = require('node:fs');
-const paths = process.argv.slice(2).filter((argument) => argument !== '--builtin-rules');
-for (const path of paths) {
+const args = process.argv.slice(2).filter((argument) => argument !== '--builtin-rules');
+const paths = [];
+const names = [];
+for (let index = 0; index < args.length; index += 1) {
+  if (args[index] === '--name-path') { names.push(args[index + 1]); index += 1; }
+  else paths.push(args[index]);
+}
+for (const [index, path] of paths.entries()) {
+  const name = names[index];
   const content = readFileSync(path, 'utf8');
+  if (name === 'FORBIDDEN_NAME.txt') {
+    process.stderr.write('[REDACTED]:name:1 rule=1 input=' + index + '\\n');
+    process.exitCode = 1;
+    break;
+  }
   if (content.includes('SIGNAL_SCANNER')) process.kill(process.pid, 'SIGTERM');
   if (content.includes('STATUS_TWO')) { process.exitCode = 2; break; }
   if (content.includes('MALFORMED_SCANNER')) { process.stderr.write('malformed-output\\n'); process.exitCode = 1; break; }
-  if (content.includes('READ_ERROR_SCANNER')) { process.stderr.write(path + ': read error: fixture\\n'); process.exitCode = 1; break; }
+  if (content.includes('READ_ERROR_SCANNER')) { process.stderr.write(name + ': read error: fixture input=' + index + '\\n'); process.exitCode = 1; break; }
   if (content.includes('POST_ONLY_FORBIDDEN')) {
     const state = process.cwd() + '/.scanner-post-state';
     if (!existsSync(state)) { writeFileSync(state, 'seen'); continue; }
-    process.stderr.write(path + ':1 rule=2\\n'); process.exitCode = 1; break;
+    process.stderr.write(name + ':1 rule=2 input=' + index + '\\n'); process.exitCode = 1; break;
   }
   if (content.includes('FORBIDDEN_SCANNER')) {
-    process.stderr.write(path + ':1 rule=1\\n'); process.exitCode = 1; break;
+    process.stderr.write(name + ':1 rule=1 input=' + index + '\\n'); process.exitCode = 1; break;
   }
 }
 `,
