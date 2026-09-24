@@ -430,14 +430,63 @@ The documented hard exits make the owned-parser translation eligible for serious
 
 ## Repository-owned parser and emitter prototype
 
-A disposable Rust crate was written under `~/temp/agent/jsonc-parser-probe-2026-09-24/`, with a separate consumer under `~/temp/agent/jsonc-parser-consumer-2026-09-24/`. This code is outside the product repository and is **not** an adopted implementation. Its `src/scan.rs` uses direct byte/index scans, decodes escaped `\uXXXX` into owned UTF-16 units (including lone surrogates), and delegates JSON number identity to the local dependency-free scratch prototype. `src/parse.rs` attaches comments separately to object keys and values and rejects scalar roots/JSON5. `src/emit.rs` emits a canonical two-space tree with trailing commas and retains raw scalar spellings, including clean `1e0` input. No regex, generated lexer, external crate, or unsafe code was introduced by this prototype.
+A disposable Rust crate was written under `~/temp/agent/jsonc-parser-probe-2026-09-24/`,
+ with a separate consumer under `~/temp/agent/jsonc-parser-consumer-2026-09-24/`.
+ This code is outside the product repository and is **not** an adopted implementation.
+ Its `src/scan.rs` uses direct byte/index scans,
+ decodes escaped `\uXXXX` into owned UTF-16 units (including lone surrogates),
+ and delegates JSON number identity to the local dependency-free scratch prototype.
+ `src/parse.rs` attaches comments separately to object keys and values and rejects scalar roots/JSON5.
+ `src/emit.rs` emits a canonical two-space tree with trailing commas and retains raw scalar spellings,
+ including clean `1e0` input.
+ No regex,
+ generated lexer,
+ external crate,
+ or unsafe code was introduced by this prototype.
 
-- `cd -- ~/temp/agent/jsonc-parser-probe-2026-09-24 && mise run test` passed the initial bounded parser suite over valid/invalid syntax, key and value comments, line-comment merging, unpaired/paired UTF-16 values, raw exact number text, and reparsable canonical output. `mise run lint:clippy` also passed with warnings denied after structural lint fixes.
-- `cd -- ~/temp/agent/jsonc-parser-consumer-2026-09-24 && mise run test` imported the library by path and printed `JSONC consumer parse and emit passed`, checking attached key/value comments, unchanged `1e0`, decoded lone surrogate, and reparsed output.
-- Positive controls in scratch: removing the root-container check made `invalid_documents_fail` fail on input `42`; suppressing key comment attachment made `comments_are_addressable` fail. Each source edit was restored, matching a saved pre-mutation SHA-256, and unit/Clippy tasks passed again. These controls cover only those guards, not all parser branches.
-- A new nested-array test invalidated the initial pass: `mise run test:isolated` ran the added suite in an offline, read-only Podman container capped at 2 GiB memory, 2 CPUs, 128 PIDs and 600 seconds. The 513-level case aborted the test process with `thread 'tests::excessive_nesting_is_rejected' has overflowed its stack` (SIGABRT, exit 101) before returning the intended depth error. The other test names printed `ok`, but the suite failed and the owned parser candidate is **not validated**. Structural recursion needs an explicit work stack or another measured stack-safe shape before this depth contract can be claimed. Never reproduce this case outside a bounded container.
+- `cd -- ~/temp/agent/jsonc-parser-probe-2026-09-24 && mise run test` passed the initial bounded parser suite over valid/invalid syntax,
+   key and value comments,
+   line-comment merging,
+   unpaired/paired UTF-16 values,
+   raw exact number text,
+   and reparsable canonical output.
+   `mise run lint:clippy` also passed with warnings denied after structural lint fixes.
+- `cd -- ~/temp/agent/jsonc-parser-consumer-2026-09-24 && mise run test` imported the library by path and printed `JSONC consumer parse and emit passed`,
+   checking attached key/value comments,
+   unchanged `1e0`,
+   decoded lone surrogate,
+   and reparsed output.
+- Positive controls in scratch:
+   removing the root-container check made `invalid_documents_fail` fail on input `42`;
+   suppressing key comment attachment made `comments_are_addressable` fail.
+   Each source edit was restored,
+   matching a saved pre-mutation SHA-256,
+   and unit/Clippy tasks passed again.
+   These controls cover only those guards,
+   not all parser branches.
+- A new nested-array test invalidated the initial pass:
+   `mise run test:isolated` ran the added suite in an offline,
+   read-only Podman container capped at 2 GiB memory,
+   2 CPUs,
+   128 PIDs and 600 seconds.
+   The 513-level case aborted the test process with `thread 'tests::excessive_nesting_is_rejected' has overflowed its stack` (SIGABRT,
+   exit 101) before returning the intended depth error.
+   The other test names printed `ok`,
+   but the suite failed and the owned parser candidate is **not validated**.
+   Structural recursion needs an explicit work stack or another measured stack-safe shape before this depth contract can be claimed.
+   Never reproduce this case outside a bounded container.
 
-This is a partial parser/emitter probe with a demonstrated stack-safety failure, not full parity. No immutable edit/navigation/comment-set operations, full TypeScript conformance corpus, fuzzing, mutation campaign, cross-platform native check, release packaging, or performance comparison is provided. The comment attachment rule for blank-line-separated comments still needs the agreed correction and tests in both maintained implementations. Do not use this prototype as publication evidence.
+This is a partial parser/emitter probe with a demonstrated stack-safety failure,
+ not full parity.
+ No immutable edit/navigation/comment-set operations,
+ full TypeScript conformance corpus,
+ fuzzing,
+ mutation campaign,
+ cross-platform native check,
+ release packaging,
+ or performance comparison is provided.
+ The comment attachment rule for blank-line-separated comments still needs the agreed correction and tests in both maintained implementations.
+ Do not use this prototype as publication evidence.
 
 ## Evidence and validation still required
 
