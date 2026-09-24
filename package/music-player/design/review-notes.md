@@ -909,7 +909,7 @@ clear the dent;
  padding,
  field/list surfaces and hit regions
 can span it.
- The player's earlier fixed24dp empty gap and fixed414dp panes
+ The player's earlier fixed 24dp empty gap and fixed 414dp panes
 are not protected decisions.
  The user's rule is
 `max(min_padding, crease_width)` for **information clearance**,
@@ -921,11 +921,11 @@ The user initially estimated 10mm,
 **about 7.5mm**.
  With the inner display's approximately 141.08mm active
 width,
- that is roughly **110 physical px** centered at x1038 on the
+ that is roughly **110 physical px** centered at x 1038 on the
 2076px panel,
  or x `[983,1093)`px.
- At the current AVD390dpi it converts
-to about45dp,
+ At the current AVD's 390dpi it converts
+to about 45dp,
  but dp changes with Android display scaling while the dent
 does not.
  Use physical millimeters or panel pixels for the invariant and
@@ -934,7 +934,7 @@ convert only at runtime for Compose layout.
 sensor area measures occlusion,
  not the visible dent.
  Do not borrow the
-unrelated12dp mode-control text-padding floor as `min_padding` here.
+unrelated 12dp mode-control text-padding floor as `min_padding` here.
 
 I initially praised the user's YouTube thumbnail timestamp/title example as
 safe near-crease placement.
