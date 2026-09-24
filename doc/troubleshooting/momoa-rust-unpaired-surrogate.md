@@ -12,7 +12,8 @@ A Rust caller supplying JSONC such as `r#"{"s":"\uD800"}"#` to
 The input contains **one** JSON-source backslash before `u`.
 This is undefined behavior under [Rust's `char::from_u32_unchecked` safety contract][rust-char];
 it is not a normal parser error whose precise message can be quoted.
-There is no observed crash, diagnostic, or successful parse to report.
+No runtime manifestation of the original unsafe implementation was observed.
+The checked pre-fix and patched-parser outcomes are recorded under Verification.
 A high surrogate in a purported pair, such as `\uD83D\uDE00`, also reaches
 the unchecked conversion of its first code unit before pairing can occur.
 This document does not claim a particular runtime manifestation.
@@ -146,23 +147,30 @@ calls construction of an invalid `char` immediate undefined behavior. This is a 
 - **Do not run** a Momoa parse of the surrogate samples on the real host.
   A pre-patch failure and post-patch success must be established only in
   a private, credential-free container bounded to 2 GiB and 2 CPUs, after
-  inspecting the invoked command tree. No such run occurred here.
+  inspecting the invoked command tree. The original unchecked parser was
+  never executed on surrogate input; only checked instrumentation and the
+  patched parser were run in that container.
 
 ### Isolated prototype execution manifest
 
 A fresh private clone was created under
 `~/temp/agent/upstream-prototype.AxhMuxdU/momoa` at commit `8dfb563`.
 Its `origin` was verified as `humanwhocodes/momoa` and its push URL disabled.
-The only product-source edit so far is a temporary checked conversion in
-`rust/src/parse.rs`; it returns an error instead of executing the original
-unchecked conversion. A separate `rust/examples/surrogate_safety.rs` exercises
-the public JSONC parse interface. The original unsafe call is **not** executed.
+The pre-fix probe temporarily replaced the unchecked constructor in
+`rust/src/parse.rs` with a checked conversion that returned an error before
+creating an invalid `char`. The final [prototype patch](momoa-rust-unpaired-surrogate.patch)
+replaces that instrumentation with checked surrogate-pair decoding.
+A separate `rust/examples/surrogate_safety.rs` calls the public JSONC parser.
+The original unsafe call was **not** executed on the suspect input.
 
 - Fetch phase: `mise run fetch` in the private scratch root invoked
   `cargo fetch --locked --manifest-path momoa/rust/Cargo.toml` with a private
-  `CARGO_HOME`. It succeeded with network access but executed no crate source.
-  The private cache measured 37 MiB after fetch; no credentials were copied.
-- Intended execution: `mise run test:safe-instrumented` runs `cargo run
+  `CARGO_HOME`. Cargo fetched dependencies with network access but did not
+  execute crate source. Mise first installed Rust 1.98.1 into that private
+  Cargo home and invoked `rustc -V`; the container run used its own pinned
+  Rust 1.97.1 image. The private cache measured 37 MiB after fetch and after
+  the test runs; no credentials were copied.
+- Container execution: `mise run test:safe-instrumented` invokes `cargo run
   --locked --offline --example surrogate_safety` in a rootless container using
   local `docker.io/library/rust:1.97-bookworm` image digest
   `sha256:77fac8b98f9f46062bb680b6d25d5bcaabfc400143952ebc572e924bcbedc3fa`.
@@ -184,8 +192,10 @@ the public JSONC parse interface. The original unsafe call is **not** executed.
   normal/build dependencies (saved in private `momoa-dependencies.txt`).
   No `build.rs`, network, or subprocess call was found in `rust/src/`.
   The pinned build scripts for `serde`, `serde_core`, `serde_json`,
-  `wasm-bindgen`, `wasm-bindgen-shared`, `proc-macro2`, `quote`, and
-  `thiserror` were read before execution. They write to Cargo's `OUT_DIR`,
+  `wasm-bindgen`, `wasm-bindgen-shared`, `proc-macro2`, and `thiserror`
+  were read before execution. The resolved `quote` 1.0.35 package has no
+  `build.rs`; the previously inspected `quote` 1.0.47 script was not the
+  selected artifact. These build scripts write to Cargo's `OUT_DIR`,
   query compiler or target settings, invoke `rustc` probes, or call
   `git rev-parse HEAD` from the private registry copy; no other declared
   subprocess or network endpoint was found. Release workflows, npm tasks,
@@ -238,6 +248,43 @@ text, an object key, ASCII `\u0041`, and a literal escaped backslash. Truncated
 and nonhex escapes returned errors without panic. The original unsafe parser
 was not executed on any surrogate input. The [updated patch](momoa-rust-unpaired-surrogate.patch)
 passed `git apply --check` against the clean clone again.
+
+### Reconstruct the safe control
+
+The [checked pre-fix patch](momoa-rust-unpaired-surrogate.prepatch.patch)
+and the [final prototype patch](momoa-rust-unpaired-surrogate.patch)
+apply independently to a clean checkout of Momoa commit `8dfb563`.
+Each includes the same public-entry example. `git apply --check` passed on
+both patches against the clean published-source-matching clone.
+**Never run the unmodified parser** on a surrogate escape.
+
+An agent can create two separate private scratch clones, disable their push
+URLs, apply the checked patch to one and the final patch to the other, and
+fetch the pinned `rust/Cargo.lock` dependencies to a private Cargo home.
+The following is the actual container command shape used for each clone.
+Replace `SCRATCH` with the agent-created private root; the source mount is
+read-only and the container has no user repository or real home mount:
+
+```sh
+# doc/troubleshooting/momoa-rust-unpaired-surrogate.md
+podman run \
+  --memory=2g --memory-swap=2g --cpus=2 --timeout=600 \
+  --pids-limit=128 --ulimit nofile=256:256 --rm \
+  --network=none --read-only --security-opt label=disable \
+  --tmpfs /target:rw,size=1g --tmpfs /tmp:rw,size=256m \
+  --volume "$SCRATCH/momoa:/work/momoa:ro" \
+  --volume "$SCRATCH/cargo-home:/cargo-home:rw" \
+  --env CARGO_HOME=/cargo-home --env CARGO_TARGET_DIR=/target \
+  --env HOME=/tmp --workdir /work/momoa/rust \
+  docker.io/library/rust@sha256:77fac8b98f9f46062bb680b6d25d5bcaabfc400143952ebc572e924bcbedc3fa \
+  cargo run --locked --offline --example surrogate_safety
+```
+
+The checked patch should fail **only** the valid-pair expectation,
+without constructing an invalid `char`. The final patch should pass the
+example; the same container command with `cargo test --locked --offline`
+then runs the upstream Rust suite. These are verification instructions for
+an agent, not a request for the user to supply credentials or execute them.
 
 ### Patterns that avoid the unsafe conversion (source-derived; patched subset tested)
 
@@ -361,8 +408,10 @@ No duplicate was found in the inspected queries; source and tracker state can ch
    Neither states a refusal to fix surrogate handling.
 6. **Minimal architecture-compatible prototype: yes, isolated.** A fresh
    private clone of commit `8dfb563` was origin-checked and had its push URL
-   disabled. The [prototype patch](momoa-rust-unpaired-surrogate.patch)
-   replaces unchecked scalar construction, decodes valid surrogate pairs,
+   disabled. The [checked pre-fix patch](momoa-rust-unpaired-surrogate.prepatch.patch)
+   and [final prototype patch](momoa-rust-unpaired-surrogate.patch)
+   separately apply to clean source. The final patch replaces unchecked
+   scalar construction, decodes valid surrogate pairs,
    and errors on isolated halves. `git apply --check` succeeded against the
    clean 3.2.6 clone. A safe checked pre-fix instrument failed the valid-pair
    assertion (exit 101); the patched public-entry example passed in the
