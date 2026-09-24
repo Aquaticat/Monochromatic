@@ -62,11 +62,52 @@ The targeted campaigns here name runtime source files explicitly.
   TOML 1.0 and 1.1 conformance,
   and the refrozen fuzz coverage gate have passed after the runtime changes.
 
+## Emitter campaign and removal ledger
+
+The container run on `src/emit-document.ts` and `src/emit-value.ts` completed with
+ 87 killed,
+ 59 confirmed survivors,
+ one timeout,
+ 147 compile errors,
+ and no infrastructure errors.
+The timeout is a forced-true loop condition at `emit-document.ts:40`,
+ not a successful assertion.
+The remaining loop-bound mutants forcing `end > 0` to true or changing `>` to `>=`
+ are equivalent because an out-of-range index is `undefined` and fails the newline comparison.
+
+Searches of `package/module/toml-edit/src` found no callers of these exports outside `emit-value.ts` itself:
+
+- `emitArrayWithoutIndex`:
+  previously described array-element omission from a parser AST.
+  Live owner is `delete-value.ts`'s immutable tree update followed by
+  `renderValueNode` in `emit-value-node.ts` and `assembleArrayParts` in `emit-value.ts`.
+  The nested-array deletion cases in `toml-delete.unit.test.ts` and the new array-content property cover the live path.
+  Retire the unused AST-only helper and its behavior.
+- `emitArrayWithSkipPath`:
+  previously described recursive nested-array omission,
+  with no non-recursive callers.
+  The same live tree-update and rendering path owns nested deletion;
+  `toml-delete.unit.test.ts` covers nested deletion,
+  including deeper nesting and inline-table elements.
+  Retire the unused helper and its empty-path/non-array diagnostics.
+- `emitInlineTableWithExtra`:
+  previously described adding an entry to a parser AST inline table.
+  Live owner is `set-value-inline.ts`'s immutable entry append,
+  rendered by `renderValueNode` and `assembleInlineTableParts`.
+  `toml-set.unit.test.ts` covers inline-table extension and conflicts.
+  Retire the unused AST-only helper and its error diagnostic.
+
+`assembleArrayParts`,
+ `assembleInlineTableParts`,
+ `emitContentNode`,
+ and the live `emitInlineTable` path remain consumed.
+Most `emit-value.ts` survivors in the former AST-only functions cannot be killed by package behavior;
+ removal avoids mislabeling this dead code as weak assertions.
+
 ## In progress
 
-- The container mutation run on `src/emit-document.ts` and `src/emit-value.ts`
-  is managed as process `toml-emitter-mutation-campaign` (`proc_6f97`).
-  Read its report at `/var/home/user/temp/agent/toml-mutation-emitter.json` after completion.
+- Triage actionable emitter survivors after removing the unconsumed helpers.
+  The report is at `/var/home/user/temp/agent/toml-mutation-emitter.json`.
 - Additional tests now pin empty and header-only canonical output,
   multiple terminal newlines,
   multiline string contents,
@@ -80,8 +121,8 @@ The targeted campaigns here name runtime source files explicitly.
 
 ## Next action
 
-Inspect the emitter report for confirmed non-equivalent survivors.
-Add assertions or production fixes for behavior changes,
+Remove the unconsumed AST-only emitter helpers,
+ then add assertions or production fixes for surviving live behavior,
  then rerun the affected mutation files and package/sidecar verification.
 Commit only explicit paths in scope.
 The full runtime scan was not run:
