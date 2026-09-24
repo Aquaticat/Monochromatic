@@ -1065,16 +1065,34 @@ ownership,
 ## Search button to separate search page (D47, active design work)
 
 The user rejected all I/G/R command-bar presentations.
- The next prototype has one
-active direction rather than an option matrix:
- show a Search button in the player,
-its activation to a separate search page,
- a page-level query field,
- typed results,
-Back to the player,
- and empty/unavailable states.
- Both color schemes and compact/
-expanded desktop widths must be drawn natively before replacing the rejected form.
+ The active prototype has one
+direction rather than an option matrix:
+ a 48px Search icon button in the player
+opens a separate page,
+ whose single 72px baseline MD3 header merges Back,
+ query
+and Clear (D48).
+ The search page replaces the player entirely;
+ no second in-app
+title row remains.
+ The throwaway Slint `search-page-study.slint` on the prototype
+branch is committed at `1ecb1f3f7`,
+ with top-bar geometry correction `773c8fc11`
+and merged-header correction `13b38f1f7`.
+ Native 360 × 640,
+ 480 × 600 and
+1100 × 640px light/dark captures now show the player trigger,
+ empty page,
+illustrative `cam` results,
+ no results and unavailable library
+(`questions/render/search-page-*`,
+ main commit `c65154138`).
+ Search button and Back
+TouchAreas are wired in the design prototype;
+ the static captures do not by
+themselves prove click delivery or focus restoration.
+ The rejected I/G/R form in
+`questions/current.html` must be replaced by an active-design review.
 D21's global hotkey and Settings row are not inherited by the Search page.
 D25's Ctrl+F reservation remains open with the whole keyboard map.
  The exact search
