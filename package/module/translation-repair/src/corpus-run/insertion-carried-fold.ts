@@ -7,6 +7,7 @@ import type {
 } from '../insertion-admission.ts';
 import { parseDocument, } from '../parse-document.ts';
 import type { PreparedDocumentPair, } from '../prepared-document-pair.ts';
+import type { AnchorTarget, } from '../validate-issue.ts';
 import { decideFold, } from './insertion-carried-decide.ts';
 
 //region Carried insertion fold
@@ -162,6 +163,133 @@ function widenCarrier(
 }
 
 /**
+ One pass over the passages still carried: each folded in turn over the
+ slices the earlier folds left, so two passages folding into one carrier both
+ widen it. Stand-asides of earlier passes are dropped; the pass rewrites them.
+
+ @param start - slices and records as the passes so far left them
+
+ @param pending - passages still carried, in admission order
+
+ @param sourceText - whole original
+
+ @param target - archive parsed for anchoring
+
+ @returns State after the pass
+
+ @example
+ ```ts
+ const after = foldPass({ start: state, pending: state.kept, sourceText, target, },);
+ ```
+ */
+function foldPass(
+  {
+    start,
+    pending,
+    sourceText,
+    target,
+  }: {
+    readonly start: FoldState;
+    readonly pending: readonly CarriedInsertion[];
+    readonly sourceText: string;
+    readonly target: AnchorTarget;
+  },
+): FoldState {
+  return pending.reduce(
+    function foldOne(
+      state: FoldState,
+      candidate,
+    ): FoldState {
+      /**
+       Whether and where this passage folds.
+       */
+      const decision = decideFold({
+        slices: state.slices,
+        sourceText,
+        target,
+        candidate,
+      },);
+      /**
+       The carrier as the earlier folds left it, absent on a stand-aside.
+       */
+      const carrier = (decision.kind === 'fold') ? state.slices[decision.carrierPosition] : undefined;
+      /**
+       The carried slice.
+       */
+      const carriedSlice = state.slices[candidate.position];
+      /**
+       Whether nothing folds: the decision stood aside or a slice is missing.
+       */
+      const standsAside = (decision.kind === 'aside')
+        || (carrier === undefined)
+        || (carriedSlice === undefined);
+      if (standsAside) {
+        /**
+         Why it stays carried.
+         */
+        const reason = (decision.kind === 'aside') ? decision.reason : 'carrier or carried slice missing from the slicing';
+        return {
+          slices: state.slices,
+          kept: [
+            ...state.kept,
+            candidate,
+          ],
+          folded: state.folded,
+          findings: state.findings,
+          asides: [
+            ...state.asides,
+            `slice ${String(candidate.sliceIndex,)} stays carried: ${reason}`,
+          ],
+        };
+      }
+      /**
+       Carrier over both sources.
+       */
+      const widened = widenCarrier({
+        sourceText,
+        carrier,
+        carried: carriedSlice,
+      },);
+      /**
+       Stable index the lanes report the carrier under.
+       */
+      const carrierSliceIndex = carrier.target
+        .sliceIndex;
+      return {
+        slices: state.slices
+          .map(function replaceCarrier(
+            slice,
+            position,
+          ): ChunkPair {
+            return (position === decision.carrierPosition) ? widened : slice;
+          },),
+        kept: state.kept,
+        folded: [
+          ...state.folded,
+          {
+            position: candidate.position,
+            sliceIndex: candidate.sliceIndex,
+            carrierSliceIndex,
+          },
+        ],
+        findings: [
+          ...state.findings,
+          `${CARRIED_FOLDED_FINDING} (slice ${String(candidate.sliceIndex,)} into slice ${
+            String(carrierSliceIndex,)
+          })`,
+        ],
+        asides: state.asides,
+      };
+    },
+    {
+      ...start,
+      kept: [],
+      asides: [],
+    },
+  );
+}
+
+/**
  Folds every unambiguously placed carried passage into its carrier.
 
  @param prepared - preparation both lanes run over
@@ -208,98 +336,30 @@ export function foldCarriedInsertions(
    */
   const target = parseDocument({ text: prepared.targetText, },);
   /**
-   Every passage folded in turn over the slices the earlier folds left, so
-   two passages folding into one carrier both widen it.
+   Passes run until nothing more folds, at most one per carried passage: a
+   passage refused for a carried neighbour in the way folds once that
+   neighbour has folded (mikaela14). A pass that folds nothing repeats the
+   same result, so the bound is the passages themselves.
    */
   const outcome = carried.reduce(
-    function foldOne(
-      state: FoldState,
-      candidate,
-    ): FoldState {
+    function passOnce(progress: FoldState,): FoldState {
       /**
-       Whether and where this passage folds.
+       Passages still carried before this pass.
        */
-      const decision = decideFold({
-        slices: state.slices,
+      const pendingCount = progress.kept
+        .length;
+      if (pendingCount === 0)
+        return progress;
+      return foldPass({
+        start: progress,
+        pending: progress.kept,
         sourceText: prepared.sourceText,
         target,
-        candidate,
       },);
-      /**
-       The carrier as the earlier folds left it, absent on a stand-aside.
-       */
-      const carrier = (decision.kind === 'fold') ? state.slices[decision.carrierPosition] : undefined;
-      /**
-       The carried slice.
-       */
-      const carriedSlice = state.slices[candidate.position];
-      /**
-       Whether nothing folds: the decision stood aside or a slice is missing.
-       */
-      const standsAside = (decision.kind === 'aside')
-        || (carrier === undefined)
-        || (carriedSlice === undefined);
-      if (standsAside) {
-        /**
-         Why it stays carried.
-         */
-        const reason = (decision.kind === 'aside') ? decision.reason : 'carrier or carried slice missing from the slicing';
-        return {
-          slices: state.slices,
-          kept: [
-            ...state.kept,
-            candidate,
-          ],
-          folded: state.folded,
-          findings: state.findings,
-          asides: [
-            ...state.asides,
-            `slice ${String(candidate.sliceIndex,)} stays carried: ${reason}`,
-          ],
-        };
-      }
-      /**
-       Carrier over both sources.
-       */
-      const widened = widenCarrier({
-        sourceText: prepared.sourceText,
-        carrier,
-        carried: carriedSlice,
-      },);
-      /**
-       Stable index the lanes report the carrier under.
-       */
-      const carrierSliceIndex = carrier.target
-        .sliceIndex;
-      return {
-        slices: state.slices
-          .map(function replaceCarrier(
-            slice,
-            position,
-          ): ChunkPair {
-            return (position === decision.carrierPosition) ? widened : slice;
-          },),
-        kept: state.kept,
-        folded: [
-          ...state.folded,
-          {
-            position: candidate.position,
-            sliceIndex: candidate.sliceIndex,
-            carrierSliceIndex,
-          },
-        ],
-        findings: [
-          ...state.findings,
-          `${CARRIED_FOLDED_FINDING} (slice ${String(candidate.sliceIndex,)} into slice ${
-            String(carrierSliceIndex,)
-          })`,
-        ],
-        asides: state.asides,
-      };
     },
     {
       slices: prepared.slices,
-      kept: [],
+      kept: carried,
       folded: [],
       findings: [],
       asides: [],
