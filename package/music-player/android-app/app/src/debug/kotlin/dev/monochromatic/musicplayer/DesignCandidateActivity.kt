@@ -454,7 +454,8 @@ class DesignCandidateActivity : ComponentActivity() {
             candidate = requestedCandidate
         }
         if (candidate.startsWith("dark-") || candidate.startsWith("cover-dark") ||
-            (candidate.startsWith("search-page") && !candidate.endsWith("-light"))) {
+            ((candidate.startsWith("search-page") || candidate.startsWith("search-layout")) &&
+                !candidate.endsWith("-light"))) {
             enableEdgeToEdge(
                 statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
                 navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
