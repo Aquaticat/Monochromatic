@@ -35,11 +35,30 @@ await describe({
       },
     },),
     it({
+      name: 'replaces a nested array-of-tables collection in place among siblings',
+      fn: async () => {
+        const source = 'title = "x"\n[[a.b]]\nx = 1\n[[a.c]]\ny = 2\n[tail]\nz = 3\n';
+        const edit = parseTomlEdit({ source, },);
+        const updated = tomlSet({ edit, path: ['a', 'b',], value: [{ x: 9, },], },);
+        expect(tomlStringify({ edit: updated, },),)
+          .toBe('title = "x"\n[[a.b]]\nx = 9\n[[a.c]]\ny = 2\n[tail]\nz = 3\n',);
+        expect(tomlGetValue({ edit: updated, path: ['a', 'c', 0, 'y',], },),).toBe(2,);
+      },
+    },),
+    it({
       name: 'creates under the deepest matching standard-table header',
       fn: async () => {
         const edit = parseTomlEdit({ source: '[a.b]\nx=1\n[a.c]\nz=2\n', },);
         const updated = tomlSet({ edit, path: ['a', 'b', 'new',], value: 3, },);
         expect(tomlStringify({ edit: updated, },),).toBe('[a.b]\nx=1\nnew = 3\n[a.c]\nz=2\n',);
+      },
+    },),
+    it({
+      name: 'prefers a nested standard table over its explicit parent',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: '[a]\nroot = 1\n[a.b]\nx = 2\n', },);
+        const updated = tomlSet({ edit, path: ['a', 'b', 'new',], value: 3, },);
+        expect(tomlStringify({ edit: updated, },),).toBe('[a]\nroot = 1\n[a.b]\nx = 2\nnew = 3\n',);
       },
     },),
     it({
