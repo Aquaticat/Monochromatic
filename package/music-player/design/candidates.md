@@ -1093,9 +1093,9 @@ TouchAreas are wired in the design prototype;
 themselves prove click delivery or focus restoration.
  The rejected I/G/R form is now archived at
 `questions/archive/command-igr-rejected.html`;
- `questions/current.html` is a
-desktop-sized walkthrough awaiting replacement with Fold-panel evidence.
- The HTML
+ The formerly active desktop walkthrough is now retired;
+`questions/current.html` embeds the native Fold-panel review.
+ The old HTML
 flow was exercised,
  but it neither proves the native TouchAreas were activated nor
 measures the target phone geometry.
@@ -1108,16 +1108,49 @@ targets,
 questions;
  none was decided by D47.
 
-## Native Fold Search-page round (D49, in progress)
+## Native Fold Search-page round (D49, awaiting correction)
 
-The definitive design evidence must show the D47/D48 Search button and one-header
-page on the Pixel 9 Pro Fold cover at 1080 × 2424 physical px and unfolded inner
-panel at 2076 × 2152 physical px,
- in both schemes.
- Use a throwaway Compose debug
-candidate and opaque panel captures with hierarchy evidence;
- preserve D46's
-provisional P4 cover picker and the accepted unfolded pane treatments as context.
-The desktop Slint captures are history,
- not a matrix to choose from or a reason to
-optimize this treatment for an independently chosen window width.
+The debug-only Compose study on `prototype/music-player-theme-compose` captured
+the D47/D48 player trigger and separate one-header Search page on the cover
+(1080 × 2424px,
+ 411 × 923dp) and inner display (2076 × 2152px,
+ 852 × 883dp)
+in both schemes.
+ `questions/render/fold-search-{cover,inner}-*.png` contains opaque
+Android system bars and target-sized results,
+ empty,
+ no-results and unavailable
+states at 100% text;
+ player and results at 200% text are fit checks.
+ Each PNG
+has a paired XML hierarchy in `questions/evidence/` and each panel/scheme has a
+native role JSON.
+ The app-owned unfolded header is bounded by the left 414dp
+pane,
+ results by the right 414dp pane,
+ and the 24dp connector is blank at D41
+black or D34 white.
+ The capture guard and `search-page-question.mjs validate`
+check semantic/hit bounds and sampled pixels;
+ red controls confirmed both a
+crossing target and a near-white fill are rejected.
+
+`questions/current.html` is the self-contained active review.
+ It shows the
+player-to-page walkthrough,
+ two native panels,
+ both schemes,
+ measured device
+frames,
+ 100% dp preview,
+ and free-text correction.
+ Canned rows and the HTML
+walkthrough do not prove an actual index,
+ result execution,
+ native Back focus or
+TalkBack speech.
+ D46's provisional P4 cover picker and accepted unfolded
+baseline are contextual only;
+ the desktop Slint captures are history,
+ not a
+matrix to choose from.
