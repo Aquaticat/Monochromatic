@@ -4,7 +4,7 @@
  *
  * @module
  */
-import { chmod, readFile, rm, stat, writeFile, } from 'node:fs/promises';
+import { chmod, lstat, readFile, rm, stat, writeFile, } from 'node:fs/promises';
 import { execute, } from './built-consumer-helpers.ts';
 import { assertFixtureEqual, initializePostCommitRepository, } from './built-post-commit-helpers.ts';
 import { KILL_WRAPPER_SOURCE, waitForOrphan, } from './built-autofix-recovery-consumer.ts';
@@ -230,6 +230,27 @@ export async function verifyFinalNewlineReconciliation({ env, }: Readonly<{
     actual: (await execute({ command: 'git', args: ['status', '--short',], cwd: repository, env, },)).stdout,
     expected: ' D missing.txt\n M repeated.txt\nM  unrelated.txt\n',
     context: 'deleted selected file remains absent without recovery failure',
+  },);
+  /** A FIFO installed by a hook must not block opening selected worktree content. */
+  await writeFile(`${repository}/repeated.txt`, 'fifo candidate',);
+  await execute({ command: '/usr/bin/git', args: ['add', '--', 'repeated.txt',], cwd: repository, },);
+  await writeFile(preHookPath, '#!/usr/bin/env node\nconst fs=require("node:fs");fs.unlinkSync("repeated.txt");require("node:child_process").execFileSync("/usr/bin/mkfifo",["repeated.txt"]);\n', { mode: 0o700, },);
+  await execute({
+    command: 'git',
+    args: ['commit', '--quiet', '--message=fifo-worktree', '--', 'repeated.txt',],
+    cwd: repository,
+    env,
+    signal: AbortSignal.timeout(5_000,),
+  },);
+  await rm(preHookPath,);
+  if (!(await lstat(`${repository}/repeated.txt`,)).isFIFO())
+    throw new Error('Hook FIFO was replaced during selected worktree completion.',);
+  await rm(`${repository}/repeated.txt`,);
+  await execute({ command: '/usr/bin/git', args: ['restore', '--worktree', '--', 'repeated.txt',], cwd: repository, },);
+  assertFixtureEqual({
+    actual: (await execute({ command: 'git', args: ['status', '--short',], cwd: repository, env, },)).stdout,
+    expected: ' D missing.txt\nM  unrelated.txt\n',
+    context: 'FIFO conflict leaves no stranded transaction',
   },);
 }
 //endregion Disposable packed-wrapper regression

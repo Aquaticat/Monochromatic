@@ -92,17 +92,27 @@ export async function inspectWorktreeFile({
     if ((await realpath(dirname(destination,))) !== dirname(destination,))
       return { kind: 'conflict', };
     /**
-     No-follow descriptor binds content reads to checked inode.
+     No-follow entry check rejects FIFOs and devices before any open.
+     */
+    const entry = await lstat(
+      destination,
+      { bigint: true, },
+    );
+    if ((!entry.isFile()) || (entry.nlink !== 1n))
+      return { kind: 'conflict', };
+    /**
+     Nonblocking no-follow descriptor also rejects FIFO replacement between check and open.
      */
     await using handle = await open(
       destination,
-      constants.O_RDONLY | constants.O_NOFOLLOW,
+      constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK,
     );
     /**
      Open descriptor metadata before content read.
      */
     const metadata = await handle.stat({ bigint: true, },);
     if ((!metadata.isFile()) || (metadata.nlink !== 1n)
+      || (entry.dev !== metadata.dev) || (entry.ino !== metadata.ino)
       || (((metadata.mode & EXECUTE_BIT) !== 0n) !== (gitMode === '100755')))
       return { kind: 'conflict', };
     /**
