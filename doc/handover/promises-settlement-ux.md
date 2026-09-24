@@ -5,9 +5,9 @@ A regression went red because the belt was empty after Promise 1's rejection obs
 receipts now appear when the observer reports, including for the current Promise.
 The manual `Promise.withResolvers()` experiment retains `"Hello Ada"` and `Error("No reply")`;
 Yum-Bot supplies artwork only, not game rules. Targeted browser, prototype, and print
-and real-download checks pass. Firefox ESR also passes after the pagehide cleanup
-and verifier navigation repair; the final corrected build's combined native-print suite
-is still pending. The older headed tab has not been reloaded.
+and real-download checks pass. Firefox ESR also passes on the generated lesson's
+receipt timing and pagehide, plus the prototype and other chapters; the final
+build-identity version's combined native-print suite is still pending. The older headed tab has not been reloaded.
 The before-ticket and before-belt local artifacts are retained.
 No teaching-skill design has been confirmed or implemented.
 
@@ -415,7 +415,8 @@ The builder now embeds a SHA-256 identity of the complete lesson before the iden
 marker. The headed presenter compares the identity from disk against each open tab,
 not merely a label that could survive a later rebuild. It must open a corrected build
 in a separate tab without reloading the prior learner tab. Presentation is pending.
-The current artifact is provisionally 693,920 bytes; the final combined suite is pending.
+The current build-identity artifact is provisionally 694,025 bytes; the final combined
+suite is pending.
 The single-current-Promise toy rule, native calls, original values, and capture timing
 are unchanged.
 
@@ -436,8 +437,11 @@ the timed experiment. The ticket has no timer or I/O to cancel on page exit;
 its pending Promise is discarded with the departing document. The same generated test
 passes after rebuilding. Its strengthened version starts a pending timed trace and
 proves pagehide still completes it while leaving the ticket pending with no invented
-receipt. The Firefox checks then passed again without another lesson code change;
-a final generated-lesson Firefox assertion for receipt timing and pagehide errors is pending.
+receipt. Removing the timing cleanup in a disposable copy makes that guard fail, then
+the real build passes again. Generated-lesson Firefox assertions now verify that its
+belt and printable receipt appear only after the observer, remain fixed after an
+ignored call, and emit no lesson-origin error during pagehide. Firefox ESR 140.16.0
+and final offline export tests passed after the build-identity marker was added.
 
 ## Superseded designs (do not revive without the user asking)
 
