@@ -276,9 +276,36 @@ not vetoed in round 3:
 - Naming precedent and candidate names:
    done,
    recorded in [`doc/research/unified-linter-naming.md`](../research/unified-linter-naming.md).
-- Processor backlog:
-   what the incumbent rules report today on extracted Rust fences and rustdoc blocks,
-   measured in a throwaway worktree:
+- Processor backlog,
+   measured at `8d73b1bab` in a throwaway worktree with the incumbent rules:
+  - Rust fences in Markdown:
+     555 fences in 160 files (554 `rust`,
+     1 `rs`,
+     none in MDX,
+     no rustdoc attributes,
+     no hidden lines).
+    With doc-test wrapping (round 3 answer),
+     905 `require-rustdoc` findings remain after dropping the 538 on the synthetic `fn main`:
+     551 missing `//!` lines (round 3 answer A requires them)
+     and 354 item findings in 212 fences across 115 files.
+    `max-lines` finds nothing.
+    None is auto-fixable.
+    194 fences still fail to parse (partial snippets with `...` elisions),
+     so their item counts come from error recovery.
+  - Rustdoc blocks:
+     5,621 blocks (5,311 `///` runs,
+     310 `//!` runs,
+     no block comments).
+    15,285 findings:
+     15,279 `semantic-line-breaks`,
+     5 `MD040`,
+     1 `MD025` (off inside rustdoc since round 3).
+    `--fix` clears all but the `MD025`.
+    579 findings sit in paths the Rust rules exempt (`tests/`,
+     `fuzz/`,
+     and so on).
+  - A from-scratch release build of the Rust linter took about 26 s.
+- Whole-repository status of both incumbents as one root task would see it:
    agent running.
 - Markdown parser crate:
    `choosing-technology` vet running,
