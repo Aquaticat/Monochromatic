@@ -394,8 +394,8 @@ Additional crates.io API terms yielded `jsonc lexer` eight results with no next 
  An inclusive metadata lead display surfaced `zetch`,
  `jsonrepair-rs` and `zoko-parser` for source screening,
  but its keyword predicate can miss uninformative descriptions.
- **Pagination**, not full candidate screening or saturation,
- is established for this secondary query.
+ This establishes secondary-query pagination,
+ not full candidate screening or saturation.
 
 Source leads for that screening include `jsonc_lexer` from [richplastow/jsonc-lexer](https://github.com/richplastow/jsonc-lexer),
  [`fracturedjson` 0.1.1](https://crates.io/crates/fracturedjson/0.1.1),
