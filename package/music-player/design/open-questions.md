@@ -69,6 +69,20 @@ rounds (2026-09-17):
   results,
   Back,
   no-results and unavailable/error states in both schemes.
+  D48
+  settles one integrated 72dp page header for Back,
+  query and Clear;
+  no second
+  in-app title/search bar stack.
+  Native Slint captures of player,
+  open-empty,
+  illustrative results,
+  no-result and unavailable states now exist in both schemes
+  at 360,
+  480 and 1100px desktop widths (`questions/render/search-page-*`).
+  The
+  captured `current.html` still contains the rejected I/G/R form until the one-design
+  Search page review replaces it.
   Use the
   local baseline M3 Search component evidence in `material-3-compliance.md` without
   mixing in Expressive treatments.
