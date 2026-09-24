@@ -73,14 +73,17 @@ rounds (2026-09-17):
   The desktop-width
   Slint screenshots in `questions/render/search-page-*` are historical experiments,
   not a live review or a basis for desktop-specific design.
-  The first unfolded Compose Search draft incorrectly spanned its centered 24dp
-  connector with a full-width header and result rows;
-  its capture run was
-  stopped.
-  E2 now excludes **all app content** from `[414,438)`dp,
-  not just
-  controls.
-  The second debug-only Compose study kept that connector empty,
+  The first unfolded Compose Search draft spanned the centered 24dp region
+  with header and row surfaces;
+  its capture run was stopped under an
+  overbroad reading of E2.
+  The user clarified that only **informational
+  material** such as text must avoid `[414,438)`dp.
+  Surfaces,
+  dividers
+  and hit regions can cross while readable material stays clear.
+  The second
+  debug-only Compose study kept the whole region visually empty,
   but put the
   entire header over a blank left body and confined all results or empty-state
   instructions to the right body.
