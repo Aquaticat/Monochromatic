@@ -4839,10 +4839,19 @@ focusable;
  geometry stayed exact with a 20px root font.
  The browser
 reported no page/console errors.
- No KWin automation was used.
+ The final browser check reloaded the
+regenerated file,
+ measured 443 × 994dp-equivalent cover display and
+852 × 883dp inner display,
+ and reopened a 200% inner Search result at the top
+after scrolling an earlier preview.
+ The corrected `questions/current.html` was
+launched with `gtk-launch helium file:///var/home/user/Monochromatic/package/music-player/design/questions/current.html`.
+ No KWin automation was used;
+ the launcher exit alone does not prove the
+user has inspected the tab.
 
 Next:
- present the active review in Helium without KWin,
  ask for corrections to
 the Search button and separate one-header page,
  and record the user's answer.
