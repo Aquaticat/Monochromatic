@@ -1,9 +1,9 @@
 # Settlement experiment UX redesign
 
-Status: the choice matrix exists, but a fresh audit found teaching and rendering defects;
-its earlier verification does not make it ready for selection.
+Status: the choice matrix exists; objective rendering and bookkeeping defects found in a fresh audit
+have been corrected in the scratch prototypes and reverified.
+The first-settlement-wins interaction still needs the user's decision before a cell is chosen.
 The lesson file is untouched by this work.
-Resolve the open teaching interaction and repair the matrix before asking for a cell choice.
 No skill design has been confirmed; this redesign feeds the Promise toy, not the teaching skill.
 
 ## Origin and measured defects
@@ -144,9 +144,47 @@ It did not exercise these cases:
 - After all five release levers have been used, the station holds the last settled pudding,
   the belt holds four, every button is disabled, and no completion/restart guidance appears.
 
-The audit keeps layout selection pending. Correct the objective defects in the scratch prototype,
-then verify both cue modes, unseeded and exhausted states, real child overflow, and Firefox ESR.
-Do not silently apply any cell to the lesson.
+The audit keeps layout selection pending. Firefox ESR and print verification still belong to the
+post-decision implementation. Do not silently apply any cell to the lesson.
+
+## Scratch corrections after the audit
+
+The source changes are in `/home/user/temp/agent/promises-revision`, outside the repository.
+They have not been integrated into `doc/planning/promises-teaching.local.html`.
+
+- `ux-variant-experiment.js` gates the second control synchronously when the first resolver
+  is called, before its observer's microtask. The log now says "called resolve" or
+  "called reject", and the face temporarily says the observer report is queued;
+  it never falsely records a second settlement in the same browser task.
+- The value gallery captures bounded strings at each event rather than reformatting the
+  current live value on every paint. It retains the latest 24 cards and now includes
+  the resolver bundle, inner Promise, lesson-owned observation, Promise after the resolver,
+  received fulfillment value or rejection reason, and selected Error properties.
+- The matrix now bakes cue mode into the full variant as well as the stage.
+  In the dark rejected state, the face screen computes to `rgb(255, 185, 157)` in
+  state-colored cells and `rgb(234, 241, 238)` in neutral cells.
+  The B card background also differs. Paper and code surfaces are grayscale in both themes,
+  matching `neutral-reading.css`; the bounded drawn factory keeps its illustration colors.
+- Snapshot grids now shrink without child-document horizontal scrolling at a 279 px iframe
+  viewport inside a 390 px parent. Control sublabels measure 12.8 px there.
+  Drawn buttons have a 3 rem minimum target, a visible `:focus-visible` rule,
+  and a non-motion live cue when reduced motion is requested.
+- The pudding's cone is clipped separately from the topping or etch,
+  so the mark is no longer clipped by the pudding wrapper.
+- Variant C now uses a real `<dl>`; all three variants call the reference "Promise states"
+  instead of "observed outcomes"; the snapshot description no longer claims an editor
+  exists in this standalone experiment. An exhausted five-pudding run reports completion.
+- The form explicitly says the first-settlement-wins interaction is unresolved,
+  and no layout should be applied yet. The existing presented tab was not reloaded,
+  so any unsubmitted choice or free text there remains intact; the rebuilt form is on disk.
+
+`mise run test:ux-choice` rebuilt and verified all six live cells,
+including same-task double-call exclusion, distinct cue colors, grayscale light and dark
+reading surfaces, six mobile child scroll widths equal to their 279 px viewports,
+and zero browser errors. `mise run probe:ux-settlement` exercised unseeded startup,
+the corrected same-task sequence, and all five releases: the belt held four settled puddings,
+the final pudding stayed at the station, and the gallery retained 24 cards.
+These probes are browser checks, not Firefox ESR, print, or a final lesson integration test.
 
 ## Earlier verification evidence (not full acceptance)
 
@@ -182,6 +220,13 @@ for the lesson file itself; this UX work has not modified it yet.
 
 ## Open choices (user's, gating implementation)
 
+- First decide what counts as "would do nothing" for a second resolver call on an already-settled
+  Promise. A visible log of an ignored attempt is a meaningful teaching result,
+  but the Promise itself cannot change. The current factory disables this control,
+  so it does not teach the heading's promised attempt. Alternatives include letting a fresh
+  one-shot control make and log the ignored call, staging a two-call sequence before running it,
+  or automatically making a second call as part of a first-action scenario.
+  Do not infer the user's preference from the earlier prohibition on no-op buttons.
 - Matrix cell: layout (A reference rows, B kept card grid, C definition list)
   by cue color (state-colored, neutral). My ranking, with adjacent-pair reasons in the form:
   a-state, a-neutral, b-state, b-neutral, c-state, c-neutral.
