@@ -38,9 +38,16 @@ export type WorktreeFileIdentity = Readonly<{
  Exact post-commit worktree state.
  */
 export type WorktreeFileState =
-  | Readonly<{ kind: 'original'; identity: WorktreeFileIdentity; }>
-  | Readonly<{ kind: 'intended'; }>
-  | Readonly<{ kind: 'conflict'; }>;
+  | Readonly<{
+    kind: 'original';
+    identity: WorktreeFileIdentity;
+  }>
+  | Readonly<{
+    kind: 'intended';
+  }>
+  | Readonly<{
+    kind: 'conflict';
+  }>;
 
 /**
  Tests whether an expected worktree copy remains an ordinary original or intended file.
@@ -96,7 +103,10 @@ export async function inspectWorktreeFile({
     /**
      Path metadata after read, rejecting a concurrently exchanged file.
      */
-    const current = await lstat(destination, { bigint: true, },);
+    const current = await lstat(
+      destination,
+      { bigint: true, },
+    );
     if ((current.dev !== metadata.dev) || (current.ino !== metadata.ino)
       || (current.mtimeNs !== metadata.mtimeNs)
       || (current.ctimeNs !== metadata.ctimeNs)
@@ -120,10 +130,13 @@ export async function inspectWorktreeFile({
     };
   }
   catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error)
-      && ((error.code === 'ENOENT') || (error.code === 'ENOTDIR')
-        || (error.code === 'ELOOP') || (error.code === 'EACCES')))
-      return { kind: 'conflict', };
+    if (Error.isError(error,) && ('code' in error)) {
+      if ((error.code === 'ENOENT')
+        || (error.code === 'ENOTDIR')
+        || (error.code === 'ELOOP')
+        || (error.code === 'EACCES'))
+        return { kind: 'conflict', };
+    }
     throw error;
   }
 }

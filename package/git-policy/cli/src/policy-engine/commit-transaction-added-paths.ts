@@ -8,20 +8,12 @@
  @module
  */
 import { Buffer, } from 'node:buffer';
-import { randomUUID, } from 'node:crypto';
 import type { Stats, } from 'node:fs';
 import {
-  chmod,
   lstat,
   readFile,
-  rename,
-  rm,
-  writeFile,
 } from 'node:fs/promises';
-import {
-  dirname,
-  join,
-} from 'node:path';
+import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { GitObjectId, } from '../api/policy-types.ts';
 import { loadBlobBatch, } from './blob-batch.ts';
@@ -31,11 +23,8 @@ import {
 } from './commit-transaction-candidate-batch.ts';
 import { CommitTransactionGitError, } from './commit-transaction-git.ts';
 import { TRACKED_TARGET_PREFIX, } from './commit-transaction-tracked-files.ts';
-import {
-  inspectWorktreeFile,
-  type WorktreeFileIdentity,
-  worktreeIdentityMatches,
-} from './commit-transaction-worktree-check.ts';
+import { inspectWorktreeFile, } from './commit-transaction-worktree-check.ts';
+import { replaceWorktreeFile, } from './commit-transaction-worktree-replace.ts';
 
 /**
  Module logger.
@@ -364,87 +353,6 @@ export async function assertAddablePath({
 }
 
 /**
- Writes one worktree file atomically through a same-directory temporary file.
-
- @param destination - absolute worktree path
-
- @param bytes - intended content
-
- @param mode - original worktree permission bits
-
- @param gitMode - expected ordinary Git file mode
-
- @param original - original file bytes to revalidate
-
- @param identity - original descriptor identity to revalidate
-
- @returns whether replacement was installed without an observed conflict
- */
-async function replaceWorktreeFile({
-  destination,
-  bytes,
-  mode,
-  gitMode,
-  original,
-  identity,
-}: Readonly<{
-  destination: string;
-  bytes: Uint8Array;
-  mode: number;
-  gitMode: AddedPathRecord['gitMode'];
-  original: Uint8Array;
-  identity: WorktreeFileIdentity;
-}>,): Promise<boolean> {
-  /**
-   Same-directory temporary path, so rename stays on one filesystem.
-   */
-  const prepared = join(
-    dirname(destination,),
-    `.cli-git-added-${randomUUID()}`,
-  );
-  try {
-    await writeFile(
-      prepared,
-      bytes,
-      {
-        mode,
-        flag: 'wx',
-      },
-    );
-    await chmod(prepared, mode,);
-    /**
-     Destination checked again after preparing replacement bytes and mode.
-     */
-    const current = await inspectWorktreeFile({
-      destination,
-      gitMode,
-      original,
-      intended: bytes,
-    },);
-    if ((current.kind !== 'original') || (!worktreeIdentityMatches({
-      first: identity,
-      second: current.identity,
-    },))) {
-      await rm(prepared, { force: true, },);
-      return false;
-    }
-    await rename(
-      prepared,
-      destination,
-    );
-    return true;
-  }
-  catch (error: unknown) {
-    l.error(`worktree completion failed for ${destination}: ${String(error,)}`,);
-    await rm(
-      prepared,
-      { force: true, },
-    );
-    throw error;
-  }
-}
-
-/**
  Worktree completion outcome for added paths.
  */
 export type AddedWorktreeInstallResult = Readonly<{
@@ -556,11 +464,15 @@ export async function installAddedWorktreeFiles({
       conflicted.push(record.path,);
       continue;
     }
+    /**
+     Installation outcome after final descriptor-bound revalidation.
+     */
     // oxlint-disable-next-line no-await-in-loop -- Replacement order follows record order for deterministic partial recovery.
     const installed = await replaceWorktreeFile({
       destination,
       bytes: intended,
-      mode: current.identity.mode,
+      mode: current.identity
+        .mode,
       gitMode: record.gitMode,
       original,
       identity: current.identity,
