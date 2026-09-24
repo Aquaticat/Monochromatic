@@ -142,11 +142,16 @@ Both local delegated `rg` queries were blocked by its security guardrail,
 - Category:
    inspectable open-source Rust parser with native and multi-platform overlays.
 - Screening:
-   raw scalar text and comment-bearing whitespace contexts may support an adapter,
+   raw scalar spelling and escaped unpaired-surrogate **source tokens** survive without a block comment,
    but JSON5 grammar and scalar roots need strict validation.
-   The prior in-repo survey records a malformed block-comment emission;
-   the canonical emitter in this port may avoid that path.
-   UTF-16 behavior not yet verified.
+   The published round-trip tokenizer shortens every block-comment span by one byte
+   (`src/tokenize.rs:529-532`),
+   and the owned-token API shifts following lexemes (`src/rt/tokenize.rs:62-156`).
+   An independent bounded [consumer control](../troubleshooting/json-five-unterminated-block-comment.md)
+   confirmed both a clean no-block-comment round trip and corruption after inserting one multi-line block comment.
+   A canonical emitter alone cannot repair incorrect comment ownership from this as-is token stream;
+   a source fork or independently checked span repair would be a separate custom candidate.
+   Decoded UTF-16 value behavior and 512-level lifecycle remain unverified.
 
 ### `biome_json_parser` 0.5.7
 
@@ -1229,8 +1234,10 @@ These are outcomes for published implementations **as-is**,
    [prior corpus probes](../planning/monorepo-manager-route-research/rust-structured-edits.md) show JSON5-only syntax and scalar roots accepted,
    where the TypeScript JSONC conformance tests reject them;
    it is not a strict JSONC parser as-is.
-   Its round-trip printer's block-comment closing-slash defect is recorded in `doc/troubleshooting/json-five-unterminated-block-comment.md`.
-   An independently strict validator and canonical emitter would be repository code.
+   Its [block-comment tokenizer defect](../troubleshooting/json-five-unterminated-block-comment.md)
+   occurs **before** the round-trip printer or an external emitter sees comments.
+   The published raw-token API therefore loses a supported comment byte as-is;
+   a source patch or independently verified span repair plus strict validator would be custom code.
 - `hifijson` 0.5.0:
    [official crate documentation](https://docs.rs/hifijson/0.5.0/hifijson/) describes JSON token and value lexers,
    not JSONC comment tokens or separately attached key/value comments.
@@ -1241,7 +1248,7 @@ The documented hard exits make the owned-parser translation eligible for serious
  they do not establish it as a validated winner.
  `biome_json_parser` 0.5.7,
  `fjson` scanner-only,
- `json-five` raw-token adapter,
+ a patched or span-repaired `json-five` raw-token adapter,
  and a repository-owned parser remain different unvalidated compositions.
  Regex-free dependency screening does not imply semantic parity.
 
