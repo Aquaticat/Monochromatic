@@ -7,10 +7,7 @@ import { join, } from 'node:path';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { parseCommitRegion, } from '../parser/commit.ts';
 import { applyPolicyPatches, } from './apply-policy-patches.ts';
-import {
-  createAddedPathTracker,
-  settleAddedPathRecords,
-} from './commit-transaction-added-path-tracker.ts';
+import { createAddedPathTracker, } from './commit-transaction-added-path-tracker.ts';
 import {
   containsExactCandidateSnapshot,
   writeCandidateSnapshot,
@@ -20,17 +17,8 @@ import {
   listChangedIndexPaths,
   listUnmergedIndexPaths,
 } from './commit-transaction-candidates.ts';
-import {
-  initializeCommitIndex,
-  preparePostIndex,
-  writePrivateTree,
-} from './commit-transaction-index.ts';
-import {
-  completeNoChangeTransaction,
-  NO_CHANGE_NOT_APPLICABLE,
-} from './commit-transaction-no-change.ts';
-import { executePreparedCommit, } from './commit-transaction-finalize.ts';
-import { prepareTransactionJournal, } from './commit-transaction-journal.ts';
+import { concludeCommitTransaction, } from './commit-transaction-conclusion.ts';
+import { initializeCommitIndex, } from './commit-transaction-index.ts';
 import {
   fixCycleFailure,
   fixPassLimitFailure,
@@ -40,15 +28,10 @@ import {
   hasSequencerConclusion,
   materializePathspecFile,
   prepareInteractiveSelection,
-  resolvePrivateCommitArgs,
 } from './commit-transaction-selection.ts';
 import { createCommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
-import {
-  selectedWorktreeRecords,
-  selectedWorktreeRoot,
-} from './commit-transaction-selected-worktree.ts';
+import { selectedWorktreeRoot, } from './commit-transaction-selected-worktree.ts';
 import { runPolicyEngine, } from './engine.ts';
-import { withFixSummary, } from './fix-summary.ts';
 import type {
   CommitTransactionPolicyOptions,
   CommitTransactionResult,
@@ -264,13 +247,13 @@ export async function runCommitTransaction({
   while (pass.patches
     .length
     > 0) {
-    pass.events.forEach(function recordNewlineCorrection(event,) {
+    for (const event of pass.events) {
       if ((event.type === 'finding')
         && (event.policyId === 'final-newline')
         && (event.fix === 'available')
         && (event.path !== undefined))
         newlinePaths.add(event.path,);
-    },);
+    }
     if (pass.exitCode === 2)
       return {
         policyResult: pass,
@@ -375,108 +358,22 @@ export async function runCommitTransaction({
       policyResult: pass,
       committed: false,
     };
-  /**
-   Exact intended tree written from stable private candidate state.
-   */
-  const intendedTreeOid = await writePrivateTree({
+  return concludeCommitTransaction({
     workspace,
     gitPath,
     cwd: layout.effectiveCwd,
-  },);
-  /**
-   Added paths with the blobs their worktree copies receive after landing.
-   */
-  const addedPathRecords = await settleAddedPathRecords({
-    gitPath,
-    cwd: layout.effectiveCwd,
-    indexPath: workspace.commitIndexPath,
-    pending: addedPaths.pending(),
-  },);
-  /**
-   Selected corrected files whose worktree still equals their original staged blob.
-   */
-  const selectedWorktreePaths = await selectedWorktreeRecords({
-    gitPath,
-    cwd: layout.effectiveCwd,
     repositoryRoot,
-    indexPath: workspace.commitIndexPath,
+    mode,
+    amend: region.hasAmendFlag,
+    allowEmpty: region.hasAllowEmptyFlag,
+    concludesSequencer,
+    pathspecs: region.pathspecs,
+    readOnlySelection,
     initialCandidates,
     newlinePaths,
-  },);
-  /**
-   Selected and added paths the commit carries.
-   */
-  const committedPaths = addedPaths.candidatePaths();
-  await preparePostIndex({
-    workspace,
-    gitPath,
-    cwd: layout.effectiveCwd,
-    mode,
-    selectedPaths: committedPaths,
-    intendedTreeOid,
-  },);
-  /**
-   A correction can remove every selected difference from HEAD.
-   */
-  const noChange = await completeNoChangeTransaction({
-    workspace,
-    gitPath,
-    cwd: layout.effectiveCwd,
-    repositoryRoot,
-    mode,
-    eligible: !region.hasAllowEmptyFlag && !region.hasAmendFlag && !concludesSequencer,
-    intendedTreeOid,
-    selectedPaths: committedPaths,
-    addedPaths: addedPathRecords,
-    selectedWorktreePaths,
+    addedPaths,
     pass,
     changedPasses,
     changedPaths: [...changedPaths,],
   },);
-  if (noChange !== NO_CHANGE_NOT_APPLICABLE)
-    return noChange;
-  /**
-   Durable prepared metadata used to detect interrupted ref advancement.
-   */
-  const journal = await prepareTransactionJournal({
-    workspace,
-    gitPath,
-    cwd: layout.effectiveCwd,
-    mode,
-    amend: region.hasAmendFlag,
-    selectedPaths: committedPaths,
-    addedPaths: addedPathRecords,
-    selectedWorktreePaths,
-    intendedTreeOid,
-  },);
-  /**
-   Real Git arguments against complete private intended index.
-   */
-  const commitArgs = resolvePrivateCommitArgs({
-    args: pass.args,
-    pathspecs: region.pathspecs,
-    mode,
-    selectedPrivately: readOnlySelection,
-  },);
-  await executePreparedCommit({
-    workspace,
-    gitPath,
-    spawnCwd: process.cwd(),
-    effectiveCwd: layout.effectiveCwd,
-    commitArgs,
-    intendedTreeOid,
-    originalHead: journal.originalHead,
-    repositoryRoot,
-    addedPaths: addedPathRecords,
-    selectedWorktreePaths,
-  },);
-  return {
-    policyResult: withFixSummary({
-      result: pass,
-      trigger: 'pre-forward',
-      passes: changedPasses,
-      changedPaths: [...changedPaths,],
-    },),
-    committed: true,
-  };
 }

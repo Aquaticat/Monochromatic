@@ -51,6 +51,10 @@ const EXECUTABLE_GIT_MODE = '100755';
  Owner-execute permission bit, which Git uses to decide the executable mode.
  */
 const OWNER_EXECUTE_BIT = 0o100;
+/**
+ Worktree permission bits retained when replacing a selected ordinary file.
+ */
+const FILE_PERMISSION_BITS = 0o777;
 
 /**
  Creates the transaction-domain error for failed or malformed Git blob output.
@@ -497,9 +501,15 @@ export async function installAddedWorktreeFiles({
      */
     // oxlint-disable-next-line no-await-in-loop -- Each selected path has independent worktree ownership.
     const metadata = await lstat(destination,);
-    // oxlint-disable-next-line no-await-in-loop -- Canonical parent prevents writing through a changed directory symlink.
+    /**
+     Canonical parent prevents writing through a changed directory symlink.
+     */
+    // oxlint-disable-next-line no-await-in-loop -- Each path has an independent worktree parent.
     const parent = await realpath(dirname(destination,));
-    const safe = parent === dirname(destination,)
+    /**
+     Whether this is still an ordinary file with the recorded executable mode.
+     */
+    const safe = (parent === dirname(destination,))
       && metadata.isFile()
       && (metadata.nlink === 1)
       && (((metadata.mode & OWNER_EXECUTE_BIT) !== 0) === (record.gitMode === EXECUTABLE_GIT_MODE));
@@ -534,7 +544,7 @@ export async function installAddedWorktreeFiles({
     await replaceWorktreeFile({
       destination,
       bytes: intended,
-      mode: metadata.mode & 0o777,
+      mode: metadata.mode & FILE_PERMISSION_BITS,
     },);
     rewritten.push(record.path,);
   }

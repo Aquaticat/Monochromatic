@@ -20,6 +20,7 @@ import { isMissingPath, } from '../trust/registry-io.ts';
 import { snapshotFilesEqual, } from './commit-transaction-candidate-snapshot.ts';
 import { installAddedWorktreeFiles, } from './commit-transaction-added-paths.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
+import { recoverNormalization, } from './commit-transaction-normalization-recovery.ts';
 import { createOwnedFileLink, } from './commit-transaction-install-link.ts';
 import {
   PROCESS_IDENTITY_ABSENT,
@@ -310,32 +311,18 @@ export async function recoverCommitTransaction({
     ...journal.addedPaths,
     ...(journal.selectedWorktreePaths ?? []),
   ];
-  if (journal.operation === 'normalize-only') {
-    if (!headsEqual({ expected: journal.originalHead, current: currentHead, })
-      || ((!realIsOriginal) && (!realIsIntended)))
-      throw new CommitTransactionRecoveryError(`Normalization-only transaction conflicts with HEAD or index; recovery retained at ${directory}`,);
-    if (!realIsIntended) {
-      await assertOwnedLock({ journal, lockPath, },);
-      await installRecoveredIndex({
-        lockPath,
-        realIndexPath,
-        postIndexPath: stablePostIndexPath,
-        journal,
-      },);
-    }
-    else if (await pathExists(lockPath,)) {
-      await assertOwnedLock({ journal, lockPath, },);
-      await rm(lockPath,);
-    }
-    await installAddedWorktreeFiles({
+  if (journal.operation === 'normalize-only')
+    return recoverNormalization({
       gitPath,
       cwd: effectiveCwd,
-      repositoryRoot: journal.repositoryRoot,
-      records: worktreeRecords,
+      directory,
+      journal,
+      currentHead,
+      realIndexPath,
+      stablePostIndexPath,
+      realIsOriginal,
+      realIsIntended,
     },);
-    await removeRecoveryArtifacts({ directory, },);
-    return 'normalization-installed';
-  }
   if (headsEqual({
     expected: journal.originalHead,
     current: currentHead,

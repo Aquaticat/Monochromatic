@@ -68,7 +68,10 @@ function parseOriginalHead(value: object,): OriginalHead {
  
  @throws CommitTransactionRecoveryError when a record is malformed
  */
-function parseAddedPaths({ value, field, }: Readonly<{
+function parseAddedPaths({
+  value,
+  field,
+}: Readonly<{
   value: object;
   field: 'addedPaths' | 'selectedWorktreePaths';
 }>,): readonly AddedPathRecord[] {
@@ -77,7 +80,10 @@ function parseAddedPaths({ value, field, }: Readonly<{
   /**
    Untrusted records field.
    */
-  const records: unknown = Reflect.get(value, field,);
+  const records: unknown = Reflect.get(
+    value,
+    field,
+  );
   if (!Array.isArray(records,))
     throw new CommitTransactionRecoveryError('Prepared transaction added paths are malformed.',);
   return records.map(function parseRecord(record: unknown,): AddedPathRecord {
@@ -192,8 +198,14 @@ export function parsePreparedJournal(bytes: Uint8Array,): PreparedTransactionJou
       .filter(function stringPath(path,): path is string {
       return (typeof path) === 'string';
     },),
-    addedPaths: parseAddedPaths({ value, field: 'addedPaths', },),
-    selectedWorktreePaths: parseAddedPaths({ value, field: 'selectedWorktreePaths', },),
+    addedPaths: parseAddedPaths({
+      value,
+      field: 'addedPaths',
+    },),
+    selectedWorktreePaths: parseAddedPaths({
+      value,
+      field: 'selectedWorktreePaths',
+    },),
     ...(('operation' in value) ? { operation: 'normalize-only' as const, } : {}),
     intendedTreeOid: value.intendedTreeOid,
     directoryDevice: value.directoryDevice,
