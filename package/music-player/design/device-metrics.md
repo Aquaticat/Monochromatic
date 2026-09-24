@@ -261,11 +261,22 @@ record and role-based guards.
     12dp of spacer plus one 414dp pane.
     Each pane is narrow and tall,
    closer to a phone column than a landscape tablet pane.
-3. **Nothing interactive may cross the crease** (decisions.md E2).
-    A full-width
-   transport row puts the play button on the fold;
-    this is why the deck sits inside
-   one half.
+3. **No app content may occupy the connected fold region** (decisions.md E2).
+    The
+   center 24dp spacer is `[414,438)`dp across the 852dp inner width,
+    about
+   `[1009,1068)` physical px at 390dpi.
+    This is background only:
+    text,
+   rows,
+   controls,
+   decorations,
+   focus cues and hit regions all stay inside their
+   respective 414dp panes.
+    A full-width Search page does not exempt its 72dp
+   header or result list.
+    Android-owned system bars are captured as rendered,
+   not repositioned by the app.
 4. **The cover screen is taller and narrower than a normal phone frame** (411×923
    versus the 390×844 that was wrongly assumed).
     At 72dp rows,
@@ -281,7 +292,7 @@ record and role-based guards.
 411 × 923    cover screen (folded)
 852 × 883    inner display (unfolded)
 426 × 883    physical right half of the inner display
-1280 × 800   a reasonable desktop window (not yet specified by the user)
+Desktop      inherits the Fold layouts; its window size is not a design frame (D49)
 ```
 
 Set these as the Design Component preview size so the file is always judged at the
