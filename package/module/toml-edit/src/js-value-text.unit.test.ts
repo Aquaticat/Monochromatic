@@ -68,6 +68,44 @@ await describe({
       },
     },),
     it({
+      name: 'preserves parsed numeric spelling only for an equal value',
+      fn: async () => {
+        const integer = tomlGetNode({
+          edit: parseTomlEdit({ source: 'count = 0x10\n', },),
+          path: ['count',],
+        },);
+        if ((!('type' in integer)) || (integer.type !== 'TOMLValue') || (integer.kind !== 'integer'))
+          throw new Error('Expected parsed integer node',);
+        expect(_jsValueToTomlText({ input: 16, options: OPTIONS, existing: { node: integer, }, },),)
+          .toBe('0x10',);
+        expect(_jsValueToTomlText({ input: 17, options: OPTIONS, existing: { node: integer, }, },),)
+          .toBe('17',);
+        const float = tomlGetNode({
+          edit: parseTomlEdit({ source: 'ratio = 1.00\n', },),
+          path: ['ratio',],
+        },);
+        if ((!('type' in float)) || (float.type !== 'TOMLValue') || (float.kind !== 'float'))
+          throw new Error('Expected parsed float node',);
+        expect(_jsValueToTomlText({ input: 1, options: OPTIONS, existing: { node: float, }, },),)
+          .toBe('1.00',);
+      },
+    },),
+    it({
+      name: 'keeps a parsed literal style only when string content is unchanged',
+      fn: async () => {
+        const node = tomlGetNode({
+          edit: parseTomlEdit({ source: "key = 'old'\n", },),
+          path: ['key',],
+        },);
+        if ((!('type' in node)) || (node.type !== 'TOMLValue') || (node.kind !== 'string'))
+          throw new Error('Expected parsed string node',);
+        expect(_jsValueToTomlText({ input: 'old', options: OPTIONS, existing: { node, }, },),)
+          .toBe("'old'",);
+        expect(_jsValueToTomlText({ input: 'new', options: OPTIONS, existing: { node, }, },),)
+          .toBe('"new"',);
+      },
+    },),
+    it({
       name: 'rejects unsupported JS inputs with a named type error',
       fn: async () => {
         /**
