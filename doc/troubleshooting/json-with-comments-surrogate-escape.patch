@@ -1,0 +1,158 @@
+diff --git a/src/de/token.rs b/src/de/token.rs
+index 0115ed7..01a94af 100644
+--- a/src/de/token.rs
++++ b/src/de/token.rs
+@@ -163,9 +163,19 @@ pub trait Tokenizer<'de> {
+         }
+     }
+ 
+-    fn parse_unicode(&mut self, buff: &mut Vec<u8>) -> crate::Result<()> {
++    /// What: Decode one four-digit Unicode escape into its 16-bit value and source position.
++    /// Why: Paired escapes need both units before creating one valid Rust character.
++    ///
++    /// In TS you'd write (pseudocode):
++    /// ```ts
++    /// function readHexUnit(): [number, number] { return [offset, readFourHexDigits()]; }
++    /// ```
++    fn parse_unicode_unit(&mut self) -> crate::Result<(Position, u32)> {
++        // Retain the first digit's location for a specific surrogate diagnostic.
++        let (pos, _) = self.look()?.ok_or(SyntaxError::EofWhileParsingEscapeSequence)?;
+         let mut hex: u32 = 0;
+         for i in 0..4 {
++            // Reject incomplete escapes before any Unicode scalar is constructed.
+             match self.eat()?.ok_or(SyntaxError::EofWhileParsingEscapeSequence)? {
+                 (_, c @ b'0'..=b'9') => hex += ((c - b'0') as u32) << (4 * (3 - i)),
+                 (_, c @ b'a'..=b'f') => hex += ((c - b'a' + 10) as u32) << (4 * (3 - i)),
+@@ -173,7 +183,45 @@ pub trait Tokenizer<'de> {
+                 (pos, found) => return Err(SyntaxError::InvalidUnicodeEscape { pos, found })?,
+             }
+         }
+-        let ch = unsafe { char::from_u32_unchecked(hex) }; // TODO maybe safe
++        // Return both the unit and its location to the caller.
++        Ok((pos, hex))
++    }
++
++    /// What: Convert one escape or a valid high/low surrogate pair to a Rust character.
++    /// Why: An isolated surrogate cannot be represented by Rust `char` safely.
++    ///
++    /// In TS you'd write (pseudocode):
++    /// ```ts
++    /// function decodeUnicode(): void { appendCodePoint(readScalarOrSurrogatePair()); }
++    /// ```
++    fn parse_unicode(&mut self, buff: &mut Vec<u8>) -> crate::Result<()> {
++        let (pos, first) = self.parse_unicode_unit()?;
++        let scalar = if (0xD800..=0xDBFF).contains(&first) {
++            // The second escape must begin with a backslash after the high half.
++            let (slash_pos, slash) = self.eat()?.ok_or(SyntaxError::EofWhileParsingEscapeSequence)?;
++            if slash != b'\\' {
++                return Err(SyntaxError::InvalidUnicodeEscape { pos: slash_pos, found: slash })?;
++            }
++            // The low half must use the JSON Unicode-escape prefix.
++            let (u_pos, u) = self.eat()?.ok_or(SyntaxError::EofWhileParsingEscapeSequence)?;
++            if u != b'u' {
++                return Err(SyntaxError::InvalidUnicodeEscape { pos: u_pos, found: u })?;
++            }
++            let (low_pos, low) = self.parse_unicode_unit()?;
++            if !(0xDC00..=0xDFFF).contains(&low) {
++                // Report the unsupported second code unit rather than creating an invalid `char`.
++                return Err(SyntaxError::CannotConvertChar { pos: low_pos, char: low })?;
++            }
++            0x10000 + ((first - 0xD800) << 10) + low - 0xDC00
++        } else if (0xDC00..=0xDFFF).contains(&first) {
++            // A low half with no high half is not a Unicode scalar value.
++            return Err(SyntaxError::CannotConvertChar { pos, char: first })?;
++        } else {
++            first
++        };
++        // Check the scalar even though the arithmetic should keep it inside the valid range.
++        let ch = char::from_u32(scalar).ok_or(SyntaxError::CannotConvertChar { pos, char: scalar })?;
++        // Append the accepted scalar as UTF-8, matching the caller's owned-string representation.
+         Ok(buff.extend_from_slice(ch.encode_utf8(&mut [0; 4]).as_bytes()))
+     }
+ 
+diff --git a/tests/surrogate_safety.rs b/tests/surrogate_safety.rs
+new file mode 100644
+index 0000000..9538081
+--- /dev/null
++++ b/tests/surrogate_safety.rs
+@@ -0,0 +1,80 @@
++/// What: Verify that two escaped UTF-16 surrogate halves produce one Unicode scalar.
++/// Why: A safety fix must preserve valid non-BMP JSON string values.
++///
++/// In TS you'd write (pseudocode):
++/// ```ts
++/// assert.equal(JSON.parse('"\\uD83D\\uDE00"'), '😀');
++/// ```
++#[test]
++fn valid_surrogate_pair_decodes() {
++    // What: `from_str::<String>` requests an owned UTF-8 string from the crate.
++    // Why: This crosses the same public parsing entry point as a consumer.
++    //
++    // In TS you'd write (pseudocode):
++    // ```ts
++    // const value: string = JSON.parse('"\\uD83D\\uDE00"');
++    // ```
++    let value = json_with_comments::from_str::<String>(r#""\uD83D\uDE00""#);
++    // What: `.unwrap()` extracts the string or fails this test on a parsing error.
++    // Why: A valid pair must remain accepted after the safety change.
++    //
++    // In TS you'd write (pseudocode):
++    // ```ts
++    // assert.equal(value, '😀');
++    // ```
++    assert_eq!(value.unwrap(), "😀");
++}
++
++/// What: Reject escapes whose two halves cannot form a valid Unicode scalar.
++/// Why: None may reach an unchecked Rust character constructor.
++///
++/// In TS you'd write (pseudocode):
++/// ```ts
++/// for (const text of invalid) assert.throws(() => decode(text));
++/// ```
++#[test]
++fn isolated_or_wrong_surrogates_return_errors() {
++    // What: Raw Rust strings keep each backslash and quote in the parser input unchanged.
++    // Why: The parser must see real JSON Unicode escapes rather than pre-decoded scalars.
++    //
++    // In TS you'd write (pseudocode):
++    // ```ts
++    // const invalid = ['"\\uD800"', '"\\uDC00"', '"\\uD800\\u0041"'];
++    // ```
++    let invalid = [
++        r#""\uD800""#,
++        r#""\uDC00""#,
++        r#""\uD800\u0041""#,
++        r#""\uD800x""#,
++        r#""\uD800\x0041""#,
++        r#""\uD800\uZZZZ""#,
++        r#""\u00""#,
++    ];
++    // Each input must return an error through both the decoded and raw-value public routes.
++    for text in invalid {
++        // The decoded String route previously reached the unchecked conversion.
++        assert!(json_with_comments::from_str::<String>(text).is_err());
++        // The raw route also validates strings through the same token parser.
++        assert!(json_with_comments::from_str_raw::<String>(text).is_err());
++    }
++}
++
++/// What: Check escaped backslashes and ordinary Unicode escapes stay distinct.
++/// Why: A guard must not reject text that merely resembles an escaped surrogate.
++///
++/// In TS you'd write (pseudocode):
++/// ```ts
++/// assert.equal(JSON.parse('"\\\\uD800"'), '\\uD800');
++/// ```
++#[test]
++fn valid_escapes_remain_accepted() {
++    // A regular scalar escape still decodes to the expected character.
++    assert_eq!(json_with_comments::from_str::<String>(r#""\u0041""#).unwrap(), "A");
++    // A backslash escape leaves the following uD800 as literal text.
++    assert_eq!(json_with_comments::from_str::<String>(r#""\\uD800""#).unwrap(), "\\uD800");
++    // The raw route returns authored escape bytes after validating a valid pair.
++    assert_eq!(
++        json_with_comments::from_str_raw::<String>(r#""\uD83D\uDE00""#).unwrap(),
++        "\\uD83D\\uDE00"
++    );
++}
