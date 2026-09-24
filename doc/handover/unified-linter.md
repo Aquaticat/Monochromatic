@@ -606,13 +606,68 @@ Round 12 answers (user,
    can proceed first,
    and no interim merge code is written.
 
-Waiting on research:
-the Markdown parser crate.
+Markdown parser vet result (subagent report,
+2026-09-23;
+report text held at `~/temp/agent/md-parser-vet-2026-09-23/report/final.md.txt`
+because the harness refused the subagent's write into `doc/audit/`):
+
+- Sätteri's Rust crates (`satteri-pulldown-cmark` 0.6.3,
+   `satteri-arena` 0.3.1,
+   `satteri-ast` 0.5.3)
+   matched raw npm Sätteri 0.10.5 on all 1,400 documents
+   (136 unit-test inputs plus 1,264 repository files,
+   619,729 nodes),
+   passed all 137 unit tests with the engine swapped in,
+   and reproduced whole-repository findings and fixes in all 1,264 files.
+- They pass the hard gates only if "Rust only" allows `psm`'s assembly,
+   compiled with `cc` at build time through `stacker`
+   (`satteri-ast-0.5.3/Cargo.toml:108`,
+   `psm-0.1.32/build.rs:38`).
+- Cost:
+   94 crates;
+   clean release build 37.5 s to 40.3 s,
+   clean dev build 28.5 s,
+   against 5.0 s and 1.2 s for markdown-rs.
+  Parse speed over the 19.5 MB corpus:
+   141 ms to 223 ms,
+   against 3,328 ms to 3,506 ms for markdown-rs.
+- Risks:
+   bruits/satteri#306 (two unacknowledged private vulnerability reports),
+   one maintainer with about 86% of human commits,
+   breaking minor releases about every three weeks,
+   invalid MDX of 1 KiB to 4 KiB taking seconds to over 120 s
+   (the npm incumbent behaves the same),
+   a release panic at `firstpass.rs:863`,
+   and a `debug_assert` at `post_passes.rs:1544` that fires in dev builds.
+- `markdown` (markdown-rs) 1.0.0 is the fallback:
+   it misses exact parity on one frozen test and two repository MDX files
+   (`magicbread.mdx`,
+   8 extra `MD034` findings and an MDX error in the fix loop)
+   and would need a repository-owned patch set.
+- Integration notes:
+   pass explicit feature flags,
+   never `DEFAULT_OPTIONS`;
+   report MDX errors as findings;
+   add 3 bytes to offsets when a file starts with a byte order mark;
+   do not port the astral correction;
+   bound each file's parse with a time budget and `catch_unwind`;
+   use the parity harness as the upgrade gate.
+- #559 changes 660 findings across the repository by this vet's count.
+
+Round 13,
+asked 2026-09-23:
+
+- Whether "Rust only" allows build-time C or assembly in dependencies.
+- Sätteri with exact parity or markdown-rs with a patch set.
+- Dependency handling:
+   crates.io `=` pins upgraded together,
+   or vendoring or forking.
+- Whether the parent session writes the 2,166-line vet report into `doc/audit/`,
+   which the harness refused to the subagent.
 
 ## Next action
 
-Collect round 11 answers and the parser vet,
+Collect round 13 answers,
 record them here,
-ask the parser choice,
 then write `doc/planning/unified-linter.md` with a draft configuration
 and ask the user to confirm a shared understanding.
