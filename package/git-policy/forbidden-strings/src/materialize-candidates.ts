@@ -198,11 +198,13 @@ export async function materializeCandidates(
   /**
    Failed lane flag computed after all lanes have stopped writing.
    */
-  let failed = false;
-  for (const write of writes) {
-    if (write.status === 'rejected')
-      failed = true;
-  }
+  const failed = (function anyLaneFailed(): boolean {
+    for (const write of writes) {
+      if (write.status === 'rejected')
+        return true;
+    }
+    return false;
+  })();
   if (failed) {
     await rm(
       directory,
