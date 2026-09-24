@@ -129,6 +129,26 @@ mise run //package/module/deepmerge-ts.fuzz:fuzz:declared-types:control
 mise run //package/module/deepmerge-ts.fuzz:generate:declared-type-cases
 ```
 
+Mutation testing of a deepmerge-ts checkout
+(StrykerJS, Vitest, and esbuild live only in the image from `container/mutation.Containerfile`;
+every run is capped at 2 GiB / 2 CPUs with the checkout and this repo read-only and `dist/mutation/` writable):
+
+```bash
+# Stryker over the checkout with upstream's own Vitest suite; writes dist/mutation/mutation.json
+mise run //package/module/deepmerge-ts.fuzz:mutation --checkout /absolute/path/to/deepmerge-ts
+
+# Control: every sidecar file passes against the unmutated esbuild bundle
+mise run //package/module/deepmerge-ts.fuzz:mutation:sweep --checkout /absolute/path/to/deepmerge-ts --baseline
+
+# Run each Survived and NoCoverage mutant (or the listed ids) through every sidecar file;
+# one line per mutant in dist/mutation/sweep.jsonl
+mise run //package/module/deepmerge-ts.fuzz:mutation:sweep --checkout /absolute/path/to/deepmerge-ts
+
+# Compare swept bundles with the baseline on fixed-seed generated cases;
+# fails unless the baseline matches itself and the control mutant differs
+mise run //package/module/deepmerge-ts.fuzz:mutation:differential --control 34 283 449
+```
+
 Replay a campaign record on the host:
 
 ```bash
