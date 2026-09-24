@@ -15,6 +15,23 @@ import { dirname, } from 'node:path';
 import type { AddedPathRecord, } from './commit-transaction-added-paths.ts';
 
 /**
+ Portable file-open flags for nonblocking descriptor-bound reads.
+ */
+const {
+  O_RDONLY,
+  O_NOFOLLOW,
+  O_NONBLOCK,
+} = constants;
+/**
+ Read-only no-follow flags shared across ordinary-file descriptors.
+ */
+const NOFOLLOW_READ_FLAGS = O_RDONLY | O_NOFOLLOW;
+/**
+ Nonblocking read flags reject a FIFO swapped in after lstat.
+ */
+const NONBLOCKING_READ_FLAGS = NOFOLLOW_READ_FLAGS | O_NONBLOCK;
+
+/**
  Owner-executable bit in POSIX file mode.
  */
 const EXECUTE_BIT = 0o100n;
@@ -105,15 +122,17 @@ export async function inspectWorktreeFile({
      */
     await using handle = await open(
       destination,
-      constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK,
+      NONBLOCKING_READ_FLAGS,
     );
     /**
      Open descriptor metadata before content read.
      */
     const metadata = await handle.stat({ bigint: true, },);
-    if ((!metadata.isFile()) || (metadata.nlink !== 1n)
-      || (entry.dev !== metadata.dev) || (entry.ino !== metadata.ino)
-      || (((metadata.mode & EXECUTE_BIT) !== 0n) !== (gitMode === '100755')))
+    if ((!metadata.isFile()) || (metadata.nlink !== 1n))
+      return { kind: 'conflict', };
+    if ((entry.dev !== metadata.dev) || (entry.ino !== metadata.ino))
+      return { kind: 'conflict', };
+    if (((metadata.mode & EXECUTE_BIT) !== 0n) !== (gitMode === '100755'))
       return { kind: 'conflict', };
     /**
      Bytes from same no-follow descriptor.
