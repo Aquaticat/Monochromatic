@@ -109,15 +109,19 @@ try {
           const pngPath = join(renderDirectory, `${base}.png`);
           writeFileSync(pngPath, png);
           if (screen.name === 'inner') {
-            // E2's centered [414,438)dp connector is approximately physical x [1009,1068).
+            // E2's [414,438)dp connector covers physical x [1009,1068) on this display.
+            // Inspect every pixel between the measured safe top 136px and navigation start 2074px.
             // A pixel-only check misses transparent clickable rows, so inspect native nodes too.
-            const xs = [1015, 1038, 1060];
-            const ys = [200, 400, 900, 1500, 1900];
-            const format = ys.flatMap((y) => xs.map((x) => `%[hex:p{${x},${y}}]`)).join(' ');
-            const pixels = execFileSync('magick', [pngPath, '-format', format, 'info:'], { encoding: 'utf8' }).trim().split(' ');
-            const expected = mode === 'dark' ? '000000FF' : `${roles.surface_container_lowest?.slice(1).toUpperCase()}FF`;
-            if (pixels.some((pixel) => pixel !== expected)) {
-              throw new Error(`${base}: unfolded connector x=[1009,1068) contains non-neutral app pixels; expected ${expected}, measured ${pixels.join(',')}.`);
+            const connectorWidth = 59;
+            const connectorTop = 136;
+            const rgba = execFileSync('magick', [pngPath, '-crop', `${connectorWidth}x1938+1009+${connectorTop}`, '+repage', '-depth', '8', 'rgba:-'], { maxBuffer: 1_000_000 });
+            if (rgba.length !== connectorWidth * 1938 * 4) throw new Error(`${base}: incomplete connector pixel extraction.`);
+            const expected = mode === 'dark' ? 0 : 255;
+            for (let offset = 0; offset < rgba.length; offset += 4) {
+              if (rgba[offset] !== expected || rgba[offset + 1] !== expected || rgba[offset + 2] !== expected || rgba[offset + 3] !== 255) {
+                const pixel = offset / 4;
+                throw new Error(`${base}: unfolded connector x=[1009,1068) has wrong ${mode} fill at (${1009 + pixel % connectorWidth},${connectorTop + Math.floor(pixel / connectorWidth)}).`);
+              }
             }
             const nodes = [...xml.matchAll(/<node\b[^>]*>/g)].map((match) => match[0]);
             const crossing = nodes.filter((node) => node.includes(`package="${packageName}"`) &&
@@ -125,7 +129,8 @@ try {
                 node.includes('clickable="true"') || node.includes('focusable="true"') || node.includes('scrollable="true"')))
               .find((node) => {
                 const bounds = node.match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);
-                return bounds && Number(bounds[1]) < 1068 && Number(bounds[3]) > 1009;
+                if (!bounds) throw new Error(`${base}: semantic app node has no parseable screen bounds: ${node.slice(0, 330)}`);
+                return Number(bounds[1]) < 1068 && Number(bounds[3]) > 1009;
               });
             if (crossing) {
               throw new Error(`${base}: app content or target spans the unfolded connector: ${crossing.slice(0, 330)}`);
