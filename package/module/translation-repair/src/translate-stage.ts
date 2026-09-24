@@ -9,7 +9,10 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
 import { runTranslateRepairs, } from './translate-stage-repair.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
-import { validateTranslatedSlice, } from './translate-validate.ts';
+import {
+  type SliceValidation,
+  validateTranslatedSlice,
+} from './translate-validate.ts';
 
 //region Translate stage
 // Every slice is translated from the ORIGINAL by several models independently,
@@ -36,6 +39,32 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
 // existed. What this stage still does not do is check anything that crosses a
 // slice boundary, which is `#92`.
 
+
+/**
+ What keeps a text off the slate, read off the floor's verdict.
+
+ @param verdict - deterministic source floor's verdict
+
+ @returns Nothing for a pass and never nothing otherwise: the findings of a
+ refusal, a stand-in line for a refusal that named none, or the reason no
+ comparison was possible, which keeps the text off the slate too
+
+ @example
+ ```ts
+ floorFindings({ verdict: { kind: 'unknown', detail: 'unparsable', }, },); // ['unparsable']
+ ```
+ */
+function floorFindings({ verdict, }: { readonly verdict: SliceValidation; },): readonly string[] {
+  if (verdict.kind === 'valid')
+    return [];
+  if (verdict.kind === 'unknown')
+    return [verdict.detail,];
+  /**
+   Findings the refusal named.
+   */
+  const { findings, } = verdict;
+  return (findings.length > 0) ? findings : ['refused without a finding',];
+}
 
 /**
  Translates one slice from its original and returns the text that ships.
@@ -164,19 +193,33 @@ export async function runTranslateStage(
   },);
 
   /**
+   Deterministic source floor's findings on the archive wording, none where
+   there is no archive wording or it passes.
+   */
+  const incumbentFindings = (incumbentKind === 'present')
+    ? floorFindings({
+      verdict: validateTranslatedSlice({
+        sourceText,
+        candidateText: incumbentText,
+        pageText: incumbentText,
+        ...((syntax === undefined) ? {} : { syntax, }),
+        lineStructured,
+        declared,
+      },),
+    },)
+    : [];
+  /**
    Whether archive wording itself may remain candidate or fallback.
    */
-  const incumbentEligible = (incumbentKind === 'present')
-    && (validateTranslatedSlice({
-      sourceText,
-      candidateText: incumbentText,
-      pageText: incumbentText,
-      ...((syntax === undefined) ? {} : { syntax, }),
-      lineStructured,
-      declared,
-    },)
-      .kind
-      === 'valid');
+  const incumbentEligible = (incumbentKind === 'present') && (incumbentFindings.length === 0);
+  // The finding line alone said a floor refused the archive, not which: the
+  // yingying10 read could not tell the class one hundred fourteen refusal from
+  // any other without replaying the slice.
+  if (incumbentFindings.length > 0) {
+    l.warn(
+      `translate incumbent excluded by deterministic source floor: ${incumbentFindings.join(' | ',)}`,
+    );
+  }
   /**
    Existing fallback kind after deterministic source floor.
    */
