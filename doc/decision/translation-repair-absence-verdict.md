@@ -281,6 +281,50 @@ a split with an anchored claim named by `insertion-split-in-container-deficit` w
 A verdict a majority carried still stays out,
 and equal block counts still admit nothing.
 
+## Addendum 2026-09-24: a carried passage inside the neighbour's archive span is folded into that neighbour
+
+Class one hundred ten,
+mikaela12.
+The archive rendered two source paragraphs as one,
+the roster paired that rendering with the second paragraph's source alone,
+and the first paragraph stood source-only.
+The coverage round found it carried:
+every voice anchored its claim on the September sentence,
+which sits inside the neighbour's archive span.
+That verdict was right and useless.
+The translate lane writes each slice from its own source,
+so it wrote the neighbour without the September sentence;
+the slate preferred the candidate without "the surrounding passage";
+the contest chose it;
+and the carried-evidence guard of the 2026-09-18 addendum stopped the entry at publish,
+fifteen minutes in,
+because the region it was told to find was gone.
+Nothing had told the writer of the neighbour that its archive span also renders the carried source.
+
+So a carried insertion is folded into its carrier at the admission
+(`foldCarriedInsertions`,
+`corpus-run/insertion-carried-fold.ts`,
+run right after `decidePassInsertionAdmission`)
+when the shape is unambiguous:
+every evidence region locates inside exactly one paired slice's target span,
+that slice stands one position away,
+the carried slice is the insertion the admission names,
+and the two sources abut with nothing but whitespace between them.
+Then the carrier's source widens over both sources,
+the carried slice leaves the carried list as `folded`,
+both lanes write the carrier from the widened source,
+and the finding `insertion-carried-folded (slice N into slice M)` prints.
+The September sentence is then owed by the slice rule
+(the whole widened source must be rendered),
+not remembered by a guard.
+Every other shape stands aside and the insertion stays carried as before:
+evidence in a non-adjacent slice,
+evidence the page never carried,
+evidence straddling two slices,
+a source gap that is not blank.
+The publish guard reads only what stays carried.
+
+
 ## What this supersedes
 
 `doc/planning/translation-repair-open-decisions.md` question 28, whose ranking was A > C > B > D

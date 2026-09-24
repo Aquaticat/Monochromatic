@@ -1485,6 +1485,58 @@ the `gqt` and `Mio` pages (running since 08:01 UTC),
 the owner's answer on the glossary,
 and the components no read page has met.
 
+## Where readiness stands on 2026-09-24
+
+The sections after this one are the 2026-09-09 and 2026-09-10 readings and stay as evidence.
+The current state is in the handover
+([`translation-repair-handover-2026-09-06.md`](../handover/translation-repair-handover-2026-09-06.md),
+"2026-09-24, 04:30 UTC")
+and the pass log;
+this section is the readiness reading of it.
+
+- The signal is still not given.
+  The rule of this document holds:
+  a class found on a read page is fixed before the next launch,
+  and a page is read before the next entry is launched.
+  Classes twenty-six to one hundred ten were found that way between 2026-09-16 and 2026-09-24,
+  one hundred ten in all,
+  and the rate has not fallen to zero:
+  of the last twelve reads (2026-09-23 22:00 UTC to 2026-09-24 04:00 UTC),
+  seven found no class and five found one each
+  (one hundred one to one hundred three,
+  one hundred four and five together,
+  one hundred six to eight from owner answers,
+  one hundred nine,
+  one hundred ten).
+- What "ready" would rest on now:
+  a rotation over every entry in the read set
+  (`XingZ60`,
+  `hulicaijia`,
+  `mikaela_khara`,
+  `shi_Yumiaoya`,
+  `zheermao101`,
+  `CuspariaKLSY`,
+  `yingying`)
+  in which every page ships SETTLED and every read finds no class,
+  on one frozen build,
+  under the seven-hour ceiling,
+  on whichever providers are wet.
+  No such rotation has completed;
+  the longest run of no-class reads on one build is three
+  (hulicaijia16,
+  mikaela11 on `0f685f551`;
+  shi_Yumiaoya17,
+  yingying7,
+  zheermao7 on `6361d74d0` before class one hundred three).
+- The entries never run on a recent build are the rest of the 92-entry corpus.
+  The owner's rule stands:
+  "We never ever need a all 92 entries launch";
+  readiness is claimed on the read set and the classes it stopped finding.
+- Money is not the constraint:
+  Bedrock 47.86 USD and OpenRouter 94.68 USD at 04:18 UTC,
+  a full rotation of the read set about 16 USD on Bedrock and OpenRouter alone.
+
+
 ## What the fourth gqt launch showed (2026-09-09, 08:01 to 09:46 UTC)
 
 The page settled in 105 minutes,

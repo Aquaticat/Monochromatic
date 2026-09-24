@@ -214,6 +214,10 @@ that rule flags one archive (a rewrite keeping `TA`) and 15 sources.
 A different rule protects a source-only passage:
 whole-document coverage must call it absent,
 then page shortfall or a destination missing from target admits translation.
+A source-only passage the coverage round finds carried inside the neighbouring paired slice's archive span
+is folded into that neighbour at the admission (`corpus-run/insertion-carried-fold.ts`),
+so both lanes write it as part of the slice that carries it and the publish guard has nothing to find.
+
 Any source passage still unfilled fails entry before contest,
 artifact and publication;
 a known gap never becomes settled page.

@@ -2184,3 +2184,41 @@ cache state,
 slice and source size,
 run-to-run band,
 and verified publication-quality outcome before recommendation.
+
+## Open on 2026-09-24
+
+Every numbered question in this document is answered.
+The items below are the owner questions and the open observations of the 2026-09-16 to 2026-09-24 sessions
+that have not been put or not been built;
+the pass log carries the evidence under the read that found each.
+
+- The placeholder block "**Come back later!**" on XingZ60
+  (the archive block review removed it 5 of 6 on XingZ627 and XingZ628,
+  kept it on XingZ626,
+  XingZ630 and XingZ631,
+  rewrote it into an under-construction warning on XingZ629):
+  whether a placeholder the archive's translator left is apparatus the page owes,
+  to be kept as the archive has it,
+  or a block the review may remove.
+  Never put to the owner;
+  the page is right either way by the review's own vote,
+  and the double blank line its removal left is fixed (class ninety-four).
+- The coined character 螐 on XingZ60:
+  "A wu[^7] bird" on XingZ630,
+  "A little wun[^7]" beside "螐儿" on XingZ631.
+  An observation,
+  not built:
+  a coined character has no pinyin reading and no corpus rendering,
+  so the handle rule of 2026-09-22 does not reach it.
+- The repair lane's own floor let a three-line closing quote into the lane contest on shi_Yumiaoya16;
+  class one hundred two closed the consolidation side
+  (the lane-text offer now carries `lineStructured`),
+  and the repair lane's floor is unchanged.
+  Not reproduced since.
+- An empty standing with no valid lane text still fails at publish rather than at once
+  (noted with class eighty-seven,
+  never reached).
+- The coverage admission logs `coverage=carried` without the evidence regions;
+  a class one hundred ten fold that stands aside cannot be judged from the log.
+  To add after mikaela13 exits (a logging change,
+  not a design question).

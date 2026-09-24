@@ -2,6 +2,28 @@
 
 Part of [the package README](../README.md).
 
+## Where it stands on 2026-09-24
+
+The sections after this one are the milestone history and stay as evidence.
+The current operating state is kept in the handover
+(`doc/handover/translation-repair-handover-2026-09-06.md`,
+"2026-09-24, 04:30 UTC" and "What to do next")
+and every read page in the pass log
+(`doc/planning/translation-repair-openrouter-2026-09-03.md`).
+In one paragraph:
+the corpus pass runs one entry at a time from a frozen copy of the built `dist`
+on whichever providers are wet (Bedrock and OpenRouter on 2026-09-24,
+Synthetic dry for the week,
+Hyper dry),
+with eight roster seats after the 2026-09-24 cull,
+overlap 8,
+and the seven-hour entry ceiling;
+each shipped page is read by the seven steps and the three checks before the next entry is launched;
+one hundred ten defect classes have been found on read pages and fixed with guards shown red first;
+the pipeline is not production ready by the rule in `doc/planning/translation-repair-readiness-signal.md`
+(a class is still found on roughly every other read).
+
+
 Milestone one (detection) is complete:
 the seven-critic ensemble reached 0.981 recall on seeded errors over the reference corpus,
 gated by the seeded-error benchmark harness.

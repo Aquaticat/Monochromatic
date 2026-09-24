@@ -24,6 +24,121 @@ and the reason is recorded in
 
 ## Where the work stands
 
+### 2026-09-24, 04:30 UTC: one hundred ten classes, eight seats, two wet providers
+
+The snapshot of 2026-09-16 (next heading) describes the takeover;
+everything after it is in the pass log
+([`translation-repair-openrouter-2026-09-03.md`](../planning/translation-repair-openrouter-2026-09-03.md),
+one heading per read page,
+newest first)
+and in step 1 of "What to do next".
+This checkpoint says where those eight days left the pipeline,
+so a reader does not have to walk eighty headings to find out.
+
+- CLASSES.
+  Classes twenty-six to one hundred ten were found on read pages and fixed,
+  each with a guard shown red first,
+  each recorded in the pass log under the read that found it,
+  the decision addenda in
+  [`translation-repair-absence-verdict.md`](../decision/translation-repair-absence-verdict.md)
+  (the admission of source-only passages: halves,
+  definitions,
+  the tail,
+  the container deficit,
+  and on 2026-09-24 the carried fold)
+  and
+  [`translation-repair-ineligible-standing.md`](../decision/translation-repair-ineligible-standing.md)
+  (nine addenda: what ships when the archive's rendering cannot),
+  and the slice rules in
+  [`slice-context.md`](../../package/module/translation-repair/doc/slice-context.md).
+  The latest,
+  class one hundred ten (`457765221`):
+  a source-only passage the roster found carried,
+  whose evidence sat inside the neighbouring paired slice's archive span,
+  is folded into that carrier's source at the admission so both lanes write it,
+  instead of the publish guard stopping the entry when the translate lane dropped it.
+  Not exercised live yet;
+  `mikaela13` runs on it.
+- ENTRIES READ.
+  Every entry in the read set has shipped SETTLED at least once on a recent build:
+  `XingZ60` (the longest,
+  119 slices,
+  43 to 76 minutes on Bedrock and OpenRouter,
+  8.6 to 9.1 USD),
+  `hulicaijia` (27 to 37 minutes,
+  about 4 USD),
+  `mikaela_khara` (11 to 18 minutes,
+  about 1.1 USD),
+  `shi_Yumiaoya` (6 to 9 minutes,
+  about 0.5 USD),
+  `zheermao101`,
+  `CuspariaKLSY`,
+  `yingying` (4 to 20 minutes,
+  0.1 to 0.5 USD).
+  The seven-hour ceiling has not been reached since XingZ607 (2026-09-19).
+  A run is read on the day it ends and the next entry launched the same hour;
+  since 2026-09-23 a read entry with no class is followed by the next entry in the rotation,
+  and a class is fixed before the next launch.
+- ROSTER.
+  Eight seats since `hf:openai/gpt-oss-120b` left every role on 2026-09-24 at the owner's instruction
+  ([`roster-changes.md`](../../package/module/translation-repair/doc/roster-changes.md),
+  the blocklist decision):
+  `deepseek-v4.1-flash`,
+  `hf:zai-org/GLM-5.3-Flash`,
+  `hf:Qwen/Qwen3.8-27B`,
+  `hf:moonshotai/Kimi-K3`,
+  `minimax-m3`,
+  `glm-5.3`,
+  `gemma-4-26b-a4b-it`,
+  `google.gemma-4-e2b`,
+  with `inception/mercury-2.5` OpenRouter-only in the writing and consolidation seats and
+  `typesafe/jev-1.13` as a select judge through the OpenRouter decisions endpoint
+  (78 of 78 usable on mikaela12).
+  The JUDGE SEATS line of a launch on Bedrock and OpenRouter alone reads
+  `wide=6 select=7 late=7 slate=7 checkers=3 translators=7 readers=5 writers=8 roster=8`.
+  Qwen and glm-5.3 are dark whenever Synthetic and Hyper are dry (by design;
+  their seats have no other provider).
+- PROVIDERS AND MONEY.
+  Bedrock 47.86 USD of the 200 the owner will never top up
+  (152 spent since 2026-09-07,
+  about 4.7 USD on a XingZ60 pass,
+  0.3 on a mikaela pass);
+  OpenRouter 94.68 USD of the final 273.99 top-up of 2026-09-09.
+  Synthetic runs out its weekly allowance most days
+  (dry since 02:56 UTC on 2026-09-24)
+  and returns as usage ages out;
+  Hyper is dry and never recharged.
+  A dry-out inside a pass is handled (classes one hundred three and nine);
+  a launch on two providers is normal operation.
+- LOGGING.
+  Since 2026-09-24 every critic claim is logged with its author at the critic stage,
+  every adjudicated issue with its proposers,
+  and the artifact carries the proposers inline (owner:
+  "we're not logging enough then");
+  every slate abstention is logged with its reason (2026-09-20);
+  every gate ballot with its reason (2026-09-18).
+  A reading that names a model's error can now cite the line.
+  Still missing:
+  the coverage admission prints `coverage=carried` without the evidence regions,
+  so a carried fold that stands aside cannot be judged from the log alone;
+  to add after `mikaela13` exits.
+- OPEN,
+  NOT BUILT.
+  The placeholder block "**Come back later!**" on XingZ60:
+  the archive block review removes it on some runs and keeps or rewrites it on others
+  (six treatments in seven runs);
+  whether it is apparatus the page owes is an owner question never put.
+  The coined 螐 ships in two treatments on one XingZ60 page.
+  The repair lane's own floor let a three-line closing quote into the contest on shi_Yumiaoya16
+  (class one hundred two closed the consolidation side only).
+  An empty standing with no valid lane text still fails at publish rather than at once
+  (never reached).
+  The seven reading steps and the three checks are unchanged;
+  every read since 2026-09-19 also counts unendorsed,
+  gate-kept and slate-declined standings,
+  abstention lines and the Jev seat.
+
+
 ### 2026-09-16, 02:00 UTC: the provider-free layer is torn down and the queue resumes
 
 The owner took the work back from the 2026-09-10 to 2026-09-15 sessions on 2026-09-16 with
@@ -4612,12 +4727,17 @@ so building the next fix cannot change the pass under way.
 The kill-and-relaunch rule is about the build a pass carries,
 not the files on disk:
 a fix that matters to the running entry still kills and relaunches it.
-The exit waiter (a background `while kill -0 <pid>` shell) is reaped by Claude Code on any memory stall once
-the session has idled 10 minutes,
-so the session must start with `CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1`
-(owner,
-2026-09-17;
-[the troubleshooting note](../troubleshooting/claude-code-background-shell-memory-pressure-reap.md)),
+Since 2026-09-19 every launch sets `TRANSLATION_REPAIR_SLICE_OVERLAP=8`
+(the log opens `OVERLAP <entry> value=8 source=TRANSLATION_REPAIR_SLICE_OVERLAP`;
+the built-in default is still 4),
+the setting that brought XingZ60 under the seven-hour ceiling.
+The exit waiter is a scratch node script
+(`wait-<run>.mjs`:
+`process.kill(pid, 0)` every 15 s,
+then the log's last TALLY and METERS lines once)
+run as a background Bash task;
+the owner dropped the cron fallback on 2026-09-19 ("You don't need a cron job"),
+and the session still starts with `CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1`.
 and a 25-minute `CronCreate` job is the fallback wake.
 
 ## The three checks

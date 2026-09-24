@@ -188,6 +188,26 @@ and the will's paragraph shipped as a silent gap twice.
 A split with an anchored claim stays unresolved;
 an unanchorable claim is still no vote for absence.
 
+## A carried passage inside the neighbour's archive span
+
+Since class one hundred ten (2026-09-24) a source-only passage the coverage round found carried,
+whose every evidence region sits inside one adjacent paired slice's archive span,
+is folded into that slice at the admission:
+the carrier's source widens over both abutting sources,
+both lanes write the carrier from the widened source,
+the carried slice is skipped as a folded one,
+and the finding `insertion-carried-folded (slice N into slice M)` prints.
+On mikaela12 the archive rendered two paragraphs as one,
+the pairing left the first source-only,
+the translate lane wrote the neighbour from its own source without the September sentence,
+and the carried-evidence guard stopped the entry at publish.
+A carried passage whose evidence is not adjacent,
+not found on the page,
+straddles two slices,
+or whose source does not abut the carrier's stays carried as before,
+and the publish guard still reads it.
+
+
 ## What the consolidate gate is told about an ineligible standing
 
 Since class fifty-six (2026-09-18) a gate over a standing the deterministic publication rule refused is told so on its sheet,
