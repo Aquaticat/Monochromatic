@@ -11,6 +11,10 @@
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { AST, } from 'toml-eslint-parser';
 
+import {
+  assembleArrayParts,
+  assembleInlineTableParts,
+} from './emit-value.ts';
 import { TomlTypeError, } from './errors.ts';
 import { encodeKey, } from './keys.ts';
 import type { CanonicalOptions, } from './types.ts';
@@ -246,10 +250,6 @@ function encodeNumber(
       return 'nan';
     return value > 0 ? 'inf' : '-inf';
   }
-  if (Number.isInteger(value,)
-    && Number
-    .isSafeInteger(value,))
-    return String(value,);
   return String(value,);
 }
 
@@ -302,38 +302,11 @@ function encodeArray(
       ...elementExistingArg,
     },);
   },);
-  /**
-   Speculative inline form so the column budget check can decide the layout.
-   */
-  const inlineCandidate = `[ ${encoded.join(', ',)}${encoded.length
-    === 0 ? '' : ', '}]`;
-  if (
-    (encoded.length
-      <= options
-      .arrayInlineThreshold)
-    && (inlineCandidate.length
-      <= options
-      .arrayInlineMaxColumns)
-  ) {
-    return inlineCandidate;
-  }
-  /**
-   Indent for each element when the array goes multi-line.
-   */
-  const indent = ' '.repeat(options.indent
-    * (depth + 1),);
-  /**
-   Closing bracket sits at the parent's indent level for legibility.
-   */
-  const closingIndent = ' '.repeat(options.indent
-    * depth,);
-  return `[\n${
-    encoded
-      .map(function withIndent(e,) {
-        return `${indent}${e},`;
-      },)
-      .join('\n',)
-  }\n${closingIndent}]`;
+  return assembleArrayParts({
+    parts: encoded,
+    options,
+    depth,
+  },);
 }
 
 /**
@@ -370,6 +343,5 @@ function encodeInlineTable(
       },)
     }`;
   },);
-  return `{ ${parts.join(', ',)}${parts.length
-    === 0 ? '' : ', '}}`;
+  return assembleInlineTableParts({ parts, },);
 }
