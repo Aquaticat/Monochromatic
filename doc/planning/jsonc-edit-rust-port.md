@@ -278,11 +278,18 @@ source-level transitive clearance remains open where required.
    A scratch rewrite with explicit container frames then passed both boundary cases
    in the same bounded container;
    the valid 512-level test also dropped its parsed node.
-   Emission,
+   Further bounded debug tests then passed emission,
    reparse,
-   nested-record cleanup,
-   and error cleanup remain unverified at that depth,
-   so the candidate is **not yet validated**.
+   drop,
+   clone/equality,
+   nested-record lifecycle,
+   and error cleanup at the accepted depth.
+   The container suite passed with explicit phase markers;
+   release and non-Linux builds,
+   full conformance,
+   fuzzing,
+   and the public edit interface remain unverified.
+   The candidate is **not yet validated** for adoption.
 - A separate TypeScript source probe found that clean `[1\n,2]` parses through the `JSON.parse` fast path,
    but `[1\n,2,]` fails in the structured path with `JsoncParseError: expected , or ] in array (at offset 3)`;
    a commented input and object with a newline before the comma fail analogously.
@@ -302,12 +309,9 @@ source-level transitive clearance remains open where required.
 
 ## Next action
 
-Exercise the iterative parser at the accepted depth across emission,
- reparse,
- clone/equality,
- nested records,
- and both success and error cleanup,
- all within resource bounds.
+Repeat the iterative parser's depth and lifecycle matrix in a bounded release build.
+ Compare its syntax and comment behavior against the maintained TypeScript conformance corpus,
+ including the measured comma and value-comment cases.
  Add comma-after-trivia and comment-owner fixtures to the maintained TypeScript implementation at the appropriate adoption stage;
  its value-comment emitter remains unfixed.
  Then rerun parser syntax,
