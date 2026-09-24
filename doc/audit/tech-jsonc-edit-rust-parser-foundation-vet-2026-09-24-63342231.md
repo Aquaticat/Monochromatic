@@ -500,6 +500,33 @@ A disposable set of exact-version manifests under `~/temp/agent/jsonc-regex-audi
  not every line of transitive source or a future resolution.
  Keep source-level regex clearance pending where required.
 
+### Selected Biome license and optional-feature check
+
+`mise run audit:licenses` in the disposable Biome probe joined Cargo metadata to the **selected normal/build**
+ `cargo tree --locked --offline --edges normal,build --target all` graph.
+ It found 87 registry package versions,
+ no missing license expression and no regex-named selected package.
+ The selected expressions include MIT,
+ Apache-2.0,
+ 0BSD,
+ Unlicense,
+ Zlib and one conjunction with Unicode-3.0.
+ The published `biome_json_parser-0.5.7/LICENSE` is MIT;
+ its `ROME_LICENSE` also carries an MIT notice.
+ `unicode-ident-1.0.26/LICENSE-UNICODE` permits redistribution with its notice in copies or documentation,
+ and `unicode-bom-2.0.3/LICENSE` contains Apache-2.0 terms.
+ The [Apache Software Foundation compatibility note](https://www.apache.org/licenses/GPL-compatibility.html) states that Apache-2.0 software can be included in GPLv3 works.
+ This source review found no license-expression exit for the prospective LGPL-3.0-or-later crate,
+ but full product notice assembly and legal interpretation remain to be validated before publication.
+
+An initial Cargo-metadata-only traversal appeared to select `regex-automata` through `similar` and `bstr`.
+ That result was **not** a production graph:
+ `similar-2.7.0/Cargo.toml:108-110,135-147` makes `bstr` optional behind its `bytes` feature,
+ and the selected normal/build `cargo tree` omits `bstr` and `regex-automata`.
+ Raw Cargo metadata includes unselected optional packages;
+ do not use it alone to reject Biome at the regex gate.
+ This does not replace source-level screening of all required selected dependencies.
+
 ### Biome bounded execution preparation
 
 The published `biome_json_parser` 0.5.7 archive SHA-256
