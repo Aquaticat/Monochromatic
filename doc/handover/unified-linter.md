@@ -606,10 +606,11 @@ Round 12 answers (user,
    can proceed first,
    and no interim merge code is written.
 
-Markdown parser vet result (subagent report,
-2026-09-23;
-report text held at `~/temp/agent/md-parser-vet-2026-09-23/report/final.md.txt`
-because the harness refused the subagent's write into `doc/audit/`):
+Markdown parser vet result
+([`doc/audit/tech-unified-linter-markdown-parser-vet-2026-09-23.md`](../audit/tech-unified-linter-markdown-parser-vet-2026-09-23.md),
+written by the parent session after reading it in full,
+with the user's approval,
+because the harness refused the subagent's own write):
 
 - Sätteri's Rust crates (`satteri-pulldown-cmark` 0.6.3,
    `satteri-arena` 0.3.1,
@@ -654,20 +655,33 @@ because the harness refused the subagent's write into `doc/audit/`):
    use the parity harness as the upgrade gate.
 - #559 changes 660 findings across the repository by this vet's count.
 
-Round 13,
-asked 2026-09-23:
+Round 13 answers (user,
+2026-09-23,
+all recommended options):
 
-- Whether "Rust only" allows build-time C or assembly in dependencies.
-- Sätteri with exact parity or markdown-rs with a patch set.
-- Dependency handling:
-   crates.io `=` pins upgraded together,
-   or vendoring or forking.
-- Whether the parent session writes the 2,166-line vet report into `doc/audit/`,
-   which the harness refused to the subagent.
+- "Rust only" allows C or assembly a dependency compiles at build time.
+- Parser:
+   Sätteri's Rust crates.
+- Dependency:
+   exact crates.io `=` pins on the three crates,
+   upgraded together,
+   gated by the parity harness;
+   fork only if a needed fix never lands upstream.
+- The vet report is committed in `doc/audit/`.
+
+Adopted by the agent from those answers,
+open to veto:
+
+- Parse inside `catch_unwind` and report a panic as a per-file processing-failure finding,
+   covering the release panic and the dev-build `debug_assert`.
+- No parse time budget in the first version:
+   the incumbent has none,
+   and the slow cases are adversarial invalid MDX,
+   not the 36 tracked MDX files.
+- bruits/satteri#306 was still open on 2026-09-23 with only the maintainer's reply that notifications were not arriving;
+   whether to ask upstream about the two advisories is external communication and is asked of the user.
 
 ## Next action
 
-Collect round 13 answers,
-record them here,
-then write `doc/planning/unified-linter.md` with a draft configuration
-and ask the user to confirm a shared understanding.
+Write `doc/planning/unified-linter.md` with the full design and a draft configuration,
+then ask the user to confirm a shared understanding.
