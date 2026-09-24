@@ -194,6 +194,92 @@ function carriedOn({ evidence, }: { readonly evidence: readonly string[]; },): I
   };
 }
 
+/**
+ Original of the flanked shape: the homecoming, then the nap, then the bath.
+ */
+const FLANKED_SOURCE_TEXT = `${HEADING_SOURCE}\n\n${HOME_SOURCE}\n\n${NAP_SOURCE}\n\n${BATH_SOURCE}\n`;
+
+/**
+ Archive of the flanked shape: the homecoming's span carries the nap after it,
+ and the bath follows in its own span.
+ */
+const FLANKED_TARGET_TEXT = `${HEADING_TARGET}\n\n${HOME_TARGET}\n\n${NAP_TARGET}\n\n${BATH_TARGET}\n`;
+
+/**
+ The prepared pair where the carried nap stands between two paired slices:
+ the homecoming (whose span holds the nap's rendering) before it and the
+ bath after it.
+
+ @returns Prepared pair with four slices, the nap at position 2
+
+ @example
+ ```ts
+ const prepared = flankedPair();
+ ```
+ */
+function flankedPair(): PreparedDocumentPair {
+  return {
+    sourceText: FLANKED_SOURCE_TEXT,
+    targetText: FLANKED_TARGET_TEXT,
+    lineStructuredSliceIndices: new Set(),
+    declaredNames: [],
+    alignmentFindings: [],
+    unclaimedTargetBlocks: [],
+    alignmentPairCount: 4,
+    slices: [
+      {
+        source: contentOver({ sliceIndex: 0, text: FLANKED_SOURCE_TEXT, fragment: HEADING_SOURCE, },),
+        target: contentOver({ sliceIndex: 0, text: FLANKED_TARGET_TEXT, fragment: HEADING_TARGET, },),
+      },
+      {
+        source: contentOver({ sliceIndex: 1, text: FLANKED_SOURCE_TEXT, fragment: HOME_SOURCE, },),
+        target: contentOver({
+          sliceIndex: 1,
+          text: FLANKED_TARGET_TEXT,
+          fragment: `${HOME_TARGET}\n\n${NAP_TARGET}`,
+        },),
+      },
+      {
+        source: contentOver({ sliceIndex: 2, text: FLANKED_SOURCE_TEXT, fragment: NAP_SOURCE, },),
+        target: makeInsertionChunk({ sliceIndex: 2, offset: FLANKED_TARGET_TEXT.indexOf(BATH_TARGET,), },),
+      },
+      {
+        source: contentOver({ sliceIndex: 3, text: FLANKED_SOURCE_TEXT, fragment: BATH_SOURCE, },),
+        target: contentOver({ sliceIndex: 3, text: FLANKED_TARGET_TEXT, fragment: BATH_TARGET, },),
+      },
+    ],
+  };
+}
+
+/**
+ The flanked nap admitted as carried on the given evidence.
+
+ @param evidence - regions the roster anchored
+
+ @returns Admission carrying the nap at position 2
+
+ @example
+ ```ts
+ const admission = flankedCarriedOn({ evidence: [NAP_TARGET,], },);
+ ```
+ */
+function flankedCarriedOn({ evidence, }: { readonly evidence: readonly string[]; },): InsertionAdmission {
+  /**
+   The nap as the roster recorded it.
+   */
+  const nap: CarriedInsertion = {
+    position: 2,
+    sliceIndex: 2,
+    sourceText: NAP_SOURCE,
+    evidence,
+  };
+  return {
+    positions: new Set(),
+    carried: [nap,],
+    findings: [],
+  };
+}
+
 await describe({
   name: foldCarriedInsertions.name,
   children: [
@@ -296,6 +382,50 @@ await describe({
         },);
         expect(idle.admission.folded,).toBeUndefined();
         expect(idle.findings,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'FOLDS a passage whose evidence straddles both neighbours into the one holding the larger share (class one hundred eleven)',
+      fn: async () => {
+        /**
+         The voice quoted the nap and ran on into the bath's line: most of the
+         region sits in the homecoming's span.
+         */
+        const intoHome = foldCarriedInsertions({
+          prepared: flankedPair(),
+          admission: flankedCarriedOn({ evidence: [`${NAP_TARGET}\n\n${BATH_TARGET}`,], },),
+        },);
+        expect(intoHome.prepared.slices[1]?.source.text,).toBe(`${HOME_SOURCE}\n\n${NAP_SOURCE}`,);
+        expect(intoHome.prepared.slices[3]?.source.text,).toBe(BATH_SOURCE,);
+        expect(intoHome.admission.carried,).toEqual([],);
+        expect(intoHome.admission.folded,).toEqual([{ position: 2, sliceIndex: 2, carrierSliceIndex: 1, },],);
+        expect(intoHome.findings,).toEqual([`${CARRIED_FOLDED_FINDING} (slice 2 into slice 1)`,],);
+        expect(intoHome.asides,).toEqual([],);
+
+        /**
+         The voice quoted the nap's tail and the whole bath line: most of the
+         region sits in the bath's span.
+         */
+        const intoBath = foldCarriedInsertions({
+          prepared: flankedPair(),
+          admission: flankedCarriedOn({ evidence: [`${NAP_TARGET.slice(-10,)}\n\n${BATH_TARGET}`,], },),
+        },);
+        expect(intoBath.prepared.slices[1]?.source.text,).toBe(HOME_SOURCE,);
+        expect(intoBath.prepared.slices[3]?.source.text,).toBe(`${NAP_SOURCE}\n\n${BATH_SOURCE}`,);
+        expect(intoBath.admission.folded,).toEqual([{ position: 2, sliceIndex: 2, carrierSliceIndex: 3, },],);
+        expect(intoBath.findings,).toEqual([`${CARRIED_FOLDED_FINDING} (slice 2 into slice 3)`,],);
+
+        /**
+         A stand-aside names its reason.
+         */
+        const unfound = foldCarriedInsertions({
+          prepared: flankedPair(),
+          admission: flankedCarriedOn({ evidence: ['The dog barked.',], },),
+        },);
+        expect(unfound.admission.carried?.length,).toBe(1,);
+        expect(unfound.asides.length,).toBe(1,);
+        expect(unfound.asides[0],).toContain('slice 2',);
+        expect(unfound.asides[0],).toContain('not found',);
       },
     },),
   ],
