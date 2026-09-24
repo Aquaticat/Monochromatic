@@ -233,3 +233,103 @@ const child = spawn('podman', [
 const [code] = await once(child, 'exit')
 if (code !== 0) throw new Error(`declared-type positive control container exited with ${String(code)}`)
 """
+
+# Mutation testing of a deepmerge-ts checkout (doc/audit/deepmerge-ts-mutation-2026-09-24.md).
+# StrykerJS and Vitest live only in the image from container/mutation.Containerfile
+# (user decision in doc/handover/deepmerge-ts-hardening.md); every run mounts the
+# checkout read-only at /checkout, this repo read-only at its host path, and
+# dist/mutation/ writable at /out, inside the usual 2 GiB / 2 CPU caps.
+[tasks."mutation:image"]
+description = "Build the pinned StrykerJS + Vitest + esbuild image the mutation tasks run in"
+run = "podman build --tag localhost/deepmerge-ts-mutation:stryker-10.0.0 --file container/mutation.Containerfile container"
+
+[tasks.mutation]
+description = "StrykerJS over a deepmerge-ts checkout with upstream's own Vitest suite; writes dist/mutation/mutation.json"
+depends = ["mutation:image"]
+usage = '''
+flag "--checkout <dir>" required=#true help="Absolute path of the deepmerge-ts checkout to mutate"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync } = await import('node:fs')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'mutation')
+mkdirSync(out, { recursive: true })
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${resolve(process.env.usage_checkout ?? '')}:/checkout:ro`,
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:/out:rw`,
+  '--workdir', packageRoot,
+  'localhost/deepmerge-ts-mutation:stryker-10.0.0',
+  'node', 'src/mutation-score.ts',
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`mutation container exited with ${String(code)}`)
+"""
+
+[tasks."mutation:sweep"]
+description = "Run Stryker's survivors from dist/mutation/mutation.json through every sidecar unit file; --baseline checks the unmutated bundle first"
+depends = ["mutation:image"]
+usage = '''
+flag "--checkout <dir>" required=#true help="Absolute path of the same deepmerge-ts checkout the mutation task used"
+flag "--baseline" help="Only bundle the unmutated checkout and require every sidecar file to pass against it"
+arg "[ids]..." help="Mutant ids to sweep; default every Survived and NoCoverage mutant"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'mutation')
+const mode = (process.env.usage_baseline === 'true') ? ['baseline'] : ['sweep', ...(process.env.usage_ids ?? '').split(' ').filter((id) => id !== '')]
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${resolve(process.env.usage_checkout ?? '')}:/checkout:ro`,
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:/out:rw`,
+  '--workdir', packageRoot,
+  'localhost/deepmerge-ts-mutation:stryker-10.0.0',
+  'node', 'src/mutation-sweep.ts', ...mode,
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`mutation sweep container exited with ${String(code)}`)
+"""
+
+[tasks."mutation:differential"]
+description = "Compare mutant bundles from mutation:sweep with the baseline on fixed-seed generated cases, after a self-comparison and a control mutant"
+depends = ["mutation:image"]
+usage = '''
+flag "--runs <runs>" default="1000" help="Cases per category"
+flag "--control <id>" required=#true help="A mutant the sidecar detects; it must show a difference"
+arg "<ids>..." help="Mutant ids to compare"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'mutation')
+const ids = (process.env.usage_ids ?? '').split(' ').filter((id) => id !== '')
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:/out:rw`,
+  '--workdir', packageRoot,
+  'localhost/deepmerge-ts-mutation:stryker-10.0.0',
+  'node', 'src/mutation-differential.ts', (process.env.usage_runs ?? '1000').trim(), (process.env.usage_control ?? '').trim(), ...ids,
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`mutation differential container exited with ${String(code)}`)
+"""
