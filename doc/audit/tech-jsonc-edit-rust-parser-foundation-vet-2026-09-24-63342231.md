@@ -410,6 +410,34 @@ Source leads for that screening include `jsonc_lexer` from [richplastow/jsonc-le
  The research transcript is retained at `~/temp/agent/` through its subagent output,
  while this report remains the owned audit artifact.
 
+### Additional repository-host JSON5 parser query
+
+A main-session `gh search repos 'json5 parser language:Rust' --limit 100 --json fullName,description,url,updatedAt`
+ returned eight repositories after the delegated version of this query had been blocked.
+ It surfaced `json5-nodes` and a separate Git-only `json5_parser` repository;
+ `JsonTape` and `jsonrepair-rs` were already screened,
+ while several other results advertise Lua integration,
+ conversion,
+ plain JSON or multi-format configuration rather than comment-bearing JSONC editing.
+ This one completed host query does not settle the broader source class.
+
+The published `json5_nodes` 2.0.2 `src/lib.rs:14-52,90-151` stores numbers as `i64` or `f64`
+ and rejects escaped lone high/low surrogates when projecting a string.
+ Its `src/json5.pest:4-5` makes comment grammar rules silent,
+ so its public JSON5 AST has no comments on keys or values.
+ `pest` is a PEG grammar dependency here,
+ not by itself evidence of a regex-backed production lexer;
+ this as-is exit is about the value and comment model.
+
+The Git checkout `jessevanassen/json5_parser` at `45275c0d29438bcc5a7f25f22301170ef564d480`
+ has `publish = false` in `json5_parser/Cargo.toml:1-8`.
+ Its `src/parser.rs:18-25,105-114,120-151,280-329` returns Serde values,
+ converts decimal numbers to `f64`,
+ rejects escaped lone surrogates through `char::from_u32` and consumes comments as trivia.
+ Its `json5_parser` package must not be confused with an unrelated published `json5-parser` 0.0.0.
+ Adopting the Git-only source would require a separate fork or vendoring decision;
+ no parser code was executed.
+
 ### Full broad `jsonc` metadata screen
 
 The delegated subagent could not read the saved pages under its security guardrail and screened none of them.
