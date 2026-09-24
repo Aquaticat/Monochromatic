@@ -4768,7 +4768,7 @@ and `stay_on_while_plugged_in=7`.
 interrupted capture was not recorded;
  do not claim it was restored.
 
-## Current native Fold Search review (2026-09-23)
+## Withdrawn native Fold Search review (2026-09-23)
 
 Main commit `d983482ed` first preserved the guarded native captures;
  `1cba72beb`
@@ -4905,10 +4905,22 @@ withdrawn notice and hide the old feedback form/gallery;
  do not present them
 as an active design review.
 
+E2 now names information,
+ not every painted surface or hit region,
+ as the
+connector exclusion.
+ `device-metrics.md`,
+ `review-notes.md` 5q/5r,
+`material-3-compliance.md`,
+ `open-questions.md`,
+ the rejected candidate
+inventory and both capture validators are marked accordingly.
+ The old pixel
+guard is historical evidence integrity only,
+ not a gate for new designs.
+
 Next:
- correct E2 and every dependent package-local statement about the
-connector,
- then inspect how installed apps actually arrange Search on the
+ inspect how installed apps actually arrange Search on the
 folded/unfolded emulator and compare the local baseline M3 adaptive/search
 reference.
  Only then build distinct design-only candidates with informational
