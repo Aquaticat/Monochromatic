@@ -814,8 +814,9 @@ contained pill and rounded selected rows with A2's baseline requirement;
  it is an
 intermediate experiment,
  not presentation evidence.
- The next redraw keeps the
-Roboto font and official Material icon assets on the prototype branch while adopting
+ The current redraw in prototype
+commits `0e9624dd2` and `7adafa092` keeps the Roboto font and official Material
+icon assets on the prototype branch while adopting
 **baseline divided** anatomy:
  56px header,
  28px docked outer shape,
@@ -825,12 +826,33 @@ Roboto font and official Material icon assets on the prototype branch while adop
 16px start padding and a disclosed custom keyboard-focus cue.
  Color roles come from
 `questions/evidence/cover-round-wallpaper-roles-{light,dark}.json` as study input.
-Compare the *entire* field,
- divider,
- container,
- icons,
- and row hierarchy with
-the readable baseline spec images at the same logical height before re-presenting.
+The active native rasters now live at `questions/render/command-md3-*`.
+ At native
+480 × 600px in the light docked scene,
+ pixels at x=200/y=120 (header) are
+`#E7E7F1` (`surfaceContainerHigh`),
+ x=200/y=148 (divider) are `#797A84`
+(`outline`),
+ and x=24/y=223 (keyboard-focus boundary) are `#4E5E8B`
+(`primary`).
+ Dark pairs are `#1E1F26`,
+ `#73757F` and `#BAC5EE`.
+The normalized 56px header contact at
+`questions/evidence/command-md3-baseline-header-comparison.png` places a crop
+from the readable baseline docked spec beside the Slint header,
+ without enlarging
+either logical height.
+ The reference still contains Google's pink measurement
+annotations;
+ it establishes header/divider shape,
+ not an exact palette match or
+accessible behavior.
+ List rows were compared against the separate baseline list
+specs;
+ the spec's search header diagram contains no actual result data.
+ The custom
+keyboard focus uses an outline and state-layer fill rather than an Expressive selected
+corner.
  Document every desktop
 adaptation rather than labelling it compliant by resemblance.
  Slint snapshots still
