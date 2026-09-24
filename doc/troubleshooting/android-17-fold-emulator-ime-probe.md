@@ -1,4 +1,4 @@
-# Android 17 Fold emulator Gboard focus without visible keys blocks Search keyboard capture
+# Android 17 Fold emulator Gboard opens a physical-keyboard toolbar instead of keys on Search focus
 
 ## Symptom
 
@@ -10,6 +10,10 @@ Earlier in this design session, Messages did show a split keyboard,
 so this is not a demonstrated permanent emulator capability limit.
 The focused query and an `input_method` visibility report alone cannot prove
 that the playback deck remains visible during software-keyboard use.
+A subsequent probe found a **per-editor Gboard workaround**:
+open the side toolbar's bottom menu and choose `Show on-screen keyboard`.
+Real, floating keys then appeared and a key tap changed the Search query.
+This does not yet establish docked or split Gboard behavior.
 
 This is distinct from a separate, confirmed app-layout finding:
 under a visible system-managed keyboard, a bottom-anchored Search prototype
@@ -23,6 +27,14 @@ Gboard's implementation is not available in the local Android SDK sources;
 we cannot identify which Gboard decision or system state produced the discrepancy.
 Changing `show_ime_with_hard_keyboard`, restarting Gboard, recreating Search,
 and reproducing in Messages did not establish a cause.
+Gboard's `Physical keyboard` preferences were also tested:
+`Show on-screen keyboard` changed from off to on, and `Show toolbar` changed
+from on to off after temporarily turning the former off.
+Neither setting combination, nor a Gboard restart, made keys appear on
+fresh Search focus.
+The separate **toolbar-menu action** did make keys appear, but the next
+fresh-focus probe returned to the side toolbar.
+Do not equate the preference switch with the per-editor action.
 
 Android's public framework does establish why a replacement IME is a valid
 occlusion probe.
@@ -119,10 +131,35 @@ That correction is in throwaway prototype commit `60e01dfab`.
   behind the input window at 200% text.
   Even the first, shorter probe was a positive control for occlusion;
   it was not a valid measurement of a 300dp keyboard.
+- With the selected Search study focused on the 2076 × 2152px inner panel,
+  the repeatable scratch harness
+  `/home/user/temp/agent/probe-fold-gboard.mjs` verified a focused
+  `EditText` and reported Gboard touchable regions
+  `[19,790,157,1436]` and `[0,2074,2076,2152]`, without a key-sized
+  region.
+  Opening the side toolbar menu at `(90,1360)` and tapping
+  `Show on-screen keyboard` at approximately `(510,1118)` at 100% text
+  displayed a real floating Gboard at x `[274,1180)`, y `[288,1059)`.
+  A tap on one letter changed the focused query to `x` and produced the
+  corresponding no-results state.
+  A fresh app launch and focus returned to the toolbar-only state.
+- At 200% text, the same menu action at approximately `(515,1080)` displayed
+  floating Gboard keys over x `[274,1180)`, y `[310,1081)`.
+  The deck title `Another Xronixle` occupied
+  `[258,1042][781,1145]` in the UI hierarchy.
+  Their overlap is x `[274,781)`, y `[1042,1081)`, and the screenshot
+  visibly obscured part of the title.
+  Dragging the floating keyboard lower moved its region to approximately
+  x `[564,1470)`, y `[1245,2016)`, obscuring more controls;
+  this was **not** a successful docking test.
+  These observations are a counterexample to assuming the selected layout
+  meets D50 under every real Gboard mode.
 
-The probe is a deliberately synthetic input method, **not Gboard**.
-Its measured overlap tests window occlusion and text input integration;
-it does not establish Gboard's exact height, split shape, or suggestions.
+The debug input method is deliberately synthetic, **not Gboard**.
+Its measured overlap tests bottom-window occlusion and text input integration;
+it does not establish Gboard's docked height, split shape, or suggestions.
+The later floating-keyboard evidence tests real Gboard, but not its docked
+or split layouts.
 
 ## Verified workaround
 
@@ -134,17 +171,27 @@ Capture after verifying the query has changed and the input view is rendered.
 The probe uses a generic dark slab and one sample key; it cannot validate
 Gboard-specific spacing or user-facing keyboard behavior.
 
-For design comparisons, anchor the unfolded deck above any bottom keyboard
-rather than treating a keyboard-closed capture as D50 evidence.
-Do not change the production app based solely on this probe.
+The Gboard side-toolbar menu's `Show on-screen keyboard` action exposes
+real keys for the focused editor without switching to the debug IME.
+It is a temporary, floating-keyboard action, not a persistent default
+or a docked-keyboard geometry test.
+At 200% text, it covers part of the selected Search deck;
+therefore it is **not** a workaround for D50.
+
+For bottom-keyboard design comparisons, anchor the unfolded deck above a
+visible keyboard rather than treating a keyboard-closed capture as D50 evidence.
+Do not change the production app based solely on either probe.
 
 ## What does not work
 
 - Query focus, a true IME visibility flag, or an XML node alone:
   none proves that an actual keyboard surface occludes app content.
-- Toggling `show_ime_with_hard_keyboard` between `0` and `1`, restarting
-  Gboard, or trying Messages again: these probes did not restore keys
-  reliably in the observed later state.
+- Toggling `show_ime_with_hard_keyboard` between `0` and `1`, changing
+  Gboard's physical-keyboard preference switches, restarting Gboard,
+  or trying Messages again: these probes did not restore keys
+  reliably on a fresh Search focus.
+- Dragging floating Gboard toward the bottom did not dock it in this probe;
+  the overlay moved over the deck without generating a bottom keyboard inset.
 - Assigning `layoutParams` with a 300dp height to the debug IME's returned
   view: the framework supplies wrap-content parent parameters;
   the first probe appeared shorter than its label.
@@ -173,13 +220,15 @@ No upstream report is ready:
 ### Draft, do not file as-is
 
 ~~~md
-Android 17 Fold emulator: query focus reports a visible IME but Gboard draws no keys
+Android 17 Fold emulator: Gboard's physical-keyboard toolbar lacks keys on fresh Search focus
 
 On emulator 37.1.11.0, Pixel 9 Pro Fold, Android 17 SDK 37,
-Gboard versionCode 175753756, the music-player debug Search and later Messages
-Search probes showed no on-screen keys after focusing a text editor.
-An earlier Messages probe did show a split keyboard.
-The current reproducer lacks a proven sequence or root cause;
+Gboard versionCode 175753756, focusing the music-player debug Search
+shows a side toolbar without keys.
+The toolbar's Show on-screen keyboard action brings up a usable floating
+keyboard, but another fresh focus returns to the toolbar-only state.
+At 200% text the floating keyboard obscures the selected player's deck title.
+Docked and split Gboard were not established;
 no upstream attribution or fix is proposed.
 ~~~
 

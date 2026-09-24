@@ -5292,8 +5292,8 @@ placement without moving the header or deck.
  the custom IME
 disabled,
  and stay-on setting 7 were measured.
- Gboard's own
-rendering and taller keyboard geometries are not verified by this probe.
+ That debug probe does not verify Gboard's own rendering or taller
+keyboard geometries.
 
 The active,
  self-contained `package/music-player/design/questions/current.html`
@@ -5348,14 +5348,34 @@ dark (see `doc/troubleshooting/axe-modal-dialog-contrast.md` for this
 conservative modal overlap path).
  Browser verification was closed.
 
-Remaining design work is limited to behaviors the selection did not settle:
-result activation/ranking,
- long result names and scrolling,
- Gboard-specific
-geometry,
- taller keyboards,
- and the independent minimum information
-clearance at the crease.
+A subsequent **real Gboard** test found the side physical-keyboard toolbar
+on fresh Search focus even after changing its preference switches and
+restarting Gboard.
+ The side-toolbar menu's `Show on-screen keyboard`
+action displayed a floating keyboard, and a key tap changed the focused
+query.
+ At 200% text, Gboard's x `[274,1180)`, y `[310,1081)` key surface
+intersected the deck title's `[258,1042][781,1145]` bounds;
+its screenshot showed the title partially covered.
+ Dragging the keyboard
+toward the bottom moved it over additional deck controls, not into a
+docked keyboard.
+ A fresh Search launch returned to the toolbar-only state.
+These observations **do not overturn D51's selected A** but reveal that
+the currently selected prototype does not meet D50 with the tested real
+floating Gboard arrangement.
+ The device's original Gboard preferences
+(off for `Show on-screen keyboard`, on for `Show toolbar`), font scale
+1.0, framework hardware-keyboard setting 0, and selected Gboard were
+restored and verified.
+ Investigation and commands are in
+`doc/troubleshooting/android-17-fold-emulator-ime-probe.md`.
+
+Remaining design work includes verifying actual docked and split Gboard,
+app-observed keyboard insets, a response to floating overlay occlusion,
+result activation/ranking, long result names and scrolling, taller
+keyboards, and the independent minimum information clearance at the
+crease.
  The user was not asked to vote again on B or C.
 No KWin automation,
  production implementation,

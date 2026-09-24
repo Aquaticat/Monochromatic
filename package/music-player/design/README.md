@@ -103,8 +103,12 @@ both panels.
 `questions/current.html` now shows only the selected design in light/dark
 at 100% and 200% text.
  A system-managed 300dp debug keyboard verified
-bounded occlusion and input routing;
+bounded bottom-keyboard occlusion and input routing;
  it is not Gboard.
+A later real floating Gboard at 200% text obscured part of the deck title,
+so D50 is not fully met in this tested mode.
+ The user's A selection is unchanged;
+docked and split Gboard require separate verification.
 Selection does not authorize production implementation.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.

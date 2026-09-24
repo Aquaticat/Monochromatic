@@ -1439,6 +1439,10 @@ while the query is focused and Android's keyboard is present,
  not only in
 keyboard-closed screenshots;
  "never" includes typing.
+ A 200% text probe with real floating Gboard shows a counterexample:
+ its x `[274,1180)`, y `[310,1081)` key surface overlaps the deck
+ title at `[258,1042][781,1145]` on the 2076 × 2152px inner panel.
+ Do not mark D50 fully validated from the debug bottom-IME captures.
  D47's separate-page
 interaction does not supersede this persistent control region.
 
@@ -1475,8 +1479,12 @@ B (fixed upper-left deck) and C (Search left with an upper-right deck) were
 not chosen.
  Their native captures remain historical comparison evidence,
 not active choices.
- The 300dp test input method verified bounded occlusion;
-Gboard-specific geometry and taller input methods are not established.
+ The 300dp test input method verified bounded bottom-keyboard occlusion.
+A later real Gboard floating-keyboard probe at 200% text obscured part of
+the deck title; moving that keyboard lower obscured more controls.
+This is a validation failure against D50 in the tested floating mode,
+not a change to the user's A selection.
+Docked and split Gboard geometry and taller input methods are still unverified.
 This is a **design choice only**;
  it does not authorize production changes.
 

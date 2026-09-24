@@ -129,10 +129,17 @@ rounds (2026-09-17):
   kept the unfolded controls visible while typing,
   with folder and track
   results starting directly below the one header.
-  The current test does
-  not establish Gboard-specific geometry or taller keyboard behavior.
-  A
-  200% long query remained in the right input region without hiding the deck.
+  A later real Gboard probe found a floating keyboard by invoking
+  `Show on-screen keyboard` from its physical-keyboard side-toolbar menu.
+  A key tap changed Search's query, but at 200% text the floating key
+  surface obscured part of the deck title.
+  Dragging it lower obscured more controls rather than docking it.
+  D50 remains **unmet in that measured Gboard mode** even though A remains
+  the selected design; the 300dp bottom-IME capture is bounded evidence.
+  Verify docked and split Gboard, app-observed insets and any design
+  response before claiming that all typing states preserve the deck.
+  A 200% long query remained in the right input region without hiding
+  the deck under the debug IME.
   Long **result** names and result-list scrolling are still open.
 - **OPEN: remaining Search behavior after D51/D52.**
   Keep positive results,
