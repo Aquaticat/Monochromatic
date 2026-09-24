@@ -1,5 +1,6 @@
 import type { AlignmentStep, } from './align-blocks-walk.ts';
 import type { BlockPair, } from './pair-blocks-wire.ts';
+import { pairUnpartneredGaps, } from './unpartnered-gap-steps.ts';
 
 //region Block pairing steps
 // TRANSLATES A ROSTER'S PAIRING INTO THE VOCABULARY THE GROUPER ALREADY READS,
@@ -29,10 +30,10 @@ import type { BlockPair, } from './pair-blocks-wire.ts';
  
  @example
  ```ts
- const steps = blockPairingToSteps({ pairs, sourceCount: 12, targetCount: 16, },);
+ const steps = bareBlockPairingSteps({ pairs, sourceCount: 12, targetCount: 16, },);
  ```
  */
-export function blockPairingToSteps(
+function bareBlockPairingSteps(
   {
     pairs,
     sourceCount,
@@ -184,6 +185,45 @@ export function blockPairingToSteps(
   }
   emitUnclaimedTargetsBefore(targetCount,);
   return steps;
+}
+
+/**
+ Converts a pairing into monotone alignment steps covering both sides, with
+ every interior gap the roster left unplaced on both sides read as one merge
+ (class one hundred twelve, mikaela15), so the grouper, the anchor reader and
+ the decline reader all see such a gap the same way.
+
+ @param pairs - correspondences the roster agreed on, in document order
+
+ @param sourceCount - original blocks
+
+ @param targetCount - translation blocks
+
+ @returns Steps in document order, each block appearing exactly once
+
+ @example
+ ```ts
+ const steps = blockPairingToSteps({ pairs, sourceCount: 12, targetCount: 16, },);
+ ```
+ */
+export function blockPairingToSteps(
+  {
+    pairs,
+    sourceCount,
+    targetCount,
+  }: {
+    readonly pairs: readonly BlockPair[];
+    readonly sourceCount: number;
+    readonly targetCount: number;
+  },
+): readonly AlignmentStep[] {
+  return pairUnpartneredGaps({
+    steps: bareBlockPairingSteps({
+      pairs,
+      sourceCount,
+      targetCount,
+    },),
+  },);
 }
 
 //endregion Block pairing steps
