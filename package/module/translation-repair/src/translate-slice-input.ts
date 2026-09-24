@@ -202,7 +202,7 @@ export function translateSliceInput(
       ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
       ...((pictureContext === undefined) ? {} : { pictureContext, }),
       ...((slice.syntax === undefined) ? {} : { syntax: slice.syntax, }),
-      declared: prepared.declaredNamePairs ?? [],
+      ...((prepared.declaredNamePairs === undefined) ? {} : { declared: prepared.declaredNamePairs, }),
     },
   };
 }
