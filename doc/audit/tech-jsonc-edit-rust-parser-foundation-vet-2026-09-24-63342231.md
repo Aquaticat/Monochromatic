@@ -593,8 +593,12 @@ The published `biome_json_parser` 0.5.7 archive SHA-256
  These checks support the inspected invariants but do not establish safety for every lexer and transitive-code path.
  Separately,
  `biome_json_parser-0.5.7/src/lexer/mod.rs:91-96` converts the source offset to `TextSize` with an `expect` for inputs beyond its representable range;
- a published adapter would need an early input-length check.
- That oversized-input branch was not exercised under the resource bound.
+ `biome_text_size-0.5.8/src/size.rs:24-25,85-90` stores that offset as `u32`.
+ The disposable adapter now checks source length before Biome runs.
+ A synthetic boundary test accepted `u32::MAX - 1` and rejected `u32::MAX` in bounded debug and optimized release runs.
+ No actual oversized document was allocated or passed through the upstream parser,
+ so this verifies the guard's arithmetic and ordering in source,
+ not a user-boundary result for a multi-gigabyte input.
  This validates a raw-syntax candidate,
  not key/value attachment,
  exact-value projection,
