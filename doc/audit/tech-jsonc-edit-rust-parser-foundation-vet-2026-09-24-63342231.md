@@ -1175,6 +1175,33 @@ The separate scratch differential consumer now imports the Biome-to-value adapte
  Full conformance,
  platform and upstream validation remain open.
 
+### Independent UTF-16 and comment-owner oracle controls
+
+The two Rust projections share `jsonc_parser_probe::decode_quoted`,
+ `jsonc_exact_number_probe::identity`,
+ and `ValueKind`
+ (`~/temp/agent/biome-projection-probe/src/lib.rs:30-66,82-109`).
+ The after-emission comparison also uses the owned writer
+ (`~/temp/agent/jsonc-foundation-diff/src/lib.rs:108-112`).
+ Thus comparing their nodes alone cannot validate a shared string decoder or normalizer.
+ A separate `mise run audit:utf16-oracle` Node script used `JSON.parse` plus `charCodeAt`
+ to measure code units without either Rust parser:
+ escaped lone high `[55296]`,
+ escaped lone low `[56320]`,
+ escaped U+FFFD `[65533]`,
+ escaped non-BMP pair and literal `😀` both `[55357,56832]`,
+ and literal or escaped `a` both `[97]`.
+ The independent comparison at `~/temp/agent/jsonc-foundation-diff/src/lib.rs`
+ now asserts those exact units **and distinct raw source spelling** for both parser candidates.
+ Separate fixtures put `/*α😀*/` after a literal or escaped object key,
+ verify that comment on the value rather than key,
+ and assert ownership after shared canonical emission and reparse.
+ A prior BOM admission mismatch and intentionally moved value comment remain positive controls.
+ Bounded debug and optimized release `mise run test:isolated` suites each passed six tests,
+ including the independent controls;
+ this validates those measured examples,
+ not all malformed inputs or the shared emitter's implementation in isolation.
+
 ### Bounded parse-performance preparation
 
 The scratch differential consumer now has `src/bin/bench.rs` and a `mise run bench:isolated` task,
