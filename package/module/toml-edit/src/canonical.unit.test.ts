@@ -37,6 +37,13 @@ await describe({
     },),
 
     it({
+      name: 'defaults to explicit rather than dotted key creation',
+      fn: async () => {
+        expect(emptyTomlEdit().canonical.preferDottedKeysForCreate,).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'canonical overrides retain an empty source',
       fn: async () => {
         const edit = emptyTomlEdit({ canonical: { indent: 4, }, },);
