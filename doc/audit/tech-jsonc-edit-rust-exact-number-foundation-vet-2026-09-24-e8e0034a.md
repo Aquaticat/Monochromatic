@@ -212,6 +212,16 @@ None has yet passed the full vet gates.
   As a grammar validator and token holder combined with our exact comparator it remains eligible for targeted validation.
   Its `src/lib.rs:178-210` uses a checked scan followed by an unsafe cast;
    audit this boundary if used.
+  The published 0.4.10 archive SHA-256 `479dfd2ad8e4b4ae076b031f72ef2f3791f65e2a0f51e5f3408dbf716c4c2f82`
+   matches the generated scratch Cargo.lock checksum.
+  Published `src/lib.rs` and private clone `283af83` both hash to
+   `467186254f8695eba06e5065759056c48b6b832c89dbe39d43d52b73981deff0`.
+  Its selected normal/build graph contains the `lexical` family but no regex-named package or build script in the inspected crate roots.
+  A composed candidate would consume only checked `Number::new`,
+   retain `as_str()` spelling,
+   and delegate equality and hashing to the owned decimal identity;
+   the library's own lexical `Eq` must not leak as public mathematical equality.
+  That composed runtime and its consumer boundary remain unverified.
 - `serde_json` 1.0.151 at `afdf6fc`,
    `src/number.rs:20-25,72-73` derives equality on `Number` and sets its arbitrary-precision inner type to `String`:
 
