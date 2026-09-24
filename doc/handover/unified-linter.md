@@ -499,13 +499,19 @@ Round 8 answer (user,
    such as `"rust/max-lines" = { severity = "error", max = 300 }` (A),
    so a later `{ severity = "warn" }` keeps `max` under deep merge.
 
-Round 9,
-asked 2026-09-23:
+Round 9 answers (user,
+2026-09-23):
 
-- How the commit policy runs one rule:
-   a non-ESLint `--only-rule <id>` reading that rule's settings from the configuration file,
-   or another mechanism.
-- Adoptions open to veto:
+- No flag for running one rule:
+   the commit policy writes a one-rule configuration to a temporary file and passes `--config`,
+   which "can already do this."
+  Consequence adopted from ESLint
+   (`docs/src/use/configure/configuration-files.md:92`):
+   with `--config`,
+   `files` and `ignores` resolve against the working directory,
+   not the configuration file's directory,
+   so a temporary file outside the repository still matches repository paths.
+- The round 9 adoptions were agreed:
    JSONL records keep today's Rust linter shape with the rule id as `code`
    and real-file positions for virtual findings;
    one root lint task and one root format task replace `lint:rust`,
@@ -522,12 +528,20 @@ asked 2026-09-23:
    the 556 findings #559 hides treated as expected differential differences;
    `Edition::CURRENT` for Rust parsing.
 
+Round 10,
+asked 2026-09-23:
+
+- Drop `--rule` too,
+   since a temporary `--config` covers its uses and it has no consumer.
+
 Waiting on research:
 the Markdown parser crate
 and the deep-merge crate.
 
 ## Next action
 
-Collect round 9 answers and both vets,
+Collect the round 10 answer and both vets,
 record them here,
-then ask round 10.
+ask the crate choices,
+then write `doc/planning/unified-linter.md` with a draft configuration
+and ask the user to confirm a shared understanding.
