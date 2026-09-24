@@ -65,9 +65,11 @@ label, or relationship in chat; no A/B/C cell choice is needed yet.
 light/dark mobile/desktop captures, and a PDF whose text retained hidden-on-screen history.
 `mise run test:firefox-ux` passed on Firefox ESR 140.16.0 for both the standalone scene
 and the focused self-contained review.
-`present-ux-clarity-review.mjs` opened a separate headed Helium tab,
-retaining the tabs observed immediately before presentation; its handoff JSON records the
-current URL, example state, and system dark mode.
+`present-ux-clarity-review.mjs` opened the latest focused review in a separate headed Helium tab,
+retaining the two tabs observed immediately before that presentation (three tabs afterwards).
+The active title is "Settlement factory: clear controls (latest review)";
+`ux-clarity-review-handoff.json` records its URL, example state, and system dark mode.
+The earlier focused tab was not reloaded or closed.
 
 ## Origin and measured defects
 
