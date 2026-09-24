@@ -16,7 +16,8 @@ The issue reports a 2.3 ms VM startup difference when importing the logger into 
  and the affected consumer temporarily uses `helpers/src/qjs-log.ts` in `Aquaticat/labwc-config`.
 That consumer writes to stderr;
  QuickJS-ng's `console.log` writes to stdout.
-These are different contracts, even if the exception is repaired.
+These are different contracts,
+ even if the exception is repaired.
 
 ## Root cause
 
@@ -38,7 +39,8 @@ fflush(stdout);
 
 At the pre-fix repository commit `193dd7eab`,
  `package/module/logger/src/sink/console.ts:381-385` required a severity method,
- not `console.log`, to verify:
+ not `console.log`,
+ to verify:
 
 ```ts
 const testFn = hasProcessStderr() ? console.info : console.debug;
@@ -62,14 +64,16 @@ if ((typeof consoleFn) === 'function') {
 
 The `qjs` CLI does not install global timer functions:
  `quickjs-libc.c:4444-4445` registers `setTimeout` and `setInterval` on the
- `qjs:os` module, while `quickjs-libc.c:4603-4624` adds console and print globals.
+ `qjs:os` module,
+ while `quickjs-libc.c:4603-4624` adds console and print globals.
 QuickJS-ng's `quickjs.c:57218` provides `queueMicrotask` as a global:
 
 ```c
 JS_CFUNC_DEF("queueMicrotask", 1, js_global_queueMicrotask ),
 ```
 
-Before the fix, `package/module/logger/src/create-logger.ts:351-358,560-565`
+Before the fix,
+ `package/module/logger/src/create-logger.ts:351-358,560-565`
  called `withTimeout` during verification and flush.
 The dependency `package/module/async-time/src/with-timeout.ts:56-61`
  requires a global timer even if the operation's promise has already resolved:
@@ -117,7 +121,9 @@ Observed:
 ```
 
 The committed regression test `package/module/logger/src/quickjs-compat.unit.test.ts`
- simulates a console with only `log`, absent timers, and absent reporting methods
+ simulates a console with only `log`,
+ absent timers,
+ and absent reporting methods
  against the built neutral artifact.
 Build and run it with:
 
@@ -161,7 +167,9 @@ deno bundle --platform=browser --external=qjs:* --node-modules-dir=manual --outp
 ```
 
 On 2026-09-24,
- stdout carried the tagged info, warn, and error lines and the internal `failure report`;
+ stdout carried the tagged info,
+ warn,
+ and error lines and the internal `failure report`;
  stderr carried `imported` and `flushed-and-reported`.
 Import and `tagged()` produced no logger output before the first log call.
 The final marker proves that `flush()` and the failing sink's verification completed.
@@ -187,8 +195,12 @@ For an indicative startup check,
  a mount-free `node:26-slim` container with the `qjs` binary and bundles baked in
  ran a bounded Node `spawnSync` harness under `podman run --memory=2g --cpus=2 --rm`.
 Three unchanged-build rounds (five warmups and forty invocations each)
- gave medians of 3.403, 3.534, and 3.562 ms for the bundled logger fixture,
- versus 1.650, 1.643, and 1.697 ms for a bare three-line `console.log` control.
+ gave medians of 3.403,
+ 3.534,
+ and 3.562 ms for the bundled logger fixture,
+ versus 1.650,
+ 1.643,
+ and 1.697 ms for a bare three-line `console.log` control.
 The logger fixture additionally creates a failing custom sink,
  so the difference is not an isolated import cost.
 The unchanged-build median spread was 0.159 ms for the logger
@@ -222,7 +234,8 @@ This container is not the physical desktop and does not establish the consumer's
 - Only guarding `console.warn` leaves sink verification failing,
   and a console-only host still drops missing severity methods.
 - Importing `qjs:os` as a global timer substitute does not automatically install
-  `setTimeout` on `globalThis`; its timer functions are module exports
+  `setTimeout` on `globalThis`;
+   its timer functions are module exports
   (`quickjs-libc.c:4444-4445`):
 
   ```c
@@ -242,31 +255,40 @@ Searches of open and closed QuickJS-ng issues and PRs for
  `console.warn console.error` found no matching thread.
 No QuickJS-ng report is warranted:
 
-- **Upstream fault:** no.
+- **Upstream fault:**
+   no.
   The QuickJS-ng standard-library documentation at `docs/docs/stdlib.md:24-26`
-  explicitly lists `console.log`, and the implementation matches it:
+  explicitly lists `console.log`,
+   and the implementation matches it:
 
   ```md
   ### `console.log(...args)`
 
   Same as `print()`.
   ```
-- **Upstream fixability:** yes in principle,
+- **Upstream fixability:**
+   yes in principle,
   but adding browser console aliases or global timers would expand QuickJS-ng's API,
   not repair this logger's assumptions.
-- **Supported use case:** no evidence that `qjs` promises a full browser console
-  or global timers; its documented `qjs:os` module owns the timers.
-- **Contribution welcome:** the tag's `README.md` and repository file list
+- **Supported use case:**
+   no evidence that `qjs` promises a full browser console
+  or global timers;
+   its documented `qjs:os` module owns the timers.
+- **Contribution welcome:**
+   the tag's `README.md` and repository file list
   showed no contribution ban or special AI-report policy;
   that observation does not make an unrelated feature request appropriate.
-- **Likely upstream fix:** no maintainer commitment was found for this request;
+- **Likely upstream fix:**
+   no maintainer commitment was found for this request;
   the reported behavior follows the documented API,
   so this is not an upstream defect to fix.
-- **Architecture-compatible upstream prototype:** not applicable because the
+- **Architecture-compatible upstream prototype:**
+   not applicable because the
   correction belongs to `module-logger`;
   the verified package patch and regression test are committed here.
 
-**Upstream filing artifact:** nothing to add to the QuickJS-ng tracker.
+**Upstream filing artifact:**
+ nothing to add to the QuickJS-ng tracker.
 A new issue there would misattribute the failure.
 The relevant downstream follow-up belongs in `Aquaticat/labwc-config`
  to evaluate migration without changing its hot-path budget or stderr/journal behavior.
