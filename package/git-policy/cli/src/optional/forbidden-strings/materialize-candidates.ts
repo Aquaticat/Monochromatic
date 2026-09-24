@@ -196,19 +196,27 @@ export async function materializeCandidates(
    writer racing temporary-root removal.
    */
   const writes = await Promise.allSettled(laneWrites,);
-  for (const write of writes) {
-    if (write.status === 'rejected') {
-      await rm(
-        directory,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-      // A candidate byte-loader exception may contain the original forbidden
-      // pathname or content. Never propagate its message or cause to host events.
-      throw new ForbiddenStringsPluginError('Forbidden-strings candidate bytes could not be materialized.',);
+  /**
+   Failed lane flag computed after all lanes have stopped writing.
+   */
+  const failed = (function anyLaneFailed(): boolean {
+    for (const write of writes) {
+      if (write.status === 'rejected')
+        return true;
     }
+    return false;
+  })();
+  if (failed) {
+    await rm(
+      directory,
+      {
+        recursive: true,
+        force: true,
+      },
+    );
+    // A candidate byte-loader exception may contain the original forbidden
+    // pathname or content. Never propagate its message or cause to host events.
+    throw new ForbiddenStringsPluginError('Forbidden-strings candidate bytes could not be materialized.',);
   }
   return {
     paths,
