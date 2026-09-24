@@ -502,11 +502,24 @@ Round 7 answers (user,
    keeps source positions,
    and adds no dependency;
    the crates add 2.59 s to 9.68 s of CPU time to a clean dev build.
-  Agent adoption,
-   open to veto in round 11:
-   the in-linter function with deepmerge-ts's one-call semantics,
-   since the user chose deepmerge-ts and prioritizes compile speed;
-   `null` and duplicate keys are rejected as configuration errors.
+  The agent proposed an in-linter function;
+   the user decided instead:
+   "We'll port deepmerge-ts to Rust as a separate pkg."
+  The linter rejects `null` and duplicate keys in its configuration before merging.
+  deepmerge-ts is BSD-3-Clause (Copyright (c) 2021,
+   Rebecca Stevens),
+   so the port must keep that notice.
+  crates.io names checked free on 2026-09-23:
+   `deepmerge-ts`,
+   `deepmerge-rs`,
+   `deep-merge`,
+   `monochromatic-deepmerge`,
+   `deepmerger`,
+   `merge-deep`.
+- Licence gap found on the way:
+   `package/cli/markdown-lint/README.md` says rule logic ported from markdownlint is recorded under `LICENSES/`,
+   but no markdownlint notice exists anywhere in the repository
+   (search for its author's copyright line found nothing).
 
 Round 8 answer (user,
 2026-09-23):
@@ -551,14 +564,33 @@ Round 10 answer (user,
    settings come only from a configuration file,
    and a temporary `--config` covers one-off changes.
 
+Round 11,
+asked 2026-09-23,
+about the deepmerge-ts port:
+
+- Scope:
+   default merge only,
+   or also `deepmergeCustom` customizers.
+- Value model:
+   a trait the caller implements for its own tree,
+   the port's own value type,
+   or `serde_json::Value`.
+- Crate name and location.
+- Licence:
+   BSD-3-Clause like upstream,
+   or the repository's LGPL-3.0-or-later with upstream's notice kept.
+- Adoptions open to veto:
+   deepmerge-ts's test suite plus the vet's 33 probe cases as the port's specification;
+   published through `cargo-publish.yml` like the linter;
+   the Rust port of markdownlint-derived rules carries markdownlint's MIT notice.
+
 Waiting on research:
-the Markdown parser crate
-and the deep-merge crate.
+the Markdown parser crate.
 
 ## Next action
 
-Collect the round 10 answer and both vets,
+Collect round 11 answers and the parser vet,
 record them here,
-ask the crate choices,
+ask the parser choice,
 then write `doc/planning/unified-linter.md` with a draft configuration
 and ask the user to confirm a shared understanding.
