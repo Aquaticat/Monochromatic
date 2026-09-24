@@ -172,8 +172,14 @@ Both local delegated `rg` queries were blocked by its security guardrail,
    that application release is not a publication of this Rust crate.
    A GitHub commits API query filtered to `crates/biome_json_parser` since 2025-09-24 returned 18 path-touching commits,
    including `chore(tooling): publish crates` at `9dcc25547` on 2026-09-19.
-   Source activity does not establish a released Rust artifact;
-   that publishing change and maintainer response history still need inspection.
+   `RELEASES.md:33-39` in upstream checkout `2f629c5` explicitly says internal crates publish on demand,
+   rather than alongside every application release.
+   `CONTRIBUTING.md:542-547` describes manual workflow dispatch and an automated release PR;
+   `.github/workflows/publish-crates.yml:1-19,72-152` publishes on merger of that PR.
+   A repository PR query showed no open `automated-release/crates` branch at this check.
+   The 2024 crates.io version alone therefore does not prove the parser source is abandoned,
+   but the newer checked-out source is not the published dependency being evaluated.
+   Maintainer response history and platform suites still need inspection.
 
 ### `jwc` 0.1.0
 
