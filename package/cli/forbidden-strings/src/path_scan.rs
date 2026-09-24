@@ -42,54 +42,65 @@ pub(crate) fn repository_root() -> Option<std::path::PathBuf> {
 /// Chooses a repository-relative name for files inside the repository.
 ///
 /// Paths outside a repository and standalone invocations retain all supplied
-/// pathname segments. The file is canonicalized only for deciding whether it
-/// is inside the repository; the content read still uses its supplied path.
+/// pathname segments. Lexical normalization removes navigation markers without
+/// following symlinks: the selected link name, not its target, must be scanned.
 pub(crate) fn logical_path(path: &str, root: Option<&Path>) -> String {
     let Some(root) = root else {
         return path.to_string();
     };
-    let Ok(absolute) = std::fs::canonicalize(path) else {
-        return path.to_string();
+    let input = Path::new(path);
+    let absolute = if input.is_absolute() {
+        input.to_path_buf()
+    } else {
+        let Ok(cwd) = std::env::current_dir() else {
+            return path.to_string();
+        };
+        cwd.join(input)
     };
-    if let Ok(relative) = absolute.strip_prefix(root) {
-        if let Some(name) = relative.to_str() {
-            return name.to_string();
+    let mut normalized = std::path::PathBuf::new();
+    for part in absolute.components() {
+        if part == std::path::Component::ParentDir {
+            normalized.pop();
+        } else if part != std::path::Component::CurDir {
+            normalized.push(part.as_os_str());
         }
     }
+    if let Ok(relative) = normalized.strip_prefix(root)
+        && let Some(name) = relative.to_str() {
+            return name.to_string();
+        }
     return path.to_string();
 }
 
-/// Converts control characters to visible escapes without altering Unicode text.
+/// Escapes reserved protocol colons and control characters in visible names.
 ///
-/// A pathname containing a newline must not inject another protocol record.
+/// A literal `:name:` must never be confused with the finding-kind separator,
+/// and a newline must never inject another protocol record.
 fn safe_component(component: &str) -> String {
-    return component.chars().flat_map(char::escape_debug).collect();
+    let mut safe = String::new();
+    for ch in component.chars() {
+        if ch == ':' {
+            safe.push_str("\\:");
+        } else {
+            safe.extend(ch.escape_debug());
+        }
+    }
+    return safe;
 }
 
-/// Matches one non-empty name component as one or more engine lines.
+/// Matches one non-empty, single-line name component against all loaded sets.
 ///
-/// Unix pathname components may contain newlines even though Git normally does
-/// not. Feeding each newline-delimited portion through the same engine prevents
-/// a rule from matching across that boundary. The component is still one name.
+/// The engine treats a trailing CR or LF as a content-line terminator, which
+/// would change anchor semantics for a filename. Callers fail closed on those
+/// pathname bytes instead of misrepresenting an incomplete name as a match.
 fn matching_rules(component: &str, loaded: &LoadedRules) -> Result<Vec<String>, ()> {
     let mut rules: Vec<String> = Vec::new();
     for set in loaded.iter_sets() {
-        let matcher = AssertUnwindSafe(|| {
-            let mut ids: Vec<usize> = Vec::new();
-            for portion in component.as_bytes().split(|byte| return *byte == b'\n') {
-                if portion.is_empty() {
-                    continue;
-                }
-                ids.extend(set.matcher.line_matches(portion, &[0]).into_iter().map(|(_, id)| return id));
-            }
-            ids.sort_unstable();
-            ids.dedup();
-            return ids;
-        });
+        let matcher = AssertUnwindSafe(|| return set.matcher.line_matches(component.as_bytes(), &[0]));
         let Ok(ids) = catch_unwind(matcher) else {
             return Err(());
         };
-        rules.extend(ids.into_iter().map(|id| return rule_token(set.base, &set.names, id)));
+        rules.extend(ids.into_iter().map(|(_, id)| return rule_token(set.base, &set.names, id)));
     }
     return Ok(rules);
 }
@@ -107,7 +118,19 @@ pub(crate) fn scan_path(path: &str, loaded: &LoadedRules) -> PathScan {
     let mut matches: Vec<(usize, Vec<String>)> = Vec::new();
     let mut position = 0;
     for component in components {
+        if component.contains('\n') || component.contains('\r') {
+            return PathScan {
+                display: REDACTED.to_string(),
+                findings: vec![format!("{}: unsupported pathname line break", REDACTED)],
+            };
+        }
         if component.is_empty() || component == "." || component == ".." {
+            displayed.push(safe_component(component));
+            continue;
+        }
+        // The native drive or network root is not a directory name.
+        if cfg!(windows) && position == 0 && component.len() == 2
+            && component.as_bytes()[1] == b':' && component.as_bytes()[0].is_ascii_alphabetic() {
             displayed.push(safe_component(component));
             continue;
         }

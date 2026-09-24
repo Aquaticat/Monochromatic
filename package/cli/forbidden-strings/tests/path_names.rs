@@ -17,6 +17,13 @@ fn fixture(label: &str) -> PathBuf {
     return dir;
 }
 
+/// Starts a scanner with a test-owned disposable runtime cache.
+fn scanner(root: &std::path::Path) -> Command {
+    let mut command = Command::new(BIN);
+    command.env("FORBIDDEN_STRINGS_CACHE_DIR", root.join("cache"));
+    return command;
+}
+
 /// Exercises name-only, content-only, and combined redaction at the CLI boundary.
 #[test]
 fn pathname_hit_masks_the_name_in_every_finding() {
@@ -25,7 +32,7 @@ fn pathname_hit_masks_the_name_in_every_finding() {
     fs::write(&rules, "VAULTTOKEN_LONG\n").expect("write rules");
     let source = root.join("content-only.txt");
     fs::write(&source, "VAULTTOKEN_LONG\n").expect("write candidate bytes");
-    let output = Command::new(BIN)
+    let output = scanner(&root)
         .current_dir(&root)
         .args(["--rules", "rules.txt", "--name-path", "private/VAULTTOKEN_LONG.txt"])
         .arg(&source)
@@ -49,7 +56,7 @@ fn walked_directory_name_fails_with_clean_content() {
     let directory = root.join("VAULTTOKEN_LONG");
     fs::create_dir(&directory).expect("create forbidden directory");
     fs::write(directory.join("clean.txt"), "harmless\n").expect("write clean file");
-    let output = Command::new(BIN)
+    let output = scanner(&root)
         .current_dir(&root)
         .args(["--rules", "rules.txt", "--all"])
         .output()
@@ -70,7 +77,7 @@ fn explicit_external_parent_is_scanned() {
     fs::create_dir(&parent).expect("create external directory");
     let file = parent.join("clean.txt");
     fs::write(&file, "harmless\n").expect("write clean file");
-    let output = Command::new(BIN)
+    let output = scanner(&root)
         .current_dir(&root)
         .args(["--rules", "rules.txt"])
         .arg(&file)
@@ -88,7 +95,7 @@ fn explicit_external_parent_is_scanned() {
 fn name_override_count_must_equal_content_file_count() {
     let root = fixture("mapping-count");
     fs::write(root.join("rules.txt"), "VAULTTOKEN_LONG\n").expect("write rules");
-    let output = Command::new(BIN)
+    let output = scanner(&root)
         .current_dir(&root)
         .args(["--rules", "rules.txt", "--name-path", "one.txt"])
         .output()

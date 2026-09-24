@@ -544,6 +544,9 @@ PATH:name:SEGMENT rule=<token>
 - An offending segment is replaced in full with `[REDACTED]` in every finding,
   including content findings and read errors for the same file.
   Other segments stay visible; no column range is reported.
+  Control characters and colons in visible segments are escaped to protect
+  the output protocol. A line break within a name produces a redacted,
+  fail-closed diagnostic because the engine's anchored rules require a single line.
 - The ordinary file-selection and exclusion rules still apply.
   Repository files use repository-relative names.
   Explicit external paths or standalone scans check all segments of the supplied pathname.
