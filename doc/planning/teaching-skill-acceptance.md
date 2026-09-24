@@ -230,6 +230,8 @@ Control-affordance counterexamples:
   onto the belt, or treating a performance-grade face as a Promise-outcome indicator.
 - One drawn object is simultaneously the processed material, the durable Promise identity,
   and the public-looking outcome marking without explaining the distinct lifetimes.
+- A belt labeled as observed outcomes stays empty after the current Promise is observed settled;
+  it records that outcome only when Create makes a later Promise, implying the wrong cause.
 - A value snapshot present in the lesson is dropped from a redesign of the same section.
 
 The Promise lesson uses literal JSON beside live Showify snapshots,

@@ -41,10 +41,14 @@ a separate observer display, and earlier Promise records; its browser, Firefox E
 and PDF text checks passed before integration.
 A-neutral was then selected for lesson integration under the user's delegated design choice;
 full-width code and neutral observed-outcome cues avoid the old grid and game-grade confusion.
-A-neutral is now generated into the local lesson; the final combined suite, Firefox ESR,
-actual downloads, native print, and independent PDF text inventory passed;
-[the settlement-UX handover](../handover/promises-settlement-ux.md) records the evidence,
-superseded models, current artifact, and next actions.
+A-neutral was generated into the local lesson; its combined suite, Firefox ESR,
+actual downloads, native print, and independent PDF text inventory passed.
+The user then found that an observed outcome entered the belt only after a later Create action.
+The corrected lesson records each outcome when its observer reports it, including the current
+Promise, while leaving the ticket available for ignored calls. Targeted checks pass;
+the corrected version's full verification is pending.
+[The settlement-UX handover](../handover/promises-settlement-ux.md) records the evidence,
+superseded models, artifact versions, and verification status.
 Earlier critiques rejected a detached opening and forced chat turn-taking.
 The shop opening, reference chat, and reading backgrounds have since been corrected and operationally checked.
 The quick scan is not learner-performance evidence or approval of the final skill.
