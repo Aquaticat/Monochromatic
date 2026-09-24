@@ -71,9 +71,13 @@ export type MaterializedCandidates = Readonly<{
    */
   paths: readonly string[];
   /**
-   Exact scanner path to policy candidate lookup.
+   Real candidate names aligned with temporary content paths.
    */
-  candidatesByPath: ReadonlyMap<string, CandidateFile>;
+  namePaths: readonly string[];
+  /**
+   Exact policy candidates aligned with scanner operand indexes.
+   */
+  candidates: readonly CandidateFile[];
   /**
    Removes plugin-owned files.
    */
@@ -192,24 +196,10 @@ export async function materializeCandidates(
   await Promise.all(laneWrites,);
   return {
     paths,
-    candidatesByPath: new Map(paths.map(function mapCandidate(
-      path,
-      index,
-    ): readonly [
-      string,
-      CandidateFile
-    ] {
-      /**
-       Candidate aligned with generated path.
-       */
-      const candidate = contentCandidates[index];
-      if (candidate === undefined)
-        throw new Error('Candidate materialization index was not aligned.',);
-      return [
-        path,
-        candidate,
-      ];
-    },),),
+    namePaths: contentCandidates.map(function candidateName(candidate,): string {
+      return candidate.path;
+    },),
+    candidates: contentCandidates,
     async [Symbol.asyncDispose](): Promise<void> {
       await rm(
         directory,
