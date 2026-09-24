@@ -52,7 +52,7 @@ const PNPM_STORE = '.pnpm';
 /**
  Rsync exclude patterns for generated or heavyweight repository artifacts.
  */
-const RSYNC_EXCLUDES: readonly string[] = [
+export const RSYNC_EXCLUDES: readonly string[] = [
   '**/node_modules',
   '**/dist',
   '**/.git',
