@@ -1175,6 +1175,26 @@ The separate scratch differential consumer now imports the Biome-to-value adapte
  Full conformance,
  platform and upstream validation remain open.
 
+### Biome recovery-to-editor-value boundary
+
+Published `biome_json_parser` 0.5.7 builds an error-tolerant syntax tree
+ (`src/lib.rs:19-47`);
+ `JsonParse::has_errors` tests diagnostic error severity (`src/lib.rs:82-91`).
+ The scratch editor wrapper checks `has_errors` **before** reading a root node or projecting values
+ (`~/temp/agent/jsonc-regex-audit/biome/lib.rs:31-43`).
+ A new positive-controlled test passed three malformed sources with a completed root or nested subtree:
+ trailing non-JSON text,
+ an invalid array child after a valid object,
+ and a missing member separator.
+ For each,
+ the direct upstream syntax result had error diagnostics **and** an accessible typed root,
+ while `parse_for_editor` returned an error rather than that apparently usable tree.
+ Both bounded debug and optimized release wrapper suites passed 15 tests.
+ This establishes the wrapper check for those recoverable fixtures,
+ not a proof that every possible bogus node produces an error diagnostic.
+ Duplicate-key behavior remains outside the user's supported contract;
+ these tests do not claim a duplicate-key policy.
+
 ### Independent UTF-16 and comment-owner oracle controls
 
 The two Rust projections share `jsonc_parser_probe::decode_quoted`,
