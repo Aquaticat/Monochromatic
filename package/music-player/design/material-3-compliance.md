@@ -804,6 +804,15 @@ say baseline list items have square corners,
 targets;
  the 16dp selected-item corner belongs to **Expressive** lists and must not
 be silently combined with the baseline Search choice.
+ `ListItem.kt:1148-1150`
+chooses [ListTokens.ItemTwoLineContainerHeight][list-tokens] for a two-line item;
+that value is **72dp**,
+ with 24dp leading icons and BodyLarge/BodyMedium label text.
+The corrected Slint study now uses continuous 72px two-line rows.
+ Its 360px
+larger-text test uses 96px rows as an explicit stress adaptation,
+ not a baseline
+token or proof of an automatic breakpoint.
  The command palette's
 keyboard-current row is a custom focus state,
  not a persistent selected folder;
@@ -866,3 +875,4 @@ hotkey feasibility.
 [search-bar-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SearchBarTokens.kt
 [search-view-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SearchViewTokens.kt
 [shape-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ShapeTokens.kt
+[list-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ListTokens.kt
