@@ -12,6 +12,8 @@ Design interview in progress. No implementation is authorized until the user con
 - The separate monorepo-manager design selects a Rust `jsonc-parser` wrapper for meow in `doc/planning/monorepo-manager-from-scratch-design.md`, under "Managed file editing". This port does not silently change that decision.
 - `package/rust-module/forbidden-regex/Cargo.toml` is a standalone, published Rust-library precedent, while `.github/workflows/cargo-publish.yml` currently handles only the named crates in its dispatch and push paths.
 - `mise exec rust -- cargo info jsonc-edit` and the same probe for `monochromatic-jsonc-edit` both reported that the package could not be found in the registry; neither name is reserved by that probe. `cargo search serde_json --limit 2` returned results as a positive control for registry queries.
+- `scanString` uses `JSON.parse(raw)` in `package/module/jsonc-edit/src/scan.ts`, so escaped unpaired UTF-16 surrogates are accepted. A direct call through the existing neutral bundle parsed `{"s":"\uD800"}` and `{"s":"\uD800",} // c` as a string whose first code unit is 55296, and re-emitted each. Rust `String` cannot represent this decoded code unit alone. Its native value representation requires a decision.
+- A direct bundle probe showed a clean `{"n":1e0}` emits a number spelled `1`, while a commented `{"n":1e0,} // c` preserves `1e0`. This matches the `JSON.parse` clean fast path and structured parser implementation. Q6's spelling preservation is a stronger contract than current clean-path behavior, and Q8 requires a corresponding TypeScript fix if that contract remains shared.
 - The [Cargo publishing guide](https://doc.rust-lang.org/cargo/reference/publishing.html) says published versions cannot be overwritten or deleted. The [crates.io Trusted Publishing guide](https://crates.io/docs/trusted-publishing) says initial publication requires an API token before trusted publishing can be configured for the crate. Existing workflow comments on the library's first release describe manual bootstrap.
 
 ## Decisions from the user
@@ -19,7 +21,7 @@ Design interview in progress. No implementation is authorized until the user con
 - Q1: Build for native Rust callers only. Do not require JavaScript bindings or browser execution of the Rust code.
 - Q2: Maintain the TypeScript package alongside the Rust implementation. Do not freeze or retire it as part of this port.
 - Q3: Expose an idiomatic Rust API with the equivalent public capabilities, rather than copying TypeScript call syntax.
-- Q4: Expose exact JSON numeric values rather than JavaScript-number semantics. Preserve source number spelling for unedited literals as part of the established serialization contract.
+- Q4: Expose exact JSON numeric values rather than JavaScript-number semantics. Q6 strengthens source-spelling preservation for unedited literals, including clean input where the TypeScript fast path currently loses it.
 - Q5: Duplicate object keys are user error and outside the supported behavioral contract. Interpret "undefined behavior" as unspecified library results for unsupported input, never permission for Rust memory unsafety or an unsafe-language contract; do not promise a particular parse or edit result for duplicates.
 - Q6: Exact numeric values compare mathematically: `1`, `1.0`, and `1e0` compare equal. An unedited number retains its source spelling on output.
 - Q7: Each edit returns a new state; the previous state remains usable. Do not make in-place mutation the public editing contract.
@@ -34,19 +36,19 @@ A port retains the documented identity of the TypeScript library: JSONC containe
 
 ## Open decisions
 
-- Exact public API surface, including low-level parse and emit capabilities, and whether internal artifact-test helpers remain public.
 - First-publish authentication and workflow path, without asking for or exposing secrets. A local Cargo credential file exists, and `gh api user --jq .login` returned `Aquaticat`; neither proves crates.io publication rights or token validity.
 - Native dependency foundation is a research and verification task, subject to the repository's choosing-technology gates rather than another user preference.
 - Recheck name availability immediately before publish; registry lookup does not reserve names.
+- Decide whether escaped unpaired surrogate values remain supported through a Rust UTF-16-capable value representation or become an explicit language exception.
 
 ## Implementation baseline for confirmation
 
 - Place the standalone crate in `package/rust-module/jsonc-edit`, with package name `monochromatic-jsonc-edit`, using the repository's Rust package tasks and license precedent. Use `0.1.0` for its first release, following existing Rust-library versions; preserve the current library's LGPL-3.0-or-later license. These are repository defaults, not separate changes to the user's requirements.
 - Port the public parser, emitter, edit, navigation, errors, node and comment capabilities. Internal artifact-test helpers need tests, not identical public Rust exports. Preserve container-root JSONC syntax and canonical formatting. Edits are immutable. Document and test the exact-number divergence.
 - Reuse the existing TypeScript conformance and property cases through language-neutral fixtures, adding focused differential tests for comments, edits, and output. When a supported-behavior defect is confirmed with a failing test, fix both maintained implementations, with documented exceptions for exact Rust numbers.
-- Choose parser or numeric dependencies only after applicable source and consumer-boundary vetting. Do not adopt meow's selected editor merely because it exists, and do not replace meow's editor as part of this port.
+- Evaluate parser or numeric dependencies under the choosing-technology gates. Present the evidence, ranking, and risks; get explicit adoption of the foundation before dependent implementation or a decision record. Do not adopt meow's selected editor merely because it exists, and do not replace meow's editor as part of this port.
 - Verify the packaged crate by building and calling it from a disposable Rust consumer, then publish the checked artifact using an authorized token route. Extend the existing release workflow for subsequent releases only after the first publication, when the crate can be configured for trusted publishing.
 
 ## Next action
 
-Ask the user to confirm the complete design before any implementation or publication. If confirmed, investigate the foundation and release mechanics, implement, verify and publish; if not, resume the design tree at the disputed decision.
+Ask the user to decide the Rust string-value domain, then confirm the complete requirements before implementation or publication. After confirmation, evaluate the foundation and request adoption of a vetted recommendation before implementation depends on it. Verify and publish only after those gates pass.
