@@ -30,6 +30,7 @@ Requirements confirmed by the user on 2026-09-24 ("Do it."). Implementation is a
 - Q10: Publish the native Rust crate as part of this port, rather than keeping it private or only publication-ready.
 - Q11: Name the published crate `monochromatic-jsonc-edit`, not `jsonc-edit`.
 - Q12: Preserve support for escaped unpaired UTF-16 surrogates in Rust string values. Provide a representation that retains the code units and a fallible conversion to Rust `String` for values that cannot be expressed in UTF-8.
+- Q13: Cull foundations whose production parser or lexer uses regular expressions. The original TypeScript parser scans characters directly, and regex is unnecessary for this port. A test-only or dev-only regex dependency does not itself make a production parser regex-based; inspect actual dependency paths before clearing a candidate.
 
 ## Working baseline
 
@@ -60,7 +61,7 @@ Freeze this numeric-foundation discovery schedule before running it:
 
 One de-duplicated expansion round after initial taxonomy findings: registry `cargo search 'json number' --limit 100` and `cargo search 'decimal arbitrary exponent' --limit 100`; repository host `gh search repos 'rust json number' --limit 100 --json fullName,url,description,updatedAt`; web `Rust lexical JSON number numeric equality arbitrary exponent crate`. Freeze after this round. Registry pagination uses the crates.io API through the rendered web-fetch transport when direct `curl` cannot read it; inspect whole pages until two consecutive pages add no screening survivor or the provider is exhausted.
 
-Compare a verified raw-token representation owned by the crate with available exact-decimal components. A component must support exact value comparison over the admitted JSON-number grammar, preserve original literal spelling on unedited output, and avoid silent rounding or unbounded recursion. Maintain the parser-foundation query record separately when its research returns. No candidate is recommended from these queries alone.
+Compare a verified raw-token representation owned by the crate with available exact-decimal components. Cull components whose production path uses regex. A component must support exact value comparison over the admitted JSON-number grammar, preserve original literal spelling on unedited output, and avoid silent rounding or unbounded recursion. Maintain the parser-foundation query record separately when its research returns. No candidate is recommended from these queries alone.
 
 ## Parser foundation discovery expansion
 
@@ -71,7 +72,7 @@ The delegated parser survey froze and ran its initial queries before source read
 - Web: `Rust JSONC lossless CST raw token UTF-16 unpaired surrogate crate` and `Rust JSON with comments lexer preserve raw escape JSONC parser alternative`.
 - In-repo taxonomy: `doc/decision/jsonc-edit-parser-foundation.md`, `package/module/jsonc-edit/src/`, and `doc/planning/monorepo-manager-route-research/rust-structured-edits.md`.
 
-Later taxonomy terms are recorded without scheduling recursive expansion. Discovery metadata is not a library recommendation.
+Later taxonomy terms are recorded without scheduling recursive expansion. Discovery metadata is not a library recommendation. As an early hard gate, reject regex-backed production lexers: `edikt-jsonc` uses `logos` with `#[regex(...)]` token patterns ([`edikt-jsonc` 0.4.0 lexer](https://docs.rs/crate/edikt-jsonc/0.4.0/source/src/lexer.rs), lines 47 to 69) and is culled. `json-five` lists `regex` only under dev-dependencies and has no regex use in its inspected runtime `src/`; this alone does not cull it. Source searches over `fjson`, `jsonc-parser`, `biome_json_parser`, `jwc`, `hifijson`, and `json-number` found no direct regex calls or macros; transitive production paths still require inspection before clearing them.
 
 ## Next action
 
