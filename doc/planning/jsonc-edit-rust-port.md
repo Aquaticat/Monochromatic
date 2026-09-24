@@ -302,8 +302,8 @@ source-level transitive clearance remains open where required.
    while the commented 513-depth array threw `JsoncParseError: nesting too deep (at offset 513)`.
    `src/parse-jsonc.ts:40-44,108-121` returns `JSON.parse` results before calling `parseValue`,
    bypassing the depth guard documented in `src/parse.ts:22-31,64-70`.
-   The accepted parser-foundation decision says the fast path must not change public behavior
-   (`doc/decision/jsonc-edit-parser-foundation.md`, "Consequences").
+   The accepted parser-foundation decision states:
+   the fast path must not change public behavior (`doc/decision/jsonc-edit-parser-foundation.md`, "Consequences").
    Treat the clean 513-depth acceptance as a confirmed fast-path bypass,
    not a promise of unbounded nesting;
    align both maintained implementations to the structured path's explicit 512-container boundary
