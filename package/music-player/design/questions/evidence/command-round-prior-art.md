@@ -210,5 +210,67 @@ without a new visual review.
  a discoverable in-app entry and the exact
 in-app binding remain open.
 
+## Baseline Material 3 redraw for the current I/G/R form
+
+A2 retains baseline M3,
+ so the earlier Expressive contained Search redraw
+(`c5b3fa31f`) is also an intermediate experiment,
+ not the presented source.
+The local `components/search/specs/manifest.json` provides the original image URLs
+for baseline **divided** Search diagrams `images/34.png` and `images/35.png`;
+requesting their existing image IDs at `=w1200` instead of the archive's `=w40`
+yields readable 72dp full-content and 56dp docked header measurements.
+The AndroidX generated SearchBar,
+ SearchView and Shape tokens confirm a 28dp docked
+outer shape,
+ sharp full-content outer shape,
+ a `surfaceContainerHigh` 56dp header,
+BodyLarge text,
+ and 56dp/72dp expanded header heights.
+ Baseline
+`ExpandedDockedSearchBar` and `ExpandedFullScreenSearchBar` both draw the header
+divider in `SearchBar.kt`.
+ Baseline list items remain square with 16dp label padding;
+16dp selected corners belong to Expressive lists and were removed.
+
+The throwaway prototype source on branch `prototype/music-player-theme-compose` is
+`package/music-player/design/candidates/command-md3-study.slint`.
+ The baseline
+redraw is committed in `0e9624dd2`,
+ with accepted-player transport backdrop
+correction at `7adafa092`.
+ Rendered rasters at
+`questions/render/command-md3-{i,g,r,e}*` are opaque native Slint in both schemes.
+The 56px logical-height comparison at
+`questions/evidence/command-md3-baseline-header-comparison.png` preserves source
+and prototype heights without upscaling;
+ the source crop retains Google's pink
+measurement marks and uses a different palette seed.
+ The screenshot comparison
+establishes geometry and visible hierarchy,
+ not pixel-for-pixel color identity.
+The I1 compact scene samples `surfaceContainerHigh` in its header and `outline`
+at its divider;
+ the focus row has an independent primary outline and state-layer fill.
+That keyboard focus is a disclosed desktop adaptation,
+ not a persistently selected
+folder.
+
+New visual rankings remain **I1 > I2 > I3** for app context,
+ **G2 > G1** for
+preserving the previous task,
+ and **R1 > R2** for dedicated search room.
+The form asks these axes separately;
+ none is a user decision yet.
+ At 360px I1
+reflows to full-content rather than shrinking below the focused Search minimum.
+No runtime hotkey,
+ OS quick window,
+ search index,
+ action execution or native
+accessibility behavior was built by the static Slint study.
+ The exact desktop
+window size remains open and the 1100 × 640px rasters are a stress viewport only.
+
 [jetbrains-search]: https://www.jetbrains.com/help/idea/searching-everywhere.html
 [vscode-palette]: https://code.visualstudio.com/docs/editing/getting-started/userinterface#_command-palette
