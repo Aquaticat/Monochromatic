@@ -257,7 +257,12 @@ The parser/document batch is now running in bounded containers:
  `document-materialize.ts`,
  `value-materialize.ts`,
  `emit-value-node.ts`,
- and `emit-value-string.ts` write `/var/home/user/temp/agent/toml-mutation-materialization.json` (`proc_d9eb`).
+ and `emit-value-string.ts` wrote `/var/home/user/temp/agent/toml-mutation-materialization.json`.
+That batch reported 44 killed,
+ 22 confirmed survivors,
+ 119 compile errors,
+ and no infrastructure errors.
+The parser/build batch is still running.
 Do not edit runtime source until both complete,
  since each shard copies the current tree.
 After triage,
