@@ -63,7 +63,7 @@ await describe({
       name: 'retains parser rejection as the cause of a package error',
       fn: async () => {
         const error = parseFailure('a = \n',);
-        expect(error.message.startsWith('Failed to parse TOML: ',),).toBe(true,);
+        expect(error.message,).toBe('Failed to parse TOML: Unspecified values are invalid',);
         expect(error.cause,).toBeInstanceOf(ParseError,);
       },
     },),
