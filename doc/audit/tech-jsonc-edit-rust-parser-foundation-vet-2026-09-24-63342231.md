@@ -464,15 +464,15 @@ A separate scratch consumer `~/temp/agent/jsonc-foundation-diff/` depends on bot
  bounded source mutations,
  positive mismatch control,
  and stop conditions before execution.
- A bounded debug run passed named accepted/rejected JSONC controls and checked a deliberately mismatching BOM case **before** interpreting the generated comparison.
+ Bounded debug and optimized release runs passed named accepted/rejected JSONC controls and checked a deliberately mismatching BOM case **before** interpreting the generated comparison.
  The fixed single-character mutation corpus contained 5635 distinct inputs;
  both parser boundaries admitted 1577,
- and no syntax-admission difference was measured within that corpus.
+ and no syntax-admission difference was measured within that corpus in either build.
  This is a syntax-domain result under the stated generator,
  not a proof of full JSONC grammar equivalence,
  key/value comment parity,
  or value equality.
- An optimized differential run and consumer-level comment projection remain unverified.
+ Consumer-level comment projection remains unverified.
 
 ## Existing-parser contract exits
 
