@@ -54,3 +54,12 @@ pub use crate::frx_load::{load, load_from_text, LoadedRules};
 /// `scan_file` splits a file's bytes into lines and runs each loaded set under the
 /// fail-closed unwind boundary, returning redacted `PATH:LINE rule=N` findings.
 pub use crate::frx_scan::scan_file;
+
+/// Exercises component-level name scanning without publishing internal matcher types.
+///
+/// The fuzz target checks that every name finding uses the same fully masked
+/// path as content findings, including newlines and repeated components.
+pub fn scan_path_for_fuzzing(path: &str, loaded: &LoadedRules) -> (String, Vec<String>) {
+    let result = crate::path_scan::scan_path(path, loaded);
+    return (result.display, result.findings);
+}

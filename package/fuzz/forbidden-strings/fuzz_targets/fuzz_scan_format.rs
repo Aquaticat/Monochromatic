@@ -19,7 +19,7 @@
 
 use libfuzzer_sys::fuzz_target;
 
-use forbidden_strings::fuzz_api::{load_from_text, scan_file};
+use forbidden_strings::fuzz_api::{load_from_text, scan_file, scan_path_for_fuzzing};
 use forbidden_strings_fuzz::generators::{redacted_fingerprint, RuleFileAndContent};
 
 // The fixed path handed to `scan_file`; findings must interpolate exactly this and two
@@ -111,5 +111,31 @@ fuzz_target!(|input: RuleFileAndContent| {
             redacted_fingerprint(content),
         );
         prev_line = line;
+    }
+
+    // Apply the same compiled rules to a generated pathname with actual segment
+    // separators and adversarial content bytes; all name findings must use the
+    // shared masked label and carry a valid one-based component position.
+    let generated_name = format!("prefix/{}/tail", String::from_utf8_lossy(content));
+    let (display, name_hits) = scan_path_for_fuzzing(&generated_name, &loaded);
+    assert!(!display.contains('\n'), "pathname injected newline ({})", redacted_fingerprint(content));
+    let segment_count = generated_name.split('/').filter(|name| return !name.is_empty() && *name != "." && *name != "..").count();
+    for hit in &name_hits {
+        if hit == "[REDACTED]: engine error" {
+            continue;
+        }
+        let Some((reported, suffix)) = hit.rsplit_once(":name:") else {
+            panic!("missing name locator ({})", redacted_fingerprint(content));
+        };
+        assert_eq!(reported, display, "name finding used wrong display path ({})", redacted_fingerprint(content));
+        let Some((number, token)) = suffix.split_once(" rule=") else {
+            panic!("missing name rule ({})", redacted_fingerprint(content));
+        };
+        let index = number.parse::<usize>().expect("numeric name position");
+        assert!(index > 0 && index <= segment_count, "invalid segment position ({})", redacted_fingerprint(content));
+        assert!(!token.is_empty(), "empty rule identity ({})", redacted_fingerprint(content));
+    }
+    for hit in scan_file(&display, content, &loaded) {
+        assert!(hit.starts_with(&display), "content finding used raw path ({})", redacted_fingerprint(content));
     }
 });
