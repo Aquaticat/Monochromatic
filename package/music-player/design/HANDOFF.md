@@ -4270,17 +4270,119 @@ variants;
 contrasted only 3.38:1 dark and 3.53:1 light;
  and the HTML preview used stale image
 dimensions when switching compact and wide.
- The first questionnaire in `current.html`
-was never presented and must not be used as an active decision form.
- Its prior-art note
-now marks the ranking withdrawn.
- Rebuild as separable in-app placement,
- global
-invocation,
- and search-surface relationship questions,
- with comparable native states and
-browser verification before presenting.
+ The first revision of `current.html`
+was never presented and has since been replaced.
+ Its prior-art note marks that ranking
+withdrawn.
  Production code remains untouched.
+
+## Corrected desktop command-bar questionnaire awaiting I/G/R answers (2026-09-23)
+
+The new Slint study at prototype branch commits `ee1b2d59c`, `dbbf5116e`,
+`6d533f740`, with its render task at `e70b40e6a`, asks three independent choices:
+I1 docked below header,
+ I2 floating inside player,
+ I3 content replacement;
+ G1 raise
+the player from another app,
+ G2 detached quick-window concept leaving the previous
+app visible;
+ R1 distinct Ctrl+F search destination,
+ R2 explicit search mode in the
+command surface.
+ D25 settles only shortcut reservations,
+ not separation.
+ Rankings:
+I1 > I2 > I3,
+ G2 > G1,
+ R1 > R2.
+ No user selection has been received.
+
+Opaque native Slint captures are in `questions/render/command-round-{i,g,r,e}*`:
+26 dark/light rasters across the independent choices,
+ 1100 × 640px I variants,
+I1 360 × 640px synthetic larger-text stress,
+ and no-results / unavailable-action
+states.
+ The default compact desktop scene is 480 × 600px from
+`package/music-player/desktop-app/ui/app.slint`,
+ not a decision about the default window
+size (11c).
+ Selected foreground versus highlight measured 6.23:1 dark and 7.09:1
+light;
+ normal muted text on the container measures 7.12:1 dark and 5.18:1 light.
+The first S × C captures remain historical and are not in the active form.
+The corrected in-app variants share the typed `open` query and selection;
+ G variants
+share a previous-app scenario;
+ R variants share a sample `cam` query and results.
+The prototype is static:
+ no actual hotkey,
+ OS second window,
+ keyboard navigation,
+TalkBack semantics,
+ focus return,
+ search index,
+ or action execution was built or
+verified.
+ The prior-art and caveats are in
+`questions/evidence/command-round-prior-art.md`.
+
+`questions/current.html` is a self-contained I/G/R questionnaire generated from
+`current.template.html` by `command-question.mjs` through the design `mise` tasks.
+The historical cover questionnaire and its validator remain at
+`questions/archive/cover-p.{html,template.html}` and `build:cover` / `lint:cover`.
+The corrected command validator checks 26 exact native rasters,
+ each card's
+scheme-to-scene mapping,
+ 7 radios in 3 fieldsets,
+ ranking text,
+ preview decode and
+focus restoration,
+ no clipboard/external resources,
+ and dark/light panel roles.
+An eleven-fault disposable-worktree mutation harness
+(`/home/user/temp/agent/verify-command-guards.mjs`) fails every fault with its intended
+diagnostic and restores to passing.
+ Browser verification of the corrected form:
+0 overflow on desktop and 390 × 500px mobile in both schemes;
+ Axe zero violations
+and zero incomplete for page and modal (18 page passes,
+ 12 modal passes);
+ all 26
+preview paths,
+ including compact/wide transitions,
+ Fit,
+ 100%,
+ zoom direction,
+Escape and focus return;
+ all 12 I × G × R answer combinations,
+ required-field
+rejection,
+ whitespace and invalidation;
+ offline reload decodes all 13 thumbnail
+figures in either scheme with zero network resources,
+ and browser console/errors are
+empty.
+ The first draft's stale-image zoom bug is fixed by decoding before preview
+and stepping zoom relative to the fitted scale.
+
+Next:
+ replace the historical cover Helium window with `questions/current.html`,
+activate and confirm it is the visible command round,
+ then await one I code,
+ one G
+code,
+ one R code,
+ and any correction.
+ Do not ratify a decision from the rankings.
+Search target scope,
+ result ranking,
+ the visible in-app entry,
+ exact key binding,
+Settings row,
+ full keyboard map,
+ media notification and other backlog items remain open.
 
 ## Issue tracking moves to Linear for this session
 
