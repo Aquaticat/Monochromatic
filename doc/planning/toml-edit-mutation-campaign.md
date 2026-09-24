@@ -509,11 +509,16 @@ Direct built-artifact value tests now pin tagged nonfinite numbers,
  and null-prototype tables.
 `value-encoders.ts` now shares one integer-wrapper spelling path,
  while `values.ts` delegates array and table assembly to the existing emitters.
-The package build and unit suite passed after this refactor;
- type,
- lint,
- sidecar,
- and mutation rechecks remain.
+The package build and unit suite,
+ type check,
+ oxlint,
+ and bounded sidecar property suite passed after this refactor.
+`values.ts` covered-line count fell from 332 to 304 because duplicated array/table assembly was removed;
+ the fuzz coverage gate requires an intentional baseline refreeze after mutation rechecks.
+The comment and value mutation rechecks are running on one source revision:
+ `/var/home/user/temp/agent/toml-mutation-comment-api-recheck.json` (`proc_6797`)
+ and `/var/home/user/temp/agent/toml-mutation-value-encoders-recheck.json` (`proc_65c8`).
+Do not edit runtime source until both complete.
 Do not claim a full-runtime verdict before those campaigns and survivor rechecks finish.
 
 ## Shared value assembly refactor
