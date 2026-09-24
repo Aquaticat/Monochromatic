@@ -95,6 +95,11 @@ and open items:
    `deepmergeInto` targets);
    `src/declared-type-soundness.generated.ts` keeps the fixed-seed draws outside pinned classes,
    and `src/type-known-defect-declared.unit.test.ts` pins the classes it found.
+- `src/mutation-*.unit.test.ts`:
+   example tests that detect the upstream mutants the rest of the suite missed
+   (custom merge functions, cycle resolution, record paths, custom metadata),
+   each naming the mutant ids it kills;
+   method and results in `doc/audit/deepmerge-ts-mutation-2026-09-24.md`.
 
 Machine-local files matching `*.local.*` (gitignored) hold embargoed security findings until upstream publishes an advisory.
 
