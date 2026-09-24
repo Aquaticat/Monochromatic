@@ -454,7 +454,8 @@ class DesignCandidateActivity : ComponentActivity() {
             candidate = requestedCandidate
         }
         if (candidate.startsWith("dark-") || candidate.startsWith("cover-dark") ||
-            ((candidate.startsWith("search-page") || candidate.startsWith("search-layout")) &&
+            ((candidate.startsWith("search-page") || candidate.startsWith("search-layout") ||
+                candidate.startsWith("search-deck")) &&
                 !candidate.endsWith("-light"))) {
             enableEdgeToEdge(
                 statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
@@ -704,7 +705,8 @@ private fun paletteFor(candidate: String, scheme: ColorScheme): CandidatePalette
 @Composable
 private fun DesignCandidatePrototype(candidate: String) {
     val context = LocalContext.current
-    val searchCandidate = candidate.startsWith("search-page") || candidate.startsWith("search-layout")
+    val searchCandidate = candidate.startsWith("search-page") || candidate.startsWith("search-layout") ||
+        candidate.startsWith("search-deck")
     val scheme = if ((candidate.startsWith("cover-picker") || searchCandidate) && !candidate.endsWith("-light")) {
         darkDynamicSchemeFor(context = context, candidate = "dark-stable-wallpaper-dynamic")
     } else if (candidate.startsWith("cover-dark")) {
@@ -727,7 +729,9 @@ private fun DesignCandidatePrototype(candidate: String) {
                 if (candidate.endsWith("-light")) scheme.surfaceContainerLowest else TrueBlack
             } else palette.window,
         ) {
-            if (candidate.startsWith("search-layout")) {
+            if (candidate.startsWith("search-deck")) {
+                SearchPersistentDeckStudy(candidate = candidate)
+            } else if (candidate.startsWith("search-layout")) {
                 SearchLayoutStudy(candidate = candidate)
             } else if (candidate.startsWith("search-page")) {
                 SearchPageStudy(candidate = candidate)
