@@ -190,6 +190,14 @@ the public JSONC parse interface. The original unsafe call is **not** executed.
   subprocess or network endpoint was found. Release workflows, npm tasks,
   benchmarks, and third-party test scripts are not invoked.
 
+The upstream Rust suite is separately prepared as `mise run test:upstream`
+with the same container image, mounts, network policy, and bounds, invoking
+`cargo test --locked --offline`. `rust/tests/parse_test.rs:500-506` reads
+fixture files under the disposable clone; a search of `rust/tests` found no
+other process or network path. The test dependency graph adds `glob`,
+`test-case`, and its proc macros, with no new build scripts in the inspected
+resolved graph. The full suite result is still pending.
+
 The checked pre-fix instrumentation was run through
 `mise run test:safe-instrumented` in this container. It exited 101 after
 compiling the pinned crate and its dependencies. The public-entry example
