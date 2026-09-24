@@ -105,6 +105,16 @@ Both local delegated `rg` queries were blocked by its security guardrail,
    An upstream fork modifying its string scanner would be a distinct custom candidate.
    It exposes comments and raw number tokens,
    but normalized key/value attachment and canonical emission would still be repository code.
+- Adapter boundary:
+   `src/scanner.rs:175-201` produces `Token::String(Cow<str>)` through the escape-decoding path;
+   `src/tokens.rs:8-22` has no raw-string token variant,
+   and `src/cst/mod.rs:1146-1160` calls `parse_to_ast` before CST construction.
+   Thus the public AST and CST paths cannot merely bypass the rejecting decoder for a surrogate escape.
+   A source-preserving surrogate prepass plus an owned UTF-16 decoder is a separate **unvalidated** adapter hypothesis,
+   not a property of the upstream crate.
+   `src/parse_to_ast.rs:285-309` recursively enters array and object parsing,
+   and `src/cst/mod.rs:2541-2576` recursively builds CST containers;
+   any adapter would also need a bounded accepted-depth lifecycle probe.
 
 ### `edikt-jsonc` 0.4.0
 
@@ -658,6 +668,17 @@ A later bounded debug run and optimized release run each reported 18 passing uni
  and malformed-string cases.
  These are selected syntax and attachment checks,
  not a full semantic comparison of the TypeScript conformance or property corpus.
+ A subsequent bounded debug run also passed adversarial edited comment bodies on both key and value owners,
+ including block terminators,
+ quotes,
+ escapes,
+ control characters,
+ blank lines,
+ carriage returns and non-ASCII text.
+ It checked reparsability,
+ retained text on the same owner,
+ and a second-to-third emission fixpoint;
+ it does not replace the generated TypeScript property corpus.
 
 Remaining validation includes full TypeScript conformance and property cases,
  wider comment-placement and syntax-boundary coverage,
