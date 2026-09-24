@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Music player design: desktop command bar round</title>
+<title>Music player design: Search button and page</title>
 <style>
 :root {
   color-scheme: light dark;
@@ -14,7 +14,6 @@
   --muted: #5d5f68;
   --line: #b0b1bc;
   --accent: #4e5e8b;
-  --accent-fill: #e1e6f7;
   --scrim: #30323b;
 }
 @media (prefers-color-scheme: dark) {
@@ -26,14 +25,13 @@
     --muted: #a9aab5;
     --line: #464850;
     --accent: #bac5ee;
-    --accent-fill: #303a54;
     --scrim: #000000;
   }
 }
 * { box-sizing: border-box; }
 body {
-  margin-block: 0;
   margin-inline: 0;
+  margin-block: 0;
   background-color: var(--page);
   color: var(--ink);
   font-family: system-ui, sans-serif;
@@ -43,17 +41,18 @@ button, textarea, input { font: inherit; }
 button {
   min-inline-size: 3rem;
   min-block-size: 3rem;
-  padding-inline: 0.8rem;
+  padding-inline: 0.85rem;
+  padding-block: 0.5rem;
   border-width: 1px;
   border-style: solid;
   border-color: var(--line);
-  border-radius: 0.5rem;
+  border-radius: 0.6rem;
   background-color: var(--panel);
   color: var(--ink);
   cursor: pointer;
 }
 button:hover { background-color: var(--raised); }
-button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible {
+button:focus-visible, input:focus-visible, textarea:focus-visible {
   outline: 0.1875rem solid var(--accent);
   outline-offset: 0.1875rem;
 }
@@ -64,59 +63,51 @@ main {
   margin-inline: auto;
 }
 h1 { font-size: clamp(1.9rem, 4vw, 2.8rem); line-height: 1.15; }
-h2 { margin-block-start: 2.5rem; }
-p { max-inline-size: 80ch; }
-.small { color: var(--muted); font-size: 0.9rem; }
+h2 { margin-block-start: 2.6rem; }
+p { max-inline-size: 82ch; }
+.small { color: var(--muted); font-size: 0.92rem; }
 .banner {
+  max-inline-size: 82ch;
   padding-inline: 1rem;
-  padding-block: 0.75rem;
+  padding-block: 0.8rem;
   border-inline-start-width: 0.25rem;
   border-inline-start-style: solid;
   border-inline-start-color: var(--accent);
   background-color: var(--panel);
 }
-fieldset {
-  margin-block: 1.5rem;
+.flow {
+  max-inline-size: 39rem;
   padding-inline: 1rem;
-  padding-block: 1.25rem;
+  padding-block: 1rem;
   border-width: 1px;
   border-style: solid;
   border-color: var(--line);
   border-radius: 0.75rem;
   background-color: var(--panel);
 }
-legend { padding-inline: 0.5rem; font-size: 1.25rem; font-weight: 700; }
-.choice-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-}
-.choice-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.choice {
-  display: block;
-  padding-inline: 1rem;
-  padding-block: 1rem;
+.flow-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: end; }
+.flow-controls label { display: block; }
+.flow-controls [hidden] { display: none; }
+.flow-controls input {
+  min-block-size: 3rem;
+  padding-inline: 0.75rem;
   border-width: 1px;
   border-style: solid;
   border-color: var(--line);
-  border-radius: 0.65rem;
-  cursor: pointer;
+  border-radius: 0.5rem;
+  background-color: var(--panel);
+  color: var(--ink);
 }
-.choice:has(input:checked) { border-color: var(--accent); background-color: var(--accent-fill); }
-.choice input { inline-size: 1.25rem; block-size: 1.25rem; accent-color: var(--accent); }
-.choice strong { display: block; margin-block: 0.4rem; font-size: 1.12rem; }
-.choice p { margin-block: 0.5rem; }
-.pro, .con { display: block; font-size: 0.9rem; }
-.pro::before { content: "Pro: "; font-weight: 700; }
-.con::before { content: "Con: "; font-weight: 700; }
-.matrix {
+.flow picture { display: block; margin-block-start: 1rem; }
+.flow img { display: block; max-inline-size: 100%; block-size: auto; border-width: 1px; border-style: solid; border-color: var(--line); }
+.gallery {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.25rem;
 }
 .capture {
-  margin: 0;
   min-inline-size: 0;
+  margin: 0;
   padding-inline: 0.75rem;
   padding-block: 0.75rem;
   border-width: 1px;
@@ -135,10 +126,9 @@ legend { padding-inline: 0.5rem; font-size: 1.25rem; font-weight: 700; }
   border-style: solid;
   border-color: var(--line);
 }
-.capture figcaption { margin-block-start: 0.6rem; }
+.capture figcaption { margin-block-start: 0.5rem; }
+.capture[data-size='wide'] img { max-inline-size: 100%; inline-size: auto; }
 .preview-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-block-start: 0.75rem; }
-.wide { max-inline-size: 70rem; }
-.wide img { max-inline-size: 100%; inline-size: auto; }
 .source-check {
   max-inline-size: 60rem;
   margin-inline: 0;
@@ -165,6 +155,7 @@ textarea {
   background-color: var(--panel);
   color: var(--ink);
 }
+output:empty { display: none; }
 output {
   display: block;
   white-space: pre-wrap;
@@ -204,79 +195,58 @@ dialog::backdrop { background-color: var(--scrim); opacity: 0.72; }
 }
 .preview-scroll img { display: block; max-inline-size: none; }
 @media (max-width: 64rem) {
-  .matrix { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 48rem) {
-  .choice-grid, .choice-grid.two, .matrix { grid-template-columns: minmax(0, 1fr); }
-  .wide img { inline-size: 100%; }
+  .gallery { grid-template-columns: minmax(0, 1fr); }
+  .capture[data-size='wide'] img { inline-size: 100%; }
 }
 </style>
 </head>
 <body>
 <main>
 <header>
-  <p class="small">Music player design-only review · native Slint study · 2026-09-23</p>
-  <h1>Three separate command-bar questions</h1>
-  <p>D21 settles that a command bar exists. Its optional global hotkey is configurable and <strong>off by default</strong>; an in-app binding remains available when global registration is off. D25 reserves Ctrl+F for future search and Ctrl+O for the folder picker, but does not decide whether search shares the command surface. Exact shortcut assignment and any visible in-app entry still need their own design pass.</p>
-  <p class="banner">Reply with <strong>one I code, one G code, and one R code</strong>, plus corrections. In-app placement and global invocation can coexist; R decides only whether Ctrl+F uses a separate search destination or an explicit search mode in the same command surface. G1 illustrates a raised I1-style player and R2 illustrates a floating I2-style view; choosing G or R never fixes your I placement. R2 with I3 can use the same full-content room as R1.</p>
-  <p class="small">The captures are native, nonfunctional Slint at the desktop app’s current preferred 480 × 600px size, in light and dark. A2 keeps this project on <strong>baseline MD3</strong>: the expanded docked Search view has a 28px outer shape, flat 56px header and divider; the full-content version has sharp outer corners and a 72px header. The 56px full pill belongs to the collapsed Search bar, not another pill nested inside the expanded view. Baseline two-line list rows are square and 72px high; the drawn keyboard-current outline is a custom desktop focus cue, not a persistent selection or proof of actual input focus. Roboto and official Material icons render the native study.</p>
-  <p class="small">The 1100 × 640px samples are stress viewports, not a default-window-size choice. The 360px stress scene illustrates a proposed full-content fallback for I1, rather than an implemented responsive transition or below-minimum dock. Global scenes draw a second-window concept inside one Slint scene, not an actual OS overlay or hotkey implementation. Static rasters do not validate keyboard interaction, screen-reader semantics, window focus restoration, search indexing, or action execution. Compact desktop docking and keeping the player header in the full-content variant are stated adaptations from Android’s default full-screen focused search.</p>
-  <figure class="source-check"><img src="__MD3_REFERENCE__" width="924" height="108" alt="Baseline MD3 docked Search header from the local spec compared at 56 logical pixels with the native Slint header"><figcaption class="small">Reference check: local baseline divided Search spec (pink measurement marks) beside the native light Slint header. The two palettes differ; compare shape, header height, icon slots and divider, not wallpaper color.</figcaption></figure>
+  <p class="small">Music player · design-only Search page review · 2026-09-23</p>
+  <h1>Search is its own page</h1>
+  <p>D47 replaces the command-bar presentation with a Search button in the player. D48 gives the destination <strong>one</strong> top bar for Back, query and Clear. No player controls remain behind this page, and no second Search title row is stacked above the input.</p>
+  <p class="banner">Inspect the active direction. Use the flow controls to open the page and return to the player. Tell me what needs correcting in chat or in the free-text field. There are no I/G/R choices to make.</p>
+  <p class="small">These are native, nonfunctional Slint design captures in both schemes at 480 × 600px, 1100 × 640px and 360 × 640px. The page header follows baseline MD3 full-content Search: a flat 72px header, Back, query/Clear and a divider. The compact player's Search button is a 48px target. Result types, matching and activation are illustrative, not a settled search index. D21's global command hotkey is not carried onto this page; D25's Ctrl+F reservation awaits the whole keyboard-map review. The HTML walkthrough changes images, not the native app or a library.</p>
+  <figure class="source-check"><img src="__SEARCH_REFERENCE__" width="__REFERENCE_WIDTH__" height="__REFERENCE_HEIGHT__" alt="Local baseline MD3 full-content Search header compared at 72 logical pixels with the native Slint Search page"><figcaption class="small">Source check: readable baseline MD3 diagram (pink measurement marks) beside the native one-bar page header. Compare geometry and divider; their palette seeds differ.</figcaption></figure>
 </header>
-<form id="answer-form">
-  <fieldset>
-    <legend>I · In-app command surface, player already focused</legend>
-    <div class="choice-grid">
-      <label class="choice"><input type="radio" name="inapp" value="I1" required><strong>I1 · Docked below the header</strong><p>Action matches attach to the folder row and scrim the content underneath.</p><span class="pro">Keeps a visible relationship to the player and its current folder.</span><span class="con">Covers the track list at narrow width.</span></label>
-      <label class="choice"><input type="radio" name="inapp" value="I2" required><strong>I2 · Floating in the player</strong><p>A centered, rounded palette overlays a scrimmed player.</p><span class="pro">Makes the temporary keyboard task prominent.</span><span class="con">Hides more context and is less locally anchored.</span></label>
-      <label class="choice"><input type="radio" name="inapp" value="I3" required><strong>I3 · Replace the content region</strong><p>The command destination fills the player below the header.</p><span class="pro">Most room for long results and compact widths.</span><span class="con">Hides the playback context while it is open.</span></label>
-    </div>
-    <p><strong>In-app ranking: I1 &gt; I2 &gt; I3.</strong> I1 retains a clearer source anchor than I2; I2 keeps more of the player visually present than I3.</p>
-  </fieldset>
-  <fieldset>
-    <legend>G · When the optional global hotkey is enabled and another app was active</legend>
-    <div class="choice-grid two">
-      <label class="choice"><input type="radio" name="global" value="G1" required><strong>G1 · Raise the player</strong><p>Bring the player forward and show its in-app command surface; close returns to the player.</p><span class="pro">Retains folder, track and deck context.</span><span class="con">Interrupts the previous app; returning there takes another step.</span></label>
-      <label class="choice"><input type="radio" name="global" value="G2" required><strong>G2 · Detached quick surface</strong><p>Show only a command window above the previously active app; close returns there.</p><span class="pro">Does not force a jump to the player for a quick command.</span><span class="con">Less player context; real second-window behavior remains developer-owned feasibility.</span></label>
-    </div>
-    <p><strong>Global ranking: G2 &gt; G1.</strong> G2 protects the ongoing task; G1 is more contextual but takes over the screen.</p>
-  </fieldset>
-  <fieldset>
-    <legend>R · Relationship to the future Ctrl+F search surface</legend>
-    <div class="choice-grid two">
-      <label class="choice"><input type="radio" name="search" value="R1" required><strong>R1 · Distinct search destination</strong><p>Ctrl+F replaces the content region with a search view; the command palette remains actions-only.</p><span class="pro">Results have room and their purpose is unambiguous.</span><span class="con">Requires a separate search presentation.</span></label>
-      <label class="choice"><input type="radio" name="search" value="R2" required><strong>R2 · Search mode in the same surface</strong><p>Ctrl+F enters an explicit search mode in the command surface; actions remain another mode.</p><span class="pro">One learned container can serve both tasks.</span><span class="con">Mode switching needs clear focus and exit behavior.</span></label>
-    </div>
-    <p><strong>Search relationship ranking: R1 &gt; R2.</strong> R1 assigns navigation a distinct purpose; R2 reuses the command surface but adds a mode to track. Result space depends on your independent I choice, so this ranking does not claim R2 must be smaller. D25 itself does not settle either choice.</p>
-  </fieldset>
-  <section aria-labelledby="inapp-title">
-    <h2 id="inapp-title">In-app comparison at the preferred desktop size</h2>
-    <p>All I variants show the same typed action query, <code>open</code>, and the same selected result. The thumbnail follows your system scheme; preview either native capture at 100%.</p>
-    <div class="matrix">__IN_APP_CARDS__</div>
-  </section>
-  <section aria-labelledby="global-title">
-    <h2 id="global-title">Out-of-app invocation concepts</h2>
-    <p>Both G variants start from the same previous app and the same typed action query. Their window and focus behavior is proposed, not tested by these screenshots.</p>
-    <div class="matrix">__GLOBAL_CARDS__</div>
-  </section>
-  <section aria-labelledby="search-title">
-    <h2 id="search-title">Search invoked by Ctrl+F</h2>
-    <p>Both R variants show the same illustrative query and result types. Folder results open a folder; track results reveal a track. Whether folder paths match queries, which media types are indexed, and result ranking are separate open questions; the D31 picker remains the browsing route.</p>
-    <div class="matrix">__SEARCH_CARDS__</div>
-  </section>
-  <section aria-labelledby="stress-title">
-    <h2 id="stress-title">Fit and state probes, not additional choices</h2>
-    <p>I variants also appear at 1100 × 640px; I1’s 360 × 640px probe draws a full-content fallback with larger text and a long action (96px rows are a stress adaptation, not the baseline 72px token). Separate I1 captures show no results and an explicitly unavailable action. All are native Slint in both schemes.</p>
-    <div class="matrix">__WIDE_CARDS____STRESS_CARDS____EDGE_CARDS__</div>
-  </section>
-  <section aria-labelledby="notes-title">
-    <h2 id="notes-title">Correction or a better idea</h2>
-    <label for="correction">What would you change? Name any visible entry-point, search-target or accessibility concern separately from your I, G and R picks.</label>
-    <textarea id="correction" name="correction"></textarea>
-    <p><button type="submit">Prepare my reply</button></p>
-    <output id="reply" aria-live="polite" for="correction"></output>
-    <p class="small">This prepares visible text only. Reply in chat; this form makes no network request and uses no clipboard API.</p>
-  </section>
+<section class="flow" aria-labelledby="flow-title">
+  <h2 id="flow-title">Walk from player to Search and back</h2>
+  <p id="flow-state" aria-live="polite">Player. The Search icon is beside Open in the app bar.</p>
+  <div class="flow-controls">
+    <button id="open-page" type="button">Open Search page</button>
+    <button id="back-player" type="button" hidden>Back to player</button>
+    <label id="query-label" for="sample-query" hidden>Try <code>cam</code> or <code>zzq</code><input id="sample-query" type="search" hidden autocomplete="off"></label>
+    <button id="unavailable" type="button" hidden>Inspect unavailable state</button>
+  </div>
+  <picture id="flow-picture"><source media="(prefers-color-scheme: dark)" srcset="__FLOW_DARK__"><img id="flow-image" src="__FLOW_LIGHT__" width="480" height="600" alt="Player with a Search icon button next to Open"></picture>
+  <p class="small">The button and Back are also wired in the throwaway Slint prototype, but these images alone do not prove native click delivery or focus restoration. This HTML walkthrough demonstrates the intended state sequence.</p>
+</section>
+<section aria-labelledby="compact-title">
+  <h2 id="compact-title">Player and page at 480 × 600px</h2>
+  <p>Only the active Search-page direction is shown: trigger, open/empty, illustrative query results, no matches and an unavailable library. Thumbnails follow your system color scheme; preview either opaque native capture at 100%.</p>
+  <div class="gallery">__COMPACT_CARDS__</div>
+</section>
+<section aria-labelledby="wide-title">
+  <h2 id="wide-title">Expanded desktop window at 1100 × 640px</h2>
+  <p>Trigger, empty page and query results. This is a stress viewport, not a decision on the default desktop window size.</p>
+  <div class="gallery">__WIDE_CARDS__</div>
+</section>
+<section aria-labelledby="stress-title">
+  <h2 id="stress-title">Narrow desktop width at 360 × 640px</h2>
+  <p>The same page header remains a single full-width 72px row. The final result supporting line may truncate in this prototype; its full wording remains visible in the 480px capture. This is a narrow-width study, not an Android screenshot.</p>
+  <div class="gallery">__STRESS_CARDS__</div>
+</section>
+<form id="response-form">
+  <h2>What would you correct?</h2>
+  <label for="correction">Describe any concern about the button, page structure, result meaning or empty state.</label>
+  <textarea id="correction" name="correction"></textarea>
+  <p><button type="submit">Prepare my response</button></p>
+  <output id="reply" aria-live="polite" for="correction"></output>
+  <p class="small">Prepared text is visible on this page only. Reply in chat; no network request or clipboard API is used.</p>
 </form>
 </main>
 <dialog id="preview" aria-labelledby="preview-title">
@@ -289,7 +259,7 @@ dialog::backdrop { background-color: var(--scrim); opacity: 0.72; }
     <button id="close-preview" type="button">Close</button>
   </div>
   <p id="scale-label" class="small" aria-live="polite"></p>
-  <div class="preview-scroll"><img id="preview-image" alt="Native Slint command-bar capture" width="480" height="600"></div>
+  <div class="preview-scroll"><img id="preview-image" alt="Native Slint Search-page capture" width="480" height="600"></div>
 </dialog>
 <script>
 const preview = document.querySelector('#preview');
@@ -312,10 +282,10 @@ function showScale() {
 document.querySelectorAll('.preview-actions button').forEach(button => {
   button.addEventListener('click', async () => {
     const figure = button.closest('figure');
-    const selectedImage = button.dataset.scheme === 'dark' ? figure.querySelector('source').srcset : figure.querySelector('picture img').src;
+    const image = button.dataset.scheme === 'dark' ? figure.querySelector('source').srcset : figure.querySelector('picture img').src;
     returnTarget = button;
     previewTitle.textContent = `${figure.dataset.label} · ${button.dataset.scheme} · native Slint`;
-    previewImage.src = selectedImage;
+    previewImage.src = image;
     previewImage.alt = previewTitle.textContent;
     await previewImage.decode();
     fitting = true;
@@ -337,18 +307,55 @@ document.querySelector('#zoom-in').addEventListener('click', () => stepZoom(0.25
 document.querySelector('#close-preview').addEventListener('click', () => preview.close());
 preview.addEventListener('close', () => returnTarget?.focus());
 window.addEventListener('resize', () => { if (preview.open && fitting) showScale(); });
-document.querySelectorAll('input[type=radio]').forEach(input => {
-  input.addEventListener('change', () => { document.querySelector('#reply').textContent = ''; });
+const flowImage = document.querySelector('#flow-image');
+const flowSource = document.querySelector('#flow-picture source');
+const flowState = document.querySelector('#flow-state');
+const openPage = document.querySelector('#open-page');
+const backPlayer = document.querySelector('#back-player');
+const sampleQuery = document.querySelector('#sample-query');
+const queryLabel = document.querySelector('#query-label');
+const unavailable = document.querySelector('#unavailable');
+function showStage(stage) {
+  const figure = document.querySelector(`figure.capture[data-stage="${stage}"][data-size="compact"]`);
+  flowSource.srcset = figure.querySelector('source').srcset;
+  flowImage.src = figure.querySelector('picture img').src;
+  flowImage.alt = figure.querySelector('picture img').alt;
+  flowState.textContent = stage === 'player' ? 'Player. The Search icon is beside Open in the app bar.' :
+    stage === 'open-empty' ? 'Separate Search page. One top bar contains Back and the empty query.' :
+    stage === 'open-results' ? 'Search page: illustrative results for cam.' :
+    stage === 'open-none' ? 'Search page: no results for this stub query.' :
+    'Search page: library unavailable.';
+}
+openPage.addEventListener('click', () => {
+  openPage.hidden = true;
+  backPlayer.hidden = false;
+  queryLabel.hidden = false;
+  sampleQuery.hidden = false;
+  unavailable.hidden = false;
+  sampleQuery.value = '';
+  showStage('open-empty');
+  backPlayer.focus();
 });
+backPlayer.addEventListener('click', () => {
+  backPlayer.hidden = true;
+  queryLabel.hidden = true;
+  sampleQuery.hidden = true;
+  unavailable.hidden = true;
+  openPage.hidden = false;
+  sampleQuery.value = '';
+  showStage('player');
+  openPage.focus();
+});
+sampleQuery.addEventListener('input', () => {
+  const term = sampleQuery.value.trim().toLowerCase();
+  showStage(term === '' ? 'open-empty' : term === 'cam' ? 'open-results' : 'open-none');
+});
+unavailable.addEventListener('click', () => showStage('open-unavailable'));
 document.querySelector('#correction').addEventListener('input', () => { document.querySelector('#reply').textContent = ''; });
-document.querySelector('#answer-form').addEventListener('submit', event => {
+document.querySelector('#response-form').addEventListener('submit', event => {
   event.preventDefault();
-  if (!event.currentTarget.reportValidity()) return;
-  const inapp = document.querySelector('input[name=inapp]:checked').value;
-  const global = document.querySelector('input[name=global]:checked').value;
-  const search = document.querySelector('input[name=search]:checked').value;
   const correction = document.querySelector('#correction').value.trim();
-  document.querySelector('#reply').textContent = `${inapp}, ${global}, ${search}${correction ? `\nCorrection: ${correction}` : ''}`;
+  document.querySelector('#reply').textContent = correction ? `Correction: ${correction}` : 'No correction entered. Reply in chat with what you would change, or say the page direction is clear.';
 });
 </script>
 </body>
