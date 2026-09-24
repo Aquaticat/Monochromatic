@@ -19,6 +19,82 @@ const LINE_END = '\n';
 const ATTRIBUTE_EQUALS = '=';
 
 /**
+ Blanks a tag may write between an attribute's equals sign and its quoted
+ value, as `<h3 align = "center">` does.
+ */
+const ATTRIBUTE_BLANKS: ReadonlySet<string> = new Set([
+  ' ',
+  '\t',
+],);
+
+/**
+ Offset of the last character before a mark that is not a blank, -1 where
+ only blanks precede it.
+
+ @param pageText - page text of the slice
+
+ @param at - offset of the opening mark
+
+ @returns Offset read backwards past the blanks
+
+ @example
+ ```ts
+ offsetPastBlanks({ pageText: 'a = "b"', at: 4, },); // 2
+ ```
+ */
+function offsetPastBlanks(
+  {
+    pageText,
+    at,
+  }: {
+    readonly pageText: string;
+    readonly at: number;
+  },
+): number {
+  /**
+   Offset read backwards past the blanks.
+   */
+  let before = at - 1;
+  while ((before >= 0) && ATTRIBUTE_BLANKS.has(pageText.charAt(before,),))
+    before -= 1;
+  return before;
+}
+
+/**
+ Whether an opening mark stands as a tag attribute's value, after an equals
+ sign and any blanks.
+
+ CLASS ONE HUNDRED TWENTY (XingZ6010, 2026-09-24): the first check read only
+ the character before the mark, so `align = "center"` read as prose and the
+ title was written into the attribute.
+
+ @param pageText - page text of the slice
+
+ @param at - offset of the opening mark
+
+ @returns Whether the mark opens an attribute value
+
+ @example
+ ```ts
+ opensAttributeValue({ pageText: '<h3 align = "center">', at: 11, },); // true
+ ```
+ */
+function opensAttributeValue(
+  {
+    pageText,
+    at,
+  }: {
+    readonly pageText: string;
+    readonly at: number;
+  },
+): boolean {
+  return pageText.charAt(offsetPastBlanks({
+    pageText,
+    at,
+  },),) === ATTRIBUTE_EQUALS;
+}
+
+/**
  Every span between an opening and a closing mark on one line.
 
  @param pageText - page text of the slice
@@ -76,7 +152,10 @@ function spansBetween(
     /**
      Whether the opening mark stands in prose, not after an attribute's equals sign.
      */
-    const prose = pageText.charAt(at - 1,) !== ATTRIBUTE_EQUALS;
+    const prose = !opensAttributeValue({
+      pageText,
+      at,
+    },);
     /**
      Whether the span stays on one line.
      */
