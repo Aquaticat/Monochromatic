@@ -73,8 +73,9 @@ try {
       throw new Error(`Expected device state ${screen.state} for ${screen.name}.`);
     }
     const size = remote('wm size').trim();
-    if (!size.includes(screen.pixels.join('x'))) {
-      throw new Error(`${screen.name} is ${size}; expected ${screen.pixels.join('x')}.`);
+    const density = remote('wm density').trim();
+    if (!size.includes(screen.pixels.join('x')) || density !== 'Physical density: 390') {
+      throw new Error(`${screen.name} is ${size} at ${density}; expected ${screen.pixels.join('x')} at 390dpi.`);
     }
     const line = adbText(['shell', 'dumpsys', 'SurfaceFlinger', '--display-id'])
       .split('\n').find((entry) => entry.includes(screen.display));
@@ -88,7 +89,7 @@ try {
         throw new Error(`${screen.name}/${mode} dynamic roles did not settle: ${JSON.stringify(roles)}`);
       }
       writeFileSync(join(evidenceDirectory, `fold-search-${screen.name}-roles-${mode}.json`),
-        `${JSON.stringify({ android: { api: 37, deviceState: screen.state, displayPixels: screen.pixels, night: mode }, roles }, null, 2)}\n`);
+        `${JSON.stringify({ android: { api: 37, deviceState: screen.state, displayPixels: screen.pixels, densityDpi: 390, night: mode }, roles }, null, 2)}\n`);
       for (const scale of ['1.0', '2.0']) {
         const subset = scale === '1.0' ? states : states.filter((stage) => stage.name === 'player' || stage.name === 'open-results');
         for (const stage of subset) {
@@ -136,8 +137,15 @@ try {
               throw new Error(`${base}: app content or target spans the unfolded connector: ${crossing.slice(0, 330)}`);
             }
           }
+          const observedScale = remote('settings get system font_scale').trim();
+          const observedMode = remote('cmd uimode night').trim();
+          const observedState = remote('cmd device_state print-state').trim();
+          if (observedScale !== scale || observedMode !== `Night mode: ${mode === 'dark' ? 'yes' : 'no'}` || observedState !== screen.state) {
+            throw new Error(`${base}: scene state changed during native capture: font ${observedScale}, ${observedMode}, device ${observedState}.`);
+          }
           writeFileSync(join(evidenceDirectory, `${base}.xml`), `${xml.trim()}\n`);
-          console.log(`${base}.png ${screen.pixels.join('x')} ${png.length} bytes; connector clear`);
+          writeFileSync(join(evidenceDirectory, `${base}.meta.json`), `${JSON.stringify({ deviceState: observedState, physicalPixels: screen.pixels, densityDpi: 390, night: mode, fontScale: Number(observedScale) }, null, 2)}\n`);
+          console.log(`${base}.png ${screen.pixels.join('x')} ${png.length} bytes at 390dpi and ${observedScale} font scale; connector clear`);
         }
       }
     }
