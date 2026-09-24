@@ -457,6 +457,16 @@ The published `Cargo.toml:28-42` depends on `jsonc-parser` in the 0.15 range.
  The separately audited `jsonc-parser` 0.33.2 surrogate failure is **not** attributed to the older 0.15 dependency without a versioned source check.
  No upstream code was executed for this category screen.
 
+### `prim-fmt` 0.9.1 as-is category exit
+
+The published `prim-fmt` library exposes file classification and `format()` at `src/lib.rs:31-63`,
+ not a comment-query or immutable edit-state API.
+ Its JSONC implementation `src/json.rs:1-43` calls `dprint-plugin-json::format_text` and applies whitespace hygiene;
+ `:59-65` tests that formatting removes a trailing comma.
+ Preserving source comments while formatting is not the attached key/value comment model or canonical trailing-comma output of this port.
+ Its private formatter parser would be a separate adapter/fork candidate rather than the published interface as-is.
+ No candidate code was executed for this screen.
+
 ### `fjson` 0.3.1
 
 **Source correction:**
