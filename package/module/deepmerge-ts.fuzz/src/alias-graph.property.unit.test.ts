@@ -42,6 +42,12 @@ import {
   materialize,
 } from './alias-graph.ts';
 import {
+  cyclicValueAtMissingKey,
+  intoCaseArbitrary,
+  intoInputsOf,
+  treeTargetWithSources,
+} from './alias-into-case.ts';
+import {
   cloneGraph,
   isomorphismMismatch,
   isTree,
@@ -53,6 +59,10 @@ import {
   sharedWithRoot,
 } from './alias-rewire.ts';
 import { fuzzRunPlan, } from './fuzz-budget.ts';
+import {
+  minimumReach,
+  reachTally,
+} from './reach-tally.ts';
 import { target, } from './target.ts';
 
 //region Constants and arbitraries
@@ -68,10 +78,10 @@ const RUN = fuzzRunPlan();
 const graphs = graphSpecArbitrary({ exoticLeaves: true, recordRoots: false, },);
 
 /**
- Graphs for `deepmergeInto`: record roots, no leaves that trigger the known
- first-value typing defect.
+ Runs in which the into properties must merge a cyclic source value at a
+ root key the target lacks (`./alias-into-case.ts`).
  */
-const intoGraphs = graphSpecArbitrary({ exoticLeaves: false, recordRoots: true, },);
+const MINIMUM_REACH = minimumReach(RUN.params.numRuns,);
 
 /**
  Mismatch between each value and its pre-merge copy, empty when none changed.
@@ -148,18 +158,28 @@ await describe({
       name: 'deepmergeInto a tree target from graph sources agrees with upstream\'s cycle rule outside the false-cycle region',
       timeout: RUN.timeout,
       fn: async () => {
+        /**
+         Seeded-slot cycles this property must reach.
+         */
+        const tally = reachTally(['cyclicValueAtMissingKey',],);
         assert(
-          property(intoGraphs, function graphInto(spec,) {
+          property(intoCaseArbitrary, function graphInto(intoCase,) {
             /**
-             First root becomes the target, the rest the sources.
+             Private target this run mutates, and its sources.
              */
-            const [first, ...sources] = materialize(spec,);
-            if ((sources.length === 0) || (!isTree(first,)))
+            const inputs = intoInputsOf(intoCase,);
+            if (!treeTargetWithSources(inputs,))
               return;
             /**
-             Private target this run mutates.
+             Target and sources of the case.
              */
-            const intoTarget = cloneGraph({ copies: new Map(), value: first, },) as object;
+            const {
+              intoTarget,
+              sources,
+            } = inputs;
+            if (cyclicValueAtMissingKey({ intoTarget, sources, },))
+              tally.hit('cyclicValueAtMissingKey',);
+            tally.endRun();
             /**
              Target before the merge, for the oracle.
              */
@@ -173,26 +193,33 @@ await describe({
           },),
           RUN.params,
         );
+        expect(tally.shortfalls(MINIMUM_REACH,),).toEqual([],);
       },
     },),
     it({
       name: 'deepmergeInto never mutates its graph sources within one call',
       timeout: RUN.timeout,
       fn: async () => {
+        /**
+         Seeded-slot cycles this property must reach.
+         */
+        const tally = reachTally(['cyclicValueAtMissingKey',],);
         assert(
-          property(intoGraphs, function graphSourcesUnchanged(spec,) {
+          property(intoCaseArbitrary, function graphSourcesUnchanged(intoCase,) {
             /**
-             First root becomes the target, the rest the sources.
+             Private target this run mutates, and its sources.
              */
-            const [first, ...sources] = materialize(spec,);
+            const {
+              intoTarget,
+              sources,
+            } = intoInputsOf(intoCase,);
             /**
              Children of every source container before the merge.
              */
             const edges = snapshotEdges(reachableContainers(sources,),);
-            /**
-             Private target this run mutates.
-             */
-            const intoTarget = cloneGraph({ copies: new Map(), value: first, },) as object;
+            if (cyclicValueAtMissingKey({ intoTarget, sources, },))
+              tally.hit('cyclicValueAtMissingKey',);
+            tally.endRun();
             target.deepmergeInto(intoTarget, ...sources,);
             /**
              Source containers the target reaches after the call; writes into them are the pinned defect.
@@ -204,6 +231,7 @@ await describe({
           },),
           RUN.params,
         );
+        expect(tally.shortfalls(MINIMUM_REACH,),).toEqual([],);
       },
     },),
   ],
