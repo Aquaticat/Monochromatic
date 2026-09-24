@@ -291,8 +291,9 @@ source-level transitive clearance remains open where required.
 - A multi-line value comment in `{"k":/*value\ncomment*/1}` moves from the value to the key after canonical emission and reparse.
    A direct TypeScript bundle probe measured `COMMENT_ABSENT` on the key before emission and on the value afterward;
    an isolated scratch Rust test failed with the same migration.
-   The Rust emitter must place that comment after the colon;
-   the maintained TypeScript emitter needs the same correction and shared fixture after foundation adoption.
+   The scratch Rust emitter was changed to put that comment after the colon;
+   its parse/emit/reparse regression passed in the bounded container.
+   The maintained TypeScript emitter still needs the same correction and shared fixture after foundation adoption.
    This is a separate comment-ownership incident,
    not the stack or comma failure.
 - Current reports are `doc/audit/tech-jsonc-edit-rust-parser-foundation-vet-2026-09-24-63342231.md` and `doc/audit/tech-jsonc-edit-rust-exact-number-foundation-vet-2026-09-24-e8e0034a.md`.
@@ -307,8 +308,8 @@ Exercise the iterative parser at the accepted depth across emission,
  nested records,
  and both success and error cleanup,
  all within resource bounds.
- Preserve multi-line value-comment ownership in the scratch Rust emitter,
- then add comma-after-trivia and comment-owner fixtures to the maintained TypeScript implementation at the appropriate adoption stage.
+ Add comma-after-trivia and comment-owner fixtures to the maintained TypeScript implementation at the appropriate adoption stage;
+ its value-comment emitter remains unfixed.
  Then rerun parser syntax,
  comment,
  UTF-16,
