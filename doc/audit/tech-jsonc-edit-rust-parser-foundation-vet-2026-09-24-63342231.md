@@ -582,11 +582,16 @@ The separate scratch differential consumer now imports the Biome-to-value adapte
  Separate bounded named tests for object and array separators on a later line both failed the Biome adapter's owner assertion.
  The maintained TypeScript structured parser rejects the object source due its separately measured comma-after-trivia defect;
  its documented same-line trailing rule and the owned parser's continuation support the following-key reading.
- The prototype's `src/children.rs:108-113,148,202` currently routes every comma's trailing comment to the preceding value.
- This is an adapter ownership defect under the selected policy,
- not evidence that Biome's raw syntax tree lost the comment.
- Correction,
- optimized validation and a rerun of the positive-controlled differential remain pending.
+ The prototype's previous `src/children.rs` routed every comma's trailing comment to the preceding value;
+ Biome's raw syntax tree had retained the comment.
+ The scratch adapter now checks for a line break between the value and comma
+ (`src/children.rs:105-136`) and carries the comma's following comments to the next key or element when present.
+ Both named owner regressions passed in the bounded debug suite.
+ A rerun of the positive-controlled debug differential admitted 1577 of the 5635 generated inputs in both parsers
+ and found no syntax or editor-node difference within that corpus.
+ The intentionally mismatching BOM and moved-comment controls passed before interpreting that null result.
+ This does not prove semantic equality outside the corpus;
+ optimized projection and differential reruns remain pending.
 
 ## Existing-parser contract exits
 
