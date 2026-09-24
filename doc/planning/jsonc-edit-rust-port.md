@@ -303,13 +303,25 @@ source-level transitive clearance remains open where required.
    The maintained TypeScript emitter still needs the same correction and shared fixture after foundation adoption.
    This is a separate comment-ownership incident,
    not the stack or comma failure.
+- A separate published `biome_json_parser` 0.5.7 syntax probe passed bounded debug and optimized release runs for
+   escaped lone surrogate text,
+   raw number tokens,
+   comment trivia,
+   strict JSON5 rejection,
+   and 512-level array/record parse and cleanup.
+   Upstream also accepts a 513th container;
+   a scratch postparse adapter guard passed 512-accepted and 513-rejected controls.
+   Comment trivia lives on punctuation tokens,
+   so mapping it to separately queryable key and value owners remains unvalidated.
+   This is an unadopted alternative with a larger build dependency surface.
 - Current reports are `doc/audit/tech-jsonc-edit-rust-parser-foundation-vet-2026-09-24-63342231.md` and `doc/audit/tech-jsonc-edit-rust-exact-number-foundation-vet-2026-09-24-e8e0034a.md`.
    Their no-regex predecessors are superseded.
    Other worktree changes are concurrent and out of scope.
 
 ## Next action
 
-Compare the iterative parser's syntax and comment behavior against the maintained TypeScript conformance corpus,
+Finish parser and exact-number candidate discovery and compare surviving foundations at equal depth.
+ Compare the owned iterative parser and any viable syntax adapter against the maintained TypeScript conformance corpus,
  including the measured comma and value-comment cases.
  Add comma-after-trivia and comment-owner fixtures to the maintained TypeScript implementation at the appropriate adoption stage;
  its value-comment emitter remains unfixed.
