@@ -1498,15 +1498,16 @@ this section is the readiness reading of it.
   The rule of this document holds:
   a class found on a read page is fixed before the next launch,
   and a page is read before the next entry is launched.
-  Classes twenty-six to one hundred fifteen were found that way between 2026-09-16 and 2026-09-24,
-  one hundred fifteen in all,
+  Classes twenty-six to one hundred sixteen were found that way between 2026-09-16 and 2026-09-24,
+  one hundred sixteen in all,
   and the rate has not fallen to zero:
-  of the last twelve reads (yingying8 at 00:31 UTC to yingying10 at 07:26 UTC 2026-09-24),
-  three found no class and nine found one each
-  (one hundred eight to one hundred fifteen,
+  of the last thirteen reads (yingying8 at 00:31 UTC to zheermao11 at 08:10 UTC 2026-09-24),
+  three found no class and ten found one each
+  (one hundred eight to one hundred sixteen,
   with the chain arm of one hundred eleven found on its own read).
-  The last seven reads each found one,
-  yingying10's on the translate slate rather than the page,
+  The last eight reads each found one,
+  yingying10's on the translate slate rather than the page
+  and zheermao11's on the clock (a translate lane of 616 s against 77, the page itself clean),
   five of them on `mikaela_khara`,
   where the carried-insertion fold and the pairing met new shapes in a row.
 - What "ready" would rest on now:
@@ -1534,7 +1535,7 @@ this section is the readiness reading of it.
   "We never ever need a all 92 entries launch";
   readiness is claimed on the read set and the classes it stopped finding.
 - Money is not the constraint:
-  Bedrock 46.70 USD and OpenRouter 92.87 USD at 07:40 UTC,
+  Bedrock 46.57 USD and OpenRouter 92.81 USD at 08:10 UTC,
   a full rotation of the read set about 16 USD on Bedrock and OpenRouter alone.
 
 

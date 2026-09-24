@@ -8082,6 +8082,62 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## zheermao11 read, 2026-09-24, 08:30 UTC: SETTLED in 30 min, every zheermao9 check holding, classes one hundred fourteen and fifteen silent by design; the translate lane 616 s against 77 on picture transcripts cut by the volume bound (class one hundred sixteen, built in 3bb47c918)
+
+`zheermao11` (entry `zheermao101`, frozen `c958640fb`, pid 2456306) was launched at 07:40 UTC 2026-09-24
+and SETTLED at 08:10 UTC,
+30 min (TALLY `ms=1820557`),
+one attempt,
+857 seats,
+834 calls,
+7 retry rounds,
+0.19 USD by the meters
+(Bedrock 46.70 to 46.57, OpenRouter 92.87 to 92.81),
+Synthetic dry, Hyper wet.
+Jev 18 of 18; 5 abstention lines with reasons.
+
+Every zheermao9 check holds:
+front matter equal,
+2 headings,
+no TA,
+no error finish,
+no double blank line,
+curly "we’ll" (class ninety-six).
+Both labels are one line each (class seventy-seven holding), reworded by the archive block review to name what they label:
+"English translation of Arts’s letter:" (the archive's "the preceding letter")
+and "English translation of Zheermao’s email to One Among Us and the members’ reply:" (the archive's "the preceding email conversation"),
+both accurate to the pictures they follow and free of the positional reference.
+The reply label reads "When the members of One Among Us saw it, they stayed up through the night to send her a reply:" for 那些秋叶的成员在看到后连夜给她发送了一份回信, the plural members and 连夜 both carried.
+No `translate incumbent excluded by deterministic source floor:` line,
+no unwrapped-link refusal ("links words to"),
+no `checker stage re-seated` line:
+the page carries no linked title naming a declared person and no worded link, and no hold began inside the lane,
+so classes one hundred nine, fourteen and fifteen stood silent by design.
+No `translate-archive-disputed` line (class one hundred seven silent).
+Terminals: consolidated on 0, 5 and 12, gate-kept on 1, 4, 11 and 13, slate-endorsed on 2, 3 and 9, slate-declined on 6;
+the contest won a lane on nine slices and settled on neither on 12 and 13.
+
+Class one hundred sixteen, found on the clock.
+The stages ran archive block review 07:43 to 07:49, repair 07:50 to 07:55, translate 07:55 to 08:05 and consolidation 08:06 to 08:10,
+against zheermao9's translate lane of 77 s (03:00:38 to 03:01:55) with Hyper dry.
+Twenty-two translate streams ended on the produced volume bound (`StreamOverrunError`, 1,024 or 1,536 characters for a picture component or the sentence introducing it),
+every one rendering a neighbouring picture's transcript into the passage: openings `{"translation": "<PhotoScroll photos={[ ... ]} />` with the letter or the email thread after it, or "A few days before her departure, she sent an email ..." followed by the thread;
+the reasoning seats said so in their own words ("The ORIGINAL is a PhotoScroll component plus OCR transcription", "The passage is a WHAT THE PICTURES HERE SAY section").
+On Bedrock the Gemma seats were cut in 3 to 6 s, but Kimi-K3 (7 of 17 translate streams, 55.1 s mean, 171 s longest), glm-5.3 (2 of 11) and minimax-m3 (1 of 25) thought 60 to 170 s before writing the transcript and being cut,
+and five translate rounds waited 129 to 172 s to hear 0 or 1 of their voices, one recovery round 73 s more hearing none.
+The overruns are not new (38, 39, 43 and 31 on zheermao6 to 9); the Hyper seats being reachable made them cost minutes.
+The translator sheet showed WHAT THE PICTURES HERE SAY for the pictures one slice each way and never said what the block was for,
+while its rules said "Translate everything the ORIGINAL says" and "Do not add content the ORIGINAL does not support and the existing translation does not already carry."
+Built in 3bb47c918 (guard red first 40721851c, `picture-transcript-scope.unit.test.ts`):
+`TRANSLATE_PICTURE_SCOPE_RULE` (`translate-wire.ts`), added to the translator sheet whenever the block is shown, says the block is context and not part of the ORIGINAL,
+that a picture's words belong only where the passage writes them out or its existing translation already carries them,
+and that a picture component renders exactly as the ORIGINAL has it, since a transcript there is an addition and, where the page translates the picture in its own block, a second copy.
+Lint 0 and 0, types clean, full suite `suite-class116.log` 1119 PASS, no FAIL.
+The rule is words on a sheet, so only a live read can say whether it moves the writers:
+`zheermao12` (frozen `3bb47c918`, pid 2782250) launched at 08:21 UTC with Hyper wet again
+(meters 46.57 USD Bedrock and 92.81 OpenRouter, Synthetic dry), waiter wait-z12;
+read it for the `StreamOverrunError` count on `produceTranslateSlate` (22 here) and the translate lane's span (616 s here, 77 on zheermao9 with Hyper dry), beside every check of this read.
+
 ## yingying10 read, 2026-09-24, 07:40 UTC: SETTLED with "Yingying" in the [^2] title, class one hundred fourteen live, class one hundred fifteen found and built in a7b7f3934
 
 `yingying10` (entry `yingying`, frozen `f4d554838`, pid 2023934) was launched at 07:15 UTC 2026-09-24
