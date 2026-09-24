@@ -490,7 +490,17 @@ This is a partial parser/emitter probe with a demonstrated stack-safety failure,
 
 ### Accepted-depth positive control also failed
 
-A separate filtered probe `mise run test:depth-512` generated a valid array document with 512 nested containers and a scalar leaf. It ran solely inside the same 2 GiB/2 CPU, network-free container with a 600-second ceiling. The test process aborted with `thread 'tests::depth_512_is_accepted' has overflowed its stack` (SIGABRT, exit 101), before it could assert a successful parse. Thus a pre-scan that merely rejects nesting beyond 512 would not remediate the supported-depth case. The parser's recursive container-to-child calls must be replaced by an explicit work stack; once parsing succeeds, dropping and emitting a deeply nested tree must be measured separately because they can also recurse. Do not run these inputs on the host until the stack-safe design has passed the isolated positive control.
+A separate filtered probe `mise run test:depth-512` generated a valid array document with 512 nested containers and a scalar leaf.
+ It ran solely inside the same 2 GiB/2 CPU,
+ network-free container with a 600-second ceiling.
+ The test process aborted with `thread 'tests::depth_512_is_accepted' has overflowed its stack` (SIGABRT,
+ exit 101),
+ before it could assert a successful parse.
+ Thus a pre-scan that merely rejects nesting beyond 512 would not remediate the supported-depth case.
+ The parser's recursive container-to-child calls must be replaced by an explicit work stack;
+ once parsing succeeds,
+ dropping and emitting a deeply nested tree must be measured separately because they can also recurse.
+ Do not run these inputs on the host until the stack-safe design has passed the isolated positive control.
 
 ## Evidence and validation still required
 
