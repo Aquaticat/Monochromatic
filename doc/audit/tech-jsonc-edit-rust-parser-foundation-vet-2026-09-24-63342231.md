@@ -571,6 +571,19 @@ The published codec has an actual JSONC grammar with comments and trailing comma
  but transitive source and normal/build graph remain uninspected because the comment-query gate already fails.
  No candidate code was executed.
 
+### `subc-jsonc` 0.1.1 as-is span/normalizer exit
+
+The published single-file `src/lib.rs:3-68` exports JSONC-to-JSON normalization by discarding comments
+ and trailing commas.
+ `src/lib.rs:115-200` also exports object/member byte-span queries for narrow edits,
+ but the tokenizer and parser are private (`:221,341`) and no public key/value comment node or number value is returned.
+ Source-preserving span cuts are not a complete canonical emitter with independently queryable comments.
+ Treat it as a useful utility for a different edit model,
+ not this port's parsing foundation as-is;
+ building a comment-bearing editor on its private parser would be a separate custom candidate.
+ Its inspected source has no direct regex call;
+ no candidate code was executed.
+
 ### `fjson` 0.3.1
 
 **Source correction:**
