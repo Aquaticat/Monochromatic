@@ -214,13 +214,9 @@ open to veto (round 3):
 
 ## In flight
 
-- Incumbent coverage ledger
-   (every responsibility,
-   consumer,
-   size,
-   churn,
-   and related doc):
-   research agent running.
+- Incumbent coverage ledger:
+   done,
+   recorded in [`doc/planning/unified-linter-coverage-ledger.md`](../planning/unified-linter-coverage-ledger.md).
 - ESLint's current model in detail,
    plus the `satteri` Rust crate API:
    research agent running.
