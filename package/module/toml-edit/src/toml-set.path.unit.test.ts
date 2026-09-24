@@ -46,6 +46,17 @@ await describe({
       },
     },),
     it({
+      name: 'keeps a deeper array-of-tables header when replacing its parent collection',
+      fn: async () => {
+        const edit = parseTomlEdit({
+          source: 'title="x"\n[[a.b]]\nx=1\n[[a.b.c]]\ny=2\n',
+        },);
+        const updated = tomlSet({ edit, path: ['a', 'b',], value: [{ x: 9, },], },);
+        expect(tomlStringify({ edit: updated, },),)
+          .toBe('title="x"\n[[a.b]]\nx = 9\n[[a.b.c]]\ny=2\n',);
+      },
+    },),
+    it({
       name: 'creates under the deepest matching standard-table header',
       fn: async () => {
         const edit = parseTomlEdit({ source: '[a.b]\nx=1\n[a.c]\nz=2\n', },);
@@ -59,6 +70,14 @@ await describe({
         const edit = parseTomlEdit({ source: '[a]\nroot = 1\n[a.b]\nx = 2\n', },);
         const updated = tomlSet({ edit, path: ['a', 'b', 'new',], value: 3, },);
         expect(tomlStringify({ edit: updated, },),).toBe('[a]\nroot = 1\n[a.b]\nx = 2\nnew = 3\n',);
+      },
+    },),
+    it({
+      name: 'chooses the deepest table even when its parent appears later',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: '[a.b]\nx=1\n[a]\nroot=2\n', },);
+        const updated = tomlSet({ edit, path: ['a', 'b', 'new',], value: 9, },);
+        expect(tomlStringify({ edit: updated, },),).toBe('[a.b]\nx=1\nnew = 9\n[a]\nroot=2\n',);
       },
     },),
     it({
@@ -86,6 +105,14 @@ await describe({
         const updated = tomlSet({ edit, path: ['a',], value: { q: 9, r: 10, }, },);
         expect(tomlStringify({ edit: updated, },),)
           .toBe('title="x"\nother=3\na.q = 9\na.r = 10\n[sibling]\nz=4\n',);
+      },
+    },),
+    it({
+      name: 'retains comment filler when replacing an implicit parent',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: '# header\na.x=1\n', },);
+        const updated = tomlSet({ edit, path: ['a',], value: { y: 2, }, },);
+        expect(tomlStringify({ edit: updated, },),).toBe('# header\na.y = 2\n',);
       },
     },),
     it({
