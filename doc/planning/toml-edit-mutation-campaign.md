@@ -542,6 +542,7 @@ Final comment/value mutation rechecks are running on this source revision:
  `/var/home/user/temp/agent/toml-mutation-comment-api-final.json` (`proc_2b74`)
  and `/var/home/user/temp/agent/toml-mutation-value-final.json` (`proc_7bac`).
 Do not edit runtime source until both complete.
+TOML 1.0 and 1.1 conformance passed after the shared value-assembly refactor.
 Do not claim a full-runtime verdict before those campaigns and survivor rechecks finish.
 
 ## Shared value assembly refactor
