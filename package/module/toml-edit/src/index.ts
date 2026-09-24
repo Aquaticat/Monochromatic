@@ -73,6 +73,14 @@ export { tomlGetCommentAfter, } from './toml-get-comment-after.ts';
 
 export { tomlSet, } from './toml-set.ts';
 
+export {
+  tomlFloat,
+  tomlInteger,
+  tomlLocalDate,
+  tomlLocalDateTime,
+  tomlLocalTime,
+} from './wrappers.ts';
+
 export { tomlDelete, } from './toml-delete.ts';
 
 export { tomlSetHeaderComment, } from './toml-set-header-comment.ts';
@@ -100,6 +108,16 @@ export {
  from application code. See `doc/decision/toml-edit-fuzzing.md`.
  */
 export { encodeKey as _encodeKey, } from './keys.ts';
+
+/**
+ Unstable comment-gap classifier exported for built-artifact tests.
+
+ @example
+ ```ts
+ _isAttachedGap('\n');
+ ```
+ */
+export { isAttachedGap as _isAttachedGap, } from './build-comments.ts';
 
 /**
  {@inheritDoc _encodeKey}
