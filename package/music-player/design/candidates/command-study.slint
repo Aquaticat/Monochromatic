@@ -241,14 +241,15 @@ component CommandPanel inherits Rectangle {
         y: root.surface-mode == 3 ? 104px : 80px;
         width: parent.width - 24px;
         height: parent.height - 128px;
+        Text { x: 12px; y: 10px; text: "Actions"; font-size: 14px; color: root.dark ? #a9aab5 : #5d5f68; }
+        Text { x: parent.width / 3 + 12px; y: 10px; text: "Tracks"; font-size: 14px; font-weight: 600; color: root.dark ? #bac5ee : #4e5e8b; }
+        Text { x: parent.width * 2 / 3 + 12px; y: 10px; text: "Folders"; font-size: 14px; color: root.dark ? #a9aab5 : #5d5f68; }
         Rectangle {
-            width: parent.width;
-            height: 44px;
-            background: root.dark ? #121318 : #ffffff;
-            border-radius: 8px;
-            Text { x: 12px; y: 12px; text: "Actions"; font-size: 14px; color: root.dark ? #a9aab5 : #5d5f68; }
-            Text { x: parent.width / 3 + 12px; y: 12px; text: "Tracks"; font-size: 14px; font-weight: 600; color: root.dark ? #bac5ee : #4e5e8b; }
-            Text { x: parent.width * 2 / 3 + 12px; y: 12px; text: "Folders"; font-size: 14px; color: root.dark ? #a9aab5 : #5d5f68; }
+            x: parent.width / 3;
+            y: 39px;
+            width: parent.width / 3;
+            height: 2px;
+            background: root.dark ? #bac5ee : #4e5e8b;
         }
         Text { x: 8px; y: 55px; text: "RECENT TRACKS"; font-size: 12px; color: root.dark ? #a9aab5 : #5d5f68; }
         ResultRow { x: 0px; y: 78px; width: parent.width; dark: root.dark; selected: true; label: "Another Xronixle"; detail: "Track 1 · Camellia"; tail: "4:35"; }
@@ -300,14 +301,15 @@ export component CommandStudy inherits Window {
         y: 34px;
         width: parent.width;
         height: parent.height - 34px;
-        background: root.dark ? #98000000 : #8c30323b;
+        background: root.dark ? #00000099 : #30323b66;
     }
     CommandPanel {
         surface-mode: root.surface-mode;
         content-mode: root.content-mode;
         dark: root.dark;
         width: root.surface-mode == 1 ? (root.compact ? parent.width - 24px : 640px) : (root.compact ? parent.width - 40px : 600px);
-        height: root.surface-mode == 1 ? 356px : (root.surface-mode == 3 ? 388px : 376px);
+        height: root.content-mode == 3 ? (root.surface-mode == 3 ? 440px : 406px) :
+            (root.surface-mode == 1 ? 356px : (root.surface-mode == 3 ? 388px : 376px));
         x: root.surface-mode == 1 ? (root.compact ? 12px : 92px) : (parent.width - self.width) / 2;
         y: root.surface-mode == 1 ? 96px : (root.surface-mode == 3 ? 56px : 88px);
     }
