@@ -232,6 +232,16 @@ mod edit_state;
 /// ```
 mod navigate;
 
+/// What:     The iterative spine walk shared by every immutable edit.
+/// Why:      A recursive rebuild overflows a debug test thread's stack at the accepted 512-container depth,
+///           so descent and rebuild keep their own explicit level stack.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // private module: descend(root, path) then rebuild(levels, value).
+/// ```
+mod edit_spine;
+
 /// What:     Immutable value replacement, insertion and deletion.
 /// Why:      Structural edits return a new document and leave the input state usable.
 ///
@@ -285,3 +295,23 @@ pub use edit_apply::{jsonc_delete, jsonc_set};
 /// export { jsoncGetComment, jsoncSetComment, jsoncGetKeyComment, jsoncSetKeyComment } from './index';
 /// ```
 pub use edit_comment::{jsonc_comment, jsonc_key_comment, jsonc_set_comment, jsonc_set_key_comment};
+
+/// What:     Read and structural edit tests.
+/// Why:      Immutability, insertion limits and the two failure kinds are the edit contract.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import './edit.test';
+/// ```
+#[cfg(test)]
+mod edit_tests;
+
+/// What:     Comment query and edit tests.
+/// Why:      Key and value comments are separate data and must keep their owner across emission.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import './editComment.test';
+/// ```
+#[cfg(test)]
+mod edit_comment_tests;
