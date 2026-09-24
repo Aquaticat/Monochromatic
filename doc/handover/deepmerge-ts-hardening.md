@@ -550,6 +550,30 @@ an oracle written from the docs alone found no runtime defect the sidecar had mi
 which is recall evidence for runtime values against documented behaviour,
 not for the surfaces the other two workstreams search.
 
+### Recall result
+
+Report `doc/audit/deepmerge-ts-recall-2026-09-24.md` (commits `bb05f7b58` to `95f6fc976`):
+of 22 historical bugs whose control reproduced them, the sidecar at `e4237dc8f` detects 16:
+runtime 8 of 8 (all in `test:unit`, none needed the campaign),
+result types 8 of 10,
+packaging and metadata 0 of 4.
+Every miss is on a surface the sidecar never loads
+(exported utility types, `utils.defaultMergeFunctions` in custom functions, `node10` resolution, `engines`);
+none came from generator reach or a model copying the bug.
+Upstream shipped only 8 runtime fixes ever, so this bounds recall for the fault classes upstream has shipped,
+not the count of unknown faults.
+New 8.0.2 finding, reproduced independently here (pin with the directive removed reports TS2589,
+and the issue snippet type-checks verbatim in `src/issue-snippet-union-depth.local.ts`):
+with `DeepMergeNoFilteringURI`, a 50-member leaf union exceeds instantiation depth;
+added to issue section 12.
+The same edit dropped a work-inviting offer from section 12 (`XCM`).
+
+Its proposals, split by owner:
+generator changes (zero-argument calls, `undefined` between 3+ records, 50+ member unions, more declared-type seeds)
+are applied from this session because no other workstream touches those files;
+exported-type, documented-example, packaging, and `engines` checks wait for the surfaces report,
+which covers the same ground, so both land in one integration pass.
+
 ### Campaign
 
 The run started 2026-09-24 had passed 363 rounds without a counterexample before the widening pass;
