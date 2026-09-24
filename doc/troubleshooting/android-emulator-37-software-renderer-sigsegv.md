@@ -158,6 +158,20 @@ ANDROID_AVD_HOME="$HOME/temp/agent/issue460-avd-home" \
   -gpu swiftshader_indirect -camera-back none -camera-front none
 ```
 
+On 2026-09-23,
+ the same installed Fold AVD also crashed on SIGSEGV with the emulator's
+implicit software renderer when started as follows:
+
+```bash
+emulator -avd Pixel_9_Pro_Fold -no-window -no-audio
+```
+
+The process logged `Graphics Adapter Android Emulator OpenGL ES Translator (Google SwiftShader)`;
+`coredumpctl info 3324401` recorded signal 11 from `qemu-system-x86_64-headless` before
+`adb` became ready.
+ This additional invocation supports the failing catalog but does
+not isolate `-no-window` itself as the cause.
+
 ### Working catalog
 
 The installed Pixel 9 Pro Fold AVD booted read-only with host GPU rendering:
@@ -184,7 +198,19 @@ emulator-5554 device product:sdk_gphone16k_x86_64
 boot_completed=1
 ```
 
-The music-player APK and test APK installed on that emulator.
+On 2026-09-23,
+ the existing Fold AVD also reached `sys.boot_completed=1` and exposed
+`cmd device_state` with a windowed host-GPU invocation:
+
+```bash
+emulator -avd Pixel_9_Pro_Fold -no-audio -gpu host -no-snapshot-load
+```
+
+This comparison changes renderer and window mode together;
+ the prior read-only
+headless `-gpu host` positive control is the evidence that a window is not required for
+host-GPU success on this host.
+ The music-player APK and test APK installed on that emulator.
 The real Android instrumentation runner then executed the migration suite:
 
 ```text
