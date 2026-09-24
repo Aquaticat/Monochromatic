@@ -6,8 +6,8 @@ const root = process.env.MUSIC_PLAYER_REVIEW_ROOT;
 if (!root) throw new Error('MUSIC_PLAYER_REVIEW_ROOT must name the main design/questions directory.');
 const question = resolve(root);
 const render = join(question, 'render');
-const templateFile = join(question, 'current.template.html');
-const outputFile = join(question, 'current.html');
+const templateFile = join(question, 'archive', 'search-three-way-before-a.template.html');
+const outputFile = join(question, 'archive', 'search-three-way-before-a.html');
 const source = (filename) => {
   const png = readFileSync(join(render, filename));
   if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') {

@@ -440,11 +440,21 @@ dir = "{{config_root}}"
 run = "node sanitize-search-selected.mjs"
 
 [tasks."prototype:build:search-review"]
-description = "Build the self-contained provisional Fold Search questionnaire from sanitized captures"
+description = "Rebuild the archived historical three-way Fold Search questionnaire"
 dir = "{{config_root}}"
 run = "node build-search-review.mjs build"
 
 [tasks."prototype:lint:search-review"]
-description = "Validate the self-contained Fold Search questionnaire against sanitized captures"
+description = "Validate the archived historical three-way Fold Search questionnaire"
 dir = "{{config_root}}"
 run = "node build-search-review.mjs validate"
+
+[tasks."prototype:build:selected-search"]
+description = "Build self-contained D51 A-only review from sanitized current captures"
+dir = "{{config_root}}"
+run = "node build-search-selected.mjs build"
+
+[tasks."prototype:lint:selected-search"]
+description = "Validate current D51/D52 selected Fold review"
+dir = "{{config_root}}"
+run = "node build-search-selected.mjs validate"
