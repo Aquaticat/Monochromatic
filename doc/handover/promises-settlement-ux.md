@@ -164,6 +164,9 @@ Its game-faithfulness assertion is intentionally red:
 - Fresh tools can call resolving functions again on the processed pudding.
   That is useful and accepted for the Promise experiment, but the game description supplies
   no second physical processing step for the same departed or destroyed pudding.
+- `build-ux-choice-form.mjs:71,160` cites the game's colored timing faces as a reason to color
+  fulfilled/rejected Promise cues. That maps action grades onto different semantics;
+  the existing layout/color ranking must not be treated as accepted.
 
 The probe reports the separate authored policy that Release 2 is disabled while Promise 1 is pending.
 It is not evidence of a Promise restriction or, alone, a game contradiction.
@@ -183,44 +186,58 @@ An ignored resolver call does not prevent other code from doing physical work.
 The prior claim that a consumed game pudding makes repeated Promise calls impossible was too strong:
 the resolver functions can target a durable record after a physical pudding has departed.
 
-### Proposed mappings, not accepted decisions
+### Corrected contract and proposed directions
 
-1.  **Physical pudding plus durable Promise ticket (recommended for game fidelity).**
-    The pudding is a supplied job with a normal/defective cue; the Promise is a separate ticket
-    tracking its processing or delivery. Catch sends a normal pudding to the belt immediately;
-    laser destroys a defective pudding; a correct action can show a green performance face
-    even when the ticket rejects under a clearly declared delivery contract.
-    Later numbered resolver probes target the ticket, not another physical strike.
-    **Pros:** keeps the game choreography and Promise identity distinct.
-    **Cons:** adds a ticket, explicit contract, and a distinction between physical controls
-    and resolver probes; wrong-tool and timing behavior need separately authored rules.
-2.  **Promise-first factory with Yum-Bot artwork only.**
-    Keep the current direct resolver experiment but stop claiming game fidelity;
-    the belt is outcome history, the face is a Promise-state display, and Hand/Laser are
-    resolver controls, not physical catch/destruction.
-    **Pros:** retains the lesson's first-settlement-wins focus and existing interaction.
-    **Cons:** sacrifices the game's causal mechanics and needs honest relabeling of artwork.
-3.  **Separate game depiction and Promise experiment.**
-    Show the real game choreography as inspiration alongside an independent Promise trace.
-    **Pros:** both models can be accurate without forcing object identity across them.
-    **Cons:** two parallel systems increase the teaching load and occupy more content space.
-4.  **Promise of a game turn's correct execution.**
-    Correct Hand and correct Laser both fulfill with tagged results;
-    misses or wrong actions reject, and resolver probes target the retained turn record.
-    **Pros:** aligns the robot face's success grade with the Promise contract.
-    **Cons:** abandons Hand = fulfill and Laser = reject and introduces classification/timing
-    into a lesson intended to focus on Promises.
+The lesson source at `/home/user/temp/agent/promises-revision/promise-sequence.html:84-99` says
+`Promise.withResolvers()` starts no timer or service, calls the section a *manual settlement
+experiment, not a service request*, and uses `"Hello Ada"` or `Error("No reply")`.
+Neither outcome is an edible pudding, and no real shop network request is performed here.
+A physical pudding-delivery ticket would require changing the operation and payloads;
+that is a new lesson-contract decision, not a cosmetic fix.
+The earlier recommendation to use a pudding-delivery ticket without accounting for these
+values was wrong. The independent advisor identified that gap; the cited lesson source
+confirms it. The remaining direct question is how much literal Yum-Bot behavior to retain
+without changing the already authored reply-shaped settlement fixture.
 
-Ranking: ticket mapping > honest factory metaphor > separated depictions > turn-success Promise.
-The ticket mapping retains both game choreography and durable Promise identity better than
-artwork-only; artwork-only keeps the Promise lesson more direct than two parallel systems;
-separated depictions avoid changing the central resolver mapping more than a turn-success model.
-No mapping is authorized for implementation by this audit.
+1.  **Honest, Promise-first factory with bounded Yum-Bot inspiration (recommended).**
+    Keep the manual `Promise.withResolvers()` experiment and its values.
+    Use factory artwork and a drawn control surface, but call the belt outcome history,
+    the face an observed Promise-state display, and Hand/Laser resolver-control icons.
+    Stop describing physical catching, laser destruction, and game timing grades as implemented.
+    **Pros:** preserves the meaningful reply-shaped values and first-settlement-wins teaching
+    without inventing a physical operation that produces `"Hello Ada"`.
+    **Cons:** no longer follows the source game's causal choreography;
+    some artwork may need replacement to avoid implying physical actions.
+2.  **Separate faithful game illustration from the unchanged Promise experiment.**
+    Show normal/defective cues, immediate belt placement or destruction, and action grades
+    in a clearly separate game panel; keep the manual resolver experiment independent.
+    **Pros:** neither causal model needs to pretend to be the other.
+    **Cons:** adds a second system and more teaching surface to a Promise-focused lesson.
+3.  **Physical pudding plus Promise ticket (requires new contract approval).**
+    The pudding is a supplied job and the Promise a durable delivery/processing ticket;
+    later resolver probes target the ticket, not the pudding.
+    **Pros:** can preserve game choreography and repeated resolver calls in distinct layers.
+    **Cons:** the current `"Hello Ada"`/`Error("No reply")` outcomes and manual-service boundary
+    do not describe that ticket; changing them changes the lesson, not just its visuals.
+4.  **Promise of correct game-turn execution (requires new contract approval).**
+    Both correct Hand and correct Laser fulfill; wrong or missed actions reject.
+    **Pros:** aligns the face's game-performance grade with the Promise contract.
+    **Cons:** reverses the current Hand=fulfill/Laser=reject teaching setup and introduces
+    timing/classification into a Promise lesson.
+
+Ranking for the existing fixture: honest factory inspiration > separate faithful illustration >
+physical ticket contract rewrite > game-turn-success contract rewrite.
+The honest factory keeps one coherent Promise experiment better than two parallel systems;
+separating the game is less invasive than changing the established values and operation;
+a physical ticket retains more of the existing resolver pairing than a turn-success Promise.
+No direction is authorized for implementation by this audit.
 
 The user's logged-ignored-attempt decision remains settled.
-Two independent preferences remain: what operation the Promise represents,
-and whether game classification/routing/timing should be simulated or only visually referenced.
-Ask these separately before the layout/color matrix.
+The already authored manual experiment determines its reply-shaped values and no-service boundary.
+Ask whether the user wants literal game behavior kept in a separate illustration,
+or the game used only as visual inspiration for the unchanged experiment.
+Real-time rhythm timing is not entailed by either choice and should not be added unasked.
+Only then revisit layout and cue color.
 
 ## Superseded designs (do not revive without the user asking)
 
@@ -418,13 +435,13 @@ This decision is not a selection of matrix layout or cue colors.
 
 ## Open choices (user's, gating implementation)
 
-- Decide what the Promise represents: a durable ticket for a physical pudding's processing or
-  delivery (recommended for game fidelity), the pudding itself in a merely game-themed factory,
-  or another explicit operation. This is independent of how much timing/gameplay to reproduce.
-- Decide whether to simulate the game's supplied normal/defective cues, immediate normal-pudding
-  conveyor routing, defective-pudding destruction, and separate action-grade face;
-  or keep these as visual inspiration only and label the scene honestly.
-  Real-time rhythm timing is a separate optional choice, not entailed by a physical ticket.
+- Decide whether to keep the existing manual reply-shaped Promise experiment and use Yum-Bot
+  only as explicitly bounded visual inspiration (recommended), or show the game's supplied cues,
+  catch/obliteration, conveyor routing, and action-grade face in a separate faithful illustration.
+  Both retain the accepted real ignored resolver calls in the Promise experiment.
+- A physical pudding-delivery ticket or Promise of game-turn success would require an explicit
+  redesign of the operation and payloads. The user has not authorized that design change.
+  Do not ask for rhythm timing by default; the lesson focuses on Promises.
 - The focused clarity repair remains unaccepted as a final design while the logic mapping is open.
   Do not treat the user's logic challenge as a matrix-cell selection.
 - Only after mapping acceptance, revisit the matrix cell: layout (A reference rows,
