@@ -288,6 +288,13 @@ source-level transitive clearance remains open where required.
    a commented input and object with a newline before the comma fail analogously.
    Treat syntax parity here as a separate issue from stack safety;
    add shared fixtures and fix both implementations after foundation adoption.
+- A multi-line value comment in `{"k":/*value\ncomment*/1}` moves from the value to the key after canonical emission and reparse.
+   A direct TypeScript bundle probe measured `COMMENT_ABSENT` on the key before emission and on the value afterward;
+   an isolated scratch Rust test failed with the same migration.
+   The Rust emitter must place that comment after the colon;
+   the maintained TypeScript emitter needs the same correction and shared fixture after foundation adoption.
+   This is a separate comment-ownership incident,
+   not the stack or comma failure.
 - Current reports are `doc/audit/tech-jsonc-edit-rust-parser-foundation-vet-2026-09-24-63342231.md` and `doc/audit/tech-jsonc-edit-rust-exact-number-foundation-vet-2026-09-24-e8e0034a.md`.
    Their no-regex predecessors are superseded.
    Other worktree changes are concurrent and out of scope.
@@ -300,7 +307,8 @@ Exercise the iterative parser at the accepted depth across emission,
  nested records,
  and both success and error cleanup,
  all within resource bounds.
- Add comma-after-trivia fixtures and correct the source-syntax divergence in Rust and TypeScript at the appropriate adoption stage.
+ Preserve multi-line value-comment ownership in the scratch Rust emitter,
+ then add comma-after-trivia and comment-owner fixtures to the maintained TypeScript implementation at the appropriate adoption stage.
  Then rerun parser syntax,
  comment,
  UTF-16,

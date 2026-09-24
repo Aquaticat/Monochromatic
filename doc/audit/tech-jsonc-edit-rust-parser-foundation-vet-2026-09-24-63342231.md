@@ -563,6 +563,12 @@ The result does **not** yet prove stack-safe emission,
  The earlier isolated stack-overflow logs are retained as before-state evidence,
  not erased by the new pass.
 
+### Separate multi-line value-comment ownership failure
+
+The isolated scratch test `multiline_value_comment_stays_on_value` failed under the same bounded container while the other parser tests passed. Source `{"k":/*value\ncomment*/1}` parsed with its block comment on the value; the scratch emitter wrote `/*value\ncomment*/` before the key, and reparse attached it to the key. The assertion at scratch `src/tests.rs:124` reported `value comment migrated to key` (exit 101). This is not the earlier stack overflow: both 512-level and 513-level depth tests completed under the explicit-frame parser in this run.
+
+A separate direct probe of the built TypeScript library in `package/module/jsonc-edit/dist/final/neutral/index.mjs` reproduced the same user-visible change. Before emission, `jsoncGetKeyComment({ path: ['k'] })` returned `COMMENT_ABSENT` and `jsoncGetComment` returned `{ type: 'block', text: 'value\ncomment' }`; `jsoncStringify` placed that block before `"k"`; after reparse the key carried that comment and the value returned `COMMENT_ABSENT`. The source `package/module/jsonc-edit/src/stringify.ts` emits `valLead` before the key. This is a confirmed ownership bug in both implementations, not a whitespace-only difference. The accepted shared-behavior contract requires the same regression fixture and a fix in both maintained packages after foundation adoption. The Rust prototype needs to emit multi-line value comments after the key's colon so the parser attaches them to the value; that remedy has not yet been applied or measured.
+
 ## Evidence and validation still required
 
 - Finish the scheduled registry,
