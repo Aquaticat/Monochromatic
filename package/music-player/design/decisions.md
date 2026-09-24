@@ -636,24 +636,31 @@ See device-metrics.md for real dimensions.
  The hinge is **vertical** in portrait.
 
 ### E2. Keep information off the fold connector (clarified 2026-09-23)
-On the 852dp inner display,
- the physical crease is centered at about
-426dp (physical x 1038 on this AVD).
- The user corrected the player's pane
-gap:
- **`gap = max(min_padding, crease_width)`**.
- The earlier fixed 24dp
-spacer and two fixed 414dp panes are withdrawn as player geometry.
+The user supplied a **visible crease width of about 10mm for this design**.
+At the inner panel's approximately 141.08mm active width,
+ this spans roughly
+147 physical px or 60dp around the center x 1038 on the 390dpi AVD:
+about x `[964,1112)`px,
+ or `[396,456)`dp.
+ These are approximate bounds
+because the 8-inch diagonal and 10mm dent are approximate inputs.
+
+The player's pane gap is **`max(min_padding, crease_width)`**.
+ Thus the
+10mm crease sets an approximately 60dp floor unless the applicable minimum
+padding is even larger;
+ symmetric panes would each be about 396dp at a
+60dp gap.
+ The old fixed 24dp gap and 414dp panes are withdrawn.
  D34's
 white light spacer and D41's black dark structure remain color treatments,
 not width requirements.
- AVD `hw.sensor.hinge.areas=1038-0-0-2152` reports a
-zero-pixel hinge area width in the emulator's `x-y-width-height` grammar;
-this does not measure a real handset's visible crease.
- The applicable
-`min_padding` must be established before assigning a new player gap or pane
-width.
- No fixed pane spacing is a universal no-text band or a mandate for
+ The AVD's zero-width emulated hinge area describes
+an occlusion model,
+ **not** the user's 10mm visible dent;
+ it must not reduce
+the gap to `min_padding` by itself.
+ This player geometry does not require
 other pages to become two panes.
 
 Here "content" means **information the user must perceive**:
@@ -673,11 +680,14 @@ the player's spacer,
  force every surface to its black/white colors,
  or
 strand a Search query and results in different halves to clear the crease.
-Judge information placement in native panel captures at design scale;
- the
-user pointed to YouTube's thumbnail timestamp ending on one side and title
-lettering beginning on the other as an example of close placement without
-putting readable characters on the fold.
+Judge information placement in native panel captures at design scale.
+ I
+initially read the user's YouTube timestamp/title observation as praise;
+that was wrong.
+ The captured characters approach the center closely enough
+to fall within the approximate 10mm band,
+ so YouTube is a **negative
+near-crease example** for this player's text placement.
  Android's system-owned bars are outside
 this app-content requirement.
  The earlier "no app-owned paint or hit region"
