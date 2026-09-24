@@ -398,8 +398,8 @@ function verifyConsole(): Promise<boolean> {
       /**
        Debug needs either a console method or a process stream.
        */
-      const hasDebugOutput = (typeof console.debug) === 'function' || hasProcessStderr();
-      if (!hasDebugOutput)
+      const debugMethod = hasProcessStderr() ? console.info : console.debug;
+      if ((typeof debugMethod) !== 'function')
         return Promise.resolve(false,);
     }
 
