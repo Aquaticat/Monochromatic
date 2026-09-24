@@ -131,6 +131,17 @@ The keyword filter can hide numerically relevant crates whose name and descripti
 Notable new leads include `fpdec`, `fraction`, `dashu-int`, `arbi`, `b10`, `scientific`, `ordecimal`, and `decimal-bytes`.
 No saturation conclusion follows until each page's candidates are screened and the two-page condition holds.
 
+## Repository-owned equality prototype and limits
+
+A disposable JavaScript reference prototype at `~/temp/agent/jsonc-number-probe.mjs` validates a JSON number token, separates sign and significand digits, collapses zero, strips leading and trailing coefficient zeros, and compares the adjusted decimal exponent without materializing exponent-sized zero padding.
+It retains the raw spelling separately in its call site. This is an algorithm probe, **not** a Rust library implementation or consumer validation.
+
+- `cd -- ~/temp/agent && mise run test:number` passed, reporting `validated 1120 generated literals against a bounded BigInt oracle, plus edge cases`. The oracle cross-multiplies exact rational values only for bounded exponents; generated literals include signed coefficients, fractions and exponents. Targeted cases cover `1 = 1.0 = 1e0`, `100 = 1e2`, `0.00100 = 1e-3`, all zero spellings, adjacent integers beyond 2^53, distinct huge exponents and a compensating huge-exponent equality. Invalid forms include missing exponent digits, leading zero, invalid sign and Unicode digit.
+- Positive control: `mise run test:number:control` deliberately dropped the exponent from identity and failed on huge positive versus negative exponents (`true !== false`, exit 1). The unmodified task passed again afterward. Thus an unchanged test result from the prototype is not an unproven null.
+- Remaining failure risks: the prototype uses JavaScript `BigInt` to adjust exponents, while the Rust implementation needs a bounded-by-input, sign-aware decimal-exponent representation without machine-integer overflow. Exact equality and hashing must share normalized identity; `-0` equals `0` while retaining original spelling. The scratch probe cannot establish Rust ergonomics, linear time, parser integration, or published crate behavior.
+
+Further source screening: `fpdec` 0.14.1, `~/temp/agent/fpdec-2026-09-24` at `b9ac6e5`, `src/lib.rs:98-131` stores `coeff: i128` and restricts fractional digits to `MAX_N_FRAC_DIGITS`; it cannot be the only representation for arbitrary JSON numbers. Its `LICENSE.TXT:1-3` identifies BSD 3-Clause despite registry `cargo info` reporting `license: unknown` (manifest uses `license-file`, not a license identifier). `fraction` 0.17.0 at `~/temp/agent/fraction-2026-09-24` uses `BigInt`-backed rationals but does not by itself preserve a raw JSON number token or provide unbounded exponents without magnitude-sized denominator/numerator expansion; a custom exponent layer would still be needed. The latter is an architectural inference, not a verified execution result.
+
 ## Pending evidence and validation
 
 - Finish required discovery saturation or report a blocked terminal outcome; record exact expansion queries and pagination attempts.
