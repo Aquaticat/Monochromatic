@@ -4276,7 +4276,7 @@ was never presented and has since been replaced.
 withdrawn.
  Production code remains untouched.
 
-## Corrected desktop command-bar questionnaire awaiting I/G/R answers (2026-09-23)
+## Second desktop command-bar draft, visually rejected (2026-09-23)
 
 The new Slint study at prototype branch commits `ee1b2d59c`, `dbbf5116e`,
 `6d533f740`, with its render task at `e70b40e6a`, asks three independent choices:
@@ -4367,15 +4367,80 @@ empty.
  The first draft's stale-image zoom bug is fixed by decoding before preview
 and stepping zoom relative to the fitted scale.
 
-Next:
- replace the historical cover Helium window with `questions/current.html`,
-activate and confirm it is the visible command round,
- then await one I code,
- one G
-code,
- one R code,
- and any correction.
- Do not ratify a decision from the rankings.
+The user saw this form and rejected the visual design as obviously not MD3.
+Its native capture,
+ form,
+ accessibility and mutation tests were integration checks,
+ not
+proof of visual compliance.
+ No I/G/R answer was given;
+ do not treat any of the
+rankings as chosen or ask the user to decide from the rejected rasters.
+ The opened
+Helium window may still show this old page.
+ The user explicitly said not to use KWin
+window management again.
+
+## Current command-bar correction: use local MD3 component visuals (2026-09-23)
+
+The earlier study painted a generic outlined 8px-corner palette with text glyphs and
+Noto fallback;
+ that is the wrong component anatomy despite using native Slint.
+The user's local MD3 archive now has been examined visually,
+ not only extracted as
+text:
+ `components/search/guidelines/images/20.png` shows the light focused search
+view,
+ `images/28.png` the dark focused view,
+ and `images/37.png` the contained
+docked/full-screen comparison.
+ The component source confirms a 56dp fully rounded
+search field in `surfaceContainerHigh`,
+ docked container 28dp corner,
+ full-screen
+sharp corners,
+ 56dp docked / 72dp full-screen header,
+ BodyLarge input,
+ 16dp list
+padding and a selected expressive list item with 16dp corners.
+
+The package-local canonical correction is in `material-3-compliance.md` under
+"Command-bar study correction".
+ In the disposable prototype branch,
+ official
+Material SVGs (Search,
+ Back,
+ Clear,
+ Folder,
+ Music,
+ Settings,
+ Pause,
+ Play,
+ More)
+and the AVD's Roboto TrueType face were committed at `2f4fc8b89`.
+ They have not
+yet been applied to the Slint scenes.
+ Next design-only steps:
+ redraw the I/G/R
+prototypes around the actual MD3 Search bar/view anatomy and list states,
+ render both
+schemes and 360/480/wide sizes,
+ compare at the same logical scale with the local
+archive,
+ then replace the rejected `questions/current.html` form and rerun native,
+browser,
+ and mutation verification.
+ Keep the independent decisions separate and
+explicitly label every desktop adaptation.
+ Update `candidates.md`,
+`open-questions.md`,
+ and this handover as corrections land.
+ Present in Helium
+without KWin automation;
+ no response codes should be requested until corrected
+visuals are ready.
+ Production code remains untouched.
+
 Search target scope,
  result ranking,
  the visible in-app entry,

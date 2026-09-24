@@ -711,3 +711,112 @@ These captures establish palette-dependent appearance only.
 after Android roles settle,
  so runtime wallpaper-change propagation remains later
 implementation verification rather than a claim of this design matrix.
+
+## Command-bar study correction (2026-09-23)
+
+The user rejected the first desktop command-bar scenes as visibly non-MD3.
+ The
+Slint renderer made the rasters native,
+ but the component was a generic outlined
+palette with 8px input corners,
+ 8px to 16px container corners,
+ text glyphs in place of
+Material icons,
+ and a system Noto fallback.
+ Its successful form and pixel checks did
+not validate its visual lineage.
+ The first `command-round-s*-c*` captures and their
+ranking are historical experiments,
+ not options to present or carry forward.
+ The
+corrected I/G/R questionnaire built from those scenes was also withdrawn before any
+user choice.
+
+The deciding visual sources are the user's local Material archive at
+`~/Downloads/m3.material.io/components/search/guidelines/index.html` (especially
+`images/20.png`,
+ `images/28.png`,
+ and `images/37.png`) and
+`components/search/specs/index.html`.
+ The Search specs place a 56dp high field in a
+360 to 720dp wide search container;
+ docked height starts at 240dp and can rise to
+two-thirds of the viewport.
+ The guidelines show a filled,
+ fully rounded search bar
+with a leading Back icon in its focused state,
+ a trailing clear action for entered
+text,
+ and labeled result rows underneath.
+ Docked results are for medium and expanded
+layouts;
+ compact focused search is full-screen by default.
+ A compact desktop dock
+is an explicit adaptation,
+ not MD3 compliance by assertion.
+
+AndroidX Material3 source makes the shape and colors explicit:
+`SearchBarDefaults` in
+`compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/SearchBar.kt`
+reads `SearchBarTokens.ContainerHeight`,
+ `ContainerShape`,
+ and
+`SearchViewTokens.DockedContainerShape`.
+ In the corresponding AndroidX generated
+[search bar tokens][search-bar-tokens],
+ `SearchBarTokens.ContainerHeight` is 56dp,
+ `ContainerShape` is
+`ShapeKeyTokens.CornerFull`,
+ `ContainerColor` is `SurfaceContainerHigh`,
+ and
+`InputTextFont` is `BodyLarge`;
+ the generated [search view tokens][search-view-tokens] set
+`SearchViewTokens.DockedContainerShape` to
+`CornerExtraLarge` (28dp),
+ `FullScreenContainerShape` is `CornerNone`,
+ and
+header heights are 56dp docked and 72dp full-screen.
+ AndroidX
+[shape tokens][shape-tokens] assign 28dp to `CornerExtraLarge` and a circle to
+`CornerFull`.
+ These are source-backed
+values,
+ not inferred from the blurred token thumbnails.
+ The archive's list specs
+recommend expressive list items with 16dp selected corners;
+ baseline list padding
+is 16dp and targets are at least 48dp.
+
+A new throwaway Slint study must use those actual visual roles and assets:
+ Android's
+Roboto face copied only into the prototype branch,
+ official Google Material icons
+for Search,
+ Back,
+ Clear,
+ Folder,
+ Music and actions,
+ a filled 56px pill rather
+than the previous outlined rectangle,
+ a 28px docked container,
+ MD3 list spacing
+and selected shape,
+ and the measured light/dark role pairs in
+`questions/evidence/cover-round-wallpaper-roles-{light,dark}.json` as study input.
+Compare the rerendered field,
+ container,
+ icons and row hierarchy with the local
+archive at the same logical height before re-presenting.
+ Document every desktop
+adaptation rather than labelling it compliant by resemblance.
+ Slint snapshots still
+do not prove accessibility,
+ keyboard interaction,
+ OS window behavior,
+ or global
+hotkey feasibility.
+ No KWin window-management automation is needed for this round.
+
+[search-bar-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SearchBarTokens.kt
+[search-view-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SearchViewTokens.kt
+[shape-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ShapeTokens.kt
