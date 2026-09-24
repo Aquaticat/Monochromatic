@@ -40,15 +40,45 @@ and open items:
    the model against documented examples,
    independent of deepmerge-ts,
    plus a JSON-serializable corpus intended for the Rust unified-linter merge.
-- `src/known-defect.unit.test.ts`:
+- `src/realm.ts`:
+   realm-independent record,
+   Set,
+   and Map checks shared by the model and `src/shape.ts`,
+   pinned by `src/realm.unit.test.ts`.
+- `src/exotic-*.ts`:
+   subclasses,
+   typed arrays,
+   boxed primitives,
+   Proxies,
+   and other-realm objects against the model,
+   plus characterization of `isRecord` branches and non-writable `deepmergeInto` targets.
+- `src/options-*.ts`:
+   the four `*Custom` entry points against an options-aware model over generated option plans
+   (custom and disabled merge functions,
+   `actions.skip` and `actions.defaultMerge`,
+   filters,
+   `enableImplicitDefaultMerging`,
+   `maxDepth`).
+- `src/alias-*.ts`:
+   shared references,
+   cycles through records,
+   arrays,
+   Sets,
+   and Maps,
+   and `deepmergeInto` aliasing,
+   checked by a graph bisimulation oracle under upstream's cycle rule.
+- `src/scale-width.unit.test.ts`:
+   linear scaling of wide two-input merges.
+- `src/known-defect*.unit.test.ts`:
    each known runtime divergence asserted to still reproduce,
    so an upstream fix turns it red.
    The comment on each test names the generator region it excludes.
-- `src/accepted-behaviour.unit.test.ts`:
+- `src/accepted-behaviour.unit.test.ts`, `src/exotic-behaviour.unit.test.ts`, and `src/alias-accepted.unit.test.ts`:
    accepted but otherwise untested behaviour
    (the default `maxDepth` fallback,
    getter flattening,
-   frozen targets).
+   frozen targets,
+   single-input reference sharing).
 - `src/type-*.unit.test.ts`:
    `expectTypeOf` pins of result types beside runtime values;
    `src/type-known-defect.unit.test.ts` pins result types the runtime contradicts.
