@@ -6,18 +6,29 @@
  */
 
 import {
+  array,
   boolean,
+  constant,
   constantFrom,
   integer,
   oneof,
   record,
+  tuple,
+  uniqueArray,
   type Arbitrary,
 } from 'fast-check';
 
+import {
+  keyOfEntry,
+  mergeArgumentsArbitrary,
+  treeArbitraries,
+  type TreeOptions,
+} from './arbitraries.ts';
 import type {
   CustomChoice,
   FilterChoice,
   MaxDepthChoice,
+  MetaUpdaterChoice,
   OptionsPlan,
 } from './options-plan.ts';
 
@@ -27,34 +38,188 @@ import type {
 const MAX_PLANNED_DEPTH = 5;
 
 /**
+ Most collections merged at the shared key, and most elements per collection.
+ */
+const MAX_PARALLEL = 3;
+
+/**
+ Records that each hold a Set, or each hold a Map, under the key `k`: the
+ only inputs where two collections of one kind meet, so a plan's Set and Map
+ functions run instead of `mergeOthers`. The general tree arguments almost
+ never line up that way.
+
+ @param options - Leaf and key switches, as for the tree generators.
+
+ @returns Generator of two or three such records.
+
+ @example
+ ```ts
+ const inputs = parallelCollectionsArbitrary({ exotic: false, });
+ ```
+ */
+export function parallelCollectionsArbitrary(options: TreeOptions,): Arbitrary<readonly object[]> {
+  /**
+   Values stored in the collections.
+   */
+  const { tree, } = treeArbitraries(options,);
+  /**
+   One Set of trees.
+   */
+  const set = array(
+    tree,
+    { maxLength: MAX_PARALLEL, },
+  )
+    .map(function toSet(items,): unknown {
+      return new Set(items,);
+    },);
+  /**
+   One Map of trees under a small key pool, so Maps overlap.
+   */
+  const map = uniqueArray(
+    tuple(
+      constantFrom(
+        'a',
+        'b',
+      ),
+      tree,
+    ),
+    {
+      maxLength: MAX_PARALLEL,
+      selector: keyOfEntry,
+    },
+  )
+    .map(function toMap(pairs,): unknown {
+      return new Map(pairs,);
+    },);
+  return oneof(
+    set,
+    map,
+  )
+    .chain(function sameKind(first,) {
+      return array(
+        first instanceof Set ? set : map,
+        {
+          minLength: 1,
+          maxLength: MAX_PARALLEL - 1,
+        },
+      )
+        .map(function toRecords(rest,) {
+          /**
+           Every collection, first one first.
+           */
+          const collections = [
+            first,
+            ...rest,
+          ];
+          return collections.map(function holder(collection,) {
+            return { k: collection, };
+          },);
+        },);
+    },);
+}
+
+/**
+ Merge arguments for option plans: the general tree arguments, plus
+ {@link parallelCollectionsArbitrary} often enough to reach the collection
+ functions.
+
+ @param options - Leaf and key switches, as for the tree generators.
+
+ @returns Generator of merge arguments.
+
+ @example
+ ```ts
+ const inputs = optionsArgumentsArbitrary({ exotic: true, });
+ ```
+ */
+export function optionsArgumentsArbitrary(options: TreeOptions,): Arbitrary<readonly unknown[]> {
+  return oneof(
+    {
+      weight: 3,
+      arbitrary: mergeArgumentsArbitrary(options,),
+    },
+    {
+      weight: 1,
+      arbitrary: parallelCollectionsArbitrary(options,),
+    },
+  );
+}
+
+/**
  Choice generator for one merge function.
 
- @param skip - Whether `skipNested` may be drawn; off for FastUnsafe, where no
-   call has metadata, so a planned skip could not tell the root apart.
+ @param fast - Whether the plan is for a FastUnsafe variant: no skips (no
+   call has metadata, so a planned skip could not tell the root apart) and
+   no `metaProbe` (FastUnsafe takes no metadata options).
 
  @returns Generator of choices.
 
  @example
  ```ts
- const choices = choiceArbitrary({ skip: true, });
+ const choices = choiceArbitrary({ fast: false, });
  ```
  */
-function choiceArbitrary({ skip, }: { readonly skip: boolean; },): Arbitrary<CustomChoice> {
+function choiceArbitrary({ fast, }: { readonly fast: boolean; },): Arbitrary<CustomChoice> {
   return constantFrom<CustomChoice>(
     'absent',
     'false',
     'defaultMerge',
     'undefined',
     'first',
-    ...(skip ? ['skipNested',] as const : []),
+    ...(fast
+      ? []
+      : [
+        'skipNested',
+        'metaProbe',
+      ] as const),
   );
+}
+
+/**
+ Filter generator shared by every plan.
+ */
+const filterArbitrary: Arbitrary<FilterChoice> = constantFrom<FilterChoice>(
+  'absent',
+  'false',
+  'dropNull',
+  'dropArrays',
+);
+
+/**
+ Root metadata and updater switches; FastUnsafe takes neither.
+
+ @param fast - Whether the plan is for a FastUnsafe variant.
+
+ @returns Generators of the two switches.
+
+ @example
+ ```ts
+ const meta = metaArbitraries({ fast: false, });
+ ```
+ */
+function metaArbitraries({ fast, }: { readonly fast: boolean; },): {
+  readonly rootMeta: Arbitrary<boolean>;
+  readonly metaUpdater: Arbitrary<MetaUpdaterChoice>;
+} {
+  return fast
+    ? {
+      metaUpdater: constant<MetaUpdaterChoice>('absent',),
+      rootMeta: constant(false,),
+    }
+    : {
+      metaUpdater: constantFrom<MetaUpdaterChoice>(
+        'absent',
+        'tagging',
+      ),
+      rootMeta: boolean(),
+    };
 }
 
 /**
  Plan generator.
 
- @param fast - Whether the plan is for a FastUnsafe variant (no skips,
-   `maxDepth` ignored by the library).
+ @param fast - Whether the plan is for a FastUnsafe variant (no skips, no
+   metadata options, `maxDepth` ignored by the library).
 
  @returns Generator of option plans.
 
@@ -67,13 +232,10 @@ export function optionsPlanArbitrary({ fast, }: { readonly fast: boolean; },): A
   /**
    Choice generator shared by the five functions.
    */
-  const choice = choiceArbitrary({ skip: !fast, },);
+  const choice = choiceArbitrary({ fast, },);
   return record({
-    filter: constantFrom<FilterChoice>(
-      'absent',
-      'false',
-      'dropNull',
-    ),
+    ...metaArbitraries({ fast, },),
+    filter: filterArbitrary,
     implicit: boolean(),
     maxDepth: oneof(
       constantFrom<MaxDepthChoice>(
@@ -98,12 +260,14 @@ export function optionsPlanArbitrary({ fast, }: { readonly fast: boolean; },): A
 /**
  Plan generator for the `Into` variants.
 
- Into custom functions mutate a target reference, so plans use only
- `absent`, `false`, and `defaultMerge`. `mergeRecords` is never `false`:
- at the root that makes the whole call a silent no-op (known defect,
- `./known-defect-options.unit.test.ts`). `filterValues` never drops `null`:
- a filtered first value at a key hits the known `deepmergeInto` first-value
- typing defect (`./known-defect.unit.test.ts`).
+ Into custom functions mutate a target slot, so plans use `absent`,
+ `false`, `defaultMerge`, `first` (writes the first value), and `metaProbe`
+ (writes a marker), and `mergeOthers` may also write `actions.defaultMerge`
+ into the slot (`slotDefault`). `mergeRecords` is never `false` or
+ `metaProbe`: at the root either makes the call a silent no-op (known
+ defect, `./known-defect-options.unit.test.ts`); it tags the target record
+ instead (`metaTag`). The filter regions that
+ hit known into defects are excluded by the model, not here.
 
  @param fast - Whether the plan is for `deepmergeIntoFastUnsafeCustom`.
 
@@ -116,18 +280,22 @@ export function optionsPlanArbitrary({ fast, }: { readonly fast: boolean; },): A
  */
 export function intoPlanArbitrary({ fast, }: { readonly fast: boolean; },): Arbitrary<OptionsPlan> {
   /**
-   Choice generator for every function except `mergeRecords`.
+   Choices every container function may take.
    */
-  const choice = constantFrom<CustomChoice>(
+  const containerChoices: readonly CustomChoice[] = [
     'absent',
     'false',
     'defaultMerge',
-  );
+    'first',
+    ...(fast ? [] : ['metaProbe',] as const),
+  ];
+  /**
+   Choice generator for the Array, Set, and Map functions.
+   */
+  const choice = constantFrom<CustomChoice>(...containerChoices,);
   return record({
-    filter: constantFrom<FilterChoice>(
-      'absent',
-      'false',
-    ),
+    ...metaArbitraries({ fast, },),
+    filter: filterArbitrary,
     implicit: boolean(),
     maxDepth: fast
       ? constantFrom<MaxDepthChoice>('absent',)
@@ -145,10 +313,15 @@ export function intoPlanArbitrary({ fast, }: { readonly fast: boolean; },): Arbi
       ),
     mergeArrays: choice,
     mergeMaps: choice,
-    mergeOthers: choice,
+    mergeOthers: constantFrom<CustomChoice>(
+      ...containerChoices,
+      'slotDefault',
+    ),
     mergeRecords: constantFrom<CustomChoice>(
       'absent',
       'defaultMerge',
+      'first',
+      ...(fast ? [] : ['metaTag',] as const),
     ),
     mergeSets: choice,
   },);

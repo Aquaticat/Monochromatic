@@ -16,18 +16,40 @@
  Plans never return `actions.skip` at the root: that leaks the symbol to the
  caller (known defect).
 
+ The into variants mutate the target, so the into model tracks whether each
+ position is the target's own value (`target`) or a key the target lacks
+ (`seeded`). When the filter removes every value at a key the target has,
+ the target keeps its value (`./mutation-custom.unit.test.ts`). Two filter
+ regions are known defects and reported as excluded rather than predicted
+ (`./known-defect-mutation.unit.test.ts`, `./known-defect.unit.test.ts`):
+ every value removed at a key the target lacks, and the first value removed
+ while a later one survives.
+
  @module
  */
 
 import {
   DEFAULT_MAX_DEPTH,
   kindOf,
-  recordKeys,
   type ValueKind,
 } from './model.ts';
+import {
+  applyFilter,
+  customResult,
+  DEFAULT,
+  type ModelEvent,
+  SKIP,
+} from './options-model-choice.ts';
+import {
+  type ChildPosition,
+  defaultMerge,
+  type MergeChild,
+} from './options-model-merge.ts';
+import {
+  metaStateAt,
+  metaTagMerge,
+} from './options-model-meta.ts';
 import type {
-  CustomChoice,
-  FilterChoice,
   MaxDepthChoice,
   MergeFunctionName,
   OptionsPlan,
@@ -45,23 +67,52 @@ const FUNCTION_OF_KIND: Readonly<Record<ValueKind, MergeFunctionName>> = {
 };
 
 /**
- Marker for "leave this key out", the model's `actions.skip`.
- */
-const SKIP: unique symbol = Symbol('model marker for a skipped key or entry',);
-
-/**
- Marker for "use the default merge", the model's `actions.defaultMerge`.
- */
-const DEFAULT: unique symbol = Symbol('model marker for falling back to the default merge',);
-
-/**
  Context shared by every step of one model merge.
  */
 type ModelContext = {
   readonly plan: OptionsPlan;
   readonly maxDepth: number;
-  readonly metaAlwaysAbsent: boolean;
+  readonly fast: boolean;
+  readonly into: boolean;
+  readonly observe: (event: ModelEvent,) => void;
 };
+
+/**
+ One position of a model merge, with the context of the whole merge.
+ */
+type Position = ChildPosition & {
+  readonly depth: number;
+  readonly context: ModelContext;
+};
+
+/**
+ Thrown inside the into model when a position falls in a known-defect
+ region; {@link modelMergeIntoWithOptions} turns it into an excluded
+ prediction.
+ */
+class ExcludedRegionError extends Error {
+  /**
+   @param region - Which known-defect region the position falls in.
+   */
+  constructor(region: string,) {
+    super(region,);
+    this.name = 'ExcludedRegionError';
+  }
+}
+
+/**
+ Receives model events when the caller does not tally them.
+
+ @param _event - Ignored event.
+
+ @example
+ ```ts
+ modelMergeWithOptions({ values, plan, fast: false, observe: ignoreEvent, });
+ ```
+ */
+function ignoreEvent(_event: ModelEvent,): void {
+  // Intentionally empty: tallies are optional.
+}
 
 /**
  Effective `maxDepth` after the invalid-option fallback.
@@ -80,208 +131,11 @@ export function effectiveMaxDepth(choice: MaxDepthChoice,): number {
 }
 
 /**
- Apply the plan's filter.
-
- @param values - Values at one position.
-
- @param filter - Filter choice.
-
- @returns Values that take part in the merge.
-
- @example
- ```ts
- applyFilter({ values: [1, undefined,], filter: 'absent', }); // [1]
- ```
- */
-function applyFilter({
-  values,
-  filter,
-}: {
-  readonly values: readonly unknown[];
-  readonly filter: FilterChoice
-},): readonly unknown[] {
-  if (filter === 'false')
-    return values;
-  return values.filter(function kept(value,) {
-    return (value !== undefined) && ((filter === 'absent') || (value !== null));
-  },);
-}
-
-/**
- What a planned custom function returns, before fallback.
-
- @param choice - Custom choice (never `absent` or `false`).
-
- @param values - Filtered values.
-
- @param metaAbsent - Whether the call carries no metadata.
-
- @returns Returned value, or a model marker.
-
- @example
- ```ts
- customResult({ choice: 'first', values: [1, 2,], metaAbsent: true, }); // 1
- ```
- */
-function customResult(
-  {
-    choice,
-    values,
-    metaAbsent,
-  }: {
-    readonly choice: CustomChoice;
-    readonly values: readonly unknown[];
-    readonly metaAbsent: boolean
-  },
-): unknown {
-  if (choice === 'defaultMerge')
-    return DEFAULT;
-  if (choice === 'undefined')
-    return undefined;
-  if (choice === 'first')
-    return values[0];
-  return metaAbsent ? DEFAULT : SKIP;
-}
-
-/**
- Merges one child position; injected so the kind steps precede recursion.
- */
-type MergeChild = (values: readonly unknown[],) => unknown;
-
-/**
- Default merge of one kind, with children merged through `mergeChild`.
-
- @param kind - Kind of every value.
-
- @param values - Filtered values of that kind.
-
- @param mergeChild - Child merge one level deeper.
-
- @returns Default merge result.
-
- @example
- ```ts
- defaultMerge({ kind: 'array', values: [[1,], [2,],], mergeChild, }); // [1, 2]
- ```
- */
-function defaultMerge(
-  {
-    kind,
-    values,
-    mergeChild,
-  }: {
-    readonly kind: ValueKind;
-    readonly values: readonly unknown[];
-    readonly mergeChild: MergeChild
-  },
-): unknown {
-  if (kind === 'array') {
-    return values.flatMap(function items(value,): unknown[] {
-      return Array.isArray(value,) ? [...(value as readonly unknown[]),] : [];
-    },);
-  }
-  if (kind === 'set') {
-    return new Set(values.flatMap(function items(value,): unknown[] {
-      return value instanceof Set ? [...(value as ReadonlySet<unknown>),] : [];
-    },),);
-  }
-  if (kind === 'map') {
-    /**
-     Maps being merged.
-     */
-    const maps = values.filter(function isMap(value,): value is ReadonlyMap<unknown, unknown> {
-      return value instanceof Map;
-    },);
-    /**
-     Union of keys in first-seen order.
-     */
-    const keys = [...new Set(maps.flatMap(function mapKeys(map,) {
-      return [...map.keys(),];
-    },),),];
-    return new Map(keys.flatMap(function entry(key,): (readonly [
-      unknown,
-      unknown,
-    ])[] {
-      /**
-       Merged value for this key.
-       */
-      const merged = mergeChild(maps.filter(function hasKey(map,) {
-        return map.has(key,);
-      },)
-        .map(function valueOf(map,) {
-        return map.get(key,);
-      },),);
-      return merged === SKIP ? [] : [[
-        key,
-        merged,
-      ],];
-    },),);
-  }
-  if (kind === 'record') {
-    /**
-     Records being merged.
-     */
-    const records = values.filter(function isObject(value,): value is object {
-      return ((typeof value) === 'object') && (value !== null);
-    },);
-    /**
-     Union of keys in first-seen order.
-     */
-    const keys = [...new Set(records.flatMap(function keysOf(record,) {
-      return recordKeys(record,);
-    },),),];
-    return keys.reduce<object>(
-      function addKey(
-        result,
-        key,
-      ) {
-      /**
-       Merged value for this key.
-       */
-      const merged = mergeChild(records.filter(function hasKey(record,) {
-        return Object.prototype
-          .propertyIsEnumerable
-          .call(
-            record,
-            key,
-          );
-      },)
-        .map(function valueOf(record,): unknown {
-        return Reflect.get(
-          record,
-          key,
-        );
-      },),);
-      if (merged !== SKIP) {
-        Reflect.defineProperty(
-          result,
-          key,
-          {
-          configurable: true,
-          enumerable: true,
-          value: merged,
-          writable: true,
-        },
-        );
-      }
-      return result;
-    },
-      {},
-    );
-  }
-  return values.at(-1,);
-}
-
-/**
  Call the function the plan resolves for a kind, with default fallback.
 
  @param kind - Kind the dispatch chose (`other` for the mergeOthers path).
 
- @param values - Filtered values.
-
- @param metaAbsent - Whether the call carries no metadata.
-
- @param context - Plan context.
+ @param position - Filtered values, depth, slot, and context.
 
  @param mergeChild - Child merge one level deeper.
 
@@ -289,110 +143,209 @@ function defaultMerge(
 
  @example
  ```ts
- const merged = dispatch({ kind: 'other', values: [1, 2,], metaAbsent: true, context, mergeChild, });
+ const merged = dispatch({ kind: 'other', position, mergeChild, });
  ```
  */
 function dispatch(
   {
     kind,
-    values,
-    metaAbsent,
-    context,
+    position,
     mergeChild,
   }: {
     readonly kind: ValueKind;
-    readonly values: readonly unknown[];
-    readonly metaAbsent: boolean;
-    readonly context: ModelContext;
+    readonly position: Position;
     readonly mergeChild: MergeChild;
   },
 ): unknown {
   /**
+   Position parts the dispatch reads.
+   */
+  const {
+    context,
+    depth,
+    slot,
+    values,
+  } = position;
+  /**
+   Plan and observer of this merge.
+   */
+  const {
+    plan,
+    observe,
+  } = context;
+  /**
    Plan choice for this kind's function.
    */
-  const choice = context.plan[FUNCTION_OF_KIND[kind]];
-  if (choice === 'absent')
+  const choice = plan[FUNCTION_OF_KIND[kind]];
+  if (choice === 'absent') {
     return defaultMerge({
       kind,
       mergeChild,
+      slot,
       values,
     },);
+  }
   // `false` resolves to the default mergeOthers: the last value.
   if (choice === 'false')
     return values.at(-1,);
+  /**
+   Metadata a `metaProbe` function recognizes here.
+   */
+  const metaState = metaStateAt({
+    depth,
+    fast: context.fast,
+    plan,
+  },);
+  if (choice === 'metaTag') {
+    return metaTagMerge({
+      mergeChild,
+      metaState,
+      observe,
+      slot,
+      values,
+    },);
+  }
   /**
    Custom result before fallback.
    */
   const result = customResult({
     choice,
-    metaAbsent,
+    metaAbsent: context.fast || (depth === 0),
+    metaState,
+    observe,
     values,
   },);
-  if ((result === DEFAULT) || (context.plan
-    .implicit
-    && (result === undefined)))
+  if (context.into
+    && (choice === 'first')
+    && (depth > 0))
+    observe('intoSlotWrite',);
+  if (context.into && (choice === 'slotDefault'))
+    observe('slotDefault',);
+  /**
+   Whether implicit default merging turns an `undefined` result into the default.
+   */
+  const implicitFallback = (!context.into)
+    && plan.implicit
+    && (result === undefined);
+  if (implicitFallback && ((kind === 'set') || (kind === 'map')))
+    observe(kind === 'set' ? 'implicitSet' : 'implicitMap',);
+  if ((result === DEFAULT) || implicitFallback) {
     return defaultMerge({
       kind,
       mergeChild,
+      slot,
       values,
     },);
+  }
   return result;
+}
+
+/**
+ Values at a position after the plan's filter, with the into regions
+ checked first.
+
+ @param position - Unfiltered values (the target's own value first at a
+   `target` slot), slot, and context.
+
+ @returns Filtered values.
+
+ @throws {@link ExcludedRegionError} For a known-defect into region.
+
+ @example
+ ```ts
+ const present = presentValues(position);
+ ```
+ */
+function presentValues(position: Position,): readonly unknown[] {
+  /**
+   Position parts the filter step reads.
+   */
+  const {
+    context,
+    slot,
+    values,
+  } = position;
+  /**
+   Filter choice of the plan.
+   */
+  const { filter, } = context.plan;
+  /**
+   Values after the plan's filter.
+   */
+  const present = applyFilter({
+    filter,
+    values,
+  },);
+  if (slot === 'none') {
+    if ((present.length === 0)
+      && (values.length > 0)
+      && (filter === 'dropArrays'))
+      context.observe('filterDroppedAll',);
+    return present;
+  }
+  if ((present.length === 0) && (slot === 'seeded'))
+    throw new ExcludedRegionError('filterValues removed every value at a key the target lacks',);
+  if (present.length === 0)
+    return present;
+  /**
+   First value, if the filter keeps it.
+   */
+  const firstKept = applyFilter({
+    filter,
+    values: values.slice(
+      0,
+      1,
+    ),
+  },);
+  if (firstKept.length === 0)
+    throw new ExcludedRegionError('filterValues removed the first value while a later one survives',);
+  return present;
 }
 
 /**
  Recursive model step.
 
- @param values - Unfiltered values at this position.
-
- @param depth - Depth of this position.
-
- @param context - Plan context.
+ @param position - Unfiltered values, depth, slot, and context.
 
  @returns Merged value or the skip marker.
 
  @example
  ```ts
- const merged = mergeAt({ values, depth: 0, context, });
+ const merged = mergeAt({ values, depth: 0, slot: 'none', context, });
  ```
  */
-function mergeAt(
-  {
-    values,
-    depth,
+function mergeAt(position: Position,): unknown {
+  /**
+   Position parts the recursion reads.
+   */
+  const {
     context,
-  }: {
-    readonly values: readonly unknown[];
-    readonly depth: number;
-    readonly context: ModelContext
-  },
-): unknown {
+    depth,
+    slot,
+    values,
+  } = position;
   /**
    Values after the plan's filter.
    */
-  const present = applyFilter({
-    filter: context.plan
-      .filter,
-    values,
-  },);
-  if (present.length === 0)
-    return undefined;
+  const present = presentValues(position,);
+  if (present.length === 0) {
+    if (slot !== 'target')
+      return undefined;
+    context.observe('intoDropAllKept',);
+    return values[0];
+  }
   /**
    Merge one child position one level deeper.
 
-   @param childValues - Values under one key.
+   @param child - Values and slot under one key.
 
    @returns Merged child, possibly the skip marker.
-
-   @example
-   ```ts
-   mergeChild([1, 2,]);
-   ```
    */
-  function mergeChild(childValues: readonly unknown[],): unknown {
+  function mergeChild(child: ChildPosition,): unknown {
     return mergeAt({
+      ...child,
       context,
       depth: depth + 1,
-      values: childValues,
     },);
   }
   /**
@@ -409,24 +362,66 @@ function mergeAt(
       return kindOf(value,) !== kind;
     },);
   return dispatch({
-    context,
     kind: toOthers ? 'other' : kind,
     mergeChild,
-    metaAbsent: context.metaAlwaysAbsent || (depth === 0),
-    values: present,
+    position: {
+      ...position,
+      values: present,
+    },
   },);
 }
 
 /**
- Predict a customized merge for a plan: `deepmergeCustom` (or the into
- variants' final target), or the FastUnsafe variants when `fast` is set
- (no depth limit, no metadata anywhere).
+ Context for one prediction.
 
- @param values - Tree inputs, target first for the into variants.
+ @param plan - Option plan.
+
+ @param fast - Whether to model a FastUnsafe variant (no depth limit, no metadata).
+
+ @param into - Whether to model an into variant.
+
+ @param observe - Receives the model branches the prediction reaches.
+
+ @returns Model context.
+
+ @example
+ ```ts
+ const context = contextOf({ plan, fast: false, into: false, observe, });
+ ```
+ */
+function contextOf(
+  {
+    plan,
+    fast,
+    into,
+    observe,
+  }: {
+    readonly plan: OptionsPlan;
+    readonly fast: boolean;
+    readonly into: boolean;
+    readonly observe: (event: ModelEvent,) => void;
+  },
+): ModelContext {
+  return {
+    fast,
+    into,
+    maxDepth: fast ? Number.POSITIVE_INFINITY : effectiveMaxDepth(plan.maxDepth,),
+    observe,
+    plan,
+  };
+}
+
+/**
+ Predict a customized merge for a plan: `deepmergeCustom`, or
+ `deepmergeFastUnsafeCustom` when `fast` is set.
+
+ @param values - Tree inputs.
 
  @param plan - Option plan.
 
  @param fast - Whether to model a FastUnsafe variant.
+
+ @param observe - Receives the model branches the prediction reaches.
 
  @returns Predicted result.
 
@@ -442,25 +437,116 @@ export function modelMergeWithOptions(
     values,
     plan,
     fast,
+    observe = ignoreEvent,
   }: {
     readonly values: readonly unknown[];
     readonly plan: OptionsPlan;
-    readonly fast: boolean
+    readonly fast: boolean;
+    readonly observe?: (event: ModelEvent,) => void;
   },
 ): unknown {
   /**
    Merge result.
    */
   const merged = mergeAt({
-    context: {
-      maxDepth: fast ? Number.POSITIVE_INFINITY : effectiveMaxDepth(plan.maxDepth,),
-      metaAlwaysAbsent: fast,
+    context: contextOf({
+      fast,
+      into: false,
+      observe,
       plan,
-    },
+    },),
     depth: 0,
+    slot: 'none',
     values,
   },);
   if (merged === SKIP)
     throw new Error('modelMergeWithOptions: a planned skip reached the root',);
   return merged;
+}
+
+/**
+ Prediction of an into merge: the target's final shape, or the known-defect
+ region the inputs fall in.
+ */
+export type IntoPrediction =
+  | {
+    readonly modelled: false;
+    readonly region: string;
+  }
+  | {
+    readonly modelled: true;
+    readonly expected: unknown;
+  };
+
+/**
+ Predict the target of `deepmergeIntoCustom` (or
+ `deepmergeIntoFastUnsafeCustom` when `fast` is set) for a plan.
+
+ @param values - Target first, then the sources.
+
+ @param plan - Into option plan.
+
+ @param fast - Whether to model the FastUnsafe variant.
+
+ @param observe - Receives the model branches the prediction reaches, only
+   when the inputs are modelled.
+
+ @returns Predicted target, or the excluded region.
+
+ @throws When the model rejects the plan for another reason.
+
+ @example
+ ```ts
+ const prediction = modelMergeIntoWithOptions({ values: [target, ...sources,], plan, fast: false, });
+ ```
+ */
+export function modelMergeIntoWithOptions(
+  {
+    values,
+    plan,
+    fast,
+    observe = ignoreEvent,
+  }: {
+    readonly values: readonly unknown[];
+    readonly plan: OptionsPlan;
+    readonly fast: boolean;
+    readonly observe?: (event: ModelEvent,) => void;
+  },
+): IntoPrediction {
+  /**
+   Events of this prediction, forwarded only when it is modelled.
+   */
+  const events: ModelEvent[] = [];
+  try {
+    /**
+     Predicted target.
+     */
+    const expected = mergeAt({
+      context: contextOf({
+        fast,
+        into: true,
+        observe: function record(event,) {
+          events.push(event,);
+        },
+        plan,
+      },),
+      depth: 0,
+      slot: 'target',
+      values,
+    },);
+    for (const event of events)
+      observe(event,);
+    return {
+      expected,
+      modelled: true,
+    };
+  } catch (error) {
+    if (error instanceof ExcludedRegionError) {
+      return {
+        modelled: false,
+        region: error.message,
+      };
+    }
+    throw error;
+  }
 }
