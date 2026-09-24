@@ -103,9 +103,10 @@ uses these coordinates at 100%:
    and 27px block-axis chassis insets.
 - 454 × 937 CSS px for a crop from the fold centre through the right body edge.
 - 426px of physical right-half screen content and 28px of outer chassis in that crop.
-  Under the current expanded layout,
-   the 426px screen half contains 12dp of the centered
-  pane spacer plus the 414dp right pane.
+  In the withdrawn 24dp-spacer prototype,
+   this half contained 12dp of
+  spacer and a 414dp right pane.
+    E2 supersedes that fixed gap.
 
 The user supplied eight current product references on 2026-09-04.
  The straight-on
@@ -145,6 +146,7 @@ Source:
  [Google Pixel phone hardware tech specs][pixel-hardware-specs].
 
 [pixel-hardware-specs]: https://support.google.com/pixelphone/answer/7158570?hl=en
+[emulator-hardware-properties]: https://android.googlesource.com/platform/prebuilts/android-emulator/+/refs/heads/main/linux-x86_64/lib/hardware-properties.ini
 
 ---
 
@@ -270,24 +272,25 @@ record and role-based guards.
    not a landscape tablet.
     Every mockup drawn at 924×600 was wrong in structure.
 2. **The hinge is vertical in portrait.**
-    The accepted unfolded player uses
-two 414dp panes around the 24dp centered connector.
-    Each physical screen
-half is **426dp × 883dp**:
-    12dp of connector plus one 414dp pane.
-    This
-is the player's arrangement,
- not a rule that Search must divide its query and
-results between two columns.
+    Each physical screen half is
+   **426 × 883dp** at the measured AVD density.
+    The previous player
+   prototype placed two 414dp panes around a fixed 24dp connector.
+    E2
+   supersedes that width with `max(min_padding, crease_width)`;
+    each
+   symmetric pane would be `(852dp - gap) / 2`.
+    Search need not divide
+   its query and results between those halves.
 3. **Informational material stays visibly clear of the physical crease**
    (E2).
     Its center is about 426dp,
  physical x 1038 on the 2076px inner
    panel.
-    The surrounding 24dp `[414,438)`dp or `[1009,1068)`px is the
-   **accepted player's pane spacer**,
- not a mandatory text-exclusion band
-   for every page.
+    The old 24dp `[414,438)`dp or `[1009,1068)`px band was a
+   **prototype player spacer**,
+ not a mandatory text-exclusion band or
+   accepted final player gap.
     Readable text,
  results and other meaning-bearing marks
    must not sit on the crease itself;
@@ -314,6 +317,35 @@ captured as rendered,
 5. **Tabletop posture** is detectable on Android only (decisions.md E3).
 
 ---
+
+## Crease width and pending player gap
+
+The Pixel_9_Pro_Fold AVD's `config.ini` contains
+`hw.sensor.hinge.areas=1038-0-0-2152`.
+ Google's emulator hardware-property
+schema defines this form as `x-y-width-height`,
+ so the emulated hinge-area
+width is **0 physical px** at x 1038.
+ It does not measure the real handset's
+visible crease width.
+ Source:
+ [Google emulator hardware properties][emulator-hardware-properties],
+`hw.sensor.hinge.areas`.
+
+The user's required player gap is **`max(min_padding, crease_width)`**.
+On this AVD the reported hinge-area width is 0,
+ so the formula reduces to
+`min_padding` for the emulator.
+ The applicable numeric minimum padding has
+not yet been established for the pane separation;
+ the existing 12dp rule
+belongs to **mode-button horizontal content padding**,
+ not automatically to
+this gap.
+ Do not invent a replacement width or call the old 24dp spacer
+accepted while that value remains unresolved.
+ A physical handset could have
+a measurable nonzero crease width and therefore a different maximum.
 
 ## Viewport sizes to design and test at
 
