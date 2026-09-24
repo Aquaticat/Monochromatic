@@ -7,6 +7,53 @@ Requirements confirmed by the user on 2026-09-24 ("Do it.").
  subject to a separate foundation-adoption gate before work depends on an unselected external component.
  Crates.io publication is explicitly requested.
 
+Foundation adoption was granted by the user on 2026-09-24 (option A):
+ the repository-owned parser,
+ emitter and exact-number identity,
+ with no third-party parser or numeric dependency.
+ Both vet reports record the evidence,
+ scores and sensitivity behind that recommendation,
+ and
+ `doc/decision/jsonc-edit-rust-foundation.md` is the accepted decision record.
+
+Progress since adoption:
+
+- `package/rust-module/jsonc-edit` holds the crate `monochromatic-jsonc-edit` 0.1.0:
+   scanner,
+   iterative depth-bounded parser,
+   canonical emitter,
+   comment merging,
+   UTF-16 text conversion,
+   exact-number identity,
+   immutable edit state,
+   address reads,
+   set and delete,
+   and the comment query and edit surface.
+   54 tests pass in debug and release,
+   `cargo clippy --release --all-targets -- -D warnings` is clean,
+   and `monochromatic-rust-linter` reports no findings.
+   Edits rebuild on an explicit spine because a recursive rebuild overflowed a debug test thread's
+   stack at the accepted 512-container depth.
+- The maintained TypeScript package's confirmed defects are fixed,
+   each with a guard test shown
+   failing before the fix and passing after:
+   a separator following trivia on a later line,
+   comment ownership around a later-line comma,
+   CR and CRLF line-comment termination,
+   unedited number spelling on clean input,
+   and the clean-input nesting-limit bypass.
+   The last two required removing the native `JSON.parse` fast-path,
+   which `doc/decision/jsonc-edit-parser-foundation.md` now records as an amendment with the
+   measured clean-input cost (11055 to 2794 ops/s) and the comparison-library numbers.
+   The package unit suite,
+   the conformance corpus and the fuzz property suites pass after the change.
+
+Still open:
+ language-neutral fixtures shared by both implementations,
+ a disposable Rust consumer check of the packaged crate,
+ the authorized crates.io first-publication route,
+ and the release-workflow wiring that follows it.
+
 ## Existing boundaries
 
 - `package/module/jsonc-edit` is a TypeScript JSONC parser,

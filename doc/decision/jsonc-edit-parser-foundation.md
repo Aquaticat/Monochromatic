@@ -37,6 +37,9 @@ The hand-written parser exists for reasons no surveyed library satisfies:
   `//` or `//region` lines merge into a single `mixed` comment.
 - A hybrid fast-path that runs native `JSON.parse` over clean (comment-free) regions and
   only custom-parses where JSONC features appear.
+  **Superseded:**
+  the fast-path was removed on 2026-09-24;
+  see the amendment section below.
 - Zero runtime dependencies and house-style ownership of a stable syntax module (no regex
   where an index scan expresses the rule,
    immutable data,
@@ -65,17 +68,19 @@ comments queryable and editable rather than merely preserved.
    and no splice mode is offered.
   Unedited whitespace is normalized by canonical emit;
   raw scalar tokens and all comments are preserved.
-- The fast-path stays an internal read optimization.
-  Clean regions are comment-free,
-   so their `PlainJson` form canonical-emits losslessly,
-   and
-  the fast-path never leaks into the public API.
+- Every document takes the structured parse path,
+  so clean and commented input share one
+  number-spelling,
+  comment-ownership and nesting-limit behavior.
+  The `PlainJson` variant stays in the value model as a leaf a caller may build from native
+  JSON,
+  and the edit API normalizes it before editing.
 - The branded `StringJsonc` type is redefined locally inside `jsonc-edit`,
    decoupled from
   the abandoned `module-es` taxonomy.
 - Performance is a stated goal,
    so the package ships benchmarks against
-  `jsonc-eslint-parser` and `jsonc-parser` to keep the fast-path honest.
+  `jsonc-eslint-parser` and `jsonc-parser` to keep the structured parser honest.
 
 ## Rejected alternatives
 
@@ -154,3 +159,72 @@ documentation alone.
   why JSONC was chosen over TOML for workspace configuration.
 - `doc/troubleshooting/c-like-comments.md`:
   the accepted block-comment-nesting limitation.
+
+## Amendment, 2026-09-24: the native `JSON.parse` fast-path is removed
+
+The Rust port work in `doc/planning/jsonc-edit-rust-port.md` confirmed two defects that the
+fast-path caused,
+ and the user's port requirements (Q6,
+ Q8) make both unsupported behavior:
+
+- An unedited number lost its source spelling on clean input,
+  because `JSON.parse` keeps only
+  the numeric value:
+  `{"n":1e0}` emitted as `1`.
+  Q6 requires an unedited literal to keep the spelling it was written with.
+- A clean document bypassed the 512-container nesting limit,
+  because the limit lives in the
+  structured parser:
+  a measured probe accepted clean nesting at depth 513 while the same depth with a trailing
+  comment was rejected.
+  Q8 requires the supported behavior to be shared by both implementations.
+
+A direct measurement of the maintained bundle recorded both,
+ and the fix removes the shortcut
+rather than special-casing it:
+ any spelling check cheap enough to keep the shortcut would cost as much as the structural
+parse it avoids.
+
+Measured cost,
+ from `mise run //package/module/jsonc-edit.bench:bench` (300 entries,
+ 3000
+iterations,
+ one run before and one after on the same machine):
+
+- Clean input:
+  11055 ops/s before,
+  2794 ops/s after;
+  microsoft `jsonc-parser` measured 2733
+  ops/s in the same after-run and `jsonc-eslint-parser` 479 ops/s.
+- Commented input:
+  3893 ops/s before,
+  3591 ops/s after,
+  against 4193 and 876 ops/s for the same
+  two comparisons.
+
+The clean-input regression is accepted:
+ correctness of unedited spelling and of the nesting
+limit outranks the shortcut,
+ and the structured parser stays level with microsoft
+`jsonc-parser` on clean input while remaining several times faster than
+`jsonc-eslint-parser`.
+Single-run samples bound nothing smaller than their run-to-run spread;
+ the commented-input
+movement between the two runs (about 8 percent) is a rough indication of that spread,
+ and the
+clean-input change is far larger than it.
+
+Guards added with the amendment,
+ each shown failing before the fix and passing after:
+ clean number spelling through `jsoncStringify`,
+ clean depth 512 accepted and 513 rejected,
+ a
+later-line comma in arrays and objects,
+ comment ownership around a later-line comma,
+ CR and
+CRLF line-comment termination,
+ and a multi-line value comment keeping its owner across
+emission and reparse.
+The package unit suite (58 assertions groups),
+ the conformance corpus and the fuzz property
+suites pass after the change.
