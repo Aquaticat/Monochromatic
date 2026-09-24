@@ -1453,6 +1453,51 @@ choices,
  No production change
 is authorized.
 
+### D51. Search uses the IME-lifted left deck (2026-09-24)
+
+The user selected **A** from the native Fold Search comparison.
+ On the
+unfolded panel,
+ Search's integrated Back/query/Clear header and results stay
+together on the right;
+ the existing playback/control deck remains at the
+bottom-left when the keyboard is closed and lifts above the visible system
+keyboard while typing.
+ Folder browsing may yield to the keyboard,
+ but
+Search must not hide the deck or its controls (D50).
+ The cover uses one
+full-width Search destination with the same integrated header.
+ D49 makes
+this Fold treatment the visual source for desktop too.
+
+B (fixed upper-left deck) and C (Search left with an upper-right deck) were
+not chosen.
+ Their native captures remain historical comparison evidence,
+not active choices.
+ The 300dp test input method verified bounded occlusion;
+Gboard-specific geometry and taller input methods are not established.
+This is a **design choice only**;
+ it does not authorize production changes.
+
+### D52. Remove the redundant positive-results heading (2026-09-24)
+
+The user directed removal of the separate `Results for “cam”` text after
+choosing A.
+ Positive Search results start directly beneath the single
+Back/query/Clear header on both Fold panels;
+ do not repeat the query as a
+results heading.
+ The query remains visible in the header,
+ and folder/track
+labels still identify result meaning.
+ Keep the distinct no-results and
+library-unavailable explanations,
+ because they convey states rather than
+repeat a successful query.
+ This is design-only until implementation is
+separately authorized.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)
