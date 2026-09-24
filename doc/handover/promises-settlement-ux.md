@@ -1,11 +1,13 @@
 # Settlement experiment UX redesign
 
-Status: after the source-and-browser audit, the user delegated the best remedy.
-The chosen direction keeps the existing manual `Promise.withResolvers()` experiment and its
-reply-shaped values, using Yum-Bot only as bounded visual inspiration.
-No separate faithful game panel or new physical pudding-delivery contract is planned.
-The old focused clarity review remains a preserved prototype; the mapping redesign is in progress.
-The lesson file is untouched.
+Status: the user delegated the best remedy after the logic audit.
+The Promise-ticket prototype keeps the manual `Promise.withResolvers()` experiment and
+reply-shaped values, with Yum-Bot only as visual inspiration.
+Chromium, native-call, Firefox ESR, and PDF checks passed on the prototype.
+The agent then selected A-neutral for integration: full-width reference code and one neutral
+observer display avoid a competing highlighted state map and misleading game-grade colors.
+Lesson integration and its own boundary verification are in progress; the original lesson
+has not yet been replaced.
 No skill design has been confirmed; this redesign feeds the Promise toy, not the teaching skill.
 
 ## Latest screenshot-driven clarity repair
@@ -269,7 +271,10 @@ The redesigned scene will use Yum-Bot's visual vocabulary only:
 
 The choice form's color ranking has been recomputed for Promise-outcome cues rather than game grades.
 Its current prototype ranking is a-neutral, a-state, b-neutral, b-state, c-neutral, c-state.
-This is not yet a final lesson layout implementation.
+After the user delegated the best overall result, A-neutral was selected for the lesson.
+Its reference rows keep code full width; neutral outcome cues keep fulfillment/rejection
+separate from the source game's performance-grade colors.
+This selection does not change the manual fixture or authorize a separate game.
 
 ### Scratch implementation and verification
 
@@ -520,9 +525,9 @@ This decision is not a selection of matrix layout or cue colors.
   Do not ask the user to reapprove the same mapping or reopen the logged-attempt decision.
 - Build and verify the Promise-ticket scene in the scratch prototypes.
   Treat the old focused clarity review as rejected evidence, not the active design.
-- The A/B/C layout and cue-color matrix has not been selected.
-  The previous a-state ranking relied on game timing-face colors and is invalid.
-  Reassess presentation choices against Promise teaching after the scene is coherent.
+- A-neutral is selected under the user's delegated design choice.
+  Do not reopen A/B/C or cue color without new user feedback.
+  Integrate this into the lesson; the prototype checks do not substitute for the lesson boundary.
 - A physical pudding-delivery ticket or Promise of game-turn success remains outside scope;
   either requires a new operation/payload design request.
   Do not add rhythm timing by default.
