@@ -528,11 +528,12 @@ Round 9 answers (user,
    the 556 findings #559 hides treated as expected differential differences;
    `Edition::CURRENT` for Rust parsing.
 
-Round 10,
-asked 2026-09-23:
+Round 10 answer (user,
+2026-09-23):
 
-- Drop `--rule` too,
-   since a temporary `--config` covers its uses and it has no consumer.
+- `--rule` is dropped (A):
+   settings come only from a configuration file,
+   and a temporary `--config` covers one-off changes.
 
 Waiting on research:
 the Markdown parser crate
