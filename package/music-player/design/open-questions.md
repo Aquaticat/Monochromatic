@@ -56,43 +56,33 @@ rounds (2026-09-17):
   chosen as the working baseline, not banned from exploration.
   K1's discouraging back
   navigation and K3's non-local sheet remain rejected.
-- **ACTIVE: one-bar Search page review (D47/D48), awaiting correction.**
-  The user
-  rejected all command-bar variants and then corrected the first Search-page
-  prototype's double bar.
-  `questions/current.html` now shows the active direction
-  only:
-  a player Search icon button,
-  a separate page with a single 72px
-  Back/query/Clear header and divider,
- illustrative results,
- no-result and
-  unavailable states.
-  Native Slint rasters in both schemes cover player,
-  empty,
-  results,
-  no-results
-  and unavailable states at 360 and 480px;
-  the 1100px set covers player,
-  empty
-  and results (`questions/render/search-page-*`).
-  The HTML walkthrough
-  demonstrates player → page → player without claiming native click/focus evidence.
-  The
-  rejected comparison is archived in `questions/archive/command-igr-rejected.html`;
-  do not ask for I/G/R codes.
-  Baseline M3 Search component evidence is in
-  `material-3-compliance.md`.
-  Search targets,
-  result actions/ranking,
-  button placement
-  beyond this desktop study,
-  and empty/error semantics remain open.
-  D21's global
-  hotkey and Settings row belonged to the superseded command bar and do not
-  automatically move to Search.
-  D25 reserves Ctrl+F for future search and Ctrl+O for
-  the picker,
+- **ACTIVE: native Fold Search-page round (D47/D48/D49).**
+  D47 chooses a Search
+  button opening a separate page;
+  D48 puts Back,
+  query and Clear in one header.
+  D49 makes the Pixel 9 Pro Fold's cover (1080 × 2424px) and unfolded inner
+  (2076 × 2152px) panels the visual source for all platforms.
+  The desktop-width
+  Slint screenshots in `questions/render/search-page-*` are historical experiments,
+  not a live review or a basis for desktop-specific design.
+  The current
+  `questions/current.html` still shows those obsolete desktop scenes and must be
+  replaced with native Compose captures of the actual Fold panels in both schemes
+  before requesting feedback.
+  Do not ask for I/G/R codes or a desktop window size.
+  Keep Search results,
+  no-result/unavailable states,
+  and open/back behavior visibly
+  distinguished without claiming the static capture proves interaction.
+  Baseline
+  M3 Search component evidence is in `material-3-compliance.md`.
+  Search targets and
+  result effects/ranking remain open;
+  D21's global command hotkey and Settings row
+  do not transfer to Search.
+  D25 still reserves Ctrl+F for search and Ctrl+O for the
+  picker,
   pending the whole keyboard map.
   Cover-specific accessibility remains open;
   D39/D40 settled only the unfolded
@@ -109,7 +99,11 @@ rounds (2026-09-17):
   first-run prompt,
   scan bar.
 - **OPEN: D10 empty state redrawn for the no-system-library case (8b).**
-- **OPEN: desktop window default size (11c).**
+- **DEVELOPER-OWNED: desktop window default size (11c, D49).**
+  Choose an
+  implementation window frame around the Fold-derived treatments;
+  do not use it as
+  a separate visual design target.
 - **OPEN: custom display templating round (11e).**
 - **DEVELOPER-OWNED: MD3-on-Slint feasibility (A4).**
   The user assigned feasibility and
@@ -630,10 +624,10 @@ surface with a Search button and page.
  Reconsidering the picker
 remains a separate pre-1.x question, not a promise to replace it;
  the keyboard-map pass,
- desktop window size,
- Android
-media notification,
- and undrawn light surfaces remain open.
+ Android media notification,
+ and undrawn light surfaces remain open;
+  desktop
+  window sizing follows the Fold design as developer-owned work (D49).
 
 ### 11d. Light-theme surfaces remaining to be drawn
 D45 settles the cover's flat L3 surface with hairlines at both seams, and the P2 picker
