@@ -251,7 +251,7 @@ a conflict blocks with exit `2` while its unmerged state remains private.
 Explicit-path mode builds the intended tree from `HEAD` plus selected worktree paths,
 then reconciles only those landed entries into a copy of the original index.
 Explicit `--no-only` mode patches a copy of the complete real index.
-The completed index is installed atomically only after real Git succeeds,
+For a commit that changes the tree, the completed index is installed atomically only after real Git succeeds,
 so policy failures,
 patch conflicts,
 and failed commit hooks leave real index and worktree bytes unchanged by cli-git.
@@ -274,6 +274,14 @@ Successful corrections emit only a `fix-summary` JSONL event.
 At default warning severity,
 ordinary `git add` reports noncanonical final newlines and continues;
 the later patch-capable commit transaction normalizes the exact bytes it commits.
+For selected final-newline corrections whose staged bytes match their worktree copy,
+the wrapper also synchronizes that worktree copy after the commit lands.
+Partial staging and later edits keep their worktree bytes.
+When the settled tree is identical to `HEAD`,
+the wrapper reconciles eligible worktree and index copies,
+reports `commit-normalization/no-change` with exit `1`,
+and does not create an empty commit unless explicitly requested.
+The wrapper applies this behavior in repositories outside Monochromatic too.
 An explicit error override restores blocking behavior.
 
 A durable no-follow transaction directory retains exact original and prepared index snapshots,

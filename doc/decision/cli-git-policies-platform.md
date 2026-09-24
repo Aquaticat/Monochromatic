@@ -807,8 +807,13 @@ Exact exclusion families are:
    which moved out of `dist/`;
    see `doc/decision/gitignore-negations.md`).
 
-Commit fixing changes only exact would-be-committed blobs.
-Unstaged tails and unrelated staged paths remain byte-identical.
+Commit fixing first changes only exact would-be-committed blobs.
+After a successful commit, a selected final-newline path whose original staged bytes and worktree bytes matched exactly
+receives the settled blob in its worktree copy, subject to a fresh ordinary-file, mode, and byte check.
+Partially staged paths, concurrent worktree edits, and unrelated staged paths remain byte-identical.
+If normalization removes every selected tree difference from `HEAD`, the wrapper reconciles eligible worktree copies and
+the selected index entries, reports that no commit was created, and does not create an empty commit.
+This does not change explicit `--allow-empty`, amend, or sequencer semantics.
 The implementation must cover hk's duplicate-separator partial-staging regression.
 Direct fix replaces the old `hk fix --all --step final-newline --no-stage` capability without touching the index.
 

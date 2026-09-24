@@ -324,8 +324,11 @@ Issues `#356` and `#357` completed the independent CI gate and hk/Pkl retirement
 - Hk 1.50.0's retired fixer could insert a blank boundary line when it added the staged file's missing final LF at the
   exact point where an unstaged tail began.
   Cli-git avoids that merge path entirely:
-  commit correction changes only its private index,
-  and direct fix changes selected worktree files only after exact concurrency and real-index checks.
+  commit correction first changes only its private index,
+  then synchronizes selected worktree files only when their initial bytes matched the staged candidate and still match
+  immediately before installation.
+  Partial staging remains untouched.
+  Direct fix changes selected worktree files only after exact concurrency and real-index checks.
 - Generated license normalization stays attached to file-enforcer's canonical source.
 - Tsdown's `dist/final/node` tree is a deliberate compact-output exception;
   paths moved outside that boundary become subject to normal enforcement.
