@@ -1,8 +1,9 @@
-// THROWAWAY, NONFUNCTIONAL MD3 VISUAL STUDY. Render only after comparing with
-// the local m3.material.io/components/search visual specifications.
-// SearchBarTokens: 56dp, CornerFull, surfaceContainerHigh, BodyLarge text.
-// SearchViewTokens: 28dp docked shape, sharp full-screen shape, 56/72dp header.
-// List specs: 16dp start padding, 48dp targets, expressive selected corners 16dp.
+// THROWAWAY, NONFUNCTIONAL BASELINE MD3 SEARCH STUDY.
+// The previously rendered contained/Expressive version conflicted with A2.
+// Baseline expanded docked: 28dp outer shape, 56dp header, divider, High container.
+// Baseline expanded full-content: sharp outer shape, 72dp header, divider.
+// Baseline list: square rows, 16dp start padding, minimum 48dp targets.
+// The outlined keyboard-current row is a custom desktop focus cue, not selection.
 // Desktop color-role and window-mode adaptations must be disclosed in the review.
 import "command-fonts/Roboto-Regular.ttf";
 
@@ -27,17 +28,14 @@ component Md3Result inherits Rectangle {
     in property <string> supporting;
     in property <string> end-label;
     height: root.large ? 96px : 64px;
-    background: root.active ? (root.dark ? #353b4d : #dde2f9) : #00000000;
-    border-radius: root.active ? 16px : 4px;
-    if root.active: Rectangle {
-        x: 0px; y: 8px; width: 3px; height: parent.height - 16px;
-        background: root.dark ? #bac5ee : #4e5e8b;
-        border-radius: 2px;
-    }
+    background: root.active ? (root.dark ? #2e3038 : #d5d6e2) : #00000000;
+    border-radius: root.active ? 4px : 0px;
+    border-width: root.active ? 2px : 0px;
+    border-color: root.dark ? #bac5ee : #4e5e8b;
     MaterialGlyph {
         x: 16px; y: root.large ? 20px : 20px;
         glyph: root.glyph;
-        ink: root.active ? (root.dark ? #b9bed5 : #4b5164) : (root.dark ? #a9aab5 : #5d5f68);
+        ink: root.active ? (root.dark ? #e4e5f0 : #30323b) : (root.dark ? #a9aab5 : #5d5f68);
     }
     Text {
         x: 56px; y: root.large ? 8px : 9px;
@@ -45,10 +43,10 @@ component Md3Result inherits Rectangle {
         height: root.large ? 56px : 26px;
         text: root.label;
         font-size: root.large ? 20px : 16px;
-        font-weight: root.active ? 600 : 400;
+        font-weight: 400;
         wrap: root.large ? word-wrap : no-wrap;
         overflow: root.large ? clip : elide;
-        color: root.active ? (root.dark ? #b9bed5 : #4b5164) :
+        color: root.active ? (root.dark ? #e4e5f0 : #30323b) :
             (root.unavailable ? (root.dark ? #a9aab5 : #5d5f68) : (root.dark ? #e4e5f0 : #30323b));
     }
     Text {
@@ -58,7 +56,7 @@ component Md3Result inherits Rectangle {
         text: root.supporting;
         font-size: root.large ? 14px : 14px;
         overflow: elide;
-        color: root.active ? (root.dark ? #b9bed5 : #4b5164) : (root.dark ? #a9aab5 : #5d5f68);
+        color: root.active ? (root.dark ? #e4e5f0 : #30323b) : (root.dark ? #a9aab5 : #5d5f68);
     }
     Text {
         x: parent.width - 90px; y: root.large ? 19px : 19px;
@@ -67,7 +65,7 @@ component Md3Result inherits Rectangle {
         font-size: 12px;
         horizontal-alignment: right;
         overflow: elide;
-        color: root.active ? (root.dark ? #b9bed5 : #4b5164) : (root.dark ? #a9aab5 : #5d5f68);
+        color: root.active ? (root.dark ? #e4e5f0 : #30323b) : (root.dark ? #a9aab5 : #5d5f68);
     }
 }
 
@@ -77,30 +75,39 @@ component Md3SearchSurface inherits Rectangle {
     in property <bool> large: false;
     in property <int> state: 1; // 1 commands, 2 search, 3 no results, 4 unavailable
     in property <bool> shared-search: false;
+    in property <bool> show-owner: false;
     background: root.dark ? #1e1f26 : #e7e7f1;
     border-radius: root.full-content ? 0px : 28px;
     clip: true;
 
-    // Search is focused: 56px filled pill, leading Back, typed query, trailing Clear.
+    // Baseline divided Search: header and results share the High container, separated by 1px.
     Rectangle {
-        x: root.full-content ? 12px : 12px;
-        y: root.full-content ? 8px : 0px;
-        width: parent.width - 24px;
-        height: 56px;
-        border-radius: 28px;
-        background: root.dark ? #23252e : #f4f3fa;
-        MaterialGlyph { x: 16px; y: 16px; glyph: @image-url("command-icons/back.svg"); ink: root.dark ? #e4e5f0 : #30323b; }
+        x: 0px; y: 0px; width: parent.width;
+        height: root.full-content ? 72px : 56px;
+        background: root.dark ? #1e1f26 : #e7e7f1;
+        MaterialGlyph { x: 28px; y: root.full-content ? 24px : 16px; glyph: @image-url("command-icons/back.svg"); ink: root.dark ? #e4e5f0 : #30323b; }
         Text {
-            x: 56px; y: 15px;
-            width: parent.width - 112px; height: 27px;
+            x: 80px; y: root.full-content ? 23px : 15px;
+            width: parent.width - 160px; height: 27px;
             text: root.state == 3 ? "zzq" : (root.state == 4 ? "scan" : (root.state == 2 ? "cam" : "open"));
             font-size: root.large ? 20px : 16px;
             color: root.dark ? #e4e5f0 : #30323b;
         }
-        MaterialGlyph { x: parent.width - 40px; y: 16px; glyph: @image-url("command-icons/close.svg"); ink: root.dark ? #a9aab5 : #5d5f68; }
+        MaterialGlyph { x: parent.width - 52px; y: root.full-content ? 24px : 16px; glyph: @image-url("command-icons/close.svg"); ink: root.dark ? #a9aab5 : #5d5f68; }
+    }
+    Rectangle {
+        x: 0px; y: root.full-content ? 71px : 55px;
+        width: parent.width; height: 1px;
+        background: root.dark ? #73757f : #797a84;
+    }
+    if root.show-owner: Text {
+        x: 20px; y: 63px; height: 20px;
+        text: "Music Player · Commands";
+        font-size: 14px; font-weight: 600;
+        color: root.dark ? #e4e5f0 : #30323b;
     }
     if root.shared-search: Rectangle {
-        x: 16px; y: root.full-content ? 76px : 64px;
+        x: 16px; y: root.full-content ? 80px : 64px;
         width: parent.width - 32px; height: 45px;
         Text { x: 8px; y: 10px; text: "Actions"; font-size: 14px; color: root.dark ? #a9aab5 : #5d5f68; }
         Text { x: 108px; y: 10px; text: "Search"; font-size: 14px; font-weight: 600; color: root.dark ? #bac5ee : #4e5e8b; }
@@ -108,14 +115,14 @@ component Md3SearchSurface inherits Rectangle {
     }
     Text {
         x: 20px;
-        y: (root.full-content ? 80px : 68px) + (root.shared-search ? 47px : 0px);
+        y: (root.full-content ? 88px : 72px) + (root.shared-search ? 47px : 0px) + (root.show-owner ? 24px : 0px);
         text: root.state == 2 ? "Search results" : (root.state == 3 ? "No matching actions" : "Actions");
         font-size: 14px;
         font-weight: 600;
         color: root.dark ? #e4e5f0 : #30323b;
     }
     if root.state == 1: Rectangle {
-        x: 12px; y: root.full-content ? 112px : 100px;
+        x: 12px; y: (root.full-content ? 112px : 100px) + (root.show-owner ? 24px : 0px);
         width: parent.width - 24px; height: root.large ? 224px : 196px;
         Md3Result {
             x: 0px; y: 0px; width: parent.width; dark: root.dark; active: true; large: root.large;
@@ -252,8 +259,10 @@ export component CommandMd3Study inherits Window {
         compact: root.compact || root.stress || root.study-mode == 2;
     }
     if (root.study-mode == 1 && root.variant < 3 && !root.stress) || (root.study-mode == 3 && root.variant == 2) || (root.study-mode == 2 && root.variant == 1): Rectangle {
-        x: 0px; y: root.study-mode == 2 ? 66px : 34px;
-        width: parent.width; height: parent.height - self.y;
+        x: root.study-mode == 2 ? 24px : (root.compact || root.stress ? 0px : 50px);
+        y: root.study-mode == 2 ? 66px : (root.compact || root.stress ? 34px : 54px);
+        width: root.study-mode == 2 ? parent.width - 48px : (root.compact || root.stress ? parent.width : parent.width - 100px);
+        height: root.study-mode == 2 ? parent.height - 100px : (root.compact || root.stress ? parent.height - 34px : parent.height - 74px);
         background: root.dark ? #00000099 : #30323b66;
     }
     if (root.study-mode == 1 && (root.variant == 3 || root.stress)) || (root.study-mode == 3 && root.variant == 1): Rectangle {
@@ -266,6 +275,7 @@ export component CommandMd3Study inherits Window {
     Md3SearchSurface {
         state: root.study-mode == 3 ? 2 : (root.study-mode == 4 ? (root.variant == 1 ? 3 : 4) : 1);
         shared-search: root.study-mode == 3 && root.variant == 2;
+        show-owner: root.study-mode == 2 && root.variant == 2;
         full-content: (root.study-mode == 1 && (root.variant == 3 || root.stress)) || (root.study-mode == 3 && root.variant == 1);
         dark: root.dark;
         large: root.stress;
