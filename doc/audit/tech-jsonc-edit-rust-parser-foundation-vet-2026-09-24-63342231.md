@@ -750,15 +750,30 @@ The published single-file `src/lib.rs:3-68` exports JSONC-to-JSON normalization 
 ### Other registry leads
 
 - `jsonc` 0.1.0 has no repository URL in registry metadata;
-   the published source in the local Cargo cache (`jsonc_document.rs:2-4,62-73,107-119`) wraps `jsonc-parser` and projects through `serde_json::Value`.
-   It inherits the upstream scanner's surrogate constraint and cannot provide the full contract as-is.
+   its published `Cargo.toml:29-34` selects `jsonc-parser` 0.26.
+   Its `JsoncDocument::parse` uses `CstRootNode::parse` and its public getter projects through
+   `serde_json::Value` (`src/jsonc_document.rs:81-117`).
+   The **versioned 0.26.0** CST parser calls `parse_to_ast`
+   (`jsonc-parser/src/cst/mod.rs:1047-1060`),
+   whose scanner calls the string decoder
+   (`jsonc-parser/src/scanner.rs:148`,
+   `src/string.rs:141-166`).
+   That decoder rejects unpaired surrogate escapes through `char::from_u32`,
+   so the wrapper's CST entry fails the required source domain as-is.
+   This conclusion no longer borrows the separate 0.33.2 finding.
 - `jsonc_tools` 0.0.1 published source (`src/lib.rs:1-18`,
    `src/parser/parser.rs:1-13`) is a scaffold with no JSONC parser implementation.
    Category mismatch.
-- `jsontape`,
-   `hifijson`,
-   `tokora`,
-   and `purrdf-json` remain discovery leads requiring category screening;
+- `jsontape` and the `tokora` JSON CST example have versioned as-is exits in their separate sections.
+   `hifijson` 0.5.0 exposes a byte lexer whose caller supplies a peek function
+   (`src/token.rs:27-60`);
+   the default `ws_peek` skips only JSON whitespace,
+   and attaching comments would require a custom peek/ownership parser.
+   It remains a possible primitive composition,
+   not an as-is comment-bearing editor.
+   `purrdf-json` 2.0.2 parses RFC 8259 JSON,
+   whose whitespace scanner omits comments (`src/parse.rs:4-58`);
+   its RDF-oriented strict-JSON interface is a category mismatch as-is.
    `momoa` has a separate source-proven safety hard-gate failure recorded next.
 
 ### `momoa` 3.2.6 safety exit
