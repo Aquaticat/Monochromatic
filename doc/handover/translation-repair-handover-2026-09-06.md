@@ -4766,17 +4766,18 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA19 RUNS (entry `shi_Yumiaoya`,
+1.  HULICAIJIA17 RUNS (entry `hulicaijia`,
     frozen `0d8e463ef`,
-    corpus-pass pid 3826911 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
-    launched 10:08 UTC 2026-09-24,
-    waiter wait-s19 (background bash),
-    meters 46.33 USD Bedrock and 92.68 OpenRouter at launch, Synthetic dry;
+    corpus-pass pid 3979105 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
+    launched 10:32 UTC 2026-09-24,
+    waiter wait-h17 (background bash),
+    meters 46.21 USD Bedrock and 92.61 OpenRouter at launch;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    the rotation on the class one hundred eighteen build;
-    read it by every shi_Yumiaoya18 check (4 headings, front matter equal, the death paragraphs, "Magic Chewing Gum and Danpian", the survived attempt as an attempt, the closing quote as the archive's two lines, the [^1] definition, no TA, no error finish, no double blank line) and no GLM-5.3-Flash stream on Synthetic;
-    then `hulicaijia`, `XingZ60`, `mikaela_khara` and `yingying` on the same build if each reads clean;
-    record each under a new heading above "## CuspariaKLSY14 read, 2026-09-24" in the pass log.
+    read it by every hulicaijia16 check (13 headings, 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish, no double blank line) and no GLM-5.3-Flash stream on Synthetic;
+    then `XingZ60`, `mikaela_khara` and `yingying` on the same build if each reads clean;
+    record each under a new heading above "## shi_Yumiaoya19 read, 2026-09-24" in the pass log.
+    SHI_YUMIAOYA19 READ (frozen `0d8e463ef`): SETTLED 10:29 UTC 2026-09-24 in 20.9 min, 812 seats, 811 calls, 0.19 USD by the meters; every shi_Yumiaoya18 check holds;
+    OPEN OWNER QUESTION: 小药娘 and 药娘 shipped in Han (judges following the archive translator's "needn't be translated" comment), the third rendering in three runs after "little HRT girl" (shi17) and "little yaoniang" / "yao-niang (gloss)" (shi18); no glossary entry exists; the fix is a glossary entry once the owner picks the rendering.
     CUSPARIAKLSY14 READ (frozen `0d8e463ef`): SETTLED 10:05 UTC 2026-09-24 in 21.6 min, 401 seats, 400 calls, 0 retry rounds, 0.07 USD by the meters;
     class one hundred eighteen live (no GLM-5.3-Flash stream on Synthetic, its first streams on Hyper while Synthetic read wet, longest gap 89 s against 179), class one hundred seventeen not exercised (the bench wrote the list loose), every CuspariaKLSY13 check holds; observation: 又 dropped before the argument with her father; no class.
     CUSPARIAKLSY13 READ (frozen `3bb47c918`): SETTLED 09:15 UTC 2026-09-24 in 31.9 min, 367 seats, 363 calls, 0.06 USD by the meters;

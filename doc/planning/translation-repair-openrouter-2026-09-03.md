@@ -8082,6 +8082,45 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya19 read, 2026-09-24, 10:32 UTC: SETTLED in 20.9 min, every shi_Yumiaoya18 check holding; 小药娘 and 药娘 shipped in Han, the third rendering of the term in three runs (open question for the owner)
+
+`shi_Yumiaoya19` (frozen `0d8e463ef`, corpus-pass pid 3826911) was launched at 10:08 UTC 2026-09-24
+and SETTLED at 10:29 UTC,
+20.9 min (TALLY `ms=1253218`),
+one attempt,
+812 seats,
+811 calls,
+1 retry round,
+0.19 USD by the meters
+(Bedrock 46.33 to 46.21, OpenRouter 92.68 to 92.61),
+Synthetic dry.
+Jev 27 of 27; 3 abstention lines.
+No GLM-5.3-Flash stream on Synthetic (class one hundred eighteen holding).
+
+Every shi_Yumiaoya18 check holds:
+front matter equal,
+4 headings,
+"she tried to end her life in the early hours of January 16th" (class seventy-nine),
+"Magic Chewing Gum and Danpian" (class seventy-eight),
+the closing quote as the archive's two lines with the attribution once (classes eighty and one hundred two),
+the [^1] marker and its definition as the page's last line (class one hundred one),
+no TA,
+no error finish,
+no double blank line.
+
+The finding:
+the source's community term 小药娘 (with its [^1] definition) shipped in Han on the Description line ("Yumiao was a very ordinary 小药娘[^1].")
+and 药娘 in Han in the Departure section ("psychologically bullied by a minor 药娘").
+shi_Yumiaoya17 wrote "little HRT girl" and shi_Yumiaoya18 "little yaoniang" on the first line and "yao-niang (a trans person undergoing female-oriented hormone replacement therapy)" on the second:
+three renderings in three runs, two on one page.
+The judges who kept the Han cited the archive translator's comment above the Description
+(注释：我觉得"小药娘"就可以不用翻译了，英文环境里好像没有对应的东西，注释应该也可以不需要。, "I think 小药娘 needn't be translated; English seems to have no equivalent; a note shouldn't be needed either").
+The corpus census: 药娘 in 3 source pages; no archive English renders it (shi_Yumiaoya's archive body is empty under its headings, mikaela_khara's writes the studio name XiaoYaoNiang);
+the community glossary carries no entry for it.
+The fix is a glossary entry (the class seventy-two mechanism) once the rendering is chosen;
+which rendering is the owner's call, asked 2026-09-24.
+`hulicaijia17` launched at 10:32 UTC on `.frozen-dist-0d8e463ef` (corpus-pass pid 3979105).
+
 ## CuspariaKLSY14 read, 2026-09-24, 10:08 UTC: SETTLED in 21.6 min, GLM-5.3-Flash on Hyper with Synthetic wet (class one hundred eighteen live), the life list loose as the archive; no class
 
 `CuspariaKLSY14` (frozen `0d8e463ef`, corpus-pass pid 3557762) was launched at 09:44 UTC 2026-09-24
