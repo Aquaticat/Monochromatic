@@ -56,18 +56,30 @@ rounds (2026-09-17):
   chosen as the working baseline, not banned from exploration.
   K1's discouraging back
   navigation and K3's non-local sheet remain rejected.
-- **NEXT RECOMMENDED: command bar surface (D21) with the reserved search behavior (D25).**
-  Design the bar's own content and actions, then separately examine search targets,
-  results, and how search and the folder picker relate.
-  Cover-specific accessibility
-  remains to be checked; D39/D40 settled only the unfolded screen.
+- **ACTIVE: desktop command-bar design round (D21/D25), awaiting one I, G and R code.**
+  Native Slint captures in light and dark compare in-app placement (I1 docked, I2
+  floating, I3 content replacement), optional global invocation (G1 raise player, G2
+  detached quick-window concept), and the relationship to future Ctrl+F search (R1
+  distinct destination, R2 explicit mode in the same surface).
+  These are independent
+  choices;
+  D25 reserves bindings but does not force separate surfaces.
+  The form is
+  `questions/current.html`;
+  none of these alternatives is settled yet.
+  Native static
+  frames do not prove keyboard behavior, screen-reader semantics, actual second-window
+  focus restoration, hotkey feasibility, action execution or search indexing.
+  Search
+  target scope and result ranking, the in-app visible entry and exact binding, and the
+  D21 Settings row remain open.
+  Cover-specific accessibility remains to be checked;
+  D39/D40 settled only the unfolded screen.
 - **OPEN: keyboard map revision (section 6):**
   one revised IntelliJ-aligned map,
-  plus the
- ↑/↓ popover question.
+  including what ↑/↓ does after D43 removed the volume popover.
 - **OPEN: Android media notification.**
-- **OPEN: light surfaces never drawn (11d):**
-  cover,
+- **OPEN: light surfaces not yet drawn (11d):**
   error bar,
   undo toast,
   settings pane,
@@ -313,13 +325,14 @@ Open:
 
 - **Volume icon + vertical popover** — historical D20 treatment, superseded by D43.
    No in-app volume control remains; the ↑/↓ keyboard question remains open in section 6.
-- **Command bar** — SETTLED as a configurable global hotkey,
-   off by default (D21).
-  The surface itself has never been designed:
-   what it searches (folders?
-   tracks?
-  commands?),
-   and what it does once search exists (D25) are both unbuilt.
+- **Command bar** — existence and the configurable,
+  off-by-default global hotkey are
+  settled by D21.
+  Native surface prototypes and the separate search relationship
+  question are now active in section 0b;
+  search targets,
+  ranking and keyboard behavior
+  remain unbuilt.
 - **Picker names not as a wall of chips** — settled by D31: wrapped plain-text names,
   with the current folder marked by primary color and a bottom-edge indicator.
 
@@ -449,7 +462,8 @@ of decisions.md.
    tag track number,
    filename fallback (D24).
 - **Command bar surface.**
-   Unbuilt — see 3c.
+   Native design alternatives built and awaiting a verdict;
+   see section 0b.
 
 ---
 
@@ -477,7 +491,8 @@ of decisions.md.
   (review-notes 5d),
    not live candidates.
 - **Command bar surface** (D21) — hotkey settled,
-   the surface itself never designed.
+   native surface candidates now built;
+   see section 0b.
 - **Keyboard map / IntelliJ alignment pass** (D25):
    see section 6;
    one revised map is the
