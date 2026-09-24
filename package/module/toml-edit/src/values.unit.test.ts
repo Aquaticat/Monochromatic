@@ -138,9 +138,9 @@ await describe({
       fn: async () => {
         const edit = emptyTomlEdit();
         expect(() => tomlSet({ edit, path: ['values',], value: [null,], },),)
-          .toThrow(TomlTypeError,);
+          .toThrow('Cannot encode null as TOML; use tomlDelete to remove a key',);
         expect(() => tomlSet({ edit, path: ['table',], value: { child: undefined, }, },),)
-          .toThrow(TomlTypeError,);
+          .toThrow('Cannot encode undefined as TOML; use tomlDelete to remove a key',);
       },
     },),
   ],
