@@ -10,8 +10,9 @@ User constraints from confirmation:
 all security findings go into one combined private advisory draft,
 all other upstream items go into one combined issue draft,
 and both stay local until the user reviews and posts them personally.
-No GitHub fork is created and nothing is pushed upstream-side until then;
-fix branches stay in a local checkout with pushes disabled.
+Only those two drafts are held (user correction the same day):
+the GitHub fork is created and non-embargoed fix branches are pushed to it.
+Embargoed repros, properties, and fixes belong to the advisory and stay in `*.local.*` files (Q8).
 
 Findings under disclosure embargo live only in gitignored `*.local.*` files
 (see `Embargo`);
@@ -157,11 +158,12 @@ confirmed by the user the same day.
    unbounded containerized `fuzz`,
    `fuzz:coverage` gate,
    `README.md`.
-3. Local upstream checkout under `~/temp/agent` with push disabled,
+3. GitHub fork `Aquaticat/deepmerge-ts`,
+   local checkout under `~/temp/agent` pushing only to the fork,
    and sidecar support for targeting a local branch build.
-   The GitHub fork waits until the user posts the drafts.
-4. Local fix branches with Vitest regression tests for non-embargoed defects;
-   not pushed.
+4. Fix branches with Vitest regression tests for non-embargoed defects,
+   pushed to the fork;
+   no upstream PRs until the user posts the combined issue.
 5. One combined local issue draft:
    non-embargoed defects,
    `maxDepth` fallback docs request,
