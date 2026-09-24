@@ -64,7 +64,7 @@ await describe({
     it({
       name: 'escapes a quote and backslash in a single-line string',
       fn: async () => {
-        const value = 'a"b\\c';
+        const value = String.raw`a"b\c`;
         expect(emitAssignedString(value,),).toBe(`${String.raw`value = "a\"b\\c"`}\n`,);
       },
     },),
