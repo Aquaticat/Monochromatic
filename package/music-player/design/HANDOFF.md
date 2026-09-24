@@ -4623,14 +4623,19 @@ by scaling the step to the fitted size (template `d0294ab63`,
 `1916cbfbc`),
  then rechecked at 390 × 500px.
 
-Next:
- open `questions/current.html` in Helium via `gtk-launch helium` only,
- explain
-what changed and what to inspect,
- and request corrections in chat.
- No KWin
-window-manager scripting and no `AGENTS.md` edit for this package-local lesson,
-per the user's explicit instruction.
+The final `questions/current.html` file URL was handed to normal Helium using
+`gtk-launch helium`;
+ the launcher returned successfully.
+ No KWin script was used,
+and Helium active-tab focus was not independently measured.
+ Next,
+ wait for the
+user's correction to the Search button and one-bar page,
+ or confirmation to
+continue other design-only work.
+ No I/G/R code or broad approval is requested.
+The user explicitly prohibited a narrow `AGENTS.md` change and asked to avoid KWin
+window automation.
  Do not reintroduce production app changes.
 
 Search target scope,
