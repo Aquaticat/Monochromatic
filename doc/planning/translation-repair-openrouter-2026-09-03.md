@@ -8126,11 +8126,14 @@ Built in `79972da3d` (guard red first `2f7dd5190`):
   the owner corrected that the same day:
   "even when existing English translation itself keeps the term it shouldn't be kept."
   The exception is gone in `5fd7d3dea` (guard red first `2ba810b2f`).
+  The owner gave the reason: "because 小药娘 the term itself could be read as degratory, which is absolutely not what we want."
+  The entry's why, which the sheets and the refusal finding quote, says so since `d73cb46b9`.
   The renderings are listed but not required,
   since a rendering inflects and the judges still choose among renderings.
 - Lint 0/0, types clean, full suite `suite-class119.log` and `suite-class119b.log` 1121 PASS each, no FAIL.
 - shi_Yumiaoya20 launched 21:38 UTC on `.frozen-dist-79972da3d` and was killed at 21:55 UTC under always-kill-and-relaunch;
-  shi_Yumiaoya21 launched 21:55 UTC on `.frozen-dist-5fd7d3dea` to read it live.
+  shi_Yumiaoya21 launched 21:55 UTC on `.frozen-dist-5fd7d3dea` and was killed at 21:57 UTC for the why text;
+  shi_Yumiaoya22 launched 21:57 UTC on `.frozen-dist-d73cb46b9` to read it live.
   The shi_Yumiaoya archive carries 小药娘 only inside a translator comment, so the exception had not reached this entry.
 
 ## shi_Yumiaoya19 read, 2026-09-24, 10:32 UTC: SETTLED in 20.9 min, every shi_Yumiaoya18 check holding; 小药娘 and 药娘 shipped in Han, the third rendering of the term in three runs (open question for the owner)
