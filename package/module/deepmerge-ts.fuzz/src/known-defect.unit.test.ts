@@ -93,6 +93,27 @@ await describe({
       },
     },),
     it({
+      name: 'deepmergeInto replaces instead of merging sources at a target key holding undefined',
+      // Excluded region: deepmergeInto targets use undefinedLeaves: false (src/merge-model.property.unit.test.ts).
+      // Cause: mergeRecordsInto seeds an existing key from the target's own value (undefined) in
+      // src/defaults/into.ts, and mergeUnknownsInto types the merge by that value, so it falls to mergeOthers.
+      fn: () => {
+        expect(target.deepmerge({ a: undefined, }, { a: { x: 1, }, }, { a: { y: 2, }, },),).toEqual({ a: { x: 1, y: 2, }, },);
+        /**
+         Target whose key exists but holds `undefined`.
+         */
+        const intoTarget: Record<string, unknown> = { a: undefined, };
+        target.deepmergeInto(intoTarget, { a: { x: 1, }, }, { a: { y: 2, }, },);
+        expect(intoTarget,).toEqual({ a: { y: 2, }, },);
+        /**
+         Same target for the FastUnsafe variant, which shares the seeding.
+         */
+        const fastTarget: Record<string, unknown> = { a: undefined, };
+        target.deepmergeIntoFastUnsafe(fastTarget, { a: [0,], }, { a: [1,], },);
+        expect(fastTarget,).toEqual({ a: [1,], },);
+      },
+    },),
+    it({
       name: 'array holes are dropped instead of concatenated (upstream intent question)',
       // Excluded region: generators build dense arrays only (src/arbitraries.ts).
       // Cause: mergeArrays uses Array.prototype.flat in src/defaults/general.ts, which skips holes.

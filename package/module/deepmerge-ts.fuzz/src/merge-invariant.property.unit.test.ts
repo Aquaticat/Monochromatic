@@ -137,7 +137,7 @@ await describe({
       fn: () => {
         assert(
           property(
-            treeArbitraries({ exotic: false, objectLeaves: false, },).record,
+            treeArbitraries({ exotic: false, objectLeaves: false, undefinedLeaves: false, },).record,
             array(exoticTrees.record, { minLength: 1, maxLength: 3, },),
             function sourcesUnchanged(generated, sources,) {
               /**

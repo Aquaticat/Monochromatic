@@ -97,17 +97,21 @@ const mapKeyArbitrary: Arbitrary<unknown> = constantFrom<unknown>('a', 'b', 1, 2
 
  @param objectLeaves - Whether dates and class instances join the leaves; off
    only where a known defect (`src/known-defect.unit.test.ts`) makes them diverge.
+ @param undefinedLeaves - Whether `undefined` joins the leaves; off only for
+   `deepmergeInto` targets, for the same reason.
 
  @returns Generator of every non-container value the merge must treat as a leaf.
 
  @example
  ```ts
- const leaves = leafArbitrary({ objectLeaves: true, });
+ const leaves = leafArbitrary({ objectLeaves: true, undefinedLeaves: true, });
  ```
  */
-export function leafArbitrary({ objectLeaves, }: { readonly objectLeaves: boolean; },): Arbitrary<unknown> {
+export function leafArbitrary(
+  { objectLeaves, undefinedLeaves, }: { readonly objectLeaves: boolean; readonly undefinedLeaves: boolean; },
+): Arbitrary<unknown> {
   return oneof(
-    constant(undefined,),
+    ...(undefinedLeaves ? [constant(undefined,),] : []),
     constant(null,),
     boolean(),
     integer({ min: -3, max: 3, },),
@@ -203,6 +207,10 @@ export type TreeOptions = {
    Whether records may use the `__proto__` key.
    */
   readonly protoKey?: boolean;
+  /**
+   Whether `undefined` appears as a leaf.
+   */
+  readonly undefinedLeaves?: boolean;
 };
 
 /**
@@ -219,6 +227,7 @@ export type TreeArbitraries = {
  @param exotic - See {@link TreeOptions}.
  @param objectLeaves - See {@link TreeOptions}.
  @param protoKey - See {@link TreeOptions}.
+ @param undefinedLeaves - See {@link TreeOptions}.
 
  @returns Tree generator plus a record-only generator over the same scope.
 
@@ -227,7 +236,7 @@ export type TreeArbitraries = {
  const { tree, record } = treeArbitraries({ exotic: true, });
  ```
  */
-export function treeArbitraries({ exotic, objectLeaves = true, protoKey = true, }: TreeOptions,): TreeArbitraries {
+export function treeArbitraries({ exotic, objectLeaves = true, protoKey = true, undefinedLeaves = true, }: TreeOptions,): TreeArbitraries {
   /**
    Entry style generator; plain data only when `exotic` is off.
    */
@@ -246,7 +255,7 @@ export function treeArbitraries({ exotic, objectLeaves = true, protoKey = true, 
    Mutually recursive generators; `tree` bounds the depth.
    */
   const scope = letrec<{ tree: unknown; container: unknown; record: object; }>((tie,) => ({
-    tree: oneof({ maxDepth: TREE_MAX_DEPTH, depthIdentifier: 'tree', }, leafArbitrary({ objectLeaves, },), tie('container',),),
+    tree: oneof({ maxDepth: TREE_MAX_DEPTH, depthIdentifier: 'tree', }, leafArbitrary({ objectLeaves, undefinedLeaves, },), tie('container',),),
     container: oneof(
       { depthIdentifier: 'tree', },
       tie('record',),
@@ -277,6 +286,7 @@ export function treeArbitraries({ exotic, objectLeaves = true, protoKey = true, 
  @param exotic - Forwarded to {@link treeArbitraries}.
  @param objectLeaves - Forwarded to {@link treeArbitraries}.
  @param protoKey - Forwarded to {@link treeArbitraries}.
+ @param undefinedLeaves - Forwarded to {@link treeArbitraries}.
 
  @returns Generator of one to four merge arguments.
 
@@ -285,11 +295,11 @@ export function treeArbitraries({ exotic, objectLeaves = true, protoKey = true, 
  const inputs = mergeArgumentsArbitrary({ exotic: true, });
  ```
  */
-export function mergeArgumentsArbitrary({ exotic, objectLeaves = true, protoKey = true, }: TreeOptions,): Arbitrary<readonly unknown[]> {
+export function mergeArgumentsArbitrary({ exotic, objectLeaves = true, protoKey = true, undefinedLeaves = true, }: TreeOptions,): Arbitrary<readonly unknown[]> {
   /**
    Generators shared by both argument shapes.
    */
-  const { record: recordTree, tree, } = treeArbitraries({ exotic, objectLeaves, protoKey, },);
+  const { record: recordTree, tree, } = treeArbitraries({ exotic, objectLeaves, protoKey, undefinedLeaves, },);
   return oneof(
     { weight: 3, arbitrary: array(recordTree, { minLength: 1, maxLength: CONTAINER_MAX_LENGTH, },), },
     { weight: 1, arbitrary: array(tree, { minLength: 1, maxLength: CONTAINER_MAX_LENGTH, },), },

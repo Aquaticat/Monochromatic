@@ -30,18 +30,25 @@ run = """
 const { spawn } = await import('node:child_process')
 const { once } = await import('node:events')
 const { mkdirSync } = await import('node:fs')
-const { join, resolve } = await import('node:path')
+const { dirname, join, resolve } = await import('node:path')
 const packageRoot = process.cwd()
 const repoRoot = resolve(packageRoot, '../../..')
 const failureDir = join(packageRoot, 'dist', 'fuzz-failure')
 mkdirSync(failureDir, { recursive: true })
 const roundRuns = (process.env.usage_round_runs ?? '10000').trim()
 const nodeMajor = process.versions.node.split('.')[0]
+// DEEPMERGE_FUZZ_TARGET (src/target.ts) may point outside the repo, e.g. at a
+// fork build; forward it as an absolute path and mount its directory read-only.
+const override = process.env.DEEPMERGE_FUZZ_TARGET
+const targetArgs = (override === undefined || override === '')
+  ? []
+  : ['--volume', `${dirname(resolve(override))}:${dirname(resolve(override))}:ro`, '--env', `DEEPMERGE_FUZZ_TARGET=${resolve(override)}`]
 const child = spawn('podman', [
   'run', '--memory=2g', '--cpus=2', '--rm', '--init',
   '--security-opt', 'label=disable',
   '--volume', `${repoRoot}:${repoRoot}:ro`,
   '--volume', `${failureDir}:${failureDir}:rw`,
+  ...targetArgs,
   '--workdir', packageRoot,
   '--env', `DEEPMERGE_FUZZ_ROUND_RUNS=${roundRuns}`,
   '--env', `DEEPMERGE_FUZZ_FAILURE_DIR=${failureDir}`,
