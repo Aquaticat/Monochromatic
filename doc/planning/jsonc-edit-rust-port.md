@@ -295,6 +295,20 @@ source-level transitive clearance remains open where required.
    a commented input and object with a newline before the comma fail analogously.
    Treat syntax parity here as a separate issue from stack safety;
    add shared fixtures and fix both implementations after foundation adoption.
+- A separate public-boundary depth probe used the existing TypeScript node bundle from a disposable,
+   2 GiB/2 CPU Node 26 container (`~/temp/agent/jsonc-ts-depth-envelope/probe.mjs`).
+   Clean arrays at depths 512 **and 513** both returned a `plainJson` node;
+   the same 512-depth array with a trailing comment returned a structured `array`,
+   while the commented 513-depth array threw `JsoncParseError: nesting too deep (at offset 513)`.
+   `src/parse-jsonc.ts:40-44,108-121` returns `JSON.parse` results before calling `parseValue`,
+   bypassing the depth guard documented in `src/parse.ts:22-31,64-70`.
+   The accepted parser-foundation decision says the fast path must not change public behavior
+   (`doc/decision/jsonc-edit-parser-foundation.md`, "Consequences").
+   Treat the clean 513-depth acceptance as a confirmed fast-path bypass,
+   not a promise of unbounded nesting;
+   align both maintained implementations to the structured path's explicit 512-container boundary
+   and add shared clean/commented boundary fixtures after foundation adoption.
+   This is distinct from the comma-grammar fast-path discrepancy and the Rust stack-lifecycle issue.
 - A bounded owner-sensitive Rust differential found one accepted-input difference on `{"a":1\n, //inline\n"b":2}`:
    the owned parser places `inline` on key `b`,
    but the Biome prototype places it on value `a`.
