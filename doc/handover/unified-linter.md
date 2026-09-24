@@ -182,6 +182,13 @@ open to veto (round 3):
    4 `# Example`,
    1 `# Preconditions`,
    all level 1.
+- Clippy's `# Safety`,
+   `# Errors`,
+   and `# Panics` section detection accepts a heading of any level:
+   it sets `in_heading` on `Start(Heading { .. })` and compares the heading text
+   (`rust-lang/rust-clippy` `master`,
+   `clippy_lints/src/doc/mod.rs:1199-1201` and `1341-1346`,
+   fetched 2026-09-23).
 - Rustdoc lines containing `![`:
    5;
    `#[doc = ...]` attributes:
