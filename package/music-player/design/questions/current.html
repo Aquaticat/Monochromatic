@@ -373,7 +373,8 @@ document.querySelectorAll('.preview-actions button').forEach(button => {
 document.querySelector('#fit').addEventListener('click', () => { fitting = true; showScale(); });
 document.querySelector('#native').addEventListener('click', () => { fitting = false; scale = 1; showScale(); });
 function stepZoom(delta) {
-  scale = Math.max(0.25, Math.min(3, (fitting ? fitScale() : scale) + delta));
+  const step = Math.min(0.25, fitScale() / 2);
+  scale = Math.max(0.05, Math.min(3, (fitting ? fitScale() : scale) + Math.sign(delta) * step));
   fitting = false;
   showScale();
 }
