@@ -259,8 +259,7 @@ The public [issue #7728](https://github.com/biomejs/biome/issues/7728) reports a
  A second fixture test calls the scratch `parse_for_editor` consumer wrapper,
  which also formats diagnostics before returning an error;
  the execution manifest was updated before that test was run.
- The bounded debug wrapper test returned an error and dropped its result without an abort.
- Its optimized counterpart remains pending.
+ Bounded debug and optimized release wrapper tests each returned an error and dropped the result without an abort.
  Neither direct nor wrapper result establishes a cause or resolution for the separate newer CLI/worker incident.
 
 ## Current source checks, not a recommendation
