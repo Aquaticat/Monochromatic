@@ -59,7 +59,7 @@ export component SearchPageStudy inherits Window {
 
     // Desktop window context remains stable while its page content changes.
     Rectangle {
-        width: parent.width; height: 34px;
+        x: 0px; y: 0px; width: parent.width; height: 34px;
         background: root.dark ? #121318 : #f4f3fa;
         Text {
             x: 16px; y: 8px; height: 20px;
@@ -73,7 +73,7 @@ export component SearchPageStudy inherits Window {
         x: 0px; y: 34px; width: parent.width; height: parent.height - 34px;
         background: root.dark ? #000000 : #ffffff;
         Rectangle {
-            width: parent.width; height: 64px;
+            x: 0px; y: 0px; width: parent.width; height: 64px;
             background: root.dark ? #000000 : #ffffff;
             Text {
                 x: 16px; y: 18px; width: parent.width - 248px; height: 30px;
@@ -171,7 +171,7 @@ export component SearchPageStudy inherits Window {
         background: root.dark ? #000000 : #ffffff;
         // Page identity is separate from the search input; no player controls remain.
         Rectangle {
-            width: parent.width; height: 64px;
+            x: 0px; y: 0px; width: parent.width; height: 64px;
             background: root.dark ? #000000 : #ffffff;
             back-button := Rectangle {
                 x: 16px; y: 8px; width: 48px; height: 48px;
@@ -285,12 +285,14 @@ export component SearchPageStudy inherits Window {
             x: (parent.width - min(720px, parent.width - 32px)) / 2;
             y: 215px; width: min(720px, parent.width - 32px); height: 150px;
             Text {
-                width: parent.width; text: "No results for “" + root.query + "”";
+                x: 0px; y: 0px; width: parent.width; height: 30px;
+                text: "No results for “" + root.query + "”";
                 font-size: 20px; font-weight: 600; horizontal-alignment: center;
                 color: root.dark ? #e4e5f0 : #30323b;
             }
             Text {
-                y: 40px; width: parent.width; text: "Try another name.";
+                x: 0px; y: 40px; width: parent.width; height: 24px;
+                text: "Try another name.";
                 font-size: 14px; horizontal-alignment: center;
                 color: root.dark ? #a9aab5 : #5d5f68;
             }
@@ -299,12 +301,14 @@ export component SearchPageStudy inherits Window {
             x: (parent.width - min(720px, parent.width - 32px)) / 2;
             y: 215px; width: min(720px, parent.width - 32px); height: 150px;
             Text {
-                width: parent.width; text: "Library unavailable";
+                x: 0px; y: 0px; width: parent.width; height: 30px;
+                text: "Library unavailable";
                 font-size: 20px; font-weight: 600; horizontal-alignment: center;
                 color: root.dark ? #e4e5f0 : #30323b;
             }
             Text {
-                y: 40px; width: parent.width; text: "Search will return when the library is available.";
+                x: 0px; y: 40px; width: parent.width; height: 24px;
+                text: "Search will return when the library is available.";
                 font-size: 14px; horizontal-alignment: center;
                 color: root.dark ? #a9aab5 : #5d5f68;
             }
