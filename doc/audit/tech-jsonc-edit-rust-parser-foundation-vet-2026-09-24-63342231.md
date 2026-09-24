@@ -547,8 +547,11 @@ A direct TypeScript bundle probe parsed a CRLF-separated object but returned a l
  The scratch scanner also stops only on `\n` at `~/temp/agent/jsonc-parser-probe-2026-09-24/src/scan.rs:143-151`.
  Microsoft's JSONC scanner at `~/temp/agent/node-jsonc-parser-2026-09-24/src/impl/scanner.ts:251-261,399-401`
  (checkout `dba4356`) terminates a line comment at either CR or LF.
- The Biome adapter's fixture has not yet run;
- treat the two measured failures as separate symptoms until its boundary and both scratch corrections are verified.
+ The Biome adapter's bounded debug fixture accepted both CRLF and CR-only,
+ returned a line-comment body `" x"` for each,
+ and retained that value after canonical emission and reparse.
+ Its optimized fixture and the owned scratch correction remain unverified;
+ treat the two prior failures as separate symptoms until each boundary is tested.
  TypeScript production behavior remains unchanged pending foundation adoption.
 
 ## Existing-parser contract exits
