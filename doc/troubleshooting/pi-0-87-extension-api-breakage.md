@@ -157,9 +157,9 @@ and every `package/pi-plugin` and `package/pi-shared` package now passes `lint:t
   goal scripted tool calls use Pi AI `JsonObject` arguments,
   and ask-user-question annotates an exported constant for `--isolatedDeclarations`.
 
-Still failing and unrelated to Pi:
-`package/webapp-productivity/done/src/lib/db-migrations.ts` imports `initPromise`,
-which `@monochromatic-dev/module-logger/ts` no longer exports.
+The remaining logger type-check failure was resolved under issue #254:
+`package/webapp-productivity/done/src/lib/db-migrations.ts` no longer imports or awaits
+`initPromise`, which the lazy default logger does not export.
 
 ## Open questions
 

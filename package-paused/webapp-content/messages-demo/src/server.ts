@@ -16,7 +16,6 @@
 
 import { buildCss as buildCSS, } from '@monochromatic-dev/build-tool-css/ts';
 import {
-  initPromise,
   logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
@@ -65,8 +64,6 @@ import {
   requireParam,
 } from './server/route-params.ts';
 import { staticHandler, } from './server/static.ts';
-
-await initPromise;
 
 /**
  * Tagged logger for the server boot.

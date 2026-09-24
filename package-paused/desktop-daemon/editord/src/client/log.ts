@@ -5,13 +5,10 @@
  */
 
 import {
-  initPromise,
   logger,
-} from '@monochromatic-dev/module-logger/logger';
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
-import type { Logger, } from '@monochromatic-dev/module-logger/types';
-
-await initPromise;
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 
 /**
  * Root tagged logger for all editord client subsystems.
