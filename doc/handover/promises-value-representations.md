@@ -36,9 +36,11 @@ The root devDependencies now consume `showify: 'catalog:'`, resolved to 0.2.8.
 Pnpm also sorted existing devDependency keys without changing their versions.
 The dependency change was committed separately.
 The formatter is now bundled into the lesson and learning exports.
-The first settlement-UX prototypes omitted the resolver-bundle and inner-Promise snapshot cards;
-every current matrix cell restores them with the audited showify bundle,
-and the lesson implementation must keep them.
+The first settlement-UX prototypes omitted the resolver-bundle and inner-Promise snapshot cards.
+The integrated A-neutral lesson retains the current bundle and inner Promise in visible cards,
+uses `window.lessonValues.captureValue` for the same audited JSON/showify representations,
+and groups additional current/earlier captures in disclosures that expand for print.
+The generated lesson, actual PDF, Firefox ESR, and downloaded artifacts were verified.
 [The settlement-UX handover](promises-settlement-ux.md) records that redesign.
 
 ## Existing omissions

@@ -1,16 +1,12 @@
 # Settlement experiment UX redesign
 
-Status: the user delegated the best remedy after the logic audit.
-The Promise-ticket prototype keeps the manual `Promise.withResolvers()` experiment and
-reply-shaped values, with Yum-Bot only as visual inspiration.
-Chromium, native-call, Firefox ESR, and PDF checks passed on the prototype.
-The agent then selected A-neutral for integration: full-width reference code and one neutral
-observer display avoid a competing highlighted state map and misleading game-grade colors.
-The A-neutral section is now generated into the local lesson; full-suite verification is
-running with its required offline fixture and isolated native-print browser.
-The older local lesson is preserved separately. Do not claim the final lesson is verified
-until the combined suite and final Firefox/export/print checks finish.
-No skill design has been confirmed; this redesign feeds the Promise toy, not the teaching skill.
+Status: the delegated A-neutral Promise-ticket design is integrated into the local lesson.
+The manual `Promise.withResolvers()` experiment retains `"Hello Ada"` and `Error("No reply")`;
+Yum-Bot supplies artwork only, not game rules.
+The final `mise run test:all` (now including ticket-boundary tests) passed with its owned
+offline and native-print fixtures, followed by Firefox ESR and real-download checks.
+The lesson is open in a separate headed Helium tab; older tabs were preserved.
+The before-ticket artifact is retained. No teaching-skill design has been confirmed or implemented.
 
 ## Latest screenshot-driven clarity repair
 
@@ -328,7 +324,7 @@ Its red game-faithfulness result remains historical evidence of why the mapping 
 At this prototype stage the lesson was still unchanged; the later A-neutral integration
 and its separate verification are recorded in the next section.
 
-## Integrated A-neutral lesson (verification in progress)
+## Integrated A-neutral lesson (verified)
 
 `promise-sequence.html` now delegates its settlement section to
 `/home/user/temp/agent/promises-revision/settlement-section.html`.
@@ -344,10 +340,12 @@ The value disclosures preserve mixed open/closed states through two PDF cycles a
 Preserved before-state artifact:
 `doc/planning/promises-teaching-before-ticket.local.html`, SHA-256
 `5401b0df5d9b1eee7f987086e1cef6d60d4e109b63c7bd61d818ed7ef8a05002`.
-Current provisional artifact: `doc/planning/promises-teaching.local.html`, 693,749 bytes,
+Final local artifact: `doc/planning/promises-teaching.local.html`, 693,749 bytes,
 SHA-256 `e90aa8feecad370e5a77c9d2b37a4a9c65fee1e6eca98885c82208fa2484bd28`.
-The most recent complete PDF inventory was 126 Letter pages, 2,475,134 bytes.
-Re-measure after the final build; before-state facts are not after-state evidence.
+The final generated PDF has 126 Letter pages and measured 2,475,133 bytes.
+The independent print inventory contained 791 teaching entries and 66 appendix entries;
+every item passed actual PDF text comparison. The before-ticket artifact's different hash
+is preserved as before-state evidence, not a substitute for these final measurements.
 
 The new generated-lesson guard failed against the preserved old interface and passed against
 this ticket build. `mise run test:ticket-lesson` exercised Create, Reject, real later Resolve,
@@ -360,9 +358,23 @@ Suppressing later native calls left a plausible log but failed the guard.
 `mise run test:value-views`, foundation checks, PDF content inventory,
 `mise run test:exports`, `mise run test:reference-sending`, neutral-surface checks,
 and Firefox ESR value/ownership checks passed in targeted sessions.
-`mise run test:native-print` passed after its off-screen Helium fixture was started;
-the first combined run failed only because that fixture's `DevToolsActivePort` was absent.
-The rerun with both owned fixtures running is `proc_de51` and had not finished at this edit.
+`mise run test:native-print` passed with the off-screen Helium fixture and a real Cancel action;
+its first combined invocation lacked the fixture's `DevToolsActivePort`, an environment setup
+failure rather than a lesson regression.
+The combined suite passed as `proc_de51`; after adding generated ticket-boundary tasks to
+`test:all`, the final rerun passed as `proc_502f`.
+That final run included the native resolver-call ledger with a failing suppressed-call mutant,
+finite-control exhaustion, value views, source guidance, all foundation and advanced chapters,
+shop/reference sending, native print, PDF content, and neutral surfaces.
+The separate final Firefox ESR 140.16.0 runs passed value/opaque-frame and reviewed policy checks.
+The final `mise run test:exports` reopened actual downloads behind a rejecting proxy whose
+network-denial positive control passed. `mise run review:ticket-lesson-layout` captured the
+lesson at 944 and 390 CSS px and made a same-scale side-by-side artifact against the preserved
+crowded factory scene; DOM geometry and OCR checked the visible status, guide, and history.
+The headed lesson presenter first timed out after opening its tab; the tab was inspected,
+then the idempotent presenter reused it without reloading or creating a duplicate.
+`ticket-lesson-handoff.json` records five tabs before and after reuse, A-neutral mode,
+initial state, system dark mode, and zero browser errors.
 
 A PDF extraction check displaced literal `✓` characters in printed reference JavaScript.
 The authored UI source now spells those characters as `\u2713` in JavaScript string literals,
@@ -373,8 +385,8 @@ records the evidence without attributing the positioning cause to one upstream t
 ## Superseded designs (do not revive without the user asking)
 
 - Embedding screenshots as base64 images in the choice form; replaced by live `srcdoc` iframes.
-- The inverted mapping where the bot was the Promise ("drops a new bot", buckets holding outcome
-  puddings); replaced by pudding-as-Promise, which is now also under audit.
+- The inverted mapping where the bot was the Promise ("drops a new bot") and the later
+  pudding-as-Promise mapping. Both are rejected as causal models; historical copies remain.
 - A plain slot-grid rack outside the scene; replaced by drawn controls inside the scene.
 - Reusable buttons with a dashed "spent" style; replaced by numbered one-shot buttons per user rule.
 - Global call-slot numbering with a "skipped" state; replaced by per-row numbering.
@@ -385,16 +397,16 @@ records the evidence without attributing the positioning cause to one upstream t
   `5401b0df5d9b1eee7f987086e1cef6d60d4e109b63c7bd61d818ed7ef8a05002`;
   that exact file is preserved as `promises-teaching-before-ticket.local.html`.
   The older PDF was 121 Letter pages; the pre-value-view copy keeps hash `319ffcb2…`.
-  Current provisional artifact and PDF measurements are in the integration section.
+  The verified current artifact and PDF measurements are in the integration section.
 - Authoring workspace: `/home/user/temp/agent/promises-revision`.
-- Variant prototypes: `ux-variants/ux-variant-a.html` (reference rows),
-  `ux-variant-b.html` (kept card grid as live map), `ux-variants/ux-variant-c.html`
-  (definition list), sharing `ux-variants/ux-variant-base.css` and
-  `ux-variants/ux-variant-experiment.js`.
-- Choice form: `ux-variants/settlement-ux-choice.local.html`, a matrix of layout rows
-  (A, B, C) by cue-color columns (state-colored, neutral): six live `srcdoc` cells,
-  one radio per cell (`name="cell"`, values like `a-state`), row and column pros and cons,
-  a full ranking, and a free-text textarea. Rebuild with `node build-ux-choice-form.mjs`.
+- Prototype variants: `ux-variants/ux-variant-a.html` (reference rows),
+  `ux-variant-b.html` (kept card grid), `ux-variant-c.html` (definition list),
+  sharing `ux-variant-base.css` and `ux-variant-ticket-experiment.js`.
+  Rejected edible-pudding variants and a focused review are preserved as `*.before-ticket.local.*`.
+- The current prototype matrix is `ux-variants/promise-ticket-choice.local.html` with six
+  live `srcdoc` cells. Its A-neutral layout was selected under the user's delegation.
+  The old `settlement-ux-choice.local.html` remains preserved for historical comparison.
+  The actual lesson section is authored in `settlement-section.html`, injected by `build.mjs`.
 - Verifier and presenter: `verify-ux-choice-form.mjs`, `shoot-ux-variants.mjs`,
   `present-ux-choice.mjs`; defect probe `probe-settlement-ux.mjs`;
   debug helpers `debug-matrix-cell.mjs`, `debug-showify-direct.mjs`.
@@ -555,36 +567,27 @@ for the lesson file itself; this UX work has not modified it yet.
 
 ## Settled first-settlement-wins interaction
 
-The user chose **yes**: a fresh numbered hand or laser button counts as doing something
-when it calls a resolver after the Promise has settled and visibly logs
-"attempt ignored; original outcome unchanged".
-The Promise itself remains fixed. The clicked one-shot button becomes used.
-Buttons before a pudding exists remain disabled; available unspent buttons may make later calls
-against a settled pudding. The log names both the pudding and the button's per-row number.
-A same-task second call is logged as ignored before the observer's microtask;
-a later click preserves the face and marking as well.
+The user chose **yes**: a fresh numbered resolver control counts as doing something
+when it calls the same bundle after the Promise's first outcome is fixed and visibly logs
+"attempt ignored; first outcome unchanged".
+The Promise ticket remains the same object. The clicked one-shot control becomes used.
+Controls before a Promise exists remain disabled; unused controls can make later calls
+against a settled Promise. The log names the Promise and the control's per-row call number.
+A same-task second call is logged before the observer's microtask;
+a later click keeps the ticket and observed result unchanged as well.
 The staged two-call run and automatic second-call alternatives were not selected.
-This decision is not a selection of matrix layout or cue colors.
 
-## Open choices and remaining work
+## Remaining scope
 
-- The bounded-visual-inspiration direction is settled by the user's delegation.
-  Do not ask the user to reapprove the same mapping or reopen the logged-attempt decision.
-- Build and verify the Promise-ticket scene in the scratch prototypes.
-  Treat the old focused clarity review as rejected evidence, not the active design.
-- A-neutral is selected under the user's delegated design choice.
-  Do not reopen A/B/C or cue color without new user feedback.
-  Integrate this into the lesson; the prototype checks do not substitute for the lesson boundary.
-- A physical pudding-delivery ticket or Promise of game-turn success remains outside scope;
-  either requires a new operation/payload design request.
-  Do not add rhythm timing by default.
-- Free-text changes to the chosen cell.
-- Implementation afterwards (task 35 in the session task list): only after both mapping and
-  layout/cue decisions, apply the approved design to `promise-sequence.html` and lesson CSS.
-  Preserve the actual ignored resolver calls, disabled-with-reason one-shot controls,
-  value snapshots, print counterpart, and achromatic reading backgrounds;
-  then re-run the combined suite, exports, PDF inventory, and Firefox ESR pass,
-  and commit with scoped pathspecs.
+- The bounded-visual-inspiration mapping, logged ignored calls, and A-neutral presentation
+  are implemented and verified in the local lesson. Do not reopen these choices without
+  new user feedback. The rejected focused review remains as local historical evidence.
+- Physical pudding-delivery or game-turn-success Promises and rhythm timing remain outside scope;
+  they would require a new operation/payload design request.
+- The teaching-skill requirements proposal remains unconfirmed.
+  No final teaching skill has been written or authorized; see `doc/planning/teaching-skill.md`.
+- The generated lesson is an ignored local artifact, while only scoped tracked docs are committed.
+  The lesson and its preserved before-state are not silently pushed as package code.
 
 ## Constraints carried from earlier work
 

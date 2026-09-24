@@ -38,10 +38,11 @@ The user delegated the remedy: keep the manual reply-shaped Promise experiment a
 as visual inspiration only, without adding a second game or changing the example values.
 The shared scene now has a Promise-ticket prototype with a neutral decorative robot,
 a separate observer display, and earlier Promise records; its browser, Firefox ESR,
-and PDF text checks pass. The lesson itself is unchanged.
+and PDF text checks passed before integration.
 A-neutral was then selected for lesson integration under the user's delegated design choice;
 full-width code and neutral observed-outcome cues avoid the old grid and game-grade confusion.
-A-neutral is now generated into the local lesson; the final combined verification remains in progress;
+A-neutral is now generated into the local lesson; the final combined suite, Firefox ESR,
+actual downloads, native print, and independent PDF text inventory passed;
 [the settlement-UX handover](../handover/promises-settlement-ux.md) records the evidence,
 superseded models, current artifact, and next actions.
 Earlier critiques rejected a detached opening and forced chat turn-taking.
