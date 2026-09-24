@@ -357,6 +357,11 @@ description = "Type-check the MD3-based desktop command study"
 dir = "{{config_root}}"
 run = "slint-viewer --check candidates/command-md3-study.slint"
 
+[tasks."prototype:search:check"]
+description = "Type-check the nonfunctional desktop Search button to page study"
+dir = "{{config_root}}"
+run = "slint-viewer --check candidates/search-page-study.slint"
+
 [tasks.build]
 description = "Embed exact candidate renders into the self-contained questionnaire"
 shell = "node --input-type=module-typescript -e"
