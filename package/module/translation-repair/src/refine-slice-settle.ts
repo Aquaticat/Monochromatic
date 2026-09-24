@@ -210,18 +210,6 @@ export async function settleRefinedSlice(
     > 0;
 
   /**
-   Checkers for this slice's recheck and rewrite probe, on the bench as seated
-   at the stage (class one hundred thirteen): the proof stage re-seats under
-   a hold that began inside the lane (class one hundred nine) and this stage
-   must not keep the bench the chunk was seated with.
-   */
-  const stageCheckers = await checkerBenchAtStage({
-    models,
-    reseat,
-    l,
-  },);
-
-  /**
    What refinement decided for this slice.
    */
   const refined = await runRefineStage({
@@ -272,6 +260,20 @@ export async function settleRefinedSlice(
       refinedBy: [],
       refinersHeard: refined.heard,
     };
+
+  /**
+   Checkers for this slice's recheck and rewrite probe, on the bench as seated
+   now (class one hundred thirteen). Read here, after the rewrite shipped and
+   right before the checkers are asked, because the refiners and their judges
+   take seconds a hold can begin in; the proof stage re-seats the same way
+   (class one hundred nine), and this stage must not keep the bench the chunk
+   was seated with.
+   */
+  const stageCheckers = await checkerBenchAtStage({
+    models,
+    reseat,
+    l,
+  },);
 
   /**
    Whether every issue the checkers had confirmed is still confirmed in the
