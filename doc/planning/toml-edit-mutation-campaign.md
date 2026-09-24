@@ -495,6 +495,37 @@ The remaining runtime comment API and value-encoding files are now being scanned
 Do not edit runtime source until both complete.
 Do not claim a full-runtime verdict before those campaigns and survivor rechecks finish.
 
+## Shared value assembly refactor
+
+The value-encoding campaign surfaced repeated array and inline-table layout logic in `values.ts`.
+Before replacing it,
+ the consumed responsibilities are mapped:
+
+- `values.ts:encodeArray` still recursively encodes JS elements and carries equal-valued parse-time element nodes.
+  Its final inline-vs-multiline assembly can use the existing `emit-value.ts:assembleArrayParts`,
+  already consumed by parsed AST emission and synthetic value-node rendering.
+  `js-value-text.unit.test.ts` pins empty,
+  inline,
+  threshold-boundary,
+  multiline,
+  nested-indentation,
+  and raw-element spelling paths.
+  The duplicated final formatting branch is retired;
+  recursive coercion remains.
+- `values.ts:encodeInlineTable` still builds per-entry encoded keys and recursive values.
+  Its final punctuation can use `emit-value.ts:assembleInlineTableParts`,
+  already consumed by parsed and synthetic table rendering.
+  `js-value-text.unit.test.ts` pins empty and populated table output.
+  The duplicated final formatting branch is retired;
+  entry coercion remains.
+- `values.ts:encodeNumber` has identical `String(value)` returns for safe and other finite numbers.
+  The numeric guard adds no behavior,
+  so it can be removed while the nonfinite branch stays.
+  The direct built-artifact tests pin finite and nonfinite outputs.
+
+This is a parity-preserving owner change in an unpublished package,
+ not evidence that formatting did not need tests.
+
 ## Remaining scope
 
 The `emit-document.ts` recheck retains equivalent or factory-state-unreachable mutants,
