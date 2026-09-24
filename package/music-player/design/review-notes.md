@@ -897,6 +897,54 @@ not a mandate to split Search into two independent halves.
 the rejected images as evidence,
  not as the current design.
 
+## 5t. A physical dent was confused with a dp pane spacer
+
+I first used M3's 24dp expanded-pane spacer as if it were the Pixel Fold's
+physical crease,
+ then banned every painted pixel and hit region from that
+strip.
+ The user clarified that only **informational material** needs to
+clear the dent;
+ decoration,
+ padding,
+ field/list surfaces and hit regions
+can span it.
+ The player's earlier fixed24dp empty gap and fixed414dp panes
+are not protected decisions.
+ The user's rule is
+`max(min_padding, crease_width)` for **information clearance**,
+ not a
+mandatory visual gutter between halves.
+
+The user initially estimated 10mm,
+ then corrected the visible dent to
+**about 7.5mm**.
+ With the inner display's approximately 141.08mm active
+width,
+ that is roughly **110 physical px** centered at x1038 on the
+2076px panel,
+ or x `[983,1093)`px.
+ At the current AVD390dpi it converts
+to about45dp,
+ but dp changes with Android display scaling while the dent
+does not.
+ Use physical millimeters or panel pixels for the invariant and
+convert only at runtime for Compose layout.
+ The emulator's zero-width hinge
+sensor area measures occlusion,
+ not the visible dent.
+ Do not borrow the
+unrelated12dp mode-control text-padding floor as `min_padding` here.
+
+I initially praised the user's YouTube thumbnail timestamp/title example as
+safe near-crease placement.
+ In the native screenshot those glyphs reach
+within the approximate 7.5mm band;
+ it is a **negative** precedent for
+readable material on the dent.
+ Inspect the center at native physical pixels
+rather than assuming that a familiar app has satisfied this product rule.
+
 ## Standing standards for this project
 
 1. **EVERY question form ends with a free-text field.
