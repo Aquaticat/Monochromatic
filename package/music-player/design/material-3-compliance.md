@@ -906,9 +906,13 @@ query and Clear,
 outer corners.
  On the player,
  a standard 48px icon-button target holding a 24px Search glyph opens this page;
-no player controls persist inside Search.
- This is visually distinct from a command
-palette or a modal overlay.
+no player controls persisted inside **that retired desktop-sized experiment**.
+This was superseded by D50/D51:
+ the unfolded deck must stay visible,
+and selected A lifts it above a visible keyboard while Search remains on the
+right.
+ The separate destination is still visually distinct from a command
+palette or modal overlay.
 
 The same local archive's Search guidelines say an icon button is appropriate when
 search is a secondary action.
@@ -994,9 +998,11 @@ ban,
 does not prescribe that disconnected pane allocation;
  the withdrawn study
 must not be presented as an MD3-endorsed adaptation.
- The one-header direction
-D48 remains,
- but a replacement visual design is open.
+ The one-header direction D48 remains;
+ D51 later selected the right-side Search
+pane with an IME-lifted left deck.
+ D52 removed the separate positive-results
+query heading so results follow the integrated header directly.
  A static capture also
 does not prove live search,
  accessibility focus or result execution.
