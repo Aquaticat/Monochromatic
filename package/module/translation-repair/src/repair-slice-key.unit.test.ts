@@ -132,8 +132,12 @@ await describe({
         // already key input. IT MOVED A THIRD TIME ON 2026-09-16, when the owner
         // removed deepseek-v4-pro-0813 and this fixture's refiner became
         // deepseek-v4.1-flash, again an id already in key input.
+        //
+        // VERSION 31 ON 2026-09-24 moved it the ordinary way: the version is
+        // key input and the record grew `filedBy` on every adjudicated issue,
+        // so the derivation moved and the version moved with it.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('a161c35e70061c7ee0ac402d5f47166f0becc720a7610b8a31219c0f900f829f',);
+          .toBe('e9df510bd4696df6d836b6e7f01aa272d250eac73262371441d6686d8f053461',);
       },
     },),
     it({
