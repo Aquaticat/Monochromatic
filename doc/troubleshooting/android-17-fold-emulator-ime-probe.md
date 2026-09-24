@@ -1,0 +1,175 @@
+# Android 17 Fold emulator Gboard focus without visible keys blocks Search keyboard capture
+
+## Symptom
+
+On the Pixel 9 Pro Fold emulator 37.1.11.0, Android 17 SDK 37,
+Gboard `versionCode=175753756`, focusing a Compose Search query can report an active
+IME while the screenshot contains no on-screen keys.
+A later Google Messages Search probe also showed no keys.
+Earlier in this design session, Messages did show a split keyboard,
+so this is not a demonstrated permanent emulator capability limit.
+The focused query and an `input_method` visibility report alone cannot prove
+that the playback deck remains visible during software-keyboard use.
+
+This is distinct from a separate, confirmed app-layout finding:
+under a visible system-managed keyboard, a bottom-anchored Search prototype
+covered the lower portion of its playback deck at 200% text.
+Do not attribute that layout failure to Gboard.
+
+## Root cause and limits of the diagnosis
+
+The reason Gboard did not draw its keys in these later probes is **unresolved**.
+Gboard's implementation is not available in the local Android SDK sources;
+we cannot identify which Gboard decision or system state produced the discrepancy.
+Changing `show_ime_with_hard_keyboard`, restarting Gboard, recreating Search,
+and reproducing in Messages did not establish a cause.
+
+Android's public framework does establish why a replacement IME is a valid
+occlusion probe.
+The local SDK source,
+`/home/user/Android/Sdk/sources/android-37.0/android/inputmethodservice/InputMethodService.java:2389-2400`,
+checks whether an IME should show its input view:
+
+```java
+if (mSettingsObserver.shouldShowImeWithHardKeyboard()) {
+    return true;
+}
+Configuration config = getResources().getConfiguration();
+return config.keyboard == Configuration.KEYBOARD_NOKEYS
+        || config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES;
+```
+
+This is the framework's *default* decision, not a source trace of Gboard.
+At `InputMethodService.java:2347-2357`, the framework shows or hides the
+input frame according to the IME's decision and creates its view:
+
+```java
+boolean isShown = mShowInputRequested && onEvaluateInputViewShown();
+mInputFrame.setVisibility(isShown ? View.VISIBLE : View.GONE);
+if (mInputView == null) {
+    View v = onCreateInputView();
+    if (v != null) {
+        setInputView(v);
+    }
+}
+```
+
+The view supplied by the debug IME needs its own measured minimum height.
+`InputMethodService.java:2521-2524` supplies a fresh wrap-content parent layout:
+
+```java
+public void setInputView(View view) {
+    mInputFrame.removeAllViews();
+    mInputFrame.addView(view, new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
+    mInputView = view;
+}
+```
+
+Setting only the returned view's parent layout parameters did **not** give
+our first probe the requested 300dp height; the rendered window was shorter.
+Setting `minimumHeight` on the returned view made the dark input surface fill
+approximately 300dp on this 390dpi AVD.
+That correction is in throwaway prototype commit `60e01dfab`.
+
+## Verification
+
+- Check the installed emulator and Gboard versions:
+
+  ```sh
+  /home/user/Android/Sdk/emulator/emulator -version
+  adb -s emulator-5554 shell dumpsys package com.google.android.inputmethod.latin
+  ```
+
+- The debug-only implementation is on branch
+  `prototype/music-player-theme-compose` at
+  `package/music-player/android-app/app/src/debug/kotlin/dev/monochromatic/musicplayer/FoldProbeInputMethod.kt`.
+  Build and install with
+  `ANDROID_SERIAL=emulator-5554 mise run //package/music-player/android-app:prototype:install`
+  from that worktree.
+  `adb -s emulator-5554 shell ime enable dev.monochromatic.musicplayer/.FoldProbeInputMethod`
+  and `adb -s emulator-5554 shell ime set dev.monochromatic.musicplayer/.FoldProbeInputMethod`
+  select the probe after launching the activity.
+  Selecting the probe **before** `am force-stop dev.monochromatic.musicplayer`
+  may revert the selected input method to Gboard because this debug IME
+  shares the activity's package.
+- With the emulator unfolded at font scale `2.0`, launch
+  `dev.monochromatic.musicplayer/.DesignCandidateActivity` with
+  `--es candidate search-deck-inner-right-empty-light`, focus the query,
+  tap the probe's `Type cam` key, then capture the inner HWC display 0.
+  The query becomes `cam`; the result heading, result lines, all playback
+  mode labels, transport controls, and the system-managed input pane are
+  visible together.
+  The mirrored candidate,
+  `search-deck-inner-mirrored-empty-light`, also passes this visible-state
+  check with Search on the left and the deck on the right.
+- The previously bottom-anchored right candidate, captured with the same
+  initial probe before moving the deck, displayed its lower mode controls
+  behind the input window at 200% text.
+  Even the first, shorter probe was a positive control for occlusion;
+  it was not a valid measurement of a 300dp keyboard.
+
+The probe is a deliberately synthetic input method, **not Gboard**.
+Its measured overlap tests window occlusion and text input integration;
+it does not establish Gboard's exact height, split shape, or suggestions.
+
+## Verified workaround
+
+Use the debug-only `FoldProbeInputMethod`, which overrides
+`onEvaluateInputViewShown()` to return `true`, gives its view a measured
+300dp minimum height, and commits the sample query via
+`currentInputConnection.commitText("cam", 1)`.
+Capture after verifying the query has changed and the input view is rendered.
+The probe uses a generic dark slab and one sample key; it cannot validate
+Gboard-specific spacing or user-facing keyboard behavior.
+
+For design comparisons, anchor the unfolded deck above any bottom keyboard
+rather than treating a keyboard-closed capture as D50 evidence.
+Do not change the production app based solely on this probe.
+
+## What does not work
+
+- Query focus, a true IME visibility flag, or an XML node alone:
+  none proves that an actual keyboard surface occludes app content.
+- Toggling `show_ime_with_hard_keyboard` between `0` and `1`, restarting
+  Gboard, or trying Messages again: these probes did not restore keys
+  reliably in the observed later state.
+- Assigning `layoutParams` with a 300dp height to the debug IME's returned
+  view: the framework supplies wrap-content parent parameters;
+  the first probe appeared shorter than its label.
+- The old `capture-search-deck.mjs` screenshots: they were taken before
+  the deck-first revisions and have no visible keyboard.
+
+## Upstream filing decision
+
+The `.out-of-scope/` entries do not exempt this Android symptom.
+A `gh search issues` query for
+`Android emulator Gboard physical keyboard not showing soft keyboard`
+returned no matching GitHub issues, but GitHub is not the Gboard issue tracker.
+No upstream report is ready:
+
+1. **Upstream fault:** Unknown. The same Gboard build previously drew keys,
+   and current behavior has not been isolated from emulator state or app focus.
+2. **Fixability:** Unknown without the responsible path.
+3. **Supported use case:** Android documents custom IMEs and soft-keyboard use,
+   but that does not identify a Gboard regression.
+4. **Contribution policy:** Gboard is not an identified public source repository
+   with reviewed contribution or AI-assistance policy for this path.
+5. **Expected upstream response:** No comparable maintainer signal was established.
+6. **Tested upstream fix:** None. The custom IME is a consumer-side measurement
+   workaround, not a patch for Gboard.
+
+### Draft, do not file as-is
+
+~~~md
+Android 17 Fold emulator: query focus reports a visible IME but Gboard draws no keys
+
+On emulator 37.1.11.0, Pixel 9 Pro Fold, Android 17 SDK 37,
+Gboard versionCode 175753756, the music-player debug Search and later Messages
+Search probes showed no on-screen keys after focusing a text editor.
+An earlier Messages probe did show a split keyboard.
+The current reproducer lacks a proven sequence or root cause;
+no upstream attribution or fix is proposed.
+~~~
+
+The [Android IME guide](https://developer.android.com/develop/ui/views/touch-and-input/creating-input-method)
+explains the supported input-method extension point used for the probe.
