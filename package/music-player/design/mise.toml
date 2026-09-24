@@ -362,6 +362,58 @@ description = "Type-check the nonfunctional desktop Search button to page study"
 dir = "{{config_root}}"
 run = "slint-viewer --check candidates/search-page-study.slint"
 
+[tasks."prototype:search:render"]
+description = "Render the Search button and separate page in native Slint across schemes and desktop widths"
+dir = "{{config_root}}"
+depends = ["prototype:search:check"]
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { mkdirSync, writeFileSync } = await import('node:fs')
+const { join } = await import('node:path')
+const output = 'questions/render'
+const temp = 'target/search-page-study'
+mkdirSync(output, { recursive: true })
+mkdirSync(temp, { recursive: true })
+const modes = ['dark', 'light']
+const stages = [
+  { name: 'player', open: false, query: '', unavailable: false },
+  { name: 'open-empty', open: true, query: '', unavailable: false },
+  { name: 'open-results', open: true, query: 'cam', unavailable: false },
+  { name: 'open-none', open: true, query: 'zzq', unavailable: false },
+  { name: 'open-unavailable', open: true, query: '', unavailable: true },
+]
+const sizes = [
+  { name: 'compact', width: 480, height: 600, compact: true, stress: false, stageNames: stages.map(stage => stage.name) },
+  { name: 'wide', width: 1100, height: 640, compact: false, stress: false, stageNames: ['player', 'open-empty', 'open-results'] },
+  { name: 'stress', width: 360, height: 640, compact: true, stress: true, stageNames: stages.map(stage => stage.name) },
+]
+for (const size of sizes) {
+  for (const stage of stages.filter(entry => size.stageNames.includes(entry.name))) {
+    for (const mode of modes) {
+      const name = `search-page-${stage.name}-${mode}-${size.name}`
+      const dataPath = join(temp, `${name}.json`)
+      const imagePath = join(output, `${name}.png`)
+      writeFileSync(dataPath, JSON.stringify({
+        'search-open': stage.open,
+        query: stage.query,
+        'library-unavailable': stage.unavailable,
+        dark: mode === 'dark',
+        compact: size.compact,
+        stress: size.stress,
+      }))
+      execFileSync('slint-viewer', [
+        '--load-data', dataPath, '--screenshot', imagePath, 'candidates/search-page-study.slint',
+      ], { stdio: 'inherit', env: { ...process.env, SLINT_BACKEND: 'software' } })
+      const dimensions = execFileSync('magick', ['identify', '-format', '%wx%h %[opaque]', imagePath], { encoding: 'utf8' })
+      const expected = `${size.width}x${size.height} True`
+      if (dimensions !== expected) throw new Error(`${name}: expected ${expected}, got ${dimensions}`)
+      console.log(`${name}.png ${dimensions}`)
+    }
+  }
+}
+'''
+
 [tasks.build]
 description = "Embed exact candidate renders into the self-contained questionnaire"
 shell = "node --input-type=module-typescript -e"
