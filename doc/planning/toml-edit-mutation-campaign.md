@@ -515,10 +515,17 @@ The package build and unit suite,
  and bounded sidecar property suite passed after this refactor.
 `values.ts` covered-line count fell from 332 to 304 because duplicated array/table assembly was removed;
  the fuzz coverage gate requires an intentional baseline refreeze after mutation rechecks.
-The comment and value mutation rechecks are running on one source revision:
- `/var/home/user/temp/agent/toml-mutation-comment-api-recheck.json` (`proc_6797`)
- and `/var/home/user/temp/agent/toml-mutation-value-encoders-recheck.json` (`proc_65c8`).
-Do not edit runtime source until both complete.
+The comment API recheck completed with 31 killed,
+ 17 confirmed survivors,
+ 149 compile errors,
+ and no infrastructure errors.
+Its report is `/var/home/user/temp/agent/toml-mutation-comment-api-recheck.json`.
+The remaining comment findings are concentrated in synthetic-node `-1` offsets,
+ sentinel descriptions,
+ and array-table descent guards.
+The value encoding recheck is still running at
+ `/var/home/user/temp/agent/toml-mutation-value-encoders-recheck.json` (`proc_65c8`).
+Do not edit runtime source until it completes.
 Do not claim a full-runtime verdict before those campaigns and survivor rechecks finish.
 
 ## Shared value assembly refactor
