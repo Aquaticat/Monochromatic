@@ -137,6 +137,22 @@ export async function verifyFinalNewlineReconciliation({ env, }: Readonly<{
     expected: 'M  unrelated.txt\n',
     context: 'normalization-only command cleans selected index but preserves unrelated staging',
   },);
+  /** Explicit allow-empty must retain the user's request to create a commit. */
+  await writeFile(`${repository}/newline-only.txt`, 'same',);
+  await execute({ command: 'git', args: ['add', '--', 'newline-only.txt',], cwd: repository, env, },);
+  await execute({
+    command: 'git',
+    args: ['commit', '--quiet', '--allow-empty', '--message=explicit-empty', '--', 'newline-only.txt',],
+    cwd: repository,
+    env,
+  },);
+  if ((await execute({ command: '/usr/bin/git', args: ['rev-parse', 'HEAD',], cwd: repository, },)).stdout === originalHead)
+    throw new Error('Explicit allow-empty did not create a commit.',);
+  assertFixtureEqual({
+    actual: await readFile(`${repository}/newline-only.txt`, 'utf8',),
+    expected: 'same\n',
+    context: 'explicit allow-empty reconciles selected worktree',
+  },);
   /** Wrapper death after Git advances HEAD must replay selected-file completion. */
   await writeFile(`${repository}/missing.txt`, 'after interruption',);
   await execute({ command: '/usr/bin/git', args: ['add', '--', 'missing.txt',], cwd: repository, },);

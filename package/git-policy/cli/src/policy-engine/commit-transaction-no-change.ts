@@ -190,7 +190,10 @@ export async function completeNoChangeTransaction({
     cwd,
     expectedOid: head.oid,
   },);
-  await installAddedWorktreeFiles({
+  /**
+   Worktree copies completed or preserved after concurrent edits.
+   */
+  const completion = await installAddedWorktreeFiles({
     gitPath,
     cwd,
     repositoryRoot,
@@ -225,7 +228,9 @@ export async function completeNoChangeTransaction({
             .length,
           coreId: 'commit-normalization',
           code: 'no-change',
-          message: 'No commit created: normalization removed every selected change; matching worktree and index copies were reconciled.',
+          message: completion.conflicted.length === 0
+            ? 'No commit created: normalization removed every selected change; matching worktree and index copies were reconciled.'
+            : `No commit created: normalization removed every selected change; index copies were reconciled, but worktree copies changed and were kept: ${JSON.stringify(completion.conflicted,)}. Compare them with HEAD before retrying.`,
         },),
       ],
       exitCode: 1,
