@@ -232,7 +232,8 @@ export async function judgeSlateWithRetry(
   const finalists = (first.kind === 'raised')
     ? first.error
       .finalists
-    : undefined;
+    : first.result
+      .runoffFinalists;
 
   /**
    Findings the first round gathered, which the second must not lose, with
@@ -325,6 +326,32 @@ export async function judgeSlateWithRetry(
        What the panel returned.
        */
       const { result, } = again;
+
+      /**
+       Finalists a tie this round left, when fewer than it was offered and
+       the incumbent was kept (class one hundred six).
+       */
+      const kept = result.runoffFinalists;
+      if (isRetriedDecline({ reason: result.decision, },)
+        && (kept !== undefined)
+        && (kept.length < offeredCount)) {
+        l.info(
+          `translate stage: run-off tied again over ${String(offeredCount,)} finalists and narrowed to ${
+            String(kept.length,)
+          }; asking the same panel over them`,
+        );
+        cursor.findings = [
+          ...cursor.findings,
+          ...result.findings,
+          RETRY_FINDING,
+          runoffFinding({
+            finalists: kept.length,
+            offered: offeredCount,
+          },),
+        ];
+        cursor.offered = kept;
+        continue;
+      }
       return {
         ...result,
         ...(isRetriedDecline({ reason: result.decision, },)

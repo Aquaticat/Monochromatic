@@ -308,6 +308,12 @@ export type ConsolidationSettlement = {
  on the slate beside the proposals when the standing is neither endorsed nor
  eligible (`consolidate-lane-offer.ts`, class forty, 2026-09-17)
 
+ @param runoffOverStanding - whether a tied slate over an ELIGIBLE standing is
+ run off rather than left to its single round, which the driver sets when
+ every contest ballot called the archive flawed (`consolidate-archive-flawed.ts`,
+ class one hundred six, 2026-09-24); the standing still ships where the
+ run-off ends undecided
+
  @param signal - cancellation for the whole settlement
 
  @param perCallTimeoutMs - bound on any single exchange
@@ -340,6 +346,7 @@ export async function settleConsolidation(
     standingEligible = true,
     standingRefusal,
     laneTexts = [],
+    runoffOverStanding = false,
     signal,
     perCallTimeoutMs,
     l,
@@ -359,6 +366,7 @@ export async function settleConsolidation(
     readonly standingEligible?: boolean;
     readonly standingRefusal?: string;
     readonly laneTexts?: readonly LaneText[];
+    readonly runoffOverStanding?: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -505,6 +513,17 @@ export async function settleConsolidation(
   },);
   if (!standingEligible)
     sl.warn(`slice ${String(sliceIndex,)}: ${INELIGIBLE_STANDING_WITHHELD_FINDING}`,);
+  /**
+   Whether a tie is challenged: always over a withheld standing (class
+   fifty-five), and over an eligible one only where every contest ballot
+   called the archive flawed (class one hundred six).
+   */
+  const challenged = (!standingEligible) || runoffOverStanding;
+  if (standingEligible && runoffOverStanding) {
+    sl.info(
+      `slice ${String(sliceIndex,)}: every contest ballot called the archive flawed; a tied slate is run off rather than left to the standing (class one hundred six)`,
+    );
+  }
 
   if (laneTexts.length > 0) {
     /**
@@ -606,9 +625,9 @@ export async function settleConsolidation(
         l: sl,
       };
     try {
-      return standingEligible
-        ? await judgeTranslateSlate(judging,)
-        : await judgeSlateWithRetry({ judging, },);
+      return challenged
+        ? await judgeSlateWithRetry({ judging, },)
+        : await judgeTranslateSlate(judging,);
     }
     catch (error) {
       if ((standingEligible) || (!(error instanceof TranslateAbsenceError)))

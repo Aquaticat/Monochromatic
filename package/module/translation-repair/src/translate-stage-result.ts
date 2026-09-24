@@ -1,10 +1,14 @@
 import type {
+  Candidate,
   CandidateProducer,
   CandidateWeight,
   SelectionBallot,
   SelectionTally,
 } from './candidate-select-model.ts';
-import type { TranslateOrigin, } from './translate-candidates.ts';
+import type {
+  TranslateCandidateValue,
+  TranslateOrigin,
+} from './translate-candidates.ts';
 import type { TranslateSlateEntry, } from './translate-slate.ts';
 
 //region Translate stage result
@@ -118,6 +122,15 @@ export type TranslateStageResult = {
    Position the judges chose, or {@link NOT_ON_SLATE} when they chose nothing.
    */
   readonly selectedIndex: number;
+
+  /**
+   Candidates a tied round backed when fewer than the slate, so a challenge
+   round can be a run-off over them where the incumbent was kept (class one
+   hundred six, 2026-09-24). The same narrowing `TranslateAbsenceError`
+   carries where there is no incumbent to keep (class fifty-three); absent
+   where the round decided, rejected, or backed the whole slate.
+   */
+  readonly runoffFinalists?: readonly Candidate<TranslateCandidateValue>[];
 
   /**
    Position of the text that actually shipped, which differs from the

@@ -530,16 +530,17 @@ export async function judgeTranslateSlate(
   // agree have said nothing about the archive's wording, which is why keeping it
   // is right; where the archive has no wording, the same silence would ship the
   // empty string as though the judges had chosen it.
+  /**
+   Candidates a tie backed when some of the slate drew nothing, so the
+   challenge round can be a run-off over them (class fifty-three), on either
+   door (class one hundred six).
+   */
+  const narrowed = runoffFinalists({
+    candidates: rotated,
+    perCandidate: outcome.perCandidate,
+    disposition: outcome.disposition,
+  },);
   if (incumbentKind === 'absent') {
-    /**
-     Candidates a tie backed when some of the slate drew nothing, so the
-     challenge round can be a run-off over them (class fifty-three).
-     */
-    const narrowed = runoffFinalists({
-      candidates: rotated,
-      perCandidate: outcome.perCandidate,
-      disposition: outcome.disposition,
-    },);
     throw new TranslateAbsenceError({
       reason: declined,
       findings: declineFindings,
@@ -555,6 +556,8 @@ export async function judgeTranslateSlate(
     perCandidate: outcome.perCandidate,
     decision: declined,
     findings: declineFindings,
+    // Conditional spread keeps the field absent where the whole slate stands.
+    ...((narrowed.kind === 'narrowed') ? { runoffFinalists: narrowed.finalists, } : {}),
   };
 }
 

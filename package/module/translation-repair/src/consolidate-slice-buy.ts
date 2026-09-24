@@ -42,6 +42,11 @@ type ConsolidationBuyInput = {
    2026-09-17).
    */
   readonly laneTexts?: readonly LaneText[];
+  /**
+   Whether a tied slate over an eligible standing is run off (class one
+   hundred six, 2026-09-24).
+   */
+  readonly runoffOverStanding?: boolean;
   readonly signal: AbortSignal;
   readonly perCallTimeoutMs: number;
   readonly l: Logger;
@@ -124,6 +129,7 @@ async function buyConsolidationAttempt(
     standingRefusal,
     standingFindings = [],
     laneTexts = [],
+    runoffOverStanding = false,
     signal,
     perCallTimeoutMs,
     l,
@@ -154,6 +160,7 @@ async function buyConsolidationAttempt(
       standingEligible,
       ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
       laneTexts,
+      runoffOverStanding,
       signal,
       perCallTimeoutMs,
       l,
@@ -206,6 +213,7 @@ async function buyConsolidationAttempt(
     standingEligible,
     ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
     laneTexts,
+    runoffOverStanding,
     signal,
     perCallTimeoutMs,
     l,

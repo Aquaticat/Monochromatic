@@ -38,7 +38,6 @@ function ballotOf(
   { archive, }: { readonly archive?: 'publishable' | 'flawed'; },
 ): LaneContestBallot {
   return {
-    modelId: 'hf:zai-org/GLM-5.3-Flash',
     choice: 'repair',
     unsupported: [],
     unsupportedRaw: [],

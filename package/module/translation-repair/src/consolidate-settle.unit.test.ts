@@ -1148,17 +1148,52 @@ await describe({
          */
         const OTHER = 'The cat naps on the sill each afternoon.';
         /**
+         Fragments naming each proposal on a sheet, since the wrap step may
+         rewrap a proposal across lines and the whole text then never matches.
+         */
+        const FRESH_MARK = 'beside the window';
+        const OTHER_MARK = 'naps on the sill';
+        /**
          Wording the challenge round's task carries and the first round's does not.
          */
         const CHALLENGE_MARKER = 'A prior panel declined this exact slate';
         /**
-         Ballots: the first round splits one voice each way and a third declines,
-         the challenge round backs candidate 1 unanimously.
+         One-based number of the candidate block carrying a rendering on the
+         sheet a judge was shown, or zero when absent; read off the sheet
+         because a run-off round renumbers the finalists.
+         */
+        function numberedOn({ sent, wanted, }: { readonly sent: string; readonly wanted: string; },): number {
+          /**
+           Candidate heading marker.
+           */
+          const marker = 'CANDIDATE ';
+          for (let cursor = sent.indexOf(marker,); cursor >= 0;) {
+            /**
+             Start of the next candidate block, or the sheet's end.
+             */
+            const next = sent.indexOf(marker, cursor + marker.length,);
+            if (sent.slice(cursor, (next === (-1)) ? sent.length : next,)
+              .includes(wanted,))
+              return Number(sent.charAt(cursor + marker.length,),);
+            cursor = next;
+          }
+          return 0;
+        }
+        /**
+         Ballots: the first round splits one voice each way between the two
+         proposals and a third declines; the challenge round backs the fresh
+         proposal unanimously.
          */
         function tiedThenSettled(sent: string, call: number,): string {
           if (sent.includes(CHALLENGE_MARKER,))
-            return judgeBallot({ best: 1, },);
-          return judgeBallot({ best: [1, 2, 0,][call % 3] ?? 0, },);
+            return judgeBallot({ best: numberedOn({ sent, wanted: FRESH_MARK, },), },);
+          return judgeBallot({
+            best: [
+              numberedOn({ sent, wanted: FRESH_MARK, },),
+              numberedOn({ sent, wanted: OTHER_MARK, },),
+              0,
+            ][call % 3] ?? 0,
+          },);
         }
         const decided = await settleWith({
           voices: [
@@ -1180,10 +1215,17 @@ await describe({
         },),).toBe(true,);
 
         /**
-         Ballots that tie on every round: one voice each way, a third declining.
+         Ballots that tie on every round: one voice each way between the two
+         proposals, a third declining.
          */
-        function tiedThroughout(_sent: string, call: number,): string {
-          return judgeBallot({ best: [1, 2, 0,][call % 3] ?? 0, },);
+        function tiedThroughout(sent: string, call: number,): string {
+          return judgeBallot({
+            best: [
+              numberedOn({ sent, wanted: FRESH_MARK, },),
+              numberedOn({ sent, wanted: OTHER_MARK, },),
+              0,
+            ][call % 3] ?? 0,
+          },);
         }
         const undecided = await settleWith({
           voices: [
