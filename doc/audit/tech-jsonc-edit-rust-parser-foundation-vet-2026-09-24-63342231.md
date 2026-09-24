@@ -598,6 +598,24 @@ The separate scratch differential consumer now imports the Biome-to-value adapte
  Full conformance,
  platform and upstream validation remain open.
 
+### Bounded parse-performance preparation
+
+The scratch differential consumer now has `src/bin/bench.rs` and a `mise run bench:isolated` task,
+ with the same inspected third-party command tree and a separate invocation recorded **before execution** in
+ `~/temp/agent/jsonc-differential-execution-manifest.md`.
+ Its fixed JSONC source has comments,
+ nested records,
+ an escaped unpaired surrogate and raw exact-number spellings.
+ The binary compares the candidate editor nodes for equality before timing,
+ warms both paths,
+ measures repeated unchanged-build samples on the owned path,
+ then Biome projection,
+ then the owned path again to show timing drift.
+ This measures complete parse-to-editor-value paths,
+ not Biome syntax parsing alone.
+ No timing band or winner is yet claimed;
+ overlapping sample bands cannot justify an advantage.
+
 ## Existing-parser contract exits
 
 These are outcomes for published implementations **as-is**,
