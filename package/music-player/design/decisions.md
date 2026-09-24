@@ -637,31 +637,48 @@ See device-metrics.md for real dimensions.
 
 ### E2. Keep information off the fold connector (clarified 2026-09-23)
 The user supplied a **visible crease width of about 10mm for this design**.
-At the inner panel's approximately 141.08mm active width,
- this spans roughly
-147 physical px or 60dp around the center x 1038 on the 390dpi AVD:
-about x `[964,1112)`px,
- or `[396,456)`dp.
- These are approximate bounds
-because the 8-inch diagonal and 10mm dent are approximate inputs.
+At the panel's approximately 141.08mm active width,
+ this is about **147
+physical px** of the 2076px inner display,
+ centered at x 1038:
+ approximately
+x `[964,1112)`px.
+ These are approximate physical bounds because the
+published 8-inch diagonal and the user's dent width are approximate.
 
-The player's pane gap is **`max(min_padding, crease_width)`**.
- Thus the
-10mm crease sets an approximately 60dp floor unless the applicable minimum
-padding is even larger;
- symmetric panes would each be about 396dp at a
-60dp gap.
- The old fixed 24dp gap and 414dp panes are withdrawn.
- D34's
-white light spacer and D41's black dark structure remain color treatments,
-not width requirements.
- The AVD's zero-width emulated hinge area describes
-an occlusion model,
- **not** the user's 10mm visible dent;
- it must not reduce
-the gap to `min_padding` by itself.
- This player geometry does not require
-other pages to become two panes.
+Where information is arranged on opposing sides of the fold,
+ its clearance
+is **`max(min_padding, crease_width)`** after both terms are expressed in the
+same physical coordinate system.
+ This is **not** a required empty surface
+gap between two panes.
+ Text,
+ labels and other informative marks stay out;
+backgrounds,
+ borders,
+ padding,
+ field/row containers and hit regions may
+span the center.
+ The former fixed 24dp player spacer and fixed 414dp
+pane geometry do not satisfy this rule.
+ D34 white and D41 black remain
+accepted player color treatments where those surfaces are used,
+ not a
+mandated 24dp blank stripe.
+
+Do **not** store `crease_width` as a fixed dp value:
+ dp varies with Android
+display scaling while the physical dent does not.
+ The current AVD density
+of 390dpi would convert about 147px to about 60dp,
+ but that is only a
+runtime conversion for this setting,
+ not the design constant.
+ The AVD's
+zero-width hinge sensor area describes emulated occlusion,
+ not the user's
+visible 10mm dent.
+ No other page is required to become two panes.
 
 Here "content" means **information the user must perceive**:
  keep readable
@@ -680,7 +697,10 @@ the player's spacer,
  force every surface to its black/white colors,
  or
 strand a Search query and results in different halves to clear the crease.
-Judge information placement in native panel captures at design scale.
+Judge information placement against the physical crease band in native
+panel-pixel captures,
+ then convert only the current layout's coordinates to
+dp for Compose.
  I
 initially read the user's YouTube timestamp/title observation as praise;
 that was wrong.
