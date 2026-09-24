@@ -195,7 +195,7 @@ private fun SearchLayoutDocked(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, light: Boolean, pageColor: Color,
     halfClearance: androidx.compose.ui.unit.Dp) {
     Box(modifier = Modifier.fillMaxSize().background(pageColor)) {
-        SearchPlayerPreview(isCover = false, light = light, onSearch = {})
+        SearchPlayerPreview(isCover = false, light = light, onSearch = null)
         Row(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.weight(1f).fillMaxHeight().background(pageColor)) {
                 Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))

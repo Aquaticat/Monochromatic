@@ -930,7 +930,7 @@ private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePal
 
 /** Reuses the accepted Fold player context while exposing a Search trigger to the page study. */
 @Composable
-internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: () -> Unit) {
+internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: (() -> Unit)?) {
     val palette = paletteFor(
         candidate = if (isCover) {
             if (light) "cover-picker-p4-light" else "cover-picker-p4"
