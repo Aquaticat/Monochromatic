@@ -1,0 +1,37 @@
+import { execFileSync } from 'node:child_process';
+import { mkdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+
+// The throwaway branch holds raw Fold captures; only scrubbed design evidence enters main.
+const output = process.env.MUSIC_PLAYER_REVIEW_OUTPUT;
+if (!output) throw new Error('Set MUSIC_PLAYER_REVIEW_OUTPUT to the target design/questions/render directory.');
+const prototype = resolve('questions/render');
+const destination = resolve(output);
+mkdirSync(destination, { recursive: true });
+const captures = [
+  ...['right', 'right-lift', 'mirrored'].flatMap((candidate) =>
+    ['light', 'dark'].flatMap((mode) => [
+      { source: `search-choice-inner-${candidate}-empty-${mode}-s100.png`, panel: 'inner', mode, scale: '100' },
+      { source: `search-choice-inner-${candidate}-typing-${mode}-s200.png`, panel: 'inner', mode, scale: '200' },
+    ])),
+  ...['light', 'dark'].flatMap((mode) => ['100', '200'].map((scale) => ({
+    source: `search-deck-cover-left-results-${mode}-s${scale}.png`, panel: 'cover', mode, scale,
+  }))),
+];
+for (const capture of captures) {
+  const inner = capture.panel === 'inner';
+  const upperBand = inner ? 135 : 151;
+  const maskRight = inner ? 570 : 350;
+  const ink = capture.mode === 'dark' ? '#ffffff' : '#171820';
+  const surface = capture.mode === 'dark' ? '#000000' : '#ffffff';
+  const fontSize = capture.scale === '200' ? 57 : 37;
+  const baseline = capture.scale === '200' ? 93 : 81;
+  const start = inner ? 149 : 61;
+  const file = join(destination, `search-review-${capture.source}`);
+  execFileSync('magick', [join(prototype, capture.source),
+    '-fill', surface, '-draw', `rectangle 0,0 ${maskRight},${upperBand}`,
+    '-font', 'DejaVu-Sans', '-pointsize', String(fontSize),
+    '-fill', ink, '-annotate', `+${start}+${baseline}`, '9:41',
+    '-strip', file], { stdio: 'inherit' });
+  console.log(file);
+}

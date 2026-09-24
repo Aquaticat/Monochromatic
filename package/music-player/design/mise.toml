@@ -428,3 +428,8 @@ run = "{{vars.validate_question}}"
 description = "Exercise the design questionnaire's static completion contract"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.validate_question}}"
+
+[tasks."prototype:sanitize:search"]
+description = "Mask notification status content in native Fold Search review images"
+dir = "{{config_root}}"
+run = "node sanitize-search-review.mjs"
