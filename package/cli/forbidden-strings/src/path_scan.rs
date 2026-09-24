@@ -118,6 +118,15 @@ fn matching_rules(component: &str, loaded: &LoadedRules) -> Result<Vec<String>, 
 pub(crate) fn scan_path(path: &str, loaded: &LoadedRules) -> PathScan {
     // Git paths use `/`; native external paths use the platform separator.
     let normalized = if cfg!(windows) { path.replace('\\', "/") } else { path.to_string() };
+    // `C:filename` is drive-relative: the drive is a prefix, while the
+    // following bytes are still a real filename that must be matched.
+    let normalized = if cfg!(windows) && normalized.len() > 2
+        && normalized.as_bytes()[0].is_ascii_alphabetic()
+        && normalized.as_bytes()[1] == b':' && normalized.as_bytes()[2] != b'/' {
+        format!("{}/{}", &normalized[..2], &normalized[2..])
+    } else {
+        normalized
+    };
     let components: Vec<&str> = normalized.split('/').collect();
     // A native Windows drive or UNC prefix names a volume, not directories.
     let mut prefix_parts = if cfg!(windows) {

@@ -136,4 +136,6 @@ fn windows_volume_prefix_is_not_name_segment() {
     assert_eq!(drive.findings, vec!["C\\x3a/[REDACTED]/clean.txt:name:1 rule=0"]);
     let network = scan_path("\\\\server\\share\\VAULTTOKEN_LONG\\clean.txt", &loaded);
     assert_eq!(network.findings, vec!["//server/share/[REDACTED]/clean.txt:name:1 rule=0"]);
+    let drive_relative = scan_path("C:VAULTTOKEN_LONG.txt", &loaded);
+    assert_eq!(drive_relative.findings, vec!["C\\x3a/[REDACTED]:name:1 rule=0"]);
 }
