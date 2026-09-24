@@ -38,12 +38,16 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  CheckerQuorumError,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   settleRefinedSlice,
+  standingSeating,
   type ChunkRepairOutcome,
   type RepairModels,
+  type RepairSliceSeating,
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
@@ -171,6 +175,9 @@ function settledOutcome(
  
  @param nonTranslationStanding - whether this slice stands as non-translation
  
+ @param reseat - reads the checker seating at the stage; the standing seating
+ when absent
+ 
  @returns What the lane settled on
  
  @example
@@ -179,7 +186,13 @@ function settledOutcome(
  ```
  */
 async function settleWith(
-  { nonTranslationStanding, }: { readonly nonTranslationStanding: boolean; },
+  {
+    nonTranslationStanding,
+    reseat = standingSeating,
+  }: {
+    readonly nonTranslationStanding: boolean;
+    readonly reseat?: () => Promise<RepairSliceSeating>;
+  },
 ): Promise<Awaited<ReturnType<typeof settleRefinedSlice>>> {
   return await settleRefinedSlice({
     client: REFUSING_CLIENT,
@@ -188,6 +201,7 @@ async function settleWith(
     incumbentText: REPAIRED_TEXT,
     definitions: '',
     models: MODELS,
+    reseat,
     refinerModelIds: REFINERS,
     declaredNames: [],
     signal: AbortSignal.timeout(30_000,),
@@ -238,6 +252,29 @@ await describe({
         expect(settled.refinedBy,).toEqual([],);
         // The one refiner's voice was lost, so nobody was heard either.
         expect(settled.refinersHeard,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'READS THE CHECKER BENCH AT THE STAGE through the re-seat hook, so '
+        + 'a hold that began inside the lane re-seats the recheck and the '
+        + 'rewrite probe as it re-seats the proof stage (class one hundred '
+        + 'thirteen, mikaela16: ten recheck rounds on the stale bench heard one '
+        + 'of three after Synthetic dried out). A reading below the checker '
+        + 'floor refuses the stage before any refiner is asked, which the '
+        + 'refusing client makes observable: a settle that ignored the hook '
+        + 'would reach the client and record a lost voice instead',
+      fn: async () => {
+        await expect(settleWith({
+          nonTranslationStanding: false,
+          reseat: async (): Promise<RepairSliceSeating> => ({
+            repairModels: {
+              ...MODELS,
+              checkerModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
+            },
+          }),
+        },),).rejects
+          .toThrow(CheckerQuorumError,);
       },
     },),
   ],
