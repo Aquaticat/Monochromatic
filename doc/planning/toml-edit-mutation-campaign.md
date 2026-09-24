@@ -113,7 +113,7 @@ Their removal is a deliberate source-API design change,
 Most `emit-value.ts` survivors in the former AST-only functions cannot be killed by package behavior;
  removal avoids mislabeling this dead code as weak assertions.
 
-## In progress
+## Verification and remaining limits
 
 - Removed `emitArrayWithoutIndex`,
   `emitArrayWithSkipPath`,
@@ -166,6 +166,14 @@ Most `emit-value.ts` survivors in the former AST-only functions cannot be killed
   after removing the unconsumed helper bodies.
   The baseline was refrozen with `fuzz:coverage --write` after inspecting that change;
   the surviving file now has 133 covered lines out of 218 code lines.
+  The coverage gate then passed in check mode.
+- Final `buildAndTest`,
+  package and sidecar types and oxlint,
+  sidecar bounded property tests,
+  and the coverage gate passed.
+  TOML 1.0 and 1.1 conformance passed after retiring the unused emitter helpers.
+  A separate sidecar consumer imported `tomlFloat` from the built package and observed
+  `trailingNewline: false` output `ratio = 1.0` without a final newline.
 - Additional tests now pin empty and header-only canonical output,
   multiple terminal newlines,
   multiline string contents,
@@ -177,12 +185,14 @@ Most `emit-value.ts` survivors in the former AST-only functions cannot be killed
 - Never delete or stage unrelated changes under other packages;
   concurrent agents have been editing `deepmerge-ts.fuzz` and other areas.
 
-## Next action
+## Remaining scope
 
-Run the coverage gate in check mode and the package/sidecar suites after the final emitter tests.
-Keep the remaining `emit-document.ts` equivalent and out-of-domain survivors distinct from killed mutants.
+The `emit-document.ts` recheck retains equivalent or out-of-domain mutants under states constructed by package APIs,
+ plus one forced-true-loop timeout.
+These are not counted as killed assertions.
+The `emit-value.ts` final recheck has no survivors.
 No full-runtime campaign was run,
- so the completion claim is limited to the named files and documented branches.
+ so the evidence applies only to the named files and documented branches.
 Commit only explicit paths in scope.
 The full runtime scan was not run:
  the initial dry run enumerated 2,675 mutants over 45 runtime files,
