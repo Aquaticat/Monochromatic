@@ -222,8 +222,18 @@ export function emitValue({ value, typeExpression, }: { readonly value: unknown;
   if (value instanceof RegExp)
     return `new RegExp(${JSON.stringify(value.source,)}, ${JSON.stringify(value.flags,)})`;
   if (Array.isArray(value,)) {
+    // Position as two counter tuples (index from the start, distance from the end), so ElemAt can
+    // resolve both fixed prefixes and fixed tails around a rest element.
     return `[${value.map(function element(item: unknown, index: number,) {
-      return emitValue({ typeExpression: `ElemOf<${typeExpression}, ${String(index,)}>`, value: item, },);
+      /**
+       Counter tuple of a given length.
+       */
+      const counter = function counterOf(length: number,): string {
+        return `[${Array.from({ length, }, function slot() {
+          return 'unknown';
+        },).join(', ',)}]`;
+      };
+      return emitValue({ typeExpression: `ElemAt<${typeExpression}, ${counter(index,)}, ${counter(value.length - index - 1,)}>`, value: item, },);
     },).join(', ',)}]`;
   }
   if (value instanceof Set) {
@@ -366,7 +376,10 @@ export function emitHeader(exportName: string,): readonly string[] {
     '// Each distributes over unions and drops members that lack the position.',
     '// A member that admits any such value (for example `{}` or `object`) yields `unknown`.',
     'type PropOf<T, K extends PropertyKey,> = T extends unknown ? (K extends keyof T ? T[K] : ({} extends T ? unknown : never)) : never;',
-    'type ElemOf<T, I extends number,> = T extends readonly unknown[] ? T[I] : (unknown[] extends T ? unknown : never);',
+    'type AtFromEnd<T, K extends unknown[],> = T extends readonly [...infer Head, infer Last,] ? (K extends [] ? Last : AtFromEnd<Head, K extends [unknown, ...infer R,] ? R : []>) : (T extends readonly (infer E)[] ? E : never);',
+    'type ElemAt<T, I extends unknown[], K extends unknown[],> = T extends readonly unknown[]',
+    '  ? (number extends T["length"] ? (T extends readonly [infer First, ...infer Rest,] ? (I extends [] ? First : ElemAt<Rest, I extends [unknown, ...infer R,] ? R : [], K>) : AtFromEnd<T, K>) : T[I["length"]])',
+    '  : (unknown[] extends T ? unknown : never);',
     'type SetElem<T,> = T extends ReadonlySet<infer V> ? V : (Set<unknown> extends T ? unknown : never);',
     'type MapKey<T,> = T extends ReadonlyMap<infer K, unknown> ? K : (Map<unknown, unknown> extends T ? unknown : never);',
     'type MapValue<T,> = T extends ReadonlyMap<unknown, infer V> ? V : (Map<unknown, unknown> extends T ? unknown : never);',

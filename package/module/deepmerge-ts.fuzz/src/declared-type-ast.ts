@@ -210,6 +210,8 @@ export function emitType(node: TypeNode,): string {
     },).join(' | ',)}, ${emitType(node.value,)}>`;
   if (node.kind === 'box')
     return `Box<${emitType(node.inner,)}>`;
+  if (node.kind !== 'object')
+    throw new Error(`emitType: unhandled kind ${node.kind}`,);
   /**
    Member list of the object literal type.
    */

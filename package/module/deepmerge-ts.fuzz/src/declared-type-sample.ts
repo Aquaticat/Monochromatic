@@ -289,5 +289,7 @@ export function sampleValue(node: TypeNode,): Arbitrary<Sampled> {
       return objectOf([...left, ...right,],);
     },);
   }
+  if (node.kind !== 'object')
+    throw new Error(`sampleValue: unhandled kind ${node.kind}`,);
   return sampleEntries(node,).map(objectOf,);
 }
