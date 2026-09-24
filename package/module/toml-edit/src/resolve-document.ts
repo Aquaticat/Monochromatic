@@ -25,8 +25,8 @@ import type { TomlPath, } from './types.ts';
 /**
  A table section a path names directly.
  
- `table`: the path names a single standard `[foo]` section.
- `aot`: the path names one or more array-of-tables `[[foo]]` instances.
+ `table`: the path names a standard `[foo]` section or one indexed `[[foo]]` instance.
+ `aot`: the path names the whole array-of-tables collection.
  */
 export type TableSectionHit =
   | {
@@ -203,6 +203,33 @@ export function matchTableSection(
     return {
       kind: 'aot',
       tables: exact,
+    };
+  }
+  /**
+   Array-of-tables instance selected by the numeric segment after its header.
+   */
+  const indexed = blocks.find(function isIndexedAot(b,): b is TableNode {
+    if ((b.kind !== 'table') || (b.tableKind !== 'array') || (!isStrictPrefix({
+      candidate: b.headerSegments,
+      path,
+    },)))
+      return false;
+    return path[b.headerSegments.length] === b.aotIndex;
+  },);
+  if (indexed !== undefined) {
+    /**
+     Path offset after the selected array instance's numeric segment.
+     */
+    const bodyStart = indexed.headerSegments.length + 1;
+    if (path.length === bodyStart)
+      return {
+        kind: 'table',
+        table: indexed,
+      };
+    return {
+      kind: 'descend',
+      blocks: indexed.body,
+      path: path.slice(bodyStart,),
     };
   }
   /**
