@@ -48,10 +48,12 @@ The targeted campaigns here name runtime source files explicitly.
   For valid string or numeric path segments,
   any candidate past the end compares against `undefined` and fails the `every` check anyway.
 - The `build-value.ts` survivor fills `commentsBefore` on inline-table entries.
-  `emit-value-node.ts` renders those entries using keys and values,
-  never `commentsBefore`;
-  top-level blocks use `emit-document.ts` instead.
-  No public behavior distinguishes this mutant.
+  An earlier classification called it equivalent because serialization and accessors do not read that field.
+  That was too broad:
+  `TomlEditState.blocks` exposes the parsed entry structure,
+  so a caller can distinguish the extra comment directly.
+  Added `inline-entry-state.unit.test.ts` to assert the public state has no phantom comments;
+  the `build-value.ts` mutation recheck is pending.
 - Package wrappers named in the unit tests were missing from the published entrypoint.
   A package-root import failed for `tomlLocalDate` before `index.ts` exported the wrappers.
   Unit tests now import the built package,
@@ -145,7 +147,8 @@ Most `emit-value.ts` survivors in the former AST-only functions cannot be killed
   57 compile errors,
   and no infrastructure errors;
   the diagnostic mutant was killed.
-- Remaining `emit-document.ts` survivors were traced to construction invariants:
+- Remaining `emit-document.ts` survivors were traced to package-factory construction invariants,
+  not universal equivalence for caller-composed structural states passed to `_emitDocument`:
   `build-document.ts` creates parsed key-values and tables with clean origins,
   so `emit-document.ts` returns their original source before synthetic comment rendering.
   `set-create.ts`,
@@ -187,8 +190,11 @@ Most `emit-value.ts` survivors in the former AST-only functions cannot be killed
 
 ## Remaining scope
 
-The `emit-document.ts` recheck retains equivalent or out-of-domain mutants under states constructed by package APIs,
+The `emit-document.ts` recheck retains equivalent or factory-state-unreachable mutants,
  plus one forced-true-loop timeout.
+`TomlEditState` is structural and `_emitDocument` is exposed as an unstable seam;
+ a caller-composed state could distinguish some synthetic comment/header mutants.
+The campaign does not claim universal equivalence for such inputs.
 These are not counted as killed assertions.
 The `emit-value.ts` final recheck has no survivors.
 No full-runtime campaign was run,
