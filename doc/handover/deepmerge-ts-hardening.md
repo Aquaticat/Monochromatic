@@ -5,8 +5,8 @@
 Shared understanding confirmed 2026-09-23;
 first implementation pass done 2026-09-24 (see `Outcomes`).
 The user judged the defect count too low for the search effort;
-a widening pass is in progress (see `Widening pass`).
-Do not ask the user to post the advisory or issue drafts until the widening pass is integrated into them.
+the widening pass that followed is integrated into both drafts as of 2026-09-24 (see `Widening pass` and `Outcomes`),
+so the drafts are ready for the user's review.
 
 Next actions, in order:
 
@@ -19,7 +19,10 @@ Next actions, in order:
      User decision 2026-09-24: make the run reproducible as a Stryker image task in this package
      (chosen over extending `package/cli/mutation-test`, which cannot run upstream's Vitest suite,
      and over leaving it documented only).
-     Porting the scratch image, sweep, and differential harness from `~/temp/agent/deepmerge-mutation-image/`: in progress.
+     Ported as the `mutation`, `mutation:sweep`, and `mutation:differential` tasks (commits `d1a3cd6d1`, `50348c435`):
+     the rerun from a `v8.0.2` checkout reproduces 800 of 1098 with matching mutant ids,
+     the sweep baseline passes all sidecar files, four known mutants reproduce their verdicts,
+     and the differential controls hold.
      Generator-widening fork (the report's generator gaps): done, commits `1d2cc683f` to `035805aa8`;
      its new divergence (into never passes a target-only Map entry to a custom function)
      and a slot-written `actions.defaultMerge` ignored by into array, Set, and Map functions
@@ -53,10 +56,10 @@ Next actions, in order:
      the `prefer-readonly-parameter-type` plugin's deliberate omission record for a TypeScript tuple-serialization panic
      (`doc/handover/prefer-readonly-parameter-types-issue-review.md`, "Verified controls"),
      so that one callable goes unanalyzed by that rule, not a finding in this package.
-     Pending: the Stryker port,
-     then `format:oxlint` once no fork is editing,
-     and `fuzz:coverage --write`.
-3.   Restart the campaign (`mise run //package/module/deepmerge-ts.fuzz:fuzz`) with the widened generators.
+     `format:oxlint`, `lint:oxlint` (0 warnings, 0 errors), `lint:types`, and `test:unit` pass;
+     coverage baseline ratcheted to 1765 of 1772 lines.
+3.   Campaign restarted with the widened generators (log `campaign-8.log` in the session scratchpad);
+     triage any counterexample per `Campaign`.
 4.   Ask the user to review and post the updated drafts,
      then open PRs from the fork branches if the maintainer wants them,
      and follow `After upstream responds`.
@@ -275,8 +278,19 @@ Sidecar package `package/module/deepmerge-ts.fuzz` (README there lists every lay
    (600 widened literals, 400 `as const`),
    each asserting that the runtime result fits the static result type.
 - Coverage-reachability baseline over the npm `dist`:
-   1676 of 1772 lines (95%) for `deepmerge-ts@8.0.2`,
-   up from 1569 when first frozen.
+   1765 of 1772 lines for `deepmerge-ts@8.0.2` after the widening pass,
+   up from 1676 after the first pass and 1569 when first frozen;
+   `defaultMetaDataUpdaterFast` is still never called.
+- Widening-pass layers (README lists each):
+   realm-independent model and snapshot,
+   exotic inputs, generated option plans, alias graphs with a bisimulation oracle and per-node rewrite detection,
+   declared-type fuzzing (439-case corpus, capped campaign, positive control),
+   scale probes (embargoed parts machine-local),
+   and mutation-derived tests.
+- Mutation testing, reproducible via the `mutation`, `mutation:sweep`, and `mutation:differential` tasks
+   (`doc/audit/deepmerge-ts-mutation-2026-09-24.md`):
+   upstream's suite detects 800 of 1098 Stryker mutants;
+   with the sidecar, 1017, and the remaining 81 are argued equivalent.
 - Unbounded campaign (`fuzz` task) in a 2 GiB / 2 CPU podman container;
    the run started 2026-09-24 had passed 363 rounds of 10000 runs per property
    with no counterexample at the time of writing.
@@ -300,6 +314,9 @@ so embargoed work must never be committed there):
    8 new guards fail without the fix;
    the sidecar's two into known-defect tests turn red;
    5000 runs of the into model properties with object leaves and `undefined` restored pass on the fix and fail on 8.0.2.
+   It does not cover the `filterValues` empty-seed case (built and checked).
+- `fix/cross-realm-collections`:
+   Sets and Maps from another realm merge as collections.
 
 Public runtime findings (in the issue draft):
 false cycle detection,
@@ -315,6 +332,47 @@ custom `maxDepth` / `mergeRecords: false` / `filterValues: false` / `mergeArrays
 `deepmergeIntoCustom` leaving the target type unchanged,
 `any` inputs,
 plus two sound imprecisions.
+
+Added by the widening pass, each reproduced independently on 8.0.2 before entering the drafts:
+the issue draft now has 13 sections
+(runtime defects, intent questions, a docs request, result types including 7 declared-type classes,
+and the property-test proposal with the mutation score),
+and the advisory draft 7 findings (4 new).
+The campaign found two further runtime defects on its own
+(single-call `deepmergeInto` source rewrites, seeds 1395258848 and 1831879258).
+
+### Unexercised surfaces after the widening pass
+
+Each fork's own list, plus gaps measured here:
+
+- Options (first options fork): custom functions returning a container of another kind;
+   custom functions calling `utils.mergeFunctions` or `utils.defaultMergeFunctions` directly;
+   the documented `skipme` and `keyPath` examples
+   (the fork's list is truncated after this item in the recovered transcript).
+- Options (generator-widening fork): into array, Set, Map, or records functions writing `actions.defaultMerge`
+   into the slot (probed by hand here and pinned, not generated);
+   into `mergeRecords` returning a marker at the root;
+   a `filterValues` that reads `meta`;
+   leaf-kind record-likes as a root into source;
+   cycle functions returning `undefined` without implicit merging, and `first`-value cycle functions;
+   record-likes on the into model paths.
+- Exotic inputs: `deepmergeInto` with several exotic sources;
+   the `*Custom` variants on exotic inputs;
+   Proxies that lie about descriptors as into targets or sources;
+   exotic Map keys beyond `-0`, `NaN`, and objects;
+   `WeakRef` and module namespace objects;
+   foreign-realm collections nested in into targets beyond one case.
+- Aliasing: no oracle for custom `maxDepth` with cycles or for into with cyclic or shared targets (no-throw only);
+   FastUnsafe variants on DAGs;
+   graph nodes with getters, hidden keys, null prototypes, symbol keys, or containers as Map keys;
+   deep graphs (embargo).
+   The mutation differential's six categories never draw a drop-all filter at a key the target lacks (mutant 511).
+- Declared types: the AST has no generic, conditional, or function types (only `Partial` and `Required` wrappers),
+   and calls cover `deepmerge`, `deepmergeCustom`, `deepmergeFastUnsafe`, and `deepmergeInto` only.
+- Scale: cyclic inputs (embargo), width with many inputs, custom functions at scale,
+   the CJS build, Bun and Deno, and non-default stack or heap limits.
+- Mutation: TypeScript types, higher-order mutants, mutators outside Stryker's defaults,
+   the sidecar's own oracles, the 17 or 18 Stryker timeouts, and upstream's rollup build.
 
 ## After upstream responds
 
