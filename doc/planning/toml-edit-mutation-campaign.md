@@ -489,10 +489,31 @@ The remaining runtime comment API and value-encoding files are now being scanned
   148 compile errors,
   no infrastructure errors.
   Missing-path diagnostics and comment insertion inside standard tables need tests.
-- `value-encoders.ts` and `values.ts` write
-  `/var/home/user/temp/agent/toml-mutation-value-encoders.json` (`proc_1ab6`).
+- `value-encoders.ts` and `values.ts` wrote
+  `/var/home/user/temp/agent/toml-mutation-value-encoders.json`:
+  80 killed,
+  83 confirmed survivors,
+  143 compile errors,
+  no infrastructure errors.
 
-Do not edit runtime source until both complete.
+A built-artifact test demonstrated that `tomlGetCommentAfter` missed a trailing
+ comment on a standard or indexed array-of-tables header.
+`toml-get-comment-after.ts` had scanned from a stored header span that includes the newline;
+ it now anchors to the parse-time header key before the comment.
+The test failed before the fix and the rebuilt package suite passed afterward.
+Additional comment tests cover nested insertion and missing-path diagnostics.
+Direct built-artifact value tests now pin tagged nonfinite numbers,
+ false booleans,
+ empty and populated arrays/tables,
+ threshold-boundary layout,
+ and null-prototype tables.
+`value-encoders.ts` now shares one integer-wrapper spelling path,
+ while `values.ts` delegates array and table assembly to the existing emitters.
+The package build and unit suite passed after this refactor;
+ type,
+ lint,
+ sidecar,
+ and mutation rechecks remain.
 Do not claim a full-runtime verdict before those campaigns and survivor rechecks finish.
 
 ## Shared value assembly refactor
