@@ -2,8 +2,10 @@
 
 ## Status
 
-Design interview (grilling);
-no product code.
+Design interview (grilling) complete:
+the user confirmed [`doc/planning/unified-linter.md`](../planning/unified-linter.md) as the shared understanding on 2026-09-23.
+No product code;
+implementation awaits the user's go-ahead.
 Goal (user,
 2026-09-23):
 replace the self-maintained Rust linter and Markdown linter with one unified linter,
@@ -681,7 +683,18 @@ open to veto:
 - bruits/satteri#306 was still open on 2026-09-23 with only the maintainer's reply that notifications were not arriving;
    whether to ask upstream about the two advisories is external communication and is asked of the user.
 
+Final answers (user,
+2026-09-23):
+
+- `doc/planning/unified-linter.md` confirmed as the shared understanding.
+- bruits/satteri#306:
+   re-check before the first publish,
+   and ask upstream only if it is still silent then.
+
 ## Next action
 
-Write `doc/planning/unified-linter.md` with the full design and a draft configuration,
-then ask the user to confirm a shared understanding.
+Implementation starts only on the user's go-ahead,
+following "Build order" in `doc/planning/unified-linter.md`:
+steps 1 to 4 do not depend on the deepmerge-ts fork;
+configuration merging waits for `monochromatic-deepmerge`;
+re-check bruits/satteri#306 before the first publish.

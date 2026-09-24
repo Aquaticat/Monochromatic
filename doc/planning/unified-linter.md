@@ -12,8 +12,9 @@ Incumbent responsibilities and their owners:
 [`doc/planning/unified-linter-coverage-ledger.md`](unified-linter-coverage-ledger.md).
 
 Status:
-awaiting the user's confirmation of a shared understanding;
-no product code exists.
+confirmed by the user as the shared understanding on 2026-09-23;
+implementation awaits the user's go-ahead,
+and no product code exists.
 
 ## Goal and scope
 
