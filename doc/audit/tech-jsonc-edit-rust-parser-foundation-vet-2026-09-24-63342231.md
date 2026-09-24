@@ -571,9 +571,17 @@ The published `serde_jsonc` 1.0.108 and `serde_jsonc2` 0.1.2 parse line and bloc
  consuming comments as whitespace cannot supply the required query/edit API as-is.
  `serde_jsonc2` offers `raw_value` and `arbitrary_precision` features,
  but those do not add normalized attached comments by themselves.
- An adapter that independently reparses trivia would be a separate custom parser,
- not the published deserializer interface.
- No surrogate or regex claim is inferred from this comment-model exit,
+ Counterevidence against a blanket surrogate exit:
+ both archives document `deserialize_bytes` accepting escaped lone surrogates as WTF-8 bytes
+ (`serde_jsonc2/src/de.rs:1636-1699`,
+ `serde_jsonc/src/de.rs:1634-1694`),
+ even though the ordinary Rust `String` value route requires valid UTF-8.
+ A custom Serde visitor with byte-string keys/values plus a separate comment owner might compose these parts,
+ but its map-key route,
+ exact numeric raw tokens and source-boundary ownership remain untested.
+ The **as-is `Value` interface** fails comment queries;
+ the composition is pending rather than excluded by that interface alone.
+ No regex claim is inferred here,
  and no candidate code was executed.
 
 ### `babbel_json` 0.2.2 as-is grammar and comment-model exit
@@ -606,8 +614,13 @@ The published codec documents a JSONC grammar with comments and trailing commas,
  including trailing value comments.
  `src/edit.rs:1-19` describes splice verification by re-decoding;
  it does **not** prove a conflict with an immutable wrapper.
- Retained authored bytes and spans could support a key/trailing-comment interpretation and canonical emitter,
- so this potential composition needs targeted source and consumer tests before exclusion or promotion.
+ However,
+ the shared fast string path defers an escaped lone high surrogate to an error (`src/parse.rs:700-719,2480-2520`);
+ a lone low surrogate becomes U+FFFD (`src/parse.rs:724-726`,
+ `src/lex.rs:441-455`).
+ The published parser therefore cannot supply this port's required decoded string value on that source text as-is.
+ Retained authored bytes and spans may still help a fork or an independently validating preprocessing adapter,
+ but neither composition has been shown to accept the exact string domain.
  A targeted direct-source search found no regex invocation in its JSONC path;
  transitive source and normal/build graph remain uninspected.
  No candidate code was executed.
