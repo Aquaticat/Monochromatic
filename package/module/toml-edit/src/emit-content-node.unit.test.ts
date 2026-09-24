@@ -11,6 +11,7 @@ import {
   parseTomlEdit,
   tomlGetNode,
   tomlGetValue,
+  TomlImmutableNodeError,
 } from '@monochromatic-dev/module-toml-edit';
 
 /**
@@ -103,6 +104,25 @@ await describe({
           edit: parseTomlEdit({ source: `probe = ${emitted}\n`, },),
           path: ['probe',],
         },),).toEqual({ a: { b: 1, }, xs: [1, 2,], },);
+      },
+    },),
+    it({
+      name: 'rejects a parsed table node with a specific diagnostic',
+      fn: async () => {
+        const node = tomlGetNode({
+          edit: parseTomlEdit({ source: '[section]\nx = 1\n', },),
+          path: ['section',],
+        },);
+        if ((!('type' in node)) || (node.type !== 'TOMLTable'))
+          throw new Error('Expected parsed table node for emitter test',);
+        expect(() => _emitContentNode({
+          node,
+          options: emptyTomlEdit().canonical,
+        },),).toThrow(TomlImmutableNodeError,);
+        expect(() => _emitContentNode({
+          node,
+          options: emptyTomlEdit().canonical,
+        },),).toThrow('emitInlineTable: expected TOMLInlineTable, got TOMLTable',);
       },
     },),
     it({
