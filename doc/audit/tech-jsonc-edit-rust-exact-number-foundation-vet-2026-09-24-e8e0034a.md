@@ -3,9 +3,14 @@
 ## Status and fingerprint
 
 - Status:
-   Discovery,
-   incomplete.
-   No candidate is recommended or adopted.
+   discovery saturated for the frozen schedule,
+   the single survivor validated and scored with sensitivity,
+   and a recommendation recorded.
+   **Not adopted**:
+   adoption is a separate user decision,
+   and no dependency,
+   product code,
+   decision record or publication followed.
 - Subject:
    jsonc-edit Rust exact-number foundation.
 - Scope:
@@ -56,8 +61,10 @@ Every validated candidate receives the same weight of 1 for each relevant soft c
  release/maintenance evidence,
  dependency and build surface,
  and measured performance on the library's input corpus.
- The maximum for each is 4;
- no candidate has been scored.
+ The maximum for each is 4.
+ Ratings,
+ totals,
+ sensitivity reruns and the ranking are recorded in the scoring section.
  Hard constraints are not scored.
  Sensitivity must rerun each weight from 1 through 5 and each uncertain rating endpoint before any recommendation.
 
@@ -467,10 +474,13 @@ Metadata-level classifications,
    `fast-float`,
    `fast-float2`,
    `hexfloat2`.
-- Arbitrary-precision families whose exponent or scale handling was not individually read:
-   `puremp` 0.2.4 (integers,
-   rationals and MPFR-class floats),
-   `bigfixed` 0.0.0 (fixed point),
+- Source-verified additions to the bounded and materializing families:
+   `puremp` 0.2.4 stores an arbitrary-precision coefficient with an **`i64`** exponent
+   (`src/decimal.rs:1-7,41-45`),
+   and `bigfixed` 0.0.0 stores a decimal digit vector with a radix position
+   (`src/big_fixed.rs:26-30`),
+   so a 40-digit JSON exponent is either unrepresentable or needs roughly a billion materialized digits.
+- Arbitrary-precision integer families whose exponent handling was not individually read:
    `flexint`,
    `smallbigint`,
    `astra-num`,
@@ -732,30 +742,211 @@ Additional targeted cases exercise an uppercase exponent marker and leading zero
  runtime scaling measurements,
  and release consumer tests remain open.
 
-## Pending evidence and validation
+## Terminal discovery result
 
-- Finish required discovery saturation or report a blocked terminal outcome;
-   record exact expansion queries and pagination attempts.
-- Clone every serious candidate under private `~/temp/agent/` using `gh repo clone`,
-   disable clone push targets before any prototype commit,
-   and record revisions.
-- Inspect licenses,
-   manifests,
-   source parsing and equality paths,
-   test/CI and maintenance;
-   complete applicable hard gates and overlays.
-   Do not run third-party build/test commands before inspecting execution trees and sandboxing.
-- Validate every hard-gate survivor at equal depth,
-   including original spelling,
-   `1 = 1.0 = 1e0`,
-   `-0`,
-   integers past 2^53,
-   large exponents,
-   invalid grammar,
-   and consumer use in a throwaway Rust crate.
-- Freeze evidence-backed ratings,
-   run scoring and sensitivity,
-   state complete ranking with pros,
-   cons and adjacent reasons,
-   then present recommendation to the user for adoption.
-   No dependency change or decision record before adoption.
+- **Registry class:
+   finished.**
+   The five frozen numeric queries (`exact decimal`,
+   `bigint`,
+   `arbitrary precision json`,
+   `json number`,
+   `decimal arbitrary exponent`) were paginated to `next_page=null`,
+   validated for contiguous pages,
+   matching totals and duplicate-free crate ids,
+   and all **13303** saved records were passed through the inclusive lead predicate recorded above.
+   The two delegated comparable-term queries (`unbounded decimal`,
+   `decimal exponent`) also ended at `next_page=null`.
+   Limitation recorded rather than hidden:
+   keyword lead extraction can pass over a crate whose name and description avoid both term families.
+- **Repository-host class:
+   finished.**
+   The frozen queries `rust arbitrary precision decimal json`,
+   `rust bigint` and the expansion `rust json number` returned no matches.
+   The delegated comparable queries returned 15 for `decimal arbitrary precision` and zero for
+   `json number exact` and `decimal exponent`,
+   each reporting `incomplete_results:false`.
+   Every lead they produced (`aequa`,
+   `bignumber`,
+   `puremp`,
+   `bigfixed`,
+   `qubit-json`,
+   `postgres-jsonb-canonical`) is classified in the screen above.
+- **Broader-web class:
+   frozen schedule finished,
+   completeness not provable.**
+   The recorded queries returned source and documentation leads without totals or cursors.
+- **In-repo class:
+   finished.**
+   The maintained TypeScript number behavior,
+   the prior structured-edits research and the existing Cargo dependency set were read;
+   the repository-owned prototype is the incumbent baseline.
+
+Terminal outcome:
+ **saturated with one survivor** for the exact-number value representation,
+ namely the repository-owned raw-token plus mathematical-identity prototype.
+ Every published alternative exited on a source-verified hard gate rather than on a score:
+
+- Lexical equality as-is:
+   `json-number` 0.4.10 (also excluded by the unsized-layout gate),
+   `serde_json` 1.0.151 `arbitrary_precision`,
+   `jstrict` 0.15.0,
+   `reliakit-json` 1.0.0.
+- Bounded exponent or scale:
+   `bigdecimal` 0.4.10,
+   `scientific` 0.6.0,
+   `b10` 1.0.0,
+   `ordecimal` 0.3.1,
+   `decimal-bytes` 0.6.0,
+   `fpdec` 0.14.1,
+   `rust_decimal` 1.43.0 (a 96-bit coefficient with a scale field limited to 0 through 28,
+   `src/decimal.rs:126-134` in the published archive),
+   `hypercast` 0.3.0,
+   `postgres-jsonb-canonical` 0.1.0,
+   `puremp` 0.2.4.
+- Magnitude materialization on admitted input:
+   `dashu-ratio` 0.6.0,
+   `bigfixed` 0.0.0,
+   and `fraction` 0.17.0 by the same mechanism.
+- Binary floating-point projection:
+   `bignumber` 0.1.1,
+   `number-general` 0.14.0.
+- Integer or float range rejection:
+   `qubit-json` 0.10.0.
+
+Two further leads exited on registry metadata alone rather than source:
+ `fast-float` 0.2.0 and `fast-float2` 0.2.4 describe themselves as floating-point number parsers,
+ which is inexact by category.
+
+Still unverified individually,
+ and therefore not claimed as exits:
+ `aequa` (Git-only,
+ no crates.io record under that exact name),
+ `arbi`,
+ `flexint`,
+ `smallbigint`,
+ `astra-num`,
+ `near-bigint`,
+ `num-rational-parse`,
+ `dashu` and `dashu-int`.
+ Their family's decisive pattern is source-verified through `dashu-ratio`,
+ but each needs its own check before an individual exit is asserted.
+ None of them is a JSON-number token holder with unbounded decimal-exponent identity,
+ which is what the survivor provides.
+
+## Scoring, sensitivity and recommendation
+
+The frozen rubric scores each relevant soft concern at weight 1 with a maximum of 4.
+ Hard constraints are not scored.
+ Only validated candidates are scored,
+ and saturation produced one.
+
+### Repository-owned raw token plus mathematical identity
+
+- API clarity for exact values:
+   **4**.
+   `identity(raw)` returns a canonical identity with private fields,
+   equality and hashing derive from that identity,
+   and the caller keeps the original spelling separately;
+   a separate consumer crate exercised it across a crate boundary.
+- Source auditability:
+   **4**.
+   Repository-owned,
+   and a targeted search of its source found no `unsafe` block.
+- Release and maintenance evidence:
+   **2**.
+   No published crate,
+   no CI history and no external users;
+   maintenance is internal and unproven at product scale.
+- Dependency and build surface:
+   **4**.
+   Standard library only,
+   with no normal or build dependencies to audit or re-audit.
+- Measured performance on the library's input corpus:
+   **3**.
+   Its cost is inside the measured parser shapes
+   (the 40-digit-exponent shape ran 12739 to 13427 nanoseconds per parse-to-value call for the owned path),
+   but no isolated microbenchmark of `identity` alone was taken.
+- Total:
+   **17 of 20**.
+- Pros:
+   exact equality across arbitrary exponent digit runs without materializing magnitude;
+   original spelling retained for unedited literals;
+   `-0` and `0` unified;
+   no dependencies and no unsafe;
+   directly fixable alongside the parser.
+- Cons:
+   this port owns the grammar validator,
+   the normalizer and their tests forever;
+   no external review,
+   fuzzing or release engineering;
+   performance evidence is shape-level rather than isolated.
+
+### Strongest rejected alternative: `serde_json` `arbitrary_precision` plus a custom adapter
+
+Not scored,
+ because it is not an independent foundation.
+ Its raw-token retention comes from `serde_json`'s `arbitrary_precision` `String` representation
+ (`serde_json-1.0.151/src/number.rs:20-25,72-73`),
+ whose derived equality is lexical,
+ so mathematical identity still has to be supplied by the owned normalizer.
+ The composition therefore adds a dependency and a foreign parse boundary
+ without removing any owned code,
+ and it inherits `serde_json`'s own string and number admission rules.
+ Pros:
+   a widely used parser and token store.
+ Cons:
+   lexical equality as-is,
+   an extra dependency graph,
+   and no reduction in the code this port must write and maintain.
+
+### Sensitivity
+
+With a single survivor,
+ no weighting can change the order:
+ there is no second scored candidate to overtake.
+ The sensitivity question that does matter is whether re-rating could resurrect an excluded candidate,
+ and it cannot,
+ because every exclusion above is a hard-gate failure and the frozen rubric does not score hard constraints.
+
+The two uncertain ratings were rerun at their endpoints.
+ Maintenance evidence at 1 gives 16 of 20;
+ at 3 it gives 18.
+ Measured performance at 2 gives 16;
+ at 4 it gives 18.
+ The combined worst case is 15 of 20 and the best case 19 of 20.
+ Rerunning each criterion's weight from 1 through 5 with the worst-case ratings leaves the survivor unchanged
+ (the weighted worst case with performance at weight 5 is 24 of 36).
+ No endpoint or weight overturns the outcome.
+
+### Recommendation
+
+Recommend the **repository-owned raw-token plus mathematical-identity representation** as the exact-number
+ foundation for the native Rust crate,
+ paired with the repository-owned parser recommendation in the companion parser report.
+
+This is a recommendation for a **separate adoption decision**.
+ It authorizes no dependency change,
+ no product code,
+ no decision record and no publication.
+ If adoption is refused,
+ the recorded alternative is not a different crate but the same owned normalizer behind
+ `serde_json` `arbitrary_precision`,
+ with the extra dependency and boundary noted above.
+
+## Remaining validation before publication
+
+- Product-crate boundary:
+   the validated code is a scratch prototype,
+   not `package/rust-module/jsonc-edit`;
+   packaging,
+   the public API shape,
+   documentation and repository lint and type gates are unbuilt.
+- Isolated performance measurement of the normalizer on an exponent-heavy corpus,
+   if the product needs a number-level budget rather than a shape-level one.
+- Fuzzing of the grammar validator and normalizer at product level;
+   the current evidence is a bounded generated rational oracle plus curated edge cases.
+- Individual source checks for the nine unverified integer-family leads if a later reviewer wants
+   every registry lead closed rather than family-classified.
+- Publication route:
+   an authorized crates.io token path for the first release remains unverified,
+   and name availability must be rechecked immediately before publishing.
