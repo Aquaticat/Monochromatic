@@ -309,10 +309,10 @@ description = "Type-check the nonfunctional desktop command-bar Slint study"
 dir = "{{config_root}}"
 run = "slint-viewer --check candidates/command-study.slint"
 
-[tasks."prototype:command:render"]
-description = "Render separate in-app, global, search, and edge scenes in native Slint for both schemes"
+[tasks."prototype:command:md3:render"]
+description = "Render MD3 Search-based in-app, global, search, and edge scenes in native Slint"
 dir = "{{config_root}}"
-depends = ["prototype:command:check"]
+depends = ["prototype:command:md3:check"]
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFileSync } = await import('node:child_process')
@@ -332,7 +332,7 @@ const scenes = [
 ]
 const labels = ['i', 'g', 'r', 'e']
 for (const scene of scenes) {
-  const name = `command-round-${labels[scene.study - 1]}${scene.variant}-${scene.mode}-${scene.stress ? 'stress' : (scene.compact ? 'compact' : 'wide')}`
+  const name = `command-md3-${labels[scene.study - 1]}${scene.variant}-${scene.mode}-${scene.stress ? 'stress' : (scene.compact ? 'compact' : 'wide')}`
   const dataPath = join(temp, `${name}.json`)
   const imagePath = join(output, `${name}.png`)
   writeFileSync(dataPath, JSON.stringify({
@@ -343,7 +343,7 @@ for (const scene of scenes) {
     stress: scene.stress,
   }))
   execFileSync('slint-viewer', [
-    '--load-data', dataPath, '--screenshot', imagePath, 'candidates/command-study.slint',
+    '--load-data', dataPath, '--screenshot', imagePath, 'candidates/command-md3-study.slint',
   ], { stdio: 'inherit', env: { ...process.env, SLINT_BACKEND: 'software' } })
   const dimensions = execFileSync('magick', ['identify', '-format', '%wx%h %[opaque]', imagePath], { encoding: 'utf8' })
   const expected = scene.stress ? '360x640 True' : (scene.compact ? '480x600 True' : '1100x640 True')
