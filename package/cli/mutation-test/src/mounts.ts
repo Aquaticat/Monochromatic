@@ -36,4 +36,4 @@ export const BAKED_ROOT: string = '/baked';
 /**
  Container-side entrypoint executed from baked source with plain node.
  */
-export const BAKED_ENTRYPOINT: string = '/baked/packages/cli/mutation-test/src/container/main.ts';
+export const BAKED_ENTRYPOINT: string = '/baked/package/cli/mutation-test/src/container/main.ts';
