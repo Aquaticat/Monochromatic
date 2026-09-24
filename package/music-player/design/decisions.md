@@ -636,15 +636,16 @@ See device-metrics.md for real dimensions.
  The hinge is **vertical** in portrait.
 
 ### E2. Keep information off the fold connector (clarified 2026-09-23)
-The user supplied a **visible crease width of about 10mm for this design**.
-At the panel's approximately 141.08mm active width,
- this is about **147
-physical px** of the 2076px inner display,
- centered at x 1038:
- approximately
-x `[964,1112)`px.
- These are approximate physical bounds because the
-published 8-inch diagonal and the user's dent width are approximate.
+The user corrected their initial 10mm estimate to a **visible crease width
+of about 7.5mm for this design**.
+ At the panel's approximately 141.08mm
+active width,
+ this is about **110 physical px** of the 2076px inner display,
+centered at x 1038:
+ approximately x `[983,1093)`px.
+ These are approximate
+physical bounds because the published 8-inch diagonal and the user's dent
+width are approximate.
 
 Where information is arranged on opposing sides of the fold,
  its clearance
@@ -670,14 +671,14 @@ Do **not** store `crease_width` as a fixed dp value:
  dp varies with Android
 display scaling while the physical dent does not.
  The current AVD density
-of 390dpi would convert about 147px to about 60dp,
+of 390dpi would convert about 110px to about 45dp,
  but that is only a
 runtime conversion for this setting,
  not the design constant.
  The AVD's
 zero-width hinge sensor area describes emulated occlusion,
  not the user's
-visible 10mm dent.
+visible 7.5mm dent.
  No other page is required to become two panes.
 
 Here "content" means **information the user must perceive**:
@@ -705,7 +706,7 @@ dp for Compose.
 initially read the user's YouTube timestamp/title observation as praise;
 that was wrong.
  The captured characters approach the center closely enough
-to fall within the approximate 10mm band,
+to fall within the approximate 7.5mm band,
  so YouTube is a **negative
 near-crease example** for this player's text placement.
  Android's system-owned bars are outside
@@ -1035,7 +1036,7 @@ Use the `1c` tonal structure.
  The vertical spacer between panes and the
 16dp horizontal divider between the folder picker and transport are white.
 The original 24dp vertical width does not establish safe placement of
-information across the user's 10mm crease.
+information across the user's 7.5mm crease.
  E2 applies
 `max(min_padding, crease_width)` to informative material in physical space;
 borders,
