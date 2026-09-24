@@ -1508,6 +1508,28 @@ Remaining validation includes full TypeScript conformance and property cases,
  This checks the current tree shape,
  not the public immutable edit API that has yet to be built.
 
+## Maintained TypeScript depth fork and evaluation boundary
+
+The user requested supported behavior rather than parser-algorithm imitation.
+ A direct public `parseJsonc` probe in the disposable 2 GiB/2 CPU Node 26 container
+ (`~/temp/agent/jsonc-ts-depth-envelope/probe.mjs`) measured:
+ clean 512 and 513 nested arrays both returned a `plainJson` node;
+ a commented 512 nested array returned structured `array`;
+ a commented 513 nested array threw `JsoncParseError: nesting too deep (at offset 513)`.
+ `package/module/jsonc-edit/src/parse-jsonc.ts:40-44,108-121` returns
+ `JSON.parse` fast-path values without the structured parser's documented 512-depth check
+ (`package/module/jsonc-edit/src/parse.ts:22-31,64-70`).
+ This is a **distinct fast-path bypass**,
+ not evidence that the user adopted unbounded nesting:
+ the accepted `doc/decision/jsonc-edit-parser-foundation.md` says the fast path must not alter public behavior.
+ The [port plan](../planning/jsonc-edit-rust-port.md) records the inference to align both maintained
+ implementations at the explicit 512-container boundary after foundation adoption.
+ The parser finalist check must reject depth 513 for both clean and commented documents
+ and accept depth 512 with safe parse,
+ emit,
+ clone/equality and cleanup.
+ Do not claim Rust parity solely from the TypeScript structured path's source guard.
+
 ## Evidence and validation still required
 
 - Finish the scheduled registry,
