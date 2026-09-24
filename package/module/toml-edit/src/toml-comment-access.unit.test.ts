@@ -8,6 +8,9 @@ import {
   parseTomlEdit,
   tomlGetCommentAfter,
   tomlGetCommentsBefore,
+  tomlInsertCommentAfter,
+  tomlInsertCommentBefore,
+  tomlStringify,
   TomlPathNotFoundError,
 } from '@monochromatic-dev/module-toml-edit';
 
@@ -24,6 +27,37 @@ await describe({
           .toThrow(TomlPathNotFoundError,);
         expect(() => tomlGetCommentsBefore({ edit, path: ['missing',], },),)
           .toThrow('Path missing not found',);
+      },
+    },),
+    it({
+      name: 'rejects missing insertion paths with a named diagnostic',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'key = 1\n', },);
+        expect(() => tomlInsertCommentAfter({ edit, path: ['missing',], comment: 'note', },),)
+          .toThrow('Path missing not found',);
+        expect(() => tomlInsertCommentBefore({ edit, path: ['missing',], comment: 'note', },),)
+          .toThrow('Path missing not found',);
+      },
+    },),
+    it({
+      name: 'inserts comments inside a standard table without touching sibling tables',
+      fn: async () => {
+        const source = '[a]\nx=1\ny=2\n[b]\nz=3\n';
+        const edit = parseTomlEdit({ source, },);
+        expect(tomlStringify({
+          edit: tomlInsertCommentBefore({ edit, path: ['a', 'y',], comment: 'note', },),
+        },),).toBe('[a]\nx=1\n# note\ny=2\n[b]\nz=3\n',);
+        expect(tomlStringify({
+          edit: tomlInsertCommentAfter({ edit, path: ['a', 'y',], comment: 'note', },),
+        },),).toBe('[a]\nx=1\ny=2  # note\n[b]\nz=3\n',);
+      },
+    },),
+    it({
+      name: 'keeps earlier top-level entries when inserting before a later key',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'first=1\nsecond=2\n', },);
+        const updated = tomlInsertCommentBefore({ edit, path: ['second',], comment: 'note', },);
+        expect(tomlStringify({ edit: updated, },),).toBe('first=1\n# note\nsecond=2\n',);
       },
     },),
     it({
