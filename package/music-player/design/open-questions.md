@@ -68,10 +68,15 @@ rounds (2026-09-17):
  illustrative results,
  no-result and
   unavailable states.
-  Native Slint rasters in both schemes cover 360,
-  480 and
-  1100px desktop widths (`questions/render/search-page-*`),
- and the HTML walkthrough
+  Native Slint rasters in both schemes cover player,
+  empty,
+  results,
+  no-results
+  and unavailable states at 360 and 480px;
+  the 1100px set covers player,
+  empty
+  and results (`questions/render/search-page-*`).
+  The HTML walkthrough
   demonstrates player → page → player without claiming native click/focus evidence.
   The
   rejected comparison is archived in `questions/archive/command-igr-rejected.html`;
