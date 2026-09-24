@@ -88,5 +88,26 @@ await describe({
         }
       },
     },),
+    it({
+      name: 'preserves parsed literal and single-line basic string styles',
+      fn: async () => {
+        for (const [source, expected,] of [
+          [`${String.raw`v = 'a\b'`}\n`, String.raw`'a\b'`,],
+          ["v = '''\nhello\nworld'''\n", "'''hello\nworld'''",],
+          [`${String.raw`v = "a\t b"`}\n`, String.raw`"a\t b"`,],
+        ] as const) {
+          const edit = parseTomlEdit({ source, },);
+          const node = tomlGetNode({ edit, path: ['v',], },);
+          if ((!('type' in node)) || (node.type !== 'TOMLValue') || (node.kind !== 'string'))
+            throw new Error('Expected parsed string node',);
+          const emitted = _emitStringValue({ node, },);
+          expect(emitted,).toBe(expected,);
+          expect(tomlGetValue({
+            edit: parseTomlEdit({ source: `v = ${emitted}\n`, },),
+            path: ['v',],
+          },),).toBe(tomlGetValue({ edit, path: ['v',], },),);
+        }
+      },
+    },),
   ],
 },);
