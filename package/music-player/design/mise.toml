@@ -1,10 +1,10 @@
 [vars]
-build_question = '''
+build_cover_question = '''
 const { readFileSync, writeFileSync } = await import("node:fs")
 const { join } = await import("node:path")
 const root = process.cwd()
-const templatePath = join(root, "questions", "current.template.html")
-const outputPath = join(root, "questions", "current.html")
+const templatePath = join(root, "questions", "archive", "cover-p.template.html")
+const outputPath = join(root, "questions", "archive", "cover-p.html")
 const darkCards = [
   { basename: "cover-round-cover-dark-wallpaper-s100", code: "D100", title: "Dark cover · wallpaper seed · 100% text", alt: "folded cover in dark mode under the measured wallpaper seed at default text size" },
   { basename: "cover-round-cover-dark-wallpaper-s085", code: "D085", title: "Dark cover · wallpaper seed · 85% text", alt: "folded cover in dark mode under the measured wallpaper seed at the smallest Android text preset" },
@@ -39,12 +39,12 @@ writeFileSync(outputPath, html)
 console.log("Built self-contained folded cover questionnaire.")
 '''
 
-validate_question = '''
+validate_cover_question = '''
 const { execFileSync } = await import("node:child_process")
 const { readFileSync } = await import("node:fs")
 const { join } = await import("node:path")
 const root = process.cwd()
-const htmlPath = join(root, "questions", "current.html")
+const htmlPath = join(root, "questions", "archive", "cover-p.html")
 const html = readFileSync(htmlPath, "utf8")
 if (html.includes("@@DARK_CARDS@@") || html.includes("@@LIGHT_CARDS@@") || html.includes("@@PICKER_CARDS@@")) {
   throw new Error("Cover questionnaire contains an unresolved card placeholder.")
@@ -379,19 +379,28 @@ console.log("Folded cover questionnaire is valid.")
 '''
 
 [tasks.build]
-description = "Embed native folded cover evidence into the self-contained cover questionnaire"
+description = "Embed native Slint evidence into the self-contained command-bar questionnaire"
 dir = "{{config_root}}"
-shell = "node --input-type=module-typescript -e"
-run = "{{vars.build_question}}"
+run = "node command-question.mjs build"
 
 [tasks.lint]
-description = "Validate the active folded cover design questionnaire"
+description = "Validate the active desktop command-bar questionnaire"
 dir = "{{config_root}}"
-shell = "node --input-type=module-typescript -e"
-run = "{{vars.validate_question}}"
+run = "node command-question.mjs validate"
 
 [tasks."test:unit"]
-description = "Exercise the folded cover questionnaire completion contract"
+description = "Exercise the desktop command-bar questionnaire completion contract"
+dir = "{{config_root}}"
+run = "node command-question.mjs validate"
+
+[tasks."build:cover"]
+description = "Rebuild the historical folded-cover P questionnaire in questions/archive"
 dir = "{{config_root}}"
 shell = "node --input-type=module-typescript -e"
-run = "{{vars.validate_question}}"
+run = "{{vars.build_cover_question}}"
+
+[tasks."lint:cover"]
+description = "Validate the historical folded-cover P questionnaire"
+dir = "{{config_root}}"
+shell = "node --input-type=module-typescript -e"
+run = "{{vars.validate_cover_question}}"
