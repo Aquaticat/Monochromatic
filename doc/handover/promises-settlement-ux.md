@@ -382,6 +382,23 @@ which preserves runtime checkmarks while the complete PDF source inventory passe
 [The print extraction note](../troubleshooting/agent-browser-pdf-checkmark-extraction.md)
 records the evidence without attributing the positioning cause to one upstream tool.
 
+## Belt timing feedback
+
+The user noticed that the belt stays empty when the current Promise settles and shows its
+result only after the next Create action. This is the authored "earlier Promise records"
+rule, not Promise behavior: `observe` updates the status and snapshots, while `perform`
+appends the old result to the belt only in its Create branch. It is causally awkward as
+an outcome timeline, even though the status reports the settlement immediately.
+
+Recommended change for a subsequent action request: append one observed-outcome receipt
+when the observer fires, label the belt as observed outcome records (including the current
+Promise), and leave the numbered current ticket available for later ignored resolver calls.
+Remove the Create-time append to avoid duplicate receipts; update the print counterpart
+and a browser test to assert appearance on observation, not on the next Create.
+Keep the native resolver calls, single-current-Promise toy rule, original values, and
+capture timing unchanged. The user's question establishes the UX concern, not an order to
+change the artifact in this decision turn.
+
 ## Superseded designs (do not revive without the user asking)
 
 - Embedding screenshots as base64 images in the choice form; replaced by live `srcdoc` iframes.
