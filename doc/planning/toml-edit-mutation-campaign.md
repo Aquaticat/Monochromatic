@@ -296,6 +296,23 @@ The parser/build recheck completed with 111 killed,
  178 compile errors,
  and no infrastructure errors.
 Its report is `/var/home/user/temp/agent/toml-mutation-parser-builder-recheck.json`.
+A further guard run after state and diagnostic tests reported 132 killed,
+ 18 confirmed survivors,
+ two timeouts,
+ and 178 compile errors;
+ `build-document.ts` had no survivors.
+Tests added since that run pin exact parser rejection text,
+ EOF comment metadata,
+ deeper array-table indices,
+ and a structurally tagged float string's numeric read.
+`build-input.ts`'s duplicate null guard was removed after the shared value encoder proved the same rejection;
+ package build/tests,
+ types,
+ oxlint,
+ and bounded sidecar properties passed.
+The fuzz coverage gate now reports `build-input.ts` dropping from 130 to 128 covered lines
+ because that guard was removed;
+ refreeze the baseline after the pending mutation recheck and any remaining runtime edits.
 A previous review mistakenly treated `parse-toml-edit.ts:53`'s `<` to `>=` mutant as a survivor.
 The actual final report and raw singleton shard record both classify it as a confirmed timeout;
  there is no verdict mismatch.
