@@ -90,3 +90,9 @@ try {
   rmSync(dir, { recursive: true, force: true })
 }
 """
+
+# Type-level soundness corpus (src/type-case-generate.ts): fixed seed, so the
+# committed output only changes when the generator, seed, or deepmerge-ts does.
+[tasks."generate:type-cases"]
+description = "Regenerate src/type-soundness.generated.ts; lint:types then proves each runtime result fits its static type"
+run = "node src/type-case-generate.ts"
