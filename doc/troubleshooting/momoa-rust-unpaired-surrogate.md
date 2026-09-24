@@ -147,6 +147,52 @@ calls construction of an invalid `char` immediate undefined behavior. This is a 
   a private, credential-free container bounded to 2 GiB and 2 CPUs, after
   inspecting the invoked command tree. No such run occurred here.
 
+### Isolated prototype execution manifest
+
+A fresh private clone was created under
+`~/temp/agent/upstream-prototype.AxhMuxdU/momoa` at commit `8dfb563`.
+Its `origin` was verified as `humanwhocodes/momoa` and its push URL disabled.
+The only product-source edit so far is a temporary checked conversion in
+`rust/src/parse.rs`; it returns an error instead of executing the original
+unchecked conversion. A separate `rust/examples/surrogate_safety.rs` exercises
+the public JSONC parse interface. The original unsafe call is **not** executed.
+
+- Fetch phase: `mise run fetch` in the private scratch root invoked
+  `cargo fetch --locked --manifest-path momoa/rust/Cargo.toml` with a private
+  `CARGO_HOME`. It succeeded with network access but executed no crate source.
+  The private cache measured 37 MiB after fetch; no credentials were copied.
+- Intended execution: `mise run test:safe-instrumented` runs `cargo run
+  --locked --offline --example surrogate_safety` in a rootless container using
+  local `docker.io/library/rust:1.97-bookworm` image digest
+  `sha256:77fac8b98f9f46062bb680b6d25d5bcaabfc400143952ebc572e924bcbedc3fa`.
+  The image source and toolchain are not part of the published Momoa crate.
+- Inputs: only the disposable clone mounted read-only at `/work/momoa` and
+  the private Cargo registry mounted at `/cargo-home`.
+  No repository checkout, real home directory, ambient credentials, or
+  network access enters the container. The filesystem root is read-only.
+  Cargo writes build artifacts to a 1 GiB `/target` tmpfs and temporary data
+  to a 256 MiB `/tmp` tmpfs. The registry bind mount remains writable for
+  Cargo locking and is not a strict disk-quota boundary; this deviation is
+  limited to the inspected private cache, not user or shared state.
+- Bounds: `--memory=2g`, `--memory-swap=2g`, `--cpus=2`,
+  `--pids-limit=128`, `--ulimit nofile=256:256`, and native Podman
+  `--timeout=600`. Stop if an undeclared write, subprocess, network attempt,
+  crash, or resource bound appears; do not retry unsafe input outside isolation.
+- Inspected command tree: `rust/Cargo.toml` and `Cargo.lock` select
+  `serde`, `thiserror`, `wasm-bindgen`, `serde-wasm-bindgen` and their
+  normal/build dependencies (saved in private `momoa-dependencies.txt`).
+  No `build.rs`, network, or subprocess call was found in `rust/src/`.
+  The pinned build scripts for `serde`, `serde_core`, `serde_json`,
+  `wasm-bindgen`, `wasm-bindgen-shared`, `proc-macro2`, `quote`, and
+  `thiserror` were read before execution. They write to Cargo's `OUT_DIR`,
+  query compiler or target settings, invoke `rustc` probes, or call
+  `git rev-parse HEAD` from the private registry copy; no other declared
+  subprocess or network endpoint was found. Release workflows, npm tasks,
+  benchmarks, and third-party test scripts are not invoked.
+
+At this point the container run and resulting output are pending.
+A missing failure or success must not be inferred from this manifest.
+
 ### Patterns that avoid the unsafe conversion (source-derived, not Momoa-run)
 
 - `r#"{"s":"plain"}"#`: no Unicode escape enters the `u` arm of
