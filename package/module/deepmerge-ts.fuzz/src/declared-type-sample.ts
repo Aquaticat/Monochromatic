@@ -29,9 +29,9 @@ import {
   type Arbitrary,
 } from 'fast-check';
 
+import { LEAF_INTEGER, } from './declared-type-leaf.ts';
 import {
   emitType,
-  LEAF_INTEGER,
   SYMBOL_NAMES,
   type ObjectNode,
   type PropNode,
@@ -49,7 +49,7 @@ export type Sampled = {
 /**
  Runtime symbols keyed by the constant names the generated file declares.
  */
-export const RUNTIME_SYMBOLS: Readonly<Record<string, symbol>> = Object.fromEntries(SYMBOL_NAMES.map(function toSymbol(name,) {
+export const RUNTIME_SYMBOLS: Readonly<Record<string, symbol>> = Object.fromEntries(SYMBOL_NAMES.map(function toSymbol(name: string,) {
   return [
     name,
     Symbol(name,),
@@ -76,6 +76,30 @@ type Entry = {
 };
 
 /**
+ Drawn key paired with its sampled value, before it becomes an entry or Map pair.
+ */
+type KeyedSample<Key,> = readonly [
+  Key,
+  Sampled
+];
+
+/**
+ Uniqueness selector of keyed samples.
+
+ @param keyed - Key and sample.
+
+ @returns Key.
+
+ @example
+ ```ts
+ keyOfPair(['a', sampled,]); // 'a'
+ ```
+ */
+function keyOfPair<const Key,>(keyed: KeyedSample<Key>,): Key {
+  return keyed[0];
+}
+
+/**
  Scalar sample whose source is its JSON form.
 
  @param value - Scalar value.
@@ -98,12 +122,14 @@ function scalar(value: unknown,): Sampled {
  Entry for a declared property or an index-signature key.
 
  @param key - String key or symbol constant name.
- 
+
  @param symbolKey - Whether `key` names a symbol constant.
- 
+
  @param sampled - Sampled value.
 
  @returns Entry with runtime key and source key.
+
+ @throws When `key` names no runtime symbol.
 
  @example
  ```ts
@@ -152,14 +178,14 @@ function entryOf({
  */
 function objectOf(entries: readonly Entry[],): Sampled {
   return {
-    source: `{ ${entries.map(function property(entry,) {
+    source: `{ ${entries.map(function property(entry: Entry,) {
       return `${entry.keySource}: ${entry.sampled
         .source}`;
     },)
       .join(', ',)} }`,
     value: Object.defineProperties(
       {},
-      Object.fromEntries(entries.map(function toDescriptor(entry,) {
+      Object.fromEntries(entries.map(function toDescriptor(entry: Entry,) {
       return [
         entry.key,
         {
@@ -231,7 +257,7 @@ function sampleEntries(node: ObjectNode,): Arbitrary<readonly Entry[]> {
      Present entry arbitrary.
      */
     const present = sampleValue(prop.type,)
-      .map(function toEntry(sampled,): readonly Entry[] {
+      .map(function toEntry(sampled: Sampled,): readonly Entry[] {
       return [entryOf({
         key: prop.key,
         sampled,
@@ -258,14 +284,12 @@ function sampleEntries(node: ObjectNode,): Arbitrary<readonly Entry[]> {
           .value,),
       ),
       {
-      maxLength: MAX_INDEX_KEYS,
-      selector: function keyOf([key,],) {
-        return key;
+        maxLength: MAX_INDEX_KEYS,
+        selector: keyOfPair,
       },
-    },
     )
-      .map(function toEntries(pairs,) {
-      return pairs.map(function toEntry([key, sampled,],) {
+      .map(function toEntries(pairs: readonly KeyedSample<string>[],) {
+      return pairs.map(function toEntry([key, sampled,]: KeyedSample<string>,) {
         return entryOf({
           key,
           sampled,
@@ -277,11 +301,112 @@ function sampleEntries(node: ObjectNode,): Arbitrary<readonly Entry[]> {
     tuple(...props,),
     extras,
   )
-    .map(function flatten([declared, extra,],) {
+    .map(function flatten([declared, extra,]: readonly [
+      readonly (readonly Entry[])[],
+      readonly Entry[]
+    ],) {
     return [
       ...declared.flat(),
       ...extra,
     ];
+  },);
+}
+
+/**
+ Sampler for arrays, tuples, and Sets.
+
+ @param node - Collection type.
+
+ @returns Arbitrary of conforming collections.
+
+ @example
+ ```ts
+ const samples = sampleCollection({ kind: 'set', element: { kind: 'number', }, readonly: false, });
+ ```
+ */
+function sampleCollection(node: Extract<TypeNode, { readonly kind: 'array' | 'set' | 'tuple'; }>,): Arbitrary<Sampled> {
+  /**
+   Element samples: one per tuple slot, or up to a few for arrays and Sets.
+   */
+  const items = node.kind === 'tuple'
+    ? tuple(...node.elements
+      .map(sampleValue,),)
+    : array(
+      sampleValue(node.element,),
+      { maxLength: MAX_ELEMENTS, },
+    );
+  return items.map(function toCollection(samples: readonly Sampled[],): Sampled {
+    /**
+     Element sources joined for a literal.
+     */
+    const inner = samples.map(function sourceOf(sample: Sampled,) {
+      return sample.source;
+    },)
+      .join(', ',);
+    /**
+     Element values.
+     */
+    const values = samples.map(function valueOf(sample: Sampled,) {
+      return sample.value;
+    },);
+    if (node.kind === 'set')
+      return {
+        source: `new Set<${emitType(node.element,)}>([${inner}])`,
+        value: new Set(values,),
+      };
+    return {
+      source: `[${inner}]`,
+      value: values,
+    };
+  },);
+}
+
+/**
+ Sampler for Maps, with unique keys of the declared key kind.
+
+ @param node - Map type.
+
+ @returns Arbitrary of conforming Maps.
+
+ @example
+ ```ts
+ const samples = sampleMap({ kind: 'map', keyKind: 'string', value: { kind: 'number', }, readonly: false, });
+ ```
+ */
+function sampleMap(node: Extract<TypeNode, { readonly kind: 'map'; }>,): Arbitrary<Sampled> {
+  /**
+   Keys of the declared key kind.
+   */
+  const keys = node.keyKind === 'string' ? constantFrom<number | string>(
+    'k',
+    'm',
+  ) : constantFrom<number | string>(
+    1,
+    2,
+  );
+  return uniqueArray(
+    tuple(
+      keys,
+      sampleValue(node.value,),
+    ),
+    {
+      maxLength: MAX_ELEMENTS,
+      selector: keyOfPair,
+    },
+  )
+    .map(function toMap(entries: readonly KeyedSample<number | string>[],): Sampled {
+    return {
+      source: `new Map<${node.keyKind}, ${emitType(node.value,)}>([${entries.map(function entrySource([key, sampled,]: KeyedSample<number | string>,) {
+        return `[${JSON.stringify(key,)}, ${sampled.source}]`;
+      },)
+        .join(', ',)}])`,
+      value: new Map(entries.map(function entryValue([key, sampled,]: KeyedSample<number | string>,) {
+        return [
+          key,
+          sampled.value,
+        ];
+      },),),
+    };
   },);
 }
 
@@ -291,6 +416,8 @@ function sampleEntries(node: ObjectNode,): Arbitrary<readonly Entry[]> {
  @param node - Declared type.
 
  @returns Arbitrary of conforming samples.
+
+ @throws When a new node kind has no sampler branch.
 
  @example
  ```ts
@@ -315,7 +442,7 @@ export function sampleValue(node: TypeNode,): Arbitrary<Sampled> {
   if (node.kind === 'literal')
     return constant(scalar(node.value,),);
   if (node.kind === 'date') {
-    return LEAF_INTEGER.map(function toDate(offset,): Sampled {
+    return LEAF_INTEGER.map(function toDate(offset: number,): Sampled {
       return {
         source: `new Date(${String(Math.abs(offset,),)})`,
         value: new Date(Math.abs(offset,),),
@@ -327,95 +454,30 @@ export function sampleValue(node: TypeNode,): Arbitrary<Sampled> {
       'x',
       'y',
     )
-      .map(function toRegExp(pattern,): Sampled {
+      .map(function toRegExp(pattern: string,): Sampled {
       return {
-        source: `new RegExp(${JSON.stringify(pattern,)}, "g")`,
+        source: `new RegExp(${JSON.stringify(pattern,)}, "gu")`,
+        // oxlint-disable-next-line no-restricted-syntax/no-regex -- a RegExp object is the leaf value under test; its one-letter pattern is never matched against input.
         value: new RegExp(
           pattern,
-          'g',
+          'gu',
         ),
       };
     },);
   }
   if ((node.kind === 'array') || (node.kind === 'tuple')
-    || (node.kind === 'set')) {
-    /**
-     Element samples: one per tuple slot, or up to a few for arrays and Sets.
-     */
-    const items = node.kind === 'tuple'
-      ? tuple(...node.elements
-        .map(sampleValue,),)
-      : array(
-        sampleValue(node.element,),
-        { maxLength: MAX_ELEMENTS, },
-      );
-    return items.map(function toCollection(samples,): Sampled {
-      /**
-       Element sources joined for a literal.
-       */
-      const inner = samples.map(function sourceOf(sample,) {
-        return sample.source;
-      },)
-        .join(', ',);
-      /**
-       Element values.
-       */
-      const values = samples.map(function valueOf(sample,) {
-        return sample.value;
-      },);
-      if (node.kind === 'set')
-        return {
-          source: `new Set<${emitType(node.element,)}>([${inner}])`,
-          value: new Set(values,),
-        };
-      return {
-        source: `[${inner}]`,
-        value: values,
-      };
-    },);
-  }
-  if (node.kind === 'map') {
-    return uniqueArray(
-      tuple(
-        node.keyKind === 'string' ? constantFrom<number | string>(
-          'k',
-          'm',
-        ) : constantFrom<number | string>(
-          1,
-          2,
-        ),
-        sampleValue(node.value,),
-      ),
-      {
-      maxLength: MAX_ELEMENTS,
-      selector: function keyOf([key,],) {
-        return key;
-      },
-    },
-    )
-      .map(function toMap(entries,): Sampled {
-      return {
-        source: `new Map<${node.keyKind}, ${emitType(node.value,)}>([${entries.map(function entrySource([key, sampled,],) {
-          return `[${JSON.stringify(key,)}, ${sampled.source}]`;
-        },)
-          .join(', ',)}])`,
-        value: new Map(entries.map(function entryValue([key, sampled,],) {
-          return [
-            key,
-            sampled.value,
-          ];
-        },),),
-      };
-    },);
-  }
+    || (node.kind === 'set'))
+    return sampleCollection(node,);
+  if (node.kind === 'map')
+    return sampleMap(node,);
   if (node.kind === 'union')
     return oneof(...node.members
       .map(sampleValue,),);
   if (node.kind === 'record') {
     return tuple(...node.keys
-      .map(function entry(key,) {
+      .map(function entry(key: string,) {
       return sampleValue(node.value,)
-        .map(function toEntry(sampled,) {
+        .map(function toEntry(sampled: Sampled,) {
         return entryOf({
           key,
           sampled,
@@ -427,7 +489,7 @@ export function sampleValue(node: TypeNode,): Arbitrary<Sampled> {
   }
   if (node.kind === 'box') {
     return sampleValue(node.inner,)
-      .map(function toBox(inner,) {
+      .map(function toBox(inner: Sampled,) {
       return objectOf([
         entryOf({
           key: 'v',
@@ -447,15 +509,19 @@ export function sampleValue(node: TypeNode,): Arbitrary<Sampled> {
       sampleEntries(node.left,),
       sampleEntries(node.right,),
     )
-      .map(function combine([left, right,],) {
+      .map(function combine([left, right,]: readonly [
+        readonly Entry[],
+        readonly Entry[]
+      ],) {
       return objectOf([
         ...left,
         ...right,
       ],);
     },);
   }
+  // LeafNode's kind is itself a union, so the chain cannot narrow node to never; check the last kind explicitly.
   if (node.kind !== 'object')
-    throw new Error(`sampleValue: unhandled kind ${node.kind}`,);
+    throw new Error(`sampleValue: unhandled node ${JSON.stringify(node,)}`,);
   return sampleEntries(node,)
     .map(objectOf,);
 }

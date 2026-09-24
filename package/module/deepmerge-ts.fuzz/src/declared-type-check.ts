@@ -25,8 +25,8 @@ import {
 import {
   emitCase,
   emitHeader,
-  type DrawnCase,
-} from './declared-type-generate.ts';
+} from './declared-type-emit.ts';
+import type { DrawnCase, } from './declared-type-generate.ts';
 
 /**
  One emitted case with its runtime result.
@@ -55,6 +55,14 @@ export type EmittedModule = {
     readonly first: number;
     readonly last: number
   }[];
+};
+
+/**
+ Emitted source lines of one case.
+ */
+type CaseBody = {
+  readonly id: number;
+  readonly lines: readonly string[]
 };
 
 /**
@@ -91,9 +99,9 @@ export function emitModule(
     {
       drawn,
       result,
-    },
-    id,
-  ) {
+    }: RunCase,
+    id: number,
+  ): CaseBody {
     return {
       id,
       lines: emitCase({
@@ -115,7 +123,7 @@ export function emitModule(
       {
         id,
         lines,
-      },
+      }: CaseBody,
     ) {
       return {
         next: acc.next + lines.length,
@@ -137,9 +145,9 @@ export function emitModule(
   return {
     source: [
       ...header,
-      ...bodies.flatMap(function lines({ lines: caseLines, },) {
-      return caseLines;
-    },),
+      ...bodies.flatMap(function linesOf(caseBody: CaseBody,) {
+        return caseBody.lines;
+      },),
       '];',
       '',
     ].join('\n',),

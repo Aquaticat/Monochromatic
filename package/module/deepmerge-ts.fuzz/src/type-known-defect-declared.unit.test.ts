@@ -55,17 +55,14 @@ await describe({
       },
     },),
     it({
-      name: 'unsound: a union-of-objects input with no shared key, merged with keyless inputs, is typed never',
+      // The same holds when the other inputs are keyless (`{}` or `Record<never, never>`); lint bans those spellings here.
+      name: 'unsound: union-of-objects inputs whose members share no key, with no other known key, are typed never',
       // Cause: the same keyof-of-a-union reading leaves RecordKeysOf empty, and DeepMergeRecordsDefaultHKT in
       // src/types/defaults.ts returns never when IsNever<RecordKeysOf<Ts>>, so any assertion on the result passes.
       fn: async () => {
-        const later = target.deepmerge(widen<{ a: 1; } | { b: 2; }>({ a: 1, },), widen<{}>({},),);
-        expectTypeOf(later,).toBeNever();
-        expect(later,).toEqual({ a: 1, },);
-
-        const earlier = target.deepmerge(widen<{}>({},), widen<{ a: 1; } | { b: 2; }>({ b: 2, },),);
-        expectTypeOf(earlier,).toBeNever();
-        expect(earlier,).toEqual({ b: 2, },);
+        const merged = target.deepmerge(widen<{ a: 1; } | { b: 2; }>({ a: 1, },), widen<{ c: 3; } | { d: 4; }>({ d: 4, },),);
+        expectTypeOf(merged,).toBeNever();
+        expect(merged,).toEqual({ a: 1, d: 4, },);
       },
     },),
     it({
@@ -87,9 +84,9 @@ await describe({
         expect(wider.a,).toEqual({},);
 
         // Both optional: the narrower tuple type replaces the concatenation.
-        const tuples = target.deepmerge(widen<{ a?: string[]; }>({ a: ['x',], },), widen<{ a?: []; }>({ a: [], },),);
-        expectTypeOf(tuples,).toEqualTypeOf<{ a?: []; }>();
-        expect(tuples.a,).toEqual(['x',],);
+        const tuples = target.deepmerge(widen<{ a?: string[]; }>({ a: ['x',], },), widen<{ a?: ['y',]; }>({ a: ['y',], },),);
+        expectTypeOf(tuples,).toEqualTypeOf<{ a?: ['y',]; }>();
+        expect(tuples.a,).toEqual(['x', 'y',],);
       },
     },),
     it({
@@ -112,8 +109,8 @@ await describe({
         expectTypeOf(root,).toEqualTypeOf<{ a: number; }>();
         expect(root,).toEqual({ a: 2, b: 's', },);
 
-        const nested = target.deepmerge(widen<{ x: {}; y: 1; }>({ x: {}, y: 1, },), widen<{ x: { b?: 1; }; z: 2; }>({ x: { b: 1, }, z: 2, },),);
-        expectTypeOf(nested,).toEqualTypeOf<{ x: {}; y: 1; z: 2; }>();
+        const nested = target.deepmerge(widen<{ x: { c?: 2; }; y: 1; }>({ x: {}, y: 1, },), widen<{ x: { b?: 1; c?: 2; }; z: 2; }>({ x: { b: 1, }, z: 2, },),);
+        expectTypeOf(nested,).toEqualTypeOf<{ x: { c?: 2; }; y: 1; z: 2; }>();
         expect(nested.x,).toEqual({ b: 1, },);
       },
     },),
@@ -127,11 +124,11 @@ await describe({
         expectTypeOf(tuples,).toEqualTypeOf<{ a: [number]; }>();
         expect(tuples.a,).toEqual([1, 2,],);
 
-        // Imprecise variant: an empty target type absorbs every source key.
-        const empty = widen<{}>({},);
-        target.deepmergeInto(empty, widen<{ b: 1; }>({ b: 1, },),);
-        expectTypeOf(empty,).toEqualTypeOf<{}>();
-        expect(empty,).toEqual({ b: 1, },);
+        // Imprecise variant: an `object` target type absorbs every source key.
+        const loose = widen<object>({},);
+        target.deepmergeInto(loose, widen<{ b: 1; }>({ b: 1, },),);
+        expectTypeOf(loose,).toEqualTypeOf<object>();
+        expect(loose,).toEqual({ b: 1, },);
       },
     },),
     it({
@@ -141,7 +138,7 @@ await describe({
       fn: async () => {
         const intoMap = widen<{ b: number; }>({ b: 1, },);
         target.deepmergeInto(intoMap, widen<Map<string, 'b'>>(new Map([['m', 'b',],],),),);
-        expectTypeOf(intoMap,).toMatchTypeOf<Map<string, 'b'>>();
+        expectTypeOf(intoMap,).toExtend<Map<string, 'b'>>();
         expect(intoMap instanceof Map,).toBe(false,);
         expect(intoMap,).toEqual({ b: 1, },);
       },
