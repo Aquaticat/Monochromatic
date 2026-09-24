@@ -2,12 +2,16 @@
 
 ## Status
 
-Grilling in progress since 2026-09-23;
-shared understanding not yet confirmed,
-so no implementation has started.
-Next action:
-collect answers to the open questions in `Open questions`,
-then confirm shared understanding before building anything.
+Shared understanding confirmed 2026-09-23;
+implementation authorized.
+Track progress in `Planned sequence`.
+
+User constraints from confirmation:
+all security findings go into one combined private advisory draft,
+all other upstream items go into one combined issue draft,
+and both stay local until the user reviews and posts them personally.
+No GitHub fork is created and nothing is pushed upstream-side until then;
+fix branches stay in a local checkout with pushes disabled.
 
 Findings under disclosure embargo live only in gitignored `*.local.*` files
 (see `Embargo`);
@@ -51,8 +55,6 @@ in a capped container (`podman run --memory=2g --cpus=2 --rm`, `node:24-slim`):
   - `getCyclicReferenceDepth` in `src/utils.ts` checks `parents.includes(object)` across all inputs' ancestors;
      `deepmerge({ k: s }, { k: { k2: s } })` returns `r.k.k2 === r.k`,
      a cycle absent from every input.
-  - `mergeArraysInto` in `src/defaults/general.ts` spreads the result into `splice`;
-     `deepmergeInto([], new Array(200000).fill(0))` throws `RangeError`.
 - Untested behaviour:
    getters (invoked and flattened, throwing getters propagate),
    frozen targets and sources,
@@ -121,7 +123,7 @@ Details:
 
 None.
 Frontier empty on 2026-09-23;
-awaiting the user's confirmation of shared understanding before implementation.
+confirmed by the user the same day.
 
 ## Answered 2026-09-23 (round 5)
 
@@ -142,12 +144,12 @@ awaiting the user's confirmation of shared understanding before implementation.
    citing its draft issue,
    so an upstream fix flips it and forces re-inclusion.
 - Settled (veto open):
-   public generators cap cyclic-input depth below the embargoed threshold;
-   the deep cyclic region is exercised only by the `*.local.*` property until the embargo lifts.
+   public generators stay inside bounds that avoid embargoed findings;
+   the excluded regions are exercised only by `*.local.*` properties until the embargo lifts.
 
 ## Planned sequence
 
-1. Local advisory draft for the embargoed findings, for the user to file privately.
+1. One combined local advisory draft for every embargoed finding, for the user to file privately.
 2. Sidecar `package/module/deepmerge-ts.fuzz`:
    reference model,
    invariants,
@@ -155,13 +157,14 @@ awaiting the user's confirmation of shared understanding before implementation.
    unbounded containerized `fuzz`,
    `fuzz:coverage` gate,
    `README.md`.
-3. Fork `Aquaticat/deepmerge-ts`,
-   local checkout under `~/temp/agent` with pushes only to the fork,
-   and sidecar support for targeting a fork build.
-4. Public fix branches with Vitest regression tests for non-embargoed defects.
-5. Local drafts:
-   defect issues and PR bodies,
-   `maxDepth` fallback docs issue,
+3. Local upstream checkout under `~/temp/agent` with push disabled,
+   and sidecar support for targeting a local branch build.
+   The GitHub fork waits until the user posts the drafts.
+4. Local fix branches with Vitest regression tests for non-embargoed defects;
+   not pushed.
+5. One combined local issue draft:
+   non-embargoed defects,
+   `maxDepth` fallback docs request,
    sparse-hole intent question,
    property-suite proposal.
 
