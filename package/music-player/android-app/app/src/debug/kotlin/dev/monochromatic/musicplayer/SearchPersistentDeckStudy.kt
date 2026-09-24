@@ -184,7 +184,7 @@ private fun SearchDeckLeft(query: String, onQueryChange: (String) -> Unit,
 private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, halfDent: Dp, light: Boolean, pageColor: Color) {
     Row(modifier = Modifier.fillMaxSize().background(pageColor)) {
-        SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f)) { slot ->
+        SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f), deckFirst = true) { slot ->
             SearchFoldFolders(light = light, modifier = slot.padding(end = halfDent + 8.dp))
         }
         PersistentSearchPane(query = query, onQueryChange = onQueryChange, onBack = onBack,

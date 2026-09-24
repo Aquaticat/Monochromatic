@@ -1,6 +1,18 @@
 <?xml version='1.0' encoding='utf-8'?>
 <manifest xmlns:android='http://schemas.android.com/apk/res/android'>
   <application>
+    <!-- Debug-only IME for validating the system keyboard inset when Gboard shows no keys. -->
+    <service
+      android:name='.FoldProbeInputMethod'
+      android:exported='true'
+      android:label='Fold debug keyboard probe'
+      android:permission='android.permission.BIND_INPUT_METHOD'
+    >
+      <intent-filter>
+        <action android:name='android.view.InputMethod' />
+      </intent-filter>
+      <meta-data android:name='android.view.im' android:resource='@xml/fold_probe_input_method' />
+    </service>
     <!-- Debug-only, non-functional Compose surface used for Pixel Fold screenshot capture. -->
     <activity
       android:name='.DesignCandidateActivity'

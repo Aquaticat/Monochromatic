@@ -980,13 +980,21 @@ private fun paletteForSearchDeck(light: Boolean): CandidatePalette = paletteFor(
  */
 @Composable
 internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier,
-    includeTopInset: Boolean = true, topContent: @Composable (Modifier) -> Unit) {
+    includeTopInset: Boolean = true, deckFirst: Boolean = false,
+    topContent: @Composable (Modifier) -> Unit) {
     val palette = paletteForSearchDeck(light)
     Column(modifier = modifier.fillMaxSize().background(palette.picker)) {
         if (includeTopInset) Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
-        topContent(Modifier.weight(1f))
-        Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.sectionDivider))
-        TransportBlock(modifier = Modifier.fillMaxWidth(), candidate = "dark-stable-wallpaper-dynamic", palette = palette)
+        if (deckFirst) {
+            // Keep playback controls above the system keyboard while the lower browser can scroll.
+            TransportBlock(modifier = Modifier.fillMaxWidth(), candidate = "dark-stable-wallpaper-dynamic", palette = palette)
+            Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.sectionDivider))
+            topContent(Modifier.weight(1f))
+        } else {
+            topContent(Modifier.weight(1f))
+            Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.sectionDivider))
+            TransportBlock(modifier = Modifier.fillMaxWidth(), candidate = "dark-stable-wallpaper-dynamic", palette = palette)
+        }
     }
 }
 
