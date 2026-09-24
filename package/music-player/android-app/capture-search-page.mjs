@@ -106,9 +106,33 @@ try {
               png.readUInt32BE(16) !== screen.pixels[0] || png.readUInt32BE(20) !== screen.pixels[1]) {
             throw new Error(`${base} did not return the opaque panel's physical PNG dimensions.`);
           }
-          writeFileSync(join(renderDirectory, `${base}.png`), png);
+          const pngPath = join(renderDirectory, `${base}.png`);
+          writeFileSync(pngPath, png);
+          if (screen.name === 'inner') {
+            // E2's centered [414,438)dp connector is approximately physical x [1009,1068).
+            // A pixel-only check misses transparent clickable rows, so inspect native nodes too.
+            const xs = [1015, 1038, 1060];
+            const ys = [200, 400, 900, 1500, 1900];
+            const format = ys.flatMap((y) => xs.map((x) => `%[hex:p{${x},${y}}]`)).join(' ');
+            const pixels = execFileSync('magick', [pngPath, '-format', format, 'info:'], { encoding: 'utf8' }).trim().split(' ');
+            const expected = mode === 'dark' ? '000000FF' : `${roles.surface_container_lowest?.slice(1).toUpperCase()}FF`;
+            if (pixels.some((pixel) => pixel !== expected)) {
+              throw new Error(`${base}: unfolded connector x=[1009,1068) contains non-neutral app pixels; expected ${expected}, measured ${pixels.join(',')}.`);
+            }
+            const nodes = [...xml.matchAll(/<node\b[^>]*>/g)].map((match) => match[0]);
+            const crossing = nodes.filter((node) => node.includes(`package="${packageName}"`) &&
+              (/text="[^"]+"/.test(node) || /content-desc="[^"]+"/.test(node) ||
+                node.includes('clickable="true"') || node.includes('focusable="true"') || node.includes('scrollable="true"')))
+              .find((node) => {
+                const bounds = node.match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);
+                return bounds && Number(bounds[1]) < 1068 && Number(bounds[3]) > 1009;
+              });
+            if (crossing) {
+              throw new Error(`${base}: app content or target spans the unfolded connector: ${crossing.slice(0, 330)}`);
+            }
+          }
           writeFileSync(join(evidenceDirectory, `${base}.xml`), `${xml.trim()}\n`);
-          console.log(`${base}.png ${screen.pixels.join('x')} ${png.length} bytes`);
+          console.log(`${base}.png ${screen.pixels.join('x')} ${png.length} bytes; connector clear`);
         }
       }
     }
