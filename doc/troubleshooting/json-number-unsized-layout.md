@@ -1,7 +1,8 @@
 # json-number 0.4.10: checked number creation lacks a documented unsized layout guarantee
 
 Status:
- **source-level portability gate**, not a reproduced runtime memory fault.
+ **source-level portability gate**,
+ not a reproduced runtime memory fault.
  The published crate was not executed as a number foundation after this finding.
  A separate safe repository-owned number prototype and its consumer passed their existing tests.
  No upstream issue was filed.
@@ -164,20 +165,26 @@ No matching entry exists in this repository's `.out-of-scope/` list.
  its maintainer states that issue was fixed in version 0.4.9.
  No report or patch was sent.
 
-1. **Upstream fault:** unresolved.
+1. **Upstream fault**:
+   unresolved.
    The public docs do not establish the needed layout guarantee,
    but this audit has not proved a concrete invalid result or checked a formal compiler guarantee outside the cited Reference.
    Do not equate an unproved safety case with demonstrated undefined behavior.
-2. **Fixability:** yes in principle.
+2. **Fixability**:
+   yes in principle.
    A separately reviewed transparent representation and justified pointer conversion could supply a documented layout boundary.
-3. **Supported use case:** yes for checked raw JSON-number token storage (`src/lib.rs:110-128`).
+3. **Supported use case**:
+   yes for checked raw JSON-number token storage (`src/lib.rs:110-128`).
    Mathematical equality is explicitly **not** claimed by upstream.
-4. **Contribution welcome:** `README.md:43-48` specifies dual licensing for submitted contributions.
+4. **Contribution welcome**:
+   `README.md:43-48` specifies dual licensing for submitted contributions.
    The checkout has no `CONTRIBUTING.md` or `.github/` policy;
    no ban on outside or AI-assisted reports was found in the inspected files.
-5. **Maintainer disposition:** neither searched tracker results nor the README state a refusal.
+5. **Maintainer disposition**:
+   neither searched tracker results nor the README state a refusal.
    This is not a prediction of acceptance.
-6. **Prototype:** not attempted.
+6. **Prototype**:
+   not attempted.
    Constraint 1 remains unresolved,
    so the auto-prototype rule for constraints 1 through 5 holding does not apply.
    A separate fork would need representation,
