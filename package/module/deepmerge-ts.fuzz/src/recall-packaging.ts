@@ -16,7 +16,6 @@
  @module
  */
 
-import { execFile, } from 'node:child_process';
 import {
   cp,
   mkdir,
@@ -27,12 +26,14 @@ import {
   join,
   resolve,
 } from 'node:path';
-import { promisify, } from 'node:util';
+
+import { runProbe, } from './recall-probe-run.ts';
 
 /**
- Promise form of `execFile`.
+ Characters of a failure's output kept when no line names an error.
  */
-const run = promisify(execFile,);
+const FAILURE_EXCERPT = 200;
+
 
 /**
  This package's root.
@@ -337,42 +338,34 @@ async function probeRelease(version: string,): Promise<Readonly<Record<string, s
    Outcomes in probe order.
    */
   const outcomes = await Promise.all(PROBES.map(async function probe(entry,) {
-    try {
-      await run(
-        entry.command,
-        [...entry.args(dir,),],
-        {
-          cwd: dir,
-          timeout: 300_000,
-        },
-      );
+    /**
+     Probe exit and output.
+     */
+    const { code, output, } = await runProbe({
+      args: entry.args(dir,),
+      command: entry.command,
+      cwd: dir,
+    },);
+    if (code === 0) {
       return [
         entry.name,
         'pass',
       ] as const;
-    } catch (error) {
-      /**
-       Compiler or runtime output of the failure.
-       */
-      const output = `${String(Reflect.get(
-        Object(error,),
-        'stdout',
-      ) ?? '',)}${String(Reflect.get(
-        Object(error,),
-        'stderr',
-      ) ?? '',)}`;
-      return [
-        entry.name,
-        `fail: ${(output.split('\n',)
-          .find(function isError(line,) {
-            return line.includes('error',) || line.includes('Error',);
-          },) ?? output.slice(
-          0,
-          200,
-        ))
-          .trim()}`,
-      ] as const;
     }
+    /**
+     First line naming an error, else the start of the output.
+     */
+    const reason = output.split('\n',)
+      .find(function isError(line,) {
+        return line.includes('error',) || line.includes('Error',);
+      },) ?? output.slice(
+      0,
+      FAILURE_EXCERPT,
+    );
+    return [
+      entry.name,
+      `fail: ${reason.trim()}`,
+    ] as const;
   },),);
   return Object.fromEntries(outcomes,);
 }

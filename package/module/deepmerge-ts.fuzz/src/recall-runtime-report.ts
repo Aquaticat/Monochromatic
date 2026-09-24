@@ -15,6 +15,7 @@ import { readFile, } from 'node:fs/promises';
 import { resolve, } from 'node:path';
 
 import { isPinningFile, } from './mutation-mutant.ts';
+import { fieldOf, } from './recall-json.ts';
 
 /**
  Recall output directory.
@@ -47,13 +48,38 @@ type Detection = {
  ```
  */
 function isDetection(value: unknown,): value is Detection {
-  return ((typeof Reflect.get(
-    Object(value,),
-    'file',
-  )) === 'string') && Array.isArray(Reflect.get(
-    Object(value,),
-    'failures',
-  ),);
+  /**
+   Failures field.
+   */
+  const failures = fieldOf({
+    key: 'failures',
+    value,
+  },);
+  return ((typeof fieldOf({
+    key: 'file',
+    value,
+  },)) === 'string') && Array.isArray(failures,)
+    && failures.every(function isString(name: unknown,) {
+      return (typeof name) === 'string';
+    },);
+}
+
+/**
+ Test names in one detection, without the suite rollup.
+
+ @param entry - Detection of one file.
+
+ @returns Names of failing tests, which carry a suite and a test bracket.
+
+ @example
+ ```ts
+ testsOf({ failures: ['[s] [t]', '[s]',], file: 'src/a.ts', }); // ['[s] [t]']
+ ```
+ */
+function testsOf(entry: Detection,): readonly string[] {
+  return entry.failures.filter(function isTest(name,) {
+    return name.includes('] [',);
+  },);
 }
 
 if (import.meta.main) {
@@ -94,42 +120,34 @@ if (import.meta.main) {
       /**
        Bounded-layer detections in baseline files.
        */
-      const bounded = [Reflect.get(
-        Object(record,),
-        'bounded',
-      ),]
+      const bounded = [fieldOf({
+        key: 'bounded',
+        value: record,
+      },),]
         .flat()
         .filter(isDetection,)
         .filter(function inBaseline(entry,) {
           return baseline.has(entry.file,);
         },);
-      /**
-       Test names in one detection, without the suite rollup.
-       */
-      const tests = function testsOf(entry: Detection,): readonly string[] {
-        return entry.failures.filter(function isTest(name,) {
-          return name.includes('] [',);
-        },);
-      };
       return {
-        control: Reflect.get(
-          Object(record,),
-          'control',
-        ),
-        id: Reflect.get(
-          Object(record,),
-          'id',
-        ),
+        control: fieldOf({
+          key: 'control',
+          value: record,
+        },),
+        id: fieldOf({
+          key: 'id',
+          value: record,
+        },),
         pinning: bounded
           .filter(function pins(entry,) {
             return isPinningFile(entry.file,);
           },)
-          .flatMap(tests,),
+          .flatMap(testsOf,),
         specifying: bounded
           .filter(function specifies(entry,) {
             return !isPinningFile(entry.file,);
           },)
-          .flatMap(tests,),
+          .flatMap(testsOf,),
       };
     },);
   console.log(JSON.stringify(

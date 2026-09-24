@@ -19,6 +19,7 @@ import {
 } from 'node:path';
 
 import { attributable, } from './recall-edit.ts';
+import { fieldOf, } from './recall-json.ts';
 import { TYPE_BUGS, } from './recall-ledger-type.ts';
 
 /**
@@ -94,23 +95,23 @@ async function readJob(job: string,): Promise<{
     /**
      Diagnostics field.
      */
-    const diagnostics: unknown = Reflect.get(
-      Object(parsed,),
-      'diagnostics',
-    );
+    const diagnostics: unknown = fieldOf({
+      key: 'diagnostics',
+      value: parsed,
+    },);
     return {
       diagnostics: Array.isArray(diagnostics,) ? diagnostics.map(String,) : [],
-      ms: Number(Reflect.get(
-        Object(parsed,),
-        'ms',
-      ),),
-      state: (Reflect.get(
-        Object(parsed,),
-        'timedOut',
-      ) === true) ? 'timeout' : 'ran',
+      ms: Number(fieldOf({
+        key: 'ms',
+        value: parsed,
+      },),),
+      state: (fieldOf({
+        key: 'timedOut',
+        value: parsed,
+      },) === true) ? 'timeout' : 'ran',
     };
   } catch (error) {
-    if ((error instanceof Error) && error.message.includes('ENOENT',)) {
+    if (Error.isError(error,) && error.message.includes('ENOENT',)) {
       return {
         diagnostics: [],
         ms: 0,

@@ -41,20 +41,24 @@ import {
 } from './recall-runner.ts';
 
 /**
+ First seed of the bounded campaign rounds; any fixed value keeps runs reproducible.
+ */
+const FIRST_CAMPAIGN_SEED = 11;
+
+/**
  Seeds of the bounded campaign rounds run when the bounded layer misses.
  */
-const CAMPAIGN_SEEDS = [
-  11,
-  12,
-  13,
-  14,
-  15,
-] as const;
+const CAMPAIGN_SEEDS: readonly number[] = Array.from(
+  { length: 5, },
+  function seedAt(_unused: unknown, index: number,) {
+    return FIRST_CAMPAIGN_SEED + index;
+  },
+);
 
 /**
  Runs per property in each bounded campaign round.
  */
-const CAMPAIGN_RUNS = 2000;
+const CAMPAIGN_RUNS = 2_000;
 
 /**
  Runs already made, keyed by bundle and layer, so the shared baseline bundle

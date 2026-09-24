@@ -24,7 +24,11 @@ export const RUNTIME_BUGS: readonly RuntimeBug[] = [
     issue: '',
     regressionTest: 'tests/deepmerge.test.ts "return undefined when nothing to merge"',
     reproduces: function emptyCallReturnsRecord(library,) {
-      return library.deepmerge() !== undefined;
+      /**
+       Zero-argument call, typed to return a value so the check reads it.
+       */
+      const mergeNothing: () => unknown = library.deepmerge;
+      return mergeNothing() !== undefined;
     },
     source: {
       edits: [{
@@ -96,7 +100,7 @@ export const RUNTIME_BUGS: readonly RuntimeBug[] = [
       /**
        Non-enumerable symbol key.
        */
-      const hidden = Symbol('hidden',);
+      const hidden = Symbol('non-enumerable key that must never reach a merge result',);
       /**
        Record holding the hidden key.
        */

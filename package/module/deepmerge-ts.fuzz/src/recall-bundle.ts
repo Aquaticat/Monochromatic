@@ -379,6 +379,6 @@ export async function controlOn(
   try {
     return String(bug.reproduces(loaded,),);
   } catch (error) {
-    return `throw:${(error instanceof Error) ? error.name : 'unknown'}`;
+    return `throw:${Error.isError(error,) ? error.name : 'unknown'}`;
   }
 }
