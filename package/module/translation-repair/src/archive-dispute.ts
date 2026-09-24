@@ -25,7 +25,7 @@ const DISPUTING_CATEGORY = 'accuracy/addition';
 
  @example
  ```ts
- const dispute: ArchiveDispute = { sliceIndex: 3, standIn: repairedText, acceptedAdditions: 2, };
+ const dispute: ArchiveDispute = { sliceIndex: 3, standIn: repairedText, acceptedAdditions: 2, acceptedClaims: [], };
  ```
  */
 export type ArchiveDispute = {
@@ -43,6 +43,12 @@ export type ArchiveDispute = {
    How many `accuracy/addition` claims the adjudicators accepted.
    */
   readonly acceptedAdditions: number;
+
+  /**
+   Those claims, each as "category severity: summary", for the sheets that
+   judge or write against the stand-in (class one hundred eight).
+   */
+  readonly acceptedClaims: readonly string[];
 };
 
 /**
@@ -81,20 +87,21 @@ type DisputeEntry = readonly [
 ];
 
 /**
- Counts the accepted addition claims against one chunk's archive rendering.
+ Names the accepted addition claims against one chunk's archive rendering.
 
  @param issues - adjudicated issues of the chunk
 
- @returns Claims of the disputing category inside accepted issues
+ @returns Claims of the disputing category inside accepted issues, each as
+ "category severity: summary"
 
  @example
  ```ts
- const count = acceptedAdditionsOf({ issues: chunk.issues, },);
+ const claims = acceptedAdditionClaimsOf({ issues: chunk.issues, },);
  ```
  */
-function acceptedAdditionsOf(
+function acceptedAdditionClaimsOf(
   { issues, }: { readonly issues: readonly AdjudicatedIssue[]; },
-): number {
+): readonly string[] {
   return issues
     .filter(function isAccepted(issue,): boolean {
       return issue.status === 'accepted';
@@ -109,7 +116,17 @@ function acceptedAdditionsOf(
       const { category, } = member.claim;
       return category === DISPUTING_CATEGORY;
     },)
-    .length;
+    .map(function toBody(member,): string {
+      /**
+       Claim as the critic filed it.
+       */
+      const {
+        category,
+        severity,
+        summary,
+      } = member.claim;
+      return `${category} ${severity}: ${summary}`;
+    },);
 }
 
 /**
@@ -132,15 +149,16 @@ export function archiveDisputesOf(
       /**
        Accepted addition claims against this chunk's archive rendering.
        */
-      const acceptedAdditions = acceptedAdditionsOf({ issues: chunk.issues, },);
-      if (acceptedAdditions === 0)
+      const acceptedClaims = acceptedAdditionClaimsOf({ issues: chunk.issues, },);
+      if (acceptedClaims.length === 0)
         return [];
       return [[
         chunk.sliceIndex,
         {
           sliceIndex: chunk.sliceIndex,
           standIn: chunk.repairedText,
-          acceptedAdditions,
+          acceptedAdditions: acceptedClaims.length,
+          acceptedClaims,
         },
       ],];
     },),);
@@ -191,6 +209,83 @@ export function logArchiveDisputes(
   for (const dispute of disputes.values()) {
     l.warn(describeArchiveDispute({ dispute, },),);
   }
+}
+
+/**
+ Sheet block for a disputed slice: what the adjudicators accepted against the
+ archive rendering, and what every writer and judge is to make of a detail
+ those claims name.
+
+ THE HUNDRED-AND-EIGHTH CLASS (CuspariaKLSY11 slice 3, 2026-09-24). The
+ repair lane softened the archive's invented suicide method to "She took
+ medication that night", the consolidated proposal dropped it, and the gate
+ kept the stand-in 2 to 1 as "dropped page content ... which the Chinese does
+ not contradict": the page apparatus clause protected on the stand-in the very
+ detail the stand-in exists to remove. ONE WORDING FOR EVERY SHEET, as that
+ clause is, so the writer, the slate judge, the gate and the contest read the
+ same rule about the same detail.
+
+ @param dispute - disputed slice
+
+ @returns Block naming the claims and the rule, headed for the sheets
+
+ @example
+ ```ts
+ const note = archiveDisputeNote({ dispute, },);
+ ```
+ */
+export function archiveDisputeNote(
+  { dispute, }: { readonly dispute: ArchiveDispute; },
+): string {
+  /**
+   Claims numbered the way a ballot can cite them.
+   */
+  const numbered = dispute.acceptedClaims
+    .map(function toLine(
+      claim,
+      index,
+    ): string {
+      return `(${String(index + 1,)}) ${claim}`;
+    },)
+    .join('; ',);
+  return `ARCHIVE RENDERING DISPUTED: the repair lane's adjudicators accepted ${
+    String(dispute.acceptedAdditions,)
+  } ${DISPUTING_CATEGORY} claim(s) that the archive rendering says what the ORIGINAL never states; the claims: ${
+    numbered
+  }. A detail those claims name is not page content and not the page's apparatus, in the archive's wording or `
+    + 'any softer one: a candidate leaving it out has dropped nothing, and a candidate keeping it carries an '
+    + 'accepted addition. Judge such a detail against the ORIGINAL alone.';
+}
+
+/**
+ Sheet notes per disputed slice, for a stage that reads its slices by index.
+
+ @param chunks - every chunk the repair lane settled
+
+ @returns Notes keyed by slice index, in chunk order
+
+ @example
+ ```ts
+ const notes = archiveDisputeNotesOf({ chunks: repair.chunks, },);
+ ```
+ */
+export function archiveDisputeNotesOf(
+  { chunks, }: { readonly chunks: readonly DisputableChunk[]; },
+): ReadonlyMap<number, string> {
+  /**
+   Disputes keyed by slice.
+   */
+  const bySlice = archiveDisputesOf({ chunks, },);
+  return new Map([...bySlice.values(),]
+    .map(function toNote(dispute,): readonly [
+      number,
+      string,
+    ] {
+      return [
+        dispute.sliceIndex,
+        archiveDisputeNote({ dispute, },),
+      ];
+    },),);
 }
 
 //endregion Archive dispute

@@ -232,6 +232,7 @@ export function buildTranslateMessages(
     identityContext = '',
     pictureContext = '',
     attestedLines = [],
+    archiveDisputeNote = '',
     syntax,
     followupEvidence,
     lineStructured = false,
@@ -240,6 +241,7 @@ export function buildTranslateMessages(
     readonly existingText: string;
     readonly incumbentKind?: IncumbentKind;
     readonly identityContext?: string;
+    readonly archiveDisputeNote?: string;
     readonly pictureContext?: string;
     readonly attestedLines?: readonly string[];
     readonly syntax?: SliceSyntax;
@@ -266,6 +268,7 @@ export function buildTranslateMessages(
       existingText,
       identityContext,
       pictureContext,
+      archiveDisputeNote,
       ...attestedLines,
       ...(followupEvidence?.candidateTexts ?? []),
       ...(followupEvidence?.findings ?? []),
@@ -348,6 +351,12 @@ ${pictureContext}`
         }
 ${fence} EXISTING TRANSLATION ${fence}
 ${existingText === '' ? '(none: this passage has no translation yet)' : existingText}${
+          archiveDisputeNote === ''
+            ? ''
+            : `
+${fence} ARCHIVE RENDERING DISPUTED ${fence}
+${archiveDisputeNote}`
+        }${
           (attestedLines.length === 0)
             ? ''
             : `

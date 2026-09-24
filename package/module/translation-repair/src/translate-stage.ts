@@ -117,6 +117,7 @@ export async function runTranslateStage(
     identityContext,
     referenceContext,
     attestedLines,
+    archiveDisputeNote,
     neighbouringIncumbentText,
     neighbouringSourceText,
     pictureContext,
@@ -135,6 +136,7 @@ export async function runTranslateStage(
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly attestedLines?: readonly string[];
+    readonly archiveDisputeNote?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly pictureContext?: string;
@@ -183,6 +185,7 @@ export async function runTranslateStage(
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((attestedLines === undefined) ? {} : { attestedLines, }),
+    ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),

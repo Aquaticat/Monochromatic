@@ -332,6 +332,7 @@ export async function consolidateDocument(
     const {
       incumbentText,
       standInShips,
+      disputeNote,
     } = archiveStandInFor({
       ...((archiveDisputes === undefined) ? {} : { archiveDisputes, }),
       sliceIndex: row.sliceIndex,
@@ -444,6 +445,7 @@ export async function consolidateDocument(
       lineStructured,
       ...((identityContext === undefined) ? {} : { identityContext, }),
       ...((referenceContext === undefined) ? {} : { referenceContext, }),
+      ...((disputeNote === undefined) ? {} : { archiveDisputeNote: disputeNote, }),
       // Omitted rather than empty, matching the context above it, so a producer
       // shown no readings is shown no heading promising any.
       ...((pictureContext === '') ? {} : { pictureContext, }),

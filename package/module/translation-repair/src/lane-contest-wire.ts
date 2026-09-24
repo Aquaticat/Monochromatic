@@ -337,6 +337,13 @@ export type LaneContestSubject = {
   readonly referenceContext?: string;
 
   /**
+   Which details of the archive rendering the repair lane's adjudicators
+   accepted as additions, so a candidate leaving one out is not read as
+   dropping page content (class one hundred eight, 2026-09-24).
+   */
+  readonly archiveDisputeNote?: string;
+
+  /**
    Corroborated added-damage claims the introduced-defect probe raised
    against the repair candidate, one line each, absent when none.
    
@@ -375,6 +382,7 @@ export function buildLaneContestMessages(
       subject.translateText,
       subject.identityContext ?? '',
       subject.referenceContext ?? '',
+      subject.archiveDisputeNote ?? '',
     ],
   },);
 
@@ -408,6 +416,20 @@ export function buildLaneContestMessages(
     fence,
     referenceContext: subject.referenceContext ?? '',
   },);
+
+  /**
+   Accepted additions against the archive rendering, or nothing on an
+   undisputed slice (class one hundred eight).
+
+   PLACED AFTER THE PASSAGES, like the references: a judge reads the texts
+   before the evidence about what they may carry.
+   */
+  const disputeBlock = ((subject.archiveDisputeNote === undefined) || (subject.archiveDisputeNote === ''))
+    ? []
+    : [
+      subject.archiveDisputeNote,
+      '',
+    ];
 
   /**
    Size evidence, or nothing when every rendering is in proportion.
@@ -557,6 +579,7 @@ export function buildLaneContestMessages(
         'CANDIDATE "translate":',
         `${fence}\n${subject.translateText}\n${fence}`,
         '',
+        ...disputeBlock,
         ...referenceBlock,
         ...damageBlock,
         ...communityBlock,

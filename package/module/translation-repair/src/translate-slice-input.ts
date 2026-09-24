@@ -47,6 +47,12 @@ export type TranslateSliceStageInput = {
    */
   readonly attestedLines?: readonly string[];
   /**
+   Why the incumbent is the repair lane's stand-in and which details are
+   accepted additions, present only on a disputed slice (class one hundred
+   eight).
+   */
+  readonly archiveDisputeNote?: string;
+  /**
    Supplied source neighbors retain their context-only role.
    */
   readonly neighbouringSourceText?: string;
@@ -111,6 +117,10 @@ export type TranslateSliceInput = {
  @param archiveStandIn - repair lane's text standing in for a disputed archive
  rendering (class one hundred seven), judged and restored as though it were
  the archive so the disputed wording is neither a candidate nor the fallback
+
+ @param archiveDisputeNote - sheet note naming the accepted additions the
+ stand-in answers for, so no writer or judge reads them as page content
+ (class one hundred eight)
  
  @returns Stage surface and protected archive material without changing the operation being measured
  
@@ -127,10 +137,12 @@ export function translateSliceInput(
     neighbouringIncumbentText,
     pictureContext,
     archiveStandIn,
+    archiveDisputeNote,
   }: {
     readonly slice: ChunkPair;
     readonly prepared: PreparedDocumentPair;
     readonly archiveStandIn?: string;
+    readonly archiveDisputeNote?: string;
     readonly neighbouringSourceText?: string;
     readonly neighbouringIncumbentText?: string;
     readonly pictureContext?: string;
@@ -179,6 +191,7 @@ export function translateSliceInput(
       ...((prepared.identityContext === undefined) ? {} : { identityContext: prepared.identityContext, }),
       ...((prepared.referenceContext === undefined) ? {} : { referenceContext: prepared.referenceContext, }),
       ...((attestedLines.length === 0) ? {} : { attestedLines, }),
+      ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
       ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
       ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
       ...((pictureContext === undefined) ? {} : { pictureContext, }),

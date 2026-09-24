@@ -106,6 +106,12 @@ export function laneContestRunShape(
  @param repairText - what the repair lane would ship
  
  @param translateText - what the translate lane would ship
+
+ @param repairDamageClaims - corroborated claims shown against the repair
+ candidate, absent when none
+
+ @param archiveDisputeNote - accepted additions shown against the archive
+ rendering, absent on an undisputed slice (class one hundred eight)
  
  @returns Hash keying this slice`s ballots
  
@@ -124,6 +130,7 @@ export function laneContestSliceKey(
     repairText,
     translateText,
     repairDamageClaims = [],
+    archiveDisputeNote,
   }: {
     readonly runShape: string;
     readonly sourceText: string;
@@ -133,6 +140,7 @@ export function laneContestSliceKey(
     readonly repairText: string;
     readonly translateText: string;
     readonly repairDamageClaims?: readonly string[];
+    readonly archiveDisputeNote?: string;
   },
 ): string {
   return hashContent({
@@ -159,6 +167,14 @@ export function laneContestSliceKey(
         : [
           'damage',
           ...repairDamageClaims,
+        ]),
+      // A dispute note changes the question the same way (class one hundred
+      // eight); an undisputed slice keys exactly as before.
+      ...((archiveDisputeNote === undefined)
+        ? []
+        : [
+          'dispute',
+          archiveDisputeNote,
         ]),
     ],),
   },);

@@ -24,6 +24,7 @@ import { runTranslateStage, } from './translate-stage.ts';
 import { translateSliceInput, } from './translate-slice-input.ts';
 import {
   type ArchiveDispute,
+  archiveDisputeNote,
   describeArchiveDispute,
 } from './archive-dispute.ts';
 
@@ -137,7 +138,12 @@ export async function settleTranslateSlice(
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
-    ...((archiveDispute === undefined) ? {} : { archiveStandIn: archiveDispute.standIn, }),
+    ...((archiveDispute === undefined)
+      ? {}
+      : {
+        archiveStandIn: archiveDispute.standIn,
+        archiveDisputeNote: archiveDisputeNote({ dispute: archiveDispute, },),
+      }),
   },);
   /**
    The exact staged surface is also what later publication guards compare.

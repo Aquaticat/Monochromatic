@@ -36,6 +36,8 @@ export {
 } from './document-lanes.ts';
 export {
   type ArchiveDispute,
+  archiveDisputeNote,
+  archiveDisputeNotesOf,
   archiveDisputesOf,
   describeArchiveDispute,
   type DisputableChunk,

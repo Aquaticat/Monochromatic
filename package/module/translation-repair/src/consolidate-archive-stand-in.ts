@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   type ArchiveDispute,
+  archiveDisputeNote,
   describeArchiveDispute,
 } from './archive-dispute.ts';
 import type { LaneChoice, } from './lane-contest-wire.ts';
@@ -26,8 +27,9 @@ import type { LaneChoice, } from './lane-contest-wire.ts';
 
  @param l - driver logger
 
- @returns Wording standing as the archive here, and whether a kept standing
- is the stand-in the page must carry
+ @returns Wording standing as the archive here, whether a kept standing is
+ the stand-in the page must carry, and the sheet note on a disputed slice
+ (class one hundred eight)
 
  @example
  ```ts
@@ -51,6 +53,7 @@ export function archiveStandInFor(
 ): {
   readonly incumbentText: string;
   readonly standInShips: boolean;
+  readonly disputeNote?: string;
 } {
   /**
    Dispute over this slice's archive rendering, absent for most slices.
@@ -66,6 +69,7 @@ export function archiveStandInFor(
   return {
     incumbentText: dispute.standIn,
     standInShips: choice === 'neither',
+    disputeNote: archiveDisputeNote({ dispute, },),
   };
 }
 

@@ -236,6 +236,7 @@ export async function contestDocumentLanes(
     frontMatterSlices,
     cache,
     damageClaimsBySlice = new Map<number, readonly string[]>(),
+    disputeNotesBySlice = new Map<number, string>(),
     signal,
     perCallTimeoutMs,
     overlap = 1,
@@ -254,6 +255,11 @@ export async function contestDocumentLanes(
      shown to the judges as evidence (`repair-damage-evidence.ts`).
      */
     readonly damageClaimsBySlice?: ReadonlyMap<number, readonly string[]>;
+    /**
+     Dispute notes against the archive rendering, per slice, shown to the
+     judges as evidence (class one hundred eight).
+     */
+    readonly disputeNotesBySlice?: ReadonlyMap<number, string>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly overlap?: number;
@@ -379,6 +385,17 @@ export async function contestDocumentLanes(
         ? {}
         : { repairDamageClaims, };
       /**
+       Accepted additions against this slice's archive rendering, absent for
+       most slices (class one hundred eight).
+       */
+      const archiveDisputeNote = disputeNotesBySlice.get(row.sliceIndex,);
+      /**
+       That note as the optional subject and key field, absent when none.
+       */
+      const disputeFragment = (archiveDisputeNote === undefined)
+        ? {}
+        : { archiveDisputeNote, };
+      /**
        Key these ballots resume under.
        */
       const key = laneContestSliceKey({
@@ -390,6 +407,7 @@ export async function contestDocumentLanes(
         repairText: row.repairText,
         translateText: row.translateText,
         ...damageFragment,
+        ...disputeFragment,
       },);
 
       /**
@@ -428,6 +446,7 @@ export async function contestDocumentLanes(
                 ...((identityContext === undefined) ? {} : { identityContext, }),
                 ...((referenceContext === undefined) ? {} : { referenceContext, }),
                 ...damageFragment,
+                ...disputeFragment,
               },
               signal,
               exchangeTimeoutMs: perCallTimeoutMs,

@@ -595,7 +595,7 @@ await describe({
         const archivePhrase = 'is doing the sleeping on the windowsill';
         const sheets: string[] = [];
         const { result, } = await runDriver({
-          archiveDisputes: new Map([[0, { sliceIndex: 0, standIn, acceptedAdditions: 1, },],],),
+          archiveDisputes: new Map([[0, { sliceIndex: 0, standIn, acceptedAdditions: 1, acceptedClaims: ['accuracy/addition major: The cat did not swallow pills.',], },],],),
           sheets,
         },);
         /**

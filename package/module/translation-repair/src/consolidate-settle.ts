@@ -166,6 +166,12 @@ export type ConsolidationSubject = {
   readonly referenceContext?: string;
 
   /**
+   Why the archive rendering shown is the repair lane's stand-in, absent on
+   an undisputed slice (class one hundred eight, 2026-09-24).
+   */
+  readonly archiveDisputeNote?: string;
+
+  /**
    What the pictures near this slice were read to say.
    
    DECLARED HERE FROM 2026-08-22, having been PASSED here since `#176`. The

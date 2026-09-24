@@ -7,6 +7,7 @@ import { damageClaimLinesBySlice, } from '../repair-damage-evidence.ts';
 import type { ArtifactContestSlice, } from './artifact-two-lane-contest.ts';
 import type { ProjectedLanes, } from './artifact-two-lane-derive.ts';
 import { openLaneContestCache, } from './lane-contest-cache-store.ts';
+import { archiveDisputeNotesOf, } from '../archive-dispute.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 import { readJudgeSeats, } from './run-seats-read.ts';
@@ -103,6 +104,12 @@ export async function runPassContest(
     // The probe's corroborated claims, shown to the judges and acted on by
     // nobody (`repair-damage-evidence.ts`).
     damageClaimsBySlice: damageClaimLinesBySlice({ lane: lanes.repair, },),
+    // The accepted additions against each disputed archive rendering, read
+    // off the repair chunks (class one hundred eight).
+    disputeNotesBySlice: archiveDisputeNotesOf({
+      chunks: lanes.repair
+        .chunks,
+    },),
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
     cache: await openLaneContestCache({

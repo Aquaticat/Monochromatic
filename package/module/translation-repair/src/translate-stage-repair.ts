@@ -36,6 +36,7 @@ type TranslateRoundInput = ForeignBorrowed<{
   readonly identityContext?: string;
   readonly referenceContext?: string;
   readonly attestedLines?: readonly string[];
+  readonly archiveDisputeNote?: string;
   readonly neighbouringIncumbentText?: string;
   readonly neighbouringSourceText?: string;
   readonly pictureContext?: string;
@@ -88,6 +89,7 @@ async function produceAndJudgeOnce(
     incumbentKind: input.incumbentKind,
     incumbentEligible: input.incumbentEligible,
     ...((input.identityContext === undefined) ? {} : { identityContext: input.identityContext, }),
+    ...((input.archiveDisputeNote === undefined) ? {} : { archiveDisputeNote: input.archiveDisputeNote, }),
     ...((input.pictureContext === undefined) ? {} : { pictureContext: input.pictureContext, }),
     ...((input.attestedLines === undefined) ? {} : { attestedLines: input.attestedLines, }),
     ...((input.syntax === undefined) ? {} : { syntax: input.syntax, }),
@@ -119,6 +121,7 @@ async function produceAndJudgeOnce(
           incumbentKind: input.incumbentKind,
           ...((input.identityContext === undefined) ? {} : { identityContext: input.identityContext, }),
           ...((input.referenceContext === undefined) ? {} : { referenceContext: input.referenceContext, }),
+          ...((input.archiveDisputeNote === undefined) ? {} : { archiveDisputeNote: input.archiveDisputeNote, }),
           ...((input.neighbouringSourceText === undefined)
             ? {}
             : { neighbouringSourceText: input.neighbouringSourceText, }),
@@ -207,6 +210,7 @@ export async function runTranslateRepairs(
     identityContext,
     referenceContext,
     attestedLines,
+    archiveDisputeNote,
     neighbouringIncumbentText,
     neighbouringSourceText,
     pictureContext,
@@ -226,6 +230,7 @@ export async function runTranslateRepairs(
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly attestedLines?: readonly string[];
+    readonly archiveDisputeNote?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly pictureContext?: string;
@@ -250,6 +255,7 @@ export async function runTranslateRepairs(
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((attestedLines === undefined) ? {} : { attestedLines, }),
+    ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),

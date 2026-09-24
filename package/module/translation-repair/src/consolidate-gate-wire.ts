@@ -243,6 +243,13 @@ export type ConsolidateGateSubject = {
   readonly standingRefusal?: string;
 
   /**
+   Why the archive rendering shown is the repair lane's stand-in and which
+   details are accepted additions, so keeping the stand-in is not the safe
+   choice on their account (class one hundred eight, 2026-09-24).
+   */
+  readonly archiveDisputeNote?: string;
+
+  /**
    Names and handles both documents' front matter declares, when either does.
    
    WITHOUT THIS THE JUDGE CANNOT TELL AN ATTESTED NAME FROM AN INVENTION,
@@ -285,6 +292,7 @@ export function buildConsolidateGateMessages(
       subject.identityContext ?? '',
       subject.referenceContext ?? '',
       subject.standingRefusal ?? '',
+      subject.archiveDisputeNote ?? '',
     ],
   },);
   /**
@@ -298,6 +306,16 @@ export function buildConsolidateGateMessages(
       }).`,
       'Choosing "standing" stops this entry with no page. Choose it only when "consolidated" misrepresents '
         + 'the ORIGINAL; a rendering the rule refuses is not the safer choice.',
+      '',
+    ];
+  /**
+   Why the archive rendering and the standing are the repair lane's stand-in,
+   or nothing on an undisputed slice (class one hundred eight).
+   */
+  const disputeBlock = ((subject.archiveDisputeNote === undefined) || (subject.archiveDisputeNote === ''))
+    ? []
+    : [
+      subject.archiveDisputeNote,
       '',
     ];
 
@@ -431,6 +449,7 @@ export function buildConsolidateGateMessages(
         `${fence}\n${subject.standingText}\n${fence}`,
         '',
         ...refusalBlock,
+        ...disputeBlock,
         ...referenceBlock,
         ...communityBlock,
         ...sizeBlock,

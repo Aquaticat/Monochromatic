@@ -84,6 +84,11 @@ export type TranslateJudgeResponsibility =
  @param referenceContext - what the pages the original cites say, shown as
  evidence with its rule so accurate archive detail a candidate keeps is not
  read as invention (class thirty-six, 2026-09-16); omitted when it cites none
+
+ @param archiveDisputeNote - why the incumbent shown is the repair lane's
+ stand-in and which details are accepted additions, so a candidate leaving
+ one out is not read as dropping page content (class one hundred eight,
+ 2026-09-24); omitted on an undisputed slice
  
  @param neighbouringSourceText - original of the sections either side, shown as
  CONTEXT the candidates are not expected to render. Absent by default, so a
@@ -134,6 +139,7 @@ export async function judgeTranslateSlate(
     incumbentKind,
     identityContext,
     referenceContext,
+    archiveDisputeNote,
     neighbouringIncumbentText,
     neighbouringSourceText,
     pictureContext,
@@ -153,6 +159,7 @@ export async function judgeTranslateSlate(
     readonly incumbentKind: IncumbentKind;
     readonly identityContext?: string;
     readonly referenceContext?: string;
+    readonly archiveDisputeNote?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly pictureContext?: string;
@@ -448,6 +455,17 @@ export async function judgeTranslateSlate(
       // a detail only a cited page states is judged on evidence rather than
       // condemned for saying what the original does not.
       ...citedReferenceEvidence({ referenceContext: referenceContext ?? '', },),
+      // Why the incumbent on the ballot is the repair lane's stand-in, after
+      // the references, so a candidate leaving a disputed detail out is not
+      // read as dropping the page's own content (class one hundred eight).
+      ...((archiveDisputeNote === undefined) || (archiveDisputeNote === '')
+        ? []
+        : [
+          {
+            label: 'ARCHIVE RENDERING DISPUTED',
+            text: archiveDisputeNote,
+          },
+        ]),
     ],
     signal,
     perCallTimeoutMs,

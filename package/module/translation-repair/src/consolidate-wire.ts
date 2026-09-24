@@ -218,6 +218,12 @@ export type ConsolidateSubject = {
   readonly priorFailure?: ConsolidationFailureEvidence;
 
   /**
+   Why the archive rendering shown is the repair lane's stand-in, absent on
+   an undisputed slice (class one hundred eight, 2026-09-24).
+   */
+  readonly archiveDisputeNote?: string;
+
+  /**
    Names and handles both documents' front matter declares, when either does.
    */
   readonly identityContext?: string;
@@ -398,6 +404,7 @@ export function buildConsolidateMessages(
       references,
       brief,
       priorFailure,
+      subject.archiveDisputeNote ?? '',
     ],
   },);
 
@@ -458,6 +465,14 @@ export function buildConsolidateMessages(
           // carries that label.
           label: 'ARCHIVE RENDERING, the EXISTING TRANSLATION, evidence only',
           text: subject.incumbentText,
+        },),
+        // Why that rendering is the repair lane's stand-in, right under it, so
+        // the accepted additions it answers for are not carried as page
+        // content (class one hundred eight).
+        ...renderBlock({
+          fence,
+          label: 'ARCHIVE RENDERING DISPUTED',
+          text: subject.archiveDisputeNote ?? '',
         },),
         ...renderBlock({
           fence,

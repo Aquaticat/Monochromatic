@@ -52,6 +52,7 @@ export type ProposalVerdict = {
 export type SettlementIdentity = {
   readonly identityContext?: string;
   readonly referenceContext?: string;
+  readonly archiveDisputeNote?: string;
 };
 
 /**
@@ -93,6 +94,7 @@ export function settlementContextOf(
   const identity: SettlementIdentity = {
     ...((subject.identityContext === undefined) ? {} : { identityContext: subject.identityContext, }),
     ...((subject.referenceContext === undefined) ? {} : { referenceContext: subject.referenceContext, }),
+    ...((subject.archiveDisputeNote === undefined) ? {} : { archiveDisputeNote: subject.archiveDisputeNote, }),
   };
 
   /**
