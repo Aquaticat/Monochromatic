@@ -182,6 +182,12 @@ dir = "{{config_root}}"
 depends = ["prototype:install"]
 run = "node capture-search-page.mjs"
 
+[tasks."prototype:capture:layout"]
+description = "Capture coherent docked, full-width list, and two-column Search studies on both Fold panels"
+dir = "{{config_root}}"
+depends = ["prototype:install"]
+run = "node capture-search-layout.mjs"
+
 [tasks."prototype:capture"]
 description = "Install and capture accepted screen 3B at every user-facing Android text scale"
 dir = "{{config_root}}"
