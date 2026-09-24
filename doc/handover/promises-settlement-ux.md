@@ -1,8 +1,9 @@
 # Settlement experiment UX redesign
 
-Status: the choice matrix exists, and the user has resolved the first-settlement-wins interaction:
-a fresh one-shot button may call a resolver after settlement when the ignored attempt is logged.
-Implementation and verification of that decision are in progress in the scratch prototypes.
+Status: the choice matrix implements the user's decision that a fresh one-shot button may call
+a resolver after settlement when the ignored attempt is logged.
+Chromium, Firefox ESR, keyboard/pointer, native resolver-call, and PDF text checks pass.
+The corrected matrix is open for the user's layout-by-cue-color choice.
 The lesson file is untouched by this work.
 No skill design has been confirmed; this redesign feeds the Promise toy, not the teaching skill.
 
@@ -58,7 +59,8 @@ every press gets expressive feedback; a manager line explains each event.
   it falls from the hatch and sits at the station plate pending.
 - The robot is the settling agent with two tools: the hand catches the pudding with the
   "Hello Ada" topping (fulfill); the laser etches the "No reply" reason (reject).
-  The first tool press settles; the marking (cherry dot or exclamation etch) never changes again.
+  The first tool press settles; fresh tools may call a resolver again and log the ignored attempt.
+  The marking (cherry dot or exclamation etch) never changes again.
 - When the next pudding drops, the settled one rides the conveyor as a chip
   (pudding cone plus marking plus text), which is the visible form of "settlements are not revised".
 - The robot face gives timing-display feedback (flat waiting, smile caught, frown etched);
@@ -102,10 +104,16 @@ every press gets expressive feedback; a manager line explains each event.
   it exposes `globalThis.showifyShow`. Options mirror the lesson viewer:
   depth 4, indent 2, breakLength 80, maxArrayLength 24, maxStringLength 2000, colors false,
   getters none, callToJSON false, callNodeInspect false, callCustomInspect false.
-- Presentation: agent-browser session `promises-open-chat-present` (headed helium);
-  the form tab is reloaded in place by `present-ux-choice.mjs`; evidence in
-  `ux-choice-handoff.json`. Screenshots: `ux-variants/shot-*.png` and
-  `settlement-ux-current-1008-dark.png`.
+- Presentation: agent-browser session `promises-open-chat-present` (headed Helium);
+  `present-ux-choice.mjs` now navigates only an active empty tab or opens a separate tab,
+  never reloads an existing choice or draft. The latest invocation opened a separate tab
+  (`ux-choice-handoff.json` records one tab before and two after).
+  The active new tab contains six live cells and the baked ignored-call trace, with no
+  checked radio, empty free text, and zero browser errors. Screenshots:
+  `ux-variants/shot-*.png` and `settlement-ux-current-1008-dark.png`.
+  An earlier invocation of agent-browser 0.38.1 emitted "Daemon version mismatch detected,
+  restarting..." and saw only `about:blank`; preservation of any tab that existed before
+  that restart is unknown. Do not claim such a draft survived without evidence.
 
 ## Fresh audit after compaction
 
@@ -152,10 +160,11 @@ post-decision implementation. Do not silently apply any cell to the lesson.
 The source changes are in `/home/user/temp/agent/promises-revision`, outside the repository.
 They have not been integrated into `doc/planning/promises-teaching.local.html`.
 
-- `ux-variant-experiment.js` gates the second control synchronously when the first resolver
-  is called, before its observer's microtask. The log now says "called resolve" or
-  "called reject", and the face temporarily says the observer report is queued;
-  it never falsely records a second settlement in the same browser task.
+- The audit's first fix gated the second control synchronously at the first resolver call.
+  The user's subsequent decision superseded that restriction. `ux-variant-experiment.js` now
+  keeps the first-call record immediately, calls the actual resolving function on each fresh
+  numbered tool press, and logs subsequent calls as ignored without claiming a second settlement.
+  The face distinguishes the call from its observer's microtask, even when both happen in one task.
 - The value gallery captures bounded strings at each event rather than reformatting the
   current live value on every paint. It retains the latest 24 cards and now includes
   the resolver bundle, inner Promise, lesson-owned observation, Promise after the resolver,
@@ -174,21 +183,38 @@ They have not been integrated into `doc/planning/promises-teaching.local.html`.
 - Variant C now uses a real `<dl>`; all three variants call the reference "Promise states"
   instead of "observed outcomes"; the snapshot description no longer claims an editor
   exists in this standalone experiment. An exhausted five-pudding run reports completion.
-- The form explicitly says the first-settlement-wins interaction is unresolved,
-  and no layout should be applied yet. The existing presented tab was not reloaded,
-  so any unsubmitted choice or free text there remains intact; the rebuilt form is on disk.
+- The form now bakes Release 1, Laser 1, then Hand 1: the hand invokes `resolve` on the
+  already-rejected Promise, logs the ignored attempt, and leaves the etch and frown fixed.
+  The form clearly separates the factory's single-flight and one-shot rules from Promise rules.
+  The choice matrix remains a prototype until the user selects a cell.
 
 `mise run test:ux-choice` rebuilt and verified all six live cells,
-including same-task double-call exclusion, distinct cue colors, grayscale light and dark
-reading surfaces, six mobile child scroll widths equal to their 279 px viewports,
-and zero browser errors. `mise run probe:ux-settlement` exercised unseeded startup,
-the corrected same-task sequence, and all five releases: the belt held four settled puddings,
-the final pudding stayed at the station, and the gallery retained 24 cards.
-These probes are browser checks, not Firefox ESR, print, or a final lesson integration test.
+including real ignored resolver calls, both call orders, repeated same-action attempts,
+same-task calls, an exhausted-tool pending pudding, dark/light grayscale reading surfaces,
+mobile child widths without overflow, trusted pointer and keyboard activation,
+visible keyboard focus, and zero browser errors.
+`verify-ux-resolver-calls.mjs` wrapped `Promise.withResolvers()` in a disposable variant:
+its ledger recorded Reject, Resolve, Reject while the native Promise observer reported only
+Rejected. A suppressed-call mutant kept the same UI log but failed the native-call guard.
+`mise run review:ux-captures` regenerated desktop/mobile light/dark screenshots and found no
+horizontally clipped code; the snapshot viewer now wraps and remains keyboard-scrollable.
+`mise run probe:ux-settlement` exercised unseeded startup and all five releases:
+the belt held four settled puddings, the final pudding stayed at the station,
+and the gallery retained 24 cards. Exhaustion now has explicit text if all tools are spent
+before the next pudding is released, leaving that Promise visibly pending.
+`mise run test:firefox-ux` passed on Firefox ESR 140.16.0 for both call orders, the fixed markings,
+the actual error/value snapshots, and ignored resolver calls.
+`mise run test:ux-print` generated `ux-variants/settlement-print-review.local.pdf` and confirmed
+its extracted text keeps state explanations, the ignored call, fixed outcome, and value snapshots
+while the nonfunctional scene is omitted. This is text inventory, not final visual print approval.
+The latest prototype artifacts are outside Git, in the authoring workspace.
+The lesson remains at SHA-256 `5401b0df5d9b1eee7f987086e1cef6d60d4e109b63c7bd61d818ed7ef8a05002`.
 
-## Earlier verification evidence (not full acceptance)
+## Earlier verification evidence (superseded)
 
-`verify-ux-choice-form.mjs` passed for all six cells after the baked Release 1 plus Laser 1:
+This paragraph describes the prototype before the user allowed logged ignored attempts;
+it is preserved only to explain why the matrix was reopened.
+`verify-ux-choice-form.mjs` then passed for all six cells after the baked Release 1 plus Laser 1:
 face and scene read rejected, the station pudding carries the etch, post reads 01,
 release 1 and laser 1 are used, hand 1 is disabled as "this pudding is already settled",
 release 2 is the single live control, the belt is empty, the snapshot cards render
@@ -225,15 +251,18 @@ when it calls a resolver after the Promise has settled and visibly logs
 "attempt ignored; original outcome unchanged".
 The Promise itself remains fixed. The clicked one-shot button becomes used.
 Buttons before a pudding exists remain disabled; available unspent buttons may make later calls
-against a settled pudding. The button log and face must distinguish calls from the handler's
-observed outcome, including two calls in one browser task.
+against a settled pudding. The log names both the pudding and the button's per-row number.
+A same-task second call is logged as ignored before the observer's microtask;
+a later click preserves the face and marking as well.
 The staged two-call run and automatic second-call alternatives were not selected.
 This decision is not a selection of matrix layout or cue colors.
 
 ## Open choices (user's, gating implementation)
 
 - Matrix cell: layout (A reference rows, B kept card grid, C definition list)
-  by cue color (state-colored, neutral). My ranking, with adjacent-pair reasons in the form:
+  by cue color (state-colored, neutral). The corrected live form is open in a separate tab;
+  ask the user for the cell value and any free-text changes.
+  My ranking, with adjacent-pair reasons in the form:
   a-state, a-neutral, b-state, b-neutral, c-state, c-neutral.
 - Free-text changes to the chosen cell.
 - Implementation afterwards (task 35 in the session task list): apply the chosen cell to
