@@ -3,13 +3,20 @@
 ## Status
 
 Shared understanding confirmed 2026-09-23;
-implementation done 2026-09-24 (see `Outcomes`).
-Waiting on the user:
-review and post the combined advisory draft (privately) and the combined issue draft,
-both in gitignored `doc/handover/*.local.md` files.
-Next action after posting:
-open PRs from the fork branches in `Outcomes` if the maintainer wants them,
-and follow `After upstream responds`.
+first implementation pass done 2026-09-24 (see `Outcomes`).
+The user judged the defect count too low for the search effort;
+a widening pass is in progress (see `Widening pass`).
+Do not ask the user to post the advisory or issue drafts until the widening pass is integrated into them.
+
+Next actions, in order:
+
+1.   Launch the mutation-testing fork (prompt in `Widening pass`) once a subagent slot frees
+     (the harness caps concurrent subagents at 5).
+2.   Integrate each widening fork's report per `Widening pass`.
+3.   Restart the campaign (`mise run //package/module/deepmerge-ts.fuzz:fuzz`) with the widened generators.
+4.   Ask the user to review and post the updated drafts,
+     then open PRs from the fork branches if the maintainer wants them,
+     and follow `After upstream responds`.
 
 User constraints from confirmation:
 all security findings go into one combined private advisory draft,
@@ -281,3 +288,103 @@ plus two sound imprecisions.
 - Rust unified-linter merge (Q13):
    once the merge-crate vet lands,
    export `src/json-case.ts` as a fixture file.
+
+## Widening pass
+
+### Why
+
+The first pass reported 3 security findings, 2 runtime defect root causes (one with 3 symptoms),
+2 intent questions, 1 docs request, and 9 unsound plus 2 imprecise result types.
+The user called that absurdly low.
+Assessment:
+the fuzzer itself found only the `deepmergeInto` first-value defects;
+everything else came from source reading, hand probes, and hand-written type probes.
+After each known-defect region was excluded,
+the campaign's quiet rounds only measured narrow generators,
+so they were never evidence of absence.
+Correction recorded in `AGENTS.md` rule `QIV`
+(validate generator reach before trusting a null or count; list unexercised surfaces),
+commit `0d39b4b7a`.
+
+### Unexercised surfaces at the end of the first pass
+
+- Customization:
+   custom merge functions,
+   `actions.skip` and `actions.defaultMerge`,
+   `enableImplicitDefaultMerging`,
+   custom `filterValues`,
+   `metaDataUpdater` and `rootMetaData`,
+   custom `mergeCircularReferences`,
+   and all four `*Custom` entry points.
+- Input kinds:
+   `isRecord` fallback branches (still uncovered in the fork source report),
+   cross-realm objects,
+   Proxies,
+   typed arrays,
+   boxed primitives,
+   subclasses of Array, Set, and Map,
+   non-writable, sealed, and setter-only `deepmergeInto` targets.
+- Aliasing and cycles:
+   shared containers (excluded after the first finding),
+   target and source aliasing in `deepmergeInto`,
+   cycles through Maps, Sets, and arrays.
+- Declared types:
+   the type corpus uses inferred literals only,
+   while every type defect came from declared unions, optionals, and index signatures.
+- Scale:
+   record width, array length, argument count, per-level copying, superlinear time.
+- Test strength:
+   no mutation testing of upstream's suite or the sidecar.
+
+### Forks launched 2026-09-24
+
+Five parallel forks,
+each owning new files only under a prefix in `package/module/deepmerge-ts.fuzz/src/`
+and forbidden from editing shared files or running `format:oxlint` (package-wide rewrite);
+shared-file changes come back as requests in their reports.
+Security candidates go only to `doc/handover/deepmerge-ts-embargo-<area>.local.md`.
+
+- Custom options:
+   prefix `options-`,
+   known defects in `known-defect-options.unit.test.ts`.
+- Exotic input kinds:
+   prefix `exotic-`,
+   known defects in `known-defect-exotic.unit.test.ts`.
+- Aliasing and cycles (cycles kept at depth 20 or less):
+   prefix `alias-`,
+   known defects in `known-defect-alias.unit.test.ts`,
+   own fork builds under `dist/alias-fork-build/`.
+- Declared-type generation:
+   prefix `declared-type-`,
+   new type classes in `type-known-defect-declared.unit.test.ts`.
+- Scale and limits (all runs in `podman --memory=2g --cpus=2`):
+   prefix `scale-`,
+   known defects in `known-defect-scale.unit.test.ts`.
+
+Pending, blocked by the concurrency cap:
+mutation testing.
+StrykerJS with the Vitest runner over upstream `src` against upstream's suite,
+inside the capped container (never installed in this repo or the fork);
+then each survivor applied to a build and run against the sidecar via `DEEPMERGE_FUZZ_TARGET`,
+classified killed-by-sidecar, survives-both, or equivalent;
+new tests under prefix `mutation-`;
+report `doc/audit/deepmerge-ts-mutation-2026-09-24.md`.
+
+### Integration checklist per fork report
+
+- Reproduce each claimed finding against 8.0.2 before accepting it.
+- Apply requested shared-file changes
+   (generator options in `src/arbitraries.ts`, tasks in `mise.toml`, `README.md`).
+- Run `format:oxlint`, `lint:oxlint`, `lint:types`, `test:unit`,
+   then ratchet `fuzz:coverage --write`.
+- Public findings into `doc/handover/deepmerge-ts-issue.local.md`;
+   security candidates into `doc/handover/deepmerge-ts-advisory.local.md`
+   (one combined advisory, one combined issue, per the user's constraint).
+- Record new findings and counts in `Outcomes` with the surfaces still unexercised.
+
+### Campaign
+
+The run started 2026-09-24 had passed 363 rounds without a counterexample before the widening pass;
+it re-reads property files each round,
+so forks' new property files join it automatically,
+and a failure caused by a half-written file is triage noise, not a finding.
