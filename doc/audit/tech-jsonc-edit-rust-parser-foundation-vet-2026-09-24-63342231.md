@@ -250,13 +250,13 @@ The public [issue #7728](https://github.com/biomejs/biome/issues/7728) reports a
  SHA-256 `8490581e9b29f474beedf09c72a9930d0103a694bc430a8408828c53a4340109`.
  The issue's recursive-drop explanation is a contributor hypothesis,
  not a confirmed source diagnosis.
- A disposable test of the **published 0.5.7 parser library** will parse,
- inspect diagnostics,
- traverse syntax tokens,
- and drop this input inside the existing 2 GiB/2 CPU offline container.
- The revised `~/temp/agent/biome-execution-manifest.md` records its new read-only fixture mount and stop conditions before execution.
- No result is yet claimed;
- the application CLI/worker incident and direct library path remain separate until a matching failure boundary is measured.
+ The revised `~/temp/agent/biome-execution-manifest.md` recorded the read-only fixture mount and stop conditions before execution.
+ A bounded **debug** run of the published 0.5.7 parser library reported syntax errors on the input,
+ traversed 236856 syntax tokens,
+ and dropped the syntax tree without an abort.
+ Its optimized run remains pending.
+ This positive cleanup result is specific to the direct library path;
+ it does not establish a cause or resolution for the newer Biome application CLI/worker incident.
 
 ## Current source checks, not a recommendation
 
