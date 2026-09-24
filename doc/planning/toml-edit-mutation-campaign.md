@@ -388,7 +388,14 @@ Additional deletion and set tests cover indexed instances,
  implicit dotted-key replacement,
  path-create placement,
  and exact rejection diagnostics.
-The edit-path mutation recheck is still pending.
+The edit-path rechecks are running from the same revision:
+ `/var/home/user/temp/agent/toml-mutation-edit-a-recheck.json` (`proc_560d`)
+ and `/var/home/user/temp/agent/toml-mutation-edit-b-recheck.json` (`proc_ec79`).
+Do not edit runtime source until both complete.
+The indexed array-of-tables read fix passed the rebuilt package suite,
+ types,
+ oxlint,
+ and the deterministic fuzz coverage gate.
 After edit-path triage,
  scan the remaining comment API and value-encoding files.
 Do not claim a full-runtime verdict before those campaigns and survivor rechecks finish.
