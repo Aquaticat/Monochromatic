@@ -1,12 +1,14 @@
 # Settlement experiment UX redesign
 
-Status: the delegated A-neutral Promise-ticket design is integrated into the local lesson.
+Status: the user authorized correction of a delayed outcome receipt in the A-neutral lesson.
+A regression went red because the belt was empty after Promise 1's rejection observer ran;
+receipts now appear when the observer reports, including for the current Promise.
 The manual `Promise.withResolvers()` experiment retains `"Hello Ada"` and `Error("No reply")`;
-Yum-Bot supplies artwork only, not game rules.
-The final `mise run test:all` (now including ticket-boundary tests) passed with its owned
-offline and native-print fixtures, followed by Firefox ESR and real-download checks.
-The lesson is open in a separate headed Helium tab; older tabs were preserved.
-The before-ticket artifact is retained. No teaching-skill design has been confirmed or implemented.
+Yum-Bot supplies artwork only, not game rules. Targeted browser, prototype, and print
+and real-download checks pass; the corrected lesson's combined, Firefox ESR, and
+native-print checks are still pending. The older headed tab has not been reloaded.
+The before-ticket and before-belt local artifacts are retained.
+No teaching-skill design has been confirmed or implemented.
 
 ## Latest screenshot-driven clarity repair
 
@@ -324,7 +326,7 @@ Its red game-faithfulness result remains historical evidence of why the mapping 
 At this prototype stage the lesson was still unchanged; the later A-neutral integration
 and its separate verification are recorded in the next section.
 
-## Integrated A-neutral lesson (verified)
+## Integrated A-neutral lesson (verified before the belt correction)
 
 `promise-sequence.html` now delegates its settlement section to
 `/home/user/temp/agent/promises-revision/settlement-section.html`.
@@ -340,9 +342,10 @@ The value disclosures preserve mixed open/closed states through two PDF cycles a
 Preserved before-state artifact:
 `doc/planning/promises-teaching-before-ticket.local.html`, SHA-256
 `5401b0df5d9b1eee7f987086e1cef6d60d4e109b63c7bd61d818ed7ef8a05002`.
-Final local artifact: `doc/planning/promises-teaching.local.html`, 693,749 bytes,
+Before-belt local artifact, now preserved as `doc/planning/promises-teaching-before-belt.local.html`:
+693,749 bytes,
 SHA-256 `e90aa8feecad370e5a77c9d2b37a4a9c65fee1e6eca98885c82208fa2484bd28`.
-The final generated PDF has 126 Letter pages and measured 2,475,133 bytes.
+The before-belt generated PDF had 126 Letter pages and measured 2,475,133 bytes.
 The independent print inventory contained 791 teaching entries and 66 appendix entries;
 every item passed actual PDF text comparison. The before-ticket artifact's different hash
 is preserved as before-state evidence, not a substitute for these final measurements.
@@ -390,14 +393,19 @@ rule, not Promise behavior: `observe` updates the status and snapshots, while `p
 appends the old result to the belt only in its Create branch. It is causally awkward as
 an outcome timeline, even though the status reports the settlement immediately.
 
-Recommended change for a subsequent action request: append one observed-outcome receipt
-when the observer fires, label the belt as observed outcome records (including the current
-Promise), and leave the numbered current ticket available for later ignored resolver calls.
-Remove the Create-time append to avoid duplicate receipts; update the print counterpart
-and a browser test to assert appearance on observation, not on the next Create.
-Keep the native resolver calls, single-current-Promise toy rule, original values, and
-capture timing unchanged. The user's question establishes the UX concern, not an order to
-change the artifact in this decision turn.
+The user then said to continue working on it. `mise run test:ticket-lesson` first failed
+at the observer boundary: the Promise 1 status was rejected, but the belt was `[]`.
+The corrected controller appends one observed-outcome receipt in either observer callback;
+Create no longer transfers a prior receipt. The belt and printable list now say observed
+outcome receipts, including the current Promise. The same ticket remains available for
+logged ignored calls; those calls do not create another receipt. All three current
+prototype variants and the generated lesson use the same controller and wording.
+`mise run test:ticket-boundaries`, `test:ux-choice`, `test:ux-clarity-review`, and
+`test:ux-print` pass after the change. The generated-lesson test checks both resolver
+orders, no duplicate on ignored call or Create, and the actual PDF after Promise 2
+settles. The current artifact is provisionally 694,011 bytes; full verification and
+headed presentation of the new version remain pending. The single-current-Promise toy
+rule, native calls, original values, and capture timing are unchanged.
 
 ## Superseded designs (do not revive without the user asking)
 
@@ -414,7 +422,8 @@ change the artifact in this decision turn.
   `5401b0df5d9b1eee7f987086e1cef6d60d4e109b63c7bd61d818ed7ef8a05002`;
   that exact file is preserved as `promises-teaching-before-ticket.local.html`.
   The older PDF was 121 Letter pages; the pre-value-view copy keeps hash `319ffcb2…`.
-  The verified current artifact and PDF measurements are in the integration section.
+  The verified before-belt artifact and PDF measurements are in the integration section;
+  the corrected artifact's verification is tracked in the belt timing section.
 - Authoring workspace: `/home/user/temp/agent/promises-revision`.
 - Prototype variants: `ux-variants/ux-variant-a.html` (reference rows),
   `ux-variant-b.html` (kept card grid), `ux-variant-c.html` (definition list),
