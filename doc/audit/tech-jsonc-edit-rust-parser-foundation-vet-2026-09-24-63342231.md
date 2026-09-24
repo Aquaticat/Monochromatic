@@ -502,6 +502,14 @@ A separate filtered probe `mise run test:depth-512` generated a valid array docu
  dropping and emitting a deeply nested tree must be measured separately because they can also recurse.
  Do not run these inputs on the host until the stack-safe design has passed the isolated positive control.
 
+### Localized parse-stage stack overflow
+
+The accepted-depth test was instrumented with unbuffered markers before parse, after parse, and before/after drop. `mise run test:depth-512` was rerun inside the 2 GiB/2 CPU bounded container with Cargo test output uncaptured. It printed `depth control: before parse` and then aborted with `thread 'tests::depth_512_is_accepted' has overflowed its stack` (SIGABRT, exit 101). Neither the after-parse nor drop markers appeared. This localizes the observed failure to parser execution, not successful tree destruction. Emission and destruction remain unverified separate boundaries. Replace recursive parsing with explicit container frames before any candidate recommendation.
+
+### Separate TypeScript JSONC comma discrepancy
+
+A direct call through the current TypeScript neutral bundle (`package/module/jsonc-edit/dist/final/neutral/index.mjs`) measured the `JSON.parse` fast path and structured parser separately. Clean `[1\n,2]` parsed as a positive control. `[1\n,2,]` forced the structured path and threw `JsoncParseError: expected , or ] in array (at offset 3)`; `[1 /* c */\n,2]` also threw at offset 11. `{"a":1\n,"b":2,}` threw `JsoncParseError: expected , or } in object (at offset 7)`. The visible boundary differs by whether a comment or trailing comma requires the structured path. `package/module/jsonc-edit/src/parse-trivia.ts` ends same-line trailing capture at LF, and `src/parse.ts` demands a close when it saw no comma. This is independent of the Rust prototype's stack overflow. The accepted shared-behavior fixtures need an explicit comma-after-trivia case; TypeScript and Rust require a fix once the foundation is adopted. Do not treat a clean-only fast-path probe as evidence for the structured path.
+
 ## Evidence and validation still required
 
 - Finish the scheduled registry,

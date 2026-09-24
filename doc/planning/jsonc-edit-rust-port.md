@@ -272,8 +272,15 @@ source-level transitive clearance remains open where required.
    and consuming-crate probes.
    A new 513-level nested-array case aborted its 2 GiB/2 CPU isolated test process with a stack overflow before the intended 512-depth error.
    A separate positive control with **valid 512-level nesting** also aborted with a stack overflow in the same bounds.
+   An uncaptured stage marker printed before parsing but not after;
+   the observed overflow occurs during parse execution.
    Merely checking depth before recursive descent cannot preserve the accepted input domain.
    The candidate is **not validated**.
+- A separate TypeScript source probe found that clean `[1\n,2]` parses through the `JSON.parse` fast path,
+   but `[1\n,2,]` fails in the structured path with `JsoncParseError: expected , or ] in array (at offset 3)`;
+   a commented input and object with a newline before the comma fail analogously.
+   Treat syntax parity here as a separate issue from stack safety;
+   add shared fixtures and fix both implementations after foundation adoption.
 - Current reports are `doc/audit/tech-jsonc-edit-rust-parser-foundation-vet-2026-09-24-63342231.md` and `doc/audit/tech-jsonc-edit-rust-exact-number-foundation-vet-2026-09-24-e8e0034a.md`.
    Their no-regex predecessors are superseded.
    Other worktree changes are concurrent and out of scope.
@@ -283,6 +290,7 @@ source-level transitive clearance remains open where required.
 Replace recursive container descent with an explicit work stack;
  test accepted 512-level input and rejected 513-level input inside a bounded container.
  Measure emission and tree cleanup at the accepted depth separately before relying on them.
+ Add comma-after-trivia fixtures and correct the source-syntax divergence in Rust and TypeScript at the appropriate adoption stage.
  Then rerun parser syntax,
  comment,
  UTF-16,
