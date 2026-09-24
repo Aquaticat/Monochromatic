@@ -55,6 +55,7 @@ const PNPM_STORE = '.pnpm';
 export const RSYNC_EXCLUDES: readonly string[] = [
   '**/node_modules',
   '**/dist',
+  '**/.cache',
   '**/.git',
   '**/target',
   '**/output',
