@@ -1067,7 +1067,7 @@ ownership,
 The user rejected all I/G/R command-bar presentations.
  The active prototype has one
 direction rather than an option matrix:
- a 48px Search icon button in the player
+ a 48px Search button target with a 24px official icon in the player
 opens a separate page,
  whose single 72px baseline MD3 header merges Back,
  query
@@ -1079,12 +1079,12 @@ title row remains.
 branch is committed at `1ecb1f3f7`,
  with top-bar geometry correction `773c8fc11`
 and merged-header correction `13b38f1f7`.
- Native 360 × 640,
- 480 × 600 and
-1100 × 640px light/dark captures now show the player trigger,
- empty page,
-illustrative `cam` results,
- no results and unavailable library
+ Native 360 × 640 and 480 × 600px light/dark captures show the player trigger,
+empty page,
+ illustrative `cam` results,
+ no results and unavailable library;
+1100 × 640px captures cover the trigger,
+ empty page and illustrative results only
 (`questions/render/search-page-*`,
  main commit `c65154138`).
  Search button and Back

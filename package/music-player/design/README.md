@@ -78,8 +78,10 @@ search bars.
  open/empty page,
 illustrative results,
  no results and unavailable library in both schemes at
-360px,
- 480px and 1100px widths.
+360px and 480px;
+ the 1100px stress viewport shows the trigger,
+ empty page and
+results only.
  The HTML walkthrough exercises the intended
 open/back sequence without claiming the static native captures prove click delivery.
 The rejected command review remains at `questions/archive/command-igr-rejected.html`.

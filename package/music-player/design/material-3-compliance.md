@@ -887,7 +887,7 @@ query and Clear,
  and the page has sharp
 outer corners.
  On the player,
- a standard 48px icon-button target opens this page;
+ a standard 48px icon-button target holding a 24px Search glyph opens this page;
 no player controls persist inside Search.
  This is visually distinct from a command
 palette or a modal overlay.
@@ -910,8 +910,11 @@ The native light/dark study captures at
 `questions/render/search-page-*` show the trigger,
  empty page,
  `cam` sample,
-no matches and unavailable library at desktop widths 360,
- 480 and 1100px.
+no matches and unavailable library at desktop widths 360 and 480px.
+The 1100px stress viewport covers the player trigger,
+ empty page and illustrative
+results,
+ not the no-match or unavailable states.
 At compact 480px,
  the rendered header is `#E7E7F1` light / `#1E1F26` dark,
 its divider is `#797A84` / `#73757F`,
