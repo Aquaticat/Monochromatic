@@ -1188,6 +1188,38 @@ the seams.
  L1 ramp with a deck-seam hairline,
  and L2 pure ramp without hairlines.
 
+### D46. Cover picker opened state = P4, temporary pre-1.x decision (2026-09-23)
+Use P4 as the current design baseline for the folded cover screen:
+ the app-bar folder title
+and caret open the picker in the list slot,
+ leaving the deck visible.
+ This is explicitly a
+**temporary pre-1.x decision**, not final acceptance of the picker interaction or a
+production implementation authorization.
+ The user chose P4 while believing a better
+solution exists;
+ keep a dedicated improvement question open before 1.x rather than
+representing P4 as the ideal solution.
+
+**Why.**
+ P4 is the user's selected working variant from the P1 to P4 native comparison.
+The form's P4 evidence covers dark at 100% text;
+ P4 at 200% and in the accepted L3
+light scheme were not captured (those captures depict P2).
+ Verify the selected variant
+at those states before claiming the cover picker is validated there.
+ The comparison's
+recommendation was P2;
+ the user's P4 selection takes precedence.
+
+**Not selected for the temporary baseline.**
+ P1 and P3 use a floating panel;
+ P2 uses
+the MD3 outlined text-field trigger with the in-slot picker.
+ These are comparison
+alternatives,
+ not permanent prohibitions on exploring a better pre-1.x solution.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)
