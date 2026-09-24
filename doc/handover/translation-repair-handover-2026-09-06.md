@@ -4766,11 +4766,12 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA20 RUNS (entry `shi_Yumiaoya`,
-    frozen `79972da3d`,
-    corpus-pass pid 1802613 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
-    launched 21:38 UTC 2026-09-24,
-    waiter wait-s20 (background bash);
+1.  SHI_YUMIAOYA21 RUNS (entry `shi_Yumiaoya`,
+    frozen `5fd7d3dea`,
+    corpus-pass pid 1852021 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
+    launched 21:55 UTC 2026-09-24,
+    waiter wait-s21 (background bash);
+    shi_Yumiaoya20 on `79972da3d` was killed at 21:55 UTC, 17 min in, under always-kill-and-relaunch once `5fd7d3dea` landed;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
     read it by every shi_Yumiaoya19 check first, then class one hundred nineteen:
     the Description line and the Departure line carry "trans girl" or "trans woman" for 小药娘 and 药娘, no Han and no pinyin form outside a comment, and the `translate-candidate-refused` findings name the community term where a candidate kept it;
@@ -4779,7 +4780,8 @@ each read off the pass log and the shipped page:
     CLASS ONE HUNDRED NINETEEN BUILT (79972da3d, guard red first 2f7dd5190, full suite `suite-class119.log` 1121 PASS, no FAIL):
     owner answer 2026-09-24 on 小药娘 and 药娘: "This term is pretty disrespectful though currently being used by some people in the community in a neutral way. We shouldn't assume that neutralness carries over to English. The best thing we can do here is just to say "trans woman" or "trans girl"."
     `COMMUNITY_GLOSSARY` seeds 药娘 with the renderings "trans girl", "trans woman", "trans women" and the refused forms yaoniang, yao-niang, yao niang (entries gain `refusedForms`);
-    `communityTermFindings` (`translate-community-term.ts`), a source-carry floor after the title floor, refuses before any judge a candidate that keeps a glossary term the original carries in Han or writes a refused form in any casing, comments cut on every side, a term the page itself keeps left to the judges.
+    `communityTermFindings` (`translate-community-term.ts`), a source-carry floor after the title floor, refuses before any judge a candidate that keeps a glossary term the original carries in Han or writes a refused form in any casing, comments cut on both sides.
+    OWNER CORRECTION 2026-09-24: "even when existing English translation itself keeps the term it shouldn't be kept." The page-kept exception is gone (`5fd7d3dea`, guard red first `2ba810b2f`, lint 0/0, types clean, full suite `suite-class119b.log` 1121 PASS, no FAIL).
     HULICAIJIA17 READ (frozen `0d8e463ef`): SETTLED at about 11:00 UTC 2026-09-24 in 28.4 min, one attempt, 4,326 seats, 154 retry rounds, 3,477 calls, 1.03 USD Bedrock and 1.63 OpenRouter by the meters;
     every hulicaijia16 check holds (13 headings, markers and 9 definitions as the archive, 2 links, 3 Sakura, front matter equal, no TA, no error finish, no double blank line), 75 abstention lines, Jev 127 of 127;
     class one hundred eighteen holding (GLM-5.3-Flash 231 of 231 off Synthetic), the class ninety-seven floor excluded the archive's third-person incumbent once;

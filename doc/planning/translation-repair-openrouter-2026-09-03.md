@@ -8121,12 +8121,17 @@ Built in `79972da3d` (guard red first `2f7dd5190`):
   It refuses, before any judge reads it,
   a candidate that keeps a glossary term the original carries in Han
   or writes one of the entry's refused forms in any casing.
-  Comments are cut on every side,
-  and a term the page itself keeps outside a comment is left to the judges.
+  Comments are cut on both sides.
+  The first build (`79972da3d`) left a term the page itself keeps outside a comment to the judges;
+  the owner corrected that the same day:
+  "even when existing English translation itself keeps the term it shouldn't be kept."
+  The exception is gone in `5fd7d3dea` (guard red first `2ba810b2f`).
   The renderings are listed but not required,
   since a rendering inflects and the judges still choose among renderings.
-- Lint 0/0, types clean, full suite `suite-class119.log` 1121 PASS, no FAIL.
-- shi_Yumiaoya20 launched 21:38 UTC on `.frozen-dist-79972da3d` to read it live.
+- Lint 0/0, types clean, full suite `suite-class119.log` and `suite-class119b.log` 1121 PASS each, no FAIL.
+- shi_Yumiaoya20 launched 21:38 UTC on `.frozen-dist-79972da3d` and was killed at 21:55 UTC under always-kill-and-relaunch;
+  shi_Yumiaoya21 launched 21:55 UTC on `.frozen-dist-5fd7d3dea` to read it live.
+  The shi_Yumiaoya archive carries 小药娘 only inside a translator comment, so the exception had not reached this entry.
 
 ## shi_Yumiaoya19 read, 2026-09-24, 10:32 UTC: SETTLED in 20.9 min, every shi_Yumiaoya18 check holding; 小药娘 and 药娘 shipped in Han, the third rendering of the term in three runs (open question for the owner)
 
