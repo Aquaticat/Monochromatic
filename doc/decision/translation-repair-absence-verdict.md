@@ -352,6 +352,23 @@ and the passes repeat, at most one per carried passage, until nothing more folds
 On mikaela14 slice 12 folded into slice 13 and slice 11, whose evidence sat in slice 10's paragraph and slice 13's span, then folded into slice 10.
 
 
+## Addendum 2026-09-24, third: an interior gap the roster left unplaced on both sides is one rendering, not insertions
+
+`mikaela15` (2026-09-24 05:19 UTC) SETTLED with the fold live and shipped the HRT passage twice:
+slice 10's stand-in rendered it through the fold, and slice 13's span kept the archive paragraph that renders it.
+The pairing had left sources 3 to 7 and targets 3 to 6 of section 2 unplaced between two paired blocks;
+slicing read the originals as insertions (so the coverage round called them carried and this verdict's fold applied)
+and the translation blocks, undeclined because no original was placed, rode into the next paired slice's span.
+`mikaela12` and `mikaela13` lost the passage through the same shape.
+
+Such a gap is a merge the roster did not name, not a run of insertions.
+`pairUnpartneredGaps` (`unpartnered-gap-steps.ts`, a43c5d88d) reads every interior gap with blocks on both sides as one rendering:
+the first original and the first translation block paired, the rest continuing on both sides,
+so the passage reaches the lanes as one slice and the carried verdict is never asked about it.
+Leading and trailing gaps keep their own rules (the tail bound, the leading skip), and a gap with blocks on one side alone stays bare.
+The fold above remains for the shapes it was built on: an original the roster placed nothing beside while the archive rendered it inside a neighbour's span.
+
+
 ## What this supersedes
 
 `doc/planning/translation-repair-open-decisions.md` question 28, whose ranking was A > C > B > D

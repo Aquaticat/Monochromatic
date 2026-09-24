@@ -229,6 +229,18 @@ the abutting check refuses a fold across a source the carrier has not absorbed,
 and the fold passes repeat until nothing more folds, at most once per carried passage.
 
 
+## An interior gap unplaced on both sides
+
+Class one hundred twelve (`mikaela15`, 2026-09-24):
+between two paired steps a roster may leave originals and translation blocks alike unpartnered.
+Read as bare steps, the originals became insertions and the translation blocks rode into the next paired slice's span,
+so the passage was lost (`mikaela12`, `mikaela13`) or, once the fold worked, shipped twice (`mikaela15`).
+`pairUnpartneredGaps` (`unpartnered-gap-steps.ts`) now reads such a gap as one merge:
+the first pair opens the rendering and the rest continue it on both sides,
+so the gap is one slice whose source is every unplaced original and whose span is every unplaced block.
+Leading, trailing and one-sided gaps are unchanged.
+
+
 ## What the consolidate gate is told about an ineligible standing
 
 Since class fifty-six (2026-09-18) a gate over a standing the deterministic publication rule refused is told so on its sheet,

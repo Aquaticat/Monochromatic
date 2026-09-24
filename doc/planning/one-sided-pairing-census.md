@@ -90,6 +90,16 @@ The per-slice ratio needs slicing to have run, so it costs either a lane run or 
 Page scale is the cheap screen that names which entries to look at first;
 it is not a substitute for the slice-scale census.
 
+## Interior gaps unplaced on both sides, 2026-09-24
+
+The `mikaela_khara` section 2 pairing (`mikaela15`, frozen `caac222a6`) paired sources 0 to 2 and 8 onward
+and left sources 3 to 7 and targets 3 to 6 unplaced between them.
+That is a third shape beside the two this census names:
+neither a decline nor a confident guess, but a merge the roster did not say out loud.
+Slicing read it as five insertions and a target-only run, which lost the passage on `mikaela12` and `mikaela13` and shipped it twice on `mikaela15`.
+Since a43c5d88d `pairUnpartneredGaps` (`package/module/translation-repair/src/unpartnered-gap-steps.ts`) reads every such interior gap as one merge.
+A pairing-cache count of how many entries carry this shape has not been taken.
+
 ## Candidates this suggests for the bed
 
 The consolidation bed currently runs 13 slices drawn from entries in the band.

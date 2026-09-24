@@ -8082,6 +8082,49 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## mikaela15 read, 2026-09-24, 05:45 UTC: SETTLED with the fold live, the HRT passage shipped twice, class one hundred twelve found and built in a43c5d88d; mikaela16 launched
+
+`mikaela15` (entry `mikaela_khara`, frozen `caac222a6`, pid 876937) was launched at 05:09 UTC 2026-09-24
+and SETTLED at 05:19 UTC,
+10.5 min,
+one attempt,
+2,116 seats,
+1,687 calls,
+75 retry rounds,
+0.75 USD by the meters (Bedrock 47.37 to 47.09, OpenRouter 93.85 to 93.42),
+on Bedrock and OpenRouter alone;
+the lanes disagreed on 25 of 34 slices, class one hundred seven live on slices 13 and 24, all 15 checker rounds heard 2 of 3, slices 5 and 14 unendorsed, 51 abstention lines, Jev 68 of 69.
+
+Class one hundred eleven live end to end:
+this pairing carried slice 11 alone and the log reads `insertion-carried-folded (slice 11 into slice 10)`,
+slice 10's stand-in renders the HRT sentences and 原本只是 together,
+and there is no carried-evidence-lost stop.
+Every check of `mikaela11` holds:
+𝓠𝓾𝓪𝓷 as the archive, "𝓠𝓾𝓪𝓷’s" curled, "Mika was outed", the Epilogue one to one, the life in the past, front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish.
+
+The page ships the HRT passage twice (class one hundred twelve).
+Slice 10's stand-in renders it through the fold,
+and slice 13 ("That night…") kept the archive paragraph "That was originally just a typical thing." in its own span beside it.
+The cause is in the slicing, not the fold.
+In section 2 the roster paired sources 0 to 2 and 8 onward and left sources 3 to 7 and targets 3 to 6 unplaced on both sides,
+which `blockPairingToSteps` read as bare source-only steps followed by bare target-only steps:
+the originals became insertions (the coverage round then called them carried),
+and the target-only run, undeclined because the pairing placed no original, rode into the next paired slice's span (`group-merge.ts mergeOneSidedRuns`).
+`mikaela12` and `mikaela13` lost the passage through the same shape; `mikaela15` rendered it twice because the fold now works.
+
+Class one hundred twelve built (a43c5d88d, guard red first 0c5ee4b6c, lint 0/0, types clean, full suite `suite-class112.log`, replayed over mikaela15's section 2 pairing: `P2:2 P3:3 S4+ S5+ S6+ S7+ T4+ T5+ T6+ P8:7`):
+`pairUnpartneredGaps` (`unpartnered-gap-steps.ts`) reads an interior gap unplaced on both sides as one merge,
+the first source and target paired and the rest continuing on both sides,
+so the grouper keeps it as one run, the anchor reader gives it no insertion, and the decline reader declines none of it;
+`blockPairingToSteps` wraps the bare builder with it.
+Leading and trailing gaps and one-sided gaps are unchanged.
+Frozen `.frozen-dist-a43c5d88d`.
+
+Observation, not yet read: the mikaela15 carrier wrote "That night, 𝓠𝓾𝓪𝓷, Spring, and Mika…" where the archive has Spring for 泉;
+read it on `mikaela16` before calling it a class.
+
+`mikaela16` launched on it.
+
 ## mikaela14 read, 2026-09-24, 05:15 UTC: class one hundred eleven live at the admission, its chain arm found and built in caac222a6; killed at 05:05 UTC; mikaela15 launched
 
 `mikaela14` (entry `mikaela_khara`, frozen `0ab0abdd8`, pid 691210) was launched at 04:53 UTC 2026-09-24 and killed at 05:05 UTC

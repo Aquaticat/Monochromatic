@@ -4766,22 +4766,30 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  MIKAELA15 RUNS (entry `mikaela_khara`,
-    frozen `caac222a6`,
-    pid 876937,
-    launched 05:09 UTC 2026-09-24,
-    waiter wait-m15 (background bash),
-    meters 47.37 USD Bedrock and 93.85 OpenRouter at launch, Synthetic dry for the week since 02:56 UTC, Hyper dry;
+1.  MIKAELA16 RUNS (entry `mikaela_khara`,
+    frozen `a43c5d88d`,
+    pid 1173176,
+    launched 05:40 UTC 2026-09-24,
+    waiter wait-m16 (background bash),
+    meters 47.09 USD Bedrock and 93.42 OpenRouter at launch, Synthetic dry for the week since 02:56 UTC, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    the first run on the chain arm of class one hundred eleven;
-    read for the `insertion-carried-folded` lines at the admission (mikaela14's shape folds slice 12 into slice 13 and slice 11 into slice 10; mikaela13's folds slice 11 into slice 10),
-    any `stays carried:` warn line and the `carried on N region(s)` lines,
-    the carrier's widened source rendered on the page (the HRT paragraph written from both source paragraphs),
-    no carried-evidence-lost stop,
+    the first run on class one hundred twelve;
+    read the section 2 pairing steps for one merge over sources 3 to 7 and targets 3 to 6 (no insertions at 3 to 7, no target-only run riding into the next slice),
+    the HRT passage shipped once on the page,
+    any `insertion-carried-folded`, `stays carried:` and `carried on N region(s)` lines,
+    "That night, 𝓠𝓾𝓪𝓷, Spring, and Mika" (mikaela15 wrote 𝓠𝓾𝓪𝓷 for 泉 where the archive has Spring; class or glossary effect, undecided),
     then classes seventy to seventy-seven, ninety-six, one hundred one and one hundred two beside every check of `mikaela11`
     (𝓠𝓾𝓪𝓷 as the archive, "𝓠𝓾𝓪𝓷’s" curled, "Mika was outed", the Epilogue one to one, the life in the past, front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish);
     then `yingying` or `zheermao101`, beside every check of the last read of each;
-    record each under a new heading above "## mikaela14 read, 2026-09-24" in the pass log.
+    record each under a new heading above "## mikaela15 read, 2026-09-24" in the pass log.
+    MIKAELA15 READ (frozen `caac222a6`): SETTLED 05:19 UTC 2026-09-24 in 10.5 min, 2,116 seats, 1,687 calls, 0.75 USD by the meters;
+    class one hundred eleven live end to end (`insertion-carried-folded (slice 11 into slice 10)`, no carried-evidence-lost stop, every mikaela11 check holds),
+    but the HRT passage shipped twice: slice 10's stand-in through the fold and slice 13's span keeping the archive's "That was originally just a typical thing." (class one hundred twelve);
+    class one hundred seven live on slices 13 and 24, contest 25 of 34 differ, all 15 checker rounds 2 of 3, slices 5 and 14 unendorsed, 51 abstention lines, Jev 68 of 69.
+    CLASS ONE HUNDRED TWELVE BUILT (a43c5d88d, guard red first 0c5ee4b6c, full suite `suite-class112.log`, replayed over mikaela15's section 2 pairing: `P3:3 S4+ S5+ S6+ S7+ T4+ T5+ T6+`):
+    the roster had paired sources 0 to 2 and 8 onward and left sources 3 to 7 and targets 3 to 6 unplaced on both sides, which slicing read as insertions plus an undeclined target-only run riding into slice 13 (mikaela12 and 13 lost the passage the same way);
+    `pairUnpartneredGaps` (`unpartnered-gap-steps.ts`) reads such an interior gap as one merge (first pair, the rest `continuesPairing` on both sides), applied by `blockPairingToSteps`; leading, trailing and one-sided gaps unchanged.
+    Not exercised live yet.
     MIKAELA14 READ (frozen `0ab0abdd8`): launched 04:53 UTC, killed 05:05 UTC 2026-09-24 12 min in at consolidation chunk 26 under always-kill-and-relaunch, no tally, 1,471 calls, 0.57 USD by the meters;
     class one hundred eleven live at the admission (`insertion-carried-folded (slice 12 into slice 13)`, the warn line `slice 11 stays carried: evidence sits in slice at position 13, not a neighbour`, the `carried on 3 region(s)` line),
     which showed the chain arm: two carried slices in a row, the neighbour rule counting positions instead of paired slices, slice 11 doomed to the same publish stop;
