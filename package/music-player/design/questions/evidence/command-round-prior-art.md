@@ -137,5 +137,76 @@ could coexist with either in-app surface;
   C3 finds everything in one place but makes result relevance
   and Enter's effect less predictable.
 
+## Corrected active study, independent questions
+
+The rebuilt throwaway Slint source is committed on the prototype branch as
+`ee1b2d59c`,
+ with native-fit fixes in `dbbf5116e` and `6d533f740`.
+ Its new
+`questions/render/command-round-{i,g,r,e}*` captures replace the first matrix for
+review.
+ Every proposed state has an opaque light and dark Slint raster:
+
+- **I (in-app placement):** I1 docked below the header,
+  I2 floating within the player,
+  I3 replacing the content region.
+  All show the same typed `open` action query,
+  matching actions and selected result.
+  Each appears at 480 × 600 and 1100 × 640px.
+  I1 also has a 360 × 640px synthetic larger-text and long-label stress capture.
+- **G (optional global invocation):** G1 raises the player from a previously active
+  notes app,
+  G2 draws a detached quick surface over that app.
+  I and G are
+  complementary;
+  the Slint scenes do not implement an actual second OS window or
+  hotkey.
+- **R (future Ctrl+F):** R1 uses a separate search destination,
+  R2 an explicit
+  search mode in the command surface.
+  Both depict the same illustrative `cam`
+  query and folder/track results.
+  D25 settles only the reserved shortcut,
+  not
+  whether those surfaces are shared.
+- **Edge probes:** E1 names no matching actions;
+  E2 explicitly names an action
+  unavailable during a scan.
+  They are contextual evidence,
+  not extra choices.
+
+The native scenes do not establish keyboard navigation,
+ screen-reader semantics,
+ focus
+restoration,
+ result execution,
+ search indexing,
+ or real compositor window behavior.
+The simplified player behind the overlays draws D43's absence of volume,
+ a 24% seek
+state,
+ a pause glyph matching the suggested action,
+ D38's tonal Open and current-row
+emphasis.
+ It remains a design representation rather than an exact desktop application
+screenshot.
+ The native 360px stress uses explicit larger prototype text,
+ not a measured
+OS UI-font preset.
+
+Current questionnaire rankings are **I1 > I2 > I3** (source anchor over floating,
+context retention over full replacement),
+ **G2 > G1** (keep the previous task visible
+over raising the player),
+ and **R1 > R2** (dedicated navigation room over mode
+switching).
+ These are recommendations for separately selectable choices,
+ not settled
+decisions.
+ Search targets,
+ result ranking,
+ a discoverable in-app entry and the exact
+in-app binding remain open.
+
 [jetbrains-search]: https://www.jetbrains.com/help/idea/searching-everywhere.html
 [vscode-palette]: https://code.visualstudio.com/docs/editing/getting-started/userinterface#_command-palette
