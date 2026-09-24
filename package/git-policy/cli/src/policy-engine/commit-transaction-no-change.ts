@@ -112,9 +112,13 @@ export async function completeNoChangeTransaction({
     ],
     allowFailure: true,
   },);
+  /**
+   Exact current tree, absent only for an unborn repository.
+   */
+  const headTreeOid = DECODER.decode(currentTree.stdout,)
+    .trim();
   if ((currentTree.exitCode !== 0)
-    || (DECODER.decode(currentTree.stdout,)
-      .trim() !== intendedTreeOid))
+    || (headTreeOid !== intendedTreeOid))
     return NO_CHANGE_NOT_APPLICABLE;
   await prepareTransactionJournal({
     workspace,

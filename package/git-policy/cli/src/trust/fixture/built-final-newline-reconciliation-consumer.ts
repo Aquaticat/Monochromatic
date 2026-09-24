@@ -4,9 +4,10 @@
  *
  * @module
  */
-import { readFile, writeFile, } from 'node:fs/promises';
+import { readFile, rm, writeFile, } from 'node:fs/promises';
 import { execute, } from './built-consumer-helpers.ts';
 import { assertFixtureEqual, initializePostCommitRepository, } from './built-post-commit-helpers.ts';
+import { KILL_WRAPPER_SOURCE, waitForOrphan, } from './built-autofix-recovery-consumer.ts';
 
 /**
  * Exercises canonical input, corrected worktrees, and normalization-only commits.
@@ -135,6 +136,53 @@ export async function verifyFinalNewlineReconciliation({ env, }: Readonly<{
     actual: (await execute({ command: '/usr/bin/git', args: ['status', '--short',], cwd: repository, },)).stdout,
     expected: 'M  unrelated.txt\n',
     context: 'normalization-only command cleans selected index but preserves unrelated staging',
+  },);
+  /** Wrapper death after Git advances HEAD must replay selected-file completion. */
+  await writeFile(`${repository}/missing.txt`, 'after interruption',);
+  await execute({ command: '/usr/bin/git', args: ['add', '--', 'missing.txt',], cwd: repository, },);
+  const postHookPath = `${repository}/.git/hooks/post-commit`;
+  await writeFile(postHookPath, KILL_WRAPPER_SOURCE, { mode: 0o700, },);
+  await execute({
+    command: 'git',
+    args: ['commit', '--quiet', '--message=interrupted-normalization', '--', 'missing.txt',],
+    cwd: repository,
+    env,
+    expectedExit: -1,
+  },);
+  await waitForOrphan();
+  await rm(postHookPath,);
+  await execute({ command: 'git', args: ['status', '--short',], cwd: repository, env, },);
+  assertFixtureEqual({
+    actual: await readFile(`${repository}/missing.txt`, 'utf8',),
+    expected: 'after interruption\n',
+    context: 'selected final-newline worktree recovered after commit',
+  },);
+  assertFixtureEqual({
+    actual: (await execute({ command: '/usr/bin/git', args: ['status', '--short',], cwd: repository, },)).stdout,
+    expected: 'M  unrelated.txt\n',
+    context: 'recovery preserves unrelated staged file',
+  },);
+  /** A hook editing the worktree after selection must not lose that edit. */
+  await writeFile(`${repository}/repeated.txt`, 'staged without LF',);
+  await execute({ command: '/usr/bin/git', args: ['add', '--', 'repeated.txt',], cwd: repository, },);
+  const preHookPath = `${repository}/.git/hooks/pre-commit`;
+  await writeFile(preHookPath, '#!/usr/bin/env node\nrequire("node:fs").writeFileSync("repeated.txt", "concurrent edit\\n");\n', { mode: 0o700, },);
+  await execute({
+    command: 'git',
+    args: ['commit', '--quiet', '--message=concurrent-edit', '--', 'repeated.txt',],
+    cwd: repository,
+    env,
+  },);
+  await rm(preHookPath,);
+  assertFixtureEqual({
+    actual: await readFile(`${repository}/repeated.txt`, 'utf8',),
+    expected: 'concurrent edit\n',
+    context: 'hook-edited worktree remains untouched',
+  },);
+  assertFixtureEqual({
+    actual: (await execute({ command: '/usr/bin/git', args: ['show', 'HEAD:repeated.txt',], cwd: repository, },)).stdout,
+    expected: 'staged without LF\n',
+    context: 'hook edit does not change committed normalization',
   },);
 }
 //endregion Disposable packed-wrapper regression

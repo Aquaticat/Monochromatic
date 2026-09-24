@@ -358,7 +358,7 @@ export async function runCommitTransaction({
       policyResult: pass,
       committed: false,
     };
-  return concludeCommitTransaction({
+  return await concludeCommitTransaction({
     workspace,
     gitPath,
     cwd: layout.effectiveCwd,
