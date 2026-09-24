@@ -872,6 +872,66 @@ do not prove accessibility,
 hotkey feasibility.
  No KWin window-management automation is needed for this round.
 
+## D47/D48: one Search page, one integrated header
+
+The user rejected every I/G/R command-bar appearance and chose a Search icon button
+that opens a separate page (D47).
+ The first page prototype stacked a "Search" app
+bar over a query bar;
+ the user removed that redundancy (D48).
+ The active page
+instead uses the baseline full-content Search layout:
+ one 72px header contains Back,
+query and Clear,
+ a 1px `outline` divider separates results,
+ and the page has sharp
+outer corners.
+ On the player,
+ a standard 48px icon-button target opens this page;
+no player controls persist inside Search.
+ This is visually distinct from a command
+palette or a modal overlay.
+
+The same local archive's Search guidelines say an icon button is appropriate when
+search is a secondary action.
+ Its baseline specs and AndroidX
+`SearchViewTokens.FullScreenHeaderContainerHeight` give the 72dp header;
+`ExpandedFullScreenSearchBar` in `SearchBar.kt` draws the divider.
+ The normalized
+source-versus-study contact at
+`questions/evidence/search-page-header-comparison.png` compares the readable
+baseline `components/search/specs/images/34.png` request at `=w1200` (pink source
+measurements retained) to the Slint page header at the same 72px logical height.
+The study's query/result examples are sample content,
+ not an approved index or
+ranking.
+
+The native light/dark study captures at
+`questions/render/search-page-*` show the trigger,
+ empty page,
+ `cam` sample,
+no matches and unavailable library at desktop widths 360,
+ 480 and 1100px.
+At compact 480px,
+ the rendered header is `#E7E7F1` light / `#1E1F26` dark,
+its divider is `#797A84` / `#73757F`,
+ and the page body remains white / black.
+The Slint source wires Search and Back TouchAreas and gives the input
+`input-type: search`;
+ offscreen rasters do not prove native click delivery,
+ focus
+restoration,
+ screen-reader output,
+ indexing,
+ or a backend.
+ The HTML walkthrough
+is a separate interactive design artifact,
+ not a substitute for native integration
+verification.
+ D21's former global command hotkey and Settings row are not copied
+to Search;
+ D25's Ctrl+F reservation awaits its separate keyboard-map round.
+
 [search-bar-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SearchBarTokens.kt
 [search-view-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SearchViewTokens.kt
 [shape-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ShapeTokens.kt
