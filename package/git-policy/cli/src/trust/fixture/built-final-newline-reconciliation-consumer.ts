@@ -4,7 +4,7 @@
  *
  * @module
  */
-import { readFile, rm, writeFile, } from 'node:fs/promises';
+import { chmod, readFile, rm, stat, writeFile, } from 'node:fs/promises';
 import { execute, } from './built-consumer-helpers.ts';
 import { assertFixtureEqual, initializePostCommitRepository, } from './built-post-commit-helpers.ts';
 import { KILL_WRAPPER_SOURCE, waitForOrphan, } from './built-autofix-recovery-consumer.ts';
@@ -183,6 +183,37 @@ export async function verifyFinalNewlineReconciliation({ env, }: Readonly<{
     actual: (await execute({ command: '/usr/bin/git', args: ['show', 'HEAD:repeated.txt',], cwd: repository, },)).stdout,
     expected: 'staged without LF\n',
     context: 'hook edit does not change committed normalization',
+  },);
+  /** Original worktree permissions survive the creation umask. */
+  await writeFile(`${repository}/canonical.txt`, 'mode preservation',);
+  await chmod(`${repository}/canonical.txt`, 0o664,);
+  await execute({ command: '/usr/bin/git', args: ['add', '--', 'canonical.txt',], cwd: repository, },);
+  await execute({
+    command: 'git',
+    args: ['commit', '--quiet', '--message=preserve-mode', '--', 'canonical.txt',],
+    cwd: repository,
+    env,
+  },);
+  assertFixtureEqual({
+    actual: String((await stat(`${repository}/canonical.txt`,)).mode & 0o777,),
+    expected: String(0o664,),
+    context: 'selected worktree permissions survive normalization',
+  },);
+  /** A hook deleting a selected file must not strand transaction recovery. */
+  await writeFile(`${repository}/missing.txt`, 'deleted during commit',);
+  await execute({ command: '/usr/bin/git', args: ['add', '--', 'missing.txt',], cwd: repository, },);
+  await writeFile(preHookPath, '#!/usr/bin/env node\nrequire("node:fs").unlinkSync("missing.txt");\n', { mode: 0o700, },);
+  await execute({
+    command: 'git',
+    args: ['commit', '--quiet', '--message=deleted-worktree', '--', 'missing.txt',],
+    cwd: repository,
+    env,
+  },);
+  await rm(preHookPath,);
+  assertFixtureEqual({
+    actual: (await execute({ command: 'git', args: ['status', '--short',], cwd: repository, env, },)).stdout,
+    expected: ' D missing.txt\n M repeated.txt\nM  unrelated.txt\n',
+    context: 'deleted selected file remains absent without recovery failure',
   },);
 }
 //endregion Disposable packed-wrapper regression

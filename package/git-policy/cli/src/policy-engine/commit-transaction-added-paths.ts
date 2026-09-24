@@ -11,9 +11,9 @@ import { Buffer, } from 'node:buffer';
 import { randomUUID, } from 'node:crypto';
 import type { Stats, } from 'node:fs';
 import {
+  chmod,
   lstat,
   readFile,
-  realpath,
   rename,
   rm,
   writeFile,
@@ -31,6 +31,11 @@ import {
 } from './commit-transaction-candidate-batch.ts';
 import { CommitTransactionGitError, } from './commit-transaction-git.ts';
 import { TRACKED_TARGET_PREFIX, } from './commit-transaction-tracked-files.ts';
+import {
+  inspectWorktreeFile,
+  type WorktreeFileIdentity,
+  worktreeIdentityMatches,
+} from './commit-transaction-worktree-check.ts';
 
 /**
  Module logger.
@@ -51,10 +56,6 @@ const EXECUTABLE_GIT_MODE = '100755';
  Owner-execute permission bit, which Git uses to decide the executable mode.
  */
 const OWNER_EXECUTE_BIT = 0o100;
-/**
- Worktree permission bits retained when replacing a selected ordinary file.
- */
-const FILE_PERMISSION_BITS = 0o777;
 
 /**
  Creates the transaction-domain error for failed or malformed Git blob output.
@@ -370,16 +371,30 @@ export async function assertAddablePath({
  @param bytes - intended content
 
  @param mode - original worktree permission bits
+
+ @param gitMode - expected ordinary Git file mode
+
+ @param original - original file bytes to revalidate
+
+ @param identity - original descriptor identity to revalidate
+
+ @returns whether replacement was installed without an observed conflict
  */
 async function replaceWorktreeFile({
   destination,
   bytes,
   mode,
+  gitMode,
+  original,
+  identity,
 }: Readonly<{
   destination: string;
   bytes: Uint8Array;
   mode: number;
-}>,): Promise<void> {
+  gitMode: AddedPathRecord['gitMode'];
+  original: Uint8Array;
+  identity: WorktreeFileIdentity;
+}>,): Promise<boolean> {
   /**
    Same-directory temporary path, so rename stays on one filesystem.
    */
@@ -396,13 +411,31 @@ async function replaceWorktreeFile({
         flag: 'wx',
       },
     );
+    await chmod(prepared, mode,);
+    /**
+     Destination checked again after preparing replacement bytes and mode.
+     */
+    const current = await inspectWorktreeFile({
+      destination,
+      gitMode,
+      original,
+      intended: bytes,
+    },);
+    if ((current.kind !== 'original') || (!worktreeIdentityMatches({
+      first: identity,
+      second: current.identity,
+    },))) {
+      await rm(prepared, { force: true, },);
+      return false;
+    }
     await rename(
       prepared,
       destination,
     );
+    return true;
   }
   catch (error: unknown) {
-    l.error(`added-path worktree install failed for ${destination}: ${String(error,)}`,);
+    l.error(`worktree completion failed for ${destination}: ${String(error,)}`,);
     await rm(
       prepared,
       { force: true, },
@@ -497,33 +530,6 @@ export async function installAddedWorktreeFiles({
       record.path,
     );
     /**
-     Current worktree entry, without following a final symlink or a redirected parent.
-     */
-    // oxlint-disable-next-line no-await-in-loop -- Each selected path has independent worktree ownership.
-    const metadata = await lstat(destination,);
-    /**
-     Canonical parent prevents writing through a changed directory symlink.
-     */
-    // oxlint-disable-next-line no-await-in-loop -- Each path has an independent worktree parent.
-    const parent = await realpath(dirname(destination,));
-    /**
-     Whether this is still an ordinary file with the recorded executable mode.
-     */
-    const safe = (parent === dirname(destination,))
-      && metadata.isFile()
-      && (metadata.nlink === 1)
-      && (((metadata.mode & OWNER_EXECUTE_BIT) !== 0) === (record.gitMode === EXECUTABLE_GIT_MODE));
-    if (!safe) {
-      l.warn(`Worktree copy of ${record.path} is no longer an ordinary file with its original mode; the commit or normalization finished but this copy was kept. Compare it with HEAD (git diff HEAD -- ${record.path}).`,);
-      conflicted.push(record.path,);
-      continue;
-    }
-    /**
-     Current worktree bytes.
-     */
-    // oxlint-disable-next-line no-await-in-loop -- Each path is compared and replaced before the next, so a conflict stops with earlier paths already complete.
-    const current = Buffer.from(await readFile(destination,),);
-    /**
      Landed content.
      */
     const intended = blobs.get(record.intendedOid,);
@@ -532,20 +538,38 @@ export async function installAddedWorktreeFiles({
      */
     const original = blobs.get(record.originalOid,);
     if ((intended === undefined) || (original === undefined))
-      throw new CommitTransactionGitError(`Git blob batch omitted an added-path object for ${record.path}.`,);
-    if (current.equals(intended,))
+      throw new CommitTransactionGitError(`Git blob batch omitted a worktree completion object for ${record.path}.`,);
+    /**
+     Descriptor-bound current worktree state, including deletion as a conflict.
+     */
+    // oxlint-disable-next-line no-await-in-loop -- Each path is checked immediately before its own replacement.
+    const current = await inspectWorktreeFile({
+      destination,
+      gitMode: record.gitMode,
+      original,
+      intended,
+    },);
+    if (current.kind === 'intended')
       continue;
-    if (!current.equals(original,)) {
-      l.warn(`Worktree copy of ${record.path} changed while cli-git committed a policy fix to it; the commit landed with the fix and your edit was kept, so compare the file with HEAD (git diff HEAD -- ${record.path}) and keep the version you want.`,);
+    if (current.kind === 'conflict') {
+      l.warn(`Worktree copy of ${record.path} changed or disappeared while cli-git completed a policy fix; the committed bytes remain in HEAD and your worktree state was kept. Compare it with HEAD (git diff HEAD -- ${record.path}).`,);
       conflicted.push(record.path,);
       continue;
     }
     // oxlint-disable-next-line no-await-in-loop -- Replacement order follows record order for deterministic partial recovery.
-    await replaceWorktreeFile({
+    const installed = await replaceWorktreeFile({
       destination,
       bytes: intended,
-      mode: metadata.mode & FILE_PERMISSION_BITS,
+      mode: current.identity.mode,
+      gitMode: record.gitMode,
+      original,
+      identity: current.identity,
     },);
+    if (!installed) {
+      l.warn(`Worktree copy of ${record.path} changed while its replacement was prepared; the committed bytes remain in HEAD and your edit was kept. Compare it with HEAD (git diff HEAD -- ${record.path}).`,);
+      conflicted.push(record.path,);
+      continue;
+    }
     rewritten.push(record.path,);
   }
   return {

@@ -12,6 +12,7 @@ import { runTransactionGit, } from './commit-transaction-git.ts';
 import {
   prepareTransactionJournal,
   recordIndexInstalled,
+  resolveCurrentHead,
 } from './commit-transaction-journal.ts';
 import type { CommitTransactionResult, } from './commit-transaction-types.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
@@ -30,6 +31,42 @@ const DECODER = new TextDecoder(
   'utf-8',
   { fatal: true, },
 );
+
+/**
+ Rejects a changed HEAD before or during normalization-only installation.
+
+ @param gitPath - real Git executable
+
+ @param cwd - effective repository directory
+
+ @param expectedOid - commit whose tree was compared with settled selection
+
+ @throws TypeError when another commit changed HEAD
+
+ @example
+ ```ts
+ await assertNormalizationHead({ gitPath: '/usr/bin/git', cwd: '/repo', expectedOid: 'abc' });
+ ```
+ */
+async function assertNormalizationHead({
+  gitPath,
+  cwd,
+  expectedOid,
+}: Readonly<{
+  gitPath: string;
+  cwd: string;
+  expectedOid: string;
+}>,): Promise<void> {
+  /**
+   Current commit identity across public index and worktree mutations.
+   */
+  const current = await resolveCurrentHead({
+    gitPath,
+    cwd,
+  },);
+  if ((current.kind !== 'oid') || (current.oid !== expectedOid))
+    throw new TypeError('HEAD changed during normalization-only reconciliation; recovery retained for inspection.',);
+}
 
 /**
  Completes an index and worktree correction without creating an empty commit.
@@ -100,7 +137,16 @@ export async function completeNoChangeTransaction({
   if (!eligible)
     return NO_CHANGE_NOT_APPLICABLE;
   /**
-   HEAD tree against which a content-changing commit would be made.
+   Exact HEAD commit whose immutable tree is compared with settled selection.
+   */
+  const head = await resolveCurrentHead({
+    gitPath,
+    cwd,
+  },);
+  if (head.kind === 'absent')
+    return NO_CHANGE_NOT_APPLICABLE;
+  /**
+   Tree of that exact commit, rather than a later moving HEAD reference.
    */
   const currentTree = await runTransactionGit({
     gitPath,
@@ -108,17 +154,15 @@ export async function completeNoChangeTransaction({
     args: [
       'rev-parse',
       '--verify',
-      'HEAD^{tree}',
+      `${head.oid}^{tree}`,
     ],
-    allowFailure: true,
   },);
   /**
-   Exact current tree, absent only for an unborn repository.
+   Exact current tree for selected comparison.
    */
   const headTreeOid = DECODER.decode(currentTree.stdout,)
     .trim();
-  if ((currentTree.exitCode !== 0)
-    || (headTreeOid !== intendedTreeOid))
+  if (headTreeOid !== intendedTreeOid)
     return NO_CHANGE_NOT_APPLICABLE;
   await prepareTransactionJournal({
     workspace,
@@ -130,11 +174,22 @@ export async function completeNoChangeTransaction({
     addedPaths,
     selectedWorktreePaths,
     operation: 'normalize-only',
+    expectedHeadOid: head.oid,
     intendedTreeOid,
   },);
   workspace.preserveForRecovery();
+  await assertNormalizationHead({
+    gitPath,
+    cwd,
+    expectedOid: head.oid,
+  },);
   await workspace.installIndex(workspace.postIndexPath,);
   await recordIndexInstalled({ workspace, },);
+  await assertNormalizationHead({
+    gitPath,
+    cwd,
+    expectedOid: head.oid,
+  },);
   await installAddedWorktreeFiles({
     gitPath,
     cwd,

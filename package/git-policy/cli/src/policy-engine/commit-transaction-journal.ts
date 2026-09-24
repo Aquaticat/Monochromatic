@@ -270,6 +270,8 @@ export async function resolveCurrentHead({
  
  @param operation - normalization-only operation when no commit can be made
  
+ @param expectedHeadOid - exact HEAD that the normalization-only comparison examined
+ 
  @param intendedTreeOid - exact intended tree
  
  @returns durable journal value
@@ -289,6 +291,7 @@ export async function prepareTransactionJournal({
   addedPaths,
   selectedWorktreePaths = [],
   operation,
+  expectedHeadOid,
   intendedTreeOid,
 }: Readonly<{
   workspace: CommitTransactionWorkspace;
@@ -300,6 +303,7 @@ export async function prepareTransactionJournal({
   addedPaths: readonly AddedPathRecord[];
   selectedWorktreePaths?: readonly AddedPathRecord[];
   operation?: 'normalize-only';
+  expectedHeadOid?: string;
   intendedTreeOid: string;
 }>,): Promise<PreparedTransactionJournal> {
   /**
@@ -321,6 +325,9 @@ export async function prepareTransactionJournal({
     gitPath,
     cwd,
   },);
+  if ((expectedHeadOid !== undefined)
+    && ((originalHead.kind !== 'oid') || (originalHead.oid !== expectedHeadOid)))
+    throw new TypeError('HEAD changed after normalization-only tree comparison; no index or worktree bytes were installed.',);
   /**
    Existing current commit parent identities.
    */
