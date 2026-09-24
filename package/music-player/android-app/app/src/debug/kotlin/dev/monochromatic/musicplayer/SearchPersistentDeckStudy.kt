@@ -43,6 +43,10 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 // `fillMaxWidth` permits structural surfaces across the fold.
 import androidx.compose.foundation.layout.fillMaxWidth
+// `ime` reports the system input window, not a guessed keyboard height.
+import androidx.compose.foundation.layout.ime
+// `imePadding` lifts the bottom-anchored comparison above the actual keyboard.
+import androidx.compose.foundation.layout.imePadding
 // `height` gives divided Search its 72dp baseline header.
 import androidx.compose.foundation.layout.height
 // `heightIn` permits enlarged row text to wrap rather than crop.
@@ -161,7 +165,8 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
             unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor)
     } else if (candidate.contains("-right-")) {
         SearchDeckRight(query = query, onQueryChange = { query = it }, onBack = onBack,
-            unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor)
+            unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor,
+            liftWithIme = candidate.contains("-lift-"))
     } else {
         SearchDeckWide(query = query, onQueryChange = { query = it }, onBack = onBack,
             unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor)
@@ -185,14 +190,16 @@ private fun SearchDeckLeft(query: String, onQueryChange: (String) -> Unit,
 /** Shows Search in the right track slot while folders and the deck stay on the left. */
 @Composable
 private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
-    onBack: () -> Unit, unavailable: Boolean, halfDent: Dp, light: Boolean, pageColor: Color) {
-    Row(modifier = Modifier.fillMaxSize().background(pageColor)) {
-        SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f), deckFirst = true) { slot ->
-            BoxWithConstraints(modifier = slot.fillMaxSize()) {
-                if (maxHeight >= 250.dp) {
-                    SearchFoldFolders(light = light, modifier = Modifier.padding(end = halfDent + 8.dp))
-                }
-            }
+    onBack: () -> Unit, unavailable: Boolean, halfDent: Dp, light: Boolean, pageColor: Color,
+    liftWithIme: Boolean) {
+    val keyboardShown = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    Row(modifier = Modifier.fillMaxSize().background(pageColor)
+        .then(if (liftWithIme) Modifier.imePadding() else Modifier)) {
+        SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f),
+            deckFirst = !liftWithIme, deckFullHeight = liftWithIme) { slot ->
+            if (!keyboardShown) SearchFoldFolders(light = light,
+                modifier = slot.padding(end = halfDent + 8.dp))
+            else Box(modifier = slot)
         }
         PersistentSearchPane(query = query, onQueryChange = onQueryChange, onBack = onBack,
             unavailable = unavailable, modifier = Modifier.weight(1f),
@@ -210,12 +217,12 @@ private fun SearchDeckMirrored(query: String, onQueryChange: (String) -> Unit,
             unavailable = unavailable, modifier = Modifier.weight(1f),
             startSafe = 16.dp, endSafe = halfDent + 16.dp,
             includeTopInset = true, pageColor = pageColor)
+        val keyboardShown = WindowInsets.ime.getBottom(LocalDensity.current) > 0
         SearchFoldDeckHost(light = light,
             modifier = Modifier.weight(1f).padding(start = halfDent + 8.dp),
             deckFirst = true) { slot ->
-            BoxWithConstraints(modifier = slot.fillMaxSize()) {
-                if (maxHeight >= 250.dp) SearchFoldTracks(light = light, modifier = Modifier)
-            }
+            if (!keyboardShown) SearchFoldTracks(light = light, modifier = slot)
+            else Box(modifier = slot)
         }
     }
 }
