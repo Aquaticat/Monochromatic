@@ -139,6 +139,19 @@ legend { padding-inline: 0.5rem; font-size: 1.25rem; font-weight: 700; }
 .preview-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-block-start: 0.75rem; }
 .wide { max-inline-size: 70rem; }
 .wide img { max-inline-size: 100%; inline-size: auto; }
+.source-check {
+  max-inline-size: 60rem;
+  margin-inline: 0;
+  margin-block: 1rem 2rem;
+  padding-inline: 0.75rem;
+  padding-block: 0.75rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--line);
+  border-radius: 0.75rem;
+  background-color: var(--panel);
+}
+.source-check img { display: block; max-inline-size: 100%; block-size: auto; }
 textarea {
   display: block;
   inline-size: 100%;
@@ -206,7 +219,9 @@ dialog::backdrop { background-color: var(--scrim); opacity: 0.72; }
   <h1>Three separate command-bar questions</h1>
   <p>D21 settles that a command bar exists. Its optional global hotkey is configurable and <strong>off by default</strong>; an in-app binding remains available when global registration is off. D25 reserves Ctrl+F for future search and Ctrl+O for the folder picker, but does not decide whether search shares the command surface. Exact shortcut assignment and any visible in-app entry still need their own design pass.</p>
   <p class="banner">Reply with <strong>one I code, one G code, and one R code</strong>, plus corrections. In-app placement and global invocation can coexist; R decides only whether Ctrl+F uses a separate search destination or an explicit search mode in the same command surface.</p>
-  <p class="small">The captures are native, nonfunctional Slint at the desktop app’s current preferred 480 × 600px size, in light and dark. The 1100 × 640px samples are stress viewports, not a default-window-size choice. Global scenes draw a second-window concept inside one Slint scene, not an actual OS overlay or hotkey implementation. Static rasters do not validate keyboard interaction, screen-reader semantics, window focus restoration, search indexing, or action execution. MD3’s compact focused search defaults to full-screen; desktop docked and floating options here are deliberate adaptations, not compliance claims.</p>
+  <p class="small">The captures are native, nonfunctional Slint at the desktop app’s current preferred 480 × 600px size, in light and dark. A2 keeps this project on <strong>baseline MD3</strong>: the expanded docked Search view has a 28px outer shape, flat 56px header and divider; the full-content version has sharp outer corners and a 72px header. The 56px full pill belongs to the collapsed Search bar, not another pill nested inside the expanded view. Baseline list rows are square; the outlined keyboard-current row is a custom desktop focus cue, not a persistent selection. Roboto and official Material icons render the native study.</p>
+  <p class="small">The 1100 × 640px samples are stress viewports, not a default-window-size choice. At 360px, the docked choice reflows to the full-content treatment rather than squeezing below the minimum. Global scenes draw a second-window concept inside one Slint scene, not an actual OS overlay or hotkey implementation. Static rasters do not validate keyboard interaction, screen-reader semantics, window focus restoration, search indexing, or action execution. Compact desktop docking and keeping the player header in the full-content variant are stated adaptations from Android’s default full-screen focused search.</p>
+  <figure class="source-check"><img src="__MD3_REFERENCE__" width="924" height="108" alt="Baseline MD3 docked Search header from the local spec compared at 56 logical pixels with the native Slint header"><figcaption class="small">Reference check: local baseline divided Search spec (pink measurement marks) beside the native light Slint header. The two palettes differ; compare shape, header height, icon slots and divider, not wallpaper color.</figcaption></figure>
 </header>
 <form id="answer-form">
   <fieldset>
@@ -251,7 +266,7 @@ dialog::backdrop { background-color: var(--scrim); opacity: 0.72; }
   </section>
   <section aria-labelledby="stress-title">
     <h2 id="stress-title">Fit and state probes, not additional choices</h2>
-    <p>I variants also appear at 1100 × 640px; I1 is checked at 360 × 640px with larger text and a long action. Separate I1 captures show no results and an explicitly unavailable action. All are native Slint in both schemes.</p>
+    <p>I variants also appear at 1100 × 640px; I1 reflows to a full-content baseline Search view at 360 × 640px with larger text and a long action. Separate I1 captures show no results and an explicitly unavailable action. All are native Slint in both schemes.</p>
     <div class="matrix">__WIDE_CARDS____STRESS_CARDS____EDGE_CARDS__</div>
   </section>
   <section aria-labelledby="notes-title">
