@@ -5025,8 +5025,20 @@ player context,
 result cards;
  its debug build and emulator install succeeded.
  First native
-visual inspection is pending;
- do not infer acceptance from build/install.
+visual inspection found that docked Search keeps query/results together over a
+dimmed player context,
+ and the two-column alternative keeps both result
+cards under one continuous full-width header.
+ The first full-width list
+alternative showed result text on the far left and type labels on the far
+right with a visually vacant middle;
+ that is not acceptable just because
+the information cleared the dent.
+ The throwaway prototype now paints each
+full-width row as one bounded surface to test whether that composition can
+be rescued;
+ the revised APK install is running.
+ No candidate is accepted.
  Assess
 composition on both panels at 100%/200% text,
  present genuinely different
