@@ -44,8 +44,11 @@ rounds (2026-09-17):
   leaves keyboard focus unset in touch mode.
   TalkBack accessibility focus remains
   unmeasured; do not infer it from the keyboard-focus check or static captures.
-  The cover geometry is 411 × 923dp (1080 × 2424px), with D41/D42 dark
-  structure and D45 light seams.
+  The cover panel is 1080 × 2424 physical px,
+  approximately 443 × 994dp
+  at this AVD's measured 390dpi,
+  with D41/D42 dark structure and D45
+  light seams.
   Selection does not authorize production work.
 - **OPEN: revisit the folded-cover picker before 1.x (D46).**
   The user chose P4 while
@@ -63,6 +66,10 @@ rounds (2026-09-17):
   query and Clear in one header.
   D49 makes the Pixel 9 Pro Fold's cover (1080 × 2424px) and unfolded inner
   (2076 × 2152px) panels the visual source for all platforms.
+  This AVD's
+  measured 390dpi gives the cover approximately 443 × 994dp,
+  not the old
+  published-ppi estimate of 411 × 923dp.
   The desktop-width
   Slint screenshots in `questions/render/search-page-*` are historical experiments,
   not a live review or a basis for desktop-specific design.
