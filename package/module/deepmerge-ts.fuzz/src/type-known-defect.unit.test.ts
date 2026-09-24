@@ -132,6 +132,30 @@ await describe({
       },
     },),
     it({
+      name: 'unsound: deepmergeInto asserts Target & Merged, so a changed value type becomes never or keeps the old elements',
+      fn: async () => {
+        const replaced = { a: 1, };
+        target.deepmergeInto(replaced, { a: 'x', },);
+        expectTypeOf(replaced,).toEqualTypeOf<{ a: never; }>();
+        expect(replaced,).toEqual({ a: 'x', },);
+
+        const concatenated = { list: [1,], };
+        target.deepmergeInto(concatenated, { list: ['s',], },);
+        expectTypeOf(concatenated.list[1],).toEqualTypeOf<number | undefined>();
+        // Elements read as number (or absent), yet index 1 holds a string.
+        expect(concatenated.list,).toEqual([1, 's',],);
+      },
+    },),
+    it({
+      name: 'unsound: deepmergeIntoCustom leaves the target type unchanged',
+      fn: async () => {
+        const replacedArray = { a: [1,], };
+        target.deepmergeIntoCustom({ mergeArrays: false, },)(replacedArray, { a: ['s',], },);
+        expectTypeOf(replacedArray,).toEqualTypeOf<{ a: number[]; }>();
+        expect(replacedArray,).toEqual({ a: ['s',], },);
+      },
+    },),
+    it({
       name: 'inherent: an object typed by a type alias is a record to the types even when its prototype makes it a leaf',
       fn: async () => {
         type Shaped = { readonly boxed: number; };
