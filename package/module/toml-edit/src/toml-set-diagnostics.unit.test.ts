@@ -47,6 +47,12 @@ await describe({
             message: 'tomlSet on an array-of-tables at foo requires an array value; pass [] to clear all instances',
           },
           {
+            source: '[[foo]]\nx=1\n',
+            path: ['foo',],
+            value: [42,],
+            message: 'tomlSet on an array-of-tables at foo requires every element to be a plain object; index 0 is not',
+          },
+          {
             source: '[a.b]\nx=1\n[a.c]\ny=2\n',
             path: ['a',],
             value: {},
