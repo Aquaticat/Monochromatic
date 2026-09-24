@@ -151,8 +151,18 @@ if (import.meta.main) {
           .flatMap(testsOf,),
       };
     },);
+  /**
+   Latest row per id: `recall-runtime.ts` appends, so a rerun of one id adds
+   a second row that would otherwise count twice.
+   */
+  const latest = new Map(rows.map(function keyed(row,) {
+    return [
+      String(row.id,),
+      row,
+    ] as const;
+  },),);
   console.log(JSON.stringify(
-    rows,
+    [...latest.values(),],
     undefined,
     2,
   ),);
