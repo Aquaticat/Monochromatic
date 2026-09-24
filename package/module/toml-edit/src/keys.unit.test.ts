@@ -36,6 +36,14 @@ await describe({
     },),
 
     it({
+      name: 'ASCII letter and digit endpoints remain bare keys',
+      fn: async () => {
+        for (const key of ['A', 'Z', 'a', 'z', '0', '9', 'Az9',])
+          expect(encodeKey({ key, },),).toBe(key,);
+      },
+    },),
+
+    it({
       name: 'digits, underscore, and hyphen are bare',
       fn: async () => {
         expect(encodeKey({ key: 'a_b-2', },),).toBe('a_b-2',);
