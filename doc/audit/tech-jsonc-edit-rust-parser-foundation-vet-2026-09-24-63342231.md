@@ -3,9 +3,12 @@
 ## Status and fingerprint
 
 - Status:
-   Discovery and targeted source screening,
-   incomplete.
-   No candidate is recommended or adopted.
+   discovery saturated for the frozen schedule,
+   both survivors validated at equal depth,
+   scored with sensitivity,
+   and a recommendation recorded.
+   **Not adopted**:
+   adoption is a separate user decision, and no product code, dependency, decision record or publication followed.
 - Subject:
    jsonc-edit Rust parser foundation.
 - Scope:
@@ -51,7 +54,7 @@
    dependency and build surface,
    maintenance evidence,
    and measured parse performance.
-   Ratings and sensitivity remain pending.
+   Ratings, totals, sensitivity checks and the full ranking are recorded in the scoring section.
 
 ## Discovery schedule and limits
 
@@ -1950,36 +1953,168 @@ The current machine reports Linux x86_64 and only the
  ABI safety in Biome's unsafe code,
  or packaging of an adopted product crate.
 
-## Evidence and validation still required
+## Scoring, sensitivity and recommendation
 
-- Finish the scheduled registry,
-   repository-host and broader-web discovery with pagination saturation and an expansion round.
-   Log every query,
-   filters,
-   result counts and newly discovered survivor.
-- Clone every serious alternative under private `~/temp/agent/`,
-   pin release revision,
-   inspect licenses,
-   manifests,
-   source,
-   tests/CI and maintenance.
-   The delegated research read remote sources and did not execute code;
-   its findings are not final validation.
-- Audit relevant parser and serializer paths for original scalar tokens,
-   comments,
-   escaped unpaired surrogates,
-   strict JSONC,
-   resource bounds and errors.
-   Compare a repository-owned parser with any third-party raw-token adapter at equal depth.
-- Inspect every third-party execution tree and isolate any build/test/probe before running it.
-   Exercise the TypeScript conformance corpus,
-   comment queries,
-   malformed cases,
-   exact numbers and surrogates from a disposable Rust consumer.
-- Rate validated finalists with the frozen rubric,
-   run sensitivity and publish a full ranking with pros,
-   cons and adjacent reasons.
-   Present the result for separate adoption.
-   No product dependency,
-   decision record,
-   or release change before adoption.
+Two survivors received equal-depth validation.
+ Ratings use the frozen criteria at weight 1 each,
+ on a 1 to 5 scale where 5 is best.
+ Every rating cites evidence recorded in this report.
+
+### Repository-owned parser and emitter translation
+
+- Source auditability:
+   **5**.
+   Every line is repository code;
+   a targeted search of both scratch crates found no `unsafe` block at all.
+- API clarity for the comment model:
+   **5**.
+   Keys and values carry separate normalized comments in the value type,
+   and the independent UTF-16,
+   comment-owner and conformance controls passed.
+- Dependency and build surface:
+   **5**.
+   No third-party runtime dependency beyond the owned exact-number prototype,
+   so no graph to re-audit on a version bump.
+- Maintenance evidence:
+   **3**.
+   Maintenance is internal and permanent,
+   with no upstream abandonment risk but also no external reviewers,
+   fuzzers or release engineering.
+- Measured parse performance:
+   **5**.
+   Lower band on all six workload shapes,
+   by roughly 3.5 to 7 times.
+- Total:
+   **23 of 25**.
+- Pros:
+   no unsafe surface;
+   no dependency graph;
+   conformance,
+   CR and CRLF handling,
+   comment ownership and the depth boundary are all fixable in one place;
+   fastest measured path;
+   smallest license and notice burden.
+- Cons:
+   this port must write and maintain a parser,
+   emitter and their tests;
+   no external ecosystem review;
+   every future JSONC edge case is ours to find;
+   the prototype is not yet a product crate
+   (no public immutable edit API,
+   no fuzzing,
+   no packaging).
+
+### `biome_json_parser` 0.5.7 with the scratch projection adapter
+
+- Source auditability:
+   **2**.
+   Published source is inspectable,
+   but the selected graph carries unsafe pointer ownership in `biome_rowan`,
+   release-disabled lexer boundary assertions and 87 registry packages;
+   the audit here covered the deciding paths,
+   not the whole surface.
+- API clarity for the comment model:
+   **3**.
+   Comments live as trivia on punctuation tokens;
+   the adapter reconstructs key and value ownership and now passes the same controls,
+   but two ownership defects had to be found and fixed during validation.
+- Dependency and build surface:
+   **1**.
+   87 selected registry packages including proc-macros and build scripts;
+   product notice assembly is still open.
+- Maintenance evidence:
+   **2**.
+   The Biome project is active,
+   but the published parser crate line is stale
+   (0.5.7 predates the upstream fix for a known panic),
+   internal crates publish on demand,
+   and the newer workspace source is not what a consumer installs.
+- Measured parse performance:
+   **2**.
+   Higher band on all six shapes.
+- Total:
+   **10 of 25**.
+- Pros:
+   lossless CST with byte-exact source retention;
+   mature error recovery and diagnostics;
+   substantial upstream engineering and test corpus;
+   raw scalar tokens,
+   including escaped lone surrogates,
+   without a custom decoder.
+- Cons:
+   the mandatory safety and stack gates hold only because of adapter code this port would own permanently
+   (diagnostics gate,
+   preparse depth preflight,
+   source-length guard);
+   a measured stack overflow while dropping an 8192-deep tree;
+   a published helper that panics on an unterminated string;
+   3.5 to 7 times slower parse-to-value;
+   a large dependency and notice surface;
+   no published crate release carrying the upstream lexer fix.
+
+### Ranking and sensitivity
+
+Ranking:
+ repository-owned translation first,
+ Biome composition second.
+ Adjacent-pair reason:
+ the owned translation is rated at least as high on all five frozen criteria and strictly higher on four,
+ so no non-negative weighting reverses the order.
+
+Sensitivity:
+ the owned candidate leads by 13 points.
+ Reversing the order would require the Biome composition to gain 13 points relative to it;
+ the largest swing any single criterion can produce on this scale is 4,
+ so at least four criteria would have to flip to their maximum in Biome's favor.
+ Two plausible re-ratings were computed explicitly:
+
+- Equal maintenance evidence (3 and 3) gives totals of 23 and 11.
+- Biome rated best on maintenance (5) and the owned candidate worst (1) gives totals of 21 and 13.
+
+Neither changes the order,
+ so the ranking is insensitive to any single-criterion disagreement and to any combination of up to three.
+
+Hard-gate note:
+ the Biome composition satisfies the mandatory memory-safety constraint **only** with consumer-side gates this port
+ would own.
+ That is a design obligation rather than an upstream property,
+ and it is why its auditability rating is low instead of failing.
+
+### Recommendation
+
+Recommend the **repository-owned parser and emitter translation**,
+ together with the repository-owned exact-number identity prototype recorded in the companion number report,
+ as the native Rust JSONC foundation.
+
+This is a recommendation for a **separate adoption decision**.
+ Nothing here authorizes product code,
+ a dependency change,
+ a decision record or publication.
+ If adoption is granted,
+ the remaining work is the product crate,
+ shared fixtures,
+ the maintained TypeScript defect fixes and the publication route.
+ If it is refused,
+ the Biome composition is the only other validated path and carries the obligations listed above.
+
+## Remaining validation before publication
+
+- Product-crate boundary:
+   the validated code is scratch prototypes,
+   not `package/rust-module/jsonc-edit`.
+   Packaging,
+   the public immutable edit API,
+   documentation and repository lint and type gates are unbuilt.
+- Platform runtime:
+   cross-target `cargo check` passed for Windows GNU and macOS ARM64,
+   but no executable ran on either;
+   only Linux x86-64 runtime behavior is measured.
+- Fuzzing and property testing at product level.
+   The differential corpus is bounded (5635 generated inputs) and is not a proof of semantic equivalence.
+- Memory footprint and allocation behavior were not measured for either candidate.
+- License notice assembly for the chosen foundation:
+   trivial for the owned path,
+   87 packages for the Biome path.
+- Publication route:
+   an authorized crates.io token path for the first release remains unverified,
+   and name availability must be rechecked immediately before publishing.
