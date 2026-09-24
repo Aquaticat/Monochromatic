@@ -1,5 +1,6 @@
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import { droppedAddressFindings, } from './translate-address-drop.ts';
+import { communityTermFindings, } from './translate-community-term.ts';
 import { declaredLinkNameFindings, } from './translate-declared-link-name.ts';
 import { hanTitleFindings, } from './translate-han-title.ts';
 import { droppedMarkerFindings, } from './translate-marker-drop.ts';
@@ -9,7 +10,8 @@ import { unwrappedLinkFindings, } from './translate-unwrapped-link.ts';
 // What the original passage carries that every candidate must carry too,
 // read before any judge: its footnote markers (class ninety-two), its
 // second-person address (class ninety-seven), its bracketed work titles
-// in English (class ninety-eight), its worded links as links (class one
+// in English (class ninety-eight), its community terms as the glossary
+// renders them (class one hundred nineteen), its worded links as links (class one
 // hundred fifteen) and a declared name inside a linked title in its
 // declared form (class one hundred fourteen). The floors run in that order and the
 // first one that speaks decides, so a candidate is refused for one thing at
@@ -77,6 +79,16 @@ export function sourceCarryFindings(
   },);
   if (titleFindings.length > 0)
     return titleFindings;
+  /**
+   Community terms the candidate kept in Han or wrote in a refused form.
+   */
+  const termFindings = communityTermFindings({
+    sourceText,
+    candidateText,
+    pageText,
+  },);
+  if (termFindings.length > 0)
+    return termFindings;
   /**
    Worded links the candidate unwrapped while keeping the destination.
    */

@@ -25,7 +25,7 @@
  
  @example
  ```ts
- const term: CommunityTerm = { term: '自切', renderings: ['self-surgery',], why: '...', };
+ const term: CommunityTerm = { term: '自切', renderings: ['self-surgery',], refusedForms: [], why: '...', };
  ```
  */
 export type CommunityTerm = {
@@ -41,6 +41,13 @@ export type CommunityTerm = {
   readonly renderings: readonly string[];
 
   /**
+   Forms a candidate may not write for the term, in any casing, refused by
+   the source-carry floor (`translate-community-term.ts`) alongside the
+   term left in Han; empty where no form is refused.
+   */
+  readonly refusedForms: readonly string[];
+
+  /**
    One line of why, for the sheet.
    */
   readonly why: string;
@@ -53,6 +60,7 @@ export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
   {
     term: '自切',
     renderings: ['self-surgery',],
+    refusedForms: [],
     why: 'the community\'s word for gender-affirming surgery performed on oneself; the archive renders it '
       + '"attempted self-surgery", and "self-harm" or "cutting" misreads it',
   },
@@ -62,6 +70,7 @@ export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
       'KAngel',
       'Needy Streamer Overload',
     ],
+    refusedForms: [],
     why: 'the community\'s nickname for KAngel, the streamer character of the game Needy Streamer Overload; '
       + 'the archive names the character or the game, never a transliteration',
   },
@@ -75,9 +84,34 @@ export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
       'outed',
       'blown out of the closet',
     ],
+    refusedForms: [],
     why: 'the community\'s word for being outed against one\'s will, the closet blowing up, not for coming out; '
       + 'the source pairs it with the family finding and throwing away the medication, and "came out" or '
       + '"tried coming out" reads the outing as her choice',
+  },
+  {
+    // CLASS ONE HUNDRED NINETEEN (shi_Yumiaoya19, 2026-09-24). 小药娘 and
+    // 药娘 shipped in Han, the judges following the archive translator's
+    // comment that the word needs no translation, where two earlier runs
+    // wrote "little HRT girl" and "little yaoniang". The owner answered on
+    // 2026-09-24: the word is disrespectful, used neutrally by only some of
+    // the community, and that neutrality does not carry into English, so
+    // the page says "trans woman" or "trans girl". 小药娘 carries 药娘, so
+    // one entry covers both.
+    term: '药娘',
+    renderings: [
+      'trans girl',
+      'trans woman',
+      'trans women',
+    ],
+    refusedForms: [
+      'yaoniang',
+      'yao-niang',
+      'yao niang',
+    ],
+    why: 'a disrespectful word for trans women on hormone therapy that some of the community use neutrally; '
+      + 'the neutrality does not carry into English, so the page says "trans girl" or "trans woman", never the '
+      + 'Han and never a pinyin form, whatever a translator\'s note on the page asks',
   },
 ];
 
