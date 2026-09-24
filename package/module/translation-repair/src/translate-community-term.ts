@@ -14,9 +14,10 @@ import { withoutComments, } from './translate-address-drop.ts';
 // woman". A candidate that keeps a glossary term the original carries in
 // Han, or writes a form the entry refuses (the pinyin), is refused HERE
 // before any judge reads it. A rendering the entry lists is not required:
-// a rendering inflects and the judges still choose among renderings. A term
-// the page itself keeps outside a comment is left to the judges, and
-// comments are cut on every side.
+// a rendering inflects and the judges still choose among renderings. The
+// owner added the same day that the term is refused even where the existing
+// translation keeps it, so the page's own text earns no exception; comments
+// are cut on both sides.
 
 /**
  Accepted renderings quoted for a finding.
@@ -88,28 +89,23 @@ function refusedFormIn(
 
  @param candidateText - rendering under the floor
 
- @param pageText - text the rendering would replace, empty where the page
- has none
-
  @param glossary - terms to hold; defaults to the corpus glossary
 
  @returns One finding per term the candidate fails, empty where it passes
 
  @example
  ```ts
- const findings = communityTermFindings({ sourceText, candidateText, pageText: '', },);
+ const findings = communityTermFindings({ sourceText, candidateText, },);
  ```
  */
 export function communityTermFindings(
   {
     sourceText,
     candidateText,
-    pageText,
     glossary = COMMUNITY_GLOSSARY,
   }: {
     readonly sourceText: string;
     readonly candidateText: string;
-    readonly pageText: string;
     readonly glossary?: readonly CommunityTerm[];
   },
 ): readonly string[] {
@@ -126,14 +122,7 @@ export function communityTermFindings(
    Candidate with its comments cut.
    */
   const candidate = withoutComments({ text: candidateText, },);
-  /**
-   Page text with its comments cut.
-   */
-  const page = withoutComments({ text: pageText, },);
   return carried.flatMap(function findingsFor(entry,): readonly string[] {
-    // A term the page itself keeps is the page's own choice, left to the judges.
-    if (page.includes(entry.term,))
-      return [];
     if (candidate.includes(entry.term,)) {
       return [
         `Your translation leaves the community term ${entry.term} in Han. Render it as ${

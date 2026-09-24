@@ -85,7 +85,6 @@ export function sourceCarryFindings(
   const termFindings = communityTermFindings({
     sourceText,
     candidateText,
-    pageText,
   },);
   if (termFindings.length > 0)
     return termFindings;
