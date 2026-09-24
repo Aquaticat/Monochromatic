@@ -310,9 +310,23 @@ Tests added since that run pin exact parser rejection text,
  types,
  oxlint,
  and bounded sidecar properties passed.
-The fuzz coverage gate now reports `build-input.ts` dropping from 130 to 128 covered lines
- because that guard was removed;
- refreeze the baseline after the pending mutation recheck and any remaining runtime edits.
+The final parser-boundary recheck reported 128 killed,
+ 12 confirmed survivors,
+ two confirmed timeouts,
+ 177 compile errors,
+ and no infrastructure errors.
+`build-document.ts` has no survivors.
+The remaining `build-comments.ts` comparisons are equivalent only for parser-produced,
+ non-overlapping comment ranges.
+The `build-input.ts` survivors are the optional `existing: undefined` forwarding branch
+ and a number-type branch whose non-number inputs already fall through to the same kind.
+The `parse-toml-edit.ts` surviving range check adds one harmless out-of-range iteration;
+ other survivors affect warnings or the non-`ParseError` error path not driven by the package unit suite.
+The two reversed/forced loop mutants were confirmed timeouts,
+ not survivors.
+The `build-input.ts` coverage baseline was refrozen from 130 to 128 covered lines
+ after deleting the duplicate guard;
+ the gate passed in check mode.
 A previous review mistakenly treated `parse-toml-edit.ts:53`'s `<` to `>=` mutant as a survivor.
 The actual final report and raw singleton shard record both classify it as a confirmed timeout;
  there is no verdict mismatch.
