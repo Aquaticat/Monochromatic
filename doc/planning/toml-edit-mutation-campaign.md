@@ -523,9 +523,19 @@ Its report is `/var/home/user/temp/agent/toml-mutation-comment-api-recheck.json`
 The remaining comment findings are concentrated in synthetic-node `-1` offsets,
  sentinel descriptions,
  and array-table descent guards.
-The value encoding recheck is still running at
- `/var/home/user/temp/agent/toml-mutation-value-encoders-recheck.json` (`proc_65c8`).
-Do not edit runtime source until it completes.
+The value encoding recheck completed at
+ `/var/home/user/temp/agent/toml-mutation-value-encoders-recheck.json`:
+ 111 killed,
+ 12 confirmed survivors,
+ 141 compile errors,
+ no infrastructure errors.
+The comment recheck's remaining synthetic-header cases are now covered by a test
+ with an unrelated preceding comment.
+Direct built-artifact value tests now distinguish equal versus changed literal/numeric spelling,
+ finite float markers,
+ and nested array depth.
+The package build and unit suite passed after these assertions;
+ targeted comment/value mutation rechecks follow.
 Do not claim a full-runtime verdict before those campaigns and survivor rechecks finish.
 
 ## Shared value assembly refactor
