@@ -81,15 +81,16 @@ also uses `logos` regex patterns and is excluded as an approach, not proof that 
 `json-five` lists `regex` only under dev-dependencies and has no regex use in its inspected runtime `src/`;
 this alone does not cull it.
 Direct source searches of `fjson`, `jsonc-parser`, `biome_json_parser`, `jwc`, `hifijson`, and `json-number`
-found no regex calls or macros, but selected normal/build dependencies remain to be inspected before clearance.
+found no regex calls or macros. Selected normal/build dependency trees were checked;
+source-level transitive clearance remains open where required.
 
 ## Current gate status
 
-- Regex culling is applied before further candidate validation. `edikt-jsonc` and the regex-backed `tokora` JSON CST example are excluded. Disposable, pinned Cargo dependency trees of `fjson`, `json-five` (lean and default), `biome_json_parser` (with required pins), `hifijson`, `jsonc-parser`, `jwc`, and `json-number` showed no regex-named normal/build dependency; the `edikt-jsonc` positive control exposed `logos`, `regex`, and related crates. Source audit for hidden regex use in mandatory dependencies remains open.
-- `jsonc-parser` and `jwc` reject unpaired surrogate escapes in their existing parser paths. `fjson` and `json-five` expose raw tokens but still need adapters for the required comment model. Biome transitive source screening is delegated and pending. The current audit reports are `doc/audit/tech-jsonc-edit-rust-parser-foundation-vet-2026-09-24-63342231.md` and `doc/audit/tech-jsonc-edit-rust-exact-number-foundation-vet-2026-09-24-e8e0034a.md`; predecessor reports without the regex constraint are marked superseded.
-- The `momoa` Rust parser has a separate potential Unicode-scalar safety issue in the published 3.2.6 source. A source trace and safe standard-library control exist; a troubleshooting document and isolated verification are in progress. Do not execute its unsafe parse on the reported input.
-- No Rust port product code, dependency adoption, or crates.io publication has occurred. Other worktree changes are concurrent and out of scope.
+- `edikt-jsonc` and the regex-backed `tokora` JSON CST example are excluded. Disposable pinned Cargo trees of the remaining listed candidates showed no regex-named normal/build dependency, while the `edikt-jsonc` positive control exposed `logos`, `regex`, and related crates. Source audit for hidden regex use in mandatory dependencies remains open; a delegated Biome source pass did not establish complete clearance.
+- `jsonc-parser` and `jwc` reject unpaired surrogate escapes as-is. `fjson` and `json-five` expose raw tokens but need owned adapters for the comment model and strict syntax. `momoa` 3.2.6 is excluded separately on a source-proven invalid-`char` safety path. A checked pre-fix instrument and patched public-entry test passed their expected fail/pass controls in a bounded container, and the patched upstream Rust suite passed. The original unsafe parser was never run on the suspect input. See `doc/troubleshooting/momoa-rust-unpaired-surrogate.md`.
+- A dependency-free Rust exact-number prototype under private scratch passes its unit suite, Clippy with warnings denied, and a separate consuming-crate call. An independent review led to private identity fields, strict valid-fixture checks, long-exponent tests, and a hash/equality check. No full JSONC crate was built or published.
+- Current reports are `doc/audit/tech-jsonc-edit-rust-parser-foundation-vet-2026-09-24-63342231.md` and `doc/audit/tech-jsonc-edit-rust-exact-number-foundation-vet-2026-09-24-e8e0034a.md`. Their no-regex predecessors are superseded. Other worktree changes are concurrent and out of scope.
 
 ## Next action
 
-Finish source and consumer-boundary evaluation of regex-free parser and number candidates, including any required troubleshooting document, then present an evidenced ranking for foundation adoption. Implement only after adoption, validate against the maintained TypeScript behavior, and publish with an authorized credential route.
+Validate an owned parser/emitter prototype against the accepted syntax, UTF-16, comments, and numeric contract; finish candidate comparison and present a vetted foundation recommendation for adoption. Only then implement the product crate, align TypeScript behavior, verify through a consuming project, and publish with an authorized credential route.
