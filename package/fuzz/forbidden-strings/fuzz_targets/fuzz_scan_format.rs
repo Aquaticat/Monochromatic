@@ -129,21 +129,29 @@ fuzz_target!(|input: RuleFileAndContent| {
     let generated_name = format!("prefix/{}/tail", String::from_utf8_lossy(content));
     let (display, name_hits) = scan_path_for_fuzzing(&generated_name, &loaded);
     assert!(!display.contains('\n'), "pathname injected newline ({})", redacted_fingerprint(content));
-    let segment_count = generated_name.split('/').filter(|name| return !name.is_empty() && *name != "." && *name != "..").count();
-    for hit in &name_hits {
-        if hit == "[REDACTED]: engine error" {
-            continue;
+    if generated_name.contains('\n') || generated_name.contains('\r') {
+        // A name with a line break cannot satisfy the engine's single-line
+        // contract; the scanner masks its entire path and fails closed.
+        assert_eq!(display, "[REDACTED]", "line-break name was not masked");
+        assert_eq!(name_hits, vec!["[REDACTED]: unsupported pathname line break"]);
+    } else {
+        let segment_count = generated_name.split('/').filter(|name| return !name.is_empty() && *name != "." && *name != "..").count();
+        for hit in &name_hits {
+            if hit == "[REDACTED]: engine error" {
+                assert_eq!(display, "[REDACTED]", "engine failure path was not masked");
+                continue;
+            }
+            let Some((reported, suffix)) = hit.rsplit_once(":name:") else {
+                panic!("missing name locator ({})", redacted_fingerprint(content));
+            };
+            assert_eq!(reported, display, "name finding used wrong display path ({})", redacted_fingerprint(content));
+            let Some((number, token)) = suffix.split_once(" rule=") else {
+                panic!("missing name rule ({})", redacted_fingerprint(content));
+            };
+            let index = number.parse::<usize>().expect("numeric name position");
+            assert!(index > 0 && index <= segment_count, "invalid segment position ({})", redacted_fingerprint(content));
+            assert!(!token.is_empty(), "empty rule identity ({})", redacted_fingerprint(content));
         }
-        let Some((reported, suffix)) = hit.rsplit_once(":name:") else {
-            panic!("missing name locator ({})", redacted_fingerprint(content));
-        };
-        assert_eq!(reported, display, "name finding used wrong display path ({})", redacted_fingerprint(content));
-        let Some((number, token)) = suffix.split_once(" rule=") else {
-            panic!("missing name rule ({})", redacted_fingerprint(content));
-        };
-        let index = number.parse::<usize>().expect("numeric name position");
-        assert!(index > 0 && index <= segment_count, "invalid segment position ({})", redacted_fingerprint(content));
-        assert!(!token.is_empty(), "empty rule identity ({})", redacted_fingerprint(content));
     }
     for hit in scan_file(&display, content, &loaded) {
         assert!(hit.starts_with(&display), "content finding used raw path ({})", redacted_fingerprint(content));
