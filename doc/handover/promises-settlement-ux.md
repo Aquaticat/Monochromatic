@@ -1,7 +1,9 @@
 # Settlement experiment UX redesign
 
-Status: prototypes and the choice matrix are built and verified; the lesson file is untouched by this work.
-The user must pick one matrix cell (layout by cue-color) plus any free-text changes before implementation.
+Status: the choice matrix exists, but a fresh audit found teaching and rendering defects;
+its earlier verification does not make it ready for selection.
+The lesson file is untouched by this work.
+Resolve the open teaching interaction and repair the matrix before asking for a cell choice.
 No skill design has been confirmed; this redesign feeds the Promise toy, not the teaching skill.
 
 ## Origin and measured defects
@@ -105,7 +107,48 @@ every press gets expressive feedback; a manager line explains each event.
   `ux-choice-handoff.json`. Screenshots: `ux-variants/shot-*.png` and
   `settlement-ux-current-1008-dark.png`.
 
-## Verification evidence (latest run)
+## Fresh audit after compaction
+
+`mise run probe:ux-settlement` in the authoring workspace tested the live matrix in a separate browser session.
+The earlier verifier checked the baked Release 1 plus Laser 1 state and only one later interaction sequence.
+It did not exercise these cases:
+
+- The section says "try to replace it", but both settling tools are disabled once a Promise settles.
+  That is a factory restriction, not proof that later resolving calls leave a Promise unchanged.
+  A new teaching interaction needs a user decision; do not silently change that requirement.
+- In one scripted browser task, Release 2, Hand 1, then Laser 2 leaves the Promise fulfilled,
+  yet the log records both Hand 1 and Laser 2 as settlements.
+  The second tool remains enabled until the Promise observer runs in a microtask.
+  This is a verified authored-log bug, not a claim about two separate human pointer clicks.
+- The sampled rejected-state foreground colors in every state/neutral pair were identical:
+  the scene, face screen, face word, and mark all computed to `rgb(255, 185, 157)`.
+  Other cues and backgrounds need their own comparison before claiming whole cells are identical.
+- `ux-variant-base.css` uses chromatic reading surface tokens (`#142023` paper and `#102023` code
+  in dark mode), while the lesson's `neutral-reading.css` requires grayscale backgrounds.
+  The drawn factory scene is a bounded illustration and can keep its color.
+- At the 390 px parent viewport, a child frame had a 279 px viewport and its snapshot cards
+  extended to x=418 px; the body scrolled horizontally.
+  The control sublabel computed to 9.92 px. The CSS lacks explicit `:focus-visible` styling
+  for the drawn buttons and overrides their minimum block size with zero.
+- The visible rejection mark starts above the pudding and mostly falls outside the pudding's
+  `clip-path`: mark top/bottom 1036/1049 px, pudding top/bottom 1045/1074 px in one snapshot.
+  The conveyor chip's mark uses the same clipped-outside construction.
+- The prototype's only value cards are the current resolver bundle and its inner Promise.
+  `value-runtime-patches.mjs` also records the lesson-owned observation, the Promise after a
+  resolver call, the received value or rejection reason, and selected Error properties.
+  The prototype recreates the two cards on paint instead of retaining earlier snapshots.
+- Variant C calls itself a definition list but uses `<ul>`. All variants call pending an
+  "observed outcome" even while the station is idle, before any Promise exists.
+  The snapshot-limit prose refers to an edited draft and a latest-24 recorder that this
+  standalone experiment does not have.
+- After all five release levers have been used, the station holds the last settled pudding,
+  the belt holds four, every button is disabled, and no completion/restart guidance appears.
+
+The audit keeps layout selection pending. Correct the objective defects in the scratch prototype,
+then verify both cue modes, unseeded and exhausted states, real child overflow, and Firefox ESR.
+Do not silently apply any cell to the lesson.
+
+## Earlier verification evidence (not full acceptance)
 
 `verify-ux-choice-form.mjs` passed for all six cells after the baked Release 1 plus Laser 1:
 face and scene read rejected, the station pudding carries the etch, post reads 01,
