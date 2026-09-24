@@ -158,6 +158,17 @@ The crates.io API was paged through `web_fetch` for pages 2 and 3 of `json numbe
 
 Page 2 and page 3 of the initial `exact decimal`, `bigint`, and `arbitrary precision json` registry searches were also retrieved earlier. Their obvious leads include `fpdec`, `fraction`, `bigdecimal`, `ordecimal`, `decimal-bytes`, `arbi` and `dashu`; source screening recorded limitations for several. The three initial Cargo searches each advertised more results after their first 100, so their initial response alone was not saturation. No candidate is recommended from these partial pages.
 
+## Rust owned-number prototype, not an adopted foundation
+
+A disposable, dependency-free Rust library at `~/temp/agent/jsonc-exact-number-probe/` validates JSON number grammar and computes numeric identity from sign, normalized nonzero coefficient digits, and a signed decimal exponent stored as text. It uses direct byte scans and decimal column addition/subtraction, with no regex or recursion. The original token remains the caller's responsibility; this prototype has no JSONC parser, comment model, or serializer. It is evaluation code outside the main worktree.
+
+- `cd -- ~/temp/agent/jsonc-exact-number-probe && mise run test` passed the Rust unit suite, including mathematical equality across `1`, `1.0`, `1e0`, signed zero, compensated exponents longer than machine integers, adjacent large integers, invalid grammar, and a generated bounded-domain comparison with an independently computed `i128` rational oracle.
+- Positive control: replacing only the adjusted-exponent calculation with `String::from("0")` caused `unequal_values` and `generated_against_rational_oracle` to fail. The original expression was restored, a SHA-256 comparison to the saved pre-mutation source matched, and `mise run test` passed again. Later additional equivalent/unequal cases passed.
+- `mise run lint:clippy` passed with warnings denied after changing the scratch source's digit check to `is_ascii_digit` and its nonzero-start branch to a named local. The scratch manifest mirrors the repository Rust convention allowing `needless_return` while denying implicit returns. This is not a claim that the final crate passes its own linter.
+- A separate disposable consumer at `~/temp/agent/jsonc-exact-number-consumer/` imported the library by a local path and ran `mise run test`, printing `consumer exact-number equality passed`. Its first run failed because the hand-written fixture compared exponents with different digit counts; that test input was measured and corrected before the passing run. No product code was touched.
+
+The core operates on ASCII tokens of finite in-memory length, scans each character through grammar and coefficient normalization, and adds or subtracts exponent digit strings without expanding `10^E`. This suggests work bounded by input length, but the full crate's complexity and error contracts have not been measured. Candidate validation remains incomplete until its public value type retains raw spellings, edited inputs preserve exactness, and the port runs through the JSONC comment and serializer surfaces.
+
 ## Pending evidence and validation
 
 - Finish required discovery saturation or report a blocked terminal outcome; record exact expansion queries and pagination attempts.
