@@ -4647,18 +4647,21 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CUSPARIAKLSY12 RUNS (frozen `85ed2881f`,
-    pid 3947732,
-    launched 02:17 UTC 2026-09-24,
-    waiter buax5c511,
-    meters 48.46 USD Bedrock and 95.80 OpenRouter at launch, Synthetic's five-hour window spent since 23:15:27 UTC 2026-09-23, Hyper dry;
+1.  ZHEERMAO9 RUNS (entry `zheermao101`,
+    frozen `85ed2881f`,
+    pid 4089371,
+    launched 02:44 UTC 2026-09-24,
+    waiter bhdypi1ya,
+    meters 48.41 USD Bedrock and 95.71 OpenRouter at launch, Synthetic wet again since at least 02:17 UTC, Hyper dry;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    the first pass on class one hundred eight;
-    read slice 3 first (the ARCHIVE RENDERING DISPUTED block on the contest, slate and gate sheets in the artifact; the death paragraph without "took medication"; `translate-archive-disputed` on slices 1 and 3 again),
-    then classes one hundred four, five and seven, beside every check of `CuspariaKLSY11` (1 heading, front matter equal, no TA, no error finish, no double blank line, the life in the past);
-    then `zheermao101` (slice 9 for class one hundred six: a `translate-declined-retried` finding on a consolidation slice after a contest with the archive flawed on every ballot; the reply label rendering plural members that same night),
+    read slice 9 first for class one hundred six (a `translate-declined-retried` finding on a consolidation slice after a contest with the archive flawed on every ballot; the reply label rendering plural members that same night),
+    any `translate-archive-disputed` line and its ARCHIVE RENDERING DISPUTED block (classes one hundred seven and eight),
+    then classes seventy-seven, ninety-six, one hundred one, one hundred two and one hundred four beside every check of `zheermao8` (2 headings, front matter equal, both labels as the archive, no TA, no error finish, no double blank line);
     then `shi_Yumiaoya` or `mikaela_khara`, beside every check of the last read of each;
-    record each under a new heading above "## CuspariaKLSY11 read, 2026-09-24" in the pass log.
+    record each under a new heading above "## CuspariaKLSY12 read, 2026-09-24" in the pass log.
+    CUSPARIAKLSY12 READ (frozen `85ed2881f`): SETTLED at 02:42 UTC 2026-09-24 in 25 min (Synthetic's latency), one attempt, 437 seats, 420 calls, 0.13 USD by the meters;
+    class one hundred eight live on slice 3 (the repair lane softened the accepted addition into "She fell asleep"; with the ARCHIVE RENDERING DISPUTED block on the sheets the translate slate ran off and chose the candidate without it, the contest chose translate 4 of 5 with every ballot calling the archive flawed, the gate kept the contest winner with a ballot writing "both omit the rejected medication detail"; the page reads "She then attempted suicide and was sent to the hospital for emergency treatment" with no medication detail),
+    class one hundred seven live on slice 3 (three accepted claims; slice 1 undisputed this run), classes one hundred four and five holding, every check as `CuspariaKLSY11`, slice 1 gate-kept, slice 2 slate-declined, 10 abstention lines, Jev 12 of 12, glm-5.3 dark on Hyper dry; no class.
     CUSPARIAKLSY11 READ (frozen `a40c28cad`): SETTLED at 01:55 UTC 2026-09-24 in 5 min, one attempt, 327 seats, 13 retry rounds, 256 calls, 0.10 USD by the meters;
     class one hundred seven live (`translate-archive-disputed` on slices 1 and 3 in the lanes and the consolidation, the stand-in the incumbent, slice 3 shipped as `{kind: incumbent}` gate-kept, the archive's "swallowed lots of her meds" never on the page),
     classes one hundred four and five holding, every check as `CuspariaKLSY10`, 5 abstention lines, Jev 11 of 11;

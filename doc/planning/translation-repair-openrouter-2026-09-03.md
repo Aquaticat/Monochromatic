@@ -8082,6 +8082,44 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## CuspariaKLSY12 read, 2026-09-24, 02:50 UTC: SETTLED in 25 min, class one hundred eight live on slice 3 (the softened detail refused on the translate slate, the contest and the gate), no class; zheermao9 launched
+
+`CuspariaKLSY12` (frozen `85ed2881f`, pid 3947732) SETTLED at 02:42 UTC 2026-09-24,
+25 min after its 02:17 launch (TALLY `ms=1478275`),
+one attempt,
+437 seats asked,
+420 calls,
+0.13 USD by the meters (Bedrock 48.46 to 48.41, OpenRouter 95.79 to 95.71),
+Synthetic wet again from the launch (five-hour window 2750 of 2750 at 02:17 UTC, so the handover's "spent since 23:15:27 UTC" line was stale by then), Hyper dry;
+the time is Synthetic's again (Qwen3.8-27B streams there at 39 s, the naturalness reviews 26 s in grace), against `CuspariaKLSY11`'s 5 min on Bedrock and OpenRouter alone.
+glm-5.3 dark (17 asked, 17 threw; the Hyper-only seat with Hyper dry, by design).
+Jev 12 of 12; 10 abstention lines with reasons.
+
+Class one hundred eight live on slice 3, the death paragraph.
+The repair lane softened the accepted addition again, this run into "She fell asleep" (the repair lane's own sheets are unchanged, as the ninth addendum says),
+and the stand-in carried it into every later sheet with the ARCHIVE RENDERING DISPUTED block beside it:
+the translate slate declined its first round, ran off 2 of 6 (class eighty-two) and chose the candidate without it, one ballot writing "Candidate 2 also adds 'She fell asleep'";
+the contest chose translate 4 of 5 with every ballot calling the archive flawed, two ballots naming the repair lane's "inference" and one "avoiding unsupported claims found in the archive rendering";
+the gate heard 4 of 5 (standing 2, consolidated 1, neither 1) and kept the contest winner as the standing over a proposal differing only in "her friend" against "a friend", one standing ballot writing "both omit the rejected medication detail".
+The page reads "A conflict broke out while she was trying to console her friend, and emotions boiled over on both sides. After waking up, she argued with her father again. She then attempted suicide and was sent to the hospital for emergency treatment."
+where `CuspariaKLSY11` shipped "She took medication that night";
+双方情绪爆发, 又 and 抢救 all rendered, the archive's "swallowed lots of her meds" and every softening of it gone.
+Class one hundred seven live on slice 3 (`translate-archive-disputed`, three accepted `accuracy/addition` claims, in the lanes and the consolidation); slice 1 undisputed this run (no accepted addition claim against it).
+Classes one hundred four and five holding (the life in the past; the gloss inline as "(Cold Water Fishy)" on the nickname line, the restore standing aside by design).
+Every check as `CuspariaKLSY11`: 1 heading, front matter equal, no TA, no error finish, no double blank line.
+Terminals: slice 1 gate-kept (2 to 2, the standing carrying the gloss), slice 2 slate-declined and unendorsed, slice 3 gate-kept as read.
+The archive's gloss line ("Ling Shui Yu Yu Zi" means fish in clear water) is on the page in the parenthetical form only, as on `CuspariaKLSY8` to `11`.
+No class.
+
+`zheermao9` (entry `zheermao101`, frozen `85ed2881f`, pid 4089371, overlap 8)
+launched 02:44 UTC on Synthetic, Bedrock and OpenRouter
+(meters 48.41 USD Bedrock, 95.71 OpenRouter at launch),
+waiter bhdypi1ya.
+Read slice 9 first for class one hundred six (a `translate-declined-retried` finding on a consolidation slice after a contest with the archive flawed on every ballot; the reply label rendering plural members that same night),
+any `translate-archive-disputed` line and its ARCHIVE RENDERING DISPUTED block,
+then classes seventy-seven, ninety-six, one hundred one, one hundred two and one hundred four beside every check of `zheermao8` (2 headings, front matter equal, both labels as the archive, no TA, no error finish, no double blank line).
+Then `shi_Yumiaoya` or `mikaela_khara`.
+
 ## CuspariaKLSY11 read, 2026-09-24, 02:20 UTC: SETTLED in 5 min, class one hundred seven live on slices 1 and 3, the stand-in still carrying "took medication that night"; class one hundred eight built (the dispute note on every sheet), CuspariaKLSY12 launched
 
 `CuspariaKLSY11` (frozen `a40c28cad`) SETTLED at 01:55 UTC 2026-09-24,
