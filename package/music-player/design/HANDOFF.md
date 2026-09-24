@@ -5037,7 +5037,24 @@ the information cleared the dent.
  The throwaway prototype now paints each
 full-width row as one bounded surface to test whether that composition can
 be rescued;
- the revised APK install is running.
+ the revised APK installed and its screenshot now connects each
+far-left label to its far-right type within a tonal row,
+ although the empty
+middle remains a consequential con.
+ Native 200% captures of the docked and
+two-column studies show query/result information together without visible
+text clipping;
+ this is a provisional visual observation,
+ not accepted
+interaction or accessibility.
+ The first manual captures omitted status-bar
+icons because the debug activity did not classify `search-layout` as a dark
+candidate;
+ that branch now uses dark system-bar icons,
+ and the docked
+context hides its duplicate Search action.
+ A fresh native screenshot shows
+the icons in place.
  No candidate is accepted.
  Assess
 composition on both panels at 100%/200% text,
