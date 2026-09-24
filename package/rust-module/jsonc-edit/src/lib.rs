@@ -315,3 +315,13 @@ mod edit_tests;
 /// ```
 #[cfg(test)]
 mod edit_comment_tests;
+
+/// What:     Public-surface tests for address helpers, identity accessors, comment merging and errors.
+/// Why:      Every exported item needs coverage before the crate can be called complete.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import './api.test';
+/// ```
+#[cfg(test)]
+mod api_tests;
