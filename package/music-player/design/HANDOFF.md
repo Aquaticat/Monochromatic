@@ -4211,11 +4211,18 @@ states or its native focus behavior.
  Commits: prototype `4ff352c1b` for the MD3 text-field trigger and main
 `406663175` for the recapture; D46 is in `decisions.md`.
 
-Recommended next design-only sequence: capture P4 in dark at 200% and in L3 light at
-100% and 200% on the folded cover for fit and row/deck separation, and exercise native
-open, close and focus-return behavior separately.
- This check is necessary before
-claiming those states are validated but need not block an independent design round.
+Post-decision folded native P4 captures in dark at 200% and L3 light at 100% and 200%
+were carried to the design evidence in `1c33fc833`.
+ The opaque 1080 × 2424px rasters
+keep the 200% mode-group bottom border visible, with the L3 hairlines at both seams and
+the selected-folder indicator inside the picker.
+ These static frames do not verify
+opening, closing, focus return or cover-specific accessibility.
+ An interactive P4 study
+is being built in the prototype worktree for those checks.
+
+Recommended next design-only sequence: exercise P4 native open, close, and focus return.
+This interaction check need not block an independent design round.
 The next recommended surface round is the command bar's content and actions (D21), with
 search targets/results and its relationship to the folder picker (D25) treated as
 separate questions.

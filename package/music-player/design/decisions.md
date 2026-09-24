@@ -1214,6 +1214,19 @@ validate focus and return behavior through native interaction, not screenshots a
 recommendation was P2;
  the user's P4 selection takes precedence.
 
+**Post-decision visual check (2026-09-23).**
+ Native folded captures now cover P4 in dark at 200% and L3 light at 100% and 200%
+(`questions/render/cover-round-cover-picker-p4-s200.png` and
+`cover-round-cover-picker-p4-light-s{100,200}.png`, with matching XML).
+ All three are
+opaque 1080 × 2424px cover rasters.
+ The 200% mode group's final target ends at y=2326
+of 2424, with its bottom border visible above the navigation bar.
+ L3's top-row and
+deck hairlines remain separate from the selected folder indicator.
+ These are visual
+checks of the opened state, not native open/close or focus-return evidence.
+
 **Not selected for the temporary baseline.**
  P1 and P3 use a floating panel;
  P2 uses

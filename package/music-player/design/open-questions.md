@@ -31,13 +31,16 @@ rounds (2026-09-17):
   The app-bar folder title and caret
   open the picker in the list slot while the deck remains visible.
   The P comparison
-  captured P4 only in dark at 100% text; its dark 200% and L3 light 100% captures show
-  P2 instead, and there is no L3 light 200% picker capture.
-  To establish P4's own coverage, capture those three states
-  and exercise native open, close and focus-return interactions before making fit,
-  separation, or accessibility claims.
-  This evidence task need not block an independent
-  design round.
+  originally captured P4 only in dark at 100% text.
+  Post-decision native captures now
+  show P4 in dark at 200% and L3 light at 100% and 200% (D46 follow-up).
+  The 200% mode
+  group border remains visible, and L3's two seams remain distinct from the folder
+  selection cue.
+  Native open, close and focus-return interactions are not yet verified;
+  static captures cannot establish those behaviors or accessibility.
+  This remaining
+  interaction check need not block an independent design round.
   The cover geometry is 411 × 923dp (1080 × 2424px), with D41/D42 dark
   structure and D45 light seams.
   Selection does not authorize production work.

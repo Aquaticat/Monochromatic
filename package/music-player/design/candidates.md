@@ -939,9 +939,11 @@ chips, menus, sheets, and text-field specs.
 All four reuse the D28 adaptive rail and the D31 wrapped plain-text names at 48dp with
 primary plus 2dp indicator on the current folder. Captures: `cover-round-cover-picker-*`
 in `questions/render`, dark at 100%, P2 at 200%, and P2 in light under the settled L3
-(D45). P4 itself has only the dark 100% capture;
- its 200% and L3 light states still need
-native capture before those states can be credited to the provisional choice.
+(D45). Post-decision P4 captures now cover dark 200%, L3 light 100%, and L3 light 200%
+under the same folded native geometry; the original P form remains historical and does
+not contain those later rasters.
+ Native opening, closing, and focus return still require
+interaction evidence.
  Documented
 P1/P3 deviation: the floating menu panel exceeds the baseline menu's 112 to 280dp width
 cap because the D31 name wall needs the full panel.

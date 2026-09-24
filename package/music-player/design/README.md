@@ -53,9 +53,10 @@ P3 app-bar title plus floating panel, and P4 title plus in-slot picker.
  D46 selects P4
 as a **temporary pre-1.x decision**: it is the current design baseline, but the user
 believes a better picker exists.
- Only P4 dark at 100% was captured;
- dark 200% and accepted L3 light 100% and 200%
-remain unverified for P4.
+ Post-decision native P4 captures now cover dark at 200% and accepted L3 light at
+100% and 200%, in addition to dark at 100%; the opened-state visuals fit without mode
+border clipping.
+ Native open/close and focus return still need interaction evidence.
  The light surface itself is settled by D45 (flat with hairlines
 at both seams).
  The next recommended surface round is the command bar's content and
