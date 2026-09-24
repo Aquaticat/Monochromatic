@@ -244,9 +244,10 @@ The HTML default, optional Markdown alternative, print completeness, and learner
 veto are settled; do not ask the user to ratify them again.
 No full cooking lesson has been requested or verified,
 and these working probes have not been run against a finalized skill.
-The remaining user-sourced evidence question is whether a concrete teaching failure
-still escapes this comparison.
-Ask for a falsifying example or critique of the probes,
-not approval of the whole skill or a generic choice between more questions and implementation.
+The broad Q1 that asked the user to invent a failure escaping this comparison was rejected.
+Research a specific missing mechanism, make the contrasting responses visible,
+and identify whether any remaining decision actually depends on the user's preference.
+Do not ask for a generic falsifying example, checklist approval,
+or a choice between more questions and implementation.
 
 [rotisserie-definition]: https://www.merriam-webster.com/dictionary/rotisserie

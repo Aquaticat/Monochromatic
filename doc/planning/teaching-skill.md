@@ -1145,6 +1145,22 @@ At the assessment boundary, the lesson and authoring sources were unchanged.
 The later action request authorizes the concrete lesson repairs, not finalization of the teaching skill.
 The pre-change artifact has been preserved separately.
 
+## Interview correction: research before asking
+
+I asked Q1: after imagining a lesson that passes the current checks,
+what concrete way could it still teach badly?
+The user rejected it as a poor question and instructed me to research more.
+The question supplied no researched missing mechanism or consequential choice;
+it delegated discovery of a failure to the user.
+This repeats the previously rejected move of asking the user to diagnose a teaching defect
+before the assistant shows its own reasoned interpretation.
+Retract Q1. Investigate primary teaching sources, build a concrete contrast,
+and ask only if the evidence leaves a user-dependent decision.
+The settled learner-observation veto remains in force.
+A future `AGENTS.md` rule could require evidence-backed questions rather than open-ended
+requests for the user to invent counterexamples, but the user's no-`AGENTS.md` instruction
+precludes applying it here.
+
 ## Next action
 
 The correction handover records the completed lesson repair and verification boundary.
@@ -1157,8 +1173,10 @@ The final teaching skill remains unconfirmed and unimplemented.
 The user liked the corrected Promise toy; no further concrete failure has been named in it.
 The [transfer probe](teaching-skill-transfer-probe.md) separates working cross-domain
 rules from JavaScript-specific controls and from unobserved cooking-timeline hypotheses.
-Ask the user for a concrete teaching failure these probes still miss, rather than asking
-for approval of a checklist. Do not infer learner mastery from artifact tests.
+Do not repeat the withdrawn broad Q1 or ask for checklist approval.
+Research a specific possible failure and contrast its remedies before asking a question;
+if the issue can be settled from evidence, answer it without asking.
+Do not infer learner mastery from artifact tests.
 The original request covers live teaching and authored materials; do not reopen that split
 or the confirmed default HTML and complete-print requirements without new evidence.
 Write additions in chunks no larger than the requested 200 to 500 lines.
