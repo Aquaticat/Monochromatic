@@ -57,8 +57,9 @@ The shared-understanding checkpoint was premature and is withdrawn.
 [Proposed acceptance checks](teaching-skill-acceptance.md) are only a working hypothesis.
 The corrected Promise toy is built and the user responded, “This is great. What next?”
 That is positive feedback on this artifact, not a learner-mastery finding or final skill approval.
-Continue discovery by checking whether candidate rules transfer to the user's contrasting
-rotated-chicken teaching example before confirming the skill design.
+[A working cross-domain probe](teaching-skill-transfer-probe.md) now contrasts the user's
+rotated-chicken critique, apples explanation, and Promise corrections.
+Its passing and near-miss cases are hypotheses for critique, not a cooking lesson or final skill.
 No skill design has been confirmed or implemented.
 
 ## Evidence from the user
@@ -1154,10 +1155,12 @@ Independent sending and neutral surfaces are implemented and operationally check
 those checks do not establish teaching acceptance, learner independence, or mastery.
 The final teaching skill remains unconfirmed and unimplemented.
 The user liked the corrected Promise toy; no further concrete failure has been named in it.
-Next, contrast this toy's observed failures with the user's rotated-chicken example to
-separate transferable teaching rules from JavaScript-specific interaction requirements.
-Do not infer learner mastery from tests or replace the user's critique with a checklist.
-Clarify remaining non-measurable scope only when the contrasting evidence makes it necessary.
+The [transfer probe](teaching-skill-transfer-probe.md) separates working cross-domain
+rules from JavaScript-specific controls and from unobserved cooking-timeline hypotheses.
+Ask the user for a concrete teaching failure these probes still miss, rather than asking
+for approval of a checklist. Do not infer learner mastery from artifact tests.
+The original request covers live teaching and authored materials; do not reopen that split
+or the confirmed default HTML and complete-print requirements without new evidence.
 Write additions in chunks no larger than the requested 200 to 500 lines.
 Do not write the final skill or ask for final confirmation yet.
 Do not edit `AGENTS.md`.

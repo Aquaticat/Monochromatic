@@ -128,8 +128,9 @@ a named countercase prevents converting the condition into an unconditional scri
   obtains or checks the particulars needed for the actual recipe;
   then supplies usable instructions with a specific deliverable product link or an opened
   in-person map, matched to the learner's available tools, location, and preference.
-- **Near miss:** Precise quantities and a genuine product link still fail if the product
-  cannot be delivered to the learner or the promised map has not been opened.
+- **Near miss:** Precise quantities and an explicit temperature unit still fail if the
+  method or setting is unverified. A genuine product link fails if the product cannot
+  be delivered to the learner or the promised map has not been opened.
 - **Countercase:** A definition or conceptual explanation that asks the learner to perform
   no measured step need not manufacture quantities. The rule is about action boundaries.
 
@@ -201,3 +202,15 @@ a named countercase prevents converting the condition into an unconditional scri
   withhold claims about independent learner performance unless it was actually observed.
 - **Countercase:** Lack of a learner study need not prevent using or improving the artifact;
   the user already declined that as an approval gate.
+
+## Current interview frontier
+
+The original request already covers live teaching and authored materials.
+The HTML default, optional Markdown alternative, print completeness, and learner-observation
+veto are settled; do not ask the user to ratify them again.
+No full cooking lesson has been requested or verified,
+and these working probes have not been run against a finalized skill.
+The remaining user-sourced evidence question is whether a concrete teaching failure
+still escapes this comparison.
+Ask for a falsifying example or critique of the probes,
+not approval of the whole skill or a generic choice between more questions and implementation.
