@@ -332,7 +332,171 @@ No saturation conclusion follows until each page's candidates are screened and t
  The full unfiltered page files under `~/temp/agent/jsonc-registry-full-pages/` are scratch evidence,
  not a curated candidate ledger.
  Registry **pagination** is complete for the frozen initial and expansion terms;
- screening full records and saturation of the other required source classes remain open.
+ the full-record numeric metadata screen is recorded in the next section,
+ while saturation of the other required source classes remains open.
+
+## Full numeric-registry metadata screen
+
+`mise run audit:number-registry-leads` re-read every saved page of the five frozen numeric queries
+ (`exact decimal`,
+ `bigint`,
+ `arbitrary precision json`,
+ `json number`,
+ `decimal arbitrary exponent`),
+ scanned **13303** records,
+ and applied one inclusive predicate:
+ a record becomes a lead when its name or description matches a numeric term
+ (`decimal`,
+ `bigint`,
+ `bignum`,
+ `rational`,
+ `exact`,
+ `arbitrary precision`,
+ `lossless`,
+ `fixed point`,
+ `num`/`number`,
+ `numeric`)
+ **and** a JSON or token term
+ (`json`,
+ `jsonc`,
+ `token`,
+ `lexeme`,
+ `lexical`,
+ `serial`,
+ `parse`,
+ `value`,
+ `literal`,
+ `spelling`).
+ The run reported **87** leads with query,
+ page and record index,
+ saved at `~/temp/agent/jsonc-number-registry-leads.jsonl`.
+ The predicate is deliberately over-inclusive,
+ but a crate whose name and description avoid both term families could still be missed;
+ this is a recorded metadata screen,
+ not proof that every numeric crate was considered.
+
+Source-verified exits among those leads:
+
+- `bignumber` 0.1.1 wraps `dashu_float::DBig` with a compile-time default precision of 256 bits
+   (`src/bignumber.rs:3-13,38`).
+   A fixed-precision **binary** float rounds decimal fractions,
+   so it cannot be the exact decimal identity for admitted JSON numbers.
+- `postgres-jsonb-canonical` 0.1.0 bounds its numeric domain explicitly:
+   `MAX_SCALE = 16_383` and `MAX_INTEGER_DIGITS = 131_072` (`src/number.rs:11,14`),
+   with a dedicated error for numbers outside the PostgreSQL numeric domain (`src/lib.rs:112-113`).
+   The JSON number grammar has no such bound.
+- `number-general` 0.14.0 offers only `Bool`,
+   `Complex`,
+   `Float`,
+   `Int` and `UInt` variants (`src/lib.rs:120-128`) with `f64` and complex-`f64` dtypes (`:92-94`).
+   Fractional JSON literals land in binary floating point.
+- `hypercast` 0.3.0 documents its exact decimal as a sign,
+   a **96-bit** magnitude and a base-10 scale,
+   states that precision is a range rather than a rounding opportunity,
+   and refuses larger magnitudes (`src/decimal.rs:3-19,82-83,137-139`);
+   its own test expects `OutOfRange` for a 23-digit integer (`src/lib.rs:192`).
+- `dashu-ratio` 0.6.0 parses a decimal exponent by materializing `base.pow(abs_scale)` and multiplying it
+   into the numerator or denominator (`src/parse.rs:163-170`).
+   A literal such as `1e1000000000` would need a bigint of roughly a billion decimal digits,
+   so this family fails on admitted input by resource exhaustion rather than by a clean rejection.
+   That is the same class of exit already recorded for `bigdecimal`,
+   `scientific` and `b10`,
+   which bound the exponent instead of materializing it.
+- `qubit-json` 0.10.0 reports integer and float values outside `i64`/`u64`/finite `f64` as errors
+   (`src/decode/json_syntax_error_reason.rs:55-58`),
+   which the parser-foundation report records separately as a strict-JSON component.
+
+Metadata-level classifications,
+ without pinned source confirmation:
+
+- Fixed-scale or domain decimal models:
+   `atomr-money`,
+   `financial-ops`,
+   `metering`,
+   `ledgeline-core`,
+   `price-parser`,
+   `price-parser-rs`,
+   `positive`,
+   `wager-math`,
+   `hardmoney`,
+   `gnucobol-rs`,
+   `emob-ocpp`,
+   `tktax-serde`,
+   `decimal_scaled_macros`.
+- Other formats or unrelated domains:
+   `ason`,
+   `purrdf-json`,
+   `purrdf-text`,
+   `purrdf-geo`,
+   `yaml-rt-core`,
+   `tomljson`,
+   `mp2json`,
+   `pairl`,
+   `tokn-codex-protocol`,
+   `tokn-pi-protocol`,
+   `spanned_json_parser`,
+   `elicit_serde_json`,
+   `enum2schema`,
+   `serde_sated`,
+   `dtype_variant`,
+   `tagword`,
+   `exatok`,
+   `tokcost`,
+   `pretty-bytes-enum`,
+   `ecma-lex-cat`,
+   `floravox-ssml`,
+   `ferrodoc-ast`,
+   `differential-engine`,
+   `dig-rpc-protocol`,
+   `dig-rpc-types`,
+   `intl`,
+   `laser-sdk`,
+   `logicaffeine-base`,
+   `okf-ingest`,
+   `gcal-fetcher`,
+   `bionamic-immunum`,
+   `person-matcher`,
+   `phonenumber-rs`,
+   `pitlane-mcp`,
+   `std-logger`,
+   `ferrotherm`,
+   `ferromorphic`,
+   `torustcalcmcp`,
+   `vastblue-uni`,
+   `outram-park-fork-coolprop`,
+   `fast-float`,
+   `fast-float2`,
+   `hexfloat2`.
+- Arbitrary-precision families whose exponent or scale handling was not individually read:
+   `puremp` 0.2.4 (integers,
+   rationals and MPFR-class floats),
+   `bigfixed` 0.0.0 (fixed point),
+   `flexint`,
+   `smallbigint`,
+   `astra-num`,
+   `near-bigint`,
+   `num-rational-parse`,
+   `dashu`,
+   `dashu-int`.
+   `dashu-ratio`'s verified exponent materialization is the family's decisive pattern,
+   but each crate needs its own source check before an individual exit is asserted.
+- `aequa` was not found on crates.io under that exact name by a direct registry lookup,
+   so it remains a Git-only lead like the parser report's `jsonc_lexer`.
+- `decimal-scaled-golden` 0.5.1 is a library-agnostic golden value set and comparison harness.
+   It is a potential independent **oracle** rather than a value representation;
+   the owned prototype already cross-checks against a separately computed bounded rational oracle,
+   so no decision depends on adopting it.
+- `json-number` 0.4.10 reappeared in this scan and keeps its recorded exclusion
+   ([documented unsized-layout gap](../troubleshooting/json-number-unsized-layout.md)).
+
+After this screen the numeric registry class has one **validated** representation
+ (the repository-owned token plus identity prototype)
+ and one unvalidated composition
+ (`serde_json` `arbitrary_precision` behind a custom mathematical-equality adapter).
+ That is a screening outcome over the frozen queries,
+ not proof that no other crate could satisfy the constraints.
+ The repository-host and broader-web classes are still incomplete,
+ so discovery saturation remains unclaimable and no recommendation follows from this section alone.
 
 ## Repository-owned equality prototype and limits
 
