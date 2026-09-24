@@ -587,7 +587,16 @@ A separate direct probe of the built TypeScript library in `package/module/jsonc
 
 ### After-state: Rust scratch value-comment owner retained
 
-The scratch emitter was changed to write a multi-line value comment **after the object key's colon**, so the parser's between-colon-and-value trivia channel owns it. In the same 2 GiB/2 CPU offline container, `mise run test:isolated` exited 0 with the `multiline_value_comment_stays_on_value` regression passing alongside the rest of the bounded parser suite. `mise run lint:clippy` passed with warnings denied before the isolated run. This measures the Rust scratch fix at parse/emit/reparse, not merely a predicted effect from source. The maintained TypeScript bundle still demonstrates the original migration and needs the corresponding fix and shared fixture after foundation adoption. The scratch parser remains incomplete until deep emission, lifecycle and other required branches pass.
+The scratch emitter was changed to write a multi-line value comment **after the object key's colon**,
+ so the parser's between-colon-and-value trivia channel owns it.
+ In the same 2 GiB/2 CPU offline container,
+ `mise run test:isolated` exited 0 with the `multiline_value_comment_stays_on_value` regression passing alongside the rest of the bounded parser suite.
+ `mise run lint:clippy` passed with warnings denied before the isolated run.
+ This measures the Rust scratch fix at parse/emit/reparse,
+ not merely a predicted effect from source.
+ The maintained TypeScript bundle still demonstrates the original migration and needs the corresponding fix and shared fixture after foundation adoption.
+ The scratch parser remains incomplete until deep emission,
+ lifecycle and other required branches pass.
 
 ## Evidence and validation still required
 
