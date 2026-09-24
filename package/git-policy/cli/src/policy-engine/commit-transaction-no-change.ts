@@ -199,6 +199,11 @@ export async function completeNoChangeTransaction({
       ...selectedWorktreePaths,
     ],
   },);
+  await assertNormalizationHead({
+    gitPath,
+    cwd,
+    expectedOid: head.oid,
+  },);
   workspace.finishTransaction();
   /**
    Final stable pass plus accurate fix summary.

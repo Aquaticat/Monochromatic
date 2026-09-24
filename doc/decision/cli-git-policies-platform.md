@@ -810,7 +810,9 @@ Exact exclusion families are:
 Commit fixing first changes only exact would-be-committed blobs.
 After a successful commit, a selected final-newline path whose original staged bytes and worktree bytes matched exactly
 receives the settled blob in its worktree copy, subject to a fresh ordinary-file, mode, and byte check.
-Partially staged paths, concurrent worktree edits, and unrelated staged paths remain byte-identical.
+Partially staged paths and unrelated staged paths remain byte-identical.
+Worktree edits detected before replacement are kept and reported;
+filesystem writers that ignore cli-git's index lock can still race the final pathname replacement.
 If normalization removes every selected tree difference from `HEAD`, the wrapper reconciles eligible worktree copies and
 the selected index entries, reports that no commit was created, and does not create an empty commit.
 This does not change explicit `--allow-empty`, amend, or sequencer semantics.

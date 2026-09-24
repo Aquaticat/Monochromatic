@@ -276,7 +276,9 @@ ordinary `git add` reports noncanonical final newlines and continues;
 the later patch-capable commit transaction normalizes the exact bytes it commits.
 For selected final-newline corrections whose staged bytes match their worktree copy,
 the wrapper also synchronizes that worktree copy after the commit lands.
-Partial staging and later edits keep their worktree bytes.
+Partial staging is preserved;
+edits detected before installation are kept and reported.
+A noncooperating filesystem writer can still race the final pathname replacement.
 When the settled tree is identical to `HEAD`,
 the wrapper reconciles eligible worktree and index copies,
 reports `commit-normalization/no-change` with exit `1`,

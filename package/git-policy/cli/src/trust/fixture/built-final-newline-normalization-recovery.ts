@@ -5,6 +5,7 @@
  * @module
  */
 import {
+  access,
   readFile,
   rm,
   writeFile,
@@ -81,9 +82,13 @@ export async function verifyNormalizationRecovery({ env, }: Readonly<{
       originalHead: { kind: 'oid', oid, },
     })}\n`,);
     if (sameIndex) {
-      /** Identical indexes must still replay pending worktree completion. */
-      // oxlint-disable-next-line no-await-in-loop -- Copy preserves post.index inode bound by journal.
-      await writeFile(`${transaction}/post.index`, await readFile(`${transaction}/original.index`,),);
+      /** Model a selected raw worktree file whose real and prepared indexes already match canonical HEAD. */
+      // oxlint-disable-next-line no-await-in-loop -- Read actual prepared canonical index from interrupted transaction.
+      const canonicalIndex = await readFile(`${transaction}/post.index`,);
+      // oxlint-disable-next-line no-await-in-loop -- In-place writes preserve journal-bound snapshot inodes.
+      await writeFile(`${transaction}/original.index`, canonicalIndex,);
+      // oxlint-disable-next-line no-await-in-loop -- Disposable real index now matches both identical snapshots.
+      await writeFile(`${repository}/.git/index`, canonicalIndex,);
     }
     // oxlint-disable-next-line no-await-in-loop -- Invokes startup recovery through packed shim.
     await execute({ command: 'git', args: ['status', '--short',], cwd: repository, env, },);
@@ -98,12 +103,18 @@ export async function verifyNormalizationRecovery({ env, }: Readonly<{
     const status = (await execute({ command: '/usr/bin/git', args: ['status', '--short',], cwd: repository, },)).stdout;
     assertFixtureEqual({
       actual: status,
-      expected: sameIndex ? 'M  value.txt\n' : '',
+      expected: '',
       context: `${content} normalization-only recovered index`,
     },);
-    if (sameIndex)
-      // oxlint-disable-next-line no-await-in-loop -- Final fixture reset is on disposable state only.
-      await execute({ command: '/usr/bin/git', args: ['reset', '--quiet', 'HEAD', '--', 'value.txt',], cwd: repository, },);
+    try {
+      // oxlint-disable-next-line no-await-in-loop -- Finished recovery must remove its journal.
+      await access(transaction,);
+      throw new Error(`Normalization recovery retained completed journal for ${content}.`,);
+    }
+    catch (error: unknown) {
+      if (!(Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT')))
+        throw error;
+    }
   }
 }
 //endregion Normalization-only recovery fixture
