@@ -352,6 +352,20 @@ and explicit `--allow-empty`.
 index snapshots.
 Neither fixture claims a reproduction of the original doubled or relocated LF incident.
 
+The issue-specific verification passed with `mise run //package/git-policy/cli:build:js:node`,
+`mise run //package/git-policy/cli:lint:types`,
+`mise run //package/git-policy/cli:test:unit`,
+and `mise run //package/git-policy/cli:test:built:trust`.
+The rebuilt `node_modules/.bin/git` also left a disposable foreign repository clean after a corrected pathspec commit;
+for a normalization-only selection it reported no commit and cleaned the selected index and worktree.
+A file-scoped Oxlint pass over the changed production TypeScript files reported zero warnings and errors.
+The file-scoped task's positive control reported the existing `test-import(require-eventual-artifact)` errors in
+`package/git-policy/cli/src/policy-engine/final-newline-policy.unit.test.ts`.
+Package-wide Oxlint remains red on that rule in unchanged unit tests and an unrelated
+`unicorn(consistent-function-scoping)` warning in `package/git-policy/cli/src/trust/account-root.ts`.
+Those diagnostics do not meet the historical whole-package zero-lint criterion;
+they are not evidence that issue #520's changed production files pass package-wide lint.
+
 ## Limitations
 
 - Clients that bypass the PATH-shadowed executable also bypass local cli-git policy enforcement;
