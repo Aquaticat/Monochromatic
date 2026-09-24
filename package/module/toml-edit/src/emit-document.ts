@@ -46,19 +46,22 @@ export function emitDocument({ edit, }: { readonly edit: TomlEditState; },): str
     edit,
   },);
   /**
-   Combined output before the synthetic-document trailing-newline fixup.
+   Combined output before canonical trailing-newline handling.
    */
   const result = `${header}${body}`;
-  if (
-    (edit.source
-      === '')
-      && edit.canonical
-      .trailingNewline
-      && (result !== '')
-      && (!result.endsWith('\n',))
-  )
-    return `${result}\n`;
-  return result;
+  if ((edit.source !== '') && (edit.mode !== 'canonical'))
+    return result;
+  if (result === '')
+    return result;
+  if (edit.canonical.trailingNewline)
+    return result.endsWith('\n',) ? result : `${result}\n`;
+  /**
+   Final content boundary, excluding every terminal newline.
+   */
+  let end = result.length;
+  while ((end > 0) && (result[end - 1] === '\n'))
+    end -= 1;
+  return result.slice(0, end,);
 }
 
 /**
