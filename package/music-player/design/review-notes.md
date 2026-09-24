@@ -699,6 +699,27 @@ Record each intentional platform adaptation and keep prototype renderability,
 form accessibility,
  and actual visual fidelity as separate verification claims.
 
+## 5p. Desktop mock widths displaced the actual target screens
+
+The Search-page study used Slint-native screenshots at 360 × 640,
+ 480 × 600 and
+1100 × 640px because the desktop app exposed a 480 × 600 preferred size.
+ The user
+corrected the premise:
+ all visual decisions follow the Pixel 9 Pro Fold cover and
+unfolded panels,
+ with desktop inheriting even when that is awkward.
+ The previous
+rasters proved Slint drawing at invented window sizes,
+ not the device result.
+
+**The rule.**
+ For this music player,
+ compose the visual review from native Android
+captures at the measured cover and inner panel physical resolution in both schemes.
+Keep desktop porting and window-size choices subordinate to those visual decisions;
+never relabel a desktop-native screenshot as target-device evidence.
+
 ## Standing standards for this project
 
 1. **EVERY question form ends with a free-text field.
