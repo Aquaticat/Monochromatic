@@ -388,10 +388,14 @@ Additional deletion and set tests cover indexed instances,
  implicit dotted-key replacement,
  path-create placement,
  and exact rejection diagnostics.
-The edit-path rechecks are running from the same revision:
- `/var/home/user/temp/agent/toml-mutation-edit-a-recheck.json` (`proc_560d`)
- and `/var/home/user/temp/agent/toml-mutation-edit-b-recheck.json` (`proc_ec79`).
-Do not edit runtime source until both complete.
+The delete/resolve recheck completed with 106 killed,
+ 28 confirmed survivors,
+ 292 compile errors,
+ and no infrastructure errors.
+Its report is `/var/home/user/temp/agent/toml-mutation-edit-a-recheck.json`.
+The set-internals recheck is still running at
+ `/var/home/user/temp/agent/toml-mutation-edit-b-recheck.json` (`proc_ec79`).
+Do not edit runtime source until it completes.
 The indexed array-of-tables read fix passed the rebuilt package suite,
  types,
  oxlint,
