@@ -229,5 +229,53 @@ await describe({
         );
       },
     },),
+    it({
+      name: 'a shallow cyclic input merged with a non-cyclic tree at the same key keeps every key',
+      timeout: RUN.timeout,
+      fn: async () => {
+        assert(
+          property(
+            integer({ min: 0, max: MAX_CYCLE_DEPTH, },),
+            exoticTrees.record,
+            exoticTrees.tree,
+            function oneSidedCycle(depth, otherSelf, extra,) {
+              /**
+               Non-cyclic input colliding with the cycle at `self`.
+               */
+              const other = { self: otherSelf, beside: extra, };
+              /**
+               Merge that routes the non-cyclic side through cycle resolution.
+               */
+              const merged: unknown = target.deepmerge(cyclicRecord({ depth, extra, },), other,);
+              expect(Object.getPrototypeOf(merged,),).toBe(Object.prototype,);
+              expect(Reflect.ownKeys(merged as object,),).toEqual(['extra', 'self', 'beside',],);
+            },
+          ),
+          RUN.params,
+        );
+      },
+    },),
+    it({
+      name: 'deepmergeInto a shallow cyclic target from a non-cyclic tree at the same key keeps every key',
+      timeout: RUN.timeout,
+      fn: async () => {
+        assert(
+          property(
+            integer({ min: 0, max: MAX_CYCLE_DEPTH, },),
+            exoticTrees.record,
+            exoticTrees.tree,
+            function oneSidedCycleInto(depth, otherSelf, extra,) {
+              /**
+               Cyclic target, freshly built so the merge may mutate it.
+               */
+              const looped = cyclicRecord({ depth, extra, },);
+              target.deepmergeInto(looped, { self: otherSelf, beside: extra, },);
+              expect(Reflect.ownKeys(looped,),).toEqual(['extra', 'self', 'beside',],);
+            },
+          ),
+          RUN.params,
+        );
+      },
+    },),
   ],
 },);
