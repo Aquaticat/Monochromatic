@@ -644,6 +644,12 @@ The disposable parser and exact-number crates were rebuilt in the same pinned,
  it is not a timing comparison,
  a macOS/Windows result,
  or a consumer test of a published crate.
+ After the iterative rewrite and value-comment correction,
+ `mise run test` in the separate scratch consumer `~/temp/agent/jsonc-parser-consumer-2026-09-24/` rebuilt the library,
+ called parse and emit,
+ and printed `JSONC consumer parse and emit passed`.
+ This is a local path dependency,
+ not published-crate validation.
 
 Remaining validation includes full TypeScript conformance and property cases,
  wider comment-placement and syntax-boundary coverage,
