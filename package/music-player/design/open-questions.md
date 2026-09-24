@@ -104,6 +104,12 @@ rounds (2026-09-17):
   replacement design-only and E2-safe;
   do not infer that E2 requires the
   header on one side and content on the other.
+  The user explicitly permits a
+  Search screen occupying only one half of the unfolded display,
+  with query
+  and results together;
+  this is one candidate,
+  not an adopted layout.
   Keep Search results,
   no-result/unavailable states,
   and open/back behavior visibly
