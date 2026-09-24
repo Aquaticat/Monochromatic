@@ -445,6 +445,18 @@ The published `fig` 4.1.0 source in the local Cargo registry exposes an editor w
  regex is **not** the as-is exit reason.
  No candidate code or binary was executed for this screening.
 
+### `dprint-plugin-jsonc` 0.7.4 as-is category exit
+
+The published `Cargo.toml:28-42` depends on `jsonc-parser` in the 0.15 range.
+ Its public `src/lib.rs:1-7` exports `format_text` and configuration,
+ while its `parser` module is private.
+ It is a formatter interface,
+ not a public raw-token or independently queryable key/value-comment editor.
+ Consuming its private parser would be a fork or another custom composition,
+ not adoption of the published formatter as-is.
+ The separately audited `jsonc-parser` 0.33.2 surrogate failure is **not** attributed to the older 0.15 dependency without a versioned source check.
+ No upstream code was executed for this category screen.
+
 ### `fjson` 0.3.1
 
 **Source correction:**
