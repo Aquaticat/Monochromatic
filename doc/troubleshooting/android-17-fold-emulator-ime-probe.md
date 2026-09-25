@@ -155,6 +155,85 @@ The empty branch is the relevant one for the measured source.
 its absence in the server dump matters.
 Thus this **observed IME source** offers neither a bottom inset nor a
 floating-keyboard bounding rectangle through these framework paths.
+
+`WindowInsets.java:413-430` describes `isVisible(Type.ime())` as
+independent of overlap with the app window.
+Its implementation checks a boolean map:
+
+```java
+public boolean isVisible(@InsetsType int typeMask) {
+    for (@InsetsType int type : TYPES) {
+        if ((typeMask & type) == 0) {
+            continue;
+        }
+        if (!mTypeVisibilityMap[indexOf(type)]) {
+            return false;
+        }
+    }
+    return true;
+}
+```
+
+`InsetsState.java:435-437` sets that map from source visibility:
+
+```java
+if (typeVisibilityMap != null) {
+    typeVisibilityMap[index] = source.isVisible();
+}
+```
+
+The original Gboard toolbar-only and floating-key states both exposed a
+visible IME source with no usable bottom inset.
+Changing `SearchDeckRight`'s `keyboardShown` test from
+`WindowInsets.ime.getBottom(...) > 0` to a visibility flag could detect
+that an IME window exists,
+but cannot distinguish a toolbar from real keys or locate floating keys.
+`WindowInsetsAnimation.java:187-201` stores lower and upper **Insets**
+bounds for an animation,
+not a floating-window rectangle:
+
+```java
+private final Insets mLowerBound;
+private final Insets mUpperBound;
+```
+
+`InputMethodManager.java:5025-5041` preserves
+`getInputMethodWindowVisibleHeight()` only as a hidden compatibility API
+and calls its result not well-defined:
+
+```java
+/**
+ * This is kept due to {@link android.compat.annotation.UnsupportedAppUsage}.
+ *
+ * <p>TODO(Bug 113914148): Check if we can remove this.  We have accidentally exposed
+ * WindowManagerInternal#getInputMethodWindowVisibleHeight to app developers and some of them
+ * started relying on it.</p>
+ *
+ * @return Something that is not well-defined.
+ * @hide
+ */
+@UnsupportedAppUsage(trackingBug = 204906124, maxTargetSdk = Build.VERSION_CODES.TIRAMISU,
+        publicAlternatives = "Use {@link android.view.WindowInsets} instead")
+public int getInputMethodWindowVisibleHeight() {
+    return IInputMethodManagerGlobalInvoker.getInputMethodWindowVisibleHeight(mClient);
+}
+```
+
+It does not provide a supported floating rectangle for this app,
+whose `package/music-player/android-app/app/build.gradle.kts:25-26`
+sets `minSdk=26` and `targetSdk=36`.
+`WindowManager.java:2879-2885` describes a nonfocusable window that can
+layer above the IME and cover it:
+
+```java
+* gets Z-ordered on top of the input method, so it can use the full
+* screen for its content and cover the input method if needed.  You
+```
+
+Layering the deck there could instead obscure Gboard keys in the measured
+overlap;
+it is not a verified design for keeping both Search input and the
+complete deck usable.
 This is not proof that every app-observable keyboard API lacks the geometry
 or that floating overlays are impossible to avoid by other means.
 
