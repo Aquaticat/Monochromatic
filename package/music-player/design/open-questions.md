@@ -160,10 +160,15 @@ rounds (2026-09-17):
   the upper-left area while typing.
   Do not blank it or replace it with a `Current folder` caption;
   the user rejected that substitute as useless.
-  The viewport may shorten without changing browser content,
-  but no visible partial button may bypass the 48dp target floor.
-  Whether the existing header and folder targets remain usable in a
-  banner-height viewport requires direct testing.
+  The viewport may shorten without changing browser content.
+  The user accepts a little clipping even around the Open button;
+  this does not imply that the off-screen folder rows are accessible during
+  a banner-height keyboard.
+  The full Open parent is `[621,148][953,279]` with the keyboard closed,
+  while UI Automator sees only `[621,132][953,245]` in the short viewport.
+  Those are visible accessibility bounds,
+  not an intrinsic layout-size measurement.
+  No below-48dp layout target has been deliberately introduced.
   Do not take space from the complete deck or put meaning on the crease.
   A 415dp debug-only system IME reproduced the banner-height clipping at
   y `1141` in selected A,

@@ -1476,8 +1476,13 @@ its visible viewport may shorten above the IME-lifted deck.
 Do not replace it with a `Current folder` caption or blank it solely because
 the keyboard appeared.
 Search must not hide the deck or its controls (D50).
-How the browser's controls remain usable in a very short viewport still
-requires measurement.
+At the measured tall keyboard height,
+only part of the existing browser header fits.
+The user accepts a little viewport clipping,
+including around Open,
+rather than a different upper-left composition.
+Do not claim every folder target is reachable while that viewport is short;
+keep the full deck visible.
  The cover uses one
 full-width Search destination with the same integrated header.
  D49 makes

@@ -5499,12 +5499,21 @@ browser** when Search is open and the keyboard appears.
 Do not blank it or swap it for a different summary;
 the user specifically rejected a `Current folder` caption as useless.
 D51 still places Search on the right and the complete deck bottom-left.
-The browser viewport may shorten,
-but partial controls must not become sub-48dp targets or force the deck
-behind the IME.
-Prototype commit `119e4b559` removed the caption and keeps the browser in
-the keyboard-height study;
-its short-viewport usability is awaiting device verification.
+The browser viewport may shorten without replacing its content.
+The user accepts a little clipping,
+even if the visible portion of Open has less than its normal touch extent;
+no deliberately undersized underlying layout target is required.
+Prototype commit `119e4b559` removed the caption and kept the original
+browser in the keyboard-height study.
+At 200% text with the synthetic 415dp IME starting at y `1141`,
+`Folders` and Open remained visible in the short upper-left viewport,
+but folder rows did not fit.
+The Open parent's visible accessibility bounds were
+`[621,132][953,245]`,
+compared with `[621,148][953,279]` when the keyboard was closed.
+Those bounds alone do not establish the underlying intrinsic target size
+or that off-screen folder rows can be reached while typing.
+The full deck still has priority.
 
 A debug-only 415dp system IME on private `emulator-5580` reproduced the
 observed Gboard banner-height geometry within 1px:
