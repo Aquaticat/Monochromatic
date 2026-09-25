@@ -38,6 +38,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 // `Column` stacks Search header, results and the persistent deck.
 import androidx.compose.foundation.layout.Column
+// `Arrangement` keeps the compact folder icon and text at the accepted 8dp group gap.
+import androidx.compose.foundation.layout.Arrangement
 // `Row` places related panes without banning paint from the crease.
 import androidx.compose.foundation.layout.Row
 // `Spacer` flexes decorative space between text regions.
