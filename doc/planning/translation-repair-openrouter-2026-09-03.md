@@ -8082,6 +8082,77 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## The page's register, 2026-09-25, 06:30 UTC: plain written English on every sheet (class one hundred twenty-eight)
+
+The owner answered the three renderings left as the original wrote them
+("overdosing", "sailor uniform", "National College Entrance Examination";
+class one hundred twenty-seven),
+then wrote:
+"I'm not sure why you allowed the very informal terms like OD to go through."
+
+### Why OD passed
+
+The reads treated the original's register as the authority:
+a page that writes OD was read as faithful when the English wrote OD or ODing.
+Nothing on any sheet said otherwise.
+The house policy's community-vocabulary bullet keeps
+"an abbreviation local to the person's world, such as 大证 or WER"
+and glosses it,
+which a judge could read as licence for OD, jk and TGT,
+and no bullet named the register of the English itself.
+So shi_Yumiaoya27 shipped "ODing", "jk skirt" and "the TGT series",
+and no ballot held them against a candidate.
+
+### What the corpus writes
+
+A sweep of the pinned originals found the shorthand the rule has to reach:
+MtF, MTF and mtf
+(also inside links such as `mtf.wiki` and handles such as `siyan_MTF`),
+SRS, GAHT, POV, OST, ACG, RPG, DID, OD, jk and MtX.
+No archive writes "gaokao" or a bare OD.
+Mechanical floors for each were rejected:
+a substring floor on MtF would refuse links and handles,
+and spelling a term out once and abbreviating it after is ordinary formal practice
+that a floor cannot tell from carried shorthand.
+
+### The rule
+
+`src/house-policy.ts` gains a bullet after the community-vocabulary bullet,
+so it reaches every writer and judge sheet through `HOUSE_POLICY_BLOCK`:
+the page is plain written English for a general reader whatever the ORIGINAL's register;
+chat shorthand and internet slang are rendered by the plain words
+(OD is overdose, jk 裙 a sailor uniform, MtF trans woman, TGT The Grand Tour);
+the English adds no slang of its own (gearhead, slacked off);
+an abbreviation a general reader would not know is spelled out where it first appears;
+known abbreviations (HRT, ICU) and names in Latin letters (QQ, a handle, a link) stay;
+an identity label with no everyday English equivalent (MtX) is kept and glossed;
+quoted speech keeps its warmth but not its shorthand;
+and carried shorthand is a defect, never faithfulness to the ORIGINAL's tone.
+Guard `src/register-policy.unit.test.ts`, red first at `194eca498`,
+asserts the rule on the house policy, the translate sheet and the select sheet.
+Built in `c432737d5`; lint 0/0, types clean, suite `suite-class128.log` 1129 PASS, no FAIL.
+
+### The test the rule broke
+
+The first suite run failed one case in `src/archive-block-review-stage.unit.test.ts`:
+"archive review left the block unresolved" read 0 of 3 where the case expects 1 of 3.
+The case scripted one anchoring reply by roster position (`ROSTER[0]`),
+but `gatherStageVoices` asks seats in the order `rotatedBench` gives,
+a rotation keyed on the prompt,
+and the quorum of three on a four-seat roster closes without the last seat asked.
+The longer policy changed the rotation and put `ROSTER[0]` fourth.
+The run with the policy of `HEAD` passed and five runs with the new policy all failed, so the cause was deterministic, not load.
+The case now anchors the first seat asked,
+which keeps its intent (one heard reply anchors, the rest do not) under any sheet wording.
+
+### Runs
+
+shi_Yumiaoya29 (frozen `811d908a9`, pid 2915263) was killed under always-kill-and-relaunch.
+shi_Yumiaoya30 launched at 06:29 UTC on `.frozen-dist-c432737d5` (pid 2972665),
+to be read by every shi_Yumiaoya27 check,
+the class one hundred twenty-six and twenty-seven renderings,
+and the register check the handover's step 1 lists.
+
 ## shi_Yumiaoya27 read, 2026-09-25, 06:00 UTC: classes one hundred twenty-two to twenty-five live, five more renderings (class one hundred twenty-six)
 
 shi_Yumiaoya27 ran on frozen `13b633bad`,

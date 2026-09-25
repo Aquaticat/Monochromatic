@@ -4773,17 +4773,26 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA29 RUNS (entry `shi_Yumiaoya`,
-    frozen `811d908a9`, classes one hundred twenty-six and twenty-seven,
-    corpus-pass pid 2915263, launched 06:17 UTC 2026-09-25, waiter wait-s29;
-    the frozen dir checked absent first and grepped for "sailor-uniform skirt" after):
+1.  SHI_YUMIAOYA30 RUNS (entry `shi_Yumiaoya`,
+    frozen `c432737d5`, classes one hundred twenty-six to twenty-eight,
+    corpus-pass pid 2972665, launched 06:29 UTC 2026-09-25, waiter wait-s30;
+    the frozen dir checked absent first and grepped for "plain written English for a general reader" after):
     read it by every shi_Yumiaoya27 check, then "head of year" or "grade director" (no "grade leader"),
     "underage trans girl" (no "minor trans"), "psychologically" or "emotionally" before "bullied",
     the ashes made into dice (no "ash dice"), "housemate" on both 同居者 lines (no "cohabitant"),
     "overdosing" on both OD lines (no "OD" or "ODing"; owner 2026-09-25), "sailor uniform" (no "jk skirt")
     and "National College Entrance Examination" (no "Gaokao");
+    then the REGISTER CHECK (class one hundred twenty-eight): no chat shorthand or internet slang on the page
+    (no OD, ODing, jk, TGT, MtF, gearhead, slacked off), every abbreviation a general reader would not know
+    (SRS, GAHT, OST, POV, ACG) spelled out where it first appears, known abbreviations (HRT, ICU) and names in Latin letters kept;
     record it under a new heading above "## shi_Yumiaoya27 read, 2026-09-25" in the pass log;
-    then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on the same build.
+    then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on the same build, each read with the register check too.
+    CLASS ONE HUNDRED TWENTY-EIGHT (owner 2026-09-25: "I'm not sure why you allowed the very informal terms like OD to go through."):
+    built `c432737d5` (guard red first `194eca498`, suite `suite-class128.log` 1129 PASS, no FAIL). OD passed because the read treated the original's register as the authority
+    and the house policy's community bullet keeps "an abbreviation local to the person's world"; no rule named the register of the English.
+    The new house-policy bullet reaches every writer and judge sheet. The same commit makes the archive-block-review-stage retention case anchor the first seat asked,
+    since `rotatedBench` orders seats by a hash of the prompt and the longer policy had moved its named seat out of the quorum.
+    SHI_YUMIAOYA29 KILLED (frozen `811d908a9`, pid 2915263) under always-kill-and-relaunch once class one hundred twenty-eight was underway.
     SHI_YUMIAOYA27 READ (frozen `13b633bad`): SETTLED at 05:57 UTC in 26.3 min, 851 calls, about 0.41 USD by the meters;
     classes one hundred twenty-two to twenty-five live ("suddenly became a top student", "attempted to end her life in the early hours of January 16",
     "missed her chosen schools and ended up at a second-tier teachers' college", "this was her way of telling everyone");
