@@ -95,6 +95,9 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
     refusedForms: [
       'slid down',
       'slid into',
+      'slid to',
+      'slipped to',
+      'slipped into',
       'slipped a file',
       'sliding file',
       'huadang',
@@ -113,8 +116,12 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
       'using this way to',
       'use this way to',
       'used this way to',
+      // shi_Yumiaoya26 wrote the same calque with another noun.
+      'using this method to',
+      'use this method to',
+      'used this method to',
     ],
-    why: '"use this way to" is not English; the page writes "this was her way of telling" or "in this way"',
+    why: '"use this way to" is not English and "use this method to" is the same calque; the page writes "this was her way of telling" or "in this way"',
   },
 ];
 
