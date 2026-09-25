@@ -5400,7 +5400,26 @@ it hard-codes `emulator-5554`.
  The scratch-only
 `probe-disposable-fold-gboard.mjs` pins `emulator-5580` and checks the
 AVD name before touching settings.
- No fresh Gboard result was obtained,
+ With user authorization,
+a 6 GiB/2 CPU container retry passed the earlier cgroup limit,
+but a stale scratch-AVD lock stopped its first launch.
+ After that lock
+was removed with no process holding it,
+the next retry remained `unauthorized` in host ADB and emitted
+`No adb private key exists` and `adb: device unauthorized` from the emulator.
+It used `5.496GB / 6.442GB` when inspected after the user's wait;
+the container was then intentionally killed.
+ Its exit 137 is **not**
+evidence of another out-of-memory event.
+ Android Emulator's current help
+supports `-skip-adb-auth`;
+a new disposable boot with that flag and a bounded readiness monitor is
+underway.
+ The monitor was positively checked against the already-booted
+original AVD,
+but it will not mutate that device.
+ No fresh Gboard result has been
+obtained yet,
 and the active user AVD was not restarted or reconfigured for this attempt.
 
 Remaining design work includes verifying actual docked and split Gboard,

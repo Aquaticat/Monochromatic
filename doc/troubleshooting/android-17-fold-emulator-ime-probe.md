@@ -275,7 +275,30 @@ The `mvm` alternative was checked without creating a VM:
 `mvm list` failed with `spawn virsh ENOENT`;
 `package/cli/mvm/README.md` names `virsh`, `qemu-img` and libvirt as
 prerequisites, and none of those binaries/libraries was present locally.
-No host packages were installed and no larger container limit was used.
+No host packages were installed.
+
+After the user authorized a larger cap,
+a 6 GiB/2 CPU retry first stopped at Android Emulator's
+`Running multiple emulators with the same AVD` fatal diagnostic.
+No container or process held the private AVD's lock files;
+removing only those stale scratch locks allowed another retry to launch.
+That retry did not become usable:
+`adb devices -l` reported `emulator-5580 unauthorized`,
+while the emulator's own log repeatedly reported
+`adb: device unauthorized` and `No adb private key exists`.
+After the user noted the wait,
+Podman measured `5.496GB / 6.442GB` for the container.
+I killed that disposable container;
+its exit status 137 was the result of this **intentional stop**,
+not evidence of a second cgroup out-of-memory event.
+No Gboard or deck measurement was obtained.
+
+The installed Android Emulator 37.1.11 help lists `-skip-adb-auth`.
+Google's [emulator container launcher][emulator-container-launcher]
+uses that flag for a disposable container.
+A retry with this flag and a separate bounded boot monitor is the next
+probe;
+no host ADB server restart or private key transfer is planned.
 
 The debug input method is deliberately synthetic, **not Gboard**.
 Its measured overlap tests bottom-window occlusion and text input integration;
@@ -359,3 +382,5 @@ no upstream attribution or fix is proposed.
 
 The [Android IME guide](https://developer.android.com/develop/ui/views/touch-and-input/creating-input-method)
 explains the supported input-method extension point used for the probe.
+
+[emulator-container-launcher]: https://github.com/google/android-emulator-container-scripts/blob/master/emu/templates/launch-emulator.sh
