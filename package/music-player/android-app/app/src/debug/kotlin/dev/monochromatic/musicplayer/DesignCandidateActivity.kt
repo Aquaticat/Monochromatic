@@ -1501,8 +1501,9 @@ private fun TransportBlock(
     // The inner pane has no gesture-navigation edge at its center boundary.
     // Keep the actual outer-edge inset and constrain the seek time separately.
     val horizontalSafeSides = if (bannerFit) WindowInsetsSides.Start else WindowInsetsSides.Horizontal
+    val layoutDirection = LocalLayoutDirection.current
     val seekEndSafe = with(LocalDensity.current) {
-        if (bannerFit) WindowInsets.systemGestures.getRight(this).toDp() else 0.dp
+        if (bannerFit) WindowInsets.systemGestures.getRight(this, layoutDirection).toDp() else 0.dp
     }
     Column(
         modifier = modifier
