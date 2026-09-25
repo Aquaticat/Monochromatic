@@ -8082,6 +8082,46 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya27 read, 2026-09-25, 06:00 UTC: classes one hundred twenty-two to twenty-five live, five more renderings (class one hundred twenty-six)
+
+shi_Yumiaoya27 ran on frozen `13b633bad`,
+launched 05:40 UTC,
+SETTLED at 05:57:50 UTC in 26.3 min (`ms=1577313`),
+one attempt, 851 calls, 928 seats, 5 retry rounds,
+about 0.41 USD by the meters (Bedrock 40.84 to 40.70, OpenRouter 83.69 to 83.42).
+Front matter equal, 4 headings, no TA, no error finish, no double blank line,
+19 abstention lines;
+glm-5.3 asked 77 times and usable 0 (Hyper-only, Hyper dry).
+
+Every targeted sentence reads right on the correct build:
+"In the ninth grade she suddenly became a top student" (class one hundred twenty-three),
+"she attempted to end her life in the early hours of January 16." with no means (class one hundred twenty-four),
+"She missed her chosen schools and ended up at a second-tier teachers' college" (classes one hundred twenty-three and twenty-five),
+"this was her way of telling everyone not to overdose or misuse drugs." (class one hundred twenty-five).
+"trans girl" on both 小药娘 lines,
+"Magic Chewing Gum and Danpian" (the name entry `a2581911655` declares),
+the closing attribution once.
+
+CLASS ONE HUNDRED TWENTY-SIX, under the owner's standing instruction of 2026-09-25.
+A read of the whole page found five more renderings an English reader stumbles on:
+年级组长 as "the grade leader",
+未成年药娘 as "a minor trans girl" (which reads as "an unimportant trans girl"),
+骨灰骰子 as "ash dice",
+同居者 as "her cohabitants" (a romantic partner, and plural for the one housemate the page names two paragraphs before),
+and 精神霸凌 as plain "bullied" (the adjective dropped).
+The rendering glossary now seeds 年级组长 ("head of year", "grade director"; refused "grade leader"),
+未成年 ("underage", "a minor"; refused "minor trans", "minor girl", "minor boy"),
+骨灰骰子 ("dice made from the ashes"; refused "ash dice", "ashes dice"),
+同居者 ("housemate", "roommate"; refused "cohabitant", "cohabiter")
+and 精神霸凌 ("psychologically bullied", "emotionally bullied"; refused "spiritual bull", "spiritually bull").
+No archive English page carries a refused form;
+saurikissa's "cohabitation" is not refused, since its original carries no 同居者.
+Fixed in `0468bf5bc`, guard red first `a2db36962` (`rendering-glossary-school-life.unit.test.ts`),
+lint 0/0, types clean, full suite `suite-class126.log` 1127 PASS, no FAIL.
+Left as written: "ODing" (the original writes OD), "jk skirt" (the corpus's other page writes "JK skirts"),
+"Gaokao" capitalised.
+shi_Yumiaoya28 launched 06:03 UTC on `.frozen-dist-0468bf5bc` (pid 2861379, waiter wait-s28).
+
 ## shi_Yumiaoya26 void, 2026-09-25, 05:30 UTC: the freeze nested the build, so the pass ran a stale one
 
 shi_Yumiaoya26 SETTLED at 05:27 UTC in 24.7 min (894 calls, about 0.42 USD by the meters),

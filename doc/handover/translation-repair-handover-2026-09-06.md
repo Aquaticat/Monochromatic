@@ -4773,16 +4773,19 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA27 RUNS (entry `shi_Yumiaoya`,
-    frozen `13b633bad`, class one hundred twenty-five and its two added forms,
-    corpus-pass pid 2781839, launched 05:40 UTC 2026-09-25, waiter wait-s27;
-    the frozen dir is a fresh copy of `dist/final/node`, checked absent first and grepped after):
-    read it by every shi_Yumiaoya25 check, then the "top student" sentence (no "trait"),
-    the January 16 sentence (an attempt, no means),
-    the gaokao sentence (no "slid", "slipped" or "admission slot"; "second-tier university")
-    and the OD tweet sentence (no "using this way to" or "using this method to");
-    record it under a new heading above "## shi_Yumiaoya26 void, 2026-09-25" in the pass log;
+1.  SHI_YUMIAOYA28 RUNS (entry `shi_Yumiaoya`,
+    frozen `0468bf5bc`, class one hundred twenty-six,
+    corpus-pass pid 2861379, launched 06:03 UTC 2026-09-25, waiter wait-s28;
+    the frozen dir checked absent first and grepped for "grade team leader" after):
+    read it by every shi_Yumiaoya27 check, then "head of year" or "grade director" (no "grade leader"),
+    "underage trans girl" (no "minor trans"), "psychologically" or "emotionally" before "bullied",
+    the ashes made into dice (no "ash dice") and "housemate" on both 同居者 lines (no "cohabitant");
+    record it under a new heading above "## shi_Yumiaoya27 read, 2026-09-25" in the pass log;
     then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on the same build.
+    SHI_YUMIAOYA27 READ (frozen `13b633bad`): SETTLED at 05:57 UTC in 26.3 min, 851 calls, about 0.41 USD by the meters;
+    classes one hundred twenty-two to twenty-five live ("suddenly became a top student", "attempted to end her life in the early hours of January 16",
+    "missed her chosen schools and ended up at a second-tier teachers' college", "this was her way of telling everyone");
+    five more renderings refused as class one hundred twenty-six (`0468bf5bc`, guard red first `a2db36962`, suite `suite-class126.log` 1127 PASS, no FAIL).
     SHI_YUMIAOYA26 VOID: the freeze nested the build under `node/` inside a stale directory, so the pass ran an older build (see the handover's freeze paragraph and the pass log's shi_Yumiaoya26 heading);
     its page still showed "using this method to tell" and "slipped to a second-tier university", both refused since `13b633bad` (guards red first `e569be075`, `889811657`; suite `suite-class125b.log` 1126 PASS, no FAIL).
     SHI_YUMIAOYA25 READ (frozen `2fe4def37`): SETTLED at 03:26 UTC in 23.5 min, 905 calls, about 0.43 USD by the meters;
