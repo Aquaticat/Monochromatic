@@ -230,6 +230,8 @@ import androidx.compose.foundation.layout.systemGestures
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+// A stress-only inline control group needs its intrinsic width beside the track label.
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -981,7 +983,8 @@ private fun paletteForSearchDeck(light: Boolean): CandidatePalette = paletteFor(
 @Composable
 internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier,
     includeTopInset: Boolean = true, deckFirst: Boolean = false,
-    deckFullHeight: Boolean = false, topContent: @Composable (Modifier) -> Unit) {
+    deckFullHeight: Boolean = false, bannerFit: Boolean = false,
+    topContent: @Composable (Modifier) -> Unit) {
     val palette = paletteForSearchDeck(light)
     Column(modifier = modifier.fillMaxSize().background(palette.picker)) {
         if (includeTopInset) Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
@@ -993,9 +996,12 @@ internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier,
             topContent(Modifier.weight(1f))
         } else {
             topContent(Modifier.weight(1f))
-            Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.sectionDivider))
+            // The tall-IME study has no browser above its deck, so omit its empty separator.
+            if (!bannerFit) {
+                Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.sectionDivider))
+            }
             TransportBlock(modifier = Modifier.fillMaxWidth(), candidate = "dark-stable-wallpaper-dynamic",
-                palette = palette, deckHeightCap = !deckFullHeight)
+                palette = palette, deckHeightCap = !deckFullHeight, bannerFit = bannerFit)
         }
     }
 }
@@ -1474,6 +1480,7 @@ private fun TransportBlock(
     candidate: String,
     palette: CandidatePalette,
     deckHeightCap: Boolean = true,
+    bannerFit: Boolean = false,
 ) {
     // What:     Kotlin's `if` can return a value, unlike a TypeScript `if` statement.
     // Why:      Every candidate keeps one immutable Material spacing value for its complete deck.
@@ -1491,28 +1498,55 @@ private fun TransportBlock(
     } else {
         12.dp
     }
+    // The inner pane has no gesture-navigation edge at its center boundary.
+    // Keep the actual outer-edge inset and constrain the seek time separately.
+    val horizontalSafeSides = if (bannerFit) WindowInsetsSides.Start else WindowInsetsSides.Horizontal
+    val seekEndSafe = with(LocalDensity.current) {
+        if (bannerFit) WindowInsets.systemGestures.getRight(this).toDp() else 0.dp
+    }
     Column(
         modifier = modifier
             .then(if (deckHeightCap) Modifier.heightIn(max = 440.dp) else Modifier)
             .background(color = palette.transport)
-            .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.Horizontal))
+            .windowInsetsPadding(WindowInsets.systemGestures.only(horizontalSafeSides))
             .windowInsetsPadding(WindowInsets.navigationBars)
             .verticalScroll(rememberScrollState())
             .padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(groupSpacing),
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "Another Xronixle", style = MaterialTheme.typography.titleMedium)
-            Text(
-                text = "1 of 16 · −1.2 dBTP",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-            )
+        if (bannerFit) {
+            // Share one band without shrinking MD3 controls, text, or 48dp touch targets.
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "Another Xronixle", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = "1 of 16 · −1.2 dBTP",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                    TransportControls(candidate = candidate, modifier = Modifier.wrapContentWidth())
+                }
+            }
+        } else {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = "Another Xronixle", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = "1 of 16 · −1.2 dBTP",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         }
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(end = seekEndSafe),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
@@ -1537,7 +1571,7 @@ private fun TransportBlock(
                     style = timeStyle,
                 )
             }
-            TransportControls(candidate = candidate)
+            if (!bannerFit) TransportControls(candidate = candidate)
         }
         ModeControl()
     }
@@ -1582,14 +1616,14 @@ private fun SecondaryTransportButton(
 
 /** Draws three real Material icon buttons with color hierarchy for playback. */
 @Composable
-private fun TransportControls(candidate: String) {
+private fun TransportControls(candidate: String, modifier: Modifier = Modifier.fillMaxWidth()) {
     val secondaryStyle = if (candidate.usesAcceptedUnfoldedTreatment()) {
         "outlined"
     } else {
         candidate.substringAfterLast('-')
     }
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {

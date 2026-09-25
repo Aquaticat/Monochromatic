@@ -167,7 +167,8 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
     } else if (candidate.contains("-right-")) {
         SearchDeckRight(query = query, onQueryChange = { query = it }, onBack = onBack,
             unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor,
-            liftWithIme = candidate.contains("-lift-"))
+            liftWithIme = candidate.contains("-lift-"),
+            bannerHeightStress = candidate.contains("-bannerfit-"))
     } else {
         SearchDeckWide(query = query, onQueryChange = { query = it }, onBack = onBack,
             unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor)
@@ -188,16 +189,22 @@ private fun SearchDeckLeft(query: String, onQueryChange: (String) -> Unit,
     }
 }
 
+/** Minimum reported physical inset used only to select the measured banner-height fixture. */
+private const val BANNER_STRESS_INSET_PX = 1000
+
 /** Shows Search in the right track slot while folders and the deck stay on the left. */
 @Composable
 private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, halfDent: Dp, light: Boolean, pageColor: Color,
-    liftWithIme: Boolean) {
-    val keyboardShown = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    liftWithIme: Boolean, bannerHeightStress: Boolean) {
+    val reportedImeInset = WindowInsets.ime.getBottom(LocalDensity.current)
+    val keyboardShown = reportedImeInset > 0
+    // This debug-only threshold studies the measured banner geometry, not a production IME rule.
+    val bannerFit = bannerHeightStress && reportedImeInset >= BANNER_STRESS_INSET_PX
     Row(modifier = Modifier.fillMaxSize().background(pageColor)
         .then(if (liftWithIme) Modifier.imePadding() else Modifier)) {
         SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f),
-            deckFirst = !liftWithIme, deckFullHeight = liftWithIme) { slot ->
+            deckFirst = !liftWithIme, deckFullHeight = liftWithIme, bannerFit = bannerFit) { slot ->
             if (!keyboardShown) SearchFoldFolders(light = light,
                 modifier = slot.padding(end = halfDent + 8.dp))
             else Box(modifier = slot)

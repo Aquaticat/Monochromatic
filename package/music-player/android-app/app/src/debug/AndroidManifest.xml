@@ -13,6 +13,18 @@
       </intent-filter>
       <meta-data android:name='android.view.im' android:resource='@xml/fold_probe_input_method' />
     </service>
+    <!-- Debug-only tall system IME, a height stressor distinct from real Gboard evidence. -->
+    <service
+      android:name='.FoldBannerInputMethod'
+      android:exported='true'
+      android:label='Fold debug banner-height stress'
+      android:permission='android.permission.BIND_INPUT_METHOD'
+    >
+      <intent-filter>
+        <action android:name='android.view.InputMethod' />
+      </intent-filter>
+      <meta-data android:name='android.view.im' android:resource='@xml/fold_probe_input_method' />
+    </service>
     <!-- Debug-only, non-functional Compose surface used for Pixel Fold screenshot capture. -->
     <activity
       android:name='.DesignCandidateActivity'
