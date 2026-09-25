@@ -15,6 +15,7 @@ export {
 } from './corpus-run/handle-reading.ts';
 export { unifyHeadingSeries, } from './corpus-run/heading-series-unify.ts';
 export { restoreJsxAttributes, } from './corpus-run/jsx-attribute-restore.ts';
+export { restoreArchiveCasing, } from './corpus-run/archive-casing-restore.ts';
 export { restoreListSpread, } from './corpus-run/list-spread-restore.ts';
 export { restoreNameGlossLines, } from './corpus-run/name-gloss-restore.ts';
 export { unifyTitleReferences, } from './corpus-run/title-reference-unify.ts';

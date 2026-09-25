@@ -6,6 +6,7 @@ import { restoreContributorNames, } from './contributor-name-restore.ts';
 import { placeHandleGlosses, } from './handle-gloss-place.ts';
 import { restoreCollidingHeadings, } from './heading-collision-restore.ts';
 import { unifyHeadingSeries, } from './heading-series-unify.ts';
+import { restoreArchiveCasing, } from './archive-casing-restore.ts';
 import { restoreJsxAttributes, } from './jsx-attribute-restore.ts';
 import { restoreListSpread, } from './list-spread-restore.ts';
 import { restoreNameGlossLines, } from './name-gloss-restore.ts';
@@ -150,6 +151,14 @@ export function guardPageAssembly(
     replacements: glossLines.replacements,
   },);
   /**
+   Every word the archive writes only in capitals at the archive's form
+   (class one hundred twenty-one).
+   */
+  const casing = restoreArchiveCasing({
+    slices,
+    replacements: lists.replacements,
+  },);
+  /**
    Rows the page-assembly passes rewrote, the latest pass's text per slice.
    */
   const restoredRows = new Map<number, SliceReplacement>([
@@ -161,6 +170,7 @@ export function guardPageAssembly(
     ...titles.restored,
     ...glossLines.restored,
     ...lists.restored,
+    ...casing.restored,
   ].map(function bySlice(row,): readonly [
     number,
     SliceReplacement,
@@ -176,7 +186,7 @@ export function guardPageAssembly(
   const guarded = guardFootnoteAssembly({
     targetText,
     slices,
-    replacements: lists.replacements
+    replacements: casing.replacements
       .filter(function stillChanges(replacement,): boolean {
         // A restoration that brings a slice back to the archive's exact wording
         // is no change for the assembler; its override row below still says
@@ -219,6 +229,7 @@ export function guardPageAssembly(
       ...titles.findings,
       ...glossLines.findings,
       ...lists.findings,
+      ...casing.findings,
       ...guarded.findings,
     ],
   };
