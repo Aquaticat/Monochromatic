@@ -8082,6 +8082,34 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya26 void, 2026-09-25, 05:30 UTC: the freeze nested the build, so the pass ran a stale one
+
+shi_Yumiaoya26 SETTLED at 05:27 UTC in 24.7 min (894 calls, about 0.42 USD by the meters),
+but not on the class one hundred twenty-five build.
+Its page carried "awakened her top-student trait" (class one hundred twenty-three),
+"attempted to end her life ... by taking a large amount of medication" (class one hundred twenty-four)
+and "slipped to a second-tier university" and "using this method to tell" (class one hundred twenty-five).
+The frozen floor replayed "valid" on slice 6's shipped text,
+and the frozen top level carried no "normal college" at all:
+the freeze was first written to a misnamed `.frozen-dist-` that already held an older build,
+`cp -r` nested the new build inside it as `node/`,
+and the rename to `.frozen-dist-67da525a2` kept the stale top level the launcher runs.
+The mistake was in the freeze, not in the code:
+the correct freeze of the same commit refuses slices 6 and 7 when replayed.
+The handover's freeze paragraph now says to test that the directory is absent before the copy
+and to grep the frozen top level for the newest fix afterwards.
+
+The run still showed two things worth using.
+Slice 10's "using this method to tell" is the refused calque with another noun,
+and slice 7's "slipped to a second-tier university" does not say that she missed her chosen schools.
+Both forms are now refused (`13b633bad`; guards red first `e569be075` and `889811657`).
+The consolidation polish on slice 4 had three review seats calling "awakened her top-student trait" a calque,
+yet the refiner's proposal only reordered a clause and the polish gate kept the base.
+The glossary floor, which the stale build lacked, is what closes that path.
+
+shi_Yumiaoya27 was launched at 05:40 UTC on `.frozen-dist-13b633bad`
+after a fresh copy and a grep for "using this method to".
+
 ## shi_Yumiaoya25 read, 2026-09-25, 03:30 UTC: class one hundred twenty-four live, two calques on the page (class one hundred twenty-five)
 
 shi_Yumiaoya25 ran on frozen `2fe4def37` (class one hundred twenty-four),
