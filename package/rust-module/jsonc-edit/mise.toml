@@ -39,3 +39,20 @@ run = "cargo nextest run --release"
 [tasks."test:debug"]
 description = "cargo nextest run in debug mode for fast iteration"
 run = "cargo nextest run"
+
+[tasks."test:shared-fixtures"]
+description = "Fail when the shared JSONC conformance fixture copies drift"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { createHash } = await import('node:crypto')
+const { readFile } = await import('node:fs/promises')
+const { resolve } = await import('node:path')
+const root = resolve(process.cwd(), '../../..')
+const canonical = resolve(root, 'package/module/jsonc-edit.conformance/fixtures/jsonc-conformance.json')
+const copy = resolve(root, 'package/rust-module/jsonc-edit/fixtures/jsonc-conformance.json')
+const digest = async (path) => createHash('sha256').update(await readFile(path)).digest('hex')
+const canonicalDigest = await digest(canonical)
+const copyDigest = await digest(copy)
+if (canonicalDigest !== copyDigest) { throw new Error(`shared JSONC conformance fixture drift: ${canonicalDigest} != ${copyDigest}`) }
+console.log(`shared JSONC conformance fixture matches: ${canonicalDigest}`)
+"""

@@ -5,7 +5,8 @@
     "comments": "Every object key and every value carries at most one attached comment, queryable separately.",
     "numbers": "An unedited number keeps the spelling it was written with, while equality is mathematical.",
     "nesting": "Containers nested to acceptedDepth parse; one more container is rejected before deeper state is built.",
-    "lineEndings": "A line comment ends at CR, LF or CRLF, and the terminator is not part of its body."
+    "lineEndings": "A line comment ends at CR, LF or CRLF, and the terminator is not part of its body.",
+    "exactIdentityOnly": "A case whose expectation needs exact mathematical identity. The Rust crate satisfies every case; the TypeScript package stores IEEE 754 binary64 values, so cases carrying this flag are asserted there only through preserved source spelling, never through value equality."
   },
   "valid": [
     { "name": "empty-object", "source": "{}", "rootKind": "record", "members": 0 },
@@ -65,7 +66,7 @@
     { "name": "exponent-form", "left": "1e0", "right": "1", "equal": true },
     { "name": "scaled-integer", "left": "100", "right": "1e2", "equal": true },
     { "name": "signed-zero", "left": "-0", "right": "0.000", "equal": true },
-    { "name": "adjacent-big-integers", "left": "9007199254740992", "right": "9007199254740993", "equal": false },
+    { "name": "adjacent-big-integers", "left": "9007199254740992", "right": "9007199254740993", "equal": false, "exactIdentityOnly": true },
     { "name": "opposite-exponents", "left": "1e10", "right": "1e-10", "equal": false },
     { "name": "huge-exponent-equality", "left": "1e999999999999999999999999", "right": "10e999999999999999999999998", "equal": true }
   ],
