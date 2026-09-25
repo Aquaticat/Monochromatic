@@ -1219,19 +1219,34 @@ This was a failure to follow that rule, not evidence that the skill was approved
 The user reiterated, “No need to update AGENTS.md for now.”
 The existing `PXQ` rule covers this failure; no `AGENTS.md` change is planned.
 
-The research, corrected Promise artifact, proposed acceptance checks,
-[decision outline](teaching-skill-decision-outline.md), and
-[static replay](teaching-skill-outline-replay.md) now supply a concrete contract
-for a shared-understanding question. Present the settled scope and the still-proposed
-model invocation and learner-owned check explicitly; invite correction of a named
-clause rather than asking for another failure the assistant has not researched.
-No final `SKILL.md` exists. The user's answer gates implementation.
-Do not reopen the learner-observation veto or treat a working artifact as mastery.
+That contract question was asked and rejected. The user answered: “We're far from that
+stage. You didn't even review the Promise example yourself. You didn't call Astra with
+another pi to review it. You didn't confirm with me with your ‘good bad ugly’,
+‘things tried, things that you can't put a finger on’ of that Promise example in mind.”
+The required order is therefore: review the actual lesson, obtain an independent review,
+then discuss grounded findings with the user. Skill-contract confirmation stays gated
+behind that discussion; a written contract is not a substitute for reviewing the artifact.
+
+## Artifact review status
+
+The primary agent's own review is complete and recorded in
+[the Promise lesson self-review](promises-lesson-self-review.md), with measured
+good, bad, and ugly findings, the actions actually tried, and unsettled judgment items.
+The separate Pi session running Astra was started with a bounded read-only prompt,
+produced no output in 1 hour 47 minutes (0-byte stdout; stderr held only model-pattern
+warnings), and the user cancelled it: “forget the other pi with astra. Kill it and
+continue as if the plan didn't ask for a separate Pi Astra review.”
+The process and its child are stopped and no stray browser session remains.
+The user took the troubleshooting write-up for that hang themselves, so no
+`doc/troubleshooting/` entry was created here.
+Scratch evidence: `/home/user/temp/agent/promise-lesson-astra-review{,-output,-stderr}.local.*`.
+No final `SKILL.md` exists. Do not reopen the learner-observation veto or treat a
+working artifact as mastery.
 
 ## Next action
 
-Ask the user to confirm or correct the concrete teaching-skill contract.
-If they confirm it, settle packaging and invocation mechanics that still depend on
-their preference, then implement and verify the skill against the recorded failures.
-If they correct it, update the planning contract and rerun the relevant static cases.
+Discuss the self-review findings with the user: the measured defects, the unsettled
+judgment items, and what to repair now versus fold into a structure decision.
+Only after that discussion returns to the teaching-skill contract, and only with the
+user's correction of any clause that does not match their intent.
 Until then, keep the final skill unimplemented and leave `AGENTS.md` unchanged.

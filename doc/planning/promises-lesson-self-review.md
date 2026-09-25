@@ -4,6 +4,9 @@ Status: the primary agent's own review of the generated local lesson,
 `doc/planning/promises-teaching.local.html` (694,025 bytes, SHA-256 `fb4631d8…`).
 It records what was exercised, what measured well, what measured badly, and what remains
 uncertain. It is not learner evidence, not a skill decision, and not approval.
+A separate Pi session running Astra was started for an independent review, produced no
+output in 1 hour 47 minutes, and the user cancelled it and took its troubleshooting
+write-up. Everything recorded here is the primary agent's own observation.
 All browser work ran in disposable owned sessions (`promises-review-own-teaching-review-*`);
 the human's presented tab was never reloaded. Scratch drivers:
 `/home/user/temp/agent/promises-revision/review-promise-lesson-own{,-2,-3,-4,-5}.mjs`.
