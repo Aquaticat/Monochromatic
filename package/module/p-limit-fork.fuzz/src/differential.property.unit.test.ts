@@ -59,7 +59,7 @@ const LIMIT_MEMBERS: readonly string[] = [
 /**
  Echo function driving the `limitFunction` surface comparison.
  */
-function echo(value: string,): string {
+async function echo(value: string,): Promise<string> {
   return value;
 }
 
@@ -77,12 +77,7 @@ function echo(value: string,): string {
  normalizeDescriptor(Object.getOwnPropertyDescriptor(limit, 'map',),);
  ```
  */
-function normalizeDescriptor(descriptor: PropertyDescriptor | undefined,): Record<string, unknown> {
-  if (descriptor === undefined)
-    return {
-      present: false,
-    };
-
+function normalizeDescriptor(descriptor: PropertyDescriptor,): Record<string, unknown> {
   return {
     present: true,
     kind: (('get' in descriptor) || ('set' in descriptor))
@@ -119,12 +114,21 @@ function memberSurface(
   members: readonly string[],
 ): Record<string, unknown> {
   return Object.fromEntries(members.map(function projectMember(member: string,): readonly [string, unknown] {
+    /**
+     Own descriptor of this member,
+     absent when the member is missing.
+     */
+    const descriptor = Object.getOwnPropertyDescriptor(
+      value,
+      member,
+    );
     return [
       member,
-      normalizeDescriptor(Object.getOwnPropertyDescriptor(
-        value,
-        member,
-      ),),
+      (descriptor === undefined)
+        ? {
+          present: false,
+        }
+        : normalizeDescriptor(descriptor,),
     ];
   },),);
 }
