@@ -4766,14 +4766,18 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA25 RUNS (entry `shi_Yumiaoya`,
-    frozen `2fe4def37`, class one hundred twenty-four,
-    corpus-pass pid 2596683, launched 03:03 UTC 2026-09-25, waiter wait-s25;
+1.  SHI_YUMIAOYA26 RUNS (entry `shi_Yumiaoya`,
+    frozen `67da525a2`, class one hundred twenty-five,
+    corpus-pass pid 2731796, launched 05:02 UTC 2026-09-25, waiter wait-s26;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read it by every shi_Yumiaoya24 check, then the January 16 sentence:
-    "she attempted suicide" or "tried to end her life" with no means (no swallowed, no medication);
-    record it under a new heading above "## shi_Yumiaoya24 read, 2026-09-25" in the pass log;
+    read it by every shi_Yumiaoya25 check, then the gaokao sentence (no "slid", no "admission slot"; "second-tier university")
+    and the OD tweet sentence (no "using this way to");
+    record it under a new heading above "## shi_Yumiaoya25 read, 2026-09-25" in the pass log;
     then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on the same build.
+    SHI_YUMIAOYA25 READ (frozen `2fe4def37`): SETTLED at 03:26 UTC in 23.5 min, 905 calls, about 0.43 USD by the meters;
+    class one hundred twenty-four live ("she attempted suicide in the early hours of January 16."), classes one hundred twenty-two and twenty-three holding;
+    two calques (滑档二本 "slid down into a second-tier admission slot", 用这种方式 "using this way to tell"), class one hundred twenty-five built `67da525a2` (guard red first `052f6cffe`, suite `suite-class125.log` 1126 PASS, no FAIL).
+    OWNER ANSWER 2026-09-25 on medication overuse the original does not call an attempt: "Leave it".
     SHI_YUMIAOYA24 READ (frozen `7e20bbee2`): SETTLED at 02:57 UTC 2026-09-25 in 24.5 min, 885 calls, about 0.44 USD by the meters;
     classes one hundred twenty-two and twenty-three live ("she had taken medication before she died", no rooftop; "teachers' college", "suddenly became a top student");
     but "she swallowed a large amount of medication ... and attempted to end her life" for the survived January 16 attempt (class one hundred twenty-four, built `2fe4def37`, guard red first `fe230891b`, suite `suite-class124.log` 1125 PASS, no FAIL: the reader-protection bullet opens on a death or an attempt).

@@ -8082,6 +8082,53 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya25 read, 2026-09-25, 03:30 UTC: class one hundred twenty-four live, two calques on the page (class one hundred twenty-five)
+
+shi_Yumiaoya25 ran on frozen `2fe4def37` (class one hundred twenty-four),
+launched 03:03 UTC,
+SETTLED at 03:26:59 UTC in 23.5 min (`ms=1411317`),
+one attempt, 905 calls, 978 seats, 1 retry round,
+about 0.43 USD by the meters (Bedrock 41.12 to 40.98, OpenRouter 84.32 to 84.03).
+Front matter equal, 4 headings, no TA, no error finish, no double blank line,
+20 abstention lines;
+glm-5.3 asked 73 times and usable 0 (Hyper-only, Hyper dry).
+
+Class one hundred twenty-four is live:
+the January 16 sentence reads "she attempted suicide in the early hours of January 16.",
+no means.
+Classes one hundred twenty-two and twenty-three hold:
+"Although she had taken medication before her passing",
+"ended her short and tragic life" with no place,
+"a teachers' college",
+"suddenly blossomed into a top student".
+"trans girl" on both 小药娘 lines,
+"Chewing Gum and Danpian" this run,
+the closing attribution once.
+
+OWNER ANSWER, 2026-09-25, on the question from the shi_Yumiaoya24 read:
+"Leave it".
+每日大量服用精神药物 ("took large amounts of psychiatric medication every day", then the ICU)
+stays as the original writes it;
+the reader-protection rule reaches a death and an attempt only.
+Read under the same answer (my reading, not the owner's words):
+the last weeks' "began abusing medication heavily" and "take medication and rest",
+which the original does not call an attempt either.
+
+CLASS ONE HUNDRED TWENTY-FIVE, under the owner's standing instruction of 2026-09-25.
+Two passages the archive never translated shipped as calques:
+滑档二本 as "slid down into a second-tier admission slot"
+(the English is that she missed her chosen schools and ended up at a second-tier university),
+and 用这种方式告诉大家 as "she was only using this way to tell everyone"
+("use this way to" is not English).
+Each form appears once in the pinned corpus, on this page.
+Fixed in `67da525a2`:
+`RENDERING_GLOSSARY` seeds 二本 ("second-tier university"; refused "admission slot", "second batch", "erben"),
+滑档 ("missed her chosen schools", "ended up at"; refused "slid down", "slid into", "slipped a file", "sliding file", "huadang")
+and 用这种方式 ("this was her way of", "in this way"; refused "using this way to", "use this way to", "used this way to").
+Guard red first `052f6cffe` (`rendering-glossary-calques.unit.test.ts`),
+lint 0/0, types clean, full suite `suite-class125.log` 1126 PASS lines, no FAIL.
+shi_Yumiaoya26 launched 05:02 UTC on `.frozen-dist-67da525a2` (pid 2731796, waiter wait-s26).
+
 ## shi_Yumiaoya24 read, 2026-09-25, 03:05 UTC: classes one hundred twenty-two and twenty-three live, a survived attempt's method on the page (class one hundred twenty-four)
 
 shi_Yumiaoya24 ran on frozen `7e20bbee2` (classes one hundred twenty-two and twenty-three),
