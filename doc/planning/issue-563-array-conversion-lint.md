@@ -51,6 +51,18 @@ The branch commit is blocked: the forbidden-strings scanner cannot start in the 
   175 spreads of other calls, 465 spreads of values, 15 `Array.from` calls;
   280 of the 656 hits sit in tests, fixtures, or fuzz packages.
 
+### Built-ins replace the helpers
+
+`builtins.prototype.ts` shows built-in spellings already let TypeScript reject every wrong receiver tried
+(6 `@ts-expect-error` controls):
+`iterator.toArray()` exists only on iterators;
+`.values().toArray()` covers sets, maps, arrays, and typed arrays but not strings;
+`array.toSpliced(0,)` copies arrays only.
+What built-ins cannot do without types: tell a needless `x.map(f,).values().toArray()` on an array
+from a needed one on a typed array.
+The user noted progressive enhancement applies: a type-free baseline, with type information
+narrowing messages and enabling safe fixes where the bridge can answer.
+
 ## Candidate policies
 
 - Narrow ban with built-in vocabulary: ban `[...x.m()]` for ambiguous `m`; authors use `.toArray()`,
