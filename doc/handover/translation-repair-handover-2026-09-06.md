@@ -4773,13 +4773,15 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA28 RUNS (entry `shi_Yumiaoya`,
-    frozen `0468bf5bc`, class one hundred twenty-six,
-    corpus-pass pid 2861379, launched 06:03 UTC 2026-09-25, waiter wait-s28;
-    the frozen dir checked absent first and grepped for "grade team leader" after):
+1.  SHI_YUMIAOYA29 RUNS (entry `shi_Yumiaoya`,
+    frozen `811d908a9`, classes one hundred twenty-six and twenty-seven,
+    corpus-pass pid 2915263, launched 06:17 UTC 2026-09-25, waiter wait-s29;
+    the frozen dir checked absent first and grepped for "sailor-uniform skirt" after):
     read it by every shi_Yumiaoya27 check, then "head of year" or "grade director" (no "grade leader"),
     "underage trans girl" (no "minor trans"), "psychologically" or "emotionally" before "bullied",
-    the ashes made into dice (no "ash dice") and "housemate" on both 同居者 lines (no "cohabitant");
+    the ashes made into dice (no "ash dice"), "housemate" on both 同居者 lines (no "cohabitant"),
+    "overdosing" on both OD lines (no "OD" or "ODing"; owner 2026-09-25), "sailor uniform" (no "jk skirt")
+    and "National College Entrance Examination" (no "Gaokao");
     record it under a new heading above "## shi_Yumiaoya27 read, 2026-09-25" in the pass log;
     then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on the same build.
     SHI_YUMIAOYA27 READ (frozen `13b633bad`): SETTLED at 05:57 UTC in 26.3 min, 851 calls, about 0.41 USD by the meters;

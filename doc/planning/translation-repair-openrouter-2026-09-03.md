@@ -8118,9 +8118,28 @@ No archive English page carries a refused form;
 saurikissa's "cohabitation" is not refused, since its original carries no 同居者.
 Fixed in `0468bf5bc`, guard red first `a2db36962` (`rendering-glossary-school-life.unit.test.ts`),
 lint 0/0, types clean, full suite `suite-class126.log` 1127 PASS, no FAIL.
-Left as written: "ODing" (the original writes OD), "jk skirt" (the corpus's other page writes "JK skirts"),
-"Gaokao" capitalised.
-shi_Yumiaoya28 launched 06:03 UTC on `.frozen-dist-0468bf5bc` (pid 2861379, waiter wait-s28).
+The read left three renderings as written: "ODing", "jk skirt" and "Gaokao".
+shi_Yumiaoya28 launched 06:03 UTC on `.frozen-dist-0468bf5bc` (pid 2861379).
+
+OWNER ANSWER, 2026-09-25, on those three:
+"overdosing", "sailor uniform", "National College Entrance Examination".
+CLASS ONE HUNDRED TWENTY-SEVEN builds it.
+The rendering glossary seeds " OD" ("overdosing", "overdose", "overdosed"),
+"jk 裙" ("sailor uniform", "sailor-uniform skirt"; refused "jk skirt", "jk-skirt", "jk uniform", "jk-style", "jk dress")
+and 高考 ("National College Entrance Examination", "college entrance examination"; refused "gaokao").
+The OD term carries its leading space:
+every OD in the pinned corpus stands after one (aiyysk, Susiethegamer, interrgned, hulicaijia, shi_Yumiaoya),
+and a bare OD would match the "MOD" s5ehfr9 writes.
+A candidate keeping the term is refused by the floor's untranslated-term check,
+whose finding now says "untranslated" instead of "in Han" and names the term trimmed.
+No archive English page writes "gaokao" or a bare OD;
+spike0qy's archive "JK skirts" is now a refused form there too, by the owner's answer.
+Guard red first `352062144` (`rendering-glossary-owner-forms.unit.test.ts`, which also holds that MOD passes),
+fixed in `811d908a9`, lint 0/0, types clean, full suite `suite-class127b.log` 1128 PASS, no FAIL.
+The commit message of `811d908a9` names the guard wrongly as `0e0bd1a8c`;
+a commit comment on GitHub corrects it.
+shi_Yumiaoya28 was killed at 06:14 UTC eleven minutes in under always-kill-and-relaunch;
+shi_Yumiaoya29 launched 06:17 UTC on `.frozen-dist-811d908a9` (pid 2915263, waiter wait-s29).
 
 ## shi_Yumiaoya26 void, 2026-09-25, 05:30 UTC: the freeze nested the build, so the pass ran a stale one
 
