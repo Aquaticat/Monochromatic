@@ -1,0 +1,189 @@
+{
+  "sourceImage": "fold-disposable-inner-updated-gboard-results-dark-200.png",
+  "sourceHierarchy": "fold-disposable-inner-updated-results-dark-200.xml",
+  "image": "gboard-inner-updated-split-dark-s200.png",
+  "avd": "Fold_No_Hardware_Probe",
+  "panel": "inner",
+  "theme": "dark",
+  "fontScale": 2,
+  "keyboardMode": "pass-inner",
+  "keyboardBoundsPx": [
+    0,
+    1352,
+    2076,
+    2152
+  ],
+  "densityDpi": 390,
+  "gboardVersionCode": 175981944,
+  "apkSha256": "d895072b4f232181c1f24d9db0bfd6b3af7cafae2e25f869cbe21b0039e81f53",
+  "appNodes": [
+    {
+      "text": "Another Xronixle",
+      "description": "",
+      "type": "android.widget.TextView",
+      "bounds": [
+        258,
+        320,
+        781,
+        423
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Track position",
+      "type": "android.view.View",
+      "bounds": [
+        192,
+        526,
+        846,
+        633
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Previous track",
+      "type": "android.view.View",
+      "bounds": [
+        354,
+        688,
+        413,
+        747
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Pause",
+      "type": "android.view.View",
+      "bounds": [
+        491,
+        688,
+        550,
+        747
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Next track",
+      "type": "android.view.View",
+      "bounds": [
+        628,
+        688,
+        687,
+        747
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Repeat track",
+      "type": "android.view.View",
+      "bounds": [
+        73,
+        795,
+        965,
+        926
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Play in order",
+      "type": "android.view.View",
+      "bounds": [
+        73,
+        924,
+        965,
+        1055
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Shuffle Camellia",
+      "type": "android.view.View",
+      "bounds": [
+        73,
+        1053,
+        965,
+        1184
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Shuffle all folders",
+      "type": "android.view.View",
+      "bounds": [
+        73,
+        1182,
+        965,
+        1313
+      ],
+      "focused": false
+    },
+    {
+      "text": "cam",
+      "description": "",
+      "type": "android.widget.EditText",
+      "bounds": [
+        1249,
+        166,
+        1920,
+        283
+      ],
+      "focused": true
+    },
+    {
+      "text": "Camellia",
+      "description": "",
+      "type": "android.widget.TextView",
+      "bounds": [
+        1220,
+        338,
+        1503,
+        441
+      ],
+      "focused": false
+    },
+    {
+      "text": "Folder · opens this folder",
+      "description": "",
+      "type": "android.widget.TextView",
+      "bounds": [
+        1220,
+        441,
+        1940,
+        532
+      ],
+      "focused": false
+    },
+    {
+      "text": "Another Xronixle",
+      "description": "",
+      "type": "android.widget.TextView",
+      "bounds": [
+        1220,
+        580,
+        1760,
+        683
+      ],
+      "focused": false
+    },
+    {
+      "text": "Track · Camellia · reveals track",
+      "description": "",
+      "type": "android.widget.TextView",
+      "bounds": [
+        1220,
+        683,
+        2037,
+        865
+      ],
+      "focused": false
+    }
+  ]
+}
