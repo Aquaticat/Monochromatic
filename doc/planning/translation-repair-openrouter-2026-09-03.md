@@ -8082,6 +8082,78 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya35 and hulicaijia19 read, 2026-09-25: class one hundred thirty-three live, Canadian dates and spellings on untouched slices (class one hundred thirty-four)
+
+### What ran
+
+shi_Yumiaoya35 on frozen `6a24362ff` (pid 3272330, launched 08:48 UTC):
+SETTLED at 09:23 UTC in 33.5 min, one attempt, 18 slices, 14 changed.
+hulicaijia19 on frozen `6a24362ff`:
+SETTLED at about 10:03 UTC in 72.0 min, one attempt, 72 slices, 39 changed.
+
+### What the pages show
+
+Class one hundred thirty-three is live on shi_Yumiaoya35:
+"Yumiao took her very first Progynova" and "it had already left her deeply traumatized";
+no "of her life" beside the pill and no "great trauma".
+The en_CA scan of shi_Yumiaoya35 is clean.
+
+hulicaijia19 carried three forms no lane had rewritten,
+each on a slice whose archive text stood:
+"29th April was my birthday", "On 4 May," and "compound liquorice tablets" (twice),
+beside the bench's own "March 13".
+And 药代 shipped as "In her role as a pharmaceutical sales representative,"
+where the page means she resold medication to others.
+The drug names the bench dropped on the death passage are left as they are:
+the house reader-protection rule covers drugs tied to a death.
+
+### What was wrong (class one hundred thirty-four)
+
+The en_CA rule of class one hundred thirty-two reaches only the sheets,
+so it reaches only slices a lane rewrites.
+A slice whose archive rendering stands untouched ships the archive's own date order and spelling.
+The policy also named no date order, and 药代 had no glossary entry.
+
+### What changed
+
+`canadianizePage` (`src/corpus-run/canadian-forms.ts`) runs in `guardPageAssembly` after the casing pass,
+over every slice as the page will carry it, the untouched ones included:
+
+-   `monthFirstDates` (`canadian-date.ts`) rewrites a day number (1 to 31, ordinal suffix or not)
+    before a full month name month first,
+    a four-digit year after it taking a comma ("13 March 2024" to "March 13, 2024");
+    a day that closes a range ("1st to 3rd June") stands aside.
+-   `canadianSpellings` (`canadian-spelling.ts`) respells a closed list of lower-case words
+    (colour, centre, grey, licorice, travelled, catalogue, defence, realize, analyze and their forms);
+    a capitalised word is a name or a title and stands,
+    and words with a second sense (meter, check, tire, mum) are left to the judges.
+-   `protectedRanges` (`prose-ranges.ts`) keeps both out of front matter, tags and their attributes,
+    JSX expressions, link destinations, bare URLs, inline and fenced code and HTML comments;
+    a dot counts as a path neighbour only with a letter or digit on its far side.
+-   Front-matter slices and slices overlapping a span sealed as the English original stand aside.
+    A changed slice no lane replaced gets a restored row,
+    and each change prints `canadian-form-rewritten (slice N: …)`.
+
+`HOUSE_POLICY_BLOCK` now says dates are written month first (April 29, May 4, March 13, 2024), never day first,
+and lists licorice among the spellings.
+`WORDING_GLOSSARY` seeds 药代 ("sold medication", "selling medication", "medication seller";
+refusing "pharmaceutical sales representative" and its shorter forms).
+
+Guards red first `acb5a9ccb` (`canadian-forms.unit.test.ts`, `canadian-forms-policy.unit.test.ts`), fixed `4641ff1d2`;
+lint 0/0, types clean, suite `suite-class134.log` 1136 PASS, no FAIL.
+Replayed over shipped pages with `canadianizeText`:
+hulicaijia19 four rewrites (the two dates, "liquorice" twice);
+XingZ6010 nine ("center of the mourning hall", "behavior" five times, "gray portraits", "recognise", "honored"),
+the four `align="center"` and `text-align: center` attributes untouched;
+mikaela17 "humor"; zheermao13 "favorite flavor"; shi_Yumiaoya35, CuspariaKLSY15 and yingying11 none.
+Frozen `.frozen-dist-4641ff1d2`; hulicaijia20 launched (pid 3632174).
+
+### What the owner said
+
+Asked whether the en_CA convention should also cover the repo's own docs, comments and prose through `AGENTS.md`:
+"Translated pages only".
+The rule stays in the package (the house policy, the glossaries, this pass and the README) and is not an `AGENTS.md` rule.
+
 ## shi_Yumiaoya34 read, 2026-09-25, 08:50 UTC: classes one hundred thirty-one and thirty-two live, two life-event calques (class one hundred thirty-three)
 
 ### What ran

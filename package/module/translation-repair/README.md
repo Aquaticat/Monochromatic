@@ -170,11 +170,22 @@ Vocabulary takes the Canadian word where varieties differ:
 gas, not petrol;
 Grade 12, not Year 12;
 math, not maths.
+Dates are written month first (April 29, March 13, 2024), never day first.
 The rule lives in `HOUSE_POLICY_BLOCK` (`src/house-policy.ts`),
 which every writing and judging sheet carries,
 and the rendering glossaries (`src/rendering-glossary*.ts`) seed Canadian forms only;
-`src/canadian-english-policy.unit.test.ts` guards both.
-Names, titles and quoted English keep their own spelling.
+`src/canadian-english-policy.unit.test.ts` and `src/canadian-forms-policy.unit.test.ts` guard both.
+The sheets reach only slices a lane rewrites,
+so a page-assembly pass (`canadianizePage`, `src/corpus-run/canadian-forms.ts`)
+also reads every slice as the page will carry it, the untouched ones included,
+writes day-first dates month first
+and respells a closed list of lower-case words (colour, centre, grey, licorice, realize and others),
+outside front matter, markup, attributes, links, code, comments and spans sealed as the English original;
+each change prints `canadian-form-rewritten`.
+Names, titles and quoted English keep their own spelling,
+so a capitalised word is never respelled.
+The convention covers translated pages only, not the repository's own prose
+(owner, 2026-09-25: "Translated pages only").
 
 ## Operating a corpus pass
 

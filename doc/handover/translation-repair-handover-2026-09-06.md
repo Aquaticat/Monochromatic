@@ -4773,18 +4773,27 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA35 RUNS (entry `shi_Yumiaoya`,
-    frozen `6a24362ff`, class one hundred thirty-three,
-    corpus-pass pid 3272330, launched 08:48 UTC 2026-09-25, waiter wait-s35;
-    the frozen dir checked absent first and grepped for "left her deeply traumatized" after):
-    read it by every shi_Yumiaoya34 check (the class one hundred thirty and thirty-one renderings,
-    the en_CA check: no American or British spelling or word where Canadian differs,
-    color, center, behavior, favorite, counselor, adviser, petrol, head of year, maths, mum, -ise for -ize),
-    then the class one hundred thirty-three renderings: no "of her life" beside the first Progynova,
-    no "great trauma" or "left with great trauma";
-    record it under a new heading above "## shi_Yumiaoya34 read" in the pass log;
-    then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on `6a24362ff` or newer,
-    each read with the register check and the en_CA check.
+1.  HULICAIJIA20 RUNS (entry `hulicaijia`,
+    frozen `4641ff1d2`, class one hundred thirty-four,
+    corpus-pass pid 3632174, waiter wait-h20, reader read-h20;
+    the frozen dir checked absent first and grepped for "canadian-form-rewritten" after):
+    read it by every hulicaijia19 check, then class one hundred thirty-four:
+    `canadian-form-rewritten` findings in the log for the untouched slices,
+    "April 29" and "May 4" (no "29th April" or "4 May"), "licorice" (no "liquorice"),
+    no "pharmaceutical sales representative" for 药代,
+    the en_CA check (no color, center, behavior, favorite, gray, -ise for -ize),
+    and no attribute, link or comment rewritten;
+    record it under a new heading above "## shi_Yumiaoya35 and hulicaijia19 read" in the pass log;
+    then `XingZ60` (run XingZ6011) on `4641ff1d2` or newer, read with the register check and the en_CA check.
+    CLASS ONE HUNDRED THIRTY-FOUR (`4641ff1d2`, guards red first `acb5a9ccb`, suite `suite-class134.log` 1136 PASS, no FAIL):
+    `canadianizePage` writes day-first dates month first and respells a closed list of lower-case words
+    on every slice after the casing pass; the house policy names the date order and licorice; 药代 seeded.
+    OWNER 2026-09-25: en_CA covers "Translated pages only", not the repository's own prose.
+    HULICAIJIA19 READ (frozen `6a24362ff`): SETTLED at about 10:03 UTC in 72.0 min;
+    "29th April", "On 4 May" and "liquorice" on untouched slices, 药代 as "pharmaceutical sales representative"
+    (class one hundred thirty-four).
+    SHI_YUMIAOYA35 READ (frozen `6a24362ff`): SETTLED at 09:23 UTC in 33.5 min;
+    class one hundred thirty-three live ("her very first Progynova", "left her deeply traumatized"), en_CA scan clean.
     CLASS ONE HUNDRED THIRTY-THREE (`6a24362ff`, guard red first `47fbf2253`, suite `suite-class133.log` 1134 PASS, no FAIL):
     人生中的第一颗 and 留下了巨大的创伤 seeded in `WORDING_GLOSSARY`.
     SHI_YUMIAOYA34 READ (frozen `9bdeae9c6`): SETTLED at 08:45 UTC in 28.3 min, 948 calls, about 0.23 USD by the meters;
