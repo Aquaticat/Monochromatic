@@ -8082,6 +8082,41 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya34 read, 2026-09-25, 08:50 UTC: classes one hundred thirty-one and thirty-two live, two life-event calques (class one hundred thirty-three)
+
+### What ran
+
+Frozen `9bdeae9c6`, corpus-pass pid 3235678, launched 08:16 UTC.
+SETTLED at 08:45 UTC in 28.3 min, one attempt, 948 calls, 2 retry rounds, 10 abstention lines,
+about 0.23 USD by the meters (Bedrock 40.13 to 39.97, OpenRouter 82.77 to 82.70).
+glm-5.3 answered 77 of 77; gemma-4-e2b 117 of 118, deepseek 126 of 129, Qwen 119 of 120.
+
+### What the page shows
+
+Every shi_Yumiaoya32 structural check holds.
+Class one hundred thirty-one on the page: no "counselor", "correctional facility", "took the initiative to propose",
+"rescue plan", "days of resuscitation", "replace Yumiao's perspective" or "of such a good nature".
+Class one hundred thirty-two on the page: a whole-word scan of `page.en.md` finds no OD, jk, Gaokao,
+color, center, behavior, favorite, counselor, adviser, petrol, maths, mum, realise, recognise or romanised.
+
+### What was wrong (class one hundred thirty-three)
+
+Under the owner's standing instruction of 2026-09-25 ("whenever you see anything that can be translated better do it"),
+two sentences read word for word:
+人生中的第一颗补佳乐 shipped as "the first Progynova of her life",
+and 精神已留下了巨大的创伤 as "her mind had already been left with great trauma".
+Each term stands in one pinned entry (this one), so the refused forms reach only its paragraphs.
+
+### What changed
+
+`WORDING_GLOSSARY` gains 人生中的第一颗 ("her very first", "her first-ever";
+refusing "of her life", "of his life", "of its life")
+and 留下了巨大的创伤 ("left her deeply traumatized", "deeply traumatized", "left deep scars";
+refusing "left with great trauma", "left with a huge trauma", "great trauma", "huge trauma").
+Guard red first `47fbf2253` (`rendering-glossary-life-event.unit.test.ts`), fixed `6a24362ff`;
+lint 0/0, types clean, suite `suite-class133.log` 1134 PASS, no FAIL.
+Frozen `.frozen-dist-6a24362ff`; shi_Yumiaoya35 launched 08:48 UTC (pid 3272330).
+
 ## Canadian English, 2026-09-25, 08:17 UTC: class one hundred thirty-two
 
 ### What the owner said

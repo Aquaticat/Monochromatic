@@ -4773,20 +4773,22 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA34 RUNS (entry `shi_Yumiaoya`,
-    frozen `9bdeae9c6`, classes one hundred thirty-one and thirty-two,
-    corpus-pass pid 3235678, launched 08:16 UTC 2026-09-25, waiter wait-s34;
-    the frozen dir checked absent first and grepped for "Canadian English (en_CA)" after):
-    read it by every shi_Yumiaoya32 check (the shi_Yumiaoya31 checks plus the class one hundred thirty renderings,
-    with "a gas-powered car" now where class one hundred thirty had "a petrol car"),
-    then the class one hundred thirty-one renderings: no "counselor", "correctional facility", "took the initiative to propose",
-    "rescue plan", "days of resuscitation", "replace Yumiao's perspective" or "of such a good nature";
-    then the en_CA check (owner, 2026-09-25: "The convention is and should be en_CA."):
-    no American or British spelling or word where Canadian differs
-    (color, center, behavior, favorite, counselor, adviser, petrol, head of year, maths, mum; -ise for -ize);
-    record it under a new heading above "## Canadian English, 2026-09-25" in the pass log;
-    then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on `9bdeae9c6`,
+1.  SHI_YUMIAOYA35 RUNS (entry `shi_Yumiaoya`,
+    frozen `6a24362ff`, class one hundred thirty-three,
+    corpus-pass pid 3272330, launched 08:48 UTC 2026-09-25, waiter wait-s35;
+    the frozen dir checked absent first and grepped for "left her deeply traumatized" after):
+    read it by every shi_Yumiaoya34 check (the class one hundred thirty and thirty-one renderings,
+    the en_CA check: no American or British spelling or word where Canadian differs,
+    color, center, behavior, favorite, counselor, adviser, petrol, head of year, maths, mum, -ise for -ize),
+    then the class one hundred thirty-three renderings: no "of her life" beside the first Progynova,
+    no "great trauma" or "left with great trauma";
+    record it under a new heading above "## shi_Yumiaoya34 read" in the pass log;
+    then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on `6a24362ff` or newer,
     each read with the register check and the en_CA check.
+    CLASS ONE HUNDRED THIRTY-THREE (`6a24362ff`, guard red first `47fbf2253`, suite `suite-class133.log` 1134 PASS, no FAIL):
+    人生中的第一颗 and 留下了巨大的创伤 seeded in `WORDING_GLOSSARY`.
+    SHI_YUMIAOYA34 READ (frozen `9bdeae9c6`): SETTLED at 08:45 UTC in 28.3 min, 948 calls, about 0.23 USD by the meters;
+    classes one hundred thirty-one and thirty-two live, the en_CA scan clean; two life-event calques found (class one hundred thirty-three).
     CLASS ONE HUNDRED THIRTY-TWO (`9bdeae9c6`, guard red first `53ddd36de`, suite `suite-class132b.log` 1133 PASS, no FAIL):
     the page is Canadian English, stated in `HOUSE_POLICY_BLOCK` and the package README ("English variety");
     shi_Yumiaoya33 on `fe56bffed` killed at 08:09 UTC for it.
