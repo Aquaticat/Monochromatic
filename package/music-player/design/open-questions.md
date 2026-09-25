@@ -180,6 +180,11 @@ rounds (2026-09-17):
   The last transport glyph ends at x `965`;
   its 48dp clickable parent is `[877,298][994,415]`,
   so only the hit region may cross the approximate crease start x `983`.
+  Title ink starts at x `58` in this synthetic stress capture,
+  but its UI Automator text bounds begin at x `73` because the scroll
+  viewport clips accessibility geometry.
+  The screenshot shows the complete painted title;
+  TalkBack focus bounds for this **unaccepted** tall-IME reflow remain untested.
   With settled real split Gboard,
   the same debug-only candidate retained that browser header and showed
   final mode `[73,1201][965,1332]` before its y `1352` keyboard.

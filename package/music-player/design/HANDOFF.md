@@ -5588,6 +5588,12 @@ The `Next track` glyph was `[906,327][965,386]` inside clickable parent
 `[877,298][994,415]`;
 the glyph clears approximate crease x `[983,1093)` while the full
 48dp hit region may cross it.
+The title's ink begins at x `58` in the final synthetic capture,
+but UI Automator clips its text bounds to `[73,265][580,368]` at the
+scroll viewport.
+The complete title is painted in the screenshot;
+its clipped accessibility bounds still need a focused accessibility check
+before treating this tall-IME arrangement as complete.
 With settled real split Gboard top y `1352`,
 the same browser header remained,
 final mode was `[73,1201][965,1332]`,
@@ -5601,7 +5607,13 @@ All production work remains unapproved;
 the browser content itself is no longer an open choice.
 
 The corrected selected-A matrix was recaptured on the disposable Fold with
-prototype commit `25dc2fb01` and the system-managed **300dp debug IME**.
+the installed debug APK SHA-256
+`89af26500614050e27cbf81178bc5b4711f3439b37617c79888ed172cdc2f444`
+and the system-managed **300dp debug IME**.
+The APK was built after prototype code commit `67fb04d23`;
+`25dc2fb01` is the later capture-script checkout revision.
+The scratch metadata's `buildCommit` field records that checkout HEAD,
+**not** an independent proof of the preinstalled APK's build commit.
 The capture checked both physical panels,
 light and dark,
 100% and 200% text,

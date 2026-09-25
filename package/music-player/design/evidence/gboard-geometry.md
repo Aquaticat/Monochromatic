@@ -90,7 +90,9 @@ and real-key retyping restored both results.
 These are bounded observations of the earlier debug Search composition,
 not proof of result activation or rank behavior.
 A later disposable-AVD probe of the corrected retained-browser candidate
-again entered `cam` with real Gboard at 200% text:
+used a different debug APK SHA-256
+`89af26500614050e27cbf81178bc5b4711f3439b37617c79888ed172cdc2f444`
+and again entered `cam` with real Gboard at 200% text:
 `Folders` and Open remained at upper-left,
 and the final mode occupied `[73,1201][965,1332]` before the keyboard's
 y `1352` top.
