@@ -71,6 +71,10 @@ function pair(
  */
 const SLICES: readonly ChunkPair[] = [
   pair({
+    sliceIndex: 3,
+    target: '## From Maowu to the Sea',
+  },),
+  pair({
     sliceIndex: 0,
     target: 'We got off at MAOWU Station[^1] and it was NOT raining. NOTE the rain.',
   },),
@@ -97,14 +101,23 @@ await describe({
           slices: SLICES,
           replacements: [
             {
+              sliceIndex: 3,
+              replacementText: '## From Maowu to the Sea',
+            },
+            {
               sliceIndex: 0,
               replacementText: 'We got off at Maowu Station[^1]; it was Not raining. Note the rain.',
             },
           ],
         },);
+        // A heading writes its words title case, so the archive's heading
+        // neither disqualifies the capital form nor is rewritten on the page.
         expect(restored.replacements.map(function textOf(row,): string {
           return row.replacementText;
-        },),).toEqual(['We got off at MAOWU Station[^1]; it was Not raining. Note the rain.',],);
+        },),).toEqual([
+          '## From Maowu to the Sea',
+          'We got off at MAOWU Station[^1]; it was Not raining. Note the rain.',
+        ],);
         expect(restored.restored.length,).toBe(1,);
         expect(restored.findings,).toEqual(['archive-casing-restored (slice 0: "Maowu" to "MAOWU")',],);
       },
