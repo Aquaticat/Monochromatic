@@ -2,7 +2,7 @@
 
 Claude Code `Stop` hook that detects uncertain language in Claude's responses
 and reminds it to investigate rather than guess,
-and that refuses a stop whenever pushing could plausibly help.
+and that can optionally refuse a stop whenever pushing could plausibly help.
 
 ## What it does
 
@@ -34,12 +34,27 @@ for wording Claude was already told about.
 
 ## Forced continuation
 
-Separately from the response-quality detectors,
+Off by default;
+ set `MONOCHROMATIC_STOP_AUTO_CONTINUE` to `on`,
+ `1`,
+ `true`,
+ or `yes` to enable it.
+The response-quality detectors run either way.
+
+When enabled,
+ separately from the response-quality detectors,
  the hook blocks a stop without reading the response text at all,
  releasing only when state shows another turn cannot help.
-This exists because Claude routinely ends a turn by announcing its next action
+It was built for one observed failure:
+ in this repository's transcripts,
+ `claude-opus-5` sessions often ended a turn by announcing their next action
 instead of performing it,
  leaving the user to type `Continue.`
+The same corpus shows a much lower rate on `claude-fable-5` and `claude-opus-4-8`,
+ the comparison is confounded,
+ and the repository owner reports that `claude-opus-5-5` does not show it,
+ so it is now opt-in.
+See [`claude-code-opus-5-premature-turn-end.md`](../../../doc/troubleshooting/claude-code-opus-5-premature-turn-end.md).
 Measured across this repository's transcripts,
  blocking a stop puts the agent back to work most of the time,
  with a median of nine tool calls per forced continuation.
@@ -109,13 +124,13 @@ and resuming a session cannot lose the count.
  never clearing,
  so honoring it caps forced continuation at one.
 
-**Kill switch**:
- set `MONOCHROMATIC_STOP_AUTO_CONTINUE` to `off`,
- `0`,
- `false`,
- or `no` to disable forced continuation
-without editing settings or code.
-The response-quality detectors keep working.
+**Opt-in switch**:
+ any value of `MONOCHROMATIC_STOP_AUTO_CONTINUE` other than `on`,
+ `1`,
+ `true`,
+ or `yes` (compared case-insensitively after trimming),
+ including leaving it unset,
+ keeps forced continuation off.
 
 ## Detected patterns
 

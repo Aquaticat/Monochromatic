@@ -9,7 +9,7 @@ import {
   autoContinueActive,
   autoContinueEnabled,
   autoContinueReason,
-  DISABLING_VALUES,
+  ENABLING_VALUES,
   UNSET_SETTING,
 } from './auto-continue.ts';
 import {
@@ -57,39 +57,39 @@ await describe({
       name: autoContinueEnabled.name,
       children: [
         it({
-          name: 'defaults to enabled when the kill switch is unset',
+          name: 'defaults to disabled when the opt-in switch is unset',
           fn: async () => {
-            expect(autoContinueEnabled(UNSET_SETTING,),).toBe(true,);
+            expect(autoContinueEnabled(UNSET_SETTING,),).toBe(false,);
           },
         },),
         it({
-          name: 'stays enabled for an unrecognized value',
+          name: 'stays disabled for an unrecognized value',
           fn: async () => {
-            expect(autoContinueEnabled('yes',),).toBe(true,);
+            expect(autoContinueEnabled('off',),).toBe(false,);
           },
         },),
         it({
-          name: 'disables on every documented disabling value',
+          name: 'enables on every documented enabling value',
           fn: async () => {
-            for (const value of DISABLING_VALUES) {
-              expect(autoContinueEnabled(value,),).toBe(false,);
+            for (const value of ENABLING_VALUES) {
+              expect(autoContinueEnabled(value,),).toBe(true,);
             }
           },
         },),
         it({
           name: 'normalizes surrounding space and letter case',
           fn: async () => {
-            expect(autoContinueEnabled('  OFF  ',),).toBe(false,);
+            expect(autoContinueEnabled('  ON  ',),).toBe(true,);
           },
         },),
         it({
-          name: 'names the kill switch with the repository environment prefix',
+          name: 'names the opt-in switch with the repository environment prefix',
           fn: async () => {
             expect(AUTO_CONTINUE_ENV,).toBe('MONOCHROMATIC_STOP_AUTO_CONTINUE',);
           },
         },),
         it({
-          name: 'reads the kill switch from this process without re-deciding it',
+          name: 'reads the opt-in switch from this process without re-deciding it',
           fn: async () => {
             expect(autoContinueActive(),).toBe(
               autoContinueEnabled(process.env[AUTO_CONTINUE_ENV] ?? UNSET_SETTING,),
@@ -213,9 +213,15 @@ await describe({
           },
         },),
         it({
-          name: "wires the handler through to a real block on a live event",
+          name: "wires the handler through to the opt-in switch on a live event",
           fn: async () => {
-            expect((await stopRemindersHandler(stopEvent(),)).decision,).toBe("block",);
+            // Reading the ambient switch instead of mutating it keeps this test from racing
+            // the others; the built-bundle suite drives both switch states explicitly.
+            expect((await stopRemindersHandler(stopEvent(),)).decision,).toBe(
+              autoContinueActive()
+                ? "block"
+                : undefined,
+            );
           },
         },),
       ],

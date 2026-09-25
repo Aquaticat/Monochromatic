@@ -18,18 +18,20 @@
  bounds the busy case in `continuation-depth.ts` and releases the pointless
  cases in `continuation-progress.ts` and `continuation-tasks.ts`. See
  `doc/troubleshooting/claude-code-opus-5-premature-turn-end.md`.
- 
+
+ Off unless {@link AUTO_CONTINUE_ENV} opts in.
+
  @module
  */
 
 /**
- Kill switch. Set to any value in {@link DISABLING_VALUES} to stop forcing
+ Opt-in switch. Set to any value in {@link ENABLING_VALUES} to force
  continuation without editing settings or code.
  */
 const AUTO_CONTINUE_ENV = 'MONOCHROMATIC_STOP_AUTO_CONTINUE' as const;
 
 /**
- Setting value standing for an unset kill switch.
+ Setting value standing for an unset opt-in switch.
  
  The empty string is the read-side spelling of absence for environment
  variables, so it is the domain's own "not configured" value rather than a
@@ -38,16 +40,17 @@ const AUTO_CONTINUE_ENV = 'MONOCHROMATIC_STOP_AUTO_CONTINUE' as const;
 const UNSET_SETTING = '' as const;
 
 /**
- Values that disable forcing continuation.
+ Values that enable forcing continuation.
  
- An unset variable means enabled, so the guard is opt-out. An unset
- environment is the common case and must keep the behavior the user asked for.
+ An unset variable means disabled, so the guard is opt-in. It was opt-out while
+ `claude-opus-5` ended turns on announced-but-undone work; `claude-opus-5-5`
+ does not, so the reason became a distraction on every stop.
  */
-const DISABLING_VALUES: ReadonlySet<string> = new Set([
-  '0',
-  'off',
-  'false',
-  'no',
+const ENABLING_VALUES: ReadonlySet<string> = new Set([
+  '1',
+  'on',
+  'true',
+  'yes',
 ],);
 
 /**
@@ -57,16 +60,16 @@ const DISABLING_VALUES: ReadonlySet<string> = new Set([
  
  @param rawSetting - value read from {@link AUTO_CONTINUE_ENV}, or {@link UNSET_SETTING}
  
- @returns `false` only when `rawSetting` names one of {@link DISABLING_VALUES}
+ @returns `true` only when `rawSetting` names one of {@link ENABLING_VALUES}
  
  @example
  ```ts
- autoContinueEnabled('off'); // false
- autoContinueEnabled(''); // true
+ autoContinueEnabled('on'); // true
+ autoContinueEnabled(''); // false
  ```
  */
 function autoContinueEnabled(rawSetting: string,): boolean {
-  return !DISABLING_VALUES.has(
+  return ENABLING_VALUES.has(
     rawSetting
       .trim()
       .toLowerCase(),
@@ -74,12 +77,12 @@ function autoContinueEnabled(rawSetting: string,): boolean {
 }
 
 /**
- Reads the kill switch from this process and reports whether blocking applies.
+ Reads the opt-in switch from this process and reports whether blocking applies.
  
  Separated from {@link autoContinueEnabled} so the decision stays pure and only
  this wrapper touches the environment.
  
- @returns `false` only when the environment disables forced continuation
+ @returns `true` only when the environment enables forced continuation
  
  @example
  ```ts
@@ -135,6 +138,6 @@ export {
   autoContinueActive,
   autoContinueEnabled,
   autoContinueReason,
-  DISABLING_VALUES,
+  ENABLING_VALUES,
   UNSET_SETTING,
 };
