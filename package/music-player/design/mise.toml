@@ -393,6 +393,16 @@ description = "Check the selected Fold Search artifact against its sanitized cap
 dir = "{{config_root}}"
 run = "node selected-search-question.mjs validate"
 
+[tasks."evidence:gboard"]
+description = "Sanitize real Gboard screenshots and retain selected app geometry"
+dir = "{{config_root}}"
+run = "node gboard-evidence.mjs build"
+
+[tasks."lint:gboard:evidence"]
+description = "Validate committed real Gboard evidence without private raw screenshots"
+dir = "{{config_root}}"
+run = "node gboard-evidence.mjs validate"
+
 [tasks."build:search:historical"]
 description = "Rebuild the archived rejected Fold Search artifact for historical inspection"
 dir = "{{config_root}}"
