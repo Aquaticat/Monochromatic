@@ -64,10 +64,36 @@ Progress since adoption:
    because the TypeScript package stores binary64 values and asserts those through preserved
    spelling instead.
 
-Still open:
- a disposable Rust consumer check of the packaged crate,
- the authorized crates.io first-publication route,
- and the release-workflow wiring that follows it.
+- The packaged artifact was verified from a disposable consumer at
+   `~/temp/agent/jsonc-packaged-consumer-2026-09-25`:
+   `cargo package` produced 31 files,
+   the extracted `.crate`'s own 61 tests passed,
+   and the consumer exercised parsing,
+   reads,
+   immutable set and delete,
+   comment queries and attachment,
+   canonical emission,
+   number spelling and identity,
+   lone-surrogate retention,
+   the nesting boundary and the rejection set.
+- `.github/workflows/cargo-publish.yml` gained `je-detect` and `je-publish-crate`,
+   a dispatch choice for `monochromatic-jsonc-edit` and a push trigger on the crate's manifest,
+   mirroring the `forbidden-regex` library-crate jobs.
+- `cargo publish --dry-run --no-verify` packaged and reached the upload step locally.
+
+Blocked on a credential:
+ the token in `~/.cargo/credentials.toml` now answers
+ `status 403 Forbidden` with `authentication failed`,
+ no crates.io token exists among the repository's seven Actions secrets,
+ and Trusted Publishing cannot bootstrap a crate that does not exist yet.
+`doc/runbook/publish-crate-first-time.md` carries the user steps
+(mint a short-lived `publish-new` token,
+ `cargo login`,
+ confirm the dry run,
+ then configure the crate's Trusted Publisher and revoke the token),
+ after which the agent runs the real publish,
+ the registry checks,
+ the disposable consumer against the published version and the workflow dispatch.
 
 ## Existing boundaries
 
