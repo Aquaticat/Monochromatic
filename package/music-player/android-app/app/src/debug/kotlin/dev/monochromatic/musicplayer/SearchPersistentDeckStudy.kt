@@ -3,6 +3,11 @@
 // The physical 7.5mm crease is approximately 110 panel px here; text avoids it, surfaces may cross.
 package dev.monochromatic.musicplayer
 
+// The throwaway probe reads the app's own platform insets without privileged window inspection.
+import android.os.Build
+import android.util.Log
+import android.view.WindowInsets as AndroidWindowInsets
+
 // What:     BackHandler routes Android Back from temporary Search to the player.
 // Why:      A separate D47 destination needs a visible and system Back path.
 //
@@ -88,6 +93,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 // `Composable` marks these functions as Compose UI descriptions.
 import androidx.compose.runtime.Composable
+// Log only after Compose applies an inset-triggered recomposition.
+import androidx.compose.runtime.SideEffect
 // `mutableStateOf` holds throwaway query/navigation state.
 import androidx.compose.runtime.mutableStateOf
 // `remember` preserves that state during one activity visit.
@@ -103,6 +110,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 // `LocalDensity` converts physical pixels at runtime instead of storing a fixed dp crease.
 import androidx.compose.ui.platform.LocalDensity
+// `LocalView` exposes this app window's delivered platform insets.
+import androidx.compose.ui.platform.LocalView
 // `semantics` names the query field for native accessibility inspection.
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -192,6 +201,9 @@ private fun SearchDeckLeft(query: String, onQueryChange: (String) -> Unit,
 /** Minimum reported physical inset used only to select the measured banner-height fixture. */
 private const val BANNER_STRESS_INSET_PX = 1000
 
+/** Android 17 SDK level used only to guard debug bounding-rectangle inspection. */
+private const val BOUNDING_RECT_API_LEVEL = 37
+
 /** Shows Search in the right track slot while folders and the deck stay on the left. */
 @Composable
 private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
@@ -201,6 +213,22 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     val keyboardShown = reportedImeInset > 0
     // This debug-only threshold studies the measured banner geometry, not a production IME rule.
     val bannerFit = bannerHeightStress && reportedImeInset >= BANNER_STRESS_INSET_PX
+    val observedView = LocalView.current
+    SideEffect {
+        val platformInsets = observedView.rootWindowInsets
+        val imeType = if (Build.VERSION.SDK_INT >= 30) AndroidWindowInsets.Type.ime() else 0
+        val platformBottom = if (Build.VERSION.SDK_INT >= 30) {
+            platformInsets?.getInsets(imeType)?.bottom
+        } else null
+        val visible = if (Build.VERSION.SDK_INT >= 30) {
+            platformInsets?.isVisible(imeType)
+        } else null
+        val rectangles = if (Build.VERSION.SDK_INT >= BOUNDING_RECT_API_LEVEL) {
+            platformInsets?.getBoundingRects(imeType)
+        } else null
+        Log.i("SearchInsetProbe", "composeBottom=$reportedImeInset platformBottom=$platformBottom " +
+            "visible=$visible boundingRects=$rectangles stress=$bannerFit")
+    }
     Row(modifier = Modifier.fillMaxSize().background(pageColor)
         .then(if (liftWithIme) Modifier.imePadding() else Modifier)) {
         SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f),

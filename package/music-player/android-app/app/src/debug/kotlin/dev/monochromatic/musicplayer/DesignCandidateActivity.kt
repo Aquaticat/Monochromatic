@@ -1517,9 +1517,10 @@ private fun TransportBlock(
         verticalArrangement = Arrangement.spacedBy(groupSpacing),
     ) {
         if (bannerFit) {
-            // Share one band without shrinking MD3 controls, text, or 48dp touch targets.
+            // Share one band without shrinking MD3 controls or text.
+            // Shift the passive title toward the outer edge so the last icon clears the crease.
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().offset(x = -groupSpacing),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
