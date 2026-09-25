@@ -48,14 +48,88 @@ Grilling session started 2026-09-25 from the request "optimize my `AGENTS.md`".
 - Rationale for removed or relocated rules goes to `doc/philosophy/agents.md`,
    following its existing "Removed" practice.
 
+## Rule audit (2026-09-25)
+
+Read-only subagent audit;
+working files lived in the session scratchpad,
+not committed.
+Token counts via `mise run //package/module/token-count:count` (Claude `count_tokens` endpoint).
+
+- `AGENTS.md`:
+   17431 tokens (`claude-opus-5-5`),
+   12786 (`claude-sonnet-4-6`).
+- Comma-level line breaks cost 1913 Opus tokens (11%);
+   OpenAI o200k shows 17,
+   so Codex barely pays.
+- Estimated savings (Opus):
+   situational rules to skills 4910 minus new skill descriptions;
+   duplicate merges 1496 (46 rules become 18);
+   harness duplicates 140 (RT1,
+   RT3,
+   RT4);
+   reformat 1913.
+   Built combined file measured 9795,
+   a 43.8% cut.
+- Lint-enforced (probed with repo oxlint conf):
+   22 rules including IMM,
+   LN4,
+   PP1,
+   PP3,
+   PP5,
+   PP9,
+   TY1,
+   TY3,
+   TY6,
+   ST9,
+   TQ1,
+   RG3,
+   TSD,
+   TD8.
+- Not lint-enforced despite the rule:
+   TLG,
+   ST8,
+   TD4,
+   TQ2,
+   LG2;
+   these stay.
+- No checker at all:
+   WR2,
+   TAG,
+   RLM,
+   SGD.
+- Stale:
+   RT3 names nonexistent `FetchUrl`;
+   NCD and CRN point at the local forbidden-strings file,
+   but shared codes live in `forbidden-strings.append.txt`;
+   TY8 cites tsc 6;
+   VA6 understates linter exemptions;
+   M1T "MD1 tabs" collides with code MD1;
+   VRB and CPN exceed RLM;
+   DL1 and DL2 describe a finished migration;
+   `doc/philosophy/agents.md` cites `handlers/` instead of `handler/`.
+- 24 misplaced rules,
+   beyond M1T,
+   PXF,
+   CXL.
+- Side finding:
+   `package/module/token-count` claims all current Claude models share one tokenizer;
+   Opus 5.5 and Sonnet 4.6 differ by 36% on the same file.
+
+## Adopted without asking (from audit)
+
+- Fix every stale item listed in "Rule audit".
+- Delete the verified lint-enforced rules (per deletion authority);
+   keep unenforced ones.
+
 ## Open questions
 
 - Destination for situational rules.
 - Rewrite scope for kept rules.
-- Line-wrap format,
-   pending token measurement from the rule audit.
+- Line-wrap format.
+- JCH and OWB into linter diagnostics.
+- TAG and RLM checker.
 
 ## Next action
 
-Finish the rule audit,
-then ask the next grilling round.
+Collect answers,
+then build the restructured `AGENTS.md` plus coverage mapping in the philosophy doc.
