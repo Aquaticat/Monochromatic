@@ -1524,6 +1524,9 @@ this section is the readiness reading of it.
   XingZ6010 found one (one hundred twenty):
   a page-assembly pass wrote a song title into a heading's `align` attribute because the tag spaces its equals sign,
   a broken page the bench did not cause; fixed and replayed over the run.
+  mikaela17 found one (one hundred twenty-one):
+  a judge preferred "Xiawafang" to the archive's XIAWAFANG, so the body and its footnote spelled the station two ways;
+  the archive's all-capitals form is now restored at page assembly, and a corpus census shows the rule firing only on acronyms and names.
 - What "ready" would rest on now:
   a rotation over every entry in the read set
   (`XingZ60`,

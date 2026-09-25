@@ -8082,6 +8082,63 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## mikaela17 read, 2026-09-25, 00:22 UTC: SETTLED in 40.8 min; class one hundred twenty-one
+
+mikaela17 ran on frozen `9ec838a01`
+(launched 23:41 UTC 2026-09-24, `TALLY mikaela_khara status=SETTLED slices=32`, 2,445,213 ms),
+one attempt, 2,394 calls
+(Bedrock 641, OpenRouter 1,086, Synthetic 667),
+Bedrock 42.43 to 42.12 and OpenRouter 86.64 to 86.18 USD by the meters;
+Hyper read dry.
+The time against mikaela16's 20.6 min is Synthetic's,
+wet again after the owner's reset and serving 667 of the calls:
+the standing latency observation, not a class.
+
+Every mikaela16 check holds:
+front matter byte-equal,
+4 headings,
+4 comments,
+2 markers and 2 definitions as the archive,
+𝓠𝓾𝓪𝓷 six times with no straight apostrophe after it,
+"outed" once,
+the HRT passage once ("It should have been an ordinary matter: a family conflict, her parents not wanting her to undergo hormone replacement therapy (HRT).")
+where the archive has the "tried coming out" reading,
+no TA,
+no error finish,
+the one double blank line the archive's own.
+71 abstention lines, one unendorsed standing (slice 2).
+Observations, not classes:
+the Huai An parenthetical "(𝓠𝓾𝓪𝓷’s classmate in high school)" dropped again
+(a Qwen3.8-27B ballot: "does not add an unsupported relationship for Huai An";
+mikaela6 recorded the same);
+the excerpt line now renders the magazine's full title
+"Tea Dwelling · Star-Lingering Pavilion · Star-Trace Chronicle, 2023, Issue No. 33"
+where the archive writes "Chronicle Issue No.33".
+
+Class one hundred twenty-one:
+the body shipped "Huai An and I decided to get off at Xiawafang Station[^2]"
+beside the footnote's "XIAWAFANG Station is an interchange station",
+where mikaela11 to 16 all wrote the archive's capitals.
+The archive's translator comment gives the reason:
+"下瓦房站：XIAWAFANG Station（备注这个是因为天津用大写拼音…）", Tianjin writes its station names in capitals.
+Mercury 2.5 chose the candidate "using standard capitalization for the station name ('Xiawafang') instead of all-caps",
+and no sheet saw the body and the footnote together.
+Built as a page-assembly pass after the list spread
+(`restoreArchiveCasing`, `corpus-run/archive-casing-restore.ts`):
+a Latin word of four or more letters the archive writes in capitals at least twice in prose and never in another casing there
+takes that form wherever a shipped slice's prose writes it title case;
+headings are read past on both sides,
+since the archive's own "## From Xiawafang to Tianjin Eye" writes the name title case by the heading's style;
+a lower-case spelling, a link destination and a word after `/`, `.`, `#`, `=`, `_` or `-` stand;
+finding `archive-casing-restored`.
+Guard red first `196a4fd6c` then `990f5f68f` (the heading case, red against the first fix),
+fixed in `d12aa2ed7` and `e57a2589c`,
+lint 0/0, types clean,
+replayed over the mikaela17 artifact: `archive-casing-restored (slice 16: "Xiawafang" to "XIAWAFANG")`, no other row.
+A census of every archive in the corpus finds the rule fires on eleven more capital forms across thirteen entries
+(BUAA on four, COOH, LGBT, USTC, COHAE, GAHT, COVID, ISBN, HANLIANYI, TODO, INFJ),
+all acronyms or names the archive writes in capitals only.
+
 ## XingZ6010 read, 2026-09-24, 23:35 UTC: SETTLED in 64.9 min; class one hundred twenty
 
 XingZ6010 ran on frozen `d73cb46b9`

@@ -4766,15 +4766,20 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  MIKAELA17 RUNS (entry `mikaela_khara`,
-    frozen `9ec838a01`,
-    corpus-pass pid 2024094 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
-    launched 23:41 UTC 2026-09-24,
-    waiter wait-m17 (background bash);
+1.  YINGYING11 RUNS (entry `yingying`,
+    frozen `e57a2589c`,
+    corpus-pass pid 2112729 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
+    launched 00:30 UTC 2026-09-25,
+    waiter wait-y11 (background bash);
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read it by every mikaela16 check (front matter equal, 4 headings, 4 comments, markers and definitions as the archive, 𝓠𝓾𝓪𝓷 as the archive with "𝓠𝓾𝓪𝓷’s" curled, "Mika was outed", the HRT passage once, the life in the past, no TA, no error finish);
-    then `yingying` on the same build;
-    record each under a new heading above "## XingZ6010 read, 2026-09-24" in the pass log.
+    read it by every yingying10 check ("Yingying" in the [^2] definition, "May you still have", 1 heading, 4 markers, 2 definitions, front matter equal, References kept, no TA, no error finish, no double blank line, "Geek Lab" with 硬核视频 rendered);
+    the casing pass should stay silent (the yingying archive writes no all-capitals name);
+    record it under a new heading above "## mikaela17 read, 2026-09-25" in the pass log.
+    MIKAELA17 READ (frozen `9ec838a01`): SETTLED at 00:22 UTC 2026-09-25 in 40.8 min, 2,394 calls;
+    every mikaela16 check holds;
+    but slice 16 wrote "Xiawafang" where the archive writes XIAWAFANG in the body and its footnote (class one hundred twenty-one).
+    CLASS ONE HUNDRED TWENTY-ONE BUILT (d12aa2ed7 and e57a2589c, guards red first 196a4fd6c and 990f5f68f, full suite `suite-class121b.log` 1122 PASS lines, no FAIL, replayed over the mikaela17 artifact):
+    `corpus-run/archive-casing-restore.ts` restores an all-capitals word the archive writes that way at least twice and never otherwise, reading past heading lines, as the last page-assembly pass.
     DEVPASS (owner, 2026-09-24): LLM Gateway DevPass is left out of the pipeline, the owner's choice after reading its terms (no apps, scripts or batch pipelines; translation named as excluded from 2026-10-15; no ZDR; no provider pinning);
     `LLMGATEWAY_DEVPASS_API_KEY` sits in the sops file unused (addendum in `doc/decision/translation-repair-openrouter-fallback.md`, `aff37b34b`).
     SYNTHETIC reset by the owner on 2026-09-24; the running XingZ6010 picked it up by its meters (151 Synthetic calls).
