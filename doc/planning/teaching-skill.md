@@ -1243,14 +1243,37 @@ Scratch evidence: `/home/user/temp/agent/promise-lesson-astra-review{,-output,-s
 No final `SKILL.md` exists. Do not reopen the learner-observation veto or treat a
 working artifact as mastery.
 
+## Interview correction: complements are not a question
+
+After the three repairs, the agent asked the user to choose between paced sittings,
+answer-first summaries, one long read, or no change, while stating that the first two are
+complements and ranking them above the rest.
+The user chose “A+B, of course” and objected to the question itself:
+“There was no need to burn this question on me because you already know and stated how you
+want to proceed based on what's the best. Your ‘complements’ also indicated you know A+B
+overwhelmingly crowds out every possible answer I could give you.”
+
+The failure is the one the existing rules already name: options that are complements were
+presented as alternatives, and a ranking that left one answer standing was still put to the
+user as a choice. When the evidence and the agent's own ranking determine one answer,
+adopt it, record it, and invite veto instead of asking.
+A question is owed to the user only where two paths genuinely hinge on their preference or
+authority, and the options must be mutually exclusive.
+Applied here: both changes were implemented together, and the remaining items
+(the audience seam and the `Waiting…` ambiguity) are decided and recorded with reasons
+rather than offered as a menu.
+The user's instruction to leave `AGENTS.md` unchanged still stands, so this correction lives
+in the planning record only.
+
 ## Next action
 
-The three measured defects from the self-review are repaired, guarded, verified, and
-presented; see [the repair record](promises-lesson-self-review.md).
-Ask the user the deferred structure questions that the repairs could not settle:
-intended consumption mode for a 23,598-word lesson, whether the novice and
-interview-candidate audiences should split, and whether the `Waiting…` ambiguity needs its
-own exercise. Do not bundle those separable decisions into one option set.
-Only after that discussion returns to the teaching-skill contract, and only with the
-user's correction of any clause that does not match their intent.
-Until then, keep the final skill unimplemented and leave `AGENTS.md` unchanged.
+The three measured defects, the paced sittings, the answer-first takeaways, the audience
+labels, and the `Waiting…` diagnosis exercise are implemented, guarded red-then-green,
+verified, and presented; see [the review record](promises-lesson-self-review.md).
+Hand the presented build to the user for critique before returning to the teaching-skill
+contract: their reading of the repaired lesson is the evidence the contract discussion needs,
+and it is theirs to give, not something to infer from passing guards.
+Remaining recorded items that were deliberately left alone: the capstone's long worked
+comparison sharing one editor with the learner's attempt, the settlement scene's reliance on
+its disclaimer paragraph, and whether manually revealed shop replies prime the wrong model.
+Keep the final skill unimplemented and leave `AGENTS.md` unchanged.

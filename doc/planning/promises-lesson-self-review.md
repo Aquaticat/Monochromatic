@@ -169,9 +169,70 @@ The presenter's default anchor moved from `#promise-settlement` to the document 
 presentation lands on the orientation the lesson now puts first.
 Owned fixtures were stopped and their profiles removed after verification.
 
-Still open by the user's ordering, not repaired: the unannounced reading load, the
-8,668-character capstone paste, the settlement scene's reliance on its disclaimer paragraph,
-and the three unsettled judgment items below.
+Still open at that point, and taken up in the next section: the unannounced reading load and
+the two unsettled judgment items about audience and `Waiting…`.
+Still open now: the 8,668-character capstone paste sharing one editor with the learner's own
+attempt, and the settlement scene's reliance on its disclaimer paragraph.
+
+## Second increment: pacing, takeaways, audience labels, and a diagnosis exercise
+
+The user chose paced sittings plus answer-first summaries (“A+B, of course”) and objected
+that the question itself was unnecessary, because the two options are complements and the
+stated ranking left one answer standing. Both were implemented together.
+Pre-increment artifact preserved as `doc/planning/promises-teaching-before-pacing.local.html`,
+695,026 bytes, SHA-256 `e0f770f8f31e3c0b6425c530c6f13415a284d272d2f48e3f0d8f2ee956d887f6`.
+The pacing-only build, before the new exercise, is preserved as
+`doc/planning/promises-teaching-before-waiting-exercise.local.html`, SHA-256
+`33914cd23e7ccb0879560ad8b6c734cdf5c8d7255a23b664b2364832c7915c9d`.
+
+- **Paced sittings.** `chapter-orientations.mjs` groups the 14 chapters into six sittings,
+  each with a header (chapters, capabilities gained, who needs it) and a stop marker naming
+  the next sitting. Coverage is exact: every chapter appears once, in document order.
+- **Derived durations.** `lesson-pacing.mjs` counts words with `Intl.Segmenter` and hands-on
+  blocks in the rendered DOM at load, then prints a five-minute band from
+  200 words per minute plus 4 minutes per block. No duration is authored by hand.
+  Measured on the pacing build: 18,250 words, 14 hands-on blocks, 145 to 155 minutes total;
+  per sitting 25 to 35, 20 to 30, 35 to 45, 15 to 25, 15 to 25, and 25 to 35 minutes.
+  The verifier recomputes the same formula from the page, so a hand-edited number fails.
+- **Answer-first takeaways.** Every chapter opens with a `The point:` paragraph written from
+  that chapter's own content, placed before its first code or experiment; the guard requires
+  14 of them, each at least two sentences and 120 characters.
+- **Audience labels.** Each sitting states who needs it, marking the rate gate, backoff,
+  jitter, timeout, and ownership material as interview depth. This addresses the two-audience
+  seam inside the single self-contained file rather than splitting it, which the confirmed
+  presentation default rules out.
+- **`Waiting…` diagnosis exercise.** The workshop gained `waiting`, placed after `await`:
+  its starter starts the operation and lets the fixture reply while the page keeps showing
+  `Waiting…`; the learner must decide which boundary is missing and repair it so the record
+  names start, settlement, and render. The `await` chapter points at the exercise by name and
+  states that the same page text can mean an unresolved Promise or a settled one nobody rendered.
+
+Guard discipline for this increment: `probe:lesson-pacing-before` failed against the preserved
+pre-pacing artifact (no `window.lessonPacing`) and `test:lesson-pacing` passed after the rebuild;
+`probe:waiting-exercise-before` failed against the preserved pacing-only artifact (the dropdown
+had no `waiting` entry) and `test:waiting-exercise` passed after the rebuild.
+The exercise guard includes a positive control: `window.promiseLab.fakeReply` returned
+`Simulated reply to “control”` while the page still read `Waiting…`, which attributes the
+silence to the missing observer rather than to a dead fixture. The repaired version shows
+`Simulated reply to “Hello Ada”` with all three record lines.
+
+Two verifier expectations needed correction rather than exemption: the print inventory's
+workshop `Task` count rose from 11 to 12, and an initial guess that `Starter source` items
+would also rise was wrong, because those ten items come from the in-page labs
+(`window.lessonLabs.labs`), not from workshop exercises.
+
+Verification of this increment: `mise run test:all` passed in 376 s with the owned offline and
+native-print fixtures, including the pacing, waiting-exercise, repair, and ticket-boundary
+guards. `test:exports` passed against a proxy whose HTTP denial was positively tested.
+Firefox ESR 140.16.0 passed the value, receipt, pagehide, chapter, capstone, and prototype
+checks. The final artifact is `doc/planning/promises-teaching.local.html`, 718,990 bytes,
+SHA-256 `270049535caaf4a86063fd9b3322b2f1be3c838f52566c9abcc77fd16941d818`,
+build identity `895a0c508be2a32ffa21cc8c9eae48c9a170d91e09fe77c7633a62d245f47e13`.
+Its print run measured 133 Letter pages at 2,589,705 bytes with 894 teaching and
+70 appendix inventory entries, all matched against extracted PDF text.
+The presenter opened this build in a separate headed tab at the document top
+(3 tabs before, 4 after) without reloading the tabs holding the two earlier builds.
+Owned fixtures were stopped and their profiles removed afterwards.
 
 ## Unease (judgment, not measurement)
 
@@ -180,13 +241,22 @@ and the three unsettled judgment items below.
   idempotency, and cancellation ownership. Both are in the confirmed destination, but the
   single linear path makes the early chapters feel slow for one reader and the later
   chapters feel steep for the other. I have no learner evidence for where the seam hurts.
+  **Partly addressed:** each sitting now states who needs it and marks the policy material as
+  interview depth, so a reader can skip forward inside one file. Whether labels are enough,
+  or the seam still costs the novice something, remains unmeasured.
 - The shop's manually revealed replies are labelled teaching equipment, yet the first
   interactive thing a learner touches is a chat whose timing they control. I am unsure
   whether that primes "replies arrive when I click" before the lesson says otherwise.
+  **Still open:** no change was made, and I have no evidence either way.
 - The `Waiting…` ambiguity I measured in disposable learner code (unresolved Promise versus
   resolved-but-unrendered) is a real novice trap. The lesson explains awaiting and rendering
   separately, but I did not find a place where the learner practices telling those two apart
-  in their own code. That may be a gap or may already be covered by an exercise I did not run.
-- Whether 23,598 words with 11 previews is the right size for this destination is a value
-  judgment I cannot settle from the artifact. It depends on how the user intends the lesson
-  to be consumed: one long read, a reference, or a paced course.
+  in their own code. **Addressed:** the `waiting` workshop exercise is that practice, and the
+  `await` chapter names the ambiguity explicitly. Whether one exercise is enough practice is
+  a judgment I cannot settle without a learner.
+- Whether the lesson is the right size for this destination is a value judgment I cannot
+  settle from the artifact. **Partly addressed:** the user chose paced sittings plus
+  answer-first summaries, so the load is now stated per sitting (derived: 145 to 155 minutes
+  across six sittings) instead of being invisible. Whether that total is too long for the
+  destination, or should be split into separate artifacts, remains open and depends on how
+  the lesson is meant to be used.
