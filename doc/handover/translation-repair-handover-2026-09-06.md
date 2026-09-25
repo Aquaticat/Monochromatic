@@ -4766,15 +4766,19 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CUSPARIAKLSY15 RUNS (entry `CuspariaKLSY`,
+1.  SHI_YUMIAOYA23 RUNS (entry `shi_Yumiaoya`,
     frozen `e57a2589c`,
-    corpus-pass pid 2217593 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
-    launched 01:10 UTC 2026-09-25,
-    waiter wait-c15 (background bash);
+    corpus-pass pid 2246652 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
+    launched 01:28 UTC 2026-09-25,
+    waiter wait-s23 (background bash);
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read it by every CuspariaKLSY14 check (1 heading, front matter equal, no TA, no error finish, no double blank line, the life in the past, the gloss line on the page, the death paragraph with no medication detail);
-    record it under a new heading above "## zheermao13 read, 2026-09-25" in the pass log;
-    then continue the rotation one entry at a time on the same build (`shi_Yumiaoya`, `hulicaijia`, `XingZ60`).
+    read it by every shi_Yumiaoya22 check (4 headings, front matter equal, no TA, no error finish, no double blank line, the death paragraphs on the page, the closing quote as the archive's two lines with the attribution once, 小药娘 as "trans girl" or "trans woman" with no Han or pinyin outside the archive comment);
+    record it under a new heading above "## CuspariaKLSY15 read, 2026-09-25" in the pass log;
+    then continue the rotation one entry at a time on the same build (`hulicaijia`, `XingZ60`).
+    CUSPARIAKLSY15 READ (frozen `e57a2589c`): SETTLED at 01:27 UTC 2026-09-25 in 17.2 min, one attempt, 380 seats, 361 calls, about 0.09 USD by the meters;
+    every CuspariaKLSY14 check holds (1 heading, front matter equal, no TA, no error finish, no double blank line, the life in the past, the gloss line put back by `name-gloss-restored`);
+    the death paragraph carries every clause of the original with no medication detail (又 dropped again, an observation);
+    the life list's mixed marker spacing is the archive's own; class one hundred seven live on slices 1 and 3; glm-5.3 dark (19 seats, Hyper dry); no class.
     ZHEERMAO13 READ (frozen `e57a2589c`): SETTLED at 01:08 UTC 2026-09-25 in 21.0 min, one attempt, 877 seats, 829 calls, about 0.30 USD by the meters;
     every zheermao12 check holds (2 headings, front matter equal, both labels one line, no TA, no error finish, no double blank line, 1 translate overrun against zheermao12's 1);
     class one hundred seven live on slice 5 (three minor accuracy claims accepted, the repair text the stand-in); the casing pass silent (INFJ, the archive's one capital form, already in capitals); glm-5.3 dark all run (47 seats, Hyper-only, Hyper dry); no class.

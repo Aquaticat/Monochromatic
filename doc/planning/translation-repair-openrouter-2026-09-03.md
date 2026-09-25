@@ -8082,6 +8082,44 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## CuspariaKLSY15 read, 2026-09-25, 01:27 UTC: SETTLED in 17.2 min, the death paragraph whole; no class
+
+`CuspariaKLSY15` ran on frozen `e57a2589c` (class one hundred twenty-one),
+launched 01:10 UTC,
+and settled at 01:27 UTC in 1,030 s (TALLY `ms=1030329`) against CuspariaKLSY14's 1,299,
+one attempt,
+380 seats,
+361 calls,
+one retry round,
+about 0.09 USD by the meters
+(Bedrock 41.97 to 41.94, OpenRouter 85.91 to 85.85).
+Synthetic wet, Hyper dry, so glm-5.3 dark all run (19 seats refused at call time, no wait).
+Jev 15 of 15; 9 abstention lines.
+The longest log gap is 51 s.
+
+Every CuspariaKLSY14 check holds:
+front matter equal,
+1 heading,
+no TA,
+no error finish,
+no double blank line,
+the life in the past on every line.
+The gloss line “Ling Shui Yu Yu Zi” means fish in clear water stands after the nickname line,
+put back by the class one hundred five restore (`name-gloss-restored`, one line) after the bench dropped it again.
+Class one hundred seven live on slices 1 and 3 (`translate-archive-disputed`, 2 and 4 accepted claims).
+The death paragraph carries every clause of the original with no medication detail:
+双方情绪爆发 ("their emotions boiled over"),
+抢救 ("where doctors tried to revive her"),
+再次得到消息 ("When word came again"),
+脑死亡 and 于 ("confirmed brain dead ... cremated on August 1st, 2023");
+又 before 和其父亲发生争吵 is dropped again ("After waking up, she argued with her father"), the CuspariaKLSY14 observation, not a class.
+The life list carries `1.  `, `3.  ` and `4.  ` with two spaces and `2. ` with one:
+that is the archive's own spacing, kept where the bench kept the archive's words;
+it renders the same, so no class.
+The casing pass stayed silent by design (the archive's one capital word, ACG, has three letters).
+No class.
+`shi_Yumiaoya23` launched at 01:28 UTC on `.frozen-dist-e57a2589c` (pid 2246652), waiter wait-s23.
+
 ## zheermao13 read, 2026-09-25, 01:08 UTC: SETTLED in 21.0 min; no class
 
 zheermao13 (entry `zheermao101`) ran on frozen `e57a2589c` (class one hundred twenty-one),
