@@ -5411,15 +5411,24 @@ It used `5.496GB / 6.442GB` when inspected after the user's wait;
 the container was then intentionally killed.
  Its exit 137 is **not**
 evidence of another out-of-memory event.
- Android Emulator's current help
-supports `-skip-adb-auth`;
-a new disposable boot with that flag and a bounded readiness monitor is
-underway.
- The monitor was positively checked against the already-booted
-original AVD,
-but it will not mutate that device.
- No fresh Gboard result has been
-obtained yet,
+ Android Emulator's current help supports `-skip-adb-auth`,
+but a 6 GiB retry with that flag still exposed `emulator-5580 unauthorized`.
+The disposable AVD's launch parameters confirmed the flag;
+it alone did not solve this measured connection failure.
+The run was stopped on that terminal finding rather than left running
+for another wait.
+ Google's emulator container launcher accepts a supplied
+ADB public key at `/root/.android/adbkey.pub` alongside `-skip-adb-auth`.
+A new scratch-AVD run mounts only a private copy of the host's **public**
+key read-only,
+wipes interrupted disposable data,
+and has a five-minute readiness monitor.
+ The monitor was positively
+checked against the already-booted original AVD,
+but will not mutate it.
+ The host's private ADB key and shared ADB server were not copied or
+restarted.
+ No fresh Gboard result has been obtained yet,
 and the active user AVD was not restarted or reconfigured for this attempt.
 
 Remaining design work includes verifying actual docked and split Gboard,

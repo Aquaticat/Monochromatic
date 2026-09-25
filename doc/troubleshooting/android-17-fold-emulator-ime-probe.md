@@ -294,11 +294,38 @@ not evidence of a second cgroup out-of-memory event.
 No Gboard or deck measurement was obtained.
 
 The installed Android Emulator 37.1.11 help lists `-skip-adb-auth`.
-Google's [emulator container launcher][emulator-container-launcher]
-uses that flag for a disposable container.
-A retry with this flag and a separate bounded boot monitor is the next
-probe;
-no host ADB server restart or private key transfer is planned.
+The [Google emulator container launcher][emulator-container-launcher] at commit
+`0654f694b46794fae4b178f1e1a17cb60c5d2d34`
+uses it in `emu/templates/launch-emulator.sh:177-180`:
+
+```sh
+LAUNCH_CMD+=("-skip-adb-auth" "-no-snapshot-save" "-wipe-data" "-no-boot-anim")
+```
+
+A 6 GiB retry did pass this flag,
+confirmed in the disposable AVD's `emu-launch-params.txt`,
+but `adb devices -l` still reported `emulator-5580 unauthorized`.
+Android Emulator continued to emit `No adb private key exists` and
+`adb: device unauthorized`.
+The container was intentionally stopped before the bounded monitor's
+five-minute deadline;
+this attempt did not establish whether Android completed startup.
+The flag alone is **not** an observed authorization workaround on this fixture.
+
+The same launcher at `emu/templates/launch-emulator.sh:67-69`
+has a public-key input path:
+
+```sh
+elif [ ! -z "${ADBKEY_PUB}" ]; then
+  echo "emulator: Using provided adb public key"
+  echo $ADBKEY_PUB >>/root/.android/adbkey.pub
+```
+
+A further private-AVD retry mounts **only the host ADB public key**
+read-only at that path,
+wipes the disposable guest data after interrupted boots,
+and uses an independently bounded boot monitor.
+The existing host ADB server and its private key remain untouched.
 
 The debug input method is deliberately synthetic, **not Gboard**.
 Its measured overlap tests bottom-window occlusion and text input integration;
