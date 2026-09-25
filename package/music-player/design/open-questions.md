@@ -156,11 +156,29 @@ rounds (2026-09-17):
   A transient Gboard font-update banner on the disposable inner panel
   raised its IME to y `1140` and clipped the last mode until `OK` was tapped.
   D50 therefore remains unmet in measured floating and banner states.
+  The user clarified that Search need not blank the upper-left area.
+  Keep useful browsing or contextual content there where measured height
+  permits;
+  do not take space from the complete deck or put meaning on the crease.
+  Which portion can remain interactive versus passive at taller IME heights
+  is an open design question,
+  not a reason to silently weaken D50.
+  A 415dp debug-only system IME reproduced the banner-height clipping at
+  y `1141` in selected A,
+  while an **unaccepted** inline title/transport variant showed the final
+  mode at `[73,971][1038,1102]`,
+  above that synthetic IME.
+  Its last icon ended at x `965` and its 48dp parent hit target was
+  `[877,279][994,396]`;
+  the hit region alone crosses the approximate crease start x `983`.
+  This candidate still blanks upper-left context while typing and uses a
+  fixed stress threshold,
+  so it is not a complete design response.
+  App-side logging measured docked IME insets and a bounding rectangle,
+  but the floating case and animation continuity remain unverified.
   Sanitized real-keyboard captures and whitelisted geometry records are
   indexed in `package/music-player/design/evidence/gboard-geometry.md`.
-  App-observed insets,
-  other keyboard heights,
-  and a design response remain open.
+  Other keyboard heights and the user-visible response remain open.
   A 200% long query remained in the right input region without hiding
   the deck under the debug IME.
   Long **result** names and result-list scrolling are still open.

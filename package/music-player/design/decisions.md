@@ -1473,6 +1473,10 @@ keyboard while typing.
  Folder browsing may yield to the keyboard,
  but
 Search must not hide the deck or its controls (D50).
+The user clarified that Search does **not** require a blank upper-left area.
+Retain useful browsing or context there when it fits without obscuring the
+complete deck;
+the amount visible under each keyboard height remains open.
  The cover uses one
 full-width Search destination with the same integrated header.
  D49 makes
@@ -1500,7 +1504,10 @@ floating behavior, so version alone is not an explanation.
 A Gboard font-update banner on the disposable inner panel temporarily
 raised the IME top to y `1140` and clipped the final mode until dismissed.
 These bounded passing modes and failing states do not change D50 or the
-user's A selection; other heights and app-observed insets remain unverified.
+user's A selection; other heights and app-observed floating insets remain unverified.
+A debug-only app probe subsequently observed the docked bottom inset and
+bounding rectangle;
+its synthetic 415dp banner-height reflow is not a chosen replacement.
 `package/music-player/design/evidence/gboard-geometry.md` indexes sanitized real Gboard evidence;
 its passing split and full-width states do not supersede the floating and
 banner counterexamples.

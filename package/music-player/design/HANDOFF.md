@@ -5481,17 +5481,89 @@ non-overlapping floating results and an unmasked status pixel;
 restored copies passed after each test.
 Raw screenshots and full hierarchies remain in private agent scratch only.
 
-Remaining design work includes app-observed inset/bounding-rectangle
-measurement,
+Remaining design work includes app-observed **floating** keyboard geometry,
 responses to floating and transient IME occlusion,
 result activation/ranking,
 long result names and scrolling,
 taller keyboards,
 and the independent minimum information clearance at the crease.
- The user was not asked to vote again on B or C.
+The user was not asked to vote again on B or C.
 No KWin automation,
- production implementation,
- or `AGENTS.md` change.
+production implementation,
+or `AGENTS.md` change.
+
+## Banner-height study and upper-left clarification
+
+The user clarified that the upper-left region **does not have to be blank**
+when Search is open.
+D51 still places Search on the right and the complete deck bottom-left;
+keep useful browsing or contextual content in the upper-left region wherever
+it fits without clipping that deck or violating the crease clearance.
+Neither the amount of visible browsing during typing nor a compact substitute
+has been selected.
+The current synthetic stress variant still blanks that region,
+so it does not resolve the clarification.
+
+A debug-only 415dp system IME on private `emulator-5580` reproduced the
+observed Gboard banner-height geometry within 1px:
+its IME started at y `1141` rather than the real banner's y `1140`.
+At 200% font scale,
+focused Search in unchanged A clipped `Shuffle all folders` to
+`[73,1076][965,1141]`.
+This is the positive failure control for evaluating a proposed reflow.
+On prototype branch `prototype/music-player-theme-compose`,
+commit `62efa92ad` introduced an **unaccepted** inline title/transport
+band for a measured tall IME,
+omitted an empty browser/deck separator,
+and preserved the original 16dp outer and 8dp group spacing.
+The same synthetic IME left its final mode at `[73,971][1038,1102]` with
+39px below it,
+while the `cam` editor was focused and both matching result labels remained
+above the keyboard.
+The final transport glyph ended at x `965`,
+clear of the approximate x `[983,1093)` crease;
+its clickable parent was `[877,279][994,396]`,
+a 48dp target whose right edge may cross the crease without moving its glyph
+onto the hinge.
+Its title paint appeared intact,
+but accessibility bounds clipped its leading 16px at the scroll viewport;
+recheck this before offering the variant for adoption.
+These are **synthetic IME**, not real Gboard, after-state observations.
+Raw screenshots/XML stay in private agent scratch pending sanitized evidence.
+
+The debug-only app probe logged a settled Compose IME bottom of `1011px`,
+a platform bottom of `1011px`, `isVisible=true`,
+and the app-delivered bounding rectangle
+`Rect(0, 1141 - 2076, 2152)` for the tall system IME.
+At Gboard's settled split inner height,
+it logged `800px` for both bottoms and
+`Rect(0, 1352 - 2076, 2152)`.
+During the synthetic IME appearance,
+Compose reported `759`, then `987`, then `1011px` while the platform
+reported `1011px` in all sampled frames.
+The prototype's `1000px` stress trigger changed its layout only at the
+last sample;
+this is a fixture-selection threshold,
+**not** a demonstrated uninterrupted fit rule.
+A disposable Gboard font-scale toggle from 1.5 to 2.0 did not yield an
+observed second banner,
+but the app restarted and keyboard focus dropped on that transition.
+No claim of nonrecurrence or real-banner reflow is supported.
+The original floating Gboard remains a distinct D50 failure;
+platform visibility alone does not locate floating keys.
+
+The bounded Compose build ran in a 6 GiB/2 CPU Podman container using the
+actual `/home/user/Android/Sdk` toolchain.
+The first isolated build pointed at mise's command-line SDK without installed
+platform/build-tools licenses and failed at dependency resolution;
+the second found the SDK but caught an omitted `layoutDirection` argument in
+`WindowInsets.getRight`;
+subsequent corrected builds passed.
+The isolated container generated a different debug signing certificate,
+so the private disposable app was uninstalled before installing the built
+APK;
+no shared app/device state was modified.
+All production work and choice of upper-left content remain open.
 
 ## Issue tracking moves to Linear for this session
 
