@@ -140,13 +140,25 @@ rounds (2026-09-17):
   result visibility remains unmet in its measured floating mode,
   even though A remains the selected design;
   the 300dp bottom-IME capture is bounded evidence.
-  Verify docked and split Gboard, app-observed insets and any design
-  response before claiming that all typing states preserve the deck.
-  A fresh `hw.keyboard=no` Fold AVD was prepared in private scratch,
-  but the 2 GiB/2 CPU container run failed before Android boot:
-  first the host-GL renderer had no display, then Xvfb allowed rendering
-  but QEMU was killed by the container's memory limit.
-  The fixture provides no keyboard evidence yet.
+  A disposable Fold AVD booted after user authorization raised its container
+  cap to 6 GiB.
+  Its `hw.keyboard=no` config did not remove the runtime physical keyboard.
+  Real Gboard split keys on the inner panel and full-width keys on the cover
+  entered `cam` at 100% and 200% text.
+  Settled IME tops were y `1352` inner and y `1605` cover;
+  the inner final mode ended at y `1313` at 200%,
+  and both cover result labels stayed above its keyboard.
+  Light and dark 200% captures support those **bounded passing modes**.
+  The original AVD's active Gboard was updated versionCode `175981944`,
+  not its preloaded `175753756`;
+  updating the disposable Gboard to the same build did not change its
+  split/full-width geometry.
+  A transient Gboard font-update banner on the disposable inner panel
+  raised its IME to y `1140` and clipped the last mode until `OK` was tapped.
+  D50 therefore remains unmet in measured floating and banner states.
+  App-observed insets,
+  other keyboard heights,
+  and a design response remain open.
   A 200% long query remained in the right input region without hiding
   the deck under the debug IME.
   Long **result** names and result-list scrolling are still open.

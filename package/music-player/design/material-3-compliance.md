@@ -912,8 +912,13 @@ This was superseded by D50/D51:
 and selected A lifts it above the measured bottom debug keyboard while Search
 remains on the right.
  A later real floating Gboard occluded part of that
-deck title at 200% text and both cover result labels at 100% text;
-the bottom-keyboard result does not establish Gboard compliance.
+deck title at 200% text and both cover result labels at 100% text.
+On a disposable Fold,
+real split inner and full-width cover Gboard keys entered `cam` at
+100% and 200% text;
+the settled deck and result labels stayed visible.
+A Gboard font-update banner briefly clipped the final inner mode,
+so the bottom-keyboard result does not establish D50 for every keyboard state.
  The separate destination is still visually distinct from a command
 palette or modal overlay.
 

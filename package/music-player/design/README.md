@@ -109,8 +109,16 @@ A later real floating Gboard at 200% text obscured part of the deck title,
 so D50 is not fully met in this tested mode.
  On the cover at 100% text,
 the floating keyboard obscured both matching result labels while typing.
- The user's A selection is unchanged;
-docked and split Gboard require separate verification.
+ The user's A selection is unchanged.
+A disposable Fold then verified real split inner and full-width cover Gboard
+at 100% and 200% text, with the deck and cover results visible in settled
+states.
+Its Gboard font-update banner briefly clipped the final inner mode;
+D50 remains unmet across the measured floating and transient states.
+The original AVD's active Gboard was updated versionCode `175981944`,
+not the preloaded `175753756`;
+updating the disposable Gboard to that same build did not reproduce the
+floating layout.
 Selection does not authorize production implementation.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.

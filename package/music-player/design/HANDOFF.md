@@ -5419,23 +5419,66 @@ The run was stopped on that terminal finding rather than left running
 for another wait.
  Google's emulator container launcher accepts a supplied
 ADB public key at `/root/.android/adbkey.pub` alongside `-skip-adb-auth`.
-A new scratch-AVD run mounts only a private copy of the host's **public**
-key read-only,
-wipes interrupted disposable data,
-and has a five-minute readiness monitor.
- The monitor was positively
-checked against the already-booted original AVD,
-but will not mutate it.
- The host's private ADB key and shared ADB server were not copied or
-restarted.
- No fresh Gboard result has been obtained yet,
-and the active user AVD was not restarted or reconfigured for this attempt.
+A clean scratch-AVD run with only a read-only copy of the host's
+**public** ADB key,
+`-skip-adb-auth`,
+and the independent five-minute monitor completed boot after 122 seconds.
+`getprop ro.boot.qemu.avd_name` identified `Fold_No_Hardware_Probe` on
+`emulator-5580`.
+The host's private key and shared ADB server were not copied or restarted.
+The debug Search APK was installed only on that disposable AVD.
+The original AVD remains unfolded with its original Gboard selection.
 
-Remaining design work includes verifying actual docked and split Gboard,
-app-observed keyboard insets, a response to floating overlay occlusion,
-result activation/ranking, long result names and scrolling, taller
-keyboards, and the independent minimum information clearance at the
-crease.
+The configuration's `hw.keyboard=no` did **not** make this fixture
+hardware-keyboard-free:
+`dumpsys input` still exposed `AT Translated Set 2 keyboard`,
+and Window Manager reported `qwerty/v/v`.
+The original AVD's **active updated** Gboard was versionCode `175981944`,
+not the preloaded `175753756` originally cited.
+The two AVDs ran the same debug Search APK SHA-256
+`d895072b4f232181c1f24d9db0bfd6b3af7cafae2e25f869cbe21b0039e81f53`.
+The disposable AVD initially used preloaded Gboard,
+then accepted the original AVD's updated APK splits and reported the same
+active versionCode `175981944`.
+Its settled split/full-width layout persisted after that update.
+Neither Gboard version nor `hw.keyboard=no` alone is a demonstrated cause
+of the original AVD's floating mode.
+
+On the disposable inner panel,
+real split Gboard key taps entered `cam` at 100% and 200% text.
+Its settled IME frame began at y `1352` of the 2152px screen;
+all playback controls remained visible,
+with the final mode ending at y `1313` at 200%.
+On the cover,
+real full-width Gboard taps entered `cam` at both scales;
+its IME began at y `1605` of 2424px,
+with both result labels above it.
+Light and dark 200% captures agreed,
+including after the disposable Gboard update.
+Android Back hid the cover keyboard while retaining the query/results;
+refocusing reopened it,
+and Clear plus real-key retyping worked.
+
+This **does not** settle D50 universally.
+On the original AVD,
+floating Gboard still covered the unfolded deck title at 200% and both
+cover result labels at 100%.
+A separate Gboard `Keyboard font size updated` banner on the disposable
+inner panel briefly raised the IME to y `1140`,
+clipping the final mode;
+tapping `OK` returned the IME top to y `1352` and restored the deck.
+Do not dismiss that failing state as capture noise,
+or silently narrow the user's “never hidden” requirement.
+Raw screenshots and hierarchies remain in private agent scratch pending
+sanitized durable evidence.
+
+Remaining design work includes app-observed inset/bounding-rectangle
+measurement,
+responses to floating and transient IME occlusion,
+result activation/ranking,
+long result names and scrolling,
+taller keyboards,
+and the independent minimum information clearance at the crease.
  The user was not asked to vote again on B or C.
 No KWin automation,
  production implementation,

@@ -1443,6 +1443,9 @@ keyboard-closed screenshots;
  its x `[274,1180)`, y `[310,1081)` key surface overlaps the deck
  title at `[258,1042][781,1145]` on the 2076 × 2152px inner panel.
  Do not mark D50 fully validated from the debug bottom-IME captures.
+The later real split-keyboard test passed after settling but a Gboard
+font-update banner briefly clipped the final mode;
+D50 also covers that observed typing state.
  D47's separate-page
 interaction does not supersede this persistent control region.
 
@@ -1486,7 +1489,18 @@ This is a validation failure against D50 in the tested floating mode,
 not a change to the user's A selection.
 On the folded cover, the same real floating mode covered both matching
 result labels while a focused `cam` query remained visible.
-Docked and split Gboard geometry and taller input methods are still unverified.
+A separate disposable Fold AVD verified real Gboard split input on the
+inner panel and full-width input on the cover at 100% and 200% text.
+At settled 200%, its inner IME began at y `1352` and the final mode ended
+at y `1313`; cover result labels stayed above its y `1605` keyboard.
+The original AVD's active Gboard was an update to versionCode `175981944`,
+not the preloaded `175753756`.
+Updating the disposable Gboard to the same version did not reproduce its
+floating behavior, so version alone is not an explanation.
+A Gboard font-update banner on the disposable inner panel temporarily
+raised the IME top to y `1140` and clipped the final mode until dismissed.
+These bounded passing modes and failing states do not change D50 or the
+user's A selection; other heights and app-observed insets remain unverified.
 This is a **design choice only**;
  it does not authorize production changes.
 

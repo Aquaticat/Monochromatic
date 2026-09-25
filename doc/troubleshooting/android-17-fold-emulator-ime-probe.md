@@ -1,10 +1,14 @@
-# Android 17 Fold emulator Gboard opens a physical-keyboard toolbar instead of keys on Search focus
+# Android 17 Fold Gboard 18.2.7 opens a physical-keyboard toolbar instead of keys on Search focus
 
 ## Symptom
 
-On the Pixel 9 Pro Fold emulator 37.1.11.0, Android 17 SDK 37,
-Gboard `versionCode=175753756`, focusing a Compose Search query can report an active
-IME while the screenshot contains no on-screen keys.
+On the original Pixel 9 Pro Fold emulator 37.1.11.0, Android 17 SDK 37,
+the **active updated Gboard** `versionCode=175981944` can report an active
+IME on Compose Search focus while the screenshot contains no on-screen keys.
+The earlier `versionCode=175753756` reading named the preloaded system APK,
+not the active updated package; `dumpsys package` shows the active code path
+under `/data/app/`, with `lastUpdateTime=2026-09-24 12:32:53`.
+Do not attribute the later floating-keyboard observations to the preload.
 A later Google Messages Search probe also showed no keys.
 Earlier in this design session, Messages did show a split keyboard,
 so this is not a demonstrated permanent emulator capability limit.
@@ -13,7 +17,8 @@ that the playback deck remains visible during software-keyboard use.
 A subsequent probe found a **per-editor Gboard workaround**:
 open the side toolbar's bottom menu and choose `Show on-screen keyboard`.
 Real, floating keys then appeared and a key tap changed the Search query.
-This does not yet establish docked or split Gboard behavior.
+A separate disposable Fold subsequently established bounded split and
+full-width Gboard behavior; it does not erase the original floating failure.
 
 This is distinct from a separate, confirmed app-layout finding:
 under a visible system-managed keyboard, a bottom-anchored Search prototype
@@ -321,17 +326,83 @@ elif [ ! -z "${ADBKEY_PUB}" ]; then
   echo $ADBKEY_PUB >>/root/.android/adbkey.pub
 ```
 
-A further private-AVD retry mounts **only the host ADB public key**
+A further private-AVD retry mounted **only the host ADB public key**
 read-only at that path,
-wipes the disposable guest data after interrupted boots,
-and uses an independently bounded boot monitor.
-The existing host ADB server and its private key remain untouched.
+passed `-skip-adb-auth`,
+and wiped interrupted disposable guest data.
+The bounded monitor reported `ADB_BOOT_READY emulator-5580` after 122 seconds;
+`getprop ro.boot.qemu.avd_name` returned `Fold_No_Hardware_Probe`.
+No private ADB key was copied and the shared host ADB server was not restarted.
+The combination worked;
+this run did **not** isolate which step corrected authorization.
+
+The fresh AVD's generated configuration said `hw.keyboard=no`,
+yet `dumpsys input` still listed an enabled `AT Translated Set 2 keyboard`,
+and Window Manager reported `qwerty/v/v`.
+Do not call this fixture hardware-keyboard-free or infer that removing
+hardware keyboard alone changed Gboard's layout.
+The installed debug app APK on both AVDs had the same SHA-256
+`d895072b4f232181c1f24d9db0bfd6b3af7cafae2e25f869cbe21b0039e81f53`.
+The original AVD's active Gboard was version
+`18.2.7.969776716-release-x86_64` (`versionCode=175981944`),
+while the fresh AVD initially used its preloaded
+`17.2.2.895242737-preload-x86_64` (`versionCode=175753756`).
+I pulled only the updated Gboard APKs from the original AVD,
+installed them into the disposable AVD,
+and verified its active `/data/app/` package became the same updated version.
+The disposable AVD still showed split inner and full-width cover keys,
+so **Gboard version alone did not reproduce the original floating mode**.
+User data,
+physical-keyboard configuration and other AVD settings still differ.
+
+### Actual Gboard typing and visibility
+
+On the disposable inner panel,
+actual taps on Gboard's split keys entered `cam` into the focused Search field.
+At settled 100% and 200% font scales,
+the system IME source occupied `[0,1352][2076,2152]`.
+At 200%,
+all four unfolded mode options were visible;
+`Shuffle all folders` occupied `[73,1182][965,1313]`,
+ending 39 physical px before the keyboard.
+The folder and track result labels also remained visible beside the deck.
+At 200%,
+light and dark captures showed this bounded arrangement,
+including after installing the updated Gboard.
+
+On the disposable cover panel,
+actual Gboard key taps again entered `cam` at 100% and 200% font scales.
+The full-width IME source occupied `[0,1605][1080,2424]`.
+At 200%,
+folder `Camellia` occupied `[127,350][410,453]` and track
+`Another Xronixle` occupied `[127,584][667,687]`,
+well above that keyboard.
+Light and dark 200% captures agreed;
+updating Gboard did not change this measured layout.
+Android Back hid the keyboard while retaining `cam` results;
+tapping the query reopened it,
+and Clear followed by real-key retyping restored the results.
+
+A separate **transient counterexample** appeared immediately after changing
+Android's font scale to 200% while Search was focused.
+Gboard showed a `Keyboard font size updated` banner with an `OK` action;
+the IME source temporarily began at y `1140`.
+The final mode's accessibility bounds were only
+`[73,1076][965,1140]`,
+with part of its label and container visibly covered.
+Tapping `OK` removed the banner,
+returned the IME source to y `1352`,
+and restored the complete mode at `[73,1182][965,1313]`.
+This measured temporary failure does **not** become a passing state just
+because the settled screenshot passes D50.
+Automatic dismissal and recurrence were not established.
 
 The debug input method is deliberately synthetic, **not Gboard**.
 Its measured overlap tests bottom-window occlusion and text input integration;
-it does not establish Gboard's docked height, split shape, or suggestions.
-The later floating-keyboard evidence tests real Gboard, but not its docked
-or split layouts.
+it does not establish Gboard's own geometry.
+The real-keyboard evidence now covers the specific settled split/full-width
+arrangements and the original floating failures,
+not every keyboard or user configuration.
 
 ## Verified workaround
 
@@ -349,6 +420,15 @@ It is a temporary, floating-keyboard action, not a persistent default
 or a docked-keyboard geometry test.
 At 200% text, it covers part of the selected Search deck;
 therefore it is **not** a workaround for D50.
+
+For repeatable geometry research without changing the active AVD,
+the disposable Fold can be booted in a 6 GiB/2 CPU container with Xvfb,
+a read-only copy of the host ADB **public** key,
+`-skip-adb-auth`,
+and clean disposable guest data.
+This verified combination enables real Gboard input,
+but its resource cost is higher than the earlier 2 GiB probe,
+and it does not make the original AVD's floating mode go away.
 
 For bottom-keyboard design comparisons, anchor the unfolded deck above a
 visible keyboard rather than treating a keyboard-closed capture as D50 evidence.
@@ -372,6 +452,12 @@ Do not change the production app based solely on either probe.
 - The 2 GiB capped disposable AVD run: the container-local Xvfb allowed
   graphics initialization, but the kernel killed `qemu-system-x86` for
   container memory exhaustion before a keyboard could be tested.
+- Passing `-skip-adb-auth` alone in the 6 GiB container still left the fresh
+  guest `unauthorized` to the host ADB server.
+- Treating the generated `hw.keyboard=no` config as absence of a physical
+  keyboard: `dumpsys input` and Window Manager contradict that assumption.
+- Treating the banner-state `bottom <= imeTop` as a deck-visibility proof:
+  the final mode was clipped to 64px while ending exactly at the IME top.
 
 ## Upstream filing decision
 
@@ -381,8 +467,9 @@ A `gh search issues` query for
 returned no matching GitHub issues, but GitHub is not the Gboard issue tracker.
 No upstream report is ready:
 
-1. **Upstream fault:** Unknown. The same Gboard build previously drew keys,
-   and current behavior has not been isolated from emulator state or app focus.
+1. **Upstream fault:** Unknown. A disposable AVD running the same updated
+   Gboard build drew split/full-width keys; the original differs in user data
+   and settings, so the floating mode is not an isolated regression.
 2. **Fixability:** Unknown without the responsible path.
 3. **Supported use case:** Android documents custom IMEs and soft-keyboard use,
    but that does not identify a Gboard regression.
@@ -398,13 +485,15 @@ No upstream report is ready:
 Android 17 Fold emulator: Gboard's physical-keyboard toolbar lacks keys on fresh Search focus
 
 On emulator 37.1.11.0, Pixel 9 Pro Fold, Android 17 SDK 37,
-Gboard versionCode 175753756, focusing the music-player debug Search
+Active Gboard versionCode 175981944, focusing the music-player debug Search
 shows a side toolbar without keys.
 The toolbar's Show on-screen keyboard action brings up a usable floating
 keyboard, but another fresh focus returns to the toolbar-only state.
 At 200% text the floating keyboard obscures the selected player's deck title.
-Docked and split Gboard were not established;
-no upstream attribution or fix is proposed.
+A disposable Fold with the same updated Gboard drew split inner and
+full-width cover keyboards,
+so version alone did not reproduce the original state.
+No upstream attribution or fix is proposed.
 ~~~
 
 The [Android IME guide](https://developer.android.com/develop/ui/views/touch-and-input/creating-input-method)
