@@ -177,7 +177,8 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
         SearchDeckRight(query = query, onQueryChange = { query = it }, onBack = onBack,
             unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor,
             liftWithIme = candidate.contains("-lift-"),
-            bannerHeightStress = candidate.contains("-bannerfit-"))
+            bannerHeightStress = candidate.contains("-bannerfit-"),
+            retainLeftContext = candidate.contains("-retain-"))
     } else {
         SearchDeckWide(query = query, onQueryChange = { query = it }, onBack = onBack,
             unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor)
@@ -204,11 +205,33 @@ private const val BANNER_STRESS_INSET_PX = 1000
 /** Android 17 SDK level used only to guard debug bounding-rectangle inspection. */
 private const val BOUNDING_RECT_API_LEVEL = 37
 
+/** Minimum debug browser slot that can show one 48dp folder target below a top app bar. */
+private val MIN_BROWSER_SLOT_HEIGHT = 128.dp
+
+/**
+ * What: Keep the selected folder visible in upper-left space too short for a tappable browser.
+ * Why: Search should not blank context just because the IME displaces the complete deck.
+ * In TS you'd write: function FoldSearchContext(): UIElement;
+ */
+@Composable
+private fun FoldSearchContext(modifier: Modifier) {
+    Row(
+        modifier = modifier.fillMaxSize().padding(start = 30.dp, end = 30.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(imageVector = Icons.Filled.FolderOpen, contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(text = "Current folder · Camellia", style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+    }
+}
+
 /** Shows Search in the right track slot while folders and the deck stay on the left. */
 @Composable
 private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, halfDent: Dp, light: Boolean, pageColor: Color,
-    liftWithIme: Boolean, bannerHeightStress: Boolean) {
+    liftWithIme: Boolean, bannerHeightStress: Boolean, retainLeftContext: Boolean) {
     val reportedImeInset = WindowInsets.ime.getBottom(LocalDensity.current)
     val keyboardShown = reportedImeInset > 0
     // This debug-only threshold studies the measured banner geometry, not a production IME rule.
@@ -235,7 +258,16 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
             deckFirst = !liftWithIme, deckFullHeight = liftWithIme, bannerFit = bannerFit) { slot ->
             if (!keyboardShown) SearchFoldFolders(light = light,
                 modifier = slot.padding(end = halfDent + 8.dp))
-            else Box(modifier = slot)
+            else if (retainLeftContext) {
+                BoxWithConstraints(modifier = slot) {
+                    if (maxHeight >= MIN_BROWSER_SLOT_HEIGHT) {
+                        SearchFoldFolders(light = light,
+                            modifier = Modifier.fillMaxSize().padding(end = halfDent + 8.dp))
+                    } else {
+                        FoldSearchContext(modifier = Modifier.fillMaxSize())
+                    }
+                }
+            } else Box(modifier = slot)
         }
         PersistentSearchPane(query = query, onQueryChange = onQueryChange, onBack = onBack,
             unavailable = unavailable, modifier = Modifier.weight(1f),
