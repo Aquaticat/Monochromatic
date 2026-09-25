@@ -118,6 +118,40 @@ export const WORDING_GLOSSARY: readonly CommunityTerm[] = [
     ],
     why: 'praise of her temperament; the page says she "was very good-natured", never "a person of such a good nature"',
   },
+  // CLASS ONE HUNDRED THIRTY-THREE (shi_Yumiaoya34, 2026-09-25): 人生中的第一颗补佳乐
+  // shipped as "the first Progynova of her life" and 精神已留下了巨大的创伤 as "her
+  // mind had already been left with great trauma". Each term stands in one pinned
+  // entry, so the refused forms are read only on that page's paragraphs.
+  {
+    term: '人生中的第一颗',
+    renderings: [
+      'her very first',
+      'her first-ever',
+    ],
+    refusedForms: [
+      'of her life',
+      'of his life',
+      'of its life',
+    ],
+    why: 'the first pill she ever took; "the first Progynova of her life" is word for word, so the page says she took '
+      + '"her very first" Progynova',
+  },
+  {
+    term: '留下了巨大的创伤',
+    renderings: [
+      'left her deeply traumatized',
+      'deeply traumatized',
+      'left deep scars',
+    ],
+    refusedForms: [
+      'left with great trauma',
+      'left with a huge trauma',
+      'great trauma',
+      'huge trauma',
+    ],
+    why: 'the arrest left her badly hurt in mind; "left with great trauma" is word for word, so the page says it '
+      + '"left her deeply traumatized"',
+  },
 ];
 
 //endregion Wording renderings
