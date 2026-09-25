@@ -67,6 +67,55 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
     why: 'a student who excels academically; 觉醒了学霸属性 is internet slang for suddenly becoming a top '
       + 'student, so the page says that, never that she "awakened" a "trait" or "attribute"',
   },
+  // CLASS ONE HUNDRED TWENTY-FIVE (shi_Yumiaoya25, 2026-09-25): 滑档二本
+  // shipped as "slid down into a second-tier admission slot" and 用这种方式告诉
+  // as "using this way to tell". Each form appears once in the pinned corpus.
+  {
+    term: '二本',
+    renderings: [
+      'second-tier university',
+      'second-tier college',
+      'second-tier school',
+    ],
+    refusedForms: [
+      'admission slot',
+      'second batch',
+      'erben',
+    ],
+    why: 'the second tier of Chinese universities, admitted by gaokao score after the first tier (一本); the '
+      + 'page names the kind of university, never the admission batch or slot',
+  },
+  {
+    term: '滑档',
+    renderings: [
+      'missed her chosen schools',
+      'fell through to',
+      'ended up at',
+    ],
+    refusedForms: [
+      'slid down',
+      'slid into',
+      'slipped a file',
+      'sliding file',
+      'huadang',
+    ],
+    why: 'a gaokao applicant whose score met none of the schools she applied to and who was placed at a lower '
+      + 'tier; the page says she missed her chosen schools and ended up at the lower-tier one',
+  },
+  {
+    term: '用这种方式',
+    renderings: [
+      'this was her way of',
+      'in this way',
+      'by doing so',
+    ],
+    refusedForms: [
+      'using this way to',
+      'use this way to',
+      'used this way to',
+    ],
+    why: '"use this way to" is not English; the page writes "this was her way of telling" or "in this way"',
+  },
 ];
 
 /**
