@@ -1579,7 +1579,8 @@ private fun TransportBlock(
             }
             if (!bannerFit) TransportControls(candidate = candidate)
         }
-        ModeControl()
+        // Segment labels and complete targets stay off the approximate crease.
+        ModeControl(modifier = Modifier.fillMaxWidth().padding(end = seekEndSafe))
     }
 }
 
@@ -1949,16 +1950,16 @@ private fun FourRowModeControl(
  *
  * In TS you'd write (pseudocode):
  * ```ts
- * function ModeControl(): UIElement;
+ * function ModeControl(props: { modifier: Modifier }): UIElement;
  * ```
  */
 @Composable
-private fun ModeControl() {
+private fun ModeControl(modifier: Modifier) {
     val labels = listOf("Repeat", "In order", "Shuffle $CURRENT_SUBDIRECTORY", "Shuffle all")
     val accessibleLabels = listOf("Repeat track", "Play in order", "Shuffle $CURRENT_SUBDIRECTORY", "Shuffle all folders")
     val density = LocalDensity.current
     BoxWithConstraints(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         contentAlignment = Alignment.Center,
     ) {
         val oneRowOverflow = remember(maxWidth, density.fontScale) { mutableStateOf(false) }
