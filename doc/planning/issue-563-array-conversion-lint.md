@@ -77,7 +77,19 @@ narrowing messages and enabling safe fixes where the bridge can answer.
 - Upstream fixes are not awaited; repo precedent replaces problematic upstream rules with project rules
   (`package/config/oxlint/src/rule/restriction.ts:115-140`).
 
+### `prefer-spread` is not needed off for the baseline (correction)
+
+An earlier recommendation to turn `unicorn/prefer-spread` off was retracted.
+Its `Array.from(x.m(),)` rewrite lands in the banned shape, but the baseline only reports,
+so the author sees an error instead of a silent break and the fix loop has no second fix to oscillate with.
+Its `concat` arm only reports; its no-argument `toSpliced()` arm cannot type-check anyway.
+Its `slice()` arm is a separate standalone defect: `scoopGrams.slice()` becomes `[...scoopGrams]`,
+a `[...value]` spread the baseline does not ban.
+Repo uses of single-argument `Array.from` are 2 deliberate string code-point splits, each suppressing `prefer-spread`
+(`package/git-policy/cli/src/parser/commit-normalise.ts:122`, `package/module/i18n-compose/src/render-helpers.ts:147`).
+
 ## Open questions
 
 - Which candidate policy.
-- Whether `unicorn/prefer-spread` is turned off or replaced, given its standalone typed-array break.
+- When the type-aware enhancement ships.
+- Whether the standalone `prefer-spread` `slice()` defect gets its own issue.
