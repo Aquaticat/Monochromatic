@@ -123,6 +123,77 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
     ],
     why: '"use this way to" is not English and "use this method to" is the same calque; the page writes "this was her way of telling" or "in this way"',
   },
+  // CLASS ONE HUNDRED TWENTY-SIX (shi_Yumiaoya27, 2026-09-25): 年级组长
+  // shipped as "the grade leader", 未成年药娘 as "a minor trans girl", 骨灰骰子
+  // as "ash dice", 同居者 as "cohabitants" and 精神霸凌 as plain "bullied".
+  {
+    term: '年级组长',
+    renderings: [
+      'head of year',
+      'year head',
+      'grade director',
+    ],
+    refusedForms: [
+      'grade leader',
+      'grade group leader',
+      'grade team leader',
+    ],
+    why: 'the teacher in charge of a whole school year; "grade leader" is a calque English readers do not know',
+  },
+  {
+    term: '未成年',
+    renderings: [
+      'underage',
+      'under eighteen',
+      'a minor',
+    ],
+    refusedForms: [
+      'minor trans',
+      'minor girl',
+      'minor boy',
+    ],
+    why: '"a minor" is English as a noun, but before another noun ("a minor trans girl") it reads as "unimportant"; '
+      + 'the page writes "an underage trans girl"',
+  },
+  {
+    term: '骨灰骰子',
+    renderings: [
+      'dice made from the ashes',
+      'memorial dice made from the ashes',
+    ],
+    refusedForms: [
+      'ash dice',
+      'ashes dice',
+    ],
+    why: 'dice made with a person\'s cremated ashes as a keepsake; "ash dice" reads as dice made of ash from anything',
+  },
+  {
+    term: '同居者',
+    renderings: [
+      'housemate',
+      'roommate',
+      'flatmate',
+    ],
+    refusedForms: [
+      'cohabitant',
+      'cohabiter',
+    ],
+    why: 'someone she shared a home with; "cohabitant" says a romantic partner, which the original does not',
+  },
+  {
+    term: '精神霸凌',
+    renderings: [
+      'psychologically bullied',
+      'emotionally bullied',
+      'psychological bullying',
+    ],
+    refusedForms: [
+      'spiritually bull',
+      'spiritual bull',
+    ],
+    why: 'bullying by words and pressure rather than by force; the page keeps the adjective ("psychologically '
+      + 'bullied"), never "spiritual"',
+  },
 ];
 
 /**
