@@ -41,6 +41,11 @@ The branch commit is blocked: the forbidden-strings scanner cannot start in the 
 - Because `copyArray` only accepts arrays, a syntax-only rule can report `copyArray(x.m())` as a useless copy
   with no false positive in code that type-checks.
   It must not autofix: on code that fails type-checking the unwrap would recreate the silent break.
+- Learning cost of the helper vocabulary: four names, met only when the narrow ban fires (1 current hit),
+  listed in the lint message; a wrong pick fails type-checking.
+  `copyArray`, `numbersOf`, and `codePointsOf` errors read plainly (`'string' is not assignable to 'readonly unknown[]'`).
+  `collect` with a `length?: never` guard produced `'number' is not assignable to 'undefined'`;
+  a string-literal guard type puts the remedy into the TypeScript error text instead.
 - Repo-wide run of the prototype rule over `package/`:
   1 spread of an ambiguous method result (a deliberate test fixture),
   175 spreads of other calls, 465 spreads of values, 15 `Array.from` calls;
