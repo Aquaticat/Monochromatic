@@ -4766,15 +4766,20 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA18 RUNS (entry `hulicaijia`,
-    frozen `e57a2589c`,
-    launched about 01:55 UTC 2026-09-25;
-    find the pass pid with `pgrep --full --list-full 'node .*frozen-dist-e57a2589c/corpus-pass.mjs --only hulicaijia'`,
-    the first pid is the pass;
+1.  SHI_YUMIAOYA24 RUNS (entry `shi_Yumiaoya`,
+    frozen `7e20bbee2`, classes one hundred twenty-two and twenty-three,
+    corpus-pass pid 2523838, launched 02:37 UTC 2026-09-25, waiter wait-s24;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read it by every hulicaijia17 check (13 headings, 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish, no double blank line);
-    record it under a new heading above "## shi_Yumiaoya23 read, 2026-09-25" in the pass log;
-    then `XingZ60` (run XingZ6011) on the same build.
+    read it by every shi_Yumiaoya23 check, then the two classes:
+    no drug class, count or container of medication near the death ("she had taken medication" at most),
+    no rooftop or tall building in the death sentence,
+    师范学院 as "teachers' college" (never "normal college"),
+    学霸 as "top student" (never "trait");
+    record it under a new heading above "## Classes one hundred twenty-two and one hundred twenty-three, 2026-09-25" in the pass log;
+    then `hulicaijia` (run hulicaijia19; hulicaijia18 was killed at 02:36 UTC for the fix) and `XingZ60` (run XingZ6011) on the same build.
+    OWNER STANDING INSTRUCTIONS OF 2026-09-25:
+    "From now on whenever you see anything that can be translated better do it." A rendering that reads badly is a class to fix (rendering glossary entry, policy clause or floor), never an observation left in a note.
+    "dropping "swallowing a large amount of medication" is fine. It's documented somewhere that not showing suicide methods therefore promoting replication is expected." Read every death and attempt passage against `src/house-policy.ts` reader protection; a method, substance, dose or place-as-means on the page is a class.
     SHI_YUMIAOYA23 READ (frozen `e57a2589c`): SETTLED at 01:49 UTC 2026-09-25 in 20.9 min, one attempt, 917 seats, 841 calls, about 0.35 USD by the meters;
     every shi_Yumiaoya22 check holds (4 headings, front matter equal, no TA, no error finish, no double blank line, the death paragraphs, the closing quote's two lines with the attribution once, "trans girl", Han only in the archive comments);
     the sedative detail of the original now on the page; the January 16 sentence drops 吞下大量药物 as shi_Yumiaoya14 did (an observation); glm-5.3 dark (72 seats, Hyper dry); no class.

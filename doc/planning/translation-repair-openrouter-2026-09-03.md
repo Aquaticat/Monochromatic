@@ -8082,7 +8082,71 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
-## shi_Yumiaoya23 read, 2026-09-25, 01:49 UTC: SETTLED in 20.9 min, the sedative detail on the page; no class
+## Classes one hundred twenty-two and one hundred twenty-three, 2026-09-25, 02:40 UTC: the owner's reading of shi_Yumiaoya23
+
+The owner read the shi_Yumiaoya23 note and wrote on 2026-09-25:
+"these should obviously be translated better.
+From now on whenever you see anything that can be translated better do it."
+and
+"dropping "swallowing a large amount of medication" is fine.
+It's documented somewhere that not showing suicide methods therefore promoting replication is expected."
+Both are standing instructions:
+a rendering that reads badly is a class to fix, not an observation to record,
+and the reader-protection rule (`src/house-policy.ts`) is the authority on method detail.
+
+CORRECTION of the shi_Yumiaoya23 read below:
+it called "Although before her passing she took three bottles of some kind of sedative-hypnotic" closer to the original.
+Under the reader-protection rule it is a violation:
+the rule keeps "a method, a substance, a dose" vague,
+and a drug class with a count is both.
+Every shi_Yumiaoya run from 14 to 23 except 22 shipped the class and the count
+(shi_Yumiaoya14 "three bottles of a certain sedative",
+16 "three bottles of a certain sedative",
+17 and 19 "a large amount of a ... sedative-hypnotic medication",
+18 "three bottles of a certain sedative-hypnotic"),
+and every run shipped "the rooftop of a tall building" for 走上了高楼的天台.
+The artifact shows why:
+the translate slate judges read the drug class as vague because it named no drug
+("the drug name/dosage is deliberately kept vague"),
+one read the rule as reaching only the medication that was the means
+("violates the rule against softening/generalizing unless it's a suicide method"),
+and the one candidate writing "a large amount of medication" was marked down as over-vague.
+The rule never said that a class is a substance,
+that it reaches medication beside the means,
+or that a place can itself be the means.
+
+CLASS ONE HUNDRED TWENTY-TWO:
+the house policy now says that a class of drug is a substance and a count is a dose, named or not;
+that this holds for any medication the page ties to a death or an attempt, not only the means,
+the page saying at most that she had taken medication;
+and that a place which is itself the means (a rooftop, a high floor, a bridge, a railway line, deep water) is a method,
+the page keeping a place only where it tells a reader nothing to copy (a city, a hotel, a hospital).
+The place clause is my reading of the rule's own replicability test against its "the date, the place and the age" stay;
+the owner's words ("not showing suicide methods") settle it the same way.
+
+CLASS ONE HUNDRED TWENTY-THREE:
+a rendering glossary (`src/rendering-glossary.ts`) beside the community glossary,
+sharing its machinery:
+the ordinary words an entry's source carries reach every sheet's identity context under a RENDERINGS heading,
+and the source-carry floor refuses a candidate that keeps one in Han or writes a refused calque before any judge reads it.
+Seeded from the corpus census (`rg` over every `page.md` at the pin):
+师范学院 (shi_Yumiaoya) as "teachers' college", refusing "normal college";
+师范学校 (Xu_Yushu) as "teacher-training school", refusing "normal school";
+学霸 (shi_Yumiaoya, mikaela_khara) as "top student", refusing "top-student trait", "academic tyrant", "study tyrant" and "xueba".
+The official names 北京师范大学 and 辽宁师范大学 keep "Normal University" and are not entered.
+Each future rendering that can be better is a new entry.
+
+Guards red first `87a50966f` (`protected-substance-policy.unit.test.ts`, `rendering-glossary.unit.test.ts`),
+built `7e20bbee2`,
+lint 0/0 on the touched files,
+types clean,
+full suite green (`suite-class122-123.log`, 1124 PASS, no FAIL).
+`document-preparation.ts` went one line over its budget with two glossary calls,
+so `glossaryTermLines` in `rendering-glossary.ts` carries both.
+`hulicaijia18` (frozen `e57a2589c`) was killed at 02:36 UTC under always kill and relaunch,
+and `shi_Yumiaoya24` launched on `.frozen-dist-7e20bbee2` to read both classes live.
+
+## shi_Yumiaoya23 read, 2026-09-25, 01:49 UTC: SETTLED in 20.9 min; the sedative detail and two calques on the page (classes one hundred twenty-two and twenty-three, found by the owner)
 
 `shi_Yumiaoya23` ran on frozen `e57a2589c` (class one hundred twenty-one),
 launched 01:28 UTC,
@@ -8111,9 +8175,11 @@ the closing quote as the archive's two lines with "From *The Truman Show*" once,
 小药娘 as "trans girl" in the body and "trans women" in the `[^1]` definition,
 with Han only inside the archive's own comments.
 
-The death paragraph is closer to the original than shi_Yumiaoya22's:
-虽然在离世前她吃了三瓶某种镇静催眠药 now reads "Although before her passing she took three bottles of some kind of sedative-hypnotic",
-where shi_Yumiaoya22 wrote "She had taken medication before she died".
+The death paragraph names a drug class and a count
+(虽然在离世前她吃了三瓶某种镇静催眠药 as "Although before her passing she took three bottles of some kind of sedative-hypnotic"),
+where shi_Yumiaoya22 wrote "She had taken medication before she died";
+this note first called that closer to the original, which the reader-protection rule contradicts
+(corrected under "Classes one hundred twenty-two and one hundred twenty-three, 2026-09-25").
 The ICU paragraph reads "Chewing Gum and Danpian" for 口香糖和单片,
 the original's short form,
 where shi_Yumiaoya22 wrote the declared long form (class seventy-eight holds either way).
