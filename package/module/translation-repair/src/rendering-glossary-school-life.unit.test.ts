@@ -70,7 +70,7 @@ const REFUSED_CANDIDATES: readonly { readonly sourceText: string; readonly candi
  Candidates carrying the English meaning, each with the original it renders.
  */
 const ACCEPTED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
-  { sourceText: YEAR_HEAD, candidateText: 'The head of year often comforted the cat.', },
+  { sourceText: YEAR_HEAD, candidateText: 'The grade coordinator often comforted the cat.', },
   { sourceText: UNDERAGE, candidateText: 'The cat was psychologically bullied by an underage trans girl.', },
   { sourceText: ASHES, candidateText: 'The cat\'s ashes will be made into dice.', },
   { sourceText: HOUSEMATE, candidateText: 'The cat\'s housemate was taken away.', },

@@ -20,22 +20,22 @@ export const WORDING_GLOSSARY: readonly CommunityTerm[] = [
   {
     term: '辅导员',
     renderings: [
-      'student adviser',
-      'student affairs adviser',
-      'class adviser',
+      'student advisor',
+      'student affairs advisor',
+      'academic advisor',
     ],
     refusedForms: [
       'counselor',
       'counsellor',
     ],
-    why: 'a Chinese university\'s student affairs officer, not a therapist; "counselor" tells an English reader she '
-      + 'was seeing one, so the page says "student adviser"',
+    why: 'a Chinese university\'s student affairs officer, not a therapist; "counsellor" tells an English reader she '
+      + 'was seeing one, so the page says "student advisor", the Canadian spelling of the role',
   },
   {
     term: '矫正机构',
     renderings: [
       'behaviour-correction centre',
-      'behavior-correction center',
+      'behaviour-correction camp',
       'correction camp',
     ],
     refusedForms: [

@@ -33,7 +33,7 @@ const TRIO = '猫也是三剑客汽车节目的忠实观众。';
 /**
  Original likening the cat to a car that will be phased out.
  */
-const PETROL_CAR = '猫就如同燃油车一样，终究会消逝。';
+const GAS_CAR = '猫就如同燃油车一样，终究会消逝。';
 
 /**
  Original in which schoolwork weighs on the cat.
@@ -90,7 +90,7 @@ const SEEDED_TERMS = [
  */
 const REFUSED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
   { sourceText: TRIO, candidateText: 'The cat was also a devoted viewer of the Three Musketeers car show.', },
-  { sourceText: PETROL_CAR, candidateText: 'The cat was like a fuel-powered car, bound to fade away.', },
+  { sourceText: GAS_CAR, candidateText: 'The cat was like a fuel-powered car, bound to fade away.', },
   { sourceText: CRUSHING, candidateText: 'The pressure of schoolwork left the cat breathless.', },
   { sourceText: SCARS, candidateText: 'The cat\'s paws were covered in densely packed scars.', },
   { sourceText: APPLICATIONS, candidateText: 'The cat made a major mistake in its application preferences.', },
@@ -105,7 +105,7 @@ const REFUSED_CANDIDATES: readonly { readonly sourceText: string; readonly candi
  */
 const ACCEPTED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
   { sourceText: TRIO, candidateText: 'The cat was also a devoted viewer of the Top Gear trio\'s car shows.', },
-  { sourceText: PETROL_CAR, candidateText: 'The cat was like a petrol car, bound to fade away.', },
+  { sourceText: GAS_CAR, candidateText: 'The cat was like a gas-powered car, bound to fade away.', },
   { sourceText: CRUSHING, candidateText: 'The pressure of schoolwork was crushing for the cat.', },
   { sourceText: SCARS, candidateText: 'The cat\'s paws were covered in scars.', },
   { sourceText: APPLICATIONS, candidateText: 'The cat made a serious mistake on its university applications.', },

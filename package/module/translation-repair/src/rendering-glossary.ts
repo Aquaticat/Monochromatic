@@ -38,7 +38,7 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
       'normal college',
     ],
     why: 'a generic college that trains teachers; "normal college" is a calque English readers do not '
-      + 'recognise, kept only inside an institution\'s own official English name',
+      + 'recognize, kept only inside an institution\'s own official English name',
   },
   {
     term: '师范学校',
@@ -51,7 +51,7 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
       'normal school',
     ],
     why: 'a generic school that trains teachers; "normal school" is a dated calque English readers do not '
-      + 'recognise',
+      + 'recognize',
   },
   {
     term: '学霸',
@@ -132,16 +132,19 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
   {
     term: '年级组长',
     renderings: [
-      'head of year',
-      'year head',
+      'grade coordinator',
+      'head of the grade',
       'grade director',
     ],
     refusedForms: [
       'grade leader',
+      'head of year',
+      'year head',
       'grade group leader',
       'grade team leader',
     ],
-    why: 'the teacher in charge of a whole school year; "grade leader" is a calque English readers do not know',
+    why: 'the teacher in charge of a whole grade; "grade leader" is a calque English readers do not know, and '
+      + '"head of year" is British where a Canadian school says grade',
   },
   {
     term: '未成年',
@@ -175,7 +178,6 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
     renderings: [
       'housemate',
       'roommate',
-      'flatmate',
     ],
     refusedForms: [
       'cohabitant',

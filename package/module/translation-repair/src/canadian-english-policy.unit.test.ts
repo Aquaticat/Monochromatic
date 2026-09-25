@@ -64,6 +64,11 @@ const NON_CANADIAN_WORDS = [
 const NON_CANADIAN_PHRASES = ['head of year', 'year head',] as const;
 
 /**
+ Letters a rendering's words are made of, once lowercased.
+ */
+const LOWERCASE_LETTERS = 'abcdefghijklmnopqrstuvwxyz';
+
+/**
  Cat-themed source, since neither sheet varies with what it is given.
  */
 const SOURCE_TEXT = '猫在窗台上睡觉。';
@@ -132,7 +137,7 @@ function glossaryRenderings(): readonly string[] {
 function nonCanadianRenderings(): readonly string[] {
   return glossaryRenderings().filter(function isNonCanadian(rendering,): boolean {
     const words = Array.from(rendering, function letterOrSpace(character,): string {
-      return character >= 'a' && character <= 'z' ? character : ' ';
+      return LOWERCASE_LETTERS.includes(character,) ? character : ' ';
     },).join('',).split(' ',);
     return NON_CANADIAN_WORDS.some(function hasWord(word,): boolean {
       return words.includes(word,);

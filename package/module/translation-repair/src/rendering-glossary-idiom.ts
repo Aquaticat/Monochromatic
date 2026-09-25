@@ -34,9 +34,9 @@ export const IDIOM_GLOSSARY: readonly CommunityTerm[] = [
   {
     term: '燃油车',
     renderings: [
-      'petrol car',
+      'gas-powered car',
       'gasoline car',
-      'combustion-engine car',
+      'gas car',
     ],
     refusedForms: [
       'fuel-powered car',
@@ -44,8 +44,12 @@ export const IDIOM_GLOSSARY: readonly CommunityTerm[] = [
       'fuel car',
       'fuel vehicle',
       'fuel-burning car',
+      // Class one hundred thirty-two: "petrol" is British; the page is Canadian.
+      'petrol car',
+      'petrol-powered',
     ],
-    why: 'a car with a petrol engine, the kind being phased out; English says "a petrol car", never "a fuel-powered car"',
+    why: 'a car with a gasoline engine, the kind being phased out; Canadian English says "a gas-powered car", never '
+      + '"a fuel-powered car" or the British "petrol car"',
   },
   {
     term: '喘不过气',

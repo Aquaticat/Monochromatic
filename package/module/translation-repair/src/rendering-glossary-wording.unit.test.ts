@@ -26,7 +26,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Original in which the cat's university adviser sends it away.
+ Original in which the cat's university advisor sends it away.
  */
 const ADVISER = '猫的辅导员把它送去了别处。';
 
@@ -90,7 +90,7 @@ const REFUSED_CANDIDATES: readonly { readonly sourceText: string; readonly candi
  Candidates carrying the English meaning, each with the original it renders.
  */
 const ACCEPTED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
-  { sourceText: ADVISER, candidateText: 'The cat\'s student adviser sent it somewhere else.', },
+  { sourceText: ADVISER, candidateText: 'The cat\'s student advisor sent it somewhere else.', },
   { sourceText: CORRECTION, candidateText: 'The cat was sent to a behaviour-correction centre.', },
   { sourceText: BREAKUP, candidateText: 'The cat was the one who suggested breaking up.', },
   { sourceText: FREE, candidateText: 'The cats launched a campaign to free their friend.', },
