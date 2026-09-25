@@ -8082,6 +8082,62 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya31 read, 2026-09-25, 07:35 UTC: class one hundred twenty-nine live, nine idiom calques (class one hundred thirty)
+
+### What ran
+
+Frozen `a719b81f6`, corpus-pass pid 3059542, launched 06:58 UTC.
+SETTLED at about 07:29 UTC in 30.6 min, one attempt,
+983 seats, 981 calls, no retry rounds, 10 abstentions,
+about 0.16 USD on Bedrock and 0.07 USD on OpenRouter by the meters
+(40.47 to 40.31, 82.93 to 82.86).
+Every provider wet; glm-5.3 answered 80 of 80 with Hyper back.
+
+### Checks
+
+Every shi_Yumiaoya30 check holds:
+front matter equal, 4 headings as the archive, no TA, no double blank line, no error finish,
+"year head", "psychologically bullied by an underage trans girl", "memorial dice", "housemate",
+"overdosing" and "Don't overdose", "sailor uniform", "National College Entrance Examination",
+"teachers' college", "became a top student".
+Register check clean: none of OD, ODing, jk, TGT, MtF, gearhead or slacked off;
+MtX spelled out where it first appears.
+Class one hundred twenty-nine on the page:
+"Yumiao's death had many causes", "so Yumiao, as an exception, received no punishment",
+"she stopped trying in her studies" and "she stopped trying completely",
+"This drove Yumiao to the edge of madness", "go on observing this vast world".
+
+### Nine idiom calques (class one hundred thirty)
+
+Under the owner's standing instruction of 2026-09-25,
+nine more renderings that read badly join the rendering glossary,
+each term carried by this entry alone in the pinned corpus:
+
+- 三剑客汽车节目 shipped "the Three Musketeers car show"; English viewers say "the Top Gear trio".
+- 燃油车 shipped "like a fuel-powered car"; the page says "a petrol car".
+- 喘不过气 shipped "the intense academic pressure left her breathless";
+  "breathless" reads as excited or winded, so the page says the pressure was crushing or that she could barely breathe.
+- 密密麻麻的伤痕 shipped "covered in densely packed scars"; the page says her arms were covered in scars.
+- 志愿填写 shipped "a major mistake in filling out her application preferences"; the page says her university applications.
+- 命运的齿轮 shipped "the gears of fate began to turn"; the English idiom is "the wheels of fate".
+- 相关医院 shipped "sought treatment at the relevant hospitals"; the page says she sought hospital treatment.
+- 巨大的影响 shipped "Yumiao's parents also had an enormous influence on her death";
+  the page says they played a large part in her death.
+- 贴贴计划 shipped "through her cuddling plan she met many companions"; the page names the cuddle meetups.
+
+Left as written, each read against its source line:
+"She seriously hurt herself" is 其进行了较为严重自伤行为, right;
+"bipolar disorder with other psychotic features" keeps the original's 其他;
+"negative energy" for 负能量 is ordinary English;
+"did not want to disturb him" for 不想打扰他 reads as English.
+
+`rendering-glossary.ts` crossed the 300-line budget with the new entries,
+so class one hundred twenty-nine's entries moved to `rendering-glossary-phrasing.ts`
+and class one hundred thirty's sit in `rendering-glossary-idiom.ts`, both spread into `RENDERING_GLOSSARY`.
+Guard red first `3774ee79a` (`rendering-glossary-idiom.unit.test.ts`: seeds, refuses the nine calques, accepts the English),
+fixed `6637865d6`, lint 0/0, types clean, suite `suite-class130.log` 1131 PASS, no FAIL.
+Frozen `.frozen-dist-6637865d6`; shi_Yumiaoya32 launched 07:36 UTC (pid 3135802).
+
 ## shi_Yumiaoya30 read, 2026-09-25, 06:55 UTC: classes one hundred twenty-six to twenty-eight live, five phrasing calques (class one hundred twenty-nine)
 
 ### What ran

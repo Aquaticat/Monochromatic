@@ -4773,16 +4773,20 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA31 RUNS (entry `shi_Yumiaoya`,
-    frozen `a719b81f6`, class one hundred twenty-nine,
-    corpus-pass pid 3059542, launched 06:58 UTC 2026-09-25, waiter wait-s31;
-    the frozen dir checked absent first and grepped for "原因是多方面的" after):
-    read it by every shi_Yumiaoya30 check below, then the class one hundred twenty-nine renderings:
-    the death "had many causes" (no "many sides to the cause"), "Yumiao, as an exception," (no "this exception,"),
-    a plain verb for 摆烂 (no "one of giving up", no "slacked off"), "edge of madness" or like (no "mental state into madness"),
-    "this vast world" or like (no "myriad world");
-    record it under a new heading above "## shi_Yumiaoya30 read, 2026-09-25" in the pass log;
-    then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on `a719b81f6`, each read with the register check.
+1.  SHI_YUMIAOYA32 RUNS (entry `shi_Yumiaoya`,
+    frozen `6637865d6`, class one hundred thirty,
+    corpus-pass pid 3135802, launched 07:36 UTC 2026-09-25, waiter wait-s32;
+    the frozen dir checked absent first and grepped for "three musketeers" after):
+    read it by every shi_Yumiaoya31 check (the shi_Yumiaoya30 checks below plus the class one hundred twenty-nine renderings),
+    then the class one hundred thirty renderings: no "Three Musketeers", "fuel-powered", "breathless", "densely packed",
+    "application preferences", "gears of fate", "relevant hospitals", "influence on her death" or "cuddling plan";
+    record it under a new heading above "## shi_Yumiaoya31 read, 2026-09-25" in the pass log;
+    then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on `6637865d6`, each read with the register check.
+    SHI_YUMIAOYA31 READ (frozen `a719b81f6`): SETTLED at about 07:29 UTC in 30.6 min, 981 calls, about 0.23 USD by the meters;
+    class one hundred twenty-nine live ("had many causes", "Yumiao, as an exception,", "stopped trying", "edge of madness", "this vast world"),
+    every shi_Yumiaoya30 check and the register check clean; glm-5.3 80 of 80 with Hyper wet;
+    nine idiom calques refused as class one hundred thirty (`6637865d6`, guard red first `3774ee79a`, suite `suite-class130.log` 1131 PASS, no FAIL;
+    class one hundred twenty-nine's entries moved to `rendering-glossary-phrasing.ts` for the line budget).
     SHI_YUMIAOYA30 READ (frozen `c432737d5`): SETTLED at 06:54 UTC in 25.1 min, 881 calls, about 0.45 USD by the meters;
     classes one hundred twenty-six to twenty-eight live and the register check clean;
     five phrasing calques refused as class one hundred twenty-nine (`a719b81f6`, guard red first `a5be55ae8`, suite `suite-class129.log` 1130 PASS, no FAIL).
