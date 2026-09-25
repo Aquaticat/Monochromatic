@@ -253,6 +253,30 @@ export function pLimit(concurrencyOrOptions: number | LimitOptions,): LimitFunct
   }
 
   /**
+   Invokes one call's function asynchronously, so a synchronous throw becomes
+   a rejection and the completion handling in {@link runCall} always runs
+   from a suspended continuation (matching upstream `p-limit`'s slot-release
+   tick).
+   
+   @param fn - Function to invoke.
+   
+   @param args - Arguments spread into `fn`.
+   
+   @returns Promise settling with the function's result or failure.
+   */
+  async function startCall<TArgs extends readonly unknown[], TResult>(
+    {
+      fn,
+      args,
+    }: {
+      readonly fn: (...args: TArgs) => TResult | PromiseLike<TResult>;
+      readonly args: TArgs;
+    },
+  ): Promise<TResult> {
+    return await fn(...args,);
+  }
+
+  /**
    Runs one admitted call, settles its deferred with the outcome, then frees
    the slot.
    
@@ -278,7 +302,10 @@ export function pLimit(concurrencyOrOptions: number | LimitOptions,): LimitFunct
        Result of the call's function; awaited so a thenable return flattens
        exactly once before the caller's promise settles.
        */
-      const result = await fn(...args,);
+      const result = await startCall({
+        fn,
+        args,
+      },);
       deferred.resolve(result,);
     }
     catch (error) {
