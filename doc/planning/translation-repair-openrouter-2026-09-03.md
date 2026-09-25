@@ -8082,6 +8082,59 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya24 read, 2026-09-25, 03:05 UTC: classes one hundred twenty-two and twenty-three live, a survived attempt's method on the page (class one hundred twenty-four)
+
+shi_Yumiaoya24 ran on frozen `7e20bbee2` (classes one hundred twenty-two and twenty-three),
+launched 02:37 UTC,
+SETTLED at 02:57:47 UTC in 24.5 min (`ms=1472366`),
+one attempt, 885 calls,
+about 0.44 USD by the meters (Bedrock 41.25 to 41.12, OpenRouter 84.63 to 84.32).
+Every shi_Yumiaoya23 check holds:
+4 headings, front matter equal, no TA, no error finish, no double blank line,
+the closing quote's two lines with the attribution once,
+"trans girl" and "trans woman" on the two 小药娘 lines,
+Han only inside the archive's comments;
+16 abstention lines, 2 retry rounds.
+
+Class one hundred twenty-two is live:
+the death paragraph reads "Although she had taken medication before she died"
+and "ended her brief and tragic life",
+with no drug class, no count and no rooftop.
+Class one hundred twenty-three is live:
+"teachers' college" and "she suddenly became a top student".
+
+CLASS ONE HUNDRED TWENTY-FOUR.
+The January 16 sentence, two sentences before the ICU waking, reads
+"she swallowed a large amount of medication in the early hours of January 16 and attempted to end her life".
+The method (吞下大量药物) is on the page for a survived attempt.
+The winning ballots show why:
+one wrote that the candidate "adheres to the 'Reader protection' rule ... appropriate way to handle the specific method",
+another "(survived the attempt, so no method named)".
+The bullet opened "When a death was by suicide, the specific method is deliberately kept vague",
+so the judges read an attempt as outside it.
+Fixed in `2fe4def37`:
+the bullet opens "When a death or an attempt was by suicide, the specific method is deliberately kept vague, whether she died or survived",
+and after the 自杀 sentence it states
+"A survived attempt is no exception: the page says that she attempted suicide or tried to end her life, never by what means".
+Guard red first `fe230891b` (`attempt-method-policy.unit.test.ts`: the house policy and the select sheet carry both clauses, the old opening gone),
+lint 0/0, types clean, full suite `suite-class124.log` 1125 PASS lines, no FAIL.
+shi_Yumiaoya25 launched 03:03 UTC on `.frozen-dist-2fe4def37` (pid 2596683, waiter wait-s25).
+
+Not a class:
+the ICU paragraph reads "Magic Chewing Gum and interrgned"
+where shi_Yumiaoya9 to 23 wrote "Chewing Gum and Danpian".
+Both are the entries' own renderings:
+interrgned's original declares 单片 as name and alias,
+its English page declares `name: interrgned` (the handle on every site in its `info.yml`) and `alias: Danpian`,
+the same shape as a2581911655's `name: Magic Chewing Gum` and `alias: Chewing Gum`;
+the page names both people by their entries' English names, once each.
+Line 237 ("she took large amounts of psychiatric medication every day", before the second ICU stay)
+renders 每日大量服用精神药物 as the original writes it:
+daily overuse whose harm to her body led to the ICU,
+which the original does not call an attempt.
+It stands under the rule as written (a death or an attempt);
+whether reader protection also reaches medication overuse the original does not call an attempt is left to the owner.
+
 ## Classes one hundred twenty-two and one hundred twenty-three, 2026-09-25, 02:40 UTC: the owner's reading of shi_Yumiaoya23
 
 The owner read the shi_Yumiaoya23 note and wrote on 2026-09-25:
