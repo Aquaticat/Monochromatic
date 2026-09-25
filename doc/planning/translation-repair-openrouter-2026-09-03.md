@@ -8082,6 +8082,38 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## yingying11 read, 2026-09-25, 00:46 UTC: SETTLED in 15.4 min; no class
+
+yingying11 ran on frozen `e57a2589c` (class one hundred twenty-one),
+launched 00:30 UTC,
+and settled at 00:46 UTC in 923 s,
+one attempt,
+333 calls,
+0.03 USD Bedrock (42.12 to 42.09) and 0.06 OpenRouter (86.18 to 86.12) by the meters.
+Synthetic was wet (weekly 89 percent) and Hyper dry.
+
+Every yingying10 check holds:
+front matter equal,
+1 heading,
+2 markers and 2 definitions as the archive,
+"Yingying" in the [^2] definition where the archive writes "Sakura" (classes eighty-six and one hundred fourteen),
+"May you still have" as the original's 你 (class ninety-seven),
+References kept,
+"Geek Lab" with 硬核视频 rendered as "the hardcore video Bilibili account",
+no Han,
+no TA,
+no error finish,
+no double blank line.
+The casing pass stayed silent, as expected:
+the archive's only all-capitals word is BUAA, and it already reads that way in the contributor line.
+Slice 0 shipped gate-kept (`gate-kept-standing`), with 8 abstention lines.
+
+Observation, not a class:
+one translate-slate abstention on the farewell says both candidates "violate the corpus house rule by using second person instead of third person".
+No house rule says that.
+The class ninety-seven floor refused the Kimi and minimax candidates that dropped the second person,
+and the page reads "May you" as the original does.
+
 ## mikaela17 read, 2026-09-25, 00:22 UTC: SETTLED in 40.8 min; class one hundred twenty-one
 
 mikaela17 ran on frozen `9ec838a01`

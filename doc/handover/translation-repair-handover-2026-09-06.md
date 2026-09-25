@@ -4766,15 +4766,18 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  YINGYING11 RUNS (entry `yingying`,
+1.  ZHEERMAO13 RUNS (entry `zheermao101`,
     frozen `e57a2589c`,
-    corpus-pass pid 2112729 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
-    launched 00:30 UTC 2026-09-25,
-    waiter wait-y11 (background bash);
+    corpus-pass pid 2131106 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
+    launched 00:47 UTC 2026-09-25,
+    waiter wait-z13 (background bash);
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read it by every yingying10 check ("Yingying" in the [^2] definition, "May you still have", 1 heading, 4 markers, 2 definitions, front matter equal, References kept, no TA, no error finish, no double blank line, "Geek Lab" with 硬核视频 rendered);
-    the casing pass should stay silent (the yingying archive writes no all-capitals name);
-    record it under a new heading above "## mikaela17 read, 2026-09-25" in the pass log.
+    read it by every zheermao12 check (2 headings, front matter equal, both labels one line, no TA, no error finish, no double blank line, the translate lane's picture transcripts within the volume bound);
+    record it under a new heading above "## yingying11 read, 2026-09-25" in the pass log;
+    then continue the rotation one entry at a time on the same build (`CuspariaKLSY`, `shi_Yumiaoya`, `hulicaijia`, `XingZ60`).
+    YINGYING11 READ (frozen `e57a2589c`): SETTLED at 00:46 UTC 2026-09-25 in 15.4 min, 333 calls, about 0.09 USD by the meters;
+    every yingying10 check holds, the casing pass silent (BUAA already in capitals); no class;
+    observation: one abstention called the farewell's second person a house-rule breach, and the page reads "May you" as the original.
     MIKAELA17 READ (frozen `9ec838a01`): SETTLED at 00:22 UTC 2026-09-25 in 40.8 min, 2,394 calls;
     every mikaela16 check holds;
     but slice 16 wrote "Xiawafang" where the archive writes XIAWAFANG in the body and its footnote (class one hundred twenty-one).
