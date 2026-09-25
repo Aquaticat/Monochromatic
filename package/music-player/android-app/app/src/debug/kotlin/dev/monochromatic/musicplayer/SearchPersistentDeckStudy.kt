@@ -218,7 +218,8 @@ private val MIN_BROWSER_SLOT_HEIGHT = 128.dp
 @Composable
 private fun FoldSearchContext(modifier: Modifier) {
     Row(
-        modifier = modifier.fillMaxSize().padding(start = 30.dp, end = 30.dp),
+        modifier = modifier.fillMaxSize().padding(start = 30.dp, end = 30.dp,
+            top = 8.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -257,7 +258,8 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     Row(modifier = Modifier.fillMaxSize().background(pageColor)
         .then(if (liftWithIme) Modifier.imePadding() else Modifier)) {
         SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f),
-            deckFirst = !liftWithIme, deckFullHeight = liftWithIme, bannerFit = bannerFit) { slot ->
+            deckFirst = !liftWithIme, deckFullHeight = liftWithIme, bannerFit = bannerFit,
+            compactForContext = retainLeftContext && keyboardShown) { slot ->
             if (!keyboardShown) SearchFoldFolders(light = light,
                 modifier = slot.padding(end = halfDent + 8.dp))
             else if (retainLeftContext) {
