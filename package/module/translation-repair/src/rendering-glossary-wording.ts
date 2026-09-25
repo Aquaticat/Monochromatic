@@ -173,6 +173,25 @@ export const WORDING_GLOSSARY: readonly CommunityTerm[] = [
     why: 'in the community, someone who buys medication and resells it to others; the general abbreviation of '
       + '医药代表 ("pharmaceutical sales representative") misreads it, so the page says she sold medication',
   },
+  // CLASS ONE HUNDRED THIRTY-FIVE (hulicaijia20, 2026-09-25): the closing
+  // quote shipped 豆花 as "tofu pudding" while the front matter (published as
+  // the archive has it), the archive and every other slice wrote "douhua",
+  // so one food stood under two names on one page. The corpus writes 豆花 on
+  // that page alone; MocaKawai's "tofu pudding" glosses 豆腐脑, another word,
+  // which this entry never reads.
+  {
+    term: '豆花',
+    renderings: ['douhua',],
+    refusedForms: [
+      'tofu pudding',
+      'tofu flower',
+      'bean curd pudding',
+      'soybean pudding',
+      'tofu custard',
+    ],
+    why: 'the page names the dish "douhua" in its front matter and throughout, and a second name for it on the same '
+      + 'page reads as a second food',
+  },
 ];
 
 //endregion Wording renderings
