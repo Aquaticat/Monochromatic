@@ -118,6 +118,61 @@ the human's presented tab was never reloaded. Scratch drivers:
   hint, interview, receipt, and scaffolding strings.
 - Checked page errors after each pass: empty in every session used here.
 
+## Repairs applied after this review
+
+The user chose “Repair everything now, then re-ask”, so all three measured defects were
+repaired before the deferred structure questions.
+Pre-repair artifact preserved as `doc/planning/promises-teaching-before-review-repairs.local.html`,
+694,025 bytes, SHA-256 `fb4631d86bd99bb532b142372e61aaaabe985a0d324cf61993f8d36900dc4875`.
+Repaired artifact: `doc/planning/promises-teaching.local.html`, 695,026 bytes,
+SHA-256 `e0f770f8f31e3c0b6425c530c6f13415a284d272d2f48e3f0d8f2ee956d887f6`,
+build identity `983a61d22da2dcab…`.
+
+- **Result panel.** `labs.mjs` now classifies each lab from its authored sample plus worked
+  comparison; a lab whose examples never write `#result` gets a `Page text` panel saying the
+  example reports to the monitor. Measured after the rebuild with a 2,000 ms settle:
+  `callback-batch`, `promise-batch`, and `adoption` show the honest text with 6, 6, and 1
+  monitor entries; `listener` still shows `Program result: No greeting yet.` and `constructor`
+  still shows `Program result: Hello Ada`.
+  The workshop's `Ready` panel is **not** a matching defect: the capstone's fixed panels are
+  `#result` and `#result-b`, and its worked comparison writes `Pending sends: 0` and
+  `Cancelled: Delivery cost?` there, so `Ready` is a true initial state.
+- **Orientation.** Profile, destination, learning path, and the usage callout now precede the
+  shop artifact. Measured at 944 by 741 CSS px after the rebuild: profile y 390 (inside the
+  first viewport, was 1693), destination 481, nav 629, callout 869, shop lab 1209 (was 402),
+  first chapter 2515.
+- **Scaffolding.** The kicker is `A browser-programming workshop`; `Tell me in Pi`,
+  `This revision is for critique`, and `Reply in Pi with your critique` are absent from both
+  screen and extracted print text. The notes caption now says the download is a local file the
+  learner can keep or share with whoever is teaching them, and the callout says the path links
+  every chapter so the learner can stop and return.
+
+Guard discipline: `verify-review-repairs.mjs` (task `test:review-repairs`, included in
+`test:all`) was run red against the preserved pre-repair artifact first, failing on the kicker,
+the `Pi` instructions, the prototype framing, and the panel text; it passed after the rebuild.
+Task `probe:review-repairs-before` keeps that red run reproducible.
+Its print assertions follow the lesson's own rule that `nav`, `button`, `iframe`, and `.controls`
+do not print, so the panel text is asserted on screen while the `.paper` counterparts are
+asserted in the PDF.
+
+Verification after the repairs: `mise run test:all` passed in 372 s, including the new guard and
+the ticket-boundary guards; the print inventory held 126 Letter pages at 2,477,051 bytes with
+793 teaching and 66 appendix entries; `test:exports` passed against a proxy whose HTTP denial
+was positively tested; Firefox ESR 140.16.0 passed the value, receipt, pagehide, chapter, and
+prototype checks.
+
+Presentation: the headed presenter opened the repaired build in a separate tab
+(2 tabs before, 3 after; build identity `983a61d22da2dcabcc0d7ae5a5932ebd35536ca527dc6b473ba55819da9e4ed4`)
+and scrolled it to the top, so the repaired kicker and `Starting profile` are the first things
+visible. The tab holding the pre-repair build was not reloaded or closed.
+The presenter's default anchor moved from `#promise-settlement` to the document top so a
+presentation lands on the orientation the lesson now puts first.
+Owned fixtures were stopped and their profiles removed after verification.
+
+Still open by the user's ordering, not repaired: the unannounced reading load, the
+8,668-character capstone paste, the settlement scene's reliance on its disclaimer paragraph,
+and the three unsettled judgment items below.
+
 ## Unease (judgment, not measurement)
 
 - The lesson may be teaching two audiences at once: a novice who needs the greeting,

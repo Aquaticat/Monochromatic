@@ -1245,8 +1245,12 @@ working artifact as mastery.
 
 ## Next action
 
-Discuss the self-review findings with the user: the measured defects, the unsettled
-judgment items, and what to repair now versus fold into a structure decision.
+The three measured defects from the self-review are repaired, guarded, verified, and
+presented; see [the repair record](promises-lesson-self-review.md).
+Ask the user the deferred structure questions that the repairs could not settle:
+intended consumption mode for a 23,598-word lesson, whether the novice and
+interview-candidate audiences should split, and whether the `Waiting…` ambiguity needs its
+own exercise. Do not bundle those separable decisions into one option set.
 Only after that discussion returns to the teaching-skill contract, and only with the
 user's correction of any clause that does not match their intent.
 Until then, keep the final skill unimplemented and leave `AGENTS.md` unchanged.
