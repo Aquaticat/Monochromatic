@@ -14,16 +14,22 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import pLimitUpstream from 'p-limit';
+import pLimitUpstream, {
+  limitFunction as limitFunctionUpstream,
+} from 'p-limit';
 import {
   assert,
   array,
   asyncProperty,
+  boolean,
   integer,
   property,
 } from 'fast-check';
 
-import { pLimit, } from '@monochromatic-dev/module-p-limit-fork/ts';
+import {
+  limitFunction,
+  pLimit,
+} from '@monochromatic-dev/module-p-limit-fork/ts';
 
 import { fuzzRuns, } from './fuzz-budget.ts';
 import { workloadArb, } from './limit-arbitrary.ts';
@@ -38,6 +44,92 @@ import {
 } from './workload.ts';
 
 //region Helpers
+
+/**
+ Members both implementations attach to a limiter.
+ */
+const LIMIT_MEMBERS: readonly string[] = [
+  'activeCount',
+  'pendingCount',
+  'concurrency',
+  'clearQueue',
+  'map',
+];
+
+/**
+ Echo function driving the `limitFunction` surface comparison.
+ */
+function echo(value: string,): string {
+  return value;
+}
+
+/**
+ Normalizes one property descriptor for comparison across implementations:
+ bound functions are never reference-equal, so only descriptor shape and
+ flags are compared.
+ 
+ @param descriptor - Own descriptor from the value under comparison.
+ 
+ @returns Comparable projection of the descriptor.
+ 
+ @example
+ ```ts
+ normalizeDescriptor(Object.getOwnPropertyDescriptor(limit, 'map',),);
+ ```
+ */
+function normalizeDescriptor(descriptor: PropertyDescriptor | undefined,): Record<string, unknown> {
+  if (descriptor === undefined)
+    return {
+      present: false,
+    };
+
+  return {
+    present: true,
+    kind: (('get' in descriptor) || ('set' in descriptor))
+      ? 'accessor'
+      : 'data',
+    enumerable: descriptor.enumerable
+      ?? false,
+    configurable: descriptor.configurable
+      ?? false,
+    writable: descriptor.writable
+      ?? false,
+    hasGet: (typeof descriptor.get) === 'function',
+    hasSet: (typeof descriptor.set) === 'function',
+    hasValue: 'value' in descriptor,
+  };
+}
+
+/**
+ Comparable own-member surface of a limiter or limited function.
+ 
+ @param value - Object whose attached members are compared.
+ 
+ @param members - Member names to project.
+ 
+ @returns Normalized descriptor per member name.
+ 
+ @example
+ ```ts
+ memberSurface(limit, ['map',],);
+ ```
+ */
+function memberSurface(
+  value: object,
+  members: readonly string[],
+): Record<string, unknown> {
+  return Object.fromEntries(members.map(function projectMember(member: string,): readonly [string, unknown] {
+    return [
+      member,
+      normalizeDescriptor(Object.getOwnPropertyDescriptor(
+        value,
+        member,
+      ),),
+    ];
+  },),);
+}
+
+//endregion Helpers
 
 /**
  Normalizes a trace for cross-implementation comparison: settlements are
@@ -235,6 +327,75 @@ await describe({
               }
 
               expect(forkMessage,).toBe(upstreamMessage,);
+            },
+          ),
+          {
+            numRuns: fuzzRuns,
+          },
+        );
+      },
+    },),
+    it({
+      name: 'attached member descriptors and enumerable keys match upstream p-limit',
+      fn: async () => {
+        assert(
+          property(
+            integer({
+              min: 1,
+              max: 6,
+            }),
+            boolean(),
+            (concurrency: number, rejectOnClear: boolean,) => {
+              /**
+               Options shared by both implementations.
+               */
+              const options = {
+                concurrency,
+                rejectOnClear,
+              };
+              /**
+               Fork limiter under comparison.
+               */
+              const forkLimit = pLimit(options,);
+              /**
+               Upstream limiter under comparison.
+               */
+              const upstreamLimit = pLimitUpstream(options,);
+              expect(memberSurface(
+                forkLimit,
+                LIMIT_MEMBERS,
+              ),).toEqual(memberSurface(
+                upstreamLimit,
+                LIMIT_MEMBERS,
+              ),);
+              expect(Object.keys(forkLimit,),).toEqual(Object.keys(upstreamLimit,),);
+
+              /**
+               Fork wrapped function under comparison.
+               */
+              const forkLimited = limitFunction({
+                fn: echo,
+                options,
+              },);
+              /**
+               Upstream wrapped function under comparison.
+               */
+              const upstreamLimited = limitFunctionUpstream(
+                echo,
+                options,
+              );
+              expect(memberSurface(
+                forkLimited,
+                [
+                  'clearQueue',
+                ],
+              ),).toEqual(memberSurface(
+                upstreamLimited,
+                [
+                  'clearQueue',
+                ],
+              ),);
+              expect(Object.keys(forkLimited,),).toEqual(Object.keys(upstreamLimited,),);
             },
           ),
           {

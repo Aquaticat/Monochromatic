@@ -171,5 +171,31 @@ await describe({
         void dropped;
       },
     },),
+    it({
+      name: 'attaches clearQueue as a non-enumerable, non-writable, non-configurable property like upstream p-limit',
+      fn: async () => {
+        const limited = limitFunction({
+          fn: function identity(value: string,): string {
+            return value;
+          },
+          options: {
+            concurrency: 1,
+          },
+        },);
+        /**
+         Own descriptor of the attached `clearQueue` member.
+         */
+        const descriptor = Object.getOwnPropertyDescriptor(
+          limited,
+          'clearQueue',
+        );
+        expect(descriptor,).toBeDefined();
+        expect(descriptor?.enumerable,).toBe(false,);
+        expect(descriptor?.writable,).toBe(false,);
+        expect(descriptor?.configurable,).toBe(false,);
+        expect(typeof descriptor?.value,).toBe('function',);
+        expect(Object.keys(limited,),).toEqual([],);
+      },
+    },),
   ],
 },);

@@ -321,13 +321,49 @@ await describe({
     },),
 
     it({
-      name: 'keeps limiter members non-enumerable like upstream p-limit',
+      name: 'keeps limiter members non-enumerable, non-writable, and non-configurable like upstream p-limit',
       fn: async () => {
         const limit = pLimit(1,);
         expect(Object.keys(limit,),).toEqual([],);
         expect({
           ...limit,
         },).toEqual({},);
+
+        /**
+         Member descriptor contract shared by both implementations:
+         accessors expose only a getter (plus a setter for `concurrency`),
+         data members are frozen values, and none of them are enumerable or
+         configurable.
+         */
+        const memberKinds: Readonly<Record<string, string>> = {
+          activeCount: 'getter',
+          pendingCount: 'getter',
+          concurrency: 'getter-setter',
+          clearQueue: 'frozen-value',
+          map: 'frozen-value',
+        };
+        for (const [member, kind,] of Object.entries(memberKinds,)) {
+          /**
+           Own descriptor of this limiter member.
+           */
+          const descriptor = Object.getOwnPropertyDescriptor(
+            limit,
+            member,
+          );
+          expect(descriptor,).toBeDefined();
+          expect(descriptor?.enumerable,).toBe(false,);
+          expect(descriptor?.configurable,).toBe(false,);
+          if (kind === 'frozen-value') {
+            expect(descriptor?.writable,).toBe(false,);
+            expect(descriptor?.value,).toBeDefined();
+          }
+          else {
+            expect(typeof descriptor?.get,).toBe('function',);
+            expect(typeof descriptor?.set,).toBe((kind === 'getter-setter')
+              ? 'function'
+              : 'undefined',);
+          }
+        }
       },
     },),
 

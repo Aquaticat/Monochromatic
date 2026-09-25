@@ -362,6 +362,13 @@ export function pLimit(concurrencyOrOptions: number | LimitOptions,): LimitFunct
     return deferred.promise;
   }
 
+  /**
+   Members attached exactly as upstream `p-limit` attaches them:
+   non-enumerable,
+   non-configurable accessors and data properties,
+   so
+   `Object.keys` stays empty and no member can be replaced.
+   */
   Object.defineProperties(
     limit,
     {
@@ -369,11 +376,15 @@ export function pLimit(concurrencyOrOptions: number | LimitOptions,): LimitFunct
         get: function getActiveCount(): number {
           return state.activeCount;
         },
+        enumerable: false,
+        configurable: false,
       },
       pendingCount: {
         get: function getPendingCount(): number {
           return queue.size;
         },
+        enumerable: false,
+        configurable: false,
       },
       concurrency: {
         get: function getConcurrency(): number {
@@ -385,6 +396,8 @@ export function pLimit(concurrencyOrOptions: number | LimitOptions,): LimitFunct
             drainQueue();
           },);
         },
+        enumerable: false,
+        configurable: false,
       },
       clearQueue: {
         value: function clearQueue(): void {
@@ -407,6 +420,9 @@ export function pLimit(concurrencyOrOptions: number | LimitOptions,): LimitFunct
           for (const call of discarded)
             call.reject(abortReason,);
         },
+        writable: false,
+        enumerable: false,
+        configurable: false,
       },
       map: {
         value: async function map<TInput, TResult>(
@@ -454,6 +470,9 @@ export function pLimit(concurrencyOrOptions: number | LimitOptions,): LimitFunct
 
           return await Promise.all(scheduled,);
         },
+        writable: false,
+        enumerable: false,
+        configurable: false,
       },
     },
   );

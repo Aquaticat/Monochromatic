@@ -1,51 +1,23 @@
 ## module-p-limit-fork
 
 TypeScript fork of [`p-limit`](https://github.com/sindresorhus/p-limit),
-in-repo so its behavior is owned,
+ in-repo so its behavior is owned,
  tested,
  fuzzed,
- and mutation-tested here
-instead of trusted from a third-party package.
+ and mutation-tested here instead of trusted from a third-party package.
 
 ### Attribution
 
 Derived from [`p-limit`](https://github.com/sindresorhus/p-limit) by
 [Sindre Sorhus](https://sindresorhus.com),
- released upstream under the
-[MIT License](LICENSES/MIT.txt).
-The scheduling semantics,
+ released upstream under the [MIT License](LICENSES/MIT.txt).
+Scheduling semantics,
  validation rules,
  and error message texts come from `p-limit` 7.3.3.
 Upstream's copyright and permission notice are preserved verbatim in
 `LICENSES/MIT.txt`;
-this fork's own code is licensed
-`LGPL-3.0-or-later AND MIT` as declared in `package.json`.
-
-### Behavior
-
-- `pLimit(concurrency)` or `pLimit({ concurrency, rejectOnClear })` creates
-  one limiter.
-- Scheduling one call returns a promise settling with that function's result
-  or failure.
-- Calls start asynchronously,
-  never inside the `limit` call that scheduled them,
-  and start in FIFO order.
-- At most `concurrency` calls run at once;
-  `Number.POSITIVE_INFINITY` removes the cap.
-- `activeCount` counts running calls,
-  `pendingCount` counts queued calls.
-- `concurrency` reads and writes the bound;
-  raising it admits queued calls from a microtask,
-  lowering it never interrupts running calls.
-- `clearQueue()` discards queued calls only;
-  with `rejectOnClear`,
-  each discarded call's promise rejects with
-  `AbortSignal.abort().reason`.
-- `map({ iterable, mapper })` processes inputs under the bound and collects
-  results in input order.
-- `limitFunction({ fn, options })` wraps one function in its own bounded call
-  queue,
-  returning a callable exposing `clearQueue`.
+ this fork's own code is licensed `LGPL-3.0-or-later AND MIT`
+as declared in `package.json`.
 
 ### Usage
 
@@ -61,35 +33,110 @@ const results = await Promise.all([
 ]);
 ```
 
-### Deviations from upstream `p-limit`
+### Behavior
 
-- Calls pass an `args` tuple instead of a rest parameter
-  (`limit({ fn, args })`),
-  and `map` takes a destructured options object,
-  because repository lint bans rest parameters and multi-positional-parameter
-  declarations outright.
-- `limitFunction({ fn, options })` takes one destructured options object for
-  the same reason.
-- Invalid configuration throws `InvalidConcurrencyError` or
-  `InvalidRejectOnClearError`,
-  both `TypeError` subclasses carrying upstream's message text,
-  instead of a bare `TypeError`.
-- The queue is implemented in `src/task-queue.ts`,
-  so the package has zero runtime dependencies;
-  upstream depends on `yocto-queue`.
-- Each call's promise settles directly with its function's outcome,
-  instead of routing through upstream's promise-of-promise adoption hop;
-  the fuzz sidecar's differential oracle finds no observable difference in
-  scheduling,
-  counters,
-  settlements,
-  or validation.
-- Limiter members are non-enumerable,
-  matching upstream `p-limit`'s `Object.defineProperties` defaults.
+#### Scheduling
+
+`pLimit(concurrency)` and `pLimit({ concurrency, rejectOnClear })` create one
+limiter.
+Each scheduled call returns a promise settling with its function's result or
+failure.
+Calls start asynchronously,
+ never inside the `limit` call that scheduled
+them,
+ and begin in FIFO order.
+At most `concurrency` calls run at once;
+`Number.POSITIVE_INFINITY` removes the cap.
+
+#### Counters
+
+`activeCount` counts running calls and `pendingCount` counts queued calls.
+The `concurrency` member reads and writes the bound:
+ raising it admits queued
+calls from a microtask,
+ lowering it never interrupts running calls.
+Attached members are non-enumerable,
+ non-writable,
+ and non-configurable,
+matching upstream's property descriptors.
+
+#### clearQueue
+
+`clearQueue()` discards queued calls only,
+ leaving running calls untouched.
+With `rejectOnClear`,
+ each discarded call's promise rejects with
+`AbortSignal.abort().reason`;
+ otherwise those promises stay pending.
+
+#### map
+
+`map({ iterable, mapper })` processes inputs under the bound and collects
+results in input order.
+
+#### limitFunction
+
+`limitFunction({ fn, options })` wraps one function in its own bounded call
+queue,
+ returning a callable that takes `{ args }` and exposes `clearQueue`.
+
+### Deviations from upstream p-limit
+
+#### Call shape
+
+Calls pass an `args` tuple instead of a rest parameter
+(`limit({ fn, args })`),
+ `map` takes a destructured options object,
+ and
+`limitFunction({ fn, options })` takes one destructured options object.
+Repository lint bans rest parameters and multi-positional-parameter
+declarations outright.
+
+#### Error types
+
+Invalid configuration throws `InvalidConcurrencyError` or
+`InvalidRejectOnClearError`
+ instead of a bare `TypeError`.
+Both extend `TypeError` and carry upstream's message text verbatim,
+ so
+migrating callers see identical diagnostics and the fuzz sidecar's
+differential oracle can compare both implementations directly.
+
+#### Internal queue
+
+The queue lives in `src/task-queue.ts` instead of upstream's `yocto-queue`
+dependency,
+ leaving the package with zero runtime dependencies and one less
+third-party trust surface on the concurrency path.
+
+#### Settle timing
+
+Each call's promise settles directly with its function's outcome,
+ instead of
+routing through upstream's promise-of-promise adoption hop.
+The differential
+oracle finds no observable difference in scheduling,
+ counters,
+ settlements,
+descriptors,
+ or validation.
+
+### Layout
+
+`p-limit.ts` owns scheduling,
+ `task-queue.ts` the FIFO queue,
+`limit-options.ts` configuration,
+ `limit-function.ts` the wrapper factory,
+and `errors.ts` the error classes.
+Test files sit beside each module as `<stem>.unit.test.ts`,
+ so mutation
+testing selects each module's tests automatically.
 
 ### Testing
 
 ```bash
+# package/module/p-limit-fork/mise.toml
+
 # Unit tests against the built dist
 mise run //package/module/p-limit-fork:buildAndTest
 
@@ -102,19 +149,3 @@ mise run //package/module/p-limit-fork.fuzz:fuzz:coverage
 # Container-isolated mutation testing
 mise run //package/module/p-limit-fork:test:mutation
 ```
-
-### Design decisions
-
-- **One file per concept.
-  ** `p-limit.ts` owns scheduling,
-  `task-queue.ts` the FIFO queue,
-  `limit-options.ts` configuration,
-  `limit-function.ts` the wrapper factory,
-  `errors.ts` the error classes.
-- **Internal queue over a dependency.
-  ** Dropping `yocto-queue` removes the last third-party trust surface from
-  the concurrency path.
-- **Upstream error message texts kept verbatim.
-  ** Callers migrating from `p-limit` see identical diagnostics,
-  and the fuzz sidecar's differential oracle can compare both
-  implementations directly.

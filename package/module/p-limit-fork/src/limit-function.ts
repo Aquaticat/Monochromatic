@@ -125,10 +125,27 @@ export function limitFunction<const TArgs extends readonly unknown[], TResult>(
     },);
   }
 
-  limited.clearQueue = function clearQueue(): void {
-    limit.clearQueue();
-  };
+  /**
+   `clearQueue` attached exactly as upstream `p-limit`'s `limitFunction`
+   attaches it: a non-enumerable,
+   non-writable,
+   non-configurable data
+   property holding the backing limiter's method,
+   so `Object.keys`
+   stays empty and the member cannot be replaced.
+   */
+  Object.defineProperty(
+    limited,
+    'clearQueue',
+    {
+      value: limit.clearQueue,
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    },
+  );
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- `limited` gains its clearQueue member through defineProperty above
   return limited as LimitedFunction<TArgs, TResult>;
 }
 
