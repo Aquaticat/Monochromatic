@@ -187,17 +187,28 @@ await describe({
         + 'unresolved block with its findings',
       fn: async () => {
         const prompts: string[] = [];
+        /**
+         Seats asked for a review, in first-call order. The first one anchors
+         its quote: the gather rotates the bench by the prompt
+         (`rotatedBench`), so a seat named by roster position can be the one
+         the quorum closes without whenever a sheet's wording changes.
+         */
+        const reviewers: string[] = [];
         const outcome = await runArchiveBlockReviewStage({
           client: scriptedClient({
             prompts,
-            replyFor: ({ schema, modelId, },) => schema === 'archive_block_review'
-              ? {
+            replyFor: ({ schema, modelId, },) => {
+              if (schema !== 'archive_block_review')
+                return ACCEPTABLE_NATURALNESS;
+              if (!reviewers.includes(modelId,))
+                reviewers.push(modelId,);
+              return {
                 disposition: 'source-supported',
-                sourceQuote: modelId === ROSTER[0] ? '窗边安静地睡觉' : '不存在的来源句子',
+                sourceQuote: modelId === reviewers[0] ? '窗边安静地睡觉' : '不存在的来源句子',
                 replacementText: '',
                 finding: 'Source support claim.',
-              }
-              : ACCEPTABLE_NATURALNESS,
+              };
+            },
           },),
           modelIds: ROSTER,
           sourceText: '猫在窗边安静地睡觉。',
