@@ -8082,6 +8082,58 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya30 read, 2026-09-25, 06:55 UTC: classes one hundred twenty-six to twenty-eight live, five phrasing calques (class one hundred twenty-nine)
+
+### What ran
+
+Frozen `c432737d5`, corpus-pass pid 2972665, launched 06:29 UTC.
+SETTLED at 06:54 UTC in 25.1 min, one attempt,
+965 seats, 881 calls, 6 retry rounds, 7 abstention lines,
+about 0.13 USD on Bedrock and 0.32 USD on OpenRouter by the meters
+(40.61 to 40.48, 83.25 to 82.93).
+Hyper dry all run: glm-5.3, a Hyper-only seat, was asked 82 times and refused at call time each time
+(`NoProviderForModelError`, out of budget), which costs nothing and leaves quorum unaffected (class twenty-six).
+
+### Checks
+
+Front matter equal, 4 headings as the archive,
+no TA, no double blank line, no error finish.
+Class one hundred twenty-six on the page:
+"The head of year", "psychologically bullied by an underage trans girl",
+"ashes will be made into memorial dice", "housemate" on both 同居者 lines.
+Class one hundred twenty-seven:
+"overdosing day and night" and "Don't overdose ... not to overdose or misuse medication" for both OD lines,
+"sailor uniform", "college entrance examination" (an entry rendering; no "Gaokao").
+Register check (class one hundred twenty-eight) clean:
+no OD, ODing, jk, TGT, MtF, gearhead or slacked off on the page;
+"The Grand Tour" for TGT; HRT and ICU kept; "trans girl" for 小药娘.
+The rooftop in the departure paragraph is not on the page, as the reader-protection rule asks.
+
+### Five phrasing calques (class one hundred twenty-nine)
+
+Under the owner's standing instruction of 2026-09-25,
+five renderings that read badly join the rendering glossary:
+
+- 原因是多方面的 shipped "There were many sides to the cause of Yumiao's death";
+  the page says the death "had many causes".
+- 鱼喵这个特例 shipped "so this exception, Yumiao, received no punishment";
+  the page says "Yumiao, as an exception,".
+- 摆烂 shipped "Yumiao's attitude toward studying turned to one of giving up";
+  the page writes the plain verb ("stopped trying"), and "slacked off" is refused as slang (class one hundred twenty-eight).
+  lxy writes 偶尔摆烂 for taking it easy now and then, so "took it easy" is an entry rendering.
+- 陷入癫狂 shipped "This pushed her mental state into madness";
+  the page says it drove her to the edge of madness.
+  The entry keys on the verb because XingZ60 writes 癫狂 alone for an outlook others call mad.
+- 万千世界 shipped "continue to observe this myriad world";
+  the page says "this vast world".
+
+Guard red first `a5be55ae8` (`rendering-glossary-phrasing.unit.test.ts`: seeds, refuses the five calques and "slacked off", accepts the English),
+fixed `a719b81f6`, lint 0/0, types clean, suite `suite-class129.log` 1130 PASS, no FAIL.
+Frozen `.frozen-dist-a719b81f6`; shi_Yumiaoya31 launched 06:58 UTC (pid 3059542).
+
+"Her mathematics grades looked very interesting" for 数学成绩看上去十分有趣 stays:
+the original is wry, and the English keeps the wryness in plain words.
+
 ## The page's register, 2026-09-25, 06:30 UTC: plain written English on every sheet (class one hundred twenty-eight)
 
 The owner answered the three renderings left as the original wrote them

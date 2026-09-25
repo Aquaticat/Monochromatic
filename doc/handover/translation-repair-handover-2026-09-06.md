@@ -4773,20 +4773,29 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA30 RUNS (entry `shi_Yumiaoya`,
-    frozen `c432737d5`, classes one hundred twenty-six to twenty-eight,
-    corpus-pass pid 2972665, launched 06:29 UTC 2026-09-25, waiter wait-s30;
-    the frozen dir checked absent first and grepped for "plain written English for a general reader" after):
-    read it by every shi_Yumiaoya27 check, then "head of year" or "grade director" (no "grade leader"),
+1.  SHI_YUMIAOYA31 RUNS (entry `shi_Yumiaoya`,
+    frozen `a719b81f6`, class one hundred twenty-nine,
+    corpus-pass pid 3059542, launched 06:58 UTC 2026-09-25, waiter wait-s31;
+    the frozen dir checked absent first and grepped for "原因是多方面的" after):
+    read it by every shi_Yumiaoya30 check below, then the class one hundred twenty-nine renderings:
+    the death "had many causes" (no "many sides to the cause"), "Yumiao, as an exception," (no "this exception,"),
+    a plain verb for 摆烂 (no "one of giving up", no "slacked off"), "edge of madness" or like (no "mental state into madness"),
+    "this vast world" or like (no "myriad world");
+    record it under a new heading above "## shi_Yumiaoya30 read, 2026-09-25" in the pass log;
+    then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on `a719b81f6`, each read with the register check.
+    SHI_YUMIAOYA30 READ (frozen `c432737d5`): SETTLED at 06:54 UTC in 25.1 min, 881 calls, about 0.45 USD by the meters;
+    classes one hundred twenty-six to twenty-eight live and the register check clean;
+    five phrasing calques refused as class one hundred twenty-nine (`a719b81f6`, guard red first `a5be55ae8`, suite `suite-class129.log` 1130 PASS, no FAIL).
+    glm-5.3 asked 82, usable 0: a Hyper-only seat with Hyper dry, refused at call time, not a class.
+    The shi_Yumiaoya30 checks, kept for the next read:
+    every shi_Yumiaoya27 check, then "head of year" or "grade director" (no "grade leader"),
     "underage trans girl" (no "minor trans"), "psychologically" or "emotionally" before "bullied",
     the ashes made into dice (no "ash dice"), "housemate" on both 同居者 lines (no "cohabitant"),
     "overdosing" on both OD lines (no "OD" or "ODing"; owner 2026-09-25), "sailor uniform" (no "jk skirt")
-    and "National College Entrance Examination" (no "Gaokao");
+    and "National College Entrance Examination" or "college entrance examination" (no "Gaokao");
     then the REGISTER CHECK (class one hundred twenty-eight): no chat shorthand or internet slang on the page
     (no OD, ODing, jk, TGT, MtF, gearhead, slacked off), every abbreviation a general reader would not know
-    (SRS, GAHT, OST, POV, ACG) spelled out where it first appears, known abbreviations (HRT, ICU) and names in Latin letters kept;
-    record it under a new heading above "## shi_Yumiaoya27 read, 2026-09-25" in the pass log;
-    then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on the same build, each read with the register check too.
+    (SRS, GAHT, OST, POV, ACG) spelled out where it first appears, known abbreviations (HRT, ICU) and names in Latin letters kept.
     CLASS ONE HUNDRED TWENTY-EIGHT (owner 2026-09-25: "I'm not sure why you allowed the very informal terms like OD to go through."):
     built `c432737d5` (guard red first `194eca498`, suite `suite-class128.log` 1129 PASS, no FAIL). OD passed because the read treated the original's register as the authority
     and the house policy's community bullet keeps "an abbreviation local to the person's world"; no rule named the register of the English.
