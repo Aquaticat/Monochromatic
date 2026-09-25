@@ -1,3 +1,4 @@
+import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import { withholdLoneContainerHalves, } from '../assembly-container-halves.ts';
 import { guardFootnoteAssembly, } from '../assembly-integrity.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
@@ -7,6 +8,7 @@ import { placeHandleGlosses, } from './handle-gloss-place.ts';
 import { restoreCollidingHeadings, } from './heading-collision-restore.ts';
 import { unifyHeadingSeries, } from './heading-series-unify.ts';
 import { restoreArchiveCasing, } from './archive-casing-restore.ts';
+import { canadianizePage, } from './canadian-forms.ts';
 import { restoreJsxAttributes, } from './jsx-attribute-restore.ts';
 import { restoreListSpread, } from './list-spread-restore.ts';
 import { restoreNameGlossLines, } from './name-gloss-restore.ts';
@@ -37,6 +39,9 @@ import type { WouldShipSource, } from './would-ship-text.ts';
  
  @param targetText - archive text the replacement spans address
  
+ @param archiveOriginalSpans - spans sealed as the English original, which
+ the Canadian forms pass leaves as the archive has them
+ 
  @returns What the guard trimmed, withdrew and found
  
  @example
@@ -50,11 +55,13 @@ export function guardPageAssembly(
     slices,
     sourceText,
     targetText,
+    archiveOriginalSpans = [],
   }: {
     readonly artifact: WouldShipSource;
     readonly slices: readonly ChunkPair[];
     readonly sourceText: string;
     readonly targetText: string;
+    readonly archiveOriginalSpans?: readonly ArchiveOriginalSpan[];
   },
 ): ArtifactPageAssembly {
   /**
@@ -159,6 +166,15 @@ export function guardPageAssembly(
     replacements: lists.replacements,
   },);
   /**
+   Every date month first and every listed word in its Canadian spelling, on
+   every slice the page carries (class one hundred thirty-four).
+   */
+  const canadian = canadianizePage({
+    slices,
+    replacements: casing.replacements,
+    archiveOriginalSpans,
+  },);
+  /**
    Rows the page-assembly passes rewrote, the latest pass's text per slice.
    */
   const restoredRows = new Map<number, SliceReplacement>([
@@ -171,6 +187,7 @@ export function guardPageAssembly(
     ...glossLines.restored,
     ...lists.restored,
     ...casing.restored,
+    ...canadian.restored,
   ].map(function bySlice(row,): readonly [
     number,
     SliceReplacement,
@@ -186,7 +203,7 @@ export function guardPageAssembly(
   const guarded = guardFootnoteAssembly({
     targetText,
     slices,
-    replacements: casing.replacements
+    replacements: canadian.replacements
       .filter(function stillChanges(replacement,): boolean {
         // A restoration that brings a slice back to the archive's exact wording
         // is no change for the assembler; its override row below still says
@@ -230,6 +247,7 @@ export function guardPageAssembly(
       ...glossLines.findings,
       ...lists.findings,
       ...casing.findings,
+      ...canadian.findings,
       ...guarded.findings,
     ],
   };

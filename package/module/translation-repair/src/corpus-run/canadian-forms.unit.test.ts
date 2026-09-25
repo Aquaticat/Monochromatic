@@ -189,7 +189,9 @@ await describe({
           restored: page.restored.map(function indexOf(row,): number {
             return row.sliceIndex;
           },)
-            .toSorted(),
+            .toSorted(function ascending(left, right,): number {
+              return left - right;
+            },),
         },).toEqual({
           rows: [
             '0: April 29 was the cat\'s birthday.',

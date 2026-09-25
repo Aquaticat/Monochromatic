@@ -152,6 +152,27 @@ export const WORDING_GLOSSARY: readonly CommunityTerm[] = [
     why: 'the arrest left her badly hurt in mind; "left with great trauma" is word for word, so the page says it '
       + '"left her deeply traumatized"',
   },
+  // CLASS ONE HUNDRED THIRTY-FOUR (hulicaijia19, 2026-09-25): 药代 shipped as
+  // "In her role as a pharmaceutical sales representative", the general sense
+  // of the abbreviation (医药代表), where the page means she resold medication
+  // to others. It stands in one pinned entry.
+  {
+    term: '药代',
+    renderings: [
+      'sold medication',
+      'selling medication',
+      'medication seller',
+    ],
+    refusedForms: [
+      'pharmaceutical sales representative',
+      'pharmaceutical sales rep',
+      'pharmaceutical representative',
+      'medical representative',
+      'sales representative',
+    ],
+    why: 'in the community, someone who buys medication and resells it to others; the general abbreviation of '
+      + '医药代表 ("pharmaceutical sales representative") misreads it, so the page says she sold medication',
+  },
 ];
 
 //endregion Wording renderings

@@ -92,6 +92,7 @@ export function settledPageArtifact(
     slices: prepared.slices,
     sourceText: prepared.sourceText,
     targetText,
+    archiveOriginalSpans: prepared.archiveOriginalSpans ?? [],
   },);
   for (const finding of pageAssembly.findings)
     l.warn(`page assembly: ${finding}`,);
