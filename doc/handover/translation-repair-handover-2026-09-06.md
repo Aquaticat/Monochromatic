@@ -4773,18 +4773,19 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA20 RUNS (entry `hulicaijia`,
-    frozen `4641ff1d2`, class one hundred thirty-four,
-    corpus-pass pid 3632174, waiter wait-h20, reader read-h20;
-    the frozen dir checked absent first and grepped for "canadian-form-rewritten" after):
-    read it by every hulicaijia19 check, then class one hundred thirty-four:
-    `canadian-form-rewritten` findings in the log for the untouched slices,
-    "April 29" and "May 4" (no "29th April" or "4 May"), "licorice" (no "liquorice"),
-    no "pharmaceutical sales representative" for 药代,
-    the en_CA check (no color, center, behavior, favorite, gray, -ise for -ize),
-    and no attribute, link or comment rewritten;
-    record it under a new heading above "## shi_Yumiaoya35 and hulicaijia19 read" in the pass log;
-    then `XingZ60` (run XingZ6011) on `4641ff1d2` or newer, read with the register check and the en_CA check.
+1.  XINGZ6011 NEXT (entry `XingZ60`, frozen `2d5113b7d` or newer):
+    read it by every XingZ6010 check, the register check and the en_CA check,
+    then the page-assembly findings `archive-name-casing-restored` and `pinyin-tone-corrected`
+    (either may stay silent; any rewrite must be one the archive or the character supports);
+    record it under a new heading above "## hulicaijia20 read" in the pass log;
+    then `hulicaijia` (run hulicaijia21) to see class one hundred thirty-five live:
+    "douhua" in the closing quote, no "tofu pudding", "Jiefangbei Pedestrian Street" on every line,
+    and "jīn gāng wán’àn" in the amantadine note beside 晚安 "wǎn’ān".
+    HULICAIJIA20 READ (frozen `4641ff1d2`): SETTLED at 22:28 UTC 2026-09-25 in 81.9 min;
+    class one hundred thirty-four live ("April 29", "May 4", "licorice", no "pharmaceutical sales representative", en_CA clean);
+    classes one hundred thirty-five to thirty-seven found and built:
+    豆花 seeded as "douhua" (`46731b86e`), `restoreArchiveNameCasing` (`76341f8e4`),
+    `correctPinyinPage` (`2d5113b7d`, suite `suite-class137.log` 1139 PASS, no FAIL, replayed over the page: 烷 alone).
     CLASS ONE HUNDRED THIRTY-FOUR (`4641ff1d2`, guards red first `acb5a9ccb`, suite `suite-class134.log` 1136 PASS, no FAIL):
     `canadianizePage` writes day-first dates month first and respells a closed list of lower-case words
     on every slice after the casing pass; the house policy names the date order and licorice; 药代 seeded.

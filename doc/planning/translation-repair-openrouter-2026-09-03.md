@@ -8082,6 +8082,56 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## hulicaijia20 read, 2026-09-25: class one hundred thirty-four live; douhua, a name's casing and a pinyin tone (classes one hundred thirty-five to one hundred thirty-seven)
+
+### What ran
+
+hulicaijia20 on frozen `4641ff1d2` (pid 3632174):
+SETTLED at 22:28 UTC in 81.9 min, one attempt, 72 slices, 41 changed on the page.
+glm-5.3 sat dark all run: its seat is Hyper-only and Hyper was dry, which is the seating's design.
+
+### What the page shows
+
+Class one hundred thirty-four is live.
+The log carries `canadian-form-rewritten (slice 62: "liquorice" to "licorice", ...)`,
+the page reads "April 29" and "May 4" with no "29th April" or "4 May",
+"compound licorice tablets" twice, no "pharmaceutical sales representative",
+and the en_CA scan is clean ("favourite", "city centre"; the only "center" is the archive's CSS `text-align`).
+
+Three things read wrong, each now a class.
+
+-   The closing quote wrote "she was something like tofu pudding."
+    where the front matter, the archive and every other slice write "douhua" for 豆花 (class one hundred thirty-five).
+-   One line wrote "the Jiefangbei pedestrian street"
+    where the archive writes "Jiefangbei Pedestrian Street" mid-sentence in the body and a caption and never otherwise
+    (class one hundred thirty-six).
+-   The archive's translator note glossed 金刚烷胺 as "jīn gāng wǎn’àn" to show the pun on 晚安 (wǎn’ān),
+    and the page carried it; 烷 has one reading, wán (class one hundred thirty-seven).
+
+### What was built
+
+-   Class one hundred thirty-five (`46731b86e`, guard red first `c18e78a6e`):
+    豆花 seeded in the wording glossary as "douhua",
+    refusing "tofu pudding", "tofu flower", "bean curd pudding", "soybean pudding" and "tofu custard".
+-   Class one hundred thirty-six (`76341f8e4`, guard red first `3d71c35a0`):
+    `restoreArchiveNameCasing` in `corpus-run/archive-name-casing.ts`, after the class one hundred twenty-one casing pass.
+    A run of two or more title-case words the archive writes mid-sentence at least twice, outside headings,
+    and never in another casing is restored where a shipped slice keeps the first word and lowers a later one.
+    Replayed over 36 shipped pages: the Jiefangbei line on hulicaijia19's page and nothing else.
+-   Class one hundred thirty-seven (`2d5113b7d`, guard red first `db88480e5`):
+    `correctPinyinPage` in `corpus-run/pinyin-tone.ts`, after the Canadian forms pass, on every slice the page carries.
+    Where a parenthesis pairs a Han run with tone-marked pinyin, one syllable to a character,
+    a syllable whose single-reading character differs from it in tone alone takes the character's tone (pinyin-pro).
+    A polyphonic character, a count mismatch, another syllable and toneless pinyin stand aside.
+    The slice loop it shares with `canadianizePage` moved to `rewriteEverySlice` in `corpus-run/page-slice-rewrite.ts`.
+    Replayed over hulicaijia20's page: "wǎn" to "wán" for 烷 and nothing else, 晚安's "wǎn’ān" untouched;
+    over 36 shipped pages: no other rewrite.
+    Lint 0/0, types clean, suite `suite-class137.log` 1139 PASS, no FAIL.
+
+A `--fix` lint pass rewrote the new file's code-point spreads of `String.prototype.slice` into plain strings
+(`unicorn/no-useless-spread` reads `.slice` as an array method);
+the file now uses index scans, and the autofix is filed as issue 563.
+
 ## shi_Yumiaoya35 and hulicaijia19 read, 2026-09-25: class one hundred thirty-three live, Canadian dates and spellings on untouched slices (class one hundred thirty-four)
 
 ### What ran
