@@ -68,6 +68,23 @@ await describe({
             expect(result,).toBeUndefined();
           },
         },),
+
+        it({
+          name: 'spans a macrotask turn, letting earlier timers fire first',
+          fn: async () => {
+            /**
+             Flag set by a timer scheduled before the turn under test.
+             */
+            const state = { timerFired: false, };
+            setTimeout(function markFired(): void {
+              state.timerFired = true;
+            },
+            0,
+            );
+            await yieldTurn();
+            expect(state.timerFired,).toBe(true,);
+          },
+        },),
       ],
     },),
   ],

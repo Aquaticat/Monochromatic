@@ -320,6 +320,17 @@ await describe({
       },
     },),
 
+    it({
+      name: 'keeps limiter members non-enumerable like upstream p-limit',
+      fn: async () => {
+        const limit = pLimit(1,);
+        expect(Object.keys(limit,),).toEqual([],);
+        expect({
+          ...limit,
+        },).toEqual({},);
+      },
+    },),
+
     //endregion Counters
 
     //region Types

@@ -214,6 +214,55 @@ await describe({
       },
     },),
 
+    it({
+      name: 'defaults rejectOnClear to false for the bare-number constructor form',
+      fn: async () => {
+        const limit = pLimit(1,);
+        /**
+         Gate held by the single running call.
+         */
+        const gate = createGate();
+        /**
+         Flags recording whether the dropped call's function ever ran.
+         */
+        const runState = { droppedRan: false, };
+        void limit({
+          fn: async function blockForever(): Promise<string> {
+            await gate.open;
+            return 'running';
+          },
+          args: [],
+        },);
+        const dropped = limit({
+          fn: function markDropped(): string {
+            runState.droppedRan = true;
+            return 'dropped';
+          },
+          args: [],
+        },);
+        limit.clearQueue();
+        await yieldTurn();
+        expect(runState.droppedRan,).toBe(false,);
+
+        /**
+         Whether the dropped call's promise settled within the turn window.
+         */
+        const settleState = { settled: false, };
+        /**
+         Observes the dropped promise settling without awaiting it in the
+         test body.
+         */
+        async function observeSettled(): Promise<void> {
+          await dropped;
+          settleState.settled = true;
+        }
+        void observeSettled();
+        await yieldTurn();
+        expect(settleState.settled,).toBe(false,);
+        gate.release();
+      },
+    },),
+
     //endregion Defaults
   ],
 },);

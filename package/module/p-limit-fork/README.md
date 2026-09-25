@@ -77,9 +77,15 @@ const results = await Promise.all([
 - The queue is implemented in `src/task-queue.ts`,
   so the package has zero runtime dependencies;
   upstream depends on `yocto-queue`.
-- Each call's promise settles when its function settles,
-  without upstream's promise-of-promise adoption hop;
-  observable outcomes are identical.
+- Each call's promise settles directly with its function's outcome,
+  instead of routing through upstream's promise-of-promise adoption hop;
+  the fuzz sidecar's differential oracle finds no observable difference in
+  scheduling,
+  counters,
+  settlements,
+  or validation.
+- Limiter members are non-enumerable,
+  matching upstream `p-limit`'s `Object.defineProperties` defaults.
 
 ### Testing
 

@@ -175,5 +175,96 @@ await describe({
         expect(limit.activeCount,).toBe(0,);
       },
     },),
+    it({
+      name: 'reports queued calls through pendingCount while a consumed prefix remains',
+      fn: async () => {
+        const limit = pLimit(1,);
+        /**
+         Gates for the five gated calls, released one at a time.
+         */
+        const gates: Gate[] = Array.from(
+          {
+            length: 5,
+          },
+          function makeGate(): Gate {
+            return createGate();
+          },
+        );
+        for (const gate of gates)
+          void limit({
+            fn: async function gatedCall(): Promise<void> {
+              await gate.open;
+            },
+            args: [],
+          },);
+
+        await yieldTurn();
+        expect(limit.pendingCount,).toBe(4,);
+
+        gates[0]?.release();
+        await yieldTurn();
+        expect(limit.pendingCount,).toBe(3,);
+
+        for (const gate of gates)
+          gate.release();
+        await yieldTurn();
+        expect(limit.pendingCount,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'clearQueue drops only queued calls and leaves the running call to finish',
+      fn: async () => {
+        const limit = pLimit({
+          concurrency: 1,
+          rejectOnClear: true,
+        },);
+        /**
+         Gate held by the single running call.
+         */
+        const gate = createGate();
+        const running = limit({
+          fn: async function blockedRunning(): Promise<string> {
+            await gate.open;
+            return 'running';
+          },
+          args: [],
+        },);
+        /**
+         Promises of the two queued calls, enqueued in order.
+         */
+        const dropped = [
+          limit({
+            fn: function firstDropped(): string {
+              return 'first';
+            },
+            args: [],
+          },),
+          limit({
+            fn: function secondDropped(): string {
+              return 'second';
+            },
+            args: [],
+          },),
+        ];
+        await yieldTurn();
+        expect(limit.pendingCount,).toBe(2,);
+
+        limit.clearQueue();
+        /**
+         Outcomes of the two dropped calls, which must both reject.
+         */
+        const outcomes = await Promise.allSettled(dropped,);
+        expect(outcomes.map(function toStatus(outcome: PromiseSettledResult<string>,): string {
+          return outcome.status;
+        },),).toEqual([
+          'rejected',
+          'rejected',
+        ],);
+
+        gate.release();
+        expect(await running,).toBe('running',);
+      },
+    },),
   ],
 },);

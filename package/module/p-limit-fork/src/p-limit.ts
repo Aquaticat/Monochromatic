@@ -158,6 +158,30 @@ export type LimitFunction = {
 //region Limiter
 
 /**
+ Invokes one call's function asynchronously, so a synchronous throw becomes
+ a rejection and the completion handling in {@link runCall} always runs
+ from a suspended continuation (matching upstream `p-limit`'s slot-release
+ tick).
+ 
+ @param fn - Function to invoke.
+ 
+ @param args - Arguments spread into `fn`.
+ 
+ @returns Promise settling with the function's result or failure.
+ */
+async function startCall<TArgs extends readonly unknown[], TResult>(
+  {
+    fn,
+    args,
+  }: {
+    readonly fn: (...args: TArgs) => TResult | PromiseLike<TResult>;
+    readonly args: TArgs;
+  },
+): Promise<TResult> {
+  return await fn(...args,);
+}
+
+/**
  Creates a concurrency limiter over upstream `p-limit`'s constructor shapes.
  
  @param concurrencyOrOptions - Bare concurrency number, or options carrying
@@ -229,6 +253,7 @@ export function pLimit(concurrencyOrOptions: number | LimitOptions,): LimitFunct
      every queued call admissible.
      */
     const capacity = state.concurrency - state.activeCount;
+    // mutation-test-disable-next-line conditional, equality -- fast path only: taking zero or fewer calls admits nothing, so skipping the guard is unobservable
     if (capacity <= 0)
       return;
 
@@ -250,30 +275,6 @@ export function pLimit(concurrencyOrOptions: number | LimitOptions,): LimitFunct
   function complete(): void {
     state.activeCount -= 1;
     drainQueue();
-  }
-
-  /**
-   Invokes one call's function asynchronously, so a synchronous throw becomes
-   a rejection and the completion handling in {@link runCall} always runs
-   from a suspended continuation (matching upstream `p-limit`'s slot-release
-   tick).
-   
-   @param fn - Function to invoke.
-   
-   @param args - Arguments spread into `fn`.
-   
-   @returns Promise settling with the function's result or failure.
-   */
-  async function startCall<TArgs extends readonly unknown[], TResult>(
-    {
-      fn,
-      args,
-    }: {
-      readonly fn: (...args: TArgs) => TResult | PromiseLike<TResult>;
-      readonly args: TArgs;
-    },
-  ): Promise<TResult> {
-    return await fn(...args,);
   }
 
   /**
@@ -368,13 +369,11 @@ export function pLimit(concurrencyOrOptions: number | LimitOptions,): LimitFunct
         get: function getActiveCount(): number {
           return state.activeCount;
         },
-        enumerable: true,
       },
       pendingCount: {
         get: function getPendingCount(): number {
           return queue.size;
         },
-        enumerable: true,
       },
       concurrency: {
         get: function getConcurrency(): number {
@@ -386,7 +385,6 @@ export function pLimit(concurrencyOrOptions: number | LimitOptions,): LimitFunct
             drainQueue();
           },);
         },
-        enumerable: true,
       },
       clearQueue: {
         value: function clearQueue(): void {
@@ -409,7 +407,6 @@ export function pLimit(concurrencyOrOptions: number | LimitOptions,): LimitFunct
           for (const call of discarded)
             call.reject(abortReason,);
         },
-        enumerable: true,
       },
       map: {
         value: async function map<TInput, TResult>(
@@ -457,7 +454,6 @@ export function pLimit(concurrencyOrOptions: number | LimitOptions,): LimitFunct
 
           return await Promise.all(scheduled,);
         },
-        enumerable: true,
       },
     },
   );

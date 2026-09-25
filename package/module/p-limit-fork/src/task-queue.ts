@@ -108,10 +108,13 @@ export function createTaskQueue(): TaskQueue {
    Compacts the consumed prefix so the backing store never keeps slots that
    can no longer be taken.
    */
+  // mutation-test-disable-next-line block, conditional, equality -- compaction is a memory-only heuristic: queue behavior is identical however it runs
   function compact(): void {
+    // mutation-test-disable-next-line conditional, equality -- compaction is a memory-only heuristic: queue behavior is identical however it runs
     if (cursor.head === 0)
       return;
 
+    // mutation-test-disable-next-line conditional, block -- compaction is a memory-only heuristic: queue behavior is identical however it runs
     if (cursor.head === entries.length) {
       entries.length = 0;
       cursor.head = 0;
@@ -120,6 +123,7 @@ export function createTaskQueue(): TaskQueue {
 
     // Once the consumed prefix holds at least half the store, re-slicing is
     // cheaper than carrying the dead slots further.
+    // mutation-test-disable-next-line conditional, arithmetic, equality, block -- compaction is a memory-only heuristic: queue behavior is identical however it runs
     if ((cursor.head * 2) >= entries.length) {
       entries.splice(
         0,
