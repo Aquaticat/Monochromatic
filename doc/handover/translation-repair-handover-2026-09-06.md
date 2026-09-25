@@ -4766,15 +4766,18 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA23 RUNS (entry `shi_Yumiaoya`,
+1.  HULICAIJIA18 RUNS (entry `hulicaijia`,
     frozen `e57a2589c`,
-    corpus-pass pid 2246652 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
-    launched 01:28 UTC 2026-09-25,
-    waiter wait-s23 (background bash);
+    launched about 01:55 UTC 2026-09-25;
+    find the pass pid with `pgrep --full --list-full 'node .*frozen-dist-e57a2589c/corpus-pass.mjs --only hulicaijia'`,
+    the first pid is the pass;
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read it by every shi_Yumiaoya22 check (4 headings, front matter equal, no TA, no error finish, no double blank line, the death paragraphs on the page, the closing quote as the archive's two lines with the attribution once, 小药娘 as "trans girl" or "trans woman" with no Han or pinyin outside the archive comment);
-    record it under a new heading above "## CuspariaKLSY15 read, 2026-09-25" in the pass log;
-    then continue the rotation one entry at a time on the same build (`hulicaijia`, `XingZ60`).
+    read it by every hulicaijia17 check (13 headings, 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish, no double blank line);
+    record it under a new heading above "## shi_Yumiaoya23 read, 2026-09-25" in the pass log;
+    then `XingZ60` (run XingZ6011) on the same build.
+    SHI_YUMIAOYA23 READ (frozen `e57a2589c`): SETTLED at 01:49 UTC 2026-09-25 in 20.9 min, one attempt, 917 seats, 841 calls, about 0.35 USD by the meters;
+    every shi_Yumiaoya22 check holds (4 headings, front matter equal, no TA, no error finish, no double blank line, the death paragraphs, the closing quote's two lines with the attribution once, "trans girl", Han only in the archive comments);
+    the sedative detail of the original now on the page; the January 16 sentence drops 吞下大量药物 as shi_Yumiaoya14 did (an observation); glm-5.3 dark (72 seats, Hyper dry); no class.
     CUSPARIAKLSY15 READ (frozen `e57a2589c`): SETTLED at 01:27 UTC 2026-09-25 in 17.2 min, one attempt, 380 seats, 361 calls, about 0.09 USD by the meters;
     every CuspariaKLSY14 check holds (1 heading, front matter equal, no TA, no error finish, no double blank line, the life in the past, the gloss line put back by `name-gloss-restored`);
     the death paragraph carries every clause of the original with no medication detail (又 dropped again, an observation);

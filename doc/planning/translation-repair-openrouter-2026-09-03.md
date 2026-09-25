@@ -8082,7 +8082,55 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
-## CuspariaKLSY15 read, 2026-09-25, 01:27 UTC: SETTLED in 17.2 min, the death paragraph whole; no class
+## shi_Yumiaoya23 read, 2026-09-25, 01:49 UTC: SETTLED in 20.9 min, the sedative detail on the page; no class
+
+`shi_Yumiaoya23` ran on frozen `e57a2589c` (class one hundred twenty-one),
+launched 01:28 UTC,
+and settled at 01:49 UTC in 1,252 s (`ms=1252566`) against shi_Yumiaoya22's 31.9 min,
+one attempt,
+917 seats,
+841 calls,
+5 retry rounds,
+about 0.35 USD by the meters (Bedrock 41.94 to 41.82, OpenRouter 85.85 to 85.62).
+Synthetic wet,
+Hyper dry;
+glm-5.3 dark (72 seats, Hyper-only by design).
+Jev 29 of 29;
+9 abstention lines;
+no disputed slice;
+longest gap 33 s.
+
+Every shi_Yumiaoya22 check holds:
+4 of 4 headings (Description, Experience, Departure, Memorial),
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+the death paragraphs on the page,
+the closing quote as the archive's two lines with "From *The Truman Show*" once,
+小药娘 as "trans girl" in the body and "trans women" in the `[^1]` definition,
+with Han only inside the archive's own comments.
+
+The death paragraph is closer to the original than shi_Yumiaoya22's:
+虽然在离世前她吃了三瓶某种镇静催眠药 now reads "Although before her passing she took three bottles of some kind of sedative-hypnotic",
+where shi_Yumiaoya22 wrote "She had taken medication before she died".
+The ICU paragraph reads "Chewing Gum and Danpian" for 口香糖和单片,
+the original's short form,
+where shi_Yumiaoya22 wrote the declared long form (class seventy-eight holds either way).
+Observation,
+not a class:
+the January 16 sentence drops 吞下大量药物 ("she attempted suicide in the early hours of January 16"),
+the same rendering shi_Yumiaoya14 shipped;
+class seventy-nine holds (an attempt, not a death).
+Other observations:
+师范学院 as "a normal college",
+觉醒了学霸属性 as "awakened her top-student trait",
+three bench-written em-dashes left per the owner.
+The Banner's title and text differ from the archive's in both runs;
+the Banner is a JSX component in the body,
+not front matter,
+so the rule publishing the archive's front matter does not reach it.
+: SETTLED in 17.2 min, the death paragraph whole; no class
 
 `CuspariaKLSY15` ran on frozen `e57a2589c` (class one hundred twenty-one),
 launched 01:10 UTC,
