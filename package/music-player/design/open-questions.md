@@ -142,6 +142,11 @@ rounds (2026-09-17):
   the 300dp bottom-IME capture is bounded evidence.
   Verify docked and split Gboard, app-observed insets and any design
   response before claiming that all typing states preserve the deck.
+  A fresh `hw.keyboard=no` Fold AVD was prepared in private scratch,
+  but the 2 GiB/2 CPU container run failed before Android boot:
+  first the host-GL renderer had no display, then Xvfb allowed rendering
+  but QEMU was killed by the container's memory limit.
+  The fixture provides no keyboard evidence yet.
   A 200% long query remained in the right input region without hiding
   the deck under the debug IME.
   Long **result** names and result-list scrolling are still open.

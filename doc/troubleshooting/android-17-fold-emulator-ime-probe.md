@@ -239,6 +239,44 @@ or that floating overlays are impossible to avoid by other means.
   This is a separate cover Search result-visibility defect,
   not the unfolded deck-title overlap.
 
+### Disposable keyboard-free Fold attempt
+
+A separate Pixel 9 Pro Fold API 37 AVD was created under
+`/home/user/temp/agent/fold-no-hardware-avd/` without copying the active
+user AVD.
+Its generated `config.ini` says `hw.keyboard=no`,
+`hw.ramSize=2G`, and `hw.lcd.density=390`.
+The Android SDK and this private AVD were mounted respectively read-only and
+writable in a rootless Fedora 44 Podman container capped at 2 GiB RAM and
+2 CPUs.
+The emulator reported `Increasing RAM size to 4096MB` at startup.
+This establishes the effective requested guest size for **this invocation**,
+not a universal minimum across Fold system images.
+
+The first `-gpu host -no-window` launch inside the container had no X display;
+Android Emulator reported `Failed to get EGL display` and
+`Could not start renderer! (Error: -2)`.
+A second attempt used a container-local Xvfb display while retaining
+`-gpu host` and the same memory/CPU limits.
+Its renderer proceeded further,
+but the process exited with status 137 before Android booted.
+The retained kernel journal records the deciding emitter and memory boundary:
+
+```text
+Sep 24 20:11:18 bazzite kernel: Memory cgroup out of memory: Killed process 2055528 (qemu-system-x86) total-vm:8001484kB, anon-rss:2062252kB, file-rss:53928kB, shmem-rss:0kB, UID:1000 pgtables:9928kB oom_score_adj:200
+```
+
+`journalctl -k --since '2026-09-24 20:08:00' --until
+'2026-09-24 20:12:00'` reproduces the diagnostic while that journal is
+retained.
+This is a **container-limit failure**, not evidence that a keyboard-free
+Fold cannot display Gboard or that the app passes D50.
+The `mvm` alternative was checked without creating a VM:
+`mvm list` failed with `spawn virsh ENOENT`;
+`package/cli/mvm/README.md` names `virsh`, `qemu-img` and libvirt as
+prerequisites, and none of those binaries/libraries was present locally.
+No host packages were installed and no larger container limit was used.
+
 The debug input method is deliberately synthetic, **not Gboard**.
 Its measured overlap tests bottom-window occlusion and text input integration;
 it does not establish Gboard's docked height, split shape, or suggestions.
@@ -281,6 +319,9 @@ Do not change the production app based solely on either probe.
   the first probe appeared shorter than its label.
 - The old `capture-search-deck.mjs` screenshots: they were taken before
   the deck-first revisions and have no visible keyboard.
+- The 2 GiB capped disposable AVD run: the container-local Xvfb allowed
+  graphics initialization, but the kernel killed `qemu-system-x86` for
+  container memory exhaustion before a keyboard could be tested.
 
 ## Upstream filing decision
 

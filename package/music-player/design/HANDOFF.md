@@ -5387,6 +5387,21 @@ failure from the unfolded deck occlusion.
 restored and verified.
  Investigation and commands are in
 `doc/troubleshooting/android-17-fold-emulator-ime-probe.md`.
+ A fresh private
+Pixel 9 Pro Fold AVD now exists at
+`/home/user/temp/agent/fold-no-hardware-avd/`, with `hw.keyboard=no`.
+The capped Podman test did not reach Android:
+ without a display its host-GL renderer failed;
+ with container-local Xvfb the emulator raised its guest RAM request to
+4096MB and the kernel killed QEMU at the 2 GiB container memory limit.
+`mvm` cannot currently provision a local VM because `virsh` is absent.
+Do not use `/home/user/temp/agent/probe-fold-gboard.mjs` on the fixture:
+it hard-codes `emulator-5554`.
+ The scratch-only
+`probe-disposable-fold-gboard.mjs` pins `emulator-5580` and checks the
+AVD name before touching settings.
+ No fresh Gboard result was obtained,
+and the active user AVD was not restarted or reconfigured for this attempt.
 
 Remaining design work includes verifying actual docked and split Gboard,
 app-observed keyboard insets, a response to floating overlay occlusion,
