@@ -4773,15 +4773,19 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA32 RUNS (entry `shi_Yumiaoya`,
-    frozen `6637865d6`, class one hundred thirty,
-    corpus-pass pid 3135802, launched 07:36 UTC 2026-09-25, waiter wait-s32;
-    the frozen dir checked absent first and grepped for "three musketeers" after):
-    read it by every shi_Yumiaoya31 check (the shi_Yumiaoya30 checks below plus the class one hundred twenty-nine renderings),
-    then the class one hundred thirty renderings: no "Three Musketeers", "fuel-powered", "breathless", "densely packed",
-    "application preferences", "gears of fate", "relevant hospitals", "influence on her death" or "cuddling plan";
-    record it under a new heading above "## shi_Yumiaoya31 read, 2026-09-25" in the pass log;
-    then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on `6637865d6`, each read with the register check.
+1.  SHI_YUMIAOYA33 RUNS (entry `shi_Yumiaoya`,
+    frozen `fe56bffed`, class one hundred thirty-one,
+    corpus-pass pid 3186607, launched 08:07 UTC 2026-09-25, waiter wait-s33;
+    the frozen dir checked absent first and grepped for "behaviour-correction centre" after):
+    read it by every shi_Yumiaoya32 check (the shi_Yumiaoya31 checks plus the class one hundred thirty renderings),
+    then the class one hundred thirty-one renderings: no "counselor", "correctional facility", "took the initiative to propose",
+    "rescue plan", "days of resuscitation", "replace Yumiao's perspective" or "of such a good nature";
+    record it under a new heading above "## shi_Yumiaoya32 read, 2026-09-25" in the pass log;
+    then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on `fe56bffed`, each read with the register check.
+    SHI_YUMIAOYA32 READ (frozen `6637865d6`): SETTLED at 08:02 UTC in 26.7 min, 965 calls, about 0.23 USD by the meters;
+    class one hundred thirty live (all nine renderings on the page, no refused form), every shi_Yumiaoya31 check clean;
+    seven wording calques refused as class one hundred thirty-one (`fe56bffed`, guard red first `74322469d`,
+    suite `suite-class131.log` 1132 PASS, no FAIL; the entries in `rendering-glossary-wording.ts`).
     SHI_YUMIAOYA31 READ (frozen `a719b81f6`): SETTLED at about 07:29 UTC in 30.6 min, 981 calls, about 0.23 USD by the meters;
     class one hundred twenty-nine live ("had many causes", "Yumiao, as an exception,", "stopped trying", "edge of madness", "this vast world"),
     every shi_Yumiaoya30 check and the register check clean; glm-5.3 80 of 80 with Hyper wet;

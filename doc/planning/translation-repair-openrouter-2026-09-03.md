@@ -8082,6 +8082,56 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya32 read, 2026-09-25, 08:05 UTC: class one hundred thirty live, seven wording calques (class one hundred thirty-one)
+
+### What ran
+
+Frozen `6637865d6`, corpus-pass pid 3135802, launched 07:36 UTC.
+SETTLED at 08:02 UTC in 26.7 min, one attempt,
+965 seats, 965 calls, one retry round, 6 abstentions,
+about 0.16 USD on Bedrock and 0.07 USD on OpenRouter by the meters
+(40.31 to 40.15, 82.86 to 82.79).
+Every provider wet; every seat answered every call it was asked (glm-5.3 68 of 68).
+
+### Checks
+
+Every shi_Yumiaoya31 check holds:
+front matter equal, 4 headings as the archive, no TA, no double blank line, no error finish,
+the register check clean, classes one hundred twenty-six to twenty-nine on the page.
+Class one hundred thirty on the page, none of its refused forms present
+(the count read zero; the same count over "top gear trio", "petrol car" and "wheels of fate" read 3):
+"the Top Gear trio's car shows", "Like a petrol car",
+"the crushing academic pressure left her barely able to breathe", "both of her arms were covered in scars",
+"a huge mistake on her university applications", "the wheels of fate began to turn",
+"she also tried hard to get hospital treatment", "Yumiao's parents also played a large part in her death",
+"at her cuddle meetups".
+
+### Seven wording calques (class one hundred thirty-one)
+
+Under the owner's standing instruction of 2026-09-25, seven more renderings join the rendering glossary:
+
+- 辅导员 shipped "Her counselor", which tells an English reader she was seeing a therapist;
+  the page says "student adviser", a university's student affairs officer.
+- 矫正机构 shipped "a correctional facility", which in English is a prison;
+  the page says "behaviour-correction centre".
+- 主动提出了与他分手 shipped "took the initiative to propose breaking up with him";
+  the page says she "was the one who suggested" it.
+- 营救计划 shipped "a rescue plan" for work to free an arrested housemate; the page says "efforts to free" her.
+- ICU 抢救了六天 shipped "after six days of resuscitation in the ICU";
+  resuscitation takes minutes, so the page says six days in intensive care.
+- 代替鱼喵的视角 shipped "will replace Yumiao's perspective";
+  the page says the camera looks on the world "in her place".
+- 性格非常好的人 shipped "a person of such a good nature"; the page says she "was very good-natured".
+
+抢救 alone stands in thirteen pinned entries (xixi_yuexi's "我还能抢救一下" means "salvage"),
+so only `ICU 抢救` is seeded; 代替 stands in two (hakureico's "in place of a cold obituary" is right),
+so only the perspective calques are refused.
+The other five terms stand in this entry alone, and no entry carries both 辅导员 and a counsellor (心理咨询).
+The entries sit in `rendering-glossary-wording.ts`, spread into `RENDERING_GLOSSARY`.
+Guard red first `74322469d` (`rendering-glossary-wording.unit.test.ts`: seeds, refuses the seven calques, accepts the English),
+fixed `fe56bffed`, lint 0/0, types clean, suite `suite-class131.log` 1132 PASS, no FAIL.
+Frozen `.frozen-dist-fe56bffed`; shi_Yumiaoya33 launched 08:07 UTC (pid 3186607).
+
 ## shi_Yumiaoya31 read, 2026-09-25, 07:35 UTC: class one hundred twenty-nine live, nine idiom calques (class one hundred thirty)
 
 ### What ran
