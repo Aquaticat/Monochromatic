@@ -123,10 +123,11 @@ function verifyImage({ capture, file }) {
     encoding: 'utf8',
   }).trim();
   if (result !== `${expected} True`) throw new Error(`${capture.id}: unexpected image shape: ${result}`);
-  const corner = execFileSync('magick', [file, '-format', '%[pixel:p{0,0}]', 'info:'], {
+  const corner = execFileSync('magick', [file, '-format',
+    '%[fx:p{0,0}.r] %[fx:p{0,0}.g] %[fx:p{0,0}.b]', 'info:'], {
     encoding: 'utf8',
   }).trim();
-  if (corner !== (capture.theme === 'dark' ? 'gray(0)' : 'gray(255)')) {
+  if (corner !== (capture.theme === 'dark' ? '0 0 0' : '1 1 1')) {
     throw new Error(`${capture.id}: status area was not anonymized: ${corner}`);
   }
 }
