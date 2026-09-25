@@ -119,6 +119,8 @@ The original AVD's active Gboard was updated versionCode `175981944`,
 not the preloaded `175753756`;
 updating the disposable Gboard to that same build did not reproduce the
 floating layout.
+`evidence/gboard-geometry.md` indexes sanitized real-keyboard captures
+and measured passing/failing states.
 Selection does not authorize production implementation.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.

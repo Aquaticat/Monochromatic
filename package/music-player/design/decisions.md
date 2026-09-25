@@ -1501,6 +1501,9 @@ A Gboard font-update banner on the disposable inner panel temporarily
 raised the IME top to y `1140` and clipped the final mode until dismissed.
 These bounded passing modes and failing states do not change D50 or the
 user's A selection; other heights and app-observed insets remain unverified.
+`evidence/gboard-geometry.md` indexes sanitized real Gboard evidence;
+its passing split and full-width states do not supersede the floating and
+banner counterexamples.
 This is a **design choice only**;
  it does not authorize production changes.
 

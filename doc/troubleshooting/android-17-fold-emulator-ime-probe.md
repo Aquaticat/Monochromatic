@@ -403,6 +403,13 @@ it does not establish Gboard's own geometry.
 The real-keyboard evidence now covers the specific settled split/full-width
 arrangements and the original floating failures,
 not every keyboard or user configuration.
+The [Gboard geometry evidence](../../package/music-player/design/evidence/gboard-geometry.md)
+indexes sanitized physical-panel PNGs and whitelisted app-node JSON;
+raw screenshots and full hierarchies stayed in private agent scratch.
+The committed evidence validator rejected altered deck,
+banner,
+floating-result and status-mask fixtures,
+then passed their restored originals.
 
 ## Verified workaround
 

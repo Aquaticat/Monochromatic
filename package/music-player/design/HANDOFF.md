@@ -5469,8 +5469,17 @@ clipping the final mode;
 tapping `OK` returned the IME top to y `1352` and restored the deck.
 Do not dismiss that failing state as capture noise,
 or silently narrow the user's “never hidden” requirement.
-Raw screenshots and hierarchies remain in private agent scratch pending
-sanitized durable evidence.
+Sanitized physical-panel captures and curated app-node geometry are
+committed under `questions/evidence/gboard-*.{png,json}`.
+`evidence/gboard-geometry.md` indexes the passing and failing captures,
+records both Gboard versions,
+and explains the current D50 boundary.
+`mise run //package/music-player/design:lint:gboard:evidence` passed.
+Disposable negative controls rejected clipped settled modes,
+a falsely passing banner,
+non-overlapping floating results and an unmasked status pixel;
+restored copies passed after each test.
+Raw screenshots and full hierarchies remain in private agent scratch only.
 
 Remaining design work includes app-observed inset/bounding-rectangle
 measurement,
