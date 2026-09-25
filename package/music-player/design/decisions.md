@@ -1492,7 +1492,10 @@ B (fixed upper-left deck) and C (Search left with an upper-right deck) were
 not chosen.
  Their native captures remain historical comparison evidence,
 not active choices.
- The 300dp test input method verified bounded bottom-keyboard occlusion.
+The corrected A-only review was recaptured with the same folder browser
+visible in the shortened upper-left viewport under a 300dp debug IME;
+its unfolded deck and query/results remained visible.
+The older real-Gboard PNGs predate that browser correction.
 A later real Gboard floating-keyboard probe at 200% text obscured part of
 the deck title; moving that keyboard lower obscured more controls.
 This is a validation failure against D50 in the tested floating mode,

@@ -102,9 +102,14 @@ both panels.
 `questions/archive/search-three-way-before-a.html`.
 `questions/current.html` now shows only the selected design in light/dark
 at 100% and 200% text.
- A system-managed 300dp debug keyboard verified
-bounded bottom-keyboard occlusion and input routing;
- it is not Gboard.
+The corrected unfolded typing captures keep the **same folder browser** above
+the lifted deck;
+the user accepts a little crop of that browser in short keyboard viewports
+and rejected a substitute `Current folder` caption.
+A system-managed 300dp debug keyboard verified bounded bottom-keyboard
+occlusion and input routing;
+it is not Gboard.
+The linked older real-Gboard PNGs predate this browser correction.
 A later real floating Gboard at 200% text obscured part of the deck title,
 so D50 is not fully met in this tested mode.
  On the cover at 100% text,

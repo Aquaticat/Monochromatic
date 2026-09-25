@@ -5540,7 +5540,9 @@ Its title paint appeared intact,
 but accessibility bounds clipped its leading 16px at the scroll viewport;
 recheck this before offering the variant for adoption.
 These are **synthetic IME**, not real Gboard, after-state observations.
-Raw screenshots/XML stay in private agent scratch pending sanitized evidence.
+The 415dp stress screenshots and full hierarchies remain in private agent
+scratch;
+they are not the published 300dp selected review captures.
 
 The debug-only app probe logged a settled Compose IME bottom of `1011px`,
 a platform bottom of `1011px`, `isVisible=true`,
@@ -5597,6 +5599,34 @@ the fixed stress threshold is not an animation-fit rule,
 and floating Gboard remains a separate D50 failure.
 All production work remains unapproved;
 the browser content itself is no longer an open choice.
+
+The corrected selected-A matrix was recaptured on the disposable Fold with
+prototype commit `25dc2fb01` and the system-managed **300dp debug IME**.
+The capture checked both physical panels,
+light and dark,
+100% and 200% text,
+complete mode and result bounds,
+then restored the AVD's selected IME and settings.
+For the unfolded typing state,
+it now requires the actual `Folders` browser to remain in UI Automator;
+there is no substitute caption.
+Twelve selected PNGs were sanitized with a generic `9:41` status clock
+and stripped of metadata,
+then `questions/current.html` was rebuilt from them.
+A separate image check validated every PNG's physical dimensions,
+opaque pixels,
+masked upper-left status corner,
+and absence of text/EXIF chunks;
+a disposable red-corner fixture was rejected while the original passed.
+The design build,
+lint,
+unit task,
+and browser preview controls passed after the update.
+The current A-only review now depicts this retained browser,
+not the old blank-left typing capture.
+Older real-Gboard evidence PNGs predate that correction;
+the new real-Gboard recheck measured the corrected settled state but did
+not reproduce the transient font banner or settle floating-keyboard D50.
 
 ## Issue tracking moves to Linear for this session
 

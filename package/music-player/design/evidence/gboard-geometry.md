@@ -9,7 +9,13 @@ The active review at `package/music-player/design/questions/current.html` still 
 system-managed input method,
 not Gboard.
 The captures linked here test selected A with real Gboard.
-They are design evidence,
+They **predate** the user's correction to retain the same folder browser
+above the deck during typing and the subsequent debug-only height reflow.
+The active review now shows that retained browser under the separate 300dp
+debug input method;
+these older Gboard PNGs must not be read as images of the corrected
+upper-left composition.
+They remain evidence of the measured keyboard modes,
 not production implementation or a new choice between A,
 B and C.
 
@@ -81,8 +87,15 @@ Android Back dismissed Gboard without clearing `cam` or its results.
 Tapping the field reopened the keyboard.
 Clear removed the query while retaining focus,
 and real-key retyping restored both results.
-These are bounded observations of the selected debug Search study,
+These are bounded observations of the earlier debug Search composition,
 not proof of result activation or rank behavior.
+A later disposable-AVD probe of the corrected retained-browser candidate
+again entered `cam` with real Gboard at 200% text:
+`Folders` and Open remained at upper-left,
+and the final mode occupied `[73,1201][965,1332]` before the keyboard's
+y `1352` top.
+Its raw current APK screenshot remains private;
+it is **not** one of the linked sanitized Gboard PNGs.
 
 ## Measured failures that remain
 
