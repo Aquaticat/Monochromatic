@@ -534,6 +534,14 @@ A trailing question keeps precedence over it.
  `false`,
  or `no` disables it.
 
+Disabled on 2026-09-25 at the user's request:
+the local `.claude/settings.local.json` sets `MONOCHROMATIC_STOP_AUTO_CONTINUE` to `off` in its `env` block.
+The user reports that `claude-opus-5-5` does not end turns on announced-but-undone work,
+so the forced-continuation reason had become a distraction.
+The response-quality detectors in the same `ccsr` hook stay active.
+To re-enable,
+ remove that `env` entry.
+
 ### What this does not achieve
 
 The stated goal was that auto-prompting on every stop would eventually finish the work.
