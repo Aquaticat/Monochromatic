@@ -128,9 +128,16 @@ export function communityTermFindings(
    */
   const candidate = withoutComments({ text: candidateText, },);
   return carried.flatMap(function findingsFor(entry,): readonly string[] {
+    /**
+     Term as the finding names it, without the leading space a Latin term
+     (" OD") carries so it does not match inside a longer word.
+     */
+    const shownTerm = entry
+      .term
+      .trim();
     if (candidate.includes(entry.term,)) {
       return [
-        `Your translation leaves the ${noun} ${entry.term} in Han. Render it as ${
+        `Your translation leaves the ${noun} ${shownTerm} untranslated. Render it as ${
           renderingList({ entry, },)
         }: ${entry.why}.`,
       ];

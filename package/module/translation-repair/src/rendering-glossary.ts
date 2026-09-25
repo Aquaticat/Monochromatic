@@ -194,6 +194,49 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
     why: 'bullying by words and pressure rather than by force; the page keeps the adjective ("psychologically '
       + 'bullied"), never "spiritual"',
   },
+  // CLASS ONE HUNDRED TWENTY-SEVEN (owner, 2026-09-25: "overdosing", "sailor
+  // uniform", "National College Entrance Examination"), answering the three
+  // renderings the shi_Yumiaoya27 read left as written. OD carries its leading
+  // space: every OD in the pinned corpus stands after one, and a bare OD would
+  // match the MOD entry s5ehfr9 writes.
+  {
+    term: ' OD',
+    renderings: [
+      'overdosing',
+      'overdose',
+      'overdosed',
+    ],
+    refusedForms: [],
+    why: 'the community\'s shorthand for taking medication far past the dose; the page spells it out, never "OD" '
+      + 'or "ODing"',
+  },
+  {
+    term: 'jk 裙',
+    renderings: [
+      'sailor uniform',
+      'sailor-uniform skirt',
+    ],
+    refusedForms: [
+      'jk skirt',
+      'jk-skirt',
+      'jk uniform',
+      'jk-style',
+      'jk dress',
+    ],
+    why: 'the Japanese schoolgirl uniform the community calls JK; the page says "sailor uniform", never "JK skirt"',
+  },
+  {
+    term: '高考',
+    renderings: [
+      'National College Entrance Examination',
+      'college entrance examination',
+      'college entrance exam',
+    ],
+    refusedForms: [
+      'gaokao',
+    ],
+    why: 'China\'s national university entrance examination; the page names it in English, never "Gaokao"',
+  },
 ];
 
 /**
