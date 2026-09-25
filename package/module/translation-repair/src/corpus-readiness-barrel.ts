@@ -16,6 +16,7 @@ export {
 export { unifyHeadingSeries, } from './corpus-run/heading-series-unify.ts';
 export { restoreJsxAttributes, } from './corpus-run/jsx-attribute-restore.ts';
 export { restoreArchiveCasing, } from './corpus-run/archive-casing-restore.ts';
+export { restoreArchiveNameCasing, } from './corpus-run/archive-name-casing.ts';
 export {
   canadianizePage,
   canadianizeText,

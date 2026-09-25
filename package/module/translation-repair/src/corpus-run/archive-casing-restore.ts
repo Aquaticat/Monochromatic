@@ -61,7 +61,7 @@ const HEADING_MARK = '#';
  onHeadingLine({ text: '## From Maowu', at: 8, },); // true
  ```
  */
-function onHeadingLine(
+export function onHeadingLine(
   {
     text,
     at,
@@ -85,7 +85,7 @@ function onHeadingLine(
 /**
  One run of Latin letters and where it starts.
  */
-type LatinWord = {
+export type LatinWord = {
   readonly word: string;
   readonly start: number;
 };
@@ -120,7 +120,7 @@ function isLatinLetter(
  latinWords({ text: 'MAOWU Station', },); // [{ word: 'MAOWU', start: 0 }, { word: 'Station', start: 6 }]
  ```
  */
-function latinWords(
+export function latinWords(
   { text, }: { readonly text: string; },
 ): readonly LatinWord[] {
   /**
@@ -227,7 +227,7 @@ function capitalForms(
  isTitleCase({ word: 'Maowu', },); // true
  ```
  */
-function isTitleCase(
+export function isTitleCase(
   { word, }: { readonly word: string; },
 ): boolean {
   /**

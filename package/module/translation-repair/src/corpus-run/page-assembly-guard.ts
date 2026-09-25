@@ -8,6 +8,7 @@ import { placeHandleGlosses, } from './handle-gloss-place.ts';
 import { restoreCollidingHeadings, } from './heading-collision-restore.ts';
 import { unifyHeadingSeries, } from './heading-series-unify.ts';
 import { restoreArchiveCasing, } from './archive-casing-restore.ts';
+import { restoreArchiveNameCasing, } from './archive-name-casing.ts';
 import { canadianizePage, } from './canadian-forms.ts';
 import { restoreJsxAttributes, } from './jsx-attribute-restore.ts';
 import { restoreListSpread, } from './list-spread-restore.ts';
@@ -166,12 +167,20 @@ export function guardPageAssembly(
     replacements: lists.replacements,
   },);
   /**
+   Every multi-word name the archive writes title case at the archive's form
+   (class one hundred thirty-six).
+   */
+  const nameCasing = restoreArchiveNameCasing({
+    slices,
+    replacements: casing.replacements,
+  },);
+  /**
    Every date month first and every listed word in its Canadian spelling, on
    every slice the page carries (class one hundred thirty-four).
    */
   const canadian = canadianizePage({
     slices,
-    replacements: casing.replacements,
+    replacements: nameCasing.replacements,
     archiveOriginalSpans,
   },);
   /**
@@ -187,6 +196,7 @@ export function guardPageAssembly(
     ...glossLines.restored,
     ...lists.restored,
     ...casing.restored,
+    ...nameCasing.restored,
     ...canadian.restored,
   ].map(function bySlice(row,): readonly [
     number,
@@ -247,6 +257,7 @@ export function guardPageAssembly(
       ...glossLines.findings,
       ...lists.findings,
       ...casing.findings,
+      ...nameCasing.findings,
       ...canadian.findings,
       ...guarded.findings,
     ],
