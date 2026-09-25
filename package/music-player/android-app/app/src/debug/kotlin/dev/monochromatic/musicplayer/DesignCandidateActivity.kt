@@ -984,7 +984,7 @@ private fun paletteForSearchDeck(light: Boolean): CandidatePalette = paletteFor(
 internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier,
     includeTopInset: Boolean = true, deckFirst: Boolean = false,
     deckFullHeight: Boolean = false, bannerFit: Boolean = false,
-    compactForContext: Boolean = false,
+    compactForBrowser: Boolean = false,
     topContent: @Composable (Modifier) -> Unit) {
     val palette = paletteForSearchDeck(light)
     Column(modifier = modifier.fillMaxSize().background(palette.picker)) {
@@ -1003,7 +1003,7 @@ internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier,
             }
             TransportBlock(modifier = Modifier.fillMaxWidth(), candidate = "dark-stable-wallpaper-dynamic",
                 palette = palette, deckHeightCap = !deckFullHeight, bannerFit = bannerFit,
-                compactForContext = compactForContext)
+                compactForBrowser = compactForBrowser)
         }
     }
 }
@@ -1483,7 +1483,7 @@ private fun TransportBlock(
     palette: CandidatePalette,
     deckHeightCap: Boolean = true,
     bannerFit: Boolean = false,
-    compactForContext: Boolean = false,
+    compactForBrowser: Boolean = false,
 ) {
     // What:     Kotlin's `if` can return a value, unlike a TypeScript `if` statement.
     // Why:      Every candidate keeps one immutable Material spacing value for its complete deck.
@@ -1515,8 +1515,8 @@ private fun TransportBlock(
             .windowInsetsPadding(WindowInsets.systemGestures.only(horizontalSafeSides))
             .windowInsetsPadding(WindowInsets.navigationBars)
             .verticalScroll(rememberScrollState())
-            // Reinvest only outer whitespace in a readable upper-left context strip.
-            .padding(vertical = if (compactForContext) 8.dp else 16.dp),
+            // Reinvest only outer whitespace in the unchanged folder browser above the deck.
+            .padding(vertical = if (compactForBrowser) 8.dp else 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(groupSpacing),
     ) {
