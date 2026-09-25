@@ -1,7 +1,7 @@
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
-import { slicesInOrder, } from './assembly-page-text.ts';
+import { rewriteEverySlice, } from './page-slice-rewrite.ts';
 import { monthFirstDates, } from './canadian-date.ts';
 import { canadianSpellings, } from './canadian-spelling.ts';
 import { protectedRanges, } from './prose-ranges.ts';
@@ -110,39 +110,6 @@ export function canadianizeText(
 }
 
 /**
- Whether a slice's archive span lies inside any span sealed as the English
- original.
-
- @param slice - prepared pair
-
- @param archiveOriginalSpans - sealed spans
-
- @returns Whether the slice overlaps a sealed span
-
- @example
- ```ts
- sealed({ slice, archiveOriginalSpans: [], },); // false
- ```
- */
-function sealed(
-  {
-    slice,
-    archiveOriginalSpans,
-  }: {
-    readonly slice: ChunkPair;
-    readonly archiveOriginalSpans: readonly ArchiveOriginalSpan[];
-  },
-): boolean {
-  return archiveOriginalSpans.some(function overlaps(span,): boolean {
-    return (span.startOffset
-      < slice.target
-      .endOffset) && (span.endOffset
-        > slice.target
-        .startOffset);
-  },);
-}
-
-/**
  Writes every slice's dates and listed spellings the Canadian way, the
  slices no lane replaced included.
 
@@ -176,89 +143,12 @@ export function canadianizePage(
   readonly restored: readonly SliceReplacement[];
   readonly findings: readonly string[];
 } {
-  /**
-   Replacement text by slice.
-   */
-  const replaced = new Map(replacements.map(function toEntry(row,): readonly [
-    number,
-    string,
-  ] {
-    return [
-      row.sliceIndex,
-      row.replacementText,
-    ];
-  },),);
-  /**
-   Rows the pass changed, with the finding each carries.
-   */
-  const changedRows = slicesInOrder({ slices, },)
-    .filter(function eligible(slice,): boolean {
-      return (slice.syntax !== 'front-matter') && (!sealed({
-        slice,
-        archiveOriginalSpans,
-      },));
-    },)
-    .flatMap(function rewrite(slice,): readonly {
-      readonly row: SliceReplacement;
-      readonly finding: string
-    }[] {
-      /**
-       Text the page carries at this slice.
-       */
-      const text = replaced.get(slice.target
-        .sliceIndex,)
-        ?? slice.target
-        .text;
-      /**
-       That text in Canadian forms.
-       */
-      const canadian = canadianizeText({ text, },);
-      if (canadian.changed
-        .length
-        === 0)
-        return [];
-      return [{
-        row: {
-          sliceIndex: slice.target
-            .sliceIndex,
-          replacementText: canadian.text,
-        },
-        finding: `canadian-form-rewritten (slice ${String(slice.target
-          .sliceIndex,)}: ${canadian.changed
-            .join(', ',)})`,
-      },];
-    },);
-  /**
-   Rewritten text by slice.
-   */
-  const rewritten = new Map(changedRows.map(function toEntry({ row, },): readonly [
-    number,
-    SliceReplacement,
-  ] {
-    return [
-      row.sliceIndex,
-      row,
-    ];
-  },),);
-  return {
-    replacements: [
-      ...replacements.map(function swap(row,): SliceReplacement {
-        return rewritten.get(row.sliceIndex,) ?? row;
-      },),
-      ...changedRows
-        .filter(function added({ row, },): boolean {
-          return !replaced.has(row.sliceIndex,);
-        },)
-        .map(function rowOf({ row, },): SliceReplacement {
-          return row;
-        },),
-    ],
-    restored: changedRows.map(function rowOf({ row, },): SliceReplacement {
-      return row;
-    },),
-    findings: changedRows.map(function findingOf({ finding, },): string {
-      return finding;
-    },),
-  };
+  return rewriteEverySlice({
+    slices,
+    replacements,
+    archiveOriginalSpans,
+    rewrite: canadianizeText,
+    findingName: 'canadian-form-rewritten',
+  },);
 }
 //endregion Canadian forms

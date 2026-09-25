@@ -18,6 +18,10 @@ export { restoreJsxAttributes, } from './corpus-run/jsx-attribute-restore.ts';
 export { restoreArchiveCasing, } from './corpus-run/archive-casing-restore.ts';
 export { restoreArchiveNameCasing, } from './corpus-run/archive-name-casing.ts';
 export {
+  correctPinyinPage,
+  correctPinyinTones,
+} from './corpus-run/pinyin-tone.ts';
+export {
   canadianizePage,
   canadianizeText,
 } from './corpus-run/canadian-forms.ts';
