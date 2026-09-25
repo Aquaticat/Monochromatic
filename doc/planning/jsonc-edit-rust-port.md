@@ -48,8 +48,23 @@ Progress since adoption:
    The package unit suite,
    the conformance corpus and the fuzz property suites pass after the change.
 
+- Language-neutral fixtures are shared:
+   `fixtures/jsonc-conformance.json` exists as byte-identical copies in
+   `package/module/jsonc-edit.conformance` and `package/rust-module/jsonc-edit`,
+   both suites read it,
+   and a `test:shared-fixtures` task in each package fails on drift.
+   The fixture covers accepted and rejected sources,
+   root shape,
+   comment ownership on the root,
+   keys and values,
+   preserved number spelling,
+   mathematical equality,
+   and the nesting boundary.
+   Cases needing exact mathematical identity are flagged,
+   because the TypeScript package stores binary64 values and asserts those through preserved
+   spelling instead.
+
 Still open:
- language-neutral fixtures shared by both implementations,
  a disposable Rust consumer check of the packaged crate,
  the authorized crates.io first-publication route,
  and the release-workflow wiring that follows it.
