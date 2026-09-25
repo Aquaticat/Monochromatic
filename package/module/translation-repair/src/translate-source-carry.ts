@@ -1,4 +1,5 @@
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
+import { RENDERING_GLOSSARY, } from './rendering-glossary.ts';
 import { droppedAddressFindings, } from './translate-address-drop.ts';
 import { communityTermFindings, } from './translate-community-term.ts';
 import { declaredLinkNameFindings, } from './translate-declared-link-name.ts';
@@ -11,7 +12,9 @@ import { unwrappedLinkFindings, } from './translate-unwrapped-link.ts';
 // read before any judge: its footnote markers (class ninety-two), its
 // second-person address (class ninety-seven), its bracketed work titles
 // in English (class ninety-eight), its community terms as the glossary
-// renders them (class one hundred nineteen), its worded links as links (class one
+// renders them (class one hundred nineteen), its ordinary words without the
+// calques the rendering glossary refuses (class one hundred twenty-three),
+// its worded links as links (class one
 // hundred fifteen) and a declared name inside a linked title in its
 // declared form (class one hundred fourteen). The floors run in that order and the
 // first one that speaks decides, so a candidate is refused for one thing at
@@ -88,6 +91,17 @@ export function sourceCarryFindings(
   },);
   if (termFindings.length > 0)
     return termFindings;
+  /**
+   Ordinary words the candidate kept in Han or wrote as a refused calque.
+   */
+  const renderingFindings = communityTermFindings({
+    sourceText,
+    candidateText,
+    glossary: RENDERING_GLOSSARY,
+    noun: 'word',
+  },);
+  if (renderingFindings.length > 0)
+    return renderingFindings;
   /**
    Worded links the candidate unwrapped while keeping the destination.
    */

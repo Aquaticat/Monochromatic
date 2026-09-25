@@ -91,6 +91,9 @@ function refusedFormIn(
 
  @param glossary - terms to hold; defaults to the corpus glossary
 
+ @param noun - what the finding calls a term, so a word from the rendering
+ glossary (`rendering-glossary.ts`) is not called the community's
+
  @returns One finding per term the candidate fails, empty where it passes
 
  @example
@@ -103,10 +106,12 @@ export function communityTermFindings(
     sourceText,
     candidateText,
     glossary = COMMUNITY_GLOSSARY,
+    noun = 'community term',
   }: {
     readonly sourceText: string;
     readonly candidateText: string;
     readonly glossary?: readonly CommunityTerm[];
+    readonly noun?: string;
   },
 ): readonly string[] {
   /**
@@ -125,7 +130,7 @@ export function communityTermFindings(
   return carried.flatMap(function findingsFor(entry,): readonly string[] {
     if (candidate.includes(entry.term,)) {
       return [
-        `Your translation leaves the community term ${entry.term} in Han. Render it as ${
+        `Your translation leaves the ${noun} ${entry.term} in Han. Render it as ${
           renderingList({ entry, },)
         }: ${entry.why}.`,
       ];
@@ -140,7 +145,7 @@ export function communityTermFindings(
     if (refused === '')
       return [];
     return [
-      `Your translation writes "${refused}" for the community term ${entry.term}. Render it as ${
+      `Your translation writes "${refused}" for the ${noun} ${entry.term}. Render it as ${
         renderingList({ entry, },)
       }: ${entry.why}.`,
     ];

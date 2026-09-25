@@ -148,6 +148,10 @@ export {
 } from './community-glossary.ts';
 export { pageNameLines, } from './page-name-glossary.ts';
 export {
+  RENDERING_GLOSSARY,
+  renderingTermLines,
+} from './rendering-glossary.ts';
+export {
   type CorpusName,
   corpusNameLines,
   corpusNamesOf,

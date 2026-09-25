@@ -199,9 +199,12 @@ function quotedRenderings(
  @param text - whole original document
  
  @param glossary - terms to look for; defaults to the corpus glossary
- 
+
+ @param heading - line naming what the terms are, so a glossary of ordinary
+ words (`rendering-glossary.ts`) does not call them the community's
+
  @returns Heading and one line per term present, empty when none is
- 
+
  @example
  ```ts
  const lines = communityTermLines({ text: sourceText, },);
@@ -211,9 +214,11 @@ export function communityTermLines(
   {
     text,
     glossary = COMMUNITY_GLOSSARY,
+    heading = 'COMMUNITY TERMS this entry carries, rendered as the archive and the community render them (a rendering may inflect):',
   }: {
     readonly text: string;
     readonly glossary?: readonly CommunityTerm[];
+    readonly heading?: string;
   },
 ): readonly string[] {
   /**
@@ -226,7 +231,7 @@ export function communityTermLines(
   if (present.length === 0)
     return [];
   return [
-    'COMMUNITY TERMS this entry carries, rendered as the archive and the community render them (a rendering may inflect):',
+    heading,
     ...present.map(function toLine(entry,): string {
       return `- ${entry.term}: ${quotedRenderings({ entry, },)} (${entry.why})`;
     },),

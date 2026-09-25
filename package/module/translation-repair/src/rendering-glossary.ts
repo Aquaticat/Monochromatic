@@ -1,0 +1,120 @@
+import {
+  type CommunityTerm,
+  communityTermLines,
+} from './community-glossary.ts';
+
+//region Rendering glossary
+// CLASS ONE HUNDRED TWENTY-THREE (shi_Yumiaoya23, 2026-09-25). The page
+// shipped 师范学院 as "a normal college" and 觉醒了学霸属性 as "awakened her
+// top-student trait": word-for-word renderings an English reader stumbles on,
+// chosen by judges who had nothing telling them the ordinary English. The
+// owner answered on 2026-09-25 that anything which can be translated better
+// should be. This glossary holds ordinary Chinese words, not the community's
+// own (`community-glossary.ts`), with the English the page uses and the
+// calques a candidate may not write. It shares the community glossary's
+// machinery: the words an entry's source carries reach every sheet's identity
+// context (`renderingTermLines`), and the source-carry floor refuses a
+// candidate that keeps one in Han or writes a refused form
+// (`translate-source-carry.ts`). An entry is added whenever a read finds a
+// rendering that can be better; an official name that carries a word (北京师范
+// 大学, "Beijing Normal University") is never entered, only the generic word.
+
+/**
+ Ordinary words the pinned corpus carries whose word-for-word rendering reads
+ badly in English, with the English the page uses.
+ */
+export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
+  {
+    term: '师范学院',
+    renderings: [
+      'teachers\' college',
+      'teachers college',
+      'teacher-training college',
+    ],
+    refusedForms: [
+      'normal college',
+    ],
+    why: 'a generic college that trains teachers; "normal college" is a calque English readers do not '
+      + 'recognise, kept only inside an institution\'s own official English name',
+  },
+  {
+    term: '师范学校',
+    renderings: [
+      'teacher-training school',
+      'teachers\' school',
+      'teachers\' college',
+    ],
+    refusedForms: [
+      'normal school',
+    ],
+    why: 'a generic school that trains teachers; "normal school" is a dated calque English readers do not '
+      + 'recognise',
+  },
+  {
+    term: '学霸',
+    renderings: [
+      'top student',
+      'star student',
+      'straight-A',
+    ],
+    refusedForms: [
+      'top-student trait',
+      'top student trait',
+      'academic tyrant',
+      'study tyrant',
+      'xueba',
+    ],
+    why: 'a student who excels academically; 觉醒了学霸属性 is internet slang for suddenly becoming a top '
+      + 'student, so the page says that, never that she "awakened" a "trait" or "attribute"',
+  },
+];
+
+/**
+ Identity-context lines for the ordinary words an entry's source carries,
+ under a heading that does not call them the community's.
+
+ @param text - whole original document
+
+ @returns Heading and one line per word present, empty when none is
+
+ @example
+ ```ts
+ const lines = renderingTermLines({ text: sourceText, },);
+ ```
+ */
+export function renderingTermLines(
+  { text, }: { readonly text: string; },
+): readonly string[] {
+  return communityTermLines({
+    text,
+    glossary: RENDERING_GLOSSARY,
+    heading: 'RENDERINGS for ordinary words this entry carries: write the English meaning, not a word-for-word calque '
+      + '(a rendering may inflect):',
+  },);
+}
+
+/**
+ Identity-context lines for both glossaries: the community's words an entry
+ carries (the owner's decision of 2026-09-09), then the ordinary words whose
+ calque reads badly.
+
+ @param text - whole original document
+
+ @returns Both glossaries' headed lines, each empty when the entry carries
+ none of its words
+
+ @example
+ ```ts
+ const lines = glossaryTermLines({ text: sourceText, },);
+ ```
+ */
+export function glossaryTermLines(
+  { text, }: { readonly text: string; },
+): readonly string[] {
+  return [
+    ...communityTermLines({ text, },),
+    ...renderingTermLines({ text, },),
+  ];
+}
+
+//endregion Rendering glossary
