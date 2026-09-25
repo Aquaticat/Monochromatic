@@ -112,8 +112,46 @@ if (getType() == WindowInsets.Type.ime()) {
 
 The zero-height server source and the unlifted deck agree for this device
 state.
-This is not a measurement of every app-observable keyboard API or proof
-that floating overlays are impossible to avoid by other means.
+
+Android 17 also exposes a flagged `WindowInsets.getBoundingRects(typeMask)`
+API for obscuring regions (`WindowInsets.java:525-553`).
+`InsetsState.java:383-391` computes that public map from each source:
+
+```java
+final Insets insets = source.calculateInsets(relativeFrame, hostBounds, ignoreVisibility);
+final Rect[] boundingRects = source.calculateBoundingRects(relativeFrame, hostBounds,
+        ignoreVisibility);
+processSourceAsPublicType(source, typeInsetsMap, idSideMap, typeVisibilityMap,
+        typeBoundingRectsMap, insets, boundingRects, type);
+```
+
+The observed IME source had a zero-height frame and no `boundingRects` or
+`insetsBoundingRects` entries in `dumpsys window`.
+`InsetsSource.java:595-608` returns no rectangle when those arrays are absent
+and the frame does not intersect the app window:
+
+```java
+if (mBoundingRects == null && mInsetsBoundingRects == null) {
+    return mTmpFrame2.setIntersect(mTmpFrame, relativeFrame)
+            ? new Rect[]{
+                    new Rect(
+                            mTmpFrame2.left - relativeFrame.left,
+                            mTmpFrame2.top - relativeFrame.top,
+                            mTmpFrame2.right - relativeFrame.left,
+                            mTmpFrame2.bottom - relativeFrame.top
+                    )
+            }
+            : EMPTY_RECTS;
+}
+```
+
+The empty branch is the relevant one for the measured source.
+`InsetsSource.java:839-848` prints either array when present, which is why
+its absence in the server dump matters.
+Thus this **observed IME source** offers neither a bottom inset nor a
+floating-keyboard bounding rectangle through these framework paths.
+This is not proof that every app-observable keyboard API lacks the geometry
+or that floating overlays are impossible to avoid by other means.
 
 ## Verification
 
