@@ -156,13 +156,15 @@ rounds (2026-09-17):
   A transient Gboard font-update banner on the disposable inner panel
   raised its IME to y `1140` and clipped the last mode until `OK` was tapped.
   D50 therefore remains unmet in measured floating and banner states.
-  The user clarified that Search need not blank the upper-left area.
-  Keep useful browsing or contextual content there where measured height
-  permits;
-  do not take space from the complete deck or put meaning on the crease.
-  Which portion can remain interactive versus passive at taller IME heights
-  is an open design question,
-  not a reason to silently weaken D50.
+  The user clarified that Search keeps its **actual folder browser** in
+  the upper-left area while typing.
+  Do not blank it or replace it with a `Current folder` caption;
+  the user rejected that substitute as useless.
+  The viewport may shorten without changing browser content,
+  but no visible partial button may bypass the 48dp target floor.
+  Whether the existing header and folder targets remain usable in a
+  banner-height viewport requires direct testing.
+  Do not take space from the complete deck or put meaning on the crease.
   A 415dp debug-only system IME reproduced the banner-height clipping at
   y `1141` in selected A,
   while an **unaccepted** inline title/transport variant showed the final
@@ -171,9 +173,10 @@ rounds (2026-09-17):
   Its last icon ended at x `965` and its 48dp parent hit target was
   `[877,279][994,396]`;
   the hit region alone crosses the approximate crease start x `983`.
-  This candidate still blanks upper-left context while typing and uses a
-  fixed stress threshold,
-  so it is not a complete design response.
+  The earlier blank and caption substitutions are rejected.
+  A revised debug-only candidate keeps the browser under the keyboard,
+  but its short-viewport fit and fixed stress threshold are unverified;
+  neither is a complete D50 response.
   App-side logging measured docked IME insets and a bounding rectangle,
   but the floating case and animation continuity remain unverified.
   Sanitized real-keyboard captures and whitelisted geometry records are

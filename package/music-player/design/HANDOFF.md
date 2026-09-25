@@ -5494,15 +5494,17 @@ or `AGENTS.md` change.
 
 ## Banner-height study and upper-left clarification
 
-The user clarified that the upper-left region **does not have to be blank**
-when Search is open.
-D51 still places Search on the right and the complete deck bottom-left;
-keep useful browsing or contextual content in the upper-left region wherever
-it fits without clipping that deck or violating the crease clearance.
-Neither the amount of visible browsing during typing nor a compact substitute
-has been selected.
-The current synthetic stress variant still blanks that region,
-so it does not resolve the clarification.
+The user clarified that the upper-left region stays the **same folder
+browser** when Search is open and the keyboard appears.
+Do not blank it or swap it for a different summary;
+the user specifically rejected a `Current folder` caption as useless.
+D51 still places Search on the right and the complete deck bottom-left.
+The browser viewport may shorten,
+but partial controls must not become sub-48dp targets or force the deck
+behind the IME.
+Prototype commit `119e4b559` removed the caption and keeps the browser in
+the keyboard-height study;
+its short-viewport usability is awaiting device verification.
 
 A debug-only 415dp system IME on private `emulator-5580` reproduced the
 observed Gboard banner-height geometry within 1px:

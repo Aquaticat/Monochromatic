@@ -1470,13 +1470,14 @@ together on the right;
  the existing playback/control deck remains at the
 bottom-left when the keyboard is closed and lifts above the visible system
 keyboard while typing.
- Folder browsing may yield to the keyboard,
- but
+The upper-left keeps the **same folder browser** when Search is open,
+including while typing;
+its visible viewport may shorten above the IME-lifted deck.
+Do not replace it with a `Current folder` caption or blank it solely because
+the keyboard appeared.
 Search must not hide the deck or its controls (D50).
-The user clarified that Search does **not** require a blank upper-left area.
-Retain useful browsing or context there when it fits without obscuring the
-complete deck;
-the amount visible under each keyboard height remains open.
+How the browser's controls remain usable in a very short viewport still
+requires measurement.
  The cover uses one
 full-width Search destination with the same integrated header.
  D49 makes
