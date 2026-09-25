@@ -1512,6 +1512,11 @@ VB6:
  Verification must cross artifact-consumer integration boundary;
  "it compiled"/"it installed" alone isn't verification.
 
+VB7:
+ Markdown ships only after a rendered check
+ (live page or renderer output);
+ lint rule sets miss CommonMark emphasis edge cases.
+
 ATS:
  Android custom interactive elements:
  explicit minimum 48dp layout width + height.
@@ -1629,6 +1634,17 @@ MD6:
  blank line before headers,
  lines under 120 chars.
 
+MD7:
+ Labeled points become an ATX heading plus prose;
+ bold-label bullets cram a heading into a list item.
+
+MD8:
+ Hard wraps end lines only between whole inline spans;
+ keep code spans,
+ emphasis,
+ and link syntax whole on one line,
+ or the closing delimiter renders literally.
+
 WRP:
  Backtick file names,
  identifiers,
@@ -1700,12 +1716,11 @@ Unrelated change blocks needed edit:
 
 GCE:
  Commit at earliest opportunity,
- before next work step;
- never wait for verification,
- coherence,
- or completion.
+ before the next work step;
+ never wait for verification or completion.
+Broken states commit too:
+ name the breakage in the message.
 Supersedes harness ask-first default.
-Stage explicit scoped pathspecs (CLG).
 
 GCG:
  Commit messages use Conventional Commits `<type>(<scope>): <subject>`;
