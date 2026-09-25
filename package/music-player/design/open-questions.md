@@ -171,17 +171,23 @@ rounds (2026-09-17):
   No below-48dp layout target has been deliberately introduced.
   Do not take space from the complete deck or put meaning on the crease.
   A 415dp debug-only system IME reproduced the banner-height clipping at
-  y `1141` in selected A,
-  while an **unaccepted** inline title/transport variant showed the final
-  mode at `[73,971][1038,1102]`,
-  above that synthetic IME.
-  Its last icon ended at x `965` and its 48dp parent hit target was
-  `[877,279][994,396]`;
-  the hit region alone crosses the approximate crease start x `983`.
-  The earlier blank and caption substitutions are rejected.
-  A revised debug-only candidate keeps the browser under the keyboard,
-  but its short-viewport fit and fixed stress threshold are unverified;
-  neither is a complete D50 response.
+  y `1141` in unchanged A.
+  An **unaccepted** inline title/transport study keeps the original
+  folder browser in its shortened upper-left viewport;
+  at 200% text the `Folders`/Open header is visible,
+  the off-screen folder rows are not,
+  and the complete final mode is `[73,990][965,1121]`.
+  The last transport glyph ends at x `965`;
+  its 48dp clickable parent is `[877,298][994,415]`,
+  so only the hit region may cross the approximate crease start x `983`.
+  With settled real split Gboard,
+  the same debug-only candidate retained that browser header and showed
+  final mode `[73,1201][965,1332]` before its y `1352` keyboard.
+  Real key taps re-entered `cam` after Clear with both result labels visible.
+  Earlier blank and caption substitutions are rejected.
+  The stress trigger is fixed at 1000px;
+  no real-banner recurrence or continuous animation fit has been verified.
+  This is not a complete D50 response.
   App-side logging measured docked IME insets and a bounding rectangle,
   but the floating case and animation continuity remain unverified.
   Sanitized real-keyboard captures and whitelisted geometry records are

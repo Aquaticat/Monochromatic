@@ -5574,7 +5574,29 @@ The isolated container generated a different debug signing certificate,
 so the private disposable app was uninstalled before installing the built
 APK;
 no shared app/device state was modified.
-All production work and choice of upper-left content remain open.
+
+The user settled the upper-left **content** as the unchanged folder browser.
+Prototype commit `67fb04d23` constrained the tall-IME mode group to the
+crease-safe width while keeping that same browser above the deck.
+At 200% text with the 415dp synthetic IME top at y `1141`,
+`Folders`/Open were visible in the shortened header,
+off-screen folder rows were not,
+and the final mode was `[73,990][965,1121]`.
+The `Next track` glyph was `[906,327][965,386]` inside clickable parent
+`[877,298][994,415]`;
+the glyph clears approximate crease x `[983,1093)` while the full
+48dp hit region may cross it.
+With settled real split Gboard top y `1352`,
+the same browser header remained,
+final mode was `[73,1201][965,1332]`,
+and actual key taps after Clear restored `cam` with both results visible.
+The user accepts a little cropping of Open in the short viewport;
+visible accessibility bounds there do not establish intrinsic target size.
+The real font banner was not reproduced after this edit,
+the fixed stress threshold is not an animation-fit rule,
+and floating Gboard remains a separate D50 failure.
+All production work remains unapproved;
+the browser content itself is no longer an open choice.
 
 ## Issue tracking moves to Linear for this session
 
