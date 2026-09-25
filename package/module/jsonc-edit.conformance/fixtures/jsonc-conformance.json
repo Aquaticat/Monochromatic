@@ -6,6 +6,7 @@
     "numbers": "An unedited number keeps the spelling it was written with, while equality is mathematical.",
     "nesting": "Containers nested to acceptedDepth parse; one more container is rejected before deeper state is built.",
     "lineEndings": "A line comment ends at CR, LF or CRLF, and the terminator is not part of its body.",
+    "lineOwnership": "For comment ownership a line ends at LF or CRLF only. A bare CR terminates a comment body but does not start a new line, so a comment reached after a bare CR belongs to the value before the separator, exactly as a same-line comment does. The user adopted this rule on 2026-09-25 after both implementations were measured to agree on it.",
     "exactIdentityOnly": "A case whose expectation needs exact mathematical identity. The Rust crate satisfies every case; the TypeScript package stores IEEE 754 binary64 values, so cases carrying this flag are asserted there only through preserved source spelling, never through value equality."
   },
   "valid": [
@@ -51,6 +52,10 @@
     { "name": "comment-before-later-line-comma-goes-to-previous-value", "source": "{\"a\":1\n/* why */,\"b\":2}", "root": null, "at": [{ "path": ["a"], "key": null, "value": " why " }, { "path": ["b"], "key": null, "value": null }] },
     { "name": "carriage-return-comment-body", "source": "{\"a\":1,// x\r\"b\":2}", "root": null, "at": [{ "path": ["a"], "key": null, "value": " x" }, { "path": ["b"], "key": null, "value": null }] },
     { "name": "crlf-comment-body", "source": "{\"a\":1,// x\r\n\"b\":2}", "root": null, "at": [{ "path": ["a"], "key": null, "value": " x" }] },
+    { "name": "comma-then-lf-comment-owns-next-key", "source": "{\"a\":1,\n// x\n\"b\":2}", "root": null, "at": [{ "path": ["a"], "key": null, "value": null }, { "path": ["b"], "key": " x", "value": null }] },
+    { "name": "comma-then-crlf-comment-owns-next-key", "source": "{\"a\":1,\r\n// x\r\n\"b\":2}", "root": null, "at": [{ "path": ["a"], "key": null, "value": null }, { "path": ["b"], "key": " x", "value": null }] },
+    { "name": "comma-then-cr-comment-owns-previous-value", "source": "{\"a\":1,\r// x\r\"b\":2}", "root": null, "at": [{ "path": ["a"], "key": null, "value": " x" }, { "path": ["b"], "key": null, "value": null }] },
+    { "name": "cr-only-document-keeps-previous-value-ownership", "source": "{\r\"a\":1,\r// x\r\"b\":2\r}", "root": null, "at": [{ "path": ["a"], "key": null, "value": " x" }, { "path": ["b"], "key": null, "value": null }] },
     { "name": "multi-line-value-comment-stays-on-value", "source": "{\"k\":/*value\ncomment*/1}", "root": null, "at": [{ "path": ["k"], "key": null, "value": "value\ncomment" }] },
     { "name": "array-element-comment", "source": "[/* one */1,2]", "root": null, "at": [{ "path": [0], "key": null, "value": " one " }] },
     { "name": "empty-container-comment", "source": "[/* inner */]", "root": " inner ", "at": [] }

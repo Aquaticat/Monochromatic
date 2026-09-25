@@ -15,6 +15,13 @@ keeps a hand-written parser whose distinctive value is a normalized comment mode
 every object key and every value carries at most one comment,
  and stacked `//` or `//region`
 lines merge into a single comment.
+Ownership follows lines:
+ a comment before a separator belongs to the key or value it precedes,
+ and one after a separator on a later line belongs to the next key,
+ while a line ends at LF or CRLF only,
+ so a bare CR terminates a comment body without starting a new line.
+`doc/decision/jsonc-comment-line-ownership.md` records that choice,
+ and the Rust crate reads the same rule from the shared fixtures.
 See `doc/decision/jsonc-edit-parser-foundation.md` for why no off-the-shelf parser fits.
 
 ## Status

@@ -29,6 +29,12 @@ This crate is the native sibling of the TypeScript package
    512 open containers are accepted and a 513th is rejected before deeper state is built.
 - Line comments terminate at CR,
    LF or CRLF.
+- A comment belongs to the key or value it precedes,
+   or to the value before a separator when it follows that separator on the same line.
+   For ownership a line ends at LF or CRLF only:
+   a bare CR terminates a comment body but does not start a new line,
+   so a comment reached after a bare CR stays with the preceding value.
+   `doc/decision/jsonc-comment-line-ownership.md` records that choice.
 
 ## Dependencies
 
