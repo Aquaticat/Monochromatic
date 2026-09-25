@@ -49,7 +49,7 @@ using a read-only copy of the host ADB **public** key,
 and clean disposable guest data.
 No host private key,
 production source or active AVD setting was changed.
-See `../../../doc/troubleshooting/android-17-fold-emulator-ime-probe.md`
+See `doc/troubleshooting/android-17-fold-emulator-ime-probe.md`
 for the failed lower-memory and ADB-auth probes.
 
 ## Settled Gboard typing that fits
@@ -145,7 +145,7 @@ the original records passed after each restoration.
 App-delivered IME insets and any other public bounding-rectangle APIs were
 not directly measured inside Compose.
 The system `InsetsSource` path is traced in
-`../../../doc/troubleshooting/android-17-fold-emulator-ime-probe.md`.
+`doc/troubleshooting/android-17-fold-emulator-ime-probe.md`.
 A design response to movable keyboards and system-owned transient overlays,
 plus long result names and scrolling,
 remains open.
