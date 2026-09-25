@@ -10,9 +10,11 @@ import { slicesInOrder, } from './assembly-page-text.ts';
 // candidate writing it "Xiawafang" as "standard capitalization ... instead of
 // all-caps", so the page carried the name one way in the body and the
 // archive's way in the footnote, which no slice sheet saw together. A word the
-// archive writes in capitals more than once and never any other way is the
-// page's own form; a title-case spelling of it in a shipped slice is restored
-// here, where the page is in view.
+// archive writes in capitals more than once and never any other way in prose
+// is the page's own form; a title-case spelling of it in a shipped slice's
+// prose is restored here, where the page is in view. Headings are read past
+// on both sides: the archive's own "## From Xiawafang to Tianjin Eye" writes
+// the name title case by the heading's style, not as a second spelling.
 
 /**
  Fewest letters a word needs before its capitals read as a name, not an
@@ -38,6 +40,47 @@ const NON_PROSE_BEFORE: ReadonlySet<string> = new Set([
   '_',
   '-',
 ],);
+
+/**
+ Mark a Markdown heading line opens with; a heading writes its words title
+ case by style, so its casing says nothing about the page's form of a name.
+ */
+const HEADING_MARK = '#';
+
+/**
+ Whether the line holding one position is a Markdown heading.
+
+ @param text - text under scan
+
+ @param at - position on the line
+
+ @returns Whether the line opens with a heading mark
+
+ @example
+ ```ts
+ onHeadingLine({ text: '## From Maowu', at: 8, },); // true
+ ```
+ */
+function onHeadingLine(
+  {
+    text,
+    at,
+  }: {
+    readonly text: string;
+    readonly at: number;
+  },
+): boolean {
+  /**
+   Where the line holding the position starts.
+   */
+  const lineStart = text.lastIndexOf(
+    '\n',
+    at,
+  ) + 1;
+  return text.slice(lineStart,)
+    .trimStart()
+    .startsWith(HEADING_MARK,);
+}
 
 /**
  One run of Latin letters and where it starts.
@@ -127,6 +170,12 @@ function capitalForms(
    with how often each spelling occurs.
    */
   const spellings = latinWords({ text: archiveText, },)
+    .filter(function inProse({ start, },): boolean {
+      return !onHeadingLine({
+        text: archiveText,
+        at: start,
+      },);
+    },)
     .reduce(
       function tally(
         byWord,
@@ -236,7 +285,11 @@ function recase(
     },): boolean {
       return forms.has(word.toUpperCase(),)
         && isTitleCase({ word, },)
-        && (!NON_PROSE_BEFORE.has(text.charAt(start - 1,),));
+        && (!NON_PROSE_BEFORE.has(text.charAt(start - 1,),))
+        && (!onHeadingLine({
+          text,
+          at: start,
+        },));
     },);
   /**
    Text rebuilt around the rewritten words.
