@@ -14,6 +14,9 @@ const buildCommit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8
 const render = resolve('../design/questions/render');
 const evidence = resolve('../design/questions/evidence');
 const shell = (args) => execFileSync(adb, ['-s', serial, 'shell', ...args], { encoding: 'utf8' }).trim();
+if (serial === 'emulator-5580' && shell(['getprop', 'ro.boot.qemu.avd_name']) !== 'Fold_No_Hardware_Probe') {
+  throw new Error('Retained-browser capture must target the private disposable Fold AVD.');
+}
 const adbText = (args) => execFileSync(adb, ['-s', serial, ...args], { encoding: 'utf8' }).trim();
 const pause = (milliseconds) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
 const before = {
@@ -95,6 +98,9 @@ const verifyResults = ({ panel, xml, keyboardTop }) => {
     }
   }
   if (panel.name !== 'inner') return;
+  if (!xml.includes('text="Folders"')) {
+    throw new Error('Upper-left folder browser disappeared during selected Search.');
+  }
   for (const description of ['Track position', 'Previous track', 'Pause', 'Next track',
     'Repeat track', 'Play in order', 'Shuffle Camellia', 'Shuffle all folders']) {
     const [left, upper, right, lower] = nodeBounds({ xml, description });
@@ -156,7 +162,7 @@ mkdirSync(evidence, { recursive: true });
         shell(['input', 'keyevent', '224']);
         shell(['cmd', 'window', 'dismiss-keyguard']);
         shell(['am', 'force-stop', app]);
-        const candidate = panel.name === 'inner' ? 'search-deck-right-lift-empty' : 'search-deck-left-empty';
+        const candidate = panel.name === 'inner' ? 'search-deck-right-lift-retain-empty' : 'search-deck-left-empty';
         shell(['am', 'start', '-W', '-n', activity, '--es', 'candidate',
           `${candidate}${mode === 'light' ? '-light' : ''}`]);
         shell(['ime', 'set', ime]);

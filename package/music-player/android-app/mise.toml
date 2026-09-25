@@ -206,6 +206,11 @@ dir = "{{config_root}}"
 depends = ["prototype:install"]
 run = "node capture-search-selected.mjs"
 
+[tasks."prototype:capture:selected:preinstalled"]
+description = "Capture selected D51 Search on a disposable Fold with the bounded debug APK already installed"
+dir = "{{config_root}}"
+run = "node capture-search-selected.mjs"
+
 [tasks."prototype:capture"]
 description = "Install and capture accepted screen 3B at every user-facing Android text scale"
 dir = "{{config_root}}"
