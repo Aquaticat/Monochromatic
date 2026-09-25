@@ -4,6 +4,7 @@ import {
 } from './community-glossary.ts';
 import { IDIOM_GLOSSARY, } from './rendering-glossary-idiom.ts';
 import { PHRASING_GLOSSARY, } from './rendering-glossary-phrasing.ts';
+import { WORDING_GLOSSARY, } from './rendering-glossary-wording.ts';
 
 //region Rendering glossary
 // CLASS ONE HUNDRED TWENTY-THREE (shi_Yumiaoya23, 2026-09-25). The page
@@ -245,6 +246,9 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
   // CLASS ONE HUNDRED THIRTY (shi_Yumiaoya31, 2026-09-25): idioms and set
   // phrases, kept in `rendering-glossary-idiom.ts`.
   ...IDIOM_GLOSSARY,
+  // CLASS ONE HUNDRED THIRTY-ONE (shi_Yumiaoya32, 2026-09-25): wording in
+  // accounts of events, kept in `rendering-glossary-wording.ts`.
+  ...WORDING_GLOSSARY,
 ];
 
 /**
