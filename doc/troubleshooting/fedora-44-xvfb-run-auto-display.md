@@ -3,7 +3,8 @@
 ## Symptom
 
 The `xorg-x11-server-Xvfb` package `21.1.24-1.fc44` prints
-`--auto-display` in `xvfb-run --help`, but running
+`--auto-display` in `xvfb-run --help`,
+ but running
 `xvfb-run --auto-display /usr/bin/true` emits:
 
 ```text
@@ -27,7 +28,8 @@ Its lines 66 to 69 advertise `--auto-display`:
 -d        --auto-display            use the X server to find a display number
 ```
 
-Lines 103 to 104 give `getopt` a short `d`, but omit `auto-display`
+Lines 103 to 104 give `getopt` a short `d`,
+ but omit `auto-display`
 from its accepted long-option list:
 
 ```sh
@@ -47,7 +49,9 @@ A shallow source clone of `RussianFedora/xorg-x11-server` at
 `97d81e6799d589e3efa0eff37041718316bda286` was inspected.
 Its `xvfb-run.sh` lacks the newer auto-display feature altogether,
 so it is **not** the source revision of the installed Fedora 44 script.
-The installed script, not that older clone, is the deciding evidence.
+The installed script,
+ not that older clone,
+ is the deciding evidence.
 
 ## Verification
 
@@ -62,15 +66,18 @@ xvfb-run --auto-servernum --server-args='-screen 0 2076x2152x24' /usr/bin/true
 ```
 
 The first command exited 1 with the quoted diagnostic.
-The latter two exited 0, confirming that Xvfb itself can launch.
+The latter two exited 0,
+ confirming that Xvfb itself can launch.
 The test used no host package installation and no active Android AVD.
 
 ## Verified workaround
 
 Use `-d` to request the advertised auto-display behavior on this packaged script.
-It passed the direct `/usr/bin/true` control, but the short spelling is
+It passed the direct `/usr/bin/true` control,
+ but the short spelling is
 required despite the normal long-flag convention.
-Alternatively, `--auto-servernum` passed with a screen-size argument;
+Alternatively,
+ `--auto-servernum` passed with a screen-size argument;
 its own help marks that mode deprecated.
 Neither option increases Android emulator memory or proves Gboard behavior.
 
@@ -88,17 +95,24 @@ No `.out-of-scope/` entry names Fedora Xvfb or this option mismatch.
 but that does not search Fedora's own issue tracker.
 No upstream communication was sent.
 
-1. **Upstream fault:** The installed Fedora script's help and parser disagree.
-2. **Fixability:** Adding the missing long option to `getopt` appears sufficient;
+1. **Upstream fault:**
+    The installed Fedora script's help and parser disagree.
+2. **Fixability:**
+    Adding the missing long option to `getopt` appears sufficient;
    this has not been patched and rerun against the exact installed script.
-3. **Supported use case:** Its own help advertises the option.
-4. **Contribution policy:** The exact Fedora package source repository and
+3. **Supported use case:**
+    Its own help advertises the option.
+4. **Contribution policy:**
+    The exact Fedora package source repository and
    its contribution requirements were not audited.
    The older GitHub mirror is not equivalent evidence.
-5. **Expected response:** No maintainer signal was established.
-6. **Tested upstream fix:** None.
+5. **Expected response:**
+    No maintainer signal was established.
+6. **Tested upstream fix:**
+    None.
    The project's script policy forbids authoring a shell-script patch for
-   this unrelated package; the consumer-side `-d` workaround was tested.
+   this unrelated package;
+    the consumer-side `-d` workaround was tested.
 
 ### Draft, do not file as-is
 
