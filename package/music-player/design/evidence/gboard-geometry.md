@@ -110,6 +110,40 @@ D50 has not been met for every observed typing state,
 and D51's A selection has not changed.
 Do not narrow “never hidden” to docked keyboards without a user decision.
 
+## Banner-height fit bound, not a proposed fix
+
+At 200% font scale,
+the settled light capture first paints the deck at y `281` and the
+keyboard begins at y `1352`.
+That deck takes 1071px.
+The banner capture first paints it at y `175`,
+just after the 136px status inset and a 16dp,
+approximately 39px divider.
+With the banner IME beginning at y `1140`,
+the safe vertical area from status inset to keyboard is 1004px.
+The current divider plus deck needs 1110px,
+a 106px shortfall;
+the screenshot and final-mode bounds show the resulting clip.
+
+In prototype commit `36f8a8b8e`,
+`package/music-player/android-app/app/src/debug/kotlin/dev/monochromatic/musicplayer/DesignCandidateActivity.kt:982-999`
+keeps that divider even when Search hides the folder browser.
+`TransportBlock` at the same file's lines 1472 to 1501 also applies
+16dp vertical outer padding.
+Removing the now-unneeded divider would save about 39px but leave about
+67px of the measured shortfall.
+Reducing outer padding from 16dp to 8dp on both edges would save about
+39px more but still leave about 28px **if the other components kept their
+settled heights**.
+These are before-state arithmetic,
+not a built variant or after-state fit proof.
+Do not implement a partial compact fallback,
+shrink a 48dp target,
+undercut the accepted 8dp group spacing or 12dp horizontal mode padding,
+or hide controls to silence this diagnostic.
+Any viable reflow needs a debug-only Compose build and a real keyboard check
+before another design question.
+
 ## Evidence and regeneration
 
 Each linked PNG is a full physical-panel capture,
