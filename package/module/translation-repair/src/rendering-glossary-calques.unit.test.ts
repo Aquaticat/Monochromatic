@@ -85,6 +85,12 @@ await describe({
           sourceText: MEANS,
           candidateText: 'The cat was only using this way to tell everyone to sleep more.',
         },).kind,).toBe('invalid',);
+        // shi_Yumiaoya26 dodged the refused form with "using this method to
+        // tell", the same calque with another noun.
+        expect(validateTranslatedSlice({
+          sourceText: MEANS,
+          candidateText: 'The cat was only using this method to tell everyone to sleep more.',
+        },).kind,).toBe('invalid',);
       },
     },),
     it({
