@@ -3,8 +3,8 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 // D51/D52: capture only selected Search A on both physical Fold panels, with no repeated query heading.
-const sdk = process.env.ANDROID_HOME;
-if (!sdk) throw new Error('ANDROID_HOME is unset; invoke through its mise task.');
+const sdk = process.env.MUSIC_PLAYER_CAPTURE_SDK_HOME ?? process.env.ANDROID_HOME;
+if (!sdk) throw new Error('No Android SDK path was supplied for the native capture task.');
 const adb = join(sdk, 'platform-tools', 'adb');
 const serial = process.env.ANDROID_SERIAL ?? 'emulator-5554';
 const app = 'dev.monochromatic.musicplayer';
