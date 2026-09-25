@@ -4766,15 +4766,18 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  ZHEERMAO13 RUNS (entry `zheermao101`,
+1.  CUSPARIAKLSY15 RUNS (entry `CuspariaKLSY`,
     frozen `e57a2589c`,
-    corpus-pass pid 2131106 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
-    launched 00:47 UTC 2026-09-25,
-    waiter wait-z13 (background bash);
+    corpus-pass pid 2217593 (the launcher's own pid exits at once; wait on the `corpus-pass.mjs` process),
+    launched 01:10 UTC 2026-09-25,
+    waiter wait-c15 (background bash);
     the frozen dir is a copy of `dist/final/node`, not of `dist`):
-    read it by every zheermao12 check (2 headings, front matter equal, both labels one line, no TA, no error finish, no double blank line, the translate lane's picture transcripts within the volume bound);
-    record it under a new heading above "## yingying11 read, 2026-09-25" in the pass log;
-    then continue the rotation one entry at a time on the same build (`CuspariaKLSY`, `shi_Yumiaoya`, `hulicaijia`, `XingZ60`).
+    read it by every CuspariaKLSY14 check (1 heading, front matter equal, no TA, no error finish, no double blank line, the life in the past, the gloss line on the page, the death paragraph with no medication detail);
+    record it under a new heading above "## zheermao13 read, 2026-09-25" in the pass log;
+    then continue the rotation one entry at a time on the same build (`shi_Yumiaoya`, `hulicaijia`, `XingZ60`).
+    ZHEERMAO13 READ (frozen `e57a2589c`): SETTLED at 01:08 UTC 2026-09-25 in 21.0 min, one attempt, 877 seats, 829 calls, about 0.30 USD by the meters;
+    every zheermao12 check holds (2 headings, front matter equal, both labels one line, no TA, no error finish, no double blank line, 1 translate overrun against zheermao12's 1);
+    class one hundred seven live on slice 5 (three minor accuracy claims accepted, the repair text the stand-in); the casing pass silent (INFJ, the archive's one capital form, already in capitals); glm-5.3 dark all run (47 seats, Hyper-only, Hyper dry); no class.
     YINGYING11 READ (frozen `e57a2589c`): SETTLED at 00:46 UTC 2026-09-25 in 15.4 min, 333 calls, about 0.09 USD by the meters;
     every yingying10 check holds, the casing pass silent (BUAA already in capitals); no class;
     observation: one abstention called the farewell's second person a house-rule breach, and the page reads "May you" as the original.

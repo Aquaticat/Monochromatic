@@ -8082,6 +8082,41 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## zheermao13 read, 2026-09-25, 01:08 UTC: SETTLED in 21.0 min; no class
+
+zheermao13 (entry `zheermao101`) ran on frozen `e57a2589c` (class one hundred twenty-one),
+launched 00:47 UTC,
+and settled at 01:08 UTC in 1,259 s against zheermao12's 1,298,
+one attempt,
+877 seats,
+829 calls,
+0.11 USD Bedrock (42.09 to 41.98) and 0.19 OpenRouter (86.11 to 85.92) by the meters.
+Synthetic was wet (weekly 86 percent at the end) and Hyper dry,
+so glm-5.3, a Hyper-only seat, was dark all run (47 seats refused at call time by `NoProviderForModelError`, no wait).
+Jev 23 of 23; 13 abstention lines; one retry round.
+
+Every zheermao12 check holds:
+front matter equal,
+2 headings,
+no TA,
+no error finish,
+no double blank line
+(the one `>   > ` line with a trailing space is the archive's own).
+Both labels one line each:
+"English translation of Arts’s letter:" and "English translation of the email conversation with One Among Us:" (class seventy-seven holding).
+The reply label reads "One Among Us members sent her a reply that very night:", plural and 连夜 carried, as zheermao12.
+One `StreamOverrunError` in the log, minimax-m3 on `produceTranslateSlate`, 1,035 characters against 1,024:
+the translate lane's picture transcripts stay within the volume bound (class one hundred sixteen holding).
+Class one hundred seven live on slice 5:
+the repair lane's adjudicators accepted three minor accuracy claims against the archive ("always" added; 身边的人 narrowed to "friends"),
+so the repair text stood in (`translate-archive-disputed (slice 5)`),
+and the page reads "She leaned on the people around her and often needed their company."
+The casing pass stayed silent:
+the archive's one capital form is INFJ (twice, in "INFJ-A/INFJ-T"), and the page writes it in capitals.
+No Han on the page.
+No class.
+`CuspariaKLSY15` launched at 01:10 UTC on `.frozen-dist-e57a2589c` (pid 2217593), waiter wait-c15.
+
 ## yingying11 read, 2026-09-25, 00:46 UTC: SETTLED in 15.4 min; no class
 
 yingying11 ran on frozen `e57a2589c` (class one hundred twenty-one),
