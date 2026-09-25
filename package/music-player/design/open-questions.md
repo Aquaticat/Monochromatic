@@ -157,7 +157,7 @@ rounds (2026-09-17):
   raised its IME to y `1140` and clipped the last mode until `OK` was tapped.
   D50 therefore remains unmet in measured floating and banner states.
   Sanitized real-keyboard captures and whitelisted geometry records are
-  indexed in `evidence/gboard-geometry.md`.
+  indexed in `package/music-player/design/evidence/gboard-geometry.md`.
   App-observed insets,
   other keyboard heights,
   and a design response remain open.

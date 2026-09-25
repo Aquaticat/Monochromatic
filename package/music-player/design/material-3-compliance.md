@@ -919,7 +919,7 @@ real split inner and full-width cover Gboard keys entered `cam` at
 the settled deck and result labels stayed visible.
 A Gboard font-update banner briefly clipped the final inner mode,
 so the bottom-keyboard result does not establish D50 for every keyboard state.
-`evidence/gboard-geometry.md` records the separate real-keyboard states,
+`package/music-player/design/evidence/gboard-geometry.md` records the separate real-keyboard states,
 not a new Material component rule.
  The separate destination is still visually distinct from a command
 palette or modal overlay.

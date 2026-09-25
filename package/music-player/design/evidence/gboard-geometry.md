@@ -5,7 +5,7 @@
 D51 keeps Search and results on the right of the unfolded Pixel 9 Pro Fold,
 with the playback deck at bottom-left.
 D50 requires that deck to remain visible even while typing.
-The active review at `questions/current.html` still shows a debug-only 300dp
+The active review at `package/music-player/design/questions/current.html` still shows a debug-only 300dp
 system-managed input method,
 not Gboard.
 The captures linked here test selected A with real Gboard.
@@ -120,7 +120,7 @@ app content and navigation handle were inspected;
 they carry no account,
 path,
 notification text or other personal identifier in these samples.
-Each same-stem JSON file in `questions/evidence/` contains only whitelisted
+Each same-stem JSON file in `package/music-player/design/questions/evidence/` contains only whitelisted
 synthetic app labels,
 focused-field state,
 node bounds,
@@ -129,7 +129,7 @@ APK hash and AVD/version provenance.
 Full raw UI hierarchies and screenshots remain in private agent scratch,
 not the repository.
 
-`gboard-evidence.mjs` owns the sanitizer and geometry checks.
+`package/music-player/design/gboard-evidence.mjs` owns the sanitizer and geometry checks.
 Regenerate only with the private raw capture directory set as
 `MUSIC_PLAYER_GBOARD_INPUT` and run
 `mise run //package/music-player/design:evidence:gboard`.

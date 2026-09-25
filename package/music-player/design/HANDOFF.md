@@ -5470,8 +5470,8 @@ tapping `OK` returned the IME top to y `1352` and restored the deck.
 Do not dismiss that failing state as capture noise,
 or silently narrow the user's “never hidden” requirement.
 Sanitized physical-panel captures and curated app-node geometry are
-committed under `questions/evidence/gboard-*.{png,json}`.
-`evidence/gboard-geometry.md` indexes the passing and failing captures,
+committed under `package/music-player/design/questions/evidence/gboard-*.{png,json}`.
+`package/music-player/design/evidence/gboard-geometry.md` indexes the passing and failing captures,
 records both Gboard versions,
 and explains the current D50 boundary.
 `mise run //package/music-player/design:lint:gboard:evidence` passed.
