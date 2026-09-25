@@ -8082,6 +8082,51 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Canadian English, 2026-09-25, 08:17 UTC: class one hundred thirty-two
+
+### What the owner said
+
+Asked "adviser - is this en_CA?" about the class one hundred thirty-one rendering for 辅导员,
+then: "The convention is and should be en_CA. It should have been documented and in the prompts."
+
+### What was wrong
+
+No sheet named the English the page is written in.
+The package said nothing about it; the corpus archive is mixed
+(across `page.en.md`: center 22 against centre 5, behavior 10 against behaviour 1, realize 8 against realise 0,
+favourite 14 against favorite 4, travelled 3 against traveled 0).
+So the bench mixed varieties: shi_Yumiaoya32 shipped "Her counselor", "the head of year" and "Like a petrol car",
+and the glossaries seeded British and American forms as the renderings to use
+("head of year", "year head", "flatmate", "petrol car", "behavior-correction center", "student adviser").
+The house policy itself wrote "romanised", "neutralise" and "localisation".
+
+### Which forms
+
+McGill's style guide, which takes the Canadian Press Stylebook and the Canadian Oxford as its references,
+writes -our, -re and -ize and says "advisor, not adviser",
+so 辅导员 is "student advisor".
+Canadian schools say Grade 12, not Year 12 (the breathinglanguage.com Canadian school vocabulary notes),
+so 年级组长 is "grade coordinator" and "head of year" is refused.
+燃油车 is "a gas-powered car" and "petrol car" is refused.
+
+### What changed (class one hundred thirty-two)
+
+`HOUSE_POLICY_BLOCK` gains a bullet naming Canadian English (en_CA) with its spelling and vocabulary,
+and says English already on the page in another variety's spelling is respelled as a correction of form,
+never a change of meaning, while names, titles and quoted English keep their own spelling.
+The policy's own -ise forms are respelled -ize.
+The glossaries seed Canadian renderings only; `flatmate` is dropped from 同居者.
+The package README gains an "English variety" section.
+Guard red first `53ddd36de` (`canadian-english-policy.unit.test.ts`: the rule on the house policy and on the translate and select sheets,
+no British -ise form in the policy, no British or American rendering in either glossary,
+"petrol car" and "head of year" refused, the Canadian words accepted),
+fixed `9bdeae9c6`; the class one hundred twenty-six, thirty and thirty-one tests and the house-policy test
+updated to the Canadian forms; lint 0/0, types clean, suite `suite-class132b.log` 1133 PASS, no FAIL.
+
+shi_Yumiaoya33 (frozen `fe56bffed`, launched 08:07 UTC) was killed at 08:09 UTC under always-kill-and-relaunch
+before it reached the lanes.
+Frozen `.frozen-dist-9bdeae9c6`; shi_Yumiaoya34 launched 08:16 UTC (pid 3235678).
+
 ## shi_Yumiaoya32 read, 2026-09-25, 08:05 UTC: class one hundred thirty live, seven wording calques (class one hundred thirty-one)
 
 ### What ran

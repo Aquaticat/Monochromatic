@@ -4773,15 +4773,23 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  SHI_YUMIAOYA33 RUNS (entry `shi_Yumiaoya`,
-    frozen `fe56bffed`, class one hundred thirty-one,
-    corpus-pass pid 3186607, launched 08:07 UTC 2026-09-25, waiter wait-s33;
-    the frozen dir checked absent first and grepped for "behaviour-correction centre" after):
-    read it by every shi_Yumiaoya32 check (the shi_Yumiaoya31 checks plus the class one hundred thirty renderings),
+1.  SHI_YUMIAOYA34 RUNS (entry `shi_Yumiaoya`,
+    frozen `9bdeae9c6`, classes one hundred thirty-one and thirty-two,
+    corpus-pass pid 3235678, launched 08:16 UTC 2026-09-25, waiter wait-s34;
+    the frozen dir checked absent first and grepped for "Canadian English (en_CA)" after):
+    read it by every shi_Yumiaoya32 check (the shi_Yumiaoya31 checks plus the class one hundred thirty renderings,
+    with "a gas-powered car" now where class one hundred thirty had "a petrol car"),
     then the class one hundred thirty-one renderings: no "counselor", "correctional facility", "took the initiative to propose",
     "rescue plan", "days of resuscitation", "replace Yumiao's perspective" or "of such a good nature";
-    record it under a new heading above "## shi_Yumiaoya32 read, 2026-09-25" in the pass log;
-    then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on `fe56bffed`, each read with the register check.
+    then the en_CA check (owner, 2026-09-25: "The convention is and should be en_CA."):
+    no American or British spelling or word where Canadian differs
+    (color, center, behavior, favorite, counselor, adviser, petrol, head of year, maths, mum; -ise for -ize);
+    record it under a new heading above "## Canadian English, 2026-09-25" in the pass log;
+    then `hulicaijia` (run hulicaijia19) and `XingZ60` (run XingZ6011) on `9bdeae9c6`,
+    each read with the register check and the en_CA check.
+    CLASS ONE HUNDRED THIRTY-TWO (`9bdeae9c6`, guard red first `53ddd36de`, suite `suite-class132b.log` 1133 PASS, no FAIL):
+    the page is Canadian English, stated in `HOUSE_POLICY_BLOCK` and the package README ("English variety");
+    shi_Yumiaoya33 on `fe56bffed` killed at 08:09 UTC for it.
     SHI_YUMIAOYA32 READ (frozen `6637865d6`): SETTLED at 08:02 UTC in 26.7 min, 965 calls, about 0.23 USD by the meters;
     class one hundred thirty live (all nine renderings on the page, no refused form), every shi_Yumiaoya31 check clean;
     seven wording calques refused as class one hundred thirty-one (`fe56bffed`, guard red first `74322469d`,

@@ -159,6 +159,23 @@ publish partial bytes,
 publish archive fallback,
 or become quality outcome.
 
+## English variety
+
+The page is written in Canadian English (en_CA),
+in spelling and in vocabulary
+(owner, 2026-09-25: "The convention is and should be en_CA.").
+Spelling follows the Canadian Press Stylebook and the Canadian Oxford:
+colour, centre, travelled, counsellor, realize, analyze, cheque, program, advisor.
+Vocabulary takes the Canadian word where varieties differ:
+gas, not petrol;
+Grade 12, not Year 12;
+math, not maths.
+The rule lives in `HOUSE_POLICY_BLOCK` (`src/house-policy.ts`),
+which every writing and judging sheet carries,
+and the rendering glossaries (`src/rendering-glossary*.ts`) seed Canadian forms only;
+`src/canadian-english-policy.unit.test.ts` guards both.
+Names, titles and quoted English keep their own spelling.
+
 ## Operating a corpus pass
 
 This file describes the design.
