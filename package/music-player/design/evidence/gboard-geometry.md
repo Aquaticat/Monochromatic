@@ -87,13 +87,15 @@ not proof of result activation or rank behavior.
 ## Measured failures that remain
 
 - [Original AVD floating Gboard at 200% inner][floating-inner]:
-  its touchable key region x `[274,1180)`, y `[310,1081)` overlapped the
+  its touchable key region x `[274,1180)`,
+   y `[310,1081)` overlapped the
   playback title `[258,1042][781,1145]`.
   Moving that floating keyboard lower covered more controls.
   The public IME source reported a zero-height bottom inset in this state.
 - [Original AVD floating Gboard at 100% cover][floating-cover]:
   real key taps entered `cam`,
-  but its x `[0,830)`, y `[304,1025)` key surface covered both result labels.
+  but its x `[0,830)`,
+   y `[304,1025)` key surface covered both result labels.
 - [Disposable inner Gboard font-update banner at 200%][font-banner]:
   immediately after a font-scale change,
   `Keyboard font size updated` raised the IME top to y `1140`.
