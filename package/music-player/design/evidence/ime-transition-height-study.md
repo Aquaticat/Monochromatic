@@ -201,6 +201,55 @@ but no sampled-frame pass would prove every unrecorded instant.
 A response must act before or alongside IME geometry movement,
 not only after the app recomposes from its new bottom inset.
 
+## Animation callback control
+
+A debug-only `WindowInsetsAnimation.Callback` was attached to the
+`ComposeView` parent with subtree dispatch preserved.
+On first showing the 330dp debug IME,
+its `SearchAnimationProbe` logged `prepare`,
+`start lower=0 upper=804`,
+progress bottoms `0`,
+`652`,
+`785`,
+`804`,
+and `end`.
+That positive control proves the callback was installed and could report a
+normal show animation.
+When the same focused input view increased in place from 330 to 360dp,
+`SearchInsetProbe` reported the actual IME bottom change from `804` to
+`877px`,
+but no `SearchAnimationProbe` event appeared.
+The same absence held for 375 to 400dp,
+when the bottom changed from `914` to `975px` and the final mode clipped
+briefly in recorded frames.
+This fixture did **not** dispatch a public animation callback for those
+in-place height steps;
+it is not evidence that a real Gboard banner behaves identically.
+
+Android's `WindowInsetsAnimation.java:331-363` specifies the sequence
+**when an insets animation occurs**:
+
+```java
+* <li>onPrepare is called on the view hierarchy listeners</li>
+* <li>{@link View#onApplyWindowInsets} will be called with the end state of the
+*     animation</li>
+* <li>View hierarchy gets laid out according to the changes the application has
+*     requested due to the new insets being dispatched</li>
+* <li>{@link #onStart} is called <em>before</em> the view
+*     hierarchy gets drawn in the new laid out state</li>
+```
+
+`WindowInsetsAnimation.java:202-208` describes size-change bounds:
+
+```java
+* However, if the size of a window that causes insets is changing, these are the
+* lower/upper bounds of that size animation.
+```
+
+Those provisions do not require every in-place resize to start an
+animation.
+The observed step cannot be fixed by an `onStart` callback that never ran.
+
 ## Remaining boundary
 
 The closed deck's first measured heights changed from `762` to `891` to
@@ -208,9 +257,10 @@ The closed deck's first measured heights changed from `762` to `891` to
 A later focused transition logged a stored `1071px` height,
 but this capture did not isolate when that earlier sample was taken.
 No single early `onSizeChanged` value proves full-content demand.
-Investigate whether the system dispatches an IME animation preparation or
-start callback before this in-place height jump is drawn,
-then test whether its target is usable to prepare the deck in time.
+Investigate an app-visible end-state inset delivery boundary for this
+non-animated in-place height jump;
+verify whether it precedes the first clipped draw without replacing
+Compose's own inset handling.
 Keyboard dismissal,
 refocus,
 and cold entry at a height where both deck arrangements fit remain open.
