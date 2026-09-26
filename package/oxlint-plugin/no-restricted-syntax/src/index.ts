@@ -54,6 +54,7 @@ import { noSwitch, } from './rule/no-switch.ts';
 import { noSync, } from './rule/no-sync.ts';
 import { noTrimLeftRight, } from './rule/no-trim-left-right.ts';
 import { noTryFinally, } from './rule/no-try-finally.ts';
+import { noUselessSpread, } from './rule/no-useless-spread/index.ts';
 import {
   noVariableFunctionExpression,
 } from './rule/no-variable-function-expression.ts';
@@ -113,6 +114,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-sync': noSync,
     'no-trim-left-right': noTrimLeftRight,
     'no-try-finally': noTryFinally,
+    'no-useless-spread': noUselessSpread,
     'no-variable-function-expression': noVariableFunctionExpression,
     'prefer-describe-function-ref-name': preferDescribeFunctionRefName,
     'prefer-caught-value-text': preferCaughtValueText,
