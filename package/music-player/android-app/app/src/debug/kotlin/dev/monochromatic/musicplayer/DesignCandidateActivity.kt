@@ -396,6 +396,14 @@ import androidx.compose.ui.text.style.TextOverflow
 // const sp = (value: number) => value;
 // ```
 import androidx.compose.ui.unit.LayoutDirection
+// What: `Dp` carries a logical pixel measurement at the current Android density.
+// Why: The debug E2 player can receive a physical gap converted at the Fold boundary.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type Dp = number;
+// ```
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /** Intent key used by screenshot automation to select one static candidate. */
@@ -936,9 +944,18 @@ private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePal
     }
 }
 
-/** Reuses the accepted Fold player context while exposing a Search trigger to the page study. */
+/** What: Render the accepted player or the debug-only E2-aware unfolded player with Search closed.
+ *  Why: Compare the floor before entering Search while retaining the real folder browser,
+ *      playback controls, track list and Search action.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function SearchPlayerPreview(options: { isCover: boolean; light: boolean; onSearch?: () => void; e2HalfClearance: number }): UIElement;
+ * ```
+ */
 @Composable
-internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: (() -> Unit)?) {
+internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: (() -> Unit)?,
+    e2HalfClearance: Dp = 0.dp) {
     val palette = paletteFor(
         candidate = if (isCover) {
             if (light) "cover-picker-p4-light" else "cover-picker-p4"
@@ -953,6 +970,27 @@ internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: (()
             palette = palette,
             onSearch = onSearch,
         )
+    } else if (e2HalfClearance > 0.dp) {
+        // What: Share the additional physical gap between two equal host slots in this debug study.
+        // Why: Preserve real player components while making the floor's browser and track costs visible.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return <Row><FoldersAndDeck endInset={gap / 2} /><Tracks startInset={gap / 2} /></Row>;
+        // ```
+        Row(modifier = Modifier.fillMaxSize().background(palette.window)) {
+            FolderAndTransportPane(
+                modifier = Modifier.weight(1f).padding(end = e2HalfClearance),
+                candidate = "dark-stable-wallpaper-dynamic",
+                palette = palette,
+            )
+            TrackPane(
+                modifier = Modifier.weight(1f).padding(start = e2HalfClearance),
+                candidate = "dark-stable-wallpaper-dynamic",
+                palette = palette,
+                onSearch = onSearch,
+            )
+        }
     } else {
         FullUnfoldedStudy(candidate = "dark-stable-wallpaper-dynamic", palette = palette, onSearch = onSearch)
     }

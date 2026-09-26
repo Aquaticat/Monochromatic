@@ -162,6 +162,16 @@ private const val E2_REVIEW_PANEL_WIDTH_PX = 2076f
  */
 private const val E2_REVIEW_PANEL_WIDTH_MM = 141.08f
 
+/** What: Physical minimum stated by the user before requesting Search-closed views.
+ *  Why: Show its present-device layout without yet recording a final E2 decision.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * const E2_REVIEW_FLOOR_SEVEN_HALF_MM = 7.5;
+ * ```
+ */
+private const val E2_REVIEW_FLOOR_SEVEN_HALF_MM = 7.5f
+
 /** What: First visibly separated total-gap floor in the debug comparison.
  *  Why: Test one clearance target beyond the existing selected-A information boxes.
  *
@@ -223,23 +233,36 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
         query = ""
     }
     BackHandler(enabled = opened) { onBack() }
+    val halfDent = with(LocalDensity.current) { (55f / density).dp }
+    // What: These markers select a total physical floor only in the debug Compose candidate.
+    // Why: Compare the user's stated 7.5mm minimum with wider floors on both sides of Search.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const floorMm = candidate.includes('-e2floor20-') ? 20 : candidate.includes('-e2floor14-') ? 14 : 7.5;
+    // ```
+    val e2FloorMillimeters = if (candidate.contains("-e2floor20-")) E2_REVIEW_FLOOR_WIDE_MM
+        else if (candidate.contains("-e2floor14-")) E2_REVIEW_FLOOR_MIDDLE_MM
+        else if (candidate.contains("-e2floor7p5-")) E2_REVIEW_FLOOR_SEVEN_HALF_MM else 0f
+    // What: Convert the total floor to half of a physical gap around the current center crease.
+    // Why: The Search-closed player previously used a fixed 24dp stripe that did not express E2.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const halfGapDp = Math.max(110, floorMm / 141.08 * 2076) / 2 / density;
+    // ```
+    val physicalGapPx = maxOf(110f,
+        e2FloorMillimeters / E2_REVIEW_PANEL_WIDTH_MM * E2_REVIEW_PANEL_WIDTH_PX)
+    val e2ClosedHalfGap = if (candidate.contains("-e2floor")) {
+        (physicalGapPx / 2 / LocalDensity.current.density).dp
+    } else 0.dp
     if (!opened) {
         SearchPlayerPreview(isCover = false, light = light, onSearch = {
             query = ""
             opened = true
-        })
+        }, e2HalfClearance = e2ClosedHalfGap)
         return
     }
-    val halfDent = with(LocalDensity.current) { (55f / density).dp }
-    // What: These named markers select physical floor policies only in the debug Compose candidate.
-    // Why: The unchanged selected A remains the zero-floor control on the same APK.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const floorMm = candidate.includes('-e2floor20-') ? 20 : candidate.includes('-e2floor14-') ? 14 : 0;
-    // ```
-    val e2FloorMillimeters = if (candidate.contains("-e2floor20-")) E2_REVIEW_FLOOR_WIDE_MM
-        else if (candidate.contains("-e2floor14-")) E2_REVIEW_FLOOR_MIDDLE_MM else 0f
     val pageColor = if (light) MaterialTheme.colorScheme.surfaceContainerLowest else Color.Black
     if (candidate.contains("-mirrored-")) {
         SearchDeckMirrored(query = query, onQueryChange = { query = it }, onBack = onBack,
