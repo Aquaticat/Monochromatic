@@ -1439,6 +1439,14 @@ Rename dir + name + consumers together.
 Exemptions:
  `doc/planning/singular-dir-name-invariant.md`.
 
+SBS:
+ Sidecars (`.fuzz`,
+ `.bench`,
+ `.conformance`) sit beside their subject package as `<pkg>.<kind>`,
+ never under a per-kind top-level dir.
+Move dir,
+ name and consumers together.
+
 ## Before declaring work complete
 
 ### Package completeness
