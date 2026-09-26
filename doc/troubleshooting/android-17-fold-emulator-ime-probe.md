@@ -351,13 +351,17 @@ The app logged a request for `[0,717][1038,2152]`;
 Window Manager reported that exact restricted `keepClearAreas` rectangle
 on the app window.
 Its real floating Gboard still occupied
-`[482,1006][1388,1777]`,
-inside the requested clear area,
-and the screenshot still showed its keys over the deck.
+`[482,1006][1388,1777]`.
+The key region **partially overlapped** the requested area in x
+`[482,1038)` and y `[1006,1777)`,
+and the screenshot showed its keys over the deck.
 To validate that Window Manager's touch-region probe could show movement,
-a deliberate drag moved Gboard to `[1025,1006][1931,1777]`;
-a reverse drag moved it back to `[528,1006][1434,1777]` while the same
+a deliberate drag moved Gboard to `[1025,1006][1931,1777]`,
+which still overlapped the requested area by 13px horizontally.
+A reverse drag moved it back to `[528,1006][1434,1777]` while the same
 keep-clear area remained registered.
+Manual movement validates the geometry detector,
+**not** keep-clear cooperation or automatic movement.
 The screenshot after that reverse drag still showed the deck title obscured.
 A tap on a visible floating key entered `d` in the focused query,
 so this was real usable Gboard input rather than a toolbar-only state.
