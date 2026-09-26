@@ -993,6 +993,11 @@ Each commit command returns only once a push containing its OID has finished,
 so concurrent commits usually produce fewer pushes than commits.
 A failed joined push is surfaced by every commit that joined it,
 each still exiting `0`.
+A commit waiting behind a push whose owner was killed takes over and pushes the tip itself.
+The coordination lives in `.git/cli-git/push/`:
+a per-branch lock and a `last-pushed` record;
+if that coordination itself fails,
+the commit surfaces the failure the same way and still exits `0`.
 
 ## Performance gates
 

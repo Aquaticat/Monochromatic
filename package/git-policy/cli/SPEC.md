@@ -962,24 +962,62 @@ repository-root or candidate-fact setup failure emits `content-unavailable` plus
 
 Auto-push is single-flight per branch.
 A per-branch owner lock at `<git-common-dir>/cli-git/push/<encoded-ref>.lock`
-and a `last-pushed.json` record
-(tip OID,
-outcome,
-and owner)
+and a `last-pushed` record at `<git-common-dir>/cli-git/push/<encoded-ref>.last-pushed.json`
 coordinate pushes from concurrent landings.
-The encoded ref is a filesystem-safe reversible encoding of the branch ref name.
+The record names the most recent attempt:
+the branch tip it resolved,
+its outcome,
+the owner-lock token and PID of the attempt,
+its exit code,
+and,
+for a failed attempt,
+its complete push output.
+It is published by rename,
+and an absent or unreadable record reads as no attempt,
+which only costs an extra push.
+The encoded ref is the branch ref name's UTF-8 bytes
+with every byte outside lowercase ASCII letters,
+digits,
+`-`,
+`_`,
+and `.`
+written as `%XX` in uppercase hexadecimal,
+so it is reversible,
+flat,
+and distinct on case-insensitive filesystems.
 
-- A landed commit whose OID is an ancestor of an in-flight push's tip joins that push and waits for its outcome.
-- Otherwise it takes the lock,
-  resolves the current branch tip,
+- A landed commit whose OID is an ancestor of the recorded successful tip has already been delivered
+  and finishes without taking the lock.
+- Otherwise it waits for the lock,
+  which a pusher holds for its whole push,
+  so it waits for any in-flight push.
+  Holding the lock,
+  it re-reads the record:
+  a successful attempt whose tip contains its OID is a joined success;
+  a failed attempt that finished after the commit's first read and whose tip contains its OID is a joined failure.
+  A failed attempt recorded before the commit's first read is retried rather than reported.
+- Otherwise it resolves the current branch tip,
   pushes with the existing argument selection
   (plain `git push` with an upstream,
   `git push --set-upstream origin HEAD` without one),
-  and records the pushed tip on success.
+  and records the attempt,
+  successful or failed.
 - An invocation finishes auto-push once a successful push covers its OID,
   or once the push that would cover it has failed.
+  Covering is `git merge-base --is-ancestor <landed OID> <tip>`
+  against the tip the deciding push resolved before it pushed.
+  When the pushed tip no longer contains the landed OID,
+  because the branch was reset or rewritten,
+  the invocation prints a note naming both.
 - A dead pusher's lock is retired through the owner-liveness check,
   and a waiting joiner takes over.
+  A dead pusher records nothing,
+  so the joiner pushes the current tip itself.
+  The dead pusher's orphaned `git push` child may still be running.
+  The killed-pusher fixture observed the takeover push succeed while that child waited in its `pre-push` hook,
+  and the child's later update of an older tip left the remote at the takeover tip.
+  A takeover push that races the child on the remote ref can fail,
+  and it is then surfaced like any other failed push.
 - A joined commit's own `pre-push` hook does not run separately;
   the joined push ran it once for its tip.
 - The existing exit contract holds:
@@ -988,7 +1026,11 @@ The encoded ref is a filesystem-safe reversible encoding of the branch ref name.
   is surfaced with its complete output by every affected invocation,
   leaves the commit local,
   and preserves exit `0`.
-- Skips for a detached `HEAD` or a missing remote are unchanged.
+  A failure of the coordination itself,
+  such as an unwritable `cli-git/push` directory,
+  is surfaced the same way.
+- Skips for a detached `HEAD` or a missing remote are unchanged
+  and create no coordination files.
 - The landing lock is never held while waiting for or running a push.
 
 ### Manual push
