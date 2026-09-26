@@ -41,14 +41,15 @@ await describe({
   name: communityTermsIn.name,
   children: [
     it({
-      name: 'SEEDS THE FOUR TERMS the bench lost (two the archive had right, one the archive misread too, one the owner renders), each with the accepted rendering first',
+      name: 'SEEDS THE FIVE TERMS the bench lost (two the archive had right, one the archive misread too, one the owner renders, one insult the bench ungendered), each with the accepted rendering first',
       fn: async () => {
         expect(COMMUNITY_GLOSSARY.map(function termOf(entry,): string {
           return entry.term;
-        },),).toEqual(['自切', '超天酱', '炸柜', '药娘',],);
+        },),).toEqual(['自切', '超天酱', '炸柜', '药娘', '逆子',],);
         expect(COMMUNITY_GLOSSARY[0]?.renderings[0],).toBe('self-surgery',);
         expect(COMMUNITY_GLOSSARY[1]?.renderings[0],).toBe('KAngel',);
         expect(COMMUNITY_GLOSSARY[2]?.renderings[0],).toBe('outed',);
+        expect(COMMUNITY_GLOSSARY[4]?.renderings[0],).toBe('unfilial son',);
       },
     },),
 
@@ -99,8 +100,31 @@ await describe({
           ],
         },);
         expect(departures,).toEqual([
-          'CANDIDATE 2 carries none of the community\'s renderings of 自切 ("self-surgery"); the archive renders it so',
+          'CANDIDATE 2 carries none of the community\'s renderings of 自切 ("self-surgery"); the community glossary renders it so',
         ],);
+      },
+    },),
+
+    it({
+      name: 'NAMES A RENDERING THAT UNGENDERS 逆子 (class one hundred fifty-one): a father calling his '
+        + 'daughter a son keeps the son, and "child" loses it',
+      fn: async () => {
+        /** Departures over the kept and the ungendered insult. */
+        const departures = communityRenderingDepartures({
+          sourceText: '黑猫多次与父亲争吵，被骂作「逆子」。',
+          candidates: [
+            {
+              label: 'CANDIDATE 1',
+              text: 'The black cat argued with her father many times and was called an “unfilial son”.',
+            },
+            {
+              label: 'CANDIDATE 2',
+              text: 'The black cat argued with her father many times and was called a “rebellious child”.',
+            },
+          ],
+        },);
+        expect(departures,).toHaveLength(1,);
+        expect(departures[0],).toContain('CANDIDATE 2 carries none of the community\'s renderings of 逆子',);
       },
     },),
 
