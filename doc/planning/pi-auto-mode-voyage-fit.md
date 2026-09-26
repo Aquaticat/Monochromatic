@@ -66,7 +66,7 @@ also distinguishes key/endpoint routing and different SDK retry defaults.
 The probe uses a first-party fixed-endpoint HTTP client,
 not either SDK's defaults.
 
-The live [Voyage FAQ](https://docs.voyageai.com/docs/faq)
+The [Voyage FAQ](https://docs.voyageai.com/docs/faq#what-are-your-policies-in-regard-to-protecting-customer-data)
 describes an organization opt-out from storage and future model training.
 The user's actual setting has not been inspected or changed.
 Q12's acceptance of necessity-based retention does not establish that setting
@@ -88,7 +88,7 @@ No unrestricted vendor discovery or saturation claim follows.
 ## Raw-feature probe design
 
 The experiment tested evidence relevance for named claims,
-not rank candidate final actions.
+not rankings of candidate final actions.
 Every document contains a complete current policy snapshot and public synthetic state.
 `truncation` is explicitly false.
 Reference truth remains local and is not included as an expected answer in the request.
@@ -114,7 +114,7 @@ reference truths,
 usage,
 request sizes,
 and timings.
-It will not produce probabilities,
+It produced no probabilities,
 Brier scores,
 automatic decisions,
 or calibrated thresholds.
@@ -153,6 +153,8 @@ revision `d638a2a8d9d535a850e7b0d664e49e65934f3bde`.
 Its `voyage-openapi.yml:542-580` describes indexed relevance scores and token usage.
 Its model roster predates the current live documentation;
 it does not establish `rerank-3` limits.
+An uncapped `rg --line-number --fixed-strings 'rerank' voyage-openapi.yml` returned the older model entries;
+the same search for `rerank-3` returned no match.
 
 The official [voyage-large-2-instruct repository](https://github.com/voyage-ai/voyage-large-2-instruct)
 explicitly describes an embedding model optimized for classification,
@@ -163,7 +165,8 @@ This is relevant evidence for downstream classification with embeddings,
 not evidence that the embedding API returns arbitrary-claim truth probabilities.
 A composed classifier remains a possible design requiring separate training authorization and qualification,
 not an evaluated substitute or a selected addition.
-The current FAQ also advertises fine-tuned embeddings through subscription;
+The [fine-tuning FAQ](https://docs.voyageai.com/docs/faq#is-fine-tuning-available)
+also advertises fine-tuned embeddings through subscription;
 that does not establish a native probability response or authorize training or vendor contact here.
 
 ## Raw-feature results

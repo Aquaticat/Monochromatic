@@ -306,10 +306,10 @@ Update its explicit path list when adding scoped documents.
 
 The nine-document format/render/lint run `proc_0fea` passed and its output was inspected.
 Commit `618d05404` retained the resulting provenance and handover formatting.
-The newly added Voyage fit and troubleshooting documents,
-this handover update,
-and the current audit amendment need the next scoped render/lint check.
-Do not report that later check as completed until its result is inspected.
-After that check,
-close todo #11 for interface/feature fit only and resume todo #16's authorization contract.
-No candidate has a qualified production selection.
+The eleven-document format/render/lint run `proc_5ce4` passed and its output was inspected.
+It included the Voyage fit and troubleshooting documents,
+current audit,
+and handover.
+A subsequent citation/checkpoint edit is being rechecked before closing todo #11.
+Then resume todo #16's authorization contract;
+no candidate has a qualified production selection.
