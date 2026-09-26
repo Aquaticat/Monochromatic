@@ -215,6 +215,25 @@ await describe({
       },
     },),
     it({
+      name: 'detaching HEAD between preparation and landing fails with branch-switched even at the same commit',
+      fn: async function testDetached(): Promise<void> {
+        await using repository = await createLandingRepository();
+        await writeWorktreeFile({ repository, name: 'a.txt', content: 'a\n', },);
+        /** Baseline commit. */
+        const baseline = await git({ repository, args: ['rev-parse', 'HEAD',], },);
+        /** Commit held in its editor. */
+        const held = await holdInEditor({ repository, name: 'detach', args: ['commit', '-e', '-m', 'detached', 'a.txt',], },);
+        await git({ repository, args: ['switch', '--quiet', '--detach',], },);
+        await held.release();
+        /** Outcome. */
+        const outcome = await held.outcome;
+        expect(outcome.exitCode,).toBe(1,);
+        expect(findingCodes(outcome,),).toEqual(['concurrent-commit/branch-switched',],);
+        expect(await git({ repository, args: ['rev-parse', 'main', 'HEAD',], },),).toBe(`${baseline}\n${baseline}`,);
+        expect(await leftovers(repository,),).toEqual([],);
+      },
+    },),
+    it({
       name: 'an amend whose target moved fails with head-moved',
       fn: async function testAmendMoved(): Promise<void> {
         await using repository = await createLandingRepository();
