@@ -3,13 +3,18 @@
 
  @module
  */
-import type {
-  CandidateFile,
-  LazyPolicyGitFacts,
-  PolicyDefinition,
-  TrackedFile,
+import {
+  ABSENT_GIT_VALUE,
+  type CandidateFile,
+  type internalTestExports,
+  type LazyPolicyGitFacts,
+  type TrackedFile,
 } from '../../dist/final/node/index.mjs';
-import { ABSENT_GIT_VALUE, } from '../../dist/final/node/index.mjs';
+
+/**
+ Runtime policy shape the engine registers.
+ */
+export type RuntimePolicy = NonNullable<Parameters<typeof internalTestExports.runPolicyEngine>[0]['registeredPolicies']>[number];
 
 /**
  UTF-8 encoder.
@@ -198,11 +203,11 @@ export function countingPolicy({
   severity = 'warn',
 }: Readonly<{
   name: string;
-  severity?: PolicyDefinition['defaultSeverity'];
-  inputs?: PolicyDefinition['inputs'];
-  check: PolicyDefinition['check'];
+  severity?: RuntimePolicy['defaultSeverity'];
+  inputs?: RuntimePolicy['inputs'];
+  check: RuntimePolicy['check'];
 }>,): Readonly<{
-  policy: PolicyDefinition;
+  policy: RuntimePolicy;
   runs: () => number;
 }> {
   /**

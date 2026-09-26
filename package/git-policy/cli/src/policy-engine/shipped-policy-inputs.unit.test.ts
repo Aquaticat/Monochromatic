@@ -260,7 +260,7 @@ async function traceCheck({
        First quoted argument.
        */
       const quoteStart = line.indexOf('"',);
-      if (quoteStart === -1)
+      if (quoteStart === (-1))
         return [];
       /**
        Raw path.
@@ -331,7 +331,9 @@ async function createTraceRoot(): Promise<Readonly<{
   /**
    Scratch.
    */
-  const scratch = await realpath(await mkdtemp(join(tmpdir(), 'cli-git-policy-trace-',),),);
+  const scratch = await realpath(
+    await mkdtemp(join(tmpdir(), 'cli-git-policy-trace-',),),
+  );
   /**
    Repository root.
    */
@@ -407,9 +409,11 @@ await describe({
         it({
           name: 'built-ins that read only their context declare no external inputs; the others stay unrestricted',
           fn: async function testBuiltIns(): Promise<void> {
-            expect(Object.fromEntries(BUILT_IN_POLICIES.map(function declared(policy,) {
+            expect(
+              Object.fromEntries(BUILT_IN_POLICIES.map(function declared(policy,) {
               return [policy.name, effectivePolicyInputs(policy,),];
-            },),),).toEqual({
+            },),),
+            ).toEqual({
               'require-root': 'unrestricted',
               'linked-worktree-only': 'unrestricted',
               'branch-worktree-only': 'unrestricted',
@@ -434,7 +438,7 @@ await describe({
           name: 'forbidden-strings declares its configured scanner, FORBIDDEN_STRINGS_RULES, and the rules file it names',
           fn: async function testForbiddenStrings(): Promise<void> {
             /** Declaration function. */
-            const inputs = forbiddenStringsPolicy.inputs;
+            const {inputs} = forbiddenStringsPolicy;
             if ((typeof inputs) !== 'function')
               throw new TypeError('forbidden-strings must declare its inputs as a function of its options.',);
             /** Previous override. */

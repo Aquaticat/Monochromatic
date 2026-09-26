@@ -171,7 +171,9 @@ await describe({
         await writeFile(join(fixture.root, 'rules.local.txt',), 'ignored edit\n',);
         expect(await one({ fixture, input, },),).not.toBe(ignored,);
         await rm(join(fixture.root, 'rules.txt',),);
-        expect(String(await one({ fixture, input, },),),).toContain('"rules.txt","missing"',);
+        expect(
+          String(await one({ fixture, input, },),),
+        ).toContain('"rules.txt","missing"',);
       },
     },),
     it({
@@ -208,7 +210,9 @@ await describe({
               process.env.GIT_LITERAL_PATHSPECS = previous;
           },
         };
-        expect(String(await one({ fixture, input, },),),).toContain('rules.a',);
+        expect(
+          String(await one({ fixture, input, },),),
+        ).toContain('rules.a',);
       },
     },),
     it({
@@ -262,14 +266,28 @@ await describe({
         const absent: PolicyInput = { kind: 'revision', rev: 'refs/heads/absent', };
         /** Initial fingerprints. */
         const initial = await fixture.fingerprint([head, absent,],);
-        expect(initial.get(policyInputKey(head,),),).toBe(JSON.stringify([await fixture.git(['rev-parse', 'HEAD',],),],),);
-        expect(String(initial.get(policyInputKey(absent,),),),).toContain('missing',);
+        expect(
+          initial.get(policyInputKey(head,),),
+        ).toBe(JSON.stringify([await fixture.git(['rev-parse', 'HEAD',],),],),);
+        expect(
+          String(
+            initial.get(policyInputKey(absent,),),
+          ),
+        ).toContain('missing',);
         expect(await fixture.fingerprint([head, absent,],),).toEqual(initial,);
         await fixture.git(['commit', '--quiet', '--allow-empty', '-m', 'next',],);
         /** After the ref moved. */
         const moved = await fixture.fingerprint([head, absent,],);
-        expect(moved.get(policyInputKey(head,),),).not.toBe(initial.get(policyInputKey(head,),),);
-        expect(moved.get(policyInputKey(absent,),),).toBe(initial.get(policyInputKey(absent,),),);
+        expect(
+          moved.get(policyInputKey(head,),),
+        ).not.toBe(
+          initial.get(policyInputKey(head,),),
+        );
+        expect(
+          moved.get(policyInputKey(absent,),),
+        ).toBe(
+          initial.get(policyInputKey(absent,),),
+        );
       },
     },),
     it({

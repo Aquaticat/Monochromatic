@@ -63,6 +63,8 @@ const DEFAULT_RULES_PATH = 'forbidden-strings.local.txt';
  so a path outside the repository cannot be fingerprinted and the policy always re-runs.
  The scanner's compiled-rules cache is keyed by rules content,
  so it is not an input.
+ It also looks for `.git` above its working directory,
+ which is fixed for a commit.
 
  @param options - validated scanner options
 

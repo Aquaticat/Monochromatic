@@ -129,7 +129,7 @@ await describe({
             expect(parsed,).toEqual({ external: [{ kind: 'worktree', pathspecs: ['a.txt',], },], },);
           },
         },),
-        ...[
+        ...([
           ['an unknown kind', { external: [{ kind: 'network', url: 'x', },], }, 'unknown input kind',],
           ['an empty pathspec list', { external: [{ kind: 'worktree', pathspecs: [], }, ], }, 'worktree pathspecs must be non-empty',],
           ['an empty pathspec', { external: [{ kind: 'worktree', pathspecs: ['',], },], }, 'must be non-empty',],
@@ -142,13 +142,13 @@ await describe({
           ['a non-array external', { external: 'rules.txt', }, 'Policy x has invalid inputs',],
           ['another string', 'everything', 'Policy x has invalid inputs',],
           ['a missing external', {}, 'Policy x has invalid inputs',],
-        ].map(function rejectedCase([label, value, message,]) {
+        ] as const).map(function rejectedCase([label, value, message,]) {
           return it({
-            name: `rejects ${String(label,)}`,
+            name: `rejects ${label}`,
             fn: async function testRejected(): Promise<void> {
               expect(rejection(function parse() {
                 return parsePolicyInputs({ value, effectiveId: 'x', },);
-              },),).toContain(String(message,),);
+              },),).toContain(message,);
             },
           },);
         },),
@@ -162,9 +162,9 @@ await describe({
           fn: async function testDeclaration(): Promise<void> {
             expect(validateInputsDeclaration({ value: undefined, effectiveId: 'x', },),).toBe(INPUTS_UNDECLARED,);
             /** Function declaration. */
-            const declared = function declared(): string {
+            function declared(): string {
               return 'unrestricted';
-            };
+            }
             expect(validateInputsDeclaration({ value: declared, effectiveId: 'x', },),).toBe(declared,);
             expect(rejection(function validate() {
               return validateInputsDeclaration({ value: { external: [{ kind: 'x', },], }, effectiveId: 'x', },);
@@ -214,10 +214,9 @@ await describe({
             },),).toContain('Policy probe/check inputs function threw: no scanner',);
             expect(rejection(function resolve() {
               return resolvePolicyInputs({
-                // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The test declares an invalid result the types forbid.
                 declaration: function inputs() {
                   return { external: [{ kind: 'worktree', pathspecs: [], },], };
-                } as () => 'unrestricted',
+                } as unknown as () => 'unrestricted',
                 options: undefined,
                 effectiveId: 'probe/check',
               },);
@@ -232,26 +231,34 @@ await describe({
         it({
           name: 'resolves a function declaration with the parsed options, defaults applied',
           fn: async function testConfigFunction(): Promise<void> {
-            expect(probeInputs(configWith({
+            expect(
+              probeInputs(configWith({
               inputs: function inputs(options: Readonly<{ executable: string; }>,) {
                 return { external: [{ kind: 'executable', path: options.executable, },], };
               },
               options: v.optional(v.object({ executable: v.optional(v.string(), 'default-scanner',), },), {},),
-            },),),).toEqual({ external: [{ kind: 'executable', path: 'default-scanner', },], },);
-            expect(probeInputs(configWith({
+            },),),
+            ).toEqual({ external: [{ kind: 'executable', path: 'default-scanner', },], },);
+            expect(
+              probeInputs(configWith({
               inputs: function inputs(options: Readonly<{ executable: string; }>,) {
                 return { external: [{ kind: 'executable', path: options.executable, },], };
               },
               options: v.optional(v.object({ executable: v.optional(v.string(), 'default-scanner',), },), {},),
               setting: ['warn', { executable: './configured', },],
-            },),),).toEqual({ external: [{ kind: 'executable', path: './configured', },], },);
+            },),),
+            ).toEqual({ external: [{ kind: 'executable', path: './configured', },], },);
           },
         },),
         it({
           name: 'keeps static declarations, and an absent one resolves to unrestricted',
           fn: async function testConfigStatic(): Promise<void> {
-            expect(probeInputs(configWith({ inputs: { external: [], }, },),),).toEqual({ external: [], },);
-            expect(probeInputs(configWith({ inputs: undefined, },),),).toBe('unrestricted',);
+            expect(
+              probeInputs(configWith({ inputs: { external: [], }, },),),
+            ).toEqual({ external: [], },);
+            expect(
+              probeInputs(configWith({ inputs: undefined, },),),
+            ).toBe('unrestricted',);
           },
         },),
         it({

@@ -183,22 +183,21 @@ await describe({
             expect(await readSetHolds({ readSet: recordPolicyReads(fakeFacts(BASE,).facts,).finish(), facts: fakeFacts({ candidates: [], },).facts, },),).toBe(true,);
           },
         },),
-        ...[
+        ...([
           ['candidate content', { ...BASE, candidates: [{ path: 'a.txt', content: 'changed', }, { path: 'gone.txt', content: '', change: 'deleted', },], },],
           ['candidate list', { ...BASE, candidates: [{ path: 'a.txt', content: 'a', },], },],
           ['candidate change kind', { ...BASE, candidates: [{ path: 'a.txt', content: 'a', change: 'added', }, { path: 'gone.txt', content: '', change: 'deleted', },], },],
           ['tracked entry', { ...BASE, tracked: [{ path: 'pkg/package.json', content: '{"v":2}', },], },],
           ['tracked entry at the parent', { ...BASE, head: 'moved', },],
-        ].map(function changedCase([label, state,]) {
+        ] as const).map(function changedCase([label, state,]) {
           return it({
-            name: `fails when the ${String(label,)} changed`,
+            name: `fails when the ${label} changed`,
             fn: async function testChanged(): Promise<void> {
               /** Recorder over base facts. */
               const recorder = recordPolicyReads(fakeFacts(BASE,).facts,);
               await recorder.facts.candidates();
               await recorder.facts.trackedFiles({ pathspecs: ['pkg/',], },);
-              // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The parameterized table holds states.
-              expect(await readSetHolds({ readSet: recorder.finish(), facts: fakeFacts(state as FakeState,).facts, },),).toBe(false,);
+              expect(await readSetHolds({ readSet: recorder.finish(), facts: fakeFacts(state,).facts, },),).toBe(false,);
             },
           },);
         },),

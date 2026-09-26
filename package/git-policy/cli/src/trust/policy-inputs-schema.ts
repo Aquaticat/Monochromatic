@@ -16,6 +16,7 @@ import type {
   PolicyInputs,
   PolicyInputsDeclaration,
 } from '../api/policy-input-types.ts';
+import type { RuntimePolicyInputs, } from '../policy-engine/types.ts';
 import { ConfigValidationError, } from './config-validation-error.ts';
 
 /**
@@ -301,7 +302,7 @@ export function resolvePolicyInputs({
   options,
   effectiveId,
 }: Readonly<{
-  declaration?: PolicyInputsDeclaration<unknown>;
+  declaration?: RuntimePolicyInputs;
   options: unknown;
   effectiveId: string;
 }>,): PolicyInputs {

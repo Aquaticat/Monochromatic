@@ -5,7 +5,7 @@
  */
 import type { GenericSchema, } from 'valibot';
 import type { LazyPolicyGitFacts, } from '../api/context-types.ts';
-import type { PolicyInputsDeclaration, } from '../api/policy-input-types.ts';
+import type { PolicyInputs, } from '../api/policy-input-types.ts';
 import type {
   PolicyContext,
   PolicyFinding,
@@ -15,6 +15,16 @@ import type {
 } from '../api/policy-types.ts';
 import type { PolicyEvent, } from './events.ts';
 import type { PolicyReadTracking, } from './policy-read-tracking.ts';
+
+/**
+ Runtime-erased inputs declaration:
+ a static value,
+ or a function whose options type is erased, so any typed policy declaration fits.
+ Config loading calls a function only through a runtime check.
+ */
+export type RuntimePolicyInputs =
+  | PolicyInputs
+  | ((options: never) => PolicyInputs);
 
 /**
  Runtime-erased policy after option validation.
@@ -43,7 +53,7 @@ export type RuntimePolicyDefinition = {
   /**
    Declared external inputs; config loading replaces a function form with its result for every enabled policy.
    */
-  readonly inputs?: PolicyInputsDeclaration<unknown>;
+  readonly inputs?: RuntimePolicyInputs;
   /**
    Runtime policy callback receiving validated options.
    */

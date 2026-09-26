@@ -25,12 +25,31 @@ const {
   decideRerun,
   declaredPreForwardInputs,
   effectivePolicyInputs,
-  FINGERPRINT_UNAVAILABLE,
   policyInputKey,
   runPolicyEngine,
   validateConfig,
   withPolicyReadTracking,
 } = internalTestExports;
+
+/**
+ Fingerprints of one phase.
+ */
+type Fingerprints = Parameters<typeof decideRerun>[0]['fingerprints'];
+
+/**
+ One fingerprint.
+ */
+type Fingerprint = Fingerprints extends ReadonlyMap<string, infer TValue> ? TValue : never;
+
+/**
+ A recorded run.
+ */
+type Run = Parameters<typeof decideRerun>[0]['runs'][number];
+
+/**
+ Unavailable fingerprint.
+ */
+const UNAVAILABLE: Fingerprint = internalTestExports.FINGERPRINT_UNAVAILABLE;
 
 /**
  One input of each kind.
@@ -45,7 +64,7 @@ const EVERY_KIND: readonly PolicyInput[] = [
 /**
  Fingerprints of every kind, all `before`.
  */
-const BEFORE = new Map(EVERY_KIND.map(function before(input,) {
+const BEFORE: Fingerprints = new Map<string, Fingerprint>(EVERY_KIND.map(function before(input,) {
   return [policyInputKey(input,), 'before',] as const;
 },),);
 
@@ -63,8 +82,8 @@ function recordedRun({
   fingerprints = BEFORE,
 }: Readonly<{
   findings?: readonly PolicyFinding[];
-  fingerprints?: ReadonlyMap<string, string | typeof FINGERPRINT_UNAVAILABLE>;
-}> = {},) {
+  fingerprints?: Fingerprints;
+}> = {},): Run {
   return {
     policyId: 'probe/check',
     readSet: { bytesPaths: [], trackedFiles: [], replayable: true, },
@@ -228,7 +247,7 @@ await describe({
             name: `re-runs when a declared ${input.kind} input changed, and reuses while it is unchanged`,
             fn: async function testKind(): Promise<void> {
               /** Current fingerprints with this input changed. */
-              const changed = new Map([...BEFORE, [policyInputKey(input,), 'after',],],);
+              const changed = new Map<string, Fingerprint>([...BEFORE, [policyInputKey(input,), 'after',],],);
               expect(await decideRerun({ inputs: { external: EVERY_KIND, }, runs: [recordedRun(),], fingerprints: changed, readsHold, },),)
                 .toEqual({ kind: 'run', reason: 'input-changed', },);
               expect((await decideRerun({ inputs: { external: EVERY_KIND, }, runs: [recordedRun(),], fingerprints: BEFORE, readsHold, },)).kind,)
@@ -240,7 +259,7 @@ await describe({
           name: 'treats an unavailable fingerprint then or now as changed',
           fn: async function testUnavailable(): Promise<void> {
             /** Fingerprints with the executable unavailable. */
-            const unavailable = new Map([...BEFORE, [policyInputKey({ kind: 'executable', path: 'scanner', },), FINGERPRINT_UNAVAILABLE,],],);
+            const unavailable = new Map<string, Fingerprint>([...BEFORE, [policyInputKey({ kind: 'executable', path: 'scanner', },), UNAVAILABLE,],],);
             expect((await decideRerun({ inputs: { external: EVERY_KIND, }, runs: [recordedRun({ fingerprints: unavailable, },),], fingerprints: unavailable, readsHold, },)).kind,)
               .toBe('run',);
             expect((await decideRerun({ inputs: { external: EVERY_KIND, }, runs: [recordedRun(),], fingerprints: unavailable, readsHold, },)).kind,)
@@ -402,9 +421,13 @@ await describe({
               policyOptions: validated.policyOptions,
             };
             expect(declaredPreForwardInputs(policyOptions,),).toEqual([{ kind: 'env', name: 'CONFIGURED', },],);
-            expect(effectivePolicyInputs(validated.registeredPolicies.find(function isDisabled(policy,) {
+            /** Disabled policy, whose inputs config loading leaves unresolved. */
+            const disabled = validated.registeredPolicies.find(function isDisabled(policy,) {
               return policy.name === 'probe/disabled';
-            },) ?? validated.registeredPolicies[0]!,),).toEqual({ external: [{ kind: 'env', name: 'NEVER', },], },);
+            },);
+            if (disabled === undefined)
+              throw new Error('The disabled policy is missing.',);
+            expect(effectivePolicyInputs(disabled,),).toEqual({ external: [{ kind: 'env', name: 'NEVER', },], },);
             /** Location with an environment instead of real Git; env inputs spawn nothing. */
             const location = { gitPath: '/nonexistent/git', repositoryRoot: '/nonexistent', shadowPath: '/nonexistent', environment: { CONFIGURED: 'one', }, };
             /** Preparation phase. */
