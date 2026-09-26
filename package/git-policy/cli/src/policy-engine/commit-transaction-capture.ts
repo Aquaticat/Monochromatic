@@ -18,6 +18,12 @@ import {
   CommitTransactionGitError,
   runTransactionGit,
 } from './commit-transaction-git.ts';
+import {
+  resolveConclusionKind,
+  resolveRefCommit,
+  resolveRefFormat,
+  resolveSymbolicHead,
+} from './commit-transaction-capture-refs.ts';
 
 /**
  Module logger.
@@ -130,6 +136,11 @@ export type InvocationCapture = Readonly<{
 }>;
 
 /**
+ Invocation facts other than the preparation base.
+ */
+export type InvocationLayout = Omit<InvocationCapture, 'base'>;
+
+/**
  Decodes one trimmed Git output.
 
  @param bytes - Git stdout
@@ -204,213 +215,9 @@ function absoluteReported({
 }
 
 /**
- Reports whether a pseudoref resolves in the owning worktree.
-
- @param gitPath - real Git executable
-
- @param cwd - invocation directory
-
- @param name - pseudoref name
-
- @returns whether the pseudoref names an object
- */
-async function pseudorefExists({
-  gitPath,
-  cwd,
-  name,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-  name: string;
-}>,): Promise<boolean> {
-  return (await runTransactionGit({
-    gitPath,
-    cwd,
-    args: [
-      'rev-parse',
-      '--verify',
-      '--quiet',
-      name,
-    ],
-    allowFailure: true,
-  },)).exitCode === 0;
-}
-
-/**
- Resolves the commit kind from the amend flag and the owning worktree's conclusion state.
-
- @param gitPath - real Git executable
-
- @param cwd - invocation directory
-
- @param amend - whether the invocation amends
-
- @returns conclusion kind
-
- @example
- ```ts
- await resolveConclusionKind({ gitPath: '/usr/bin/git', cwd: '/repo', amend: false });
- ```
- */
-export async function resolveConclusionKind({
-  gitPath,
-  cwd,
-  amend,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-  amend: boolean;
-}>,): Promise<ConclusionKind> {
-  if (amend)
-    return 'amend';
-  /**
-   Presence of each conclusion marker, probed concurrently.
-   */
-  const [merge, cherryPick, revert,] = await Promise.all([
-    'MERGE_HEAD',
-    'CHERRY_PICK_HEAD',
-    'REVERT_HEAD',
-  ].map(function probe(name,): Promise<boolean> {
-    return pseudorefExists({
-      gitPath,
-      cwd,
-      name,
-    },);
-  },),);
-  if (merge === true)
-    return 'merge';
-  if (cherryPick === true)
-    return 'cherry-pick';
-  if (revert === true)
-    return 'revert';
-  return 'none';
-}
-
-/**
- Resolves the symbolic `HEAD` target in the owning worktree.
-
- @param gitPath - real Git executable
-
- @param cwd - owning worktree directory
-
- @returns branch ref or detached
-
- @example
- ```ts
- await resolveSymbolicHead({ gitPath: '/usr/bin/git', cwd: '/repo' });
- ```
- */
-export async function resolveSymbolicHead({
-  gitPath,
-  cwd,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-}>,): Promise<SymbolicHeadTarget> {
-  /**
-   Quiet symbolic-ref probe; exit 1 means detached.
-   */
-  const result = await runTransactionGit({
-    gitPath,
-    cwd,
-    args: [
-      'symbolic-ref',
-      '--quiet',
-      'HEAD',
-    ],
-    allowFailure: true,
-  },);
-  if (result.exitCode === 1)
-    return { kind: 'detached', };
-  if (result.exitCode !== 0)
-    throw new CommitTransactionGitError(`git symbolic-ref HEAD failed: ${result.stderr
-      .trim()}`,);
-  return {
-    kind: 'branch',
-    ref: decodeTrimmed(result.stdout,),
-  };
-}
-
-/**
- Resolves a ref to its commit, or unborn when it names nothing.
-
- @param gitPath - real Git executable
-
- @param cwd - owning worktree directory
-
- @param ref - full ref name or `HEAD`
-
- @returns commit or unborn
-
- @example
- ```ts
- await resolveRefCommit({ gitPath: '/usr/bin/git', cwd: '/repo', ref: 'refs/heads/main' });
- ```
- */
-export async function resolveRefCommit({
-  gitPath,
-  cwd,
-  ref,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-  ref: string;
-}>,): Promise<PreparationBase> {
-  /**
-   Quiet commit resolution.
-   */
-  const result = await runTransactionGit({
-    gitPath,
-    cwd,
-    args: [
-      'rev-parse',
-      '--verify',
-      '--quiet',
-      `${ref}^{commit}`,
-    ],
-    allowFailure: true,
-  },);
-  if (result.exitCode !== 0)
-    return { kind: 'unborn', };
-  return {
-    kind: 'commit',
-    oid: decodeTrimmed(result.stdout,),
-  };
-}
-
-/**
- Reads the ref storage backend, treating a Git that cannot report it as the files backend.
-
- @param gitPath - real Git executable
-
- @param cwd - owning worktree directory
-
- @returns ref storage format
- */
-async function resolveRefFormat({
-  gitPath,
-  cwd,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-}>,): Promise<RefStorageFormat> {
-  /**
-   Ref format report; Git before 2.45 rejects the option.
-   */
-  const result = await runTransactionGit({
-    gitPath,
-    cwd,
-    args: [
-      'rev-parse',
-      '--show-ref-format',
-    ],
-    allowFailure: true,
-  },);
-  return (result.exitCode === 0) && (decodeTrimmed(result.stdout,) === 'reftable') ? 'reftable' : 'files';
-}
-
-/**
- Captures every invocation fact before any Git mutation.
+ Captures every invocation fact except the preparation base, before any Git mutation.
+ A commit transaction publishes its directory between this and {@link captureInvocationBase},
+ so pruning of landed-capture records sees it before it reads its base.
 
  @param gitPath - real Git executable
 
@@ -418,16 +225,16 @@ async function resolveRefFormat({
 
  @param amend - whether the invocation amends
 
- @returns invocation capture
+ @returns invocation layout
 
  @throws {@link CommitTransactionGitError} when Git reports an incomplete layout
 
  @example
  ```ts
- await captureInvocation({ gitPath: '/usr/bin/git', cwd: '/repo', amend: false });
+ await captureInvocationLayout({ gitPath: '/usr/bin/git', cwd: '/repo', amend: false });
  ```
  */
-export async function captureInvocation({
+export async function captureInvocationLayout({
   gitPath,
   cwd,
   amend,
@@ -435,12 +242,12 @@ export async function captureInvocation({
   gitPath: string;
   cwd: string;
   amend: boolean;
-}>,): Promise<InvocationCapture> {
+}>,): Promise<InvocationLayout> {
   /**
    Tagged capture logger.
    */
   const rl = tagged({
-    tag: captureInvocation.name,
+    tag: captureInvocationLayout.name,
     l,
   },);
   /**
@@ -507,18 +314,9 @@ export async function captureInvocation({
    */
   const targetRef = symbolicHead.kind === 'branch' ? symbolicHead.ref : 'HEAD';
   /**
-   Target commit at invocation.
+   Recorded layout.
    */
-  const base = await resolveRefCommit({
-    gitPath,
-    cwd,
-    ref: targetRef,
-  },);
-  /**
-   Recorded capture.
-   */
-  const capture: InvocationCapture = {
-    base,
+  const layoutCapture: InvocationLayout = {
     symbolicHead,
     targetRef,
     conclusion,
@@ -560,8 +358,86 @@ export async function captureInvocation({
     emptyTreeOid: decodeTrimmed(emptyTree.stdout,),
     invokedAt,
   };
-  rl.debug(`captured ${capture.targetRef} at ${base.kind === 'commit' ? base.oid : 'unborn'} (${conclusion})`,);
-  return capture;
+  rl.debug(`captured the layout of ${layoutCapture.targetRef} (${conclusion})`,);
+  return layoutCapture;
+}
+
+/**
+ Completes the invocation capture with the preparation base: the target's commit now.
+
+ @param gitPath - real Git executable
+
+ @param cwd - effective invocation directory
+
+ @param layout - invocation layout
+
+ @returns invocation capture
+
+ @example
+ ```ts
+ await captureInvocationBase({ gitPath: '/usr/bin/git', cwd: '/repo', layout });
+ ```
+ */
+export async function captureInvocationBase({
+  gitPath,
+  cwd,
+  layout,
+}: Readonly<{
+  gitPath: string;
+  cwd: string;
+  layout: InvocationLayout;
+}>,): Promise<InvocationCapture> {
+  /**
+   Target commit at invocation.
+   */
+  const base = await resolveRefCommit({
+    gitPath,
+    cwd,
+    ref: layout.targetRef,
+  },);
+  l.debug(`captured ${layout.targetRef} at ${base.kind === 'commit' ? base.oid : 'unborn'}`,);
+  return {
+    ...layout,
+    base,
+  };
+}
+
+/**
+ Captures every invocation fact before any Git mutation.
+
+ @param gitPath - real Git executable
+
+ @param cwd - effective invocation directory
+
+ @param amend - whether the invocation amends
+
+ @returns invocation capture
+
+ @throws {@link CommitTransactionGitError} when Git reports an incomplete layout
+
+ @example
+ ```ts
+ await captureInvocation({ gitPath: '/usr/bin/git', cwd: '/repo', amend: false });
+ ```
+ */
+export async function captureInvocation({
+  gitPath,
+  cwd,
+  amend,
+}: Readonly<{
+  gitPath: string;
+  cwd: string;
+  amend: boolean;
+}>,): Promise<InvocationCapture> {
+  return await captureInvocationBase({
+    gitPath,
+    cwd,
+    layout: await captureInvocationLayout({
+      gitPath,
+      cwd,
+      amend,
+    },),
+  },);
 }
 
 /**

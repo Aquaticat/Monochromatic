@@ -10,6 +10,10 @@
  */
 
 import {
+  type CaptureOrderTestExports,
+  captureOrderTestExports,
+} from './internal-test-exports-capture-order.ts';
+import {
   type EventTestExports,
   eventTestExports,
 } from './internal-test-exports-events.ts';
@@ -80,6 +84,7 @@ import {
  Shapes of the transaction internals exposed to built-artifact tests.
  */
 export type InternalTestExports =
+  & CaptureOrderTestExports
   & EventTestExports
   & LandingTestExports
   & LockTestExports
@@ -190,6 +195,7 @@ export type InternalTestExports =
  Transaction internals as one plain object, so the single bundled artifact needs no namespace runtime helper.
  */
 export const internalTestExports: InternalTestExports = Object.freeze({
+  ...captureOrderTestExports,
   ...eventTestExports,
   ...landingTestExports,
   ...lockTestExports,

@@ -29,6 +29,11 @@ import {
   selectTraceWindow,
   tracePath,
 } from './trace-replay-fixture.ts';
+import {
+  blockerOf,
+  createdPaths,
+  removedPaths,
+} from './trace-execution-fixture.ts';
 
 //region Fixtures
 
@@ -121,6 +126,26 @@ await describe({
               ['t1', ['trace/p3',], ['trace/p0', 'trace/p2', 'trace/p3',],],
               ['t2', [], ['trace/p1',],],
             ],);
+          },
+        },),
+        it({
+          name: 'a removal of a path an in-flight operation creates waits for that operation to land, every other overlap for its capture',
+          fn: async () => {
+            const { operations, } = planTraceOperations([
+              ...WINDOW,
+              { changes: [change({ kind: 'delete', path: 0, },), change({ kind: 'delete', path: 3, },),], },
+            ],);
+            const [add, rename, , remove,] = operations;
+            if ((add === undefined) || (rename === undefined) || (remove === undefined))
+              throw new Error('planTraceOperations dropped an operation',);
+            expect([...createdPaths(add,),],).toEqual(['trace/p0',],);
+            expect([...removedPaths(rename,),],).toEqual(['trace/p2',],);
+            expect([...removedPaths(remove,),],).toEqual(['trace/p0', 'trace/p3',],);
+            const captured = Promise.resolve();
+            const finished = Promise.resolve();
+            expect(blockerOf({ claim: { captured, finished, adds: true, }, removes: true, },),).toBe(finished,);
+            expect(blockerOf({ claim: { captured, finished, adds: true, }, removes: false, },),).toBe(captured,);
+            expect(blockerOf({ claim: { captured, finished, adds: false, }, removes: true, },),).toBe(captured,);
           },
         },),
       ],

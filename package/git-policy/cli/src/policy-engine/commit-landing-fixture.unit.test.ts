@@ -630,15 +630,22 @@ export async function leftovers(repository: LandingRepository,): Promise<readonl
   /**
    Every candidate location.
    */
-  const [shadows, transactions, packs, top,] = await Promise.all([
+  const [shadows, transactions, packs, top, captures, landed,] = await Promise.all([
     entries('cli-git/shadow',),
     entries('cli-git-transactions',),
     entries('objects/pack',),
     readdir(repository.gitDir,),
+    entries('cli-git-captures',),
+    entries('cli-git-captures/landed',),
   ],);
   return [
     ...shadows,
     ...transactions,
+    // The capture store keeps its identity, its sequence, and the landed-record directory; records are pruned.
+    ...captures.filter(function isTransient(name,): boolean {
+      return !['cli-git-captures/worktree-id', 'cli-git-captures/sequence', 'cli-git-captures/landed',].includes(name,);
+    },),
+    ...landed,
     ...packs.filter(function isKeep(name,): boolean {
       return name.endsWith('.keep',);
     },),

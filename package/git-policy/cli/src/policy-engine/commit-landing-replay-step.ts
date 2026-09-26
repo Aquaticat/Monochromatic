@@ -24,12 +24,12 @@ import {
   writeReplayedCommit,
 } from './commit-replay.ts';
 import { subsumeLandedChanges, } from './commit-replay-subsumption.ts';
+import { decideSharedPaths, } from './commit-capture-order-replay.ts';
+import { revalidateReplay, } from './commit-revalidation.ts';
 import {
-  type RevalidationContext,
-  revalidateReplay,
-} from './commit-revalidation.ts';
-import type { AddedPathRecord, } from './commit-transaction-added-paths.ts';
-import { loadIndexEntries, } from './commit-transaction-candidate-batch.ts';
+  mergeRecords,
+  retargetRecords,
+} from './commit-landing-replay-records.ts';
 import { transactionFailure, } from './commit-transaction-results.ts';
 import {
   appendEvents,
@@ -43,78 +43,6 @@ import { withChangedFixSummary, } from './fix-summary.ts';
  Module logger.
  */
 const l = tagged({ tag: 'cli-git', },);
-
-/**
- Points worktree completions at the blobs a replayed tree holds, dropping paths it no longer holds as ordinary files.
-
- @param context - invocation facts
-
- @param indexPath - replayed private index
-
- @param records - completions before the replay
-
- @returns completions for the replayed tree
- */
-async function retargetRecords({
-  context,
-  indexPath,
-  records,
-}: Readonly<{
-  context: RevalidationContext;
-  indexPath: string;
-  records: readonly AddedPathRecord[];
-}>,): Promise<readonly AddedPathRecord[]> {
-  /**
-   Replayed entries of every completion path.
-   */
-  const entries = await loadIndexEntries({
-    gitPath: context.gitPath,
-    cwd: context.cwd,
-    indexPath,
-    paths: records.map(function recordPath(record,): string {
-      return record.path;
-    },),
-  },);
-  return records.flatMap(function retarget(record,): readonly AddedPathRecord[] {
-    /**
-     Replayed entry.
-     */
-    const entry = entries.get(record.path,);
-    return (entry === undefined) || (entry.modeText !== record.gitMode)
-      || (entry.stage !== '0')
-      ? []
-      : [{
-        ...record,
-        intendedOid: entry.oid,
-      },];
-  },);
-}
-
-/**
- Merges added-path records, a later record replacing an earlier one for the same path.
-
- @param earlier - earlier records
-
- @param later - later records
-
- @returns merged records
- */
-function mergeRecords({
-  earlier,
-  later,
-}: Readonly<{
-  earlier: readonly AddedPathRecord[];
-  later: readonly AddedPathRecord[];
-}>,): readonly AddedPathRecord[] {
-  return [
-    ...earlier.filter(function notReplaced(record,): boolean {
-      return !later.some(function samePath(replacement,): boolean {
-        return replacement.path === record.path;
-      },);
-    },),
-    ...later,
-  ];
-}
 
 /**
  Replays after a lost race: merge, conflict handling, revalidation, and the rebuilt commit.
@@ -171,8 +99,23 @@ async function replayCandidate({
     },),
     current: onto,
     prepared: prepared.oid,
+    orderPaths: async function orderPaths(paths,) {
+      return await decideSharedPaths({
+        gitPath: context.gitPath,
+        shadowPath: context.workspace
+          .shadowPath,
+        gitDir: context.capture
+          .gitDir,
+        transactionDirectory: context.workspace
+          .directory,
+        base: context.capture
+          .base,
+        current: onto,
+        paths,
+      },);
+    },
   },);
-  l.debug(`replay onto ${onto} keeps the prepared entries of ${JSON.stringify(subsumption.subsumedPaths,)}`,);
+  l.debug(`replay onto ${onto} keeps the prepared entries of ${JSON.stringify(subsumption.subsumedPaths,)} and the landed entries of ${JSON.stringify(subsumption.keptLandedPaths,)}`,);
   /**
    Clean merge or conflicting paths.
    */

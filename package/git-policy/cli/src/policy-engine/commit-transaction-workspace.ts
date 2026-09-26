@@ -14,6 +14,7 @@ import { randomUUID, } from 'node:crypto';
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { removeShadowRepository, } from '../shadow-repository/shadow-repository.ts';
+import { pruneLandedCaptures, } from './commit-capture-order-prune.ts';
 import {
   type InvocationCapture,
   shadowRepositoryPath,
@@ -97,7 +98,7 @@ export type CommitTransactionWorkspace = {
  ```
  */
 export async function createCommitTransactionWorkspace({ capture, }: Readonly<{
-  capture: Pick<InvocationCapture, 'registryRoot' | 'commonDir' | 'realIndexPath' | 'invokedAt'>;
+  capture: Pick<InvocationCapture, 'registryRoot' | 'commonDir' | 'gitDir' | 'realIndexPath' | 'invokedAt'>;
 }>,): Promise<CommitTransactionWorkspace> {
   await ensureTransactionRoot(capture.registryRoot,);
   /**
@@ -168,6 +169,11 @@ export async function createCommitTransactionWorkspace({ capture, }: Readonly<{
       }
       await removeShadowRepository(shadowPath,);
       await removeTransactionDirectory(directory,);
+      // Last, so the last transaction to finish sees no other one pinning landed-capture records.
+      await pruneLandedCaptures({
+        gitDir: capture.gitDir,
+        registryRoot: capture.registryRoot,
+      },);
     },
   };
 }

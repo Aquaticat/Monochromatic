@@ -45,6 +45,7 @@ const RELEASE_POLL_MS = 20;
  Phases a marker can name, in transaction order.
  */
 export const TRANSACTION_TEST_PHASES = [
+  'capture-locked',
   'preparation-done',
   'landing-locked',
   'objects-migrated',

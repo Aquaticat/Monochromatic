@@ -152,13 +152,105 @@ async function applyChanges({
 }
 
 /**
- Runs one operation after the in-flight owners of its paths captured theirs.
+ Claim an in-flight operation holds on one path.
+ */
+export type PathClaim = Readonly<{
+  /**
+   Settles once the claiming operation captured the path.
+   */
+  captured: Promise<void>;
+  /**
+   Settles once the claiming operation's wrapper exited, after its landing.
+   */
+  finished: Promise<void>;
+  /**
+   Whether the claiming operation, or an in-flight operation before it, creates the path.
+   */
+  adds: boolean;
+}>;
+
+/**
+ Paths an operation creates: additions and rename destinations.
+
+ @param operation - planned operation
+
+ @returns created paths
+
+ @example
+ ```ts
+ createdPaths(operation);
+ ```
+ */
+export function createdPaths(operation: TraceOperation,): ReadonlySet<string> {
+  return new Set(operation.changes
+    .flatMap(function created(change,): readonly string[] {
+    return (change.shape
+      .kind
+      === 'add') || (change.shape
+        .kind
+        === 'rename') ? [change.path,] : [];
+  },),);
+}
+
+/**
+ Paths an operation removes: deletions and rename sources.
+
+ @param operation - planned operation
+
+ @returns removed paths
+
+ @example
+ ```ts
+ removedPaths(operation);
+ ```
+ */
+export function removedPaths(operation: TraceOperation,): ReadonlySet<string> {
+  return new Set(operation.changes
+    .flatMap(function removed(change,): readonly string[] {
+    return [
+      ...(change.shape
+        .kind
+        === 'delete' ? [change.path,] : []),
+      ...(change.from === undefined ? [] : [change.from,]),
+    ];
+  },),);
+}
+
+/**
+ What an operation waits for on one of its paths:
+ the claimant's capture,
+ or its landing when this operation removes a path the claimant creates,
+ because the path exists in neither the preparation base nor the worktree until that landing,
+ so a native `git commit -- <path>` would fail with "pathspec did not match".
+
+ @param claim - latest claim on the path
+
+ @param removes - whether this operation removes the path
+
+ @example
+ ```ts
+ blockerOf({ claim, removes: true });
+ ```
+ */
+export function blockerOf({
+  claim,
+  removes,
+}: Readonly<{
+  claim: PathClaim;
+  removes: boolean;
+}>,): Promise<void> {
+  return removes && claim.adds ? claim.finished : claim.captured;
+}
+
+/**
+ Runs one operation after the in-flight owners of its paths captured theirs,
+ or landed when it removes a path they create.
 
  @param context - scenario context
 
  @param operation - operation to run
 
- @param claims - capture promise per path of the latest claiming operation
+ @param claims - claim per path of the latest claiming operation
 
  @returns finished attempt
 
@@ -174,10 +266,18 @@ async function runOperation({
 }: Readonly<{
   context: ScenarioContext;
   operation: TraceOperation;
-  claims: Map<string, Promise<void>>;
+  claims: Map<string, PathClaim>;
 }>,): Promise<AttemptRecord> {
   /**
-   Captures this operation must wait for.
+   Paths this operation removes.
+   */
+  const removes = removedPaths(operation,);
+  /**
+   Paths this operation creates.
+   */
+  const creates = createdPaths(operation,);
+  /**
+   Signals this operation must wait for.
    */
   const blockers = operation.selected
     .flatMap(function blocker(path,) {
@@ -185,19 +285,77 @@ async function runOperation({
      Latest claim on the path.
      */
     const claim = claims.get(path,);
-    return claim === undefined ? [] : [claim,];
+    return claim === undefined ? [] : [blockerOf({
+      claim,
+      removes: removes.has(path,),
+    },),];
   },);
   /**
    This operation's own capture signal.
    */
   const captured = Promise.withResolvers<void>();
+  /**
+   This operation's own exit signal.
+   */
+  const finished = Promise.withResolvers<void>();
   operation.selected
     .forEach(function claim(path,) {
     claims.set(
       path,
-      captured.promise,
+      {
+        captured: captured.promise,
+        finished: finished.promise,
+        // A path an earlier in-flight operation creates exists in HEAD only once this operation landed too.
+        adds: creates.has(path,) || (claims.get(path,)
+          ?.adds
+          ?? false),
+      },
     );
   },);
+  /**
+   Settles both signals however the operation ends, so no waiting operation hangs.
+   */
+  using _settled = {
+    [Symbol.dispose]: function settle(): void {
+      captured.resolve();
+      finished.resolve();
+    },
+  };
+  return await runClaimedOperation({
+    context,
+    operation,
+    blockers,
+    captured,
+  },);
+}
+
+/**
+ Runs an operation whose claims are registered:
+ waits for its blockers,
+ writes its changes,
+ and commits.
+
+ @param context - scenario context
+
+ @param operation - operation to run
+
+ @param blockers - signals to wait for
+
+ @param captured - resolved once this operation captured
+
+ @returns finished attempt
+ */
+async function runClaimedOperation({
+  context,
+  operation,
+  blockers,
+  captured,
+}: Readonly<{
+  context: ScenarioContext;
+  operation: TraceOperation;
+  blockers: readonly Promise<void>[];
+  captured: PromiseWithResolvers<void>;
+}>,): Promise<AttemptRecord> {
   await Promise.all(blockers,);
   await applyChanges({
     context,
@@ -291,9 +449,9 @@ export async function runTraceOperations({
    */
   const cursor = { next: 0, };
   /**
-   Capture claims per path.
+   Claims per path.
    */
-  const claims = new Map<string, Promise<void>>();
+  const claims = new Map<string, PathClaim>();
   /**
    Finished attempts.
    */

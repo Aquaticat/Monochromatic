@@ -3,7 +3,8 @@
  target comparison,
  the expected old value of a payload,
  file identities for landing records,
- and the nonce-bearing reflog message.
+ the nonce-bearing reflog message,
+ and the compare-and-swap.
 
  @module
  */
@@ -12,7 +13,10 @@ import type {
   InvocationCapture,
   PreparationBase,
 } from './commit-transaction-capture.ts';
-import { runTransactionGit, } from './commit-transaction-git.ts';
+import {
+  type GitOutput,
+  runTransactionGit,
+} from './commit-transaction-git.ts';
 import type { FileIdentity, } from './commit-transaction-journal-states.ts';
 import type { LandingPayload, } from './commit-landing.ts';
 
@@ -160,4 +164,66 @@ export async function landingReflogMessage({
  */
 export function landingReflogPrefix(nonce: string,): string {
   return `commit (cli-git ${nonce}):`;
+}
+
+/**
+ Advances the target by compare-and-swap in the owning worktree's context,
+ which also writes the real `HEAD` reflog.
+
+ @param gitPath - real Git executable
+
+ @param cwd - owning worktree directory
+
+ @param capture - invocation capture naming the target
+
+ @param transactionId - transaction ID, the reflog nonce
+
+ @param newOid - commit to land
+
+ @param expectedOld - value the target must still hold
+
+ @returns `git update-ref` outcome; a nonzero exit is a lost race
+
+ @example
+ ```ts
+ await compareAndSwapTarget({ gitPath: '/usr/bin/git', cwd: '/repo', capture, transactionId, newOid, expectedOld });
+ ```
+ */
+export async function compareAndSwapTarget({
+  gitPath,
+  cwd,
+  capture,
+  transactionId,
+  newOid,
+  expectedOld,
+}: Readonly<{
+  gitPath: string;
+  cwd: string;
+  capture: Pick<InvocationCapture, 'symbolicHead' | 'targetRef' | 'emptyTreeOid'>;
+  transactionId: string;
+  newOid: string;
+  expectedOld: PreparationBase;
+}>,): Promise<GitOutput> {
+  return await runTransactionGit({
+    gitPath,
+    cwd,
+    args: [
+      'update-ref',
+      '-m',
+      await landingReflogMessage({
+        gitPath,
+        cwd,
+        nonce: transactionId,
+        oid: newOid,
+      },),
+      ...(capture.symbolicHead
+        .kind
+        === 'detached' ? ['--no-deref',] : []),
+      capture.targetRef,
+      newOid,
+      expectedOld.kind === 'commit' ? expectedOld.oid : '0'.repeat(capture.emptyTreeOid
+        .length,),
+    ],
+    allowFailure: true,
+  },);
 }

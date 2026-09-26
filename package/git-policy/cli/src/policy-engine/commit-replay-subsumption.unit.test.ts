@@ -100,20 +100,25 @@ async function commitFiles({
 
  @param prepared - prepared changes on top of the base
 
- @returns subsumed paths and the merge outcome
+ @param order - capture-order decision per path; unnamed paths are unordered
+
+ @returns subsumed and landed-kept paths and the merge outcome
  */
 async function replay({
   repository,
   base,
   landed,
   prepared,
+  order = {},
 }: Readonly<{
   repository: LandingRepository;
   base: Readonly<Record<string, Side>>;
   landed: Readonly<Record<string, Side>>;
   prepared: Readonly<Record<string, Side>>;
+  order?: Readonly<Record<string, 'prepared' | 'landed' | 'unordered'>>;
 }>,): Promise<Readonly<{
   subsumedPaths: readonly string[];
+  keptLandedPaths: readonly string[];
   merge: Awaited<ReturnType<typeof mergeReplayTree>>;
 }>> {
   /** Base commit. */
@@ -133,9 +138,11 @@ async function replay({
     mergeBase: baseOid,
     current,
     prepared: preparedOid,
+    orderPaths: async (paths: readonly string[],) => new Map(paths.flatMap((path,) => (order[path] === undefined ? [] : [[path, order[path],] as const,])),),
   },);
   return {
     subsumedPaths: subsumption.subsumedPaths,
+    keptLandedPaths: subsumption.keptLandedPaths,
     merge: await mergeReplayTree({
       gitPath: REAL_GIT,
       shadowPath: repository.gitDir,

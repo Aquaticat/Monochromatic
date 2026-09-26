@@ -12,9 +12,11 @@ import {
   lstat,
   readdir,
 } from 'node:fs/promises';
+import { dirname, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { GitWorktreeIdentity, } from '../git-worktree-identity.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
+import { pruneLandedCaptures, } from './commit-capture-order-prune.ts';
 import { classifyTransactionOwner, } from './commit-transaction-owner.ts';
 import { recoveryPathExists, } from './commit-transaction-recovery-files.ts';
 import {
@@ -177,5 +179,13 @@ export async function recoverCommitTransaction({
   ];
   if (outcomes.length > 0)
     rl.debug(`transaction recovery outcomes: ${JSON.stringify(outcomes,)}`,);
+  if (outcomes.some(function recovered(outcome,): boolean {
+    return outcome.action !== 'owner-active';
+  },))
+    // A recovered transaction no longer pins landed-capture records.
+    await pruneLandedCaptures({
+      gitDir: dirname(targets.registryRoot,),
+      registryRoot: targets.registryRoot,
+    },);
   return outcomes;
 }

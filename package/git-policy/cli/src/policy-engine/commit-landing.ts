@@ -22,16 +22,18 @@
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { reproduceConclusionCleanup, } from '../shadow-repository/shadow-conclusion-cleanup.ts';
+import { recordLandedCaptureOrWarn, } from './commit-capture-order-records.ts';
 import type { AddedPathRecord, } from './commit-transaction-added-paths.ts';
 import {
   baseRevision,
   type InvocationCapture,
   type PreparationBase,
-  resolveRefCommit,
-  resolveSymbolicHead,
   type SymbolicHeadTarget,
 } from './commit-transaction-capture.ts';
-import { runTransactionGit, } from './commit-transaction-git.ts';
+import {
+  resolveRefCommit,
+  resolveSymbolicHead,
+} from './commit-transaction-capture-refs.ts';
 import {
   type FileIdentity,
   JOURNAL_SCHEMA_VERSION,
@@ -59,9 +61,9 @@ import {
 import { reachTransactionPhase, } from './commit-transaction-test-phase.ts';
 import { copyIndexFile, } from './index-file-timestamps.ts';
 import {
+  compareAndSwapTarget,
   expectedOldTarget,
   fileIdentity,
-  landingReflogMessage,
   sameTarget,
 } from './commit-landing-support.ts';
 
@@ -375,27 +377,13 @@ export async function landTransaction({
     /**
      Compare-and-swap in the owning worktree's context, which also writes the real `HEAD` reflog.
      */
-    const swap = await runTransactionGit({
+    const swap = await compareAndSwapTarget({
       gitPath,
       cwd,
-      args: [
-        'update-ref',
-        '-m',
-        await landingReflogMessage({
-          gitPath,
-          cwd,
-          nonce: workspace.transactionId,
-          oid: payload.newOid,
-        },),
-        ...(capture.symbolicHead
-          .kind
-          === 'detached' ? ['--no-deref',] : []),
-        capture.targetRef,
-        payload.newOid,
-        expectedOld.kind === 'commit' ? expectedOld.oid : '0'.repeat(capture.emptyTreeOid
-          .length,),
-      ],
-      allowFailure: true,
+      capture,
+      transactionId: workspace.transactionId,
+      newOid: payload.newOid,
+      expectedOld,
     },);
     if (swap.exitCode !== 0) {
       rl.debug(`compare-and-swap lost: ${swap.stderr
@@ -432,6 +420,12 @@ export async function landTransaction({
     await removePackKeep({
       objectDirectory: capture.objectDirectory,
       packName: packName ?? '',
+    },);
+    await recordLandedCaptureOrWarn({
+      gitDir: capture.gitDir,
+      transactionDirectory: workspace.directory,
+      transactionId: workspace.transactionId,
+      landedOid: payload.newOid,
     },);
   }
   await indexLock.installIndex(postIndexPath,);

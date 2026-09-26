@@ -22,10 +22,9 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { removeShadowRepository, } from '../shadow-repository/shadow-repository.ts';
 import { reproduceConclusionCleanup, } from '../shadow-repository/shadow-conclusion-cleanup.ts';
 import { installAddedWorktreeFiles, } from './commit-transaction-added-paths.ts';
-import {
-  resolveRefCommit,
-  shadowRepositoryPath,
-} from './commit-transaction-capture.ts';
+import { recordLandedCaptureOrWarn, } from './commit-capture-order-records.ts';
+import { shadowRepositoryPath, } from './commit-transaction-capture.ts';
+import { resolveRefCommit, } from './commit-transaction-capture-refs.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
 import {
   parseLandingRecord,
@@ -303,6 +302,14 @@ export async function recoverDeadTransaction({
     objectDirectory: preparing.objectDirectory,
     transactionId,
   },);
+  if ((landing.operation === 'commit') && (landing.newOid !== undefined))
+    // Before any other landing takes the landing lock, so no replay moves over this commit without its record.
+    await recordLandedCaptureOrWarn({
+      gitDir: preparing.gitDir,
+      transactionDirectory: directory,
+      transactionId,
+      landedOid: landing.newOid,
+    },);
   /**
    Index completion.
    */

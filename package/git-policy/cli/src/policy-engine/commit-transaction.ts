@@ -25,8 +25,11 @@ import { writeCandidateSnapshot, } from './commit-transaction-candidate-snapshot
 import { createPrivateIndexFacts, } from './commit-transaction-candidates.ts';
 import {
   baseRevision,
-  captureInvocation,
+  captureInvocationBase,
+  captureInvocationLayout,
 } from './commit-transaction-capture.ts';
+import { captureCommitContent, } from './commit-capture-order-capture.ts';
+import { readNextCaptureSequence, } from './commit-capture-order-store.ts';
 import { concludeCommitTransaction, } from './commit-transaction-conclusion.ts';
 import { convergeCommitPolicies, } from './commit-transaction-convergence.ts';
 import { initializeCommitIndex, } from './commit-transaction-index.ts';
@@ -114,19 +117,15 @@ export async function runCommitTransaction({
   /**
    Facts recorded before any Git mutation.
    */
-  const capture = await captureInvocation({
+  const layoutCapture = await captureInvocationLayout({
     gitPath,
     cwd: layout.effectiveCwd,
     amend: region.hasAmendFlag,
   },);
   /**
-   Recorded baseline every later read uses instead of live `HEAD`.
-   */
-  const base = baseRevision(capture,);
-  /**
    Whether pathless commit concludes a merge, cherry-pick, or revert.
    */
-  const concludesSequencer = (capture.conclusion !== 'none') && (capture.conclusion !== 'amend');
+  const concludesSequencer = (layoutCapture.conclusion !== 'none') && (layoutCapture.conclusion !== 'amend');
   /**
    Whether selection UI remains read-only for automatic fixes.
    */
@@ -158,7 +157,24 @@ export async function runCommitTransaction({
   /**
    Disposable private workspace, published before any Git mutation.
    */
-  await using workspace = await createCommitTransactionWorkspace({ capture, },);
+  await using workspace = await createCommitTransactionWorkspace({ capture: layoutCapture, },);
+  /**
+   Next capture sequence number, read after publication and before the base,
+   so landed-capture pruning keeps every record this transaction may replay over.
+   */
+  const nextSequenceBeforeBase = await readNextCaptureSequence(layoutCapture.gitDir,);
+  /**
+   Facts recorded before any Git mutation, completed with the preparation base.
+   */
+  const capture = await captureInvocationBase({
+    gitPath,
+    cwd: layout.effectiveCwd,
+    layout: layoutCapture,
+  },);
+  /**
+   Recorded baseline every later read uses instead of live `HEAD`.
+   */
+  const base = baseRevision(capture,);
   await writeJournalRecord({
     directory: workspace.directory,
     filename: PREPARING_FILENAME,
@@ -200,18 +216,30 @@ export async function runCommitTransaction({
     effectiveCwd: layout.effectiveCwd,
     ...(region.pathspecFile === undefined ? {} : { source: region.pathspecFile, }),
   },);
-  await initializeCommitIndex({
-    workspace,
+  await captureCommitContent({
     gitPath,
-    cwd: layout.effectiveCwd,
+    cwd: capture.repositoryRoot,
+    gitDir: capture.gitDir,
+    workspace,
     mode,
-    pathspecs: region.pathspecs,
-    ...((typeof pathspecFile) === 'symbol' ? {} : { pathspecFile, }),
-    pathspecFileNul: region.hasPathspecFileNul,
-    stageIntoIndex: region.hasIncludeFlag,
-    stageTrackedChanges: stagedAll,
+    stagesWorktree: stagedAll || region.hasIncludeFlag,
     baseRevision: base,
-    objectDirectory: workspace.objectDirectory,
+    nextSequenceBeforeBase,
+    capture: async function captureContent(): Promise<void> {
+      await initializeCommitIndex({
+        workspace,
+        gitPath,
+        cwd: layout.effectiveCwd,
+        mode,
+        pathspecs: region.pathspecs,
+        ...((typeof pathspecFile) === 'symbol' ? {} : { pathspecFile, }),
+        pathspecFileNul: region.hasPathspecFileNul,
+        stageIntoIndex: region.hasIncludeFlag,
+        stageTrackedChanges: stagedAll,
+        baseRevision: base,
+        objectDirectory: workspace.objectDirectory,
+      },);
+    },
   },);
   if (region.hasInteractiveFlag || region.hasPatchFlag)
     await prepareInteractiveSelection({
