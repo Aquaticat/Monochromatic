@@ -287,16 +287,25 @@ function disjointSpec({
  */
 export async function collectConcurrentScenarios(): Promise<readonly ConcurrentScenarioResult[]> {
   /**
-   Default-config repository for disjoint levels.
+   Per-level repositories, fresh for each level because per-commit cost grows with a repository's history:
+   a wrapped and a direct real-Git repository for every disjoint level.
    */
-  const disjointRepository = await prepareRepository({
-    name: 'disjoint',
-    config: DEFAULT_CONFIG,
-  },);
-  /**
-   Configless repository for the direct real-Git baseline.
-   */
-  const directRepository = await prepareRepository({ name: 'direct', },);
+  const disjointRepositories = await Promise.all(DISJOINT_SCENARIOS.map(async function levelRepositories(level,): Promise<Readonly<{
+    id: ConcurrentScenarioId;
+    concurrency: number;
+    repository: string;
+    directRepository: string;
+  }>> {
+    return {
+      id: level.id,
+      concurrency: level.concurrency,
+      repository: await prepareRepository({
+        name: level.id,
+        config: DEFAULT_CONFIG,
+      },),
+      directRepository: await prepareRepository({ name: `${level.id}-direct`, },),
+    };
+  },),);
   /**
    Same-file repository.
    */
@@ -388,12 +397,12 @@ export async function collectConcurrentScenarios(): Promise<readonly ConcurrentS
         },);
       },
     },
-    ...DISJOINT_SCENARIOS.map(function levelSpec(level,): ScenarioSpec {
+    ...disjointRepositories.map(function levelSpec(level,): ScenarioSpec {
       return disjointSpec({
         id: level.id,
-        repository: disjointRepository,
+        repository: level.repository,
         concurrency: level.concurrency,
-        directRepository,
+        directRepository: level.directRepository,
       },);
     },),
     disjointSpec({

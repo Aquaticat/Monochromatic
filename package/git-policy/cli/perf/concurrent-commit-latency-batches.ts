@@ -8,39 +8,31 @@
  */
 import {
   appendFile,
-  mkdir,
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
-import { setTimeout as sleep, } from 'node:timers/promises';
 import {
   type BatchSample,
   type CommitObservation,
-  ConcurrentBenchmarkError,
   FIRST_EDIT_LINE,
   SECOND_EDIT_LINE,
 } from './concurrent-commit-latency-contracts.ts';
+import {
+  startPausedCommit,
+  type StartedCommit,
+  withPausedCommit,
+} from './concurrent-commit-latency-pause.ts';
 import {
   disjointFile,
   SHARED_FILE,
   sharedBaselineLines,
 } from './concurrent-commit-latency-repositories.ts';
 import {
+  commitArgs,
   nowMs,
   observeLocks,
-  pathExists,
   runCommit,
 } from './concurrent-commit-latency-process.ts';
-
-/**
- Poll interval while waiting for a phase marker.
- */
-const MARKER_POLL_MS = 1;
-
-/**
- Phase at which a paused commit has captured and prepared.
- */
-const PAUSE_PHASE = 'preparation-done';
 
 /**
  One commit to run: its arguments and extra environment.
@@ -55,36 +47,6 @@ export type CommitPlan = Readonly<{
    */
   command?: string;
 }>;
-
-/**
- Explicit-path commit arguments.
-
- @param path - committed path
-
- @param message - commit message
-
- @returns wrapper arguments
-
- @example
- ```ts
- commitArgs({ path: 'a.txt', message: 'x' });
- ```
- */
-export function commitArgs({
-  path,
-  message,
-}: Readonly<{
-  path: string;
-  message: string;
-}>,): readonly string[] {
-  return [
-    'commit',
-    '--quiet',
-    `--message=${message}`,
-    '--',
-    path,
-  ];
-}
 
 /**
  Runs plans together or one after another while observing the locks.
@@ -267,128 +229,7 @@ export async function writeShared({
 }
 
 /**
- A commit started while another is paused.
- */
-export type StartedCommit = Readonly<{
-  /**
-   The started commit's pending observation.
-   */
-  started: Promise<CommitObservation>;
-}>;
-
-/**
- Waits until a paused commit wrote its phase marker, failing when it exits first.
-
- @param markerDirectory - marker directory
-
- @param exited - set once the paused commit exited
- */
-async function waitForMarker({
-  markerDirectory,
-  exited,
-}: Readonly<{
-  markerDirectory: string;
-  exited: Readonly<{ done: boolean; }>;
-}>,): Promise<void> {
-  /**
-   Marker the paused commit writes.
-   */
-  const marker = join(
-    markerDirectory,
-    `${PAUSE_PHASE}.reached`,
-  );
-  // The paused commit writes the marker once or exits; every iteration sleeps.
-  // oxlint-disable-next-line no-await-in-loop -- Polling observes the paused commit in order.
-  while (!(await pathExists(marker,))) {
-    if (exited.done)
-      throw new ConcurrentBenchmarkError(`A commit armed to pause at ${PAUSE_PHASE} exited before writing ${marker}.`,);
-    // oxlint-disable-next-line no-await-in-loop -- Polling observes the paused commit in order.
-    await sleep(MARKER_POLL_MS,);
-  }
-}
-
-/**
- Starts a commit paused after preparation, waits until it prepared, runs a step, then releases it.
-
- @param repository - repository path
-
- @param markerDirectory - fresh marker directory
-
- @param path - committed path
-
- @param message - commit message
-
- @param whilePaused - step run while the commit is paused, returning its own commit when it starts one
-
- @returns both observations: paused commit first
-
- @example
- ```ts
- await withPausedCommit({ repository, markerDirectory, path, message, whilePaused: async () => 'no-commit' });
- ```
- */
-export async function withPausedCommit({
-  repository,
-  markerDirectory,
-  path,
-  message,
-  whilePaused,
-}: Readonly<{
-  repository: string;
-  markerDirectory: string;
-  path: string;
-  message: string;
-  whilePaused: () => Promise<StartedCommit | 'no-commit'>;
-}>,): Promise<readonly CommitObservation[]> {
-  await mkdir(
-    markerDirectory,
-    { recursive: true, },
-  );
-  /**
-   Whether the paused commit exited.
-   */
-  const exited = { done: false, };
-  /**
-   Paused commit, marking its exit.
-   */
-  const paused = (async function runPaused(): Promise<CommitObservation> {
-    /**
-     Paused commit's observation.
-     */
-    const observation = await runCommit({
-    repository,
-    args: commitArgs({
-      path,
-      message,
-    },),
-    env: { CLI_GIT_TEST_ONLY_PHASE_SIGNAL: `${PAUSE_PHASE}:pause:${markerDirectory}`, },
-    },);
-    exited.done = true;
-    return observation;
-  })();
-  await waitForMarker({
-    markerDirectory,
-    exited,
-  },);
-  /**
-   Commit the step started, if any.
-   */
-  const other = await whilePaused();
-  await writeFile(
-    join(
-      markerDirectory,
-      `${PAUSE_PHASE}.release`,
-    ),
-    '',
-  );
-  return other === 'no-commit' ? [await paused,] : await Promise.all([
-    paused,
-    other.started,
-  ],);
-}
-
-/**
- Runs one same-file non-overlapping pair: far-apart lines of one file, the second captured while the first is prepared.
+ Runs one same-file non-overlapping pair: far-apart lines of one file, the second captured while the first is prepared, both released together.
 
  @param repository - repository path
 
@@ -502,15 +343,16 @@ export async function sameFileBatch({
         repository,
         edits: bothEdits,
       },);
-      return {
-        started: runCommit({
-          repository,
-          args: commitArgs({
-            path: SHARED_FILE,
-            message: `second ${String(sequence,)}`,
-          },),
-        },),
-      };
+      // Pausing the second commit too makes both prepared before either lands, so one replays.
+      return await startPausedCommit({
+        repository,
+        markerDirectory: join(
+          markerRoot,
+          `same-file-${String(sequence,)}-second`,
+        ),
+        path: SHARED_FILE,
+        message: `second ${String(sequence,)}`,
+      },);
     },
   },);
   return {

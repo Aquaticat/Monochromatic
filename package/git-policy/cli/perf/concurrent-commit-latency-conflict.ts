@@ -23,16 +23,16 @@ import {
   REAL_GIT,
 } from './concurrent-commit-latency-contracts.ts';
 import {
-  commitArgs,
   runPlans,
-  withPausedCommit,
   writeShared,
 } from './concurrent-commit-latency-batches.ts';
+import { withPausedCommit, } from './concurrent-commit-latency-pause.ts';
 import {
   SHARED_FILE,
   sharedBaselineLines,
 } from './concurrent-commit-latency-repositories.ts';
 import {
+  commitArgs,
   nowMs,
   observeLocks,
 } from './concurrent-commit-latency-process.ts';

@@ -348,3 +348,33 @@ export async function runCommit({
     },) > 0,
   };
 }
+
+/**
+ Explicit-path commit arguments.
+
+ @param path - committed path
+
+ @param message - commit message
+
+ @returns wrapper arguments
+
+ @example
+ ```ts
+ commitArgs({ path: 'a.txt', message: 'x' });
+ ```
+ */
+export function commitArgs({
+  path,
+  message,
+}: Readonly<{
+  path: string;
+  message: string;
+}>,): readonly string[] {
+  return [
+    'commit',
+    '--quiet',
+    `--message=${message}`,
+    '--',
+    path,
+  ];
+}
