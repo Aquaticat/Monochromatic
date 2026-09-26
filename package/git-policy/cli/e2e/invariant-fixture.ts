@@ -16,6 +16,11 @@ import type {
 //region Helpers
 
 /**
+ Digest and commit ID prefix length in diagnostics.
+ */
+const SHORT_DIGEST = 12;
+
+/**
  Renders content for diagnostics.
 
  @param content - content state
@@ -28,7 +33,11 @@ import type {
  ```
  */
 export function describeContent(content: ContentState,): string {
-  return content.state === 'absent' ? 'absent' : `sha256:${content.digest.slice(0, 12,)}`;
+  return content.state === 'absent' ? 'absent' : `sha256:${content.digest
+    .slice(
+      0,
+      SHORT_DIGEST,
+    )}`;
 }
 
 /**
@@ -42,13 +51,16 @@ export function describeContent(content: ContentState,): string {
 
  @example
  ```ts
- sameContent({ state: 'absent' }, { state: 'absent' }); // => true
+ sameContent({ left: { state: 'absent' }, right: { state: 'absent' } }); // => true
  ```
  */
-export function sameContent(
-  left: ContentState,
-  right: ContentState,
-): boolean {
+export function sameContent({
+  left,
+  right,
+}: Readonly<{
+  left: ContentState;
+  right: ContentState;
+}>,): boolean {
   if ((left.state === 'absent') || (right.state === 'absent'))
     return left.state === right.state;
   return left.digest === right.digest;
@@ -75,7 +87,11 @@ function violation({
   subject,
   detail,
 }: Violation,): Violation {
-  return { invariant, subject, detail, };
+  return {
+    invariant,
+    subject,
+    detail,
+  };
 }
 
 //endregion Helpers
@@ -106,19 +122,30 @@ function checkLanding({
   /**
    Subject naming attempt and commit.
    */
-  const subject = `${attempt.label} ${landing.oid.slice(0, 12,)}`;
+  const subject = `${attempt.label} ${landing.oid
+    .slice(
+      0,
+      SHORT_DIGEST,
+    )}`;
   /**
    Paths changed outside the attempt's selection.
    */
-  const outside = landing.changedPaths.filter(function unselected(path,) {
-    return !attempt.selectedPaths.includes(path,);
+  const outside = landing.changedPaths
+    .filter(function unselected(path,) {
+    return !attempt.selectedPaths
+      .includes(path,);
   },);
   /**
    Paths whose landed bytes match no acceptable content.
    */
-  const wrongBytes = landing.paths.filter(function unacceptable(path,) {
-    return !path.acceptable.some(function matches(content,) {
-      return sameContent(content, path.landed,);
+  const wrongBytes = landing.paths
+    .filter(function unacceptable(path,) {
+    return !path.acceptable
+      .some(function matches(content,) {
+      return sameContent({
+        left: content,
+        right: path.landed,
+      },);
     },);
   },);
   /**
@@ -132,44 +159,75 @@ function checkLanding({
   /**
    Candidate violations paired with whether they occurred.
    */
-  const checks: readonly (readonly [boolean, Violation])[] = [
-    [!landing.onExpectedBranch, violation({
+  const checks: readonly (readonly [
+    boolean,
+    Violation
+  ])[] = [
+    [
+      !landing.onExpectedBranch,
+      violation({
       invariant: 'landed-branch',
       subject,
       detail: 'the branch HEAD named at invocation does not reach the landed commit',
-    },),],
-    [outside.length > 0, violation({
+    },),
+    ],
+    [
+      outside.length > 0,
+      violation({
       invariant: 'landed-scope',
       subject,
       detail: `changes unselected paths ${outside.join(', ',)}`,
-    },),],
-    ...wrongBytes.map(function bytesViolation(path,): readonly [boolean, Violation] {
-      return [true, violation({
+    },),
+    ],
+    ...wrongBytes.map(function bytesViolation(path,): readonly [
+      boolean,
+      Violation
+    ] {
+      return [
+        true,
+        violation({
         invariant: 'landed-bytes',
         subject: `${subject} ${path.path}`,
-        detail: `landed ${describeContent(path.landed,)}, accepted ${path.acceptable.map(describeContent,).join(' or ',)}`,
-      },),];
+        detail: `landed ${describeContent(path.landed,)}, accepted ${path.acceptable
+          .map(describeContent,)
+          .join(' or ',)}`,
+      },),
+      ];
     },),
-    [succeeded && attempt.requiresRemote && !landing.remoteContains, violation({
+    [
+      succeeded && attempt.requiresRemote
+        && (!landing.remoteContains),
+      violation({
       invariant: 'remote-contains',
       subject,
       detail: 'the remote branch does not reach the landed commit after exit 0',
-    },),],
-    [hooks.commitMsgTrailer === false, violation({
+    },),
+    ],
+    [
+      hooks.commitMsgTrailer === false,
+      violation({
       invariant: 'commit-msg-hook',
       subject,
       detail: 'the landed message lacks the commit-msg hook trailer',
-    },),],
-    [succeeded && (hooks.postCommitRuns !== undefined) && (hooks.postCommitRuns !== 1), violation({
+    },),
+    ],
+    [
+      succeeded && (hooks.postCommitRuns !== undefined)
+        && (hooks.postCommitRuns !== 1),
+      violation({
       invariant: 'post-commit-once',
       subject,
       detail: `post-commit ran ${String(hooks.postCommitRuns,)} times`,
-    },),],
-    [hooks.signatureValid === false, violation({
+    },),
+    ],
+    [
+      hooks.signatureValid === false,
+      violation({
       invariant: 'signature-valid',
       subject,
       detail: 'git verify-commit rejected the landed commit',
-    },),],
+    },),
+    ],
   ];
   return checks.flatMap(function occurred([failed, found,],) {
     return failed ? [found,] : [];
@@ -194,7 +252,8 @@ function checkAttempt(attempt: AttemptObservation,): readonly Violation[] {
   /**
    Number of history commits carrying the token.
    */
-  const count = attempt.landings.length;
+  const count = attempt.landings
+    .length;
   /**
    Landing-count problem for this attempt's outcome.
    */
@@ -204,20 +263,35 @@ function checkAttempt(attempt: AttemptObservation,): readonly Violation[] {
     if (attempt.exitCode === 0)
       return count === 1 ? '' : `exited 0 but landed ${String(count,)} times`;
     if (attempt.landedEventOid !== undefined) {
-      return (count === 1) && (attempt.landings[0]?.oid === attempt.landedEventOid)
+      return (count === 1) && (attempt.landings[0]
+        ?.oid
+        === attempt.landedEventOid)
         ? ''
         : `commit-landed names ${attempt.landedEventOid} but history has ${String(count,)} landings`;
     }
     return count === 0 ? '' : `exited ${String(attempt.exitCode,)} without commit-landed but landed ${String(count,)} times`;
   })();
   return [
-    ...(countProblem === '' ? [] : [violation({ invariant: 'landed-once', subject: attempt.label, detail: countProblem, },),]),
-    ...attempt.eventIssues.map(function eventViolation(issue,) {
-      return violation({ invariant: 'exit-events', subject: attempt.label, detail: issue, },);
+    ...(countProblem === '' ? [] : [violation({
+      invariant: 'landed-once',
+      subject: attempt.label,
+      detail: countProblem,
+    },),]),
+    ...attempt.eventIssues
+      .map(function eventViolation(issue,) {
+      return violation({
+        invariant: 'exit-events',
+        subject: attempt.label,
+        detail: issue,
+      },);
     },),
     ...(count === 1
-      ? attempt.landings.flatMap(function landingViolations(landing,) {
-        return checkLanding({ attempt, landing, },);
+      ? attempt.landings
+        .flatMap(function landingViolations(landing,) {
+        return checkLanding({
+          attempt,
+          landing,
+        },);
       },)
       : []),
   ];
@@ -241,8 +315,10 @@ function checkAttempt(attempt: AttemptObservation,): readonly Violation[] {
  */
 export function checkInvariants(observation: RunObservation,): readonly Violation[] {
   return [
-    ...observation.attempts.flatMap(checkAttempt,),
-    ...observation.auxiliaries.flatMap(function auxiliaryViolations(auxiliary,) {
+    ...observation.attempts
+      .flatMap(checkAttempt,),
+    ...observation.auxiliaries
+      .flatMap(function auxiliaryViolations(auxiliary,) {
       return [
         ...(auxiliary.mustSucceed && (auxiliary.exitCode !== 0)
           ? [violation({
@@ -251,13 +327,22 @@ export function checkInvariants(observation: RunObservation,): readonly Violatio
             detail: `exited ${String(auxiliary.exitCode,)}`,
           },),]
           : []),
-        ...auxiliary.eventIssues.map(function eventViolation(issue,) {
-          return violation({ invariant: 'exit-events', subject: auxiliary.label, detail: issue, },);
+        ...auxiliary.eventIssues
+          .map(function eventViolation(issue,) {
+          return violation({
+            invariant: 'exit-events',
+            subject: auxiliary.label,
+            detail: issue,
+          },);
         },),
       ];
     },),
-    ...observation.worktree.flatMap(function worktreeViolation(entry,) {
-      return sameContent(entry.expected, entry.actual,)
+    ...observation.worktree
+      .flatMap(function worktreeViolation(entry,) {
+      return sameContent({
+        left: entry.expected,
+        right: entry.actual,
+      },)
         ? []
         : [violation({
           invariant: 'worktree-preserved',
@@ -265,7 +350,8 @@ export function checkInvariants(observation: RunObservation,): readonly Violatio
           detail: `expected ${describeContent(entry.expected,)}, found ${describeContent(entry.actual,)}`,
         },),];
     },),
-    ...observation.staged.flatMap(function stagedViolation(entry,) {
+    ...observation.staged
+      .flatMap(function stagedViolation(entry,) {
       if (entry.expectedByHarness)
         return [];
       return [violation({
@@ -276,20 +362,38 @@ export function checkInvariants(observation: RunObservation,): readonly Violatio
           : 'the real index differs from HEAD without a harness write',
       },),];
     },),
-    ...observation.leftovers.map(function leftoverViolation(leftover,) {
-      return violation({ invariant: 'no-leftovers', subject: leftover, detail: 'remains after the run', },);
+    ...observation.leftovers
+      .map(function leftoverViolation(leftover,) {
+      return violation({
+        invariant: 'no-leftovers',
+        subject: leftover,
+        detail: 'remains after the run',
+      },);
     },),
-    ...((observation.fsck.exitCode === 0) && (observation.fsck.output.trim() === '')
+    ...((observation.fsck
+      .exitCode
+      === 0) && (observation.fsck
+        .output
+        .trim()
+        === '')
       ? []
       : [violation({
         invariant: 'fsck-clean',
         subject: 'repository',
-        detail: `exit ${String(observation.fsck.exitCode,)}: ${observation.fsck.output.trim()}`,
+        detail: `exit ${String(observation.fsck
+          .exitCode,)}: ${observation.fsck
+            .output
+            .trim()}`,
       },),]),
-    ...observation.expectations.flatMap(function expectationViolation(expectation,) {
+    ...observation.expectations
+      .flatMap(function expectationViolation(expectation,) {
       return expectation.holds
         ? []
-        : [violation({ invariant: expectation.name, subject: 'scenario', detail: expectation.detail, },),];
+        : [violation({
+          invariant: expectation.name,
+          subject: 'scenario',
+          detail: expectation.detail,
+        },),];
     },),
   ];
 }

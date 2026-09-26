@@ -44,7 +44,7 @@ import {
  change({ kind: 'add', path: 0 });
  ```
  */
-function change(fields: Pick<ShapeChange, 'kind' | 'path'> & Partial<ShapeChange>,): ShapeChange {
+function change(fields: Pick<ShapeChange, 'kind' | 'path'> & Readonly<{ from?: number; mode?: ShapeChange['mode']; size?: number; binary?: boolean; }>,): ShapeChange {
   return { mode: 'file', size: 100, binary: false, added: 2, deleted: 1, ...fields, };
 }
 

@@ -121,20 +121,46 @@ export async function installPrograms(toolsDir: string,): Promise<Readonly<{
   hook: string;
   editor: string;
 }>> {
-  await mkdir(toolsDir, { recursive: true, },);
+  await mkdir(
+    toolsDir,
+    { recursive: true, },
+  );
   /**
    Shared hook program path.
    */
-  const hook = join(toolsDir, 'e2e-hook.cjs',);
+  const hook = join(
+    toolsDir,
+    'e2e-hook.cjs',
+  );
   /**
    Holding editor path.
    */
-  const editor = join(toolsDir, 'holding-editor.cjs',);
-  await writeFile(hook, HOOK_PROGRAM, { mode: EXECUTABLE_MODE, },);
-  await writeFile(editor, HOLDING_EDITOR_PROGRAM, { mode: EXECUTABLE_MODE, },);
-  await chmod(hook, EXECUTABLE_MODE,);
-  await chmod(editor, EXECUTABLE_MODE,);
-  return { hook, editor, };
+  const editor = join(
+    toolsDir,
+    'holding-editor.cjs',
+  );
+  await writeFile(
+    hook,
+    HOOK_PROGRAM,
+    { mode: EXECUTABLE_MODE, },
+  );
+  await writeFile(
+    editor,
+    HOLDING_EDITOR_PROGRAM,
+    { mode: EXECUTABLE_MODE, },
+  );
+  await chmod(
+    hook,
+    EXECUTABLE_MODE,
+  );
+  await chmod(
+    editor,
+    EXECUTABLE_MODE,
+  );
+  return {
+    hook,
+    editor,
+  };
 }
 
 /**
@@ -160,18 +186,27 @@ export async function installHookdirHooks({
   hookProgram: string;
   events: readonly HookEvent[];
 }>,): Promise<void> {
-  await mkdir(hooksDir, { recursive: true, },);
+  await mkdir(
+    hooksDir,
+    { recursive: true, },
+  );
   await Promise.all(events.map(async function installHook(event,) {
     /**
      Hook path Git executes for the event.
      */
-    const hookPath = join(hooksDir, event,);
+    const hookPath = join(
+      hooksDir,
+      event,
+    );
     await writeFile(
       hookPath,
       `#!/usr/bin/env node\nprocess.argv.splice(2, 0, ${JSON.stringify(event,)});\nrequire(${JSON.stringify(hookProgram,)});\n`,
       { mode: EXECUTABLE_MODE, },
     );
-    await chmod(hookPath, EXECUTABLE_MODE,);
+    await chmod(
+      hookPath,
+      EXECUTABLE_MODE,
+    );
   },),);
 }
 
@@ -203,8 +238,17 @@ export function configHookArguments({
      */
     const name = `e2e-${event}`;
     return [
-      ['config', `hook.${name}.command`, `${hookProgram} ${event}`,],
-      ['config', '--add', `hook.${name}.event`, event,],
+      [
+        'config',
+        `hook.${name}.command`,
+        `${hookProgram} ${event}`,
+      ],
+      [
+        'config',
+        '--add',
+        `hook.${name}.event`,
+        event,
+      ],
     ];
   },);
 }

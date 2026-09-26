@@ -25,7 +25,10 @@ export type SeededRandom = Readonly<{
   /**
    Returns an integer in the inclusive range.
    */
-  integer: (range: Readonly<{ min: number; max: number; }>,) => number;
+  integer: (range: Readonly<{
+    min: number;
+    max: number
+  }>,) => number;
   /**
    Returns one element of a non-empty array.
    */
@@ -71,7 +74,7 @@ export class SeededRandomError extends Error {
 /**
  Largest seed value plus one; seeds are unsigned 32-bit integers.
  */
-const SEED_MODULUS = 2 ** 32;
+export const SEED_MODULUS = 4_294_967_296;
 
 /**
  FNV-1a 32-bit offset basis.
@@ -133,12 +136,28 @@ export function deriveSeed({
    Text hashed so equal seeds and labels always collide.
    */
   const text = `${String(seed,)}:${label}`;
-  return Array.from({ length: text.length, }, function codeUnit(_unused, index,) {
-    return text.charCodeAt(index,);
-  },).reduce(function fnvStep(hash, unit,) {
-    // oxlint-disable-next-line no-bitwise -- FNV-1a is defined over 32-bit XOR and multiplication.
-    return Math.imul(hash ^ unit, FNV_PRIME,) >>> 0;
-  }, FNV_OFFSET,);
+  return Array.from(
+    { length: text.length, },
+    function codeUnit(
+      _unused,
+      index,
+    ) {
+    // Labels are ASCII, so code points and code units coincide.
+    return text.codePointAt(index,) ?? 0;
+  },
+  )
+    .reduce(
+      function fnvStep(
+        hash,
+        unit,
+      ) {
+    return Math.imul(
+      hash ^ unit,
+      FNV_PRIME,
+    ) >>> 0;
+  },
+      FNV_OFFSET,
+    );
 }
 
 /**
@@ -156,7 +175,8 @@ export function deriveSeed({
  ```
  */
 export function createSeededRandom(seed: number,): SeededRandom {
-  if (!Number.isSafeInteger(seed,) || (seed < 0) || (seed >= SEED_MODULUS))
+  if ((!Number.isSafeInteger(seed,)) || (seed < 0)
+    || (seed >= SEED_MODULUS))
     throw new SeededRandomError(`seed must be an unsigned 32-bit integer, got ${String(seed,)}`,);
   /**
    Generator state advanced by every draw.
@@ -173,23 +193,29 @@ export function createSeededRandom(seed: number,): SeededRandom {
    ```
    */
   function next(): number {
-    /* oxlint-disable no-bitwise -- Mulberry32 is defined over 32-bit integer operations. */
     state.value = (state.value + MULBERRY_INCREMENT) >>> 0;
     /**
      First mixing round.
      */
-    const first = Math.imul(state.value ^ (state.value >>> SHIFT_A), state.value | 1,);
+    const first = Math.imul(
+      state.value ^ (state.value >>> SHIFT_A),
+      state.value | 1,
+    );
     /**
      Second mixing round.
      */
-    const second = first ^ (first + Math.imul(first ^ (first >>> SHIFT_B), first | MIX_MULTIPLIER,));
+    const second = first ^ (first + Math.imul(
+      first ^ (first >>> SHIFT_B),
+      first | MIX_MULTIPLIER,
+    ));
     return ((second ^ (second >>> SHIFT_C)) >>> 0) / SEED_MODULUS;
-    /* oxlint-enable no-bitwise */
   }
   /**
    Draws an inclusive integer.
 
-   @param range - inclusive bounds
+   @param min - smallest result
+
+   @param max - largest result
 
    @returns integer within bounds
 
@@ -201,8 +227,12 @@ export function createSeededRandom(seed: number,): SeededRandom {
   function integer({
     min,
     max,
-  }: Readonly<{ min: number; max: number; }>,): number {
-    if (!Number.isSafeInteger(min,) || !Number.isSafeInteger(max,) || (max < min))
+  }: Readonly<{
+    min: number;
+    max: number
+  }>,): number {
+    if ((!Number.isSafeInteger(min,)) || (!Number.isSafeInteger(max,))
+      || (max < min))
       throw new SeededRandomError(`invalid integer range ${String(min,)}..${String(max,)}`,);
     return min + Math.floor(next() * ((max - min) + 1),);
   }
@@ -214,17 +244,29 @@ export function createSeededRandom(seed: number,): SeededRandom {
       /**
        Chosen element.
        */
-      const chosen = items[integer({ min: 0, max: items.length - 1, },)];
+      const chosen = items[integer({
+        min: 0,
+        max: items.length - 1,
+      },)];
       if ((items.length === 0) || (chosen === undefined))
         throw new SeededRandomError('cannot pick from an empty array',);
       return chosen;
     },
     shuffle<const Element,>(items: readonly Element[],): readonly Element[] {
       return items
-        .map(function keyed(item,) {
-          return { key: next(), item, };
+        .map(function keyed(item,): Readonly<{
+          key: number;
+          item: Element
+        }> {
+          return {
+            key: next(),
+            item,
+          };
         },)
-        .toSorted(function byKey(left, right,) {
+        .toSorted(function byKey(
+          left,
+          right,
+        ) {
           return left.key - right.key;
         },)
         .map(function unkeyed(entry,) {
@@ -232,7 +274,10 @@ export function createSeededRandom(seed: number,): SeededRandom {
         },);
     },
     fork(label: string,): SeededRandom {
-      return createSeededRandom(deriveSeed({ seed, label, },),);
+      return createSeededRandom(deriveSeed({
+        seed,
+        label,
+      },),);
     },
   };
 }
@@ -269,14 +314,21 @@ export function parseSeed({
   generated: boolean;
 }> {
   if (text.trim() === '')
-    return { seed: fresh(), generated: true, };
+    return {
+      seed: fresh(),
+      generated: true,
+    };
   /**
    Parsed decimal seed.
    */
   const seed = Number(text.trim(),);
-  if (!Number.isSafeInteger(seed,) || (seed < 0) || (seed >= SEED_MODULUS))
+  if ((!Number.isSafeInteger(seed,)) || (seed < 0)
+    || (seed >= SEED_MODULUS))
     throw new SeededRandomError(`seed must be a decimal unsigned 32-bit integer, got ${text}`,);
-  return { seed, generated: false, };
+  return {
+    seed,
+    generated: false,
+  };
 }
 
 //endregion Seed text

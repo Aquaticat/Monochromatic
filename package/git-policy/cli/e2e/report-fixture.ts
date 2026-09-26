@@ -14,6 +14,11 @@ import type { ScenarioResult, } from './scenario-model-fixture.ts';
 const STATUS_WIDTH = 5;
 
 /**
+ Detail lines shown per result, enough for an error's message and top frames.
+ */
+const MAX_DETAIL_LINES = 8;
+
+/**
  Formats one result with its violations.
 
  @param result - scenario result
@@ -29,15 +34,26 @@ export function formatResult(result: ScenarioResult,): readonly string[] {
   /**
    Attempt exit summary.
    */
-  const attempts = result.attempts.map(function attemptSummary(attempt,) {
+  const attempts = result.attempts
+    .map(function attemptSummary(attempt,) {
     return `${attempt.label}=${attempt.killed ? 'killed' : String(attempt.exitCode,)}`;
-  },).join(' ',);
+  },)
+    .join(' ',);
   return [
-    `${result.status.toUpperCase().padEnd(STATUS_WIDTH,)} git ${result.gitVersion} ${result.name} (${String(result.durationMs,)} ms)${attempts === '' ? '' : ` exits: ${attempts}`}`,
-    ...result.violations.map(function violationLine(violation,) {
+    `${result.status
+      .toUpperCase()
+      .padEnd(STATUS_WIDTH,)} git ${result.gitVersion} ${result.name} (${String(result.durationMs,)} ms)${attempts === '' ? '' : ` exits: ${attempts}`}`,
+    ...result.violations
+      .map(function violationLine(violation,) {
       return `      ${violation.invariant} [${violation.subject}]: ${violation.detail}`;
     },),
-    ...(result.detail === undefined ? [] : result.detail.split('\n',).slice(0, 8,).map(function detailLine(line,) {
+    ...(result.detail === undefined ? [] : result.detail
+      .split('\n',)
+      .slice(
+        0,
+        MAX_DETAIL_LINES,
+      )
+      .map(function detailLine(line,) {
       return `      ${line}`;
     },)),
   ];
@@ -59,18 +75,26 @@ export function summarize(results: readonly ScenarioResult[],): readonly string[
   /**
    Count per group and status.
    */
-  const counts = results.reduce(function count(map, result,) {
-    /**
-     Group and status key.
-     */
-    const key = `${result.group} ${result.status}`;
-    return new Map([...map, [key, (map.get(key,) ?? 0) + 1,],],);
-  }, new Map<string, number>(),);
+  const counts = [...Map.groupBy(
+    results,
+    function byGroupAndStatus(result,) {
+    return `${result.group} ${result.status}`;
+  },
+  ),].map(function countEntry([key, grouped,],) {
+    return [
+      key,
+      grouped.length,
+    ] as const;
+  },);
   return [
     `summary: ${String(results.length,)} scenario runs`,
-    ...[...counts,].toSorted(function byKey([left,], [right,],) {
+    ...counts.toSorted(function byKey(
+      [left,],
+      [right,],
+    ) {
       return left.localeCompare(right,);
-    },).map(function countLine([key, value,],) {
+    },)
+      .map(function countLine([key, value,],) {
       return `  ${key}: ${String(value,)}`;
     },),
   ];

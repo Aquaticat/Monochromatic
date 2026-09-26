@@ -78,7 +78,9 @@ await describe({
           fn: async () => {
             const input = [1, 2, 3, 4, 5, 6,] as const;
             const shuffled = createSeededRandom(9,).shuffle(input,);
-            expect(shuffled.toSorted(),).toEqual([...input,],);
+            expect(shuffled.toSorted(function ascending(left, right,) {
+              return left - right;
+            },),).toEqual([...input,],);
             expect(input,).toEqual([1, 2, 3, 4, 5, 6,],);
           },
         },),
@@ -184,7 +186,9 @@ await describe({
               return JSON.stringify(interleaveSequences({ random: createSeededRandom(seed,), lengths: [2, 2,], },),);
             },);
             expect(new Set(orders,).size,).toBeGreaterThan(1,);
-            expect(JSON.stringify(interleaveSequences({ random: createSeededRandom(4,), lengths: [2, 2,], },),),).toBe(orders[4],);
+            expect(
+              JSON.stringify(interleaveSequences({ random: createSeededRandom(4,), lengths: [2, 2,], },),),
+            ).toBe(orders[4],);
           },
         },),
         it({

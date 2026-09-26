@@ -12,6 +12,8 @@ import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import { setTimeout as sleep, } from 'node:timers/promises';
 
+import { caughtValueStack, } from '@monochromatic-dev/module-caught-value/ts';
+
 import type { CommitShapeTrace, } from './commit-shape-trace-fixture.ts';
 import type {
   RunObservation,
@@ -144,7 +146,11 @@ export type ScenarioResult = Readonly<{
   /**
    Attempt outcomes for the report.
    */
-  attempts: readonly Readonly<{ label: string; exitCode: number; killed: boolean; }>[];
+  attempts: readonly Readonly<{
+    label: string;
+    exitCode: number;
+    killed: boolean
+  }>[];
 }>;
 
 //endregion Types
@@ -176,14 +182,23 @@ export function allSucceeded({
    Attempts that did not exit 0.
    */
   const failed = attempts.filter(function nonZero(attempt,) {
-    return attempt.outcome.exitCode !== 0;
+    return attempt.outcome
+      .exitCode
+      !== 0;
   },);
   return {
     name,
     holds: failed.length === 0,
     detail: failed.map(function describe(attempt,) {
-      return `${attempt.label} exited ${String(attempt.outcome.exitCode,)}: ${attempt.outcome.stderr.trim().split('\n',).slice(-2,).join(' | ',)}`;
-    },).join('; ',),
+      return `${attempt.label} exited ${String(attempt.outcome
+        .exitCode,)}: ${attempt.outcome
+          .stderr
+          .trim()
+          .split('\n',)
+          .slice(-2,)
+          .join(' | ',)}`;
+    },)
+      .join('; ',),
   };
 }
 
@@ -207,22 +222,36 @@ const SCENARIO_TIMEOUT_MS = 180_000;
 
  @example
  ```ts
- compareVersions('2.40.0', '2.54.0') < 0; // => true
+ compareVersions({ left: '2.40.0', right: '2.54.0' }) < 0; // => true
  ```
  */
-export function compareVersions(
-  left: string,
-  right: string,
-): number {
+export function compareVersions({
+  left,
+  right,
+}: Readonly<{
+  left: string;
+  right: string;
+}>,): number {
   /**
    Numeric parts of both versions.
    */
-  const [leftParts, rightParts,] = [left, right,].map(function parts(version,) {
-    return version.split('.',).map(Number,);
+  const [leftParts, rightParts,] = [
+    left,
+    right,
+  ].map(function parts(version,) {
+    return version.split('.',)
+      .map(Number,);
   },);
-  return (leftParts ?? []).reduce(function firstDifference(difference, part, index,) {
+  return (leftParts ?? []).reduce(
+    function firstDifference(
+      difference,
+      part,
+      index,
+    ) {
     return difference === 0 ? part - ((rightParts ?? [])[index] ?? 0) : difference;
-  }, 0,);
+  },
+    0,
+  );
 }
 
 /**
@@ -247,9 +276,16 @@ export function judge({
 }: Readonly<{
   definition: Pick<ScenarioDefinition, 'expectedViolations'>;
   violations: readonly Violation[];
-}>,): Readonly<{ passed: boolean; violations: readonly Violation[]; detail?: string; }> {
+}>,): Readonly<{
+  passed: boolean;
+  violations: readonly Violation[];
+  detail?: string
+}> {
   if (definition.expectedViolations === undefined)
-    return { passed: violations.length === 0, violations, };
+    return {
+      passed: violations.length === 0,
+      violations,
+    };
   /**
    Distinct violated invariant names.
    */
@@ -259,17 +295,26 @@ export function judge({
   /**
    Required names, sorted for comparison.
    */
-  const expected = definition.expectedViolations.toSorted();
+  const expected = definition.expectedViolations
+    .toSorted();
   /**
    Whether the checker detected exactly the planted violations.
    */
   const passed = JSON.stringify(found,) === JSON.stringify(expected,);
   return passed
-    ? { passed, violations: [], detail: `detected planted violations: ${found.join(', ',)}`, }
+    ? {
+      passed,
+      violations: [],
+      detail: `detected planted violations: ${found.join(', ',)}`,
+    }
     : {
       passed,
       violations: [
-        { invariant: 'positive-control', subject: 'checker', detail: `expected ${expected.join(', ',)}; found ${found.join(', ',)}`, },
+        {
+          invariant: 'positive-control',
+          subject: 'checker',
+          detail: `expected ${expected.join(', ',)}; found ${found.join(', ',)}`,
+        },
         ...violations,
       ],
     };
@@ -315,18 +360,42 @@ export async function runScenario({
   /**
    Result fields shared by every outcome.
    */
-  const base = { name: definition.name, group: definition.group, gitVersion, };
-  if ((definition.minimumGit !== undefined) && (compareVersions(gitVersion, definition.minimumGit,) < 0))
-    return { ...base, status: 'skip', violations: [], durationMs: 0, detail: `requires Git ${definition.minimumGit}`, attempts: [], };
+  const base = {
+    name: definition.name,
+    group: definition.group,
+    gitVersion,
+  };
+  if ((definition.minimumGit !== undefined) && (compareVersions({
+    left: gitVersion,
+    right: definition.minimumGit,
+  },) < 0))
+    return {
+      ...base,
+      status: 'skip',
+      violations: [],
+      durationMs: 0,
+      detail: `requires Git ${definition.minimumGit}`,
+      attempts: [],
+    };
   /**
    Scenario-local seeded source, independent of filters.
    */
-  const random = createSeededRandom(deriveSeed({ seed, label: `${definition.name}@${gitVersion}`, },),);
+  const random = createSeededRandom(deriveSeed({
+    seed,
+    label: `${definition.name}@${gitVersion}`,
+  },),);
   /**
    Scenario root.
    */
-  const root = join(workRoot, gitVersion, definition.name,);
-  await mkdir(root, { recursive: true, },);
+  const root = join(
+    workRoot,
+    gitVersion,
+    definition.name,
+  );
+  await mkdir(
+    root,
+    { recursive: true, },
+  );
   /**
    Ledger shared by workload and observation.
    */
@@ -339,7 +408,11 @@ export async function runScenario({
     /**
      Fresh repositories.
      */
-    const repository = await createScenarioRepository({ root, gitVersion, options, },);
+    const repository = await createScenarioRepository({
+      root,
+      gitVersion,
+      options,
+    },);
     /**
      Cancels the timeout once the workload settles.
      */
@@ -349,7 +422,13 @@ export async function runScenario({
      */
     const workload = (async function settleWorkload(): Promise<Readonly<{ expectations: Expectations; }> | Readonly<{ error: unknown; }>> {
       try {
-        return { expectations: await definition.run({ repository, ledger, random: random.fork('workload',), trace, gitVersion, },), };
+        return { expectations: await definition.run({
+          repository,
+          ledger,
+          random: random.fork('workload',),
+          trace,
+          gitVersion,
+        },), };
       }
       catch (error: unknown) {
         return { error, };
@@ -360,7 +439,11 @@ export async function runScenario({
      */
     const timeout = (async function scenarioTimeout(): Promise<'timeout' | 'cancelled'> {
       try {
-        await sleep(SCENARIO_TIMEOUT_MS, undefined, { signal: controller.signal, },);
+        await sleep(
+          SCENARIO_TIMEOUT_MS,
+          undefined,
+          { signal: controller.signal, },
+        );
         return 'timeout';
       }
       catch (error: unknown) {
@@ -372,13 +455,16 @@ export async function runScenario({
     /**
      First settlement.
      */
-    const first = await Promise.race([workload, timeout,],);
+    const first = await Promise.race([
+      workload,
+      timeout,
+    ],);
     controller.abort();
     if ((typeof first) === 'string') {
       killActiveGroups();
       throw new Error(`scenario exceeded ${String(SCENARIO_TIMEOUT_MS,)} ms; killed its process groups`,);
     }
-    if ((typeof first) === 'object' && ('error' in first))
+    if (((typeof first) === 'object') && ('error' in first))
       throw first.error;
     /**
      Scenario-specific expectations.
@@ -408,15 +494,23 @@ export async function runScenario({
     /**
      Pass decision, inverted for positive controls.
      */
-    const verdict = judge({ definition, violations, },);
+    const verdict = judge({
+      definition,
+      violations,
+    },);
     return {
       ...base,
       status: verdict.passed ? 'pass' : 'fail',
       violations: verdict.violations,
       ...(verdict.detail === undefined ? {} : { detail: verdict.detail, }),
       durationMs: Math.round(performance.now() - startedAt,),
-      attempts: observation.attempts.map(function summarize(attempt,) {
-        return { label: attempt.label, exitCode: attempt.exitCode, killed: attempt.killed, };
+      attempts: observation.attempts
+        .map(function summarize(attempt,) {
+        return {
+          label: attempt.label,
+          exitCode: attempt.exitCode,
+          killed: attempt.killed,
+        };
       },),
     };
   }
@@ -427,9 +521,16 @@ export async function runScenario({
       status: 'error',
       violations: [],
       durationMs: Math.round(performance.now() - startedAt,),
-      detail: Error.isError(error,) ? (error.stack ?? error.message) : String(error,),
-      attempts: ledger.snapshot().attempts.map(function summarize(attempt,) {
-        return { label: attempt.label, exitCode: attempt.outcome.exitCode, killed: attempt.killed, };
+      detail: caughtValueStack(error,),
+      attempts: ledger.snapshot()
+        .attempts
+        .map(function summarize(attempt,) {
+        return {
+          label: attempt.label,
+          exitCode: attempt.outcome
+            .exitCode,
+          killed: attempt.killed,
+        };
       },),
     };
   }

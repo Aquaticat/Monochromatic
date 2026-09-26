@@ -186,12 +186,18 @@ export function startProcess(spec: CommandSpec,): RunningProcess {
       cwd: spec.cwd,
       env: spec.env,
       detached: true,
-      stdio: [spec.input === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe',],
+      stdio: [
+        spec.input === undefined ? 'ignore' : 'pipe',
+        'pipe',
+        'pipe',
+      ],
     },
   );
-  if ((child.pid === undefined) || (child.stdout === null) || (child.stderr === null))
+  if ((child.pid === undefined) || (child.stdout === null)
+    || (child.stderr === null))
     throw new FixtureCommandError(`could not start ${spec.command}`,);
-  child.stdin?.end(spec.input,);
+  child.stdin
+    ?.end(spec.input,);
   /**
    Group leader PID.
    */
@@ -199,7 +205,10 @@ export function startProcess(spec: CommandSpec,): RunningProcess {
   /**
    Stream collection started before settlement.
    */
-  const streams = Promise.all([consumeText(child.stdout,), consumeText(child.stderr,),],);
+  const streams = Promise.all([
+    consumeText(child.stdout,),
+    consumeText(child.stderr,),
+  ],);
   /**
    Sends `SIGKILL` to the child's process group.
 
@@ -210,11 +219,15 @@ export function startProcess(spec: CommandSpec,): RunningProcess {
    */
   function killGroup(): void {
     try {
-      process.kill(-pid, 'SIGKILL',);
+      process.kill(
+        -pid,
+        'SIGKILL',
+      );
     }
     catch (error: unknown) {
       // ESRCH: the group already exited, which is the state killing aims for.
-      if (!(Error.isError(error,) && ('code' in error) && (error.code === 'ESRCH')))
+      if (!(Error.isError(error,) && ('code' in error)
+        && (error.code === 'ESRCH')))
         throw error;
     }
   }
@@ -226,7 +239,10 @@ export function startProcess(spec: CommandSpec,): RunningProcess {
    Settlement with captured output.
    */
   const outcome = (async function settle(): Promise<ProcessOutcome> {
-    await once(child, 'close',);
+    await once(
+      child,
+      'close',
+    );
     state.settled = true;
     activeGroups.delete(killGroup,);
     /**
@@ -234,7 +250,7 @@ export function startProcess(spec: CommandSpec,): RunningProcess {
      */
     const [stdout, stderr,] = await streams;
     return {
-      exitCode: child.exitCode ?? -1,
+      exitCode: child.exitCode ?? (-1),
       ...(child.signalCode === null ? {} : { signal: child.signalCode, }),
       stdout,
       stderr,
@@ -265,7 +281,8 @@ export function startProcess(spec: CommandSpec,): RunningProcess {
  ```
  */
 export async function runProcess(spec: CommandSpec,): Promise<ProcessOutcome> {
-  return await startProcess(spec,).outcome;
+  return await startProcess(spec,)
+    .outcome;
 }
 
 /**
@@ -289,7 +306,8 @@ export async function runChecked(spec: CommandSpec,): Promise<string> {
   const outcome = await runProcess(spec,);
   if (outcome.exitCode !== 0) {
     throw new FixtureCommandError(
-      `${spec.command} ${spec.args.join(' ',)} exited ${String(outcome.exitCode,)}\n${outcome.stderr}${outcome.stdout}`,
+      `${spec.command} ${spec.args
+        .join(' ',)} exited ${String(outcome.exitCode,)}\n${outcome.stderr}${outcome.stdout}`,
     );
   }
   return outcome.stdout;
@@ -313,18 +331,37 @@ export async function runBytes(spec: CommandSpec,): Promise<Buffer> {
   /**
    Child with binary-safe output capture.
    */
-  const child = spawn(spec.command, [...spec.args,], { cwd: spec.cwd, env: spec.env, stdio: ['ignore', 'pipe', 'pipe',], },);
+  const child = spawn(
+    spec.command,
+    [...spec.args,],
+    {
+      cwd: spec.cwd,
+      env: spec.env,
+      stdio: [
+        'ignore',
+        'pipe',
+        'pipe',
+      ],
+    },
+  );
   /**
    Binary-safe collection started before settlement.
    */
-  const streams = Promise.all([consumeBuffer(child.stdout,), consumeText(child.stderr,),],);
-  await once(child, 'close',);
+  const streams = Promise.all([
+    consumeBuffer(child.stdout,),
+    consumeText(child.stderr,),
+  ],);
+  await once(
+    child,
+    'close',
+  );
   /**
    Collected output and diagnostic.
    */
   const [stdout, stderr,] = await streams;
   if (child.exitCode !== 0)
-    throw new FixtureCommandError(`${spec.command} ${spec.args.join(' ',)} exited ${String(child.exitCode,)}\n${stderr}`,);
+    throw new FixtureCommandError(`${spec.command} ${spec.args
+      .join(' ',)} exited ${String(child.exitCode,)}\n${stderr}`,);
   return stdout;
 }
 
@@ -355,7 +392,8 @@ export async function pathExists(path: string,): Promise<boolean> {
     return true;
   }
   catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ENOENT'))
       return false;
     throw error;
   }
@@ -419,10 +457,14 @@ export async function waitForMarker({
  */
 export async function readOptionalText(path: string,): Promise<string> {
   try {
-    return await readFile(path, 'utf8',);
+    return await readFile(
+      path,
+      'utf8',
+    );
   }
   catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ENOENT'))
       return '';
     throw error;
   }

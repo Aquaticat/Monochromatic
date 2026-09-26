@@ -116,7 +116,10 @@ export type WorkloadLedger = Readonly<{
   /**
    Marks or clears a path the harness deliberately left staged.
    */
-  recordStaged: (entry: Readonly<{ path: string; staged: boolean; }>,) => void;
+  recordStaged: (entry: Readonly<{
+    path: string;
+    staged: boolean
+  }>,) => void;
   /**
    Adds a finished attempt.
    */
@@ -197,9 +200,15 @@ export function createLedger(): WorkloadLedger {
   const auxiliaries: AuxiliaryRecord[] = [];
   return {
     recordWorktree(entry: CapturedPath,): void {
-      worktree.set(entry.path, contentOf(entry.bytes,),);
+      worktree.set(
+        entry.path,
+        contentOf(entry.bytes,),
+      );
     },
-    recordStaged(entry: Readonly<{ path: string; staged: boolean; }>,): void {
+    recordStaged(entry: Readonly<{
+      path: string;
+      staged: boolean
+    }>,): void {
       if (entry.staged)
         staged.add(entry.path,);
       else

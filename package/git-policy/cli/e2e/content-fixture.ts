@@ -39,12 +39,22 @@ export const MAX_TEXT_BYTES = 32_768;
 /**
  Largest synthesized binary size in bytes.
  */
-export const MAX_BINARY_BYTES = 8192;
+export const MAX_BINARY_BYTES = 8_192;
 
 /**
  Average synthetic line length used to turn byte sizes into line counts.
  */
 const AVERAGE_LINE_BYTES = 40;
+
+/**
+ Share of synthetic words that are numbers.
+ */
+const NUMBER_WORD_SHARE = 0.25;
+
+/**
+ Largest number word.
+ */
+const NUMBER_WORD_MAX = 999;
 
 /**
  Largest byte value.
@@ -68,9 +78,19 @@ const BYTE_MAX = 255;
  ```
  */
 export function synthesizeLine(random: SeededRandom,): string {
-  return Array.from({ length: random.integer({ min: 2, max: 7, },), }, function word() {
-    return random.next() < 1 / 4 ? String(random.integer({ min: 0, max: 999, },),) : random.pick(WORDS,);
-  },).join(' ',);
+  return Array.from(
+    { length: random.integer({
+      min: 2,
+      max: 7,
+    },), },
+    function word() {
+    return random.next() < NUMBER_WORD_SHARE ? String(random.integer({
+      min: 0,
+      max: NUMBER_WORD_MAX,
+    },),) : random.pick(WORDS,);
+  },
+  )
+    .join(' ',);
 }
 
 /**
@@ -106,7 +126,10 @@ export function splitLines(bytes: Buffer,): readonly string[] {
    Decoded text.
    */
   const text = bytes.toString('utf8',);
-  return (text.endsWith('\n',) ? text.slice(0, -1,) : text).split('\n',);
+  return (text.endsWith('\n',) ? text.slice(
+    0,
+    -1,
+  ) : text).split('\n',);
 }
 
 /**
@@ -133,10 +156,19 @@ export function synthesizeText({
   /**
    Line count approximating the size.
    */
-  const lines = Math.max(1, Math.ceil(Math.min(size, MAX_TEXT_BYTES,) / AVERAGE_LINE_BYTES,),);
-  return joinLines(Array.from({ length: lines, }, function line() {
+  const lines = Math.max(
+    1,
+    Math.ceil(Math.min(
+      size,
+      MAX_TEXT_BYTES,
+    ) / AVERAGE_LINE_BYTES,),
+  );
+  return joinLines(Array.from(
+    { length: lines, },
+    function line() {
     return synthesizeLine(random,);
-  },),);
+  },
+  ),);
 }
 
 /**
@@ -176,18 +208,43 @@ export function editText({
   /**
    Lines removed, bounded by what exists.
    */
-  const removeCount = Math.min(deleted, lines.length,);
+  const removeCount = Math.min(
+    deleted,
+    lines.length,
+  );
   /**
    Edit position.
    */
-  const at = random.integer({ min: 0, max: lines.length - removeCount, },);
+  const at = random.integer({
+    min: 0,
+    max: lines.length - removeCount,
+  },);
   /**
    Inserted lines; at least one so the edit is never a no-op.
    */
-  const inserted = Array.from({ length: Math.max(1, Math.min(added, MAX_TEXT_BYTES / AVERAGE_LINE_BYTES,),), }, function line() {
-    return `${synthesizeLine(random,)} ${String(random.integer({ min: 0, max: 1_000_000, },),)}`;
-  },);
-  return joinLines([...lines.slice(0, at,), ...inserted, ...lines.slice(at + removeCount,),],);
+  const inserted = Array.from(
+    { length: Math.max(
+      1,
+      Math.min(
+        added,
+        MAX_TEXT_BYTES / AVERAGE_LINE_BYTES,
+      ),
+    ), },
+    function line() {
+    return `${synthesizeLine(random,)} ${String(random.integer({
+      min: 0,
+      max: 1_000_000,
+    },),)}`;
+  },
+  );
+  return joinLines([
+    ...lines.slice(
+      0,
+      at,
+    ),
+    ...inserted,
+    ...lines.slice(at + removeCount,),
+  ],);
 }
 
 //endregion Text
@@ -218,10 +275,25 @@ export function synthesizeBinary({
   /**
    Byte count, at least two so the NUL marker leaves room for payload.
    */
-  const length = Math.max(2, Math.min(size, MAX_BINARY_BYTES,),);
-  return Buffer.from(Array.from({ length, }, function byte(_unused, index,) {
-    return index === 0 ? 0 : random.integer({ min: 0, max: BYTE_MAX, },);
-  },),);
+  const length = Math.max(
+    2,
+    Math.min(
+      size,
+      MAX_BINARY_BYTES,
+    ),
+  );
+  return Buffer.from(Array.from(
+    { length, },
+    function byte(
+      _unused,
+      index,
+    ) {
+    return index === 0 ? 0 : random.integer({
+      min: 0,
+      max: BYTE_MAX,
+    },);
+  },
+  ),);
 }
 
 //endregion Binary

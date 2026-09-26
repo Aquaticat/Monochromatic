@@ -12,8 +12,8 @@ import {
 import type { AttemptRecord, } from './ledger-fixture.ts';
 import type { ScenarioContext, } from './scenario-model-fixture.ts';
 import type { TraceOperation, } from './trace-replay-fixture.ts';
+import { reached, } from './barrier-fixture.ts';
 import {
-  reached,
   readWorktree,
   runWrapper,
   startAttempt,
@@ -50,25 +50,106 @@ async function changeBytes({
   /**
    Deterministic source per operation and path.
    */
-  const random = context.random.fork(`${operation.label}:${change.path}`,);
-  if (change.shape.kind === 'delete')
+  const random = context.random
+    .fork(`${operation.label}:${change.path}`,);
+  if (change.shape
+    .kind
+    === 'delete')
     return 'delete';
-  if (change.shape.binary)
-    return synthesizeBinary({ random, size: change.shape.size, },);
-  if ((change.shape.kind === 'add') || (change.shape.kind === 'rename'))
-    return synthesizeText({ random, size: change.shape.size, },);
+  if (change.shape
+    .binary)
+    return synthesizeBinary({
+      random,
+      size: change.shape
+        .size,
+    },);
+  if ((change.shape
+    .kind
+    === 'add') || (change.shape
+      .kind
+      === 'rename'))
+    return synthesizeText({
+      random,
+      size: change.shape
+        .size,
+    },);
   /**
    Current bytes to edit; a missing file is synthesized fresh.
    */
-  const current = (await readWorktree({ repository: context.repository, path: change.path, },)).bytes;
+  const current = (await readWorktree({
+    repository: context.repository,
+    path: change.path,
+  },)).bytes;
   if ((current === undefined) || current.includes(0,))
-    return synthesizeText({ random, size: change.shape.size, },);
-  return editText({ random, current, added: change.shape.added, deleted: change.shape.deleted, },);
+    return synthesizeText({
+      random,
+      size: change.shape
+        .size,
+    },);
+  return editText({
+    random,
+    current,
+    added: change.shape
+      .added,
+    deleted: change.shape
+      .deleted,
+  },);
 }
 
 //endregion Content
 
 //region Execution
+
+/**
+ Applies an operation's changes in trace order:
+ edits read the bytes earlier writes produced,
+ and rename sources are removed after their destinations are written.
+
+ @param context - scenario context
+
+ @param operation - operation whose changes to apply
+
+ @example
+ ```ts
+ await applyChanges({ context, operation });
+ ```
+ */
+async function applyChanges({
+  context,
+  operation,
+}: Readonly<{
+  context: ScenarioContext;
+  operation: TraceOperation;
+}>,): Promise<void> {
+  await operation.changes
+    .reduce(
+      async function applyAfter(
+        previous,
+        change,
+      ) {
+    await previous;
+    /**
+     New bytes, or `delete`.
+     */
+    const bytes = await changeBytes({
+      context,
+      operation,
+      change,
+    },);
+    await writeWorktree({
+      ...context,
+      path: change.path,
+      ...(bytes === 'delete' ? {} : { bytes, }),
+    },);
+    if (change.from !== undefined)
+      await writeWorktree({
+        ...context,
+        path: change.from,
+      },);
+  },
+      Promise.resolve(),
+    );
+}
 
 /**
  Runs one operation after the in-flight owners of its paths captured theirs.
@@ -98,7 +179,8 @@ async function runOperation({
   /**
    Captures this operation must wait for.
    */
-  const blockers = operation.selected.flatMap(function blocker(path,) {
+  const blockers = operation.selected
+    .flatMap(function blocker(path,) {
     /**
      Latest claim on the path.
      */
@@ -109,39 +191,70 @@ async function runOperation({
    This operation's own capture signal.
    */
   const captured = Promise.withResolvers<void>();
-  operation.selected.forEach(function claim(path,) {
-    claims.set(path, captured.promise,);
+  operation.selected
+    .forEach(function claim(path,) {
+    claims.set(
+      path,
+      captured.promise,
+    );
   },);
   await Promise.all(blockers,);
-  // Writes are sequential per operation so rename sources are removed after destinations are written.
-  for (const change of operation.changes) {
-    // oxlint-disable-next-line no-await-in-loop -- Edits read the bytes the previous write produced.
-    const bytes = await changeBytes({ context, operation, change, },);
-    // oxlint-disable-next-line no-await-in-loop -- Same sequential write order as the trace.
-    await writeWorktree({ ...context, path: change.path, ...(bytes === 'delete' ? {} : { bytes, }), },);
-    if (change.from !== undefined)
-      // oxlint-disable-next-line no-await-in-loop -- Rename source removal follows destination write.
-      await writeWorktree({ ...context, path: change.from, },);
-  }
-  if (operation.adds.length > 0) {
-    await runWrapper({ ...context, label: `${operation.label} add`, args: ['add', '--', ...operation.adds,], mustSucceed: true, },);
-    operation.adds.forEach(function staged(path,) {
-      context.ledger.recordStaged({ path, staged: true, },);
+  await applyChanges({
+    context,
+    operation,
+  },);
+  if (operation.adds
+    .length
+    > 0) {
+    await runWrapper({
+      ...context,
+      label: `${operation.label} add`,
+      args: [
+        'add',
+        '--',
+        ...operation.adds,
+      ],
+      mustSucceed: true,
+    },);
+    operation.adds
+      .forEach(function staged(path,) {
+      context.ledger
+        .recordStaged({
+          path,
+          staged: true,
+        },);
     },);
   }
   /**
    Started explicit-path commit.
    */
-  const attempt = await startAttempt({ ...context, label: operation.label, paths: operation.selected, mode: 'explicit', },);
-  await reached({ repository: context.repository, token: attempt.token, running: attempt.running, event: 'pre-commit', },);
+  const attempt = await startAttempt({
+    ...context,
+    label: operation.label,
+    paths: operation.selected,
+    mode: 'explicit',
+  },);
+  await reached({
+    repository: context.repository,
+    token: attempt.token,
+    running: attempt.running,
+    event: 'pre-commit',
+  },);
   captured.resolve();
   /**
    Finished record.
    */
   const record = await attempt.finished;
-  if (record.outcome.exitCode === 0) {
-    operation.adds.forEach(function landed(path,) {
-      context.ledger.recordStaged({ path, staged: false, },);
+  if (record.outcome
+    .exitCode
+    === 0) {
+    operation.adds
+      .forEach(function landed(path,) {
+      context.ledger
+        .recordStaged({
+          path,
+          staged: false,
+        },);
     },);
   }
   return record;
@@ -197,10 +310,17 @@ export async function runTraceOperations({
     for (let operation = operations[cursor.next]; operation !== undefined; operation = operations[cursor.next]) {
       cursor.next += 1;
       // oxlint-disable-next-line no-await-in-loop -- Each lane runs its operations one at a time by design.
-      finished.push(await runOperation({ context, operation, claims, },),);
+      finished.push(await runOperation({
+        context,
+        operation,
+        claims,
+      },),);
     }
   }
-  await Promise.all(Array.from({ length: concurrency, }, lane,),);
+  await Promise.all(Array.from(
+    { length: concurrency, },
+    lane,
+  ),);
   return finished;
 }
 

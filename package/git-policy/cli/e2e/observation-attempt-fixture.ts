@@ -104,7 +104,8 @@ async function acceptableContents({
    Captured content, always acceptable.
    */
   const direct = contentOf(captured.bytes,);
-  if ((parent === undefined) || (captured.bytes === undefined) || (parent === headBefore))
+  if ((parent === undefined) || (captured.bytes === undefined)
+    || (parent === headBefore))
     return [direct,];
   /**
    Captured bytes narrowed for the merge closure.
@@ -113,13 +114,21 @@ async function acceptableContents({
   /**
    Landed parent's bytes.
    */
-  const current = await treeBytes({ repository, commit: parent, path: captured.path, },);
+  const current = await treeBytes({
+    repository,
+    commit: parent,
+    path: captured.path,
+  },);
   if (current === 'absent')
     return [direct,];
   /**
    Candidate bases, excluding the parent itself whose merge is the captured bytes.
    */
-  const bases = (await firstParentChain({ repository, newest: parent, oldest: headBefore, },)).filter(function notParent(oid,) {
+  const bases = (await firstParentChain({
+    repository,
+    newest: parent,
+    oldest: headBefore,
+  },)).filter(function notParent(oid,) {
     return oid !== parent;
   },);
   /**
@@ -129,8 +138,17 @@ async function acceptableContents({
     /**
      Base bytes.
      */
-    const baseBytes = await treeBytes({ repository, commit: base, path: captured.path, },);
-    return baseBytes === 'absent' ? 'conflict' : await mergeOnto({ repository, current, base: baseBytes, other, },);
+    const baseBytes = await treeBytes({
+      repository,
+      commit: base,
+      path: captured.path,
+    },);
+    return baseBytes === 'absent' ? 'conflict' : await mergeOnto({
+      repository,
+      current,
+      base: baseBytes,
+      other,
+    },);
   },),);
   return [
     direct,
@@ -160,8 +178,14 @@ export async function postCommitRuns(repository: ScenarioRepository,): Promise<R
   /**
    Hook log text, empty before any hook ran.
    */
-  const text = await readOptionalText(join(repository.logDir, 'hooks.jsonl',),);
-  return text
+  const text = await readOptionalText(join(
+    repository.logDir,
+    'hooks.jsonl',
+  ),);
+  /**
+   Token of every post-commit run.
+   */
+  const tokens = text
     .split('\n',)
     .filter(function nonEmpty(line,) {
       return line !== '';
@@ -170,13 +194,23 @@ export async function postCommitRuns(repository: ScenarioRepository,): Promise<R
       return JSON.parse(line,);
     },)
     .flatMap(function postCommitToken(entry,): readonly string[] {
-      if (((typeof entry) !== 'object') || (entry === null) || !('event' in entry) || !('token' in entry))
+      if (((typeof entry) !== 'object') || (entry === null)
+        || (!('event' in entry))
+        || (!('token' in entry)))
         return [];
-      return (entry.event === 'post-commit') && ((typeof entry.token) === 'string') ? [String(entry.token,),] : [];
-    },)
-    .reduce(function count(counts, token,) {
-      return new Map([...counts, [token, (counts.get(token,) ?? 0) + 1,],],);
-    }, new Map<string, number>(),);
+      return (entry.event === 'post-commit') && ((typeof entry.token) === 'string') ? [entry.token,] : [];
+    },);
+  return new Map([...Map.groupBy(
+    tokens,
+    function byToken(token,) {
+    return token;
+  },
+  ),].map(function runCount([token, tokenRuns,],) {
+    return [
+      token,
+      tokenRuns.length,
+    ] as const;
+  },),);
 }
 
 /**
@@ -216,18 +250,22 @@ export async function observeAttempt({
    Commits carrying the token.
    */
   const carrying = history.filter(function hasToken(commit,) {
-    return commit.message.includes(`[${attempt.token}]`,);
+    return commit.message
+      .includes(`[${attempt.token}]`,);
   },);
   /**
    Decoded wrapper events; the foreign real-Git commit emits none.
    */
-  const extraction = extractPolicyEvents(attempt.mode === 'foreign' ? '' : attempt.outcome.stderr,);
+  const extraction = extractPolicyEvents(attempt.mode === 'foreign' ? '' : attempt.outcome
+    .stderr,);
   /**
    Landed OID from a `commit-landed` event.
    */
-  const landedEventOid = extraction.events.find(function isLanded(event,) {
+  const landedEventOid = extraction.events
+    .find(function isLanded(event,) {
     return event.type === 'commit-landed';
-  },)?.oid;
+  },)
+    ?.oid;
   /**
    Landing observations.
    */
@@ -235,10 +273,15 @@ export async function observeAttempt({
     /**
      Per-path landed and acceptable contents.
      */
-    const paths = await Promise.all(attempt.captured.map(async function landPath(captured,): Promise<PathLanding> {
+    const paths = await Promise.all(attempt.captured
+      .map(async function landPath(captured,): Promise<PathLanding> {
       return {
         path: captured.path,
-        landed: stateOf(await treeBytes({ repository, commit: commit.oid, path: captured.path, },),),
+        landed: stateOf(await treeBytes({
+          repository,
+          commit: commit.oid,
+          path: captured.path,
+        },),),
         acceptable: await acceptableContents({
           repository,
           captured,
@@ -252,17 +295,41 @@ export async function observeAttempt({
      Signature verification when commits are signed.
      */
     const signatureValid = checks.signature
-      ? (await runProcess({ command: repository.realGit, args: ['verify-commit', commit.oid,], cwd: repository.worktree, env: repository.realEnv, },)).exitCode === 0
+      ? (await runProcess({
+        command: repository.realGit,
+        args: [
+          'verify-commit',
+          commit.oid,
+        ],
+        cwd: repository.worktree,
+        env: repository.realEnv,
+      },)).exitCode === 0
       : undefined;
     return {
       oid: commit.oid,
-      onExpectedBranch: await isAncestor({ repository, oid: commit.oid, ref: `refs/heads/${attempt.expectedBranch}`, },),
+      onExpectedBranch: await isAncestor({
+        repository,
+        oid: commit.oid,
+        ref: `refs/heads/${attempt.expectedBranch}`,
+      },),
       // An amend's scope is measured against the commit it replaced, not against that commit's parent.
-      changedPaths: await changedPaths({ repository, commit: attempt.mode === 'amend' ? { ...commit, parent: attempt.headBefore, } : commit, },),
+      changedPaths: await changedPaths({
+        repository,
+        commit: attempt.mode === 'amend' ? {
+          ...commit,
+          parent: attempt.headBefore,
+        } : commit,
+      },),
       paths,
-      remoteContains: await isAncestor({ repository, gitDir: repository.remote, oid: commit.oid, ref: `refs/heads/${attempt.expectedBranch}`, },),
+      remoteContains: await isAncestor({
+        repository,
+        gitDir: repository.remote,
+        oid: commit.oid,
+        ref: `refs/heads/${attempt.expectedBranch}`,
+      },),
       hooks: {
-        ...(checks.commitMsgTrailer ? { commitMsgTrailer: commit.message.includes(HOOK_TRAILER,), } : {}),
+        ...(checks.commitMsgTrailer ? { commitMsgTrailer: commit.message
+          .includes(HOOK_TRAILER,), } : {}),
         ...(checks.postCommitRuns ? { postCommitRuns: runs.get(attempt.token,) ?? 0, } : {}),
         ...(signatureValid === undefined ? {} : { signatureValid, }),
       },
@@ -270,13 +337,21 @@ export async function observeAttempt({
   },),);
   return {
     label: attempt.label,
-    exitCode: attempt.outcome.exitCode,
+    exitCode: attempt.outcome
+      .exitCode,
     killed: attempt.killed,
     selectedPaths: attempt.selectedPaths,
     landings,
     eventIssues: attempt.killed
       ? []
-      : [...extraction.issues, ...checkExitConsistency({ exitCode: attempt.outcome.exitCode, events: extraction.events, },),],
+      : [
+        ...extraction.issues,
+        ...checkExitConsistency({
+          exitCode: attempt.outcome
+            .exitCode,
+          events: extraction.events,
+        },),
+      ],
     ...(landedEventOid === undefined ? {} : { landedEventOid, }),
     requiresRemote: attempt.requiresRemote,
   };

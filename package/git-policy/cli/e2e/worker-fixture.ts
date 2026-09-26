@@ -2,8 +2,7 @@
  Scenario actors:
  worktree writes,
  commit attempts through the packed wrapper,
- auxiliary wrapper commands,
- and hook barriers.
+ and auxiliary wrapper commands.
 
  @module
  */
@@ -30,7 +29,6 @@ import {
   type RunningProcess,
   runBytes,
   startProcess,
-  waitForMarker,
 } from './process-fixture.ts';
 import {
   realGit,
@@ -62,7 +60,7 @@ export type StartedAttempt = Readonly<{
    */
   token: string;
   /**
-   Running wrapper process group.
+   Running process group.
    */
   running: RunningProcess;
   /**
@@ -75,6 +73,11 @@ export type StartedAttempt = Readonly<{
   finished: Promise<AttemptRecord>;
 }>;
 
+/**
+ Attempt fields known before its process settles.
+ */
+export type PendingAttempt = Omit<AttemptRecord, 'killed' | 'outcome'>;
+
 //endregion Types
 
 //region Worktree
@@ -82,7 +85,9 @@ export type StartedAttempt = Readonly<{
 /**
  Writes or removes one worktree path and records the harness's intent.
 
- @param actors - scenario handles
+ @param repository - scenario repository
+
+ @param ledger - scenario ledger
 
  @param path - repository path
 
@@ -105,14 +110,29 @@ export async function writeWorktree({
   /**
    Absolute path.
    */
-  const absolute = join(repository.worktree, path,);
+  const absolute = join(
+    repository.worktree,
+    path,
+  );
   if (bytes === undefined)
-    await rm(absolute, { force: true, },);
+    await rm(
+      absolute,
+      { force: true, },
+    );
   else {
-    await mkdir(dirname(absolute,), { recursive: true, },);
-    await writeFile(absolute, bytes,);
+    await mkdir(
+      dirname(absolute,),
+      { recursive: true, },
+    );
+    await writeFile(
+      absolute,
+      bytes,
+    );
   }
-  ledger.recordWorktree({ path, ...(bytes === undefined ? {} : { bytes, }), },);
+  ledger.recordWorktree({
+    path,
+    ...(bytes === undefined ? {} : { bytes, }),
+  },);
 }
 
 /**
@@ -137,10 +157,17 @@ export async function readWorktree({
   path: string;
 }>,): Promise<CapturedPath> {
   try {
-    return { path, bytes: await readFile(join(repository.worktree, path,),), };
+    return {
+      path,
+      bytes: await readFile(join(
+        repository.worktree,
+        path,
+      ),),
+    };
   }
   catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ENOENT'))
       return { path, };
     throw error;
   }
@@ -160,7 +187,7 @@ export async function readWorktree({
  await readIndexEntry({ repository, path: 'a.txt' });
  ```
  */
-async function readIndexEntry({
+export async function readIndexEntry({
   repository,
   path,
 }: Readonly<{
@@ -168,18 +195,36 @@ async function readIndexEntry({
   path: string;
 }>,): Promise<CapturedPath> {
   /**
-   `ls-files` line naming the staged blob, empty when untracked.
+   `<mode> <oid> <stage>\t<path>` record, empty when untracked.
    */
-  const listed = await realGit({ repository, args: ['ls-files', '--stage', '-z', '--', path,], },);
+  const listed = await realGit({
+    repository,
+    args: [
+      'ls-files',
+      '--stage',
+      '-z',
+      '--',
+      path,
+    ],
+  },);
   /**
-   Staged blob ID.
+   Mode and staged blob ID fields.
    */
-  const oid = listed.split(' ',)[1];
+  const [, oid,] = listed.split(' ',);
   if ((listed === '') || (oid === undefined))
     return { path, };
   return {
     path,
-    bytes: await runBytes({ command: repository.realGit, args: ['cat-file', 'blob', oid,], cwd: repository.worktree, env: repository.realEnv, },),
+    bytes: await runBytes({
+      command: repository.realGit,
+      args: [
+        'cat-file',
+        'blob',
+        oid,
+      ],
+      cwd: repository.worktree,
+      env: repository.realEnv,
+    },),
   };
 }
 
@@ -204,19 +249,68 @@ export function attemptToken(label: string,): string {
 }
 
 /**
+ Wraps a running process into a started attempt that records itself on settlement.
+
+ @param ledger - scenario ledger
+
+ @param pending - attempt fields known at start
+
+ @param running - running process
+
+ @returns started attempt
+
+ @example
+ ```ts
+ trackAttempt({ ledger, pending, running });
+ ```
+ */
+export function trackAttempt({
+  ledger,
+  pending,
+  running,
+}: Readonly<{
+  ledger: WorkloadLedger;
+  pending: PendingAttempt;
+  running: RunningProcess;
+}>,): StartedAttempt {
+  /**
+   Kill flag recorded with the attempt.
+   */
+  const state = { killed: false, };
+  return {
+    token: pending.token,
+    running,
+    kill(): void {
+      state.killed = true;
+      running.killGroup();
+    },
+    finished: (async function record(): Promise<AttemptRecord> {
+      /**
+       Recorded attempt.
+       */
+      const attempt: AttemptRecord = {
+        ...pending,
+        outcome: await running.outcome,
+        killed: state.killed,
+      };
+      ledger.addAttempt(attempt,);
+      return attempt;
+    })(),
+  };
+}
+
+/**
  Starts a commit attempt through the wrapper and records it on settlement.
 
- @param actors - scenario handles
+ @param repository - scenario repository
+
+ @param ledger - scenario ledger
 
  @param label - unique label
 
  @param paths - explicit paths, or the index paths an index commit is expected to take
 
  @param mode - selection mode
-
- @param extraArgs - arguments before the message
-
- @param extraEnv - additional environment
 
  @returns started attempt
 
@@ -232,170 +326,91 @@ export async function startAttempt({
   label,
   paths,
   mode,
-  extraArgs = [],
-  extraEnv = {},
 }: ScenarioActors & Readonly<{
   label: string;
   paths: readonly string[];
   mode: Exclude<AttemptMode, 'foreign'>;
-  extraArgs?: readonly string[];
-  extraEnv?: NodeJS.ProcessEnv;
 }>,): Promise<StartedAttempt> {
   /**
    Message token.
    */
   const token = attemptToken(label,);
   /**
-   Bytes at invocation: worktree for explicit and amend, real index for index commits.
+   Bytes at invocation:
+   worktree for explicit and amend commits,
+   real index for index commits.
    */
   const captured = await Promise.all(paths.map(async function capture(path,) {
-    return mode === 'index' ? await readIndexEntry({ repository, path, },) : await readWorktree({ repository, path, },);
+    return mode === 'index' ? await readIndexEntry({
+      repository,
+      path,
+    },) : await readWorktree({
+      repository,
+      path,
+    },);
   },),);
-  /**
-   `HEAD` before start.
-   */
-  const headBefore = (await realGit({ repository, args: ['rev-parse', 'HEAD',], },)).trim();
   /**
    Mode-specific arguments.
    */
   const modeArgs = {
-    explicit: ['--', ...paths,],
-    amend: ['--amend', '--', ...paths,],
+    explicit: [
+      '--',
+      ...paths,
+    ],
+    amend: [
+      '--amend',
+      '--',
+      ...paths,
+    ],
     index: ['--no-only',],
   }[mode];
   /**
-   Running wrapper.
+   `HEAD` read immediately before start.
    */
-  const running = startProcess({
-    command: 'git',
-    args: ['commit', '--quiet', ...extraArgs, '--message', `e2e ${label} [${token}]`, ...modeArgs,],
-    cwd: repository.worktree,
-    env: { ...repository.wrapperEnv, E2E_TOKEN: token, ...extraEnv, },
-  },);
-  /**
-   Kill flag recorded with the attempt.
-   */
-  const state = { killed: false, };
-  return {
-    token,
-    running,
-    kill(): void {
-      state.killed = true;
-      running.killGroup();
+  const headBefore = (await realGit({
+    repository,
+    args: [
+      'rev-parse',
+      'HEAD',
+    ],
+  },)).trim();
+  return trackAttempt({
+    ledger,
+    pending: {
+      label,
+      token,
+      mode,
+      selectedPaths: paths,
+      captured,
+      headBefore,
+      expectedBranch: repository.branch,
+      // Auto-push never forces, so an amended pushed commit cannot reach the remote.
+      requiresRemote: mode !== 'amend',
     },
-    finished: (async function record(): Promise<AttemptRecord> {
-      /**
-       Settled wrapper.
-       */
-      const outcome = await running.outcome;
-      /**
-       Recorded attempt.
-       */
-      const attempt: AttemptRecord = {
-        label,
-        token,
-        mode,
-        selectedPaths: paths,
-        captured,
-        headBefore,
-        expectedBranch: repository.branch,
-        outcome,
-        killed: state.killed,
-        // Auto-push never forces, so an amended pushed commit cannot reach the remote.
-        requiresRemote: mode !== 'amend',
-      };
-      ledger.addAttempt(attempt,);
-      return attempt;
-    })(),
-  };
-}
-
-/**
- Starts a real-Git `commit -a` by absolute path that bypasses the wrapper
- and holds `index.lock` while its editor waits for release.
-
- @param actors - scenario handles
-
- @param label - unique label
-
- @param paths - tracked paths modified before the start; `commit -a` takes exactly these
-
- @returns started attempt
-
- @example
- ```ts
- const foreign = await startForeignCommit({ ...actors, label: 'foreign', paths: ['f.txt'] });
- ```
- */
-export async function startForeignCommit({
-  repository,
-  ledger,
-  label,
-  paths,
-}: ScenarioActors & Readonly<{
-  label: string;
-  paths: readonly string[];
-}>,): Promise<StartedAttempt> {
-  /**
-   Message token the editor writes.
-   */
-  const token = attemptToken(label,);
-  /**
-   Worktree bytes `commit -a` stages.
-   */
-  const captured = await Promise.all(paths.map(async function capture(path,) {
-    return await readWorktree({ repository, path, },);
-  },),);
-  /**
-   `HEAD` before start.
-   */
-  const headBefore = (await realGit({ repository, args: ['rev-parse', 'HEAD',], },)).trim();
-  /**
-   Running real Git.
-   */
-  const running = startProcess({
-    command: repository.realGit,
-    args: ['commit', '--quiet', '--all',],
-    cwd: repository.worktree,
-    env: { ...repository.realEnv, E2E_TOKEN: token, GIT_EDITOR: repository.editorProgram, },
+    running: startProcess({
+      command: 'git',
+      args: [
+        'commit',
+        '--quiet',
+        '--message',
+        `e2e ${label} [${token}]`,
+        ...modeArgs,
+      ],
+      cwd: repository.worktree,
+      env: {
+        ...repository.wrapperEnv,
+        E2E_TOKEN: token,
+      },
+    },),
   },);
-  /**
-   Kill flag recorded with the attempt.
-   */
-  const state = { killed: false, };
-  return {
-    token,
-    running,
-    kill(): void {
-      state.killed = true;
-      running.killGroup();
-    },
-    finished: (async function record(): Promise<AttemptRecord> {
-      /**
-       Recorded attempt; real Git never auto-pushes.
-       */
-      const attempt: AttemptRecord = {
-        label,
-        token,
-        mode: 'foreign',
-        selectedPaths: paths,
-        captured,
-        headBefore,
-        expectedBranch: repository.branch,
-        outcome: await running.outcome,
-        killed: state.killed,
-        requiresRemote: false,
-      };
-      ledger.addAttempt(attempt,);
-      return attempt;
-    })(),
-  };
 }
 
 /**
  Runs one wrapper command to settlement and records it.
 
- @param actors - scenario handles
+ @param repository - scenario repository
+
+ @param ledger - scenario ledger
 
  @param label - unique label
 
@@ -424,135 +439,20 @@ export async function runWrapper({
   /**
    Settled wrapper.
    */
-  const outcome = await startProcess({ command: 'git', args, cwd: repository.worktree, env: repository.wrapperEnv, },).outcome;
-  ledger.addAuxiliary({ label, outcome, mustSucceed, wrapper: true, },);
+  const outcome = await startProcess({
+    command: 'git',
+    args,
+    cwd: repository.worktree,
+    env: repository.wrapperEnv,
+  },)
+    .outcome;
+  ledger.addAuxiliary({
+    label,
+    outcome,
+    mustSucceed,
+    wrapper: true,
+  },);
   return outcome;
 }
 
 //endregion Commands
-
-//region Barriers
-
-/**
- Hook barrier bound for one wait.
- */
-export const BARRIER_TIMEOUT_MS = 60_000;
-
-/**
- Arms a hook barrier so the named event blocks until released.
-
- @param repository - scenario repository
-
- @param token - attempt token
-
- @param event - hook event or `editor`
-
- @example
- ```ts
- await holdAt({ repository, token, event: 'pre-commit' });
- ```
- */
-export async function holdAt({
-  repository,
-  token,
-  event,
-}: Readonly<{
-  repository: ScenarioRepository;
-  token: string;
-  event: string;
-}>,): Promise<void> {
-  await writeFile(join(repository.markerDir, `${token}.${event}.hold`,), '',);
-}
-
-/**
- Releases a hook barrier.
-
- @param repository - scenario repository
-
- @param token - attempt token
-
- @param event - hook event or `editor`
-
- @example
- ```ts
- await releaseAt({ repository, token, event: 'pre-commit' });
- ```
- */
-export async function releaseAt({
-  repository,
-  token,
-  event,
-}: Readonly<{
-  repository: ScenarioRepository;
-  token: string;
-  event: string;
-}>,): Promise<void> {
-  await writeFile(join(repository.markerDir, `${token}.${event}.release`,), '',);
-}
-
-/**
- Waits until an attempt's hook reaches an event or the attempt settles.
-
- @param repository - scenario repository
-
- @param attempt - started attempt
-
- @param event - hook event or `editor`
-
- @returns `marker`, `settled`, or `timeout`
-
- @example
- ```ts
- await reached({ repository, attempt, event: 'pre-commit' });
- ```
- */
-export async function reached({
-  repository,
-  token,
-  running,
-  event,
-}: Readonly<{
-  repository: ScenarioRepository;
-  token: string;
-  running: Pick<RunningProcess, 'isSettled'>;
-  event: string;
-}>,): Promise<'marker' | 'settled' | 'timeout'> {
-  return await waitForMarker({
-    path: join(repository.markerDir, `${token}.${event}`,),
-    timeoutMs: BARRIER_TIMEOUT_MS,
-    isSettled: running.isSettled,
-  },);
-}
-
-/**
- Waits until a process settles or a window passes, whichever comes first.
- Used where the accepted design gives no hook-visible point before capture:
- a second agent captures at invocation and then waits for the hook lock,
- so the harness gives it this window before releasing the first agent.
-
- @param running - process to watch
-
- @param windowMs - longest wait
-
- @returns whether the process settled within the window
-
- @example
- ```ts
- await settleWithin({ running: second.running, windowMs: 1500 });
- ```
- */
-export async function settleWithin({
-  running,
-  windowMs,
-}: Readonly<{
-  running: Pick<RunningProcess, 'isSettled'>;
-  windowMs: number;
-}>,): Promise<boolean> {
-  /**
-   Wait outcome; the marker path never exists.
-   */
-  const result = await waitForMarker({ path: '/nonexistent/e2e-settle-window', timeoutMs: windowMs, isSettled: running.isSettled, },);
-  return result === 'settled';
-}
-
-//endregion Barriers

@@ -58,9 +58,15 @@ export function planStartOffsets({
   count: number;
   maxJitterMs: number;
 }>,): readonly number[] {
-  return Array.from({ length: count, }, function offset() {
-    return random.integer({ min: 0, max: maxJitterMs, },);
-  },);
+  return Array.from(
+    { length: count, },
+    function offset() {
+    return random.integer({
+      min: 0,
+      max: maxJitterMs,
+    },);
+  },
+  );
 }
 
 /**
@@ -91,42 +97,81 @@ export function interleaveSequences({
   /**
    Total operation count.
    */
-  const total = lengths.reduce(function sum(accumulated, length,) {
+  const total = lengths.reduce(
+    function sum(
+      accumulated,
+      length,
+    ) {
     return accumulated + length;
-  }, 0,);
-  return Array.from({ length: total, },).reduce<readonly InterleavedStep[]>(function nextStep(steps,) {
+  },
+    0,
+  );
+  return Array.from({ length: total, },)
+    .reduce<readonly InterleavedStep[]>(
+      function nextStep(steps,) {
     /**
      Operations each actor has already scheduled.
      */
-    const used = lengths.map(function usedCount(_length, actor,) {
+    const used = lengths.map(function usedCount(
+      _length,
+      actor,
+    ) {
       return steps.filter(function byActor(step,) {
         return step.actor === actor;
-      },).length;
+      },)
+        .length;
     },);
     /**
      Remaining operation count per actor.
      */
-    const remaining = lengths.map(function remainingCount(length, actor,) {
+    const remaining = lengths.map(function remainingCount(
+      length,
+      actor,
+    ) {
       return length - (used[actor] ?? 0);
     },);
     /**
      Weighted choice over remaining operations.
      */
-    const ticket = random.integer({ min: 0, max: (total - steps.length) - 1, },);
+    const ticket = random.integer({
+      min: 0,
+      max: (total - steps.length) - 1,
+    },);
     /**
      Actor owning the chosen ticket.
      */
-    const actor = remaining.findIndex(function owner(_count, index,) {
+    const actor = remaining.findIndex(function owner(
+      _count,
+      index,
+    ) {
       /**
        Tickets held by actors before and including this one.
        */
-      const through = remaining.slice(0, index + 1,).reduce(function sum(accumulated, count,) {
+      const through = remaining.slice(
+        0,
+        index + 1,
+      )
+        .reduce(
+          function sum(
+            accumulated,
+            count,
+          ) {
         return accumulated + count;
-      }, 0,);
+      },
+          0,
+        );
       return ticket < through;
     },);
-    return [...steps, { actor, position: used[actor] ?? 0, },];
-  }, [],);
+    return [
+      ...steps,
+      {
+        actor,
+        position: used[actor] ?? 0,
+      },
+    ];
+  },
+      [],
+    );
 }
 
 /**
@@ -154,7 +199,10 @@ export function planFaultOffset({
   minMs: number;
   maxMs: number;
 }>,): number {
-  return random.integer({ min: minMs, max: maxMs, },);
+  return random.integer({
+    min: minMs,
+    max: maxMs,
+  },);
 }
 
 //endregion Planning

@@ -31,7 +31,10 @@ import {
   runScenario,
   type ScenarioResult,
 } from './scenario-model-fixture.ts';
-import { parseSeed, } from './seeded-random-fixture.ts';
+import {
+  parseSeed,
+  SEED_MODULUS,
+} from './seeded-random-fixture.ts';
 
 //region Configuration
 
@@ -40,17 +43,16 @@ import { parseSeed, } from './seeded-random-fixture.ts';
  the first release with `merge-tree --merge-base`,
  and the current release.
  */
-const GIT_VERSIONS: readonly string[] = ['2.40.0', '2.55.0',];
+const GIT_VERSIONS: readonly string[] = [
+  '2.40.0',
+  '2.55.0',
+];
 
 /**
  Container work root.
  */
 const WORK_ROOT = '/work';
 
-/**
- Exclusive upper bound of generated seeds.
- */
-const SEED_LIMIT = 2 ** 32;
 
 /**
  Splits a comma-separated filter.
@@ -65,9 +67,11 @@ const SEED_LIMIT = 2 ** 32;
  ```
  */
 function splitFilter(text: string,): readonly string[] {
-  return text.split(',',).map(function trim(entry,) {
+  return text.split(',',)
+    .map(function trim(entry,) {
     return entry.trim();
-  },).filter(function nonEmpty(entry,) {
+  },)
+    .filter(function nonEmpty(entry,) {
     return entry !== '';
   },);
 }
@@ -110,26 +114,46 @@ async function runSuite(): Promise<void> {
   /**
    Seed from the task argument, or a fresh one.
    */
-  const { seed, generated, } = parseSeed({
-    text: process.env.E2E_SEED ?? '',
+  const {
+    seed,
+    generated,
+  } = parseSeed({
+    text: process.env
+      .E2E_SEED
+      ?? '',
     fresh() {
-      return randomInt(0, SEED_LIMIT,);
+      return randomInt(
+        0,
+        SEED_MODULUS,
+      );
     },
   },);
   /**
    Scenario name filter.
    */
-  const scenarioFilter = splitFilter(process.env.E2E_SCENARIOS ?? '',);
+  const scenarioFilter = splitFilter(process.env
+    .E2E_SCENARIOS
+    ?? '',);
   /**
    Git version filter.
    */
-  const versionFilter = splitFilter(process.env.E2E_GIT_VERSIONS ?? '',);
+  const versionFilter = splitFilter(process.env
+    .E2E_GIT_VERSIONS
+    ?? '',);
   console.log(`seed=${String(seed,)}${generated ? ' (generated)' : ''}`,);
   console.log(`replay: mise run //package/git-policy/cli:test:e2e:concurrent --seed ${String(seed,)}`,);
   /**
    Committed trace.
    */
-  const trace = assertCommitShapeTrace(JSON.parse(await readFile(join(import.meta.dirname, 'commit-shape-trace.json',), 'utf8',),),);
+  const trace = assertCommitShapeTrace(
+    JSON.parse(await readFile(
+      join(
+        import.meta.dirname,
+        'commit-shape-trace.json',
+      ),
+      'utf8',
+    ),),
+  );
   /**
    Selected scenarios.
    */
@@ -147,9 +171,20 @@ async function runSuite(): Promise<void> {
    */
   const results = await versions.flatMap(function versionRuns(gitVersion,) {
     return scenarios.map(function scenarioRun(definition,) {
-      return { gitVersion, definition, };
+      return {
+        gitVersion,
+        definition,
+      };
     },);
-  },).reduce<Promise<readonly ScenarioResult[]>>(async function next(previous, { gitVersion, definition, },) {
+  },)
+    .reduce<Promise<readonly ScenarioResult[]>>(
+      async function next(
+        previous,
+        {
+          gitVersion,
+          definition,
+        },
+      ) {
     /**
      Results so far.
      */
@@ -157,16 +192,30 @@ async function runSuite(): Promise<void> {
     /**
      This run's result.
      */
-    const result = await runScenario({ definition, gitVersion, seed, workRoot: WORK_ROOT, trace, },);
-    console.log(formatResult(result,).join('\n',),);
-    return [...done, result,];
-  }, Promise.resolve([],),);
-  console.log(summarize(results,).join('\n',),);
+    const result = await runScenario({
+      definition,
+      gitVersion,
+      seed,
+      workRoot: WORK_ROOT,
+      trace,
+    },);
+    console.log(formatResult(result,)
+      .join('\n',),);
+    return [
+      ...done,
+      result,
+    ];
+  },
+      Promise.resolve([],),
+    );
+  console.log(summarize(results,)
+    .join('\n',),);
   console.log(`seed=${String(seed,)}`,);
   if (!runPassed(results,)) {
     throw new ConcurrentSuiteError(`${String(results.filter(function failed(result,) {
       return (result.status === 'fail') || (result.status === 'error');
-    },).length,)} of ${String(results.length,)} scenario runs failed; replay with --seed ${String(seed,)}`,);
+    },)
+      .length,)} of ${String(results.length,)} scenario runs failed; replay with --seed ${String(seed,)}`,);
   }
 }
 

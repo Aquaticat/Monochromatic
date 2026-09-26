@@ -257,6 +257,7 @@ const child = spawn('podman', [
   '--env', `E2E_SCENARIOS=${process.env.usage_scenario ?? ''}`,
   '--env', `E2E_GIT_VERSIONS=${process.env.usage_git ?? ''}`,
   '--volume', `${join(packageRoot, 'e2e')}:/fixture/e2e:ro,Z`,
+  '--volume', `${join(packageRoot, '..', '..', 'module', 'caught-value')}:/fixture/caught-value:ro,Z`,
   'cli-git-concurrent-e2e',
   'node',
   '/fixture/e2e/concurrent-e2e-consumer.ts',

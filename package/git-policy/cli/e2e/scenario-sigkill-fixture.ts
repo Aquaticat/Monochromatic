@@ -17,7 +17,7 @@ import { setTimeout as sleep, } from 'node:timers/promises';
 
 import { synthesizeText, } from './content-fixture.ts';
 import type { HookEvent, } from './hook-program-fixture.ts';
-import { ALL_HOOK_EVENTS, } from './scenario-baseline-fixture.ts';
+import { ALL_HOOK_EVENTS, } from './scenario-setup-fixture.ts';
 import {
   repositoryOptions,
   seedTexts,
@@ -31,6 +31,8 @@ import { planFaultOffset, } from './seeded-schedule-fixture.ts';
 import {
   holdAt,
   reached,
+} from './barrier-fixture.ts';
+import {
   runWrapper,
   type StartedAttempt,
   startAttempt,
@@ -42,7 +44,10 @@ import {
 /**
  Seeded kill window after start, in milliseconds.
  */
-const KILL_WINDOW = { minMs: 20, maxMs: 600, } as const;
+const KILL_WINDOW = {
+  minMs: 20,
+  maxMs: 600,
+} as const;
 
 //endregion Constants
 
@@ -72,37 +77,101 @@ async function killAndRecover({
   context: ScenarioContext;
   phase: HookEvent | 'offset';
 }>,): Promise<Awaited<ReturnType<ScenarioDefinition['run']>>> {
-  await Promise.all(['victim.txt', 'bystander.txt',].map(async function rewrite(path,) {
-    await writeWorktree({ ...context, path, bytes: synthesizeText({ random: context.random.fork(path,), size: 800, },), },);
+  await Promise.all([
+    'victim.txt',
+    'bystander.txt',
+  ].map(async function rewrite(path,) {
+    await writeWorktree({
+      ...context,
+      path,
+      bytes: synthesizeText({
+        random: context.random
+          .fork(path,),
+        size: 800,
+      },),
+    },);
   },),);
   /**
    Victim attempt.
    */
-  const victim = await startAttempt({ ...context, label: 'victim', paths: ['victim.txt',], mode: 'explicit', },);
+  const victim = await startAttempt({
+    ...context,
+    label: 'victim',
+    paths: ['victim.txt',],
+    mode: 'explicit',
+  },);
   if (phase === 'offset')
-    await sleep(planFaultOffset({ random: context.random.fork('kill',), ...KILL_WINDOW, },),);
+    await sleep(planFaultOffset({
+      random: context.random
+        .fork('kill',),
+      ...KILL_WINDOW,
+    },),);
   else {
-    await holdAt({ repository: context.repository, token: victim.token, event: phase, },);
-    await reached({ repository: context.repository, token: victim.token, running: victim.running, event: phase, },);
+    await holdAt({
+      repository: context.repository,
+      token: victim.token,
+      event: phase,
+    },);
+    await reached({
+      repository: context.repository,
+      token: victim.token,
+      running: victim.running,
+      event: phase,
+    },);
   }
   /**
    Bystander started while the victim is at its phase.
    */
-  const bystander: StartedAttempt = await startAttempt({ ...context, label: 'bystander', paths: ['bystander.txt',], mode: 'explicit', },);
+  const bystander: StartedAttempt = await startAttempt({
+    ...context,
+    label: 'bystander',
+    paths: ['bystander.txt',],
+    mode: 'explicit',
+  },);
   victim.kill();
   /**
    Settled victim and bystander.
    */
-  const [, bystanderRecord,] = await Promise.all([victim.finished, bystander.finished,],);
-  await runWrapper({ ...context, label: 'recovery status', args: ['status', '--short',], mustSucceed: true, },);
-  await writeWorktree({ ...context, path: 'follow-up.txt', bytes: synthesizeText({ random: context.random.fork('follow-up',), size: 400, },), },);
+  const [, bystanderRecord,] = await Promise.all([
+    victim.finished,
+    bystander.finished,
+  ],);
+  await runWrapper({
+    ...context,
+    label: 'recovery status',
+    args: [
+      'status',
+      '--short',
+    ],
+    mustSucceed: true,
+  },);
+  await writeWorktree({
+    ...context,
+    path: 'follow-up.txt',
+    bytes: synthesizeText({
+      random: context.random
+        .fork('follow-up',),
+      size: 400,
+    },),
+  },);
   /**
    Follow-up after recovery.
    */
-  const followUp = await (await startAttempt({ ...context, label: 'follow-up', paths: ['follow-up.txt',], mode: 'explicit', },)).finished;
+  const followUp = await (await startAttempt({
+    ...context,
+    label: 'follow-up',
+    paths: ['follow-up.txt',],
+    mode: 'explicit',
+  },)).finished;
   return [
-    allSucceeded({ name: 'bystander-succeeds', attempts: [bystanderRecord,], },),
-    allSucceeded({ name: 'follow-up-commit-succeeds', attempts: [followUp,], },),
+    allSucceeded({
+      name: 'bystander-succeeds',
+      attempts: [bystanderRecord,],
+    },),
+    allSucceeded({
+      name: 'follow-up-commit-succeeds',
+      attempts: [followUp,],
+    },),
   ];
 }
 
@@ -127,13 +196,23 @@ function killScenario(phase: HookEvent | 'offset',): ScenarioDefinition {
       : `SIGKILL one committing agent inside ${phase} while another commits, then recover`,
     repository(random,) {
       return repositoryOptions({
-        seedFiles: seedTexts({ random, paths: ['victim.txt', 'bystander.txt', 'follow-up.txt',], },),
+        seedFiles: seedTexts({
+          random,
+          paths: [
+            'victim.txt',
+            'bystander.txt',
+            'follow-up.txt',
+          ],
+        },),
         hooks: 'hookdir',
         hookEvents: ALL_HOOK_EVENTS,
       },);
     },
     async run(context,) {
-      return await killAndRecover({ context, phase, },);
+      return await killAndRecover({
+        context,
+        phase,
+      },);
     },
   };
 }

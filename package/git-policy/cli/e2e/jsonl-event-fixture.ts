@@ -9,6 +9,8 @@
  @module
  */
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 //region Types
 
 /**
@@ -68,7 +70,8 @@ export type EventExtraction = Readonly<{
  ```
  */
 function isJsonObject(value: unknown,): value is Readonly<Record<string, unknown>> {
-  return ((typeof value) === 'object') && (value !== null) && !Array.isArray(value,);
+  return ((typeof value) === 'object') && (value !== null)
+    && (!Array.isArray(value,));
 }
 
 /**
@@ -92,11 +95,11 @@ function decodeEventLine(line: string,): PolicyEvent | string {
       return JSON.parse(line,);
     }
     catch (error: unknown) {
-      return `malformed JSONL line (${String(error,)}): ${line}`;
+      return `malformed JSONL line (${caughtValueText(error,)}): ${line}`;
     }
   })();
   if ((typeof parsed) === 'string')
-    return String(parsed,);
+    return parsed;
   if (!isJsonObject(parsed,))
     return `JSONL line is not an object: ${line}`;
   /**
@@ -111,11 +114,11 @@ function decodeEventLine(line: string,): PolicyEvent | string {
   if (((typeof fields.sequence) !== 'number') || ((typeof fields.type) !== 'string'))
     return `JSONL event lacks sequence or type: ${line}`;
   return {
-    sequence: Number(fields.sequence,),
-    type: String(fields.type,),
-    ...((typeof fields.severity) === 'string' ? { severity: String(fields.severity,), } : {}),
-    ...((typeof fields.code) === 'string' ? { code: String(fields.code,), } : {}),
-    ...((typeof fields.oid) === 'string' ? { oid: String(fields.oid,), } : {}),
+    sequence: fields.sequence,
+    type: fields.type,
+    ...((typeof fields.severity) === 'string' ? { severity: fields.severity, } : {}),
+    ...((typeof fields.code) === 'string' ? { code: fields.code, } : {}),
+    ...((typeof fields.oid) === 'string' ? { oid: fields.oid, } : {}),
   };
 }
 
@@ -153,7 +156,10 @@ export function extractPolicyEvents(stderr: string,): EventExtraction {
   /**
    Sequence numbering problems.
    */
-  const sequenceIssues = events.flatMap(function sequenceCheck(event, index,) {
+  const sequenceIssues = events.flatMap(function sequenceCheck(
+    event,
+    index,
+  ) {
     return event.sequence === index ? [] : [`event ${String(index,)} has sequence ${String(event.sequence,)}`,];
   },);
   return {
@@ -213,13 +219,34 @@ export function checkExitConsistency({
   /**
    Rules paired with their violation text.
    */
-  const rules: readonly (readonly [boolean, string])[] = [
-    [engineFailure && (exitCode !== 2), `engine-failure event with exit ${String(exitCode,)}`,],
-    [(landedIndex !== -1) && (exitCode !== 2), `commit-landed event with exit ${String(exitCode,)}`,],
-    [(landedIndex !== -1) && (landedIndex !== events.length - 1), 'commit-landed is not the final event',],
-    [blocking && !engineFailure && (landedIndex === -1) && (exitCode !== 1),
-      `blocking finding with exit ${String(exitCode,)}`,],
-    [(exitCode === 0) && (blocking || engineFailure || (landedIndex !== -1)), 'exit 0 with a blocking event',],
+  const rules: readonly (readonly [
+    boolean,
+    string
+  ])[] = [
+    [
+      engineFailure && (exitCode !== 2),
+      `engine-failure event with exit ${String(exitCode,)}`,
+    ],
+    [
+      (landedIndex !== (-1)) && (exitCode !== 2),
+      `commit-landed event with exit ${String(exitCode,)}`,
+    ],
+    [
+      (landedIndex !== (-1)) && (landedIndex !== (events.length
+        - 1)),
+      'commit-landed is not the final event',
+    ],
+    [
+      blocking && (!engineFailure)
+        && (landedIndex === (-1))
+        && (exitCode !== 1),
+      `blocking finding with exit ${String(exitCode,)}`,
+    ],
+    [
+      (exitCode === 0) && (blocking || engineFailure
+        || (landedIndex !== (-1))),
+      'exit 0 with a blocking event',
+    ],
   ];
   return rules.flatMap(function violated([failed, message,],) {
     return failed ? [message,] : [];

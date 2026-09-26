@@ -13,21 +13,7 @@ import type {
   CommitShapeTrace,
   ShapeChange,
 } from './commit-shape-trace-fixture.ts';
-import {
-  editText,
-  synthesizeBinary,
-  synthesizeText,
-} from './content-fixture.ts';
-import type { AttemptRecord, } from './ledger-fixture.ts';
-import type { ScenarioContext, } from './scenario-model-fixture.ts';
 import type { SeededRandom, } from './seeded-random-fixture.ts';
-import {
-  reached,
-  readWorktree,
-  runWrapper,
-  startAttempt,
-  writeWorktree,
-} from './worker-fixture.ts';
 
 //region Planning
 
@@ -42,7 +28,11 @@ export type TraceOperation = Readonly<{
   /**
    Path changes to apply.
    */
-  changes: readonly Readonly<{ path: string; from?: string; shape: ShapeChange; }>[];
+  changes: readonly Readonly<{
+    path: string;
+    from?: string;
+    shape: ShapeChange
+  }>[];
   /**
    Paths to stage with `git add` before committing.
    */
@@ -93,7 +83,14 @@ function isReplayable({
   commit: CommitShape;
   maxChanges: number;
 }>,): boolean {
-  return (commit.changes.length > 0) && (commit.changes.length <= maxChanges) && commit.changes.every(function plainFile(change,) {
+  return (commit.changes
+    .length
+    > 0)
+    && (commit.changes
+      .length
+      <= maxChanges)
+    && commit.changes
+    .every(function plainFile(change,) {
     return (change.mode === 'file') || (change.mode === 'executable');
   },);
 }
@@ -130,14 +127,27 @@ export function selectTraceWindow({
   /**
    Replayable commits in trace order.
    */
-  const eligible = trace.commits.filter(function replayable(commit,) {
-    return isReplayable({ commit, maxChanges, },);
+  const eligible = trace.commits
+    .filter(function replayable(commit,) {
+    return isReplayable({
+      commit,
+      maxChanges,
+    },);
   },);
   /**
    Window start.
    */
-  const start = random.integer({ min: 0, max: Math.max(0, eligible.length - length,), },);
-  return eligible.slice(start, start + length,);
+  const start = random.integer({
+    min: 0,
+    max: Math.max(
+      0,
+      eligible.length - length,
+    ),
+  },);
+  return eligible.slice(
+    start,
+    start + length,
+  );
 }
 
 /**
@@ -154,45 +164,88 @@ export function selectTraceWindow({
  */
 export function planTraceOperations(window: readonly CommitShape[],): Readonly<{
   operations: readonly TraceOperation[];
-  seeds: readonly Readonly<{ path: string; binary: boolean; size: number; }>[];
+  seeds: readonly Readonly<{
+    path: string;
+    binary: boolean;
+    size: number
+  }>[];
 }> {
   /**
    First reference of each path in window order.
    */
-  const firstReference = new Map<number, Readonly<{ kind: 'add' | 'existing'; change: ShapeChange; }>>();
+  const firstReference = new Map<number, Readonly<{
+    kind: 'add' | 'existing';
+    change: ShapeChange
+  }>>();
   window.forEach(function recordFirst(commit,) {
-    commit.changes.forEach(function recordChange(change,) {
-      if ((change.from !== undefined) && !firstReference.has(change.from,))
-        firstReference.set(change.from, { kind: 'existing', change, },);
+    commit.changes
+      .forEach(function recordChange(change,) {
+      if ((change.from !== undefined) && (!firstReference.has(change.from,)))
+        firstReference.set(
+          change.from,
+          {
+            kind: 'existing',
+            change,
+          },
+        );
       if (!firstReference.has(change.path,))
-        firstReference.set(change.path, { kind: (change.kind === 'add') || (change.kind === 'rename') ? 'add' : 'existing', change, },);
+        firstReference.set(
+          change.path,
+          {
+            kind: (change.kind === 'add') || (change.kind === 'rename') ? 'add' : 'existing',
+            change,
+          },
+        );
     },);
   },);
   return {
-    operations: window.map(function operation(commit, index,): TraceOperation {
+    operations: window.map(function operation(
+      commit,
+      index,
+    ): TraceOperation {
       /**
        Changes with repository paths.
        */
-      const changes = commit.changes.map(function named(change,) {
-        return { path: tracePath(change.path,), ...(change.from === undefined ? {} : { from: tracePath(change.from,), }), shape: change, };
+      const changes: TraceOperation['changes'] = commit.changes
+        .map(function named(change,) {
+        return {
+          path: tracePath(change.path,),
+          ...(change.from === undefined ? {} : { from: tracePath(change.from,), }),
+          shape: change,
+        };
       },);
       return {
         label: `t${String(index,)}`,
         changes,
         adds: changes.filter(function added(change,) {
-          return (change.shape.kind === 'add') || (change.shape.kind === 'rename');
-        },).map(function addedPath(change,) {
+          return (change.shape
+            .kind
+            === 'add') || (change.shape
+              .kind
+              === 'rename');
+        },)
+          .map(function addedPath(change,) {
           return change.path;
         },),
         selected: [...new Set(changes.flatMap(function selectedPaths(change,) {
-          return change.from === undefined ? [change.path,] : [change.from, change.path,];
+          return change.from === undefined ? [change.path,] : [
+            change.from,
+            change.path,
+          ];
         },),),],
       };
     },),
     seeds: [...firstReference,].filter(function existing([, reference,],) {
       return reference.kind === 'existing';
-    },).map(function seed([id, reference,],) {
-      return { path: tracePath(id,), binary: reference.change.binary, size: reference.change.size, };
+    },)
+      .map(function seed([id, reference,],) {
+      return {
+        path: tracePath(id,),
+        binary: reference.change
+          .binary,
+        size: reference.change
+          .size,
+      };
     },),
   };
 }

@@ -21,9 +21,36 @@ import {
 //region Repository options
 
 /**
+ Repository options a scenario may override;
+ each is optional because {@link repositoryOptions} supplies a default.
+ */
+export type RepositoryOverrides = Readonly<{
+  /**
+   Worktree kind, default main.
+   */
+  worktree?: RepositoryOptions['worktree'];
+  /**
+   Hook source, default none.
+   */
+  hooks?: RepositoryOptions['hooks'];
+  /**
+   Hook events, default none.
+   */
+  hookEvents?: RepositoryOptions['hookEvents'];
+  /**
+   Extra hook behavior.
+   */
+  hookMode?: 'lint-staged';
+  /**
+   SSH signing, default off.
+   */
+  signing?: boolean;
+}>;
+
+/**
  Seed file text size in bytes.
  */
-const SEED_TEXT_BYTES = 1200;
+const SEED_TEXT_BYTES = 1_200;
 
 /**
  Builds seed files with synthetic text.
@@ -47,7 +74,13 @@ export function seedTexts({
   paths: readonly string[];
 }>,): RepositoryOptions['seedFiles'] {
   return paths.map(function seedFile(path,) {
-    return { path, bytes: synthesizeText({ random: random.fork(path,), size: SEED_TEXT_BYTES, },), };
+    return {
+      path,
+      bytes: synthesizeText({
+        random: random.fork(path,),
+        size: SEED_TEXT_BYTES,
+      },),
+    };
   },);
 }
 
@@ -72,9 +105,15 @@ export function workerPaths({
   prefix: string;
   count: number;
 }>,): readonly string[] {
-  return Array.from({ length: count, }, function path(_unused, index,) {
+  return Array.from(
+    { length: count, },
+    function path(
+      _unused,
+      index,
+    ) {
     return `${prefix}-${String(index,)}.txt`;
-  },);
+  },
+  );
 }
 
 /**
@@ -92,7 +131,7 @@ export function workerPaths({
  repositoryOptions({ seedFiles: [] });
  ```
  */
-export function repositoryOptions(overrides: Partial<RepositoryOptions> & Pick<RepositoryOptions, 'seedFiles'>,): RepositoryOptions {
+export function repositoryOptions(overrides: RepositoryOverrides & Pick<RepositoryOptions, 'seedFiles'>,): RepositoryOptions {
   return {
     worktree: 'main',
     hooks: 'none',
@@ -123,6 +162,35 @@ export type WorkerPlan = Readonly<{
 }>;
 
 /**
+ Worker plans over disjoint files `w-<index>.txt`,
+ one file per worker.
+
+ @param count - worker count
+
+ @returns plans labelled `w<index>`
+
+ @example
+ ```ts
+ disjointPlans(2); // => [{ label: 'w0', paths: ['w-0.txt'] }, { label: 'w1', paths: ['w-1.txt'] }]
+ ```
+ */
+export function disjointPlans(count: number,): readonly WorkerPlan[] {
+  return workerPaths({
+    prefix: 'w',
+    count,
+  },)
+    .map(function plan(
+      path,
+      index,
+    ) {
+    return {
+      label: `w${String(index,)}`,
+      paths: [path,],
+    };
+  },);
+}
+
+/**
  Rewrites each worker's paths with fresh text.
 
  @param context - scenario context
@@ -142,11 +210,16 @@ export async function rewritePaths({
   plans: readonly WorkerPlan[];
 }>,): Promise<void> {
   await Promise.all(plans.flatMap(function planWrites(plan,) {
-    return plan.paths.map(async function rewrite(path,) {
+    return plan.paths
+      .map(async function rewrite(path,) {
       await writeWorktree({
         ...context,
         path,
-        bytes: synthesizeText({ random: context.random.fork(`${plan.label}:${path}`,), size: SEED_TEXT_BYTES, },),
+        bytes: synthesizeText({
+          random: context.random
+            .fork(`${plan.label}:${path}`,),
+          size: SEED_TEXT_BYTES,
+        },),
       },);
     },);
   },),);
@@ -180,10 +253,23 @@ export async function startWorkers({
   /**
    Seeded start offsets.
    */
-  const offsets = planStartOffsets({ random: context.random.fork('offsets',), count: plans.length, maxJitterMs, },);
-  return await Promise.all(plans.map(async function startLater(plan, index,) {
+  const offsets = planStartOffsets({
+    random: context.random
+      .fork('offsets',),
+    count: plans.length,
+    maxJitterMs,
+  },);
+  return await Promise.all(plans.map(async function startLater(
+    plan,
+    index,
+  ) {
     await sleep(offsets[index] ?? 0,);
-    return await startAttempt({ ...context, label: plan.label, paths: plan.paths, mode: 'explicit', },);
+    return await startAttempt({
+      ...context,
+      label: plan.label,
+      paths: plan.paths,
+      mode: 'explicit',
+    },);
   },),);
 }
 
@@ -230,8 +316,15 @@ export async function runDisjointWorkers({
   plans: readonly WorkerPlan[];
   maxJitterMs: number;
 }>,): Promise<readonly AttemptRecord[]> {
-  await rewritePaths({ context, plans, },);
-  return await finishAll(await startWorkers({ context, plans, maxJitterMs, },),);
+  await rewritePaths({
+    context,
+    plans,
+  },);
+  return await finishAll(await startWorkers({
+    context,
+    plans,
+    maxJitterMs,
+  },),);
 }
 
 /**
@@ -255,8 +348,15 @@ export async function runSequentialWorkers({
   context: ScenarioContext;
   plans: readonly WorkerPlan[];
 }>,): Promise<readonly AttemptRecord[]> {
-  await rewritePaths({ context, plans, },);
-  return await plans.reduce<Promise<readonly AttemptRecord[]>>(async function next(previous, plan,) {
+  await rewritePaths({
+    context,
+    plans,
+  },);
+  return await plans.reduce<Promise<readonly AttemptRecord[]>>(
+    async function next(
+      previous,
+      plan,
+    ) {
     /**
      Records so far.
      */
@@ -264,9 +364,19 @@ export async function runSequentialWorkers({
     /**
      This worker's record.
      */
-    const record = await (await startAttempt({ ...context, label: plan.label, paths: plan.paths, mode: 'explicit', },)).finished;
-    return [...done, record,];
-  }, Promise.resolve([],),);
+    const record = await (await startAttempt({
+      ...context,
+      label: plan.label,
+      paths: plan.paths,
+      mode: 'explicit',
+    },)).finished;
+    return [
+      ...done,
+      record,
+    ];
+  },
+    Promise.resolve([],),
+  );
 }
 
 //endregion Workers

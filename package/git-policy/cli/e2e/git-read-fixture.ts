@@ -74,14 +74,33 @@ export async function treeBytes({
   /**
    `ls-tree` record naming the blob.
    */
-  const listed = await realGit({ repository, args: ['ls-tree', '-z', commit, '--', path,], },);
+  const listed = await realGit({
+    repository,
+    args: [
+      'ls-tree',
+      '-z',
+      commit,
+      '--',
+      path,
+    ],
+  },);
   /**
    Blob ID from `<mode> <type> <oid>\t<path>`.
    */
-  const oid = listed.split('\t',)[0]?.split(' ',)[2];
+  const oid = listed.split('\t',)[0]
+    ?.split(' ',)[2];
   if ((listed === '') || (oid === undefined))
     return 'absent';
-  return await runBytes({ command: repository.realGit, args: ['cat-file', 'blob', oid,], cwd: repository.worktree, env: repository.realEnv, },);
+  return await runBytes({
+    command: repository.realGit,
+    args: [
+      'cat-file',
+      'blob',
+      oid,
+    ],
+    cwd: repository.worktree,
+    env: repository.realEnv,
+  },);
 }
 
 /**
@@ -116,7 +135,14 @@ export async function readHistory(repository: ScenarioRepository,): Promise<read
   /**
    Records separated by RS, fields by NUL.
    */
-  const text = await realGit({ repository, args: ['log', '--branches', '--format=%H%x00%P%x00%B%x1e',], },);
+  const text = await realGit({
+    repository,
+    args: [
+      'log',
+      '--branches',
+      '--format=%H%x00%P%x00%B%x1e',
+    ],
+  },);
   return text
     .split('\u001E',)
     .map(function trimRecord(record,) {
@@ -133,8 +159,12 @@ export async function readHistory(repository: ScenarioRepository,): Promise<read
       /**
        First parent ID.
        */
-      const parent = parents.split(' ',)[0];
-      return { oid, ...(parent === undefined || parent === '' ? {} : { parent, }), message, };
+      const [parent,] = parents.split(' ',);
+      return {
+        oid,
+        ...((parent === undefined) || (parent === '') ? {} : { parent, }),
+        message,
+      };
     },);
 }
 
@@ -172,7 +202,13 @@ export async function isAncestor({
    */
   const outcome = await runProcess({
     command: repository.realGit,
-    args: [...(gitDir === undefined ? [] : [`--git-dir=${gitDir}`,]), 'merge-base', '--is-ancestor', oid, ref,],
+    args: [
+      ...(gitDir === undefined ? [] : [`--git-dir=${gitDir}`,]),
+      'merge-base',
+      '--is-ancestor',
+      oid,
+      ref,
+    ],
     cwd: repository.worktree,
     env: repository.realEnv,
   },);
@@ -206,10 +242,29 @@ export async function changedPaths({
   const text = await realGit({
     repository,
     args: commit.parent === undefined
-      ? ['diff-tree', '--root', '--no-commit-id', '--name-only', '--no-renames', '-r', '-z', commit.oid,]
-      : ['diff-tree', '--no-commit-id', '--name-only', '--no-renames', '-r', '-z', commit.parent, commit.oid,],
+      ? [
+        'diff-tree',
+        '--root',
+        '--no-commit-id',
+        '--name-only',
+        '--no-renames',
+        '-r',
+        '-z',
+        commit.oid,
+      ]
+      : [
+        'diff-tree',
+        '--no-commit-id',
+        '--name-only',
+        '--no-renames',
+        '-r',
+        '-z',
+        commit.parent,
+        commit.oid,
+      ],
   },);
-  return text.split('\0',).filter(function nonEmpty(path,) {
+  return text.split('\0',)
+    .filter(function nonEmpty(path,) {
     return path !== '';
   },);
 }
@@ -242,10 +297,22 @@ export async function firstParentChain({
   /**
    Commits strictly between the ends plus the newest.
    */
-  const text = await realGit({ repository, args: ['rev-list', '--first-parent', '--max-count=64', `${oldest}..${newest}`,], },);
-  return [...text.split('\n',).filter(function nonEmpty(line,) {
+  const text = await realGit({
+    repository,
+    args: [
+      'rev-list',
+      '--first-parent',
+      '--max-count=64',
+      `${oldest}..${newest}`,
+    ],
+  },);
+  return [
+    ...text.split('\n',)
+      .filter(function nonEmpty(line,) {
     return line !== '';
-  },), oldest,];
+  },),
+    oldest,
+  ];
 }
 
 /**
@@ -280,22 +347,54 @@ export async function mergeOnto({
   /**
    Scratch directory for the three inputs.
    */
-  const directory = await mkdtemp(join(repository.root, 'merge-',),);
+  const directory = await mkdtemp(join(
+    repository.root,
+    'merge-',
+  ),);
   /**
    Input paths.
    */
-  const files = { current: join(directory, 'current',), base: join(directory, 'base',), other: join(directory, 'other',), };
+  const files = {
+    current: join(
+      directory,
+      'current',
+    ),
+    base: join(
+      directory,
+      'base',
+    ),
+    other: join(
+      directory,
+      'other',
+    ),
+  };
   await Promise.all([
-    writeFile(files.current, current,),
-    writeFile(files.base, base,),
-    writeFile(files.other, other,),
+    writeFile(
+      files.current,
+      current,
+    ),
+    writeFile(
+      files.base,
+      base,
+    ),
+    writeFile(
+      files.other,
+      other,
+    ),
   ],);
   /**
    Merge result; exit 0 means clean.
    */
   const merged = await runProcess({
     command: repository.realGit,
-    args: ['merge-file', '-p', '--quiet', files.current, files.base, files.other,],
+    args: [
+      'merge-file',
+      '-p',
+      '--quiet',
+      files.current,
+      files.base,
+      files.other,
+    ],
     cwd: directory,
     env: repository.realEnv,
   },);
@@ -303,7 +402,13 @@ export async function mergeOnto({
    Exact merged bytes; text capture is safe because merge-file refuses binary input.
    */
   const bytes = Buffer.from(merged.stdout,);
-  await rm(directory, { recursive: true, force: true, },);
+  await rm(
+    directory,
+    {
+      recursive: true,
+      force: true,
+    },
+  );
   return merged.exitCode === 0 ? bytes : 'conflict';
 }
 

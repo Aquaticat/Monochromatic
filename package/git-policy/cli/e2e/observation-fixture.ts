@@ -66,7 +66,14 @@ async function findLeftovers(repository: ScenarioRepository,): Promise<readonly 
   /**
    Private refs, loose or packed.
    */
-  const refs = (await realGit({ repository, args: ['for-each-ref', '--format=%(refname)', 'refs/cli-git/',], },))
+  const refs = (await realGit({
+    repository,
+    args: [
+      'for-each-ref',
+      '--format=%(refname)',
+      'refs/cli-git/',
+    ],
+  },))
     .split('\n',)
     .filter(function nonEmpty(line,) {
       return line !== '';
@@ -74,7 +81,10 @@ async function findLeftovers(repository: ScenarioRepository,): Promise<readonly 
   /**
    Every entry under the common directory, relative to it.
    */
-  const entries = await readdir(repository.commonDir, { recursive: true, },);
+  const entries = await readdir(
+    repository.commonDir,
+    { recursive: true, },
+  );
   /**
    Lock files and transaction directories.
    */
@@ -82,12 +92,17 @@ async function findLeftovers(repository: ScenarioRepository,): Promise<readonly 
     /**
      Entry basename.
      */
-    const name = entry.split('/',).at(-1,) ?? entry;
-    return !entry.startsWith('objects/',) && (name.endsWith('.lock',) || name.startsWith('cli-git-transaction',));
+    const name = entry.split('/',)
+      .at(-1,)
+      ?? entry;
+    return (!entry.startsWith('objects/',)) && (name.endsWith('.lock',) || name.startsWith('cli-git-transaction',));
   },);
-  return [...refs, ...files.map(function relative(entry,) {
+  return [
+    ...refs,
+    ...files.map(function relative(entry,) {
     return `.git/${entry}`;
-  },),];
+  },),
+  ];
 }
 
 /**
@@ -118,7 +133,17 @@ async function findStagedDifferences({
   /**
    Paths whose index entry differs from `HEAD`.
    */
-  const paths = (await realGit({ repository, args: ['diff', '--cached', '--no-renames', '--name-only', '-z', 'HEAD',], },))
+  const paths = (await realGit({
+    repository,
+    args: [
+      'diff',
+      '--cached',
+      '--no-renames',
+      '--name-only',
+      '-z',
+      'HEAD',
+    ],
+  },))
     .split('\0',)
     .filter(function nonEmpty(path,) {
       return path !== '';
@@ -127,7 +152,16 @@ async function findStagedDifferences({
     /**
      Stage-0 entry line.
      */
-    const listed = await realGit({ repository, args: ['ls-files', '--stage', '-z', '--', path,], },);
+    const listed = await realGit({
+      repository,
+      args: [
+        'ls-files',
+        '--stage',
+        '-z',
+        '--',
+        path,
+      ],
+    },);
     /**
      Staged blob ID, absent for a staged deletion.
      */
@@ -137,12 +171,24 @@ async function findStagedDifferences({
      */
     const staged = oid === undefined
       ? contentOf()
-      : contentOf(await runBytes({ command: repository.realGit, args: ['cat-file', 'blob', oid,], cwd: repository.worktree, env: repository.realEnv, },),);
+      : contentOf(await runBytes({
+        command: repository.realGit,
+        args: [
+          'cat-file',
+          'blob',
+          oid,
+        ],
+        cwd: repository.worktree,
+        env: repository.realEnv,
+      },),);
     return {
       path,
       expectedByHarness: stagedByHarness.has(path,),
       revertsLandedContent: (replaced.get(path,) ?? []).some(function equalsReplaced(content,) {
-        return sameContent(content, staged,);
+        return sameContent({
+          left: content,
+          right: staged,
+        },);
       },),
     };
   },),);
@@ -196,8 +242,15 @@ export async function observeRun({
   /**
    Attempt observations.
    */
-  const attempts = await Promise.all(snapshot.attempts.map(async function observe(attempt,) {
-    return await observeAttempt({ repository, attempt, history, checks, runs, },);
+  const attempts = await Promise.all(snapshot.attempts
+    .map(async function observe(attempt,) {
+    return await observeAttempt({
+      repository,
+      attempt,
+      history,
+      checks,
+      runs,
+    },);
   },),);
   /**
    Parent-side contents replaced by landed commits, per path.
@@ -205,47 +258,89 @@ export async function observeRun({
   const replacedEntries = await Promise.all(history.flatMap(function landedByAttempt(commit,) {
     return snapshot.attempts
       .filter(function carries(attempt,) {
-        return commit.message.includes(`[${attempt.token}]`,) && (commit.parent !== undefined);
+        return commit.message
+          .includes(`[${attempt.token}]`,)
+          && (commit.parent !== undefined);
       },)
       .flatMap(function replacedPaths(attempt,) {
-        return attempt.selectedPaths.map(async function replacedContent(path,) {
-          return [path, stateOf(await treeBytes({ repository, commit: commit.parent ?? commit.oid, path, },),),] as const;
+        return attempt.selectedPaths
+          .map(async function replacedContent(path,) {
+          return [
+            path,
+            stateOf(await treeBytes({
+              repository,
+              commit: commit.parent ?? commit.oid,
+              path,
+            },),),
+          ] as const;
         },);
       },);
   },),);
   /**
    Replaced contents grouped by path.
    */
-  const replaced = replacedEntries.reduce(function group(map, [path, content,],) {
-    return new Map([...map, [path, [...(map.get(path,) ?? []), content,],],],);
-  }, new Map<string, readonly ReturnType<typeof contentOf>[]>(),);
+  const replaced = new Map([...Map.groupBy(
+    replacedEntries,
+    function byPath([path,],) {
+    return path;
+  },
+  ),].map(function contents([path, entries,],) {
+    return [
+      path,
+      entries.map(function content([, state,],) {
+      return state;
+    },),
+    ] as const;
+  },),);
   /**
    Auxiliary command observations.
    */
-  const auxiliaries = snapshot.auxiliaries.map(function observeAuxiliary(auxiliary,): AuxiliaryObservation {
+  const auxiliaries = snapshot.auxiliaries
+    .map(function observeAuxiliary(auxiliary,): AuxiliaryObservation {
     /**
      Decoded events for wrapper commands.
      */
-    const extraction = extractPolicyEvents(auxiliary.wrapper ? auxiliary.outcome.stderr : '',);
+    const extraction = extractPolicyEvents(auxiliary.wrapper ? auxiliary.outcome
+      .stderr : '',);
     return {
       label: auxiliary.label,
-      exitCode: auxiliary.outcome.exitCode,
+      exitCode: auxiliary.outcome
+        .exitCode,
       mustSucceed: auxiliary.mustSucceed,
-      eventIssues: [...extraction.issues, ...checkExitConsistency({ exitCode: auxiliary.outcome.exitCode, events: extraction.events, },),],
+      eventIssues: [
+        ...extraction.issues,
+        ...checkExitConsistency({
+          exitCode: auxiliary.outcome
+            .exitCode,
+          events: extraction.events,
+        },),
+      ],
     };
   },);
   /**
    Final worktree contents of tracked harness paths.
    */
   const worktree = await Promise.all([...snapshot.worktree,].map(async function compare([path, expected,],) {
-    return { path, expected, actual: contentOf((await readWorktree({ repository, path, },)).bytes,), };
+    return {
+      path,
+      expected,
+      actual: contentOf((await readWorktree({
+        repository,
+        path,
+      },)).bytes,),
+    };
   },),);
   /**
    `git fsck` settlement.
    */
   const fsck = await runProcess({
     command: repository.realGit,
-    args: ['fsck', '--strict', '--no-dangling', '--no-progress',],
+    args: [
+      'fsck',
+      '--strict',
+      '--no-dangling',
+      '--no-progress',
+    ],
     cwd: repository.worktree,
     env: repository.realEnv,
   },);
@@ -253,9 +348,16 @@ export async function observeRun({
     attempts,
     auxiliaries,
     worktree,
-    staged: await findStagedDifferences({ repository, stagedByHarness: snapshot.staged, replaced, },),
+    staged: await findStagedDifferences({
+      repository,
+      stagedByHarness: snapshot.staged,
+      replaced,
+    },),
     leftovers: await findLeftovers(repository,),
-    fsck: { exitCode: fsck.exitCode, output: `${fsck.stdout}${fsck.stderr}`, },
+    fsck: {
+      exitCode: fsck.exitCode,
+      output: `${fsck.stdout}${fsck.stderr}`,
+    },
     expectations,
   };
 }

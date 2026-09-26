@@ -17,7 +17,10 @@
  */
 export type ContentState =
   | Readonly<{ state: 'absent'; }>
-  | Readonly<{ state: 'present'; digest: string; }>;
+  | Readonly<{
+    state: 'present';
+    digest: string
+  }>;
 
 /**
  Landed content of one selected path and every content the invariant accepts for it.
@@ -219,11 +222,18 @@ export type RunObservation = Readonly<{
   /**
    `git fsck --strict` result.
    */
-  fsck: Readonly<{ exitCode: number; output: string; }>;
+  fsck: Readonly<{
+    exitCode: number;
+    output: string
+  }>;
   /**
    Scenario-specific expectations of the accepted design.
    */
-  expectations: readonly Readonly<{ name: string; holds: boolean; detail: string; }>[];
+  expectations: readonly Readonly<{
+    name: string;
+    holds: boolean;
+    detail: string
+  }>[];
 }>;
 
 /**
