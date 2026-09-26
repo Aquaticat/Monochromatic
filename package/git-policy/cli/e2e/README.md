@@ -264,7 +264,7 @@ so filtering never shifts another scenario's decisions.
 Each result line prints a workload digest over labels,
 selections,
 and captured bytes.
-Two runs of seed 1 on build `976a2c00e` printed identical digests for all 54 non-skipped runs.
+Two consecutive runs of seed 1 printed identical digests for all 54 non-skipped runs.
 Hook barriers make the pinned interleavings identical on replay;
 free-running starts and the `sigkill-offset` kill still depend on process scheduling,
 so a replay reproduces the workload exactly but can land a free-running race differently.
@@ -272,9 +272,10 @@ so a replay reproduces the workload exactly but can land a free-running race dif
 ## Results on the current build
 
 Seed 1,
-build `976a2c00e` of `feat/cli-git-concurrent-commits`
-(the parallel-commit slices are not implemented yet),
-2026-09-25.
+2026-09-25,
+packed from the `feat/cli-git-concurrent-commits` working tree at `976a2c00e`,
+which included other agents' uncommitted slice 1 edits under `src/`
+(the parallel-commit slices are not implemented yet).
 This is the suite's positive control:
 the design scenarios must fail on today's build.
 
@@ -329,7 +330,7 @@ the design scenarios must fail on today's build.
   nothing recovers them,
   so the bystander and every later commit fail with `EEXIST`.
 
-Earlier runs against the build before `976a2c00e` also showed
+Earlier runs against the working tree at `2be50139e` also showed
 `content-unavailable` "Incomplete transaction recovery artifacts" exits
 and one `ENOENT` on `lstat .git/cli-git-transaction`
 when a concurrent wrapper's recovery met another invocation's transaction directory mid-lifecycle.
