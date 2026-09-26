@@ -56,7 +56,7 @@ const MAINTENANCE_CONFIG_PATTERN = String.raw`^(maintenance\.auto|maintenance\.a
 /**
  Automatic maintenance is disabled by `maintenance.auto` or a non-positive `gc.auto`.
  */
-export const AUTO_MAINTENANCE_DISABLED: unique symbol = Symbol('maintenance.auto or gc.auto disables automatic maintenance',);
+export const AUTO_MAINTENANCE_DISABLED: unique symbol = Symbol('Git configuration turns off the background repository cleanup native commits start, such as pack consolidation',);
 
 /**
  Interprets one `--type=bool-or-int` value as Git's boolean.
@@ -96,17 +96,26 @@ export function parseConfigRecords(output: string,): Readonly<Record<string, str
     .filter(function nonEmpty(record,): boolean {
       return record.length > 0;
     },)
-    .map(function keyValue(record,): readonly [string, string,] {
+    .map(function keyValue(record,): readonly [
+      string,
+      string,
+    ] {
       /**
        Newline separating the key from its value; absent for a value-less key.
        */
       const newline = record.indexOf('\n',);
       return newline === (-1)
-        ? [record, 'true',]
-        : [record.slice(
-          0,
-          newline,
-        ), record.slice(newline + 1,),];
+        ? [
+          record,
+          'true',
+        ]
+        : [
+          record.slice(
+            0,
+            newline,
+          ),
+          record.slice(newline + 1,),
+        ];
     },),);
 }
 
@@ -224,7 +233,10 @@ export async function runAutoMaintenance({
   const result = await runTransactionGit({
     gitPath,
     cwd,
-    args: [...globalArgs, ...args,],
+    args: [
+      ...globalArgs,
+      ...args,
+    ],
     allowFailure: true,
   },);
   if (result.exitCode !== USAGE_EXIT_CODE) {
@@ -240,10 +252,13 @@ export async function runAutoMaintenance({
   const fallback = await runTransactionGit({
     gitPath,
     cwd,
-    args: [...globalArgs, ...args.slice(
-      0,
-      -1,
-    ),],
+    args: [
+      ...globalArgs,
+      ...args.slice(
+        0,
+        -1,
+      ),
+    ],
     allowFailure: true,
   },);
   rl.debug(`automatic maintenance exited ${String(fallback.exitCode,)}`,);
