@@ -1061,6 +1061,41 @@ every ceiling remains below 2,000 milliseconds.
 `perf/lifecycle-latency-2026-09-26.json` re-measures the matrix after every non-dry-run commit moved to private preparation;
 every scenario stays below its ceiling.
 
+```console
+mise run //package/git-policy/cli:perf:concurrent-commits
+```
+
+The concurrent-commit benchmark runs in the same bounded container shape,
+on `node:24-trixie-slim`,
+because bookworm's Git 2.39.5 predates `git merge-tree --merge-base`,
+the declared minimum,
+and every replay there fails.
+It covers the concurrent scenarios `SPEC.md` "Benchmark method" names:
+disjoint paths at concurrency 1,
+2,
+4,
+and 8,
+a same-file non-overlapping pair,
+a conflicting pair against a native commit,
+a slow `pre-commit` hook with `hooks.concurrentCommits` `false` and `true`,
+and a `landing.reserveAfterLostRaces` sweep.
+Each scenario gets a fresh repository,
+because per-commit cost grows with a repository's history,
+warms up until adjacent three-batch windows agree within 20 %,
+then records 30 concurrent batches,
+each paired with the same commits serialized through the wrapper
+(and,
+for disjoint paths,
+through direct Git).
+It reports batch wall time,
+throughput,
+per-commit completion,
+lost races,
+replays,
+and landing lock and real `index.lock` holds read from inotify rename events.
+`perf/concurrent-commit-latency-2026-09-26.json` stores the first baseline;
+no budget is enforced yet.
+
 ## How it works
 
 The wrapper shadows the system `git` binary on PATH (via mise bin linkage).
