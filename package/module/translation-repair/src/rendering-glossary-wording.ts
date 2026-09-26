@@ -192,6 +192,23 @@ export const WORDING_GLOSSARY: readonly CommunityTerm[] = [
     why: 'the page names the dish "douhua" in its front matter and throughout, and a second name for it on the same '
       + 'page reads as a second food',
   },
+  // CLASS ONE HUNDRED FORTY (XingZ6012, 2026-09-26): the song credit
+  // 「——来自《笼中之鸟》，作者 洁澄天奏Official」 shipped "——from “Bird in a
+  // Cage”…, author Jiecheng Tianzou Official", where XingZ6011 and XingZ623
+  // wrote "by". The term is the credit form with its comma: 作者 alone also
+  // stands inside 社会工作者 ("social worker") on GLaDOSister, and the one
+  // other pinned 「，作者」 opens a footnote whose subject is the author, which
+  // renders "the author" and never ", author ".
+  {
+    term: '，作者',
+    renderings: [
+      'by',
+      'written by',
+    ],
+    refusedForms: [', author ',],
+    why: 'a credit line\'s 作者 names who made the work, and an English credit says "by" before the maker; '
+      + '", author" before a name is word for word',
+  },
 ];
 
 //endregion Wording renderings
