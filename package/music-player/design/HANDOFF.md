@@ -5907,3 +5907,27 @@ larger opposing-information floor would change the accepted A composition.
 Long result names,
 scrolling and distinct screen states require separate crease review.
 No production code or AGENTS rules changed for this measurement.
+
+## Disposable Fold recovered for result-overflow review
+
+A restarted `Fold_No_Hardware_Probe` container exited before boot with
+Android Emulator 37.1.11's `Running multiple emulators with the same AVD`
+FATAL.
+The previous private container had required Podman's `SIGKILL` fallback.
+No `emulator-5580` device,
+matching emulator process,
+private Podman emulator container or holder of its lock files was found.
+The empty `multiinstance.lock` and three-byte `hardware-qemu.ini.lock` were
+moved to a private scratch backup rather than deleted;
+the same 6 GiB/2 CPU container command then reported `ADB_BOOT_READY`.
+The guest remained unfolded at 200% text with Gboard selected,
+and an explicit selected-A Search launch showed Folders,
+Open,
+`cam` and the complete keyboard-closed mode.
+This **joint relocation** proves recovery of this disposable fixture,
+not which lock was decisive or a general emulator fix.
+The original `Pixel_9_Pro_Fold` AVD was not touched.
+The source-bounded incident and backup location are in
+`doc/troubleshooting/android-emulator-37-disposable-avd-lock-after-hard-stop.md`.
+Continue native result-overflow checks in this private fixture only;
+keep raw status-bearing captures out of the review artifact.
