@@ -358,6 +358,23 @@ The loader's separate temperature warning names `choice:11+`,
 not the `noul:2` bucket used here;
 its source trace is retained in the Laya troubleshooting document.
 
+### CPU BF16 follow-up
+
+A direct `/proc/cpuinfo` probe found native `avx512_bf16` support.
+The inspected Laya source offers `LAYA_CPU_AMP=bf16` for CPU inference.
+A separate scratch variant at `~/temp/agent/laya-axiom-bf16-2026-09-26`
+retains the same checkpoint,
+question,
+scenario,
+complete-policy checks,
+and resource limits.
+It asserts BF16 is enabled before inference and has not fallen back afterward.
+No GPU is exposed and no training is performed.
+Process `proc_57da` is measuring this variant;
+no result has been inspected yet.
+The purpose is budget fit for this configuration,
+not a single-run speedup comparison or a safety qualification.
+
 ## Native Jev axiom pilot result
 
 The first axiom-only batch completed through LLM Gateway using `typesafe/jev-1.13.0`.
