@@ -200,6 +200,14 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    requested by user:
    proposed,
    awaiting user review.
+- Batch 6 (option presentation):
+   6 rules become 5,
+   352 to 302 tokens;
+   retires OPI into OPT;
+   OCG stays always-loaded (17 CLI packages,
+   301 commits to `package/cli` since 2026-06-25) and moves to "Architecture decisions".
+   Proposed,
+   awaiting user review.
 - Retired-code references:
    rewrite every reference in other docs to the successor code (user chose this over a retired-codes list).
 
