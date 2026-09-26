@@ -273,3 +273,28 @@ fn root_set_to_a_scalar_is_refused() {
     let replacement = JsoncValue { kind: JsoncKind::Array { elements: Vec::new() }, comment: None };
     assert!(jsonc_set(&document, &[], replacement).is_ok(), "a container root must be accepted");
 }
+
+/// A shape mismatch must name both the operation and the mismatch. The generic scalar complaint is
+/// a different arm, so asserting the exact message is what distinguishes them.
+#[test]
+fn mismatched_segments_name_operation_and_shape() {
+    let state = parse_jsonc_edit("{\"list\":[10],\"rec\":{\"a\":1}}").expect("document parses");
+    let list_by_key = [JsoncPathSegment::Key { key: "list".to_string() }, JsoncPathSegment::Key { key: "a".to_string() }];
+    let rec_by_position = [JsoncPathSegment::Key { key: "rec".to_string() }, at(0)];
+    let replacement = JsoncValue { kind: JsoncKind::Null, comment: None };
+
+    let lookup_error = jsonc_lookup(&state.root, &list_by_key).expect_err("an array takes no key");
+    assert_eq!(format!("{lookup_error}"), "jsonc lookup: cannot index an array with key \"a\"");
+    let lookup_position = jsonc_lookup(&state.root, &rec_by_position).expect_err("a record takes no position");
+    assert_eq!(format!("{lookup_position}"), "jsonc lookup: cannot index an object with position 0");
+
+    let set_error = jsonc_set(&state.root, &list_by_key, replacement.clone()).expect_err("set into an array by key");
+    assert_eq!(format!("{set_error}"), "jsonc edit: cannot index an array with key \"a\"");
+    let set_position = jsonc_set(&state.root, &rec_by_position, replacement).expect_err("set into a record by position");
+    assert_eq!(format!("{set_position}"), "jsonc edit: cannot index an object with position 0");
+
+    let delete_error = jsonc_delete(&state.root, &list_by_key).expect_err("delete from an array by key");
+    assert_eq!(format!("{delete_error}"), "jsonc delete: cannot index an array with key \"a\"");
+    let delete_position = jsonc_delete(&state.root, &rec_by_position).expect_err("delete from a record by position");
+    assert_eq!(format!("{delete_position}"), "jsonc delete: cannot index an object with position 0");
+}

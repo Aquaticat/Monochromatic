@@ -384,3 +384,72 @@ fn merged_comment_body_with_cr_survives_round_trip() {
     assert!(body.contains('a') && body.contains('b'), "merged body lost content: {body:?} from {emitted:?}");
     assert!(!body.contains('\r') || emitted.contains("/*"), "a CR body was emitted as a // line: {emitted:?}");
 }
+
+/// A block comment at offset zero exercises the scan loop's first iteration, where an arithmetic
+/// mistake on the offset underflows rather than merely miscounting.
+#[test]
+fn leading_block_comment_at_offset_zero_parses() {
+    let document = parse_jsonc("/* lead */\n{\"a\":1}").expect("a leading block comment parses");
+    let body = document.comment.as_ref().map(|comment| return comment.text.clone());
+    assert_eq!(body.as_deref(), Some(" lead "), "leading block comment body");
+}
+
+/// A block comment body may contain a lone star or slash; only the pair closes it.
+#[test]
+fn block_comment_body_may_contain_lone_star_and_slash() {
+    let document = parse_jsonc("{\"a\":/* a * b / c */1}").expect("lone star and slash parse");
+    let value = &document.entries().expect("record")[0].value;
+    let body = value.comment.as_ref().map(|comment| return comment.text.clone());
+    assert_eq!(body.as_deref(), Some(" a * b / c "), "block body was cut short");
+}
+
+/// A block comment that ends exactly at end of input must still be recognized as closed.
+#[test]
+fn block_comment_at_end_of_input_is_attached() {
+    let document = parse_jsonc("{\"a\":1}/* tail */").expect("trailing block comment parses");
+    let body = document.comment.as_ref().map(|comment| return comment.text.clone());
+    assert_eq!(body.as_deref(), Some(" tail "), "end-of-input block comment body");
+}
+
+/// A space inside a string is emitted literally; only control characters and surrogates are escaped.
+#[test]
+fn string_body_keeps_spaces_literal() {
+    let document = parse_jsonc("{\"s\":\"a b\"}").expect("string with a space parses");
+    let emitted = emit_jsonc_value(&document);
+    assert!(emitted.contains("\"a b\""), "space was escaped in {emitted:?}");
+    assert!(!emitted.contains("\\u0020"), "space was escaped in {emitted:?}");
+}
+
+/// A lone slash is not a comment opener, and the refusal must name the character rather than
+/// reporting the end of input that a mistaken comment scan would run into.
+#[test]
+fn lone_slash_is_rejected_naming_the_character() {
+    let error = parse_jsonc("{\"a\": 1/2}").expect_err("a lone slash must be rejected");
+    // The parser reads `1`, then meets `/` where a separator or close was required. A scanner that
+    // mistook the lone slash for a comment opener would instead run to end of input.
+    assert_eq!(error.message, "expected comma or container close", "refusal named the wrong failure");
+}
+
+/// Canonical layout indents two spaces per level, so a nesting arithmetic mistake is visible.
+#[test]
+fn canonical_layout_indents_each_nesting_level() {
+    let document = parse_jsonc("{\"a\":{\"b\":{\"c\":1}}}").expect("nested document parses");
+    let emitted = emit_jsonc_value(&document);
+    let pads: Vec<usize> = emitted
+        .lines()
+        .map(|line| return line.len() - line.trim_start().len())
+        .filter(|pad| return *pad > 0)
+        .collect();
+    assert!(pads.contains(&2), "no line indented one level in {emitted:?}");
+    assert!(pads.contains(&4), "no line indented two levels in {emitted:?}");
+    assert!(pads.contains(&6), "no line indented three levels in {emitted:?}");
+}
+
+/// A single-line value comment is emitted after the value on the same line, which is what
+/// distinguishes trailing placement from leading placement.
+#[test]
+fn single_line_value_comment_emits_trailing() {
+    let document = parse_jsonc("{\"a\": 1 /* note */}").expect("document parses");
+    let emitted = emit_jsonc_value(&document);
+    assert!(emitted.contains("1, // note"), "comment did not trail the value in {emitted:?}");
+}

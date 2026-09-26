@@ -39,7 +39,8 @@ use crate::value::{JsoncComment, JsoncCommentKind};
 /// import { jsoncComment, jsoncSetComment, jsoncKeyComment, jsoncSetKeyComment } from './index';
 /// ```
 use crate::{
-    jsonc_comment, jsonc_key_comment, jsonc_set_comment, jsonc_set_key_comment, parse_jsonc_edit,
+    jsonc_comment, jsonc_key_comment, jsonc_set_comment, jsonc_set_key_comment, parse_jsonc,
+    parse_jsonc_edit,
 };
 use crate::path::{jsonc_key_path, JsoncPathSegment};
 
@@ -177,4 +178,18 @@ fn replaced_comments_survive_round_trip() {
     assert_eq!(jsonc_comment(&reparsed.root, &jsonc_key_path(["a"])).expect("value comment").map(|comment| return comment.text.as_str()), Some(" note "));
     assert_eq!(jsonc_key_comment(&reparsed.root, &jsonc_key_path(["b"])).expect("key comment").map(|comment| return comment.text.as_str()), Some(" list "));
     assert_eq!(jsonc_comment(&reparsed.root, &element).expect("element comment").map(|comment| return comment.text.as_str()), Some(" item "));
+}
+
+/// A caller may attach a line-style comment whose body carries a bare CR. Emission must not render
+/// it as a `//` line, because that comment would end at the CR and leave the rest as code.
+#[test]
+fn line_kind_body_with_cr_round_trips() {
+    let state = parse_jsonc_edit("{\"a\":1}").expect("document parses");
+    let path = [JsoncPathSegment::Key { key: "a".to_string() }];
+    let comment = JsoncComment { kind: JsoncCommentKind::Line, text: " x\ry ".to_string() };
+    let edited = jsonc_set_comment(&state.root, &path, Some(comment)).expect("comment attaches");
+    let emitted = emit_jsonc_value(&edited);
+    let reparsed = parse_jsonc(&emitted).unwrap_or_else(|error| panic!("emission must reparse: {error}\n{emitted:?}"));
+    let body = jsonc_comment(&reparsed, &path).expect("query").map(|found| return found.text.clone());
+    assert_eq!(body.as_deref(), Some(" x\ry "), "CR body did not survive: {emitted:?}");
 }

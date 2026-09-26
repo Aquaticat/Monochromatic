@@ -20,10 +20,12 @@ import {
 import type { StringJsonc, } from '@monochromatic-dev/module-jsonc-edit/ts/brand.ts';
 import {
   COMMENT_ABSENT,
+  type JsoncEditState,
   jsoncGetComment,
   jsoncGetKeyComment,
   jsoncGetValue,
   jsoncKeys,
+  jsoncSet,
   jsoncStringify,
   parseJsonc,
   parseJsoncEdit,
@@ -131,13 +133,13 @@ type SharedOwnershipCase = {
  What:     Decode one fixture comment field into text or the absence sentinel.
  Why:      The fixture's absence spelling is JSON null; narrowing by typeof keeps this module's
            comparisons free of nullish literals while still rejecting the wrong field type.
- *
+ 
  @param value - Fixture field read from JSON.
 
  @returns The comment text, or FIXTURE_ABSENT when the fixture expects none.
  */
 const decodeComment = (value: FixtureCommentJson,): FixtureComment => {
-  if (typeof value === 'string')
+  if ((typeof value) === 'string')
     return value;
   if (value === null)
     return FIXTURE_ABSENT;
@@ -147,7 +149,7 @@ const decodeComment = (value: FixtureCommentJson,): FixtureComment => {
 /**
  What:     Decode one comment the API returned into the same vocabulary as the fixture.
  Why:      Both sides then compare as sentinel-or-text, with no nullish value involved.
- *
+ 
  @param comment - Comment query result, which is COMMENT_ABSENT when nothing is attached.
 
  @returns The comment text, or FIXTURE_ABSENT when the query found none.
@@ -156,6 +158,116 @@ const actualComment = (comment: { type: string; text: string } | symbol,): Fixtu
   (comment === COMMENT_ABSENT)
     ? FIXTURE_ABSENT
     : (comment as { text: string }).text;
+
+/**
+ What:     One shared round-trip case: a source plus the comment bodies that must still be attached
+ after emission and a reparse.
+ */
+type SharedRoundTripCase = {
+  readonly name: string;
+  readonly source: string;
+  readonly commentBodies: readonly string[];
+};
+
+/**
+ What:     One shared root-shape case: an address, a replacement kind and whether the edit is refused.
+ */
+type SharedRootShapeCase = {
+  readonly name: string;
+  readonly path: readonly (string | number)[];
+  readonly valueKind: string;
+  readonly refused: boolean;
+};
+
+/**
+ What:     Collect every comment body attached anywhere in a document.
+ Why:      The round-trip contract is stated as bodies that must still be attached afterwards, which
+ needs one walk over keys, values and the root rather than a query per address.
+
+ @param state - Document to walk.
+ @param path - Address the walk is currently at.
+ @param into - Accumulator, filled in place so the walk stays tail-shaped.
+ */
+const collectBodies = (
+  state: JsoncEditState,
+  path: readonly (string | number)[],
+  into: string[],
+): void => {
+  const valueComment = jsoncGetComment({ state, path: [...path,], },);
+  if (valueComment !== COMMENT_ABSENT)
+    into.push(valueComment.text,);
+  if ((typeof path.at(-1,)) === 'string') {
+    const keyComment = jsoncGetKeyComment({ state, path: [...path,], },);
+    if (keyComment !== COMMENT_ABSENT)
+      into.push(keyComment.text,);
+  }
+  const value = jsoncGetValue({ state, path: [...path,], },);
+  // Scalars and JSON null have no members, and `jsoncKeys` throws rather than returning nothing for
+  // them, so the walk stops here. `instanceof Object` is false for null without naming it.
+  if (!(value instanceof Object))
+    return;
+  if (Array.isArray(value,)) {
+    value.forEach(function walkElement(_: unknown, index: number,): void {
+      collectBodies(state, [...path, index,], into,);
+    },);
+    return;
+  }
+  const keys = jsoncKeys({ state, path: [...path,], },);
+  if (keys === undefined)
+    return;
+  for (const key of keys)
+    collectBodies(state, [...path, key,], into,);
+};
+
+/**
+ What:     Build the replacement value a root-shape case names.
+ Why:      The contract is about the replacement's shape, so the fixture names a kind instead of
+ spelling a literal both suites would have to agree on.
+
+ @param kind - Fixture kind name.
+
+ @returns A value of that shape.
+ */
+const valueForKind = (kind: string,): JsonValue => {
+  if (kind === 'null')
+    return null;
+  if (kind === 'number')
+    return 7;
+  if (kind === 'string')
+    return '';
+  if (kind === 'array')
+    return [];
+  if (kind === 'record')
+    return {};
+  throw new Error(`fixture names an unknown value kind ${kind}`);
+};
+
+/**
+ What:     The outcome of trying an edit that the contract may refuse.
+ Why:      A refusal is an expected outcome for some cases, so it travels as a value; the message
+ comes along so the case can assert the refusal names the root.
+ */
+type RefusalProbe = {
+  readonly refused: boolean;
+  readonly message: string;
+};
+
+/**
+ What:     Try an edit and report whether the package refused it.
+ Why:      Both outcomes are contractual, so neither may be allowed to fail the case by throwing.
+
+ @param attempt - The edit to try.
+
+ @returns Whether it was refused, and the thrown message when it was.
+ */
+const attemptRefusal = (attempt: () => unknown,): RefusalProbe => {
+  try {
+    attempt();
+    return { refused: false, message: '', };
+  } catch (error) {
+    return { refused: true, message: (error as Error).message, };
+  }
+};
 
 await describe({
   name: 'JSONC conformance',
@@ -213,13 +325,19 @@ await describe({
           fn: async () => {
             for (const sample of fixtures.commentOwnership as readonly SharedOwnershipCase[]) {
               const state = parseJsoncEdit({ source: asJsonc(sample.source,), },);
-              expect(actualComment(jsoncGetComment({ state, path: [], },),),).toBe(decodeComment(sample.root,),);
+              expect(
+                actualComment(jsoncGetComment({ state, path: [], },),),
+              ).toBe(decodeComment(sample.root,),);
               for (const expectation of sample.at) {
                 const path = [...expectation.path,];
-                expect(actualComment(jsoncGetComment({ state, path, },),),).toBe(decodeComment(expectation.value,),);
+                expect(
+                  actualComment(jsoncGetComment({ state, path, },),),
+                ).toBe(decodeComment(expectation.value,),);
                 const finalSegment = expectation.path.at(-1,);
-                if (typeof finalSegment === 'string') {
-                  expect(actualComment(jsoncGetKeyComment({ state, path, },),),).toBe(decodeComment(expectation.key,),);
+                if ((typeof finalSegment) === 'string') {
+                  expect(
+                    actualComment(jsoncGetKeyComment({ state, path, },),),
+                  ).toBe(decodeComment(expectation.key,),);
                 }
               }
             }
@@ -262,6 +380,37 @@ await describe({
               const left = jsoncGetValue({ state, path: ['l',], },);
               const right = jsoncGetValue({ state, path: ['r',], },);
               expect(Object.is(left, right,) || (left === right),).toBe(sample.equal,);
+            }
+          },
+        },),
+        it({
+          name: 'shared round-trip cases keep every comment body',
+          fn: async () => {
+            for (const sample of fixtures.roundTrip as readonly SharedRoundTripCase[]) {
+              const emitted = jsoncStringify({
+                state: parseJsoncEdit({ source: asJsonc(sample.source,), },),
+              },);
+              const reparsed = parseJsoncEdit({ source: asJsonc(emitted,), },);
+              const bodies: string[] = [];
+              collectBodies(reparsed, [], bodies,);
+              for (const wanted of sample.commentBodies)
+                expect(bodies.includes(wanted,),).toBe(true,);
+            }
+          },
+        },),
+        it({
+          name: 'shared root-shape cases refuse non-container roots',
+          fn: async () => {
+            for (const sample of fixtures.rootShape as readonly SharedRootShapeCase[]) {
+              const state = parseJsoncEdit({ source: asJsonc('{ "a": 1 }',), },);
+              const probe = attemptRefusal(() => jsoncSet({
+                state,
+                path: [...sample.path,],
+                value: valueForKind(sample.valueKind,),
+              },),);
+              expect(probe.refused,).toBe(sample.refused,);
+              if (sample.refused)
+                expect(probe.message.includes('root',),).toBe(true,);
             }
           },
         },),
