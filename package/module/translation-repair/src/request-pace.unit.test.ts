@@ -10,6 +10,9 @@
  @module
  */
 
+import { once, } from 'node:events';
+
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import {
   describe,
   expect,
@@ -202,6 +205,100 @@ await describe({
         expect(hyperRequestsPerHour({ env: {}, },),).toBe(HYPER_REQUESTS_PER_HOUR,);
         expect(HYPER_REQUESTS_PER_HOUR,).toBe(1_000,);
         expect(HYPER_PACE_WINDOW_MS,).toBe(3_600_000,);
+      },
+    },),
+  ],
+},);
+
+/**
+ How long the release case gives an abandoned take to end before calling it
+ stuck behind another take's wait.
+ */
+const RELEASE_PATIENCE_MS = 200;
+
+/**
+ Sleeper that ends only when its caller gives up, standing for a timer far
+ past the case's patience.
+
+ @param _ms - wait the pacer asked for, never reached here
+
+ @param signal - caller's abort, the only way out
+
+ @example
+ ```ts
+ const pace = createRequestPace({ perWindow: 1, windowMs: WINDOW_MS, wait: untilAborted, },);
+ ```
+ */
+async function untilAborted(_ms: number, signal?: AbortSignal,): Promise<void> {
+  await once(
+    signal ?? SIGNAL,
+    'abort',
+  );
+}
+
+/**
+ Resolves once the release case's patience has run out.
+
+ @returns Marker saying the take was still waiting
+
+ @example
+ ```ts
+ const outcome = await Promise.race([Promise.allSettled([take,],), patienceRunsOut(),],);
+ ```
+ */
+async function patienceRunsOut(): Promise<'still waiting'> {
+  await wait(RELEASE_PATIENCE_MS,);
+  return 'still waiting';
+}
+
+await describe({
+  name: 'a full window never holds one caller behind another caller\'s wait (class one hundred forty-nine, hulicaijia30)',
+  children: [
+    it({
+      name: 'RELEASES a caller that gives up while another take waits for the window, at once and with its own '
+        + 'reason, and leaves the window holding only the start that happened',
+      fn: async () => {
+        const pace = createRequestPace({
+          perWindow: 1,
+          windowMs: WINDOW_MS,
+          now: () => 0,
+          wait: untilAborted,
+        },);
+        await pace.take({ signal: SIGNAL, },);
+        const first = new AbortController();
+        const second = new AbortController();
+        const firstTake = pace.take({ signal: first.signal, },);
+        const secondTake = pace.take({ signal: second.signal, },);
+        second.abort(new Error('the second cat left the queue',),);
+        /**
+         The second take's outcome, or the marker when it was still waiting.
+         */
+        const outcome = await Promise.race([
+          Promise.allSettled([secondTake,],),
+          patienceRunsOut(),
+        ],);
+        expect(Array.isArray(outcome,),).toBe(true,);
+        const [secondSettled,] = outcome as PromiseSettledResult<void>[];
+        expect(secondSettled?.status,).toBe('rejected',);
+        expect(((secondSettled as PromiseRejectedResult).reason as Error).message,).toBe('the second cat left the queue',);
+
+        first.abort(new Error('the first cat left too',),);
+        const [firstSettled,] = await Promise.allSettled([firstTake,],);
+        expect(firstSettled.status,).toBe('rejected',);
+        expect(pace.inWindow(),).toBe(1,);
+      },
+    },),
+    it({
+      name: 'SAYS how long a take would wait now: zero while the window has room, until the oldest start '
+        + 'leaves it once full',
+      fn: async () => {
+        const { pace, clock, } = scriptedPace({ perWindow: 1, },);
+        expect(pace.waitMs(),).toBe(0,);
+        await pace.take({ signal: SIGNAL, },);
+        clock.now += 10_000;
+        expect(pace.waitMs(),).toBe(WINDOW_MS - 10_000,);
+        clock.now += WINDOW_MS;
+        expect(pace.waitMs(),).toBe(0,);
       },
     },),
   ],
