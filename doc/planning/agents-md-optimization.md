@@ -225,13 +225,20 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    JEV moves to `doc/troubleshooting/rtw89-wifi-disconnects.md`,
    FLK to `package/pi-plugin/advisor/README.md`.
    Approved,
-   except compressed RT1 and RT4 wording awaiting review.
+   including compressed RT1 (gains `--hidden`/`--no-ignore`) and RT4.
 - Batch 8 (git cleanup):
    GCL,
    GC2,
    GCR stay always-loaded (282 to 234 tokens);
    GCI folds into GCR;
-   GCW and WXG move to `package/git-policy/cli/README.md`.
+   GCW and WXG move to `package/git-policy/cli/README.md`;
+   `doc/agent/regression-suite.md` Case 3 gets updated to match GCR.
+   Approved.
+- Batch 9 (command execution and long-form flags):
+   13 rules become 12,
+   1002 to 803 tokens;
+   retires LF2 into LFF;
+   CLH moves to "Command execution conventions".
    Proposed,
    awaiting user review.
 - Retired-code references:
@@ -786,6 +793,136 @@ OCG:
  sketch token encoding before asserting repeated,
  delimited,
  or variadic forms.
+```
+
+### Batch 7
+
+```md
+EVL:
+ "Should we use X better?":
+ before recommending,
+ report X's usage + conf,
+ parallel systems meeting the same need (with content),
+ TODO/workaround comments,
+ suppressions,
+ and stated policies.
+
+EL4:
+ Codebase health signals:
+ zero TODO/FIXME/workaround hits mean discipline only if the search provably ran;
+ thousands mean debt.
+Suppressions with rationale are healthy;
+ bare ones are debt.
+
+XIC:
+ Similar or concurrent symptoms stay separate incidents until user-visible boundaries match.
+Component removal,
+ log silence (retention + emitter unverified),
+ or later recovery proves no cause or fix.
+
+VKI:
+ Synthetic key input:
+ nested compositor or caller-independent broker only;
+ never `ydotool` from an agent command (key-down can cancel the caller before key-up,
+ wedging desktop input).
+
+CB2:
+ Claims an external system "can't" or behaves "by design":
+ read the deciding source;
+ black-box probes aren't proof,
+ and workaround menus assert the claim.
+Surprise after your edit:
+ diff it.
+
+RPB:
+ Resource the user says exists fails one probe:
+ re-probe,
+ then ask user to reconnect/re-authorize/restart before concluding unreachable.
+
+FCH:
+ Doc points elsewhere for substance:
+ fetch that before concluding;
+ never hedge ("likely contains") about a document one tool call away.
+
+QRY:
+ Search output claims the search ran and lines match;
+ both fail silently (bad `--type`,
+ masked stderr,
+ `head` caps,
+ `-v` filters,
+ hidden/ignored skips).
+Sanity-check broader,
+ uncapped,
+ unfiltered.
+
+RT1:
+ `rg` for text search,
+ not directory navigation;
+ `rg --files` for globs;
+ add `--hidden`/`--no-ignore` when dot-dirs or ignored files may hold matches.
+
+RT4:
+ `gh` for GitHub issues,
+ PRs,
+ release notes,
+ repository metadata.
+```
+
+### Batch 7, moved to single-product docs
+
+```md
+JEV:
+ Wi-Fi drop debugging:
+ reproduce with live link,
+ supplicant,
+ kernel,
+ and reachability capture;
+ journal silence or later recovery isn't cause.
+
+FLK:
+ One provider "Context limit exceeded" isn't a stable limit:
+ measure repeated same-input outcomes before lowering global context budgets;
+ prefer model-aware budgeting.
+```
+
+### Batch 8
+
+```md
+GCL:
+ Before doing or reviewing cleanup of ignored files (`git clean -X`,
+ artifact deletion):
+ list them with `git clean --dry-run -d -X` first.
+
+GC2:
+ `git status`,
+ `git ls-files --others --exclude-standard`,
+ and `rg --files` hide ignored files;
+ never use them as cleanup evidence.
+
+GCR:
+ Before cleanup,
+ check root `HEAD`,
+ `config`,
+ `hooks`,
+ `objects`,
+ `refs` (stray git-dir entries) with `ls -d` + `git check-ignore --verbose`;
+ any hit makes safe cleanup part of the finding.
+```
+
+### Batch 8, moved to `package/git-policy/cli/README.md`
+
+```md
+GCW:
+ Worktree-guard reviews:
+ `DEFAULT_ALLOWED_WORKTREE_DIRS` (`src/allowed-worktree-dirs.ts`) lets git-dirs under allowed dirs bypass the guard.
+
+WXG:
+ Worktree-copy incidents:
+ first verify main worktrees bypass admin observation,
+ recovery,
+ settlement,
+ and copying;
+ then classify the effective source before lock analysis.
 ```
 
 ## Next action
