@@ -415,6 +415,21 @@ await describe({
           },
         },),
         it({
+          name: 'shared canonical layout matches byte for byte',
+          fn: async () => {
+            for (const sample of fixtures.canonicalLayout as readonly {
+              name: string;
+              source: string;
+              emitted: string;
+            }[]) {
+              const emitted = jsoncStringify({
+                state: parseJsoncEdit({ source: asJsonc(sample.source,), },),
+              },);
+              expect(emitted,).toBe(sample.emitted,);
+            }
+          },
+        },),
+        it({
           name: 'the shared nesting boundary accepts and rejects the fixture depths',
           fn: async () => {
             const { accepted, rejected, } = fixtures.depth;

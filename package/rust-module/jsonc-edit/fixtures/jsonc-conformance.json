@@ -8,6 +8,7 @@
     "lineEndings": "A line comment ends at CR, LF or CRLF, and the terminator is not part of its body.",
     "lineOwnership": "For comment ownership a line ends at LF or CRLF only. A bare CR terminates a comment body but does not start a new line, so a comment reached after a bare CR belongs to the value before the separator, exactly as a same-line comment does. The user adopted this rule on 2026-09-25 after both implementations were measured to agree on it.",
     "roundTrip": "Emitting a parsed document must produce text that parses again, and every comment body listed for a case must be attached to some node afterwards, byte for byte.",
+    "canonicalLayout": "Emitting a parsed document must produce exactly the recorded text, so indentation, separators, trailing commas and comment placement are one shared contract rather than two implementations that happen to agree today.",
     "rootShape": "Setting the document root is refused when the replacement is not a container, because a scalar root emits text the parser rejects.",
     "exactIdentityOnly": "A case whose expectation needs exact mathematical identity. The Rust crate satisfies every case; the TypeScript package stores IEEE 754 binary64 values, so cases carrying this flag are asserted there only through preserved source spelling, never through value equality."
   },
@@ -76,6 +77,16 @@
     { "name": "adjacent-big-integers", "left": "9007199254740992", "right": "9007199254740993", "equal": false, "exactIdentityOnly": true },
     { "name": "opposite-exponents", "left": "1e10", "right": "1e-10", "equal": false },
     { "name": "huge-exponent-equality", "left": "1e999999999999999999999999", "right": "10e999999999999999999999998", "equal": true }
+  ],
+  "canonicalLayout": [
+    { "name": "trailing-comma-record", "source": "{ \"a\": 1, }", "emitted": "{\n  \"a\": 1,\n}" },
+    { "name": "nested-records", "source": "{\"a\":{\"b\":{\"c\":1}}}", "emitted": "{\n  \"a\": {\n    \"b\": {\n      \"c\": 1,\n    },\n  },\n}" },
+    { "name": "nested-arrays", "source": "[[[1]]]", "emitted": "[\n  [\n    [\n      1,\n    ],\n  ],\n]" },
+    { "name": "single-line-value-comment-trails", "source": "{\"a\": 1 /* note */}", "emitted": "{\n  \"a\": 1, // note \n}" },
+    { "name": "nested-multi-line-value-comment", "source": "{\"a\":{\"b\":/*x\ny*/1}}", "emitted": "{\n  \"a\": {\n    \"b\":\n    /*x\ny*/\n    1,\n  },\n}" },
+    { "name": "nested-array-element-comment", "source": "{\"a\":[/*x\ny*/1]}", "emitted": "{\n  \"a\": [\n    /*x\ny*/\n    1,\n  ],\n}" },
+    { "name": "space-in-string-stays-literal", "source": "{\"s\":\"a b\"}", "emitted": "{\n  \"s\": \"a b\",\n}" },
+    { "name": "block-body-with-bare-cr", "source": "[1 /* a\rb */]", "emitted": "[\n  /* a\rb */\n  1,\n]" }
   ],
   "depth": { "accepted": 512, "rejected": 513 },
   "roundTrip": [

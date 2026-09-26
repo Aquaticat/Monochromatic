@@ -385,3 +385,18 @@ fn root_shape_cases_match_the_fixture() {
         }
     }
 }
+
+/// Canonical emission must equal the recorded text exactly, byte for byte.
+#[test]
+fn canonical_layout_matches_the_fixture() {
+    let document = fixture();
+    let cases = member(&document, "canonicalLayout");
+    for index in 0..cases.elements().expect("layout cases").len() {
+        let case = element(cases, index);
+        let name = text(case, "name");
+        let source = text(case, "source");
+        let parsed = parse_jsonc(&source).unwrap_or_else(|error| panic!("{name} must parse: {error}"));
+        let expected = text(case, "emitted");
+        assert_eq!(emit_jsonc_value(&parsed), expected, "{name} canonical layout differs");
+    }
+}
