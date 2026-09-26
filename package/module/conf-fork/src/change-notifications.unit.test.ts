@@ -12,13 +12,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type StoreChange,
+  type ValueChange,
   subscribeStoreChange,
   subscribeValueChange,
-} from '../dist/final/neutral/index.mjs';
-
-import type {
-  StoreChange,
-  ValueChange,
 } from '../dist/final/neutral/index.mjs';
 
 /**
@@ -40,7 +37,7 @@ function onlyChange<Value>(changes: readonly ValueChange<Value>[],): ValueChange
    The single recorded change,
    absent when the count is not exactly one.
    */
-  const change = changes[0];
+  const [change,] = changes;
   if ((changes.length !== 1) || (change === undefined))
     throw new Error(`Expected exactly one recorded change, got ${String(changes.length,)}`,);
   return change;

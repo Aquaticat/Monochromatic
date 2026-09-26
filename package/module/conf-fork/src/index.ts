@@ -104,6 +104,7 @@ export {
  */
 export {
   createPlainObject,
+  isStoreContentEqual,
   getStoreValue,
   hasStoreValue,
   withStoreValue,

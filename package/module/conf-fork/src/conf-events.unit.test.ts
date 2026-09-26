@@ -14,14 +14,11 @@ import {
 import {
   createConf,
   createEventMethods,
+  type EventContext,
   InvalidCallbackError,
   InvalidKeyError,
-} from '../dist/final/neutral/index.mjs';
-
-import type {
-  EventContext,
-  StoreChange,
-  ValueChange,
+  type StoreChange,
+  type ValueChange,
 } from '../dist/final/neutral/index.mjs';
 
 import { createTempDirectory, } from './test-support.ts';
@@ -64,7 +61,7 @@ function captureThrown(call: () => unknown,): unknown {
  ```
  */
 function caughtMessage(error: unknown,): string {
-  return error instanceof Error ? error.message : String(error,);
+  return Error.isError(error,) ? error.message : String(error,);
 }
 
 /**
@@ -86,7 +83,7 @@ function createEventFixture(): {
   /**
    Real store whose events and reads back the subscriptions.
    */
-  const conf = createConf<Record<string, unknown>>({
+  const conf = createConf({
     cwd: createTempDirectory(),
   },);
   /**
@@ -119,7 +116,6 @@ await describe({
          Event-method fixture under test.
          */
         const fixture = createEventFixture();
-        /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the runtime check under test accepts deliberately mistyped arguments the call signature forbids. */
         const invalidKeyInput = {
           key: 1,
           callback: function ignored(): void {},
@@ -143,7 +139,6 @@ await describe({
          Event-method fixture under test.
          */
         const fixture = createEventFixture();
-        /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the runtime check under test accepts deliberately mistyped arguments the call signature forbids. */
         const invalidCallbackInput = {
           key: 'theme',
           callback: 'nope',
@@ -273,7 +268,6 @@ await describe({
          Event-method fixture under test.
          */
         const fixture = createEventFixture();
-        /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the runtime check under test accepts deliberately mistyped arguments the call signature forbids. */
         const invalidCallback = 'nope' as unknown as Parameters<typeof fixture.eventMethods.onDidAnyChange>[0];
         /**
          Error thrown while subscribing with the non-function callback.

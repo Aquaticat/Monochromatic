@@ -10,7 +10,6 @@
  @module
  */
 
-import { isDeepStrictEqual, } from 'node:util';
 import { getProperty, } from 'dot-prop';
 import semver from 'semver';
 
@@ -21,7 +20,10 @@ import {
   MissingProjectVersionError,
 } from './errors.ts';
 import { MIGRATION_KEY, } from './internal-key.ts';
-import { createPlainObject, } from './store-access.ts';
+import {
+  createPlainObject,
+  isStoreContentEqual,
+} from './store-access.ts';
 import type { MigrationHost, } from './migration-host.ts';
 import type {
   BeforeEachMigrationCallback,
@@ -294,10 +296,10 @@ export function applyMigrations<T extends Record<string, unknown>>({
     defaults ?? {},
     fileStore,
   );
-  if (!isDeepStrictEqual(
-    fileStore,
-    storeWithDefaults,
-  ))
+  if (!isStoreContentEqual({
+    left: fileStore,
+    right: storeWithDefaults,
+  },))
     host.writeStoreWithoutEvents(storeWithDefaults,);
   if (isNewStore) {
     host.recordVersion(projectVersion,);

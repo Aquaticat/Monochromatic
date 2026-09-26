@@ -14,9 +14,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { createConfigWatcher, } from '../dist/final/neutral/index.mjs';
-
-import type { ConfigWatcher, } from '../dist/final/neutral/index.mjs';
+import {
+  type ConfigWatcher,
+  createConfigWatcher,
+} from '../dist/final/neutral/index.mjs';
 
 import {
   createTempDirectory,
@@ -181,6 +182,7 @@ async function waitForCallCount({
   while (Date.now() < deadline) {
     if (calls.length >= wantedCount)
       return true;
+    /* oxlint-disable-next-line eslint/no-await-in-loop -- a bounded poll must observe between sleeps, so the sleeps cannot run in parallel. */
     await delay(POLL_INTERVAL,);
   }
   return calls.length >= wantedCount;

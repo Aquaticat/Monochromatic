@@ -19,7 +19,6 @@
  */
 
 import path from 'node:path';
-import { isDeepStrictEqual, } from 'node:util';
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
@@ -39,6 +38,7 @@ import {
   createPlainObject,
   getStoreValue,
   hasStoreValue,
+  isStoreContentEqual,
   withStoreValue,
 } from './store-access.ts';
 import {
@@ -417,10 +417,10 @@ export function createConf<T extends Record<string, unknown> = Record<string, un
       fileStore,
     );
     validateParsedStore(storeWithDefaults,);
-    if (!isDeepStrictEqual(
-      fileStore,
-      storeWithDefaults,
-    ))
+    if (!isStoreContentEqual({
+      left: fileStore,
+      right: storeWithDefaults,
+    },))
       assignStore(storeWithDefaults,);
   }
 

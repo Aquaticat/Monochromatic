@@ -10,6 +10,8 @@
  @module
  */
 
+import { isDeepStrictEqual, } from 'node:util';
+
 import {
   deleteProperty,
   getProperty,
@@ -54,6 +56,44 @@ const NON_DOT_FORBIDDEN_KEYS: ReadonlySet<string> = new Set([
 //endregion Constants
 
 //region Reads
+
+/**
+ Reports whether two store snapshots hold the same contents,
+ ignoring top-level prototype differences.
+ 
+ Upstream `conf` compares its defaults merge with `assert.deepEqual`,
+ which is prototype-insensitive:
+ a null-prototype read result and a plain-object stub with identical keys
+ count as unchanged. Spreading both sides normalizes the top level the
+ same way while keeping strict comparison of nested JSON values.
+ 
+ @param left - One store snapshot.
+ 
+ @param right - The other store snapshot.
+ 
+ @returns `true` when the snapshots hold equal contents.
+ 
+ @example
+ ```ts
+ isStoreContentEqual({
+   left: { theme: 'dark', },
+   right: Object.assign(Object.create(null,), { theme: 'dark', },),
+ }); // => true
+ ```
+ */
+export function isStoreContentEqual({
+  left,
+  right,
+}: {
+  readonly left: Readonly<Record<string, unknown>>;
+  readonly right: Readonly<Record<string, unknown>>;
+},): boolean {
+  return isDeepStrictEqual({
+    ...left,
+  }, {
+    ...right,
+  },);
+}
 
 /**
  Reads one key from the store,
