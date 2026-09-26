@@ -257,6 +257,15 @@ Evidence:
   so option-dependent inputs such as a configured executable are expressible.
   The two shipped repository policies declare `{ external: [] }`.
 - Reservations are granted oldest invocation first.
+- Subsumption reads "applies in reverse" as strict `git apply --reverse --check`
+  or a one-sided extension of the landed hunks,
+  added 2026-09-26 (veto open):
+  the strict check (and `-C1`) rejects exactly the adjacent-edit case the decision targets,
+  because the prepared edit sits in the landed hunk's context,
+  and `-C0` also accepts landed deletions the prepared bytes never made.
+  Additions on both sides are checked against an empty base.
+  Rules and evidence:
+  `package/git-policy/cli/SPEC.md` "Subsumption".
 - Forwarded index writers coordinate with landings through the cli-git landing lock
   and pre-wait for foreign `index.lock` holders;
   cli-git does not capture Git's stderr to detect a lock failure and re-forward,
