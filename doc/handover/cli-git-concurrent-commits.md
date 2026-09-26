@@ -51,15 +51,13 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
   and the container end-to-end suite
   (expected to fail its concurrency scenarios until later slices land,
   which is its positive control).
-- A prototype in disposable repositories compares private `HEAD` shapes
-  (detached,
-  symbolic pending ref,
-  per-worktree ref,
-  shadow repository with private refs and the real object store)
-  so hooks see the real branch name,
-  plus sequencer-conclusion state copying and replay header preservation
-  (`git commit-tree` against `git replay`).
-  Slice 2 waits on it.
+- Private `HEAD` shape chosen from a disposable-repository prototype:
+  a shadow repository with alternates to the real object store
+  (decision record commit `0d19ff973` on the branch).
+  Culled shapes and their evidence are in the decision record.
+  A docs agent is replacing the `SPEC.md` placeholders to match.
+  Slice 2 starts after slice 1 lands,
+  because both change the transaction workspace files.
 
 ## Evidence produced this session
 
