@@ -257,6 +257,108 @@ Evidence:
   the landed commit exits `0` after surfacing the push failure.
 - macOS and Windows holder detection spawns `lsof` or a Restart Manager query only while a foreign lock is present.
 
+### Private `HEAD` shape: shadow repository with alternates
+
+A prototype in disposable repositories
+(real Git 2.55.0)
+compared the candidate shapes with a pre-commit hook that reads the branch name,
+the upstream,
+`includeIf onbranch:`,
+and runs a "reject commits to main" check.
+
+- Chosen:
+  a shadow repository per transaction at `<common-dir>/cli-git/shadow/<id>`,
+  with its own `HEAD` symbolic to a private copy of the target branch ref,
+  a private copy of the branch's upstream ref,
+  and `objects/info/alternates` naming the real object store.
+  Hooks see the real branch name,
+  the upstream,
+  and `onbranch:` includes,
+  and the "reject main" hook rejects.
+  New objects stay in the shadow store,
+  so a real `git prune --expire=now` cannot delete a pending commit
+  and a prune run inside the shadow cannot delete real objects.
+- Required hardening,
+  each observed necessary in the prototype:
+  the shadow config copies `repositoryformatversion` and `extensions.*` explicitly
+  (an include does not apply them),
+  sets `core.hooksPath` to the real hooks path before `[include] path=<real config>`
+  so a real `core.hooksPath` still wins,
+  and disables `gc.auto` and `maintenance.auto`;
+  every real Git-dir entry that is not transaction-private
+  (such as `info`,
+  `rr-cache`,
+  `lfs`,
+  and `modules`)
+  is symlinked into the shadow by default,
+  and only `HEAD`,
+  refs,
+  logs,
+  `index`,
+  `config`,
+  `objects`,
+  and the copied per-worktree state stay private;
+  `config.worktree` is copied.
+- Landing migrates the shadow's new objects into the real store as a pack kept with a `.keep` file
+  until the compare-and-swap succeeds,
+  so neither `git prune` nor repacking can drop them in between.
+- No `refs/cli-git/` pending ref exists;
+  the shadow store protects the pending commit.
+- Culled:
+  detached private `HEAD` and a per-worktree ref
+  (hooks see no branch and no upstream,
+  so the "reject main" hook is bypassed);
+  a symbolic pending ref
+  (same hook bypass;
+  kept only as the fallback if the shadow repository hits a blocker);
+  `GIT_REFERENCE_BACKEND` with a private ref store
+  (Git passes it into submodules and `git -C` from hooks sees private refs,
+  and pseudorefs must be kept in two places);
+  and a shadow repository using `GIT_OBJECT_DIRECTORY`
+  (a prune inside the shadow deleted objects reachable only from real refs).
+- Residual risk:
+  a Git-dir-derived path that is neither symlinked nor copied points into the shadow.
+  The container end-to-end suite covers LFS,
+  submodules,
+  sparse checkout,
+  reftable,
+  and SHA-256 repositories.
+
+### Conclusions and replay
+
+- Merge,
+  cherry-pick,
+  and revert conclusions work in the shadow:
+  copying the per-worktree state files in produced commits byte-identical to native.
+  Landing reproduces native cleanup in the real worktree's admin dir:
+  it removes the files native removed
+  (`AUTO_MERGE`,
+  `MERGE_HEAD`,
+  `MERGE_MODE`,
+  `MERGE_MSG`,
+  `CHERRY_PICK_HEAD`,
+  `REVERT_HEAD`),
+  copies the private `MERGE_RR` back,
+  keeps `ORIG_HEAD`,
+  and leaves `sequencer/` as native leaves it.
+  Reftable repositories delete pseudorefs with `git update-ref -d` instead of removing files.
+- Landing runs `git update-ref` in the owning worktree's context with no `GIT_DIR` override,
+  because only then does Git also write the real `HEAD` reflog.
+- Replay computes the tree with `git merge-tree --write-tree --merge-base`
+  and rebuilds an unsigned commit by rewriting the raw commit object
+  (`git hash-object -t commit -w`,
+  replacing only `tree` and `parent` lines),
+  which preserved `encoding`,
+  exact identities and dates,
+  and custom headers.
+  `git replay` and plain `git commit-tree` both transcoded non-UTF-8 messages and dropped headers.
+  A signed commit is rebuilt with `git commit-tree -S`
+  under the original identities,
+  dates,
+  and `i18n.commitEncoding`;
+  custom headers on a signed commit are dropped with a warning event,
+  because no primitive re-signs a raw object.
+
 ## Rejected
 
 - A lock queue around today's unchanged transaction.
