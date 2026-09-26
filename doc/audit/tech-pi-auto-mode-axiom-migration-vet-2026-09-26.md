@@ -103,7 +103,8 @@ not an eligible coding-plan fallback.
   Reject stale results rather than authorize under an obsolete snapshot.
 - First deployment is this Linux workstation.
 - Five-second total interactive assessment budget,
-  including at most one transport retry.
+  including at most one client transport retry.
+  Gateway-internal retries are permitted by Q11 B.
   No separate full budget for the retry.
 - Additional manual approvals are acceptable.
 - New grants present explicit human-confirmed scope alongside original prose.
@@ -316,7 +317,8 @@ including with `x-no-fallback: true`.
 This is same-provider credential rotation,
 not cross-provider fallback.
 No test established the number of internal attempts in the historical hosted pilot.
-The client's one-retry preference needs an explicit client-versus-upstream interpretation.
+Q11 B explicitly caps our client at two calls and permits gateway-internal retries.
+An end-to-end two-attempt cap is not a user requirement.
 A five-second caller deadline does not itself prove upstream work or billing stops.
 
 Metadata-only stripping cleared ordinary payload fields but preserved upstream error text.
@@ -325,7 +327,8 @@ content can survive the stripping boundary.
 The mock proves that conditional path,
 not live private-data retention or actual TypeSafe error echoing.
 Gate:
- pending complete retention and hosted configuration evidence.
+ pending hosted configuration and remaining data-handling evidence,
+not a requirement for zero retention or a fixed deletion deadline.
 
 The probe ran in image `0a55e1fbafe71f9bf6b539e0c8011b7d9ce7ba768690143c801fb3de5160dd53`,
 with 2 GiB memory,
@@ -427,8 +430,12 @@ The browser session was closed.
 
 Gate:
  private hosted payloads remain unqualified.
-A fixed retention requirement versus mandatory zero payload retention is an unresolved user preference.
-No private upload is authorized by the general willingness expressed in Q8.
+Q12 C accepts published necessity-based retention without a fixed deletion deadline.
+The user answered after disclosure of both the no-training distinction
+and the conditional error-diagnostic retention path.
+Do not impose zero retention or a fixed maximum as an additional gate.
+Actual account settings and remaining service qualification still need verification.
+Private uploads and production cutover remain unauthorized.
 
 ### Terms affecting adversarial evaluation and fine-tuning
 
