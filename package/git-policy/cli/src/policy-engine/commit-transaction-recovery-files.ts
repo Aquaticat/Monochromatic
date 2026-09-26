@@ -5,6 +5,7 @@
  */
 import { constants, } from 'node:fs';
 import {
+  access,
   open,
   rename,
   rm,
@@ -13,14 +14,42 @@ import {
   dirname,
   join,
 } from 'node:path';
-import { syncDirectory, } from '../trust/registry-io.ts';
+import {
+  isMissingPath,
+  syncDirectory,
+} from '../trust/registry-io.ts';
 import { createOwnedFileLink, } from './commit-transaction-install-link.ts';
 import type { PreparedTransactionJournal, } from './commit-transaction-journal.ts';
+import { removeTransactionDirectory, } from './commit-transaction-registry.ts';
 import {
   assertOwnedLock,
   CommitTransactionRecoveryError,
 } from './commit-transaction-recovery-validation.ts';
 import { applyIndexTimestamps, } from './index-file-timestamps.ts';
+
+/**
+ Reports whether path currently exists without suppressing other failures.
+
+ @param path - exact path to probe
+
+ @returns whether path is present
+
+ @example
+ ```ts
+ await recoveryPathExists('/repo/.git/index.lock');
+ ```
+ */
+export async function recoveryPathExists(path: string,): Promise<boolean> {
+  try {
+    await access(path,);
+    return true;
+  }
+  catch (error: unknown) {
+    if (isMissingPath(error,))
+      return false;
+    throw error;
+  }
+}
 
 /**
  Reads exact regular artifact bytes through no-follow descriptor.
@@ -31,7 +60,7 @@ import { applyIndexTimestamps, } from './index-file-timestamps.ts';
  
  @example
  ```ts
- await readRegularRecoveryFile('/repo/.git/cli-git-transaction/journal.json');
+ await readRegularRecoveryFile('/repo/.git/cli-git-transactions/0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10/journal.json');
  ```
  */
 export async function readRegularRecoveryFile(path: string,): Promise<Uint8Array> {
@@ -157,12 +186,5 @@ export async function removeRecoveryArtifacts({
       lockPath,
       { force: true, },
     );
-  await rm(
-    directory,
-    {
-      recursive: true,
-      force: true,
-    },
-  );
-  await syncDirectory(dirname(directory,),);
+  await removeTransactionDirectory(directory,);
 }

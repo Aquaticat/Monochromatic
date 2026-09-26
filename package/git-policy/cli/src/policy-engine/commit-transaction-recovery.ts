@@ -1,109 +1,122 @@
 /**
  Startup recovery for interrupted private-index commit transactions.
- 
+
+ Recovery examines the legacy single per-index journal that earlier builds wrote,
+ then every per-transaction directory.
+ Transactions whose owner still runs are skipped;
+ dead owners are recovered by their durable evidence or fail closed.
+
  @module
  */
 import {
-  access,
   lstat,
   readdir,
-  realpath,
-  rm,
 } from 'node:fs/promises';
-import {
-  isAbsolute,
-  join,
-  resolve,
-} from 'node:path';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { GitWorktreeIdentity, } from '../git-worktree-identity.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
-import { isMissingPath, } from '../trust/registry-io.ts';
-import { snapshotFilesEqual, } from './commit-transaction-candidate-snapshot.ts';
-import { installAddedWorktreeFiles, } from './commit-transaction-added-paths.ts';
-import { runTransactionGit, } from './commit-transaction-git.ts';
-import { recoverNormalization, } from './commit-transaction-normalization-recovery.ts';
-import { createOwnedFileLink, } from './commit-transaction-install-link.ts';
+import { classifyTransactionOwner, } from './commit-transaction-owner.ts';
+import { recoveryPathExists, } from './commit-transaction-recovery-files.ts';
 import {
-  PROCESS_IDENTITY_ABSENT,
-  resolveProcessBirthIdentity,
-} from './commit-transaction-process-identity.ts';
-import {
-  installRecoveredIndex,
-  readRegularRecoveryFile,
-  removeRecoveryArtifacts,
-} from './commit-transaction-recovery-files.ts';
-import {
-  INDEX_INSTALLED_FILENAME,
-  REF_UPDATED_FILENAME,
-  resolveCurrentHead,
-} from './commit-transaction-journal.ts';
+  loadTransactionJournal,
+  recoverJournaledTransaction,
+} from './commit-transaction-recovery-journaled.ts';
+import { recoverRegisteredTransactions, } from './commit-transaction-recovery-scan.ts';
 import {
   RECOVERY_TARGET_NOT_APPLICABLE,
-  resolveCommitTransactionDirectory,
+  resolveCommitTransactionTargets,
 } from './commit-transaction-recovery-target.ts';
-import {
-  assertLandedCommit,
-  assertOwnedLock,
-  assertTransactionReflog,
-  CommitTransactionRecoveryError,
-  headsEqual,
-  parsePreparedJournal,
-  parseRefUpdated,
-  processIsAlive,
-} from './commit-transaction-recovery-validation.ts';
+import type { CommitTransactionRecoveryOutcome, } from './commit-transaction-recovery-types.ts';
+import { CommitTransactionRecoveryError, } from './commit-transaction-recovery-validation.ts';
 
+export type {
+  CommitTransactionRecoveryAction,
+  CommitTransactionRecoveryOutcome,
+} from './commit-transaction-recovery-types.ts';
 export { CommitTransactionRecoveryError, } from './commit-transaction-recovery-validation.ts';
 
 /**
- Strict journal and Git decoder.
+ Module logger.
  */
-const DECODER = new TextDecoder(
-  'utf-8',
-  { fatal: true, },
-);
+const l = tagged({ tag: 'cli-git', },);
 
 /**
- Recovery action taken at startup.
- */
-export type CommitTransactionRecoveryResult =
-  | 'none'
-  | 'commit-not-created'
-  | 'normalization-installed'
-  | 'index-installed'
-  | 'already-installed';
+ Recovers the single per-index journal directory earlier builds wrote, when one was retained.
 
-/**
- Reports whether path currently exists without suppressing other failures.
- 
- @param path - exact path to probe
- 
- @returns whether path is present
+ @param directory - legacy transaction directory
+
+ @param gitPath - resolved real Git executable
+
+ @param effectiveCwd - invocation repository location
+
+ @returns zero or one outcome
+
+ @throws {@link CommitTransactionRecoveryError} when the directory is unsafe, empty, incomplete, or conflicts
  */
-async function pathExists(path: string,): Promise<boolean> {
-  try {
-    await access(path,);
-    return true;
+async function recoverLegacyTransaction({
+  directory,
+  gitPath,
+  effectiveCwd,
+}: Readonly<{
+  directory: string;
+  gitPath: string;
+  effectiveCwd: string;
+}>,): Promise<readonly CommitTransactionRecoveryOutcome[]> {
+  /**
+   Tagged legacy recovery logger.
+   */
+  const rl = tagged({
+    tag: recoverLegacyTransaction.name,
+    l,
+  },);
+  if (!(await recoveryPathExists(directory,)))
+    return [];
+  /**
+   Non-followed transaction directory metadata.
+   */
+  const directoryMetadata = await lstat(directory,);
+  if ((!directoryMetadata.isDirectory()) || directoryMetadata.isSymbolicLink())
+    throw new CommitTransactionRecoveryError(`Unsafe transaction recovery directory: ${directory}`,);
+  if ((await readdir(directory,)).length === 0)
+    throw new CommitTransactionRecoveryError(`Empty pre-journal transaction directory: ${directory}. Setup may still be active; retry after its owner exits. If no owner remains, inspect the empty directory before removing it.`,);
+  /**
+   Prepared journal naming the legacy owner.
+   */
+  const journal = await loadTransactionJournal(directory,);
+  if ((await classifyTransactionOwner({
+    ownerPid: journal.ownerPid,
+    ownerIdentity: journal.ownerIdentity,
+  },)) === 'alive') {
+    rl.debug(`legacy transaction owner ${String(journal.ownerPid,)} is active; skipping ${directory}`,);
+    return [{
+      directory,
+      action: 'owner-active',
+    },];
   }
-  catch (error: unknown) {
-    if (isMissingPath(error,))
-      return false;
-    throw error;
-  }
+  return [{
+    directory,
+    action: await recoverJournaledTransaction({
+      directory,
+      journal,
+      gitPath,
+      effectiveCwd,
+    },),
+  },];
 }
 
 /**
- Recovers interrupted transaction for invocation repository before config execution.
- 
+ Recovers every interrupted transaction for the invocation worktree before config execution.
+
  @param args - exact wrapper arguments
- 
+
  @param gitPath - resolved real Git executable
- 
+
  @param identity - optional repository identity retained by config-free forwarding
- 
- @returns recovery action
- 
+
+ @returns one outcome per examined transaction directory; empty when none exist
+
  @throws CommitTransactionRecoveryError when current state conflicts
- 
+
  @example
  ```ts
  await recoverCommitTransaction({ args: ['status'], gitPath: '/usr/bin/git' });
@@ -117,284 +130,52 @@ export async function recoverCommitTransaction({
   args: readonly string[];
   gitPath: string;
   identity?: GitWorktreeIdentity;
-}>,): Promise<CommitTransactionRecoveryResult> {
+}>,): Promise<readonly CommitTransactionRecoveryOutcome[]> {
   /**
-   Absolute invocation-specific transaction directory when one can exist.
+   Tagged startup recovery logger.
    */
-  const directory = await resolveCommitTransactionDirectory({
+  const rl = tagged({
+    tag: recoverCommitTransaction.name,
+    l,
+  },);
+  /**
+   Absolute invocation-specific transaction locations when any can exist.
+   */
+  const targets = await resolveCommitTransactionTargets({
     args,
     gitPath,
     ...(identity === undefined ? {} : { identity, }),
   },);
-  if (directory === RECOVERY_TARGET_NOT_APPLICABLE)
-    return 'none';
+  if (targets === RECOVERY_TARGET_NOT_APPLICABLE)
+    return [];
   /**
    Effective invocation cwd retained for journal verification Git requests.
    */
   const { effectiveCwd, } = parseGlobalOptions(args,);
-  if (!(await pathExists(directory,)))
-    return 'none';
   /**
-   Non-followed transaction directory metadata.
+   Legacy journal outcome, recovered first because it predates every registry transaction.
    */
-  const directoryMetadata = await lstat(
-    directory,
-    { bigint: true, },
-  );
-  if ((!directoryMetadata.isDirectory()) || directoryMetadata.isSymbolicLink())
-    throw new CommitTransactionRecoveryError(`Unsafe transaction recovery directory: ${directory}`,);
-  if ((await readdir(directory,)).length === 0)
-    throw new CommitTransactionRecoveryError(`Empty pre-journal transaction directory: ${directory}. Setup may still be active; retry after its owner exits. If no owner remains, inspect the empty directory before removing it.`,);
-  /**
-   Required prepared journal path.
-   */
-  const journalPath = join(
-    directory,
-    'journal.json',
-  );
-  /**
-   Required exact original index snapshot.
-   */
-  const originalIndexPath = join(
-    directory,
-    'original.index',
-  );
-  /**
-   Required exact intended index snapshot.
-   */
-  const postIndexPath = join(
-    directory,
-    'post.index',
-  );
-  if (!(await Promise.all([
-    pathExists(journalPath,),
-    pathExists(originalIndexPath,),
-    pathExists(postIndexPath,),
-  ],)).every(Boolean,))
-    throw new CommitTransactionRecoveryError(`Incomplete transaction recovery artifacts: ${directory}`,);
-  /**
-   Prepared journal read through no-follow descriptor.
-   */
-  const journal = parsePreparedJournal(
-    await readRegularRecoveryFile(journalPath,),
-  );
-  if ((String(directoryMetadata.dev,) !== journal.directoryDevice)
-    || (String(directoryMetadata.ino,) !== journal.directoryInode))
-    throw new CommitTransactionRecoveryError(`Transaction directory identity changed: ${directory}`,);
-  /**
-   Owner-preserving stable original-index path.
-   */
-  const stableOriginalIndexPath = join(
-    directory,
-    'original.recovery',
-  );
-  /**
-   Owner-preserving stable post-index path.
-   */
-  const stablePostIndexPath = join(
-    directory,
-    'post.recovery',
-  );
-  await Promise.all([
-    createOwnedFileLink({
-      sourcePath: originalIndexPath,
-      linkedPath: stableOriginalIndexPath,
-      expectedDevice: journal.originalIndexDevice,
-      expectedInode: journal.originalIndexInode,
-    },),
-    createOwnedFileLink({
-      sourcePath: postIndexPath,
-      linkedPath: stablePostIndexPath,
-      expectedDevice: journal.postIndexDevice,
-      expectedInode: journal.postIndexInode,
-    },),
-  ],);
-  if (processIsAlive(journal.ownerPid,)) {
-    /**
-     Current process birth identity for recorded PID.
-     */
-    const currentOwnerIdentity = await resolveProcessBirthIdentity(journal.ownerPid,);
-    if ((typeof currentOwnerIdentity) === 'symbol') {
-      if (currentOwnerIdentity !== PROCESS_IDENTITY_ABSENT)
-        throw new CommitTransactionRecoveryError('Unknown transaction owner identity state.',);
-      throw new CommitTransactionRecoveryError(`Transaction owner identity is unavailable for active PID ${String(journal.ownerPid,)}: ${directory}`,);
-    }
-    if (currentOwnerIdentity === journal.ownerIdentity)
-      throw new CommitTransactionRecoveryError(`Transaction owner process ${String(journal.ownerPid,)} is still active: ${directory}`,);
-  }
-  /**
-   Canonical current repository root.
-   */
-  const repositoryRoot = await realpath(DECODER.decode((await runTransactionGit({
+  const legacy = await recoverLegacyTransaction({
+    directory: targets.legacyDirectory,
     gitPath,
-    cwd: effectiveCwd,
-    args: [
-      'rev-parse',
-      '--show-toplevel',
-    ],
-  },)).stdout,)
-    .trim(),);
-  if (repositoryRoot !== journal.repositoryRoot)
-    throw new CommitTransactionRecoveryError('Transaction journal repository identity does not match invocation.',);
-  /**
-   Git-provided current index path.
-   */
-  const reportedIndex = DECODER.decode((await runTransactionGit({
-    gitPath,
-    cwd: effectiveCwd,
-    args: [
-      'rev-parse',
-      '--git-path',
-      'index',
-    ],
-  },)).stdout,)
-    .trim();
-  /**
-   Absolute current real index path.
-   */
-  const realIndexPath = isAbsolute(reportedIndex,)
-    ? reportedIndex
-    : resolve(
-      effectiveCwd,
-      reportedIndex,
-    );
-  if (realIndexPath !== journal.realIndexPath)
-    throw new CommitTransactionRecoveryError('Transaction journal index path does not match invocation.',);
-  /**
-   Current exact ref state.
-   */
-  const currentHead = await resolveCurrentHead({
-    gitPath,
-    cwd: effectiveCwd,
+    effectiveCwd,
   },);
   /**
-   Whether real index remains exact original bytes.
+   Per-transaction outcomes.
    */
-  const realIsOriginal = await snapshotFilesEqual({
-    leftPath: stableOriginalIndexPath,
-    rightPath: realIndexPath,
+  const registered = await recoverRegisteredTransactions({
+    root: targets.registryRoot,
+    gitPath,
+    effectiveCwd,
   },);
   /**
-   Whether real index already contains intended bytes.
+   Every examined transaction.
    */
-  const realIsIntended = await snapshotFilesEqual({
-    leftPath: stablePostIndexPath,
-    rightPath: realIndexPath,
-  },);
-  /**
-   Current lock path.
-   */
-  const lockPath = `${realIndexPath}.lock`;
-  /**
-   Completion records for added and selected worktree files.
-   */
-  const worktreeRecords = [
-    ...journal.addedPaths,
-    ...(journal.selectedWorktreePaths ?? []),
+  const outcomes = [
+    ...legacy,
+    ...registered,
   ];
-  if (journal.operation === 'normalize-only')
-    return recoverNormalization({
-      gitPath,
-      cwd: effectiveCwd,
-      directory,
-      journal,
-      currentHead,
-      realIndexPath,
-      stablePostIndexPath,
-      realIsOriginal,
-      realIsIntended,
-    },);
-  if (headsEqual({
-    expected: journal.originalHead,
-    current: currentHead,
-  })) {
-    if (!realIsOriginal)
-      throw new CommitTransactionRecoveryError(`Commit did not land but real index changed; recovery retained at ${directory}`,);
-    await assertOwnedLock({
-      journal,
-      lockPath,
-    },);
-    await removeRecoveryArtifacts({
-      directory,
-      lockPath,
-    },);
-    return 'commit-not-created';
-  }
-  if (currentHead.kind === 'absent')
-    throw new CommitTransactionRecoveryError(`HEAD disappeared after prepared transaction; recovery retained at ${directory}`,);
-  /**
-   Optional durable landed marker path.
-   */
-  const markerPath = join(
-    directory,
-    REF_UPDATED_FILENAME,
-  );
-  if (await pathExists(markerPath,)) {
-    /**
-     Validated durable landed marker.
-     */
-    const marker = parseRefUpdated(
-      await readRegularRecoveryFile(markerPath,),
-    );
-    if (marker.landedOid !== currentHead.oid)
-      throw new CommitTransactionRecoveryError(`Current HEAD differs from journal landed OID; recovery retained at ${directory}`,);
-  }
-  else {
-    await assertTransactionReflog({
-      gitPath,
-      cwd: effectiveCwd,
-      oid: currentHead.oid,
-      journal,
-    },);
-  }
-  await assertLandedCommit({
-    gitPath,
-    cwd: effectiveCwd,
-    oid: currentHead.oid,
-    journal,
-  },);
-  if (realIsIntended) {
-    /**
-     Whether installation marker became durable before interruption.
-     */
-    const installationMarked = await pathExists(join(
-      directory,
-      INDEX_INSTALLED_FILENAME,
-    ),);
-    if (await pathExists(lockPath,)) {
-      await assertOwnedLock({
-        journal,
-        lockPath,
-      },);
-      await rm(lockPath,);
-    }
-    await installAddedWorktreeFiles({
-      gitPath,
-      cwd: effectiveCwd,
-      repositoryRoot: journal.repositoryRoot,
-      records: worktreeRecords,
-    },);
-    await removeRecoveryArtifacts({ directory, },);
-    return installationMarked ? 'already-installed' : 'index-installed';
-  }
-  if (!realIsOriginal)
-    throw new CommitTransactionRecoveryError(`Real index conflicts with prepared recovery state: ${directory}`,);
-  await assertOwnedLock({
-    journal,
-    lockPath,
-  },);
-  await installRecoveredIndex({
-    lockPath,
-    realIndexPath,
-    postIndexPath: stablePostIndexPath,
-    journal,
-  },);
-  await installAddedWorktreeFiles({
-    gitPath,
-    cwd: effectiveCwd,
-    repositoryRoot: journal.repositoryRoot,
-    records: worktreeRecords,
-  },);
-  await removeRecoveryArtifacts({ directory, },);
-  return 'index-installed';
+  if (outcomes.length > 0)
+    rl.debug(`transaction recovery outcomes: ${JSON.stringify(outcomes,)}`,);
+  return outcomes;
 }

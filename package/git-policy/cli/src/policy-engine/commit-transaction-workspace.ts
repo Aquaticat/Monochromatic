@@ -7,13 +7,10 @@ import { resolveFsId, } from '@monochromatic-dev/module-fs-id/ts';
 import { randomUUID, } from 'node:crypto';
 import {
   lstat,
-  mkdir,
   open,
   readFile,
-  realpath,
   rename,
   rm,
-  rmdir,
 } from 'node:fs/promises';
 import {
   dirname,
@@ -22,13 +19,22 @@ import {
   resolve,
 } from 'node:path';
 import {
-  DIRECTORY_MODE,
   isMissingPath,
   protectPath,
   syncDirectory,
 } from '../trust/registry-io.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
 import { createOwnedFileLink, } from './commit-transaction-install-link.ts';
+import {
+  createTransactionOwnerRecord,
+  encodeTransactionOwner,
+} from './commit-transaction-owner.ts';
+import {
+  ensureTransactionRoot,
+  publishTransactionDirectory,
+  removeTransactionDirectory,
+  TRANSACTION_ROOT_NAME,
+} from './commit-transaction-registry.ts';
 import { applyIndexTimestamps, } from './index-file-timestamps.ts';
 
 /**
@@ -36,14 +42,18 @@ import { applyIndexTimestamps, } from './index-file-timestamps.ts';
  */
 const PRIVATE_FILE_MODE = 0o600;
 /**
- Stable per-index transaction directory name.
+ Reflog action prefix whose suffix is the transaction ID, identifying the transaction's ref movement after a crash.
  */
-export const TRANSACTION_DIRECTORY_NAME = 'cli-git-transaction';
+export const TRANSACTION_REFLOG_ACTION_PREFIX = 'cli-git:transaction:';
 
 /**
  Owned private transaction state.
  */
 export type CommitTransactionWorkspace = {
+  /**
+   Unique transaction ID naming the durable directory.
+   */
+  readonly transactionId: string;
   /**
    Durable transaction directory outside worktree content.
    */
@@ -196,9 +206,9 @@ export async function createCommitTransactionWorkspace({
   cwd: string;
 }>,): Promise<CommitTransactionWorkspace> {
   /**
-   Git-provided real index and transaction paths.
+   Git-provided real index and transaction registry paths.
    */
-  const [indexOutput, directoryOutput,] = await Promise.all([
+  const [indexOutput, rootOutput,] = await Promise.all([
     runTransactionGit({
       gitPath,
       cwd,
@@ -214,7 +224,7 @@ export async function createCommitTransactionWorkspace({
       args: [
         'rev-parse',
         '--git-path',
-        TRANSACTION_DIRECTORY_NAME,
+        TRANSACTION_ROOT_NAME,
       ],
     },),
   ],);
@@ -234,22 +244,14 @@ export async function createCommitTransactionWorkspace({
       .trim(),
   },);
   /**
-   Absolute durable transaction directory.
+   Absolute per-worktree transaction registry.
    */
-  const directory = resolveGitPath({
+  const root = resolveGitPath({
     cwd,
-    reportedPath: decoder.decode(directoryOutput.stdout,)
+    reportedPath: decoder.decode(rootOutput.stdout,)
       .trim(),
   },);
-  /**
-   Canonical administrative parent proving no transaction symlink.
-   */
-  const canonicalParent = await realpath(dirname(directory,),);
-  if (resolve(
-    canonicalParent,
-    TRANSACTION_DIRECTORY_NAME,
-  ) !== resolve(directory,))
-    throw new TypeError('Git transaction path has a noncanonical administrative parent.',);
+  await ensureTransactionRoot(root,);
   /**
    Real Git lock path.
    */
@@ -276,9 +278,9 @@ export async function createCommitTransactionWorkspace({
     },
   };
   /**
-   Whether this invocation created a directory it can remove while still holding its lock.
+   Published directory this invocation can remove while still holding its lock.
    */
-  const created = new Set<'created'>();
+  const published: string[] = [];
   /**
    Releases only setup artifacts owned by this invocation on any pre-return failure.
    */
@@ -286,8 +288,9 @@ export async function createCommitTransactionWorkspace({
     [Symbol.asyncDispose]: async function disposeFailedSetup(): Promise<void> {
       if (ready.size > 0)
         return;
-      if (created.size > 0)
-        await rmdir(directory,);
+      await Promise.all(published.map(function removePublished(directory,): Promise<void> {
+        return removeTransactionDirectory(directory,);
+      },),);
       try {
         /**
          Current lock metadata, never followed across a replaced path.
@@ -307,8 +310,6 @@ export async function createCommitTransactionWorkspace({
         if (!isMissingPath(error,))
           throw error;
       }
-      if (created.size > 0)
-        await syncDirectory(canonicalParent,);
     },
   };
   /**
@@ -326,16 +327,29 @@ export async function createCommitTransactionWorkspace({
     path: lockPath,
     emitDiagnostics: false,
   },);
-  await mkdir(
-    directory,
-    { mode: DIRECTORY_MODE, },
-  );
-  created.add('created',);
-  await protectPath({
-    path: directory,
-    directory: true,
+  /**
+   Fresh transaction ID naming the directory and the reflog nonce.
+   */
+  const transactionId = randomUUID();
+  /**
+   Owner record published with the directory so recovery can skip this live transaction.
+   */
+  const owner = await createTransactionOwnerRecord({
+    transactionId,
+    realIndexPath,
+    lockFsId: lockFilesystem.value,
+    lockDevice: String(lockMetadata.dev,),
+    lockInode: String(lockMetadata.ino,),
   },);
-  await syncDirectory(canonicalParent,);
+  /**
+   Published durable transaction directory.
+   */
+  const directory = await publishTransactionDirectory({
+    root,
+    transactionId,
+    ownerBytes: encodeTransactionOwner(owner,),
+  },);
+  published.push(directory,);
   /**
    Installation marker populated only after atomic replacement.
    */
@@ -350,6 +364,7 @@ export async function createCommitTransactionWorkspace({
   const closed = new Set<'closed'>();
   ready.add('ready',);
   return {
+    transactionId,
     directory,
     commitIndexPath: join(
       directory,
@@ -367,7 +382,7 @@ export async function createCommitTransactionWorkspace({
       directory,
       'journal.json',
     ),
-    reflogAction: `cli-git:transaction:${randomUUID()}`,
+    reflogAction: `${TRANSACTION_REFLOG_ACTION_PREFIX}${transactionId}`,
     realIndexPath,
     lockPath,
     lockFsId: lockFilesystem.value,
@@ -443,14 +458,7 @@ export async function createCommitTransactionWorkspace({
           lockPath,
           { force: true, },
         );
-      await rm(
-        directory,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
-      await syncDirectory(canonicalParent,);
+      await removeTransactionDirectory(directory,);
     },
   };
 }
