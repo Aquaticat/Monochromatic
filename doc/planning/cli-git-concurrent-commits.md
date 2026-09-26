@@ -38,6 +38,13 @@ issue #560 is a real collision.
   serial landing.
   The owner chose this over a lock queue because the engineering capacity exists now.
 
+## Recommendation calibration
+
+Owner, 2026-09-25:
+engineering budget is not a constraint;
+recommend the most correct and performant option,
+never the cheapest to build.
+
 ## Settled by the decisions, veto open
 
 - Same worktree and branch only;
