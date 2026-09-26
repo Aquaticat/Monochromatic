@@ -203,6 +203,9 @@ export async function resolveEffectiveScope<TModel extends ReadonlyModel,>(
 
 /**
  Read live scoped models from a runtime context when pi exposes them.
+ Pi's empty cycle list means no live restriction, including SDK sessions that
+ omit `scopedModels`. A nonempty list containing only malformed entries remains
+ an authoritative empty result instead of widening selection.
  
  @param getScopedModels - optional live-scope getter
  
@@ -229,7 +232,7 @@ export function readLiveScope<TModel extends ReadonlyModel,>(
   const rawScope = getScopedModels === undefined
     ? scopedModels
     : getScopedModels();
-  if (!Array.isArray(rawScope,))
+  if (!Array.isArray(rawScope,) || rawScope.length === 0)
     return NO_LIVE_SCOPE;
 
   return rawScope

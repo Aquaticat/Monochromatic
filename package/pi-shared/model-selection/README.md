@@ -41,8 +41,15 @@ Thinking-defaults imports only root or `/core` helpers.
 It accepts raw models and `{ model, thinkingLevel }` entries,
  normalizes their canonical slugs,
  and filters malformed entries.
-An unavailable or non-array live value returns `NO_LIVE_SCOPE`;
- an explicit empty array remains an empty scope.
+An unavailable,
+ non-array,
+ or empty live value returns `NO_LIVE_SCOPE`.
+Pi uses an empty cycle list for SDK sessions without an explicit live restriction.
+`resolveEffectiveScope()` then checks argv,
+ configured settings,
+ and available models in that order.
+Configured restrictions that match no models remain empty;
+ a nonempty live list containing only malformed entries also remains empty.
 Use this helper for a final dispatch check after asynchronous authentication.
 
 ## Fast judge-model ranking
