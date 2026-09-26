@@ -129,7 +129,10 @@ not the preloaded `175753756`;
 updating the disposable Gboard to that same build did not reproduce the
 floating layout.
 `package/music-player/design/evidence/gboard-geometry.md` indexes sanitized real-keyboard captures
-and measured passing/failing states.
+and bounded accepted overlays.
+The [selected Search A crease measurement](evidence/selected-search-crease-geometry.md)
+records the visible central band and app-node geometry;
+it does not choose E2's still-open minimum opposing-information padding.
 Selection does not authorize production implementation.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.

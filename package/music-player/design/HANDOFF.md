@@ -5880,3 +5880,30 @@ raw status-bearing captures remain private,
 while the sanitized cover evidence is indexed in
 `package/music-player/design/evidence/gboard-geometry.md`.
 No production Search code has been authorized.
+
+## Selected Search A crease measurement, E2 floor still open
+
+The accepted inner A screenshots remain the visual source.
+Read-only inspection of private native UI Automator fixtures at 390dpi placed
+left app text bounds no farther than x `965` and the nearest right text bounds
+at x `1132` across the tested Search states.
+Neither set intersected the approximate physical crease x `[983,1093)`;
+those extrema form a **projected node-box gap** of 167px,
+not a measured minimum between painted glyphs at the same height.
+A light typing and dark empty image-band scan found no dark or bright mark,
+respectively,
+inside the sampled central region;
+in-memory crossing marks made each detector respond.
+The selected light typing PNG matched the private prototype capture's app
+pixels after the sanitized status band was excluded.
+Details and limitations are in
+`package/music-player/design/evidence/selected-search-crease-geometry.md`.
+
+E2's `max(min_padding, crease_width)` still lacks a chosen numeric
+`min_padding`.
+Neither the 167px box gap nor 12dp mode-button internal padding sets it.
+Inspect accepted spacing precedent and present visible variants only if a
+larger opposing-information floor would change the accepted A composition.
+Long result names,
+scrolling and distinct screen states require separate crease review.
+No production code or AGENTS rules changed for this measurement.

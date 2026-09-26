@@ -307,6 +307,13 @@ rounds (2026-09-17):
   visible dent.
   The numeric `min_padding` for this boundary remains open;
   the 12dp mode-button text rule is unrelated.
+  The [selected-A Search measurement](evidence/selected-search-crease-geometry.md)
+  found no app-node box intersecting the approximate dent and a 167px
+  projected horizontal gap between extreme boxes across the inner fixtures.
+  A sampled rendered-pixel scan with an injected crossing mark supported
+  the visible gap,
+  but neither accessibility bounds nor those samples establish a universal
+  glyph-ink margin or select the minimum floor.
   Borders,
   paddings,
   input/row
