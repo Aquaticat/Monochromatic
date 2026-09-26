@@ -270,7 +270,20 @@ rounds (2026-09-17):
   unverified.
   A 200% long query remained in the right input region without hiding
   the deck under the debug IME.
-  Long **result** names and result-list scrolling are still open.
+  A debug-only stress fixture now wraps long spaced and unbroken result
+  titles on the right at 100%/200% text while retaining the browser/deck.
+  On the cover at 200%,
+  the selected list could not scroll its final rows above a bottom debug IME;
+  a same-APK opt-out control repeated this failure.
+  An **unaccepted** IME-aware cover viewport comparison made row 18 and
+  its support text reachable above both a 300dp debug IME and settled
+  full-width Gboard at 100%/200% text.
+  The selected A review remains unchanged;
+  the comparison is not a production fix or evidence for other IME heights.
+  Real floating Gboard also obscured right-pane result lettering on the
+  inner stress fixture;
+  D53 does not accept that separate overlap (#122).
+  See `evidence/search-result-overflow.md` for bounds and test limitations.
 - **OPEN: remaining Search behavior after D51/D52.**
   Keep positive results,
   no-results/unavailable states and open/back behavior distinct;
