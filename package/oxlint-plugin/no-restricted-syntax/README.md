@@ -51,6 +51,11 @@ This plugin provides individual rules for each banned syntax pattern instead.
    bans `.trimLeft()`/`.trimRight()` in favor of `.trimStart()`/`.trimEnd()`
 - **no-try-finally**:
    bans `try...finally` blocks in favor of `using`/`await using`
+- **no-useless-spread**:
+   replaces `unicorn/no-useless-spread`;
+   reports spreads that only copy a fresh value,
+   and asks TypeScript before touching ambiguous spreads such as `[...text.slice(0, 3)]`
+   (see [no-useless-spread](#no-useless-spread))
 - **no-nullish-union**:
    bans union types containing `null` or `undefined`
   (`T | null`,
@@ -100,6 +105,85 @@ The semantic `prefer-readonly-parameter-types` rule now lives in
 `package/oxlint-plugin/prefer-readonly-parameter-type`.
 This package retains `no-disable-prefer-readonly-parameter-types` so inline comments cannot bypass the dedicated
 plugin's rule.
+
+## no-useless-spread
+
+Oxlint's `unicorn/no-useless-spread` removes the spread in `[...x.slice()]` because `slice` returns a new array
+on arrays.
+It decides by method name alone,
+so `--fix` also rewrites strings,
+typed arrays,
+and iterators,
+whose spread converts rather than copies
+(oxc issue 26159;
+repo issue 563).
+
+This rule keeps every upstream check and applies fixes only where the rewrite provably keeps behavior:
+
+- array literals spread into arrays or argument lists,
+  and object literals spread into objects,
+  are inlined;
+  holes,
+  accessors,
+  `__proto__` keys,
+  and edge comments withhold the fix;
+- `new Set([...x])`,
+  `Promise.all([...x])`,
+  `Array.from([...x])`,
+  and `Object.fromEntries([...x])` drop the spread;
+  `for…of` and `yield*` are reported without a fix,
+  because a loop that changes its source may need the snapshot;
+- copies of values syntax proves fresh,
+  such as `[...Array.from(x)]`,
+  `[...Object.keys(x)]`,
+  `[...new Array(n)]`
+  (fixed to `new Array(n).fill()`),
+  and `{ ...Object.fromEntries(x) }`,
+  drop the spread;
+  `{ ...Object.create(p) }` is not a copy,
+  since the spread drops the prototype.
+
+Spreads of methods shared by arrays and other receivers
+(`concat`,
+`copyWithin`,
+`filter`,
+`flat`,
+`flatMap`,
+`map`,
+`slice`,
+`splice`,
+`toReversed`,
+`toSorted`,
+`toSpliced`,
+`with`,
+`split`,
+and `reduce` with an array accumulator)
+use progressive enhancement:
+
+- where the TypeScript 7 semantic bridge from `@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type`
+  proves the value is an array,
+  the spread is a useless copy and is fixed;
+- where it proves a typed array,
+  string,
+  iterator,
+  or mixed union,
+  the spread converts and is not reported;
+- where no type is available
+  (`any`,
+  `unknown`,
+  error types,
+  or a file outside every tsconfig project),
+  the spread is reported without a fix.
+  Code without types states its conversions:
+  remove the spread for an array,
+  use `.values().toArray()` for a typed array,
+  `.toArray()` for an iterator,
+  and a string API or `Intl.Segmenter` for a string.
+
+The bundled `@monochromatic-dev/config-oxlint` output shares one bridge instance between this plugin and the
+readonly plugin.
+Design record:
+`doc/planning/issue-563-array-conversion-lint.md`.
 
 ## no-nullish-union
 

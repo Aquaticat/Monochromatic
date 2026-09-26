@@ -133,6 +133,13 @@ export const restrictionRules: DummyRuleMap = {
   'unicorn/no-immediate-mutation': 'off',
   'no-restricted-syntax/no-immediate-mutation': 'warn',
 
+  // Upstream unicorn/no-useless-spread strips `[...x.slice()]` by method name alone, so --fix
+  // rewrites strings, typed arrays, and iterators into different values (oxc#26159, repo #563).
+  // The project rule keeps every upstream check, fixes ambiguous method spreads only when
+  // TypeScript proves an array, and reports them without a fix when no type is available.
+  'unicorn/no-useless-spread': 'off',
+  'no-restricted-syntax/no-useless-spread': 'error',
+
   // Upstream node/no-sync is suffix-only and reports non-Node APIs like Optique parseSync.
   // The project rule below enforces the narrower policy: Node sync APIs only.
   'node/no-sync': 'off',
