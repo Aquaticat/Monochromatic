@@ -24,26 +24,6 @@ import {
   resolveMatcherOptions,
 } from './matcher-options.ts';
 
-//region Types
-
-/**
- One input's match verdict: whether it matches the pattern set.
- */
-export type InputMatch = {
-  /**
-   Input string the verdict belongs to.
-   */
-  readonly input: string;
-  /**
-   Whether the input matches under the resolved options.
-   */
-  readonly matched: boolean;
-};
-
-//endregion Types
-
-
-
 //region Entry points
 
 /**
