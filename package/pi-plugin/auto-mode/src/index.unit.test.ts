@@ -389,6 +389,7 @@ await describe({
           systemPrompt: '',
           systemPromptOptions: {
             cwd: '/var/home/user/project',
+            contextFiles: [],
             skills: [
               {
                 name: 'testing-practices',
