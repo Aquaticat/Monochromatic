@@ -1424,7 +1424,7 @@ parallel design vote.
 ### D50. The unfolded control deck remains visible (2026-09-24)
 The user requires the playback/control deck to **never be hidden while the
 Fold is unfolded**.
-D53 permits one later, explicit exception for real floating Gboard;
+D53 permits one explicit exception for real floating Gboard;
 other keyboard states remain subject to this requirement.
  This includes the D47 Search destination,
  regardless

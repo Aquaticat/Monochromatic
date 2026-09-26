@@ -59,7 +59,7 @@ rounds (2026-09-17):
   chosen as the working baseline, not banned from exploration.
   K1's discouraging back
   navigation and K3's non-local sheet remain rejected.
-- **SETTLED: Fold Search A, results heading and floating overlay scope (D47 to D53).**
+- **SETTLED: Fold Search A with result heading and floating overlay scope (D47 to D53).**
   D47 chooses a Search
   button opening a separate page;
   D48 puts Back,
