@@ -28,6 +28,18 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
   `mise run prepare:pnpm:install` completed there.
   cli-git skips ignored-state copying for worktrees created from the main worktree,
   so dependencies had to be installed separately.
+  The worktree's `cli-git.config.ts` was byte-identical to the trusted main copy
+  and was enrolled with `git cli-git trust --yes`.
+  The `forbidden-strings` scanner binary had to be built there
+  (`mise run //package/cli/forbidden-strings:build`)
+  before commits passed the `security/forbidden-strings` policy.
+- Decision record committed on the branch as `d322d083e`
+  (`doc/decision/cli-git-concurrent-commits.md`).
+- Implementation issue:
+   #571.
+- A code-mapping pass is writing
+  `package/git-policy/cli/doc/concurrent-commits-implementation-plan.md`
+  in the worktree (uncommitted until reviewed).
 - No implementation code exists yet.
 
 ## Evidence produced this session
@@ -49,14 +61,12 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
 
 ## Next actions
 
-1.  In the worktree,
-    promote the planning doc to `doc/decision/cli-git-concurrent-commits.md`.
+1.  Review and commit the implementation plan.
 2.  Update `package/git-policy/cli/SPEC.md` and `README.md` for the new transaction protocol,
     policy `inputs` declaration,
     config keys,
     and JSONL events.
-3.  Open the GitHub implementation issue.
-4.  Implement in separately verifiable slices:
+3.  Implement in separately verifiable slices:
     per-transaction journals and recovery,
     private `HEAD` preparation with the hook dispatcher shim,
     landing critical section with replay,
@@ -65,7 +75,7 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
     foreign `index.lock` classification and index-writer waits,
     single-flight auto-push,
     concurrent fixtures and benchmarks.
-5.  Verify at the user boundary with the packed shadow-bin fixtures,
+4.  Verify at the user boundary with the packed shadow-bin fixtures,
     then merge `feat/cli-git-concurrent-commits` into `main`.
 
 ## Open items for the owner
