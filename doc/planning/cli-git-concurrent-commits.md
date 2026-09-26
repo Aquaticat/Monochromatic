@@ -225,6 +225,16 @@ Git source at commit `0f8e75abebff` plus experiments with real Git 2.55.0.
   broad when absent.
 - Config keys: `indexLock: { unprovenOwnerTimeoutMs: 1000 }`
   and `landing: { reserveAfterLostRaces: 2 }`.
+- Forwarded index writers
+  (`add`, `rm`, `mv`, `restore --staged`, `reset`, and similar)
+  wait on `index.lock` under the foreign-owner rules before forwarding,
+  and re-forward after a lock `EEXIST` only when a disposable fixture proves that command fails before side effects.
+  `git status` needs nothing because its optional lock is skipped silently.
+  Rationale:
+  concurrent agents already collide on `git add` today.
+  The earlier claim that concurrent commits raise neighbor collision rates was retracted:
+  landing holds `index.lock` far shorter than today's whole-transaction hold,
+  and the net effect is unmeasured.
 - Hooks and editor: run during preparation.
   The editor,
   `prepare-commit-msg`,
@@ -339,8 +349,7 @@ the owner declined an `AGENTS.md` rule.
 
 ## Open questions
 
-- Whether forwarded non-commit index writers (`git add`, `rm`, `mv`, `restore --staged`, `reset`)
-  also wait on `index.lock` with the foreign-owner classification.
+- Opt-out switch for concurrent commits.
 
 ## Next action
 
