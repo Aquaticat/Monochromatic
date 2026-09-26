@@ -1822,6 +1822,25 @@ and unsafe Windows ACLs.
 When the target config was deleted,
 `untrust` resolves the canonical repository root and revokes its sole matching stored record without executing code.
 
+Every journal writer holds the recursive-operation lock
+(see "Locks")
+from publishing its journal until settling it.
+Readers that take no lock,
+namely config loading in every wrapped Git command,
+`git cli-git status`,
+and the deleted-config `untrust` lookup,
+read without the lock while no journal is published.
+When one is,
+they take the lock,
+waiting without a time limit while its owner lives,
+recover every journal still published,
+each of which then belongs to a dead holder,
+and release it before reading.
+So a command never fails because another process is mid-transaction,
+and never reads records a live transaction has only partly settled.
+Journal owner PIDs are not consulted:
+a PID alone cannot tell a live owner from an unrelated process that reused it.
+
 A descendant with an independent explicit authorizer remains installed after inherited authorizers are removed.
 
 ## Relaxed-mode parser

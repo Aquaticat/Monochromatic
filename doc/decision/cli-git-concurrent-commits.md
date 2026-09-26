@@ -328,6 +328,21 @@ Evidence:
   production still ignores `HOME`.
   Rules:
   `package/git-policy/cli/SPEC.md` "Locks".
+- Trust provenance readers follow "Locks",
+  added 2026-09-26 (veto open):
+  config loading,
+  `status`,
+  and the deleted-config `untrust` lookup read the registry without the recursive-operation lock
+  while no provenance journal is published,
+  and otherwise take the lock,
+  waiting while a live `untrust` settles,
+  then recover only journals of dead holders.
+  Before,
+  they recovered unlocked and failed with "Recursive trust transaction is active in another process"
+  whenever a journal named a running PID,
+  so a commit overlapping another repository's `untrust` exited `2`.
+  Rules:
+  `package/git-policy/cli/SPEC.md` "Recursive enrollment and revocation".
 - Forwarded index writers coordinate with landings through the cli-git landing lock
   and pre-wait for foreign `index.lock` holders;
   cli-git does not capture Git's stderr to detect a lock failure and re-forward,

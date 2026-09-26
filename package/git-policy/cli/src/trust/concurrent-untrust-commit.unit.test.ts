@@ -93,6 +93,17 @@ async function recordFiles(registry: string,): Promise<readonly string[]> {
 }
 
 /**
+ Lists published provenance journals.
+
+ @param registry - registry root
+
+ @returns journal directory entries
+ */
+async function journalEntries(registry: string,): Promise<readonly string[]> {
+  return await readdir(join(registry, 'transactions',),);
+}
+
+/**
  Finds the stored identity of the record whose repository root is given.
 
  @param registry - registry root
@@ -234,7 +245,7 @@ await describe({
         },);
         expect(await git({ repository, args: ['log', '-1', '--format=%s',], },),).toBe('during untrust',);
         expect((await recordFiles(fixture.registry,)).length,).toBe(1,);
-        expect(await readdir(join(fixture.registry, 'transactions',),),).toEqual([],);
+        expect(await journalEntries(fixture.registry,),).toEqual([],);
       },
     },),
     it({
@@ -255,7 +266,7 @@ await describe({
         expect({ exitCode: result.exitCode, stderr: result.stderr, },).toEqual({ exitCode: 0, stderr: '', },);
         expect(await git({ repository, args: ['log', '-1', '--format=%s',], },),).toBe('after dead untrust',);
         expect((await recordFiles(fixture.registry,)).length,).toBe(1,);
-        expect(await readdir(join(fixture.registry, 'transactions',),),).toEqual([],);
+        expect(await journalEntries(fixture.registry,),).toEqual([],);
       },
     },),
   ],

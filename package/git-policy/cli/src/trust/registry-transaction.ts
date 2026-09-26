@@ -30,29 +30,6 @@ import {
 export type { ProvenanceOperation, } from './registry-transaction-types.ts';
 
 /**
- Reports whether transaction owner process still exists.
- 
- @param ownerPid - recorded process ID
- 
- @returns whether operating system still exposes process
- */
-function processExists(ownerPid: number,): boolean {
-  try {
-    process.kill(
-      ownerPid,
-      0,
-    );
-    return true;
-  }
-  catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error)
-      && (error.code === 'ESRCH'))
-      return false;
-    return true;
-  }
-}
-
-/**
  Ensures private transaction journal directory.
  
  @param registryRoot - complete registry root
@@ -100,12 +77,58 @@ async function transactionDirectory(registryRoot: string,): Promise<string> {
 }
 
 /**
- Recovers every interrupted provenance transaction.
+ Lists journal entries in deterministic order.
+ 
+ @param directory - validated private journal directory
+ 
+ @returns journal directory entries sorted by name
+ */
+async function sortedJournalEntries(directory: string,): Promise<readonly Dirent[]> {
+  return (await readdir(
+    directory,
+    { withFileTypes: true, },
+  ))
+    .toSorted(function byName(
+      left: ForeignBorrowed<Dirent>,
+      right: ForeignBorrowed<Dirent>,
+    ) {
+      return left.name
+        .localeCompare(right.name,);
+    },);
+}
+
+/**
+ Reports whether any provenance journal is published,
+ so a reader that holds no lock takes the recursive-operation lock only when a transaction may be in flight.
+ 
+ @param registryRoot - complete registry root
+ 
+ @returns whether the private journal directory holds any entry
+ 
+ @example
+ ```ts
+ if (await provenanceJournalsPresent(registryRoot)) { ... }
+ ```
+ */
+export async function provenanceJournalsPresent(registryRoot: string,): Promise<boolean> {
+  return (await sortedJournalEntries(await transactionDirectory(registryRoot,),)).length > 0;
+}
+
+/**
+ Settles every published provenance transaction.
+ 
+ The caller holds the registry-wide recursive-operation lock,
+ which every journal writer holds from publishing its journal until settling it,
+ so every journal still published belongs to this process or to a holder that died:
+ none can belong to a live transaction in another process.
+ Owner PIDs recorded in journals are not consulted,
+ because a PID alone cannot tell a live owner from an unrelated process that reused it.
  
  @param registryRoot - complete registry root
  
  @example
  ```ts
+ await using lock = await acquireRecursiveRegistryLock({ registryRoot });
  await recoverProvenanceTransactions({ registryRoot });
  ```
  */
@@ -121,17 +144,7 @@ export async function recoverProvenanceTransactions({
   /**
    Journal filenames in deterministic order.
    */
-  const entries = (await readdir(
-    directory,
-    { withFileTypes: true, },
-  ))
-    .toSorted(function byName(
-      left: ForeignBorrowed<Dirent>,
-      right: ForeignBorrowed<Dirent>,
-    ) {
-      return left.name
-        .localeCompare(right.name,);
-    },);
+  const entries = await sortedJournalEntries(directory,);
   await entries.reduce<Promise<void>>(
     async function recoverAfter(
       previous,
@@ -152,8 +165,6 @@ export async function recoverProvenanceTransactions({
      */
     const journal = parseTransactionJournal(Buffer.from(await readPrivateFile(journalPath,),)
       .toString('utf8',),);
-    if ((journal.ownerPid !== process.pid) && processExists(journal.ownerPid))
-      throw new TrustStorageError('Recursive trust transaction is active in another process.',);
     await settleProvenanceJournal({
       registryRoot,
       journalPath,

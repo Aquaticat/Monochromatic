@@ -27,7 +27,7 @@ import {
   revokeRecursiveTrust,
   type RecursiveUntrustResult,
 } from './recursive-revocation.ts';
-import { recoverProvenanceTransactions, } from './registry-transaction.ts';
+import { recoverProvenanceBeforeUnlockedRead, } from './registry-transaction-read.ts';
 import { trustMjs as explicitMjsTrust, } from './explicit-trust.ts';
 import { trustTypeScript as explicitTypeScriptTrust, } from './explicit-typescript-trust.ts';
 import type {
@@ -187,7 +187,7 @@ export async function loadTrustedConfig({
   readonly relaxedValue?: string;
   readonly warn?: (warning: TrustWarning,) => void;
 },): Promise<LoadedTrustedConfig> {
-  await recoverProvenanceTransactions({ registryRoot, },);
+  await recoverProvenanceBeforeUnlockedRead({ registryRoot, },);
   /**
    Fresh live candidate compared with exact stored bytes.
    */
@@ -296,7 +296,7 @@ export async function inspectTrust({
    */
   const candidate = await captureTrustCandidate(discovered,);
   try {
-    await recoverProvenanceTransactions({ registryRoot, },);
+    await recoverProvenanceBeforeUnlockedRead({ registryRoot, },);
     /**
      Existing validated record.
      */
@@ -409,7 +409,7 @@ export async function untrustRepository({
   readonly registryRoot: string;
   readonly disclose?: TrustConsentAdapters['disclose'];
 },): Promise<RecursiveUntrustResult> {
-  await recoverProvenanceTransactions({ registryRoot, },);
+  await recoverProvenanceBeforeUnlockedRead({ registryRoot, },);
   /**
    Exact records historically installed for repository root.
    */
