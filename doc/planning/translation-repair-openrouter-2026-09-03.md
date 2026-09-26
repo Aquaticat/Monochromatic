@@ -8082,7 +8082,7 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
-## TianqiChen6665 read, 2026-09-26: classes one hundred sixty-two and sixty-three live, class one hundred sixty-four
+## TianqiChen6665 read, 2026-09-26: classes one hundred sixty-two to sixty-seven
 
 TianqiChen6665 ran on `.frozen-dist-c75738ea1` and SETTLED in 17.8 min, one attempt, 24 slices,
 1,428 calls, 1,649 seats, 56 retry rounds, 0.71 USD of OpenRouter cost, 1 abandoned stream (0.004 USD).
@@ -8107,14 +8107,37 @@ the grammar glossary seeds 遇到的却是 with "met with", "was met with" and "
 and refuses "made her met with",
 so that standing reads ineligible and a lane text replaces it.
 Lint 0/0, types clean, full suite 1,162 PASS, 0 FAIL (`suite-class164.log`).
-TianqiChen6666 launched on `.frozen-dist-c5f664396` (scope `pass-TianqiChen6666`, pid 3048898).
+TianqiChen6666 launched on `.frozen-dist-c5f664396` (scope `pass-TianqiChen6666`, pid 3048898)
+and was killed right after launch under always-kill-and-relaunch,
+since three more renderings on this page could be better and the owner's standing instruction of 2026-09-25
+("whenever you see anything that can be translated better do it") makes each one a fix, not an observation.
 
-Observations not built:
-the archive's final-message blockquote carries one stray closing quote and no opening one
+Class one hundred sixty-five:
+the archive's final-message blockquote carries one closing quotation mark and no opening one
 (the source quotes each line with 「」),
-shipped as the archive on an unendorsed standing;
-"whenever she caught a glimpse through the gaps of those she had comforted" misplaces the object;
-the UNO pun line stays the archive's own ambiguous wording.
+shipped as the archive on an unendorsed standing.
+Fixed in `e146633e1` (guard red first `a1c44e652`):
+`translate-quote-balance.ts` refuses, before any judge,
+a candidate carrying a closing ”, 」 or 』 with nothing of its kind open,
+wired into `sourceCarryFindings` after the marker floor, so such an archive rendering is an ineligible standing.
+It stands aside where the original itself closes a quotation it never opened (a slice boundary inside a quotation),
+and an opener with no closer is no fault, since a quotation over several paragraphs opens each and closes the last.
+
+Class one hundred sixty-six:
+"whenever she caught a glimpse through the gaps of those she had comforted" for 在隙中得以窥见有被她治愈的人
+reads the gaps as belonging to the people seen through them.
+Fixed in `e146633e1`: the grammar glossary seeds 在隙中 with "through the gap" and "through the narrow gap"
+and refuses "gaps of those" and "gap of those".
+
+Class one hundred sixty-seven:
+the farewell's 这次的 uno，真的加了很多呢 stayed the archive's "the game of Uno, truly, we've added a lot",
+which says nothing in English; in UNO, 加 is stacking the +2 and +4 draw cards.
+Fixed in `e146633e1`: `rendering-glossary-slang.ts` (spread into `RENDERING_GLOSSARY`) seeds
+`uno，真的加了很多` with "draw cards", "piled up" and "+2 and +4 cards" and refuses "added a lot".
+
+Lint 0/0, types clean, full suite 1,164 PASS, 0 FAIL (`suite-class165-167.log`).
+TianqiChen6667 launched on `.frozen-dist-e146633e1` (scope `pass-TianqiChen6667`, pid 3464291);
+Synthetic and Hyper still dry at launch.
 
 ## TianqiChen6664 read, 2026-09-26: TALLY ERROR, class one hundred sixty-three
 

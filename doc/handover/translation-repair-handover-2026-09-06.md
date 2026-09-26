@@ -4789,8 +4789,13 @@ each read off the pass log and the shipped page:
     sixty-two ("type 2 diabetes") and sixty-three ("in her headpiece") live; class one hundred sixty-four (the
     archive's "made her met with" for 遇到的却是 on an unendorsed standing) built (guard `32e4213cd`, fix
     `c5f664396`, full suite 1,162 PASS, 0 FAIL); recorded under "## TianqiChen6665 read".
-    TIANQICHEN6666 RUNNING on `.frozen-dist-c5f664396` (scope `pass-TianqiChen6666`, pid 3048898):
-    read slice 6 (the family-pressure paragraph) first.
+    TIANQICHEN6666 (`.frozen-dist-c5f664396`) killed right after launch for classes one hundred sixty-five
+    (a closing quotation mark with no opening one, refused by `translate-quote-balance.ts`), sixty-six (在隙中
+    "through the gap") and sixty-seven (the UNO line's draw cards, `rendering-glossary-slang.ts`); guards
+    `a1c44e652`, fix `e146633e1`, full suite 1,164 PASS, 0 FAIL; recorded under "## TianqiChen6665 read".
+    TIANQICHEN6667 RUNNING on `.frozen-dist-e146633e1` (scope `pass-TianqiChen6667`, pid 3464291):
+    read slice 6 (class 164), the final message's quotation marks (165), the glimpse line (166) and the UNO
+    line (167) first, then classes 160 to 163 holding.
     TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built
