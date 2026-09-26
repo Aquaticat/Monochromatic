@@ -18,7 +18,13 @@ A subsequent probe found a **per-editor Gboard workaround**:
 open the side toolbar's bottom menu and choose `Show on-screen keyboard`.
 Real, floating keys then appeared and a key tap changed the Search query.
 A separate disposable Fold subsequently established bounded split and
-full-width Gboard behavior; it does not erase the original floating failure.
+full-width Gboard behavior;
+it does not erase the measured floating overlap.
+Design decisions D53 and D54 accept that unfolded floating-deck overlap and
+the distinct brief font-update banner,
+respectively.
+They do not approve obscuring cover Search results or clipping the deck
+beneath ordinary settled split or docked keyboards.
 
 This is distinct from a separate, confirmed app-layout finding:
 under a visible system-managed keyboard, a bottom-anchored Search prototype
@@ -178,8 +184,10 @@ UI Automator placed the deck's `4:35` duration at
 intersecting the floating keys in x `[936,965)`.
 The resulting screenshot visibly obscured the duration's ending and a strip
 of the playback-mode container.
-This is a real-Gboard counterexample to D50 on the disposable AVD,
-not a synthetic height-step result.
+This was a real-Gboard counterexample to D50's unqualified deck-visibility
+rule on the disposable AVD,
+not a synthetic height-step result;
+D53 now accepts this specific floating-keyboard overlap.
 The exact launch variant for that first toggle was not recorded;
 the captured public inset data must not be attributed to a specific
 accepted-layout intent extra.
@@ -658,9 +666,10 @@ with part of its label and container visibly covered.
 Tapping `OK` removed the banner,
 returned the IME source to y `1352`,
 and restored the complete mode at `[73,1182][965,1313]`.
-This measured temporary failure does **not** become a passing state just
+This measured temporary clip does **not** become a visibly complete deck
 because the settled screenshot passes D50.
-Automatic dismissal and recurrence were not established.
+D54 explicitly accepts this brief Gboard banner overlap as an exception;
+automatic dismissal and recurrence were not established.
 
 A later **bounded recurrence attempt** on the disposable AVD used the
 corrected `search-deck-right-lift-retain-results-light` debug candidate
@@ -705,8 +714,10 @@ The Gboard side-toolbar menu's `Show on-screen keyboard` action exposes
 real keys for the focused editor without switching to the debug IME.
 It is a temporary, floating-keyboard action, not a persistent default
 or a docked-keyboard geometry test.
-At 200% text, it covers part of the selected Search deck;
-therefore it is **not** a workaround for D50.
+At 200% text,
+it covers part of the selected Search deck.
+D53 permits that measured floating overlap;
+this action does not prove any docked-keyboard layout passes D50.
 
 For repeatable geometry research without changing the active AVD,
 the disposable Fold can be booted in a 6 GiB/2 CPU container with Xvfb,
