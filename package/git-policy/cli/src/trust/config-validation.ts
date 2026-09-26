@@ -10,21 +10,15 @@ import type {
 } from '../api/policy-types.ts';
 import { BUILT_IN_POLICIES, } from '../policy-engine/built-ins.ts';
 import type { RuntimePolicyDefinition, } from '../policy-engine/types.ts';
+import {
+  CONCURRENCY_CONFIG_KEYS,
+  type ConcurrencyConfig,
+  validateConcurrencyConfig,
+} from './config-validation-concurrency.ts';
+import { ConfigValidationError, } from './config-validation-error.ts';
 
-/**
- Loaded configuration failed runtime validation.
- */
-export class ConfigValidationError extends Error {
-  /**
-   Creates configuration validation failure.
-   
-   @param message - safe failure explanation
-   */
-  public constructor(message: string,) {
-    super(message,);
-    this.name = 'ConfigValidationError';
-  }
-}
+export { ConfigValidationError, } from './config-validation-error.ts';
+
 
 /**
  Prepared runtime policy configuration.
@@ -46,6 +40,10 @@ export type ValidatedConfig = Readonly<{
    Runtime-parsed policy option outputs.
    */
   policyOptions: ReadonlyMap<string, unknown>;
+  /**
+   Concurrent-commit tuning with defaults applied.
+   */
+  concurrency: ConcurrencyConfig;
 }>;
 
 /**
@@ -73,6 +71,7 @@ const CONFIG_KEYS: ReadonlySet<string> = new Set([
   'plugins',
   'policies',
   'trust',
+  ...CONCURRENCY_CONFIG_KEYS,
 ]);
 
 /**
@@ -392,6 +391,10 @@ export function validateConfig(value: unknown,): ValidatedConfig {
   },);
   if (unknownKey !== undefined)
     throw new ConfigValidationError(`Unknown configuration key: ${unknownKey}`,);
+  /**
+   Concurrent-commit tuning, validated before plugins as the config contract orders it.
+   */
+  const concurrency = validateConcurrencyConfig(value,);
 
   /**
    Declared plugin namespace map.
@@ -508,5 +511,6 @@ export function validateConfig(value: unknown,): ValidatedConfig {
     registeredPolicies,
     policySeverities,
     policyOptions,
+    concurrency,
   };
 }

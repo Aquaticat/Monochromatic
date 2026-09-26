@@ -43,6 +43,14 @@ import {
   TRANSACTION_ROOT_NAME,
 } from './policy-engine/commit-transaction-registry.ts';
 import { createCommitTransactionWorkspace, } from './policy-engine/commit-transaction-workspace.ts';
+import {
+  ConfigValidationError,
+  validateConfig,
+} from './trust/config-validation.ts';
+import {
+  DEFAULT_CONCURRENCY_CONFIG,
+  validateConcurrencyConfig,
+} from './trust/config-validation-concurrency.ts';
 
 /**
  Shapes of the transaction internals exposed to built-artifact tests.
@@ -57,6 +65,10 @@ export type InternalTestExports = Readonly<{
    */
   CommitTransactionRecoveryError: typeof CommitTransactionRecoveryError;
   /**
+   Internal `ConfigValidationError`.
+   */
+  ConfigValidationError: typeof ConfigValidationError;
+  /**
    Internal `createCommitTransactionWorkspace`.
    */
   createCommitTransactionWorkspace: typeof createCommitTransactionWorkspace;
@@ -64,6 +76,10 @@ export type InternalTestExports = Readonly<{
    Internal `createTransactionOwnerRecord`.
    */
   createTransactionOwnerRecord: typeof createTransactionOwnerRecord;
+  /**
+   Internal `DEFAULT_CONCURRENCY_CONFIG`.
+   */
+  DEFAULT_CONCURRENCY_CONFIG: typeof DEFAULT_CONCURRENCY_CONFIG;
   /**
    Internal `encodeTransactionOwner`.
    */
@@ -136,6 +152,14 @@ export type InternalTestExports = Readonly<{
    Internal `TRANSACTION_ROOT_NAME`.
    */
   TRANSACTION_ROOT_NAME: typeof TRANSACTION_ROOT_NAME;
+  /**
+   Internal `validateConcurrencyConfig`.
+   */
+  validateConcurrencyConfig: typeof validateConcurrencyConfig;
+  /**
+   Internal `validateConfig`.
+   */
+  validateConfig: typeof validateConfig;
 }>;
 
 /**
@@ -144,8 +168,10 @@ export type InternalTestExports = Readonly<{
 export const internalTestExports: InternalTestExports = Object.freeze({
   classifyTransactionOwner,
   CommitTransactionRecoveryError,
+  ConfigValidationError,
   createCommitTransactionWorkspace,
   createTransactionOwnerRecord,
+  DEFAULT_CONCURRENCY_CONFIG,
   encodeTransactionOwner,
   ensureTransactionRoot,
   findTransactionLandedOid,
@@ -164,4 +190,6 @@ export const internalTestExports: InternalTestExports = Object.freeze({
   removeTransactionDirectory,
   resolveProcessBirthIdentity,
   TRANSACTION_ROOT_NAME,
+  validateConcurrencyConfig,
+  validateConfig,
 },);

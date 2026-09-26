@@ -74,6 +74,45 @@ export type BuiltInPolicyId =
 export type PluginMap = Readonly<Record<string, PluginDefinition>>;
 
 /**
+ Concurrent-commit tuning accepted at the top level of trusted config.
+ None of these keys disables the concurrent commit transaction.
+
+ @example
+ ```ts
+ const tuning: CliGitConcurrencyConfig = { hooks: { concurrentCommits: false } };
+ ```
+ */
+export type CliGitConcurrencyConfig = Readonly<{
+  /**
+   Hook serialization.
+   */
+  hooks?: Readonly<{
+    /**
+     Whether hooks from concurrent commits overlap instead of serializing; default `false`.
+     */
+    concurrentCommits?: boolean;
+  }>;
+  /**
+   Foreign `index.lock` patience.
+   */
+  indexLock?: Readonly<{
+    /**
+     Backoff budget in milliseconds for a lock whose owner cannot be proven alive; default `1000`.
+     */
+    unprovenOwnerTimeoutMs?: number;
+  }>;
+  /**
+   Landing starvation protection.
+   */
+  landing?: Readonly<{
+    /**
+     Lost landing races before a commit reserves the next landing slot; default `2`.
+     */
+    reserveAfterLostRaces?: number;
+  }>;
+}>;
+
+/**
  Consumer cli-git configuration.
  
  Precise policy-ID and option checking occurs in {@link defineConfig}.
@@ -83,7 +122,7 @@ export type PluginMap = Readonly<Record<string, PluginDefinition>>;
  const config: CliGitConfig = {};
  ```
  */
-export type CliGitConfig<TPlugins extends PluginMap = PluginMap> = Readonly<{
+export type CliGitConfig<TPlugins extends PluginMap = PluginMap> = CliGitConcurrencyConfig & Readonly<{
   /**
    Plugins keyed by namespace.
    */
@@ -111,7 +150,7 @@ export type CliGitConfig<TPlugins extends PluginMap = PluginMap> = Readonly<{
  const input: CliGitConfigInput = {};
  ```
  */
-export type CliGitConfigInput = Readonly<{
+export type CliGitConfigInput = CliGitConcurrencyConfig & Readonly<{
   /**
    Consumer plugins.
    */

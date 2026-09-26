@@ -20,6 +20,7 @@ export type {
 } from './context-types.ts';
 export type {
   BuiltInPolicyId,
+  CliGitConcurrencyConfig,
   CliGitConfig,
   PluginDefinition,
   PluginMap,
