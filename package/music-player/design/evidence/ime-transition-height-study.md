@@ -442,6 +442,61 @@ D54's accepted brief real-Gboard font-update banner does not excuse this
 separate synthetic steady state.
 The opt-in cover result viewport does not alter either inner result.
 
+## Early inline layout without advance clearance
+
+A separate debug-only `-earlyinline-` branch keeps the accepted vertical
+Search layout at 100% text and requests the compact inline deck at 200%
+**before** a focused keyboard first becomes visible.
+Unlike the older `-preclear-` study,
+it uses ordinary layout-time `imePadding()` rather than a fixed 416dp
+bottom reservation.
+The tested APK SHA-256 was
+`b9d7a7cec4dcea956b57cd694e5c964cf4d70ef1c96a4a0b92518501145556b0`.
+It was installed only on the disposable AVD after its earlier debug
+certificate was found to differ.
+The same artifact still provided the unmodified selected vertical control
+and the pre-reserved comparison.
+
+At 200% text,
+the stepped debug IME moved in place from 375dp (top y `1238`) to
+400dp (top y `1177`) without losing the `cam` editor's focus.
+A half-resolution native video of the **early inline** candidate contained
+22 sampled IME-visible frames.
+Its first four frames showed all five mode-group outlines at video keyboard
+y `619`.
+Frames 005 to 007 showed the keyboard at y `588` and only four outlines:
+the complete final mode's bottom border was behind the keyboard.
+Frame 008 showed five outlines again after the layout caught up.
+The actual frame 005 shows Folders,
+Open,
+query,
+results and the deck's text;
+the mode-group bottom edge is visibly cut at the keyboard boundary.
+That is a D50 counterexample during a **synthetic in-place height change**,
+even though the compact deck was already selected at 375dp.
+It does not establish the reason layout lost those sampled frames.
+
+On the **same APK**,
+the advance-reserved `-preclear-` candidate showed all five outlines
+in each of its 24 IME-visible sampled frames across the same 375dp to
+400dp step.
+Its last border stayed at video y `558` while the keyboard edge moved
+from y `619` to y `588`.
+The earlier fixed-height study measured the reservation's unused space
+above a shorter 330dp keyboard at about 210 physical px;
+this same-APK run confirms the clearance tradeoff at 375dp,
+but does not retest every intermediate instant or real Gboard.
+The two recordings sampled different frame counts,
+so their counts are categorical observed pass/fail evidence,
+not a timing comparison.
+After Android Back hid the pre-reserved debug IME,
+the focused `cam` editor remained and the full closed deck returned to
+`[73,1904][965,2035]` with Folders and Open visible.
+The native videos,
+raw frame directories,
+logs and hierarchies remain private.
+Neither inline reflow nor the 416dp reservation is accepted.
+
 ## Remaining boundary
 
 The closed deck's first measured heights changed from `762` to `891` to
