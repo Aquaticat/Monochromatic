@@ -446,7 +446,7 @@ await describe({
     //region Shutdown
 
     it({
-      name: 'closes the source exactly once when two mapper calls fail',
+      name: 'closes the source exactly once when two gated mapper calls fail',
       fn: async () => {
         /**
          Close and pull counters for this source.
@@ -479,20 +479,32 @@ await describe({
           },
         };
         /**
+         Gate holding both mapper calls past the settled check, so both
+         failures reach the run's rejection handling.
+         */
+        const gate = createGate();
+        /**
+         Run promise observed for its rejection.
+         */
+        const running = pMap({
+          iterable: countedIterable,
+          mapper: async function gatedFailure(): Promise<never> {
+            await gate.open;
+            throw new Error('first failure',);
+          },
+          options: {
+            concurrency: 2,
+            stopOnError: true,
+          },
+        },);
+        await yieldTurn();
+        gate.release();
+        /**
          Failure observed from the run's promise.
          */
         let caught: unknown;
         try {
-          await pMap({
-            iterable: countedIterable,
-            mapper: function failingMapper(): never {
-              throw new Error('first failure',);
-            },
-            options: {
-              concurrency: 2,
-              stopOnError: true,
-            },
-          },);
+          await running;
         }
         catch (error) {
           caught = error;

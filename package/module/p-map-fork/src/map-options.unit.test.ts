@@ -328,6 +328,41 @@ await describe({
     },),
 
     describe({
+      name: 'signal resolution',
+      children: [
+        it({
+          name: 'forwards a present signal to the run so an abort rejects it',
+          fn: async () => {
+            /**
+             AbortController whose signal aborts before the run starts.
+             */
+            const abortController = new AbortController();
+            abortController.abort('stopped early',);
+            /**
+             Failure observed from the run's promise.
+             */
+            let caught: unknown;
+            try {
+              await pMap({
+                iterable: [1],
+                mapper: function identity(value: number,): number {
+                  return value;
+                },
+                options: {
+                  signal: abortController.signal,
+                },
+              },);
+            }
+            catch (error) {
+              caught = error;
+            }
+            expect(caught,).toBe('stopped early',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
       name: 'check ordering',
       children: [
         it({
