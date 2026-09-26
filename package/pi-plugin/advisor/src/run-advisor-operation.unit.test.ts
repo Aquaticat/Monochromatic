@@ -81,7 +81,9 @@ await describe({ name: '', children: [
   it({ name: 'clearing Pi model cycling scope does not revoke the selected endpoint', fn: async (): Promise<void> => {
     const fixture = hostFixture();
     fixture.first.setResponses([fauxAssistantMessage('review after clearing cycle list',),],);
-    fixture.state.auth = (): void => { fixture.state.live = []; };
+    fixture.state.auth = (): void => {
+      fixture.state.live = [];
+    };
     const result = await runAdvisor({ ctx: fixture.ctx, config, requestedSlug: 'first/a', },);
     expect(result.text,).toBe('review after clearing cycle list',);
     expect(fixture.first.state.callCount,).toBe(1,);
