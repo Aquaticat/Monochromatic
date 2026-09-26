@@ -21,7 +21,7 @@ if (action === 'build') {
 } else if (action === 'validate') {
   const actual = readFileSync(output, 'utf8');
   if (actual !== expected) throw new Error('Crease form does not match its sanitized selected-A source.');
-  for (const marker of ['P10 &gt; P0 &gt; P12', 'not a visual fit test',
+  for (const marker of ['P10 &gt; P12 &gt; P0', 'not a visual fit test',
     'not necessarily in the same state', 'min_padding = 0mm', 'name="floor"',
     'Anything else you want settled or changed?', 'Response path:', 'Reset 100%',
     'prefers-color-scheme: dark']) {

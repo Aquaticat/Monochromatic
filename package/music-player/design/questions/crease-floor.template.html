@@ -57,11 +57,12 @@ p { max-inline-size: 90ch; }
 .policy li { margin-block: 0.4rem; }
 .ruler { display: grid; gap: 0.55rem; margin-block: 0.8rem; }
 .measure { display: grid; grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr); gap: 0.6rem; align-items: center; }
+.measure .track { display: block; inline-size: min(100%, 12rem); }
 .measure .line { display: block; block-size: 0.65rem; border-radius: 0.35rem; background-color: var(--color-information); }
-.measure[data-kind='crease'] .line { inline-size: min(100%, 6.9rem); background-color: var(--color-crease); }
-.measure[data-kind='ten'] .line { inline-size: min(100%, 9.2rem); }
-.measure[data-kind='twelve'] .line { inline-size: min(100%, 11.05rem); }
-.measure[data-kind='boxes'] .line { inline-size: min(100%, 10.45rem); }
+.measure[data-kind='crease'] .line { inline-size: 62.5%; background-color: var(--color-crease); }
+.measure[data-kind='ten'] .line { inline-size: 83.333333%; }
+.measure[data-kind='twelve'] .line { inline-size: 100%; }
+.measure[data-kind='boxes'] .line { inline-size: 94.583333%; }
 button, textarea { font: inherit; color: var(--color-ink); background-color: var(--color-panel); }
 button {
   min-inline-size: 3rem;
@@ -152,10 +153,10 @@ dialog::backdrop { background-color: var(--color-backdrop); }
   <h3>Thresholds, not new app screens</h3>
   <p>These labeled bars compare <strong>total opposing-information distance</strong>, not centered exclusion bands or equal side margins. Their lengths are proportional to the stated millimeters. The 11.35mm box-gap bar is a cross-state proxy, not a measured nearest painted-pair gap or a fit pass for any proposal.</p>
   <div class="ruler" role="list" aria-label="Approximate physical distance comparison">
-    <div class="measure" data-kind="crease" role="listitem"><span>Crease: 7.5mm</span><span class="line" aria-hidden="true"></span></div>
-    <div class="measure" data-kind="ten" role="listitem"><span>Floor: 10mm</span><span class="line" aria-hidden="true"></span></div>
-    <div class="measure" data-kind="boxes" role="listitem"><span>Box proxy: 11.35mm</span><span class="line" aria-hidden="true"></span></div>
-    <div class="measure" data-kind="twelve" role="listitem"><span>Floor: 12mm</span><span class="line" aria-hidden="true"></span></div>
+    <div class="measure" data-kind="crease" role="listitem"><span>Crease: 7.5mm</span><span class="track" aria-hidden="true"><span class="line"></span></span></div>
+    <div class="measure" data-kind="ten" role="listitem"><span>Floor: 10mm</span><span class="track" aria-hidden="true"><span class="line"></span></span></div>
+    <div class="measure" data-kind="boxes" role="listitem"><span>Box proxy: 11.35mm</span><span class="track" aria-hidden="true"><span class="line"></span></span></div>
+    <div class="measure" data-kind="twelve" role="listitem"><span>Floor: 12mm</span><span class="track" aria-hidden="true"><span class="line"></span></span></div>
   </div>
 </section>
 <section aria-labelledby="choices-title">
@@ -165,7 +166,7 @@ dialog::backdrop { background-color: var(--color-backdrop); }
       <h3>P10 · 10mm independent minimum (Recommended)</h3>
       <h4>Pros</h4><ul><li>Requires at least 2.5mm of combined clearance beyond this device's approximate 7.5mm crease.</li><li>Sets a stable physical total-separation floor if a later device has a narrower crease.</li></ul>
       <h4>Cons</h4><ul><li>The measured 11.35mm box proxy is not ink or a same-height opposing pair; compliance remains unverified.</li><li>Could require a different layout in unmeasured states or devices.</li></ul>
-      <p><strong>My read:</strong> Recommend as a moderate independent floor, without asserting that the current art already passes. This 10mm is a proposed separation target, <strong>not</strong> the superseded 10mm estimate of the crease itself.</p>
+      <p><strong>My read:</strong> Recommend an explicit 2.5mm combined cushion beyond this crease as a policy, without claiming a demonstrated readability benefit or fit. This 10mm separation target is <strong>not</strong> the superseded 10mm estimate of the crease itself.</p>
     </article>
     <article class="policy" data-option="crease">
       <h3>P0 · No independent floor, crease width alone</h3>
@@ -176,11 +177,11 @@ dialog::backdrop { background-color: var(--color-backdrop); }
     <article class="policy" data-option="twelve">
       <h3>P12 · 12mm independent minimum</h3>
       <h4>Pros</h4><ul><li>Requires at least 4.5mm of combined clearance beyond this device's approximate crease.</li><li>Provides a stricter target if stronger visual separation is worth possible layout responses.</li></ul>
-      <h4>Cons</h4><ul><li>Exceeds the 11.35mm projected box-gap proxy, but actual painted distance and nearest same-height pair remain unmeasured.</li><li>A state that fails this target would require a visible response; no such response has been built or validated.</li></ul>
+      <h4>Cons</h4><ul><li>The 11.35mm projected box-gap proxy cannot establish this floor's fit or failure for painted marks.</li><li>A state that fails this stricter target would require a visible response; none has been built or validated.</li></ul>
       <p><strong>My read:</strong> Choose if the stricter physical floor is intentional even though current-state fit is unproven; do not infer automatic truncation or layout changes from the proxy alone.</p>
     </article>
   </div>
-  <p class="note"><strong>Ranking:</strong> P10 &gt; P0 &gt; P12. P10 exceeds the physical crease while setting a bounded independent target; P0 is second because it honors only the known obstruction rather than creating a stricter unverified target; P12 is third because it exceeds even the available projected box-gap proxy without a built alternative. This is a policy ranking, not a visual fit test. All options still require app information to remain outside the physical crease; none mandates symmetric left/right clearance.</p>
+  <p class="note"><strong>Ranking:</strong> P10 &gt; P12 &gt; P0. I prefer P10 to P12 because a 2.5mm combined cushion is an explicit buffer and there is no demonstrated readability gain from adding the further 2mm. I prefer P12 to P0 because a cross-device independent floor is more protective than leaving future narrower creases as the sole threshold. This is a normative policy ranking, not a visual fit test; the 11.35mm cross-state box proxy favors none of these values. All options still require app information to remain outside the physical crease; none mandates symmetric left/right clearance.</p>
 </section>
 <section aria-labelledby="response-title">
   <h2 id="response-title">Decision: E2's <code>min_padding</code> only</h2>
