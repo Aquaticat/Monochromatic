@@ -5,7 +5,8 @@
 D51 keeps Search and results on the right of the unfolded Pixel 9 Pro Fold,
 with the playback deck at bottom-left.
 D50 requires that deck to remain visible while typing,
-except where D53 explicitly accepts real floating Gboard obscuring it.
+except for real floating Gboard (D53) and the brief measured Gboard
+font-update banner (D54).
 The active review at `package/music-player/design/questions/current.html` still shows a debug-only 300dp
 system-managed input method,
 not Gboard.
@@ -186,11 +187,11 @@ The split/full-width passes do **not** cancel the observed occlusions.
 D53 explicitly accepts real floating Gboard hiding the **unfolded deck**;
 D51's A selection is unchanged.
 The measured cover result-label overlap is not part of that approval.
-The transient banner clipped the unfolded final mode and remains an open
-D50 failure under a nonfloating keyboard.
-Do not broaden D53 to other input methods or keyboard states.
+D54 separately accepts the observed brief Gboard font-update-banner clip.
+Neither exception covers ordinary settled docked keyboards,
+other input methods or persistent keyboard overlays.
 
-## Banner-height fit bound, not a proposed fix
+## Banner-height fit bound retained as evidence
 
 At 200% font scale,
 the settled light capture first paints the deck at y `281` and the
@@ -221,7 +222,9 @@ Do not implement a partial compact fallback,
 shrink a 48dp target,
 undercut the accepted 8dp group spacing or 12dp horizontal mode padding,
 or hide controls to silence this diagnostic.
-Any viable reflow needs a debug-only Compose build and a real keyboard check
+D54 accepts this measured brief banner overlap without choosing a reflow.
+If a different tall keyboard still requires a complete deck,
+validate any proposed reflow in a debug-only Compose build with real input
 before another design question.
 
 ## Evidence and regeneration
@@ -256,13 +259,16 @@ result labels moved outside the floating keyboard,
 and an unmasked status-corner pixel;
 the original records passed after each restoration.
 
-App-delivered IME insets and any other public bounding-rectangle APIs were
-not directly measured inside Compose.
+A later debug-only Compose probe measured docked Gboard insets and a
+bounding rectangle;
+with real floating Gboard it observed visibility but neither a bottom inset
+nor a usable floating-key rectangle.
 The system `InsetsSource` path is traced in
 `doc/troubleshooting/android-17-fold-emulator-ime-probe.md`.
-A design response to movable keyboards and system-owned transient overlays,
-plus long result names and scrolling,
-remains open.
+D53 and D54 accept the measured unfolded-deck overlays,
+but cover result visibility under floating Gboard,
+other keyboard states,
+long result names and scrolling remain open.
 
 [inner-100]: ../questions/evidence/gboard-inner-split-light-s100.png
 [inner-200]: ../questions/evidence/gboard-inner-split-light-s200.png

@@ -59,7 +59,7 @@ rounds (2026-09-17):
   chosen as the working baseline, not banned from exploration.
   K1's discouraging back
   navigation and K3's non-local sheet remain rejected.
-- **SETTLED: Fold Search A with result heading and floating overlay scope (D47 to D53).**
+- **SETTLED: Fold Search A with result heading and measured IME exceptions (D47 to D54).**
   D47 chooses a Search
   button opening a separate page;
   D48 puts Back,
@@ -118,7 +118,8 @@ rounds (2026-09-17):
   not an endorsement.
   D50 additionally requires the unfolded playback/control deck to remain
   visible throughout Search,
-  except for real floating-Gboard overlap accepted by D53.
+  except for real floating-Gboard overlap (D53) and the brief measured
+  Gboard font-update banner (D54).
   The first coherent-layout studies still hid
   it (the docked overlay covered it;
   both full-width variants replaced its
@@ -157,8 +158,9 @@ rounds (2026-09-17):
   split/full-width geometry.
   A transient Gboard font-update banner on the disposable inner panel
   raised its IME to y `1140` and clipped the last mode until `OK` was tapped.
-  D53 permits floating Gboard to obscure the unfolded deck;
-  the observed transient banner remains a separate D50 failure.
+  D53 permits real floating Gboard to obscure the unfolded deck;
+  D54 separately accepts that brief measured font-update banner clipping.
+  Ordinary docked and split-keyboard typing still requires the full deck.
   The user clarified that Search keeps its **actual folder browser** in
   the upper-left area while typing.
   Do not blank it or replace it with a `Current folder` caption;
@@ -169,15 +171,19 @@ rounds (2026-09-17):
   a banner-height keyboard.
   The user liked the refreshed A-only review on 2026-09-25;
   the retained browser composition is settled,
-  not the separate tall-IME reflow or the unresolved banner-height D50 failure.
+  not the separate tall-IME reflow.
+  D54 accepts the observed brief banner clipping without adopting
+  that reflow.
   The full Open parent is `[621,148][953,279]` with the keyboard closed,
   while UI Automator sees only `[621,132][953,245]` in the short viewport.
   Those are visible accessibility bounds,
   not an intrinsic layout-size measurement.
   No below-48dp layout target has been deliberately introduced.
-  Do not take space from the complete deck for docked or banner-height
-  keyboards or put meaning on the crease;
-  D53 alone permits the real floating-keyboard overlay.
+  Do not take space from the complete deck under ordinary docked or split
+  keyboards or put meaning on the crease.
+  D53 and D54 permit only their measured floating and font-update-banner
+  exceptions,
+  respectively.
   A 415dp debug-only system IME reproduced the banner-height clipping at
   y `1141` in unchanged A.
   An **unaccepted** inline title/transport study keeps the original
@@ -253,9 +259,11 @@ rounds (2026-09-17):
   indexed in `package/music-player/design/evidence/gboard-geometry.md`.
   The user explicitly accepted that real floating Gboard still obscures
   the unfolded deck (D53).
-  This does not accept the separate cover result-label occlusion or waive
-  complete deck visibility under docked keyboards and the font-update banner.
-  Other keyboard heights and the banner response remain open.
+  The user also accepted the **brief** font-update-banner clip (D54).
+  Neither choice accepts the separate cover result-label occlusion or waives
+  complete deck visibility under ordinary settled docked/split keyboards.
+  Other keyboard heights and distinct or persistent banner behavior remain
+  unverified.
   A 200% long query remained in the right input region without hiding
   the deck under the debug IME.
   Long **result** names and result-list scrolling are still open.

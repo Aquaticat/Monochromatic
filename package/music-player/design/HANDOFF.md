@@ -5807,11 +5807,11 @@ The earlier portions of this handover describe the experiment and the original
 strict D50 criterion;
 read them with D53's newer exception.
 
-The user did **not** approve clipping under split or docked keyboards,
-Gboard's transient full-width font-update banner,
-or the cover-panel floating keyboard hiding both result labels.
-The real banner remains an unresolved D50 gate;
-its one observed y `1140` state clipped the final mode,
+D53 did **not** approve clipping under ordinary settled split or docked
+keyboards,
+nor the cover-panel floating keyboard hiding both result labels.
+D54 separately accepts the observed brief full-width font-update banner;
+its measured y `1140` state clipped the final mode,
 and a later font-scale cycle did not re-create it.
 The 416dp anticipatory reservation and inline title/transport reflow remain
 unaccepted debug-only alternatives.
@@ -5830,3 +5830,24 @@ the existing captures and separate disposable fixture provide the design
 evidence.
 The persistent per-user process limits are documented in
 `doc/troubleshooting/fedora-44-fold-emulator-user-task-ceiling.md`.
+
+## D54 accepts the brief real Gboard font-update banner
+
+After seeing the separate 200% text banner evidence,
+the user answered: “That brief banner is also acceptable.”
+D54 permits the observed `Keyboard font size updated` message to clip the
+last unfolded playback mode until `OK` dismisses it.
+The 415dp debug IME and anticipatory 416dp reservation remain synthetic
+experiments,
+not selected changes to A.
+The accepted layout still keeps the same upper-left folder browser and
+right-hand Search query/results,
+with a complete bottom-left deck under ordinary settled docked/split input.
+Neither D53 nor D54 approves cover result labels disappearing beneath
+floating Gboard;
+that is a separable user decision or design gate.
+Do not mark every keyboard height or transition verified from these bounded
+exceptions.
+The original AVD exited separately with `qemu_thread_create` failure;
+no emulator restart is needed merely to record this design decision.
+Production implementation is still unauthorized.
