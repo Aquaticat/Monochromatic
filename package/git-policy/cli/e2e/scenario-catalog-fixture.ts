@@ -13,6 +13,7 @@ import { HOOKED_SCENARIOS, } from './scenario-hooked-fixture.ts';
 import { INDEX_WRITER_SCENARIOS, } from './scenario-index-writer-fixture.ts';
 import { LOCK_GC_SCENARIOS, } from './scenario-lock-gc-fixture.ts';
 import type { ScenarioDefinition, } from './scenario-model-fixture.ts';
+import { PHASE_KILL_SCENARIOS, } from './scenario-phase-kill-fixture.ts';
 import { SHARED_FILE_SCENARIOS, } from './scenario-shared-file-fixture.ts';
 import { SIGKILL_SCENARIOS, } from './scenario-sigkill-fixture.ts';
 
@@ -34,4 +35,5 @@ export const SCENARIO_CATALOG: readonly ScenarioDefinition[] = [
   ...AMEND_SWITCH_SCENARIOS,
   ...LOCK_GC_SCENARIOS,
   ...SIGKILL_SCENARIOS,
+  ...PHASE_KILL_SCENARIOS,
 ];
