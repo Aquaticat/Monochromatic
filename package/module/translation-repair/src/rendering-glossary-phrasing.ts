@@ -95,6 +95,34 @@ export const PHRASING_GLOSSARY: readonly CommunityTerm[] = [
     ],
     why: 'the world in all its variety; "myriad" before a singular noun is not English, so the page says "this vast world"',
   },
+  // CLASS ONE HUNDRED FIFTY-EIGHT (aiyysk2, 2026-09-26): 没和 MTF 交往过 shipped
+  // twice as "I'd never dated a trans woman", a romance the original never
+  // states; the next paragraph calls it "my first time ever talking with a
+  // trans woman" and the archive wrote "never actually talked to". The pinned
+  // corpus carries 交往 three times, all on aiyysk, all ordinary social contact.
+  // Refused forms match as substrings, so none is bare "dated" or "dating",
+  // which "updated" and "validating" hold.
+  {
+    term: '交往',
+    renderings: [
+      'talked to',
+      'interacted with',
+      'spent time with',
+      'got to know',
+    ],
+    refusedForms: [
+      'never dated',
+      'dated a trans',
+      'dated an mtf',
+      'dated them',
+      'dating a trans',
+      'dating them',
+      'date them',
+      'normal dating',
+    ],
+    why: 'spending time with people and getting to know them; unless the passage speaks of romance, English says '
+      + '"talked to" or "spent time with", never "dated"',
+  },
 ];
 
 //endregion Phrasing renderings
