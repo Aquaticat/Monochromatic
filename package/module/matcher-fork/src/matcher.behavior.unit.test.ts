@@ -717,6 +717,13 @@ await describe({
         },),).toBe(true,);
         expect(isMatch({
           inputs: [
+            'foo',
+            'bar',
+          ],
+          patterns: ['!bar'],
+        },),).toBe(true,);
+        expect(isMatch({
+          inputs: [
             'Hey, tiger!',
             'tiger has edge over hyenas',
             'pushing a tiger over the edge is a stunt',

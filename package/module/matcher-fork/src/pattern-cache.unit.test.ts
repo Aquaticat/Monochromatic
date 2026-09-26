@@ -104,6 +104,18 @@ await describe({
         },),
 
         it({
+          name: 'clears every entry',
+          fn: async () => {
+            getPattern({
+              pattern: 'clear-me*',
+              caseSensitive: false,
+            },);
+            clearPatternCache();
+            expect(cacheSize(),).toBe(0,);
+          },
+        },),
+
+        it({
           name: 'recompiles an evicted entry on next use',
           fn: async () => {
             clearPatternCache();

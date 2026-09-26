@@ -60,6 +60,22 @@ await describe({
     },),
 
     it({
+      name: 'matches when any input matches without allPatterns',
+      fn: async () => {
+        expect(isMatch({
+          inputs: [
+            'foo',
+            'zoo',
+          ],
+          patterns: [
+            'f*',
+            'b*',
+          ],
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'requires every input under allPatterns with only negations',
       fn: async () => {
         expect(isMatch({
