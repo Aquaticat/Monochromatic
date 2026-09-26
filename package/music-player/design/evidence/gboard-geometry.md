@@ -138,6 +138,18 @@ it is **not** one of the linked sanitized Gboard PNGs.
   so do not transplant the first probe's public geometry into its row.
   See `doc/troubleshooting/android-17-fold-emulator-ime-probe.md`
   for the source trace and boundary between these visits.
+- A later **debug-only, same-APK layering control** used APK SHA-256
+  `e4bfec8e8eb98187a0afc06ef11d587fd3c87623fe45a37da7b0ffd862c6461e`.
+  A nonfocusable app panel visibly painted over real floating Gboard.
+  An uncovered real key changed the focused query to `m`;
+  tapping a key beneath the panel left it at `m`.
+  `InputDispatcher` logged a dropped untrusted touch due to the app window.
+  After Back hid Gboard,
+  the sampled panel remained over the deck.
+  This is a **rejected integration probe**,
+  not a usable replacement Search design or a public review PNG.
+  Its source and exact screen/window evidence are in the same troubleshooting
+  document.
 - [Original AVD floating Gboard at 100% cover][floating-cover]:
   real key taps entered `cam`,
   but its x `[0,830)`,

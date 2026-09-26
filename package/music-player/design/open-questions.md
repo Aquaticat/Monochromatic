@@ -215,6 +215,13 @@ rounds (2026-09-17):
   The first visit received no floating-key rectangle through the tested
   app APIs;
   animation continuity remains unverified.
+  A debug-only app panel painted above real floating Gboard,
+  but an uncovered key entered `m` while a key beneath the panel did not.
+  `InputDispatcher` reported a dropped touch due to app-window occlusion.
+  The panel also remained over the deck after Back in the sampled state.
+  Reject this layering probe;
+  it is not approval to obscure keyboard keys or the folder browser.
+  A keep-clear preference remains a distinct untested API lead.
   A bounded real-banner recurrence attempt changed the disposable font
   scale from 200% to 100% and back while the floating keyboard was open.
   The activity was recreated;
