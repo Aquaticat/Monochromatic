@@ -123,6 +123,44 @@ export const PHRASING_GLOSSARY: readonly CommunityTerm[] = [
     why: 'spending time with people and getting to know them; unless the passage speaks of romance, English says '
       + '"talked to" or "spent time with", never "dated"',
   },
+  // CLASS ONE HUNDRED FIFTY-NINE (aiyysk2, 2026-09-26): 我没有怎么在乎环境的问题
+  // shipped "I cared all that much about the environment" (the archive: "not
+  // really the environment itself that I mind"), which reads as nature and
+  // pollution where she meant the crowded place she lived; 工程机 shipped
+  // "engineering phone" three times (the archive too), where the phone world
+  // says "prototype" or "engineering sample". The pinned corpus carries
+  // 环境的问题 once and 工程机 three times, all on aiyysk.
+  {
+    term: '环境的问题',
+    renderings: [
+      'my surroundings',
+      'where I was living',
+      'my living conditions',
+    ],
+    refusedForms: [
+      'about the environment',
+      'the environment itself',
+      'environmental issue',
+      'environmental problem',
+    ],
+    why: 'the place someone lives and what it is like; "the environment" alone reads as nature and pollution in English, '
+      + 'so the page says "my surroundings"',
+  },
+  {
+    term: '工程机',
+    renderings: [
+      'prototype phone',
+      'engineering sample',
+      'prototype',
+    ],
+    refusedForms: [
+      'engineering phone',
+      'engineering machine',
+      'engineering device',
+    ],
+    why: 'a pre-release phone made for testing; the phone world calls it a "prototype" or "engineering sample", never an '
+      + '"engineering phone"',
+  },
 ];
 
 //endregion Phrasing renderings
