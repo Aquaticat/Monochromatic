@@ -101,6 +101,33 @@ submodules,
 - Mechanism: parallel preparation,
   serial landing.
   The owner chose this over a lock queue because the engineering capacity exists now.
+- Replay: three-way content merge from the preparation base onto the new `HEAD`.
+- Replay conflict: fail,
+  nothing lands,
+  and the diagnostic names conflicting paths and the winning commit;
+  never re-prepare from current worktree bytes.
+- Policy re-run after replay: record each policy's lazy reads
+  (candidate bytes,
+  `trackedFiles` pathspecs,
+  `headOid`)
+  and re-run only policies whose read set changed.
+  Policies that read outside the API declare it and always re-run.
+- Hooks and editor: run during preparation.
+  The editor,
+  `prepare-commit-msg`,
+  and `commit-msg` run once;
+  `pre-commit` re-runs outside the landing lock against the replayed index whenever the replayed tree differs,
+  then landing retries.
+- Landing order: preparation completion order.
+- Waiting: unbounded while the cli-git landing owner is alive;
+  bounded for an `index.lock` without a known owner.
+- `--amend` and merge,
+  cherry-pick,
+  revert conclusions fail when `HEAD` moved.
+- Index commits participate with the index captured at invocation.
+- Auto-push: single-flight per branch.
+  A landed commit joins an in-flight push covering its OID or pushes the branch tip itself,
+  and exits only once the remote contains its OID.
 
 ## Recommendation calibration
 
@@ -108,6 +135,8 @@ Owner, 2026-09-25:
 engineering budget is not a constraint;
 recommend the most correct and performant option,
 never the cheapest to build.
+This applies to this design session only;
+the owner declined an `AGENTS.md` rule.
 
 ## Settled by the decisions, veto open
 
@@ -123,6 +152,28 @@ never the cheapest to build.
   recovery handles each.
 - Replay onto a moved `HEAD` uses `git merge-tree --write-tree --merge-base`;
   cli-git declares a minimum Git version covering the plumbing it uses.
+- Preparation runs native `git commit` against a private index and a private admin dir `HEAD`,
+  per the prototype.
+- When `HEAD` did not move,
+  landing advances the ref to the prepared commit itself,
+  keeping its signature.
+- Replay signs with `git commit-tree -S` whenever the prepared commit was signed.
+- The landing critical section holds the landing lock and real `index.lock`,
+  advances the ref by compare-and-swap with a `-m` reflog message carrying the recovery nonce,
+  installs the real index,
+  then releases,
+  so no ordinary commit can observe a moved ref with a stale index.
+- Pending prepared commits are protected from `gc` by a private ref under `refs/cli-git/`,
+  deleted at landing,
+  abort,
+  or recovery;
+  the private admin dir stays unregistered,
+  so `git worktree list` never shows it.
+  The ref is briefly visible to `git for-each-ref` and `git log --all`.
+- A replay conflict is a `core-finding` JSONL event with exit `1`,
+  matching other expected commit rejections.
+- New JSONL events report replays and lost landing races.
+- Required disposable fixtures and lifecycle benchmarks gain concurrent-commit scenarios.
 
 ## Rejected
 
@@ -132,21 +183,14 @@ never the cheapest to build.
 
 ## Open questions
 
-- Replay granularity: path level or three-way content merge.
-- Replay conflict: fail or re-prepare from current worktree bytes.
-- Policy re-run after replay.
-- Where hooks and the message editor run: preparation or landing.
-- Landing order: completion order or invocation order.
-- Waiting on landing owners and foreign `index.lock` holders.
-- `--amend` and merge, cherry-pick, revert conclusions when `HEAD` moved.
-- Index commits (`--no-only`, pathspec-less escape hatch).
-- Auto-push when landings are close together.
-- Private `HEAD` mechanism details,
-  after the hook placement answer:
-  `gc` protection for pending commits,
-  the `GIT_WORK_TREE=.` hook environment,
-  and replay signing.
-- Whether the budget calibration becomes an `AGENTS.md` rule.
+- Starvation guard for a commit that keeps losing the landing race.
+- Foreign `index.lock` wait bound,
+  pending research on whether a live holder is detectable.
+- Hook environment:
+  absolute `GIT_WORK_TREE`,
+  suppressing prepared `post-commit` and running it once after landing,
+  and config-based hooks;
+  pending experiment.
 
 ## Next action
 
