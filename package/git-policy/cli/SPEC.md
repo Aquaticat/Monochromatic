@@ -1971,6 +1971,7 @@ Each transaction passes through four phases:
 4.  Post-landing:
     outside both locks,
     complete worktree copies,
+    run automatic maintenance,
     run `post-commit` once,
     run post-commit policies,
     and auto-push.
@@ -2709,6 +2710,11 @@ and by recovery.
 A pack whose compare-and-swap failed stays as unreachable objects until `gc` expires them;
 the shadow store still holds the same objects for the next attempt.
 
+Every landing therefore adds one pack to the real store.
+Git searches every pack for an object it does not find in the most recently used one,
+so unconsolidated packs make every later Git process in the repository slower;
+"Post-landing" step 2 bounds their number the way native `git commit` does.
+
 #### Replay
 
 A lost race replays the prepared commit onto the current target outside both locks,
@@ -3185,7 +3191,31 @@ After both locks are released:
     (see "Added paths"),
     remove the shadow repository,
     and then remove the transaction directory.
-2.  Run `post-commit` once through `git hook run post-commit` in the real worktree,
+2.  Run automatic maintenance in the real worktree with the caller's kept global options,
+    as native `git commit` runs it after updating `HEAD` and before `post-commit`
+    (`run_auto_maintenance` in Git's `builtin/commit.c`):
+    `git maintenance run --auto --quiet` with `--detach` or `--no-detach`.
+    The decision mirrors `prepare_auto_maintenance` in Git's `run-command.c`:
+    `maintenance.auto`,
+    falling back to a positive `gc.auto`,
+    enables it;
+    `maintenance.autoDetach`,
+    falling back to `gc.autoDetach`,
+    then to `true`,
+    selects detaching.
+    Git before 2.47 rejects `--detach` with exit status 129,
+    so the step retries without it,
+    the form native `git commit` used there.
+    `--quiet` is fixed,
+    so the background notice never interleaves with JSONL output.
+    Its exit status is ignored,
+    as in native Git.
+    This bounds the real pack count
+    (see "Object migration"):
+    since Git 2.54 the default `geometric` maintenance strategy merges packs whose sizes break a geometric progression,
+    and under the `gc` strategy or an older Git,
+    `gc --auto` repacks once the count exceeds `gc.autoPackLimit`.
+3.  Run `post-commit` once through `git hook run post-commit` in the real worktree,
     under the hook lock unless `hooks.concurrentCommits` is `true`,
     with native-equivalent `GIT_INDEX_FILE`,
     `GIT_AUTHOR_NAME`,
@@ -3194,9 +3224,9 @@ After both locks are released:
     and `GIT_EDITOR=:`.
     Its exit status is ignored,
     as in native Git.
-3.  Run post-commit policies with the landed OID
+4.  Run post-commit policies with the landed OID
     (see "Post-commit").
-4.  Auto-push
+5.  Auto-push
     (see "Auto-push").
 
 ### Starvation reservation
@@ -4091,6 +4121,24 @@ and a paired serialized baseline.
 Because every non-dry-run commit now prepares privately,
 the lifecycle baseline is re-measured and stored as a new dated `perf/lifecycle-latency-<date>.json`.
 Timing comparisons first measure the run-to-run band on one unchanged build.
+
+Repeated wrapper commits in one repository measure a moving state,
+not one fixed scenario:
+before automatic maintenance ran after landing
+(see "Post-landing"),
+every landing left one more pack in the real store,
+so per-commit time grew with the number of earlier wrapper commits while direct Git stayed flat.
+With synthetic one-commit packs on Git 2.55.0,
+30 serialized commits had a median of 435 ms at 250 packs,
+521 ms at 500,
+716 ms at 1000,
+and 1062 ms at 2000,
+against a 339 to 344 ms band at none;
+with maintenance the medians stayed between 343 and 351 ms.
+Commit history length alone,
+2000 commits in one pack,
+did not move the median.
+`doc/troubleshooting/git-plumbing-commit-auto-maintenance.md` holds the trace and source citations.
 
 For each scenario:
 

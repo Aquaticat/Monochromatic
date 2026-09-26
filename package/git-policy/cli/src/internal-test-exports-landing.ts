@@ -34,6 +34,12 @@ import {
   landingReflogPrefix,
   landTransaction,
 } from './policy-engine/commit-landing.ts';
+import {
+  AUTO_MAINTENANCE_DISABLED,
+  autoMaintenanceArgs,
+  parseConfigRecords,
+  runAutoMaintenance,
+} from './policy-engine/commit-landing-auto-maintenance.ts';
 import { landingFindingResult, } from './policy-engine/commit-landing-findings.ts';
 import { computeLandingPostIndex, } from './policy-engine/commit-landing-index.ts';
 import {
@@ -103,6 +109,14 @@ export type LandingTestExports = Readonly<{
    Internal `acquireRealIndexLock`.
    */
   acquireRealIndexLock: typeof acquireRealIndexLock;
+  /**
+   Internal `AUTO_MAINTENANCE_DISABLED`.
+   */
+  AUTO_MAINTENANCE_DISABLED: typeof AUTO_MAINTENANCE_DISABLED;
+  /**
+   Internal `autoMaintenanceArgs`.
+   */
+  autoMaintenanceArgs: typeof autoMaintenanceArgs;
   /**
    Internal `baseRevision`.
    */
@@ -212,6 +226,10 @@ export type LandingTestExports = Readonly<{
    */
   OwnerLockError: typeof OwnerLockError;
   /**
+   Internal `parseConfigRecords`.
+   */
+  parseConfigRecords: typeof parseConfigRecords;
+  /**
    Internal `parseIndexLockRecord`.
    */
   parseIndexLockRecord: typeof parseIndexLockRecord;
@@ -280,6 +298,10 @@ export type LandingTestExports = Readonly<{
    */
   removeTransactionKeeps: typeof removeTransactionKeeps;
   /**
+   Internal `runAutoMaintenance`.
+   */
+  runAutoMaintenance: typeof runAutoMaintenance;
+  /**
    Internal `runNativePreparation`.
    */
   runNativePreparation: typeof runNativePreparation;
@@ -319,6 +341,8 @@ export type LandingTestExports = Readonly<{
 export const landingTestExports: LandingTestExports = {
   acquireOwnerLock,
   acquireRealIndexLock,
+  AUTO_MAINTENANCE_DISABLED,
+  autoMaintenanceArgs,
   baseRevision,
   captureInvocation,
   combineConfigParameters,
@@ -346,6 +370,7 @@ export const landingTestExports: LandingTestExports = {
   migrateShadowObjects,
   NativeCommitFailedError,
   OwnerLockError,
+  parseConfigRecords,
   parseIndexLockRecord,
   parseLandingRecord,
   parseOwnerLockRecord,
@@ -363,6 +388,7 @@ export const landingTestExports: LandingTestExports = {
   REF_UPDATED_RECORD_FILENAME,
   removeShadowRepository,
   removeTransactionKeeps,
+  runAutoMaintenance,
   runNativePreparation,
   shadowRepositoryPath,
   splitCommitInvocation,

@@ -42,6 +42,7 @@ import type {
   CommitTransactionResult,
 } from './commit-transaction-types.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
+import { runAutoMaintenance, } from './commit-landing-auto-maintenance.ts';
 import { runPostCommitHook, } from './commit-landing-post-commit-hook.ts';
 import {
   readPreparedCommit,
@@ -401,6 +402,12 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
   },);
   workspace.finishTransaction();
   await workspace[Symbol.asyncDispose]();
+  // Native order: automatic maintenance, then post-commit; it bounds the pack count each landing grows.
+  await runAutoMaintenance({
+    gitPath,
+    cwd: repositoryRoot,
+    globalArgs: invocation.globalArgs,
+  },);
   await runPostCommitHook({
     gitPath,
     cwd: repositoryRoot,
