@@ -1,6 +1,35 @@
 # cli-git concurrent commits handover
 
-Updated 2026-09-25.
+Updated 2026-09-26.
+
+## Landed
+
+The feature branch `feat/cli-git-concurrent-commits` fast-forwarded `main` to `cf2bf70d2` on 2026-09-26
+and was pushed;
+main's wrapper was rebuilt from it.
+Final verification on that head:
+build,
+types,
+oxlint,
+`test:unit` (3 consecutive green runs before the last merge,
+145 passing suites after it),
+`test:built:trust`,
+container end-to-end seeds 1 to 3
+(114 runs each,
+0 failures,
+documented skips only,
+Git 2.55.0,
+2.40.0,
+and 2.39.5),
+lifecycle latency budgets,
+and the concurrent-commit benchmark.
+`landing.reserveAfterLostRaces` defaults to 1 after repeated sweeps (veto open).
+
+GitHub's ruleset reported one bypassed violation on the push:
+commit `8ed5daa61` is unsigned and authored by the test fixture identity `T <t@example.invalid>`;
+all 465 other commits in the range are signed by the owner.
+Cause under investigation;
+rewriting `main` would need the owner's authorization.
 
 ## Goal
 
