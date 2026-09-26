@@ -6,6 +6,9 @@
  @module
  */
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import { pMapSkip, } from '@monochromatic-dev/module-p-map-fork/ts';
 
 //region Mappers
@@ -381,9 +384,17 @@ export function swallow(thunk: () => void,): void {
   try {
     thunk();
   }
-  catch {
-    // Swallowed deliberately: the driver's own assertions below detect
-    // stale inputs, so an expected failure must not stop the walk.
+  catch (error: unknown) {
+    // Logged rather than discarded: the driver's own assertions detect stale
+    // inputs, so an expected failure must not stop the walk, but repository
+    // rules forbid silent catch blocks.
+    /**
+     Logger carrying this function's name as its tag.
+     */
+    const log = tagged({
+      tag: swallow.name,
+    },);
+    log.warn(`swallowed expected driver failure: ${caughtValueText(error,)}`,);
   }
 }
 
@@ -407,9 +418,17 @@ export async function swallowAsync(thunk: () => Promise<void>,): Promise<void> {
   try {
     await thunk();
   }
-  catch {
-    // Swallowed deliberately: the driver's own assertions below detect
-    // stale inputs, so an expected rejection must not stop the walk.
+  catch (error: unknown) {
+    // Logged rather than discarded: the driver's own assertions detect stale
+    // inputs, so an expected rejection must not stop the walk, but
+    // repository rules forbid silent catch blocks.
+    /**
+     Logger carrying this function's name as its tag.
+     */
+    const log = tagged({
+      tag: swallowAsync.name,
+    },);
+    log.warn(`swallowed expected driver rejection: ${caughtValueText(error,)}`,);
   }
 }
 

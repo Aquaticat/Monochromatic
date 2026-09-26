@@ -277,7 +277,8 @@ export function pMapIterable<Element, NewElement>(
              */
             const nextItem: IteratorResult<Element | Promise<Element>, unknown> = await iterator.next();
 
-            if (nextItem.done === true) {
+            // oxlint-disable-next-line typescript/strict-boolean-expressions -- upstream `p-map` checks `if (nextItem.done)` with truthiness, so a non-conforming source's truthy `done` must terminate the pull exactly like upstream
+            if (nextItem.done) {
               state.isIterableDone = true;
               state.pendingPromisesCount -= 1;
               pull.resolve({

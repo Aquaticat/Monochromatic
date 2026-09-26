@@ -15,6 +15,7 @@ import {
   closeIterator,
   selectIterator,
   validateInput,
+  type YieldedItem,
 } from './map-iterator.ts';
 import {
   type MapOptions,
@@ -81,6 +82,7 @@ export type MapRun<Element, NewElement> = {
 
 //region Run
 
+/* oxlint-disable eslint/require-await -- `pMap` stays `async` so a destructuring failure rejects the caller's promise like upstream `p-map`'s `async` signature, and returning the deferred promise without awaiting it preserves upstream's promise-adoption tick (measured: an `await` here settles the caller one microtask early) */
 /**
  Runs one concurrent map over upstream `p-map`'s run structure: option
  destructuring first, then the input, mapper, and concurrency checks in
@@ -269,7 +271,10 @@ export async function pMap<Element, NewElement>(
       reject(abortReason,);
     }
 
-    if (signal !== undefined) {
+    // Upstream `p-map` guards signal handling with `if (signal)`, so any
+    // falsy `signal` value (including `null` and other non-signals) skips it
+    // entirely instead of failing.
+    if (signal) {
       if (signal.aborted) {
         /**
          Reason of the already-aborted signal, rejecting the run before any
@@ -336,7 +341,8 @@ export async function pMap<Element, NewElement>(
        parallel; the shutdown below runs once because the skip staging is not
        idempotent.
        */
-      if (nextItem.done === true) {
+      // oxlint-disable-next-line typescript/strict-boolean-expressions -- upstream `p-map` checks `if (nextItem.done)` with truthiness, so a non-conforming source's truthy `done` must terminate the pull exactly like upstream
+      if (nextItem.done) {
         state.isIterableDone = true;
 
         if ((state.resolvingCount === 0) && (!state.isResolved)) {
@@ -375,10 +381,12 @@ export async function pMap<Element, NewElement>(
 
       /**
        Element source item for this call, narrowed past the synthetic `done`
-       marker above: narrowing never reaches the detached continuation's
-       function declaration, so the narrowed value lands in this `const`.
+       marker above and passed as a parameter: narrowing never reaches the
+       detached continuation's function declaration, and the value getter
+       must run inside that continuation's `try` exactly as upstream
+       `p-map`'s detached runner reads it.
        */
-      const elementItem: Element | Promise<Element> = nextItem.value;
+      const elementItem: YieldedItem<Element> = nextItem;
 
       /**
        Awaits this element, runs its mapper call, then pulls the next item
@@ -387,13 +395,27 @@ export async function pMap<Element, NewElement>(
        
        @throws Nothing; every failure is routed to the run's settlement.
        */
-      async function runElement(): Promise<void> {
+      async function runElement(
+        {
+          item,
+          position,
+        }: {
+          /**
+           Narrowed source item whose value getter runs inside the `try`.
+           */
+          readonly item: YieldedItem<Element>;
+          /**
+           Position of this element in the input.
+           */
+          readonly position: number;
+        },
+      ): Promise<void> {
         try {
           /**
            Element after awaiting the source's yielded value, matching
            upstream `p-map`'s per-item await.
            */
-          const element = await elementItem;
+          const element = await item.value;
 
           if (state.isResolved)
             return;
@@ -403,16 +425,16 @@ export async function pMap<Element, NewElement>(
            */
           const value = await mapper(
             element,
-            index,
+            position,
           );
 
           if (value === pMapSkip)
             skippedIndexesMap.set(
-              index,
+              position,
               pMapSkip,
             );
 
-          result[index] = value;
+          result[position] = value;
         }
         catch (error) {
           if (stopOnError) {
@@ -436,7 +458,10 @@ export async function pMap<Element, NewElement>(
         }
       }
 
-      void runElement();
+      void runElement({
+        item: elementItem,
+        position: index,
+      },);
     }
 
     /**
@@ -481,7 +506,8 @@ export async function pMap<Element, NewElement>(
     settlement.reject(error,);
   }
 
-  return await settlement.promise;
+  return settlement.promise;
 }
+/* oxlint-enable eslint/require-await */
 
 //endregion Run

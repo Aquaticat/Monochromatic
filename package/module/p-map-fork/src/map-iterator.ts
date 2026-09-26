@@ -31,6 +31,42 @@ export type SourceIterator<Element> =
   | Iterator<Element | Promise<Element>, unknown, undefined>
   | AsyncIterator<Element | Promise<Element>, unknown, undefined>;
 
+/**
+ One yielded source item projected deep-read-only: the runners pass it into
+ their detached continuations, and repository lint requires writable
+ projections to be replaced at this boundary.
+ 
+ @typeParam Element - element type after awaiting an iterated item
+ */
+export type YieldedItem<Element> = {
+  /**
+   Absent or `false` while the source yields; the union member carrying
+   `true` is filtered out before this projection is used.
+   */
+  readonly done?: false;
+  /**
+   Element or element promise this item carries.
+   */
+  readonly value: Element | Promise<Element>;
+};
+
+/**
+ Structural view of the input whose iterator slots are callable.
+ 
+ Selection invokes the slots exactly as upstream `p-map`'s ternary does
+ (probe the async slot,
+ then method-call the selected slot on the input), and
+ the invocation must read as `iterable[Symbol.iterator]()` on a binding named
+ `iterable`, so an engine "is not a function" diagnostic names the same
+ expression upstream's does.
+ 
+ @typeParam Element - element type after awaiting an iterated item
+ */
+type CallableProbe<Element> = {
+  readonly [Symbol.iterator]: () => Iterator<Element | Promise<Element>>;
+  readonly [Symbol.asyncIterator]: () => AsyncIterator<Element | Promise<Element>>;
+};
+
 //endregion Types
 
 //region Selection
@@ -75,7 +111,7 @@ export function validateInput<Element>(iterable: MapInput<Element>,): void {
  
  @typeParam Element - element type after awaiting an iterated item
  
- @param iterable - Inputs as typed by the public API.
+ @param input - Inputs as typed by the public API.
  
  @returns The input's async iterator when present, else its sync iterator.
  
@@ -84,27 +120,17 @@ export function validateInput<Element>(iterable: MapInput<Element>,): void {
  const iterator = selectIterator([1, 2,],);
  ```
  */
-export function selectIterator<Element>(iterable: MapInput<Element>,): SourceIterator<Element> {
+export function selectIterator<Element>(input: MapInput<Element>,): SourceIterator<Element> {
   /**
-   Both iterator slots, probed in upstream `p-map`'s selection order.
+   Input under its upstream name, typed with callable slots: the ternary
+   below is upstream `p-map`'s selection expression verbatim, slot reads and
+   method calls included.
    */
-  const probe = iteratorProbe(iterable,);
-  /**
-   Asynchronous iterator factory when the input is async. Captured into one
-   binding so the branch below narrows it; each factory is called with the
-   probe as receiver, exactly like upstream `p-map`'s method calls.
-   */
-  const asyncFactory = probe[Symbol.asyncIterator];
-  if (asyncFactory !== undefined)
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the probe type models both slots as optional; this branch holds the asynchronous one
-    return asyncFactory.call(probe,) as AsyncIterator<Element | Promise<Element>, unknown, undefined>;
-  /**
-   Synchronous iterator factory; {@link validateInput} proved the slot
-   present once the asynchronous one is absent.
-   */
-  const syncFactory = nonNullishOrThrow(probe[Symbol.iterator],);
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the probe type models both slots as optional; validateInput proved the synchronous one present here
-  return syncFactory.call(probe,) as Iterator<Element | Promise<Element>, unknown, undefined>;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the probe type models both slots as optional so `validateInput` can compare them; selection invokes them exactly as upstream `p-map`'s ternary does
+  const iterable = iteratorProbe(input,) as CallableProbe<Element>;
+  return iterable[Symbol.asyncIterator] === undefined
+    ? iterable[Symbol.iterator]()
+    : iterable[Symbol.asyncIterator]();
 }
 
 //endregion Selection
@@ -143,7 +169,16 @@ export async function closeIterator<Element>(iterator: SourceIterator<Element>,)
     const log = tagged({
       tag: closeIterator.name,
     },);
-    log.warn(`ignoring iterator close failure: ${caughtValueText(error,)}`,);
+    try {
+      log.warn(`ignoring iterator close failure: ${caughtValueText(error,)}`,);
+    }
+    catch (renderFailure: unknown) {
+      // Rendering the close failure failed too (an adversarial value whose
+      // string coercion throws); the fallback keeps this function from
+      // rejecting like upstream `p-map`'s total swallow of close failures
+      // while still naming the failure in the log.
+      log.warn(`ignoring iterator close failure whose rendering also failed: ${caughtValueText(renderFailure,)}`,);
+    }
   }
 }
 
