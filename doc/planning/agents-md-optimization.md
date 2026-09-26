@@ -163,6 +163,13 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    retires WK2 (into WKP) and HUP (into DCK).
    Proposed,
    awaiting user review.
+- Batch 3 (measure-vs-ask remainder):
+   11 rules become 9,
+   798 to 541 tokens;
+   retires MA3 and FLG (into QGR,
+   the more-cited code).
+   Proposed,
+   awaiting user review.
 
 - Retired-code references:
    rewrite every reference in other docs to the successor code (user chose this over a retired-codes list).
@@ -231,10 +238,22 @@ working files lived in the session scratchpad.
    Factory loads nested `AGENTS.md` on read.
    Lint and guard messages are the only mechanism firing at the violation in every harness.
 
+## Decisions (round 3)
+
+- Codex cutoff:
+   set `project_doc_max_bytes = 65536` in `~/.codex/config.toml` (done 2026-09-25).
+   Verified with `codex exec` (codex-cli 0.155.1) asking for the last rule code it sees:
+   SK3 with the new limit;
+   RCO with `--config project_doc_max_bytes=32768` as positive control.
+   Shrinking `AGENTS.md` continues.
+- Narrow-rule destinations:
+   rules tied to one package or product go to that package's docs;
+   narrow rules spanning packages go to skills,
+   since the user can invoke skills manually when agents miss them;
+   general rules stay always-loaded.
+
 ## Open questions
 
-- Situational rule destinations,
-   pending research.
 
 ## Approved text
 
