@@ -361,6 +361,40 @@ it was copied to scratch for digest verification rather than blindly repeating t
 Recovery uses a bounded 900-second per-file deadline for the remaining model data.
 No inference has run yet.
 
+### Full-policy tokenizer probe execution manifest
+
+The current `AGENTS.md` snapshot has 42,514 bytes and 1,824 lines.
+SHA-256: `f15df716f1a7cb9cb4838686e2cde8f006a87b99c3aa7db87533fb47b8314840`.
+English tokenizer JSON comes from the verified pinned checkpoint download.
+Its encoder config declares `max_position_embeddings: 8192`;
+this is source configuration, not yet proof of a hard runtime limit or supported extrapolation.
+
+The scratch probe is `laya-auto-mode-eval-2026-09-26/context-probe/`.
+Its `mise.toml` defines `build` and `probe`; the Containerfile has no RUN instruction.
+Build only copies the full policy, tokenizer data, and reviewed Python probe onto pinned local dependency image
+`ddb7f6c055731eb83def1eca6b9568cbe6c0c54bd9f505c751dacb3fe700a5c6`.
+OCI manifest digest: `sha256:ae5fec490715809bd448a0e9ccfc2489e72dab44b05757206959dc09e881a78f`.
+
+Runtime command: `/usr/local/bin/python3 -I -S /input/probe.py`.
+It bypasses Python startup hooks, explicitly adds the image's inspected package directory,
+and imports stdlib plus `tokenizers` 0.22.2.
+The inspected wrapper loads its Hugging Face Rust tokenizer extension;
+no Laya weights, router, serving code, training, shell commands, or fixture actions are invoked.
+The backend reads baked tokenizer JSON and encodes the complete UTF-8 policy and a JSON context envelope.
+A deliberately enabled 64-token cap supplies a positive control before truncation is disabled again.
+
+Expected reads: baked input files and pinned Python/tokenizers runtime libraries.
+Expected writes: stdout only; root filesystem is read-only and no host directory is mounted.
+Expected subprocesses and network: none.
+Container runs as UID/GID 65534 with all capabilities dropped and no-new-privileges.
+No host environment or proxy credentials are passed.
+Limits: 2 GiB memory with no additional swap, 2 CPUs, 64 processes, 256 file descriptors,
+and a 120-second container deadline.
+Build also has network disabled, a 2 GiB bound, and a 2-CPU quota.
+Success requires printed file/tokenizer hashes, full token counts, and a passing positive control.
+Any unexpected execution, write, network dependency, or limit breach stops the probe for review.
+Container is removed on exit; the scratch source/data and output evidence are retained.
+
 ## Research still required
 
 - Finalize open ownership/authority choices in the responsibility ledger.
