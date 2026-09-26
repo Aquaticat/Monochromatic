@@ -521,8 +521,24 @@ traverse and activate each mode during keyboard-open Search.
 After those inputs,
 a later hierarchy showed the keyboard closed and the full closed deck.
 The disposable guest's original accessibility settings were restored.
-No 200% TalkBack traversal pass was performed in this comparison;
-node presence is not a screen-reader interaction test.
+At 200% text and the 400dp debug IME (top y `1177`),
+a pre-reserved accessibility hierarchy exposed Folders,
+Open,
+query and all four mode descriptions;
+`Shuffle all folders` occupied its full `[73,987][965,1118]` node box.
+After a first-run notification-permission dialog was dismissed on the
+disposable guest,
+a native screenshot showed TalkBack's focus rectangle on the query with the
+400dp debug keyboard visibly present.
+That is evidence of TalkBack being active in this composition,
+**not** a completed mode-by-mode focus,
+speech or activation sequence.
+The dialog initially interrupted the probe,
+and synthetic gestures did not establish traversal.
+The guest's prior accessibility settings and notification permission were
+restored after this bounded check.
+Node presence is not a screen-reader interaction test;
+full 100%/200% Search traversal remains open for the accessibility review.
 
 The native videos,
 raw frame directories,
