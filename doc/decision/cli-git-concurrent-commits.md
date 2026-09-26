@@ -66,12 +66,23 @@ not a reason to disable parts of it.
   the prepared commit itself lands,
   keeping its signature.
 - When `HEAD` moved,
-  replay uses `git merge-tree --write-tree --merge-base=<preparation base>`,
-  then `git commit-tree`
-  (with `-S` when the prepared commit was signed),
-  preserving author,
+  replay resolves every path that both the prepared commit and the landed history changed
+  by a subsumption check first:
+  when the landed change for that path
+  (its diff from the preparation base to the new `HEAD`)
+  applies in reverse to the prepared version,
+  the prepared bytes already contain it and land as they are,
+  matching what native sequential commits produce in a shared worktree.
+  Otherwise replay three-way merges from the preparation base
+  (`git merge-tree --write-tree --merge-base=<preparation base>`).
+  Owner decision 2026-09-26,
+  amending the original pure three-way merge
+  after the container trace scenario showed it conflicting on adjacent edits
+  whose captured file already held the other commit's landed edit.
+  The replayed commit is rebuilt preserving author,
   committer,
-  and message.
+  and message
+  (see "Conclusions and replay").
 - A replay conflict fails without landing,
   as a `core-finding` JSONL event with exit `1`
   naming the conflicting paths and the winning commit.
@@ -371,6 +382,19 @@ and runs a "reject commits to main" check.
   and `i18n.commitEncoding`;
   custom headers on a signed commit are dropped with a warning event,
   because no primitive re-signs a raw object.
+
+### Amending published history
+
+Owner decision 2026-09-26:
+when an amend of an already-published commit lands while other commits are in flight,
+those commits replay onto the amended history
+and auto-push cannot fast-forward the remote,
+exactly as native Git behaves.
+The container checker exempts commits landed on an amended published history from `remote-contains`
+and instead requires the non-fast-forward push failure to be surfaced with exit `0`.
+Refusing `--amend` on published commits was rejected
+because it would change amend behavior in every repository,
+including solo use.
 
 ## Rejected
 
