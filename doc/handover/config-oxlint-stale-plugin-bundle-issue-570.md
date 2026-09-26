@@ -157,6 +157,31 @@ The user rejected that round.
   The wrapper has no test;
   `oxlint-augment.ts` holds testable pure helpers.
 
+### Lint speed: built sidecars versus `./ts` source entry (subagent report)
+
+- Issue #238 (closed, commit `05cbf8fd1`) recorded,
+  per oxlint process on a clean fixture,
+  prebuilt 606.2±35.5 ms versus source 910.0±62.0 ms;
+  savings multiply in the `--fix` loop
+  (a three-pass fix chain spawns six oxlint processes).
+- Re-measured through `mise run //package/<pkg>:lint:oxlint`,
+  hyperfine one warmup plus five runs,
+  on a host at load average 28.59 over 16 cores (other sessions),
+  so the band is wide:
+  - `package/module/or-throw` (58 files):
+    built median 1.736 s (spread 0.242 s),
+    `./ts` median 1.785 s (spread 0.100 s).
+  - `package/git-policy/cli` (255 files):
+    built median 3.837 s (spread 0.216 s),
+    `./ts` median 3.970 s (spread 0.107 s).
+  - Differences sit inside or near the run-to-run band;
+    the `--fix` loop was not re-measured.
+- Positive control confirmed the `./ts` config loads all five plugins
+  (`no-restricted-syntax(no-regex)` fired on a probe file).
+- Whole-repo lint took 369.6 s in one fresh-worktree trial
+  with 385 TS2307 errors from unbuilt packages;
+  not representative.
+
 ## Reframed failure chain
 
 These are separate links;
@@ -195,8 +220,12 @@ Candidate dissolutions under investigation:
   both get their own investigations
   (troubleshooting docs `doc/troubleshooting/pnpm-stale-node-modules-detection.md`
    and `doc/troubleshooting/mise-dependency-freshness.md`, subagents running).
-- Lint wall time,
-  built sidecars versus `./ts` source entry (subagent running).
+- oxlint exit-code and rolldown docs/source investigations running
+  (troubleshooting docs `doc/troubleshooting/oxlint-config-load-failure-exit-code.md`
+   and `doc/troubleshooting/rolldown-unresolved-import-external.md`).
+- Lint speed on a quiet host,
+  including the `--fix` loop,
+  if the source-entry option stays on the table.
 
 ## Commits
 
