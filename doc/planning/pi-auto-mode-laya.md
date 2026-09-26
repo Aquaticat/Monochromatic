@@ -637,6 +637,34 @@ The first-party Node driver captures exit/state and stops on an unexpected outco
 A successful kernel differential is not a completed full-policy workaround;
 rerun the unchanged end-to-end policy input afterward.
 
+### Kernel differential result
+
+`proc_416d` exited 0 after the sequential diagnostic driver completed.
+Native head mode reproduced exit 137 with `OOMKilled: true` at 8 GiB.
+Functional head mode processed `[1, 12676, 1024]` and exited 0.
+Its observed computation time was 6.827002863865346 seconds;
+reported container memory peak was 1,120,821,248 bytes.
+The fixed-seed 128-token numerical control passed with maximum absolute difference
+`4.76837158203125e-7` at `rtol=1e-5` and `atol=1e-6`.
+This is one kernel diagnostic,
+not a latency distribution or full-model memory measurement.
+
+The result reproduces the native-head memory failure without running the encoder
+and supplies a working consumer-side configuration for the same head dimensions.
+Long-input numerical parity against the native path cannot be claimed because that path OOMs.
+
+Next end-to-end experiment changes only the runtime attention-path setting
+for the same first development input:
+`torch.backends.mha.set_fastpath_enabled(False)`.
+It executes one case per 5-minute probe rather than placing a second case behind the first.
+The complete policy,
+checkpoint,
+float32 precision,
+question schema,
+and actual-forward token assertions remain unchanged.
+Container bounds remain the user-authorized 8 GiB/2 CPU/no-extra-swap/offline/no-host-mount configuration.
+Do not call the full-policy memory blocker resolved before an actual verdict returns.
+
 ## Research still required
 
 - Finalize open ownership/authority choices in the responsibility ledger.
