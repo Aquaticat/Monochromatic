@@ -195,7 +195,8 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
             autoFitStudy = candidate.contains("-autofit-"),
             preclearStudy = candidate.contains("-preclear-"),
             retainBrowser = candidate.contains("-retain-"),
-            layerProbe = candidate.contains("-layerprobe-"))
+            layerProbe = candidate.contains("-layerprobe-"),
+            keepClearProbe = candidate.contains("-keepclear-"))
     } else {
         SearchDeckWide(query = query, onQueryChange = { query = it }, onBack = onBack,
             unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor)
@@ -292,7 +293,8 @@ private fun ObserveImeAnimation(parentView: View, onAppliedIme: (Int) -> Unit) {
 private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, halfDent: Dp, light: Boolean, pageColor: Color,
     liftWithIme: Boolean, bannerHeightStress: Boolean, autoFitStudy: Boolean,
-    preclearStudy: Boolean, retainBrowser: Boolean, layerProbe: Boolean) {
+    preclearStudy: Boolean, retainBrowser: Boolean, layerProbe: Boolean,
+    keepClearProbe: Boolean) {
     val density = LocalDensity.current
     val reportedImeInset = WindowInsets.ime.getBottom(density)
     var queryFocused by remember { mutableStateOf(false) }
@@ -323,6 +325,15 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     // ```
     val testLayer = layerProbe && platformInsets?.isVisible(imeType) == true && platformBottom == 0
     FoldAboveImeMarker(active = testLayer)
+    // What:     The separate keep-clear candidate uses the same public visibility signal.
+    // Why:      A docked keyboard already fits; only floating overlap tests this hint.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const testKeepClear = keepClearProbe && imeVisible && platformBottom === 0;
+    // ```
+    val testKeepClear = keepClearProbe && platformInsets?.isVisible(imeType) == true && platformBottom == 0
+    FoldKeepClearProbe(active = testKeepClear)
     val targetBottom = if (autoFitStudy || preclearStudy) {
         maxOf(reportedImeInset, platformBottom, deliveredBottom)
     } else reportedImeInset
