@@ -7,10 +7,7 @@
 
  @module
  */
-import {
-  type ChildProcess,
-  spawn,
-} from 'node:child_process';
+import type { ChildProcess, } from 'node:child_process';
 import { once, } from 'node:events';
 import {
   access,
@@ -27,6 +24,10 @@ import { join, } from 'node:path';
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { resolveRealGit, } from '@monochromatic-dev/git-executable/ts';
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
+import {
+  createProcessGroups,
+  type ProcessGroups,
+} from './process-group-fixture.unit.test.ts';
 
 /**
  Absolute real Git executable.
@@ -79,7 +80,11 @@ export type LandingRepository = Readonly<{
    */
   scratch: string;
   /**
-   Removes everything.
+   Process groups of the wrapper runs, native Git, and other programs started against this repository.
+   */
+  processGroups: ProcessGroups;
+  /**
+   Kills every started process group, then removes everything.
    */
   [Symbol.asyncDispose]: () => Promise<void>;
 }>;
@@ -238,6 +243,10 @@ export async function createLandingRepository(setup: readonly (readonly [string,
     { env, },
   );
   /**
+   Process groups started against the repository.
+   */
+  const processGroups = createProcessGroups();
+  /**
    Repository handle.
    */
   const repository: LandingRepository = {
@@ -248,14 +257,23 @@ export async function createLandingRepository(setup: readonly (readonly [string,
     ),
     env,
     scratch,
+    processGroups,
     async [Symbol.asyncDispose](): Promise<void> {
-      await rm(
-        root,
-        {
-          recursive: true,
-          force: true,
+      /**
+       Removes the scratch root even when a process group outlives its kill.
+       */
+      await using _removed = {
+        [Symbol.asyncDispose]: async function removeRoot(): Promise<void> {
+          await rm(
+            root,
+            {
+              recursive: true,
+              force: true,
+            },
+          );
         },
-      );
+      };
+      await processGroups[Symbol.asyncDispose]();
     },
   };
   for (const [key, value,] of setup) {
@@ -449,7 +467,7 @@ export async function runWrapper({
 }
 
 /**
- Starts the wrapper without waiting.
+ Starts the wrapper without waiting, as the leader of a process group the repository kills on disposal.
 
  @param repository - fixture repository
 
@@ -473,10 +491,10 @@ export function startWrapper({
   args: readonly string[];
   env?: NodeJS.ProcessEnv;
 }>,): ChildProcess {
-  return spawn(
-    process.execPath,
-    [WRAPPER_PATH, ...args,],
-    {
+  return repository.processGroups.spawn({
+    command: process.execPath,
+    args: [WRAPPER_PATH, ...args,],
+    options: {
       cwd: repository.path,
       env: {
         ...repository.env,
@@ -484,7 +502,7 @@ export function startWrapper({
       },
       stdio: ['ignore', 'pipe', 'pipe',],
     },
-  );
+  },);
 }
 
 /**

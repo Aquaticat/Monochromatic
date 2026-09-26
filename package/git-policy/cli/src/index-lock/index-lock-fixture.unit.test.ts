@@ -5,10 +5,7 @@
 
  @module
  */
-import {
-  type ChildProcess,
-  spawn,
-} from 'node:child_process';
+import type { ChildProcess, } from 'node:child_process';
 import { once, } from 'node:events';
 import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -144,7 +141,8 @@ export type NativeHolder = Readonly<{
 }>;
 
 /**
- Starts real Git by absolute path, bypassing the wrapper, running `commit --all` whose editor holds `index.lock` at a barrier.
+ Starts real Git by absolute path, bypassing the wrapper, running `commit --all` whose editor holds `index.lock` at a barrier;
+ the repository kills its process group on disposal.
 
  @param repository - fixture repository
 
@@ -178,20 +176,23 @@ export async function holdNativeCommitAll({
     source: `${barrierSource({ ready, release, },)}\nrequire('node:fs').writeFileSync(process.argv[2], ${JSON.stringify(message,)});`,
   },);
   /** Native Git. */
-  const child = spawn(
-    REAL_GIT,
-    [...(lockfilePid ? ['-c', 'core.lockfilePid=true',] : []), 'commit', '--all', '--quiet',],
-    {
+  const child = repository.processGroups.spawn({
+    command: REAL_GIT,
+    args: [...(lockfilePid ? ['-c', 'core.lockfilePid=true',] : []), 'commit', '--all', '--quiet',],
+    options: {
       cwd: repository.path,
       env: { ...repository.env, GIT_CONFIG_COUNT: '0', GIT_EDITOR: editor, },
       stdio: 'ignore',
     },
-  );
+  },);
   /** Exit promise. */
   const exited = once(child, 'exit',);
+  // A missing PID must never become -1, which process.kill reads as every process the user may signal.
+  if (child.pid === undefined)
+    throw new Error('Native Git did not start.',);
   await waitForFile({ path: ready, },);
   return {
-    pid: child.pid ?? (-1),
+    pid: child.pid,
     child,
     release: async function releaseEditor(): Promise<void> {
       await writeFile(release, '',);

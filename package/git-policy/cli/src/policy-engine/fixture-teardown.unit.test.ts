@@ -86,7 +86,10 @@ async function survivors(pids: readonly number[],): Promise<readonly number[]> {
 function killOnExit(pids: readonly number[],): Disposable {
   return {
     [Symbol.dispose]: function killLeftovers(): void {
-      for (const pid of pids) {
+      // Only positive PIDs: process.kill reads -1 as every process the user may signal, and 0 as this group.
+      for (const pid of pids.filter(function isProcess(candidate,): boolean {
+        return candidate > 0;
+      },)) {
         try {
           process.kill(pid, 'SIGKILL',);
         }
@@ -125,10 +128,12 @@ await describe({
         await writeWorktreeFile({ repository, name: 'a.txt', content: 'a\n', },);
         /** Wrapped commit left waiting in its hook. */
         const wrapper = startWrapper({ repository, args: ['commit', '-m', 'a', 'a.txt',], },);
+        if (wrapper.pid === undefined)
+          throw new Error('Wrapper did not start.',);
         /** Hook PID. */
         const hook = await barrierPid(ready,);
         /** Every process the commit started that the test knows by PID. */
-        const pids = [wrapper.pid ?? (-1), hook,];
+        const pids = [wrapper.pid, hook,];
         using _killed = killOnExit(pids,);
         await repository[Symbol.asyncDispose]();
         expect(await survivors(pids,),).toEqual([],);

@@ -4,7 +4,6 @@
 
  @module
  */
-import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
 import {
   lstat,
@@ -101,7 +100,7 @@ async function observeBlockedAdd({
   /**
    Blocked `git add`.
    */
-  const child = spawn(REAL_GIT, ['add', '--', `${name}.blocked`,], { cwd: repository.path, env, stdio: 'ignore', },);
+  const child = repository.processGroups.spawn({ command: REAL_GIT, args: ['add', '--', `${name}.blocked`,], options: { cwd: repository.path, env, stdio: 'ignore', }, },);
   /**
    Exit promise registered before waiting.
    */

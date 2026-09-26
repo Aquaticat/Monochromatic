@@ -5,7 +5,6 @@
 
  @module
  */
-import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
 import {
   mkdir,
@@ -22,6 +21,7 @@ import {
   waitForFile,
   writeNodeProgram,
 } from './policy-engine/commit-landing-fixture.unit.test.ts';
+import { createProcessGroups, } from './policy-engine/process-group-fixture.unit.test.ts';
 import {
   captureWrapper,
   createTempDirectory,
@@ -37,6 +37,8 @@ await describe({
       name: 'a wrapped command in a linked worktree runs while another wrapped non-worktree command is still running',
       fn: async function testConcurrentLinked(): Promise<void> {
         await using fixture = await createTempDirectory();
+        /** Process groups killed before the directory is removed. */
+        await using groups = createProcessGroups();
         /** Linked source worktree. */
         const repositoryRoot = join(fixture.path, 'repository',);
         await initializeRepository(repositoryRoot,);
@@ -49,7 +51,7 @@ await describe({
         const release = join(fixture.path, 'blocker.release',);
         await writeNodeProgram({ path: join(hooks, 'pre-auto-gc',), source: barrierSource({ ready, release, },), },);
         /** Wrapped `git hook run`, blocked in its hook. */
-        const blocker = spawn(process.execPath, [WRAPPER_PATH, 'hook', 'run', 'pre-auto-gc',], { cwd: repositoryRoot, stdio: 'ignore', },);
+        const blocker = groups.spawn({ command: process.execPath, args: [WRAPPER_PATH, 'hook', 'run', 'pre-auto-gc',], options: { cwd: repositoryRoot, stdio: 'ignore', }, },);
         /** Blocker exit. */
         const blockerExit = once(blocker, 'exit',);
         await waitForFile({ path: ready, },);

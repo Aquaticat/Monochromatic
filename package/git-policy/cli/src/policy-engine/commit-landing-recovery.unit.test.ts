@@ -3,7 +3,6 @@
 
  @module
  */
-import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
 import {
   readFile,
@@ -59,11 +58,10 @@ await describe({
         const editor = join(repository.scratch, 'editor.cjs',);
         await writeNodeProgram({ path: editor, source: barrierSource({ ready, release: join(repository.scratch, 'never',), },), },);
         /** Wrapper in its own process group, so the kill reaches the wrapper, native Git, and the editor. */
-        const child = spawn(process.execPath, [WRAPPER_PATH, 'commit', '-e', '-m', 'killed', 'a.txt',], {
-          cwd: repository.path,
-          env: { ...repository.env, GIT_EDITOR: editor, },
-          stdio: 'ignore',
-          detached: true,
+        const child = repository.processGroups.spawn({
+          command: process.execPath,
+          args: [WRAPPER_PATH, 'commit', '-e', '-m', 'killed', 'a.txt',],
+          options: { cwd: repository.path, env: { ...repository.env, GIT_EDITOR: editor, }, stdio: 'ignore', },
         },);
         /** Exit notification registered before the kill. */
         const exited = once(child, 'exit',);
@@ -96,11 +94,14 @@ await describe({
           const preparing = join(repository.scratch, 'bystander-preparing',);
           await writeHook({ repository, event: 'pre-commit', source: `if (process.env.BYSTANDER === '1') require('node:fs').writeFileSync(${JSON.stringify(preparing,)}, '');`, },);
           /** Victim paused at the phase, holding the landing lock and the real index.lock. */
-          const victim = spawn(process.execPath, [WRAPPER_PATH, 'commit', '-m', 'victim', 'victim.txt',], {
-            cwd: repository.path,
-            env: { ...repository.env, CLI_GIT_TEST_ONLY_PHASE_SIGNAL: `${phase}:pause:${repository.scratch}`, },
-            stdio: 'ignore',
-            detached: true,
+          const victim = repository.processGroups.spawn({
+            command: process.execPath,
+            args: [WRAPPER_PATH, 'commit', '-m', 'victim', 'victim.txt',],
+            options: {
+              cwd: repository.path,
+              env: { ...repository.env, CLI_GIT_TEST_ONLY_PHASE_SIGNAL: `${phase}:pause:${repository.scratch}`, },
+              stdio: 'ignore',
+            },
           },);
           /** Victim exit, registered before the kill. */
           const exited = once(victim, 'exit',);
