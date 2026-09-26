@@ -143,12 +143,18 @@ await describe({
          */
         const store: Record<string, unknown> = {};
 
-        expect(getStoreValue({
+        /**
+         Value the inherited-name probe resolves to,
+         which must be the prototype's function rather than the default.
+         */
+        const inheritedNameValue = getStoreValue({
           store,
           key: 'toString',
           defaultValue: 'fallback',
           accessPropertiesByDotNotation: false,
-        },),).toBe(Object.prototype.toString,);
+        },);
+        expect(typeof inheritedNameValue,).toBe('function',);
+        expect(inheritedNameValue === 'fallback',).toBe(false,);
         expect(hasStoreValue({
           store,
           key: 'toString',

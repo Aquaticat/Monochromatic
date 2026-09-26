@@ -51,7 +51,7 @@ function captureThrown(fn: () => void,): Error {
     fn();
   }
   catch (caught) {
-    if (caught instanceof Error)
+    if (Error.isError(caught,))
       return caught;
     throw caught;
   }
@@ -148,7 +148,7 @@ await describe({
         const thrown = captureThrown(function attemptSymbol(): void {
           checkValueType({
             key: KEY,
-            value: Symbol('unsupported',),
+            value: Symbol('symbol value rejected by the JSON config gate',),
           },);
         },);
 

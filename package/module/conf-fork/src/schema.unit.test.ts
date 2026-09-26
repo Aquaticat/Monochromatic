@@ -103,7 +103,7 @@ await describe({
         expect(captureSchemaDefaults({
           port: {
             type: 'number',
-            default: 8080,
+            default: 8_080,
           },
           name: {
             type: 'string',
@@ -113,7 +113,7 @@ await describe({
             type: 'string',
           },
         },),).toEqual({
-          port: 8080,
+          port: 8_080,
           name: 'conf',
         },);
       },
@@ -160,7 +160,7 @@ await describe({
             },
             port: {
               type: 'number',
-              default: 8080,
+              default: 8_080,
             },
           },
         },),);
@@ -173,7 +173,7 @@ await describe({
         validator.validate(data,);
         expect(data,).toEqual({
           theme: 'dark',
-          port: 8080,
+          port: 8_080,
         },);
       },
     },),
@@ -388,7 +388,7 @@ await describe({
         /**
          Store whose schema declares defaults and one type constraint.
          */
-        const config = createConf<Record<string, unknown>>({
+        const config = createConf({
           cwd: createTempDirectory(),
           schema: {
             theme: {
@@ -397,19 +397,19 @@ await describe({
             },
             port: {
               type: 'number',
-              default: 8080,
+              default: 8_080,
             },
           },
         },);
         expect(config.get('theme',),).toBe('light',);
-        expect(config.get('port',),).toBe(8080,);
+        expect(config.get('port',),).toBe(8_080,);
 
         config.set({
           key: 'theme',
           value: 'dark',
         },);
         expect(config.get('theme',),).toBe('dark',);
-        expect(config.get('port',),).toBe(8080,);
+        expect(config.get('port',),).toBe(8_080,);
 
         /**
          Failure captured from an invalid store write.

@@ -50,7 +50,7 @@ await describe({
         /**
          Store encrypting under the default `aes-256-cbc` algorithm.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
         },);
@@ -78,7 +78,7 @@ await describe({
          File bytes used to check the framing layout.
          */
         const fileBytes = new Uint8Array(readFileSync(conf.path,),);
-        expect(fileBytes[16],).toBe(':'.charCodeAt(0),);
+        expect(fileBytes[16],).toBe(':'.codePointAt(0),);
 
         /**
          Decrypted serialized store recovered with the store's wire format.
@@ -88,7 +88,6 @@ await describe({
           encryptionKey: 'abc123',
           encryptionAlgorithm: 'aes-256-cbc',
         },);
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- parsed fixture JSON is inspected property by property below.
         const parsed = JSON.parse(decrypted,) as Record<string, unknown>;
         expect(parsed.foo,).toBe(FIXTURE_VALUE,);
         expect(parsed.baz,).toEqual({
@@ -98,7 +97,7 @@ await describe({
         /**
          Second store standing in for another process reading the file.
          */
-        const reloaded = createConf<Record<string, unknown>>({
+        const reloaded = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
         },);
@@ -117,7 +116,7 @@ await describe({
         /**
          Store encrypting under `aes-256-gcm`.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
           encryptionAlgorithm: 'aes-256-gcm',
@@ -135,14 +134,13 @@ await describe({
           encryptionKey: 'abc123',
           encryptionAlgorithm: 'aes-256-gcm',
         },);
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- parsed fixture JSON is inspected property by property below.
         const parsed = JSON.parse(decrypted,) as Record<string, unknown>;
         expect(parsed.foo,).toBe(FIXTURE_VALUE,);
 
         /**
          Second store standing in for another process reading the file.
          */
-        const reloaded = createConf<Record<string, unknown>>({
+        const reloaded = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
           encryptionAlgorithm: 'aes-256-gcm',
@@ -181,13 +179,12 @@ await describe({
         const deserialize = (text: string,): Record<string, unknown> => {
           if (text === '')
             return {};
-          /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- parsed JSON becomes the store shape this fixture hands back. */
           return JSON.parse(text,) as Record<string, unknown>;
         };
         /**
          Store writing the empty payload under `aes-256-gcm`.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
           encryptionAlgorithm: 'aes-256-gcm',
@@ -210,7 +207,7 @@ await describe({
         /**
          Second store standing in for another process reading the file.
          */
-        const reloaded = createConf<Record<string, unknown>>({
+        const reloaded = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
           encryptionAlgorithm: 'aes-256-gcm',
@@ -231,7 +228,7 @@ await describe({
         /**
          Store encrypting under `aes-256-ctr`.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
           encryptionAlgorithm: 'aes-256-ctr',
@@ -249,14 +246,13 @@ await describe({
           encryptionKey: 'abc123',
           encryptionAlgorithm: 'aes-256-ctr',
         },);
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- parsed fixture JSON is inspected property by property below.
         const parsed = JSON.parse(decrypted,) as Record<string, unknown>;
         expect(parsed.foo,).toBe(FIXTURE_VALUE,);
 
         /**
          Second store standing in for another process reading the file.
          */
-        const reloaded = createConf<Record<string, unknown>>({
+        const reloaded = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
           encryptionAlgorithm: 'aes-256-ctr',
@@ -283,7 +279,7 @@ await describe({
         /**
          Store that must fall back to the legacy salt derivation.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
         },);
@@ -292,7 +288,7 @@ await describe({
         /**
          Second store standing in for another process reading the file.
          */
-        const reloaded = createConf<Record<string, unknown>>({
+        const reloaded = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
         },);
@@ -310,7 +306,7 @@ await describe({
         /**
          Writer without a schema so the invalid value can be stored.
          */
-        const writer = createConf<Record<string, unknown>>({
+        const writer = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
         },);
@@ -319,7 +315,7 @@ await describe({
         };
 
         expect(function constructReaderWithSchema(): unknown {
-          return createConf<Record<string, unknown>>({
+          return createConf({
             cwd: directory,
             encryptionKey: 'abc123',
             schema: {
@@ -330,7 +326,7 @@ await describe({
           },);
         },).toThrow(SchemaViolationError,);
         expect(function constructReaderWithSchema(): unknown {
-          return createConf<Record<string, unknown>>({
+          return createConf({
             cwd: directory,
             encryptionKey: 'abc123',
             schema: {
@@ -353,7 +349,7 @@ await describe({
         /**
          Store writing the file that will be tampered.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
           encryptionAlgorithm: 'aes-256-gcm',
@@ -367,21 +363,25 @@ await describe({
          File bytes with the trailing authentication-tag byte inverted.
          */
         const tampered = Uint8Array.from(readFileSync(conf.path,),);
-        tampered[tampered.length - 1] = (tampered[tampered.length - 1] ?? 0) ^ 0xff;
+        /**
+         Index of the trailing authentication-tag byte the test inverts.
+         */
+        const lastByteIndex = tampered.length - 1;
+        tampered[lastByteIndex] = (tampered[lastByteIndex] ?? 0) ^ 0xFF;
         writeFileSync(
           conf.path,
           tampered,
         );
 
         expect(function constructReaderOverTamperedFile(): unknown {
-          return createConf<Record<string, unknown>>({
+          return createConf({
             cwd: directory,
             encryptionKey: 'abc123',
             encryptionAlgorithm: 'aes-256-gcm',
           },);
         },).toThrow(DecryptionFailedError,);
         expect(function constructReaderOverTamperedFile(): unknown {
-          return createConf<Record<string, unknown>>({
+          return createConf({
             cwd: directory,
             encryptionKey: 'abc123',
             encryptionAlgorithm: 'aes-256-gcm',
@@ -400,7 +400,7 @@ await describe({
         /**
          Store whose file is about to be corrupted.
          */
-        const before = createConf<Record<string, unknown>>({
+        const before = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
           clearInvalidConfig: true,
@@ -418,7 +418,7 @@ await describe({
         /**
          Store that must read the cleared store instead of the corruption.
          */
-        const after = createConf<Record<string, unknown>>({
+        const after = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
           clearInvalidConfig: true,
@@ -438,7 +438,7 @@ await describe({
         /**
          Store validating `enabled` as a boolean.
          */
-        const before = createConf<Record<string, unknown>>({
+        const before = createConf({
           cwd: directory,
           encryptionKey: 'enc-schema',
           schema: {
@@ -460,7 +460,7 @@ await describe({
         /**
          Store that must read the cleared store instead of the corruption.
          */
-        const after = createConf<Record<string, unknown>>({
+        const after = createConf({
           cwd: directory,
           encryptionKey: 'enc-schema',
           schema: {
@@ -484,7 +484,7 @@ await describe({
         /**
          Store whose file is about to be corrupted.
          */
-        const before = createConf<Record<string, unknown>>({
+        const before = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
           encryptionAlgorithm: 'aes-256-gcm',
@@ -499,7 +499,7 @@ await describe({
         );
 
         expect(function constructReaderOverCorruptFile(): unknown {
-          return createConf<Record<string, unknown>>({
+          return createConf({
             cwd: directory,
             encryptionKey: 'abc123',
             encryptionAlgorithm: 'aes-256-gcm',
@@ -525,7 +525,7 @@ await describe({
         /**
          Store that must treat unframed `aes-256-cbc` data as plaintext.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
         },);
@@ -534,7 +534,7 @@ await describe({
         /**
          Second store standing in for another process reading the file.
          */
-        const reloaded = createConf<Record<string, unknown>>({
+        const reloaded = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
         },);
@@ -557,14 +557,14 @@ await describe({
         },);
 
         expect(function constructGcmReaderOverPlaintext(): unknown {
-          return createConf<Record<string, unknown>>({
+          return createConf({
             cwd: directory,
             encryptionKey: 'abc123',
             encryptionAlgorithm: 'aes-256-gcm',
           },);
         },).toThrow(DecryptionFailedError,);
         expect(function constructGcmReaderOverPlaintext(): unknown {
-          return createConf<Record<string, unknown>>({
+          return createConf({
             cwd: directory,
             encryptionKey: 'abc123',
             encryptionAlgorithm: 'aes-256-gcm',
@@ -588,7 +588,7 @@ await describe({
         },);
 
         expect(function constructCtrReaderOverPlaintext(): unknown {
-          return createConf<Record<string, unknown>>({
+          return createConf({
             cwd: directory,
             encryptionKey: 'abc123',
             encryptionAlgorithm: 'aes-256-ctr',
@@ -612,7 +612,7 @@ await describe({
         /**
          Store whose framing byte will be corrupted.
          */
-        const before = createConf<Record<string, unknown>>({
+        const before = createConf({
           cwd: directory,
           encryptionKey: 'abc123',
         },);
@@ -625,14 +625,14 @@ await describe({
          File bytes with the framing separator byte replaced by `x`.
          */
         const corrupted = Uint8Array.from(readFileSync(before.path,),);
-        corrupted[16] = 'x'.charCodeAt(0,);
+        corrupted[16] = 'x'.codePointAt(0,) ?? 0;
         writeFileSync(
           before.path,
           corrupted,
         );
 
         expect(function constructReaderOverCorruptedFraming(): unknown {
-          return createConf<Record<string, unknown>>({
+          return createConf({
             cwd: directory,
             encryptionKey: 'abc123',
           },);

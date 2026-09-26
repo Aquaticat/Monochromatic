@@ -47,26 +47,27 @@ function createRunRecorder(): {
   readonly lastRunAt: () => number;
 } {
   /**
-   Number of completed runs so far.
+   Mutable run record the debounced call appends to,
+   kept in one object so the recorder closures share state without
+   function-root mutable bindings.
    */
-  let runCount = 0;
-  /**
-   Timestamp of the most recent run in milliseconds.
-   */
-  let lastRunAt = 0;
+  const runs = {
+    count: 0,
+    lastRunAt: 0,
+  };
   return {
     debounced: debounce({
       fn: function recordRun(): void {
-        runCount += 1;
-        lastRunAt = Date.now();
+        runs.count += 1;
+        runs.lastRunAt = Date.now();
       },
       wait: WAIT_MS,
     },),
     runCount: function readRunCount(): number {
-      return runCount;
+      return runs.count;
     },
     lastRunAt: function readLastRunAt(): number {
-      return lastRunAt;
+      return runs.lastRunAt;
     },
   };
 }
@@ -92,7 +93,7 @@ await describe({
         await wait(SETTLE_MS,);
 
         expect(recorder.runCount(),).toBe(1,);
-        expect(recorder.lastRunAt() - triggeredAt >= WAIT_MS,).toBe(true,);
+        expect((recorder.lastRunAt() - triggeredAt) >= WAIT_MS,).toBe(true,);
       },
     },),
 
@@ -115,7 +116,7 @@ await describe({
         await wait(SETTLE_MS,);
 
         expect(recorder.runCount(),).toBe(1,);
-        expect(recorder.lastRunAt() - lastTriggerAt >= WAIT_MS,).toBe(true,);
+        expect((recorder.lastRunAt() - lastTriggerAt) >= WAIT_MS,).toBe(true,);
       },
     },),
 

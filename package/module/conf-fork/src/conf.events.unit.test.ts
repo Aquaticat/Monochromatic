@@ -47,7 +47,7 @@ await describe({
         /**
          Store carrying one flat and one nested key.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
         },);
         conf.set({
@@ -127,7 +127,7 @@ await describe({
         /**
          Store without any value for the watched key yet.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
         },);
         /**
@@ -148,7 +148,7 @@ await describe({
          First reported change,
          which must carry only the new side.
          */
-        const change = history[0];
+        const [change] = history;
         expect(change,).toEqual({
           newValue: 'born',
         },);
@@ -165,7 +165,7 @@ await describe({
         /**
          Store carrying the key that will be deleted.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
         },);
         conf.set({
@@ -187,7 +187,7 @@ await describe({
          First reported change,
          which must carry only the old side.
          */
-        const change = history[0];
+        const [change] = history;
         expect(change,).toEqual({
           oldValue: FIXTURE_VALUE,
         },);
@@ -204,7 +204,7 @@ await describe({
         /**
          Store carrying the current value.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
         },);
         conf.set({
@@ -235,7 +235,7 @@ await describe({
         /**
          Store carrying the current contents.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
         },);
         conf.set({
@@ -262,7 +262,7 @@ await describe({
         /**
          Store carrying one key that will change and one that will be deleted.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
         },);
         conf.set({
@@ -318,7 +318,7 @@ await describe({
         /**
          Store whose clear resets everything to its defaults.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
           defaults: {
             foo: 42,
@@ -382,7 +382,7 @@ await describe({
         /**
          Store whose array key is created by the first append.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
         },);
 
@@ -464,10 +464,9 @@ await describe({
          Store whose subscription receives a mistyped key;
          cast because the runtime check under test is what rejects it.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
         },);
-        /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the runtime check under test accepts deliberately mistyped arguments the call signature forbids. */
         const invalidKeyInput = {
           key: 1,
           callback: function ignored(): void {},
@@ -485,10 +484,9 @@ await describe({
          Store whose subscriptions receive mistyped callbacks;
          cast because the runtime check under test is what rejects it.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
         },);
-        /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the runtime check under test accepts deliberately mistyped arguments the call signature forbids. */
         const invalidCallbackInput = {
           key: 'foo',
           callback: 'nope',
@@ -496,7 +494,6 @@ await describe({
         expect(function subscribeWithInvalidCallback(): unknown {
           return conf.onDidChange(invalidCallbackInput,);
         },).toThrow(InvalidCallbackError,);
-        /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the runtime check under test accepts deliberately mistyped arguments the call signature forbids. */
         const invalidAnyChangeCallback = 'nope' as unknown as Parameters<typeof conf.onDidAnyChange>[0];
         expect(function subscribeAnyChangeWithInvalidCallback(): unknown {
           return conf.onDidAnyChange(invalidAnyChangeCallback,);

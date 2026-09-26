@@ -183,9 +183,13 @@ await describe({
       name: 'readParsedFile throws a missing-file error when the config file does not exist',
       fn: async () => {
         /**
+         Temp directory hosting the never-written config file.
+         */
+        const directory = createTempDirectory();
+        /**
          Pipeline whose config file was never written.
          */
-        const storeFile = createStoreFile(jsonStoreOptions(createTempDirectory(),),);
+        const storeFile = createStoreFile(jsonStoreOptions(directory,),);
         /**
          Failure captured from the missing-file read.
          */
@@ -476,7 +480,11 @@ await describe({
           path: storeFile.path,
         },)
           .startsWith(CUSTOM_PREFIX,),).toBe(true,);
-        expect(Object.entries(storeFile.readStore(),),).toEqual([
+        /**
+         Store entries read back through the custom deserializer.
+         */
+        const storedEntries = Object.entries(storeFile.readStore(),);
+        expect(storedEntries,).toEqual([
           [
             'greeting',
             'héllo',
@@ -519,7 +527,11 @@ await describe({
           path: storeFile.path,
         },);
         expect(bytesToString(rawBytes,) === serialized,).toBe(false,);
-        expect(Object.entries(storeFile.readStore(),),).toEqual(Object.entries(written,),);
+        /**
+         Store entries read back after decryption.
+         */
+        const decryptedEntries = Object.entries(storeFile.readStore(),);
+        expect(decryptedEntries,).toEqual(Object.entries(written,),);
       },
     },),
 
@@ -527,9 +539,13 @@ await describe({
       name: 'fileExists reports the config file only after it exists',
       fn: async () => {
         /**
+         Temp directory hosting the pipeline under test.
+         */
+        const directory = createTempDirectory();
+        /**
          Pipeline over a fresh temp directory.
          */
-        const storeFile = createStoreFile(jsonStoreOptions(createTempDirectory(),),);
+        const storeFile = createStoreFile(jsonStoreOptions(directory,),);
         expect(storeFile.path,).toBe(path.join(
           path.dirname(storeFile.path,),
           CONFIG_FILE_NAME,

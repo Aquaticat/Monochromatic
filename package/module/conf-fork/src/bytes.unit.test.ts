@@ -27,12 +27,20 @@ await describe({
          ASCII fixture decoded back below.
          */
         const ascii = 'hello config';
+        /**
+         UTF-8 encoding of the two-letter sample.
+         */
+        const hiBytes = stringToBytes('hi',);
 
-        expect(Array.from(stringToBytes('hi',),),).toEqual([
+        expect(hiBytes,).toEqual(new Uint8Array([
           104,
           105,
-        ],);
-        expect(bytesToString(stringToBytes(ascii,),),).toBe(ascii,);
+        ],),);
+        /**
+         Round-trip result of the ASCII fixture.
+         */
+        const decoded = bytesToString(stringToBytes(ascii,),);
+        expect(decoded,).toBe(ascii,);
       },
     },),
 
@@ -45,26 +53,43 @@ await describe({
          and four-byte code points.
          */
         const mixed = 'héllo 世界 🎉';
+        /**
+         UTF-8 encoding of the accented two-byte sample.
+         */
+        const accentBytes = stringToBytes('é',);
+        /**
+         UTF-8 encoding of the four-byte emoji sample.
+         */
+        const emojiBytes = stringToBytes('🎉',);
 
-        expect(Array.from(stringToBytes('é',),),).toEqual([
+        expect(accentBytes,).toEqual(new Uint8Array([
           195,
           169,
-        ],);
-        expect(Array.from(stringToBytes('🎉',),),).toEqual([
+        ],),);
+        expect(emojiBytes,).toEqual(new Uint8Array([
           240,
           159,
           142,
           137,
-        ],);
-        expect(bytesToString(stringToBytes(mixed,),),).toBe(mixed,);
+        ],),);
+        /**
+         Round-trip result of the mixed-width fixture.
+         */
+        const decoded = bytesToString(stringToBytes(mixed,),);
+        expect(decoded,).toBe(mixed,);
       },
     },),
 
     it({
       name: 'encodes the empty string as zero bytes and decodes empty bytes back',
       fn: async () => {
+        /**
+         Empty byte buffer decoded back below.
+         */
+        const emptyBytes = new Uint8Array(0,);
+
         expect(stringToBytes('',),).toHaveLength(0,);
-        expect(bytesToString(new Uint8Array(0,),),).toBe('',);
+        expect(bytesToString(emptyBytes,),).toBe('',);
       },
     },),
 
@@ -88,13 +113,13 @@ await describe({
           ],),
         ],);
 
-        expect(Array.from(joined,),).toEqual([
+        expect(joined,).toEqual(new Uint8Array([
           1,
           2,
           3,
           4,
           5,
-        ],);
+        ],),);
       },
     },),
 
@@ -115,11 +140,7 @@ await describe({
         const joined = concatBytes([chunk],);
 
         expect(joined === chunk,).toBe(false,);
-        expect(Array.from(joined,),).toEqual([
-          7,
-          8,
-          9,
-        ],);
+        expect(joined,).toEqual(chunk,);
       },
     },),
 

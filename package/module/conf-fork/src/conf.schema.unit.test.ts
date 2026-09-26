@@ -35,7 +35,7 @@ await describe({
         /**
          Store whose schema declares a top-level default.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
           schema: {
             foo: {
@@ -55,7 +55,7 @@ await describe({
         /**
          Store carrying both a schema default and a Conf default for `foo`.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
           defaults: {
             foo: 'foo',
@@ -79,7 +79,7 @@ await describe({
          whose body must throw upstream: only top-level schema defaults are
          applied, so the nested `bar` default never reaches the store.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
           schema: {
             foo: {
@@ -108,7 +108,7 @@ await describe({
         /**
          Store whose Conf default for `appearance` competes with its schema default.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
           defaults: {
             appearance: {
@@ -149,10 +149,10 @@ await describe({
           },
         };
         expect(function constructWithInvalidDefault(): unknown {
-          return createConf<Record<string, unknown>>(invalidDefaults,);
+          return createConf(invalidDefaults,);
         },).toThrow(SchemaViolationError,);
         expect(function constructWithInvalidDefault(): unknown {
-          return createConf<Record<string, unknown>>(invalidDefaults,);
+          return createConf(invalidDefaults,);
         },).toThrow('Config schema violation: `foo` must be string',);
       },
     },),
@@ -163,7 +163,7 @@ await describe({
         /**
          Store whose schema constrains nested numeric properties.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
           schema: {
             foo: {
@@ -198,7 +198,7 @@ await describe({
         /**
          Store whose schema types `foo` as a string.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
           schema: {
             foo: {
@@ -227,7 +227,7 @@ await describe({
         /**
          Store whose schema rejects the two properties of one nested object.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
           schema: {
             foo: {
@@ -267,7 +267,7 @@ await describe({
          array,
          and uniqueness keywords.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
           schema: {
             foo: {
@@ -315,7 +315,7 @@ await describe({
         /**
          Store whose schema declares the `uri` format for `foo`.
          */
-        const uriConf = createConf<Record<string, unknown>>({
+        const uriConf = createConf({
           cwd: createTempDirectory(),
           schema: {
             foo: {
@@ -340,7 +340,7 @@ await describe({
         /**
          Store whose schema declares the `url` format for `foo`.
          */
-        const urlConf = createConf<Record<string, unknown>>({
+        const urlConf = createConf({
           cwd: createTempDirectory(),
           schema: {
             foo: {
@@ -374,7 +374,7 @@ await describe({
         /**
          Store validating `foo` as a string.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: directory,
           schema: {
             foo: {
@@ -411,7 +411,7 @@ await describe({
           },
         },);
         expect(function constructWithoutClearing(): unknown {
-          return createConf<Record<string, unknown>>({
+          return createConf({
             cwd: directory,
             clearInvalidConfig: false,
             schema: {
@@ -440,7 +440,7 @@ await describe({
         /**
          Store that clears the invalid data instead of surfacing it.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: directory,
           clearInvalidConfig: true,
           schema: {
@@ -460,7 +460,6 @@ await describe({
          Store options carrying a string where the schema object belongs;
          cast because the runtime check under test is what rejects it.
          */
-        /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the runtime check under test accepts deliberately mistyped options the option type forbids. */
         const mistypedOptions = {
           cwd: createTempDirectory(),
           schema: 'object',
@@ -480,7 +479,7 @@ await describe({
         /**
          Store whose root schema constrains every property through a pattern.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
           rootSchema: {
             patternProperties: {
@@ -527,7 +526,6 @@ await describe({
          Store options whose root schema carries the forbidden `properties` key;
          cast because the runtime check under test is what rejects it.
          */
-        /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the runtime check under test accepts deliberately mistyped options the option type forbids. */
         const forbiddenRootSchema = {
           cwd: createTempDirectory(),
           rootSchema: {
@@ -555,7 +553,7 @@ await describe({
         /**
          Store whose root schema forbids every undeclared property.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
           rootSchema: {
             additionalProperties: false,
@@ -577,7 +575,7 @@ await describe({
          Store whose root schema forbids undeclared properties while ajv
          removes them instead of rejecting the write.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
           ajvOptions: {
             removeAdditional: true,
