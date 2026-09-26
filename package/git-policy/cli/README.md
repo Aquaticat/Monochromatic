@@ -349,8 +349,12 @@ so another invocation's staging survives.
 When no other commit landed in between,
 the prepared commit lands unchanged,
 signature included.
-Otherwise cli-git replays it onto the new tip with a three-way tree merge,
-re-signs it when it was signed,
+Otherwise cli-git replays it onto the new tip:
+a file whose captured bytes already contain the change that landed meanwhile,
+such as an edit made right next to another agent's in-flight edit,
+keeps its captured bytes,
+and every other file merges three-way from the commit's base.
+The replay re-signs the commit when it was signed,
 re-runs `pre-commit` when the tree changed,
 and re-runs only the policies whose recorded reads or declared `inputs` changed
 (this build re-runs every policy,
@@ -369,7 +373,13 @@ Amends and merge,
 cherry-pick,
 or revert conclusions fail with `concurrent-commit/head-moved` when the branch moved,
 and any commit fails with `concurrent-commit/branch-switched` when `HEAD` now names another branch.
-Replays and lost landing races also appear as `commit-replayed` and `landing-race-lost` JSONL events.
+A commit that keeps losing the race to land reserves the next landing slot
+after `landing.reserveAfterLostRaces` lost races.
+Replays,
+lost landing races,
+and reservations also appear as `commit-replayed`,
+`landing-race-lost`,
+and `landing-reserved` JSONL events.
 Re-signing a replayed signed commit drops any custom commit headers
 and reports them in a `replay-headers-dropped` event;
 consumers ignore event types they do not recognize.
