@@ -342,6 +342,56 @@ the source says the system may ignore it when the request cannot be met.
 `ViewRootImpl`,
 and `ViewRootImpl.java:6687-6709` reports changed areas to Window Manager.
 This path does **not** by itself promise movement of Gboard's internal keys.
+The **Android 17 AOSP release branch**, rather than a source-identical
+mapping to this Google system image,
+provides one concrete downstream consumer trace.
+Its
+[DisplayContent.java][aosp-display-content] `:6468-6503`
+collects keep-clear areas from visible windows,
+adds the IME window's touchable region to the **unrestricted** set,
+and dispatches changed areas:
+
+```java
+getKeepClearAreas(restrictedKeepClearAreas, unrestrictedKeepClearAreas);
+mWmService.mDisplayNotificationController.dispatchKeepClearAreasChanged(
+        this, restrictedKeepClearAreas, unrestrictedKeepClearAreas);
+// Inside getKeepClearAreas, for a visible IME window:
+w.getEffectiveTouchableRegion(touchableRegion);
+RegionUtils.forEachRect(touchableRegion, rect -> outUnrestricted.add(rect));
+```
+
+[DisplayWindowListenerController.java][aosp-display-listener] `:124-133`
+forwards those sets to registered display listeners,
+and the Shell [DisplayController.java][aosp-shell-display] `:478-490`
+forwards the callback to its display-change listeners.
+The Android 17 [PipController.java][aosp-pip-controller] `:349-359`
+is one such consumer:
+
+```java
+public void onKeepClearAreasChanged(int displayId, Set<Rect> restricted,
+        Set<Rect> unrestricted) {
+    if (mPipDisplayLayoutState.getDisplayId() == displayId) {
+        mPipBoundsState.setKeepClearAreas(restricted, unrestricted);
+        mMainExecutor.executeDelayed(
+                mMovePipInResponseToKeepClearAreasChangeCallback,
+                PIP_KEEP_CLEAR_AREAS_DELAY);
+    }
+}
+```
+
+`PipController.java:187-205` calls its PiP keep-clear algorithm and,
+when the destination differs,
+animates the **PiP task** to new bounds.
+These source paths establish a PiP use of the hint,
+not a Gboard subscription or a command to move Gboard's internal keys.
+No PiP movement was tested on this fixture,
+and no complete consumer search establishes that Gboard cannot participate
+through another path.
+
+[aosp-display-content]: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android17-release/services/core/java/com/android/server/wm/DisplayContent.java
+[aosp-display-listener]: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android17-release/services/core/java/com/android/server/wm/DisplayWindowListenerController.java
+[aosp-shell-display]: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android17-release/libs/WindowManager/Shell/src/com/android/wm/shell/common/DisplayController.java
+[aosp-pip-controller]: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android17-release/libs/WindowManager/Shell/src/com/android/wm/shell/pip/phone/PipController.java
 
 A second debug-only candidate,
 `search-deck-right-lift-keepclear-retain-results-light`,
