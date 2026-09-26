@@ -105,6 +105,8 @@ export type OwnerIdentity = Readonly<{
 
  @param args - Git arguments
 
+ @param env - extra environment entries
+
  @returns trimmed standard output
 
  @example
@@ -115,16 +117,21 @@ export type OwnerIdentity = Readonly<{
 export async function runFixtureGit({
   repository,
   args,
+  env = {},
 }: Readonly<{
   repository: string;
   args: readonly string[];
+  env?: NodeJS.ProcessEnv;
 }>,): Promise<string> {
   return (await nanoSpawn(
     REAL_GIT,
     [...args,],
     {
       cwd: repository,
-      env: FIXTURE_ENV,
+      env: {
+        ...FIXTURE_ENV,
+        ...env,
+      },
     },
   )).stdout.trim();
 }

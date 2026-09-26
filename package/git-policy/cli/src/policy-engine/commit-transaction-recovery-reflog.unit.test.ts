@@ -136,7 +136,7 @@ await describe({
           },
         };
         await runFixtureGit({ repository: path, args: ['init', '--quiet',], },);
-        expect(await searchFailure({ repository: path, },),).toContain('lacks durable reflog provenance',);
+        expect(await searchFailure({ repository: path, },),).toContain('HEAD reflog is unreadable',);
       },
     },),
     it({

@@ -75,9 +75,11 @@ async function conclusionState(repository: LandingRepository,): Promise<readonly
  */
 async function conflictedPair(operation: 'merge' | 'cherry-pick' | 'revert',): Promise<readonly [LandingRepository, LandingRepository]> {
   /**
-   Both repositories built by identical deterministic steps.
+   Builds one repository by the shared deterministic steps.
+
+   @returns repository stopped at the conflict
    */
-  return Promise.all([0, 1,].map(async function build(): Promise<LandingRepository> {
+  async function build(): Promise<LandingRepository> {
     /**
      One repository.
      */
@@ -104,7 +106,31 @@ async function conflictedPair(operation: 'merge' | 'cherry-pick' | 'revert',): P
     await writeWorktreeFile({ repository, name: 'x.txt', content: 'resolved\n', },);
     await git({ repository, args: ['add', 'x.txt',], },);
     return repository;
-  },),) as Promise<readonly [LandingRepository, LandingRepository]>;
+  }
+  return Promise.all([build(), build(),],);
+}
+
+/**
+ Builds a repository stopped at the first of two cherry-picks with a resolved conflict.
+
+ @returns repository
+ */
+async function midSequenceRepository(): Promise<LandingRepository> {
+  /** One repository. */
+  const repository = await createLandingRepository();
+  await git({ repository, args: ['switch', '--quiet', '-c', 'side',], },);
+  await writeWorktreeFile({ repository, name: 'base.txt', content: 'side\n', },);
+  await git({ repository, args: ['commit', '--quiet', '-am', 'side one',], },);
+  await writeWorktreeFile({ repository, name: 'y.txt', content: 'y\n', },);
+  await git({ repository, args: ['add', 'y.txt',], },);
+  await git({ repository, args: ['commit', '--quiet', '-m', 'side two',], },);
+  await git({ repository, args: ['switch', '--quiet', 'main',], },);
+  await writeWorktreeFile({ repository, name: 'base.txt', content: 'main\n', },);
+  await git({ repository, args: ['commit', '--quiet', '-am', 'main change',], },);
+  await gitOutcome({ repository, args: ['cherry-pick', 'side~1', 'side',], },);
+  await writeWorktreeFile({ repository, name: 'base.txt', content: 'resolved\n', },);
+  await git({ repository, args: ['add', 'base.txt',], },);
+  return repository;
 }
 
 await describe({
@@ -166,23 +192,7 @@ await describe({
       name: 'a mid-sequence cherry-pick conclusion keeps the sequencer as native Git does',
       fn: async function testMidSequence(): Promise<void> {
         /** Native and wrapper repositories stopped at the first of two picks. */
-        const [native, wrapped,] = await Promise.all([0, 1,].map(async function build(): Promise<LandingRepository> {
-          /** One repository. */
-          const repository = await createLandingRepository();
-          await git({ repository, args: ['switch', '--quiet', '-c', 'side',], },);
-          await writeWorktreeFile({ repository, name: 'base.txt', content: 'side\n', },);
-          await git({ repository, args: ['commit', '--quiet', '-am', 'side one',], },);
-          await writeWorktreeFile({ repository, name: 'y.txt', content: 'y\n', },);
-          await git({ repository, args: ['add', 'y.txt',], },);
-          await git({ repository, args: ['commit', '--quiet', '-m', 'side two',], },);
-          await git({ repository, args: ['switch', '--quiet', 'main',], },);
-          await writeWorktreeFile({ repository, name: 'base.txt', content: 'main\n', },);
-          await git({ repository, args: ['commit', '--quiet', '-am', 'main change',], },);
-          await gitOutcome({ repository, args: ['cherry-pick', 'side~1', 'side',], },);
-          await writeWorktreeFile({ repository, name: 'base.txt', content: 'resolved\n', },);
-          await git({ repository, args: ['add', 'base.txt',], },);
-          return repository;
-        },),);
+        const [native, wrapped,] = await Promise.all([midSequenceRepository(), midSequenceRepository(),],);
         await using _native = native;
         await using _wrapped = wrapped;
         await git({ repository: native, args: ['commit', '--quiet', '--no-edit',], },);
