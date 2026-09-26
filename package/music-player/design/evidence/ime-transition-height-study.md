@@ -285,8 +285,57 @@ The throwaway listener calls `view.onApplyWindowInsets(insets)` and preserves
 subtree dispatch in this measured fixture.
 That is not evidence that an unrelated existing parent listener could be
 safely replaced in production.
-The next forked experiment will use this early delivery to request a compact
-deck before assessing rendered frames.
+A forked debug revision (`7d17bda51`) also wrote a remembered Compose state
+from that parent listener when it received the new bottom inset.
+Its APK SHA-256 was
+`86b4b7f7750304c735ee12b8f77e57859cfb315169a5c1fcb7e59a7294695a3b`.
+The system delivered bottom `975px` before `SearchInsetProbe` logged compact
+selection,
+but the same-AVD in-place 375 to 400dp recording still showed a
+partly hidden final mode in frames 005 to 007.
+Frame 008 showed its lower outline restored.
+The recording sampled 23 frames;
+the fixed-trigger control recording sampled 24 frames under a previous
+APK,
+so their different failed-frame counts do **not** isolate a causal
+improvement from the state write.
+The current `auto-height-jump.mp4` and its frame directory remain private;
+the earlier listener-logging-only run was moved to
+`auto-apply-logging-only-height-jump.mp4` and its matching frame directory.
+An earlier app callback does not establish that a new Compose layout is
+presented before the keyboard surface moves.
+The full deck is **still not continuously visible** under this synthetic
+in-place resize.
+
+## Anticipatory clearance prototype
+
+The reactive branch still lost recorded mode borders during the in-place
+height jump.
+A separate **unaccepted**, debug-only candidate from commit `02be4b162`
+reserved 416dp at the bottom whenever the Search editor gained focus;
+it used that single reservation instead of `imePadding()` and selected the
+inline deck before the keyboard rose.
+The 416dp band is a measured test envelope for the y-`1140` Gboard banner,
+**not** a maximum keyboard size.
+In one visit,
+`SearchInsetProbe` recorded focus and the reserved deck while both IME
+bottoms were zero,
+then recorded the 330dp debug IME bottom of `804px`.
+This establishes early selection for that visit,
+not uninterrupted visual presentation.
+
+The first rendition also kept `TransportBlock`'s navigation-bar padding
+inside the already-reserved band.
+At 330dp,
+`Shuffle all folders` ended at y `1040` while the reserved app boundary
+was about y `1138`,
+and the Folders text was clipped to `[112,136][394,164]` with Open absent
+from the hierarchy.
+The user accepted **minor** browser/Open cropping in the earlier review,
+not this loss of the visible Open action throughout ordinary typing.
+Prototype commit `5e07bdfbb` omits that additional navigation inset only
+inside the pre-reserved debug candidate.
+Its fit and focus-lifetime behavior are pending a device check.
 
 ## Remaining boundary
 
@@ -295,10 +344,12 @@ The closed deck's first measured heights changed from `762` to `891` to
 A later focused transition logged a stored `1071px` height,
 but this capture did not isolate when that earlier sample was taken.
 No single early `onSizeChanged` value proves full-content demand.
-Investigate an app-visible end-state inset delivery boundary for this
-non-animated in-place height jump;
-verify whether it precedes the first clipped draw without replacing
-Compose's own inset handling.
+Investigate a design that reserves enough deck space **before** a possible
+in-place keyboard-height increase,
+or a supported integration point that synchronizes layout with IME
+presentation;
+the parent callback experiment did not prevent the first clipped draw.
+Do not treat a settled synthetic fit as real-banner verification.
 Keyboard dismissal,
 refocus,
 and cold entry at a height where both deck arrangements fit remain open.
