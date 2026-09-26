@@ -21,7 +21,6 @@ import { internalTestExports, } from '../../dist/final/node/index.mjs';
 import {
   createLandingRepository,
   git,
-  jsonlEvents,
   type LandingRepository,
   readText,
   runWrapper,
@@ -140,15 +139,11 @@ await describe({
         expect([...commits, ...adds,].some(function collided(outcome,): boolean {
           return outcome.stderr.includes('index.lock',) || outcome.stderr.includes('File exists',);
         },),).toBe(false,);
-        // Commits that lost the landing race fail fast with head-moved until replay exists.
-        expect(commits.every(function acceptable(outcome,): boolean {
-          return (outcome.exitCode === 0) || ((outcome.exitCode === 1) && jsonlEvents(outcome.stderr,).some(function headMoved(event,): boolean {
-            return event.code === 'concurrent-commit/head-moved';
-          },));
-        },),).toBe(true,);
-        expect(commits.some(function landed(outcome,): boolean {
-          return outcome.exitCode === 0;
-        },),).toBe(true,);
+        // Commits that lost the landing race replay onto the winner, so every commit lands.
+        expect(commits.map(function exitOf(outcome,): number {
+          return outcome.exitCode;
+        },),).toEqual([0, 0, 0,],);
+        expect((await git({ repository, args: ['log', '--format=%s', '-3',], },)).split('\n',).toSorted(),).toEqual(committed,);
         expect((await git({ repository, args: ['ls-files', '--', ...staged,], },)).split('\n',),).toEqual(staged,);
       },
     },),
