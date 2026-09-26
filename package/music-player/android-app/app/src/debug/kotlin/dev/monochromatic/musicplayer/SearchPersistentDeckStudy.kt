@@ -204,7 +204,9 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
             liftWithIme = candidate.contains("-lift-"),
             bannerHeightStress = candidate.contains("-bannerfit-"),
             autoFitStudy = candidate.contains("-autofit-"),
-            preclearStudy = candidate.contains("-preclear-"),
+            preclearStudy = candidate.contains("-preclear-") || candidate.contains("-scalereserve-"),
+            // A separate comparison limits early reservation to the tested stress scale.
+            scaleReserveStudy = candidate.contains("-scalereserve-"),
             // A separate comparison makes the compact deck ready before any IME rise.
             earlyInlineStudy = candidate.contains("-earlyinline-"),
             retainBrowser = candidate.contains("-retain-"),
@@ -242,10 +244,10 @@ private val PRECLEAR_REVIEW_HEIGHT = 416.dp
  *
  *  In TS you'd write (pseudocode):
  *  ```ts
- *  const EARLY_INLINE_STRESS_FONT_SCALE = 2;
+ *  const STRESS_TEXT_FONT_SCALE = 2;
  *  ```
  */
-private const val EARLY_INLINE_STRESS_FONT_SCALE = 2f
+private const val STRESS_TEXT_FONT_SCALE = 2f
 
 /** Android 17 SDK level used only to guard debug bounding-rectangle inspection. */
 private const val BOUNDING_RECT_API_LEVEL = 37
@@ -317,7 +319,8 @@ private fun ObserveImeAnimation(parentView: View, onAppliedIme: (Int) -> Unit) {
 private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, halfDent: Dp, light: Boolean, pageColor: Color,
     liftWithIme: Boolean, bannerHeightStress: Boolean, autoFitStudy: Boolean,
-    preclearStudy: Boolean, earlyInlineStudy: Boolean, retainBrowser: Boolean, layerProbe: Boolean,
+    preclearStudy: Boolean, scaleReserveStudy: Boolean, earlyInlineStudy: Boolean,
+    retainBrowser: Boolean, layerProbe: Boolean,
     keepClearProbe: Boolean, overflowStudy: Boolean) {
     val density = LocalDensity.current
     val reportedImeInset = WindowInsets.ime.getBottom(density)
@@ -364,8 +367,17 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     val keyboardShown = targetBottom > 0
     // Compare an early inline deck only at the tested scale with a clipping control.
     // The alternate full reservation remains its own unaccepted candidate.
-    val anticipatoryLayout = preclearStudy ||
-        (earlyInlineStudy && density.fontScale >= EARLY_INLINE_STRESS_FONT_SCALE)
+    // What:     This comparison names the tested enlarged text setting.
+    // Why:      A 100% vertical deck already fitted the sampled 415dp keyboard.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const stressText = fontScale >= STRESS_TEXT_FONT_SCALE;
+    // ```
+    val stressText = density.fontScale >= STRESS_TEXT_FONT_SCALE
+    // Keep the old reservation control and only gate its new scale-limited sibling.
+    val anticipatoryLayout = (preclearStudy && (!scaleReserveStudy || stressText)) ||
+        (earlyInlineStudy && stressText)
     // Keep the compact deck during the initial focus request and while the IME exists.
     // Once a seen IME is hidden, keep the focused query but restore closed A.
     val anticipatoryActive = anticipatoryLayout &&
