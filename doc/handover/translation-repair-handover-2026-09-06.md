@@ -4777,7 +4777,7 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASS ONE HUNDRED FORTY-NINE BUILT (2026-09-26), READ HULICAIJIA31 NEXT:
+1.  CLASS ONE HUNDRED FORTY-NINE BUILT (2026-09-26), NOT YET EXERCISED LIVE:
     Hyper's request pacer reserves each start in arrival order and waits on its own abortable timer,
     and a provider whose window would make the call wait reads saturated,
     so the call overflows to OpenRouter and queues on Hyper only for a Hyper-only model
@@ -4787,6 +4787,12 @@ each read off the pass log and the shipped page:
     hulicaijia31 launched 09:25 UTC on `.frozen-dist-eac0b67a8` (pid 669977, scope `pass-hulicaijia31`):
     read it for `request window is full` overflow lines, for no pacer wait longer than a few seconds
     holding a translate slice, and for the translate lane back near hulicaijia29's 25.7 min.
+    HULICAIJIA31 READ (frozen `eac0b67a8`): SETTLED at 09:45 UTC 2026-09-26 in 19.3 min, about 2.81 USD;
+    Hyper dry from the first reading (balance 0), so class one hundred forty-nine was NOT exercised live:
+    the next run launched while Hyper reads wet is the one to read for `request window is full` lines;
+    every hulicaijia30 check held; the scratch en_CA scan's `center`, `realize`, `mom` were false positives
+    (a style attribute, "moment", Canadian -ize), corrected and proven by a positive control;
+    recorded under "## hulicaijia31 read" in the pass log.
     HULICAIJIA30 READ (frozen `1f3d85c29`): SETTLED at 09:12 UTC 2026-09-26 in 100.6 min, about 2.38 USD plus Hyper's 208;
     class one hundred forty-eight never fired (Bedrock Gemma healthy, e2b 1.5 s mean);
     class one hundred forty-four not exercised again;

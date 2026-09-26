@@ -8082,6 +8082,37 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## hulicaijia31 read, 2026-09-26: class one hundred forty-nine not exercised, and the en_CA scan corrected
+
+hulicaijia31 (frozen `eac0b67a8`) SETTLED at 09:45 UTC in 19.3 min,
+about 2.81 USD by the meters (Bedrock 21.98 to 20.86, OpenRouter 51.16 to 49.47).
+Hyper read dry from the first reading (balance 0, spent by hulicaijia30) and Synthetic dry throughout,
+so no call reached Hyper, its window never filled,
+and the log carries no `window full` or `request window is full` line:
+class one hundred forty-nine was NOT exercised live; its unit guards stand.
+The two Synthetic- and Hyper-only seats threw every call (Qwen3.8-27B 610, glm-5.3 274),
+as on every run with both dry.
+Lanes: repair 3.3 min, translate 3.3 min, consolidation 6.9 min.
+The 19.3 minutes is the run on Bedrock and OpenRouter alone, not a measurement of the fix.
+
+Every hulicaijia30 check held:
+13 headings, 9 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish,
+no double blank line, no straight double quote outside tags, "douhua" seven times, "licorice" twice, register clean,
+no Han on the page (hulicaijia30 had two characters).
+"Jiefangbei" five times against six:
+the walking passage now reads "through the streets of Jiefangbei, along the pedestrian street around eight or nine in the evening",
+which renders every clause of 在晚上八九点钟左右的解放碑步行街上走着 without repeating the name.
+
+The en_CA scan in the scratch `check-hulicaijia.mjs` had reported `center`, `realize` and `mom` on hulicaijia29, 30 and 31.
+All three were false positives:
+`center` stood only in `text-align: center` style attributes,
+`mom` matched the start of "moment",
+and `realize` is Canadian spelling, which takes -ize.
+The scan now strips tags, matches at a word start, and lists only spellings Canadian usage writes otherwise
+(`color`, `favorite`, `center`, `gray`, `behavior`, `neighbor`, `honor`, `labor`);
+a positive control on "the color of the neighborhood" beside a styled `center` reports `color` and `neighbor` only,
+and all three pages read clean.
+
 ## hulicaijia30 read, 2026-09-26: class one hundred forty-eight quiet, and class one hundred forty-nine
 
 ### What the run did
