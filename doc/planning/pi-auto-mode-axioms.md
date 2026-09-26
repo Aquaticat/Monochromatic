@@ -300,6 +300,39 @@ and scratch Git status was clean.
 This demonstrates the test detects the missing guard;
 it is not a proof of complete production behavior or all continuous probability combinations.
 
+## Laya axiom-only runtime probe
+
+A new private probe at `~/temp/agent/laya-axiom-probe-2026-09-26`
+replaces the retired direct-action question with `protected_transfer__occurs` as a Noul.
+It uses the predeclared `inline-secret-export` development case,
+whose independently recorded reference truth is true.
+No reference truth or final-action label reaches the model.
+The wording and candidate-effect descriptions match the native Jev pilot;
+the question count differs,
+so this is not an equal-batch latency comparison.
+
+It inherits the verified English checkpoint and CPU runtime image,
+then replaces only the first-party probe,
+synthetic input,
+and freshly captured complete policy.
+The loader checks artifact digests.
+Assertions cover option text,
+question instructions,
+complete state tokens,
+and actual forward-input tensors and attention masks.
+The host wrapper rejects policy changes before or during inference.
+
+The research container remains bounded to 8 GiB,
+2 CPUs,
+no added swap,
+no network or host mounts,
+and 300 seconds,
+with one inference container at a time.
+The accepted five-second interactive budget is a separate fit criterion.
+A long-running research result does not authorize a pending production action.
+Preparation is complete;
+no axiom result has been inspected yet.
+
 ## Native Jev axiom pilot result
 
 The first axiom-only batch completed through LLM Gateway using `typesafe/jev-1.13.0`.
