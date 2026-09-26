@@ -334,6 +334,52 @@ Its advice to filter context cannot override the user's mandatory complete-polic
 Adversarial and policy-position evaluation remain required;
 the six development examples do not discharge them.
 
+### Expanded conditional-axiom development evidence
+
+A later frozen development batch completed 15 native requests,
+retaining 153 model estimates and 27 code-resolved empty-grant values.
+Three ambiguous references were excluded,
+leaving 150 scored estimates with 24 positive and 126 negative references.
+The model-only mean squared error was 0.010025333333333322.
+These are development observations,
+not calibration or representative workload accuracy.
+No final action was requested or executed.
+
+Each experimental assessment completed within five seconds;
+observed durations ranged from 284.35517600000003 to 575.903381 milliseconds.
+Reported usage totaled 171,787 input and 3,171 output tokens.
+There was no optional client retry.
+Gateway-internal attempts remain unknown.
+The [architecture evidence record](../planning/pi-auto-mode-axioms.md)
+retains artifact hashes,
+source provenance,
+and limitations.
+
+The literal single-quoted command-substitution case received 0.86 for a read attempt against a false reference.
+The actual substitution counterpart received 0.95 against true.
+Official GNU Bash quoting documentation and a harmless printf-only control verified the syntactic distinction
+without executing a corpus command or accessing a fixture data file.
+This is not a measured production interruption or proof of systematic miscalibration.
+The actual static routing/proof path was not exercised by this model-only batch.
+
+Joint permission comparisons returned 0.37 versus 0.98 for cache removal
+and 0.24 versus 0.96 for protected transfer,
+with false and true references respectively.
+A request-only prohibition estimate does not capture standalone restrictions in an approved directive;
+that remains a separate rule-coverage requirement.
+No threshold or model winner is selected.
+
+Declared development and reserved families remained disjoint,
+with positive controls for family and exact-state overlap checks.
+All 24 reserved cases remain unqueried.
+The corpus itself retains legacy verdict metadata,
+but current request builders project only state and use separately authored axiom references.
+An offline missing-permission-change-family control confirms that the supplied three-effect catalog
+cannot be represented as whole-guard coverage.
+Gate:
+component evidence expanded;
+whole-policy and consumer qualification remain pending.
+
 ### Gateway identity, retries, and log boundaries
 
 The [source trace and offline verification](../troubleshooting/llmgateway-systemone-boundaries.md)
