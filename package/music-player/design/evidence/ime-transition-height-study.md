@@ -390,9 +390,15 @@ All 16 sampled IME-visible frames retained five complete mode boundaries,
 with title,
 seek,
 transport and results visible in the inspected frames.
-This is another bounded synthetic pass,
-not proof of every unrecorded instant;
-a same-APK fixed-trigger refocus control is being checked separately.
+A same-APK fixed-trigger refocus control sampled 22 frames,
+14 with the IME visible.
+Frames 011 and 012 lacked the final mode's bottom outline;
+the geometric check also rejected frame 010 because its margin to the
+keyboard was smaller than the check's 8-video-pixel floor.
+The pre-reserved run had no rejected visible-IME frame.
+This is a bounded synthetic comparison,
+not proof of every unrecorded instant or the cause of a frame-count
+difference.
 The reserved candidate remains unaccepted and does not address floating keys
 or a real Gboard banner.
 
