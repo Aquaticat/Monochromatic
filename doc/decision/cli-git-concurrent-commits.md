@@ -287,6 +287,47 @@ Evidence:
   Accepted cost:
   a later capture from a stale editor buffer reverts the earlier edit,
   exactly as native Git would.
+- Plain index commits record no worktree-captured paths,
+  added 2026-09-26 (veto open):
+  an index commit without `-a` or `--include` commits bytes staged at an unknown earlier time,
+  not a disk state read at its capture,
+  so its capture sequence number says nothing about when those bytes were written.
+  Ordering them by capture could let a stale staged blob win over an edit a later-landed commit captured from disk,
+  reverting landed content.
+  Its shared paths keep subsumption,
+  then the three-way merge.
+  `commit -a` and `--include` record the paths whose private index entry differs from the captured real index,
+  because those bytes were read from the worktree at capture.
+  Rules:
+  `package/git-policy/cli/SPEC.md` "Worktree-captured paths".
+- The container checker's `landed-bytes` invariant accepts a later capture's landed bytes under capture order,
+  added 2026-09-26 (veto open):
+  for an explicit-path attempt,
+  a selected path may hold the landed parent's bytes
+  when an attempt started later captured exactly those bytes for the same path
+  and that attempt's commit lies between `HEAD` before the invocation and the parent.
+  This is the case capture order prescribes,
+  where an earlier capture keeps the landed bytes of a later capture that landed first.
+  The acceptance is that narrow,
+  so any other landed parent bytes still fail the invariant.
+  Evidence:
+  a first seed-3 run failed `concurrent-trace-replay` on Git 2.40.0 with `landed-bytes` for exactly this case.
+  Rules:
+  `package/git-policy/cli/e2e/README.md` "Invariants".
+- The trust registry's recursive-operation lock follows "Locks",
+  added 2026-09-26 (veto open):
+  it is an owner lock hardened to registry modes and Windows ACLs before publication,
+  a live owner gets an unbounded wait,
+  and only an unproven owner
+  (a PID-only record from an earlier build naming a running PID,
+  or a malformed or missing record)
+  gets the 1000 ms backoff.
+  Its fixed 100 x 10 ms budget failed 16 of 16 concurrent `trust --yes` behind a live owner.
+  Built-wrapper tests reach a disposable registry through a test-only `NODE_OPTIONS=--import` preload
+  that makes `os.userInfo().homedir` report `HOME`;
+  production still ignores `HOME`.
+  Rules:
+  `package/git-policy/cli/SPEC.md` "Locks".
 - Forwarded index writers coordinate with landings through the cli-git landing lock
   and pre-wait for foreign `index.lock` holders;
   cli-git does not capture Git's stderr to detect a lock failure and re-forward,
