@@ -144,7 +144,9 @@ await describe({
         expect(String(eventOfType({ outcome, type: 'core-finding', },).message,),).toContain('--merge-base',);
         expect(await git({ repository, args: ['rev-parse', 'HEAD',], },),).toBe(winner,);
         expect(await git({ repository, args: ['status', '--porcelain',], },),).toBe('A  a.txt',);
-        expect(await readText(join(repository.path, 'a.txt',),),).toBe('a\n',);
+        expect(
+          await readText(join(repository.path, 'a.txt',),),
+        ).toBe('a\n',);
         expect(await leftovers(repository,),).toEqual([],);
       },
     },),

@@ -40,10 +40,13 @@ import {
 
 /**
  Git versions built into the image:
+ Debian bookworm's 2.39.5,
+ whose `merge-tree` lacks `--merge-base` and so proves replay degrades to fail-fast,
  the first release with `merge-tree --merge-base`,
  and the current release.
  */
 const GIT_VERSIONS: readonly string[] = [
+  '2.39.5',
   '2.40.0',
   '2.55.0',
 ];

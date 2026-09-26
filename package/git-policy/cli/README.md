@@ -406,6 +406,18 @@ Amends and merge,
 cherry-pick,
 or revert conclusions fail with `concurrent-commit/head-moved` when the branch moved,
 and any commit fails with `concurrent-commit/branch-switched` when `HEAD` now names another branch.
+On a Git whose `git merge-tree` has no `--merge-base` option
+(before Git 2.40.0;
+verified on Git 2.39.5),
+a commit that loses the race to land fails fast with `concurrent-commit/head-moved` instead of replaying,
+as every overlapping commit did before replay existed;
+commits that land on their first attempt are unaffected.
+Before Git 2.54.0,
+Git writes no `core.lockfilePid` owner file,
+so a wrapped commit waits for a native `git commit` holding `index.lock` in its editor
+only up to `indexLock.unprovenOwnerTimeoutMs`,
+and config-based hooks do not exist.
+See `SPEC.md` "Compatibility and degradation".
 A commit that keeps losing the race to land reserves the next landing slot
 after `landing.reserveAfterLostRaces` lost races.
 Replays,
@@ -1081,8 +1093,7 @@ mise run //package/git-policy/cli:perf:concurrent-commits
 The concurrent-commit benchmark runs in the same bounded container shape,
 on `node:24-trixie-slim`,
 because bookworm's Git 2.39.5 predates `git merge-tree --merge-base`,
-the declared minimum,
-and every replay there fails.
+so every commit that loses a landing race there fails fast instead of replaying.
 It covers the concurrent scenarios `SPEC.md` "Benchmark method" names:
 disjoint paths at concurrency 1,
 2,

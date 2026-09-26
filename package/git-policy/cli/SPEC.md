@@ -1379,7 +1379,9 @@ and cannot be disabled or assigned a severity through repository config.
   or a normalization found the target moved since preparation,
   or any commit found that the target no longer names a commit
   (a deleted branch),
-  so there is nothing to replay onto.
+  so there is nothing to replay onto,
+  or a commit found the target moved on a Git without replay plumbing
+  (see "Compatibility and degradation").
 - `concurrent-commit/branch-switched`:
   the symbolic `HEAD` target differs from the one recorded at invocation.
 
@@ -3485,15 +3487,72 @@ and preserves conflicting evidence after unrelated ref or index movement.
 
 ### Compatibility and degradation
 
-Cli-git declares a minimum Git version covering `git hook run --ignore-missing`
-and `git merge-tree --write-tree --merge-base`.
-A Git below that minimum fails commit transactions with `transaction-failed` naming the missing feature.
-Missing optional features degrade per feature:
-without `core.lockfilePid`,
-foreign locks have no PID evidence;
-without replay plumbing,
-a moved target fails the commit without landing with `transaction-failed`,
-the fail-fast behavior that predates replay.
+Cli-git has no version gate.
+Git 2.40.0 is the oldest release with every feature it uses;
+Git 2.39.5,
+Debian bookworm's Git,
+is the oldest release the container suite verifies,
+with replay degraded.
+Private preparation dispatches hooks through `git hook run --ignore-missing`,
+which Git 2.36.0 introduced;
+older releases are unverified.
+Features newer than that degrade one at a time,
+each detected by what Git does rather than by its version string:
+
+- Replay plumbing,
+  `git merge-tree --write-tree --merge-base`
+  (Git 2.40.0).
+  After a commit's first lost landing race,
+  and before any replay work,
+  cli-git runs `git merge-tree --write-tree --merge-base=<winner> <winner> <winner>`:
+  exit `0` proves the option,
+  exit `129`,
+  Git's usage status for an unknown option,
+  proves its absence,
+  and any other status fails the transaction.
+  The merge of the winning commit with itself yields that commit's own tree,
+  so the probe writes no object.
+  The answer is kept per Git executable for the rest of the process.
+  Usage text is not read,
+  because its spelling changed from `--merge-base <commit>` in Git 2.40.0
+  to `--[no-]merge-base <tree-ish>` in Git 2.55.0.
+  Without the option,
+  the commit fails with `concurrent-commit/head-moved` and exit `1`
+  (see "Core finding event"),
+  emitting no `landing-race-lost` event and leaving ref,
+  real index,
+  and worktree bytes unchanged,
+  the fail-fast behavior that predates replay.
+  A commit that lands on its first attempt never runs the probe.
+- `core.lockfilePid`
+  (Git 2.54.0).
+  Cli-git still injects it
+  (see "Lock PID injection");
+  an older Git ignores the unknown key and writes no PID file,
+  so a foreign `index.lock` holder is proven alive only by an open-descriptor scan.
+  A native `git commit` waiting in its editor keeps no descriptor open,
+  so a wrapped commit or index writer waits for it only up to `indexLock.unprovenOwnerTimeoutMs`
+  and then fails with `index-lock-unproven-owner` and exit `2`
+  instead of waiting for it without a time limit.
+- Config-based hooks,
+  `hook.<name>.command`
+  (Git 2.54.0).
+  An older Git runs none,
+  natively or through the wrapper,
+  and ignores the `hook.<event>.enabled=false` entries the dispatcher passes.
+
+Observed on Git 2.39.5 and 2.40.0 on 2026-09-26:
+an ordinary commit lands;
+a native `git commit` holding `index.lock` in its editor makes a concurrent wrapped commit fail after 1000 ms
+with `index-lock-unproven-owner`,
+naming "no PID file";
+a `hook.probe.command` `pre-commit` hook runs neither natively nor through the wrapper.
+On Git 2.39.5,
+before the probe existed,
+the commit that lost the race exited `2` with `transaction-failed` carrying `git merge-tree` usage text;
+nothing landed,
+its staged entry stayed,
+and `git fsck --strict` was clean.
 
 ### Required disposable fixtures
 
@@ -3795,8 +3854,14 @@ so this suite is an inherent part of the transaction protocol.
 - A mise task packs the npm tarball and runs a consumer script inside `podman` with stated memory and CPU bounds,
   following the `test:built:trust` precedent.
 - The image provides every Git version under test:
-  the declared minimum and the current release.
-  Distribution images that ship an older Git do not qualify.
+  Git 2.40.0,
+  the oldest release with every feature cli-git uses,
+  and the current release,
+  each running the whole catalog,
+  plus Git 2.39.5,
+  which runs the scenarios that never replay and the ones proving replay degrades to fail-fast
+  (see "Compatibility and degradation").
+  Distribution images that ship an older Git do not qualify as the only Git.
 - Each run creates new repositories and a local bare remote inside the container,
   never touching host repositories.
 - Workloads come from two sources:
@@ -4045,7 +4110,9 @@ Before release readiness:
 - direct fix proves index preservation;
 - the container end-to-end suite
   (see "Container end-to-end suite")
-  passes on the declared minimum Git and the current release;
+  passes on Git 2.39.5,
+  Git 2.40.0,
+  and the current release;
 - Linux,
   macOS,
   and Windows trust adapters have real-host evidence.

@@ -233,7 +233,7 @@ const child = spawn('podman', [
   '--tmpfs',
   '/work:rw,size=1g',
   // Debian trixie: bookworm's Git 2.39.5 predates git merge-tree --merge-base (Git 2.40.0),
-  // cli-git's declared minimum, so every replay there fails with transaction-failed.
+  // so every commit that loses a landing race there fails fast with head-moved instead of replaying.
   'docker.io/library/node:24-trixie-slim',
   'node',
   '--input-type=module-typescript',
@@ -268,7 +268,7 @@ if (code !== 0) throw new Error(`commit-shape trace generator exited with ${Stri
 '''
 
 [tasks.'test:e2e:concurrent:image']
-description = "Build the concurrent-commit e2e image: Git 2.40.0 and 2.55.0 from source, Node at the engines floor, packed cli-git"
+description = "Build the concurrent-commit e2e image: Git 2.39.5, 2.40.0, and 2.55.0 from source, Node at the engines floor, packed cli-git"
 depends = ["pack:npm"]
 # Layer-cached: only the tarball layer rebuilds after a new pack. The build fetches Git sources
 # (checksum-pinned) and the tarball's npm dependencies; the suite itself runs with --network=none.
@@ -297,12 +297,12 @@ console.log(`concurrent e2e image built in ${String(Math.round((performance.now(
 '''
 
 [tasks.'test:e2e:concurrent']
-description = "Replay concurrent-commit workloads through the packed wrapper on Git 2.40.0 and 2.55.0 in a bounded, network-isolated container"
+description = "Replay concurrent-commit workloads through the packed wrapper on Git 2.39.5, 2.40.0, and 2.55.0 in a bounded, network-isolated container"
 depends = ["test:e2e:concurrent:image"]
 usage = '''
 flag "--seed <seed>" help="Replay this decimal seed (printed by every run)"
 flag "--scenario <names>" help="Comma-separated scenario names to run"
-flag "--git <versions>" help="Comma-separated Git versions to run (2.40.0, 2.55.0)"
+flag "--git <versions>" help="Comma-separated Git versions to run (2.39.5, 2.40.0, 2.55.0)"
 '''
 # Bounds per AGENTS.md BOX: 2 GiB, 2 CPUs, no network. Inputs are mounted read-only;
 # repositories are created inside the container and discarded with it.

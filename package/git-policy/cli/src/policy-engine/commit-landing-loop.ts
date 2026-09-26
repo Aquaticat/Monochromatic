@@ -28,6 +28,7 @@ import {
   landTransaction,
 } from './commit-landing.ts';
 import { reachTransactionPhase, } from './commit-transaction-test-phase.ts';
+import { replayPlumbingAvailable, } from './replay-plumbing.ts';
 import {
   appendEvents,
   createLandingRaceLostEvent,
@@ -53,16 +54,20 @@ const l = tagged({ tag: 'cli-git', },);
 
  @param outcome - failed outcome
 
+ @param replayPlumbingMissing - whether a replayable commit failed only because Git cannot replay
+
  @returns blocking result
  */
 function unreplayableResult({
   input,
   candidate,
   outcome,
+  replayPlumbingMissing = false,
 }: Readonly<{
   input: LandingLoopInput;
   candidate: LandingCandidate;
   outcome: Exclude<LandingOutcome, Readonly<{ kind: 'landed'; }>>;
+  replayPlumbingMissing?: boolean;
 }>,): LandingLoopOutcome {
   return {
     kind: 'failed',
@@ -80,6 +85,7 @@ function unreplayableResult({
         .capture,
       preparedOid: input.prepared
         .oid,
+      replayPlumbingMissing,
     },),
   };
 }
@@ -186,6 +192,21 @@ export async function landWithReplay(input: LandingLoopInput,): Promise<LandingL
         candidate,
         outcome,
       },);
+    // oxlint-disable-next-line no-await-in-loop -- Probed after a lost race, before any replay work; the answer is cached.
+    if (!await replayPlumbingAvailable({
+      gitPath: context.gitPath,
+      cwd: context.cwd,
+      commit: outcome.current
+        .oid,
+    },)) {
+      rl.debug('this Git cannot replay; failing fast with head-moved',);
+      return unreplayableResult({
+        input,
+        candidate,
+        outcome,
+        replayPlumbingMissing: true,
+      },);
+    }
     /**
      Lost races including this one.
      */
