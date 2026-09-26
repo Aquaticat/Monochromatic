@@ -111,3 +111,14 @@ This statement is pending explicit re-confirmation after those player views;
 no numeric `min_padding` decision was recorded from the incomplete review.
 The historical player preview still uses fixed 414dp panes and a 24dp stripe,
 so it cannot stand in for a native E2 player-floor variant.
+An initial debug-only Search-closed player variant painted a gray central
+rectangle by setting the inset Row's background to `palette.window`.
+The user rejected that reading of E2:
+7.5mm constrains informational marks,
+not structural surfaces,
+borders,
+padding or hit regions.
+Those player captures are withdrawn and must remain private.
+A follow-up debug prototype paints a continuous surface below the
+information-placement study;
+no floor decision or native player visual has yet been re-accepted.

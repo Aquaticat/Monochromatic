@@ -6134,6 +6134,19 @@ The existing P0/P14/P20 review is incomplete for this choice;
 add separately captured player-with-Search-closed native views for each
 floor policy before re-asking.
 Do not treat the historical fixed-414dp/24dp player preview as E2-compliant.
+The first separately rendered Search-closed player captures exposed an
+**unaccepted gray central rectangle** from painting the whole inset Row
+with the prototype's tinted `palette.window` surface.
+The user explicitly rejected treating the 7.5mm as a surface,
+border,
+padding or hit-region exclusion;
+it governs informational marks like text only.
+Do not publish or ask from those gray-strip player captures.
+Debug-only commit `504299ed0` instead paints a continuous player surface
+beneath the inset hosts;
+recapture and visually check it before replacing the incomplete review.
+Inset allocation remains a prototype mechanism,
+not a settled demand to move decorative bounds.
 No production change or new IME experiment is authorized;
 only the disposable capped Fold may be used.
 The original AVD remains untouched.
