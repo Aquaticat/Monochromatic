@@ -45,6 +45,19 @@ runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', files)
 [tasks."format:oxlint"]
 extends = "format:oxlint"
 
+[tasks.'format:oxlint:paths']
+description = "Auto-fix explicitly selected git-policy-cli paths with Oxlint without touching unrelated package files"
+usage = 'arg "[paths]" var=#true help="Package-relative files to fix"'
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+{{vars.parse_usage_args}}
+const files = parseUsageArgs(process.env.usage_paths ?? '')
+if (files.length === 0) { throw new Error('format:oxlint:paths requires at least one file') }
+ensureOxlintConfig()
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', ...files])
+"""
+
 [tasks.'test:unit']
 extends = "test:unit"
 
@@ -164,4 +177,27 @@ const child = spawn('podman', [
 ], { stdio: 'inherit' })
 const [code] = await once(child, 'exit')
 if (code !== 0) throw new Error(`Lifecycle latency container exited with ${String(code)}`)
+'''
+
+[tasks.'e2e:concurrent:trace']
+description = "Mine anonymized commit shapes from repository history with real Git into e2e/commit-shape-trace.json"
+# Runs on the host with /usr/bin/git, bypassing the wrapper; the output holds shapes only
+# (no contents, paths, object IDs, messages, or author data).
+usage = '''
+flag "--repository <path>" help="Repository whose history is mined (default: this checkout)"
+flag "--revision <rev>" help="Revision whose history is mined" default="HEAD"
+flag "--limit <count>" help="Newest non-merge commits mined" default="4000"
+'''
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const args = [
+  ...(process.env.usage_repository ? ['--repository', process.env.usage_repository] : []),
+  '--revision', process.env.usage_revision ?? 'HEAD',
+  '--limit', process.env.usage_limit ?? '4000',
+]
+const child = spawn('node', ['e2e/commit-shape-trace-generator.ts', ...args], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`commit-shape trace generator exited with ${String(code)}`)
 '''
