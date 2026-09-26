@@ -18,7 +18,9 @@ import {
   realGit,
 } from './built-autofix-added-paths-helpers.ts';
 import {
-  KILL_WRAPPER_SOURCE,
+  KILL_LANDING_SOURCE,
+  KILL_OWNER_SOURCE,
+  LANDING_HOOK,
   waitForOrphan,
 } from './built-autofix-recovery-consumer.ts';
 import { execute, } from './built-consumer-helpers.ts';
@@ -55,7 +57,7 @@ type RecoveryPaths = Readonly<{
  *
  * @param round - distinct version text for this scenario
  *
- * @param hook - Git hook that kills the wrapper
+ * @param hook - Git hook that kills the wrapper: a preparation hook, or the landing's compare-and-swap hook
  *
  * @param hookSuffix - hook source appended after the kill
  *
@@ -72,7 +74,7 @@ async function interruptAddedPathCommit({
   repository: string;
   env: NodeJS.ProcessEnv;
   round: string;
-  hook: 'pre-commit' | 'post-commit';
+  hook: 'pre-commit' | typeof LANDING_HOOK;
   hookSuffix: string;
   recovery: RecoveryPaths;
 }>,): Promise<void> {
@@ -101,7 +103,7 @@ async function interruptAddedPathCommit({
   },);
   await writeFile(
     hookPath,
-    `${KILL_WRAPPER_SOURCE}${hookSuffix}`,
+    `${hook === 'pre-commit' ? KILL_OWNER_SOURCE : KILL_LANDING_SOURCE}${hookSuffix}`,
     { mode: EXECUTABLE_MODE, },
   );
   await execute({
@@ -120,8 +122,9 @@ async function interruptAddedPathCommit({
   await waitForOrphan();
   await rm(hookPath,);
   await resolveSingleTransactionDirectory(repository,);
-  if (!(await pathExists(recovery.lockPath,)))
-    throw new Error(`${round} interruption did not retain recovery artifacts`,);
+  // Only a landing holds the real index lock; preparation never takes it.
+  if ((await pathExists(recovery.lockPath,)) !== (hook === LANDING_HOOK))
+    throw new Error(`${round} interruption left unexpected real index lock state`,);
   assertFixtureEqual({
     actual: await readFile(
       `${repository}/dependent.txt`,
@@ -250,7 +253,7 @@ export async function verifyAddedPathRecovery({
     repository,
     env,
     round: 'recovery-after-ref',
-    hook: 'post-commit',
+    hook: LANDING_HOOK,
     hookSuffix: '',
     recovery,
   },);
@@ -275,7 +278,7 @@ export async function verifyAddedPathRecovery({
     repository,
     env,
     round: 'recovery-installed',
-    hook: 'post-commit',
+    hook: LANDING_HOOK,
     // Keeps the killed wrapper's Git alive briefly, matching the completed-install sibling fixture.
     hookSuffix: 'setTimeout(() => {}, 250);\n',
     recovery,
@@ -286,7 +289,7 @@ export async function verifyAddedPathRecovery({
   const transactionDirectory = await resolveSingleTransactionDirectory(repository,);
   // Simulates an interruption after the wrapper installed the prepared index and wrote its durable marker.
   await copyFile(
-    `${transactionDirectory}/post.index`,
+    `${transactionDirectory}/post-1.index`,
     recovery.lockPath,
   );
   await rename(

@@ -49,7 +49,7 @@ async function pathExists(path: string,): Promise<boolean> {
  *
  * @param lockPath - held real-index lock
  *
- * @param postHookPath - disposable post-commit hook
+ * @param postHookPath - disposable landing hook
  *
  * @param killingHookSource - wrapper-killing hook prefix
  *
@@ -115,7 +115,7 @@ export async function verifyCompletedInstallRecovery({
    */
   const transactionDirectory = await resolveSingleTransactionDirectory(repository,);
   await copyFile(
-    `${transactionDirectory}/post.index`,
+    `${transactionDirectory}/post-1.index`,
     lockPath,
   );
   await rename(

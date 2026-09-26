@@ -33,15 +33,37 @@ import {
  */
 const EXECUTABLE_MODE = 0o700;
 /**
- * Wrapper-killing hook source prefix shared by interruption phases.
+ * Preparation-hook source prefix that kills the wrapper owning the transaction.
+ *
+ * Preparation hooks run under the dispatcher shim beneath native Git,
+ * so the wrapper is found through the preparation lease's transaction directory and its owner record.
  */
-export const KILL_WRAPPER_SOURCE = `#!/usr/bin/env node
+export const KILL_OWNER_SOURCE = `#!/usr/bin/env node
 const { readFileSync } = require('node:fs');
-const status = readFileSync('/proc/' + process.ppid + '/status', 'utf8');
-const parentLine = status.split('\\n').find((line) => line.startsWith('PPid:'));
-if (parentLine === undefined) throw new Error('wrapper pid unavailable');
-const wrapperPid = Number(parentLine.slice('PPid:'.length).trim());
-process.kill(wrapperPid, 'SIGKILL');
+const lease = JSON.parse(process.env.CLI_GIT_PREPARATION_LEASE);
+const owner = JSON.parse(readFileSync(lease.directory + '/owner.json', 'utf8'));
+process.kill(owner.ownerPid, 'SIGKILL');
+`;
+
+/**
+ * Hook the landing's compare-and-swap runs in the real repository.
+ */
+export const LANDING_HOOK = 'reference-transaction';
+
+/**
+ * `reference-transaction` hook source prefix that kills the wrapper once its compare-and-swap committed,
+ * leaving a landed ref with the real index lock held and the index not installed.
+ * The landing runs `git update-ref` directly, so the hook's grandparent is the wrapper.
+ */
+export const KILL_LANDING_SOURCE = `#!/usr/bin/env node
+const { readFileSync } = require('node:fs');
+readFileSync(0);
+if (process.argv[2] === 'committed') {
+  const status = readFileSync('/proc/' + process.ppid + '/status', 'utf8');
+  const parentLine = status.split('\\n').find((line) => line.startsWith('PPid:'));
+  if (parentLine === undefined) throw new Error('wrapper pid unavailable');
+  process.kill(Number(parentLine.slice('PPid:'.length).trim()), 'SIGKILL');
+}
 `;
 
 /**
@@ -154,7 +176,7 @@ export async function verifyAutofixRecovery({
   const beforeHead = await resolveFixtureOid({ repository, },);
   await writeFile(
     hookPath,
-    `${KILL_WRAPPER_SOURCE}throw new Error('abort before commit');\n`,
+    `${KILL_OWNER_SOURCE}throw new Error('abort before commit');\n`,
     { mode: EXECUTABLE_MODE, },
   );
   await execute({
@@ -183,8 +205,8 @@ export async function verifyAutofixRecovery({
     context: 'pre-ref interruption index',
   },);
   await resolveSingleTransactionDirectory(repository,);
-  if (!(await pathExists(lockPath,)))
-    throw new Error('pre-ref interruption did not retain recovery artifacts',);
+  if (await pathExists(lockPath,))
+    throw new Error('preparation interruption left a real index lock; preparation must never hold it',);
   await execute({
     command: 'git',
     args: [
@@ -241,12 +263,12 @@ export async function verifyAutofixRecovery({
    */
   const postRefOriginalHead = await resolveFixtureOid({ repository, },);
   /**
-   * Post-commit hook kills wrapper after Git advances ref.
+   * Landing hook kills the wrapper after its compare-and-swap advanced the ref.
    */
-  const postHookPath = `${repository}/.git/hooks/post-commit`;
+  const postHookPath = `${repository}/.git/hooks/${LANDING_HOOK}`;
   await writeFile(
     postHookPath,
-    KILL_WRAPPER_SOURCE,
+    KILL_LANDING_SOURCE,
     { mode: EXECUTABLE_MODE, },
   );
   await execute({
@@ -319,7 +341,7 @@ export async function verifyAutofixRecovery({
     repository,
     lockPath,
     postHookPath,
-    killingHookSource: KILL_WRAPPER_SOURCE,
+    killingHookSource: KILL_LANDING_SOURCE,
     waitForOrphan,
     env,
   },);
@@ -328,7 +350,7 @@ export async function verifyAutofixRecovery({
     repository,
     lockPath,
     postHookPath,
-    killingHookSource: KILL_WRAPPER_SOURCE,
+    killingHookSource: KILL_LANDING_SOURCE,
     waitForOrphan,
     env,
   },);

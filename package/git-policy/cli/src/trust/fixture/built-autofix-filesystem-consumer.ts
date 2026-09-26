@@ -74,7 +74,7 @@ export async function verifyAutofixFilesystemFailure({
   const originalIndex = Buffer.from(await readFile(`${repository}/.git/index`,))
     .toString('base64',);
   /**
-   * Existing Git index lock from another owner must not create recovery state.
+   * Existing Git index lock from another owner outlasts the landing backoff and must not create recovery state.
    */
   const lockPath = `${repository}/.git/index.lock`;
   await writeFile(lockPath, 'other owner',);
@@ -90,8 +90,8 @@ export async function verifyAutofixFilesystemFailure({
     expectedCode: 'transaction-failed',
     context: 'preexisting Git index lock',
   },);
-  if (!locked.stderr.includes('EEXIST'))
-    throw new Error(`expected exclusive index lock failure, received ${locked.stderr}`,);
+  if (!locked.stderr.includes('cli-git left it in place and landed nothing'))
+    throw new Error(`expected busy index lock failure at landing, received ${locked.stderr}`,);
   await assertNoTransactionDirectories({
     repository,
     context: 'failed lock acquisition',

@@ -110,7 +110,7 @@ export async function assertNoTransactionDirectories({
  *
  * @example
  * ```ts
- * transactionFileExpression('post.index');
+ * transactionFileExpression('post-1.index');
  * ```
  */
 export function transactionFileExpression(file: string,): string {

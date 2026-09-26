@@ -153,13 +153,13 @@ export async function verifyUnsafeRecoveryDirectory({
 }
 
 /**
- * Interrupts a commit after Git advanced the ref and before the wrapper recorded it.
+ * Interrupts a landing after its compare-and-swap advanced the ref and before the wrapper recorded it.
  *
  * @param repository - disposable repository
  *
  * @param path - file staged for the interrupted commit
  *
- * @param postHookPath - disposable post-commit hook
+ * @param postHookPath - disposable landing hook
  *
  * @param killingHookSource - wrapper-killing hook prefix
  *
@@ -227,7 +227,7 @@ async function interruptAfterRef({
  *
  * @param lockPath - held real-index lock
  *
- * @param postHookPath - disposable post-commit hook
+ * @param postHookPath - disposable landing hook
  *
  * @param killingHookSource - wrapper-killing hook prefix
  *
@@ -317,12 +317,23 @@ export async function verifyConflictingRecoveryReflog({
    * Transaction directory whose nonce entry is deleted.
    */
   const transactionDirectory = await resolveSingleTransactionDirectory(repository,);
+  /**
+   * Branch the landing advanced; its reflog carries the transaction nonce.
+   */
+  const targetRef = (await execute({
+    command: '/usr/bin/git',
+    args: [
+      'symbolic-ref',
+      'HEAD',
+    ],
+    cwd: repository,
+  },)).stdout.trim();
   await execute({
     command: '/usr/bin/git',
     args: [
       'reflog',
       'delete',
-      'HEAD@{0}',
+      `${targetRef}@{0}`,
     ],
     cwd: repository,
   },);
@@ -341,7 +352,7 @@ export async function verifyConflictingRecoveryReflog({
   },);
   assertIncludes({
     text: conflictedRecovery.stderr,
-    expected: 'HEAD reflog does not identify prepared transaction',
+    expected: 'but its reflog lacks the nonce entry',
     context: 'missing reflog nonce recovery conflict',
   },);
   try {
