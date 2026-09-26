@@ -29,7 +29,7 @@ import {
  Upper bound on watcher waits;
  Linux `fs.watchFile` polls about every 5007 milliseconds.
  */
-const WATCH_TIMEOUT_MILLISECONDS = 8_000;
+const WATCH_TIMEOUT_MILLISECONDS = 25_000;
 
 /**
  Poll interval for bounded condition waits.

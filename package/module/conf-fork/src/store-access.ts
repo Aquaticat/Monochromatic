@@ -88,11 +88,14 @@ export function isStoreContentEqual({
   readonly left: Readonly<Record<string, unknown>>;
   readonly right: Readonly<Record<string, unknown>>;
 },): boolean {
-  return isDeepStrictEqual({
-    ...left,
-  }, {
-    ...right,
-  },);
+  return isDeepStrictEqual(
+    {
+      ...left,
+    },
+    {
+      ...right,
+    },
+  );
 }
 
 /**

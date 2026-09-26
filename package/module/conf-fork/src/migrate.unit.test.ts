@@ -13,6 +13,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+
 import {
   applyMigrations,
   type BeforeEachMigrationContext,
@@ -78,7 +80,7 @@ function captureThrown(call: () => unknown,): unknown {
  ```
  */
 function caughtMessage(error: unknown,): string {
-  return Error.isError(error,) ? error.message : String(error,);
+  return caughtValueText(error,);
 }
 
 /**

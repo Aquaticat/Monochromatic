@@ -16,6 +16,17 @@ import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { debounce, } from '../dist/final/neutral/index.mjs';
 
 /**
+ Timer tolerance for lower-bound wait assertions:
+ a coarse clock may fire `setTimeout` slightly before its nominal wait.
+ 
+ @example
+ ```ts
+ TIMER_TOLERANCE_MS; // 25
+ ```
+ */
+const TIMER_TOLERANCE_MS = 25;
+
+/**
  Quiet period under test,
  short enough to keep the suite fast while leaving event-loop lag far below
  the margins the assertions rely on.
@@ -93,7 +104,7 @@ await describe({
         await wait(SETTLE_MS,);
 
         expect(recorder.runCount(),).toBe(1,);
-        expect((recorder.lastRunAt() - triggeredAt) >= WAIT_MS,).toBe(true,);
+        expect((recorder.lastRunAt() - triggeredAt) >= (WAIT_MS - TIMER_TOLERANCE_MS),).toBe(true,);
       },
     },),
 
@@ -116,7 +127,7 @@ await describe({
         await wait(SETTLE_MS,);
 
         expect(recorder.runCount(),).toBe(1,);
-        expect((recorder.lastRunAt() - lastTriggerAt) >= WAIT_MS,).toBe(true,);
+        expect((recorder.lastRunAt() - lastTriggerAt) >= (WAIT_MS - TIMER_TOLERANCE_MS),).toBe(true,);
       },
     },),
 
