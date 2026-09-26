@@ -170,12 +170,30 @@ See [the source trace](../troubleshooting/pi-input-provenance.md).
 
 ## Active work and next action
 
-Todo #16 is active:
-complete the effect/authorization contract,
-independent axiom fixtures,
-and its code-owned witness/freshness tests in private scratch.
-The source-backed inventory now distinguishes review signals from proved facts
-and honors Q13 B's semantic effect policy.
+Todo #18 is active:
+expand and assess independently labelled development axioms.
+The frozen private repository is `~/temp/agent/auto-mode-axiom-fixtures-2026-09-26`.
+It contains 15 development scenarios and 180 reference fields,
+including three unresolved prohibition references excluded from binary scoring.
+Scenario and oracle files are separate from request construction.
+The original corpus contains legacy verdict metadata;
+only the explicit scenario-state projection is used.
+Declared family and exact-state overlap checks passed with injected-overlap positive controls.
+No reserved family was added to this development batch.
+
+Response and fixture checks passed,
+and removing the committed probability upper-bound guard made its test fail before restoration.
+Scratch commit `18e3d60` records the gateway client before inference.
+Process `proc_2b93` is running the development batch;
+its result has not been inspected at this checkpoint.
+Artifact: `gateway-results-initial.json` in the same private directory.
+
+Todo #16 remains pending for the complete effect/authorization contract
+and its code-owned witness/freshness tests.
+The inventory honors Q13 B.
+Joint permission binding is required even within one grant:
+separate operation and target mentions cannot be combined across clauses.
+Standalone directive prohibitions must also survive alternative permission witnesses.
 
 Next work should address:
 
