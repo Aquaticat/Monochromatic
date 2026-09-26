@@ -4781,8 +4781,12 @@ each read off the pass log and the shipped page:
     sixty-one live (headpiece, Arona and Atri, "someone she had comforted", "became a small box", "deserved a better
     life"); class one hundred sixty-two ("type II diabetes" for II型糖尿病) built (guard `a9562aaba`, fix
     `358a6bdcb`, full suite 1,162 PASS, 0 FAIL); recorded under "## TianqiChen6663 read".
-    TIANQICHEN6664 RUNNING on `.frozen-dist-358a6bdcb` (scope `pass-TianqiChen6664`, pid 2470692):
-    read the diabetes line first.
+    TIANQICHEN6664 READ (`.frozen-dist-358a6bdcb`): TALLY ERROR after three attempts on chunk 9, no page;
+    class one hundred sixty-three (the refused form "inside her head" matched inside the accepted "inside her
+    headpiece") built (guard `bd12b556f`, fix `c75738ea1`, full suite 1,162 PASS, 0 FAIL); recorded under
+    "## TianqiChen6664 read".
+    TIANQICHEN6665 RUNNING on `.frozen-dist-c75738ea1` (scope `pass-TianqiChen6665`, pid 2520043):
+    read the kigurumi slice and the diabetes line first.
     TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built

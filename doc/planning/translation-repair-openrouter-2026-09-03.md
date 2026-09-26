@@ -8082,6 +8082,32 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## TianqiChen6664 read, 2026-09-26: TALLY ERROR, class one hundred sixty-three
+
+TianqiChen6664 ran on `.frozen-dist-358a6bdcb` and ended TALLY ERROR after three attempts
+(about 20 min, 2 min and 2.5 s), with no page.
+Every attempt stopped on chunk 9 (the kigurumi slice) because the absent slice had no candidate:
+the floor refused every rendering the bench wrote for it.
+
+Class one hundred sixty-three:
+the class one hundred sixty refused form `inside her head` is the opening of the accepted rendering
+"inside her headpiece",
+and `refusedFormIn` in `translate-community-term.ts` matched the form with `includes`,
+so a candidate carrying the correct rendering was refused as the misreading.
+Class one hundred sixty-two was working in the lanes before the stop
+(critics flagged "type II", writers wrote "type 2 diabetes"),
+but no page shipped to read it on.
+
+Fixed in `c75738ea1` (guard red first `bd12b556f`):
+`refusedFormIn` scans every occurrence of each refused form with a linear `indexOf` cursor
+and excuses an occurrence where an accepted rendering of the same entry starts inside it and runs past its end.
+A rendering that ends inside the occurrence excuses nothing,
+so "a minor trans girl" stays refused on `minor trans` although "a minor" is a rendering,
+and the prefix refusals that rely on matching inside a longer word (`spiritual bull`, `cohabitant`) still refuse.
+A standalone "inside her head" beside "inside her headpiece" in the same candidate stays refused.
+Lint 0/0, types clean, full suite 1,162 PASS, 0 FAIL (`suite-class163.log`).
+TianqiChen6665 launched on `.frozen-dist-c75738ea1` (scope `pass-TianqiChen6665`, pid 2520043).
+
 ## TianqiChen6663 read, 2026-09-26: classes one hundred sixty and sixty-one live, class one hundred sixty-two
 
 TianqiChen6663 ran on `.frozen-dist-7b87c5a4e` and SETTLED in 39.2 min, one attempt, 24 slices, 1,565 calls,
