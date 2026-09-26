@@ -156,6 +156,27 @@ its absence in the server dump matters.
 Thus this **observed IME source** offers neither a bottom inset nor a
 floating-keyboard bounding rectangle through these framework paths.
 
+A separate real-Gboard check on the disposable `emulator-5580` reproduced
+this geometry with the **retained-browser Search prototype** at 200% text.
+Google's [Pixel Tablet keyboard instructions](https://support.google.com/googlepixeltablet/answer/13555948?hl=en-AU)
+identify the keyboard-over-line toolbar icon as **Floating keyboard**.
+Tapping that icon in the disposable Gboard toolbar switched its visible
+full-width keys to a floating key surface over Search.
+The app's `SearchInsetProbe` then logged `visible=true`,
+`platformBottom=0`, `composeBottom=0`, and `boundingRects=[]`.
+No new IME animation callback appeared in the captured app log for this toggle.
+Privileged `dumpsys window windows`, which is **not an app API**, reported the
+Gboard window's touchable region at `[936,1147][1842,1918]` plus the
+navigation region.
+UI Automator placed the deck's `4:35` duration at
+`[842,1263][965,1341]`, intersecting the floating keys in x `[936,965)`.
+The resulting screenshot visibly obscured the duration's ending and a strip
+of the playback-mode container.
+This is a real-Gboard counterexample to D50 on the disposable AVD,
+not a synthetic height-step result.
+The local screenshot and logs are unsanitized scratch evidence,
+not published review assets.
+
 `WindowInsets.java:413-430` describes `isVisible(Type.ime())` as
 independent of overlap with the app window.
 Its implementation checks a boolean map:
