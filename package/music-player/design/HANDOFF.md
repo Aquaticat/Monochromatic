@@ -5931,3 +5931,58 @@ The source-bounded incident and backup location are in
 `doc/troubleshooting/android-emulator-37-disposable-avd-lock-after-hard-stop.md`.
 Continue native result-overflow checks in this private fixture only;
 keep raw status-bearing captures out of the review artifact.
+
+## Search result-overflow comparison remains design-only
+
+The private prototype adds a long spaced folder name,
+an unbroken track name and eighteen synthetic folder rows under commit
+`c7e0552ee`.
+On the accepted inner A at 100%/200% text,
+both title types wrap on the **right** without replacing the left Folders/Open
+browser or moving the complete bottom-left deck.
+Inner result 18 was reachable at 100% under a 300dp debug keyboard,
+and at 200% in the prior debug-keyboard probe.
+The projected app text bounds remain outside the approximate x `[983,1093)`
+crease;
+this does not measure every glyph-ink edge or set E2's `min_padding`.
+
+On the cover at 200%,
+the current selected layout's list scrolls behind a bottom debug keyboard.
+After the end of a same-APK swipe sequence,
+row 18 remained at `[127,2151][765,2254]` below the y `1693` keyboard top;
+another upward swipe left it there.
+An opt-in **unaccepted** cover comparison routes
+`search-deck-right-lift-retain-overflow-imeviewport-results-light`
+through the same selected cover header and applies `imePadding()` **only** to
+the result viewport.
+Prototype commits `f4a35e817` and `c4cf948e4` produced installed APK SHA-256
+`0801ea3f44ef84163cbddb2b2f37fbddbb1c293148440381f6f899be7eaee7af`.
+Its viewport ended at the debug keyboard top,
+and the last title,
+icon and supporting line became visible after scrolling at 100%/200%.
+With real **docked full-width** Gboard on the cover,
+the same last row was readable above y `1605` at both scales.
+A real key tap edited the query,
+but this synthetic fixture renders matches only for exactly `cam`;
+it is not a ranking or filtering test.
+At 200%,
+closing then reopening the debug keyboard required another list swipe to
+recover the last visible row.
+These are settled-state checks,
+not intermediate animation or arbitrary-keyboard-height findings.
+
+The opt-in marker does not affect the unfolded branch.
+Real floating Gboard on the inner stress fixture also covered some
+**right-side result lettering**;
+D53 accepts the separate deck overlap,
+not this result-label overlap.
+Track the result question independently as #122.
+Do not adopt the cover viewport comparison or change the selected A review
+until that design refinement is explicitly reviewed.
+Details,
+including the same-APK opt-out failure control and private capture boundaries,
+are in `package/music-player/design/evidence/search-result-overflow.md`.
+Proceed with non-exempt IME heights,
+result actions,
+accessibility and E2's open numeric informational floor;
+no production Search work is authorized.
