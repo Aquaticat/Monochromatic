@@ -42,6 +42,10 @@ import {
   reservationTestExports,
 } from './internal-test-exports-reservation.ts';
 import {
+  type TrustTestExports,
+  trustTestExports,
+} from './internal-test-exports-trust.ts';
+import {
   classifyTransactionOwner,
   createTransactionOwnerRecord,
   encodeTransactionOwner,
@@ -92,6 +96,7 @@ export type InternalTestExports =
   & ReadsTestExports
   & ReplayTestExports
   & ReservationTestExports
+  & TrustTestExports
   & Readonly<{
   /**
    Internal `classifyTransactionOwner`.
@@ -203,6 +208,7 @@ export const internalTestExports: InternalTestExports = Object.freeze({
   ...readsTestExports,
   ...replayTestExports,
   ...reservationTestExports,
+  ...trustTestExports,
   classifyTransactionOwner,
   CommitTransactionRecoveryError,
   ConfigValidationError,
