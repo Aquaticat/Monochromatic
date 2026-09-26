@@ -316,7 +316,8 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
     fromTree: intendedTreeOid,
     toTree: prepared.treeOid,
   },);
-  rl.debug(`prepared ${prepared.oid}; hooks changed ${String(hookChanges.paths.length,)} paths`,);
+  rl.debug(`prepared ${prepared.oid}; hooks changed ${String(hookChanges.paths
+    .length,)} paths`,);
   /**
    Worktree completions: selected corrections, then hook changes.
    */
@@ -339,7 +340,7 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
       selectedWorktreePaths: worktreeRecords,
     },
   },);
-  await reachTransactionPhase('preparation-done',);
+  await reachTransactionPhase({ phase: 'preparation-done', },);
   /**
    Settled preparation pass with its fix summary.
    */

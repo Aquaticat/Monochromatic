@@ -85,15 +85,18 @@ export async function startZombie(resolveIdentity: (pid: number) => Promise<stri
   const identity = await resolveIdentity(pid,);
   if ((typeof identity) !== 'string')
     throw new Error(`Zombie stand-in ${String(pid,)} exited before its identity was read.`,);
-  for (let polls = 0; (await processState(pid,)) !== 'Z'; polls += 1) {
+  for (let polls = 0; ; polls += 1) {
+    // oxlint-disable-next-line no-await-in-loop -- Polling observes the state change in order.
+    if ((await processState(pid,)) === 'Z')
+      break;
     if (polls > 500)
       throw new Error(`Process ${String(pid,)} never became a zombie.`,);
-    // oxlint-disable-next-line no-await-in-loop -- Polling observes the state change in order.
+    // oxlint-disable-next-line no-await-in-loop -- Poll delay between state reads.
     await wait(10,);
   }
   return {
     pid,
-    identity: String(identity,),
+    identity,
     async [Symbol.asyncDispose](): Promise<void> {
       /**
        Parent exit.

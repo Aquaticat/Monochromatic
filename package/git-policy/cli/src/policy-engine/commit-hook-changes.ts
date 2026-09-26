@@ -106,7 +106,7 @@ function parseRawChanges(output: string,): readonly RawChange[] {
     field,
     index,
   ): readonly RawChange[] {
-    if ((index % 2) !== 0 || (field === ''))
+    if (((index % 2) !== 0) || (field === ''))
       return [];
     /**
      `:<mode> <mode> <oid> <oid> <status>`.

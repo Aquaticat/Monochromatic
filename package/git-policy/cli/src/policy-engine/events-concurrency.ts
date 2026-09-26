@@ -313,16 +313,15 @@ export function appendEvents({
   events: readonly PolicyEvent[];
   appended: readonly PolicyEvent[];
 }>,): readonly PolicyEvent[] {
-  return [
-    ...events,
-    ...appended.map(function renumber(
-      event,
-      index,
-    ): PolicyEvent {
-      return {
-        ...event,
-        sequence: events.length + index,
-      };
-    },),
-  ];
+  /**
+   Combined events, each appended one numbered after its predecessor.
+   */
+  const combined: PolicyEvent[] = [...events,];
+  for (const event of appended) {
+    combined.push({
+      ...event,
+      sequence: combined.length,
+    },);
+  }
+  return combined;
 }

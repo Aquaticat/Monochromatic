@@ -175,13 +175,16 @@ async function awaitRelease(path: string,): Promise<void> {
 
  @example
  ```ts
- await reachTransactionPhase('ref-updated');
+ await reachTransactionPhase({ phase: 'ref-updated' });
  ```
  */
-export async function reachTransactionPhase(
-  phase: TransactionTestPhase,
-  environment: Readonly<NodeJS.ProcessEnv> = process.env,
-): Promise<void> {
+export async function reachTransactionPhase({
+  phase,
+  environment = process.env,
+}: Readonly<{
+  phase: TransactionTestPhase;
+  environment?: Readonly<NodeJS.ProcessEnv>;
+}>,): Promise<void> {
   /**
    Marker variable.
    */

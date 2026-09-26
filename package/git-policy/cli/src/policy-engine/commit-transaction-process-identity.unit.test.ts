@@ -4,11 +4,13 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import {
+import { internalTestExports, } from '../../dist/final/node/index.mjs';
+import { startZombie, } from '../owner-lock/zombie-fixture.unit.test.ts';
+
+const {
   PROCESS_IDENTITY_ABSENT,
   resolveProcessBirthIdentity,
-} from './commit-transaction-process-identity.ts';
-import { startZombie, } from '../owner-lock/zombie-fixture.unit.test.ts';
+} = internalTestExports;
 
 await describe({
   name: resolveProcessBirthIdentity.name,

@@ -174,7 +174,8 @@ function scanToken({
       ...state,
       valueNext: true,
     };
-  if (token.startsWith('-',) && (!token.startsWith('--',)) && (token.length > 1))
+  if (token.startsWith('-',) && (!token.startsWith('--',))
+    && (token.length > 1))
     return scanCluster({
       state,
       token,

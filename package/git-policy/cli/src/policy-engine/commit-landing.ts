@@ -19,7 +19,6 @@
 
  @module
  */
-import { lstat, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { reproduceConclusionCleanup, } from '../shadow-repository/shadow-conclusion-cleanup.ts';
@@ -55,19 +54,22 @@ import {
 } from './commit-landing-objects.ts';
 import { reachTransactionPhase, } from './commit-transaction-test-phase.ts';
 import { copyIndexFile, } from './index-file-timestamps.ts';
+import {
+  expectedOldTarget,
+  fileIdentity,
+  landingReflogMessage,
+  sameTarget,
+} from './commit-landing-support.ts';
+
+export {
+  landingReflogMessage,
+  landingReflogPrefix,
+} from './commit-landing-support.ts';
 
 /**
  Module logger.
  */
 const l = tagged({ tag: 'cli-git', },);
-
-/**
- Strict Git output decoder.
- */
-const DECODER = new TextDecoder(
-  'utf-8',
-  { fatal: true, },
-);
 
 /**
  Result of one landing attempt.
@@ -154,129 +156,6 @@ export type LandingPayload =
   }>;
 
 /**
- Reports whether two target values are equal.
-
- @param left - first value
-
- @param right - second value
-
- @returns equality
- */
-function sameTarget({
-  left,
-  right,
-}: Readonly<{
-  left: PreparationBase;
-  right: PreparationBase;
-}>,): boolean {
-  if ((left.kind === 'unborn') || (right.kind === 'unborn'))
-    return left.kind === right.kind;
-  return left.oid === right.oid;
-}
-
-/**
- Expected old target value of a payload.
-
- @param payload - landing payload
-
- @param capture - invocation capture
-
- @returns replay parent or preparation base
- */
-function expectedOldTarget({
-  payload,
-  capture,
-}: Readonly<{
-  payload: LandingPayload;
-  capture: InvocationCapture;
-}>,): PreparationBase {
-  return payload.operation === 'commit' ? payload.expectedOld : capture.base;
-}
-
-/**
- Reads a file's device and inode.
-
- @param path - file path
-
- @returns identity
- */
-async function fileIdentity(path: string,): Promise<FileIdentity> {
-  /**
-   Non-followed metadata.
-   */
-  const metadata = await lstat(
-    path,
-    { bigint: true, },
-  );
-  return {
-    device: String(metadata.dev,),
-    inode: String(metadata.ino,),
-  };
-}
-
-/**
- Builds the nonce-bearing reflog message.
-
- @param gitPath - real Git executable
-
- @param cwd - owning worktree directory
-
- @param nonce - transaction ID
-
- @param oid - landed commit
-
- @returns `commit (cli-git <nonce>): <subject>`
-
- @example
- ```ts
- await landingReflogMessage({ gitPath: '/usr/bin/git', cwd: '/repo', nonce, oid });
- ```
- */
-export async function landingReflogMessage({
-  gitPath,
-  cwd,
-  nonce,
-  oid,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-  nonce: string;
-  oid: string;
-}>,): Promise<string> {
-  /**
-   Commit subject.
-   */
-  const subject = DECODER.decode((await runTransactionGit({
-    gitPath,
-    cwd,
-    args: [
-      'show',
-      '--no-patch',
-      '--format=%s',
-      oid,
-    ],
-  },)).stdout,)
-    .trim();
-  return `${landingReflogPrefix(nonce,)} ${subject}`;
-}
-
-/**
- Reflog subject prefix carrying the transaction nonce.
-
- @param nonce - transaction ID
-
- @returns prefix before the subject
-
- @example
- ```ts
- landingReflogPrefix(id); // 'commit (cli-git <id>):'
- ```
- */
-export function landingReflogPrefix(nonce: string,): string {
-  return `commit (cli-git ${nonce}):`;
-}
-
-/**
  Runs one landing attempt.
 
  @param gitPath - real Git executable
@@ -357,7 +236,7 @@ export async function landTransaction({
     attempt,
     timeoutMs: indexLockTimeoutMs,
   },);
-  await reachTransactionPhase('landing-locked',);
+  await reachTransactionPhase({ phase: 'landing-locked', },);
   /**
    Symbolic `HEAD` target now.
    */
@@ -403,7 +282,8 @@ export async function landTransaction({
     return {
       kind: 'head-moved',
       current,
-      replayable: (payload.operation === 'commit') && (capture.conclusion === 'none') && (current.kind === 'commit'),
+      replayable: (payload.operation === 'commit') && (capture.conclusion === 'none')
+        && (current.kind === 'commit'),
     };
   }
   /**
@@ -419,7 +299,7 @@ export async function landTransaction({
       keepMessage: transactionKeepMessage(workspace.transactionId,),
     },)
     : undefined;
-  await reachTransactionPhase('objects-migrated',);
+  await reachTransactionPhase({ phase: 'objects-migrated', },);
   /**
    Exact pre-landing real index snapshot.
    */
@@ -533,7 +413,7 @@ export async function landTransaction({
         landedOid: payload.newOid,
       },
     },);
-    await reachTransactionPhase('ref-updated',);
+    await reachTransactionPhase({ phase: 'ref-updated', },);
     await removePackKeep({
       objectDirectory: capture.objectDirectory,
       packName: packName ?? '',
@@ -541,7 +421,7 @@ export async function landTransaction({
   }
   await indexLock.installIndex(postIndexPath,);
   await writeIndexInstalledMarker(workspace.directory,);
-  await reachTransactionPhase('index-installed',);
+  await reachTransactionPhase({ phase: 'index-installed', },);
   if (payload.operation === 'commit')
     await reproduceConclusionCleanup({
       gitPath,

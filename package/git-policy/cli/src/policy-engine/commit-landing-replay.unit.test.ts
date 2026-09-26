@@ -111,7 +111,9 @@ await describe({
         expect(finding,).toMatchObject({ paths: ['f.txt',], winningOid: winner, },);
         expect(await git({ repository, args: ['rev-parse', 'HEAD',], },),).toBe(winner,);
         expect(Buffer.compare(indexBefore, gitBytes({ repository, args: ['ls-files', '--stage',], },),),).toBe(0,);
-        expect(await readText(join(repository.path, 'f.txt',),),).toBe(numberedLines({ 1: 'mine', },),);
+        expect(
+          await readText(join(repository.path, 'f.txt',),),
+        ).toBe(numberedLines({ 1: 'mine', },),);
         expect(await leftovers(repository,),).toEqual([],);
         /** Prepared commit named by the finding. */
         const prepared = String(finding.preparedOid,);

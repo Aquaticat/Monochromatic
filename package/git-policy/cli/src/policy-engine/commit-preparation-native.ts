@@ -113,9 +113,17 @@ export class NativeCommitFailedError extends Error {
    Creates a preparation failure.
 
    @param exitCode - native Git exit code
+
+   @param message - explanation, the preparation failure when absent
    */
-  public constructor(exitCode: number,) {
-    super(`git commit exited ${String(exitCode,)} during private preparation; nothing landed.`,);
+  public constructor({
+    exitCode,
+    message = `git commit exited ${String(exitCode,)} during private preparation; nothing landed.`,
+  }: Readonly<{
+    exitCode: number;
+    message?: string;
+  }>,) {
+    super(message,);
     this.name = 'NativeCommitFailedError';
     this.exitCode = exitCode;
   }
@@ -358,7 +366,7 @@ export async function runNativePreparation({
   },);
   if (result.exitCode !== 0) {
     rl.debug(`native preparation exited ${String(result.exitCode,)}`,);
-    throw new NativeCommitFailedError(result.exitCode,);
+    throw new NativeCommitFailedError({ exitCode: result.exitCode, },);
   }
 }
 

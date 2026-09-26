@@ -235,7 +235,7 @@ async function loadPrivateIndexCandidates({
   indexPath: string;
   paths: readonly string[];
   baseRevision: string;
-  objectDirectory: string | undefined;
+  objectDirectory?: string;
 }>,): Promise<readonly CandidateFile[]> {
   /**
    Independent staged and baseline reads for complete path set.
@@ -336,7 +336,7 @@ export function createPrivateIndexFacts({
         indexPath,
         paths,
         baseRevision,
-        objectDirectory,
+        ...(objectDirectory === undefined ? {} : { objectDirectory, }),
       },);
     },
     trackedFiles: function trackedFiles({ pathspecs, },): Promise<readonly TrackedFile[]> {

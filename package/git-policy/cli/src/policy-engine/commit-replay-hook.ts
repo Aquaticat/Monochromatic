@@ -39,8 +39,10 @@ export class ReplayedPreCommitRejectedError extends NativeCommitFailedError {
    @param hookExit - hook's exit status
    */
   public constructor(hookExit: number,) {
-    super(HOOK_REJECTION_EXIT,);
-    this.message = `pre-commit exited ${String(hookExit,)} when re-run against the commit replayed onto the moved branch; nothing landed.`;
+    super({
+      exitCode: HOOK_REJECTION_EXIT,
+      message: `pre-commit exited ${String(hookExit,)} when re-run against the commit replayed onto the moved branch; nothing landed.`,
+    },);
     this.name = 'ReplayedPreCommitRejectedError';
   }
 }
