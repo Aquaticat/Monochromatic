@@ -6093,3 +6093,22 @@ D57 does not accept their absence or inaccessibility.
 No additional IME testing was performed.
 D53's deck allowance and D55's folded-cover allowance remain distinct;
 D57 does not generalize to other floating placements or ordinary keyboards.
+
+The separate E2 opposing-information floor question is at
+`package/music-player/design/questions/crease-floor-review.html`.
+It uses an existing sanitized selected-A native image and a clearly labeled
+cross-state **projected node-box gap** of 167px (approximately 11.35mm),
+not a measured painted nearest-pair distance.
+The three policy choices are P0 (no independent floor beyond crease width),
+P10 (10mm total opposing-information minimum,
+recommended),
+and P12 (12mm).
+At the approximate 7.5mm physical dent,
+P10 requires 2.5mm additional **combined** exterior clearance and P12
+requires 4.5mm;
+neither imposes equal side margins.
+The bars are threshold illustrations,
+not native candidate layouts or proof that selected A passes a chosen floor.
+The preference is pending;
+record the user's answer before replacing E2's unresolved `min_padding`.
+No new IME or device test was performed.

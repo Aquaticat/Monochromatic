@@ -110,3 +110,10 @@ this before-state reading alone does not establish which minimum fits.
 Long result names,
 other screen states and the preference for a future minimum clearance
 remain separate review work.
+The self-contained policy question at
+`package/music-player/design/questions/crease-floor-review.html` compares
+P0 (crease-only),
+P10 (10mm) and P12 (12mm) as **total** opposing-information floors.
+Its proportional bars are analytical threshold illustrations,
+not new native layout variants or a claim that any floor passes this screen.
+The user's selection is pending.
