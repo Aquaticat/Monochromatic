@@ -528,6 +528,18 @@ a coding-plan fallback,
 or a new full timeout after the retry begins.
 Transport failure classification and downstream gateway retry behavior still need source and boundary verification.
 
+## Accepted TypeSafe AUP scope
+
+The user explicitly stated that TypeSafe AUP section 1.5 is acceptable.
+Do not keep that section as an unresolved blocker for this guard-classification evaluation
+or require provider clarification solely about it.
+This acceptance does not authorize executing hostile fixture commands,
+uploading private histories,
+training on Jev outputs,
+or implementing the production migration.
+It does not settle retention or retry limits.
+No special provider exception or contractual amendment has been established.
+
 ## Next design dependencies
 
 Audit the preferred hosted route's data handling,
