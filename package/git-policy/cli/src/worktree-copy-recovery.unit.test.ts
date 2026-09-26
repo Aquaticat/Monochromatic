@@ -9,6 +9,7 @@
  */
 import {
   mkdir,
+  readdir,
   readFile,
   rm,
   writeFile,
@@ -124,6 +125,43 @@ await describe({
         expect(await journalNames(repositoryRoot,),).toEqual([],);
         expect(await stageNames(destinationRoot,),).toEqual([],);
         expect(await readFile(join(destinationRoot, 'state.txt',), 'utf8',),).toBe('tracked old\n',);
+      },
+    },),
+
+    it({
+      name: 'a failed installation removes the directories it created before failing',
+      fn: async function testRollbackDirectories(): Promise<void> {
+        await using fixture = await createTempDirectory();
+        /** Linked source worktree. */
+        const repositoryRoot = join(fixture.path, 'repository',);
+        /** Destination whose hook makes a later parent unwritable. */
+        const destinationRoot = join(fixture.path, 'rollback-topic',);
+        await initializeRepository(repositoryRoot,);
+        await mkdir(join(repositoryRoot, 'zzz',),);
+        await writeFile(join(repositoryRoot, 'zzz', 'tracked.txt',), 'tracked\n',);
+        await writeFile(join(repositoryRoot, '.gitignore',), 'cache/\nzzz/sub/\n',);
+        await commitPaths({ repositoryRoot, message: 'track zzz and ignore state', paths: ['.gitignore', 'zzz/tracked.txt',], },);
+        await mkdir(join(repositoryRoot, 'cache', 'nested',), { recursive: true, },);
+        await writeFile(join(repositoryRoot, 'cache', 'nested', 'file.txt',), 'cached\n',);
+        await mkdir(join(repositoryRoot, 'zzz', 'sub',),);
+        await writeFile(join(repositoryRoot, 'zzz', 'sub', 'data.txt',), 'data\n',);
+        /** Shared hooks directory. */
+        const hooks = join(await resolveFixtureCommonDir(repositoryRoot,), 'hooks',);
+        await mkdir(hooks, { recursive: true, },);
+        await writeNodeProgram({
+          path: join(hooks, 'post-checkout',),
+          source: 'require("node:fs").chmodSync("zzz", 0o555);',
+        },);
+
+        /** Creation whose installation fails at the unwritable parent. */
+        const failure = requireFailure(await captureWrapper({ cwd: repositoryRoot, args: ['worktree', 'add', '-b', 'rollback-topic', destinationRoot,], },),);
+
+        expect(failure.exitCode,).toBe(2,);
+        expect(failure.stderr,).toContain('ignored-state installation failed',);
+        expect(failure.stderr,).not.toContain('Rollback retained',);
+        expect(await readdir(destinationRoot,),).not.toContain('cache',);
+        expect(await journalNames(repositoryRoot,),).toEqual([],);
+        expect(await stageNames(destinationRoot,),).toEqual([],);
       },
     },),
 

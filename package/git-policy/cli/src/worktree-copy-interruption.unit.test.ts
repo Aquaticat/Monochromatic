@@ -285,6 +285,27 @@ await describe({
     },),
 
     it({
+      name: 'an unfinished trailing install-log append is cut off before recovery appends to the log',
+      fn: async function testTruncatedAppend(): Promise<void> {
+        await using fixture = await createTempDirectory();
+        /** Source and destination. */
+        const { repositoryRoot, destinationRoot, } = await sourceAndDestination({ fixturePath: fixture.path, branch: 'cut-topic', },);
+        /** Interrupted transaction. */
+        const transaction = await writeInterruptedInstallation({ repositoryRoot, destinationRoot, recordCreated: false, },);
+        /** Install log whose complete line claims a path the stage lacks, so recovery stops after opening it. */
+        const logPath = join(transaction.stageContainer, INSTALL_LOG_NAME,);
+        await writeFile(logPath, '{"intended":["cache","absent"]}\n{"created":[{"dev', { mode: 0o600, },);
+
+        /** Recovery that fails closed after opening the log. */
+        const failure = requireFailure(await captureWrapper({ cwd: repositoryRoot, args: ['status', '--short',], },),);
+
+        expect(failure.stderr,).toContain('journal intent is absent from private stage',);
+        expect(await readFile(logPath, 'utf8',),).toBe('{"intended":["cache","absent"]}\n',);
+        expect(await readFile(transaction.journalPath, 'utf8',),).toContain('cut-topic',);
+      },
+    },),
+
+    it({
       name: 'discards an interrupted transaction whose private stage was removed',
       fn: async function testMissingStage(): Promise<void> {
         await using fixture = await createTempDirectory();
