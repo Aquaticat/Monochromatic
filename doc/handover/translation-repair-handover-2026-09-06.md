@@ -4777,7 +4777,13 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  AIYYSK4 READ (2026-09-26, `.frozen-dist-8f2b07c37`): SETTLED at 16:01 UTC in 44.9 min, 2.66 USD;
+1.  XU_YUSHU1 READ (2026-09-26, `.frozen-dist-8f2b07c37`): INCOMPLETE in 3.3 min at the pictures phase;
+    only GLM-5.3-Flash read the handwritten `composition.webp` and no second reader agreed
+    (Synthetic and Hyper dry, Qwen with no provider, Kimi withheld); rerun when Synthetic is wet.
+    The padded-reading log fixed (`141598127`, guard `a6ce93330`); recorded under "## Xu_Yushu1 read".
+    TIANQICHEN6662 RUNNING on `.frozen-dist-141598127` (entry TianqiChen666, scope `pass-TianqiChen6662`,
+    pid 2004144); TianqiChen6661 killed for the fix. Read it for calques and the structural checks.
+    AIYYSK4 READ (2026-09-26, `.frozen-dist-8f2b07c37`): SETTLED at 16:01 UTC in 44.9 min, 2.66 USD;
     classes one hundred fifty-seven to fifty-nine live ("used her own life as leverage", "spent time with an MTF person",
     "my surroundings", "prototype"), every aiyysk2 check held, no class; the extra time is Synthetic's latency and
     Mercury's upstream rate limits; recorded under "## aiyysk4 read". Next: another never-run entry on the newest build.

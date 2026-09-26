@@ -8082,6 +8082,27 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Xu_Yushu1 read, 2026-09-26: INCOMPLETE at the pictures phase, the padded-reading log fixed
+
+Xu_Yushu1 ran on `.frozen-dist-8f2b07c37` and stopped INCOMPLETE in 3.3 min (199,440 ms),
+"visual evidence incomplete for 1 referenced assets": `composition.webp`, a handwritten essay.
+The seat line read Synthetic and Hyper dry, `readers=5`, Kimi-K3 withheld
+(OpenRouter withholding of 2026-09-03), and Qwen3.8-27B failed outright with no provider,
+since the owner's no-bleed directive of 2026-09-09 keeps it off OpenRouter.
+GLM-5.3-Flash read the essay (1,216 characters).
+minimax-m3 (1,149 characters), gemma-4-26b (370, after one refusal) and google.gemma-4-31b returned garbage;
+no two of four readings agreed, the closest GLM-5.3-Flash and minimax-m3 at overlap 0.206.
+The stop is the bench's reach while Synthetic is dry, not a code defect,
+and corroboration stays as it is: one model's reading is not evidence.
+
+One logging defect: gemma-4-31b's reply was 27 characters followed by about 2,700 ideographic spaces.
+The sense verdict judged the trimmed 28 characters, but the stage logged "2753 characters"
+and handed the padded text on.
+The usable branch of `readImageAsset` now logs and returns the trimmed reading, as the short branch did
+(guard red first `a6ce93330`, fix `141598127`).
+TianqiChen6661, launched on `.frozen-dist-8f2b07c37`, was killed a few minutes in under always-kill-and-relaunch;
+TianqiChen6662 runs on `.frozen-dist-141598127`.
+
 ## aiyysk4 read, 2026-09-26: classes one hundred fifty-eight and fifty-nine live
 
 aiyysk4 ran on `.frozen-dist-8f2b07c37` and SETTLED at 16:01 UTC in 44.9 min, one attempt, 79 slices,
