@@ -534,10 +534,13 @@ For semantic grant matching,
 keep operation,
 resource,
 destination,
-and conditions tied to the same grant identifier.
-Do not combine the operation from one grant with the resource from another.
-Code may combine fully satisfied grants as alternatives;
-missing evidence on an authorization path cannot be invented by the model.
+and conditions tied to the same permission relation within the grant.
+A shared grant identifier alone does not prevent combining dimensions from different clauses.
+Use explicit human-confirmed scope identities for structured grants
+and a qualified narrow joint text-relation estimate for legacy prose.
+Do not combine an operation from one scope with a resource from another.
+Code may combine fully satisfied witnesses as alternatives;
+missing binding or restriction evidence cannot be invented by the model.
 
 Distinguish a proposed attempt on a feasible execution path from guaranteed runtime success.
 A protected transfer conditional on a successful file read is still relevant before execution.

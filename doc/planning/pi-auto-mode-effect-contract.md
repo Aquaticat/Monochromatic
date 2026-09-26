@@ -262,11 +262,30 @@ or condition matches that already accepted grant.
 A model cannot manufacture authority from plausible wording.
 
 For each possible authorization witness,
-keep all required scope dimensions tied to the same grant identity.
-Do not combine a permitted operation from one grant with a permitted resource from another.
-Fully satisfied independent grants can be alternative witnesses.
-The model should not answer whether it has found enough authorization overall;
-code evaluates the witness predicates.
+keep all required scope dimensions tied to the same permission relation,
+not merely the same parent grant identity.
+A grant saying `read package.json and overwrite README.md`
+does not state permission to overwrite `package.json`.
+Operation and filename mentions can both be present without being linked that way.
+An independent contract review confirmed this cross-clause counterexample.
+
+Human-confirmed structured grants supply explicit scope identities.
+For qualified legacy prose,
+use a narrow joint text-relation estimate about the named operation/resource/destination tuple,
+not an AND of unrelated mentions.
+This estimates what the directive states,
+not whether the proposed action should be allowed overall.
+Any applicable exclusion and required condition must remain attached to that same permission relation.
+Unknown binding or unresolved restrictions cannot support automatic approval on that witness.
+
+Do not combine dimensions from different grants or different scopes inside one grant.
+Fully satisfied independent witnesses can be alternatives.
+Code owns the actual grant provenance,
+condition evaluation,
+precedence,
+thresholds,
+and final result.
+No model-generated clause text or newly invented scope ID is required.
 
 New grants retain original wording and present explicit scope before human confirmation,
 as selected in Q9a.
