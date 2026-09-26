@@ -4783,7 +4783,7 @@ each read off the pass log and the shipped page:
     `comparativePolishPolicy` keeps line structure only where the line rule governs and otherwise tells the gate
     line breaks inside a paragraph are the page's own wrap; the gate subject carries `lineStructured`.
     Guard `7d5d3fe75`, fix `1dd8ebc52`; XingZ6014 launched 10:38 UTC on `.frozen-dist-1dd8ebc52`
-    (pid 1441286, scope `pass-XingZ6014`); full suite running to `suite-class152.log`.
+    (pid 1441286, scope `pass-XingZ6014`); full suite 1,152 PASS, 0 FAIL (`suite-class152.log`).
     YINGYING12 READ: SETTLED at 10:35 UTC in 10.4 min on `.frozen-dist-0de47d546`, every yingying11 check held;
     recorded under "## yingying12 read" in the pass log.
     Next: read XingZ6014 (the gate ballots on prose slices naming no line structure), then a shi_Yumiaoya run for 逆子.
