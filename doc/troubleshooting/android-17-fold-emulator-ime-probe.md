@@ -342,8 +342,8 @@ the source says the system may ignore it when the request cannot be met.
 `ViewRootImpl`,
 and `ViewRootImpl.java:6687-6709` reports changed areas to Window Manager.
 This path does **not** by itself promise movement of Gboard's internal keys.
-The **Android 17 AOSP release branch**, rather than a source-identical
-mapping to this Google system image,
+The **Android 17 AOSP release branch**,
+rather than a source-identical mapping to this Google system image,
 provides one concrete downstream consumer trace.
 Its
 [DisplayContent.java][aosp-display-content] `:6468-6503`
