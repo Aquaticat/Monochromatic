@@ -15,6 +15,15 @@ A subsequent command launcher reported `spawn /bin/bash EAGAIN`,
 and a boot watcher reported `/etc/profile: fork: Resource temporarily unavailable`.
 These were host process-creation failures,
 not evidence that floating Gboard or a Compose layout caused the exit.
+The original `Pixel_9_Pro_Fold` AVD's separate host-emulator process also
+ended on `SIGSEGV` on 2026-09-26 after boot.
+Its own stdout ended with `Thread: failed to create a thread, errno 11`
+and `crashhandler_die: fatal: qemu: qemu_thread_create: Resource temporarily unavailable`.
+Earlier lines included `bad color buffer handle` and
+`adb protocol fault (couldn't read status length)`;
+no captured task-count peak ties those messages or the original process's
+exit to the disposable crash's cause.
+The original AVD's data was not reconfigured or removed.
 The user authorized raising the host process limits permanently.
 The separate SwiftShader boot crash in
 [android-emulator-37-software-renderer-sigsegv.md](android-emulator-37-software-renderer-sigsegv.md)
