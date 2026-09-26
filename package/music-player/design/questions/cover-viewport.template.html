@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search A · folded-cover results viewport review</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --color-page: #f4f5f9;
+  --color-panel: #ffffff;
+  --color-raised: #e5e8f2;
+  --color-ink: #242733;
+  --color-muted: #4d5261;
+  --color-edge: #666c7c;
+  --color-accent: #344d86;
+  --color-chassis: #17191f;
+  --color-backdrop: rgb(0 0 0 / 80%);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-page: #0c0e13;
+    --color-panel: #191d26;
+    --color-raised: #2b3040;
+    --color-ink: #f2f3f8;
+    --color-muted: #c4c9d5;
+    --color-edge: #a1a8b8;
+    --color-accent: #b7caff;
+    --color-chassis: #08090c;
+    --color-backdrop: rgb(0 0 0 / 86%);
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin-inline: 0;
+  margin-block: 0;
+  background-color: var(--color-page);
+  color: var(--color-ink);
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+main { max-inline-size: 82rem; margin-inline: auto; padding-inline: clamp(1rem, 3vw, 2.5rem); padding-block: 1rem 4rem; }
+h1 { font-size: clamp(1.8rem, 3vw, 2.6rem); line-height: 1.2; }
+h2 { margin-block: 0.5rem; }
+p { max-inline-size: 85ch; }
+.intro, .choice, .finding {
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.8rem;
+  background-color: var(--color-panel);
+  padding-inline: 1rem;
+  padding-block: 0.7rem;
+}
+.muted { color: var(--color-muted); }
+.gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 28rem), 1fr)); gap: 1.2rem; margin-block: 1rem; }
+.choice { min-inline-size: 0; }
+.choice[data-recommended='true'] { border-width: 0.15rem; border-color: var(--color-accent); }
+.choice img { display: block; inline-size: min(100%, 17rem); block-size: auto; }
+.choice ul { padding-inline-start: 1.5rem; }
+.choice li { margin-block: 0.3rem; }
+button, textarea { font: inherit; color: var(--color-ink); background-color: var(--color-panel); }
+button {
+  min-inline-size: 3rem;
+  min-block-size: 3rem;
+  padding-inline: 0.8rem;
+  padding-block: 0.3rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.6rem;
+  cursor: pointer;
+}
+button:hover { background-color: var(--color-raised); }
+button:focus-visible, input:focus-visible, textarea:focus-visible, .stage:focus-visible {
+  outline: 0.1875rem solid var(--color-accent);
+  outline-offset: 0.1875rem;
+}
+fieldset { border-width: 0; padding-inline: 0; padding-block: 0; margin-inline: 0; margin-block: 0.8rem; }
+label { display: block; padding-block: 0.45rem; }
+textarea {
+  display: block;
+  inline-size: min(100%, 50rem);
+  min-block-size: 7rem;
+  padding-inline: 0.7rem;
+  padding-block: 0.5rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.4rem;
+}
+output { display: block; white-space: pre-wrap; }
+dialog {
+  inline-size: min(98vw, 39rem);
+  max-inline-size: none;
+  max-block-size: 97vh;
+  padding-inline: 0;
+  padding-block: 0;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.8rem;
+  background-color: var(--color-panel);
+  color: var(--color-ink);
+}
+dialog::backdrop { background-color: var(--color-backdrop); }
+.dialog-bar { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; padding-inline: 0.7rem; padding-block: 0.6rem; }
+.dialog-bar h2 { flex-basis: 100%; }
+.stage { overflow: auto; block-size: min(72vh, 69rem); padding-inline: 0.7rem; padding-block: 0.7rem; background-color: var(--color-raised); }
+.device {
+  --scale: 1;
+  position: relative;
+  inline-size: calc(31.4rem * var(--scale));
+  block-size: calc(65.825rem * var(--scale));
+  margin-inline: auto;
+  border-width: 0.125rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: calc(2.7rem * var(--scale));
+  background-color: var(--color-chassis);
+}
+.screen {
+  position: absolute;
+  inset-inline-start: calc(1.81875rem * var(--scale));
+  inset-block-start: calc(1.81875rem * var(--scale));
+  inline-size: calc(27.69230625rem * var(--scale));
+  block-size: calc(62.15384375rem * var(--scale));
+  overflow: hidden;
+  border-radius: calc(1.88625rem * var(--scale));
+  background-color: var(--color-chassis);
+}
+.screen img { display: block; inline-size: 100%; block-size: 100%; }
+.hinge {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 15%;
+  inline-size: calc(0.35rem * var(--scale));
+  block-size: 70%;
+  border-radius: 0.25rem;
+  background-color: var(--color-edge);
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <p class="muted">Music player · design-only refinement of selected Search A · Pixel 9 Pro Fold cover</p>
+  <h1>Make the last Search match scroll above a docked keyboard?</h1>
+  <div class="intro">
+    <p><strong>What changed:</strong> Only the folded cover's scrolling results viewport is tested with keyboard-aware bottom space. The integrated Back/query/Clear header and positive results directly beneath it stay the same. The unfolded right-side Search, actual upper-left folder browser and bottom-left playback deck do not change. Neither comparison is accepted as a new design or production work.</p>
+    <p>Inspect the last row and its supporting text at the end of a 200% text-scale result list. Both captures use the same installed debug APK, synthetic long-title fixture, 300dp debug keyboard and 1080 × 2424 physical-pixel cover. The dark keyboard is <strong>not Gboard</strong>; these images do not prove every real keyboard height, transition frame, result action or accessibility traversal.</p>
+  </div>
+</header>
+<section aria-labelledby="comparison-title">
+  <h2 id="comparison-title">Same-fixture end-of-list comparison</h2>
+  <div class="gallery">
+    <article class="choice" data-option="refinement" data-recommended="true">
+      <h2>R · Fit results above the keyboard (Recommended)</h2>
+      <img id="refinement-image" src="__REFINEMENT_IMAGE__" alt="Folded cover Search with the last Camellia archive result and its supporting line visible above the dark debug keyboard" width="1080" height="2424">
+      <button type="button" data-preview="refinement">Inspect R at device size</button>
+      <h3>Pros</h3>
+      <ul><li>Row 18 and its supporting line are readable after scrolling while this bottom keyboard is open.</li><li>The query remains fixed and editable; no repeated positive-results heading appears.</li></ul>
+      <h3>Cons</h3>
+      <ul><li>Fewer rows fit at once; after hiding and refocusing the keyboard, another swipe may be needed.</li><li>Only measured settled states are validated, not arbitrary keyboards or animation frames.</li></ul>
+      <p><strong>My read:</strong> Recommend for this cover-only overflow behavior, subject to your acceptance. It preserves the selected composition while letting the list reach its end.</p>
+    </article>
+    <article class="choice" data-option="control">
+      <h2>C · Keep the current cover viewport</h2>
+      <img id="control-image" src="__CONTROL_IMAGE__" alt="Same folded cover fixture and keyboard, with the final three Camellia archive rows behind the keyboard after scrolling to the list end" width="1080" height="2424">
+      <button type="button" data-preview="control">Inspect C at device size</button>
+      <h3>Pros</h3>
+      <ul><li>No additional keyboard-aware viewport behavior or reflow is introduced.</li><li>The closed-keyboard list retains its current layout.</li></ul>
+      <h3>Cons</h3>
+      <ul><li>Rows 16 to 18 remain unreachable above this open bottom keyboard even after another swipe.</li><li>The user must dismiss the keyboard to see those matches, unlike the measured floating-keyboard exception D55.</li></ul>
+      <p><strong>My read:</strong> Fallback if keeping the current behavior matters more than accessing every match while typing.</p>
+    </article>
+  </div>
+  <p class="finding"><strong>Ranking:</strong> R &gt; C because reaching the end of a scrollable result list with the ordinary bottom keyboard open matters more here than avoiding a cover-only viewport adjustment. Both are debug-only study variants. This preference does not resolve the separate inner floating-Gboard result-label overlap.</p>
+</section>
+<section aria-labelledby="answer-title">
+  <h2 id="answer-title">Decision: folded-cover result viewport only</h2>
+  <p>Do you accept R's keyboard-aware cover result viewport, keep C's present behavior, or prefer another treatment? This question does not reopen selected A, D53 to D55, or the unfinished inner-panel keyboard and accessibility decisions.</p>
+  <form id="answer-form">
+    <fieldset><legend>Choose one direction, if ready</legend>
+      <label><input type="radio" name="coverViewport" value="Accept R"> Accept R, the cover-only keyboard-aware results viewport</label>
+      <label><input type="radio" name="coverViewport" value="Keep C"> Keep C, dismiss the bottom keyboard to reach the last rows</label>
+      <label><input type="radio" name="coverViewport" value="Other"> Another treatment or not ready to choose</label>
+    </fieldset>
+    <label for="other">Anything else you want settled or changed?</label>
+    <textarea id="other" name="other" placeholder="Describe a correction or alternative here. Nothing is sent automatically."></textarea>
+  </form>
+  <p><strong>Response path:</strong> Reply in this chat with “Accept R”, “Keep C”, or your alternative. The form only prepares text; it does not submit a decision.</p>
+  <output id="prepared" form="answer-form" aria-live="polite">Select a direction or write a correction, then reply in chat.</output>
+</section>
+</main>
+<dialog id="preview" aria-labelledby="preview-title">
+  <div class="dialog-bar">
+    <h2 id="preview-title">Folded cover at the list end</h2>
+    <button id="fit" type="button">Fit</button>
+    <button id="reset" type="button">Reset 100%</button>
+    <button id="zoom-out" type="button">Zoom out</button>
+    <button id="zoom-in" type="button">Zoom in</button>
+    <button id="close" type="button">Close</button>
+    <p id="scale-label" class="muted" aria-live="polite"></p>
+  </div>
+  <div class="stage" id="stage" role="region" tabindex="0" aria-label="Scrollable folded-cover device mock at physical source resolution">
+    <div class="device" id="device"><div class="screen"><img id="preview-image" width="1080" height="2424" alt="Folded cover result viewport comparison"></div><span class="hinge" aria-hidden="true"></span></div>
+  </div>
+</dialog>
+<script>
+const pictures = { refinement: document.querySelector('#refinement-image'), control: document.querySelector('#control-image') };
+const dialog = document.querySelector('#preview');
+const device = document.querySelector('#device');
+const stage = document.querySelector('#stage');
+const previewImage = document.querySelector('#preview-image');
+const scaleLabel = document.querySelector('#scale-label');
+let scale = 1;
+let returnTarget;
+function renderScale() {
+  device.style.setProperty('--scale', String(scale));
+  scaleLabel.textContent = `Source 1080 × 2424 physical px · approximately 443 × 994dp at the measured 390dpi · ${Math.round(scale * 100)}% of design dp · reset returns to 100%`;
+}
+document.querySelectorAll('[data-preview]').forEach(button => {
+  button.addEventListener('click', async () => {
+    returnTarget = button;
+    const variant = button.dataset.preview;
+    previewImage.src = pictures[variant].src;
+    previewImage.alt = pictures[variant].alt;
+    document.querySelector('#preview-title').textContent = variant === 'refinement' ? 'R · keyboard-aware viewport' : 'C · current viewport';
+    await previewImage.decode();
+    scale = 1;
+    renderScale();
+    dialog.showModal();
+    stage.scrollTop = 0;
+    stage.scrollLeft = 0;
+    document.querySelector('#close').focus();
+  });
+});
+document.querySelector('#fit').addEventListener('click', () => {
+  scale = Math.min(1, (stage.clientWidth - 32) / 502.4, (stage.clientHeight - 32) / 1053.2);
+  renderScale();
+});
+document.querySelector('#reset').addEventListener('click', () => { scale = 1; renderScale(); });
+document.querySelector('#zoom-out').addEventListener('click', () => { scale = Math.max(0.25, scale - 0.25); renderScale(); });
+document.querySelector('#zoom-in').addEventListener('click', () => { scale = Math.min(2, scale + 0.25); renderScale(); });
+document.querySelector('#close').addEventListener('click', () => dialog.close());
+dialog.addEventListener('close', () => returnTarget?.focus());
+const form = document.querySelector('#answer-form');
+function prepareAnswer() {
+  const selected = form.querySelector('input[name="coverViewport"]:checked');
+  const correction = document.querySelector('#other').value.trim();
+  document.querySelector('#prepared').textContent = [selected?.value, correction].filter(Boolean).join(': ') || 'Select a direction or write a correction, then reply in chat.';
+}
+form.addEventListener('input', prepareAnswer);
+</script>
+</body>
+</html>
