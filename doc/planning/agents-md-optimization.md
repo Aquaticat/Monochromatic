@@ -258,6 +258,16 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
 - HON and VR2 redraft:
    user required that they cannot be read as conflicting;
    the reading-ambiguity clause moves wholly from HON into VR2.
+   Approved.
+- Batch 12 (simplification and linting):
+   15 rules become 9 always-loaded,
+   980 to 578 tokens;
+   deletes lint-enforced IMM,
+   LN4 (`no-for-in` message names the fix),
+   LN8 (`denyWarnings: true`);
+   merges LN5 into LN3;
+   MXL widens to Rust;
+   MXR and RDC move to `package/rust-linter-plugin/builtin/README.md` with codes kept (219 to 180 tokens).
    Proposed,
    awaiting user review.
 - Retired-code references:
@@ -455,15 +465,13 @@ RBK:
  package-specific ones stay beside code.
 ```
 
-### Batch 2 (PX2 and PXQ redrafted self-contained)
+### Batch 2
 
 ```md
 HON:
  Honest;
  research,
  don't deflect.
-One clear reading -> act;
- several -> confirm.
 Unpublished package change = design change,
  not compat break.
 
@@ -953,7 +961,6 @@ WXG:
  then classify the effective source before lock analysis.
 ```
 
-
 ### Batch 9
 
 ```md
@@ -1105,7 +1112,7 @@ WC2:
  commit output as-is.
 ```
 
-### Batch 11 (VR2 pending redraft)
+### Batch 11
 
 ```md
 VRB:
@@ -1141,9 +1148,13 @@ AUT:
  never expanding scope or acting on adjacent undecided choices.
 
 VR2:
- Ambiguous request verb:
- take the narrower reading;
- propose the broader action explicitly.
+ Request with one clear reading:
+ act.
+Readings differing in what to do:
+ confirm first.
+Readings differing only in how far to go:
+ do the narrower,
+ propose the broader explicitly.
 
 ANN:
  Put changes where they belong immediately (other file,
