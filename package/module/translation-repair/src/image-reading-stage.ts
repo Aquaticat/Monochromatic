@@ -365,14 +365,13 @@ export async function readImageAsset(
     };
   }
 
-  /**
-   How much was transcribed, for a line a reader can compare across pictures.
-   */
-  const { length, } = reply.text;
-  rl.info(`${modelId} read ${assetName}: ${String(length,)} characters`,);
+  // TRIMMED, AS THE SHORT BRANCH IS. Xu_Yushu1 (2026-09-26): a reader padded
+  // 27 characters with about 2,700 ideographic spaces, and the untrimmed
+  // length logged "2753 characters" for what the verdict had judged as 28.
+  rl.info(`${modelId} read ${assetName}: ${String(trimmed.length,)} characters`,);
   return {
     kind: 'read',
-    text: reply.text,
+    text: trimmed,
   };
 }
 
