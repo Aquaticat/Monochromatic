@@ -176,6 +176,23 @@ await describe({
       },
     },),
     it({
+      name: 'recovers an unlanded transaction whose lock was already removed',
+      fn: async function testLockAlreadyRemoved(): Promise<void> {
+        await using repository = await createRecoveryRepository();
+        await stageFile({ repository: repository.path, name: 'unlocked.txt', content: 'unlocked\n', },);
+        /** Prepared transaction whose lock someone removed after the crash. */
+        const unlocked = await openTransaction(repository.path,);
+        await journalTransaction({ repository: repository.path, workspace: unlocked, },);
+        await abandonTransaction(unlocked,);
+        await rm(repository.lockPath,);
+        await reassignOwner({ directory: unlocked.directory, owner: await exitedProcessIdentity(), createdAt: CREATED[0], },);
+
+        expect(await recoverActions(repository.path,),).toEqual(['commit-not-created',],);
+        expect(await registryEntries(repository.registryRoot,),).toEqual([],);
+        expect(await exists(repository.lockPath,),).toBe(false,);
+      },
+    },),
+    it({
       name: 'treats an owner PID that now names another process as dead',
       fn: async function testReusedPid(): Promise<void> {
         await using repository = await createRecoveryRepository();

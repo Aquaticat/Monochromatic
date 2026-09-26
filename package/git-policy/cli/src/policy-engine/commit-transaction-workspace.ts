@@ -278,19 +278,13 @@ export async function createCommitTransactionWorkspace({
     },
   };
   /**
-   Published directory this invocation can remove while still holding its lock.
-   */
-  const published: string[] = [];
-  /**
-   Releases only setup artifacts owned by this invocation on any pre-return failure.
+   Releases the owned lock on any failure before the directory is published;
+   publication is the last fallible step, so a published directory always reaches the returned workspace.
    */
   await using setup = {
     [Symbol.asyncDispose]: async function disposeFailedSetup(): Promise<void> {
       if (ready.size > 0)
         return;
-      await Promise.all(published.map(function removePublished(directory,): Promise<void> {
-        return removeTransactionDirectory(directory,);
-      },),);
       try {
         /**
          Current lock metadata, never followed across a replaced path.
@@ -349,7 +343,6 @@ export async function createCommitTransactionWorkspace({
     transactionId,
     ownerBytes: encodeTransactionOwner(owner,),
   },);
-  published.push(directory,);
   /**
    Installation marker populated only after atomic replacement.
    */
