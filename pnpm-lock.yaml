@@ -141,6 +141,9 @@ catalogs:
     ajv-formats:
       specifier: '>=3.0.1'
       version: 3.0.1
+    atomically:
+      specifier: '>=2.0.3'
+      version: 2.1.1
     browserslist:
       specifier: '>=4.28.8'
       version: 4.29.0
@@ -162,6 +165,9 @@ catalogs:
     csstype:
       specifier: '>=3.2.3'
       version: 3.2.3
+    debounce-fn:
+      specifier: '>=6.0.0'
+      version: 6.0.0
     decircular:
       specifier: '>=1.0.0'
       version: 1.0.0
@@ -174,6 +180,9 @@ catalogs:
     electron:
       specifier: '>=43.4.1'
       version: 44.4.3
+    env-paths:
+      specifier: '>=3.0.0'
+      version: 3.0.0
     execa:
       specifier: '>=10.0.1'
       version: 10.0.1
@@ -318,6 +327,9 @@ catalogs:
     typescript:
       specifier: '>=7.0.2'
       version: 7.0.2
+    uint8array-extras:
+      specifier: '>=1.5.0'
+      version: 1.5.0
     unbash:
       specifier: '>=4.0.10'
       version: 4.0.11
@@ -2423,6 +2435,54 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
+  package/module/conf-fork.fuzz:
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-conf-fork':
+        specifier: workspace:*
+        version: link:../conf-fork
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.2
+      ajv:
+        specifier: 'catalog:'
+        version: 8.20.0
+      ajv-formats:
+        specifier: 'catalog:'
+        version: 3.0.1(ajv@8.20.0)
+      atomically:
+        specifier: 'catalog:'
+        version: 2.1.1
+      debounce-fn:
+        specifier: 'catalog:'
+        version: 6.0.0
+      dot-prop:
+        specifier: 'catalog:'
+        version: 10.2.0
+      env-paths:
+        specifier: 'catalog:'
+        version: 3.0.0
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
+      json-schema-typed:
+        specifier: 'catalog:'
+        version: 8.0.2
+      semver:
+        specifier: '>=7.8.5'
+        version: 7.8.5
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      uint8array-extras:
+        specifier: 'catalog:'
+        version: 1.5.0
+
   package/module/const:
     devDependencies:
       '@monochromatic-dev/config-rolldown':
@@ -2934,6 +2994,24 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
+  package/module/make-asynchronous-fork:
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
   package/module/matcher-fork:
     devDependencies:
       '@monochromatic-dev/config-rolldown':
@@ -3180,6 +3258,9 @@ importers:
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
         version: link:../caught-value
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
       '@monochromatic-dev/module-or-throw':
         specifier: workspace:*
         version: link:../or-throw
@@ -3276,6 +3357,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../caught-value
       '@monochromatic-dev/module-pify-fork':
         specifier: workspace:*
         version: link:../pify-fork
@@ -6598,6 +6682,9 @@ packages:
     resolution: {integrity: sha512-LElXdjswlqjWrPpJFg1Fx4wpkOCxj1TDHlSV4PlaRxHGWko024xICaa97ZkMfs6DRKlCguiAI+rbXv5GWwXIkg==, tarball: https://registry.npmjs.org/astring/-/astring-1.9.0.tgz}
     hasBin: true
 
+  atomically@2.1.1:
+    resolution: {integrity: sha512-P4w9o2dqARji6P7MHprklbfiArZAWvo07yW7qs3pdljb3BWr12FIB7W+p0zJiuiVsUpRO0iZn1kFFcpPegg0tQ==, tarball: https://registry.npmjs.org/atomically/-/atomically-2.1.1.tgz}
+
   bail@2.0.2:
     resolution: {integrity: sha512-0xO6mYd7JB2YesxDKplafRpsiOzPt9V02ddPCLbY1xYGPOX24NTyN50qnUxgCPcSoYMhKpAuBTjQoRZCAkUDRw==, tarball: https://registry.npmjs.org/bail/-/bail-2.0.2.tgz}
 
@@ -6750,6 +6837,10 @@ packages:
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==, tarball: https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz}
+
+  debounce-fn@6.0.0:
+    resolution: {integrity: sha512-rBMW+F2TXryBwB54Q0d8drNEI+TfoS9JpNTAoVpukbWEhjXQq4rySFYLaqXMFXwdv61Zb2OHtj5bviSoimqxRQ==, tarball: https://registry.npmjs.org/debounce-fn/-/debounce-fn-6.0.0.tgz}
+    engines: {node: '>=18'}
 
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==, tarball: https://registry.npmjs.org/debug/-/debug-4.4.3.tgz}
@@ -8004,6 +8095,12 @@ packages:
   strnum@2.4.2:
     resolution: {integrity: sha512-rDG3Ah4TV0k1hWvLSzkZtMmLN9+eS+h3knq4MP6A42Y3Yh5qGNnOUs1jJkoSr8FG5dsL28c7KgkIBzSEykqtuw==, tarball: https://registry.npmjs.org/strnum/-/strnum-2.4.2.tgz}
 
+  stubborn-fs@2.0.0:
+    resolution: {integrity: sha512-Y0AvSwDw8y+nlSNFXMm2g6L51rBGdAQT20J3YSOqxC53Lo3bjWRtr2BKcfYoAf352WYpsZSTURrA0tqhfgudPA==, tarball: https://registry.npmjs.org/stubborn-fs/-/stubborn-fs-2.0.0.tgz}
+
+  stubborn-utils@1.0.2:
+    resolution: {integrity: sha512-zOh9jPYI+xrNOyisSelgym4tolKTJCQd5GBhK0+0xJvcYDcwlOoxF/rnFKQ2KRZknXSG9jWAp66fwP6AxN9STg==, tarball: https://registry.npmjs.org/stubborn-utils/-/stubborn-utils-1.0.2.tgz}
+
   style-to-js@1.1.21:
     resolution: {integrity: sha512-RjQetxJrrUJLQPHbLku6U/ocGtzyjbJMP9lCNK7Ag0CNh690nSH8woqWH9u16nMjYBAok+i7JO1NP2pOy8IsPQ==, tarball: https://registry.npmjs.org/style-to-js/-/style-to-js-1.1.21.tgz}
 
@@ -8124,6 +8221,10 @@ packages:
     engines: {node: '>=16.20.0'}
     hasBin: true
 
+  uint8array-extras@1.5.0:
+    resolution: {integrity: sha512-rvKSBiC5zqCCiDZ9kAOszZcDvdAHwwIKJG33Ykj43OKcWsnmcBRL09YTU4nOeHZ8Y2a7l1MgTd08SBe9A8Qj6A==, tarball: https://registry.npmjs.org/uint8array-extras/-/uint8array-extras-1.5.0.tgz}
+    engines: {node: '>=18'}
+
   unbash@4.0.11:
     resolution: {integrity: sha512-FoSOKV7NEofQSkAefMVHam4ZPKYMxjAydxiV72UFEDNV/YofxjGfiZ2A9pZjdL/lRJzTjcu4PABo1JYJX8N5iQ==, tarball: https://registry.npmjs.org/unbash/-/unbash-4.0.11.tgz}
     engines: {node: '>=14'}
@@ -8221,6 +8322,9 @@ packages:
 
   web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==, tarball: https://registry.npmjs.org/web-namespaces/-/web-namespaces-2.0.1.tgz}
+
+  when-exit@2.1.5:
+    resolution: {integrity: sha512-VGkKJ564kzt6Ms1dbgPP/yuIoQCrsFAnRbptpC5wOEsDaNsbCB2bnfnaA8i/vRs5tjUSEOtIuvl9/MyVsvQZCg==, tarball: https://registry.npmjs.org/when-exit/-/when-exit-2.1.5.tgz}
 
   which-command@0.1.0:
     resolution: {integrity: sha512-XZyoF5/5hZtXitIwzrU4NKK+Wtbb9aB9CezUEw2Q0wlYK8NUYQxC1rRXgNueYLtBAJwXIb+/tFVk4dozciNJMA==, tarball: https://registry.npmjs.org/which-command/-/which-command-0.1.0.tgz}
@@ -9791,6 +9895,11 @@ snapshots:
 
   astring@1.9.0: {}
 
+  atomically@2.1.1:
+    dependencies:
+      stubborn-fs: 2.0.0
+      when-exit: 2.1.5
+
   bail@2.0.2: {}
 
   balanced-match@4.0.4: {}
@@ -9915,6 +10024,10 @@ snapshots:
   cssesc@3.0.0: {}
 
   csstype@3.2.3: {}
+
+  debounce-fn@6.0.0:
+    dependencies:
+      mimic-function: 5.0.1
 
   debug@4.4.3(supports-color@10.2.2):
     dependencies:
@@ -11527,6 +11640,12 @@ snapshots:
     dependencies:
       anynum: 1.0.1
 
+  stubborn-fs@2.0.0:
+    dependencies:
+      stubborn-utils: 1.0.2
+
+  stubborn-utils@1.0.2: {}
+
   style-to-js@1.1.21:
     dependencies:
       style-to-object: 1.0.14
@@ -11692,6 +11811,8 @@ snapshots:
       '@typescript/typescript-win32-arm64': 7.0.2
       '@typescript/typescript-win32-x64': 7.0.2
 
+  uint8array-extras@1.5.0: {}
+
   unbash@4.0.11: {}
 
   undici-types@7.18.2: {}
@@ -11800,6 +11921,8 @@ snapshots:
   wawoff2@2.0.1: {}
 
   web-namespaces@2.0.1: {}
+
+  when-exit@2.1.5: {}
 
   which-command@0.1.0: {}
 
