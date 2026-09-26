@@ -8082,6 +8082,36 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## TianqiChen6669 read, 2026-09-26: INCOMPLETE on a run-off tie, class one hundred seventy-four
+
+TianqiChen6669 ran on `.frozen-dist-fce655de0` and stopped INCOMPLETE after 1,458 s (24.3 min),
+Bedrock and OpenRouter alone with Synthetic and Hyper dry,
+at the consolidation of slice 4 (`slate-declined-standing`); no page and no artifact.
+
+The glossary refusals of classes one hundred sixty-one, sixty-two, sixty-four, sixty-seven and seventy-two fired live
+("she has healed", "type ii diabetes", "made her met with", "added a lot", and "she’s a" three times);
+classes one hundred seventy, seventy-one and seventy-three were not reached on a page.
+
+Class one hundred seventy-four:
+the class one hundred seventy-two floor refused the archive's "So, she’s a girl of incredible perseverance",
+so the consolidation standing on slice 4 was ineligible;
+the contest had split 2 repair to 2 translate over "on" against "with" for 在最虚弱的身体上;
+the slate of three valid renderings tied 1.5 to 1.5
+("bore the greatest pressure on her frailest body" against "with the frailest body"),
+the run-off over those two tied 1.5 to 1.5 again,
+and a run-off of two has nothing left to narrow, so the entry stopped over two valid sentences.
+Fixed in `8db508b0a` (guard red first `8666d2480`):
+`settleAbsentDecline` in `translate-runoff-tie.ts`, called from `judgeTranslateSlate` wherever the slice has no incumbent,
+ships one candidate when a challenge round ties across every candidate it asked about,
+the repair lane's text first, then the translate lane's, then slate order,
+with the finding `translate-runoff-tie-broken (<basis>)`;
+a partial tie still narrows, and a slice with an incumbent keeps it.
+Recorded as the tenth addendum of `doc/decision/translation-repair-ineligible-standing.md`.
+
+The class fifty-three guard that expected a repeated tie to raise now expects the slate-order ship (`7390294ff`).
+Lint 0/0, types clean, full suite 1,166 PASS, 0 FAIL (`suite-class174b.log`).
+TianqiChen66610 launched on `.frozen-dist-7390294ff` (scope `pass-TianqiChen66610`, pid 877799).
+
 ## TianqiChen6668 read, 2026-09-26: class one hundred sixty-eight live, classes one hundred seventy to seventy-three
 
 TianqiChen6668 ran on `.frozen-dist-5f7fa6742` and SETTLED in 2,005 s (33.4 min), one attempt,

@@ -4803,10 +4803,17 @@ each read off the pass log and the shipped page:
     seventy-two (three wording slips seeded in `GRAMMAR_GLOSSARY`; guard `91d3fd5d3`, fix `2151fbbc8`) and
     seventy-three (a quoted title restored to the archive's italics, `restoreArchiveItalicTitles`; guard
     `cdb756270`, fix `fce655de0`) built, suite 1,166 PASS, 0 FAIL; recorded under "## TianqiChen6668 read".
-    TIANQICHEN6669 RUNNING on `.frozen-dist-fce655de0` (scope `pass-TianqiChen6669`, pid 704034):
-    read "there will be hope", "when I leave" and "So she was a girl" on all four lines (170 to 172) and the
-    italic Anohana title with an `archive-italic-title-restored` finding or no quotes (173) first, then
-    classes 160 to 169 holding.
+    TIANQICHEN6669 READ (`.frozen-dist-fce655de0`): INCOMPLETE in 24.3 min at the consolidation of slice 4
+    (`slate-declined-standing`): the class one hundred seventy-two floor made the archive ineligible and two
+    valid renderings tied 1.5 to 1.5 in the slate and again in the run-off of two, which cannot narrow (class
+    one hundred seventy-four); built as `settleAbsentDecline` in `translate-runoff-tie.ts` (guard `8666d2480`,
+    fix `8db508b0a`, class fifty-three test updated `7390294ff`), shipping by repair lane, then translate lane,
+    then slate order; tenth ineligible-standing addendum; suite 1,166 PASS, 0 FAIL; recorded under
+    "## TianqiChen6669 read".
+    TIANQICHEN66610 RUNNING on `.frozen-dist-7390294ff` (scope `pass-TianqiChen66610`, pid 877799):
+    read slice 4 first (any `translate-runoff-tie-broken` finding and what shipped), then "there will be
+    hope", "when I leave" and "So she was a girl" on all four lines (170 to 172), the italic Anohana title
+    (173), then classes 160 to 169 holding; TianqiChen6669 left no page, so compare against TianqiChen6668's.
     TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built
