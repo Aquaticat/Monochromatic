@@ -16,6 +16,7 @@ import { restoreListSpread, } from './list-spread-restore.ts';
 import { restoreNameGlossLines, } from './name-gloss-restore.ts';
 import { shippableReplacements, } from './publish-fixed.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
+import { unifyQuoteStyle, } from './quote-style-unify.ts';
 import { unifyTitleReferences, } from './title-reference-unify.ts';
 import type { WouldShipSource, } from './would-ship-text.ts';
 
@@ -194,6 +195,15 @@ export function guardPageAssembly(
     archiveOriginalSpans,
   },);
   /**
+   Every slice's prose quote marks in the page's majority style (class one
+   hundred forty-two).
+   */
+  const quotes = unifyQuoteStyle({
+    slices,
+    replacements: pinyinTones.replacements,
+    archiveOriginalSpans,
+  },);
+  /**
    Rows the page-assembly passes rewrote, the latest pass's text per slice.
    */
   const restoredRows = new Map<number, SliceReplacement>([
@@ -209,6 +219,7 @@ export function guardPageAssembly(
     ...nameCasing.restored,
     ...canadian.restored,
     ...pinyinTones.restored,
+    ...quotes.restored,
   ].map(function bySlice(row,): readonly [
     number,
     SliceReplacement,
@@ -224,7 +235,7 @@ export function guardPageAssembly(
   const guarded = guardFootnoteAssembly({
     targetText,
     slices,
-    replacements: pinyinTones.replacements
+    replacements: quotes.replacements
       .filter(function stillChanges(replacement,): boolean {
         // A restoration that brings a slice back to the archive's exact wording
         // is no change for the assembler; its override row below still says
@@ -271,6 +282,7 @@ export function guardPageAssembly(
       ...nameCasing.findings,
       ...canadian.findings,
       ...pinyinTones.findings,
+      ...quotes.findings,
       ...guarded.findings,
     ],
   };
