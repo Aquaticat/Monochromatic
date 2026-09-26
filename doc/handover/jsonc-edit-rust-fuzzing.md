@@ -255,9 +255,48 @@ while a deleted element must leave the parent with exactly one fewer element.
 The artifact panicked before the rebuild and replays clean after it,
 which is the positive control that the rebuilt binary is the one under test.
 
-Campaign 5 is the clean full round:
-150 seconds per target over all four,
-recorded below when it finishes.
+## Campaign 5, the clean full round
+
+150 seconds per target,
+same 2 GiB and 2 CPU bounds,
+no crash artifacts written by any target:
+
+- `fuzz_parse_emit_roundtrip`:
+   13184 runs,
+   clean.
+   The low count against campaign 4 is the merged corpus being replayed and minimized first,
+   not a slowdown in the target.
+- `fuzz_reject_and_recover`:
+   160114 runs,
+   clean.
+- `fuzz_depth_envelope`:
+   625656 runs at 4143 exec/s,
+   clean.
+- `fuzz_edit_invariants`:
+   452889 runs,
+   clean.
+
+## Mutation testing
+
+`cargo mutants` 0.x over the crate,
+test files excluded (`-E '_tests\.rs$'`),
+found 489 mutants.
+The first round caught 379 and missed 24.
+Most survivors were real gaps rather than equivalent mutants,
+and each now has a test naming the expected message or layout:
+canonical indentation per nesting level,
+trailing placement of a single-line comment,
+a block comment at offset zero and at end of input,
+a lone star or slash inside a block body,
+a space inside a string,
+a lone slash where a separator belongs,
+and the six shape-mismatch refusals across lookup,
+set and delete.
+Two survivors look genuinely equivalent and are candidates for `.cargo/mutants.toml` with proofs:
+`src/number.rs:213` turning the pre-loop `cursor += 1` into `*= 1`,
+which the following digit loop absorbs with the same final cursor,
+and `src/scan.rs:185` widening `offset + 1 < len` to `<=` or `-`,
+whose extra iteration finds no close delimiter and ends in the same unterminated refusal.
 
 ## Related records
 
