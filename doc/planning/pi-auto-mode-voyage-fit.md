@@ -92,8 +92,9 @@ Every document contains a complete current policy snapshot and public synthetic 
 `truncation` is explicitly false.
 Reference truth remains local and is not included as an expected answer in the request.
 
-A full-policy retrieval control first checks that the method can distinguish explicit package-reading evidence
+A retrieval control with policy present first checks whether the method can distinguish explicit package-reading evidence
 from an unrelated recipe field.
+It does not test whether the model attends to or internally preserves the policy.
 The subsequent frozen development contrasts concern:
 
 - Protected-file read attempts:
@@ -121,4 +122,41 @@ A failed control or uninformative contrast would not prove every Voyage model or
 
 This work is conditional feature feasibility,
 not equal-format model-quality comparison with native Jev Noul outputs.
+Each request receives a separate five-second experimental budget.
+This does not establish the production requirement of all needed axioms for one action within five seconds.
+Scores from different queries are not assumed comparable.
+The ordinary-package/transfer comparison also changes request and transfer context;
+only the quote pair isolates quoting.
+Grant cases assume valid synthetic human authority;
+they do not test origin,
+revocation,
+or standalone prohibitions.
+
+Offline response and request-construction checks passed.
+Removing the committed repeated-index guard made the test fail with
+`Missing expected exception (RerankResponseError)`.
+The guard was restored before any live feature request.
 No raw-feature result has been inspected yet.
+
+## Source and classification counterevidence
+
+The official organization repository enumeration located `voyage-ai/openapi`.
+The attempted `voyage-ai/voyage-openapi` name returned a GitHub GraphQL resolution error
+and a REST 404;
+that failed name is not evidence of absent source.
+The correct source was cloned read-only to
+`~/temp/agent/voyage-openapi-source-2026-09-26`,
+revision `d638a2a8d9d535a850e7b0d664e49e65934f3bde`.
+Its `voyage-openapi.yml:542-580` describes indexed relevance scores and token usage.
+Its model roster predates the current live documentation;
+it does not establish `rerank-3` limits.
+
+The official [voyage-large-2-instruct repository](https://github.com/voyage-ai/voyage-large-2-instruct)
+explicitly describes an embedding model optimized for classification,
+clustering,
+and retrieval.
+It recommends prepending classification instructions with `input_type: None`.
+This is relevant evidence for downstream classification with embeddings,
+not evidence that the embedding API returns arbitrary-claim truth probabilities.
+A composed classifier remains a possible design requiring separate training authorization and qualification,
+not an evaluated substitute or a selected addition.
