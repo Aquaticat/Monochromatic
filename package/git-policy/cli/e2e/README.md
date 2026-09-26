@@ -448,10 +448,11 @@ Seeds 1,
 2,
 and 3,
 2026-09-26,
-packed from `feat/cli-git-concurrent-commits` at `d647d4786`
-(after merging the worktree-copy stall fix,
+packed from `feat/cli-git-concurrent-commits` at `b2b20ac74`
+(after merging the worktree-copy stall fix and automatic maintenance after landing,
 waiting for live trust provenance transactions,
-and failing fast without replay plumbing),
+failing fast without replay plumbing,
+and lowering the `landing.reserveAfterLostRaces` default to 1),
 114 scenario runs per seed:
 38 scenarios on each of Git 2.39.5,
 2.40.0,
