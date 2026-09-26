@@ -309,5 +309,47 @@ await describe({
         expect(unified.restored,).toEqual([],);
       },
     },),
+    it({
+      // CLASS ONE HUNDRED FORTY-SIX (XingZ6013, 2026-09-26). The second song
+      // credit rendered its title in pinyin inside a slice whose summary
+      // quotes a line, so the quote search found two spans, neither the
+      // heading's, and stood aside; the credit line the original writes in
+      // its own tag was one line of the page.
+      name: 'READS the credit on the page\'s line opening with the same tag where the slice quotes elsewhere too',
+      fn: async () => {
+        /**
+         Pass over a slice whose summary quotes the cat and whose tagged
+         credit renders the title afresh.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            ...SLICES.slice(
+              0,
+              3,
+            ),
+            pair({
+              sliceIndex: 3,
+              source: '<summary>「猫说晚安」</summary>\n\n<p style="text-align: end;">—— 雨猫【梦】《零重猫愿》</p>',
+              target: '',
+            },),
+          ],
+          replacements: [
+            ...HEADINGS,
+            {
+              sliceIndex: 3,
+              replacementText: '<summary>“The cat said goodnight”</summary>\n\n'
+                + '<p style="text-align: end;">—— Yumao 【Dream】 “Ling Chong Mao Yuan”</p>',
+            },
+          ],
+        },);
+        expect(unified.replacements.map(function textOf(row,): string {
+          return row.replacementText;
+        },)[2],).toBe(
+          '<summary>“The cat said goodnight”</summary>\n\n'
+            + '<p style="text-align: end;">—— Yumao 【Dream】 “Zero-Layer Cat Prayer”</p>',
+        );
+        expect(unified.findings.join('\n',),).not.toContain('title-reference-ambiguous',);
+      },
+    },),
   ],
 },);
