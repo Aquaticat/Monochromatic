@@ -223,6 +223,11 @@ Git source at commit `0f8e75abebff` plus experiments with real Git 2.55.0.
   `env` (name).
   Precedent: Nx task `inputs`,
   broad when absent.
+- No opt-out:
+  no config key and no environment variable disables concurrent commits.
+  Owner rationale:
+  a misbehaving wrapper is a bug to fix,
+  not a reason to disable parts of it.
 - Config keys: `indexLock: { unprovenOwnerTimeoutMs: 1000 }`
   and `landing: { reserveAfterLostRaces: 2 }`.
 - Forwarded index writers
@@ -349,7 +354,8 @@ the owner declined an `AGENTS.md` rule.
 
 ## Open questions
 
-- Opt-out switch for concurrent commits.
+None.
+Awaiting owner confirmation of shared understanding.
 
 ## Next action
 
