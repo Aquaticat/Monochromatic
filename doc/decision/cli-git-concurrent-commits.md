@@ -43,7 +43,8 @@ not a reason to disable parts of it.
   The design session chose a private ref under `refs/cli-git/`;
   the implementation replaced it with a per-transaction shadow repository whose own object store holds the pending commit,
   so no `refs/cli-git/` ref exists
-  (see "Private `HEAD` shape: shadow repository with alternates").
+  (see "Private `HEAD` shape:
+   shadow repository with alternates").
   The shadow repository stays unregistered.
 - Hooks run through a dispatcher shim passed with `-c core.hooksPath=<shim>`
   plus `-c hook.<event>.enabled=false` for each event.

@@ -23,7 +23,8 @@ and "Final behavior versus this plan" lists every place where the implementation
 
 Line references use `path:line` relative to `package/git-policy/cli/`
 and point at the first line of the named declaration at `d322d083e`;
-the "Owners today" sections describe that revision, not the implemented code.
+the "Owners today" sections describe that revision,
+ not the implemented code.
 
 ## Final behavior versus this plan
 
@@ -40,7 +41,8 @@ the `SPEC.md` heading holds the rules.
   New objects stay in the shadow store until landing migrates them into the real store as a pack kept with a `.keep` file,
   and no `refs/cli-git/` ref is ever created.
   `SPEC.md` "Private preparation" and "Object migration";
-  the decision's "Private `HEAD` shape: shadow repository with alternates" records the prototype.
+  the decision's "Private `HEAD` shape:
+   shadow repository with alternates" records the prototype.
 - Recovery of a dead owner without a landing record removes its `.keep` files,
   its reservation,
   the shadow repository,
@@ -525,7 +527,8 @@ whose `HEAD` names a private copy of the target branch
 and whose `objects/info/alternates` names the real object store;
 no `refs/cli-git/` ref exists
 (`SPEC.md` "Private preparation";
-decision "Private `HEAD` shape: shadow repository with alternates").
+decision "Private `HEAD` shape:
+ shadow repository with alternates").
 The rejected options follow as planned.
 
 #### Option B: symbolic `HEAD` to the pending ref
