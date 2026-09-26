@@ -486,20 +486,31 @@ and unverified integration paths.
 It is a proposal,
 not a frozen production rule set.
 
-### Positive admission, not absence of listed hazards
+### Qualified semantic effects, not a code-proof-only approval gate
 
 The prototype catalog names one file,
 one destination,
 and one cache directory.
-An all-false vector means those specific effects are absent;
-it does not mean an arbitrary command is safe.
-Production approval requires a code-established,
-versioned supported action domain and coverage of its relevant effects.
-Unknown executable bodies,
-unknown target resolution,
-or effects outside that admitted domain require review.
-Do not replace this boundary with another broad model question such as whether all hazards have been covered.
-Retain the incumbent's deterministic proofs where available.
+An all-false vector means only that those specific effects were estimated absent;
+it does not establish safety for arbitrary commands.
+The user selected Q13 B:
+within validated inspected script forms,
+code may compose qualified narrow effect estimates and authorization matches into automatic approval
+without separate code-established effect analysis.
+
+The stricter code-admitted-operation-family requirement was an unaccepted prototype assumption
+and is not the first-deployment requirement.
+Code still owns profile applicability,
+required evidence,
+rules,
+thresholds,
+and final actions.
+Missing executable content,
+unqualified inputs,
+and missing evidence required by the selected rule require review.
+Do not add a broad model question asking whether the action is safe or whether all hazards were covered.
+Retain incumbent deterministic checks and proofs where available.
+Qualification must evaluate both missed effects and gaps in the effect catalog.
 
 ### Stable scope and witnesses
 
@@ -663,6 +674,23 @@ input,
 security,
 and final design checks without reopening this settled preference.
 
+### Q13: Qualified semantic effect estimates may support approval
+
+The user selected B for first deployment.
+For inspected script forms covered by validation,
+model-estimated effects may participate in automatic approval without separate code-established effect analysis.
+Code composes those estimates with authorization and policy.
+This accepts dependence on effect detection and catalog coverage in exchange for broader automatic handling.
+It does not authorize arbitrary unqualified scripts,
+missing required context,
+stale results,
+fixed-block overrides,
+or model-generated final verdicts.
+
+The rejected alternative required code to admit an operation family and establish its effect scope before approval.
+Do not silently retain that stricter prerequisite under another name.
+The current fixture-only prototype and its test results do not establish the qualification required by B.
+
 ## Accepted TypeSafe AUP scope
 
 The user explicitly stated that TypeSafe AUP section 1.5 is acceptable.
@@ -685,7 +713,8 @@ Do not re-ask the accepted AUP,
 retention,
 or client retry-scope choices.
 Measure and test deadline accounting across the entire assessment and permitted retry.
-Complete the admitted effect inventory and independent per-axiom evaluation.
+Complete the qualified-form effect inventory and independent per-axiom evaluation,
+including semantic effect-detection errors and catalog omissions under Q13 B.
 Keep prototype thresholds unqualified and production migration blocked.
 Model selection,
 calibration cutoffs,
