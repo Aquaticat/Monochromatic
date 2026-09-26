@@ -158,6 +158,57 @@ and exits only once the remote contains its OID.
 - Missing optional Git features degrade per feature;
   missing replay plumbing falls back to today's fail-fast behavior.
 
+## Container end-to-end verification
+
+Owner requirement,
+2026-09-25:
+container end-to-end tests with freshly created dummy repositories replaying realistic workloads.
+Unit and packed shadow-bin fixtures alone are not sufficient.
+
+- The suite follows the `test:built:trust` precedent:
+  a mise task packs the npm tarball
+  and runs a consumer script inside `podman`
+  with stated memory and CPU bounds.
+- The image provides every Git version under test:
+  the declared minimum and the current release.
+  Distribution images that ship an older Git do not qualify.
+- Each run creates new repositories and a local bare remote inside the container,
+  never touching host repositories.
+- Workloads come from two sources:
+  commit-shape traces mined from this repository's own history
+  (files per commit,
+  path overlap,
+  sizes,
+  additions,
+  deletions,
+  renames,
+  binary files)
+  with synthesized content,
+  and a scenario catalog of concurrent agent behavior:
+  shared-file edits with overlapping and non-overlapping hunks,
+  interleaved index writers,
+  hookdir and config-based hooks,
+  lint-staged-style stash hooks,
+  `commit-msg` and `post-commit` hooks,
+  SSH signing,
+  amend attempts,
+  branch switches,
+  foreign `index.lock` holders,
+  `gc --prune=now` during preparation,
+  and `SIGKILL` injected at every transaction phase followed by recovery.
+- Runs are seeded;
+  a failing seed replays deterministically.
+- Every run checks invariants:
+  each commit that exited `0` appears exactly once with exactly its captured bytes;
+  no worktree edit is lost;
+  the real index never stages a revert of landed content;
+  the remote contains every landed OID;
+  no `refs/cli-git/` ref,
+  transaction directory,
+  or lock remains;
+  `git fsck` is clean;
+  exit codes match the JSONL events.
+
 ## Rejected
 
 - A lock queue around today's unchanged transaction.
