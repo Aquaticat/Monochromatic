@@ -67,7 +67,9 @@ const FILE_BYTES = 300;
 const foreignLock: ScenarioDefinition = {
   name: 'foreign-index-lock-holder',
   group: 'concurrency',
-  summary: 'real Git by absolute path runs commit --all with a waiting editor (holding index.lock) while 3 agents commit',
+  summary: 'real Git by absolute path with core.lockfilePid=true runs commit --all with a waiting editor (holding index.lock) while 3 agents commit',
+  // `core.lockfilePid` arrived in Git 2.54.0 (Documentation/RelNotes/2.54.0.adoc); older Git leaves no owner evidence.
+  minimumGit: '2.54.0',
   repository(random,) {
     return repositoryOptions({ seedFiles: seedTexts({
       random,
@@ -97,6 +99,7 @@ const foreignLock: ScenarioDefinition = {
       ...context,
       label: 'foreign',
       paths: ['foreign.txt',],
+      lockfilePid: true,
     },);
     /**
      Whether the editor started, so the lock is held.

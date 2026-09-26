@@ -9,6 +9,7 @@ import { BASELINE_AMEND_SCENARIOS, } from './scenario-baseline-amend-fixture.ts'
 import { BASELINE_COMMIT_SCENARIOS, } from './scenario-baseline-commit-fixture.ts';
 import { BASELINE_HOOK_SCENARIOS, } from './scenario-baseline-hook-fixture.ts';
 import { CONCURRENT_PATH_SCENARIOS, } from './scenario-concurrent-paths-fixture.ts';
+import { FOREIGN_UNPROVEN_SCENARIOS, } from './scenario-foreign-unproven-fixture.ts';
 import { HOOKED_SCENARIOS, } from './scenario-hooked-fixture.ts';
 import { INDEX_WRITER_SCENARIOS, } from './scenario-index-writer-fixture.ts';
 import { LOCK_GC_SCENARIOS, } from './scenario-lock-gc-fixture.ts';
@@ -33,5 +34,6 @@ export const SCENARIO_CATALOG: readonly ScenarioDefinition[] = [
   ...HOOKED_SCENARIOS,
   ...AMEND_SWITCH_SCENARIOS,
   ...LOCK_GC_SCENARIOS,
+  ...FOREIGN_UNPROVEN_SCENARIOS,
   ...SIGKILL_SCENARIOS,
 ];

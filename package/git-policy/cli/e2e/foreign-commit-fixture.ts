@@ -29,11 +29,14 @@ import {
 
  @param paths - tracked paths modified before the start; `commit --all` takes exactly these
 
+ @param lockfilePid - whether the foreign Git records its PID beside the lock (`core.lockfilePid=true`, Git 2.54.0 and later),
+ as a user who enabled it would
+
  @returns started attempt
 
  @example
  ```ts
- const foreign = await startForeignCommit({ ...actors, label: 'foreign', paths: ['f.txt'] });
+ const foreign = await startForeignCommit({ ...actors, label: 'foreign', paths: ['f.txt'], lockfilePid: true });
  ```
  */
 export async function startForeignCommit({
@@ -41,9 +44,11 @@ export async function startForeignCommit({
   ledger,
   label,
   paths,
+  lockfilePid,
 }: ScenarioActors & Readonly<{
   label: string;
   paths: readonly string[];
+  lockfilePid: boolean;
 }>,): Promise<StartedAttempt> {
   /**
    Message token the editor writes.
@@ -84,6 +89,10 @@ export async function startForeignCommit({
     running: startProcess({
       command: repository.realGit,
       args: [
+        ...(lockfilePid ? [
+          '-c',
+          'core.lockfilePid=true',
+        ] : []),
         'commit',
         '--quiet',
         '--all',
