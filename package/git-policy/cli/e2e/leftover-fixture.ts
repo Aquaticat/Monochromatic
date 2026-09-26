@@ -4,13 +4,25 @@
  lock files and lock directories,
  published or staging transaction directories under `cli-git-transactions/`,
  the legacy single `cli-git-transaction` directory,
- and shadow repositories under `cli-git/shadow/`.
- The persistent `cli-git-transactions/` and `cli-git/shadow/` roots themselves are not leftovers.
+ shadow repositories under `cli-git/shadow/`,
+ and capture-store entries other than the worktree identity, the sequence, and the landed-record directory,
+ including every landed-capture record (`SPEC.md` "Capture order"),
+ which the last transaction to finish prunes.
+ The persistent `cli-git-transactions/`, `cli-git/shadow/`, and `cli-git-captures/` roots themselves are not leftovers.
 
  @module
  */
 
 //region Classification
+
+/**
+ Capture-store entries that persist between transactions.
+ */
+const PERSISTENT_CAPTURE_ENTRIES: ReadonlySet<string> = new Set([
+  'worktree-id',
+  'sequence',
+  'landed',
+],);
 
 /**
  Returns the leftover root an entry belongs to.
@@ -41,7 +53,9 @@ function leftoverRoot(entry: string,): readonly string[] {
     return segment.endsWith('.lock',)
       || (segment === 'cli-git-transaction')
       || (segments[index - 1] === 'cli-git-transactions')
-      || ((segments[index - 1] === 'shadow') && (segments[index - 2] === 'cli-git'));
+      || ((segments[index - 1] === 'shadow') && (segments[index - 2] === 'cli-git'))
+      || ((segments[index - 1] === 'cli-git-captures') && (!PERSISTENT_CAPTURE_ENTRIES.has(segment,)))
+      || ((segments[index - 1] === 'landed') && (segments[index - 2] === 'cli-git-captures'));
   },);
   return rootEnd === (-1) ? [] : [segments.slice(
     0,
