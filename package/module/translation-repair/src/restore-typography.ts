@@ -1,3 +1,10 @@
+import { nestedSinglePairs, } from './nested-single-quotes.ts';
+import {
+  bindsWord,
+  closesSpan,
+  codePointAt,
+  codePointBefore,
+} from './quote-neighbours.ts';
 import { restoreEllipsis, } from './restore-ellipsis.ts';
 import { proseMask, } from './typography-prose-mask.ts';
 
@@ -21,27 +28,19 @@ import { proseMask, } from './typography-prose-mask.ts';
 // stayed straight on a curly page because its apostrophe has a space on one
 // side. Markup and code are now masked out (`typography-prose-mask.ts`), and a
 // trailing apostrophe converts when nothing in the replacement could be its
-// opening quote.
+// opening quote. The neighbour reading lives in `quote-neighbours.ts`, shared
+// with the nested quotation reading of class one hundred forty-seven.
 
 /**
- Highest code point one UTF-16 unit can carry; anything above it is a
- surrogate pair.
- */
-const BMP_MAX = 0xFF_FF;
-
-/**
- Whether one code point is a cased letter or an ASCII digit. Cased letters by
- general category, not by case mapping: the mathematical script letters the
- corpus writes handles in are cased letters with no case mapping, and Han is
- neither cased nor a word an apostrophe binds into (class ninety-six).
- */
-// oxlint-disable-next-line no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends, so the test is bounded and cannot backtrack; the Unicode general categories have no string API
-const WORD_CODE_POINT = /^(?:\p{Lu}|\p{Ll}|\p{Lt}|[0-9])$/u;
-
-/**
- Right single quotation mark, used as an apostrophe in the corpus.
+ Right single quotation mark, used as an apostrophe in the corpus and as a
+ nested quotation's closing mark.
  */
 const CURLY_APOSTROPHE = '\u{2019}';
+
+/**
+ Left single quotation mark, a nested quotation's opening mark.
+ */
+const CURLY_OPEN_SINGLE = '\u{2018}';
 
 /**
  Left double quotation mark.
@@ -52,141 +51,6 @@ const CURLY_OPEN_DOUBLE = '\u{201C}';
  Right double quotation mark.
  */
 const CURLY_CLOSE_DOUBLE = '\u{201D}';
-
-/**
- Whether a character can sit beside an apostrophe inside one word.
- 
- Restricted to letters and digits so a straight quote acting as a QUOTE, which
- has a space or punctuation on at least one side, is never mistaken for an
- apostrophe inside a contraction.
- 
- @param character - character beside the quote, empty at a text boundary
- 
- @returns Whether it binds the quote into a word
- 
- @example
- ```ts
- const binds = bindsWord({ character: 't', },);
- ```
- */
-function bindsWord({ character, }: { readonly character: string; },): boolean {
-  if (character === '')
-    return false;
-
-  return WORD_CODE_POINT.test(character,);
-}
-
-// CLASS NINETY-SIX (mikaela_khara, 2026-09-23). The archive writes a handle
-// in mathematical script, every letter a surrogate pair, and the bench wrote
-// its possessive with a straight apostrophe. The neighbours of a quote were
-// read by UTF-16 unit, so the unit before the apostrophe was the low half of
-// the last letter, which is no letter at all, and the apostrophe stayed
-// straight on a curly page. THE NEIGHBOURS ARE WHOLE CODE POINTS.
-
-/**
- Whole code point ending just before an offset, empty at the text's start.
-
- @param text - text being read
-
- @param at - offset of the character whose predecessor is wanted
-
- @returns The code point before, as a string of one or two units
-
- @example
- ```ts
- const before = codePointBefore({ text: 'ab', at: 1, },); // 'a'
- ```
- */
-function codePointBefore({
-  text,
-  at,
-}: {
-  readonly text: string;
-  readonly at: number;
-},): string {
-  if (at <= 0)
-    return '';
-  /**
-   Code point starting two units back, which ends just before the offset
-   when it is a surrogate pair.
-   */
-  const paired = (at >= 2) ? text.codePointAt(at - 2,) : undefined;
-  if ((paired !== undefined) && (paired > BMP_MAX))
-    return text.slice(
-      at - 2,
-      at,
-    );
-  return text.charAt(at - 1,);
-}
-
-/**
- Whole code point starting at an offset, empty past the text's end.
-
- @param text - text being read
-
- @param at - offset of the code point wanted
-
- @returns The code point there, as a string of one or two units
-
- @example
- ```ts
- const after = codePointAt({ text: 'ab', at: 1, },); // 'b'
- ```
- */
-function codePointAt({
-  text,
-  at,
-}: {
-  readonly text: string;
-  readonly at: number;
-},): string {
-  if (at >= text.length)
-    return '';
-  /**
-   Code point there, read by the string's own decoding.
-   */
-  const point = text.codePointAt(at,);
-  if (point === undefined)
-    return '';
-  return String.fromCodePoint(point,);
-}
-
-/**
- Characters that close an inline span the prose mask leaves in place: a
- link's `)`, a reference's `]`, an emphasis or strong `*` and `_`, a
- strikethrough `~`, a code span's backtick and a tag's `>`.
-
- CLASS SEVENTY (mikaela_khara, 2026-09-19). The archive's closing line reads
- `[name](url)’s chronicle`; the page shipped `)'s` straight on a curly page
- because only a letter or digit before the quote bound it into a word, and a
- possessive after a link, an emphasis span or a tag has a delimiter there.
- */
-const SPAN_CLOSERS: ReadonlySet<string> = new Set([
-  ')',
-  ']',
-  '*',
-  '_',
-  '~',
-  '`',
-  '>',
-],);
-
-/**
- Whether a character closes an inline span, so a possessive quote after it
- belongs to the word the span carries.
-
- @param character - character before the quote, empty at a text boundary
-
- @returns Whether a span ends there
-
- @example
- ```ts
- const closes = closesSpan({ character: ')', },);
- ```
- */
-function closesSpan({ character, }: { readonly character: string; },): boolean {
-  return SPAN_CLOSERS.has(character,);
-}
 
 /**
  Whether the text from an offset is the possessive clitic `s` and no more of
@@ -424,13 +288,28 @@ export function restoreTypography(
   const convertDoubles = wantsCurlyDouble && ((straightDoubles % 2) === 0);
 
   /**
-   Whether a trailing straight single quote may be read as an apostrophe.
+   Straight single quotation pairs, curled with the apostrophes they share a
+   convention with (class one hundred forty-seven).
    */
-  const convertTrailing = wantsCurlyApostrophe
-    && (countOpeningSingles({
+  const pairs = wantsCurlyApostrophe
+    ? nestedSinglePairs({
       text: replacement,
       mask,
-    },) === 0);
+    },)
+    : {
+      openings: new Set<number>(),
+      closings: new Set<number>(),
+    };
+
+  /**
+   Whether a trailing straight single quote may be read as an apostrophe: no
+   opening-shaped quote is left without its partner.
+   */
+  const convertTrailing = wantsCurlyApostrophe
+    && ((countOpeningSingles({
+      text: replacement,
+      mask,
+    },) - pairs.openings.size) === 0);
 
   return (function scan(): string {
     /**
@@ -449,6 +328,14 @@ export function restoreTypography(
       const character = replacement.charAt(index,);
       if (mask[index] !== true) {
         rebuilt.push(character,);
+        continue;
+      }
+      if (pairs.openings.has(index,)) {
+        rebuilt.push(CURLY_OPEN_SINGLE,);
+        continue;
+      }
+      if (pairs.closings.has(index,)) {
+        rebuilt.push(CURLY_APOSTROPHE,);
         continue;
       }
       if ((character === '\'') && wantsCurlyApostrophe) {

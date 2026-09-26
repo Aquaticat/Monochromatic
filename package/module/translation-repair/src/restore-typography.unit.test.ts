@@ -225,7 +225,8 @@ await describe({
 
     it({
       name: 'RESTORES a trailing possessive apostrophe when nothing in the replacement could be '
-        + 'its opening quote, and leaves a quoted phrase alone (yulianNyanner, 2026-09-06)',
+        + 'its opening quote (yulianNyanner, 2026-09-06), and curls a quoted phrase as a whole pair, '
+        + 'never half of it (class one hundred forty-seven, XingZ6013, 2026-09-26)',
       fn: async () => {
         expect(restoreTypography({
           replacement: "on the girls' side too.",
@@ -236,7 +237,7 @@ await describe({
           replacement: "on the 'girls' side too.",
           replaced: 'on the other side too.',
           convention: `Every other line here reads didn${APOSTROPHE}t.`,
-        },),).toBe("on the 'girls' side too.",);
+        },),).toBe('on the ‘girls’ side too.',);
       },
     },),
     it({
@@ -264,7 +265,8 @@ await describe({
     it({
       name: 'RESTORES a possessive apostrophe after a letter outside the Basic Multilingual Plane, a '
         + 'mathematical-script handle (class ninety-six, mikaela_khara, 2026-09-23: the archive curls '
-        + '\u{1D4E0}\u{1D4FE}\u{1D4EA}\u{1D4F7}\u2019s and the bench wrote it straight)',
+        + '\u{1D4E0}\u{1D4FE}\u{1D4EA}\u{1D4F7}\u2019s and the bench wrote it straight), and a quoted '
+        + 'handle curled as a pair (class one hundred forty-seven)',
       fn: async () => {
         /**
          A handle set in mathematical script, every letter a surrogate pair.
@@ -285,7 +287,7 @@ await describe({
           replacement: `She said '${handle}' and left.`,
           replaced: 'She said the name and left.',
           convention,
-        },),).toBe(`She said '${handle}' and left.`,);
+        },),).toBe(`She said \u{2018}${handle}${APOSTROPHE} and left.`,);
       },
     },),
     it({
