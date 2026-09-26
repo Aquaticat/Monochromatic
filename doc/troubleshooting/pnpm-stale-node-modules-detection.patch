@@ -1,0 +1,45 @@
+diff --git a/pnpm/crates/deps-restorer/src/create_virtual_dir_by_snapshot.rs b/pnpm/crates/deps-restorer/src/create_virtual_dir_by_snapshot.rs
+index 6fc42d1..92c4641 100644
+--- a/pnpm/crates/deps-restorer/src/create_virtual_dir_by_snapshot.rs
++++ b/pnpm/crates/deps-restorer/src/create_virtual_dir_by_snapshot.rs
+@@ -126,9 +126,7 @@ impl CreateVirtualDirBySnapshot<'_> {
+                 rayon::join(import_package, || self.link_children(&slot.node_modules));
+             cas_result?;
+             symlink_result?;
+-            if !self.dependencies.include_optional {
+-                self.remove_optional_children(&slot.node_modules)?;
+-            }
++            self.remove_unlinked_optional_children(&slot.node_modules)?;
+         } else {
+             import_package()?;
+             self.remove_all_children(&slot.node_modules)?;
+@@ -213,13 +211,28 @@ impl CreateVirtualDirBySnapshot<'_> {
+         .map_err(CreateVirtualDirError::SymlinkPackage)
+     }
+ 
+-    fn remove_optional_children(&self, node_modules: &Path) -> Result<(), CreateVirtualDirError> {
++    /// Unlink every optional child `create_symlink_layout` did not link:
++    /// all of them when optional dependencies are excluded, otherwise the
++    /// ones whose target snapshot is skipped on this host. A link left by
++    /// an earlier install for a now-skipped optional would otherwise fail
++    /// `optional_children_match` on every later install and re-import the
++    /// slot each time.
++    fn remove_unlinked_optional_children(
++        &self,
++        node_modules: &Path,
++    ) -> Result<(), CreateVirtualDirError> {
++        let include_optional = self.dependencies.include_optional;
++        let skipped = self.dependencies.skipped;
+         remove_obsolete_children(
+             node_modules,
+             &self.dependencies.package_key.name,
+             self.dependencies.snapshot.optional_dependencies
+                 .iter()
+                 .flatten()
++                .filter(|(alias, dep_ref)| {
++                    !include_optional
++                        || dep_ref.resolve(alias).is_some_and(|target| skipped.contains(&target))
++                })
+                 .map(|(alias, _)| alias),
+         )
+     }

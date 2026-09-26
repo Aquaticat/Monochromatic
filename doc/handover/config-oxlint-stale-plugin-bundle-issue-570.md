@@ -246,6 +246,30 @@ The user rejected that round.
   a comment for upstream discussion #8733 with a prototype fix and e2e test
   (`doc/troubleshooting/mise-dependency-freshness.patch`).
 
+### pnpm share of blame (subagent report; details in `doc/troubleshooting/pnpm-stale-node-modules-detection.md`)
+
+- `--lockfile-only` writes only `pnpm-lock.yaml` (documented);
+  it skips linking and the installed-state files,
+  and nothing warns afterwards (`pnpm list` exits 0 without the new dependency).
+- No standalone status command exists in pnpm 12.5.1.
+  The `verifyDepsBeforeRun` check compares settings, catalogs, project list,
+  missing `node_modules`, member manifest mtimes,
+  and wanted versus installed lockfile.
+  Usable as a probe today:
+  `pnpm --config.verify-deps-before-run=error exec true`,
+  about 85 ms up to date or stale (30 runs, quiet host),
+  versus 96.9 ms for a no-op `pnpm install --offline`
+  and 215 ms for `--frozen-lockfile --offline` (frozen disables the fast path).
+- The per-run "added 6" in the main checkout is a pnpm bug:
+  49 dangling links to skipped optional platform packages inside
+  typescript, rolldown, oxlint, oxlint-tsgolint, satteri, yuku-parser
+  never satisfy the reinstall check;
+  visible here because the repo sets `modulesCacheMaxAge: 0`.
+  Local repair (not run):
+  delete the dangling links under `node_modules/.pnpm`.
+  Prototype upstream fix and draft issue exist, not filed.
+- A repair install prints `Already up to date` even while it creates a sub-project workspace link.
+
 ## Reframed failure chain
 
 These are separate links;
