@@ -59,7 +59,8 @@ The recordings demonstrate that combining the sampled difference with
 `imePadding()` did **not** yield a reliable reservation in this fixture.
 They do not establish an AndroidX bug or prove the precise callback order.
 The experiment's raw logs are in private scratch as
-`fixed-ime-transition.log` and `auto-ime-transition.log`;
+`fixed-ime-transition.log` and
+`auto-reserve-failed-ime-transition.log`;
 full videos and extracted frames have matching names there.
 
 ## Revised experiment and unresolved checks
