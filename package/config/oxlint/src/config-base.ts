@@ -1,6 +1,6 @@
 /**
  Shared oxlint configuration without `jsPlugins`.
- 
+
  Holds every field of the Monochromatic oxlint config except the plugin list:
  the development entry (`index.ts`) and the built Node entry (`index.node.ts`)
  each spread this base and attach their own `jsPlugins` (source-resolved vs
@@ -46,7 +46,10 @@ export const base: OxlintConfig = {
   env: {
     browser: true,
     node: true,
-    es2024: true,
+    es2026: true,
+    serviceworker: true,
+    webextensions: true,
+    worker: true
   },
 
   settings: {},
