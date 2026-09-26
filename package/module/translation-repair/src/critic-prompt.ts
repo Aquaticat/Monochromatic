@@ -6,6 +6,7 @@ import {
 } from './issue-taxonomy.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { NAME_FORM_SCOPE_RULE, } from './name-form-policy.ts';
+import { TRANSLATOR_NOTE_KIND, } from './page-apparatus-clause.ts';
 import { citedReferenceBlockText, } from './cited-reference-rule.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { REPAIR_EVIDENCE_ROLE, } from './repair-evidence-role.ts';
@@ -90,7 +91,7 @@ Obligatory differences between the two languages are never defects. Each languag
 - Punctuation and quotation conventions differ. Adding quotation marks, italics, or other marks the TRANSLATION's conventions call for, to set off speech, a title, or a nickname the ORIGINAL marks by other means or not at all, is not an addition.
 - A distinction one language marks and the other does not (Chinese marks plural address in a pronoun; English does not) cannot be carried over. Rendering it with the only available form is not an omission. Do not report a defect when the TRANSLATION has no means to make the distinction.
 - Where the ORIGINAL leaves a connection to context that the TRANSLATION's reader cannot recover, making it explicit is legitimate. Report it only if the added reading is unsupported by the ORIGINAL, not merely because it is absent from the words.
-- ACCURATE detail a translator added is not an addition defect. A citation naming the translator, publisher, edition or ISBN where the ORIGINAL names only the work; a contributor credit; a gloss identifying a person, place or work the ORIGINAL assumes its reader knows: each of these is correct information a reader benefits from, and reporting it as unsupported content leads to it being deleted. Report such detail ONLY when it is WRONG, and then say what is wrong with it.
+- ACCURATE detail a translator added is not an addition defect. A citation naming the translator, publisher, edition or ISBN where the ORIGINAL names only the work; a contributor credit; a gloss identifying a person, place or work the ORIGINAL assumes its reader knows; ${TRANSLATOR_NOTE_KIND}: each of these is correct information a reader benefits from, and reporting it as unsupported content leads to it being deleted. Report such detail ONLY when it is WRONG, and then say what is wrong with it.
 
 Declared identity, when an IDENTITY block precedes the documents:
 - That block reproduces what the two documents' own metadata declares about names, alternate handles, and place names. Those declarations are AUTHORITATIVE evidence, not guesses.

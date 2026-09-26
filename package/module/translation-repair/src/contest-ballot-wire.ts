@@ -2,6 +2,10 @@ import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import { SIZE_NOTE_POLICY, } from './contest-size-note.ts';
 import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
 import {
+  NARRATIVE_DETAIL_IS_NOT_APPARATUS,
+  TRANSLATOR_NOTE_KIND,
+} from './page-apparatus-clause.ts';
+import {
   DECLARED_NAME_REFERENCE_EXEMPTION,
   NAME_FORM_SCOPE_RULE,
 } from './name-form-policy.ts';
@@ -48,7 +52,8 @@ export const CONTEST_POLICY: string = [
   '',
   'UNSUPPORTED: does the candidate state something the Chinese does not say?',
   'An invented time period, an invented characterisation, a strengthened claim: all unsupported.',
-  'A detail the archive supplies that the Chinese does not contradict, such as a name, a spelled-out referent or a gloss of a name or a term, is NOT unsupported: keeping it is correct.',
+  `Apparatus the archive supplies, such as a name, a spelled-out referent, a gloss of a name or a term, or ${TRANSLATOR_NOTE_KIND}, is NOT unsupported: keeping it is correct.`,
+  NARRATIVE_DETAIL_IS_NOT_APPARATUS,
   '',
   'DROPPED: does the candidate omit something the Chinese does say?',
   'A clause, a qualifier, a named object, a speaker aside: all dropped.',
