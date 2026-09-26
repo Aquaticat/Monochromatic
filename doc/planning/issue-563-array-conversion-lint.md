@@ -88,8 +88,18 @@ a `[...value]` spread the baseline does not ban.
 Repo uses of single-argument `Array.from` are 2 deliberate string code-point splits, each suppressing `prefer-spread`
 (`package/git-policy/cli/src/parser/commit-normalise.ts:122`, `package/module/i18n-compose/src/render-helpers.ts:147`).
 
+## Decisions (2026-09-25)
+
+- Baseline: `no-restricted-syntax/no-useless-spread` at `error` replaces `unicorn/no-useless-spread`.
+  Non-method checks keep safe autofixes; `[...x.m(),]` for ambiguous method names (including `split`) reports
+  without a fix and names the built-in spellings (Q6).
+- Type-aware enhancement ships in this session under its own issue:
+  where TypeScript resolves the file, the rule names the receiver kind and autofixes proven arrays (Q8).
+- `unicorn/prefer-spread` is replaced, not turned off, under its own issue, in this session (Q7):
+  `Array.from(x,)` to `[...x]` keeps its fix (equivalent for every iterable);
+  `x.slice()` reports and fixes only when types prove an array.
+- No upstream contact; oxc issue 26159 is cited.
+
 ## Open questions
 
-- Which candidate policy.
-- When the type-aware enhancement ships.
-- Whether the standalone `prefer-spread` `slice()` defect gets its own issue.
+- None at decision time; implementation findings get appended here.
