@@ -25,6 +25,18 @@
       </intent-filter>
       <meta-data android:name='android.view.im' android:resource='@xml/fold_probe_input_method' />
     </service>
+    <!-- Debug-only native IME whose height steps bracket the measured deck-fit boundary. -->
+    <service
+      android:name='.FoldHeightStepInputMethod'
+      android:exported='true'
+      android:label='Fold debug keyboard height steps'
+      android:permission='android.permission.BIND_INPUT_METHOD'
+    >
+      <intent-filter>
+        <action android:name='android.view.InputMethod' />
+      </intent-filter>
+      <meta-data android:name='android.view.im' android:resource='@xml/fold_probe_input_method' />
+    </service>
     <!-- Debug-only, non-functional Compose surface used for Pixel Fold screenshot capture. -->
     <activity
       android:name='.DesignCandidateActivity'
