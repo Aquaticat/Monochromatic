@@ -43,7 +43,105 @@ function renderingList(
 }
 
 /**
- First form the entry refuses that a text writes, in any casing.
+ Every index at which a needle starts in a text, overlapping starts included.
+
+ @param text - lower-cased candidate text
+
+ @param needle - lower-cased form looked for
+
+ @returns Start indices in ascending order, empty where the needle is absent
+
+ @example
+ ```ts
+ occurrenceStarts({ text: 'head and head', needle: 'head', },);
+ // => [0, 9]
+ ```
+ */
+function occurrenceStarts(
+  {
+    text,
+    needle,
+  }: {
+    readonly text: string;
+    readonly needle: string;
+  },
+): readonly number[] {
+  /**
+   Starts found so far; a linear cursor scan, since the text is unbounded.
+   */
+  const starts: number[] = [];
+  /**
+   Index the next search starts from.
+   */
+  let cursor = text.indexOf(needle,);
+  while (cursor !== (-1)) {
+    starts.push(cursor,);
+    cursor = text.indexOf(
+      needle,
+      cursor + 1,
+    );
+  }
+  return starts;
+}
+
+/**
+ Whether a refused-form occurrence is the opening of a longer accepted
+ rendering, as "inside her head" opens "inside her headpiece" (class one
+ hundred sixty-three). A rendering excuses the occurrence only when it starts
+ inside the occurrence and runs past its end; one that ends inside it ("a
+ minor" in "a minor trans girl") excuses nothing.
+
+ @param entry - term whose renderings may excuse the occurrence
+
+ @param lowered - lower-cased candidate text
+
+ @param start - index the refused-form occurrence starts at
+
+ @param end - index just past the refused-form occurrence
+
+ @returns True where an accepted rendering carries the occurrence inside it
+
+ @example
+ ```ts
+ renderingCarries({ entry, lowered: 'inside her headpiece', start: 0, end: 15, },);
+ // => true
+ ```
+ */
+function renderingCarries(
+  {
+    entry,
+    lowered,
+    start,
+    end,
+  }: {
+    readonly entry: CommunityTerm;
+    readonly lowered: string;
+    readonly start: number;
+    readonly end: number;
+  },
+): boolean {
+  return entry
+    .renderings
+    .some(function carries(rendering,): boolean {
+      /**
+       Rendering in lower case, matched as the refused forms are.
+       */
+      const needle = rendering.toLowerCase();
+      return occurrenceStarts({
+        text: lowered,
+        needle,
+      },)
+        .some(function spans(renderingStart,): boolean {
+          return (renderingStart >= start)
+            && (renderingStart < end)
+            && ((renderingStart + needle.length) > end);
+        },);
+    },);
+}
+
+/**
+ First form the entry refuses that a text writes, in any casing, where some
+ occurrence is not the opening of an accepted rendering (`renderingCarries`).
 
  @param entry - term whose refused forms are looked for
 
@@ -76,7 +174,22 @@ function refusedFormIn(
   const found = entry
     .refusedForms
     .find(function written(form,): boolean {
-      return lowered.includes(form.toLowerCase(),);
+      /**
+       Form in lower case, matched against the lowered text.
+       */
+      const needle = form.toLowerCase();
+      return occurrenceStarts({
+        text: lowered,
+        needle,
+      },)
+        .some(function standsApart(start,): boolean {
+          return !renderingCarries({
+            entry,
+            lowered,
+            start,
+            end: start + needle.length,
+          },);
+        },);
     },);
   return found ?? '';
 }
