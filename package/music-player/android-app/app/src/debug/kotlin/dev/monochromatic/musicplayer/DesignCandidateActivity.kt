@@ -978,7 +978,8 @@ internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: (()
         // ```ts
         // return <Row><FoldersAndDeck endInset={gap / 2} /><Tracks startInset={gap / 2} /></Row>;
         // ```
-        Row(modifier = Modifier.fillMaxSize().background(palette.window)) {
+        // Paint the player surface continuously beneath the inset hosts; E2 judges informative paint, not this background.
+        Row(modifier = Modifier.fillMaxSize().background(palette.picker)) {
             FolderAndTransportPane(
                 modifier = Modifier.weight(1f).padding(end = e2HalfClearance),
                 candidate = "dark-stable-wallpaper-dynamic",
