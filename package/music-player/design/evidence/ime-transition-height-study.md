@@ -152,10 +152,22 @@ so this is an inference,
 not a proven AndroidX cause.
 The APK SHA-256 for this failing revision was
 `ba9925858eb04d51515647a93f3a22654c78dbbc3d80c3533f1ac8f3b75156a9`.
-Prototype commit `ae10caf0d` now retains the largest fitting height for
+Prototype commit `ae10caf0d` retains the largest fitting height for
 the unchanged content,
 width and text scale rather than overwriting it with a shorter sample.
-This revised guard is pending a same-fixture test.
+With APK SHA-256
+`74d145d5cea646c022b81ae6c325c14b990494313016b2b24ec17254da7a0b51`,
+the app learned `1033px` of open deck demand at 330dp and retained it
+through the height steps.
+The complete final mode remained 131px high and ended 20px before the
+IME at every ascending **and descending** endpoint.
+The normal vertical deck stayed selected through 375dp;
+the compact branch became active at 400 and 415dp and reverted at 375dp.
+At 375dp the `1033px` deck plus 39px divider fit within 1102px;
+at 400dp the same demand exceeded the 1041px available area.
+This is an in-place **endpoint** result,
+not proof of visibility on every intervening rendered frame or on
+cold entry directly into an intermediate keyboard height.
 
 ## Remaining boundary
 
@@ -164,7 +176,8 @@ The closed deck's first measured heights changed from `762` to `891` to
 A later focused transition logged a stored `1071px` height,
 but this capture did not isolate when that earlier sample was taken.
 No single early `onSizeChanged` value proves full-content demand.
-Verify the revised open-height guard with ascending and descending steps,
+Verify the revised open-height guard across rendered frames of an in-place
+height change,
 keyboard dismissal and refocus,
 and cold entry at a height where both deck arrangements fit.
 Check title paint and accessibility bounds separately;
