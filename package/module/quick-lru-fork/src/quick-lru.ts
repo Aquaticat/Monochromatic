@@ -27,388 +27,27 @@
  */
 
 import {
+  hasExpiryStamp,
+  type QuickLruItem,
+  type QuickLruItemEntry,
+} from './quick-lru-item.ts';
+import {
+  attachMembers,
+  NODE_INSPECT_SYMBOL,
+} from './quick-lru-members.ts';
+import {
+  createIteration,
+} from './quick-lru-iteration.ts';
+import {
   resolveQuickLruOptions,
   type QuickLruOptions,
   validateMaxSize,
 } from './quick-lru-options.ts';
-
-//region Types
-
-/**
- One stored cache item: its value and optional absolute expiry timestamp.
- 
- Mirrors upstream `quick-lru`'s internal `{value, expiry}` record, which is
- observable through the `__oldCache` test hook. An item that never expires
- carries no `expiry` property at all; upstream carries `expiry: undefined`,
- and every read path treats the two shapes identically.
- 
- @typeParam Value - cache value type
- 
- @example
- ```ts
- const item: QuickLruItem<number> = {
-   value: 7,
-   expiry: 1_700_000_000_000,
- };
- ```
- */
-export type QuickLruItem<Value> = {
-  /**
-   Stored value, returned while the item is live.
-   */
-  readonly value: Value;
-  /**
-   `Date.now()` reading after which the item counts as expired, absent for
-   items that never expire.
-   */
-  readonly expiry?: number;
-};
-
-/**
- Destructured call shape of {@link QuickLru}'s `set`.
- 
- Upstream's `set(key, value, options)` positional form is banned by
- repository lint, so the key, value, and per-item lifetime arrive as one
- options object.
- 
- @typeParam Key - cache key type
- 
- @typeParam Value - cache value type
- 
- @example
- ```ts
- const entry: QuickLruSetOptions<string, number> = {
-   key: 'a',
-   value: 1,
-   maxAge: 60_000,
- };
- ```
- */
-export type QuickLruSetOptions<Key, Value> = {
-  /**
-   Key to store the value under.
-   */
-  readonly key: Key;
-  /**
-   Value to store.
-   */
-  readonly value: Value;
-  /**
-   Milliseconds this item may live, overriding the cache's global `maxAge`.
-   Absent means the global bound applies.
-   */
-  readonly maxAge?: number;
-};
-
-/**
- Visitor called per entry by {@link QuickLru}'s `forEach`.
- 
- The positional `(value, key, cache)` signature is dictated by `Map`
- compatibility, which upstream `quick-lru` preserves.
- 
- @typeParam Key - cache key type
- 
- @typeParam Value - cache value type
- */
-export type QuickLruVisitor<Key, Value> = (
-  value: Value,
-  key: Key,
-  cache: QuickLru<Key, Value>,
-) => void;
-
-/**
- Destructured call shape of {@link QuickLru}'s `forEach`.
- 
- Upstream's `forEach(callbackFunction, thisArgument)` positional form is
- banned by repository lint, so both arrive in one options object.
- 
- @typeParam Key - cache key type
- 
- @typeParam Value - cache value type
- 
- @example
- ```ts
- lru.forEach({
-   callback: function logEntry(value: string, key: string): void {
-     console.log(key, value);
-   },
- },);
- ```
- */
-export type QuickLruForEachOptions<Key, Value> = {
-  /**
-   Visitor run per live entry, oldest entry first.
-   */
-  readonly callback: QuickLruVisitor<Key, Value>;
-  /**
-   `this` value the visitor is called with. Defaults to the cache itself,
-   matching upstream `quick-lru`.
-   */
-  readonly thisArgument?: unknown;
-};
-
-/**
- A Least Recently Used cache over upstream `quick-lru`'s dual-cache
- algorithm.
- 
- Upstream `quick-lru` returns a `Map` subclass instance; repository lint
- bans classes, so this fork returns a factory-built object with the same
- members instead. Every member here mirrors one upstream member, and the
- fuzz sidecar's differential oracle checks that parity against upstream
- `quick-lru` 7.3.0 directly.
- 
- @typeParam Key - cache key type
- 
- @typeParam Value - cache value type
- 
- @example
- ```ts
- import { createQuickLru, } from '\@monochromatic-dev/module-quick-lru-fork';
- 
- const lru: QuickLru<string, number> = createQuickLru({ maxSize: 2, },);
- lru.set({ key: 'a', value: 1, },);
- lru.get('a',); // => 1
- ```
- */
-export type QuickLru<Key, Value> = {
-  /**
-   Stores one value under one key, refreshing its lifetime. Returns the
-   cache, so calls chain.
-   
-   @param options - Key, value, and optional per-item lifetime.
-   
-   @returns The cache itself.
-   */
-  readonly set: (options: QuickLruSetOptions<Key, Value>,) => QuickLru<Key, Value>;
-  /**
-   Reads one value and marks it most recently used.
-   
-   @param key - Key to read.
-   
-   @returns Stored value, or `undefined` when the key is absent or its item
-   expired during this read.
-   */
-  // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- mirrors upstream quick-lru 7.3.0's `get(key): ValueType | undefined` return; absence stays `undefined` so migrating callers and the fuzz differential oracle observe the upstream shape
-  readonly get: (key: Key,) => Value | undefined;
-  /**
-   Checks one key without marking it recently used; expired items are
-   removed during the check.
-   
-   @param key - Key to check.
-   
-   @returns Whether a live item exists under the key.
-   */
-  readonly has: (key: Key,) => boolean;
-  /**
-   Reads one value without marking it recently used.
-   
-   @param key - Key to read.
-   
-   @returns Stored value, or `undefined` when the key is absent or its item
-   expired during this read.
-   */
-  // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- mirrors upstream quick-lru 7.3.0's `peek(key): ValueType | undefined` return; absence stays `undefined` so migrating callers and the fuzz differential oracle observe the upstream shape
-  readonly peek: (key: Key,) => Value | undefined;
-  /**
-   Removes one item.
-   
-   @param key - Key to remove.
-   
-   @returns Whether an item was removed.
-   */
-  readonly delete: (key: Key,) => boolean;
-  /**
-   Removes every item without eviction notifications.
-   */
-  readonly clear: () => void;
-  /**
-   Reads one item's remaining lifetime without marking it recently used
-   and without removing it when it is already expired.
-   
-   @param key - Key to inspect.
-   
-   @returns Remaining milliseconds, `Number.POSITIVE_INFINITY` for items
-   without expiry, or `undefined` when the key is absent.
-   */
-  // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- mirrors upstream quick-lru 7.3.0's `expiresIn(key): number | undefined` return; absence stays `undefined` so migrating callers and the fuzz differential oracle observe the upstream shape
-  readonly expiresIn: (key: Key,) => number | undefined;
-  /**
-   Updates `maxSize` in place, discarding items as necessary.
-   
-   @param maxSize - New target maximum number of items.
-   
-   @throws InvalidMaxSizeError when the value is not truthy and greater
-   than `0`.
-   */
-  readonly resize: (maxSize: number,) => void;
-  /**
-   Evicts the least recently used items, keeping at least one.
-   
-   @param count - Number of items to evict.
-   
-   @defaultValue 1
-   */
-  readonly evict: (count?: number,) => void;
-  /**
-   Iterates every live key, most recently used first.
-   */
-  readonly keys: () => IterableIterator<Key>;
-  /**
-   Iterates every live value, most recently used first.
-   */
-  readonly values: () => IterableIterator<Value>;
-  /**
-   Iterates every live entry, oldest first. Exists for `Map`
-   compatibility; prefer `entriesAscending`.
-   */
-  readonly entries: () => IterableIterator<[Key, Value]>;
-  /**
-   Iterates every live entry, oldest first.
-   */
-  readonly entriesAscending: () => IterableIterator<[Key, Value]>;
-  /**
-   Iterates every live entry, newest first.
-   */
-  readonly entriesDescending: () => IterableIterator<[Key, Value]>;
-  /**
-   Runs one visitor per live entry, oldest first. Exists for `Map`
-   compatibility; prefer `entriesAscending`.
-   
-   @param options - Visitor and optional `this` value.
-   */
-  readonly forEach: (options: QuickLruForEachOptions<Key, Value>,) => void;
-  /**
-   Stored item count, capped at `maxSize` even though the dual-cache design
-   may hold more.
-   */
-  readonly size: number;
-  /**
-   The set maximum number of items.
-   */
-  readonly maxSize: number;
-  /**
-   The set global lifetime in milliseconds.
-   */
-  readonly maxAge: number;
-  /**
-   The old cache's raw items, upstream `quick-lru`'s `__oldCache` test hook,
-   mirrored so tests and the differential oracle can observe promotion.
-   */
-  readonly __oldCache: Map<Key, QuickLruItem<Value>>;
-  /**
-   Renders the cache like upstream: `QuickLRU(<size>/<maxSize>)`.
-   */
-  readonly toString: () => string;
-  /**
-   Iterates every live entry, most recently used first.
-   */
-  readonly [Symbol.iterator]: () => IterableIterator<[Key, Value]>;
-  /**
-   `Object.prototype.toString` tag, kept at upstream's `QuickLRU`.
-   */
-  readonly [Symbol.toStringTag]: string;
-};
-
-//endregion Types
-
-//region Constants
-
-/**
- `Node.js` custom inspection symbol upstream `quick-lru` implements as
- `[Symbol.for('nodejs.util.inspect.custom')]`.
- */
-const NODE_INSPECT_SYMBOL = Symbol.for('nodejs.util.inspect.custom',);
-
-//endregion Constants
-
-//region Item helpers
-
-/**
- Builds one stored item, mirroring upstream's `{value, expiry}` record.
- 
- @param value - Value to store.
- 
- @param expiry - Absolute expiry timestamp, `undefined` for items that never
- expire.
- 
- @returns Item record carrying the value and its lifetime.
- 
- @example
- ```ts
- const item = createItem(7, Number.NaN,);
- ```
- */
-function createItem<Value>(value: Value, expiry?: number,): QuickLruItem<Value> {
-  return (expiry === undefined)
-    ? {
-      value,
-    }
-    : {
-      value,
-      expiry,
-    };
-}
-
-//endregion Item helpers
-
-//region Member attachment
-
-/**
- Attaches one method member with upstream's class-prototype descriptor
- flags: writable data property, non-enumerable, configurable.
- 
- @param target - Object gaining the member.
- 
- @param name - Member key, string or symbol.
- 
- @param method - Function stored under the key.
- 
- @example
- ```ts
- attachMethod(self, 'clear', clear,);
- ```
- */
-function attachMethod(target: object, name: PropertyKey, method: unknown,): void {
-  Object.defineProperty(
-    target,
-    name,
-    {
-      value: method,
-      writable: true,
-      enumerable: false,
-      configurable: true,
-    },
-  );
-}
-
-/**
- Attaches one getter member with upstream's class-prototype accessor
- flags: non-enumerable, configurable, no setter.
- 
- @param target - Object gaining the member.
- 
- @param name - Member key, string or symbol.
- 
- @param getter - Function backing the read.
- 
- @example
- ```ts
- attachGetter(self, 'size', readSize,);
- ```
- */
-function attachGetter(target: object, name: PropertyKey, getter: () => unknown,): void {
-  Object.defineProperty(
-    target,
-    name,
-    {
-      get: getter,
-      enumerable: false,
-      configurable: true,
-    },
-  );
-}
-
-//endregion Member attachment
+import type {
+  QuickLru,
+  QuickLruForEachOptions,
+  QuickLruSetOptions,
+} from './quick-lru-types.ts';
 
 //region Cache
 
@@ -490,7 +129,7 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
    upstream's prototype descriptor flags, so the surface check in the fuzz
    sidecar can pin it against upstream `quick-lru`.
    */
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- `self` gains every QuickLru member through the attachMethod/attachGetter calls below before it is returned; the empty shell exists so closures can return the cache itself for chaining
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- `self` gains every QuickLru member through the members table and attachMembers call below before it is returned; the empty shell exists so closures can return the cache itself for chaining
   const self = {} as QuickLru<Key, Value>;
 
   //region Cache internals
@@ -502,7 +141,10 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
    
    @param items - Leaving items as key and item pairs, map or snapshot.
    */
-  function emitEvictions(items: Iterable<readonly [Key, QuickLruItem<Value>]>,): void {
+  function emitEvictions(items: Iterable<readonly [
+    Key,
+    QuickLruItem<Value>
+  ]>,): void {
     /**
      Eviction callback, absent or non-callable exactly when upstream skips
      notification.
@@ -512,7 +154,10 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
       return;
 
     for (const [key, item] of items)
-      notify(key, item.value,);
+      notify(
+        key,
+        item.value,
+      );
   }
 
   /**
@@ -526,11 +171,14 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
     /**
      Whether the recent map held the key.
      */
-    const deleted = state.cache.delete(key,);
+    const deleted = state.cache
+      .delete(key,);
     if (deleted)
       state.cacheSize -= 1;
 
-    return state.oldCache.delete(key,) || deleted;
+    return state.oldCache
+      .delete(key,)
+      || deleted;
   }
 
   /**
@@ -543,7 +191,10 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
    
    @returns Whether the item expired and was removed now.
    */
-  function deleteIfExpired(key: Key, item: QuickLruItem<Value>,): boolean {
+  function deleteIfExpired({
+    key,
+    item,
+  }: QuickLruItemEntry<Key, Value>,): boolean {
     if (((typeof item.expiry) === 'number') && (item.expiry <= Date.now())) {
       /**
        Eviction callback, notified exactly as upstream does before the
@@ -551,7 +202,10 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
        */
       const notify = state.onEviction;
       if ((typeof notify) === 'function')
-        notify(key, item.value,);
+        notify(
+          key,
+          item.value,
+        );
 
       return deleteEntry(key,);
     }
@@ -567,8 +221,15 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
    
    @param item - Stored item to insert.
    */
-  function insertRecentItem(key: Key, item: QuickLruItem<Value>,): void {
-    state.cache.set(key, item,);
+  function insertRecentItem({
+    key,
+    item,
+  }: QuickLruItemEntry<Key, Value>,): void {
+    state.cache
+      .set(
+        key,
+        item,
+      );
     state.cacheSize += 1;
 
     if (state.cacheSize >= state.maxSize) {
@@ -587,138 +248,51 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
    
    @param item - Stored item to promote.
    */
-  function promoteItem(key: Key, item: QuickLruItem<Value>,): void {
-    state.oldCache.delete(key,);
-    insertRecentItem(key, item,);
+  function promoteItem({
+    key,
+    item,
+  }: QuickLruItemEntry<Key, Value>,): void {
+    state.oldCache
+      .delete(key,);
+    insertRecentItem({
+      key,
+      item,
+    },);
   }
 
   //endregion Cache internals
 
-  //region Iteration
+  //region Iteration context
 
   /**
-   Iterates raw stored items oldest first, skipping keys duplicated in the
-   recent map and dropping items that expire during iteration, mirroring
-   upstream's `#entriesAscending`.
+   Reads the current recent map for the iteration orderings.
+   
+   @returns The recent map as currently installed.
    */
-  function* iterateItemEntriesAscending(): IterableIterator<readonly [Key, QuickLruItem<Value>]> {
-    for (const entry of state.oldCache) {
-      const [key, item] = entry;
-      if ((!state.cache.has(key,)) && (!deleteIfExpired(key, item,)))
-        yield entry;
-    }
-
-    for (const entry of state.cache) {
-      const [key, item] = entry;
-      if (!deleteIfExpired(key, item,))
-        yield entry;
-    }
+  function readCache(): Map<Key, QuickLruItem<Value>> {
+    return state.cache;
   }
 
   /**
-   Iterates live entries most recently used first: recent map before old
-   map, mirroring upstream's `[Symbol.iterator]`.
+   Reads the current old map for the iteration orderings.
+   
+   @returns The old map as currently installed.
    */
-  function* iterateEntries(): IterableIterator<[Key, Value]> {
-    for (const entry of state.cache) {
-      const [key, item] = entry;
-      if (!deleteIfExpired(key, item,)) {
-        /**
-         Live entry as an upstream-shaped key and value pair.
-         */
-        const pair: [Key, Value] = [
-          key,
-          item.value,
-        ];
-        yield pair;
-      }
-    }
-
-    for (const entry of state.oldCache) {
-      const [key, item] = entry;
-      if ((!state.cache.has(key,)) && (!deleteIfExpired(key, item,))) {
-        /**
-         Live entry as an upstream-shaped key and value pair.
-         */
-        const pair: [Key, Value] = [
-          key,
-          item.value,
-        ];
-        yield pair;
-      }
-    }
+  function readOldCache(): Map<Key, QuickLruItem<Value>> {
+    return state.oldCache;
   }
 
   /**
-   Iterates live entries newest first within each map, mirroring upstream's
-   `entriesDescending`.
+   The six dual-cache orderings, bound to this cache's live maps and
+   lazy-expiry hook.
    */
-  function* iterateEntriesDescending(): IterableIterator<[Key, Value]> {
-    for (const entry of [...state.cache].reverse()) {
-      const [key, item] = entry;
-      if (!deleteIfExpired(key, item,)) {
-        /**
-         Live entry as an upstream-shaped key and value pair.
-         */
-        const pair: [Key, Value] = [
-          key,
-          item.value,
-        ];
-        yield pair;
-      }
-    }
+  const iteration = createIteration({
+    readCache,
+    readOldCache,
+    deleteIfExpired,
+  },);
 
-    for (const entry of [...state.oldCache].reverse()) {
-      const [key, item] = entry;
-      if ((!state.cache.has(key,)) && (!deleteIfExpired(key, item,))) {
-        /**
-         Live entry as an upstream-shaped key and value pair.
-         */
-        const pair: [Key, Value] = [
-          key,
-          item.value,
-        ];
-        yield pair;
-      }
-    }
-  }
-
-  /**
-   Iterates live entries oldest first, mirroring upstream's
-   `entriesAscending`.
-   */
-  function* iterateEntriesAscending(): IterableIterator<[Key, Value]> {
-    for (const [key, item] of iterateItemEntriesAscending()) {
-      /**
-       Live entry as an upstream-shaped key and value pair.
-       */
-      const pair: [Key, Value] = [
-        key,
-        item.value,
-      ];
-      yield pair;
-    }
-  }
-
-  /**
-   Iterates live keys most recently used first, mirroring upstream's
-   `keys`.
-   */
-  function* iterateKeys(): IterableIterator<Key> {
-    for (const [key] of iterateEntries())
-      yield key;
-  }
-
-  /**
-   Iterates live values most recently used first, mirroring upstream's
-   `values`.
-   */
-  function* iterateValues(): IterableIterator<Value> {
-    for (const [, value] of iterateEntries())
-      yield value;
-  }
-
-  //endregion Iteration
+  //endregion Iteration context
 
   //region Cache members
 
@@ -726,7 +300,12 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
    Stores one value under one key with an optional per-item lifetime,
    refreshing its expiry, mirroring upstream's `set`.
    
-   @param options - Key, value, and optional per-item lifetime.
+   @param key - Key to store the value under.
+   
+   @param value - Value to store.
+   
+   @param maxAge - Milliseconds this item may live; falls back to the
+   cache's global bound when absent.
    
    @returns The cache itself, so calls chain.
    
@@ -752,15 +331,30 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
       ? (Date.now() + maxAge)
       : undefined;
     /**
-     Item record built once so both insertion paths share upstream's
-     `{value, expiry}` shape.
+     Stored item matching upstream's `{value, expiry}` shape: the stamp is
+     present only when the item expires.
      */
-    const item = createItem(value, expiry,);
+    const item = (expiry === undefined)
+      ? {
+        value,
+      }
+      : {
+        value,
+        expiry,
+      };
 
-    if (state.cache.has(key,))
-      state.cache.set(key, item,);
+    if (state.cache
+      .has(key,))
+      state.cache
+        .set(
+          key,
+          item,
+        );
     else
-      insertRecentItem(key, item,);
+      insertRecentItem({
+        key,
+        item,
+      },);
 
     return self;
   }
@@ -779,12 +373,16 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
     /**
      Item stored in the recent map, when present.
      */
-    const recentItem = state.cache.get(key,);
+    const recentItem = state.cache
+      .get(key,);
     if (recentItem !== undefined) {
-      if (!recentItem.expiry)
+      if (!hasExpiryStamp(recentItem))
         return recentItem.value;
 
-      return deleteIfExpired(key, recentItem,)
+      return deleteIfExpired({
+        key,
+        item: recentItem,
+      },)
         ? undefined
         : recentItem.value;
     }
@@ -792,13 +390,20 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
     /**
      Item stored in the old map, when present.
      */
-    const oldItem = state.oldCache.get(key,);
-    if (oldItem !== undefined) {
-      if (!deleteIfExpired(key, oldItem,)) {
-        promoteItem(key, oldItem,);
-        return oldItem.value;
-      }
+    const oldItem = state.oldCache
+      .get(key,);
+    if ((oldItem !== undefined) && (!deleteIfExpired({
+      key,
+      item: oldItem,
+    },))) {
+      promoteItem({
+        key,
+        item: oldItem,
+      },);
+      return oldItem.value;
     }
+
+    return undefined;
   }
 
   /**
@@ -815,12 +420,16 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
     /**
      Item stored in the recent map, when present.
      */
-    const recentItem = state.cache.get(key,);
+    const recentItem = state.cache
+      .get(key,);
     if (recentItem !== undefined) {
-      if (!recentItem.expiry)
+      if (!hasExpiryStamp(recentItem))
         return recentItem.value;
 
-      return deleteIfExpired(key, recentItem,)
+      return deleteIfExpired({
+        key,
+        item: recentItem,
+      },)
         ? undefined
         : recentItem.value;
     }
@@ -828,15 +437,21 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
     /**
      Item stored in the old map, when present.
      */
-    const oldItem = state.oldCache.get(key,);
+    const oldItem = state.oldCache
+      .get(key,);
     if (oldItem !== undefined) {
-      if (!oldItem.expiry)
+      if (!hasExpiryStamp(oldItem))
         return oldItem.value;
 
-      return deleteIfExpired(key, oldItem,)
+      return deleteIfExpired({
+        key,
+        item: oldItem,
+      },)
         ? undefined
         : oldItem.value;
     }
+
+    return undefined;
   }
 
   /**
@@ -851,16 +466,24 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
     /**
      Item stored in the recent map, when present.
      */
-    const recentItem = state.cache.get(key,);
+    const recentItem = state.cache
+      .get(key,);
     if (recentItem !== undefined)
-      return !deleteIfExpired(key, recentItem,);
+      return !deleteIfExpired({
+        key,
+        item: recentItem,
+      },);
 
     /**
      Item stored in the old map, when present.
      */
-    const oldItem = state.oldCache.get(key,);
+    const oldItem = state.oldCache
+      .get(key,);
     if (oldItem !== undefined)
-      return !deleteIfExpired(key, oldItem,);
+      return !deleteIfExpired({
+        key,
+        item: oldItem,
+      },);
 
     return false;
   }
@@ -880,11 +503,16 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
      Item stored under the key in either map, recent map taking precedence
      exactly as upstream reads it.
      */
-    const item = state.cache.get(key,) ?? state.oldCache.get(key,);
+    const item = state.cache
+      .get(key,)
+      ?? state.oldCache
+      .get(key,);
     if (item !== undefined)
-      return item.expiry
+      return hasExpiryStamp(item)
         ? (item.expiry - Date.now())
         : Number.POSITIVE_INFINITY;
+
+    return undefined;
   }
 
   /**
@@ -892,15 +520,17 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
    `clear`.
    */
   function clear(): void {
-    state.cache.clear();
-    state.oldCache.clear();
+    state.cache
+      .clear();
+    state.oldCache
+      .clear();
     state.cacheSize = 0;
   }
 
   /**
    Updates the target maximum in place, mirroring upstream's `resize`:
-   growing keeps every item in the recent map, shrinking evicts the oldest
-   ones first with notifications.
+   growing keeps every item, shrinking evicts the oldest ones first with
+   notifications.
    
    @param maxSize - New target maximum number of items.
    
@@ -916,7 +546,7 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
      Live items oldest first, collected through the same lazy-expiry walk
      upstream uses.
      */
-    const items = [...iterateItemEntriesAscending()];
+    const items = [...iteration.iterateItemEntriesAscending()];
     /**
      How many oldest items the new bound no longer fits.
      */
@@ -929,7 +559,10 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
     }
     else {
       if (removeCount > 0)
-        emitEvictions(items.slice(0, removeCount,),);
+        emitEvictions(items.slice(
+          0,
+          removeCount,
+        ),);
 
       state.oldCache = new Map(items.slice(removeCount,),);
       state.cache = new Map<Key, QuickLruItem<Value>>();
@@ -943,32 +576,42 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
    Evicts the least recently used items with notifications, keeping at
    least one, mirroring upstream's `evict`.
    
-   @param count - Number of items to evict.
+   @param count - Number of items to evict; coerced exactly as upstream
+   coerces it, so out-of-type runtime values behave identically.
    
    @defaultValue 1
    */
-  function evict(count = 1,): void {
+  function evict(count: unknown = 1,): void {
     /**
-     Coerced eviction request, `undefined` exactly when upstream gives up
+     Coerced eviction request, invalid exactly when upstream gives up
      before touching the cache.
      */
     const requested = Number(count,);
-    if ((!requested) || (requested <= 0))
+    if ((Number.isNaN(requested,)) || (requested <= 0))
       return;
 
     /**
      Live items oldest first, collected through the same lazy-expiry walk
      upstream uses.
      */
-    const items = [...iterateItemEntriesAscending()];
+    const items = [...iteration.iterateItemEntriesAscending()];
     /**
      How many oldest items leave, never the final item.
      */
-    const evictCount = Math.trunc(Math.min(requested, Math.max(items.length - 1, 0,),),);
+    const evictCount = Math.trunc(Math.min(
+      requested,
+      Math.max(
+        items.length - 1,
+        0,
+      ),
+    ),);
     if (evictCount <= 0)
       return;
 
-    emitEvictions(items.slice(0, evictCount,),);
+    emitEvictions(items.slice(
+      0,
+      evictCount,
+    ),);
     state.oldCache = new Map(items.slice(evictCount,),);
     state.cache = new Map<Key, QuickLruItem<Value>>();
     state.cacheSize = 0;
@@ -978,14 +621,22 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
    Runs one visitor per live entry oldest first, mirroring upstream's
    `forEach`.
    
-   @param options - Visitor and optional `this` value.
+   @param callback - Visitor run per live entry, oldest first.
+   
+   @param thisArgument - `this` value the visitor is called with; defaults
+   to the cache itself, matching upstream.
    */
   function forEach({
     callback,
     thisArgument = self,
   }: QuickLruForEachOptions<Key, Value>,): void {
-    for (const [key, value] of iterateEntriesAscending())
-      callback.call(thisArgument, value, key, self,);
+    for (const [key, value] of iteration.iterateEntriesAscending())
+      callback.call(
+        thisArgument,
+        value,
+        key,
+        self,
+      );
   }
 
   /**
@@ -995,8 +646,9 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
    @returns Stored item count as upstream reports it.
    */
   function readSize(): number {
-    if (!state.cacheSize)
-      return state.oldCache.size;
+    if (state.cacheSize === 0)
+      return state.oldCache
+        .size;
 
     /**
      Old-map keys absent from the recent map, counted in a container
@@ -1005,12 +657,17 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
     const tally = {
       uniques: 0,
     };
-    for (const key of state.oldCache.keys()) {
-      if (!state.cache.has(key,))
+    for (const key of state.oldCache
+      .keys()) {
+      if (!state.cache
+        .has(key,))
         tally.uniques += 1;
     }
 
-    return Math.min(state.cacheSize + tally.uniques, state.maxSize,);
+    return Math.min(
+      state.cacheSize + tally.uniques,
+      state.maxSize,
+    );
   }
 
   /**
@@ -1036,36 +693,56 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
 
   //region Attachment
 
-  attachMethod(self, 'set', set,);
-  attachMethod(self, 'get', get,);
-  attachMethod(self, 'has', has,);
-  attachMethod(self, 'peek', peek,);
-  attachMethod(self, 'delete', deleteEntry,);
-  attachMethod(self, 'clear', clear,);
-  attachMethod(self, 'expiresIn', expiresIn,);
-  attachMethod(self, 'resize', resize,);
-  attachMethod(self, 'evict', evict,);
-  attachMethod(self, 'keys', iterateKeys,);
-  attachMethod(self, 'values', iterateValues,);
-  attachMethod(self, 'entries', iterateEntriesAscending,);
-  attachMethod(self, 'entriesAscending', iterateEntriesAscending,);
-  attachMethod(self, 'entriesDescending', iterateEntriesDescending,);
-  attachMethod(self, 'forEach', forEach,);
-  attachMethod(self, 'toString', toString,);
-  attachMethod(self, Symbol.iterator, iterateEntries,);
-  attachMethod(self, NODE_INSPECT_SYMBOL, inspectCustom,);
-  attachGetter(self, 'size', readSize,);
-  attachGetter(self, 'maxSize', function readMaxSize(): number {
-    return state.maxSize;
-  },);
-  attachGetter(self, 'maxAge', function readMaxAge(): number {
-    return state.maxAge;
-  },);
-  attachGetter(self, '__oldCache', function readOldCache(): Map<Key, QuickLruItem<Value>> {
-    return state.oldCache;
-  },);
-  attachGetter(self, Symbol.toStringTag, function readToStringTag(): string {
-    return 'QuickLRU';
+  /**
+   Every member exactly as upstream's class body carries it: methods are
+   writable-or-accessor entries and `attachMembers` pins `enumerable:
+   false` to match upstream's class-prototype flags.
+   */
+  const members = {
+    set,
+    get,
+    has,
+    peek,
+    delete: deleteEntry,
+    clear,
+    expiresIn,
+    resize,
+    evict,
+    keys: iteration.iterateKeys,
+    values: iteration.iterateValues,
+    entries: iteration.iterateEntriesAscending,
+    entriesAscending: iteration.iterateEntriesAscending,
+    entriesDescending: iteration.iterateEntriesDescending,
+    forEach,
+    toString,
+    [Symbol.iterator]: iteration.iterateEntries,
+    [NODE_INSPECT_SYMBOL]: inspectCustom,
+    /**
+     Stored item count, capped at `maxSize` like upstream's `size` getter.
+     */
+    get size(): number { return readSize(); },
+    /**
+     The set maximum number of items.
+     */
+    get maxSize(): number { return state.maxSize; },
+    /**
+     The set global lifetime in milliseconds.
+     */
+    get maxAge(): number { return state.maxAge; },
+    /**
+     The old cache's raw items, upstream `quick-lru`'s `__oldCache` test
+     hook.
+     */
+    get __oldCache(): Map<Key, QuickLruItem<Value>> { return state.oldCache; },
+    /**
+     `Object.prototype.toString` tag, kept at upstream's `QuickLRU`.
+     */
+    get [Symbol.toStringTag](): string { return 'QuickLRU'; },
+  };
+
+  attachMembers({
+    self,
+    members,
   },);
 
   //endregion Attachment

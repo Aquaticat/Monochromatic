@@ -57,7 +57,10 @@ export type QuickLruOptions<Key, Value> = {
    Called right before an item is evicted by LRU pressure, TTL expiry, or a
    manual `evict` call. Never called for `delete` or `clear`.
    */
-  readonly onEviction?: (key: Key, value: Value) => void;
+  readonly onEviction?: (
+    key: Key,
+    value: Value
+  ) => void;
 };
 
 /**
@@ -114,7 +117,7 @@ export type ResolvedQuickLruOptions = {
  ```
  */
 export function validateMaxSize(maxSize?: number,): number {
-  if (!(maxSize && (maxSize > 0)))
+  if ((maxSize === undefined) || (!(maxSize > 0)))
     throw new InvalidMaxSizeError();
   return maxSize;
 }
@@ -138,6 +141,7 @@ export function validateMaxSize(maxSize?: number,): number {
 export function resolveMaxAge(maxAge?: number,): number {
   if (((typeof maxAge) === 'number') && (maxAge === 0))
     throw new InvalidMaxAgeError();
+  // oxlint-disable-next-line typescript/prefer-nullish-coalescing, typescript/strict-boolean-expressions -- mirrors upstream `options.maxAge || Number.POSITIVE_INFINITY` exactly: every falsy value (NaN and falsy non-number junk included) rewrites to Infinity, while `??` and explicit falsy enumeration both diverge on the junk inputs the differential oracle feeds
   return maxAge || Number.POSITIVE_INFINITY;
 }
 

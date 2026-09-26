@@ -115,6 +115,7 @@ function caseLabel(value: unknown,): string {
 function catchThrown(run: () => unknown,): unknown {
   try {
     run();
+    return undefined;
   }
   catch (error) {
     return error;

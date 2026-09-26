@@ -33,15 +33,25 @@ export {
 } from './errors.ts';
 
 export {
+  /**
+   @internal
+   */
+  hasExpiryStamp,
+  type QuickLruItem,
+} from './quick-lru-item.ts';
+
+export {
   type QuickLruOptions,
   type ResolvedQuickLruOptions,
 } from './quick-lru-options.ts';
 
+export type {
+  QuickLru,
+  QuickLruForEachOptions,
+  QuickLruSetOptions,
+  QuickLruVisitor,
+} from './quick-lru-types.ts';
+
 export {
   createQuickLru,
-  type QuickLru,
-  type QuickLruForEachOptions,
-  type QuickLruItem,
-  type QuickLruSetOptions,
-  type QuickLruVisitor,
 } from './quick-lru.ts';

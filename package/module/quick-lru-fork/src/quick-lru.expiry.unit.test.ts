@@ -235,7 +235,7 @@ await describe({
           key: 'a',
           value: 'alpha',
           maxAge: undefined,
-        },);
+        } as never,);
         clock.advance(150,);
         expect(lru.get('a',),).toBe(undefined,);
       },
@@ -544,7 +544,7 @@ await describe({
         },);
         clock.advance(200,);
         expect([...lru.keys()],).toEqual([],);
-        expect(evicted.sort(),).toEqual([
+        expect(evicted.toSorted(),).toEqual([
           'a=alpha',
           'b=beta',
           'c=gamma',
