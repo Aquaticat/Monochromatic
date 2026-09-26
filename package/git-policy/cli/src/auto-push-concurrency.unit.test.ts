@@ -123,7 +123,7 @@ async function createPushFixture({
       'const prePushFs = require("node:fs");',
       `prePushFs.appendFileSync(${JSON.stringify(prePushLog,)}, "pre-push\\n");`,
       `const prePushCount = prePushFs.readFileSync(${JSON.stringify(prePushLog,)}, "utf8").split("\\n").filter(Boolean).length;`,
-      holdFirstPush ? `if (prePushCount === 1) {\n${barrierSource({ ready, release, },)}\n}` : '',
+      holdFirstPush ? `if (prePushCount === 1) {\nprePushFs.writeFileSync(${JSON.stringify(`${ready}.parent`,)}, String(process.ppid));\n${barrierSource({ ready, release, },)}\n}` : '',
       `process.exit(${String(prePushExitCode,)});`,
     ].join('\n',),
   },);
@@ -449,11 +449,15 @@ await describe({
         expect(await remoteContains({ fixture, oid: oids.get('c2',) ?? 'c2', },),).toBe(true,);
         expect(await pushCount(fixture,),).toBe(2,);
         expect(await pushEntries(fixture.repository,),).toEqual(['refs%2Fheads%2Fmain.last-pushed.json',],);
-        // The killed pusher's orphaned `git push` still waits in its hook; release it and let it finish.
+        // The killed pusher's orphaned `git push` still waits in its hook; release it, let it finish, and check it left the takeover tip.
         /** Orphaned hook process. */
-        const orphan = Number(await readText(fixture.ready,),);
+        const orphanHook = Number(await readText(fixture.ready,),);
+        /** Orphaned `git push` running the hook. */
+        const orphanPush = Number(await readText(`${fixture.ready}.parent`,),);
         await writeFile(fixture.release, '',);
-        await waitForProcessExit(orphan,);
+        await waitForProcessExit(orphanHook,);
+        await waitForProcessExit(orphanPush,);
+        expect((await nanoSpawn(REAL_GIT, ['rev-parse', 'refs/heads/main',], { cwd: fixture.remote, },)).stdout,).toBe(oids.get('c2',),);
       },
     },),
     it({
