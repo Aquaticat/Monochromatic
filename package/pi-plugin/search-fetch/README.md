@@ -123,11 +123,20 @@ GitHub shapes with no `gh` mapping fall through to the paid provider chain:
 
 One git reference may itself contain slashes,
  so blob and tree URLs are ambiguous.
-The planner builds one ordered attempt per split point with the shortest reference first.
-The first attempt whose `gh` call exits zero answers.
+The planner builds one ordered attempt per split point with the shortest reference first,
+encodes the decoded reference as one whole `ref` query value,
+and the first attempt whose `gh` call exits zero answers.
+A failure other than gh's ordinary exit code 1 ends the sequence instead of trying another split,
+so an environmental failure costs one attempt rather than one per split point.
 
 Each `gh` invocation runs in a temporary working directory so no ambient repository context reaches it.
 One invocation carries a fixed 60-second deadline and a 32 MiB captured output ceiling.
+The child environment pins `GH_HOST` to `github.com`,
+ `GH_FORCE_TTY` to empty,
+ `CLICOLOR_FORCE` to `0`,
+and `NO_COLOR` to `1`,
+so ambient values cannot redirect a fetch or switch gh to colored terminal-shaped output.
+Pull request diffs also pass `--color never`.
 
 These outcomes all fall back to Linkup and then Exa:
 
@@ -139,13 +148,17 @@ These outcomes all fall back to Linkup and then Exa:
 - unmapped GitHub shape
 
 Tool-result details record every fallback step as `fallbackChain`.
-A cancelled tool call never falls back.
+A cancelled tool call rethrows before every provider hop instead of continuing to the next provider.
 
 `gh` output returns in the same single-field `{ "markdown": ... }` shape Linkup uses,
  so the model sees raw text.
-Output that is not valid UTF-8 returns a one-line notice naming the captured byte count instead of replacement
-characters.
- Font and image blobs take that path.
+Output that is not renderable text returns a one-line notice naming the captured byte count instead of
+replacement characters.
+Font and image blobs take that path,
+as does any payload carrying a NUL byte.
+A failed optional comment read leaves its own one-line notice after the thread body,
+so a partial thread is visible rather than silent.
+Whitespace-only file content is preserved exactly.
 
 Linkup fetch uses fixed behavior:
 

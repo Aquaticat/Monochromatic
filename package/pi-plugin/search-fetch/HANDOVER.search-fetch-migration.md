@@ -463,6 +463,70 @@ and the package `pi.extensions` entry points at the rebuilt `dist/final/node/ind
    client,
    and routing tests.
 
+### Review round after the first implementation
+
+An independent review of the first implementation found six defects,
+each confirmed by measurement before fixing:
+
+- Reference values crossed a URL syntax boundary unencoded.
+   Measured:
+   a blob URL for reference `topic+one&x=1` produced `?ref=topic+one&x=1`,
+   which parsed as `ref` equal to `topic one` plus an injected `x` parameter.
+   Fixed by decoding the reference and re-encoding it as one whole query value.
+- Release tags kept URL escaping inside an argv value,
+   and the leading-dash check ran before decoding.
+   Fixed by decoding first and validating after.
+- Cancellation protection covered only the gh hop.
+   Fixed by rethrowing before every provider hop,
+   with a test that cancels during the Linkup call and asserts Exa is never called.
+- Split retries continued after environmental failures.
+   Fixed by retrying only gh's ordinary exit code 1.
+   Measured afterwards:
+   a deep blob path with `gh` missing made one attempt instead of three.
+- A failed optional comment read was logged but invisible to the model.
+   Fixed with a one-line notice in the returned text.
+- Whitespace-only file content was dropped by a trimmed-emptiness test.
+   Fixed by dropping only exactly empty parts.
+
+Three ambient-environment hazards were found by measurement while checking that review:
+
+- `GH_HOST` redirects `gh api` to another host.
+   Measured:
+   `GH_HOST=github.example.invalid` made `gh api /repos/cli/cli` fail with
+   `error connecting to github.example.invalid`.
+- `GH_FORCE_TTY` switches gh to colored terminal-shaped output.
+   Measured:
+   one issue comment read grew from 477 bytes to 13990 bytes with ANSI escapes,
+   and one `gh repo view` grew from 6349 bytes to 124371 bytes.
+   `NO_COLOR=1` removes the escapes but not the shape,
+   so the variable is pinned empty.
+- `CLICOLOR_FORCE=1` adds ANSI escapes to `gh pr diff` and `NO_COLOR=1` does not override it,
+   so the diff plan also passes `--color never`,
+   measured ANSI-free with `CLICOLOR_FORCE=1` ambient.
+
+The runner now pins `GH_HOST=github.com`,
+`GH_FORCE_TTY` empty,
+`CLICOLOR_FORCE=0`,
+and `NO_COLOR=1` in the child environment.
+Verified end to end with all three hostile values set in the parent process:
+repository home returned 6349 raw bytes,
+the issue thread returned 2194 bytes identical to the unpinned baseline,
+and the pull request diff carried no ANSI escapes.
+
+A NUL byte now counts as non-text alongside lossy UTF-8 decoding,
+because a byte round trip alone accepts valid UTF-8 that carries NUL.
+
+Provider fallback helpers moved to `src/provider-fallback.ts` to keep the router under the
+300 code-line budget.
+
+Also corrected in `doc/troubleshooting/gh-view-comments-raw-output.md`:
+gh 2.101.0 rejects `--comments` together with `--json` through `cmdutil.MutuallyExclusive` at
+`pkg/cmd/issue/view/view.go:60-63`,
+with exit code 1 and `specify only one of --comments or --json`,
+rather than silently ignoring a flag as the older upstream report described.
+
+Commit `4e990aaf2` carries every fix in this subsection.
+
 ### Open questions for the user
 
 - Should `/actions/runs/{id}` map to `gh run view`,

@@ -318,9 +318,11 @@ Tradeoffs:
    including minimized comment state.
 - markdown bodies arrive JSON-escaped,
    which costs tokens and reads worse for a model than gh's raw text rendering.
-- `--comments` is silently ignored alongside `--json`,
-   reported upstream as `cli/cli#14214`,
-   so the two flags cannot be combined.
+- `--comments` cannot be combined with `--json` on gh 2.101.0.
+   The pair is rejected before any request,
+   measured as exit code 1 with `specify only one of --comments or --json`,
+   and enforced by `cmdutil.MutuallyExclusive` at `pkg/cmd/issue/view/view.go:60-63`.
+   `cli/cli#14214` described the older silently-ignored behavior.
 
 ### Allocate a pseudo-terminal
 
@@ -344,8 +346,9 @@ Rejected for this repository.
    It never contains the title or body in non-terminal mode.
 - Treating exit code zero as evidence of content.
    Zero bytes with exit zero is the normal result for a thread with no displayable comment.
-- Passing `--comments` together with `--json` and expecting comments in the JSON.
-   `cli/cli#14214` reports the flag is ignored there.
+- Passing `--comments` together with `--json`.
+   gh 2.101.0 rejects the combination with exit code 1 and `specify only one of --comments or --json`,
+   rather than silently ignoring one flag as `cli/cli#14214` described for an older release.
 - Expecting `gh release view <url>` to accept a URL the way `issue view`,
    `pr view`,
    `pr diff`,
