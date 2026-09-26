@@ -1091,6 +1091,10 @@ Each enforced ceiling is twice its baseline maximum rounded up to the next 25 mi
 every ceiling remains below 2,000 milliseconds.
 `perf/lifecycle-latency-2026-09-26.json` re-measures the matrix after every non-dry-run commit moved to private preparation;
 every scenario stays below its ceiling.
+`perf/lifecycle-latency-2026-09-26-maintained.json` re-measures it at `30a7d95d0`,
+with automatic maintenance after landing and a reservation default of `1`;
+every scenario still stays below its ceiling,
+and the post-commit scenario's wrapper-added median moves from 399 ms to 413 ms.
 
 ```console
 mise run //package/git-policy/cli:perf:concurrent-commits
@@ -1137,6 +1141,15 @@ it had the lowest per-commit p95 and median in every run
 after the worktree-copy stall fix merge and the trust and replay degradation fixes;
 every scenario's median batch wall time stays within 5 % of the first baseline,
 and disjoint commits at concurrency 8 give a per-commit p95 of 4537 ms against 4614 ms.
+`perf/concurrent-commit-latency-2026-09-26-maintained.json` re-measures it at `30a7d95d0`,
+with automatic maintenance after landing and a reservation default of `1`:
+at concurrency 8 the median batch wall time drops from 4073 ms to 2661 ms
+and the per-commit p95 from 4537 ms to 2809 ms,
+while single commits and pairs,
+which lose few races and leave few packs,
+take 3 to 6 % longer
+(disjoint commits at concurrency 1:
+313 ms to 328 ms).
 
 ## How it works
 
