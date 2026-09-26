@@ -19,6 +19,8 @@ import { withoutComments, } from './translate-address-drop.ts';
 // judge reads it. A title that carries Latin letters (【妄想症Paranoia】's
 // album), a title kept in parentheses after its English, and a title the
 // page itself keeps are left to the judges; comments are cut on both sides.
+// A title standing as a link's whole text is never a gloss (class one
+// hundred forty-five).
 
 /**
  Opening title bracket.
@@ -371,8 +373,48 @@ function insideParentheses(
 }
 
 /**
- Whether an occurrence of a title stands bare: no gloss follows it and no
- parentheses enclose it.
+ Whether an occurrence of a title is a Markdown link's whole text, which the
+ reader sees as the work's name whatever stands around the link.
+
+ CLASS ONE HUNDRED FORTY-FIVE (XingZ6013, 2026-09-26): the consolidated
+ candidate wrote “Gilded Cage” ([笼中之鸟](url)), the Han the link's text in
+ parentheses after a web-lookup English title, and read as a gloss it passed.
+
+ @param text - candidate text
+
+ @param title - Han title as the original brackets it
+
+ @param start - offset of the occurrence
+
+ @returns True when the occurrence opens and closes a link's text
+
+ @example
+ ```ts
+ isLinkText({ text: 'Cat ([猫](https://example.test))', title: '猫', start: 6, },); // true
+ ```
+ */
+function isLinkText(
+  {
+    text,
+    title,
+    start,
+  }: {
+    readonly text: string;
+    readonly title: string;
+    readonly start: number;
+  },
+): boolean {
+  if (text.charAt(start - 1,) !== LINK_OPEN)
+    return false;
+  return text.startsWith(
+    LINK_MIDDLE,
+    start + title.length,
+  );
+}
+
+/**
+ Whether an occurrence of a title stands bare: a link's whole text, or with
+ no gloss after it and no parentheses around it.
 
  @param text - candidate text
 
@@ -398,6 +440,12 @@ function standsBare(
     readonly start: number;
   },
 ): boolean {
+  if (isLinkText({
+    text,
+    title,
+    start,
+  },))
+    return true;
   if (glossFollows({
     text,
     end: start + title.length,

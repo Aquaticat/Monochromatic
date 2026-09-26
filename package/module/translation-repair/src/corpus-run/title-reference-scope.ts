@@ -3,7 +3,8 @@
 // carries several footnotes, each quoting its own title, so a whole-slice
 // search for one quoted span reads ambiguous; where the original references
 // the title on a footnote definition line, the search is held to the page's
-// line with the same label.
+// line with the same label, and where it references it on a line opening
+// with a tag, to the page's line opening with the same tag in the same place.
 
 /**
  Newline, which no span crosses.
@@ -96,9 +97,202 @@ function lineStartingWith(
 }
 
 /**
- Span of the page text a bracket or quote search reads: the page's
- definition line where the original references the title on a footnote
- definition line, the whole text otherwise.
+ Opening of an HTML tag.
+ */
+const TAG_OPEN = '<';
+
+/**
+ Opening of an HTML closing tag, which frames no line.
+ */
+const CLOSING_TAG_OPEN = '</';
+
+/**
+ Closing of an HTML tag.
+ */
+const TAG_CLOSE = '>';
+
+/**
+ Opening tag a line starts with, empty where the line opens with no tag.
+
+ CLASS ONE HUNDRED FORTY-SIX (XingZ6013, 2026-09-26): the second song credit
+ stands on its own `<p style="text-align: end;">` line in a slice whose
+ summary quotes a line, and the whole-slice quote search read two spans and
+ stood aside; the page writes the credit on a line opening with the same
+ tag.
+
+ @param line - one line
+
+ @returns Opening tag through its `>`
+
+ @example
+ ```ts
+ openingTag({ line: '<p style="text-align: end;">—— 雨猫</p>', },); // '<p style="text-align: end;">'
+ ```
+ */
+function openingTag({ line, }: { readonly line: string; },): string {
+  if (!line.startsWith(TAG_OPEN,) || line.startsWith(CLOSING_TAG_OPEN,))
+    return '';
+  /**
+   Offset of the tag's close, -1 for none.
+   */
+  const close = line.indexOf(TAG_CLOSE,);
+  if (close === (-1))
+    return '';
+  return line.slice(
+    0,
+    close + TAG_CLOSE.length,
+  );
+}
+
+/**
+ Offsets of every line in a text that opens with a frame, in order.
+
+ @param text - text to read
+
+ @param frame - label or tag
+
+ @returns Offsets of the lines' first characters
+
+ @example
+ ```ts
+ framedLineStarts({ text: '<p>a</p>\n\n<p>b</p>', frame: '<p>', },); // [0, 10]
+ ```
+ */
+function framedLineStarts(
+  {
+    text,
+    frame,
+  }: {
+    readonly text: string;
+    readonly frame: string;
+  },
+): readonly number[] {
+  /**
+   Offsets found so far.
+   */
+  const starts: number[] = [];
+  for (
+    let at = 0;
+    at !== (-1);
+    at = lineAfter({
+      text,
+      at,
+    },)
+  ) {
+    if (text.startsWith(
+      frame,
+      at,
+    ))
+      starts.push(at,);
+  }
+  return starts;
+}
+
+/**
+ Offset of the line after the one at an offset, -1 at the text's last line.
+
+ @param text - text to read
+
+ @param at - offset inside a line
+
+ @returns Offset of the next line's first character, or -1
+
+ @example
+ ```ts
+ lineAfter({ text: 'a\nb', at: 0, },); // 2
+ ```
+ */
+function lineAfter(
+  {
+    text,
+    at,
+  }: {
+    readonly text: string;
+    readonly at: number;
+  },
+): number {
+  /**
+   Offset of the line's end, -1 for none.
+   */
+  const end = text.indexOf(
+    LINE_END,
+    at,
+  );
+  return (end === (-1)) ? -1 : end + LINE_END.length;
+}
+
+/**
+ Offset of the page line that renders a framed original line: the page's
+ line with the same label for a definition, else the page line holding the
+ same place among the lines that open with the same tag, where the page
+ opens as many lines with it as the original does; -1 otherwise.
+
+ @param sourceText - original text of the slice, comments cut
+
+ @param pageText - page text of the slice
+
+ @param line - original line carrying the title
+
+ @param offset - offset of that line in the original
+
+ @returns Offset of the page line's first character, or -1
+
+ @example
+ ```ts
+ framedPageLine({ sourceText: '<p>猫</p>', pageText: '<p>Cat</p>', line: '<p>猫</p>', offset: 0, },); // 0
+ ```
+ */
+function framedPageLine(
+  {
+    sourceText,
+    pageText,
+    line,
+    offset,
+  }: {
+    readonly sourceText: string;
+    readonly pageText: string;
+    readonly line: string;
+    readonly offset: number;
+  },
+): number {
+  /**
+   Label the line opens with, if it is a definition.
+   */
+  const label = footnoteLabel({ line, },);
+  if (label !== '')
+    return lineStartingWith({
+      pageText,
+      label,
+    },);
+  /**
+   Opening tag the line starts with, if any.
+   */
+  const frame = openingTag({ line, },);
+  if (frame === '')
+    return -1;
+  /**
+   Original lines opening with the tag.
+   */
+  const sourceStarts = framedLineStarts({
+    text: sourceText,
+    frame,
+  },);
+  /**
+   Page lines opening with the tag.
+   */
+  const pageStarts = framedLineStarts({
+    text: pageText,
+    frame,
+  },);
+  if (sourceStarts.length !== pageStarts.length)
+    return -1;
+  return pageStarts[sourceStarts.indexOf(offset,)] ?? -1;
+}
+
+/**
+ Span of the page text a bracket or quote search reads: the page's line
+ rendering the original line that carries the title, where that line opens
+ with a footnote label or a tag the page keeps, the whole text otherwise.
 
  @param sourceText - original text of the slice, comments cut
 
@@ -124,21 +318,38 @@ export function referenceScope(
     readonly title: string;
   },
 ): Span {
-  for (const line of sourceText.split(LINE_END,)) {
+  for (
+    let offset = 0;
+    offset !== (-1);
+    offset = lineAfter({
+      text: sourceText,
+      at: offset,
+    },)
+  ) {
+    /**
+     Offset of the line's end, -1 for the text's end.
+     */
+    const lineEnd = sourceText.indexOf(
+      LINE_END,
+      offset,
+    );
+    /**
+     Original line under the scan.
+     */
+    const line = sourceText.slice(
+      offset,
+      (lineEnd === (-1)) ? sourceText.length : lineEnd,
+    );
     if (!line.includes(title,))
       continue;
     /**
-     Label the referencing line opens with, if it is a definition.
+     Offset of the page line rendering it, -1 for none.
      */
-    const label = footnoteLabel({ line, },);
-    if (label === '')
-      continue;
-    /**
-     Offset of the page's line with the same label, -1 for none.
-     */
-    const start = lineStartingWith({
+    const start = framedPageLine({
+      sourceText,
       pageText,
-      label,
+      line,
+      offset,
     },);
     if (start === (-1))
       continue;
