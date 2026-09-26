@@ -122,6 +122,34 @@ await describe({
       },
     },),
     it({
+      name: 'an adjacent edit captured on top of another commit\'s edit replays with its captured bytes as they are',
+      fn: async function testSubsumedAdjacent(): Promise<void> {
+        await using repository = await createLandingRepository();
+        await writeWorktreeFile({ repository, name: 'f.txt', content: numberedLines({},), },);
+        await git({ repository, args: ['add', 'f.txt',], },);
+        await git({ repository, args: ['commit', '--quiet', '-m', 'lines',], },);
+        await writeWorktreeFile({ repository, name: 'f.txt', content: numberedLines({ 5: 'first', },), },);
+        /** First commit, captured before the second agent's edit. */
+        const first = await holdInEditor({ repository, name: 'first', args: ['commit', '-e', '-m', 'first', 'f.txt',], },);
+        await writeWorktreeFile({ repository, name: 'f.txt', content: numberedLines({ 5: 'first', 6: 'second', },), },);
+        /** Second commit, captured with both edits in the worktree. */
+        const second = await holdInEditor({ repository, name: 'second', args: ['commit', '-e', '-m', 'second', 'f.txt',], },);
+        await first.release();
+        expect((await first.outcome).exitCode,).toBe(0,);
+        /** First commit, landed. */
+        const landed = await git({ repository, args: ['rev-parse', 'HEAD',], },);
+        await second.release();
+        /** Replayed outcome. */
+        const outcome = await second.outcome;
+        expect(outcome.exitCode,).toBe(0,);
+        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'commit-replayed',],);
+        expect(await git({ repository, args: ['rev-parse', 'HEAD~1',], },),).toBe(landed,);
+        expect(`${await git({ repository, args: ['show', 'HEAD:f.txt',], },)}\n`,).toBe(numberedLines({ 5: 'first', 6: 'second', },),);
+        expect(await git({ repository, args: ['status', '--porcelain',], },),).toBe('',);
+        expect(await leftovers(repository,),).toEqual([],);
+      },
+    },),
+    it({
       name: 'an SSH-signed commit replays re-signed under its original identities and dates',
       fn: async function testSignedReplay(): Promise<void> {
         await using repository = await createLandingRepository();
