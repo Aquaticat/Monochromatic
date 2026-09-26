@@ -1,0 +1,192 @@
+diff --git a/crates/oxc_linter/src/rules/unicorn/prefer_spread.rs b/crates/oxc_linter/src/rules/unicorn/prefer_spread.rs
+index f0f347a..3c0dfe5 100644
+--- a/crates/oxc_linter/src/rules/unicorn/prefer_spread.rs
++++ b/crates/oxc_linter/src/rules/unicorn/prefer_spread.rs
+@@ -43,7 +43,7 @@ declare_oxc_lint!(
+     PreferSpread,
+     unicorn,
+     style,
+-    conditional_fix,
++    conditional_dangerous_fix,
+     version = "0.0.17",
+     short_description = "Enforces the use of the spread operator (`...`) over outdated patterns.",
+ );
+@@ -93,7 +93,14 @@ fn check_unicorn_prefer_spread<'a>(
+                 return;
+             }
+ 
+-            report_with_spread_fixer(node, ctx, call_expr.span, "Array.from()", expr);
++            report_with_spread_fixer(
++                node,
++                ctx,
++                call_expr.span,
++                "Array.from()",
++                expr,
++                FixKind::SafeFix,
++            );
+         }
+         // `array.concat()`
+         "concat" => {
+@@ -125,10 +132,6 @@ fn check_unicorn_prefer_spread<'a>(
+                 return;
+             }
+ 
+-            if is_typed_array_or_buffer_construction(member_expr_obj) {
+-                return;
+-            }
+-
+             if let Expression::Identifier(ident) = member_expr_obj
+                 && IGNORED_SLICE_CALLEE.contains(&ident.name.as_str())
+             {
+@@ -148,7 +151,14 @@ fn check_unicorn_prefer_spread<'a>(
+                 }
+             }
+ 
+-            report_with_spread_fixer(node, ctx, call_expr.span, "array.slice()", member_expr_obj);
++            report_with_spread_fixer(
++                node,
++                ctx,
++                call_expr.span,
++                "array.slice()",
++                member_expr_obj,
++                receiver_fix_kind(member_expr_obj, ctx),
++            );
+         }
+         // `array.toSpliced()`
+         "toSpliced" => {
+@@ -167,6 +177,7 @@ fn check_unicorn_prefer_spread<'a>(
+                 call_expr.span,
+                 "array.toSpliced()",
+                 member_expr.object(),
++                receiver_fix_kind(member_expr.object(), ctx),
+             );
+         }
+         _ => {}
+@@ -210,6 +221,9 @@ fn is_not_array(expr: &Expression, ctx: &LintContext) -> bool {
+     if expr.is_literal() {
+         return true;
+     }
++    if is_typed_array_or_buffer_construction(expr.without_parentheses()) {
++        return true;
++    }
+ 
+     if let Expression::CallExpression(call_expr) = expr {
+         if let Some(member_expr) = call_expr.callee.without_parentheses().as_member_expression() {
+@@ -255,14 +269,55 @@ fn is_not_array(expr: &Expression, ctx: &LintContext) -> bool {
+     false
+ }
+ 
++/// `x.slice()` / `x.toSpliced()` equals `[...x]` only when `x` is an `Array`.
++/// For strings, typed arrays, or user-defined classes the rewrite changes the
++/// result type, so the fix is dangerous unless the receiver is a known array.
++fn receiver_fix_kind(receiver: &Expression, ctx: &LintContext) -> FixKind {
++    if is_known_array(receiver, ctx) { FixKind::SafeFix } else { FixKind::DangerousFix }
++}
++
++/// Returns `true` for `Array.from(...)`, `Array.of(...)`, or a `const` binding
++/// initialized with an array literal or one of those calls.
++fn is_known_array(expr: &Expression, ctx: &LintContext) -> bool {
++    match expr.without_parentheses() {
++        Expression::ArrayExpression(_) => true,
++        Expression::CallExpression(call) => {
++            call.callee.is_specific_member_access("Array", "from")
++                || call.callee.is_specific_member_access("Array", "of")
++        }
++        Expression::Identifier(ident) => {
++            let Some(symbol_id) = ast_util::get_symbol_id_of_variable(ident, ctx) else {
++                return false;
++            };
++            let scoping = ctx.scoping();
++            if !scoping.symbol_flags(symbol_id).is_const_variable() {
++                return false;
++            }
++            let node = ctx.nodes().get_node(scoping.symbol_declaration(symbol_id));
++            matches!(
++                node.kind(),
++                AstKind::VariableDeclarator(decl)
++                    if decl.id.is_binding_identifier()
++                        && decl.init.as_ref().is_some_and(|init| {
++                            !matches!(init.without_parentheses(), Expression::Identifier(_))
++                                && is_known_array(init, ctx)
++                        })
++            )
++        }
++        _ => false,
++    }
++}
++
+ fn report_with_spread_fixer(
+     node: &AstNode,
+     ctx: &LintContext,
+     span: Span,
+     bad_method: &str,
+     expr_to_spread: &Expression,
++    fix_kind: FixKind,
+ ) {
+-    ctx.diagnostic_with_fix(unicorn_prefer_spread_diagnostic(span, bad_method), |fixer| {
++    let diagnostic = unicorn_prefer_spread_diagnostic(span, bad_method);
++    ctx.diagnostic_with_fix_of_kind(diagnostic, fix_kind, |fixer| {
+         let needs_semi = ast_util::could_be_asi_hazard(node, ctx);
+         let mut codegen = fixer.codegen();
+         if needs_semi {
+@@ -365,6 +420,8 @@ fn test() {
+         "new Float64Array([1, 2, 3]).slice()",
+         "new BigInt64Array([1n, 2n, 3n]).slice()",
+         "new BigUint64Array([1n, 2n, 3n]).slice()",
++        "const b = new Uint8Array(4); b.slice()",
++        "const buf = new ArrayBuffer(8); buf.slice(0)",
+         "new Array.toSpliced()",
+         "toSpliced()",
+         "array[toSpliced]()",
+@@ -663,6 +720,51 @@ str.split("")"#,
+         ("[Array.from(set)]", "[[...set]]"),
+         ("async () => await Array.from(set)", "async () => await [...set]"),
+     ];
++    let mut fix = fix
++        .into_iter()
++        .map(|(source, expected)| (source, expected, None, FixKind::All))
++        .collect::<Vec<_>>();
++    fix.extend([
++        // Receiver type is only guessed: it may be a typed array or a string, where
++        // `[...x]` yields a `number[]` / `string[]` instead of a copy.
++        (
++            "declare const scoopGrams: Uint8Array; scoopGrams.slice()",
++            "declare const scoopGrams: Uint8Array; scoopGrams.slice()",
++            None,
++            FixKind::SafeFix,
++        ),
++        (
++            "declare const scoopGrams: Uint8Array; scoopGrams.slice()",
++            "declare const scoopGrams: Uint8Array; [...scoopGrams]",
++            None,
++            FixKind::DangerousFix,
++        ),
++        (
++            "function f(text: string) { return text.slice() }",
++            "function f(text: string) { return text.slice() }",
++            None,
++            FixKind::SafeFix,
++        ),
++        (
++            "function f(text: string) { return text.slice() }",
++            "function f(text: string) { return [...text] }",
++            None,
++            FixKind::DangerousFix,
++        ),
++        ("array.slice(0)", "array.slice(0)", None, FixKind::SafeFix),
++        ("array.toSpliced()", "array.toSpliced()", None, FixKind::SafeFix),
++        ("let a = [1]; a.slice()", "let a = [1]; a.slice()", None, FixKind::SafeFix),
++        // Known arrays keep their safe fix.
++        ("const a = [1, 2]; a.slice()", "const a = [1, 2]; [...a]", None, FixKind::SafeFix),
++        ("Array.of(1, 2).slice()", "[...Array.of(1, 2)]", None, FixKind::SafeFix),
++        (
++            "const a = Array.of(1); a.toSpliced()",
++            "const a = Array.of(1); [...a]",
++            None,
++            FixKind::SafeFix,
++        ),
++        ("const x = Array.from(set);", "const x = [...set];", None, FixKind::SafeFix),
++    ]);
+ 
+     Tester::new(PreferSpread::NAME, PreferSpread::PLUGIN, pass, fail)
+         .expect_fix(fix)

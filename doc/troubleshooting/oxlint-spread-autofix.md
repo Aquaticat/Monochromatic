@@ -317,7 +317,7 @@ not a new issue.
    which the fix-kind approach does not need.
 6. **Minimal fix prototyped:**
    yes.
-   [oxlint-spread-autofix.patch](oxlint-spread-autofix.patch),
+   [oxlint-spread-autofix.no-useless-spread.patch](oxlint-spread-autofix.no-useless-spread.patch),
    against `oxc-project/oxc` `f51e67812ed15cea95c9bddfe614d889685f0703`:
    `is_method_name_guess` in `const_eval.rs` marks hints that come only from a method name
    (`split`,
@@ -372,7 +372,7 @@ new tests and the old kind it fails on exactly `[...text.slice(0, 3)]`, `[...tex
 
 <details><summary>patch</summary>
 
-(paste doc/troubleshooting/oxlint-spread-autofix.patch)
+(paste doc/troubleshooting/oxlint-spread-autofix.no-useless-spread.patch)
 
 </details>
 
@@ -382,5 +382,136 @@ AI disclosure: investigation, source trace, and prototype were done with an AI c
 
 #### `prefer-spread`: typed-array and string `slice()` receivers
 
-Pending the prototype of the receiver fix;
-this subsection is completed when it reports.
+Duplicate search in oxc issues and pull requests,
+open and closed,
+for `prefer-spread` with `slice`,
+`typed array`,
+`Uint8Array`,
+and `string`:
+pull request 19478 (merged 2026-02-17) covers direct `new Uint8Array(…)`/`new ArrayBuffer(…)` receivers,
+pull request 23520 (merged 2026-06-16) skips literal and other syntactically non-array receivers,
+pull request 26935 (merged 2026-09-22,
+after 1.85.0) changed the rule again,
+and issue 26873 (closed) covers `String#split('')`.
+The prototype's clone includes all of them,
+and identifier-held typed arrays and string parameters are still rewritten there,
+so none is a candidate fix for this failure,
+and no open report covers it.
+The artifact is a new issue.
+
+1. **Upstream's fault:**
+   yes;
+   the fix is a safe fix chosen from spelling heuristics.
+2. **Upstream can fix it:**
+   yes;
+   the prototype below touches one file.
+3. **Supported use case:**
+   yes;
+   upstream already excludes direct typed-array and buffer receivers,
+   so typed arrays are an intended non-target.
+4. **Contribution welcome:**
+   yes,
+   with disclosure (`CONTRIBUTING.md:12-21`).
+5. **Likely to fix:**
+   plausible;
+   the rule receives regular receiver-exclusion fixes (pull requests 19478,
+   23520,
+   26935).
+6. **Minimal fix prototyped:**
+   yes.
+   [oxlint-spread-autofix.prefer-spread.patch](oxlint-spread-autofix.prefer-spread.patch)
+   (`crates/oxc_linter/src/rules/unicorn/prefer_spread.rs`,
+   110 insertions and 8 deletions,
+   against `f51e67812ed15cea95c9bddfe614d889685f0703`):
+   the rule becomes `conditional_dangerous_fix`,
+   as `no_null` and `prefer_array_flat` already declare;
+   `slice`/`toSpliced` rewrites are `SafeFix` only when `is_known_array` proves the receiver
+   (array literal,
+   `Array.from`/`Array.of`,
+   or a `const` bound to one),
+   otherwise `DangerousFix`;
+   `is_not_array` also returns true for `new <TypedArray|ArrayBuffer|SharedArrayBuffer>(…)`,
+   covering `const` initializers;
+   `Array.from(x)` stays safe.
+   Verified with
+   `podman run --rm --memory=6g --cpus=4 … docker.io/library/rust:latest cargo test -p oxc_linter prefer_spread`:
+   post-patch both `prefer_spread` tests pass with no snapshot change;
+   the control (new tests,
+   old behavior) fails on exactly the new cases:
+
+   ```text
+   2 test cases expected to pass, but failed:
+      1. const b = new Uint8Array(4); b.slice()
+      2. const buf = new ArrayBuffer(8); buf.slice(0)
+   5 fixes did not produce expected output:
+      declare const scoopGrams: Uint8Array; scoopGrams.slice() -> ...; [...scoopGrams]
+      function f(text: string) { return text.slice() } -> ... return [...text] }
+      array.slice(0) -> [...array]
+      array.toSpliced() -> [...array]
+      let a = [1]; a.slice() -> let a = [1]; [...a]
+   ```
+
+   Not handled:
+   holes in a proven array literal (`[1,,2]`) become `undefined` under the spread,
+   and a local binding named `Array` would pass `is_known_array`.
+   `toSpliced` exists only on `Array.prototype` among built-ins,
+   so reviewers may prefer keeping it safe.
+   Formatting was wrapped by hand;
+   the container had no rustfmt.
+
+All six hold.
+The draft is fileable once the person filing re-runs the reproduction and fills in the disclosure bracket;
+posting needs the user's approval.
+
+~~~md
+Title: linter(unicorn/prefer-spread): safe fix rewrites `.slice()` on typed arrays and strings held in variables
+
+Template: `.github/ISSUE_TEMPLATE/linter_bug_report.yaml` (fill its version, config, and reproduction fields
+from the sections below)
+
+### Description
+
+On oxlint 1.85.0 (and `main` at f51e678), plain `--fix` rewrites `x.slice()` / `x.slice(0)` / `x.toSpliced()` to
+`[...x]` whenever `is_not_array` (`prefer_spread.rs:203-256`) cannot rule out an array. It follows a `const`
+initializer and otherwise falls back to identifier capitalization, so:
+
+- `declare const scoopGrams: Uint8Array; scoopGrams.slice()` → `[...scoopGrams]`: a `number[]` instead of a
+  `Uint8Array` copy; later writes of 300 store 300 instead of wrapping to 44.
+- `const b = new Uint8Array(4); b.slice()` → `[...b]`: the `new Uint8Array` initializer reaches
+  `_ => return false`; only direct `new Uint8Array(...).slice()` is excluded (`:176-201`).
+- `function f(text: string) { return text.slice(); }` → `[...text]`: an array of code points.
+
+The fix is emitted with `ctx.diagnostic_with_fix` (`:265`), i.e. `FixKind::SafeFix`, under `conditional_fix` (`:46`).
+
+### Reproduction
+
+```json
+{ "plugins": ["unicorn"], "categories": { "correctness": "off" }, "rules": { "unicorn/prefer-spread": "error" } }
+```
+
+```ts
+declare const scoopGrams: Uint8Array;
+declare const text: string;
+export const scoopCopy = scoopGrams.slice();
+export const codeCopy = text.slice();
+```
+
+`oxlint --fix` produces `[...scoopGrams]` and `[...text]`.
+
+### Suggested fix
+
+Keep the diagnostic, but make the `slice`/`toSpliced` rewrite a `DangerousFix` unless the receiver is provably an
+array (array literal, `Array.from`/`Array.of`, or a `const` bound to one), and let `is_not_array` return `true` for
+`new <TypedArray|ArrayBuffer|SharedArrayBuffer>(...)` initializers. Prototype (one file, +110/-8 incl. tests,
+category `conditional_dangerous_fix` as in `no_null`/`prefer_array_flat`) passes `cargo test -p oxc_linter
+prefer_spread`; with the old behavior the new cases fail as expected:
+
+<details><summary>patch</summary>
+
+(paste doc/troubleshooting/oxlint-spread-autofix.prefer-spread.patch)
+
+</details>
+
+AI disclosure: investigation, source trace, and prototype were done with an AI coding assistant.
+[Filer: re-run the reproduction and the cargo test yourself, then replace this bracket with what you verified.]
+~~~
