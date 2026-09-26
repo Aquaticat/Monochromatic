@@ -22,6 +22,7 @@ import type {
   StagedDifference,
 } from './invariant-model-fixture.ts';
 import { sameContent, } from './invariant-fixture.ts';
+import { classifyLeftovers, } from './leftover-fixture.ts';
 import {
   checkExitConsistency,
   extractPolicyEvents,
@@ -49,9 +50,7 @@ import { readWorktree, } from './worker-fixture.ts';
 
 /**
  Lists leftover transaction state:
- `refs/cli-git/` refs,
- `cli-git-transaction*` entries,
- and `*.lock` files anywhere in the common directory outside `objects/`.
+ `refs/cli-git/` refs plus the entries {@link classifyLeftovers} reports.
 
  @param repository - scenario repository
 
@@ -85,23 +84,12 @@ async function findLeftovers(repository: ScenarioRepository,): Promise<readonly 
     repository.commonDir,
     { recursive: true, },
   );
-  /**
-   Lock files and transaction directories.
-   */
-  const files = entries.filter(function leftover(entry,) {
-    /**
-     Entry basename.
-     */
-    const name = entry.split('/',)
-      .at(-1,)
-      ?? entry;
-    return (!entry.startsWith('objects/',)) && (name.endsWith('.lock',) || name.startsWith('cli-git-transaction',));
-  },);
   return [
     ...refs,
-    ...files.map(function relative(entry,) {
-    return `.git/${entry}`;
-  },),
+    ...classifyLeftovers(entries,)
+      .map(function relative(entry,) {
+      return `.git/${entry}`;
+    },),
   ];
 }
 

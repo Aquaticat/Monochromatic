@@ -278,6 +278,11 @@ export async function stagePartially({
     ],
     mustSucceed: true,
   },);
+  context.ledger
+    .recordStaged({
+      path,
+      staged: true,
+    },);
   await writeWorktree({
     ...context,
     path,

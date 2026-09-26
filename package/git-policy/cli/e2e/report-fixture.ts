@@ -14,6 +14,11 @@ import type { ScenarioResult, } from './scenario-model-fixture.ts';
 const STATUS_WIDTH = 5;
 
 /**
+ Workload digest prefix length in the report.
+ */
+const WORKLOAD_PREFIX = 12;
+
+/**
  Detail lines shown per result, enough for an error's message and top frames.
  */
 const MAX_DETAIL_LINES = 8;
@@ -42,7 +47,11 @@ export function formatResult(result: ScenarioResult,): readonly string[] {
   return [
     `${result.status
       .toUpperCase()
-      .padEnd(STATUS_WIDTH,)} git ${result.gitVersion} ${result.name} (${String(result.durationMs,)} ms)${attempts === '' ? '' : ` exits: ${attempts}`}`,
+      .padEnd(STATUS_WIDTH,)} git ${result.gitVersion} ${result.name} (${String(result.durationMs,)} ms)${result.workload === undefined ? '' : ` workload ${result.workload
+        .slice(
+          0,
+          WORKLOAD_PREFIX,
+        )}`}${attempts === '' ? '' : ` exits: ${attempts}`}`,
     ...result.violations
       .map(function violationLine(violation,) {
       return `      ${violation.invariant} [${violation.subject}]: ${violation.detail}`;

@@ -166,6 +166,54 @@ export function contentOf(bytes?: Buffer,): ContentState {
   };
 }
 
+/**
+ Digest of a scenario's workload:
+ each attempt's label,
+ mode,
+ selection,
+ and captured bytes,
+ independent of completion order and of timing-dependent facts such as `HEAD` or exit codes.
+ Equal digests across runs of one seed show the workload replayed exactly.
+
+ @param attempts - finished attempts
+
+ @returns hexadecimal SHA-256 digest
+
+ @example
+ ```ts
+ workloadDigest(ledger.snapshot().attempts);
+ ```
+ */
+export function workloadDigest(attempts: readonly AttemptRecord[],): string {
+  /**
+   Canonical attempt descriptions sorted by label.
+   */
+  const canonical = attempts
+    .map(function describe(attempt,) {
+      return JSON.stringify([
+        attempt.label,
+        attempt.mode,
+        attempt.selectedPaths,
+        attempt.captured
+          .map(function capturedDigest(captured,) {
+          return [
+            captured.path,
+            contentOf(captured.bytes,),
+          ];
+        },),
+      ],);
+    },)
+    .toSorted(function byText(
+      left,
+      right,
+    ) {
+      return left.localeCompare(right,);
+    },);
+  return createHash('sha256',)
+    .update(canonical.join('\n',),)
+    .digest('hex',);
+}
+
 //endregion Content digests
 
 //region Ledger

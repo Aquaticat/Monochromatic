@@ -2,9 +2,7 @@
  Single-commit baselines for commit shapes:
  explicit paths,
  index commits,
- sequential trace replay,
- amend,
- and a lint-staged hook.
+ and sequential trace replay.
  Each must pass against today's build,
  which proves the harness sound for these shapes.
 
@@ -24,10 +22,7 @@ import {
   seedTexts,
 } from './scenario-helper-fixture.ts';
 import {
-  amendReplacedBase,
-  commitAmendBase,
   seedTracePaths,
-  stagePartially,
   TRACE_MAX_CHANGES,
 } from './scenario-setup-fixture.ts';
 import { runTraceOperations, } from './trace-execution-fixture.ts';
@@ -121,6 +116,11 @@ const explicitCommit: ScenarioDefinition = {
       ],
       mustSucceed: true,
     },);
+    context.ledger
+      .recordStaged({
+        path: 'added.txt',
+        staged: true,
+      },);
     /**
      Add attempt.
      */
@@ -198,6 +198,16 @@ const indexCommit: ScenarioDefinition = {
       ],
       mustSucceed: true,
     },);
+    [
+      'one.txt',
+      'two.txt',
+    ].forEach(function staged(path,) {
+      context.ledger
+        .recordStaged({
+          path,
+          staged: true,
+        },);
+    },);
     /**
      Index attempt.
      */
@@ -268,107 +278,12 @@ const traceSequential: ScenarioDefinition = {
 };
 
 /**
- Amend of a token-free setup commit.
- */
-const amend: ScenarioDefinition = {
-  name: 'baseline-amend',
-  group: 'baseline',
-  summary: 'amend a setup commit with new bytes for its path',
-  repository(random,) {
-    return repositoryOptions({ seedFiles: seedTexts({
-      random,
-      paths: ['amend.txt',],
-    },), },);
-  },
-  async run(context,) {
-    /**
-     Parent of the setup commit.
-     */
-    const { parent, } = await commitAmendBase({
-      context,
-      path: 'amend.txt',
-    },);
-    await writeWorktree({
-      ...context,
-      path: 'amend.txt',
-      bytes: synthesizeText({
-        random: context.random
-          .fork('amend',),
-        size: FILE_BYTES,
-      },),
-    },);
-    /**
-     Amend attempt.
-     */
-    const attempt = await (await startAttempt({
-      ...context,
-      label: 'amend',
-      paths: ['amend.txt',],
-      mode: 'amend',
-    },)).finished;
-    return [
-      allSucceeded({
-        name: 'all-commits-succeed',
-        attempts: [attempt,],
-      },),
-      await amendReplacedBase({
-        context,
-        amend: attempt,
-        parent,
-      },),
-    ];
-  },
-};
-
-/**
- lint-staged-style hook on a partially staged index commit in a linked worktree.
- */
-const lintStaged: ScenarioDefinition = {
-  name: 'baseline-lint-staged',
-  group: 'baseline',
-  summary: 'lint-staged backup stash and hide-unstaged hook on one partially staged index commit (linked worktree)',
-  repository(random,) {
-    return repositoryOptions({
-      seedFiles: seedTexts({
-        random,
-        paths: ['partial.txt',],
-      },),
-      worktree: 'linked',
-      hooks: 'hookdir',
-      hookEvents: ['pre-commit',],
-      hookMode: 'lint-staged',
-    },);
-  },
-  async run(context,) {
-    await stagePartially({
-      context,
-      path: 'partial.txt',
-    },);
-    /**
-     Index attempt.
-     */
-    const attempt = await (await startAttempt({
-      ...context,
-      label: 'lint-staged',
-      paths: ['partial.txt',],
-      mode: 'index',
-    },)).finished;
-    return [allSucceeded({
-      name: 'all-commits-succeed',
-      attempts: [attempt,],
-    },),];
-  },
-};
-
-/**
  Commit-shape baselines in report order.
  */
 export const BASELINE_COMMIT_SCENARIOS: readonly ScenarioDefinition[] = [
   explicitCommit,
   indexCommit,
   traceSequential,
-  amend,
-  lintStaged,
 ];
 
 //endregion Scenarios

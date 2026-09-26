@@ -5,6 +5,7 @@
  */
 
 import { AMEND_SWITCH_SCENARIOS, } from './scenario-amend-switch-fixture.ts';
+import { BASELINE_AMEND_SCENARIOS, } from './scenario-baseline-amend-fixture.ts';
 import { BASELINE_COMMIT_SCENARIOS, } from './scenario-baseline-commit-fixture.ts';
 import { BASELINE_HOOK_SCENARIOS, } from './scenario-baseline-hook-fixture.ts';
 import { CONCURRENT_PATH_SCENARIOS, } from './scenario-concurrent-paths-fixture.ts';
@@ -24,6 +25,7 @@ import { SIGKILL_SCENARIOS, } from './scenario-sigkill-fixture.ts';
  */
 export const SCENARIO_CATALOG: readonly ScenarioDefinition[] = [
   ...BASELINE_COMMIT_SCENARIOS,
+  ...BASELINE_AMEND_SCENARIOS,
   ...BASELINE_HOOK_SCENARIOS,
   ...CONCURRENT_PATH_SCENARIOS,
   ...SHARED_FILE_SCENARIOS,

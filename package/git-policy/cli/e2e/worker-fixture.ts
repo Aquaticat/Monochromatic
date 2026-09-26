@@ -281,6 +281,9 @@ export function trackAttempt({
     token: pending.token,
     running,
     kill(): void {
+      // A process that already settled keeps its real outcome; only an in-flight group counts as killed.
+      if (running.isSettled())
+        return;
       state.killed = true;
       running.killGroup();
     },

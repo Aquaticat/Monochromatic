@@ -23,6 +23,7 @@ import { checkInvariants, } from './invariant-fixture.ts';
 import {
   type AttemptRecord,
   createLedger,
+  workloadDigest,
 } from './ledger-fixture.ts';
 import { observeRun, } from './observation-fixture.ts';
 import { killActiveGroups, } from './process-fixture.ts';
@@ -143,6 +144,11 @@ export type ScenarioResult = Readonly<{
    Skip reason or harness error.
    */
   detail?: string;
+  /**
+   Workload digest from {@link workloadDigest};
+   absent for skipped scenarios.
+   */
+  workload?: string;
   /**
    Attempt outcomes for the report.
    */
@@ -504,6 +510,8 @@ export async function runScenario({
       violations: verdict.violations,
       ...(verdict.detail === undefined ? {} : { detail: verdict.detail, }),
       durationMs: Math.round(performance.now() - startedAt,),
+      workload: workloadDigest(ledger.snapshot()
+        .attempts,),
       attempts: observation.attempts
         .map(function summarize(attempt,) {
         return {
@@ -522,6 +530,8 @@ export async function runScenario({
       violations: [],
       durationMs: Math.round(performance.now() - startedAt,),
       detail: caughtValueStack(error,),
+      workload: workloadDigest(ledger.snapshot()
+        .attempts,),
       attempts: ledger.snapshot()
         .attempts
         .map(function summarize(attempt,) {
