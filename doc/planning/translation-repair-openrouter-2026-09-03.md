@@ -8082,6 +8082,43 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Class one hundred forty-two, 2026-09-26: straight quotes on archive paragraphs of a page written curly
+
+### What the page showed
+
+XingZ6012 wrote its quotes curly (134 curly double marks and 108 curly apostrophes),
+yet two lines kept straight double quotes and two kept straight apostrophes:
+`"When a person dies, it is like water disappearing into water."`, `"take it slow"`,
+`it's the standard narrative` and `my body doesn't want to die.`
+They stood on archive paragraphs no lane rewrote,
+and the typography restoration reads only the text a lane replaced.
+Of the other latest read pages only XingZ60 mixed the two forms;
+shi_Yumiaoya's straight quotes are JSX string literals and must stay straight.
+
+### What was built
+
+`corpus-run/quote-style-unify.ts` `unifyQuoteStyle` is a page-assembly pass after the pinyin pass
+and before the footnote guard.
+It counts the prose quote marks on every slice outside the front matter,
+through the same `proseMask` the restoration uses (tags and code spans masked, read by UTF-16 unit),
+and where the curly form of a mark outnumbers its straight form it curls that mark on every slice
+through `restoreTypography`, so tags, code, unbalanced doubles and the ellipsis stay as they are.
+Doubles and apostrophes are decided apart.
+Sealed English-original spans and the front matter stand aside, as for every whole-page pass;
+each slice changed prints a `quote-style-unified` finding with the count of marks curled.
+Guard red first `c5a03ea2c` (`quote-style-unify.unit.test.ts`: curls an archive slice on a curly page,
+leaves a straight-majority page, leaves tag attributes and code spans straight), fix `0e0b05d0f`,
+lint 0/0, types clean, full suite `suite-class142.log` 1142 PASS with one FAIL, the load-sensitive grace-window case of `lane-contest-stage.unit.test.ts` (seen before under class one hundred ten), which passes alone.
+Replayed over seven read pages and every archive page:
+XingZ6012 curled on four blocks (the four lines above),
+the lin10104 and shihai4h archives one apostrophe each ("it’s", "doesn’t"), nothing else changed,
+no JSX or code touched.
+
+### The pass the build killed
+
+hulicaijia25 (frozen `8c8c7007b`, pid 369265) was killed under always-kill-and-relaunch.
+hulicaijia26 runs on `.frozen-dist-0e0b05d0f` (pid 524784, scope `pass-hulicaijia26`).
+
 ## Class one hundred forty-one, 2026-09-26: an English title left in the Chinese title marks 《》
 
 ### What the page showed

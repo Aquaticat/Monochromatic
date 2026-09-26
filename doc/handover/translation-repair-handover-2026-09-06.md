@@ -4777,16 +4777,20 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA25 NEXT (entry `hulicaijia`, frozen `8c8c7007b`, pid 369265, scope `pass-hulicaijia25`;
-    hulicaijia24 on `5cb874a36` was killed ten minutes in when class one hundred forty-one landed):
+1.  HULICAIJIA26 NEXT (entry `hulicaijia`, frozen `0e0b05d0f`, pid 524784, scope `pass-hulicaijia26`;
+    hulicaijia24 on `5cb874a36` and hulicaijia25 on `8c8c7007b` were killed when classes one hundred forty-one and forty-two landed):
     see class one hundred thirty-five live:
     "douhua" in the closing quote, no "tofu pudding", "Jiefangbei Pedestrian Street" on every line,
     and "jīn gāng wán’àn" in the amantadine note beside 晚安 "wǎn’ān";
     read it by every hulicaijia20 check, the register check and the en_CA check;
-    record it under a new heading above "## Class one hundred forty-one" in the pass log;
-    then `XingZ60` (run XingZ6013) to see classes one hundred thirty-nine to forty-one live:
+    and note any `quote-style-unified` finding (expected silent or archive apostrophes only);
+    record it under a new heading above "## Class one hundred forty-two" in the pass log;
+    then `XingZ60` (run XingZ6013) to see classes one hundred thirty-nine to forty-two live:
     "—— Yuli [Paranoia]…" or the album kept on slice 98's credit, "by Jiecheng Tianzou Official" on the first credit,
-    and “Zero-Layer Prayer” in quotation marks on the second, with no English title left in 《》 anywhere on the page.
+    “Zero-Layer Prayer” in quotation marks on the second, with no English title left in 《》 anywhere on the page,
+    and no straight prose quote on the page outside JSX and code ("take it slow", "doesn’t want to die").
+    CLASS ONE HUNDRED FORTY-TWO (2026-09-26): `unifyQuoteStyle` curls each prose quote mark on every slice where the page's curly form outnumbers the straight
+    (guard `c5a03ea2c`, fix `0e0b05d0f`, suite 1142 PASS plus the load-sensitive lane-contest grace case passing alone, replayed: XingZ6012 four blocks, lin10104 and shihai4h archives one apostrophe each).
     CLASS ONE HUNDRED FORTY-ONE (2026-09-26): `latinTitleFindings` refuses an English-only title set in 《》
     unless the replaced page writes it (guard `2999b2a45`, fix `8c8c7007b`, suite 1142 PASS, replayed over XingZ6012's credit line).
     LAUNCH IN A SCOPE (2026-09-26): hulicaijia21 died silently five minutes in when systemd-oomd killed the `claude-code-bash` cgroup it shared with a build;
