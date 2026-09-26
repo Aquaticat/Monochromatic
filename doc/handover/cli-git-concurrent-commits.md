@@ -124,8 +124,8 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
   The lock branch is published under its new name
   (slice 6 finished at `6143d837d`)
   and the old remote `feat/ccc-locks` is deleted.
-  The auto-push branch is not yet published under its new name;
-  the old remote `feat/ccc-push` stays until the manual-push fix merges.
+  The auto-push branch is published under its new name
+  and the old remote `feat/ccc-push` is deleted.
 - Claude Code crashed twice on 2026-09-26 while running a wrapped manual `git push` of the renamed branch.
   An isolated rerun as a systemd user service showed the cause:
   the wrapper's `manual-push` scan listed the whole history for a ref the remote lacks
@@ -137,12 +137,20 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
   `pushedCommits` and `createManualPushCandidates` in `package/git-policy/cli/src/policy-engine/manual-push-candidates.ts`.
   The owner ruled it wrong by design:
   the scan must never walk every commit.
-  Fix in progress in `/var/home/user/worktrees/cli-git-manual-push-scans-already-published-history`
-  (branch `fix/cli-git-manual-push-scans-already-published-history`,
-  from `main`);
-  it also resolves `doc/troubleshooting/cli-git-tag-push-eagain.md`.
-  Until it merges,
-  never run a wrapped manual push of a new ref inside the agent's process tree.
+  Fixed on branch `fix/cli-git-manual-push-scans-already-published-history`
+  and merged into `main`
+  (pushed as `f1f8d6640`;
+  main's wrapper rebuilt):
+  the scan excludes everything reachable from the destination remote's tracking refs,
+  scans only the tip tree when nothing on the remote is known,
+  and uses a fixed number of processes.
+  Measured on the real repository:
+  the new-branch push that failed at 3256 tasks and 1.3 GB now takes 5.7 s and 73 MB.
+  `doc/troubleshooting/cli-git-tag-push-eagain.md` now records the root cause.
+- While pushing,
+  the released cli-git on `main` failed closed with `content-unavailable`
+  because another session's commit transaction was live in the main worktree;
+  slice 1's live-owner skip resolves that once the feature branch merges.
 - Slices 3 and 6 were interrupted by the crashes and resumed from their transcripts.
 - `SPEC.md` has no placeholders left;
   the shadow snapshots every real ref at invocation so hooks resolve tags and other branches.
