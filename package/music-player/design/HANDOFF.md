@@ -5705,9 +5705,17 @@ The user authorized permanent host process-limit changes,
 which are recorded separately in
 `doc/troubleshooting/fedora-44-fold-emulator-user-task-ceiling.md`.
 The disposable container remains capped at 6 GiB/2 CPU.
-A boot check passed after the limit change,
-but it does not establish recurrence or absence of the real font banner.
-Continue the design-only banner and accessibility checks without changing
+The process-limit fix has persistent per-user systemd and PAM files;
+a fresh login process and the active slice both measured `12288`.
+No reboot or long-running emulator-stability test was performed.
+A post-reboot launch initially timed out while the disposable display slept;
+waking it restored the rendered Search hierarchy and a fresh launch passed.
+A later 200% to 100% to 200% font-scale cycle recreated the activity.
+Refocusing the same explicit A layout showed real docked split Gboard at
+y `1352` with complete final mode ending at y `1332` and no banner.
+That does not test a continuously focused banner transition or prove
+that Gboard's original font-update banner cannot recur.
+Continue design-only banner and accessibility checks without changing
 accepted A or conflating synthetic sampled-frame passes with real Gboard.
 
 ## Issue tracking moves to Linear for this session

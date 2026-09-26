@@ -214,7 +214,15 @@ rounds (2026-09-17):
   but its public-insets log did not retain a noninitial sample.
   The first visit received no floating-key rectangle through the tested
   app APIs;
-  animation continuity and real-banner recurrence remain unverified.
+  animation continuity remains unverified.
+  A bounded real-banner recurrence attempt changed the disposable font
+  scale from 200% to 100% and back while the floating keyboard was open.
+  The activity was recreated;
+  after refocus at 200%,
+  docked split Gboard began at y `1352` with the complete final mode
+  ending at y `1332` and **no** font-update banner.
+  This does not test a continuously focused scale transition or prove
+  that the original banner cannot recur.
   Sanitized real-keyboard captures and whitelisted geometry records are
   indexed in `package/music-player/design/evidence/gboard-geometry.md`.
   Other keyboard heights and the user-visible response remain open.
