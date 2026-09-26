@@ -142,6 +142,46 @@ import androidx.compose.ui.unit.Dp
 // `dp` sizes Material controls and nonphysical spacing.
 import androidx.compose.ui.unit.dp
 
+/** What: Physical inner-panel width in pixels from the target Fold display.
+ *  Why: Convert only this debug study's proposed millimeter floors to device pixels.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * const E2_REVIEW_PANEL_WIDTH_PX = 2076;
+ * ```
+ */
+private const val E2_REVIEW_PANEL_WIDTH_PX = 2076f
+
+/** What: Estimated active inner-panel width in millimeters from the published panel diagonal.
+ *  Why: Keep the floor proposals in physical units instead of fixed Android dp.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * const E2_REVIEW_PANEL_WIDTH_MM = 141.08;
+ * ```
+ */
+private const val E2_REVIEW_PANEL_WIDTH_MM = 141.08f
+
+/** What: First visibly separated total-gap floor in the debug comparison.
+ *  Why: Test one clearance target beyond the existing selected-A information boxes.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * const E2_REVIEW_FLOOR_MIDDLE_MM = 14;
+ * ```
+ */
+private const val E2_REVIEW_FLOOR_MIDDLE_MM = 14f
+
+/** What: Second visibly separated total-gap floor in the debug comparison.
+ *  Why: Expose a wider spacing tradeoff without editing the accepted Search design.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * const E2_REVIEW_FLOOR_WIDE_MM = 20;
+ * ```
+ */
+private const val E2_REVIEW_FLOOR_WIDE_MM = 20f
+
 /**
  * What:     Switch between deck-persistent Search arrangements in one debug activity.
  * Why:      Every native capture must preserve D50 while comparing visible composition.
@@ -191,6 +231,15 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
         return
     }
     val halfDent = with(LocalDensity.current) { (55f / density).dp }
+    // What: These named markers select physical floor policies only in the debug Compose candidate.
+    // Why: The unchanged selected A remains the zero-floor control on the same APK.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const floorMm = candidate.includes('-e2floor20-') ? 20 : candidate.includes('-e2floor14-') ? 14 : 0;
+    // ```
+    val e2FloorMillimeters = if (candidate.contains("-e2floor20-")) E2_REVIEW_FLOOR_WIDE_MM
+        else if (candidate.contains("-e2floor14-")) E2_REVIEW_FLOOR_MIDDLE_MM else 0f
     val pageColor = if (light) MaterialTheme.colorScheme.surfaceContainerLowest else Color.Black
     if (candidate.contains("-mirrored-")) {
         SearchDeckMirrored(query = query, onQueryChange = { query = it }, onBack = onBack,
@@ -212,7 +261,8 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
             retainBrowser = candidate.contains("-retain-"),
             layerProbe = candidate.contains("-layerprobe-"),
             keepClearProbe = candidate.contains("-keepclear-"),
-            overflowStudy = overflowStudy)
+            overflowStudy = overflowStudy,
+            e2FloorMillimeters = e2FloorMillimeters)
     } else {
         SearchDeckWide(query = query, onQueryChange = { query = it }, onBack = onBack,
             unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor)
@@ -321,8 +371,32 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     liftWithIme: Boolean, bannerHeightStress: Boolean, autoFitStudy: Boolean,
     preclearStudy: Boolean, scaleReserveStudy: Boolean, earlyInlineStudy: Boolean,
     retainBrowser: Boolean, layerProbe: Boolean,
-    keepClearProbe: Boolean, overflowStudy: Boolean) {
+    keepClearProbe: Boolean, overflowStudy: Boolean, e2FloorMillimeters: Float) {
     val density = LocalDensity.current
+    // What: Convert the physical floor to pixels using the published active panel width.
+    // Why: A chosen millimeter floor must not become a fixed dp gap across display scales.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const requiredGapPx = floorMm / panelWidthMm * panelWidthPx;
+    // ```
+    val requiredGapPx = e2FloorMillimeters / E2_REVIEW_PANEL_WIDTH_MM * E2_REVIEW_PANEL_WIDTH_PX
+    // What: Sum the current opposing pane-safe insets, including the separate 8dp and 16dp minima.
+    // Why: The debug floor adds space only beyond the existing selected-A inset budget.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const baselineGapPx = (halfDentDp * 2 + 8 + 16) * density;
+    // ```
+    val baselineGapPx = (halfDent.value * 2 + 8 + 16) * density.density
+    // What: Divide only the positive remaining distance between the opposing pane boundaries.
+    // Why: Preserve selected A if its nominal gap already exceeds this variant's requested floor.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const extraInsetDp = Math.max(0, requiredGapPx - baselineGapPx) / 2 / density;
+    // ```
+    val extraInsetDp = ((requiredGapPx - baselineGapPx).coerceAtLeast(0f) / 2 / density.density).dp
     val reportedImeInset = WindowInsets.ime.getBottom(density)
     var queryFocused by remember { mutableStateOf(false) }
     var initialFocusPending by remember { mutableStateOf(false) }
@@ -429,7 +503,7 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     Row(modifier = Modifier.fillMaxSize().background(pageColor)
         .then(if (preclearStudy && anticipatoryActive) Modifier.padding(bottom = PRECLEAR_REVIEW_HEIGHT)
             else if (liftWithIme) Modifier.imePadding() else Modifier)) {
-        SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f),
+        SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f).padding(end = extraInsetDp),
             deckFirst = !liftWithIme, deckFullHeight = liftWithIme, bannerFit = bannerFit,
             compactForBrowser = retainBrowser && (keyboardShown || anticipatoryActive),
             reserveOwnsNavigation = preclearStudy && anticipatoryActive,
@@ -451,7 +525,7 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
             } else Box(modifier = slot)
         }
         PersistentSearchPane(query = query, onQueryChange = onQueryChange, onBack = onBack,
-            unavailable = unavailable, modifier = Modifier.weight(1f),
+            unavailable = unavailable, modifier = Modifier.weight(1f).padding(start = extraInsetDp),
             startSafe = halfDent + 16.dp, endSafe = 16.dp,
             includeTopInset = true, pageColor = pageColor,
             overflowStudy = overflowStudy,
