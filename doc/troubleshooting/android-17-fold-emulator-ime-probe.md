@@ -23,8 +23,10 @@ it does not erase the measured floating overlap.
 Design decisions D53 and D54 accept that unfolded floating-deck overlap and
 the distinct brief font-update banner,
 respectively.
-They do not approve obscuring cover Search results or clipping the deck
-beneath ordinary settled split or docked keyboards.
+D55 separately accepts the measured floating cover keyboard obscuring both
+matching labels while `cam` remains visible.
+None approves obscuring the query or clipping the deck beneath ordinary
+settled split or docked keyboards.
 
 This is distinct from a separate, confirmed app-layout finding:
 under a visible system-managed keyboard, a bottom-anchored Search prototype
@@ -513,9 +515,9 @@ app-observable keyboard API lacks geometry or that all overlay approaches fail.
   `[127,374][286,433]` and track title `Another Xronixle` at
   `[127,569][432,628]`, both fully under Gboard's key surface.
   The captured Search screenshot showed the query but no visible result
-  data until the floating keyboard was dismissed or moved.
-  This is a separate cover Search result-visibility defect,
-  not the unfolded deck-title overlap.
+  data in that observed floating-keyboard position.
+  D55 accepts this separate cover result overlap,
+  not the absence of actual result data or an obscured query.
 
 ### Disposable keyboard-free Fold attempt
 
