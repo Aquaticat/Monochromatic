@@ -103,6 +103,20 @@ Progress since adoption:
    passes the whole API exercise,
    and the registry-downloaded source passes its own 61 tests including the shared fixtures.
 
+- The release workflow integration was exercised,
+   not just parsed:
+   dispatching `cargo-publish.yml` with `crate=monochromatic-jsonc-edit` and `dry-run=true`
+   (run `36217693067`,
+   2026-09-26) concluded `success`,
+   with `je-detect` success,
+   `je-publish-crate` success including the `Build .crate package (verifies by compile)` and
+   `Publish (dry run)` steps,
+   and the attestation,
+   Trusted Publishing authentication and real publish steps correctly skipped.
+   The other three crates' detect jobs reported no bump and their publish jobs stayed skipped.
+   The OIDC publish path itself is still unexercised,
+   because it only runs for a version that is not yet on crates.io.
+
 Remaining,
 and it is user dashboard work per `doc/runbook/publish-crate-first-time.md` steps 12 to 17:
 configure the crate's Trusted Publisher as `Aquaticat`,
