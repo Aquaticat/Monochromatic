@@ -224,8 +224,10 @@ rounds (2026-09-17):
   A later debug-only keep-clear probe registered
   `[0,717][1038,2152]` with Window Manager,
   yet floating Gboard still covered the deck.
-  Manual drags moved the reported key region away and back into that
-  registered area;
+  Manual drags moved the reported key region rightward (still overlapping
+  the area by 13px) and then back to a larger overlap;
+  that validates region detection,
+  not automatic keep-clear cooperation.
   a real key entered `d` while the title was still obscured.
   Reject this best-effort request on the tested Gboard fixture,
   not every possible keyboard configuration.

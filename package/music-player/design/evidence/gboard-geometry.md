@@ -154,10 +154,15 @@ it is **not** one of the linked sanitized Gboard PNGs.
   `e755bf76ed65e45dc4e4ec57f4f55bdbd948902ca6e1940ddf911474ee8a4dd7`.
   App logging and privileged Window Manager agreed that a keep-clear area
   `[0,717][1038,2152]` was registered.
-  Gboard's floating keys stayed inside it at `[482,1006][1388,1777]`.
-  Dragging the keyboard right moved the observed key region;
-  dragging it back left returned overlap with the registered area and
-  visibly covered the deck title.
+  Gboard's floating keys at `[482,1006][1388,1777]` **partially**
+  overlapped it in x `[482,1038)` and y `[1006,1777)`.
+  Dragging the keyboard right moved the observed key region to
+  `[1025,1006][1931,1777]`,
+  still overlapping the requested area by 13px horizontally.
+  Dragging it back left returned a larger overlap and visibly covered
+  the deck title.
+  Those manual drags validate region detection,
+  not system cooperation with the hint.
   A real key tap entered `d`.
   This validates the geometry detector and rejects **this best-effort
   hint on this fixture** as a D50 response;

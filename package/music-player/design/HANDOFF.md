@@ -5743,11 +5743,15 @@ A separate keep-clear probe at prototype commit `b9c05342f` then
 registered `[0,717][1038,2152]` with Window Manager.
 Real floating Gboard still occupied `[482,1006][1388,1777]` and obscured
 the deck title.
-Manual right and left drags visibly moved its reported key region,
-including back into the registered keep-clear area;
-a real key tap entered `d`.
-This tests a real Gboard placement response,
-not merely whether the app sent the hint.
+Manual right and left drags visibly moved its reported key region.
+The rightward region `[1025,1006][1931,1777]` still intersected the
+registered area by 13px;
+the return drag increased that overlap.
+A real key tap entered `d`.
+These drags validate the region measurement,
+not Gboard's cooperation with the hint.
+The app's request reached Window Manager,
+but the source of Gboard's continued overlap is unproven.
 The best-effort request is **not** a verified automatic D50 response on
 this fixture;
 no universal absence claim follows.
