@@ -10,6 +10,7 @@ import {
 import { POLISH_GATE_HOUSE_RULES, } from './polish-gate-house-rules.ts';
 import { selectFence, } from './prompt-fence.ts';
 import type { RefineStageMode, } from './refine-selection-context.ts';
+import { foldSoftBreaks, } from './soft-break-fold.ts';
 
 //region Consolidation polish gate wire
 
@@ -41,6 +42,12 @@ const POLISH_NAMES: readonly PolishChoice[] = [
  a pity that all this stopped abruptly" tied 2 to 2 with both base ballots
  citing it.
 
+ SHOWN ONE LINE A PARAGRAPH. Class one hundred fifty-three (XingZ6014,
+ 2026-09-26): the base may stand as the archive's own unwrapped paragraph, so
+ "both candidates by the same rule" was false on slices 36, 61 and 64 and three
+ ballots still weighed the polish's added breaks. The sheet now shows both
+ candidates folded (`soft-break-fold.ts`), and the policy says so.
+
  @param lineStructured - whether source line boundaries must survive
 
  @returns Policy for comparative gate
@@ -58,7 +65,7 @@ function comparativePolishPolicy(
    */
   const kept = lineStructured
     ? 'Markdown structure, or line structure'
-    : 'or Markdown structure. LINE BREAKS INSIDE A PARAGRAPH ARE THE PAGE\'S OWN WRAP, applied to both candidates by the same rule after they were written: never weigh where either candidate breaks its lines';
+    : 'or Markdown structure. LINE BREAKS INSIDE A PARAGRAPH ARE THE PAGE\'S OWN WRAP and render as spaces, so each candidate\'s paragraphs are shown here on one line each: never weigh line breaks';
   return `You are deciding whether a polished English memorial passage may replace its already-approved base.
 
 THE ORIGINAL CHINESE IS THE FIDELITY STANDARD. First check both candidates for unsupported statements and dropped content. Naturalness can never compensate for either fault.
@@ -110,9 +117,9 @@ export type ConsolidationPolishGateSubject = {
   readonly mode: RefineStageMode;
 
   /**
-   Whether the source's line boundaries must survive; false where both
-   candidates were wrapped by the page's semantic wrap, whose line breaks the
-   gate must not weigh (class one hundred fifty-two).
+   Whether the source's line boundaries must survive; false on prose, whose
+   line breaks are the page's wrap and which the gate reads folded one line a
+   paragraph (classes one hundred fifty-two and fifty-three).
    */
   readonly lineStructured: boolean;
 
@@ -298,14 +305,24 @@ export function buildConsolidationPolishGateMessages(
         return `Attempt ${String(index + 1,)} candidate:\n${prior.candidateText}\nFindings:\n${findings}`;
       },);
   /**
+   Base as the judge reads it: on prose, each paragraph as it renders.
+   */
+  const shownBase = subject.lineStructured ? subject.baseText : foldSoftBreaks({ text: subject.baseText, },);
+  /**
+   Polish as the judge reads it: on prose, each paragraph as it renders.
+   */
+  const shownPolished = subject.lineStructured
+    ? subject.polishedText
+    : foldSoftBreaks({ text: subject.polishedText, },);
+  /**
    Fence absent from every enclosed passage and finding.
    */
   const fence = selectFence({
     texts: [
       subject.sourceText,
       subject.archiveText,
-      subject.baseText,
-      subject.polishedText,
+      shownBase,
+      shownPolished,
       ...requiredFindings,
       ...priorCorrections,
       ...((subject.identityContext === undefined) ? [] : [subject.identityContext,]),
@@ -366,10 +383,10 @@ export function buildConsolidationPolishGateMessages(
         `${fence}\n${subject.archiveText}\n${fence}`,
         '',
         baseLabel,
-        `${fence}\n${subject.baseText}\n${fence}`,
+        `${fence}\n${shownBase}\n${fence}`,
         '',
         'CANDIDATE "polished":',
-        `${fence}\n${subject.polishedText}\n${fence}`,
+        `${fence}\n${shownPolished}\n${fence}`,
         '',
         ...referenceBlock,
         ...correctionEvidence,
