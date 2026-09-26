@@ -983,6 +983,7 @@ internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: (()
                 modifier = Modifier.weight(1f),
                 candidate = "dark-stable-wallpaper-dynamic",
                 palette = palette,
+                deckFullHeight = true,
             )
             TrackPane(
                 modifier = Modifier.weight(1f),
@@ -1285,12 +1286,20 @@ private fun CoverFolderChip() {
     }
 }
 
-/** Builds the settled picker-over-transport left pane. */
+/** What: Reuse the folder browser above the transport with an optional full-height mode deck.
+ *  Why: The E2 player study must keep each 200% mode target complete without changing other candidates.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function FolderAndTransportPane(options: { deckFullHeight: boolean }): UIElement;
+ * ```
+ */
 @Composable
 private fun FolderAndTransportPane(
     modifier: Modifier,
     candidate: String,
     palette: CandidatePalette,
+    deckFullHeight: Boolean = false,
 ) {
     Column(
         modifier = modifier
@@ -1312,6 +1321,7 @@ private fun FolderAndTransportPane(
                 .accessibilityTraversalGroup(candidate = candidate, area = "transport"),
             candidate = candidate,
             palette = palette,
+            deckHeightCap = !deckFullHeight,
         )
     }
 }
