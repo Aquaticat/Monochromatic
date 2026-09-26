@@ -333,7 +333,8 @@ A long-running research result does not authorize a pending production action.
 Process `proc_0007` completed with exit 0 and no memory kill.
 The saved result is `result-initial.json` in the private probe directory,
 SHA-256 `d896795583fd6e518b72dab6562f93d9f70917e65cddda2d3351c4c4f6f98101`.
-Built image: `d7b110379a8d597f52b3388cfe4fd62f1e2e4b5554cde6740a8a5a975fb4182b`.
+Built image:
+ `d7b110379a8d597f52b3388cfe4fd62f1e2e4b5554cde6740a8a5a975fb4182b`.
 
 The actual forward input contained all 12,756 state tokens and 64 question-prefix tokens,
 12,820 tokens in total.

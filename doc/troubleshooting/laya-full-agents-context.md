@@ -338,8 +338,10 @@ No safety-quality conclusion survives the retired direct-verdict formulation.
 The corrected axiom-only probe used the same verified CPU workaround,
 with a newly captured complete policy and one Noul question.
 Process `proc_0007` exited 0 with `OOMKilled=false`.
-Image: `d7b110379a8d597f52b3388cfe4fd62f1e2e4b5554cde6740a8a5a975fb4182b`.
-Private harness: `~/temp/agent/laya-axiom-probe-2026-09-26`.
+Image:
+ `d7b110379a8d597f52b3388cfe4fd62f1e2e4b5554cde6740a8a5a975fb4182b`.
+Private harness:
+ `~/temp/agent/laya-axiom-probe-2026-09-26`.
 The host wrapper confirmed current policy fingerprint
 `4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`
 before and after inference.
