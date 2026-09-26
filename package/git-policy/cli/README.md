@@ -1126,6 +1126,10 @@ in rotated orders,
 kept the default at `2`
 (`perf/reserve-sweep-2026-09-26-run-<n>.json`,
 `SPEC.md` "Benchmark method").
+`perf/concurrent-commit-latency-2026-09-26-merged.json` re-measures the full matrix at `d647d4786`,
+after the worktree-copy stall fix merge and the trust and replay degradation fixes;
+every scenario's median batch wall time stays within 5 % of the first baseline,
+and disjoint commits at concurrency 8 give a per-commit p95 of 4537 ms against 4614 ms.
 
 ## How it works
 
