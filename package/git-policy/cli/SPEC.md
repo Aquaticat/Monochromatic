@@ -410,31 +410,68 @@ broad when absent.
 - `{ external: [] }` declares that the policy reads only through its context.
 - `inputs` may be a static value or a function of the validated policy options,
   so option-dependent inputs such as a configured executable are expressible.
-  Config loading calls the function once with the parsed options
-  (see "Configuration validation").
+  Config loading calls the function once with the parsed options of each enabled policy
+  and keeps the validated result on the registered policy
+  (see "Configuration validation");
+  a disabled policy's function is never called.
 - `PolicyInput` kinds and their fingerprints:
   - `worktree`:
-    Git pathspecs,
-    fingerprinted by the matching tracked and untracked non-ignored paths and their blob OIDs;
-    an empty pathspec list is invalid.
+    Git pathspecs from the worktree root,
+    fingerprinted by every matching tracked or untracked path,
+    ignored paths included,
+    with a SHA-256 digest of each regular file,
+    the target of each symbolic link,
+    or the path's absence.
+    Ignored files count because a policy reads worktree bytes whatever `.gitignore` says,
+    and the default forbidden-strings rules file is ignored;
+    a broad pathspec therefore walks ignored directories,
+    so declarations keep pathspecs narrow.
+    Inherited `GIT_LITERAL_PATHSPECS`,
+    `GIT_GLOB_PATHSPECS`,
+    `GIT_NOGLOB_PATHSPECS`,
+    and `GIT_ICASE_PATHSPECS` are removed,
+    so a declaration keeps Git's default pathspec semantics.
+    An empty pathspec list is invalid.
   - `executable`:
-    a path or `PATH`-resolved name,
-    fingerprinted by the resolved path plus no-follow device,
+    a path with a separator,
+    resolved from the worktree root,
+    or a name looked up along `PATH`,
+    fingerprinted by the resolved path with its no-follow device,
     inode,
     size,
-    and modification time.
+    and modification time in nanoseconds,
+    the final link target with the same identity,
+    and a SHA-256 digest of the target's bytes.
+    A missing executable fingerprints as missing.
   - `revision`:
     a Git revision,
-    fingerprinted by the object it resolves to,
-    or its absence,
+    fingerprinted by the object `git cat-file --batch-check` resolves it to in the shadow repository,
+    or Git's `missing` or `ambiguous` line,
     with the private `HEAD` at the preparation base and again at the replay parent.
+    A revision must be one line and must not start with `-`.
   - `env`:
-    a variable name,
+    a variable name without `=`,
     fingerprinted by its value or absence.
+- No path,
+  pathspec,
+  revision,
+  or variable name may contain NUL.
 - A thrown `inputs` function or an invalid result is a config failure with exit `2`.
 
-The engine gives each policy its own `PolicyContext` whose `git` member records reads
-while delegating to the shared memoized facts,
+Fingerprints are taken for the union of every enabled pre-forward policy's declared inputs,
+once before preparation's first policy pass
+and once before each revalidation,
+so a change between the two re-runs the policies that declared it.
+A snapshot starts one `git ls-files` per distinct `worktree` input,
+one `git cat-file --batch-check` for every `revision` input,
+and no process for `executable` and `env` inputs.
+A fingerprint that cannot be taken,
+such as a pathspec outside the repository,
+never matches,
+so its policies always re-run.
+
+The engine gives each policy run its own `PolicyContext` whose `git` member records reads
+while delegating to the shared facts,
 so memoization is unchanged.
 A read set holds:
 
@@ -442,21 +479,50 @@ A read set holds:
   (path,
   mode,
   change,
-  and blob OID);
+  and content object ID);
 - the paths whose `bytes()` ran;
-- each `trackedFiles` pathspec request with its result entries;
-- whether `headOid()` ran.
+- each `trackedFiles` pathspec request with its result entries
+  (path,
+  mode,
+  object ID,
+  and the parent's object ID);
+- the values `headOid()`,
+  `landedCommitOid()`,
+  and `pushUpdates()` returned,
+  when they ran.
 
-Blob and commit OIDs are the fingerprints,
-so no extra hashing is needed.
+Object IDs are the fingerprints,
+so no content is hashed.
+A read that failed,
+or a non-deleted candidate without an object ID,
+makes the set unreplayable.
 Recording stops when the policy completes
 (see "Policy completion");
 a lazy read after completion is not part of the set.
 
-After a clean replay,
-a policy that declares inputs re-runs only when a recorded read or a declared input fingerprint differs
-between the preparation state and the replayed state.
-Every unrestricted policy re-runs.
+Inside a commit transaction the engine keeps every completed run of a policy that declares inputs,
+with its read set,
+its input fingerprints,
+and its findings,
+in memory for the transaction's lifetime.
+During revalidation after a clean replay,
+each pass consults these runs,
+newest first,
+before running a declared policy;
+it reuses a run's findings instead of running the policy when:
+
+- the run proposed no patch;
+- every declared input fingerprints as it did when the run was recorded;
+- replaying every recorded read against the pass's candidate state returns the same identities.
+  Validation reads are memoized once per pass.
+
+Every unrestricted policy re-runs,
+and preparation never reuses.
+A reused run is equivalent to running the policy,
+so the ordered sequence is unchanged:
+a re-run policy that proposes a patch ends the pass,
+and the next pass starts again at the first policy against the patched state,
+where each later policy either finds a run recorded against matching reads or re-runs.
 Re-run findings and patches follow the ordinary whole-sequence convergence rules
 (see "Whole-sequence fixing").
 
@@ -464,21 +530,34 @@ The shipped policies declare:
 
 - `repository/forbidden-root-context` and `repository/dependent-version-bump`:
   `{ external: [] }`;
-- `final-newline`:
-  `{ external: [] }`;
+- `final-newline` and `add-explicit`:
+  `{ external: [] }`,
+  because they read only candidate bytes and command arguments;
 - `forbidden-strings/forbidden-strings`:
-  a function of its options naming the root `forbidden-strings.*.txt` rules files as a `worktree` input,
+  a function of its options naming the configured scanner as an `executable` input,
   `FORBIDDEN_STRINGS_RULES` as an `env` input,
-  and the configured scanner as an `executable` input;
-  a rules path outside the repository has no `PolicyInput` kind,
-  so such a configuration stays `'unrestricted'`;
-- `markdown-lint/autofix` and the four command built-ins
-  (`require-root`,
-  `linked-worktree-only`,
-  `branch-worktree-only`,
-  `add-explicit`):
+  and the one rules file the scanner reads as a literal `worktree` pathspec:
+  the path `FORBIDDEN_STRINGS_RULES` names,
+  or `forbidden-strings.local.txt` in the repository root.
+  The scanner's compiled-rules cache is keyed by rules content,
+  and its `.git` lookup is fixed for a commit,
+  so neither is an input.
+  A rules path outside the repository cannot be fingerprinted,
+  so such a configuration always re-runs;
+- `markdown-lint/autofix`:
   `'unrestricted'`,
-  because they read Git or workspace state outside the context.
+  because its configured command may read anything
+  and its `lfs-image-url` rule reads `.lfsconfig`,
+  `.gitattributes`,
+  and every image a candidate links;
+- `require-root`,
+  `linked-worktree-only`,
+  and `branch-worktree-only`:
+  `'unrestricted'`,
+  because they read filesystem or Git state no input kind names.
+
+A traced fixture runs each declared shipped policy under `strace`
+and fails when the policy touches a file or starts a program its declaration does not name.
 
 ## Finding and patch validation
 
@@ -651,7 +730,8 @@ Config loading performs these steps in order:
 8.  Parse configured option values through the policy's Valibot schema.
 9.  Resolve each enabled policy's `inputs`,
     calling an `inputs` function with the parsed options,
-    and validate the result.
+    validate the result,
+    and keep it on the registered policy.
 10. Emit configuration warnings for explicit unsafe `warn` settings.
 11. Validate trust declaration.
 
@@ -1870,7 +1950,7 @@ an unpublished staging directory never blocks recovery and remains for diagnosis
   <transaction-id>/
     owner.json             PID, process-birth identity, schema version, invocation start time
     preparing.json         invocation capture facts
-    prepared.json          shadow repository path, prepared OID, signed flag, intended tree, read sets
+    prepared.json          shadow repository path, prepared OID, signed flag, intended tree
     reservation-request    empty marker written when the transaction asks for the reservation
     index-lock-<n>.json    identity of the real index.lock attempt <n> created, written right after creating it
     landing-<n>.json       one per landing attempt inside the critical section
@@ -2260,8 +2340,10 @@ validates one-target ordinary text patches,
 applies them sequentially through `git apply --cached --3way`,
 and restarts the whole ordered policy sequence after exact candidate changes.
 Only the final unchanged pass emits findings.
-Each policy's read set is recorded in `prepared.json`
-(see "Policy inputs and read sets").
+Each policy run's read set stays in memory for revalidation
+(see "Policy inputs and read sets");
+recovery never revalidates,
+so the journal does not record it.
 Policy exceptions,
 patch conflicts,
 and failed Git hooks discard private state without changing real index,
@@ -2614,9 +2696,11 @@ in a private directory `<tx>/replay-<r>/`:
      or detached `HEAD`)
     to `<current>`,
     so policies and hooks see the parent the commit will have.
-3.  Re-run every cli-git policy against the paths the replayed tree changes relative to `<current>`.
-    Until policy read sets exist,
-    every policy is treated as unrestricted.
+3.  Fingerprint the declared policy inputs,
+    then re-run cli-git policies against the paths the replayed tree changes relative to `<current>`:
+    every unrestricted policy runs,
+    and a declared policy keeps a recorded result while its reads and inputs hold
+    (see "Policy inputs and read sets").
     Patches converge under the ordinary pass-limit and cycle rules,
     and policy-added paths follow "Added paths",
     checked against the real index captured at invocation.
@@ -3146,12 +3230,18 @@ Policy inputs and read sets:
 - each lazy method records exactly its read,
   memoized second calls still record per policy,
   and a policy reading nothing records an empty set;
-- context-only policies skip after a disjoint replay,
-  unrestricted policies re-run,
-  and a declared `worktree`,
+- through the built wrapper,
+  a context-only policy skips after a disjoint replay,
+  an unrestricted policy re-runs,
+  and a declared `worktree` input changed by the winning commit forces a re-run;
+- each `worktree`,
   `executable`,
   `revision`,
-  or `env` input changed by the winning commit forces a re-run;
+  and `env` fingerprint changes when its input changes and stays equal otherwise,
+  and each changed fingerprint forces a re-run;
+- engine passes mixing reused and re-run policies keep the ordered sequence:
+  a re-run patch ends the pass and later policies are re-evaluated against the patched state;
+- each shipped declaration is traced against the files and programs its policy touches;
 - an option-derived `inputs` function receives the parsed options;
 - invalid `inputs` shapes,
   an unknown kind,

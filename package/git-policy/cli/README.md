@@ -169,7 +169,18 @@ The default `'unrestricted'` always re-runs;
 an `executable`,
 a Git `revision`,
 or an `env` variable.
-`inputs` may also be a function of the validated policy options.
+`inputs` may also be a function of the validated policy options,
+called once at config loading.
+A `worktree` input covers every matching file,
+ignored ones included,
+so keep its pathspecs narrow.
+The shipped repository policies,
+`final-newline`,
+and `add-explicit` read only their context;
+forbidden-strings declares its scanner,
+`FORBIDDEN_STRINGS_RULES`,
+and the rules file it names;
+markdown autofix and the other built-ins stay unrestricted.
 `ABSENT_GIT_VALUE` represents mutable candidate revisions,
 missing object IDs,
 and direct operations without a Git subcommand.
@@ -352,9 +363,8 @@ signature included.
 Otherwise cli-git replays it onto the new tip with a three-way tree merge,
 re-signs it when it was signed,
 re-runs `pre-commit` when the tree changed,
-and re-runs only the policies whose recorded reads or declared `inputs` changed
-(this build re-runs every policy,
-because policy read sets are not recorded yet).
+and re-runs only the policies whose recorded reads or declared `inputs` changed;
+every policy without an `inputs` declaration re-runs.
 A `pre-commit` hook that rewrites and re-stages files,
 as lint-staged does,
 commits what it staged,
