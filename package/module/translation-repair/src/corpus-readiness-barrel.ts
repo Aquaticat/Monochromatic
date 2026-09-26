@@ -29,6 +29,7 @@ export { restoreListSpread, } from './corpus-run/list-spread-restore.ts';
 export { restoreNameGlossLines, } from './corpus-run/name-gloss-restore.ts';
 export { unifyQuoteStyle, } from './corpus-run/quote-style-unify.ts';
 export { unwrapBlockquoteQuotes, } from './corpus-run/blockquote-quote-unify.ts';
+export { restoreArchiveItalicTitles, } from './corpus-run/archive-italic-title-restore.ts';
 export { unifyTitleReferences, } from './corpus-run/title-reference-unify.ts';
 export { settledPageArtifact, } from './corpus-run/pass-page-assembly.ts';
 export {
