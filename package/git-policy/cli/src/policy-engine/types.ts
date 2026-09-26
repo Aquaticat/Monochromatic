@@ -5,6 +5,7 @@
  */
 import type { GenericSchema, } from 'valibot';
 import type { LazyPolicyGitFacts, } from '../api/context-types.ts';
+import type { PolicyInputs, } from '../api/policy-input-types.ts';
 import type {
   PolicyContext,
   PolicyFinding,
@@ -13,6 +14,17 @@ import type {
   PolicyTrigger,
 } from '../api/policy-types.ts';
 import type { PolicyEvent, } from './events.ts';
+import type { PolicyReadTracking, } from './policy-read-tracking.ts';
+
+/**
+ Runtime-erased inputs declaration:
+ a static value,
+ or a function whose options type is erased, so any typed policy declaration fits.
+ Config loading calls a function only through a runtime check.
+ */
+export type RuntimePolicyInputs =
+  | PolicyInputs
+  | ((options: never) => PolicyInputs);
 
 /**
  Runtime-erased policy after option validation.
@@ -38,6 +50,10 @@ export type RuntimePolicyDefinition = {
    Optional runtime options schema.
    */
   readonly options?: GenericSchema<unknown, unknown>;
+  /**
+   Declared external inputs; config loading replaces a function form with its result for every enabled policy.
+   */
+  readonly inputs?: RuntimePolicyInputs;
   /**
    Runtime policy callback receiving validated options.
    */
@@ -104,6 +120,10 @@ export type RunPolicyEngineOptions = Readonly<{
    Runtime-validated option outputs by effective policy ID.
    */
   policyOptions?: ReadonlyMap<string, unknown>;
+  /**
+   Read recording and reuse of earlier runs, present only inside a commit transaction.
+   */
+  readTracking?: PolicyReadTracking;
 }>;
 /**
  Stable policy-engine result.

@@ -247,6 +247,8 @@ export const dependentVersionBump: PolicyDefinition<undefined, 'dependent-versio
   name: 'dependent-version-bump',
   defaultSeverity: 'error',
   warnSafe: false,
+  // Reads only candidates, tracked manifests, and their bytes through its context.
+  inputs: { external: [], },
   // direct-fix lets `git cli-git fix` apply the ripple `git cli-git check` reports (owner decision 2026-09-15).
   triggers: [
     'pre-forward',

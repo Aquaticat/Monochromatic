@@ -23,6 +23,8 @@ export const requireRootPolicy: RuntimePolicyDefinition = {
   name: 'require-root',
   defaultSeverity: 'error',
   warnSafe: false,
+  // Walks the filesystem from the effective directory for the repository root, which no input kind names.
+  inputs: 'unrestricted',
   triggers: [
     'pre-forward',
     'direct-check',

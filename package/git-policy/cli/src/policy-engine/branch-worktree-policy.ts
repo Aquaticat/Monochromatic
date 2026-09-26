@@ -20,6 +20,8 @@ export const branchWorktreePolicy: RuntimePolicyDefinition = {
   name: 'branch-worktree-only',
   defaultSeverity: 'error',
   warnSafe: true,
+  // Queries remote-tracking refs through Git for implicit branch creation, which no input kind names.
+  inputs: 'unrestricted',
   triggers: ['pre-forward',],
   check: async function runBranchWorktreePolicy({ context, }): Promise<readonly PolicyFinding[]> {
     try {

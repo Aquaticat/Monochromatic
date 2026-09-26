@@ -16,6 +16,11 @@ import {
   validateConcurrencyConfig,
 } from './config-validation-concurrency.ts';
 import { ConfigValidationError, } from './config-validation-error.ts';
+import {
+  INPUTS_UNDECLARED,
+  resolvePolicyInputs,
+  validateInputsDeclaration,
+} from './policy-inputs-schema.ts';
 
 export { ConfigValidationError, } from './config-validation-error.ts';
 
@@ -29,7 +34,7 @@ export type ValidatedConfig = Readonly<{
    */
   recursiveChildren: boolean;
   /**
-   Built-ins followed by namespaced plugins.
+   Built-ins followed by namespaced plugins, each enabled policy carrying its resolved inputs.
    */
   registeredPolicies: readonly RuntimePolicyDefinition[];
   /**
@@ -238,6 +243,13 @@ function validatePolicy({
   assertPolicyCheck(value.check,);
   if (value.options !== undefined)
     assertSchema(value.options,);
+  /**
+   Validated static inputs or function, or the undeclared sentinel for the unrestricted default.
+   */
+  const inputs = validateInputsDeclaration({
+    value: value.inputs,
+    effectiveId,
+  },);
 
   return {
     name: effectiveId,
@@ -246,6 +258,7 @@ function validatePolicy({
     triggers: value.triggers
       .filter(isPolicyTrigger,),
     ...(value.options === undefined ? {} : { options: value.options, }),
+    ...(inputs === INPUTS_UNDECLARED ? {} : { inputs, }),
     check: value.check,
   };
 }
@@ -487,6 +500,21 @@ export function validateConfig(value: unknown,): ValidatedConfig {
     );
     policySeverities[policy.name] = parsed.severity;
   }
+  /**
+   Registry with every enabled policy's inputs resolved after every option parsed.
+   */
+  const resolvedPolicies = registeredPolicies.map(function resolveInputs(policy,): RuntimePolicyDefinition {
+    return policySeverities[policy.name] === 'off'
+      ? policy
+      : {
+        ...policy,
+        inputs: resolvePolicyInputs({
+          ...(policy.inputs === undefined ? {} : { declaration: policy.inputs, }),
+          options: policyOptions.get(policy.name,),
+          effectiveId: policy.name,
+        },),
+      };
+  },);
 
   if (value.trust !== undefined) {
     assertRecord(value.trust,);
@@ -508,7 +536,7 @@ export function validateConfig(value: unknown,): ValidatedConfig {
     recursiveChildren: (value.trust !== undefined) && (value.trust
       .children
       === true),
-    registeredPolicies,
+    registeredPolicies: resolvedPolicies,
     policySeverities,
     policyOptions,
     concurrency,

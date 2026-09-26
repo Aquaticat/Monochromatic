@@ -3,9 +3,10 @@
 
  The replayed tree gets its own private index,
  the shadow `HEAD` moves to the replay parent,
- every cli-git policy re-runs against it under the ordinary convergence rules,
+ cli-git policies re-run against it under the ordinary convergence rules,
  and `pre-commit` re-runs whenever the tree differs from the one it last approved.
- Every policy is treated as reading unrestricted inputs until policy read sets exist.
+ An unrestricted policy always re-runs;
+ a policy that declares its inputs keeps a recorded result while its context reads and declared inputs are unchanged.
  A hook's staged changes are kept,
  as in native preparation.
 
@@ -35,6 +36,7 @@ import { writePrivateTree, } from './commit-transaction-index.ts';
 import { listChangedIndexPaths, } from './commit-transaction-index-paths.ts';
 import type { CommitTransactionPolicyOptions, } from './commit-transaction-types.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
+import { withPolicyReadTracking, } from './commit-transaction-read-tracking.ts';
 import { runPolicyEngine, } from './engine.ts';
 import type { PolicyEngineResult, } from './types.ts';
 
@@ -261,6 +263,18 @@ export async function revalidateReplay({
     onto,
   },);
   /**
+   Policy options reusing preparation's recorded runs, with inputs fingerprinted at the replay parent.
+   */
+  const policyOptions = await withPolicyReadTracking({
+    policyOptions: context.policyOptions,
+    location: {
+      gitPath,
+      repositoryRoot: context.repositoryRoot,
+      shadowPath: workspace.shadowPath,
+      environment: process.env,
+    },
+  },);
+  /**
    Paths the replayed commit changes relative to its new parent.
    */
   const candidatePaths = await listChangedIndexPaths({
@@ -300,7 +314,7 @@ export async function revalidateReplay({
    First pass over the replayed candidates.
    */
   const firstPass = await runPolicyEngine({
-    ...context.policyOptions,
+    ...policyOptions,
     args: context.args,
     trigger: 'pre-forward',
     gitFacts: facts,
@@ -328,7 +342,7 @@ export async function revalidateReplay({
         capturedIndexPath: workspace.capturedIndexPath,
         objectDirectory: workspace.objectDirectory,
       },
-      policyOptions: context.policyOptions,
+      policyOptions,
       baseRevision: onto,
       repositoryRoot: context.repositoryRoot,
       addedPaths,
