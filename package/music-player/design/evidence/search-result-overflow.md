@@ -42,7 +42,7 @@ the final synthetic `Camellia archive 18` label was fully visible at
 `[1220,1856][1858,1959]` while the left browser and mode bounds remained
 unchanged.
 
-The selected, system-managed 300dp **debug IME** began at y `1421`;
+The 300dp system-managed **debug IME** began at y `1421`;
 this is not a real-Gboard pass.
 With `cam` focused,
 the same left browser remained visible and the final mode occupied
