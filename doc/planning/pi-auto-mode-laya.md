@@ -62,6 +62,21 @@ Cutover does not require retaining the current level of automatic handling.
 Keep deterministic safety checks and require human approval when the local decision lacks validated support.
 Do not treat model confidence alone as proof of safe authorization.
 
+### Q4: Deployment scope
+
+Settled: A.
+Target this Linux workstation first.
+Do not make validation on other Pi hosts a first-cutover requirement.
+
+### Q5: Evaluation data
+
+Settled: A.
+The user authorizes local inspection of existing Pi session histories
+and retaining redacted guard-action examples alongside synthetic/adversarial cases.
+Do not upload session data or commit raw histories.
+Review redaction before committing any fixture.
+This does not authorize fine-tuning or ongoing transcript capture.
+
 ## Research still required
 
 - Inventory every consumed auto-mode responsibility and assign its future owner and parity test.
@@ -77,6 +92,7 @@ Do not treat model confidence alone as proof of safe authorization.
 ## Next action
 
 Inspect the incumbent policy surface and Laya input and deployment boundaries.
-Resolve deployment scope and any user-visible policy changes required by the Laya boundary.
+Inspect local historical guard decisions without exposing raw histories.
+Resolve user-visible policy changes required by the Laya boundary.
 Recompute the remaining interview frontier from the source findings.
 Keep implementation blocked until the complete design is confirmed.
