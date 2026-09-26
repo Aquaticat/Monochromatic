@@ -4106,13 +4106,13 @@ and 4-1-8-2).
 Default changed to `1` on 2026-09-26
 (veto open):
 four sweeps of the build that runs automatic maintenance after landing
-(`5f79404b1`;
-the last three sweeps recorded `35db9ea0a`,
-which changed only Markdown,
+(`5f79404b1`,
 Git 2.47.3,
 concurrency 8,
 30 recorded batches per setting,
-`perf/reserve-sweep-2026-09-26-maintained-run-<n>.json`)
+`perf/reserve-sweep-2026-09-26-maintained-run-<n>.json`;
+the last three sweeps recorded `35db9ea0a`,
+a commit that changed only Markdown)
 gave per-commit p95 of 2630 to 2774 ms for `1`
 (band 144 ms),
 2823 to 2899 ms and one 3145 ms for `2`
@@ -4139,7 +4139,7 @@ Earlier sweeps,
 superseded because every landing then left one more pack in the real store
 (see "Post-landing"),
 so later batches in a sweep ran against more packs than earlier ones:
-four sweeps of `2ec229081`,
+four sweeps of one build (`2ec229081`,
 Git 2.47.3,
 concurrency 8,
 30 recorded batches per setting,
