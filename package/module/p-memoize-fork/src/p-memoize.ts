@@ -329,12 +329,17 @@ export function pMemoize<
    ```
    */
   const memoized = mimicFunction({
-    to: function memoized(
-      this: unknown,
-      {
-        args,
-      }: MemoizedCall<TArgs>,
-    ): Promise<TResult> {
+    // The wrapper is named explicitly because bundlers strip expression
+    // names; the wrapped `toString` marker reads this name before the source
+    // function's own name replaces it, matching upstream `p-memoize`'s
+    // `const memoized = function (...)` inference.
+    to: Object.defineProperty(
+      function memoized(
+        this: unknown,
+        {
+          args,
+        }: MemoizedCall<TArgs>,
+      ): Promise<TResult> {
       /**
        Cache key derived from the argument tuple, recomputed on every call
        like upstream so a throwing `cacheKey` throws synchronously.
@@ -361,7 +366,13 @@ export function pMemoize<
         promise,
       );
       return promise;
-    },
+      },
+      'name',
+      {
+        value: 'memoized',
+        configurable: true,
+      },
+    ),
     from: fn,
     ignoreNonConfigurable: true,
   },);

@@ -252,18 +252,27 @@ export type SpyCacheCall = {
  promises like an asynchronous cache, while `delete` and `clear` stay
  synchronous like `Map`'s own methods.
  
+ @typeParam KeyType - cache key type the storage accepts
+ 
+ @typeParam ValueType - stored value type
+ 
  @example
  ```ts
- const spy = createSpyCache();
+ const spy = createSpyCache<string, number>();
  await spy.cache.set('k', 1,);
  expect(spy.calls.length,).toBe(1,);
  ```
  */
-export type SpyCache = {
+export type SpyCache<KeyType, ValueType> = {
   /**
    Storage to hand to a memoizer.
    */
-  readonly cache: CacheStorage<unknown, unknown>;
+  readonly cache: CacheStorage<KeyType, ValueType> & {
+    /**
+     Drops every entry; always present on the spy.
+     */
+    readonly clear: () => unknown;
+  };
   /**
    Recorded calls in invocation order.
    */
@@ -271,24 +280,28 @@ export type SpyCache = {
   /**
    Backing entries, readable for content assertions.
    */
-  readonly entries: Map<unknown, unknown>;
+  readonly entries: Map<KeyType, ValueType>;
 };
 
 /**
  Creates one recording cache storage.
  
+ @typeParam KeyType - cache key type the storage accepts
+ 
+ @typeParam ValueType - stored value type
+ 
  @returns Spy cache whose `cache` records every method call.
  
  @example
  ```ts
- const spy = createSpyCache();
+ const spy = createSpyCache<string, number>();
  ```
  */
-export function createSpyCache(): SpyCache {
+export function createSpyCache<KeyType, ValueType>(): SpyCache<KeyType, ValueType> {
   /**
    Backing store behind the spy's methods.
    */
-  const entries = new Map<unknown, unknown>();
+  const entries = new Map<KeyType, ValueType>();
   /**
    Recorded calls in invocation order.
    */
@@ -298,14 +311,15 @@ export function createSpyCache(): SpyCache {
     entries,
     calls,
     cache: {
-      has: function spyHas(key: unknown,): Promise<boolean> {
+      has: function spyHas(key: KeyType,): Promise<boolean> {
         calls.push({
           method: 'has',
           key,
         },);
         return Promise.resolve(entries.has(key,),);
       },
-      get: function spyGet(key: unknown,): Promise<unknown> {
+      // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- mirrors `CacheStorage.get` documented cache-miss `undefined` value
+      get: function spyGet(key: KeyType,): Promise<ValueType | undefined> {
         calls.push({
           method: 'get',
           key,
@@ -313,8 +327,8 @@ export function createSpyCache(): SpyCache {
         return Promise.resolve(entries.get(key,),);
       },
       set: function spySet(
-        key: unknown,
-        value: unknown,
+        key: KeyType,
+        value: ValueType,
       ): Promise<void> {
         calls.push({
           method: 'set',
@@ -327,7 +341,7 @@ export function createSpyCache(): SpyCache {
         );
         return Promise.resolve();
       },
-      delete: function spyDelete(key: unknown,): boolean {
+      delete: function spyDelete(key: KeyType,): boolean {
         calls.push({
           method: 'delete',
           key,

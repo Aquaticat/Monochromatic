@@ -41,7 +41,6 @@ export {
 export {
   type AnyAsyncFunction,
   type CacheStorage,
-  isCacheEnabled,
   type ShouldCache,
 } from './cache-storage.ts';
 
