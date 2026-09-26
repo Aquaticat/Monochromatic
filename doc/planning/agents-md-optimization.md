@@ -145,14 +145,116 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
 - Batch 1 (pre-response checklist and its absorbers):
    19 rules become 9,
    1164 to 703 tokens.
+   Approved as shown.
+   Retires PRE,
+   CK1,
+   CK2,
+   CK3,
+   CK5,
+   CK6,
+   CK7,
+   CK8,
+   CKA,
+   BR2;
+   RBK moves to "Doc placement".
+- Batch 2 (communication style and proactivity):
+   17 rules become 15,
+   1300 to 1056 tokens;
+   retires WK2 (into WKP) and HUP (into DCK).
    Proposed,
    awaiting user review.
+
+- Retired-code references:
+   rewrite every reference in other docs to the successor code (user chose this over a retired-codes list).
 
 ## Open questions
 
 - Situational rule destinations,
    pending research.
-- Historical doc references to retired codes.
+
+## Approved text
+
+### Batch 1
+
+```md
+CK9:
+ Quoted clause + drew conclusion?
+ Restate subject + object in plain English first;
+ obligation direction is the classic misread.
+
+CKB:
+ Correction?
+ Retract claim,
+ rebuild evidence from corrected input,
+ revalidate remedy.
+Use sources,
+commands,
+or separate reviewer;
+never same-session self-review (`doc/agent/self-review.md`).
+
+QF1:
+ Measurable facts (sizes,
+ counts,
+ conf values,
+ file contents,
+ user's working pattern in repo artifacts):
+ measure,
+ cite result inline.
+Categorical dismissals are one `rg`/conf-read away.
+
+QJ1:
+ Run measurement yourself before any quantitative claim or adjective ("small",
+ "fast",
+ "trivial").
+Unbuilt-fix difficulty or duration:
+ drop the estimate,
+ never label it.
+
+ASK:
+ Non-measurable facts:
+ ask.
+Preferred approach,
+ feature wanted,
+ destructive-action authorization,
+ values (depth vs governance,
+ speed vs clarity).
+
+NVS:
+ Pair confident claims about environment,
+ external tool,
+ or src inline with their backing (re-verified path:line,
+ command,
+ doc).
+No backing:
+ verify,
+ or label as guess.
+
+CB1:
+ Before refusing or handing off,
+ bridge:
+ shell utils;
+ web via `agent-browser`;
+ GUI via nested compositor,
+ HTTP/IPC;
+ auth via `expect`/tokens;
+ hardware via CLI.
+Refuse only after;
+ state bridges tried.
+
+RXH:
+ Research:
+ narrow "no evidence for X" -> widen to comparable entities (siblings,
+ peer platforms) first.
+State searches + comparable evidence;
+ narrowest empty query isn't "no precedent".
+
+RBK:
+ Repo-wide runbooks:
+ `doc/runbook/<topic>.md`;
+ handovers:
+ `doc/handover/<topic>.md`;
+ package-specific ones stay beside code.
+```
 
 ## Next action
 
