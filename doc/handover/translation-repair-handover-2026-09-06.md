@@ -5053,6 +5053,8 @@ each read off the pass log and the shipped page:
     OPEN FOR THE OWNER: 每日大量服用精神药物 ("took large amounts of psychiatric medication every day", then the ICU) is medication overuse the original does not call an attempt; the rule as written does not reach it.
     OWNER STANDING INSTRUCTIONS OF 2026-09-25:
     "From now on whenever you see anything that can be translated better do it." A rendering that reads badly is a class to fix (rendering glossary entry, policy clause or floor), never an observation left in a note.
+    OWNER CORRECTION OF 2026-09-26, after the TianqiChen6665 read left three observations "not built": "Shouldn't you always immediately fix and restart?"
+    Every observation from a read is fixed in the same turn (guard red first, fix, suite), then the running pass is killed and relaunched on the new frozen build; a read never ends on an unbuilt observation.
     "dropping "swallowing a large amount of medication" is fine. It's documented somewhere that not showing suicide methods therefore promoting replication is expected." Read every death and attempt passage against `src/house-policy.ts` reader protection; a method, substance, dose or place-as-means on the page is a class.
     SHI_YUMIAOYA23 READ (frozen `e57a2589c`): SETTLED at 01:49 UTC 2026-09-25 in 20.9 min, one attempt, 917 seats, 841 calls, about 0.35 USD by the meters;
     every shi_Yumiaoya22 check holds (4 headings, front matter equal, no TA, no error finish, no double blank line, the death paragraphs, the closing quote's two lines with the attribution once, "trans girl", Han only in the archive comments);
