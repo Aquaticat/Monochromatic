@@ -6094,21 +6094,21 @@ No additional IME testing was performed.
 D53's deck allowance and D55's folded-cover allowance remain distinct;
 D57 does not generalize to other floating placements or ordinary keyboards.
 
-The separate E2 opposing-information floor question is at
-`package/music-player/design/questions/crease-floor-review.html`.
-It uses an existing sanitized selected-A native image and a clearly labeled
-cross-state **projected node-box gap** of 167px (approximately 11.35mm),
-not a measured painted nearest-pair distance.
-The three policy choices are P0 (no independent floor beyond crease width),
-P10 (10mm total opposing-information minimum,
-recommended),
-and P12 (12mm).
-At the approximate 7.5mm physical dent,
-P10 requires 2.5mm additional **combined** exterior clearance and P12
-requires 4.5mm;
-neither imposes equal side margins.
-The bars are threshold illustrations,
-not native candidate layouts or proof that selected A passes a chosen floor.
-The preference is pending;
-record the user's answer before replacing E2's unresolved `min_padding`.
-No new IME or device test was performed.
+The initial E2 floor question at
+`package/music-player/design/questions/crease-floor-review.html` is **withdrawn**.
+The user pointed out that it contained only the existing selected-A mockup;
+proportional measurement bars were not built visual alternatives.
+The P0/P10/P12 menu was not answered;
+no `min_padding` is selected.
+The reviewed 167px cross-state **projected node-box gap** remains evidence,
+not a measured painted nearest-pair distance or a fit test.
+A replacement is being built as separate debug-only Compose variants of
+the selected inner A,
+installed on the disposable Fold within its 6 GiB/2 CPU Podman cap.
+Only keyboard-closed layouts will be captured;
+this is **not** a renewed IME experiment.
+Show the actual full native captures side by side at the measured 390dpi
+before asking the floor question again.
+Do not confuse a nominal minimum with symmetrical margins,
+and do not declare compliance without a measured painted-information check.
+The original AVD and production Search remain untouched.

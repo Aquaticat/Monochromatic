@@ -110,10 +110,11 @@ this before-state reading alone does not establish which minimum fits.
 Long result names,
 other screen states and the preference for a future minimum clearance
 remain separate review work.
-The self-contained policy question at
-`package/music-player/design/questions/crease-floor-review.html` compares
-P0 (crease-only),
-P10 (10mm) and P12 (12mm) as **total** opposing-information floors.
-Its proportional bars are analytical threshold illustrations,
-not new native layout variants or a claim that any floor passes this screen.
-The user's selection is pending.
+The first policy question at
+`package/music-player/design/questions/crease-floor-review.html` was
+withdrawn after the user noted that it showed just one existing mockup.
+Its proportional bars were not native layout variants.
+The P0/P10/P12 menu was **not answered**;
+no numeric floor was selected.
+A replacement with distinct debug-only native Compose captures is pending.
+No new IME experiment is authorized for that comparison.
