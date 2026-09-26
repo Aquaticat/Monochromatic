@@ -162,6 +162,21 @@ Design scenarios exercise the accepted concurrent-commit design:
   then the first is released.
   Far-apart hunks must both land;
   overlapping hunks may fail only with exit `1` and a `core-finding` event.
+- `shared-file-adjacent-edits`:
+  the first agent edits one line and pauses after preparation
+  (phase marker `preparation-done`),
+  the second edits the line after it,
+  the line before it,
+  or inserts a line right after it
+  (seeded),
+  so its captured bytes hold both edits,
+  and pauses the same way;
+  then the first is released and lands,
+  and the second is released.
+  Both must land,
+  the second through a replay that keeps its captured bytes
+  (subsumption,
+  `SPEC.md` "Subsumption").
 - `interleaved-index-writers`:
   4 commits and 4 `git add` runs of new files in a seeded interleaving;
   every add must succeed and its staged entry must survive.
@@ -175,6 +190,26 @@ Design scenarios exercise the accepted concurrent-commit design:
 - `amend-during-commits`:
   an amend races 3 commits;
   it may land only on the parent it saw.
+  When it lands,
+  the others replay onto the amended history,
+  which auto-push cannot fast-forward
+  (see `push-rejection-surfaced`).
+- `reservation-after-lost-races`:
+  a victim commit holds in its editor until a first winner lands,
+  loses its first race,
+  pauses at `race-lost-1` while a second winner lands,
+  loses again,
+  takes the landing reservation,
+  and pauses at `race-lost-2`;
+  a commit started then must not land during a 1.5 s window,
+  and after release the victim lands first.
+  Expectations:
+  `victim-lost-races`,
+  `reserved-within-bound`
+  (exactly one `landing-reserved`,
+   at most `landing.reserveAfterLostRaces` + 1 lost races),
+  `reservation-blocks-landing`,
+  and `reserved-lands-first`.
 - `branch-switch-during-commit`:
   `git switch side` while a commit is held in `pre-commit`;
   the switch and the commit must not both succeed.
@@ -250,7 +285,13 @@ before `landing-<n>.json`),
 (after `ref-updated.json`),
 and `index-installed`
 (after the `index-installed` marker,
-before conclusion cleanup and worktree completion).
+before conclusion cleanup and worktree completion),
+and `race-lost`
+(after each lost race and any reservation it earned,
+before the replay,
+outside both locks),
+whose files carry the occurrence:
+`race-lost-<n>.reached` and `race-lost-<n>.release`.
 The variable name says it is for tests only,
 nothing else sets it,
 and a malformed value fails the invocation instead of being ignored.
@@ -282,7 +323,14 @@ so the harness records the attempt as deliberately killed.
   the remote branch reaches every commit whose wrapper exited `0` with auto-push applying
   (not amends,
   which auto-push cannot fast-forward,
-  and not the foreign real-Git commit).
+  not the foreign real-Git commit,
+  and not commits landed on top of an amend of an already-published commit).
+- `push-rejection-surfaced`:
+  a commit that exited `0` on top of a landed amend of a commit the remote already had
+  must have surfaced Git's `non-fast-forward` push rejection and cli-git's
+  `auto-push to origin failed` note
+  (owner decision,
+  `doc/decision/cli-git-concurrent-commits.md` "Amending published history").
 - `no-leftovers`:
   no `refs/cli-git/` ref,
   lock file or lock directory,
@@ -331,76 +379,117 @@ so a replay reproduces the workload exactly but can land a free-running race dif
 
 ## Results on the current build
 
-Seed 1,
+Seeds 1 and 2,
 2026-09-26,
-packed from `feat/cli-git-concurrent-commits` at `51d21a221`
-(slice 3:
-replay,
-revalidation,
-hook-staged trees,
-shadow-store preparation,
-phase markers,
-and the zombie and dead-lander recovery fixes),
-66 scenario runs.
+packed from `feat/cli-git-concurrent-commits` at `835168405`
+(slice 3 plus subsumption replay,
+the slice 5 landing reservation,
+and the amended-history checker),
+72 scenario runs per seed.
 
 ### Passing
 
-- Every baseline on both Git versions:
+- Every baseline on both Git versions and both seeds:
   19 passes,
   plus `baseline-hooks-config` skipped on 2.40.0.
-- On both versions:
-  `concurrent-disjoint-paths`,
-  both shared-file scenarios
-  (non-overlapping hunks land through replay;
-  overlapping hunks end with one `concurrent-commit/replay-conflict`),
-  `hooks-hookdir-concurrent`,
-  `ssh-signing-concurrent`,
-  `lint-staged-stash-concurrent`,
-  `branch-switch-during-commit`,
-  `foreign-index-lock-holder`,
-  `gc-prune-during-commits`,
-  every `sigkill-*` hook and offset scenario,
-  and every `sigkill-phase-*` scenario;
-  `hooks-config-concurrent` on 2.55.0.
-- `concurrent-trace-replay` on 2.40.0 and `interleaved-index-writers` on 2.55.0.
-
-The slice 2 build hung until the scenario timeout in the three `sigkill-*` hook scenarios:
-the harness is PID 1 in the container and never reaps the killed group's orphans,
-and a zombie still answers `kill(pid, 0)` with its start time,
-so lock liveness checks kept waiting on it.
-Owner liveness now treats Linux states `Z` and `X` as exited.
+- Every concurrency scenario on both versions and both seeds,
+  except `concurrent-trace-replay` below:
+  49 of 50 non-skipped concurrency runs on seed 1
+  and 48 of 50 on seed 2.
+  This includes `amend-during-commits`
+  (the three commits that replay onto a landed amend now surface the non-fast-forward push rejection with exit `0`),
+  `interleaved-index-writers` on 2.40.0,
+  and the new `shared-file-adjacent-edits` and `reservation-after-lost-races`.
+- `concurrent-trace-replay` passes on 2.40.0 with seed 1.
+  Seed 2 on 2.55.0 no longer fails `trace/p5503`:
+  another in-flight commit had added that file,
+  and this commit captured it with 7 lines inserted in the middle,
+  which subsumption now keeps.
+- Skipped on 2.40.0:
+  the config-hook scenarios and `foreign-index-lock-holder`,
+  which need Git 2.54.0.
 
 ### Failing, and why
 
-- `amend-during-commits` on both versions (`remote-contains`):
-  the amend won the race and landed,
-  and the three commits replayed onto it and exited `0`.
-  The amended history cannot fast-forward the remote,
-  so auto-push cannot publish the three commits on top of it.
-  `remote-contains` exempts amends but not their descendants;
-  this is an invariant question for the auto-push slice,
-  not a lost commit.
-- `concurrent-trace-replay` on 2.55.0 (`all-commits-succeed`):
-  two or three in-flight trace commits edit `trace/p1538`,
-  each writing its edit on top of the worktree bytes that already hold an earlier in-flight commit's edit.
-  Replay merges from each commit's preparation base,
-  so adjacent edits conflict and the later commits exit `1` with `concurrent-commit/replay-conflict`,
-  as the accepted design specifies for overlapping hunks.
-  The scenario expects every commit to land;
-  whether it should accept replay conflicts on shared paths,
-  as the shared-file scenario does,
-  is open.
-- `interleaved-index-writers` on 2.40.0 (`command-succeeds`):
-  a `git add` exited `128` on `index.lock` while a landing held it.
-  Waiting index writers are the index-lock classification slice.
+`concurrent-trace-replay` still expects every commit to land and still fails:
+seed 1 on 2.55.0,
+seed 2 on both versions.
+Each replay conflict below is genuine under the subsumption rule:
+the committing agent's own edit deleted or rewrote lines that the commit that won the race had just added,
+so its captured bytes do not contain the landed change.
+The trace synthesizer (`editText` in `content-fixture.ts`) replaces a random block of the file,
+which can overlap the block an in-flight commit inserted.
+Hunks are in the file as the winner left it,
+from the diagnostic reruns of the same seeds:
+
+- Seed 1,
+  2.55.0,
+  `t2` against `t1`,
+  `trace/p1538`
+  (added by both):
+  `t1` added 297 lines;
+  `t2`'s bytes are `t1`'s with lines 112 to 113 replaced by 19 new lines
+  (`@@ -109,8 +109,25 @@`).
+- Seed 1,
+  2.55.0,
+  `t12` against `t11`,
+  `trace/p1538`:
+  `t11` replaced base lines 260 to 261 with 24 lines
+  (`@@ -260,2 +260,24 @@`);
+  `t12` deleted lines 283 to 291 of that result,
+  the last line `t11` inserted and the 8 base lines after it
+  (`@@ -280,15 +280,44 @@`).
+- Seed 2,
+  2.40.0,
+  `t4` against `t3`,
+  `trace/p627`
+  (added by both):
+  `t3` added 171 lines;
+  `t4` replaced 30 of them,
+  lines 93 to 122,
+  with 23
+  (`@@ -90,36 +90,29 @@`).
+- Seed 2,
+  2.40.0,
+  `t6` against `t5`,
+  `trace/p234` and `trace/p629`:
+  `t5` replaced base lines 50 to 71 of `p234` with 46 lines,
+  and `t6` replaced 8 of those with 1 line
+  (`@@ -79,14 +79,7 @@`);
+  `t5` added `p629` with 68 lines,
+  and `t6` rewrote 31 of its first 38
+  (`@@ -1,38 +1,45 @@`).
+- Seed 2,
+  2.40.0,
+  `t14` against `t13`,
+  `trace/p636` and `trace/p637`
+  (both added by both):
+  `t14` deleted 3 of the 80 lines `t13` added to `p636`
+  (`@@ -27,9 +27,19 @@`)
+  and 1 of the 288 lines it added to `p637`
+  (`@@ -112,7 +112,51 @@`).
+
+Seed 2 on 2.55.0 also fails `t7` before any replay:
+`git add --all -- trace/p5499 trace/p5500 trace/p5501 trace/p5502 failed: fatal: pathspec 'trace/p5500' did not match any files`.
+The trace window deletes `trace/p5500` in `t7`,
+while the commit that adds it is still in flight,
+so the path is in neither `t7`'s preparation base nor its worktree;
+native `git commit -- trace/p5500` fails the same way.
+The harness only waits for the other worker's `pre-commit` hook before touching a shared path,
+not for its landing.
+
+The scenario was not relaxed.
+Whether it should accept replay conflicts where one in-flight commit rewrites another's fresh lines,
+and deletions of paths another in-flight commit adds,
+is open.
 
 ## Open problems
 
 - The shared-file scenarios give the second agent a fixed 1.5 s start window,
   because the accepted design has no hook-visible point between capture and the hook lock.
   A heavily loaded host could release the first agent before the second captured.
-- No phase marker sits between a lost race and its replay or revalidation,
-  so a kill there is reached only through `sigkill-offset`.
+- The `race-lost` marker sits between a lost race and its replay,
+  but no scenario kills a transaction there yet.
 - The lint-staged scenarios run in a linked worktree,
   because the `linked-worktree-only` core policy rejects the hook's `git stash` in a main worktree.
   lint-staged in a main worktree is therefore blocked by cli-git today,
