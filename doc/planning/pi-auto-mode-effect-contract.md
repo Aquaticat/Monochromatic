@@ -284,12 +284,23 @@ continuations,
 project context,
 and tool payloads.
 
-The installed host's input provenance and persistence path still need their integration audit.
-No source label is assumed to be an authenticated human witness merely from its name.
+The [Pi input-provenance investigation](../troubleshooting/pi-input-provenance.md)
+traces the installed 0.87.1 host and records an offline actual-method probe.
+Its transient input event distinguishes channels,
+but constructed user messages omit that field.
+Programmatic prompts default to `interactive`,
+transforms retain the channel label while changing content,
+and input-handler errors do not veto prompt delivery.
+Therefore neither role nor channel name alone is a verified human witness.
+
+The collector must bind admitted original content to its actual entry and branch,
+with explicit unresolved-origin handling if collection fails.
+Do not transfer authority to a context-edited replacement solely because it retains the original role or entry identity.
+Prefer provenance metadata referencing existing entries over duplicate transcript capture.
 On resumed or externally populated history without sufficient provenance,
 require explicit confirmation rather than guessing.
-This is a proposed fail-closed treatment,
-not an implemented Pi event hook.
+This is a proposed consumer treatment;
+live TUI/RPC persistence and the collector integration remain unverified.
 
 ### Existing approval reuse
 
@@ -379,6 +390,6 @@ The initial prototype's conflict precedence,
 protected-transmission rule,
 and threshold bands remain demonstration rules.
 Do not freeze them by documentation alone.
-The next work is to inspect the host provenance path,
+The next work is to prototype provenance binding and its failure cases,
 make the first-deployment profile applicability explicit without reinstating the rejected code-proof prerequisite,
 and build corresponding independent fixtures and policy tests in private scratch.
