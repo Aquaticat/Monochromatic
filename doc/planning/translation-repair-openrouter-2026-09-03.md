@@ -8082,6 +8082,71 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ6013 read, 2026-09-26: classes one hundred thirty-nine to forty-two live, and classes one hundred forty-five to forty-seven
+
+### What the run did
+
+XingZ6013 (frozen `e387be2cf`) SETTLED at 04:32 UTC in 56.3 min,
+Bedrock and OpenRouter wet, Synthetic and Hyper dry, so glm-5.3 (602 asked) and Qwen3.8-27B (1,138 asked) threw every call.
+120 slices, 245 repair issues, 149 accepted, 110 slices where the lanes differed, 111 lane contest verdicts, 100 slices changed on the page.
+
+### The four checks the run was launched for
+
+- Class one hundred thirty-nine: both song credits keep the album,
+  "— Yuli 【妄想症Paranoia】“Nonuple Reality”" and "—— Yuli 【Paranoia】 “Ling Chong Qi Yuan”".
+- Class one hundred forty: the first credit reads "by Jiecheng Tianzou Official", no ", author".
+- Class one hundred forty-one: no English title stands in 《》 anywhere on the page.
+- Class one hundred forty-two: every straight double quote on the page is inside a tag or the JSX photo path,
+  and "take it slow" is curled; the four `quote-style-unified` lines curled slices 20, 39, 42 and 65.
+
+### Class one hundred forty-five: the first credit's title in two English renderings
+
+The page reads "——from “Gilded Cage” ([Bird in a Cage](https://www.bilibili.com/video/BV17Q4y1s7j1))[^9]".
+The original credits the song once, as the link's text: 来自《[笼中之鸟](url)》.
+The consolidated candidate wrote "Gilded Cage", a title the web lookup offered for another work
+(minimax-m3 said so on the slate and the gate, inception/mercury-2.5 on the gate), and kept 笼中之鸟 as the link's text in parentheses.
+The class ninety-eight floor read the Han in parentheses as a gloss beside its English and let the candidate through;
+the slate chose it 2.5 to 0.5, and the gate confirmed it with 2 of 4 ballots, one for the standing and one for neither.
+The class one hundred title pass then rewrote the Han link text into the heading's "Bird in a Cage",
+so one song reached the page under two titles.
+Fixed in `9157004d2` (guard red first `dd88fd5b6`): a Han title standing as a link's whole text is never a gloss,
+since the link's text is what the reader sees as the work's name.
+Replayed over the run's shipped slice 95: the floor now refuses it.
+
+### Class one hundred forty-six: the second credit left in pinyin
+
+The page reads "—— Yuli 【Paranoia】 “Ling Chong Qi Yuan”" under the heading "Zero-Layer Prayer".
+The title pass logged `title-reference-ambiguous (slice 101 ... the slice offers more than one span to read)`:
+the slice carries the summary's quoted poem title, the quoted closing line and the quoted credit.
+Fixed in `9157004d2` with `d8d86b531` (same guard commit):
+where the original writes the title on a line opening with a tag,
+the search is held to the page line opening with the same tag in the same place among such lines,
+as it already was for a footnote definition's label.
+Replayed over the run's artifact: slice 101's credit unifies to “Zero-Layer Prayer”.
+
+### Class one hundred forty-seven: a nested quotation left straight
+
+The butterfly speech quotes a law inside its own quotation, 「醒着就要活下去」 inside 「…」,
+and the page shipped "the law that says 'to be awake is to keep living.' They can fly" straight inside curly doubles.
+`restoreTypography` curled a straight single quote only as an apostrophe.
+The archive pages write nested quotations curly (13 ‘ marks over 6 pages) and never straight.
+Fixed in `f4adc4c9f` and `f31fd2ec5` (guard red first `09758edd6`):
+`nestedSinglePairs` in `nested-single-quotes.ts` pairs an opening-shaped straight single quote with the next closing-shaped one on its line,
+and on a page whose convention is the curly apostrophe the pair is written ‘…’;
+the neighbour helpers moved to `quote-neighbours.ts`.
+Two older assertions that left a quoted phrase straight, so it was never half-curled, now expect the whole pair curled.
+Replayed over the whole XingZ6013 page: that one line is the only line the restoration changes.
+
+### Observations not built
+
+- The two credits write the album two ways, 【妄想症Paranoia】 and 【Paranoia】, and the dash two ways, "—" and "——" (em-dashes left per the owner).
+- "Yuli" carries no literal gloss at its first appearance; the bench wrote none, so `placeHandleGlosses` had nothing to move.
+
+### Next
+
+hulicaijia29 on the frozen build carrying classes one hundred forty-four to forty-seven,
+read first for the chunk 69 claim's category: only an accepted `accuracy/addition` claim disputes the archive.
+
 ## hulicaijia28 read, 2026-09-26: the note kept, class one hundred forty-four not exercised
 
 ### What the run did

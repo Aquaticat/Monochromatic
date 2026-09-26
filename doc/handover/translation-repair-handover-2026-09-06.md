@@ -4777,15 +4777,22 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XINGZ6013 RUNNING on `.frozen-dist-e387be2cf` (launched 03:35 UTC 2026-09-26, pid 1394389, scope `pass-XingZ6013`,
-    log `~/temp/agent/XingZ6013.log`) to see classes one hundred thirty-nine to forty-two live:
-    "—— Yuli [Paranoia]…" or the album kept on slice 98's credit, "by Jiecheng Tianzou Official" on the first credit,
-    “Zero-Layer Prayer” in quotation marks on the second, with no English title left in 《》 anywhere on the page,
-    and no straight prose quote on the page outside JSX and code ("take it slow", "doesn’t want to die").
-    Then another hulicaijia on the same build for class one hundred forty-four:
-    read the chunk 69 "issue … filed by X, panel …" line first; only an accepted `accuracy/addition` claim disputes the archive,
+1.  HULICAIJIA29 RUNNING on `.frozen-dist-f31fd2ec5` (launched 2026-09-26, pid 2414552, scope `pass-hulicaijia29`,
+    log `~/temp/agent/hulicaijia29.log`), the build carrying classes one hundred forty-four to forty-seven,
+    for class one hundred forty-four:
+    read the chunk 69 "issue … filed by X, panel …" line first;
+    only an accepted `accuracy/addition` claim disputes the archive,
     and only then does the slice 69 slate carry the dispute block the fix bounds.
     A slate ballot citing the accepted claim as settling the note is class one hundred forty-four not live.
+    XINGZ6013 READ (frozen `e387be2cf`): SETTLED at 04:32 UTC 2026-09-26 in 56.3 min;
+    classes one hundred thirty-nine to forty-two live;
+    class one hundred forty-five (a Han title as a link's whole text escaped the class ninety-eight floor,
+    then the title pass doubled it) fixed in 9157004d2, guard dd88fd5b6;
+    class one hundred forty-six (title-reference-ambiguous on slice 101 over several quote spans)
+    fixed in 9157004d2 and d8d86b531;
+    class one hundred forty-seven (a nested quotation shipped in straight single marks on a curly page)
+    fixed in f4adc4c9f and f31fd2ec5, guard 09758edd6;
+    full suites 1145 and 1146 PASS; recorded under "## XingZ6013 read" in the pass log.
     HULICAIJIA28 READ (frozen `e387be2cf`): SETTLED at 03:33 UTC 2026-09-26 in 24.4 min, about 2.83 USD;
     every hulicaijia27 check held, en_CA and register clean, footnote 7's note on the page (pinyin 烷 corrected to wán);
     class one hundred forty-four NOT exercised: gemma-4-26b-a4b-it filed the note as `accuracy/mistranslation`,
