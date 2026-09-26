@@ -1,5 +1,22 @@
 # Pi auto-mode migration interview: Laya, Voyage, and Jev
 
+## Current architecture correction
+
+The user requires models to emit probabilities for narrow axioms.
+Deterministic code owns the final action.
+The direct-verdict pilots in this historical record used the wrong task formulation;
+their comparative approval-quality conclusions are withdrawn.
+Retain their API-access,
+context,
+resource,
+and runtime observations only.
+The focused current design is
+[axiom assessment and deterministic policy](pi-auto-mode-axioms.md).
+
+The user also prioritizes LLM Gateway over OpenRouter.
+Native Jev axiom-probability access through LLM Gateway has been verified;
+see the focused design for the probe and current routing priority.
+
 ## Status and authority
 
 Design interview in progress.
@@ -11,9 +28,12 @@ No dependency,
 
 Current authorized scope is Laya,
 relevant Voyage products/models including rerank-3,
-and Jev through OpenRouter.
-The user supplied dedicated Voyage and OpenRouter API keys through mise
-and explicitly expanded the scope in separate instructions.
+and Jev,
+with LLM Gateway preferred over OpenRouter.
+The user supplied dedicated Voyage,
+OpenRouter,
+and LLM Gateway API keys through mise
+and explicitly expanded the scope and routing preference in separate instructions.
 Other vendor/model alternatives remain outside scope.
 
 Before the Voyage expansion,
@@ -1160,11 +1180,15 @@ No production guard action is executed from any returned label.
 
 ## Next action
 
-Run the prepared current-policy Jev and Voyage development pilots after the passed policy-freshness controls.
-Record every result with its complete policy hash;
-discard stale responses and do not treat raw model scores as permission.
-Continue the applicable API/context/data-handling audits.
-Assess Laya's domain/long-context fine-tuning path rather than promoting its failed stock configuration.
+Do not run further direct-verdict pilots.
+Complete the axiom definitions,
+independent axiom truth labels,
+and deterministic-policy tests in the focused design.
+Use LLM Gateway first for native Jev axiom experiments.
+Keep complete current policy and freshness checks in every guard-model request.
+Continue the applicable model/context/data-handling audits.
+Assess Laya fine-tuning only against the corrected axiom task,
+not the retired final-action formulation.
 Repair the scoped Markdown lint findings and render the changed documents.
 Inspect mistakes independently without using reserved results to tune the tested schemas.
 Use that evidence to resolve authority,
