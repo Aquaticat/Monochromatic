@@ -729,6 +729,39 @@ SLF:
 Citing paths and docs is fine.
 ```
 
+### Batch 6
+
+```md
+OPT:
+ Distinct options:
+ pros + cons for each,
+ then "Ranking:
+ B > A > C,
+ because ..." giving the reason for every adjacent pair.
+
+OPA:
+ `AskUserQuestion`:
+ pros + cons in each `description`,
+ best first,
+ "(Recommended)" on top label;
+ full ranking with adjacent-pair reasons in surrounding prose.
+
+YKZ:
+ Before ranking several options:
+ widen to plausible alternatives (with their libraries and repo incumbents);
+ design each until disqualifying problems surface.
+
+ODM:
+ Option examples must demonstrate every concept the question asks the user to compare.
+
+OCG:
+ CLI option design:
+ output cardinality never determines option occurrence grammar;
+ sketch token encoding before asserting repeated,
+ delimited,
+ or variadic forms.
+```
+
 ## Next action
 
 Walk rules batch by batch;
