@@ -18,7 +18,6 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import nanoSpawn from 'nano-spawn';
-import { ABSENT_GIT_VALUE, } from '../api/context-types.ts';
 import { createManualPushCandidates, } from './manual-push-candidates.ts';
 
 /**
@@ -133,6 +132,8 @@ process.exitCode = result.status ?? 2;
   },);
   await runGit({ repository, args: ['config', 'user.email', 'fixture@example.invalid',], },);
   await runGit({ repository, args: ['config', 'user.name', 'Fixture',], },);
+  // Empty published baseline, so every content-bearing commit is newly pushed above it.
+  await runGit({ repository, args: ['commit', '--quiet', '--allow-empty', '-m', 'published baseline',], },);
   await Promise.all(Array.from(
     { length: FILE_COUNT, },
     function writeFixtureFile(_unused, index,) {
@@ -190,6 +191,14 @@ await describe({
           { cwd: fixture.repository, },
         )).stdout;
         /**
+         Empty published baseline below every content-bearing commit.
+         */
+        const baselineOid = (await nanoSpawn(
+          REAL_GIT,
+          ['rev-list', '--max-parents=0', 'HEAD',],
+          { cwd: fixture.repository, },
+        )).stdout;
+        /**
          Per-commit delta candidates across every newly reachable commit.
          */
         const candidates = await createManualPushCandidates({
@@ -197,7 +206,7 @@ await describe({
           cwd: fixture.repository,
           updates: [{
             localOid,
-            remoteOid: ABSENT_GIT_VALUE,
+            remoteOid: baselineOid,
             remoteName: 'origin',
             remoteRef: 'refs/heads/main',
           },],

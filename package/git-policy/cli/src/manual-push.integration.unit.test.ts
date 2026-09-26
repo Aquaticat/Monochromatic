@@ -224,7 +224,7 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'blocks a transient forbidden blob before remote creation',
+      name: 'blocks a transient forbidden blob on a new branch above published history',
       fn: async function testTransientBlob() {
         await using fixture = await createFixture();
         await installPolicy({
@@ -233,6 +233,9 @@ await describe({
 const contents = await Promise.all(candidates.map(async candidate => new TextDecoder().decode(await candidate.bytes())));
 return contents.some(content => content.includes('forbidden-transient')) ? [{ code: 'forbidden', message: 'transient content observed' }] : [];`,
         },);
+        // Publish a baseline so the remote-tracking ref bounds the new branch's scan
+        // to per-commit deltas; an empty remote scans only the pushed tip's tree.
+        await nanoSpawn(REAL_GIT, ['push', '--quiet', 'origin', 'HEAD:refs/heads/main',], { cwd: fixture.repository, },);
         await writeFile(join(fixture.repository, 'transient.txt',), 'forbidden-transient\n',);
         await nanoSpawn(REAL_GIT, ['add', 'transient.txt',], { cwd: fixture.repository, },);
         await nanoSpawn(REAL_GIT, ['commit', '--quiet', '-m', 'introduce',], { cwd: fixture.repository, },);
@@ -241,13 +244,13 @@ return contents.some(content => content.includes('forbidden-transient')) ? [{ co
         await nanoSpawn(REAL_GIT, ['commit', '--quiet', '-m', 'remove',], { cwd: fixture.repository, },);
         const failure = await captureFailure({
           fixture,
-          args: ['push', 'origin', 'HEAD:refs/heads/main',],
+          args: ['push', 'origin', 'HEAD:refs/heads/feature',],
         },);
         expect(failure.exitCode,).toBe(1,);
         expect(failure.stderr,).toContain('transient content observed',);
         expect(await remoteRefMissing({
           fixture,
-          ref: 'refs/heads/main',
+          ref: 'refs/heads/feature',
         },),).toBe(true,);
       },
     },),
