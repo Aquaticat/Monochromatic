@@ -191,7 +191,8 @@ even though both endpoint hierarchies pass.
 
 The recordings and extracted frames stay in private scratch as
 `fixed-height-jump.mp4`,
-`auto-height-jump.mp4` and matching `*-height-jump-frames/` directories.
+`auto-apply-logging-only-height-jump.mp4` and their matching private
+frame directories.
 FFmpeg's `image2` muxer reported non-monotonically increasing timestamps
 while extracting each full frame count;
 do not infer the duration of the failure from nominal frame rate.
