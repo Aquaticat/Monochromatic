@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Withdrawn E2 ruler-only study</title>
+<title>E2 · native Fold Search floor variants</title>
 <style>
 :root {
   color-scheme: light dark;
@@ -16,8 +16,6 @@
   --color-accent: #344d86;
   --color-chassis: #17191f;
   --color-backdrop: rgb(0 0 0 / 80%);
-  --color-crease: #a8502b;
-  --color-information: #354f89;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -30,17 +28,15 @@
     --color-accent: #b7caff;
     --color-chassis: #08090c;
     --color-backdrop: rgb(0 0 0 / 86%);
-    --color-crease: #ffac82;
-    --color-information: #b7caff;
   }
 }
 * { box-sizing: border-box; }
 body { margin-inline: 0; margin-block: 0; background-color: var(--color-page); color: var(--color-ink); font-family: system-ui, sans-serif; line-height: 1.5; }
-main { max-inline-size: 88rem; margin-inline: auto; padding-inline: clamp(1rem, 3vw, 2.5rem); padding-block: 1rem 4rem; }
+main { max-inline-size: 100rem; margin-inline: auto; padding-inline: clamp(1rem, 3vw, 2.5rem); padding-block: 1rem 4rem; }
 h1 { font-size: clamp(1.8rem, 3vw, 2.6rem); line-height: 1.2; }
 h2 { margin-block: 0.5rem; }
-p { max-inline-size: 90ch; }
-.evidence, .policy, .note {
+p { max-inline-size: 95ch; }
+.note, .candidate {
   border-width: 0.0625rem;
   border-style: solid;
   border-color: var(--color-edge);
@@ -50,21 +46,15 @@ p { max-inline-size: 90ch; }
   padding-block: 0.7rem;
 }
 .muted { color: var(--color-muted); }
-.evidence img { display: block; inline-size: min(100%, 30rem); block-size: auto; }
-.policies { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 23rem), 1fr)); gap: 1rem; margin-block: 1rem; }
-.policy[data-recommended='true'] { border-width: 0.15rem; border-color: var(--color-accent); }
-.policy ul { padding-inline-start: 1.5rem; }
-.policy li { margin-block: 0.4rem; }
-.ruler { display: grid; gap: 0.55rem; margin-block: 0.8rem; }
-.measure { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: 0.6rem; align-items: center; }
-.measure .track { display: block; inline-size: min(100%, 12rem); }
-.measure .line { display: block; block-size: 0.65rem; border-radius: 0.35rem; background-color: var(--color-information); }
-.measure[data-kind='crease'] .line { inline-size: 62.5%; background-color: var(--color-crease); }
-.measure[data-kind='ten'] .line { inline-size: 83.333333%; }
-.measure[data-kind='twelve'] .line { inline-size: 100%; }
-.measure[data-kind='boxes'] .line { inline-size: 94.583333%; }
-button, textarea { font: inherit; color: var(--color-ink); background-color: var(--color-panel); }
-button {
+.controls { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: center; margin-block: 1rem; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 25rem), 1fr)); gap: 1rem; margin-block: 1rem; }
+.candidate { min-inline-size: 0; }
+.candidate[data-recommended='true'] { border-width: 0.15rem; border-color: var(--color-accent); }
+.candidate img { display: block; inline-size: min(100%, 26rem); block-size: auto; }
+.candidate ul { padding-inline-start: 1.5rem; }
+.candidate li { margin-block: 0.4rem; }
+button, select, textarea { font: inherit; color: var(--color-ink); background-color: var(--color-panel); }
+button, select {
   min-inline-size: 3rem;
   min-block-size: 3rem;
   padding-inline: 0.8rem;
@@ -73,10 +63,10 @@ button {
   border-style: solid;
   border-color: var(--color-edge);
   border-radius: 0.6rem;
-  cursor: pointer;
 }
+button { cursor: pointer; }
 button:hover { background-color: var(--color-raised); }
-button:focus-visible, input:focus-visible, textarea:focus-visible, .stage:focus-visible { outline: 0.1875rem solid var(--color-accent); outline-offset: 0.1875rem; }
+button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible, .stage:focus-visible { outline: 0.1875rem solid var(--color-accent); outline-offset: 0.1875rem; }
 fieldset { border-width: 0; padding-inline: 0; padding-block: 0; margin-inline: 0; margin-block: 0.8rem; }
 label { display: block; min-block-size: 3rem; padding-block: 0.45rem; }
 textarea {
@@ -141,96 +131,122 @@ dialog::backdrop { background-color: var(--color-backdrop); }
 <body>
 <main>
 <header>
-  <p class="muted">Music player · selected Search A · Pixel 9 Pro Fold inner panel · E2 policy only</p>
-  <h1>Withdrawn: this was not a visual comparison</h1>
-  <p class="note"><strong>Do not choose a floor from this page.</strong> The first review reused one existing Search A screenshot and measurement bars; it did not show native variants of the proposed floor values. The user's correction withdrew the choice request. A replacement with separately built Compose captures on the disposable Fold is in progress, without further IME experiments. No E2 floor has been selected.</p>
-  <p class="note">E2 already keeps meaning-bearing app marks off the approximate physical crease. Its remaining floor is a <strong>total left-to-right separation</strong> between opposing information, not extra blank surface or a margin on each side. The rule is <code>gap ≥ max(min_padding, physical crease width)</code>. Surfaces and hit regions may cross. This question chooses the independent floor, not a layout redesign. The selected Search A, folder browser, deck and D56/D57 remain settled. No new device or IME experiment was done.</p>
+  <p class="muted">Music player · design-only native Compose comparison · Pixel 9 Pro Fold inner panel</p>
+  <h1>See three actual Search A clearances across the crease</h1>
+  <div class="note">
+    <p><strong>Correction:</strong> The earlier page had one existing screenshot and measurement bars, not visual alternatives. This replacement embeds separate native Compose captures for each proposed floor. All keep Search and results on the right, the same folder browser above the left playback deck, and information outside the approximate x [983,1093) crease band. The entire status strip in each 2076 × 2152px capture was replaced with generic status content. Raw captures are private.</p>
+    <p>These are debug-only keyboard-closed 200% text-scale studies from the <strong>same installed APK</strong>, SHA-256 <code>__E2_APK_SHA__</code>, on the disposable Fold at 390dpi. No new IME experiment or production Search change was made. Each floor is a proposed <strong>total opposing-information gap</strong>, not a required blank stripe or equal margin on each side. Browser cropping caused by a wider floor is visible in the mockups.</p>
+  </div>
 </header>
-<section class="evidence" aria-labelledby="evidence-title">
-  <h2 id="evidence-title">What the existing native capture can and cannot establish</h2>
-  <p>The accepted light 200% typing image comes from a 2076 × 2152 physical-pixel capture under a 300dp debug keyboard, not Gboard. Its 100% device preview is approximately 852 × 883dp at the measured AVD 390dpi. The approximate crease width is 7.5mm, about 110px, centered at x 1038. Across several selected-A states, the rightmost left text-node box ended at x 965 and the nearest-to-crease right text-node box began at x 1132. Their <strong>projected</strong> horizontal box gap is 167px, about 11.35mm. Those extrema were not necessarily in the same state or at the same height; node boxes do not certify every glyph's paint. This capture does not by itself establish the floor's fit.</p>
-  <img id="capture" src="__CREASE_IMAGE__" width="2076" height="2152" alt="Selected unfolded Search A native panel, with readable left deck and right Search content on opposite sides of the approximate crease">
-  <button id="inspect" type="button">Inspect selected A at device size</button>
-  <h3>Thresholds, not new app screens</h3>
-  <p>These labeled bars compare <strong>total opposing-information distance</strong>, not centered exclusion bands or equal side margins. Their lengths are proportional to the stated millimeters. The 11.35mm box-gap bar is a cross-state proxy, not a measured nearest painted-pair gap or a fit pass for any proposal.</p>
-  <div class="ruler" role="list" aria-label="Approximate physical distance comparison">
-    <div class="measure" data-kind="crease" role="listitem"><span>Crease: 7.5mm</span><span class="track" aria-hidden="true"><span class="line"></span></span></div>
-    <div class="measure" data-kind="ten" role="listitem"><span>Floor: 10mm</span><span class="track" aria-hidden="true"><span class="line"></span></span></div>
-    <div class="measure" data-kind="boxes" role="listitem"><span>Box proxy: 11.35mm</span><span class="track" aria-hidden="true"><span class="line"></span></span></div>
-    <div class="measure" data-kind="twelve" role="listitem"><span>Floor: 12mm</span><span class="track" aria-hidden="true"><span class="line"></span></span></div>
+<section aria-labelledby="variants-title">
+  <h2 id="variants-title">Inspect the separate native variants</h2>
+  <p>Use the state control to compare the same three variants with positive results or with the empty Search heading nearest the crease. The selected A's status and navigation bars, browser, header and full deck are included in every capture. Open a device preview at 100% of the measured 852 × 883dp display; use Fit for an overview without upscaling the screenshot.</p>
+  <div class="controls"><label for="state">Native Search state
+    <select id="state"><option value="empty">Empty Search, heading near the crease</option><option value="results">Positive results, query “cam”</option></select>
+  </label></div>
+  <div class="cards">
+    <article class="candidate" data-floor="14" data-recommended="true">
+      <h2>P14 · 14mm total minimum (Recommended)</h2>
+      <img width="2076" height="2152" alt="Native Fold Search A with a 14 millimeter total information floor">
+      <button type="button" data-preview="14">Inspect P14 at device size</button>
+      <h3>Pros</h3>
+      <ul><li>In the captured empty state, the left timer and right heading boxes moved farther apart while the complete deck, query header and first browser rows remain visible.</li><li>The first visible browser rows retained the same wrapping as P0 in this sampled closed state.</li></ul>
+      <h3>Cons</h3>
+      <ul><li>The deck and right content have less horizontal room than P0; other text, scales and focused-keyboard states are unverified.</li><li>The numeric floor remains an approximation of a physical panel width; these node boxes do not establish every glyph's ink clearance.</li></ul>
+      <p><strong>My read:</strong> Recommend the middle tested policy for its visible separation without the earlier first-screen browser reflow seen at P20. This is a design preference, not a claim that all content passes.</p>
+    </article>
+    <article class="candidate" data-floor="0">
+      <h2>P0 · No independent floor beyond the crease</h2>
+      <img width="2076" height="2152" alt="Native Fold Search A with its existing browser and deck width and no additional physical information floor">
+      <button type="button" data-preview="0">Inspect P0 at device size</button>
+      <h3>Pros</h3>
+      <ul><li>Preserves the selected A's current browser width and positive-result composition.</li><li>Does not introduce an additional spacing policy beyond keeping meaning-bearing marks off the actual crease.</li></ul>
+      <h3>Cons</h3>
+      <ul><li>A future narrower crease would reduce the effective total-gap requirement.</li><li>Offers no independent across-device separation guarantee; the captured 167px node-box proxy is not an ink minimum.</li></ul>
+      <p><strong>My read:</strong> Fallback if preserving current content width matters more than an independent minimum.</p>
+    </article>
+    <article class="candidate" data-floor="20">
+      <h2>P20 · 20mm total minimum</h2>
+      <img width="2076" height="2152" alt="Native Fold Search A with a 20 millimeter total information floor and narrower folder browser">
+      <button type="button" data-preview="20">Inspect P20 at device size</button>
+      <h3>Pros</h3>
+      <ul><li>Moves opposing information farther apart in both captured states while keeping the full deck and query header present.</li><li>Offers a stronger physical spacing policy for a narrower future crease.</li></ul>
+      <h3>Cons</h3>
+      <ul><li>The narrower actual folder browser wraps earlier: <code>Celldweller</code> moves to another line and <code>Clown Core</code> falls below the initial browser viewport even with the keyboard closed.</li><li>No additional readability gain was established from this extra distance; untested names and keyboard states could incur further tradeoffs.</li></ul>
+      <p><strong>My read:</strong> Choose only if the stronger separation merits the visible browser-density loss, without replacing the browser or reducing deck targets.</p>
+    </article>
   </div>
 </section>
-<section aria-labelledby="choices-title">
-  <h2 id="choices-title">Choose a physical-unit policy</h2>
-  <div class="policies">
-    <article class="policy" data-option="ten" data-recommended="true">
-      <h3>P10 · 10mm independent minimum (Recommended)</h3>
-      <h4>Pros</h4><ul><li>Requires at least 2.5mm of combined clearance beyond this device's approximate 7.5mm crease.</li><li>Sets a stable physical total-separation floor if a later device has a narrower crease.</li></ul>
-      <h4>Cons</h4><ul><li>The measured 11.35mm box proxy is not ink or a same-height opposing pair; compliance remains unverified.</li><li>Could require a different layout in unmeasured states or devices.</li></ul>
-      <p><strong>My read:</strong> Recommend an explicit 2.5mm combined cushion beyond this crease as a policy, without claiming a demonstrated readability benefit or fit. This 10mm separation target is <strong>not</strong> the superseded 10mm estimate of the crease itself.</p>
-    </article>
-    <article class="policy" data-option="crease">
-      <h3>P0 · No independent floor, crease width alone</h3>
-      <h4>Pros</h4><ul><li>The current target's effective threshold stays at its approximately 7.5mm physical crease width.</li><li>Does not impose an invented global floor beyond the already accepted meaning-off-crease rule.</li></ul>
-      <h4>Cons</h4><ul><li>A future narrower crease would lower the effective total-separation threshold.</li><li>There is no independent buffer for opposing information across the fold.</li></ul>
-      <p><strong>My read:</strong> Sound if E2 should track only the actual obstruction, rather than promise a separate baseline. Numerically this option sets <code>min_padding = 0mm</code> in E2, not a new component padding value.</p>
-    </article>
-    <article class="policy" data-option="twelve">
-      <h3>P12 · 12mm independent minimum</h3>
-      <h4>Pros</h4><ul><li>Requires at least 4.5mm of combined clearance beyond this device's approximate crease.</li><li>Provides a stricter target if stronger visual separation is worth possible layout responses.</li></ul>
-      <h4>Cons</h4><ul><li>The 11.35mm projected box-gap proxy cannot establish this floor's fit or failure for painted marks.</li><li>A state that fails this stricter target would require a visible response; none has been built or validated.</li></ul>
-      <p><strong>My read:</strong> Choose if the stricter physical floor is intentional even though current-state fit is unproven; do not infer automatic truncation or layout changes from the proxy alone.</p>
-    </article>
-  </div>
-  <p class="note"><strong>Ranking:</strong> P10 &gt; P12 &gt; P0. I prefer P10 to P12 because a 2.5mm combined cushion is an explicit buffer and there is no demonstrated readability gain from adding the further 2mm. I prefer P12 to P0 because a cross-device independent floor is more protective than leaving future narrower creases as the sole threshold. This is a normative policy ranking, not a visual fit test; the 11.35mm cross-state box proxy favors none of these values. All options still require app information to remain outside the physical crease; none mandates symmetric left/right clearance.</p>
+<section class="note" aria-labelledby="bounds-title">
+  <h2 id="bounds-title">What the captures measured</h2>
+  <p>In these empty-state native hierarchies, the right edge of the left <code>4:35</code> timer box and the left edge of the right <code>Search your music</code> heading box were __E2_BOUNDS_PLACEHOLDER__ Those boxes are at different vertical positions; this is <strong>not</strong> a nearest-pair ink distance or certification of 14/20mm for every state. The panel's active physical width and approximately 7.5mm crease width are themselves estimates.</p>
+  <p>P0 and a 10mm minimum would look the same in this particular debug layout because its existing nominal pane insets already exceed 10mm. P14 and P20 were chosen to make their visible consequences testable, not because a standard prescribes those numbers. A different physical value, including 10mm or 12mm, can be written in the free-text answer. Whatever floor you choose is a requirement to verify later against meaning-bearing paint, not an automatic production layout change.</p>
 </section>
 <section aria-labelledby="response-title">
-  <h2 id="response-title">Decision: E2's <code>min_padding</code> only</h2>
-  <p>Which total opposing-information floor should E2 use, if any? Selecting a floor does not certify selected A's current ink clearance or authorize production changes.</p>
+  <h2 id="response-title">Decision: E2's total information floor only</h2>
+  <p>Do you prefer the selected A's current effective layout, the visibly wider P14, the stronger P20, or another physical minimum? This choice does not reopen D50/D56/D57 or authorize new IME testing.</p>
   <form id="answer-form">
-    <fieldset disabled><legend>Withdrawn floor choices, retained for historical evidence</legend>
-      <label><input type="radio" name="floor" value="P10"> P10: 10mm independent minimum (recommended)</label>
-      <label><input type="radio" name="floor" value="P0"> P0: no independent minimum, use measured crease width only</label>
-      <label><input type="radio" name="floor" value="P12"> P12: 12mm independent minimum</label>
-      <label><input type="radio" name="floor" value="Other"> Another physical floor or policy</label>
+    <fieldset><legend>Choose a proposed total opposing-information minimum</legend>
+      <label><input type="radio" name="floor" value="P14"> P14: 14mm total minimum (recommended)</label>
+      <label><input type="radio" name="floor" value="P0"> P0: no independent floor beyond the crease</label>
+      <label><input type="radio" name="floor" value="P20"> P20: 20mm total minimum</label>
+      <label><input type="radio" name="floor" value="Other"> Another exact physical floor or a correction</label>
     </fieldset>
     <label for="other">Anything else you want settled or changed?</label>
-    <textarea id="other" name="other" disabled placeholder="This request is withdrawn; please wait for the native variant review."></textarea>
+    <textarea id="other" name="other" placeholder="Name a different floor, or say what these views miss. Nothing is sent automatically."></textarea>
   </form>
-  <p><strong>Response path:</strong> No decision is requested from this withdrawn page. Review the replacement with native Compose variants when available.</p>
-  <output id="prepared" form="answer-form" aria-live="polite">The old choice request is withdrawn.</output>
+  <p class="note"><strong>Ranking:</strong> P14 &gt; P0 &gt; P20. P14 adds visible separation while preserving the sampled first-browser wrapping; P0 is next because it retains more visible browser content than P20; P20 is last because its stronger floor visibly pushes browser names out of the initial viewport with no established readability benefit. The recommendation concerns these rendered examples, not universal ink or keyboard compliance. <strong>Recommended follow-up:</strong> after a floor is accepted, validate long names, 100% text and painted marks at that floor before production.</p>
+  <p><strong>Response path:</strong> Reply in this chat with “P14”, “P0”, “P20”, or a different physical-unit floor and any correction. This form only prepares text; it does not submit a decision.</p>
+  <output id="prepared" form="answer-form" aria-live="polite">Choose a floor or write a correction, then reply in chat.</output>
 </section>
 </main>
 <dialog id="preview" aria-labelledby="preview-title">
   <div class="dialog-bar">
-    <h2 id="preview-title">Selected inner Search A</h2>
+    <h2 id="preview-title">E2 native Fold comparison</h2>
     <button id="fit" type="button">Fit</button><button id="reset" type="button">Reset 100%</button><button id="zoom-out" type="button">Zoom out</button><button id="zoom-in" type="button">Zoom in</button><button id="close" type="button">Close</button>
     <p id="scale-label" class="muted" aria-live="polite"></p>
   </div>
   <div class="stage" id="stage" role="region" tabindex="0" aria-label="Scrollable unfolded Fold device mock at physical source resolution">
-    <div class="device" id="device"><div class="screen"><img id="preview-image" width="2076" height="2152" alt="Selected Search A native panel"></div><span class="camera" aria-hidden="true"></span><span class="hinge" data-end="start" aria-hidden="true"></span><span class="hinge" data-end="end" aria-hidden="true"></span></div>
+    <div class="device" id="device"><div class="screen"><img id="preview-image" width="2076" height="2152" alt="One of the E2 native Fold variants"></div><span class="camera" aria-hidden="true"></span><span class="hinge" data-end="start" aria-hidden="true"></span><span class="hinge" data-end="end" aria-hidden="true"></span></div>
   </div>
 </dialog>
 <script>
-const capture = document.querySelector('#capture');
+const captures = __E2_CAPTURE_MAP__;
+const state = document.querySelector('#state');
 const dialog = document.querySelector('#preview');
 const stage = document.querySelector('#stage');
 const device = document.querySelector('#device');
+const preview = document.querySelector('#preview-image');
+let selectedFloor = '14';
+let returnTarget;
 let scale = 1;
+function currentCapture() { return captures[selectedFloor][state.value]; }
+function renderCards() {
+  document.querySelectorAll('.candidate').forEach(card => {
+    card.querySelector('img').src = captures[card.dataset.floor][state.value];
+    card.querySelector('img').alt = `Native Fold Search A, ${card.dataset.floor}mm floor, ${state.value} at 200% text`;
+  });
+  if (dialog.open) { preview.src = currentCapture(); document.querySelector('#preview-title').textContent = `P${selectedFloor} · ${state.value} · 200% text`; }
+}
 function showScale() {
   device.style.setProperty('--scale', String(scale));
   document.querySelector('#scale-label').textContent = `Source 2076 × 2152 physical px · approximately 852 × 883dp at measured 390dpi · ${Math.round(scale * 100)}% of design dp · reset returns to 100%`;
 }
-document.querySelector('#inspect').addEventListener('click', async () => {
-  const preview = document.querySelector('#preview-image');
-  preview.src = capture.src;
-  await preview.decode();
-  scale = 1;
-  showScale();
-  dialog.showModal();
-  stage.scrollTop = 0;
-  stage.scrollLeft = 0;
-  document.querySelector('#close').focus();
+state.addEventListener('change', renderCards);
+document.querySelectorAll('[data-preview]').forEach(button => {
+  button.addEventListener('click', async () => {
+    returnTarget = button;
+    selectedFloor = button.dataset.preview;
+    preview.src = currentCapture();
+    document.querySelector('#preview-title').textContent = `P${selectedFloor} · ${state.value} · 200% text`;
+    await preview.decode();
+    scale = 1;
+    showScale();
+    dialog.showModal();
+    stage.scrollTop = 0;
+    stage.scrollLeft = 0;
+    document.querySelector('#close').focus();
+  });
 });
 document.querySelector('#fit').addEventListener('click', () => {
   const horizontalInset = parseFloat(getComputedStyle(stage).paddingInlineStart) * 2;
@@ -242,13 +258,14 @@ document.querySelector('#reset').addEventListener('click', () => { scale = 1; sh
 document.querySelector('#zoom-out').addEventListener('click', () => { scale = Math.max(0.25, scale - 0.25); showScale(); });
 document.querySelector('#zoom-in').addEventListener('click', () => { scale = Math.min(2, scale + 0.25); showScale(); });
 document.querySelector('#close').addEventListener('click', () => dialog.close());
-dialog.addEventListener('close', () => document.querySelector('#inspect').focus());
+dialog.addEventListener('close', () => returnTarget?.focus());
 const form = document.querySelector('#answer-form');
 form.addEventListener('input', () => {
   const selected = form.querySelector('input[name="floor"]:checked');
   const correction = document.querySelector('#other').value.trim();
   document.querySelector('#prepared').textContent = [selected?.value, correction].filter(Boolean).join(': ') || 'Choose a floor or write a correction, then reply in chat.';
 });
+renderCards();
 </script>
 </body>
 </html>
