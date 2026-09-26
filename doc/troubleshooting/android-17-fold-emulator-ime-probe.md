@@ -180,7 +180,33 @@ The resulting screenshot visibly obscured the duration's ending and a strip
 of the playback-mode container.
 This is a real-Gboard counterexample to D50 on the disposable AVD,
 not a synthetic height-step result.
-The local screenshot and logs are unsanitized scratch evidence,
+The exact launch variant for that first toggle was not recorded;
+the captured public inset data must not be attributed to a specific
+accepted-layout intent extra.
+
+A second check explicitly launched
+`search-deck-right-lift-retain-results-light`,
+the corrected **vertical-deck A layout** without the experimental tall-IME
+reflow or anticipatory reservation.
+The installed debug APK and local build both had SHA-256
+`261e608e67029f6361b79a2b26f79851099df9d98f3cdbed637b2e14a4529636`.
+After the AVD rebooted and its sleeping screen was woken,
+focusing the editor restored real floating Gboard.
+Privileged Window Manager reported a key touch region
+`[482,1006][1388,1777]`;
+UI Automator placed the deck title at `[258,1120][781,1223]`.
+Their intersection is x `[482,781)` and y `[1120,1223]`,
+and the screenshot confirms the title,
+seek display and transport were obscured.
+A real Gboard key tap changed the focused query from `cam` to `cadm`;
+its cursor had been between `a` and `m`.
+The app log for this specific baseline launch did not retain a noninitial
+public-insets sample,
+so its floating rectangle and zero inset are **not** independently
+app-logged for this exact variant.
+The first corrected-prototype public probe and the second exact-variant
+occlusion are separate evidence layers.
+Both screenshots and logs remain unsanitized private scratch evidence,
 not published review assets.
 
 `WindowInsets.java:413-430` describes `isVisible(Type.ime())` as
