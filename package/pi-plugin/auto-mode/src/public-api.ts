@@ -14,6 +14,7 @@ export {
   BYPASS_STATUS_TEXT,
   BYPASS_TOGGLE_KIND,
 } from './bypass.ts';
+export { askUser, notifyAsk, } from './ask-user.ts';
 export { findBudgetModel, } from './budget-model.ts';
 export {
   buildContext,
