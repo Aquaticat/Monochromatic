@@ -84,6 +84,53 @@ export const GRAMMAR_GLOSSARY: readonly CommunityTerm[] = [
     why: 'looking out through a narrow opening; the gap is the viewer\'s, so the page writes "glimpsed, through the '
       + 'gap, those she had comforted", never "through the gaps of those"',
   },
+  // CLASS ONE HUNDRED SEVENTY (TianqiChen6668, 2026-09-26): 这样一切都会有机会的
+  // shipped as "Then everything will have a chance", a word-for-word line
+  // that says little in English.
+  {
+    term: '一切都会有机会',
+    renderings: [
+      'there will be hope',
+      'everything will still be possible',
+    ],
+    refusedForms: [
+      'everything will have a chance',
+    ],
+    why: 'things still being possible, a hope held out; the page says "there will be hope for everything" or '
+      + '"everything will still be possible", never "everything will have a chance"',
+  },
+  // CLASS ONE HUNDRED SEVENTY-ONE (TianqiChen6668, 2026-09-26): her message's
+  // 我会在离开我们的时候 shipped as "when I leave us", which no English speaker
+  // says of leaving the others.
+  {
+    term: '离开我们的时候',
+    renderings: [
+      'when I leave',
+      'when I leave you all',
+    ],
+    refusedForms: [
+      'when i leave us',
+    ],
+    why: 'the speaker leaving the group; the page writes "when I leave" or "when I leave you all", never "when I '
+      + 'leave us"',
+  },
+  // CLASS ONE HUNDRED SEVENTY-TWO (TianqiChen6668, 2026-09-26): four parallel
+  // lines open 所以她是个…女孩吧, and two shipped as the archive's "So, she’s a
+  // girl" beside "So she was a girl" in the others, the present tense against
+  // the house rule that tells a life in the past.
+  {
+    term: '所以她是个',
+    renderings: [
+      'so she was',
+    ],
+    refusedForms: [
+      'she’s a',
+      'she\'s a',
+      'she is a',
+    ],
+    why: 'the kind of person she was, in a life the page tells in the past; the page writes "So she was a girl who '
+      + '…", never "she’s a girl" or "she is a girl"',
+  },
 ];
 
 //endregion Grammar renderings
