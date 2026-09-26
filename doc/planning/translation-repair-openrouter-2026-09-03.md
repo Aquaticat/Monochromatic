@@ -8082,6 +8082,56 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## TianqiChen6668 read, 2026-09-26: class one hundred sixty-eight live, classes one hundred seventy to seventy-three
+
+TianqiChen6668 ran on `.frozen-dist-5f7fa6742` and SETTLED in 2,005 s (33.4 min), one attempt,
+1,861 calls, 0.97 USD by the spend lines, 12 abandoned streams (0.05 USD),
+Bedrock and OpenRouter alone with Synthetic and Hyper dry
+(glm-5.3 threw 117 of 117 on Hyper dry; Qwen threw 231 and Kimi 99 with no reachable provider).
+Front matter equal, three headings, six em-dashes left as the owner said, no TA,
+one unendorsed standing, 38 abstention lines.
+
+Class one hundred sixty-eight is live:
+the log carries `page assembly: blockquote-quotes-unwrapped (slice 16: “My... wish? / … unwrapped …`
+and no quoted blockquote paragraph is on the page.
+Class one hundred sixty-nine was not exercised: the bench wrote "She used this handle" and no prose `id` reached the page.
+Classes one hundred sixty to sixty-seven hold:
+type 2 diabetes, the headpiece, Arona and Atri, "deserved a better life",
+"met with family misunderstandings", "the draw cards really piled up", "a small box"
+and "through that narrow opening".
+
+Classes one hundred seventy to seventy-two, three wording slips on terms the census finds on TianqiChen666 alone:
+"Then everything will have a chance." for 这样一切都会有机会的 (source line 67, class 170);
+"and when I leave us, it will end with my memories of Kigurumi" for 我会在离开我们的时候 (source line 49, class 171);
+and "So, she’s a girl of incredible perseverance…" and "So, she’s a girl who can be trusted…",
+the archive's present tense kept on two of the four parallel 所以她是个…女孩吧 lines (source lines 17, 25, 33 and 37)
+beside "So she was a girl…" on the others, against the house rule's past tense (class 172).
+Fixed in `2151fbbc8` (guard red first `91d3fd5d3`): three `GRAMMAR_GLOSSARY` entries in `rendering-glossary-grammar.ts`
+seed 一切都会有机会 ("there will be hope", "everything will still be possible"; refused "everything will have a chance"),
+离开我们的时候 ("when I leave", "when I leave you all"; refused "when I leave us")
+and 所以她是个 ("so she was"; refused "she’s a", "she's a" and "she is a"),
+so a candidate writing a refused form is refused before any judge.
+
+Class one hundred seventy-three:
+the page wrote the anime's title as “Anohana:\nThe Flower We Saw That Day”, in curly quotes broken after the colon,
+where the archive sets *Anohana: The Flower We Saw That Day* in italics.
+Fixed in `fce655de0` (guard red first `cdb756270`):
+`restoreArchiveItalicTitles` in `corpus-run/archive-italic-title-restore.ts`, with the span reading in
+`corpus-run/archive-italic-spans.ts`, runs after `unwrapBlockquoteQuotes` in the page assembly.
+It reads the archive's single-star italic spans that open with a capital letter
+(a bold span's words fall outside the reading) and, where a page slice quotes the same words in prose
+with whitespace runs read as one space, writes the archive's italic span back,
+moving a period or comma the quotes held outside; finding `archive-italic-title-restored`.
+Any other quotation stands, since it may be speech.
+Replayed over the real TianqiChen6668 page: the one span restored,
+"from *Anohana: The Flower We Saw That Day*." on one line.
+
+Not a class: "That glow is like" in the present stays, a timeless simile rather than the life's narration.
+
+Lint 0/0, types clean, full suite after classes 170 to 172 1,165 PASS, 0 FAIL (`suite-class170.log`),
+after class 173 1,166 PASS, 0 FAIL (`suite-class173.log`).
+TianqiChen6669 launched on `.frozen-dist-fce655de0` (scope `pass-TianqiChen6669`, pid 704034).
+
 ## TianqiChen6667 read, 2026-09-26: classes one hundred sixty-four to sixty-seven live, sixty-eight and sixty-nine
 
 TianqiChen6667 ran on `.frozen-dist-e146633e1` and SETTLED in 918 s (15.3 min), 0.78 USD by the meters,

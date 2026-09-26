@@ -4798,9 +4798,15 @@ each read off the pass log and the shipped page:
     paragraphs wrapped in quotes where the archive sets its blockquotes bare, `unwrapBlockquoteQuotes`; guard
     `c530bbf58`, fix `39a4a06fd`) and sixty-nine ("this id" written ID by the Canadian forms pass; guard
     `1e825e277`, fix `5f7fa6742`) built; recorded under "## TianqiChen6667 read".
-    TIANQICHEN6668 RUNNING on `.frozen-dist-5f7fa6742` (scope `pass-TianqiChen6668`, pid 4003551):
-    read the blockquotes (class 168, a `blockquote-quotes-unwrapped` finding or none wrapped) and the ID line
-    (169) first, then classes 160 to 167 holding.
+    TIANQICHEN6668 READ (`.frozen-dist-5f7fa6742`): SETTLED in 33.4 min, 0.97 USD; class one hundred
+    sixty-eight live, sixty-nine not exercised, sixty to sixty-seven holding; classes one hundred seventy to
+    seventy-two (three wording slips seeded in `GRAMMAR_GLOSSARY`; guard `91d3fd5d3`, fix `2151fbbc8`) and
+    seventy-three (a quoted title restored to the archive's italics, `restoreArchiveItalicTitles`; guard
+    `cdb756270`, fix `fce655de0`) built, suite 1,166 PASS, 0 FAIL; recorded under "## TianqiChen6668 read".
+    TIANQICHEN6669 RUNNING on `.frozen-dist-fce655de0` (scope `pass-TianqiChen6669`, pid 704034):
+    read "there will be hope", "when I leave" and "So she was a girl" on all four lines (170 to 172) and the
+    italic Anohana title with an `archive-italic-title-restored` finding or no quotes (173) first, then
+    classes 160 to 169 holding.
     TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built
