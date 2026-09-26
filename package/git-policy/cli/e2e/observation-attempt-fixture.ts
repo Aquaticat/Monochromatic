@@ -1,0 +1,285 @@
+/**
+ Builds attempt observations:
+ which history commits carry each attempt's token,
+ what they landed,
+ and which contents the invariant accepts.
+
+ @module
+ */
+
+import { join, } from 'node:path';
+
+import {
+  changedPaths,
+  firstParentChain,
+  type HistoryCommit,
+  isAncestor,
+  mergeOnto,
+  stateOf,
+  treeBytes,
+} from './git-read-fixture.ts';
+import type {
+  AttemptObservation,
+  ContentState,
+  LandingObservation,
+  PathLanding,
+} from './invariant-model-fixture.ts';
+import {
+  checkExitConsistency,
+  extractPolicyEvents,
+} from './jsonl-event-fixture.ts';
+import {
+  type AttemptRecord,
+  type CapturedPath,
+  contentOf,
+} from './ledger-fixture.ts';
+import {
+  readOptionalText,
+  runProcess,
+} from './process-fixture.ts';
+import type { ScenarioRepository, } from './repository-fixture.ts';
+
+//region Types
+
+/**
+ Hook facts the scenario's setup makes checkable.
+ */
+export type HookChecks = Readonly<{
+  /**
+   A `commit-msg` hook appends a trailer.
+   */
+  commitMsgTrailer: boolean;
+  /**
+   A `post-commit` hook logs each run.
+   */
+  postCommitRuns: boolean;
+  /**
+   Commits are SSH-signed.
+   */
+  signature: boolean;
+}>;
+
+/**
+ Trailer the shared `commit-msg` hook appends.
+ */
+const HOOK_TRAILER = 'E2E-Hook-Checked: yes';
+
+//endregion Types
+
+//region Acceptable contents
+
+/**
+ Lists every content the invariant accepts for one captured path:
+ the captured bytes,
+ plus each clean three-way merge of them onto the landed parent from a candidate preparation base
+ (every first-parent commit from `HEAD` before invocation up to the landed parent).
+
+ @param repository - scenario repository
+
+ @param captured - bytes captured at invocation
+
+ @param parent - landed commit's first parent
+
+ @param headBefore - `HEAD` read before invocation
+
+ @returns acceptable contents
+
+ @example
+ ```ts
+ await acceptableContents({ repository, captured, parent, headBefore });
+ ```
+ */
+async function acceptableContents({
+  repository,
+  captured,
+  parent,
+  headBefore,
+}: Readonly<{
+  repository: ScenarioRepository;
+  captured: CapturedPath;
+  parent?: string;
+  headBefore: string;
+}>,): Promise<readonly ContentState[]> {
+  /**
+   Captured content, always acceptable.
+   */
+  const direct = contentOf(captured.bytes,);
+  if ((parent === undefined) || (captured.bytes === undefined) || (parent === headBefore))
+    return [direct,];
+  /**
+   Captured bytes narrowed for the merge closure.
+   */
+  const other = captured.bytes;
+  /**
+   Landed parent's bytes.
+   */
+  const current = await treeBytes({ repository, commit: parent, path: captured.path, },);
+  if (current === 'absent')
+    return [direct,];
+  /**
+   Candidate bases, excluding the parent itself whose merge is the captured bytes.
+   */
+  const bases = (await firstParentChain({ repository, newest: parent, oldest: headBefore, },)).filter(function notParent(oid,) {
+    return oid !== parent;
+  },);
+  /**
+   Merge results per base.
+   */
+  const merges = await Promise.all(bases.map(async function mergeFrom(base,) {
+    /**
+     Base bytes.
+     */
+    const baseBytes = await treeBytes({ repository, commit: base, path: captured.path, },);
+    return baseBytes === 'absent' ? 'conflict' : await mergeOnto({ repository, current, base: baseBytes, other, },);
+  },),);
+  return [
+    direct,
+    ...merges.flatMap(function cleanMerge(merge,) {
+      return merge === 'conflict' ? [] : [contentOf(merge,),];
+    },),
+  ];
+}
+
+//endregion Acceptable contents
+
+//region Attempts
+
+/**
+ Counts `post-commit` hook runs per token.
+
+ @param repository - scenario repository
+
+ @returns runs per token
+
+ @example
+ ```ts
+ await postCommitRuns(repository);
+ ```
+ */
+export async function postCommitRuns(repository: ScenarioRepository,): Promise<ReadonlyMap<string, number>> {
+  /**
+   Hook log text, empty before any hook ran.
+   */
+  const text = await readOptionalText(join(repository.logDir, 'hooks.jsonl',),);
+  return text
+    .split('\n',)
+    .filter(function nonEmpty(line,) {
+      return line !== '';
+    },)
+    .map(function parse(line,): unknown {
+      return JSON.parse(line,);
+    },)
+    .flatMap(function postCommitToken(entry,): readonly string[] {
+      if (((typeof entry) !== 'object') || (entry === null) || !('event' in entry) || !('token' in entry))
+        return [];
+      return (entry.event === 'post-commit') && ((typeof entry.token) === 'string') ? [String(entry.token,),] : [];
+    },)
+    .reduce(function count(counts, token,) {
+      return new Map([...counts, [token, (counts.get(token,) ?? 0) + 1,],],);
+    }, new Map<string, number>(),);
+}
+
+/**
+ Observes one attempt.
+
+ @param repository - scenario repository
+
+ @param attempt - recorded attempt
+
+ @param history - local-branch history
+
+ @param checks - hook facts to collect
+
+ @param runs - post-commit runs per token
+
+ @returns attempt observation
+
+ @example
+ ```ts
+ await observeAttempt({ repository, attempt, history, checks, runs });
+ ```
+ */
+export async function observeAttempt({
+  repository,
+  attempt,
+  history,
+  checks,
+  runs,
+}: Readonly<{
+  repository: ScenarioRepository;
+  attempt: AttemptRecord;
+  history: readonly HistoryCommit[];
+  checks: HookChecks;
+  runs: ReadonlyMap<string, number>;
+}>,): Promise<AttemptObservation> {
+  /**
+   Commits carrying the token.
+   */
+  const carrying = history.filter(function hasToken(commit,) {
+    return commit.message.includes(`[${attempt.token}]`,);
+  },);
+  /**
+   Decoded wrapper events; the foreign real-Git commit emits none.
+   */
+  const extraction = extractPolicyEvents(attempt.mode === 'foreign' ? '' : attempt.outcome.stderr,);
+  /**
+   Landed OID from a `commit-landed` event.
+   */
+  const landedEventOid = extraction.events.find(function isLanded(event,) {
+    return event.type === 'commit-landed';
+  },)?.oid;
+  /**
+   Landing observations.
+   */
+  const landings = await Promise.all(carrying.map(async function observeLanding(commit,): Promise<LandingObservation> {
+    /**
+     Per-path landed and acceptable contents.
+     */
+    const paths = await Promise.all(attempt.captured.map(async function landPath(captured,): Promise<PathLanding> {
+      return {
+        path: captured.path,
+        landed: stateOf(await treeBytes({ repository, commit: commit.oid, path: captured.path, },),),
+        acceptable: await acceptableContents({
+          repository,
+          captured,
+          // An amend replaces the commit HEAD named at invocation, so its captured bytes are the only acceptable content.
+          ...(attempt.mode === 'amend' ? { parent: attempt.headBefore, } : (commit.parent === undefined ? {} : { parent: commit.parent, })),
+          headBefore: attempt.headBefore,
+        },),
+      };
+    },),);
+    /**
+     Signature verification when commits are signed.
+     */
+    const signatureValid = checks.signature
+      ? (await runProcess({ command: repository.realGit, args: ['verify-commit', commit.oid,], cwd: repository.worktree, env: repository.realEnv, },)).exitCode === 0
+      : undefined;
+    return {
+      oid: commit.oid,
+      onExpectedBranch: await isAncestor({ repository, oid: commit.oid, ref: `refs/heads/${attempt.expectedBranch}`, },),
+      // An amend's scope is measured against the commit it replaced, not against that commit's parent.
+      changedPaths: await changedPaths({ repository, commit: attempt.mode === 'amend' ? { ...commit, parent: attempt.headBefore, } : commit, },),
+      paths,
+      remoteContains: await isAncestor({ repository, gitDir: repository.remote, oid: commit.oid, ref: `refs/heads/${attempt.expectedBranch}`, },),
+      hooks: {
+        ...(checks.commitMsgTrailer ? { commitMsgTrailer: commit.message.includes(HOOK_TRAILER,), } : {}),
+        ...(checks.postCommitRuns ? { postCommitRuns: runs.get(attempt.token,) ?? 0, } : {}),
+        ...(signatureValid === undefined ? {} : { signatureValid, }),
+      },
+    };
+  },),);
+  return {
+    label: attempt.label,
+    exitCode: attempt.outcome.exitCode,
+    killed: attempt.killed,
+    selectedPaths: attempt.selectedPaths,
+    landings,
+    eventIssues: attempt.killed
+      ? []
+      : [...extraction.issues, ...checkExitConsistency({ exitCode: attempt.outcome.exitCode, events: extraction.events, },),],
+    ...(landedEventOid === undefined ? {} : { landedEventOid, }),
+    requiresRemote: attempt.requiresRemote,
+  };
+}
+
+//endregion Attempts

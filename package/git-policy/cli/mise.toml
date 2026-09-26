@@ -201,3 +201,66 @@ const child = spawn('node', ['e2e/commit-shape-trace-generator.ts', ...args], { 
 const [code] = await once(child, 'exit')
 if (code !== 0) throw new Error(`commit-shape trace generator exited with ${String(code)}`)
 '''
+
+[tasks.'test:e2e:concurrent:image']
+description = "Build the concurrent-commit e2e image: Git 2.40.0 and 2.55.0 from source, Node at the engines floor, packed cli-git"
+depends = ["pack:npm"]
+# Layer-cached: only the tarball layer rebuilds after a new pack. The build fetches Git sources
+# (checksum-pinned) and the tarball's npm dependencies; the suite itself runs with --network=none.
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { readFile } = await import('node:fs/promises')
+const { join } = await import('node:path')
+const packageRoot = process.cwd()
+// Derived, never spelled out, so a renamed package never mounts a stale tarball (see perf:lifecycle-latency).
+const manifest = JSON.parse(await readFile(join(packageRoot, 'package.json'), 'utf8'))
+const tarballName = `${manifest.name.replace('@', '').replace('/', '-')}-${manifest.version}.tgz`
+const startedAt = performance.now()
+const child = spawn('podman', [
+  'build',
+  '--memory=2g',
+  '--tag', 'cli-git-concurrent-e2e',
+  '--file', 'e2e/concurrent-commits.Containerfile',
+  '--build-arg', `TARBALL=${tarballName}`,
+  join(packageRoot, 'dist', 'pack'),
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`concurrent e2e image build exited with ${String(code)}`)
+console.log(`concurrent e2e image built in ${String(Math.round((performance.now() - startedAt) / 1000))} s`)
+'''
+
+[tasks.'test:e2e:concurrent']
+description = "Replay concurrent-commit workloads through the packed wrapper on Git 2.40.0 and 2.55.0 in a bounded, network-isolated container"
+depends = ["test:e2e:concurrent:image"]
+usage = '''
+flag "--seed <seed>" help="Replay this decimal seed (printed by every run)"
+flag "--scenario <names>" help="Comma-separated scenario names to run"
+flag "--git <versions>" help="Comma-separated Git versions to run (2.40.0, 2.55.0)"
+'''
+# Bounds per AGENTS.md BOX: 2 GiB, 2 CPUs, no network. Inputs are mounted read-only;
+# repositories are created inside the container and discarded with it.
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { join } = await import('node:path')
+const packageRoot = process.cwd()
+const child = spawn('podman', [
+  'run',
+  '--memory=2g',
+  '--cpus=2',
+  '--rm',
+  '--network=none',
+  '--env', `E2E_SEED=${process.env.usage_seed ?? ''}`,
+  '--env', `E2E_SCENARIOS=${process.env.usage_scenario ?? ''}`,
+  '--env', `E2E_GIT_VERSIONS=${process.env.usage_git ?? ''}`,
+  '--volume', `${join(packageRoot, 'e2e')}:/fixture/e2e:ro,Z`,
+  'cli-git-concurrent-e2e',
+  'node',
+  '/fixture/e2e/concurrent-e2e-consumer.ts',
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`concurrent e2e container exited with ${String(code)}`)
+'''
