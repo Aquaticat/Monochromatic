@@ -98,6 +98,30 @@ recovery.
 The failing container was removed on exit;
 the passing container retained the 6 GiB/2 CPU bounds.
 
+## Later bounded shutdown without a forced stop
+
+On a later design-only visit,
+the same disposable AVD booted within an inspected 6 GiB/2 CPU Podman cap.
+Android Emulator 37.1.11.0 then rejected the host's
+`adb -s emulator-5580 emu kill` console command:
+
+```text
+KO: authentication token does not match ~/.emulator_console_auth_token
+KO: unknown command, try 'help'
+```
+
+This diagnostic names an authentication mismatch;
+it does not establish which container or host token was responsible.
+No token was copied,
+modified or requested.
+`podman stop --time 60 fold-e2-native-variants` then completed in 3 seconds
+without the earlier observed forced-kill warning.
+`adb devices -l` no longer listed the emulator,
+and `podman ps` no longer listed this container.
+The original AVD was not touched.
+The longer graceful stop is a measured outcome of this visit,
+not proof that every future emulator exit leaves no stale locks.
+
 ## Verified workaround and tradeoffs
 
 For this **disposable AVD only**,
