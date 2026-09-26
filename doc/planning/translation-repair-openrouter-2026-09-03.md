@@ -8082,6 +8082,43 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Class one hundred forty-one, 2026-09-26: an English title left in the Chinese title marks 《》
+
+### What the page showed
+
+XingZ6012's second song credit shipped
+`<p style="text-align: end;">— Yuli【妄想症Paranoia】《Zero-Layer Prayer》</p>`:
+the title rendered, the Chinese title marks kept around it.
+《》 mean nothing in English prose,
+where a work's title stands in quotation marks,
+the way the page's other credit reads (——from “Bird in a Cage”).
+A census of the read pages found 《Maybe All Transgender People Are Really Vampires》 twenty times,
+《Nonuple Reality》 four times, 《Zero-Layer Prayer》 three times and 《Ling Chong Qi Yuan》 once.
+Of the pinned archive pages, only XingZ60 sets an English-only title in 《》 in English prose
+(the Vampires line, as the original writes it);
+the other two hits (AmbeR_the_anpa, shihai4h) are untranslated Chinese lines whose title carries Han.
+
+### What was built
+
+`translate-latin-title.ts` `latinTitleFindings` refuses before any judge a candidate that sets a title
+carrying Latin letters and no Han in 《》, the link text read where the marks hold a link,
+unless the page the candidate would replace writes the same bracketed title.
+It runs in `sourceCarryFindings` right after the Han title floor of class ninety-eight.
+A title that keeps Han (《舞萌DX》) is left to that floor and the judges;
+the bilingual album 【妄想症Paranoia】 stays with the judges as class ninety-eight decided.
+The title bullet of the house policy now says a title stands in quotation marks in English prose,
+never in 《》.
+Guard red first `2999b2a45` (`translate-latin-title.unit.test.ts`, five cases), fix `8c8c7007b`,
+lint 0/0, types clean, full suite `suite-class141b.log` 1142 PASS with no FAIL.
+Replayed over the real credit line: the shipped line is refused with the finding,
+the same line with “Zero-Layer Prayer” passes every floor.
+
+### The pass the build killed
+
+hulicaijia24 (frozen `5cb874a36`, pid 232490) was killed about ten minutes in under always-kill-and-relaunch,
+since the policy text reaches every sheet.
+hulicaijia25 runs on `.frozen-dist-8c8c7007b` (pid 369265, scope `pass-hulicaijia25`).
+
 ## XingZ6012 read, 2026-09-26: a bracketed album read into the signer's name, and a credit's 作者 as "author" (classes one hundred thirty-nine and one hundred forty)
 
 ### What ran

@@ -4777,14 +4777,18 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA24 NEXT (entry `hulicaijia`, frozen `5cb874a36`, launched in its own systemd scope):
+1.  HULICAIJIA25 NEXT (entry `hulicaijia`, frozen `8c8c7007b`, pid 369265, scope `pass-hulicaijia25`;
+    hulicaijia24 on `5cb874a36` was killed ten minutes in when class one hundred forty-one landed):
     see class one hundred thirty-five live:
     "douhua" in the closing quote, no "tofu pudding", "Jiefangbei Pedestrian Street" on every line,
     and "jīn gāng wán’àn" in the amantadine note beside 晚安 "wǎn’ān";
     read it by every hulicaijia20 check, the register check and the en_CA check;
-    record it under a new heading above "## XingZ6012 read" in the pass log;
-    then `XingZ60` (run XingZ6013) to see classes one hundred thirty-nine and forty live:
-    "—— Yuli [Paranoia]…" or the album kept on slice 98's credit, and "by Jiecheng Tianzou Official" on the first credit.
+    record it under a new heading above "## Class one hundred forty-one" in the pass log;
+    then `XingZ60` (run XingZ6013) to see classes one hundred thirty-nine to forty-one live:
+    "—— Yuli [Paranoia]…" or the album kept on slice 98's credit, "by Jiecheng Tianzou Official" on the first credit,
+    and “Zero-Layer Prayer” in quotation marks on the second, with no English title left in 《》 anywhere on the page.
+    CLASS ONE HUNDRED FORTY-ONE (2026-09-26): `latinTitleFindings` refuses an English-only title set in 《》
+    unless the replaced page writes it (guard `2999b2a45`, fix `8c8c7007b`, suite 1142 PASS, replayed over XingZ6012's credit line).
     LAUNCH IN A SCOPE (2026-09-26): hulicaijia21 died silently five minutes in when systemd-oomd killed the `claude-code-bash` cgroup it shared with a build;
     launch as `cd -- <pkg> && TRANSLATION_REPAIR_SLICE_OVERLAP=8 systemd-run --user --scope --unit=pass-<run> --quiet mise exec -- node <launch-pass.mjs> <run> <entry> <frozen-dir>`
     and confirm `/proc/<pid>/cgroup` names `pass-<run>.scope`.
