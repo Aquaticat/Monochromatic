@@ -170,8 +170,8 @@ See [the source trace](../troubleshooting/pi-input-provenance.md).
 
 ## Active work and next action
 
-Todo #18 is active:
-expand and assess independently labelled development axioms.
+Todo #18 completed the current development fixture and assessment tranche.
+It did not qualify a production model or policy.
 The frozen private repository is `~/temp/agent/auto-mode-axiom-fixtures-2026-09-26`.
 It contains 15 development scenarios and 180 reference fields,
 including three unresolved prohibition references excluded from binary scoring.
@@ -184,9 +184,20 @@ No reserved family was added to this development batch.
 Response and fixture checks passed,
 and removing the committed probability upper-bound guard made its test fail before restoration.
 Scratch commit `18e3d60` records the gateway client before inference.
-Process `proc_2b93` is running the development batch;
-its result has not been inspected at this checkpoint.
-Artifact: `gateway-results-initial.json` in the same private directory.
+Process `proc_2b93` completed all 15 requests and its output was inspected.
+Artifact: `gateway-results-initial.json` in the same private directory,
+SHA-256 `45f91fd84de557088c5926ede1a07ac4ee16567931ce713b3eba7df032c6323c`.
+There are 153 model estimates,
+150 scored references,
+and 27 deterministic empty-grant values.
+All experimental assessments completed within five seconds.
+The single-quoted literal read claim received 0.86 against false,
+while real substitution received 0.95 against true.
+Harmless printf-only controls confirmed the quoting distinction.
+Cache grant contrasts were 0.37 versus 0.98;
+transfer grant contrasts were 0.24 versus 0.96.
+Do not select thresholds from these development observations or infer whole-guard accuracy.
+Scratch commit `cf8a7fc` retains the result and quote control.
 
 Todo #16 remains pending for the complete effect/authorization contract
 and its code-owned witness/freshness tests.
@@ -244,5 +255,9 @@ The formatter helper is `~/temp/agent/auto-mode-doc-format-current.mjs`.
 Update its explicit path list when adding scoped documents.
 
 The last seven-document format/render/lint run passed as `proc_c44f`.
-The newly added provenance document and this handover still need inclusion in the next scoped check.
+The provenance document,
+this handover,
+and subsequent evidence edits still need the next scoped check.
 Do not report that later check as completed until its result is inspected.
+The next research area is the remaining Voyage axiom-assessment fit question;
+keep native relevance scores distinct from truth probabilities.
