@@ -160,10 +160,14 @@ and exits only once the remote contains its OID.
 
 ## Container end-to-end verification
 
-Owner requirement,
-2026-09-25:
-container end-to-end tests with freshly created dummy repositories replaying realistic workloads.
-Unit and packed shadow-bin fixtures alone are not sufficient.
+Concurrent mutation of shared Git state is only verified by running it concurrently against real repositories,
+so container end-to-end tests with freshly created dummy repositories replaying realistic workloads
+are an inherent part of this design.
+Unit and packed shadow-bin fixtures alone cannot show interleavings,
+crash recovery,
+or lock contention.
+The design session omitted this suite until the owner pointed it out;
+the agent-behavior gap is tracked separately.
 
 - The suite follows the `test:built:trust` precedent:
   a mise task packs the npm tarball
