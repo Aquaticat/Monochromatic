@@ -208,6 +208,44 @@ The user rejected that round.
   and `this.error` on null fails before writing (verified by the subagent).
   A prototype upstream fix (deliver warnings before writing) is drafted, not filed.
 
+### mise share of blame (subagent report; details in `doc/troubleshooting/mise-dependency-freshness.md`)
+
+- mise 2026.9.12 has `mise deps` (alias `prepare`),
+  configured as `[deps.pnpm] auto = true`;
+  experimental, but the repo already sets `experimental = true` (`mise.no-env.toml` line 225).
+  The repo has no `[deps]` table.
+- It hashes root `pnpm-lock.yaml` and `package.json` (blake3),
+  records state only after a successful install, per worktree,
+  and runs before every `mise run` and `mise x`, including child runs;
+  a failed install aborts the run.
+  Throwaway experiment:
+  after `pnpm install --lockfile-only` it reported stale and installed first
+  (positive control);
+  the next run skipped install (negative control).
+- Limits:
+  workspace-member `package.json` files need a `sources` override;
+  it never inspects `node_modules`,
+  so the issue's reproduction (deleting one link) stays invisible;
+  a manual `pnpm install` is not recorded,
+  so the next `mise run` installs again;
+  no cross-process lock.
+  Per-run overhead unresolved within noise.
+- Native task `sources`/`outputs` share the `ensureOxlintConfig` flaw
+  unless an install marker (`node_modules/.modules.yaml`) is a source.
+  Default mtime mode also skips a task whose failed first run wrote outputs;
+  hash mode reruns correctly.
+  Docs say oldest output, code uses newest.
+- Repo policy forbids `depends` (`mise.toml` line 627 comment:
+  "never use depends or post depends, use run only").
+- Enter, cd, and `watch_files` hooks fire only under `mise activate`.
+- The "fanout exited 1 with no error line" report did not reproduce:
+  a fresh-worktree build ended with `package fanout failed:` naming four packages,
+  each with its own earlier error (missing Android NDK, unresolved `canvg`,
+  `libghostty` build order, a `git log` failure).
+- Drafted, not posted:
+  a comment for upstream discussion #8733 with a prototype fix and e2e test
+  (`doc/troubleshooting/mise-dependency-freshness.patch`).
+
 ## Reframed failure chain
 
 These are separate links;
@@ -246,7 +284,8 @@ Candidate dissolutions under investigation:
   both get their own investigations
   (troubleshooting docs `doc/troubleshooting/pnpm-stale-node-modules-detection.md`
    and `doc/troubleshooting/mise-dependency-freshness.md`, subagents running).
-- Whether to file the drafted upstream reports (oxlint exit code, rolldown `onLog` write order, rolldown docs line);
+- Whether to file the drafted upstream reports (oxlint exit code, rolldown `onLog` write order, rolldown docs line,
+  mise #8733 comment);
   external action, needs user authorization.
 - Lint speed on a quiet host,
   including the `--fix` loop,
