@@ -68,6 +68,11 @@ export {
   repositoryPolicyPlugin,
 } from './optional/repository-policy/index.ts';
 export type {
+  PolicyInput,
+  PolicyInputs,
+  PolicyInputsDeclaration,
+} from './api/policy-input-types.ts';
+export type {
   ActivePolicySeverity,
   CandidateChange,
   CandidateFile,
