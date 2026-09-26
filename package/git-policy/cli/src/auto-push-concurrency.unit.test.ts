@@ -35,6 +35,7 @@ import {
   writeHook,
   writeWorktreeFile,
 } from './policy-engine/commit-landing-fixture.unit.test.ts';
+import { waitUntil, } from './index-lock/index-lock-fixture.unit.test.ts';
 
 /**
  Note every failed push prints, owned or joined.
@@ -45,6 +46,16 @@ const PUSH_FAILED_NOTE = 'auto-push to origin failed';
  Time a commit whose push has not finished is given to exit early, which it must not.
  */
 const EARLY_EXIT_WINDOW_MS = 1_000;
+
+/**
+ Debug line a commit prints, under `MONOCHROMATIC_VERBOSE=true`, once it waits for another invocation's push lock.
+ */
+const WAITING_FOR_PUSH_LOG = 'waiting for the in-flight push of refs/heads/main';
+
+/**
+ Environment that makes the wrapper print its debug log, including the push-lock wait, on stderr.
+ */
+const VERBOSE_ENV: Readonly<Record<string, string>> = { MONOCHROMATIC_VERBOSE: 'true', };
 
 /**
  Repository with a local bare remote and a logging pre-push hook.
@@ -242,6 +253,10 @@ type StartedCommit = Readonly<{
    Whether it has exited.
    */
   exited: () => boolean;
+  /**
+   Standard error so far.
+   */
+  stderr: () => string;
 }>;
 
 /**
@@ -256,27 +271,39 @@ type StartedCommit = Readonly<{
 async function startCommit({
   repository,
   name,
+  env = {},
 }: Readonly<{
   repository: LandingRepository;
   name: string;
+  env?: Readonly<Record<string, string>>;
 }>,): Promise<StartedCommit> {
   await writeWorktreeFile({ repository, name: `${name}.txt`, content: `${name}\n`, },);
   /**
    Child process.
    */
-  const child = startWrapper({ repository, args: ['commit', '-m', name, `${name}.txt`,], },);
+  const child = startWrapper({ repository, args: ['commit', '-m', name, `${name}.txt`,], env, },);
   /**
-   Exit flag.
+   Exit flag and standard error so far.
    */
-  const state = { exited: false, };
+  const state = { exited: false, stderr: '', };
   child.once('exit', function markExited(): void {
     state.exited = true;
   },);
+  /**
+   Outcome, whose collector sets the stream encoding before the observer below attaches.
+   */
+  const outcome = finish(child,);
+  child.stderr?.on('data', function observeStderr(chunk: string,): void {
+    state.stderr += chunk;
+  },);
   return {
     child,
-    outcome: finish(child,),
+    outcome,
     exited: function exited(): boolean {
       return state.exited;
+    },
+    stderr: function stderr(): string {
+      return state.stderr;
     },
   };
 }
@@ -293,9 +320,11 @@ async function startCommit({
 async function landBehindHeldPush({
   fixture,
   names,
+  env = {},
 }: Readonly<{
   fixture: PushFixture;
   names: readonly string[];
+  env?: Readonly<Record<string, string>>;
 }>,): Promise<readonly StartedCommit[]> {
   /**
    Commits on `main` before any of these.
@@ -307,7 +336,7 @@ async function landBehindHeldPush({
   const started: StartedCommit[] = [];
   for (const [index, name,] of names.entries()) {
     // oxlint-disable-next-line no-await-in-loop -- Commits land one after another so none needs replay.
-    started.push(await startCommit({ repository: fixture.repository, name, },),);
+    started.push(await startCommit({ repository: fixture.repository, name, env, },),);
     // oxlint-disable-next-line no-await-in-loop -- Waits for this landing before starting the next commit.
     await waitForCommitCount({ repository: fixture.repository, count: base + index + 1, },);
     if (index === 0)
@@ -412,7 +441,14 @@ await describe({
         /** Subjects in landing order. */
         const names = ['c1', 'c2', 'c3',];
         /** Started commits. */
-        const started = await landBehindHeldPush({ fixture, names, },);
+        const started = await landBehindHeldPush({ fixture, names, env: VERBOSE_ENV, },);
+        // A commit reaching auto-push only after the joined push already failed finds a failed record and pushes again,
+        // so release only once every later commit waits for the held push lock.
+        await waitUntil({ predicate: function laterCommitsWait(): boolean {
+          return started.slice(1,).every(function waits(commit,): boolean {
+            return commit.stderr().includes(WAITING_FOR_PUSH_LOG,);
+          },);
+        }, },);
         await writeFile(fixture.release, '',);
         /** Outcomes. */
         const outcomes = await Promise.all(started.map(async function outcomeOf(commit,): Promise<ProcessOutcome> {
