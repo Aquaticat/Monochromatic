@@ -1176,4 +1176,7 @@ at 100% and 200% text in light/dark.
 `questions/current.html` shows the selected state,
  not a new choice menu.
 Native query input was exercised with a measured 300dp debug-only system IME;
-Gboard geometry and production implementation remain unverified.
+Real-Gboard geometry is measured for the linked settled and overlay states;
+D53 to D55 accept the observed floating-deck,
+brief banner and cover floating-result overlaps.
+Other keyboard configurations and production implementation remain unverified.

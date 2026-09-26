@@ -5467,8 +5467,9 @@ A separate Gboard `Keyboard font size updated` banner on the disposable
 inner panel briefly raised the IME to y `1140`,
 clipping the final mode;
 tapping `OK` returned the IME top to y `1352` and restored the deck.
-Do not dismiss that failing state as capture noise,
-or silently narrow the user's “never hidden” requirement.
+Do not dismiss that measured clip as capture noise.
+D53 to D55 explicitly accept their named real-Gboard overlays;
+do not infer any broader waiver from this historical experiment.
 Sanitized physical-panel captures and curated app-node geometry are
 committed under `package/music-player/design/questions/evidence/gboard-*.{png,json}`.
 `package/music-player/design/evidence/gboard-geometry.md` indexes the passing and failing captures,
@@ -5562,7 +5563,8 @@ A disposable Gboard font-scale toggle from 1.5 to 2.0 did not yield an
 observed second banner,
 but the app restarted and keyboard focus dropped on that transition.
 No claim of nonrecurrence or real-banner reflow is supported.
-The original floating Gboard remains a distinct D50 failure;
+The original floating Gboard remains a distinct measured occlusion,
+now accepted by D53;
 platform visibility alone does not locate floating keys.
 
 The bounded Compose build ran in a 6 GiB/2 CPU Podman container using the
@@ -5601,8 +5603,10 @@ and actual key taps after Clear restored `cam` with both results visible.
 The user accepts a little cropping of Open in the short viewport;
 visible accessibility bounds there do not establish intrinsic target size.
 The real font banner was not reproduced after this edit,
-the fixed stress threshold is not an animation-fit rule,
-and floating Gboard remains a separate D50 failure.
+and the fixed stress threshold is not an animation-fit rule.
+D53 and D54 now accept the separately measured real floating and brief
+banner overlaps;
+this synthetic fixture did not establish either result.
 All production work remains unapproved;
 the browser content itself is no longer an open choice.
 
@@ -5638,7 +5642,9 @@ The current A-only review now depicts this retained browser,
 not the old blank-left typing capture.
 Older real-Gboard evidence PNGs predate that correction;
 the new real-Gboard recheck measured the corrected settled state but did
-not reproduce the transient font banner or settle floating-keyboard D50.
+not reproduce the transient font banner or verify floating-keyboard fit.
+D53 and D54 accept the separately observed overlays,
+not this recheck as proof of visibility.
 
 ## Accepted corrected A and next design gate
 
@@ -5647,20 +5653,15 @@ On 2026-09-25 the user said “Okay, I like it” about the refreshed
 Treat D51's retained folder browser,
 shortened upper-left viewport,
 and tolerated small Open crop as accepted.
-This is **not** approval of the separate 415dp synthetic title/transport
-reflow,
-not a waiver of D50's original “never hidden” requirement,
-and not authorization for production code.
-
-The next design-only gate is D50's observed keyboard failures.
-Distinguish the original floating Gboard overlap,
-whose reported bottom inset is zero,
-from the disposable AVD's real transient banner,
-whose reported IME top moved to y `1140` and clipped a mode.
+The accepted browser correction does **not** approve the separate 415dp
+synthetic title/transport reflow or production code.
+D53 to D55 explicitly accept three measured real-Gboard overlaps;
+other keyboard configurations remain subject to D50's visibility rule.
+The original floating Gboard reported a zero bottom inset,
+while the real transient banner raised the IME top to y `1140`.
 A fixed debug threshold and settled synthetic fit do not establish
-continuous visibility as the keyboard changes height.
-Only after the keyboard boundary is verified should the remaining Search
-behavior be closed:
+continuous visibility as other keyboards change height.
+The remaining Search design checks include:
 result effects/ranking,
 long names and scrolling,
 and the minimum informational clearance from the crease.
@@ -5697,8 +5698,10 @@ not new active-review cards.
 The source and measured boundary are in
 `doc/troubleshooting/android-17-fold-emulator-ime-probe.md` and
 `package/music-player/design/evidence/gboard-geometry.md`.
-D50 still fails in this real floating mode;
-no production change or alternative layout has been accepted.
+This floating overlap originally failed D50's unqualified visibility
+criterion;
+D53 now accepts this measured state without selecting a new layout.
+No production change has been accepted.
 A later disposable emulator process exited with
 `qemu_thread_create: Resource temporarily unavailable`.
 The user authorized permanent host process-limit changes,
@@ -5715,8 +5718,9 @@ Refocusing the same explicit A layout showed real docked split Gboard at
 y `1352` with complete final mode ending at y `1332` and no banner.
 That does not test a continuously focused banner transition or prove
 that Gboard's original font-update banner cannot recur.
-Continue design-only banner and accessibility checks without changing
-accepted A or conflating synthetic sampled-frame passes with real Gboard.
+Continue design-only checks for non-exempt keyboard heights and
+accessibility without changing accepted A or conflating synthetic
+sampled-frame passes with real Gboard.
 
 ## Above-IME app panel rejected as a D50 response
 
@@ -5737,8 +5741,10 @@ This marker is neither a real deck port nor a viable design.
 All screenshots remain private unsanitized scratch artifacts.
 Details and the SDK touch-policy source are in
 `doc/troubleshooting/android-17-fold-emulator-ime-probe.md`.
-The current review remains accepted A with D50's floating and banner gaps;
-no production change was made.
+The current review remains accepted A;
+D53 and D54 now accept those measured floating and banner overlaps,
+while other keyboard configurations remain unverified.
+No production change was made.
 A separate keep-clear probe at prototype commit `b9c05342f` then
 registered `[0,717][1038,2152]` with Window Manager.
 Real floating Gboard still occupied `[482,1006][1388,1777]` and obscured

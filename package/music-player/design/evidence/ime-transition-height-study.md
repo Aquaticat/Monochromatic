@@ -411,11 +411,13 @@ The closed deck's first measured heights changed from `762` to `891` to
 A later focused transition logged a stored `1071px` height,
 but this capture did not isolate when that earlier sample was taken.
 No single early `onSizeChanged` value proves full-content demand.
-Investigate a design that reserves enough deck space **before** a possible
-in-place keyboard-height increase,
-or a supported integration point that synchronizes layout with IME
-presentation;
+For a distinct non-exempt keyboard that can grow in place,
+a D50-compliant design would need to reserve deck space **before** its
+height increase or use a supported integration point that synchronizes
+layout with IME presentation;
 the parent callback experiment did not prevent the first clipped draw.
+D54 does not require this synthetic remedy for the accepted brief real
+font-update banner.
 Do not treat a settled synthetic fit as real-banner verification.
 Keyboard dismissal,
 refocus,

@@ -1446,9 +1446,10 @@ keyboard-closed screenshots;
  its x `[274,1180)`, y `[310,1081)` key surface overlaps the deck
  title at `[258,1042][781,1145]` on the 2076 × 2152px inner panel.
  Do not mark D50 fully validated from the debug bottom-IME captures.
-The later real split-keyboard test passed after settling but a Gboard
-font-update banner briefly clipped the final mode;
-D50 also covers that observed typing state.
+The real split-keyboard test passed after settling,
+while a Gboard font-update banner briefly clipped the final mode.
+D54 accepts that measured brief banner overlap;
+D50 still governs non-exempt keyboard states.
  D47's separate-page
 interaction does not supersede this persistent control region.
 
@@ -1579,7 +1580,7 @@ not production authorization or proof that the remaining D50 states pass.
 
 ### D54. The brief Gboard font-update banner may clip the deck (2026-09-26)
 
-After reviewing the distinct `Keyboard font size updated` state,
+When asked about the measured `Keyboard font size updated` state,
 the user said “That brief banner is also acceptable.”
 On the disposable Fold at 200% text,
 this real Gboard banner briefly raised the IME top to y `1140` and clipped
@@ -1601,15 +1602,17 @@ No production implementation is authorized.
 
 ### D55. Real floating Gboard may obscure folded-cover Search matches (2026-09-26)
 
-When asked separately about the sanitized real-Gboard cover capture,
+When asked about the measured cover state and given its sanitized capture
+path,
 the user answered “Also acceptable.”
 At 100% text on the folded cover,
 real floating Gboard covered both matching result labels,
 `Camellia` and `Another Xronixle`,
 while the focused `cam` query remained visible.
 D55 accepts that **specific floating-keyboard result overlap** without
-changing selected A's full-width cover Search page or D52's single
-Back/query/Clear header.
+changing D47's separate cover page,
+D48's single Back/query/Clear header,
+or D52's removal of the repeated positive-results heading.
 It does not approve an obscured query,
 missing or nonfunctional search results,
 or ordinary docked/full-width keyboards hiding matching labels.

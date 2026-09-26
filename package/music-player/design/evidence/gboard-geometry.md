@@ -189,8 +189,12 @@ D51's A selection is unchanged.
 D55 separately accepts the measured cover floating-keyboard overlap with
 both result labels while the query remains visible.
 D54 accepts the observed brief Gboard font-update-banner clip.
-Neither exception covers ordinary settled docked keyboards,
-other input methods or persistent keyboard overlays.
+D53 and D55 accept their measured floating-Gboard overlays even if that
+floating mode remains on screen until the user dismisses it.
+D54 accepts only the brief measured font-update banner,
+not a persistent or different banner.
+Ordinary settled docked keyboards and other input methods remain outside
+these scoped exceptions.
 
 ## Banner-height fit bound retained as evidence
 
