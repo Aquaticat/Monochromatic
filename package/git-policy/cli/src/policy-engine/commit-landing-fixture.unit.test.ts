@@ -177,7 +177,7 @@ export async function gitOutcome({
     if (!(error instanceof SubprocessError))
       throw error;
     return {
-      exitCode: error.exitCode ?? -1,
+      exitCode: error.exitCode ?? (-1),
       stdout: error.stdout.trim(),
     };
   }
@@ -524,12 +524,12 @@ export async function finish(child: ChildProcess,): Promise<ProcessOutcome> {
   /**
    Exit code and signal.
    */
-  const [code,] = await once(
+  const closed: readonly unknown[] = await once(
     child,
     'close',
   );
   return {
-    exitCode: (typeof code) === 'number' ? Number(code,) : -1,
+    exitCode: (typeof closed[0]) === 'number' ? closed[0] : -1,
     stdout: output.stdout,
     stderr: output.stderr,
   };

@@ -153,7 +153,9 @@ await describe({
         const codes = [...findingCodes(first,), ...findingCodes(second,),];
         expect(first.stderr + second.stderr,).not.toContain('index.lock',);
         // Either both prepared before either landed, or the second prepared after the first landed.
-        expect([first.exitCode, second.exitCode,].toSorted(),).toEqual(codes.length === 0 ? [0, 0,] : [0, 1,],);
+        expect([first.exitCode, second.exitCode,].toSorted(function ascending(left, right,): number {
+          return left - right;
+        },),).toEqual(codes.length === 0 ? [0, 0,] : [0, 1,],);
         expect(codes.every(function isHeadMoved(code,): boolean {
           return code === 'concurrent-commit/head-moved';
         },),).toBe(true,);
