@@ -73,7 +73,7 @@ const LINK_CLOSE = ')';
  titleText({ bracketed: '[猫猫摇篮曲](https://example.test/song)', },); // '猫猫摇篮曲'
  ```
  */
-function titleText({ bracketed, }: { readonly bracketed: string; },): string {
+export function titleText({ bracketed, }: { readonly bracketed: string; },): string {
   /**
    Whether the brackets hold a link's shape end to end.
    */
