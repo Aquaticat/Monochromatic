@@ -1,0 +1,9 @@
+{
+  "index.ts": 1,
+  "make-asynchronous-iterable.ts": 8,
+  "make-asynchronous.ts": 6,
+  "options.ts": 1,
+  "result.ts": 2,
+  "worker-lifecycle.ts": 13,
+  "worker-source.ts": 3
+}
