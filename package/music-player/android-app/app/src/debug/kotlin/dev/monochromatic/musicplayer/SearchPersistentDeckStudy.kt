@@ -205,6 +205,8 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
             bannerHeightStress = candidate.contains("-bannerfit-"),
             autoFitStudy = candidate.contains("-autofit-"),
             preclearStudy = candidate.contains("-preclear-"),
+            // A separate comparison makes the compact deck ready before any IME rise.
+            earlyInlineStudy = candidate.contains("-earlyinline-"),
             retainBrowser = candidate.contains("-retain-"),
             layerProbe = candidate.contains("-layerprobe-"),
             keepClearProbe = candidate.contains("-keepclear-"),
@@ -234,6 +236,16 @@ private const val BANNER_STRESS_INSET_PX = 1000
 
 /** One-pixel-safe debug envelope above the observed y-1140 Gboard font banner. */
 private val PRECLEAR_REVIEW_HEIGHT = 416.dp
+
+/** What:     200% text is the measured scale whose vertical deck clips at 400dp.
+ *  Why:      Keep the 100% comparison on the selected deck when it already fits.
+ *
+ *  In TS you'd write (pseudocode):
+ *  ```ts
+ *  const EARLY_INLINE_STRESS_FONT_SCALE = 2;
+ *  ```
+ */
+private const val EARLY_INLINE_STRESS_FONT_SCALE = 2f
 
 /** Android 17 SDK level used only to guard debug bounding-rectangle inspection. */
 private const val BOUNDING_RECT_API_LEVEL = 37
@@ -305,7 +317,7 @@ private fun ObserveImeAnimation(parentView: View, onAppliedIme: (Int) -> Unit) {
 private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, halfDent: Dp, light: Boolean, pageColor: Color,
     liftWithIme: Boolean, bannerHeightStress: Boolean, autoFitStudy: Boolean,
-    preclearStudy: Boolean, retainBrowser: Boolean, layerProbe: Boolean,
+    preclearStudy: Boolean, earlyInlineStudy: Boolean, retainBrowser: Boolean, layerProbe: Boolean,
     keepClearProbe: Boolean, overflowStudy: Boolean) {
     val density = LocalDensity.current
     val reportedImeInset = WindowInsets.ime.getBottom(density)
@@ -350,9 +362,13 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
         maxOf(reportedImeInset, platformBottom, deliveredBottom)
     } else reportedImeInset
     val keyboardShown = targetBottom > 0
-    // Keep clearance during the initial focus request and while an IME exists.
+    // Compare an early inline deck only at the tested scale with a clipping control.
+    // The alternate full reservation remains its own unaccepted candidate.
+    val anticipatoryLayout = preclearStudy ||
+        (earlyInlineStudy && density.fontScale >= EARLY_INLINE_STRESS_FONT_SCALE)
+    // Keep the compact deck during the initial focus request and while the IME exists.
     // Once a seen IME is hidden, keep the focused query but restore closed A.
-    val preclearActive = preclearStudy &&
+    val anticipatoryActive = anticipatoryLayout &&
         (keyboardShown || (queryFocused && initialFocusPending && !hasShownKeyboard))
     var restingDeckHeight by remember(density.density, density.fontScale, observedView.width) {
         mutableIntStateOf(0)
@@ -371,11 +387,11 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     val requiredDeckHeight = if (openDeckHeight > 0) openDeckHeight else restingDeckHeight
     val measuredOverflow = requiredDeckHeight == 0 ||
         requiredDeckHeight + dividerPx > availableAboveIme
-    val bannerFit = if (preclearStudy) preclearActive
+    val bannerFit = if (anticipatoryLayout) anticipatoryActive
         else if (autoFitStudy) keyboardShown && measuredOverflow
         else bannerHeightStress && reportedImeInset >= BANNER_STRESS_INSET_PX
     SideEffect {
-        if (preclearStudy && queryFocused) {
+        if (anticipatoryLayout && queryFocused) {
             if (keyboardShown && !hasShownKeyboard) hasShownKeyboard = true
             else if (!keyboardShown && hasShownKeyboard) {
                 initialFocusPending = false
@@ -393,17 +409,18 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
             "available=$availableAboveIme " +
             "visible=$visible boundingRects=$rectangles stress=$bannerFit " +
             "queryFocused=$queryFocused focusPending=$initialFocusPending " +
-            "seenKeyboard=$hasShownKeyboard preclear=$preclearActive")
+            "seenKeyboard=$hasShownKeyboard anticipatory=$anticipatoryActive")
     }
     // The platform target selects the layout only. Layout-time imePadding owns
-    // bottom reservation in ordinary studies; preclear has one fixed debug owner.
+    // bottom reservation in ordinary studies; only preclear has a fixed owner.
+    // Early inline instead keeps the current inset while selecting compact in advance.
     Row(modifier = Modifier.fillMaxSize().background(pageColor)
-        .then(if (preclearActive) Modifier.padding(bottom = PRECLEAR_REVIEW_HEIGHT)
+        .then(if (preclearStudy && anticipatoryActive) Modifier.padding(bottom = PRECLEAR_REVIEW_HEIGHT)
             else if (liftWithIme) Modifier.imePadding() else Modifier)) {
         SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f),
             deckFirst = !liftWithIme, deckFullHeight = liftWithIme, bannerFit = bannerFit,
-            compactForBrowser = retainBrowser && (keyboardShown || preclearActive),
-            reserveOwnsNavigation = preclearActive,
+            compactForBrowser = retainBrowser && (keyboardShown || anticipatoryActive),
+            reserveOwnsNavigation = preclearStudy && anticipatoryActive,
             onDeckMeasured = { heightPx ->
                 if (autoFitStudy && !keyboardShown && heightPx > restingDeckHeight) {
                     restingDeckHeight = heightPx
@@ -427,8 +444,8 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
             includeTopInset = true, pageColor = pageColor,
             overflowStudy = overflowStudy,
             onQueryFocusChange = { focused ->
-                if (preclearStudy && focused && !queryFocused) initialFocusPending = true
-                if (preclearStudy && !focused) {
+                if (anticipatoryLayout && focused && !queryFocused) initialFocusPending = true
+                if (anticipatoryLayout && !focused) {
                     initialFocusPending = false
                     hasShownKeyboard = false
                 }
