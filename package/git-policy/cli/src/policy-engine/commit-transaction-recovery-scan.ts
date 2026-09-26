@@ -27,6 +27,7 @@ import {
 import {
   readRegularRecoveryFile,
   recoveryPathExists,
+  releaseOwnedLock,
 } from './commit-transaction-recovery-files.ts';
 import {
   JOURNAL_FILENAME,
@@ -37,10 +38,7 @@ import type {
   CommitTransactionRecoveryAction,
   CommitTransactionRecoveryOutcome,
 } from './commit-transaction-recovery-types.ts';
-import {
-  assertOwnedLock,
-  CommitTransactionRecoveryError,
-} from './commit-transaction-recovery-validation.ts';
+import { CommitTransactionRecoveryError, } from './commit-transaction-recovery-validation.ts';
 
 /**
  Module logger.
@@ -234,25 +232,10 @@ async function recoverUnjournaledTransaction({
     tag: recoverUnjournaledTransaction.name,
     l,
   },);
-  /**
-   Real-index lock the owner created before publishing its directory.
-   */
-  const lockPath = `${owner.realIndexPath}.lock`;
-  if (await recoveryPathExists(lockPath,)) {
-    try {
-      await assertOwnedLock({
-        journal: owner,
-        lockPath,
-      },);
-      await rm(lockPath,);
-      rl.debug(`released dead owner lock ${lockPath}`,);
-    }
-    catch (error: unknown) {
-      if (!(error instanceof CommitTransactionRecoveryError))
-        throw error;
-      rl.debug(`left lock another process owns: ${error.message}`,);
-    }
-  }
+  rl.debug(`unjournaled transaction lock ${await releaseOwnedLock({
+    journal: owner,
+    lockPath: `${owner.realIndexPath}.lock`,
+  },)}: ${directory}`,);
   await removeTransactionDirectory(directory,);
 }
 

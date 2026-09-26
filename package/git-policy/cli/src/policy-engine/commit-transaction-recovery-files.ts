@@ -19,13 +19,25 @@ import {
   syncDirectory,
 } from '../trust/registry-io.ts';
 import { createOwnedFileLink, } from './commit-transaction-install-link.ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { PreparedTransactionJournal, } from './commit-transaction-journal.ts';
 import { removeTransactionDirectory, } from './commit-transaction-registry.ts';
 import {
   assertOwnedLock,
   CommitTransactionRecoveryError,
+  type OwnedLockIdentity,
 } from './commit-transaction-recovery-validation.ts';
 import { applyIndexTimestamps, } from './index-file-timestamps.ts';
+
+/**
+ Module logger.
+ */
+const l = tagged({ tag: 'cli-git', },);
+
+/**
+ What happened to the real-index lock when a transaction that no longer needs it was released.
+ */
+export type OwnedLockRelease = 'released' | 'absent' | 'foreign';
 
 /**
  Reports whether path currently exists without suppressing other failures.
@@ -49,6 +61,58 @@ export async function recoveryPathExists(path: string,): Promise<boolean> {
       return false;
     throw error;
   }
+}
+
+/**
+ Removes the real-index lock only when it is still the exact object the transaction created.
+
+ Branches that never write the real index call this,
+ so a lock another process holds now is left in place rather than treated as conflicting evidence.
+
+ @param journal - prepared journal or owner record naming the owned lock
+
+ @param lockPath - current real-index lock path
+
+ @returns whether the owned lock was removed, already gone, or replaced by another owner's lock
+
+ @example
+ ```ts
+ await releaseOwnedLock({ journal, lockPath: '/repo/.git/index.lock' });
+ ```
+ */
+export async function releaseOwnedLock({
+  journal,
+  lockPath,
+}: Readonly<{
+  journal: OwnedLockIdentity;
+  lockPath: string;
+}>,): Promise<OwnedLockRelease> {
+  /**
+   Tagged lock release logger.
+   */
+  const rl = tagged({
+    tag: releaseOwnedLock.name,
+    l,
+  },);
+  if (!(await recoveryPathExists(lockPath,))) {
+    rl.debug(`owned lock already absent: ${lockPath}`,);
+    return 'absent';
+  }
+  try {
+    await assertOwnedLock({
+      journal,
+      lockPath,
+    },);
+  }
+  catch (error: unknown) {
+    if (!(error instanceof CommitTransactionRecoveryError))
+      throw error;
+    rl.debug(`leaving lock another owner holds: ${error.message}`,);
+    return 'foreign';
+  }
+  await rm(lockPath,);
+  rl.debug(`released owned lock ${lockPath}`,);
+  return 'released';
 }
 
 /**

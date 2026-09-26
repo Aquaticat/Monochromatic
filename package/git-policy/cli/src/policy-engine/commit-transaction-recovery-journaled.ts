@@ -6,7 +6,6 @@
 import {
   lstat,
   realpath,
-  rm,
 } from 'node:fs/promises';
 import {
   isAbsolute,
@@ -29,6 +28,7 @@ import {
   installRecoveredIndex,
   readRegularRecoveryFile,
   recoveryPathExists,
+  releaseOwnedLock,
   removeRecoveryArtifacts,
 } from './commit-transaction-recovery-files.ts';
 import { findTransactionLandedOid, } from './commit-transaction-recovery-reflog.ts';
@@ -359,20 +359,12 @@ export async function recoverJournaledTransaction({
   })) {
     if (!realIsOriginal)
       throw new CommitTransactionRecoveryError(`Commit did not land but real index changed; recovery retained at ${directory}`,);
-    // A lock removed after the owner died leaves nothing to release; HEAD and the index still prove nothing landed.
-    if (!(await recoveryPathExists(lockPath,))) {
-      rl.debug(`owned lock already absent for unlanded transaction ${directory}`,);
-      await removeRecoveryArtifacts({ directory, },);
-      return 'commit-not-created';
-    }
-    await assertOwnedLock({
+    // HEAD and the index prove nothing landed, so only a lock this transaction still owns needs releasing.
+    rl.debug(`unlanded transaction lock ${await releaseOwnedLock({
       journal,
       lockPath,
-    },);
-    await removeRecoveryArtifacts({
-      directory,
-      lockPath,
-    },);
+    },)}: ${directory}`,);
+    await removeRecoveryArtifacts({ directory, },);
     return 'commit-not-created';
   }
   if (currentHead.kind === 'absent')
@@ -402,13 +394,10 @@ export async function recoverJournaledTransaction({
       directory,
       INDEX_INSTALLED_FILENAME,
     ),);
-    if (await recoveryPathExists(lockPath,)) {
-      await assertOwnedLock({
-        journal,
-        lockPath,
-      },);
-      await rm(lockPath,);
-    }
+    rl.debug(`installed transaction lock ${await releaseOwnedLock({
+      journal,
+      lockPath,
+    },)}: ${directory}`,);
     await installAddedWorktreeFiles({
       gitPath,
       cwd: effectiveCwd,
