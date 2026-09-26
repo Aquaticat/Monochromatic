@@ -22,6 +22,7 @@ import {
 } from './translate-absence.ts';
 import type { TranslateCandidateValue, } from './translate-candidates.ts';
 import { runoffFinalists, } from './translate-runoff.ts';
+import { settleAbsentDecline, } from './translate-runoff-tie.ts';
 import type { ProducedSlate, } from './translate-produce.ts';
 import { TRANSLATE_SELECTION_TASK, } from './translate-selection-sheet.ts';
 import {
@@ -559,11 +560,18 @@ export async function judgeTranslateSlate(
     disposition: outcome.disposition,
   },);
   if (incumbentKind === 'absent') {
-    throw new TranslateAbsenceError({
-      reason: declined,
-      findings: declineFindings,
+    // A challenge round tied across every valid candidate ships one by
+    // preference (class one hundred seventy-four); any other decline raises.
+    return settleAbsentDecline({
+      challenged: responsibility === 'decline-challenge',
+      outcome,
+      rotated,
+      keepIncumbent,
+      declineFindings,
+      declined,
       // Conditional spread keeps the field absent where the whole slate stands.
       ...((narrowed.kind === 'narrowed') ? { finalists: narrowed.finalists, } : {}),
+      l: tl,
     },);
   }
   tl.info(`translate stage: ${outcome.reason}; keeping the incumbent`,);
