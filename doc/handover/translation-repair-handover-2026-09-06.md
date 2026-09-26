@@ -1071,7 +1071,7 @@ Build/types/Oxlint pass;
 `v41-bench-resolution-final-unit-20260911.out` ends `unit exit 0` at line 9169.
 The source trace is in
 [bench Git resolution](../troubleshooting/translation-repair-bench-git-resolution.md).
-A concurrent/unrelated `mise.lock` change remains unstaged.
+The unstaged `mise.lock` change (tool-version downgrades only) was discarded on 2026-09-26 at the owner's word "Commit or discard mise.lock, it doesn't matter"; a copy stays in the session scratchpad.
 
 The exact frozen container sample and budget setup passed,
 but full sample reading exposed a different issue.
