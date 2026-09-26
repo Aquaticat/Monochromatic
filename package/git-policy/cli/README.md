@@ -1055,9 +1055,11 @@ config validation,
 scanner checks,
 clean and changed final-newline paths,
 and post-commit policy work.
-`perf/lifecycle-latency-2026-07-16.json` stores the measured baseline.
+`perf/lifecycle-latency-2026-07-16.json` stores the measured baseline the ceilings derive from.
 Each enforced ceiling is twice its baseline maximum rounded up to the next 25 milliseconds;
 every ceiling remains below 2,000 milliseconds.
+`perf/lifecycle-latency-2026-09-26.json` re-measures the matrix after every non-dry-run commit moved to private preparation;
+every scenario stays below its ceiling.
 
 ## How it works
 
