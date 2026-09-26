@@ -213,6 +213,50 @@ the agent-behavior gap is tracked separately.
   `git fsck` is clean;
   exit codes match the JSONL events.
 
+## Implementation-time decisions
+
+Made by the agent on 2026-09-25 while the owner was asleep,
+under the owner's instruction to work autonomously
+and to build both options when two look equally good.
+Veto open.
+Evidence:
+`package/git-policy/cli/doc/concurrent-commits-implementation-plan.md`.
+
+- Every non-dry-run commit uses private preparation,
+  including clean commits and `commit -a`.
+  Today a clean commit returns early and runs native `git commit`,
+  which holds `index.lock` through hooks and the editor,
+  so it is the #560 collision path.
+  The lifecycle latency baseline is re-measured.
+- Startup recovery skips transactions whose owner is alive;
+  it no longer blocks every invocation while another commit runs.
+- Every read of live `HEAD` in the transaction uses the recorded preparation base or the landed OID.
+- Recovery searches the target ref's reflog for its nonce instead of checking only the newest entry.
+- The worktree-copy settlement lock is held only by forwarded commands that,
+  after alias resolution,
+  create or move worktrees.
+  Today it serializes every forwarded command in a linked worktree
+  and gives up after about 1 second,
+  which would serialize private preparation.
+  Worktrees created by Git invoked through an absolute path from a hook lose automatic ignored-state copying,
+  matching the documented bypass of everything else.
+- The hook lock is taken by the dispatcher shim around each hook event,
+  so an open message editor never holds it.
+- `inputs` may be static or a function of the validated policy options,
+  so option-dependent inputs such as a configured executable are expressible.
+  The two shipped repository policies declare `{ external: [] }`.
+- Reservations are granted oldest invocation first.
+- Forwarded index writers coordinate with landings through the cli-git landing lock
+  and pre-wait for foreign `index.lock` holders;
+  cli-git does not capture Git's stderr to detect a lock failure and re-forward,
+  because capturing stderr changes Git's color and progress output.
+  A residual race remains only with processes that bypass the wrapper.
+- New JSONL event types are additive under `schemaVersion: 1`;
+  the SPEC states that consumers ignore unknown event types.
+- A failed auto-push keeps today's exit contract:
+  the landed commit exits `0` after surfacing the push failure.
+- macOS and Windows holder detection spawns `lsof` or a Restart Manager query only while a foreign lock is present.
+
 ## Rejected
 
 - A lock queue around today's unchanged transaction.
