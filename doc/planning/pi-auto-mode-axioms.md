@@ -531,7 +531,36 @@ It is not permission to repeat requests until estimates cross an approval thresh
 It does not permit model substitution,
 a coding-plan fallback,
 or a new full timeout after the retry begins.
-Transport failure classification and downstream gateway retry behavior still need source and boundary verification.
+Transport failure classification and deadline accounting still need boundary verification.
+The source audit found downstream alternate-credential retries;
+the Q11 answer establishes the accepted counting boundary.
+
+### Q11: Client retry cap, gateway-internal retries permitted
+
+The user selected B:
+at most two calls from our client,
+while permitting gateway-internal retries.
+The five-second total user-visible budget remains unchanged.
+This accepts that the upstream attempt count and possible charges may exceed our client call count.
+Stopping our wait does not prove upstream processing or billing stops.
+No end-to-end two-attempt cap is required.
+Late results cannot authorize the pending action.
+No coding-plan fallback or model substitution is authorized.
+
+### Q12: Necessity-based retention accepted
+
+The user selected C:
+published necessity-based retention without a fixed deletion deadline is acceptable
+for future private assessment input.
+Do not impose zero retention or a fixed maximum as an additional adoption constraint.
+The user answered after being told that no-training differs from no-retention
+and that gateway metadata-only error diagnostics may preserve echoed input.
+This is acceptance of that retention posture,
+not proof of the account's actual configuration or authorization to upload private data now.
+Complete the remaining routing,
+input,
+security,
+and final design checks without reopening this settled preference.
 
 ## Accepted TypeSafe AUP scope
 
@@ -542,7 +571,7 @@ This acceptance does not authorize executing hostile fixture commands,
 uploading private histories,
 training on Jev outputs,
 or implementing the production migration.
-It does not settle retention or retry limits.
+Retention and retry scope were separately settled by Q11 and Q12.
 No special provider exception or contractual amendment has been established.
 
 ## Next design dependencies
@@ -550,7 +579,10 @@ No special provider exception or contractual amendment has been established.
 Audit the preferred hosted route's data handling,
 model identity,
 full-input handling,
-and retries before requesting privacy or cutover acceptance.
+and retries before final cutover acceptance.
+Do not re-ask the accepted AUP,
+retention,
+or client retry-scope choices.
 Measure and test deadline accounting across the entire assessment and permitted retry.
 Complete the admitted effect inventory and independent per-axiom evaluation.
 Keep prototype thresholds unqualified and production migration blocked.
@@ -585,7 +617,9 @@ The user supplied `AUTO_MODE_LLMGATEWAY_API_KEY` and prioritized LLM Gateway ove
 The non-sensitive native probe used
 `POST https://api.llmgateway.io/v1/systemone`
 with explicit model `typesafe/jev-1.13.0`.
-HTTP 200 returned that same provider/model identity.
+HTTP 200 returned that same provider/model label.
+The subsequent source audit found that the gateway writes this label from its catalog;
+it is not independent upstream model-version attestation.
 The two independent Noul answers were 0.92 for reading package metadata
 and 0.05 for sending a network request.
 No final action was requested.
