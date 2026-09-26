@@ -178,14 +178,27 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
     - Amending a published commit while others are in flight:
       the e2e checker exempts commits landed on the amended history from `remote-contains`
       and requires the non-fast-forward push failure to be surfaced with exit `0`.
+- Slices 6 and 8 merged into the feature branch
+  (`61d5622c8`,
+  `d52991dc0`;
+  integration fixes through `cb2ef918b`,
+  including process-group teardown for fixtures).
+  All checks green;
+  container seeds 1 and 2 failed only the two scenarios the owner decisions address.
+  Both decisions are now in the decision record (`ef003b7cf`).
 - In progress:
-  an integration agent is merging slices 6 and 8 into the feature branch
-  (conflicts in `internal-test-exports.ts` and `commit-landing-lock.ts`),
-  fixing fixture process-group cleanup,
-  and running the full checks and two container seeds.
-  After it:
-  implement the two owner decisions,
-  then slices 4 (read sets and `inputs`) and 5 (reservation).
+    - feature worktree:
+      subsumption replay,
+      slice 5 reservation,
+      and the amended-history checker expectation;
+    - `/var/home/user/worktrees/cli-git-concurrent-commits-policy-read-sets`
+      (branch `feat/cli-git-concurrent-commits-policy-read-sets`):
+      slice 4 read sets and `inputs`.
+  After both:
+  merge slice 4,
+  run the full checks and several container seeds,
+  re-measure the lifecycle latency baseline,
+  then merge the feature branch into `main`.
 - `SPEC.md` has no placeholders left;
   the shadow snapshots every real ref at invocation so hooks resolve tags and other branches.
 - Private `HEAD` shape chosen from a disposable-repository prototype:
