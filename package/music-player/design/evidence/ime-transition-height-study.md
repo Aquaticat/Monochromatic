@@ -546,6 +546,52 @@ raw frame directories,
 logs and hierarchies remain private.
 Neither inline reflow nor the 416dp reservation is accepted.
 
+## Scale-scoped reservation comparison and stop point
+
+Prototype commit `3541587ec` added an **unaccepted** `-scalereserve-` comparison to the debug-only Search study.
+It uses the earlier 416dp anticipatory bottom reservation only at the tested 200% text scale;
+at 100% it keeps the selected vertical deck and its ordinary IME inset.
+The installed debug APK matched the built SHA-256
+`ecc1ed1a68331564e6925a0d0d65d2be826af5143f4decd0f272a98bb01ee0bb`.
+This fixture does not change production Search or the selected A review.
+
+At 100% text with the stepped debug keyboard at 330dp (top y `1348`),
+the complete vertical mode control ended at y `1328` with Folders and Open visible,
+rather than leaving the old pre-reservation's 230px blank band.
+At the settled 400dp and 415dp endpoints,
+the last mode ended at y `1157` and y `1121`.
+Each was 20px above its keyboard edge;
+Folders and Open remained visible.
+The same upper-left folder browser was shortened at 415dp,
+not replaced by a caption.
+At 200% text under 330dp,
+the reserved inline deck ended at y `1118` while the keyboard began at y `1348`,
+retaining the 230px clearance **at that scale**.
+At 400dp (keyboard top y `1177`),
+its final mode still ended at y `1118`;
+Folders,
+Open,
+query and both short results remained visible in the native capture.
+After Back hid the keyboard at 200%,
+the last mode returned to `[73,1904][965,2035]` and the upper-left browser expanded.
+
+The 200% in-place 375dp to 400dp recording kept the keyboard visible in 23 sampled frames;
+an existing five-outline image check found the complete mode in all 23,
+with its last border at video y `558` while the keyboard edge moved from y `619` to y `588`.
+An inspected frame shows the actual painted border,
+not only accessibility node bounds.
+The earlier same-APK early-inline comparison lost the border in 3 of 22 sampled IME-visible frames;
+its pre-reserved control retained all borders in 24 of 24.
+These categorical observations do not measure clip duration,
+every unrecorded frame,
+or any real Gboard transition.
+The 416dp reservation remains a measured synthetic envelope,
+not a maximum keyboard height.
+The comparison removes an unnecessary **100%** clearance cost in these states but retains an upper-left space cost at **200%**.
+No inline or reserved variant is selected.
+The user requested an end to further IME experiments;
+the design tradeoff is recorded for a later decision without widening D53 or D54.
+
 ## Remaining boundary
 
 The closed deck's first measured heights changed from `762` to `891` to
