@@ -213,6 +213,18 @@ Git source at commit `0f8e75abebff` plus experiments with real Git 2.55.0.
   and spawns `git ls-files` and `git cat-file`).
 - Hook parallelism declaration: `hooks: { concurrentCommits: true }` in `cli-git.config`,
   default false.
+- Policy input declaration:
+  `inputs?: 'unrestricted' | { readonly external: readonly PolicyInput[] }`,
+  default `'unrestricted'`;
+  `{ external: [] }` means context-only reads.
+  `PolicyInput` kinds: `worktree` (pathspecs),
+  `executable` (path),
+  `revision` (rev),
+  `env` (name).
+  Precedent: Nx task `inputs`,
+  broad when absent.
+- Config keys: `indexLock: { unprovenOwnerTimeoutMs: 1000 }`
+  and `landing: { reserveAfterLostRaces: 2 }`.
 - Hooks and editor: run during preparation.
   The editor,
   `prepare-commit-msg`,
@@ -309,6 +321,14 @@ the owner declined an `AGENTS.md` rule.
   the commit fails like a moved amend base.
   Detached `HEAD` lands by compare-and-swap on `HEAD` itself.
 - A crashed reservation holder releases its slot through the same owner-liveness check.
+- `git cli-git fix` holds the landing lock across its worktree installation and real-index verification,
+  so a concurrent landing cannot falsify its byte-identical real index check.
+- Windows holder detection skips the `DELETE`-access probe,
+  which can delay Git's own rename,
+  and relies on the PID file and Restart Manager.
+- Missing optional Git features degrade per feature
+  (no `core.lockfilePid` means no PID evidence);
+  missing replay plumbing falls back to today's fail-fast behavior.
 - Required disposable fixtures and lifecycle benchmarks gain concurrent-commit scenarios.
 
 ## Rejected
@@ -319,8 +339,8 @@ the owner declined an `AGENTS.md` rule.
 
 ## Open questions
 
-- Shape and name of the policy input declaration.
-- Config key names for the foreign lock bound and the reservation threshold.
+- Whether forwarded non-commit index writers (`git add`, `rm`, `mv`, `restore --staged`, `reset`)
+  also wait on `index.lock` with the foreign-owner classification.
 
 ## Next action
 
