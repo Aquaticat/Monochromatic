@@ -121,15 +121,40 @@ Token counts via `mise run //package/module/token-count:count` (Claude `count_to
 - Delete the verified lint-enforced rules (per deletion authority);
    keep unenforced ones.
 
+## Decisions (round 2)
+
+- Situational rules:
+   not clear cut;
+   some only seem task-specific.
+   Needs research before choosing destinations.
+- Rewrite scope:
+   compress every kept rule,
+   talked through rule by rule with the user.
+- Line-wrap format:
+   keep clause-per-line breaks.
+- JCH and OWB:
+   move guidance into the linter diagnostics.
+- TAG and RLM checker:
+   tracked in issue #566.
+
+## Rule walk
+
+Each batch is measured with a scratch script:
+RLM per rule plus `mise run //package/module/token-count:count -- --model claude-opus-5-5`.
+
+- Batch 1 (pre-response checklist and its absorbers):
+   19 rules become 9,
+   1164 to 703 tokens.
+   Proposed,
+   awaiting user review.
+
 ## Open questions
 
-- Destination for situational rules.
-- Rewrite scope for kept rules.
-- Line-wrap format.
-- JCH and OWB into linter diagnostics.
-- TAG and RLM checker.
+- Situational rule destinations,
+   pending research.
+- Historical doc references to retired codes.
 
 ## Next action
 
-Collect answers,
-then build the restructured `AGENTS.md` plus coverage mapping in the philosophy doc.
+Walk rules batch by batch;
+apply approved batches to `AGENTS.md` with a retired-code mapping.
