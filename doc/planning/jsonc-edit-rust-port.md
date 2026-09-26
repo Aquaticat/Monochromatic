@@ -117,12 +117,25 @@ Progress since adoption:
    The OIDC publish path itself is still unexercised,
    because it only runs for a version that is not yet on crates.io.
 
+- Trusted Publishing is configured and proven.
+   The user saved the crate's publisher row,
+   and dispatching the workflow with **dry-run** unchecked
+   (run `36217828047`,
+   2026-09-26) concluded `success` with `Authenticate with crates.io (Trusted Publishing)`
+   succeeding,
+   which only happens when the OIDC claims match the configured owner,
+   repository,
+   workflow filename and environment.
+   The publish step then logged
+   `monochromatic-jsonc-edit 0.1.0 already on crates.io; skipping publish.`,
+   so no upload occurred:
+   the registry still lists exactly one version,
+   `0.1.0`.
+   `Attest .crate provenance` also succeeded on the same run.
+
 Remaining,
-and it is user dashboard work per `doc/runbook/publish-crate-first-time.md` steps 12 to 17:
-configure the crate's Trusted Publisher as `Aquaticat`,
-`Monochromatic`,
-`cargo-publish.yml` with an empty environment,
-then revoke the bootstrap token.
+and it is user dashboard work per `doc/runbook/publish-crate-first-time.md` step 17:
+revoke the `monochromatic-jsonc-edit-bootstrap` token if that was not already done.
 Future versions publish by bumping `version` in the crate manifest and pushing to `main`,
 or by dispatching `cargo-publish.yml` with **dry-run** unchecked.
 
