@@ -138,7 +138,8 @@ the opt-in cover viewport again ended at y `1693` under the debug IME.
 Its last row title was `[127,1542][487,1601]` and supporting text
 `[127,1601][513,1650]`;
 the screenshot showed both above the input surface.
-At 200%, hiding the keyboard expanded the viewport to y `2365` and moved
+At 200%,
+hiding the keyboard expanded the viewport to y `2365` and moved
 row 18 to y `[2151,2254]`;
 refocusing shrank the viewport again,
 and a further list swipe returned the last title and support text above
