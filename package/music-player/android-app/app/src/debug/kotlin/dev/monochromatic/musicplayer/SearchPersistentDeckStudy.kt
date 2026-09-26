@@ -295,14 +295,15 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     val density = LocalDensity.current
     val reportedImeInset = WindowInsets.ime.getBottom(density)
     var queryFocused by remember { mutableStateOf(false) }
-    val preclearActive = preclearStudy && queryFocused
+    var initialFocusPending by remember { mutableStateOf(false) }
+    var hasShownKeyboard by remember { mutableStateOf(false) }
     val observedView = LocalView.current
     var deliveredBottom by remember(density.density, density.fontScale, observedView.width) {
         mutableIntStateOf(0)
     }
     // The debug callback remains on the view above Compose and continues subtree dispatch.
     val animationHost = observedView.parent as? View
-    if ((autoFitStudy || bannerHeightStress) && animationHost != null) {
+    if ((autoFitStudy || bannerHeightStress || preclearStudy) && animationHost != null) {
         ObserveImeAnimation(animationHost, onAppliedIme = { bottom ->
             if (deliveredBottom != bottom) deliveredBottom = bottom
         })
@@ -312,9 +313,14 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     val platformBottom = if (Build.VERSION.SDK_INT >= 30) {
         platformInsets?.getInsets(imeType)?.bottom ?: 0
     } else 0
-    val targetBottom = if (autoFitStudy) maxOf(reportedImeInset, platformBottom, deliveredBottom)
-        else reportedImeInset
+    val targetBottom = if (autoFitStudy || preclearStudy) {
+        maxOf(reportedImeInset, platformBottom, deliveredBottom)
+    } else reportedImeInset
     val keyboardShown = targetBottom > 0
+    // Keep clearance during the initial focus request and while an IME exists.
+    // Once a seen IME is hidden, keep the focused query but restore closed A.
+    val preclearActive = preclearStudy &&
+        (keyboardShown || (queryFocused && initialFocusPending && !hasShownKeyboard))
     var restingDeckHeight by remember(density.density, density.fontScale, observedView.width) {
         mutableIntStateOf(0)
     }
@@ -336,6 +342,13 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
         else if (autoFitStudy) keyboardShown && measuredOverflow
         else bannerHeightStress && reportedImeInset >= BANNER_STRESS_INSET_PX
     SideEffect {
+        if (preclearStudy && queryFocused) {
+            if (keyboardShown && !hasShownKeyboard) hasShownKeyboard = true
+            else if (!keyboardShown && hasShownKeyboard) {
+                initialFocusPending = false
+                hasShownKeyboard = false
+            }
+        }
         val visible = if (Build.VERSION.SDK_INT >= 30) platformInsets?.isVisible(imeType) else null
         val rectangles = if (Build.VERSION.SDK_INT >= BOUNDING_RECT_API_LEVEL) {
             platformInsets?.getBoundingRects(imeType)
@@ -346,7 +359,8 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
             "restingDeck=$restingDeckHeight openDeck=$openDeckHeight " +
             "available=$availableAboveIme " +
             "visible=$visible boundingRects=$rectangles stress=$bannerFit " +
-            "queryFocused=$queryFocused preclear=$preclearActive")
+            "queryFocused=$queryFocused focusPending=$initialFocusPending " +
+            "seenKeyboard=$hasShownKeyboard preclear=$preclearActive")
     }
     // The platform target selects the layout only. Layout-time imePadding owns
     // bottom reservation in ordinary studies; preclear has one fixed debug owner.
@@ -378,7 +392,14 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
             unavailable = unavailable, modifier = Modifier.weight(1f),
             startSafe = halfDent + 16.dp, endSafe = 16.dp,
             includeTopInset = true, pageColor = pageColor,
-            onQueryFocusChange = { focused -> queryFocused = focused })
+            onQueryFocusChange = { focused ->
+                if (preclearStudy && focused && !queryFocused) initialFocusPending = true
+                if (preclearStudy && !focused) {
+                    initialFocusPending = false
+                    hasShownKeyboard = false
+                }
+                queryFocused = focused
+            })
     }
 }
 
