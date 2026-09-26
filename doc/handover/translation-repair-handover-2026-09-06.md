@@ -4777,7 +4777,16 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASS ONE HUNDRED FIFTY-THREE BUILT (2026-09-26):
+1.  CLASSES ONE HUNDRED FIFTY-FOUR AND FIFTY-FIVE BUILT (2026-09-26):
+    SHI_YUMIAOYA38 READ: SETTLED at 11:49 UTC in 6.4 min on `.frozen-dist-12b581811`;
+    class one hundred fifty-one live ("unfilial son"); recorded under "## shi_Yumiaoya38 read" in the pass log.
+    One of four 跨圈 shipped "the crossdressing community": 跨圈 joins the community glossary
+    ("trans community" first, the crossdressing forms refused; guard `5c51bd440`, fix `42319ff3a`).
+    没本事 shipped "someone with no capability": it joins the wording glossary
+    ("good-for-nothing" first, "no capability" refused; guard `c160b2006`, fix `6cf583ca3`); suite 1,154 PASS, 0 FAIL.
+    shi_Yumiaoya39 launched 11:57 UTC on `.frozen-dist-6cf583ca3` (pid 2592631, scope `pass-shi_Yumiaoya39`).
+    Next: read shi_Yumiaoya39 for the fourth 跨圈 and the insult line, then the gate folding prose (class 153) on a prose slice.
+    CLASS ONE HUNDRED FIFTY-THREE BUILT (2026-09-26):
     on XingZ6014 slices 36, 61 and 64 the base stood as the archive's one-line paragraph beside a wrapped polish,
     so class one hundred fifty-two's "both wrapped by one rule" was false there and three gate ballots weighed the added breaks.
     `foldSoftBreaks` (`soft-break-fold.ts`) folds each top-level paragraph's soft breaks for the gate sheet on prose slices;
@@ -4786,7 +4795,7 @@ each read off the pass log and the shipped page:
     (the suite was red at `12b581811` on it).
     XINGZ6014 READ: SETTLED at 11:33 UTC in 54.9 min, about 8.41 USD by the meters; every XingZ6013 check held;
     class one hundred fifty-two live on slice 30; recorded under "## XingZ6014 read" in the pass log.
-    Next: freeze the class one hundred fifty-three build and run shi_Yumiaoya for 逆子 (class one hundred fifty-one).
+    shi_Yumiaoya38 ran on the class one hundred fifty-three build (the entry above).
     CLASS ONE HUNDRED FIFTY-TWO BUILT (2026-09-26), RAN ON XINGZ6014:
     yingying12's polish gate tied 2 to 2 and shipped the calque "It is a pity that all this stopped abruptly",
     both base ballots citing the polish's line breaks on a prose slice both candidates were wrapped by one rule.

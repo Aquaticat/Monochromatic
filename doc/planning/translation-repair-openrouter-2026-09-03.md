@@ -8082,6 +8082,44 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya38 read, 2026-09-26: class one hundred fifty-one live, classes one hundred fifty-four and fifty-five
+
+### What the run did
+
+shi_Yumiaoya38 (frozen `12b581811`, overlap 8) SETTLED at 11:49 UTC in 6.4 min,
+Bedrock 17.64 to 17.45 and OpenRouter 42.24 to 41.91 by the meters, 727 calls.
+Front matter equal, 4 headings, 1 footnote, no TA, no double blank line, no unendorsed standing, 7 abstention lines.
+Class one hundred fifty-one live: the father's insult reads "insulted as an 'unfilial son'—a disgrace, someone with no capability"
+where shi_Yumiaoya37 wrote "rebellious child".
+初三 now reads "In Grade 9".
+
+### Class one hundred fifty-four: 跨圈 read as the crossdressing community
+
+跨圈 (short for 跨性别圈子) appears four times on the page.
+Three shipped "the trans community"; source line 77, 在跨圈内结识了很多朋友, shipped
+"made many friends in the crossdressing community", where shi_Yumiaoya37 had "across different communities".
+Crossdressing is another word (女装) for another thing.
+The corpus carries 跨圈 on shihai4h (3), XingZ60 (1) and shi_Yumiaoya (4);
+shihai4h's archive renders it "the Trans Community" (its heading "She and the Trans Community").
+Fixed in `42319ff3a` (guard red first `5c51bd440`): 跨圈 joins the community glossary
+with "trans community" first and "crossdressing community", "cross-dressing community" and the "circle" forms refused
+by the source-carry floor before any judge reads the candidate.
+Suite 1,153 PASS, 0 FAIL (`suite-class154.log`).
+
+### Class one hundred fifty-five: 没本事 word for word
+
+The same insult rendered 没本事 as "someone with no capability"; shi_Yumiaoya37 had "a failure".
+The pinned corpus carries 没本事 once, in that insult, with no archive English.
+Under the owner's standing instruction to translate better wherever possible,
+fixed in `6cf583ca3` (guard red first `c160b2006`): 没本事 joins the wording glossary
+with "good-for-nothing" first and "no capability" and its variants refused.
+Suite 1,154 PASS, 0 FAIL (`suite-class155.log`).
+shi_Yumiaoya39 launched 11:57 UTC on `.frozen-dist-6cf583ca3` (pid 2592631, scope `pass-shi_Yumiaoya39`).
+
+### Observation not built
+
+同类 shipped "a trans woman from a local community", narrowing a gender the original leaves open; watched.
+
 ## XingZ6014 read, 2026-09-26: class one hundred fifty-two live, class one hundred fifty-three
 
 ### What the run did
