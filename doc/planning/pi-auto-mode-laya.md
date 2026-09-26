@@ -149,12 +149,118 @@ No pi-safeguard evaluation or upstream tracking was initiated.
 - Other search matches concern repository-wide lint, catalog, scaffolding, or unrelated tool guards.
   They are not additional auto-mode behavior requirements.
 
+## Incumbent responsibility ledger
+
+This maps current ownership, proposed disposition, and verification surfaces.
+It does not claim any migration code or tests have run.
+The final user-facing policy is still being interviewed.
+
+### Static safety and path handling
+
+Current owner: `src/signals.ts`, `src/path-signals.ts`, shell-analysis helpers,
+read-only command proofs, scratch/skill/worktree allowlists, and `src/virtual-input-guard.ts`.
+Proposed disposition: retain outside Laya; a model must not override the fixed virtual-input block.
+Preserve canonical paths, symlink-escape checks, secret-path checks, and read-versus-write distinctions.
+Parity: `signals`, `command-parser`, `temp-allowlist`, `git-worktree-read-allowlist`,
+`virtual-input-guard`, and `static-guard-import` unit suites.
+Correct the #279 fixture dependency when implementing the affected test changes.
+
+### Lifecycle, batch context, and denial follow-ups
+
+Current owner: `src/index.ts`.
+It captures loaded context/skills, tracks turn siblings and previous denial,
+retains project context across retry boundaries, and clears settled-run state.
+Proposed disposition: preserve lifecycle and denial sensitivity in the extension.
+Laya input eligibility must not silently discard context needed for the current decision.
+Parity: `index.unit.test.ts`, `context.unit.test.ts`, plus new overflow and missing-evidence cases.
+
+### Session approvals and trust rules
+
+Current owner: `src/context.ts`, `src/tool-helpers.ts`, `src/guard-command.ts`,
+and `src/register-propose-trust.ts`.
+Existing exact approvals use action plus input/cwd/project-context fingerprint;
+read ranges share path scope, while different edit/write payloads do not.
+Trust rules are session-branch-local prose interpreted by the judge.
+Proposed disposition: retain explicit approval and reset/replay boundaries.
+The local interpretation of arbitrary prose trust rules remains a design question.
+Migration needs an explicit rule for historical machine-approved verdict reuse
+rather than silently treating a different judge policy as the same authorization.
+Parity: `context`, `context-trust`, `tool-helpers`, `register-propose-trust`, and `evaluate` unit suites.
+
+### Bypass and manual approval
+
+Current owner: `src/bypass.ts`, `src/ask-user.ts`, and lifecycle wiring in `src/index.ts`.
+Proposed disposition: retain explicit user bypass, audit entries, status, Allow/Deny/Stop,
+notification failure handling, and headless refusal/report-to-parent behavior.
+The virtual-input guard remains active during bypass.
+Parity: `index-bypass`, `ask-user`, `update-widget`, and `model-feedback` unit suites.
+
+### Remote judge transport and selection
+
+Current owner: `src/evaluate.ts`, `src/judge.ts`, `src/judge-fallback.ts`,
+`src/budget-model*.ts`, `src/judge-call-history.ts`, and shared review/selection packages.
+Proposed disposition: remove auto-mode's provider selection, authentication, forced-tool requests,
+JSON retries, remote fallback race, and provider-health selection machinery from its active path.
+A Laya adapter and manual fallback would own local decision availability.
+Shared review code is also consumed by `package/pi-plugin/goal/package.json`;
+do not remove or change that other consumer as part of this migration.
+Parity: replace transport-specific tests with zero-provider-call, timeout, malformed-result,
+unavailable-runtime, cancellation, and local-result validation tests.
+
+### Verdicts, explanations, and evidence
+
+Current owner: `src/judge-tool.ts`, `src/judge-json.ts`, `src/system-prompt.ts`,
+`src/judge-messages.ts`, `src/visible-context.ts`, and `src/types.ts`.
+Incumbent verdicts include generated reason/guidance and can receive image-bearing context.
+Laya's typed output is not a generated explanation or proof that omitted context is irrelevant.
+Proposed owner: extension-owned policy/result validation and factual reason templates,
+with Laya supplying only evaluated typed decisions.
+Selection status: final authority and eligibility rules remain open.
+Parity: #558 checklist plus long inputs, negation, hostile tool text,
+rephrased denied goals, images, unsupported schema, and incomplete policy/context cases.
+
+### Packaging and host integration
+
+Current owner: `package.json`, `mise.toml`, build configuration, and exported extension factory.
+Runtime install boundary: published package loaded by Pi;
+`package/config/pnpr/config.yaml` references the package.
+Public named exports in `src/public-api.ts` expose verification seams as well as policy helpers.
+Repository text searches found test consumers for named auto-mode exports,
+not an independent production caller of its judge functions.
+Proposed disposition: preserve the extension's host registration and package ownership.
+Parity: isolated install/import, actual Pi tool calls, type lint,
+module-test unit suites, and scoped lint/build tasks.
+
+## Historical sample
+
+After Q5 authorization, a metadata inventory found 1,499 project session files.
+A bounded newest-first sample selected 24 files that were not modified in the preceding 120 seconds,
+each at most 16 MiB, with a total-read cap of 64 MiB.
+Actual read size: 48,793,354 bytes; 10,437 parsed JSONL records; no malformed records.
+
+Observed custom guard records in that sample:
+
+- 877 verdict entries: 685 `approve`, 9 `user-approve`, and 183 `user-deny`.
+- 35 verdicts explicitly marked as approval reuse.
+- 182 records with the exact reason `no UI`.
+- 1 trust directive and 1,837 bypass records.
+
+These are sampled archival entries, not remote request counts, cost figures, or ground-truth safety labels.
+Forks, repeated approvals, provider retries, and transport usage prevent those equivalences.
+The sample excludes larger and recently modified sessions; it is not representative proof of the whole workload.
+Headless behavior therefore needs explicit coverage, not a blanket promise that every fallback can show a prompt.
+
+The script and path-only sample manifest remain in private scratch:
+`~/temp/agent/laya-guard-history-summary.mjs`
+and `~/temp/agent/laya-guard-history-sample-manifest.json`.
+No raw action, reason, trust text, or transcript was printed or committed by this probe.
+
 ## Research still required
 
-- Inventory every consumed auto-mode responsibility and assign its future owner and parity test.
-- Inspect provider selection, fallback, session reuse, trust directives, bypass, and headless behavior.
+- Finalize open ownership/authority choices in the responsibility ledger.
+- Validate each retained and replaced branch at the actual Pi integration boundary.
 - Inspect the exact Laya inference, tokenization, serving, dependency, model-artifact, and test paths.
-- Probe available deployment hardware before choosing a runtime or host.
+- Measure Laya CPU inference on the probed workstation inside resource-bounded isolation.
 - Establish a labelled guard-action corpus, including negation and adversarial inputs.
 - Measure current judge calls and costs without exporting private transcripts.
 - Define deployment, error handling, explanations, rollout, rollback, and acceptance criteria.
@@ -163,8 +269,8 @@ No pi-safeguard evaluation or upstream tracking was initiated.
 
 ## Next action
 
-Inspect the incumbent policy surface and Laya input and deployment boundaries.
-Inspect local historical guard decisions without exposing raw histories.
-Resolve user-visible policy changes required by the Laya boundary.
+Resolve whether a manual-authority plus Laya-shadow first stage counts as an acceptable cutover.
+Resolve trust-rule interpretation and user-visible policy changes required by the Laya boundary.
+Continue Laya source/runtime audit and derive redacted evaluation fixtures.
 Recompute the remaining interview frontier from the source findings.
 Keep implementation blocked until the complete design is confirmed.
