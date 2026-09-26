@@ -197,6 +197,11 @@ Repo uses of single-argument `Array.from` are 2 deliberate string code-point spl
 
 ## Open questions
 
-- Whether to post the three upstream drafts:
-  the oxc issue 26159 comment and the `prefer-spread` issue in `doc/troubleshooting/oxlint-spread-autofix.md`,
-  and the `isGlobalReference` issue in `doc/troubleshooting/oxlint-js-plugin-global-reference-env.md`.
+- None.
+  Posting the three upstream drafts is tracked for the user in repo issues 567
+  (oxc issue 26159 comment),
+  568
+  (`prefer-spread` issue),
+  and 569
+  (`isGlobalReference` issue),
+  each with a runbook whose local steps were dry-run.
