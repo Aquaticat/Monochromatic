@@ -51,6 +51,12 @@ import {
   reachPastBoundHolds,
 } from './stream-bound-hold.ts';
 import {
+  logWindowOverflow,
+  paceWaitsOf,
+  type ProviderPaces,
+  withFullWindows,
+} from './pace-saturation.ts';
+import {
   createUpstreamModelHolds,
   UPSTREAM_MODEL_HOLD_MS,
 } from './upstream-model-hold.ts';
@@ -187,6 +193,10 @@ function reachFor(
  it is held out before it is asked again (class sixty-four)
 
  @param now - clock the model holds are read by, injectable for tests
+
+ @param paces - request windows of the providers that pace their calls; a
+ provider whose window would make the call wait reads saturated, so the call
+ overflows to a usable provider behind it (class one hundred forty-nine)
  
  @returns Client surface a stage calls without naming a provider
  
@@ -204,6 +214,7 @@ export function createRoutingClient(
     decider,
     modelHoldMs = UPSTREAM_MODEL_HOLD_MS,
     now = Date.now,
+    paces = {},
   }: {
     readonly callers: ProviderRecord<Pick<ModelCaller, 'chatText'>>;
     readonly budgets: ProviderBudgets;
@@ -212,6 +223,7 @@ export function createRoutingClient(
     readonly decider?: Decider;
     readonly modelHoldMs?: number;
     readonly now?: () => number;
+    readonly paces?: ProviderPaces;
   },
 ): ModelCaller {
   /**
@@ -300,12 +312,31 @@ export function createRoutingClient(
     },);
 
     /**
-     Where the owner's policy sends this call.
+     How long each pacing provider's window would make this call wait.
+     */
+    const waits = paceWaitsOf({ paces, },);
+
+    /**
+     Where the owner's policy sends this call: a provider whose slots are all
+     taken, or whose request window would make the call wait, overflows to a
+     usable provider behind it and still takes the call when nobody stands
+     there (class one hundred forty-nine).
      */
     const choice = routeProviderFor({
       reach,
       dry,
-      saturated: ledger.saturated({ modelId: request.modelId, },),
+      saturated: withFullWindows({
+        saturated: ledger.saturated({ modelId: request.modelId, },),
+        waits,
+      },),
+    },);
+
+    logWindowOverflow({
+      modelId: request.modelId,
+      reach,
+      dry,
+      waits,
+      chosen: choice.kind,
     },);
 
     if (choice.kind === 'unreachable')

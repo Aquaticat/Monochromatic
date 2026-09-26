@@ -1124,6 +1124,10 @@ export function createRunClient(
         openrouter: openrouter ?? unconfiguredProviderCaller({ provider: 'openrouter', },),
       },
       budgets,
+      // Hyper paces its calls to the account's hourly limit; while that
+      // window is full, a model another provider serves goes there instead
+      // of queueing (class one hundred forty-nine).
+      paces: (hyper === undefined) ? {} : { hyper: hyper.pace, },
       // Conditional spread keeps the decisions transport absent where the
       // OpenRouter key is unset.
       ...((decisions === undefined) ? {} : { decider: decisions, }),

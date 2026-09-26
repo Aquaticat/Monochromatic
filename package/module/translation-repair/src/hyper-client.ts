@@ -35,6 +35,7 @@ import {
   createRequestPace,
   HYPER_PACE_WINDOW_MS,
   HYPER_REQUESTS_PER_HOUR,
+  type RequestPace,
 } from './request-pace.ts';
 import { failureForReply, } from './request-size-refusal.ts';
 import { reportSpend, } from './spend-line.ts';
@@ -147,6 +148,13 @@ export type HyperClient = ModelCaller & {
    Remaining balance, which is this provider's whole budget signal.
    */
   readonly credits: (args: { readonly signal: AbortSignal; },) => Promise<HyperCredits>;
+
+  /**
+   How long this client's request window would make a call wait now, which
+   the router reads to send a model another provider serves elsewhere while
+   the window is full (class one hundred forty-nine).
+   */
+  readonly pace: Pick<RequestPace, 'waitMs'>;
 };
 
 /**
@@ -173,6 +181,33 @@ export type HyperClient = ModelCaller & {
 function wholeMessage(attemptReply: TransportReply,): void {
   if (isSuccessStatus({ status: attemptReply.status, },))
     requireAnthropicTerminator({ bodyText: attemptReply.bodyText, },);
+}
+
+/**
+ Spells one roster model the way this provider names it.
+ 
+ @param modelId - roster model the caller addressed
+ 
+ @returns Wire identifier for the request body
+ 
+ @throws {@link ModelNotServedError} when this provider serves no such model
+ 
+ @example
+ ```ts
+ const served = servedIdFor({ modelId, },);
+ ```
+ */
+function servedIdFor(
+  { modelId, }: { readonly modelId: RosterModelId; },
+): HyperServedId {
+  /**
+   Spelling this provider uses, or that it serves no such model.
+   */
+  const spelling = hyperIdFor({ modelId, },);
+
+  if (!spelling.served)
+    throw new ModelNotServedError({ modelId, },);
+  return spelling.id;
 }
 
 /**
@@ -293,33 +328,6 @@ export function createHyperClient(
       created,
     );
     return created;
-  }
-
-  /**
-   Spells one roster model the way this provider names it.
-   
-   @param modelId - roster model the caller addressed
-   
-   @returns Wire identifier for the request body
-   
-   @throws {@link ModelNotServedError} when this provider serves no such model
-   
-   @example
-   ```ts
-   const served = servedIdFor({ modelId, },);
-   ```
-   */
-  function servedIdFor(
-    { modelId, }: { readonly modelId: RosterModelId; },
-  ): HyperServedId {
-    /**
-     Spelling this provider uses, or that it serves no such model.
-     */
-    const spelling = hyperIdFor({ modelId, },);
-
-    if (!spelling.served)
-      throw new ModelNotServedError({ modelId, },);
-    return spelling.id;
   }
 
   /**
@@ -597,6 +605,7 @@ export function createHyperClient(
     chatText,
     chatJson,
     credits,
+    pace: { waitMs: pace.waitMs, },
   };
 }
 

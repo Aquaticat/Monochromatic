@@ -12,7 +12,7 @@
 
 import { once, } from 'node:events';
 
-import { wait, } from '@monochromatic-dev/module-async-time/ts';
+import { wait as pause, } from '@monochromatic-dev/module-async-time/ts';
 import {
   describe,
   expect,
@@ -71,7 +71,7 @@ function scriptedPace(
       perWindow,
       windowMs: WINDOW_MS,
       now: () => clock.now,
-      wait: async function wait(ms,): Promise<void> {
+      wait: async function wait({ ms, },): Promise<void> {
         sleeps.push(ms,);
         clock.now += ms;
       },
@@ -101,18 +101,22 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS concurrent takes in arrival order and counts each start once',
+      name: 'STARTS no concurrent take before one that arrived earlier, and counts each start once',
       fn: async () => {
-        const { pace, sleeps, } = scriptedPace({ perWindow: 2, },);
+        const { pace, clock, sleeps, } = scriptedPace({ perWindow: 2, },);
         /**
-         Order in which takes resolved.
+         When each take, by arrival, was let start.
          */
-        const order: number[] = [];
-        await Promise.all([1, 2, 3, 4,].map(async function taker(index,): Promise<void> {
+        const startedAt: number[] = [];
+        await Promise.all([0, 1, 2, 3,].map(async function taker(index,): Promise<void> {
           await pace.take({ signal: SIGNAL, },);
-          order.push(index,);
+          startedAt[index] = clock.now;
         },),);
-        expect(order,).toEqual([1, 2, 3, 4,],);
+        // Takes that start together may resolve in either order; what the
+        // window owes arrival order is that no later arrival starts sooner.
+        expect(startedAt.every(function inOrder(at, index,): boolean {
+          return (index === 0) || (at >= (startedAt[index - 1] ?? at));
+        },),).toBe(true,);
         // The third waits a whole window, which empties it; the fourth then
         // finds a free place beside the third and does not wait.
         expect(sleeps,).toEqual([WINDOW_MS,],);
@@ -164,7 +168,7 @@ await describe({
           perWindow: 1,
           windowMs: WINDOW_MS,
           now: () => clock.now,
-          wait: async function wait(ms,): Promise<void> {
+          wait: async function wait({ ms, },): Promise<void> {
             sleeps.push(ms,);
             gaveUp.abort(new Error('abandoned in the queue',),);
             clock.now += ms;
@@ -220,16 +224,15 @@ const RELEASE_PATIENCE_MS = 200;
  Sleeper that ends only when its caller gives up, standing for a timer far
  past the case's patience.
 
- @param _ms - wait the pacer asked for, never reached here
-
- @param signal - caller's abort, the only way out
+ @param signal - caller's abort, the only way out; the wait asked for is never
+ reached here
 
  @example
  ```ts
  const pace = createRequestPace({ perWindow: 1, windowMs: WINDOW_MS, wait: untilAborted, },);
  ```
  */
-async function untilAborted(_ms: number, signal?: AbortSignal,): Promise<void> {
+async function untilAborted({ signal, }: { readonly ms: number; readonly signal?: AbortSignal; },): Promise<void> {
   await once(
     signal ?? SIGNAL,
     'abort',
@@ -247,7 +250,7 @@ async function untilAborted(_ms: number, signal?: AbortSignal,): Promise<void> {
  ```
  */
 async function patienceRunsOut(): Promise<'still waiting'> {
-  await wait(RELEASE_PATIENCE_MS,);
+  await pause(RELEASE_PATIENCE_MS,);
   return 'still waiting';
 }
 

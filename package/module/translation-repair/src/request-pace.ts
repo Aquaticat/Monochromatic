@@ -1,4 +1,5 @@
-import { wait as sleep, } from '@monochromatic-dev/module-async-time/ts';
+import { setTimeout as sleepFor, } from 'node:timers/promises';
+
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 //region Request pace
@@ -23,11 +24,23 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 // 9,628 successes in 43 minutes; a refused exchange completes its stream too,
 // so that count was successes plus refusals. The SPEND lines are the count.
 //
-// LIMITS. The injected `wait` is not abort-aware: a caller that aborts while
-// sleeping is refused when the sleep ends, not sooner. The window starts
-// empty: requests an earlier process made in the last hour are not in it, so a
-// launch right after a heavy run can be refused until they leave the window;
-// the retry ladder honours the refusal's own wait for that.
+// CLASS ONE HUNDRED FORTY-NINE (hulicaijia30, 2026-09-26). The pass spent the
+// hour's thousand starts between 07:31 and 08:04 UTC, and at 08:04:20 one take
+// slept 1,640,012 ms until the first start left the window. Takes then ran
+// through one promise chain and the sleep did not hear an abort, so every Hyper
+// call behind it waited too, and the 360 s call deadlines that fired at about
+// 08:10 were only read at 08:31:40, when the sleep ended: eight translate
+// slices stalled 27 to 34 minutes and the entry took 100.6 minutes. Each take
+// now RESERVES its start at once, in arrival order, and waits for it on its
+// own abortable timer: a caller that gives up leaves at once and hands its
+// place back. `waitMs` says how long a take would wait, which the router reads
+// to send the call to a provider that can start it now.
+//
+// LIMITS. The window starts empty: requests an earlier process made in the
+// last hour are not in it, so a launch right after a heavy run can be refused
+// until they leave the window; the retry ladder honours the refusal's own
+// wait for that. A place handed back does not move later reservations
+// earlier; they start on their own time, which never exceeds the rate.
 
 /**
  Logger root for the pacer.
@@ -53,7 +66,7 @@ export const HYPER_REQUESTS_PER_HOUR = 1_000;
 
 /**
  What a pacer offers: a turn to start one request, granted when the window
- has room.
+ has room, and a reading of how long that turn is away.
  
  @example
  ```ts
@@ -63,24 +76,59 @@ export const HYPER_REQUESTS_PER_HOUR = 1_000;
  */
 export type RequestPace = {
   /**
-   Waits until one more request may start inside the window, then records
-   the start.
+   Reserves one start inside the window and waits until it comes.
    
    @throws The signal's reason when the caller aborts while waiting
    */
   readonly take: (input: { readonly signal: AbortSignal; }) => Promise<void>;
 
   /**
-   How many starts the window currently holds.
+   How many starts the window holds that have already happened.
    */
   readonly inWindow: () => number;
+
+  /**
+   How long a take made now would wait, zero while the window has room.
+   */
+  readonly waitMs: () => number;
 };
+
+/**
+ Sleeps the given milliseconds unless the caller aborts first.
+ 
+ @param ms - how long to sleep
+ 
+ @param signal - caller's abort, which ends the sleep at once
+ 
+ @throws The timer's abort error when the caller gives up
+ 
+ @example
+ ```ts
+ await abortableSleep({ ms: 1_000, signal, },);
+ ```
+ */
+async function abortableSleep(
+  {
+    ms,
+    signal,
+  }: {
+    readonly ms: number;
+    readonly signal: AbortSignal;
+  },
+): Promise<void> {
+  await sleepFor(
+    ms,
+    undefined,
+    { signal, },
+  );
+}
 
 /**
  Builds a pacer over a sliding window.
  
- TAKES ARE SERIALISED through one promise chain, so two calls arriving
- together cannot both read a window with one free place and both start.
+ A TAKE RESERVES ITS START WITHOUT AWAITING ANYTHING, so two calls arriving
+ together cannot both read a window with one free place and both start, and
+ no caller ever waits behind another caller's wait.
  
  @param perWindow - starts allowed in any window; not positive means no
  pacing, which is what tests and a provider without a rate limit want
@@ -89,7 +137,8 @@ export type RequestPace = {
  
  @param now - clock, injectable for tests
  
- @param wait - sleeper, injectable for tests
+ @param wait - sleeper that must end when the signal aborts, injectable for
+ tests
  
  @returns Pacer
  
@@ -103,12 +152,17 @@ export function createRequestPace(
     perWindow,
     windowMs,
     now = Date.now,
-    wait = sleep,
+    wait = abortableSleep,
   }: {
     readonly perWindow: number;
     readonly windowMs: number;
     readonly now?: () => number;
-    readonly wait?: (ms: number,) => Promise<void>;
+    readonly wait?: (
+      args: {
+        readonly ms: number;
+        readonly signal: AbortSignal;
+      },
+    ) => Promise<void>;
   },
 ): RequestPace {
   /**
@@ -119,13 +173,9 @@ export function createRequestPace(
     l,
   },);
   /**
-   Start times inside the window, oldest first.
+   Start times inside the window, past and reserved, oldest first.
    */
   const starts: number[] = [];
-  /**
-   The chain every take joins, so takes resolve in arrival order.
-   */
-  const turn: { current: Promise<void>; } = { current: Promise.resolve(), };
 
   /**
    Drops starts that have left the window.
@@ -140,61 +190,89 @@ export function createRequestPace(
   }
 
   /**
-   Waits for room in the window, then records this start.
+   When the next start may happen: now while the window has room, else when
+   the start `perWindow` places back leaves the window.
    
-   @param signal - the caller's abort
+   @returns Moment of the next free place
    */
-  async function admit({ signal, }: { readonly signal: AbortSignal; },): Promise<void> {
-    // A caller that gave up while queued behind the chain must not take a
-    // place its transport call will never use.
-    signal.throwIfAborted();
+  function nextFreeAt(): number {
     prune();
-    if ((perWindow > 0) && (starts.length >= perWindow)) {
-      /**
-       When the oldest start leaves the window.
-       */
-      const until = (starts[0] ?? now()) + windowMs;
-      /**
-       How long until then.
-       */
-      const ms = Math.max(
-        0,
-        until - now(),
+    if ((perWindow <= 0) || (starts.length < perWindow))
+      return now();
+    return Math.max(
+      now(),
+      (starts[starts.length - perWindow] ?? now()) + windowMs,
+    );
+  }
+
+  /**
+   Hands a reserved place back when its caller gave up.
+   
+   @param at - the place's start time
+   */
+  function release(at: number,): void {
+    /**
+     Where the place sits; reservations at one moment are interchangeable.
+     */
+    const index = starts.lastIndexOf(at,);
+    if (index !== (-1))
+      starts.splice(
+        index,
+        1,
       );
-      rl.info(`window full (${String(starts.length,)} starts in ${String(windowMs,)}ms); waiting ${String(ms,)}ms`,);
-      await wait(ms,);
-      signal.throwIfAborted();
-      prune();
-    }
-    starts.push(now(),);
   }
 
   return {
     take: async function take({ signal, },): Promise<void> {
       signal.throwIfAborted();
       /**
-       The take ahead of this one.
+       Start this take reserves.
        */
-      const previous = turn.current;
+      const at = nextFreeAt();
       /**
-       This take, queued behind it.
+       Starts the window holds, reservations included, before this one.
        */
-      const mine = (async function queued(): Promise<void> {
-        await previous;
-        await admit({ signal, },);
-      })();
-      turn.current = (async function settled(): Promise<void> {
-        try {
-          await mine;
-        } catch (error) {
-          rl.debug(`a take ended with ${String(error,)}; the chain continues`,);
-        }
-      })();
-      await mine;
+      const held = starts.length;
+      starts.push(at,);
+      /**
+       How long until the reserved start.
+       */
+      const ms = at - now();
+      if (ms <= 0)
+        return;
+      rl.info(`window full (${String(held,)} starts in ${String(windowMs,)}ms); waiting ${String(ms,)}ms`,);
+      try {
+        await wait({
+          ms,
+          signal,
+        },);
+      } catch (error) {
+        release(at,);
+        signal.throwIfAborted();
+        throw error;
+      }
+      if (signal.aborted) {
+        release(at,);
+        signal.throwIfAborted();
+      }
     },
     inWindow: function inWindow(): number {
       prune();
-      return starts.length;
+      /**
+       Moment the count is read at.
+       */
+      const moment = now();
+      return starts
+        .filter(function started(start,): boolean {
+          return start <= moment;
+        },)
+        .length;
+    },
+    waitMs: function waitMs(): number {
+      return Math.max(
+        0,
+        nextFreeAt() - now(),
+      );
     },
   };
 }
