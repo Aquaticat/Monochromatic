@@ -424,10 +424,14 @@ section 1.5 covers inputs containing malware or malicious code.
 The guard may need to classify hostile code,
 which is different from executing or facilitating it.
 The inspected text provides no express classification exception.
-This is an intended-use clarification gap,
-not a conclusion that every destructive-command fixture is prohibited.
-Avoid escalating to live hostile-code testing until applicability is resolved.
-Benign public/synthetic boundary tests remain distinct.
+The user subsequently stated that section 1.5 is acceptable for this work.
+It is therefore not an unresolved blocker for guard-classification evaluation.
+Do not require provider clarification solely about that section.
+No special provider exception or contractual amendment is established.
+Existing restrictions on executing fixture commands,
+private uploads,
+training,
+and production implementation remain unchanged.
 
 MCA section 2.3 restricts distillation,
 training imitation of outputs,
