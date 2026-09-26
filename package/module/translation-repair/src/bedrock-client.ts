@@ -22,6 +22,7 @@ import {
   withDoneSentinel,
 } from './bedrock-stream-end.ts';
 import { armCallDeadline, } from './call-deadline.ts';
+import { armStreamBound, } from './stream-bound.ts';
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
@@ -144,6 +145,33 @@ export type BedrockClient = ModelCaller & {
 };
 
 /**
+ Spells one roster model the way this provider names it.
+ 
+ @param modelId - roster model the caller addressed
+ 
+ @returns Wire identifier for the request body
+ 
+ @throws {@link BedrockModelNotServedError} when this provider serves no such model
+ 
+ @example
+ ```ts
+ const served = servedIdFor({ modelId, },);
+ ```
+ */
+function servedIdFor(
+  { modelId, }: { readonly modelId: RosterModelId; },
+): BedrockServedId {
+  /**
+   Spelling this provider uses, or that it serves no such model.
+   */
+  const spelling = bedrockIdFor({ modelId, },);
+
+  if (!spelling.served)
+    throw new BedrockModelNotServedError({ modelId, },);
+  return spelling.id;
+}
+
+/**
  Builds one client over injected transport, speaking chat completions.
  
  @param apiKey - bearer token; never logged
@@ -229,33 +257,6 @@ export function createBedrockClient(
   }
 
   /**
-   Spells one roster model the way this provider names it.
-   
-   @param modelId - roster model the caller addressed
-   
-   @returns Wire identifier for the request body
-   
-   @throws {@link BedrockModelNotServedError} when this provider serves no such model
-   
-   @example
-   ```ts
-   const served = servedIdFor({ modelId, },);
-   ```
-   */
-  function servedIdFor(
-    { modelId, }: { readonly modelId: RosterModelId; },
-  ): BedrockServedId {
-    /**
-     Spelling this provider uses, or that it serves no such model.
-     */
-    const spelling = bedrockIdFor({ modelId, },);
-
-    if (!spelling.served)
-      throw new BedrockModelNotServedError({ modelId, },);
-    return spelling.id;
-  }
-
-  /**
    Free-text chat exchange; bounded per model where a bound was given.
    
    @param request - exchange to perform
@@ -291,9 +292,14 @@ export function createBedrockClient(
     const servedId = servedIdFor({ modelId: request.modelId, },);
 
     /**
-     How this model's stream says it is whole.
+     How this model's stream says it is whole, and how long a call to it may
+     run before Bedrock is read as having queued it (class one hundred
+     forty-eight).
      */
-    const { streamEnd, } = BEDROCK_MODELS[servedId];
+    const {
+      streamEnd,
+      streamBoundMs,
+    } = BEDROCK_MODELS[servedId];
 
     /**
      Refuses a success reply whose stream never ended the way this route
@@ -334,11 +340,32 @@ export function createBedrockClient(
         },);
 
       /**
-       Signal the exchange honors: deadline-joined when armed.
+       Signal the deadline leaves: deadline-joined when armed.
        */
-      const exchangeSignal = deadline === undefined
+      const deadlineSignal = deadline === undefined
         ? request.signal
         : deadline.callSignal;
+
+      /**
+       The card's stream bound, armed inside the slot beside the deadline;
+       absent where the card measured none. Its cut is a
+       `StreamBoundError`, which the router reads to hold Bedrock out for
+       this model.
+       */
+      using bound = streamBoundMs === 'unbounded'
+        ? undefined
+        : armStreamBound({
+          signal: deadlineSignal,
+          boundMs: streamBoundMs,
+          label: servedId,
+        },);
+
+      /**
+       Signal the exchange honors: bound-joined when armed.
+       */
+      const exchangeSignal = bound === undefined
+        ? deadlineSignal
+        : bound.callSignal;
 
       /**
        Messages as they go on the wire, carrying this call's own response

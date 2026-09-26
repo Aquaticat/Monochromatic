@@ -230,7 +230,7 @@ export type OpenRouterCard = ServedCard<OpenRouterServedId> & {
 
  @example
  ```ts
- const card: BedrockCard = { id: 'google.gemma-4-e2b', readsImages: false, contextLength: 131_072, maxOutputLength: 131_072, route: 'openai-v1', streamEnd: 'done-sentinel', promptUsdPerMillion: 0.04, completionUsdPerMillion: 0.08, };
+ const card: BedrockCard = { id: 'google.gemma-4-e2b', readsImages: false, contextLength: 131_072, maxOutputLength: 131_072, route: 'openai-v1', streamEnd: 'done-sentinel', streamBoundMs: 60_000, promptUsdPerMillion: 0.04, completionUsdPerMillion: 0.08, };
  ```
  */
 export type BedrockCard = ServedCard<BedrockServedId> & {
@@ -248,6 +248,14 @@ export type BedrockCard = ServedCard<BedrockServedId> & {
    How this model's stream announces that it is whole.
    */
   readonly streamEnd: BedrockStreamEnd;
+
+  /**
+   How long a call to this model may run before the provider is read as no
+   longer serving it at its measured pace, or `'unbounded'` where no
+   measurement separates a slow healthy call from a queued one (class one
+   hundred forty-eight).
+   */
+  readonly streamBoundMs: number | 'unbounded';
 
   /**
    USD per million prompt tokens, off the public pricing page.

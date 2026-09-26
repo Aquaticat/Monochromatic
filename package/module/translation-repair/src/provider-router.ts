@@ -45,6 +45,11 @@ import {
   type SlotLimits,
 } from './provider-router-slots.ts';
 import { SYNTHETIC_PER_MODEL_CONCURRENCY, } from './synthetic-client.ts';
+import { isStreamBoundCut, } from './stream-bound.ts';
+import {
+  createStreamBoundHolds,
+  reachPastBoundHolds,
+} from './stream-bound-hold.ts';
 import {
   createUpstreamModelHolds,
   UPSTREAM_MODEL_HOLD_MS,
@@ -223,6 +228,15 @@ export function createRoutingClient(
   },);
 
   /**
+   Providers held out for one model after a call there ran past the card's
+   stream bound (class one hundred forty-eight), for the same backoff.
+   */
+  const boundHolds = createStreamBoundHolds({
+    holdMs: modelHoldMs,
+    now,
+  },);
+
+  /**
    Decides which provider takes one call, given what is known right now.
    
    @param request - call being routed, read for its model and its pictures
@@ -251,9 +265,27 @@ export function createRoutingClient(
     },
   ): Promise<ProviderName> {
     /**
-     Providers that can serve this model, narrowed where it carries a picture.
+     Providers that can serve this model, narrowed where it carries a picture,
+     less any holding it out on its stream bound.
      */
-    const reach = reachFor({ request, },);
+    const {
+      reach,
+      heldMs,
+    } = reachPastBoundHolds({
+      reach: reachFor({ request, },),
+      modelId: request.modelId,
+      holds: boundHolds,
+    },);
+    if ((heldMs > 0) && PROVIDER_ORDER.every(function closed(provider,): boolean {
+      return !reach[provider];
+    },)) {
+      // REFUSED WITHOUT A CALL, so a round counts the seat unreachable and
+      // neither asks nor waits for it (class one hundred forty-eight).
+      throw new NoProviderForModelError({
+        modelId: request.modelId,
+        reason: `every provider serving this model ran past its stream bound; held out for another ${String(heldMs,)}ms`,
+      },);
+    }
 
     /**
      What each provider's budget looks like right now, the refusal that
@@ -434,6 +466,18 @@ export function createRoutingClient(
           },),
         };
       } catch (error) {
+        if (isStreamBoundCut({ error, },)) {
+          boundHolds.hold({
+            provider,
+            modelId: request.modelId,
+          },);
+          rl.warn(
+            `${request.modelId}: ${provider} ran past the card's stream bound; `
+              + `${provider} is held out for this model for ${String(modelHoldMs,)}ms `
+              + 'and the call goes to the next provider serving it, if any',
+          );
+          continue;
+        }
         if (isUpstreamModelRefusal({ error, },)) {
           modelHolds.hold({ modelId: request.modelId, },);
           rl.warn(

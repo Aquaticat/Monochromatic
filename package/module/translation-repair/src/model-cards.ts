@@ -167,6 +167,8 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       maxOutputLength: 16_384,
       route: 'v1',
       streamEnd: 'usage-chunk',
+      // Culled from every role on 2026-09-24; never measured for a bound.
+      streamBoundMs: 'unbounded',
       promptUsdPerMillion: 0.1545,
       completionUsdPerMillion: 0.618,
     },
@@ -238,6 +240,12 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       maxOutputLength: 262_144,
       route: 'openai-v1',
       streamEnd: 'done-sentinel',
+      // CLASS ONE HUNDRED FORTY-EIGHT (hulicaijia29, 2026-09-26): over the
+      // 200 newest pass logs no Bedrock Gemma completion ran past 27,340 ms
+      // of 68,235 unless Bedrock had queued it (a frame every 15 s, content
+      // trickling), and queued calls ran 25 to 304 s. A call past this bound
+      // holds Bedrock out for the model and goes to its next provider.
+      streamBoundMs: 60_000,
       promptUsdPerMillion: 0.13,
       completionUsdPerMillion: 0.4,
     },
@@ -336,6 +344,12 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       maxOutputLength: 131_072,
       route: 'openai-v1',
       streamEnd: 'done-sentinel',
+      // CLASS ONE HUNDRED FORTY-EIGHT (hulicaijia29, 2026-09-26): over the
+      // 200 newest pass logs no Bedrock Gemma completion ran past 27,340 ms
+      // of 68,235 unless Bedrock had queued it (a frame every 15 s, content
+      // trickling), and queued calls ran 25 to 304 s. A call past this bound
+      // holds Bedrock out for the model and goes to its next provider.
+      streamBoundMs: 60_000,
       promptUsdPerMillion: 0.04,
       completionUsdPerMillion: 0.08,
     },
@@ -351,6 +365,8 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       maxOutputLength: 262_144,
       route: 'openai-v1',
       streamEnd: 'done-sentinel',
+      // No queued-call measurement on this card: 125 calls, none queued.
+      streamBoundMs: 'unbounded',
       promptUsdPerMillion: 0.14,
       completionUsdPerMillion: 0.4,
     },

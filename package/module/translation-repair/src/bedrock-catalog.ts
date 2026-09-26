@@ -150,6 +150,14 @@ export type BedrockModelInfo = {
   readonly streamEnd: BedrockStreamEnd;
 
   /**
+   How long a call to this model may run before the provider is read as no
+   longer serving it at its measured pace, or `'unbounded'` where no
+   measurement separates a slow healthy call from a queued one (class one
+   hundred forty-eight).
+   */
+  readonly streamBoundMs: number | 'unbounded';
+
+  /**
    USD per million prompt tokens, off the public pricing page.
    */
   readonly promptUsdPerMillion: number;
@@ -183,6 +191,7 @@ export const BEDROCK_MODELS: Readonly<Record<BedrockServedId, BedrockModelInfo>>
       maxOutputLength: bedrock.maxOutputLength,
       route: bedrock.route,
       streamEnd: bedrock.streamEnd,
+      streamBoundMs: bedrock.streamBoundMs,
       promptUsdPerMillion: bedrock.promptUsdPerMillion,
       completionUsdPerMillion: bedrock.completionUsdPerMillion,
     };
