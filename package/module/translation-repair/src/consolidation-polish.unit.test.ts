@@ -408,9 +408,13 @@ await describe({
           throw new Error('wrap fixture did not settle',);
         expect(wrapped.text,).toBe(WRAPPED_POLISHED,);
         expect(wrapped.proposedText,).toBe(WRAPPED_POLISHED,);
-        // The gate was asked about the wrapped bytes, not the refiner's line.
+        // The gate was asked about the wrapped bytes as they render: on a
+        // prose slice each paragraph is shown one line, so where the wrap
+        // broke the line is nothing the gate can weigh (class one hundred
+        // fifty-three, XingZ6014: a one-line base beside a wrapped polish).
         expect(gateSubjects.length,).toBeGreaterThan(0,);
-        expect(gateSubjects.every((subject,) => subject.includes(JSON.stringify(WRAPPED_POLISHED,).slice(1, -1),),),).toBe(true,);
+        expect(gateSubjects.every((subject,) => subject.includes(JSON.stringify(POLISHED,).slice(1, -1),),),).toBe(true,);
+        expect(gateSubjects.some((subject,) => subject.includes(JSON.stringify(WRAPPED_POLISHED,).slice(1, -1),),),).toBe(false,);
 
         // Line-structured: the one-line source keeps a one-line rewrite as
         // written; a wrap here would break the line count the rule protects.
