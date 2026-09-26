@@ -287,6 +287,14 @@ working files lived in the session scratchpad.
    skills,
    and package docs.
 
+## Decisions (round 5)
+
+- All 12 skill-bound visual and device rules go to one `visual-design-review` skill.
+- Rules must be relatively self-contained:
+   no rule depends on another rule's code to make sense.
+   Approved PX2 and PXQ cited PX1 and PX3,
+   so they were redrafted and need re-approval.
+
 ## Open questions
 
 
