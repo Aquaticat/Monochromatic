@@ -94,6 +94,7 @@ await describe({
             archiveText: 'The cat approached life positively.',
             baseText: 'The cat faced life proactively.',
             polishedText: 'The cat maintained a positive outlook on life.',
+            lineStructured: false,
             mode: { kind: 'comparative', },
           },
         },).at(0,)?.content ?? '';
@@ -117,6 +118,7 @@ await describe({
           archiveText: 'The cat loves sunflowers.',
           baseText: 'The cat loves sunflowers.',
           polishedText: 'The cat loved sunflowers.',
+          lineStructured: false,
         };
         /**
          System half of the comparative sheet.
@@ -200,6 +202,7 @@ await describe({
             archiveText: 'The cat needed care.',
             baseText: 'The cat was short on caring.',
             polishedText: 'The cat needed affection.',
+            lineStructured: false,
             mode: {
               kind: 'required-naturalness-correction',
               findings: [{ paragraph: 1, problem: 'Replace the literal emotional phrase.', },],

@@ -156,6 +156,7 @@ await describe({
               archiveText: 'The cat has an older sister who also naps.',
               baseText: 'The cat has an older sister who also naps.',
               polishedText: 'The cat has an older sister.',
+              lineStructured: false,
               mode: { kind: 'comparative', },
               referenceContext: REFERENCE_CONTEXT,
             },

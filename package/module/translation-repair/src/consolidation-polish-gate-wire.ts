@@ -28,13 +28,43 @@ const POLISH_NAMES: readonly PolishChoice[] = [
 ];
 
 /**
- Fidelity-first policy when approved base remains available.
+ Fidelity-first policy when approved base remains available, with the
+ structure the polish must keep: the source's lines where the line rule
+ governs the slice, and on prose the Markdown alone.
+
+ PROSE LINE BREAKS ARE THE PAGE'S WRAP. Class one hundred fifty-two
+ (yingying12, 2026-09-26): both candidates on a prose slice are wrapped at
+ their semantic boundaries by the same rule before the gate
+ (`consolidation-polish-round.ts`), so where they break lines follows from
+ the wording and is nobody's choice; the sheet named "line structure" among
+ what the polish may not change, and the polish replacing the calque "It is
+ a pity that all this stopped abruptly" tied 2 to 2 with both base ballots
+ citing it.
+
+ @param lineStructured - whether source line boundaries must survive
+
+ @returns Policy for comparative gate
+
+ @example
+ ```ts
+ const policy = comparativePolishPolicy({ lineStructured: false, },);
+ ```
  */
-const COMPARATIVE_POLISH_POLICY = `You are deciding whether a polished English memorial passage may replace its already-approved base.
+function comparativePolishPolicy(
+  { lineStructured, }: { readonly lineStructured: boolean; },
+): string {
+  /**
+   What the polish must keep, and on prose what the judge must not weigh.
+   */
+  const kept = lineStructured
+    ? 'Markdown structure, or line structure'
+    : 'or Markdown structure. LINE BREAKS INSIDE A PARAGRAPH ARE THE PAGE\'S OWN WRAP, applied to both candidates by the same rule after they were written: never weigh where either candidate breaks its lines';
+  return `You are deciding whether a polished English memorial passage may replace its already-approved base.
 
 THE ORIGINAL CHINESE IS THE FIDELITY STANDARD. First check both candidates for unsupported statements and dropped content. Naturalness can never compensate for either fault.
 
-Only if both candidates are equally faithful, judge natural English. Reject literal Chinese collocations, calqued verb-object combinations, stiff emotional descriptions, and grammar that a careful native editor would rewrite. Prefer polished only when it is clearly more idiomatic without changing meaning, detail, tone, names, links, Markdown structure, or line structure. Otherwise choose base. Answer neither when no clear naturalness improvement exists.`;
+Only if both candidates are equally faithful, judge natural English. Reject literal Chinese collocations, calqued verb-object combinations, stiff emotional descriptions, and grammar that a careful native editor would rewrite. Prefer polished only when it is clearly more idiomatic without changing meaning, detail, tone, names, links, ${kept}. Otherwise choose base. Answer neither when no clear naturalness improvement exists.`;
+}
 
 /**
  Fidelity-first policy when absolute review already rejected base.
@@ -50,7 +80,7 @@ The base already failed absolute naturalness review. It is evidence for preservi
  
  @example
  ```ts
- const subject: ConsolidationPolishGateSubject = { sourceText: '猫睡了。', archiveText: 'The cat slept.', baseText: 'The cat slept.', polishedText: 'The cat was asleep.', mode: { kind: 'comparative' } };
+ const subject: ConsolidationPolishGateSubject = { sourceText: '猫睡了。', archiveText: 'The cat slept.', baseText: 'The cat slept.', polishedText: 'The cat was asleep.', mode: { kind: 'comparative' }, lineStructured: false };
  ```
  */
 export type ConsolidationPolishGateSubject = {
@@ -78,6 +108,13 @@ export type ConsolidationPolishGateSubject = {
    Whether base remains available or is rejected correction evidence.
    */
   readonly mode: RefineStageMode;
+
+  /**
+   Whether the source's line boundaries must survive; false where both
+   candidates were wrapped by the page's semantic wrap, whose line breaks the
+   gate must not weigh (class one hundred fifty-two).
+   */
+  readonly lineStructured: boolean;
 
   /**
    Declared names and handles, when documents provide them.
@@ -312,7 +349,11 @@ export function buildConsolidationPolishGateMessages(
   return [
     {
       role: 'system',
-      content: `${comparative ? COMPARATIVE_POLISH_POLICY : REQUIRED_CORRECTION_POLISH_POLICY}\n\n${POLISH_GATE_HOUSE_RULES}`,
+      content: `${
+        comparative
+          ? comparativePolishPolicy({ lineStructured: subject.lineStructured, },)
+          : REQUIRED_CORRECTION_POLISH_POLICY
+      }\n\n${POLISH_GATE_HOUSE_RULES}`,
     },
     {
       role: 'user',

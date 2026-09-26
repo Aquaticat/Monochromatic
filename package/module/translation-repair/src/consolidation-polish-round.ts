@@ -369,6 +369,7 @@ export async function runConsolidationPolishRound(
       baseText,
       polishedText: polished,
       mode,
+      lineStructured,
       ...((identityContext === undefined) ? {} : { identityContext, }),
       ...((referenceContext === undefined) ? {} : { referenceContext, }),
     },
