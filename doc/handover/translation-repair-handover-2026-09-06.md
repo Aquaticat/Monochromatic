@@ -4785,7 +4785,9 @@ each read off the pass log and the shipped page:
     没本事 shipped "someone with no capability": it joins the wording glossary
     ("good-for-nothing" first, "no capability" refused; guard `c160b2006`, fix `6cf583ca3`); suite 1,154 PASS, 0 FAIL.
     shi_Yumiaoya39 launched 11:57 UTC on `.frozen-dist-6cf583ca3` (pid 2592631, scope `pass-shi_Yumiaoya39`).
-    Next: read shi_Yumiaoya39 for the fourth 跨圈 and the insult line, then the gate folding prose (class 153) on a prose slice.
+    SHI_YUMIAOYA39 READ: SETTLED at 12:05 UTC in 7.6 min; all four 跨圈 "the Trans Community",
+    the insult "unfilial son — a disgrace, good-for-nothing", 22 polish-gate ballots with none weighing line breaks;
+    every shi_Yumiaoya38 check held; recorded under "## shi_Yumiaoya39 read" in the pass log.
     CLASS ONE HUNDRED FIFTY-THREE BUILT (2026-09-26):
     on XingZ6014 slices 36, 61 and 64 the base stood as the archive's one-line paragraph beside a wrapped polish,
     so class one hundred fifty-two's "both wrapped by one rule" was false there and three gate ballots weighed the added breaks.

@@ -8082,6 +8082,23 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya39 read, 2026-09-26: classes one hundred fifty-four and fifty-five live
+
+shi_Yumiaoya39 (frozen `6cf583ca3`, overlap 8) SETTLED at 12:05 UTC in 7.6 min, one attempt,
+746 calls, 874 seats, 44 retry rounds, 0.58 USD of OpenRouter cost, Bedrock 17.45 to 17.24 by the meters;
+Synthetic and Hyper dry, so Qwen3.8-27B and glm-5.3 threw every call.
+Every shi_Yumiaoya38 check held: front matter equal, 4 headings, 1 footnote, no TA, no double blank line,
+no unendorsed standing, no error finish, 11 abstention lines.
+
+- Class one hundred fifty-four live: all four 跨圈 read "the Trans Community" (lines 33, 36, 159, 177);
+  no crossdressing form on the page.
+- Class one hundred fifty-five live: the insult reads "insulted as an “unfilial son” — a disgrace, good-for-nothing."
+- Class one hundred fifty-three held on a prose page: 22 polish-gate ballots, none naming line breaks or wrapping.
+- 同类 on source line 83 now reads "a housemate from the local trans community", no gender added (the shi_Yumiaoya38 watch closed).
+- The caution callout's label 提示 reads "Tips", as the archive writes it (runs 30 to 37 wrote Note, Notice or Tips);
+  the archive's rendering stands, so nothing is built.
+- One Mercury select ballot rejected a candidate repeating "And you can finally get a good sleep." twice; the page carries it once.
+
 ## shi_Yumiaoya38 read, 2026-09-26: class one hundred fifty-one live, classes one hundred fifty-four and fifty-five
 
 ### What the run did
