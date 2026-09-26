@@ -76,6 +76,8 @@ catalog:
   'chai-as-promised': '>=8.0.2'
   'chokidar': '>=5.0.0'
   'cidr-tools': '>=13.0.1'
+  # conf-fork.fuzz differential subject; not a runtime dependency anywhere.
+  'conf': '>=15.1.0'
   'crossws': '>=0.4.4'
   # css-edit.bench baseline parser; not a runtime dependency anywhere.
   'css-tree': '>=3.2.1'
@@ -130,6 +132,8 @@ catalog:
   'postcss-html': '>=2.0.0'
   'preact': '>=10.26.0'
   'preact-render-to-string': '>=6.5.0'
+  # quick-lru-fork.fuzz differential subject; not a runtime dependency anywhere.
+  'quick-lru': '>=7.3.0'
   'rehype-autolink-headings': '>=7.1.0'
   'rehype-parse': '>=9.0.1'
   'rehype-slug-custom-id': '>=2.0.0'
