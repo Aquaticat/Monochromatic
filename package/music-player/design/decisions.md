@@ -1510,6 +1510,7 @@ D53 accepts this specific real floating-Gboard overlap with the unfolded
 deck without changing the user's A selection.
 On the folded cover, the same real floating mode covered both matching
 result labels while a focused `cam` query remained visible.
+D55 accepts that separate observed cover overlap.
 A separate disposable Fold AVD verified real Gboard split input on the
 inner panel and full-width input on the cover at 100% and 200% text.
 At settled 200%, its inner IME began at y `1352` and the final mode ended
@@ -1568,9 +1569,9 @@ This exception does **not** permit clipping or hiding the deck under a
 docked or split keyboard.
 D54 separately accepts the measured transient Gboard font-update banner;
 D53 alone does not generalize to other keyboard overlays.
-The floating keyboard's observed cover-panel overlap with both Search result
-labels is a distinct unresolved result-visibility question,
-not an approval to hide those labels.
+D55 separately accepts the observed floating cover keyboard obscuring both
+Search result labels;
+D53 alone does not authorize that cover behavior.
 The synthetic 416dp anticipatory reservation and inline deck reflow remain
 unaccepted debug-only studies.
 This is a design-scope clarification,
@@ -1594,8 +1595,29 @@ deck and the integrated Search query/results on the right.
 The synthetic 415dp inline title/transport reflow and 416dp anticipatory
 reservation remain unaccepted debug-only studies;
 no banner-specific layout change is required by this decision alone.
-The folded-cover floating keyboard obscuring both Search result labels remains
-a separate unresolved result-visibility question.
+D55 separately accepts the measured cover result-label overlap;
+D54 alone does not authorize it.
+No production implementation is authorized.
+
+### D55. Real floating Gboard may obscure folded-cover Search matches (2026-09-26)
+
+When asked separately about the sanitized real-Gboard cover capture,
+the user answered “Also acceptable.”
+At 100% text on the folded cover,
+real floating Gboard covered both matching result labels,
+`Camellia` and `Another Xronixle`,
+while the focused `cam` query remained visible.
+D55 accepts that **specific floating-keyboard result overlap** without
+changing selected A's full-width cover Search page or D52's single
+Back/query/Clear header.
+It does not approve an obscured query,
+missing or nonfunctional search results,
+or ordinary docked/full-width keyboards hiding matching labels.
+The accepted A review still shows results with its separate debug IME;
+the sanitized real-Gboard capture is the evidence for this exception.
+D53 concerns the unfolded deck,
+D54 concerns the brief unfolded font-update banner,
+and D55 concerns the folded-cover floating keyboard.
 No production implementation is authorized.
 
 ---
