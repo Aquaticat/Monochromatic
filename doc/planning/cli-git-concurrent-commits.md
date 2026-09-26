@@ -216,6 +216,18 @@ Git source at commit `0f8e75abebff` plus experiments with real Git 2.55.0.
 - `--amend` and merge,
   cherry-pick,
   revert conclusions fail when `HEAD` moved.
+- Hook concurrency: a per-repository hook lock serializes preparation hooks and post-landing `post-commit` by default;
+  `cli-git.config` can declare the repository's hooks safe for parallel preparation.
+- Foreign `index.lock`:
+  cli-git injects `core.lockfilePid=true` into every forwarded and spawned Git.
+  Proven-live owners
+  (open holder by device and inode,
+  or a PID file naming a live process started no later than the lock's ctime)
+  get an unbounded wait with one line naming the holder.
+  Dead or evidence-free owners get Git-style quadratic backoff up to 1000 ms,
+  configurable in `cli-git.config`,
+  then a diagnostic listing the evidence.
+  cli-git never deletes a lock.
 - Index commits participate with the index captured at invocation.
 - Auto-push: single-flight per branch.
   A landed commit joins an in-flight push covering its OID or pushes the branch tip itself,
@@ -278,6 +290,11 @@ the owner declined an `AGENTS.md` rule.
 - A replay conflict is a `core-finding` JSONL event with exit `1`,
   matching other expected commit rejections.
 - New JSONL events report replays and lost landing races.
+- Each commit records the symbolic `HEAD` target at invocation;
+  if it changed before landing (branch switch),
+  the commit fails like a moved amend base.
+  Detached `HEAD` lands by compare-and-swap on `HEAD` itself.
+- A crashed reservation holder releases its slot through the same owner-liveness check.
 - Required disposable fixtures and lifecycle benchmarks gain concurrent-commit scenarios.
 
 ## Rejected
@@ -288,9 +305,13 @@ the owner declined an `AGENTS.md` rule.
 
 ## Open questions
 
-- Foreign `index.lock` owner classification and wait bound.
-- Hook concurrency:
-  hooks that mutate shared worktree or `refs/stash` can collide when preparations overlap.
+- Correction pending owner answer:
+  the accepted policy re-run rule defaults undeclared policies to API-only reads,
+  but every shipped plugin reads outside the API
+  (`forbidden-strings` and `markdown-lint` spawn tools with repository cwd;
+  `repository-policy` calls `readFile`),
+  so the safe default is the reverse.
+- Name of the `cli-git.config` hook parallelism declaration.
 
 ## Next action
 
