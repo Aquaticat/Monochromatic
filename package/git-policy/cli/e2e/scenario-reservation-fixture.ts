@@ -5,9 +5,11 @@
 
  The victim holds in its editor until the first winner lands,
  then pauses after each lost race through the test-only `race-lost` phase marker,
- so the second winner lands while it replays;
- after its second lost race it holds the reservation
- (`landing.reserveAfterLostRaces` defaults to 2).
+ so each further winner lands while it replays;
+ after its `landing.reserveAfterLostRaces`-th lost race it holds the reservation.
+ The scenario repository has no cli-git config,
+ so that is the default of 1:
+ the first winner alone makes the victim reserve.
 
  @module
  */
@@ -35,131 +37,33 @@ import {
 } from './scenario-helper-fixture.ts';
 import {
   allSucceeded,
-  type ScenarioContext,
   type ScenarioDefinition,
 } from './scenario-model-fixture.ts';
+import {
+  BLOCKED,
+  BLOCKED_WINDOW_MS,
+  commitWinner,
+  eventCount,
+  FIRST_WINNER,
+  LATER_WINNERS,
+  landedCommit,
+  PATHS,
+  RESERVE_AFTER_LOST_RACES,
+} from './scenario-reservation-helper-fixture.ts';
 import {
   startAttempt,
   writeWorktree,
 } from './worker-fixture.ts';
 
-//region Constants
-
-/**
- Default lost races before a commit reserves the next landing slot.
- */
-const RESERVE_AFTER_LOST_RACES = 2;
-
-/**
- Window in which a commit started while the reservation is held must not land.
- */
-const BLOCKED_WINDOW_MS = 1_500;
-
-/**
- Paths the victim, the two winners, and the blocked commit write.
- */
-const PATHS = [
-  'victim.txt',
-  'w1.txt',
-  'w2.txt',
-  'w3.txt',
-] as const;
-
-//endregion Constants
-
-//region Helpers
-
-/**
- Commits one winner to completion.
-
- @param context - scenario context
-
- @param label - winner label, also its path stem
-
- @returns finished attempt
-
- @example
- ```ts
- await commitWinner({ context, label: 'w1' });
- ```
- */
-async function commitWinner({
-  context,
-  label,
-}: Readonly<{
-  context: ScenarioContext;
-  label: string;
-}>,): Promise<AttemptRecord> {
-  return await (await startAttempt({
-    ...context,
-    label,
-    paths: [`${label}.txt`,],
-    mode: 'explicit',
-  },)).finished;
-}
-
-/**
- Commit carrying an attempt's token on the local branches.
-
- @param context - scenario context
-
- @param attempt - finished attempt
-
- @returns commit ID, empty when none landed
- */
-async function landedCommit({
-  context,
-  attempt,
-}: Readonly<{
-  context: ScenarioContext;
-  attempt: AttemptRecord;
-}>,): Promise<string> {
-  return (await realGit({
-    repository: context.repository,
-    args: [
-      'log',
-      '--branches',
-      '--format=%H',
-      '--fixed-strings',
-      `--grep=[${attempt.token}]`,
-    ],
-  },)).trim();
-}
-
-/**
- Counts one JSONL event type in an attempt's standard error.
-
- @param attempt - finished attempt
-
- @param type - event type
-
- @returns occurrences
- */
-function eventCount({
-  attempt,
-  type,
-}: Readonly<{
-  attempt: AttemptRecord;
-  type: string;
-}>,): number {
-  return attempt.outcome
-    .stderr
-    .split(`"type":"${type}"`,)
-    .length
-    - 1;
-}
-
-//endregion Helpers
-
 //region Scenario
 
 /**
- Commit that loses two races, reserves, and lands before a later commit.
+ Commit that loses the default number of races, reserves, and lands before a later commit.
  */
 const reservationAfterLostRaces: ScenarioDefinition = {
   name: 'reservation-after-lost-races',
   group: 'concurrency',
-  summary: 'a commit loses two landing races, reserves the next slot, and lands before a commit started while it held the reservation',
+  summary: 'a commit loses the default number of landing races, reserves the next slot, and lands before a commit started while it held the reservation',
   repository(random,) {
     return repositoryOptions({ seedFiles: seedTexts({
       random,
@@ -215,11 +119,11 @@ const reservationAfterLostRaces: ScenarioDefinition = {
       event: 'editor',
     },);
     /**
-     First winner.
+     First winner, landing while the victim is in its editor.
      */
     const first = await commitWinner({
       context,
-      label: 'w1',
+      label: FIRST_WINNER,
     },);
     await releaseAt({
       repository: context.repository,
@@ -227,43 +131,91 @@ const reservationAfterLostRaces: ScenarioDefinition = {
       event: 'editor',
     },);
     /**
-     Whether the victim lost its first race.
+     Each further winner lands while the victim pauses after its previous lost race,
+     and each lost race's marker outcome is kept in order.
      */
-    const lostFirst = await waitForMarker({
-      path: join(
-        phases,
-        'race-lost-1.reached',
-      ),
-      timeoutMs: BARRIER_TIMEOUT_MS,
-      isSettled: victim.running
-        .isSettled,
-    },);
-    /**
-     Second winner, landing while the victim replays onto the first.
-     */
-    const second = await commitWinner({
-      context,
-      label: 'w2',
-    },);
-    await writeFile(
-      join(
-        phases,
-        'race-lost-1.release',
-      ),
-      '',
+    const {
+      winners,
+      lostMarkers,
+    } = await LATER_WINNERS
+      .reduce<Promise<Readonly<{
+      winners: readonly AttemptRecord[];
+      lostMarkers: readonly string[];
+    }>>>(
+      async function landWhileReplaying(
+        previous,
+        label,
+        index,
+      ) {
+        /**
+         Winners and marker outcomes so far.
+         */
+        const earlier = await previous;
+        /**
+         Lost race the victim pauses after.
+         */
+        const race = index + 1;
+        /**
+         Whether the victim lost that race.
+         */
+        const lost = await waitForMarker({
+          path: join(
+            phases,
+            `race-lost-${String(race,)}.reached`,
+          ),
+          timeoutMs: BARRIER_TIMEOUT_MS,
+          isSettled: victim.running
+            .isSettled,
+        },);
+        /**
+         Winner landing while the victim replays.
+         */
+        const winner = await commitWinner({
+          context,
+          label,
+        },);
+        await writeFile(
+          join(
+            phases,
+            `race-lost-${String(race,)}.release`,
+          ),
+          '',
+        );
+        return {
+          winners: [
+            ...earlier.winners,
+            winner,
+          ],
+          lostMarkers: [
+            ...earlier.lostMarkers,
+            lost,
+          ],
+        };
+      },
+      Promise.resolve({
+        winners: [first,],
+        lostMarkers: [],
+      },),
     );
     /**
-     Whether the victim lost its second race and holds the reservation.
+     Whether the victim lost its last race and holds the reservation.
      */
-    const lostSecond = await waitForMarker({
+    const lostReserving = await waitForMarker({
       path: join(
         phases,
-        'race-lost-2.reached',
+        `race-lost-${String(RESERVE_AFTER_LOST_RACES,)}.reached`,
       ),
       timeoutMs: BARRIER_TIMEOUT_MS,
       isSettled: victim.running
         .isSettled,
     },);
+    /**
+     Marker outcome of every lost race, in order.
+     */
+    const lostRaceMarkers = [
+      ...lostMarkers,
+      lostReserving,
+    ];
     /**
      Branch while the victim holds the reservation.
      */
@@ -279,8 +231,8 @@ const reservationAfterLostRaces: ScenarioDefinition = {
      */
     const blocked = await startAttempt({
       ...context,
-      label: 'w3',
-      paths: ['w3.txt',],
+      label: BLOCKED,
+      paths: [`${BLOCKED}.txt`,],
       mode: 'explicit',
     },);
     /**
@@ -303,7 +255,7 @@ const reservationAfterLostRaces: ScenarioDefinition = {
     await writeFile(
       join(
         phases,
-        'race-lost-2.release',
+        `race-lost-${String(RESERVE_AFTER_LOST_RACES,)}.release`,
       ),
       '',
     );
@@ -338,17 +290,17 @@ const reservationAfterLostRaces: ScenarioDefinition = {
       allSucceeded({
         name: 'all-commits-succeed',
         attempts: [
-          first,
-          second,
+          ...winners,
           victimRecord,
           blockedRecord,
         ],
       },),
       {
         name: 'victim-lost-races',
-        holds: (inEditor === 'marker') && (lostFirst === 'marker')
-          && (lostSecond === 'marker'),
-        detail: `editor ${inEditor}, first lost race ${lostFirst}, second lost race ${lostSecond}`,
+        holds: (inEditor === 'marker') && lostRaceMarkers.every(function reachedMarker(marker,) {
+          return marker === 'marker';
+        },),
+        detail: `editor ${inEditor}, lost races ${lostRaceMarkers.join(', ',)}`,
       },
       {
         name: 'reserved-within-bound',

@@ -106,7 +106,7 @@ export type CliGitConcurrencyConfig = Readonly<{
    */
   landing?: Readonly<{
     /**
-     Lost landing races before a commit reserves the next landing slot; default `2`.
+     Lost landing races before a commit reserves the next landing slot; default `1`.
      */
     reserveAfterLostRaces?: number;
   }>;

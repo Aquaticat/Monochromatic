@@ -76,8 +76,9 @@ the `SPEC.md` heading holds the rules.
   because every landing adds one pack to the real store ("Post-landing").
 - JSONL additions stay under `schemaVersion: 1`;
   consumers ignore unknown event types.
-- `landing.reserveAfterLostRaces` default:
-  see `SPEC.md` "Benchmark method" for the sweeps that set it.
+- `landing.reserveAfterLostRaces` defaults to `1`,
+  not the planned `2`;
+  `SPEC.md` "Benchmark method" holds the sweeps that set it.
 
 ## Findings that shape every slice
 

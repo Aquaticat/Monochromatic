@@ -121,6 +121,37 @@ async function victimHoldingReservation({
 }
 
 /**
+ Reservation threshold the wrapper reservation tests configure,
+ above the default of 1 so the victim loses a race without reserving first.
+ */
+const CONFIGURED_RESERVE_AFTER_LOST_RACES = 2;
+
+/**
+ Creates a landing repository whose trusted config sets {@link CONFIGURED_RESERVE_AFTER_LOST_RACES},
+ so these tests also prove a configured threshold reaches the landing loop.
+
+ @returns fixture repository
+
+ @example
+ ```ts
+ await using repository = await createReservingRepository();
+ ```
+ */
+async function createReservingRepository(): Promise<LandingRepository> {
+  /** Fixture repository. */
+  const repository = await createLandingRepository();
+  await writeWorktreeFile({
+    repository,
+    name: 'cli-git.config.mjs',
+    content: `export default { policies: {}, landing: { reserveAfterLostRaces: ${String(CONFIGURED_RESERVE_AFTER_LOST_RACES,)} } };\n`,
+  },);
+  await git({ repository, args: ['add', 'cli-git.config.mjs',], },);
+  await git({ repository, args: ['commit', '--quiet', '-m', 'config',], },);
+  expect((await runWrapper({ repository, args: ['cli-git', 'trust', '--yes',], },)).exitCode,).toBe(0,);
+  return repository;
+}
+
+/**
  Writes the victim, winner, and bystander files.
 
  @param repository - fixture repository
@@ -240,9 +271,9 @@ await describe({
   name: 'landing reservation',
   children: [
     it({
-      name: 'a commit that lost the configured races reserves the next slot, a later commit cannot land until it does, and the slot is released',
+      name: 'a commit that lost the configured two races reserves the next slot, a later commit cannot land until it does, and the slot is released',
       fn: async function testReserved(): Promise<void> {
-        await using repository = await createLandingRepository();
+        await using repository = await createReservingRepository();
         await writeRaceFiles(repository,);
         /** Paused victim holding the reservation. */
         const { victim, markers, } = await victimHoldingReservation({ repository, second: ['commit', '-m', 'w2', 'w2.txt',], },);
@@ -271,9 +302,47 @@ await describe({
       },
     },),
     it({
+      name: 'without config, the first lost race reserves the next slot and a later commit lands after the holder',
+      fn: async function testDefaultReserved(): Promise<void> {
+        await using repository = await createLandingRepository();
+        await writeRaceFiles(repository,);
+        /** Phase marker directory. */
+        const markers = join(repository.scratch, 'phases',);
+        await mkdir(markers,);
+        /** Victim held in its editor until the winner lands. */
+        const victim = await holdInEditor({
+          repository,
+          name: 'victim',
+          args: ['commit', '-e', '-m', 'victim', 'v.txt',],
+          env: { CLI_GIT_TEST_ONLY_PHASE_SIGNAL: `race-lost:pause:${markers}`, },
+        },);
+        expect((await runWrapper({ repository, args: ['commit', '-m', 'w1', 'w1.txt',], },)).exitCode,).toBe(0,);
+        await victim.release();
+        await waitForFile({ path: join(markers, 'race-lost-1.reached',), },);
+        /** Head while the victim holds the reservation after one lost race. */
+        const held = await git({ repository, args: ['rev-parse', 'HEAD',], },);
+        /** Commit started while the reservation is held, with its outcome collected from the start. */
+        const blocked = startWrapper({ repository, args: ['commit', '-m', 'w3', 'w3.txt',], },);
+        /** Its outcome. */
+        const blockedOutcome = finish(blocked,);
+        await wait(BLOCKED_WINDOW_MS,);
+        expect(blocked.exitCode,).toBe(null,);
+        expect(await git({ repository, args: ['rev-parse', 'HEAD',], },),).toBe(held,);
+        await writeFile(join(markers, 'race-lost-1.release',), '',);
+        /** Victim outcome. */
+        const outcome = await victim.outcome;
+        expect(outcome.exitCode,).toBe(0,);
+        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'landing-reserved', 'commit-replayed',],);
+        expect((await blockedOutcome).exitCode,).toBe(0,);
+        expect(await git({ repository, args: ['log', '--format=%s', '-3',], },),).toBe('w3\nvictim\nw1',);
+        expect(await reservationRecord(repository,),).toBe('absent',);
+        expect(await leftovers(repository,),).toEqual([],);
+      },
+    },),
+    it({
       name: 'a reservation holder whose replay conflicts releases the slot',
       fn: async function testConflictReleases(): Promise<void> {
-        await using repository = await createLandingRepository();
+        await using repository = await createReservingRepository();
         await writeRaceFiles(repository,);
         await writeWorktreeFile({ repository, name: 'v.txt', content: numberedLines({},), },);
         await git({ repository, args: ['add', 'v.txt',], },);
@@ -296,7 +365,7 @@ await describe({
     it({
       name: 'a killed reservation holder releases the slot to a waiting commit, and recovery leaves nothing behind',
       fn: async function testKilledHolder(): Promise<void> {
-        await using repository = await createLandingRepository();
+        await using repository = await createReservingRepository();
         await writeRaceFiles(repository,);
         /** Paused victim holding the reservation. */
         const { victim, } = await victimHoldingReservation({ repository, second: ['commit', '-m', 'w2', 'w2.txt',], },);

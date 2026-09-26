@@ -232,11 +232,13 @@ Design scenarios exercise the accepted concurrent-commit design:
   (see `push-rejection-surfaced`).
 - `reservation-after-lost-races`:
   a victim commit holds in its editor until a first winner lands,
-  loses its first race,
-  pauses at `race-lost-1` while a second winner lands,
-  loses again,
+  then loses one race per winner,
+  pausing at each `race-lost-<n>` while the next winner lands,
+  until its `landing.reserveAfterLostRaces`-th lost race
+  (the default of 1,
+  so the first winner alone)
   takes the landing reservation,
-  and pauses at `race-lost-2`;
+  where it pauses;
   a commit started then must not land during a 1.5 s window,
   and after release the victim lands first.
   Expectations:

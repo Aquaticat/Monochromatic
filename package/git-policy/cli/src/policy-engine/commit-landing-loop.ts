@@ -101,7 +101,7 @@ function unreplayableResult({
 
  @example
  ```ts
- await landWithReplay({ context, mode: 'explicit-path', prepared, settled, options, committedPaths, addedPaths, worktreeRecords, hookChanges, indexLockTimeoutMs: 1_000, reserveAfterLostRaces: 2 });
+ await landWithReplay({ context, mode: 'explicit-path', prepared, settled, options, committedPaths, addedPaths, worktreeRecords, hookChanges, indexLockTimeoutMs: 1_000, reserveAfterLostRaces: 1 });
  ```
  */
 export async function landWithReplay(input: LandingLoopInput,): Promise<LandingLoopOutcome> {

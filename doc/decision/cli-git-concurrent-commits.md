@@ -99,7 +99,9 @@ not a reason to disable parts of it.
   Landing then retries.
 - Commits land in preparation completion order.
   After `landing.reserveAfterLostRaces` lost races
-  (default 2),
+  (default 1 since 2026-09-26,
+  2 before;
+  see "Implementation-time decisions"),
   a commit reserves the next landing slot.
 - `--amend`,
   merge,
@@ -373,8 +375,30 @@ Evidence:
   The container suite runs Git 2.39.5 with the replay-free scenarios and two degradation scenarios.
   Rules and observations:
   `package/git-policy/cli/SPEC.md` "Compatibility and degradation".
-- `landing.reserveAfterLostRaces` keeps its default of 2,
-  measured 2026-09-26:
+- `landing.reserveAfterLostRaces` defaults to 1,
+  changed 2026-09-26 (veto open)
+  by the owner's rule:
+  most correct first,
+  then most performant;
+  when the per-commit p95 of the best settings differ by less than the run-to-run band,
+  the lower per-commit median wins,
+  otherwise the lower p95 wins.
+  Every setting lands the same commits with the same bytes
+  and bounds a holder's lost races at the setting + 1,
+  so performance decided.
+  Four rotated-order sweeps of the build that runs automatic maintenance after landing
+  gave per-commit p95 of 2630 to 2774 ms for 1
+  and 2823 to 3145 ms for 2
+  (bands 144 and 322 ms,
+  means 232 ms apart),
+  and per-commit medians of 2009 to 2062 ms against 2278 to 2544 ms;
+  1 led on both in every run,
+  so either branch of the rule picks it.
+  4 and 8 were slower than both in every run.
+  Evidence:
+  `package/git-policy/cli/SPEC.md` "Benchmark method".
+  Earlier sweeps kept 2,
+  measured 2026-09-26 before maintenance ran after landing:
   a single sweep had suggested 1
   (per-commit p95 3850 ms against 4581 ms),
   but four rotated-order sweeps of one build put the p95 difference of 1 and 2 (91 ms)

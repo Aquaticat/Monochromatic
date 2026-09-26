@@ -46,7 +46,7 @@ await describe({
         expect(DEFAULT_CONCURRENCY_CONFIG,).toEqual({
           hooks: { concurrentCommits: false, },
           indexLock: { unprovenOwnerTimeoutMs: 1_000, },
-          landing: { reserveAfterLostRaces: 2, },
+          landing: { reserveAfterLostRaces: 1, },
         },);
         expect(validateConcurrencyConfig({ hooks: {}, indexLock: {}, landing: {}, },),).toEqual(DEFAULT_CONCURRENCY_CONFIG,);
       },
@@ -57,11 +57,11 @@ await describe({
         expect(validateConcurrencyConfig({
           hooks: { concurrentCommits: true, },
           indexLock: { unprovenOwnerTimeoutMs: 0, },
-          landing: { reserveAfterLostRaces: 1, },
+          landing: { reserveAfterLostRaces: 2, },
         },),).toEqual({
           hooks: { concurrentCommits: true, },
           indexLock: { unprovenOwnerTimeoutMs: 0, },
-          landing: { reserveAfterLostRaces: 1, },
+          landing: { reserveAfterLostRaces: 2, },
         },);
         expect(validateConcurrencyConfig({ indexLock: { unprovenOwnerTimeoutMs: 250, }, landing: { reserveAfterLostRaces: 5, }, },),)
           .toEqual({

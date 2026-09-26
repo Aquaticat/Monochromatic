@@ -113,7 +113,7 @@ export async function holdInEditor({
 
  @example
  ```ts
- eventTypes(outcome); // ['landing-race-lost', 'commit-replayed']
+ eventTypes(outcome); // ['landing-race-lost', 'landing-reserved', 'commit-replayed']
  ```
  */
 export function eventTypes(outcome: ProcessOutcome,): readonly unknown[] {

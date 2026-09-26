@@ -91,7 +91,7 @@ await describe({
         /** Replayed outcome. */
         const outcome = await held.outcome;
         expect(outcome.exitCode,).toBe(0,);
-        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'commit-replayed',],);
+        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'landing-reserved', 'commit-replayed',],);
         expect(await git({ repository, args: ['log', '--format=%s', 'fresh',], },),).toBe('first\nsecond',);
         expect(await git({ repository, args: ['ls-tree', '--name-only', 'fresh',], },),).toBe('a.txt\nb.txt',);
         expect(await git({ repository, args: ['rev-list', '--max-parents=0', 'fresh',], },),).toBe(await git({ repository, args: ['rev-parse', 'fresh~1',], },),);

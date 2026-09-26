@@ -269,7 +269,7 @@ export const SLOW_HOOK_SECONDS = '0.2';
 export const SWEEP_CONCURRENCY = 8;
 
 /**
- `landing.reserveAfterLostRaces` sweep; `2` is the default.
+ `landing.reserveAfterLostRaces` sweep; `1` is the default.
  */
 export const RESERVE_SWEEP: readonly Readonly<{
   id: ConcurrentScenarioId;

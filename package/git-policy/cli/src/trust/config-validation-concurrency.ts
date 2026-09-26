@@ -51,7 +51,7 @@ const DEFAULT_UNPROVEN_OWNER_TIMEOUT_MS = 1_000;
 /**
  Default lost landing races before a transaction reserves the next landing slot.
  */
-const DEFAULT_RESERVE_AFTER_LOST_RACES = 2;
+const DEFAULT_RESERVE_AFTER_LOST_RACES = 1;
 
 /**
  Concurrency defaults used when config is absent, untrusted, or omits a key,

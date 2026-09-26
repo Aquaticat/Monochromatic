@@ -151,7 +151,7 @@ await describe({
         /** Replayed outcome. */
         const outcome = await held.outcome;
         expect(outcome.exitCode,).toBe(0,);
-        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'commit-replayed',],);
+        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'landing-reserved', 'commit-replayed',],);
         expect(await git({ repository, args: ['log', '--format=%s', '-3',], },),).toBe('held\nwinner\nconfig',);
         expect(await runsOver({ log, paths: 'a.txt', },),).toEqual({ context: 1, unrestricted: 2, rules: 1, },);
         expect(await leftovers(repository,),).toEqual([],);

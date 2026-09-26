@@ -459,7 +459,7 @@ Trusted `cli-git.config.*` accepts three optional keys:
 export default defineConfig({
   hooks: { concurrentCommits: false },
   indexLock: { unprovenOwnerTimeoutMs: 1000 },
-  landing: { reserveAfterLostRaces: 2 },
+  landing: { reserveAfterLostRaces: 1 },
 });
 ```
 
@@ -471,7 +471,7 @@ export default defineConfig({
   default `1000`:
   how long to retry a foreign `index.lock` whose owner cannot be proven alive.
 - `landing.reserveAfterLostRaces`,
-  default `2`:
+  default `1`:
   after this many lost landing races,
   a commit reserves the next landing slot;
   the oldest waiting invocation is served first.
@@ -1128,9 +1128,10 @@ no budget is enforced yet.
 `--scenarios` measures a comma-separated list of scenario ids in the listed order,
 and `--output` names the evidence file under `dist/perf`.
 Four such runs of the `landing.reserveAfterLostRaces` sweep,
-in rotated orders,
-kept the default at `2`
-(`perf/reserve-sweep-2026-09-26-run-<n>.json`,
+in rotated orders on the build that runs automatic maintenance after landing,
+set the default to `1`:
+it had the lowest per-commit p95 and median in every run
+(`perf/reserve-sweep-2026-09-26-maintained-run-<n>.json`,
 `SPEC.md` "Benchmark method").
 `perf/concurrent-commit-latency-2026-09-26-merged.json` re-measures the full matrix at `d647d4786`,
 after the worktree-copy stall fix merge and the trust and replay degradation fixes;

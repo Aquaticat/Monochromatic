@@ -108,7 +108,7 @@ await describe({
         /** Replayed second commit. */
         const outcome = await second.outcome;
         expect(outcome.exitCode,).toBe(0,);
-        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'commit-replayed',],);
+        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'landing-reserved', 'commit-replayed',],);
         expect(await git({ repository, args: ['rev-parse', 'HEAD~1',], },),).toBe(landed,);
         expect(await shown(repository, 'HEAD:f.txt',),).toBe(numberedLines({ 5: 'second', },),);
         expect(await git({ repository, args: ['status', '--porcelain',], },),).toBe('',);
@@ -132,7 +132,7 @@ await describe({
         /** Replayed first commit. */
         const outcome = await first.outcome;
         expect(outcome.exitCode,).toBe(0,);
-        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'commit-replayed',],);
+        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'landing-reserved', 'commit-replayed',],);
         expect(await git({ repository, args: ['rev-parse', 'HEAD~1',], },),).toBe(landed,);
         expect(await shown(repository, 'HEAD:f.txt',),).toBe(numberedLines({ 5: 'second', },),);
         expect(await shown(repository, 'HEAD:a.txt',),).toBe('a\n',);

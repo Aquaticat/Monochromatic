@@ -763,7 +763,8 @@ no configuration key or environment variable opts out of it.
   The backoff budget for a foreign `index.lock` whose owner is dead or unproven.
 - `landing.reserveAfterLostRaces`:
   positive safe integer,
-  default `2`.
+  default `1`
+  (see "Benchmark method").
   Lost landing races after which a transaction asks for the landing reservation.
 
 Unknown nested keys,
@@ -4084,10 +4085,61 @@ Measure these scenarios separately:
 - same-file non-overlapping replays;
 - conflicting pairs;
 - a slow hook with `hooks.concurrentCommits` set to `false` and to `true`;
-- a sweep of `landing.reserveAfterLostRaces` that confirms or replaces the default by tail completion time.
+- a sweep of `landing.reserveAfterLostRaces` that confirms or replaces the default.
 
-Default kept at `2` on 2026-09-26 by tail completion time:
-four sweeps of one build (`2ec229081`,
+The sweep decides the default by the owner's rule,
+most correct first,
+then most performant:
+every setting lands the same commits with the same bytes
+and bounds a holder at `landing.reserveAfterLostRaces` + 1 lost races,
+so performance decides.
+When the per-commit p95 of the best settings differ by less than the run-to-run band,
+the lower per-commit median wins;
+otherwise the lower per-commit p95 wins.
+The run-to-run band of a setting is the spread of its per-commit p95 across four sweeps of one build
+with the setting order rotated as a Latin square
+(orders 1-2-4-8,
+8-4-2-1,
+2-8-1-4,
+and 4-1-8-2).
+
+Default changed to `1` on 2026-09-26
+(veto open):
+four sweeps of the build that runs automatic maintenance after landing
+(`5f79404b1`;
+the last three sweeps recorded `35db9ea0a`,
+which changed only Markdown,
+Git 2.47.3,
+concurrency 8,
+30 recorded batches per setting,
+`perf/reserve-sweep-2026-09-26-maintained-run-<n>.json`)
+gave per-commit p95 of 2630 to 2774 ms for `1`
+(band 144 ms),
+2823 to 2899 ms and one 3145 ms for `2`
+(band 322 ms),
+3128 to 3520 ms for `4`,
+and 3185 to 3458 ms for `8`.
+The mean p95 of `1` is 232 ms below that of `2`:
+more than the band of `1`,
+less than the band of `2`.
+Both branches of the rule pick `1`:
+its per-commit median of 2009 to 2062 ms sits below the 2278 to 2544 ms of `2` in every run,
+and its p95 was the lowest of all settings in every run,
+with no overlap between the p95 ranges of `1` and `2`.
+Lost races per commit were 1.02 to 1.09 for `1`,
+1.63 to 1.65 for `2`,
+2.53 to 2.59 for `4`,
+and 3.00 to 3.08 for `8`;
+batch wall time medians were 2581 to 2635 ms,
+2768 to 3095 ms,
+3086 to 3450 ms,
+and 3154 to 3309 ms.
+
+Earlier sweeps,
+superseded because every landing then left one more pack in the real store
+(see "Post-landing"),
+so later batches in a sweep ran against more packs than earlier ones:
+four sweeps of `2ec229081`,
 Git 2.47.3,
 concurrency 8,
 30 recorded batches per setting,
@@ -4112,6 +4164,8 @@ batch wall p95 was 5037 to 9401 ms,
 5750 to 5975 ms,
 and 6162 to 6472 ms,
 where the two highest values came from one run's last two positions.
+Those sweeps kept `2`,
+because the 91 ms p95 difference of `1` and `2` sat far inside either band.
 
 Concurrent scenarios also report per-commit completion time,
 landing lock hold time,

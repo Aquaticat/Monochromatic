@@ -45,7 +45,7 @@ await describe({
         /** First commit's outcome. */
         const firstOutcome = await first.outcome;
         expect(firstOutcome.exitCode,).toBe(0,);
-        expect(eventTypes(firstOutcome,),).toEqual(['landing-race-lost', 'commit-replayed',],);
+        expect(eventTypes(firstOutcome,),).toEqual(['landing-race-lost', 'landing-reserved', 'commit-replayed',],);
         expect(firstOutcome.stderr,).not.toContain('index.lock',);
         expect(await git({ repository, args: ['log', '--format=%s',], },),).toBe('first\nsecond\nbaseline',);
         expect(await git({ repository, args: ['show', '--name-only', '--format=', 'HEAD',], },),).toBe('a.txt',);

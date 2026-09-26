@@ -74,7 +74,7 @@ await describe({
         /** Replayed outcome. */
         const outcome = await held.outcome;
         expect(outcome.exitCode,).toBe(0,);
-        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'commit-replayed',],);
+        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'landing-reserved', 'commit-replayed',],);
         expect(eventOfType({ outcome, type: 'landing-race-lost', },),).toMatchObject({ attempt: 1, winningOid: winner, },);
         expect(eventOfType({ outcome, type: 'commit-replayed', },),).toMatchObject({ fromBase: base, onto: winner, oid: await git({ repository, args: ['rev-parse', 'HEAD',], },), },);
         expect(await git({ repository, args: ['rev-parse', 'HEAD~1',], },),).toBe(winner,);
@@ -142,7 +142,7 @@ await describe({
         /** Replayed outcome. */
         const outcome = await second.outcome;
         expect(outcome.exitCode,).toBe(0,);
-        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'commit-replayed',],);
+        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'landing-reserved', 'commit-replayed',],);
         expect(await git({ repository, args: ['rev-parse', 'HEAD~1',], },),).toBe(landed,);
         expect(`${await git({ repository, args: ['show', 'HEAD:f.txt',], },)}\n`,).toBe(numberedLines({ 5: 'first', 6: 'second', },),);
         expect(await git({ repository, args: ['status', '--porcelain',], },),).toBe('',);
@@ -165,7 +165,7 @@ await describe({
         /** Replayed outcome. */
         const outcome = await held.outcome;
         expect(outcome.exitCode,).toBe(0,);
-        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'commit-replayed',],);
+        expect(eventTypes(outcome,),).toEqual(['landing-race-lost', 'landing-reserved', 'commit-replayed',],);
         /** Replayed commit object. */
         const raw = await git({ repository, args: ['cat-file', 'commit', 'HEAD',], },);
         expect(raw,).toContain(`parent ${winner}\n`,);
