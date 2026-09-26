@@ -444,8 +444,9 @@ The opt-in cover result viewport does not alter either inner result.
 
 ## Early inline layout without advance clearance
 
-A separate debug-only `-earlyinline-` branch keeps the accepted vertical
-Search layout at 100% text and requests the compact inline deck at 200%
+Prototype commit `f674da786` adds a debug-only `-earlyinline-` branch.
+It keeps the accepted vertical Search layout at 100% text and requests
+the compact inline deck at 200%
 **before** a focused keyboard first becomes visible.
 Unlike the older `-preclear-` study,
 it uses ordinary layout-time `imePadding()` rather than a fixed 416dp
