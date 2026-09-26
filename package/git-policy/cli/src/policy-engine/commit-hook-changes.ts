@@ -65,7 +65,7 @@ export const NO_HOOK_CHANGES: HookChanges = {
 /**
  One `diff-tree --raw` record.
  */
-type RawChange = Readonly<{
+export type RawChange = Readonly<{
   /**
    Source mode.
    */
@@ -96,8 +96,13 @@ type RawChange = Readonly<{
  @returns changes in Git order
 
  @throws TypeError for a malformed record
+
+ @example
+ ```ts
+ parseRawChanges(':100644 100644 a b M\0f.txt\0');
+ ```
  */
-function parseRawChanges(output: string,): readonly RawChange[] {
+export function parseRawChanges(output: string,): readonly RawChange[] {
   /**
    Alternating metadata and path fields.
    */

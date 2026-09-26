@@ -15,6 +15,9 @@ import {
   rewriteCommitObject,
 } from './policy-engine/commit-replay-object.ts';
 import { replayOptions, } from './policy-engine/commit-replay-options.ts';
+import { parseIndexedPatch, } from './policy-engine/commit-replay-patch.ts';
+import { reverseApplies, } from './policy-engine/commit-replay-reverse-apply.ts';
+import { subsumeLandedChanges, } from './policy-engine/commit-replay-subsumption.ts';
 import {
   mergeReplayTree,
   replayMergeBase,
@@ -48,6 +51,10 @@ export type ReplayTestExports = Readonly<{
    */
   mergeReplayTree: typeof mergeReplayTree;
   /**
+   Internal `parseIndexedPatch`.
+   */
+  parseIndexedPatch: typeof parseIndexedPatch;
+  /**
    Internal `parsePhaseSignal`.
    */
   parsePhaseSignal: typeof parsePhaseSignal;
@@ -68,9 +75,17 @@ export type ReplayTestExports = Readonly<{
    */
   replayOptions: typeof replayOptions;
   /**
+   Internal `reverseApplies`.
+   */
+  reverseApplies: typeof reverseApplies;
+  /**
    Internal `rewriteCommitObject`.
    */
   rewriteCommitObject: typeof rewriteCommitObject;
+  /**
+   Internal `subsumeLandedChanges`.
+   */
+  subsumeLandedChanges: typeof subsumeLandedChanges;
   /**
    Internal `TestPhaseSignalError`.
    */
@@ -89,12 +104,15 @@ export const replayTestExports: ReplayTestExports = {
   droppedReplayHeaders,
   identityEnvironment,
   mergeReplayTree,
+  parseIndexedPatch,
   parsePhaseSignal,
   parseRawCommit,
   reachTransactionPhase,
   replayMergeBase,
   replayOptions,
+  reverseApplies,
   rewriteCommitObject,
+  subsumeLandedChanges,
   TestPhaseSignalError,
   writeReplayedCommit,
 };

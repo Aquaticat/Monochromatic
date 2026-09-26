@@ -23,6 +23,7 @@ import {
   replayMergeBase,
   writeReplayedCommit,
 } from './commit-replay.ts';
+import { subsumeLandedChanges, } from './commit-replay-subsumption.ts';
 import {
   type RevalidationContext,
   revalidateReplay,
@@ -155,12 +156,18 @@ async function replayCandidate({
     },),
   ];
   /**
-   Clean merge or conflicting paths.
+   Merge base under which every path whose prepared bytes already contain the landed change keeps them.
    */
-  const merge = await mergeReplayTree({
+  const subsumption = await subsumeLandedChanges({
     gitPath: context.gitPath,
     shadowPath: context.workspace
       .shadowPath,
+    objectDirectory: context.workspace
+      .objectDirectory,
+    cwd: context.cwd,
+    directory: context.workspace
+      .directory,
+    replay: candidate.lostRaces + 1,
     mergeBase: await replayMergeBase({
       gitPath: context.gitPath,
       shadowPath: context.workspace
@@ -170,6 +177,18 @@ async function replayCandidate({
       emptyTreeOid: context.capture
         .emptyTreeOid,
     },),
+    current: onto,
+    prepared: prepared.oid,
+  },);
+  l.debug(`replay onto ${onto} keeps the prepared entries of ${JSON.stringify(subsumption.subsumedPaths,)}`,);
+  /**
+   Clean merge or conflicting paths.
+   */
+  const merge = await mergeReplayTree({
+    gitPath: context.gitPath,
+    shadowPath: context.workspace
+      .shadowPath,
+    mergeBase: subsumption.mergeBase,
     current: onto,
     prepared: prepared.oid,
     worktreeRoot: context.repositoryRoot,
