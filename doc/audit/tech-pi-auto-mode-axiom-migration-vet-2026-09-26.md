@@ -207,11 +207,53 @@ No equal-depth axiom evaluation or data-handling audit is complete.
 Base:
  managed inference service.
 A local client would be a separate inspectable high-trust component.
-Legacy `api.voyageai.com` rerank-3 access was verified.
-Relevance scores are not axiom truth probabilities.
+Legacy `api.voyageai.com` rerank-3 access and a later raw-feature batch were verified.
+The inspected embedding interfaces return vectors;
+the rerank interface returns document relevance,
+not native arbitrary-axiom probabilities.
+The official classification-oriented embedding instructions are counterevidence to dismissing composed classifiers,
+but do not supply a qualified probability adapter.
 A calibrated assessment role or independently justified auxiliary role remains unestablished.
-Atlas lifecycle documentation does not automatically govern the verified legacy endpoint.
+Atlas lifecycle documentation explicitly excludes the verified legacy endpoint.
 No candidate is promoted to finalist or rejected solely from the old verdict-ranking pilot.
+
+The [Voyage fit record](../planning/pi-auto-mode-voyage-fit.md)
+contains the finite query schedule,
+current API categories,
+documentation-version distinctions,
+and actual account-setting unknowns.
+The relevant public specification is `voyage-ai/openapi`,
+revision `d638a2a8d9d535a850e7b0d664e49e65934f3bde`.
+The [source trace and verification](../troubleshooting/voyage-relevance-axiom-boundary.md)
+separates published relevance semantics from the private serving implementation.
+
+Four public synthetic raw-feature requests returned HTTP 200,
+with ten document scores and 116,660 reported tokens.
+Individual experimental durations were 459.2234870000002 to 765.136248 milliseconds.
+There were no client retries,
+no probability conversion,
+no final-action requests,
+and no held-out cases.
+Complete current policy was present in every serialized document,
+with freshness checks and `truncation: false`;
+hosted token preservation remains unverified.
+The per-request timings do not establish the full production per-action deadline.
+
+The topic control distinguished package evidence from a recipe.
+The literal and executed substitution cases both returned 0.66015625 despite opposite read references.
+Cache-grant relevance was 0.69921875 against false and 0.70703125 against true.
+Transfer-grant relevance was 0.66796875 against false and 0.6640625 against true.
+The returned scalar alone does not separate the quoted pair in this batch,
+and transfer relevance ordered the contrast opposite to intended claim support.
+These are feature observations,
+not calibrated error rates or an upstream relevance-contract failure.
+Gate:
+raw outputs are not a drop-in probability interface;
+any trained mapping,
+auxiliary role,
+service qualification,
+and private-input eligibility remain pending.
+No training or account setting change occurred.
 
 ## Preferred-route audit schedule
 

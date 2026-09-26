@@ -180,6 +180,43 @@ It did not run a live TUI/RPC session or persist session files.
 A production origin collector remains unimplemented and unqualified.
 See [the source trace](../troubleshooting/pi-input-provenance.md).
 
+### Voyage interface and raw features
+
+The native interfaces inspected return embeddings or relevance,
+not arbitrary-axiom probabilities.
+The [Voyage fit record](../planning/pi-auto-mode-voyage-fit.md)
+and [source/verification record](../troubleshooting/voyage-relevance-axiom-boundary.md)
+retain the evidence and endpoint distinctions.
+The public specification clone is `~/temp/agent/voyage-openapi-source-2026-09-26`,
+revision `d638a2a8d9d535a850e7b0d664e49e65934f3bde`.
+Its old model roster does not establish `rerank-3` context limits.
+Atlas lifecycle rules explicitly exclude the verified legacy endpoint.
+
+Private probe:
+`~/temp/agent/voyage-axiom-features-2026-09-26`.
+Client frozen in scratch commit `c19da8b`;
+result retained in `6d31b0d`.
+Process `proc_853d` completed and its output was inspected.
+Artifact `result-initial.json` has SHA-256
+`b11fc30ab6396ac34e53cd5fb9a7ba78a91c43e428312f54f5ba503de9de9304`.
+
+Four requests returned ten raw scores and 116,660 reported tokens.
+The topic control passed with complete policy present.
+Literal and executed substitution both returned 0.66015625 despite opposite read references.
+Cache-grant scores were 0.69921875 false and 0.70703125 true;
+transfer-grant scores were 0.66796875 false and 0.6640625 true.
+These are relevance observations,
+not probabilities or service-contract violations.
+The decoder's repeated-index guard passed a failing mutation control before restoration.
+All requests passed current-policy checks within their individual five-second experimental budgets;
+that does not qualify the complete per-action guard budget.
+No new probability adapter,
+training,
+private upload,
+account change,
+or reserved-case use occurred.
+The user's actual Voyage data-use opt-out setting remains uninspected.
+
 ## Active work and next action
 
 Todo #18 completed the current development fixture and assessment tranche.
@@ -267,10 +304,12 @@ which now accepts a JSON file of exact replacement pairs as its argument.
 The formatter helper is `~/temp/agent/auto-mode-doc-format-current.mjs`.
 Update its explicit path list when adding scoped documents.
 
-The last seven-document format/render/lint run passed as `proc_c44f`.
-The provenance document,
-this handover,
-and subsequent evidence edits still need the next scoped check.
+The nine-document format/render/lint run `proc_0fea` passed and its output was inspected.
+Commit `618d05404` retained the resulting provenance and handover formatting.
+The newly added Voyage fit and troubleshooting documents,
+this handover update,
+and the current audit amendment need the next scoped render/lint check.
 Do not report that later check as completed until its result is inspected.
-The next research area is the remaining Voyage axiom-assessment fit question;
-keep native relevance scores distinct from truth probabilities.
+After that check,
+close todo #11 for interface/feature fit only and resume todo #16's authorization contract.
+No candidate has a qualified production selection.
