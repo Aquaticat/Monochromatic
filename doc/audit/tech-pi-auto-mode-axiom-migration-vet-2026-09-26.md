@@ -93,6 +93,10 @@ not an eligible coding-plan fallback.
 
 - Models estimate narrow axioms;
   deterministic code owns policy and final actions.
+- For validated inspected script forms,
+  qualified semantic effect estimates may support approval without separate code-established effect analysis.
+  This is Q13 B;
+  the stricter code-admitted-operation-family alternative was not selected.
 - Zero coding-plan judge calls,
   including fallback.
 - Preserve deterministic blocks,
@@ -534,7 +538,12 @@ images and hostile-content boundaries;
 privacy-safe diagnostics;
 and real Pi consumer-boundary verification in a disposable environment.
 The initial prototype has fixture admission assumptions,
-not a production effect extractor.
+not production qualification.
+Under Q13 B,
+qualification must cover semantic effect-detection errors and effect-catalog omissions
+without imposing a separate code-proof-only admission requirement.
+The [effect contract inventory](../planning/pi-auto-mode-effect-contract.md)
+records this distinction and remaining integration paths.
 
 ## Current outcome
 
