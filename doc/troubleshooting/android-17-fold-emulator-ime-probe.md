@@ -43,9 +43,11 @@ Repeating that action after restoring the original off/on preference switches
 again produced the floating keys, so the preference changes were unnecessary
 for this workaround.
 Do not equate the preference switch with the per-editor action.
-Google's [Pixel Tablet keyboard guidance](https://support.google.com/googlepixeltablet/answer/13555948?hl=en)
+Google's [Pixel Tablet keyboard guidance][pixel-tablet-keyboard]
 describes a Gboard toolbar with a physical keyboard and a Floating keyboard
 mode; it does not establish which layout this Fold emulator should choose.
+
+[pixel-tablet-keyboard]: https://support.google.com/googlepixeltablet/answer/13555948?hl=en
 
 Android's public framework does establish why a replacement IME is a valid
 occlusion probe.
@@ -158,18 +160,22 @@ floating-keyboard bounding rectangle through these framework paths.
 
 A separate real-Gboard check on the disposable `emulator-5580` reproduced
 this geometry with the **retained-browser Search prototype** at 200% text.
-Google's [Pixel Tablet keyboard instructions](https://support.google.com/googlepixeltablet/answer/13555948?hl=en-AU)
+Google's [Pixel Tablet keyboard instructions][pixel-tablet-keyboard]
 identify the keyboard-over-line toolbar icon as **Floating keyboard**.
 Tapping that icon in the disposable Gboard toolbar switched its visible
 full-width keys to a floating key surface over Search.
 The app's `SearchInsetProbe` then logged `visible=true`,
-`platformBottom=0`, `composeBottom=0`, and `boundingRects=[]`.
+`platformBottom=0`,
+`composeBottom=0`,
+and `boundingRects=[]`.
 No new IME animation callback appeared in the captured app log for this toggle.
-Privileged `dumpsys window windows`, which is **not an app API**, reported the
-Gboard window's touchable region at `[936,1147][1842,1918]` plus the
-navigation region.
+Privileged `dumpsys window windows`,
+which is **not an app API**,
+reported the Gboard window's touchable region at `[936,1147][1842,1918]`
+plus the navigation region.
 UI Automator placed the deck's `4:35` duration at
-`[842,1263][965,1341]`, intersecting the floating keys in x `[936,965)`.
+`[842,1263][965,1341]`,
+intersecting the floating keys in x `[936,965)`.
 The resulting screenshot visibly obscured the duration's ending and a strip
 of the playback-mode container.
 This is a real-Gboard counterexample to D50 on the disposable AVD,
