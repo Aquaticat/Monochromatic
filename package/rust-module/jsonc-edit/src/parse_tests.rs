@@ -356,3 +356,31 @@ fn comment_text_cannot_break_jsonc_syntax() {
         }
     }
 }
+
+/// A block comment body may contain a bare CR, and a `//` comment ends at CR, so a body with one
+/// must never be emitted in trailing form. Fuzzing found this: the emitted document no longer
+/// parsed, because the comment terminated early and the rest of the body became code.
+#[test]
+fn block_comment_body_with_cr_survives_round_trip() {
+    let source = "[1 /* a\rb */]";
+    let document = parse_jsonc(source).expect("source parses");
+    let emitted = emit_jsonc_value(&document);
+    let reparsed = parse_jsonc(&emitted).unwrap_or_else(|error| panic!("emission must reparse: {error}\nemitted: {emitted:?}"));
+    let elements = reparsed.elements().expect("array root");
+    let body = elements[0].comment.as_ref().map(|comment| return comment.text.clone());
+    assert_eq!(body.as_deref(), Some(" a\rb "), "comment body did not survive the round trip");
+}
+
+/// A merged body carrying a bare CR reaches the leading `//` fallback rather than the block branch,
+/// so the fallback must not emit a line containing CR either.
+#[test]
+fn merged_comment_body_with_cr_survives_round_trip() {
+    let source = "[1, // one\r/* a\rb */]";
+    let document = parse_jsonc(source).expect("source parses");
+    let emitted = emit_jsonc_value(&document);
+    let reparsed = parse_jsonc(&emitted).unwrap_or_else(|error| panic!("emission must reparse: {error}\nemitted: {emitted:?}"));
+    let elements = reparsed.elements().expect("array root");
+    let body = elements[0].comment.as_ref().map(|comment| return comment.text.clone()).unwrap_or_default();
+    assert!(body.contains('a') && body.contains('b'), "merged body lost content: {body:?} from {emitted:?}");
+    assert!(!body.contains('\r') || emitted.contains("/*"), "a CR body was emitted as a // line: {emitted:?}");
+}

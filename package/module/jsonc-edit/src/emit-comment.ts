@@ -13,6 +13,17 @@ const INDENT_UNIT = '  ';
  */
 const BLOCK_CLOSE = '*/';
 
+/**
+ Line terminators. A `//` comment ends at any of them, so a body containing one
+ cannot be emitted in trailing form, and a body line containing one cannot be
+ emitted as a `//` line at all.
+ */
+const LINE_TERMINATORS = [
+  '\r\n',
+  '\n',
+  '\r'
+] as const;
+
 //endregion Constants
 
 //region Comment emit
@@ -23,7 +34,7 @@ const BLOCK_CLOSE = '*/';
  
  @param comment - Comment to test.
  
- @returns `true` when the body has no newline.
+ @returns `true` when the body contains no line terminator.
  
  @example
  ```ts
@@ -31,8 +42,13 @@ const BLOCK_CLOSE = '*/';
  ```
  */
 export function isSingleLineComment(comment: JsoncComment,): boolean {
-  return !comment.text
-    .includes('\n',);
+  // A bare CR counts: `//` comments end at CR, LF or CRLF, so emitting a body that
+  // contains one as a trailing comment would terminate it early and leave the rest of
+  // the body as code. Fuzzing found this as an emission that the parser then rejected.
+  return !LINE_TERMINATORS.some(function containsTerminator(terminator: string,): boolean {
+    return comment.text
+      .includes(terminator,);
+  },);
 }
 
 /**
@@ -85,11 +101,36 @@ export function leadingComment({
    Indentation prefix for this depth.
    */
   const pad = INDENT_UNIT.repeat(indent,);
-  if ((comment.type === 'block') && (!comment.text
-    .includes(BLOCK_CLOSE,)))
+  // A body carrying a bare CR is emitted as a block whenever it can be, because a block comment
+  // may contain CR verbatim while a `//` line ends there. A body carrying only LF keeps the
+  // established one `//` line per body line layout. Bodies that contain the block close
+  // delimiter cannot be blocks, so they fall through and their lines are split on every
+  // terminator, which is lossy for CR but never corrupts the document.
+  /**
+   Whether the body can be wrapped in block delimiters at all.
+   */
+  const blockSafe = !comment.text
+    .includes(BLOCK_CLOSE,);
+  if (blockSafe && ((comment.type === 'block')
+    || comment.text
+    .includes('\r',)))
     return `${pad}/*${comment.text}*/\n`;
-  return `${comment.text
-    .split('\n',)
+  /**
+   Body lines after splitting on every terminator, so no emitted `//` line can carry one.
+   */
+  const lines = LINE_TERMINATORS.reduce< readonly string[]>(
+    function splitOn(
+      accumulator: readonly string[],
+      terminator: string,
+    ): readonly string[] {
+    return accumulator.flatMap(function splitPart(part: string,): readonly string[] {
+      return part
+        .split(terminator,);
+    },);
+  },
+    [comment.text,],
+  );
+  return `${lines
     .map(function lineToComment(line: string,): string {
       return `${pad}//${line}`;
     },)

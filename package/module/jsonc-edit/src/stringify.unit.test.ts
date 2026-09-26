@@ -95,6 +95,29 @@ await describe({
             expect(jsoncGetKeyComment({ state: reparsed, path: ['k',], },),).toBe(COMMENT_ABSENT,);
           },
         },),
+        it({
+          name: 'block comment body containing a bare CR survives a round trip',
+          fn: async () => {
+            // A CR terminates a `//` comment, so emitting this body in trailing form would end the
+            // comment early and leave the remainder as code that no longer parses.
+            const emitted = roundTrip('[1 /* a\rb */]',);
+            const reparsed = parseJsoncEdit({ source: asJsonc(emitted,), },);
+            expect(jsoncGetComment({ state: reparsed, path: [0,], },),).toEqual({
+              type: 'block',
+              text: ' a\rb ',
+            },);
+          },
+        },),
+        it({
+          name: 'merged comment body containing a bare CR survives a round trip',
+          fn: async () => {
+            const emitted = roundTrip('[1 /* a\rb */ /* c */]',);
+            const reparsed = parseJsoncEdit({ source: asJsonc(emitted,), },);
+            const comment = jsoncGetComment({ state: reparsed, path: [0,], },);
+            expect(comment === COMMENT_ABSENT,).toBe(false,);
+            expect((comment as { text: string }).text.includes('a\rb'),).toBe(true,);
+          },
+        },),
       ],
     },),
     describe({

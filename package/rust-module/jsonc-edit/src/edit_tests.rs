@@ -259,3 +259,17 @@ fn constructors_build_consistent_values() {
     assert_eq!(JsoncValue::array(Vec::new()).elements().expect("array payload").len(), 0);
     assert_eq!(JsoncValue::record(Vec::new()).entries().expect("record payload").len(), 0);
 }
+
+/// The document root must stay a container. A root set to a scalar emits text the parser then
+/// rejects, which fuzzing found as an emission of `null`.
+#[test]
+fn root_set_to_a_scalar_is_refused() {
+    let document = parse_jsonc_edit("{\"a\":1}").expect("source parses").root;
+    let scalar = JsoncValue { kind: JsoncKind::Null, comment: None };
+    let error = jsonc_set(&document, &[], scalar).expect_err("a scalar root must be refused");
+    assert!(format!("{error}").contains("root"), "refusal did not name the root: {error}");
+
+    // A container replacement at the root stays allowed, so the guard is about shape, not address.
+    let replacement = JsoncValue { kind: JsoncKind::Array { elements: Vec::new() }, comment: None };
+    assert!(jsonc_set(&document, &[], replacement).is_ok(), "a container root must be accepted");
+}
