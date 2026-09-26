@@ -306,6 +306,55 @@ await describe({
     },),
 
     it({
+      name:
+        'KEEPS THE JUDGE each ballot names, so a settled page answers which models called a note '
+        + 'an addition (hulicaijia26, 2026-09-26)',
+      fn: async () => {
+        /**
+         Selection the reader returned, narrowed before its ballots are read.
+         */
+        const selection = parseLaneSelection({
+          value: {
+            kind: 'contested',
+            slices: [{
+              sliceIndex: 0,
+              verdict: {
+                kind: 'lane-won',
+                lane: 'repair',
+              },
+              ballots: [
+                {
+                  ...FOR_REPAIR,
+                  modelId: 'whiskers-judge',
+                },
+                {
+                  ...FOR_REPAIR,
+                  modelId: 'mittens-judge',
+                },
+                {
+                  ...FOR_TRANSLATE,
+                  modelId: 'tabby-judge',
+                },
+              ],
+              usable: 3,
+            },],
+          },
+          comparison: ONE_CONTESTED,
+          path: SELECTION_PATH,
+          keys: SLICE_SPELLED_KEYS,
+        },);
+        if (selection.kind !== 'contested')
+          throw new Error('reader returned pending selection for a contested record',);
+        expect(selection.slices[0]?.ballots.map(function judgeOf(cast,) {
+          return cast.modelId;
+        },),).toEqual([
+          'whiskers-judge',
+          'mittens-judge',
+          'tabby-judge',
+        ],);
+      },
+    },),
+    it({
       name: 'REFUSES SCHEMA 7 FRONT MATTER CONTEST missing eligibility record',
       fn: async () => {
         const refusal = await caught(() => parseLaneSelection({

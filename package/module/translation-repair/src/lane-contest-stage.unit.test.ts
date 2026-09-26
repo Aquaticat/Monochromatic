@@ -191,6 +191,23 @@ await describe({
       },
     },),
     it({
+      name:
+        'NAMES THE JUDGE on every ballot (hulicaijia26, 2026-09-26: four of five contest ballots '
+        + 'called the archive\'s wordplay note an addition and no record said which models cast them)',
+      fn: async () => {
+        const outcome = await contest({
+          replyByModel: [
+            ballot({ choice: 'repair', },),
+            ballot({ choice: 'repair', },),
+            ballot({ choice: 'translate', },),
+          ],
+        },);
+        expect(outcome.ballots.map(function judgeOf(cast,) {
+          return cast.modelId;
+        },),).toEqual([...ROSTER,],);
+      },
+    },),
+    it({
       name: 'RECORDS RAW HALF-QUORUM BALLOTS without waiting for delayed seats excluded downstream',
       fn: async () => {
         const outcome = await contestLaneSlice({
