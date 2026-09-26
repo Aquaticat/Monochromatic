@@ -69,7 +69,8 @@ Neither role labels nor a model's opinion can create a human grant.
 
 ### Deterministic prototype and Jev
 
-Private prototype: `~/temp/agent/auto-mode-axioms-2026-09-26`.
+Private prototype:
+ `~/temp/agent/auto-mode-axioms-2026-09-26`.
 Its three-effect catalog is a demonstration,
 not production coverage.
 Six independently labelled development cases,
@@ -93,9 +94,12 @@ These are not token counts for rejected inputs or proof of internal token preser
 
 ### Gateway source and terms
 
-Read-only clone: `~/temp/agent/llmgateway-auto-mode-source-2026-09-26`.
-Revision: `4affe8bf02559880fea74fa5ba685ad2cb19168d`.
-Offline harness: `~/temp/agent/llmgateway-route-probe-2026-09-26`.
+Read-only clone:
+ `~/temp/agent/llmgateway-auto-mode-source-2026-09-26`.
+Revision:
+ `4affe8bf02559880fea74fa5ba685ad2cb19168d`.
+Offline harness:
+ `~/temp/agent/llmgateway-route-probe-2026-09-26`.
 
 The actual pinned route with mocked host/provider dependencies showed:
 
@@ -124,14 +128,18 @@ Both verified all 12,820 actual forward tokens,
 kept policy current,
 and exited 0 without a memory kill.
 
-- Full precision: 0.5338,
+- Full precision:
+   0.5338,
   174.4122996260412 seconds inference,
   6,490,460,160 bytes peak container memory.
-  Artifact: `~/temp/agent/laya-axiom-probe-2026-09-26/result-initial.json`.
-- CPU BF16: 0.5339,
+  Artifact:
+   `~/temp/agent/laya-axiom-probe-2026-09-26/result-initial.json`.
+- CPU BF16:
+   0.5339,
   152.4031641939655 seconds inference,
   5,656,580,096 bytes peak container memory.
-  Artifact: `~/temp/agent/laya-axiom-bf16-2026-09-26/result-initial.json`.
+  Artifact:
+   `~/temp/agent/laya-axiom-bf16-2026-09-26/result-initial.json`.
 
 Both measured cases would reach manual approval at five seconds.
 Do not generalize this into rejecting every interactive workflow,
@@ -154,10 +162,14 @@ Detailed source and resource evidence:
 
 ### Pi input provenance
 
-Installed SDK: 0.87.1.
-Matching tag commit: `f07218c4d4bbc12bef056a7058c3dd49dfe41abe`.
-Read-only clone: `~/temp/agent/pi-input-provenance-2026-09-26`.
-Private actual-method harness: `~/temp/agent/pi-input-provenance-probe-2026-09-26`.
+Installed SDK:
+ 0.87.1.
+Matching tag commit:
+ `f07218c4d4bbc12bef056a7058c3dd49dfe41abe`.
+Read-only clone:
+ `~/temp/agent/pi-input-provenance-2026-09-26`.
+Private actual-method harness:
+ `~/temp/agent/pi-input-provenance-probe-2026-09-26`.
 Process `proc_9199` passed with no model calls.
 
 The probe confirmed distinct input channels can produce identical user-message objects,
@@ -185,7 +197,8 @@ Response and fixture checks passed,
 and removing the committed probability upper-bound guard made its test fail before restoration.
 Scratch commit `18e3d60` records the gateway client before inference.
 Process `proc_2b93` completed all 15 requests and its output was inspected.
-Artifact: `gateway-results-initial.json` in the same private directory,
+Artifact:
+ `gateway-results-initial.json` in the same private directory,
 SHA-256 `45f91fd84de557088c5926ede1a07ac4ee16567931ce713b3eba7df032c6323c`.
 There are 153 model estimates,
 150 scored references,

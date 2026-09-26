@@ -15,10 +15,12 @@ No production collector or SDK patch has been implemented.
 
 ## Source identity
 
-Installed package: `@earendil-works/pi-coding-agent@0.87.1`.
+Installed package:
+ `@earendil-works/pi-coding-agent@0.87.1`.
 Upstream repository: <https://github.com/earendil-works/pi>.
 Tag `v0.87.1` resolves to `f07218c4d4bbc12bef056a7058c3dd49dfe41abe`.
-Read-only clone: `~/temp/agent/pi-input-provenance-2026-09-26`.
+Read-only clone:
+ `~/temp/agent/pi-input-provenance-2026-09-26`.
 The cloned license is MIT.
 
 The probe uses inspected compiled method bodies from the installed package,
@@ -146,7 +148,8 @@ not a verified collector implementation.
 
 ## Verification
 
-Private harness: `~/temp/agent/pi-input-provenance-probe-2026-09-26`.
+Private harness:
+ `~/temp/agent/pi-input-provenance-probe-2026-09-26`.
 It extracts the inspected compiled methods using checked unique boundaries
 and executes those bodies in a VM with explicit host-service doubles.
 It does not import the full SDK modules,
@@ -161,8 +164,10 @@ mise --no-env --no-hooks run build
 mise --no-env --no-hooks run probe
 ```
 
-Base image: `bbc51c187ec813fd7c6a49afd22c15efdfe969b8c3a9a9cd49193c8a03908984`.
-Probe image: `104fe7d55d74ad816462178c6ee0f2e239f5daefd037b50f1c0ebae5df354019`.
+Base image:
+ `bbc51c187ec813fd7c6a49afd22c15efdfe969b8c3a9a9cd49193c8a03908984`.
+Probe image:
+ `104fe7d55d74ad816462178c6ee0f2e239f5daefd037b50f1c0ebae5df354019`.
 The Containerfile uses COPY only.
 Runtime bounds are 2 GiB memory including swap allowance,
 2 CPUs,
@@ -246,16 +251,22 @@ No patch is proposed.
 
 ### Upstream filing decision
 
-1.  Upstream fault: not established.
+1.  Upstream fault:
+     not established.
     The authorization consumer needs a stronger witness than the documented message shape provides.
-2.  Fixability: no impossibility claim.
+2.  Fixability:
+     no impossibility claim.
     Application-owned metadata and explicit approval interfaces remain possible integration paths.
-3.  Supported use: extension input events and custom session state are documented;
+3.  Supported use:
+     extension input events and custom session state are documented;
     a complete human-authorization collector is not supplied by these tests.
-4.  Contribution policy: not evaluated because no upstream contribution is proposed.
-5.  Maintainer willingness: not evaluated;
+4.  Contribution policy:
+     not evaluated because no upstream contribution is proposed.
+5.  Maintainer willingness:
+     not evaluated;
     no request was sent.
-6.  Fix prototype: none.
+6.  Fix prototype:
+     none.
     The method-level counterexample harness is not a provenance fix.
 
 Any future filing requires the exclusion,
