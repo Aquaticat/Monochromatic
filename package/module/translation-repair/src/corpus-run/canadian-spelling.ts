@@ -118,6 +118,15 @@ const CANADIAN_SPELLINGS: ReadonlyMap<string, string> = new Map([
     'liquorice',
     'licorice',
   ],
+  // CLASS ONE HUNDRED SIXTY-NINE (TianqiChen6667, 2026-09-26): "she used this
+  // id on basically all of her social media platforms" for 这个id. The pinned
+  // archive writes ID on three pages and lowercase id on none, and the
+  // psychoanalytic id appears nowhere in the corpus, so the word has no second
+  // sense a respelling could damage here.
+  [
+    'id',
+    'ID',
+  ],
   [
     'gray',
     'grey',
