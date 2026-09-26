@@ -231,6 +231,11 @@ rounds (2026-09-17):
   a real key entered `d` while the title was still obscured.
   Reject this best-effort request on the tested Gboard fixture,
   not every possible keyboard configuration.
+  The Android 17 AOSP release source traces submitted keep-clear areas
+  through Window Manager to a PiP placement consumer;
+  it does not establish that Gboard's internal floating keys subscribe.
+  A PiP move was not tested,
+  and the reason Gboard kept overlapping remains unproven.
   A bounded real-banner recurrence attempt changed the disposable font
   scale from 200% to 100% and back while the floating keyboard was open.
   The activity was recreated;

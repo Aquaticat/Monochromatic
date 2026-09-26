@@ -5752,6 +5752,14 @@ These drags validate the region measurement,
 not Gboard's cooperation with the hint.
 The app's request reached Window Manager,
 but the source of Gboard's continued overlap is unproven.
+The Android 17 AOSP release source traces submitted keep-clear areas
+through Window Manager to a PiP positioning listener.
+It also treats the IME touch region as an unrestricted area for consumers
+to avoid;
+it does **not** establish that Gboard's internal floating keys
+subscribe to this path.
+No PiP positive control was run,
+so the tested result remains a bounded Gboard observation.
 The best-effort request is **not** a verified automatic D50 response on
 this fixture;
 no universal absence claim follows.
