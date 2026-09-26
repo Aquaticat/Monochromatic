@@ -10,6 +10,10 @@
  */
 
 import {
+  type EventTestExports,
+  eventTestExports,
+} from './internal-test-exports-events.ts';
+import {
   type LandingTestExports,
   landingTestExports,
 } from './internal-test-exports-landing.ts';
@@ -59,7 +63,7 @@ import {
 /**
  Shapes of the transaction internals exposed to built-artifact tests.
  */
-export type InternalTestExports = LandingTestExports & LockTestExports & Readonly<{
+export type InternalTestExports = EventTestExports & LandingTestExports & LockTestExports & Readonly<{
   /**
    Internal `classifyTransactionOwner`.
    */
@@ -162,6 +166,7 @@ export type InternalTestExports = LandingTestExports & LockTestExports & Readonl
  Transaction internals as one plain object, so the single bundled artifact needs no namespace runtime helper.
  */
 export const internalTestExports: InternalTestExports = Object.freeze({
+  ...eventTestExports,
   ...landingTestExports,
   ...lockTestExports,
   classifyTransactionOwner,

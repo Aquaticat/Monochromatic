@@ -8,16 +8,22 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import {
+import { internalTestExports, } from '../../dist/final/node/index.mjs';
+
+const {
   createCommitLandedEvent,
   createConfigurationWarningEvent,
   createCoreFindingEvent,
   createEngineFailureEvent,
   createFindingEvent,
   createFixSummaryEvent,
-  type EngineFailureCode,
   renderPolicyEvents,
-} from './events.ts';
+} = internalTestExports;
+
+/**
+ Stable engine failure classification, read from the built constructor's parameter.
+ */
+type EngineFailureCode = Parameters<typeof createEngineFailureEvent>[0]['code'];
 
 /** Every stable schema-one engine failure code. */
 const ENGINE_FAILURE_CODES: readonly EngineFailureCode[] = [
