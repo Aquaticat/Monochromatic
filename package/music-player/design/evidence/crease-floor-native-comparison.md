@@ -1,14 +1,15 @@
-# E2 native inner Search floor comparison
+# E2 native inner player and Search floor comparison
 
 ## Correction and fixture
 
 The first E2 form reused one existing Search A screenshot with proportional bars.
 The user correctly noted that those were not alternative mockups.
 That form was withdrawn without a `min_padding` choice.
-The replacement at [`questions/crease-floor-review.html`](../questions/crease-floor-review.html)
-embeds separate native Compose captures for each proposed floor in both
-positive-results and empty Search states.
-The prototype lives only on branch `prototype/music-player-theme-compose`
+The first native replacement showed only positive-results and empty Search.
+Those historical six screenshots are indexed here,
+but the current [`questions/crease-floor-review.html`](../questions/crease-floor-review.html)
+now shows a separate **player with Search closed** capture for each floor too.
+The initial prototype lives only on branch `prototype/music-player-theme-compose`
 at commit `469819241` under
 `package/music-player/android-app/app/src/debug/kotlin/dev/monochromatic/musicplayer/SearchPersistentDeckStudy.kt`.
 No production Search implementation or accepted decision was changed.
@@ -30,7 +31,7 @@ The signature behavior is documented in
 
 ## Captured variants
 
-All six images have the native 2076 × 2152px panel dimensions.
+These **historical Search-only** images have native 2076 × 2152px panel dimensions.
 The full top 136px status strip was replaced with generic status content,
 all app pixels outside it matched each raw capture exactly,
 and PNG text,
@@ -132,6 +133,93 @@ A private P7.5 native sample shows no gray stripe,
 a complete last mode at `[73,1904][965,2035]`,
 and a right heading beginning at x `1106`,
 just outside the approximate crease endpoint x `1093`.
-All remaining native captures still require inspection before replacing
-the incomplete form.
-No floor decision or native player visual has yet been re-accepted.
+The corrected nine-state capture set and current form are described next.
+No floor decision was recorded from the earlier incomplete review.
+
+## Corrected player and Search comparison awaiting re-confirmation
+
+Debug-only commits `c15a2d5b5` and `678fd7d8f` moved the E2 floor owner to
+**meaning-bearing content** in both the Search-closed player and Search page.
+On the player,
+the actual folder browser and full-height playback deck fill the left half.
+The right track surface,
+highlighted current-row background,
+row dividers and click bounds remain full-width while its title and track
+text use a right-side information inset.
+The Search page keeps its full left browser/deck and right surface;
+right-side content and its associated control targets move where the floor
+demands it.
+Those hit bounds are not measured as part of E2's informational floor.
+There is no gray structural stripe in the corrected captures.
+The **selected total minimum** remains undecided until the user re-confirms
+after viewing Search-closed screens.
+
+The inspected installed APK bytes matched SHA-256
+`d301bebdd35d053ee63cbd9a8500949fb97b8be5dc26c9bb971be1493a3462b5`.
+The same disposable unfolded AVD was used at 390dpi and 200% text,
+with the existing 6 GiB/2 CPU container cap.
+No keyboard was shown or changed;
+no production code or original AVD setting was touched.
+Each of these nine physical 2076 × 2152px screenshots has its **entire**
+136px status strip replaced with generic status content.
+Pixels below the strip match their private raw captures exactly,
+and text,
+profile,
+EXIF and timestamp PNG chunks were removed.
+Only sanitized images are linked here:
+
+- P7.5,
+  proposed independent **7.5mm total** minimum even on narrower-crease
+  devices:
+  [player, Search closed](../questions/render/search-e2-complete-7p5-player-inner-light-s200.png),
+  [empty Search](../questions/render/search-e2-complete-7p5-empty-inner-light-s200.png),
+  [positive results](../questions/render/search-e2-complete-7p5-results-inner-light-s200.png).
+- P14,
+  proposed 14mm total minimum:
+  [player, Search closed](../questions/render/search-e2-complete-14-player-inner-light-s200.png),
+  [empty Search](../questions/render/search-e2-complete-14-empty-inner-light-s200.png),
+  [positive results](../questions/render/search-e2-complete-14-results-inner-light-s200.png).
+- P20,
+  proposed 20mm total minimum:
+  [player, Search closed](../questions/render/search-e2-complete-20-player-inner-light-s200.png),
+  [empty Search](../questions/render/search-e2-complete-20-empty-inner-light-s200.png),
+  [positive results](../questions/render/search-e2-complete-20-results-inner-light-s200.png).
+
+In the **player** captures,
+the left `4:35` timer node ended at x `965` for each floor;
+the right `Camellia` heading began at x `1106`,
+`1173` and `1262` for P7.5,
+P14 and P20.
+Their projected horizontal node-box gaps were 141px,
+208px and 297px (approximately 9.58mm,
+14.13mm and 20.18mm).
+In the **empty Search** captures,
+the right `Search your music` heading began at x `1132`,
+`1172` and `1260` against the same left timer edge,
+for projected gaps of 167px,
+207px and 295px (approximately 11.35mm,
+14.07mm and 20.05mm).
+The boxes are at different vertical positions;
+none is a nearest-pair glyph-ink measurement or proof of all-content E2
+compliance.
+The selected 7.5mm crease interval remains an approximation.
+
+The complete Search-closed and open four-mode deck kept its final mode at
+`[73,1904][965,2035]` in the sampled P7.5 captures.
+The corrected player keeps Folders,
+Open,
+the same browser,
+track list and Search action;
+no first-screen browser wrapping change was observed among these floors.
+P20 moves the empty Search instruction far enough right that `your`
+wraps onto the line containing `library.` in the captured state.
+Long names,
+100% text,
+painted glyph bounds,
+keyboard-open fit,
+scroll reachability,
+activation and screen-reader traversal still need separate verification.
+Choosing a floor will not select these debug inset mechanics or require
+surfaces,
+borders,
+padding and hit regions to avoid the crease.

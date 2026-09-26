@@ -6097,10 +6097,13 @@ D57 does not generalize to other floating placements or ordinary keyboards.
 The initial E2 floor form reused one existing mockup and measurement bars.
 The user rejected it as not a visual comparison;
 its P0/P10/P12 menu was never answered.
-A replacement at the **same**
-`package/music-player/design/questions/crease-floor-review.html` now embeds
-separate native Compose captures of P0,
-P14 and P20 in empty and results states at 200% text.
+A first native replacement at the **same**
+`package/music-player/design/questions/crease-floor-review.html` showed
+P0,
+P14 and P20 in empty and results states at 200% text,
+but omitted the Search-closed player.
+Its six sanitized captures remain historical evidence;
+the current review at that path uses a later nine-state set.
 The debug-only variant source is prototype commit `469819241`;
 the installed APK matched SHA-256
 `9e80c29ccfee72e82574a8884b3e4dca89361f05f73db3fc0231b546c971298c`.
@@ -6130,9 +6133,9 @@ but explicitly required the review to be redone and the question re-asked
 because it omitted **Search-closed player views**.
 Treat 7.5mm as the user's stated answer awaiting re-confirmation,
 not a recorded final `min_padding` decision.
-The existing P0/P14/P20 review is incomplete for this choice;
-add separately captured player-with-Search-closed native views for each
-floor policy before re-asking.
+That P0/P14/P20 form was paused;
+Search-closed player views are now part of the replacement.
+The 7.5mm statement awaits the explicitly requested re-ask.
 Do not treat the historical fixed-414dp/24dp player preview as E2-compliant.
 The first separately rendered Search-closed player captures exposed an
 **unaccepted gray central rectangle** from painting the whole inset Row
@@ -6162,9 +6165,30 @@ and right heading beginning at x `1106`,
 beyond approximate crease end x `1093`.
 This is still one sample,
 not a universal glyph-ink pass.
-The other native after-state captures and the replacement full review are
-pending;
-do not re-ask before verifying them.
-No production change or new IME experiment is authorized;
-only the disposable capped Fold may be used.
+The corrected nine-state review is now built at
+`package/music-player/design/questions/crease-floor-review.html`:
+P7.5,
+P14 and P20 each show the player before Search,
+empty Search and positive results at 200% text.
+Installed debug APK SHA-256
+`d301bebdd35d053ee63cbd9a8500949fb97b8be5dc26c9bb971be1493a3462b5`
+matched the guest APK bytes.
+All nine full-panel screenshots replace their status strip and omit metadata.
+On the player,
+the sampled left timer box ended at x `965`,
+while the right heading began at x `1106`,
+`1173` and `1262`;
+these are cross-height box projections,
+not minimum painted gaps.
+The folder browser and full deck stay unchanged between those player variants,
+while the highlighted row surface crosses the center.
+In empty Search,
+P20 makes `your` wrap onto the line with `library.` without reducing the
+left browser or deck width.
+`package/music-player/design/evidence/crease-floor-native-comparison.md`
+records the physical fixture,
+measured boxes and caveats.
+The re-ask still needs the user's answer before recording `min_padding`.
+No production change or new IME experiment was performed;
+only the disposable capped Fold was used.
 The original AVD remains untouched.

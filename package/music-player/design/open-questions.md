@@ -334,12 +334,19 @@ rounds (2026-09-17):
   glyph-ink margin or select the minimum floor.
   A first E2 floor form was withdrawn because proportional bars were not
   distinct mockups.
-  The [replacement native review](questions/crease-floor-review.html)
-  shows P0,
-  P14 and P20 as separate debug-only Search A captures in results and empty
-  states at 200% text.
-  The sampled P20 browser wraps earlier under one equal-added-inset allocation;
-  the numeric floor is still undecided and painted clearance remains unverified.
+  The first native revision still omitted the Search-closed player and an
+  interim player variant incorrectly painted a gray center stripe.
+  The [corrected native review](questions/crease-floor-review.html)
+  shows P7.5,
+  P14 and P20 in the **player before Search**,
+  empty Search and results at 200% text.
+  Each keeps the full browser/deck and continuous surfaces;
+  only right-side informative marks shift under wider floors.
+  The user stated 7.5mm as an independent total minimum even for a future
+  narrower crease,
+  but asked to be shown these player views and then re-asked.
+  The numeric floor is therefore not recorded as final;
+  painted clearance and other scales remain unverified.
   Borders,
   paddings,
   input/row

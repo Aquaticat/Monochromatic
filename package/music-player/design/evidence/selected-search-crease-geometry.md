@@ -116,11 +116,16 @@ withdrawn after the user noted that it showed just one existing mockup.
 Its proportional bars were not native layout variants.
 The P0/P10/P12 menu was **not answered**;
 no numeric floor was selected.
-The replacement at the same review path now embeds distinct debug-only
-native Compose captures for P0,
-P14 and P20 in empty/results states.
+After another correction requested Search-closed player views and rejected
+an interim gray structural stripe,
+the replacement at the same review path now embeds distinct debug-only
+native Compose captures for P7.5,
+P14 and P20 in the player,
+empty Search and results states.
 The [native floor study](crease-floor-native-comparison.md) records their
-measured after-state box positions,
-visible browser wrapping and sample limits.
-The user's new numeric choice remains pending;
+after-state informational box positions and continuous surfaces.
+The user stated 7.5mm as the total independent floor even on a future
+narrower-crease device,
+but explicitly asked for re-confirmation after viewing the player.
+The numeric choice remains pending;
 no new IME experiment was performed.
