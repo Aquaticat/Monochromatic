@@ -62,6 +62,8 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 // `size` fixes a minimum 48dp native icon-button layout target.
 import androidx.compose.foundation.layout.size
+// `safeDrawing` supplies the app's top inset if platform insets have not arrived.
+import androidx.compose.foundation.layout.safeDrawing
 // `statusBars` keeps the full-width header below native status UI.
 import androidx.compose.foundation.layout.statusBars
 // `windowInsetsPadding` consumes bottom navigation safe space.
@@ -95,6 +97,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 // Log only after Compose applies an inset-triggered recomposition.
 import androidx.compose.runtime.SideEffect
+// `mutableIntStateOf` remembers the closed deck's measured height across IME frames.
+import androidx.compose.runtime.mutableIntStateOf
 // `mutableStateOf` holds throwaway query/navigation state.
 import androidx.compose.runtime.mutableStateOf
 // `remember` preserves that state during one activity visit.
@@ -178,6 +182,7 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
             unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor,
             liftWithIme = candidate.contains("-lift-"),
             bannerHeightStress = candidate.contains("-bannerfit-"),
+            autoFitStudy = candidate.contains("-autofit-"),
             retainBrowser = candidate.contains("-retain-"))
     } else {
         SearchDeckWide(query = query, onQueryChange = { query = it }, onBack = onBack,
@@ -209,32 +214,51 @@ private const val BOUNDING_RECT_API_LEVEL = 37
 @Composable
 private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, halfDent: Dp, light: Boolean, pageColor: Color,
-    liftWithIme: Boolean, bannerHeightStress: Boolean, retainBrowser: Boolean) {
-    val reportedImeInset = WindowInsets.ime.getBottom(LocalDensity.current)
-    val keyboardShown = reportedImeInset > 0
-    // This debug-only threshold studies the measured banner geometry, not a production IME rule.
-    val bannerFit = bannerHeightStress && reportedImeInset >= BANNER_STRESS_INSET_PX
+    liftWithIme: Boolean, bannerHeightStress: Boolean, autoFitStudy: Boolean,
+    retainBrowser: Boolean) {
+    val density = LocalDensity.current
+    val reportedImeInset = WindowInsets.ime.getBottom(density)
     val observedView = LocalView.current
+    val platformInsets = observedView.rootWindowInsets
+    val imeType = if (Build.VERSION.SDK_INT >= 30) AndroidWindowInsets.Type.ime() else 0
+    val platformBottom = if (Build.VERSION.SDK_INT >= 30) {
+        platformInsets?.getInsets(imeType)?.bottom ?: 0
+    } else 0
+    val targetBottom = if (autoFitStudy) maxOf(reportedImeInset, platformBottom) else reportedImeInset
+    val keyboardShown = targetBottom > 0
+    var restingDeckHeight by remember { mutableIntStateOf(0) }
+    val topSafe = if (Build.VERSION.SDK_INT >= 30) {
+        platformInsets?.getInsets(AndroidWindowInsets.Type.statusBars())?.top
+    } else null
+    val topSafePx = topSafe ?: WindowInsets.safeDrawing.getTop(density)
+    val availableAboveIme = (observedView.height - topSafePx - targetBottom).coerceAtLeast(0)
+    val dividerPx = with(density) { 16.dp.roundToPx() }
+    // Select the debug reflow when the actually measured closed deck would overflow.
+    // Until its first measurement arrives, reflow conservatively instead of clipping.
+    val measuredOverflow = restingDeckHeight == 0 || restingDeckHeight + dividerPx > availableAboveIme
+    val bannerFit = if (autoFitStudy) keyboardShown && measuredOverflow
+        else bannerHeightStress && reportedImeInset >= BANNER_STRESS_INSET_PX
+    val extraBottom = if (autoFitStudy && liftWithIme) {
+        with(density) { (targetBottom - reportedImeInset).toDp() }
+    } else 0.dp
     SideEffect {
-        val platformInsets = observedView.rootWindowInsets
-        val imeType = if (Build.VERSION.SDK_INT >= 30) AndroidWindowInsets.Type.ime() else 0
-        val platformBottom = if (Build.VERSION.SDK_INT >= 30) {
-            platformInsets?.getInsets(imeType)?.bottom
-        } else null
-        val visible = if (Build.VERSION.SDK_INT >= 30) {
-            platformInsets?.isVisible(imeType)
-        } else null
+        val visible = if (Build.VERSION.SDK_INT >= 30) platformInsets?.isVisible(imeType) else null
         val rectangles = if (Build.VERSION.SDK_INT >= BOUNDING_RECT_API_LEVEL) {
             platformInsets?.getBoundingRects(imeType)
         } else null
         Log.i("SearchInsetProbe", "composeBottom=$reportedImeInset platformBottom=$platformBottom " +
+            "targetBottom=$targetBottom rootHeight=${observedView.height} topSafe=$topSafePx " +
+            "restingDeck=$restingDeckHeight available=$availableAboveIme " +
             "visible=$visible boundingRects=$rectangles stress=$bannerFit")
     }
     Row(modifier = Modifier.fillMaxSize().background(pageColor)
-        .then(if (liftWithIme) Modifier.imePadding() else Modifier)) {
+        .then(if (liftWithIme) Modifier.imePadding().padding(bottom = extraBottom) else Modifier)) {
         SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f),
             deckFirst = !liftWithIme, deckFullHeight = liftWithIme, bannerFit = bannerFit,
-            compactForBrowser = retainBrowser && keyboardShown) { slot ->
+            compactForBrowser = retainBrowser && keyboardShown,
+            onDeckMeasured = { heightPx ->
+                if (autoFitStudy && !keyboardShown) restingDeckHeight = heightPx
+            }) { slot ->
             if (!keyboardShown || retainBrowser) {
                 SearchFoldFolders(light = light,
                     modifier = slot.padding(end = halfDent + 8.dp))

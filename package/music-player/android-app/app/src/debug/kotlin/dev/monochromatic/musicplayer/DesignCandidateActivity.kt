@@ -344,6 +344,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+// Measure the unconstrained closed deck before the IME changes available height.
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -985,6 +987,7 @@ internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier,
     includeTopInset: Boolean = true, deckFirst: Boolean = false,
     deckFullHeight: Boolean = false, bannerFit: Boolean = false,
     compactForBrowser: Boolean = false,
+    onDeckMeasured: ((Int) -> Unit)? = null,
     topContent: @Composable (Modifier) -> Unit) {
     val palette = paletteForSearchDeck(light)
     Column(modifier = modifier.fillMaxSize().background(palette.picker)) {
@@ -997,11 +1000,14 @@ internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier,
             topContent(Modifier.weight(1f))
         } else {
             topContent(Modifier.weight(1f))
-            // The tall-IME study has no browser above its deck, so omit its empty separator.
+            // Remove this separator only when the tall IME needs its height;
+            // the unchanged browser and deck still differ by their surface colors.
             if (!bannerFit) {
                 Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(palette.sectionDivider))
             }
-            TransportBlock(modifier = Modifier.fillMaxWidth(), candidate = "dark-stable-wallpaper-dynamic",
+            TransportBlock(modifier = Modifier.fillMaxWidth().onSizeChanged { size ->
+                onDeckMeasured?.invoke(size.height)
+            }, candidate = "dark-stable-wallpaper-dynamic",
                 palette = palette, deckHeightCap = !deckFullHeight, bannerFit = bannerFit,
                 compactForBrowser = compactForBrowser)
         }
