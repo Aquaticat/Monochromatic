@@ -1424,6 +1424,8 @@ parallel design vote.
 ### D50. The unfolded control deck remains visible (2026-09-24)
 The user requires the playback/control deck to **never be hidden while the
 Fold is unfolded**.
+D53 permits one later, explicit exception for real floating Gboard;
+other keyboard states remain subject to this requirement.
  This includes the D47 Search destination,
  regardless
 of whether Search occupies one side or more of the display.
@@ -1503,8 +1505,8 @@ compliance.
 The older real-Gboard PNGs predate that browser correction.
 A later real Gboard floating-keyboard probe at 200% text obscured part of
 the deck title; moving that keyboard lower obscured more controls.
-This is a validation failure against D50 in the tested floating mode,
-not a change to the user's A selection.
+D53 accepts this specific real floating-Gboard overlap with the unfolded
+deck without changing the user's A selection.
 On the folded cover, the same real floating mode covered both matching
 result labels while a focused `cam` query remained visible.
 A separate disposable Fold AVD verified real Gboard split input on the
@@ -1517,8 +1519,10 @@ Updating the disposable Gboard to the same version did not reproduce its
 floating behavior, so version alone is not an explanation.
 A Gboard font-update banner on the disposable inner panel temporarily
 raised the IME top to y `1140` and clipped the final mode until dismissed.
-These bounded passing modes and failing states do not change D50 or the
-user's A selection; other heights and app-observed floating insets remain unverified.
+These bounded passing modes and the real banner do not change D50 or the
+user's A selection;
+D53 separately accepts the floating-keyboard deck overlap.
+Other heights remain unverified.
 A debug-only app probe subsequently observed the docked bottom inset and
 bounding rectangle;
 its synthetic 415dp banner-height reflow is not a chosen replacement.
@@ -1545,6 +1549,30 @@ library-unavailable explanations,
 repeat a successful query.
  This is design-only until implementation is
 separately authorized.
+
+### D53. Real floating Gboard may obscure the unfolded deck (2026-09-26)
+
+The user explicitly said that “real floating Gboard still obscures the deck”
+is **acceptable**.
+When real floating Gboard overlays the unfolded playback deck during Search,
+that specific occlusion is an exception to D50's otherwise complete-deck
+visibility requirement.
+Do not move or replace selected Search A merely to make the deck visible
+beneath a user-positioned floating keyboard.
+The actual folder browser remains above the bottom-left deck;
+query and results remain together on the right (D51),
+and D52 still removes the repeated positive-results heading.
+
+This exception does **not** permit clipping or hiding the deck under a
+docked or split keyboard,
+nor under Gboard's separately observed transient font-update banner.
+The floating keyboard's observed cover-panel overlap with both Search result
+labels is a distinct unresolved result-visibility question,
+not an approval to hide those labels.
+The synthetic 416dp anticipatory reservation and inline deck reflow remain
+unaccepted debug-only studies.
+This is a design-scope clarification,
+not production authorization or proof that the remaining D50 states pass.
 
 ---
 
