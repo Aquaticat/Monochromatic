@@ -148,7 +148,9 @@ Peak container memory was 6,490,460,160 bytes;
 policy remained current and the container exited 0 without a memory kill.
 The [runtime and warning trace](../troubleshooting/laya-full-agents-context.md)
 records the pinned image and source.
-The tested English CPU configuration fails the five-second interactive budget even for this one axiom.
+The tested English CPU configuration missed the five-second budget for this measured axiom.
+The accepted workflow would yield to manual approval;
+interactive use with that fallback is not ruled out.
 This does not reject every authorized Laya runtime/checkpoint or establish a model-quality ranking.
 No full axiom-batch resource benchmark has passed.
 Axiom-batch fit,
