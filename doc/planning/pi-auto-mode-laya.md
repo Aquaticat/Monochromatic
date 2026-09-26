@@ -1,4 +1,4 @@
-# Pi auto-mode Laya migration interview
+# Pi auto-mode migration interview: Laya and Voyage
 
 ## Status and authority
 
@@ -7,14 +7,18 @@ The user requested migration to [Laya] and explicitly requested grilling before 
 Do not implement until shared understanding is confirmed.
 No dependency, production configuration, or runtime changes have been made for this task.
 
-The user subsequently restricted research explicitly:
+Current authorized scope is Laya plus relevant Voyage products and models,
+including rerank-3.
+The user supplied a Voyage API key through mise and explicitly expanded the scope.
+Other vendor alternatives remain outside scope.
+
+Before the Voyage expansion, the user restricted research explicitly:
 
 > Only look at Laya. No alternatives.
 
-Run a Laya-only feasibility and migration audit.
-Do not search for, evaluate, or rank competing technologies.
-The incumbent is a responsibility/parity baseline, not a competing candidate.
-Do not expand this interview into selecting another model provider.
+That restriction applied until the explicit Voyage authorization.
+Do not use the Voyage expansion to start an unrestricted vendor survey.
+The incumbent remains a responsibility/parity baseline, not a competing candidate.
 
 [Laya]: https://github.com/NandhaKishorM/laya
 
@@ -51,8 +55,10 @@ No claim of safety parity, cost savings, or adequate local performance has been 
 Settled: A.
 Auto-mode must make zero coding-plan judge requests, including fallback.
 The main coding agent's normal provider traffic is outside this boundary.
-Do not propose a different model provider as fallback under the Laya-only scope.
-Manual approval is the fallback direction established by Q3.
+No coding-plan provider may be a judge fallback.
+The later Voyage authorization permits evaluating Voyage,
+but does not itself select a primary/fallback architecture.
+Manual approval remains an accepted safe fallback.
 
 ### Q3: Safety and interruption tradeoff
 
@@ -124,6 +130,45 @@ Its condensed context is not a valid evaluation of this newly required migration
 Revise the runner/input preparation before measuring safety or claiming feasibility.
 No Laya inference had run when this requirement arrived.
 
+### Voyage scope and supplied credential
+
+The user configured `AUTO_MODE_VOYAGE_API_KEY` through root mise `secrets:edit`
+and explicitly authorized investigating Voyage rerank-3 and other relevant Voyage products/models.
+This supersedes the Laya-only restriction for Voyage.
+It does not authorize unrelated vendor comparisons or private transcript uploads.
+The full-current-`AGENTS.md` requirement for Laya remains unchanged.
+Keep that complete-policy input in comparative guard tests rather than giving one model a simplified task.
+
+The supplied resource was verified before unrelated work:
+
+- First-party client loaded the key through root `mise exec --fresh-env`,
+  with `--allow-env AUTO_MODE_VOYAGE_API_KEY` and no key on the command line.
+- One POST to `https://api.voyageai.com/v1/rerank` requested `rerank-3`,
+  `truncation: false`, and 2 non-sensitive synthetic retrieval documents.
+- HTTP 200 returned model `rerank-3` and the expected top document.
+- Token usage: 37; one observed request duration: 538.507885 milliseconds.
+  This is an access/positive-control result, not guard accuracy or a latency distribution.
+- No fallback model request was needed.
+- No key, private transcript, or full policy was transmitted in this connectivity probe.
+- Process `proc_37ac` exited 0;
+  sanitized observations are in `~/temp/agent/voyage-auto-mode-probe-2026-09-26/results.json`.
+
+Primary-source routing matters:
+older cached `docs.voyageai.com` reference pages listed only rerank-2.5,
+while the live requested model call succeeded.
+MongoDB's current [reranker page](https://www.mongodb.com/docs/voyageai/models/rerankers/)
+lists rerank-3 with a 32,000-token context.
+Its [lifecycle page](https://www.mongodb.com/docs/voyageai/models/lifecycle/)
+labels rerank-3 Preview, with a 1 September 2026 release entry.
+That lifecycle policy explicitly covers `ai.mongodb.com` and excludes legacy `api.voyageai.com`.
+Do not silently apply Atlas support, pricing, retention, or account terms to the verified legacy endpoint.
+Request-limit and data-handling verification for the actual endpoint remain open.
+
+The [current model overview](https://www.mongodb.com/docs/voyageai/models/)
+identifies text/code embeddings, contextualized chunk embeddings, multimodal embeddings, and rerankers.
+These are discovery facts, not recommendations or proof that retrieval scores are safe permission judgments.
+Embedding retrieval must not replace or filter the mandatory full policy input.
+
 ## Existing GitHub issues
 
 Checked open and closed issues in `Aquaticat/Monochromatic` on 2026-09-26.
@@ -143,7 +188,8 @@ Its migration checklist covers call volume, input sizes, spend, retries, latency
 verdicts, explanations, manual approval, trust directives, fallback,
 complete context, images, context limits, and adversarial safety cases.
 Carry this checklist into the migration acceptance ledger.
-Its historical Jev comparison and TypeSafe-terms work are excluded by the user's newer Laya-only scope.
+Its historical Jev comparison and TypeSafe-terms work remain excluded;
+the user's later scope expansion names Voyage, not TypeSafe.
 The sole comment is a Linear backlink, not additional requirements.
 
 ### #279: Non-hermetic skill allowlist fixtures
@@ -530,14 +576,14 @@ That still does not establish a hard runtime ceiling or long-context decision qu
 - Measure current judge calls and costs without exporting private transcripts.
 - Define deployment, error handling, explanations, rollout, rollback, and acceptance criteria.
 - Complete Laya source, provenance, security, and runtime vetting before granting decision authority.
-- Skip competing-candidate discovery and ranking because the user explicitly excluded alternatives.
+- Restrict candidate research to Laya and the explicitly authorized relevant Voyage products/models.
 
 ## Next action
 
-Snapshot and measure the full current `AGENTS.md` with the actual Laya checkpoint tokenizers.
-Revise every diagnostic input to carry the complete file and verify model coverage.
-Finish the Laya CPU execution manifest and input-projection checks.
-Verify downloaded artifact hashes and run offline inference in bounded isolation only after the new input gate is explicit.
+Collect the terminal result of the authorized full-policy Laya 8 GiB retry (`proc_8f5d`), without polling.
+Continue current Voyage API/context/data-handling research after the successful key verification.
+Exercise complete-policy synthetic guard inputs only with explicit no-truncation checks.
+Repair the scoped Markdown lint findings and render the changed documents.
 Inspect mistakes independently without using reserved results to tune the tested schemas.
 Use that evidence to resolve authority, trust-rule interpretation, context completeness, and cutover.
 Do not require live user-supervised shadowing as the first evidence source.
