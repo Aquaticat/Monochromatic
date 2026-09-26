@@ -198,11 +198,11 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    Approved.
 - New rule SLF (self-contained rules),
    requested by user:
-   proposed,
-   awaiting user review.
+   approved;
+   placed after RLM.
 - Batch 6 (option presentation):
    6 rules become 5,
-   352 to 302 tokens;
+   352 to 293 tokens;
    retires OPI into OPT;
    OCG stays always-loaded (17 CLI packages,
    301 commits to `package/cli` since 2026-06-25) and moves to "Architecture decisions".
@@ -718,6 +718,15 @@ M1T:
  each label one content-width line plus horizontal padding;
  wrap whole tabs across rows,
  never text inside a tab.
+```
+
+### New rule SLF
+
+```md
+SLF:
+ Each tagged rule makes sense alone:
+ never cite another rule's code or lean on terms only another rule defines.
+Citing paths and docs is fine.
 ```
 
 ## Next action
