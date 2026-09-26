@@ -49,5 +49,11 @@ export {
   type StreamProgress,
   StreamStalledError,
 } from './stream-idle-guard.ts';
+export {
+  armStreamBound,
+  isStreamBoundCut,
+  type StreamBound,
+  StreamBoundError,
+} from './stream-bound.ts';
 
 //endregion Stream barrel
