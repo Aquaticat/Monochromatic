@@ -27,7 +27,6 @@ import {
   produceTranslateSlate,
   type RosterModelId,
   type SyntheticClient,
-  TranslateAbsenceError,
   type TranslateStageResult,
 } from '../dist/final/node/index.mjs';
 
@@ -362,25 +361,14 @@ await describe({
     },),
 
     it({
-      name: 'STILL RAISES no-candidate-backed when the run-off ties too, carrying the run-off finding',
+      name: 'SHIPS a finalist by slate order when the run-off ties across both finalists, carrying the run-off '
+        + 'finding (class one hundred seventy-four: a tie between valid finalists is a failure to rank, not a '
+        + 'rejection)',
       fn: async () => {
-        /**
-         What the retry raised, or nothing.
-         */
-        const raised = await (async function attempt(): Promise<unknown> {
-          try {
-            await judgedUnder({ secondRound: 'split', },);
-            return undefined;
-          }
-          catch (error) {
-            return error;
-          }
-        })();
-        expect(raised instanceof TranslateAbsenceError,).toBe(true,);
-        if (!(raised instanceof TranslateAbsenceError))
-          throw new Error('raised by construction',);
-        expect(raised.reason,).toBe('no-candidate-backed',);
-        expect(raised.findings.includes(RUNOFF_FINDING,),).toBe(true,);
+        const { result, } = await judgedUnder({ secondRound: 'split', },);
+        expect(result.origin,).toBe('fresh',);
+        expect(result.findings.includes(RUNOFF_FINDING,),).toBe(true,);
+        expect(result.findings.includes('translate-runoff-tie-broken (slate order)',),).toBe(true,);
       },
     },),
   ],

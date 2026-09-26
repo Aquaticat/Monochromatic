@@ -18,8 +18,9 @@ import type {
 // and the candidates nobody named have already lost the ranking. The
 // challenge round is therefore a run-off over the candidates that drew a
 // ballot, when that is fewer than the whole slate: the judges are asked a
-// narrower question rather than the identical one, and a second tie is still
-// a settled decline.
+// narrower question rather than the identical one. A second tie across every
+// finalist ships one of them by preference where nothing stands to keep
+// (class one hundred seventy-four, `translate-runoff-tie.ts`).
 //
 // NARROWED TO THE LEADERS ON XINGZ613 (2026-09-19, class sixty-three): slice
 // 84's standing was ineligible, four valid proposals went to a bench at

@@ -189,6 +189,41 @@ and the decline named `slate-declined-standing`.
 - Guard shown to fail first (`c6ec06788`),
     fixed in `adca69d4e`.
 
+## Addendum 2026-09-26, tenth: a challenge round tied across every valid candidate ships one by preference
+
+Taken under the rule of 2026-09-04 ("prefer the best valid proposal, else fail the slice at once")
+and the owner's answer of 2026-09-24 ("Not eligible; fall back to the repair text"),
+after TianqiChen6669 stopped INCOMPLETE at 24 min on slice 4:
+the class one hundred seventy-two floor refused the archive's "So, she’s a girl of incredible perseverance",
+the contest split 2 repair to 2 translate,
+the slate of three valid renderings tied 1.5 to 1.5 between "bore the greatest pressure on her frailest body"
+and "with the frailest body",
+the run-off over those two tied 1.5 to 1.5 again,
+and a run-off of two has nothing left to narrow.
+
+- The rule's failure is for a slice with no valid proposal.
+    Here every finalist passed the rule and the judges could not rank them,
+    a failure to rank rather than a rejection,
+    so the entry stopping on it served neither half of the rule.
+- `settleAbsentDecline` in `translate-runoff-tie.ts`,
+    called from `judgeTranslateSlate` wherever the slice has no incumbent,
+    ships one candidate when a challenge round (`decline-challenge`) ties across every candidate it asked about:
+    the repair lane's text first
+    (the owner's fallback where the archive cannot stand, the minimal edit of the human translation),
+    then the translate lane's text,
+    then slate order.
+    The record is `judged` with the tie's weight and the finding `translate-runoff-tie-broken (<basis>)`,
+    and the gate still reads it as a fresh consolidation.
+- Unchanged: a tie among some of the candidates narrows through the class eighty-two loop;
+    a first round is still challenged;
+    a rejection,
+    a leader one judge alone named,
+    or a round with no ballot still raises;
+    a slice with an incumbent keeps it as before.
+- Guard shown to fail first (`8666d2480`, `translate-retry.unit.test.ts`: repair lane, translate lane,
+    slate order, and the incumbent kept),
+    fixed in `8db508b0a`.
+
 ## Addendum 2026-09-24, ninth: the dispute note travels with the stand-in
 
 Taken after CuspariaKLSY11,
@@ -346,9 +381,8 @@ both calling the finalists ineligible on grounds the rule had answered,
     the leader wins on the two-ballot floor under the weight minimum,
     carrying `select-runoff-under-minimum`;
     the minimum stands everywhere else.
-- A run-off whose leader one judge alone named,
-    or that ties,
-    still ends the slice.
+- A run-off whose leader one judge alone named still ends the slice;
+    one that ties across every finalist ends it no longer (tenth addendum).
 - Guard shown to fail first (`49b9dccca`),
     fixed in `6a9a7ce27`.
 
