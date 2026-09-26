@@ -270,5 +270,117 @@ which the replacement keeps.
 
 ### Upstream filing decision
 
-Pending the prototypes of the fix-kind change and the `prefer-spread` receiver check;
-this section is completed when they report.
+`.out-of-scope/` has no entry for oxlint or oxc lint rules
+(same file list as `doc/troubleshooting/oxlint-js-plugin-global-reference-env.md`).
+
+#### `no-useless-spread`: duplicate of oxc issue 26159
+
+Issue 26159 (open,
+filed against 1.79.0) reports the string `.slice` case.
+Pull requests 26160 and 26615 are open and unreviewed.
+Reading both threads and diffs in full:
+
+- 26160 classifies `slice` and `concat` receivers and withholds the fix for unknown `slice` receivers;
+- 26615 bails for literal,
+  `new Foo()`,
+  and `const`-to-literal receivers,
+  and excludes typed arrays from that bail.
+
+Neither covers iterator helpers (`[...it.filter(f)]`),
+`map`/`filter` on typed arrays held in identifiers,
+`split`,
+`reduce(callback, [])`,
+or the fix-kind mismatch;
+the issue itself calls `[...nif.split('')]` "fixed correctly",
+which holds only for strings.
+Those are additive,
+so the artifact is a comment on issue 26159,
+not a new issue.
+
+1. **Upstream's fault:**
+   yes;
+   the rule declares `fix_dangerous` but emits safe fixes from name guesses.
+2. **Upstream can fix it:**
+   yes;
+   the prototype below is 86 lines including tests.
+3. **Supported use case:**
+   yes;
+   the rule targets TypeScript and JavaScript,
+   and typed-array receivers were already fixed once (pull request 26067 for issue 25868).
+4. **Contribution welcome:**
+   yes,
+   with disclosure (`CONTRIBUTING.md:12-21`);
+   both open pull requests disclose AI assistance.
+5. **Likely to fix:**
+   plausible;
+   issue 24107 was closed as not planned with a maintainer stating no plans to make the rule type-aware,
+   which the fix-kind approach does not need.
+6. **Minimal fix prototyped:**
+   yes.
+   [oxlint-spread-autofix.patch](oxlint-spread-autofix.patch),
+   against `oxc-project/oxc` `f51e67812ed15cea95c9bddfe614d889685f0703`:
+   `is_method_name_guess` in `const_eval.rs` marks hints that come only from a method name
+   (`split`,
+   the functional array methods,
+   `reduce`),
+   and `check_useless_clone` emits those as `FixKind::DangerousFix`,
+   keeping `Array.from`,
+   `Array.of`,
+   `Object.keys`/`values`/`entries`,
+   `await Promise.all`,
+   and `new Array(n)` safe.
+   Verified in `podman run --rm --memory=6g --cpus=4 … docker.io/library/rust:latest cargo test -p oxc_linter no_useless_spread`
+   (rustc 1.98.1):
+   post-patch the rule test passes with no snapshot change;
+   with the new tests kept and the kind forced back to `SafeFix`,
+   it fails on exactly the four name-guess cases:
+
+   ```text
+   Input: [...text.slice(0, 3)]  Expected: [...text.slice(0, 3)]  Actual: text.slice(0, 3)
+   Input: [...text.split("|")]   Expected: [...text.split("|")]   Actual: text.split("|")
+   Input: [...arr.reduce(...)]   Actual: arr.reduce((a, b) => a.push(b), [])
+   Input: [...(foo ? x.map(f) : [])]  Actual: (foo ? x.map(f) : [])
+   ```
+
+   Not run:
+   clippy and `cargo fmt`.
+
+All six hold.
+The comment is fileable once the person posting re-runs the reproduction and fills in the disclosure bracket;
+posting needs the user's approval.
+
+~~~md
+Two gaps beyond the string `.slice` case, reproduced on oxlint 1.85.0 (and on `main` at f51e678):
+
+1. The rewrite is not limited to `.slice`/`.concat`. Every name in `is_functional_array_method`
+   (`const_eval.rs:229-249`) plus `split` and `reduce(cb, [])` is classified `NewArray` on any receiver, so plain
+   `--fix` also does:
+   - `[...typed.map(f)]` → `typed.map(f)` for a typed array held in an identifier (`Uint8Array`, values now wrap)
+   - `[...iter.filter(f)]` → `iter.filter(f)` for iterator helpers (lazy iterator instead of array)
+   Neither #26160 nor #26615 covers these receivers.
+
+2. The rule is declared `fix_dangerous` (`no_useless_spread/mod.rs:146`), but `check_useless_clone` emits via
+   `ctx.diagnostic_with_fix` (`mod.rs:431`), which is `FixKind::SafeFix` (`context/mod.rs:306-311`), and
+   `finish_create_fix` gates on the emitted kind (`context/mod.rs:519`). So these name-guess rewrites run under plain
+   `--fix`, not only `--fix-dangerously`.
+
+A minimal fix that needs no type information: emit the clone fix as `DangerousFix` when the hint comes only from a
+method name, keeping certain cases (`Array.from/of`, `Object.keys/values/entries`, `await Promise.all`,
+`new Array(n)`) safe. Prototype (86 lines incl. tests) passes `cargo test -p oxc_linter no_useless_spread`; with the
+new tests and the old kind it fails on exactly `[...text.slice(0, 3)]`, `[...text.split("|")]`,
+`[...arr.reduce(..., [])]`, `[...(foo ? x.map(f) : [])]`:
+
+<details><summary>patch</summary>
+
+(paste doc/troubleshooting/oxlint-spread-autofix.patch)
+
+</details>
+
+AI disclosure: investigation, source trace, and prototype were done with an AI coding assistant.
+[Filer: re-run the reproduction and the cargo test yourself, then replace this bracket with what you verified.]
+~~~
+
+#### `prefer-spread`: typed-array and string `slice()` receivers
+
+Pending the prototype of the receiver fix;
+this subsection is completed when it reports.

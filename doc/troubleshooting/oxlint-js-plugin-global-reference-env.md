@@ -227,5 +227,163 @@ so this path stays exercised.
 
 ### Upstream filing decision
 
-Pending the prototype of the `addGlobals` fix;
-this section is completed when it reports.
+`.out-of-scope/` has no entry for oxlint or oxc lint behavior
+(checked:
+`bun-install.md`,
+`cargo-workspace.md`,
+`claude-code-upstream-bugs.md`,
+`codex-harness.md`,
+`jsr.md`,
+`lightningcss.md`,
+`low-impact-typescript-formatting.md`,
+`module-es-monolith.md`,
+`pi-gpt55-long-context.md`,
+`terminal-title-fork-parity-tests.md`,
+`typescript-project-references.md`).
+
+Duplicate search:
+oxc issues and pull requests,
+open and closed,
+for `isGlobalReference`,
+`env builtin`,
+`builtin globals`,
+`globals Array env plugin`,
+and `no-undef env Array` found no matching report.
+
+1. **Upstream's fault:**
+   yes.
+   The JavaScript scope manager disagrees with oxlint's own Rust global lookup and with ESLint,
+   and the config reference describes `builtin` as equivalent to `es2026`,
+   which the probe disproves.
+2. **Upstream can fix it:**
+   yes;
+   the prototype changes one loop header in `apps/oxlint/src-js/plugins/scope.ts`.
+3. **Supported use case:**
+   yes.
+   `isGlobalReference` is a documented JavaScript plugin API ported from ESLint
+   (`scope.ts:335` cites ESLint's `source-code.js`),
+   and `env` is a documented config key.
+4. **Contribution welcome:**
+   yes,
+   with disclosure.
+   `CONTRIBUTING.md:12-21` ("AI Usage Policy") requires AI usage to be disclosed and reviewed;
+   `AGENTS.md:7-15` repeats it;
+   `.github/ISSUE_TEMPLATE/linter_bug_report.yaml` has no AI field.
+   No ban was found.
+5. **Likely to fix:**
+   plausible.
+   No won't-fix signal;
+   globals resolution changed recently
+   (pull request 25905,
+   "resolve globals by reference,
+    not by name",
+   merged 2026-08-19).
+6. **Minimal fix prototyped:**
+   yes.
+   In a disposable clone of `oxc-project/oxc` at `f51e67812ed15cea95c9bddfe614d889685f0703`:
+
+   ```diff
+   -  for (const envName in envs) {
+   +  const enabledEnvs = Object.assign({ builtin: true }, envs);
+   +  for (const envName in enabledEnvs) {
+   ```
+
+   Full hunk,
+   including the updated comments:
+   `apps/oxlint/src-js/plugins/scope.ts` lines 158 to 163 in the clone.
+   Verified on a copy of the installed oxlint 1.85.0 package with the equivalent edit to `dist/lint.js:12877`
+   (`let enabledEnvs = Object.assign({ builtin: !0 }, envs); for (let envName in enabledEnvs)`),
+   running the probe with `"env": { "browser": true, "node": true, "es2024": true }`:
+   before,
+   `Array global=false`,
+   `Object global=false`;
+   after,
+   `Array`,
+   `Object`,
+   `Set`,
+   `Promise`,
+   and `Buffer` all `global=true`.
+   The env-free config still reports `Buffer global=false` after the patch.
+   Gap:
+   the upstream vitest fixtures `apps/oxlint/test/fixtures/globals` and `sourceCode_scope_methods` need the napi test build
+   and were not run;
+   their snapshots may change.
+
+All six hold,
+so the draft is fileable once the person filing re-runs the reproduction and fills in the disclosure bracket,
+which `CONTRIBUTING.md` requires to name human-verified checks.
+Posting it is an external action that needs the user's approval.
+
+### Draft issue
+
+~~~md
+Title: linter(plugins): `sourceCode.isGlobalReference` returns false for `Array`/`Object` when config sets `env` without `builtin`
+
+Template: `.github/ISSUE_TEMPLATE/linter_bug_report.yaml` (fill its version, config, and reproduction fields
+from the sections below)
+
+### Description
+
+With a config whose root `env` is set but does not list `builtin`, JS plugin rules see no ES5 globals:
+`context.sourceCode.isGlobalReference(node)` returns `false` for `Array` and `Object`, while `Set`, `Promise`
+(and `Buffer` with `node`) return `true`. Rust rules are unaffected.
+
+Cause:
+
+- An explicit root `env` replaces the default `{ builtin: true }` (`crates/oxc_linter/src/config/env.rs:65-71`,
+  `Oxlintrc` is `#[serde(default)]`; `env.rs:111` asserts `!env.contains("builtin")`).
+- The Rust side always treats builtin globals as enabled (`crates/oxc_linter/src/context/mod.rs:206-210`, `:248-251`).
+- `addGlobals` in `apps/oxlint/src-js/plugins/scope.ts:149-182` only iterates the serialized `envs`, and the
+  `es20xx` presets in `src-js/generated/envs.ts` are post-ES5 difference lists, so `Array`/`Object` never enter the
+  global scope and `isGlobalReference` (`scope.ts:334-360`) returns `false`.
+- ESLint always prepends builtin: `Object.assign({ builtin: true }, config.env, envInFile)` (`lib/linter/linter.js`).
+
+The env docs also say "builtin - Latest ECMAScript globals, equivalent to es2026." (`env.rs:17`, rendered in the
+config reference), but `env: { es2026: true }` alone omits `Array`/`Object` in JS plugin scope, while
+`env: { builtin: true }` alone includes them.
+
+### Reproduction (oxlint 1.85.0)
+
+```js
+// probe-plugin.mjs
+const rule = { create(context) { return { Identifier(node) {
+  if (!['Array', 'Object', 'Set'].includes(node.name)) return;
+  context.report({ node, message: `${node.name} global=${context.sourceCode.isGlobalReference(node)}` });
+} }; } };
+export default { meta: { name: 'probe' }, rules: { probe: rule } };
+```
+
+```json
+{ "plugins": [], "categories": { "correctness": "off" }, "env": { "es2026": true },
+  "jsPlugins": ["./probe-plugin.mjs"], "rules": { "probe/probe": "error" } }
+```
+
+```ts
+// probe.ts
+export const a = Array.from([1]);
+export const o = Object.keys({});
+export const s = new Set([1]);
+```
+
+`oxlint --format unix probe.ts` prints `Array global=false`, `Object global=false`, `Set global=true`.
+With `"env": { "builtin": true }` all three are `true`.
+
+### Suggested fix
+
+Always enable `builtin` in `addGlobals`, matching the Rust side and ESLint:
+
+```diff
+-  for (const envName in envs) {
++  const enabledEnvs = Object.assign({ builtin: true }, envs);
++  for (const envName in enabledEnvs) {
+```
+
+Verified by applying the equivalent change to the bundled `dist/lint.js` of oxlint 1.85.0: the probe then reports
+`Array`/`Object` as global under every `env`. Not yet run: `apps/oxlint/test/fixtures/globals` and
+`sourceCode_scope_methods` snapshots. Separately, the `builtin` line in `env.rs:17` could say "ES5 and later globals;
+always enabled for Rust rules" and note that an explicit `env` replaces the default.
+
+AI disclosure: investigation, source trace, and prototype were done with an AI coding assistant.
+[Filer: re-run the reproduction and the patched-bundle probe yourself, then replace this bracket with what you
+verified.]
+~~~
