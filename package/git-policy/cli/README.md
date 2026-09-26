@@ -366,6 +366,12 @@ without being held while a message editor is open.
 `post-commit` runs once,
 after landing,
 in the real worktree.
+Right before it,
+cli-git runs Git's automatic maintenance
+(`git maintenance run --auto`),
+as native `git commit` does,
+because every landing adds one pack to the real object store
+and unconsolidated packs slow down every later Git command in the repository.
 
 Commits then land one at a time in the order their preparation finished.
 Landing advances the branch by compare-and-swap and computes the real index against its current state,
@@ -1104,7 +1110,7 @@ a conflicting pair against a native commit,
 a slow `pre-commit` hook with `hooks.concurrentCommits` `false` and `true`,
 and a `landing.reserveAfterLostRaces` sweep.
 Each scenario gets a fresh repository,
-because per-commit cost grows with a repository's history,
+so no scenario inherits the packs and history earlier scenarios left,
 warms up until adjacent three-batch windows agree within 20 %,
 then records 30 concurrent batches,
 each paired with the same commits serialized through the wrapper

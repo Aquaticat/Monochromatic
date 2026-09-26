@@ -37,11 +37,14 @@ not a reason to disable parts of it.
   templates,
   message cleanup,
   and signing.
-- A private ref under `refs/cli-git/` protects each pending commit from `gc`
-  until landing,
+- The pending commit is protected from `gc` until landing,
   abort,
-  or recovery deletes it.
-  The private admin dir stays unregistered.
+  or recovery.
+  The design session chose a private ref under `refs/cli-git/`;
+  the implementation replaced it with a per-transaction shadow repository whose own object store holds the pending commit,
+  so no `refs/cli-git/` ref exists
+  (see "Private `HEAD` shape: shadow repository with alternates").
+  The shadow repository stays unregistered.
 - Hooks run through a dispatcher shim passed with `-c core.hooksPath=<shim>`
   plus `-c hook.<event>.enabled=false` for each event.
   The shim resolves the repository's own `core.hooksPath`,
@@ -66,7 +69,10 @@ not a reason to disable parts of it.
   the prepared commit itself lands,
   keeping its signature.
 - When `HEAD` moved,
-  replay resolves every path that both the prepared commit and the landed history changed
+  a path that the prepared commit and a commit landed since its base both captured from the same worktree
+  takes the later capture's bytes
+  (see "Capture order" in "Implementation-time decisions").
+  Replay resolves every other path that both the prepared commit and the landed history changed
   by a subsumption check first:
   when the landed change for that path
   (its diff from the preparation base to the new `HEAD`)
@@ -105,6 +111,13 @@ not a reason to disable parts of it.
   with native-equivalent `GIT_INDEX_FILE`,
   `GIT_AUTHOR_*`,
   and `GIT_EDITOR=:`.
+- Before `post-commit`,
+  landing runs `git maintenance run --auto` as native `git commit` does,
+  because every landing adds one pack to the real object store
+  and unconsolidated packs slow every later Git process in the repository.
+  Added 2026-09-26 (veto open);
+  evidence:
+  [`doc/troubleshooting/git-plumbing-commit-auto-maintenance.md`](../troubleshooting/git-plumbing-commit-auto-maintenance.md).
 
 ## Policy inputs
 
@@ -147,8 +160,10 @@ broad when absent.
   `restore --staged`,
   `reset`,
   and similar)
-  wait under the same rules,
-  and re-forward after a lock `EEXIST` only when a disposable fixture proves the command fails before side effects.
+  wait under the same rules.
+  The design session also allowed re-forwarding after a lock `EEXIST`;
+  the implementation does not re-forward
+  (see "Implementation-time decisions").
 - `git cli-git fix` holds the landing lock across installation and real-index verification.
 - Windows holder detection uses the PID file and Restart Manager,
   never a `DELETE`-access probe.
@@ -235,7 +250,7 @@ Evidence:
 
 - Every non-dry-run commit uses private preparation,
   including clean commits and `commit -a`.
-  Today a clean commit returns early and runs native `git commit`,
+  Before this change a clean commit returned early and ran native `git commit`,
   which holds `index.lock` through hooks and the editor,
   so it is the #560 collision path.
   The lifecycle latency baseline is re-measured.
@@ -246,8 +261,8 @@ Evidence:
 - The worktree-copy settlement lock is held only by forwarded commands that,
   after alias resolution,
   create or move worktrees.
-  Today it serializes every forwarded command in a linked worktree
-  and gives up after about 1 second,
+  Before this change it serialized every forwarded command in a linked worktree
+  and gave up after about 1 second,
   which would serialize private preparation.
   Worktrees created by Git invoked through an absolute path from a hook lose automatic ignored-state copying,
   matching the documented bypass of everything else.

@@ -3,25 +3,81 @@
 ## Status and sources
 
 Code map for issue #571,
-written 2026-09-25 against branch `feat/cli-git-concurrent-commits` at `d322d083e`.
-Nothing here is implemented.
+written 2026-09-25 against branch `feat/cli-git-concurrent-commits` at `d322d083e`
+before any of it was implemented.
+Every slice is now implemented on that branch.
+This document stays as the record of where each change was planned to go;
+`SPEC.md` describes the implemented behavior,
+and "Final behavior versus this plan" lists every place where the implementation departed from the plan.
 
 - Accepted design:
   [`doc/decision/cli-git-concurrent-commits.md`](../../../../doc/decision/cli-git-concurrent-commits.md).
 - Evidence and rejected options:
   [`doc/planning/cli-git-concurrent-commits.md`](../../../../doc/planning/cli-git-concurrent-commits.md).
 - Canonical interface:
-  [`SPEC.md`](../SPEC.md).
-  `SPEC.md` does not yet describe the accepted design;
-  it still specifies one lock held across the whole transaction ("Transaction protocol")
-  and a single journal per index ("Recovery").
-  `SPEC.md` is also already behind the code:
-  `CoreFindingEvent.coreId` allows `commit-normalization`
-  (`src/policy-engine/events.ts:208`),
-  but `SPEC.md` "Core finding event" lists only `commit-only`.
+  [`SPEC.md`](../SPEC.md),
+  which now specifies the per-transaction journals,
+  private preparation,
+  serial landing,
+  and every lock this plan introduces.
 
 Line references use `path:line` relative to `package/git-policy/cli/`
-and point at the first line of the named declaration.
+and point at the first line of the named declaration at `d322d083e`;
+the "Owners today" sections describe that revision, not the implemented code.
+
+## Final behavior versus this plan
+
+Each item names the plan's assumption and the implemented behavior;
+the `SPEC.md` heading holds the rules.
+
+- Private `HEAD`:
+  the plan's options A and B both used a pending ref under `refs/cli-git/pending/`.
+  The implementation uses neither:
+  each transaction prepares in a shadow repository at `<git-common-dir>/cli-git/shadow/<transaction-id>`
+  whose `HEAD` names a private copy of the target branch
+  and whose `objects/info/alternates` names the real object store,
+  so hooks see the real branch name and upstream.
+  New objects stay in the shadow store until landing migrates them into the real store as a pack kept with a `.keep` file,
+  and no `refs/cli-git/` ref is ever created.
+  `SPEC.md` "Private preparation" and "Object migration";
+  the decision's "Private `HEAD` shape: shadow repository with alternates" records the prototype.
+- Recovery of a dead owner without a landing record removes its `.keep` files,
+  its reservation,
+  the shadow repository,
+  and the transaction directory,
+  instead of deleting a pending ref (`SPEC.md` "Recovery").
+- Replay is not a pure three-way merge.
+  For a path that this commit and a commit landed since its base both captured from the same worktree,
+  the later capture's bytes land ("Capture order").
+  Every other shared path first checks subsumption,
+  keeping the prepared bytes when they already contain the landed change ("Subsumption"),
+  and only then merges three-way from the preparation base with `git merge-tree --write-tree --merge-base`.
+  An unsigned replayed commit is rebuilt by rewriting the raw commit object with `git hash-object -t commit -w`,
+  because `git commit-tree` transcoded non-UTF-8 messages and dropped headers;
+  only a signed commit is rebuilt with `git commit-tree -S` ("Replay").
+- Owner locks wait without bound while their owner lives,
+  including the worktree-copy settlement lock;
+  only an owner record without evidence gets a bounded wait ("Locks").
+  The settlement lock is held only by forwarded commands that create or move worktrees
+  ("Linked-worktree ignored-state synchronization").
+- The hook lock is taken by the dispatcher shim around each hook event,
+  not around the whole native preparation,
+  so an open message editor never holds it ("Hook lock").
+- `inputs` may be static or a function of the validated policy options.
+- Reservations are granted oldest invocation first ("Starvation reservation").
+- Forwarded index writers wait for the landing lock and pre-wait for foreign `index.lock` holders;
+  cli-git never captures Git's stderr to re-forward after `EEXIST` ("Index-writer coordination").
+- Missing Git features are detected by exercising each feature,
+  not by version:
+  replay plumbing is probed after a commit's first lost race,
+  and without it the commit fails with `concurrent-commit/head-moved` ("Compatibility and degradation").
+- Post-landing runs Git's automatic maintenance before `post-commit`,
+  as native `git commit` does,
+  because every landing adds one pack to the real store ("Post-landing").
+- JSONL additions stay under `schemaVersion: 1`;
+  consumers ignore unknown event types.
+- `landing.reserveAfterLostRaces` default:
+  see `SPEC.md` "Benchmark method" for the sweeps that set it.
 
 ## Findings that shape every slice
 
@@ -63,7 +119,9 @@ and hook Git calls made during private preparation carry no lease.
 Private preparation must not run inside that settlement lock;
 commits cannot register worktrees except through hooks,
 which the settlement lock was built to observe.
-This interaction needs an explicit decision in slice 2.
+This interaction needed an explicit decision in slice 2;
+the decision's "Implementation-time decisions" settled it:
+only forwarded commands that create or move worktrees take the settlement lock.
 
 ### Shared `HEAD` is re-read throughout preparation
 
@@ -238,14 +296,13 @@ because users on the current build may hold one after a crash.
   and `ownedLock` in `src/worktree-copy/journal-lock.ts`,
   parameterized by lock path,
   error factory,
-  and wait policy
-  (bounded for worktree-copy as today,
-  unbounded while the owner is alive for landing,
-  reservation,
-  hook,
-  and push locks).
-  `acquireWorktreeCopyLock` becomes a thin caller,
-  so its behavior stays byte-identical.
+  and wait policy.
+  Implemented:
+  every owner lock,
+  including the worktree-copy settlement lock,
+  waits without bound while its owner lives,
+  and only an owner record without evidence gets a bounded wait
+  (`SPEC.md` "Locks").
 
 ### Data structures
 
@@ -258,13 +315,17 @@ Directory layout per worktree Git directory:
   <transaction-id>/
     owner.json             pid, birth identity, schemaVersion 2, created time
     preparing.json         invocation facts written before any Git mutation
-    prepared.json          pending ref, prepared OID, signed flag, intended tree
+    prepared.json          shadow repository path, prepared OID, signed flag, intended tree
     landing-<n>.json       one per landing attempt inside the critical section
     ref-updated.json       exact landed OID
     index-installed        empty completion marker
-    admin/                 private admin dir (slice 2)
     commit.index, captured.index, post.index, candidate-*.state, patch-*.diff
 ```
+
+The implemented layout,
+with its pre-landing index snapshots and replay artifacts,
+is in `SPEC.md` "Transaction directory and journal";
+the private admin dir became the shadow repository under `<git-common-dir>/cli-git/shadow/`.
 
 State files keep today's exclusive-create writes (`writePrivateFile`,
  `src/trust/registry-io.ts:374`)
@@ -302,10 +363,11 @@ added-path and selected-worktree records.
   skip silently at debug log level.
   This replaces today's `is still active` failure.
 - Dead owner without a landing record:
-  delete the pending ref by compare-and-swap (`git update-ref -d <ref> <oid>`),
+  remove its `.keep` files in the real `objects/pack`,
   release any reservation it owns,
-  remove the transaction directory.
-  The real index was never touched.
+  remove the shadow repository,
+  then remove the transaction directory.
+  The real index and real refs were never touched.
 - Dead owner with a landing record:
   acquire the landing lock,
   then apply today's decision tree
@@ -385,7 +447,9 @@ added-path and selected-worktree records.
 ### Seam
 
 `executePreparedCommit` stops advancing the shared ref.
-It runs native `git commit` as
+It runs native `git commit` as shown here;
+the implementation points `--git-dir` at the transaction's shadow repository instead of `<tx>/admin`
+(see "Private `HEAD` shape"):
 
 ```text
 git --git-dir=<tx>/admin --work-tree=<worktree root>
@@ -428,16 +492,12 @@ native `commit -a` updates only the private index copy.
   `sequencer/`,
   `config.worktree` when `extensions.worktreeConfig` is set,
   and `info/sparse-checkout`.
-- `src/policy-engine/commit-preparation-pending-ref.ts`:
-  creates,
-  verifies,
-  and deletes `refs/cli-git/pending/<transaction-id>` by compare-and-swap.
 - `src/policy-engine/commit-preparation-native.ts`:
   assembles the native argv (drops user `--git-dir`/`--work-tree`,
    pathspecs,
    and internal `--only`),
   runs it with inherited stdio,
-  classifies failure before or after the pending ref moved.
+  classifies failure before or after the prepared commit exists.
 - `src/hook-dispatch/hook-shim-writer.ts`:
   writes `<tx>/hooks/` per preparation.
 - `src/hook-dispatch/hook-dispatch-program.ts`:
@@ -453,8 +513,19 @@ native `commit -a` updates only the private index copy.
 
 ### Private `HEAD` shape
 
-Two shapes satisfy the decision;
-a prototype must choose before code lands.
+The plan offered two shapes,
+both built on a pending ref under `refs/cli-git/pending/`.
+A prototype rejected both:
+hooks saw no real branch name and no upstream,
+so a "reject commits to main" hook was bypassed.
+The implementation prepares in a shadow repository per transaction
+at `<git-common-dir>/cli-git/shadow/<transaction-id>`,
+whose `HEAD` names a private copy of the target branch
+and whose `objects/info/alternates` names the real object store;
+no `refs/cli-git/` ref exists
+(`SPEC.md` "Private preparation";
+decision "Private `HEAD` shape: shadow repository with alternates").
+The rejected options follow as planned.
 
 #### Option B: symbolic `HEAD` to the pending ref
 
@@ -482,10 +553,10 @@ cli-git writes the pending ref after commit.
   a crash between commit and ref write leaves an unprotected object
   (still retained until `gc.pruneExpire`).
 
-Ranking:
-B > A,
+The plan ranked B over A,
 because B closes the `gc` window atomically and keeps symbolic-ref hooks working,
-while both shapes break branch-name-aware hooks equally.
+while both shapes break branch-name-aware hooks equally;
+the shadow repository keeps branch-name-aware hooks working as well.
 
 ### Hook dispatcher shim
 
@@ -556,12 +627,12 @@ nothing new ships in the tarball.
   (removal of `CHERRY_PICK_HEAD`,
   advancing `sequencer/todo`)
   replayed into the real Git directory at landing.
-  Unproven;
-  prototype before implementing conclusions.
-  If it fails,
-  the owner must choose again,
-  because hooks inside the landing lock are rejected.
-- Hooks that read the branch name see a private name under either option.
+  The prototype proved it:
+  conclusions prepared in the shadow produced commits byte-identical to native,
+  and landing reproduces native cleanup
+  (`SPEC.md` "Sequencer conclusion state").
+- Hooks that read the branch name see a private name under either option;
+  the shadow repository avoids this.
 - The shebang with an absolute `process.execPath` breaks when that path contains spaces
   and on Windows,
   where Git for Windows parses shebangs itself.
@@ -570,7 +641,9 @@ nothing new ships in the tarball.
   the client flavor documents it (`package/config/rolldown/src/index.client.ts:67`).
 - The worktree-copy settlement lock must not wrap preparation;
   a hook that runs `git worktree add` would then skip ignored-state synchronization.
-  Needs an owner decision.
+  Settled:
+  only commands that create or move worktrees take the settlement lock,
+  and a worktree created by Git invoked through an absolute path from a hook loses automatic ignored-state copying.
 - A `pre-commit` hook that runs `git stash` touches the shared `refs/stash`
   (planning doc "Hook environment probe");
   the hook lock only serializes cli-git's own hooks.
@@ -610,6 +683,13 @@ acquired through the slice 6 wait.
 and `bin.ts` passes it to `runPostCommitLifecycle` and auto-push instead of re-reading `HEAD`.
 
 ### Landing loop
+
+As planned;
+the implementation (`SPEC.md` "Landing" and "Post-landing") adds two steps:
+before step 5 it migrates the commit's shadow-only objects into the real store as a kept pack,
+and after the locks are released it runs Git's automatic maintenance before `post-commit`.
+With no pending ref,
+step 7 removes the migrated pack's `.keep` instead.
 
 1.  Wait until no live foreign reservation exists (slice 5).
 2.  Acquire `landing.lock`,
@@ -659,6 +739,16 @@ and `bin.ts` passes it to `runPostCommitLifecycle` and auto-push instead of re-r
 
 ### Replay
 
+Implemented differently in three ways
+(`SPEC.md` "Replay",
+"Subsumption",
+and "Capture order"):
+a shared path captured from the same worktree takes the later capture's bytes,
+every other shared path is checked for subsumption before the three-way merge,
+and an unsigned replayed commit is rebuilt by rewriting its raw commit object with `git hash-object -t commit -w`,
+because `git commit-tree` transcoded non-UTF-8 messages and dropped headers.
+The plan as written:
+
 - `git merge-tree --write-tree --name-only -z --merge-base=<base> <current> <prepared>`;
   exit `1` means conflict even though a tree ID prints,
   exit above `1` is an engine failure.
@@ -674,8 +764,7 @@ and `bin.ts` passes it to `runPostCommitLifecycle` and auto-push instead of re-r
   naming the conflicting paths,
   the first commit in `<base>..<current>` touching them,
   and the prepared commit OID so the user can cherry-pick it.
-  The pending ref is deleted;
-   the object survives until `gc` pruning.
+  The object survives in the shadow store until the transaction is removed.
 - After a clean replay:
   re-run policies per slice 4
   (until slice 4 lands,
@@ -709,7 +798,7 @@ and `bin.ts` passes it to `runPostCommitLifecycle` and auto-push instead of re-r
   `commit (cli-git <nonce>): <subject>`,
   replacing today's `GIT_REFLOG_ACTION` form (`commit-transaction-workspace.ts:370`).
 - New JSONL events (backward-compatible additions under `schemaVersion: 1`,
-   to confirm in `SPEC.md`):
+   as `SPEC.md` now states):
   `commit-replayed` (`fromBase`,
   `onto`,
   `oid`)
@@ -747,10 +836,13 @@ Disposable real-Git unit tests driving two in-process preparations with controll
 
 ### Risks and unknowns
 
-- Whether `git update-ref <branch>` also writes the `HEAD` reflog like a native commit is unverified;
-  updating through `HEAD` without `--no-deref` may be required.
-- `commit-tree` may drop an `encoding` header or other extra headers;
-  verify against a non-UTF-8 `i18n.commitEncoding` fixture.
+- Whether `git update-ref <branch>` also writes the `HEAD` reflog like a native commit was unverified.
+  Resolved:
+  it does when run in the owning worktree's context with no `GIT_DIR` override (`SPEC.md` "Landing").
+- `commit-tree` may drop an `encoding` header or other extra headers.
+  Confirmed:
+  it transcoded non-UTF-8 messages and dropped headers,
+  so unsigned replays rewrite the raw commit object instead (`SPEC.md` "Replay").
 - Replay plus revalidation is a second convergence loop;
   it must reuse `runCommitTransaction`'s pass-limit and cycle rules rather than duplicate them.
 - GPG signing during replay can prompt through pinentry;
@@ -889,9 +981,11 @@ and passes the set of policies to re-run.
 ### Risks and unknowns
 
 - The static `inputs` type cannot express option-dependent inputs.
-  Owner question:
+  Owner question at planning time:
   keep the static form and leave such policies unrestricted,
   or allow `inputs` to be computed from validated options.
+  Settled:
+  `inputs` may be either.
 - `bytes()` on a tracked file can be read after the policy returns;
   recording must stop at policy completion (`SPEC.md` "Policy completion").
 
@@ -973,9 +1067,10 @@ always uses defaults.
   An open editor blocks other commits' hooks until it closes.
 - A reservation queue with more than one waiter needs an order;
   the decision names one slot only.
-  Proposed:
-  first to reach the threshold wins,
-  later ones wait for the slot.
+  Proposed at planning time:
+  first to reach the threshold wins.
+  Implemented instead:
+  oldest invocation first (`SPEC.md` "Starvation reservation").
 
 ## Slice 6: foreign `index.lock` classification and index-writer waits
 
@@ -1085,9 +1180,11 @@ always uses defaults.
 - Re-forwarding after `EEXIST` needs to recognize Git's lock failure,
   but forwarded Git inherits stderr (`src/worktree-copy/lifecycle.ts:88`).
   Capturing stderr would change Git's terminal detection for color and progress.
-  The detection mechanism is open.
-- The first release that has `core.lockfilePid` is unrecorded here;
-  per-feature detection needs it (EXT).
+  Settled:
+  cli-git does not re-forward;
+  forwarded index writers pre-wait and coordinate through the landing lock ("Index-writer coordination").
+- The first release that has `core.lockfilePid` was unrecorded here.
+  It is Git 2.54.0 (`SPEC.md` "Compatibility and degradation").
 - Linux `/proc` scans over every process are unmeasured on hosts with many processes.
 
 ## Slice 7: single-flight auto-push per branch
@@ -1268,11 +1365,19 @@ and runs its push inside a per-branch single-flight coordinator.
 
 ## Questions for the owner
 
+All settled;
+the decision's "Implementation-time decisions" records each answer.
+
 - Private `HEAD` shape:
-  option B (symbolic to the pending ref) or option A (detached),
-  per "Private `HEAD` shape".
-- Worktree-copy settlement lock versus private preparation in linked worktrees.
-- Static `inputs` versus option-derived `inputs`.
-- Reservation order when several commits cross the threshold.
-- JSONL additions under `schemaVersion: 1` versus a schema bump.
-- Sequencer conclusions if the admin-dir state-copy prototype fails.
+  neither option;
+  a shadow repository with alternates.
+- Worktree-copy settlement lock versus private preparation in linked worktrees:
+  only commands that create or move worktrees take the lock.
+- Static `inputs` versus option-derived `inputs`:
+  both are accepted.
+- Reservation order when several commits cross the threshold:
+  oldest invocation first.
+- JSONL additions under `schemaVersion: 1` versus a schema bump:
+  additive under `schemaVersion: 1`.
+- Sequencer conclusions if the admin-dir state-copy prototype fails:
+  the prototype succeeded in the shadow repository.
