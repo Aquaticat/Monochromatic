@@ -49,8 +49,8 @@ It has no type information,
 Branch `prototype/issue-563-explicit-conversions`,
  worktree `~/temp/agent/issue-563-conversions`,
 directory `package/oxlint-plugin/no-restricted-syntax/prototype-issue-563/`.
-The branch commit is blocked:
- the forbidden-strings scanner cannot start in the uninstalled worktree.
+The branch is committed and pushed after building the forbidden-strings scanner in the worktree;
+ issue 563 carries a pointer comment.
 
 - Narrow-typed helpers (`copyArray`,
    `numbersOf`,
@@ -198,5 +198,3 @@ Repo uses of single-argument `Array.from` are 2 deliberate string code-point spl
 ## Open questions
 
 - Whether to post the upstream comment drafted in `doc/troubleshooting/oxlint-spread-autofix.md`.
-- The prototype branch `prototype/issue-563-explicit-conversions` is uncommitted:
-  the forbidden-strings scanner cannot start in the uninstalled worktree.
