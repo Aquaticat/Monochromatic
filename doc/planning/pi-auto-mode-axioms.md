@@ -243,6 +243,69 @@ Ambiguous truth labels remain explicit rather than being forced into yes or no t
 No further direct approve/deny/ask model questions are authorized by this design.
 No production decision profile is selected yet.
 
+## Private deterministic prototype
+
+The private prototype is at
+`~/temp/agent/auto-mode-axioms-2026-09-26`.
+It is an independent scratch Git repository,
+not production guard code.
+
+The first closed-world demonstration uses these candidate effects:
+protected-file reads,
+protected-file transmission,
+and cache-content removal.
+For each effect,
+separate axioms describe whether the proposed operation attempts it,
+whether the trusted request explicitly asks for it,
+whether that request prohibits it,
+and whether an active human-approved directive permits it.
+The effect definitions do not claim an attempted operation will succeed.
+Empty active-grant sets produce deterministic false values without a model call.
+
+This is deliberately not the full guard effect inventory.
+Only the named synthetic fixture domain is admitted;
+unsupported domains require review.
+The model receives effect descriptions only,
+not policy parameters,
+truth labels,
+expected final actions,
+or diagnostic thresholds.
+
+Pure code owns precedence,
+contradiction handling,
+unknown evidence,
+protected transmission,
+and authorization checks.
+Unvalidated profiles cannot approve in enforcement mode.
+Three predeclared diagnostic bands exercise offline sensitivity only;
+they are not selected production thresholds.
+
+`mise run test:policy` passed:
+
+- Six independently labelled policy examples.
+- Three diagnostic profiles.
+- 4,096 binary axiom vectors for the stated invariants.
+- Targeted uncertainty,
+  stale-policy,
+  unsupported-domain,
+  malformed-estimate,
+  conflict,
+  and precedence paths.
+
+The hard-block guard was committed in scratch commit `9a8bae0` before its mutation control.
+Removing that guard made the test fail with `ask !== deny`.
+Restoring it made the suite pass,
+and scratch Git status was clean.
+This demonstrates the test detects the missing guard;
+it is not a proof of complete production behavior or all continuous probability combinations.
+
+The next native Jev request batch uses LLM Gateway,
+the full freshly read policy,
+and only Noul axiom questions.
+It retains probabilities independently,
+then computes diagnostic final outcomes in our code.
+It does not execute a tool or select a production calibration profile.
+
 ## Primary-source cross-check
 
 The user's correction is the authority for this design.
