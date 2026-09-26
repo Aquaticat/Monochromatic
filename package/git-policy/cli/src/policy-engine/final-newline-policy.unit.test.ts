@@ -8,18 +8,18 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { ABSENT_GIT_VALUE, } from '../api/context-types.ts';
+import {
+  ABSENT_GIT_VALUE,
+  createFinalNewlinePatch,
+  finalNewlinePolicy,
+  isFinalNewlineExcluded,
+  normalizeFinalNewline,
+} from '../../dist/final/node/index.mjs';
 import type {
   CandidateFile,
   PolicyContext,
   PolicyTrigger,
-} from '../api/policy-types.ts';
-import {
-  isFinalNewlineExcluded,
-  normalizeFinalNewline,
-} from './final-newline-normalize.ts';
-import { createFinalNewlinePatch, } from './final-newline-patch.ts';
-import { finalNewlinePolicy, } from './final-newline-policy.ts';
+} from '../../dist/final/node/index.mjs';
 
 /** Text fixture encoder. */
 const ENCODER = new TextEncoder();

@@ -50,6 +50,12 @@ export type {
   MarkdownLintPolicyOptions,
   RewriteCandidatesParams as RewriteMarkdownCandidatesParams,
 } from './optional/markdown-lint/index.ts';
+/**
+ Exact-byte patch builder exposed for built-artifact verification.
+
+ @internal
+ */
+export { createFinalNewlinePatch, } from './policy-engine/final-newline-patch.ts';
 export {
   finalNewlinePolicy,
 } from './policy-engine/final-newline-policy.ts';
