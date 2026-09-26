@@ -5640,6 +5640,33 @@ Older real-Gboard evidence PNGs predate that correction;
 the new real-Gboard recheck measured the corrected settled state but did
 not reproduce the transient font banner or settle floating-keyboard D50.
 
+## Accepted corrected A and next design gate
+
+On 2026-09-25 the user said “Okay, I like it” about the refreshed
+`questions/current.html` review.
+Treat D51's retained folder browser,
+shortened upper-left viewport,
+and tolerated small Open crop as accepted.
+This is **not** approval of the separate 415dp synthetic title/transport
+reflow,
+not a waiver of D50's original “never hidden” requirement,
+and not authorization for production code.
+
+The next design-only gate is D50's observed keyboard failures.
+Distinguish the original floating Gboard overlap,
+whose reported bottom inset is zero,
+from the disposable AVD's real transient banner,
+whose reported IME top moved to y `1140` and clipped a mode.
+A fixed debug threshold and settled synthetic fit do not establish
+continuous visibility as the keyboard changes height.
+Only after the keyboard boundary is verified should the remaining Search
+behavior be closed:
+result effects/ranking,
+long names and scrolling,
+and the minimum informational clearance from the crease.
+Keep the active review limited to accepted A;
+retain experimental keyboard variants in evidence and debug-only sources.
+
 ## Issue tracking moves to Linear for this session
 
 `gh` cannot reach the GitHub API this session:

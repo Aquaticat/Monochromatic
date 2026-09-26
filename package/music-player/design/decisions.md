@@ -1495,6 +1495,11 @@ not active choices.
 The corrected A-only review was recaptured with the same folder browser
 visible in the shortened upper-left viewport under a 300dp debug IME;
 its unfolded deck and query/results remained visible.
+On 2026-09-25 the user said “Okay, I like it” after reviewing that
+correction.
+This affirms the retained-browser composition,
+not the separate synthetic 415dp title/transport reflow or universal D50
+compliance.
 The older real-Gboard PNGs predate that browser correction.
 A later real Gboard floating-keyboard probe at 200% text obscured part of
 the deck title; moving that keyboard lower obscured more controls.

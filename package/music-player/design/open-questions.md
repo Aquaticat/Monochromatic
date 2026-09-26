@@ -164,6 +164,9 @@ rounds (2026-09-17):
   The user accepts a little clipping even around the Open button;
   this does not imply that the off-screen folder rows are accessible during
   a banner-height keyboard.
+  The user liked the refreshed A-only review on 2026-09-25;
+  the retained browser composition is settled,
+  not the separate tall-IME reflow or D50's unresolved failures.
   The full Open parent is `[621,148][953,279]` with the keyboard closed,
   while UI Automator sees only `[621,132][953,245]` in the short viewport.
   Those are visible accessibility bounds,
