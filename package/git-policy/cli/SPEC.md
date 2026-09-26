@@ -3137,8 +3137,11 @@ After both locks are released:
     so the background notice never interleaves with JSONL output.
     Its exit status is ignored,
     as in native Git.
-    This keeps the real pack count under `gc.autoPackLimit`
-    (see "Object migration").
+    This bounds the real pack count
+    (see "Object migration"):
+    since Git 2.54 the default `geometric` maintenance strategy merges packs whose sizes break a geometric progression,
+    and under the `gc` strategy or an older Git,
+    `gc --auto` repacks once the count exceeds `gc.autoPackLimit`.
 3.  Run `post-commit` once through `git hook run post-commit` in the real worktree,
     under the hook lock unless `hooks.concurrentCommits` is `true`,
     with native-equivalent `GIT_INDEX_FILE`,
@@ -3952,6 +3955,24 @@ and a paired serialized baseline.
 Because every non-dry-run commit now prepares privately,
 the lifecycle baseline is re-measured and stored as a new dated `perf/lifecycle-latency-<date>.json`.
 Timing comparisons first measure the run-to-run band on one unchanged build.
+
+Repeated wrapper commits in one repository measure a moving state,
+not one fixed scenario:
+before automatic maintenance ran after landing
+(see "Post-landing"),
+every landing left one more pack in the real store,
+so per-commit time grew with the number of earlier wrapper commits while direct Git stayed flat.
+With synthetic one-commit packs on Git 2.55.0,
+30 serialized commits had a median of 435 ms at 250 packs,
+521 ms at 500,
+716 ms at 1000,
+and 1062 ms at 2000,
+against a 339 to 344 ms band at none;
+with maintenance the medians stayed between 343 and 351 ms.
+Commit history length alone,
+2000 commits in one pack,
+did not move the median.
+`doc/troubleshooting/git-plumbing-commit-auto-maintenance.md` holds the trace and source citations.
 
 For each scenario:
 

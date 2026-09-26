@@ -30,7 +30,8 @@ import {
 } from './commit-landing-fixture.unit.test.ts';
 
 /**
- Pack count above which `git gc --auto` consolidates packs in these fixtures.
+ Pack count above which `git gc --auto` consolidates packs in these fixtures;
+ Git 2.54 and later default to geometric repacking, which consolidates equal-sized packs sooner.
  */
 const PACK_LIMIT = 2;
 
@@ -205,7 +206,7 @@ await describe({
   name: 'automatic maintenance after landing',
   children: [
     it({
-      name: 'sequential landings keep the real pack count bounded by gc.autoPackLimit, as native git commit does',
+      name: 'sequential landings keep the real pack count bounded by automatic maintenance, as native git commit does',
       fn: async function testPackCountBounded(): Promise<void> {
         await using repository = await createLandingRepository([
           ['gc.autoPackLimit', String(PACK_LIMIT,),],

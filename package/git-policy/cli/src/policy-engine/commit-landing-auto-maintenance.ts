@@ -7,7 +7,8 @@
  and every landing migrates its objects as one pack,
  so without this step the real pack count grows by one per commit
  and every later Git process searches every pack.
- `gc --auto` consolidates packs once they exceed `gc.autoPackLimit`,
+ Maintenance consolidates them,
+ through geometric repacking by default since Git 2.54 or `gc --auto` past `gc.autoPackLimit`,
  which bounds that count independently of history length.
 
  The enable and detach decisions mirror Git's `prepare_auto_maintenance` in `run-command.c`:
