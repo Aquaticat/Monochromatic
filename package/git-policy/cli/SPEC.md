@@ -3275,7 +3275,9 @@ is retired by the next acquirer.
   `<registry-root>/recursive-operation.lock`,
   taken by every explicit trust,
   untrust,
-  and recursive enrollment:
+  and recursive enrollment,
+  and by a reader that finds a published provenance journal
+  (see "Recursive enrollment and revocation"):
   unbounded wait while its owner lives.
   The candidate directory and owner record get the registry's private modes
   and Windows ACL protection before publication
