@@ -227,19 +227,23 @@ await describe({
       name: 'falls back to raw bytes as text when aes-256-cbc decryption fails under a wrong key',
       fn: async () => {
         /**
-         Ciphertext written under the correct key.
+         Frozen ciphertext fixture written under `fixture-right-key`.
+         Fixed bytes keep the wrong-key case deterministic:
+         a random draw can otherwise decrypt with lucky padding roughly one
+         run in 256 and break the fallback assertion.
          */
-        const encrypted = encryptSerializedStore({
-          serialized: '{"theme":"dark"}',
-          encryptionKey: 'correct horse',
-          encryptionAlgorithm: 'aes-256-cbc',
-        },);
+        const encrypted = new Uint8Array([
+          116, 30, 39, 133, 139, 153, 21, 164, 156, 14, 85, 251, 128, 136, 13,
+          204, 58, 178, 108, 117, 240, 251, 67, 86, 209, 100, 201, 75, 200, 245,
+          59, 98, 194, 219, 142, 0, 121, 171, 142, 24, 42, 42, 108, 61, 236, 36,
+          83, 255, 119,
+        ],);
         /**
          Decryption attempt under a key that cannot open the framing.
          */
         const fallback = decryptConfigData({
           data: encrypted,
-          encryptionKey: 'wrong horse',
+          encryptionKey: 'fixture-wrong-key',
           encryptionAlgorithm: 'aes-256-cbc',
         },);
         // Upstream mirrors this plaintext passthrough of the raw encrypted bytes as text.
