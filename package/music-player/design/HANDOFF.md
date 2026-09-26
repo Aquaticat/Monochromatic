@@ -6153,8 +6153,18 @@ it applies new insets to the right-side heading and track text in the
 Search-closed player,
 and to right-side Search content while retaining the full left browser/deck.
 Only measured informational paint can decide E2 compliance.
-Its native after-state captures are pending,
-and no full review should be presented before checking them.
+Commit `678fd7d8f` additionally gives the 200% Search-closed deck full
+layout height without narrowing its mode targets.
+A bounded P7.5 player capture on that build shows a continuous white
+surface,
+the full deck (last mode box `[73,1904][965,2035]`),
+and right heading beginning at x `1106`,
+beyond approximate crease end x `1093`.
+This is still one sample,
+not a universal glyph-ink pass.
+The other native after-state captures and the replacement full review are
+pending;
+do not re-ask before verifying them.
 No production change or new IME experiment is authorized;
 only the disposable capped Fold may be used.
 The original AVD remains untouched.

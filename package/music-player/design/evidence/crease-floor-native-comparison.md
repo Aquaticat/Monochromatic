@@ -126,5 +126,12 @@ dividers and hit regions;
 only the right-side title and track text receive extra information clearance.
 Its Search page likewise retains the full left browser/deck and right
 surface while shifting right-side informational content.
-New native captures must be inspected before replacing the incomplete form.
+Commit `678fd7d8f` also keeps the full 200% mode targets in the
+Search-closed player.
+A private P7.5 native sample shows no gray stripe,
+a complete last mode at `[73,1904][965,2035]`,
+and a right heading beginning at x `1106`,
+just outside the approximate crease endpoint x `1093`.
+All remaining native captures still require inspection before replacing
+the incomplete form.
 No floor decision or native player visual has yet been re-accepted.
