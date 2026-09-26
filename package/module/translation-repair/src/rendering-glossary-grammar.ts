@@ -52,6 +52,22 @@ export const GRAMMAR_GLOSSARY: readonly CommunityTerm[] = [
     why: 'a life that ought to have been better; with the tag question 不是吗 the page writes "deserved a better life, '
       + 'didn\'t she?", since "should have had ..., didn\'t she?" mismatches the tag',
   },
+  // CLASS ONE HUNDRED SIXTY-FOUR (TianqiChen6665, 2026-09-26): 遇到的却是
+  // shipped as the archive's "made her met with" on an unendorsed standing
+  // after a 2 to 2 contest; the refused form makes that standing ineligible.
+  {
+    term: '遇到的却是',
+    renderings: [
+      'met with',
+      'was met with',
+      'faced',
+    ],
+    refusedForms: [
+      'made her met with',
+    ],
+    why: 'what someone met with instead of what they hoped for; after "made her" the verb is bare, so the page '
+      + 'writes "she was met with" or "what she met with was", never "made her met with"',
+  },
 ];
 
 //endregion Grammar renderings
