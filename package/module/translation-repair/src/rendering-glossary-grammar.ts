@@ -68,6 +68,22 @@ export const GRAMMAR_GLOSSARY: readonly CommunityTerm[] = [
     why: 'what someone met with instead of what they hoped for; after "made her" the verb is bare, so the page '
       + 'writes "she was met with" or "what she met with was", never "made her met with"',
   },
+  // CLASS ONE HUNDRED SIXTY-SIX (TianqiChen6665, 2026-09-26): 在隙中得以窥见
+  // 有被她治愈的人 shipped as "caught a glimpse through the gaps of those she
+  // had comforted", the gaps read as belonging to the people seen through them.
+  {
+    term: '在隙中',
+    renderings: [
+      'through the gap',
+      'through the narrow gap',
+    ],
+    refusedForms: [
+      'gaps of those',
+      'gap of those',
+    ],
+    why: 'looking out through a narrow opening; the gap is the viewer\'s, so the page writes "glimpsed, through the '
+      + 'gap, those she had comforted", never "through the gaps of those"',
+  },
 ];
 
 //endregion Grammar renderings

@@ -6,6 +6,7 @@ import { GRAMMAR_GLOSSARY, } from './rendering-glossary-grammar.ts';
 import { IDIOM_GLOSSARY, } from './rendering-glossary-idiom.ts';
 import { MEDICAL_GLOSSARY, } from './rendering-glossary-medical.ts';
 import { PHRASING_GLOSSARY, } from './rendering-glossary-phrasing.ts';
+import { SLANG_GLOSSARY, } from './rendering-glossary-slang.ts';
 import { WORDING_GLOSSARY, } from './rendering-glossary-wording.ts';
 
 //region Rendering glossary
@@ -259,6 +260,9 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
   // CLASS ONE HUNDRED SIXTY-TWO (TianqiChen6663, 2026-09-26): medical terms,
   // kept in `rendering-glossary-medical.ts`.
   ...MEDICAL_GLOSSARY,
+  // CLASS ONE HUNDRED SIXTY-SEVEN (TianqiChen6665, 2026-09-26): game slang,
+  // kept in `rendering-glossary-slang.ts`.
+  ...SLANG_GLOSSARY,
 ];
 
 /**

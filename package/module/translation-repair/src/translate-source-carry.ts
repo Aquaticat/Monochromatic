@@ -6,12 +6,14 @@ import { declaredLinkNameFindings, } from './translate-declared-link-name.ts';
 import { hanTitleFindings, } from './translate-han-title.ts';
 import { latinTitleFindings, } from './translate-latin-title.ts';
 import { droppedMarkerFindings, } from './translate-marker-drop.ts';
+import { strayClosingQuoteFindings, } from './translate-quote-balance.ts';
 import { droppedSuicideFindings, } from './translate-suicide-drop.ts';
 import { unwrappedLinkFindings, } from './translate-unwrapped-link.ts';
 
 //region Source carry floors
 // What the original passage carries that every candidate must carry too,
 // read before any judge: its footnote markers (class ninety-two), its
+// quotations opened before they close (class one hundred sixty-five), its
 // second-person address (class ninety-seven), the suicide it names (class
 // one hundred fifty), its bracketed work titles
 // in English (class ninety-eight) and set in quotation marks rather than
@@ -67,6 +69,15 @@ export function sourceCarryFindings(
   },);
   if (markerFindings.length > 0)
     return markerFindings;
+  /**
+   Closing quotation marks the candidate never opened.
+   */
+  const quoteFindings = strayClosingQuoteFindings({
+    sourceText,
+    candidateText,
+  },);
+  if (quoteFindings.length > 0)
+    return quoteFindings;
   /**
    Second-person address the candidate turned into the third person.
    */
