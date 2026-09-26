@@ -42,7 +42,7 @@ ripgrep = "latest"
 # Replacing strings
 "cargo:fastmod" = "latest"
 
-# Coverage-guided fuzzing for forbidden-strings (see package/fuzz/forbidden-strings/).
+# Coverage-guided fuzzing for forbidden-strings (see package/cli/forbidden-strings.fuzz/).
 # Pinned to 0.13.2 because the API around `--fuzzing-workspace=true` and
 # the libfuzzer-sys integration has shifted across point releases; this
 # version is what was verified locally for the rollout.
@@ -80,7 +80,7 @@ age = "latest"
 # For reliable timeout
 # Rust toolchain, managed repo-wide here (no per-package override).
 # Pinned to nightly because cargo-fuzz (coverage-guided fuzzing under
-# package/fuzz/forbidden-strings/) injects `-Cllvm-args=-sanitizer-coverage-*`
+# package/cli/forbidden-strings.fuzz/) injects `-Cllvm-args=-sanitizer-coverage-*`
 # RUSTFLAGS that only compile on nightly; a single root toolchain keeps every
 # crate on one channel rather than forking stable/nightly per directory.
 # Floating "nightly" tracks the latest; pin to a dated channel
@@ -101,7 +101,7 @@ cargo-binstall = "latest"
 # per-test process isolation model, faster parallel scheduling, and clearer
 # output. The `cargo:` backend resolves through cargo-binstall (installed just
 # above) to a prebuilt binary, so no slow source build. Inherited by child
-# config roots (e.g. package/fuzz/forbidden-strings), so the nightly fuzz
+# config roots (e.g. package/cli/forbidden-strings.fuzz), so the nightly fuzz
 # crate gets the same runner without its own entry. The two podman-built
 # desktop apps install nextest inside their Containerfiles instead, since the
 # container filesystem does not see host mise tools.
@@ -1288,6 +1288,7 @@ _.path = [
   "package/git-policy/cli/node_modules/.bin",
   "package/kwin/key-helper/node_modules/.bin",
   "package/mcp/mvm/node_modules/.bin",
+  "package/module/conf-fork/node_modules/.bin",
   "package/module/css-edit.bench/node_modules/.bin",
   "package/module/pnpm-workspace-catalog/node_modules/.bin",
   "package/module/token-count/node_modules/.bin",

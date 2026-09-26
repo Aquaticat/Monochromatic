@@ -21,7 +21,7 @@ libfuzzer-sys = { version = "0.4", features = ["arbitrary-derive"] }
 sha2 = "0.10"
 
 [dependencies.forbidden-strings]
-path = "../../cli/forbidden-strings"
+path = "../forbidden-strings"
 features = ["fuzzing"]
 
 # Use independent workspace for fuzzers
@@ -38,7 +38,7 @@ path = "src/lib.rs"
 
 # Spell out `panic = "unwind"` so libFuzzer can capture and minimize crashes by
 # unwinding. The scanner crate under fuzz also uses `unwind` (load-bearing for its
-# `catch_unwind` fail-closed scan boundary, see ../../cli/forbidden-strings/Cargo.toml),
+# `catch_unwind` fail-closed scan boundary, see ../forbidden-strings/Cargo.toml),
 # so this does not change the effective strategy today. It is pinned anyway so the
 # harness keeps working if the scanner's setting ever changes to `abort`, under which a
 # panic would kill the process before libFuzzer records a reproducer.
@@ -51,7 +51,7 @@ panic = "unwind"
 # The scanner's `build.rs` precompiles its embedded baseline through the
 # forbidden-regex build-dependency, which Cargo builds at `opt-level = 0` by default.
 # Profiles are read only from this workspace root, so the scanner manifest's own
-# build-override does not reach fuzz builds; see ../../cli/forbidden-strings/Cargo.toml
+# build-override does not reach fuzz builds; see ../forbidden-strings/Cargo.toml
 # for the measurement.
 [profile.release.build-override]
 opt-level = 3

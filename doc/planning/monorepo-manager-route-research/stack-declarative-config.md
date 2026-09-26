@@ -802,7 +802,7 @@ locals {
     "package/music-player/truepeak-core.bench"  = "bench"
     "package/music-player/desktop-app"          = "music"
     "package/rust-module/forbidden-regex.fuzz"  = "fuzz"
-    "package/fuzz/forbidden-strings"            = "fuzz"
+    "package/cli/forbidden-strings.fuzz"            = "fuzz"
   }
 }
 

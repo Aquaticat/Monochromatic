@@ -334,7 +334,7 @@ Run in order:
    container wrapper.
 7. `mise run //package/cli/forbidden-strings:fuzz:smoke` inside the
    container wrapper.
-8. `git check-ignore -v package/fuzz/forbidden-strings/Cargo.lock`
+8. `git check-ignore --verbose package/cli/forbidden-strings.fuzz/Cargo.lock`
    must return no match.
    Cargo lockfiles are not gitignored.
 9. Sentinel commands from `AGENTS.md` "Git cleanup and worktree safety
@@ -1233,7 +1233,7 @@ integration tests = all green.
 
 - `find . -maxdepth 1 \( -name HEAD -o -name config -o ... \)` -- no
   fuzz output escaped gitignore.
-- `git check-ignore -v package/fuzz/forbidden-strings/Cargo.lock`
+- `git check-ignore --verbose package/cli/forbidden-strings.fuzz/Cargo.lock`
   exits 1.
   This is correct because Cargo lockfiles are not ignored by root `.gitignore`.
 - The post-fix fuzz log shows the panic immediately after

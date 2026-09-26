@@ -58,7 +58,7 @@ the decision state section gives each one a status and a first action.
    and the oxlint fixture packages.
 - Build a `package/done/*` product cluster (`app` plus `variant-postcss`),
    keeping `done-postcss`.
-- Build a `package/forbidden-strings/*` product cluster from `cli/forbidden-strings` and `fuzz/forbidden-strings`.
+- Keep `package/cli/forbidden-strings` and place its sidecar at `package/cli/forbidden-strings.fuzz`.
 - Keep `package/pi-shared/*` as a deliberate extension-versus-infrastructure boundary;
    do not fold it into `pi`.
 - Keep broad independent utility buckets such as `module`,
@@ -92,8 +92,9 @@ remaining entries document the roadmap.
   proceed;
   first action is moving the canonical app to `package/done/app` and `done-postcss` to `package/done/variant-postcss`.
 - `forbidden-strings`:
-  proceed;
-  first action is moving its cli and fuzz crates into `package/forbidden-strings/{cli,fuzz}`.
+  the maintainer's sibling-sidecar requirement supersedes the product-cluster move;
+  keep the scanner at `package/cli/forbidden-strings`
+  and its harness at `package/cli/forbidden-strings.fuzz`.
 - `pi-shared`:
   keep;
   affirmed as an extension-versus-infrastructure boundary,
@@ -215,7 +216,7 @@ The active non-`package.json` project roots are:
 
 - `package/cli/forbidden-strings`
 - `package/desktop-app/terminal`
-- `package/fuzz/forbidden-strings`
+- `package/cli/forbidden-strings.fuzz`
 - `package/linter/rust`
 - `package/music-player/android-app`
 - `package/music-player/desktop-app`
@@ -362,7 +363,7 @@ Artifact-type and utility categories:
 - `fuzz`:
   fuzz-test harnesses for other packages;
   its only member,
-   `fuzz/forbidden-strings`,
+   `cli/forbidden-strings.fuzz`,
    moves into the `forbidden-strings` cluster per this plan,
   retiring the category.
 - `test-fixture`:
@@ -1222,63 +1223,43 @@ Those stay in `build-tool`,
 
 #### Current state
 
-Current roots:
+The maintainer requires fuzz sidecars at `package/<category>/<name>.fuzz`,
+beside their owning packages.
+This supersedes the proposed forbidden-strings product cluster.
 
 ```text
 package/cli/forbidden-strings/
-package/fuzz/forbidden-strings/
+package/cli/forbidden-strings.fuzz/
 ```
 
-`cli/forbidden-strings` is a Rust scanner for forbidden literal strings and regex patterns,
-built as a library plus a binary.
-`fuzz/forbidden-strings` is its fuzz harness;
-its `Cargo.toml` path-depends on `cli/forbidden-strings` with the `fuzzing` feature.
-It is the only member of the `fuzz/` category.
+The scanner stays a library plus binary.
+The sidecar keeps its independent Cargo workspace and `forbidden-strings-fuzz` crate name,
+with `path = "../forbidden-strings"` and the `fuzzing` feature.
+The standalone fuzz category is retired.
 
-This is one product split across two artifact-type categories:
-a CLI scanner and its fuzz harness.
+#### Migration boundaries
 
-#### Target shape
-
-Forbidden-strings is a near-term go.
-Move both crates into a product cluster:
-
-```text
-package/forbidden-strings/
-  cli/
-  fuzz/
-```
-
-The `cli` crate keeps its library plus binary;
-the `fuzz` crate keeps fuzzing it through a `path` dependency.
-This empties the `fuzz/` category,
- which then retires;
-future fuzz harnesses live beside the code they fuzz,
- inside that code's cluster.
-
-Long-term package names could become `forbidden-strings-cli` and `forbidden-strings-fuzz`,
-staged separately from the path move.
-
-#### Migration sketch
-
-1. Create `package/forbidden-strings/` and `git mv` the cli crate to `package/forbidden-strings/cli`.
-2. `git mv` the fuzz crate to `package/forbidden-strings/fuzz`.
-3. Update the fuzz crate's `path` dependency to point at the new cli location.
-4. Update task references and any docs that name `cli/forbidden-strings` or `fuzz/forbidden-strings`.
-5. Remove the now-empty `fuzz/` category.
+Move the complete sidecar,
+including seeds and ignored local corpora.
+Update task paths,
+the file-enforcer Cargo profile map,
+corpus ignores,
+and Git policy's exact-byte seed exclusion together.
+Keep unrelated category moves outside this change.
 
 #### Verification
 
 ```sh
-mise run //package/cli/forbidden-strings:test
-mise run //package/cli/forbidden-strings:lint
-mise run //package/fuzz/forbidden-strings:test
+# Run from the repository root.
+mise run //package/cli/forbidden-strings.fuzz:list
+mise run //package/cli/forbidden-strings.fuzz:test
+mise run //package/cli/forbidden-strings.fuzz:lint:clippy
+mise run //package/cli/forbidden-strings.fuzz:build
 ```
 
-After the move,
- run the equivalent `package/forbidden-strings/...` task names,
-and run one fuzz target (`mise run //package/forbidden-strings/fuzz:run -- -max_total_time=30`)
-to confirm the `path` dependency still resolves.
+Exercise a target through the sidecar's `run` task in a disposable,
+CPU-and-memory-bounded container.
+Compare seed hashes before and after the move and commit.
 
 ### Figma parsers
 
@@ -1547,11 +1528,13 @@ Keep `done-postcss`;
 its value is already recorded in `doc/audit/dry.md`.
 Leave the other `webapp-productivity` apps in place.
 
-### Phase 7: Build the forbidden-strings product cluster
+### Phase 7: Co-locate the forbidden-strings fuzz sidecar
 
-Move `cli/forbidden-strings` and `fuzz/forbidden-strings` into `package/forbidden-strings/{cli,fuzz}`,
-update the fuzz crate's `path` dependency,
-and retire the now-empty `fuzz/` category.
+Keep `package/cli/forbidden-strings` in place.
+Move its harness to `package/cli/forbidden-strings.fuzz`,
+update the relative Cargo dependency and path consumers,
+and retire the standalone fuzz category.
+The maintainer's sibling-sidecar requirement supersedes the product-cluster proposal.
 
 ### Phase 8: Reconcile package names
 

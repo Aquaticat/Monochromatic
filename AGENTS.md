@@ -1410,7 +1410,8 @@ Extend a present boundary when it already owns the responsibility.
 ### Adding new packages
 
 AP1:
- Create directory under the appropriate category in `package/`.
+ Create packages under `package/<category>/<name>`.
+Fuzz sidecars belong beside their owner at `package/<category>/<name>.fuzz`.
 
 AP2:
  Add `mise.toml` with task definitions mirroring sibling packages.

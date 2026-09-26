@@ -65,7 +65,7 @@ A sibling Gradle-based Kotlin linter lives in
 guarding worktree removal) behind a side-effect-free policy authoring API.
 [`cli/forbidden-strings`](package/cli/forbidden-strings/) is a gitignore-aware Rust scanner
 for banned tokens and leaked credentials,
-with a coverage-guided [`cargo-fuzz` harness](package/fuzz/forbidden-strings/).
+with a coverage-guided [`cargo-fuzz` harness](package/cli/forbidden-strings.fuzz/).
 
 **Custom Oxlint plugins**:
 [`oxlint-tsdoc`](package/oxlint-plugin/tsdoc/) enforces TSDoc correctness

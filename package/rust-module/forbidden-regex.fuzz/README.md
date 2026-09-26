@@ -2,7 +2,7 @@
 
 libFuzzer (cargo-fuzz) harnesses for the `forbidden-regex` engine.
  Mirrors
-`package/fuzz/forbidden-strings`.
+`package/cli/forbidden-strings.fuzz`.
  The Rust toolchain (nightly) comes from the repo-root
 mise tools;
  no per-package `[tools]`.

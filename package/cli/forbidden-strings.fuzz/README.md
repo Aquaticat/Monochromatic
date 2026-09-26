@@ -1,5 +1,9 @@
 # Fuzzing forbidden-strings
 
+This sidecar lives at `package/cli/forbidden-strings.fuzz`,
+beside its owner at `package/cli/forbidden-strings`.
+Fuzz sidecars use `package/<category>/<name>.fuzz`.
+
 Coverage-guided fuzzing for the scanner's own surfaces after the engine swap
 (#383/#384/#385):
  the literal-to-verbose-dialect escaper,
@@ -99,19 +103,19 @@ All commands run on nightly automatically:
 
 ```bash
 # List every target name.
-mise run //package/fuzz/forbidden-strings:list
+mise run //package/cli/forbidden-strings.fuzz:list
 
 # Type-check the shared generator library and its unit tests.
-mise run //package/fuzz/forbidden-strings:test
+mise run //package/cli/forbidden-strings.fuzz:test
 
 # Build every target.
-mise run //package/fuzz/forbidden-strings:build
+mise run //package/cli/forbidden-strings.fuzz:build
 
 # 30-second smoke run across every target (uses the dictionary).
-mise run //package/fuzz/forbidden-strings:smoke
+mise run //package/cli/forbidden-strings.fuzz:smoke
 
 # Single-target campaign with passthrough libFuzzer args.
-mise run //package/fuzz/forbidden-strings:run fuzz_literal_roundtrip -- -max_total_time=120
+mise run //package/cli/forbidden-strings.fuzz:run fuzz_literal_roundtrip -- -max_total_time=120
 ```
 
 ## Bounded-container wrapper (resource-exhaustion rule)
@@ -129,7 +133,7 @@ podman run \
   -v "$PWD":/work \
   -w /work \
   <rust-nightly-image> \
-  mise run //package/fuzz/forbidden-strings:smoke
+  mise run //package/cli/forbidden-strings.fuzz:smoke
 ```
 
 The image needs nightly Rust,
@@ -165,7 +169,7 @@ isn't handy.
 - `Cargo.lock`:
    Committed so the fuzz toolchain stays reproducible.
 
-The local deny-list (`../../cli/forbidden-strings/forbidden-strings.local.txt`)
+The local deny-list (`../forbidden-strings/forbidden-strings.local.txt`)
 and its append sibling must NEVER enter the corpus,
  dictionary,
  or reproducer text.
@@ -181,7 +185,7 @@ When a target reports a crash:
     Note its path.
 2. Re-run the exact input to confirm:
    ```bash
-   mise run //package/fuzz/forbidden-strings:run \
+   mise run //package/cli/forbidden-strings.fuzz:run \
      <target> -- artifacts/<target>/crash-<sha>
    ```
 3. Minimize it via `cargo +nightly fuzz tmin <target> artifacts/<target>/crash-<sha>`

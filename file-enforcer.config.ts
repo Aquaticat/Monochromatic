@@ -1626,7 +1626,7 @@ const CARGO_PROFILE_BY_DIR: Record<string, CargoProfileSpec> = {
   'package/music-player/truepeak-core.bench': CARGO_PROFILE_BENCH,
   'package/music-player/desktop-app': CARGO_PROFILE_MUSIC,
   'package/rust-module/forbidden-regex.fuzz': CARGO_PROFILE_FUZZ,
-  'package/fuzz/forbidden-strings': CARGO_PROFILE_FUZZ,
+  'package/cli/forbidden-strings.fuzz': CARGO_PROFILE_FUZZ,
 };
 
 /**

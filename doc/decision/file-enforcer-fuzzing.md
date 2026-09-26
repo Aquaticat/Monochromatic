@@ -55,7 +55,7 @@ Use `fast-check` property tests,
  the established TypeScript precedent in this
 repo (`package/module/test/src/format-error.property.unit.test.ts`).
  The
-Rust `cargo-fuzz` setup in `package/fuzz/forbidden-strings` does not apply
+Rust `cargo-fuzz` setup in `package/cli/forbidden-strings.fuzz` does not apply
 to a TypeScript package.
 
 One set of files,
@@ -103,7 +103,7 @@ Supporting choices:
   and boundary inputs that generative testing reaches;
    the proto and null
   defects above had sat undetected behind passing example tests.
-- A separate `package/fuzz/file-enforcer` package mirroring the Rust one.
+- A separate `package/dev-script/file-enforcer.fuzz` package mirroring the Rust one.
    A
   cross-package consumer can only reach the public API,
    so the internal

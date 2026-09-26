@@ -260,7 +260,7 @@ opt-level = 3
 ```
 
 The dev override matters because `cargo check`, clippy, `cargo nextest`, and debug builds all run the build script.
-`package/fuzz/forbidden-strings/Cargo.toml` repeats both tables,
+`package/cli/forbidden-strings.fuzz/Cargo.toml` repeats both tables,
 because it is its own workspace root and Cargo ignores the scanner manifest's profiles there.
 
 Tradeoffs:

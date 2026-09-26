@@ -139,7 +139,7 @@ All 19 carry the identical `[lints.clippy]` table
    bins `forbidden-regex-bench`, `seedless`, `dialectport`;
    path dependencies on `forbidden-regex` and `forbidden-strings`;
    release profile deliberately leaves overflow checks off "to measure the algorithm" `[V]`.
-- `package/rust-module/forbidden-regex.fuzz` and `package/fuzz/forbidden-strings`:
+- `package/rust-module/forbidden-regex.fuzz` and `package/cli/forbidden-strings.fuzz`:
    `cargo-fuzz` crates with 5 and 4 `fuzz_targets` bins respectively `[V]`.
 - `package/music-player/truepeak-core`:
    lib;
@@ -185,7 +185,7 @@ which changes compiled Slint UI output that the ElementHandle tests rely on `[V]
    every package's `test` runs `cargo nextest run --release`;
    no `.config/nextest.toml` exists `[V]`.
 - Fuzzing:
-   `package/fuzz/forbidden-strings/mise.toml` runs
+   `package/cli/forbidden-strings.fuzz/mise.toml` runs
    `cargo fuzz build --fuzz-dir . --sanitizer address --target x86_64-unknown-linux-gnu`
    and `cargo fuzz run` with dual corpus directories and a dictionary `[V]`.
 - Android cross-compile:

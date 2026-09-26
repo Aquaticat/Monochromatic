@@ -842,7 +842,7 @@ and 15 of them run a native toolchain the glob cannot reach:
 //package/desktop-app/file-manager-gtk-sticky:test
 //package/desktop-app/file-manager-qt:test
 //package/desktop-app/terminal:test
-//package/fuzz/forbidden-strings:test           cargo nextest run --lib --release
+//package/cli/forbidden-strings.fuzz:test           cargo nextest run --lib --release
 //package/linter/kotlin:test                    ./gradlew test --no-daemon --console=plain
 //package/linter/rust:test
 //package/music-player/desktop-app:test

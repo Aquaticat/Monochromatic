@@ -518,7 +518,7 @@ registered as `markdown/autofix` in `cli-git.config.ts:22-43`.
    or Android Gradle Lint.
   The same claim appears in `doc/planning/monorepo-manager-from-scratch-design.md:1892`.
 - Rust crates without `lint:rust`:
-   `package/fuzz/forbidden-strings`
+   `package/cli/forbidden-strings.fuzz`
    and `package/rust-module/forbidden-regex.fuzz`,
    whose path escapes the `**/fuzz/**` default.
 - Root `lint:markdown` and `format:markdown` run `node package/cli/markdown-lint/src/cli.ts --lfs-image-exclude=package/ssg/`,
