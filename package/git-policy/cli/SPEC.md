@@ -783,10 +783,42 @@ repository-root or candidate-fact setup failure emits `content-unavailable` plus
 ### Manual push
 
 Resolve actual local and remote updates with Git-native information.
-Scan every content-bearing commit or tree state required by enabled policies.
+Scan only content the push newly publishes to its destination remote.
 A pure deletion has no content target.
 An indeterminate content-bearing range is `content-unavailable` and exits `2`.
 Manual push never applies policy patches.
+
+A pushed commit's already-published set is every commit reachable from a commit Git knows the destination remote has:
+the commits at that remote's remote-tracking refs (`refs/remotes/<remote name>/`,
+ matched as a literal prefix),
+plus the peeled authoritative prior value of every update in the same push to that remote,
+deletions included,
+when that value exists locally.
+A prior value Git never fetched is unknown and bounds nothing.
+When the published set is non-empty,
+scan each commit reachable from the pushed commit but not from the published set.
+A tag or branch whose target is already published scans nothing.
+When the published set is empty
+(first push to an empty remote,
+a remote with no remote-tracking refs,
+or a push to a URL rather than a named remote),
+scan the pushed commit's final tree once as complete added content;
+never walk every commit in history.
+Intermediate content added and removed before that first push is not scanned.
+
+Remote-tracking refs are a cached view,
+not destination authority.
+A tracking ref left stale by a remote history rewrite can exclude commits the remote no longer has;
+Git updates tracking refs on fetch and on push to that named remote.
+Pushing history unrelated to every published commit still scans that whole unrelated range.
+
+Process creation is bounded independently of history length and update count:
+one `git cat-file --batch-check` peels every pushed and prior object,
+one `git for-each-ref` lists remote-tracking refs,
+at most four per-update `git rev-list --stdin` or `git ls-tree` processes run concurrently,
+one `git diff-tree --stdin` reads every range commit's delta,
+and one `git cat-file --batch` reads every blob.
+Never spawn one process per commit.
 
 ### Direct check
 
@@ -1611,16 +1643,18 @@ Post-commit scan uses landed commit ground truth.
 Manual push runs a private Git `--dry-run --verify` pre-push probe,
 parses Git's pre-push update records,
 and validates negotiated remote OIDs with `git ls-remote --refs` before policy evaluation.
-Do not infer destination state from cached tracking refs,
+Do not infer destination ref values from cached tracking refs,
 push output,
-or hand-written refspec interpretation.
-Scan each newly reachable commit's own delta against its parents:
+or hand-written refspec interpretation;
+tracking refs only bound which commits are already published,
+as the "Manual push" lifecycle defines.
+Scan each newly published commit's own delta against its parents:
 every parent for merges,
 the whole tree only for parentless commits,
 and deletions publish no content and are skipped.
-Directly pushed annotated-tag,
-tree,
-and blob targets scan their complete content.
+Annotated tags peel to their target.
+A pushed commit with no known published commit on its destination scans its final tree.
+Directly pushed tree and blob targets scan their complete content.
 Deduplicate exact candidate identities across updates.
 Load unique Git blobs through one `git cat-file --batch` process per evaluation.
 Materialize scanner files with no more than 64 concurrent lanes.
