@@ -24,11 +24,16 @@ import { reportIterableConsumer, } from './iterable-consumer.ts';
 import { reportLiteralSpread, } from './literal-spread.ts';
 
 /**
+ Sentinel for a literal that holds anything other than exactly one spread item.
+ */
+const NO_SOLE_SPREAD: unique symbol = Symbol('array or object literal does not consist of exactly one spread item',);
+
+/**
  Returns the literal's only item when it is a spread element.
 
  @param literal - Array or object literal.
 
- @returns Sole spread element, or `undefined`.
+ @returns Sole spread element, or {@link NO_SOLE_SPREAD}.
 
  @example
  ```ts
@@ -37,7 +42,7 @@ import { reportLiteralSpread, } from './literal-spread.ts';
  */
 function soleSpread(
   literal: ForeignBorrowed<ESTree.ArrayExpression | ESTree.ObjectExpression>,
-): ESTree.SpreadElement | undefined {
+): ESTree.SpreadElement | typeof NO_SOLE_SPREAD {
   /**
    Items of the literal.
    */
@@ -46,8 +51,10 @@ function soleSpread(
    First and only item candidate.
    */
   const [only,] = items;
-  if ((items.length !== 1) || (only === null) || (only === undefined) || (only.type !== 'SpreadElement'))
-    return undefined;
+  if ((items.length !== 1) || (only === null)
+    || (only === undefined)
+    || (only.type !== 'SpreadElement'))
+    return NO_SOLE_SPREAD;
   return only;
 }
 
@@ -83,7 +90,7 @@ function checkLiteral(
    Sole spread element of the literal.
    */
   const spread = soleSpread(literal,);
-  if (spread === undefined)
+  if (spread === NO_SOLE_SPREAD)
     return;
   if ((literal.type === 'ArrayExpression') && reportIterableConsumer({
     context,

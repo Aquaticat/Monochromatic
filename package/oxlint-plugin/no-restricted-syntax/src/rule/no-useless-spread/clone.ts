@@ -133,9 +133,13 @@ function reportUselessArrayCopy(
   context.report({
     node: spread,
     messageId: 'cloneArray',
-    data: { expression: quotedExpression(context.sourceCode.getText(spread.argument,),), },
+    data: { expression: quotedExpression(context.sourceCode
+      .getText(spread.argument,),), },
     fix(fixer: ForeignBorrowed<Fixer>,): Fix {
-      return fixer.replaceText(array, replacement,);
+      return fixer.replaceText(
+        array,
+        replacement,
+      );
     },
   },);
 }
@@ -190,9 +194,13 @@ export function reportUselessClone(
     context.report({
       node: spread,
       messageId: 'cloneObject',
-      data: { expression: quotedExpression(context.sourceCode.getText(spread.argument,),), },
+      data: { expression: quotedExpression(context.sourceCode
+        .getText(spread.argument,),), },
       fix(fixer: ForeignBorrowed<Fixer>,): Fix {
-        return fixer.replaceText(literal, replacement,);
+        return fixer.replaceText(
+          literal,
+          replacement,
+        );
       },
     },);
     return;
@@ -230,7 +238,8 @@ export function reportUselessClone(
     node: spread,
     messageId: 'ambiguousConversion',
     data: {
-      expression: quotedExpression(context.sourceCode.getText(spread.argument,),),
+      expression: quotedExpression(context.sourceCode
+        .getText(spread.argument,),),
       method: hint.method,
     },
   },);

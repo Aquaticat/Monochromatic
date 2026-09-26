@@ -36,7 +36,7 @@ const l = tagged({ tag: 'no-restricted-syntax/spread-evidence', },);
 /**
  Sentinel for an ESTree range with no TypeScript node of identical extent.
  */
-const NO_EXACT_NODE: unique symbol = Symbol('no TypeScript node spans the same source range as the linted expression',);
+const NO_EXACT_NODE: unique symbol = Symbol('semantic tree lacks a node covering exactly the linted source range',);
 
 /**
  Walks up from the deepest TypeScript node at a range start to the node whose
@@ -82,17 +82,23 @@ function exactTypeScriptNode(
   /**
    Ancestor cursor starting at the deepest node covering the start offset.
    */
-  const cursor: { current: Node | undefined; } = { current: session.nodeAtOffset(node.start,), };
-  while ((cursor.current !== undefined) && (cursor.current !== session.sourceFile)) {
+  const cursor: { current: Node; } = { current: session.nodeAtOffset(node.start,), };
+  while (cursor.current !== session.sourceFile) {
     /**
      Trivia-free start of the current ancestor.
      */
-    const start = cursor.current.getStart(session.sourceFile,);
-    if ((start === wanted.start) && (cursor.current.end === wanted.end))
+    const start = cursor.current
+      .getStart(session.sourceFile,);
+    if ((start === wanted.start) && (cursor.current
+      .end
+      === wanted.end))
       return cursor.current;
-    if ((start < wanted.start) || (cursor.current.end > wanted.end))
+    if ((start < wanted.start) || (cursor.current
+      .end
+      > wanted.end))
       return NO_EXACT_NODE;
-    cursor.current = cursor.current.parent;
+    cursor.current = cursor.current
+      .parent;
   }
   return NO_EXACT_NODE;
 }
@@ -122,7 +128,10 @@ function locateSemanticNode(
     readonly node: ESTree.Expression;
   }>,
 ):
-  | { readonly session: SemanticFileSession; readonly semanticNode: Node | typeof NO_EXACT_NODE; }
+  | {
+    readonly session: SemanticFileSession;
+    readonly semanticNode: Node | typeof NO_EXACT_NODE
+  }
   | SemanticBridgeError
 {
   try {

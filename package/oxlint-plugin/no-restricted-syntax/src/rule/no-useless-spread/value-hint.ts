@@ -36,11 +36,17 @@ import { TYPED_ARRAY_NAMES, } from '../spread-evidence/typed-array-names.ts';
  ```
  */
 export type SpreadValueHint =
-  | { readonly kind: 'array'; readonly needsFill: boolean; }
+  | {
+    readonly kind: 'array';
+    readonly needsFill: boolean
+  }
   | { readonly kind: 'object'; }
   | { readonly kind: 'typed-array'; }
   | { readonly kind: 'promise-array'; }
-  | { readonly kind: 'ambiguous'; readonly method: string; }
+  | {
+    readonly kind: 'ambiguous';
+    readonly method: string
+  }
   | { readonly kind: 'unknown'; };
 
 /**
@@ -84,13 +90,18 @@ export const AMBIGUOUS_FRESH_METHODS: ReadonlySet<string> = new Set([
 const UNKNOWN: SpreadValueHint = { kind: 'unknown', };
 
 /**
+ Sentinel for a member call whose receiver is not an unshadowed global identifier.
+ */
+const NO_GLOBAL_RECEIVER: unique symbol = Symbol('method call receiver is not an unshadowed global identifier',);
+
+/**
  Returns the unshadowed global object name a static member call is made on.
 
  @param call - Call to inspect.
 
  @param isGlobal - Global-reference predicate from the rule context.
 
- @returns Global receiver name, or `undefined` when the receiver is not a global identifier.
+ @returns Global receiver name, or {@link NO_GLOBAL_RECEIVER}.
 
  @example
  ```ts
@@ -105,15 +116,17 @@ function globalReceiverName(
     readonly call: ESTree.CallExpression;
     readonly isGlobal: IsGlobalIdentifier;
   }>,
-): string | undefined {
-  if (call.callee.type !== 'MemberExpression')
-    return undefined;
+): string | typeof NO_GLOBAL_RECEIVER {
+  if (call.callee
+    .type
+    !== 'MemberExpression')
+    return NO_GLOBAL_RECEIVER;
   /**
    Receiver of the member call.
    */
   const { object, } = call.callee;
   if ((object.type !== 'Identifier') || (!isGlobal(object,)))
-    return undefined;
+    return NO_GLOBAL_RECEIVER;
   return object.name;
 }
 
@@ -147,22 +160,31 @@ function globalFactoryHint(
   /**
    Whether the call has exactly one argument.
    */
-  const unary = call.arguments.length === 1;
-  if (TYPED_ARRAY_NAMES.has(receiver,) && (method === 'from') && unary)
+  const unary = call.arguments
+    .length
+    === 1;
+  if (TYPED_ARRAY_NAMES.has(receiver,) && (method === 'from')
+    && unary)
     return { kind: 'typed-array', };
   if ((receiver === 'Array') && ((method === 'from') || (method === 'of')))
     return {
       kind: 'array',
       needsFill: false,
     };
-  if ((receiver === 'Object') && ['keys', 'values', 'entries',].includes(method,))
+  if ((receiver === 'Object') && [
+    'keys',
+    'values',
+    'entries',
+  ].includes(method,))
     return {
       kind: 'array',
       needsFill: false,
     };
-  if ((receiver === 'Object') && (method === 'fromEntries') && unary)
+  if ((receiver === 'Object') && (method === 'fromEntries')
+    && unary)
     return { kind: 'object', };
-  if ((receiver === 'Promise') && ((method === 'all') || (method === 'allSettled')) && unary)
+  if ((receiver === 'Promise') && ((method === 'all') || (method === 'allSettled'))
+    && unary)
     return { kind: 'promise-array', };
   return UNKNOWN;
 }
@@ -199,11 +221,19 @@ function newExpressionHint(
   if (callee.name === 'Array')
     return {
       kind: 'array',
-      needsFill: (expression.arguments.length === 1) && (expression.arguments[0]?.type !== 'SpreadElement'),
+      needsFill: (expression.arguments
+        .length
+        === 1) && (expression.arguments[0]
+          ?.type
+          !== 'SpreadElement'),
     };
-  if (TYPED_ARRAY_NAMES.has(callee.name,) && (expression.arguments.length > 0))
+  if (TYPED_ARRAY_NAMES.has(callee.name,) && (expression.arguments
+    .length
+    > 0))
     return { kind: 'typed-array', };
-  if ((callee.name === 'Object') && (expression.arguments.length === 0))
+  if ((callee.name === 'Object') && (expression.arguments
+    .length
+    === 0))
     return { kind: 'object', };
   return UNKNOWN;
 }
@@ -279,7 +309,9 @@ function callExpressionHint(
    Static method name, or sentinel for computed and non-member callees.
    */
   const method = getStaticCallMemberName({ call, },);
-  if ((method === NO_STATIC_MEMBER_NAME) || (call.callee.type !== 'MemberExpression'))
+  if ((method === NO_STATIC_MEMBER_NAME) || (call.callee
+    .type
+    !== 'MemberExpression'))
     return UNKNOWN;
   /**
    Global receiver name for factory calls such as `Array.from`.
@@ -288,7 +320,7 @@ function callExpressionHint(
     call,
     isGlobal,
   },);
-  if (receiver !== undefined)
+  if (receiver !== NO_GLOBAL_RECEIVER)
     return globalFactoryHint({
       call,
       receiver,
@@ -298,14 +330,18 @@ function callExpressionHint(
     /**
      Initial accumulator of `reduce(callback, initial)`.
      */
-    const initial = call.arguments[1];
-    if ((call.arguments.length !== 2) || (initial === undefined) || (initial.type === 'SpreadElement'))
+    const [, initial,] = call.arguments;
+    if ((call.arguments
+      .length
+      !== 2) || (initial === undefined)
+      || (initial.type === 'SpreadElement'))
       return UNKNOWN;
     return classify({
       expression: initial,
       isGlobal,
     },)
-      .kind === 'array'
+      .kind
+      === 'array'
       ? {
         kind: 'ambiguous',
         method,
@@ -314,13 +350,17 @@ function callExpressionHint(
   }
   if (!AMBIGUOUS_FRESH_METHODS.has(method,))
     return UNKNOWN;
-  if (call.callee.object.type === 'Super')
+  if (call.callee
+    .object
+    .type
+    === 'Super')
     return UNKNOWN;
   /**
    Syntax-only hint of the receiver.
    */
   const receiverHint = classify({
-    expression: call.callee.object,
+    expression: call.callee
+      .object,
     isGlobal,
   },);
   if (receiverHint.kind === 'typed-array')
@@ -389,7 +429,8 @@ export function valueHint(
     /**
      Value-producing last operand of the sequence.
      */
-    const last = inner.expressions.at(-1,);
+    const last = inner.expressions
+      .at(-1,);
     return last === undefined ? UNKNOWN : valueHint({
       expression: last,
       isGlobal,

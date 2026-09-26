@@ -20,6 +20,16 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 type LiteralItem = ESTree.ArrayExpressionElement | ESTree.ObjectPropertyKind;
 
 /**
+ Sentinel for a literal spread whose textual inline could change behavior or drop comments.
+ */
+const NO_SAFE_INLINE: unique symbol = Symbol('inlining this literal spread could change behavior or drop comments',);
+
+/**
+ Sentinel for a spread literal whose container is not an array, object, or argument list.
+ */
+const NOT_A_LIST_SPREAD: unique symbol = Symbol('spread literal container is not an array, object, or argument list',);
+
+/**
  Whether text between two tokens holds only whitespace, so a rewrite drops no comment.
 
  @param text - Source slice to inspect.
@@ -33,8 +43,12 @@ type LiteralItem = ESTree.ArrayExpressionElement | ESTree.ObjectPropertyKind;
  */
 function isBlankGap(text: string,): boolean {
   return text.trim()
-    .replaceAll(',', '',)
-    .length === 0;
+    .replaceAll(
+      ',',
+      '',
+    )
+    .length
+    === 0;
 }
 
 /**
@@ -51,13 +65,19 @@ function isBlankGap(text: string,): boolean {
  hasSpreadSensitiveProperty([getterProperty]); // true
  ```
  */
-function hasSpreadSensitiveProperty(items: readonly LiteralItem[],): boolean {
+function hasSpreadSensitiveProperty(items: ForeignBorrowed<readonly LiteralItem[]>,): boolean {
   return items.some(function sensitive(item,): boolean {
     if ((item === null) || (item.type !== 'Property'))
       return false;
     if ((item.kind !== 'init') || item.method)
       return true;
-    return (!item.computed) && (!item.shorthand) && (item.key.type === 'Identifier') && (item.key.name === '__proto__');
+    return (!item.computed) && (!item.shorthand)
+      && (item.key
+        .type
+        === 'Identifier')
+      && (item.key
+        .name
+        === '__proto__');
   },);
 }
 
@@ -73,7 +93,7 @@ function hasSpreadSensitiveProperty(items: readonly LiteralItem[],): boolean {
 
  @param items - Items of the literal.
 
- @returns Fix factory, or `undefined` when the rewrite could change behavior or drop comments.
+ @returns Fix factory, or {@link NO_SAFE_INLINE} when the rewrite could change behavior or drop comments.
 
  @example
  ```ts
@@ -92,15 +112,18 @@ function inlineFix(
     readonly literal: ESTree.ArrayExpression | ESTree.ObjectExpression;
     readonly items: readonly LiteralItem[];
   }>,
-): ((fixer: Fixer) => Fix) | undefined {
+): ((fixer: Fixer) => Fix) | typeof NO_SAFE_INLINE {
   /**
    Whole source text of the linted file.
    */
   const { text, } = context.sourceCode;
   /**
-   First and last literal items.
+   First literal item.
    */
-  const first = items[0];
+  const [first,] = items;
+  /**
+   Last literal item.
+   */
   const last = items.at(-1,);
   if ((first === undefined) || (last === undefined)) {
     /**
@@ -110,28 +133,82 @@ function inlineFix(
     /**
      Offset of the first non-whitespace character after the spread.
      */
-    const nextOffset = following.length - following.trimStart().length;
+    const nextOffset = following.length
+      - following.trimStart()
+      .length;
     /**
      End of the removal: through a directly following comma when present.
      */
-    const removalEnd = following.charAt(nextOffset,) === ',' ? spread.end + nextOffset + 1 : spread.end;
-    if (!isBlankGap(text.slice(literal.start + 1, literal.end - 1,),))
-      return undefined;
+    const removalEnd = following.charAt(nextOffset,) === ',' ? spread.end + nextOffset
+      + 1 : spread.end;
+    if (!isBlankGap(text.slice(
+      literal.start + 1,
+      literal.end - 1,
+    ),))
+      return NO_SAFE_INLINE;
     return function removeEmptySpread(fixer,): Fix {
-      return fixer.removeRange([spread.start, removalEnd,],);
+      return fixer.removeRange([
+        spread.start,
+        removalEnd,
+      ],);
     };
   }
-  if (items.includes(null,) || (first === null) || (last === null))
-    return undefined;
-  if ((!isBlankGap(text.slice(literal.start + 1, first.start,),)) || (!isBlankGap(text.slice(last.end, literal.end - 1,),)))
-    return undefined;
+  if (items.includes(null,) || (first === null)
+    || (last === null))
+    return NO_SAFE_INLINE;
+  if ((!isBlankGap(text.slice(
+    literal.start + 1,
+    first.start,
+  ),)) || (!isBlankGap(text.slice(
+    last.end,
+    literal.end - 1,
+  ),)))
+    return NO_SAFE_INLINE;
   /**
    Items' source text, keeping any comments between them.
    */
-  const inlined = text.slice(first.start, last.end,);
+  const inlined = text.slice(
+    first.start,
+    last.end,
+  );
   return function inlineItems(fixer,): Fix {
-    return fixer.replaceText(spread, inlined,);
+    return fixer.replaceText(
+      spread,
+      inlined,
+    );
   };
+}
+
+/**
+ Names the diagnostic for a literal spread into its container.
+
+ @param literal - Spread array or object literal.
+
+ @param container - Node holding the spread element.
+
+ @returns Message id, or {@link NOT_A_LIST_SPREAD} when the pairing is not reported.
+
+ @example
+ ```ts
+ literalSpreadMessageId({ literal, container }); // 'spreadArrayInArguments' for f(...[a])
+ ```
+ */
+function literalSpreadMessageId(
+  {
+    literal,
+    container,
+  }: ForeignBorrowed<{
+    readonly literal: ESTree.ArrayExpression | ESTree.ObjectExpression;
+    readonly container: ESTree.Node;
+  }>,
+): 'spreadArrayInArguments' | 'spreadArrayInArray' | 'spreadObjectInObject' | typeof NOT_A_LIST_SPREAD {
+  if (literal.type === 'ObjectExpression')
+    return container.type === 'ObjectExpression' ? 'spreadObjectInObject' : NOT_A_LIST_SPREAD;
+  if (container.type === 'ArrayExpression')
+    return 'spreadArrayInArray';
+  if ((container.type === 'CallExpression') || (container.type === 'NewExpression'))
+    return 'spreadArrayInArguments';
+  return NOT_A_LIST_SPREAD;
 }
 
 /**
@@ -177,18 +254,17 @@ export function reportLiteralSpread(
   /**
    Diagnostic kind for this literal and container pairing.
    */
-  const messageId = literal.type === 'ObjectExpression'
-    ? (container.type === 'ObjectExpression' ? 'spreadObjectInObject' : undefined)
-    : (container.type === 'ArrayExpression'
-      ? 'spreadArrayInArray'
-      : (((container.type === 'CallExpression') || (container.type === 'NewExpression')) ? 'spreadArrayInArguments' : undefined));
-  if (messageId === undefined)
+  const messageId = literalSpreadMessageId({
+    literal,
+    container,
+  },);
+  if (messageId === NOT_A_LIST_SPREAD)
     return false;
   /**
    Rewrite, withheld for accessor or `__proto__` object properties.
    */
   const fix = (literal.type === 'ObjectExpression') && hasSpreadSensitiveProperty(items,)
-    ? undefined
+    ? NO_SAFE_INLINE
     : inlineFix({
       context,
       spread,
@@ -198,7 +274,7 @@ export function reportLiteralSpread(
   context.report({
     node: spread,
     messageId,
-    ...fix === undefined ? {} : { fix, },
+    ...fix === NO_SAFE_INLINE ? {} : { fix, },
   },);
   return true;
 }

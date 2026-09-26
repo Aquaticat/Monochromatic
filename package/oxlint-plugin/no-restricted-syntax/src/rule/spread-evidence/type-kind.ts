@@ -80,7 +80,11 @@ function combineIntersectionKinds(kinds: readonly ValueKind[],): ValueKind {
   /**
    Identifying kinds in precedence order.
    */
-  const identifying: readonly ValueKind[] = ['array', 'typed-array', 'string',];
+  const identifying: readonly ValueKind[] = [
+    'array',
+    'typed-array',
+    'string',
+  ];
   /**
    First identifying kind carried by any member.
    */
@@ -151,7 +155,9 @@ export function valueKindOfType(
     return 'string';
   if (checker.isArrayType(type,) || checker.isTupleType(type,))
     return 'array';
-  if (TYPED_ARRAY_NAMES.has(type.getSymbol()?.name ?? '',))
+  if (TYPED_ARRAY_NAMES.has(type.getSymbol()
+    ?.name
+    ?? '',))
     return 'typed-array';
   return 'other';
 }

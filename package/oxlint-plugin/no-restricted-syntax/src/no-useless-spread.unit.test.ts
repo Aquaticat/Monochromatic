@@ -250,10 +250,12 @@ await describe({
     it({
       name: 'reports every invalid form in a typed project',
       fn: async () => {
-        expect(await reportedKinds(resolveFixtureTarget({
+        expect(
+          await reportedKinds(resolveFixtureTarget({
           fixtureSourceRoot: FIXTURES,
           fixturePath: 'invalid/no-useless-spread.ts',
-        },),),)
+        },),),
+        )
           .toEqual([
             'ambiguousConversion',
             'cloneArray',
@@ -275,10 +277,12 @@ await describe({
     it({
       name: 'accepts typed conversions, Object.create, and shadowed globals',
       fn: async () => {
-        expect(await reportedKinds(resolveFixtureTarget({
+        expect(
+          await reportedKinds(resolveFixtureTarget({
           fixtureSourceRoot: FIXTURES,
           fixturePath: 'valid/no-useless-spread.ts',
-        },),),)
+        },),),
+        )
           .toEqual([],);
       },
     },),

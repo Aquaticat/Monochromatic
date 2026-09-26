@@ -21,21 +21,42 @@ import {
 import { TYPED_ARRAY_NAMES, } from '../spread-evidence/typed-array-names.ts';
 
 /**
+ Sentinel for an array literal whose parent does not accept an arbitrary iterable in its place.
+ */
+const NOT_ITERABLE_CONSUMER: unique symbol = Symbol('array literal parent does not accept an arbitrary iterable in its place',);
+
+/**
  Collection constructors whose single argument may be any iterable.
  */
-const ITERABLE_CONSTRUCTORS: ReadonlySet<string> = new Set(['Map', 'WeakMap', 'Set', 'WeakSet',],);
+const ITERABLE_CONSTRUCTORS: ReadonlySet<string> = new Set([
+  'Map',
+  'WeakMap',
+  'Set',
+  'WeakSet',
+],);
 
 /**
  Static methods, keyed by global receiver, whose single argument may be any iterable.
  */
 const ITERABLE_STATIC_METHODS: Readonly<Record<string, readonly string[]>> = {
-  Promise: ['all', 'allSettled', 'any', 'race',],
+  Promise: [
+    'all',
+    'allSettled',
+    'any',
+    'race',
+  ],
   Array: ['from',],
   Object: ['fromEntries',],
   ...Object.fromEntries(
     TYPED_ARRAY_NAMES.values()
-      .map(function typedFrom(name,): readonly [string, readonly string[],] {
-        return [name, ['from',],];
+      .map(function typedFrom(name,): readonly [
+        string,
+        readonly string[],
+      ] {
+        return [
+          name,
+          ['from',],
+        ];
       },),
   ),
 };
@@ -47,7 +68,7 @@ const ITERABLE_STATIC_METHODS: Readonly<Record<string, readonly string[]>> = {
 
  @param array - Single-spread array literal.
 
- @returns Consumer name for the diagnostic, or `undefined` when the parent is not such a consumer.
+ @returns Consumer name for the diagnostic, or {@link NOT_ITERABLE_CONSUMER}.
 
  @example
  ```ts
@@ -62,39 +83,45 @@ function iterableConsumerName(
     readonly context: Context;
     readonly array: ESTree.ArrayExpression;
   }>,
-): string | undefined {
+): string | typeof NOT_ITERABLE_CONSUMER {
   /**
    Call or constructor receiving the array.
    */
   const { parent, } = array;
   if ((parent.type !== 'NewExpression') && (parent.type !== 'CallExpression'))
-    return undefined;
-  if ((parent.arguments.length !== 1) || (parent.arguments[0] !== array))
-    return undefined;
+    return NOT_ITERABLE_CONSUMER;
+  if ((parent.arguments
+    .length
+    !== 1) || (parent.arguments[0] !== array))
+    return NOT_ITERABLE_CONSUMER;
   if (parent.type === 'NewExpression') {
     /**
      Constructor being invoked.
      */
     const { callee, } = parent;
-    if ((callee.type !== 'Identifier') || (!context.sourceCode.isGlobalReference(callee,)))
-      return undefined;
-    return ITERABLE_CONSTRUCTORS.has(callee.name,) || TYPED_ARRAY_NAMES.has(callee.name,) ? callee.name : undefined;
+    if ((callee.type !== 'Identifier') || (!context.sourceCode
+      .isGlobalReference(callee,)))
+      return NOT_ITERABLE_CONSUMER;
+    return ITERABLE_CONSTRUCTORS.has(callee.name,) || TYPED_ARRAY_NAMES.has(callee.name,) ? callee.name : NOT_ITERABLE_CONSUMER;
   }
-  if (parent.optional || (parent.callee.type !== 'MemberExpression'))
-    return undefined;
+  if (parent.optional || (parent.callee
+    .type
+    !== 'MemberExpression'))
+    return NOT_ITERABLE_CONSUMER;
   /**
    Receiver of the static method call.
    */
   const { object, } = parent.callee;
-  if ((object.type !== 'Identifier') || (!context.sourceCode.isGlobalReference(object,)))
-    return undefined;
+  if ((object.type !== 'Identifier') || (!context.sourceCode
+    .isGlobalReference(object,)))
+    return NOT_ITERABLE_CONSUMER;
   /**
    Static method being called.
    */
   const method = getStaticCallMemberName({ call: parent, },);
   if (method === NO_STATIC_MEMBER_NAME)
-    return undefined;
-  return (ITERABLE_STATIC_METHODS[object.name] ?? []).includes(method,) ? `${object.name}.${method}` : undefined;
+    return NOT_ITERABLE_CONSUMER;
+  return (ITERABLE_STATIC_METHODS[object.name] ?? []).includes(method,) ? `${object.name}.${method}` : NOT_ITERABLE_CONSUMER;
 }
 
 /**
@@ -140,7 +167,8 @@ export function reportIterableConsumer(
     },);
     return true;
   }
-  if ((parent.type === 'YieldExpression') && parent.delegate && (parent.argument === array)) {
+  if ((parent.type === 'YieldExpression') && parent.delegate
+    && (parent.argument === array)) {
     context.report({
       node: spread,
       messageId: 'iterableInYieldStar',
@@ -154,14 +182,17 @@ export function reportIterableConsumer(
     context,
     array,
   },);
-  if (consumer === undefined)
+  if (consumer === NOT_ITERABLE_CONSUMER)
     return false;
   /**
    Source text of the spread argument, placed where the array was; a comma
    sequence keeps parentheses so it stays one argument.
    */
-  const argumentText = spread.argument.type === 'SequenceExpression'
-    ? `(${context.sourceCode.getText(spread.argument,)})`
+  const argumentText = spread.argument
+    .type
+    === 'SequenceExpression'
+    ? `(${context.sourceCode
+      .getText(spread.argument,)})`
     : context.sourceCode
       .getText(spread.argument,);
   context.report({
@@ -169,7 +200,10 @@ export function reportIterableConsumer(
     messageId: 'iterableToArray',
     data: { consumer, },
     fix(fixer: ForeignBorrowed<Fixer>,): Fix {
-      return fixer.replaceText(array, argumentText,);
+      return fixer.replaceText(
+        array,
+        argumentText,
+      );
     },
   },);
   return true;
