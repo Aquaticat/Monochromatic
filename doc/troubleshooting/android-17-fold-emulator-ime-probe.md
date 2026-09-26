@@ -283,12 +283,64 @@ layer above the IME and cover it:
 * screen for its content and cover the input method if needed.  You
 ```
 
-Layering the deck there could instead obscure Gboard keys in the measured
-overlap;
-it is not a verified design for keeping both Search input and the
-complete deck usable.
-This is not proof that every app-observable keyboard API lacks the geometry
-or that floating overlays are impossible to avoid by other means.
+A debug-only test of that layer exists on prototype commit `d9a5c549e`.
+The tested APK SHA-256 was
+`e4bfec8e8eb98187a0afc06ef11d587fd3c87623fe45a37da7b0ffd862c6461e`.
+The same-APK vertical-A control
+`search-deck-right-lift-retain-results-light` showed real floating Gboard
+obscuring the deck title at x `[482,781)` and y `[1120,1223]`.
+The experimental
+`search-deck-right-lift-layerprobe-retain-results-light` added a
+**nonfocusable, not-touchable app panel** over the left pane.
+Window Manager reported that panel at `[0,717][1038,1793]` with
+`NOT_FOCUSABLE NOT_TOUCHABLE LAYOUT_IN_SCREEN` and the real floating
+Gboard touch region at `[482,1006][1388,1777]`.
+The screenshot verified the panel paints **above** the keys,
+but it also washed out both keyboard keys and app content.
+It was only a marker,
+not a duplicate deck or accepted design.
+
+The same SDK's
+`android/view/WindowManager.java:2893-2914` documents the relevant
+cross-UID touch rule for a `FLAG_NOT_TOUCHABLE` window:
+
+```java
+* Starting from Android {@link Build.VERSION_CODES#S}, for security reasons, touch
+* events that pass through windows containing this flag (ie. are within the bounds of the
+* window) will only be delivered to the touch-consuming window if one (or more) of the
+* items below are true:
+* <li><b>Same UID</b>: This window belongs to the same UID that owns the touch-consuming
+*   window.
+* <li><b>Trusted windows</b>: This window is trusted.
+* <li><b>Invisible windows</b>: This window is {@link View#GONE} or
+*   {@link View#INVISIBLE}.
+* <li><b>Fully transparent windows</b>: This window has {@link LayoutParams#alpha}
+*   equal to 0.
+```
+
+The visible app panel belonged to UID `10249`,
+while Gboard belonged to UID `10170`.
+A real tap on an **uncovered** floating key entered `m` in the focused
+Search query.
+A tap on a key **under the panel** left the query at `m`.
+`InputDispatcher` reported
+`Dropping untrusted touch event due to occlusion by dev.monochromatic.musicplayer/10249`.
+That positive and negative pair rejects this panel as a solution:
+painting over the IME prevented typing through the covered area.
+After Android Back hid Gboard,
+the debug marker also remained painted over the browser and deck in the
+sampled frame;
+the candidate's visibility-based cleanup did not run for that state.
+These unsanitized captures are private scratch evidence.
+Do not transplant this panel into production or treat it as D50 compliance.
+
+`View.java:13353-13370` separately offers
+`setPreferKeepClearRects()` as a **best-effort preference** for floating
+windows above an app view;
+the source says the system may ignore it when the request cannot be met.
+Whether this particular Gboard arrangement honors it has not been tested.
+The rejected panel does not prove that every app-observable keyboard API
+lacks geometry or that every floating-overlay integration fails.
 
 ## Verification
 
