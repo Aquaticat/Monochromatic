@@ -355,7 +355,9 @@ The `protected_transfer__occurs` Noul returned 0.5338
 for the predeclared `inline-secret-export` development scenario,
 whose independent reference truth is true.
 No final action was requested or executed.
-This configuration does not meet the newly accepted five-second interactive budget.
+This configuration did not return this assessment inside the five-second interactive budget.
+The agreed workflow would request manual approval rather than wait for this result.
+That fallback-based interactive workflow remains possible.
 Other runtime/checkpoint configurations were not measured by this probe.
 
 ### The loader warning names a different question bucket

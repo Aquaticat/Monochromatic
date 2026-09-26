@@ -346,7 +346,10 @@ The Noul probability was 0.5338 against the predeclared true reference label.
 Inference took 174.4122996260412 seconds,
 excluding 3.7913081771694124 seconds for model loading.
 Peak container memory was 6,490,460,160 bytes.
-The tested English CPU configuration therefore fails the accepted five-second interactive budget.
+The tested English CPU configuration did not return this assessment within the accepted five-second budget.
+The agreed workflow would send this case to manual approval at that deadline.
+The earlier assistant statement that this rules out interactive use was too broad;
+an independent review confirmed that manual-fallback interactive use remains possible.
 This is not a repeated-run speed comparison,
 a held-out quality assessment,
 or a rejection of every Laya runtime/checkpoint configuration.
