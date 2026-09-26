@@ -121,9 +121,11 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
 - The slice worktrees and branches were first created as `ccc-locks`/`ccc-push`;
   the owner called the names non-descriptive,
   and they were renamed on 2026-09-26.
-  The renamed branches are not yet published:
-  the old remote branches `feat/ccc-locks` and `feat/ccc-push` still exist
-  and are deleted once the new names are pushed.
+  The lock branch is published under its new name
+  (slice 6 finished at `6143d837d`)
+  and the old remote `feat/ccc-locks` is deleted.
+  The auto-push branch is not yet published under its new name;
+  the old remote `feat/ccc-push` stays until the manual-push fix merges.
 - Claude Code crashed twice on 2026-09-26 while running a wrapped manual `git push` of the renamed branch.
   An isolated rerun as a systemd user service showed the cause:
   the wrapper's `manual-push` scan listed the whole history for a ref the remote lacks
