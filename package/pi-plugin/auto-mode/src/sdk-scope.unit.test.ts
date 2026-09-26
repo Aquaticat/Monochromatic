@@ -13,8 +13,7 @@ import {
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { findBudgetModel, } from '../dist/final/node/index.mjs';
 
-await describe({ name: 'headless SDK judge selection', children: [
-  ...[false, true,].map(explicitScope => it({
+await describe({ name: 'headless SDK judge selection', children: [false, true,].map(explicitScope => it({
     name: explicitScope ? 'keeps a nonempty live scope authoritative' : 'uses configured models when SDK live scope is unset',
     fn: async (): Promise<void> => {
       /** Disposable workspace also contains all SDK storage. */
@@ -38,7 +37,9 @@ await describe({ name: 'headless SDK judge selection', children: [
       const loader = new DefaultResourceLoader({ cwd: root, agentDir: root,
         noExtensions: true, noSkills: true, noThemes: true, noPromptTemplates: true, noContextFiles: true,
         extensionFactories: [pi => {
-          pi.on('session_start', (_event, ctx): void => { captured.ctx = ctx; },);
+          pi.on('session_start', (_event, ctx): void => {
+            captured.ctx = ctx;
+          },);
         },], },);
       await loader.reload();
       /** Same SDK construction and headless binding used by the subagent runner. */
@@ -46,7 +47,9 @@ await describe({ name: 'headless SDK judge selection', children: [
         resourceLoader: loader, sessionManager: SessionManager.inMemory(root,),
         settingsManager: SettingsManager.create(root, root,),
         ...(explicitScope ? { scopedModels: [{ model, },], } : {}), },);
-      using cleanupSession = { [Symbol.dispose]: (): void => { session.dispose(); }, };
+      using cleanupSession = { [Symbol.dispose]: (): void => {
+        session.dispose();
+      }, };
       await session.bindExtensions({},);
       /** Fail instead of substituting a fake context when lifecycle binding did not run. */
       const { ctx, } = captured;
@@ -59,5 +62,4 @@ await describe({ name: 'headless SDK judge selection', children: [
       const judge = await findBudgetModel({ ctx, },);
       expect(judge.model.id,).toBe(model.id,);
     },
-  },)),
-], },);
+  },)), },);

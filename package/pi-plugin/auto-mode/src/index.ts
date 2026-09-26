@@ -259,7 +259,7 @@ function initializeAutoMode(
       /**
        Authoritative loaded context files for current agent run.
        */
-      const { contextFiles = [], } = systemPromptOptions;
+      const { contextFiles, } = systemPromptOptions;
       currentProjectContext = buildProjectContext(contextFiles,);
       /**
        Skills visible in the current system prompt; empty when no skills are loaded.

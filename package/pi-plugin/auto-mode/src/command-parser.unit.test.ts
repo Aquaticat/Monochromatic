@@ -11,8 +11,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { analyzeBashCommand, } from './command-parser.ts';
-import { looksLikePath, } from './command-refs.ts';
+import {
+  analyzeBashCommand,
+  looksLikePath,
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: analyzeBashCommand.name,

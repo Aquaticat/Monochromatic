@@ -21,7 +21,7 @@ import {
 import {
   agentTempAllowlistedDirs,
   isTrustedAgentTempDir,
-} from './temp-allowlist.ts';
+} from '../dist/final/node/index.mjs';
 
 /** Private directory mode accepted for agent temp allowlisting. */
 const PRIVATE_DIRECTORY_MODE = 0o700;
