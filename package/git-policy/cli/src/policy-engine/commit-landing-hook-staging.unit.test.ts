@@ -55,7 +55,9 @@ await describe({
         expect((await runWrapper({ repository, args: ['commit', '-m', 'formatted', 'a.txt',], },)).exitCode,).toBe(0,);
         expect(await git({ repository, args: ['show', 'HEAD:a.txt',], },),).toBe('LOWER',);
         expect(await git({ repository, args: ['show', ':a.txt',], },),).toBe('LOWER',);
-        expect(await readText(join(repository.path, 'a.txt',),),).toBe('LOWER\n',);
+        expect(
+          await readText(join(repository.path, 'a.txt',),),
+        ).toBe('LOWER\n',);
         expect(await git({ repository, args: ['status', '--porcelain',], },),).toBe('',);
         expect(await leftovers(repository,),).toEqual([],);
       },
@@ -68,7 +70,9 @@ await describe({
         await writeWorktreeFile({ repository, name: 'a.txt', content: 'lower\n', },);
         expect((await runWrapper({ repository, args: ['commit', '-m', 'formatted', 'a.txt',], },)).exitCode,).toBe(0,);
         expect(await git({ repository, args: ['show', 'HEAD:a.txt',], },),).toBe('LOWER',);
-        expect(await readText(join(repository.path, 'a.txt',),),).toBe('LOWER\n',);
+        expect(
+          await readText(join(repository.path, 'a.txt',),),
+        ).toBe('LOWER\n',);
         expect(await git({ repository, args: ['status', '--porcelain',], },),).toBe('',);
         expect(await leftovers(repository,),).toEqual([],);
       },
@@ -85,7 +89,9 @@ await describe({
         await held.release();
         expect((await held.outcome).exitCode,).toBe(0,);
         expect(await git({ repository, args: ['show', 'HEAD:a.txt',], },),).toBe('LOWER',);
-        expect(await readText(join(repository.path, 'a.txt',),),).toBe('user edit\n',);
+        expect(
+          await readText(join(repository.path, 'a.txt',),),
+        ).toBe('user edit\n',);
         expect(await git({ repository, args: ['status', '--porcelain',], },),).toBe('M a.txt',);
         expect(await leftovers(repository,),).toEqual([],);
       },

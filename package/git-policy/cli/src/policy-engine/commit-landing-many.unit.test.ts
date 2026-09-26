@@ -64,9 +64,11 @@ await describe({
             return `${name} bytes`;
           },),);
           // Every commit carries exactly its own path.
-          expect(await Promise.all(names.map(async function changedPaths(name,): Promise<string> {
+          expect(
+            await Promise.all(names.map(async function changedPaths(name,): Promise<string> {
             return await git({ repository, args: ['log', '-1', '--format=', '--name-only', `--grep=^${name}$`,], },);
-          },),),).toEqual(names.map(function ownPath(name,): string {
+          },),),
+          ).toEqual(names.map(function ownPath(name,): string {
             return `${name}.txt`;
           },),);
           expect(await git({ repository, args: ['status', '--porcelain',], },),).toBe('',);
