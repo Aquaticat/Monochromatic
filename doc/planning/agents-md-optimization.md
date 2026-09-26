@@ -206,6 +206,32 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    retires OPI into OPT;
    OCG stays always-loaded (17 CLI packages,
    301 commits to `package/cli` since 2026-06-25) and moves to "Architecture decisions".
+   Approved after user removed redundant OPT clause "not just the top pick".
+- Batch 7 (evidence layers,
+   inability,
+   verification,
+   research tools):
+   18 rules become 10 always-loaded,
+   1024 to 710 tokens;
+   retires EL1,
+   EL2,
+   EL3,
+   EL5,
+   EL6,
+   ELR,
+   RT2,
+   RT3.
+   User kept RT1 (`rg` is misuse-prone) and RT4 (not every harness injects `gh` guidance).
+   JEV moves to `doc/troubleshooting/rtw89-wifi-disconnects.md`,
+   FLK to `package/pi-plugin/advisor/README.md`.
+   Approved,
+   except compressed RT1 and RT4 wording awaiting review.
+- Batch 8 (git cleanup):
+   GCL,
+   GC2,
+   GCR stay always-loaded (282 to 234 tokens);
+   GCI folds into GCR;
+   GCW and WXG move to `package/git-policy/cli/README.md`.
    Proposed,
    awaiting user review.
 - Retired-code references:
