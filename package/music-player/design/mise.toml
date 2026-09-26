@@ -413,6 +413,16 @@ description = "Validate the two sanitized cover viewport states embedded in the 
 dir = "{{config_root}}"
 run = "node cover-viewport-question.mjs validate"
 
+[tasks."build:search:floating-results"]
+description = "Build an offline inner floating-Gboard result-overlap policy question"
+dir = "{{config_root}}"
+run = "node floating-results-question.mjs build"
+
+[tasks."lint:search:floating-results"]
+description = "Validate the sanitized physical inner capture and floating-result question"
+dir = "{{config_root}}"
+run = "node floating-results-question.mjs validate"
+
 [tasks."build:search:historical"]
 description = "Rebuild the archived rejected Fold Search artifact for historical inspection"
 dir = "{{config_root}}"
