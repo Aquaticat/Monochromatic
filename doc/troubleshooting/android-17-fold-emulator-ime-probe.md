@@ -338,9 +338,36 @@ Do not transplant this panel into production or treat it as D50 compliance.
 `setPreferKeepClearRects()` as a **best-effort preference** for floating
 windows above an app view;
 the source says the system may ignore it when the request cannot be met.
-Whether this particular Gboard arrangement honors it has not been tested.
-The rejected panel does not prove that every app-observable keyboard API
-lacks geometry or that every floating-overlay integration fails.
+`View.java:13449-13454` forwards changed rectangles to its attached
+`ViewRootImpl`,
+and `ViewRootImpl.java:6687-6709` reports changed areas to Window Manager.
+This path does **not** by itself promise movement of Gboard's internal keys.
+
+A second debug-only candidate,
+`search-deck-right-lift-keepclear-retain-results-light`,
+used prototype commit `b9c05342f` and APK SHA-256
+`e755bf76ed65e45dc4e4ec57f4f55bdbd948902ca6e1940ddf911474ee8a4dd7`.
+The app logged a request for `[0,717][1038,2152]`;
+Window Manager reported that exact restricted `keepClearAreas` rectangle
+on the app window.
+Its real floating Gboard still occupied
+`[482,1006][1388,1777]`,
+inside the requested clear area,
+and the screenshot still showed its keys over the deck.
+To validate that Window Manager's touch-region probe could show movement,
+a deliberate drag moved Gboard to `[1025,1006][1931,1777]`;
+a reverse drag moved it back to `[528,1006][1434,1777]` while the same
+keep-clear area remained registered.
+The screenshot after that reverse drag still showed the deck title obscured.
+A tap on a visible floating key entered `d` in the focused query,
+so this was real usable Gboard input rather than a toolbar-only state.
+This test rejects **this rectangle request on this Gboard fixture** as
+an automatic D50 response.
+It does not prove every keep-clear placement or other floating window
+behaves the same way.
+The captures remain private unsanitized scratch evidence.
+The rejected panel and measured keep-clear request do not prove that every
+app-observable keyboard API lacks geometry or that all overlay approaches fail.
 
 ## Verification
 
