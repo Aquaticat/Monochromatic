@@ -222,6 +222,43 @@ Two process lessons worth keeping:
    polluting the tracked `seed/` tree with binary blobs.
    Tasks now copy seeds into `corpus/<target>` and pass only that directory.
 
+## Campaign 4, after the fixes
+
+Same bounds,
+120 seconds per target:
+
+- `fuzz_parse_emit_roundtrip`:
+   clean,
+   403182 runs.
+- `fuzz_reject_and_recover`:
+   clean,
+   534637 runs.
+- `fuzz_depth_envelope`:
+   clean,
+   93941 runs at roughly 776 exec/s,
+   the slowest target because every run parses deep nesting.
+- `fuzz_edit_invariants`:
+   one crash,
+   `artifacts/campaign-2026-09-26-c/crash-bb249c5e1ec5e56c724e817a135cc35ad203c5f0`,
+   panicking on `deleted address still resolves`.
+
+**Finding 4,
+ harness defect,
+ fixed.**
+Deleting an array element shifts every later element down,
+so the same index legitimately resolves afterwards to a different element.
+The assertion was written as if deletion always vacated the address,
+which is true only for object members.
+It now splits by segment kind:
+a deleted member must stop resolving and the parent must lose exactly one member,
+while a deleted element must leave the parent with exactly one fewer element.
+The artifact panicked before the rebuild and replays clean after it,
+which is the positive control that the rebuilt binary is the one under test.
+
+Campaign 5 is the clean full round:
+150 seconds per target over all four,
+recorded below when it finishes.
+
 ## Related records
 
 - `doc/troubleshooting/arbitrary-choose-empty-input.md`:
