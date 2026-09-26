@@ -186,10 +186,17 @@ Candidate dissolutions under investigation:
 
 - Measured lint wall time: built sidecars versus `./ts` source entry.
 - What #238 decided and why.
-- Round 2 asked (awaiting answers):
-  build guard scope,
-  wrapper behavior on config-load failure,
-  stray symlink removal.
+- Round 2 (2026-09-25) user answers:
+  build guard scope and wrapper behavior are premature, do not decide yet;
+  the stray `~/temp/agent/node_modules/@monochromatic-dev/module-logger` symlink
+  was removed as instructed
+  (`~/temp/agent/node_modules/.monochromatic` left untouched).
+- The user partially blames pnpm and mise;
+  both get their own investigations
+  (troubleshooting docs `doc/troubleshooting/pnpm-stale-node-modules-detection.md`
+   and `doc/troubleshooting/mise-dependency-freshness.md`, subagents running).
+- Lint wall time,
+  built sidecars versus `./ts` source entry (subagent running).
 
 ## Commits
 
