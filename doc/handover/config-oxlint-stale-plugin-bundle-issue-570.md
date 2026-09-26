@@ -80,6 +80,83 @@ The user rejected that round.
 - `mise.toml` has `prepare:pnpm:install` (`pnpm install`);
   build tasks do not depend on it.
 
+### Existing freshness check backfires (verified by reading `mise.toml` lines 374 to 421)
+
+- `lint:oxlint` and `format:oxlint` templates call `ensureOxlintConfig()`,
+  which rebuilds `//package/config/oxlint:build:js:node`
+  when `shouldBuildOxlintConfig()` finds a source newer than the oldest sidecar.
+- Sources are `src`, `package.json`, `tsconfig.json`, `rolldown.node.config.ts`
+  of `config-oxlint` and each `package/oxlint-plugin/*`,
+  plus `pnpm-lock.yaml` and `pnpm-workspace.yaml`.
+- In the #570 sequence:
+  a merge or `pnpm install --lockfile-only` touches `pnpm-lock.yaml`;
+  the next lint rebuilds before install,
+  producing the broken bundle now newer than every source;
+  a later `pnpm install` touches none of those sources,
+  so the check never rebuilds again.
+  This is why "install did not help" in the issue.
+- Second hole:
+  transitively inlined workspace packages
+  (for example `package/module/logger` source)
+  are not in the source list,
+  so editing them never rebuilds the sidecars either.
+
+### Install freshness (subagent report, not re-verified except where noted)
+
+- No git hook or cli-git post-action runs `pnpm install`;
+  hk is retired (`doc/decision/cli-git-policies-platform.md` line 870);
+  `.git/hooks` holds only Git LFS shims.
+- pnpm `verifyDepsBeforeRun` only fires on `pnpm run` and `pnpm exec`,
+  which repo tasks never use (CM3).
+- `node_modules/.pnpm/lock.yaml` is pnpm's record of the last installed lockfile;
+  comparing it with `pnpm-lock.yaml` detects "lockfile changed, not installed".
+  Every install rewrites its mtime.
+- No-op `pnpm install --frozen-lockfile --offline` measured 0.39 s then 0.21 s
+  (two runs, no spread band),
+  and relinks six packages every run (cause not investigated).
+- mise native `sources`/`outputs` exist; no repo task uses them.
+  `task-util` `depends` helper is used only by `prepare:playwright`.
+
+### Consumers, reproduction, wrapper (subagent report; starred items re-verified)
+
+- No rolldown config in the repo sets `onLog`, `onwarn`, or `checks`.
+  All three shared factories build from one base object
+  (`package/config/rolldown/src/index.node.ts` `baseOptions`,
+   `index.ts`,
+   `index.client.ts`),
+  so one `onLog` there reaches every consumer.
+- With dependencies installed,
+  `//package/config/oxlint:build` emits no `UNRESOLVED_IMPORT`.
+- Issue #570 reproduced in a throwaway worktree:
+  after removing the plugin's `module-logger` link,
+  rolldown printed
+  `[UNRESOLVED_IMPORT] Could not resolve '@monochromatic-dev/module-logger/ts' ... treating it as an external dependency`,
+  exited 0,
+  and oxlint then failed to load the config.
+- A fresh-worktree full `mise run build` printed `UNRESOLVED_IMPORT` only from
+  raw (non-`config-rolldown`) electron main configs
+  and from `package/kwin/key-helper/src/nvim.ts` line 19 (starred),
+  which imports bare `@monochromatic-dev/module-async-time`
+  instead of the `/ts` subpath (ST3),
+  so it depends on sibling dist build order.
+  The full build also exited 1 partway with no error line (not investigated).
+- Starred:
+  `~/temp/agent/node_modules/@monochromatic-dev/module-logger` is a stray symlink (dated Sep 23)
+  to the main checkout;
+  any worktree under `~/temp/agent` resolves `module-logger` through it,
+  masking this bug in reproductions.
+- Starred:
+  `package/oxlint-plugin/no-restricted-syntax/package.json` lists `module-logger`
+  as a devDependency (the issue calls it "declared");
+  workspace code is bundled at build time,
+  so dev classification is consistent with the bundling policy.
+- Wrapper source:
+  `package/dev-script/task-util/src/oxlint-wrapper.ts`;
+  `finalizeResult` keeps oxlint's exit code.
+  oxlint 1.85.0 prints the config-load failure block on stdout, not stderr.
+  The wrapper has no test;
+  `oxlint-augment.ts` holds testable pure helpers.
+
 ## Reframed failure chain
 
 These are separate links;
@@ -109,12 +186,10 @@ Candidate dissolutions under investigation:
 
 - Measured lint wall time: built sidecars versus `./ts` source entry.
 - What #238 decided and why.
-- Whether any current build already emits `UNRESOLVED_IMPORT`
-  (subagent running in a throwaway worktree).
-- The oxlint wrapper's exit and output contract,
-  and which caller misread the failure.
-- Whether a post-merge or post-checkout hook, or pnpm's own dependency verification,
-  can keep install state current.
+- Round 2 asked (awaiting answers):
+  build guard scope,
+  wrapper behavior on config-load failure,
+  stray symlink removal.
 
 ## Commits
 
