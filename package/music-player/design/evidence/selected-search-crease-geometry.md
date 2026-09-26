@@ -116,5 +116,11 @@ withdrawn after the user noted that it showed just one existing mockup.
 Its proportional bars were not native layout variants.
 The P0/P10/P12 menu was **not answered**;
 no numeric floor was selected.
-A replacement with distinct debug-only native Compose captures is pending.
-No new IME experiment is authorized for that comparison.
+The replacement at the same review path now embeds distinct debug-only
+native Compose captures for P0,
+P14 and P20 in empty/results states.
+The [native floor study](crease-floor-native-comparison.md) records their
+measured after-state box positions,
+visible browser wrapping and sample limits.
+The user's new numeric choice remains pending;
+no new IME experiment was performed.

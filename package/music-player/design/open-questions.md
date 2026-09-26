@@ -332,6 +332,14 @@ rounds (2026-09-17):
   the visible gap,
   but neither accessibility bounds nor those samples establish a universal
   glyph-ink margin or select the minimum floor.
+  A first E2 floor form was withdrawn because proportional bars were not
+  distinct mockups.
+  The [replacement native review](questions/crease-floor-review.html)
+  shows P0,
+  P14 and P20 as separate debug-only Search A captures in results and empty
+  states at 200% text.
+  The sampled P20 browser wraps earlier under one equal-added-inset allocation;
+  the numeric floor is still undecided and painted clearance remains unverified.
   Borders,
   paddings,
   input/row

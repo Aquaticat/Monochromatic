@@ -6094,21 +6094,35 @@ No additional IME testing was performed.
 D53's deck allowance and D55's folded-cover allowance remain distinct;
 D57 does not generalize to other floating placements or ordinary keyboards.
 
-The initial E2 floor question at
-`package/music-player/design/questions/crease-floor-review.html` is **withdrawn**.
-The user pointed out that it contained only the existing selected-A mockup;
-proportional measurement bars were not built visual alternatives.
-The P0/P10/P12 menu was not answered;
-no `min_padding` is selected.
-The reviewed 167px cross-state **projected node-box gap** remains evidence,
-not a measured painted nearest-pair distance or a fit test.
-A replacement is being built as separate debug-only Compose variants of
-the selected inner A,
-installed on the disposable Fold within its 6 GiB/2 CPU Podman cap.
-Only keyboard-closed layouts will be captured;
-this is **not** a renewed IME experiment.
-Show the actual full native captures side by side at the measured 390dpi
-before asking the floor question again.
-Do not confuse a nominal minimum with symmetrical margins,
-and do not declare compliance without a measured painted-information check.
-The original AVD and production Search remain untouched.
+The initial E2 floor form reused one existing mockup and measurement bars.
+The user rejected it as not a visual comparison;
+its P0/P10/P12 menu was never answered.
+A replacement at the **same**
+`package/music-player/design/questions/crease-floor-review.html` now embeds
+separate native Compose captures of P0,
+P14 and P20 in empty and results states at 200% text.
+The debug-only variant source is prototype commit `469819241`;
+the installed APK matched SHA-256
+`9e80c29ccfee72e82574a8884b3e4dca89361f05f73db3fc0231b546c971298c`.
+Only the disposable Fold was used,
+within its inspected 6 GiB/2 CPU Podman cap.
+No new IME experiment or production Search change was made.
+The six full-panel screenshots are status-replaced and metadata-stripped;
+raw captures and full hierarchies stay private.
+
+In the sampled empty state,
+`4:35` and the right heading's projected horizontal box gap changed from
+167px for P0 to 209px for P14 and 297px for P20.
+Those nodes occupy different heights and are **not** a nearest painted pair.
+The complete four-mode deck and actual upper-left browser remain in all
+captured variants.
+With this tested **equal-added-inset allocation**,
+P20 makes `Celldweller` wrap and moves `Clown Core` below the first browser
+viewport even with the keyboard closed;
+its scroll reachability was not tested.
+A total numerical floor does not mandate this allocation or accept
+unreachable browser items.
+See `package/music-player/design/evidence/crease-floor-native-comparison.md`
+for the exact fixture and limits.
+The revised floor decision is pending;
+no `min_padding` is selected and the original AVD remains untouched.
