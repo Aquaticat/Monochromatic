@@ -2591,7 +2591,15 @@ by appending it through `GIT_CONFIG_COUNT`,
 and `GIT_CONFIG_VALUE_<n>` while preserving existing entries,
 so native Git leaves an owner PID file beside each lock
 and the shim's restoration of `GIT_CONFIG_PARAMETERS` does not remove the setting.
-A Git without `core.lockfilePid` produces no PID evidence.
+The wrapper installs the entry into its own environment at startup,
+so every Git it forwards or spawns inherits it.
+Nothing is appended when the last numbered `core.lockfilePid` entry already reads as true,
+or when `GIT_CONFIG_COUNT` is malformed,
+so Git still reports the caller's error.
+Git reads the numbered entries before `GIT_CONFIG_PARAMETERS`,
+so a caller's explicit `-c core.lockfilePid=false` still wins.
+`core.lockfilePid` first shipped in Git 2.54.0;
+an older Git ignores the unknown key and produces no PID evidence.
 
 #### Foreign `index.lock` classification
 
@@ -2602,7 +2610,14 @@ it classifies an existing lock from evidence re-read on every attempt:
 - the lock's device,
   inode,
   and ctime;
-- the Git PID file and whether that process is alive and started no later than the lock's ctime;
+- the Git PID file and whether that process is alive and started no later than the lock's ctime,
+  allowing for the start time's clock resolution
+  (20 ms on Linux,
+  from start ticks and `/proc/uptime`;
+  1 s on macOS,
+  from `ps -o lstart=`);
+  a zombie counts as exited,
+  and a process started later means the PID was reused;
 - open holders matched by device and inode,
   never by path:
   `/proc/<pid>/fd` on Linux,
@@ -2627,6 +2642,15 @@ or evidence-free:
 An absent open holder does not prove abandonment:
 native `git commit` keeps `index.lock` on disk without an open descriptor through its hooks and editor.
 
+The open-holder scan runs only when the PID file does not already prove a live owner.
+The unproven budget counts all time spent in attempts without a proven owner,
+evidence gathering included,
+because a Linux `/proc` scan over about 1000 processes took 59 to 106 ms on the development host.
+While a proven-alive owner holds the lock,
+polls are capped at 100 ms when a PID file proves it
+and at 500 ms when only an open descriptor does,
+because each of those polls repeats the scan.
+
 #### Index-writer coordination
 
 Forwarded index writers coordinate with landings through the landing lock.
@@ -2649,6 +2673,12 @@ Cli-git classifies them from parsed arguments:
 `am`,
 `pull`,
 and `sparse-checkout`.
+Classification uses the command after ordinary alias resolution,
+and long options match in full or as the abbreviations Git accepts for them.
+A writer is against the real index when `git rev-parse --git-path index` names `<git-dir>/index`,
+so a writer redirected by `GIT_INDEX_FILE`,
+such as a hook of a private preparation,
+is not coordinated.
 For a classified writer against the real index,
 cli-git takes the landing lock,
 pre-waits for a foreign `index.lock` under the classification rules,
@@ -2657,6 +2687,14 @@ and releases the landing lock after real Git returns.
 Cli-git does not capture Git's stderr to detect a lock failure and re-forward,
 because capturing stderr changes Git's color and progress output.
 A residual race remains only with processes that bypass the wrapper.
+
+The forwarded Git receives `CLI_GIT_LANDING_LEASE` naming the held landing lock and its owner token.
+Hooks and `rebase --exec` commands of that Git can invoke the wrapper again;
+a nested invocation whose inherited lease names the same,
+still-held landing lock proceeds without taking the landing lock or pre-waiting for `index.lock`,
+exactly as native Git would run,
+instead of waiting for its own ancestor.
+A nested commit transaction lands under the ancestor's landing lock the same way.
 
 `git cli-git fix` holds the landing lock as described in "Direct fix".
 
