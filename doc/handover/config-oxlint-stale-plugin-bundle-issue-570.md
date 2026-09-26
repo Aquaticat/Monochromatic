@@ -182,6 +182,32 @@ The user rejected that round.
   with 385 TS2307 errors from unbuilt packages;
   not representative.
 
+### oxlint and rolldown share blame (subagent report; details in troubleshooting docs)
+
+- `doc/troubleshooting/oxlint-config-load-failure-exit-code.md`:
+  oxlint 1.85.0 exits 1 both for "config or JS plugin failed to load" and for "lint found errors"
+  (`apps/oxlint/src/result.rs` lines 27 to 51 collapse distinct variants);
+  the failure prints on stdout before any formatter,
+  so `--format json` does not change it.
+  Tested consumer-side discriminators:
+  unparsable `--format json` output,
+  or the absence of the `Found N warnings and M errors.` summary line.
+  ESLint documents exit 2 for this case.
+  A prototype upstream patch (exit 2) is drafted, not filed.
+- `doc/troubleshooting/rolldown-unresolved-import-external.md`:
+  warn-and-externalize is deliberate Rollup-compatible behavior;
+  the rolldown docs line claiming otherwise is wrong.
+  A hard-error option was merged and reverted upstream (#9388, #9438; request #9362 open).
+- Decisive for design:
+  rolldown delivers warnings to `onLog` only after `bundle_write` has written every file,
+  so an `onLog` escalation exits 1 but still leaves the broken sidecar on disk,
+  newer than every input,
+  which `shouldBuildOxlintConfig` then treats as current.
+  The issue's first remediation, as worded, would not prevent the persisted artifact.
+  A `resolveId` plugin calling `this.resolve(..., { skipSelf: true })`
+  and `this.error` on null fails before writing (verified by the subagent).
+  A prototype upstream fix (deliver warnings before writing) is drafted, not filed.
+
 ## Reframed failure chain
 
 These are separate links;
@@ -220,9 +246,8 @@ Candidate dissolutions under investigation:
   both get their own investigations
   (troubleshooting docs `doc/troubleshooting/pnpm-stale-node-modules-detection.md`
    and `doc/troubleshooting/mise-dependency-freshness.md`, subagents running).
-- oxlint exit-code and rolldown docs/source investigations running
-  (troubleshooting docs `doc/troubleshooting/oxlint-config-load-failure-exit-code.md`
-   and `doc/troubleshooting/rolldown-unresolved-import-external.md`).
+- Whether to file the drafted upstream reports (oxlint exit code, rolldown `onLog` write order, rolldown docs line);
+  external action, needs user authorization.
 - Lint speed on a quiet host,
   including the `--fix` loop,
   if the source-entry option stays on the table.
