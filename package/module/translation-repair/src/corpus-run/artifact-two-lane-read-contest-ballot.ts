@@ -160,9 +160,25 @@ export function parseContestBallot(
       'droppedRaw',
       'reason',
       'archive',
+      'modelId',
     ],
     path,
   },);
+  /**
+   Seat that cast this ballot, present only on a ballot recorded with one.
+
+   ABSENT ON AN OLDER ARTIFACT rather than refused, since a ballot settled
+   before seats were recorded (hulicaijia26 and earlier) still carries a
+   verdict the reader recomputes, and the seat never enters that verdict.
+   */
+  const seat = (ballot.modelId === undefined)
+    ? {}
+    : {
+      modelId: requireString({
+        value: ballot.modelId,
+        path: `${path}.modelId`,
+      },),
+    };
   /**
    Archive verdict this ballot carries, present only when it recorded one.
    
@@ -183,6 +199,7 @@ export function parseContestBallot(
 
   return {
     ...archive,
+    ...seat,
     choice: requireOneOf({
       value: ballot.choice,
       allowed: LANE_CHOICES,

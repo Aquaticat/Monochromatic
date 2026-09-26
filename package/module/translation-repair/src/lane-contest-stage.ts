@@ -266,7 +266,55 @@ function withoutArchiveAnswer(
     dropped: ballot.dropped,
     droppedRaw: ballot.droppedRaw,
     reason: ballot.reason,
+    // Conditional spread keeps the seat absent instead of undefined.
+    ...((ballot.modelId === undefined) ? {} : { modelId: ballot.modelId, }),
   };
+}
+
+/**
+ Logs one line per ballot naming the seat that cast it.
+
+ ONE LINE A JUDGE, because the question a reader brings to a contested slice
+ is which models chose what and why (hulicaijia26 footnote 7: four of five
+ ballots called the archive's wordplay note an addition, and the one summary
+ line the stage printed could not say whose ballots they were).
+
+ @param ballots - ballots as recorded, each carrying its seat
+
+ @param l - logger to write through
+
+ @example
+ ```ts
+ logBallots({ ballots: recorded, l: cl, },);
+ ```
+ */
+function logBallots(
+  {
+    ballots,
+    l,
+  }: {
+    readonly ballots: readonly LaneContestBallot[];
+    readonly l: Logger;
+  },
+): void {
+  for (const ballot of ballots) {
+    /**
+     Candidates this judge called unsupported, as one clause.
+     */
+    const unsupported = ballot.unsupported
+      .join(', ',);
+
+    /**
+     Candidates this judge said dropped page content, as one clause.
+     */
+    const dropped = ballot.dropped
+      .join(', ',);
+    l.info(
+      `lane contest ballot by ${ballot.modelId ?? 'an unnamed seat'}: chose ${ballot.choice}, archive ${
+        ballot.archive ?? 'unanswered'
+      }, unsupported [${unsupported}], dropped [${dropped}]: ${ballot.reason}`,
+    );
+  }
 }
 
 /**
@@ -363,11 +411,19 @@ export async function contestLaneSlice(
     outcome,
   ): readonly LaneContestBallot[] {
     /**
-     This voice, heard or lost.
+     This seat and its voice, heard or lost.
      */
-    const { voice, } = outcome;
+    const {
+      modelId,
+      voice,
+    } = outcome;
     return voice.heard
-      ? [ readLaneContestBallot({ wire: voice.value, },), ]
+      ? [
+        {
+          ...readLaneContestBallot({ wire: voice.value, },),
+          modelId,
+        },
+      ]
       : [];
   },);
 
@@ -391,6 +447,10 @@ export async function contestLaneSlice(
    Candidate enough voices backed.
    */
   const choice = settleLaneContestBallots({ ballots: recorded, },);
+  logBallots({
+    ballots: recorded,
+    l: cl,
+  },);
   cl.info(
     `lane contest: ${String(ballots.length,)}/${String(outcomes.length,)} usable, settled on ${choice}`,
   );

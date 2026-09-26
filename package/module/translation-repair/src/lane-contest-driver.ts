@@ -458,7 +458,12 @@ export async function contestDocumentLanes(
               },
               signal,
               exchangeTimeoutMs: perCallTimeoutMs,
-              l: dl,
+              // Tagged with the slice so each ballot line the stage writes
+              // says which passage it judged.
+              l: tagged({
+                l: dl,
+                tag: `slice ${String(row.sliceIndex,)}`,
+              },),
               // Conditional spread keeps the knob absent instead of undefined.
               ...((fanOut === undefined) ? {} : { fanOut, }),
             },);

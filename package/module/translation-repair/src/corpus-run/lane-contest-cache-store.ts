@@ -81,7 +81,10 @@ function isLaneContestBallot(value: unknown,): value is LaneContestBallot {
     && Array.isArray(value.dropped,)
     && Array.isArray(value.droppedRaw,)
     && ((typeof value.reason) === 'string')
-    && isArchiveName(value.archive,);
+    && isArchiveName(value.archive,)
+    // A seat is optional (entries cached before seats were recorded carry
+    // none), but one that is present must be a model id, not anything else.
+    && ((value.modelId === undefined) || ((typeof value.modelId) === 'string'));
 }
 
 /**

@@ -119,6 +119,18 @@ export type LaneContestBallot = {
    would trade a lane verdict for an archive one.
    */
   readonly archive?: ArchiveVerdict;
+
+  /**
+   Seat that cast this ballot.
+
+   RECORDED SO A SETTLED PAGE CAN SAY WHO JUDGED IT. hulicaijia26
+   (2026-09-26) shipped a footnote whose translator's wordplay note four of
+   five contest ballots called an addition, and neither the log, the artifact
+   nor the stored replies named the models that cast them. OPTIONAL because a
+   ballot read back from an artifact settled before this field existed has no
+   seat to report, and the verdict never depends on it.
+   */
+  readonly modelId?: string;
 };
 
 /**
