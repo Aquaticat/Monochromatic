@@ -87,3 +87,13 @@ export {
   isMissingFileError,
   isRecoverableReadFailure,
 } from './store-file.ts';
+
+/**
+ @internal Test-fixture helpers for the built artifact;
+ not part of the supported store API.
+ */
+export {
+  bytesToString,
+  concatBytes,
+  stringToBytes,
+} from './bytes.ts';
