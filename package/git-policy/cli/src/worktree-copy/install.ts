@@ -1,14 +1,3 @@
-import { constants, } from 'node:fs';
-import {
-  chmod,
-  copyFile,
-  lstat,
-  mkdir,
-  readlink,
-  symlink,
-  unlink,
-} from 'node:fs/promises';
-
 import {
   entryMatches,
   lstatOrAbsent,
@@ -16,91 +5,67 @@ import {
 import { applyEntryModes, } from './entry-manifest.ts';
 import { WorktreeCopyError, } from './errors.ts';
 import { filesystemPath, } from './ignored-paths.ts';
-import { rollbackCreated, } from './install-rollback.ts';
 import {
-  type JournalState,
-  recordCreatedEntry,
-  recordEntryIntent,
-} from './transaction-journal.ts';
+  captureInstalledPath,
+  createSelectedEntry,
+  ensureParents,
+} from './install-entry.ts';
+import { rollbackCreated, } from './install-rollback.ts';
 import type {
   InstalledWorktreePath,
   StagedWorktreeSnapshot,
   WorktreeCopyEntry,
 } from './model.ts';
+import {
+  isTransactionPath,
+  type JournalState,
+  recordCreations,
+  recordIntents,
+} from './transaction-journal.ts';
 
 /**
- Exclusive copy-on-write request with full-copy fallback.
+ Selected entries claimed by one durable intent append and settled by one creation append.
+ Bounds both the append count and the work an interrupted owner can leave unrecorded.
  */
-const EXCLUSIVE_COPY_MODE = constants.COPYFILE_EXCL | constants.COPYFILE_FICLONE;
+const INSTALL_BATCH_ENTRIES = 512;
 
 /**
- Temporary writable mode for newly installed selected directories.
- */
-const PRIVATE_DIRECTORY_MODE = 0o700;
+ Asserts every existing destination entry is identical, or is this transaction's own interrupted directory,
+ before mutation.
 
-/**
- Captures exact no-follow identity after successful exclusive creation.
- 
- @param destinationPath - newly created native filesystem path
- 
- @param relativePath - repository path for durable ownership
- 
- @param selected - whether path came from selected source manifest
- 
- @returns exact created-path identity
- 
- @example
- ```ts
- await captureInstalledPath({ destinationPath: '/wt/cache', relativePath: 'cache', selected: true });
- ```
- */
-async function captureInstalledPath({
-  destinationPath,
-  relativePath,
-  selected,
-}: Readonly<{
-  destinationPath: string;
-  relativePath: string;
-  selected: boolean;
-}>,): Promise<InstalledWorktreePath> {
-  /**
-   Exact no-follow post-creation filesystem identity.
-   */
-  const stats = await lstat(
-    destinationPath,
-    { bigint: true, },
-  );
-  return {
-    device: stats.dev
-      .toString(),
-    inode: stats.ino
-      .toString(),
-    relativePath,
-    selected,
-  };
-}
+ A directory this transaction claimed or created still has its private installation mode
+ when its owner was interrupted,
+ because modes are applied after every entry exists;
+ accepting it lets recovery resume.
 
-/**
- Asserts every existing destination entry is identical before mutation.
- 
  @param snapshot - validated staged source state
- 
+
  @param destinationRoot - newly registered worktree root
- 
+
+ @param journalState - recorded claims and creations of this transaction
+
+ @returns selected paths absent from the destination
+
  @throws {@link WorktreeCopyError} on first differing collision
- 
+
  @example
  ```ts
- await preflightDestination({ snapshot, destinationRoot: '/wt' });
+ await preflightDestination({ snapshot, destinationRoot: '/wt', journalState });
  ```
  */
 async function preflightDestination({
   snapshot,
   destinationRoot,
+  journalState,
 }: Readonly<{
   snapshot: StagedWorktreeSnapshot;
   destinationRoot: string;
-}>,): Promise<void> {
+  journalState: JournalState;
+}>,): Promise<ReadonlySet<string>> {
+  /**
+   Selected paths not present in the destination.
+   */
+  const absent = new Set<string>();
   for (const entry of snapshot.entries) {
     /**
      Destination path aligned with staged entry.
@@ -115,8 +80,14 @@ async function preflightDestination({
      */
     const stats = await lstatOrAbsent(destinationPath,);
     /* oxlint-enable no-await-in-loop */
-    if ((typeof stats) === 'symbol')
+    if ((typeof stats) === 'symbol') {
+      absent.add(entry.relativePath,);
       continue;
+    }
+    if ((entry.kind === 'directory') && stats.isDirectory()
+      && isTransactionPath({ state: journalState, relativePath: entry.relativePath, },)) {
+      continue;
+    }
     // oxlint-disable-next-line no-await-in-loop -- exact comparison is required before any destination mutation
     if (!(await entryMatches({
       expectedRoot: snapshot.stageRoot,
@@ -128,260 +99,176 @@ async function preflightDestination({
       );
     }
   }
+  return absent;
 }
 
 /**
- Creates missing unselected parent directories for one selected entry.
- 
- @param destinationRoot - newly registered worktree root
- 
- @param entry - selected staged entry
- 
- @param created - mutable transaction-owned creation list
- 
- @param journalState - mutable durable transaction state
- 
- @mutates journalState - records proven scaffold identities through {@link recordCreatedEntry}
- 
- @example
- ```ts
- await ensureParents({ destinationRoot: '/wt', entry, created: [], journalState });
- ```
- */
-async function ensureParents({
-  destinationRoot,
-  entry,
-  created,
-  journalState,
-}: Readonly<{
-  destinationRoot: string;
-  entry: WorktreeCopyEntry;
-  created: InstalledWorktreePath[];
-  journalState: JournalState;
-}>,): Promise<void> {
-  /**
-   Selected path components excluding selected entry itself.
-   */
-  const parentComponents = entry.relativePath
-    .split('/')
-    .slice(
-      0,
-      -1,
-    );
-  /**
-   Ordered parent repository paths from shallow to deep.
-   */
-  const parentPaths = parentComponents.map(function parentPath(
-    _component,
-    index,
-  ): string {
-    return parentComponents
-      .slice(
-        0,
-        index + 1,
-      )
-      .join('/');
-  },);
-  for (const current of parentPaths) {
-    /**
-     Current native destination parent.
-     */
-    const destinationPath = filesystemPath({
-      root: destinationRoot,
-      repositoryPath: current,
-    },);
-    /* oxlint-disable no-await-in-loop -- parent chain is ordered and each child depends on prior directory */
-    /**
-     Current parent no-follow metadata or absence.
-     */
-    const stats = await lstatOrAbsent(destinationPath,);
-    /* oxlint-enable no-await-in-loop */
-    if ((typeof stats) !== 'symbol') {
-      if (!stats.isDirectory()) {
-        throw new WorktreeCopyError(
-          `cli-git: ignored-state parent is not a directory: ${JSON.stringify(current,)} in ${JSON.stringify(destinationRoot,)}.`,
-        );
-      }
-      continue;
-    }
-    // oxlint-disable-next-line no-await-in-loop -- parent chain creation is necessarily sequential
-    await mkdir(destinationPath,);
-    /**
-     Proven scaffold identity captured after exclusive creation.
-     */
-    // oxlint-disable-next-line no-await-in-loop -- ownership identity must follow successful scaffold creation
-    const installed = await captureInstalledPath({
-      destinationPath,
-      relativePath: current,
-      selected: false,
-    },);
-    created.push(installed,);
-    // oxlint-disable-next-line no-await-in-loop -- durable ownership must follow each proven scaffold creation
-    await recordCreatedEntry({
-      state: journalState,
-      entry: installed,
-    },);
-  }
-}
+ Splits the manifest into installation batches in manifest order.
 
-/**
- Creates one absent selected entry from private stage.
- 
- @param snapshot - validated staged source state
- 
- @param destinationRoot - newly registered worktree root
- 
- @param entry - absent selected entry
- 
+ @param entries - parent-first manifest
+
+ @returns consecutive batches of at most {@link INSTALL_BATCH_ENTRIES} entries
+
  @example
  ```ts
- await createSelectedEntry({ snapshot, destinationRoot: '/wt', entry });
+ installBatches(snapshot.entries);
  ```
  */
-async function createSelectedEntry({
-  snapshot,
-  destinationRoot,
-  entry,
-}: Readonly<{
-  snapshot: StagedWorktreeSnapshot;
-  destinationRoot: string;
-  entry: WorktreeCopyEntry;
-}>,): Promise<void> {
-  /**
-   Staged expected filesystem path.
-   */
-  const stagePath = filesystemPath({
-    root: snapshot.stageRoot,
-    repositoryPath: entry.relativePath,
-  },);
-  /**
-   Destination filesystem path.
-   */
-  const destinationPath = filesystemPath({
-    root: destinationRoot,
-    repositoryPath: entry.relativePath,
-  },);
-  if (entry.kind === 'directory') {
-    await mkdir(
-      destinationPath,
-      { mode: PRIVATE_DIRECTORY_MODE, },
-    );
-    return;
-  }
-  if (entry.kind === 'file') {
-    await copyFile(
-      stagePath,
-      destinationPath,
-      EXCLUSIVE_COPY_MODE,
-    );
-    try {
-      await chmod(
-        destinationPath,
-        entry.mode,
-      );
-      return;
-    }
-    catch (error: unknown) {
-      await unlink(destinationPath,);
-      throw error;
-    }
-  }
-  /**
-   Exact staged symbolic-link target text.
-   */
-  const target = await readlink(stagePath,);
-  await symlink(
-    target,
-    destinationPath,
+function installBatches(entries: readonly WorktreeCopyEntry[],): readonly (readonly WorktreeCopyEntry[])[] {
+  return Array.from(
+    { length: Math.ceil(entries.length / INSTALL_BATCH_ENTRIES,), },
+    function batchAt(_unused, index,): readonly WorktreeCopyEntry[] {
+      return entries.slice(index * INSTALL_BATCH_ENTRIES, (index + 1) * INSTALL_BATCH_ENTRIES,);
+    },
   );
 }
 
 /**
- Installs validated ignored snapshot without overwriting destination state.
- 
+ Installs one batch: claims its absent selected paths, creates them, then records their identities.
+
  @param snapshot - validated private source snapshot
- 
+
  @param destinationRoot - newly registered worktree root
- 
+
+ @param batch - consecutive manifest entries
+
+ @param absent - selected paths absent at preflight
+
+ @param created - transaction-owned creation list shared with rollback
+
  @param journalState - mutable durable transaction state
- 
- @mutates journalState - records selected intents and proven identities through journal helpers
- 
- @returns count of newly installed selected entries
- 
- @throws {@link WorktreeCopyError} after ownership-checked rollback on failure
- 
+
+ @mutates created - appends every path the batch creates
+
+ @mutates journalState - records the batch's intents and creations
+
  @example
  ```ts
- await installSnapshot({ snapshot, destinationRoot: '/wt', journalState });
+ await installBatch({ snapshot, destinationRoot: '/wt', batch, absent, created, journalState });
+ ```
+ */
+async function installBatch({
+  snapshot,
+  destinationRoot,
+  batch,
+  absent,
+  created,
+  journalState,
+}: Readonly<{
+  snapshot: StagedWorktreeSnapshot;
+  destinationRoot: string;
+  batch: readonly WorktreeCopyEntry[];
+  absent: ReadonlySet<string>;
+  created: InstalledWorktreePath[];
+  journalState: JournalState;
+}>,): Promise<void> {
+  await recordIntents({
+    state: journalState,
+    relativePaths: batch
+      .map(function entryPath(entry,): string {
+        return entry.relativePath;
+      },)
+      .filter(function isAbsent(relativePath,): boolean {
+        return absent.has(relativePath,);
+      },),
+  },);
+  /**
+   Creation-list length before this batch.
+   */
+  const batchStart = created.length;
+  for (const entry of batch) {
+    // oxlint-disable-next-line no-await-in-loop -- manifest parent order and rollback ownership require sequential install
+    await ensureParents({
+      destinationRoot,
+      entry,
+      created,
+    },);
+    /**
+     Current destination path after parent creation.
+     */
+    const destinationPath = filesystemPath({
+      root: destinationRoot,
+      repositoryPath: entry.relativePath,
+    },);
+    // oxlint-disable-next-line no-await-in-loop -- destination can change between preflight and exact exclusive creation
+    if ((typeof await lstatOrAbsent(destinationPath,)) !== 'symbol')
+      continue;
+    // oxlint-disable-next-line no-await-in-loop -- deterministic parent-before-child installation
+    await createSelectedEntry({
+      snapshot,
+      destinationRoot,
+      entry,
+    },);
+    // oxlint-disable-next-line no-await-in-loop -- ownership identity must follow successful selected creation
+    created.push(await captureInstalledPath({
+      destinationPath,
+      relativePath: entry.relativePath,
+      selected: true,
+    },),);
+  }
+  await recordCreations({
+    state: journalState,
+    entries: created.slice(batchStart,),
+  },);
+}
+
+/**
+ Installs validated ignored snapshot without overwriting destination state.
+
+ @param snapshot - validated private source snapshot
+
+ @param destinationRoot - newly registered worktree root
+
+ @param journalState - mutable durable transaction state
+
+ @param priorCreations - paths an interrupted owner already proved created
+
+ @mutates journalState - records batch intents and proven identities through journal helpers
+
+ @returns count of newly installed selected entries
+
+ @throws {@link WorktreeCopyError} after ownership-checked rollback on failure
+
+ @example
+ ```ts
+ await installSnapshot({ snapshot, destinationRoot: '/wt', journalState, priorCreations: [] });
  ```
  */
 export async function installSnapshot({
   snapshot,
   destinationRoot,
   journalState,
+  priorCreations,
 }: Readonly<{
   snapshot: StagedWorktreeSnapshot;
   destinationRoot: string;
   journalState: JournalState;
+  priorCreations: readonly InstalledWorktreePath[];
 }>,): Promise<number> {
   /**
-   Prior paths with durable post-creation identities.
+   Prior and new paths with durable or in-memory post-creation identities.
    */
-  const created: InstalledWorktreePath[] = journalState.pending
-    .record
-    .createdEntries
-    .map(function priorCreation(entry,): InstalledWorktreePath {
-      return { ...entry, };
-    },);
+  const created: InstalledWorktreePath[] = priorCreations.map(function priorCreation(entry,): InstalledWorktreePath {
+    return { ...entry, };
+  },);
   try {
-    await preflightDestination({
+    /**
+     Selected paths absent before installation.
+     */
+    const absent = await preflightDestination({
       snapshot,
       destinationRoot,
+      journalState,
     },);
-    for (const entry of snapshot.entries) {
-      // oxlint-disable-next-line no-await-in-loop -- manifest parent order and rollback ownership require sequential install
-      await ensureParents({
-        destinationRoot,
-        entry,
-        created,
-        journalState,
-      },);
-      /**
-       Current destination path after parent creation.
-       */
-      const destinationPath = filesystemPath({
-        root: destinationRoot,
-        repositoryPath: entry.relativePath,
-      },);
-      // oxlint-disable-next-line no-await-in-loop -- destination can change between preflight and exact exclusive creation
-      if ((typeof await lstatOrAbsent(destinationPath,)) !== 'symbol')
-        continue;
-      // oxlint-disable-next-line no-await-in-loop -- intent must be durable before selected destination mutation
-      await recordEntryIntent({
-        state: journalState,
-        relativePath: entry.relativePath,
-      },);
-      // oxlint-disable-next-line no-await-in-loop -- deterministic parent-before-child installation
-      await createSelectedEntry({
+    for (const batch of installBatches(snapshot.entries,)) {
+      // oxlint-disable-next-line no-await-in-loop -- batches install in manifest order so parents precede children
+      await installBatch({
         snapshot,
         destinationRoot,
-        entry,
-      },);
-      /**
-       Proven selected identity captured after exclusive creation.
-       */
-      // oxlint-disable-next-line no-await-in-loop -- ownership identity must follow successful selected creation
-      const installed = await captureInstalledPath({
-        destinationPath,
-        relativePath: entry.relativePath,
-        selected: true,
-      },);
-      created.push(installed,);
-      // oxlint-disable-next-line no-await-in-loop -- durable ownership must follow each proven selected creation
-      await recordCreatedEntry({
-        state: journalState,
-        entry: installed,
+        batch,
+        absent,
+        created,
+        journalState,
       },);
     }
     await applyEntryModes({

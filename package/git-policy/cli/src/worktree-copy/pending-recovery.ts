@@ -2,15 +2,24 @@
  Recovery of interrupted ignored-state copies for forwarded commands that hold no settlement lock.
 
  A command that neither creates nor moves worktrees checks for pending journals without the settlement lock
- and takes it only to recover when a journal exists,
- so concurrent Git commands in linked worktrees never contend on it.
+ and takes it only to recover when a journal exists.
+ While another live process owns the lock,
+ that owner is either still writing its own journal or already recovering,
+ so the command skips recovery instead of waiting;
+ concurrent Git commands in linked worktrees therefore never contend on it.
 
  @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { readPendingWorktreeCopyJournals, } from './journal.ts';
-import { acquireWorktreeCopyLock, } from './journal-lock.ts';
-import { recoverWorktreeCopyTransactions, } from './transaction.ts';
+import {
+  tryAcquireWorktreeCopyLock,
+  WORKTREE_COPY_LOCK_HELD,
+} from './journal-lock.ts';
+import {
+  recoverWorktreeCopyTransactions,
+  type RecoveryReport,
+} from './transaction-recovery.ts';
 
 /**
  Module logger.
@@ -18,30 +27,34 @@ import { recoverWorktreeCopyTransactions, } from './transaction.ts';
 const l = tagged({ tag: 'cli-git', },);
 
 /**
- Writes the recovery summary line when any copy was recovered.
+ Writes one line per transaction recovery ended without completing, then the recovery summary line.
 
- @param recovered - recovered destination count
+ @param report - recovery pass result
 
  @example
  ```ts
- reportRecoveredWorktreeCopies(1);
+ reportRecoveredWorktreeCopies({ recovered: 1, notices: [] });
  ```
  */
-export function reportRecoveredWorktreeCopies(recovered: number,): void {
-  if (recovered > 0) {
+export function reportRecoveredWorktreeCopies(report: RecoveryReport,): void {
+  report.notices.forEach(function writeNotice(notice,): void {
+    process.stderr.write(`${notice}\n`,);
+  },);
+  if (report.recovered > 0) {
     process.stderr
       .write(
-      `cli-git: recovered ignored-state copies for ${String(recovered,)} worktree transaction${recovered === 1 ? '' : 's'}.\n`,
+      `cli-git: recovered ignored-state copies for ${String(report.recovered,)} worktree transaction${report.recovered === 1 ? '' : 's'}.\n`,
     );
   }
 }
 
 /**
- Recovers pending worktree-copy journals, taking the settlement lock only when one exists.
+ Recovers pending worktree-copy journals, taking the settlement lock only when one exists
+ and no live process owns it.
 
  @param commonDir - canonical common Git directory
 
- @throws {@link WorktreeCopyError} when a journal is malformed or conflicting
+ @throws {@link WorktreeCopyError} when a journal is malformed or unsafe
 
  @example
  ```ts
@@ -61,8 +74,16 @@ export async function recoverPendingWorktreeCopies(commonDir: string,): Promise<
     return;
   }
   /**
-   Settlement lock held only for recovery.
+   Settlement lock held only for recovery, or the held sentinel.
    */
-  await using _settlementLock = await acquireWorktreeCopyLock(commonDir,);
+  const lease = await tryAcquireWorktreeCopyLock(commonDir,);
+  if (lease === WORKTREE_COPY_LOCK_HELD) {
+    rl.debug('a live process owns worktree-copy settlement; forwarding without recovery',);
+    return;
+  }
+  /**
+   Lock released when recovery settles.
+   */
+  await using _settlementLock = lease;
   reportRecoveredWorktreeCopies(await recoverWorktreeCopyTransactions(commonDir,),);
 }

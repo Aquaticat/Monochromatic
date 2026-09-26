@@ -50,6 +50,21 @@ const PRIVATE_FILE_MODE = 0o600;
 const LOCK_BUSY: unique symbol = Symbol('worktree-copy lock belongs to live process',);
 
 /**
+ Lock publication raced with another candidate or a retired stale owner; attempt again.
+ */
+const LOCK_RETRY: unique symbol = Symbol('worktree-copy lock changed during attempt',);
+
+/**
+ Returned by {@link tryAcquireWorktreeCopyLock} while another live process owns settlement.
+ */
+export const WORKTREE_COPY_LOCK_HELD: unique symbol = Symbol('worktree-copy lock held by live process',);
+
+/**
+ Attempts {@link tryAcquireWorktreeCopyLock} makes while the lock keeps changing under it.
+ */
+const TRY_LOCK_ATTEMPTS = 10;
+
+/**
  Durable lock owner identity.
  */
 type LockOwner = Readonly<{
@@ -135,7 +150,7 @@ async function readLockOwner(ownerPath: string,): Promise<LockOwner> {
  
  @param ownerPath - expected published owner file
  
- @returns validated owner or busy sentinel
+ @returns validated owner or retry sentinel when the lock vanished
  
  @example
  ```ts
@@ -144,14 +159,14 @@ async function readLockOwner(ownerPath: string,): Promise<LockOwner> {
  */
 async function readPublishedOwner(
   ownerPath: string,
-): Promise<LockOwner | typeof LOCK_BUSY> {
+): Promise<LockOwner | typeof LOCK_RETRY> {
   try {
     return await readLockOwner(ownerPath,);
   }
   catch (error: unknown) {
     if (Error.isError(error,) && ('code' in error)
       && (error.code === 'ENOENT'))
-      return LOCK_BUSY;
+      return LOCK_RETRY;
     throw error;
   }
 }
@@ -248,7 +263,7 @@ function isExistingLockError(error: unknown,): boolean {
  
  @param lockDirectory - published lock directory
  
- @returns busy sentinel so caller retries acquisition
+ @returns retry sentinel so caller attempts acquisition again
  
  @example
  ```ts
@@ -257,7 +272,7 @@ function isExistingLockError(error: unknown,): boolean {
  */
 async function retireStaleLock(
   lockDirectory: string,
-): Promise<typeof LOCK_BUSY> {
+): Promise<typeof LOCK_RETRY> {
   /**
    Unique stale lock path owned only after successful rename.
    */
@@ -272,7 +287,7 @@ async function retireStaleLock(
     if (isExistingLockError(error,)
       || (Error.isError(error,) && ('code' in error)
         && (error.code === 'ENOENT'))) {
-      return LOCK_BUSY;
+      return LOCK_RETRY;
     }
     throw error;
   }
@@ -283,7 +298,7 @@ async function retireStaleLock(
       force: true,
     },
   );
-  return LOCK_BUSY;
+  return LOCK_RETRY;
 }
 
 /**
@@ -342,7 +357,7 @@ function ownedLock({
  
  @param owner - current process identity
  
- @returns disposable lock or busy sentinel
+ @returns disposable lock, live-owner sentinel, or retry sentinel
  
  @example
  ```ts
@@ -355,7 +370,7 @@ async function attemptAcquire({
 }: Readonly<{
   lockDirectory: string;
   owner: LockOwner;
-}>,): Promise<WorktreeCopyLease | typeof LOCK_BUSY> {
+}>,): Promise<WorktreeCopyLease | typeof LOCK_BUSY | typeof LOCK_RETRY> {
   /**
    Unpublished complete lock candidate.
    */
@@ -392,8 +407,8 @@ async function attemptAcquire({
     lockDirectory,
     'owner.json',
   ),);
-  if (publishedOwner === LOCK_BUSY)
-    return LOCK_BUSY;
+  if (publishedOwner === LOCK_RETRY)
+    return LOCK_RETRY;
   /**
    Current birth identity for published PID.
    */
@@ -403,6 +418,34 @@ async function attemptAcquire({
     return LOCK_BUSY;
   }
   return retireStaleLock(lockDirectory,);
+}
+
+/**
+ Builds the lock owner identity of the current process with a fresh lease token.
+
+ @returns current process owner identity
+
+ @throws {@link WorktreeCopyError} when the process birth identity is unavailable
+
+ @example
+ ```ts
+ await currentLockOwner();
+ ```
+ */
+async function currentLockOwner(): Promise<LockOwner> {
+  /**
+   Current process birth identity.
+   */
+  const ownerBirthIdentity = await resolveProcessBirthIdentity(process.pid,);
+  if (ownerBirthIdentity === PROCESS_IDENTITY_ABSENT) {
+    throw new WorktreeCopyError('cli-git: current worktree-copy lock owner identity is unavailable.',);
+  }
+  return {
+    leaseToken: randomUUID(),
+    ownerPid: process.pid,
+    ownerBirthIdentity,
+    schemaVersion: 1,
+  };
 }
 
 /**
@@ -440,7 +483,7 @@ export async function validatesInheritedWorktreeCopyLease({
     'settlement.lock',
     'owner.json',
   ),);
-  if ((owner === LOCK_BUSY) || (owner.leaseToken !== leaseToken))
+  if ((owner === LOCK_RETRY) || (owner.leaseToken !== leaseToken))
     return false;
   /**
    Current birth identity proving owner PID still names original process.
@@ -472,21 +515,9 @@ export async function acquireWorktreeCopyLock(
    */
   const root = await ensureWorktreeCopyJournalRoot(commonDir,);
   /**
-   Current process birth identity.
-   */
-  const ownerBirthIdentity = await resolveProcessBirthIdentity(process.pid,);
-  if (ownerBirthIdentity === PROCESS_IDENTITY_ABSENT) {
-    throw new WorktreeCopyError('cli-git: current worktree-copy lock owner identity is unavailable.',);
-  }
-  /**
    Complete current lock owner.
    */
-  const owner: LockOwner = {
-    leaseToken: randomUUID(),
-    ownerPid: process.pid,
-    ownerBirthIdentity,
-    schemaVersion: 1,
-  };
+  const owner = await currentLockOwner();
   /**
    Exact repository-wide worktree-copy settlement lock.
    */
@@ -505,12 +536,58 @@ export async function acquireWorktreeCopyLock(
       owner,
     },);
     /* oxlint-enable no-await-in-loop */
-    if (result !== LOCK_BUSY)
+    if ((result !== LOCK_BUSY) && (result !== LOCK_RETRY))
       return result;
     // oxlint-disable-next-line no-await-in-loop -- retry delay prevents active-owner spin
     await wait(LOCK_RETRY_DELAY_MS,);
   }
   throw new WorktreeCopyError(
     `cli-git: timed out waiting for active worktree-copy settlement under ${JSON.stringify(commonDir,)}.`,
+  );
+}
+
+/**
+ Acquires the settlement lock unless another live process owns it, without waiting for that owner.
+ A stale owner is retired and a lock that changes during an attempt is attempted again, a bounded number of times.
+
+ @param commonDir - canonical common Git directory
+
+ @returns ownership-checking disposable lock, or the held sentinel while a live process owns it
+
+ @throws {@link WorktreeCopyError} when the lock keeps changing through every attempt
+
+ @example
+ ```ts
+ const lease = await tryAcquireWorktreeCopyLock('/repo/.git');
+ ```
+ */
+export async function tryAcquireWorktreeCopyLock(
+  commonDir: string,
+): Promise<WorktreeCopyLease | typeof WORKTREE_COPY_LOCK_HELD> {
+  /**
+   Private journal and lock root.
+   */
+  const root = await ensureWorktreeCopyJournalRoot(commonDir,);
+  /**
+   Complete current lock owner.
+   */
+  const owner = await currentLockOwner();
+  for (const _attempt of Array.from({ length: TRY_LOCK_ATTEMPTS, },)) {
+    /* oxlint-disable no-await-in-loop -- a retried attempt must follow the stale retirement or race it observed */
+    /**
+     Current bounded lock-publication result.
+     */
+    const result = await attemptAcquire({
+      lockDirectory: join(root, 'settlement.lock',),
+      owner,
+    },);
+    /* oxlint-enable no-await-in-loop */
+    if (result === LOCK_BUSY)
+      return WORKTREE_COPY_LOCK_HELD;
+    if (result !== LOCK_RETRY)
+      return result;
+  }
+  throw new WorktreeCopyError(
+    `cli-git: worktree-copy settlement lock under ${JSON.stringify(commonDir,)} kept changing while it was acquired.`,
   );
 }
