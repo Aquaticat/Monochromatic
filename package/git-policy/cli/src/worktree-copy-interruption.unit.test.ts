@@ -167,26 +167,64 @@ async function writeDependencyTree(repositoryRoot: string,): Promise<void> {
 }
 
 /**
- Polls until a journal file exists under the journal root or the deadline passes.
+ Reports whether a directory entry name is a published journal.
 
- @param journalRoot - private journal directory
+ @param name - directory entry name
 
- @returns whether a journal appeared
+ @returns whether the name ends in `.json`
 
  @example
  ```ts
- await journalAppeared('/repo/.git/cli-git-worktree-copy/v1');
+ isJournalName('id.json');
+ // => true
  ```
  */
-async function journalAppeared(journalRoot: string,): Promise<boolean> {
+function isJournalName(name: string,): boolean {
+  return name.endsWith('.json',);
+}
+
+/**
+ Accepts every directory entry name.
+
+ @returns true
+
+ @example
+ ```ts
+ isAnyName();
+ // => true
+ ```
+ */
+function isAnyName(): boolean {
+  return true;
+}
+
+/**
+ Polls until a directory holds an entry the predicate accepts, or the deadline passes.
+
+ @param directory - polled directory, possibly not created yet
+
+ @param predicate - accepts a qualifying entry name
+
+ @returns whether a qualifying entry appeared
+
+ @example
+ ```ts
+ await pathAppeared({ directory: '/repo/.git/cli-git-worktree-copy/v1', predicate: isJournalName });
+ ```
+ */
+async function pathAppeared({
+  directory,
+  predicate,
+}: Readonly<{
+  directory: string;
+  predicate: (name: string) => boolean;
+}>,): Promise<boolean> {
   /** Deadline. */
   const deadline = Date.now() + JOURNAL_DEADLINE_MS;
   while (Date.now() < deadline) {
     try {
-      // oxlint-disable-next-line no-await-in-loop -- polling observes the journal in order
-      if ((await readdir(journalRoot,)).some(function isJournal(name,): boolean {
-        return name.endsWith('.json',);
-      },))
+      // oxlint-disable-next-line no-await-in-loop -- polling observes the directory in order
+      if ((await readdir(directory,)).some(predicate,))
         return true;
     }
     catch (error: unknown) {
@@ -204,7 +242,7 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'a creation killed after its journal appeared is finished by the next command, and the destination matches the source',
+      name: 'a creation killed after it began installing is finished by the next command, and the destination matches the source',
       fn: async function testKilledCreation(): Promise<void> {
         await using fixture = await createTempDirectory();
         /** Process groups killed before the directory is removed. */
@@ -225,12 +263,11 @@ await describe({
         },);
         /** Creation exit. */
         const exited = once(creation, 'exit',);
-        expect(await journalAppeared(journalRoot,),).toBe(true,);
+        expect(await pathAppeared({ directory: journalRoot, predicate: isJournalName, },),).toBe(true,);
+        expect(await pathAppeared({ directory: join(destinationRoot, 'node_modules', '.store',), predicate: isAnyName, },),).toBe(true,);
         creation.kill('SIGKILL',);
         await exited;
-        expect((await journalNames(repositoryRoot,)).some(function isJournal(name,): boolean {
-          return name.endsWith('.json',);
-        },),).toBe(true,);
+        expect((await journalNames(repositoryRoot,)).some(isJournalName,),).toBe(true,);
 
         /** Next unrelated command. */
         const result = requireSuccess(await captureWrapper({ cwd: repositoryRoot, args: ['status', '--short',], },),);
