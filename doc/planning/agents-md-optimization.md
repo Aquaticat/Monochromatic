@@ -244,10 +244,16 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    user caught that it was neither covered nor compatible (bounded reruns can be synchronous).
 - Batch 10 (hazardous and essential commands):
    11 rules become 10,
-   887 to 778 tokens;
+   887 to 758 tokens;
    retires CM4 into CM3;
    CM2 moves to "Cross-runtime and scripts",
    WC2 to "Before editing code".
+   Approved,
+   with BOX's vague "Authorization does not transfer" deleted at user request.
+- Batch 11 (action scope,
+   cross-runtime and scripts):
+   12 rules stay 12,
+   762 to 692 tokens.
    Proposed,
    awaiting user review.
 - Retired-code references:
@@ -348,6 +354,12 @@ working files lived in the session scratchpad.
    no rule depends on another rule's code to make sense.
    Approved PX2 and PXQ cited PX1 and PX3,
    so they were redrafted and need re-approval.
+
+## Decisions (round 6)
+
+- Vague rule text gets deleted rather than guessed at:
+   `AGENTS.md` is living,
+   so the user re-adds precise wording when an agent misbehaves.
 
 ## Open questions
 
@@ -1009,6 +1021,81 @@ RGT:
  `rg` recurses by default;
  its `-r` means `--replace`,
  so grep-reflex `rg -rl`/`-ir` silently rewrites matches in output.
+```
+
+### Batch 10
+
+```md
+HRM:
+ Could an action physically harm a human or wear hardware?
+ Warn first.
+`ssh m1`:
+ 16 GiB RAM cap,
+ fragile internal SSD;
+ probe first,
+ put write-heavy work on `/Volumes/MacData`.
+
+RXI:
+ Host-exhausting risks (heavy memory/process/fd use,
+ unbounded loops,
+ uncapped fan-outs,
+ stress/bench/load):
+ run in `podman run --memory=2g --cpus=2 --rm` or `mvm`,
+ stating bounds.
+
+BOX:
+ Third-party benchmarks run mount-free,
+ inputs baked into the image.
+
+DCB:
+ Never run or have agents run catastrophic commands (`sudo rm -rf /`,
+ `mkfs`,
+ `dd of=/dev/sda`,
+ fork bombs),
+ even as guardrail tests;
+ test guardrails with moderately dangerous ones.
+
+CM1:
+ Narrow package work:
+ run that package's task,
+ never reflexive repo-root `mise run test`.
+
+CM2:
+ `mise.toml` tasks:
+ sequence with `run = ["a", "b"]`,
+ never `;` or `:::` chaining;
+ `shell = "node --input-type=module-typescript -e"` only for logic.
+
+CM3:
+ All tasks via `mise run`;
+ never `pnpm exec`,
+ package scripts,
+ or raw tools (`tsc`,
+ `tsdown`,
+ `bun test`).
+No suitable task:
+ add one to package `mise.toml`;
+ tests may run via `node <file>` meanwhile.
+
+CM5:
+ Find tasks in root + package `mise.toml`;
+ run as `mise run //package/<path>:<task>`,
+ not `mise run --cd`.
+
+CM6:
+ After editing TypeScript,
+ run `mise run //package/<path>:lint:types`;
+ nothing type-checks automatically.
+
+WC2:
+ file-enforcer generates root files (`CLAUDE.md`,
+ `mise.toml`,
+ ...):
+ check `file-enforcer.config.ts` before editing root config;
+ if managed,
+ edit its source,
+ run file-enforcer,
+ commit output as-is.
 ```
 
 ## Next action
