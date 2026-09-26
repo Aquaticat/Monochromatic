@@ -8082,6 +8082,55 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## hulicaijia28 read, 2026-09-26: the note kept, class one hundred forty-four not exercised
+
+### What the run did
+
+hulicaijia28 (frozen `e387be2cf`) SETTLED at 03:33 UTC in 24.4 min,
+Bedrock 28.23 to 27.12 and OpenRouter 60.07 to 58.35 by the meters (about 2.83 USD),
+Qwen3.8-27B and glm-5.3 dark with Synthetic and Hyper dry.
+Every hulicaijia27 check held: 13 headings, 9 markers, 9 definitions, 2 links, 3 Sakura,
+front matter equal, "douhua" eight times, "Jiefangbei" six times, "April 29", "May 4", "licorice" twice,
+no "pharmaceutical sales representative", no TA, no double blank line, no error finish,
+the fourteen straight double quotes the JSX photo paths, the "center" hits the captions' `text-align` values,
+no register hit (OD, jk, Gaokao).
+The page's only Han is inside footnote 7, the note's own 晚安 and 金刚烷胺.
+
+### Footnote 7
+
+The page ships the archive's note:
+"In Chinese, “goodnight” (晚安, wǎn’ān) is a near-homophone of amantadine (金刚烷胺, jīn gāng wán’àn), the drug mentioned earlier.
+The word here carries both meanings."
+The pinyin of 烷 reads wán where the archive and both lane texts read wǎn, so `correctPinyinPage` (class one hundred thirty-seven) acted on it.
+
+### Why this does not show class one hundred forty-four live
+
+gemma-4-26b-a4b-it filed the note as `accuracy/mistranslation major`,
+"The translation provides an expansion regarding homophones and linguistic meanings that is not present in the original text."
+The panel accepted it 3 to 1: minimax-m3, gemma-4-26b-a4b-it and google.gemma-4-e2b supported, deepseek-v4.1-flash did not.
+`archiveDisputesOf` disputes the archive only on an accepted `accuracy/addition` claim,
+so no dispute was logged for slice 69 and no sheet carried the dispute block the class one hundred forty-four fix bounds.
+The repair lane kept the note unchanged despite the accepted claim,
+the translate slate chose the archive's note 3 to 2 without the dispute block
+(deepseek-v4.1-flash, google.gemma-4-e2b and inception/mercury-2.5 for it, two ballots citing the apparatus rule;
+gemma-4-26b-a4b-it for its own short note, calling the archive's "a restatement of the 'ARCHIVE note'";
+typesafe/jev-1.13 for the short note at 0.79),
+and the lanes agreed, so slice 69 had no contest.
+The page is right, but the dispute path is untested live; the unit guard `7869828fb` still stands for it.
+
+### The panel on the note, three runs
+
+The same three panelists have accepted a claim against the note on each run where it was filed:
+minimax-m3 and gemma-4-26b-a4b-it on hulicaijia26, 27 and 28, google.gemma-4-e2b on 27 and 28,
+with the critic and panel sheets naming `TRANSLATOR_NOTE_KIND` as apparatus since class one hundred forty-three.
+It is one item asked three times with the same sheet, not three items, so no model is reseated on it;
+it is the evidence to weigh if a panel measurement across items ever shows the same seats below the standard.
+
+### Lane contest attribution
+
+The artifact's `laneSelection` carries 223 `modelId` keys, one per "lane contest ballot by" line in the log (223),
+so every contest ballot now names the model that cast it.
+
 ## Class one hundred forty-four, 2026-09-26: one panel's acceptance made final on every later sheet
 
 ### What hulicaijia27 showed

@@ -4777,13 +4777,21 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA28 NEXT on the class one hundred forty-four build (`e387be2cf`; freeze it, launch in a scope):
-    footnote 7 should keep the archive's note explaining the 晚安 / 金刚烷胺 wordplay;
-    if the repair panel accepts the addition claim again (read the "issue … filed by X, panel …" line on chunk 69),
-    the translate slate on slice 69 should now judge the note by the apparatus rule, not by the dispute block,
-    and a lane contest, if the lanes differ, names its judges on "lane contest ballot by <model>" lines;
-    plus every hulicaijia20 check, the register check and the en_CA check.
+1.  XINGZ6013 RUNNING on `.frozen-dist-e387be2cf` (launched 03:40 UTC 2026-09-26, pid 1394389, scope `pass-XingZ6013`,
+    log `~/temp/agent/XingZ6013.log`) to see classes one hundred thirty-nine to forty-two live:
+    "—— Yuli [Paranoia]…" or the album kept on slice 98's credit, "by Jiecheng Tianzou Official" on the first credit,
+    “Zero-Layer Prayer” in quotation marks on the second, with no English title left in 《》 anywhere on the page,
+    and no straight prose quote on the page outside JSX and code ("take it slow", "doesn’t want to die").
+    Then another hulicaijia on the same build for class one hundred forty-four:
+    read the chunk 69 "issue … filed by X, panel …" line first; only an accepted `accuracy/addition` claim disputes the archive,
+    and only then does the slice 69 slate carry the dispute block the fix bounds.
     A slate ballot citing the accepted claim as settling the note is class one hundred forty-four not live.
+    HULICAIJIA28 READ (frozen `e387be2cf`): SETTLED at 03:33 UTC 2026-09-26 in 24.4 min, about 2.83 USD;
+    every hulicaijia27 check held, en_CA and register clean, footnote 7's note on the page (pinyin 烷 corrected to wán);
+    class one hundred forty-four NOT exercised: gemma-4-26b-a4b-it filed the note as `accuracy/mistranslation`,
+    accepted 3 to 1 (minimax-m3, gemma-4-26b-a4b-it, google.gemma-4-e2b for; deepseek-v4.1-flash against), so no dispute;
+    the repair lane kept the note, the translate slate chose it 3 to 2, the lanes agreed, no contest;
+    contest ballots carry `modelId` (223 of 223); recorded under "## hulicaijia28 read" in the pass log.
     HULICAIJIA27 READ (frozen `2472ec48e`): SETTLED at 03:02 UTC 2026-09-26 in 45.3 min, about 3.10 USD;
     every hulicaijia26 check held; footnote 7's note lost again, class one hundred forty-three NOT live:
     repair panel 3 to 2 (minimax-m3, gemma-4-26b-a4b-it, google.gemma-4-e2b for; deepseek-v4.1-flash, mercury-2.5 against),
