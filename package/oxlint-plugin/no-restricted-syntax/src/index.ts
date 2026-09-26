@@ -63,6 +63,7 @@ import {
 } from './rule/prefer-describe-function-ref-name.ts';
 import { preferCaughtValueText, } from './rule/prefer-caught-value-text.ts';
 import { preferErrorIsError, } from './rule/prefer-error-is-error.ts';
+import { preferSpread, } from './rule/prefer-spread/index.ts';
 import { requireDestructuredParams, } from './rule/require-destructured-params.ts';
 import { requireQueryselectorGeneric, } from './rule/require-queryselector-generic.ts';
 
@@ -119,6 +120,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'prefer-describe-function-ref-name': preferDescribeFunctionRefName,
     'prefer-caught-value-text': preferCaughtValueText,
     'prefer-error-is-error': preferErrorIsError,
+    'prefer-spread': preferSpread,
     'require-destructured-params': requireDestructuredParams,
     'require-queryselector-generic': requireQueryselectorGeneric,
     //endregion Syntax rules
