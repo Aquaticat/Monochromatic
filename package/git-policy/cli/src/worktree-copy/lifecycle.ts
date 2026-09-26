@@ -5,6 +5,11 @@ import {
   stripEscapeHatch,
   WORKTREE_COPY_ESCAPE_HATCH,
 } from '../escape-hatch.ts';
+import {
+  createsOrMovesWorktrees,
+  resolveForwardedCommand,
+  type ResolvedGitCommand,
+} from '../forwarded-command.ts';
 import type { GitWorktreeIdentity, } from '../git-worktree-identity.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import {
@@ -25,6 +30,10 @@ import type {
   ForwardedGitExecution,
   WorktreeCopySummary,
 } from './model.ts';
+import {
+  recoverPendingWorktreeCopies,
+  reportRecoveredWorktreeCopies,
+} from './pending-recovery.ts';
 import {
   recoverWorktreeCopyTransactions,
   synchronizeCreatedWorktrees,
@@ -56,6 +65,8 @@ const WORKTREE_COPY_VALUE_OPTIONS: ReadonlySet<string> = new Set([
  
  @param leaseToken - optional descendant reentrancy capability
  
+ @param environment - additional variables such as the landing lease
+ 
  @returns optional real-Git subprocess failure
  
  @example
@@ -67,24 +78,23 @@ async function executeRealGit({
   args,
   gitPath,
   leaseToken,
+  environment = {},
 }: Readonly<{
   args: readonly string[];
   gitPath: string;
   leaseToken?: string;
+  environment?: Readonly<Record<string, string>>;
 }>,): Promise<ForwardedGitExecution> {
   try {
     await nanoSpawn(
       gitPath,
       [...args,],
       {
-        ...(leaseToken === undefined
-          ? {}
-          : {
-            env: {
-              ...process.env,
-              [WORKTREE_COPY_LEASE_ENV]: leaseToken,
-            },
-          }),
+        env: {
+          ...process.env,
+          ...environment,
+          ...(leaseToken === undefined ? {} : { [WORKTREE_COPY_LEASE_ENV]: leaseToken, }),
+        },
         stdio: 'inherit',
       },
     );
@@ -95,6 +105,38 @@ async function executeRealGit({
       return { failure: error, };
     throw error;
   }
+}
+
+/**
+ Forwards to real Git without synchronization, rethrowing its failure.
+ 
+ @param args - Git argv
+ 
+ @param gitPath - absolute real-Git executable
+ 
+ @param environment - additional variables
+ 
+ @throws {@link SubprocessError} when Git fails
+ */
+async function forwardOnly({
+  args,
+  gitPath,
+  environment,
+}: Readonly<{
+  args: readonly string[];
+  gitPath: string;
+  environment: Readonly<Record<string, string>>;
+}>,): Promise<void> {
+  /**
+   Real-Git execution.
+   */
+  const execution = await executeRealGit({
+    args,
+    gitPath,
+    environment,
+  },);
+  if ('failure' in execution)
+    throw execution.failure;
 }
 
 /**
@@ -156,6 +198,10 @@ function asWorktreeCopyError(error: unknown,): WorktreeCopyError {
 /**
  Runs final real-Git command and synchronizes ignored state into created worktrees.
  
+ Only a command that,
+ after ordinary alias resolution,
+ creates or moves worktrees holds the settlement lock;
+ every other command checks for pending journals without it and forwards outside it.
  Outcome-based administrative identity comparison covers ordinary aliases and
  commands that register linked worktrees before returning nonzero.
  
@@ -168,6 +214,10 @@ function asWorktreeCopyError(error: unknown,): WorktreeCopyError {
  @param gitPath - absolute real-Git executable
  
  @param identity - optional repository identity retained before config-free forwarding
+ 
+ @param command - forwarded command after alias resolution, resolved here when absent
+ 
+ @param environment - additional variables for real Git, such as the landing lease
  
  @throws {@link SubprocessError} when Git failed but copying succeeded
  
@@ -182,10 +232,14 @@ export async function runGitWithWorktreeCopy({
   args,
   gitPath,
   identity,
+  command,
+  environment = {},
 }: Readonly<{
   args: readonly string[];
   gitPath: string;
   identity?: GitWorktreeIdentity;
+  command?: ResolvedGitCommand;
+  environment?: Readonly<Record<string, string>>;
 }>,): Promise<void> {
   /**
    Tagged lifecycle logger.
@@ -216,27 +270,20 @@ export async function runGitWithWorktreeCopy({
     rl.debug(
       '--no-worktree-copy present in flag position, stripping and skipping ignored-state synchronization',
     );
-    /**
-     Real-Git execution with synchronization opted out.
-     */
-    const execution = await executeRealGit({
+    await forwardOnly({
       args: optOutStrippedArgs,
       gitPath,
+      environment,
     },);
-    if ('failure' in execution)
-      throw execution.failure;
     return;
   }
   if (willShortCircuit) {
-    /**
-     Real-Git global help or version execution cannot register worktrees.
-     */
-    const execution = await executeRealGit({
+    // Real-Git global help or version execution cannot register worktrees.
+    await forwardOnly({
       args,
       gitPath,
+      environment,
     },);
-    if ('failure' in execution)
-      throw execution.failure;
     return;
   }
   /**
@@ -248,15 +295,12 @@ export async function runGitWithWorktreeCopy({
     ...(identity === undefined ? {} : { identity, }),
   },);
   if (initialObservation === WORKTREE_COPY_NOT_APPLICABLE) {
-    /**
-     Real-Git execution outside effective repository.
-     */
-    const execution = await executeRealGit({
+    // Main worktree or outside any repository.
+    await forwardOnly({
       args,
       gitPath,
+      environment,
     },);
-    if ('failure' in execution)
-      throw execution.failure;
     return;
   }
   /**
@@ -272,15 +316,25 @@ export async function runGitWithWorktreeCopy({
       leaseToken: inheritedLeaseToken,
     },);
   if (hasInheritedLease) {
-    /**
-     Nested hook Git execution settled by outer invocation holding validated lease.
-     */
-    const execution = await executeRealGit({
+    // Nested hook Git execution settled by outer invocation holding validated lease.
+    await forwardOnly({
       args,
       gitPath,
+      environment,
     },);
-    if ('failure' in execution)
-      throw execution.failure;
+    return;
+  }
+  if (!createsOrMovesWorktrees(command ?? await resolveForwardedCommand({
+    args,
+    gitPath,
+  },),)) {
+    rl.debug('command neither creates nor moves worktrees; forwarding outside the settlement lock',);
+    await recoverPendingWorktreeCopies(initialObservation.commonDir,);
+    await forwardOnly({
+      args,
+      gitPath,
+      environment,
+    },);
     return;
   }
 
@@ -304,13 +358,7 @@ export async function runGitWithWorktreeCopy({
   /**
    Recovered interrupted transactions before allowing another Git command.
    */
-  const recovered = await recoverWorktreeCopyTransactions(observation.commonDir,);
-  if (recovered > 0) {
-    process.stderr
-      .write(
-      `cli-git: recovered ignored-state copies for ${String(recovered,)} worktree transaction${recovered === 1 ? '' : 's'}.\n`,
-    );
-  }
+  reportRecoveredWorktreeCopies(await recoverWorktreeCopyTransactions(observation.commonDir,),);
   /**
    Real-Git result retained while post-command worktree state settles.
    */
@@ -318,6 +366,7 @@ export async function runGitWithWorktreeCopy({
     args,
     gitPath,
     leaseToken: settlementLock.leaseToken,
+    environment,
   },);
 
   try {

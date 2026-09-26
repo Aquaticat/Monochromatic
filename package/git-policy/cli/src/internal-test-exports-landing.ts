@@ -38,7 +38,6 @@ import { landingFindingResult, } from './policy-engine/commit-landing-findings.t
 import { computeLandingPostIndex, } from './policy-engine/commit-landing-index.ts';
 import {
   acquireRealIndexLock,
-  IndexLockBusyError,
   lockPidPath,
 } from './policy-engine/commit-landing-index-lock.ts';
 import {
@@ -156,10 +155,6 @@ export type LandingTestExports = Readonly<{
    Internal `hookEntryProgram`.
    */
   hookEntryProgram: typeof hookEntryProgram;
-  /**
-   Internal `IndexLockBusyError`.
-   */
-  IndexLockBusyError: typeof IndexLockBusyError;
   /**
    Internal `indexLockRecordFilename`.
    */
@@ -337,7 +332,6 @@ export const landingTestExports: LandingTestExports = {
   hasValidInheritedLease,
   HOOK_DISPATCH_PROGRAM,
   hookEntryProgram,
-  IndexLockBusyError,
   indexLockRecordFilename,
   isPrivateShadowEntry,
   isRegistryLockName,

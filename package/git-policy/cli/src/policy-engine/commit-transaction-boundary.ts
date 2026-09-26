@@ -5,6 +5,7 @@
  */
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
+import { IndexLockUnprovenOwnerError, } from '../index-lock/index-lock-wait.ts';
 import type { ConcurrencyConfig, } from '../trust/config-validation-concurrency.ts';
 import { runCommitTransaction, } from './commit-transaction.ts';
 import type { CommitTransactionPolicyOptions, } from './commit-transaction-types.ts';
@@ -56,6 +57,7 @@ export async function runCommitTransactionBoundary({
       policyResult: initialTransactionFailure({
         args,
         message: caughtValueText(error,),
+        code: error instanceof IndexLockUnprovenOwnerError ? 'index-lock-unproven-owner' : 'transaction-failed',
       },),
       committed: false,
     };

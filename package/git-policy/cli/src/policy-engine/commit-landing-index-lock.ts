@@ -1,9 +1,11 @@
 /**
  The real `index.lock` held inside the landing critical section.
 
- A foreign lock is retried with Git-style quadratic backoff and jitter up to `indexLock.unprovenOwnerTimeoutMs`;
+ A foreign lock is classified from evidence re-read on every attempt:
+ a proven-alive owner gets an unbounded wait,
+ and a dead or unproven owner gets Git-style quadratic backoff with jitter up to `indexLock.unprovenOwnerTimeoutMs`
+ (see `src/index-lock/index-lock-wait.ts`).
  cli-git never deletes a lock it did not create.
- Holder-evidence classification and the unbounded wait for a proven-alive holder are pending (slice 6).
 
  @module
  */
@@ -21,9 +23,13 @@ import {
   dirname,
   join,
 } from 'node:path';
-import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { lockPidPath, } from '../index-lock/index-lock-evidence.ts';
+import {
+  LOCK_HELD,
+  waitForIndexLock,
+} from '../index-lock/index-lock-wait.ts';
 import {
   isMissingPath,
   protectPath,
@@ -49,31 +55,6 @@ const l = tagged({ tag: 'cli-git', },);
 const PRIVATE_FILE_MODE = 0o600;
 
 /**
- Lower jitter bound as a fraction of the backoff, matching Git's `lock_file_timeout`.
- */
-const JITTER_FLOOR = 1 - (1 / (2 + 2));
-
-/**
- Jitter width as a fraction of the backoff.
- */
-const JITTER_WIDTH = 1 / 2;
-
-/**
- The real `index.lock` stayed held past the backoff budget.
- */
-export class IndexLockBusyError extends Error {
-  /**
-   Creates a busy-lock failure.
-
-   @param lockPath - lock left in place
-   */
-  public constructor(lockPath: string,) {
-    super(`Another process holds ${lockPath}; cli-git left it in place and landed nothing. Retry once that Git command finishes, or remove the lock only if no Git process is running.`,);
-    this.name = 'IndexLockBusyError';
-  }
-}
-
-/**
  Real `index.lock` owned by this transaction.
  */
 export type RealIndexLock = AsyncDisposable & Readonly<{
@@ -91,82 +72,48 @@ export type RealIndexLock = AsyncDisposable & Readonly<{
   installIndex: (sourcePath: string) => Promise<void>;
 }>;
 
+export { lockPidPath, } from '../index-lock/index-lock-evidence.ts';
+
 /**
- Git's PID file path beside a lock (`index.lock` becomes `index~pid.lock`).
+ Opens the lock exclusively, waiting for a foreign holder under the classification rules.
 
  @param realIndexPath - real index path
 
- @returns PID file path
-
- @example
- ```ts
- lockPidPath('/repo/.git/index'); // '/repo/.git/index~pid.lock'
- ```
- */
-export function lockPidPath(realIndexPath: string,): string {
-  return `${realIndexPath}~pid.lock`;
-}
-
-/**
- Opens the lock exclusively, retrying a foreign holder with quadratic backoff.
-
- @param lockPath - real `index.lock`
-
- @param timeoutMs - backoff budget
+ @param timeoutMs - backoff budget for a dead or unproven owner
 
  @returns open lock handle
+
+ @throws {@link IndexLockUnprovenOwnerError} when a dead or unproven owner outlasts the budget
  */
-async function openLockWithBackoff({
-  lockPath,
+async function openLockWaiting({
+  realIndexPath,
   timeoutMs,
 }: Readonly<{
-  lockPath: string;
+  realIndexPath: string;
   timeoutMs: number;
 }>,): Promise<FileHandle> {
-  /**
-   Budget deadline.
-   */
-  const deadline = Date.now() + timeoutMs;
-  /**
-   Attempt counter and quadratic multiplier, as in Git's `lock_file_timeout`.
-   */
-  const state = {
-    attempt: 1,
-    multiplier: 1,
-  };
-  // Every iteration returns, throws, or sleeps within the finite budget.
-  for (;;) {
-    try {
-      // oxlint-disable-next-line no-await-in-loop -- Each attempt observes whether the previous holder released the lock.
-      return await open(
-        lockPath,
-        constants.O_CREAT | constants.O_EXCL
-          | constants.O_RDWR,
-        PRIVATE_FILE_MODE,
-      );
-    }
-    catch (error: unknown) {
-      if (!(Error.isError(error,) && ('code' in error)
-        && (error.code === 'EEXIST')))
-        throw error;
-      l.debug(`index lock busy on attempt ${String(state.attempt,)}: ${error.message}`,);
-    }
-    if (Date.now() >= deadline)
-      throw new IndexLockBusyError(lockPath,);
-    // oxlint-disable-next-line no-await-in-loop -- Backoff between ordered attempts.
-    await wait(Math.min(
-      Math.max(
-        1,
-        Math.round(state.multiplier * (JITTER_FLOOR + (Math.random() * JITTER_WIDTH))),
-      ),
-      Math.max(
-        1,
-        deadline - Date.now(),
-      ),
-    ),);
-    state.multiplier += (2 * state.attempt) + 1;
-    state.attempt += 1;
-  }
+  return await waitForIndexLock({
+    realIndexPath,
+    timeoutMs,
+    consequence: 'landed nothing',
+    attempt: async function openExclusive(): Promise<FileHandle | typeof LOCK_HELD> {
+      try {
+        return await open(
+          `${realIndexPath}.lock`,
+          constants.O_CREAT | constants.O_EXCL
+            | constants.O_RDWR,
+          PRIVATE_FILE_MODE,
+        );
+      }
+      catch (error: unknown) {
+        if (!(Error.isError(error,) && ('code' in error)
+          && (error.code === 'EEXIST')))
+          throw error;
+        l.debug(`index lock busy: ${error.message}`,);
+        return LOCK_HELD;
+      }
+    },
+  },);
 }
 
 /**
@@ -257,7 +204,7 @@ async function writeOwnPidFile(pidPath: string,): Promise<void> {
 
  @returns held lock
 
- @throws {@link IndexLockBusyError} when a foreign holder outlasts the budget
+ @throws {@link IndexLockUnprovenOwnerError} when a dead or unproven foreign owner outlasts the budget
 
  @example
  ```ts
@@ -286,8 +233,8 @@ export async function acquireRealIndexLock({
   /**
    Exclusive lock handle.
    */
-  const handle = await openLockWithBackoff({
-    lockPath,
+  const handle = await openLockWaiting({
+    realIndexPath,
     timeoutMs,
   },);
   /**

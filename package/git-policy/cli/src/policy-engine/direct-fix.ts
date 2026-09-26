@@ -6,6 +6,7 @@
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
+import { acquireSelectedLandingLock, } from '../index-lock/landing-location.ts';
 import {
   ADD_POLICY_FACTS_NOT_APPLICABLE,
   type AddPolicyFactsScope,
@@ -172,6 +173,14 @@ async function runPreparedDirectFix({
       return added.originalOid;
     },),
     createError: addedOriginalError,
+  },);
+  /**
+   Landing lock held from the first real-index snapshot through installation and the final snapshot,
+   so a concurrent landing cannot falsify the byte-identical real index check.
+   */
+  await using _landingLock = await acquireSelectedLandingLock({
+    gitPath: prepared.gitPath,
+    globalArgs: gitGlobalArgs,
   },);
   await installDirectFix({
     scope,
