@@ -160,6 +160,15 @@ A failed optional comment read leaves its own one-line notice after the thread b
 so a partial thread is visible rather than silent.
 Whitespace-only file content is preserved exactly.
 
+Two consequences follow from routing through an authenticated `gh`:
+
+- GitHub content that requires authentication is now readable,
+   up to the scopes of the account `gh` is authenticated as.
+   The global blocklist still applies before any `gh` invocation.
+- Every mapped read spends the authenticated account's GitHub API budget instead of paid search credits.
+   A session that fetches many GitHub files can reach a rate limit,
+   which surfaces as a non-zero `gh` exit and then falls back to the paid providers.
+
 Linkup fetch uses fixed behavior:
 
 - `renderJs: true`
