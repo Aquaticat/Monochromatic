@@ -60,6 +60,27 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
   Unit tests and `test:built:trust` were green at its last commit.
   Known limit until slice 3:
   a dead unlanded transaction fails closed if another transaction later moved `HEAD`.
+- Container end-to-end suite committed on the branch
+  (`2be50139e` through `d2e6b0512`;
+  results in `package/git-policy/cli/e2e/README.md`):
+  `mise run //package/git-policy/cli:test:e2e:concurrent [--seed N] [--scenario a,b] [--git 2.40.0,2.55.0]`.
+  Git 2.40.0 is the declared minimum
+  (`merge-tree --merge-base`).
+  On the slice 1 build all 19 baselines and the checker positive control pass,
+  and every concurrency scenario fails as expected
+  (`index.lock` `EEXIST`,
+  `git add` exit 128,
+  `gc --prune=now` deleting a held blob,
+  hook-phase `SIGKILL` leaving locks).
+  Follow-ups for the suite:
+  kill markers for landing,
+  ref-update,
+  and index-install phases once implemented;
+  binary and rename scenarios;
+  a less timing-dependent shared-file start window;
+  per-exit remote checks.
+  Observed separately:
+  the `linked-worktree-only` policy rejects lint-staged's `git stash` in a main worktree.
 - Slice 2 is running:
   shadow repository preparation for every commit,
   the hook dispatcher shim,
