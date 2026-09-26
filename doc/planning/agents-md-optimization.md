@@ -278,6 +278,18 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    TSD shrinks to its unenforced `{@inheritDoc}` clause;
    TD3 merges into TD2;
    TD8 deleted (`tsdoc/require-example`).
+   Approved.
+- Batch 14 (TypeScript standards,
+   type system,
+   variables):
+   21 rules become 16,
+   968 to 625 tokens;
+   deletes lint-enforced ST9,
+   TQ1,
+   TY1,
+   TY4,
+   VA6;
+   ST9 deletion open (cited as design rationale in about 10 files).
    Proposed,
    awaiting user review.
 - Retired-code references:
@@ -1288,6 +1300,77 @@ RDC:
 cxx-qt files exempt `use` + trait impls;
  tests/fuzz exempt;
  never disable.
+```
+### Batch 13
+
+```md
+LOG:
+ Log extensively:
+ entry points,
+ branch decisions,
+ error paths,
+ async lifecycle;
+ never remove logging to "clean up".
+
+TLG:
+ Production code logs only via tagged loggers from `@monochromatic-dev/module-logger`;
+ raw `console` only for exact terminal output (CLI output,
+ prompts).
+
+LG1:
+ Tag loggers at every module + function boundary with `myFn.name`,
+ re-wrapping with an added tag when passing to a sub-function;
+ never embed tags in message strings.
+
+LG2:
+ Every `catch (error)` uses its binding:
+ log the caught value (even expected) or rethrow.
+
+SYB:
+ Text crossing syntax boundaries obeys destination grammar:
+ encode at final interpolation.
+Never invent comment-string DSLs for relations the type system or AST can express or infer.
+
+STB:
+ Tests for code emitting another syntax include adversarial boundary cases:
+ delimiters,
+ escapes,
+ quotes,
+ newlines,
+ traversal tokens,
+ command separators,
+ source-escaped variants.
+
+TSD:
+ Non-async wrappers document via `{@inheritDoc originalFn}`.
+
+TD1:
+ Comments inside template literals:
+ `${ // comment \n '' }`,
+ never target-language comments or moving the comment outside.
+
+TD2:
+ TSDoc (`/** */`) only directly before declarations;
+ `//` or `/* */` for statements,
+ control flow,
+ imports,
+ returns.
+
+TD4:
+ Comments go on their own line above code,
+ never trailing it.
+
+TD5:
+ Escape `*/` as `*\/` inside TSDoc blocks.
+
+TD6:
+ `@param`/`@returns`:
+ no articles;
+ explain why,
+ not what.
+
+TD7:
+ Async function docs never mention Promise wrapping.
 ```
 
 ## Next action
