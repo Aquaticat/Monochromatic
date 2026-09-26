@@ -1282,6 +1282,26 @@ before revalidation.
 and `oid` is the replayed commit.
 A later lost race can replay the same transaction again with a new event.
 
+### Replay headers dropped event
+
+```ts
+export type ReplayHeadersDroppedEvent = EventBase & {
+  readonly type: 'replay-headers-dropped';
+  readonly preparedOid: GitObjectId;
+  readonly oid: GitObjectId;
+  readonly headers: readonly string[];
+  readonly message: string;
+};
+```
+
+A non-blocking warning emitted immediately after the `commit-replayed` event
+of a replay that rebuilt a signed commit carrying custom headers
+(see "Replay" in "Transaction protocol").
+`headers` lists the dropped header names in their order in the prepared commit,
+each name once,
+and `oid` is the re-signed commit that lacks them.
+The event changes no exit code.
+
 ### Landing race lost event
 
 ```ts
@@ -1795,15 +1815,23 @@ an unpublished staging directory never blocks recovery and remains for diagnosis
   <transaction-id>/
     owner.json             PID, process-birth identity, schema version, invocation start time
     preparing.json         invocation capture facts
-    prepared.json          pending ref, prepared OID, signed flag, intended tree, read sets
+    prepared.json          shadow repository path, prepared OID, signed flag, intended tree, read sets
     reservation-request    empty marker written when the transaction asks for the reservation
     landing-<n>.json       one per landing attempt inside the critical section
     ref-updated.json       exact landed OID
     index-installed        empty completion marker
-    admin/                 private admin dir
     hooks/                 hook dispatcher shim
     commit.index, captured.index, post.index, candidate-*.state, patch-*.diff
+
+<git-common-dir>/cli-git/shadow/
+  <transaction-id>/        shadow repository (see "Private preparation")
 ```
+
+The shadow repository path is derived from the transaction ID,
+so recovery finds it even before `prepared.json` exists.
+A shadow repository is created only after its transaction directory is published,
+and is removed before its transaction directory,
+so no shadow repository outlives the journal that names it.
 
 State files are created exclusively and never rewritten,
 so a crash leaves the newest complete state readable.
@@ -1820,6 +1848,8 @@ the new OID
 the exact pre-landing real index snapshot identity,
 the post-index artifact identity,
 the real `index.lock` device and inode,
+the migrated pack name
+(see "Object migration"),
 and the added-path and selected-worktree records.
 
 The legacy single-journal `<git-dir>/cli-git-transaction` directory is recovered read-only
@@ -1830,33 +1860,31 @@ until no retained legacy directory can exist.
 Preparation never mutates the real index,
 the worktree,
 the target ref,
+any other real ref,
 or shared reflogs.
 It uses:
 
 - a private commit index at `<tx>/commit.index`;
-- a private admin dir at `<tx>/admin` whose `commondir` names the absolute real common dir,
-  holding a private `HEAD`
-  (see "Private `HEAD` shape (pending prototype)")
-  and copies of the per-worktree state native `git commit` reads:
-  `config.worktree` when `extensions.worktreeConfig` is set,
-  `info/sparse-checkout`,
-  and the conclusion state
-  (see "Sequencer conclusion state (pending prototype)");
-- a pending ref `refs/cli-git/pending/<transaction-id>` that protects the prepared commit from `gc`
-  until landing,
-  abort,
-  or recovery deletes it by compare-and-swap
-  (`git update-ref -d <ref> <oid>`).
+- a shadow repository at `<git-common-dir>/cli-git/shadow/<transaction-id>`
+  (see "Shadow repository layout"),
+  whose own `HEAD` is the private `HEAD`
+  (see "Private `HEAD` shape")
+  and whose own object store receives every object preparation writes.
 
-The private admin dir stays unregistered,
-so `git worktree list` never shows it.
-The pending ref is briefly visible to `git for-each-ref` and `git log --all`.
+The shadow repository is a separate repository rather than a registered worktree,
+so `git worktree list` never shows it,
+and preparation creates no ref in the real repository.
+The shadow object store protects the prepared commit until landing:
+a real `git prune` or `git gc` never sees the shadow's objects,
+so it cannot delete them,
+and the shadow reaches real objects only through `objects/info/alternates`,
+so a prune run inside the shadow cannot delete real objects.
 
 After policy evaluation settles,
 preparation runs native `git commit` with inherited stdio as:
 
 ```text
-git --git-dir=<tx>/admin --work-tree=<worktree root>
+git --git-dir=<shadow> --work-tree=<worktree root>
     -c core.hooksPath=<tx>/hooks
     -c hook.pre-commit.enabled=false -c hook.prepare-commit-msg.enabled=false
     -c hook.commit-msg.enabled=false -c hook.post-commit.enabled=false
@@ -1864,6 +1892,15 @@ git --git-dir=<tx>/admin --work-tree=<worktree root>
 ```
 
 with `GIT_INDEX_FILE=<tx>/commit.index`.
+`--work-tree` names the same absolute worktree root as the shadow's `core.worktree`;
+the command-line value takes precedence for this process,
+and `core.worktree` covers a Git process that a hook starts with the shadow as `GIT_DIR`
+but without `GIT_WORK_TREE`.
+The child environment drops a caller-set `GIT_DIR`,
+`GIT_WORK_TREE`,
+`GIT_COMMON_DIR`,
+and `GIT_OBJECT_DIRECTORY`,
+so every object native Git writes lands in the shadow store.
 The private commit args drop the user's `--git-dir` and `--work-tree`,
 pathspecs,
 and the internal `--only`,
@@ -1875,41 +1912,165 @@ message cleanup,
 and signing.
 Native `commit -a` updates only the private index copy.
 After Git succeeds,
+the prepared OID is the value of the shadow `HEAD`;
 preparation verifies the prepared commit's tree against the intended tree
 and records `prepared.json`.
-A preparation failure deletes the pending ref and the transaction directory
+A preparation failure removes the shadow repository and then the transaction directory,
 and leaves real index,
 worktree,
-and shared ref bytes unchanged.
+and real ref bytes unchanged.
 Do not invoke Git with a lock path as `GIT_INDEX_FILE`.
 
-#### Private `HEAD` shape (pending prototype)
+#### Shadow repository layout
 
-> Placeholder:
-> pending prototype.
-> Do not implement from this subsection until it records the chosen shape and its evidence.
+The shadow repository holds these private entries:
 
-The decision fixes that the private admin dir carries its own `HEAD`,
-that its `commondir` names the real common dir,
-that Git runs with `--work-tree` at the real worktree,
-and that a pending ref under `refs/cli-git/` protects the prepared commit.
-The shape of the private `HEAD` is still being prototyped.
-Candidates:
+- The ref store:
+  `HEAD`,
+  `refs`,
+  `packed-refs`,
+  `reftable`,
+  and `logs`.
+  It contains only the private `HEAD`,
+  a private copy of the target branch ref at the preparation base,
+  and a private copy of the branch's upstream ref when `@{upstream}` resolves at invocation.
+  Cli-git writes them through Git in the shadow
+  (`git --git-dir=<shadow> update-ref` and `symbolic-ref`),
+  never as files,
+  so the copied `extensions.refStorage` governs their storage.
+- `objects`,
+  a private object store whose `objects/info/alternates` names the absolute real object directory
+  resolved at invocation
+  (`git rev-parse --git-path objects` in the owning worktree).
+- `config`,
+  written by cli-git
+  (see the config layout in this subsection).
+- `config.worktree`,
+  copied from the owning worktree's Git directory when present.
+- `COMMIT_EDITMSG`,
+  which native `git commit` rewrites during every commit,
+  so concurrent preparations never share one message file.
+- The copied conclusion state
+  (see "Sequencer conclusion state").
+- `cli-git`,
+  which is never linked,
+  because the real one contains the shadow directory itself.
 
-- detached `HEAD` at the preparation base,
-  with cli-git writing the pending ref after native `git commit` returns;
-- symbolic `HEAD` naming the pending ref,
-  created at the base first or left unborn,
-  so native `git commit` advances the pending ref itself;
-- a shadow repository in place of a private admin dir.
+Every other entry of the real common Git directory,
+such as `info`,
+`hooks`,
+`rr-cache`,
+`lfs`,
+and `modules`,
+is a symbolic link to the real entry by default.
+A per-worktree entry that Git resolves in the owning worktree's Git directory,
+such as a linked worktree's `info/sparse-checkout`,
+is copied;
+a directory that mixes shared and per-worktree entries becomes a private directory
+whose shared entries are linked individually.
+The shadow has no `index`;
+`GIT_INDEX_FILE` names the private commit index.
 
-The implementation plan ranks the symbolic form above the detached form
-("Private `HEAD` shape" in `doc/concurrent-commits-implementation-plan.md`).
-The chosen shape must keep `--amend` and merge,
-cherry-pick,
-and revert conclusions producing native parents and messages,
-must leave no window in which a prepared commit is reachable from no ref,
-and must state what hooks observe for the branch name.
+The shadow `config` has this layout:
+
+```ini
+; <git-common-dir>/cli-git/shadow/<transaction-id>/config
+[core]
+  repositoryformatversion = <copied value>
+  hooksPath = <git-common-dir>/hooks
+[extensions]
+  ; every extensions.* key of the real repository, copied with its value
+[include]
+  path = <git-common-dir>/config
+[core]
+  worktree = <worktree root>
+[gc]
+  auto = 0
+[maintenance]
+  auto = false
+```
+
+- `core.repositoryformatversion` and every `extensions.*` key are copied explicitly,
+  because Git does not apply them from an included file.
+- `core.hooksPath` precedes the include,
+  so a real `core.hooksPath` from the included config still overrides it.
+- `core.worktree` follows the include,
+  so the real config cannot redirect the shadow's worktree.
+- `gc.auto` and `maintenance.auto` follow the include,
+  so native `git commit`'s automatic maintenance
+  (`run_auto_maintenance` in Git's `builtin/commit.c`)
+  never runs in the shadow.
+
+Cli-git writes the file itself,
+quoting every path value under git-config value syntax at the final interpolation.
+
+#### Private `HEAD` shape
+
+A prototype in disposable repositories with Git 2.55.0 chose the shadow repository
+("Private `HEAD` shape:
+ shadow repository with alternates" in `doc/decision/cli-git-concurrent-commits.md`).
+It ran a `pre-commit` hook that reads the branch name,
+the upstream,
+and an `includeIf "onbranch:"` value,
+and rejects commits to `main`.
+
+- For a symbolic target,
+  the shadow `HEAD` is symbolic to the target branch's own ref name,
+  which names the private copy at the preparation base,
+  or no ref when the branch was unborn.
+  Native `git commit` advances only that private copy.
+- For a detached target,
+  the shadow `HEAD` is detached at the preparation base.
+- `--amend` and merge,
+  cherry-pick,
+  and revert conclusions read the preparation base through the shadow `HEAD`,
+  so they produce native parents and messages.
+- No window leaves a prepared commit unprotected:
+  it exists only in the shadow store until landing migrates it into a kept pack
+  (see "Object migration").
+
+Hooks running during preparation observe:
+
+- the real branch name through `git symbolic-ref HEAD`,
+  `git rev-parse --abbrev-ref HEAD`,
+  and `git branch --show-current`;
+- the branch's upstream through `@{upstream}`,
+  because the `branch.<name>.*` config arrives through the include
+  and the private upstream copy holds the real value;
+- `includeIf "onbranch:<pattern>"` sections matching the real branch,
+  so a hook that rejects commits to a protected branch still rejects them;
+- the shadow as `git rev-parse --git-dir`
+  and the private commit index as `GIT_INDEX_FILE`;
+- only the refs of the shadow ref store,
+  so another ref,
+  such as a tag or another branch,
+  does not resolve in the shadow,
+  and a hook's `git stash` writes the shadow's private `refs/stash`.
+
+Culled shapes,
+with the prototype evidence:
+
+- Detached private `HEAD` with a pending or per-worktree ref:
+  hooks see no branch and no upstream,
+  so the "reject `main`" hook is bypassed.
+- Symbolic `HEAD` naming a pending ref under `refs/cli-git/`:
+  the same hook bypass.
+  It remains the fallback only if the shadow repository hits a blocker.
+- `GIT_REFERENCE_BACKEND` with a private ref store:
+  Git passes it into submodules,
+  `git -C` from a hook sees the private refs,
+  and pseudorefs must be kept in two places.
+- A shadow repository using `GIT_OBJECT_DIRECTORY` instead of alternates:
+  a prune inside the shadow deleted objects reachable only from real refs.
+
+Residual risk:
+a Git-directory-derived path that is neither linked nor copied points into the shadow.
+The container end-to-end suite covers LFS,
+submodules,
+sparse checkout,
+reftable,
+and SHA-256 repositories
+(see "Container end-to-end suite").
 
 #### Hook dispatcher shim
 
@@ -1958,9 +2119,9 @@ The shebang form for Windows,
 where Git for Windows parses shebangs itself,
 and for a `process.execPath` containing spaces is pending verification.
 
-Hooks see a private branch state whose exact form depends on the private `HEAD` shape.
-A `pre-commit` hook that runs `git stash` still touches the shared `refs/stash`
-and transiently the shared worktree;
+Hooks observe the branch state listed in "Private `HEAD` shape".
+A `pre-commit` hook that runs `git stash` writes its entry to the shadow's private `refs/stash`
+but still transiently touches the shared worktree;
 the hook lock serializes only cli-git's own hook runs.
 
 #### Hook lock
@@ -2079,22 +2240,35 @@ One landing attempt runs these steps:
     replay and revalidate outside the locks
     (see "Replay" and "Revalidation after replay"),
     and restart at step 1.
-5.  Copy the current real index,
+5.  Migrate the new commit's shadow-only objects into the real object store as a kept pack
+    (see "Object migration").
+6.  Copy the current real index,
     compute the post-index against it
     (see "Real index at landing"),
-    and write `landing-<n>.json`.
-6.  Advance the target by compare-and-swap:
+    and write `landing-<n>.json`,
+    which records the migrated pack name.
+7.  Advance the target by compare-and-swap:
     `git update-ref -m <reflog message> <target> <new> <old>`,
     with the all-zero OID as `<old>` for an unborn target
     and `--no-deref` on `HEAD` for a detached target.
-    A compare-and-swap failure counts as a lost race and continues as in step 4.
-7.  Write `ref-updated.json`,
+    A compare-and-swap failure removes the migrated pack's `.keep`,
+    counts as a lost race,
+    and continues as in step 4.
+8.  Write `ref-updated.json`,
+    remove the migrated pack's `.keep`,
     install the post-index through the held lock with an owner-preserving hard link,
     write `index-installed`,
-    remove copied conclusion state from the real Git directory
-    (see "Sequencer conclusion state (pending prototype)"),
-    delete the pending ref,
+    reproduce native conclusion-state cleanup in the owning worktree's Git directory
+    (see "Sequencer conclusion state"),
     and release both locks.
+
+Every real-repository Git command in a landing,
+including the compare-and-swap,
+runs in the owning worktree's context as captured at invocation:
+its working directory and environment,
+never `--git-dir`,
+and never a `GIT_DIR` naming the common directory or the shadow.
+Only then does `git update-ref` on the branch also write the real `HEAD` reflog.
 
 The reflog message is `commit (cli-git <nonce>): <subject>`.
 After a landing,
@@ -2131,57 +2305,121 @@ and never stages a revert of landed content.
 
 Every copy and install keeps the source index timestamps.
 
+#### Object migration
+
+Before the compare-and-swap,
+landing copies every object the new commit reaches that exists only in the shadow store
+into the real object store:
+
+```text
+git --git-dir=<shadow> pack-objects --revs --local --stdout
+  | git index-pack --stdin --keep=<keep message>
+```
+
+- `pack-objects` reads `<new>` and,
+  unless the target is unborn,
+  `^<old>` on standard input.
+  `--local` skips every object borrowed through `objects/info/alternates`,
+  so the pack holds only shadow-store objects.
+- `index-pack` runs in the owning worktree's context,
+  so it writes into the real `objects/pack`.
+  `--keep` creates the `.keep` file before the pack and its index become visible
+  (`final` in Git's `builtin/index-pack.c`),
+  so neither `git prune` nor a concurrent repack can drop the objects
+  between migration and the compare-and-swap.
+  The line it prints
+  (`keep`,
+  a tab,
+  and the pack hash)
+  names the pack,
+  which `landing-<n>.json` records.
+- The keep message is `cli-git <transaction-id>`,
+  so recovery finds a `.keep` even when a crash preceded `landing-<n>.json`.
+
+The `.keep` is removed once `ref-updated.json` is written,
+after a failed compare-and-swap,
+and by recovery.
+A pack whose compare-and-swap failed stays as unreachable objects until `gc` expires them;
+the shadow store still holds the same objects for the next attempt.
+
 #### Replay
 
 A lost race replays the prepared commit onto the current target outside both locks,
-because signing can prompt:
+because signing can prompt.
+Replay runs in the shadow
+(`git --git-dir=<shadow>`),
+so every object it writes stays in the shadow store until the next migration;
+the current target's objects resolve through the alternates.
 
-- `git merge-tree --write-tree --name-only -z --merge-base=<base> <current> <prepared>`,
+- The tree comes from
+  `git merge-tree --write-tree --name-only -z --merge-base=<base> <current> <prepared>`,
   with the empty tree as `<base>` when the preparation base was unborn.
   Exit `1` is a conflict even though a tree ID prints;
   an exit above `1` is an engine failure.
-- `git commit-tree <tree> -p <current> -F <raw message file>`,
-  with `GIT_AUTHOR_NAME`,
+- An unsigned prepared commit is rebuilt by rewriting its raw object:
+  cli-git reads `git cat-file commit <prepared>`,
+  replaces only the `tree` line with the merged tree
+  and the `parent` line with `<current>`
+  (inserting a `parent` line after `tree` when the preparation base was unborn),
+  and writes the result with `git hash-object -t commit -w --stdin`.
+  Every other header and the message bytes stay exact,
+  including `encoding`,
+  the author and committer identities and dates,
+  and custom headers.
+  `git replay` and plain `git commit-tree` both transcoded non-UTF-8 messages and dropped custom headers in the prototype.
+- A signed prepared commit,
+  one carrying a `gpgsig` or `gpgsig-sha256` header,
+  is rebuilt with
+  `git -c i18n.commitEncoding=<encoding> commit-tree <tree> -p <current> -S[<key id>] -F <raw message file>`,
+  where `<encoding>` is the prepared commit's `encoding` header value or `UTF-8` when absent,
+  `<key id>` is the invocation's key ID when one was given,
+  and `GIT_AUTHOR_NAME`,
   `GIT_AUTHOR_EMAIL`,
   `GIT_AUTHOR_DATE`,
-  and the committer triple taken from the prepared commit,
-  preserving the author,
-  committer,
-  and message.
-  A disposable fixture verifies that a non-UTF-8 `i18n.commitEncoding` header survives.
-- `-S`,
-  with the invocation's key ID when one was given,
-  whenever the prepared commit carries a `gpgsig` header.
+  and the committer triple come from the prepared commit's raw identity lines.
+  No Git primitive re-signs a raw object,
+  so any header other than `tree`,
+  `parent`,
+  `author`,
+  `committer`,
+  `encoding`,
+  `gpgsig`,
+  and `gpgsig-sha256` is dropped,
+  and cli-git emits `replay-headers-dropped`.
+- The shadow `HEAD` target moves to `<current>` for revalidation.
 - A successful replay emits `commit-replayed`.
 
 A conflict fails without landing as `concurrent-commit/replay-conflict`
-with exit `1`,
-deletes the pending ref,
+with exit `1`
 and leaves ref,
 real index,
 and worktree bytes unchanged.
-The prepared commit object survives until `gc` pruning,
-so the user can cherry-pick it.
+Before the shadow repository is removed,
+cli-git migrates the prepared commit into the real object store as a pack without `.keep`
+(the "Object migration" command without `--keep`),
+so the prepared commit survives until `gc` expires unreachable objects
+and the user can cherry-pick it.
 Path-level replay and automatic re-preparation are not used.
 
 #### Revalidation after replay
 
 After a clean replay,
 revalidation runs outside both locks against a private index of the replayed tree,
-with the private `HEAD` at the replay parent:
+with the shadow `HEAD` at the replay parent:
 
 1.  Re-run the policies selected by "Policy inputs and read sets".
     Their patches converge under the ordinary pass-limit and cycle rules.
 2.  When the replayed tree differs from the prepared tree
     and the invocation did not pass `--no-verify`,
-    re-run `pre-commit` through the dispatcher shim under the hook lock.
+    re-run `pre-commit` through the dispatcher shim under the hook lock,
+    against the shadow repository.
     `prepare-commit-msg` and `commit-msg` do not re-run,
     because the message is fixed.
     A failing `pre-commit` lands nothing,
-    deletes the pending ref,
+    removes the shadow repository and the transaction,
     and exits `1`.
 3.  When a patch or the hook changed the private index,
-    rebuild the commit with `git commit-tree` under the replay rules,
+    rebuild the commit from the prepared commit under the "Replay" rules with the new tree,
     re-signing when required.
 
 Landing then retries from step 1 of "Landing".
@@ -2198,43 +2436,71 @@ Landing then retries from step 1 of "Landing".
 - Concurrency covers one worktree and branch;
   Git refuses to check out one branch in two worktrees.
 
-#### Sequencer conclusion state (pending prototype)
+#### Sequencer conclusion state
 
-> Placeholder:
-> pending prototype.
-> Do not implement merge,
-> cherry-pick,
-> or revert conclusions under private preparation until this subsection records the verified handling.
-
-Native `git commit` concluding a merge,
+Merge,
 cherry-pick,
-or revert reads `MERGE_HEAD`,
+and revert conclusions run under private preparation.
+In the prototype,
+copying the per-worktree state into the shadow produced commits byte-identical to native Git
+("Conclusions and replay" in `doc/decision/cli-git-concurrent-commits.md`).
+
+At preparation,
+cli-git copies each present entry of the owning worktree's conclusion state into the shadow:
+`MERGE_HEAD`,
 `MERGE_MSG`,
 `MERGE_MODE`,
 `SQUASH_MSG`,
+`AUTO_MERGE`,
 `CHERRY_PICK_HEAD`,
 `REVERT_HEAD`,
-and `sequencer/`,
-then removes or advances them.
-Under private preparation that cleanup happens in the private admin dir.
-The candidate handling copies that state into the private admin dir at preparation
-and replays the native cleanup
-(removing `CHERRY_PICK_HEAD`,
-advancing `sequencer/todo`,
-and similar)
-into the real Git directory at landing step 7.
-It is unproven.
-If the prototype fails,
-the owner chooses again,
-because hooks inside the landing lock are rejected.
+`MERGE_RR`,
+and `sequencer/`.
+In a reftable repository,
+`AUTO_MERGE`,
+`CHERRY_PICK_HEAD`,
+and `REVERT_HEAD` live in the ref store rather than as files
+(only `FETCH_HEAD` and `MERGE_HEAD` stay files,
+`is_pseudo_ref` in Git's `refs.c`),
+so cli-git reads them with `git rev-parse --verify --quiet`
+and writes them into the shadow with `git update-ref`.
+
+Native `git commit` then cleans up inside the shadow.
+Its `rerere` step writes the recorded resolution's postimage into `rr-cache` during preparation,
+through the linked real `rr-cache`,
+and updates the shadow's private `MERGE_RR`.
+
+At landing step 8,
+cli-git reproduces native cleanup in the owning worktree's Git directory:
+
+- It removes each of `AUTO_MERGE`,
+  `MERGE_HEAD`,
+  `MERGE_MODE`,
+  `MERGE_MSG`,
+  `SQUASH_MSG`,
+  `CHERRY_PICK_HEAD`,
+  and `REVERT_HEAD` that native Git removed from the shadow.
+  `SQUASH_MSG` joins the list the prototype observed because native `git commit` unlinks it too
+  (`builtin/commit.c`).
+  A reftable repository deletes store-held entries with `git update-ref -d <name> <copied value>`
+  instead of removing files.
+- An entry is removed only while it still holds the bytes or value copied at preparation;
+  a changed entry was written by another command after invocation and is kept.
+- It copies the shadow's `MERGE_RR` back.
+- It keeps `ORIG_HEAD`.
+- It leaves `sequencer/` as native Git leaves it:
+  removed only when native Git removed the shadow copy after the last pick
+  (`sequencer_post_commit_cleanup` in Git's `sequencer.c`),
+  otherwise untouched.
 
 ### Post-landing
 
 After both locks are released:
 
 1.  Complete added-path worktree copies
-    (see "Added paths")
-    and remove the transaction directory.
+    (see "Added paths"),
+    remove the shadow repository,
+    and then remove the transaction directory.
 2.  Run `post-commit` once through `git hook run post-commit` in the real worktree,
     under the hook lock unless `hooks.concurrentCommits` is `true`,
     with native-equivalent `GIT_INDEX_FILE`,
@@ -2389,17 +2655,21 @@ Management help returns before recovery.
   its transaction is not an error.
   PID reuse counts as a dead owner.
 - A dead owner without a landing record:
-  delete the pending ref by compare-and-swap,
+  remove every `.keep` in the real `objects/pack` whose message is `cli-git <transaction-id>`,
   retire any reservation or reservation request it owns,
-  and remove the transaction directory.
-  The real index was never touched.
+  remove the shadow repository,
+  and then remove the transaction directory.
+  The real index and real refs were never touched.
 - A dead owner with a landing record is recovered only while holding the landing lock,
   so recovery never races a live lander.
-  Recovery then either discards an unlanded attempt,
+  Recovery removes the transaction's `.keep` files as for an owner without a landing record,
+  then either discards an unlanded attempt,
   installs the recorded post-index for a landed commit whose index install was interrupted,
-  or recognizes a completed install,
-  completes added-path worktree copies with the "Added paths" comparison,
-  and removes the transaction.
+  or recognizes a completed install.
+  For a landed commit it also completes the conclusion-state cleanup from the shadow
+  (see "Sequencer conclusion state")
+  and added-path worktree copies with the "Added paths" comparison.
+  It then removes the shadow repository and the transaction.
 - A published directory without a valid owner record,
   or with malformed state,
   fails closed with the path named and preserves its contents.
@@ -2488,13 +2758,32 @@ Private preparation:
 - `post-commit` does not run during preparation;
 - shared `HEAD`,
   branch,
+  every other real ref,
   reflogs,
   and real index bytes stay unchanged during preparation;
-- `gc --prune=now` during preparation keeps the prepared commit;
+- a `pre-commit` hook sees the real branch name,
+  the upstream,
+  and a matching `includeIf "onbranch:"` value,
+  and a hook that rejects commits to `main` rejects one;
+- a real `git prune --expire=now` and `gc --prune=now` during preparation keep the prepared commit,
+  and `git prune --expire=now` inside the shadow keeps objects reachable only from real refs;
+- a real `core.hooksPath`,
+  `extensions.worktreeConfig` with `config.worktree`,
+  and a real `gc.auto` or `maintenance.auto` setting each take the effect "Shadow repository layout" states;
+- two concurrent preparations never share a `COMMIT_EDITMSG`;
+- preparation in LFS,
+  submodule,
+  sparse-checkout,
+  reftable,
+  and SHA-256 repositories,
+  and in a linked worktree;
 - SSH-signed preparation stays signed;
 - `--amend`,
   `--allow-empty`,
-  and merge and cherry-pick conclusions produce native parents and messages;
+  and merge,
+  cherry-pick,
+  and revert conclusions produce native parents and messages,
+  byte-identical to native Git for the conclusions;
 - shim plan with `core.hooksPath` absent,
   relative,
   and absolute,
@@ -2503,7 +2792,8 @@ Private preparation:
   and adversarial paths with quotes,
   newlines,
   and spaces;
-- `git worktree list` output unchanged by the private admin dir.
+- `git worktree list` output unchanged by the shadow repository;
+- a preparation failure leaves no shadow repository.
 
 Landing and replay:
 
@@ -2511,9 +2801,29 @@ Landing and replay:
 - non-overlapping hunks in one file replay cleanly;
 - overlapping hunks fail with `concurrent-commit/replay-conflict` and leave ref,
   real index,
-  and worktree exact;
+  and worktree exact,
+  and the named prepared commit can be cherry-picked after the shadow repository is gone;
+- the migrated pack keeps its `.keep` until the compare-and-swap succeeds or fails,
+  a real `git prune --expire=now` and `git repack -a -d` between migration and compare-and-swap keep the objects,
+  and no `cli-git` `.keep` remains afterwards;
+- the real `HEAD` reflog receives the landing entry when `update-ref` runs in the owning worktree's context,
+  checked in the main worktree and a linked worktree;
 - a signed commit landing without replay keeps its exact bytes;
   a replayed signed commit is re-signed with an SSH key generated in the fixture;
+- an unsigned replayed commit keeps its `encoding` header,
+  exact identity and date lines,
+  and a custom header;
+- a signed replayed commit with a custom header drops it and emits `replay-headers-dropped`;
+- merge,
+  cherry-pick,
+  and revert conclusions leave the owning worktree's Git directory as native Git does:
+  the removed state files,
+  `MERGE_RR`,
+  `ORIG_HEAD`,
+  and `sequencer/`
+  after the last pick and mid-sequence,
+  in files and reftable repositories;
+- a conclusion-state entry rewritten by another command after invocation survives landing;
 - another invocation's staged path survives a landing;
 - amend,
   merge,
@@ -2523,7 +2833,8 @@ Landing and replay:
 - a detached `HEAD` lands by compare-and-swap on `HEAD`;
 - two concurrent initial commits on an unborn branch;
 - the target reflog and the `HEAD` reflog each contain the nonce entry exactly once;
-- a non-UTF-8 `i18n.commitEncoding` commit replays with its encoding header;
+- a non-UTF-8 `i18n.commitEncoding` commit replays with its encoding header and exact message bytes,
+  signed and unsigned;
 - `post-commit` runs once with `GIT_INDEX_FILE`,
   `GIT_AUTHOR_*`,
   and `GIT_EDITOR=:`;
@@ -2590,9 +2901,12 @@ Recovery:
   before native Git,
   after preparation,
   after the reservation request,
+  after object migration and before `landing-<n>.json`,
   inside the landing before and after compare-and-swap,
+  before conclusion-state cleanup,
   after the index install,
-  and before added-path worktree completion;
+  and before added-path worktree completion,
+  each leaving no shadow repository and no `.keep` carrying the transaction's keep message after recovery;
 - a legacy `cli-git-transaction` directory still recovers.
 
 Auto-push:
@@ -2654,8 +2968,9 @@ so this suite is an inherent part of the transaction protocol.
   - no worktree edit is lost;
   - the real index never stages a revert of landed content;
   - the remote contains every landed OID;
-  - no `refs/cli-git/` ref,
+  - no shadow repository,
     transaction directory,
+    `cli-git` `.keep` file,
     or lock remains;
   - `git fsck` is clean;
   - exit codes match the JSONL events.

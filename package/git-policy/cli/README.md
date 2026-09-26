@@ -318,14 +318,21 @@ Cli-git captures the selected worktree bytes
 (or the staged index)
 at invocation,
 runs policies,
-then runs native `git commit` against a private index and a private `HEAD`,
+then runs native `git commit` against a private index and a private `HEAD`
+in a per-commit shadow repository that borrows the real object store,
 so Git still owns hooks,
 the editor,
 templates,
 message cleanup,
 and signing.
-A private ref under `refs/cli-git/` protects the prepared commit from `gc` until it lands;
-it is briefly visible to `git for-each-ref` and `git log --all`.
+Hooks see the real branch name,
+its upstream,
+and `includeIf "onbranch:"` config,
+but only those refs:
+another branch or a tag does not resolve inside a hook during preparation.
+The prepared commit stays in the shadow repository's own object store,
+so `gc` cannot delete it,
+and cli-git creates no ref in the real repository before landing.
 Hooks run through a generated dispatcher that honors the repository's `core.hooksPath` and disabled hooks.
 By default,
 one repository-wide hook lock serializes hook runs across concurrent commits
@@ -352,7 +359,9 @@ Amends and merge,
 cherry-pick,
 or revert conclusions fail with `concurrent-commit/head-moved` when the branch moved,
 and any commit fails with `concurrent-commit/branch-switched` when `HEAD` now names another branch.
-Replays and lost landing races also appear as `commit-replayed` and `landing-race-lost` JSONL events;
+Replays and lost landing races also appear as `commit-replayed` and `landing-race-lost` JSONL events.
+Re-signing a replayed signed commit drops any custom commit headers
+and reports them in a `replay-headers-dropped` event;
 consumers ignore event types they do not recognize.
 
 Cli-git sets `core.lockfilePid=true` for the Git it runs,
@@ -403,7 +412,7 @@ Each commit keeps a durable no-follow transaction directory under
 `<git-dir>/cli-git-transactions/<transaction-id>/`.
 It retains the owner's process birth identity,
 the preparation base,
-the pending ref,
+the shadow repository path,
 exact index snapshots,
 and a nonce-bearing reflog message written at landing.
 Filesystem setup errors emit `content-unavailable` JSONL and leave exact ref,
@@ -415,8 +424,8 @@ Before loading trusted repository code,
 every later wrapper invocation inspects each transaction.
 Transactions whose owner is still running are skipped,
 so other commands keep working while a commit waits in a hook or editor.
-An interrupted transaction that never landed has its pending ref deleted and its directory removed;
-the real index was never touched.
+An interrupted transaction that never landed has its shadow repository and directory removed;
+the real index and refs were never touched.
 An interrupted landing is recovered under the landing lock:
 cli-git searches the branch reflog for the transaction's nonce,
 then installs the intended real index,
