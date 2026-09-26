@@ -196,11 +196,23 @@ function checkLanding({
     },),
     [
       succeeded && attempt.requiresRemote
-        && (!landing.remoteContains),
+        && (!landing.remoteContains)
+        && (!landing.onAmendedPublishedHistory),
       violation({
       invariant: 'remote-contains',
       subject,
       detail: 'the remote branch does not reach the landed commit after exit 0',
+    },),
+    ],
+    [
+      succeeded && attempt.requiresRemote
+        && (!landing.remoteContains)
+        && landing.onAmendedPublishedHistory
+        && (!attempt.pushRejectionSurfaced),
+      violation({
+      invariant: 'push-rejection-surfaced',
+      subject,
+      detail: 'the commit landed on an amended published history, but exit 0 surfaced no non-fast-forward auto-push rejection',
     },),
     ],
     [

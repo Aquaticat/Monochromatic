@@ -317,6 +317,8 @@ export function trackAttempt({
 
  @param env - extra wrapper environment, such as a test-only phase marker
 
+ @param extraArgs - `commit` options before the selection, such as `-e` for a held editor
+
  @returns started attempt
 
  @example
@@ -332,11 +334,13 @@ export async function startAttempt({
   paths,
   mode,
   env = {},
+  extraArgs = [],
 }: ScenarioActors & Readonly<{
   label: string;
   paths: readonly string[];
   mode: Exclude<AttemptMode, 'foreign'>;
   env?: Readonly<Record<string, string>>;
+  extraArgs?: readonly string[];
 }>,): Promise<StartedAttempt> {
   /**
    Message token.
@@ -401,6 +405,7 @@ export async function startAttempt({
         '--quiet',
         '--message',
         `e2e ${label} [${token}]`,
+        ...extraArgs,
         ...modeArgs,
       ],
       cwd: repository.worktree,

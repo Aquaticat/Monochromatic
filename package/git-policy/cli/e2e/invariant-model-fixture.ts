@@ -70,6 +70,12 @@ export type LandingObservation = Readonly<{
    */
   remoteContains: boolean;
   /**
+   Whether this commit sits on top of an amend that replaced an already-published commit,
+   so auto-push cannot fast-forward the remote to it
+   (`doc/decision/cli-git-concurrent-commits.md` "Amending published history").
+   */
+  onAmendedPublishedHistory: boolean;
+  /**
    Hook-derived facts,
    present only in scenarios that install the corresponding hook.
    */
@@ -128,6 +134,10 @@ export type AttemptObservation = Readonly<{
    so the remote must contain the landed commit.
    */
   requiresRemote: boolean;
+  /**
+   Whether the wrapper surfaced a non-fast-forward auto-push rejection and the local-commit note.
+   */
+  pushRejectionSurfaced: boolean;
 }>;
 
 /**

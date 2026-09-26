@@ -15,8 +15,10 @@ import { INDEX_WRITER_SCENARIOS, } from './scenario-index-writer-fixture.ts';
 import { LOCK_GC_SCENARIOS, } from './scenario-lock-gc-fixture.ts';
 import type { ScenarioDefinition, } from './scenario-model-fixture.ts';
 import { PHASE_KILL_SCENARIOS, } from './scenario-phase-kill-fixture.ts';
+import { RESERVATION_SCENARIOS, } from './scenario-reservation-fixture.ts';
 import { SHARED_FILE_SCENARIOS, } from './scenario-shared-file-fixture.ts';
 import { SIGKILL_SCENARIOS, } from './scenario-sigkill-fixture.ts';
+import { SUBSUMPTION_SCENARIOS, } from './scenario-subsumption-fixture.ts';
 
 /**
  Every scenario:
@@ -31,9 +33,11 @@ export const SCENARIO_CATALOG: readonly ScenarioDefinition[] = [
   ...BASELINE_HOOK_SCENARIOS,
   ...CONCURRENT_PATH_SCENARIOS,
   ...SHARED_FILE_SCENARIOS,
+  ...SUBSUMPTION_SCENARIOS,
   ...INDEX_WRITER_SCENARIOS,
   ...HOOKED_SCENARIOS,
   ...AMEND_SWITCH_SCENARIOS,
+  ...RESERVATION_SCENARIOS,
   ...LOCK_GC_SCENARIOS,
   ...FOREIGN_UNPROVEN_SCENARIOS,
   ...SIGKILL_SCENARIOS,

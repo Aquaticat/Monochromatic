@@ -12,6 +12,8 @@ import {
 import { join, } from 'node:path';
 
 import {
+  type HistoryCommit,
+  isAncestor,
   readHistory,
   stateOf,
   treeBytes,
@@ -28,6 +30,7 @@ import {
   extractPolicyEvents,
 } from './jsonl-event-fixture.ts';
 import {
+  type AttemptRecord,
   contentOf,
   type WorkloadLedger,
 } from './ledger-fixture.ts';
@@ -182,6 +185,80 @@ async function findStagedDifferences({
   },),);
 }
 
+/**
+ Lists the landed amends that replaced an already-published commit:
+ commits after them cannot fast-forward the remote.
+
+ @param repository - scenario repository
+
+ @param attempts - recorded attempts
+
+ @param history - local-branch history
+
+ @returns landed amend commits
+
+ @example
+ ```ts
+ await findAmendedPublished({ repository, attempts, history });
+ ```
+ */
+async function findAmendedPublished({
+  repository,
+  attempts,
+  history,
+}: Readonly<{
+  repository: ScenarioRepository;
+  attempts: readonly AttemptRecord[];
+  history: readonly HistoryCommit[];
+}>,): Promise<readonly string[]> {
+  /**
+   Landed amend commits with the commit each replaced.
+   */
+  const amends = attempts
+    .filter(function landedAmend(attempt,) {
+      return (attempt.mode === 'amend') && (attempt.outcome
+        .exitCode
+        === 0);
+    },)
+    .flatMap(function landedCommits(attempt,) {
+      return history
+        .filter(function carries(commit,) {
+          return commit.message
+            .includes(`[${attempt.token}]`,);
+        },)
+        .map(function replaced(commit,): Readonly<{
+          oid: string;
+          replaced: string;
+        }> {
+          return {
+            oid: commit.oid,
+            replaced: attempt.headBefore,
+          };
+        },);
+    },);
+  /**
+   Whether the remote had each replaced commit.
+   */
+  const published = await Promise.all(amends.map(async function wasPublished(amend,) {
+    return await isAncestor({
+      repository,
+      gitDir: repository.remote,
+      oid: amend.replaced,
+      ref: `refs/heads/${repository.branch}`,
+    },);
+  },),);
+  return amends
+    .filter(function isPublished(
+      _amend,
+      index,
+    ) {
+      return published[index] === true;
+    },)
+    .map(function oidOf(amend,) {
+      return amend.oid;
+    },);
+}
+
 //endregion Repository state
 
 //region Run
@@ -228,6 +305,14 @@ export async function observeRun({
    */
   const runs = await postCommitRuns(repository,);
   /**
+   Landed amends that replaced a commit the remote already had.
+   */
+  const amendedPublished = await findAmendedPublished({
+    repository,
+    attempts: snapshot.attempts,
+    history,
+  },);
+  /**
    Attempt observations.
    */
   const attempts = await Promise.all(snapshot.attempts
@@ -238,6 +323,7 @@ export async function observeRun({
       history,
       checks,
       runs,
+      amendedPublished,
     },);
   },),);
   /**

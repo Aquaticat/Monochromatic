@@ -64,6 +64,16 @@ export type HookChecks = Readonly<{
  */
 const HOOK_TRAILER = 'E2E-Hook-Checked: yes';
 
+/**
+ Git's reason for refusing a push that does not fast-forward the remote branch.
+ */
+const NON_FAST_FORWARD = 'non-fast-forward';
+
+/**
+ Note the wrapper prints after every failed auto-push (`PUSH_FAILED_NOTE` in `src/auto-push.ts`).
+ */
+const PUSH_FAILED_NOTE = 'auto-push to origin failed';
+
 //endregion Types
 
 //region Acceptable contents
@@ -226,6 +236,8 @@ export async function postCommitRuns(repository: ScenarioRepository,): Promise<R
 
  @param runs - post-commit runs per token
 
+ @param amendedPublished - landed amends that replaced an already-published commit
+
  @returns attempt observation
 
  @example
@@ -239,12 +251,14 @@ export async function observeAttempt({
   history,
   checks,
   runs,
+  amendedPublished,
 }: Readonly<{
   repository: ScenarioRepository;
   attempt: AttemptRecord;
   history: readonly HistoryCommit[];
   checks: HookChecks;
   runs: ReadonlyMap<string, number>;
+  amendedPublished: readonly string[];
 }>,): Promise<AttemptObservation> {
   /**
    Commits carrying the token.
@@ -321,6 +335,13 @@ export async function observeAttempt({
         } : commit,
       },),
       paths,
+      onAmendedPublishedHistory: (await Promise.all(amendedPublished.map(async function onAmend(amend,) {
+        return (amend !== commit.oid) && await isAncestor({
+          repository,
+          oid: amend,
+          ref: commit.oid,
+        },);
+      },),)).includes(true,),
       remoteContains: await isAncestor({
         repository,
         gitDir: repository.remote,
@@ -354,6 +375,12 @@ export async function observeAttempt({
       ],
     ...(landedEventOid === undefined ? {} : { landedEventOid, }),
     requiresRemote: attempt.requiresRemote,
+    pushRejectionSurfaced: attempt.outcome
+      .stderr
+      .includes(NON_FAST_FORWARD,)
+      && attempt.outcome
+      .stderr
+      .includes(PUSH_FAILED_NOTE,),
   };
 }
 

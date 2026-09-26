@@ -40,6 +40,7 @@ const GOOD_LANDING: LandingObservation = {
   changedPaths: ['a.txt',],
   paths: [{ path: 'a.txt', landed: present('captured',), acceptable: [present('captured',), present('merged',),], },],
   remoteContains: true,
+  onAmendedPublishedHistory: false,
   hooks: { commitMsgTrailer: true, postCommitRuns: 1, signatureValid: true, },
 };
 
@@ -54,6 +55,7 @@ const GOOD_ATTEMPT: AttemptObservation = {
   landings: [GOOD_LANDING,],
   eventIssues: [],
   requiresRemote: true,
+  pushRejectionSurfaced: false,
 };
 
 /**
@@ -151,6 +153,16 @@ await describe({
               .toEqual(['remote-contains', 'commit-msg-hook', 'post-commit-once', 'signature-valid',],);
             expect(invariantsFor({ ...GOOD_ATTEMPT, requiresRemote: false, landings: [{ ...GOOD_LANDING, remoteContains: false, hooks: {}, },], },),)
               .toEqual([],);
+          },
+        },),
+        it({
+          name: 'exempts commits on an amended published history from remote containment only when the non-fast-forward rejection was surfaced',
+          fn: async () => {
+            const amended = { ...GOOD_LANDING, remoteContains: false, onAmendedPublishedHistory: true, };
+            expect(invariantsFor({ ...GOOD_ATTEMPT, landings: [amended,], pushRejectionSurfaced: true, },),).toEqual([],);
+            expect(invariantsFor({ ...GOOD_ATTEMPT, landings: [amended,], },),).toEqual(['push-rejection-surfaced',],);
+            expect(invariantsFor({ ...GOOD_ATTEMPT, landings: [{ ...amended, onAmendedPublishedHistory: false, },], pushRejectionSurfaced: true, },),)
+              .toEqual(['remote-contains',],);
           },
         },),
         it({
