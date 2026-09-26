@@ -260,14 +260,24 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    the reading-ambiguity clause moves wholly from HON into VR2.
    Approved.
 - Batch 12 (simplification and linting):
-   15 rules become 9 always-loaded,
-   980 to 578 tokens;
-   deletes lint-enforced IMM,
+   15 rules become 10 always-loaded,
+   980 to 596 tokens;
+   IMM shrinks to "Prefer immutable patterns" (user kept it);
+   deletes lint-enforced
    LN4 (`no-for-in` message names the fix),
    LN8 (`denyWarnings: true`);
    merges LN5 into LN3;
    MXL widens to Rust;
    MXR and RDC move to `package/rust-linter-plugin/builtin/README.md` with codes kept (219 to 180 tokens).
+   Approved.
+- Batch 13 (logging,
+   security,
+   TSDoc):
+   15 rules become 13,
+   796 to 632 tokens;
+   TSD shrinks to its unenforced `{@inheritDoc}` clause;
+   TD3 merges into TD2;
+   TD8 deleted (`tsdoc/require-example`).
    Proposed,
    awaiting user review.
 - Retired-code references:
@@ -377,6 +387,13 @@ working files lived in the session scratchpad.
 
 - Proposal code blocks mark sections with Markdown headings,
    not HTML comments.
+
+## Decisions (round 7)
+
+- Keep compact principles that stand in for many lint rules (for example IMM's "Prefer immutable patterns"):
+   one clause prevents many lint round-trips,
+   which spelling out each lint rule would not.
+   Deletion of lint-enforced rules still applies to rules that restate one lint check.
 
 ## Open questions
 
@@ -1186,6 +1203,91 @@ SPG:
  Automation that spawns agent sessions needs explicit recursion guards (env var flag,
  session type filter,
  transcript size check).
+```
+### Batch 12
+
+```md
+IMM:
+ Prefer immutable patterns.
+
+UTL:
+ Reuse existing repo utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) before writing helpers.
+
+XNC:
+ Name extracted concepts by role and boundary behavior,
+ revealing sentinel and fallback semantics;
+ start simple,
+ refactor only when needed.
+
+ITR:
+ Linear input (strings,
+ flat arrays):
+ iterate;
+ never recurse or rebuild accumulators (`acc + c`).
+Recurse only bounded structural walks;
+ flatten spines with a work stack.
+
+MXL:
+ Over max-lines (TS,
+ Rust):
+ split into sibling files/modules (constants,
+ types,
+ helpers),
+ re-exporting from `index.ts`;
+ never strip docs/`//region` or reformat to fit.
+
+LN1:
+ Lint rules in apparent conflict:
+ restructure (split,
+ extract,
+ rename);
+ never violate one or reformat to silence another.
+
+LN2:
+ Each lint finding is a design signal:
+ name the rule's intent,
+ then write the best code shape satisfying it and the codebase.
+
+LN3:
+ Before suppressing a lint rule:
+ inspect linter source + linted value;
+ try config/allow-list.
+Remaining suppression:
+ justified disable comment plus `.md` doc citing both,
+ proving config fails.
+
+LN6:
+ Suppressing a documented declaration:
+ `/* oxlint-disable rule */`,
+ TSDoc,
+ declaration,
+ `/* oxlint-enable rule */` on the very next line;
+ never `disable-next-line` between TSDoc and declaration.
+
+LN7:
+ Never loosen lint rules without prior approval.
+```
+
+### Batch 12, moved to `package/rust-linter-plugin/builtin/README.md`
+
+```md
+MXR:
+ `.rs` files:
+ 300 code lines max;
+ split into sibling modules.
+`tests/`,
+ `*_tests.rs`,
+ `fuzz/`,
+ `build.rs` exempt;
+ never disable.
+
+RDC:
+ Rustdoc (`///`/`//!`;
+ plain `//` doesn't count) on every documentable `.rs` item,
+ public + private.
+cxx-qt files exempt `use` + trait impls;
+ tests/fuzz exempt;
+ never disable.
 ```
 
 ## Next action
