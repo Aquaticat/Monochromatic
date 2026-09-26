@@ -311,8 +311,8 @@ in-place resize.
 
 The reactive branch still lost recorded mode borders during the in-place
 height jump.
-A separate **unaccepted**, debug-only candidate from commit `02be4b162`
-reserved 416dp at the bottom whenever the Search editor gained focus;
+A separate **unaccepted**,
+debug-only candidate from commit `02be4b162` reserved 416dp at the bottom whenever the Search editor gained focus;
 it used that single reservation instead of `imePadding()` and selected the
 inline deck before the keyboard rose.
 The 416dp band is a measured test envelope for the y-`1140` Gboard banner,
