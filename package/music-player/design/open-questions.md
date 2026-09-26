@@ -59,7 +59,7 @@ rounds (2026-09-17):
   chosen as the working baseline, not banned from exploration.
   K1's discouraging back
   navigation and K3's non-local sheet remain rejected.
-- **SETTLED: Fold Search A with result heading and measured IME exceptions (D47 to D54).**
+- **SETTLED: Fold Search A with result heading and measured IME exceptions (D47 to D55).**
   D47 chooses a Search
   button opening a separate page;
   D48 puts Back,
@@ -139,7 +139,8 @@ rounds (2026-09-17):
   On the folded cover, real Gboard key taps produced `cam`, while the
   floating keyboard completely covered both matching result labels.
   D53 accepts the measured floating-Gboard overlap with the unfolded deck.
-  Cover result visibility remains unmet in its measured floating mode;
+  D55 accepts the measured floating cover keyboard obscuring both matching
+  result labels while `cam` remains visible.
   A remains the selected design,
   and the original observations remain evidence.
   the 300dp bottom-IME capture is bounded evidence.
@@ -260,8 +261,11 @@ rounds (2026-09-17):
   The user explicitly accepted that real floating Gboard still obscures
   the unfolded deck (D53).
   The user also accepted the **brief** font-update-banner clip (D54).
-  Neither choice accepts the separate cover result-label occlusion or waives
-  complete deck visibility under ordinary settled docked/split keyboards.
+  The user separately accepted floating Gboard obscuring both cover result
+  labels while the query stayed visible (D55).
+  None of these choices waives complete deck visibility under ordinary
+  settled docked/split input or approves ordinary full-width cover Gboard
+  hiding matching results.
   Other keyboard heights and distinct or persistent banner behavior remain
   unverified.
   A 200% long query remained in the right input region without hiding

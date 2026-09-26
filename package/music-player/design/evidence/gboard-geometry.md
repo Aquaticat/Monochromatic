@@ -186,8 +186,9 @@ it is **not** one of the linked sanitized Gboard PNGs.
 The split/full-width passes do **not** cancel the observed occlusions.
 D53 explicitly accepts real floating Gboard hiding the **unfolded deck**;
 D51's A selection is unchanged.
-The measured cover result-label overlap is not part of that approval.
-D54 separately accepts the observed brief Gboard font-update-banner clip.
+D55 separately accepts the measured cover floating-keyboard overlap with
+both result labels while the query remains visible.
+D54 accepts the observed brief Gboard font-update-banner clip.
 Neither exception covers ordinary settled docked keyboards,
 other input methods or persistent keyboard overlays.
 
@@ -265,9 +266,11 @@ with real floating Gboard it observed visibility but neither a bottom inset
 nor a usable floating-key rectangle.
 The system `InsetsSource` path is traced in
 `doc/troubleshooting/android-17-fold-emulator-ime-probe.md`.
-D53 and D54 accept the measured unfolded-deck overlays,
-but cover result visibility under floating Gboard,
-other keyboard states,
+D53 and D54 accept the measured unfolded-deck overlays;
+D55 accepts the specific folded-cover floating overlap with both result
+labels while `cam` remains visible.
+Other keyboard states,
+result activation,
 long result names and scrolling remain open.
 
 [inner-100]: ../questions/evidence/gboard-inner-split-light-s100.png

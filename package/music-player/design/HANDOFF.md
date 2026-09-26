@@ -5803,16 +5803,17 @@ The active selected A still puts its real folder browser above the bottom-left
 deck and its integrated query/results together on the right.
 Do not adopt the rejected app-panel or keep-clear probes to chase an overlap
 the user has now accepted.
-The earlier portions of this handover describe the experiment and the original
-strict D50 criterion;
-read them with D53's newer exception.
+The D50 to D52 sections describe the experiment and the original strict
+visibility criterion;
+read them with the scoped D53 to D55 exceptions.
 
 D53 did **not** approve clipping under ordinary settled split or docked
-keyboards,
-nor the cover-panel floating keyboard hiding both result labels.
+keyboards.
+D55 separately accepts the measured cover-panel floating keyboard hiding
+both result labels while the query remains visible.
 D54 separately accepts the observed brief full-width font-update banner;
 its measured y `1140` state clipped the final mode,
-and a later font-scale cycle did not re-create it.
+and a separate 200% to 100% to 200% font-scale cycle did not re-create it.
 The 416dp anticipatory reservation and inline title/transport reflow remain
 unaccepted debug-only alternatives.
 Long result names,
@@ -5844,11 +5845,32 @@ not selected changes to A.
 The accepted layout still keeps the same upper-left folder browser and
 right-hand Search query/results,
 with a complete bottom-left deck under ordinary settled docked/split input.
-Neither D53 nor D54 approves cover result labels disappearing beneath
+D55 separately accepts the measured cover result-label overlap under
 floating Gboard;
-that is a separable user decision or design gate.
+D53 and D54 alone did not decide that case.
 Do not mark every keyboard height or transition verified from these bounded
 exceptions.
 The original AVD exited separately with `qemu_thread_create` failure;
 no emulator restart is needed merely to record this design decision.
 Production implementation is still unauthorized.
+
+## D55 accepts floating Gboard over folded-cover results
+
+The user answered “Also acceptable” when asked separately about the
+sanitized cover capture with real floating Gboard.
+At 100% text,
+its floating key surface covers both matching result labels while the
+focused `cam` query remains visible.
+D55 permits that measured cover overlap without changing the one-page cover
+Search layout or the integrated Back/query/Clear header.
+It does not approve obscuring the query,
+hiding matching labels under ordinary full-width docked Gboard,
+or omitting result activation/ranking.
+D53 still applies only to the unfolded deck;
+D54 still applies only to the brief measured unfolded font-update banner.
+Current A-only HTML text and the decision record describe each scope
+separately;
+raw status-bearing captures remain private,
+while the sanitized cover evidence is indexed in
+`package/music-player/design/evidence/gboard-geometry.md`.
+No production Search code has been authorized.

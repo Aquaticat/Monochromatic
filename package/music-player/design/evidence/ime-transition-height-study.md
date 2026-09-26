@@ -2,7 +2,9 @@
 
 ## Boundary
 
-D50 requires the complete unfolded deck throughout Search typing.
+D50 requires the complete unfolded deck throughout Search typing,
+except for the measured real floating Gboard overlap (D53) and brief
+real font-update banner (D54).
 The accepted [Search A review](../questions/current.html) uses a 300dp debug IME.
 The earlier [Gboard evidence](gboard-geometry.md) records a real transient
 font-update banner that raised the IME top to y `1140` and clipped the final mode.
@@ -420,5 +422,10 @@ refocus,
 and cold entry at a height where both deck arrangements fit remain open.
 Check title paint and accessibility bounds separately;
 acceptance of a cropped **browser** does not allow a cropped deck.
-A real Gboard banner recurrence and floating Gboard remain independent,
-unresolved evidence needs.
+D53 and D54 accept those specific observed real-Gboard overlays without
+selecting a synthetic reflow or reservation.
+The custom height-step IME,
+other untested keyboard geometries and accessibility bounds remain separate
+evidence needs before claiming broader D50 compliance.
+A Gboard banner recurrence was not established,
+but D54 does not require one to accept the already measured brief state.
