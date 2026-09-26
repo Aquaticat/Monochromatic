@@ -1,3 +1,5 @@
+import { FANDOM_GLOSSARY, } from './community-glossary-fandom.ts';
+
 //region Community glossary
 // THE COMMUNITY'S WORDS, beside the corpus pin (`corpus-source.ts`), by the
 // owner's decision of 2026-09-09 (`doc/decision/translation-repair-community-glossary.md`).
@@ -165,6 +167,7 @@ export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
     why: 'short for 跨性别圈子, the trans community; the archive renders it "the Trans Community", and it '
       + 'never means crossdressing (女装) or "across communities"',
   },
+  ...FANDOM_GLOSSARY,
 ];
 
 /**

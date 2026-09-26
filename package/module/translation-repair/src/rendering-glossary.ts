@@ -2,6 +2,7 @@ import {
   type CommunityTerm,
   communityTermLines,
 } from './community-glossary.ts';
+import { GRAMMAR_GLOSSARY, } from './rendering-glossary-grammar.ts';
 import { IDIOM_GLOSSARY, } from './rendering-glossary-idiom.ts';
 import { PHRASING_GLOSSARY, } from './rendering-glossary-phrasing.ts';
 import { WORDING_GLOSSARY, } from './rendering-glossary-wording.ts';
@@ -251,6 +252,9 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
   // CLASS ONE HUNDRED THIRTY-ONE (shi_Yumiaoya32, 2026-09-25): wording in
   // accounts of events, kept in `rendering-glossary-wording.ts`.
   ...WORDING_GLOSSARY,
+  // CLASS ONE HUNDRED SIXTY-ONE (TianqiChen6662, 2026-09-26): grammar slips,
+  // kept in `rendering-glossary-grammar.ts`.
+  ...GRAMMAR_GLOSSARY,
 ];
 
 /**
