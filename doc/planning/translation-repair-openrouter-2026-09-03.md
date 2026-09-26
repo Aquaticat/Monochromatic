@@ -8082,6 +8082,54 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ6014 read, 2026-09-26: class one hundred fifty-two live, class one hundred fifty-three
+
+### What the run did
+
+XingZ6014 (frozen `1dd8ebc52`, overlap 8) SETTLED at 11:33 UTC in 54.9 min,
+Bedrock 20.39 to 17.65 and OpenRouter 47.98 to 42.31 by the meters (about 8.41 USD),
+Synthetic and Hyper dry, so glm-5.3 and Qwen3.8-27B threw every call.
+121 slices, 207 repair issues, 139 accepted, 114 slices where the lanes differed, 99 slices changed on the page.
+Every XingZ6013 check held: 14 headings, 2 links, 9 definitions, 3 TextRing, 11 details blocks,
+front matter equal, no TA, no double blank line, no error finish, the placeholder kept.
+The heading and footnote 6 read "Layer-Zero Prayer" (XingZ6013 wrote "Zero-Layer Prayer"), one rendering on the page;
+the second credit carries the album as "[Paranoia]".
+Two unendorsed standings (2, 9), 31 gate-kept, 25 slate-declined, 143 abstention lines.
+
+### Class one hundred fifty-two live
+
+The polish gate ran 59 times with 264 ballots and shipped 17 polishes (XingZ6013 shipped 9).
+On slice 30, where the polish differs from the wrapped base by one comma and the line break after it,
+three ballots set the breaks aside as the sheet told them
+("the only difference is line-break wrapping, which the rules say not to weigh").
+
+### Class one hundred fifty-three: the base the page's own one-line paragraph
+
+The class one hundred fifty-two sentence said both candidates were wrapped by one rule.
+That is false where the base stands as the archive's own wording:
+on slices 36, 61 and 64 the base was one line a paragraph and the polish was wrapped,
+and three ballots weighed the polish's added breaks
+(minimax-m3 "adds line breaks inside a paragraph", gemma-4-26b-a4b-it "introduces unnecessary line breaks"
+and "its line breaks are not requested by the source").
+Slice 36 settled on base after a 2 to 2 tie with the one line-break ballot abstaining;
+slice 61 lost its polish ("I did what I'd planned from the start ... She was sad too that she never got to meet you") 3 to 1.
+Fixed in `12b581811` (guard red first `b2f5f373c`):
+`foldSoftBreaks` in `soft-break-fold.ts` folds each top-level paragraph's soft breaks into spaces,
+and the gate sheet shows both candidates folded on a prose slice,
+keeping hard breaks, blockquotes, lists and a line-structured slice as written; what ships is unchanged.
+The policy sentence now says the paragraphs are shown one line each.
+Replayed over the run's real slices 16, 23, 30, 36, 61 and 64: every candidate reaches the sheet one line a paragraph.
+
+### Observations not built
+
+- The absolute naturalness review still names soft breaks on prose although its sheet says they render as spaces:
+  slice 23 "excessive line breaks", slice 50 "poem-like line breaks ... choppy verse formatting"
+  and a capitalisation "error" at a wrapped line's start, slice 84 "the line break creates an unnaturally abrupt fragment".
+  Slice 50's polish shipped anyway on its other findings; no outcome turned on these, so it is watched, not built.
+- gemma-4-e2b cast 59 gate ballots; one reason is garbled ("changes 'it seems' to 'it seems'"),
+  the rest name the wording they weigh. Not enough to drop it.
+- Slice 50 shipped a bench-written em-dash ("yourself — but that chance is truly gone now"), left per the owner.
+
 ## yingying12 read, 2026-09-26: class one hundred fifty-two
 
 ### What the run did

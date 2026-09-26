@@ -4777,7 +4777,17 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASS ONE HUNDRED FIFTY-TWO BUILT (2026-09-26), RUNNING ON XINGZ6014:
+1.  CLASS ONE HUNDRED FIFTY-THREE BUILT (2026-09-26):
+    on XingZ6014 slices 36, 61 and 64 the base stood as the archive's one-line paragraph beside a wrapped polish,
+    so class one hundred fifty-two's "both wrapped by one rule" was false there and three gate ballots weighed the added breaks.
+    `foldSoftBreaks` (`soft-break-fold.ts`) folds each top-level paragraph's soft breaks for the gate sheet on prose slices;
+    hard breaks, blockquotes, lists and line-structured slices stay as written, and what ships is unchanged.
+    Guard `b2f5f373c`, fix `12b581811`, the wrap test's assertion moved to the rendered form in `f5e2c1a86`
+    (the suite was red at `12b581811` on it).
+    XINGZ6014 READ: SETTLED at 11:33 UTC in 54.9 min, about 8.41 USD by the meters; every XingZ6013 check held;
+    class one hundred fifty-two live on slice 30; recorded under "## XingZ6014 read" in the pass log.
+    Next: freeze the class one hundred fifty-three build and run shi_Yumiaoya for 逆子 (class one hundred fifty-one).
+    CLASS ONE HUNDRED FIFTY-TWO BUILT (2026-09-26), RAN ON XINGZ6014:
     yingying12's polish gate tied 2 to 2 and shipped the calque "It is a pity that all this stopped abruptly",
     both base ballots citing the polish's line breaks on a prose slice both candidates were wrapped by one rule.
     `comparativePolishPolicy` keeps line structure only where the line rule governs and otherwise tells the gate
@@ -4786,7 +4796,7 @@ each read off the pass log and the shipped page:
     (pid 1441286, scope `pass-XingZ6014`); full suite 1,152 PASS, 0 FAIL (`suite-class152.log`).
     YINGYING12 READ: SETTLED at 10:35 UTC in 10.4 min on `.frozen-dist-0de47d546`, every yingying11 check held;
     recorded under "## yingying12 read" in the pass log.
-    Next: read XingZ6014 (the gate ballots on prose slices naming no line structure), then a shi_Yumiaoya run for 逆子.
+    XingZ6014 read it live on slice 30 and found class one hundred fifty-three (the entry above).
     CLASS ONE HUNDRED FIFTY-ONE BUILT (2026-09-26), RAN ON YINGYING12 (NOT EXERCISED; NO 逆子 ON THAT PAGE):
     the father's insult 「逆子」 shipped "rebellious child" on shi_Yumiaoya36 and 37,
     dropping the "son" that misgenders her; 逆子 joins the community glossary
