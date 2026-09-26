@@ -360,11 +360,21 @@ so another invocation's staging survives.
 When no other commit landed in between,
 the prepared commit lands unchanged,
 signature included.
-Otherwise cli-git replays it onto the new tip:
-a file whose captured bytes already contain the change that landed meanwhile,
+Otherwise cli-git replays it onto the new tip.
+Captures from one worktree are ordered:
+each takes a short per-worktree capture lock and the next capture sequence number,
+kept under `<git-dir>/cli-git-captures/`.
+For a file that this commit and the commits that landed meanwhile all captured from this worktree's disk,
+the later capture's bytes land,
+as native sequential commits would record them:
+a commit captured later lands its own bytes,
+and one captured earlier keeps the landed bytes of that file.
+A file changed from anywhere else,
+such as another worktree or clone,
+or a native commit that bypassed cli-git,
+keeps its captured bytes when they already contain the change that landed meanwhile,
 such as an edit made right next to another agent's in-flight edit,
-keeps its captured bytes,
-and every other file merges three-way from the commit's base.
+and otherwise merges three-way from the commit's base.
 The replay re-signs the commit when it was signed,
 re-runs `pre-commit` when the tree changed,
 and re-runs only the policies whose recorded reads or declared `inputs` changed;

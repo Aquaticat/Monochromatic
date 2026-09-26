@@ -1886,7 +1886,9 @@ Each transaction passes through four phases:
 
 1.  Capture:
     at invocation,
-    record the transaction facts and snapshot the commit's content.
+    record the transaction facts and snapshot the commit's content
+    under the per-worktree capture lock
+    (see "Capture order").
 2.  Preparation:
     in parallel with other transactions and without the real index lock,
     evaluate policies and run native `git commit` against private state.
@@ -1940,6 +1942,18 @@ Every later read of `HEAD` inside the transaction uses the recorded preparation 
 never live `HEAD`.
 Cli-git never re-prepares a commit from current worktree bytes.
 
+The facts are read in this order,
+so capture order can keep every landed-capture record a transaction may replay over
+(see "Capture order"):
+
+1.  the layout and every other fact except the preparation base;
+2.  the transaction directory is published;
+3.  the next capture sequence number is read;
+4.  the preparation base is read;
+5.  `preparing.json` is written and the shadow repository created;
+6.  the content is captured under the per-worktree capture lock with the next capture sequence number,
+    and `captured.json` is written.
+
 Every private index copy and every index install carries the source index's access and modification times
 (`index-file-timestamps.ts`):
 Git re-hashes a cached entry only when its mtime is not older than the index file's mtime,
@@ -1981,6 +1995,13 @@ an unpublished staging directory never blocks recovery and remains for diagnosis
     candidate-<k>.state, patch-<k>.diff   convergence snapshots and patch files
     replay-<r>/            replay <r>: commit.index of the replayed tree, candidate-*.state, patch-*.diff
     replay-message-<r>     exact message bytes a signed replay passes to git commit-tree -F
+    captured.json          capture stamp, next sequence before the base, worktree-captured paths
+
+<git-dir>/cli-git-captures/
+  capture.lock/            capture lock, held only while a transaction captures
+  worktree-id              random identity of this capture store
+  sequence                 last allocated capture sequence number
+  landed/<oid>.json        capture of a commit landed from this worktree, pruned when unneeded
 
 <git-common-dir>/cli-git/shadow/
   <transaction-id>/        shadow repository (see "Private preparation")
@@ -2637,10 +2658,11 @@ whichever earlier replay lost its race.
    measured 2026-09-26).
   `<merge base>` is the preparation base,
   or,
-  when subsumption keeps any path
-  (see "Subsumption"),
+  when capture order or subsumption settles any path
+  (see "Capture order" and "Subsumption"),
   a synthetic root commit in the shadow store
-  whose tree is the preparation base's with each subsumed path set to its landed content.
+  whose tree is the preparation base's with each subsumed path set to its landed content
+  and each capture-ordered path set to the entry of the side whose change it drops.
   The output is the tree ID and a NUL;
   on a conflict,
   each conflicted path NUL-terminated follows,
@@ -2718,6 +2740,8 @@ for every path both the prepared commit
 and the landed history
 (preparation base to `<current>`)
 changed,
+and that capture order leaves undecided
+(see "Capture order"),
 the prepared bytes already contain the landed change when that change applies in reverse to them.
 Such a path keeps the prepared entry as it is,
 matching what native sequential commits produce in a shared worktree;
@@ -2790,6 +2814,7 @@ The one-sided extension accepts it and still rejects own edits on both sides of 
 
 Process count is fixed per replay:
 two `diff-tree` runs;
+the two history processes of "Capture order" when a shared path is worktree-captured;
 when text candidates exist,
 one `cat-file --batch`,
 one `hash-object` writing the empty blob when an addition on both sides needs an empty base,
@@ -2931,6 +2956,154 @@ cli-git reproduces native cleanup in the owning worktree's Git directory:
   (`sequencer_post_commit_cleanup` in Git's `sequencer.c`),
   otherwise untouched.
 
+### Capture order
+
+Owner decision 2026-09-26
+(`doc/decision/cli-git-concurrent-commits.md` "Implementation-time decisions"):
+every capture from a worktree takes a short per-worktree capture lock
+and records a monotonically increasing capture sequence number,
+giving a total order of the captured disk states of that worktree.
+For a path that both the prepared commit and a commit landed since its preparation base captured from the same worktree,
+the later capture's bytes land,
+which records what native sequential commits would record from the shared disk.
+Evidence:
+the container `concurrent-trace-replay` scenario still conflicted under subsumption alone
+wherever a later capture rewrote lines an earlier in-flight commit had just added.
+Accepted cost:
+a later capture from a stale editor buffer reverts the earlier edit,
+exactly as native Git would.
+
+#### Capture store and lock
+
+The store is `<git-dir>/cli-git-captures/`,
+in the worktree's own Git directory
+(see "Transaction directory and journal").
+
+- The capture lock `capture.lock` is an owner lock
+  (see "Locks"):
+  unbounded wait while its owner lives,
+  and a dead or zombie owner's lock is retired by the next acquirer.
+  A transaction holds it only while it allocates its sequence number and captures:
+  the private index built from the preparation base and the selected worktree paths,
+  or the copy of the real index,
+  including `commit -a` staging.
+  It is never held across hooks,
+  the editor,
+  policies,
+  or landing,
+  and no other lock is taken while it is held.
+- `worktree-id` is a random identity written once under the lock.
+  A deleted store starts again with a new identity,
+  so sequence numbers of two store generations are never compared.
+- `sequence` holds the last allocated number as decimal text and a newline.
+  Allocation reads it under the lock,
+  writes the next number to a private temporary file,
+  and renames it over `sequence`,
+  so a reader outside the lock sees the old or the new number,
+  and a crash leaves at most a gap.
+  Numbers start at 1.
+
+#### Worktree-captured paths
+
+`captured.json` in the transaction directory records the stamp
+(`worktreeId`,
+ `sequence`),
+`nextSequenceBeforeBase`,
+and the paths whose committed bytes the capture read from the worktree:
+
+- explicit-path commits:
+  every path the private index changes relative to the preparation base,
+  which are the selected paths;
+- index commits that stage worktree content at capture
+  (`commit -a`,
+   `--include`):
+  every path whose private index entry differs from the captured real index;
+- other index commits:
+  none,
+  because their staged bytes come from an unknown earlier time,
+  so a later capture of the index is not a later disk state.
+
+Paths are Latin-1 decoded Git path bytes,
+as replay's shared-path listing decodes them.
+A staged path whose entry already equals the disk is left out,
+which only sends it through subsumption.
+
+#### Landed-capture records
+
+Right after the compare-and-swap succeeds
+(after `ref-updated.json` and the `ref-updated` phase marker),
+a landing writes `landed/<landed oid>.json`:
+the landed commit,
+the transaction ID,
+the stamp,
+the worktree-captured paths,
+and `nextSequenceAfterLanding`,
+the next capture sequence number read after the compare-and-swap.
+A failure to write it is reported and never fails the landed commit;
+the commit's paths then replay without capture order.
+Recovery of a dead transaction whose commit landed writes the same record from its `captured.json`
+before any other landing can take the landing lock,
+so a commit on the branch lacks its record only when it landed without capture order.
+An existing record is kept.
+
+#### Decision per path
+
+Replay decides every shared path
+(see "Subsumption" for how shared paths are listed)
+before subsumption,
+and runs no process when no shared path is among the transaction's worktree-captured paths.
+Otherwise it lists the first-parent history since the preparation base once
+(`git rev-list --first-parent <current> ^<base>`,
+without `^<base>` for an unborn base,
+and one `git diff-tree --stdin --root -r -z --raw --no-renames -m --first-parent`),
+and reads the record of each listed commit.
+For a shared path:
+
+- when the transaction did not capture the path from the worktree,
+  or any landed commit that changed the path has no record,
+  a record of another store identity,
+  or a record whose capture did not read the path from the worktree,
+  capture order does not apply:
+  subsumption,
+  then the three-way merge,
+  decide the path;
+- otherwise,
+  when the transaction's sequence number is larger than every such record's,
+  the prepared entry lands:
+  the synthetic merge base takes the landed entry exactly,
+  mode included;
+- otherwise the landed entry stays:
+  the synthetic merge base takes the prepared entry exactly.
+
+Paths changed by a commit from another worktree or clone,
+or by a native commit that bypassed cli-git,
+therefore keep subsumption and the three-way merge.
+A replayed commit whose capture kept a landed entry does not change that path,
+so the path's landed content is always the bytes of the latest capture among the commits that changed it.
+
+#### Pruning
+
+A transaction reads `nextSequenceBeforeBase` after publishing its directory and before reading its preparation base,
+and a landing reads `nextSequenceAfterLanding` after its compare-and-swap.
+A commit that landed after a transaction read its base therefore recorded a number no smaller than the transaction's,
+and a transaction not yet published has not read its base,
+so every commit already landed is in its base.
+Pruning lists the records first and the registry second,
+then removes each record that some published transaction may not need:
+
+- every published transaction's `captured.json` of this store identity names a larger `nextSequenceBeforeBase`
+  than the record's `nextSequenceAfterLanding`,
+  or no published transaction remains;
+- the record names another store identity,
+  or is malformed.
+
+A published transaction without `captured.json` keeps every record.
+Pruning runs after every transaction removes its directory,
+whatever its outcome,
+and after startup recovery recovered a dead transaction,
+so the last transaction to finish leaves no record behind.
+It reads only files and never fails the invocation that runs it.
+
 ### Post-landing
 
 After both locks are released:
@@ -3014,6 +3187,11 @@ is retired by the next acquirer.
 - Hook lock,
   `<git-common-dir>/cli-git/hook.lock`:
   unbounded wait while its owner lives.
+- Capture lock,
+  `<git-dir>/cli-git-captures/capture.lock`:
+  unbounded wait while its owner lives,
+  held only while one transaction captures
+  (see "Capture order").
 - Push locks,
   `<git-common-dir>/cli-git/push/<encoded-ref>.lock`:
   unbounded wait while their owner lives.
@@ -3039,7 +3217,8 @@ which is what the lock serializes.
 Lock order is reservation check,
 landing lock,
 then real `index.lock`.
-No process takes the hook lock or a push lock while holding the landing lock.
+No process takes the hook lock or a push lock while holding the landing lock,
+and no process takes any other lock while holding the capture lock.
 
 Cli-git never deletes a foreign lock.
 Recovery removes a real `index.lock` only when a journal proves a dead transaction owner created it,
@@ -3183,7 +3362,9 @@ Management help returns before recovery.
   then either discards an unlanded attempt,
   installs the recorded post-index for a landed commit whose index install was interrupted,
   or recognizes a completed install.
-  For a landed commit it also completes the conclusion-state cleanup from the shadow
+  For a landed commit it writes the commit's landed-capture record when missing
+  (see "Capture order"),
+  and it also completes the conclusion-state cleanup from the shadow
   (see "Sequencer conclusion state")
   and added-path worktree copies with the "Added paths" comparison.
   It then removes the shadow repository and the transaction.
@@ -3191,6 +3372,9 @@ Management help returns before recovery.
   or with malformed state,
   fails closed with the path named and preserves its contents.
 - A reservation lock whose owner is dead is retired after the transactions are recovered.
+- After a dead transaction was recovered,
+  landed-capture records are pruned
+  (see "Capture order").
 
 Recovery validates the expected old OID,
 the landed OID,
@@ -3407,6 +3591,38 @@ Policy inputs and read sets:
   an empty pathspec list,
   and a throwing `inputs` function are config failures.
 
+Capture order:
+
+- a commit captured after another commit's capture of the same line lands its own bytes after a replay,
+  and one captured before a commit that landed first keeps the landed bytes of that path and lands its other paths;
+- a change landed from another worktree,
+  which has no capture in this worktree,
+  conflicts when it overlaps and merges three-way when it does not;
+- a landing killed after its compare-and-swap gets its landed-capture record from recovery,
+  so a commit captured before it keeps the landed bytes;
+- a capture waits while another holds the capture lock,
+  a holder killed inside the lock is retired by the next capture,
+  and captures started together in one process never overlap;
+- sequence numbers are consecutive,
+  persist in the store across invocations under one identity,
+  and a malformed sequence file fails the capture;
+- the per-path decision:
+  both directions,
+  the latest of several landed captures,
+  and the fallbacks for a commit without a record,
+  another store identity,
+  a record that did not capture the path,
+  and a path the transaction did not capture from the worktree;
+- worktree-captured paths of explicit-path,
+  `commit -a`,
+  and plain index captures;
+- the first-parent history listing from a commit and from an unborn base;
+- pruning keeps every record while a published transaction has not captured,
+  keeps a record a published transaction may replay over,
+  removes a record of another store identity or a malformed one,
+  and removes every record once no transaction remains,
+  so no landing fixture leaves a record behind.
+
 Reservation,
 locks,
 and configuration:
@@ -3520,7 +3736,10 @@ so this suite is an inherent part of the transaction protocol.
 - Landing phases that have no hook are reached through a test-only phase marker:
   `CLI_GIT_TEST_ONLY_PHASE_SIGNAL=<phase>:kill[:<directory>]` makes the wrapper `SIGKILL` itself at the phase,
   and `<phase>:pause:<directory>` writes `<directory>/<phase>.reached` and waits for `<directory>/<phase>.release`.
-  The phases are `preparation-done`,
+  The phases are `capture-locked`
+  (inside the capture lock,
+  before the sequence number is allocated),
+  `preparation-done`,
   `landing-locked`,
   `objects-migrated`,
   `ref-updated`,
@@ -3544,7 +3763,9 @@ so this suite is an inherent part of the transaction protocol.
   - no shadow repository,
     transaction directory,
     `cli-git` `.keep` file,
-    or lock remains;
+    lock,
+    landed-capture record,
+    or temporary capture-store file remains;
   - `git fsck` is clean;
   - exit codes match the JSONL events.
 
