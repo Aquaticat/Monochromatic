@@ -77,6 +77,78 @@ Do not upload session data or commit raw histories.
 Review redaction before committing any fixture.
 This does not authorize fine-tuning or ongoing transcript capture.
 
+## Existing GitHub issues
+
+Checked open and closed issues in `Aquaticat/Monochromatic` on 2026-09-26.
+GitHub search queried title, body, and comments for:
+`"auto-mode"`, `"auto mode"`, `guardrail`, `safeguard`, `judge`,
+`"budget-model-auth"`, and `"ProviderHeaders"`.
+Each query used `per_page=100` with pagination;
+GitHub returned `incomplete_results=false` and fewer than a page of results for each.
+Relevant issue bodies and comments were read.
+No issues were mutated.
+
+### #558: Existing Laya evaluation request
+
+[Issue #558](https://github.com/Aquaticat/Monochromatic/issues/558) is open.
+It explicitly says to try Laya locally on CPU first.
+Its migration checklist covers call volume, input sizes, spend, retries, latency,
+verdicts, explanations, manual approval, trust directives, fallback,
+complete context, images, context limits, and adversarial safety cases.
+Carry this checklist into the migration acceptance ledger.
+Its historical Jev comparison and TypeSafe-terms work are excluded by the user's newer Laya-only scope.
+The sole comment is a Linear backlink, not additional requirements.
+
+### #279: Non-hermetic skill allowlist fixtures
+
+[Issue #279](https://github.com/Aquaticat/Monochromatic/issues/279) is open.
+Current source still has maintainer-local fixture paths:
+`package/pi-plugin/auto-mode/src/signals.unit.test.ts:107-120`
+and `package/pi-plugin/auto-mode/src/index.unit.test.ts:371-420`.
+These tests do not construct the named skill files.
+This is current source confirmation of the fixture dependency, not a fresh reproduction of failure.
+The migration's verification must use real disposable skill directories
+and complete mock session contexts rather than treating a pass on this workstation as portability proof.
+Do not weaken the canonical-path fail-closed behavior.
+
+### #114: Historical upstream home-path false positives
+
+[Issue #114](https://github.com/Aquaticat/Monochromatic/issues/114) is open upstream-tracking work for pi-safeguard.
+It is not evidence that current auto-mode has that same defect.
+`package/pi-plugin/auto-mode/src/path-signals.ts:69-73` documents removal of the system-path test;
+`src/signals.unit.test.ts:67-78` covers paths under `/var/home` within the project.
+Keep home alias, canonical containment, and secret-path behavior in the parity suite.
+No pi-safeguard evaluation or upstream tracking was initiated.
+
+### Closed issues and excluded matches
+
+- [#166](https://github.com/Aquaticat/Monochromatic/issues/166):
+  closed after the maintainer confirmed the earlier cohesion fixes.
+  Do not revive its historical file-count prescription as a migration requirement.
+- [#155](https://github.com/Aquaticat/Monochromatic/issues/155):
+  missing TSDoc was recorded as resolved.
+- [#237](https://github.com/Aquaticat/Monochromatic/issues/237):
+  dependency-catalog cleanup was recorded as resolved.
+  Preserve catalog ownership when introducing Laya dependencies.
+- [#534](https://github.com/Aquaticat/Monochromatic/issues/534):
+  closed after fixing runtime peer installation and verifying an isolated consumer.
+  Repeat isolated installation/import checks for the migrated extension.
+- [#254](https://github.com/Aquaticat/Monochromatic/issues/254):
+  closed logger-lifecycle work; its follow-up does not name auto-mode as a remaining consumer.
+  A current auto-mode source search found no `initPromise` references.
+- [#359](https://github.com/Aquaticat/Monochromatic/issues/359):
+  the build override was recorded as removed and verified.
+  Its comment mentions a separate historical `ProviderHeaders` error;
+  searches for that diagnostic and `budget-model-auth` found only #359,
+  so no separate issue or current failure was established.
+- [#291](https://github.com/Aquaticat/Monochromatic/issues/291):
+  API-mock work names other Pi plugins, not auto-mode.
+  Do not conflate the distinct `guardrail` package with this package.
+- [#391](https://github.com/Aquaticat/Monochromatic/issues/391):
+  subagent model-class policy, not guard-judge migration.
+- Other search matches concern repository-wide lint, catalog, scaffolding, or unrelated tool guards.
+  They are not additional auto-mode behavior requirements.
+
 ## Research still required
 
 - Inventory every consumed auto-mode responsibility and assign its future owner and parity test.
