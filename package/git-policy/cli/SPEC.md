@@ -1198,9 +1198,14 @@ and cannot be disabled or assigned a severity through repository config.
   and `preparedOid` names the prepared commit so the user can cherry-pick it.
   The message names all three.
 - `concurrent-commit/head-moved`:
-  an amend or a merge,
+  an amend,
+  a merge,
   cherry-pick,
-  or revert conclusion found the target moved since preparation.
+  or revert conclusion,
+  or a normalization found the target moved since preparation,
+  or any commit found that the target no longer names a commit
+  (a deleted branch),
+  so there is nothing to replay onto.
 - `concurrent-commit/branch-switched`:
   the symbolic `HEAD` target differs from the one recorded at invocation.
 
@@ -1276,11 +1281,19 @@ export type CommitReplayedEvent = EventBase & {
 ```
 
 Emitted once per successful replay,
-before revalidation.
+after revalidation,
+when the replayed commit is written.
 `fromBase` is the preparation base and is absent when the branch was unborn at preparation.
 `onto` is the target value the replay used as parent,
-and `oid` is the replayed commit.
+and `oid` is the replayed commit the next landing attempt lands,
+including any policy patch or hook change revalidation made.
 A later lost race can replay the same transaction again with a new event.
+The events of each replay follow the settled preparation pass in this order:
+`landing-race-lost`,
+`commit-replayed`,
+`replay-headers-dropped` when it applies,
+and then the revalidation pass's own events,
+including its `fix-summary` when a revalidation patch changed bytes.
 
 ### Replay headers dropped event
 
@@ -1817,11 +1830,19 @@ an unpublished staging directory never blocks recovery and remains for diagnosis
     preparing.json         invocation capture facts
     prepared.json          shadow repository path, prepared OID, signed flag, intended tree, read sets
     reservation-request    empty marker written when the transaction asks for the reservation
+    index-lock-<n>.json    identity of the real index.lock attempt <n> created, written right after creating it
     landing-<n>.json       one per landing attempt inside the critical section
     ref-updated.json       exact landed OID
     index-installed        empty completion marker
-    hooks/                 hook dispatcher shim
-    commit.index, captured.index, post.index, candidate-*.state, patch-*.diff
+    hooks/                 hook dispatcher shim: dispatch.mjs, plan.json, and one entry per preparation event
+    captured.index         real index at invocation
+    commit.index           private commit index native preparation commits
+    pre-landing-<n>.index  exact copy of the real index attempt <n> computed against
+    post-<n>.index         post-index attempt <n> installs
+    install-<n>.index      post-index hard link attempt <n> renames over the real index
+    candidate-<k>.state, patch-<k>.diff   convergence snapshots and patch files
+    replay-<r>/            replay <r>: commit.index of the replayed tree, candidate-*.state, patch-*.diff
+    replay-message-<r>     exact message bytes a signed replay passes to git commit-tree -F
 
 <git-common-dir>/cli-git/shadow/
   <transaction-id>/        shadow repository (see "Private preparation")
@@ -1832,6 +1853,9 @@ so recovery finds it even before `prepared.json` exists.
 A shadow repository is created only after its transaction directory is published,
 and is removed before its transaction directory,
 so no shadow repository outlives the journal that names it.
+It is created right after `preparing.json`,
+before the private index exists
+(see "Private preparation").
 
 State files are created exclusively and never rewritten,
 so a crash leaves the newest complete state readable.
@@ -1870,6 +1894,26 @@ It uses:
   whose own `HEAD` is the private `HEAD`
   (see "Private `HEAD` shape")
   and whose own object store receives every object preparation writes.
+
+The shadow repository is created right after `preparing.json`,
+before the private index is built.
+Every cli-git Git command that writes or reads the private index's objects
+(`read-tree`,
+`add`,
+`add --patch`,
+`apply --cached --3way`,
+`write-tree`,
+`diff --cached`,
+and the `cat-file --batch` candidate reads)
+runs in the owning worktree with `GIT_OBJECT_DIRECTORY=<shadow>/objects`,
+whose `info/alternates` names the real object store,
+so every blob and tree preparation writes lands in the shadow store.
+A real `git gc --prune=now` during preparation therefore cannot delete a staged blob,
+which the `gc-prune-during-commits` scenario of the container suite exercises.
+Worktree completions after landing read their pre-correction or pre-hook blobs through the same store,
+because those blobs never migrate.
+Native Git and replay run with `--git-dir=<shadow>` instead;
+cli-git's own plumbing keeps the real repository's refs and config.
 
 The shadow repository is a separate repository rather than a registered worktree,
 so `git worktree list` never shows it,
@@ -1912,9 +1956,14 @@ message cleanup,
 and signing.
 Native `commit -a` updates only the private index copy.
 After Git succeeds,
-the prepared OID is the value of the shadow `HEAD`;
-preparation verifies the prepared commit's tree against the intended tree
-and records `prepared.json`.
+the prepared OID is the value of the shadow `HEAD`,
+and preparation records `prepared.json`.
+A commit hook may change the private index while it runs,
+as a lint-staged-style formatter rewrites and re-stages files;
+native `git commit` commits whatever the hook staged,
+and so does the transaction:
+the prepared tree is accepted even when it differs from the policy-settled intended tree
+(see "Hook-staged changes").
 A preparation failure removes the shadow repository and then the transaction directory,
 and leaves real index,
 worktree,
@@ -1942,7 +1991,8 @@ The shadow repository holds these private entries:
   and remote-tracking refs as they stood at invocation.
   With the files backend,
   cli-git writes the snapshot as one `packed-refs` file
-  (header `# pack-refs with: sorted`)
+  (header `# pack-refs with: sorted `,
+  with the trailing space Git's own writer emits and older readers require)
   and writes the private target ref as a loose ref through `git --git-dir=<shadow> update-ref`,
   which takes precedence over the packed entry.
   With the reftable backend,
@@ -2111,12 +2161,21 @@ so both are required.
   `post-commit` is intentionally absent,
   so it never runs during preparation.
 - The plan records the repository's own `core.hooksPath`
-  (absent means `<git-common-dir>/hooks`),
+  (absent means `<git-common-dir>/hooks`;
+  a relative value resolves against the worktree root),
   the events the user disabled through `hook.<event>.enabled`,
-  the caller's `GIT_CONFIG_PARAMETERS` or its absence,
+  the config parameters native Git would hand its hooks or their absence,
   the real Git path,
-  and the absolute worktree root.
-- The program restores the caller's `GIT_CONFIG_PARAMETERS`,
+  the absolute worktree root,
+  the preparation lease,
+  the hook lock path,
+  and whether the hook lock is skipped.
+  The config parameters are the caller's inherited `GIT_CONFIG_PARAMETERS` followed by the caller's global `-c` options,
+  each quoted in Git's `sq_quote` form
+  (`'` and `!` close and reopen the quote);
+  they are absent when the caller had neither,
+  so cli-git's own `core.hooksPath` and `hook.<event>.enabled` overrides never reach a hook.
+- The program restores those config parameters,
   exports `GIT_WORK_TREE` as the absolute worktree root
   (Git otherwise rewrites it to `.` for hooks,
   `doc/troubleshooting/git-private-admin-dir-hook-environment.md`),
@@ -2146,8 +2205,9 @@ the hook lock serializes only cli-git's own hook runs.
 The hook lock is an owner lock at `<git-common-dir>/cli-git/hook.lock`.
 The dispatcher shim takes it around each preparation hook event,
 so an open message editor never holds it.
-Cli-git also takes it around each `pre-commit` re-run after a replay
-and around the post-landing `post-commit`.
+The re-run of `pre-commit` after a replay goes through the same shim,
+so the shim takes it there too,
+and cli-git takes it around the post-landing `post-commit`.
 It is skipped when `hooks.concurrentCommits` is `true`
 and when a valid preparation lease is inherited.
 
@@ -2230,6 +2290,35 @@ Precondition failures are `patch-conflict` with direct-fix remedies
 (select the path,
  or restore it to `HEAD`).
 
+#### Hook-staged changes
+
+A `pre-commit` hook that edits files and re-stages them,
+as lint-staged does,
+changes the private index native Git commits.
+The transaction keeps that tree,
+as native Git keeps it,
+and diffs the policy-settled tree against the committed tree
+(`git diff-tree -r --raw --no-renames`)
+to learn the hook's paths:
+
+- Explicit-path commits reset each hook path outside the selection in the post-index to the landed entry
+  only while its real index entry still equals the one captured at invocation;
+  an entry restaged since then is kept,
+  with a warning naming the path.
+  Selected paths are reset as always.
+- Index commits need nothing extra:
+  the landed index is the hook's private index,
+  and the per-path merge of "Real index at landing" already takes landed entries only for unchanged paths.
+- A path modified in place as an ordinary file joins the worktree completions of `prepared.json`
+  with its pre-hook blob as the original and its committed blob as the intended bytes,
+  under the "Added paths" comparison:
+  a worktree copy still holding the pre-hook bytes receives the committed bytes,
+  one already holding them is left alone,
+  and any other bytes are kept with a warning.
+
+A `pre-commit` re-run after a replay is handled the same way
+(see "Revalidation after replay").
+
 ### Landing
 
 Commits land in preparation completion order.
@@ -2244,11 +2333,15 @@ One landing attempt runs these steps:
 3.  Fail with `concurrent-commit/branch-switched` when `git symbolic-ref -q HEAD`
     differs from the recorded symbolic `HEAD` target.
 4.  Read the target ref.
-    When it still equals the preparation base
-    (or is still unborn),
-    the new OID is the prepared commit itself,
-    which keeps its exact bytes and signature.
-    When it moved and the commit is an amend or a conclusion,
+    When it still equals the expected old value
+    (the preparation base,
+    or the parent of the latest replay),
+    the new OID is the prepared or replayed commit;
+    a prepared commit keeps its exact bytes and signature.
+    When it moved and the commit is an amend,
+    a conclusion,
+    or a normalization,
+    or when the target no longer names a commit,
     fail with `concurrent-commit/head-moved`.
     When it moved otherwise,
     record a lost race,
@@ -2268,6 +2361,12 @@ One landing attempt runs these steps:
     `git update-ref -m <reflog message> <target> <new> <old>`,
     with the all-zero OID as `<old>` for an unborn target
     and `--no-deref` on `HEAD` for a detached target.
+    `<target>` is the branch ref itself,
+    `refs/heads/<branch>`,
+    never `HEAD`,
+    so a `reference-transaction` hook sees exactly one committed update of the branch ref,
+    and Git still writes the `HEAD` reflog because `HEAD` is symbolic to it.
+    `<old>` is the expected old value of step 4.
     A compare-and-swap failure removes the migrated pack's `.keep`,
     counts as a lost race,
     and continues as in step 4.
@@ -2315,10 +2414,20 @@ and never stages a revert of landed content.
   including policy-added paths,
   reset to the landed tree.
 - Index mode:
-  for each path the commit changed relative to its preparation base,
+  when no replay happened and the current real index is byte-identical to the one captured at invocation,
+  the post-index is the private index native preparation committed,
+  exactly what native Git would leave.
+  Otherwise,
+  for each path the landed tree changes relative to the preparation base or to the tree of the captured index,
   take the landed entry only when the current real index entry still equals the captured one;
   otherwise keep the current entry,
   because it was restaged after invocation.
+  After a replay the landed entries come from the replayed private index,
+  and the wholesale copy is never used,
+  because an index read from a tree carries no stat data,
+  skip-worktree bits,
+  or intent-to-add entries.
+- Hook-staged paths follow "Hook-staged changes".
 
 Every copy and install keeps the source index timestamps.
 
@@ -2334,8 +2443,11 @@ git --git-dir=<shadow> pack-objects --revs --local --stdout
 ```
 
 - `pack-objects` reads `<new>` and,
-  unless the target is unborn,
-  `^<old>` on standard input.
+  unless the expected old value is unborn,
+  `^<old>` on standard input,
+  where `<old>` is the expected old value of "Landing" step 4:
+  the preparation base,
+  or the replay parent.
   `--local` skips every object borrowed through `objects/info/alternates`,
   so the pack holds only shadow-store objects.
 - `index-pack` runs in the owning worktree's context,
@@ -2367,19 +2479,37 @@ Replay runs in the shadow
 (`git --git-dir=<shadow>`),
 so every object it writes stays in the shadow store until the next migration;
 the current target's objects resolve through the alternates.
+Every replay starts again from the prepared commit and the preparation base,
+whichever earlier replay lost its race.
 
 - The tree comes from
   `git merge-tree --write-tree --name-only -z --merge-base=<base> <current> <prepared>`,
-  with the empty tree as `<base>` when the preparation base was unborn.
+  run with the worktree root as its working directory so conflicted paths are reported from the repository root.
+  `<base>` is the preparation base,
+  or for a branch that was unborn at preparation a root commit of the empty tree
+  that cli-git writes into the shadow store,
+  because Git 2.40 accepts only a commit as `--merge-base`
+  (`object ... is a tree, not a commit`,
+   measured 2026-09-26).
+  The output is the tree ID and a NUL;
+  on a conflict,
+  each conflicted path NUL-terminated follows,
+  then an empty record and the informational messages.
   Exit `1` is a conflict even though a tree ID prints;
-  an exit above `1` is an engine failure.
+  an exit above `1` is a replay failure.
+- The replayed tree is revalidated
+  (see "Revalidation after replay")
+  before any commit object is written,
+  so a signed commit is re-signed once per replay.
 - An unsigned prepared commit is rebuilt by rewriting its raw object:
-  cli-git reads `git cat-file commit <prepared>`,
-  replaces only the `tree` line with the merged tree
+  cli-git reads `git cat-file commit <prepared>` as bytes,
+  replaces only the `tree` line with the revalidated tree
   and the `parent` line with `<current>`
   (inserting a `parent` line after `tree` when the preparation base was unborn),
   and writes the result with `git hash-object -t commit -w --stdin`.
-  Every other header and the message bytes stay exact,
+  Every other header,
+  continuation lines included,
+  and the message bytes stay exact,
   including `encoding`,
   the author and committer identities and dates,
   and custom headers.
@@ -2387,13 +2517,15 @@ the current target's objects resolve through the alternates.
 - A signed prepared commit,
   one carrying a `gpgsig` or `gpgsig-sha256` header,
   is rebuilt with
-  `git -c i18n.commitEncoding=<encoding> commit-tree <tree> -p <current> -S[<key id>] -F <raw message file>`,
-  where `<encoding>` is the prepared commit's `encoding` header value or `UTF-8` when absent,
-  `<key id>` is the invocation's key ID when one was given,
+  `git <caller global options> -c i18n.commitEncoding=<encoding> commit-tree <tree> -p <current> -S[<key id>] -F <tx>/replay-message-<r>`,
+  where `<encoding>` is the prepared commit's `encoding` header value or `utf8` when absent,
+  `<key id>` is the key the invocation passed to `-S` or `--gpg-sign` when one was given,
+  `replay-message-<r>` holds the exact message bytes,
   and `GIT_AUTHOR_NAME`,
   `GIT_AUTHOR_EMAIL`,
   `GIT_AUTHOR_DATE`,
-  and the committer triple come from the prepared commit's raw identity lines.
+  and the committer triple come from the prepared commit's raw identity lines
+  (dates as `@<seconds> <zone>`).
   No Git primitive re-signs a raw object,
   so any header other than `tree`,
   `parent`,
@@ -2403,7 +2535,8 @@ the current target's objects resolve through the alternates.
   `gpgsig`,
   and `gpgsig-sha256` is dropped,
   and cli-git emits `replay-headers-dropped`.
-- The shadow `HEAD` target moves to `<current>` for revalidation.
+  Native `git commit` writes no such header on an ordinary commit,
+  so through the wrapper this happens only for objects a hook or another tool built.
 - A successful replay emits `commit-replayed`.
 
 A conflict fails without landing as `concurrent-commit/replay-conflict`
@@ -2411,35 +2544,78 @@ with exit `1`
 and leaves ref,
 real index,
 and worktree bytes unchanged.
+`winningOid` is the first line of
+`git rev-list --reverse <current> ^<base> -- <conflicting paths>`
+(without `^<base>` when the base was unborn),
+or `<current>` when that lists nothing.
 Before the shadow repository is removed,
 cli-git migrates the prepared commit into the real object store as a pack without `.keep`
-(the "Object migration" command without `--keep`),
+(the "Object migration" command without `--keep`,
+with the preparation base as the excluded revision),
 so the prepared commit survives until `gc` expires unreachable objects
 and the user can cherry-pick it.
+Any other replay or revalidation failure,
+such as a failed `merge-tree` or signing,
+is a `transaction-failed` engine failure with exit `2`.
 Path-level replay and automatic re-preparation are not used.
 
 #### Revalidation after replay
 
-After a clean replay,
-revalidation runs outside both locks against a private index of the replayed tree,
-with the shadow `HEAD` at the replay parent:
+After a clean merge,
+revalidation runs outside both locks
+in a private directory `<tx>/replay-<r>/`:
 
-1.  Re-run the policies selected by "Policy inputs and read sets".
-    Their patches converge under the ordinary pass-limit and cycle rules.
-2.  When the replayed tree differs from the prepared tree
-    and the invocation did not pass `--no-verify`,
-    re-run `pre-commit` through the dispatcher shim under the hook lock,
-    against the shadow repository.
+1.  `git read-tree <merged tree>` into `replay-<r>/commit.index`,
+    in the shadow store.
+2.  Move the shadow `HEAD` target
+    (the branch ref,
+     or detached `HEAD`)
+    to `<current>`,
+    so policies and hooks see the parent the commit will have.
+3.  Re-run every cli-git policy against the paths the replayed tree changes relative to `<current>`.
+    Until policy read sets exist,
+    every policy is treated as unrestricted.
+    Patches converge under the ordinary pass-limit and cycle rules,
+    and policy-added paths follow "Added paths",
+    checked against the real index captured at invocation.
+    A blocking finding or engine failure lands nothing and returns that result.
+4.  When the tree after policies differs from the tree `pre-commit` last approved
+    (the prepared tree at the first replay)
+    and the invocation did not pass `--no-verify` or `-n`,
+    re-run `pre-commit` against `replay-<r>/commit.index`:
+    `git <caller global options> --git-dir=<shadow> --work-tree=<worktree root> -c core.hooksPath=<tx>/hooks`
+    with every commit event's `hook.<event>.enabled=false`,
+    `hook run --ignore-missing pre-commit`,
+    `GIT_INDEX_FILE` naming the replayed index,
+    and `GIT_EDITOR=:`,
+    as native Git runs `pre-commit` when no editor is used.
+    The dispatcher shim takes the hook lock and runs the repository's hooks.
     `prepare-commit-msg` and `commit-msg` do not re-run,
     because the message is fixed.
     A failing `pre-commit` lands nothing,
     removes the shadow repository and the transaction,
-    and exits `1`.
-3.  When a patch or the hook changed the private index,
-    rebuild the commit from the prepared commit under the "Replay" rules with the new tree,
-    re-signing when required.
+    and exits `1` without a JSONL event,
+    like native Git's hook rejection.
+    Changes the hook staged are kept
+    (see "Hook-staged changes").
+5.  Build the replayed commit from the prepared commit on the resulting tree
+    (see "Replay").
 
-Landing then retries from step 1 of "Landing".
+Worktree completions of preparation are pointed at the blobs the replayed tree holds;
+a path the replayed tree no longer holds as the same ordinary file drops its completion.
+Landing then retries from step 1 of "Landing"
+with the replayed commit,
+`<current>` as the expected old value,
+the union of the selected and revalidated paths as the committed paths,
+and `replay-<r>/commit.index` as the landed index.
+The loop ends when the commit lands,
+its replay conflicts,
+revalidation rejects it,
+or the target cannot take it.
+The reservation after `landing.reserveAfterLostRaces` lost races plugs in before each landing attempt
+(see "Starvation reservation");
+until it exists,
+a commit replays after every lost race.
 
 #### Amend, conclusions, and branch switches
 
@@ -2573,6 +2749,20 @@ is retired by the next acquirer.
   unchanged bounded acquisition,
   held only by applicable sources
   (see "Linked-worktree ignored-state synchronization").
+
+An owner is alive only while its PID names a running process with the recorded birth identity.
+On Linux a process in state `Z`
+(exited but not reaped)
+or `X` counts as exited:
+a zombie keeps its PID and start time,
+and inside a container whose PID 1 does not reap orphans,
+such as a Node process,
+the zombies a `SIGKILL`ed process group leaves are never reaped,
+so treating them as alive made every later acquirer wait forever.
+The hook dispatcher shim applies the same rule to the hook lock.
+A hook process orphaned by a killed wrapper but still running keeps the hook lock until it exits:
+it may still rewrite worktree files,
+which is what the lock serializes.
 
 Lock order is reservation check,
 landing lock,
@@ -2858,6 +3048,17 @@ Landing and replay:
 - `pre-commit` re-runs against the replayed tree,
   is skipped under `--no-verify`,
   and a failing re-run lands nothing;
+- policies re-run against the replayed tree and a revalidation patch lands;
+- 2,
+  3,
+  and 8 commits started together each land exactly once with their captured bytes;
+- a `pre-commit` hook that stages another path,
+  rewrites and re-stages a selected file,
+  or stages a formatted blob without touching the worktree lands what it staged,
+  with the real index and worktree reconciled,
+  and a worktree edit or real-index restage made after the hook ran is kept;
+- a staged blob is absent from the real object store while the commit is held in `pre-commit`,
+  and a real `gc --prune=now` then keeps the commit whole;
 - missing replay plumbing fails a moved-target commit with `transaction-failed`.
 
 Policy inputs and read sets:
@@ -2901,6 +3102,9 @@ and configuration:
   a PID file naming a process started after the lock's ctime,
   no PID file,
   and a lock held open by a child process;
+- a lock whose owner is a zombie is retired by the owner-lock acquirer,
+  the hook dispatcher shim,
+  and the transaction-owner liveness check;
 - an unbounded wait released when the holder exits,
   and a leftover lock from a killed Git producing `index-lock-unproven-owner` after the timeout with the lock retained;
 - a concurrent `git add` during a landing waits and then succeeds;
@@ -2980,6 +3184,16 @@ so this suite is an inherent part of the transaction protocol.
     and `SIGKILL` injected at every transaction phase followed by recovery.
 - Runs are seeded;
   a failing seed replays deterministically.
+- Landing phases that have no hook are reached through a test-only phase marker:
+  `CLI_GIT_TEST_ONLY_PHASE_SIGNAL=<phase>:kill[:<directory>]` makes the wrapper `SIGKILL` itself at the phase,
+  and `<phase>:pause:<directory>` writes `<directory>/<phase>.reached` and waits for `<directory>/<phase>.release`.
+  The phases are `preparation-done`,
+  `landing-locked`,
+  `objects-migrated`,
+  `ref-updated`,
+  and `index-installed`.
+  Only this explicitly test-named variable arms a marker;
+  a malformed value fails the invocation.
 - Every run checks these invariants:
   - each commit that exited `0` appears exactly once with exactly its captured bytes;
   - no worktree edit is lost;
