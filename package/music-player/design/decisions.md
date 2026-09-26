@@ -1424,7 +1424,8 @@ parallel design vote.
 ### D50. The unfolded control deck remains visible (2026-09-24)
 The user requires the playback/control deck to **never be hidden while the
 Fold is unfolded**.
-D53 permits one explicit exception for real floating Gboard;
+D53 and D54 permit only their explicitly measured floating-Gboard and
+font-update-banner exceptions;
 other keyboard states remain subject to this requirement.
  This includes the D47 Search destination,
  regardless
@@ -1519,9 +1520,9 @@ Updating the disposable Gboard to the same version did not reproduce its
 floating behavior, so version alone is not an explanation.
 A Gboard font-update banner on the disposable inner panel temporarily
 raised the IME top to y `1140` and clipped the final mode until dismissed.
-These bounded passing modes and the real banner do not change D50 or the
-user's A selection;
+D54 accepts that measured brief banner overlap;
 D53 separately accepts the floating-keyboard deck overlap.
+Other D50 states and the user's A selection remain unchanged.
 Other heights remain unverified.
 A debug-only app probe subsequently observed the docked bottom inset and
 bounding rectangle;
@@ -1564,8 +1565,9 @@ query and results remain together on the right (D51),
 and D52 still removes the repeated positive-results heading.
 
 This exception does **not** permit clipping or hiding the deck under a
-docked or split keyboard,
-nor under Gboard's separately observed transient font-update banner.
+docked or split keyboard.
+D54 separately accepts the measured transient Gboard font-update banner;
+D53 alone does not generalize to other keyboard overlays.
 The floating keyboard's observed cover-panel overlap with both Search result
 labels is a distinct unresolved result-visibility question,
 not an approval to hide those labels.
@@ -1573,6 +1575,28 @@ The synthetic 416dp anticipatory reservation and inline deck reflow remain
 unaccepted debug-only studies.
 This is a design-scope clarification,
 not production authorization or proof that the remaining D50 states pass.
+
+### D54. The brief Gboard font-update banner may clip the deck (2026-09-26)
+
+After reviewing the distinct `Keyboard font size updated` state,
+the user said “That brief banner is also acceptable.”
+On the disposable Fold at 200% text,
+this real Gboard banner briefly raised the IME top to y `1140` and clipped
+the final mode to `[73,1076][965,1140]` until its `OK` action was tapped.
+D54 accepts **that measured transient system banner overlap** as a second
+exception to D50;
+it is not approval to hide the deck beneath ordinary settled docked or split
+keyboards,
+nor beneath arbitrary taller keyboards or persistent banners.
+The selected A still keeps the actual folder browser above the bottom-left
+deck and the integrated Search query/results on the right.
+
+The synthetic 415dp inline title/transport reflow and 416dp anticipatory
+reservation remain unaccepted debug-only studies;
+no banner-specific layout change is required by this decision alone.
+The folded-cover floating keyboard obscuring both Search result labels remains
+a separate unresolved result-visibility question.
+No production implementation is authorized.
 
 ---
 
