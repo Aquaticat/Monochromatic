@@ -213,12 +213,20 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
   the later capture wins
   (decision record,
   "Capture order").
-  Running now in the feature worktree:
-  merge slice 4,
-  implement capture order,
-  fix the trace harness's add-then-delete window,
-  and run container seeds 1 to 3.
-  After it:
+  Capture order landed with the slice 4 merge
+  (`f44b7e8d4` through `255de52b4`):
+  container seeds 1 to 3 pass every scenario on both Git versions except documented skips.
+  Open before merging to `main`:
+    - `test:unit` flakes on the trust registry's recursive lock,
+      which gives up after about 1 s even while its owner is alive;
+      an agent in the feature worktree is applying the owner-liveness wait,
+      recording the index-commit capture and checker decisions,
+      and re-measuring the latency baseline.
+    - A `git worktree add` from a linked worktree stalled after copying about 2 GB of ignored files,
+      blocking every wrapped command in linked worktrees until an agent deleted the copy journal by hand.
+      Investigation and fix in `/var/home/user/worktrees/cli-git-worktree-copy-stalls-and-blocks-linked-worktrees`
+      (branch `fix/cli-git-worktree-copy-stalls-and-blocks-linked-worktrees`).
+  After both:
   run the full checks and several container seeds,
   re-measure the lifecycle latency baseline,
   then merge the feature branch into `main`.
