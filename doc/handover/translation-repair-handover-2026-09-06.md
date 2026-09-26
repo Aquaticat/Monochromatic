@@ -4784,6 +4784,13 @@ each read off the pass log and the shipped page:
     and "jīn gāng wán’àn" in the amantadine note beside 晚安 "wǎn’ān".
     XINGZ6011 READ (frozen `2d5113b7d`): INCOMPLETE at 00:26 UTC 2026-09-26 in 96.3 min, "would drop 1 source destination":
     the restore read 来自 as a signer and replaced the song credit, link and [^9] included, with "Laizi" (class one hundred thirty-eight, `c49ff687e`, guard `bffae3bce`, suite 1140 PASS).
+    MAIN MERGED (owner, 2026-09-26, "#563 is fixed in main branch. Merge main branch to this worktree's branch."):
+    `7b34120a9` merges main `6c349a978`; the commit body names each conflict's resolution.
+    After a merge that moves dependencies, run `mise run prepare:pnpm:install` only once no pass is running,
+    then rebuild `oxlint-plugin/no-restricted-syntax`, `config/oxlint` and `dev-script/task-util`:
+    a config built before the install bundles `@monochromatic-dev/module-logger` as an unresolved import and every lint run fails with "Failed to load JS plugin".
+    Verified after both: the issue 563 repro keeps `[...text.slice(0, 3)]` through `--fix` (`unicorn/no-useless-spread` off, the typed project rule silent on a string),
+    translation-repair suite 1140 PASS, toml-edit 41 PASS, types clean.
     HULICAIJIA20 READ (frozen `4641ff1d2`): SETTLED at 22:28 UTC 2026-09-25 in 81.9 min;
     class one hundred thirty-four live ("April 29", "May 4", "licorice", no "pharmaceutical sales representative", en_CA clean);
     classes one hundred thirty-five to thirty-seven found and built:
