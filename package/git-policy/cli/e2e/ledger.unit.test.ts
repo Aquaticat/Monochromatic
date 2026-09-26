@@ -45,6 +45,7 @@ function attempt({
     selectedPaths: ['a.txt',],
     captured: [{ path: 'a.txt', bytes: Buffer.from(bytes,), },],
     headBefore: String(exitCode,).repeat(40,),
+    startedAt: exitCode,
     expectedBranch: 'main',
     outcome: { exitCode, stdout: '', stderr: '', durationMs: exitCode, },
     killed: false,

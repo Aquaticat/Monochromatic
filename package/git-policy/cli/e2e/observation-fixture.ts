@@ -320,6 +320,7 @@ export async function observeRun({
     return await observeAttempt({
       repository,
       attempt,
+      attempts: snapshot.attempts,
       history,
       checks,
       runs,

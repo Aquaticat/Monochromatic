@@ -76,7 +76,7 @@ export type StartedAttempt = Readonly<{
 /**
  Attempt fields known before its process settles.
  */
-export type PendingAttempt = Omit<AttemptRecord, 'killed' | 'outcome'>;
+export type PendingAttempt = Omit<AttemptRecord, 'killed' | 'outcome' | 'startedAt'>;
 
 //endregion Types
 
@@ -277,6 +277,10 @@ export function trackAttempt({
    Kill flag recorded with the attempt.
    */
   const state = { killed: false, };
+  /**
+   Start time, read before the process runs.
+   */
+  const startedAt = performance.now();
   return {
     token: pending.token,
     running,
@@ -293,6 +297,7 @@ export function trackAttempt({
        */
       const attempt: AttemptRecord = {
         ...pending,
+        startedAt,
         outcome: await running.outcome,
         killed: state.killed,
       };

@@ -24,6 +24,7 @@ import type {
   LandingObservation,
   PathLanding,
 } from './invariant-model-fixture.ts';
+import { sameContent, } from './invariant-fixture.ts';
 import {
   checkExitConsistency,
   extractPolicyEvents,
@@ -168,6 +169,92 @@ async function acceptableContents({
   ];
 }
 
+/**
+ Lists the landed parent's bytes of a path as acceptable when a later capture of that path landed them
+ (capture order,
+ `SPEC.md` "Capture order"):
+ another attempt that started after this one captured the same path with exactly those bytes,
+ and its commit lies on the first-parent line from `HEAD` before invocation to the landed parent.
+ The replayed commit then kept the landed entry of the path,
+ as native sequential commits of the two captures would leave it.
+
+ @param repository - scenario repository
+
+ @param attempt - attempt owning the landing
+
+ @param captured - this attempt's capture of the path
+
+ @param parent - landed commit's first parent
+
+ @param attempts - every recorded attempt
+
+ @param history - local-branch history
+
+ @returns the parent's bytes when a later capture landed them, otherwise nothing
+
+ @example
+ ```ts
+ await laterCaptureContents({ repository, attempt, captured, parent, attempts, history });
+ ```
+ */
+async function laterCaptureContents({
+  repository,
+  attempt,
+  captured,
+  parent,
+  attempts,
+  history,
+}: Readonly<{
+  repository: ScenarioRepository;
+  attempt: AttemptRecord;
+  captured: CapturedPath;
+  parent?: string;
+  attempts: readonly AttemptRecord[];
+  history: readonly HistoryCommit[];
+}>,): Promise<readonly ContentState[]> {
+  if ((parent === undefined) || (parent === attempt.headBefore)
+    || (attempt.mode !== 'explicit'))
+    return [];
+  /**
+   Parent's content of the path.
+   */
+  const current = stateOf(await treeBytes({
+    repository,
+    commit: parent,
+    path: captured.path,
+  },),);
+  /**
+   Commits the replay moved over.
+   */
+  const moved = new Set((await firstParentChain({
+    repository,
+    newest: parent,
+    oldest: attempt.headBefore,
+  },)).filter(function afterHeadBefore(oid,) {
+    return oid !== attempt.headBefore;
+  },),);
+  /**
+   Whether a later explicit capture of the path with those bytes landed in between.
+   */
+  const landedLater = attempts.some(function laterCapture(other,) {
+    return (other.startedAt > attempt.startedAt)
+      && (other.mode === 'explicit')
+      && other.captured
+      .some(function samePathAndBytes(entry,) {
+        return (entry.path === captured.path) && sameContent({
+          left: contentOf(entry.bytes,),
+          right: current,
+        },);
+      },)
+      && history.some(function carriesToken(commit,) {
+        return moved.has(commit.oid,)
+          && commit.message
+          .includes(`[${other.token}]`,);
+      },);
+  },);
+  return landedLater ? [current,] : [];
+}
+
 //endregion Acceptable contents
 
 //region Attempts
@@ -238,11 +325,13 @@ export async function postCommitRuns(repository: ScenarioRepository,): Promise<R
 
  @param amendedPublished - landed amends that replaced an already-published commit
 
+ @param attempts - every recorded attempt, for later captures of a shared path
+
  @returns attempt observation
 
  @example
  ```ts
- await observeAttempt({ repository, attempt, history, checks, runs });
+ await observeAttempt({ repository, attempt, attempts, history, checks, runs, amendedPublished });
  ```
  */
 export async function observeAttempt({
@@ -252,9 +341,11 @@ export async function observeAttempt({
   checks,
   runs,
   amendedPublished,
+  attempts,
 }: Readonly<{
   repository: ScenarioRepository;
   attempt: AttemptRecord;
+  attempts: readonly AttemptRecord[];
   history: readonly HistoryCommit[];
   checks: HookChecks;
   runs: ReadonlyMap<string, number>;
@@ -296,13 +387,23 @@ export async function observeAttempt({
           commit: commit.oid,
           path: captured.path,
         },),),
-        acceptable: await acceptableContents({
-          repository,
-          captured,
-          // An amend replaces the commit HEAD named at invocation, so its captured bytes are the only acceptable content.
-          ...(attempt.mode === 'amend' ? { parent: attempt.headBefore, } : (commit.parent === undefined ? {} : { parent: commit.parent, })),
-          headBefore: attempt.headBefore,
-        },),
+        acceptable: [
+          ...await acceptableContents({
+            repository,
+            captured,
+            // An amend replaces the commit HEAD named at invocation, so its captured bytes are the only acceptable content.
+            ...(attempt.mode === 'amend' ? { parent: attempt.headBefore, } : (commit.parent === undefined ? {} : { parent: commit.parent, })),
+            headBefore: attempt.headBefore,
+          },),
+          ...await laterCaptureContents({
+            repository,
+            attempt,
+            captured,
+            ...(commit.parent === undefined ? {} : { parent: commit.parent, }),
+            attempts,
+            history,
+          },),
+        ],
       };
     },),);
     /**

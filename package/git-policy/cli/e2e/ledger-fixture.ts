@@ -61,6 +61,12 @@ export type AttemptRecord = Readonly<{
    */
   captured: readonly CapturedPath[];
   /**
+   Monotonic harness time the attempt was started at, right after its bytes were read;
+   an attempt started later on a path it shares with an earlier one captured it later,
+   because the harness writes a shared path only after the earlier attempt captured it.
+   */
+  startedAt: number;
+  /**
    `HEAD` read immediately before the process started.
    */
   headBefore: string;

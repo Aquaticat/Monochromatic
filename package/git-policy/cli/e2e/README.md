@@ -107,6 +107,12 @@ Text always ends with exactly one LF,
 so the default `final-newline` normalization never changes captured bytes.
 A worker that touches a path another in-flight worker selected waits until that worker's `pre-commit` hook ran,
 so every attempt commits exactly the bytes the harness wrote for it.
+A worker that deletes or renames away a path an in-flight worker creates
+(or a path created by an in-flight worker before that one)
+waits until that worker's wrapper exited instead,
+because until that commit lands the path is in neither the deleting commit's preparation base nor its worktree,
+and native `git commit -- <path>` fails with "pathspec did not match" the same way.
+The workload then stays a valid sequential-per-path history.
 
 ### Scenario catalog
 
@@ -162,6 +168,8 @@ Design scenarios exercise the accepted concurrent-commit design:
   then the first is released.
   Far-apart hunks must both land;
   overlapping hunks may fail only with exit `1` and a `core-finding` event.
+  Under capture order both captures come from one worktree,
+  so the second capture's bytes land and both commits succeed.
 - `shared-file-adjacent-edits`:
   the first agent edits one line and pauses after preparation
   (phase marker `preparation-done`),
@@ -175,7 +183,10 @@ Design scenarios exercise the accepted concurrent-commit design:
   and the second is released.
   Both must land,
   the second through a replay that keeps its captured bytes
-  (subsumption,
+  (capture order,
+  since both captures come from one worktree,
+  `SPEC.md` "Capture order";
+  subsumption reaches the same bytes for a change from elsewhere,
   `SPEC.md` "Subsumption").
 - `interleaved-index-writers`:
   4 commits and 4 `git add` runs of new files in a seeded interleaving;
@@ -273,7 +284,10 @@ CLI_GIT_TEST_ONLY_PHASE_SIGNAL=<phase>:pause:<directory>   # write the marker, w
 
 The phases,
 in transaction order,
-are `preparation-done`
+are `capture-locked`
+(capture lock held,
+before the capture sequence number is allocated),
+`preparation-done`
 (after `prepared.json`),
 `landing-locked`
 (landing lock and real `index.lock` held,
@@ -333,11 +347,18 @@ so the harness records the attempt as deliberately killed.
   `doc/decision/cli-git-concurrent-commits.md` "Amending published history").
 - `no-leftovers`:
   no `refs/cli-git/` ref,
-  lock file or lock directory,
+  lock file or lock directory
+  (the capture lock included),
   transaction directory under `cli-git-transactions/`,
   legacy `cli-git-transaction` directory,
-  or shadow repository under `cli-git/shadow/` remains;
-  the persistent `cli-git-transactions/` root is allowed.
+  shadow repository under `cli-git/shadow/`,
+  landed-capture record under `cli-git-captures/landed/`,
+  or other capture-store entry remains;
+  the persistent `cli-git-transactions/` root
+  and the capture store's `worktree-id`,
+  `sequence`,
+  and `landed/` directory are allowed
+  (`SPEC.md` "Capture order").
 - `fsck-clean`:
   `git fsck --strict --no-dangling` exits `0` with no output.
 - `exit-events`:
