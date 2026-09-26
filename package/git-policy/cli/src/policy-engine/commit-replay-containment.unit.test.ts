@@ -139,5 +139,15 @@ await describe({
         expect(await contains({ base: lines(), landed, prepared: lines({ 3: ['landed 3',], 4: ['mine',], 5: ['landed 5',], },), },),).toBe(false,);
       },
     },),
+    it({
+      name: 'own lines inserted inside a landed block over exactly its range are contained only with one landed end kept',
+      fn: async function testInsideBlock(): Promise<void> {
+        /** Landed replacement of line 5 by three lines. */
+        const landed = lines({ 5: ['l1', 'l2', 'l3',], },);
+        expect(await contains({ base: lines(), landed, prepared: lines({ 5: ['l1', 'mine', 'l2', 'l3',], },), },),).toBe(true,);
+        expect(await contains({ base: lines(), landed, prepared: lines({ 5: ['x', 'l1', 'l2', 'l3', 'y',], },), },),).toBe(false,);
+        expect(await contains({ base: lines(), landed, prepared: lines({ 5: ['l1', 'mine', 'l3',], },), },),).toBe(false,);
+      },
+    },),
   ],
 },);

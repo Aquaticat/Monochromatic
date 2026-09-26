@@ -16,6 +16,10 @@
  must be a prefix of the prepared hunk's new text when the prepared hunk starts where the first landed hunk starts,
  or a suffix when it ends where the last landed hunk ends:
  the prepared commit's own edit or insertion sits on one side only.
+ When the prepared hunk covers exactly the landed range,
+ the landed lines may also appear in order with own lines inserted between them,
+ as long as the prepared text starts with the first landed line or ends with the last;
+ a landed file addition read against an empty base is this case.
  A prepared hunk anchored at neither end,
  an own edit on both sides,
  is not subsumed and merges three-way instead,
@@ -104,6 +108,37 @@ function sameLines({
 }
 
 /**
+ Whether every line appears in order within another list.
+
+ @param lines - lines that must all appear
+
+ @param within - list searched
+
+ @returns whether `lines` is a subsequence of `within`
+ */
+function isSubsequence({
+  lines,
+  within,
+}: Readonly<{
+  lines: readonly string[];
+  within: readonly string[];
+}>,): boolean {
+  /**
+   Lines of `lines` matched so far, advanced by one greedy pass over `within`.
+   */
+  const matched = within.reduce(
+    function advance(
+      count,
+      line,
+    ): number {
+    return (count < lines.length) && (lines[count] === line) ? count + 1 : count;
+  },
+    0,
+  );
+  return matched === lines.length;
+}
+
+/**
  Whether one prepared hunk's new text is the covered landed hunks extended on at most one side.
 
  @param prepared - prepared hunk
@@ -168,6 +203,15 @@ function regionContains({
     > prepared.added
     .length)
     return false;
+  // Over exactly the landed range, own lines may also sit between landed lines, as long as one end stays the landed one.
+  if (anchoredStart && anchoredEnd)
+    return ((prepared.added[0] === expected[0]) || (prepared.added
+      .at(-1,)
+      === expected.at(-1,)))
+      && isSubsequence({
+        lines: expected,
+        within: prepared.added,
+      },);
   return (anchoredStart && sameLines({
     left: prepared.added
       .slice(

@@ -210,6 +210,35 @@ export function isRegularTriple(shared: SharedPath,): boolean {
 }
 
 /**
+ Whether the text check can decide a shared path:
+ landed and prepared entries are regular files,
+ and the base entry is one too or absent,
+ an addition on both sides read against an empty base.
+
+ @param shared - shared path
+
+ @returns whether the text check applies
+
+ @example
+ ```ts
+ isTextCandidate(shared);
+ ```
+ */
+export function isTextCandidate(shared: SharedPath,): boolean {
+  /**
+   Landed and prepared entries.
+   */
+  const changed: readonly SideEntry[] = [
+    shared.landed,
+    shared.prepared,
+  ];
+  return changed.every(function regular(entry,): boolean {
+    return (entry !== ABSENT_ENTRY) && REGULAR_MODES.has(entry.mode,);
+  },) && ((shared.base === ABSENT_ENTRY) || REGULAR_MODES.has(shared.base
+    .mode,));
+}
+
+/**
  Object ID of a present entry.
 
  @param entry - entry a caller already knows is present

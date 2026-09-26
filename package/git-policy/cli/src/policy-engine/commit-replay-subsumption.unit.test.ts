@@ -236,18 +236,28 @@ await describe({
       },
     },),
     it({
-      name: 'add/add: identical additions are subsumed, and a larger addition containing the landed one conflicts as git apply would',
+      name: 'add/add: identical additions and additions that keep every landed line are subsumed, and one that drops a landed line conflicts',
       fn: async function testAddAdd(): Promise<void> {
         await using repository = await createLandingRepository();
         /** Replay. */
         const outcome = await replay({
           repository,
           base: {},
-          landed: { 'same.txt': { bytes: 'same\n', }, 'grown.txt': { bytes: 'a\n', }, },
-          prepared: { 'same.txt': { bytes: 'same\n', }, 'grown.txt': { bytes: 'a\nb\n', }, },
+          landed: {
+            'same.txt': { bytes: 'same\n', },
+            'grown.txt': { bytes: 'a\n', },
+            'inserted.txt': { bytes: 'a\nb\nc\n', },
+            'rewritten.txt': { bytes: 'a\nb\nc\n', },
+          },
+          prepared: {
+            'same.txt': { bytes: 'same\n', },
+            'grown.txt': { bytes: 'a\nb\n', },
+            'inserted.txt': { bytes: 'a\nb\nmine\nc\n', },
+            'rewritten.txt': { bytes: 'a\nmine\nc\n', },
+          },
         },);
-        expect(outcome.subsumedPaths,).toEqual(['same.txt',],);
-        expect(outcome.merge,).toEqual({ kind: 'conflict', paths: ['grown.txt',], },);
+        expect(outcome.subsumedPaths,).toEqual(['grown.txt', 'inserted.txt', 'same.txt',],);
+        expect(outcome.merge,).toEqual({ kind: 'conflict', paths: ['rewritten.txt',], },);
       },
     },),
     it({

@@ -47,6 +47,7 @@ import { decodeLatin1, } from './commit-replay-patch.ts';
 import {
   ABSENT_ENTRY,
   isRegularTriple,
+  isTextCandidate,
   listSharedPaths,
   type SharedPath,
   sameEntry,
@@ -272,7 +273,7 @@ export async function subsumeLandedChanges({
     cwd,
     objectDirectory,
     candidates: shared.filter(function needsText(entry,): boolean {
-      return isRegularTriple(entry,) && (!identical.has(entry,));
+      return isTextCandidate(entry,) && (!identical.has(entry,));
     },),
   },),);
   /**

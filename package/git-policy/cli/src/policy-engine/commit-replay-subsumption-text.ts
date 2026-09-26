@@ -27,9 +27,10 @@ import {
 } from './commit-replay-patch.ts';
 import { reverseApplies, } from './commit-replay-reverse-apply.ts';
 import {
+  ABSENT_ENTRY,
   presentOid,
   type SharedPath,
-  sidesOf,
+  type SideEntry,
 } from './commit-replay-shared-paths.ts';
 import { CommitTransactionGitError, } from './commit-transaction-git.ts';
 
@@ -47,6 +48,73 @@ const MISSING_BLOB = new Uint8Array([0,],);
  Context lines of the strict reverse check, Git's default.
  */
 const STRICT_CONTEXT = 3;
+
+/**
+ Candidate sides in tree order.
+ */
+const SIDES = [
+  'base',
+  'landed',
+  'prepared',
+] as const;
+
+/**
+ Object ID of a side, the empty blob for an absent base.
+
+ @param entry - side entry
+
+ @param emptyBlob - empty blob of the repository's object format
+
+ @returns object ID
+ */
+function sideOid({
+  entry,
+  emptyBlob,
+}: Readonly<{
+  entry: SideEntry;
+  emptyBlob: string;
+}>,): string {
+  return entry === ABSENT_ENTRY ? emptyBlob : presentOid(entry,);
+}
+
+/**
+ Writes the empty blob when an addition on both sides needs an empty base.
+
+ @param gitPath - real Git executable
+
+ @param shadowPath - shadow repository
+
+ @param candidates - text candidates
+
+ @returns empty blob ID, or an empty string when no candidate needs it
+ */
+async function emptyBlobFor({
+  gitPath,
+  shadowPath,
+  candidates,
+}: Readonly<{
+  gitPath: string;
+  shadowPath: string;
+  candidates: readonly SharedPath[];
+}>,): Promise<string> {
+  if (!candidates.some(function added(shared,): boolean {
+    return shared.base === ABSENT_ENTRY;
+  },))
+    return '';
+  return decodeLatin1((await runShadowGit({
+    gitPath,
+    shadowPath,
+    args: [
+      'hash-object',
+      '-w',
+      '-t',
+      'blob',
+      '--stdin',
+    ],
+    input: new Uint8Array(),
+  },)).stdout,)
+    .trim();
+}
 
 /**
  Builds a transaction Git error from a batch diagnostic.
@@ -198,16 +266,23 @@ export async function subsumedTextPaths({
   if (candidates.length === 0)
     return [];
   /**
-   Every blob of every candidate.
+   Empty blob standing in for an absent base.
+   */
+  const emptyBlob = await emptyBlobFor({
+    gitPath,
+    shadowPath,
+    candidates,
+  },);
+  /**
+   Every present blob of every candidate.
    */
   const blobs = await loadBlobBatch({
     gitPath,
     cwd,
     oids: candidates.flatMap(function oids(shared,): readonly string[] {
-      return sidesOf(shared,)
-        .map(function oidOf(entry,): string {
-          return presentOid(entry,);
-        },);
+      return SIDES.flatMap(function oidOf(side,): readonly string[] {
+        return shared[side] === ABSENT_ENTRY ? [] : [presentOid(shared[side],),];
+      },);
     },),
     createError: batchError,
     objectDirectory,
@@ -226,26 +301,24 @@ export async function subsumedTextPaths({
    Candidates whose three blobs are text.
    */
   const text = candidates.filter(function allText(shared,): boolean {
-    return sidesOf(shared,)
-      .every(function textBlob(entry,): boolean {
-        return !isBinary(blobs.get(presentOid(entry,),) ?? MISSING_BLOB,);
-      },);
+    return SIDES.every(function textBlob(side,): boolean {
+      return (shared[side] === ABSENT_ENTRY) || (!isBinary(blobs.get(presentOid(shared[side],),) ?? MISSING_BLOB,));
+    },);
   },);
   if (text.length === 0)
     return [];
   /**
    Index-named trees of the base, landed, and prepared blobs.
    */
-  const [baseTree = '', landedTree = '', preparedTree = '',] = await Promise.all(([
-    'base',
-    'landed',
-    'prepared',
-  ] as const).map(function treeOf(side,): Promise<string> {
+  const [baseTree = '', landedTree = '', preparedTree = '',] = await Promise.all(SIDES.map(function treeOf(side,): Promise<string> {
     return indexedTree({
       gitPath,
       shadowPath,
       oids: text.map(function oidOf(shared,): string {
-        return presentOid(shared[side],);
+        return sideOid({
+          entry: shared[side],
+          emptyBlob,
+        },);
       },),
     },);
   },),);
@@ -290,7 +363,10 @@ export async function subsumedTextPaths({
       landed: landedZero.get(name,) ?? [],
       prepared: preparedZero.get(name,) ?? [],
       base: splitKeepingNewlines(
-        textOf(presentOid(shared.base,),),
+        textOf(sideOid({
+        entry: shared.base,
+        emptyBlob,
+      },),),
       ),
     },);
   },);
