@@ -478,6 +478,14 @@ No model selection follows from this batch.
 
 ## Contract refinements required before production
 
+The [effect and authorization contract inventory](pi-auto-mode-effect-contract.md)
+maps current signal handling to deterministic facts,
+semantic claims,
+authorization witnesses,
+and unverified integration paths.
+It is a proposal,
+not a frozen production rule set.
+
 ### Positive admission, not absence of listed hazards
 
 The prototype catalog names one file,
