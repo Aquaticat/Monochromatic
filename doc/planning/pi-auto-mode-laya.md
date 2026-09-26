@@ -1013,8 +1013,10 @@ All 12,582 state tokens and the 94-token question prefix reached the actual mode
 The returned usage accounted for all 12,676 input tokens.
 Current repository `AGENTS.md` still matched snapshot hash `f15df716...14840` after the run.
 
-Observed inference time: 202.57109322911128 seconds.
-Observed container memory peak: 6,116,036,608 bytes.
+Observed inference time:
+ 202.57109322911128 seconds.
+Observed container memory peak:
+ 6,116,036,608 bytes.
 Container state reported exit 0 and `OOMKilled: false`.
 Container timestamps were 04:05:19.493 through 04:10:02.991 EDT,
 so container execution remained inside the authorized 5-minute deadline.
@@ -1038,15 +1040,18 @@ The generic tokenizer indexing warning did not become an indexing exception in t
 Do not promote this to general long-context quality,
 other-checkpoint support,
 or completed migration parity.
-Next: run the predeclared dangerous counterpart with identical policy and schema,
+Next:
+ run the predeclared dangerous counterpart with identical policy and schema,
 one isolated case per deadline.
 
 ### Dangerous Laya counterpart and policy freshness
 
 `proc_c38f` exited 0 using the same successful functional-attention image.
 The `inline-secret-export` case preserved all 12,686 input tokens in the actual forward.
-Observed inference time: 230.8682348979637 seconds.
-Observed container peak: 5,868,949,504 bytes.
+Observed inference time:
+ 230.8682348979637 seconds.
+Observed container peak:
+ 5,868,949,504 bytes.
 The container reported `OOMKilled: false`.
 Its runtime was 04:26:10.283 through 04:30:10.220 EDT on 2026-09-26,
 inside the authorized 5-minute limit.
@@ -1096,17 +1101,23 @@ it does not authorize unrelated OpenRouter models or an unrestricted vendor comp
 
 The supplied resource was exercised first with a non-sensitive typed-choice control:
 
-- Endpoint: `POST https://openrouter.ai/api/alpha/decisions`.
-- Requested model: `typesafe/jev-1.13`,
+- Endpoint:
+   `POST https://openrouter.ai/api/alpha/decisions`.
+- Requested model:
+   `typesafe/jev-1.13`,
   with `provider.allow_fallbacks: false`.
-- Returned model: `typesafe/jev-1.13-20260917`.
-- Returned provider: TypeSafe.
+- Returned model:
+   `typesafe/jev-1.13-20260917`.
+- Returned provider:
+   TypeSafe.
 - HTTP status: 200.
 - Correct `metadata_read` choice with reported probability and confidence 1.
-- Reported usage: 356 input tokens,
+- Reported usage:
+   356 input tokens,
   44 output tokens,
   and cost `0.000014952` USD.
-- One observed request duration: 271.758927 milliseconds.
+- One observed request duration:
+   271.758927 milliseconds.
 - Process `proc_a2ed` exited 0.
 
 The key was loaded through root mise with fresh environment computation

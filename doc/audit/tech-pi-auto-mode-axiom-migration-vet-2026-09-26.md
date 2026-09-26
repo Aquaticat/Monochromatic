@@ -2,18 +2,34 @@
 
 ## Metadata
 
-- Status: in progress; targeted route audit, no recommendation.
-- Started: 2026-09-26.
-- Last updated: 2026-09-26.
-- Subject: Pi auto-mode axiom migration.
-- Owner: `01a0dc52-0955-77f6-ae77-68a6e15bb12b`.
-- Governing skill commit: `a05818ad70a40e5769a36de669697ba109891b31`.
-- Governing skill SHA-256: `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
-- Compatibility fingerprint: `4a2938840ff56544f24ad0d2dd543431c94baa1e18db815adb8ee68af297ea8d`.
-- Prior compatible report: none; the historical Laya-only context is incompatible.
-- Scope override: only the user-authorized candidate families, no unrestricted vendor discovery.
+- Status:
+   in progress;
+   targeted route audit,
+   no recommendation.
+- Started:
+   2026-09-26.
+- Last updated:
+   2026-09-26.
+- Subject:
+   Pi auto-mode axiom migration.
+- Owner:
+   `01a0dc52-0955-77f6-ae77-68a6e15bb12b`.
+- Governing skill commit:
+   `a05818ad70a40e5769a36de669697ba109891b31`.
+- Governing skill SHA-256:
+   `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
+- Compatibility fingerprint:
+   `4a2938840ff56544f24ad0d2dd543431c94baa1e18db815adb8ee68af297ea8d`.
+- Prior compatible report:
+   none;
+   the historical Laya-only context is incompatible.
+- Scope override:
+   only the user-authorized candidate families,
+   no unrestricted vendor discovery.
 
-Fingerprint input, with sorted keys and sets; hash computed from compact canonical JSON:
+Fingerprint input,
+ with sorted keys and sets;
+ hash computed from compact canonical JSON:
 
 ```json
 {
@@ -109,12 +125,15 @@ not an eligible coding-plan fallback.
 
 ### Laya local runtime
 
-Base: inspectable open-source local technology.
-Overlays: incumbent replacement,
+Base:
+ inspectable open-source local technology.
+Overlays:
+ incumbent replacement,
 high-trust local execution,
 native runtime,
 and sensitive-data handling.
-Source revision: `4066d5d5fbf08b66c6757ddeedbd797bd7655bc0`,
+Source revision:
+ `4066d5d5fbf08b66c6757ddeedbd797bd7655bc0`,
 version 0.3.20.
 Checkpoint provenance and CPU attention investigation are linked from the current design.
 Full-policy runtime acceptance was verified with a consumer-side attention setting.
@@ -128,12 +147,15 @@ and consumer integration remain open.
 
 ### Jev through LLM Gateway
 
-Base: managed inference and gateway services.
+Base:
+ managed inference and gateway services.
 Any proposed local adapter is a separate inspectable high-trust component.
-Overlays: incumbent replacement,
+Overlays:
+ incumbent replacement,
 sensitive-data routing,
 and authorization evidence.
-Selected probe model: `typesafe/jev-1.13.0`.
+Selected probe model:
+ `typesafe/jev-1.13.0`.
 Native Noul access and six full-policy synthetic development requests succeeded.
 Those requests yielded 57 model estimates,
 not final-action answers.
@@ -147,7 +169,8 @@ and service gates remain open.
 
 ### Jev through OpenRouter
 
-Base: managed gateway and inference services.
+Base:
+ managed gateway and inference services.
 Secondary authorized route,
 not the preferred route and not a coding-plan fallback.
 Access was verified using `typesafe/jev-1.13` with provider fallbacks disabled.
@@ -156,7 +179,8 @@ No equal-depth axiom evaluation or data-handling audit is complete.
 
 ### Relevant Voyage services
 
-Base: managed inference service.
+Base:
+ managed inference service.
 A local client would be a separate inspectable high-trust component.
 Legacy `api.voyageai.com` rerank-3 access was verified.
 Relevance scores are not axiom truth probabilities.
@@ -214,7 +238,7 @@ Neither response supplies pagination or an exhaustive-discovery guarantee;
 no saturation claim is made.
 
 Official System One documentation links the public source repository:
-https://github.com/theopenco/llmgateway.
+<https://github.com/theopenco/llmgateway>.
 A process-managed shallow clone completed at
 `~/temp/agent/llmgateway-auto-mode-source-2026-09-26`,
 revision `4affe8bf02559880fea74fa5ba685ad2cb19168d`.
@@ -259,7 +283,8 @@ The API page's 429 description concerns rate limits,
 not context truncation.
 The offline route preserves the supplied policy string when forwarding,
 but that does not prove the hosted model sees all tokens.
-Gate: pending model-input/overflow evidence.
+Gate:
+ pending model-input/overflow evidence.
 
 The [Jev 1.13 limitations page](https://docs.typesafe.ai/model-jaggedness/jev-1.13)
 explicitly warns about adversarial state,
@@ -299,7 +324,8 @@ If a provider echoes input in that text,
 content can survive the stripping boundary.
 The mock proves that conditional path,
 not live private-data retention or actual TypeSafe error echoing.
-Gate: pending complete retention and hosted configuration evidence.
+Gate:
+ pending complete retention and hosted configuration evidence.
 
 The probe ran in image `0a55e1fbafe71f9bf6b539e0c8011b7d9ce7ba768690143c801fb3de5160dd53`,
 with 2 GiB memory,
@@ -399,7 +425,8 @@ and Slack/Google Workspace as communication services.
 It did not identify this gateway route's compute backend or AWS retention duration.
 The browser session was closed.
 
-Gate: private hosted payloads remain unqualified.
+Gate:
+ private hosted payloads remain unqualified.
 A fixed retention requirement versus mandatory zero payload retention is an unresolved user preference.
 No private upload is authorized by the general willingness expressed in Q8.
 

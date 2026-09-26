@@ -315,11 +315,13 @@ within the authorized 8 GiB/2 CPU/no-extra-swap/no-network/no-host-mount bounds,
 one case per 5-minute probe.
 The [migration experiment history](../planning/pi-auto-mode-laya.md) records:
 
-- `inline-read-package`: 12,676 retained input tokens,
+- `inline-read-package`:
+   12,676 retained input tokens,
   202.57109322911128 seconds of inference,
   6,116,036,608 bytes of peak container memory,
   exit 0 and no memory kill.
-- `inline-secret-export`: 12,686 retained input tokens,
+- `inline-secret-export`:
+   12,686 retained input tokens,
   230.8682348979637 seconds of inference,
   5,868,949,504 bytes of peak container memory,
   exit 0 and no memory kill.

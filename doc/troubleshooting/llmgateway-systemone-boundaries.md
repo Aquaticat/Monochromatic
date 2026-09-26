@@ -18,9 +18,12 @@ not observations of model substitution or private-data retention in the hosted s
 
 ## Source identity
 
-Repository: https://github.com/theopenco/llmgateway.
-Revision: `4affe8bf02559880fea74fa5ba685ad2cb19168d`.
-Read-only clone: `~/temp/agent/llmgateway-auto-mode-source-2026-09-26`.
+Repository:
+ <https://github.com/theopenco/llmgateway>.
+Revision:
+ `4affe8bf02559880fea74fa5ba685ad2cb19168d`.
+Read-only clone:
+ `~/temp/agent/llmgateway-auto-mode-source-2026-09-26`.
 The route's SHA-256 is `9eb34513cc6dfc6e8c4aa8b9d9a0dfa114f40c6129ff24563d43001feb67b841`.
 Source paths in this document are relative to that pinned clone.
 The hosted deployment's matching revision has not been established.
@@ -170,7 +173,8 @@ not a claim that every metadata-only request stores its prompt.
 
 ## Verification
 
-Private harness: `~/temp/agent/llmgateway-route-probe-2026-09-26`.
+Private harness:
+ `~/temp/agent/llmgateway-route-probe-2026-09-26`.
 The harness copies inspected route source,
 removes its import region,
 strips TypeScript annotations with Node,
@@ -193,9 +197,12 @@ mise --no-env --no-hooks run build
 mise --no-env --no-hooks run probe
 ```
 
-Pinned base image: `bbc51c187ec813fd7c6a49afd22c15efdfe969b8c3a9a9cd49193c8a03908984`.
-Built probe image: `0a55e1fbafe71f9bf6b539e0c8011b7d9ce7ba768690143c801fb3de5160dd53`.
-Runtime: 2 GiB memory including swap allowance,
+Pinned base image:
+ `bbc51c187ec813fd7c6a49afd22c15efdfe969b8c3a9a9cd49193c8a03908984`.
+Built probe image:
+ `0a55e1fbafe71f9bf6b539e0c8011b7d9ce7ba768690143c801fb3de5160dd53`.
+Runtime:
+ 2 GiB memory including swap allowance,
 2 CPUs,
 64 PIDs,
 60-second container timeout,
@@ -213,7 +220,8 @@ no assertion failed.
 ### Working controls
 
 - The complete 42,677-byte policy string survived forwarding unchanged.
-  Snapshot: `4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`.
+  Snapshot:
+   `4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`.
 - A valid Noul answer survived the route.
 - Ordinary payload fields were cleared by the metadata-only helper.
 - Retain-all mode preserved ordinary log content,
@@ -260,19 +268,25 @@ No provider has been contacted.
 
 ### Upstream filing decision
 
-1.  Upstream fault: not established for the hosted deployment.
+1.  Upstream fault:
+     not established for the hosted deployment.
     Same-provider retries and catalog normalization may be intentional;
     the conditional error channel needs complete integration evidence before a defect claim.
-2.  Fixability: no impossibility claim.
+2.  Fixability:
+     no impossibility claim.
     Consumer validation can protect response shape,
     but server-side retention requires evidence and control at that server boundary.
-3.  Supported use: native typed questions are documented;
+3.  Supported use:
+     native typed questions are documented;
     a strict end-to-end attempt cap remains unresolved.
     The user has accepted TypeSafe AUP section 1.5 for this guard-classification evaluation.
-4.  Contribution policy: not evaluated because no upstream patch or filing is proposed.
-5.  Maintainer willingness: not evaluated;
+4.  Contribution policy:
+     not evaluated because no upstream patch or filing is proposed.
+5.  Maintainer willingness:
+     not evaluated;
     no public request or communication was sent.
-6.  Fix prototype: none.
+6.  Fix prototype:
+     none.
     The isolated source-behavior probe is not an upstream fix.
 
 An upstream-filing workflow would require the applicable exclusion checks,
