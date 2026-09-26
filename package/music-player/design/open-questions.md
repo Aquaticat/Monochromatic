@@ -199,8 +199,10 @@ rounds (2026-09-17):
   App-side logging measured docked IME insets and a bounding rectangle.
   A later corrected-prototype test switched **real disposable Gboard**
   from full-width to floating keys at 200% text.
-  The app logged `visible=true`, `platformBottom=0`, and
-  `boundingRects=[]`, while privileged Window Manager reported keys
+  The app logged `visible=true`,
+  `platformBottom=0`,
+  and `boundingRects=[]`,
+  while privileged Window Manager reported keys
   overlapping the deck's `4:35` duration.
   The app still received no floating-key rectangle through these APIs.
   This is a distinct real-keyboard D50 failure;

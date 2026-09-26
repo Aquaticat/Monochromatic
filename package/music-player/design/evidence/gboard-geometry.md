@@ -113,9 +113,12 @@ it is **not** one of the linked sanitized Gboard PNGs.
   the deck's `4:35` duration.
   UI Automator placed that duration at `[842,1263][965,1341]`;
   privileged Window Manager reported the floating touch region at
-  `[936,1147][1842,1918]`, so the right edge of the time was obscured.
-  The **app-visible** data was `visible=true`, `platformBottom=0`,
-  `composeBottom=0`, and `boundingRects=[]`.
+  `[936,1147][1842,1918]`,
+  so the right edge of the time was obscured.
+  The **app-visible** data was `visible=true`,
+  `platformBottom=0`,
+  `composeBottom=0`,
+  and `boundingRects=[]`.
   No new IME animation callback appeared for this toggle in the captured log.
   The unsanitized screenshot remains a private scratch file,
   not one of the linked review PNGs.

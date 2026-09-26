@@ -5677,7 +5677,8 @@ Privileged Window Manager reported a touchable key region
 `[936,1147][1842,1918]`;
 UI Automator placed the duration at `[842,1263][965,1341]`.
 The app's public inset probe instead reported `visible=true`,
-`platformBottom=0`, and `boundingRects=[]`.
+`platformBottom=0`,
+and `boundingRects=[]`.
 Thus visibility does not locate the floating keys for a responsive deck.
 The unsanitized screenshot is private scratch evidence,
 not a new active-review card.
