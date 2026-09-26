@@ -382,8 +382,17 @@ Tapping the still-focused editor caused ordinary inset delivery of `804px`
 before the show animation's first progress log;
 the compact branch was true when Compose still reported bottom zero.
 The settled final mode again ended at y `1118`.
-These after-states check keyboard dismissal and refocus,
-but **do not** prove that an intermediate refocus frame kept the full deck.
+A separate refocus `screenrecord` sampled 23 frames after this Back path.
+The editor was still focused when tapped;
+parent inset delivery reported the 415dp IME target before its first
+animation progress event.
+All 16 sampled IME-visible frames retained five complete mode boundaries,
+with title,
+seek,
+transport and results visible in the inspected frames.
+This is another bounded synthetic pass,
+not proof of every unrecorded instant;
+a same-APK fixed-trigger refocus control is being checked separately.
 The reserved candidate remains unaccepted and does not address floating keys
 or a real Gboard banner.
 
