@@ -151,6 +151,47 @@ await describe({
     },),
 
     it({
+      name: 'TELLS THE GATE A PROSE SLICE\'S LINE BREAKS ARE THE PAGE\'S WRAP, and keeps line structure only '
+        + 'where the line rule governs (class one hundred fifty-two, yingying12, 2026-09-26: the polish '
+        + 'replacing the calque "It is a pity that all this stopped abruptly" tied 2 to 2, both base ballots '
+        + 'citing its "line structure" on a slice both candidates were wrapped by the same rule)',
+      fn: async () => {
+        /**
+         Subject shared by both line policies.
+         */
+        const subject = {
+          sourceText: '可惜这一切戛然而止，猫猫再也没有回来。',
+          archiveText: 'It is a pity that all this stopped abruptly; the cat never came back.',
+          baseText: 'It is a pity that all this stopped abruptly;\nthe cat never came back.',
+          polishedText: 'Sadly, it all ended there:\nthe cat never came home.',
+          mode: { kind: 'comparative', } as const,
+        };
+        /**
+         System half for a prose slice.
+         */
+        const prose = buildConsolidationPolishGateMessages({
+          subject: {
+            ...subject,
+            lineStructured: false,
+          },
+        },).at(0,)?.content ?? '';
+        /**
+         System half for a line-structured slice.
+         */
+        const lined = buildConsolidationPolishGateMessages({
+          subject: {
+            ...subject,
+            lineStructured: true,
+          },
+        },).at(0,)?.content ?? '';
+        expect(prose,).toContain('LINE BREAKS INSIDE A PARAGRAPH ARE THE PAGE\'S OWN WRAP',);
+        expect(prose.includes('line structure',),).toBe(false,);
+        expect(lined,).toContain('Markdown structure, or line structure',);
+        expect(lined.includes('LINE BREAKS INSIDE A PARAGRAPH ARE THE PAGE\'S OWN WRAP',),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'TREATS REJECTED BASE AS EVIDENCE rather than an approved fallback during required correction',
       fn: async () => {
         const messages = buildConsolidationPolishGateMessages({
