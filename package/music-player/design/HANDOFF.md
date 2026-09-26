@@ -6077,3 +6077,19 @@ inner floating-keyboard result-lettering overlap remains #122,
 E2's informational `min_padding` remains #120,
 and full Search accessibility traversal remains #118.
 D56 does not authorize production work or further IME experimentation.
+
+A separate #122 exception question now uses an already captured real floating
+Gboard state from the selected inner A long-results fixture.
+The self-contained review is at
+`package/music-player/design/questions/floating-results-review.html`;
+its sanitized inner-panel image keeps all app pixels,
+replaces the complete status strip and omits PNG metadata.
+It asks whether the query-clear but partially covered middle result lettering
+may remain a scoped real-floating-keyboard exception,
+or whether all inner results must be readable under floating placement.
+The latter is a requirement option,
+**not** a verified layout variant.
+No additional IME testing was performed;
+#122 awaits the user's answer.
+Do not extend D53's deck allowance or D55's folded-cover allowance to the
+inner result labels without that answer.

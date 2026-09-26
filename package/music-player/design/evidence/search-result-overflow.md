@@ -222,4 +222,26 @@ Back/Clear/focus,
 ranking/actions and TalkBack traversal remain open.
 This selection does not authorize production implementation.
 
+## Inner floating-result exception question
+
+`package/music-player/design/questions/floating-results-review.html` shows a
+separate sanitized 2076 × 2152 native inner-panel capture from the same
+long-results debug fixture with **real floating Gboard**.
+Its middle right-pane result labels are partially covered while the `cam`
+query remains visible;
+later results are visible below the floating keyboard.
+The entire top 136px status strip was replaced from an already published
+selected-A capture with generic 9:41 and status icons.
+All app pixels beneath the status strip match the private capture exactly;
+PNG text,
+profile,
+EXIF and timestamp chunks were removed.
+The form asks whether to accept this **specific** floating overlay or require
+legible matches beneath all floating placements;
+it does not claim that a solution for the latter has been built.
+D53 concerns the separately accepted deck overlap,
+and D55 concerns the folded cover.
+The inner result question remains open until the user answers;
+no additional IME experiment was performed for this artifact.
+
 [compose-insets]: https://developer.android.com/develop/ui/compose/system/insets-ui
