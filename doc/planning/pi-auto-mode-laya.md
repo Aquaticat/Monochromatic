@@ -77,6 +77,21 @@ Do not upload session data or commit raw histories.
 Review redaction before committing any fixture.
 This does not authorize fine-tuning or ongoing transcript capture.
 
+### Q6: Offline evaluation before cutover
+
+The user did not select the proposed live-shadow versus delayed-cutover menu.
+They supplied a different path:
+
+> You can generate synthetic test data from my past transcripts.
+> You can look at the decisions Laya would've made yourself.
+
+Proceed with assistant-led offline evaluation before returning to cutover decisions.
+Derive synthetic cases from local histories, label expected decisions independently,
+run Laya, and inspect its counterfactual decisions and mistakes.
+Do not require the user to supervise a live shadow rollout to collect the initial evidence.
+Neither incumbent verdicts nor Laya output are ground truth.
+This authorizes evaluation, not product changes, fine-tuning, or a completed cutover design.
+
 ## Existing GitHub issues
 
 Checked open and closed issues in `Aquaticat/Monochromatic` on 2026-09-26.
@@ -269,8 +284,9 @@ No raw action, reason, trust text, or transcript was printed or committed by thi
 
 ## Next action
 
-Resolve whether a manual-authority plus Laya-shadow first stage counts as an acceptable cutover.
-Resolve trust-rule interpretation and user-visible policy changes required by the Laya boundary.
-Continue Laya source/runtime audit and derive redacted evaluation fixtures.
+Complete the Laya CPU execution audit and generate transcript-derived synthetic evaluation cases.
+Run offline inference in bounded isolation and inspect mistakes independently.
+Use that evidence to resolve authority, trust-rule interpretation, context completeness, and cutover.
+Do not require live user-supervised shadowing as the first evidence source.
 Recompute the remaining interview frontier from the source findings.
 Keep implementation blocked until the complete design is confirmed.
