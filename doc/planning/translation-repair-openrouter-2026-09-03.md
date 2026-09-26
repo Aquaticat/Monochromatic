@@ -8104,7 +8104,25 @@ The floor matches refused forms as lower-cased substrings (`refusedFormIn`, `tra
 so the refused forms are multi-word ("never dated", "dated a trans", "dating them" and the like)
 and never bare "dated" or "dating", which "updated" and "validating" hold; the guard carries an "updated" case.
 Guard `rendering-glossary-contact.unit.test.ts`, red first; fix `bc20adb69`; suite 1,157 PASS, 0 FAIL (`suite-class158.log`).
-aiyysk3 launched 15:15 UTC on `.frozen-dist-bc20adb69` (pid 830253, scope `pass-aiyysk3`).
+aiyysk3 launched 15:10 UTC on `.frozen-dist-bc20adb69` (pid 830253, scope `pass-aiyysk3`)
+and was killed about four minutes in under always-kill-and-relaunch once class one hundred fifty-nine landed.
+
+### Class one hundred fifty-nine: 环境的问题 and 工程机
+
+Reading the rest of aiyysk2 turned up two more calques, both carried only by aiyysk in the pinned corpus.
+她对我说：「我没有怎么在乎环境的问题…」 shipped "It's not that I cared all that much about the environment",
+which an English reader takes for nature and pollution; she meant the crowded place she lived.
+The archive wrote "the environment itself" too.
+工程机 (three times, the Qualcomm Reference Design unit she spent two months reviving) shipped "engineering phone",
+as the archive had it; the phone world calls such a unit a "prototype" or "engineering sample".
+Both join the phrasing glossary: 环境的问题 with "my surroundings" first
+and "about the environment", "the environment itself" and the "environmental" forms refused;
+工程机 with "prototype phone" first and "engineering phone", "engineering machine" and "engineering device" refused.
+Other readings stayed as the bench wrote them: 「忧」 as "Worried." is the original's own one-character reply,
+and 刷机 as "flashing" is the phone world's word.
+Guard `rendering-glossary-circumstance.unit.test.ts`, red first; fix `8f2b07c37`; suite 1,158 PASS, 0 FAIL
+(`suite-class159.log`).
+aiyysk4 launched 15:17 UTC on `.frozen-dist-8f2b07c37` (pid 923957, scope `pass-aiyysk4`).
 
 ## aiyysk1 read, 2026-09-26: class one hundred fifty-six against a correct archive, class one hundred fifty-seven
 
