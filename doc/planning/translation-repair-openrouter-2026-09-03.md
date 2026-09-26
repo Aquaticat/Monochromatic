@@ -8082,6 +8082,63 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Class one hundred forty-four, 2026-09-26: one panel's acceptance made final on every later sheet
+
+### What hulicaijia27 showed
+
+hulicaijia27 (frozen `2472ec48e`) SETTLED at 03:02 UTC in 45.3 min,
+Bedrock 29.49 to 28.26 and OpenRouter 62.01 to 60.14 by the meters (about 3.10 USD), glm-5.3 dark.
+Every hulicaijia26 check held: 13 headings, 9 markers, 9 definitions, 2 links, 3 Sakura,
+"douhua" eight times and no "tofu pudding", "Jiefangbei" six times, no TA, no double blank line, no Han,
+the six "center" hits the photo captions' `text-align` values,
+the fourteen straight double quotes the seven JSX photo paths.
+Class one hundred forty-three was NOT live: footnote 7 again reads "That is, the amantadine mentioned earlier."
+The archive's note ("In Chinese, “goodnight” (晚安, wǎn’ān) is a near-homophone of amantadine …") is lost a second time.
+
+### Who judged it, by name
+
+The ballot attribution built for class one hundred forty-three answered the owner's question on this run.
+There was no lane contest on slice 69: both lanes shipped the short note, so the lanes agreed and no ballot was cast.
+The note fell twice, once per lane.
+
+The repair lane's panel on chunk 69 accepted the addition claim 3 to 2.
+deepseek-v4.1-flash filed "The translation of footnote 7 adds the full homophone explanation from the ARCHIVE note",
+and gemma-4-26b-a4b-it filed, in the same issue, "The translation replaces a simple reference to amantadine
+with an explanation of a homophone that does not exist in the source text" (accuracy/mistranslation).
+minimax-m3, gemma-4-26b-a4b-it and google.gemma-4-e2b voted supported;
+deepseek-v4.1-flash (against its own claim) and inception/mercury-2.5 voted unsupported.
+Every one of the three had the class one hundred forty-three wording on its sheet.
+
+The translate lane's slate on slice 69 chose the short note 4 to 0:
+google.gemma-4-e2b (self-vote), inception/mercury-2.5, typesafe/jev-1.13 and minimax-m3 (self-vote).
+minimax-m3's reason cites the repair panel:
+"the full homophone explanation from the ARCHIVE note, which the repair lane's adjudicators accepted as an addition";
+mercury-2.5 wrote "an addition not supported by the ORIGINAL footnote alone".
+The class one hundred eight ARCHIVE RENDERING DISPUTED block had told them exactly that:
+"A detail those claims name is not page content and not the page's apparatus … Judge such a detail against the ORIGINAL alone."
+
+### Why no model was reseated
+
+No measurement on record puts any of the three supporting panelists below a seated band as a panelist,
+and the translate slate followed the instruction its sheet gave.
+One wrong vote on one note is not the evidence the owner's authorization asks for.
+
+### What was built
+
+The fault is structural: the dispute block made one panel's verdict final on every later sheet,
+whatever the claim named, so a 3 to 2 vote on a pun note decided both lanes.
+Class one hundred eight built that block for an invented medication event,
+which is narrative detail, and class one hundred forty-three has since stated that bound on its own
+(`NARRATIVE_DETAIL_IS_NOT_APPARATUS`).
+`archiveDisputeNote` in `archive-dispute.ts` now states the narrative bound,
+keeps its any-wording rule for a detail that says what happened,
+and sends a claim naming only a gloss or a translator's note (`TRANSLATOR_NOTE_KIND`) back to the page-apparatus rule,
+"as if no claim named it".
+The dispute itself stands (the owner's "Not eligible; fall back to the repair text"),
+so the stand-in is still the repair text; what changes is that every later judge may keep the note.
+Guard red first `7869828fb` (`translator-note-apparatus.unit.test.ts`), fix `e387be2cf`,
+lint 0/0, types clean, full suite `suite-class144.log` 1144 PASS, no FAIL.
+
 ## Class one hundred forty-three, 2026-09-26: a translator note on wordplay voted out as an addition, and who voted
 
 ### What hulicaijia26 showed

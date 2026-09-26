@@ -4777,12 +4777,21 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA27 NEXT on the class one hundred forty-three build (`2472ec48e`; freeze it, launch in a scope):
+1.  HULICAIJIA28 NEXT on the class one hundred forty-four build (`e387be2cf`; freeze it, launch in a scope):
     footnote 7 should keep the archive's note explaining the 晚安 / 金刚烷胺 wordplay;
-    read every "lane contest ballot by <model>" line on the note's slice and every "issue … filed by X, panel …" line
-    (the attribution the owner asked for, built in `3fe12ce50` and `e46f8ca70`),
-    plus every hulicaijia20 check, the register check and the en_CA check;
-    a critic or panel still calling the note an addition, with the wording on its sheet, is class one hundred forty-three not live.
+    if the repair panel accepts the addition claim again (read the "issue … filed by X, panel …" line on chunk 69),
+    the translate slate on slice 69 should now judge the note by the apparatus rule, not by the dispute block,
+    and a lane contest, if the lanes differ, names its judges on "lane contest ballot by <model>" lines;
+    plus every hulicaijia20 check, the register check and the en_CA check.
+    A slate ballot citing the accepted claim as settling the note is class one hundred forty-four not live.
+    HULICAIJIA27 READ (frozen `2472ec48e`): SETTLED at 03:02 UTC 2026-09-26 in 45.3 min, about 3.10 USD;
+    every hulicaijia26 check held; footnote 7's note lost again, class one hundred forty-three NOT live:
+    repair panel 3 to 2 (minimax-m3, gemma-4-26b-a4b-it, google.gemma-4-e2b for; deepseek-v4.1-flash, mercury-2.5 against),
+    then the translate slate 4 to 0 (gemma-4-e2b, mercury-2.5, jev-1.13, minimax-m3) under the class one hundred eight dispute block,
+    lanes agreed so no contest; recorded under "## Class one hundred forty-four" in the pass log.
+    CLASS ONE HUNDRED FORTY-FOUR (2026-09-26): `archiveDisputeNote` bounded to narrative detail
+    (`NARRATIVE_DETAIL_IS_NOT_APPARATUS`), a claimed gloss or `TRANSLATOR_NOTE_KIND` note sent back to the apparatus rule
+    (guard `7869828fb`, fix `e387be2cf`, suite 1144 PASS).
     HULICAIJIA26 READ (frozen `0e0b05d0f`): SETTLED at 02:00 UTC 2026-09-26 in about 15 min, about 2.82 USD;
     every check held, class one hundred thirty-five live ("douhua" seven times, "Jiefangbei" on both lines);
     footnote 7's wordplay note lost (filed by deepseek-v4.1-flash, accepted by minimax-m3 and gemma-4-26b-a4b-it against Mercury 2.5,
