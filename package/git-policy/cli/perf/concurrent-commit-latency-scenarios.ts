@@ -30,6 +30,7 @@ import {
 } from './concurrent-commit-latency-batches.ts';
 import { conflictBatch, } from './concurrent-commit-latency-conflict.ts';
 import { prepareRepository, } from './concurrent-commit-latency-repositories.ts';
+import { selectScenarios, } from './concurrent-commit-latency-selection.ts';
 import {
   assertOutcome,
   distribution,
@@ -276,16 +277,22 @@ function disjointSpec({
 }
 
 /**
- Prepares every repository and measures the complete matrix.
+ Prepares every repository and measures the selected scenarios.
 
- @returns every scenario's evidence in matrix order
+ @param selection - comma-separated scenario identifiers in measurement order; empty measures the complete matrix
+
+ @returns every measured scenario's evidence in measurement order
 
  @example
  ```ts
- const scenarios = await collectConcurrentScenarios();
+ const scenarios = await collectConcurrentScenarios({ selection: '' });
  ```
  */
-export async function collectConcurrentScenarios(): Promise<readonly ConcurrentScenarioResult[]> {
+export async function collectConcurrentScenarios({
+  selection,
+}: Readonly<{
+  selection: string;
+}>,): Promise<readonly ConcurrentScenarioResult[]> {
   /**
    Per-level repositories, fresh for each level because per-commit cost grows with a repository's history:
    a wrapped and a direct real-Git repository for every disjoint level.
@@ -423,7 +430,11 @@ export async function collectConcurrentScenarios(): Promise<readonly ConcurrentS
       },);
     },),
   ];
-  return await specs.reduce<Promise<readonly ConcurrentScenarioResult[]>>(
+  return await selectScenarios({
+    specs,
+    selection,
+  },)
+    .reduce<Promise<readonly ConcurrentScenarioResult[]>>(
     async function measureAfter(
       previous,
       spec,

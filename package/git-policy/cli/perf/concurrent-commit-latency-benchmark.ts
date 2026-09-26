@@ -25,9 +25,15 @@ import { collectConcurrentScenarios, } from './concurrent-commit-latency-scenari
 //region Benchmark execution -- Measure the concurrent matrix and emit reproducible evidence.
 
 /**
- Complete measured scenario matrix.
+ Scenario selection in measurement order; empty measures the complete matrix.
  */
-const scenarios = await collectConcurrentScenarios();
+const selection = process.env
+  .CLI_GIT_BENCHMARK_SCENARIOS
+  ?? '';
+/**
+ Measured scenarios.
+ */
+const scenarios = await collectConcurrentScenarios({ selection, },);
 /**
  Machine-readable evidence containing raw batches and derived statistics.
  */
@@ -63,6 +69,7 @@ const benchmarkResult = {
     warmupStabilityRatio: WARMUP_STABILITY_RATIO,
     slowHookSeconds: SLOW_HOOK_SECONDS,
     lockHolds: 'inotify rename events of landing.lock and index.lock paired into intervals',
+    selection,
   },
   scenarios,
 };

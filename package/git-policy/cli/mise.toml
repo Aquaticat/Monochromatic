@@ -182,6 +182,10 @@ if (code !== 0) throw new Error(`Lifecycle latency container exited with ${Strin
 [tasks.'perf:concurrent-commits']
 description = "Measure packed concurrent-commit throughput, lock holds, and lost races in a bounded container"
 depends = ["pack:npm"]
+usage = '''
+flag "--scenarios <ids>" help="Comma-separated scenario ids, measured in the listed order (default: the complete matrix)"
+flag "--output <name>" help="Evidence file name under dist/perf" default="concurrent-commit-latency.json"
+'''
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFile, spawn } = await import('node:child_process')
@@ -223,7 +227,9 @@ const child = spawn('podman', [
   '--env',
   `CLI_GIT_BENCHMARK_REVISION=${revision}`,
   '--env',
-  'CLI_GIT_BENCHMARK_OUTPUT=/evidence/concurrent-commit-latency.json',
+  `CLI_GIT_BENCHMARK_OUTPUT=/evidence/${process.env.usage_output ?? 'concurrent-commit-latency.json'}`,
+  '--env',
+  `CLI_GIT_BENCHMARK_SCENARIOS=${process.env.usage_scenarios ?? ''}`,
   '--volume',
   `${tarballPath}:/fixture/cli.tgz:ro,Z`,
   '--volume',
