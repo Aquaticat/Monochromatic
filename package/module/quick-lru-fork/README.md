@@ -143,16 +143,25 @@ these members,
 ### Layout
 
 `quick-lru.ts` owns the cache factory and every member,
- `quick-lru-options.ts` configuration validation and resolution,
+ `quick-lru-types.ts` the API surface types,
+ `quick-lru-item.ts` the
+stored-item model and its expiry-stamp guard,
+ `quick-lru-iteration.ts` the
+six dual-cache orderings,
+ `quick-lru-members.ts` the descriptor-pinned
+member attachment,
+ `quick-lru-options.ts` configuration validation and
+resolution,
  and `errors.ts` the error classes.
-`test-support.ts` holds the test-only fake clock.
-Test files sit beside each module as `<stem>.unit.test.ts`,
- with
-`quick-lru.<feature>.unit.test.ts` sidecars for iteration,
- expiry,
- eviction,
+`test-support.ts` holds the
+test-only fake clock.
+Every runtime module has a stem-paired `<stem>.unit.test.ts`
+ beside it,
+ with `quick-lru.<feature>.unit.test.ts` sidecars for expiry,
+eviction,
  and resize,
- so mutation testing selects each module's tests automatically.
+ so mutation testing selects each module's tests
+automatically.
 
 ### Testing
 
