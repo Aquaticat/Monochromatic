@@ -3,7 +3,10 @@
 
  @module
  */
-import { execFileSync, } from 'node:child_process';
+import {
+  type ChildProcess,
+  execFileSync,
+} from 'node:child_process';
 import {
   readFile,
   writeFile,
@@ -35,6 +38,10 @@ export type HeldCommit = Readonly<{
    Outcome after release.
    */
   outcome: Promise<ProcessOutcome>;
+  /**
+   Wrapper process, the leader of its process group.
+   */
+  child: ChildProcess;
 }>;
 
 /**
@@ -93,6 +100,7 @@ export async function holdInEditor({
       await writeFile(release, '',);
     },
     outcome,
+    child,
   };
 }
 
