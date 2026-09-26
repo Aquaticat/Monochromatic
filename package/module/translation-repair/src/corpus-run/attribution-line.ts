@@ -23,6 +23,23 @@ const NAME_ENDS: readonly string[] = [
 ];
 
 /**
+ Words that open a source credit ("from", "excerpted from", "quoted from")
+ rather than name a signer: 「——来自《title》，作者 handle」 credits a work, and
+ the signer, where there is one, stands after 作者 (class one hundred
+ thirty-eight, XingZ6011). 来自 is the one the corpus writes; the rest say
+ the same thing.
+ */
+const CREDIT_LEADS: ReadonlySet<string> = new Set([
+  '来自',
+  '摘自',
+  '出自',
+  '选自',
+  '引自',
+  '转自',
+  '节选自',
+],);
+
+/**
  Where a signature line's name stands.
  */
 export type Signature = {
@@ -230,7 +247,7 @@ export function readSignature({ line, }: { readonly line: string; },): Signature
     nameEnd,
   )
     .trim();
-  if (name === '')
+  if ((name === '') || CREDIT_LEADS.has(name,))
     return { signed: false, };
   return {
     signed: true,
