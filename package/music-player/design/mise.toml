@@ -424,12 +424,12 @@ dir = "{{config_root}}"
 run = "node floating-results-question.mjs validate"
 
 [tasks."build:crease:floor"]
-description = "Build a self-contained E2 opposing-information floor review from selected-A evidence"
+description = "Build an E2 floor review from separately captured native Compose variants"
 dir = "{{config_root}}"
 run = "node crease-floor-question.mjs build"
 
 [tasks."lint:crease:floor"]
-description = "Validate the E2 floor question and its selected-A native capture"
+description = "Validate the E2 floor question and its native variant captures"
 dir = "{{config_root}}"
 run = "node crease-floor-question.mjs validate"
 
