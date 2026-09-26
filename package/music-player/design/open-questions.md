@@ -202,11 +202,19 @@ rounds (2026-09-17):
   The app logged `visible=true`,
   `platformBottom=0`,
   and `boundingRects=[]`,
-  while privileged Window Manager reported keys
-  overlapping the deck's `4:35` duration.
-  The app still received no floating-key rectangle through these APIs.
-  This is a distinct real-keyboard D50 failure;
-  animation continuity and the real-banner recurrence remain unverified.
+  while privileged Window Manager reported keys overlapping the deck's
+  `4:35` duration.
+  That first visit's exact debug variant was not recorded.
+  A separate explicit `search-deck-right-lift-retain-results-light` visit
+  showed real floating keys obscuring the vertical A deck's title and
+  other controls;
+  a real key tap changed the query from `cam` to `cadm`.
+  Its private screenshot,
+  UI Automator bounds and privileged touch region prove visual overlap,
+  but its public-insets log did not retain a noninitial sample.
+  The first visit received no floating-key rectangle through the tested
+  app APIs;
+  animation continuity and real-banner recurrence remain unverified.
   Sanitized real-keyboard captures and whitelisted geometry records are
   indexed in `package/music-player/design/evidence/gboard-geometry.md`.
   Other keyboard heights and the user-visible response remain open.

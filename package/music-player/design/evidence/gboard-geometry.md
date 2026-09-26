@@ -120,10 +120,24 @@ it is **not** one of the linked sanitized Gboard PNGs.
   `composeBottom=0`,
   and `boundingRects=[]`.
   No new IME animation callback appeared for this toggle in the captured log.
-  The unsanitized screenshot remains a private scratch file,
+  The exact debug variant for this first toggle was not recorded.
+  Its unsanitized screenshot remains a private scratch file,
   not one of the linked review PNGs.
+- An **explicit A-layout retest** launched
+  `search-deck-right-lift-retain-results-light` after reboot.
+  It used debug APK SHA-256
+  `261e608e67029f6361b79a2b26f79851099df9d98f3cdbed637b2e14a4529636`.
+  Real floating Gboard occupied privileged touch region
+  `[482,1006][1388,1777]` over the deck title
+  `[258,1120][781,1223]`;
+  their x `[482,781)` and y `[1120,1223]` intersection visibly hid
+  title ink and other deck controls in the private screenshot.
+  A real key tap changed the focused query from `cam` to `cadm` at its
+  mid-word cursor.
+  This exact-variant visit did **not** retain a noninitial app-insets log,
+  so do not transplant the first probe's public geometry into its row.
   See `doc/troubleshooting/android-17-fold-emulator-ime-probe.md`
-  for the source trace and evidence boundary.
+  for the source trace and boundary between these visits.
 - [Original AVD floating Gboard at 100% cover][floating-cover]:
   real key taps entered `cam`,
   but its x `[0,830)`,

@@ -5680,8 +5680,20 @@ The app's public inset probe instead reported `visible=true`,
 `platformBottom=0`,
 and `boundingRects=[]`.
 Thus visibility does not locate the floating keys for a responsive deck.
-The unsanitized screenshot is private scratch evidence,
-not a new active-review card.
+The exact debug variant of that first toggle was not recorded.
+After reboot and waking a sleeping display,
+a separate explicit `search-deck-right-lift-retain-results-light` visit
+verified the corrected vertical A layout with APK SHA-256
+`261e608e67029f6361b79a2b26f79851099df9d98f3cdbed637b2e14a4529636`.
+Real floating Gboard occupied `[482,1006][1388,1777]` over the deck title
+`[258,1120][781,1223]`;
+the private screenshot showed the title,
+seek display and transport obscured.
+A real key tap changed the focused query from `cam` to `cadm`.
+The explicit A visit did not retain a noninitial public-insets log;
+do not transplant the first toggle's app measurement into that visit.
+These unsanitized screenshots are private scratch evidence,
+not new active-review cards.
 The source and measured boundary are in
 `doc/troubleshooting/android-17-fold-emulator-ime-probe.md` and
 `package/music-player/design/evidence/gboard-geometry.md`.
