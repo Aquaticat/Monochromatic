@@ -240,6 +240,72 @@ These controls establish the stated pinned-source behavior only.
 The existing live synthetic pilot establishes native API access,
 not these failure paths in the hosted deployment.
 
+### Live public context-limit rejection
+
+A separate first-party client called the pinned hosted model with complete freshly read policy
+and one Noul question about an explicit synthetic color field.
+It made a no-padding control request,
+then requests padded with 40,000 and 80,000 repetitions of `x `.
+These are repeat counts,
+not measured tokenizer counts for rejected requests.
+No private content,
+raw history,
+or final-action question was submitted.
+
+Results from process `proc_b3f1`,
+exit 0:
+
+- Control: HTTP 200,
+  45,020 request bytes,
+  10,457 reported input tokens,
+  22 reported output tokens,
+  probability 0.98 for the explicit blue field,
+  1548.170908 milliseconds total assessment time.
+- First padded request: HTTP 400,
+  125,020 request bytes,
+  931.8712969999999 milliseconds.
+- Second padded request: HTTP 400,
+  205,020 request bytes,
+  3185.840116 milliseconds.
+
+Both error bodies were exactly:
+
+```json
+{
+  "detail": {
+    "error_type": "max_tokens_exceeded"
+  }
+}
+```
+
+The body names the token-limit error;
+it does not identify which documented token budget was exceeded.
+Do not infer an exact tokenizer boundary from byte counts or repeat counts.
+The gateway returned each result inside the five-second individual assessment budget.
+The whole process duration includes all requests and is not a per-request latency.
+No client retry was attempted for these intentional limit errors.
+Gateway-internal attempts remain unknown.
+
+The unchanged policy snapshot was rechecked after every response.
+These live observations demonstrate rejection of the tested oversized inputs,
+not universal overflow behavior,
+complete token-by-token model preservation,
+or forced-timeout handling.
+The successful color answer is an access control,
+not an authorization-quality result.
+
+Private client and artifact:
+`~/temp/agent/jev-context-boundary-2026-09-26/probe.mjs`
+and `result-initial.json` in the same directory.
+Client SHA-256: `1b9cbaf2d5451a39b6377a48378189e31c91e74eccb6bd55bd7f64589db0a647`.
+Artifact SHA-256: `a3ca521bc98bcc04330b3ab04dfb05626bc148d06794ca6d039798c6d6b1e3f7`.
+The create-new artifact prevents an unchanged rerun from overwriting evidence.
+The probe uses one admitted credential,
+rejects redirects,
+bounds response size to 64 KiB,
+and caps its Node heap at 256 MiB.
+Its README and mise task retain the complete execution manifest.
+
 ## Verified workarounds and present containment
 
 No production workaround has been built or verified.
