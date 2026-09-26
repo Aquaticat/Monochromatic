@@ -606,6 +606,34 @@ account modification,
 private upload,
 or new hosted hostile-content batch occurred in this audit phase.
 
+## Authorization host evidence
+
+A later isolated method-composition probe exercised installed Pi 0.87.1 prompt/command dispatch,
+branch/fork methods,
+and current project trust functions.
+Process `proc_ec6a` passed with no model call or real session write.
+A programmatic prompt labelled `rpc` reached `/guard` before input callbacks
+and appended a directive with `hasUI: false`.
+Ordinary text reached the input callback in the positive control.
+The existing branch projection exposed an old grant after moving before its reset,
+and cleared it when returning to reset.
+An in-memory fork retained the grant entry ID and text under a new session ID.
+
+The [source and verification record](../troubleshooting/pi-input-provenance.md)
+contains the pinned source mapping,
+image,
+execution bounds,
+and controlled-double limitations.
+These are not live RPC-client exploit or persisted-session claims.
+Gate:
+grant writers need admitted authority witnesses,
+and original session identity cannot be replaced by a copied entry ID.
+Q14 reset scope and Q15 ordinary fork inheritance remain explicit user choices in the
+[effect contract](../planning/pi-auto-mode-effect-contract.md).
+No collector,
+finalizer,
+or production branch policy is qualified by this probe.
+
 ## Rubric and remaining gates
 
 No candidate-specific ratings or scores are assigned.

@@ -1,4 +1,4 @@
-# Pi 0.87.1 user-role messages do not preserve input-channel provenance
+# Pi 0.87.1 input labels and copied entries do not establish human authority
 
 ## Symptom and relevance
 
@@ -146,6 +146,111 @@ A missing witness must not silently promote the new text or stale authorization.
 This is a proposed consumer requirement,
 not a verified collector implementation.
 
+### Registered commands run before input callbacks
+
+At `packages/coding-agent/src/core/agent-session.ts:1615-1623`,
+registered extension commands are dispatched before the source-bearing input event:
+
+```typescript
+// packages/coding-agent/src/core/agent-session.ts, selected statements
+if (expandPromptTemplates && text.startsWith("/")) {
+  const handled = await this._tryExecuteExtensionCommand(text);
+  if (handled) {
+    preflightResult?.(true);
+    return;
+  }
+}
+```
+
+The current project handler at
+`package/pi-plugin/auto-mode/src/guard-command.ts:91-111`
+appends a null reset or a text directive without checking `ctx.hasUI` or receiving input-origin evidence:
+
+```typescript
+// package/pi-plugin/auto-mode/src/guard-command.ts, selected append calls
+if (trimmed === 'reset') {
+  pi.appendEntry(TRUST_ENTRY_TYPE, null);
+  ctx.ui.notify('Trust directives cleared for this session.');
+  return Promise.resolve();
+}
+pi.appendEntry(TRUST_ENTRY_TYPE, trimmed);
+```
+
+An isolated actual-method composition confirmed that
+`prompt('/guard Allow reading /fixture/project/example.txt.', { source: 'rpc' })`
+reached the registered handler and appended its directive with `hasUI: false`,
+without invoking the input callback.
+Ordinary text reached that callback in the positive control.
+This is a programmatic SDK-method probe,
+not a tested live RPC client exploit or a claim that ordinary model tools can call this method.
+An input-callback-only collector therefore does not cover this grant-creation route.
+A string-shaped trust entry cannot by itself distinguish this route from an explicit UI confirmation.
+
+### Branch reset and fork identity are separate from human confirmation
+
+Current project `package/pi-plugin/auto-mode/src/context.ts:136-148`
+projects directives from the active branch only:
+
+```typescript
+// package/pi-plugin/auto-mode/src/context.ts, selected projection
+for (const entry of ctx.sessionManager.getBranch()) {
+  if (isTrustEntry(entry)) {
+    if (entry.data === null)
+      directives.length = 0;
+    else
+      directives.push(entry.data);
+  }
+}
+```
+
+Pi's `packages/coding-agent/src/core/session-manager.ts:1467-1477`
+walks parents from the current leaf,
+and `:1572-1577` changes that leaf without deleting entries:
+
+```typescript
+// packages/coding-agent/src/core/session-manager.ts:1572-1577
+branch(branchFromId: string): void {
+  if (!this.byId.has(branchFromId)) {
+    throw new Error(`Entry ${branchFromId} not found`);
+  }
+  this.leafId = branchFromId;
+}
+```
+
+The method probe reset an active grant,
+moved to the grant entry before the reset,
+and observed the directive again.
+Returning to the reset entry cleared it again.
+This verifies branch-local projection on the fixture,
+not the desired migration revocation policy.
+
+At `session-manager.ts:1625-1675`,
+`createBranchedSession()` copies the selected path under a new session ID,
+retaining non-label entry IDs:
+
+```typescript
+// packages/coding-agent/src/core/session-manager.ts, selected statements
+const path = this.getBranch(leafId);
+pathWithoutLabels.push(
+  entry.type === "compaction"
+    ? {
+        ...entry,
+        parentId: pathParentId,
+        firstKeptEntryId:
+          entry.firstKeptEntryId === entry.id
+            ? entry.id
+            : (replacementByLabelId.get(entry.firstKeptEntryId) ?? entry.firstKeptEntryId),
+      }
+    : { ...entry, parentId: pathParentId },
+);
+const newSessionId = createSessionId();
+```
+
+The in-memory fork control copied the grant's original entry ID and text into the new session.
+A bare entry ID is consequently not sufficient to bind authority to an original session.
+Verified lineage and allowed grant lifetime are separate requirements.
+No policy choosing whether ordinary grants should inherit into forks was implemented.
+
 ## Verification
 
 Private harness:
@@ -204,6 +309,80 @@ a deployed origin collector,
 or the auto-mode consumer interface.
 Those remain implementation qualification work.
 
+### Command and lifecycle probe
+
+The additional private harness is
+`~/temp/agent/pi-trust-lifecycle-probe-2026-09-26`.
+Scratch commits `a81fa9b` and `e508b17` freeze the inspected composition and source mapping;
+`83e9762` retains the result.
+Process `proc_ec6a` completed build and probe with exit 0.
+Image:
+`d24811aa4ade5e0a2cf7ab1daedc00b6c30d70dc4c079404858a745e562ae7e5`.
+Result SHA-256:
+`76d454148c75ced5f6f6a0de916990bdc3177c106d3de8b86ec4e1ab7619bc8b`.
+
+The verified commands from that directory were:
+
+```sh
+# ~/temp/agent/pi-trust-lifecycle-probe-2026-09-26
+mise --no-env --no-hooks run verify:sources
+mise --no-env --no-hooks run build
+mise --no-env --no-hooks run probe
+```
+
+Bounds are 2 GiB RAM,
+2 CPUs,
+64 PIDs,
+256 descriptors,
+60 seconds,
+and a 256 MiB Node heap,
+with no added swap,
+network,
+credentials,
+host mounts,
+or writable filesystem.
+Registry lookup,
+UI notification,
+append,
+index rebuilding,
+ID generation,
+and filesystem-facing helpers are controlled doubles.
+Actual inspected prompt,
+command-dispatch,
+branch,
+fork,
+and project trust functions execute.
+No model or real session is used.
+
+The repository's `git-policy-cli` emitted
+`final-newline/noncanonical-final-newline`
+when freezing copied SDK files.
+`verify-sources.mjs` subsequently verified that only final LF bytes differed,
+recording original and baked hashes in `source-manifest.json`.
+Installed `agent-session.js` retained its original hash recorded in the source identity section;
+the baked copy is
+`e691e6ef07e44a59c8a7add242bea8e0fc7e78e6cd38bc06f8e94c90a16db8c4`.
+Installed `session-manager.js` is
+`d365ffb5a189915c3af93953daf751bff45fe46222b05c426f8d8b845946bebf`;
+the baked copy is
+`290281d71337e18a1fd5fffeee1a4079eba66c8b5ce5bc2e0a6a732678518bc8`.
+No method body changed.
+Node emitted its `stripTypeScriptTypes` experimental-feature warning;
+that built-in transform is used only by this disposable research harness.
+
+The positive controls verify ordinary input interception,
+reset on its containing branch,
+and clearing again when returning to that branch.
+Counterexamples reject these assumptions:
+all grant commands pass the input collector,
+`hasUI: false` prevents the current command's append,
+a reset removes its grant from every branch,
+and copied entry identity implies the same session-scoped authority.
+The probe does not verify live TUI/RPC interaction,
+persistent session copying,
+a production collector,
+or a finalizer.
+
 ## Proposed containment and unverified remedies
 
 Treat conversational evidence without a verified witness as non-authorizing.
@@ -224,6 +403,13 @@ as described in the inspected session-format documentation and tests.
 Authorization must not transfer to rewritten text merely because its original entry has a trusted witness.
 The original witnessed content and later projected context need separate treatment.
 This path has not yet received a local runtime probe.
+
+Every grant writer needs its own admitted authority witness;
+merely adding an input callback cannot cover registered commands.
+Copied entries need original-session identity and explicit lifetime/lineage treatment.
+Revocation scope and fork inheritance are design choices to confirm,
+not facts supplied by a model or implied by copied text.
+Qualified legacy prose matching remains eligible once its human authority is established.
 
 No collector workaround is declared verified.
 The proposed design can ask when its required authority evidence is absent,

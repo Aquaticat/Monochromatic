@@ -331,6 +331,63 @@ require explicit confirmation rather than guessing.
 This is a proposed consumer treatment;
 live TUI/RPC persistence and the collector integration remain unverified.
 
+A subsequent isolated composition exercised actual Pi prompt/command dispatch and current project grant methods.
+A programmatic prompt labelled `rpc` reached `/guard` before any input callback
+and appended a directive with `hasUI: false`.
+Ordinary text reached the input callback in its positive control.
+Consequently,
+each grant writer needs an admitted authority witness;
+an input-event-only collector cannot cover registered commands.
+This is not a live RPC-client exploit claim or an implemented collector remedy.
+Qualified legacy prose remains eligible once its human authority is established.
+
+The same probe confirmed branch-local reset projection:
+moving before a reset exposed the prior directive again,
+and returning to the reset entry cleared it.
+An in-memory fork copied the grant entry's ID and text into a new session ID.
+Bind provenance to the original session and entry,
+not a copied entry ID alone.
+No production revocation or inheritance policy was selected by this observation.
+
+### Grant lifetime questions awaiting confirmation
+
+Q14 asks whether a reset revokes matching prior grants across the same session's branches
+or only on the active history path.
+
+- A,
+  session-wide revocation:
+  history navigation does not undo a human reset;
+  permission state no longer replays entirely with conversation state.
+- B,
+  branch-local reset:
+  preserves the incumbent's history-replay behavior;
+  moving before a reset exposes the prior permission again.
+
+Ranking:
+A > B,
+because keeping an explicit reset effective across navigation is preferable to restoring revoked authority implicitly.
+This is a recommendation,
+not an adopted change.
+
+Q15 independently asks about an ordinary session-scoped grant in a forked session:
+
+- A,
+  new confirmation:
+  preserves the new session's authority boundary;
+  introduces additional approval interruptions.
+- B,
+  verified inheritance:
+  preserves workflow continuity for an active witnessed grant;
+  extends its effective lifetime beyond the original session and needs explicit inheritance/revocation semantics.
+
+Ranking:
+A > B,
+because the new session identity should not silently widen the default grant lifetime.
+Explicitly broader grant scope is outside this default-scope question.
+If inheritance is selected,
+its revocation linkage and lifetime become a later dependent question.
+Neither choice authorizes trusting an unwitnessed historical string or bypassing fixed blocks.
+
 ### Existing approval reuse
 
 `src/context.ts` currently reuses the latest matching `approve` or `user-approve` entry.

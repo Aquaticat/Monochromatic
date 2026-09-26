@@ -180,6 +180,40 @@ It did not run a live TUI/RPC session or persist session files.
 A production origin collector remains unimplemented and unqualified.
 See [the source trace](../troubleshooting/pi-input-provenance.md).
 
+A later method-composition probe at
+`~/temp/agent/pi-trust-lifecycle-probe-2026-09-26`
+passed as `proc_ec6a` with no model calls or real session writes.
+It uses actual prompt/command dispatch,
+branch/fork methods,
+and current project grant functions,
+with registry,
+UI,
+append,
+index,
+ID,
+and filesystem doubles.
+A programmatic prompt labelled `rpc` reached the registered `/guard` handler before input callbacks
+and appended a directive with `hasUI: false`.
+Ordinary text reached the input callback as a positive control.
+Moving before a reset exposed the old directive again;
+returning to reset cleared it.
+An in-memory fork copied the grant's entry ID and text under a new session ID.
+These facts require grant-writer witnesses and original-session binding;
+they do not qualify a collector or establish a live RPC exploit.
+
+Image:
+`d24811aa4ade5e0a2cf7ab1daedc00b6c30d70dc4c079404858a745e562ae7e5`.
+Result SHA-256:
+`76d454148c75ced5f6f6a0de916990bdc3177c106d3de8b86ec4e1ab7619bc8b`.
+Scratch commits:
+`a81fa9b`,
+`e508b17`,
+and `83e9762`.
+Copied-source final-LF normalization was checked against original bytes and recorded in `source-manifest.json`.
+Node's `stripTypeScriptTypes` experimental warning was retained;
+it concerns this research harness,
+not a production dependency choice.
+
 ### Voyage interface and raw features
 
 The native interfaces inspected return embeddings or relevance,
@@ -249,7 +283,8 @@ transfer grant contrasts were 0.24 versus 0.96.
 Do not select thresholds from these development observations or infer whole-guard accuracy.
 Scratch commit `cf8a7fc` retains the result and quote control.
 
-Todo #16 remains pending for the complete effect/authorization contract
+Todo #11 is complete for Voyage interface/feature fit only.
+Todo #16 is in progress for the complete effect/authorization contract
 and its code-owned witness/freshness tests.
 The inventory honors Q13 B.
 Joint permission binding is required even within one grant:
@@ -310,6 +345,15 @@ The eleven-document format/render/lint run `proc_5ce4` passed and its output was
 It included the Voyage fit and troubleshooting documents,
 current audit,
 and handover.
-A subsequent citation/checkpoint edit is being rechecked before closing todo #11.
-Then resume todo #16's authorization contract;
-no candidate has a qualified production selection.
+The subsequent citation/checkpoint edit passed the inspected eleven-document check `proc_3a0f`.
+The newer Pi lifecycle findings and contract questions need their own scoped check.
+Q14 asks whether reset is session-wide across branches or remains branch-local.
+Q15 asks whether an ordinary session-scoped grant needs new confirmation in a new fork
+or can inherit through verified lineage.
+A is recommended for both,
+with benefits,
+tradeoffs,
+and rankings recorded in the effect contract.
+Neither is adopted yet;
+ask this frontier and wait rather than implementing either policy.
+No candidate has a qualified production selection.
