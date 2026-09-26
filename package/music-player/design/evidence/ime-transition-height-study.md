@@ -63,30 +63,96 @@ The experiment's raw logs are in private scratch as
 `auto-reserve-failed-ime-transition.log`;
 full videos and extracted frames have matching names there.
 
-## Revised experiment and unresolved checks
+## Layout-time-only retest
 
 Prototype commit `b16c667d4` removed the ordinary extra padding.
 The platform target now selects only whether to use the compact deck;
 `imePadding()` alone owns bottom reservation.
-This commit was made **after** the failing recordings,
-so neither recording proves its effect.
-The revised APK must be installed on the disposable Fold and recorded under
-the same fixture before any pass claim.
+The rebuilt debug APK SHA-256 was
+`e5b998268d5e28d65006e73ffa642e1aee58c4b0818f0511d88a3a19a3f19f9f`.
+In a new 26-frame recording at approximately 10fps,
+13 sampled frames included the visible debug IME;
+the five-outline check found the full final mode in each of those frames.
+The platform already reported a `1011px` target when Compose first reported
+`44px`,
+and the compact branch was true at that sample.
+The earlier fixed-trigger control had two clipped visible-IME frames,
+but was recorded with the previous APK;
+it proves the image check can expose a clip,
+not a same-APK performance comparison.
+The new recording jumped from an IME top around y `2108` to y `1140`
+between captured frames,
+so it **does not prove** visibility at every intermediate animation frame.
+The corrected video and logs remain private scratch files named
+`auto-ime-transition.mp4` and `auto-ime-transition.log`.
 
-The closed deck's measured height changed from `762` to `891` to `1149px`
-as Compose settled in one visit.
+## In-place height steps
+
+Prototype commit `dccedba55` added a separate debug-only input method whose
+buttons changed its actual system-managed height without losing Search focus.
+The APK SHA-256 for this step study was
+`838f0f11294e5d824768a1d57dd5b471a8aa1c93f9b7dbca6f8b7ba8adcf375c`.
+On the same unfolded 200% Fold,
+its 330,
+360,
+370,
+372,
+375,
+400 and 415dp states reported IME tops of y `1348`,
+`1275`,
+`1251`,
+`1246`,
+`1238`,
+`1177` and `1141`,
+respectively.
+The first 330 to 360dp step changed the platform bottom inset from
+`804` to `877px`,
+a positive control that the button altered the actual IME window.
+
+The measured-fit candidate selected the compact branch by 360dp.
+At every stepped endpoint,
+all four modes had full 131px final-row bounds ending 20px before the
+actual IME,
+and title,
+metadata,
+seek text,
+transport icons and both right-side results remained in their safe areas.
+This is **endpoint** evidence,
+not an animation proof.
+The unchanged vertical-deck control stayed complete at 360,
+370,
+372 and 375dp;
+it first clipped at 400dp,
+where its final mode was only 120px tall and ended exactly at the IME top.
+It switched to compact at 415dp.
+Thus the closed-deck height used by the first fit estimate caused an
+earlier-than-needed design change.
+
+The passing vertical deck's app `ScrollView` spanned 1033px at 360 and
+375dp;
+its 16dp separator occupied another approximately 39px.
+At 400dp,
+the available area from y `136` to IME top y `1177` was 1041px,
+less than that measured combined demand.
+The clipped `ScrollView` was only 1002px tall there.
+Those measurements motivated prototype commit `ad53f5685`,
+which prefers a noncompact keyboard-open deck sample when it has positive
+unconstrained space above it.
+This later candidate has **not** yet been verified in the step fixture;
+its fallback may still choose compact early on a cold start.
+
+## Remaining boundary
+
+The closed deck's first measured heights changed from `762` to `891` to
+`1149px` as Compose settled in one visit.
 A later focused transition logged a stored `1071px` height,
 but this capture did not isolate when that earlier sample was taken.
-Consequently,
-a single early `onSizeChanged` sample is not proof of full-content height.
-The test must verify title,
-metadata,
-seek controls,
-transport controls,
-all mode borders,
-and any scroll extent in the rendered frames.
-It must also exercise keyboard dismissal,
-refocus,
-and heights near the observed overflow boundary.
+No single early `onSizeChanged` value proves full-content demand.
+Verify the new open-height sample,
+ascending and descending steps,
+keyboard dismissal and refocus,
+and cold entry at a height where both deck arrangements fit.
+Check title paint and accessibility bounds separately;
+acceptance of a cropped **browser** does not allow a cropped deck.
 A real Gboard banner recurrence and floating Gboard remain independent,
 unresolved evidence needs.
