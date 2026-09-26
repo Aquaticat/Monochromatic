@@ -292,11 +292,51 @@ a space inside a string,
 a lone slash where a separator belongs,
 and the six shape-mismatch refusals across lookup,
 set and delete.
-Two survivors look genuinely equivalent and are candidates for `.cargo/mutants.toml` with proofs:
-`src/number.rs:213` turning the pre-loop `cursor += 1` into `*= 1`,
-which the following digit loop absorbs with the same final cursor,
-and `src/scan.rs:185` widening `offset + 1 < len` to `<=` or `-`,
-whose extra iteration finds no close delimiter and ends in the same unterminated refusal.
+Round two,
+scoped to the seven files that had survivors,
+caught 262 and missed 10.
+Six of those ten were real gaps and are now killed;
+the final full-crate run reports:
+
+- 485 mutants generated (test files excluded,
+   four already excluded by configuration at that point)
+- 397 caught by a failing test
+- 34 caught by timeout,
+   which is how an introduced infinite loop shows up
+- 52 unviable,
+   meaning the mutated code did not compile
+- 2 survived
+
+So of the 433 viable mutants,
+431 were caught and the 2 survivors are now excluded with written proofs in
+`package/rust-module/jsonc-edit/.cargo/mutants.toml`,
+which holds six exclusions in total.
+The crate lists 483 mutants with that configuration active.
+
+Both survivors sit in `Scanner::capture_trailing`,
+which consumes same-line trivia only (its whitespace arm takes space,
+tab and CR but not LF) and has exactly one call site.
+Replacing the comment arm's `offset + 1` lookahead with `offset * 1` makes the second disjunct
+compare the current byte against `*` when the outer condition already fixed it to `/`,
+and replacing it with `offset - 1` asks whether the byte *before* the slash is `*`,
+which is unreachable because a block comment's `*/` is consumed as one unit by `comment()`.
+Either way the arm narrows to `//` only,
+and when it declines a `/*` the caller's next `trivia()` call captures the identical comment and
+comma.
+That was measured,
+not only reasoned:
+twelve inputs covering same-line and later-line trivia,
+comment-then-comma,
+tabs,
+a lone star and a lone slash produced byte-identical outcomes under the unmutated build and under
+each mutant,
+by temporarily applying the mutation,
+running the probe,
+diffing and reverting.
+
+Exclusions are anchored on line and column,
+so a moved file stops matching and re-exposes the mutant instead of silently keeping the exclusion.
+Re-verify the proof at that point rather than re-anchoring it.
 
 ## Related records
 
