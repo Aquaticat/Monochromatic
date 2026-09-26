@@ -308,6 +308,9 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
     readonly key: string;
     readonly defaultValue?: unknown;
   },): unknown {
+    if (((typeof keyOrOptions) !== 'string')
+      && (((typeof keyOrOptions) !== 'object') || (keyOrOptions === null)))
+      throw new InvalidKeyError(`Expected \`key\` to be of type \`string\`, got ${typeof keyOrOptions}`);
     /**
      Key path as the caller wrote it.
      */

@@ -168,27 +168,26 @@ await describe({
         },);
         /**
          Error thrown when get receives `undefined`:
-         upstream `conf` throws InvalidKeyError 'got undefined',
-         while this fork's read path dereferences the argument and throws TypeError.
+         upstream `conf` names the received type in InvalidKeyError.
          */
         const undefinedError = captureThrown((): unknown => config.get(undefined as never,),);
-        expect(undefinedError,).toBeInstanceOf(TypeError,);
-        expect(undefinedError.name,).toBe('TypeError',);
+        expect(undefinedError,).toBeInstanceOf(InvalidKeyError,);
+        expect(undefinedError.name,).toBe('InvalidKeyError',);
+        expect(undefinedError.message,).toBe('Expected `key` to be of type `string`, got undefined',);
         /**
          Error thrown when get receives `null`:
-         upstream `conf` throws InvalidKeyError 'got object',
-         while this fork throws TypeError the same dereference way.
+         upstream names `object` because `typeof null` is 'object'.
          */
         const nullError = captureThrown((): unknown => config.get(null as never,),);
-        expect(nullError,).toBeInstanceOf(TypeError,);
-        expect(nullError.name,).toBe('TypeError',);
+        expect(nullError,).toBeInstanceOf(InvalidKeyError,);
+        expect(nullError.message,).toBe('Expected `key` to be of type `string`, got object',);
         /**
          Error thrown when get receives a number:
-         the fork names the resulting `undefined` key where upstream names 'got number'.
+         upstream names the received type.
          */
         const numberError = captureThrown((): unknown => config.get(1 as never,),);
         expect(numberError,).toBeInstanceOf(InvalidKeyError,);
-        expect(numberError.message,).toBe('Expected `key` to be of type `string`, got undefined',);
+        expect(numberError.message,).toBe('Expected `key` to be of type `string`, got number',);
         // The store is unchanged.
         expect(config.get('foo',),).toBe(FIXTURE,);
       },
