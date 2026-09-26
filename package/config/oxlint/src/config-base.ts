@@ -44,6 +44,9 @@ export const base: OxlintConfig = {
   ],
 
   env: {
+    // An explicit env replaces oxlint's default `builtin` env, and the JS plugin scope manager then
+    // omits ES5 globals such as Array and Object (doc/troubleshooting/oxlint-js-plugin-global-reference-env.md).
+    builtin: true,
     browser: true,
     node: true,
     es2026: true,

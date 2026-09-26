@@ -3,7 +3,8 @@
   // Isolated config for prefer-spread tests: every native category is off so
   // upstream unicorn/prefer-spread cannot apply its own fixes during --fix runs.
   "plugins": [],
-  // Mirrors the shared config environment, which drops Array and Object from the global scope.
+  // An explicit env without "builtin" drops Array and Object from the JS plugin global scope;
+  // kept on purpose so the rules stay correct for consumers configured this way.
   "env": {
     "browser": true,
     "node": true,
