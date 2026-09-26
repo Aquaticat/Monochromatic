@@ -4724,6 +4724,10 @@ Since 16:45 UTC on 2026-09-09 a pass runs from a frozen copy of the built `dist`
 inside the package so the bundle's bare imports resolve;
 the scratch launcher `launch-pass.mjs <runs-dir> <entry> <frozen-dir>` takes it as its third argument),
 so building the next fix cannot change the pass under way.
+Since 2026-09-26 the launcher runs under `systemd-run --user --scope --unit=pass-<run>`:
+a pass started from a Bash command shares the `claude-code-bash` cgroup,
+and systemd-oomd kills that whole cgroup under memory pressure,
+which took hulicaijia21 down with a build beside it.
 The target directory must not exist before the copy:
 `cp -r` into an existing directory nests the build as `<frozen-dir>/node/`,
 and the pass then runs whatever the top level already held.
@@ -4773,15 +4777,20 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XINGZ6012 NEXT (entry `XingZ60`, frozen `c49ff687e`):
-    first check the second song credit on slice 95 keeps its bilibili link and `[^9]` and no `contributor-name-restored` line names "Laizi";
-    read it by every XingZ6010 check, the register check and the en_CA check,
-    then the page-assembly findings `archive-name-casing-restored` and `pinyin-tone-corrected`
-    (either may stay silent; any rewrite must be one the archive or the character supports);
-    record it under a new heading above "## XingZ6011 read" in the pass log;
-    then `hulicaijia` (run hulicaijia21) to see class one hundred thirty-five live:
+1.  HULICAIJIA24 NEXT (entry `hulicaijia`, frozen `5cb874a36`, launched in its own systemd scope):
+    see class one hundred thirty-five live:
     "douhua" in the closing quote, no "tofu pudding", "Jiefangbei Pedestrian Street" on every line,
-    and "jīn gāng wán’àn" in the amantadine note beside 晚安 "wǎn’ān".
+    and "jīn gāng wán’àn" in the amantadine note beside 晚安 "wǎn’ān";
+    read it by every hulicaijia20 check, the register check and the en_CA check;
+    record it under a new heading above "## XingZ6012 read" in the pass log;
+    then `XingZ60` (run XingZ6013) to see classes one hundred thirty-nine and forty live:
+    "—— Yuli [Paranoia]…" or the album kept on slice 98's credit, and "by Jiecheng Tianzou Official" on the first credit.
+    LAUNCH IN A SCOPE (2026-09-26): hulicaijia21 died silently five minutes in when systemd-oomd killed the `claude-code-bash` cgroup it shared with a build;
+    launch as `cd -- <pkg> && TRANSLATION_REPAIR_SLICE_OVERLAP=8 systemd-run --user --scope --unit=pass-<run> --quiet mise exec -- node <launch-pass.mjs> <run> <entry> <frozen-dir>`
+    and confirm `/proc/<pid>/cgroup` names `pass-<run>.scope`.
+    XINGZ6012 READ (frozen `c49ff687e`): SETTLED at 01:04 UTC 2026-09-26 in 32.0 min; class one hundred thirty-eight live (link and `[^9]` kept, no "Laizi");
+    class one hundred thirty-nine (a page's `[album]` after the signer read into the name and deleted by the restore; `7292556b7`, suite 1140 PASS, replayed over slice 98)
+    and class one hundred forty (「，作者」 rendered ", author"; the rendering glossary refuses it, guard `186ad797a`, fix `5cb874a36`).
     XINGZ6011 READ (frozen `2d5113b7d`): INCOMPLETE at 00:26 UTC 2026-09-26 in 96.3 min, "would drop 1 source destination":
     the restore read 来自 as a signer and replaced the song credit, link and [^9] included, with "Laizi" (class one hundred thirty-eight, `c49ff687e`, guard `bffae3bce`, suite 1140 PASS).
     MAIN MERGED (owner, 2026-09-26, "#563 is fixed in main branch. Merge main branch to this worktree's branch."):

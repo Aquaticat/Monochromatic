@@ -8082,6 +8082,69 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ6012 read, 2026-09-26: a bracketed album read into the signer's name, and a credit's 作者 as "author" (classes one hundred thirty-nine and one hundred forty)
+
+### What ran
+
+XingZ6012 on frozen `c49ff687e`:
+SETTLED at 01:04 UTC in 32.0 min, one attempt, 120 slices, 93 changed on the page.
+Qwen3.8-27B (1,166 asked) and glm-5.3 (567 asked) sat dark all run,
+every call refused by the router before it went out
+("every provider serving this model is out of budget"):
+both seats are served only by Synthetic or Hyper, and both were dry, which is the seating's design.
+
+### What the page shows
+
+Class one hundred thirty-eight is live:
+the second song credit keeps its bilibili link and `[^9]`,
+no `contributor-name-restored` line names "Laizi",
+and the page carries both inline links and nine definitions.
+The en_CA pass rewrote "center" and "behavior" three times (`canadian-form-rewritten` on slices 13, 20 and 21).
+Five `contributor-name-restored` lines, eight `heading-series-unified`, one `title-reference-unified`; 165 abstention lines.
+
+Two things read wrong, each now a class.
+
+-   Slice 98's credit shipped as "—— Yuli, “Nonuple Reality”".
+    The bench had written "—— Yuli [妄想症Paranoia], “Nonuple Reality”" for 「—— 雨狸【妄想症Paranoia】《九重现实》」,
+    the album in ASCII brackets.
+    `readSignature` ended the page-side name at the comma,
+    so the name read "Yuli [妄想症Paranoia]",
+    and the contributor-name restore replaced name and album with the bare reading, deleting the album (class one hundred thirty-nine).
+-   The first song credit shipped as "——from “Bird in a Cage” (…)[^9], author Jiecheng Tianzou Official":
+    the 作者 of 「，作者 洁澄天奏Official」 rendered word for word,
+    where XingZ6011 and XingZ623 wrote "by" (class one hundred forty).
+    The lowercase "from" after the dash is an ordinary English attribution style and was left.
+
+### What was built
+
+Class one hundred thirty-nine (`7292556b7`, guard red first in the class one hundred thirty-eight test file):
+`attribution-line.ts` ends a name at an ASCII `[` found past the name's first character
+(at the first character the bracket opens a linked name).
+Types clean, suite `suite-class139.log` 1140 PASS, no FAIL
+(the new case joins an existing describe block, so the count holds);
+replayed over the real slice 98 line: no finding, the line unchanged.
+
+Class one hundred forty (`rendering-glossary-credit.unit.test.ts` red first, fix in `rendering-glossary-wording.ts`):
+the rendering glossary seeds the credit form `，作者` with "by" and refuses ", author ".
+A census of the pinned originals found 作者 on three pages:
+this credit, the poem credit 「作者：Chrysanthemum Tran」 on the same page (no comma, not read),
+the LCG_Akiball footnote 「原文如此，作者可能想指…」 (subject "the author", which never renders ", author "),
+and 社会工作者 on GLaDOSister, which the comma keeps out.
+
+### The pass the build killed
+
+hulicaijia21 (frozen `7292556b7`) died silently at 01:19 UTC, five minutes in, with no line in its log.
+systemd-oomd killed the whole `app.slice/claude-code-bash` cgroup at 21:19:47 local time
+("memory pressure for …/app.slice being 86.54% > 80.00% for > 20s"),
+the cgroup every Bash command runs in, while `mise run build` ran beside the pass
+and 33 GiB of swap was already in use.
+A pass launched from a Bash command lives in that cgroup and dies with it.
+hulicaijia23 was launched through `systemd-run --user --scope --unit=pass-<run>`,
+which puts the pass in its own scope (`/proc/<pid>/cgroup` reads `app.slice/pass-hulicaijia23.scope`);
+launch every pass that way.
+hulicaijia23 was killed a few minutes in under always-kill-and-relaunch once class one hundred forty landed,
+and hulicaijia24 runs on `.frozen-dist-5cb874a36` (pid 232490, `pass-hulicaijia24.scope`).
+
 ## XingZ6011 read, 2026-09-26: a source credit read as a signature (class one hundred thirty-eight)
 
 ### What ran
