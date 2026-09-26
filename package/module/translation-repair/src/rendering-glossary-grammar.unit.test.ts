@@ -56,7 +56,22 @@ const MET = '小猫很勤快，遇到的却是狗的吠叫。';
 const GAP = '小猫在隙中窥见了朋友。';
 
 /**
- Terms classes one hundred sixty-one, sixty-four and sixty-six seed.
+ Original in which the kitten naps well so there is hope for every plan.
+ */
+const HOPE = '小猫睡好了，这样一切都会有机会的。';
+
+/**
+ Original in which the kitten says it will purr as it leaves the others.
+ */
+const LEAVING = '我会在离开我们的时候轻轻地叫一声。';
+
+/**
+ Original naming, in a life told in the past, what kind of cat she was.
+ */
+const KIND = '所以她是个勇敢的小猫吧。';
+
+/**
+ Terms classes one hundred sixty-one, sixty-four, sixty-six and seventy to seventy-two seed.
  */
 const SEEDED_TERMS = [
   '化作',
@@ -64,6 +79,9 @@ const SEEDED_TERMS = [
   '应该会有更好的生活',
   '遇到的却是',
   '在隙中',
+  '一切都会有机会',
+  '离开我们的时候',
+  '所以她是个',
 ] as const;
 
 /**
@@ -75,6 +93,9 @@ const REFUSED_CANDIDATES: readonly { readonly sourceText: string; readonly candi
   { sourceText: DESERVED, candidateText: 'Such a hardworking kitten should have had a better life, didn\'t she?', },
   { sourceText: MET, candidateText: 'The kitten was diligent, but fate made her met with the dog\'s barking.', },
   { sourceText: GAP, candidateText: 'The kitten caught a glimpse through the gaps of those it loved.', },
+  { sourceText: HOPE, candidateText: 'The kitten slept well, so everything will have a chance.', },
+  { sourceText: LEAVING, candidateText: 'When I leave us, I will mew softly.', },
+  { sourceText: KIND, candidateText: 'So, she’s a brave little cat.', },
 ];
 
 /**
@@ -86,13 +107,16 @@ const ACCEPTED_CANDIDATES: readonly { readonly sourceText: string; readonly cand
   { sourceText: DESERVED, candidateText: 'Such a hardworking kitten deserved a better life, didn\'t she?', },
   { sourceText: MET, candidateText: 'The kitten was diligent, but what she met with was the dog\'s barking.', },
   { sourceText: GAP, candidateText: 'Through the gap, the kitten glimpsed a friend.', },
+  { sourceText: HOPE, candidateText: 'The kitten slept well, so there will be hope for everything.', },
+  { sourceText: LEAVING, candidateText: 'When I leave you all, I will mew softly.', },
+  { sourceText: KIND, candidateText: 'So she was a brave little cat.', },
 ];
 
 await describe({
   name: 'grammar slips the rendering glossary refuses (class one hundred sixty-one)',
   children: [
     it({
-      name: 'SEEDS 化作, 被她治愈, 应该会有更好的生活, 遇到的却是 and 在隙中',
+      name: 'SEEDS 化作, 被她治愈, 应该会有更好的生活, 遇到的却是, 在隙中, 一切都会有机会, 离开我们的时候 and 所以她是个',
       fn: async () => {
         expect(SEEDED_TERMS.filter(function isSeeded(term,): boolean {
           return RENDERING_GLOSSARY.some(function isTerm(entry,): boolean {
