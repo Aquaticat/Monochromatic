@@ -352,7 +352,15 @@ signature included.
 Otherwise cli-git replays it onto the new tip with a three-way tree merge,
 re-signs it when it was signed,
 re-runs `pre-commit` when the tree changed,
-and re-runs only the policies whose recorded reads or declared `inputs` changed.
+and re-runs only the policies whose recorded reads or declared `inputs` changed
+(this build re-runs every policy,
+because policy read sets are not recorded yet).
+A `pre-commit` hook that rewrites and re-stages files,
+as lint-staged does,
+commits what it staged,
+as native Git does;
+the real index and worktree copies of those files take the committed bytes
+unless they changed while the commit ran.
 A replay conflict lands nothing and exits `1` with a `concurrent-commit/replay-conflict` core finding
 naming the conflicting paths,
 the winning commit,
