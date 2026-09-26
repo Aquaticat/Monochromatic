@@ -243,7 +243,13 @@ solution has been built.
 Recovery by scrolling or another action was not verified in this fixture.
 D53 concerns the separately accepted deck overlap,
 and D55 concerns the folded cover.
-The inner result question remains open until the user answers;
-no additional IME experiment was performed for this artifact.
+The user answered **A**;
+D57 accepts only the observed inner floating-keyboard result-lettering
+overlap while the query remains clear.
+It does not establish scroll-reachability or activation of obscured rows,
+and does not approve other floating placements or ordinary docked input.
+The A/B comparison remains historical evidence;
+the active selected-A review shows the accepted state only.
+No additional IME experiment was performed for this artifact.
 
 [compose-insets]: https://developer.android.com/develop/ui/compose/system/insets-ui

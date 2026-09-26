@@ -1664,6 +1664,35 @@ The comparison and limits are in
 `package/music-player/design/evidence/search-result-overflow.md`.
 No production implementation is authorized.
 
+### D57. The observed inner floating Gboard may obscure some Search result lettering (2026-09-26)
+
+The user chose **A** in the separate inner floating-result review.
+At 200% text in the selected A long-results fixture,
+real floating Gboard covered portions of middle **right-pane result labels**
+while the `cam` query stayed readable and later results were visible below
+the keyboard.
+D57 accepts **this specific observed floating overlay** as a bounded
+exception to visual result-lettering visibility.
+It does not extend to other floating placements,
+ordinary docked or split keyboards,
+an obscured query,
+missing matches or nonfunctional result actions.
+Whether the covered rows can be scrolled into clear space,
+reached or activated was **not** established;
+D57 does not accept their absence or inaccessibility.
+
+D53 independently accepts the measured floating-keyboard overlap with the
+left playback deck;
+D55 concerns floating results on the folded cover.
+D56 keeps the folded-cover result list scrollable above ordinary full-width
+keyboards.
+No inner layout move,
+IME placement mechanism,
+production implementation or further device experiment was selected.
+The sanitized native capture and bounded fixture are in
+`package/music-player/design/questions/floating-results-review.html`
+and `package/music-player/design/evidence/search-result-overflow.md`.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)
