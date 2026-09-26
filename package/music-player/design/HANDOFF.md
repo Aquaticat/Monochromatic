@@ -5793,3 +5793,40 @@ Option C, codifying the design-acceptance gate in `AGENTS.md`,
 Linear as AQU-487 "docs(agents): gate production work after design acceptance" in Triage,
 with GitHub #508 attached.
  No duplicate issue was opened.
+
+## D53 accepts floating Gboard over the unfolded deck
+
+On 2026-09-26 the user explicitly said that “real floating Gboard still
+obscures the deck” is acceptable.
+D53 narrows D50 **only for that observed movable floating keyboard overlay**.
+The active selected A still puts its real folder browser above the bottom-left
+deck and its integrated query/results together on the right.
+Do not adopt the rejected app-panel or keep-clear probes to chase an overlap
+the user has now accepted.
+The earlier portions of this handover describe the experiment and the original
+strict D50 criterion;
+read them with D53's newer exception.
+
+The user did **not** approve clipping under split or docked keyboards,
+Gboard's transient full-width font-update banner,
+or the cover-panel floating keyboard hiding both result labels.
+The real banner remains an unresolved D50 gate;
+its one observed y `1140` state clipped the final mode,
+and a later font-scale cycle did not re-create it.
+The 416dp anticipatory reservation and inline title/transport reflow remain
+unaccepted debug-only alternatives.
+Long result names,
+result activation/ranking,
+accessibility and the crease clearance remain open.
+No production Search implementation is authorized.
+
+The original `Pixel_9_Pro_Fold` emulator process subsequently exited with
+`SIGSEGV` after its own log reported
+`qemu_thread_create: Resource temporarily unavailable` and `errno 11`.
+This is a host/emulator process failure,
+not evidence that Gboard caused it or that D53 changed the IME.
+Do not restart or mutate that original AVD merely to record the decision;
+the existing captures and separate disposable fixture provide the design
+evidence.
+The persistent per-user process limits are documented in
+`doc/troubleshooting/fedora-44-fold-emulator-user-task-ceiling.md`.

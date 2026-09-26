@@ -4,7 +4,8 @@
 
 D51 keeps Search and results on the right of the unfolded Pixel 9 Pro Fold,
 with the playback deck at bottom-left.
-D50 requires that deck to remain visible even while typing.
+D50 requires that deck to remain visible while typing,
+except where D53 explicitly accepts real floating Gboard obscuring it.
 The active review at `package/music-player/design/questions/current.html` still shows a debug-only 300dp
 system-managed input method,
 not Gboard.
@@ -99,7 +100,7 @@ y `1352` top.
 Its raw current APK screenshot remains private;
 it is **not** one of the linked sanitized Gboard PNGs.
 
-## Measured failures that remain
+## Measured occlusions and open failures
 
 - [Original AVD floating Gboard at 200% inner][floating-inner]:
   its touchable key region x `[274,1180)`,
@@ -165,7 +166,7 @@ it is **not** one of the linked sanitized Gboard PNGs.
   not system cooperation with the hint.
   A real key tap entered `d`.
   This validates the geometry detector and rejects **this best-effort
-  hint on this fixture** as a D50 response;
+  hint on this fixture** as automatic floating-key avoidance;
   it does not describe all possible window placements.
   Raw captures remain private.
 - [Original AVD floating Gboard at 100% cover][floating-cover]:
@@ -181,10 +182,13 @@ it is **not** one of the linked sanitized Gboard PNGs.
   and restored the full mode.
   Automatic dismissal and recurrence were not established.
 
-The split/full-width passes do **not** cancel the floating or banner failures.
-D50 has not been met for every observed typing state,
-and D51's A selection has not changed.
-Do not narrow “never hidden” to docked keyboards without a user decision.
+The split/full-width passes do **not** cancel the observed occlusions.
+D53 explicitly accepts real floating Gboard hiding the **unfolded deck**;
+D51's A selection is unchanged.
+The measured cover result-label overlap is not part of that approval.
+The transient banner clipped the unfolded final mode and remains an open
+D50 failure under a nonfloating keyboard.
+Do not broaden D53 to other input methods or keyboard states.
 
 ## Banner-height fit bound, not a proposed fix
 

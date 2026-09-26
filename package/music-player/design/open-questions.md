@@ -59,7 +59,7 @@ rounds (2026-09-17):
   chosen as the working baseline, not banned from exploration.
   K1's discouraging back
   navigation and K3's non-local sheet remain rejected.
-- **SETTLED: Fold Search composition A and result heading (D47 to D52).**
+- **SETTLED: Fold Search A, results heading and floating overlay scope (D47 to D53).**
   D47 chooses a Search
   button opening a separate page;
   D48 puts Back,
@@ -117,7 +117,8 @@ rounds (2026-09-17):
   so treat that as a negative text-clearance example,
   not an endorsement.
   D50 additionally requires the unfolded playback/control deck to remain
-  visible throughout Search.
+  visible throughout Search,
+  except for real floating-Gboard overlap accepted by D53.
   The first coherent-layout studies still hid
   it (the docked overlay covered it;
   both full-width variants replaced its
@@ -136,9 +137,10 @@ rounds (2026-09-17):
   Dragging it lower obscured more controls rather than docking it.
   On the folded cover, real Gboard key taps produced `cam`, while the
   floating keyboard completely covered both matching result labels.
-  D50 remains **unmet in the measured unfolded Gboard mode** and cover
-  result visibility remains unmet in its measured floating mode,
-  even though A remains the selected design;
+  D53 accepts the measured floating-Gboard overlap with the unfolded deck.
+  Cover result visibility remains unmet in its measured floating mode;
+  A remains the selected design,
+  and the original observations remain evidence.
   the 300dp bottom-IME capture is bounded evidence.
   A disposable Fold AVD booted after user authorization raised its container
   cap to 6 GiB.
@@ -155,7 +157,8 @@ rounds (2026-09-17):
   split/full-width geometry.
   A transient Gboard font-update banner on the disposable inner panel
   raised its IME to y `1140` and clipped the last mode until `OK` was tapped.
-  D50 therefore remains unmet in measured floating and banner states.
+  D53 permits floating Gboard to obscure the unfolded deck;
+  the observed transient banner remains a separate D50 failure.
   The user clarified that Search keeps its **actual folder browser** in
   the upper-left area while typing.
   Do not blank it or replace it with a `Current folder` caption;
@@ -166,13 +169,15 @@ rounds (2026-09-17):
   a banner-height keyboard.
   The user liked the refreshed A-only review on 2026-09-25;
   the retained browser composition is settled,
-  not the separate tall-IME reflow or D50's unresolved failures.
+  not the separate tall-IME reflow or the unresolved banner-height D50 failure.
   The full Open parent is `[621,148][953,279]` with the keyboard closed,
   while UI Automator sees only `[621,132][953,245]` in the short viewport.
   Those are visible accessibility bounds,
   not an intrinsic layout-size measurement.
   No below-48dp layout target has been deliberately introduced.
-  Do not take space from the complete deck or put meaning on the crease.
+  Do not take space from the complete deck for docked or banner-height
+  keyboards or put meaning on the crease;
+  D53 alone permits the real floating-keyboard overlay.
   A 415dp debug-only system IME reproduced the banner-height clipping at
   y `1141` in unchanged A.
   An **unaccepted** inline title/transport study keeps the original
@@ -228,7 +233,7 @@ rounds (2026-09-17):
   the area by 13px) and then back to a larger overlap;
   that validates region detection,
   not automatic keep-clear cooperation.
-  a real key entered `d` while the title was still obscured.
+  A real key entered `d` while the title was still obscured.
   Reject this best-effort request on the tested Gboard fixture,
   not every possible keyboard configuration.
   The Android 17 AOSP release source traces submitted keep-clear areas
@@ -246,7 +251,11 @@ rounds (2026-09-17):
   that the original banner cannot recur.
   Sanitized real-keyboard captures and whitelisted geometry records are
   indexed in `package/music-player/design/evidence/gboard-geometry.md`.
-  Other keyboard heights and the user-visible response remain open.
+  The user explicitly accepted that real floating Gboard still obscures
+  the unfolded deck (D53).
+  This does not accept the separate cover result-label occlusion or waive
+  complete deck visibility under docked keyboards and the font-update banner.
+  Other keyboard heights and the banner response remain open.
   A 200% long query remained in the right input region without hiding
   the deck under the debug IME.
   Long **result** names and result-list scrolling are still open.
