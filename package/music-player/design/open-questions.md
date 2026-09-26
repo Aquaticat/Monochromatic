@@ -340,8 +340,10 @@ rounds (2026-09-17):
   shows P7.5,
   P14 and P20 in the **player before Search**,
   empty Search and results at 200% text.
-  Each keeps the full browser/deck and continuous surfaces;
-  only right-side informative marks shift under wider floors.
+  Each keeps the full browser/deck and continuous surfaces.
+  The player shifts right-side text;
+  the Search content inset also moves associated control targets,
+  but their hit bounds do not count toward E2's informational floor.
   The user stated 7.5mm as an independent total minimum even for a future
   narrower crease,
   but asked to be shown these player views and then re-asked.

@@ -204,6 +204,22 @@ none is a nearest-pair glyph-ink measurement or proof of all-content E2
 compliance.
 The selected 7.5mm crease interval remains an approximation.
 
+A read-only inspector checked every captured app node with nonempty text or
+content description against approximate x `[983,1093)`.
+None of the nine states reported an intersecting labeled node box.
+An in-memory control moved the P7.5 player `Camellia` box from
+`[1106,159][1436,268]` to `[1000,159][1330,268]`;
+the same inspector then reported exactly that crossing text node.
+The accepted debug track-row candidate starts with `dark-`,
+and `TrackRow` sets its leading icon slot to `null` for that family in
+`package/music-player/android-app/app/src/debug/kotlin/dev/monochromatic/musicplayer/DesignCandidateActivity.kt`.
+The P7.5 player hierarchy put the Search and Settings icon descriptions at
+x `[1788,1847]` and `[1906,1965]`,
+with Pause at x `[491,550]`;
+those icon bounds were not near the crease.
+This bounded node check does **not** certify paint enclosure,
+unlabeled decorative pixels or every future icon.
+
 The complete Search-closed and open four-mode deck kept its final mode at
 `[73,1904][965,2035]` in the sampled P7.5 captures.
 The corrected player keeps Folders,
