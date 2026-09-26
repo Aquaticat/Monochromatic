@@ -10,14 +10,15 @@ import type {
   FetchOptions,
   SearchOptions,
 } from './client.ts';
+import type { GhClient, } from './github-fetch-types.ts';
 
 /**
  Search Fetch provider identifier.
  */
-type SearchFetchProvider = 'exa' | 'linkup';
+type SearchFetchProvider = 'exa' | 'gh' | 'linkup';
 
 /**
- Fallback metadata for provider routing.
+ One fallback step taken between providers.
  */
 type ProviderFallback = {
   /**
@@ -47,9 +48,9 @@ type ProviderResponse = {
    */
   readonly response: unknown;
   /**
-   Fallback metadata when response came from fallback provider.
+   Fallback steps taken before the responding provider answered.
    */
-  readonly fallback?: ProviderFallback;
+  readonly fallbackChain?: readonly ProviderFallback[];
 };
 
 /**
@@ -80,6 +81,10 @@ type SearchFetchClientOptions = {
    Optional fetch implementation override for tests.
    */
   readonly fetchImpl?: FetchLike;
+  /**
+   Optional gh-backed fetch client override for tests.
+   */
+  readonly ghClient?: GhClient;
 };
 
 /**

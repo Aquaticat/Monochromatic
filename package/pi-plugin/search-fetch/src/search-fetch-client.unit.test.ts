@@ -170,9 +170,13 @@ await describe({
              Local value for result.
              */
             const result = await client.search({ input: { query: 'docs', }, },);
+            /**
+             Local value for firstStep.
+             */
+            const [firstStep,] = result.fallbackChain ?? [];
 
             expect(result.provider,).toBe('linkup',);
-            expect(result.fallback?.reason,).toBe('missing Exa API key',);
+            expect(firstStep?.reason,).toBe('missing Exa API key',);
             expect(firstCall(mock,).url,).toBe(`${LINKUP_BASE_URL}/search`,);
           },
         },),
@@ -197,10 +201,14 @@ await describe({
              Local value for result.
              */
             const result = await client.search({ input: { query: 'docs', }, },);
+            /**
+             Local value for firstStep.
+             */
+            const [firstStep,] = result.fallbackChain ?? [];
 
             expect(result.provider,).toBe('linkup',);
-            expect(result.fallback?.from,).toBe('exa',);
-            expect(result.fallback?.to,).toBe('linkup',);
+            expect(firstStep?.from,).toBe('exa',);
+            expect(firstStep?.to,).toBe('linkup',);
             expect(mock.calls.map(function callUrl(call,) {
               return call.url;
             },),).toEqual([
@@ -256,9 +264,13 @@ await describe({
              Local value for requestBody.
              */
             const requestBody = requestJsonBody(firstCall(mock,),);
+            /**
+             Local value for firstStep.
+             */
+            const [firstStep,] = result.fallbackChain ?? [];
 
             expect(result.provider,).toBe('exa',);
-            expect(result.fallback?.reason,).toBe('missing Linkup API key',);
+            expect(firstStep?.reason,).toBe('missing Linkup API key',);
             expect(firstCall(mock,).url,).toBe(`${EXA_BASE_URL}/contents`,);
             expect(requestBody,).toEqual({
               urls: ['https://example.com',],

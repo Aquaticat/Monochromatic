@@ -1,0 +1,546 @@
+/**
+ gh child process boundary for Pi Search Fetch.
+ 
+ @module
+ */
+
+import { execFile, } from 'node:child_process';
+import { tmpdir, } from 'node:os';
+import { promisify, } from 'node:util';
+
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
+import type {
+  GhCommandNotRan,
+  GhCommandOutcome,
+  GhCommandRan,
+  GhCommandRequest,
+  GhCommandRunner,
+  GhCommandRunnerOptions,
+} from './github-fetch-types.ts';
+
+/**
+ Logger root for pi-search-fetch after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: ghProcessLogger, },);
+ ```
+ */
+const ghProcessLogger = tagged({ tag: 'pi-search-fetch', },);
+
+/**
+ Module logger.
+ */
+const l = tagged({
+  tag: 'gh-process',
+  l: ghProcessLogger,
+},);
+
+//region Constants
+
+/**
+ Default GitHub CLI executable resolved through PATH.
+ */
+const GH_EXECUTABLE = 'gh';
+
+/**
+ Default child deadline, matching the deadline this repository already gives GitHub CLI work.
+ */
+const GH_DEADLINE_MILLISECONDS = 60_000;
+
+/**
+ Default captured output ceiling in mebibytes.
+ */
+const GH_OUTPUT_MAX_MEBIBYTES = 32;
+
+/**
+ Bytes in one mebibyte, used to express the output ceiling.
+ */
+const BYTES_PER_MEBIBYTE = 1_048_576;
+
+/**
+ Default captured output ceiling in bytes.
+ */
+const GH_OUTPUT_MAX_BYTES: number = GH_OUTPUT_MAX_MEBIBYTES * BYTES_PER_MEBIBYTE;
+
+/**
+ Node diagnostic code reported when the executable cannot be spawned.
+ */
+const MISSING_EXECUTABLE_CODE = 'ENOENT';
+
+/**
+ Node diagnostic code reported when captured output exceeds the ceiling.
+ */
+const OUTPUT_CEILING_CODE = 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER';
+
+/**
+ Node diagnostic code reported when a caller signal cancels the child.
+ */
+const CANCELLATION_CODE = 'ABORT_ERR';
+
+//endregion Constants
+
+//region Types
+
+/**
+ Numeric child exit code read from one rejection.
+ */
+type ExitCodeResult = {
+  /**
+   Whether the child completed and reported a numeric exit code.
+   */
+  readonly found: true;
+  /**
+   Numeric child exit code.
+   */
+  readonly exitCode: number;
+} | {
+  /**
+   Whether the child completed and reported a numeric exit code.
+   */
+  readonly found: false;
+};
+
+//endregion Types
+
+/* oxlint-disable typescript/strict-void-return -- node:util.promisify intentionally accepts execFile even though execFile also returns a ChildProcess handle; this wrapper only consumes the promise result. */
+/**
+ Promise-returning `execFile` used for one child invocation.
+ */
+const execFileAsync = promisify(execFile,);
+/* oxlint-enable typescript/strict-void-return */
+
+//region Public API
+
+/**
+ Create one gh command runner with fixed executable, deadline, output ceiling, and working directory.
+ 
+ @param runnerOptions - runner overrides, primarily for tests
+ 
+ @returns runner classifying every child outcome without throwing for child failures
+ 
+ @example
+ ```ts
+ const runner = createGhCommandRunner({});
+ ```
+ */
+function createGhCommandRunner(
+  runnerOptions: GhCommandRunnerOptions,
+): GhCommandRunner {
+  /**
+   Executable resolved through PATH.
+   */
+  const executable = runnerOptions.executable ?? GH_EXECUTABLE;
+  /**
+   Child deadline in milliseconds.
+   */
+  const deadlineMs = runnerOptions.deadlineMs ?? GH_DEADLINE_MILLISECONDS;
+  /**
+   Captured output ceiling in bytes.
+   */
+  const maxOutputBytes = runnerOptions.maxOutputBytes ?? GH_OUTPUT_MAX_BYTES;
+  /**
+   Working directory keeping gh away from ambient repository context.
+   */
+  const workingDirectory = runnerOptions.cwd ?? tmpdir();
+
+  return async function runConfiguredGhCommand(
+    request: ForeignBorrowed<GhCommandRequest>,
+  ): Promise<GhCommandOutcome> {
+    /**
+     Logger tagged for this child invocation.
+     */
+    const innerL = tagged({
+      tag: createGhCommandRunner.name,
+      l,
+    },);
+    /**
+     Argument vector and caller-owned cancellation signal.
+     */
+    const {
+      args,
+      signal,
+    } = request;
+    innerL.debug(`running ${executable} ${args.join(' ',)} in ${workingDirectory}`,);
+    try {
+      /**
+       Completed child result captured as buffers.
+       */
+      const result = await execFileAsync(
+        executable,
+        [
+          ...args,
+        ],
+        {
+          cwd: workingDirectory,
+          encoding: 'buffer',
+          maxBuffer: maxOutputBytes,
+          timeout: deadlineMs,
+          ...(signal === undefined ? {} : { signal, }),
+        },
+      );
+      return completedRun({
+        exitCode: 0,
+        stdout: toBuffer(result.stdout,),
+        stderr: toBuffer(result.stderr,),
+      },);
+    }
+    catch (error: unknown) {
+      if (isCancellation({
+        error,
+        ...(signal === undefined ? {} : { signal, }),
+      },))
+        throw error;
+
+      /**
+       Classified failure outcome for routing and diagnostics.
+       */
+      const outcome = classifyChildFailure({
+        error,
+        deadlineMs,
+        maxOutputBytes,
+        executable,
+      },);
+      innerL.warn(
+        outcome.ran
+          ? `${executable} exited with code ${String(outcome.exitCode,)} for: ${executable} ${args.join(' ',)}`
+          : `${executable} produced no result for ${executable} ${args.join(' ',)}: ${outcome.reason}`,
+      );
+      return outcome;
+    }
+  };
+}
+
+/**
+ Runner using the default gh executable, deadline, output ceiling, and a neutral working directory.
+ */
+const runGhCommand: GhCommandRunner = createGhCommandRunner({},);
+
+//endregion Public API
+
+//region Outcome construction
+
+/**
+ Classify one rejected child invocation.
+ 
+ @param error - rejection from the promisified child boundary
+ 
+ @param deadlineMs - child deadline used for the invocation
+ 
+ @param maxOutputBytes - captured output ceiling used for the invocation
+ 
+ @param executable - executable name used only in safe diagnostics
+ 
+ @returns completed run output for a non-zero exit, otherwise a safe no-run reason
+ 
+ @example
+ ```ts
+ classifyChildFailure({ error: new Error('spawn gh ENOENT'), deadlineMs: 60000, maxOutputBytes: 1024, executable: 'gh' });
+ ```
+ */
+function classifyChildFailure(
+  {
+    error,
+    deadlineMs,
+    maxOutputBytes,
+    executable,
+  }: {
+    readonly error: unknown;
+    readonly deadlineMs: number;
+    readonly maxOutputBytes: number;
+    readonly executable: string;
+  },
+): GhCommandOutcome {
+  /**
+   Exit code reported by Node for a completed non-zero child.
+   */
+  const exitCode = failureExitCode(error,);
+  if (exitCode.found)
+    return completedRun({
+      exitCode: exitCode.exitCode,
+      stdout: failureBuffer({
+        error,
+        stream: 'stdout',
+      },),
+      stderr: failureBuffer({
+        error,
+        stream: 'stderr',
+      },),
+    },);
+
+  /**
+   Node diagnostic code naming the failure class.
+   */
+  const diagnosticCode = failureDiagnosticCode(error,);
+  if (diagnosticCode === MISSING_EXECUTABLE_CODE)
+    return missingRun(`gh executable ${executable} was not found on PATH`,);
+  if (diagnosticCode === OUTPUT_CEILING_CODE)
+    return missingRun(`gh output exceeded the ${String(maxOutputBytes,)} byte capture ceiling`,);
+  if (isKilledFailure(error,))
+    return missingRun(`gh was terminated after exceeding the ${String(deadlineMs,)}ms deadline`,);
+  return missingRun(`gh invocation failed: ${caughtValueText(error,)}`,);
+}
+
+/**
+ Build one completed run outcome with UTF-8 validation.
+ 
+ @param exitCode - numeric child exit code
+ 
+ @param stdout - captured standard output bytes
+ 
+ @param stderr - captured standard error bytes
+ 
+ @returns completed run outcome
+ 
+ @example
+ ```ts
+ completedRun({ exitCode: 0, stdout: Buffer.from('# Title'), stderr: Buffer.alloc(0) });
+ ```
+ */
+function completedRun(
+  {
+    exitCode,
+    stdout,
+    stderr,
+  }: {
+    readonly exitCode: number;
+    readonly stdout: Buffer;
+    readonly stderr: Buffer;
+  },
+): GhCommandRan {
+  /**
+   Standard output decoded as UTF-8, lossy for binary payloads.
+   */
+  const stdoutText = stdout.toString('utf8',);
+  return {
+    ran: true,
+    exitCode,
+    stdout: stdoutText,
+    stdoutIsUtf8: isLosslessUtf8({
+      text: stdoutText,
+      bytes: stdout,
+    },),
+    stdoutByteLength: stdout.length,
+    stderr: stderr.toString('utf8',),
+  };
+}
+
+/**
+ Build one no-run outcome.
+ 
+ @param reason - safe explanation
+ 
+ @returns no-run outcome
+ 
+ @example
+ ```ts
+ missingRun('gh executable gh was not found on PATH');
+ ```
+ */
+function missingRun(reason: string,): GhCommandNotRan {
+  return {
+    ran: false,
+    reason,
+  };
+}
+
+/**
+ Return whether decoded text re-encodes to the captured bytes unchanged.
+ 
+ @param text - UTF-8 decoded output
+ 
+ @param bytes - captured output bytes
+ 
+ @returns whether decoding lost no information
+ 
+ @example
+ ```ts
+ isLosslessUtf8({ text: 'plain', bytes: Buffer.from('plain') });
+ ```
+ */
+function isLosslessUtf8(
+  {
+    text,
+    bytes,
+  }: {
+    readonly text: string;
+    readonly bytes: Buffer;
+  },
+): boolean {
+  return Buffer.from(
+    text,
+    'utf8',
+  )
+    .equals(bytes,);
+}
+
+//endregion Outcome construction
+
+//region Failure inspection
+
+/**
+ Return whether one rejection is a caller cancellation rather than a child failure.
+ 
+ @param error - rejection from the promisified child boundary
+ 
+ @param signal - caller-owned cancellation signal, when supplied
+ 
+ @returns whether the caller cancelled this invocation
+ 
+ @example
+ ```ts
+ isCancellation({ error: Object.assign(new Error('aborted'), { code: 'ABORT_ERR' }) });
+ ```
+ */
+function isCancellation(
+  {
+    error,
+    signal,
+  }: {
+    readonly error: unknown;
+    readonly signal?: AbortSignal;
+  },
+): boolean {
+  if (signal?.aborted === true)
+    return true;
+  return failureDiagnosticCode(error,) === CANCELLATION_CODE;
+}
+
+/**
+ Read one numeric child exit code from a rejection.
+ 
+ @param error - rejection from the promisified child boundary
+ 
+ @returns numeric exit code result, absent when the child never completed
+ 
+ @example
+ ```ts
+ failureExitCode(Object.assign(new Error('failed'), { code: 1 }));
+ ```
+ */
+function failureExitCode(error: unknown,): ExitCodeResult {
+  /**
+   Node diagnostic code carried by the rejection.
+   */
+  const code = failureDiagnosticCode(error,);
+  return (typeof code) === 'number'
+    ? {
+      found: true,
+      exitCode: code,
+    }
+    : { found: false, };
+}
+
+/**
+ Read one Node diagnostic code from a rejection.
+ 
+ @param error - rejection from the promisified child boundary
+ 
+ @returns diagnostic code, absent when the rejection carries none
+ 
+ @example
+ ```ts
+ failureDiagnosticCode(Object.assign(new Error('failed'), { code: 'ENOENT' }));
+ ```
+ */
+function failureDiagnosticCode(error: unknown,): unknown {
+  if (!isRecord(error,))
+    return undefined;
+  return error.code;
+}
+
+/**
+ Return whether Node reported a forced child termination.
+ 
+ @param error - rejection from the promisified child boundary
+ 
+ @returns whether the child was killed
+ 
+ @example
+ ```ts
+ isKilledFailure(Object.assign(new Error('failed'), { killed: true }));
+ ```
+ */
+function isKilledFailure(error: unknown,): boolean {
+  return isRecord(error,)
+    && (error.killed === true);
+}
+
+/**
+ Read one captured output stream from a rejection.
+ 
+ @param error - rejection from the promisified child boundary
+ 
+ @param stream - captured stream name
+ 
+ @returns captured bytes, empty when the rejection carries none
+ 
+ @example
+ ```ts
+ failureBuffer({ error: Object.assign(new Error('failed'), { stderr: Buffer.from('boom') }), stream: 'stderr' });
+ ```
+ */
+function failureBuffer(
+  {
+    error,
+    stream,
+  }: {
+    readonly error: unknown;
+    readonly stream: 'stdout' | 'stderr';
+  },
+): Buffer {
+  if (!isRecord(error,))
+    return Buffer.alloc(0,);
+  return toBuffer(error[stream],);
+}
+
+/**
+ Normalize one captured stream value into bytes.
+ 
+ @param value - stream value reported by Node
+ 
+ @returns captured bytes
+ 
+ @example
+ ```ts
+ toBuffer('plain text');
+ ```
+ */
+function toBuffer(value: unknown,): Buffer {
+  if (Buffer.isBuffer(value,))
+    return value;
+  if ((typeof value) === 'string')
+    return Buffer.from(
+      value,
+      'utf8',
+    );
+  return Buffer.alloc(0,);
+}
+
+/**
+ Return whether one value can be read by string keys.
+ 
+ @param value - unknown rejection payload
+ 
+ @returns whether value is a non-null, non-array object
+ 
+ @example
+ ```ts
+ isRecord(new Error('failed'));
+ ```
+ */
+function isRecord(value: unknown,): value is Record<string, unknown> {
+  return (value !== null)
+    && ((typeof value) === 'object')
+    && (!Array.isArray(value,));
+}
+
+//endregion Failure inspection
+
+export {
+  createGhCommandRunner,
+  runGhCommand,
+};

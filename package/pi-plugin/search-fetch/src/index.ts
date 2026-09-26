@@ -166,6 +166,15 @@ export {
   exaForwardableBlocklist,
 } from './exa-client.ts';
 export {
+  createGhClient,
+  GhFetchError,
+} from './gh-client.ts';
+export {
+  createGhCommandRunner,
+  runGhCommand,
+} from './gh-process.ts';
+export { planGitHubFetch, } from './github-url-plan.ts';
+export {
   filterFetchResponseDataImages,
   filterMarkdownDataImages,
 } from './markdown-data-image-filter.ts';
@@ -215,6 +224,25 @@ export type {
   ExaContentsRequestBody,
   ExaSearchRequestBody,
 } from './exa-client.ts';
+export type {
+  GhClient,
+  GhClientFetchOptions,
+  GhClientOptions,
+  GhCommandNotRan,
+  GhCommandOutcome,
+  GhCommandRan,
+  GhCommandRequest,
+  GhCommandRunner,
+  GhCommandRunnerOptions,
+  GhFetchAttempt,
+  GhInvocation,
+  GhMarkdownResponse,
+  GitHubFetchRequestKind,
+  GitHubFetchPlan,
+  GitHubRefPathSplit,
+  PlannedGitHubFetch,
+  UnplannedGitHubFetch,
+} from './github-fetch-types.ts';
 export type {
   FetchResponseDataImageFilterResult,
   MarkdownDataImageFilterResult,
