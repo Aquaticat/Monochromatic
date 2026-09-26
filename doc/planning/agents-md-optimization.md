@@ -236,9 +236,18 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    Approved.
 - Batch 9 (command execution and long-form flags):
    13 rules become 12,
-   1002 to 803 tokens;
+   1002 to 814 tokens;
    retires LF2 into LFF;
    CLH moves to "Command execution conventions".
+   Approved after NXR fix:
+   the first draft dropped "rerun via process tool or bounded execution" as covered by "never rerun it synchronously";
+   user caught that it was neither covered nor compatible (bounded reruns can be synchronous).
+- Batch 10 (hazardous and essential commands):
+   11 rules become 10,
+   887 to 778 tokens;
+   retires CM4 into CM3;
+   CM2 moves to "Cross-runtime and scripts",
+   WC2 to "Before editing code".
    Proposed,
    awaiting user review.
 - Retired-code references:
@@ -923,6 +932,83 @@ WXG:
  settlement,
  and copying;
  then classify the effective source before lock analysis.
+```
+
+
+### Batch 9
+
+```md
+TMO:
+ No external `timeout` around routine verification;
+ use the command tool's session/polling and stop stale processes by PID.
+Wrappers only for behavior-under-test or unbounded runtime.
+
+NXR:
+ Transport failure (`No result provided`,
+ dropped session) after a command may have run:
+ inspect processes + logs first;
+ never repeat the same synchronous call;
+ rerun in background or with a bound.
+
+1CB:
+ At most three `&&`-chained steps per shell call;
+ no `;` chains or loops.
+Longer multi-step work:
+ write a scratch `.ts` (`node:child_process`) and run it.
+
+RGP:
+ `rg` without a path may read stdin:
+ always pass `.` or an absolute path.
+
+ATH:
+ Before using `${HOME}/temp/agent` scratch:
+ `mkdir --parents` it,
+ then `chmod 700`;
+ trust checks reject group/other permission bits.
+
+CLN:
+ Investigating package source:
+ `gh repo clone <repo> "${HOME}/temp/agent/<name>-<date>" -- --depth 1`,
+ not `git clone`,
+ unless commit history matters.
+
+APQ:
+ Auto-push fires in third-party clones too:
+ before committing in one,
+ run `git remote set-url --push origin DISABLED`.
+
+BOP:
+ `~` in shell output is a display-only home-dir substitution by the `bash-output-filter` hook;
+ bypass it with `eval`,
+ `export`,
+ `source`,
+ `$(...)`,
+ backticks,
+ or `> file`.
+
+WCD:
+ Pin target dir on every shell command (native `-C`/`--cwd` or `cd -- <abs path> &&`).
+Before alternate-worktree writes,
+ verify `pwd` + `git rev-parse --show-toplevel`.
+
+CLH:
+ Before automating CLI prompts (pipes,
+ PTYs,
+ drivers):
+ check `--help` and current docs/source for native noninteractive flags;
+ prefer them over terminal emulation.
+
+LFF:
+ Use long-form (`--flag`) CLI options,
+ not short flags;
+ writing long form forces knowing what each does.
+No long form:
+ short flag stays.
+
+RGT:
+ `rg` recurses by default;
+ its `-r` means `--replace`,
+ so grep-reflex `rg -rl`/`-ir` silently rewrites matches in output.
 ```
 
 ## Next action
