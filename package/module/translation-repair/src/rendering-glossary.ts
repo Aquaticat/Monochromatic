@@ -4,6 +4,7 @@ import {
 } from './community-glossary.ts';
 import { GRAMMAR_GLOSSARY, } from './rendering-glossary-grammar.ts';
 import { IDIOM_GLOSSARY, } from './rendering-glossary-idiom.ts';
+import { MEDICAL_GLOSSARY, } from './rendering-glossary-medical.ts';
 import { PHRASING_GLOSSARY, } from './rendering-glossary-phrasing.ts';
 import { WORDING_GLOSSARY, } from './rendering-glossary-wording.ts';
 
@@ -255,6 +256,9 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
   // CLASS ONE HUNDRED SIXTY-ONE (TianqiChen6662, 2026-09-26): grammar slips,
   // kept in `rendering-glossary-grammar.ts`.
   ...GRAMMAR_GLOSSARY,
+  // CLASS ONE HUNDRED SIXTY-TWO (TianqiChen6663, 2026-09-26): medical terms,
+  // kept in `rendering-glossary-medical.ts`.
+  ...MEDICAL_GLOSSARY,
 ];
 
 /**
