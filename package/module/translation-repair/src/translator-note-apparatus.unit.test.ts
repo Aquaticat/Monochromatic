@@ -28,6 +28,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  archiveDisputeNote,
   buildAdjudicationMessages,
   buildCriticMessages,
   CONTEST_POLICY,
@@ -43,6 +44,22 @@ const WORDPLAY_NOTE = 'a translator\'s note explaining a pun, wordplay, an allus
  Wording saying narrative detail is an addition however uncontradicted.
  */
 const NARRATIVE_DETAIL = 'WHAT HAPPENED IS NEVER APPARATUS';
+
+/**
+ Dispute note for a slice whose one accepted claim names a translator's note
+ on a pun, as hulicaijia27 chunk 69's did.
+ */
+const noteDispute = archiveDisputeNote({
+  dispute: {
+    sliceIndex: 9,
+    standIn: '[^3]: That is, the fish mentioned earlier.',
+    acceptedAdditions: 1,
+    acceptedClaims: [
+      'accuracy/addition major: The translation of footnote 3 adds the pun explanation from the ARCHIVE note, '
+        + 'whereas the ORIGINAL footnote only says that it refers to the fish mentioned earlier.',
+    ],
+  },
+},);
 
 /**
  Critic system instructions for a cat-themed pair.
@@ -104,6 +121,16 @@ await describe({
         expect(PAGE_APPARATUS_IS_KEPT,).toContain(NARRATIVE_DETAIL,);
         expect(CONTEST_POLICY,).toContain(NARRATIVE_DETAIL,);
         expect(PAGE_APPARATUS_IS_KEPT.includes('Only what the ORIGINAL contradicts is an addition.',),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'LEAVES a claimed translator note to the apparatus rule on the dispute note every downstream sheet reads '
+        + '(hulicaijia27: the panel accepted the note as an addition 3 to 2, and the dispute note told the translate '
+        + 'slate that any detail the claim names is not the page\'s apparatus, so all four judges voted it out)',
+      fn: async () => {
+        expect(noteDispute,).toContain(WORDPLAY_NOTE,);
+        expect(noteDispute,).toContain(NARRATIVE_DETAIL,);
+        expect(noteDispute.includes('A detail those claims name is not page content',),).toBe(false,);
       },
     },),
   ],
