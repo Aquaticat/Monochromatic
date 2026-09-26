@@ -198,7 +198,21 @@ Git source at commit `0f8e75abebff` plus experiments with real Git 2.55.0.
   `trackedFiles` pathspecs,
   `headOid`)
   and re-run only policies whose read set changed.
-  Policies that read outside the API declare it and always re-run.
+  Corrected default:
+  an undeclared policy is assumed to read anything and always re-runs.
+  A policy may declare that it reads only through the context,
+  or list its external inputs
+  (worktree files,
+  executables,
+  revisions passed to tools),
+  which cli-git fingerprints.
+  Evidence for the correction:
+  every shipped plugin reads outside the API
+  (`forbidden-strings` and `markdown-lint` spawn tools with repository cwd;
+  `repository-policy` calls `readFile`
+  and spawns `git ls-files` and `git cat-file`).
+- Hook parallelism declaration: `hooks: { concurrentCommits: true }` in `cli-git.config`,
+  default false.
 - Hooks and editor: run during preparation.
   The editor,
   `prepare-commit-msg`,
@@ -305,13 +319,8 @@ the owner declined an `AGENTS.md` rule.
 
 ## Open questions
 
-- Correction pending owner answer:
-  the accepted policy re-run rule defaults undeclared policies to API-only reads,
-  but every shipped plugin reads outside the API
-  (`forbidden-strings` and `markdown-lint` spawn tools with repository cwd;
-  `repository-policy` calls `readFile`),
-  so the safe default is the reverse.
-- Name of the `cli-git.config` hook parallelism declaration.
+- Shape and name of the policy input declaration.
+- Config key names for the foreign lock bound and the reservation threshold.
 
 ## Next action
 
