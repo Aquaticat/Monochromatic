@@ -97,7 +97,11 @@ Repo uses of single-argument `Array.from` are 2 deliberate string code-point spl
   where TypeScript resolves the file, the rule names the receiver kind and autofixes proven arrays (Q8).
 - `unicorn/prefer-spread` is replaced, not turned off, under its own issue, in this session (Q7):
   `Array.from(x,)` to `[...x]` keeps its fix (equivalent for every iterable);
-  `x.slice()` reports and fixes only when types prove an array.
+  `x.slice()` fixes only when types prove an array.
+  Without types it still reports, without a fix (user correction: code without types holds itself to a higher
+  standard to compensate), naming the unambiguous spellings: `[...x]` for arrays,
+  `new Uint8Array(x,)` style constructors for typed arrays, plain `x` for immutable strings.
+  With types, a proven typed-array or string receiver is not reported.
 - No upstream contact; oxc issue 26159 is cited.
 
 ## Open questions
