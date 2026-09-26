@@ -161,7 +161,15 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
         val state = if (candidate.contains("-player")) "player" else if (candidate.contains("-results")) "results"
             else if (candidate.contains("-none")) "none" else if (candidate.contains("-unavailable")) "unavailable" else "empty"
         val overflowSuffix = if (overflowStudy) "-overflow" else ""
-        SearchLayoutStudy(candidate = "search-layout-docked-$state$overflowSuffix${if (light) "-light" else ""}",
+        // What:     The optional suffix selects the cover keyboard-viewport comparison.
+        // Why:      The delegated cover candidate must preserve the incoming study marker.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const viewportSuffix = candidate.includes("-imeviewport-") ? "-imeviewport" : "";
+        // ```
+        val viewportSuffix = if (candidate.contains("-imeviewport-")) "-imeviewport" else ""
+        SearchLayoutStudy(candidate = "search-layout-docked-$state$overflowSuffix$viewportSuffix${if (light) "-light" else ""}",
             hidePositiveHeading = true)
         return
     }
