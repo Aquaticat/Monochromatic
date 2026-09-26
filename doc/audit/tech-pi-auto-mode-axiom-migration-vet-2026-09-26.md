@@ -284,8 +284,22 @@ The API page's 429 description concerns rate limits,
 not context truncation.
 The offline route preserves the supplied policy string when forwarding,
 but that does not prove the hosted model sees all tokens.
+A subsequent live public/synthetic probe returned HTTP 200 for the full-policy control
+and HTTP 400 with `max_tokens_exceeded` for both padded inputs.
+The requests were 45,020,
+125,020,
+and 205,020 bytes;
+all finished inside their individual five-second budgets.
+Rejected-request token counts were not supplied,
+so no exact token threshold or particular exceeded budget is inferred.
+The [live verification record](../troubleshooting/llmgateway-systemone-boundaries.md)
+contains the exact response,
+client/artifact hashes,
+timings,
+and limitations.
 Gate:
- pending model-input/overflow evidence.
+ tested overflow cases reject;
+complete model-input preservation and deadline failure paths remain unqualified.
 
 The [Jev 1.13 limitations page](https://docs.typesafe.ai/model-jaggedness/jev-1.13)
 explicitly warns about adversarial state,
