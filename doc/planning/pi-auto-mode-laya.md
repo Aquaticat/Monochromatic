@@ -417,6 +417,53 @@ Next probe: exercise an actual bounded full-length forward pass,
 record all retained tokens, and distinguish runtime acceptance from decision quality or supported extrapolation.
 Do not substitute truncation or policy window fragments.
 
+### Full-policy forward probe execution manifest
+
+The pinned model-data recovery completed with exit 0 (`proc_d268`).
+All allowlisted artifacts for English, multilingual, and typed decisions passed published size/hash verification.
+The typed-decisions tokenizer JSON has the same SHA-256 as English;
+its raw-policy token count is therefore the same under the tested tokenizer backend.
+Multilingual tokenizer coverage remains to be measured separately.
+
+The next disposable input image uses the same pinned dependency base plus current Laya source,
+the verified English checkpoint, scenario corpus v3, and the complete current policy snapshot.
+Preparation checks that repository `AGENTS.md` still matches the measured hash.
+Only the exact model artifact whitelist is copied; incomplete downloads and private history manifests are excluded.
+The Containerfile executes no installation/build scripts and contains no RUN instruction.
+
+Command tree: scratch `mise run build`, then `mise run probe`;
+container entrypoint `/usr/local/bin/python3 -I -S -B /input/probe.py`.
+Python startup hooks and bytecode writes are disabled.
+The script imports current `/input/source/laya` before the image's older installed package
+and asserts both Laya version 0.3.20 and that exact source path.
+Pinned CPU torch is 2.10.0+cpu,
+built from PyTorch commit `449b1768410104d3ed79d3bcfe4ba1d65c7f22c0` per its installed `version.py`.
+Installed torch metadata identifies BSD-3-Clause and the official PyTorch source repository.
+Transformers 5.0.0 local source was inspected at the model factory and ModernBERT forward/compile boundaries.
+Tokenizers is 0.22.2; safetensors is 0.8.0; numpy is 2.5.3 in this fixed image.
+This feasibility probe is not a completed dependency/adoption audit.
+
+The script loads digest-verified local safetensors,
+uses CPU with `fast=False` and `compile=False`, and sets compute threads to 2.
+No hooks, remote model ID, checkpoint Python code, GPU backend, training, or fixture command is executed.
+Python audit hooks reject subprocess creation and network connection/resolution.
+Laya's own `_encode_state` output is checked against every state token before inference;
+question instructions are also checked for truncation.
+Per-call `max_len` equals measured complete sequence length, with a hard 20,000-token probe ceiling.
+Only the predeclared benign/exfiltrating development contrast is run initially.
+Expected labels and rationales are not passed to Laya.
+
+Limits remain 2 GiB memory, no additional swap, 2 CPUs, 64 processes, 256 descriptors,
+and a 300-second container runtime deadline.
+The image/root filesystem is read-only, no host directory is mounted,
+and a disposable 64 MiB `/tmp` is the only extra writable scratch area.
+The process runs as UID/GID 65534 with dropped capabilities and no-new-privileges.
+No network, host environment, proxy credentials, secrets, or devices are passed.
+Expected outputs are coverage metadata, decisions, timing, memory counters, and any captured diagnostics.
+Keep the stopped container temporarily to inspect `State.OOMKilled` rather than inferring cause from an exit code.
+Stop and inspect any unexpected execution, network attempt, write boundary, or resource failure.
+Runtime acceptance would not establish long-context accuracy or calibrated safety.
+
 ## Research still required
 
 - Finalize open ownership/authority choices in the responsibility ledger.
