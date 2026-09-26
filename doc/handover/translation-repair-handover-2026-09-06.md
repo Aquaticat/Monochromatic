@@ -4777,7 +4777,16 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASSES ONE HUNDRED FIFTY-FOUR AND FIFTY-FIVE BUILT (2026-09-26):
+1.  CLASS ONE HUNDRED FIFTY-SIX BUILT AND LIVE (2026-09-26):
+    SHIHAI4H1 READ (first run of shihai4h, `.frozen-dist-6cf583ca3`): SETTLED at 12:34 UTC in 27.5 min, 3.14 USD;
+    every structural check as the archive, class one hundred fifty-four held against an archive already right,
+    two archive errors corrected (2013, "older cousin"); recorded under "## shihai4h1 read" in the pass log.
+    初中 "junior middle school", 自考 "self-taught exams" and 压力话 "pressured remarks" join the wording glossary
+    (guard `6dea1d435`, fix `0899e69b1`, suite 1,155 PASS, 0 FAIL).
+    SHIHAI4H2 READ (`.frozen-dist-6cf583ca3-class156`, the `0899e69b1` tree): SETTLED at 13:12 UTC in 24.7 min;
+    "junior high school", "self-study examinations", "was frequently pressured" on the page; every shihai4h1 check held;
+    recorded under "## shihai4h2 read". Next: another entry on the newest build, still watching for calques.
+    CLASSES ONE HUNDRED FIFTY-FOUR AND FIFTY-FIVE BUILT (2026-09-26):
     SHI_YUMIAOYA38 READ: SETTLED at 11:49 UTC in 6.4 min on `.frozen-dist-12b581811`;
     class one hundred fifty-one live ("unfilial son"); recorded under "## shi_Yumiaoya38 read" in the pass log.
     One of four 跨圈 shipped "the crossdressing community": 跨圈 joins the community glossary

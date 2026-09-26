@@ -8082,6 +8082,68 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shihai4h2 read, 2026-09-26: class one hundred fifty-six live
+
+shihai4h2 ran on `.frozen-dist-6cf583ca3-class156`, built from the tree later committed as `0899e69b1`;
+it was frozen and launched before the commit because every cli-git call failed on another session's abandoned worktree-copy journal.
+It SETTLED at 13:12 UTC in 24.7 min, one attempt, 3,122 calls, 3,647 seats, 119 retry rounds,
+3.19 USD of OpenRouter cost, 2 abandoned streams (0.0016 USD); Synthetic and Hyper dry,
+so Qwen3.8-27B threw all 525 calls and glm-5.3 all 234.
+Every shihai4h1 check held: front matter equal, 5 headings, 10 footnotes, 2 PhotoScroll, no TA, no double blank line,
+no error finish; 40 abstention lines, one run-off, five archive-revision-refused lines, two unendorsed standings (17, 33).
+
+- Class one hundred fifty-six live: "junior high school" on both of the page's 初中 lines (73, 169),
+  "to take self-study examinations" (76), "was frequently pressured" (78).
+- Class one hundred fifty-four held: "She and the Trans Community", both body occurrences "the trans community".
+- Both calques shihai4h1 left as observations are gone by the bench's own choice:
+  "was never able to meet her parents’ expectations afterward" (73)
+  and "the deepest core of a person’s spirit and will is always alone" (342).
+- Canadian spelling held ("centre" twice).
+
+## shihai4h1 read, 2026-09-26: class one hundred fifty-four against a correct archive, class one hundred fifty-six
+
+### What the run did
+
+shihai4h1 (frozen `6cf583ca3`, overlap 8), the first run of shihai4h,
+SETTLED at 12:34 UTC in 27.5 min, one attempt, 54 slices, 41 changed, 3,175 calls,
+3.14 USD of OpenRouter cost; the meters read Bedrock about 16.09 and OpenRouter 39.56 at the end.
+Synthetic and Hyper dry: Qwen3.8-27B threw 461 of 514 calls and glm-5.3 all 240.
+Front matter equal, 5 headings, 10 footnotes, 2 PhotoScroll, no TA, no double blank line,
+as the archive; 211 blockquote lines against the archive's 168 because the page is semantically wrapped
+(676 lines against 458).
+The log carries 37 abstention lines, one translate run-off ("the finalists were valid, so the ballots decide"),
+two archive-revision-refused lines and five archive review lines.
+
+- Class one hundred fifty-four held against an archive that was already right:
+  all three 跨圈 read "the trans community", the heading "She and the Trans Community" as the archive.
+  "crossdressing hobby" on line 139 renders 异装癖, another word, and is right.
+- The page corrected two archive errors: the year 2013 where the archive wrote 2023,
+  and "her older cousin" where the archive wrote "her sister".
+- The translator's doubt comment was dropped because the sentence it doubted was retranslated correctly.
+- Canadian spelling and vocabulary clean.
+
+### Class one hundred fifty-six: three schooling calques
+
+Under the owner's standing instruction to translate better wherever possible:
+初中 shipped "junior middle school" (line 76), 自考 "self-taught exams" (line 79)
+and 压力话 "frequently subjected to pressured remarks" (line 82).
+初中 stands in five pinned entries; four of the five archive passages that render it write "junior high school"
+(Jennife80677612, aiyysk twice, Xu_Yushu), and shihai4h's archive alone writes "junior middle school".
+自考 (高等教育自学考试, the self-study examinations) and 压力话 stand on shihai4h alone, with no archive English.
+The three join the wording glossary with "junior high school", "self-study examinations" and "pressured" first,
+and "junior middle school", "self-taught exam" and "pressured remarks" with their variants refused
+by the source-carry floor before any judge reads the candidate.
+Guard `rendering-glossary-study.unit.test.ts` (`6dea1d435`), red first on the `6cf583ca3` build; fix `0899e69b1`.
+Suite 1,155 PASS, 0 FAIL (`suite-class156.log`).
+Both commits waited about an hour: another session's `worktree add` died partway through its ignored-state copy,
+and every cli-git call failed on the abandoned copy journal until that session recovered it.
+
+### Observations not built
+
+- "continued to fail to meet her parents’ satisfaction" (line 76) and
+  "a person’s most core spiritual will is always alone" (line 360) read as calques,
+  but neither is a term a glossary entry can hold; watched.
+
 ## shi_Yumiaoya39 read, 2026-09-26: classes one hundred fifty-four and fifty-five live
 
 shi_Yumiaoya39 (frozen `6cf583ca3`, overlap 8) SETTLED at 12:05 UTC in 7.6 min, one attempt,
