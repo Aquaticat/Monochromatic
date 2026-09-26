@@ -284,6 +284,8 @@ function joinedOutcome(record: LastPushedRecord,): SingleFlightOutcome {
 
  @param push - runs today's push argument selection against real Git
 
+ @param onWait - called once when a live pusher holds the branch's push lock, after the first record read
+
  @returns how auto-push finished
 
  @example
@@ -297,12 +299,14 @@ export async function runSingleFlightPush({
   branchRef,
   landedOid,
   push,
+  onWait,
 }: Readonly<{
   gitPath: string;
   cwd: string;
   branchRef: string;
   landedOid: string;
   push: () => Promise<PushAttempt>;
+  onWait?: () => void;
 }>,): Promise<SingleFlightOutcome> {
   /**
    Tagged coordinator logger.
@@ -343,6 +347,7 @@ export async function runSingleFlightPush({
     lockDirectory,
     onWait: function reportWait(): void {
       rl.debug(`waiting for the in-flight push of ${branchRef}`,);
+      onWait?.();
     },
   },);
   /**

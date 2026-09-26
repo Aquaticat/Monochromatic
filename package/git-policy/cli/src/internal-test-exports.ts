@@ -14,6 +14,10 @@ import {
   landingTestExports,
 } from './internal-test-exports-landing.ts';
 import {
+  type PushTestExports,
+  pushTestExports,
+} from './internal-test-exports-push.ts';
+import {
   classifyTransactionOwner,
   createTransactionOwnerRecord,
   encodeTransactionOwner,
@@ -55,7 +59,7 @@ import {
 /**
  Shapes of the transaction internals exposed to built-artifact tests.
  */
-export type InternalTestExports = LandingTestExports & Readonly<{
+export type InternalTestExports = LandingTestExports & PushTestExports & Readonly<{
   /**
    Internal `classifyTransactionOwner`.
    */
@@ -159,6 +163,7 @@ export type InternalTestExports = LandingTestExports & Readonly<{
  */
 export const internalTestExports: InternalTestExports = Object.freeze({
   ...landingTestExports,
+  ...pushTestExports,
   classifyTransactionOwner,
   CommitTransactionRecoveryError,
   ConfigValidationError,

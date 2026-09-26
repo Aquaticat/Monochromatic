@@ -1,6 +1,7 @@
 import {
   mkdir,
   mkdtemp,
+  readFile,
   rm,
   writeFile,
 } from 'node:fs/promises';
@@ -14,11 +15,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import nanoSpawn from 'nano-spawn';
 
-import {
+import { internalTestExports, } from '../dist/final/node/index.mjs';
+import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
+
+const {
   autoPush,
   filterPushOutput,
-} from './auto-push.ts';
-import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
+} = internalTestExports;
 
 //region Test fixtures: disposable repos, bare remotes, and a remote-line hook
 
@@ -215,6 +218,76 @@ async function initBareRemoteWithHook({
   );
 }
 
+/**
+ Resolves a fixture repository's current commit, standing in for the OID a landing wrote.
+ 
+ @param repoPath - Repository root.
+ 
+ @returns Commit OID.
+ */
+async function headOid(repoPath: string,): Promise<string> {
+  return (await nanoSpawn(
+    realGitPath,
+    ['rev-parse', 'HEAD',],
+    { cwd: repoPath, },
+  )).stdout.trim();
+}
+
+/**
+ Creates a repository whose origin is a fresh bare remote and whose pre-push hook, a Node program, logs each invocation.
+ 
+ @param root - Scratch directory holding the repository, remote, and hook log.
+ 
+ @param prePushExitCode - Exit code of the pre-push hook.
+ 
+ @returns Repository, remote, and hook log paths.
+ */
+async function initRepoWithRemoteAndPrePush({
+  root,
+  prePushExitCode = 0,
+}: Readonly<{
+  root: string;
+  prePushExitCode?: number;
+}>,): Promise<Readonly<{ repoPath: string; remotePath: string; prePushLog: string; }>> {
+  /** Working repository. */
+  const repoPath = join(root, 'repo',);
+  /** Bare origin remote. */
+  const remotePath = join(root, 'remote.git',);
+  /** Hooks directory configured locally, so a global core.hooksPath cannot hide the hook. */
+  const hooksPath = join(root, 'hooks',);
+  /** Pre-push invocation log. */
+  const prePushLog = join(root, 'pre-push.log',);
+  await initBareRemoteWithHook({ remotePath, },);
+  await initRepoWithCommit({ repoPath, },);
+  await runGit({ cwd: repoPath, args: ['remote', 'add', 'origin', remotePath,], },);
+  await mkdir(hooksPath, { recursive: true, },);
+  await writeFile(
+    join(hooksPath, 'pre-push',),
+    `#!${process.execPath}\nrequire('node:fs').appendFileSync(${JSON.stringify(prePushLog,)}, 'pre-push\\n');\nprocess.exit(${String(prePushExitCode,)});\n`,
+    { mode: EXECUTABLE_MODE, },
+  );
+  await runGit({ cwd: repoPath, args: ['config', 'core.hooksPath', hooksPath,], },);
+  return { repoPath, remotePath, prePushLog, };
+}
+
+/**
+ Reads a file, empty when absent.
+ 
+ @param path - File path.
+ 
+ @returns Text.
+ */
+async function readOptional(path: string,): Promise<string> {
+  try {
+    return await readFile(path, 'utf8',);
+  }
+  catch (error: unknown) {
+    if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
+      return '';
+    throw error;
+  }
+}
+
 //endregion Test fixtures
 
 await describe({
@@ -270,6 +343,7 @@ await describe({
         const result = await autoPush({
           gitPath: realGitPath,
           cwd: tempDirectory.path,
+          landedOid: await headOid(tempDirectory.path,),
         },);
 
         expect(result.outcome,).toBe('skipped',);
@@ -309,6 +383,7 @@ await describe({
         const result = await autoPush({
           gitPath: realGitPath,
           cwd: repoPath,
+          landedOid: await headOid(repoPath,),
         },);
 
         expect(result.outcome,).toBe('pushed',);
@@ -369,6 +444,7 @@ await describe({
         const result = await autoPush({
           gitPath: realGitPath,
           cwd: repoPath,
+          landedOid: await headOid(repoPath,),
         },);
 
         expect(result.outcome,).toBe('skipped',);
@@ -436,6 +512,7 @@ await describe({
         const result = await autoPush({
           gitPath: realGitPath,
           cwd: repoPath,
+          landedOid: await headOid(repoPath,),
         },);
 
         expect(result.outcome,).toBe('pushed',);
@@ -514,12 +591,61 @@ await describe({
         const result = await autoPush({
           gitPath: realGitPath,
           cwd: repoPath,
+          landedOid: await headOid(repoPath,),
         },);
 
         expect(result.outcome,).toBe('failed',);
         expect(result.exitCode,).not.toBe(0,);
         expect(result.shown
           .length,).toBeGreaterThan(0,);
+      },
+    },),
+    it({
+      name: 'joins the recorded push when the same commit is backed up again, without running pre-push',
+      fn: async function testJoinsRecordedPush(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /** Fixture paths. */
+        const { repoPath, remotePath, prePushLog, } = await initRepoWithRemoteAndPrePush({ root: tempDirectory.path, },);
+        /** Landed commit. */
+        const landedOid = await headOid(repoPath,);
+        /** First backup, which pushes. */
+        const first = await autoPush({ gitPath: realGitPath, cwd: repoPath, landedOid, },);
+        /** Second backup of the same commit, which joins. */
+        const second = await autoPush({ gitPath: realGitPath, cwd: repoPath, landedOid, },);
+        expect({ outcome: first.outcome, joined: first.joined, },).toEqual({ outcome: 'pushed', joined: false, },);
+        expect(second,).toEqual({ outcome: 'pushed', exitCode: 0, shown: '', joined: true, },);
+        expect(await readOptional(prePushLog,),).toBe('pre-push\n',);
+        expect((await nanoSpawn(realGitPath, ['for-each-ref', '--format=%(objectname)', 'refs/heads',], { cwd: remotePath, },)).stdout,).toBe(landedOid,);
+      },
+    },),
+    it({
+      name: 'surfaces a failed pre-push hook as a failed push with its full output',
+      fn: async function testPrePushRejects(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /** Fixture paths. */
+        const { repoPath, prePushLog, } = await initRepoWithRemoteAndPrePush({ root: tempDirectory.path, prePushExitCode: 1, },);
+        /** Backup rejected by the hook. */
+        const result = await autoPush({ gitPath: realGitPath, cwd: repoPath, landedOid: await headOid(repoPath,), },);
+        expect({ outcome: result.outcome, joined: result.joined, },).toEqual({ outcome: 'failed', joined: false, },);
+        expect(result.exitCode,).not.toBe(0,);
+        expect(result.shown,).toContain('failed to push',);
+        expect(await readOptional(prePushLog,),).toBe('pre-push\n',);
+      },
+    },),
+    it({
+      name: 'surfaces a push coordination failure as a failed push instead of throwing',
+      fn: async function testCoordinationFailure(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+        /** Fixture paths. */
+        const { repoPath, prePushLog, } = await initRepoWithRemoteAndPrePush({ root: tempDirectory.path, },);
+        await mkdir(join(repoPath, '.git', 'cli-git',), { recursive: true, },);
+        // A file where the coordination directory belongs makes its creation fail.
+        await writeFile(join(repoPath, '.git', 'cli-git', 'push',), '',);
+        /** Backup whose coordination cannot start. */
+        const result = await autoPush({ gitPath: realGitPath, cwd: repoPath, landedOid: await headOid(repoPath,), },);
+        expect({ outcome: result.outcome, exitCode: result.exitCode, joined: result.joined, },).toEqual({ outcome: 'failed', exitCode: 1, joined: false, },);
+        expect(result.shown.length,).toBeGreaterThan(0,);
+        expect(await readOptional(prePushLog,),).toBe('',);
       },
     },),
   ],
