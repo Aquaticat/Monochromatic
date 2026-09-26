@@ -1931,13 +1931,28 @@ The shadow repository holds these private entries:
   `packed-refs`,
   `reftable`,
   and `logs`.
-  It contains only the private `HEAD`,
-  a private copy of the target branch ref at the preparation base,
-  and a private copy of the branch's upstream ref when `@{upstream}` resolves at invocation.
-  Cli-git writes them through Git in the shadow
-  (`git --git-dir=<shadow> update-ref` and `symbolic-ref`),
-  never as files,
-  so the copied `extensions.refStorage` governs their storage.
+  It contains the private `HEAD`,
+  a snapshot of every real ref taken at invocation
+  (`git for-each-ref` in the owning worktree,
+  symbolic refs recreated with `git symbolic-ref`),
+  and a private copy of the target branch ref at the preparation base
+  that replaces the snapshot's entry for that ref.
+  Hooks therefore resolve tags,
+  other branches,
+  and remote-tracking refs as they stood at invocation.
+  With the files backend,
+  cli-git writes the snapshot as one `packed-refs` file
+  (header `# pack-refs with: sorted`)
+  and writes the private target ref as a loose ref through `git --git-dir=<shadow> update-ref`,
+  which takes precedence over the packed entry.
+  With the reftable backend,
+  cli-git writes the snapshot through one `git --git-dir=<shadow> update-ref --stdin` transaction.
+  Measured with the files backend
+  (Git 2.55.0,
+  7 runs each):
+  a `packed-refs` snapshot took a median 3.5 ms for this repository's 105 refs
+  and 12.2 ms for 20,001 refs,
+  while creating loose refs through `update-ref --stdin` took 34.3 ms and 4166.9 ms.
 - `objects`,
   a private object store whose `objects/info/alternates` names the absolute real object directory
   resolved at invocation

@@ -299,6 +299,19 @@ and runs a "reject commits to main" check.
   `objects`,
   and the copied per-worktree state stay private;
   `config.worktree` is copied.
+- The shadow's ref store holds a snapshot of every real ref at invocation
+  with the target branch replaced by the private copy,
+  so hooks resolve tags,
+  other branches,
+  and remote-tracking refs.
+  A files-backend snapshot is written as one `packed-refs` file:
+  a median 12.2 ms for 20,001 refs against 4166.9 ms for creating loose refs
+  (measured 2026-09-25).
+  Reftable snapshots use one `update-ref --stdin` transaction.
+- Windows creates directory junctions instead of symbolic links for shared directories,
+  because symbolic links need a privilege or developer mode there,
+  and copies shared files;
+  Windows verification runs in CI.
 - Landing migrates the shadow's new objects into the real store as a pack kept with a `.keep` file
   until the compare-and-swap succeeds,
   so neither `git prune` nor repacking can drop them in between.
