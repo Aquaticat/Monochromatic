@@ -5768,6 +5768,12 @@ The tested debug APK SHA-256 was
 The prototype's changed debug signing certificate required an uninstall
 **only on the disposable AVD** before installing the new APK;
 see `doc/troubleshooting/android-37-debug-apk-signature-update.md`.
+After these measurements,
+`podman stop --time 20` stopped the disposable emulator container;
+Podman warned that `SIGTERM` did not stop it within 20 seconds and used
+`SIGKILL`.
+The next disposable boot and guest-data state need fresh verification.
+The original AVD was not stopped or reconfigured.
 
 ## Issue tracking moves to Linear for this session
 
