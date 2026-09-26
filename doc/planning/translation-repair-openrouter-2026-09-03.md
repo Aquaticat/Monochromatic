@@ -8082,6 +8082,48 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## TianqiChen6667 read, 2026-09-26: classes one hundred sixty-four to sixty-seven live, sixty-eight and sixty-nine
+
+TianqiChen6667 ran on `.frozen-dist-e146633e1` and SETTLED in 918 s (15.3 min), 0.78 USD by the meters,
+Bedrock and OpenRouter alone with Synthetic and Hyper dry.
+Front matter equal, three headings, six em-dashes left as the owner said, no TA.
+
+Classes one hundred sixty-four to sixty-seven are live on the page:
+"she was met with family misunderstanding and mounting pressure" (164),
+the final message's blockquote with no stray closing mark (165),
+"whenever she glimpsed, / through the gap, / those she had comforted" (166)
+and "the draw cards really piled up" (167).
+Classes one hundred sixty to sixty-three hold:
+type 2 diabetes, the headpiece, Arona and Atri, "deserved a better life" and "a small box".
+
+Class one hundred sixty-eight:
+the original quotes each of her messages with 「」 and the archive sets all nine blockquote paragraphs bare,
+yet the page wrapped two paragraphs of one blockquote in curly quotes ("My... wish? … rely on." and
+"Please don't distance yourself from me …") and left the other nine bare,
+so one page quoted her messages two ways.
+Fixed in `39a4a06fd` (guard red first `c530bbf58`):
+`unwrapBlockquoteQuotes` in `corpus-run/blockquote-quote-unify.ts`, with the line reading in
+`corpus-run/blockquote-paragraphs.ts`, runs after `unifyQuoteStyle` in the page assembly.
+Where the archive's bare blockquote paragraphs outnumber its quoted ones,
+it unwraps each page blockquote paragraph that is one quotation from its first mark to its last,
+finding `blockquote-quotes-unwrapped`.
+A paragraph holding any other mark of the pair (a quotation inside it, or two quotations) stays as written,
+and the pass never adds marks, since that would need to know which blockquotes are speech.
+Replayed over the real TianqiChen6667 page: exactly those two paragraphs unwrapped, no quoted blockquote line left.
+
+Class one hundred sixty-nine:
+"she used this id on basically all of her social media platforms" for 这个id.
+The pinned archive writes ID on three pages and lowercase id on none,
+and the psychoanalytic id appears nowhere in the corpus.
+Fixed in `5f7fa6742` (guard red first `1e825e277`): the Canadian forms pass writes a prose `id` as `ID`;
+an `id=` attribute and longer words such as "idle" stay as written.
+
+Not a class: "She loved Menma (めんま)" keeps the kana because the original itself writes 面码（即めんま）
+and names めんま as the ID she used everywhere, so the kana is the handle the sentence is about.
+
+Lint 0/0, types clean, full suite 1,165 PASS, 0 FAIL after each (`suite-class168.log`, `suite-class169.log`).
+TianqiChen6668 launched on `.frozen-dist-5f7fa6742` (scope `pass-TianqiChen6668`, pid 4003551).
+
 ## TianqiChen6665 read, 2026-09-26: classes one hundred sixty-two to sixty-seven
 
 TianqiChen6665 ran on `.frozen-dist-c75738ea1` and SETTLED in 17.8 min, one attempt, 24 slices,

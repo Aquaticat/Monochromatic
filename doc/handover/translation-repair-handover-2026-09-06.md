@@ -4793,9 +4793,14 @@ each read off the pass log and the shipped page:
     (a closing quotation mark with no opening one, refused by `translate-quote-balance.ts`), sixty-six (在隙中
     "through the gap") and sixty-seven (the UNO line's draw cards, `rendering-glossary-slang.ts`); guards
     `a1c44e652`, fix `e146633e1`, full suite 1,164 PASS, 0 FAIL; recorded under "## TianqiChen6665 read".
-    TIANQICHEN6667 RUNNING on `.frozen-dist-e146633e1` (scope `pass-TianqiChen6667`, pid 3464291):
-    read slice 6 (class 164), the final message's quotation marks (165), the glimpse line (166) and the UNO
-    line (167) first, then classes 160 to 163 holding.
+    TIANQICHEN6667 READ (`.frozen-dist-e146633e1`): SETTLED in 15.3 min, 0.78 USD; classes one hundred
+    sixty-four to sixty-seven live, sixty to sixty-three holding; class one hundred sixty-eight (two blockquote
+    paragraphs wrapped in quotes where the archive sets its blockquotes bare, `unwrapBlockquoteQuotes`; guard
+    `c530bbf58`, fix `39a4a06fd`) and sixty-nine ("this id" written ID by the Canadian forms pass; guard
+    `1e825e277`, fix `5f7fa6742`) built; recorded under "## TianqiChen6667 read".
+    TIANQICHEN6668 RUNNING on `.frozen-dist-5f7fa6742` (scope `pass-TianqiChen6668`, pid 4003551):
+    read the blockquotes (class 168, a `blockquote-quotes-unwrapped` finding or none wrapped) and the ID line
+    (169) first, then classes 160 to 167 holding.
     TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built
