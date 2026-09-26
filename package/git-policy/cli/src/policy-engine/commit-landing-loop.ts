@@ -7,9 +7,10 @@
 
  Each replay rebuilds the prepared commit from the preparation base onto the target that won,
  so every replay starts from the same prepared change.
- A reservation after repeated lost races is a later slice;
- it plugs in before each landing attempt,
- where `lostRaces` is known.
+ After `landing.reserveAfterLostRaces` lost races the transaction takes the landing reservation
+ before it replays (`commit-landing-reservation.ts`),
+ and every landing attempt yields to another transaction's live reservation;
+ the reservation is released when the loop ends.
 
  @module
  */
@@ -21,11 +22,17 @@ import type {
   LandingLoopOutcome,
 } from './commit-landing-loop-types.ts';
 import { replayOrFail, } from './commit-landing-replay-step.ts';
+import { openLandingReservation, } from './commit-landing-reservation.ts';
 import {
   type LandingOutcome,
   landTransaction,
 } from './commit-landing.ts';
-import { appendEvents, } from './events-concurrency.ts';
+import { reachTransactionPhase, } from './commit-transaction-test-phase.ts';
+import {
+  appendEvents,
+  createLandingRaceLostEvent,
+  createLandingReservedEvent,
+} from './events-concurrency.ts';
 
 export type {
   LandingLoopInput,
@@ -88,7 +95,7 @@ function unreplayableResult({
 
  @example
  ```ts
- await landWithReplay({ context, mode: 'explicit-path', prepared, settled, options, committedPaths, addedPaths, worktreeRecords, hookChanges, indexLockTimeoutMs: 1_000 });
+ await landWithReplay({ context, mode: 'explicit-path', prepared, settled, options, committedPaths, addedPaths, worktreeRecords, hookChanges, indexLockTimeoutMs: 1_000, reserveAfterLostRaces: 2 });
  ```
  */
 export async function landWithReplay(input: LandingLoopInput,): Promise<LandingLoopOutcome> {
@@ -106,6 +113,17 @@ export async function landWithReplay(input: LandingLoopInput,): Promise<LandingL
     context,
     prepared,
   } = input;
+  /**
+   Landing reservation, released when the loop ends.
+   */
+  await using reservation = await openLandingReservation({
+    registryRoot: context.capture
+      .registryRoot,
+    transactionDirectory: context.workspace
+      .directory,
+    transactionId: context.workspace
+      .transactionId,
+  },);
   // The candidate is replaced after each replay; it lives only inside the loop.
   for (let candidate: LandingCandidate = {
     newOid: prepared.oid,
@@ -149,6 +167,7 @@ export async function landWithReplay(input: LandingLoopInput,): Promise<LandingL
       selectedWorktreePaths: candidate.worktreeRecords,
       indexLockTimeoutMs: input.indexLockTimeoutMs,
       attempt: candidate.attempt,
+      reservation,
     },);
     if (outcome.kind === 'landed')
       return {
@@ -167,15 +186,44 @@ export async function landWithReplay(input: LandingLoopInput,): Promise<LandingL
         candidate,
         outcome,
       },);
-    rl.debug(`lost landing race ${String(candidate.lostRaces + 1,)} to ${outcome.current
+    /**
+     Lost races including this one.
+     */
+    const lostRaces = candidate.lostRaces + 1;
+    rl.debug(`lost landing race ${String(lostRaces,)} to ${outcome.current
       .oid}`,);
+    /**
+     Whether this lost race earned the reservation, granted before the replay.
+     */
+    // oxlint-disable-next-line no-await-in-loop -- The reservation is taken between ordered landing attempts.
+    const reserved = (lostRaces >= input.reserveAfterLostRaces) && (await reservation.reserve(lostRaces,));
+    // oxlint-disable-next-line no-await-in-loop -- Test-only marker between ordered landing attempts.
+    await reachTransactionPhase({
+      phase: 'race-lost',
+      occurrence: lostRaces,
+    },);
     /**
      Replayed candidate or final outcome.
      */
     // oxlint-disable-next-line no-await-in-loop -- Replay runs between ordered landing attempts.
     const next = await replayOrFail({
       input,
-      candidate,
+      candidate: {
+        ...candidate,
+        events: [
+          ...candidate.events,
+          createLandingRaceLostEvent({
+            sequence: 0,
+            attempt: lostRaces,
+            winningOid: outcome.current
+              .oid,
+          },),
+          ...(reserved ? [createLandingReservedEvent({
+            sequence: 0,
+            lostRaces,
+          },),] : []),
+        ],
+      },
       onto: outcome.current
         .oid,
     },);

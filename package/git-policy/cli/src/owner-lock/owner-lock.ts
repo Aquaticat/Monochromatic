@@ -63,7 +63,7 @@ const DEFAULT_POLL_DELAY_MS = 20;
 /**
  Another live process owns the lock, or a concurrent acquirer replaced it.
  */
-const LOCK_BUSY: unique symbol = Symbol('owner lock belongs to live process',);
+export const LOCK_BUSY: unique symbol = Symbol('owner lock belongs to live process',);
 
 /**
  Durable owner of one published lock.
@@ -85,6 +85,10 @@ export type OwnerLockRecord = Readonly<{
    Process-birth identity distinguishing the owner from a later process reusing its PID.
    */
   ownerBirthIdentity: string;
+  /**
+   Commit transaction the lock is held for, recorded by the landing reservation.
+   */
+  transactionId?: string;
 }>;
 
 /**
@@ -148,13 +152,15 @@ export function parseOwnerLockRecord(text: string,): OwnerLockRecord {
     || (value.ownerPid < 1)
     || (!('ownerBirthIdentity' in value))
     || ((typeof value.ownerBirthIdentity) !== 'string')
-    || (value.ownerBirthIdentity === ''))
+    || (value.ownerBirthIdentity === '')
+    || (('transactionId' in value) && (((typeof value.transactionId) !== 'string') || (value.transactionId === ''))))
     throw new OwnerLockError('Owner lock record is malformed.',);
   return {
     schemaVersion: OWNER_LOCK_SCHEMA_VERSION,
     token: value.token,
     ownerPid: value.ownerPid,
     ownerBirthIdentity: value.ownerBirthIdentity,
+    ...(('transactionId' in value) && ((typeof value.transactionId) === 'string') ? { transactionId: value.transactionId, } : {}),
   };
 }
 
@@ -261,6 +267,7 @@ async function writeCandidate({
       token: record.token,
       ownerPid: record.ownerPid,
       ownerBirthIdentity: record.ownerBirthIdentity,
+      ...(record.transactionId === undefined ? {} : { transactionId: record.transactionId, }),
     },)}\n`,
     'utf8',
   );
@@ -475,6 +482,83 @@ async function attemptAcquire({
 }
 
 /**
+ Builds a fresh owner record for the current process.
+
+ @param transactionId - commit transaction the lock is held for, when one is
+
+ @returns owner record with a new token
+
+ @throws {@link OwnerLockError} when the current process identity is unavailable
+ */
+async function currentOwnerRecord(transactionId?: string,): Promise<OwnerLockRecord> {
+  /**
+   Current process birth identity.
+   */
+  const ownerBirthIdentity = await resolveProcessBirthIdentity(process.pid,);
+  if (ownerBirthIdentity === PROCESS_IDENTITY_ABSENT)
+    throw new OwnerLockError('Current owner-lock process identity is unavailable.',);
+  return {
+    schemaVersion: OWNER_LOCK_SCHEMA_VERSION,
+    token: randomUUID(),
+    ownerPid: process.pid,
+    ownerBirthIdentity,
+    ...(transactionId === undefined ? {} : { transactionId, }),
+  };
+}
+
+/**
+ Makes one publication attempt without waiting, retiring a dead owner's lock when one blocks it.
+
+ @param lockDirectory - lock directory path whose parent exists
+
+ @param transactionId - commit transaction the lock is held for
+
+ @returns held lock, or {@link LOCK_BUSY} while another owner holds it or a dead owner's lock was just retired
+
+ @throws {@link OwnerLockError} when the current process identity is unavailable
+
+ @example
+ ```ts
+ const lock = await tryAcquireOwnerLock({ lockDirectory, transactionId });
+ ```
+ */
+export async function tryAcquireOwnerLock({
+  lockDirectory,
+  transactionId,
+}: Readonly<{
+  lockDirectory: string;
+  transactionId?: string;
+}>,): Promise<OwnerLock | typeof LOCK_BUSY> {
+  return await attemptAcquire({
+    lockDirectory,
+    record: await currentOwnerRecord(transactionId,),
+  },);
+}
+
+/**
+ Retires a lock whose recorded owner is dead, leaving an absent lock or a live owner's lock alone.
+
+ @param lockDirectory - published lock directory
+
+ @example
+ ```ts
+ await retireLockOfDeadOwner('/repo/.git/cli-git-transactions/reservation.lock');
+ ```
+ */
+export async function retireLockOfDeadOwner(lockDirectory: string,): Promise<void> {
+  /**
+   Published owner.
+   */
+  const published = await readOwnerLockRecord(lockDirectory,);
+  if ((published === LOCK_BUSY) || (await ownerLockHolderIsAlive(published,)))
+    return;
+  await retireDeadLock({
+    lockDirectory,
+    deadToken: published.token,
+  },);
+}
+
+/**
  Acquires an owner lock, waiting without bound while a live owner holds it.
 
  @param lockDirectory - lock directory path whose parent exists
@@ -502,20 +586,9 @@ export async function acquireOwnerLock({
   onWait?: () => void;
 }>,): Promise<OwnerLock> {
   /**
-   Current process birth identity.
-   */
-  const ownerBirthIdentity = await resolveProcessBirthIdentity(process.pid,);
-  if (ownerBirthIdentity === PROCESS_IDENTITY_ABSENT)
-    throw new OwnerLockError('Current owner-lock process identity is unavailable.',);
-  /**
    Complete current owner record.
    */
-  const record: OwnerLockRecord = {
-    schemaVersion: OWNER_LOCK_SCHEMA_VERSION,
-    token: randomUUID(),
-    ownerPid: process.pid,
-    ownerBirthIdentity,
-  };
+  const record = await currentOwnerRecord();
   /**
    Whether the wait notification already ran.
    */

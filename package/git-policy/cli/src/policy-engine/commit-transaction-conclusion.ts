@@ -380,6 +380,8 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
     hookChanges,
     indexLockTimeoutMs: concurrency.indexLock
       .unprovenOwnerTimeoutMs,
+    reserveAfterLostRaces: concurrency.landing
+      .reserveAfterLostRaces,
   },);
   if (outcome.kind === 'failed')
     return {

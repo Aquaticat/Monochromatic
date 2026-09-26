@@ -34,7 +34,6 @@ import { transactionFailure, } from './commit-transaction-results.ts';
 import {
   appendEvents,
   createCommitReplayedEvent,
-  createLandingRaceLostEvent,
   createReplayConflictEvent,
   createReplayHeadersDroppedEvent,
 } from './events-concurrency.ts';
@@ -122,7 +121,7 @@ function mergeRecords({
 
  @param input - loop input
 
- @param candidate - candidate that lost
+ @param candidate - candidate that lost, its events already ending with the lost race
 
  @param onto - target that won
 
@@ -145,16 +144,9 @@ async function replayCandidate({
     prepared,
   } = input;
   /**
-   Events with this lost race.
+   Events so far, ending with this lost race and any reservation it earned.
    */
-  const raced = [
-    ...candidate.events,
-    createLandingRaceLostEvent({
-      sequence: 0,
-      attempt: candidate.lostRaces + 1,
-      winningOid: onto,
-    },),
-  ];
+  const raced = candidate.events;
   /**
    Merge base under which every path whose prepared bytes already contain the landed change keeps them.
    */

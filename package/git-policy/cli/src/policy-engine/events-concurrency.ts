@@ -58,6 +58,37 @@ export type LandingRaceLostEvent = {
 };
 
 /**
+ A commit that lost `landing.reserveAfterLostRaces` races holds the next landing slot.
+
+ @example
+ ```ts
+ const event: LandingReservedEvent = { schemaVersion: 1, sequence: 1, type: 'landing-reserved', lostRaces: 2 };
+ ```
+ */
+export type LandingReservedEvent = {
+  /**
+   Schema version.
+   */
+  schemaVersion: 1;
+  /**
+   Invocation-local sequence.
+   */
+  sequence: number;
+  /**
+   Event discriminator.
+   */
+  type: 'landing-reserved';
+  /**
+   Policy identifier is absent for transaction events.
+   */
+  policyId?: never;
+  /**
+   Lost races when the reservation was granted.
+   */
+  lostRaces: number;
+};
+
+/**
  A prepared commit was replayed onto the moved target.
 
  @example
@@ -170,6 +201,32 @@ export function createLandingRaceLostEvent({
     type: 'landing-race-lost',
     attempt,
     winningOid,
+  };
+}
+
+/**
+ Creates a reservation event.
+
+ @param sequence - invocation-local event order
+
+ @param lostRaces - lost races when the reservation was granted
+
+ @returns fresh event
+
+ @example
+ ```ts
+ createLandingReservedEvent({ sequence: 1, lostRaces: 2 });
+ ```
+ */
+export function createLandingReservedEvent({
+  sequence,
+  lostRaces,
+}: Readonly<Omit<LandingReservedEvent, 'schemaVersion' | 'type'>>,): LandingReservedEvent {
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    sequence,
+    type: 'landing-reserved',
+    lostRaces,
   };
 }
 

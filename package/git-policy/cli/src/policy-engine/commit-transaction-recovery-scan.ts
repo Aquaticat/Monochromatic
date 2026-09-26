@@ -11,7 +11,10 @@
  */
 import { rm, } from 'node:fs/promises';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { acquireOwnerLock, } from '../owner-lock/owner-lock.ts';
+import {
+  acquireOwnerLock,
+  retireLockOfDeadOwner,
+} from '../owner-lock/owner-lock.ts';
 import { join, } from 'node:path';
 import {
   LANDING_LOCK_NAME,
@@ -30,7 +33,10 @@ import type {
   CommitTransactionRecoveryAction,
   CommitTransactionRecoveryOutcome,
 } from './commit-transaction-recovery-types.ts';
-import { listTransactionEntries, } from './commit-transaction-registry.ts';
+import {
+  listTransactionEntries,
+  RESERVATION_LOCK_NAME,
+} from './commit-transaction-registry.ts';
 
 export {
   type InspectedEntry,
@@ -259,6 +265,11 @@ export async function recoverRegisteredTransactions({
       },
     );
   },),);
+  // A crashed reservation holder's lock is retired here as well as by the next requester.
+  await retireLockOfDeadOwner(join(
+    root,
+    RESERVATION_LOCK_NAME,
+  ),);
   return [
     ...outcomes,
     ...retired.map(function retiredOutcome(entry,): CommitTransactionRecoveryOutcome {

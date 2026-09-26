@@ -155,4 +155,8 @@ export type LandingLoopInput = Readonly<{
    Backoff budget for a foreign `index.lock`.
    */
   indexLockTimeoutMs: number;
+  /**
+   Lost landing races after which the transaction takes the landing reservation.
+   */
+  reserveAfterLostRaces: number;
 }>;

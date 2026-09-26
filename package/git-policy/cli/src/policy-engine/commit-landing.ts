@@ -46,6 +46,10 @@ import {
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
 import { computeLandingPostIndex, } from './commit-landing-index.ts';
 import { acquireLandingLock, } from './commit-landing-lock.ts';
+import {
+  acquireReservedLandingLock,
+  type LandingReservation,
+} from './commit-landing-reservation.ts';
 import { acquireRealIndexLock, } from './commit-landing-index-lock.ts';
 import {
   migrateShadowObjects,
@@ -180,6 +184,8 @@ export type LandingPayload =
 
  @param attempt - landing attempt number
 
+ @param reservation - landing reservation the attempt yields to; absent for a landing that never waits for one, such as a normalization
+
  @returns outcome
 
  @example
@@ -199,6 +205,7 @@ export async function landTransaction({
   selectedWorktreePaths,
   indexLockTimeoutMs,
   attempt,
+  reservation,
 }: Readonly<{
   gitPath: string;
   cwd: string;
@@ -211,6 +218,7 @@ export async function landTransaction({
   selectedWorktreePaths: readonly AddedPathRecord[];
   indexLockTimeoutMs: number;
   attempt: number;
+  reservation?: Pick<LandingReservation, 'awaitSlot' | 'heldByAnother'>;
 }>,): Promise<LandingOutcome> {
   /**
    Tagged landing logger.
@@ -222,11 +230,18 @@ export async function landTransaction({
   /**
    Landing lock, held until the attempt returns.
    */
-  await using _landingLock = await acquireLandingLock({
-    gitPath,
-    cwd,
-    registryRoot: capture.registryRoot,
-  },);
+  await using _landingLock = reservation === undefined
+    ? await acquireLandingLock({
+      gitPath,
+      cwd,
+      registryRoot: capture.registryRoot,
+    },)
+    : await acquireReservedLandingLock({
+      gitPath,
+      cwd,
+      registryRoot: capture.registryRoot,
+      reservation,
+    },);
   /**
    Real `index.lock`, consumed by the install or released when the attempt lands nothing.
    */

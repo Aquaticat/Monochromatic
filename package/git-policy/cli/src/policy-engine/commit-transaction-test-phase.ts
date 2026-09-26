@@ -7,6 +7,10 @@
  `CLI_GIT_TEST_ONLY_PHASE_SIGNAL=<phase>:kill:<directory>` also writes `<directory>/<phase>.reached` first,
  and `CLI_GIT_TEST_ONLY_PHASE_SIGNAL=<phase>:pause:<directory>` writes that marker
  and waits until `<directory>/<phase>.release` exists.
+ A phase a transaction can reach more than once,
+ `race-lost` after each lost landing race,
+ numbers its files by occurrence:
+ `<phase>-<n>.reached` and `<phase>-<n>.release`.
  A malformed value fails the invocation instead of being ignored.
 
  @module
@@ -46,6 +50,7 @@ export const TRANSACTION_TEST_PHASES = [
   'objects-migrated',
   'ref-updated',
   'index-installed',
+  'race-lost',
 ] as const;
 
 /**
@@ -169,6 +174,8 @@ async function awaitRelease(path: string,): Promise<void> {
 
  @param phase - reached phase
 
+ @param occurrence - how often a repeatable phase was reached, from `1`; absent for a phase reached once
+
  @param environment - process environment
 
  @throws {@link TestPhaseSignalError} when the marker variable is malformed
@@ -180,9 +187,11 @@ async function awaitRelease(path: string,): Promise<void> {
  */
 export async function reachTransactionPhase({
   phase,
+  occurrence,
   environment = process.env,
 }: Readonly<{
   phase: TransactionTestPhase;
+  occurrence?: number;
   environment?: Readonly<NodeJS.ProcessEnv>;
 }>,): Promise<void> {
   /**
@@ -197,12 +206,16 @@ export async function reachTransactionPhase({
   const signal = parsePhaseSignal(value,);
   if (signal.phase !== phase)
     return;
-  l.warn(`${TEST_PHASE_SIGNAL_VARIABLE} reached ${phase}: ${signal.action}`,);
+  /**
+   Marker file stem, numbered for a repeatable phase.
+   */
+  const stem = occurrence === undefined ? phase : `${phase}-${String(occurrence,)}`;
+  l.warn(`${TEST_PHASE_SIGNAL_VARIABLE} reached ${stem}: ${signal.action}`,);
   if (signal.directory !== undefined)
     await writeFile(
       join(
         signal.directory,
-        `${phase}.reached`,
+        `${stem}.reached`,
       ),
       String(process.pid,),
     );
@@ -215,6 +228,6 @@ export async function reachTransactionPhase({
   }
   await awaitRelease(join(
     signal.directory ?? '',
-    `${phase}.release`,
+    `${stem}.release`,
   ),);
 }

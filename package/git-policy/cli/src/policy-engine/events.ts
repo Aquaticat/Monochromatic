@@ -13,6 +13,7 @@ import type {
 import type {
   CommitReplayedEvent,
   LandingRaceLostEvent,
+  LandingReservedEvent,
   ReplayHeadersDroppedEvent,
 } from './events-concurrency.ts';
 
@@ -324,7 +325,7 @@ export type FixSummaryEvent = {
  const events: readonly PolicyEvent[] = [];
  ```
  */
-export type PolicyEvent = CommitLandedEvent | CommitReplayedEvent | ConfigurationWarningEvent | CoreFindingEvent | FindingEvent | FixSummaryEvent | EngineFailureEvent | LandingRaceLostEvent | ReplayHeadersDroppedEvent;
+export type PolicyEvent = CommitLandedEvent | CommitReplayedEvent | ConfigurationWarningEvent | CoreFindingEvent | FindingEvent | FixSummaryEvent | EngineFailureEvent | LandingRaceLostEvent | LandingReservedEvent | ReplayHeadersDroppedEvent;
 
 /**
  Creates successful policy correction summary.

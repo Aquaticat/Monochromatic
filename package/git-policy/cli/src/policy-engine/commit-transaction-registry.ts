@@ -65,11 +65,16 @@ export const STAGING_SUFFIX = '.pending';
 export const RETIRED_SUFFIX = '.retired';
 
 /**
+ Landing reservation lock directory name inside the transaction registry.
+ */
+export const RESERVATION_LOCK_NAME = 'reservation.lock';
+
+/**
  Owner-lock directories that live beside transactions in the registry, with their pending and stale candidates.
  */
 const REGISTRY_LOCK_NAMES: readonly string[] = [
   'landing.lock',
-  'reservation.lock',
+  RESERVATION_LOCK_NAME,
 ];
 
 /**
