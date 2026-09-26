@@ -271,8 +271,214 @@ Boundary checks passed through the built Pi extension interface with the real mi
 - `web_fetch` registered and returned `provider: "linkup"` with normal environment.
 - `web_fetch` returned `provider: "exa"` with fallback metadata when `LINKUP_API_KEY` was cleared for the process.
 
+## GitHub URL routing through the gh CLI, 2026-09-26
+
+User request:
+when `web_fetch` receives a URL on GitHub,
+use `gh` as the underlying provider instead of the paid search providers.
+
+### Decisions
+
+- Mapped hosts are `github.com`,
+   `www.github.com`,
+   `gist.github.com`,
+   `api.github.com`,
+   and `raw.githubusercontent.com`.
+   Every other host,
+   including `camo.githubusercontent.com`,
+   `codeload.github.com`,
+   and GitHub Enterprise Server hosts,
+   keeps the existing paid provider chain.
+- Mapped shapes are repository home,
+   `blob`/`raw`/`blame` files,
+   `tree` directories,
+   numbered issues,
+   numbered pull requests,
+   pull request changed files,
+   single commits,
+   comparisons,
+   release index,
+   release tag,
+   gists,
+   and `api.github.com` endpoints.
+- Deliberately unmapped shapes fall through to Linkup and then Exa:
+   owner and organization pages,
+   `actions`,
+   `wiki`,
+   `discussions`,
+   `projects`,
+   `pulse`,
+   commit lists,
+   and release asset downloads.
+   Reason:
+   no `gh` surface renders them faithfully,
+   or the output volume is unbounded.
+- Blob and tree URLs plan one attempt per reference and path split point,
+   shortest reference first.
+   Reason:
+   a git reference may contain slashes.
+   Measured evidence on `cli/cli` branch `8761/allow-multiple-items-in-nested-array`:
+   the short split returns `gh: No commit found for the ref 8761 (HTTP 404)` and exits 1,
+   while the long split returns the file.
+- Issue and pull request threads plan two invocations:
+   a required body read and an optional comment read,
+   run concurrently.
+   Reason:
+   in piped mode `--comments` prints only comments and never the title or body.
+   See `doc/troubleshooting/gh-view-comments-raw-output.md`,
+   which also records upstream calling that behavior intended and recommending exactly this split.
+   Measured on this host with three samples per mode on one unchanged build:
+   sequential 2869 ms,
+   3024 ms,
+   2850 ms;
+   concurrent 1846 ms,
+   1571 ms,
+   1630 ms.
+- Release pages pass the tag and `--repo` separately.
+   Reason:
+   `gh release view` treats its positional argument as a tag and then resolves the repository
+   from the working directory,
+   so a URL argument fails outside a work tree with a Git diagnostic.
+   See `doc/troubleshooting/gh-implicit-repository-git-wrapper.md`.
+- Every gh child runs in `os.tmpdir()` with a fixed 60 second deadline and a 32 MiB output ceiling.
+   Reason:
+   a temporary directory keeps ambient repository context away from repository resolution,
+   and the deadline matches the bound this repository already gives GitHub CLI work in
+   `package/cli/open-code-review-issue`.
+- The gh response always uses the single-field `{ "markdown": ... }` shape so the model sees raw text
+   through the existing markdown-only rendering path.
+- Output that is not valid UTF-8 becomes a one-line notice naming the captured byte count.
+   Reason:
+   measured on a real 76424 byte `inter.woff2`,
+   UTF-8 decoding produces replacement characters and would fill the model context with noise.
+   Detection is a byte round trip:
+   re-encode the decoded text and compare with the captured bytes.
+- Provider fallback details changed from a single `fallback` object to a `fallbackChain` array.
+   Reason:
+   three providers can now chain,
+   and one from and to pair cannot state which hop failed when gh and Linkup both fail before Exa
+   answers.
+- A cancelled tool call rethrows instead of falling back.
+   Reason:
+   user cancellation must not silently turn into a paid provider fetch.
+
+### Files
+
+- `src/github-url-plan-constants.ts`,
+   hosts,
+   URL sections,
+   and gh argument fragments.
+- `src/github-fetch-types.ts`,
+   plan,
+   invocation,
+   attempt,
+   runner,
+   and client types.
+- `src/github-url-plan.ts`,
+   the public planner entry point.
+- `src/github-url-validation.ts`,
+   URL parsing,
+   host normalization,
+   segment extraction,
+   and argument validation.
+- `src/github-section-plan.ts`,
+   host and repository section dispatch.
+- `src/github-content-plan.ts`,
+   file,
+   directory,
+   and raw-host plans plus split candidates.
+- `src/github-record-plan.ts`,
+   issue,
+   pull request,
+   commit,
+   comparison,
+   and release plans.
+- `src/gh-invocation-plan.ts`,
+   attempt and argument builders.
+- `src/gh-process.ts`,
+   the child process boundary and its failure classification.
+- `src/gh-client.ts`,
+   attempt execution,
+   output joining,
+   and `GhFetchError`.
+
+### Verification
+
+Package tasks passed:
+`build`,
+`lint:types`,
+`lint:oxlint` with zero warnings and zero errors,
+`test:unit`,
+and `verify:extension`.
+
+End-to-end run through the built artifact and the model-facing `web_fetch` tool,
+with the real migrated config and real gh children:
+
+- 20 mapped GitHub URLs returned `provider: "gh"` with correct content,
+   including a nested blob path,
+   a multi-segment reference blob that needed the second split,
+   a raw host file,
+   a tree listing,
+   a repository root listing,
+   an issue thread,
+   an issue URL that is really a pull request,
+   a pull request thread,
+   pull request changed files,
+   a commit diff,
+   a comparison diff,
+   a release index,
+   release notes,
+   a gist,
+   an `api.github.com` endpoint,
+   a repository file in this workspace,
+   and a binary blob that returned the notice.
+- The comparison diff produced 692401 bytes,
+   truncated to 92999 visible bytes,
+   with the full text written to a temporary response file.
+- Unmapped GitHub shapes for `actions` and an owner page returned `provider: "linkup"`.
+- A non-GitHub URL returned `provider: "linkup"`.
+- With `PATH` pointed at a nonexistent directory,
+   the same repository URL returned `provider: "linkup"` with a `fallbackChain` step naming gh and the
+   reason `gh executable gh was not found on PATH`.
+- A blocklist entry for `github.com` threw before any gh child or provider request.
+- An already aborted signal threw `The operation was aborted` in 4 ms with no provider request.
+
+Live Pi wiring already loads this package from
+`/var/home/user/Monochromatic/package/pi-plugin/search-fetch`,
+and the package `pi.extensions` entry points at the rebuilt `dist/final/node/index.mjs`.
+
+### Commits
+
+- `fffd2d8d2`,
+   routing,
+   planner,
+   child boundary,
+   client,
+   and the `fallbackChain` rename.
+- `4a26b3f64`,
+   README behavior documentation.
+- `a2af1fb35`,
+   planner,
+   child boundary,
+   client,
+   and routing tests.
+
+### Open questions for the user
+
+- Should `/actions/runs/{id}` map to `gh run view`,
+   possibly with failed logs?
+   It was left out because run log volume is unbounded and its shape varies by failure.
+- Should GitHub Enterprise Server hosts be supported through `gh api --hostname`?
+   Host detection cannot identify a GHES host from a URL alone,
+   so this needs a config surface.
+- Should the gh route be switchable from `pi-search-fetch.json` for hosts without an authenticated `gh`?
+   The fallback already covers a missing or unauthenticated `gh`,
+   so no flag was added.
+- Should commit lists at `/{owner}/{repo}/commits/{ref}` map to a jq-projected log?
+
 ## Next immediate step
 
-No required implementation step remains for this migration.
+No required implementation step remains for the migration or for GitHub URL routing.
 Future work can rename internal `Linkup*` compatibility type names if desired,
 but public tools and active Pi wiring are already provider-neutral.
+The open questions in the GitHub routing section are the only pending decisions.
