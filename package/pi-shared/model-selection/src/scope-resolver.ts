@@ -232,7 +232,7 @@ export function readLiveScope<TModel extends ReadonlyModel,>(
   const rawScope = getScopedModels === undefined
     ? scopedModels
     : getScopedModels();
-  if (!Array.isArray(rawScope,) || rawScope.length === 0)
+  if (!Array.isArray(rawScope,) || (rawScope.length === 0))
     return NO_LIVE_SCOPE;
 
   return rawScope
