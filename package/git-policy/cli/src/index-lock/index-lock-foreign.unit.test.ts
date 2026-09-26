@@ -105,7 +105,7 @@ await describe({
       },
     },),
     it({
-      name: 'a wrapped commit waits for a native commit --all that then commits, never failing on index.lock',
+      name: 'a wrapped commit waits for a native commit --all that then commits, never failing on index.lock, and replays onto it',
       fn: async function testWaitThenMoved(): Promise<void> {
         await using repository = await prepared();
         /** Native commit that succeeds. */
@@ -122,13 +122,9 @@ await describe({
         const outcome = await wrapped.outcome;
         expect(failureCodes(outcome.stderr,),).toEqual([],);
         expect(outcome.stderr,).not.toContain('File exists',);
-        /** History after both. */
-        const log = await git({ repository, args: ['log', '--format=%s',], },);
-        // Landing after a moved branch replays once replay exists; until then it fails fast with head-moved.
-        expect([
-          (outcome.exitCode === 0) && (log === 'wrapped\nnative\ntrack b\nbaseline'),
-          (outcome.exitCode === 1) && outcome.stderr.includes('concurrent-commit/head-moved',) && (log === 'native\ntrack b\nbaseline'),
-        ].includes(true,),).toBe(true,);
+        // The native commit moved the branch while the wrapped commit waited, so the wrapped commit replays onto it.
+        expect(outcome.exitCode,).toBe(0,);
+        expect(await git({ repository, args: ['log', '--format=%s',], },),).toBe('wrapped\nnative\ntrack b\nbaseline',);
       },
     },),
     it({
