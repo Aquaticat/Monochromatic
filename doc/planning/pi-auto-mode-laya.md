@@ -501,6 +501,25 @@ positive control, and 2 GiB/2 CPU/120-second offline bounds as the English token
 Only the tokenizer data changes to verified hash
 `609d8f4c067cd3950f88594c5a802616cea245823836ef5848ee4fc40aab5b6f`.
 
+### Q7: Larger bounded evaluation authorized
+
+The user selected A: authorize up to 8 GiB for Laya evaluation probes,
+with 2 CPUs, no extra swap, no network or host mounts, a 5-minute limit per probe,
+and only one inference container at a time.
+This explicitly permits the experiment-specific deviation from BOX's 2 GiB Podman shape.
+It does not change production resource requirements or authorize larger limits.
+Recheck current host headroom and the policy snapshot before each inference launch.
+
+### Multilingual tokenizer result
+
+Process `proc_7d71` exited 0.
+The multilingual tokenizer's 64-token positive control passed for the same complete policy snapshot.
+Complete `AGENTS.md` uses 11,042 tokens;
+the minimal action/context envelope uses 11,966 tokens before the question prefix.
+Image: `eb9d352a0e55ae38933a068698435fecada273e7a0d3879d4eca153dc2dae161`.
+Both tested tokenizer families therefore exceed 8,192 tokens for this policy file alone.
+That still does not establish a hard runtime ceiling or long-context decision quality.
+
 ## Research still required
 
 - Finalize open ownership/authority choices in the responsibility ledger.
