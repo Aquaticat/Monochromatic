@@ -446,27 +446,45 @@ Seeds 1,
 2,
 and 3,
 2026-09-26,
-packed from `feat/cli-git-concurrent-commits` at `9b5f66c40`
-(slice 3 with subsumption and capture order,
-slice 4 policy read sets,
-the slice 5 landing reservation,
-and the amended-history checker),
-72 scenario runs per seed.
+packed from `feat/cli-git-concurrent-commits` at `d647d4786`
+(after merging the worktree-copy stall fix,
+waiting for live trust provenance transactions,
+and failing fast without replay plumbing),
+114 scenario runs per seed:
+38 scenarios on each of Git 2.39.5,
+2.40.0,
+and 2.55.0.
+Every seed passed with no failure and no harness error.
 
 ### Passing
 
-- Every baseline on both Git versions and all three seeds:
-  19 passes,
-  plus `baseline-hooks-config` skipped on 2.40.0.
-- Every concurrency scenario on both Git versions and all three seeds:
-  50 passes per seed,
-  including `concurrent-trace-replay`,
-  which failed before capture order on seed 1 with 2.55.0 and on seed 2 with both versions,
-  and `shared-file-overlapping-hunks`,
-  where both commits now land because both captures come from one worktree.
-- Skipped on 2.40.0:
-  the config-hook scenarios and `foreign-index-lock-holder`,
-  which need Git 2.54.0.
+- Git 2.55.0:
+  36 passes per seed,
+  every scenario except the two `replay-unavailable-*` ones.
+- Git 2.40.0:
+  33 passes per seed.
+  It skips the config-hook scenarios and `foreign-index-lock-holder`,
+  which need Git 2.54.0,
+  and the `replay-unavailable-*` scenarios.
+- Git 2.39.5:
+  21 passes per seed:
+  the baselines except `baseline-hooks-config`,
+  `branch-switch-during-commit`,
+  the hook-phase `sigkill-*` and all `sigkill-phase-*` scenarios,
+  and both `replay-unavailable-*` scenarios.
+  It skips the 17 scenarios that need replay plumbing or Git 2.54.0.
+
+Before replay degradation existed,
+seed 1 on Git 2.39.5 failed 12 of 36 runs:
+every commit that lost a landing race exited `2` with `transaction-failed`
+carrying `git merge-tree` usage text.
+No invariant was violated then either:
+nothing landed,
+and nothing was lost.
+With the probe disabled,
+both `replay-unavailable-*` scenarios fail again
+(`held-fails-fast-with-head-moved` and `landed-or-failed-fast`),
+so they detect the regression.
 
 ### Fixed on the way
 
