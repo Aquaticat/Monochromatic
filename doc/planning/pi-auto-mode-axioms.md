@@ -374,10 +374,24 @@ complete-policy checks,
 and resource limits.
 It asserts BF16 is enabled before inference and has not fallen back afterward.
 No GPU is exposed and no training is performed.
-Process `proc_57da` is measuring this variant;
-no result has been inspected yet.
-The purpose is budget fit for this configuration,
-not a single-run speedup comparison or a safety qualification.
+Process `proc_57da` completed with exit 0 and no memory kill.
+The mode remained enabled as `torch.bfloat16`;
+the probe rejected any full-precision fallback.
+Actual forward input again preserved all 12,820 tokens and the policy hash remained current.
+
+The axiom probability was 0.5339.
+Inference took 152.4031641939655 seconds,
+excluding 2.8198068970814347 seconds for model loading.
+Peak container memory was 5,656,580,096 bytes.
+This case also misses the five-second assessment deadline and would go to manual approval.
+No repeat-run timing band was measured,
+so do not claim a quantified BF16 speedup or numerical parity from the separate runs.
+
+Image: `89a15652172b2008f4552ee81f08e587e33bae60c68a8a6edff39a23d092bf90`.
+Result artifact SHA-256: `34774def995db9765894893eb81b7b0eb458912e305edbaf0ba504c4550e8245`.
+This is configuration-specific runtime evidence,
+not a held-out safety qualification or a rejection of other Laya paths.
+No further inference is currently scheduled.
 
 ## Native Jev axiom pilot result
 
