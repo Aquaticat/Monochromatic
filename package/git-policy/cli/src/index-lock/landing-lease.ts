@@ -92,8 +92,10 @@ export async function hasValidLandingLease({
      */
     const value: unknown = JSON.parse(lease,);
     if (((typeof value) !== 'object') || (value === null)
-      || (!('lockDirectory' in value)) || (value.lockDirectory !== lockDirectory)
-      || (!('token' in value)) || ((typeof value.token) !== 'string'))
+      || (!('lockDirectory' in value))
+      || (value.lockDirectory !== lockDirectory)
+      || (!('token' in value))
+      || ((typeof value.token) !== 'string'))
       return false;
     /**
      Current owner of the named lock.

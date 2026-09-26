@@ -110,12 +110,16 @@ export function optionTokens(command: ResolvedGitCommand,): readonly string[] {
   /**
    Tokens after the subcommand.
    */
-  const rest = command.args.slice(command.subcommandIndex + 1,);
+  const rest = command.args
+    .slice(command.subcommandIndex + 1,);
   /**
    Separator position.
    */
   const separator = rest.indexOf('--',);
-  return (separator === -1 ? rest : rest.slice(0, separator,))
+  return (separator === (-1) ? rest : rest.slice(
+    0,
+    separator,
+  ))
     .filter(function isOption(token,): boolean {
       return token.startsWith('-',) && (token !== '-');
     },);
@@ -141,7 +145,9 @@ function matchesLong({
    Option name without an attached `=value`.
    */
   const name = token.split('=',)[0] ?? token;
-  return (name.length >= option.minimumLength) && option.name.startsWith(name,);
+  return (name.length >= option.minimumLength)
+    && option.name
+    .startsWith(name,);
 }
 
 /**
@@ -188,7 +194,8 @@ function clusterHas({
  ```
  */
 export function isIndexWriter(command: ResolvedGitCommand,): boolean {
-  if ((command.route === 'shell-alias') || (command.route === 'unresolved') || (command.subcommand === undefined))
+  if ((command.route === 'shell-alias') || (command.route === 'unresolved')
+    || (command.subcommand === undefined))
     return false;
   if (ALWAYS_WRITING_COMMANDS.has(command.subcommand,))
     return true;

@@ -56,7 +56,8 @@ export async function forwardToRealGit({
     tag: forwardToRealGit.name,
     l,
   },);
-  if (parseGlobalOptions(args,).willShortCircuit) {
+  if (parseGlobalOptions(args,)
+    .willShortCircuit) {
     rl.debug('global help or version form; forwarding without coordination',);
     await runGitWithWorktreeCopy({
       args,

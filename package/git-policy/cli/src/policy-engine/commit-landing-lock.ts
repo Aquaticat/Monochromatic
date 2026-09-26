@@ -171,8 +171,9 @@ function inheritedLandingLock(lockDirectory: string,): OwnerLock {
   return {
     lockDirectory,
     token: process.env[LANDING_LEASE_ENV] ?? '',
-    [Symbol.asyncDispose]: async function keepAncestorLock(): Promise<void> {
+    [Symbol.asyncDispose]: function keepAncestorLock(): Promise<void> {
       l.debug(`leaving ${lockDirectory} to the ancestor that holds it`,);
+      return Promise.resolve();
     },
   };
 }

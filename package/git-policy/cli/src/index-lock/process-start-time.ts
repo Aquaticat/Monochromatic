@@ -31,7 +31,7 @@ export const LINUX_USER_HZ = 100;
 /**
  Milliseconds per second.
  */
-const MS_PER_SECOND = 1000;
+const MS_PER_SECOND = 1_000;
 
 /**
  Resolution of a Linux start time: one clock tick plus the centisecond resolution of `/proc/uptime`.
@@ -120,7 +120,7 @@ export function parseLinuxStat(stat: string,): Readonly<{
    Final command delimiter; the command may itself contain parentheses.
    */
   const commandEnd = stat.lastIndexOf(')',);
-  if (commandEnd === -1)
+  if (commandEnd === (-1))
     throw new TypeError('Malformed Linux process stat.',);
   /**
    Fields three onward.
@@ -142,6 +142,33 @@ export function parseLinuxStat(stat: string,): Readonly<{
     state,
     startTicks,
   };
+}
+
+/**
+ The process's stat file vanished because it exited.
+ */
+const STAT_ABSENT: unique symbol = Symbol('/proc/<pid>/stat vanished because the process exited',);
+
+/**
+ Reads a stat file.
+
+ @param path - `/proc/<pid>/stat`
+
+ @returns text, or absence after exit
+ */
+async function readStatText(path: string,): Promise<string | typeof STAT_ABSENT> {
+  try {
+    return await readFile(
+      path,
+      'utf8',
+    );
+  }
+  catch (error: unknown) {
+    if (Error.isError(error,) && ('code' in error)
+      && ((error.code === 'ENOENT') || (error.code === 'ESRCH')))
+      return STAT_ABSENT;
+    throw error;
+  }
 }
 
 /**
@@ -167,24 +194,12 @@ async function linuxStart({
   /**
    Stat text, absent after exit.
    */
-  const statText = await (async function readStat(): Promise<string | undefined> {
-    try {
-      return await readFile(
-        join(
-          procRoot,
-          String(pid,),
-          'stat',
-        ),
-        'utf8',
-      );
-    }
-    catch (error: unknown) {
-      if (Error.isError(error,) && ('code' in error) && ((error.code === 'ENOENT') || (error.code === 'ESRCH')))
-        return undefined;
-      throw error;
-    }
-  })();
-  if (statText === undefined)
+  const statText = await readStatText(join(
+    procRoot,
+    String(pid,),
+    'stat',
+  ),);
+  if (statText === STAT_ABSENT)
     return { kind: 'missing', };
   /**
    Parsed state and ticks.
@@ -293,7 +308,8 @@ function processExists(pid: number,): boolean {
     return true;
   }
   catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error) && (error.code === 'EPERM'))
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'EPERM'))
       return true;
     l.debug(`PID ${String(pid,)} does not exist: ${caughtValueText(error,)}`,);
     return false;

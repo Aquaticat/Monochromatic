@@ -21,6 +21,7 @@ import {
 import { join, } from 'node:path';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { isAsciiDigits, } from '../ascii-decimal.ts';
 import { mapBounded, } from '../policy-engine/map-bounded.ts';
 import type {
   LockHolderEvidence,
@@ -69,7 +70,7 @@ function hasCode({
 }>,): boolean {
   return Error.isError(error,) && ('code' in error)
     && ((typeof error.code) === 'string')
-    && codes.includes(String(error.code,),);
+    && codes.includes(error.code,);
 }
 
 /**
@@ -80,40 +81,41 @@ function hasCode({
  @returns whether it names a process
  */
 function isPidName(name: string,): boolean {
-  return (name.length > 0) && [...name,].every(function isDigit(character,): boolean {
-    return (character >= '0') && (character <= '9');
-  },);
+  return (name.length > 0) && isAsciiDigits(name,);
 }
 
 /**
- Reads a process's command name.
+ Describes a holder with its command name when readable.
 
  @param procRoot - proc mount
 
  @param pid - process ID
 
- @returns command, or `undefined` when unreadable
+ @returns holder
  */
-async function readCommand({
+async function describeHolder({
   procRoot,
   pid,
 }: Readonly<{
   procRoot: string;
   pid: number;
-}>,): Promise<string | undefined> {
+}>,): Promise<LockHolderProcess> {
   try {
-    return (await readFile(
-      join(
-        procRoot,
-        String(pid,),
-        'comm',
-      ),
-      'utf8',
-    )).trim();
+    return {
+      pid,
+      command: (await readFile(
+        join(
+          procRoot,
+          String(pid,),
+          'comm',
+        ),
+        'utf8',
+      )).trim(),
+    };
   }
   catch (error: unknown) {
     l.debug(`command of PID ${String(pid,)} unreadable: ${caughtValueText(error,)}`,);
-    return undefined;
+    return { pid, };
   }
 }
 
@@ -165,7 +167,10 @@ async function readDescriptors(fdDirectory: string,): Promise<DescriptorListing>
   catch (error: unknown) {
     if (hasCode({
       error,
-      codes: ['ENOENT', 'ESRCH',],
+      codes: [
+        'ENOENT',
+        'ESRCH',
+      ],
     },))
       return { kind: 'exited', };
     return {
@@ -221,7 +226,8 @@ async function scanProcess({
   /**
    Per-descriptor matches.
    */
-  const matches = await Promise.all(listing.descriptors.map(async function matchDescriptor(descriptor,): Promise<boolean | string> {
+  const matches = await Promise.all(listing.descriptors
+    .map(async function matchDescriptor(descriptor,): Promise<boolean | string> {
     try {
       /**
        Metadata of the open file itself, reached through the descriptor link.
@@ -238,7 +244,10 @@ async function scanProcess({
     catch (error: unknown) {
       if (hasCode({
         error,
-        codes: ['ENOENT', 'ESRCH',],
+        codes: [
+          'ENOENT',
+          'ESRCH',
+        ],
       },))
         return false;
       return `PID ${pid} fd ${descriptor}: ${caughtValueText(error,)}`;
@@ -317,25 +326,23 @@ export async function scanProcFdHolders({
   /**
    Holder PIDs.
    */
-  const holderPids = pids.filter(function holds(_pid, index,): boolean {
-    return scans[index]?.holds === true;
+  const holderPids = pids.filter(function holds(
+    _pid,
+    index,
+  ): boolean {
+    return scans[index]
+      ?.holds
+      === true;
   },)
     .map(Number,);
   /**
    Holders with command names.
    */
-  const holders = await Promise.all(holderPids.map(async function describeHolder(pid,): Promise<LockHolderProcess> {
-    /**
-     Command name.
-     */
-    const command = await readCommand({
+  const holders = await Promise.all(holderPids.map(async function holderOf(pid,): Promise<LockHolderProcess> {
+    return await describeHolder({
       procRoot,
       pid,
     },);
-    return command === undefined ? { pid, } : {
-      pid,
-      command,
-    };
   },),);
   /**
    Partial-evidence reasons.

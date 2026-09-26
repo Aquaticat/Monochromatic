@@ -45,9 +45,9 @@ export type ResolvedGitCommand = Readonly<{
    */
   subcommandIndex: number;
   /**
-   Built-in subcommand name, or the unresolved name.
+   Built-in subcommand name, or the unresolved name; absent for a bare `git` or a help or version form.
    */
-  subcommand: string | undefined;
+  subcommand?: string;
   /**
    How it was reached;
    `unresolved` covers external commands,
@@ -57,6 +57,16 @@ export type ResolvedGitCommand = Readonly<{
    */
   route: ForwardedCommandRoute;
 }>;
+
+/**
+ The alias value has an unclosed quote or a trailing backslash, which Git rejects.
+ */
+export const ALIAS_SPLIT_FAILED: unique symbol = Symbol('Git alias value has an unclosed quote or trailing backslash',);
+
+/**
+ No `alias.<name>` or `alias.<name>.command` is configured.
+ */
+export const ALIAS_UNSET: unique symbol = Symbol('Git config defines no alias under this subcommand spelling',);
 
 /**
  Mutable split state isolated to one call.
@@ -77,8 +87,11 @@ type SplitState = {
  @returns whether it separates words
  */
 function isSpace(character: string,): boolean {
-  return (character === ' ') || (character === '\t') || (character === '\n')
-    || (character === '\r') || (character === '\v') || (character === '\f');
+  return (character === ' ') || (character === '\t')
+    || (character === '\n')
+    || (character === '\r')
+    || (character === '\v')
+    || (character === '\f');
 }
 
 /**
@@ -89,14 +102,14 @@ function isSpace(character: string,): boolean {
 
  @param value - alias value
 
- @returns words, or `undefined` for an unclosed quote or a trailing backslash
+ @returns words, or the failure sentinel for an unclosed quote or a trailing backslash
 
  @example
  ```ts
  splitAliasCommand(`worktree add "a b"`); // ['worktree', 'add', 'a b']
  ```
  */
-export function splitAliasCommand(value: string,): readonly string[] | undefined {
+export function splitAliasCommand(value: string,): readonly string[] | typeof ALIAS_SPLIT_FAILED {
   /**
    Linear scan state.
    */
@@ -114,7 +127,8 @@ export function splitAliasCommand(value: string,): readonly string[] | undefined
     }
     else if ((state.quote === '') && isSpace(character,)) {
       if (state.started)
-        state.words.push(state.current,);
+        state.words
+          .push(state.current,);
       state.current = '';
       state.started = false;
     }
@@ -135,9 +149,10 @@ export function splitAliasCommand(value: string,): readonly string[] | undefined
     }
   }
   if ((state.quote !== '') || state.escaped)
-    return undefined;
+    return ALIAS_SPLIT_FAILED;
   if (state.started)
-    state.words.push(state.current,);
+    state.words
+      .push(state.current,);
   return state.words;
 }
 
@@ -150,7 +165,7 @@ export function splitAliasCommand(value: string,): readonly string[] | undefined
 
  @param key - configuration key
 
- @returns value, or `undefined` when unset
+ @returns value, or the unset sentinel
  */
 async function readAliasKey({
   gitPath,
@@ -160,7 +175,7 @@ async function readAliasKey({
   gitPath: string;
   globalArgs: readonly string[];
   key: string;
-}>,): Promise<string | undefined> {
+}>,): Promise<string | typeof ALIAS_UNSET> {
   try {
     /**
      `git config --get` output.
@@ -179,7 +194,7 @@ async function readAliasKey({
   catch (error: unknown) {
     if (error instanceof SubprocessError) {
       l.debug(`no ${key}: ${caughtValueText(error,)}`,);
-      return undefined;
+      return ALIAS_UNSET;
     }
     throw error;
   }
@@ -194,7 +209,7 @@ async function readAliasKey({
 
  @param name - alias name
 
- @returns value, or `undefined`
+ @returns value, or the unset sentinel
 
  @example
  ```ts
@@ -209,12 +224,18 @@ export async function lookupAlias({
   gitPath: string;
   globalArgs: readonly string[];
   name: string;
-}>,): Promise<string | undefined> {
-  return await readAliasKey({
+}>,): Promise<string | typeof ALIAS_UNSET> {
+  /**
+   Plain `alias.<name>` value.
+   */
+  const plain = await readAliasKey({
     gitPath,
     globalArgs,
     key: `alias.${name}`,
-  },) ?? await readAliasKey({
+  },);
+  if (plain !== ALIAS_UNSET)
+    return plain;
+  return await readAliasKey({
     gitPath,
     globalArgs,
     key: `alias.${name}.command`,
@@ -267,7 +288,10 @@ export async function resolveForwardedCommand({
     /**
      Current layout.
      */
-    const { subcommandIndex, willShortCircuit, } = parseGlobalOptions(state.args,);
+    const {
+      subcommandIndex,
+      willShortCircuit,
+    } = parseGlobalOptions(state.args,);
     /**
      Current subcommand.
      */
@@ -278,37 +302,50 @@ export async function resolveForwardedCommand({
     const resolved = {
       args: state.args,
       subcommandIndex,
-      subcommand,
+      ...(subcommand === undefined ? {} : { subcommand, }),
     };
     if ((subcommand === undefined) || GIT_BUILTIN_COMMANDS.has(subcommand,))
       return {
         ...resolved,
-        route: state.seen.size === 0 ? 'direct' : 'alias',
+        route: state.seen
+          .size
+          === 0 ? 'direct' : 'alias',
       };
-    if (state.seen.has(subcommand,)) {
+    if (state.seen
+      .has(subcommand,)) {
       rl.debug(`alias loop at ${subcommand}`,);
       return {
         ...resolved,
         route: 'unresolved',
       };
     }
-    state.seen.add(subcommand,);
+    state.seen
+      .add(subcommand,);
     /**
      Global options in effect for the lookup.
      */
-    const globalArgs = state.args.slice(0, subcommandIndex,);
-    // oxlint-disable-next-line no-await-in-loop -- Each expansion depends on the previous one.
+    const globalArgs = state.args
+      .slice(
+        0,
+        subcommandIndex,
+      );
+    /* oxlint-disable no-await-in-loop -- Each expansion depends on the previous one. */
+    /**
+     Alias value.
+     */
     const value = await lookup({
       gitPath,
       globalArgs,
       name: subcommand,
     },);
-    if (value === undefined)
+    /* oxlint-enable no-await-in-loop */
+    if (value === ALIAS_UNSET)
       return {
         ...resolved,
         route: 'unresolved',
       };
-    if (value.trimStart().startsWith('!',))
+    if (value.trimStart()
+      .startsWith('!',))
       return {
         ...resolved,
         route: 'shell-alias',
@@ -317,7 +354,7 @@ export async function resolveForwardedCommand({
      Alias words.
      */
     const words = splitAliasCommand(value.trim(),);
-    if ((words === undefined) || (words.length === 0))
+    if ((words === ALIAS_SPLIT_FAILED) || (words.length === 0))
       return {
         ...resolved,
         route: 'unresolved',
@@ -326,38 +363,24 @@ export async function resolveForwardedCommand({
     state.args = [
       ...globalArgs,
       ...words,
-      ...state.args.slice(subcommandIndex + 1,),
+      ...state.args
+        .slice(subcommandIndex + 1,),
     ];
   }
   /**
    Layout after the expansion limit.
    */
   const { subcommandIndex, } = parseGlobalOptions(state.args,);
+  /**
+   Last unresolved name.
+   */
+  const subcommand = state.args[subcommandIndex];
   return {
     args: state.args,
     subcommandIndex,
-    subcommand: state.args[subcommandIndex],
+    ...(subcommand === undefined ? {} : { subcommand, }),
     route: 'unresolved',
   };
-}
-
-/**
- First positional token after a subcommand, skipping options.
-
- @param command - resolved command
-
- @returns sub-subcommand such as `add` in `worktree add`
-
- @example
- ```ts
- subSubcommand(resolved); // 'add'
- ```
- */
-export function subSubcommand(command: ResolvedGitCommand,): string | undefined {
-  return command.args.slice(command.subcommandIndex + 1,)
-    .find(function isPositional(token,): boolean {
-      return !token.startsWith('-',);
-    },);
 }
 
 /**
@@ -374,11 +397,16 @@ export function subSubcommand(command: ResolvedGitCommand,): string | undefined 
  ```
  */
 export function createsOrMovesWorktrees(command: ResolvedGitCommand,): boolean {
-  if ((command.route === 'shell-alias') || (command.route === 'unresolved') || (command.subcommand !== 'worktree'))
+  if ((command.route === 'shell-alias') || (command.route === 'unresolved')
+    || (command.subcommand !== 'worktree'))
     return false;
   /**
-   Worktree action.
+   Worktree action: the first positional token after `worktree`.
    */
-  const action = subSubcommand(command,);
+  const action = command.args
+    .slice(command.subcommandIndex + 1,)
+    .find(function isPositional(token,): boolean {
+      return !token.startsWith('-',);
+    },);
   return (action === 'add') || (action === 'move');
 }

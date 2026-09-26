@@ -56,8 +56,9 @@ export type IndexWriterCoordination = AsyncDisposable & Readonly<{
  */
 export const NO_COORDINATION: IndexWriterCoordination = {
   environment: {},
-  [Symbol.asyncDispose]: async function releaseNothing(): Promise<void> {
+  [Symbol.asyncDispose]: function releaseNothing(): Promise<void> {
     l.debug('no index-writer coordination to release',);
+    return Promise.resolve();
   },
 };
 
@@ -106,7 +107,11 @@ export async function coordinateIndexWriter({
    */
   const location = await resolveLandingLocation({
     gitPath,
-    globalArgs: command.args.slice(0, command.subcommandIndex,),
+    globalArgs: command.args
+      .slice(
+        0,
+        command.subcommandIndex,
+      ),
   },);
   if (location === LANDING_LOCATION_ABSENT)
     return NO_COORDINATION;

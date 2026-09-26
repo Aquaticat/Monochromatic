@@ -15,6 +15,7 @@
  @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { isAsciiDigits, } from './ascii-decimal.ts';
 
 /**
  Module logger.
@@ -52,35 +53,33 @@ const GIT_TRUE_VALUES: ReadonlySet<string> = new Set([
 export type GitChildEnvironmentOverlay = Readonly<Record<string, string>>;
 
 /**
- Parses `GIT_CONFIG_COUNT` the way Git's `strtoul` check accepts it.
+ `GIT_CONFIG_COUNT` holds something Git rejects.
+ */
+export const CONFIG_COUNT_MALFORMED: unique symbol = Symbol('GIT_CONFIG_COUNT holds non-digit characters that would be rejected',);
+
+/**
+ Parses a present `GIT_CONFIG_COUNT` the way Git's `strtoul` check accepts it.
 
  @param value - raw variable value
 
- @returns entry count, or `undefined` when Git would reject the value
+ @returns entry count, or the malformed sentinel when Git would reject the value
 
  @example
  ```ts
  parseConfigCount('2'); // 2
  parseConfigCount(''); // 0
- parseConfigCount('x'); // undefined
+ parseConfigCount('x'); // CONFIG_COUNT_MALFORMED
  ```
  */
-export function parseConfigCount(value: string | undefined,): number | undefined {
-  if (value === undefined)
-    return 0;
-  /**
-   Whether every character is an ASCII digit; Git rejects trailing non-digits.
-   */
-  const digitsOnly = [...value,].every(function isDigit(character,): boolean {
-    return (character >= '0') && (character <= '9');
-  },);
-  if (!digitsOnly)
-    return undefined;
+export function parseConfigCount(value: string,): number | typeof CONFIG_COUNT_MALFORMED {
+  // Git rejects any trailing non-digit.
+  if (!isAsciiDigits(value,))
+    return CONFIG_COUNT_MALFORMED;
   /**
    Parsed count; the empty string is zero, as for `strtoul`.
    */
   const count = value === '' ? 0 : Number(value,);
-  return Number.isSafeInteger(count,) ? count : undefined;
+  return Number.isSafeInteger(count,) ? count : CONFIG_COUNT_MALFORMED;
 }
 
 /**
@@ -110,35 +109,42 @@ export function lockfilePidOverlay(environment: Readonly<NodeJS.ProcessEnv>,): G
     l,
   },);
   /**
+   Raw count variable.
+   */
+  const rawCount = environment[COUNT_VARIABLE];
+  /**
    Existing numbered entry count.
    */
-  const count = parseConfigCount(environment[COUNT_VARIABLE],);
-  if (count === undefined) {
+  const count = rawCount === undefined ? 0 : parseConfigCount(rawCount,);
+  if (count === CONFIG_COUNT_MALFORMED) {
     rl.debug(`${COUNT_VARIABLE} is malformed; leaving it for Git to report`,);
     return {};
   }
   /**
-   Values of existing numbered `core.lockfilePid` entries in Git's reading order.
+   Indexes of existing numbered `core.lockfilePid` entries in Git's reading order.
    */
-  const existing = Array.from(
+  const matching = Array.from(
     { length: count, },
-    function entryAt(_unused, index,): Readonly<{
-      key: string | undefined;
-      value: string | undefined;
-    }> {
-      return {
-        key: environment[`GIT_CONFIG_KEY_${String(index,)}`],
-        value: environment[`GIT_CONFIG_VALUE_${String(index,)}`],
-      };
+    function entryIndex(
+      _unused,
+      index,
+    ): number {
+      return index;
     },
   )
-    .filter(function isLockfilePid(entry,): boolean {
-      return entry.key?.toLowerCase() === LOCKFILE_PID_KEY;
+    .filter(function isLockfilePid(index,): boolean {
+      return environment[`GIT_CONFIG_KEY_${String(index,)}`]
+        ?.toLowerCase()
+        === LOCKFILE_PID_KEY;
     },);
   /**
-   Git's effective numbered value: the last entry wins.
+   Git's effective numbered entry: the last one wins.
    */
-  const effective = existing.at(-1,)?.value;
+  const lastIndex = matching.at(-1,);
+  /**
+   Its value.
+   */
+  const effective = lastIndex === undefined ? lastIndex : environment[`GIT_CONFIG_VALUE_${String(lastIndex,)}`];
   if ((effective !== undefined) && GIT_TRUE_VALUES.has(effective.toLowerCase(),)) {
     rl.debug('core.lockfilePid is already true in the numbered Git configuration',);
     return {};

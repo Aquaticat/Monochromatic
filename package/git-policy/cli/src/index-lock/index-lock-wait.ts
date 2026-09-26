@@ -43,7 +43,7 @@ export const LOCK_HELD: unique symbol = Symbol('index lock held by another proce
 /**
  Git's `BACKOFF_MAX_MULTIPLIER`.
  */
-export const BACKOFF_MAX_MULTIPLIER = 1000;
+export const BACKOFF_MAX_MULTIPLIER = 1_000;
 
 /**
  Git's jitter floor in thousandths of the backoff.
@@ -58,7 +58,7 @@ const JITTER_SPAN_PERMILLE = 500;
 /**
  Thousandths per whole.
  */
-const PERMILLE = 1000;
+const PERMILLE = 1_000;
 
 /**
  Longest single poll while a proven-alive owner holds the lock,
@@ -177,7 +177,8 @@ export function nextBackoff(state: BackoffState,): BackoffState {
   /**
    Uncapped next multiplier, since `(n + 1)^2 = n^2 + 2n + 1`.
    */
-  const multiplier = state.multiplier + (2 * state.step) + 1;
+  const multiplier = state.multiplier + (2 * state.step)
+    + 1;
   return multiplier > BACKOFF_MAX_MULTIPLIER
     ? {
       step: state.step,
@@ -223,7 +224,8 @@ export const HOST_WAIT_EFFECTS: IndexLockWaitEffects = {
   },
   random: Math.random,
   report: function reportHost(line,): void {
-    process.stderr.write(line,);
+    process.stderr
+      .write(line,);
   },
 };
 
@@ -279,12 +281,20 @@ export async function waitForIndexLock<const Result,>({
   };
   // Every iteration returns, throws, or sleeps; the budget bounds the unproven iterations.
   for (;;) {
-    // oxlint-disable-next-line no-await-in-loop -- Each attempt observes whether the previous holder released the lock.
+    /* oxlint-disable no-await-in-loop -- Each attempt observes whether the previous holder released the lock. */
+    /**
+     Attempt outcome.
+     */
     const result = await attempt();
+    /* oxlint-enable no-await-in-loop */
     if (result !== LOCK_HELD)
       return result;
-    // oxlint-disable-next-line no-await-in-loop -- Evidence is re-read on every attempt.
+    /* oxlint-disable no-await-in-loop -- Evidence is re-read on every attempt. */
+    /**
+     This attempt's evidence.
+     */
     const evidence = await effects.gather(realIndexPath,);
+    /* oxlint-enable no-await-in-loop */
     if (evidence === LOCK_ABSENT) {
       rl.debug('lock released between the attempt and the evidence read',);
       continue;

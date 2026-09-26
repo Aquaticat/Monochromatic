@@ -24,6 +24,7 @@ import {
 } from 'node:fs/promises';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { isAsciiDigits, } from '../ascii-decimal.ts';
 import { scanLsofHolders, } from './index-lock-holders-darwin.ts';
 import { scanProcFdHolders, } from './index-lock-holders-linux.ts';
 import { scanRestartManagerHolders, } from './index-lock-holders-win32.ts';
@@ -48,7 +49,7 @@ const l = tagged({ tag: 'cli-git', },);
 /**
  The lock does not exist.
  */
-export const LOCK_ABSENT: unique symbol = Symbol('index lock absent',);
+export const LOCK_ABSENT: unique symbol = Symbol('index.lock was not found on disk during evidence reading',);
 
 /**
  Longest PID file text quoted in evidence.
@@ -59,6 +60,11 @@ const QUOTED_TEXT_LIMIT = 64;
  Partial-evidence reasons quoted before summarizing the rest.
  */
 const QUOTED_REASON_LIMIT = 3;
+
+/**
+ The PID file does not hold `pid <n>`.
+ */
+export const PID_TEXT_MALFORMED: unique symbol = Symbol('Git lock owner file lacks the "pid <digits>" line format',);
 
 /**
  Prefix of Git's PID file content.
@@ -149,33 +155,31 @@ export async function readLockMetadata(lockPath: string,): Promise<LockFileMetad
 
  @param text - file text
 
- @returns PID, or `undefined` when malformed
+ @returns PID, or the malformed sentinel
 
  @example
  ```ts
  parsePidFileText('pid 42\n'); // 42
  ```
  */
-export function parsePidFileText(text: string,): number | undefined {
+export function parsePidFileText(text: string,): number | typeof PID_TEXT_MALFORMED {
   /**
    Text without trailing whitespace, as `strbuf_rtrim` leaves it.
    */
   const trimmed = text.trimEnd();
   if (!trimmed.startsWith(PID_PREFIX,))
-    return undefined;
+    return PID_TEXT_MALFORMED;
   /**
    Decimal digits after the prefix.
    */
   const digits = trimmed.slice(PID_PREFIX.length,);
-  if ((digits === '') || (![...digits,].every(function isDigit(character,): boolean {
-    return (character >= '0') && (character <= '9');
-  },)))
-    return undefined;
+  if ((digits === '') || (!isAsciiDigits(digits,)))
+    return PID_TEXT_MALFORMED;
   /**
    Parsed PID.
    */
   const pid = Number(digits,);
-  return (Number.isSafeInteger(pid,) && (pid > 0)) ? pid : undefined;
+  return (Number.isSafeInteger(pid,) && (pid > 0)) ? pid : PID_TEXT_MALFORMED;
 }
 
 /**
@@ -277,10 +281,14 @@ export async function readPidFileEvidence({
    Named PID.
    */
   const pid = parsePidFileText(read.text,);
-  if (pid === undefined)
+  if (pid === PID_TEXT_MALFORMED)
     return {
       kind: 'malformed',
-      text: read.text.slice(0, QUOTED_TEXT_LIMIT,),
+      text: read.text
+        .slice(
+          0,
+          QUOTED_TEXT_LIMIT,
+        ),
     };
   return {
     kind: 'owner',
@@ -359,7 +367,8 @@ export function classifyIndexLock(evidence: IndexLockEvidence,): IndexLockVerdic
   /**
    First open holder.
    */
-  const holder = evidence.holders?.holders[0];
+  const holder = evidence.holders
+    ?.holders[0];
   if (holder !== undefined)
     return {
       kind: 'proven-alive',
@@ -371,13 +380,17 @@ export function classifyIndexLock(evidence: IndexLockEvidence,): IndexLockVerdic
    PID file evidence.
    */
   const { pidFile, } = evidence;
-  if ((pidFile.kind === 'owner') && (pidFile.owner.state === 'started-before-lock'))
+  if ((pidFile.kind === 'owner') && (pidFile.owner
+    .state
+    === 'started-before-lock'))
     return {
       kind: 'proven-alive',
       pid: pidFile.pid,
       source: 'pid-file',
     };
-  if ((pidFile.kind === 'owner') && (pidFile.owner.state === 'missing'))
+  if ((pidFile.kind === 'owner') && (pidFile.owner
+    .state
+    === 'missing'))
     return {
       kind: 'dead',
       pid: pidFile.pid,
@@ -431,7 +444,9 @@ export async function gatherIndexLockEvidence({
     lock,
     resolveStart: sources.resolveStart,
   },);
-  if ((pidFile.kind === 'owner') && (pidFile.owner.state === 'started-before-lock')) {
+  if ((pidFile.kind === 'owner') && (pidFile.owner
+    .state
+    === 'started-before-lock')) {
     rl.debug(`PID file proves live owner ${String(pidFile.pid,)}`,);
     return {
       lockPath,
@@ -468,44 +483,68 @@ function describePidFile(pidFile: PidFileEvidence,): string {
    Named PID text.
    */
   const pid = `PID file names PID ${String(pidFile.pid,)}`;
-  if (pidFile.owner.state === 'missing')
+  if (pidFile.owner
+    .state
+    === 'missing')
     return `${pid}, which no longer runs`;
-  if (pidFile.owner.state === 'started-after-lock')
-    return `${pid}, now a process started at ${new Date(pidFile.owner.startedAtMs,).toISOString()}, after the lock changed, so the PID was reused`;
-  if (pidFile.owner.state === 'start-unknown')
-    return `${pid}, which runs but whose start time is unreadable (${pidFile.owner.reason})`;
+  if (pidFile.owner
+    .state
+    === 'started-after-lock')
+    return `${pid}, now a process started at ${new Date(pidFile.owner
+      .startedAtMs,).toISOString()}, after the lock changed, so the PID was reused`;
+  if (pidFile.owner
+    .state
+    === 'start-unknown')
+    return `${pid}, which runs but whose start time is unreadable (${pidFile.owner
+      .reason})`;
   return `${pid}, which runs and started before the lock changed`;
 }
 
 /**
  Describes holder-scan evidence.
 
- @param holders - scan evidence
+ @param evidence - attempt evidence, whose holder scan may be absent
 
  @returns clause
  */
-function describeHolders(holders: LockHolderEvidence | undefined,): string {
+function describeHolders(evidence: IndexLockEvidence,): string {
+  /**
+   Scan evidence.
+   */
+  const { holders, } = evidence;
   if (holders === undefined)
     return 'no open-holder scan';
   /**
    Found holders.
    */
-  const found = holders.holders.length === 0
+  const found = holders.holders
+    .length
+    === 0
     ? 'no process holding it open'
-    : holders.holders.map(function holderText(holder,): string {
+    : holders.holders
+      .map(function holderText(holder,): string {
       return `PID ${String(holder.pid,)}${holder.command === undefined ? '' : ` (${holder.command})`}`;
     },)
       .join(', ',);
   /**
    Quoted partial reasons.
    */
-  const quoted = holders.partial.slice(0, QUOTED_REASON_LIMIT,);
+  const quoted = holders.partial
+    .slice(
+      0,
+      QUOTED_REASON_LIMIT,
+    );
   /**
    Partial-evidence clause.
    */
-  const partial = holders.partial.length === 0
+  const partial = holders.partial
+    .length
+    === 0
     ? ''
-    : `; ${String(holders.partial.length,)} partial-evidence note(s): ${quoted.join('; ',)}${holders.partial.length > quoted.length ? '; ...' : ''}`;
+    : `; ${String(holders.partial
+      .length,)} partial-evidence note(s): ${quoted.join('; ',)}${holders.partial
+        .length
+        > quoted.length ? '; ...' : ''}`;
   return `${holders.method} scan found ${found}${partial}`;
 }
 
@@ -523,9 +562,12 @@ function describeHolders(holders: LockHolderEvidence | undefined,): string {
  */
 export function describeIndexLockEvidence(evidence: IndexLockEvidence,): string {
   return [
-    `${evidence.lockPath} (device ${String(evidence.lock.device,)}, inode ${String(evidence.lock.inode,)}, changed ${new Date(evidence.lock.ctimeMs,).toISOString()})`,
+    `${evidence.lockPath} (device ${String(evidence.lock
+      .device,)}, inode ${String(evidence.lock
+        .inode,)}, changed ${new Date(evidence.lock
+          .ctimeMs,).toISOString()})`,
     describePidFile(evidence.pidFile,),
-    describeHolders(evidence.holders,),
+    describeHolders(evidence,),
   ].join('; ',);
 }
 

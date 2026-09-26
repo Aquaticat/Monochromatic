@@ -21,7 +21,7 @@ const l = tagged({ tag: 'cli-git', },);
 /**
  The command runs outside any repository.
  */
-export const LANDING_LOCATION_ABSENT: unique symbol = Symbol('no repository for landing coordination',);
+export const LANDING_LOCATION_ABSENT: unique symbol = Symbol('Git rev-parse found no repository to coordinate an index writer with landings',);
 
 /**
  Landing lock and index paths of one repository selection.
@@ -73,7 +73,10 @@ export async function resolveLandingLocation({
   /**
    Directory after `-C` options.
    */
-  const { effectiveCwd, } = parseGlobalOptions([...globalArgs, 'rev-parse',],);
+  const { effectiveCwd, } = parseGlobalOptions([
+    ...globalArgs,
+    'rev-parse',
+  ],);
   try {
     /**
      Absolute layout lines.
@@ -95,7 +98,8 @@ export async function resolveLandingLocation({
      Fixed-order lines.
      */
     const [gitDir, indexPath, registryRoot,] = stdout.split('\n',);
-    if ((gitDir === undefined) || (indexPath === undefined) || (registryRoot === undefined))
+    if ((gitDir === undefined) || (indexPath === undefined)
+      || (registryRoot === undefined))
       throw new TypeError(`Unexpected rev-parse layout: ${JSON.stringify(stdout,)}`,);
     return {
       cwd: effectiveCwd,

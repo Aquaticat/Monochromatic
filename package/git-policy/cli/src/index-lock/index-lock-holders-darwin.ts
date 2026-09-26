@@ -28,6 +28,20 @@ const l = tagged({ tag: 'cli-git', },);
 const SILENT_DENIAL_NOTE = 'lsof omits other users\' processes on macOS without reporting it';
 
 /**
+ One listed file's identity.
+ */
+type LsofFile = Readonly<{
+  /**
+   Device number.
+   */
+  device?: bigint;
+  /**
+   Inode number.
+   */
+  inode?: bigint;
+}>;
+
+/**
  One process record assembled from `lsof -F` field lines.
  */
 type LsofProcess = Readonly<{
@@ -42,27 +56,118 @@ type LsofProcess = Readonly<{
   /**
    Device and inode pairs of the listed files.
    */
-  files: readonly Readonly<{
-    device?: bigint;
-    inode?: bigint;
-  }>[];
+  files: readonly LsofFile[];
 }>;
+
+/**
+ An `lsof` numeric field could not be parsed.
+ */
+const FIELD_UNPARSABLE: unique symbol = Symbol('lsof D or i field is not a BigInt literal',);
 
 /**
  Parses a numeric field; `BigInt` reads both `lsof`'s `0x`-prefixed device numbers and decimal inodes.
 
  @param text - field value
 
- @returns number, or `undefined` when unparsable
+ @returns number, or the unparsable sentinel
  */
-function parseNumberField(text: string,): bigint | undefined {
+function parseNumberField(text: string,): bigint | typeof FIELD_UNPARSABLE {
   try {
     return BigInt(text,);
   }
   catch (error: unknown) {
     l.debug(`unparsable lsof number ${text}: ${caughtValueText(error,)}`,);
-    return undefined;
+    return FIELD_UNPARSABLE;
   }
+}
+
+/**
+ Field lines grouped under their starting line.
+ */
+type FieldGroup = Readonly<{
+  /**
+   Group-starting line.
+   */
+  head: string;
+  /**
+   Every line of the group, head included.
+   */
+  lines: readonly string[];
+}>;
+
+/**
+ Splits field lines into groups that each start at a line with the given field identifier,
+ dropping lines before the first such line.
+
+ @param lines - field lines
+
+ @param identifier - group-starting field identifier
+
+ @returns groups in order
+ */
+function groupsStartingAt({
+  lines,
+  identifier,
+}: Readonly<{
+  lines: readonly string[];
+  identifier: string;
+}>,): readonly FieldGroup[] {
+  /**
+   Group starts with their lines.
+   */
+  const starts = lines.flatMap(function startOf(
+    line,
+    index,
+  ): readonly Readonly<{
+    head: string;
+    index: number;
+  }>[] {
+    return line.startsWith(identifier,)
+      ? [{
+        head: line,
+        index,
+      },]
+      : [];
+  },);
+  return starts.map(function group(
+    start,
+    position,
+  ): FieldGroup {
+    return {
+      head: start.head,
+      lines: lines.slice(
+        start.index,
+        starts[position + 1]
+          ?.index
+          ?? lines.length,
+      ),
+    };
+  },);
+}
+
+/**
+ Reads one field of a group.
+
+ @param lines - group lines
+
+ @param identifier - field identifier
+
+ @returns field value, or the unparsable sentinel when absent or not numeric
+ */
+function numberField({
+  lines,
+  identifier,
+}: Readonly<{
+  lines: readonly string[];
+  identifier: string;
+}>,): bigint | typeof FIELD_UNPARSABLE {
+  /**
+   Field line.
+   */
+  const line = lines.find(function hasIdentifier(candidate,): boolean {
+    return candidate.startsWith(identifier,);
+  },);
+  return line === undefined ? FIELD_UNPARSABLE : parseNumberField(line.slice(1,),);
 }
 
 /**
@@ -78,62 +183,53 @@ function parseNumberField(text: string,): bigint | undefined {
  ```
  */
 export function parseLsofFields(output: string,): readonly LsofProcess[] {
-  return output.split('\n',)
-    .reduce<readonly LsofProcess[]>(
-    function addField(processes, line,): readonly LsofProcess[] {
+  return groupsStartingAt({
+    lines: output.split('\n',),
+    identifier: 'p',
+  },)
+    .map(function processRecord({
+      head,
+      lines,
+    },): LsofProcess {
       /**
-       Field identifier.
+       Command line.
        */
-      const field = line.charAt(0,);
+      const commandLine = lines.find(function isCommand(line,): boolean {
+        return line.startsWith('c');
+      },);
       /**
-       Field value.
+       Listed files.
        */
-      const value = line.slice(1,);
-      if (field === 'p')
-        return [...processes, {
-          pid: Number(value,),
-          files: [],
-        },];
-      /**
-       Process the field belongs to.
-       */
-      const current = processes.at(-1,);
-      if (current === undefined)
-        return processes;
-      /**
-       Processes before the current one.
-       */
-      const earlier = processes.slice(0, -1,);
-      if (field === 'c')
-        return [...earlier, {
-          ...current,
-          command: value,
-        },];
-      if (field === 'f')
-        return [...earlier, {
-          ...current,
-          files: [...current.files, {},],
-        },];
-      /**
-       File the field belongs to.
-       */
-      const file = current.files.at(-1,);
-      if ((file === undefined) || ((field !== 'D') && (field !== 'i')))
-        return processes;
-      /**
-       Parsed number.
-       */
-      const number = parseNumberField(value,);
-      return [...earlier, {
-        ...current,
-        files: [...current.files.slice(0, -1,), {
-          ...file,
-          ...(number === undefined ? {} : (field === 'D' ? { device: number, } : { inode: number, })),
-        },],
-      },];
-    },
-    [],
-  );
+      const files = groupsStartingAt({
+        lines,
+        identifier: 'f',
+      },)
+        .map(function fileRecord({ lines: fileLines, },): LsofFile {
+          /**
+           Device field.
+           */
+          const device = numberField({
+            lines: fileLines,
+            identifier: 'D',
+          },);
+          /**
+           Inode field.
+           */
+          const inode = numberField({
+            lines: fileLines,
+            identifier: 'i',
+          },);
+          return {
+            ...(device === FIELD_UNPARSABLE ? {} : { device, }),
+            ...(inode === FIELD_UNPARSABLE ? {} : { inode, }),
+          };
+        },);
+      return {
+        pid: Number(head.slice(1,),),
+        ...(commandLine === undefined ? {} : { command: commandLine.slice(1,), }),
+        files,
+      };
+    },);
 }
 
 /**
@@ -162,7 +258,8 @@ export function matchingHolders({
   inode: bigint;
 }>,): readonly LockHolderProcess[] {
   return processes.filter(function holds(candidate,): boolean {
-    return candidate.files.some(function sameFile(file,): boolean {
+    return candidate.files
+      .some(function sameFile(file,): boolean {
       return (file.device === device) && (file.inode === inode);
     },);
   },)

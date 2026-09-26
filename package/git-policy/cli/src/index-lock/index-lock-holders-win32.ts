@@ -112,13 +112,16 @@ export function parseRestartManagerOutput(output: string,): readonly LockHolderP
       /**
        Process ID.
        */
-      const pid = Number(tab === -1 ? line : line.slice(0, tab,),);
+      const pid = Number(tab === (-1) ? line : line.slice(
+        0,
+        tab,
+      ),);
       if ((!Number.isSafeInteger(pid,)) || (pid < 1))
         return [];
       /**
        Application name.
        */
-      const command = tab === -1 ? '' : line.slice(tab + 1,);
+      const command = tab === (-1) ? '' : line.slice(tab + 1,);
       return [command === '' ? { pid, } : {
         pid,
         command,
