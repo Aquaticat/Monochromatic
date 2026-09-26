@@ -236,7 +236,7 @@ await describe({
           },);
         },);
         expect(caught,).toBeInstanceOf(InvalidMaxAgeError,);
-      },),
+      },
     },),
 
     it({

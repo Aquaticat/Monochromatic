@@ -376,11 +376,11 @@ await describe({
           key: 'a',
           value: 1,
         },);
+        expect(lru.__oldCache.size,).toBe(0,);
         lru.set({
           key: 'b',
           value: 2,
         },);
-        expect(lru.__oldCache.size,).toBe(0,);
         lru.set({
           key: 'c',
           value: 3,
