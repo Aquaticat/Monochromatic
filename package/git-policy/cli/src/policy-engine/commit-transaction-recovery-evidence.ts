@@ -125,6 +125,39 @@ export async function hasLandingRecord(directory: string,): Promise<boolean> {
 }
 
 /**
+ Reports whether a transaction entered the landing critical section:
+ it recorded the real `index.lock` it created or a landing attempt.
+ A dead owner past this point may still hold the real `index.lock`,
+ which only a recovery under the landing lock may release.
+
+ @param directory - transaction directory
+
+ @returns whether any `index-lock-<n>.json` or `landing-<n>.json` exists
+
+ @example
+ ```ts
+ await enteredLanding('/repo/.git/cli-git-transactions/id');
+ ```
+ */
+export async function enteredLanding(directory: string,): Promise<boolean> {
+  /**
+   Directory entries.
+   */
+  const names = await readdir(directory,);
+  return [
+    LANDING_RECORD_PREFIX,
+    INDEX_LOCK_RECORD_PREFIX,
+  ].some(function hasRecord(prefix,): boolean {
+    return attemptNumbers({
+      names,
+      prefix,
+    },)
+      .length
+      > 0;
+  },);
+}
+
+/**
  Removes the dead owner's PID file beside the real index lock when it still names that owner.
 
  @param realIndexPath - real index path

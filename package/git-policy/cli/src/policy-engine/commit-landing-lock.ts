@@ -13,10 +13,8 @@ import {
   type InspectedEntry,
   inspectRegistryEntry,
 } from './commit-transaction-recovery-inspect.ts';
-import {
-  hasLandingRecord,
-  recoverDeadTransaction,
-} from './commit-transaction-recovery-landing.ts';
+import { enteredLanding, } from './commit-transaction-recovery-evidence.ts';
+import { recoverDeadTransaction, } from './commit-transaction-recovery-landing.ts';
 import type { CommitTransactionRecoveryOutcome, } from './commit-transaction-recovery-types.ts';
 import { listTransactionEntries, } from './commit-transaction-registry.ts';
 
@@ -81,7 +79,11 @@ export function oldestFirst(entries: readonly InspectedEntry[],): readonly Inspe
 }
 
 /**
- Recovers every dead-owner transaction holding a landing record; the caller holds the landing lock.
+ Recovers every dead-owner transaction that entered the landing critical section,
+ holding a landing record or the record of a real `index.lock` it created;
+ the caller holds the landing lock.
+ An owner killed while holding the landing lock and `index.lock` has no landing record yet,
+ and its `index.lock` would otherwise block this landing as an unproven foreign lock.
 
  @param root - transaction registry
 
@@ -137,7 +139,7 @@ export async function recoverDeadLandings({
     if (((typeof owner) === 'string') || (owner.liveness === 'alive'))
       continue;
     // oxlint-disable-next-line no-await-in-loop -- Each recovery mutates the ref or index the next one validates.
-    if (!(await hasLandingRecord(entry.path,)))
+    if (!(await enteredLanding(entry.path,)))
       continue;
     rl.debug(`recovering dead landing ${entry.path}`,);
     outcomes.push({
@@ -157,7 +159,7 @@ export async function recoverDeadLandings({
 }
 
 /**
- Acquires the landing lock and first recovers dead transactions that hold a landing record,
+ Acquires the landing lock and first recovers dead transactions that entered the landing critical section,
  so a crashed landing is resolved before another landing moves the ref or index.
 
  @param gitPath - real Git executable

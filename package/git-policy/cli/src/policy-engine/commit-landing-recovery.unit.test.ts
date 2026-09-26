@@ -18,11 +18,14 @@ import {
 import {
   barrierSource,
   createLandingRepository,
+  finish,
   git,
   leftovers,
   runWrapper,
+  startWrapper,
   WRAPPER_PATH,
   waitForFile,
+  writeHook,
   writeNodeProgram,
   writeWorktreeFile,
 } from './commit-landing-fixture.unit.test.ts';
@@ -81,6 +84,44 @@ await describe({
           await readFile(join(repository.gitDir, 'index',),),
         ).toEqual(indexBefore,);
       },
+    },),
+    ...(['landing-locked', 'objects-migrated',] as const).map(function killedInLanding(phase,) {
+      return it({
+        name: `a commit killed at ${phase} while another waits for the landing lock releases the real index.lock to that landing`,
+        fn: async function testKilledInLanding(): Promise<void> {
+          await using repository = await createLandingRepository();
+          await writeWorktreeFile({ repository, name: 'victim.txt', content: 'victim\n', },);
+          await writeWorktreeFile({ repository, name: 'bystander.txt', content: 'bystander\n', },);
+          /** Marker the bystander's pre-commit writes once its startup recovery is behind it. */
+          const preparing = join(repository.scratch, 'bystander-preparing',);
+          await writeHook({ repository, event: 'pre-commit', source: `if (process.env.BYSTANDER === '1') require('node:fs').writeFileSync(${JSON.stringify(preparing,)}, '');`, },);
+          /** Victim paused at the phase, holding the landing lock and the real index.lock. */
+          const victim = spawn(process.execPath, [WRAPPER_PATH, 'commit', '-m', 'victim', 'victim.txt',], {
+            cwd: repository.path,
+            env: { ...repository.env, CLI_GIT_TEST_ONLY_PHASE_SIGNAL: `${phase}:pause:${repository.scratch}`, },
+            stdio: 'ignore',
+            detached: true,
+          },);
+          /** Victim exit, registered before the kill. */
+          const exited = once(victim, 'exit',);
+          await waitForFile({ path: join(repository.scratch, `${phase}.reached`,), },);
+          /** Bystander, which waits for the landing lock. */
+          const bystander = finish(startWrapper({ repository, args: ['commit', '-m', 'bystander', 'bystander.txt',], env: { BYSTANDER: '1', }, },),);
+          // Past its startup recovery, so only the landing-lock recovery can release the victim's index.lock.
+          await waitForFile({ path: preparing, },);
+          if (victim.pid === undefined)
+            throw new Error('Victim did not start.',);
+          process.kill(-victim.pid, 'SIGKILL',);
+          await exited;
+          /** Bystander outcome. */
+          const outcome = await bystander;
+          expect(outcome.exitCode,).toBe(0,);
+          expect(outcome.stderr,).not.toContain('index.lock',);
+          expect(await git({ repository, args: ['log', '--format=%s',], },),).toBe('bystander\nbaseline',);
+          expect(await git({ repository, args: ['status', '--porcelain',], },),).toBe('?? victim.txt',);
+          expect(await leftovers(repository,),).toEqual([],);
+        },
+      },);
     },),
     it({
       name: 'a landing that crashed after its compare-and-swap is completed before the next commit lands on top',

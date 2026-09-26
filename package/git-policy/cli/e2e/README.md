@@ -191,6 +191,19 @@ Design scenarios exercise the accepted concurrent-commit design:
   then `git status` for recovery and a follow-up commit.
 - `sigkill-offset`:
   the same with the kill at a seeded 20 to 600 ms offset instead of a hook.
+- `sigkill-phase-preparation-done`,
+  `sigkill-phase-landing-locked`,
+  `sigkill-phase-objects-migrated`,
+  `sigkill-phase-ref-updated`,
+  and `sigkill-phase-index-installed`:
+  the victim pauses at that landing phase through the test-only phase marker
+  (see "Phase markers"),
+  the bystander starts and gets 500 ms to reach its landing wait,
+  then the victim's process group is killed,
+  followed by `git status` for recovery and a follow-up commit.
+  At `landing-locked` the victim holds the landing lock and the real `index.lock`,
+  so the bystander must recover both from a dead owner.
+  `victim-reached-phase` fails when the victim settled before its marker appeared.
 
 Hooks and editors are Node programs (`hook-program-fixture.ts`),
 not shell scripts.
@@ -198,6 +211,43 @@ Each hook logs its run,
 writes a `<token>.<event>` marker,
 and blocks while a `<token>.<event>.hold` file exists,
 which is how scenarios pin interleavings and inject kills.
+
+### Phase markers
+
+Landing phases run no hook,
+so the wrapper exposes them through a test-only environment variable
+(`src/policy-engine/commit-transaction-test-phase.ts`,
+`SPEC.md` "Container end-to-end suite"):
+
+```sh
+# package/git-policy/cli/e2e: environment of one wrapper invocation
+CLI_GIT_TEST_ONLY_PHASE_SIGNAL=<phase>:kill                # SIGKILL itself at the phase
+CLI_GIT_TEST_ONLY_PHASE_SIGNAL=<phase>:kill:<directory>    # write <directory>/<phase>.reached first
+CLI_GIT_TEST_ONLY_PHASE_SIGNAL=<phase>:pause:<directory>   # write the marker, wait for <directory>/<phase>.release
+```
+
+The phases,
+in transaction order,
+are `preparation-done`
+(after `prepared.json`),
+`landing-locked`
+(landing lock and real `index.lock` held,
+`index-lock-<n>.json` written),
+`objects-migrated`
+(kept pack written,
+before `landing-<n>.json`),
+`ref-updated`
+(after `ref-updated.json`),
+and `index-installed`
+(after the `index-installed` marker,
+before conclusion cleanup and worktree completion).
+The variable name says it is for tests only,
+nothing else sets it,
+and a malformed value fails the invocation instead of being ignored.
+A nested wrapper invocation from a hook inherits the variable,
+so scenarios arm it only on commits whose hooks start no nested commit.
+The kill scenarios use `pause` and kill the whole process group from the harness,
+so the harness records the attempt as deliberately killed.
 
 ## Invariants
 
@@ -340,13 +390,8 @@ when a concurrent wrapper's recovery met another invocation's transaction direct
 - The shared-file scenarios give the second agent a fixed 1.5 s start window,
   because the accepted design has no hook-visible point between capture and the hook lock.
   A heavily loaded host could release the first agent before the second captured.
-- Kill phases are the four hook events plus a time offset.
-  Landing-lock,
-  ref-update,
-  and index-install phases have no externally observable barrier,
-  so only `sigkill-offset` can land inside them.
-  Once the implementation exposes phase markers,
-  add one kill scenario per phase.
+- No phase marker sits between a lost race and its replay or revalidation,
+  so a kill there is reached only through `sigkill-offset`.
 - The lint-staged scenarios run in a linked worktree,
   because the `linked-worktree-only` core policy rejects the hook's `git stash` in a main worktree.
   lint-staged in a main worktree is therefore blocked by cli-git today,
