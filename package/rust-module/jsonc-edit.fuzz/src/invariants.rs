@@ -75,9 +75,9 @@ pub fn collect_comments(value: &JsoncValue) -> Vec<String> {
 /// What:     Assert every comment body in the tree survives into the emitted text.
 /// Why:      Comments are data here,
 ///           so emission that quietly drops one is the worst failure this crate can have.
-///           Bodies are matched as substrings because a merged comment renders as one block whose
-///           text contains each original body,
-///           and a single-line body may be re-rendered with the other delimiter.
+///           Each body line is matched as a substring,
+///           because canonical emission splits a merged multi-line body into one `//` line per body
+///           line and may re-render a single-line body with the other delimiter.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -85,7 +85,14 @@ pub fn collect_comments(value: &JsoncValue) -> Vec<String> {
 /// ```
 pub fn assert_comments_preserved(value: &JsoncValue, emitted: &str) {
     for body in collect_comments(value) {
-        assert!(emitted.contains(&body), "emission dropped the comment body {body:?}:\n{emitted}");
+        // What: Check every body line rather than the whole body as one substring.
+        // Why: Canonical emission renders a merged multi-line body as one `//` line per body line,
+        //      with indentation between them, so the joined body is deliberately not a substring of
+        //      the output. Content loss is still caught: a dropped line has no counterpart.
+        let normalized = body.replace("\r\n", "\n");
+        for line in normalized.split(['\n', '\r']) {
+            assert!(emitted.contains(line), "emission dropped part of the comment body {body:?}:\n{emitted}");
+        }
     }
 }
 

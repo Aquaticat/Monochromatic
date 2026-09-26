@@ -38,7 +38,7 @@ description = "Run every fuzz target for 30s with the dictionary as a smoke test
 shell = "node --input-type=module-typescript -e"
 run = """
 const { execFileSync } = await import('node:child_process')
-const { mkdirSync } = await import('node:fs')
+const { copyFileSync, existsSync, mkdirSync, readdirSync } = await import('node:fs')
 const targets = execFileSync('cargo', ['fuzz', 'list', '--fuzz-dir', '.'], { encoding: 'utf8' }).split('\\n').map((line) => line.trim()).filter(Boolean)
 for (const target of targets) {
   console.log(`--- ${target} ---`)
@@ -48,7 +48,14 @@ for (const target of targets) {
   // both dirs are created here before the run.
   mkdirSync(`corpus/${target}`, { recursive: true })
   mkdirSync(`seed/${target}`, { recursive: true })
-  execFileSync('cargo', ['fuzz', 'run', '--fuzz-dir', '.', target, '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', `corpus/${target}`, `seed/${target}`, '--', '-max_total_time=30', '-rss_limit_mb=2048', '-dict=dictionary/jsonc-edit.dict'], { stdio: 'inherit' })
+  // Only one corpus directory is passed to libFuzzer. With two, this libFuzzer version also wrote
+  // newly discovered units into the second one, which polluted the committed seed directory with
+  // binary blobs. Seeds are copied in instead, without overwriting existing discoveries.
+  for (const entry of readdirSync(`seed/${target}`)) {
+    const destination = `corpus/${target}/${entry}`
+    if (!existsSync(destination)) copyFileSync(`seed/${target}/${entry}`, destination)
+  }
+  execFileSync('cargo', ['fuzz', 'run', '--fuzz-dir', '.', target, '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', `corpus/${target}`, '--', '-max_total_time=30', '-rss_limit_mb=2048', '-dict=dictionary/jsonc-edit.dict'], { stdio: 'inherit' })
 }
 """
 
@@ -58,4 +65,4 @@ usage = """
 arg "target" help="Fuzz target name (e.g. fuzz_parse_emit_roundtrip)"
 arg "[args]" var=#true help="libFuzzer flags (-flag=v) and/or input paths to replay (artifacts/<target>/crash-...)"
 """
-run = "cargo fuzz run --fuzz-dir . --sanitizer address --target x86_64-unknown-linux-gnu {{ target }} corpus/{{ target }} seed/{{ target }} -- {{ args() }}"
+run = "cargo fuzz run --fuzz-dir . --sanitizer address --target x86_64-unknown-linux-gnu {{ target }} corpus/{{ target }} -- {{ args() }}"

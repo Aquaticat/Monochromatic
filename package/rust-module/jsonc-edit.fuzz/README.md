@@ -104,6 +104,10 @@ The house rule for that isolation is in `AGENTS.md` under hazardous commands.
 - `dictionary/jsonc-edit.dict` gives libFuzzer the JSONC tokens worth splicing.
 - `seed/` holds committed starting inputs;
    `corpus/` and `artifacts/` are gitignored scratch that libFuzzer owns.
+   Tasks copy seeds into `corpus/<target>` and pass only that one directory,
+   because passing `seed/` as a second corpus directory let libFuzzer write newly discovered
+   units into it,
+   polluting tracked files with binary blobs.
 
 ## Relationship to the other suites
 

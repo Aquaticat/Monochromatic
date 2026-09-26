@@ -51,10 +51,19 @@ fuzz_target!(|input: (GeneratedDocument, Vec<u8>)| {
             // Set: write a generated value at the address, carrying the existing comment across so
             // comment preservation can be asserted on the result.
             let Ok(target) = jsonc_lookup(&state.root, &path) else { return };
-            let mut replacement = replacement_value(&mut unstructured).expect("replacement builds");
+            // An exhausted byte budget is not a defect, so the input is skipped rather than failed.
+            let Ok(mut replacement) = replacement_value(&mut unstructured) else { return };
             replacement.comment = target.comment.clone();
             written = Some(replacement.clone());
-            jsonc_set(&state.root, &path, replacement).expect("set at a resolved address succeeds")
+            match jsonc_set(&state.root, &path, replacement) {
+                Ok(edited) => edited,
+                Err(error) => {
+                    // The only refusal this target may provoke is the root shape guard: a scalar at
+                    // the root would break the container-root contract, so the crate refuses it.
+                    assert!(path.is_empty(), "set at a resolved address was refused: {error}");
+                    return;
+                }
+            }
         }
         1 => {
             // Delete: only meaningful away from the root, which the contract refuses to remove.
