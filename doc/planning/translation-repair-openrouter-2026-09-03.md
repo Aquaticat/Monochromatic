@@ -8082,6 +8082,147 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## shi_Yumiaoya37 read, 2026-09-26: the attempt said, and class one hundred fifty-one
+
+### What the run did
+
+shi_Yumiaoya37 (the uncommitted class one hundred fifty build, frozen as `.frozen-dist-class150-20260926`)
+SETTLED at 10:18 UTC in 15.8 min, one attempt,
+901 seats, 51 retry rounds, 771 calls,
+about 1.03 USD by the OpenRouter spend lines plus Bedrock 20.65 to 20.43.
+Synthetic and Hyper read dry throughout.
+
+The January 16 sentence reads "she attempted to end her life in the early hours of January 16."
+The bench wrote the attempt itself:
+no candidate drew the class one hundred fifty refusal (`drops the suicide` appears nowhere in the log),
+so the floor was silent, not exercised.
+The polish gate's ballot lines are live: 28 ballots over 7 gate runs, each with model, choice and reason.
+
+Every shi_Yumiaoya36 check held:
+front matter equal, 4 headings, no TA, no error finish, no double blank line,
+no unendorsed standing, no repeat or run-off finding, 11 abstention lines.
+The film link reads "Josee, the Tiger and the Fish" again, where shi_Yumiaoya36 had "film".
+
+### Class one hundred fifty-one: the father's insult lost its "son"
+
+The original reports that her father insulted her as 「逆子」, "unfilial son".
+On a trans woman's memorial, the insult is her father calling her his son.
+shi_Yumiaoya36 and 37 both shipped "rebellious child", which takes the misgendering out of the insult the page reports,
+and shi_Yumiaoya8 left it in Han.
+No archive English covers the passage (the archive is partial), so nothing on any sheet said which.
+
+`逆子` joins the community glossary (`community-glossary.ts`)
+with the renderings "unfilial son", "undutiful son", "disobedient son", "ungrateful son" and "rebellious son",
+and a why naming the misgendering.
+So the identity context carries the term,
+the judges' sheets name any candidate lacking every rendering,
+and the source-carry floor refuses the term left in Han.
+It refuses no English form; "child" is named as evidence, not barred.
+The corpus carries 逆子 only on shi_Yumiaoya (the Simplified and Traditional originals).
+
+The departure line on the judges' sheets ended "the archive renders it so",
+which was already untrue for 药娘 (the archive keeps it in Han, and the owner's ruling overrides it)
+and would be untrue for 逆子.
+It now ends "the community glossary renders it so".
+The glossary's header says which entries have no archive rendering.
+
+Guard: `community-glossary.unit.test.ts` seeds five terms and names a "rebellious child" candidate while leaving "unfilial son" unnamed.
+It was red against the class one hundred fifty build (2 FAIL; `aea5c3d91`) and passes on the fix (`0de47d546`); types clean, full suite 1,152 PASS, 0 FAIL (scratch `suite-class151.log`).
+
+### A note on the unit runner's output
+
+A throwaway probe with pass, fail, pass in one `describe` showed the runner prints one PASS line per `describe`
+naming every passing test in it, and one FAIL line per failing test.
+Suite PASS counts are therefore counts of `describe` blocks, not tests;
+FAIL counts are per test and complete.
+
+### Not built
+
+- 提示 in the caution callout still ships as "Tips".
+- "to do suicide intervention" reads as a calque.
+
+## shi_Yumiaoya36 read, 2026-09-26: class one hundred fifty
+
+### What the run did
+
+shi_Yumiaoya36 (frozen `eac0b67a8`) SETTLED at 09:53 UTC in 5.5 min, one attempt,
+848 seats, 51 retry rounds, 729 calls,
+about 0.50 USD by the meters (Bedrock 20.83 to 20.65, OpenRouter 49.36 to 49.04).
+Synthetic and Hyper read dry throughout,
+so the two seats only they serve threw every call (Qwen3.8-27B 117, glm-5.3 81)
+and class one hundred forty-nine was not exercised again.
+
+Every shi_Yumiaoya35 check held:
+front matter equal, 4 headings, no TA, no error finish, no double blank line,
+no unendorsed standing, no repeat or run-off finding, 18 abstention lines.
+
+### Class one hundred fifty: the page dropped a suicide attempt the original names
+
+The original's 于 1 月 16 日凌晨吞下大量药物自杀 is an attempt she survived:
+the paragraph goes on to six days in intensive care and her waking.
+The page shipped "she overdosed in the early hours of January 16."
+The attempt the original states was gone,
+and the means, which the house rule keeps vague, stood in its place.
+shi_Yumiaoya14 and 35 had shipped "attempted suicide" for the same sentence.
+
+The bench had the right text in hand.
+The consolidation polish proposed "attempted suicide by overdosing" and won the polish round 2.5 to 2,
+with two ballots citing the survived-attempt rule of class seventy-nine.
+The polish gate then settled on neither, and the base shipped.
+The log carried only the gate's tally, not its ballots' reasons,
+so why the gate refused cannot be read from this run.
+
+Fixed in two parts:
+
+- `droppedSuicideFindings` in `translate-suicide-drop.ts` refuses, before any judge reads it,
+  a candidate whose original names a suicide (自杀, 自尽, 轻生, outside comments)
+  and which carries no wording for suicide at all.
+  A word on the stem `suicid`, a kill verb with a reflexive ("killed herself"),
+  or an end or take verb closing on a life ("tried to end her life", "took her own life") all count.
+  The floor asks only that the suicide be said, never how;
+  whether the means are too specific stays with the judges.
+  It runs in `sourceCarryFindings` after the address floor,
+  so it covers translate candidates, consolidation proposals and standings alike.
+- The consolidation polish gate now logs every ballot with its model and reason,
+  as the consolidate gate has since class fifty-six.
+
+The corpus census of 2026-09-26 (scratch `suicide-census.mjs`) found 44 entries whose original names a suicide.
+The archive English of 40 says it.
+Two (shi_Yumiaoya, XIEPT2) are partial archives without those passages.
+Two render a quoted line without the word:
+自杀痛苦 as "the pain of dying" and 别自杀 as "please don't follow her".
+The floor now refuses those two lines as standings,
+so those slices go to the lanes instead of shipping as the archive has them.
+
+The guard `suicide-drop.unit.test.ts` was red against the old build (two FAIL, one PASS)
+and passes on the new one.
+The full suite passed 1,152 with no FAIL (scratch `suite-class150.log`).
+That suite ran before the polish gate's log line was added;
+the polish gate's own tests pass on the rebuilt dist.
+A replay over the real paragraphs refuses shi_Yumiaoya36's shipped "overdosed" paragraph
+and accepts shi_Yumiaoya35's "attempted suicide" paragraph.
+
+### Observations not built
+
+- 逆子 as "rebellious child" loses the gendered "son" in the father's insult.
+- The handles 雪秋 and 由之 shipped without the literal gloss class eighty-three asks for.
+  No candidate glossed them, so there was nothing for a deterministic pass to restore.
+- The caution callout's 提示 as "Tips".
+- 初三 as "third year of junior high".
+- The italics on *Girls' Last Tour* lost.
+- The film link's text is just "film".
+- The sedative detail stays on the page, as on shi_Yumiaoya23.
+
+### Next
+
+shi_Yumiaoya37 was launched at 10:02 UTC.
+It runs from a freeze of the class one hundred fifty build, `node_modules/.frozen-dist-class150-20260926`.
+The freeze was taken before the commit because another session's `worktree add` held git's worktree-copy settlement lock.
+The lock cleared at about 10:20 UTC; the guard landed as `c7168c1ec` and the fix as `fb41795ba`, the same source as the freeze.
+Read first whether the January 16 sentence says the attempt.
+Then check any `drops the suicide` refusal and the polish gate's ballot lines,
+then the standing checks.
+
 ## hulicaijia31 read, 2026-09-26: class one hundred forty-nine not exercised, and the en_CA scan corrected
 
 hulicaijia31 (frozen `eac0b67a8`) SETTLED at 09:45 UTC in 19.3 min,

@@ -4777,7 +4777,33 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASS ONE HUNDRED FORTY-NINE BUILT (2026-09-26), NOT YET EXERCISED LIVE:
+1.  CLASS ONE HUNDRED FIFTY-ONE BUILT (2026-09-26), NOT YET RUN:
+    the father's insult 「逆子」 shipped "rebellious child" on shi_Yumiaoya36 and 37,
+    dropping the "son" that misgenders her; 逆子 joins the community glossary
+    ("unfilial son" first, Han refused, "child" named to the judges as evidence),
+    and the sheets' departure line now ends "the community glossary renders it so".
+    Guard `aea5c3d91` red on the class one hundred fifty build, fix `0de47d546`, suite 1,152 PASS 0 FAIL; class 150 guard `c7168c1ec`, fix `fb41795ba`.
+    SHI_YUMIAOYA37 READ: SETTLED at 10:18 UTC in 15.8 min; "she attempted to end her life in the early hours of January 16";
+    the class one hundred fifty floor silent (the bench said it); 28 polish-gate ballot lines with reasons;
+    every shi_Yumiaoya36 check held; recorded under "## shi_Yumiaoya37 read" in the pass log.
+    Unit runner note: PASS lines are one per `describe`, FAIL lines one per test.
+    Next: commit once git is free, then yingying, then XingZ60, then a shi_Yumiaoya run for 逆子.
+    CLASS ONE HUNDRED FIFTY BUILT (2026-09-26), RAN ON SHI_YUMIAOYA37:
+    shi_Yumiaoya36 shipped "she overdosed in the early hours of January 16" for 吞下大量药物自杀,
+    a survived attempt shi_Yumiaoya14 and 35 had rendered "attempted suicide";
+    the polish round chose "attempted suicide by overdosing" 2.5 to 2 and the polish gate settled on neither.
+    `droppedSuicideFindings` (`translate-suicide-drop.ts`, in `sourceCarryFindings` after the address floor)
+    refuses a candidate or standing whose original names 自杀, 自尽 or 轻生 and which carries no wording for suicide;
+    the consolidation polish gate now logs every ballot with its reason.
+    Guard `suicide-drop.unit.test.ts` red on the old build, green on the new;
+    full suite 1,152 PASS, 0 FAIL (`suite-class150.log`, before the log line; the polish gate's own tests pass after it).
+    NOT YET COMMITTED when shi_Yumiaoya37 launched at 10:02 UTC (pid 1025286, scope `pass-shi_Yumiaoya37`)
+    from `.frozen-dist-class150-20260926`: another session's `worktree add` held git's worktree-copy lock.
+    Read shi_Yumiaoya37 for the January 16 sentence saying the attempt,
+    any `drops the suicide` refusal, and the polish gate's ballot lines;
+    recorded under "## shi_Yumiaoya36 read" in the pass log with the observations not built.
+    Then yingying, then XingZ60.
+    CLASS ONE HUNDRED FORTY-NINE BUILT (2026-09-26), NOT YET EXERCISED LIVE:
     Hyper's request pacer reserves each start in arrival order and waits on its own abortable timer,
     and a provider whose window would make the call wait reads saturated,
     so the call overflows to OpenRouter and queues on Hyper only for a Hyper-only model
