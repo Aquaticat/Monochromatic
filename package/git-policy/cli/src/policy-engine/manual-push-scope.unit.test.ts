@@ -8,10 +8,10 @@
 
  @module
  */
-import {
-  type ChildProcess,
+import type {
+  ChildProcess,
   spawn,
-  type SpawnOptions,
+  SpawnOptions,
 } from 'node:child_process';
 import {
   mkdtemp,
@@ -34,11 +34,11 @@ import {
 import nanoSpawn from 'nano-spawn';
 import {
   ABSENT_GIT_VALUE,
+  type CandidateFile,
+  createManualPushCandidates,
+  parseRawDiffRecords,
   type PushUpdate,
-} from '../api/context-types.ts';
-import type { CandidateFile, } from '../api/policy-types.ts';
-import { createManualPushCandidates, } from './manual-push-candidates.ts';
-import { parseRawDiffRecords, } from './raw-diff-records.ts';
+} from '../../dist/final/node/index.mjs';
 
 //region Fixture constants
 
@@ -485,7 +485,7 @@ function branchCommits({
     return commitCommand({
       ref,
       mark: firstMark + index,
-      from: index === 0 ? start : `:${String(firstMark + index - 1,)}`,
+      from: index === 0 ? start : `:${String((firstMark + index) - 1,)}`,
       changes: [{ kind: 'modify', mode: '100644', path, content: `${path}\n`, },],
     },);
   },).join('',);
@@ -573,7 +573,7 @@ type CandidateSummary = Readonly<{
   /**
    Git object identity.
    */
-  revision: string;
+  revision: CandidateFile['revision'];
   /**
    Candidate mode.
    */
@@ -639,7 +639,9 @@ async function referenceSummaries({
     )).stdout;
     perCommit.push(parseRawDiffRecords({
       text: raw,
-      createError: function toError(message,) { return new Error(message,); },
+      createError: function toError(message,) {
+        return new Error(message,);
+      },
     },).map(function toSummary(record,) {
       return {
         targetId: `${targetBase}:${commit}:${record.oid}:${record.path}`,
@@ -676,10 +678,14 @@ async function rangeCommits({
 }>,): Promise<readonly string[]> {
   return (await git({
     cwd: repository,
-    args: ['rev-list', '--reverse', tip, ...exclusions.map(function exclude(oid,) { return `^${oid}`; },),],
+    args: ['rev-list', '--reverse', tip, ...exclusions.map(function exclude(oid,) {
+      return `^${oid}`;
+    },),],
   },))
     .split('\n',)
-    .filter(function nonEmpty(line,) { return line.length > 0; },);
+    .filter(function nonEmpty(line,) {
+      return line.length > 0;
+    },);
 }
 
 /**
@@ -756,7 +762,9 @@ await describe({
           commits: await rangeCommits({ repository: fixture.repository, tip: featureTip, exclusions: ['main',], },),
           targetBase: 'manual-push:origin:refs/heads/feature',
         },),);
-        expect(candidates.map(function pathOf(candidate,) { return candidate.path; },),)
+        expect(candidates.map(function pathOf(candidate,) {
+          return candidate.path;
+        },),)
           .toEqual(['feature-1.txt', 'feature-2.txt',],);
       },
     },),
@@ -810,7 +818,9 @@ await describe({
         },);
         // Nothing is known on `mirror`, so its tip tree is scanned once.
         expect(candidates,).toHaveLength(SHORT_HISTORY_COMMITS,);
-        expect(candidates.every(function isAdded(candidate,) { return candidate.change === 'added'; },),).toBe(true,);
+        expect(candidates.every(function isAdded(candidate,) {
+          return candidate.change === 'added';
+        },),).toBe(true,);
         expect(candidates.every(function isTipTarget(candidate,) {
           return candidate.targetId.startsWith(`manual-push:mirror:refs/heads/main:${tip}:`,);
         },),).toBe(true,);
@@ -927,12 +937,24 @@ await describe({
         },);
         expect(summarize(candidates,),).toEqual(expected,);
         // Guard the fixture itself: every edge family is present in the expectation.
-        expect(expected.map(function pathOf(summary,) { return summary.path; },),).toContain('other.txt',);
-        expect(expected.map(function pathOf(summary,) { return summary.path; },),).toContain('tools/exec.sh',);
-        expect(expected.some(function isGitlink(summary,) { return summary.mode === 'submodule'; },),).toBe(true,);
-        expect(expected.some(function isExecutable(summary,) { return summary.mode === 'executable'; },),).toBe(true,);
-        expect(expected.map(function pathOf(summary,) { return summary.path; },),).not.toContain('b.txt',);
-        await Promise.all(candidates.map(function load(candidate,) { return candidate.bytes(); },),);
+        expect(expected.map(function pathOf(summary,) {
+          return summary.path;
+        },),).toContain('other.txt',);
+        expect(expected.map(function pathOf(summary,) {
+          return summary.path;
+        },),).toContain('tools/exec.sh',);
+        expect(expected.some(function isGitlink(summary,) {
+          return summary.mode === 'submodule';
+        },),).toBe(true,);
+        expect(expected.some(function isExecutable(summary,) {
+          return summary.mode === 'executable';
+        },),).toBe(true,);
+        expect(expected.map(function pathOf(summary,) {
+          return summary.path;
+        },),).not.toContain('b.txt',);
+        await Promise.all(candidates.map(function load(candidate,) {
+          return candidate.bytes();
+        },),);
       },
     },),
 

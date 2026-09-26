@@ -18,7 +18,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import nanoSpawn from 'nano-spawn';
-import { createManualPushCandidates, } from './manual-push-candidates.ts';
+import { createManualPushCandidates, } from '../../dist/final/node/index.mjs';
 
 /**
  Real Git executable used behind instrumented wrapper.

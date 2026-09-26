@@ -48,6 +48,24 @@ export type ResolvedObject = Readonly<{
 }>;
 
 /**
+ One remote-tracking ref record.
+ */
+type TrackingRef = Readonly<{
+  /**
+   Ref target object ID.
+   */
+  oid: GitObjectId;
+  /**
+   Ref target object type.
+   */
+  type: string;
+  /**
+   Fully qualified ref name.
+   */
+  refName: string;
+}>;
+
+/**
  Splits Git line output, dropping the terminal empty line.
 
  @param bytes - raw stdout
@@ -65,9 +83,9 @@ function outputLines(bytes: Uint8Array,): readonly string[] {
 /**
  Peels every requested object through one batch-check process.
 
- Names absent from the local object database resolve to `undefined`, which
- callers treat as unknown rather than failing: a remote value Git never
- fetched cannot bound a scan, and a missing local value fails later.
+ Names absent from the local object database are omitted, which callers
+ treat as unknown rather than failing: a remote value Git never fetched
+ cannot bound a scan, and a missing pushed value fails in the caller.
 
  @param gitPath - resolved real Git executable
 
@@ -75,7 +93,7 @@ function outputLines(bytes: Uint8Array,): readonly string[] {
 
  @param oids - object IDs to peel
 
- @returns peeled object per requested ID, `undefined` when missing
+ @returns peeled object per locally present requested ID
 
  @throws ManualPushProbeError when Git fails or output is malformed
 
@@ -92,7 +110,7 @@ export async function peelObjects({
   gitPath: string;
   cwd: string;
   oids: readonly GitObjectId[];
-}>,): Promise<ReadonlyMap<GitObjectId, ResolvedObject | undefined>> {
+}>,): Promise<ReadonlyMap<GitObjectId, ResolvedObject>> {
   /**
    Unique request order.
    */
@@ -111,20 +129,25 @@ export async function peelObjects({
     ],
     input: `${requested.map(function peeledName(oid,) {
       return `${oid}^{}`;
-    },).join('\n',)}\n`,
+    },)
+      .join('\n',)}\n`,
   },),);
   if (lines.length !== requested.length)
     throw new ManualPushProbeError('Git object batch-check returned an unexpected record count.',);
-  return new Map(requested.map(function pairLine(oid, index,): readonly [
+  return new Map(requested.flatMap(function pairLine(
+    oid,
+    index,
+  ): readonly (readonly [
     GitObjectId,
-    ResolvedObject | undefined
-  ] {
+    ResolvedObject
+  ])[] {
     /**
      Output line for current request.
      */
     const line = lines[index] ?? '';
+    // Objects Git never fetched stay absent from the result.
     if (line === `${oid}^{}${MISSING_SUFFIX}`)
-      return [oid, undefined,];
+      return [];
     /**
      Peeled object ID and type fields.
      */
@@ -132,7 +155,13 @@ export async function peelObjects({
     if ((peeledOid === undefined) || (type === undefined)
       || (extra !== undefined))
       throw new ManualPushProbeError(`Git object batch-check returned malformed record: ${line}`,);
-    return [oid, { oid: peeledOid, type, },];
+    return [[
+      oid,
+      {
+        oid: peeledOid,
+        type,
+      },
+    ],];
   },),);
 }
 
@@ -179,7 +208,8 @@ export async function trackingCommits({
       '--format=%(objectname) %(objecttype) %(refname)',
       TRACKING_NAMESPACE,
     ],
-  },),).map(function parseRef(line,) {
+  },),)
+    .map(function parseRef(line,): TrackingRef {
     /**
      Space-delimited fields; ref names cannot contain spaces.
      */
@@ -188,7 +218,11 @@ export async function trackingCommits({
       || (refName === undefined)
       || (extra !== undefined))
       throw new ManualPushProbeError(`Git for-each-ref returned malformed record: ${line}`,);
-    return { oid, type, refName, };
+    return {
+      oid,
+      type,
+      refName,
+    };
   },);
   return new Map([...remoteNames,].map(function commitsFor(remoteName,): readonly [
     string,
@@ -201,8 +235,11 @@ export async function trackingCommits({
     return [
       remoteName,
       refs.filter(function isRemoteCommit(ref,) {
-        return (ref.type === 'commit') && ref.refName.startsWith(prefix,);
-      },).map(function oidOf(ref,) {
+        return (ref.type === 'commit')
+          && ref.refName
+          .startsWith(prefix,);
+      },)
+        .map(function oidOf(ref,) {
         return ref.oid;
       },),
     ];
@@ -231,7 +268,7 @@ export function publishedTips({
   tracking,
 }: Readonly<{
   updates: readonly PushUpdate[];
-  peeled: ReadonlyMap<GitObjectId, ResolvedObject | undefined>;
+  peeled: ReadonlyMap<GitObjectId, ResolvedObject>;
   tracking: ReadonlyMap<string, readonly GitObjectId[]>;
 }>,): ReadonlyMap<string, readonly GitObjectId[]> {
   /**

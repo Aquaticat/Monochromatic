@@ -155,7 +155,8 @@ export async function runGitBytes({
    Request delivery; a Git exit before reading all input surfaces as a write error here.
    */
   const delivery = Promise.allSettled([finished(child.stdin,),],);
-  child.stdin.end(input === undefined ? undefined : INPUT_ENCODER.encode(input,),);
+  child.stdin
+    .end(input === undefined ? undefined : INPUT_ENCODER.encode(input,),);
   await once(
     child,
     'close',
@@ -171,7 +172,10 @@ export async function runGitBytes({
   if (child.exitCode !== 0)
     throw new ManualPushProbeError(`git ${args.join(' ',)} failed: ${stderr.trim()}`,);
   if (delivered.status === 'rejected')
-    throw new ManualPushProbeError(`git ${args.join(' ',)} did not read its complete input.`, { cause: delivered.reason, },);
+    throw new ManualPushProbeError(
+      `git ${args.join(' ',)} did not read its complete input.`,
+      { cause: delivered.reason, },
+    );
   return new Uint8Array(stdout,);
 }
 

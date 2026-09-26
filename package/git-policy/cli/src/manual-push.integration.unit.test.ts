@@ -24,7 +24,7 @@ import nanoSpawn, {
 import {
   ManualPushProbeError,
   probeManualPushUpdates,
-} from './policy-engine/manual-push-probe.ts';
+} from '../dist/final/node/index.mjs';
 
 /** Real Git fixture executable. */
 const REAL_GIT = '/usr/bin/git';

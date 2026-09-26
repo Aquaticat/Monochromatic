@@ -123,9 +123,12 @@ async function unpublishedCommits({
       '--reverse',
       '--stdin',
     ],
-    input: `${[tip, ...published.map(function exclude(oid,) {
+    input: `${[
+      tip,
+      ...published.map(function exclude(oid,) {
       return `^${oid}`;
-    },),].join('\n',)}\n`,
+    },),
+    ].join('\n',)}\n`,
   },);
   return new TextDecoder().decode(output,)
     .split('\n',)
@@ -164,7 +167,13 @@ async function planUpdate({
   contentUpdate: ContentUpdate;
   published: ReadonlyMap<string, readonly string[]>;
 }>,): Promise<UpdatePlan> {
-  const { update, content, } = contentUpdate;
+  /**
+   Authoritative update and its peeled pushed object.
+   */
+  const {
+    update,
+    content,
+  } = contentUpdate;
   /**
    Target prefix naming remote and destination ref.
    */
@@ -172,8 +181,8 @@ async function planUpdate({
   /**
    Commits Git knows destination remote already has.
    */
-  const publishedTips = published.get(update.remoteName,) ?? [];
-  if ((content.type === 'tree') || ((content.type === 'commit') && (publishedTips.length === 0))) {
+  const knownTips = published.get(update.remoteName,) ?? [];
+  if ((content.type === 'tree') || ((content.type === 'commit') && (knownTips.length === 0))) {
     return {
       kind: 'descriptors',
       descriptors: await treeCandidates({
@@ -192,7 +201,7 @@ async function planUpdate({
         gitPath,
         cwd,
         tip: content.oid,
-        published: publishedTips,
+        published: knownTips,
       },),
     };
   }
@@ -255,7 +264,10 @@ async function planUpdates({
       gitPath,
       cwd,
       oids: updates.flatMap(function objectIds(update,): readonly string[] {
-        return [update.localOid, update.remoteOid,].filter(function isOid(oid,): oid is string {
+        return [
+          update.localOid,
+          update.remoteOid,
+        ].filter(function isOid(oid,): oid is string {
           return oid !== ABSENT_GIT_VALUE;
         },);
       },),
@@ -271,7 +283,11 @@ async function planUpdates({
   /**
    Known published commits per remote name.
    */
-  const published = publishedTips({ updates, peeled, tracking, },);
+  const published = publishedTips({
+    updates,
+    peeled,
+    tracking,
+  },);
   return await mapBounded({
     values: contentBearing,
     concurrency: UPDATE_LANES,
@@ -285,7 +301,10 @@ async function planUpdates({
       return await planUpdate({
         gitPath,
         cwd,
-        contentUpdate: { update, content, },
+        contentUpdate: {
+          update,
+          content,
+        },
         published,
       },);
     },
@@ -320,7 +339,11 @@ export async function createManualPushCandidates({
   /**
    Per-update plans in update order.
    */
-  const plans = await planUpdates({ gitPath, cwd, updates, },);
+  const plans = await planUpdates({
+    gitPath,
+    cwd,
+    updates,
+  },);
   /**
    Deltas for every planned commit through one diff-tree process.
    */
@@ -337,7 +360,8 @@ export async function createManualPushCandidates({
   const candidateGroups = plans.map(function planDescriptors(plan,): readonly ManualPushCandidateDescriptor[] {
     if (plan.kind === 'descriptors')
       return plan.descriptors;
-    return plan.commits.flatMap(function commitDescriptors(commit,) {
+    return plan.commits
+      .flatMap(function commitDescriptors(commit,) {
       return (deltas.get(commit,) ?? []).map(function toDescriptor(record,) {
         return recordDescriptor({
           record,

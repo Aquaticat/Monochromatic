@@ -250,9 +250,9 @@ export function parseRawDiffCommitStream({
    */
   const tokensByCommit = new Map<string, string[]>();
   /**
-   Cursor state: current section's token sink.
+   Commit header owning the current section, absent before the first header.
    */
-  const cursorState: { sink: string[] | undefined } = { sink: undefined, };
+  const cursorState: { commit?: string } = {};
   // Tokens are headers where metadata is expected; paths are consumed pairwise and never inspected as headers.
   for (let cursor = 0; cursor < tokens.length;) {
     /**
@@ -260,18 +260,29 @@ export function parseRawDiffCommitStream({
      */
     const token = tokens[cursor] ?? '';
     if (!token.startsWith(':',)) {
-      cursorState.sink = tokensByCommit.get(token,) ?? [];
-      tokensByCommit.set(token, cursorState.sink,);
+      cursorState.commit = token;
+      if (!tokensByCommit.has(token,))
+        tokensByCommit.set(
+          token,
+          [],
+        );
       cursor += 1;
       continue;
     }
     /**
+     Current section's token sink.
+     */
+    const sink = cursorState.commit === undefined ? undefined : tokensByCommit.get(cursorState.commit,);
+    /**
      Companion path token.
      */
     const path = tokens[cursor + 1];
-    if ((cursorState.sink === undefined) || (path === undefined))
+    if ((sink === undefined) || (path === undefined))
       throw createError('Raw diff-tree stream record lacks its commit header or path.',);
-    cursorState.sink.push(token, path,);
+    sink.push(
+      token,
+      path,
+    );
     cursor += 2;
   }
   return new Map([...tokensByCommit.entries(),].map(function retainCommit([commit, commitTokens,],): readonly [
