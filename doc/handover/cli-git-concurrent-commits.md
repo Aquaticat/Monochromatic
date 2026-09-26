@@ -194,6 +194,13 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
     - `/var/home/user/worktrees/cli-git-concurrent-commits-policy-read-sets`
       (branch `feat/cli-git-concurrent-commits-policy-read-sets`):
       slice 4 read sets and `inputs`.
+  Slice 4 finished at `96d96533d`,
+  all checks green.
+  Its agent made 9 commits with `/usr/bin/git` after a `require-root` finding,
+  skipping commit-time policies and auto-push;
+  they were pushed through the wrapper afterwards and its manual-push policies passed.
+  The owner chose a deterministic hook over more rule wording:
+  issue #575.
   After both:
   merge slice 4,
   run the full checks and several container seeds,
