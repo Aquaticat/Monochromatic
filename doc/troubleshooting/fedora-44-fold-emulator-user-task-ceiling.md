@@ -115,9 +115,23 @@ a new login obtains the PAM setting without the per-process adjustment.
 `2000000000` NanoCPUs for the disposable emulator container,
 corresponding to the original 6 GiB/2 CPU cap.
 No production app code or original AVD settings were changed.
-The disposable AVD subsequently reported `sys.boot_completed=1`,
-but neither its long-running stability nor the cause of the first exit
-has been established by that boot check.
+The disposable AVD subsequently reported `sys.boot_completed=1`.
+The first post-reboot `am start -W` returned `Status: timeout` and
+`LaunchState: UNKNOWN (-1)`;
+`uiautomator dump` returned `ERROR: null root node returned by UiTestAutomationBridge.`
+At that point `dumpsys power` reported `mIsInteractive: false`.
+Waking this **disposable** screen with `input keyevent 224` and
+`cmd window dismiss-keyguard` made the hierarchy report the Search
+browser,
+focused field and deck.
+A fresh explicit Search activity launch then returned `Status: ok` and
+`LaunchState: COLD`;
+real floating Gboard keys entered a letter.
+The sleep symptom matches
+[android-emulator-display-sleep-uiautomator-visibility.md](android-emulator-display-sleep-uiautomator-visibility.md),
+not a repeat of the host `EAGAIN` diagnostic.
+Neither boot completion nor that short functional check establishes
+long-running stability or the cause of the earlier QEMU exit.
 
 ## Verified workaround and tradeoffs
 
