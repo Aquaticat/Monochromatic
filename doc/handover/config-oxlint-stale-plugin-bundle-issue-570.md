@@ -270,51 +270,50 @@ The user rejected that round.
   Prototype upstream fix and draft issue exist, not filed.
 - A repair install prints `Already up to date` even while it creates a sub-project workspace link.
 
-## Reframed failure chain
 
-These are separate links;
-a fix at an earlier link can make later ones moot:
+## Failure chain with owners
 
-1. Install state drifts from manifests (merge without `pnpm install`).
-2. The bundler silently turns an unresolvable workspace import into an external.
-3. In-repo lint consumes a gitignored build artifact whose freshness nobody tracks
-   against its inputs (source and installed dependencies),
-   so `pnpm install` alone cannot repair it.
-4. The lint wrapper exits 1 with no findings,
-   and a caller that filters output for diagnostics reads that as clean.
-   Per `AGENTS.md` XIC this is a separate incident until boundaries match.
+Separate links;
+a fix at an earlier link can make later ones moot,
+but each link also fails for causes other than #570.
 
-Candidate dissolutions under investigation:
+1. Install drift:
+   `node_modules` falls behind manifests.
+   pnpm leaves `--lockfile-only` drift silent and has no status command outside `pnpm run`/`pnpm exec`;
+   mise ships `mise deps` but the repo does not enable it;
+   nothing in the repo gates tasks on install state.
+2. Silent bundling:
+   rolldown warns and externalizes (deliberate, Rollup-compatible),
+   and an `onLog` escalation fires only after output is written;
+   only a `resolveId` guard fails before writing.
+3. Stale persisted artifact:
+   in-repo lint consumes gitignored `dist` sidecars;
+   the repo's hand-rolled `ensureOxlintConfig` mtime check
+   ignores install state and transitive workspace sources,
+   and mise native `sources`/`outputs` would repeat that flaw.
+4. Ambiguous failure signal:
+   oxlint exits 1 for both config-load failure and findings;
+   the wrapper passes that through;
+   a caller filtering output read it as clean.
 
-- In-repo lint uses the `./ts` source entry,
-  removing link 3 for in-repo use;
-  cost is the #238 lint-time optimization,
-  which must be measured before it is weighed.
-- Tie builds (or lint) to install freshness,
-  removing link 1 for every tool, not only rolldown.
-- Track `config-oxlint` build freshness via task sources/outputs
-  (the `task-util` `depends` helper already supports `--sources`/`--outputs`).
+## Open questions
 
-## Open questions (pending facts)
-
-- Measured lint wall time: built sidecars versus `./ts` source entry.
-- What #238 decided and why.
-- Round 2 (2026-09-25) user answers:
-  build guard scope and wrapper behavior are premature, do not decide yet;
-  the stray `~/temp/agent/node_modules/@monochromatic-dev/module-logger` symlink
-  was removed as instructed
-  (`~/temp/agent/node_modules/.monochromatic` left untouched).
-- The user partially blames pnpm and mise;
-  both get their own investigations
-  (troubleshooting docs `doc/troubleshooting/pnpm-stale-node-modules-detection.md`
-   and `doc/troubleshooting/mise-dependency-freshness.md`, subagents running).
-- Whether to file the drafted upstream reports (oxlint exit code, rolldown `onLog` write order, rolldown docs line,
-  mise #8733 comment);
-  external action, needs user authorization.
-- Lint speed on a quiet host,
-  including the `--fix` loop,
-  if the source-entry option stays on the table.
+- Round 3 asked (awaiting answers):
+  policy when a task starts on drifted `node_modules`;
+  which drafted upstream reports to file;
+  whether to repair the main checkout's dangling optional-platform links.
+- Held until install policy is settled:
+  install-gate mechanism (mise deps versus pnpm verify probe);
+  in-repo lint artifact (fixed freshness check versus `./ts` source entry;
+  `--fix` loop measurement running);
+  build guard (link 2);
+  wrapper signal (link 4).
+- Unrelated incidents seen during research,
+  not in #570 scope:
+  fresh-worktree full build failures
+  (Android NDK, `canvg`, `libghostty` order, `git log`);
+  `package/kwin/key-helper/src/nvim.ts` bare import violating ST3.
 
 ## Commits
 
-- This handover only.
+- Handover and troubleshooting docs only; no code changed.
