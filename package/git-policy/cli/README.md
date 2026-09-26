@@ -328,8 +328,10 @@ and signing.
 Hooks see the real branch name,
 its upstream,
 and `includeIf "onbranch:"` config,
-but only those refs:
-another branch or a tag does not resolve inside a hook during preparation.
+and every other ref as it stood at invocation,
+so tags,
+other branches,
+and remote-tracking refs resolve inside hooks.
 The prepared commit stays in the shadow repository's own object store,
 so `gc` cannot delete it,
 and cli-git creates no ref in the real repository before landing.
