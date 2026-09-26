@@ -67,7 +67,7 @@ button:focus-visible, select:focus-visible, .preview-stage:focus-visible {
   outline: 0.1875rem solid var(--color-accent);
   outline-offset: 0.1875rem;
 }
-.note, .capture {
+.note, .capture, .accepted-overflow {
   border-width: 0.0625rem;
   border-style: solid;
   border-color: var(--color-edge);
@@ -79,13 +79,14 @@ button:focus-visible, select:focus-visible, .preview-stage:focus-visible {
 .controls { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: end; margin-block: 1rem; }
 .controls label { display: grid; gap: 0.3rem; }
 .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 1rem; }
-.capture { min-inline-size: 0; padding-inline: 1rem; padding-block: 1rem; }
+.capture, .accepted-overflow { min-inline-size: 0; padding-inline: 1rem; padding-block: 1rem; }
 .capture h2 { margin-block: 0 0.5rem; }
 .capture picture { display: block; overflow: hidden; max-block-size: 45rem; }
 .capture img { display: block; max-inline-size: 100%; block-size: auto; }
 .capture[data-panel='inner'] img { inline-size: min(100%, 42rem); }
 .capture[data-panel='cover'] img { inline-size: min(100%, 20rem); }
-.capture p { background-color: var(--color-panel); }
+.capture p, .accepted-overflow p { background-color: var(--color-panel); }
+.accepted-overflow img { display: block; inline-size: min(100%, 20rem); block-size: auto; }
 .capture button { margin-block-start: 0.75rem; }
 dialog {
   inline-size: min(98vw, 96rem);
@@ -174,9 +175,10 @@ dialog::backdrop { background-color: var(--color-backdrop); }
 <main>
 <header>
   <p class="muted">Music player · selected design review · Pixel 9 Pro Fold</p>
-  <h1>Search A, without a repeated results heading</h1>
+  <h1>Search A, with reachable folded-cover results</h1>
   <p>The user selected A (D51). On the unfolded panel, Search stays in the right pane and the bottom-left playback deck lifts above the keyboard. The folded cover has one full-width Search destination. The separate <code>Results for “cam”</code> heading is gone on both panels (D52); the query appears once in the Back/query/Clear header, with folder and track results directly beneath it.</p>
   <div class="note"><p><strong>Design only, with a real-keyboard finding.</strong> On a disposable Fold, real split Gboard on the inner panel and full-width Gboard on the cover let the user type “cam” with the complete deck and results visible in settled 100% and 200% states. Real floating Gboard obscured the unfolded playback title at 200% and both cover result labels at 100%. D53 accepts the unfolded deck overlap; D55 separately accepts the measured cover result-label overlap while the query stays visible. A real Gboard font-update banner on the disposable inner panel clipped the final mode until dismissed; D54 accepts that brief overlap. The complete deck remains required under ordinary settled docked and split keyboards. A remains the selected design. The review images show a separate 300dp debug input method, not Gboard. The indexed sanitized real-Gboard captures predate the retained-browser correction; a later disposable-device check confirmed its settled split keyboard with the browser header and full deck, but did not reproduce the transient banner. The Gboard evidence is indexed at <code>package/music-player/design/evidence/gboard-geometry.md</code>. No production implementation was made.</p></div>
+  <p class="muted">D56 adds keyboard-aware bottom space only to the folded-cover scrolling results viewport for ordinary docked/full-width keyboards; the header stays fixed. The inner layout is unchanged. Acceptance does not validate every IME height, animation frame or refocus position.</p>
   <p class="muted">Native source: unfolded 2076 × 2152 physical px (approximately 852 × 883dp) and cover 1080 × 2424px (approximately 443 × 994dp) at this AVD's 390dpi. Meaning-bearing app marks stay clear of the approximate 7.5mm physical crease at inner-panel x[983,1093); surfaces may cross it. Minimum informational padding remains open. Status notification content is replaced with a generic clock.</p>
 </header>
 <section aria-labelledby="states-title">
@@ -201,9 +203,15 @@ dialog::backdrop { background-color: var(--color-backdrop); }
     </article>
   </div>
 </section>
+<section class="accepted-overflow" aria-labelledby="overflow-title">
+  <h2 id="overflow-title">Accepted D56: reach the final match on the cover</h2>
+  <p>In this separate 200% synthetic long-result fixture, the final folder and its supporting line scroll fully above a 300dp debug bottom keyboard while the Back/query/Clear header remains fixed. This is the selected cover-only viewport direction; this light-scheme overflow capture does not change when the earlier state and scheme controls change. The rejected unchanged viewport is retained only in the historical R/C evidence. Another swipe was required after refocusing, which remains an open behavior question (#116). This capture does not establish result activation, ranking, TalkBack traversal or arbitrary real-keyboard heights.</p>
+  <img id="accepted-overflow" src="__ACCEPTED_COVER_OVERFLOW__" width="1080" height="2424" alt="Accepted folded-cover Search viewport with the last Camellia archive match and supporting line above the 300dp debug keyboard">
+  <button type="button" data-preview="overflow">Inspect accepted cover overflow at device size</button>
+</section>
 <section aria-labelledby="response-title">
   <h2 id="response-title">Correction path</h2>
-  <p>A is selected. Reply in this chat with any remaining visual correction; please identify the panel and state. The comparison with B and C is archived, not an active choice. Long result names, tall real keyboards, result-list scrolling and the exact minimum information clearance still need follow-up before production.</p>
+  <p>A and the cover-only viewport direction D56 are selected. Reply in this chat with any remaining visual correction; please identify the panel and state. The comparison with Search B/C and the rejected cover viewport are historical, not active choices. Other keyboard geometries, inner floating-keyboard result overlap, result actions, accessibility and the exact minimum information clearance remain open before production.</p>
 </section>
 </main>
 <dialog id="preview" aria-labelledby="preview-title">
@@ -233,7 +241,7 @@ let selectedPanel = 'inner';
 let scale = 1;
 let returnTarget;
 function currentScheme() { return scheme.value === 'system' ? (media.matches ? 'dark' : 'light') : scheme.value; }
-function sourceFor(panel) { return captures[panel][state.value][currentScheme()]; }
+function sourceFor(panel) { return panel === 'overflow' ? document.querySelector('#accepted-overflow').src : captures[panel][state.value][currentScheme()]; }
 function render() {
   document.querySelectorAll('.capture').forEach(card => {
     card.querySelector('img').src = sourceFor(card.dataset.panel);
@@ -265,8 +273,8 @@ document.querySelectorAll('[data-preview]').forEach(button => {
   button.addEventListener('click', async () => {
     returnTarget = button;
     selectedPanel = button.dataset.preview;
-    device.dataset.panel = selectedPanel;
-    previewTitle.textContent = `${selectedPanel === 'cover' ? 'Folded cover' : 'Unfolded inner'} · ${state.options[state.selectedIndex].textContent} · ${currentScheme()}`;
+    device.dataset.panel = selectedPanel === 'overflow' ? 'cover' : selectedPanel;
+    previewTitle.textContent = selectedPanel === 'overflow' ? 'Accepted D56 · folded cover · long results at 200% text · debug keyboard' : `${selectedPanel === 'cover' ? 'Folded cover' : 'Unfolded inner'} · ${state.options[state.selectedIndex].textContent} · ${currentScheme()}`;
     updatePreview();
     await previewImage.decode();
     scale = 1;

@@ -6,6 +6,12 @@ const question = join(process.cwd(), 'questions');
 const render = join(question, 'render');
 const templateFile = join(question, 'current.template.html');
 const outputFile = join(question, 'current.html');
+const overflowPng = readFileSync(join(render, 'search-cover-viewport-refinement-s200.png'));
+if (overflowPng.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
+    overflowPng.readUInt32BE(16) !== 1080 || overflowPng.readUInt32BE(20) !== 2424) {
+  throw new Error('Accepted D56 cover capture has wrong physical panel size.');
+}
+const overflowUrl = `data:image/png;base64,${overflowPng.toString('base64')}`;
 const captures = Object.fromEntries(['inner', 'cover'].map((panel) => [panel,
   Object.fromEntries(['results', 'typing', 'empty'].map((state) => [state,
     Object.fromEntries(['light', 'dark'].map((scheme) => {
@@ -26,7 +32,11 @@ if (command === 'build') {
   if (template.split('__SELECTED_CAPTURES__').length !== 2) {
     throw new Error('Selected review must have exactly one embedded capture slot.');
   }
-  writeFileSync(outputFile, template.replace('__SELECTED_CAPTURES__', JSON.stringify(captures)));
+  if (template.split('__ACCEPTED_COVER_OVERFLOW__').length !== 2) {
+    throw new Error('Selected D56 review must embed exactly one accepted cover capture.');
+  }
+  writeFileSync(outputFile, template.replace('__SELECTED_CAPTURES__', JSON.stringify(captures))
+    .replace('__ACCEPTED_COVER_OVERFLOW__', overflowUrl));
   console.log(`Built selected D51/D52 review in ${outputFile}.`);
 } else if (command === 'validate') {
   const html = readFileSync(outputFile, 'utf8');
@@ -37,13 +47,17 @@ if (command === 'build') {
   if (JSON.stringify(embedded) !== JSON.stringify(captures)) {
     throw new Error('Embedded selected rasters differ from sanitized physical-panel sources.');
   }
-  for (const marker of ['Search A, without a repeated results heading',
-    'D51', 'D52', 'not Gboard', '7.5mm', 'Reset 100%', 'data-panel="inner"',
-    'data-panel="cover"', 'Reply in this chat']) {
+  if (!html.includes(`id="accepted-overflow" src="${overflowUrl}"`)) {
+    throw new Error('Accepted cover raster differs from the sanitized physical-panel source.');
+  }
+  for (const marker of ['Search A, with reachable folded-cover results',
+    'D51', 'D52', 'D56', 'not Gboard', '7.5mm', 'Reset 100%', 'data-panel="inner"',
+    'data-panel="cover"', 'data-preview="overflow"', 'Reply in this chat']) {
     if (!html.includes(marker)) throw new Error(`Selected review contract missing ${marker}.`);
   }
   if (html.includes('data-variant="right"') || html.includes('data-variant="mirrored"') ||
-      html.includes('__SELECTED_CAPTURES__') || html.includes('<script src=')) {
+      html.includes('__SELECTED_CAPTURES__') || html.includes('__ACCEPTED_COVER_OVERFLOW__') ||
+      html.includes('id="control-image"') || html.includes('<script src=')) {
     throw new Error('Rejected options or external scripts leaked into the selected review.');
   }
   console.log('Validated the self-contained A-only native Fold Search review.');

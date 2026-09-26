@@ -1623,6 +1623,47 @@ D54 concerns the brief unfolded font-update banner,
 and D55 concerns the folded-cover floating keyboard.
 No production implementation is authorized.
 
+### D56. The folded-cover Search result list fits above a bottom keyboard (2026-09-26)
+
+The user chose **R** in the cover-viewport design review.
+For the selected A cover Search page,
+keep the integrated Back/query/Clear header fixed and give **only the scrolling
+results viewport** keyboard-aware bottom space while an ordinary docked or
+full-width keyboard is open.
+Positive matches still start directly beneath the header (D52).
+Long result names retain their wrapping and the last result and supporting
+text must be reachable by scrolling above the keyboard,
+not remain stranded beneath it.
+The selected unfolded Search layout,
+upper-left folder browser and bottom-left deck are unchanged.
+
+The same installed debug APK supplied a 200% text-scale failure control:
+with a 300dp bottom keyboard,
+row 18 remained at y `[2151,2254]` below keyboard top y `1693`
+even after another end-of-list swipe.
+The opt-in cover-only viewport brought its title and supporting line to
+y `[1479,1582]` and `[1582,1673]` above that keyboard.
+At 100%/200%,
+the final row was also scroll-reachable above **settled real full-width Gboard**
+in this debug fixture.
+These are bounded design-study results,
+not validation of animation frames,
+all keyboard geometries,
+real search ranking or activation.
+
+The measured R prototype required another swipe to recover the final row
+after hiding and refocusing the keyboard.
+That refocus behavior and Back/Clear/focus remain open under #116;
+R selects the cover viewport direction,
+not that extra swipe as a requirement.
+C's unchanged cover viewport was rejected for the measured end-of-list
+occlusion.
+D55 remains the separate accepted **floating** cover Gboard exception,
+not a waiver for ordinary full-width input.
+The comparison and limits are in
+`package/music-player/design/evidence/search-result-overflow.md`.
+No production implementation is authorized.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)

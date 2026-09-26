@@ -197,7 +197,7 @@ The cover viewport comparison is **not adopted** for production or inserted
 into the accepted A review.
 Raw status-bearing screenshots and hierarchies remain private.
 
-## Review artifact awaiting selection
+## Historical R/C review and D56 selection
 
 `package/music-player/design/questions/cover-viewport-review.html` compares the
 same-APK 200% opt-out failure control with the opt-in end-of-list state;
@@ -213,10 +213,13 @@ no PNG text,
 profile,
 EXIF or timestamp chunks remained.
 The reference strip itself contains no notification or account text.
-Only the **cover viewport direction** is being asked of the user;
-refocus position,
+The user answered **R**,
+selecting the cover-only keyboard-aware results viewport as D56.
+The R/C comparison remains historical evidence;
+`questions/current.html` presents only the active design.
+Refocus position,
 Back/Clear/focus,
 ranking/actions and TalkBack traversal remain open.
-The recommendation is not an adopted decision or permission to implement.
+This selection does not authorize production implementation.
 
 [compose-insets]: https://developer.android.com/develop/ui/compose/system/insets-ui

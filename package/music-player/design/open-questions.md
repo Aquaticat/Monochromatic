@@ -275,11 +275,13 @@ rounds (2026-09-17):
   On the cover at 200%,
   the selected list could not scroll its final rows above a bottom debug IME;
   a same-APK opt-out control repeated this failure.
-  An **unaccepted** IME-aware cover viewport comparison made row 18 and
-  its support text reachable above both a 300dp debug IME and settled
-  full-width Gboard at 100%/200% text.
-  The selected A review remains unchanged;
-  the comparison is not a production fix or evidence for other IME heights.
+  D56 selects a **cover-only keyboard-aware results viewport** after an
+  opt-in study made row 18 and its support text reachable above both a
+  300dp debug IME and settled full-width Gboard at 100%/200% text.
+  The accepted direction keeps the fixed header and selected inner A;
+  it is not a production fix or evidence for other IME heights.
+  The prototype needed another swipe after keyboard dismissal and refocus;
+  that behavior is still open under #116.
   Real floating Gboard also obscured right-pane result lettering on the
   inner stress fixture;
   D53 does not accept that separate overlap (#122).

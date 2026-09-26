@@ -6065,14 +6065,15 @@ the cover-only opt-in list can scroll the entire row and its supporting line
 above that keyboard.
 The screenshots replace the full status strip and omit PNG metadata;
 private raw captures must not be published.
-The user's answer to the review's explicit R-versus-C question is **pending**.
-Do not change `decisions.md`,
-`questions/current.html`,
-the production app,
-or the selected inner Search for this unaccepted comparison.
+The user answered **R** on 2026-09-26;
+D56 selects the cover-only keyboard-aware results viewport as a design direction.
+The previously published R/C question remains a historical comparison;
+the active selected-A review shows R without the discarded C.
+The selected inner Search and production app remain unchanged.
 Refocus requires another swipe in the measured opt-in state;
 that interaction,
 Back/Clear and result ranking/actions remain #116,
 inner floating-keyboard result-lettering overlap remains #122,
 E2's informational `min_padding` remains #120,
 and full Search accessibility traversal remains #118.
+D56 does not authorize production work or further IME experimentation.
