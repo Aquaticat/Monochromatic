@@ -418,6 +418,168 @@ await describe({
       },
     },),
 
+    it({
+      name: 'rejects with the configuration failure instead of hanging',
+      fn: async () => {
+        /**
+         Failure observed from the run's promise.
+         */
+        let caught: unknown;
+        try {
+          await pMap({
+            iterable: [1],
+            mapper: function identity(value: number,): number {
+              return value;
+            },
+            options: { concurrency: 0, },
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(TypeError,);
+      },
+    },),
+
     //endregion Failures
+
+    //region Shutdown
+
+    it({
+      name: 'closes the source exactly once when two mapper calls fail',
+      fn: async () => {
+        /**
+         Close and pull counters for this source.
+         */
+        const telemetry = {
+          pulls: 0,
+          closes: 0,
+        };
+        /**
+         Source counting its pulls and closes.
+         */
+        const countedIterable: Iterable<number> = {
+          [Symbol.iterator]: function openCountedIterator(): Iterator<number> {
+            return {
+              next: function countedNext(): IteratorResult<number> {
+                telemetry.pulls += 1;
+                return {
+                  done: false,
+                  value: telemetry.pulls,
+                };
+              },
+              return: function countedReturn(): IteratorResult<number> {
+                telemetry.closes += 1;
+                return {
+                  done: true,
+                  value: undefined,
+                };
+              },
+            };
+          },
+        };
+        /**
+         Failure observed from the run's promise.
+         */
+        let caught: unknown;
+        try {
+          await pMap({
+            iterable: countedIterable,
+            mapper: function failingMapper(): never {
+              throw new Error('first failure',);
+            },
+            options: {
+              concurrency: 2,
+              stopOnError: true,
+            },
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect((caught as Error).message,).toBe('first failure',);
+        await yieldTurn();
+        expect(telemetry.closes,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'leaves an exhausted source open when a mapper fails after the source is done',
+      fn: async () => {
+        /**
+         Close counter for this source.
+         */
+        const telemetry = {
+          closes: 0,
+        };
+        /**
+         Source yielding one value and then reporting `done` on the second
+         pull, recording its close.
+         */
+        const oneValueIterable: Iterable<number> = {
+          [Symbol.iterator]: function openOneValueIterator(): Iterator<number> {
+            const cursor = {
+              position: 0,
+            };
+            return {
+              next: function oneValueNext(): IteratorResult<number> {
+                if (cursor.position >= 1)
+                  return {
+                    done: true,
+                    value: undefined,
+                  };
+                cursor.position += 1;
+                return {
+                  done: false,
+                  value: 1,
+                };
+              },
+              return: function oneValueReturn(): IteratorResult<number> {
+                telemetry.closes += 1;
+                return {
+                  done: true,
+                  value: undefined,
+                };
+              },
+            };
+          },
+        };
+        /**
+         Gate holding the single mapper call until the source is done.
+         */
+        const gate = createGate();
+        /**
+         Run promise observed for its rejection.
+         */
+        const running = pMap({
+          iterable: oneValueIterable,
+          mapper: async function gatedFailure(): Promise<never> {
+            await gate.open;
+            throw new Error('mapper failed',);
+          },
+          options: {
+            concurrency: 2,
+            stopOnError: true,
+          },
+        },);
+        await yieldTurn();
+        gate.release();
+        /**
+         Failure observed from the run's promise.
+         */
+        let caught: unknown;
+        try {
+          await running;
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect((caught as Error).message,).toBe('mapper failed',);
+        await yieldTurn();
+        expect(telemetry.closes,).toBe(0,);
+      },
+    },),
+
+    //endregion Shutdown
   ],
 },);

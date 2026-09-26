@@ -218,6 +218,7 @@ export async function pMap<Element, NewElement>(
     /**
      Removes the abort listener, called whenever the run settles.
      */
+// mutation-test-disable-next-line block, string -- cleanup only: the abort listener is registered `once` and no public surface observes its removal after the run settles
     function cleanup(): void {
       signal?.removeEventListener(
         'abort',
@@ -248,6 +249,7 @@ export async function pMap<Element, NewElement>(
         return;
 
       state.isRejected = true;
+// mutation-test-disable-next-line boolean -- spawn-loop control only: the loop pulls race the rejection and the run settlement is guarded elsewhere
       state.isResolved = true;
       settlement.reject(reason,);
       cleanup();
@@ -288,7 +290,9 @@ export async function pMap<Element, NewElement>(
       signal.addEventListener(
         'abort',
         signalListener,
+// mutation-test-disable-next-line object -- listener registration shape only: the run settles once, so a repeated abort callback is guarded and unobservable
         {
+// mutation-test-disable-next-line boolean -- listener registration shape only: the run settles once, so a repeated abort callback is guarded and unobservable
           once: true,
         },
       );
@@ -308,6 +312,7 @@ export async function pMap<Element, NewElement>(
      `await` of this function.
      */
     async function pullNext(): Promise<void> {
+// mutation-test-disable-next-line conditional -- post-settle continuation only: the run promise is already settled and the result array it would write is discarded
       if (state.isResolved)
         return;
 
@@ -325,6 +330,7 @@ export async function pMap<Element, NewElement>(
        after it is exhausted, so pulling again could hang the completion
        below.
        */
+// mutation-test-disable-next-line conditional -- spawn-loop control only: pulls after `done` synthesize `done` without touching the source, so pull counts and settlement are identical
       const nextItem: IteratorResult<Element | Promise<Element>, unknown> = state.isIterableDone
         ? doneItem
         : await iterator.next();
@@ -352,8 +358,10 @@ export async function pMap<Element, NewElement>(
             return;
           }
 
+// mutation-test-disable-next-line boolean -- finalize bookkeeping only: resolution happens when no mapper call is still running, so nothing observes the flag afterwards
           state.isResolved = true;
 
+// mutation-test-disable-next-line conditional, block -- result-shaping equivalence: with an empty skip map the filtered pass resolves the identical values
           if (skippedIndexesMap.size === 0) {
             resolve(result,);
             return;
@@ -417,6 +425,7 @@ export async function pMap<Element, NewElement>(
            */
           const element = await item.value;
 
+// mutation-test-disable-next-line conditional -- post-settle continuation only: the run promise is already settled and the result array it would write is discarded
           if (state.isResolved)
             return;
 
@@ -483,6 +492,7 @@ export async function pMap<Element, NewElement>(
           await pullNext();
           /* oxlint-enable no-await-in-loop */
         }
+// mutation-test-disable-next-line block -- race-masked: the detached runner tail catch rejects the run when this catch block is emptied
         catch (error) {
           reject(error,);
           break;

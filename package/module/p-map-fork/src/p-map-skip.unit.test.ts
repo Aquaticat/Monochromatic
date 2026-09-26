@@ -19,6 +19,13 @@ await describe({
   name: 'pMapSkip handling',
   children: [
     it({
+      name: 'carries a descriptive symbol description for readable traces',
+      fn: async () => {
+        expect(pMapSkip.description,).toBe('p-map mapper skip sentinel',);
+      },
+    },),
+
+    it({
       name: 'drops one skipped input from the collected results',
       fn: async () => {
         const results = await pMap({

@@ -15,7 +15,33 @@ import {
   pMapSkip,
 } from '../dist/final/neutral/index.mjs';
 
-import { yieldTurn, } from './test-support.ts';
+import {
+  createGate,
+  type Gate,
+  yieldTurn,
+} from './test-support.ts';
+
+//region Helpers
+
+/**
+ Collects one value from a stream's iterator.
+ 
+ @param call - Iterator under test.
+ 
+ @returns The iterator result handed to the consumer.
+ 
+ @example
+ ```ts
+ const step = await collectOne(iterator,);
+ ```
+ */
+async function collectOne(
+  call: AsyncIterator<unknown>,
+): Promise<IteratorResult<unknown>> {
+  return await call.next();
+}
+
+//endregion Helpers
 
 await describe({
   name: pMapIterable.name,
@@ -249,6 +275,147 @@ await describe({
         const pullsAtBreak = pullState.pulls;
         await yieldTurn();
         expect(pullState.pulls,).toBe(pullsAtBreak,);
+      },
+    },),
+
+    it({
+      name: 'bounds mapper concurrency independently of a slack backpressure bound',
+      fn: async () => {
+        /**
+         Overlap counters shared by every mapper call.
+         */
+        const counts = {
+          running: 0,
+          maxRunning: 0,
+        };
+        /**
+         Gates for the four mapper calls, released in creation order.
+         */
+        const gates: Gate[] = Array.from(
+          {
+            length: 4,
+          },
+          function makeGate(): Gate {
+            return createGate();
+          },
+        );
+        /**
+         Stream under test: concurrency two, backpressure four, so only the
+         concurrency bound can hold the mapper calls back.
+         */
+        const stream = pMapIterable({
+          iterable: [
+            1,
+            2,
+            3,
+            4,
+          ],
+          mapper: async function trackedMapper(value: number,): Promise<number> {
+            counts.running += 1;
+            counts.maxRunning = Math.max(
+              counts.maxRunning,
+              counts.running,
+            );
+            await gates.at(value - 1,)
+              ?.open;
+            counts.running -= 1;
+            return value;
+          },
+          options: {
+            concurrency: 2,
+            backpressure: 4,
+          },
+        });
+        /**
+         Stream iterator consumed while gates hold.
+         */
+        const iterator = stream[Symbol.asyncIterator]();
+        /**
+         First collection, pending until a gate releases.
+         */
+        const firstCollection = collectOne(iterator,);
+
+        await yieldTurn();
+        expect(counts.running,).toBe(2,);
+
+        for (const gate of gates)
+          gate.release();
+        expect((await firstCollection).value,).toBe(1,);
+        /* oxlint-disable no-await-in-loop -- collections happen one at a time, in yield order */
+        for (let remaining = 2; remaining <= 4; remaining += 1)
+          await collectOne(iterator,);
+        /* oxlint-enable no-await-in-loop */
+        expect(counts.maxRunning,).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'leaves an exhausted source open rather than closing it',
+      fn: async () => {
+        /**
+         Close and pull counters for this source.
+         */
+        const telemetry = {
+          pulls: 0,
+          closes: 0,
+        };
+        /**
+         Source yielding one value, then done, recording its close.
+         */
+        const oneValueIterable: Iterable<number> = {
+          [Symbol.iterator]: function openOneValueIterator(): Iterator<number> {
+            const cursor = {
+              position: 0,
+            };
+            return {
+              next: function oneValueNext(): IteratorResult<number> {
+                telemetry.pulls += 1;
+                if (cursor.position >= 1)
+                  return {
+                    done: true,
+                    value: undefined,
+                  };
+                cursor.position += 1;
+                return {
+                  done: false,
+                  value: 1,
+                };
+              },
+              return: function oneValueReturn(): IteratorResult<number> {
+                telemetry.closes += 1;
+                return {
+                  done: true,
+                  value: undefined,
+                };
+              },
+            };
+          },
+        };
+        /**
+         Streamed values in yield order.
+         */
+        const streamed: number[] = [];
+        for await (const mapped of pMapIterable({
+          iterable: oneValueIterable,
+          mapper: function identity(value: number,): number {
+            return value;
+          },
+          options: {
+            concurrency: 2,
+            backpressure: 2,
+          },
+        }))
+          streamed.push(mapped,);
+        expect(streamed,).toEqual([1],);
+        await yieldTurn();
+        expect(telemetry.closes,).toBe(0,);
+        /**
+         Pulls recorded after the source reported `done`; spawning stops
+         there.
+         */
+        const pullsAfterDone = telemetry.pulls;
+        await yieldTurn();
+        expect(telemetry.pulls,).toBe(pullsAfterDone,);
       },
     },),
 

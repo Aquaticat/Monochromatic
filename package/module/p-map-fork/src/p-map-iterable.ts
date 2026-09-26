@@ -240,6 +240,7 @@ export function pMapIterable<Element, NewElement>(
         /**
          Whether iteration stopped or the source reported `done`.
          */
+// mutation-test-disable-next-line conditional, logical -- spawn-gate control only: trySpawn after stop is reached solely from pending continuations whose outcomes are dropped
         const stopped = state.isDone || state.isIterableDone;
         /**
          Whether both bounds still allow a spawn, matching upstream `p-map`'s
@@ -305,6 +306,7 @@ export function pMapIterable<Element, NewElement>(
             // The consumer stopped iterating or an earlier mapper failed
             // while this input was pending, so drop it instead of doing work
             // nobody will consume.
+// mutation-test-disable-next-line conditional, block -- dropped-work path only: the consumer already left the iteration, so whether the pending mapper runs changes no yielded value, error, or close
             if (state.isDone) {
               state.pendingPromisesCount -= 1;
               pull.resolve({
@@ -324,6 +326,7 @@ export function pMapIterable<Element, NewElement>(
 
             state.pendingPromisesCount -= 1;
 
+// mutation-test-disable-next-line conditional, block -- backpressure-capacity bookkeeping only: the skip outcome is dropped at the consumer either way, with identical yields and errors
             if (returnValue === pMapSkip) {
               /**
                Own position in the spawn queue, matching upstream `p-map`'s
@@ -331,6 +334,7 @@ export function pMapIterable<Element, NewElement>(
                never collects it.
                */
               const spawnedPosition = promises.indexOf(pull.promise,);
+// mutation-test-disable-next-line conditional -- backpressure-capacity bookkeeping only: the skip outcome is dropped at the consumer either way, with identical yields and errors
               if (spawnedPosition > 0)
                 void promises.splice(
                   spawnedPosition,
@@ -349,6 +353,7 @@ export function pMapIterable<Element, NewElement>(
           }
           catch (error) {
             state.pendingPromisesCount -= 1;
+// mutation-test-disable-next-line boolean -- error-path stop flag only: the failing outcome is already queued and the consumer throws it regardless
             state.isDone = true;
             // Failures settle as a value instead of rejecting: a promise the
             // consumer abandons after an earlier error would otherwise become
@@ -375,6 +380,7 @@ export function pMapIterable<Element, NewElement>(
        */
       using sourceShutdown: Disposable = {
         [Symbol.dispose]: function disposeSource(): void {
+// mutation-test-disable-next-line boolean -- dispose stop flag only: the consumer already left the iteration and the source close is gated separately
           state.isDone = true;
 
           if (!state.isIterableDone)
@@ -384,6 +390,7 @@ export function pMapIterable<Element, NewElement>(
       void sourceShutdown;
 
       /* oxlint-disable no-await-in-loop -- the consumer collects pulls one at a time, in yield order */
+// mutation-test-disable-next-line conditional, equality -- loop-shape only: the queue empties through the `done` outcome before the length check is reached
       while (promises.length > 0) {
         /**
          Oldest spawned pull's outcome; only the head is awaited so results

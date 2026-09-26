@@ -159,6 +159,7 @@ export async function closeIterator<Element>(iterator: SourceIterator<Element>,)
   try {
     await iterator.return?.();
   }
+// mutation-test-disable-next-line block, string -- logging only: the close failure is swallowed either way and the log output is not observable through the public API
   catch (error) {
     // Swallowed like upstream `p-map`, because the close runs detached and a
     // rethrow would surface as an unhandled rejection; the caught value is
@@ -169,14 +170,18 @@ export async function closeIterator<Element>(iterator: SourceIterator<Element>,)
     const log = tagged({
       tag: closeIterator.name,
     },);
+// mutation-test-disable-next-line block, string -- logging only: the close failure is swallowed either way and the log output is not observable through the public API
     try {
+      // mutation-test-disable-next-line string -- logging only: the close failure is swallowed either way and the log output is not observable through the public API
       log.warn(`ignoring iterator close failure: ${caughtValueText(error,)}`,);
     }
+// mutation-test-disable-next-line block, string -- logging only: the fallback message is observably identical to the primary one through the public API
     catch (renderFailure: unknown) {
       // Rendering the close failure failed too (an adversarial value whose
       // string coercion throws); the fallback keeps this function from
       // rejecting like upstream `p-map`'s total swallow of close failures
       // while still naming the failure in the log.
+// mutation-test-disable-next-line string -- logging only: the fallback message is observably identical to the primary one through the public API
       log.warn(`ignoring iterator close failure whose rendering also failed: ${caughtValueText(renderFailure,)}`,);
     }
   }

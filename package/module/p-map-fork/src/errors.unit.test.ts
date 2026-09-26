@@ -99,6 +99,14 @@ await describe({
         },),
 
         it({
+          name: 'names itself for readable stacks',
+          fn: async () => {
+            const error = new InvalidConcurrencyError(0,);
+            expect(error.name,).toBe('InvalidConcurrencyError',);
+          },
+        },),
+
+        it({
           name: 'renders non-numeric values the way upstream templates them',
           fn: async () => {
             const error = new InvalidConcurrencyError('yes',);
@@ -149,6 +157,17 @@ await describe({
               concurrency: 4,
             },);
             expect(error.message,).toBe('Expected `backpressure` to be an integer from `concurrency` (4) and up or `Infinity`, got `2` (number)',);
+          },
+        },),
+
+        it({
+          name: 'names itself for readable stacks',
+          fn: async () => {
+            const error = new InvalidBackpressureError({
+              backpressure: 2,
+              concurrency: 4,
+            },);
+            expect(error.name,).toBe('InvalidBackpressureError',);
           },
         },),
 
