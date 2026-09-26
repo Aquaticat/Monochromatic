@@ -51,6 +51,21 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
   and the container end-to-end suite
   (expected to fail its concurrency scenarios until later slices land,
   which is its positive control).
+- Slice 1 landed on the branch
+  (`9f53f7857` through `ce4de39e8`):
+  per-transaction directories under `<git-dir>/cli-git-transactions/<uuid>`,
+  `owner.json`,
+  live-owner-skipping recovery,
+  and reflog nonce search.
+  Unit tests and `test:built:trust` were green at its last commit.
+  Known limit until slice 3:
+  a dead unlanded transaction fails closed if another transaction later moved `HEAD`.
+- Slice 2 is running:
+  shadow repository preparation for every commit,
+  the hook dispatcher shim,
+  and a fail-fast landing that reports a moved `HEAD` instead of replaying.
+- `SPEC.md` has no placeholders left;
+  the shadow snapshots every real ref at invocation so hooks resolve tags and other branches.
 - Private `HEAD` shape chosen from a disposable-repository prototype:
   a shadow repository with alternates to the real object store
   (decision record commit `0d19ff973` on the branch).
