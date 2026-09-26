@@ -86,6 +86,8 @@ async function runHookedSequence(context: ScenarioContext,): ReturnType<Scenario
 const hookdirHooks: ScenarioDefinition = {
   name: 'baseline-hooks-hookdir',
   group: 'baseline',
+  // Sequential: no commit can lose a landing race, so this also runs on Git without replay plumbing.
+  replayPlumbing: 'unused',
   summary: 'pre-commit, prepare-commit-msg, commit-msg, and post-commit hookdir hooks on two sequential commits',
   repository(random,) {
     return repositoryOptions({
@@ -109,6 +111,8 @@ const hookdirHooks: ScenarioDefinition = {
 const configHooks: ScenarioDefinition = {
   name: 'baseline-hooks-config',
   group: 'baseline',
+  // Sequential: no commit can lose a landing race, so this also runs on Git without replay plumbing.
+  replayPlumbing: 'unused',
   summary: 'the same hooks registered through hook.<name>.command config',
   minimumGit: '2.54.0',
   repository(random,) {
@@ -133,6 +137,8 @@ const configHooks: ScenarioDefinition = {
 const sshSigning: ScenarioDefinition = {
   name: 'baseline-ssh-signing',
   group: 'baseline',
+  // Sequential: no commit can lose a landing race, so this also runs on Git without replay plumbing.
+  replayPlumbing: 'unused',
   summary: 'two sequential SSH-signed commits',
   repository(random,) {
     return repositoryOptions({
@@ -159,6 +165,8 @@ const sshSigning: ScenarioDefinition = {
 const sigkillPostCommit: ScenarioDefinition = {
   name: 'baseline-sigkill-post-commit',
   group: 'baseline',
+  // Sequential: no commit can lose a landing race, so this also runs on Git without replay plumbing.
+  replayPlumbing: 'unused',
   summary: 'SIGKILL one commit in post-commit, run git status to recover, commit again',
   repository(random,) {
     return repositoryOptions({
@@ -247,6 +255,8 @@ const sigkillPostCommit: ScenarioDefinition = {
 const checkerPositiveControl: ScenarioDefinition = {
   name: 'baseline-checker-positive-control',
   group: 'baseline',
+  // Sequential: no commit can lose a landing race, so this also runs on Git without replay plumbing.
+  replayPlumbing: 'unused',
   summary: 'land one commit, then tamper with real Git; the checker must report exactly the planted violations',
   expectedViolations: [
     'index-no-revert',

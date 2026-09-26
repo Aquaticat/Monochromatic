@@ -191,6 +191,9 @@ function killScenario(phase: HookEvent | 'offset',): ScenarioDefinition {
   return {
     name: `sigkill-${phase}`,
     group: 'concurrency',
+    // A hook-phase victim is killed before landing, or after it in post-commit before the bystander starts,
+    // so the bystander never loses a race; a seeded offset can kill inside landing after the bystander started.
+    replayPlumbing: phase === 'offset' ? 'required' : 'unused',
     summary: phase === 'offset'
       ? 'SIGKILL one committing agent at a seeded offset while another commits, then recover'
       : `SIGKILL one committing agent inside ${phase} while another commits, then recover`,

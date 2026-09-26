@@ -196,6 +196,9 @@ function phaseKillScenario(phase: typeof PHASES[number],): ScenarioDefinition {
   return {
     name: `sigkill-phase-${phase}`,
     group: 'concurrency',
+    // The bystander starts while the victim pauses: before its ref update the victim never lands,
+    // and after it the bystander's base already holds the victim's commit, so no race is lost.
+    replayPlumbing: 'unused',
     summary: `SIGKILL one committing agent paused at the ${phase} phase marker while another commits, then recover`,
     repository(random,) {
       return repositoryOptions({

@@ -15,6 +15,7 @@ import { INDEX_WRITER_SCENARIOS, } from './scenario-index-writer-fixture.ts';
 import { LOCK_GC_SCENARIOS, } from './scenario-lock-gc-fixture.ts';
 import type { ScenarioDefinition, } from './scenario-model-fixture.ts';
 import { PHASE_KILL_SCENARIOS, } from './scenario-phase-kill-fixture.ts';
+import { REPLAY_DEGRADATION_SCENARIOS, } from './scenario-replay-degradation-fixture.ts';
 import { RESERVATION_SCENARIOS, } from './scenario-reservation-fixture.ts';
 import { SHARED_FILE_SCENARIOS, } from './scenario-shared-file-fixture.ts';
 import { SIGKILL_SCENARIOS, } from './scenario-sigkill-fixture.ts';
@@ -25,7 +26,8 @@ import { SUBSUMPTION_SCENARIOS, } from './scenario-subsumption-fixture.ts';
  baselines first,
  then the accepted design's concurrency,
  interference,
- and kill scenarios.
+ and kill scenarios,
+ then the replay degradation scenarios that run only on a Git without replay plumbing.
  */
 export const SCENARIO_CATALOG: readonly ScenarioDefinition[] = [
   ...BASELINE_COMMIT_SCENARIOS,
@@ -42,4 +44,5 @@ export const SCENARIO_CATALOG: readonly ScenarioDefinition[] = [
   ...FOREIGN_UNPROVEN_SCENARIOS,
   ...SIGKILL_SCENARIOS,
   ...PHASE_KILL_SCENARIOS,
+  ...REPLAY_DEGRADATION_SCENARIOS,
 ];

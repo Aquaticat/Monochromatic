@@ -137,6 +137,8 @@ const amendDuringCommits: ScenarioDefinition = {
 const branchSwitch: ScenarioDefinition = {
   name: 'branch-switch-during-commit',
   group: 'concurrency',
+  // The held commit fails with branch-switched before any replay.
+  replayPlumbing: 'unused',
   summary: 'git switch to another branch while a commit is held in pre-commit; the commit must not land on the new branch',
   repository(random,) {
     return repositoryOptions({

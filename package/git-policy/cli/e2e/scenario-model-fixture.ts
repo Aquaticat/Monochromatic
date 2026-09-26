@@ -37,6 +37,18 @@ import {
   type SeededRandom,
 } from './seeded-random-fixture.ts';
 import type { ScenarioActors, } from './worker-fixture.ts';
+import {
+  compareVersions,
+  REPLAY_PLUMBING_FITS,
+  REPLAY_PLUMBING_GIT,
+  type ReplayPlumbingDependency,
+  replayPlumbingSkip,
+} from './git-version-fixture.ts';
+
+export {
+  compareVersions,
+  REPLAY_PLUMBING_GIT,
+} from './git-version-fixture.ts';
 
 //region Types
 
@@ -92,6 +104,19 @@ export type ScenarioDefinition = Readonly<{
    when newer than the suite minimum.
    */
   minimumGit?: string;
+  /**
+   How the scenario depends on replay plumbing,
+   `git merge-tree --merge-base` from Git {@link REPLAY_PLUMBING_GIT} on:
+   `required`,
+   the default,
+   skips it on an older Git,
+   where a commit that loses a landing race fails fast instead of replaying;
+   `unused` runs it on every Git,
+   because no commit in it can lose a landing race;
+   `absent` runs it only on an older Git,
+   to prove that degradation.
+   */
+  replayPlumbing?: ReplayPlumbingDependency;
   /**
    Invariants a positive-control scenario must violate, exactly;
    the scenario passes only when the checker reports this set.
@@ -218,49 +243,6 @@ export function allSucceeded({
 const SCENARIO_TIMEOUT_MS = 180_000;
 
 /**
- Compares dotted Git versions.
-
- @param left - version
-
- @param right - version
-
- @returns negative, zero, or positive
-
- @example
- ```ts
- compareVersions({ left: '2.40.0', right: '2.54.0' }) < 0; // => true
- ```
- */
-export function compareVersions({
-  left,
-  right,
-}: Readonly<{
-  left: string;
-  right: string;
-}>,): number {
-  /**
-   Numeric parts of both versions.
-   */
-  const [leftParts, rightParts,] = [
-    left,
-    right,
-  ].map(function parts(version,) {
-    return version.split('.',)
-      .map(Number,);
-  },);
-  return (leftParts ?? []).reduce(
-    function firstDifference(
-      difference,
-      part,
-      index,
-    ) {
-    return difference === 0 ? part - ((rightParts ?? [])[index] ?? 0) : difference;
-  },
-    0,
-  );
-}
-
-/**
  Decides a scenario's verdict.
  Ordinary scenarios pass with no violations;
  positive controls pass when the violated invariant names equal `expectedViolations`.
@@ -381,6 +363,22 @@ export async function runScenario({
       violations: [],
       durationMs: 0,
       detail: `requires Git ${definition.minimumGit}`,
+      attempts: [],
+    };
+  /**
+   Why this Git's replay plumbing does not fit the scenario, if it does not.
+   */
+  const replaySkip = replayPlumbingSkip({
+    replayPlumbing: definition.replayPlumbing ?? 'required',
+    gitVersion,
+  },);
+  if (replaySkip !== REPLAY_PLUMBING_FITS)
+    return {
+      ...base,
+      status: 'skip',
+      violations: [],
+      durationMs: 0,
+      detail: replaySkip,
       attempts: [],
     };
   /**

@@ -61,6 +61,8 @@ const FILE_BYTES = 400;
 const explicitCommit: ScenarioDefinition = {
   name: 'baseline-explicit-commit',
   group: 'baseline',
+  // Sequential: no commit can lose a landing race, so this also runs on Git without replay plumbing.
+  replayPlumbing: 'unused',
   summary: 'modify, add, and delete one path each through sequential explicit-path commits',
   repository(random,) {
     return repositoryOptions({ seedFiles: seedTexts({
@@ -160,6 +162,8 @@ const explicitCommit: ScenarioDefinition = {
 const indexCommit: ScenarioDefinition = {
   name: 'baseline-index-commit',
   group: 'baseline',
+  // Sequential: no commit can lose a landing race, so this also runs on Git without replay plumbing.
+  replayPlumbing: 'unused',
   summary: 'git add two paths, keep an unrelated unstaged edit, commit --no-only',
   repository(random,) {
     return repositoryOptions({ seedFiles: seedTexts({
@@ -233,6 +237,8 @@ const indexCommit: ScenarioDefinition = {
 const traceSequential: ScenarioDefinition = {
   name: 'baseline-trace-sequential',
   group: 'baseline',
+  // Sequential: no commit can lose a landing race, so this also runs on Git without replay plumbing.
+  replayPlumbing: 'unused',
   summary: `replay ${String(BASELINE_TRACE_COMMITS,)} consecutive trace commits one at a time`,
   repository(random,) {
     return repositoryOptions({

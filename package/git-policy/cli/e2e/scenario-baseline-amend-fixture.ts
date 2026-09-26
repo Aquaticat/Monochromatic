@@ -43,6 +43,8 @@ const FILE_BYTES = 400;
 const amend: ScenarioDefinition = {
   name: 'baseline-amend',
   group: 'baseline',
+  // Sequential: no commit can lose a landing race, so this also runs on Git without replay plumbing.
+  replayPlumbing: 'unused',
   summary: 'amend a setup commit with new bytes for its path',
   repository(random,) {
     return repositoryOptions({ seedFiles: seedTexts({
@@ -96,6 +98,8 @@ const amend: ScenarioDefinition = {
 const lintStaged: ScenarioDefinition = {
   name: 'baseline-lint-staged',
   group: 'baseline',
+  // Sequential: no commit can lose a landing race, so this also runs on Git without replay plumbing.
+  replayPlumbing: 'unused',
   summary: 'lint-staged backup stash and hide-unstaged hook on one partially staged index commit (linked worktree)',
   repository(random,) {
     return repositoryOptions({
