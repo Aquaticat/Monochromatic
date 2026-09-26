@@ -1,0 +1,6 @@
+{
+  "plugins": [],
+  "categories": { "correctness": "off" },
+  "jsPlugins": ["./proto-rule.mjs"],
+  "rules": { "proto563/no-implicit-array-conversion": "error" }
+}

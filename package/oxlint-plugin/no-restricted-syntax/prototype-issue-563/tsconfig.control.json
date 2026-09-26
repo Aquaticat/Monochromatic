@@ -1,0 +1,1 @@
+{ "extends": "./tsconfig.json", "compilerOptions": { "allowImportingTsExtensions": true }, "files": ["conversions.prototype.ts", "control.prototype.ts"] }
