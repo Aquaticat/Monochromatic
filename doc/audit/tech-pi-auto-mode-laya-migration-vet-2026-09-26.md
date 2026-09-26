@@ -1,8 +1,22 @@
 # Pi auto-mode Laya migration vetting
 
+## Superseded scope
+
+This report is archived as the initial Laya-only source-inspection checkpoint.
+Its runtime and pending-preference statements describe that checkpoint,
+not the current investigation.
+The user subsequently authorized Voyage and Jev,
+required narrow axiom estimates with deterministic actions,
+and settled hosted-data eligibility,
+trust representation,
+and the interactive budget.
+Current selection work is in the
+[axiom migration audit](tech-pi-auto-mode-axiom-migration-vet-2026-09-26.md).
+The original compatibility fingerprint is retained rather than reassigned to a different scope.
+
 ## Metadata
 
-- Status: in progress; context and source audit.
+- Status: archived; superseded context, no recommendation.
 - Started: 2026-09-26.
 - Last updated: 2026-09-26.
 - Subject: Pi auto-mode Laya migration.
