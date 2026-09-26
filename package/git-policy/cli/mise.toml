@@ -216,6 +216,9 @@ const child = spawn('podman', [
   'run',
   '--memory=2g',
   '--cpus=2',
+  // An init reaps orphaned children; with the benchmark's Node as PID 1 they stay zombies
+  // until the container's 2048-PID limit fails spawns with EAGAIN.
+  '--init',
   '--rm',
   '--env',
   `CLI_GIT_BENCHMARK_REVISION=${revision}`,
