@@ -66,8 +66,9 @@ export function attachMembers(options: {
       options.members,
       name,
     );
-    // mutation-test-disable-next-line conditional, string -- unreachable defensive guard: Reflect.ownKeys only yields own keys, so every listed member always has a descriptor; the throw keeps the impossible case loud instead of silently skipping it
+    // mutation-test-disable-next-line conditional -- unreachable defensive guard: Reflect.ownKeys only yields own keys, so every listed member always has a descriptor; the throw keeps the impossible case loud instead of silently skipping it
     if (descriptor === undefined)
+      // mutation-test-disable-next-line string -- same unreachable defensive guard: this message text renders only in a state Reflect.ownKeys cannot produce
       throw new Error(`member descriptor missing for ${String(name,)}`);
 
     Object.defineProperty(
