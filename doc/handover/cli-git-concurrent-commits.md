@@ -201,8 +201,24 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
   they were pushed through the wrapper afterwards and its manual-push policies passed.
   The owner chose a deterministic hook over more rule wording:
   issue #575.
-  After both:
+  Subsumption replay,
+  slice 5 reservation,
+  and the amended-history checker finished through `5a863e43b`:
+  container seed 1 passed 71 of 72 runs,
+  seed 2 passed 70 of 72;
+  only `concurrent-trace-replay` still conflicted,
+  where a later capture rewrote lines an earlier in-flight commit had just added.
+  Owner decision 2026-09-26:
+  for a path both commits captured from the same worktree,
+  the later capture wins
+  (decision record,
+  "Capture order").
+  Running now in the feature worktree:
   merge slice 4,
+  implement capture order,
+  fix the trace harness's add-then-delete window,
+  and run container seeds 1 to 3.
+  After it:
   run the full checks and several container seeds,
   re-measure the lifecycle latency baseline,
   then merge the feature branch into `main`.
