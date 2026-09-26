@@ -529,6 +529,21 @@ This measured temporary failure does **not** become a passing state just
 because the settled screenshot passes D50.
 Automatic dismissal and recurrence were not established.
 
+A later **bounded recurrence attempt** on the disposable AVD used the
+corrected `search-deck-right-lift-retain-results-light` debug candidate
+with APK SHA-256
+`261e608e67029f6361b79a2b26f79851099df9d98f3cdbed637b2e14a4529636`.
+With floating Gboard visible,
+`settings put system font_scale 1.0` recreated Search and hid the keys;
+changing the font scale back to `2.0` recreated it again.
+After a settled refocus,
+Gboard displayed **docked split keys** with touchable region
+`[0,1352][2076,2152]` and no font-update banner.
+UI Automator placed the complete final mode at `[0,1201][1038,1332]`.
+This sequence differs from the first banner's focused scale change.
+It neither reproduces the banner nor proves it cannot recur while typing;
+its unsanitized screenshot remains private scratch evidence.
+
 The debug input method is deliberately synthetic, **not Gboard**.
 Its measured overlap tests bottom-window occlusion and text input integration;
 it does not establish Gboard's own geometry.
