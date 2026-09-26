@@ -61,7 +61,9 @@ async function installedIdentityState({
 
 /**
  Removes unchanged entries created by failed installation.
- 
+ A proven directory is removed only when empty;
+ a proven file or symbolic link only while it still equals the private stage.
+
  @param snapshot - validated stage retained for ownership comparison
  
  @param destinationRoot - partially populated worktree
@@ -125,7 +127,9 @@ export async function rollbackCreated({
         retained.push(`${installed.relativePath}: filesystem identity changed`,);
         continue;
       }
-      if (expected !== undefined) {
+      // A proven directory still carries its private installation mode until modes are applied,
+      // and rmdir removes it only when it is empty, so its identity is the whole ownership proof.
+      if ((expected !== undefined) && (expected.kind !== 'directory')) {
         /* oxlint-disable no-await-in-loop -- ownership proof precedes each destructive rollback step */
         /**
          Whether installed selected entry still equals private snapshot.

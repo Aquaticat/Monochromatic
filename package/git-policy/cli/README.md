@@ -75,7 +75,10 @@ The snapshot preserves regular files,
 directories,
 symbolic-link target text,
 and portable permission bits.
-File copies request copy-on-write and use Node's full-copy fallback when the filesystem cannot clone extents.
+File copies into the private stage request copy-on-write and use Node's full-copy fallback when the filesystem cannot
+clone extents;
+installation then hard-links each staged file into the new worktree,
+copying instead when the filesystem refuses the link.
 Registered worktree roots nested beneath an ignored source tree are excluded,
 as are cli-git's private staging paths.
 Source paths remain selected even when the destination branch does not ignore them.
@@ -88,7 +91,8 @@ An exact type,
 mode,
 link target,
 and byte match is accepted;
-a difference fails after retaining the Git-created worktree.
+a difference fails after retaining the Git-created worktree,
+and the failed copy removes its journal and stage so later commands are unaffected.
 Cli-git compares the completed private stage back to the source before installation,
 so source instability fails unless exact final equivalence remains.
 A successful copy emits one summary line on stderr.
@@ -99,12 +103,21 @@ or uses `1` when Git ended by signal without a numeric status.
 
 Private stages live beside their destination for same-filesystem copy-on-write.
 Durable journals and a recoverable process-identity lock live under
-`<git-common-dir>/cli-git-worktree-copy/v1`.
-A later cli-git invocation validates destination registration,
-stage ownership,
+`<git-common-dir>/cli-git-worktree-copy/v1`;
+each installation appends its progress to a log inside its private stage,
+so its cost grows linearly with the copied entry count.
+A later cli-git invocation validates stage ownership,
 permissions,
-and path containment before resuming an interrupted installation.
-Malformed or conflicting recovery state fails closed and remains available for diagnosis.
+and path containment before resuming an interrupted installation,
+including directories the interrupted owner created before applying their final modes.
+A journal whose worktree was removed or whose private stage is gone is discarded with a one-line notice.
+While another live cli-git process holds settlement,
+commands that do not create or move worktrees skip recovery rather than wait,
+and a command that creates or moves worktrees waits for it without a time limit
+after printing one line naming the holder's PID.
+A settlement lock whose owner record proves nothing fails that command after about one second,
+leaving the lock in place.
+Malformed or unsafe recovery state fails closed and remains available for diagnosis.
 
 ## Policy authoring API
 

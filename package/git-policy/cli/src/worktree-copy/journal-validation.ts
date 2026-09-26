@@ -1,9 +1,3 @@
-import type { Stats, } from 'node:fs';
-import {
-  lstat,
-  readFile,
-  realpath,
-} from 'node:fs/promises';
 import {
   basename,
   dirname,
@@ -18,18 +12,7 @@ import type {
   InstalledWorktreePath,
   WorktreeCopyJournal,
 } from './model.ts';
-import { assertPrivateWorktreeCopyPath, } from './private-path.ts';
 import { STAGE_PREFIX, } from './snapshot.ts';
-
-/**
- Git-file prefix introducing linked-worktree administrative path.
- */
-const GITDIR_PREFIX = 'gitdir: ';
-
-/**
- Filesystem path is absent.
- */
-const PATH_ABSENT: unique symbol = Symbol('journal path is absent',);
 
 /**
  Reports whether unknown JSON value is a non-null object record.
@@ -61,7 +44,7 @@ function isRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
  // => true
  ```
  */
-function isStringArray(value: unknown,): value is readonly string[] {
+export function isStringArray(value: unknown,): value is readonly string[] {
   return Array.isArray(value,)
     && value.every(function stringMember(item,): item is string {
       return (typeof item) === 'string';
@@ -131,7 +114,7 @@ function isInstalledEntry(value: unknown,): value is InstalledWorktreePath {
  // => true
  ```
  */
-function isInstalledEntryArray(
+export function isInstalledEntryArray(
   value: unknown,
 ): value is readonly InstalledWorktreePath[] {
   return Array.isArray(value,)
@@ -286,158 +269,4 @@ export function validateJournalValue({
     );
   }
   return record;
-}
-
-/**
- Reads no-follow metadata or absence for journal path validation.
- 
- @param path - exact filesystem path
- 
- @returns no-follow metadata or absence sentinel
- 
- @example
- ```ts
- await lstatOrAbsent('/private/stage');
- ```
- */
-async function lstatOrAbsent(path: string,): Promise<Readonly<Stats> | typeof PATH_ABSENT> {
-  try {
-    return await lstat(path,);
-  }
-  catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error)
-      && (error.code === 'ENOENT'))
-      return PATH_ABSENT;
-    throw error;
-  }
-}
-
-/**
- Asserts journal destination remains registered under expected common directory.
- 
- @param commonDir - canonical common Git directory
- 
- @param destinationRoot - canonical linked-worktree root
- 
- @throws {@link WorktreeCopyError} when destination registration changed
- 
- @example
- ```ts
- await assertRegisteredDestination({ commonDir: '/repo/.git', destinationRoot: '/worktrees/topic' });
- ```
- */
-async function assertRegisteredDestination({
-  commonDir,
-  destinationRoot,
-}: Readonly<{
-  commonDir: string;
-  destinationRoot: string;
-}>,): Promise<void> {
-  if ((await realpath(destinationRoot,)) !== destinationRoot) {
-    throw new WorktreeCopyError(
-      `cli-git: worktree-copy destination identity changed: ${JSON.stringify(destinationRoot,)}.`,
-    );
-  }
-  /**
-   Linked-worktree Git-file pointer.
-   */
-  const pointer = (await readFile(
-    join(
-      destinationRoot,
-      '.git',
-    ),
-    'utf8',
-  ))
-    .trimEnd();
-  if (!pointer.startsWith(GITDIR_PREFIX,)) {
-    throw new WorktreeCopyError(
-      `cli-git: worktree-copy destination is not a linked worktree: ${JSON.stringify(destinationRoot,)}.`,
-    );
-  }
-  /**
-   Canonical linked administrative directory.
-   */
-  const adminPath = await realpath(resolve(
-    destinationRoot,
-    pointer.slice(GITDIR_PREFIX.length,),
-  ),);
-  /**
-   Canonical expected linked administrative parent.
-   */
-  const expectedAdminRoot = await realpath(join(
-    commonDir,
-    'worktrees',
-  ),);
-  if (dirname(adminPath,) !== expectedAdminRoot) {
-    throw new WorktreeCopyError(
-      `cli-git: worktree-copy destination registration changed: ${JSON.stringify(destinationRoot,)}.`,
-    );
-  }
-}
-
-/**
- Validates live identities before recovery reads, installs, or removes stage state.
- 
- @param commonDir - canonical common Git directory
- 
- @param record - schema-validated journal record
- 
- @throws {@link WorktreeCopyError} when private stage or destination changed
- 
- @example
- ```ts
- await validateJournalFilesystem({ commonDir: '/repo/.git', record });
- ```
- */
-export async function validateJournalFilesystem({
-  commonDir,
-  record,
-}: Readonly<{
-  commonDir: string;
-  record: WorktreeCopyJournal;
-}>,): Promise<void> {
-  try {
-    await assertRegisteredDestination({
-      commonDir,
-      destinationRoot: record.destinationRoot,
-    },);
-    /**
-     Private stage-container metadata or completed-cleanup absence.
-     */
-    const containerStats = await lstatOrAbsent(record.stageContainer,);
-    if ((typeof containerStats) === 'symbol') {
-      if (record.phase === 'complete')
-        return;
-      throw new WorktreeCopyError(
-        `cli-git: incomplete worktree-copy stage is missing: ${JSON.stringify(record.stageContainer,)}.`,
-      );
-    }
-    await assertPrivateWorktreeCopyPath({
-      path: record.stageContainer,
-      role: 'private stage',
-    },);
-    /**
-     Private payload metadata or partial completed cleanup absence.
-     */
-    const stageStats = await lstatOrAbsent(record.stageRoot,);
-    if ((typeof stageStats) === 'symbol') {
-      if (record.phase === 'complete')
-        return;
-      throw new WorktreeCopyError(
-        `cli-git: incomplete worktree-copy payload is missing: ${JSON.stringify(record.stageRoot,)}.`,
-      );
-    }
-    await assertPrivateWorktreeCopyPath({
-      path: record.stageRoot,
-      role: 'private stage',
-    },);
-  }
-  catch (error: unknown) {
-    if (error instanceof WorktreeCopyError)
-      throw error;
-    throw new WorktreeCopyError(
-      `cli-git: could not validate worktree-copy recovery state for ${JSON.stringify(record.destinationRoot,)}.`,
-      error,
-    );
-  }
 }

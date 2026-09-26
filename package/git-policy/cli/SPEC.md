@@ -960,8 +960,8 @@ Before staging,
 exclude every registered worktree root strictly nested under the source.
 Private stage names are reserved and excluded at every path component.
 Stage each destination separately in a mode-`0700` sibling directory so file cloning stays on the destination filesystem.
-Copy regular files with an exclusive copy-on-write request whose unsupported-filesystem behavior falls back to a full
-copy.
+Copy regular files into the stage with an exclusive copy-on-write request whose unsupported-filesystem behavior falls
+back to a full copy.
 Preserve directory and regular-file permission bits plus exact symbolic-link target text.
 Never follow a symbolic link while classifying source or destination entries.
 
@@ -980,10 +980,21 @@ Preflight every existing destination manifest entry before creating any path.
 Accept an exact match even when the destination does not ignore that path.
 Never overwrite or remove a differing destination entry.
 Create absent entries exclusively and retain the Git-created worktree on any failure.
+Install a regular file as a hard link to its staged copy,
+so it appears atomically with its final bytes and mode;
+when the filesystem refuses the link,
+fall back to the exclusive copy-on-write request.
+The staged copy is independent of the source,
+so a destination file never shares storage with its source file.
 Immediate rollback visits only transaction-owned paths in child-first order;
-it removes a selected path only when it still exactly matches the private stage,
-and removes an unselected scaffold only when it remains empty.
+it removes a selected file or symbolic link only when it still exactly matches the private stage,
+and removes a proven directory,
+selected or scaffold,
+only when it is empty.
 Every path whose ownership cannot be proved remains in place and is named in the diagnostic.
+A failed installation ends its transaction after rollback:
+it removes its journal and private stage,
+so no later invocation replays the same failure.
 
 Each destination uses a schema-versioned journal under
 `<git-common-dir>/cli-git-worktree-copy/v1`.
@@ -991,24 +1002,65 @@ Journal writes use a private no-follow temporary file,
 file synchronization,
 atomic rename,
 and parent-directory synchronization where supported.
-Persist selected-entry intent before destination mutation.
+The journal record is rewritten only when the transaction changes phase.
+Selected-entry intents and proven post-creation identities are appended to a private install log inside the stage,
+one synchronized line per bounded batch of manifest entries:
+the batch's absent paths are claimed before any of them is created,
+and their identities are recorded after.
+Installation cost therefore grows linearly with the entry count.
+A trailing log fragment without a line terminator is an unfinished append;
+recovery ignores it and truncates it before appending.
 A completion phase makes stage removal and journal removal recoverable in either crash order.
-A process-birth-identity lock serializes installation and recovery,
-rejects live contention after bounded acquisition,
-and reclaims stale PID reuse safely.
+A process-birth-identity lock serializes installation and recovery.
+An applicable source waits for an owner proven alive without a time limit,
+after writing one stderr line naming the owner's PID and the lock;
+while that owner lives the waiter only reads the owner record,
+and it attempts publication again once the owner releases,
+replaces,
+or no longer runs.
+A dead owner's lock,
+including PID reuse or an exited but unreaped process,
+is retired after re-reading that it still names that owner.
+An owner record that is unreadable or invalid proves nothing,
+so the waiter uses Git's jittered quadratic backoff for up to 1000 ms without a proven owner,
+then fails with a diagnostic listing that evidence and leaves the lock in place.
+The lock is released and retired by renaming it to a unique name before deleting it,
+so a concurrent publication is never emptied in place.
 
 Every later linked-worktree or bare-repository invocation checks for pending journals before forwarding
 without taking the settlement lock,
 and takes it only to recover when a pending journal exists.
+An invocation that neither creates nor moves worktrees does not wait for the lock:
+while another live process owns it,
+that owner is still writing its own journal or already recovering,
+so the invocation forwards without recovery.
 Recovery validates that journal paths remain canonical,
 the stage is a private owned directory beside the destination,
-the destination still resolves to a linked registration under the same common directory,
 and every intended entry exists in the private manifest.
-Malformed,
-replaced,
-missing,
-or conflicting state fails closed without deleting the journal or a path outside the validated private stage.
-Completed cleanup is resumed without reinstalling entries.
+Every pending transaction then reaches an end:
+
+- A destination that no longer resolves to a linked registration under the same common directory,
+  because it was removed,
+  moved,
+  pruned,
+  or replaced,
+  is discarded:
+  recovery removes the private stage and journal,
+  never touches the destination path,
+  and writes one notice line.
+- A transaction whose private stage is gone is discarded the same way,
+  with a notice that ignored files in the destination may be incomplete.
+- Otherwise installation resumes.
+  An existing directory at a selected path the transaction claimed or created is accepted whatever its mode,
+  because an interrupted installation applies modes after every entry exists;
+  every other existing entry still requires an exact match.
+  A resumed installation that fails ends its transaction as a first attempt would,
+  and the recovering invocation writes the failure as a notice and continues.
+- Completed cleanup is resumed without reinstalling entries.
+
+Malformed or unsafe journal,
+install-log,
+or stage state fails closed without deleting the journal or a path outside the validated private stage.
 
 After all newly registered destinations settle successfully,
 write exactly one human summary line to stderr.
@@ -3196,7 +3248,8 @@ is retired by the next acquirer.
   `<git-common-dir>/cli-git/push/<encoded-ref>.lock`:
   unbounded wait while their owner lives.
 - Worktree-copy settlement lock:
-  unchanged bounded acquisition,
+  unbounded wait while its owner lives,
+  bounded wait for an owner record without evidence,
   held only by applicable sources
   (see "Linked-worktree ignored-state synchronization").
 - Trust registry recursive-operation lock,

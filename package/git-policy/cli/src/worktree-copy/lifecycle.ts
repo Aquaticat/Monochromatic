@@ -34,10 +34,8 @@ import {
   recoverPendingWorktreeCopies,
   reportRecoveredWorktreeCopies,
 } from './pending-recovery.ts';
-import {
-  recoverWorktreeCopyTransactions,
-  synchronizeCreatedWorktrees,
-} from './transaction.ts';
+import { synchronizeCreatedWorktrees, } from './transaction.ts';
+import { recoverWorktreeCopyTransactions, } from './transaction-recovery.ts';
 
 /**
  Logger root for real-Git worktree-copy lifecycle.
