@@ -6085,10 +6085,11 @@ The self-contained review is at
 its sanitized inner-panel image keeps all app pixels,
 replaces the complete status strip and omits PNG metadata.
 It asks whether the query-clear but partially covered middle result lettering
-may remain a scoped real-floating-keyboard exception,
-or whether all inner results must be readable under floating placement.
-The latter is a requirement option,
-**not** a verified layout variant.
+in **this captured floating state** may remain a scoped exception,
+or whether this same observed overlap must be resolved within selected A.
+Declining this exception does not demand universal floating-keyboard
+readability or select an unbuilt layout variant.
+Recovery by scrolling or other means was not established on this fixture.
 No additional IME testing was performed;
 #122 awaits the user's answer.
 Do not extend D53's deck allowance or D55's folded-cover allowance to the

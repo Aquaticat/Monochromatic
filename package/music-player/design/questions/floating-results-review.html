@@ -136,8 +136,8 @@ dialog::backdrop { background-color: var(--color-backdrop); }
 <main>
 <header>
   <p class="muted">Music player · selected Search A · Pixel 9 Pro Fold inner panel · design-only exception question</p>
-  <h1>May floating Gboard cover some right-side Search results?</h1>
-  <p class="evidence"><strong>What to inspect:</strong> In the captured 200% text-scale Search A, the <code>cam</code> query remains visible at upper-right. Real floating Gboard overlaps parts of middle result rows on that right pane while also obscuring the left deck, the separate D53 exception. Later rows remain visible beneath the keyboard in this image. The keyboard is a movable system overlay; this capture does <strong>not</strong> prove that every obscured result can be scrolled into an uncovered area or activated. D55's folded-cover floating-keyboard allowance does not decide this inner result question. No app layout variant has been accepted for this overlap.</p>
+  <h1>May this floating Gboard state cover right-side Search lettering?</h1>
+  <p class="evidence"><strong>What to inspect:</strong> In the captured 200% text-scale Search A, the <code>cam</code> query remains visible at upper-right. Real floating Gboard overlaps parts of middle result rows on that right pane while also obscuring the left deck, the separate D53 exception. Later rows remain visible beneath the keyboard in this image. This capture does <strong>not</strong> prove whether covered results can be scrolled into an uncovered area or activated. D55's folded-cover floating-keyboard allowance does not decide this inner result question. No app layout variant has been accepted for this overlap.</p>
 </header>
 <section class="evidence" aria-labelledby="capture-title">
   <h2 id="capture-title">Observed selected-A composition with real floating Gboard</h2>
@@ -151,34 +151,34 @@ dialog::backdrop { background-color: var(--color-backdrop); }
     <article class="policy" data-option="accept" data-recommended="true">
       <h3>A · Accept this measured floating overlap (Recommended)</h3>
       <h4>Pros</h4>
-      <ul><li>Keeps the selected right-side Search and actual left browser/deck without a speculative layout shift.</li><li>Applies only while real Gboard is floating and the query stays unobscured; ordinary docked/split results are not waived.</li></ul>
+      <ul><li>Keeps the selected right-side Search and actual left browser/deck without a speculative layout shift.</li><li>Applies only to this captured real floating-Gboard overlap while the query stays unobscured; ordinary docked/split results are not waived.</li></ul>
       <h4>Cons</h4>
-      <ul><li>Some matches can be unreadable behind the overlay until the keyboard is moved or dismissed.</li><li>This evidence does not establish activation or reachability of every obscured row.</li></ul>
+      <ul><li>Some result lettering is unreadable in this captured frame; scrolling or other recovery was not tested on this fixture.</li><li>This evidence does not establish activation or reachability of the obscured rows.</li></ul>
       <p><strong>My read:</strong> Accept the specific observed overlay as another scoped exception, not a universal search-results waiver.</p>
     </article>
     <article class="policy" data-option="require">
-      <h3>B · Require every match readable under floating input</h3>
+      <h3>B · Decline this observed result overlap</h3>
       <h4>Pros</h4>
-      <ul><li>Keeps results legible during all floating-keyboard placements if a working solution is found.</li><li>Does not require users to move or dismiss Gboard to read covered rows.</li></ul>
+      <ul><li>Sets a requirement to keep result lettering readable in the captured floating-keyboard state.</li><li>Does not assume scrolling, moving or dismissing Gboard is necessary for recovery.</li></ul>
       <h4>Cons</h4>
-      <ul><li>No validated native candidate currently meets this requirement while preserving A and usable keys; B is a requirement, not a built screen.</li><li>Further device work would need a compelling case presented first under the user's IME-testing stop instruction.</li></ul>
-      <p><strong>My read:</strong> Choose only if result readability under floating input is a hard requirement; no implementation is implied.</p>
+      <ul><li>No validated native candidate currently resolves this captured state while preserving A and usable keys; B is a requirement, not a built screen.</li><li>Further device work would need a compelling case presented first under the user's IME-testing stop instruction.</li></ul>
+      <p><strong>My read:</strong> Choose if result lettering must remain readable in this captured state; the remedy stays open and no implementation is implied.</p>
     </article>
   </div>
-  <p class="ranking"><strong>Ranking:</strong> A &gt; B because A retains the selected composition within a narrowly named real-keyboard exception, while B has no validated mechanism that preserves both usable keys and A. This ranks design policies, not a built B variant. Either answer keeps D56's ordinary folded-cover result scrolling and D50's ordinary unfolded deck requirement.</p>
+  <p class="ranking"><strong>Ranking:</strong> A &gt; B because a bounded allowance for this observed overlay keeps the selected composition intact, while declining this overlap leaves a still-unbuilt resolution under the same A constraints. This ranks exception policies, not mechanisms or a built B variant. Neither answer decides other floating placements, result reachability/activation (#116), D56's ordinary folded-cover scrolling, or D50's ordinary unfolded deck requirement.</p>
 </section>
 <section aria-labelledby="response-title">
   <h2 id="response-title">Decision: inner floating-keyboard result lettering only</h2>
   <form id="answer-form">
     <fieldset><legend>Choose the scope of this exception</legend>
-      <label><input type="radio" name="floatingResults" value="Accept A"> Accept A's measured real floating-Gboard overlap with some right-side results, while the query stays clear</label>
-      <label><input type="radio" name="floatingResults" value="Require B"> Require all inner result lettering readable even under floating Gboard; no layout solution is yet accepted</label>
+      <label><input type="radio" name="floatingResults" value="Accept A"> Accept A's measured real floating-Gboard overlap with some right-side result lettering while the query stays clear</label>
+      <label><input type="radio" name="floatingResults" value="Decline B"> Decline that same observed overlap; keep the remedy within selected Search A open</label>
       <label><input type="radio" name="floatingResults" value="Other"> Another boundary or correction</label>
     </fieldset>
     <label for="other">Anything else you want settled or changed?</label>
     <textarea id="other" name="other" placeholder="Describe a correction here. Nothing is sent automatically."></textarea>
   </form>
-  <p><strong>Response path:</strong> Reply in this chat with “Accept A”, “Require B”, or your own boundary. The form prepares text but does not submit a decision. This choice does not authorize production or new IME experiments.</p>
+  <p><strong>Response path:</strong> Reply in this chat with “Accept A”, “Decline B”, or your own boundary. The form prepares text but does not submit a decision. Neither answer approves missing/nonfunctional matches, production work or new IME experiments.</p>
   <output id="prepared" form="answer-form" aria-live="polite">Select a direction or write a correction, then reply in chat.</output>
 </section>
 </main>

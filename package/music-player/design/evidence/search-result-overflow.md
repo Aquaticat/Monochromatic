@@ -236,9 +236,11 @@ All app pixels beneath the status strip match the private capture exactly;
 PNG text,
 profile,
 EXIF and timestamp chunks were removed.
-The form asks whether to accept this **specific** floating overlay or require
-legible matches beneath all floating placements;
-it does not claim that a solution for the latter has been built.
+The form asks whether to accept **this specific observed** floating overlap
+or leave resolution of this same state open within selected A;
+it does not demand universal floating-keyboard readability or claim a
+solution has been built.
+Recovery by scrolling or another action was not verified in this fixture.
 D53 concerns the separately accepted deck overlap,
 and D55 concerns the folded cover.
 The inner result question remains open until the user answers;
