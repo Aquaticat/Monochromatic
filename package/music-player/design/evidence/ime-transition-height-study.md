@@ -136,10 +136,26 @@ the available area from y `136` to IME top y `1177` was 1041px,
 less than that measured combined demand.
 The clipped `ScrollView` was only 1002px tall there.
 Those measurements motivated prototype commit `ad53f5685`,
-which prefers a noncompact keyboard-open deck sample when it has positive
-unconstrained space above it.
-This later candidate has **not** yet been verified in the step fixture;
-its fallback may still choose compact early on a cold start.
+which preferred a noncompact keyboard-open deck sample when it had positive
+space above it.
+The next same-APK step run disproved this version:
+it learned a `1033px` open deck at 330dp and retained it through 375dp,
+then reported only `1002px` at 400dp.
+That input selected the noncompact branch even though the final mode was
+only `[73,1057][965,1177]`,
+a visible 120px ending at the y `1177` IME top.
+The browser header was absent from that hierarchy.
+The callback apparently combined a smaller constrained viewport with an
+older available-height value;
+its exact scheduling was not captured,
+so this is an inference,
+not a proven AndroidX cause.
+The APK SHA-256 for this failing revision was
+`ba9925858eb04d51515647a93f3a22654c78dbbc3d80c3533f1ac8f3b75156a9`.
+Prototype commit `ae10caf0d` now retains the largest fitting height for
+the unchanged content,
+width and text scale rather than overwriting it with a shorter sample.
+This revised guard is pending a same-fixture test.
 
 ## Remaining boundary
 
@@ -148,8 +164,7 @@ The closed deck's first measured heights changed from `762` to `891` to
 A later focused transition logged a stored `1071px` height,
 but this capture did not isolate when that earlier sample was taken.
 No single early `onSizeChanged` value proves full-content demand.
-Verify the new open-height sample,
-ascending and descending steps,
+Verify the revised open-height guard with ascending and descending steps,
 keyboard dismissal and refocus,
 and cold entry at a height where both deck arrangements fit.
 Check title paint and accessibility bounds separately;
