@@ -1,8 +1,10 @@
 # Issue 563: exact array-conversion lint policy
 
 Status:
- grilling in progress;
- no decision recorded yet.
+ implemented;
+ issues 563,
+ 564,
+ and 565 closed by commits on `main`.
 Issue: <https://github.com/Aquaticat/Monochromatic/issues/563>.
 
 ## Problem
@@ -165,7 +167,36 @@ Repo uses of single-argument `Array.from` are 2 deliberate string code-point spl
 - No upstream contact;
    oxc issue 26159 is cited.
 
+## Implementation findings
+
+- Rules:
+  `package/oxlint-plugin/no-restricted-syntax/src/rule/no-useless-spread/`,
+  `package/oxlint-plugin/no-restricted-syntax/src/rule/prefer-spread/`,
+  shared evidence in `package/oxlint-plugin/no-restricted-syntax/src/rule/spread-evidence/`.
+  Tests:
+  `package/oxlint-plugin/no-restricted-syntax/src/spread-rules.unit.test.ts`;
+  removing either typed-array or ambiguity guard fails the issue 563 or 565 tests
+  (negative controls run before commit).
+- The TypeScript 7 bridge is imported from the readonly plugin's `/ts` subpath;
+  the bundled `@monochromatic-dev/config-oxlint` output places it in one shared chunk,
+  so both plugins use one TypeScript process.
+- `sourceCode.isGlobalReference` drops `Array` and `Object` under the shared config's explicit `env`;
+  both rules resolve globals by the absence of a file-local declaration instead
+  (`doc/troubleshooting/oxlint-js-plugin-global-reference-env.md`).
+- A repo-wide run found `Buffer.concat(chunks,)` reported as an ambiguous array `concat` in an untyped file;
+  undeclared receivers are now treated as host namespaces.
+- Enabling both rules repo-wide adds no diagnostics outside ignored test fixtures,
+  except two `prefer-spread` warnings in untyped bench analysis scripts
+  that already carry 270 lint problems and are not lint-clean targets.
+- The two `unicorn/prefer-spread` suppressions around `Array.from(string,)` were removed;
+  the project rule leaves `Array.from` of strings alone.
+- Known limitation shared with upstream:
+  `[...arr]` and `arr.slice()` differ on sparse arrays (spread fills holes with `undefined`);
+  types cannot prove density,
+  so fixes on proven arrays assume dense arrays.
+
 ## Open questions
 
-- None at decision time;
-   implementation findings get appended here.
+- Whether to post the upstream comment drafted in `doc/troubleshooting/oxlint-spread-autofix.md`.
+- The prototype branch `prototype/issue-563-explicit-conversions` is uncommitted:
+  the forbidden-strings scanner cannot start in the uninstalled worktree.
