@@ -1,7 +1,9 @@
 # cli-git concurrent commits
 
 Grilling session started 2026-09-25.
-Status: design in progress; nothing implemented.
+Status:
+ design in progress;
+ nothing implemented.
 
 ## Goal
 
@@ -16,14 +18,18 @@ issue #560 is a real collision.
   so a second transaction fails immediately instead of waiting.
 - The lock is held across every policy pass,
   the real `git commit` including its hooks,
-  and post-commit index installation (`package/git-policy/cli/SPEC.md`, "Transaction protocol").
+  and post-commit index installation (`package/git-policy/cli/SPEC.md`,
+   "Transaction protocol").
 - Explicit-path commits already build the commit tree in a private index from `HEAD` plus selected paths.
 - Policies may read `trackedFiles` for any pathspec and `headOid`,
   and candidate `change`/`revision` are relative to `HEAD`
-  (`SPEC.md`, "Public authoring declarations"),
+  (`SPEC.md`,
+   "Public authoring declarations"),
   so a verdict can depend on `HEAD` beyond the candidate bytes.
 - Local real Git 2.55.0 has `git hook run` and `git merge-tree --write-tree --merge-base`.
-- `git help git`, `GIT_OPTIONAL_LOCKS`: `git status` takes `index.lock` to refresh the index,
+- `git help git`,
+   `GIT_OPTIONAL_LOCKS`:
+   `git status` takes `index.lock` to refresh the index,
   so non-cli-git lock holders are routine.
 - Wrapper-added commit latency in the fixture benchmark is roughly 0.3 to 0.45 seconds
   (`package/git-policy/cli/perf/lifecycle-latency-2026-07-16.json`);
@@ -98,7 +104,12 @@ submodules,
 Disposable fixture,
 real Git 2.55.0.
 Driver scripts and raw reports lived in the session scratchpad;
-the durable write-ups are the `doc/troubleshooting/` docs for these Git hook quirks.
+the durable write-ups are
+[`git-hook-disable-switches.md`](../troubleshooting/git-hook-disable-switches.md)
+and
+[`git-private-admin-dir-hook-environment.md`](../troubleshooting/git-private-admin-dir-hook-environment.md).
+Handover:
+ [`doc/handover/cli-git-concurrent-commits.md`](../handover/cli-git-concurrent-commits.md).
 
 - No plain invocation gives hooks an absolute `GIT_WORK_TREE`:
   Git rewrites `--work-tree` and `GIT_WORK_TREE` to `.` for hooks.
@@ -145,7 +156,8 @@ Git source at commit `0f8e75abebff` plus experiments with real Git 2.55.0.
   prepare-commit-msg,
   the editor,
   and commit-msg
-  (`builtin/commit.c`, lines 402 to 550 and 1957).
+  (`builtin/commit.c`,
+   lines 402 to 550 and 1957).
   Measured:
   a 3 second hook meant 3 seconds of lock with no holder.
   So no open holder does not mean abandoned.
@@ -182,18 +194,24 @@ Git source at commit `0f8e75abebff` plus experiments with real Git 2.55.0.
 
 ## Decisions
 
-- Meaning: concurrent separate invocations,
+- Meaning:
+   concurrent separate invocations,
   not one invocation producing several commits.
-- Scope: default on in every repository the wrapper runs in.
-- Mechanism: parallel preparation,
+- Scope:
+   default on in every repository the wrapper runs in.
+- Mechanism:
+   parallel preparation,
   serial landing.
   The owner chose this over a lock queue because the engineering capacity exists now.
-- Replay: three-way content merge from the preparation base onto the new `HEAD`.
-- Replay conflict: fail,
+- Replay:
+   three-way content merge from the preparation base onto the new `HEAD`.
+- Replay conflict:
+   fail,
   nothing lands,
   and the diagnostic names conflicting paths and the winning commit;
   never re-prepare from current worktree bytes.
-- Policy re-run after replay: record each policy's lazy reads
+- Policy re-run after replay:
+   record each policy's lazy reads
   (candidate bytes,
   `trackedFiles` pathspecs,
   `headOid`)
@@ -211,27 +229,36 @@ Git source at commit `0f8e75abebff` plus experiments with real Git 2.55.0.
   (`forbidden-strings` and `markdown-lint` spawn tools with repository cwd;
   `repository-policy` calls `readFile`
   and spawns `git ls-files` and `git cat-file`).
-- Hook parallelism declaration: `hooks: { concurrentCommits: true }` in `cli-git.config`,
+- Hook parallelism declaration:
+   `hooks: { concurrentCommits: true }` in `cli-git.config`,
   default false.
 - Policy input declaration:
   `inputs?: 'unrestricted' | { readonly external: readonly PolicyInput[] }`,
   default `'unrestricted'`;
   `{ external: [] }` means context-only reads.
-  `PolicyInput` kinds: `worktree` (pathspecs),
+  `PolicyInput` kinds:
+   `worktree` (pathspecs),
   `executable` (path),
   `revision` (rev),
   `env` (name).
-  Precedent: Nx task `inputs`,
+  Precedent:
+   Nx task `inputs`,
   broad when absent.
 - No opt-out:
   no config key and no environment variable disables concurrent commits.
   Owner rationale:
   a misbehaving wrapper is a bug to fix,
   not a reason to disable parts of it.
-- Config keys: `indexLock: { unprovenOwnerTimeoutMs: 1000 }`
+- Config keys:
+   `indexLock: { unprovenOwnerTimeoutMs: 1000 }`
   and `landing: { reserveAfterLostRaces: 2 }`.
 - Forwarded index writers
-  (`add`, `rm`, `mv`, `restore --staged`, `reset`, and similar)
+  (`add`,
+   `rm`,
+   `mv`,
+   `restore --staged`,
+   `reset`,
+   and similar)
   wait on `index.lock` under the foreign-owner rules before forwarding,
   and re-forward after a lock `EEXIST` only when a disposable fixture proves that command fails before side effects.
   `git status` needs nothing because its optional lock is skipped silently.
@@ -240,24 +267,29 @@ Git source at commit `0f8e75abebff` plus experiments with real Git 2.55.0.
   The earlier claim that concurrent commits raise neighbor collision rates was retracted:
   landing holds `index.lock` far shorter than today's whole-transaction hold,
   and the net effect is unmeasured.
-- Hooks and editor: run during preparation.
+- Hooks and editor:
+   run during preparation.
   The editor,
   `prepare-commit-msg`,
   and `commit-msg` run once;
   `pre-commit` re-runs outside the landing lock against the replayed index whenever the replayed tree differs,
   then landing retries.
-- Landing order: preparation completion order.
-- Starvation guard: after K lost landing races a commit reserves the next landing slot;
+- Landing order:
+   preparation completion order.
+- Starvation guard:
+   after K lost landing races a commit reserves the next landing slot;
   others keep preparing and revalidating but cannot land until it lands or fails.
   K defaults to 2,
   is tunable,
   and the concurrent-commit benchmark confirms the default.
-- Waiting: unbounded while the cli-git landing owner is alive;
+- Waiting:
+   unbounded while the cli-git landing owner is alive;
   bounded for an `index.lock` without a known owner.
 - `--amend` and merge,
   cherry-pick,
   revert conclusions fail when `HEAD` moved.
-- Hook concurrency: a per-repository hook lock serializes preparation hooks and post-landing `post-commit` by default;
+- Hook concurrency:
+   a per-repository hook lock serializes preparation hooks and post-landing `post-commit` by default;
   `cli-git.config` can declare the repository's hooks safe for parallel preparation.
 - Foreign `index.lock`:
   cli-git injects `core.lockfilePid=true` into every forwarded and spawned Git.
@@ -270,13 +302,15 @@ Git source at commit `0f8e75abebff` plus experiments with real Git 2.55.0.
   then a diagnostic listing the evidence.
   cli-git never deletes a lock.
 - Index commits participate with the index captured at invocation.
-- Auto-push: single-flight per branch.
+- Auto-push:
+   single-flight per branch.
   A landed commit joins an in-flight push covering its OID or pushes the branch tip itself,
   and exits only once the remote contains its OID.
 
 ## Recommendation calibration
 
-Owner, 2026-09-25:
+Owner,
+ 2026-09-25:
 engineering budget is not a constraint;
 recommend the most correct and performant option,
 never the cheapest to build.
