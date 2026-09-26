@@ -76,9 +76,9 @@ type RanFixture = {
    */
   readonly exitCode?: number;
   /**
-   Whether standard output round-tripped through UTF-8.
+   Whether standard output is safe to render as text.
    */
-  readonly stdoutIsUtf8?: boolean;
+  readonly stdoutIsText?: boolean;
   /**
    Captured standard output byte count.
    */
@@ -115,7 +115,7 @@ function ranOutcome(fixture: RanFixture = {},): GhCommandRan {
     ran: true,
     exitCode: fixture.exitCode ?? 0,
     stdout,
-    stdoutIsUtf8: fixture.stdoutIsUtf8 ?? true,
+    stdoutIsText: fixture.stdoutIsText ?? true,
     stdoutByteLength: fixture.stdoutByteLength ?? stdout.length,
     stderr: fixture.stderr ?? '',
   };
@@ -310,7 +310,7 @@ await describe({
           },
         },),
         it({
-          name: 'runs the next attempt after a required invocation exits non-zero',
+          name: 'runs the next attempt after a required invocation exits with the ordinary failure code',
           fn: async () => {
             /**
              Local value for harness.
@@ -362,7 +362,7 @@ await describe({
           },
         },),
         it({
-          name: 'runs the next attempt after a required invocation does not run',
+          name: 'stops after a required invocation does not run',
           fn: async () => {
             /**
              Local value for harness.
@@ -380,9 +380,9 @@ await describe({
             const client = createGhClient({ runner: harness.runner, },);
 
             /**
-             Local value for response.
+             Local value for caught.
              */
-            const response = await client.fetch(fetchOptions({
+            const pendingOptions = fetchOptions({
               attempts: [
                 attempt({
                   label: 'repository cli/cli overview and README',
@@ -405,9 +405,68 @@ await describe({
                   ],
                 },),
               ],
-            },),);
+            },);
+            /**
+             Local value for caught.
+             */
+            const caught = await caughtRejection(client.fetch(pendingOptions,),);
 
-            expect(response,).toEqual({ markdown: '# GitHub CLI', },);
+            expect(caught,).toBeInstanceOf(GhFetchError,);
+            expect((caught as GhFetchError).attemptReasons,).toHaveLength(1,);
+            expect(harness.calls,).toHaveLength(1,);
+          },
+        },),
+        it({
+          name: 'stops after a required invocation reports the authentication exit code',
+          fn: async () => {
+            /**
+             Local value for harness.
+             */
+            const harness = scriptedRunner([
+              ranOutcome({
+                exitCode: 4,
+                stderr: 'To get started with GitHub CLI, please run:  gh auth login',
+              },),
+              ranOutcome({ stdout: 'module github.com/cli/cli/v2', },),
+            ],);
+            /**
+             Local value for client.
+             */
+            const client = createGhClient({ runner: harness.runner, },);
+
+            /**
+             Local value for caught.
+             */
+            const pendingOptions = fetchOptions({
+              attempts: [
+                attempt({
+                  label: 'file content attempt 1 of 2 at ref 8761 path allow-items/go.mod',
+                  invocations: [
+                    requiredInvocation([
+                      'api',
+                      '/repos/cli/cli/contents/allow-items/go.mod?ref=8761',
+                    ],),
+                  ],
+                },),
+                attempt({
+                  label: 'file content attempt 2 of 2 at ref 8761/allow-items path go.mod',
+                  invocations: [
+                    requiredInvocation([
+                      'api',
+                      '/repos/cli/cli/contents/go.mod?ref=8761/allow-items',
+                    ],),
+                  ],
+                },),
+              ],
+            },);
+            /**
+             Local value for caught.
+             */
+            const caught = await caughtRejection(client.fetch(pendingOptions,),);
+
+            expect(caught,).toBeInstanceOf(GhFetchError,);
+            expect((caught as GhFetchError).attemptReasons,).toHaveLength(1,);
+            expect(harness.calls,).toHaveLength(1,);
           },
         },),
         it({
@@ -502,7 +561,7 @@ await describe({
         //region Optional invocations
 
         it({
-          name: 'returns only the required output when an optional comment read fails',
+          name: 'appends a visible notice when an optional comment read fails',
           fn: async () => {
             /**
              Local value for harness.
@@ -527,12 +586,20 @@ await describe({
                 threadAttempt(),
               ],
             },),);
+            /**
+             Local value for markdown.
+             */
+            const {
+              markdown,
+            } = response as { readonly markdown: string; };
 
-            expect(response,).toEqual({ markdown: 'title:\tbrew install gh', },);
+            expect(markdown.startsWith('title:\tbrew install gh\n\n[optional gh read failed',),).toBe(true,);
+            expect(markdown,).toContain('its output is omitted',);
+            expect(markdown,).toContain('Could not resolve to an issue',);
           },
         },),
         it({
-          name: 'returns only the required output when an optional comment read does not run',
+          name: 'appends a visible notice when an optional comment read does not run',
           fn: async () => {
             /**
              Local value for harness.
@@ -557,8 +624,15 @@ await describe({
                 threadAttempt(),
               ],
             },),);
+            /**
+             Local value for markdown.
+             */
+            const {
+              markdown,
+            } = response as { readonly markdown: string; };
 
-            expect(response,).toEqual({ markdown: 'title:\tbrew install gh', },);
+            expect(markdown.startsWith('title:\tbrew install gh\n\n[optional gh read failed',),).toBe(true,);
+            expect(markdown,).toContain('60000ms deadline',);
           },
         },),
         it({
@@ -649,6 +723,40 @@ await describe({
             expect(response,).toEqual({ markdown: '', },);
           },
         },),
+        it({
+          name: 'preserves whitespace-only file content exactly',
+          fn: async () => {
+            /**
+             Local value for harness.
+             */
+            const harness = scriptedRunner([
+              ranOutcome({ stdout: '  \n\t\n', },),
+            ],);
+            /**
+             Local value for client.
+             */
+            const client = createGhClient({ runner: harness.runner, },);
+
+            /**
+             Local value for response.
+             */
+            const response = await client.fetch(fetchOptions({
+              attempts: [
+                attempt({
+                  label: 'file content attempt 1 of 1 at ref trunk path .keep',
+                  invocations: [
+                    requiredInvocation([
+                      'api',
+                      '/repos/cli/cli/contents/.keep?ref=trunk',
+                    ],),
+                  ],
+                },),
+              ],
+            },),);
+
+            expect(response,).toEqual({ markdown: '  \n\t\n', },);
+          },
+        },),
 
         //endregion Optional invocations
 
@@ -663,7 +771,7 @@ await describe({
             const harness = scriptedRunner([
               ranOutcome({
                 stdout: 'wOF2\uFFFD\uFFFD',
-                stdoutIsUtf8: false,
+                stdoutIsText: false,
                 stdoutByteLength: BINARY_BYTE_LENGTH,
               },),
             ],);

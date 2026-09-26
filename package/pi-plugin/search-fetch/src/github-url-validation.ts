@@ -5,6 +5,7 @@
  */
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   DASH_PREFIX,
@@ -28,6 +29,24 @@ import type {
   TokenValidation,
   UrlParseResult,
 } from './github-fetch-types.ts';
+
+/**
+ Logger root for pi-search-fetch after removing the package log shim.
+ 
+ @example
+ ```ts
+ const rl = tagged({ tag: someFunction.name, l: validationLogger, },);
+ ```
+ */
+const validationLogger = tagged({ tag: 'pi-search-fetch', },);
+
+/**
+ Module logger.
+ */
+const l = tagged({
+  tag: 'github-url-validation',
+  l: validationLogger,
+},);
 
 //region URL parsing
 
@@ -261,6 +280,39 @@ function isSafePathSegment(segment: string,): boolean {
 }
 
 /**
+ Decode one percent-encoded URL text value, keeping the raw text when decoding fails.
+ 
+ URL path segments stay percent-encoded,
+ while gh arguments and query values need decoded text,
+ and a bare percent sign makes decoding impossible.
+ 
+ @param value - percent-encoded text taken from a URL path
+ 
+ @returns decoded text, or the raw value when it carries a malformed escape
+ 
+ @example
+ ```ts
+ decodeUrlText('topic%2Bone');
+ ```
+ */
+function decodeUrlText(value: string,): string {
+  /**
+   Logger tagged for this decode call.
+   */
+  const innerL = tagged({
+    tag: decodeUrlText.name,
+    l,
+  },);
+  try {
+    return decodeURIComponent(value,);
+  }
+  catch (error: unknown) {
+    innerL.debug(`keeping raw URL text ${JSON.stringify(value,)} after a malformed escape: ${caughtValueText(error,)}`,);
+    return value;
+  }
+}
+
+/**
  Return whether one value stays inside printable ASCII.
  
  URL parsing already percent-encodes every non-printable character,
@@ -462,6 +514,7 @@ function validatePositionalPathArgument(
 //endregion Argument validation
 
 export {
+  decodeUrlText,
   isPrintableAscii,
   parseGitHubUrl,
   validateEndpointFragment,

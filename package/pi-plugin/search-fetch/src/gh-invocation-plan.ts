@@ -24,6 +24,7 @@ import type {
   RepositoryContentContext,
   UnplannedGitHubFetch,
 } from './github-fetch-types.ts';
+import { decodeUrlText, } from './github-url-validation.ts';
 
 //region Plan shapes
 
@@ -236,9 +237,16 @@ function contentsArgs(
   },
 ): readonly string[] {
   /**
+   Reference decoded from URL path form and re-encoded as one whole query value.
+   
+   A path segment keeps `+` and `&` literally,
+   while a query value would read `+` as a space and `&` as a parameter separator.
+   */
+  const referenceQueryValue = encodeURIComponent(decodeUrlText(split.ref,),);
+  /**
    Contents endpoint shared by both response shapes.
    */
-  const endpoint = `${URL_SLASH}repos/${owner}/${repo}/contents/${split.path}?ref=${split.ref}`;
+  const endpoint = `${URL_SLASH}repos/${owner}/${repo}/contents/${split.path}?ref=${referenceQueryValue}`;
   return listing
     ? [
       GH_API_SUBCOMMAND,

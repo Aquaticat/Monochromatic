@@ -480,8 +480,56 @@ await describe({
             }
 
             expect(caught,).toBeInstanceOf(Error,);
-            expect((caught as Error).message,).toBe('The operation was aborted',);
+            expect((caught as Error).message,).toBe('This operation was aborted',);
             expect(mock.calls,).toHaveLength(0,);
+          },
+        },),
+        it({
+          name: 'fetch rethrows a cancellation arriving during the Linkup call instead of continuing to Exa',
+          fn: async () => {
+            /**
+             Local value for controller.
+             */
+            const controller = new AbortController();
+            /**
+             Local value for mock.
+             */
+            const mock = mockFetch({
+              responses: [
+                { body: { message: 'bad gateway', }, status: 502, statusText: 'Bad Gateway', },
+                { body: EXA_FETCH_RESPONSE, },
+              ],
+              onCall: function cancelFirstCall(): void {
+                controller.abort();
+              },
+            },);
+            /**
+             Local value for client.
+             */
+            const client = clientWithMock({
+              mock,
+              exaApiKey: EXA_API_KEY,
+              linkupApiKey: LINKUP_API_KEY,
+              ghClient: failingGhClient({ reason: GH_FAILURE_REASON, },).client,
+            },);
+
+            /**
+             Local value for caught.
+             */
+            let caught: unknown;
+            try {
+              await client.fetch({
+                input: { url: GITHUB_REPOSITORY_URL, },
+                signal: controller.signal,
+              },);
+            }
+            catch (error: unknown) {
+              caught = error;
+            }
+
+            expect(caught,).toBeInstanceOf(Error,);
+            expect(mock.calls,).toHaveLength(1,);
+            expect(firstCall(mock,).url,).toBe(`${LINKUP_BASE_URL}/fetch`,);
           },
         },),
         it({
@@ -687,7 +735,15 @@ function failingGhClient({ reason, }: { readonly reason: string; }): GhClientFix
  
  @returns mock fetch harness
  */
-function mockFetch({ responses, }: { readonly responses: readonly MockResponse[]; }): FetchMock {
+function mockFetch(
+  {
+    responses,
+    onCall,
+  }: {
+    readonly responses: readonly MockResponse[];
+    readonly onCall?: (index: number,) => void;
+  },
+): FetchMock {
   /**
    Recorded calls.
    */
@@ -700,6 +756,8 @@ function mockFetch({ responses, }: { readonly responses: readonly MockResponse[]
       url: fetchInputUrl(input,),
       init: init ?? {},
     },);
+    if (onCall !== undefined)
+      onCall(calls.length - 1,);
     /**
      Local value for response.
      */

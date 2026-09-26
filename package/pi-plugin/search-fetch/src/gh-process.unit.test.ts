@@ -14,6 +14,7 @@ import {
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
+import { setTimeout as delay, } from 'node:timers/promises';
 
 import {
   describe,
@@ -56,6 +57,11 @@ const OVER_CEILING_OUTPUT_CHARACTERS = 100_000;
  Exit code used by the failing child case.
  */
 const FAILING_EXIT_CODE = 3;
+
+/**
+ Delay before an in-flight cancellation, long enough for the child to start.
+ */
+const ABORT_DELAY_MILLISECONDS = 60;
 
 /**
  Build one runner driving the current Node executable as the child.
@@ -132,6 +138,8 @@ function notRun(outcome: GhCommandOutcome,): Extract<GhCommandOutcome, { readonl
 
 await describe({
   name: '',
+  // One case mutates process.env to prove child environment pins win over ambient values.
+  concurrency: 1,
   children: [
     describe({
       name: createGhCommandRunner.name,
@@ -150,7 +158,7 @@ await describe({
 
             expect(outcome.exitCode,).toBe(0,);
             expect(outcome.stdout,).toBe('hello gh',);
-            expect(outcome.stdoutIsUtf8,).toBe(true,);
+            expect(outcome.stdoutIsText,).toBe(true,);
             expect(outcome.stdoutByteLength,).toBe(8,);
             expect(outcome.stderr,).toBe('',);
           },
@@ -191,13 +199,28 @@ await describe({
              Local value for outcome.
              */
             const outcome = completed(await nodeRunner()({
-              args: nodeArgs('process.stdout.write(Buffer.from([0x77, 0x4f, 0x46, 0x32, 0xff, 0xfe, 0x00]));',),
+              args: nodeArgs('process.stdout.write(Buffer.from([0x77, 0x4f, 0x46, 0x32, 0xff, 0xfe]));',),
             },),);
 
             expect(outcome.exitCode,).toBe(0,);
-            expect(outcome.stdoutIsUtf8,).toBe(false,);
-            expect(outcome.stdoutByteLength,).toBe(7,);
+            expect(outcome.stdoutIsText,).toBe(false,);
+            expect(outcome.stdoutByteLength,).toBe(6,);
             expect(outcome.stdout.includes('\uFFFD',),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'reports valid UTF-8 carrying a NUL character as non-text',
+          fn: async () => {
+            /**
+             Local value for outcome.
+             */
+            const outcome = completed(await nodeRunner()({
+              args: nodeArgs(String.raw`process.stdout.write("before\u0000after");`,),
+            },),);
+
+            expect(outcome.exitCode,).toBe(0,);
+            expect(outcome.stdoutIsText,).toBe(false,);
+            expect(outcome.stdoutByteLength,).toBe(12,);
           },
         },),
 
@@ -225,7 +248,8 @@ await describe({
             },),);
 
             expect(outcome.reason,).toContain('gh-definitely-not-installed-xyz',);
-            expect(outcome.reason,).toContain('was not found on PATH',);
+            expect(outcome.reason,).toContain('is missing from PATH',);
+            expect(outcome.reason,).toContain('did not spawn',);
           },
         },),
         it({
@@ -293,6 +317,83 @@ await describe({
             }
 
             expect(caught,).toBeInstanceOf(Error,);
+          },
+        },),
+        it({
+          name: 'throws and stops the child when cancellation arrives mid-run',
+          fn: async () => {
+            /**
+             Local value for controller.
+             */
+            const controller = new AbortController();
+            /**
+             Local value for startedAt.
+             */
+            const startedAt = performance.now();
+            /**
+             Local value for pending.
+             */
+            const pending = nodeRunner()({
+              args: nodeArgs(`setTimeout(function keepAlive() {}, ${String(LONG_SLEEP_MILLISECONDS,)});`,),
+              signal: controller.signal,
+            },);
+            await delay(ABORT_DELAY_MILLISECONDS,);
+            controller.abort();
+
+            /**
+             Local value for caught.
+             */
+            let caught: unknown;
+            try {
+              await pending;
+            }
+            catch (error: unknown) {
+              caught = error;
+            }
+
+            /**
+             Local value for elapsed.
+             */
+            const elapsed = performance.now() - startedAt;
+            expect(caught,).toBeInstanceOf(Error,);
+            expect(elapsed < LONG_SLEEP_MILLISECONDS,).toBe(true,);
+          },
+        },),
+        it({
+          name: 'pins the gh host and output variables over ambient values',
+          fn: async () => {
+            /**
+             Local value for savedHost.
+             */
+            const savedHost = process.env.GH_HOST;
+            /**
+             Local value for savedForceTty.
+             */
+            const savedForceTty = process.env.GH_FORCE_TTY;
+            process.env.GH_HOST = 'github.example.invalid';
+            process.env.GH_FORCE_TTY = '80';
+
+            /**
+             Local value for outcome.
+             */
+            const outcome = completed(await nodeRunner()({
+              args: nodeArgs('process.stdout.write(JSON.stringify([process.env.GH_HOST, process.env.GH_FORCE_TTY, process.env.CLICOLOR_FORCE, process.env.NO_COLOR]));',),
+            },),);
+            if (savedHost === undefined)
+              delete process.env.GH_HOST;
+            else
+              process.env.GH_HOST = savedHost;
+            if (savedForceTty === undefined)
+              delete process.env.GH_FORCE_TTY;
+            else
+              process.env.GH_FORCE_TTY = savedForceTty;
+
+            expect(JSON.parse(outcome.stdout,),).toEqual([
+              'github.com',
+              '',
+              '0',
+              '1',
+            ],);
           },
         },),
         it({

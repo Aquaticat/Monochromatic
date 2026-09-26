@@ -10,6 +10,13 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
+  combinedFallbackError,
+  fetchExaFallback,
+  hasCredential,
+  rethrowIfCancelled,
+  searchLinkupFallback,
+} from './provider-fallback.ts';
+import {
   DEFAULT_LINKUP_BASE_URL,
   createLinkupClient,
   type FetchOptions,
@@ -160,6 +167,7 @@ async function searchWithFallback(
       };
     }
     catch (error: unknown) {
+      rethrowIfCancelled(options.signal === undefined ? {} : { signal: options.signal, },);
       /**
        Safe Exa failure text for logs and details.
        */
@@ -256,12 +264,7 @@ async function fetchWithFallback(
     };
   }
   catch (error: unknown) {
-    // Caller cancellation must not silently degrade into a paid provider fetch.
-    if (options.signal
-      ?.aborted
-      === true)
-      throw error;
-
+    rethrowIfCancelled(options.signal === undefined ? {} : { signal: options.signal, },);
     /**
      Safe gh failure text for logs and details.
      */
@@ -313,6 +316,7 @@ async function fetchLinkupThenExa(
     readonly fallbackChain?: readonly ProviderFallback[];
   },
 ): Promise<ProviderResponse> {
+  rethrowIfCancelled(options.signal === undefined ? {} : { signal: options.signal, },);
   if ((runtime.linkupApiKey !== undefined) && hasCredential({ value: runtime.linkupApiKey, })) {
     try {
       return {
@@ -322,6 +326,7 @@ async function fetchLinkupThenExa(
       };
     }
     catch (error: unknown) {
+      rethrowIfCancelled(options.signal === undefined ? {} : { signal: options.signal, },);
       /**
        Safe Linkup failure text for logs and details.
        */
@@ -358,146 +363,6 @@ async function fetchLinkupThenExa(
 }
 
 //endregion Routed operations
-
-//region Fallback helpers
-
-/**
- Execute Linkup search fallback and wrap failures with earlier fallback context.
- 
- @param linkupClient - Linkup client
- 
- @param options - search options
- 
- @param fallbackChain - fallback steps already taken before Linkup
- 
- @returns provider-tagged Linkup response
- */
-async function searchLinkupFallback(
-  {
-    linkupClient,
-    options,
-    fallbackChain,
-  }: {
-    readonly linkupClient: LinkupClient;
-    readonly options: SearchOptions;
-    readonly fallbackChain: readonly ProviderFallback[];
-  },
-): Promise<ProviderResponse> {
-  try {
-    return {
-      provider: 'linkup',
-      response: await linkupClient.search(options,),
-      fallbackChain,
-    };
-  }
-  catch (error: unknown) {
-    throw combinedFallbackError({
-      operation: 'search',
-      fallbackChain,
-      finalProvider: 'Linkup',
-      finalError: error,
-    },);
-  }
-}
-
-/**
- Execute Exa fetch fallback and wrap failures with earlier fallback context.
- 
- @param exaClient - Exa client
- 
- @param options - fetch options
- 
- @param fallbackChain - fallback steps already taken before Exa
- 
- @returns provider-tagged Exa response
- */
-async function fetchExaFallback(
-  {
-    exaClient,
-    options,
-    fallbackChain,
-  }: {
-    readonly exaClient: ExaClient;
-    readonly options: FetchOptions;
-    readonly fallbackChain: readonly ProviderFallback[];
-  },
-): Promise<ProviderResponse> {
-  try {
-    return {
-      provider: 'exa',
-      response: await exaClient.fetch(options,),
-      fallbackChain,
-    };
-  }
-  catch (error: unknown) {
-    throw combinedFallbackError({
-      operation: 'fetch',
-      fallbackChain,
-      finalProvider: 'Exa',
-      finalError: error,
-    },);
-  }
-}
-
-/**
- Build an error naming every earlier fallback reason and the final provider failure.
- 
- @param operation - operation name
- 
- @param fallbackChain - fallback steps already taken
- 
- @param finalProvider - final provider display name
- 
- @param finalError - final provider error
- 
- @returns combined provider failure
- 
- @mutates finalError - `errorMessage` may invoke string-conversion hooks.
- */
-function combinedFallbackError(
-  {
-    operation,
-    fallbackChain,
-    finalProvider,
-    finalError,
-  }: {
-    readonly operation: string;
-    readonly fallbackChain: readonly ProviderFallback[];
-    readonly finalProvider: string;
-    readonly finalError: unknown;
-  },
-): Error {
-  /**
-   Failure details in routing order, ending with the final provider failure.
-   */
-  const details = [
-    ...fallbackChain.map(function describeStep(step: ProviderFallback,): string {
-      return `${step.from} unavailable: ${step.reason}`;
-    },),
-    `${finalProvider} failed: ${errorMessage(finalError,)}`,
-  ];
-  return new Error(
-    `Search Fetch ${operation} failed. ${details.join('. ',)}`,
-    { cause: finalError, },
-  );
-}
-
-//endregion Fallback helpers
-
-//region Utility helpers
-
-/**
- Return whether optional credential has non-blank content.
- 
- @param value - optional credential
- 
- @returns whether credential is configured
- */
-function hasCredential({ value, }: { readonly value: string; }): boolean {
-  return value.trim() !== '';
-}
-
-//endregion Utility helpers
 
 export { createSearchFetchClient, };
 export type {

@@ -6,6 +6,8 @@
 
 import {
   EMPTY_SEGMENT,
+  GH_COLOR_FLAG,
+  GH_COLOR_NEVER,
   GH_REPO_FLAG,
   GITHUB_URL_PREFIX,
   ISSUES_SECTION,
@@ -25,6 +27,7 @@ import {
   unplanned,
 } from './gh-invocation-plan.ts';
 import {
+  decodeUrlText,
   validateEndpointFragment,
   validatePositionalPathArgument,
   validateReferenceNumber,
@@ -130,6 +133,8 @@ function planPullRequestSection(context: RepositorySectionContext,): GitHubFetch
         'pr',
         'diff',
         pullRequestUrl,
+        GH_COLOR_FLAG,
+        GH_COLOR_NEVER,
       ],
     },);
   return unplanned(`GitHub pull request subsection ${URL_SLASH}${subsection}${URL_SLASH} has no gh equivalent`,);
@@ -247,11 +252,11 @@ function planReleasesSection(context: RepositorySectionContext,): GitHubFetchPla
     return unplanned(`GitHub releases subsection ${URL_SLASH}${subsection}${URL_SLASH} has no gh equivalent`,);
 
   /**
-   Release tag joined from remaining segments.
+   Release tag joined from remaining segments and decoded for use as one argv value.
    */
-  const tag = tagSegments.join(URL_SLASH,);
+  const tag = decodeUrlText(tagSegments.join(URL_SLASH,),);
   /**
-   Release tag validation result.
+   Release tag validation result, checked after decoding so a decoded dash cannot become a flag.
    */
   const validation = validatePositionalPathArgument({
     value: tag,

@@ -81,6 +81,46 @@ const OUTPUT_CEILING_CODE = 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER';
  */
 const CANCELLATION_CODE = 'ABORT_ERR';
 
+/**
+ Environment variable naming the host gh targets when a command carries no host.
+ */
+const GH_HOST_VARIABLE = 'GH_HOST';
+
+/**
+ Host every mapped GitHub URL names, pinned so an ambient GH_HOST cannot redirect a fetch.
+ */
+const PINNED_GITHUB_HOST = 'github.com';
+
+/**
+ Environment variable that forces terminal-shaped output even when output is redirected.
+ */
+const GH_FORCE_TTY_VARIABLE = 'GH_FORCE_TTY';
+
+/**
+ Environment variable keeping ANSI color in piped output.
+ */
+const CLICOLOR_FORCE_VARIABLE = 'CLICOLOR_FORCE';
+
+/**
+ Environment variable suppressing ANSI color output.
+ */
+const NO_COLOR_VARIABLE = 'NO_COLOR';
+
+/**
+ Value disabling forced color while leaving the variable defined.
+ */
+const COLOR_DISABLED_VALUE = '0';
+
+/**
+ Value gh treats as unset for its forced-terminal variable.
+ */
+const UNSET_VARIABLE_VALUE = '';
+
+/**
+ Character marking a payload as binary even when it decodes as valid UTF-8.
+ */
+const NUL_CHARACTER = '\u0000';
+
 //endregion Constants
 
 //region Types
@@ -177,6 +217,7 @@ function createGhCommandRunner(
         {
           cwd: workingDirectory,
           encoding: 'buffer',
+          env: childEnvironment(),
           maxBuffer: maxOutputBytes,
           timeout: deadlineMs,
           ...(signal === undefined ? {} : { signal, }),
@@ -203,6 +244,7 @@ function createGhCommandRunner(
         deadlineMs,
         maxOutputBytes,
         executable,
+        workingDirectory,
       },);
       innerL.warn(
         outcome.ran
@@ -222,6 +264,33 @@ const runGhCommand: GhCommandRunner = createGhCommandRunner({},);
 //endregion Public API
 
 //region Outcome construction
+
+/**
+ Build the child environment, pinning the variables that change gh routing or output shape.
+ 
+ Measured on gh 2.101.0:
+ an ambient `GH_HOST` redirects `gh api` to that host,
+ an ambient `GH_FORCE_TTY` swaps raw output for ANSI-colored terminal output and grew one issue
+ comment read from 477 bytes to 13990 bytes,
+ an empty `GH_FORCE_TTY` value behaves as unset,
+ and `CLICOLOR_FORCE=0` keeps `gh pr diff` output free of ANSI escapes.
+ 
+ @returns inherited environment with routing and output variables pinned
+ 
+ @example
+ ```ts
+ childEnvironment();
+ ```
+ */
+function childEnvironment(): NodeJS.ProcessEnv {
+  return {
+    ...process.env,
+    [GH_HOST_VARIABLE]: PINNED_GITHUB_HOST,
+    [GH_FORCE_TTY_VARIABLE]: UNSET_VARIABLE_VALUE,
+    [CLICOLOR_FORCE_VARIABLE]: COLOR_DISABLED_VALUE,
+    [NO_COLOR_VARIABLE]: '1',
+  };
+}
 
 /**
  Classify one rejected child invocation.
@@ -247,11 +316,13 @@ function classifyChildFailure(
     deadlineMs,
     maxOutputBytes,
     executable,
+    workingDirectory,
   }: {
     readonly error: unknown;
     readonly deadlineMs: number;
     readonly maxOutputBytes: number;
     readonly executable: string;
+    readonly workingDirectory: string;
   },
 ): GhCommandOutcome {
   /**
@@ -276,7 +347,9 @@ function classifyChildFailure(
    */
   const diagnosticCode = failureDiagnosticCode(error,);
   if (diagnosticCode === MISSING_EXECUTABLE_CODE)
-    return missingRun(`gh executable ${executable} was not found on PATH`,);
+    return missingRun(
+      `gh child did not spawn, so either ${executable} is missing from PATH or working directory ${workingDirectory} is missing: ${caughtValueText(error,)}`,
+    );
   if (diagnosticCode === OUTPUT_CEILING_CODE)
     return missingRun(`gh output exceeded the ${String(maxOutputBytes,)} byte capture ceiling`,);
   if (isKilledFailure(error,))
@@ -319,7 +392,7 @@ function completedRun(
     ran: true,
     exitCode,
     stdout: stdoutText,
-    stdoutIsUtf8: isLosslessUtf8({
+    stdoutIsText: isRenderableText({
       text: stdoutText,
       bytes: stdout,
     },),
@@ -348,20 +421,20 @@ function missingRun(reason: string,): GhCommandNotRan {
 }
 
 /**
- Return whether decoded text re-encodes to the captured bytes unchanged.
+ Return whether captured output is safe to render as text.
  
  @param text - UTF-8 decoded output
  
  @param bytes - captured output bytes
  
- @returns whether decoding lost no information
+ @returns whether decoding lost no information and the text carries no NUL character
  
  @example
  ```ts
- isLosslessUtf8({ text: 'plain', bytes: Buffer.from('plain') });
+ isRenderableText({ text: 'plain', bytes: Buffer.from('plain') });
  ```
  */
-function isLosslessUtf8(
+function isRenderableText(
   {
     text,
     bytes,
@@ -370,6 +443,8 @@ function isLosslessUtf8(
     readonly bytes: Buffer;
   },
 ): boolean {
+  if (text.includes(NUL_CHARACTER,))
+    return false;
   return Buffer.from(
     text,
     'utf8',

@@ -112,14 +112,14 @@ function optional(args: readonly string[],): ExpectedInvocation {
  */
 function contentsEndpoint(
   {
-    ref,
+    refQuery,
     path,
   }: {
-    readonly ref: string;
+    readonly refQuery: string;
     readonly path: string;
   },
 ): string {
-  return `/repos/cli/cli/contents/${path}?ref=${ref}`;
+  return `/repos/cli/cli/contents/${path}?ref=${refQuery}`;
 }
 
 /**
@@ -127,10 +127,10 @@ function contentsEndpoint(
  */
 function rawFileInvocation(
   {
-    ref,
+    refQuery,
     path,
   }: {
-    readonly ref: string;
+    readonly refQuery: string;
     readonly path: string;
   },
 ): ExpectedInvocation {
@@ -139,7 +139,7 @@ function rawFileInvocation(
     '-H',
     RAW_ACCEPT_HEADER,
     contentsEndpoint({
-      ref,
+      refQuery,
       path,
     },),
   ],);
@@ -150,17 +150,17 @@ function rawFileInvocation(
  */
 function listingInvocation(
   {
-    ref,
+    refQuery,
     path,
   }: {
-    readonly ref: string;
+    readonly refQuery: string;
     readonly path: string;
   },
 ): ExpectedInvocation {
   return required([
     'api',
     contentsEndpoint({
-      ref,
+      refQuery,
       path,
     },),
     '--jq',
@@ -269,7 +269,7 @@ const MAPPED_CASES: readonly MappedCase[] = [
     attempts: [
       [
         rawFileInvocation({
-          ref: 'trunk',
+          refQuery: 'trunk',
           path: 'README.md',
         },),
       ],
@@ -282,7 +282,7 @@ const MAPPED_CASES: readonly MappedCase[] = [
     attempts: [
       [
         rawFileInvocation({
-          ref: 'trunk',
+          refQuery: 'trunk',
           path: 'README.md',
         },),
       ],
@@ -295,7 +295,7 @@ const MAPPED_CASES: readonly MappedCase[] = [
     attempts: [
       [
         rawFileInvocation({
-          ref: 'trunk',
+          refQuery: 'trunk',
           path: 'README.md',
         },),
       ],
@@ -308,19 +308,19 @@ const MAPPED_CASES: readonly MappedCase[] = [
     attempts: [
       [
         rawFileInvocation({
-          ref: 'trunk',
+          refQuery: 'trunk',
           path: 'internal/gh/gh.go',
         },),
       ],
       [
         rawFileInvocation({
-          ref: 'trunk/internal',
+          refQuery: 'trunk%2Finternal',
           path: 'gh/gh.go',
         },),
       ],
       [
         rawFileInvocation({
-          ref: 'trunk/internal/gh',
+          refQuery: 'trunk%2Finternal%2Fgh',
           path: 'gh.go',
         },),
       ],
@@ -333,13 +333,13 @@ const MAPPED_CASES: readonly MappedCase[] = [
     attempts: [
       [
         rawFileInvocation({
-          ref: '8761',
+          refQuery: '8761',
           path: 'allow-items/go.mod',
         },),
       ],
       [
         rawFileInvocation({
-          ref: '8761/allow-items',
+          refQuery: '8761%2Fallow-items',
           path: 'go.mod',
         },),
       ],
@@ -352,13 +352,13 @@ const MAPPED_CASES: readonly MappedCase[] = [
     attempts: [
       [
         rawFileInvocation({
-          ref: 'trunk',
+          refQuery: 'trunk',
           path: 'docs/my%20file.md',
         },),
       ],
       [
         rawFileInvocation({
-          ref: 'trunk/docs',
+          refQuery: 'trunk%2Fdocs',
           path: 'my%20file.md',
         },),
       ],
@@ -371,13 +371,13 @@ const MAPPED_CASES: readonly MappedCase[] = [
     attempts: [
       [
         rawFileInvocation({
-          ref: 'trunk',
+          refQuery: 'trunk',
           path: 'docs/%E4%B8%AD%E6%96%87.md',
         },),
       ],
       [
         rawFileInvocation({
-          ref: 'trunk/docs',
+          refQuery: 'trunk%2Fdocs',
           path: '%E4%B8%AD%E6%96%87.md',
         },),
       ],
@@ -390,7 +390,7 @@ const MAPPED_CASES: readonly MappedCase[] = [
     attempts: [
       [
         rawFileInvocation({
-          ref: 'trunk',
+          refQuery: 'trunk',
           path: 'README.md',
         },),
       ],
@@ -403,13 +403,13 @@ const MAPPED_CASES: readonly MappedCase[] = [
     attempts: [
       [
         listingInvocation({
-          ref: 'trunk',
+          refQuery: 'trunk',
           path: 'docs',
         },),
       ],
       [
         listingInvocation({
-          ref: 'trunk/docs',
+          refQuery: 'trunk%2Fdocs',
           path: '',
         },),
       ],
@@ -422,7 +422,7 @@ const MAPPED_CASES: readonly MappedCase[] = [
     attempts: [
       [
         listingInvocation({
-          ref: 'trunk',
+          refQuery: 'trunk',
           path: '',
         },),
       ],
@@ -453,7 +453,7 @@ const MAPPED_CASES: readonly MappedCase[] = [
     ],
   },
   {
-    name: 'pull request changed-file URL reads the diff',
+    name: 'pull request changed-file URL reads the diff without color',
     url: 'https://github.com/cli/cli/pull/14517/files',
     kind: 'pull-request-diff',
     attempts: [
@@ -462,6 +462,8 @@ const MAPPED_CASES: readonly MappedCase[] = [
           'pr',
           'diff',
           'https://github.com/cli/cli/pull/14517',
+          '--color',
+          'never',
         ],),
       ],
     ],
@@ -587,6 +589,61 @@ const MAPPED_CASES: readonly MappedCase[] = [
     ],
   },
   {
+    name: 'blob reference carrying plus and ampersand reaches the query as one encoded value',
+    url: 'https://github.com/cli/cli/blob/topic+one&x=1/README.md',
+    kind: 'file-content',
+    attempts: [
+      [
+        rawFileInvocation({
+          refQuery: 'topic%2Bone%26x%3D1',
+          path: 'README.md',
+        },),
+      ],
+    ],
+  },
+  {
+    name: 'blob reference carrying an encoded slash round-trips through decode and encode',
+    url: 'https://github.com/cli/cli/blob/8761%2Fallow-items/go.mod',
+    kind: 'file-content',
+    attempts: [
+      [
+        rawFileInvocation({
+          refQuery: '8761%2Fallow-items',
+          path: 'go.mod',
+        },),
+      ],
+    ],
+  },
+  {
+    name: 'blob reference carrying a malformed escape stays raw and gets encoded once',
+    url: 'https://github.com/cli/cli/blob/100%/README.md',
+    kind: 'file-content',
+    attempts: [
+      [
+        rawFileInvocation({
+          refQuery: '100%25',
+          path: 'README.md',
+        },),
+      ],
+    ],
+  },
+  {
+    name: 'release tag URL decodes an encoded build metadata character',
+    url: 'https://github.com/cli/cli/releases/tag/v1.0%2Bbuild',
+    kind: 'release-notes',
+    attempts: [
+      [
+        required([
+          'release',
+          'view',
+          'v1.0+build',
+          '--repo',
+          'cli/cli',
+        ],),
+      ],
+    ],
+  },
+  {
     name: 'GitHub API URL forwards path and query to gh api',
     url: 'https://api.github.com/repos/cli/cli?per_page=2',
     kind: 'api-endpoint',
@@ -698,6 +755,11 @@ const UNMAPPED_CASES: readonly UnmappedCase[] = [
   {
     name: 'release tag starting with a dash would parse as a gh flag',
     url: 'https://github.com/cli/cli/releases/tag/-rc1',
+    reasonPart: 'would parse as a gh flag',
+  },
+  {
+    name: 'release tag decoding to a leading dash would parse as a gh flag',
+    url: 'https://github.com/cli/cli/releases/tag/%2Drc1',
     reasonPart: 'would parse as a gh flag',
   },
   {
@@ -861,6 +923,38 @@ await describe({
         },),
 
         //endregion Attempt labels
+
+        //region Query encoding
+
+        it({
+          name: 'builds a contents endpoint whose ref query value survives URL parsing',
+          fn: async () => {
+            /**
+             Local value for plan.
+             */
+            const plan = planGitHubFetch({ url: 'https://github.com/cli/cli/blob/topic+one&x=1/README.md', },);
+
+            expect(plan.planned,).toBe(true,);
+            /**
+             Local value for planned.
+             */
+            const planned = plan as PlannedGitHubFetch;
+            /**
+             Local value for endpoint.
+             */
+            const endpoint = planned.attempts[0]?.invocations[0]?.args[3] ?? '';
+            /**
+             Local value for parsed.
+             */
+            const parsed = new URL(`https://api.github.com${endpoint}`,);
+
+            expect(parsed.searchParams.get('ref'),).toBe('topic+one&x=1',);
+            expect(parsed.searchParams.get('x'),).toBe(null,);
+            expect(parsed.pathname,).toBe('/repos/cli/cli/contents/README.md',);
+          },
+        },),
+
+        //endregion Query encoding
       ],
     },),
   ],

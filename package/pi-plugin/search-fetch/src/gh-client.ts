@@ -74,6 +74,11 @@ const ATTEMPT_OUTPUT_SEPARATOR = '\n\n';
  */
 const EXCERPT_TRUNCATION_SUFFIX = '...';
 
+/**
+ gh exit code covering ordinary command failures, including a wrong reference or path split.
+ */
+const GH_RETRYABLE_EXIT_CODE = 1;
+
 //endregion Constants
 
 //region Types
@@ -121,6 +126,10 @@ type InvocationDescription = {
    Safe failure reason.
    */
   readonly reason: string;
+  /**
+   Whether another attempt could plausibly succeed after this failure.
+   */
+  readonly retryable: boolean;
 };
 
 /**
@@ -144,6 +153,10 @@ type AttemptResult = {
    Safe failure reason from the first failed required invocation.
    */
   readonly reason: string;
+  /**
+   Whether another attempt could plausibly succeed after this failure.
+   */
+  readonly retryable: boolean;
 };
 
 //endregion Types
@@ -315,6 +328,10 @@ async function fetchThroughGh(
     }
     innerL.warn(`gh attempt failed: ${attempt.label}: ${result.reason}`,);
     attemptReasons.push(`${attempt.label}: ${result.reason}`,);
+    if (!result.retryable) {
+      innerL.warn(`stopping gh attempts because the failure is not reference or path ambiguity: ${result.reason}`,);
+      break;
+    }
   }
   /* oxlint-enable eslint/no-await-in-loop */
 
@@ -403,16 +420,17 @@ async function runAttempt(
     return {
       succeeded: false,
       reason: requiredFailure.reason,
+      retryable: requiredFailure.retryable,
     };
 
   /**
-   First failed optional invocation, logged because it shortens output.
+   First failed optional invocation, logged because it leaves a visible gap notice in output.
    */
   const optionalFailure = described.find(function findOptionalFailure(entry: InvocationDescription,): boolean {
     return entry.failed && (!entry.required);
   },);
   if (optionalFailure?.failed === true)
-    innerL.warn(`ignoring optional gh invocation failure for ${attempt.label}: ${optionalFailure.reason}`,);
+    innerL.warn(`optional gh invocation failed for ${attempt.label}: ${optionalFailure.reason}`,);
 
   /**
    Non-empty output parts in invocation order.
@@ -439,20 +457,39 @@ async function runAttempt(
  ```
  */
 function entryTextParts(entry: InvocationDescription,): readonly string[] {
-  if (entry.failed)
-    return [];
-
-  /**
-   Output text contributed by this invocation.
-   */
-  const { text, } = entry;
-  return text
-    .trim()
-    === ''
+  if (!entry.failed) {
+    /**
+     Output text contributed by this invocation.
+     */
+    const { text, } = entry;
+    return text === ''
+      ? []
+      : [
+        text,
+      ];
+  }
+  // A required failure already fails the attempt; only an optional failure needs a visible gap notice.
+  return entry.required
     ? []
     : [
-      text,
+      optionalFailureNotice(entry.reason,),
     ];
+}
+
+/**
+ Build one model-visible notice replacing an omitted optional read.
+ 
+ @param reason - safe failure reason from the optional invocation
+ 
+ @returns notice text naming the omission and its cause
+ 
+ @example
+ ```ts
+ optionalFailureNotice('gh needs authentication, run gh auth login or set GH_TOKEN (exit 4)');
+ ```
+ */
+function optionalFailureNotice(reason: string,): string {
+  return `[optional gh read failed, so its output is omitted: ${reason}]`;
 }
 
 /**
@@ -490,6 +527,7 @@ function describeInvocation(
       required: invocation.required,
       failed: true,
       reason: outcome.reason,
+      retryable: false,
     };
   if (outcome.exitCode !== 0)
     return {
@@ -499,11 +537,12 @@ function describeInvocation(
         exitCode: outcome.exitCode,
         stderr: outcome.stderr,
       },),
+      retryable: outcome.exitCode === GH_RETRYABLE_EXIT_CODE,
     };
   return {
     required: invocation.required,
     failed: false,
-    text: outcome.stdoutIsUtf8
+    text: outcome.stdoutIsText
       ? outcome.stdout
       : binaryContentNotice({
         url,

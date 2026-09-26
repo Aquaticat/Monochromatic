@@ -117,9 +117,11 @@ type GhCommandRan = {
    */
   readonly stdout: string;
   /**
-   Whether standard output bytes round-tripped through UTF-8 unchanged.
+   Whether standard output is safe to render as text.
+   
+   False when decoding lost bytes or the payload carries a NUL character.
    */
-  readonly stdoutIsUtf8: boolean;
+  readonly stdoutIsText: boolean;
   /**
    Standard output byte count before decoding.
    */
