@@ -190,7 +190,7 @@ The same candidate therefore still fails D50 during this in-place resize,
 even though both endpoint hierarchies pass.
 
 The recordings and extracted frames stay in private scratch as
-`fixed-height-jump.mp4`,
+`fixed-before-preclear-height-jump.mp4`,
 `auto-apply-logging-only-height-jump.mp4` and their matching private
 frame directories.
 FFmpeg's `image2` muxer reported non-monotonically increasing timestamps
