@@ -5667,6 +5667,36 @@ and the minimum informational clearance from the crease.
 Keep the active review limited to accepted A;
 retain experimental keyboard variants in evidence and debug-only sources.
 
+## Corrected A under real floating Gboard
+
+On 2026-09-26 the disposable AVD's Gboard toolbar exposed its actual
+Floating keyboard action.
+With the corrected retained-browser Search prototype at 200% text,
+that keyboard obscured the end of the deck's `4:35` duration.
+Privileged Window Manager reported a touchable key region
+`[936,1147][1842,1918]`;
+UI Automator placed the duration at `[842,1263][965,1341]`.
+The app's public inset probe instead reported `visible=true`,
+`platformBottom=0`, and `boundingRects=[]`.
+Thus visibility does not locate the floating keys for a responsive deck.
+The unsanitized screenshot is private scratch evidence,
+not a new active-review card.
+The source and measured boundary are in
+`doc/troubleshooting/android-17-fold-emulator-ime-probe.md` and
+`package/music-player/design/evidence/gboard-geometry.md`.
+D50 still fails in this real floating mode;
+no production change or alternative layout has been accepted.
+A later disposable emulator process exited with
+`qemu_thread_create: Resource temporarily unavailable`.
+The user authorized permanent host process-limit changes,
+which are recorded separately in
+`doc/troubleshooting/fedora-44-fold-emulator-user-task-ceiling.md`.
+The disposable container remains capped at 6 GiB/2 CPU.
+A boot check passed after the limit change,
+but it does not establish recurrence or absence of the real font banner.
+Continue the design-only banner and accessibility checks without changing
+accepted A or conflating synthetic sampled-frame passes with real Gboard.
+
 ## Issue tracking moves to Linear for this session
 
 `gh` cannot reach the GitHub API this session:

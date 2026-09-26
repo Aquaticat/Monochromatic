@@ -107,6 +107,20 @@ it is **not** one of the linked sanitized Gboard PNGs.
   playback title `[258,1042][781,1145]`.
   Moving that floating keyboard lower covered more controls.
   The public IME source reported a zero-height bottom inset in this state.
+- A later **disposable AVD** test used the corrected retained-browser
+  Search prototype at 200% text.
+  The actual Gboard Floating keyboard toolbar action displayed keys over
+  the deck's `4:35` duration.
+  UI Automator placed that duration at `[842,1263][965,1341]`;
+  privileged Window Manager reported the floating touch region at
+  `[936,1147][1842,1918]`, so the right edge of the time was obscured.
+  The **app-visible** data was `visible=true`, `platformBottom=0`,
+  `composeBottom=0`, and `boundingRects=[]`.
+  No new IME animation callback appeared for this toggle in the captured log.
+  The unsanitized screenshot remains a private scratch file,
+  not one of the linked review PNGs.
+  See `doc/troubleshooting/android-17-fold-emulator-ime-probe.md`
+  for the source trace and evidence boundary.
 - [Original AVD floating Gboard at 100% cover][floating-cover]:
   real key taps entered `cam`,
   but its x `[0,830)`,
