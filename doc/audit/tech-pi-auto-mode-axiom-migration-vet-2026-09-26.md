@@ -152,6 +152,14 @@ The tested English CPU configuration missed the five-second budget for this meas
 The accepted workflow would yield to manual approval;
 interactive use with that fallback is not ruled out.
 This does not reject every authorized Laya runtime/checkpoint or establish a model-quality ranking.
+A source-supported CPU BF16 variant then returned 0.5339 for the same axiom
+in 152.4031641939655 seconds of inference,
+with 5,656,580,096 bytes peak container memory.
+The precision mode stayed enabled,
+all 12,820 actual input tokens were retained,
+and current policy freshness passed.
+That case also reaches manual approval at five seconds.
+Separate single runs do not establish a quantified speedup or numerical parity.
 No full axiom-batch resource benchmark has passed.
 Axiom-batch fit,
 fine-tuning feasibility,
