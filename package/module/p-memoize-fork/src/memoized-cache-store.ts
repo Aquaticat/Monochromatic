@@ -24,7 +24,10 @@ import type {
  memoizedCacheStore.set(memoized, CACHE_DISABLED,);
  ```
  */
-export const CACHE_DISABLED: unique symbol = Symbol('memoized function caches nothing');
+export const CACHE_DISABLED: unique symbol = Symbol(
+  // mutation-test-disable-next-line string -- the description is debugging metadata only; consumers narrow by symbol identity
+  'memoized function caches nothing',
+);
 
 //endregion Sentinels
 

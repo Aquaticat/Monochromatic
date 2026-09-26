@@ -186,6 +186,7 @@ export function changePrototype({
    */
   const fromPrototype = Reflect.getPrototypeOf(from,);
 
+  // mutation-test-disable-next-line conditional -- re-setting an identical prototype is a no-op on every runtime; the guard is a pure fast path
   if (fromPrototype === Reflect.getPrototypeOf(to,))
     return;
 
@@ -284,6 +285,7 @@ export function changeToString({
     'name',
   );
 
+  // mutation-test-disable-next-line conditional -- every function carries a name descriptor, so the guard is unreachable; it exists to fail loud if that invariant breaks
   if (wrapperNameDescriptor === undefined)
     throw new PropertyDescriptorMissingError();
 
@@ -306,8 +308,11 @@ export function changeToString({
    */
   const replacementDescriptor: PropertyDescriptor = {
     value: newToString,
+    // mutation-test-disable-next-line boolean -- `Function.prototype.toString` always carries full data-descriptor flags, so this fallback is unreachable on conforming runtimes
     writable: TOSTRING_DESCRIPTOR.writable ?? false,
+    // mutation-test-disable-next-line boolean -- same unreachable fallback as `writable` above
     enumerable: TOSTRING_DESCRIPTOR.enumerable ?? false,
+    // mutation-test-disable-next-line boolean -- same unreachable fallback as `writable` above
     configurable: TOSTRING_DESCRIPTOR.configurable ?? false,
   };
 

@@ -364,6 +364,24 @@ await describe({
     },),
 
     it({
+      name: 'keeps the wrapper toString marker and copies the source name',
+      fn: async () => {
+        /**
+         Wrapped function whose identity the wrapper adopts.
+         */
+        async function fixture(): Promise<number> {
+          return 1;
+        }
+        const memoized = pMemoize({
+          fn: fixture,
+        },);
+
+        expect(memoized.toString(),).toBe(`/* Wrapped with memoized() */\n${fixture.toString()}`,);
+        expect(memoized.name,).toBe('fixture',);
+      },
+    },),
+
+    it({
       name: 'types the memoized function as MemoizedFunction and calls as MemoizedCall',
       fn: async () => {
         /**

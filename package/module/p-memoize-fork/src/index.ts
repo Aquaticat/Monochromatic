@@ -58,3 +58,10 @@ export {
 export {
   pMemoizeClear,
 } from './p-memoize-clear.ts';
+
+// Exported for built-artifact tests: the function-identity copy's legal,
+// skipped, and default-flag paths are only observable with hand-crafted
+// source and target properties.
+export {
+  mimicFunction,
+} from './mimic-function.ts';

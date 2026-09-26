@@ -374,6 +374,7 @@ export function pMemoize<
       },
     ),
     from: fn,
+    // mutation-test-disable-next-line boolean -- the wrapper is always a fresh function whose own properties are a configurable `name` and the skipped `length`/`prototype`, so no copy can conflict; the flag's behavior is pinned by direct `mimicFunction` tests
     ignoreNonConfigurable: true,
   },);
 
