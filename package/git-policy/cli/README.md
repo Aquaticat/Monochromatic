@@ -367,7 +367,8 @@ and reports them in a `replay-headers-dropped` event;
 consumers ignore event types they do not recognize.
 
 Cli-git sets `core.lockfilePid=true` for the Git it runs,
-so Git records who holds `index.lock`.
+so Git 2.54.0 and later records who holds `index.lock`;
+older Git leaves no such record.
 A lock whose owner is proven alive gets an unbounded wait with one stderr line naming the holder.
 A lock with a dead or unproven owner is retried with backoff for `indexLock.unprovenOwnerTimeoutMs`,
 then reported as `index-lock-unproven-owner` with exit `2` and the evidence collected.
