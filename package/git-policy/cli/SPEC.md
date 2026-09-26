@@ -2056,11 +2056,13 @@ Hooks running during preparation observe:
   so a hook that rejects commits to a protected branch still rejects them;
 - the shadow as `git rev-parse --git-dir`
   and the private commit index as `GIT_INDEX_FILE`;
-- only the refs of the shadow ref store,
-  so another ref,
-  such as a tag or another branch,
-  does not resolve in the shadow,
-  and a hook's `git stash` writes the shadow's private `refs/stash`.
+- the shadow ref store's snapshot of every real ref at invocation,
+  so tags,
+  other branches,
+  and remote-tracking refs resolve as they stood at invocation;
+- a private `refs/stash`,
+  so a hook's `git stash` never touches the real stash list,
+  although it still rewrites shared worktree files.
 
 Culled shapes,
 with the prototype evidence:
