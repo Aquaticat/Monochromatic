@@ -291,7 +291,10 @@ export function restoreTypography(
    Straight single quotation pairs, curled with the apostrophes they share a
    convention with (class one hundred forty-seven).
    */
-  const pairs = wantsCurlyApostrophe
+  const {
+    openings,
+    closings,
+  } = wantsCurlyApostrophe
     ? nestedSinglePairs({
       text: replacement,
       mask,
@@ -309,7 +312,7 @@ export function restoreTypography(
     && ((countOpeningSingles({
       text: replacement,
       mask,
-    },) - pairs.openings.size) === 0);
+    },) - openings.size) === 0);
 
   return (function scan(): string {
     /**
@@ -330,11 +333,11 @@ export function restoreTypography(
         rebuilt.push(character,);
         continue;
       }
-      if (pairs.openings.has(index,)) {
+      if (openings.has(index,)) {
         rebuilt.push(CURLY_OPEN_SINGLE,);
         continue;
       }
-      if (pairs.closings.has(index,)) {
+      if (closings.has(index,)) {
         rebuilt.push(CURLY_APOSTROPHE,);
         continue;
       }

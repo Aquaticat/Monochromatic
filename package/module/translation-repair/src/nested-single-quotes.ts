@@ -111,7 +111,7 @@ function singleShape(
     at: at + 1,
   },), },);
   if (boundAfter)
-    return (!bindsWord({ character: before, },) && opensAfter({ character: before, },)) ? 'opening' : 'neither';
+    return ((!bindsWord({ character: before, },)) && opensAfter({ character: before, },)) ? 'opening' : 'neither';
   return (before.trim() === '') ? 'neither' : 'closing';
 }
 
@@ -148,34 +148,36 @@ export function nestedSinglePairs(
    Paired closing offsets.
    */
   const closings = new Set<number>();
-  /**
-   Offset of the opening mark waiting for its partner, -1 for none.
-   */
-  let open = -1;
-  for (let index = 0; index < text.length; index += 1) {
+  (function scan(): void {
     /**
-     Unit under the scan.
+     Offset of the opening mark waiting for its partner, -1 for none.
      */
-    const character = text.charAt(index,);
-    if (character === LINE_END)
-      open = -1;
-    if ((mask[index] !== true) || (character !== STRAIGHT_SINGLE))
-      continue;
-    /**
-     How the quote reads.
-     */
-    const shape = singleShape({
-      text,
-      at: index,
-    },);
-    if (shape === 'opening')
-      open = index;
-    if ((shape === 'closing') && (open !== (-1))) {
-      openings.add(open,);
-      closings.add(index,);
-      open = -1;
+    let open = -1;
+    for (let index = 0; index < text.length; index += 1) {
+      /**
+       Unit under the scan.
+       */
+      const character = text.charAt(index,);
+      if (character === LINE_END)
+        open = -1;
+      if ((mask[index] !== true) || (character !== STRAIGHT_SINGLE))
+        continue;
+      /**
+       How the quote reads.
+       */
+      const shape = singleShape({
+        text,
+        at: index,
+      },);
+      if (shape === 'opening')
+        open = index;
+      if ((shape === 'closing') && (open !== (-1))) {
+        openings.add(open,);
+        closings.add(index,);
+        open = -1;
+      }
     }
-  }
+  })();
   return {
     openings,
     closings,
