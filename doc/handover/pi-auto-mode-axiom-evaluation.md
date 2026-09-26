@@ -346,10 +346,14 @@ It included the Voyage fit and troubleshooting documents,
 current audit,
 and handover.
 The subsequent citation/checkpoint edit passed the inspected eleven-document check `proc_3a0f`.
-The newer Pi lifecycle findings and contract questions need their own scoped check.
-Q14 asks whether reset is session-wide across branches or remains branch-local.
-Q15 asks whether an ordinary session-scoped grant needs new confirmation in a new fork
-or can inherit through verified lineage.
+The Pi lifecycle findings passed the inspected eleven-document check `proc_1490`.
+A final scope clarification distinguishes reusable trust directives from exact-action approvals.
+Q14 asks whether trust-directive reset is session-wide across branches or remains branch-local;
+already-forked sessions are outside that question.
+Q15 asks whether an ordinary session-scoped trust directive needs new confirmation in a new forked session ID
+or can inherit through verified lineage plus a valid original human witness.
+Q9b's prose matching does not settle inheritance.
+The in-memory probe does not qualify persisted replay.
 A is recommended for both,
 with benefits,
 tradeoffs,

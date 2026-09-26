@@ -351,8 +351,18 @@ No production revocation or inheritance policy was selected by this observation.
 
 ### Grant lifetime questions awaiting confirmation
 
-Q14 asks whether a reset revokes matching prior grants across the same session's branches
+These questions concern reusable trust directives from `/guard` and `propose_trust`,
+not separate exact-action approval records.
+Every option requires verifiable original human confirmation;
+lineage alone cannot supply that witness.
+The current `/guard reset` appends a null trust entry,
+while exact-action approvals are read separately by `getReusableApproval()`.
+These questions do not silently expand reset to those approval records.
+
+Q14 asks whether reset revokes prior trust directives across the same session's branches
 or only on the active history path.
+The same session means the same session ID;
+already-forked sessions are outside this question.
 
 - A,
   session-wide revocation:
@@ -369,7 +379,13 @@ because keeping an explicit reset effective across navigation is preferable to r
 This is a recommendation,
 not an adopted change.
 
-Q15 independently asks about an ordinary session-scoped grant in a forked session:
+Q15 independently asks about an ordinary session-scoped trust directive in a new forked session,
+with a new session ID,
+not ordinary branch navigation within the same session.
+The in-memory fork-method probe copied the directive;
+persisted replay remains unqualified.
+Q9b settles semantic prose matching,
+not this lifetime question:
 
 - A,
   new confirmation:
