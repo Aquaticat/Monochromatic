@@ -4777,10 +4777,16 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASS ONE HUNDRED FORTY-EIGHT IN PROGRESS (2026-09-26): cut a Bedrock Gemma call at a bound measured per model
-    and hold the model out, so a round stops waiting on a stream held in Bedrock's queue;
-    then relaunch hulicaijia for class one hundred forty-four, which still needs an accepted
-    `accuracy/addition` claim on chunk 69 to be exercised.
+1.  CLASS ONE HUNDRED FORTY-EIGHT BUILT (2026-09-26), READ HULICAIJIA30 NEXT:
+    a Bedrock Gemma call is cut at its card's measured `streamBoundMs`
+    (60,000 ms on `google.gemma-4-e2b` and `google.gemma-4-26b-a4b`, `'unbounded'` elsewhere),
+    and the router holds that provider out for that model for the model hold
+    (`stream-bound.ts`, `stream-bound-hold.ts`, `provider-router.ts`, `bedrock-client.ts`);
+    guard red first `2691bdf56`, fixed `1f3d85c29`, inventory `18d410df4`
+    (the full suite was red at `1f3d85c29` on `message-names-only.unit.test.ts`), lint 0/0, types clean.
+    hulicaijia30 launched 07:31 UTC on `.frozen-dist-1f3d85c29` (pid 3774525, scope `pass-hulicaijia30`):
+    read it for `ran past the card's stream bound` lines and for class one hundred forty-four,
+    which still needs an accepted `accuracy/addition` claim on chunk 69 to be exercised.
     HULICAIJIA29 READ (frozen `f31fd2ec5`): SETTLED at 07:09 UTC 2026-09-26 in 85.0 min, about 3.06 USD;
     every hulicaijia28 check held, footnote 7's note on the page;
     class one hundred forty-four NOT exercised (no issue filed on chunk 69; the slate kept the note 3 to 2);
