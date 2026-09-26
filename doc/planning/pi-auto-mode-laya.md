@@ -5,20 +5,25 @@
 Design interview in progress.
 The user requested migration to [Laya][] and explicitly requested grilling before implementation.
 Do not implement until shared understanding is confirmed.
-No dependency, production configuration, or runtime changes have been made for this task.
+No dependency,
+ production configuration,
+ or runtime changes have been made for this task.
 
 Current authorized scope is Laya plus relevant Voyage products and models,
 including rerank-3.
 The user supplied a Voyage API key through mise and explicitly expanded the scope.
 Other vendor alternatives remain outside scope.
 
-Before the Voyage expansion, the user restricted research explicitly:
+Before the Voyage expansion,
+ the user restricted research explicitly:
 
-> Only look at Laya. No alternatives.
+> Only look at Laya.
+>  No alternatives.
 
 That restriction applied until the explicit Voyage authorization.
 Do not use the Voyage expansion to start an unrestricted vendor survey.
-The incumbent remains a responsibility/parity baseline, not a competing candidate.
+The incumbent remains a responsibility/parity baseline,
+ not a competing candidate.
 
 [Laya]: https://github.com/NandhaKishorM/laya
 
@@ -30,30 +35,42 @@ The user's answer to Q1:
 
 Cost and provider-facing request patterns are the target.
 The initial assistant suggestion about autonomous task completion was not the user's stated objective.
-Auto-mode is a tool-call safety guard, not task-completion orchestration.
+Auto-mode is a tool-call safety guard,
+ not task-completion orchestration.
 
 ## Evidence gathered
 
-`package/pi-plugin/auto-mode/README.md` describes the current flagger, judge, and approval pipeline.
+`package/pi-plugin/auto-mode/README.md` describes the current flagger,
+ judge,
+ and approval pipeline.
 `package/pi-plugin/auto-mode/src/evaluate.ts` checks reusable session approvals before resolving a judge model.
 It asks the user when model resolution or judging fails.
 `package/pi-plugin/auto-mode/src/judge.ts` sends structured-tool requests through shared model-review code
 and retries using direct JSON when no verdict tool call appears.
 These paths are relevant to request volume and request shape.
-Actual provider call counts, costs, and account-policy implications have not been measured.
+Actual provider call counts,
+ costs,
+ and account-policy implications have not been measured.
 
 The current upstream Laya README advertises typed decisions rather than generated explanations.
-It also documents input-window limits, overconfidence, and negation failures.
-These are upstream statements, not local runtime validation.
+It also documents input-window limits,
+ overconfidence,
+ and negation failures.
+These are upstream statements,
+ not local runtime validation.
 They motivate source inspection and guard-specific evaluation before adoption.
-No claim of safety parity, cost savings, or adequate local performance has been established.
+No claim of safety parity,
+ cost savings,
+ or adequate local performance has been established.
 
 ## Decision frontier
 
 ### Q2: Provider boundary
 
-Settled: A.
-Auto-mode must make zero coding-plan judge requests, including fallback.
+Settled:
+ A.
+Auto-mode must make zero coding-plan judge requests,
+ including fallback.
 The main coding agent's normal provider traffic is outside this boundary.
 No coding-plan provider may be a judge fallback.
 The later Voyage authorization permits evaluating Voyage,
@@ -62,7 +79,8 @@ Manual approval remains an accepted safe fallback.
 
 ### Q3: Safety and interruption tradeoff
 
-Settled: A.
+Settled:
+ A.
 Additional manual approvals are acceptable when needed to preserve safety.
 Cutover does not require retaining the current level of automatic handling.
 Keep deterministic safety checks and require human approval when the local decision lacks validated support.
@@ -70,13 +88,15 @@ Do not treat model confidence alone as proof of safe authorization.
 
 ### Q4: Deployment scope
 
-Settled: A.
+Settled:
+ A.
 Target this Linux workstation first.
 Do not make validation on other Pi hosts a first-cutover requirement.
 
 ### Q5: Evaluation data
 
-Settled: A.
+Settled:
+ A.
 The user authorizes local inspection of existing Pi session histories
 and retaining redacted guard-action examples alongside synthetic/adversarial cases.
 Do not upload session data or commit raw histories.
@@ -92,11 +112,16 @@ They supplied a different path:
 > You can look at the decisions Laya would've made yourself.
 
 Proceed with assistant-led offline evaluation before returning to cutover decisions.
-Derive synthetic cases from local histories, label expected decisions independently,
-run Laya, and inspect its counterfactual decisions and mistakes.
+Derive synthetic cases from local histories,
+ label expected decisions independently,
+run Laya,
+ and inspect its counterfactual decisions and mistakes.
 Do not require the user to supervise a live shadow rollout to collect the initial evidence.
 Neither incumbent verdicts nor Laya output are ground truth.
-This authorizes evaluation, not product changes, fine-tuning, or a completed cutover design.
+This authorizes evaluation,
+ not product changes,
+ fine-tuning,
+ or a completed cutover design.
 
 ### Fine-tuning scope
 
@@ -106,9 +131,12 @@ The user added:
 
 Fine-tuning is an eligible follow-up if baseline errors warrant it.
 Do not assume the user requires pretrained-only integration.
-This expresses openness, not a decision to start training or use paid/external compute.
+This expresses openness,
+ not a decision to start training or use paid/external compute.
 Existing no-upload and no-raw-history-commit boundaries remain active.
-Split synthetic examples by source scenario into training, calibration, and frozen held-out groups;
+Split synthetic examples by source scenario into training,
+ calibration,
+ and frozen held-out groups;
 paraphrases of the same case must not leak across those groups.
 Establish the baseline before tuning and evaluate any trained result on unseen cases.
 
@@ -119,9 +147,13 @@ The user added this hard requirement:
 > Laya must receive the full current AGENTS.md .
 
 Every evaluated migration decision must include the complete current repository `AGENTS.md`.
-No summary, filtered subset, or silent tokenizer truncation satisfies this requirement.
+No summary,
+ filtered subset,
+ or silent tokenizer truncation satisfies this requirement.
 Passing the full string into an API that truncates it internally is not full model coverage.
-Measure actual tokens for the file plus question prefix, complete current action, and required context.
+Measure actual tokens for the file plus question prefix,
+ complete current action,
+ and required context.
 Record the snapshot hash and re-read current content rather than keeping an obsolete startup snapshot.
 Do not substitute separately windowed policy fragments without resolving whether that preserves the requirement.
 
@@ -144,12 +176,19 @@ The supplied resource was verified before unrelated work:
 - First-party client loaded the key through root `mise exec --fresh-env`,
   with `--allow-env AUTO_MODE_VOYAGE_API_KEY` and no key on the command line.
 - One POST to `https://api.voyageai.com/v1/rerank` requested `rerank-3`,
-  `truncation: false`, and 2 non-sensitive synthetic retrieval documents.
+  `truncation: false`,
+   and 2 non-sensitive synthetic retrieval documents.
 - HTTP 200 returned model `rerank-3` and the expected top document.
-- Token usage: 37; one observed request duration: 538.507885 milliseconds.
-  This is an access/positive-control result, not guard accuracy or a latency distribution.
+- Token usage:
+   37;
+   one observed request duration:
+   538.507885 milliseconds.
+  This is an access/positive-control result,
+   not guard accuracy or a latency distribution.
 - No fallback model request was needed.
-- No key, private transcript, or full policy was transmitted in this connectivity probe.
+- No key,
+   private transcript,
+   or full policy was transmitted in this connectivity probe.
 - Process `proc_37ac` exited 0;
   sanitized observations are in `~/temp/agent/voyage-auto-mode-probe-2026-09-26/results.json`.
 
@@ -159,22 +198,37 @@ while the live requested model call succeeded.
 MongoDB's current [reranker page](https://www.mongodb.com/docs/voyageai/models/rerankers/)
 lists rerank-3 with a 32,000-token context.
 Its [lifecycle page](https://www.mongodb.com/docs/voyageai/models/lifecycle/)
-labels rerank-3 Preview, with a 1 September 2026 release entry.
+labels rerank-3 Preview,
+ with a 1 September 2026 release entry.
 That lifecycle policy explicitly covers `ai.mongodb.com` and excludes legacy `api.voyageai.com`.
-Do not silently apply Atlas support, pricing, retention, or account terms to the verified legacy endpoint.
+Do not silently apply Atlas support,
+ pricing,
+ retention,
+ or account terms to the verified legacy endpoint.
 Request-limit and data-handling verification for the actual endpoint remain open.
 
 The [current model overview](https://www.mongodb.com/docs/voyageai/models/)
-identifies text/code embeddings, contextualized chunk embeddings, multimodal embeddings, and rerankers.
-These are discovery facts, not recommendations or proof that retrieval scores are safe permission judgments.
+identifies text/code embeddings,
+ contextualized chunk embeddings,
+ multimodal embeddings,
+ and rerankers.
+These are discovery facts,
+ not recommendations or proof that retrieval scores are safe permission judgments.
 Embedding retrieval must not replace or filter the mandatory full policy input.
 
 ## Existing GitHub issues
 
 Checked open and closed issues in `Aquaticat/Monochromatic` on 2026-09-26.
-GitHub search queried title, body, and comments for:
-`"auto-mode"`, `"auto mode"`, `guardrail`, `safeguard`, `judge`,
-`"budget-model-auth"`, and `"ProviderHeaders"`.
+GitHub search queried title,
+ body,
+ and comments for:
+`"auto-mode"`,
+ `"auto mode"`,
+ `guardrail`,
+ `safeguard`,
+ `judge`,
+`"budget-model-auth"`,
+ and `"ProviderHeaders"`.
 Each query used `per_page=100` with pagination;
 GitHub returned `incomplete_results=false` and fewer than a page of results for each.
 Relevant issue bodies and comments were read.
@@ -184,13 +238,26 @@ No issues were mutated.
 
 [Issue #558](https://github.com/Aquaticat/Monochromatic/issues/558) is open.
 It explicitly says to try Laya locally on CPU first.
-Its migration checklist covers call volume, input sizes, spend, retries, latency,
-verdicts, explanations, manual approval, trust directives, fallback,
-complete context, images, context limits, and adversarial safety cases.
+Its migration checklist covers call volume,
+ input sizes,
+ spend,
+ retries,
+ latency,
+verdicts,
+ explanations,
+ manual approval,
+ trust directives,
+ fallback,
+complete context,
+ images,
+ context limits,
+ and adversarial safety cases.
 Carry this checklist into the migration acceptance ledger.
 Its historical Jev comparison and TypeSafe-terms work remain excluded;
-the user's later scope expansion names Voyage, not TypeSafe.
-The sole comment is a Linear backlink, not additional requirements.
+the user's later scope expansion names Voyage,
+ not TypeSafe.
+The sole comment is a Linear backlink,
+ not additional requirements.
 
 ### #279: Non-hermetic skill allowlist fixtures
 
@@ -199,7 +266,8 @@ Current source still has maintainer-local fixture paths:
 `package/pi-plugin/auto-mode/src/signals.unit.test.ts:107-120`
 and `package/pi-plugin/auto-mode/src/index.unit.test.ts:371-420`.
 These tests do not construct the named skill files.
-This is current source confirmation of the fixture dependency, not a fresh reproduction of failure.
+This is current source confirmation of the fixture dependency,
+ not a fresh reproduction of failure.
 The migration's verification must use real disposable skill directories
 and complete mock session contexts rather than treating a pass on this workstation as portability proof.
 Do not weaken the canonical-path fail-closed behavior.
@@ -210,7 +278,9 @@ Do not weaken the canonical-path fail-closed behavior.
 It is not evidence that current auto-mode has that same defect.
 `package/pi-plugin/auto-mode/src/path-signals.ts:69-73` documents removal of the system-path test;
 `src/signals.unit.test.ts:67-78` covers paths under `/var/home` within the project.
-Keep home alias, canonical containment, and secret-path behavior in the parity suite.
+Keep home alias,
+ canonical containment,
+ and secret-path behavior in the parity suite.
 No pi-safeguard evaluation or upstream tracking was initiated.
 
 ### Closed issues and excluded matches
@@ -227,7 +297,8 @@ No pi-safeguard evaluation or upstream tracking was initiated.
   closed after fixing runtime peer installation and verifying an isolated consumer.
   Repeat isolated installation/import checks for the migrated extension.
 - [#254](https://github.com/Aquaticat/Monochromatic/issues/254):
-  closed logger-lifecycle work; its follow-up does not name auto-mode as a remaining consumer.
+  closed logger-lifecycle work;
+   its follow-up does not name auto-mode as a remaining consumer.
   A current auto-mode source search found no `initPromise` references.
 - [#359](https://github.com/Aquaticat/Monochromatic/issues/359):
   the build override was recorded as removed and verified.
@@ -235,168 +306,315 @@ No pi-safeguard evaluation or upstream tracking was initiated.
   searches for that diagnostic and `budget-model-auth` found only #359,
   so no separate issue or current failure was established.
 - [#291](https://github.com/Aquaticat/Monochromatic/issues/291):
-  API-mock work names other Pi plugins, not auto-mode.
+  API-mock work names other Pi plugins,
+   not auto-mode.
   Do not conflate the distinct `guardrail` package with this package.
 - [#391](https://github.com/Aquaticat/Monochromatic/issues/391):
-  subagent model-class policy, not guard-judge migration.
-- Other search matches concern repository-wide lint, catalog, scaffolding, or unrelated tool guards.
+  subagent model-class policy,
+   not guard-judge migration.
+- Other search matches concern repository-wide lint,
+   catalog,
+   scaffolding,
+   or unrelated tool guards.
   They are not additional auto-mode behavior requirements.
 
 ## Incumbent responsibility ledger
 
-This maps current ownership, proposed disposition, and verification surfaces.
+This maps current ownership,
+ proposed disposition,
+ and verification surfaces.
 It does not claim any migration code or tests have run.
 The final user-facing policy is still being interviewed.
 
 ### Static safety and path handling
 
-Current owner: `src/signals.ts`, `src/path-signals.ts`, shell-analysis helpers,
-read-only command proofs, scratch/skill/worktree allowlists, and `src/virtual-input-guard.ts`.
-Proposed disposition: retain outside Laya; a model must not override the fixed virtual-input block.
-Preserve canonical paths, symlink-escape checks, secret-path checks, and read-versus-write distinctions.
-Parity: `signals`, `command-parser`, `temp-allowlist`, `git-worktree-read-allowlist`,
-`virtual-input-guard`, and `static-guard-import` unit suites.
+Current owner:
+ `src/signals.ts`,
+ `src/path-signals.ts`,
+ shell-analysis helpers,
+read-only command proofs,
+ scratch/skill/worktree allowlists,
+ and `src/virtual-input-guard.ts`.
+Proposed disposition:
+ retain outside Laya;
+ a model must not override the fixed virtual-input block.
+Preserve canonical paths,
+ symlink-escape checks,
+ secret-path checks,
+ and read-versus-write distinctions.
+Parity:
+ `signals`,
+ `command-parser`,
+ `temp-allowlist`,
+ `git-worktree-read-allowlist`,
+`virtual-input-guard`,
+ and `static-guard-import` unit suites.
 Correct the #279 fixture dependency when implementing the affected test changes.
 
 ### Lifecycle, batch context, and denial follow-ups
 
-Current owner: `src/index.ts`.
-It captures loaded context/skills, tracks turn siblings and previous denial,
-retains project context across retry boundaries, and clears settled-run state.
-Proposed disposition: preserve lifecycle and denial sensitivity in the extension.
+Current owner:
+ `src/index.ts`.
+It captures loaded context/skills,
+ tracks turn siblings and previous denial,
+retains project context across retry boundaries,
+ and clears settled-run state.
+Proposed disposition:
+ preserve lifecycle and denial sensitivity in the extension.
 Laya input eligibility must not silently discard context needed for the current decision.
-Parity: `index.unit.test.ts`, `context.unit.test.ts`, plus new overflow and missing-evidence cases.
+Parity:
+ `index.unit.test.ts`,
+ `context.unit.test.ts`,
+ plus new overflow and missing-evidence cases.
 
 ### Session approvals and trust rules
 
-Current owner: `src/context.ts`, `src/tool-helpers.ts`, `src/guard-command.ts`,
+Current owner:
+ `src/context.ts`,
+ `src/tool-helpers.ts`,
+ `src/guard-command.ts`,
 and `src/register-propose-trust.ts`.
 Existing exact approvals use action plus input/cwd/project-context fingerprint;
-read ranges share path scope, while different edit/write payloads do not.
+read ranges share path scope,
+ while different edit/write payloads do not.
 Trust rules are session-branch-local prose interpreted by the judge.
-Proposed disposition: retain explicit approval and reset/replay boundaries.
+Proposed disposition:
+ retain explicit approval and reset/replay boundaries.
 The local interpretation of arbitrary prose trust rules remains a design question.
 Migration needs an explicit rule for historical machine-approved verdict reuse
 rather than silently treating a different judge policy as the same authorization.
-Parity: `context`, `context-trust`, `tool-helpers`, `register-propose-trust`, and `evaluate` unit suites.
+Parity:
+ `context`,
+ `context-trust`,
+ `tool-helpers`,
+ `register-propose-trust`,
+ and `evaluate` unit suites.
 
 ### Bypass and manual approval
 
-Current owner: `src/bypass.ts`, `src/ask-user.ts`, and lifecycle wiring in `src/index.ts`.
-Proposed disposition: retain explicit user bypass, audit entries, status, Allow/Deny/Stop,
-notification failure handling, and headless refusal/report-to-parent behavior.
+Current owner:
+ `src/bypass.ts`,
+ `src/ask-user.ts`,
+ and lifecycle wiring in `src/index.ts`.
+Proposed disposition:
+ retain explicit user bypass,
+ audit entries,
+ status,
+ Allow/Deny/Stop,
+notification failure handling,
+ and headless refusal/report-to-parent behavior.
 The virtual-input guard remains active during bypass.
-Parity: `index-bypass`, `ask-user`, `update-widget`, and `model-feedback` unit suites.
+Parity:
+ `index-bypass`,
+ `ask-user`,
+ `update-widget`,
+ and `model-feedback` unit suites.
 
 ### Remote judge transport and selection
 
-Current owner: `src/evaluate.ts`, `src/judge.ts`, `src/judge-fallback.ts`,
-`src/budget-model*.ts`, `src/judge-call-history.ts`, and shared review/selection packages.
-Proposed disposition: remove auto-mode's provider selection, authentication, forced-tool requests,
-JSON retries, remote fallback race, and provider-health selection machinery from its active path.
+Current owner:
+ `src/evaluate.ts`,
+ `src/judge.ts`,
+ `src/judge-fallback.ts`,
+`src/budget-model*.ts`,
+ `src/judge-call-history.ts`,
+ and shared review/selection packages.
+Proposed disposition:
+ remove auto-mode's provider selection,
+ authentication,
+ forced-tool requests,
+JSON retries,
+ remote fallback race,
+ and provider-health selection machinery from its active path.
 A Laya adapter and manual fallback would own local decision availability.
 Shared review code is also consumed by `package/pi-plugin/goal/package.json`;
 do not remove or change that other consumer as part of this migration.
-Parity: replace transport-specific tests with zero-provider-call, timeout, malformed-result,
-unavailable-runtime, cancellation, and local-result validation tests.
+Parity:
+ replace transport-specific tests with zero-provider-call,
+ timeout,
+ malformed-result,
+unavailable-runtime,
+ cancellation,
+ and local-result validation tests.
 
 ### Verdicts, explanations, and evidence
 
-Current owner: `src/judge-tool.ts`, `src/judge-json.ts`, `src/system-prompt.ts`,
-`src/judge-messages.ts`, `src/visible-context.ts`, and `src/types.ts`.
+Current owner:
+ `src/judge-tool.ts`,
+ `src/judge-json.ts`,
+ `src/system-prompt.ts`,
+`src/judge-messages.ts`,
+ `src/visible-context.ts`,
+ and `src/types.ts`.
 Incumbent verdicts include generated reason/guidance and can receive image-bearing context.
 Laya's typed output is not a generated explanation or proof that omitted context is irrelevant.
-Proposed owner: extension-owned policy/result validation and factual reason templates,
+Proposed owner:
+ extension-owned policy/result validation and factual reason templates,
 with Laya supplying only evaluated typed decisions.
-Selection status: final authority and eligibility rules remain open.
-Parity: #558 checklist plus long inputs, negation, hostile tool text,
-rephrased denied goals, images, unsupported schema, and incomplete policy/context cases.
+Selection status:
+ final authority and eligibility rules remain open.
+Parity:
+ #558 checklist plus long inputs,
+ negation,
+ hostile tool text,
+rephrased denied goals,
+ images,
+ unsupported schema,
+ and incomplete policy/context cases.
 
 ### Packaging and host integration
 
-Current owner: `package.json`, `mise.toml`, build configuration, and exported extension factory.
-Runtime install boundary: published package loaded by Pi;
+Current owner:
+ `package.json`,
+ `mise.toml`,
+ build configuration,
+ and exported extension factory.
+Runtime install boundary:
+ published package loaded by Pi;
 `package/config/pnpr/config.yaml` references the package.
 Public named exports in `src/public-api.ts` expose verification seams as well as policy helpers.
 Repository text searches found test consumers for named auto-mode exports,
 not an independent production caller of its judge functions.
-Proposed disposition: preserve the extension's host registration and package ownership.
-Parity: isolated install/import, actual Pi tool calls, type lint,
-module-test unit suites, and scoped lint/build tasks.
+Proposed disposition:
+ preserve the extension's host registration and package ownership.
+Parity:
+ isolated install/import,
+ actual Pi tool calls,
+ type lint,
+module-test unit suites,
+ and scoped lint/build tasks.
 
 ## Historical sample
 
-After Q5 authorization, a metadata inventory found 1,499 project session files.
+After Q5 authorization,
+ a metadata inventory found 1,499 project session files.
 A bounded newest-first sample selected 24 files that were not modified in the preceding 120 seconds,
-each at most 16 MiB, with a total-read cap of 64 MiB.
-Actual read size: 48,793,354 bytes; 10,437 parsed JSONL records; no malformed records.
+each at most 16 MiB,
+ with a total-read cap of 64 MiB.
+Actual read size:
+ 48,793,354 bytes;
+ 10,437 parsed JSONL records;
+ no malformed records.
 
 Observed custom guard records in that sample:
 
-- 877 verdict entries: 685 `approve`, 9 `user-approve`, and 183 `user-deny`.
+- 877 verdict entries:
+   685 `approve`,
+   9 `user-approve`,
+   and 183 `user-deny`.
 - 35 verdicts explicitly marked as approval reuse.
 - 182 records with the exact reason `no UI`.
 - 1 trust directive and 1,837 bypass records.
 
-These are sampled archival entries, not remote request counts, cost figures, or ground-truth safety labels.
-Forks, repeated approvals, provider retries, and transport usage prevent those equivalences.
-The sample excludes larger and recently modified sessions; it is not representative proof of the whole workload.
-Headless behavior therefore needs explicit coverage, not a blanket promise that every fallback can show a prompt.
+These are sampled archival entries,
+ not remote request counts,
+ cost figures,
+ or ground-truth safety labels.
+Forks,
+ repeated approvals,
+ provider retries,
+ and transport usage prevent those equivalences.
+The sample excludes larger and recently modified sessions;
+ it is not representative proof of the whole workload.
+Headless behavior therefore needs explicit coverage,
+ not a blanket promise that every fallback can show a prompt.
 
 The script and path-only sample manifest remain in private scratch:
 `~/temp/agent/laya-guard-history-summary.mjs`
 and `~/temp/agent/laya-guard-history-sample-manifest.json`.
-No raw action, reason, trust text, or transcript was printed or committed by this probe.
+No raw action,
+ reason,
+ trust text,
+ or transcript was printed or committed by this probe.
 
 ## Offline evaluation preparation
 
 ### Synthetic diagnostic corpus
 
 Prepared private scratch `laya-auto-mode-eval-2026-09-26/corpus-v3.json` before running Laya.
-SHA-256: `23f541af9a4518dde90131dd413c07daec276091d023f59a6d4997cfd0591d86`.
-It contains 59 cases: 35 development and 24 reserved cases;
-reference targets are 29 approve, 10 deny, and 20 ask.
-Question schemas are predeclared semantic labels, opaque labels, and reversed semantic-label order.
+SHA-256:
+ `23f541af9a4518dde90131dd413c07daec276091d023f59a6d4997cfd0591d86`.
+It contains 59 cases:
+ 35 development and 24 reserved cases;
+reference targets are 29 approve,
+ 10 deny,
+ and 20 ask.
+Question schemas are predeclared semantic labels,
+ opaque labels,
+ and reversed semantic-label order.
 No fixture command will be executed.
 
 A second private history pass skipped 3 sample files whose sizes changed,
 then inspected 21 unchanged files.
-It found action-shape signals for scratch inspection, Git reads/mutations, GitHub reads,
-container runs, inline interpreters, permissions, deletion, secrets, downloads, installs, and file reads.
+It found action-shape signals for scratch inspection,
+ Git reads/mutations,
+ GitHub reads,
+container runs,
+ inline interpreters,
+ permissions,
+ deletion,
+ secrets,
+ downloads,
+ installs,
+ and file reads.
 Literal matches can overlap or occur inside quoted code;
-these are discovery signals, not a production traffic distribution or independent safety labels.
-The synthetic cases replace all account paths, repository names, URLs, and content rather than copying history.
+these are discovery signals,
+ not a production traffic distribution or independent safety labels.
+The synthetic cases replace all account paths,
+ repository names,
+ URLs,
+ and content rather than copying history.
 Additional reserved cases exercise current policy and #558 boundaries,
-including negation, revocation, quoted commands, executable payloads, missing images,
-headless sessions, and long-context action placement.
+including negation,
+ revocation,
+ quoted commands,
+ executable payloads,
+ missing images,
+headless sessions,
+ and long-context action placement.
 
-An independent Advisor review identified oracle ambiguity, simulated fact provenance,
-static-versus-model pipeline scope, and held-out contamination risks.
+An independent Advisor review identified oracle ambiguity,
+ simulated fact provenance,
+static-versus-model pipeline scope,
+ and held-out contamination risks.
 The corpus records these limitations explicitly:
 
-- Expected labels are authored reference targets, not old-judge verdicts or measured truth.
-- Both ask and deny block execution; report hazardous auto-approval separately from exact-label mismatch.
-- Environment facts are synthetic ground-truth assumptions, not a proven production evidence collector.
-- Static/fixed-block cases are controls, not evidence that Laya should own those boundaries.
-- Most cases have not yet been run through the actual flagger, so this is not approval-coverage measurement.
-- Reserved families must not guide prompt, threshold, or fine-tuning selection.
+- Expected labels are authored reference targets,
+   not old-judge verdicts or measured truth.
+- Both ask and deny block execution;
+   report hazardous auto-approval separately from exact-label mismatch.
+- Environment facts are synthetic ground-truth assumptions,
+   not a proven production evidence collector.
+- Static/fixed-block cases are controls,
+   not evidence that Laya should own those boundaries.
+- Most cases have not yet been run through the actual flagger,
+   so this is not approval-coverage measurement.
+- Reserved families must not guide prompt,
+   threshold,
+   or fine-tuning selection.
   A later cutover claim needs new independent validation cases.
-- The runner must send only case state and question schema, never reference labels or rationales.
-- Record actual token truncation; incomplete inputs are ineligible for automatic approval regardless of model output.
+- The runner must send only case state and question schema,
+   never reference labels or rationales.
+- Record actual token truncation;
+   incomplete inputs are ineligible for automatic approval regardless of model output.
 
 ### Runtime preparation
 
 Laya source is pinned at `4066d5d5fbf08b66c6757ddeedbd797bd7655bc0`.
 The local image `localhost/laya-cpu-benchmark:0.3.6` was discovered by inspecting existing Podman images.
 It contains an older Laya package with CPU torch and transformers;
-it is only a possible dependency base, not the runtime source being evaluated.
+it is only a possible dependency base,
+ not the runtime source being evaluated.
 The planned runner must import the freshly inspected Laya source and record its actual version/path.
 
 Data-only downloads use the checkpoint revisions explicitly listed in `laya/revisions.py`:
 
-- English: `55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851`.
-- Multilingual: `e4e9ddf21a7b1903b7acffd8814ad4307bf63a67`.
-- Typed decisions: `1a793eb568e6718f15941d08f85432581df534e3`.
+- English:
+   `55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851`.
+- Multilingual:
+   `e4e9ddf21a7b1903b7acffd8814ad4307bf63a67`.
+- Typed decisions:
+   `1a793eb568e6718f15941d08f85432581df534e3`.
 
 Only safetensors weights and allowlisted JSON configs/tokenizers are retrieved.
 The downloader verifies published byte counts and LFS SHA-256 or Git-blob hashes.
@@ -410,36 +628,65 @@ No inference has run yet.
 ### Full-policy tokenizer probe execution manifest
 
 The current `AGENTS.md` snapshot has 42,514 bytes and 1,824 lines.
-SHA-256: `f15df716f1a7cb9cb4838686e2cde8f006a87b99c3aa7db87533fb47b8314840`.
+SHA-256:
+ `f15df716f1a7cb9cb4838686e2cde8f006a87b99c3aa7db87533fb47b8314840`.
 English tokenizer JSON comes from the verified pinned checkpoint download.
 Its encoder config declares `max_position_embeddings: 8192`;
-this is source configuration, not yet proof of a hard runtime limit or supported extrapolation.
+this is source configuration,
+ not yet proof of a hard runtime limit or supported extrapolation.
 
 The scratch probe is `laya-auto-mode-eval-2026-09-26/context-probe/`.
-Its `mise.toml` defines `build` and `probe`; the Containerfile has no RUN instruction.
-Build only copies the full policy, tokenizer data, and reviewed Python probe onto pinned local dependency image
+Its `mise.toml` defines `build` and `probe`;
+ the Containerfile has no RUN instruction.
+Build only copies the full policy,
+ tokenizer data,
+ and reviewed Python probe onto pinned local dependency image
 `ddb7f6c055731eb83def1eca6b9568cbe6c0c54bd9f505c751dacb3fe700a5c6`.
-OCI manifest digest: `sha256:ae5fec490715809bd448a0e9ccfc2489e72dab44b05757206959dc09e881a78f`.
+OCI manifest digest:
+ `sha256:ae5fec490715809bd448a0e9ccfc2489e72dab44b05757206959dc09e881a78f`.
 
-Runtime command: `/usr/local/bin/python3 -I -S /input/probe.py`.
-It bypasses Python startup hooks, explicitly adds the image's inspected package directory,
+Runtime command:
+ `/usr/local/bin/python3 -I -S /input/probe.py`.
+It bypasses Python startup hooks,
+ explicitly adds the image's inspected package directory,
 and imports stdlib plus `tokenizers` 0.22.2.
 The inspected wrapper loads its Hugging Face Rust tokenizer extension;
-no Laya weights, router, serving code, training, shell commands, or fixture actions are invoked.
+no Laya weights,
+ router,
+ serving code,
+ training,
+ shell commands,
+ or fixture actions are invoked.
 The backend reads baked tokenizer JSON and encodes the complete UTF-8 policy and a JSON context envelope.
 A deliberately enabled 64-token cap supplies a positive control before truncation is disabled again.
 
-Expected reads: baked input files and pinned Python/tokenizers runtime libraries.
-Expected writes: stdout only; root filesystem is read-only and no host directory is mounted.
-Expected subprocesses and network: none.
+Expected reads:
+ baked input files and pinned Python/tokenizers runtime libraries.
+Expected writes:
+ stdout only;
+ root filesystem is read-only and no host directory is mounted.
+Expected subprocesses and network:
+ none.
 Container runs as UID/GID 65534 with all capabilities dropped and no-new-privileges.
 No host environment or proxy credentials are passed.
-Limits: 2 GiB memory with no additional swap, 2 CPUs, 64 processes, 256 file descriptors,
+Limits:
+ 2 GiB memory with no additional swap,
+ 2 CPUs,
+ 64 processes,
+ 256 file descriptors,
 and a 120-second container deadline.
-Build also has network disabled, a 2 GiB bound, and a 2-CPU quota.
-Success requires printed file/tokenizer hashes, full token counts, and a passing positive control.
-Any unexpected execution, write, network dependency, or limit breach stops the probe for review.
-Container is removed on exit; the scratch source/data and output evidence are retained.
+Build also has network disabled,
+ a 2 GiB bound,
+ and a 2-CPU quota.
+Success requires printed file/tokenizer hashes,
+ full token counts,
+ and a passing positive control.
+Any unexpected execution,
+ write,
+ network dependency,
+ or limit breach stops the probe for review.
+Container is removed on exit;
+ the scratch source/data and output evidence are retained.
 
 ### Full-policy tokenizer result
 
@@ -447,11 +694,18 @@ The English tokenizer probe passed with no stderr diagnostic beyond task command
 The 64-token positive control behaved as expected.
 For snapshot `f15df716f1a7cb9cb4838686e2cde8f006a87b99c3aa7db87533fb47b8314840`:
 
-- Complete `AGENTS.md`: 11,893 tokens.
-- Full file inside a minimal action/context JSON envelope: 12,501 tokens before the question prefix.
-- Tokenizer SHA-256: `6c8aaa9a542084f2457eab775d4eeb51f92a70c0fd9de28d5edb0ddec3c08d30`.
-- Probe image: `c77564ed8521de45f2326f61286697649ff802f532157985b28d2360e597fcc7`.
-- Process: `proc_3b0b`; exit 0; process-manager elapsed 26 seconds includes image build and probe.
+- Complete `AGENTS.md`:
+   11,893 tokens.
+- Full file inside a minimal action/context JSON envelope:
+   12,501 tokens before the question prefix.
+- Tokenizer SHA-256:
+   `6c8aaa9a542084f2457eab775d4eeb51f92a70c0fd9de28d5edb0ddec3c08d30`.
+- Probe image:
+   `c77564ed8521de45f2326f61286697649ff802f532157985b28d2360e597fcc7`.
+- Process:
+   `proc_3b0b`;
+   exit 0;
+   process-manager elapsed 26 seconds includes image build and probe.
   This is not an inference-latency measurement.
 
 The file exceeds the English encoder's configured 8,192 positions and Laya's default 512-token sequence cap.
@@ -459,25 +713,34 @@ Neither default setting alone proves a hard mathematical/runtime limit.
 Installed transformers 5.0.0 constructs positions dynamically in
 `models/modernbert/modeling_modernbert.py:923-927` and computes RoPE for supplied positions at `:312-327`.
 Laya `Agent.predict` accepts a per-call `max_len` override.
-Next probe: exercise an actual bounded full-length forward pass,
-record all retained tokens, and distinguish runtime acceptance from decision quality or supported extrapolation.
+Next probe:
+ exercise an actual bounded full-length forward pass,
+record all retained tokens,
+ and distinguish runtime acceptance from decision quality or supported extrapolation.
 Do not substitute truncation or policy window fragments.
 
 ### Full-policy forward probe execution manifest
 
 The pinned model-data recovery completed with exit 0 (`proc_d268`).
-All allowlisted artifacts for English, multilingual, and typed decisions passed published size/hash verification.
+All allowlisted artifacts for English,
+ multilingual,
+ and typed decisions passed published size/hash verification.
 The typed-decisions tokenizer JSON has the same SHA-256 as English;
 its raw-policy token count is therefore the same under the tested tokenizer backend.
 Multilingual tokenizer coverage remains to be measured separately.
 
 The next disposable input image uses the same pinned dependency base plus current Laya source,
-the verified English checkpoint, scenario corpus v3, and the complete current policy snapshot.
+the verified English checkpoint,
+ scenario corpus v3,
+ and the complete current policy snapshot.
 Preparation checks that repository `AGENTS.md` still matches the measured hash.
-Only the exact model artifact whitelist is copied; incomplete downloads and private history manifests are excluded.
+Only the exact model artifact whitelist is copied;
+ incomplete downloads and private history manifests are excluded.
 The Containerfile executes no installation/build scripts and contains no RUN instruction.
 
-Command tree: scratch `mise run build`, then `mise run probe`;
+Command tree:
+ scratch `mise run build`,
+ then `mise run probe`;
 container entrypoint `/usr/local/bin/python3 -I -S -B /input/probe.py`.
 Python startup hooks and bytecode writes are disabled.
 The script imports current `/input/source/laya` before the image's older installed package
@@ -486,28 +749,53 @@ Pinned CPU torch is 2.10.0+cpu,
 built from PyTorch commit `449b1768410104d3ed79d3bcfe4ba1d65c7f22c0` per its installed `version.py`.
 Installed torch metadata identifies BSD-3-Clause and the official PyTorch source repository.
 Transformers 5.0.0 local source was inspected at the model factory and ModernBERT forward/compile boundaries.
-Tokenizers is 0.22.2; safetensors is 0.8.0; numpy is 2.5.3 in this fixed image.
+Tokenizers is 0.22.2;
+ safetensors is 0.8.0;
+ numpy is 2.5.3 in this fixed image.
 This feasibility probe is not a completed dependency/adoption audit.
 
 The script loads digest-verified local safetensors,
-uses CPU with `fast=False` and `compile=False`, and sets compute threads to 2.
-No hooks, remote model ID, checkpoint Python code, GPU backend, training, or fixture command is executed.
+uses CPU with `fast=False` and `compile=False`,
+ and sets compute threads to 2.
+No hooks,
+ remote model ID,
+ checkpoint Python code,
+ GPU backend,
+ training,
+ or fixture command is executed.
 Python audit hooks reject subprocess creation and network connection/resolution.
 Laya's own `_encode_state` output is checked against every state token before inference;
 question instructions are also checked for truncation.
-Per-call `max_len` equals measured complete sequence length, with a hard 20,000-token probe ceiling.
+Per-call `max_len` equals measured complete sequence length,
+ with a hard 20,000-token probe ceiling.
 Only the predeclared benign/exfiltrating development contrast is run initially.
 Expected labels and rationales are not passed to Laya.
 
-Limits remain 2 GiB memory, no additional swap, 2 CPUs, 64 processes, 256 descriptors,
+Limits remain 2 GiB memory,
+ no additional swap,
+ 2 CPUs,
+ 64 processes,
+ 256 descriptors,
 and a 300-second container runtime deadline.
-The image/root filesystem is read-only, no host directory is mounted,
+The image/root filesystem is read-only,
+ no host directory is mounted,
 and a disposable 64 MiB `/tmp` is the only extra writable scratch area.
 The process runs as UID/GID 65534 with dropped capabilities and no-new-privileges.
-No network, host environment, proxy credentials, secrets, or devices are passed.
-Expected outputs are coverage metadata, decisions, timing, memory counters, and any captured diagnostics.
+No network,
+ host environment,
+ proxy credentials,
+ secrets,
+ or devices are passed.
+Expected outputs are coverage metadata,
+ decisions,
+ timing,
+ memory counters,
+ and any captured diagnostics.
 Keep the stopped container temporarily to inspect `State.OOMKilled` rather than inferring cause from an exit code.
-Stop and inspect any unexpected execution, network attempt, write boundary, or resource failure.
+Stop and inspect any unexpected execution,
+ network attempt,
+ write boundary,
+ or resource failure.
 Runtime acceptance would not establish long-context accuracy or calibrated safety.
 
 ### Forward probe failure and next resource decision
@@ -515,42 +803,61 @@ Runtime acceptance would not establish long-context accuracy or calibrated safet
 Process `proc_774d` built image
 `f187e4e14fe09c955fda3ea59da84b560c67bb20a13eb8f74332769319ab68fd`
 and loaded Laya 0.3.20 from the intended source path with CPU torch 2.10.0+cpu.
-Model load took 4.264209541 seconds in this run; this is one observation, not a timing comparison.
-For `inline-read-package`, Laya retained all 12,582 state tokens plus a 94-token prefix,
+Model load took 4.264209541 seconds in this run;
+ this is one observation,
+ not a timing comparison.
+For `inline-read-package`,
+ Laya retained all 12,582 state tokens plus a 94-token prefix,
 forming a 12,676-token sequence with no state or instruction truncation.
 The process then died before producing any verdict.
 
-`podman inspect laya-full-policy-forward-20260926` reported `OOMKilled: true`, exit 137,
+`podman inspect laya-full-policy-forward-20260926` reported `OOMKilled: true`,
+ exit 137,
 with memory and memory-plus-swap both 2,147,483,648 bytes.
-This establishes a container-memory failure, not a model indexing exception or decision-quality result.
+This establishes a container-memory failure,
+ not a model indexing exception or decision-quality result.
 The complete current repository policy still matched the measured hash after failure.
 `free --bytes` reported 30,387,249,152 available bytes after the stopped run.
 
 Transformers also emitted its generic sequence-length warning for 12,582 versus 8,192 tokens.
 Installed `transformers/tokenization_utils_base.py:2988-2995` emits that warning based on token count
-versus `model_max_length`; it does not execute the encoder to establish an indexing failure.
+versus `model_max_length`;
+ it does not execute the encoder to establish an indexing failure.
 Keep that warning separate from the confirmed cgroup OOM.
 Laya's loader also warned about clamping `choice:11+` temperature;
-the probe question has 3 choices, not 11 or more, and this warning does not establish calibration for this workload.
+the probe question has 3 choices,
+ not 11 or more,
+ and this warning does not establish calibration for this workload.
 
 A larger Podman experiment needs explicit authorization:
 `AGENTS.md:853-858` (BOX) names the 2 GiB/2 CPU Podman shape or `mvm`.
 An independent Advisor review confirmed that the technology skill's default-isolation deviation language
 should not silently override that named repository boundary.
-Proposed next probe: same full input, 8 GiB memory/no extra swap, 2 CPUs, 300 seconds,
-no network or host mounts, with current memory/policy hashes rechecked before launch.
+Proposed next probe:
+ same full input,
+ 8 GiB memory/no extra swap,
+ 2 CPUs,
+ 300 seconds,
+no network or host mounts,
+ with current memory/policy hashes rechecked before launch.
 No larger-memory run has been started.
 
 A multilingual tokenizer-only probe is prepared in `context-probe-ml/`.
-It uses the same audited Python/tokenizer command tree, full policy snapshot,
-positive control, and 2 GiB/2 CPU/120-second offline bounds as the English tokenizer probe.
+It uses the same audited Python/tokenizer command tree,
+ full policy snapshot,
+positive control,
+ and 2 GiB/2 CPU/120-second offline bounds as the English tokenizer probe.
 Only the tokenizer data changes to verified hash
 `609d8f4c067cd3950f88594c5a802616cea245823836ef5848ee4fc40aab5b6f`.
 
 ### Q7: Larger bounded evaluation authorized
 
-The user selected A: authorize up to 8 GiB for Laya evaluation probes,
-with 2 CPUs, no extra swap, no network or host mounts, a 5-minute limit per probe,
+The user selected A:
+ authorize up to 8 GiB for Laya evaluation probes,
+with 2 CPUs,
+ no extra swap,
+ no network or host mounts,
+ a 5-minute limit per probe,
 and only one inference container at a time.
 This explicitly permits the experiment-specific deviation from BOX's 2 GiB Podman shape.
 It does not change production resource requirements or authorize larger limits.
@@ -562,7 +869,8 @@ Process `proc_7d71` exited 0.
 The multilingual tokenizer's 64-token positive control passed for the same complete policy snapshot.
 Complete `AGENTS.md` uses 11,042 tokens;
 the minimal action/context envelope uses 11,966 tokens before the question prefix.
-Image: `eb9d352a0e55ae38933a068698435fecada273e7a0d3879d4eca153dc2dae161`.
+Image:
+ `eb9d352a0e55ae38933a068698435fecada273e7a0d3879d4eca153dc2dae161`.
 Both tested tokenizer families therefore exceed 8,192 tokens for this policy file alone.
 That still does not establish a hard runtime ceiling or long-context decision quality.
 
@@ -590,7 +898,8 @@ Ranked hypotheses were stated before further tests:
 PyTorch source was cloned read-only at tag v2.10.0,
 which resolves to the installed wheel's exact commit
 `449b1768410104d3ed79d3bcfe4ba1d65c7f22c0`.
-Clone: `~/temp/agent/pytorch-laya-2026-09-26`.
+Clone:
+ `~/temp/agent/pytorch-laya-2026-09-26`.
 
 `aten/src/ATen/native/transformers/transformer.cpp:107-121`
 passes through `_native_multi_head_attention` even with `need_weights=false`.
@@ -609,7 +918,8 @@ The installed/source `torch.backends.mha.set_fastpath_enabled(False)` disables t
 The fallback layer passes `need_weights=False` through its self-attention block.
 No PyTorch or Laya source is being edited.
 
-Kernel probe: `~/temp/agent/laya-auto-mode-eval-2026-09-26/head-probe/`.
+Kernel probe:
+ `~/temp/agent/laya-auto-mode-eval-2026-09-26/head-probe/`.
 It constructs one inference-mode TransformerEncoderLayer with Laya's exact head dimensions,
 then runs sequential native and functional modes at the observed full sequence length.
 The native run must reproduce an OOM at 8 GiB before the functional result is accepted as a useful differential.
@@ -669,22 +979,40 @@ Do not call the full-policy memory blocker resolved before an actual verdict ret
 
 - Finalize open ownership/authority choices in the responsibility ledger.
 - Validate each retained and replaced branch at the actual Pi integration boundary.
-- Inspect the exact Laya inference, tokenization, serving, dependency, model-artifact, and test paths.
+- Inspect the exact Laya inference,
+   tokenization,
+   serving,
+   dependency,
+   model-artifact,
+   and test paths.
 - Measure Laya CPU inference on the probed workstation inside resource-bounded isolation.
-- Establish a labelled guard-action corpus, including negation and adversarial inputs.
+- Establish a labelled guard-action corpus,
+   including negation and adversarial inputs.
 - Measure current judge calls and costs without exporting private transcripts.
-- Define deployment, error handling, explanations, rollout, rollback, and acceptance criteria.
-- Complete Laya source, provenance, security, and runtime vetting before granting decision authority.
+- Define deployment,
+   error handling,
+   explanations,
+   rollout,
+   rollback,
+   and acceptance criteria.
+- Complete Laya source,
+   provenance,
+   security,
+   and runtime vetting before granting decision authority.
 - Restrict candidate research to Laya and the explicitly authorized relevant Voyage products/models.
 
 ## Next action
 
-Collect the terminal result of the authorized full-policy Laya 8 GiB retry (`proc_8f5d`), without polling.
+Collect the terminal result of the authorized full-policy Laya 8 GiB retry (`proc_8f5d`),
+ without polling.
 Continue current Voyage API/context/data-handling research after the successful key verification.
 Exercise complete-policy synthetic guard inputs only with explicit no-truncation checks.
 Repair the scoped Markdown lint findings and render the changed documents.
 Inspect mistakes independently without using reserved results to tune the tested schemas.
-Use that evidence to resolve authority, trust-rule interpretation, context completeness, and cutover.
+Use that evidence to resolve authority,
+ trust-rule interpretation,
+ context completeness,
+ and cutover.
 Do not require live user-supervised shadowing as the first evidence source.
 Recompute the remaining interview frontier from the source findings.
 Keep implementation blocked until the complete design is confirmed.

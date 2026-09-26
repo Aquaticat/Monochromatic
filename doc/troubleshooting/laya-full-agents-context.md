@@ -16,17 +16,25 @@ Current requirements and experiment history live in
 The user requires Laya to receive the complete current repository `AGENTS.md`.
 For the measured snapshot:
 
-- File size: 42,514 bytes, 1,824 lines.
-- SHA-256: `f15df716f1a7cb9cb4838686e2cde8f006a87b99c3aa7db87533fb47b8314840`.
-- English and typed-decisions tokenizer: 11,893 tokens for the file alone.
-- Multilingual tokenizer: 11,042 tokens for the file alone.
-- Minimal JSON context/action envelope: 12,501 English tokens or 11,966 multilingual tokens,
+- File size:
+   42,514 bytes,
+   1,824 lines.
+- SHA-256:
+   `f15df716f1a7cb9cb4838686e2cde8f006a87b99c3aa7db87533fb47b8314840`.
+- English and typed-decisions tokenizer:
+   11,893 tokens for the file alone.
+- Multilingual tokenizer:
+   11,042 tokens for the file alone.
+- Minimal JSON context/action envelope:
+   12,501 English tokens or 11,966 multilingual tokens,
   before the question prefix.
 
 Default Laya sequence lengths do not preserve that complete input.
 A bounded English forward experiment overrode the sequence length and verified an actual
-12,676-token sequence, including all 12,582 state tokens and its 94-token question prefix.
-The model loaded, but the process died before returning a verdict.
+12,676-token sequence,
+ including all 12,582 state tokens and its 94-token question prefix.
+The model loaded,
+ but the process died before returning a verdict.
 Podman reported exit 137 and `State.OOMKilled=true` with a 2 GiB memory/memory-plus-swap limit.
 
 Transformers independently emitted:
@@ -42,7 +50,8 @@ No indexing exception was observed.
 
 Laya source:
 `https://github.com/NandhaKishorM/laya`,
-commit `4066d5d5fbf08b66c6757ddeedbd797bd7655bc0`, version 0.3.20.
+commit `4066d5d5fbf08b66c6757ddeedbd797bd7655bc0`,
+ version 0.3.20.
 Read-only clone:
 `~/temp/agent/laya-auto-mode-2026-09-26`.
 
@@ -61,15 +70,21 @@ The typed-decisions checkpoint uses byte-identical tokenizer JSON to English at 
 
 Pinned dependency image:
 `ddb7f6c055731eb83def1eca6b9568cbe6c0c54bd9f505c751dacb3fe700a5c6`.
-Runtime: Python 3.13.15, CPU torch 2.10.0+cpu, transformers 5.0.0, tokenizers 0.22.2.
+Runtime:
+ Python 3.13.15,
+ CPU torch 2.10.0+cpu,
+ transformers 5.0.0,
+ tokenizers 0.22.2.
 Torch reports source commit `449b1768410104d3ed79d3bcfe4ba1d65c7f22c0`.
-The probe imports the inspected Laya source explicitly, not the image's older installed Laya 0.3.6 package.
+The probe imports the inspected Laya source explicitly,
+ not the image's older installed Laya 0.3.6 package.
 
 ## Root cause boundaries
 
 ### Default sequence construction drops excess state
 
-At the pinned Laya revision, `laya/common.py:127-146` separately budgets the question prefix and state:
+At the pinned Laya revision,
+ `laya/common.py:127-146` separately budgets the question prefix and state:
 
 ```python
 # laya/common.py:132-146, selected statements
@@ -113,7 +128,8 @@ if max_length is None and len(ids) > self.model_max_length and verbose and self.
         )
 ```
 
-That branch compares token count with tokenizer metadata; it does not run the encoder.
+That branch compares token count with tokenizer metadata;
+ it does not run the encoder.
 ModernBERT's non-flash forward constructs positions dynamically in
 `models/modernbert/modeling_modernbert.py:925-927`:
 
@@ -218,16 +234,22 @@ Long-input numerical parity against the native path remains unavailable because 
 
 ### Working probes
 
-Tokenizer-only probes ran offline with 2 GiB, 2 CPUs, no host mounts, and a 120-second deadline.
-They encoded the complete policy, then deliberately enabled a 64-token cap as a positive control,
+Tokenizer-only probes ran offline with 2 GiB,
+ 2 CPUs,
+ no host mounts,
+ and a 120-second deadline.
+They encoded the complete policy,
+ then deliberately enabled a 64-token cap as a positive control,
 then disabled truncation and measured the full JSON envelope.
-Both positive controls produced 64 tokens, distinct from the complete-file counts.
+Both positive controls produced 64 tokens,
+ distinct from the complete-file counts.
 
 The English Laya loader succeeded in the 2 GiB forward probe.
 The source version/path assertion passed.
 `Agent._encode_state` retained every expected state token and all question instructions
 under the measured per-call override.
-This is encoding evidence, not a completed model decision.
+This is encoding evidence,
+ not a completed model decision.
 
 ### Failing probes
 
@@ -243,7 +265,9 @@ Multilingual tokenizer probe:
 `~/temp/agent/laya-auto-mode-eval-2026-09-26/context-probe-ml/`.
 Forward probe:
 `~/temp/agent/laya-auto-mode-eval-2026-09-26/forward-probe/`.
-Each contains reviewed source, a Containerfile without RUN instructions, and scoped mise tasks.
+Each contains reviewed source,
+ a Containerfile without RUN instructions,
+ and scoped mise tasks.
 
 ```sh
 # Run from the named private experiment directory, not the main repository.
@@ -256,7 +280,8 @@ The original failed forward image is immutable:
 `f187e4e14fe09c955fda3ea59da84b560c67bb20a13eb8f74332769319ab68fd`.
 Its stopped container is `laya-full-policy-forward-20260926`.
 No fixture command embedded in synthetic input is executed by the harness.
-The input/labels are separate; only state and typed question schema are passed to Laya.
+The input/labels are separate;
+ only state and typed question schema are passed to Laya.
 
 ## Verified workarounds
 
@@ -302,14 +327,28 @@ not a demonstrated upstream defect requiring a patch.
 
 ### Upstream filing decision
 
-1.  Upstream fault: not established; sequence budgets are documented and the first run hit our container limit.
-2.  Fixability: no impossibility claim; per-call input extension exists, while runtime/quality validation remains open.
-3.  Supported use case: the README advertises context through 8,192 tokens;
+1.  Upstream fault:
+     not established;
+     sequence budgets are documented and the first run hit our container limit.
+2.  Fixability:
+     no impossibility claim;
+     per-call input extension exists,
+     while runtime/quality validation remains open.
+3.  Supported use case:
+     the README advertises context through 8,192 tokens;
     this policy alone exceeds that advertised range under both measured tokenizer families.
-4.  Contribution policy: not assessed for filing because no actionable upstream fault or filing is proposed.
-5.  Maintainer willingness: not assessed; no request has been sent.
-6.  Prototype: this is a consumer-side feasibility probe, not an upstream patch.
+4.  Contribution policy:
+     not assessed for filing because no actionable upstream fault or filing is proposed.
+5.  Maintainer willingness:
+     not assessed;
+     no request has been sent.
+6.  Prototype:
+     this is a consumer-side feasibility probe,
+     not an upstream patch.
 
 No upstream filing workflow is active.
-Before any future issue/comment draft, check applicable `.out-of-scope/` exclusions,
-contribution policy, and existing upstream issues, then reassess every filing constraint.
+Before any future issue/comment draft,
+ check applicable `.out-of-scope/` exclusions,
+contribution policy,
+ and existing upstream issues,
+ then reassess every filing constraint.
