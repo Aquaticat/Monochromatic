@@ -264,10 +264,16 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
             deckFirst = !liftWithIme, deckFullHeight = liftWithIme, bannerFit = bannerFit,
             compactForBrowser = retainBrowser && keyboardShown,
             onDeckMeasured = { heightPx ->
-                if (autoFitStudy && !keyboardShown) restingDeckHeight = heightPx
-                // Positive slack proves this sample was not capped by the upper browser.
+                if (autoFitStudy && !keyboardShown && heightPx > restingDeckHeight) {
+                    restingDeckHeight = heightPx
+                }
+                // A shrinking callback sample can belong to a newer constrained layout
+                // than the available height captured by this earlier composition.
+                // Keep the largest fitting demand for this unchanged title and width.
                 if (autoFitStudy && keyboardShown && !bannerFit &&
-                    availableAboveIme > heightPx + dividerPx) openDeckHeight = heightPx
+                    availableAboveIme > heightPx + dividerPx && heightPx > openDeckHeight) {
+                    openDeckHeight = heightPx
+                }
             }) { slot ->
             if (!keyboardShown || retainBrowser) {
                 SearchFoldFolders(light = light,
