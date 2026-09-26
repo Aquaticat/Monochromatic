@@ -300,6 +300,41 @@ and scratch Git status was clean.
 This demonstrates the test detects the missing guard;
 it is not a proof of complete production behavior or all continuous probability combinations.
 
+## Development fixture expansion
+
+The pinned original corpus still contains legacy final-verdict labels,
+rationale,
+and direct-verdict schemas.
+It is not a label-free file.
+Current axiom runners explicitly project scenario state and supply independent axiom questions;
+they do not consume those legacy labels as axiom truth or send them as expected answers.
+
+A private corpus audit at `~/temp/agent/auto-mode-axiom-fixtures-2026-09-26`
+verified 35 development and 24 reserved cases.
+Declared families are disjoint between those groups,
+and no exact serialized state is shared.
+Injected in-memory overlap controls were detected for both checks.
+These checks do not detect every semantic paraphrase or establish qualification coverage.
+Reserved bodies were not printed or submitted to a model by this audit.
+
+The new development-only collection contains 15 scenarios with 12 named reference axioms each.
+It retains the original six axiom oracles,
+adds selected existing development states,
+and derives quoted/expanded shell and joint-grant-scope variants only from development parents.
+It does not import the reserved instruction-boundary,
+revocation,
+or long-context-placement families for prompt fitting.
+Three deictic prohibition references remain explicitly unresolved and must be excluded from binary scoring.
+
+Scenario SHA-256: `768f30cf45c2a5fd3819087499de09d634308f6fb9876c6f3df54f0df3ba83bb`.
+Oracle SHA-256: `2623615c2907f1b86c825eacaf9286e9dfd76dcd17dd9459bcdcec09333ea426`.
+An independent,
+unblinded review found no clear label error
+and identified the need to preserve directive restrictions outside the request-only prohibition axis.
+It also reiterated that this tests supplied candidate effects,
+not effect-catalog completeness.
+No new model request or production qualification has occurred for this collection yet.
+
 ## Laya axiom-only runtime probe
 
 A new private probe at `~/temp/agent/laya-axiom-probe-2026-09-26`
@@ -541,6 +576,9 @@ and a qualified narrow joint text-relation estimate for legacy prose.
 Do not combine an operation from one scope with a resource from another.
 Code may combine fully satisfied witnesses as alternatives;
 missing binding or restriction evidence cannot be invented by the model.
+A standalone prohibition inside an approved directive must not disappear when another witness matches.
+The initial prototype's `forbidden` axis reads only `user_request`,
+so it does not represent every active directive restriction.
 
 Distinguish a proposed attempt on a feasible execution path from guaranteed runtime success.
 A protected transfer conditional on a successful file read is still relevant before execution.

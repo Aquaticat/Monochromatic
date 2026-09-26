@@ -287,6 +287,16 @@ thresholds,
 and final result.
 No model-generated clause text or newly invented scope ID is required.
 
+A directive may also state a prohibition that is broader than one permission witness.
+For example,
+`Allow reading .env locally; do not send credentials anywhere`
+contains a separate transmission restriction.
+A request-only prohibition axiom returning false does not erase that directive restriction.
+Alternative permission witnesses cannot silently discard applicable standing prohibitions.
+Keep witness-local conditions and broader constraints distinct;
+unknown restriction scope or applicability requires review.
+Precedence and explicit override handling remain code-owned and must be tested.
+
 New grants retain original wording and present explicit scope before human confirmation,
 as selected in Q9a.
 Qualified prose reuse remains available under Q9b.
