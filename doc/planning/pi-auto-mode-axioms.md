@@ -326,13 +326,37 @@ revocation,
 or long-context-placement families for prompt fitting.
 Three deictic prohibition references remain explicitly unresolved and must be excluded from binary scoring.
 
-Scenario SHA-256: `768f30cf45c2a5fd3819087499de09d634308f6fb9876c6f3df54f0df3ba83bb`.
-Oracle SHA-256: `2623615c2907f1b86c825eacaf9286e9dfd76dcd17dd9459bcdcec09333ea426`.
+Canonical committed scenario SHA-256:
+`df2ecb7aa3f922c86bc91e73e743ed4cc7c0f991e298c953e355627006c6b8fc`.
+Canonical committed oracle SHA-256:
+`ce608c10f4b8b0dbb268f2b74d80d4f474f1cf2063505d1b69aed7f9a7f40324`.
+`git-policy-cli` normalized final LF during the scratch commit.
+Dropping that final byte reproduced the initially recorded hashes;
+label content did not change.
+The generators and manifest were corrected before inference.
 An independent,
 unblinded review found no clear label error
 and identified the need to preserve directive restrictions outside the request-only prohibition axis.
 It also reiterated that this tests supplied candidate effects,
 not effect-catalog completeness.
+Scratch commit `18e3d60` records the bounded gateway client before inference.
+Fixture integrity,
+lineage,
+joint-scope contrasts,
+and a missing-permission-change-family coverage control passed.
+The coverage control checks an offline qualification ledger,
+not a runtime code-proof prerequisite under Q13 B.
+
+Response tests passed for identity,
+usage,
+required IDs,
+Noul type/range,
+and loss accounting.
+The decoder uses Noul rather than confidence or auxiliary action values.
+A nonzero-loss positive control passed;
+unresolved references and deterministic empty-grant values are excluded from model-quality scoring.
+Removing the committed probability upper-bound guard made the suite fail with `Missing expected exception`.
+Restoring it made the suite pass and the scratch tree was clean.
 No new model request or production qualification has occurred for this collection yet.
 
 ## Laya axiom-only runtime probe
