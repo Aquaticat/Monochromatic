@@ -404,6 +404,44 @@ difference.
 The reserved candidate remains unaccepted and does not address floating keys
 or a real Gboard banner.
 
+## Font-scale retest of the selected vertical deck
+
+The later debug-only APK SHA-256
+`0801ea3f44ef84163cbddb2b2f37fbddbb1c293148440381f6f899be7eaee7af`
+kept the selected vertical deck unchanged while adding separate
+Search-result stress and cover-viewport comparisons.
+On the disposable inner panel at 390dpi and **100% text**,
+a system-managed stepped debug IME reached 400dp (top y `1177`) and
+415dp (top y `1141`).
+At 400dp,
+the unchanged complete final mode had accessibility bounds
+`[518,1040][965,1157]`,
+ending 20px above the keyboard;
+Folders and Open remained visible.
+At 415dp,
+the final mode ended at y `1121`,
+also 20px above its keyboard,
+with the same browser header.
+Native screenshots confirmed the complete four-mode group at the 400dp
+endpoint.
+This is a **settled endpoint** pass at 100%,
+not continuous-animation or TalkBack evidence.
+
+The **same APK at 200% text** selected the identical A branch.
+After the same debug IME stepped from 330dp to 400dp,
+Window Manager reported the input window starting at y `1177`.
+The final `Shuffle all folders` box was only
+`[73,1057][965,1177]`,
+against its 131px full row at the lower keyboard height.
+The native screenshot showed the mode group's rounded bottom cut by the
+dark keyboard edge;
+Folders and Open had disappeared from the accessibility hierarchy.
+This reproduces a non-exempt **200% endpoint failure** while the same
+keyboard height fits at 100%.
+D54's accepted brief real-Gboard font-update banner does not excuse this
+separate synthetic steady state.
+The opt-in cover result viewport does not alter either inner result.
+
 ## Remaining boundary
 
 The closed deck's first measured heights changed from `762` to `891` to
