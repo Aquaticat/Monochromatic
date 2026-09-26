@@ -109,6 +109,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 // `remember` preserves that state during one activity visit.
 import androidx.compose.runtime.remember
+// The parent listener reads the latest state setter without reattaching on each recomposition.
+import androidx.compose.runtime.rememberUpdatedState
 // Kotlin delegates read and write observable state.
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -222,8 +224,9 @@ private const val BOUNDING_RECT_API_LEVEL = 37
  * In TS you'd write (pseudocode): observeImeAnimation(parentView, onEvent);
  */
 @Composable
-private fun ObserveImeAnimation(parentView: View) {
+private fun ObserveImeAnimation(parentView: View, onAppliedIme: (Int) -> Unit) {
     if (Build.VERSION.SDK_INT < 30) return
+    val latestOnAppliedIme by rememberUpdatedState(onAppliedIme)
     DisposableEffect(parentView) {
         val callback = object : AndroidWindowInsetsAnimation.Callback(
             AndroidWindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE,
@@ -266,6 +269,7 @@ private fun ObserveImeAnimation(parentView: View) {
         parentView.setOnApplyWindowInsetsListener { view, insets ->
             val bottom = insets.getInsets(AndroidWindowInsets.Type.ime()).bottom
             Log.i("SearchApplyProbe", "delivered bottom=$bottom")
+            latestOnAppliedIme(bottom)
             view.onApplyWindowInsets(insets)
         }
         Log.i("SearchAnimationProbe", "installed on ${parentView.javaClass.name}")
@@ -285,17 +289,23 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     val density = LocalDensity.current
     val reportedImeInset = WindowInsets.ime.getBottom(density)
     val observedView = LocalView.current
+    var deliveredBottom by remember(density.density, density.fontScale, observedView.width) {
+        mutableIntStateOf(0)
+    }
     // The debug callback remains on the view above Compose and continues subtree dispatch.
     val animationHost = observedView.parent as? View
     if ((autoFitStudy || bannerHeightStress) && animationHost != null) {
-        ObserveImeAnimation(animationHost)
+        ObserveImeAnimation(animationHost, onAppliedIme = { bottom ->
+            if (deliveredBottom != bottom) deliveredBottom = bottom
+        })
     }
     val platformInsets = observedView.rootWindowInsets
     val imeType = if (Build.VERSION.SDK_INT >= 30) AndroidWindowInsets.Type.ime() else 0
     val platformBottom = if (Build.VERSION.SDK_INT >= 30) {
         platformInsets?.getInsets(imeType)?.bottom ?: 0
     } else 0
-    val targetBottom = if (autoFitStudy) maxOf(reportedImeInset, platformBottom) else reportedImeInset
+    val targetBottom = if (autoFitStudy) maxOf(reportedImeInset, platformBottom, deliveredBottom)
+        else reportedImeInset
     val keyboardShown = targetBottom > 0
     var restingDeckHeight by remember(density.density, density.fontScale, observedView.width) {
         mutableIntStateOf(0)
@@ -322,7 +332,8 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
             platformInsets?.getBoundingRects(imeType)
         } else null
         Log.i("SearchInsetProbe", "composeBottom=$reportedImeInset platformBottom=$platformBottom " +
-            "targetBottom=$targetBottom rootHeight=${observedView.height} topSafe=$topSafePx " +
+            "deliveredBottom=$deliveredBottom targetBottom=$targetBottom " +
+            "rootHeight=${observedView.height} topSafe=$topSafePx " +
             "restingDeck=$restingDeckHeight openDeck=$openDeckHeight " +
             "available=$availableAboveIme " +
             "visible=$visible boundingRects=$rectangles stress=$bannerFit")
