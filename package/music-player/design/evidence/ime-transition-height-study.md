@@ -370,8 +370,22 @@ keyboard-closed deck near the bottom of the panel.
 This conflicts with D51's accepted closed composition.
 The user has **not** selected this visible tradeoff;
 the active A-only review continues to show the accepted arrangement.
-A further debug experiment must release the reservation on keyboard hide
-without clipping on refocus.
+Prototype commit `771028179` then gated that reservation on the focused
+editor's first keyboard request or a still-present IME.
+With APK SHA-256
+`261e608e67029f6361b79a2b26f79851099df9d98f3cdbed637b2e14a4529636`,
+Android Back hid the 330dp debug IME while the `cam` editor retained focus.
+Once both reported bottoms reached zero,
+`Shuffle all folders` returned to `[73,1904][965,2035]`,
+and the unchanged folder browser expanded.
+Tapping the still-focused editor caused ordinary inset delivery of `804px`
+before the show animation's first progress log;
+the compact branch was true when Compose still reported bottom zero.
+The settled final mode again ended at y `1118`.
+These after-states check keyboard dismissal and refocus,
+but **do not** prove that an intermediate refocus frame kept the full deck.
+The reserved candidate remains unaccepted and does not address floating keys
+or a real Gboard banner.
 
 ## Remaining boundary
 
