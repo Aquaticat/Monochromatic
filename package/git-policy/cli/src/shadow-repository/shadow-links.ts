@@ -199,6 +199,17 @@ async function regularFileExists(path: string,): Promise<boolean> {
 }
 
 /**
+ Reports whether a shared `info` entry is the per-worktree sparse-checkout file copied separately.
+
+ @param name - `info` entry name
+
+ @returns whether it is `sparse-checkout`
+ */
+function isPerWorktreeSparse(name: string,): boolean {
+  return name === 'sparse-checkout';
+}
+
+/**
  Links the real common directory into the shadow and copies per-worktree entries.
 
  @param shadowPath - shadow repository
@@ -293,9 +304,7 @@ export async function linkShadowEntries({
     await linkDirectoryEntries({
       sourceDirectory: sharedInfo,
       shadowDirectory: shadowInfo,
-      skip: function skipSparse(name,): boolean {
-        return name === 'sparse-checkout';
-      },
+      skip: isPerWorktreeSparse,
     },);
   }
   catch (error: unknown) {

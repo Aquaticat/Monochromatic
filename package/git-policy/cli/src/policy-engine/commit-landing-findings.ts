@@ -56,7 +56,7 @@ function outcomeFinding({
 }: Readonly<{
   outcome: Exclude<LandingOutcome, Readonly<{ kind: 'landed'; }>>;
   capture: InvocationCapture;
-  preparedOid: string | undefined;
+  preparedOid?: string;
 }>,): Readonly<{
   code: 'head-moved' | 'branch-switched';
   message: string;
@@ -109,7 +109,7 @@ export function landingFindingResult({
   pass: PolicyEngineResult;
   outcome: Exclude<LandingOutcome, Readonly<{ kind: 'landed'; }>>;
   capture: InvocationCapture;
-  preparedOid: string | undefined;
+  preparedOid?: string;
 }>,): PolicyEngineResult {
   /**
    Finding code and message.
@@ -117,14 +117,15 @@ export function landingFindingResult({
   const finding = outcomeFinding({
     outcome,
     capture,
-    preparedOid,
+    ...(preparedOid === undefined ? {} : { preparedOid, }),
   },);
   return {
     ...pass,
     events: [
       ...pass.events,
       createCoreFindingEvent({
-        sequence: pass.events.length,
+        sequence: pass.events
+          .length,
         coreId: 'concurrent-commit',
         code: finding.code,
         message: finding.message,

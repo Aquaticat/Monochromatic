@@ -33,7 +33,10 @@ export type RepositoryFormat = Readonly<{
   /**
    Every `extensions.*` key with its value, in file order.
    */
-  extensions: readonly (readonly [name: string, value: string])[];
+  extensions: readonly (readonly [
+    name: string,
+    value: string
+  ])[];
 }>;
 
 /**
@@ -64,13 +67,13 @@ export function quoteGitConfigValue(value: string,): string {
   const body = Array.from(value,)
     .map(function escapeCharacter(character,): string {
       if (character === '\\')
-        return '\\\\';
+        return String.raw`\\`;
       if (character === '"')
-        return '\\"';
+        return String.raw`\"`;
       if (character === '\n')
-        return '\\n';
+        return String.raw`\n`;
       if (character === '\t')
-        return '\\t';
+        return String.raw`\t`;
       return character;
     },)
     .join('',);
@@ -120,7 +123,10 @@ export async function readRepositoryFormat({
     .filter(function nonempty(entry,): boolean {
       return entry.length > 0;
     },)
-    .map(function splitEntry(entry,): readonly [string, string] {
+    .map(function splitEntry(entry,): readonly [
+      string,
+      string
+    ] {
       /**
        Key and value separator.
        */
@@ -151,7 +157,10 @@ export async function readRepositoryFormat({
         return key.toLowerCase()
           .startsWith('extensions.',);
       },)
-      .map(function extensionName([key, value,],): readonly [string, string] {
+      .map(function extensionName([key, value,],): readonly [
+        string,
+        string
+      ] {
         return [
           key.slice('extensions.'.length,),
           value,
@@ -189,11 +198,14 @@ export function formatShadowConfig({
     '[core]',
     `\trepositoryformatversion = ${quoteGitConfigValue(format.version,)}`,
     `\thooksPath = ${quoteGitConfigValue(`${commonDir}/hooks`,)}`,
-    ...(format.extensions.length === 0
+    ...(format.extensions
+      .length
+      === 0
       ? []
       : [
         '[extensions]',
-        ...format.extensions.map(function extensionLine([name, value,],): string {
+        ...format.extensions
+          .map(function extensionLine([name, value,],): string {
           return `\t${name} = ${quoteGitConfigValue(value,)}`;
         },),
       ]),

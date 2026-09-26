@@ -166,7 +166,8 @@ async function changedPaths({
 }
 
 /**
- Writes the tree of the invocation-time index, or `undefined` when it cannot form one.
+ Lists paths the landed tree changes relative to what was staged at invocation;
+ nothing when the invocation-time index cannot form a tree.
 
  @param gitPath - real Git executable
 
@@ -174,17 +175,21 @@ async function changedPaths({
 
  @param capturedIndexPath - invocation-time index copy
 
- @returns tree OID or absence
+ @param landedTreeOid - landed tree
+
+ @returns changed paths
  */
-async function capturedTree({
+async function changedSinceCaptured({
   gitPath,
   cwd,
   capturedIndexPath,
+  landedTreeOid,
 }: Readonly<{
   gitPath: string;
   cwd: string;
   capturedIndexPath: string;
-}>,): Promise<string | undefined> {
+  landedTreeOid: string;
+}>,): Promise<readonly string[]> {
   /**
    Tree write that fails on unmerged entries.
    */
@@ -195,8 +200,15 @@ async function capturedTree({
     args: ['write-tree',],
     allowFailure: true,
   },);
-  return result.exitCode === 0 ? DECODER.decode(result.stdout,)
-    .trim() : undefined;
+  if (result.exitCode !== 0)
+    return [];
+  return changedPaths({
+    gitPath,
+    cwd,
+    from: DECODER.decode(result.stdout,)
+      .trim(),
+    to: landedTreeOid,
+  },);
 }
 
 /**
@@ -268,11 +280,7 @@ async function mergeLandedEntries({
    `--index-info` lines: landed entries, or removal of paths the commit deleted.
    */
   const lines = untouched.flatMap(function landedLines(path,): readonly string[] {
-    /**
-     Landed stage records.
-     */
-    const entries = landed.get(path,);
-    return entries === undefined ? [`0 ${zeroOid}\t${path}`,] : entries;
+    return landed.get(path,) ?? [`0 ${zeroOid}\t${path}`,];
   },);
   await runTransactionGit({
     gitPath,
@@ -389,14 +397,6 @@ export async function computeLandingPostIndex({
     destinationPath: postIndexPath,
   },);
   /**
-   Invocation-time staged tree, when writable.
-   */
-  const stagedTree = await capturedTree({
-    gitPath,
-    cwd,
-    capturedIndexPath,
-  },);
-  /**
    Paths the commit changed relative to its base or to what was staged at invocation.
    */
   const changed = [
@@ -407,14 +407,12 @@ export async function computeLandingPostIndex({
         from: baseRevision,
         to: landedTreeOid,
       },)),
-      ...(stagedTree === undefined
-        ? []
-        : await changedPaths({
-          gitPath,
-          cwd,
-          from: stagedTree,
-          to: landedTreeOid,
-        },)),
+      ...(await changedSinceCaptured({
+        gitPath,
+        cwd,
+        capturedIndexPath,
+        landedTreeOid,
+      },)),
     ],),
   ];
   await mergeLandedEntries({

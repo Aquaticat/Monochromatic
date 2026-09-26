@@ -117,8 +117,6 @@ export class AddedPathPreconditionError extends Error {
    @param reason - which state differs from `HEAD`
 
    @param lifecycle - operation adding the path, which decides the remedy text
-
- @param baseRevision - baseline commit the path must match; live `HEAD` when absent
    */
   constructor({
     path,
@@ -234,6 +232,8 @@ async function worktreeMetadata({
  @param oid - blob the policy patch was computed against
 
  @param lifecycle - operation adding the path, which decides the remedy text
+
+ @param baseRevision - baseline commit the path must match; live `HEAD` when absent
 
  @returns Git mode of the unchanged ordinary file
 

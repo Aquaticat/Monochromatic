@@ -116,7 +116,8 @@ export async function listNonceReflogOids({
     allowFailure: true,
   },);
   if (result.exitCode !== 0)
-    throw new CommitTransactionRecoveryError(`${ref} reflog is unreadable: ${result.stderr.trim()}`,);
+    throw new CommitTransactionRecoveryError(`${ref} reflog is unreadable: ${result.stderr
+      .trim()}`,);
   return [
     ...new Set(
       DECODER.decode(result.stdout,)
@@ -124,7 +125,9 @@ export async function listNonceReflogOids({
         .filter(function nonempty(line,): boolean {
           return line.length > 0;
         },)
-        .map(parseReflogLine,)
+        .map(function parseLine(line,): ReflogEntry {
+          return parseReflogLine(line,);
+        },)
         .filter(function carriesNonceAction({ subject, },): boolean {
           return subject.startsWith(subjectPrefix,);
         },)

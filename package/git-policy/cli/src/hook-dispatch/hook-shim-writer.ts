@@ -116,7 +116,8 @@ export async function writeHookShim({
       path: hookPath,
       bytes: ENCODER.encode(hookEntryProgram({
         nodePath,
-        dispatchUrl: pathToFileURL(dispatchPath,).href,
+        dispatchUrl: pathToFileURL(dispatchPath,)
+          .href,
         event,
       },),),
     },);

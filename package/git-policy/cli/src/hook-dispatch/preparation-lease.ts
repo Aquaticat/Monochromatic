@@ -9,6 +9,7 @@
  */
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   classifyTransactionOwner,
@@ -61,7 +62,7 @@ export function formatPreparationLease({
  await hasValidInheritedLease(process.env);
  ```
  */
-export async function hasValidInheritedLease(environment: Readonly<Record<string, string | undefined>>,): Promise<boolean> {
+export async function hasValidInheritedLease(environment: Readonly<NodeJS.ProcessEnv>,): Promise<boolean> {
   /**
    Tagged lease logger.
    */
@@ -80,12 +81,14 @@ export async function hasValidInheritedLease(environment: Readonly<Record<string
      Parsed lease.
      */
     const value: unknown = JSON.parse(lease,);
-    if (((typeof value) !== 'object') || (value === null) || (!('directory' in value)) || ((typeof value.directory) !== 'string'))
+    if (((typeof value) !== 'object') || (value === null)
+      || (!('directory' in value))
+      || ((typeof value.directory) !== 'string'))
       return false;
     /**
      Named transaction directory.
      */
-    const directory = String(value.directory,);
+    const {directory} = value;
     /**
      Plan the lease must still match.
      */
@@ -97,22 +100,28 @@ export async function hasValidInheritedLease(environment: Readonly<Record<string
       ),
       'utf8',
     ),);
-    if (((typeof plan) !== 'object') || (plan === null) || (!('lease' in plan)) || (plan.lease !== lease))
+    if (((typeof plan) !== 'object') || (plan === null)
+      || (!('lease' in plan))
+      || (plan.lease !== lease))
       return false;
     /**
      Owner of the leasing transaction.
      */
-    const owner = parseTransactionOwner(new Uint8Array(await readFile(join(
+    const owner = parseTransactionOwner(
+      new Uint8Array(
+        await readFile(join(
       directory,
       OWNER_FILENAME,
-    ),),),);
+    ),),
+      ),
+    );
     return (await classifyTransactionOwner({
       ownerPid: owner.ownerPid,
       ownerIdentity: owner.ownerIdentity,
     },)) === 'alive';
   }
   catch (error: unknown) {
-    rl.debug(`inherited preparation lease is invalid: ${error instanceof Error ? error.message : 'unreadable'}`,);
+    rl.debug(`inherited preparation lease is invalid: ${caughtValueText(error,)}`,);
     return false;
   }
 }

@@ -21,7 +21,7 @@
 import { lstat, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { reproduceConclusionCleanup, } from '../shadow-repository/shadow-conclusion-state.ts';
+import { reproduceConclusionCleanup, } from '../shadow-repository/shadow-conclusion-cleanup.ts';
 import type { AddedPathRecord, } from './commit-transaction-added-paths.ts';
 import {
   baseRevision,
@@ -303,11 +303,17 @@ export async function landTransaction({
     tag: landTransaction.name,
     l,
   },);
+  /**
+   Landing lock, held until the attempt returns.
+   */
   await using _landingLock = await acquireLandingLock({
     gitPath,
     cwd,
     registryRoot: capture.registryRoot,
   },);
+  /**
+   Real `index.lock`, consumed by the install or released when the attempt lands nothing.
+   */
   await using indexLock = await acquireRealIndexLock({
     realIndexPath: capture.realIndexPath,
     transactionDirectory: workspace.directory,
@@ -321,8 +327,15 @@ export async function landTransaction({
     gitPath,
     cwd,
   },);
-  if ((symbolicHead.kind !== capture.symbolicHead.kind)
-    || ((symbolicHead.kind === 'branch') && (capture.symbolicHead.kind === 'branch') && (symbolicHead.ref !== capture.symbolicHead.ref))) {
+  if ((symbolicHead.kind
+    !== capture.symbolicHead
+    .kind)
+    || ((symbolicHead.kind === 'branch') && (capture.symbolicHead
+      .kind
+      === 'branch')
+      && (symbolicHead.ref
+        !== capture.symbolicHead
+        .ref))) {
     rl.debug('HEAD names another target than at invocation',);
     return {
       kind: 'branch-switched',
@@ -427,15 +440,22 @@ export async function landTransaction({
           nonce: workspace.transactionId,
           oid: payload.newOid,
         },),
-        ...(capture.symbolicHead.kind === 'detached' ? ['--no-deref',] : []),
+        ...(capture.symbolicHead
+          .kind
+          === 'detached' ? ['--no-deref',] : []),
         capture.targetRef,
         payload.newOid,
-        capture.base.kind === 'commit' ? capture.base.oid : '0'.repeat(capture.emptyTreeOid.length,),
+        capture.base
+          .kind
+          === 'commit' ? capture.base
+            .oid : '0'.repeat(capture.emptyTreeOid
+              .length,),
       ],
       allowFailure: true,
     },);
     if (swap.exitCode !== 0) {
-      rl.debug(`compare-and-swap lost: ${swap.stderr.trim()}`,);
+      rl.debug(`compare-and-swap lost: ${swap.stderr
+        .trim()}`,);
       await removePackKeep({
         objectDirectory: capture.objectDirectory,
         packName: packName ?? '',
@@ -481,6 +501,9 @@ export async function landTransaction({
     kind: 'landed',
     oid: payload.operation === 'commit'
       ? payload.newOid
-      : (capture.base.kind === 'commit' ? capture.base.oid : ''),
+      : (capture.base
+        .kind
+        === 'commit' ? capture.base
+          .oid : ''),
   };
 }

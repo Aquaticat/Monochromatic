@@ -117,7 +117,8 @@ export async function runPostCommitHook({
     tag: runPostCommitHook.name,
     l,
   },);
-  if (plan.disabledEvents.includes('post-commit',)) {
+  if (plan.disabledEvents
+    .includes('post-commit',)) {
     rl.debug('post-commit disabled by hook.post-commit.enabled=false',);
     return;
   }

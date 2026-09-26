@@ -22,6 +22,7 @@ import {
   join,
 } from 'node:path';
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   isMissingPath,
@@ -50,7 +51,7 @@ const PRIVATE_FILE_MODE = 0o600;
 /**
  Lower jitter bound as a fraction of the backoff, matching Git's `lock_file_timeout`.
  */
-const JITTER_FLOOR = 3 / (2 + 2);
+const JITTER_FLOOR = 1 - (1 / (2 + 2));
 
 /**
  Jitter width as a fraction of the backoff.
@@ -133,18 +134,20 @@ async function openLockWithBackoff({
     attempt: 1,
     multiplier: 1,
   };
-  // oxlint-disable-next-line typescript/no-unnecessary-condition -- Every iteration returns, throws, or sleeps within the finite budget.
-  while (true) {
+  // Every iteration returns, throws, or sleeps within the finite budget.
+  for (;;) {
     try {
       // oxlint-disable-next-line no-await-in-loop -- Each attempt observes whether the previous holder released the lock.
       return await open(
         lockPath,
-        constants.O_CREAT | constants.O_EXCL | constants.O_RDWR,
+        constants.O_CREAT | constants.O_EXCL
+          | constants.O_RDWR,
         PRIVATE_FILE_MODE,
       );
     }
     catch (error: unknown) {
-      if (!(Error.isError(error,) && ('code' in error) && (error.code === 'EEXIST')))
+      if (!(Error.isError(error,) && ('code' in error)
+        && (error.code === 'EEXIST')))
         throw error;
       l.debug(`index lock busy on attempt ${String(state.attempt,)}: ${error.message}`,);
     }
@@ -202,7 +205,10 @@ async function assertLockIdentity({
  */
 async function removeOwnPidFile(pidPath: string,): Promise<void> {
   try {
-    if ((await readFile(pidPath, 'utf8',)) === `pid ${String(process.pid,)}\n`)
+    if ((await readFile(
+      pidPath,
+      'utf8',
+    )) === `pid ${String(process.pid,)}\n`)
       await rm(pidPath,);
   }
   catch (error: unknown) {
@@ -224,13 +230,15 @@ async function writeOwnPidFile(pidPath: string,): Promise<void> {
      */
     await using handle = await open(
       pidPath,
-      constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY,
+      constants.O_CREAT | constants.O_EXCL
+        | constants.O_WRONLY,
       PRIVATE_FILE_MODE,
     );
     await handle.writeFile(`pid ${String(process.pid,)}\n`,);
   }
   catch (error: unknown) {
-    if (!(Error.isError(error,) && ('code' in error) && (error.code === 'EEXIST')))
+    if (!(Error.isError(error,) && ('code' in error)
+      && (error.code === 'EEXIST')))
       throw error;
     l.debug(`a PID file already exists beside the lock: ${pidPath}`,);
   }
@@ -389,7 +397,7 @@ export async function acquireRealIndexLock({
       catch (error: unknown) {
         if (!(isMissingPath(error,) || (error instanceof TypeError)))
           throw error;
-        l.warn(`index lock was not this transaction's at release: ${Error.isError(error,) ? error.message : 'absent'}`,);
+        l.warn(`index lock was not this transaction's at release: ${caughtValueText(error,)}`,);
       }
       await removeOwnPidFile(pidPath,);
     },

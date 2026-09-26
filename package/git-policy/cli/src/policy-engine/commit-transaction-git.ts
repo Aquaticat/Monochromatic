@@ -15,6 +15,7 @@ import type {
   GitObjectId,
   PolicyPatch,
 } from '../api/policy-types.ts';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { validatePolicyPatch, } from './commit-transaction-patch.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
@@ -176,13 +177,15 @@ export async function runTransactionGit({
     throw new CommitTransactionGitError(`git ${args.join(' ',)} started without captured output streams.`,);
   if ((input !== undefined) && (child.stdin !== null)) {
     // Git may exit before reading everything; its exit status, not the broken pipe, reports the failure.
-    child.stdin.once(
+    child.stdin
+      .once(
       'error',
-      function reportInputError(error,): void {
-        l.debug(`git ${args.join(' ',)} closed standard input early: ${error.message}`,);
+      function reportInputError(error: unknown,): void {
+        l.debug(`git ${args.join(' ',)} closed standard input early: ${caughtValueText(error,)}`,);
       },
     );
-    child.stdin.end(input,);
+    child.stdin
+      .end(input,);
   }
   /**
    Concurrent stream consumers.

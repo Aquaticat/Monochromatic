@@ -134,11 +134,15 @@ export async function runCommitTransaction({
   /**
    Whether any path was selected.
    */
-  const selectsPaths = (region.pathspecs.length > 0) || region.hasPathspecFromFile;
+  const selectsPaths = (region.pathspecs
+    .length
+    > 0) || region.hasPathspecFromFile;
   /**
    Whether `-a` stages privately; invalid combinations reach native Git unchanged so it rejects them.
    */
-  const stagedAll = region.hasAllFlag && (!selectsPaths) && (!readOnlySelection) && (!region.hasExplicitOnlyFlag);
+  const stagedAll = region.hasAllFlag && (!selectsPaths)
+    && (!readOnlySelection)
+    && (!region.hasExplicitOnlyFlag);
   /**
    Supported private-index mode.
    */
@@ -309,7 +313,8 @@ export async function runCommitTransaction({
       policyResult: convergence.result,
       committed: false,
     };
-  if (!convergence.pass.shouldForward) {
+  if (!convergence.pass
+    .shouldForward) {
     rl.debug('policies blocked the commit before preparation',);
     return {
       policyResult: convergence.pass,

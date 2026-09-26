@@ -90,7 +90,8 @@ export async function recoverInspectedEntry({
     return 'staging-unattributed';
   }
   if (owner.liveness === 'alive') {
-    rl.debug(`transaction owner ${String(owner.record.ownerPid,)} is active; skipping ${entry.path}`,);
+    rl.debug(`transaction owner ${String(owner.record
+      .ownerPid,)} is active; skipping ${entry.path}`,);
     return 'owner-active';
   }
   if (entry.kind === 'staging') {
@@ -98,10 +99,11 @@ export async function recoverInspectedEntry({
     rl.debug(`dead owner stopped before publishing; staging candidate kept: ${entry.path}`,);
     return 'staging-retained';
   }
-  return recoverDeadTransaction({
+  return await recoverDeadTransaction({
     directory: entry.path,
     transactionId: entry.transactionId,
-    ownerPid: owner.record.ownerPid,
+    ownerPid: owner.record
+      .ownerPid,
     gitPath,
     effectiveCwd,
   },);
@@ -118,7 +120,10 @@ async function needsLandingLock(inspected: InspectedEntry,): Promise<boolean> {
   /**
    Entry owner evidence.
    */
-  const { owner, entry, } = inspected;
+  const {
+    owner,
+    entry,
+  } = inspected;
   return (entry.kind === 'transaction')
     && ((typeof owner) !== 'string')
     && ((typeof owner) === 'object')
@@ -146,6 +151,9 @@ async function recoverLandingsUnderLock({
   gitPath: string;
   effectiveCwd: string;
 }>,): Promise<readonly CommitTransactionRecoveryOutcome[]> {
+  /**
+   Landing lock, so recovery never races a live lander.
+   */
   await using _landingLock = await acquireOwnerLock({
     lockDirectory: join(
       root,
@@ -193,15 +201,21 @@ export async function recoverRegisteredTransactions({
   /**
    Owner evidence for every published and staging entry, read concurrently because inspection never mutates.
    */
-  const inspected = oldestFirst(await Promise.all(entries
+  const inspected = oldestFirst(
+    await Promise.all(entries
     .filter(function ownsEvidence(entry,): boolean {
       return entry.kind !== 'retired';
     },)
-    .map(inspectRegistryEntry,),),);
+      .map(function inspectEntry(entry,): Promise<InspectedEntry> {
+        return inspectRegistryEntry(entry,);
+      },),),
+  );
   /**
    Whether each entry needs the landing lock, in the same order.
    */
-  const lockNeeds = await Promise.all(inspected.map(needsLandingLock,),);
+  const lockNeeds = await Promise.all(inspected.map(function landingLockNeed(item,): Promise<boolean> {
+    return needsLandingLock(item,);
+  },),);
   /**
    Landing recoveries, run once under the landing lock when any dead landing exists.
    */
@@ -220,7 +234,8 @@ export async function recoverRegisteredTransactions({
     if (lockNeeds[index] === true)
       continue;
     outcomes.push({
-      directory: item.entry.path,
+      directory: item.entry
+        .path,
       // oxlint-disable-next-line no-await-in-loop -- Each recovery mutates the shared ref, index, or lock the next one validates.
       action: await recoverInspectedEntry({
         inspected: item,

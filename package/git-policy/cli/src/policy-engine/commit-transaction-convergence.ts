@@ -140,15 +140,21 @@ export async function convergeCommitPolicies({
     pass: firstPass,
     changedPasses: 0,
   };
-  while (state.pass.patches.length > 0) {
-    for (const event of state.pass.events) {
+  while (state.pass
+    .patches
+    .length
+    > 0) {
+    for (const event of state.pass
+      .events) {
       if ((event.type === 'finding')
         && (event.policyId === 'final-newline')
         && (event.fix === 'available')
         && (event.path !== undefined))
         newlinePaths.add(event.path,);
     }
-    if (state.pass.exitCode === 2)
+    if (state.pass
+      .exitCode
+      === 2)
       return {
         kind: 'blocked',
         result: state.pass,

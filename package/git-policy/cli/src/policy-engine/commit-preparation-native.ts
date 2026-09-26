@@ -234,7 +234,8 @@ export function withoutAllFlag(commitArgs: readonly string[],): readonly string[
     }
     if (token === '--all')
       continue;
-    if (token.startsWith('-',) && (!token.startsWith('--',)) && (token.length > 1)) {
+    if (token.startsWith('-',) && (!token.startsWith('--',))
+      && (token.length > 1)) {
       /**
        Cluster letters; everything after an optional-value letter is that option's value.
        */

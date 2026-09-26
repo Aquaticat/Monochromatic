@@ -5,22 +5,23 @@
 
  @module
  */
-import type { AddedPathRecord, } from './commit-transaction-added-paths.ts';
 import type {
   ConclusionKind,
-  PreparationBase,
   SymbolicHeadTarget,
 } from './commit-transaction-capture.ts';
 import {
-  type FileIdentity,
   type IndexLockRecord,
   JOURNAL_SCHEMA_VERSION,
   type LandingRecord,
-  type LockIdentity,
   type PreparedRecord,
   type PreparingRecord,
   type RefUpdatedRecord,
 } from './commit-transaction-journal-states.ts';
+import {
+  createRecordReader,
+  FIELD_ABSENT,
+  type RecordReader,
+} from './commit-transaction-journal-reader.ts';
 import { CommitTransactionRecoveryError, } from './commit-transaction-recovery-validation.ts';
 
 /**
@@ -34,385 +35,24 @@ const DECODER = new TextDecoder(
 /**
  Accepted conclusion kinds.
  */
-const CONCLUSION_KINDS: ReadonlySet<string> = new Set([
+const CONCLUSION_KINDS: readonly ConclusionKind[] = [
   'none',
   'amend',
   'merge',
   'cherry-pick',
   'revert',
-],);
+];
 
 /**
- Record being parsed, named in diagnostics.
+ Narrows a recorded conclusion kind.
+
+ @param value - recorded value
+
+ @returns whether it names a conclusion kind
  */
-type ParseScope = Readonly<{
-  /**
-   Record filename.
-   */
-  record: string;
-  /**
-   Parsed JSON object.
-   */
-  value: object;
-}>;
-
-/**
- Builds the malformed-field failure.
-
- @param scope - record scope
-
- @param key - field name
-
- @returns recovery error naming both
- */
-function malformed({
-  scope,
-  key,
-}: Readonly<{
-  scope: ParseScope;
-  key: string;
-}>,): CommitTransactionRecoveryError {
-  return new CommitTransactionRecoveryError(`Transaction record ${scope.record} has a malformed ${key} field.`,);
-}
-
-/**
- Reads a required string field.
-
- @param scope - record scope
-
- @param key - field name
-
- @returns string value
- */
-function stringField({
-  scope,
-  key,
-}: Readonly<{
-  scope: ParseScope;
-  key: string;
-}>,): string {
-  /**
-   Untrusted field value.
-   */
-  const value: unknown = Reflect.get(
-    scope.value,
-    key,
-  );
-  if ((typeof value) !== 'string')
-    throw malformed({
-      scope,
-      key,
-    },);
-  return String(value,);
-}
-
-/**
- Reads an optional string field.
-
- @param scope - record scope
-
- @param key - field name
-
- @returns string value or absence
- */
-function optionalStringField({
-  scope,
-  key,
-}: Readonly<{
-  scope: ParseScope;
-  key: string;
-}>,): string | undefined {
-  return (key in scope.value)
-    ? stringField({
-      scope,
-      key,
-    },)
-    : undefined;
-}
-
-/**
- Reads a required object field.
-
- @param scope - record scope
-
- @param key - field name
-
- @returns nested scope
- */
-function objectField({
-  scope,
-  key,
-}: Readonly<{
-  scope: ParseScope;
-  key: string;
-}>,): ParseScope {
-  /**
-   Untrusted field value.
-   */
-  const value: unknown = Reflect.get(
-    scope.value,
-    key,
-  );
-  if (((typeof value) !== 'object') || (value === null) || Array.isArray(value,))
-    throw malformed({
-      scope,
-      key,
-    },);
-  return {
-    record: `${scope.record}#${key}`,
-    value,
-  };
-}
-
-/**
- Reads a required array of strings.
-
- @param scope - record scope
-
- @param key - field name
-
- @returns strings
- */
-function stringArrayField({
-  scope,
-  key,
-}: Readonly<{
-  scope: ParseScope;
-  key: string;
-}>,): readonly string[] {
-  /**
-   Untrusted field value.
-   */
-  const value: unknown = Reflect.get(
-    scope.value,
-    key,
-  );
-  if (!Array.isArray(value,))
-    throw malformed({
-      scope,
-      key,
-    },);
-  return value.map(function stringItem(item: unknown,): string {
-    if ((typeof item) !== 'string')
-      throw malformed({
-        scope,
-        key,
-      },);
-    return String(item,);
-  },);
-}
-
-/**
- Reads a positive safe integer field.
-
- @param scope - record scope
-
- @param key - field name
-
- @returns integer
- */
-function positiveIntegerField({
-  scope,
-  key,
-}: Readonly<{
-  scope: ParseScope;
-  key: string;
-}>,): number {
-  /**
-   Untrusted field value.
-   */
-  const value: unknown = Reflect.get(
-    scope.value,
-    key,
-  );
-  if (((typeof value) !== 'number') || (!Number.isSafeInteger(value,)) || (Number(value,) < 1))
-    throw malformed({
-      scope,
-      key,
-    },);
-  return Number(value,);
-}
-
-/**
- Reads a preparation base.
-
- @param scope - record scope
-
- @param key - field name
-
- @returns base
- */
-function baseField({
-  scope,
-  key,
-}: Readonly<{
-  scope: ParseScope;
-  key: string;
-}>,): PreparationBase {
-  /**
-   Nested base object.
-   */
-  const nested = objectField({
-    scope,
-    key,
-  },);
-  /**
-   Base discriminator.
-   */
-  const kind = stringField({
-    scope: nested,
-    key: 'kind',
-  },);
-  if (kind === 'unborn')
-    return { kind: 'unborn', };
-  if (kind !== 'commit')
-    throw malformed({
-      scope,
-      key,
-    },);
-  return {
-    kind: 'commit',
-    oid: stringField({
-      scope: nested,
-      key: 'oid',
-    },),
-  };
-}
-
-/**
- Reads a file identity.
-
- @param scope - record scope
-
- @param key - field name
-
- @returns identity
- */
-function identityField({
-  scope,
-  key,
-}: Readonly<{
-  scope: ParseScope;
-  key: string;
-}>,): FileIdentity {
-  /**
-   Nested identity object.
-   */
-  const nested = objectField({
-    scope,
-    key,
-  },);
-  return {
-    device: stringField({
-      scope: nested,
-      key: 'device',
-    },),
-    inode: stringField({
-      scope: nested,
-      key: 'inode',
-    },),
-  };
-}
-
-/**
- Reads a lock identity.
-
- @param scope - record scope
-
- @param key - field name
-
- @returns lock identity
- */
-function lockField({
-  scope,
-  key,
-}: Readonly<{
-  scope: ParseScope;
-  key: string;
-}>,): LockIdentity {
-  return {
-    ...identityField({
-      scope,
-      key,
-    },),
-    fsId: stringField({
-      scope: objectField({
-        scope,
-        key,
-      },),
-      key: 'fsId',
-    },),
-  };
-}
-
-/**
- Reads added-path or selected-worktree records.
-
- @param scope - record scope
-
- @param key - field name
-
- @returns records
- */
-function addedPathsField({
-  scope,
-  key,
-}: Readonly<{
-  scope: ParseScope;
-  key: string;
-}>,): readonly AddedPathRecord[] {
-  /**
-   Untrusted field value.
-   */
-  const value: unknown = Reflect.get(
-    scope.value,
-    key,
-  );
-  if (!Array.isArray(value,))
-    throw malformed({
-      scope,
-      key,
-    },);
-  return value.map(function parseRecord(item: unknown,): AddedPathRecord {
-    if (((typeof item) !== 'object') || (item === null))
-      throw malformed({
-        scope,
-        key,
-      },);
-    /**
-     Nested record scope.
-     */
-    const nested: ParseScope = {
-      record: `${scope.record}#${key}`,
-      value: item,
-    };
-    /**
-     Recorded Git mode.
-     */
-    const gitMode = stringField({
-      scope: nested,
-      key: 'gitMode',
-    },);
-    if ((gitMode !== '100644') && (gitMode !== '100755'))
-      throw malformed({
-        scope: nested,
-        key: 'gitMode',
-      },);
-    return {
-      path: stringField({
-        scope: nested,
-        key: 'path',
-      },),
-      gitMode,
-      originalOid: stringField({
-        scope: nested,
-        key: 'originalOid',
-      },),
-      intendedOid: stringField({
-        scope: nested,
-        key: 'intendedOid',
-      },),
-    };
+function isConclusionKind(value: string,): value is ConclusionKind {
+  return CONCLUSION_KINDS.some(function sameKind(kind,): boolean {
+    return kind === value;
   },);
 }
 
@@ -421,40 +61,66 @@ function addedPathsField({
 
  @param bytes - record bytes
 
- @param record - filename named in diagnostics
+ @param name - record name used in diagnostics
 
  @param state - expected state discriminator
 
- @returns parse scope
+ @returns field reader
  */
 function openRecord({
   bytes,
-  record,
+  name,
   state,
 }: Readonly<{
   bytes: Uint8Array;
-  record: string;
+  name: string;
   state: string;
-}>,): ParseScope {
+}>,): RecordReader {
   /**
    Untrusted JSON value.
    */
   const value: unknown = JSON.parse(DECODER.decode(bytes,),);
-  if (((typeof value) !== 'object') || (value === null) || Array.isArray(value,))
-    throw new CommitTransactionRecoveryError(`Transaction record ${record} is not an object.`,);
-  /**
-   Record scope.
-   */
-  const scope: ParseScope = {
-    record,
+  if (((typeof value) !== 'object') || (value === null)
+    || Array.isArray(value,)
+    || (Reflect.get(
+      value,
+      'schemaVersion',
+    ) !== JOURNAL_SCHEMA_VERSION)
+    || (Reflect.get(
+      value,
+      'state',
+    ) !== state))
+    throw new CommitTransactionRecoveryError(`Transaction record ${name} is not a schema-version-2 ${state} record.`,);
+  return createRecordReader({
+    name,
     value,
+  },);
+}
+
+/**
+ Reads a recorded symbolic `HEAD` target.
+
+ @param read - record reader
+
+ @returns symbolic target
+ */
+function readSymbolicHead(read: RecordReader,): SymbolicHeadTarget {
+  /**
+   Nested target.
+   */
+  const head = read.object('symbolicHead',);
+  /**
+   Target discriminator.
+   */
+  const kind = head.string('kind',);
+  if (kind === 'detached')
+    return { kind: 'detached', };
+  if (kind !== 'branch')
+    throw new CommitTransactionRecoveryError('Transaction record preparing.json has a malformed symbolicHead field.',);
+  return {
+    kind: 'branch',
+    ref: head.string('ref',),
   };
-  if ((Reflect.get(value, 'schemaVersion',) !== JOURNAL_SCHEMA_VERSION) || (Reflect.get(value, 'state',) !== state))
-    throw malformed({
-      scope,
-      key: 'schemaVersion or state',
-    },);
-  return scope;
 }
 
 /**
@@ -473,88 +139,44 @@ function openRecord({
  */
 export function parsePreparingRecord(bytes: Uint8Array,): PreparingRecord {
   /**
-   Record scope.
+   Record reader.
    */
-  const scope = openRecord({
+  const read = openRecord({
     bytes,
-    record: 'preparing.json',
+    name: 'preparing.json',
     state: 'preparing',
   },);
   /**
-   Mode discriminator.
+   Recorded mode, conclusion, and ref backend.
    */
-  const mode = stringField({
-    scope,
-    key: 'mode',
-  },);
-  /**
-   Commit kind.
-   */
-  const conclusion = stringField({
-    scope,
-    key: 'conclusion',
-  },);
-  /**
-   Ref backend.
-   */
-  const refFormat = stringField({
-    scope,
-    key: 'refFormat',
-  },);
-  /**
-   Symbolic head object.
-   */
-  const head = objectField({
-    scope,
-    key: 'symbolicHead',
-  },);
-  /**
-   Symbolic head discriminator.
-   */
-  const headKind = stringField({
-    scope: head,
-    key: 'kind',
-  },);
+  const [mode, conclusion, refFormat,] = [
+    read.string('mode',),
+    read.string('conclusion',),
+    read.string('refFormat',),
+  ];
   if (((mode !== 'explicit-path') && (mode !== 'index'))
-    || (!CONCLUSION_KINDS.has(conclusion,))
-    || ((refFormat !== 'files') && (refFormat !== 'reftable'))
-    || ((headKind !== 'branch') && (headKind !== 'detached')))
-    throw malformed({
-      scope,
-      key: 'mode, conclusion, refFormat, or symbolicHead',
-    },);
-  /**
-   Validated symbolic head.
-   */
-  const symbolicHead: SymbolicHeadTarget = headKind === 'branch'
-    ? {
-      kind: 'branch',
-      ref: stringField({
-        scope: head,
-        key: 'ref',
-      },),
-    }
-    : { kind: 'detached', };
+    || (!isConclusionKind(conclusion,))
+    || ((refFormat !== 'files') && (refFormat !== 'reftable')))
+    throw new CommitTransactionRecoveryError('Transaction record preparing.json has a malformed mode, conclusion, or refFormat field.',);
   return {
     schemaVersion: JOURNAL_SCHEMA_VERSION,
     state: 'preparing',
-    transactionId: stringField({ scope, key: 'transactionId', },),
+    transactionId: read.string('transactionId',),
     mode,
-    base: baseField({ scope, key: 'base', },),
-    symbolicHead,
-    targetRef: stringField({ scope, key: 'targetRef', },),
-    // Membership was checked against CONCLUSION_KINDS.
-    conclusion: conclusion as ConclusionKind,
-    repositoryRoot: stringField({ scope, key: 'repositoryRoot', },),
-    gitDir: stringField({ scope, key: 'gitDir', },),
-    commonDir: stringField({ scope, key: 'commonDir', },),
-    realIndexPath: stringField({ scope, key: 'realIndexPath', },),
-    objectDirectory: stringField({ scope, key: 'objectDirectory', },),
+    base: read.base('base',),
+    symbolicHead: readSymbolicHead(read,),
+    targetRef: read.string('targetRef',),
+    conclusion,
+    repositoryRoot: read.string('repositoryRoot',),
+    gitDir: read.string('gitDir',),
+    commonDir: read.string('commonDir',),
+    realIndexPath: read.string('realIndexPath',),
+    objectDirectory: read.string('objectDirectory',),
     refFormat,
-    emptyTreeOid: stringField({ scope, key: 'emptyTreeOid', },),
-    shadowPath: stringField({ scope, key: 'shadowPath', },),
-    selectedPathspecs: stringArrayField({ scope, key: 'selectedPathspecs', },),
-    invokedAt: stringField({ scope, key: 'invokedAt', },),
+    emptyTreeOid: read.string('emptyTreeOid',),
+    shadowPath: read.string('shadowPath',),
+    selectedPathspecs: read.strings('selectedPathspecs',),
+    invokedAt: read.string('invokedAt',),
   };
 }
 
@@ -574,35 +196,23 @@ export function parsePreparingRecord(bytes: Uint8Array,): PreparingRecord {
  */
 export function parsePreparedRecord(bytes: Uint8Array,): PreparedRecord {
   /**
-   Record scope.
+   Record reader.
    */
-  const scope = openRecord({
+  const read = openRecord({
     bytes,
-    record: 'prepared.json',
+    name: 'prepared.json',
     state: 'prepared',
   },);
-  /**
-   Signed flag.
-   */
-  const signed: unknown = Reflect.get(
-    scope.value,
-    'signed',
-  );
-  if ((typeof signed) !== 'boolean')
-    throw malformed({
-      scope,
-      key: 'signed',
-    },);
   return {
     schemaVersion: JOURNAL_SCHEMA_VERSION,
     state: 'prepared',
-    shadowPath: stringField({ scope, key: 'shadowPath', },),
-    preparedOid: stringField({ scope, key: 'preparedOid', },),
-    signed: signed === true,
-    intendedTreeOid: stringField({ scope, key: 'intendedTreeOid', },),
-    committedPaths: stringArrayField({ scope, key: 'committedPaths', },),
-    addedPaths: addedPathsField({ scope, key: 'addedPaths', },),
-    selectedWorktreePaths: addedPathsField({ scope, key: 'selectedWorktreePaths', },),
+    shadowPath: read.string('shadowPath',),
+    preparedOid: read.string('preparedOid',),
+    signed: read.boolean('signed',),
+    intendedTreeOid: read.string('intendedTreeOid',),
+    committedPaths: read.strings('committedPaths',),
+    addedPaths: read.addedPaths('addedPaths',),
+    selectedWorktreePaths: read.addedPaths('selectedWorktreePaths',),
   };
 }
 
@@ -622,18 +232,18 @@ export function parsePreparedRecord(bytes: Uint8Array,): PreparedRecord {
  */
 export function parseIndexLockRecord(bytes: Uint8Array,): IndexLockRecord {
   /**
-   Record scope.
+   Record reader.
    */
-  const scope = openRecord({
+  const read = openRecord({
     bytes,
-    record: 'index-lock record',
+    name: 'index-lock record',
     state: 'index-locked',
   },);
   return {
     schemaVersion: JOURNAL_SCHEMA_VERSION,
     state: 'index-locked',
-    attempt: positiveIntegerField({ scope, key: 'attempt', },),
-    lock: lockField({ scope, key: 'lock', },),
+    attempt: read.positiveInteger('attempt',),
+    lock: read.lock('lock',),
   };
 }
 
@@ -653,58 +263,42 @@ export function parseIndexLockRecord(bytes: Uint8Array,): IndexLockRecord {
  */
 export function parseLandingRecord(bytes: Uint8Array,): LandingRecord {
   /**
-   Record scope.
+   Record reader.
    */
-  const scope = openRecord({
+  const read = openRecord({
     bytes,
-    record: 'landing record',
+    name: 'landing record',
     state: 'landing',
   },);
   /**
    Landing kind.
    */
-  const operation = stringField({
-    scope,
-    key: 'operation',
-  },);
-  if ((operation !== 'commit') && (operation !== 'normalize-only'))
-    throw malformed({
-      scope,
-      key: 'operation',
-    },);
+  const operation = read.string('operation',);
   /**
-   Optional new target value.
+   New target value, absent for a normalization.
    */
-  const newOid = optionalStringField({
-    scope,
-    key: 'newOid',
-  },);
+  const newOid = read.optionalString('newOid',);
   /**
-   Optional migrated pack.
+   Migrated pack, absent for a normalization.
    */
-  const packName = optionalStringField({
-    scope,
-    key: 'packName',
-  },);
-  if ((operation === 'commit') && (newOid === undefined))
-    throw malformed({
-      scope,
-      key: 'newOid',
-    },);
+  const packName = read.optionalString('packName',);
+  if (((operation !== 'commit') && (operation !== 'normalize-only'))
+    || ((operation === 'commit') && (newOid === FIELD_ABSENT)))
+    throw new CommitTransactionRecoveryError('Transaction record landing record has a malformed operation or newOid field.',);
   return {
     schemaVersion: JOURNAL_SCHEMA_VERSION,
     state: 'landing',
-    attempt: positiveIntegerField({ scope, key: 'attempt', },),
+    attempt: read.positiveInteger('attempt',),
     operation,
-    expectedOld: baseField({ scope, key: 'expectedOld', },),
-    ...(newOid === undefined ? {} : { newOid, }),
-    landedTreeOid: stringField({ scope, key: 'landedTreeOid', },),
-    preLandingIndex: identityField({ scope, key: 'preLandingIndex', },),
-    postIndex: identityField({ scope, key: 'postIndex', },),
-    lock: lockField({ scope, key: 'lock', },),
-    ...(packName === undefined ? {} : { packName, }),
-    addedPaths: addedPathsField({ scope, key: 'addedPaths', },),
-    selectedWorktreePaths: addedPathsField({ scope, key: 'selectedWorktreePaths', },),
+    expectedOld: read.base('expectedOld',),
+    ...(newOid === FIELD_ABSENT ? {} : { newOid, }),
+    landedTreeOid: read.string('landedTreeOid',),
+    preLandingIndex: read.identity('preLandingIndex',),
+    postIndex: read.identity('postIndex',),
+    lock: read.lock('lock',),
+    ...(packName === FIELD_ABSENT ? {} : { packName, }),
+    addedPaths: read.addedPaths('addedPaths',),
+    selectedWorktreePaths: read.addedPaths('selectedWorktreePaths',),
   };
 }
 
@@ -723,17 +317,14 @@ export function parseLandingRecord(bytes: Uint8Array,): LandingRecord {
  ```
  */
 export function parseRefUpdatedRecord(bytes: Uint8Array,): RefUpdatedRecord {
-  /**
-   Record scope.
-   */
-  const scope = openRecord({
-    bytes,
-    record: 'ref-updated.json',
-    state: 'ref-updated',
-  },);
   return {
     schemaVersion: JOURNAL_SCHEMA_VERSION,
     state: 'ref-updated',
-    landedOid: stringField({ scope, key: 'landedOid', },),
+    landedOid: openRecord({
+      bytes,
+      name: 'ref-updated.json',
+      state: 'ref-updated',
+    },)
+      .string('landedOid',),
   };
 }

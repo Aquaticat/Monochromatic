@@ -168,10 +168,10 @@ export async function dispatch(event, args) {
     return;
   }
   const environment = { ...process.env };
-  if (plan.configParameters === null)
+  if (plan.configParameters.kind === 'absent')
     delete environment.GIT_CONFIG_PARAMETERS;
   else
-    environment.GIT_CONFIG_PARAMETERS = plan.configParameters;
+    environment.GIT_CONFIG_PARAMETERS = plan.configParameters.value;
   environment.GIT_WORK_TREE = plan.worktreeRoot;
   environment.CLI_GIT_PREPARATION_LEASE = plan.lease;
   const lock = plan.skipHookLock ? null : await acquire(plan.hookLockPath);

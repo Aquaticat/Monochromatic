@@ -106,7 +106,9 @@ export async function completeNoChangeTransaction({
   changedPaths: readonly string[];
   indexLockTimeoutMs: number;
 }>,): Promise<CommitTransactionResult | typeof NO_CHANGE_NOT_APPLICABLE> {
-  if ((!eligible) || (capture.base.kind === 'unborn'))
+  if ((!eligible) || (capture.base
+    .kind
+    === 'unborn'))
     return NO_CHANGE_NOT_APPLICABLE;
   /**
    Tree of the recorded base, never a later moving HEAD.
@@ -117,7 +119,8 @@ export async function completeNoChangeTransaction({
     args: [
       'rev-parse',
       '--verify',
-      `${capture.base.oid}^{tree}`,
+      `${capture.base
+        .oid}^{tree}`,
     ],
   },)).stdout,)
     .trim();
@@ -158,7 +161,6 @@ export async function completeNoChangeTransaction({
         pass: summary,
         outcome,
         capture,
-        preparedOid: undefined,
       },),
     };
   /**

@@ -33,6 +33,11 @@ const DECODER = new TextDecoder(
 );
 
 /**
+ Lines the layout request prints: toplevel, Git directory, common directory, index, objects, registry, object format.
+ */
+const LAYOUT_LINES = 7;
+
+/**
  Preparation base: the target's commit at invocation, or an unborn target.
  */
 export type PreparationBase =
@@ -137,11 +142,40 @@ function decodeTrimmed(bytes: Uint8Array,): string {
 }
 
 /**
+ Reads one required line of a fixed-order Git report.
+
+ @param lines - report lines
+
+ @param index - line position
+
+ @returns nonempty line
+
+ @throws {@link CommitTransactionGitError} for a missing or empty line
+ */
+function requiredLine({
+  lines,
+  index,
+}: Readonly<{
+  lines: readonly string[];
+  index: number;
+}>,): string {
+  /**
+   Line at the position.
+   */
+  const line = lines[index] ?? '';
+  if (line === '')
+    throw new CommitTransactionGitError('Git returned incomplete repository layout.',);
+  return line;
+}
+
+/**
  Resolves one Git-reported path against the invocation directory.
 
  @param cwd - invocation directory
 
- @param reported - Git-reported path
+ @param lines - fixed-order report lines
+
+ @param index - line position of the path
 
  @returns absolute path
 
@@ -149,13 +183,20 @@ function decodeTrimmed(bytes: Uint8Array,): string {
  */
 function absoluteReported({
   cwd,
-  reported,
+  lines,
+  index,
 }: Readonly<{
   cwd: string;
-  reported: string | undefined;
+  lines: readonly string[];
+  index: number;
 }>,): string {
-  if ((reported === undefined) || (reported === ''))
-    throw new CommitTransactionGitError('Git returned incomplete repository layout.',);
+  /**
+   Reported path.
+   */
+  const reported = requiredLine({
+    lines,
+    index,
+  },);
   return isAbsolute(reported,) ? reported : resolve(
     cwd,
     reported,
@@ -282,7 +323,8 @@ export async function resolveSymbolicHead({
   if (result.exitCode === 1)
     return { kind: 'detached', };
   if (result.exitCode !== 0)
-    throw new CommitTransactionGitError(`git symbolic-ref HEAD failed: ${result.stderr.trim()}`,);
+    throw new CommitTransactionGitError(`git symbolic-ref HEAD failed: ${result.stderr
+      .trim()}`,);
   return {
     kind: 'branch',
     ref: decodeTrimmed(result.stdout,),
@@ -430,7 +472,7 @@ export async function captureInvocation({
   /**
    Fixed-order layout lines.
    */
-  const [toplevel, gitDir, commonDir, indexPath, objectDirectory, registryRoot, objectFormat,] = decodeTrimmed(layout.stdout,)
+  const lines = decodeTrimmed(layout.stdout,)
     .split('\n',);
   /**
    Symbolic `HEAD` target and every other independent fact.
@@ -472,8 +514,6 @@ export async function captureInvocation({
     cwd,
     ref: targetRef,
   },);
-  if ((objectFormat === undefined) || (objectFormat === ''))
-    throw new CommitTransactionGitError('Git returned no object format.',);
   /**
    Recorded capture.
    */
@@ -484,30 +524,39 @@ export async function captureInvocation({
     conclusion,
     repositoryRoot: await realpath(absoluteReported({
       cwd,
-      reported: toplevel,
+      lines,
+      index: 0,
     },),),
     gitDir: absoluteReported({
       cwd,
-      reported: gitDir,
+      lines,
+      index: 1,
     },),
     commonDir: absoluteReported({
       cwd,
-      reported: commonDir,
+      lines,
+      index: 2,
     },),
     realIndexPath: absoluteReported({
       cwd,
-      reported: indexPath,
+      lines,
+      index: 3,
     },),
     objectDirectory: absoluteReported({
       cwd,
-      reported: objectDirectory,
+      lines,
+      index: 4,
     },),
     registryRoot: absoluteReported({
       cwd,
-      reported: registryRoot,
+      lines,
+      index: 5,
     },),
     refFormat,
-    objectFormat,
+    objectFormat: requiredLine({
+      lines,
+      index: LAYOUT_LINES - 1,
+    },),
     emptyTreeOid: decodeTrimmed(emptyTree.stdout,),
     invokedAt,
   };
@@ -528,7 +577,10 @@ export async function captureInvocation({
  ```
  */
 export function baseRevision(capture: Pick<InvocationCapture, 'base' | 'emptyTreeOid'>,): string {
-  return capture.base.kind === 'commit' ? capture.base.oid : capture.emptyTreeOid;
+  return capture.base
+    .kind
+    === 'commit' ? capture.base
+      .oid : capture.emptyTreeOid;
 }
 
 /**

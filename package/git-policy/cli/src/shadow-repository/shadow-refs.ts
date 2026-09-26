@@ -160,7 +160,8 @@ export async function listRealRefs({
        Name, object, and symbolic target.
        */
       const [name, oid, symref,] = line.split('\0',);
-      if ((name === undefined) || (oid === undefined) || (symref === undefined))
+      if ((name === undefined) || (oid === undefined)
+        || (symref === undefined))
         throw new TypeError(`git for-each-ref returned a malformed line: ${JSON.stringify(line,)}`,);
       return {
         name,
@@ -168,10 +169,19 @@ export async function listRealRefs({
         symref,
       };
     },)
-    .toSorted(function byteOrder(left, right,): number {
+    .toSorted(function byteOrder(
+      left,
+      right,
+    ): number {
       return Buffer.compare(
-        Buffer.from(left.name, 'utf8',),
-        Buffer.from(right.name, 'utf8',),
+        Buffer.from(
+          left.name,
+          'utf8',
+        ),
+        Buffer.from(
+          right.name,
+          'utf8',
+        ),
       );
     },);
 }
@@ -308,8 +318,8 @@ export async function writeShadowRefs({
     gitPath,
     cwd,
   },);
-  if (capture.refFormat === 'files')
-    await writeFile(
+  await (capture.refFormat === 'files'
+    ? writeFile(
       join(
         shadowPath,
         'packed-refs',
@@ -319,9 +329,8 @@ export async function writeShadowRefs({
         targetRef: capture.targetRef,
       },),
       { mode: 0o600, },
-    );
-  else
-    await runShadowGit({
+    )
+    : runShadowGit({
       gitPath,
       shadowPath,
       args: [
@@ -336,7 +345,7 @@ export async function writeShadowRefs({
           return `create ${ref.name} ${ref.oid}\n`;
         },)
         .join('',),),
-    },);
+    },));
   /**
    Symbolic refs recreated after their targets exist.
    */

@@ -247,7 +247,9 @@ try {
       args: rawArgs,
       gitPath,
       policyOptions,
-      ...(runtimeResolution.loaded === RUNTIME_CONFIG_ABSENT ? {} : { concurrency: runtimeResolution.loaded.validated.concurrency, }),
+      ...(runtimeResolution.loaded === RUNTIME_CONFIG_ABSENT ? {} : { concurrency: runtimeResolution.loaded
+        .validated
+        .concurrency, }),
     },);
   /**
    Stable policy result before real Git forwarding.
@@ -346,7 +348,7 @@ try {
    Whether private-index transaction already executed real Git.
    */
   const transactionCommitted = landedOid !== undefined;
-  if ((typeof commitTransaction) !== 'symbol' && (!transactionCommitted))
+  if (((typeof commitTransaction) !== 'symbol') && (!transactionCommitted))
     throw new TypeError('A commit transaction that landed nothing must block forwarding.',);
   if (!transactionCommitted) {
     await runGitWithWorktreeCopy({

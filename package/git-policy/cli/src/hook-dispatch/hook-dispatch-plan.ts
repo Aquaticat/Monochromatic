@@ -57,6 +57,21 @@ export type CommitHookEvent = typeof SILENCED_HOOK_EVENTS[number];
 export const PREPARATION_LEASE_ENV = 'CLI_GIT_PREPARATION_LEASE';
 
 /**
+ Value the dispatcher restores as `GIT_CONFIG_PARAMETERS`, or its absence.
+ */
+export type ConfigParameters =
+  | Readonly<{ kind: 'absent'; }>
+  | Readonly<{
+    kind: 'present';
+    value: string;
+  }>;
+
+/**
+ Config key is not set.
+ */
+const CONFIG_UNSET: unique symbol = Symbol('git config key unset',);
+
+/**
  Plan written to `<tx>/hooks/plan.json`.
  */
 export type HookDispatchPlan = Readonly<{
@@ -77,9 +92,9 @@ export type HookDispatchPlan = Readonly<{
    */
   disabledEvents: readonly CommitHookEvent[];
   /**
-   Caller's `GIT_CONFIG_PARAMETERS` including its global `-c` options, or `null` when there were none.
+   Caller's `GIT_CONFIG_PARAMETERS` including its global `-c` options, or absence when there were none.
    */
-  configParameters: string | null;
+  configParameters: ConfigParameters;
   /**
    Absolute worktree root exported as `GIT_WORK_TREE`.
    */
@@ -120,9 +135,9 @@ export function quoteConfigParameter(value: string,): string {
   const body = Array.from(value,)
     .map(function quoteCharacter(character,): string {
       if (character === '\'')
-        return '\'\\\'\'';
+        return String.raw`'\''`;
       if (character === '!')
-        return '\'\\!\'';
+        return String.raw`'\!'`;
       return character;
     },)
     .join('',);
@@ -162,28 +177,33 @@ export function globalConfigOverrides(globalArgs: readonly string[],): readonly 
 
  @param overrides - global `-c` values
 
- @returns combined value, or `null` when both are absent
+ @returns combined value, or absence when both are absent
 
  @example
  ```ts
- combineConfigParameters({ inherited: undefined, overrides: ['a.b=1'] }); // "'a.b=1'"
+ combineConfigParameters({ inherited: '', overrides: ['a.b=1'] }); // { kind: 'present', value: "'a.b=1'" }
  ```
  */
 export function combineConfigParameters({
   inherited,
   overrides,
 }: Readonly<{
-  inherited: string | undefined;
+  inherited: string;
   overrides: readonly string[];
-}>,): string | null {
+}>,): ConfigParameters {
   /**
    Entries in Git's order: inherited first, then command-line options.
    */
   const entries = [
-    ...((inherited === undefined) || (inherited === '') ? [] : [inherited,]),
+    ...(inherited === '' ? [] : [inherited,]),
     ...overrides.map(quoteConfigParameter,),
   ];
-  return entries.length === 0 ? null : entries.join(' ',);
+  return entries.length === 0
+    ? { kind: 'absent', }
+    : {
+      kind: 'present',
+      value: entries.join(' ',),
+    };
 }
 
 /**
@@ -199,7 +219,7 @@ export function combineConfigParameters({
 
  @param key - config key
 
- @returns value, or `undefined` when unset
+ @returns value, or the unset marker
  */
 async function readConfig({
   gitPath,
@@ -213,7 +233,7 @@ async function readConfig({
   globalArgs: readonly string[];
   type: 'path' | 'bool';
   key: string;
-}>,): Promise<string | undefined> {
+}>,): Promise<string | typeof CONFIG_UNSET> {
   /**
    Config lookup; exit 1 means unset.
    */
@@ -230,9 +250,10 @@ async function readConfig({
     allowFailure: true,
   },);
   if (result.exitCode === 1)
-    return undefined;
+    return CONFIG_UNSET;
   if (result.exitCode !== 0)
-    throw new TypeError(`git config --get ${key} failed: ${result.stderr.trim()}`,);
+    throw new TypeError(`git config --get ${key} failed: ${result.stderr
+      .trim()}`,);
   /**
    Value with Git's single terminating newline.
    */
@@ -290,7 +311,7 @@ export async function computeHookDispatchPlan({
   lease: string;
   concurrentCommits: boolean;
   inheritedLeaseValid: boolean;
-  environment: Readonly<Record<string, string | undefined>>;
+  environment: Readonly<NodeJS.ProcessEnv>;
 }>,): Promise<HookDispatchPlan> {
   /**
    Tagged plan logger.
@@ -310,7 +331,7 @@ export async function computeHookDispatchPlan({
       type: 'path',
       key: 'core.hooksPath',
     },),
-    ...SILENCED_HOOK_EVENTS.map(function readEventSwitch(event,): Promise<string | undefined> {
+    ...SILENCED_HOOK_EVENTS.map(function readEventSwitch(event,): Promise<string | typeof CONFIG_UNSET> {
       return readConfig({
         gitPath,
         cwd,
@@ -323,7 +344,7 @@ export async function computeHookDispatchPlan({
   /**
    Absolute hooks directory; Git resolves a relative `core.hooksPath` where hooks run, the worktree root.
    */
-  const hooksPath = configuredHooksPath === undefined
+  const hooksPath = configuredHooksPath === CONFIG_UNSET
     ? join(
       commonDir,
       'hooks',
@@ -346,7 +367,7 @@ export async function computeHookDispatchPlan({
       return eventSwitches[index] === 'false';
     },),
     configParameters: combineConfigParameters({
-      inherited: environment.GIT_CONFIG_PARAMETERS,
+      inherited: environment.GIT_CONFIG_PARAMETERS ?? '',
       overrides: globalConfigOverrides(globalArgs,),
     },),
     worktreeRoot,
@@ -358,6 +379,7 @@ export async function computeHookDispatchPlan({
     ),
     skipHookLock: concurrentCommits || inheritedLeaseValid,
   };
-  rl.debug(`hook plan: hooksPath=${plan.hooksPath} disabled=${plan.disabledEvents.join(',',)} skipLock=${String(plan.skipHookLock,)}`,);
+  rl.debug(`hook plan: hooksPath=${plan.hooksPath} disabled=${plan.disabledEvents
+    .join(',',)} skipLock=${String(plan.skipHookLock,)}`,);
   return plan;
 }

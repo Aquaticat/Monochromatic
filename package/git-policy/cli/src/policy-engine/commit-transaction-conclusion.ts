@@ -190,7 +190,8 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
     gitPath,
     cwd,
     indexPath: workspace.commitIndexPath,
-    pending: settled.addedPaths.pending(),
+    pending: settled.addedPaths
+      .pending(),
   },);
   /**
    Selected corrected files whose worktree equals their original staged blob.
@@ -206,7 +207,8 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
   /**
    Selected and added paths the commit carries.
    */
-  const committedPaths = settled.addedPaths.candidatePaths();
+  const committedPaths = settled.addedPaths
+    .candidatePaths();
   /**
    Correction can remove every selected difference from the base.
    */
@@ -217,7 +219,9 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
     cwd,
     repositoryRoot,
     mode,
-    eligible: (settled.newlinePaths.size > 0)
+    eligible: (settled.newlinePaths
+      .size
+      > 0)
       && (!settled.allowEmpty)
       && (!settled.amend)
       && (!settled.concludesSequencer),
@@ -228,7 +232,8 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
     pass,
     changedPasses,
     changedPaths,
-    indexLockTimeoutMs: concurrency.indexLock.unprovenOwnerTimeoutMs,
+    indexLockTimeoutMs: concurrency.indexLock
+      .unprovenOwnerTimeoutMs,
   },);
   if (noChange !== NO_CHANGE_NOT_APPLICABLE)
     return noChange;
@@ -246,7 +251,8 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
    */
   const invocation = splitCommitInvocation({
     args: privateArgs,
-    subcommandIndex: parseGlobalOptions(privateArgs,).subcommandIndex,
+    subcommandIndex: parseGlobalOptions(privateArgs,)
+      .subcommandIndex,
   },);
   /**
    Dispatch plan shared by the preparation shim and the post-landing `post-commit`.
@@ -261,7 +267,8 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
       directory: workspace.directory,
       token: randomUUID(),
     },),
-    concurrentCommits: concurrency.hooks.concurrentCommits,
+    concurrentCommits: concurrency.hooks
+      .concurrentCommits,
     inheritedLeaseValid: settled.inheritedLeaseValid,
     environment: process.env,
   },);
@@ -336,7 +343,8 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
     committedPaths,
     addedPaths: addedPathRecords,
     selectedWorktreePaths,
-    indexLockTimeoutMs: concurrency.indexLock.unprovenOwnerTimeoutMs,
+    indexLockTimeoutMs: concurrency.indexLock
+      .unprovenOwnerTimeoutMs,
     attempt: 1,
   },);
   if (outcome.kind !== 'landed')

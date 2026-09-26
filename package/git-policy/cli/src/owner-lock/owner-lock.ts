@@ -23,6 +23,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   PROCESS_IDENTITY_ABSENT,
@@ -180,7 +181,8 @@ export async function readOwnerLockRecord(lockDirectory: string,): Promise<Owner
     ),);
   }
   catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error) && ((error.code === 'ENOENT') || (error.code === 'ENOTDIR'))) {
+    if (Error.isError(error,) && ('code' in error)
+      && ((error.code === 'ENOENT') || (error.code === 'ENOTDIR'))) {
       l.debug(`owner lock vanished while reading: ${error.message}`,);
       return LOCK_BUSY;
     }
@@ -218,7 +220,8 @@ export async function ownerLockHolderIsAlive(record: OwnerLockRecord,): Promise<
 function isOccupiedError(error: unknown,): boolean {
   return Error.isError(error,)
     && ('code' in error)
-    && ((error.code === 'EEXIST') || (error.code === 'ENOTEMPTY') || (error.code === 'EPERM'));
+    && ((error.code === 'EEXIST') || (error.code === 'ENOTEMPTY')
+      || (error.code === 'EPERM'));
 }
 
 /**
@@ -298,7 +301,8 @@ async function retireDeadLock({
     );
   }
   catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT')) {
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ENOENT')) {
       rl.debug(`dead lock already retired by another acquirer: ${lockDirectory}`,);
       return LOCK_BUSY;
     }
@@ -319,7 +323,7 @@ async function retireDeadLock({
     catch (error: unknown) {
       if (!isOccupiedError(error,))
         throw error;
-      rl.warn(`could not restore ${lockDirectory}: ${error instanceof Error ? error.message : 'occupied'}`,);
+      rl.warn(`could not restore ${lockDirectory}: ${caughtValueText(error,)}`,);
     }
     return LOCK_BUSY;
   }
@@ -454,8 +458,8 @@ export async function acquireOwnerLock({
    Whether the wait notification already ran.
    */
   const notified = new Set<'notified'>();
-  // oxlint-disable-next-line typescript/no-unnecessary-condition -- The wait is unbounded by contract while the owner lives; every iteration either returns or sleeps.
-  while (true) {
+  // The wait is unbounded by contract while the owner lives; every iteration either returns or sleeps.
+  for (;;) {
     /**
      One publication attempt.
      */

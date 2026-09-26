@@ -95,7 +95,7 @@ export async function migrateShadowObjects({
   shadowPath: string;
   newOid: string;
   oldBase: PreparationBase;
-  keepMessage: string | undefined;
+  keepMessage?: string;
 }>,): Promise<string> {
   /**
    Tagged migration logger.
@@ -147,7 +147,8 @@ export async function migrateShadowObjects({
    Migrated pack hash.
    */
   const packName = report.slice(tab + 1,);
-  rl.debug(`migrated ${String(pack.stdout.length,)} pack bytes for ${newOid} as pack-${packName}`,);
+  rl.debug(`migrated ${String(pack.stdout
+    .length,)} pack bytes for ${newOid} as pack-${packName}`,);
   return packName;
 }
 

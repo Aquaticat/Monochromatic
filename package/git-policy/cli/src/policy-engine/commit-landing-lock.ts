@@ -41,8 +41,12 @@ function creationKey(inspected: InspectedEntry,): string {
   /**
    Entry owner evidence.
    */
-  const { owner, entry, } = inspected;
-  return (typeof owner) === 'string' ? `~${entry.path}` : `${owner.record.createdAt} ${entry.path}`;
+  const {
+    owner,
+    entry,
+  } = inspected;
+  return (typeof owner) === 'string' ? `~${entry.path}` : `${owner.record
+    .createdAt} ${entry.path}`;
 }
 
 /**
@@ -51,9 +55,17 @@ function creationKey(inspected: InspectedEntry,): string {
  @param entries - inspected entries
 
  @returns ordered entries
+
+ @example
+ ```ts
+ oldestFirst(await Promise.all(entries.map(inspectRegistryEntry)));
+ ```
  */
 export function oldestFirst(entries: readonly InspectedEntry[],): readonly InspectedEntry[] {
-  return entries.toSorted(function byCreation(left, right,): number {
+  return entries.toSorted(function byCreation(
+    left,
+    right,
+  ): number {
     /**
      Left key.
      */
@@ -107,7 +119,9 @@ export async function recoverDeadLandings({
     .filter(function isPublished(entry,): boolean {
       return entry.kind === 'transaction';
     },)
-    .map(inspectRegistryEntry,),);
+    .map(function inspectEntry(entry,): Promise<InspectedEntry> {
+      return inspectRegistryEntry(entry,);
+    },),);
   /**
    Outcomes in recovery order.
    */
@@ -116,7 +130,10 @@ export async function recoverDeadLandings({
     /**
      Entry owner evidence.
      */
-    const { owner, entry, } = item;
+    const {
+      owner,
+      entry,
+    } = item;
     if (((typeof owner) === 'string') || (owner.liveness === 'alive'))
       continue;
     // oxlint-disable-next-line no-await-in-loop -- Each recovery mutates the ref or index the next one validates.
@@ -129,7 +146,8 @@ export async function recoverDeadLandings({
       action: await recoverDeadTransaction({
         directory: entry.path,
         transactionId: entry.transactionId,
-        ownerPid: owner.record.ownerPid,
+        ownerPid: owner.record
+          .ownerPid,
         gitPath,
         effectiveCwd,
       },),
