@@ -179,8 +179,18 @@ Design scenarios exercise the accepted concurrent-commit design:
   `git switch side` while a commit is held in `pre-commit`;
   the switch and the commit must not both succeed.
 - `foreign-index-lock-holder`:
-  real Git by absolute path runs `commit --all` with an editor that holds `index.lock` for 1.5 s
-  while 3 agents commit.
+  real Git by absolute path with `-c core.lockfilePid=true` runs `commit --all`
+  with an editor that holds `index.lock` for 1.5 s while 3 agents commit;
+  the PID file proves the owner alive,
+  so every agent must wait and succeed.
+  It skips Git older than 2.54.0,
+  which has no `core.lockfilePid`.
+- `foreign-index-lock-unproven`:
+  the same holder without `core.lockfilePid`,
+  so no evidence proves it alive;
+  each agent either lands after the holder finishes
+  or fails with exit `2` and only `index-lock-unproven-owner`,
+  and the holder's own commit succeeds.
 - `gc-prune-during-commits`:
   `git gc --prune=now` while one commit is held in `pre-commit` and 3 others commit.
 - `sigkill-pre-commit`,

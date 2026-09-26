@@ -97,6 +97,7 @@ export type EngineFailureCode =
   | 'fix-cycle'
   | 'fix-pass-limit'
   | 'transaction-failed'
+  | 'index-lock-unproven-owner'
   | 'trust-consent-unavailable'
   | 'trust-failed';
 

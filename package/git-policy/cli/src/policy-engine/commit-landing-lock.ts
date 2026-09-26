@@ -6,6 +6,10 @@
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
+  hasValidLandingLease,
+  LANDING_LEASE_ENV,
+} from '../index-lock/landing-lease.ts';
+import {
   acquireOwnerLock,
   type OwnerLock,
 } from '../owner-lock/owner-lock.ts';
@@ -159,8 +163,29 @@ export async function recoverDeadLandings({
 }
 
 /**
+ Lock view for an invocation nested under a landing-lock holder, which releases nothing.
+
+ @param lockDirectory - landing lock directory the ancestor holds
+
+ @returns held-by-ancestor lock
+ */
+function inheritedLandingLock(lockDirectory: string,): OwnerLock {
+  return {
+    lockDirectory,
+    token: process.env[LANDING_LEASE_ENV] ?? '',
+    [Symbol.asyncDispose]: function keepAncestorLock(): Promise<void> {
+      l.debug(`leaving ${lockDirectory} to the ancestor that holds it`,);
+      return Promise.resolve();
+    },
+  };
+}
+
+/**
  Acquires the landing lock and first recovers dead transactions that entered the landing critical section,
  so a crashed landing is resolved before another landing moves the ref or index.
+ An invocation nested under the holder,
+ proven by an inherited landing lease,
+ proceeds under its ancestor's lock instead of waiting for it.
 
  @param gitPath - real Git executable
 
@@ -185,14 +210,21 @@ export async function acquireLandingLock({
   registryRoot: string;
 }>,): Promise<OwnerLock> {
   /**
-   Held landing lock.
+   Landing lock directory.
    */
-  const lock = await acquireOwnerLock({
-    lockDirectory: join(
-      registryRoot,
-      LANDING_LOCK_NAME,
-    ),
-  },);
+  const lockDirectory = join(
+    registryRoot,
+    LANDING_LOCK_NAME,
+  );
+  /**
+   Held landing lock, or the ancestor's.
+   */
+  const lock = await hasValidLandingLease({
+    environment: process.env,
+    lockDirectory,
+  },)
+    ? inheritedLandingLock(lockDirectory,)
+    : await acquireOwnerLock({ lockDirectory, },);
   /**
    Whether ownership passed to the caller.
    */
