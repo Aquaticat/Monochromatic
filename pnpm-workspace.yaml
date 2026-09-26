@@ -129,6 +129,8 @@ catalog:
   'p-map': '>=7.0.8'
   # pify-fork.fuzz differential subject; not a runtime dependency anywhere.
   'pify': '>=6.1.0'
+  # make-asynchronous-fork.fuzz differential subject; not a runtime dependency anywhere.
+  'make-asynchronous': '>=2.1.0'
   # p-waterfall is omitted: package/module/pipe provides sequential async composition.
   'pdfjs-dist': '>=4.0.0'
   'picomatch': '>=4.0.5'
@@ -206,6 +208,11 @@ minimumReleaseAgeExclude:
   # 2026-09-25, inside the 24h cutoff; the oracle needs the exact release the
   # fork was derived from, not an older mature one.
   - 'matcher@6.1.0'
+  # make-asynchronous-fork.fuzz differential subject: upstream
+  # make-asynchronous 2.1.0 published 2026-09-25, inside the 24h cutoff; the
+  # oracle needs the exact release the fork was derived from, not an older
+  # mature one.
+  - 'make-asynchronous@2.1.0'
 minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
 nodeLinker: isolated

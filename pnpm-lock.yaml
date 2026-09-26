@@ -222,6 +222,9 @@ catalogs:
     jspdf:
       specifier: '>=4.2.1'
       version: 4.2.1
+    make-asynchronous:
+      specifier: '>=2.1.0'
+      version: 2.1.0
     matcher:
       specifier: '>=6.1.0'
       version: 6.1.0
@@ -3008,6 +3011,33 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/module/make-asynchronous-fork.fuzz:
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../caught-value
+      '@monochromatic-dev/module-make-asynchronous-fork':
+        specifier: workspace:*
+        version: link:../make-asynchronous-fork
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.2
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
+      make-asynchronous:
+        specifier: 'catalog:'
+        version: 2.1.0
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -7436,6 +7466,10 @@ packages:
     resolution: {integrity: sha512-U4N8FgzmWxc8k1VH8Kr6lQg18U7Fjvby6wXHVRX/ZZ7IwWbRMgrRbP0Wrb5q5NVinryp4SQampHKdvtecItxUg==, tarball: https://registry.npmjs.org/lru-cache/-/lru-cache-11.5.3.tgz}
     engines: {node: 20 || >=22}
 
+  make-asynchronous@2.1.0:
+    resolution: {integrity: sha512-GUKWKLC2e9oxcAlQpQuhbmM6GSJA+T20WDo3uGIgzweO4VIT24ymqlp1hTpEQcypPnMxz3DhJnd7V6mjZ+k42Q==, tarball: https://registry.npmjs.org/make-asynchronous/-/make-asynchronous-2.1.0.tgz}
+    engines: {node: '>=22.15.0'}
+
   map-stream@0.0.7:
     resolution: {integrity: sha512-C0X0KQmGm3N2ftbTGBhSyuydQ+vV1LC3f3zPvT3RXHXNZrvfPZcoXp/N5DOa8vedX/rTMm2CjTtivFg2STJMRQ==, tarball: https://registry.npmjs.org/map-stream/-/map-stream-0.0.7.tgz}
 
@@ -10670,6 +10704,10 @@ snapshots:
   longest-streak@3.1.0: {}
 
   lru-cache@11.5.3: {}
+
+  make-asynchronous@2.1.0:
+    dependencies:
+      type-fest: 5.10.0
 
   map-stream@0.0.7: {}
 
