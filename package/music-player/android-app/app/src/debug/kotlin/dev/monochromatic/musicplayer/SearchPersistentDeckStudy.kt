@@ -194,7 +194,8 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
             bannerHeightStress = candidate.contains("-bannerfit-"),
             autoFitStudy = candidate.contains("-autofit-"),
             preclearStudy = candidate.contains("-preclear-"),
-            retainBrowser = candidate.contains("-retain-"))
+            retainBrowser = candidate.contains("-retain-"),
+            layerProbe = candidate.contains("-layerprobe-"))
     } else {
         SearchDeckWide(query = query, onQueryChange = { query = it }, onBack = onBack,
             unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor)
@@ -291,7 +292,7 @@ private fun ObserveImeAnimation(parentView: View, onAppliedIme: (Int) -> Unit) {
 private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, halfDent: Dp, light: Boolean, pageColor: Color,
     liftWithIme: Boolean, bannerHeightStress: Boolean, autoFitStudy: Boolean,
-    preclearStudy: Boolean, retainBrowser: Boolean) {
+    preclearStudy: Boolean, retainBrowser: Boolean, layerProbe: Boolean) {
     val density = LocalDensity.current
     val reportedImeInset = WindowInsets.ime.getBottom(density)
     var queryFocused by remember { mutableStateOf(false) }
@@ -313,6 +314,15 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     val platformBottom = if (Build.VERSION.SDK_INT >= 30) {
         platformInsets?.getInsets(imeType)?.bottom ?: 0
     } else 0
+    // What:     Public IME visibility and bottom inset select only a debug layering experiment.
+    // Why:      The marker must appear for floating keys, not obscure normal docked-key tests.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const testLayer = layerProbe && imeVisible && platformBottom === 0;
+    // ```
+    val testLayer = layerProbe && platformInsets?.isVisible(imeType) == true && platformBottom == 0
+    FoldAboveImeMarker(active = testLayer)
     val targetBottom = if (autoFitStudy || preclearStudy) {
         maxOf(reportedImeInset, platformBottom, deliveredBottom)
     } else reportedImeInset
