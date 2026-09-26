@@ -4777,15 +4777,20 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA26 NEXT (entry `hulicaijia`, frozen `0e0b05d0f`, pid 524784, scope `pass-hulicaijia26`;
-    hulicaijia24 on `5cb874a36` and hulicaijia25 on `8c8c7007b` were killed when classes one hundred forty-one and forty-two landed):
-    see class one hundred thirty-five live:
-    "douhua" in the closing quote, no "tofu pudding", "Jiefangbei Pedestrian Street" on every line,
-    and "jīn gāng wán’àn" in the amantadine note beside 晚安 "wǎn’ān";
-    read it by every hulicaijia20 check, the register check and the en_CA check;
-    and note any `quote-style-unified` finding (expected silent or archive apostrophes only);
-    record it under a new heading above "## Class one hundred forty-two" in the pass log;
-    then `XingZ60` (run XingZ6013) to see classes one hundred thirty-nine to forty-two live:
+1.  HULICAIJIA27 NEXT on the class one hundred forty-three build (`2472ec48e`; freeze it, launch in a scope):
+    footnote 7 should keep the archive's note explaining the 晚安 / 金刚烷胺 wordplay;
+    read every "lane contest ballot by <model>" line on the note's slice and every "issue … filed by X, panel …" line
+    (the attribution the owner asked for, built in `3fe12ce50` and `e46f8ca70`),
+    plus every hulicaijia20 check, the register check and the en_CA check;
+    a critic or panel still calling the note an addition, with the wording on its sheet, is class one hundred forty-three not live.
+    HULICAIJIA26 READ (frozen `0e0b05d0f`): SETTLED at 02:00 UTC 2026-09-26 in about 15 min, about 2.82 USD;
+    every check held, class one hundred thirty-five live ("douhua" seven times, "Jiefangbei" on both lines);
+    footnote 7's wordplay note lost (filed by deepseek-v4.1-flash, accepted by minimax-m3 and gemma-4-26b-a4b-it against Mercury 2.5,
+    archive disputed, four of five contest ballots against it); recorded under "## Class one hundred forty-three" in the pass log.
+    CLASS ONE HUNDRED FORTY-THREE (2026-09-26): `TRANSLATOR_NOTE_KIND` on the critic, panel, contest and apparatus wordings,
+    `NARRATIVE_DETAIL_IS_NOT_APPARATUS` in place of "only what the ORIGINAL contradicts is an addition"
+    (guard `4520367f0`, fix `2472ec48e`, suite 1144 PASS).
+    Then `XingZ60` (run XingZ6013) to see classes one hundred thirty-nine to forty-two live:
     "—— Yuli [Paranoia]…" or the album kept on slice 98's credit, "by Jiecheng Tianzou Official" on the first credit,
     “Zero-Layer Prayer” in quotation marks on the second, with no English title left in 《》 anywhere on the page,
     and no straight prose quote on the page outside JSX and code ("take it slow", "doesn’t want to die").

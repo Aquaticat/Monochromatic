@@ -8082,6 +8082,58 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Class one hundred forty-three, 2026-09-26: a translator note on wordplay voted out as an addition, and who voted
+
+### What hulicaijia26 showed
+
+hulicaijia26 (frozen `0e0b05d0f`) SETTLED at 02:00 UTC in about 15 min,
+Bedrock 30.63 to 29.51 and OpenRouter 63.86 to 62.16 by the meters (about 2.82 USD),
+Synthetic and Hyper dry, Qwen3.8-27B and glm-5.3 dark for want of a provider.
+Every hulicaijia20 check held: front matter equal, 13 headings, 9 markers, 9 definitions, 2 links, 3 Sakura,
+no TA, no double blank line, "douhua" seven times and no "tofu pudding" (class one hundred thirty-five),
+"Jiefangbei" on both lines, register and en_CA clean
+(the six "center" hits are CSS `text-align` values in the photo captions),
+no English title left in 《》, no Han outside markup,
+the only straight quotes the seven JSX photo paths.
+The one loss: footnote 7 shipped as "the amantadine mentioned earlier" alone.
+The archive's note had explained the wordplay between 晚安 (goodnight) and 金刚烷胺 (amantadine),
+which the English reader cannot see.
+
+### Who judged it
+
+The owner asked who the judges were.
+The artifact's repair chunk 69 records the panel:
+deepseek-v4.1-flash filed the note as accuracy/addition,
+minimax-m3 and gemma-4-26b-a4b-it voted supported, Mercury 2.5 unsupported, so it was accepted.
+That acceptance disputed the archive under class one hundred seven,
+and the class one hundred eight ARCHIVE RENDERING DISPUTED block told the contest the note was an accepted addition;
+four of five contest ballots then called it "an addition the ORIGINAL never states".
+The contest ballots carried no model id, so those four judges cannot be named for this run.
+
+### What was built
+
+The ballots now name their judges (owner: "that's an our problem").
+`LaneContestBallot.modelId` is recorded by the stage from each round outcome,
+read back by the artifact reader and the contest cache (optional, so older artifacts still read),
+and the stage logs one line per ballot, "lane contest ballot by <model>: chose …, archive …, unsupported […], dropped […]: <reason>",
+under a logger tagged with the slice.
+Guards red first `ef0c6befd`, fix `3fe12ce50`.
+The adjudicated-issue log line names the panel beside the filers,
+"<claim> filed by X, panel A supported, B unsupported", or "panel not on record" (`claim-panel-voters.ts`);
+guard red first `d994a7377`, fix `e46f8ca70`, full suite 1143 PASS.
+
+Class one hundred forty-three (`page-apparatus-clause.ts`):
+`TRANSLATOR_NOTE_KIND`, a translator's note explaining a pun, wordplay, an allusion or a term the English cannot carry by itself,
+now sits on the critic sheet's and the panel's lists of accurate translator detail,
+in `CONTEST_POLICY`'s exemption and in `PAGE_APPARATUS_IS_KEPT`.
+The four sheets had carried four lists, and none named such a note.
+`NARRATIVE_DETAIL_IS_NOT_APPARATUS` ("WHAT HAPPENED IS NEVER APPARATUS") replaces the apparatus clause's
+"Only what the ORIGINAL contradicts is an addition" and follows the contest exemption,
+since that wording is what a class one hundred eight gate ballot used to keep an invented overdose detail.
+Guard red first `4520367f0` (`translator-note-apparatus.unit.test.ts`), fix `2472ec48e`,
+lint 0/0, types clean, full suite `suite-class143.log` 1144 PASS, no FAIL.
+A corpus census found this note on one entry, so no deterministic floor was built; the wording carries it.
+
 ## Class one hundred forty-two, 2026-09-26: straight quotes on archive paragraphs of a page written curly
 
 ### What the page showed
