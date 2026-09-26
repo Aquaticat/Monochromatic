@@ -1026,7 +1026,8 @@ always uses defaults.
   `hooks.concurrentCommits` (boolean,
   default `false`),
   `landing.reserveAfterLostRaces` (positive safe integer,
-  default `2`),
+  planned default `2`,
+  shipped default `1`),
   `indexLock.unprovenOwnerTimeoutMs` (non-negative safe integer,
   default `1000`),
   unknown nested keys rejected with exit `2`.
