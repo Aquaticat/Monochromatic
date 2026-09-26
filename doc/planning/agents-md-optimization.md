@@ -167,6 +167,70 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
 - Retired-code references:
    rewrite every reference in other docs to the successor code (user chose this over a retired-codes list).
 
+## Situational-rule research (2026-09-25)
+
+Read-only subagent research;
+working files lived in the session scratchpad.
+
+- Codex truncates project docs at `DEFAULT_PROJECT_DOC_MAX_BYTES = 32 * 1024`
+   (`openai/codex` `codex-rs/config/src/config_toml.rs`);
+   `~/.codex/config.toml` sets no `project_doc_max_bytes`.
+   At 42264 bytes,
+   Codex drops the last 63 rules,
+   from RCI onward (new packages,
+   package completeness,
+   verification,
+   doc placement,
+   commit rules,
+   agent skills).
+   A 2026-09-07 Codex session shows instructions cut mid-word inside TCV.
+- Skill loaded before first edit in its domain
+   (sessions editing domain files;
+   Bash edits invisible):
+   `troubleshooting-doc` pi 97%,
+   Claude main 58%;
+   `testing-practices` pi 80%,
+   Claude main 40%,
+   Claude subagents 17%;
+   `dum-dum-non-ts` pi 61%,
+   Claude main 0 of 6,
+   Claude subagents 1 of 26;
+   `writing-for-agents` pi 25%.
+- Many "situational" rules fired outside their assumed domain
+   (GFP,
+   CLN,
+   HRM,
+   RDC,
+   MXR,
+   RCI,
+   PRV,
+   TCV,
+   XIC,
+   QNB,
+   GCL);
+   user corrections repeat CXD,
+   HDM,
+   ATS principles in other domains.
+   31 of 77 have no citations outside `AGENTS.md`-editing sessions;
+   Claude transcripts only reach back to 2026-08-19.
+- User precedent for narrow rules:
+   package-local docs,
+   not skills
+   (commits `82c1006bf`,
+   `5555179ec`,
+   `a28f5d1c7`,
+   `3c37169ca`,
+   `fbbafc4e8`,
+   `d45ec7b54`);
+   on 2026-08-14 the user rejected naming the package file `AGENTS.md`.
+- Conditional loading:
+   Claude Code nested `CLAUDE.md` and `.claude/rules` `paths:` fire on file read,
+   not create;
+   Codex reads `AGENTS.md` only root-to-cwd at startup;
+   pi loads context at startup only;
+   Factory loads nested `AGENTS.md` on read.
+   Lint and guard messages are the only mechanism firing at the violation in every harness.
+
 ## Open questions
 
 - Situational rule destinations,
