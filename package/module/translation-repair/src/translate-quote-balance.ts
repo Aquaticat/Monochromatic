@@ -11,8 +11,16 @@ import { withoutComments, } from './translate-address-drop.ts';
 // the original itself closes a quotation it never opened (a slice boundary
 // inside a quotation), since the rendering then owes the same shape. An
 // opening mark with no closing one is no fault: a quotation over several
-// paragraphs opens each and closes only the last. Straight quotes and single
-// marks are left alone, since an apostrophe is a single closing mark.
+// paragraphs opens each and closes only the last. Single marks are left
+// alone, since an apostrophe is a single closing mark.
+//
+// CLASS ONE HUNDRED SEVENTY-FIVE (TianqiChen66610 slice 16, 2026-09-26): the
+// same stray closer shipped as a straight double quote ("rely on.""), which
+// this floor left alone and the typography restore left straight on its odd
+// count. A straight double quote is read by its shape: one between a word or
+// punctuation and a space or line end closes, one between a space or line
+// start and a word opens, one after a digit is an inch mark and reads as
+// neither, and any other shape is left unread.
 
 /**
  Closing mark of each quotation pair, keyed by its opening mark.
@@ -31,6 +39,102 @@ const OPENER_OF: Readonly<Record<string, string>> = {
   '」': '「',
   '』': '『',
 };
+
+/**
+ Straight double quote the scan reads as a curly one by its shape.
+ */
+const STRAIGHT_DOUBLE = '"';
+
+/**
+ Characters a closing quotation mark may stand before without a space.
+ */
+const CLOSE_FOLLOWERS: ReadonlySet<string> = new Set([
+  ',',
+  '.',
+  ';',
+  ':',
+  '!',
+  '?',
+  ')',
+  ']',
+  '…',
+],);
+
+/**
+ Characters an opening quotation mark may stand after without a space.
+ */
+const OPEN_PRECEDERS: ReadonlySet<string> = new Set([
+  '(',
+  '[',
+  '>',
+  '*',
+  '_',
+],);
+
+/**
+ Whether a character is a space, a line break, or the text's edge.
+
+ @param character - character to test, empty at the edge
+
+ @returns Whether nothing prints there
+
+ @example
+ ```ts
+ isBlank({ character: '', },); // true
+ ```
+ */
+function isBlank({ character, }: { readonly character: string; },): boolean {
+  return character.trim() === '';
+}
+
+/**
+ What a straight double quote does by its shape: open a quotation, close
+ one, or neither where the shape does not say.
+
+ @param text - passage scanned
+
+ @param index - position of the straight double quote
+
+ @returns The curly mark it stands for, or `unread`
+
+ @example
+ ```ts
+ straightDoubleRole({ text: 'on."', index: 3, },); // '”'
+ ```
+ */
+function straightDoubleRole(
+  {
+    text,
+    index,
+  }: {
+    readonly text: string;
+    readonly index: number;
+  },
+): '“' | '”' | 'unread' {
+  /**
+   Character before the quote, empty at the start.
+   */
+  const before = (index === 0) ? '' : text.charAt(index - 1,);
+  /**
+   Character after the quote, empty at the end.
+   */
+  const after = text.charAt(index + 1,);
+  // A digit before it makes it an inch mark, not a quotation.
+  if ((before >= '0') && (before <= '9'))
+    return 'unread';
+  /**
+   Whether the side before prints nothing or is opening punctuation.
+   */
+  const openSide = isBlank({ character: before, },) || OPEN_PRECEDERS.has(before,);
+  /**
+   Whether the side after prints nothing or is closing punctuation.
+   */
+  const closeSide = isBlank({ character: after, },) || CLOSE_FOLLOWERS.has(after,);
+  // Both sides open or both close: the shape does not say which it is.
+  if (openSide === closeSide)
+    return 'unread';
+  return openSide ? '“' : '”';
+}
 
 /**
  Closing marks in a text that close no quotation opened before them, in
@@ -58,9 +162,15 @@ function strayClosers({ text, }: { readonly text: string; },): readonly string[]
   // surrogate halves and combining marks read as neither opener nor closer.
   for (let index = 0; index < text.length; index += 1) {
     /**
-     Code unit under the cursor.
+     Code unit under the cursor, a straight double quote read as the curly
+     mark its shape stands for.
      */
-    const character = text.charAt(index,);
+    const character = (text.charAt(index,) === STRAIGHT_DOUBLE)
+      ? straightDoubleRole({
+        text,
+        index,
+      },)
+      : text.charAt(index,);
     if (character in CLOSER_OF) {
       depth.set(
         character,
@@ -79,7 +189,8 @@ function strayClosers({ text, }: { readonly text: string; },): readonly string[]
      */
     const open = depth.get(opener,) ?? 0;
     if (open === 0) {
-      strays.push(character,);
+      // The mark as the text writes it, so the finding names what to repair.
+      strays.push(text.charAt(index,),);
       continue;
     }
     depth.set(
