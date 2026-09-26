@@ -21,7 +21,8 @@
 // renderings are the archive's first, then forms the community also uses.
 // Where no archive renders the term well (药娘 by the owner's ruling, 逆子
 // where the only passage has no archive English), the renderings are the
-// ones the entry's why states.
+// ones the entry's why states. 跨圈 takes shihai4h's archive rendering, since
+// shi_Yumiaoya's archive leaves its passages untranslated.
 
 /**
  One community term and how the community renders it.
@@ -139,6 +140,30 @@ export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
     why: 'a parent\'s insult, "unfilial son"; said by a father of his trans daughter it calls her his son, '
       + 'so the page keeps "son" inside the quoted insult: "child" or "kid" drops the misgendering the '
       + 'insult carries, and the Han is never left',
+  },
+  {
+    // CLASS ONE HUNDRED FIFTY-FOUR (shi_Yumiaoya38, 2026-09-26). 跨圈 appears
+    // four times on the page; three shipped "the trans community" and one
+    // "the crossdressing community", where shi_Yumiaoya37 had read it "across
+    // different communities". The word is short for 跨性别圈子, and the archive
+    // renders it "the Trans Community" (shihai4h's heading). Crossdressing is
+    // another word (女装) and names another thing, so writing it for 跨圈
+    // tells the reader the page's trans women are crossdressers.
+    term: '跨圈',
+    renderings: [
+      'trans community',
+      'transgender community',
+      'trans circles',
+      'trans circle',
+    ],
+    refusedForms: [
+      'crossdressing community',
+      'cross-dressing community',
+      'crossdressing circle',
+      'cross-dressing circle',
+    ],
+    why: 'short for 跨性别圈子, the trans community; the archive renders it "the Trans Community", and it '
+      + 'never means crossdressing (女装) or "across communities"',
   },
 ];
 
