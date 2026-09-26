@@ -2,8 +2,13 @@
  The text half of replay's subsumption check:
  which regular-file paths hold prepared bytes that already contain the landed change.
 
- The landed hunks come from one `git diff-tree -p --text` over two single-level trees
- whose entries are named by index,
+ A path is subsumed when the landed change applies in reverse to the prepared bytes
+ with Git's full context (`commit-replay-reverse-apply.ts`),
+ or when the prepared change of every landed region is the landed change
+ extended by the prepared commit's own edit on one side (`commit-replay-containment.ts`),
+ the adjacent-edit case strict reverse application rejects.
+
+ Hunks come from `git diff-tree -p --text` over single-level trees whose entries are named by index,
  so no patch header carries a user path,
  and attributes never turn a text file into a binary diff.
  Binary detection is Git's content rule instead:
@@ -13,7 +18,13 @@
  */
 import { runShadowGit, } from '../shadow-repository/shadow-refs.ts';
 import { loadBlobBatch, } from './blob-batch.ts';
-import { parseIndexedPatch, } from './commit-replay-patch.ts';
+import { containsLandedChange, } from './commit-replay-containment.ts';
+import {
+  decodeLatin1,
+  type PatchHunk,
+  parseIndexedPatch,
+  splitKeepingNewlines,
+} from './commit-replay-patch.ts';
 import { reverseApplies, } from './commit-replay-reverse-apply.ts';
 import {
   presentOid,
@@ -21,11 +32,6 @@ import {
   sidesOf,
 } from './commit-replay-shared-paths.ts';
 import { CommitTransactionGitError, } from './commit-transaction-git.ts';
-
-/**
- Byte-preserving decoder for Git output that carries file bytes.
- */
-const LATIN1 = new TextDecoder('latin1',);
 
 /**
  Bytes Git inspects for a NUL when deciding that a blob is binary (`FIRST_FEW_BYTES` in `xdiff-interface.c`).
@@ -36,6 +42,11 @@ const BINARY_PROBE_BYTES = 8_000;
  Stand-in bytes for a blob the batch did not return, which counts as binary and so is never subsumed.
  */
 const MISSING_BLOB = new Uint8Array([0,],);
+
+/**
+ Context lines of the strict reverse check, Git's default.
+ */
+const STRICT_CONTEXT = 3;
 
 /**
  Builds a transaction Git error from a batch diagnostic.
@@ -83,7 +94,7 @@ async function indexedTree({
   shadowPath: string;
   oids: readonly string[];
 }>,): Promise<string> {
-  return LATIN1.decode((await runShadowGit({
+  return decodeLatin1((await runShadowGit({
     gitPath,
     shadowPath,
     args: [
@@ -102,7 +113,55 @@ async function indexedTree({
 }
 
 /**
- Decides the text candidates: whose landed change applies in reverse to the prepared bytes.
+ Hunks per index between two index-named trees.
+
+ @param gitPath - real Git executable
+
+ @param shadowPath - shadow repository
+
+ @param from - older tree
+
+ @param to - newer tree
+
+ @param context - context lines per hunk
+
+ @returns hunks per entry name
+ */
+async function indexedHunks({
+  gitPath,
+  shadowPath,
+  from,
+  to,
+  context,
+}: Readonly<{
+  gitPath: string;
+  shadowPath: string;
+  from: string;
+  to: string;
+  context: number;
+}>,): Promise<ReadonlyMap<string, readonly PatchHunk[]>> {
+  return parseIndexedPatch(decodeLatin1((await runShadowGit({
+    gitPath,
+    shadowPath,
+    args: [
+      'diff-tree',
+      '-p',
+      '--text',
+      `--unified=${String(context,)}`,
+      '--no-color',
+      '--no-ext-diff',
+      '--no-textconv',
+      '--no-renames',
+      '--src-prefix=a/',
+      '--dst-prefix=b/',
+      from,
+      to,
+    ],
+  },)).stdout,),);
+}
+
+/**
+ Decides the text candidates: whose prepared bytes already contain the landed change.
 
  @param gitPath - real Git executable
 
@@ -114,7 +173,7 @@ async function indexedTree({
 
  @param candidates - paths whose three entries are regular files
 
- @returns candidates whose prepared bytes contain the landed change
+ @returns subsumed candidates
 
  @throws {@link CommitTransactionGitError} when a Git command fails
 
@@ -144,74 +203,95 @@ export async function subsumedTextPaths({
   const blobs = await loadBlobBatch({
     gitPath,
     cwd,
-    oids: candidates.flatMap(function sides(shared,): readonly string[] {
-      return [
-        presentOid(shared.base,),
-        presentOid(shared.landed,),
-        presentOid(shared.prepared,),
-      ];
+    oids: candidates.flatMap(function oids(shared,): readonly string[] {
+      return sidesOf(shared,)
+        .map(function oidOf(entry,): string {
+          return presentOid(entry,);
+        },);
     },),
     createError: batchError,
     objectDirectory,
   },);
+  /**
+   Bytes of one entry as text.
+
+   @param oid - blob
+
+   @returns Latin-1 text
+   */
+  function textOf(oid: string,): string {
+    return decodeLatin1(blobs.get(oid,) ?? new Uint8Array(),);
+  }
   /**
    Candidates whose three blobs are text.
    */
   const text = candidates.filter(function allText(shared,): boolean {
     return sidesOf(shared,)
       .every(function textBlob(entry,): boolean {
-      return !isBinary(blobs.get(presentOid(entry,),) ?? MISSING_BLOB,);
-    },);
+        return !isBinary(blobs.get(presentOid(entry,),) ?? MISSING_BLOB,);
+      },);
   },);
   if (text.length === 0)
     return [];
   /**
-   Index-named trees of the base and landed blobs.
+   Index-named trees of the base, landed, and prepared blobs.
    */
-  const [baseTree, landedTree,] = await Promise.all([
-    indexedTree({
+  const [baseTree = '', landedTree = '', preparedTree = '',] = await Promise.all(([
+    'base',
+    'landed',
+    'prepared',
+  ] as const).map(function treeOf(side,): Promise<string> {
+    return indexedTree({
       gitPath,
       shadowPath,
-      oids: text.map(function baseOid(shared,): string {
-        return presentOid(shared.base,);
+      oids: text.map(function oidOf(shared,): string {
+        return presentOid(shared[side],);
       },),
+    },);
+  },),);
+  /**
+   Landed hunks with full context, and landed and prepared hunks without context.
+   */
+  const [strict, landedZero, preparedZero,] = await Promise.all([
+    indexedHunks({
+      gitPath,
+      shadowPath,
+      from: baseTree,
+      to: landedTree,
+      context: STRICT_CONTEXT,
     },),
-    indexedTree({
+    indexedHunks({
       gitPath,
       shadowPath,
-      oids: text.map(function landedOid(shared,): string {
-        return presentOid(shared.landed,);
-      },),
+      from: baseTree,
+      to: landedTree,
+      context: 0,
+    },),
+    indexedHunks({
+      gitPath,
+      shadowPath,
+      from: baseTree,
+      to: preparedTree,
+      context: 0,
     },),
   ],);
-  /**
-   Landed hunks per index.
-   */
-  const hunks = parseIndexedPatch(LATIN1.decode((await runShadowGit({
-    gitPath,
-    shadowPath,
-    args: [
-      'diff-tree',
-      '-p',
-      '--text',
-      '--unified=3',
-      '--no-color',
-      '--no-ext-diff',
-      '--no-textconv',
-      '--no-renames',
-      '--src-prefix=a/',
-      '--dst-prefix=b/',
-      baseTree,
-      landedTree,
-    ],
-  },)).stdout,),);
-  return text.filter(function contained(
+  return text.filter(function subsumed(
     shared,
     index,
   ): boolean {
+    /**
+     Entry name of this candidate.
+     */
+    const name = String(index,);
     return reverseApplies({
-      hunks: hunks.get(String(index,),) ?? [],
-      prepared: LATIN1.decode(blobs.get(presentOid(shared.prepared,),) ?? new Uint8Array(),),
+      hunks: strict.get(name,) ?? [],
+      prepared: textOf(presentOid(shared.prepared,),),
+    },) || containsLandedChange({
+      landed: landedZero.get(name,) ?? [],
+      prepared: preparedZero.get(name,) ?? [],
+      base: splitKeepingNewlines(
+        textOf(presentOid(shared.base,),),
+      ),
     },);
   },);
 }

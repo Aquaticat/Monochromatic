@@ -43,6 +43,7 @@
 import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { runShadowGit, } from '../shadow-repository/shadow-refs.ts';
+import { decodeLatin1, } from './commit-replay-patch.ts';
 import {
   ABSENT_ENTRY,
   isRegularTriple,
@@ -56,11 +57,6 @@ import { subsumedTextPaths, } from './commit-replay-subsumption-text.ts';
  Module logger.
  */
 const l = tagged({ tag: 'cli-git', },);
-
-/**
- Byte-preserving decoder for Git output.
- */
-const LATIN1 = new TextDecoder('latin1',);
 
 /**
  Effective merge base of one replay.
@@ -166,14 +162,14 @@ async function writeSubsumedBase({
   /**
    Base tree with the landed content at every subsumed path.
    */
-  const tree = LATIN1.decode((await runShadowGit({
+  const tree = decodeLatin1((await runShadowGit({
     gitPath,
     shadowPath,
     args: ['write-tree',],
     environment,
   },)).stdout,)
     .trim();
-  return LATIN1.decode((await runShadowGit({
+  return decodeLatin1((await runShadowGit({
     gitPath,
     shadowPath,
     args: [

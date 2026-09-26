@@ -240,7 +240,7 @@ await describe({
   children: [
     it({
       name: 'an adjacent edit on top of the landed change still contains it',
-      fn: function testAdjacent(): void {
+      fn: async function testAdjacent(): Promise<void> {
         /** Landed change of line 2. */
         const patch = 'diff --git a/0 b/0\nindex 1..2 100644\n--- a/0\n+++ b/0\n@@ -1,3 +1,3 @@\n a\n-b\n+B\n c\n';
         expect(ourVerdict({ patch: patch.replaceAll('/0', '/f',), prepared: 'a\nB\nc\nd\n', },),).toBe(true,);
@@ -249,7 +249,7 @@ await describe({
     },),
     it({
       name: 'reads an empty context line written under diff.suppressBlankEmpty and an incomplete last line',
-      fn: function testSuppressBlankEmpty(): void {
+      fn: async function testSuppressBlankEmpty(): Promise<void> {
         /** Hunk with a bare empty context line and an incomplete new last line. */
         const hunks = parseIndexedPatch('diff --git a/0 b/0\n@@ -1,3 +1,3 @@\n a\n\n-b\n\\ No newline at end of file\n+B\n\\ No newline at end of file\n',).get('0',) ?? [];
         expect(hunks[0]?.lines,).toEqual([{ op: ' ', text: 'a\n', }, { op: ' ', text: '\n', }, { op: '-', text: 'b', }, { op: '+', text: 'B', },],);
@@ -259,7 +259,7 @@ await describe({
     },),
     it({
       name: 'rejects a truncated hunk and a line without a diff marker',
-      fn: function testMalformed(): void {
+      fn: async function testMalformed(): Promise<void> {
         expect(function truncated() {
           parseIndexedPatch('diff --git a/0 b/0\n@@ -1,2 +1,2 @@\n a\n',);
         },).toThrow('truncated',);

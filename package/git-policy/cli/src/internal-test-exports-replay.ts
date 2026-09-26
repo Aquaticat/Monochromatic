@@ -15,7 +15,11 @@ import {
   rewriteCommitObject,
 } from './policy-engine/commit-replay-object.ts';
 import { replayOptions, } from './policy-engine/commit-replay-options.ts';
-import { parseIndexedPatch, } from './policy-engine/commit-replay-patch.ts';
+import { containsLandedChange, } from './policy-engine/commit-replay-containment.ts';
+import {
+  parseIndexedPatch,
+  splitKeepingNewlines,
+} from './policy-engine/commit-replay-patch.ts';
 import { reverseApplies, } from './policy-engine/commit-replay-reverse-apply.ts';
 import { subsumeLandedChanges, } from './policy-engine/commit-replay-subsumption.ts';
 import {
@@ -38,6 +42,10 @@ export type ReplayTestExports = Readonly<{
    Internal `appendEvents`.
    */
   appendEvents: typeof appendEvents;
+  /**
+   Internal `containsLandedChange`.
+   */
+  containsLandedChange: typeof containsLandedChange;
   /**
    Internal `droppedReplayHeaders`.
    */
@@ -83,6 +91,10 @@ export type ReplayTestExports = Readonly<{
    */
   rewriteCommitObject: typeof rewriteCommitObject;
   /**
+   Internal `splitKeepingNewlines`.
+   */
+  splitKeepingNewlines: typeof splitKeepingNewlines;
+  /**
    Internal `subsumeLandedChanges`.
    */
   subsumeLandedChanges: typeof subsumeLandedChanges;
@@ -101,6 +113,7 @@ export type ReplayTestExports = Readonly<{
  */
 export const replayTestExports: ReplayTestExports = {
   appendEvents,
+  containsLandedChange,
   droppedReplayHeaders,
   identityEnvironment,
   mergeReplayTree,
@@ -112,6 +125,7 @@ export const replayTestExports: ReplayTestExports = {
   replayOptions,
   reverseApplies,
   rewriteCommitObject,
+  splitKeepingNewlines,
   subsumeLandedChanges,
   TestPhaseSignalError,
   writeReplayedCommit,

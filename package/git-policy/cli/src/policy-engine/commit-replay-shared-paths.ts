@@ -12,11 +12,7 @@ import {
   parseRawChanges,
   type RawChange,
 } from './commit-hook-changes.ts';
-
-/**
- Byte-preserving decoder for Git output that carries paths.
- */
-const LATIN1 = new TextDecoder('latin1',);
+import { decodeLatin1, } from './commit-replay-patch.ts';
 
 /**
  Git's absent-entry mode in raw diff output.
@@ -123,7 +119,7 @@ async function rawChanges({
   from: string;
   to: string;
 }>,): Promise<ReadonlyMap<string, RawChange>> {
-  return new Map(parseRawChanges(LATIN1.decode((await runShadowGit({
+  return new Map(parseRawChanges(decodeLatin1((await runShadowGit({
     gitPath,
     shadowPath,
     args: [

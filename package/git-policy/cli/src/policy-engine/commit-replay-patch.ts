@@ -63,6 +63,27 @@ export class ReplayPatchFormatError extends Error {
 //region Lines
 
 /**
+ Decodes Git output byte for byte, so every byte maps to one character and encodes back exactly.
+
+ @param bytes - output bytes
+
+ @returns Latin-1 text
+
+ @example
+ ```ts
+ decodeLatin1(new Uint8Array([0xE9])); // 'é'
+ ```
+ */
+export function decodeLatin1(bytes: Uint8Array,): string {
+  return Buffer.from(
+    bytes.buffer,
+    bytes.byteOffset,
+    bytes.byteLength,
+  )
+    .toString('latin1',);
+}
+
+/**
  Section header of one file.
  */
 const SECTION_HEADER = 'diff --git a/';
