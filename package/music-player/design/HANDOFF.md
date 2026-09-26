@@ -6142,11 +6142,19 @@ border,
 padding or hit-region exclusion;
 it governs informational marks like text only.
 Do not publish or ask from those gray-strip player captures.
-Debug-only commit `504299ed0` instead paints a continuous player surface
-beneath the inset hosts;
-recapture and visually check it before replacing the incomplete review.
-Inset allocation remains a prototype mechanism,
-not a settled demand to move decorative bounds.
+Painting a continuous base in commit `504299ed0` removed the gray color
+but still narrowed whole pane hosts,
+which treated structural bounds as the floor owner.
+That intermediate player variant is also rejected as the final E2 example.
+Debug-only commit `c15a2d5b5` retains full half-screen pane surfaces,
+current-row backgrounds,
+dividers and click bounds;
+it applies new insets to the right-side heading and track text in the
+Search-closed player,
+and to right-side Search content while retaining the full left browser/deck.
+Only measured informational paint can decide E2 compliance.
+Its native after-state captures are pending,
+and no full review should be presented before checking them.
 No production change or new IME experiment is authorized;
 only the disposable capped Fold may be used.
 The original AVD remains untouched.

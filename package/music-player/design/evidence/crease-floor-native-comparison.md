@@ -119,6 +119,12 @@ not structural surfaces,
 borders,
 padding or hit regions.
 Those player captures are withdrawn and must remain private.
-A follow-up debug prototype paints a continuous surface below the
-information-placement study;
-no floor decision or native player visual has yet been re-accepted.
+The next debug-only prototype (`c15a2d5b5`) retains full-size player
+surfaces,
+current-row backgrounds,
+dividers and hit regions;
+only the right-side title and track text receive extra information clearance.
+Its Search page likewise retains the full left browser/deck and right
+surface while shifting right-side informational content.
+New native captures must be inspected before replacing the incomplete form.
+No floor decision or native player visual has yet been re-accepted.
