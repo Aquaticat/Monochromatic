@@ -28,14 +28,16 @@ import {
  Upper bound for waiting on an `onChange` call:
  on Linux the watcher polls `fs.watchFile` at Node's default interval and
  then debounces one second,
- so a call can arrive several seconds after the write.
+ so a call can arrive several seconds after the write. The bound exits
+ early when the call arrives,
+ so the slack only pays on slow schedulers.
  
  @example
  ```ts
- CALL_WAIT_LIMIT; // 12000
+ CALL_WAIT_LIMIT; // 25000
  ```
  */
-const CALL_WAIT_LIMIT = 12_000;
+const CALL_WAIT_LIMIT = 25_000;
 
 /**
  Polling step between bounded-wait observations.
@@ -76,7 +78,7 @@ const CLOSE_DROP_WINDOW = 8_000;
  
  @example
  ```ts
- const fixture = createWatcherFixture();
+ const fixture = await createWatcherFixture();
  fixture.watcher.close();
  ```
  */
@@ -110,10 +112,10 @@ type WatcherFixture = {
  
  @example
  ```ts
- const fixture = createWatcherFixture();
+ const fixture = await createWatcherFixture();
  ```
  */
-function createWatcherFixture(): WatcherFixture {
+async function createWatcherFixture(): Promise<WatcherFixture> {
   /**
    Disposable directory holding the watched config file.
    */
@@ -144,6 +146,12 @@ function createWatcherFixture(): WatcherFixture {
       calls.push(Date.now(),);
     },
   },);
+  /**
+   Settle window letting `fs.watchFile` record its baseline before any
+   case write: Node takes that first stat asynchronously, so a write
+   landing before it becomes the baseline and never fires a change.
+   */
+  await delay(WATCH_SETTLE_WINDOW,);
   return {
     directory,
     filePath,
@@ -151,6 +159,16 @@ function createWatcherFixture(): WatcherFixture {
     watcher,
   };
 }
+
+/**
+ Settle window between watcher creation and the first case write.
+ 
+ @example
+ ```ts
+ WATCH_SETTLE_WINDOW; // 500
+ ```
+ */
+const WATCH_SETTLE_WINDOW = 500;
 
 /**
  Waits until the recorded call count reaches the wanted count,
@@ -197,7 +215,7 @@ await describe({
         /**
          Watcher fixture under test.
          */
-        const fixture = createWatcherFixture();
+        const fixture = await createWatcherFixture();
         writeConfigFile({
           directory: fixture.directory,
           data: {
@@ -224,7 +242,7 @@ await describe({
         /**
          Watcher fixture under test.
          */
-        const fixture = createWatcherFixture();
+        const fixture = await createWatcherFixture();
         for (const run of [
           'burst-one',
           'burst-two',
@@ -257,7 +275,7 @@ await describe({
         /**
          Watcher fixture under test.
          */
-        const fixture = createWatcherFixture();
+        const fixture = await createWatcherFixture();
         writeConfigFile({
           directory: fixture.directory,
           data: {
@@ -291,7 +309,7 @@ await describe({
         /**
          Watcher fixture under test.
          */
-        const fixture = createWatcherFixture();
+        const fixture = await createWatcherFixture();
         writeConfigFile({
           directory: fixture.directory,
           data: {
@@ -311,7 +329,7 @@ await describe({
         /**
          Watcher fixture under test.
          */
-        const fixture = createWatcherFixture();
+        const fixture = await createWatcherFixture();
         fixture.watcher
           .close();
         fixture.watcher
