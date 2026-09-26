@@ -455,23 +455,61 @@ No production thresholds have been chosen.
 ## Next interview frontier
 
 The source and runtime facts still being researched do not justify choosing a model yet.
-These independent preferences can be resolved now:
+An independent Advisor review of the interview frontier returned successfully.
+It reviewed question dependencies,
+not fixture truth labels or model qualification.
+It identified two bundled choices:
+new grant representation versus reuse of approved prose,
+and total waiting budget versus automatic retries.
+Exact-action approval is an available fallback,
+not a mutually exclusive reusable-trust design.
 
-- Q8: whether future hosted assessment may receive private non-secret runtime action/context,
+The next round asks these independent preferences:
+
+- Q8: whether future hosted assessment may receive minimal private non-secret runtime action/context,
   or only public/synthetic content.
+  Recommendation: consider the former only after the data-handling audit and separate cutover acceptance.
+  It permits a hosted path for private work but exposes approved content to another service.
+  Public/synthetic-only avoids that exposure but leaves private work to local assessment or manual review.
+  Rank conditional private assessment first for runtime coverage;
+  public/synthetic-only second.
   Existing permission does not authorize historical-transcript uploads or credentials as payload.
-  Any wider future route remains conditional on its data-handling audit.
-- Q9: whether reusable prose trust should remain semantically matched for each action,
-  become human-confirmed structured scopes,
-  or require exact-action approval when code cannot match its scope.
-  None permits a model to create authority.
-- Q10: the interactive waiting budget before model assessment yields to manual approval.
-  This is a user-experience preference,
-  not the experimental container deadline or a promised runtime.
+  Neither answer authorizes an upload now.
+- Q9a: whether new reusable grants should offer explicit human-confirmed structured scopes.
+  Recommendation: yes,
+  retaining the original wording and showing operation,
+  target,
+  destination,
+  and conditions together before acceptance.
+  This makes scope inspectable but adds confirmation detail.
+  Prose-only preserves the current prompt shape but leaves scope interpretation unresolved.
+  Rank structured confirmation before prose-only for explicit scope boundaries.
+- Q9b: whether accepted prose may still be reused through qualified narrow-axiom matching.
+  Recommendation: yes,
+  conditional on validation and preserved provenance;
+  unresolved matches require manual review.
+  This preserves reusable prose behavior but retains model interpretation risk.
+  Deterministic-only reuse avoids that matching risk but can require more explicit approvals.
+  Rank qualified matching before deterministic-only reuse for preserving current trust behavior.
+  Neither path permits a model to create authority.
+- Q10a: the total user-visible waiting budget before model assessment yields to manual approval.
+  Proposed starting preference: 5 seconds for the entire assessment,
+  not per axiom or request.
+  It bounds the model-induced wait but excludes results arriving after that deadline.
+  This is not a measured performance guarantee.
+  The tested full-policy Laya CPU path would not fit it.
+- Q10b: whether to allow an automatic transport retry within that same total budget.
+  Recommendation: no automatic retry;
+  failures yield to manual approval without another request.
+  One bounded transport retry could recover an intermittent failure but adds a request and possible charge.
+  Rank no retry before one bounded retry because manual approval is already an accepted fallback.
+  Neither option permits model substitution or a coding-plan fallback.
 
-The next round must ask these separately with pros,
-cons,
-and recommendations.
+The earlier assistant latency commentary was incorrect:
+the authorized Laya probe deadline is 300 seconds,
+not 300 milliseconds.
+No minimum production wait or production deadline has been agreed.
+All preferences remain unanswered.
 Model choice,
 calibration cutoffs,
 and cutover remain downstream of unanswered preferences and unfinished evidence.
