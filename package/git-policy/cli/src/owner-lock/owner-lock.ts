@@ -291,6 +291,15 @@ async function retireDeadLock({
     l,
   },);
   /**
+   Owner published now; the liveness check took time, during which the dead-looking owner may have released
+   and a live acquirer may have published its own lock.
+   */
+  const current = await readOwnerLockRecord(lockDirectory,);
+  if ((current === LOCK_BUSY) || (current.token !== deadToken)) {
+    rl.debug(`${lockDirectory} changed owner since its owner was found dead; not retiring it`,);
+    return LOCK_BUSY;
+  }
+  /**
    Unique retired name owned only after a successful rename.
    */
   const staleDirectory = `${lockDirectory}.${randomUUID()}.stale`;

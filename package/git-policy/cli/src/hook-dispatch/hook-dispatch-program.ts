@@ -111,6 +111,10 @@ async function holderIsAlive(owner) {
 }
 
 async function retire(lockDirectory, deadToken) {
+  // The liveness check took time; the owner may have released and a live acquirer published since.
+  const current = await readOwner(lockDirectory);
+  if (!current || (current.token !== deadToken))
+    return;
   const staleDirectory = lockDirectory + '.' + randomUUID() + '.stale';
   try {
     await rename(lockDirectory, staleDirectory);
