@@ -119,6 +119,11 @@ submodules,
   `pre-commit` re-runs outside the landing lock against the replayed index whenever the replayed tree differs,
   then landing retries.
 - Landing order: preparation completion order.
+- Starvation guard: after K lost landing races a commit reserves the next landing slot;
+  others keep preparing and revalidating but cannot land until it lands or fails.
+  K defaults to 2,
+  is tunable,
+  and the concurrent-commit benchmark confirms the default.
 - Waiting: unbounded while the cli-git landing owner is alive;
   bounded for an `index.lock` without a known owner.
 - `--amend` and merge,
@@ -183,7 +188,6 @@ the owner declined an `AGENTS.md` rule.
 
 ## Open questions
 
-- Starvation guard for a commit that keeps losing the landing race.
 - Foreign `index.lock` wait bound,
   pending research on whether a live holder is detectable.
 - Hook environment:
