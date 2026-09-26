@@ -284,6 +284,65 @@ The script and path-only sample manifest remain in private scratch:
 and `~/temp/agent/laya-guard-history-sample-manifest.json`.
 No raw action, reason, trust text, or transcript was printed or committed by this probe.
 
+## Offline evaluation preparation
+
+### Synthetic diagnostic corpus
+
+Prepared private scratch `laya-auto-mode-eval-2026-09-26/corpus-v3.json` before running Laya.
+SHA-256: `23f541af9a4518dde90131dd413c07daec276091d023f59a6d4997cfd0591d86`.
+It contains 59 cases: 35 development and 24 reserved cases;
+reference targets are 29 approve, 10 deny, and 20 ask.
+Question schemas are predeclared semantic labels, opaque labels, and reversed semantic-label order.
+No fixture command will be executed.
+
+A second private history pass skipped 3 sample files whose sizes changed,
+then inspected 21 unchanged files.
+It found action-shape signals for scratch inspection, Git reads/mutations, GitHub reads,
+container runs, inline interpreters, permissions, deletion, secrets, downloads, installs, and file reads.
+Literal matches can overlap or occur inside quoted code;
+these are discovery signals, not a production traffic distribution or independent safety labels.
+The synthetic cases replace all account paths, repository names, URLs, and content rather than copying history.
+Additional reserved cases exercise current policy and #558 boundaries,
+including negation, revocation, quoted commands, executable payloads, missing images,
+headless sessions, and long-context action placement.
+
+An independent Advisor review identified oracle ambiguity, simulated fact provenance,
+static-versus-model pipeline scope, and held-out contamination risks.
+The corpus records these limitations explicitly:
+
+- Expected labels are authored reference targets, not old-judge verdicts or measured truth.
+- Both ask and deny block execution; report hazardous auto-approval separately from exact-label mismatch.
+- Environment facts are synthetic ground-truth assumptions, not a proven production evidence collector.
+- Static/fixed-block cases are controls, not evidence that Laya should own those boundaries.
+- Most cases have not yet been run through the actual flagger, so this is not approval-coverage measurement.
+- Reserved families must not guide prompt, threshold, or fine-tuning selection.
+  A later cutover claim needs new independent validation cases.
+- The runner must send only case state and question schema, never reference labels or rationales.
+- Record actual token truncation; incomplete inputs are ineligible for automatic approval regardless of model output.
+
+### Runtime preparation
+
+Laya source is pinned at `4066d5d5fbf08b66c6757ddeedbd797bd7655bc0`.
+The local image `localhost/laya-cpu-benchmark:0.3.6` was discovered by inspecting existing Podman images.
+It contains an older Laya package with CPU torch and transformers;
+it is only a possible dependency base, not the runtime source being evaluated.
+The planned runner must import the freshly inspected Laya source and record its actual version/path.
+
+Data-only downloads use the checkpoint revisions explicitly listed in `laya/revisions.py`:
+
+- English: `55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851`.
+- Multilingual: `e4e9ddf21a7b1903b7acffd8814ad4307bf63a67`.
+- Typed decisions: `1a793eb568e6718f15941d08f85432581df534e3`.
+
+Only safetensors weights and allowlisted JSON configs/tokenizers are retrieved.
+The downloader verifies published byte counts and LFS SHA-256 or Git-blob hashes.
+It loads no checkpoint-provided code and sends no transcripts or credentials.
+The first English-weight transfer hit its 300-second per-file deadline after writing 397,053,883 bytes.
+A matching content-addressed English weight blob was available in a stopped local benchmark container;
+it was copied to scratch for digest verification rather than blindly repeating the transfer.
+Recovery uses a bounded 900-second per-file deadline for the remaining model data.
+No inference has run yet.
+
 ## Research still required
 
 - Finalize open ownership/authority choices in the responsibility ledger.
@@ -298,8 +357,9 @@ No raw action, reason, trust text, or transcript was printed or committed by thi
 
 ## Next action
 
-Complete the Laya CPU execution audit and generate transcript-derived synthetic evaluation cases.
-Run offline inference in bounded isolation and inspect mistakes independently.
+Finish the Laya CPU execution manifest and input-projection checks for the frozen diagnostic corpus.
+Verify downloaded artifact hashes and run offline inference in bounded isolation.
+Inspect mistakes independently without using reserved results to tune the tested schemas.
 Use that evidence to resolve authority, trust-rule interpretation, context completeness, and cutover.
 Do not require live user-supervised shadowing as the first evidence source.
 Recompute the remaining interview frontier from the source findings.
