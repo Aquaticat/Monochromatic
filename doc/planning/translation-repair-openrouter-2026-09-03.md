@@ -8082,6 +8082,40 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## TianqiChen6665 read, 2026-09-26: classes one hundred sixty-two and sixty-three live, class one hundred sixty-four
+
+TianqiChen6665 ran on `.frozen-dist-c75738ea1` and SETTLED in 17.8 min, one attempt, 24 slices,
+1,428 calls, 1,649 seats, 56 retry rounds, 0.71 USD of OpenRouter cost, 1 abandoned stream (0.004 USD).
+Front matter equal, 3 headings, no TA, no error finish, no triple blank line,
+4 unendorsed standings (slices 6, 8, 15, 23), 21 abstention lines, 5 em-dashes against the archive's 6.
+Synthetic and Hyper stayed dry: Qwen3.8-27B threw 252 of 252 and glm-5.3 106 of 106.
+
+Class one hundred sixty-two is live: the page reads "Living with type 2 diabetes".
+Class one hundred sixty-three is live: the kigurumi slice shipped "in her headpiece"
+and "Wearing this headpiece" with no refusal of the correct rendering.
+Classes one hundred sixty and sixty-one hold (Arona and Atri, "those she had comforted",
+"turned into a small box", "deserved a better life, didn't she?").
+
+Class one hundred sixty-four:
+slice 6 shipped the archive's "God, in His sense of 'fairness,' made her met with family misunderstandings"
+for 积极上进遇到的却是家人的不理解.
+The contest split 2 to 2 (minimax and gemma-4-e2b for the repair text, deepseek and Mercury for translate;
+deepseek named "made her meet with" as carried over from the archive),
+so the archive stood unendorsed with its slip.
+Fixed in `c5f664396` (guard red first `32e4213cd`):
+the grammar glossary seeds 遇到的却是 with "met with", "was met with" and "faced"
+and refuses "made her met with",
+so that standing reads ineligible and a lane text replaces it.
+Lint 0/0, types clean, full suite 1,162 PASS, 0 FAIL (`suite-class164.log`).
+TianqiChen6666 launched on `.frozen-dist-c5f664396` (scope `pass-TianqiChen6666`, pid 3048898).
+
+Observations not built:
+the archive's final-message blockquote carries one stray closing quote and no opening one
+(the source quotes each line with 「」),
+shipped as the archive on an unendorsed standing;
+"whenever she caught a glimpse through the gaps of those she had comforted" misplaces the object;
+the UNO pun line stays the archive's own ambiguous wording.
+
 ## TianqiChen6664 read, 2026-09-26: TALLY ERROR, class one hundred sixty-three
 
 TianqiChen6664 ran on `.frozen-dist-358a6bdcb` and ended TALLY ERROR after three attempts

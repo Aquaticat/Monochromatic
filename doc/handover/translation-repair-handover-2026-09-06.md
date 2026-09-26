@@ -4785,8 +4785,12 @@ each read off the pass log and the shipped page:
     class one hundred sixty-three (the refused form "inside her head" matched inside the accepted "inside her
     headpiece") built (guard `bd12b556f`, fix `c75738ea1`, full suite 1,162 PASS, 0 FAIL); recorded under
     "## TianqiChen6664 read".
-    TIANQICHEN6665 RUNNING on `.frozen-dist-c75738ea1` (scope `pass-TianqiChen6665`, pid 2520043):
-    read the kigurumi slice and the diabetes line first.
+    TIANQICHEN6665 READ (`.frozen-dist-c75738ea1`): SETTLED in 17.8 min, 0.71 USD; classes one hundred
+    sixty-two ("type 2 diabetes") and sixty-three ("in her headpiece") live; class one hundred sixty-four (the
+    archive's "made her met with" for 遇到的却是 on an unendorsed standing) built (guard `32e4213cd`, fix
+    `c5f664396`, full suite 1,162 PASS, 0 FAIL); recorded under "## TianqiChen6665 read".
+    TIANQICHEN6666 RUNNING on `.frozen-dist-c5f664396` (scope `pass-TianqiChen6666`, pid 3048898):
+    read slice 6 (the family-pressure paragraph) first.
     TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built
