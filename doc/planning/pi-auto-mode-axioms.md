@@ -452,67 +452,94 @@ The adapter cannot declare itself validated merely by returning that field.
 A changed definition or model invalidates qualification unless the relevant revalidation passes.
 No production thresholds have been chosen.
 
-## Next interview frontier
+## Confirmed interview answers
 
-The source and runtime facts still being researched do not justify choosing a model yet.
 An independent Advisor review of the interview frontier returned successfully.
 It reviewed question dependencies,
 not fixture truth labels or model qualification.
-It identified two bundled choices:
-new grant representation versus reuse of approved prose,
-and total waiting budget versus automatic retries.
-Exact-action approval is an available fallback,
-not a mutually exclusive reusable-trust design.
+The user then answered Q8 A,
+Q9a A,
+Q9b A,
+accepted the Q10a recommendation,
+and chose Q10b B.
 
-The next round asks these independent preferences:
+### Q8: Conditional future hosted private content
 
-- Q8: whether future hosted assessment may receive minimal private non-secret runtime action/context,
-  or only public/synthetic content.
-  Recommendation: consider the former only after the data-handling audit and separate cutover acceptance.
-  It permits a hosted path for private work but exposes approved content to another service.
-  Public/synthetic-only avoids that exposure but leaves private work to local assessment or manual review.
-  Rank conditional private assessment first for runtime coverage;
-  public/synthetic-only second.
-  Existing permission does not authorize historical-transcript uploads or credentials as payload.
-  Neither answer authorizes an upload now.
-- Q9a: whether new reusable grants should offer explicit human-confirmed structured scopes.
-  Recommendation: yes,
-  retaining the original wording and showing operation,
-  target,
-  destination,
-  and conditions together before acceptance.
-  This makes scope inspectable but adds confirmation detail.
-  Prose-only preserves the current prompt shape but leaves scope interpretation unresolved.
-  Rank structured confirmation before prose-only for explicit scope boundaries.
-- Q9b: whether accepted prose may still be reused through qualified narrow-axiom matching.
-  Recommendation: yes,
-  conditional on validation and preserved provenance;
-  unresolved matches require manual review.
-  This preserves reusable prose behavior but retains model interpretation risk.
-  Deterministic-only reuse avoids that matching risk but can require more explicit approvals.
-  Rank qualified matching before deterministic-only reuse for preserving current trust behavior.
-  Neither path permits a model to create authority.
-- Q10a: the total user-visible waiting budget before model assessment yields to manual approval.
-  Proposed starting preference: 5 seconds for the entire assessment,
-  not per axiom or request.
-  It bounds the model-induced wait but excludes results arriving after that deadline.
-  This is not a measured performance guarantee.
-  The tested full-policy Laya CPU path would not fit it.
-- Q10b: whether to allow an automatic transport retry within that same total budget.
-  Recommendation: no automatic retry;
-  failures yield to manual approval without another request.
-  One bounded transport retry could recover an intermittent failure but adds a request and possible charge.
-  Rank no retry before one bounded retry because manual approval is already an accepted fallback.
-  Neither option permits model substitution or a coding-plan fallback.
+The user will consider sending the minimal private non-secret runtime action/context needed for assessment
+after a satisfactory routing and retention audit.
+This keeps hosted assessment eligible for private work,
+while acknowledging the additional service exposure.
+It is not authorization to upload private data now or to implement the cutover.
+Complete current `AGENTS.md` remains mandatory.
+Raw-history uploads and credentials as assessment content remain excluded.
+Public/synthetic-only was not selected as the permanent boundary.
+
+### Q9a: Human-confirmed explicit scope for new grants
+
+Show explicit structured scope alongside the original proposed wording before acceptance.
+Keep operation,
+target,
+destination,
+conditions,
+and lifetime together.
+For example,
+a local read grant for this repository's `.env` does not grant transmission.
+The user accepted the additional confirmation detail for inspectable permission boundaries.
+Prose-only was not selected as the sole new-grant confirmation format.
+This is a design choice,
+not an implemented prompt or schema.
+
+### Q9b: Qualified reuse of approved prose
+
+Human-approved prose may remain reusable through validated narrow-axiom matching.
+Uncertain or unsupported matches require manual review.
+Only the accepted grant supplies authority;
+model estimates cannot create or broaden it.
+Existing exact-action approval reuse remains available.
+The user preferred preserving reusable prose behavior over requiring deterministic-only matching.
+No current pilot establishes the required matching qualification.
+
+### Q10a: Five-second total assessment budget
+
+The user accepted 5 seconds total before assessment yields to manual approval.
+The budget covers the entire assessment,
+not each axiom,
+request,
+or retry independently.
+Late results cannot authorize the pending action.
+This is an accepted user-experience limit,
+not a measured service guarantee.
+The tested complete-policy Laya CPU path does not fit it;
+axiom-batch timing and other authorized candidate paths still need evaluation.
 
 The earlier assistant latency commentary was incorrect:
 the authorized Laya probe deadline is 300 seconds,
 not 300 milliseconds.
-No minimum production wait or production deadline has been agreed.
-All preferences remain unanswered.
-Model choice,
+That experiment limit is separate from the accepted interactive budget.
+
+### Q10b: One transport retry within the same budget
+
+The user selected at most one automatic transport retry within the same total waiting budget.
+This may recover a transient failure,
+but can add a request and another charge.
+It is not permission to repeat requests until estimates cross an approval threshold.
+It does not permit model substitution,
+a coding-plan fallback,
+or a new full timeout after the retry begins.
+Transport failure classification and downstream gateway retry behavior still need source and boundary verification.
+
+## Next design dependencies
+
+Audit the preferred hosted route's data handling,
+model identity,
+full-input handling,
+and retries before requesting privacy or cutover acceptance.
+Measure and test deadline accounting across the entire assessment and permitted retry.
+Complete the admitted effect inventory and independent per-axiom evaluation.
+Keep prototype thresholds unqualified and production migration blocked.
+Model selection,
 calibration cutoffs,
-and cutover remain downstream of unanswered preferences and unfinished evidence.
+and final shared-understanding confirmation remain open.
 
 ## Primary-source cross-check
 
