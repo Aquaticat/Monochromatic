@@ -131,6 +131,40 @@ await describe({
         },),
 
         it({
+          name: 'rejects a missing prefix or suffix',
+          fn: async () => {
+            expect(matchParts({
+              input: 'xbar',
+              parts: [
+                'foo',
+                'bar',
+              ],
+            },),).toBe(false,);
+            expect(matchParts({
+              input: 'foox',
+              parts: [
+                'foo',
+                'bar',
+              ],
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'rejects middle parts past the suffix room',
+          fn: async () => {
+            expect(matchParts({
+              input: 'abc',
+              parts: [
+                '',
+                'bc',
+                'abc',
+              ],
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
           name: 'rejects overlapping prefix and suffix',
           fn: async () => {
             expect(matchParts({
@@ -205,6 +239,28 @@ await describe({
             },);
             expect(compiled.test('UNICORN',),).toBe(true,);
             expect(compiled.test('rainbow',),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'strips one negation level and keeps the remainder',
+          fn: async () => {
+            /**
+             Backslash code unit for the escaped-bang pattern below.
+             */
+            const escape = String.fromCodePoint(92,);
+            expect(compilePattern({
+              pattern: '!!foo',
+              caseSensitive: true,
+            },).test('!foo',),).toBe(true,);
+            expect(compilePattern({
+              pattern: `${escape}!foo`,
+              caseSensitive: true,
+            },).test('!foo',),).toBe(true,);
+            expect(compilePattern({
+              pattern: 'a*b',
+              caseSensitive: true,
+            },).test('axb',),).toBe(true,);
           },
         },),
       ],

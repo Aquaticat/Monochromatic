@@ -165,9 +165,23 @@ export function matchParts(
    */
   const end = input.length - last.length;
 
-  if ((end < first.length)
-    || (!input.startsWith(first,))
-    || (!input.endsWith(last,)))
+  /**
+   Whether the input opens with the literal prefix.
+   */
+  const prefixHits = input.startsWith(first,);
+  /**
+   Whether the input closes with the literal suffix.
+   */
+  const suffixHits = input.endsWith(last,);
+  /**
+   Whether the input leaves room for the prefix before the suffix.
+   */
+  const roomHolds = end >= first.length;
+  if (!prefixHits)
+    return false;
+  if (!suffixHits)
+    return false;
+  if (!roomHolds)
     return false;
 
   /**

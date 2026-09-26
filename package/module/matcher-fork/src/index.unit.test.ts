@@ -58,5 +58,41 @@ await describe({
         },),).toBe(true,);
       },
     },),
+
+    it({
+      name: 'requires every input under allPatterns with only negations',
+      fn: async () => {
+        expect(isMatch({
+          inputs: [
+            'foo',
+            'bar',
+          ],
+          patterns: [
+            '!bar',
+            '!baz',
+          ],
+          options: { allPatterns: true, },
+        },),).toBe(false,);
+        expect(isMatch({
+          inputs: [
+            'foo',
+            'qux',
+          ],
+          patterns: [
+            '!bar',
+            '!baz',
+          ],
+          options: { allPatterns: true, },
+        },),).toBe(true,);
+        expect(isMatch({
+          inputs: [],
+          patterns: [
+            '!bar',
+            '!baz',
+          ],
+          options: { allPatterns: true, },
+        },),).toBe(false,);
+      },
+    },),
   ],
 },);

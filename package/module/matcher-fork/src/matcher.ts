@@ -15,14 +15,6 @@ import { getPattern, } from './pattern-cache.ts';
 //region Empty set
 
 /**
- Empty-set match verdict shared by every empty pattern list.
- */
-
-//endregion Empty set
-
-//region Empty set
-
-/**
  Empty-set matcher: an empty pattern list matches nothing.
  */
 const emptySetMatchers: CompiledMatchers = {
@@ -42,8 +34,11 @@ const emptySetMatchers: CompiledMatchers = {
  
  @example
  ```ts
- const compiled = compileMatchers({ patterns: ['a*'], options: {}, });
- compiled.matches({ input: 'abc', }); // => true
+ const compiled = compileMatchers({
+   patterns: ['a*'],
+   options: { caseSensitive: false, allPatterns: false, },
+ });
+ compiled.matches('abc'); // => true
  ```
  */
 export type CompiledMatchers = {

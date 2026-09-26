@@ -102,6 +102,38 @@ await describe({
             },),).toBe(true,);
           },
         },),
+
+        it({
+          name: 'recompiles an evicted entry on next use',
+          fn: async () => {
+            clearPatternCache();
+            /**
+             Entry compiled before the eviction flood.
+             */
+            const before = getPattern({
+              pattern: 'evict-me*',
+              caseSensitive: false,
+            },);
+            /**
+             Maximum entries the cache holds, matching upstream's bound.
+             */
+            const maximumCacheSize = 1_000;
+            for (let index = 0; index <= maximumCacheSize; index += 1)
+              getPattern({
+                pattern: `flood-${String(index,)}*`,
+                caseSensitive: false,
+              },);
+            /**
+             Entry recompiled after eviction: equal verdicts, fresh identity.
+             */
+            const after = getPattern({
+              pattern: 'evict-me*',
+              caseSensitive: false,
+            },);
+            expect(after.test('EVICT-ME',),).toBe(before.test('EVICT-ME',),);
+            expect(after,).not.toBe(before,);
+          },
+        },),
       ],
     },),
   ],

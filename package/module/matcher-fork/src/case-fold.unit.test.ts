@@ -26,6 +26,11 @@ await describe({
           name: 'uppercases ordinary non-ASCII letters',
           fn: async () => {
             expect(foldCharacter('é',),).toBe('É',);
+            /**
+             Composed e-acute, normalized before folding.
+             */
+            const composed = 'é'.normalize('NFC',);
+            expect(foldCharacter(composed,),).toBe('É',);
           },
         },),
 
@@ -33,6 +38,7 @@ await describe({
           name: 'keeps characters whose folding changes length',
           fn: async () => {
             expect(foldCharacter('ﬁ',),).toBe('ﬁ',);
+            expect(foldCharacter('\uFB00',),).toBe('\uFB00',);
           },
         },),
 
@@ -41,6 +47,15 @@ await describe({
           fn: async () => {
             expect(foldCharacter('ß',),).toBe('ß',);
             expect(foldCharacter('ı',),).toBe('ı',);
+            expect(foldCharacter('ſ',),).toBe('ſ',);
+          },
+        },),
+
+        it({
+          name: 'uppercases astral halves without merging them',
+          fn: async () => {
+            expect(foldCharacter('\uD83D',),).toBe('\uD83D',);
+            expect(foldCharacter('😀',),).toBe('😀',);
           },
         },),
       ],
@@ -103,6 +118,24 @@ await describe({
               value: 'ß',
               caseSensitive: false,
             },),).toBe('ß',);
+            expect(foldCase({
+              value: 'ßa',
+              caseSensitive: false,
+            },),).toBe('ßA',);
+          },
+        },),
+
+        it({
+          name: 'keeps astral characters unchanged off the fast path',
+          fn: async () => {
+            expect(foldCase({
+              value: '😀',
+              caseSensitive: false,
+            },),).toBe('😀',);
+            expect(foldCase({
+              value: 'a😀b',
+              caseSensitive: false,
+            },),).toBe('A😀B',);
           },
         },),
       ],
