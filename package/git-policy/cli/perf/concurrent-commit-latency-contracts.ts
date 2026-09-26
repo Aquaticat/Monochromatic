@@ -58,6 +58,10 @@ export type CommitObservation = Readonly<{
    Whether the commit emitted a `core-finding` event, as a conflicting replay must.
    */
   coreFinding: boolean;
+  /**
+   Complete stdout and stderr of a commit that exited nonzero, for the failure diagnostic.
+   */
+  failureOutput?: string;
 }>;
 
 /**

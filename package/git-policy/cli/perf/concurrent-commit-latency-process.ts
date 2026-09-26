@@ -309,8 +309,17 @@ export async function runCommit({
       chunks.push(chunk,);
     },
   );
+  /**
+   Captured stderr chunks.
+   */
+  const errorChunks: Buffer[] = [];
   child.stderr
-    .resume();
+    .on(
+      'data',
+      function collectError(chunk: Buffer,): void {
+        errorChunks.push(chunk,);
+      },
+    );
   await once(
     child,
     'close',
@@ -323,6 +332,12 @@ export async function runCommit({
   return {
     completionMs: nowMs() - startedAt,
     exitCode: child.exitCode ?? (-1),
+    ...(child.exitCode === 0
+      ? {}
+      : {
+        failureOutput: `${stdout}${Buffer.concat(errorChunks,)
+          .toString('utf8',)}`,
+      }),
     lostRaces: countEvents({
       stdout,
       type: 'landing-race-lost',

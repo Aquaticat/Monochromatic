@@ -229,7 +229,9 @@ const child = spawn('podman', [
   `${join(packageRoot, 'perf')}:/work/perf:ro,Z`,
   '--tmpfs',
   '/work:rw,size=1g',
-  'docker.io/library/node:24-slim',
+  // Debian trixie: bookworm's Git 2.39.5 predates git merge-tree --merge-base (Git 2.40.0),
+  // cli-git's declared minimum, so every replay there fails with transaction-failed.
+  'docker.io/library/node:24-trixie-slim',
   'node',
   '--input-type=module-typescript',
   '--eval',
