@@ -386,7 +386,7 @@ hard-links staged files into the destination,
 accepts the transaction's own directories on recovery,
 ends failed and orphaned transactions,
 and lets unrelated commands skip recovery while an owner is live.
-Commit `ef865a280` applies the decision's lock model to settlement:
+Commit `bb91a9f26` applies the decision's lock model to settlement:
 a worktree-creating command waits for a proven-live owner without a time limit after one stderr line naming its PID,
 retires a dead owner's lock after a re-read,
 and gives an owner record without evidence a bounded wait and a diagnostic.
