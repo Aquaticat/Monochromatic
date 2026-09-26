@@ -10,7 +10,10 @@
  ... milliseconds,
  capped at 1000)
  with each wait jittered to between 75 % and 125 % of the backoff,
- until the waits spent without a proven owner reach `indexLock.unprovenOwnerTimeoutMs`;
+ until the time spent in attempts without a proven owner reaches `indexLock.unprovenOwnerTimeoutMs`.
+ That time includes evidence gathering,
+ because an open-holder scan is not free:
+ a Linux `/proc` scan over about 1000 processes took 59 to 106 ms on the development host.
  then the wait fails with {@link IndexLockUnprovenOwnerError}.
  Nothing here deletes a lock.
 
@@ -61,10 +64,17 @@ const JITTER_SPAN_PERMILLE = 500;
 const PERMILLE = 1_000;
 
 /**
- Longest single poll while a proven-alive owner holds the lock,
- so its release is noticed promptly even after the backoff grew.
+ Longest single poll while a PID file proves the owner alive,
+ so its release is noticed promptly even after the backoff grew;
+ re-reading a PID file costs little.
  */
-export const PROVEN_OWNER_POLL_CAP_MS = 100;
+export const PROVEN_BY_PID_FILE_POLL_CAP_MS = 100;
+
+/**
+ Longest single poll while only an open descriptor proves the owner alive;
+ longer than {@link PROVEN_BY_PID_FILE_POLL_CAP_MS} because each poll repeats the open-holder scan.
+ */
+export const PROVEN_BY_DESCRIPTOR_POLL_CAP_MS = 500;
 
 /**
  A foreign lock with a dead or unproven owner outlasted the backoff budget.
@@ -210,6 +220,10 @@ export type IndexLockWaitEffects = Readonly<{
    Writes the holder line.
    */
   report: (line: string) => void;
+  /**
+   Current time in milliseconds.
+   */
+  now: () => number;
 }>;
 
 /**
@@ -227,6 +241,8 @@ export const HOST_WAIT_EFFECTS: IndexLockWaitEffects = {
     process.stderr
       .write(line,);
   },
+  now: performance.now
+    .bind(performance,),
 };
 
 /**
@@ -272,7 +288,7 @@ export async function waitForIndexLock<const Result,>({
     l,
   },);
   /**
-   Loop state: backoff position, waits spent without a proven owner, and whether the holder line was written.
+   Loop state: backoff position, time spent without a proven owner, and whether the holder line was written.
    */
   const state = {
     backoff: INITIAL_BACKOFF,
@@ -281,6 +297,10 @@ export async function waitForIndexLock<const Result,>({
   };
   // Every iteration returns, throws, or sleeps; the budget bounds the unproven iterations.
   for (;;) {
+    /**
+     When this iteration started.
+     */
+    const iterationStartedAt = effects.now();
     /* oxlint-disable no-await-in-loop -- Each attempt observes whether the previous holder released the lock. */
     /**
      Attempt outcome.
@@ -322,10 +342,11 @@ export async function waitForIndexLock<const Result,>({
       // oxlint-disable-next-line no-await-in-loop -- Polling a live holder in order.
       await effects.sleep(Math.min(
         backoffMs,
-        PROVEN_OWNER_POLL_CAP_MS,
+        verdict.source === 'pid-file' ? PROVEN_BY_PID_FILE_POLL_CAP_MS : PROVEN_BY_DESCRIPTOR_POLL_CAP_MS,
       ),);
       continue;
     }
+    state.unprovenMs += effects.now() - iterationStartedAt;
     if (state.unprovenMs >= timeoutMs)
       throw new IndexLockUnprovenOwnerError({
         evidence,
@@ -334,8 +355,12 @@ export async function waitForIndexLock<const Result,>({
         consequence,
       },);
     rl.debug(`${verdict.kind} owner of ${evidence.lockPath}; backing off ${String(backoffMs,)} ms`,);
+    /**
+     When the backoff sleep started.
+     */
+    const sleepStartedAt = effects.now();
     // oxlint-disable-next-line no-await-in-loop -- Backoff between ordered attempts.
     await effects.sleep(backoffMs,);
-    state.unprovenMs += backoffMs;
+    state.unprovenMs += effects.now() - sleepStartedAt;
   }
 }
