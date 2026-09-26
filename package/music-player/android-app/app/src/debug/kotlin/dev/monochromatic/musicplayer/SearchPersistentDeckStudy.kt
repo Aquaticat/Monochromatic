@@ -261,8 +261,18 @@ private fun ObserveImeAnimation(parentView: View) {
             }
         }
         parentView.setWindowInsetsAnimationCallback(callback)
+        // Observe ordinary inset delivery as well: this IME's in-place resize
+        // did not run an animation callback despite updating its frame.
+        parentView.setOnApplyWindowInsetsListener { view, insets ->
+            val bottom = insets.getInsets(AndroidWindowInsets.Type.ime()).bottom
+            Log.i("SearchApplyProbe", "delivered bottom=$bottom")
+            view.onApplyWindowInsets(insets)
+        }
         Log.i("SearchAnimationProbe", "installed on ${parentView.javaClass.name}")
-        onDispose { parentView.setWindowInsetsAnimationCallback(null) }
+        onDispose {
+            parentView.setOnApplyWindowInsetsListener(null)
+            parentView.setWindowInsetsAnimationCallback(null)
+        }
     }
 }
 
