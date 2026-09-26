@@ -57,6 +57,12 @@ export const REPOSITORY_REDIRECT_VARIABLES: readonly string[] = [
 const PACKED_REFS_HEADER = '# pack-refs with: sorted \n';
 
 /**
+ Absent shadow directory named as the hooks path of cli-git's own shadow Git commands,
+ so a `reference-transaction` or other hook never observes private shadow ref writes.
+ */
+const NO_HOOKS_DIRECTORY = 'no-hooks';
+
+/**
  One real ref at invocation.
  */
 export type RefSnapshotEntry = Readonly<{
@@ -110,6 +116,12 @@ export function runShadowGit({
     cwd: shadowPath,
     args: [
       `--git-dir=${shadowPath}`,
+      // The shadow config names the real hooks directory for native preparation; cli-git's own shadow maintenance runs no hooks.
+      '-c',
+      `core.hooksPath=${join(
+        shadowPath,
+        NO_HOOKS_DIRECTORY,
+      )}`,
       ...args,
     ],
     unsetEnvironment: REPOSITORY_REDIRECT_VARIABLES,
