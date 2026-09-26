@@ -156,6 +156,27 @@ export const IDIOM_GLOSSARY: readonly CommunityTerm[] = [
     why: 'her project of meeting community friends across the country for hugs; the page names the meetups, never a '
       + '"cuddling plan"',
   },
+  // CLASS ONE HUNDRED FIFTY-SEVEN (aiyysk1, 2026-09-26): 樱奈以生命相逼 shipped as
+  // "Sakurana threatened her life", which reads as a threat against the other
+  // girl; the friend staked her own life ("If I find out, I'll kill myself").
+  // The archive wrote "threatened her in return". The pinned corpus carries
+  // the idiom once, on aiyysk.
+  {
+    term: '以生命相逼',
+    renderings: [
+      'threatened to take her own life',
+      'threatened to kill herself',
+      'used her own life as leverage',
+    ],
+    refusedForms: [
+      'threatened her life',
+      'threatened his life',
+      'threatened their life',
+      'threatening her life',
+    ],
+    why: 'someone who stakes their own life to stop another, threatening to kill themselves; "threatened her life" '
+      + 'says the other person\'s life was threatened',
+  },
 ];
 
 //endregion Idiom renderings
