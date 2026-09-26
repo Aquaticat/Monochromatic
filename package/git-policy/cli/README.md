@@ -1119,6 +1119,13 @@ replays,
 and landing lock and real `index.lock` holds read from inotify rename events.
 `perf/concurrent-commit-latency-2026-09-26.json` stores the first baseline;
 no budget is enforced yet.
+`--scenarios` measures a comma-separated list of scenario ids in the listed order,
+and `--output` names the evidence file under `dist/perf`.
+Four such runs of the `landing.reserveAfterLostRaces` sweep,
+in rotated orders,
+kept the default at `2`
+(`perf/reserve-sweep-2026-09-26-run-<n>.json`,
+`SPEC.md` "Benchmark method").
 
 ## How it works
 

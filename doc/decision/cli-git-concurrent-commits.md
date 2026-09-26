@@ -358,6 +358,18 @@ Evidence:
   The container suite runs Git 2.39.5 with the replay-free scenarios and two degradation scenarios.
   Rules and observations:
   `package/git-policy/cli/SPEC.md` "Compatibility and degradation".
+- `landing.reserveAfterLostRaces` keeps its default of 2,
+  measured 2026-09-26:
+  a single sweep had suggested 1
+  (per-commit p95 3850 ms against 4581 ms),
+  but four rotated-order sweeps of one build put the p95 difference of 1 and 2 (91 ms)
+  far inside either setting's run-to-run band (about 1150 to 1270 ms),
+  with 1 ahead in only two runs.
+  Setting 1 does lower the per-commit median in every run
+  (2586 to 2767 ms against 3024 to 3106 ms),
+  which would favor it if median latency rather than tail latency decided the default.
+  Evidence:
+  `package/git-policy/cli/SPEC.md` "Benchmark method".
 - Forwarded index writers coordinate with landings through the cli-git landing lock
   and pre-wait for foreign `index.lock` holders;
   cli-git does not capture Git's stderr to detect a lock failure and re-forward,

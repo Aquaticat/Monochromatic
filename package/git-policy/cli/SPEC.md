@@ -4056,6 +4056,33 @@ Measure these scenarios separately:
 - a slow hook with `hooks.concurrentCommits` set to `false` and to `true`;
 - a sweep of `landing.reserveAfterLostRaces` that confirms or replaces the default by tail completion time.
 
+Default kept at `2` on 2026-09-26 by tail completion time:
+four sweeps of one build (`2ec229081`,
+Git 2.47.3,
+concurrency 8,
+30 recorded batches per setting,
+setting order rotated as a Latin square,
+`perf/reserve-sweep-2026-09-26-run-<n>.json`)
+gave per-commit p95 of 4342 to 5616 ms for `1`
+and 4379 to 5530 ms for `2`,
+so the run-to-run band of either setting
+(about 1150 to 1270 ms)
+is more than ten times the 91 ms between their means,
+and `1` had the lower p95 in only two of the four runs.
+`4` (5257 to 5392 ms) and `8` (5615 to 5806 ms) were slower than both in every run.
+Per-commit medians do separate:
+`1` gave 2586 to 2767 ms and `2` gave 3024 to 3106 ms in every run,
+with 1.16 to 1.24 against 1.63 to 1.71 lost races per commit.
+Batch wall time medians were 3765 to 3965 ms for `1`,
+3897 to 4045 ms for `2`,
+4511 to 4749 ms for `4`,
+and 4844 to 5035 ms for `8`;
+batch wall p95 was 5037 to 9401 ms,
+4927 to 8871 ms,
+5750 to 5975 ms,
+and 6162 to 6472 ms,
+where the two highest values came from one run's last two positions.
+
 Concurrent scenarios also report per-commit completion time,
 landing lock hold time,
 real `index.lock` hold time,
