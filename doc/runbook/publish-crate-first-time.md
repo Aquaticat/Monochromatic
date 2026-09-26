@@ -197,15 +197,22 @@ TODO
    A `404` means the upload did not land.
 2. The version carries the right metadata.
    The same response must contain `"license":"LGPL-3.0-or-later"`,
-   `"crate_size"` near `293` KiB,
+   `"crate_size"` near `72070`,
+   which is the compressed upload size in bytes rather than the
+   `286.9KiB` that `cargo package` reports uncompressed,
    and a non-empty `"description"`.
 3. Documentation builds.
-   Open <https://docs.rs/crate/monochromatic-jsonc-edit/0.1.0>.
+   Open <https://docs.rs/monochromatic-jsonc-edit/0.1.0/monochromatic_jsonc_edit/>.
    Expected outcome:
-   the crate's rendered docs,
-   eventually without a build-failure banner.
+   HTTP `200` and a module page listing `parse_jsonc`,
+   `emit_jsonc_value`,
+   `jsonc_set_comment` and `JsoncNumberIdentity`.
    docs.rs builds asynchronously,
-   so a first load may still show a queued or in-progress state.
+   so a first load may still return `404` while the build is queued;
+   measured on 2026-09-26,
+   the page served `200` within minutes of the upload.
+   The `/crate/.../status` route is not a public JSON endpoint:
+   it returned an HTML `404` for this crate even after the docs page worked.
 4. A downstream crate can consume it.
    The agent performs this check in a disposable directory under `~/temp/agent`,
    with `monochromatic-jsonc-edit = "0.1.0"` resolved from the registry rather than a path.

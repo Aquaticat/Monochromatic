@@ -81,19 +81,36 @@ Progress since adoption:
    mirroring the `forbidden-regex` library-crate jobs.
 - `cargo publish --dry-run --no-verify` packaged and reached the upload step locally.
 
-Blocked on a credential:
- the token in `~/.cargo/credentials.toml` now answers
- `status 403 Forbidden` with `authentication failed`,
- no crates.io token exists among the repository's seven Actions secrets,
- and Trusted Publishing cannot bootstrap a crate that does not exist yet.
-`doc/runbook/publish-crate-first-time.md` carries the user steps
-(mint a short-lived `publish-new` token,
- `cargo login`,
- confirm the dry run,
- then configure the crate's Trusted Publisher and revoke the token),
- after which the agent runs the real publish,
- the registry checks,
- the disposable consumer against the published version and the workflow dispatch.
+- Published:
+   the user minted a bootstrap token after the stored one answered
+   `status 403 Forbidden` with `authentication failed`,
+   and `cargo publish --no-verify` uploaded `monochromatic-jsonc-edit` 0.1.0 on 2026-09-26.
+   Verified from the registry side:
+   `max_stable_version` is `0.1.0`,
+   not yanked,
+   `license` is `LGPL-3.0-or-later`,
+   `crate_size` is `72070` bytes compressed against the `286.9KiB` that
+   `cargo package` reports uncompressed,
+   and the description and repository metadata match the manifest.
+   `https://docs.rs/monochromatic-jsonc-edit/0.1.0/monochromatic_jsonc_edit/` serves `200`
+   with `parse_jsonc`,
+   `emit_jsonc_value`,
+   `jsonc_set_comment` and `JsoncNumberIdentity` listed.
+- Verified as a downstream dependency:
+   a disposable consumer at `~/temp/agent/jsonc-published-consumer-2026-09-26` resolves
+   `monochromatic-jsonc-edit = "0.1.0"` from
+   `registry+https://github.com/rust-lang/crates.io-index` per its `Cargo.lock`,
+   passes the whole API exercise,
+   and the registry-downloaded source passes its own 61 tests including the shared fixtures.
+
+Remaining,
+and it is user dashboard work per `doc/runbook/publish-crate-first-time.md` steps 12 to 17:
+configure the crate's Trusted Publisher as `Aquaticat`,
+`Monochromatic`,
+`cargo-publish.yml` with an empty environment,
+then revoke the bootstrap token.
+Future versions publish by bumping `version` in the crate manifest and pushing to `main`,
+or by dispatching `cargo-publish.yml` with **dry-run** unchecked.
 
 ## Existing boundaries
 
