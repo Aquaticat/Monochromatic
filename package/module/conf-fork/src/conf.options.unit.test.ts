@@ -13,15 +13,15 @@
 import {
   existsSync,
   statSync,
+  writeFileSync,
 } from 'node:fs';
 
 import {
   basename,
   extname,
+  join,
   sep,
 } from 'node:path';
-
-import process from 'node:process';
 
 import {
   describe,
@@ -58,9 +58,7 @@ function captureThrown(call: () => unknown,): Error {
     call();
   }
   catch (error) {
-    if (error instanceof Error)
-      return error;
-    throw error;
+    return error as Error;
   }
   throw new Error('expected the call to throw, but it returned',);
 }
@@ -195,7 +193,7 @@ await describe({
         /**
          Store persisting through the custom format.
          */
-        const conf = createConf<Record<string, unknown>>({
+        const conf = createConf({
           cwd: createTempDirectory(),
           serialize,
           deserialize,
@@ -528,10 +526,14 @@ await describe({
       name: 'configFileMode',
       fn: async () => {
         /**
+         Directory holding the created config file and the umask probe beside it.
+         */
+        const directory = createTempDirectory();
+        /**
          Store requesting owner-only permissions on its created file.
          */
         const conf = createConf({
-          cwd: createTempDirectory(),
+          cwd: directory,
           configFileMode: 0o600,
         },);
         conf.set({
@@ -539,10 +541,32 @@ await describe({
           value: 'bar',
         },);
         /**
-         Permission bits actually granted after the process umask reduces the requested mode.
+         Probe file created with a fully open mode whose granted bits reveal the process umask.
+         */
+        const probePath = join(
+          directory,
+          'umask-probe.bin',
+        );
+        writeFileSync(
+          probePath,
+          '',
+          {
+          mode: 0o777,
+        },
+        );
+        /**
+         Probe permission bits after the umask reduction.
+         */
+        const probeMode = statSync(probePath,).mode & 0o777;
+        /**
+         Process umask inferred from the probe's reduction.
+         */
+        const umask = 0o777 & (~probeMode);
+        /**
+         Permission bits the config file actually carries.
          */
         const grantedMode = statSync(conf.path,).mode & 0o777;
-        expect(grantedMode,).toBe(0o600 & ~process.umask(),);
+        expect(grantedMode,).toBe(0o600 & (~umask),);
       },
     },),
 

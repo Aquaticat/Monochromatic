@@ -59,7 +59,7 @@ const FIXTURE = '🦄';
  
  @returns Store persisting to a fresh temp directory.
  */
-function createFreshStore(): Conf<Record<string, unknown>> {
+function createFreshStore(): Conf {
   return createConf({ cwd: createTempDirectory(), },);
 }
 
@@ -75,9 +75,7 @@ function captureThrown(call: () => unknown,): Error {
     call();
   }
   catch (error) {
-    if (error instanceof Error)
-      return error;
-    throw error;
+    return error as Error;
   }
   throw new Error('expected the call to throw, but it returned',);
 }
@@ -175,7 +173,7 @@ await describe({
          */
         const undefinedError = captureThrown((): unknown => config.get(undefined as never,),);
         expect(undefinedError,).toBeInstanceOf(TypeError,);
-        expect(undefinedError instanceof InvalidKeyError,).toBe(false,);
+        expect(undefinedError.name,).toBe('TypeError',);
         /**
          Error thrown when get receives `null`:
          upstream `conf` throws InvalidKeyError 'got object',
@@ -183,7 +181,7 @@ await describe({
          */
         const nullError = captureThrown((): unknown => config.get(null as never,),);
         expect(nullError,).toBeInstanceOf(TypeError,);
-        expect(nullError instanceof InvalidKeyError,).toBe(false,);
+        expect(nullError.name,).toBe('TypeError',);
         /**
          Error thrown when get receives a number:
          the fork names the resulting `undefined` key where upstream names 'got number'.
@@ -312,18 +310,18 @@ await describe({
         },),);
         expect(functionError,).toBeInstanceOf(UnsupportedValueTypeError,);
         expect(functionError.message,).toBe(
-          'Setting a value of type `function` for key `a` is not allowed as it\'s not supported by JSON',
+          "Setting a value of type `function` for key `a` is not allowed as it's not supported by JSON",
         );
         /**
          Error thrown for a symbol value under a single key.
          */
         const symbolError = captureThrown((): unknown => config.set({
           key: 'a',
-          value: Symbol('a',),
+          value: Symbol('probe symbol created to fail JSON serialization',),
         },),);
         expect(symbolError,).toBeInstanceOf(UnsupportedValueTypeError,);
         expect(symbolError.message,).toBe(
-          'Setting a value of type `symbol` for key `a` is not allowed as it\'s not supported by JSON',
+          "Setting a value of type `symbol` for key `a` is not allowed as it's not supported by JSON",
         );
         /**
          Error thrown for an `undefined` value inside the multi-item form.
@@ -335,7 +333,7 @@ await describe({
         },),);
         expect(valuesUndefinedError,).toBeInstanceOf(UnsupportedValueTypeError,);
         expect(valuesUndefinedError.message,).toBe(
-          'Setting a value of type `undefined` for key `a` is not allowed as it\'s not supported by JSON',
+          "Setting a value of type `undefined` for key `a` is not allowed as it's not supported by JSON",
         );
         /**
          Error thrown for a method value inside the multi-item form.
@@ -347,19 +345,19 @@ await describe({
         },),);
         expect(valuesFunctionError,).toBeInstanceOf(UnsupportedValueTypeError,);
         expect(valuesFunctionError.message,).toBe(
-          'Setting a value of type `function` for key `a` is not allowed as it\'s not supported by JSON',
+          "Setting a value of type `function` for key `a` is not allowed as it's not supported by JSON",
         );
         /**
          Error thrown for a symbol value inside the multi-item form.
          */
         const valuesSymbolError = captureThrown((): unknown => config.set({
           values: {
-            a: Symbol('a',),
+            a: Symbol('probe symbol created to fail JSON serialization',),
           },
         },),);
         expect(valuesSymbolError,).toBeInstanceOf(UnsupportedValueTypeError,);
         expect(valuesSymbolError.message,).toBe(
-          'Setting a value of type `symbol` for key `a` is not allowed as it\'s not supported by JSON',
+          "Setting a value of type `symbol` for key `a` is not allowed as it's not supported by JSON",
         );
       },
     },),
@@ -374,7 +372,7 @@ await describe({
          Error thrown when the whole set input is a number,
          matching upstream `conf`'s `set(1, 'unicorn')` probe.
          */
-        const numberInputError = captureThrown((): unknown => config.set(1 as never, 'unicorn' as never,),);
+        const numberInputError = captureThrown((): unknown => config.set(1 as never,),);
         expect(numberInputError,).toBeInstanceOf(InvalidKeyError,);
         expect(numberInputError.name,).toBe('InvalidKeyError',);
         expect(numberInputError.message,).toBe('Expected `key` to be of type `string` or `object`, got number',);
@@ -561,18 +559,18 @@ await describe({
         },),);
         expect(functionError,).toBeInstanceOf(UnsupportedValueTypeError,);
         expect(functionError.message,).toBe(
-          'Setting a value of type `function` for key `items` is not allowed as it\'s not supported by JSON',
+          "Setting a value of type `function` for key `items` is not allowed as it's not supported by JSON",
         );
         /**
          Error thrown for a symbol item.
          */
         const symbolError = captureThrown((): unknown => config.appendToArray({
           key: 'items',
-          value: Symbol('test',),
+          value: Symbol('probe symbol created to fail JSON serialization',),
         },),);
         expect(symbolError,).toBeInstanceOf(UnsupportedValueTypeError,);
         expect(symbolError.message,).toBe(
-          'Setting a value of type `symbol` for key `items` is not allowed as it\'s not supported by JSON',
+          "Setting a value of type `symbol` for key `items` is not allowed as it's not supported by JSON",
         );
         /**
          Error thrown for an `undefined` item.
@@ -583,7 +581,7 @@ await describe({
         },),);
         expect(undefinedError,).toBeInstanceOf(UnsupportedValueTypeError,);
         expect(undefinedError.message,).toBe(
-          'Setting a value of type `undefined` for key `items` is not allowed as it\'s not supported by JSON',
+          "Setting a value of type `undefined` for key `items` is not allowed as it's not supported by JSON",
         );
       },
     },),
@@ -597,7 +595,7 @@ await describe({
         /**
          Change records collected across both appends.
          */
-        const changes: Array<ValueChange<unknown>> = [];
+        const changes: ValueChange<unknown>[] = [];
         /**
          Subscription recording each change of the watched key.
          */
@@ -739,6 +737,7 @@ await describe({
           value: 'kept',
         },);
         store.reset({
+          // @ts-expect-error - `options.other` is added at runtime, so it is not part of the inferred type.
           keys: ['options.other',],
         },);
         expect(store.get('options.other',),).toBe('kept',);
@@ -953,7 +952,7 @@ await describe({
         /**
          Whole-store change records collected across the clear.
          */
-        const events: Array<StoreChange<Record<string, unknown>>> = [];
+        const events: StoreChange<Record<string, unknown>>[] = [];
         /**
          Subscription recording each whole-store change.
          */
@@ -1027,7 +1026,7 @@ await describe({
         const error = captureThrown((): unknown => store.clear(),);
         expect(error,).toBeInstanceOf(UnsupportedValueTypeError,);
         expect(error.message,).toBe(
-          'Setting a value of type `function` for key `bad` is not allowed as it\'s not supported by JSON',
+          "Setting a value of type `function` for key `bad` is not allowed as it's not supported by JSON",
         );
       },
     },),
@@ -1133,7 +1132,7 @@ await describe({
     //region Persistence
 
     it({
-      name: 'doesn\'t write to disk upon instantiation if and only if the store didn\'t change',
+      name: "doesn't write to disk upon instantiation if and only if the store didn't change",
       fn: async () => {
         /**
          Store created without defaults before anything is written.
@@ -1209,7 +1208,7 @@ await describe({
         expect(directError,).toBeInstanceOf(ReservedKeyError,);
         expect(directError.name,).toBe('ReservedKeyError',);
         expect(directError.message,).toBe(
-          'Please don\'t use the __internal__ key, as it\'s used to manage this module internal operations.',
+          "Please don't use the __internal__ key, as it's used to manage this module internal operations.",
         );
         /**
          Error thrown when the multi-item form carries `__internal__`.
@@ -1221,7 +1220,7 @@ await describe({
         },),);
         expect(valuesError,).toBeInstanceOf(ReservedKeyError,);
         expect(valuesError.message,).toBe(
-          'Please don\'t use the __internal__ key, as it\'s used to manage this module internal operations.',
+          "Please don't use the __internal__ key, as it's used to manage this module internal operations.",
         );
         /**
          Error thrown when a dotted write reaches inside `__internal__`.
@@ -1232,7 +1231,7 @@ await describe({
         },),);
         expect(dottedError,).toBeInstanceOf(ReservedKeyError,);
         expect(dottedError.message,).toBe(
-          'Please don\'t use the __internal__ key, as it\'s used to manage this module internal operations.',
+          "Please don't use the __internal__ key, as it's used to manage this module internal operations.",
         );
       },
     },),
