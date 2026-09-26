@@ -254,6 +254,10 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    cross-runtime and scripts):
    12 rules stay 12,
    762 to 692 tokens.
+   Approved except VR2.
+- HON and VR2 redraft:
+   user required that they cannot be read as conflicting;
+   the reading-ambiguity clause moves wholly from HON into VR2.
    Proposed,
    awaiting user review.
 - Retired-code references:
@@ -360,6 +364,9 @@ working files lived in the session scratchpad.
 - Vague rule text gets deleted rather than guessed at:
    `AGENTS.md` is living,
    so the user re-adds precise wording when an agent misbehaves.
+
+- Proposal code blocks mark sections with Markdown headings,
+   not HTML comments.
 
 ## Open questions
 
@@ -1096,6 +1103,78 @@ WC2:
  edit its source,
  run file-enforcer,
  commit output as-is.
+```
+
+### Batch 11 (VR2 pending redraft)
+
+```md
+VRB:
+ Decision verbs ("decide",
+ "review",
+ "audit",
+ "investigate",
+ "propose"...) want an answer + required docs,
+ no fixes;
+ action verbs ("fix",
+ "implement",
+ "update"...) authorize action.
+
+DRR:
+ Recommendations,
+ even delegated:
+ brief evidence,
+ ranking,
+ risks;
+ proposals in `doc/planning/`;
+ only explicit acceptance (not review or sub-question answers) unlocks `doc/decision/` or dependent work.
+
+IWT:
+ Deliberation requests ("review",
+ "audit",
+ "investigate"...):
+ main worktree gets doc/report writes only;
+ experiment in `git worktree add <path> HEAD`,
+ removed after.
+
+AUT:
+ Auto mode's "prefer action over planning" covers executing the requested action,
+ never expanding scope or acting on adjacent undecided choices.
+
+VR2:
+ Ambiguous request verb:
+ take the narrower reading;
+ propose the broader action explicitly.
+
+ANN:
+ Put changes where they belong immediately (other file,
+ new file,
+ gitignore entry);
+ unsure:
+ propose the concrete edit + location.
+
+EC4:
+ Never implement features that can't achieve their intended effect;
+ explain the limitation instead of writing non-functional code.
+
+XRT:
+ Prefer cross-runtime patterns over Bun-specific APIs.
+
+HOM:
+ Derive current-user paths from injected home or runtime homedir,
+ never a hardcoded username or `/home`;
+ environment-sensitive tests inject disposable homes.
+
+SCR:
+ Never write bash/powershell scripts or `mise.<action>.ts` files;
+ put task logic inline via `shell = "node --input-type=module-typescript -e"` or in a package bin.
+
+PIN:
+ Pin tool versions only with a comment explaining why.
+
+SPG:
+ Automation that spawns agent sessions needs explicit recursion guards (env var flag,
+ session type filter,
+ transcript size check).
 ```
 
 ## Next action
