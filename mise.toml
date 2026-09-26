@@ -1288,6 +1288,7 @@ _.path = [
   "package/git-policy/cli/node_modules/.bin",
   "package/kwin/key-helper/node_modules/.bin",
   "package/mcp/mvm/node_modules/.bin",
+  "package/module/conf-fork.fuzz/node_modules/.bin",
   "package/module/conf-fork/node_modules/.bin",
   "package/module/css-edit.bench/node_modules/.bin",
   "package/module/pnpm-workspace-catalog/node_modules/.bin",

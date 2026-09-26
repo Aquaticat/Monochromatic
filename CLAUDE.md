@@ -789,6 +789,11 @@ NXR:
 Inspect processes + logs;
  rerun via process tool or bounded execution.
 
+EDR:
+ Parallel tool calls may run unordered,
+ so a command reading a fresh edit can run against the pre-edit file.
+ Batch the dependent run after the edit lands.
+
 1CB:
  At most three `&&`-chained steps per Bash call;
  never `;` chains or loops:
