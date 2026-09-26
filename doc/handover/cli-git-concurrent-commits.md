@@ -226,10 +226,43 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
       blocking every wrapped command in linked worktrees until an agent deleted the copy journal by hand.
       Investigation and fix in `/var/home/user/worktrees/cli-git-worktree-copy-stalls-and-blocks-linked-worktrees`
       (branch `fix/cli-git-worktree-copy-stalls-and-blocks-linked-worktrees`).
-  After both:
-  run the full checks and several container seeds,
-  re-measure the lifecycle latency baseline,
-  then merge the feature branch into `main`.
+  Update 2026-09-26 evening:
+    - Trust registry lock,
+      test home isolation,
+      and the untrust-overlap reader fix landed;
+      worktree-copy fix merged (`6f613c26e`);
+      Git 2.39.5 degrades by capability probe;
+      feature head `da8ba33cf` passed unit (3 runs),
+      `test:built:trust`,
+      container seeds 1 to 3 (90 pass,
+      24 documented skips,
+      0 fail per seed),
+      and latency budgets.
+    - Per-commit cost growth was unconsolidated packs from `index-pack --keep` landings,
+      because plumbing skips native `git commit`'s auto-maintenance;
+      fixed on `fix/cli-git-concurrent-commits-per-commit-cost-grows-with-history`
+      (344 ms per commit at 2000 packs,
+      from 1062 ms).
+    - Running:
+      final integration
+      (merge the maintenance fix,
+      re-run the reservation sweep with the rule "tails within the band:
+       lower median wins",
+      benchmarks,
+      full verification,
+      documentation consistency),
+      and removal of about 1351 stale trust records of deleted `/tmp` repositories
+      from the owner's real registry after a backup (owner approved).
+    - Issues opened this session:
+      #572 (under-scoped verification),
+      #573 (logger sink timeout noise),
+      #574 (short-form names),
+      #575 (absolute-path git bypass hook),
+      #576 (logger logs under `node_modules`).
+  After final integration:
+  merge the feature branch into `main`,
+  rebuild main's wrapper,
+  and close #571.
 - `SPEC.md` has no placeholders left;
   the shadow snapshots every real ref at invocation so hooks resolve tags and other branches.
 - Private `HEAD` shape chosen from a disposable-repository prototype:
