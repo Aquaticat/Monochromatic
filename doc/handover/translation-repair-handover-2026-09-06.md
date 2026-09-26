@@ -4777,7 +4777,13 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XU_YUSHU1 READ (2026-09-26, `.frozen-dist-8f2b07c37`): INCOMPLETE in 3.3 min at the pictures phase;
+1.  TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
+    check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
+    sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built
+    (guard `069690562`, fix `7b87c5a4e`); recorded under "## TianqiChen6662 read".
+    TIANQICHEN6663 RUNNING on `.frozen-dist-7b87c5a4e` (scope `pass-TianqiChen6663`, pid 2416632):
+    read the 头壳 line, the character names and the three grammar lines first.
+    XU_YUSHU1 READ (2026-09-26, `.frozen-dist-8f2b07c37`): INCOMPLETE in 3.3 min at the pictures phase;
     only GLM-5.3-Flash read the handwritten `composition.webp` and no second reader agreed
     (Synthetic and Hyper dry, Qwen with no provider, Kimi withheld); rerun when Synthetic is wet.
     The padded-reading log fixed (`141598127`, guard `a6ce93330`); recorded under "## Xu_Yushu1 read".

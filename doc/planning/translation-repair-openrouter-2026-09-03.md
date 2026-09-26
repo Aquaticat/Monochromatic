@@ -8082,6 +8082,41 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## TianqiChen6662 read, 2026-09-26: classes one hundred sixty and sixty-one
+
+TianqiChen6662 (entry TianqiChen666, Menma) ran on `.frozen-dist-141598127` and SETTLED in 19.7 min, one attempt,
+24 slices, 1,512 calls, 1,754 seats, 61 retry rounds, 0.74 USD of OpenRouter cost, 4 abandoned streams (0.02 USD).
+Front matter equal, 3 headings, no TA, no error finish, no triple blank line, 4 unendorsed standings,
+17 abstention lines; 7 em-dashes, left as the owner said.
+Synthetic and Hyper stayed dry: Qwen3.8-27B threw 266 of 266 and glm-5.3 109 of 109 with no provider.
+
+### Class one hundred sixty: fandom words
+
+头壳 (a kigurumi performer's head mask) shipped "within the smallest space inside her head",
+reading it as the wearer's own head; the archive renders 头壳 "headpiece" three times on the same page.
+阿洛娜 and 亚托莉 shipped as the archive's "Alona and Atori"; they are Arona of Blue Archive and Atri of
+ATRI -My Dear Moments-, and no candidate on the run wrote either name (0 of 75 artifact mentions).
+All three join the community glossary through `community-glossary-fandom.ts`, spread into `COMMUNITY_GLOSSARY`,
+refusing "inside her head", "alona" and "atori" where the source carries the term
+(guard red first `069690562`, fix `7b87c5a4e`).
+
+### Class one hundred sixty-one: grammar slips
+
+Three ungrammatical lines reached the page.
+"turned into in a small box" (化作) and "those she has healed" (被她治愈, present perfect in a life told in the past)
+were the archive's own and no lane repaired them.
+"should have had a better life, didn't she?" (应该会有更好的生活，不是吗) was the bench's regression:
+the archive had written "deserved a better life, didn't she?", and the tag does not match the clause.
+All three join the rendering glossary through `rendering-glossary-grammar.ts`, spread into `RENDERING_GLOSSARY`
+(same guard and fix commits).
+TianqiChen6663 runs on `.frozen-dist-7b87c5a4e` to read them live.
+
+### Observations not built
+
+The UNO line 这次的 uno，真的加了很多呢 shipped "we've added a lot", which loses the draw-card stacking the line
+jokes about; blockquotes carry curly quotes on some quoted lines and none on others where the original quotes
+every line with 「」.
+
 ## Xu_Yushu1 read, 2026-09-26: INCOMPLETE at the pictures phase, the padded-reading log fixed
 
 Xu_Yushu1 ran on `.frozen-dist-8f2b07c37` and stopped INCOMPLETE in 3.3 min (199,440 ms),
