@@ -56,6 +56,21 @@ await describe({
           },
         },),
         it({
+          name: 'refuses to replace the document root with a scalar',
+          fn: async () => {
+            // The root must stay a container: a scalar root emits text this package's own parser
+            // rejects. Fuzzing the Rust port found it as an emission of `null`.
+            expect(() => {
+              jsoncSet({ state: base(), path: [], value: null, },);
+            },).toThrow('root must stay an object or array',);
+            expect(() => {
+              jsoncSet({ state: base(), path: [], value: 7, },);
+            },).toThrow('root must stay an object or array',);
+            const next = jsoncSet({ state: base(), path: [], value: [], },);
+            expect(jsoncGetValue({ state: next, path: [], },),).toEqual([],);
+          },
+        },),
+        it({
           name: 'appends at the length index',
           fn: async () => {
             const next = jsoncSet({ state: base(), path: ['list', 2,], value: 30, },);

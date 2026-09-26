@@ -51,10 +51,19 @@ fuzz_target!(|input: (GeneratedDocument, Vec<u8>)| {
             // Set: write a generated value at the address, carrying the existing comment across so
             // comment preservation can be asserted on the result.
             let Ok(target) = jsonc_lookup(&state.root, &path) else { return };
-            let mut replacement = replacement_value(&mut unstructured).expect("replacement builds");
+            // An exhausted byte budget is not a defect, so the input is skipped rather than failed.
+            let Ok(mut replacement) = replacement_value(&mut unstructured) else { return };
             replacement.comment = target.comment.clone();
             written = Some(replacement.clone());
-            jsonc_set(&state.root, &path, replacement).expect("set at a resolved address succeeds")
+            match jsonc_set(&state.root, &path, replacement) {
+                Ok(edited) => edited,
+                Err(error) => {
+                    // The only refusal this target may provoke is the root shape guard: a scalar at
+                    // the root would break the container-root contract, so the crate refuses it.
+                    assert!(path.is_empty(), "set at a resolved address was refused: {error}");
+                    return;
+                }
+            }
         }
         1 => {
             // Delete: only meaningful away from the root, which the contract refuses to remove.
@@ -101,7 +110,27 @@ fuzz_target!(|input: (GeneratedDocument, Vec<u8>)| {
         );
     }
     if action == 1 {
-        assert!(!jsonc_has(&edited, &path), "deleted address still resolves");
+        // What: Assert what deletion actually guarantees, per segment kind.
+        // Why: Deleting a member removes its name, so the address must stop resolving. Deleting an
+        //      element shifts the ones after it, so the same index can still resolve to a different
+        //      element; what must hold there is that the parent lost exactly one element.
+        let parent = &path[..path.len() - 1];
+        let before = jsonc_lookup(&state.root, parent).expect("parent resolves before the delete");
+        let after = jsonc_lookup(&edited, parent).expect("parent resolves after the delete");
+        match path.last() {
+            Some(JsoncPathSegment::Key { .. }) => {
+                assert!(!jsonc_has(&edited, &path), "deleted member still resolves");
+                let siblings_before = before.entries().expect("record parent").len();
+                let siblings_after = after.entries().expect("record parent").len();
+                assert_eq!(siblings_after + 1, siblings_before, "member delete did not remove exactly one member");
+            }
+            Some(JsoncPathSegment::Index { .. }) => {
+                let elements_before = before.elements().expect("array parent").len();
+                let elements_after = after.elements().expect("array parent").len();
+                assert_eq!(elements_after + 1, elements_before, "element delete did not remove exactly one element");
+            }
+            None => panic!("the root address returns before any delete"),
+        }
     }
     if action == 2 {
         let found = jsonc_comment(&reparsed, &path).expect("comment query on reparsed document");

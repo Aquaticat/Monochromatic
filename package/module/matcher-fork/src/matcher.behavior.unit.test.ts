@@ -717,6 +717,13 @@ await describe({
         },),).toBe(true,);
         expect(isMatch({
           inputs: [
+            'foo',
+            'bar',
+          ],
+          patterns: ['!bar'],
+        },),).toBe(true,);
+        expect(isMatch({
+          inputs: [
             'Hey, tiger!',
             'tiger has edge over hyenas',
             'pushing a tiger over the edge is a stunt',
@@ -792,6 +799,43 @@ await describe({
           patterns,
           options,
         },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'keeps some-branch under allPatterns with a single negation',
+      fn: async () => {
+        /**
+         One negation plus one positive: requiresAllInputs stays false,
+         so isMatch needs only one matching input.
+         */
+        const patterns = [
+          '!bar',
+          'f*',
+        ];
+        /**
+         All-patterns flags shared by every case below.
+         */
+        const options = { allPatterns: true, };
+        expect(isMatch({
+          inputs: [
+            'foo',
+            'qux',
+          ],
+          patterns,
+          options,
+        },),).toBe(true,);
+        expect(isMatch({
+          inputs: [
+            'foo',
+            'qux',
+          ],
+          patterns: [
+            'f*',
+            '!bar',
+          ],
+          options,
+        },),).toBe(true,);
       },
     },),
 

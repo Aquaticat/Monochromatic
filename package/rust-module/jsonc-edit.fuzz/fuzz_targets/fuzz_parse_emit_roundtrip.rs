@@ -26,10 +26,14 @@ fuzz_target!(|document: GeneratedDocument| {
     let emitted = emit_jsonc_value(&parsed);
     assert_comments_preserved(&parsed, &emitted);
 
-    // Every body the generator wrote must still be present, which catches comments dropped during
-    // merging as well as during emission. An empty body is trivially contained.
+    // Every line of every body the generator wrote must still be present, which catches comments
+    // dropped during merging as well as during emission. Whole bodies are not substrings of the
+    // output by design: canonical emission renders a merged multi-line body as one indented `//`
+    // line per body line.
     for body in &document.comment_texts {
-        assert!(emitted.contains(body), "generated comment body {body:?} missing from emission:\n{emitted}");
+        for line in body.replace("\r\n", "\n").split(['\n', '\r']) {
+            assert!(emitted.contains(line), "generated comment body {body:?} lost {line:?} in emission:\n{emitted}");
+        }
     }
 
     // Emission must itself be a document the parser accepts, with the same depth.

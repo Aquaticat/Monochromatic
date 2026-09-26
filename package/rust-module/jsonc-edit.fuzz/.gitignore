@@ -3,3 +3,8 @@
 /target
 /corpus
 /artifacts
+# Crash artifacts libFuzzer drops next to the binary; they belong in artifacts/, never in git.
+/crash-*
+/oom-*
+/timeout-*
+/leak-*

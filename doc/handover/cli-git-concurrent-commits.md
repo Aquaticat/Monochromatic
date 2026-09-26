@@ -101,18 +101,49 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
       native semantics for hooks that restage files,
       e2e kill-phase markers,
       and syncing `SPEC.md` with slices 2 and 3;
-    - slice 6 in `/var/home/user/worktrees/ccc-locks` (branch `feat/ccc-locks`):
+    - slice 6 in `/var/home/user/worktrees/cli-git-concurrent-commits-index-lock-classification`
+      (branch `feat/cli-git-concurrent-commits-index-lock-classification`):
       `core.lockfilePid` injection,
       foreign `index.lock` classification and waits,
       index-writer coordination,
       and the narrowed worktree-copy settlement lock;
-    - slice 8 in `/var/home/user/worktrees/ccc-push` (branch `feat/ccc-push`):
-      single-flight auto-push;
-    - an e2e measurement run of the slice 2 build in `/var/home/user/worktrees/ccc-e2e-slice2`
-      (throwaway,
-      detached).
-  `feat/ccc-locks` and `feat/ccc-push` merge into `feat/cli-git-concurrent-commits` after they are green.
+    - slice 8 finished in `/var/home/user/worktrees/cli-git-concurrent-commits-single-flight-auto-push`
+      (branch `feat/cli-git-concurrent-commits-single-flight-auto-push`,
+      through `b6860a9e8`):
+      single-flight auto-push,
+      green on build,
+      types,
+      oxlint,
+      unit,
+      and `test:built:trust`.
+  Both merge into `feat/cli-git-concurrent-commits` after they are green.
   Slices 4 (read sets and `inputs`) and 5 (reservation) follow slice 3.
+- The slice worktrees and branches were first created as `ccc-locks`/`ccc-push`;
+  the owner called the names non-descriptive,
+  and they were renamed on 2026-09-26.
+  The lock branch is published under its new name
+  (slice 6 finished at `6143d837d`)
+  and the old remote `feat/ccc-locks` is deleted.
+  The auto-push branch is not yet published under its new name;
+  the old remote `feat/ccc-push` stays until the manual-push fix merges.
+- Claude Code crashed twice on 2026-09-26 while running a wrapped manual `git push` of the renamed branch.
+  An isolated rerun as a systemd user service showed the cause:
+  the wrapper's `manual-push` scan listed the whole history for a ref the remote lacks
+  and spawned one `git diff-tree` per commit concurrently
+  (3256 tasks,
+  1.3 GB peak,
+  then `spawn /usr/bin/git EAGAIN` from `final-newline`).
+  Code:
+  `pushedCommits` and `createManualPushCandidates` in `package/git-policy/cli/src/policy-engine/manual-push-candidates.ts`.
+  The owner ruled it wrong by design:
+  the scan must never walk every commit.
+  Fix in progress in `/var/home/user/worktrees/cli-git-manual-push-scans-already-published-history`
+  (branch `fix/cli-git-manual-push-scans-already-published-history`,
+  from `main`);
+  it also resolves `doc/troubleshooting/cli-git-tag-push-eagain.md`.
+  Until it merges,
+  never run a wrapped manual push of a new ref inside the agent's process tree.
+- Slices 3 and 6 were interrupted by the crashes and resumed from their transcripts.
 - `SPEC.md` has no placeholders left;
   the shadow snapshots every real ref at invocation so hooks resolve tags and other branches.
 - Private `HEAD` shape chosen from a disposable-repository prototype:

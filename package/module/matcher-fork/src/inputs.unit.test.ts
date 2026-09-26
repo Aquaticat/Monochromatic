@@ -165,6 +165,7 @@ await describe({
             caught = error;
           }
           expect(caught,).toBeInstanceOf(InvalidInputsError,);
+          expect((caught as Error).message,).toBe(`Expected 'inputs' to be a string or an array, but got a type of '${typeof value}'`,);
         },
       },);
     },),
@@ -184,6 +185,7 @@ await describe({
             caught = error;
           }
           expect(caught,).toBeInstanceOf(InvalidPatternsError,);
+          expect((caught as Error).message,).toBe(`Expected 'patterns' to be a string or an array, but got a type of '${typeof value}'`,);
         },
       },);
     },),
@@ -202,6 +204,7 @@ await describe({
           caught = error;
         }
         expect(caught,).toBeInstanceOf(InvalidInputsError,);
+        expect((caught as Error).message,).toBe('Expected \'inputs\' to be an array of strings, but found a type of \'number\' in the array',);
       },
     },),
 
@@ -219,6 +222,7 @@ await describe({
           caught = error;
         }
         expect(caught,).toBeInstanceOf(InvalidPatternsError,);
+        expect((caught as Error).message,).toBe('Expected \'patterns\' to be an array of strings, but found a type of \'object\' in the array',);
       },
     },),
 

@@ -96,6 +96,9 @@ export function installFakeClock(options: {
   Date.now = readFakeNow;
 
   return {
+    /**
+     Current fake time in milliseconds since the epoch.
+     */
     get now(): number {
       return time.milliseconds;
     },

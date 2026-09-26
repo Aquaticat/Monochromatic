@@ -84,6 +84,20 @@ await describe({
     },),
 
     it({
+      name: 'keeps OR logic under null options',
+      fn: async () => {
+        expect(isMatch({
+          inputs: 'foo',
+          patterns: [
+            'f*',
+            'b*',
+          ],
+          options: null as never,
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'treats truthy option values as enabled',
       fn: async () => {
         expect(isMatch({
@@ -149,6 +163,25 @@ await describe({
           ],
           options: pollutedOptions({}),
         },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'honors own flags over a polluted prototype',
+      fn: async () => {
+        expect(isMatch({
+          inputs: 'SECRET.txt',
+          patterns: 'secret*',
+          options: pollutedOptions({ caseSensitive: true, }),
+        },),).toBe(false,);
+        expect(isMatch({
+          inputs: 'foo',
+          patterns: [
+            'f*',
+            'b*',
+          ],
+          options: pollutedOptions({ allPatterns: true, }),
+        },),).toBe(false,);
       },
     },),
 

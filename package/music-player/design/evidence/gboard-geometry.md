@@ -138,6 +138,36 @@ it is **not** one of the linked sanitized Gboard PNGs.
   so do not transplant the first probe's public geometry into its row.
   See `doc/troubleshooting/android-17-fold-emulator-ime-probe.md`
   for the source trace and boundary between these visits.
+- A later **debug-only layering control on the same APK** used SHA-256
+  `e4bfec8e8eb98187a0afc06ef11d587fd3c87623fe45a37da7b0ffd862c6461e`.
+  A nonfocusable app panel visibly painted over real floating Gboard.
+  An uncovered real key changed the focused query to `m`;
+  tapping a key beneath the panel left it at `m`.
+  `InputDispatcher` logged a dropped untrusted touch due to the app window.
+  After Back hid Gboard,
+  the sampled panel remained over the deck.
+  This is a **rejected integration probe**,
+  not a usable replacement Search design or a public review PNG.
+  Its source and exact screen/window evidence are in the same troubleshooting
+  document.
+- The separate debug-only `-keepclear-` candidate used APK SHA-256
+  `e755bf76ed65e45dc4e4ec57f4f55bdbd948902ca6e1940ddf911474ee8a4dd7`.
+  App logging and privileged Window Manager agreed that a keep-clear area
+  `[0,717][1038,2152]` was registered.
+  Gboard's floating keys at `[482,1006][1388,1777]` **partially**
+  overlapped it in x `[482,1038)` and y `[1006,1777)`.
+  Dragging the keyboard right moved the observed key region to
+  `[1025,1006][1931,1777]`,
+  still overlapping the requested area by 13px horizontally.
+  Dragging it back left returned a larger overlap and visibly covered
+  the deck title.
+  Those manual drags validate region detection,
+  not system cooperation with the hint.
+  A real key tap entered `d`.
+  This validates the geometry detector and rejects **this best-effort
+  hint on this fixture** as a D50 response;
+  it does not describe all possible window placements.
+  Raw captures remain private.
 - [Original AVD floating Gboard at 100% cover][floating-cover]:
   real key taps entered `cam`,
   but its x `[0,830)`,

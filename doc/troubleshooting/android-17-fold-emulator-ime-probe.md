@@ -283,12 +283,95 @@ layer above the IME and cover it:
 * screen for its content and cover the input method if needed.  You
 ```
 
-Layering the deck there could instead obscure Gboard keys in the measured
-overlap;
-it is not a verified design for keeping both Search input and the
-complete deck usable.
-This is not proof that every app-observable keyboard API lacks the geometry
-or that floating overlays are impossible to avoid by other means.
+A debug-only test of that layer exists on prototype commit `d9a5c549e`.
+The tested APK SHA-256 was
+`e4bfec8e8eb98187a0afc06ef11d587fd3c87623fe45a37da7b0ffd862c6461e`.
+The same-APK vertical-A control
+`search-deck-right-lift-retain-results-light` showed real floating Gboard
+obscuring the deck title at x `[482,781)` and y `[1120,1223]`.
+The experimental
+`search-deck-right-lift-layerprobe-retain-results-light` added a
+**nonfocusable and not-touchable app panel** over the left pane.
+Window Manager reported that panel at `[0,717][1038,1793]` with
+`NOT_FOCUSABLE NOT_TOUCHABLE LAYOUT_IN_SCREEN` and the real floating
+Gboard touch region at `[482,1006][1388,1777]`.
+The screenshot verified the panel paints **above** the keys,
+but it also washed out both keyboard keys and app content.
+It was only a marker,
+not a duplicate deck or accepted design.
+
+The same SDK's
+`android/view/WindowManager.java:2893-2914` documents the relevant
+cross-UID touch rule for a `FLAG_NOT_TOUCHABLE` window:
+
+```java
+* Starting from Android {@link Build.VERSION_CODES#S}, for security reasons, touch
+* events that pass through windows containing this flag (ie. are within the bounds of the
+* window) will only be delivered to the touch-consuming window if one (or more) of the
+* items below are true:
+* <li><b>Same UID</b>: This window belongs to the same UID that owns the touch-consuming
+*   window.
+* <li><b>Trusted windows</b>: This window is trusted.
+* <li><b>Invisible windows</b>: This window is {@link View#GONE} or
+*   {@link View#INVISIBLE}.
+* <li><b>Fully transparent windows</b>: This window has {@link LayoutParams#alpha}
+*   equal to 0.
+```
+
+The visible app panel belonged to UID `10249`,
+while Gboard belonged to UID `10170`.
+A real tap on an **uncovered** floating key entered `m` in the focused
+Search query.
+A tap on a key **under the panel** left the query at `m`.
+`InputDispatcher` reported
+`Dropping untrusted touch event due to occlusion by dev.monochromatic.musicplayer/10249`.
+That positive and negative pair rejects this panel as a solution:
+painting over the IME prevented typing through the covered area.
+After Android Back hid Gboard,
+the debug marker also remained painted over the browser and deck in the
+sampled frame;
+the candidate's visibility-based cleanup did not run for that state.
+These unsanitized captures are private scratch evidence.
+Do not transplant this panel into production or treat it as D50 compliance.
+
+`View.java:13353-13370` separately offers
+`setPreferKeepClearRects()` as a **best-effort preference** for floating
+windows above an app view;
+the source says the system may ignore it when the request cannot be met.
+`View.java:13449-13454` forwards changed rectangles to its attached
+`ViewRootImpl`,
+and `ViewRootImpl.java:6687-6709` reports changed areas to Window Manager.
+This path does **not** by itself promise movement of Gboard's internal keys.
+
+A second debug-only candidate,
+`search-deck-right-lift-keepclear-retain-results-light`,
+used prototype commit `b9c05342f` and APK SHA-256
+`e755bf76ed65e45dc4e4ec57f4f55bdbd948902ca6e1940ddf911474ee8a4dd7`.
+The app logged a request for `[0,717][1038,2152]`;
+Window Manager reported that exact restricted `keepClearAreas` rectangle
+on the app window.
+Its real floating Gboard still occupied
+`[482,1006][1388,1777]`.
+The key region **partially overlapped** the requested area in x
+`[482,1038)` and y `[1006,1777)`,
+and the screenshot showed its keys over the deck.
+To validate that Window Manager's touch-region probe could show movement,
+a deliberate drag moved Gboard to `[1025,1006][1931,1777]`,
+which still overlapped the requested area by 13px horizontally.
+A reverse drag moved it back to `[528,1006][1434,1777]` while the same
+keep-clear area remained registered.
+Manual movement validates the geometry detector,
+**not** keep-clear cooperation or automatic movement.
+The screenshot after that reverse drag still showed the deck title obscured.
+A tap on a visible floating key entered `d` in the focused query,
+so this was real usable Gboard input rather than a toolbar-only state.
+This test rejects **this rectangle request on this Gboard fixture** as
+an automatic D50 response.
+It does not prove every keep-clear placement or other floating window
+behaves the same way.
+The captures remain private unsanitized scratch evidence.
+The rejected panel and measured keep-clear request do not prove that every
+app-observable keyboard API lacks geometry or that all overlay approaches fail.
 
 ## Verification
 

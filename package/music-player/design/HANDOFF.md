@@ -5718,6 +5718,49 @@ that Gboard's original font-update banner cannot recur.
 Continue design-only banner and accessibility checks without changing
 accepted A or conflating synthetic sampled-frame passes with real Gboard.
 
+## Above-IME app panel rejected as a D50 response
+
+Prototype commit `d9a5c549e` added a **debug-only** app-owned panel with
+`NOT_FOCUSABLE` and `NOT_TOUCHABLE` flags over the left deck.
+The tested APK was SHA-256
+`e4bfec8e8eb98187a0afc06ef11d587fd3c87623fe45a37da7b0ffd862c6461e`.
+The same-APK plain A control visibly lost its deck title beneath real
+floating Gboard.
+The marker candidate did paint over Gboard at `[0,717][1038,1793]`,
+but it washed out keys and browser content.
+An uncovered key entered `m`;
+a key beneath the marker did not change the query,
+and `InputDispatcher` logged a dropped untrusted touch from the app overlay.
+After Back hid Gboard,
+the sampled marker still covered the deck.
+This marker is neither a real deck port nor a viable design.
+All screenshots remain private unsanitized scratch artifacts.
+Details and the SDK touch-policy source are in
+`doc/troubleshooting/android-17-fold-emulator-ime-probe.md`.
+The current review remains accepted A with D50's floating and banner gaps;
+no production change was made.
+A separate keep-clear probe at prototype commit `b9c05342f` then
+registered `[0,717][1038,2152]` with Window Manager.
+Real floating Gboard still occupied `[482,1006][1388,1777]` and obscured
+the deck title.
+Manual right and left drags visibly moved its reported key region.
+The rightward region `[1025,1006][1931,1777]` still intersected the
+registered area by 13px;
+the return drag increased that overlap.
+A real key tap entered `d`.
+These drags validate the region measurement,
+not Gboard's cooperation with the hint.
+The app's request reached Window Manager,
+but the source of Gboard's continued overlap is unproven.
+The best-effort request is **not** a verified automatic D50 response on
+this fixture;
+no universal absence claim follows.
+The tested debug APK SHA-256 was
+`e755bf76ed65e45dc4e4ec57f4f55bdbd948902ca6e1940ddf911474ee8a4dd7`.
+The prototype's changed debug signing certificate required an uninstall
+**only on the disposable AVD** before installing the new APK;
+see `doc/troubleshooting/android-37-debug-apk-signature-update.md`.
+
 ## Issue tracking moves to Linear for this session
 
 `gh` cannot reach the GitHub API this session:
