@@ -2658,14 +2658,14 @@ and prepared entries:
   or both are absent:
   subsumed.
 - Otherwise,
-  when any entry is absent
-  (an addition on both sides,
-   a deletion on one,
+  when the landed or prepared entry is absent
+  (a deletion on one side,
    or a deletion against a modification):
   not subsumed,
-  because a reversed creation or deletion applies only to identical content.
+  because a reversed deletion applies only to an absent file.
+  An addition on both sides goes on to the text check against an empty base.
 - Otherwise,
-  when any entry is not a regular file
+  when any present entry is not a regular file
   (a symbolic link or a submodule `160000` entry),
   or any of the three blobs has a NUL byte in its first 8000 bytes
   (Git's `buffer_is_binary`,
@@ -2686,6 +2686,16 @@ and prepared entries:
     joined by the base lines between them,
     are a prefix of the prepared text when both hunks start on the same base line,
     or a suffix when both end on the same base line.
+    When both hunks cover exactly the same base range,
+    the landed lines may also appear in order with own lines inserted between them,
+    as long as the prepared text starts with the first landed line or ends with the last;
+    an addition on both sides,
+    whose zero-context hunks both cover the empty base,
+    is this case,
+    so a prepared file holding every line the landed addition added,
+    in order,
+    is subsumed,
+    and one that dropped or rewrote a landed line is not.
     A prepared hunk that replaces exactly the lines a landed deletion removed is a modify/delete conflict and is not subsumed.
 
 Strict reverse application alone never subsumes the case the decision exists for:
@@ -2700,6 +2710,7 @@ Process count is fixed per replay:
 two `diff-tree` runs;
 when text candidates exist,
 one `cat-file --batch`,
+one `hash-object` writing the empty blob when an addition on both sides needs an empty base,
 three `mktree` runs writing single-level trees whose entries are named by index,
 so no patch header carries a user path,
 and three `diff-tree -p --text` runs;
@@ -3227,7 +3238,7 @@ Landing and replay:
   prepared bytes holding the landed edit plus an adjacent own edit land as they are;
   a far-apart edit is not subsumed and merges;
   an adjacent edit without the landed one conflicts;
-  identical additions are subsumed while an addition containing the landed one conflicts;
+  identical additions and additions keeping every landed line are subsumed while one that rewrote a landed line conflicts;
   delete against modify conflicts either way round and a deletion on both sides is subsumed;
   binary blobs are subsumed only when identical;
   a landed mode change merges three-way even when the content is subsumed;
