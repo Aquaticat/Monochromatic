@@ -356,6 +356,7 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
         SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f),
             deckFirst = !liftWithIme, deckFullHeight = liftWithIme, bannerFit = bannerFit,
             compactForBrowser = retainBrowser && (keyboardShown || preclearActive),
+            reserveOwnsNavigation = preclearActive,
             onDeckMeasured = { heightPx ->
                 if (autoFitStudy && !keyboardShown && heightPx > restingDeckHeight) {
                     restingDeckHeight = heightPx

@@ -987,6 +987,7 @@ internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier,
     includeTopInset: Boolean = true, deckFirst: Boolean = false,
     deckFullHeight: Boolean = false, bannerFit: Boolean = false,
     compactForBrowser: Boolean = false,
+    reserveOwnsNavigation: Boolean = false,
     onDeckMeasured: ((Int) -> Unit)? = null,
     topContent: @Composable (Modifier) -> Unit) {
     val palette = paletteForSearchDeck(light)
@@ -1009,7 +1010,8 @@ internal fun SearchFoldDeckHost(light: Boolean, modifier: Modifier,
                 onDeckMeasured?.invoke(size.height)
             }, candidate = "dark-stable-wallpaper-dynamic",
                 palette = palette, deckHeightCap = !deckFullHeight, bannerFit = bannerFit,
-                compactForBrowser = compactForBrowser)
+                compactForBrowser = compactForBrowser,
+                reserveOwnsNavigation = reserveOwnsNavigation)
         }
     }
 }
@@ -1490,6 +1492,7 @@ private fun TransportBlock(
     deckHeightCap: Boolean = true,
     bannerFit: Boolean = false,
     compactForBrowser: Boolean = false,
+    reserveOwnsNavigation: Boolean = false,
 ) {
     // What:     Kotlin's `if` can return a value, unlike a TypeScript `if` statement.
     // Why:      Every candidate keeps one immutable Material spacing value for its complete deck.
@@ -1519,7 +1522,8 @@ private fun TransportBlock(
             .then(if (deckHeightCap) Modifier.heightIn(max = 440.dp) else Modifier)
             .background(color = palette.transport)
             .windowInsetsPadding(WindowInsets.systemGestures.only(horizontalSafeSides))
-            .windowInsetsPadding(WindowInsets.navigationBars)
+            // A pre-reserved keyboard band already includes the bottom navigation edge.
+            .then(if (reserveOwnsNavigation) Modifier else Modifier.windowInsetsPadding(WindowInsets.navigationBars))
             .verticalScroll(rememberScrollState())
             // Reinvest only outer whitespace in the unchanged folder browser above the deck.
             .padding(vertical = if (compactForBrowser) 8.dp else 16.dp),
