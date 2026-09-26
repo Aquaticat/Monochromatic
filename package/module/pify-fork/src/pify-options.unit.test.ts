@@ -50,6 +50,72 @@ await describe({
       },
     },),
 
+    it({
+      name: 'the default exclude pattern is suffix-anchored and needs a prefix',
+      fn: async () => {
+        /**
+         Module mixing names the default pattern must and must not catch:
+         `readSync` ends with the suffix behind a prefix, `Sync` has no
+         prefix character, `xxStreamyy` does not end with the suffix, and
+         `read` carries no suffix at all.
+         */
+        const module = {
+          readSync(): string {
+            return 'raw';
+          },
+          Sync(callback: (error: unknown, value: unknown) => void): void {
+            callback(null, 'p',);
+          },
+          xxStreamyy(callback: (error: unknown, value: unknown) => void): void {
+            callback(null, 'p',);
+          },
+          read(callback: (error: unknown, value: unknown) => void): void {
+            callback(null, 'p',);
+          },
+        };
+        const pified = pify({
+          input: module,
+        },);
+        /**
+         Member classification per name: only `readSync` may pass through
+         raw.
+         */
+        const shapes: Record<string, string> = {};
+        for (const key of [
+          'readSync',
+          'Sync',
+          'xxStreamyy',
+          'read',
+        ]) {
+          try {
+            /**
+             Member call through the fork's call shape.
+             */
+            const memberCall = (pified as unknown as Record<string, (call: {
+              readonly args: readonly unknown[];
+            }) => unknown>)[key] as (call: {
+              readonly args: readonly unknown[];
+            }) => unknown;
+            const result = memberCall({
+              args: [],
+            },);
+            shapes[key] = (typeof (result as { then?: unknown; }).then) === 'function'
+              ? 'promisified'
+              : 'raw';
+          }
+          catch (error) {
+            shapes[key] = `throws ${(error as Error).name}`;
+          }
+        }
+        expect(shapes,).toEqual({
+          readSync: 'raw',
+          Sync: 'promisified',
+          xxStreamyy: 'promisified',
+          read: 'promisified',
+        },);
+      },
+    },),
+
     //endregion Defaults
 
     //region Explicit undefined overrides

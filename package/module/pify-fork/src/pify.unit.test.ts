@@ -302,6 +302,70 @@ await describe({
 
     //endregion Prototype chains
 
+    it({
+      name: 'rejects every non-function non-object input with the upstream message',
+      fn: async () => {
+        /**
+         Inputs upstream `pify` refuses, paired with their message suffixes.
+         */
+        const invalidCases: readonly { readonly input: unknown; readonly shown: string; }[] = [
+          {
+            input: null,
+            shown: 'null',
+          },
+          {
+            input: undefined,
+            shown: 'undefined',
+          },
+          {
+            input: 42,
+            shown: 'number',
+          },
+          {
+            input: 'nope',
+            shown: 'string',
+          },
+          {
+            input: true,
+            shown: 'boolean',
+          },
+        ];
+        for (const { input, shown, } of invalidCases) {
+          /**
+           Wrap failure captured for its class and message.
+           */
+          let thrown: unknown = 'unset';
+          try {
+            pify({
+              input: input as object,
+            },);
+          }
+          catch (error) {
+            thrown = error;
+          }
+          expect(thrown,).toBeInstanceOf(TypeError,);
+          expect(
+            (thrown as Error).message,
+          ).toBe(`Expected \`input\` to be a \`Function\` or \`Object\`, got \`${shown}\``,);
+        }
+      },
+    },),
+
+    it({
+      name: 'caches one promisified wrapper per member function',
+      fn: async () => {
+        const module = {
+          read(callback: (error: unknown, value: unknown) => void): void {
+            callback(null, 'p',);
+          },
+        };
+        const pified = pify({
+          input: module,
+        },);
+        expect(pified.read,).toBe(pified.read,);
+      },
+    },),
+
     //region Type surface
 
     it({

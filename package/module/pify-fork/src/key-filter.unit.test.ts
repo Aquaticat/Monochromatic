@@ -253,6 +253,86 @@ await describe({
 
     //endregion Descriptors and keys
 
+    it({
+      name: 'never matches symbol keys against patterns, even regexes',
+      fn: async () => {
+        /**
+         Description carrying enough words for the symbol lint rule.
+         */
+        const symbolKey = Symbol('fixture member key for pattern test',);
+        const module = {
+          [symbolKey](callback: (error: unknown, value: unknown) => void): void {
+            callback(null, 'symbol',);
+          },
+        };
+        const pified = pify({
+          input: module,
+          options: {
+            // oxlint-disable-next-line no-restricted-syntax/no-regex -- pattern under test must match the symbol's string form so only the symbol-key short-circuit keeps the member selected
+            exclude: [/^Symbol/u,] as unknown as readonly (keyof typeof module)[],
+          },
+        },);
+        /**
+         Symbol-keyed member through the proxy view: the exclude pattern
+         matches its string form, but symbol keys compare by identity only,
+         so the member stays selected.
+         */
+        const symbolMember = (pified as unknown as Record<symbol, unknown>)[symbolKey] as (
+          call: { readonly args: readonly unknown[]; },
+        ) => Promise<unknown>;
+        expect(memberShape(symbolMember,),).toBe('promisified',);
+      },
+    },),
+
+    it({
+      name: 'promisifies writable but non-configurable own members',
+      fn: async () => {
+        /**
+         Module whose own member is writable yet frozen against
+         reconfiguration: the writable flag alone keeps it selectable.
+         */
+        const module: Record<string, unknown> = {};
+        Object.defineProperty(module, 'prop', {
+          value(callback: (error: unknown, value: unknown) => void): void {
+            callback(null, 'x',);
+          },
+          writable: true,
+          configurable: false,
+        },);
+        const pified = pify({
+          input: module,
+        },);
+        expect(
+          memberShape((pified as unknown as Record<string, unknown>).prop,),
+        ).toBe('promisified',);
+      },
+    },),
+
+    it({
+      name: 'exclude drops a member when any one of several patterns matches',
+      fn: async () => {
+        const module = {
+          read(callback: (error: unknown, value: unknown) => void): void {
+            callback(null, 'p',);
+          },
+          other(callback: (error: unknown, value: unknown) => void): void {
+            callback(null, 'o',);
+          },
+        };
+        const pified = pify({
+          input: module,
+          options: {
+            exclude: [
+              'read',
+              'never-matches-this',
+            ] as unknown as readonly (keyof typeof module)[],
+          },
+        },);
+        expect(memberShape(pified.read,),).toBe('throws TypeError',);
+        expect(memberShape(pified.other,),).toBe('promisified',);
+      },
+    },),
+
     //region Upstream quirks
 
     it({
