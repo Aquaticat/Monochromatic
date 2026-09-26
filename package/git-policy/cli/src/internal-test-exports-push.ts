@@ -1,5 +1,5 @@
 /**
- Single-flight auto-push internals reachable from the built artifact for unit tests.
+ Single-flight auto-push and manual-push probe internals reachable from the built artifact for unit tests.
 
  Not part of the authoring API;
  names and shapes change without notice.
@@ -29,6 +29,10 @@ import {
   runSingleFlightPush,
   tipContains,
 } from './auto-push-single-flight.ts';
+import {
+  ManualPushProbeError,
+  probeManualPushUpdates,
+} from './policy-engine/manual-push-probe.ts';
 
 /**
  Shapes of the auto-push internals exposed to built-artifact tests.
@@ -63,9 +67,17 @@ export type PushTestExports = Readonly<{
    */
   LAST_PUSHED_SUFFIX: typeof LAST_PUSHED_SUFFIX;
   /**
+   Internal `ManualPushProbeError`.
+   */
+  ManualPushProbeError: typeof ManualPushProbeError;
+  /**
    Internal `parseLastPushedRecord`.
    */
   parseLastPushedRecord: typeof parseLastPushedRecord;
+  /**
+   Internal `probeManualPushUpdates`.
+   */
+  probeManualPushUpdates: typeof probeManualPushUpdates;
   /**
    Internal `readLastPushedRecord`.
    */
@@ -99,7 +111,9 @@ export const pushTestExports: PushTestExports = {
   filterPushOutput,
   LAST_PUSHED_ABSENT,
   LAST_PUSHED_SUFFIX,
+  ManualPushProbeError,
   parseLastPushedRecord,
+  probeManualPushUpdates,
   readLastPushedRecord,
   resolvePushCoordinationPaths,
   runSingleFlightPush,

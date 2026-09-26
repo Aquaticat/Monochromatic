@@ -24,6 +24,7 @@ import { join, } from 'node:path';
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { resolveRealGit, } from '@monochromatic-dev/git-executable/ts';
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
+import { disposableAccountEnvironment, } from '../trust/account-home-fixture.unit.test.ts';
 import {
   createProcessGroups,
   type ProcessGroups,
@@ -232,7 +233,7 @@ export async function createLandingRepository(setup: readonly (readonly [string,
   const env: NodeJS.ProcessEnv = {
     ...process.env,
     ...FIXED_IDENTITY,
-    HOME: scratch,
+    ...disposableAccountEnvironment(scratch,),
     GIT_CONFIG_GLOBAL: '/dev/null',
     GIT_CONFIG_NOSYSTEM: '1',
     GIT_EDITOR: ':',

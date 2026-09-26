@@ -21,10 +21,13 @@ import nanoSpawn, {
   type Result,
   SubprocessError,
 } from 'nano-spawn';
-import {
+import { internalTestExports, } from '../dist/final/node/index.mjs';
+import { disposableAccountEnvironment, } from './trust/account-home-fixture.unit.test.ts';
+
+const {
   ManualPushProbeError,
   probeManualPushUpdates,
-} from './policy-engine/manual-push-probe.ts';
+} = internalTestExports;
 
 /** Real Git fixture executable. */
 const REAL_GIT = '/usr/bin/git';
@@ -74,7 +77,7 @@ async function createFixture(): Promise<ManualPushFixture> {
     remote,
     env: {
       ...process.env,
-      HOME: home,
+      ...disposableAccountEnvironment(home,),
       PATH: `/usr/bin:/bin:${process.env.PATH ?? ''}`,
     },
     async [Symbol.asyncDispose](): Promise<void> {
