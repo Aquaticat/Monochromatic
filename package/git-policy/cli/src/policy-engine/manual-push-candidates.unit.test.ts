@@ -105,7 +105,8 @@ import { appendFileSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 const args = process.argv.slice(2);
 appendFileSync(${JSON.stringify(logPath,)}, JSON.stringify(args) + '\\n');
-const input = args[0] === 'cat-file' && args[1] === '--batch' ? readFileSync(0) : undefined;
+// Batch readers (cat-file, rev-list --stdin, diff-tree --stdin) take requests on stdin.
+const input = readFileSync(0);
 const result = spawnSync(${JSON.stringify(REAL_GIT,)}, args, {
   cwd: process.cwd(),
   env: process.env,

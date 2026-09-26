@@ -72,39 +72,26 @@ function requiredDiffPart({
 }
 
 /**
- Parses NUL-delimited raw diff-tree output into first-wins per-path records.
+ Retains first-wins content-bearing records from alternating metadata/path tokens.
  
  Deletions publish no content and are dropped; with `-m` a merge lists one
  diff per parent, so the first record retained per path wins.
  
- @param text - decoded NUL-delimited raw diff-tree output
+ @param tokens - alternating colon-prefixed metadata and path tokens
  
  @param createError - domain error factory for malformed output
  
  @returns retained content-bearing records in first-appearance order
  
- @throws caller-domain error when output is malformed
- 
- @example
- ```ts
- parseRawDiffRecords({ text: '', createError: function toError(message,) { return new Error(message,); } });
- // => []
- ```
+ @throws caller-domain error when tokens are malformed
  */
-export function parseRawDiffRecords({
-  text,
+function retainRecords({
+  tokens,
   createError,
 }: {
-  readonly text: string;
+  readonly tokens: readonly string[];
   readonly createError: (message: string) => Error;
 },): readonly RawDiffRecord[] {
-  /**
-   Alternating metadata and path tokens, excluding terminal empty token.
-   */
-  const tokens = text.split('\0',)
-    .filter(function isToken(token,) {
-      return token.length > 0;
-    },);
   /**
    First retained record per path across every listed diff.
    */
@@ -175,4 +162,128 @@ export function parseRawDiffRecords({
       );
   }
   return [...recordsByPath.values(),];
+}
+
+/**
+ Splits raw diff-tree output into non-empty NUL-delimited tokens.
+ 
+ @param text - decoded NUL-delimited raw diff-tree output
+ 
+ @returns tokens without terminal empty token
+ */
+function rawTokens(text: string,): readonly string[] {
+  return text.split('\0',)
+    .filter(function isToken(token,) {
+      return token.length > 0;
+    },);
+}
+
+/**
+ Parses NUL-delimited raw diff-tree output into first-wins per-path records.
+ 
+ Deletions publish no content and are dropped; with `-m` a merge lists one
+ diff per parent, so the first record retained per path wins.
+ 
+ @param text - decoded NUL-delimited raw diff-tree output
+ 
+ @param createError - domain error factory for malformed output
+ 
+ @returns retained content-bearing records in first-appearance order
+ 
+ @throws caller-domain error when output is malformed
+ 
+ @example
+ ```ts
+ parseRawDiffRecords({ text: '', createError: function toError(message,) { return new Error(message,); } });
+ // => []
+ ```
+ */
+export function parseRawDiffRecords({
+  text,
+  createError,
+}: {
+  readonly text: string;
+  readonly createError: (message: string) => Error;
+},): readonly RawDiffRecord[] {
+  return retainRecords({
+    tokens: rawTokens(text,),
+    createError,
+  },);
+}
+
+/**
+ Parses `diff-tree --stdin -z` output into per-commit first-wins records.
+ 
+ Each diff section starts with a bare commit-ID token where a metadata token
+ would otherwise stand; `-m` repeats that header once per merge parent, and
+ repeated sections of one commit share first-wins path retention exactly as
+ a single-commit {@link parseRawDiffRecords} call would. Commits whose diff is
+ empty print no header and are absent from the result.
+ 
+ @param text - decoded NUL-delimited multi-commit raw diff-tree output
+ 
+ @param createError - domain error factory for malformed output
+ 
+ @returns retained records per commit, in first-header order
+ 
+ @throws caller-domain error when a record precedes any header or lacks its path
+ 
+ @example
+ ```ts
+ parseRawDiffCommitStream({ text: '', createError: function toError(message,) { return new Error(message,); } });
+ // => Map {}
+ ```
+ */
+export function parseRawDiffCommitStream({
+  text,
+  createError,
+}: {
+  readonly text: string;
+  readonly createError: (message: string) => Error;
+},): ReadonlyMap<string, readonly RawDiffRecord[]> {
+  /**
+   Complete token stream.
+   */
+  const tokens = rawTokens(text,);
+  /**
+   Metadata/path tokens collected per commit header.
+   */
+  const tokensByCommit = new Map<string, string[]>();
+  /**
+   Cursor state: current section's token sink.
+   */
+  const cursorState: { sink: string[] | undefined } = { sink: undefined, };
+  // Tokens are headers where metadata is expected; paths are consumed pairwise and never inspected as headers.
+  for (let cursor = 0; cursor < tokens.length;) {
+    /**
+     Token at metadata-or-header position.
+     */
+    const token = tokens[cursor] ?? '';
+    if (!token.startsWith(':',)) {
+      cursorState.sink = tokensByCommit.get(token,) ?? [];
+      tokensByCommit.set(token, cursorState.sink,);
+      cursor += 1;
+      continue;
+    }
+    /**
+     Companion path token.
+     */
+    const path = tokens[cursor + 1];
+    if ((cursorState.sink === undefined) || (path === undefined))
+      throw createError('Raw diff-tree stream record lacks its commit header or path.',);
+    cursorState.sink.push(token, path,);
+    cursor += 2;
+  }
+  return new Map([...tokensByCommit.entries(),].map(function retainCommit([commit, commitTokens,],): readonly [
+    string,
+    readonly RawDiffRecord[]
+  ] {
+    return [
+      commit,
+      retainRecords({
+        tokens: commitTokens,
+        createError,
+      },),
+    ];
+  },),);
 }

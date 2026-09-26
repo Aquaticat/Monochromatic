@@ -1,10 +1,11 @@
 /**
- Manual-push candidate descriptors for pushed trees and per-commit deltas.
+ Manual-push candidate descriptors for pushed trees and batched per-commit deltas.
  
  @module
  */
 import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
+import { finished, } from 'node:stream/promises';
 import {
   arrayBuffer,
   text,
@@ -14,7 +15,10 @@ import type {
   CandidateFileMode,
 } from '../api/policy-types.ts';
 import { ManualPushProbeError, } from './manual-push-probe.ts';
-import { parseRawDiffRecords, } from './raw-diff-records.ts';
+import {
+  parseRawDiffCommitStream,
+  type RawDiffRecord,
+} from './raw-diff-records.ts';
 
 /**
  Git tree modes mapped to policy modes.
@@ -32,6 +36,10 @@ const DECODER = new TextDecoder(
   'utf-8',
   { fatal: true, },
 );
+/**
+ Encoder for Git stdin request text.
+ */
+const INPUT_ENCODER = new TextEncoder();
 
 /**
  Candidate metadata separated from batched object content.
@@ -101,6 +109,8 @@ function pushedDiffError(message: string,): Error {
  
  @param args - exact Git arguments
  
+ @param input - optional complete stdin text, written while output is consumed
+ 
  @returns exact stdout bytes
  
  @example
@@ -112,13 +122,15 @@ export async function runGitBytes({
   gitPath,
   cwd,
   args,
+  input,
 }: Readonly<{
   gitPath: string;
   cwd: string;
   args: readonly string[];
+  input?: string;
 }>,): Promise<Uint8Array> {
   /**
-   Child process with binary stdout.
+   Child process with binary stdout and optional request stdin.
    */
   const child = spawn(
     gitPath,
@@ -126,19 +138,24 @@ export async function runGitBytes({
     {
       cwd,
       stdio: [
-        'ignore',
+        'pipe',
         'pipe',
         'pipe',
       ],
     },
   );
   /**
-   Concurrent output consumers.
+   Concurrent output consumers prevent either pipe from blocking Git.
    */
   const output = Promise.all([
     arrayBuffer(child.stdout,),
     text(child.stderr,),
   ],);
+  /**
+   Request delivery; a Git exit before reading all input surfaces as a write error here.
+   */
+  const delivery = Promise.allSettled([finished(child.stdin,),],);
+  child.stdin.end(input === undefined ? undefined : INPUT_ENCODER.encode(input,),);
   await once(
     child,
     'close',
@@ -147,8 +164,14 @@ export async function runGitBytes({
    Settled stdout and stderr.
    */
   const [stdout, stderr,] = await output;
+  /**
+   Settled request delivery, inspected only after Git's own status.
+   */
+  const [delivered,] = await delivery;
   if (child.exitCode !== 0)
     throw new ManualPushProbeError(`git ${args.join(' ',)} failed: ${stderr.trim()}`,);
+  if (delivered.status === 'rejected')
+    throw new ManualPushProbeError(`git ${args.join(' ',)} did not read its complete input.`, { cause: delivered.reason, },);
   return new Uint8Array(stdout,);
 }
 
@@ -156,7 +179,8 @@ export async function runGitBytes({
  Parses complete recursive tree into immutable candidates.
  
  Serves directly pushed tree objects, whose complete content is newly
- published; pushed commits go through {@link commitDeltaCandidates}.
+ published; pushed commits go through {@link commitRangeDeltas}. It also
+ serves the pushed commit tip when nothing is known on the destination remote.
  
  @param gitPath - resolved real Git executable
  
@@ -257,73 +281,108 @@ export async function treeCandidates({
 }
 
 /**
- Parses one pushed commit's own delta into immutable candidates.
+ Loads every listed commit's own delta through one `diff-tree --stdin` process.
+ 
+ Each commit is compared against every parent (`-m`), parentless commits
+ against the empty tree (`--root`); records keep per-commit first-wins path
+ semantics of {@link parseRawDiffCommitStream}. One process serves any range
+ length, so history size never multiplies process creation.
  
  @param gitPath - resolved real Git executable
  
  @param cwd - effective repository directory
  
- @param commitOid - newly reachable pushed commit
+ @param commits - newly published commits
  
- @param targetPrefix - invocation-local target prefix
+ @returns retained content-bearing records per commit, empty for commits without content changes
  
- @returns content-bearing delta candidate descriptors
+ @throws ManualPushProbeError when Git fails or names an unrequested commit
  
  @example
  ```ts
- await commitDeltaCandidates({ gitPath: '/usr/bin/git', cwd: '/repo', commitOid: 'abc', targetPrefix: 'manual-push:origin:refs/heads/main:abc' });
+ await commitRangeDeltas({ gitPath: '/usr/bin/git', cwd: '/repo', commits: ['abc'] });
  ```
  */
-export async function commitDeltaCandidates({
+export async function commitRangeDeltas({
   gitPath,
   cwd,
-  commitOid,
-  targetPrefix,
+  commits,
 }: Readonly<{
   gitPath: string;
   cwd: string;
-  commitOid: string;
-  targetPrefix: string;
-}>,): Promise<readonly ManualPushCandidateDescriptor[]> {
+  commits: readonly string[];
+}>,): Promise<ReadonlyMap<string, readonly RawDiffRecord[]>> {
   /**
-   Raw NUL-delimited change records against every parent.
+   Unique request order.
    */
-  const deltaBytes = await runGitBytes({
-    gitPath,
-    cwd,
-    args: [
-      'diff-tree',
-      '--root',
-      '--no-commit-id',
-      '-r',
-      '-z',
-      '-m',
-      commitOid,
-    ],
-  },);
+  const requested = [...new Set(commits,),];
+  if (requested.length === 0)
+    return new Map();
   /**
-   Retained content-bearing pushed change records.
+   Records keyed by the commit header diff-tree printed.
    */
-  const records = parseRawDiffRecords({
-    text: DECODER.decode(deltaBytes,),
+  const deltas = parseRawDiffCommitStream({
+    text: DECODER.decode(await runGitBytes({
+      gitPath,
+      cwd,
+      args: [
+        'diff-tree',
+        '--stdin',
+        '--root',
+        '-r',
+        '-z',
+        '-m',
+      ],
+      input: `${requested.join('\n',)}\n`,
+    },),),
     createError: pushedDiffError,
   },);
-  return records.map(function toDescriptor(record,): ManualPushCandidateDescriptor {
-    return {
-      targetId: `${targetPrefix}:${record.oid}:${record.path}`,
-      path: record.path,
-      revision: record.oid,
-      mode: record.mode,
-      change: record.change,
-      content: record.mode === 'submodule'
-        ? {
-          kind: 'inline',
-          bytes: new TextEncoder().encode(record.oid,),
-        }
-        : {
-          kind: 'blob',
-          oid: record.oid,
-        },
-    };
-  },);
+  /**
+   Requested commit lookup for header validation.
+   */
+  const requestedSet = new Set(requested,);
+  for (const commit of deltas.keys()) {
+    if (!requestedSet.has(commit,))
+      throw new ManualPushProbeError(`Git diff-tree reported unrequested commit ${commit}.`,);
+  }
+  return deltas;
+}
+
+/**
+ Converts one retained pushed change record into a candidate descriptor.
+ 
+ @param record - retained raw diff record
+ 
+ @param targetPrefix - invocation-local target prefix naming remote, ref, and commit
+ 
+ @returns content-bearing candidate descriptor
+ 
+ @example
+ ```ts
+ recordDescriptor({ record, targetPrefix: 'manual-push:origin:refs/heads/main:abc' });
+ ```
+ */
+export function recordDescriptor({
+  record,
+  targetPrefix,
+}: Readonly<{
+  record: RawDiffRecord;
+  targetPrefix: string;
+}>,): ManualPushCandidateDescriptor {
+  return {
+    targetId: `${targetPrefix}:${record.oid}:${record.path}`,
+    path: record.path,
+    revision: record.oid,
+    mode: record.mode,
+    change: record.change,
+    content: record.mode === 'submodule'
+      ? {
+        kind: 'inline',
+        bytes: new TextEncoder().encode(record.oid,),
+      }
+      : {
+        kind: 'blob',
+        oid: record.oid,
+      },
+  };
 }
