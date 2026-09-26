@@ -2,12 +2,15 @@
 
 ## Status
 
-Investigation in progress during the Laya-only auto-mode migration interview.
+The native CPU attention memory failure was reproduced and a consumer-side workaround was verified.
 No production configuration or judge implementation has changed.
-No successful full-policy model verdict has been established at this checkpoint.
-The authorized 8 GiB full-model retry also failed with a confirmed memory kill.
-A subsequent isolated head differential reproduced the failure and verified a functional attention path.
-The full-model retry using that setting is still pending at this checkpoint.
+Both complete-policy English inputs subsequently completed within the authorized 8 GiB limit
+with the native attention fast path disabled.
+The generic tokenizer warning did not become an indexing exception in those runs.
+The experimental direct-verdict question has since been retired:
+models must assess narrow axioms and code must own the final action.
+Retain these observations as context-capacity and runtime evidence,
+not model-quality comparisons.
 Current requirements and experiment history live in
 [the migration plan](../planning/pi-auto-mode-laya.md).
 
@@ -152,7 +155,8 @@ emb = torch.cat((freqs, freqs), dim=-1)
 
 It would be incorrect to infer an unavoidable indexing failure solely from the warning.
 It would also be incorrect to infer reliable extrapolation from these source paths.
-An actual completed forward and independently labelled long-context evaluation remain necessary.
+The completed forwards establish runtime acceptance for the measured inputs only.
+Independently labelled long-context axiom evaluation remains necessary.
 
 ### The first forward was memory-killed
 
@@ -285,10 +289,9 @@ The input/labels are separate;
 
 ## Verified workarounds
 
-No successful full-policy inference workaround has been verified at this checkpoint.
 The `max_len` override preserves the sequence but is not itself an end-to-end remedy.
-
-The source-audited consumer setting fixes the isolated head reproduction:
+The source-audited consumer setting fixes the isolated head reproduction
+and allowed the subsequent complete-policy English forwards to finish:
 
 ```python
 # Consumer-side runtime setting; no upstream source edit.
@@ -306,10 +309,27 @@ the numerical check covers only the stated short tensor control,
 not full-policy classifier accuracy or long-input parity.
 Use an isolated inference process rather than changing unrelated workloads in a shared host process.
 
-The unchanged complete-policy input is being rerun with this setting,
+The end-to-end runs used image
+`50d9f5148c7eca5bc710b3d39e67ed922b25a8c75fc7f793881d5e1cc4d92bc1`
 within the authorized 8 GiB/2 CPU/no-extra-swap/no-network/no-host-mount bounds,
 one case per 5-minute probe.
-Do not promote the kernel-only result to a full-model or safety claim.
+The [migration experiment history](../planning/pi-auto-mode-laya.md) records:
+
+- `inline-read-package`: 12,676 retained input tokens,
+  202.57109322911128 seconds of inference,
+  6,116,036,608 bytes of peak container memory,
+  exit 0 and no memory kill.
+- `inline-secret-export`: 12,686 retained input tokens,
+  230.8682348979637 seconds of inference,
+  5,868,949,504 bytes of peak container memory,
+  exit 0 and no memory kill.
+
+These are individual runtime observations,
+not a repeated-run latency comparison or axiom-batch benchmark.
+Both used policy snapshot `f15df716f1a7cb9cb4838686e2cde8f006a87b99c3aa7db87533fb47b8314840`.
+The repository policy changed during the second run;
+that result could not authorize an action under the new policy.
+No safety-quality conclusion survives the retired direct-verdict formulation.
 
 ## What does not work
 
