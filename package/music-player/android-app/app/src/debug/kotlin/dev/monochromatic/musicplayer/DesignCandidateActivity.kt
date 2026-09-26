@@ -950,12 +950,12 @@ private fun CoverPickerInteractiveStudy(candidate: String, palette: CandidatePal
  *
  * In TS you'd write (pseudocode):
  * ```ts
- * function SearchPlayerPreview(options: { isCover: boolean; light: boolean; onSearch?: () => void; e2HalfClearance: number }): UIElement;
+ * function SearchPlayerPreview(options: { isCover: boolean; light: boolean; onSearch?: () => void; e2InformationStartInset: number }): UIElement;
  * ```
  */
 @Composable
 internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: (() -> Unit)?,
-    e2HalfClearance: Dp = 0.dp) {
+    e2InformationStartInset: Dp = 0.dp) {
     val palette = paletteFor(
         candidate = if (isCover) {
             if (light) "cover-picker-p4-light" else "cover-picker-p4"
@@ -970,26 +970,26 @@ internal fun SearchPlayerPreview(isCover: Boolean, light: Boolean, onSearch: (()
             palette = palette,
             onSearch = onSearch,
         )
-    } else if (e2HalfClearance > 0.dp) {
-        // What: Share the additional physical gap between two equal host slots in this debug study.
-        // Why: Preserve real player components while making the floor's browser and track costs visible.
+    } else if (e2InformationStartInset > 0.dp) {
+        // What: Fill both half-screen surfaces while shifting only the right title and track text.
+        // Why: E2 constrains information, not the pane background, row highlights, dividers or hit bounds.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // return <Row><FoldersAndDeck endInset={gap / 2} /><Tracks startInset={gap / 2} /></Row>;
+        // return <Row><FoldersAndDeck /><Tracks textStartInset={floorInset} /></Row>;
         // ```
-        // Paint the player surface continuously beneath the inset hosts; E2 judges informative paint, not this background.
         Row(modifier = Modifier.fillMaxSize().background(palette.picker)) {
             FolderAndTransportPane(
-                modifier = Modifier.weight(1f).padding(end = e2HalfClearance),
+                modifier = Modifier.weight(1f),
                 candidate = "dark-stable-wallpaper-dynamic",
                 palette = palette,
             )
             TrackPane(
-                modifier = Modifier.weight(1f).padding(start = e2HalfClearance),
+                modifier = Modifier.weight(1f),
                 candidate = "dark-stable-wallpaper-dynamic",
                 palette = palette,
                 onSearch = onSearch,
+                informationStartInset = e2InformationStartInset,
             )
         }
     } else {
@@ -2043,10 +2043,18 @@ private fun ModeControl(modifier: Modifier) {
     }
 }
 
-/** Builds one edge-to-edge track surface with a real app bar and list inside native insets. */
+/** What: Render a full-width track surface with an optional text-only start inset.
+ *  Why: Debug E2 floors move readable marks without forcing surfaces or hit regions away from the fold.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function TrackPane(options: { informationStartInset: number; onSearch?: () => void }): UIElement;
+ * ```
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidatePalette, onSearch: (() -> Unit)? = null) {
+private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidatePalette,
+    onSearch: (() -> Unit)? = null, informationStartInset: Dp = 0.dp) {
     Box(modifier = modifier.fillMaxSize().background(color = palette.tracks)) {
         Row(modifier = Modifier.fillMaxSize()) {
             if (palette.paneDivider) {
@@ -2066,7 +2074,7 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
                 Box(modifier = Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
                 TopAppBar(
                     title = {
-                        Text(text = CURRENT_SUBDIRECTORY)
+                        Text(text = CURRENT_SUBDIRECTORY, modifier = Modifier.padding(start = informationStartInset))
                     },
                     actions = {
                         if (onSearch != null) {
@@ -2107,6 +2115,7 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
                             track = tracks[index],
                             candidate = candidate,
                             palette = palette,
+                            informationStartInset = informationStartInset,
                         )
                     }
                 }
@@ -2115,10 +2124,18 @@ private fun TrackPane(modifier: Modifier, candidate: String, palette: CandidateP
     }
 }
 
-/** Renders one baseline Material two-line list item with candidate-specific redundant current-track cues. */
+/** What: Render one full-width track row while optionally moving just its readable content.
+ *  Why: The colored current-row container and click bounds may cross the physical fold under E2.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function TrackRow(options: { track: Track; informationStartInset: number }): UIElement;
+ * ```
+ */
 @Suppress("DEPRECATION")
 @Composable
-private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palette: CandidatePalette) {
+private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palette: CandidatePalette,
+    informationStartInset: Dp = 0.dp) {
     val playing = index == 0
     val currentTrackCue = if (candidate.startsWith("a11y-") || candidate.startsWith("dark-") || candidate.startsWith("cover-")) {
         "container"
@@ -2175,27 +2192,30 @@ private fun TrackRow(index: Int, track: PrototypeTrack, candidate: String, palet
                 text = track.title,
                 color = currentHeadlineColor,
                 style = currentHeadlineStyle,
+                modifier = Modifier.padding(start = informationStartInset),
             )
         },
         supportingContent = {
-            if (playing && currentTrackCue == "label") {
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(
-                        text = "Playing",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                    )
-                    Text(
-                        text = "· ${track.duration} · ${track.peak}",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodySmall,
+            Box(modifier = Modifier.padding(start = informationStartInset)) {
+                if (playing && currentTrackCue == "label") {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            text = "Playing",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                        )
+                        Text(
+                            text = "· ${track.duration} · ${track.peak}",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                } else {
+                    TrackMetadata(
+                        track = track,
+                        candidate = candidate,
                     )
                 }
-            } else {
-                TrackMetadata(
-                    track = track,
-                    candidate = candidate,
-                )
             }
         },
         leadingContent = if (candidate.usesAcceptedUnfoldedTreatment()) {

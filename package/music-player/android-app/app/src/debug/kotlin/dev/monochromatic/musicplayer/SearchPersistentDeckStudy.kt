@@ -192,6 +192,16 @@ private const val E2_REVIEW_FLOOR_MIDDLE_MM = 14f
  */
 private const val E2_REVIEW_FLOOR_WIDE_MM = 20f
 
+/** What: Predicted information-node separation with two uninterrupted half-screen player panes.
+ *  Why: Anchor the throwaway player-floor study to meaning-bearing boxes, not panel backgrounds.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * const E2_REVIEW_CLOSED_BOX_PROXY_PX = 112;
+ * ```
+ */
+private const val E2_REVIEW_CLOSED_BOX_PROXY_PX = 112f
+
 /**
  * What:     Switch between deck-persistent Search arrangements in one debug activity.
  * Why:      Every native capture must preserve D50 while comparing visible composition.
@@ -244,23 +254,32 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
     val e2FloorMillimeters = if (candidate.contains("-e2floor20-")) E2_REVIEW_FLOOR_WIDE_MM
         else if (candidate.contains("-e2floor14-")) E2_REVIEW_FLOOR_MIDDLE_MM
         else if (candidate.contains("-e2floor7p5-")) E2_REVIEW_FLOOR_SEVEN_HALF_MM else 0f
-    // What: Convert the total floor to half of a physical gap around the current center crease.
-    // Why: The Search-closed player previously used a fixed 24dp stripe that did not express E2.
+    // What: Compare the physical floor with the unshifted player text-node gap.
+    // Why: Backgrounds and borders should span the fold even when text moves away from it.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const halfGapDp = Math.max(110, floorMm / 141.08 * 2076) / 2 / density;
+    // const targetGapPx = Math.max(110, floorMm / panelWidthMm * panelWidthPx);
     // ```
-    val physicalGapPx = maxOf(110f,
+    val targetGapPx = maxOf(110f,
         e2FloorMillimeters / E2_REVIEW_PANEL_WIDTH_MM * E2_REVIEW_PANEL_WIDTH_PX)
-    val e2ClosedHalfGap = if (candidate.contains("-e2floor")) {
-        (physicalGapPx / 2 / LocalDensity.current.density).dp
+    // What: Reserve a 12dp right-text inset in this fixture and add only any remaining floor demand.
+    // Why: The unshifted heading approaches the estimated crease, but its surface may still cross.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const infoInsetDp = Math.max(12, Math.max(0, targetGapPx - baselineTextGapPx) / density + 1);
+    // ```
+    val e2ClosedInformationInset = if (candidate.contains("-e2floor")) {
+        maxOf(12f,
+            (targetGapPx - E2_REVIEW_CLOSED_BOX_PROXY_PX).coerceAtLeast(0f) /
+                LocalDensity.current.density + 1f).dp
     } else 0.dp
     if (!opened) {
         SearchPlayerPreview(isCover = false, light = light, onSearch = {
             query = ""
             opened = true
-        }, e2HalfClearance = e2ClosedHalfGap)
+        }, e2InformationStartInset = e2ClosedInformationInset)
         return
     }
     val pageColor = if (light) MaterialTheme.colorScheme.surfaceContainerLowest else Color.Black
@@ -412,15 +431,15 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     // const baselineGapPx = (halfDentDp * 2 + 8 + 16) * density;
     // ```
     val baselineGapPx = (halfDent.value * 2 + 8 + 16) * density.density
-    // What: Add a one-dp debug allowance on each side when the proposed floor exceeds the baseline.
-    // Why: Rounded native text-node boxes missed the nominal 14mm and 20mm targets by about one pixel.
+    // What: Add any needed separation to right-side information, including one dp for rounding.
+    // Why: The accepted left browser and deck stay full-width; surface and hit bounds remain free to cross.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const extraDp = requiredGapPx > baselineGapPx ? (requiredGapPx - baselineGapPx) / 2 / density + 1 : 0;
+    // const rightInfoInsetDp = requiredGapPx > baselineGapPx ? (requiredGapPx - baselineGapPx) / density + 1 : 0;
     // ```
     val extraInsetDp = if (requiredGapPx > baselineGapPx) {
-        ((requiredGapPx - baselineGapPx) / 2 / density.density).dp + 1.dp
+        ((requiredGapPx - baselineGapPx) / density.density).dp + 1.dp
     } else 0.dp
     val reportedImeInset = WindowInsets.ime.getBottom(density)
     var queryFocused by remember { mutableStateOf(false) }
@@ -528,7 +547,7 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     Row(modifier = Modifier.fillMaxSize().background(pageColor)
         .then(if (preclearStudy && anticipatoryActive) Modifier.padding(bottom = PRECLEAR_REVIEW_HEIGHT)
             else if (liftWithIme) Modifier.imePadding() else Modifier)) {
-        SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f).padding(end = extraInsetDp),
+        SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f),
             deckFirst = !liftWithIme, deckFullHeight = liftWithIme, bannerFit = bannerFit,
             compactForBrowser = retainBrowser && (keyboardShown || anticipatoryActive),
             reserveOwnsNavigation = preclearStudy && anticipatoryActive,
@@ -550,8 +569,8 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
             } else Box(modifier = slot)
         }
         PersistentSearchPane(query = query, onQueryChange = onQueryChange, onBack = onBack,
-            unavailable = unavailable, modifier = Modifier.weight(1f).padding(start = extraInsetDp),
-            startSafe = halfDent + 16.dp, endSafe = 16.dp,
+            unavailable = unavailable, modifier = Modifier.weight(1f),
+            startSafe = halfDent + 16.dp + extraInsetDp, endSafe = 16.dp,
             includeTopInset = true, pageColor = pageColor,
             overflowStudy = overflowStudy,
             onQueryFocusChange = { focused ->
