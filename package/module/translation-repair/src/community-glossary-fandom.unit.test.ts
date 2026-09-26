@@ -56,7 +56,20 @@ const REFUSED_CANDIDATES: readonly { readonly sourceText: string; readonly candi
 const ACCEPTED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
   { sourceText: HEAD, candidateText: 'Inside the headpiece, the kitten held up a whole world in the smallest space.', },
   { sourceText: CHARACTERS, candidateText: 'The kitten dressed up as Arona and Atri.', },
+  // CLASS ONE HUNDRED SIXTY-THREE (TianqiChen6664, 2026-09-26): the refused
+  // form "inside her head" is the start of the rendering "inside her
+  // headpiece", and every candidate for the slice was refused on it.
+  { sourceText: HEAD, candidateText: 'Inside her headpiece, the kitten held up a whole world in the smallest space.', },
 ];
+
+/**
+ Candidates carrying a refused form beside an accepted rendering, so the
+ rendering excuses no other occurrence.
+ */
+const MIXED_CANDIDATE = {
+  sourceText: HEAD,
+  candidateText: 'Inside her headpiece, and inside her head, the kitten held up a whole world.',
+} as const;
 
 await describe({
   name: 'fandom words the community glossary renders (class one hundred sixty)',
@@ -89,6 +102,12 @@ await describe({
         },),).toEqual(ACCEPTED_CANDIDATES.map(function valid(): string {
           return 'valid';
         },),);
+      },
+    },),
+    it({
+      name: 'REFUSES a refused form standing apart even where the rendering appears elsewhere',
+      fn: async () => {
+        expect(validateTranslatedSlice(MIXED_CANDIDATE,).kind,).toBe('invalid',);
       },
     },),
   ],
