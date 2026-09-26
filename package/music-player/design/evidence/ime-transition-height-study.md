@@ -345,18 +345,33 @@ IME-visible frames of the pre-reserved candidate;
 the five-outline check found its complete final mode in every sampled frame.
 A fixed-trigger control on that APK sampled 23 IME-visible frames and
 lacked the last mode border in 19 of them.
+During initial focus into a 415dp debug IME,
+the pre-reserved branch was selected while both reported IME bottoms were
+zero;
+14 recorded IME-visible frames kept the full final mode.
+The same APK's fixed-trigger control missed its bottom border in one of
+15 recorded IME-visible frames.
 The pre-reserved frames also show title,
 metadata,
 seek,
-transport and Search results while the IME top moves.
-These counts identify a **bounded** passing synthetic run with a positive
-failure control,
+transport and Search results while the IME moves.
+These counts identify **bounded** passing synthetic runs with positive
+failure controls,
 not every unrecorded frame or a real-Gboard banner guarantee.
-Pre-reserving the banner-sized space under the ordinary 330dp keyboard
-leaves about 210 physical px of unused space above that keyboard and keeps
-the upper-left browser at its shortened header.
-The user has **not** selected that visible tradeoff;
-the active A-only review continues to show the accepted deck arrangement.
+
+Pre-reserving banner-sized space under the ordinary 330dp keyboard leaves
+about 210 physical px unused above that keyboard and keeps the upper-left
+browser at its shortened header.
+Pressing Android Back hid that keyboard while retaining query focus.
+Both Compose and platform bottoms reached zero,
+but the focus-only reservation remained active:
+`Shuffle all folders` still ended at y `1118` instead of returning to the
+keyboard-closed deck near the bottom of the panel.
+This conflicts with D51's accepted closed composition.
+The user has **not** selected this visible tradeoff;
+the active A-only review continues to show the accepted arrangement.
+A further debug experiment must release the reservation on keyboard hide
+without clipping on refocus.
 
 ## Remaining boundary
 
