@@ -803,6 +803,43 @@ await describe({
     },),
 
     it({
+      name: 'keeps some-branch under allPatterns with a single negation',
+      fn: async () => {
+        /**
+         One negation plus one positive: requiresAllInputs stays false,
+         so isMatch needs only one matching input.
+         */
+        const patterns = [
+          '!bar',
+          'f*',
+        ];
+        /**
+         All-patterns flags shared by every case below.
+         */
+        const options = { allPatterns: true, };
+        expect(isMatch({
+          inputs: [
+            'foo',
+            'qux',
+          ],
+          patterns,
+          options,
+        },),).toBe(true,);
+        expect(isMatch({
+          inputs: [
+            'foo',
+            'qux',
+          ],
+          patterns: [
+            'f*',
+            '!bar',
+          ],
+          options,
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'combines empty and wildcard patterns under allPatterns',
       fn: async () => {
         expect(isMatch({
