@@ -21,15 +21,15 @@ await describe({ name: readLiveScope.name, children: [
       { model, canonicalSlug: 'fixture/one', thinkingLevel: 'high', },
     ],);
   }, },),
-  it({ name: 'preserves the existing authoritative empty-array behavior', fn: async (): Promise<void> => {
-    expect(readLiveScope({ scopedModels: [], },),).toEqual([],);
+  it({ name: 'treats the SDK empty cycle list as absent live scope', fn: async (): Promise<void> => {
+    expect(readLiveScope({ scopedModels: [], },),).toBe(NO_LIVE_SCOPE,);
   }, },),
   it({ name: 'getter overrides a stale property and is read on every invocation', fn: async (): Promise<void> => {
     const state = { entries: [model,], };
     const ctx = { scopedModels: [model,], getScopedModels: (): unknown => state.entries, };
     expect(readLiveScope(ctx,),).not.toBe(NO_LIVE_SCOPE,);
     state.entries = [];
-    expect(readLiveScope(ctx,),).toEqual([],);
+    expect(readLiveScope(ctx,),).toBe(NO_LIVE_SCOPE,);
   }, },),
   ...['id', 'name', 'provider', 'api', 'contextWindow', 'maxTokens', 'cost',].map(key => it({
     name: `filters structurally invalid models missing ${key}`,
