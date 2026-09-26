@@ -23,6 +23,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   judgeSlateWithRetry,
+  type LaneText,
   messageText,
   producerModelIds,
   produceTranslateSlate,
@@ -302,7 +303,10 @@ function scriptedRig(
  Judges one freshly produced slate through the retry, under one script.
  
  @param ballotFor - what the judges say per judging
- 
+
+ @param laneTexts - lane texts the slate offers beside the proposals, none
+ by default
+
  @returns Stage result plus the judge calls it cost
  
  @example
@@ -317,6 +321,7 @@ async function judgedUnder(
     translators = TRANSLATORS,
     judges = JUDGES,
     renderings = RENDERINGS,
+    laneTexts = [],
   }: {
     readonly ballotFor: (
       judging: number,
@@ -327,6 +332,7 @@ async function judgedUnder(
     readonly translators?: readonly RosterModelId[];
     readonly judges?: readonly RosterModelId[];
     readonly renderings?: readonly string[];
+    readonly laneTexts?: readonly LaneText[];
   },
 ): Promise<{
   readonly result: TranslateStageResult;
@@ -383,12 +389,37 @@ async function judgedUnder(
   author.dozes = dozesAuthor;
 
   /**
+   Lane texts joined to the slate after the proposals, as the consolidation
+   offers them (class forty).
+   */
+  const withLanes = {
+    ...produced,
+    candidates: [
+      ...produced.candidates,
+      ...laneTexts.map(function toLaneCandidate(laneText,): (typeof produced.candidates)[number] {
+        return {
+          producer: {
+            kind: 'lane',
+            lane: laneText.lane,
+            matched: [],
+          },
+          value: {
+            text: laneText.text,
+            origin: 'fresh',
+          },
+          rendered: laneText.text,
+        };
+      },),
+    ],
+  };
+
+  /**
    What the retry settled on.
    */
   const result = await judgeSlateWithRetry({
     judging: {
       client: rig.client,
-      produced,
+      produced: withLanes,
       judgeModelIds: judges,
       sourceText: SOURCE_TEXT,
       incumbentText: (incumbentKind === 'present') ? INCUMBENT_TEXT : '',
@@ -410,6 +441,62 @@ async function judgedUnder(
  Finding the retry writes between the two rounds' findings.
  */
 const RETRY_FINDING = 'translate-declined-retried';
+
+/**
+ Script under which the first disinterested judge names one rendering, the
+ second names another and the third rejects, every judging alike: a tie
+ between two that no run-off can narrow.
+
+ @param first - word the first judge's rendering carries
+
+ @param second - word the second judge's rendering carries
+
+ @returns Ballot script for the rig
+
+ @example
+ ```ts
+ const ballotFor = tiedEveryJudging({ first: 'naps', second: 'curls', },);
+ ```
+ */
+function tiedEveryJudging(
+  {
+    first,
+    second,
+  }: {
+    readonly first: ScriptedBallot;
+    readonly second: ScriptedBallot;
+  },
+): (judging: number, seat: RosterModelId) => ScriptedBallot {
+  return function splitAlike(
+    _judging,
+    seat,
+  ): ScriptedBallot {
+    if (seat === DISINTERESTED_JUDGES[0])
+      return first;
+    return (seat === DISINTERESTED_JUDGES[1]) ? second : 'reject';
+  };
+}
+
+/**
+ Repair lane text carrying a word no translator's rendering carries.
+ */
+const REPAIR_LANE: LaneText = {
+  lane: 'repair',
+  text: 'The cat curls up on the ledge, tail tucked by the warmth.',
+};
+
+/**
+ Translate lane text carrying a word no translator's rendering carries.
+ */
+const TRANSLATE_LANE: LaneText = {
+  lane: 'translate',
+  text: 'The cat yawns on the sill, tail resting against the pipe.',
+};
+
+/**
+ Finding naming a run-off tie the preference broke.
+ */
+const TIE_BROKEN = 'translate-runoff-tie-broken';
 
 await describe({
   name: judgeSlateWithRetry.name,
@@ -499,6 +586,80 @@ await describe({
         expect(result.findings.includes('translate-runoff (finalists 3 of 4)',),).toBe(true,);
         expect(result.findings.includes('translate-runoff (finalists 2 of 3)',),).toBe(true,);
         expect(judgeCalls,).toBe(DISINTERESTED_JUDGES.length * 3,);
+      },
+    },),
+    it({
+      name: 'SHIPS the repair lane text when a run-off over valid finalists ties again and cannot narrow where the '
+        + 'slice has no incumbent (class one hundred seventy-four, TianqiChen6669 slice 4, 2026-09-26: two valid '
+        + 'renderings tied 1.5 to 1.5 on the slate and again in the run-off, and the entry stopped)',
+      fn: async () => {
+        const { result, judgeCalls, } = await judgedUnder({
+          incumbentKind: 'absent',
+          judges: DISINTERESTED_JUDGES,
+          laneTexts: [REPAIR_LANE,],
+          ballotFor: tiedEveryJudging({
+            first: 'naps',
+            second: 'curls',
+          },),
+        },);
+        expect(result.origin,).toBe('fresh',);
+        expect(result.text,).toBe(REPAIR_LANE.text,);
+        expect(result.findings.includes(`${TIE_BROKEN} (repair lane)`,),).toBe(true,);
+        expect(judgeCalls,).toBe(DISINTERESTED_JUDGES.length * 2,);
+      },
+    },),
+    it({
+      name: 'SHIPS the translate lane text over a writer\'s proposal when the run-off ties between them and the '
+        + 'repair lane text is no finalist',
+      fn: async () => {
+        const { result, } = await judgedUnder({
+          incumbentKind: 'absent',
+          judges: DISINTERESTED_JUDGES,
+          laneTexts: [
+            REPAIR_LANE,
+            TRANSLATE_LANE,
+          ],
+          ballotFor: tiedEveryJudging({
+            first: 'dozes',
+            second: 'yawns',
+          },),
+        },);
+        expect(result.text,).toBe(TRANSLATE_LANE.text,);
+        expect(result.findings.includes(`${TIE_BROKEN} (translate lane)`,),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'SHIPS a tied finalist by slate order when neither lane text is a finalist',
+      fn: async () => {
+        const { result, } = await judgedUnder({
+          incumbentKind: 'absent',
+          judges: DISINTERESTED_JUDGES,
+          laneTexts: [REPAIR_LANE,],
+          ballotFor: tiedEveryJudging({
+            first: 'dozes',
+            second: 'naps',
+          },),
+        },);
+        expect(result.origin,).toBe('fresh',);
+        expect(RENDERINGS.includes(result.text,),).toBe(true,);
+        expect(result.findings.includes(`${TIE_BROKEN} (slate order)`,),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'KEEPS the incumbent when a run-off ties again over a slice the archive translates, breaking no tie',
+      fn: async () => {
+        const { result, } = await judgedUnder({
+          judges: DISINTERESTED_JUDGES,
+          ballotFor: tiedEveryJudging({
+            first: 'dozes',
+            second: 'naps',
+          },),
+        },);
+        expect(result.origin,).toBe('incumbent',);
+        expect(result.text,).toBe(INCUMBENT_TEXT,);
+        expect(result.findings.some(function isTieBroken(finding,): boolean {
+          return finding.startsWith(TIE_BROKEN,);
+        },),).toBe(false,);
       },
     },),
     it({
