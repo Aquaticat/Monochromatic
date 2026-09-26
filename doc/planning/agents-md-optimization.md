@@ -1375,5 +1375,167 @@ TD7:
 
 ## Next action
 
-Walk rules batch by batch;
-apply approved batches to `AGENTS.md` with a retired-code mapping.
+Paused before compaction with batch 14 awaiting user answers:
+Q32 (delete ST9,
+or keep it compressed;
+recommended keep) and Q33 (approve the rest).
+
+### Pending batch 14 text
+
+```md
+ST2:
+ Mark logical sections with `//region`/`//endregion`,
+ stating purpose + explanation.
+
+ST3:
+ Cross-package workspace imports use the package's `/ts` subpath (TypeScript source),
+ never built output;
+ rationale:
+ `doc/decision/workspace-ts-source-imports.md`.
+
+ST5:
+ Prefer named imports;
+ import workspace packages by absolute package name.
+
+ST6:
+ Static assets (SVG,
+ HTML,
+ CSS,
+ SQL):
+ `import ... with { type: 'text' }`,
+ not `readFile`;
+ build tooling resolves them.
+
+ST8:
+ Declare functions before calling them in source order,
+ despite hoisting.
+
+TQ2:
+ Export at declaration,
+ not in a trailing `export { }`;
+ never extend typed objects via `Object.assign`.
+
+TQ3:
+ Throw + return early.
+
+XPT:
+ Exporting small helpers through the package API so built-artifact tests reach them is allowed.
+
+TY2:
+ Write `Generator<T>`/`AsyncGenerator<T>` without unused or optional type arguments.
+
+TY3:
+ `as const` for literals;
+ branded types for domain primitives.
+
+TY5:
+ `const` generic parameters with meaningful constraint names.
+
+TY6:
+ Avoid deeply nested conditional types.
+
+TY7:
+ Runtime narrowing:
+ type guards or assertion functions (`asserts value is T`).
+
+TY8:
+ `const` narrowing doesn't reach function declarations:
+ use a helper returning non-null,
+ or a new explicitly typed `const` after the null check.
+
+TY9:
+ Generator overload signatures omit `*`/`async *`;
+ only the implementation has them.
+
+VA5:
+ `satisfies` checks types without widening;
+ destructure dependent values in separate statements.
+```
+
+Proposed compressed ST9 if kept:
+
+```md
+ST9:
+ Functions with 2+ parameters take one destructured object,
+ except callbacks with externally dictated signatures.
+```
+
+### Remaining batches (90 rules)
+
+- Batch 15:
+   PP1 to PP9,
+   PPX,
+   OWB (guidance moves into prefer-readonly diagnostics per round 2),
+   RG1 to RG3 (RG2 recursion clause already absorbed by ITR).
+- Batch 16:
+   TP1 to TP3,
+   DM1,
+   DM2,
+   LFW,
+   RCO,
+   RCI,
+   AP1 to AP5,
+   SGD.
+- Batch 17:
+   PKG,
+   TCV,
+   TC2,
+   GFP,
+   CXL,
+   VUB,
+   VB1 to VB7,
+   ABR,
+   URF,
+   THR,
+   TAE.
+- Batch 18:
+   WR2 to WR5,
+   MD1 to MD8,
+   WRP,
+   DPL,
+   DL1 to DL6,
+   EC1.
+- Batch 19:
+   GCE,
+   GCG,
+   GCB,
+   GCA,
+   CLG,
+   CPN,
+   XCM,
+   AD1 to AD4,
+   SK1 to SK3.
+- Batch 20:
+   ORG,
+   TAG,
+   RLM,
+   NCD,
+   CRN,
+   APG,
+   DGT,
+   DNL,
+   JCH (guidance moves into `tsdoc/check-mutates` diagnostic),
+   EPR.
+
+### Apply phase (after the walk)
+
+- Rewrite `AGENTS.md` from approved text,
+   including section moves and new "User interfaces" heading;
+   regenerate `CLAUDE.md` via file-enforcer.
+- Create `.agents/skills/visual-design-review/SKILL.md` with an imperative description.
+- Add moved rules to their package docs.
+- Rewrite references to retired codes;
+   add forbidden-strings entries for retired codes.
+- Update `doc/philosophy/agents.md` and `doc/agent/regression-suite.md` Case 3.
+- Move JCH and OWB guidance into linter diagnostics.
+
+### Resume notes
+
+Walk scratch files live in the session scratchpad `walk/` directory:
+`bN-after.md` holds proposed text;
+`measure.ts <batch> <CODES>` extracts originals to `bN-before.md`,
+checks RLM,
+and counts Opus 5.5 tokens.
+Scratch is not durable;
+this doc's approved-text sections are canonical.
+Proposal code blocks mark sections with Markdown headings.
