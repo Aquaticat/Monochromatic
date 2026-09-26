@@ -408,6 +408,7 @@ try {
     await autoPush({
       gitPath,
       cwd: effectiveCwd,
+      landedOid: postCommitResult.oid,
     },);
   }
 
