@@ -492,6 +492,38 @@ not a timing comparison.
 After Android Back hid the pre-reserved debug IME,
 the focused `cam` editor remained and the full closed deck returned to
 `[73,1904][965,2035]` with Folders and Open visible.
+At **100% text** under the 330dp debug keyboard (top y `1348`),
+the selected vertical and the new early-inline-gated candidates kept their
+last mode at y `1328` with Folders/Open above it.
+The pre-reserved candidate instead ended its complete last mode at y `1118`,
+leaving 230px between the mode and the keyboard and shortening the same
+upper-left browser so only its first rows showed.
+A native screenshot showed this blank strip under the deck;
+no substitute browser or production layout was introduced.
+At 100%,
+the selected vertical deck also remained complete at the 400dp and
+415dp settled endpoints on this same device,
+so reserving 416dp under a 330dp keyboard at that text scale was not
+required by the tested static fit.
+The early-inline candidate deliberately retained the selected vertical
+100% branch at 330dp;
+its **200%** sampled-frame failure remains decisive for that alternative.
+
+TalkBack was enabled on the disposable AVD for a bounded 100% pre-reserved
+probe.
+A native screenshot showed its green focus rectangle on the query while
+the debug keyboard was present;
+a later synthetic tap showed focus on the debug IME's `Type cam` button.
+The captured UI hierarchy exposed Folders,
+Open and the four mode descriptions,
+but synthetic swipe/Tab attempts did not establish that TalkBack could
+traverse and activate each mode during keyboard-open Search.
+After those inputs,
+a later hierarchy showed the keyboard closed and the full closed deck.
+The disposable guest's original accessibility settings were restored.
+No 200% TalkBack traversal pass was performed in this comparison;
+node presence is not a screen-reader interaction test.
+
 The native videos,
 raw frame directories,
 logs and hierarchies remain private.
