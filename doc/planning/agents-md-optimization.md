@@ -169,30 +169,33 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    retires MA3 and FLG (into QGR,
    the more-cited code).
    Approved as shown.
-- Batch 4 (visual and device rules):
+- Batch 4 (visual and device rules),
+   revised after user correction:
+   Android rules are not music-player-only,
+   because more Android apps are planned.
+   Always-loaded:
    CXD,
    HDM,
    SCF,
    PRV,
-   VHI stay always-loaded,
-   reworded general (359 to 340 tokens);
+   VHI,
+   ATS reworded general (426 to 407 tokens).
+   Skill-bound:
    QVE,
    PFG,
    QVM,
    MXQ,
    HFM,
    RVC,
-   PXF move to a new `visual-design-review` skill;
+   PXF,
    ZDV,
    BZF,
    ANB,
    AVP,
-   M1T,
-   ATS move to `package/music-player/design/review-notes.md`
-   (830 tokens leave `AGENTS.md` in total).
+   M1T (763 to 736 tokens,
+   leaving `AGENTS.md`).
    Proposed,
    awaiting user review.
-
 - Retired-code references:
    rewrite every reference in other docs to the successor code (user chose this over a retired-codes list).
 
@@ -273,6 +276,16 @@ working files lived in the session scratchpad.
    narrow rules spanning packages go to skills,
    since the user can invoke skills manually when agents miss them;
    general rules stay always-loaded.
+
+## Decisions (round 4)
+
+- Rules moving to skills or package docs are compressed rule by rule too.
+- Adopted without asking:
+   moved rules keep their codes,
+   since TAG makes codes stable cross-session handles;
+   code uniqueness spans `AGENTS.md`,
+   skills,
+   and package docs.
 
 ## Open questions
 
