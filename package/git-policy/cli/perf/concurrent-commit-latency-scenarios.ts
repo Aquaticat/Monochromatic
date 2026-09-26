@@ -343,17 +343,9 @@ export async function collectConcurrentScenarios(): Promise<readonly ConcurrentS
     };
   },),);
   /**
-   Complete ordered matrix.
+   Complete matrix, the paused-commit scenarios first so a harness failure there surfaces early.
    */
   const specs: readonly ScenarioSpec[] = [
-    ...DISJOINT_SCENARIOS.map(function levelSpec(level,): ScenarioSpec {
-      return disjointSpec({
-        id: level.id,
-        repository: disjointRepository,
-        concurrency: level.concurrency,
-        directRepository,
-      },);
-    },),
     {
       id: 'same-file-non-overlapping',
       concurrency: 2,
@@ -396,6 +388,14 @@ export async function collectConcurrentScenarios(): Promise<readonly ConcurrentS
         },);
       },
     },
+    ...DISJOINT_SCENARIOS.map(function levelSpec(level,): ScenarioSpec {
+      return disjointSpec({
+        id: level.id,
+        repository: disjointRepository,
+        concurrency: level.concurrency,
+        directRepository,
+      },);
+    },),
     disjointSpec({
       id: 'slow-hook-serialized',
       repository: slowSerialized,

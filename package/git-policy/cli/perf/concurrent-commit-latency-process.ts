@@ -223,22 +223,22 @@ export async function observeLocks(repository: string,): Promise<LockObserver> {
 }
 
 /**
- Counts JSONL events of one type in wrapper stdout.
+ Counts JSONL events of one type in wrapper output.
 
- @param stdout - captured stdout
+ @param output - captured stdout and stderr
 
  @param type - event type
 
  @returns event count
  */
 function countEvents({
-  stdout,
+  output,
   type,
 }: Readonly<{
-  stdout: string;
+  output: string;
   type: string;
 }>,): number {
-  return stdout
+  return output
     .split('\n',)
     .filter(function isEvent(line,): boolean {
       return line.startsWith('{',) && line.includes(`"type":"${type}"`,);
@@ -325,29 +325,25 @@ export async function runCommit({
     'close',
   );
   /**
-   Complete stdout.
+   Complete output; wrapped commits write JSONL events to stderr, so both streams are searched.
    */
-  const stdout = Buffer.concat(chunks,)
-    .toString('utf8',);
+  const output = `${Buffer.concat(chunks,)
+    .toString('utf8',)}${Buffer.concat(errorChunks,)
+      .toString('utf8',)}`;
   return {
     completionMs: nowMs() - startedAt,
     exitCode: child.exitCode ?? (-1),
-    ...(child.exitCode === 0
-      ? {}
-      : {
-        failureOutput: `${stdout}${Buffer.concat(errorChunks,)
-          .toString('utf8',)}`,
-      }),
+    ...(child.exitCode === 0 ? {} : { failureOutput: output, }),
     lostRaces: countEvents({
-      stdout,
+      output,
       type: 'landing-race-lost',
     },),
     replays: countEvents({
-      stdout,
+      output,
       type: 'commit-replayed',
     },),
     coreFinding: countEvents({
-      stdout,
+      output,
       type: 'core-finding',
     },) > 0,
   };
