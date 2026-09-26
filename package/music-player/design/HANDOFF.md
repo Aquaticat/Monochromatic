@@ -6124,5 +6124,16 @@ A total numerical floor does not mandate this allocation or accept
 unreachable browser items.
 See `package/music-player/design/evidence/crease-floor-native-comparison.md`
 for the exact fixture and limits.
-The revised floor decision is pending;
-no `min_padding` is selected and the original AVD remains untouched.
+The user then stated **7.5mm total minimum even if a future device has a
+narrower crease**,
+but explicitly required the review to be redone and the question re-asked
+because it omitted **Search-closed player views**.
+Treat 7.5mm as the user's stated answer awaiting re-confirmation,
+not a recorded final `min_padding` decision.
+The existing P0/P14/P20 review is incomplete for this choice;
+add separately captured player-with-Search-closed native views for each
+floor policy before re-asking.
+Do not treat the historical fixed-414dp/24dp player preview as E2-compliant.
+No production change or new IME experiment is authorized;
+only the disposable capped Fold may be used.
+The original AVD remains untouched.

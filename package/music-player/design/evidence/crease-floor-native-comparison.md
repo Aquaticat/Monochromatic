@@ -104,4 +104,10 @@ focus behavior,
 activation or accessibility traversal.
 Choosing a numeric E2 floor remains a design decision;
 compliance at that floor needs its own later verification.
-No new `min_padding` was recorded while this review awaited the user's answer.
+The user stated **7.5mm total minimum even on a future narrower-crease
+device**,
+then required re-asking because the form omitted views with Search closed.
+This statement is pending explicit re-confirmation after those player views;
+no numeric `min_padding` decision was recorded from the incomplete review.
+The historical player preview still uses fixed 414dp panes and a 24dp stripe,
+so it cannot stand in for a native E2 player-floor variant.
