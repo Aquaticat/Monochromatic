@@ -152,6 +152,40 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
   because another session's commit transaction was live in the main worktree;
   slice 1's live-owner skip resolves that once the feature branch merges.
 - Slices 3 and 6 were interrupted by the crashes and resumed from their transcripts.
+- Slice 3 finished on the feature branch
+  (through `0dbebe896`):
+  replay,
+  revalidation,
+  shadow-store objects,
+  hook-staged trees kept,
+  phase markers,
+  and the `SIGKILL` hang fix
+  (the container's PID 1 never reaps orphans,
+  so zombie lock owners looked alive;
+  Linux states `Z` and `X` now count as exited).
+  Container seed 1:
+  4 of 66 runs failed.
+- Owner decisions 2026-09-26,
+  not yet in the decision record because a merge is in progress in the feature worktree:
+    - Replay per overlapping path:
+      if the captured bytes already contain the landed change
+      (its diff applies in reverse to the captured version),
+      land the captured bytes;
+      otherwise three-way merge,
+      and a conflict fails.
+      This amends the Q4 answer
+      after the trace scenario showed pure three-way merging conflicting on adjacent edits in a shared worktree.
+    - Amending a published commit while others are in flight:
+      the e2e checker exempts commits landed on the amended history from `remote-contains`
+      and requires the non-fast-forward push failure to be surfaced with exit `0`.
+- In progress:
+  an integration agent is merging slices 6 and 8 into the feature branch
+  (conflicts in `internal-test-exports.ts` and `commit-landing-lock.ts`),
+  fixing fixture process-group cleanup,
+  and running the full checks and two container seeds.
+  After it:
+  implement the two owner decisions,
+  then slices 4 (read sets and `inputs`) and 5 (reservation).
 - `SPEC.md` has no placeholders left;
   the shadow snapshots every real ref at invocation so hooks resolve tags and other branches.
 - Private `HEAD` shape chosen from a disposable-repository prototype:
