@@ -29,6 +29,70 @@ issue #560 is a real collision.
   (`package/git-policy/cli/perf/lifecycle-latency-2026-07-16.json`);
   real-repo lock hold time with this repo's plugins is unmeasured.
 
+## Private HEAD prototype, 2026-09-25
+
+Disposable fixture,
+real Git 2.55.0 at `/usr/bin/git`,
+global and system config disabled,
+SSH commit signing configured.
+
+- Native `git commit` with `GIT_INDEX_FILE` private and `--git-dir` pointing at a private per-worktree admin dir
+  (registered `git worktree add --detach --no-checkout`,
+  or hand-built `HEAD` plus `commondir` file or `GIT_COMMON_DIR`)
+  and `--work-tree` at the real worktree
+  ran pre-commit,
+  prepare-commit-msg,
+  commit-msg,
+  post-commit,
+  the editor,
+  template and cleanup,
+  and signing.
+- Hooks ran with the real worktree top level as cwd,
+  saw the private index and private `HEAD`,
+  and read real worktree files.
+- Shared `HEAD`,
+  `refs/heads/main`,
+  their reflogs,
+  and real `.git/index` bytes stayed unchanged.
+- Replay with `git merge-tree --write-tree --merge-base`,
+  `git commit-tree`,
+  and compare-and-swap `git update-ref <ref> <new> <old>` produced the right tree,
+  parent,
+  author,
+  and committer.
+  Non-overlapping hunks in one file merged;
+  overlapping hunks exited 1 and still printed a tree ID,
+  so callers must check the exit status.
+
+Measured caveats:
+
+- The real index is stale after the ref moves;
+  an ordinary commit afterwards committed a revert.
+  The landing-time real index update is mandatory.
+- Hooks inherit `GIT_DIR` and relative `GIT_WORK_TREE=.`;
+  a hook that changes into a subdirectory and runs Git sees the wrong top level.
+  Ordinary commits export neither.
+- `git commit-tree` ignores `commit.gpgsign`;
+  replay must pass `-S` when signing is configured.
+- `git update-ref` without `-m` writes an empty reflog message.
+- A registered no-checkout worktree protects its private commit from `gc`,
+  appears in `git worktree list`,
+  and needs `git worktree remove --force`.
+  An unregistered admin dir is invisible,
+  but `git gc --prune=now` deleted its commits.
+
+Untested:
+concurrency,
+the wrapper on `PATH`,
+hook frameworks,
+GPG signing,
+user config,
+`--amend` and `--verbose` with a private `HEAD`,
+sparse checkout,
+submodules,
+`core.hooksPath`,
+`extensions.worktreeConfig`.
+
 ## Decisions
 
 - Meaning: concurrent separate invocations,
@@ -77,8 +141,12 @@ never the cheapest to build.
 - `--amend` and merge, cherry-pick, revert conclusions when `HEAD` moved.
 - Index commits (`--no-only`, pathspec-less escape hatch).
 - Auto-push when landings are close together.
-- Pending fact: whether native `git commit` can run against a private index and a private `HEAD`
-  with hooks running in the real worktree (prototype running).
+- Private `HEAD` mechanism details,
+  after the hook placement answer:
+  `gc` protection for pending commits,
+  the `GIT_WORK_TREE=.` hook environment,
+  and replay signing.
+- Whether the budget calibration becomes an `AGENTS.md` rule.
 
 ## Next action
 
