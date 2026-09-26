@@ -3,7 +3,7 @@
 ## Status and authority
 
 Design interview in progress.
-The user requested migration to [Laya] and explicitly requested grilling before implementation.
+The user requested migration to [Laya][] and explicitly requested grilling before implementation.
 Do not implement until shared understanding is confirmed.
 No dependency, production configuration, or runtime changes have been made for this task.
 

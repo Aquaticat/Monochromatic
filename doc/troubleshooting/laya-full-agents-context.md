@@ -5,8 +5,9 @@
 Investigation in progress during the Laya-only auto-mode migration interview.
 No production configuration or judge implementation has changed.
 No successful full-policy model verdict has been established at this checkpoint.
-The user authorized a subsequent 8 GiB experiment;
-its result is not assumed here.
+The authorized 8 GiB full-model retry also failed with a confirmed memory kill.
+A subsequent isolated head differential reproduced the failure and verified a functional attention path.
+The full-model retry using that setting is still pending at this checkpoint.
 Current requirements and experiment history live in
 [the migration plan](../planning/pi-auto-mode-laya.md).
 
@@ -151,8 +152,67 @@ Its retained post-exit state reported:
 }
 ```
 
-The precise tensor allocation responsible has not been identified.
-No claim is made that increasing memory will resolve every possible long-context failure.
+The authorized 8 GiB retry also reported `OOMKilled=true` before returning a verdict.
+An actual model pre-forward assertion confirmed all 12,676 input tokens and valid mask positions.
+The container ran from 03:22:37.763 to 03:26:41.095 EDT on 2026-09-26.
+Increasing memory to 8 GiB did not resolve this workload.
+
+### The native CPU head materializes a full attention matrix
+
+Read-only PyTorch source clone:
+`~/temp/agent/pytorch-laya-2026-09-26`,
+commit `449b1768410104d3ed79d3bcfe4ba1d65c7f22c0`,
+matching the installed wheel.
+
+`aten/src/ATen/native/transformers/transformer.cpp:107-121`
+calls native attention with `need_weights=false`:
+
+```cpp
+// aten/src/ATen/native/transformers/transformer.cpp:107-121, selected arguments
+x = std::get<0>(at::_native_multi_head_attention(
+    x, x, x, embed_dim, num_heads, qkv_weight, qkv_bias,
+    proj_weight, proj_bias, mask,
+    false /* need_weights */,
+    true /* average_attn_weights */,
+    mask_type));
+```
+
+That flag does not avoid score-matrix allocation in the CPU implementation.
+`aten/src/ATen/native/transformers/attention.cpp:383-406` materializes the matrix
+and releases it only after use:
+
+```cpp
+// aten/src/ATen/native/transformers/attention.cpp:383-406, selected statements
+// shape: [B, num_head, T, T]
+auto qkt = bmm_nt(q, k);
+qkt = masked_softmax(qkt, mask, query, mask_type);
+auto attn_ctx = bmm_nn(q, qkt, v);
+if (!need_weights) {
+  qkt = Tensor();
+}
+```
+
+For the observed batch 1,
+16 heads,
+12,676-token sequence,
+and float32,
+this matrix alone is 10,283,582,464 bytes (9.577332496643066 GiB).
+
+The isolated one-layer reproduction used Laya's exact head dimensions
+without the encoder or model weights.
+At the same authorized 8 GiB limit:
+
+- Native mode reproduced exit 137 and `OOMKilled=true`.
+- Functional mode completed `[1, 12676, 1024]`,
+  with reported container memory peak 1,120,821,248 bytes
+  and observed computation time 6.827002863865346 seconds.
+- A fixed-seed 128-token random-tensor parity control passed
+  at `rtol=1e-5` and `atol=1e-6`,
+  with maximum absolute difference `4.76837158203125e-7`.
+
+These are kernel controls,
+not guard decisions with shortened policy.
+Long-input numerical parity against the native path remains unavailable because it OOMs.
 
 ## Verification
 
@@ -201,10 +261,30 @@ The input/labels are separate; only state and typed question schema are passed t
 ## Verified workarounds
 
 No successful full-policy inference workaround has been verified at this checkpoint.
-The `max_len` override preserves the sequence but is not yet a working end-to-end remedy.
-The user authorized an 8 GiB/2 CPU/no-extra-swap/no-network/no-host-mount retry,
-with a 5-minute deadline and one inference container at a time.
-Do not report that retry as successful until its actual result is captured.
+The `max_len` override preserves the sequence but is not itself an end-to-end remedy.
+
+The source-audited consumer setting fixes the isolated head reproduction:
+
+```python
+# Consumer-side runtime setting; no upstream source edit.
+torch.backends.mha.set_fastpath_enabled(False)
+```
+
+`torch/backends/mha/__init__.py:21-25` implements this public setting.
+`torch/nn/modules/transformer.py:840-846` checks it before the fused path;
+the fallback self-attention block at `:968-975` passes `need_weights=False`.
+
+Tradeoffs:
+this is a process-global PyTorch setting,
+not a per-agent toggle;
+the numerical check covers only the stated short tensor control,
+not full-policy classifier accuracy or long-input parity.
+Use an isolated inference process rather than changing unrelated workloads in a shared host process.
+
+The unchanged complete-policy input is being rerun with this setting,
+within the authorized 8 GiB/2 CPU/no-extra-swap/no-network/no-host-mount bounds,
+one case per 5-minute probe.
+Do not promote the kernel-only result to a full-model or safety claim.
 
 ## What does not work
 
