@@ -13,6 +13,9 @@ import {
   createExaClient,
   createSearchFetchClient,
   exaForwardableBlocklist,
+  type GhClient,
+  type GhClientFetchOptions,
+  planGitHubFetch,
   type FetchLike,
 } from '../dist/final/node/index.mjs';
 
@@ -65,6 +68,26 @@ const LINKUP_FETCH_RESPONSE = { markdown: 'Linkup page', };
  Exa fetch response fixture.
  */
 const EXA_FETCH_RESPONSE = { results: [{ url: 'https://example.com', text: 'Exa page', },], };
+
+/**
+ GitHub repository URL fixture carrying a gh mapping.
+ */
+const GITHUB_REPOSITORY_URL = 'https://github.com/cli/cli';
+
+/**
+ GitHub URL fixture whose shape has no gh mapping.
+ */
+const UNMAPPED_GITHUB_URL = 'https://github.com/cli/cli/actions/runs/36224089994';
+
+/**
+ gh client response fixture.
+ */
+const GH_FETCH_RESPONSE = { markdown: 'name:\tcli/cli', };
+
+/**
+ gh client failure reason fixture.
+ */
+const GH_FAILURE_REASON = 'gh fetch failed for https://github.com/cli/cli (repository-home)';
 
 //endregion Fixtures
 
@@ -278,6 +301,220 @@ await describe({
             },);
           },
         },),
+        it({
+          name: 'fetch routes a mapped GitHub URL through gh without any HTTP request',
+          fn: async () => {
+            /**
+             Local value for mock.
+             */
+            const mock = mockFetch({ responses: [], },);
+            /**
+             Local value for gh.
+             */
+            const gh = recordingGhClient({ response: GH_FETCH_RESPONSE, },);
+            /**
+             Local value for client.
+             */
+            const client = clientWithMock({
+              mock,
+              linkupApiKey: LINKUP_API_KEY,
+              ghClient: gh.client,
+            },);
+
+            /**
+             Local value for result.
+             */
+            const result = await client.fetch({ input: { url: GITHUB_REPOSITORY_URL, }, },);
+
+            expect(result.provider,).toBe('gh',);
+            expect(result.response,).toEqual(GH_FETCH_RESPONSE,);
+            expect(result.fallbackChain,).toBeUndefined();
+            expect(mock.calls,).toHaveLength(0,);
+            expect(gh.requests,).toHaveLength(1,);
+            expect(gh.requests[0]?.url,).toBe(GITHUB_REPOSITORY_URL,);
+            expect(gh.requests[0]?.kind,).toBe('repository-home',);
+            expect(gh.requests[0]?.attempts[0]?.invocations[0]?.args,).toEqual([
+              'repo',
+              'view',
+              'cli/cli',
+            ],);
+          },
+        },),
+        it({
+          name: 'fetch falls back to Linkup when gh fails and records the gh step',
+          fn: async () => {
+            /**
+             Local value for mock.
+             */
+            const mock = mockFetch({
+              responses: [{ body: LINKUP_FETCH_RESPONSE, },],
+            },);
+            /**
+             Local value for client.
+             */
+            const client = clientWithMock({
+              mock,
+              linkupApiKey: LINKUP_API_KEY,
+              ghClient: failingGhClient({ reason: GH_FAILURE_REASON, },).client,
+            },);
+
+            /**
+             Local value for result.
+             */
+            const result = await client.fetch({ input: { url: GITHUB_REPOSITORY_URL, }, },);
+            /**
+             Local value for firstStep.
+             */
+            const [firstStep,] = result.fallbackChain ?? [];
+
+            expect(result.provider,).toBe('linkup',);
+            expect(result.response,).toEqual(LINKUP_FETCH_RESPONSE,);
+            expect(result.fallbackChain,).toHaveLength(1,);
+            expect(firstStep?.from,).toBe('gh',);
+            expect(firstStep?.to,).toBe('linkup',);
+            expect(firstStep?.reason,).toBe(GH_FAILURE_REASON,);
+          },
+        },),
+        it({
+          name: 'fetch records every earlier step when gh and Linkup fail and Exa answers',
+          fn: async () => {
+            /**
+             Local value for mock.
+             */
+            const mock = mockFetch({
+              responses: [
+                { body: { message: 'bad gateway', }, status: 502, statusText: 'Bad Gateway', },
+                { body: EXA_FETCH_RESPONSE, },
+              ],
+            },);
+            /**
+             Local value for client.
+             */
+            const client = clientWithMock({
+              mock,
+              exaApiKey: EXA_API_KEY,
+              linkupApiKey: LINKUP_API_KEY,
+              ghClient: failingGhClient({ reason: GH_FAILURE_REASON, },).client,
+            },);
+
+            /**
+             Local value for result.
+             */
+            const result = await client.fetch({ input: { url: GITHUB_REPOSITORY_URL, }, },);
+
+            expect(result.provider,).toBe('exa',);
+            expect(result.fallbackChain,).toHaveLength(2,);
+            expect(result.fallbackChain?.[0]?.from,).toBe('gh',);
+            expect(result.fallbackChain?.[0]?.to,).toBe('linkup',);
+            expect(result.fallbackChain?.[0]?.reason,).toBe(GH_FAILURE_REASON,);
+            expect(result.fallbackChain?.[1]?.from,).toBe('linkup',);
+            expect(result.fallbackChain?.[1]?.to,).toBe('exa',);
+          },
+        },),
+        it({
+          name: 'fetch sends an unmapped GitHub URL to Linkup without calling gh',
+          fn: async () => {
+            /**
+             Local value for mock.
+             */
+            const mock = mockFetch({
+              responses: [{ body: LINKUP_FETCH_RESPONSE, },],
+            },);
+            /**
+             Local value for gh.
+             */
+            const gh = recordingGhClient({ response: GH_FETCH_RESPONSE, },);
+            /**
+             Local value for client.
+             */
+            const client = clientWithMock({
+              mock,
+              linkupApiKey: LINKUP_API_KEY,
+              ghClient: gh.client,
+            },);
+
+            /**
+             Local value for result.
+             */
+            const result = await client.fetch({ input: { url: UNMAPPED_GITHUB_URL, }, },);
+
+            expect(result.provider,).toBe('linkup',);
+            expect(gh.requests,).toHaveLength(0,);
+            expect(planGitHubFetch({ url: UNMAPPED_GITHUB_URL, },).planned,).toBe(false,);
+            expect(mock.calls,).toHaveLength(1,);
+          },
+        },),
+        it({
+          name: 'fetch rethrows a cancellation instead of falling back to Linkup',
+          fn: async () => {
+            /**
+             Local value for mock.
+             */
+            const mock = mockFetch({ responses: [], },);
+            /**
+             Local value for controller.
+             */
+            const controller = new AbortController();
+            controller.abort();
+            /**
+             Local value for client.
+             */
+            const client = clientWithMock({
+              mock,
+              linkupApiKey: LINKUP_API_KEY,
+              ghClient: failingGhClient({ reason: 'The operation was aborted', },).client,
+            },);
+
+            /**
+             Local value for caught.
+             */
+            let caught: unknown;
+            try {
+              await client.fetch({
+                input: { url: GITHUB_REPOSITORY_URL, },
+                signal: controller.signal,
+              },);
+            }
+            catch (error: unknown) {
+              caught = error;
+            }
+
+            expect(caught,).toBeInstanceOf(Error,);
+            expect((caught as Error).message,).toBe('The operation was aborted',);
+            expect(mock.calls,).toHaveLength(0,);
+          },
+        },),
+        it({
+          name: 'search never routes through gh',
+          fn: async () => {
+            /**
+             Local value for mock.
+             */
+            const mock = mockFetch({
+              responses: [{ body: EXA_SEARCH_RESPONSE, },],
+            },);
+            /**
+             Local value for gh.
+             */
+            const gh = recordingGhClient({ response: GH_FETCH_RESPONSE, },);
+            /**
+             Local value for client.
+             */
+            const client = clientWithMock({
+              mock,
+              exaApiKey: EXA_API_KEY,
+              ghClient: gh.client,
+            },);
+
+            /**
+             Local value for result.
+             */
+            const result = await client.search({ input: { query: GITHUB_REPOSITORY_URL, }, },);
+
+            expect(result.provider,).toBe('exa',);
+            expect(gh.requests,).toHaveLength(0,);
+          },
+        },),
       ],
     },),
   ],
@@ -347,6 +584,24 @@ type ClientWithMockOptions = {
    Optional Linkup API key.
    */
   readonly linkupApiKey?: string;
+  /**
+   Optional gh client replacing the real child process boundary.
+   */
+  readonly ghClient?: GhClient;
+};
+
+/**
+ Recorded gh client harness.
+ */
+type GhClientFixture = {
+  /**
+   gh client injected into the routing client.
+   */
+  readonly client: GhClient;
+  /**
+   Requests received in call order.
+   */
+  readonly requests: GhClientFetchOptions[];
 };
 
 /**
@@ -365,6 +620,7 @@ function clientWithMock(
     mock,
     exaApiKey,
     linkupApiKey,
+    ghClient,
   }: ClientWithMockOptions,
 ) {
   return createSearchFetchClient({
@@ -374,7 +630,54 @@ function clientWithMock(
     exaBaseUrl: EXA_BASE_URL,
     linkupBaseUrl: LINKUP_BASE_URL,
     fetchImpl: mock.fetchImpl,
+    ...(ghClient === undefined ? {} : { ghClient, }),
   },);
+}
+
+/**
+ Create a gh client recording requests and returning one scripted response.
+ 
+ @param response - response returned for every request
+ 
+ @returns recording gh client harness
+ */
+function recordingGhClient({ response, }: { readonly response: unknown; }): GhClientFixture {
+  /**
+   Recorded requests.
+   */
+  const requests: GhClientFetchOptions[] = [];
+  return {
+    requests,
+    client: {
+      fetch: async function recordFetch(options: GhClientFetchOptions,): Promise<unknown> {
+        requests.push(options,);
+        return response;
+      },
+    },
+  };
+}
+
+/**
+ Create a gh client recording requests and failing with one scripted reason.
+ 
+ @param reason - failure message thrown for every request
+ 
+ @returns failing gh client harness
+ */
+function failingGhClient({ reason, }: { readonly reason: string; }): GhClientFixture {
+  /**
+   Recorded requests.
+   */
+  const requests: GhClientFetchOptions[] = [];
+  return {
+    requests,
+    client: {
+      fetch: async function failFetch(options: GhClientFetchOptions,): Promise<unknown> {
+        requests.push(options,);
+        throw new Error(reason,);
+      },
+    },
+  };
 }
 
 /**

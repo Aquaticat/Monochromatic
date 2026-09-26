@@ -206,8 +206,8 @@ function createGhCommandRunner(
       },);
       innerL.warn(
         outcome.ran
-          ? `${executable} exited with code ${String(outcome.exitCode,)} for: ${executable} ${args.join(' ',)}`
-          : `${executable} produced no result for ${executable} ${args.join(' ',)}: ${outcome.reason}`,
+          ? `${executable} exited with code ${String(outcome.exitCode,)} for args: ${args.join(' ',)}`
+          : `${executable} produced no result for args: ${args.join(' ',)}: ${outcome.reason}`,
       );
       return outcome;
     }

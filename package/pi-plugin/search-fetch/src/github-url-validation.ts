@@ -7,7 +7,6 @@
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 import {
-  CURRENT_DIRECTORY_SEGMENT,
   DASH_PREFIX,
   EMPTY_SEGMENT,
   HIGHEST_DIGIT,
@@ -17,7 +16,6 @@ import {
   LOWEST_DIGIT,
   MAPPED_GITHUB_HOSTS,
   MAXIMUM_REFERENCE_NUMBER_DIGITS,
-  PARENT_DIRECTORY_SEGMENT,
   SPACE_CHARACTER,
   TILDE_CHARACTER,
   TOKEN_ALLOWED_CHARACTERS,
@@ -228,7 +226,7 @@ function lastContentSegmentIndex(segments: readonly string[],): number {
  
  @example
  ```ts
- validatePathSegments(['cli', 'cli', '..', 'secret']);
+ validatePathSegments(['cli', 'cli', 'README.md']);
  ```
  */
 function validatePathSegments(segments: readonly string[],): SegmentValidation {
@@ -251,7 +249,7 @@ function validatePathSegments(segments: readonly string[],): SegmentValidation {
  
  @param segment - one URL path segment
  
- @returns whether the segment is printable, non-empty, and not a traversal token
+ @returns whether the segment is non-empty and printable ASCII
  
  @example
  ```ts
@@ -259,16 +257,16 @@ function validatePathSegments(segments: readonly string[],): SegmentValidation {
  ```
  */
 function isSafePathSegment(segment: string,): boolean {
-  return (segment !== EMPTY_SEGMENT)
-    && (segment !== CURRENT_DIRECTORY_SEGMENT)
-    && (segment !== PARENT_DIRECTORY_SEGMENT)
-    && isPrintableAscii(segment,);
+  return (segment !== EMPTY_SEGMENT) && isPrintableAscii(segment,);
 }
 
 /**
  Return whether one value stays inside printable ASCII.
  
- @param value - URL-derived argument candidate
+ URL parsing already percent-encodes every non-printable character,
+ so this guard holds that invariant for any caller building a gh argument without URL parsing.
+ 
+ @param value - argument candidate
  
  @returns whether every character sits between exclusive space and inclusive tilde
  
@@ -360,7 +358,7 @@ function validateReferenceNumber(
   if ((!hasOnlyDigits(value,)) || (value.length > MAXIMUM_REFERENCE_NUMBER_DIGITS))
     return {
       safe: false,
-      reason: `${label} reference ${JSON.stringify(value,)} is not a ${label} number`,
+      reason: `${label} reference ${JSON.stringify(value,)} is not a number`,
     };
   return { safe: true, };
 }
@@ -464,6 +462,7 @@ function validatePositionalPathArgument(
 //endregion Argument validation
 
 export {
+  isPrintableAscii,
   parseGitHubUrl,
   validateEndpointFragment,
   validatePathSegments,

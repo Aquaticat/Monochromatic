@@ -175,6 +175,13 @@ export {
 } from './gh-process.ts';
 export { planGitHubFetch, } from './github-url-plan.ts';
 export {
+  isPrintableAscii,
+  validateEndpointFragment,
+  validatePositionalPathArgument,
+  validateReferenceNumber,
+  validateTokenArgument,
+} from './github-url-validation.ts';
+export {
   filterFetchResponseDataImages,
   filterMarkdownDataImages,
 } from './markdown-data-image-filter.ts';
@@ -241,6 +248,7 @@ export type {
   GitHubFetchPlan,
   GitHubRefPathSplit,
   PlannedGitHubFetch,
+  TokenValidation,
   UnplannedGitHubFetch,
 } from './github-fetch-types.ts';
 export type {

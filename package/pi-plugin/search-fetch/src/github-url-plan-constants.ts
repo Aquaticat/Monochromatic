@@ -71,16 +71,6 @@ const HTTPS_SCHEME = 'https:';
 const HTTP_SCHEME = 'http:';
 
 /**
- Current directory path segment rejected as a traversal token.
- */
-const CURRENT_DIRECTORY_SEGMENT = '.';
-
-/**
- Parent directory path segment rejected as a traversal token.
- */
-const PARENT_DIRECTORY_SEGMENT = '..';
-
-/**
  Leading dash rejected in positional gh arguments so they cannot parse as flags.
  */
 const DASH_PREFIX = '-';
@@ -237,7 +227,6 @@ export {
   BLAME_SECTION,
   COMMIT_SECTION,
   COMPARE_SECTION,
-  CURRENT_DIRECTORY_SEGMENT,
   DASH_PREFIX,
   EMPTY_SEGMENT,
   GIST_GITHUB_HOST,
@@ -259,7 +248,6 @@ export {
   LOWEST_DIGIT,
   MAPPED_GITHUB_HOSTS,
   MAXIMUM_REFERENCE_NUMBER_DIGITS,
-  PARENT_DIRECTORY_SEGMENT,
   PULL_FILES_SECTION,
   PULL_SECTION,
   RAW_GITHUB_CONTENT_HOST,
