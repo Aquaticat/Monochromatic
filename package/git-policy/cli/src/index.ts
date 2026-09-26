@@ -8,6 +8,12 @@
 import { runCliGit, } from './bin.ts';
 
 export * from './authoring.ts';
+/**
+ Transaction internals for built-artifact unit tests; not authoring API.
+
+ @internal
+ */
+export * as internalTestExports from './internal-test-exports.ts';
 
 // Direct execution runs the wrapper; module import remains inert.
 if (import.meta.main)

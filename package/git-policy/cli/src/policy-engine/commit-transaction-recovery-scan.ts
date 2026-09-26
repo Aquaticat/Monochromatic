@@ -53,7 +53,7 @@ const REFLOG_ACTION_PREFIX = 'cli-git:transaction:';
 /**
  Owner evidence for one unpublished or published entry.
  */
-type InspectedEntry = Readonly<{
+export type InspectedEntry = Readonly<{
   /**
    Classified registry entry.
    */
@@ -132,8 +132,13 @@ function parseStagingOwner(bytes: Uint8Array,): TransactionOwnerRecord | typeof 
  @returns inspected entry
 
  @throws {@link CommitTransactionRecoveryError} when a published directory lacks a valid matching owner record
+
+ @example
+ ```ts
+ await inspectRegistryEntry({ kind: 'transaction', transactionId, path: '/repo/.git/cli-git-transactions/' + transactionId });
+ ```
  */
-async function inspectEntry(entry: TransactionRegistryEntry,): Promise<InspectedEntry> {
+export async function inspectRegistryEntry(entry: TransactionRegistryEntry,): Promise<InspectedEntry> {
   /**
    Owner record path inside the entry.
    */
@@ -249,8 +254,13 @@ async function recoverUnjournaledTransaction({
  @param effectiveCwd - invocation repository location
 
  @returns action for the entry
+
+ @example
+ ```ts
+ await recoverInspectedEntry({ inspected, gitPath: '/usr/bin/git', effectiveCwd: '/repo' });
+ ```
  */
-async function recoverInspectedEntry({
+export async function recoverInspectedEntry({
   inspected,
   gitPath,
   effectiveCwd,
@@ -383,7 +393,7 @@ export async function recoverRegisteredTransactions({
     .filter(function ownsEvidence(entry,): boolean {
       return entry.kind !== 'retired';
     },)
-    .map(inspectEntry,),))
+    .map(inspectRegistryEntry,),))
     .toSorted(function byCreation(
       left,
       right,
