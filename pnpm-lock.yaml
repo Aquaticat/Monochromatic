@@ -120,6 +120,9 @@ catalogs:
     '@types/node':
       specifier: '>=26.2.0'
       version: 26.6.2
+    '@types/semver':
+      specifier: '>=7.7.1'
+      version: 7.8.0
     '@types/sinon':
       specifier: '>=22.0.0'
       version: 22.0.0
@@ -132,6 +135,12 @@ catalogs:
     '@valibot/to-json-schema':
       specifier: '>=1.7.1'
       version: 1.8.0
+    ajv:
+      specifier: '>=8.17.1'
+      version: 8.20.0
+    ajv-formats:
+      specifier: '>=3.0.1'
+      version: 3.0.1
     browserslist:
       specifier: '>=4.28.8'
       version: 4.29.0
@@ -192,6 +201,9 @@ catalogs:
     ignore:
       specifier: '>=7.0.6'
       version: 7.0.9
+    json-schema-typed:
+      specifier: '>=8.0.1'
+      version: 8.0.2
     jsonc-eslint-parser:
       specifier: '>=3.3.0'
       version: 3.3.0
@@ -2350,6 +2362,52 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
+  package/module/conf-fork:
+    dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../caught-value
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
+      ajv:
+        specifier: 'catalog:'
+        version: 8.20.0
+      ajv-formats:
+        specifier: 'catalog:'
+        version: 3.0.1(ajv@8.20.0)
+      dot-prop:
+        specifier: 'catalog:'
+        version: 10.2.0
+      json-schema-typed:
+        specifier: 'catalog:'
+        version: 8.0.2
+      semver:
+        specifier: '>=7.8.5'
+        version: 7.8.5
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../async-time
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.2
+      '@types/semver':
+        specifier: 'catalog:'
+        version: 7.8.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
   package/module/const:
     devDependencies:
       '@monochromatic-dev/config-rolldown':
@@ -2861,6 +2919,24 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
+  package/module/matcher-fork:
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
   package/module/matrix:
     dependencies:
       '@monochromatic-dev/module-fs-path':
@@ -3023,6 +3099,76 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
+  package/module/p-map-fork:
+    dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../caught-value
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../or-throw
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../async-time
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/module/p-memoize-fork:
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../async-time
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/module/pify-fork:
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
   package/module/pipe:
     dependencies:
       '@monochromatic-dev/module-logger':
@@ -3059,6 +3205,24 @@ importers:
       yaml:
         specifier: 'catalog:'
         version: 3.0.0-2
+    devDependencies:
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/module/quick-lru-fork:
     devDependencies:
       '@monochromatic-dev/config-rolldown':
         specifier: workspace:*
@@ -5877,6 +6041,9 @@ packages:
   '@types/pako@2.0.4':
     resolution: {integrity: sha512-VWDCbrLeVXJM9fihYodcLiIv0ku+AlOa/TQ1SvYOaBuyrSKgEcro95LJyIsJ4vSo6BXIxOKxiJAat04CmST9Fw==, tarball: https://registry.npmjs.org/@types/pako/-/pako-2.0.4.tgz}
 
+  '@types/semver@7.8.0':
+    resolution: {integrity: sha512-1mAINjtQCXXeLkJ9ehXkwOcBpqtLxiVtKhpUf83DdRNdQKV0iXZpaHYqRr7nj+wvxuJzoAmAwXI+sCNMv1CzLQ==, tarball: https://registry.npmjs.org/@types/semver/-/semver-7.8.0.tgz}
+
   '@types/sinon-chai@4.0.0':
     resolution: {integrity: sha512-Uar+qk3TmeFsUWCwtqRNqNUE7vf34+MCJiQJR5M2rd4nCbhtE8RgTiHwN/mVwbfCjhmO6DiOel/MgzHkRMJJFg==, tarball: https://registry.npmjs.org/@types/sinon-chai/-/sinon-chai-4.0.0.tgz}
 
@@ -6235,6 +6402,14 @@ packages:
   agent-base@9.0.0:
     resolution: {integrity: sha512-TQf59BsZnytt8GdJKLPfUZ54g/iaUL2OWDSFCCvMOhsHduDQxO8xC4PNeyIkVcA5KwL2phPSv0douC0fgWzmnA==, tarball: https://registry.npmjs.org/agent-base/-/agent-base-9.0.0.tgz}
     engines: {node: '>= 20'}
+
+  ajv-formats@3.0.1:
+    resolution: {integrity: sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ==, tarball: https://registry.npmjs.org/ajv-formats/-/ajv-formats-3.0.1.tgz}
+    peerDependencies:
+      ajv: ^8.0.0
+    peerDependenciesMeta:
+      ajv:
+        optional: true
 
   ajv@8.20.0:
     resolution: {integrity: sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==, tarball: https://registry.npmjs.org/ajv/-/ajv-8.20.0.tgz}
@@ -6964,6 +7139,9 @@ packages:
 
   json-schema-traverse@1.0.0:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==, tarball: https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-1.0.0.tgz}
+
+  json-schema-typed@8.0.2:
+    resolution: {integrity: sha512-fQhoXdcvc3V28x7C7BMs4P5+kNlgUURe2jmUT1T//oBRMDrqy1QPelJimwZGo7Hg9VPV3EQV5Bnq4hbFy2vetA==, tarball: https://registry.npmjs.org/json-schema-typed/-/json-schema-typed-8.0.2.tgz}
 
   json-with-bigint@3.5.12:
     resolution: {integrity: sha512-uwbF/wSSuOgC7qqlq27Xp5B6a2MHVug3t0idZdTqu0JnlFvgJuH7ju+KAk/J06C7GfhoYy2gnb9wz2INqcne7w==, tarball: https://registry.npmjs.org/json-with-bigint/-/json-with-bigint-3.5.12.tgz}
@@ -9197,6 +9375,8 @@ snapshots:
 
   '@types/pako@2.0.4': {}
 
+  '@types/semver@7.8.0': {}
+
   '@types/sinon-chai@4.0.0':
     dependencies:
       '@types/chai': 5.2.3
@@ -9395,6 +9575,10 @@ snapshots:
   acorn@8.18.0: {}
 
   agent-base@9.0.0: {}
+
+  ajv-formats@3.0.1(ajv@8.20.0):
+    optionalDependencies:
+      ajv: 8.20.0
 
   ajv@8.20.0:
     dependencies:
@@ -10144,6 +10328,8 @@ snapshots:
       ts-algebra: 2.0.0
 
   json-schema-traverse@1.0.0: {}
+
+  json-schema-typed@8.0.2: {}
 
   json-with-bigint@3.5.12: {}
 
