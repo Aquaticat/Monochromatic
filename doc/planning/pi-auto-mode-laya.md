@@ -39,21 +39,16 @@ No claim of safety parity, cost savings, or adequate local performance has been 
 
 ### Q2: Provider boundary
 
-Unanswered:
-Must auto-mode make no coding-plan judge requests, including fallback,
-or is reducing their frequency sufficient?
-Separately, may escalation use a metered API that supports this workload,
-or must every automatic decision remain local?
-
-The main coding agent's normal provider traffic is outside this question.
+Settled: A.
+Auto-mode must make zero coding-plan judge requests, including fallback.
+The main coding agent's normal provider traffic is outside this boundary.
+Whether a separate metered API may receive escalation remains unanswered.
 
 ### Q3: Safety and interruption tradeoff
 
-Unanswered:
-How should the migration resolve a conflict between eliminating judge traffic
-and retaining automatic approval of actions that require contextual judgment?
-
-Proposed posture, not adopted:
+Settled: A.
+Additional manual approvals are acceptable when needed to preserve safety.
+Cutover does not require retaining the current level of automatic handling.
 Keep deterministic safety checks and require human approval when the local decision lacks validated support.
 Do not treat model confidence alone as proof of safe authorization.
 
@@ -70,5 +65,7 @@ Do not treat model confidence alone as proof of safe authorization.
 
 ## Next action
 
-Resolve the provider boundary and safety/interruption priorities.
-Recompute the interview frontier from those answers and the source findings.
+Inspect the incumbent policy surface and Laya input and deployment boundaries.
+Ask whether metered-API escalation is acceptable.
+Recompute the remaining interview frontier from the source findings.
+Keep implementation blocked until the complete design is confirmed.
