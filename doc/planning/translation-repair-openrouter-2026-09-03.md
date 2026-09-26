@@ -8082,6 +8082,22 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## aiyysk4 read, 2026-09-26: classes one hundred fifty-eight and fifty-nine live
+
+aiyysk4 ran on `.frozen-dist-8f2b07c37` and SETTLED at 16:01 UTC in 44.9 min, one attempt, 79 slices,
+4,110 calls, 4,967 seats, 257 retry rounds, 2.66 USD of OpenRouter cost, 2 abandoned streams (0.01 USD).
+All three new glossary terms reached the page as the glossary seeds them:
+"I'd never actually spent time with an MTF person before" (交往, class one hundred fifty-eight),
+"I don't really care about my surroundings" (环境的问题) and "prototype" on all three 工程机 lines
+(class one hundred fifty-nine).
+Class one hundred fifty-seven held in its third seeded form, "Sakurana used her own life as leverage:".
+Front matter equal, 13 headings, 3 footnotes, no TA, no error finish, no double blank line,
+no unendorsed standing, 100 abstention lines, one run-off; 11 em-dashes, left as the owner said.
+The two "doubles" log hits are judge prose ("Candidate 2 doubles …"), not findings.
+The time over aiyysk2's 26.7 min is the providers': Synthetic read wet on 12 meter readings,
+so Qwen (70 usable) and Kimi-K3 (35 usable) ran there at its latency, and Mercury drew 156 upstream rate-limit lines
+against aiyysk2's 24 (94 of its 582 seats threw). No class.
+
 ## aiyysk2 read, 2026-09-26: class one hundred fifty-seven live, class one hundred fifty-eight
 
 ### What the run did
