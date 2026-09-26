@@ -32,6 +32,7 @@ import {
  ```
  */
 export function createPlainObject(): Record<string, unknown> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.create(null) is the only way to mint a null-prototype dictionary and is typed `any`; the annotation carries the intended shape.
   return Object.create(null,) as Record<string, unknown>;
 }
 
@@ -59,8 +60,11 @@ const NON_DOT_FORBIDDEN_KEYS: ReadonlySet<string> = new Set([
  in dot-notation or literal-key mode.
  
  @param store - Store object to read from.
+ 
  @param key - Key path as the caller wrote it.
+ 
  @param defaultValue - Value returned when the key is absent.
+ 
  @param accessPropertiesByDotNotation - Whether dots address nested
  properties.
  
@@ -82,13 +86,17 @@ export function getStoreValue({
   defaultValue,
   accessPropertiesByDotNotation,
 }: {
-  readonly store: Record<string, unknown>;
+  readonly store: Readonly<Record<string, unknown>>;
   readonly key: string;
   readonly defaultValue?: unknown;
   readonly accessPropertiesByDotNotation: boolean;
 },): unknown {
   if (accessPropertiesByDotNotation)
-    return getProperty(store, key, defaultValue,);
+    return getProperty(
+      store,
+      key,
+      defaultValue,
+    );
   return key in store ? store[key] : defaultValue;
 }
 
@@ -97,7 +105,9 @@ export function getStoreValue({
  in dot-notation or literal-key mode.
  
  @param store - Store object to probe.
+ 
  @param key - Key path as the caller wrote it.
+ 
  @param accessPropertiesByDotNotation - Whether dots address nested
  properties.
  
@@ -117,12 +127,15 @@ export function hasStoreValue({
   key,
   accessPropertiesByDotNotation,
 }: {
-  readonly store: Record<string, unknown>;
+  readonly store: Readonly<Record<string, unknown>>;
   readonly key: string;
   readonly accessPropertiesByDotNotation: boolean;
 },): boolean {
   if (accessPropertiesByDotNotation)
-    return hasProperty(store, key,);
+    return hasProperty(
+      store,
+      key,
+    );
   return key in store;
 }
 
@@ -131,22 +144,32 @@ export function hasStoreValue({
 //region Writes
 
 /**
- Assigns one key in the store,
+ Builds a store copy carrying one placed key,
  in dot-notation or literal-key mode.
  
  The literal-key mode silently refuses `__proto__`,
  `constructor`,
- and `prototype` keys exactly as upstream `conf` does.
+ and `prototype` keys exactly as upstream `conf` does. Top-level keys are
+ copied so the caller's object keeps its own state;
+ dotted writes reach the copy's shared nested objects,
+ which callers hand over freshly-read stores for.
  
- @param store - Store object to mutate.
+ @param store - Store object read for the copy.
+ 
  @param key - Key path as the caller wrote it.
+ 
  @param value - JSON-representable value to place.
+ 
  @param accessPropertiesByDotNotation - Whether dots address nested
  properties.
  
+ @returns Null-prototype store copy carrying the placed value.
+ 
+ @mutates store - Dotted writes reach shared nested objects of the input.
+ 
  @example
  ```ts
- setStoreValue({
+ const next = withStoreValue({
    store,
    key: 'nested.theme',
    value: 'dark',
@@ -154,58 +177,90 @@ export function hasStoreValue({
  });
  ```
  */
-export function setStoreValue({
+export function withStoreValue({
   store,
   key,
   value,
   accessPropertiesByDotNotation,
 }: {
-  readonly store: Record<string, unknown>;
+  readonly store: Readonly<Record<string, unknown>>;
   readonly key: string;
   readonly value: unknown;
   readonly accessPropertiesByDotNotation: boolean;
-},): void {
+},): Record<string, unknown> {
+  /**
+   Null-prototype copy carrying the placed value.
+   */
+  const next = Object.assign(
+    createPlainObject(),
+    store,
+  );
   if (accessPropertiesByDotNotation) {
-    setProperty(store, key, value,);
-    return;
+    setProperty(
+      next,
+      key,
+      value,
+    );
+    return next;
   }
   if (NON_DOT_FORBIDDEN_KEYS.has(key,))
-    return;
-  store[key] = value;
+    return next;
+  next[key] = value;
+  return next;
 }
 
 /**
- Removes one key from the store,
+ Builds a store copy without one key,
  in dot-notation or literal-key mode.
  
- @param store - Store object to mutate.
+ @param store - Store object read for the copy.
+ 
  @param key - Key path as the caller wrote it.
+ 
  @param accessPropertiesByDotNotation - Whether dots address nested
  properties.
  
+ @returns Null-prototype store copy without the key.
+ 
+ @mutates store - Dotted deletes reach shared nested objects of the input.
+ 
  @example
  ```ts
- deleteStoreValue({
+ const next = withoutStoreValue({
    store,
    key: 'nested.theme',
    accessPropertiesByDotNotation: true,
  });
  ```
  */
-export function deleteStoreValue({
+export function withoutStoreValue({
   store,
   key,
   accessPropertiesByDotNotation,
 }: {
-  readonly store: Record<string, unknown>;
+  readonly store: Readonly<Record<string, unknown>>;
   readonly key: string;
   readonly accessPropertiesByDotNotation: boolean;
-},): void {
+},): Record<string, unknown> {
+  /**
+   Null-prototype copy missing the removed key.
+   */
+  const next = Object.assign(
+    createPlainObject(),
+    store,
+  );
   if (accessPropertiesByDotNotation) {
-    deleteProperty(store, key,);
-    return;
+    deleteProperty(
+      next,
+      key,
+    );
+    return next;
   }
-  delete store[key];
+  Reflect.deleteProperty(
+    next,
+    key,
+  );
+  return next;
 }
 
 //endregion Writes

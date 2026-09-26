@@ -132,6 +132,7 @@ export class UnsupportedValueTypeError extends TypeError {
    see identical diagnostics.
    
    @param type - `typeof` result of the rejected value, reported verbatim.
+   
    @param key - Store key the value was destined for, reported verbatim.
    */
   constructor({

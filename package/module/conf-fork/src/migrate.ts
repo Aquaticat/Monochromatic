@@ -18,8 +18,10 @@ import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 import {
   MigrationFailedError,
+  MissingProjectVersionError,
 } from './errors.ts';
 import { MIGRATION_KEY, } from './internal-key.ts';
+import { createPlainObject, } from './store-access.ts';
 import type { MigrationHost, } from './migration-host.ts';
 import type {
   BeforeEachMigrationCallback,
@@ -69,7 +71,9 @@ export function isVersionInRangeFormat(version: string,): boolean {
  at or below the target.
  
  @param candidateVersion - Migration key: a concrete version or a range.
+ 
  @param previousMigratedVersion - Last version recorded as migrated.
+ 
  @param versionToMigrate - Project version this pass targets.
  
  @returns `true` when the step should run.
@@ -93,14 +97,26 @@ export function shouldPerformMigration({
   readonly versionToMigrate: string;
 },): boolean {
   if (isVersionInRangeFormat(candidateVersion,)) {
-    if (previousMigratedVersion !== UNKNOWN_VERSION
-      && semver.satisfies(previousMigratedVersion, candidateVersion,))
+    if ((previousMigratedVersion !== UNKNOWN_VERSION)
+      && semver.satisfies(
+        previousMigratedVersion,
+        candidateVersion,
+      ))
       return false;
-    return semver.satisfies(versionToMigrate, candidateVersion,);
+    return semver.satisfies(
+      versionToMigrate,
+      candidateVersion,
+    );
   }
-  if (semver.lte(candidateVersion, previousMigratedVersion,))
+  if (semver.lte(
+    candidateVersion,
+    previousMigratedVersion,
+  ))
     return false;
-  if (semver.gt(candidateVersion, versionToMigrate,))
+  if (semver.gt(
+    candidateVersion,
+    versionToMigrate,
+  ))
     return false;
   return true;
 }
@@ -114,11 +130,14 @@ export function shouldPerformMigration({
  restoring the pre-step snapshot when a step throws.
  
  @param host - Store access surface this runner mutates through.
+ 
  @param migrations - Version-to-handler map from the `migrations` option.
+ 
  @param projectVersion - Target version for the whole pass.
+ 
  @param beforeEachMigration - Optional per-step hook.
  
- @throws {MigrationFailedError} When a step throws; the store is restored
+ @throws MigrationFailedError When a step throws; the store is restored
  first.
  
  @example
@@ -145,7 +164,11 @@ export function runMigrationSteps<T extends Record<string, unknown>>({
    Version recorded in the file,
    defaulting to the unknown sentinel.
    */
-  const storedVersion = getProperty(host.readRawStore(), MIGRATION_KEY, UNKNOWN_VERSION,);
+  const storedVersion = getProperty(
+    host.readRawStore(),
+    MIGRATION_KEY,
+    UNKNOWN_VERSION,
+  );
   /**
    Loop state: the version each step migrates from and the snapshot a failed
    step restores.
@@ -158,7 +181,8 @@ export function runMigrationSteps<T extends Record<string, unknown>>({
    Migration keys that apply in this pass,
    in their configured order.
    */
-  const newerVersions = Object.keys(migrations,).filter(
+  const newerVersions = Object.keys(migrations,)
+    .filter(
     function isCandidate(candidateVersion: string,): boolean {
       return shouldPerformMigration({
         candidateVersion,
@@ -197,7 +221,10 @@ export function runMigrationSteps<T extends Record<string, unknown>>({
     }
   }
   if (isVersionInRangeFormat(state.previousMigratedVersion,)
-    || !semver.eq(state.previousMigratedVersion, projectVersion,))
+    || (!semver.eq(
+      state.previousMigratedVersion,
+      projectVersion,
+    )))
     host.recordVersion(projectVersion,);
 }
 
@@ -212,13 +239,18 @@ export function runMigrationSteps<T extends Record<string, unknown>>({
  then run and record the steps.
  
  @param host - Store access surface this runner mutates through.
+ 
  @param migrations - Version-to-handler map from the `migrations` option.
+ 
  @param projectVersion - Target version for the whole pass.
+ 
  @param defaults - Default values merged into the store before steps run.
+ 
  @param beforeEachMigration - Optional per-step hook.
  
- @throws {MissingProjectVersionError} When no target version is provided.
- @throws {MigrationFailedError} When a step throws.
+ @throws MissingProjectVersionError When no target version is provided.
+ 
+ @throws MigrationFailedError When a step throws.
  
  @example
  ```ts
@@ -258,11 +290,14 @@ export function applyMigrations<T extends Record<string, unknown>>({
    File contents with defaults filled in for missing keys.
    */
   const storeWithDefaults = Object.assign(
-    Object.create(null,) as Record<string, unknown>,
+    createPlainObject(),
     defaults ?? {},
     fileStore,
   );
-  if (!isDeepStrictEqual(fileStore, storeWithDefaults,))
+  if (!isDeepStrictEqual(
+    fileStore,
+    storeWithDefaults,
+  ))
     host.writeStoreWithoutEvents(storeWithDefaults,);
   if (isNewStore) {
     host.recordVersion(projectVersion,);
@@ -272,7 +307,7 @@ export function applyMigrations<T extends Record<string, unknown>>({
     host,
     migrations,
     projectVersion,
-    beforeEachMigration,
+    ...(beforeEachMigration === undefined ? {} : { beforeEachMigration }),
   },);
 }
 

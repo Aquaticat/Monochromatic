@@ -10,16 +10,19 @@
  @module
  */
 
-import { Ajv2020 as Ajv, type ValidateFunction as AjvValidateFunction, } from 'ajv/dist/2020.js';
-import ajvFormatsModule from 'ajv-formats';
+import {
+  Ajv2020 as Ajv,
+  type ValidateFunction as AjvValidateFunction,
+} from 'ajv/dist/2020.js';
+import ajvFormatsPlugin from 'ajv-formats';
 
 import {
   InvalidSchemaError,
   RootSchemaPropertiesError,
   SchemaViolationError,
 } from './errors.ts';
+import type { ValueSchema, } from './options.ts';
 import type { PreparedOptions, } from './prepare-options.ts';
-import type { Schema, } from './options.ts';
 
 //region Types
 
@@ -66,36 +69,45 @@ export type SchemaValidator = {
  // => { port: 8080 }
  ```
  */
-export function captureSchemaDefaults<T extends Record<string, unknown>>(schema: Schema<T> | undefined,): Record<string, unknown> {
-  return Object.fromEntries(
-    Object.entries(schema ?? {},).filter(
-      function hasDefault(entry: [string, unknown],): boolean {
-        /**
-         Candidate property schema from the map.
-         */
-        const [, candidateSchema,] = entry;
-        return typeof candidateSchema === 'object'
-          && candidateSchema !== null
-          && Object.hasOwn(candidateSchema, 'default',)
-          && (candidateSchema as {
-            readonly default?: unknown;
-          }).default !== undefined;
-      },
-    ).map(
-      function toDefaultEntry(entry: [string, unknown],): [string, unknown] {
-        /**
-         Property schema holding the declared default.
-         */
-        const [propertyName, propertySchema,] = entry;
-        return [
-          propertyName,
-          (propertySchema as {
-            readonly default: unknown;
-          }).default,
-        ];
-      },
-    ),
-  );
+export function captureSchemaDefaults(schema: Readonly<Record<string, ValueSchema>>): Record<string, unknown> {
+  /**
+   Declared defaults keyed by property name.
+   */
+  const declaredDefaults: Record<string, unknown> = {};
+  for (const [propertyName, propertySchema,] of Object.entries(schema)) {
+    if (((typeof propertySchema) !== 'object') || (propertySchema === null))
+      continue;
+    if (!Object.hasOwn(
+      propertySchema,
+      'default',
+    ))
+      continue;
+    /**
+     Declared default value for this property.
+     */
+    const declaredDefault: unknown = propertySchema.default;
+    if (declaredDefault === undefined)
+      continue;
+    declaredDefaults[propertyName] = declaredDefault;
+  }
+  return declaredDefaults;
+}
+
+/**
+ Validates nothing:
+ the shape used when no schema option is configured,
+ since no store shape can violate an absent schema.
+ 
+ @param data - Store object the caller asked to validate.
+ 
+ @example
+ ```ts
+ validateNothing({ theme: 'dark', });
+ ```
+ */
+function validateNothing(data: unknown,): void {
+  // Intentionally empty: without a schema every store passes.
+  void data;
 }
 
 //endregion Helpers
@@ -112,8 +124,9 @@ export function captureSchemaDefaults<T extends Record<string, unknown>>(schema:
  
  @returns Validator applying defaults and throwing {@link SchemaViolationError}.
  
- @throws {InvalidSchemaError} When `schema` is set but is not an object.
- @throws {RootSchemaPropertiesError} When `rootSchema` carries `properties`.
+ @throws InvalidSchemaError when `schema` is set but is not an object.
+ 
+ @throws RootSchemaPropertiesError when `rootSchema` carries `properties`.
  
  @example
  ```ts
@@ -125,29 +138,33 @@ export function createSchemaValidator<T extends Record<string, unknown>>(options
   /**
    Property-to-schema map from the `schema` option.
    */
-  const schema = options.schema;
+  const {schema} = options;
   /**
    Root-level JSON Schema keywords from the `rootSchema` option.
    */
-  const rootSchema = options.rootSchema;
+  const {rootSchema} = options;
   /**
    ajv configuration overrides from the `ajvOptions` option.
    */
-  const ajvOptions = options.ajvOptions;
-  if (schema === undefined && rootSchema === undefined && ajvOptions === undefined)
+  const {ajvOptions} = options;
+  if ((schema === undefined) && (rootSchema === undefined)
+    && (ajvOptions === undefined))
     return {
-      validate: function validateNothing(_data: unknown,): void {},
+      validate: validateNothing,
       schemaDefaults: {},
     };
-  if (schema !== undefined && typeof schema !== 'object')
+  if ((schema !== undefined) && ((typeof schema) !== 'object'))
     throw new InvalidSchemaError();
-  if (rootSchema !== undefined && 'properties' in rootSchema)
+  if ((rootSchema !== undefined) && ('properties' in rootSchema))
     throw new RootSchemaPropertiesError();
   /**
-   ajv-formats entry point; upstream `conf` unwraps one extra `.default`
-   layer for CommonJS/ESM interop (ajv-validator/ajv#2047).
+   ajv-formats entry point.
+   Upstream `conf` unwraps one extra `.default` layer for its build's
+   CommonJS/ESM interop (ajv-validator/ajv#2047); this repository's Node
+   module resolution hands back the plugin directly,
+   verified by direct invocation before adopting the plain import.
    */
-  const ajvFormats = ajvFormatsModule.default;
+  const ajvFormats = ajvFormatsPlugin;
   /**
    Validator instance configured like upstream `conf`'s:
    every error reported,
@@ -190,14 +207,15 @@ export function createSchemaValidator<T extends Record<string, unknown>>(options
           readonly instancePath: string;
           readonly message?: string;
         },): string {
-          return `\`${error.instancePath.slice(1,)}\` ${error.message ?? ''}`;
+          return `\`${error.instancePath
+            .slice(1,)}\` ${error.message ?? ''}`;
         },
       );
       throw new SchemaViolationError({
         violations,
       },);
     },
-    schemaDefaults: captureSchemaDefaults(schema,),
+    schemaDefaults: captureSchemaDefaults(schema ?? {},),
   };
 }
 

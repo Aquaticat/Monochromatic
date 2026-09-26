@@ -21,7 +21,10 @@ import {
   pbkdf2Sync,
   randomBytes,
 } from 'node:crypto';
-import { tagged, type Logger, } from '@monochromatic-dev/module-logger/ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
@@ -78,7 +81,7 @@ export const DEFAULT_ENCRYPTION_ALGORITHM: EncryptionAlgorithm = 'aes-256-cbc';
  SUPPORTED_ENCRYPTION_ALGORITHMS.has('aes-256-gcm'); // => true
  ```
  */
-export const SUPPORTED_ENCRYPTION_ALGORITHMS: ReadonlySet<EncryptionAlgorithm> = new Set<EncryptionAlgorithm>([
+export const SUPPORTED_ENCRYPTION_ALGORITHMS: ReadonlySet<string> = new Set<string>([
   'aes-256-cbc',
   'aes-256-gcm',
   'aes-256-ctr',
@@ -165,7 +168,7 @@ const PBKDF2_DIGEST = 'sha512';
  ```
  */
 export function isSupportedEncryptionAlgorithm(value: unknown,): value is EncryptionAlgorithm {
-  return typeof value === 'string' && SUPPORTED_ENCRYPTION_ALGORITHMS.has(value as EncryptionAlgorithm,);
+  return ((typeof value) === 'string') && SUPPORTED_ENCRYPTION_ALGORITHMS.has(value);
 }
 
 //endregion Algorithm checks
@@ -176,6 +179,7 @@ export function isSupportedEncryptionAlgorithm(value: unknown,): value is Encryp
  Derives the per-file cipher key from the user key and a salt.
  
  @param encryptionKey - User-supplied key material.
+ 
  @param salt - Salt bytes; the initialization vector in current files.
  
  @returns Derived 32-byte key for the configured algorithm.
@@ -192,7 +196,14 @@ export function deriveKey({
   readonly encryptionKey: EncryptionKey;
   readonly salt: Uint8Array | string;
 },): Buffer {
-  return pbkdf2Sync(encryptionKey, salt, PBKDF2_ITERATIONS, DERIVED_KEY_LENGTH, PBKDF2_DIGEST,);
+  // oxlint-disable-next-line no-restricted-syntax/no-sync -- Structurally synchronous boundary: the store's get/set contract writes before returning, so key derivation must finish inside the write call; see package/module/conf-fork/DECISION.sync-api.md.
+  return pbkdf2Sync(
+    encryptionKey,
+    salt,
+    PBKDF2_ITERATIONS,
+    DERIVED_KEY_LENGTH,
+    PBKDF2_DIGEST,
+  );
 }
 
 //endregion Key derivation
@@ -203,7 +214,9 @@ export function deriveKey({
  Encrypts serialized store text into the config-file byte layout.
  
  @param serialized - Serialized store text to protect.
+ 
  @param encryptionKey - User-supplied key material.
+ 
  @param encryptionAlgorithm - Algorithm to apply.
  
  @returns Initialization vector,
@@ -234,33 +247,51 @@ export function encryptSerializedStore({
    */
   const initializationVector = randomBytes(INITIALIZATION_VECTOR_LENGTH,);
   /**
-   Cipher keyed by the derived password.
+   Derived per-file cipher key.
    */
-  const cipher = createCipheriv(
-    encryptionAlgorithm,
-    deriveKey({
-      encryptionKey,
-      salt: initializationVector,
-    },),
-    initializationVector,
-  );
-  /**
-   Encrypted payload bytes excluding the framing.
-   */
-  const ciphertext = concatBytes([
-    cipher.update(stringToBytes(serialized,),),
-    cipher.final(),
-  ],);
+  const key = deriveKey({
+    encryptionKey,
+    salt: initializationVector,
+  },);
   /**
    Framed parts joined below in wire order.
    */
   const parts = [
     initializationVector,
     stringToBytes(':',),
-    ciphertext,
   ];
-  if (encryptionAlgorithm === 'aes-256-gcm')
-    parts.push(cipher.getAuthTag(),);
+  if (encryptionAlgorithm === 'aes-256-gcm') {
+    /**
+     GCM cipher whose authentication tag is appended after the ciphertext.
+     */
+    const cipher = createCipheriv(
+      'aes-256-gcm',
+      key,
+      initializationVector,
+    );
+    parts.push(
+      concatBytes([
+        cipher.update(stringToBytes(serialized,),),
+        cipher.final(),
+      ],),
+      cipher.getAuthTag(),
+    );
+    return concatBytes(parts,);
+  }
+  /**
+   Block or stream cipher for the unauthenticated algorithms.
+   */
+  const cipher = createCipheriv(
+    encryptionAlgorithm,
+    key,
+    initializationVector,
+  );
+  parts.push(
+    concatBytes([
+      cipher.update(stringToBytes(serialized,),),
+      cipher.final(),
+    ],),
+  );
   return concatBytes(parts,);
 }
 
@@ -273,13 +304,16 @@ export function encryptSerializedStore({
  or reports why it failed.
  
  @param data - Full file bytes including framing.
+ 
  @param encryptionKey - User-supplied key material.
+ 
  @param encryptionAlgorithm - Algorithm the file was written with.
+ 
  @param salt - Salt candidate to try.
  
  @returns Decrypted serialized store text.
  
- @throws {InvalidAuthenticationTagError} When an `aes-256-gcm` payload is
+ @throws InvalidAuthenticationTagError when an `aes-256-gcm` payload is
  too short for its authentication tag.
  
  @example
@@ -306,7 +340,10 @@ export function decryptWithSalt({
   /**
    Initialization vector framing the payload.
    */
-  const initializationVector = data.slice(0, INITIALIZATION_VECTOR_LENGTH,);
+  const initializationVector = data.slice(
+    0,
+    INITIALIZATION_VECTOR_LENGTH,
+  );
   /**
    Ciphertext region following the separator byte.
    */
@@ -332,7 +369,10 @@ export function decryptWithSalt({
     decipher.setAuthTag(payload.slice(authenticationTagStart,),);
     return bytesToString(
       concatBytes([
-        decipher.update(payload.slice(0, authenticationTagStart,),),
+        decipher.update(payload.slice(
+          0,
+          authenticationTagStart,
+        ),),
         decipher.final(),
       ],),
     );
@@ -365,13 +405,16 @@ export function decryptWithSalt({
  and only then does the plaintext-or-fail fallback apply.
  
  @param data - Full file bytes as read from disk.
+ 
  @param encryptionKey - User-supplied key material.
+ 
  @param encryptionAlgorithm - Algorithm the file was written with.
+ 
  @param logger - Logger for the expected salt-scheme fallback diagnostics.
  
  @returns Serialized store text.
  
- @throws {DecryptionFailedError} When no plaintext passthrough applies and
+ @throws DecryptionFailedError when no plaintext passthrough applies and
  every decryption attempt failed.
  
  @example
@@ -413,7 +456,10 @@ export function decryptConfigData({
   /**
    Initialization vector framing the payload.
    */
-  const initializationVector = data.slice(0, INITIALIZATION_VECTOR_LENGTH,);
+  const initializationVector = data.slice(
+    0,
+    INITIALIZATION_VECTOR_LENGTH,
+  );
   try {
     return decryptWithSalt({
       data,

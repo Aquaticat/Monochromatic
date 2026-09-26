@@ -86,7 +86,10 @@ export function concatBytes(chunks: readonly Uint8Array[],): Uint8Array {
    Total byte count every chunk contributes to the result.
    */
   const totalLength = chunks.reduce(
-    function sumLength(total: number, chunk: Uint8Array,): number {
+    function sumLength(
+      total: number,
+      chunk: Uint8Array,
+    ): number {
       return total + chunk.length;
     },
     0,
@@ -102,7 +105,10 @@ export function concatBytes(chunks: readonly Uint8Array[],): Uint8Array {
     offset: 0,
   };
   for (const chunk of chunks) {
-    joined.set(chunk, cursor.offset,);
+    joined.set(
+      chunk,
+      cursor.offset,
+    );
     cursor.offset += chunk.length;
   }
   return joined;

@@ -114,7 +114,7 @@ function stripLeadingDots(fileExtension: string,): string {
   const cursor = {
     index: 0,
   };
-  while (cursor.index < fileExtension.length && fileExtension[cursor.index] === '.')
+  while ((cursor.index < fileExtension.length) && (fileExtension[cursor.index] === '.'))
     cursor.index += 1;
   return fileExtension.slice(cursor.index,);
 }
@@ -133,9 +133,10 @@ function stripLeadingDots(fileExtension: string,): string {
  `cwd` resolved,
  and the file extension normalized.
  
- @throws {InvalidEncryptionAlgorithmError} When `encryptionAlgorithm` names
+ @throws InvalidEncryptionAlgorithmError When `encryptionAlgorithm` names
  an unsupported algorithm.
- @throws {MissingProjectNameError} When neither `cwd` nor `projectName`
+ 
+ @throws MissingProjectNameError When neither `cwd` nor `projectName`
  resolves a config directory.
  
  @example
@@ -169,11 +170,11 @@ export function prepareOptions<T extends Record<string, unknown>>(partialOptions
    File extension after leading dots are stripped;
    non-string extensions pass through untouched.
    */
-  const normalizedFileExtension = typeof options.fileExtension === 'string'
+  const normalizedFileExtension = (typeof options.fileExtension) === 'string'
     ? stripLeadingDots(options.fileExtension,)
     : options.fileExtension;
-  if (options.cwd === undefined || options.cwd === '') {
-    if (options.projectName === undefined || options.projectName === '')
+  if ((options.cwd === undefined) || (options.cwd === '')) {
+    if ((options.projectName === undefined) || (options.projectName === ''))
       throw new MissingProjectNameError();
     return {
       ...options,

@@ -17,7 +17,10 @@ import {
   watch,
   watchFile,
 } from 'node:fs';
-import { tagged, type Logger, } from '@monochromatic-dev/module-logger/ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 
 import { debounce, } from './debounce.ts';
 
@@ -63,7 +66,7 @@ const DIRECTORY_EVENT_DEBOUNCE_WAIT = 100;
  FILE_EVENT_DEBOUNCE_WAIT; // 1000
  ```
  */
-const FILE_EVENT_DEBOUNCE_WAIT = 1000;
+const FILE_EVENT_DEBOUNCE_WAIT = 1_000;
 
 //endregion Constants
 
@@ -74,7 +77,9 @@ const FILE_EVENT_DEBOUNCE_WAIT = 1000;
  coalescing change bursts into `onChange` calls.
  
  @param path - Absolute config file path.
+ 
  @param onChange - Called once after the file settles.
+ 
  @param logger - Logger for watch lifecycle diagnostics.
  
  @returns Watcher whose `close` stops the underlying watch.
@@ -111,7 +116,7 @@ export function createConfigWatcher({
   const state: {
     directoryWatcher?: ReturnType<typeof watch>;
   } = {};
-  if (process.platform === 'win32' || process.platform === 'darwin') {
+  if ((process.platform === 'win32') || (process.platform === 'darwin')) {
     /**
      Debounced change reporter for directory event bursts.
      */
@@ -134,8 +139,12 @@ export function createConfigWatcher({
         persistent: false,
         encoding: 'utf8',
       },
-      function onDirectoryEvent(_eventType: string, filename: string | null,): void {
-        if (filename !== null && filename !== basename)
+      function onDirectoryEvent(
+        _eventType: string,
+        // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- mirrors node:fs WatchListener<string>, whose filename parameter is string | null by Node's own signature.
+        filename: string | null,
+      ): void {
+        if ((filename !== null) && (filename !== basename))
           return;
         debounced.trigger();
       },
@@ -143,7 +152,8 @@ export function createConfigWatcher({
     return {
       close: function closeDirectoryWatcher(): void {
         debounced.cancel();
-        state.directoryWatcher?.close();
+        state.directoryWatcher
+          ?.close();
         delete state.directoryWatcher;
       },
     };

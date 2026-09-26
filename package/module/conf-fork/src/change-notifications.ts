@@ -27,6 +27,7 @@ import type {
  
  @param newValue - Value after the change;
  `undefined` means the key was deleted.
+ 
  @param oldValue - Value before the change;
  `undefined` means the key never existed.
  
@@ -46,11 +47,13 @@ function toValueChange<Value>({
 },): ValueChange<Value> {
   return {
     ...(newValue === undefined ? {} : {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the change pair arrives as dynamic store state and is re-exposed as the caller's watched value type at this subscription boundary.
       newValue: newValue as Value,
-    },),
+    }),
     ...(oldValue === undefined ? {} : {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the change pair arrives as dynamic store state and is re-exposed as the caller's watched value type at this subscription boundary.
       oldValue: oldValue as Value,
-    },),
+    }),
   };
 }
 
@@ -62,7 +65,9 @@ function toValueChange<Value>({
  Subscribes to changes of one key's value.
  
  @param events - Store event target dispatching `change`.
+ 
  @param getter - Reads the watched value's current state.
+ 
  @param callback - Receives the changed value pair.
  
  @returns Unsubscribe function stopping the subscription.
@@ -105,17 +110,27 @@ export function subscribeValueChange<Value>({
      Value after this event.
      */
     const newValue = getter();
-    if (isDeepStrictEqual(newValue, oldValue,))
+    if (isDeepStrictEqual(
+      newValue,
+      oldValue,
+    ))
       return;
     state.currentValue = newValue;
+    // oxlint-disable-next-line promise/prefer-await-to-callbacks -- event-subscription API mirroring upstream `conf`'s onDidChange; there is no promise to await, the callback IS the subscription payload.
     callback(toValueChange<Value>({
       newValue,
       oldValue,
     },),);
   }
-  events.addEventListener('change', onChange,);
+  events.addEventListener(
+    'change',
+    onChange,
+  );
   return function unsubscribe(): void {
-    events.removeEventListener('change', onChange,);
+    events.removeEventListener(
+      'change',
+      onChange,
+    );
   };
 }
 
@@ -123,7 +138,9 @@ export function subscribeValueChange<Value>({
  Subscribes to whole-store changes.
  
  @param events - Store event target dispatching `change`.
+ 
  @param getSnapshot - Reads the current whole store.
+ 
  @param callback - Receives the changed store pair.
  
  @returns Unsubscribe function stopping the subscription.
@@ -166,17 +183,27 @@ export function subscribeStoreChange<T extends Record<string, unknown>>({
      Store after this event.
      */
     const newValue = getSnapshot();
-    if (isDeepStrictEqual(newValue, oldValue,))
+    if (isDeepStrictEqual(
+      newValue,
+      oldValue,
+    ))
       return;
     state.currentSnapshot = newValue;
+    // oxlint-disable-next-line promise/prefer-await-to-callbacks -- event-subscription API mirroring upstream `conf`'s onDidAnyChange; there is no promise to await, the callback IS the subscription payload.
     callback({
       newValue,
       oldValue,
     },);
   }
-  events.addEventListener('change', onChange,);
+  events.addEventListener(
+    'change',
+    onChange,
+  );
   return function unsubscribe(): void {
-    events.removeEventListener('change', onChange,);
+    events.removeEventListener(
+      'change',
+      onChange,
+    );
   };
 }
 

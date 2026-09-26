@@ -23,10 +23,10 @@ import { containsReservedKey, } from './internal-key.ts';
 import { checkValueType, } from './value-type.ts';
 import {
   createPlainObject,
-  deleteStoreValue,
   getStoreValue,
   hasStoreValue,
-  setStoreValue,
+  withStoreValue,
+  withoutStoreValue,
 } from './store-access.ts';
 import type { StoreFile, } from './store-file.ts';
 import type { PreparedOptions, } from './prepare-options.ts';
@@ -158,6 +158,22 @@ export type CrudContext<T extends Record<string, unknown>> = {
 //region Factory
 
 /**
+ Reports whether a value is an array of unknown items.
+ 
+ @param value - Candidate value read from the store.
+ 
+ @returns `true` when the value is an array.
+ 
+ @example
+ ```ts
+ isUnknownArray([1]); // => true
+ ```
+ */
+function isUnknownArray(value: unknown,): value is unknown[] {
+  return Array.isArray(value,);
+}
+
+/**
  Builds the CRUD methods bound to one store's context.
  
  @param context - Options,
@@ -177,25 +193,33 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
   /**
    Whether dots address nested properties.
    */
-  const accessPropertiesByDotNotation = context.options.accessPropertiesByDotNotation;
+  const {accessPropertiesByDotNotation} = context.options;
 
   /**
-   Places one value into an already-read store object.
+   Builds the store copy carrying one placed value.
+   
+   @param store - Freshly-read store the copy starts from.
+   
+   @param key - Key path receiving the value.
+   
+   @param value - JSON-representable value to place.
+   
+   @returns Store copy carrying the placed value.
    */
   function setOne({
     store,
     key,
     value,
   }: {
-    readonly store: Record<string, unknown>;
+    readonly store: Readonly<Record<string, unknown>>;
     readonly key: string;
     readonly value: unknown;
-  },): void {
+  },): Record<string, unknown> {
     checkValueType({
       key,
       value,
     },);
-    setStoreValue({
+    return withStoreValue({
       store,
       key,
       value,
@@ -206,33 +230,52 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
   /**
    Places one keyed value or many at once,
    reading the file fresh so concurrent writers' changes survive.
+   
+   @param input - Single keyed value or multi-item values object to place.
+   
+   @throws InvalidKeyError when the key argument shape is wrong.
+   
+   @throws MissingValueError when the single form omits its value.
+   
+   @throws ReservedKeyError when the payload addresses `__internal__`.
    */
   function set(input: SetInput,): void {
-    if (typeof input !== 'object' || input === null)
+    if (((typeof input) !== 'object') || (input === null))
       throw new InvalidKeyError(`Expected \`key\` to be of type \`string\` or \`object\`, got ${typeof input}`);
     if ('values' in input) {
-      if (typeof input.values !== 'object' || input.values === null)
+      if (((typeof input.values) !== 'object') || (input.values === null))
         throw new InvalidKeyError(`Expected \`key\` to be of type \`string\` or \`object\`, got ${typeof input.values}`);
       if (containsReservedKey(input.values,))
         throw new ReservedKeyError();
       /**
        Store read fresh from disk so concurrent writers' changes survive.
        */
-      const store = context.storeFile.readStore();
-      for (const [key, value,] of Object.entries(input.values,))
-        setOne({
-          store,
-          key,
-          value,
-        },);
-      context.assignStore(store,);
+      const store = context.storeFile
+        .readStore();
+      context.assignStore(Object.entries(input.values,)
+        .reduce(
+        function placeEntry(
+          currentStore: Record<string, unknown>,
+          entry: [
+          string,
+          unknown
+        ],
+        ): Record<string, unknown> {
+          return setOne({
+            store: currentStore,
+            key: entry[0],
+            value: entry[1],
+          },);
+        },
+        store,
+      ),);
       return;
     }
     /**
      Single key path as the caller wrote it.
      */
-    const key = input.key;
-    if (typeof key !== 'string')
+    const {key} = input;
+    if ((typeof key) !== 'string')
       throw new InvalidKeyError(`Expected \`key\` to be of type \`string\` or \`object\`, got ${typeof key}`);
     if (input.value === undefined)
       throw new MissingValueError();
@@ -241,18 +284,25 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
     /**
      Store read fresh from disk so concurrent writers' changes survive.
      */
-    const store = context.storeFile.readStore();
-    setOne({
+    const store = context.storeFile
+      .readStore();
+    context.assignStore(setOne({
       store,
       key,
       value: input.value,
-    },);
-    context.assignStore(store,);
+    },),);
   }
 
   /**
    Reads one key,
    with an optional default for missing keys.
+   
+   @param keyOrOptions - Key path alone,
+   or an object carrying the key and its default.
+   
+   @returns Stored value,
+   the supplied default,
+   or `undefined`.
    */
   function get(keyOrOptions: string | {
     readonly key: string;
@@ -261,12 +311,12 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
     /**
      Key path as the caller wrote it.
      */
-    const key = typeof keyOrOptions === 'string' ? keyOrOptions : keyOrOptions.key;
+    const key = (typeof keyOrOptions) === 'string' ? keyOrOptions : keyOrOptions.key;
     /**
      Default reported when the key is absent.
      */
-    const defaultValue = typeof keyOrOptions === 'string' ? undefined : keyOrOptions.defaultValue;
-    if (typeof key !== 'string')
+    const defaultValue = (typeof keyOrOptions) === 'string' ? undefined : keyOrOptions.defaultValue;
+    if ((typeof key) !== 'string')
       throw new InvalidKeyError(`Expected \`key\` to be of type \`string\`, got ${typeof key}`);
     return getStoreValue({
       store: context.getStore(),
@@ -278,6 +328,10 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
 
   /**
    Reports whether a key exists.
+   
+   @param key - Key path probed in the current store.
+   
+   @returns `true` when the key resolves to a present value.
    */
   function has(key: string,): boolean {
     return hasStoreValue({
@@ -290,6 +344,11 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
   /**
    Appends one item to a key's array value,
    creating the array when the key is absent.
+   
+   @param input - Key whose array grows,
+   and the item appended.
+   
+   @throws NonArrayValueError when the key holds a non-array value.
    */
   function appendToArray(input: {
     readonly key: string;
@@ -302,7 +361,8 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
     /**
      Store read fresh from disk so concurrent writers' changes survive.
      */
-    const store = context.storeFile.readStore();
+    const store = context.storeFile
+      .readStore();
     /**
      Current array value;
      missing keys append onto a fresh array.
@@ -313,7 +373,7 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
       defaultValue: [],
       accessPropertiesByDotNotation,
     },);
-    if (!Array.isArray(current))
+    if (!isUnknownArray(current,))
       throw new NonArrayValueError({
         key: input.key,
       },);
@@ -328,6 +388,9 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
 
   /**
    Restores keys to their default values.
+   
+   @param input - Keys reset to their defaults;
+   keys without defaults are left untouched.
    */
   function reset(input: {
     readonly keys: readonly string[];
@@ -352,18 +415,20 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
 
   /**
    Removes one key.
+   
+   @param key - Key path removed from the current store.
    */
   function deleteItem(key: string,): void {
     /**
      Store read fresh from disk so concurrent writers' changes survive.
      */
-    const store = context.storeFile.readStore();
-    deleteStoreValue({
+    const store = context.storeFile
+      .readStore();
+    context.assignStore(withoutStoreValue({
       store,
       key,
       accessPropertiesByDotNotation,
-    },);
-    context.assignStore(store,);
+    },),);
   }
 
   /**
@@ -373,21 +438,34 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
     /**
      Fresh store seeded with every default value.
      */
-    const newStore = createPlainObject();
-    for (const [key, value,] of Object.entries(context.defaultValues)) {
-      if (value === undefined)
-        continue;
-      checkValueType({
-        key,
-        value,
-      },);
-      setStoreValue({
-        store: newStore,
-        key,
-        value,
-        accessPropertiesByDotNotation,
-      },);
-    }
+    const newStore = Object.entries(context.defaultValues,)
+      .reduce(
+      function placeDefault(
+        currentStore: Record<string, unknown>,
+        entry: [
+        string,
+        unknown
+      ],
+      ): Record<string, unknown> {
+        /**
+         Default entry being placed into the accumulating store copy.
+         */
+        const [key, value,] = entry;
+        if (value === undefined)
+          return currentStore;
+        checkValueType({
+          key,
+          value,
+        },);
+        return withStoreValue({
+          store: currentStore,
+          key,
+          value,
+          accessPropertiesByDotNotation,
+        },);
+      },
+      createPlainObject(),
+    );
     context.assignStore(newStore,);
   }
 

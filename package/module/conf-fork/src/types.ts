@@ -295,8 +295,8 @@ export type PartialObjectDeep<T> =
 			? Map<PartialObjectDeep<K>, PartialObjectDeep<V>>
 			: T extends Set<infer U>
 				? Set<PartialObjectDeep<U>>
-				: T extends Array<infer U>
-					? Array<PartialObjectDeep<U>>
+				: T extends (infer U)[]
+					? PartialObjectDeep<U>[]
 					: T extends (...args: never[]) => unknown
 						? T
 						: T extends Record<string, unknown>

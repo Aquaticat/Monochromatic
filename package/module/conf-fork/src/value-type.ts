@@ -35,7 +35,7 @@ export type UnsupportedValueType = 'undefined' | 'symbol' | 'function';
  UNSUPPORTED_VALUE_TYPES.has('function'); // => true
  ```
  */
-export const UNSUPPORTED_VALUE_TYPES: ReadonlySet<UnsupportedValueType> = new Set<UnsupportedValueType>([
+export const UNSUPPORTED_VALUE_TYPES: ReadonlySet<string> = new Set<string>([
   'undefined',
   'symbol',
   'function',
@@ -51,9 +51,10 @@ export const UNSUPPORTED_VALUE_TYPES: ReadonlySet<UnsupportedValueType> = new Se
  
  @param key - Store key the value is destined for,
  used verbatim in the diagnostic.
+ 
  @param value - Candidate value produced by the caller.
  
- @throws {UnsupportedValueTypeError} When `typeof value` is `undefined`,
+ @throws UnsupportedValueTypeError when `typeof value` is `undefined`,
  `symbol`, or `function`.
  
  @example
@@ -72,7 +73,7 @@ export function checkValueType({
    `typeof` result of the candidate value.
    */
   const type = typeof value;
-  if (UNSUPPORTED_VALUE_TYPES.has(type as UnsupportedValueType))
+  if (UNSUPPORTED_VALUE_TYPES.has(type))
     throw new UnsupportedValueTypeError({
       type,
       key,

@@ -23,7 +23,10 @@ import {
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
-import { tagged, type Logger, } from '@monochromatic-dev/module-logger/ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
@@ -74,7 +77,10 @@ export function readFileText({
 }: {
   readonly path: string;
 },): string {
-  return readFileSync(filePath, 'utf8',);
+  return readFileSync(
+    filePath,
+    'utf8',
+  );
 }
 
 /**
@@ -107,6 +113,7 @@ export function pathExists({
  reported.
  
  @param path - Absolute file path to remove.
+ 
  @param logger - Logger for cleanup failures.
  
  @example
@@ -148,7 +155,9 @@ export function removeFileIfExists({
  which this mirrors.
  
  @param path - Absolute target file path.
+ 
  @param data - Bytes or text to write.
+ 
  @param mode - File mode for the created file, before the process umask
  reduces it.
  
@@ -170,10 +179,16 @@ export function writeFileAtomic({
   readonly data: string | Uint8Array;
   readonly mode: number;
 },): void {
-  if (process.env['SNAP'] !== undefined) {
-    writeFileSync(filePath, data, {
+  if (process.env
+    .SNAP
+    !== undefined) {
+    writeFileSync(
+      filePath,
+      data,
+      {
       mode,
-    },);
+    },
+    );
     return;
   }
   /**
@@ -185,10 +200,17 @@ export function writeFileAtomic({
     `.${path.basename(filePath,)}.${randomUUID()}.tmp`,
   );
   try {
-    writeFileSync(temporaryPath, data, {
+    writeFileSync(
+      temporaryPath,
+      data,
+      {
       mode,
-    },);
-    renameSync(temporaryPath, filePath,);
+    },
+    );
+    renameSync(
+      temporaryPath,
+      filePath,
+    );
   }
   catch (error) {
     removeFileIfExists({
@@ -213,9 +235,12 @@ export function ensureDirectory({
 }: {
   readonly path: string;
 },): void {
-  mkdirSync(directoryPath, {
+  mkdirSync(
+    directoryPath,
+    {
     recursive: true,
-  },);
+  },
+  );
 }
 
 /* oxlint-enable no-restricted-syntax/no-sync */

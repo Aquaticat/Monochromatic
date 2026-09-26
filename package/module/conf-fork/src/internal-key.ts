@@ -28,7 +28,7 @@ export const INTERNAL_KEY = '__internal__';
  MIGRATION_KEY; // '__internal__.migrations.version'
  ```
  */
-export const MIGRATION_KEY = `${INTERNAL_KEY}.migrations.version`;
+export const MIGRATION_KEY: string = `${INTERNAL_KEY}.migrations.version`;
 
 //endregion Keys
 
@@ -48,7 +48,23 @@ export const MIGRATION_KEY = `${INTERNAL_KEY}.migrations.version`;
  ```
  */
 export function isReservedKeyPath(candidate: string,): boolean {
-  return candidate === INTERNAL_KEY || candidate.startsWith(`${INTERNAL_KEY}.`,);
+  return (candidate === INTERNAL_KEY) || candidate.startsWith(`${INTERNAL_KEY}.`,);
+}
+
+/**
+ Reports whether a value is a plain object worth recursing into.
+ 
+ @param value - Candidate value from a nested walk.
+ 
+ @returns `true` when the value is a non-null object.
+ 
+ @example
+ ```ts
+ isRecord({}); // => true
+ ```
+ */
+function isRecord(value: unknown,): value is Record<string, unknown> {
+  return ((typeof value) === 'object') && (value !== null);
 }
 
 /**
@@ -71,9 +87,9 @@ export function isReservedKeyPath(candidate: string,): boolean {
  ```
  */
 export function containsReservedKey(value: unknown,): boolean {
-  if (typeof value === 'string')
+  if ((typeof value) === 'string')
     return isReservedKeyPath(value,);
-  if (typeof value !== 'object' || value === null)
+  if (!isRecord(value,))
     return false;
   /**
    Objects already expanded,
@@ -83,19 +99,19 @@ export function containsReservedKey(value: unknown,): boolean {
   /**
    Breadth-first work stack of nested objects still to scan.
    */
-  const pending: object[] = [value,];
+  const pending: Record<string, unknown>[] = [value,];
   while (pending.length > 0) {
     /**
      Object whose own key names are checked in this step.
      */
     const current = pending.pop();
-    if (current === undefined || visited.has(current,))
+    if ((current === undefined) || visited.has(current,))
       continue;
     visited.add(current,);
     for (const [candidateKey, candidateValue,] of Object.entries(current,)) {
       if (isReservedKeyPath(candidateKey,))
         return true;
-      if (typeof candidateValue === 'object' && candidateValue !== null)
+      if (isRecord(candidateValue,))
         pending.push(candidateValue,);
     }
   }

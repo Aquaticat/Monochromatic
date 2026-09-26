@@ -15,18 +15,6 @@
  watching,
  and change events.
  
- @example
- ```ts
- import { createConf, } from '\@monochromatic-dev/module-conf-fork';
- 
- const config = createConf<{ theme: string, }>({
-   projectName: 'foo',
-   defaults: { theme: 'light', },
- });
- config.set({ key: 'theme', value: 'dark', });
- config.get('theme'); // => 'dark'
- ```
- 
  @module
  */
 
@@ -34,7 +22,10 @@ import path from 'node:path';
 import { isDeepStrictEqual, } from 'node:util';
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-import { tagged, type Logger, } from '@monochromatic-dev/module-logger/ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 
 import {
   createCrud,
@@ -46,10 +37,9 @@ import {
 } from './conf-events.ts';
 import {
   createPlainObject,
-  deleteStoreValue,
   getStoreValue,
   hasStoreValue,
-  setStoreValue,
+  withStoreValue,
 } from './store-access.ts';
 import {
   INTERNAL_KEY,
@@ -61,272 +51,19 @@ import {
   isMissingFileError,
   type StoreFile,
 } from './store-file.ts';
+import { applyMigrations, } from './migrate.ts';
 import {
-  applyMigrations,
-} from './migrate.ts';
-import { prepareOptions, type PreparedOptions, } from './prepare-options.ts';
+  prepareOptions,
+  type PreparedOptions,
+} from './prepare-options.ts';
 import { createSchemaValidator, } from './schema.ts';
-import { createConfigWatcher, type ConfigWatcher, } from './watcher.ts';
+import {
+  createConfigWatcher,
+  type ConfigWatcher,
+} from './watcher.ts';
 import type { MigrationHost, } from './migration-host.ts';
+import type { Conf, } from './conf-type.ts';
 import type { Options, } from './options.ts';
-import type {
-  DotNotationKeyOf,
-  DotNotationValueOf,
-  OnDidAnyChangeCallback,
-  OnDidChangeCallback,
-  PartialObjectDeep,
-  Unsubscribe,
-} from './types.ts';
-
-//region Store type
-
-/**
- One config store:
- the frozen object {@link createConf} returns.
- 
- Members mirror upstream `conf` 15.1.0's `Conf` instance with the call
- shapes this repository requires:
- multi-argument members take one destructured object,
- and `set` distinguishes its single and multi forms by the `key` and
- `values` fields.
- 
- @example
- ```ts
- const config: Conf<{ theme: string, }> = createConf({
-   projectName: 'foo',
- });
- ```
- */
-export type Conf<T extends Record<string, unknown> = Record<string, unknown>> = {
-  /**
-   Path of the config file this store persists to.
-   */
-  readonly path: string;
-  /**
-   Dispatches `change` whenever the config changes;
-   `onDidChange` and `onDidAnyChange` subscribe through it.
-   */
-  readonly events: EventTarget;
-  /**
-   Item count of the user-visible store.
-   */
-  readonly size: number;
-  /**
-   The whole store:
-   read it for every item,
-   assign it to replace everything.
-   */
-  store: T;
-
-  /**
-   Gets one item by key.
-   */
-  get<Key extends keyof T>(key: Key): T[Key];
-  /**
-   Gets one item with a default for missing keys.
-   */
-  get<Key extends keyof T>(input: {
-    readonly key: Key;
-    readonly defaultValue: Required<T>[Key];
-  }): Required<T>[Key];
-  /**
-   Gets one item by dotted path.
-   */
-  get<Key extends DotNotationKeyOf<T>>(key: Key): DotNotationValueOf<T, Key>;
-  /**
-   Gets one dotted-path item with a default for missing paths.
-   */
-  get<Key extends DotNotationKeyOf<T>>(input: {
-    readonly key: Key;
-    readonly defaultValue: NonNullable<DotNotationValueOf<T, Key>>;
-  }): NonNullable<DotNotationValueOf<T, Key>>;
-  /**
-   Gets one item from stores without static key types.
-   */
-  get<Key extends string, Value = unknown>(key: Exclude<Key, DotNotationKeyOf<T>>): Value;
-  /**
-   Gets one item from stores without static key types,
-   with a default.
-   */
-  get<Key extends string, Value = unknown>(input: {
-    readonly key: Exclude<Key, DotNotationKeyOf<T>>;
-    readonly defaultValue?: Value;
-  }): Value;
-
-  /**
-   Sets one item by key.
-   */
-  set<Key extends keyof T>(input: {
-    readonly key: Key;
-    readonly value?: T[Key];
-  }): void;
-  /**
-   Sets one item by dotted path.
-   */
-  set<Key extends DotNotationKeyOf<T>>(input: {
-    readonly key: Key;
-    readonly value?: DotNotationValueOf<T, Key>;
-  }): void;
-  /**
-   Sets one item on stores without static key types.
-   */
-  set(input: {
-    readonly key: string;
-    readonly value?: unknown;
-  }): void;
-  /**
-   Sets multiple items at once under the `values` field.
-   */
-  set(input: {
-    readonly values: PartialObjectDeep<T>;
-  }): void;
-
-  /**
-   Reports whether an item exists.
-   */
-  has<Key extends keyof T>(key: Key): boolean;
-  /**
-   Reports whether a dotted path exists.
-   */
-  has<Key extends DotNotationKeyOf<T>>(key: Key): boolean;
-  /**
-   Reports whether a key exists on stores without static key types.
-   */
-  has(key: string): boolean;
-
-  /**
-   Appends one item to a key's array value.
-   */
-  appendToArray<Key extends keyof T>(input: {
-    readonly key: Key;
-    readonly value: T[Key] extends ReadonlyArray<infer U> ? U : unknown;
-  }): void;
-  /**
-   Appends one item to a dotted path's array value.
-   */
-  appendToArray<Key extends DotNotationKeyOf<T>>(input: {
-    readonly key: Key;
-    readonly value: DotNotationValueOf<T, Key> extends ReadonlyArray<infer U> ? U : unknown;
-  }): void;
-  /**
-   Appends one item on stores without static key types.
-   */
-  appendToArray(input: {
-    readonly key: string;
-    readonly value: unknown;
-  }): void;
-
-  /**
-   Restores keys to their default values.
-   */
-  reset<Key extends keyof T>(input: {
-    readonly keys: readonly Key[];
-  }): void;
-  /**
-   Restores dotted paths to their default values.
-   */
-  reset<Key extends DotNotationKeyOf<T>>(input: {
-    readonly keys: readonly Key[];
-  }): void;
-  /**
-   Restores keys on stores without static key types.
-   */
-  reset(input: {
-    readonly keys: readonly string[];
-  }): void;
-
-  /**
-   Deletes one item.
-   */
-  delete<Key extends keyof T>(key: Key): void;
-  /**
-   Deletes one dotted path.
-   */
-  delete<Key extends DotNotationKeyOf<T>>(key: Key): void;
-
-  /**
-   Deletes all items,
-   restoring defaults.
-   */
-  clear(): void;
-
-  /**
-   Subscribes to changes of one key's value.
-   */
-  onDidChange<Key extends keyof T>(input: {
-    readonly key: Key;
-    readonly callback: OnDidChangeCallback<T[Key]>;
-  }): Unsubscribe;
-  /**
-   Subscribes to changes of one dotted path's value.
-   */
-  onDidChange<Key extends DotNotationKeyOf<T>>(input: {
-    readonly key: Key;
-    readonly callback: OnDidChangeCallback<DotNotationValueOf<T, Key>>;
-  }): Unsubscribe;
-  /**
-   Subscribes to changes of one key on stores without static key types.
-   */
-  onDidChange(input: {
-    readonly key: string;
-    readonly callback: OnDidChangeCallback<unknown>;
-  }): Unsubscribe;
-
-  /**
-   Subscribes to whole-store changes.
-   */
-  onDidAnyChange(callback: OnDidAnyChangeCallback<T>): Unsubscribe;
-
-  /**
-   Closes the file watcher when one exists.
-   */
-  closeWatcher(): void;
-
-  /**
-   Iterates the user-visible store's entries.
-   */
-  [Symbol.iterator](): IterableIterator<[keyof T, T[keyof T]]>;
-};
-
-//endregion Store type
-
-//region Serialization defaults
-
-/**
- Serializes the store like upstream `conf`'s default:
- indented JSON.
- 
- @param value - Store object to serialize.
- 
- @returns JSON text written to the config file.
- 
- @example
- ```ts
- defaultSerialize({ theme: 'dark', });
- ```
- */
-function defaultSerialize(value: unknown,): string {
-  return JSON.stringify(value, undefined, '\t',);
-}
-
-/**
- Deserializes the store like upstream `conf`'s default:
- JSON parsing.
- 
- @param text - Config file text.
- 
- @returns Parsed store object.
- 
- @example
- ```ts
- defaultDeserialize('{"theme":"dark"}');
- ```
- */
-function defaultDeserialize(text: string,): Record<string, unknown> {
-  return JSON.parse(text,) as Record<string, unknown>;
-}
-
-//endregion Serialization defaults
 
 //region Helpers
 
@@ -349,7 +86,10 @@ function resolveConfigPath<T extends Record<string, unknown>>(options: PreparedO
    empty when the extension is empty.
    */
   const extensionSuffix = options.fileExtension === '' ? '' : `.${options.fileExtension}`;
-  return path.resolve(options.cwd, `${options.configName}${extensionSuffix}`,);
+  return path.resolve(
+    options.cwd,
+    `${options.configName}${extensionSuffix}`,
+  );
 }
 
 /**
@@ -404,6 +144,27 @@ function createMigrationScope<T extends Record<string, unknown>>(state: StoreSta
   };
 }
 
+/**
+ Serializes the store like upstream `conf`'s default:
+ indented JSON.
+ 
+ @param value - Store object to serialize.
+ 
+ @returns JSON text written to the config file.
+ 
+ @example
+ ```ts
+ defaultSerialize({ theme: 'dark', });
+ ```
+ */
+function defaultSerialize(value: unknown,): string {
+  return JSON.stringify(
+    value,
+    undefined,
+    '\t',
+  );
+}
+
 //endregion Helpers
 
 //region Factory
@@ -416,11 +177,13 @@ function createMigrationScope<T extends Record<string, unknown>>(state: StoreSta
  
  @returns Frozen store object persisting to the resolved config file.
  
- @throws {InvalidEncryptionAlgorithmError} When `encryptionAlgorithm` names
- an unsupported algorithm.
- @throws {MissingProjectNameError} When neither `cwd` nor `projectName`
+ @throws InvalidEncryptionAlgorithmError when `encryptionAlgorithm` names an
+ unsupported algorithm.
+ 
+ @throws MissingProjectNameError when neither `cwd` nor `projectName`
  resolves a config directory.
- @throws {MissingProjectVersionError} When `migrations` is set without
+ 
+ @throws MissingProjectVersionError when `migrations` is set without
  `projectVersion`.
  
  @example
@@ -458,26 +221,39 @@ export function createConf<T extends Record<string, unknown> = Record<string, un
    */
   const configPath = resolveConfigPath(prepared,);
   /**
+   Deserializes config text with JSON when no custom deserializer is set.
+   
+   @param text - Config file text to parse.
+   
+   @returns Parsed store contents.
+   */
+  function deserializeWithJson(text: string,): T {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse's dynamic output becomes the caller's store type; no narrower static type exists for parsed JSON.
+    return JSON.parse(text,) as T;
+  }
+  /**
    Validation hook honoring the migration bypass,
    mirroring upstream `conf`'s `#isInMigration` gate.
+   
+   @param data - Parsed store contents to validate.
    */
-  const validate = function validateParsedStore(data: unknown,): void {
+  function validateParsedStore(data: unknown,): void {
     if (state.isInMigration)
       return;
     validator.validate(data,);
-  };
+  }
   /**
    Read/write pipeline over the config file.
    */
   const storeFile = createStoreFile<T>({
     path: configPath,
-    encryptionKey: prepared.encryptionKey,
+    ...(prepared.encryptionKey === undefined ? {} : { encryptionKey: prepared.encryptionKey, }),
     encryptionAlgorithm: prepared.encryptionAlgorithm,
     serialize: prepared.serialize ?? defaultSerialize,
-    deserialize: prepared.deserialize ?? defaultDeserialize,
+    deserialize: prepared.deserialize ?? deserializeWithJson,
     clearInvalidConfig: prepared.clearInvalidConfig,
     configFileMode: prepared.configFileMode,
-    validate,
+    validate: validateParsedStore,
     logger: log,
   },);
   /**
@@ -504,6 +280,8 @@ export function createConf<T extends Record<string, unknown> = Record<string, un
   /**
    Reads the user-visible store:
    file contents validated and stripped of reserved bookkeeping keys.
+   
+   @returns User-visible store contents.
    */
   function readUserStore(): T {
     /**
@@ -512,30 +290,33 @@ export function createConf<T extends Record<string, unknown> = Record<string, un
     const store = storeFile.readStore();
     for (const key of Object.keys(store)) {
       if (isReservedKeyPath(key,))
-        deleteStoreValue({
+        Reflect.deleteProperty(
           store,
           key,
-          accessPropertiesByDotNotation: false,
-        },);
+        );
     }
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- file contents are parsed into a generic dictionary and surfaced as the caller's store type; the shape proof lives with the schema validator.
     return store as T;
   }
 
   /**
    Reads the whole store,
    through the cache when caching is enabled.
+   
+   @returns Whole user-visible store.
    */
   function getStore(): T {
-    if (!prepared.cache)
+    if (prepared.cache !== true)
       return readUserStore();
-    if (state.cachedStore === undefined)
-      state.cachedStore = readUserStore();
+    state.cachedStore ??= readUserStore();
     return state.cachedStore;
   }
 
   /**
    Writes raw store contents,
    dropping the cache first like upstream `conf`'s `_write`.
+   
+   @param store - Store contents to persist.
    */
   function writeStore(store: Record<string, unknown>,): void {
     dropCache();
@@ -545,6 +326,11 @@ export function createConf<T extends Record<string, unknown> = Record<string, un
   /**
    Merges the reserved bookkeeping key back into a replacement store,
    leaving the caller's object untouched.
+   
+   @param value - Replacement store from the caller.
+   
+   @returns Store to persist,
+   carrying preserved bookkeeping.
    */
   function preserveInternalKey(value: Record<string, unknown>,): Record<string, unknown> {
     if (hasStoreValue({
@@ -567,8 +353,12 @@ export function createConf<T extends Record<string, unknown> = Record<string, un
       /**
        Caller value copy carrying the preserved bookkeeping.
        */
-      const merged = Object.assign(createPlainObject(), value,);
-      setStoreValue({
+      const merged = createPlainObject();
+      Object.assign(
+        merged,
+        value,
+      );
+      return withStoreValue({
         store: merged,
         key: INTERNAL_KEY,
         value: getStoreValue({
@@ -578,7 +368,6 @@ export function createConf<T extends Record<string, unknown> = Record<string, un
         },),
         accessPropertiesByDotNotation: true,
       },);
-      return merged;
     }
     catch (error) {
       if (!isMissingFileError(error,))
@@ -593,6 +382,8 @@ export function createConf<T extends Record<string, unknown> = Record<string, un
    validate,
    persist,
    dispatch `change`.
+   
+   @param value - Replacement store contents.
    */
   function assignStore(value: Record<string, unknown>,): void {
     storeFile.ensureDirectory();
@@ -601,7 +392,7 @@ export function createConf<T extends Record<string, unknown> = Record<string, un
      */
     const valueToWrite = preserveInternalKey(value,);
     if (!state.isInMigration)
-      validate(valueToWrite,);
+      validateParsedStore(valueToWrite,);
     writeStore(valueToWrite,);
     events.dispatchEvent(new Event('change',),);
   }
@@ -620,9 +411,16 @@ export function createConf<T extends Record<string, unknown> = Record<string, un
     /**
      File contents with defaults filled in for missing keys.
      */
-    const storeWithDefaults = Object.assign(createPlainObject(), prepared.defaults ?? {}, fileStore,);
-    validate(storeWithDefaults,);
-    if (!isDeepStrictEqual(fileStore, storeWithDefaults,))
+    const storeWithDefaults = Object.assign(
+      createPlainObject(),
+      prepared.defaults ?? {},
+      fileStore,
+    );
+    validateParsedStore(storeWithDefaults,);
+    if (!isDeepStrictEqual(
+      fileStore,
+      storeWithDefaults,
+    ))
       assignStore(storeWithDefaults,);
   }
 
@@ -653,14 +451,25 @@ export function createConf<T extends Record<string, unknown> = Record<string, un
   const conf = {
     path: configPath,
     events,
+    /**
+     Item count of the user-visible store.
+     */
     get size(): number {
-      return Object.keys(getStore(),).length;
+      return Object.keys(getStore(),)
+        .length;
     },
+    /**
+     The whole user-visible store;
+     assigning replaces everything.
+     */
     get store(): T {
       return getStore();
     },
+    /**
+     Replaces the whole store contents.
+     */
     set store(value: T) {
-      assignStore(value as Record<string, unknown>,);
+      assignStore(value,);
     },
     get: crud.get,
     set: crud.set,
@@ -672,21 +481,32 @@ export function createConf<T extends Record<string, unknown> = Record<string, un
     onDidChange: eventMethods.onDidChange,
     onDidAnyChange: eventMethods.onDidAnyChange,
     closeWatcher: function closeWatcher(): void {
-      state.watcher?.close();
+      state.watcher
+        ?.close();
       delete state.watcher;
     },
-    * [Symbol.iterator](): IterableIterator<[keyof T, T[keyof T]]> {
-      for (const [key, value,] of Object.entries(getStore(),))
+    * [Symbol.iterator](): IterableIterator<[
+      keyof T,
+      T[keyof T]
+    ]> {
+      for (const [key, value,] of Object.entries(getStore(),)) {
+        /* oxlint-disable typescript/no-unsafe-type-assertion -- entry pairs come from a generic dictionary and are re-exposed as the caller's key and value types at this iteration boundary. */
         yield [
           key as keyof T,
           value as T[keyof T],
         ];
+        /* oxlint-enable typescript/no-unsafe-type-assertion */
+      }
     },
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the implementation object satisfies Conf<T> member by member; the overload set is restated at this single factory edge because per-member overload assignability cannot be expressed on an object literal.
   } as unknown as Conf<T>;
   Object.freeze(conf,);
 
   if (prepared.migrations !== undefined) {
     {
+      /**
+       Migration window suppressing validation while steps run.
+       */
       using _migrationScope = createMigrationScope(state,);
       applyMigrations<T>({
         host: {
@@ -695,7 +515,7 @@ export function createConf<T extends Record<string, unknown> = Record<string, un
           readRawStore: storeFile.readStore,
           readUserStore: getStore,
           writeUserStore: function writeUserStore(store: T,): void {
-            assignStore(store as Record<string, unknown>,);
+            assignStore(store,);
           },
           writeStoreWithoutEvents: writeStore,
           recordVersion: function recordVersion(version: string,): void {
@@ -703,28 +523,29 @@ export function createConf<T extends Record<string, unknown> = Record<string, un
              File contents awaiting the recorded version.
              */
             const store = storeFile.readStore();
-            setStoreValue({
+            assignStore(withStoreValue({
               store,
               key: MIGRATION_KEY,
               value: version,
               accessPropertiesByDotNotation: true,
-            },);
-            assignStore(store,);
+            },),);
           },
         },
         migrations: prepared.migrations,
         projectVersion: prepared.projectVersion ?? '',
-        defaults: prepared.defaults,
-        beforeEachMigration: prepared.beforeEachMigration,
+        ...(prepared.defaults === undefined ? {} : { defaults: prepared.defaults, }),
+        ...(prepared.beforeEachMigration === undefined
+          ? {}
+          : { beforeEachMigration: prepared.beforeEachMigration, }),
       },);
     }
-    validate(getStore(),);
+    validateParsedStore(getStore(),);
   }
   else {
     initializeStore();
   }
 
-  if (prepared.watch) {
+  if (prepared.watch === true) {
     storeFile.ensureDirectory();
     if (!storeFile.fileExists())
       writeStore(createPlainObject(),);
@@ -742,3 +563,5 @@ export function createConf<T extends Record<string, unknown> = Record<string, un
 }
 
 //endregion Factory
+
+export type { Conf, } from './conf-type.ts';

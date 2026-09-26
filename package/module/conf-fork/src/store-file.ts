@@ -10,7 +10,10 @@
  */
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-import { tagged, type Logger, } from '@monochromatic-dev/module-logger/ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 import path from 'node:path';
 
 import {
@@ -87,13 +90,21 @@ export type StoreFile = {
  Builds the read/write pipeline for one config file.
  
  @param path - Absolute config file path.
+ 
  @param encryptionKey - Key material enabling encryption when present.
+ 
  @param encryptionAlgorithm - Algorithm applied when encrypting.
+ 
  @param serialize - Store-to-text serializer.
+ 
  @param deserialize - Text-to-store deserializer.
+ 
  @param clearInvalidConfig - Whether corrupt files read as empty stores.
+ 
  @param configFileMode - File mode for created files.
+ 
  @param validate - Validation hook run on every parsed store.
+ 
  @param logger - Logger for corrupt-file triage diagnostics.
  
  @returns StoreFile pipeline bound to these settings.
@@ -163,7 +174,10 @@ export function createStoreFile<T extends Record<string, unknown>>({
         encryptionAlgorithm,
         logger: log,
       },);
-    return Object.assign(createPlainObject(), deserialize(decrypted,),);
+    return Object.assign(
+      createPlainObject(),
+      deserialize(decrypted,),
+    );
   }
 
   /**
@@ -212,13 +226,18 @@ export function createStoreFile<T extends Record<string, unknown>>({
     readStore,
     writeStore: function writeStore(store: Record<string, unknown>,): void {
       /**
+       Serialized store text.
+       */
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- file contents are a generic dictionary serialized through the caller's store type; the shape proof lives with the schema validator.
+      const serialized = serialize(store as T,);
+      /**
        File content: serialized text,
        or its encryption when a key is configured.
        */
       const data = encryptionKey === undefined
-        ? serialize(store as T,)
+        ? serialized
         : encryptSerializedStore({
-          serialized: serialize(store as T,),
+          serialized,
           encryptionKey,
           encryptionAlgorithm,
         },);
@@ -249,8 +268,8 @@ export function createStoreFile<T extends Record<string, unknown>>({
  */
 export function isMissingFileError(error: unknown,): boolean {
   return Error.isError(error,)
-    && 'code' in error
-    && error.code === 'ENOENT';
+    && ('code' in error)
+    && (error.code === 'ENOENT');
 }
 
 /**
@@ -271,9 +290,9 @@ export function isMissingFileError(error: unknown,): boolean {
  ```
  */
 export function isRecoverableReadFailure(error: unknown,): boolean {
-  return error instanceof SyntaxError
-    || error instanceof SchemaViolationError
-    || error instanceof DecryptionFailedError;
+  return (error instanceof SyntaxError)
+    || (error instanceof SchemaViolationError)
+    || (error instanceof DecryptionFailedError);
 }
 
 //endregion Failure triage

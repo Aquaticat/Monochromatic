@@ -40,6 +40,7 @@ export type DebouncedCall = {
  Wraps a call so rapid triggers collapse into one trailing run.
  
  @param fn - Call to coalesce; invoked with no arguments.
+ 
  @param wait - Quiet period in milliseconds before the run.
  
  @returns Wrapper exposing `trigger` and `cancel`.

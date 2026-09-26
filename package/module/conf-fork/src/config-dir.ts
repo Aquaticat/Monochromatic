@@ -32,8 +32,15 @@ function macosConfigDirectory(name: string,): string {
   /**
    Per-user Library directory macOS keeps preferences in.
    */
-  const library = path.join(homedir(), 'Library',);
-  return path.join(library, 'Preferences', name,);
+  const library = path.join(
+    homedir(),
+    'Library',
+  );
+  return path.join(
+    library,
+    'Preferences',
+    name,
+  );
 }
 
 /**
@@ -53,8 +60,18 @@ function windowsConfigDirectory(name: string,): string {
   /**
    Roaming application-data root Windows stores per-app config under.
    */
-  const appData = process.env['APPDATA'] ?? path.join(homedir(), 'AppData', 'Roaming',);
-  return path.join(appData, name, 'Config',);
+  const appData = process.env
+    .APPDATA
+    ?? path.join(
+    homedir(),
+    'AppData',
+    'Roaming',
+  );
+  return path.join(
+    appData,
+    name,
+    'Config',
+  );
 }
 
 /**
@@ -74,8 +91,16 @@ function xdgConfigDirectory(name: string,): string {
   /**
    XDG config root shared by freedesktop.org platforms.
    */
-  const configRoot = process.env['XDG_CONFIG_HOME'] ?? path.join(homedir(), '.config',);
-  return path.join(configRoot, name,);
+  const configRoot = process.env
+    .XDG_CONFIG_HOME
+    ?? path.join(
+    homedir(),
+    '.config',
+  );
+  return path.join(
+    configRoot,
+    name,
+  );
 }
 
 //endregion Platform layouts
@@ -88,6 +113,7 @@ function xdgConfigDirectory(name: string,): string {
  `env-paths` dependency.
  
  @param projectName - App name, typically package.json's `name`.
+ 
  @param projectSuffix - Suffix appended as `-<suffix>` to avoid clashing with
  native apps; `''` appends nothing.
  

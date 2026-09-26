@@ -100,9 +100,9 @@ export function createEventMethods<T extends Record<string, unknown>>(context: E
       readonly key: string;
       readonly callback: OnDidChangeCallback<unknown>;
     },): Unsubscribe {
-      if (typeof input.key !== 'string')
+      if ((typeof input.key) !== 'string')
         throw new InvalidKeyError(`Expected \`key\` to be of type \`string\`, got ${typeof input.key}`);
-      if (typeof input.callback !== 'function')
+      if ((typeof input.callback) !== 'function')
         throw new InvalidCallbackError(`Expected \`callback\` to be of type \`function\`, got ${typeof input.callback}`);
       return subscribeValueChange({
         events: context.events,
@@ -113,8 +113,9 @@ export function createEventMethods<T extends Record<string, unknown>>(context: E
       },);
     },
 
+    // oxlint-disable-next-line promise/prefer-await-to-callbacks -- event-subscription API mirroring upstream `conf`'s onDidAnyChange; there is no promise to await, the callback IS the subscription payload.
     onDidAnyChange: function onDidAnyChange(callback: OnDidAnyChangeCallback<Record<string, unknown>>,): Unsubscribe {
-      if (typeof callback !== 'function')
+      if ((typeof callback) !== 'function')
         throw new InvalidCallbackError(`Expected \`callback\` to be of type \`function\`, got ${typeof callback}`);
       return subscribeStoreChange({
         events: context.events,
