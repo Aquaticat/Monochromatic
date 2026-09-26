@@ -44,8 +44,11 @@ export const base: OxlintConfig = {
   ],
 
   env: {
-    // An explicit env replaces oxlint's default `builtin` env, and the JS plugin scope manager then
-    // omits ES5 globals such as Array and Object (doc/troubleshooting/oxlint-js-plugin-global-reference-env.md).
+    // Required even with es2026 below. The oxc config reference says `builtin` is "equivalent to es2026";
+    // that is wrong: `es2026` lists only post-ES5 additions, so without `builtin` the JS plugin scope
+    // manager omits Array and Object and `isGlobalReference` returns false for them (measured on oxlint
+    // 1.85.0). An explicit env also replaces oxlint's default `builtin: true` rather than merging with it.
+    // Details: doc/troubleshooting/oxlint-js-plugin-global-reference-env.md.
     builtin: true,
     browser: true,
     node: true,
