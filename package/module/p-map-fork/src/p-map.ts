@@ -221,6 +221,7 @@ export async function pMap<Element, NewElement>(
 // mutation-test-disable-next-line block, string -- cleanup only: the abort listener is registered `once` and no public surface observes its removal after the run settles
     function cleanup(): void {
       signal?.removeEventListener(
+        // mutation-test-disable-next-line string -- cleanup only: the abort listener is registered `once` and no public surface observes which event name it detaches from
         'abort',
         signalListener,
       );
