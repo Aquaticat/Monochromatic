@@ -324,15 +324,22 @@ export async function recoverDeadTransaction({
       transactionDirectory: directory,
       refFormat: preparing.refFormat,
     },);
-  await installAddedWorktreeFiles({
-    gitPath,
-    cwd: effectiveCwd,
-    repositoryRoot: preparing.repositoryRoot,
-    records: [
-      ...landing.addedPaths,
-      ...landing.selectedWorktreePaths,
-    ],
-  },);
+  // Completion precedes shadow removal, so a missing shadow means an earlier run already finished the copies;
+  // the shadow store still holds originals that never landed, such as a pre-correction worktree blob.
+  if (await pathPresent(preparing.shadowPath,))
+    await installAddedWorktreeFiles({
+      gitPath,
+      cwd: effectiveCwd,
+      repositoryRoot: preparing.repositoryRoot,
+      records: [
+        ...landing.addedPaths,
+        ...landing.selectedWorktreePaths,
+      ],
+      objectDirectory: join(
+        preparing.shadowPath,
+        'objects',
+      ),
+    },);
   await removeShadowRepository(preparing.shadowPath,);
   await removeTransactionDirectory(directory,);
   return landing.operation === 'normalize-only' ? 'normalization-installed' : action;

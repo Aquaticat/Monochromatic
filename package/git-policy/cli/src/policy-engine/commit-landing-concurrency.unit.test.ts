@@ -3,7 +3,6 @@
 
  @module
  */
-import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import {
   describe,
@@ -11,110 +10,26 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  barrierSource,
   createLandingRepository,
-  finish,
   git,
-  jsonlEvents,
-  type LandingRepository,
   leftovers,
-  type ProcessOutcome,
   readText,
   runWrapper,
-  startWrapper,
-  waitForFile,
   writeHook,
-  writeNodeProgram,
   writeWorktreeFile,
 } from './commit-landing-fixture.unit.test.ts';
-
-/**
- One commit held open in its message editor.
- */
-type HeldCommit = Readonly<{
-  /**
-   Releases the editor.
-   */
-  release: () => Promise<void>;
-  /**
-   Outcome after release.
-   */
-  outcome: Promise<ProcessOutcome>;
-}>;
-
-/**
- Starts a wrapper commit whose message editor waits at a barrier, and waits until it is there.
-
- @param repository - fixture repository
-
- @param name - barrier name
-
- @param args - wrapper arguments, which must open the editor
-
- @returns held commit
- */
-async function holdInEditor({
-  repository,
-  name,
-  args,
-}: Readonly<{
-  repository: LandingRepository;
-  name: string;
-  args: readonly string[];
-}>,): Promise<HeldCommit> {
-  /**
-   Barrier files.
-   */
-  const ready = join(repository.scratch, `${name}.ready`,);
-  /**
-   Release file.
-   */
-  const release = join(repository.scratch, `${name}.release`,);
-  /**
-   Editor program.
-   */
-  const editor = join(repository.scratch, `${name}-editor.cjs`,);
-  await writeNodeProgram({ path: editor, source: barrierSource({ ready, release, },), },);
-  /**
-   Started commit.
-   */
-  const child = startWrapper({ repository, args, env: { GIT_EDITOR: editor, }, },);
-  /**
-   Outcome collected from the start.
-   */
-  const outcome = finish(child,);
-  await waitForFile({ path: ready, },);
-  return {
-    release: async function releaseEditor(): Promise<void> {
-      await writeFile(release, '',);
-    },
-    outcome,
-  };
-}
-
-/**
- Codes of the core findings in a wrapper outcome.
-
- @param outcome - wrapper outcome
-
- @returns finding codes
- */
-function findingCodes(outcome: ProcessOutcome,): readonly unknown[] {
-  return jsonlEvents(outcome.stderr,)
-    .filter(function isCoreFinding(event,): boolean {
-      return event.type === 'core-finding';
-    },)
-    .map(function codeOf(event,): unknown {
-      return event.code;
-    },);
-}
+import {
+  eventTypes,
+  findingCodes,
+  holdInEditor,
+} from './commit-landing-replay-fixture.unit.test.ts';
 
 await describe({
   name: 'concurrent commit landing',
   children: [
     it({
-      name: 'a commit landing while another waits in its editor wins, and the waiting one fails with head-moved, never EEXIST',
-      fn: async function testHeadMoved(): Promise<void> {
+      name: 'a commit landing while another waits in its editor wins, and the waiting one replays onto it after pre-commit re-runs, never EEXIST',
+      fn: async function testReplayAfterEditor(): Promise<void> {
         await using repository = await createLandingRepository();
         /** Pre-commit log proving the second commit's hook ran while the first editor was open. */
         const log = join(repository.scratch, 'hooks.log',);
@@ -129,17 +44,19 @@ await describe({
         await first.release();
         /** First commit's outcome. */
         const firstOutcome = await first.outcome;
-        expect(firstOutcome.exitCode,).toBe(1,);
-        expect(findingCodes(firstOutcome,),).toEqual(['concurrent-commit/head-moved',],);
+        expect(firstOutcome.exitCode,).toBe(0,);
+        expect(eventTypes(firstOutcome,),).toEqual(['landing-race-lost', 'commit-replayed',],);
         expect(firstOutcome.stderr,).not.toContain('index.lock',);
-        expect(await git({ repository, args: ['log', '--format=%s',], },),).toBe('second\nbaseline',);
-        expect(await git({ repository, args: ['status', '--porcelain',], },),).toBe('?? a.txt',);
-        expect(await readText(log,),).toBe('pre-commit\npre-commit\n',);
+        expect(await git({ repository, args: ['log', '--format=%s',], },),).toBe('first\nsecond\nbaseline',);
+        expect(await git({ repository, args: ['show', '--name-only', '--format=', 'HEAD',], },),).toBe('a.txt',);
+        expect(await git({ repository, args: ['status', '--porcelain',], },),).toBe('',);
+        // Preparation of each commit, then the re-run against the replayed tree.
+        expect(await readText(log,),).toBe('pre-commit\npre-commit\npre-commit\n',);
         expect(await leftovers(repository,),).toEqual([],);
       },
     },),
     it({
-      name: 'two commits started together each land or fail with head-moved, never EEXIST, and a later commit lands on top',
+      name: 'two commits started together both land, never EEXIST, and a later commit lands on top',
       fn: async function testStartedTogether(): Promise<void> {
         await using repository = await createLandingRepository();
         await writeWorktreeFile({ repository, name: 'a.txt', content: 'a\n', },);
@@ -152,18 +69,15 @@ await describe({
         /** Codes of every finding. */
         const codes = [...findingCodes(first,), ...findingCodes(second,),];
         expect(first.stderr + second.stderr,).not.toContain('index.lock',);
-        // Either both prepared before either landed, or the second prepared after the first landed.
-        expect([first.exitCode, second.exitCode,].toSorted(function ascending(left, right,): number {
-          return left - right;
-        },),).toEqual(codes.length === 0 ? [0, 0,] : [0, 1,],);
-        expect(codes.every(function isHeadMoved(code,): boolean {
-          return code === 'concurrent-commit/head-moved';
-        },),).toBe(true,);
+        // Whichever lands second replays onto the first when both prepared before either landed.
+        expect([first.exitCode, second.exitCode,],).toEqual([0, 0,],);
+        expect(codes,).toEqual([],);
         /** Commit invoked after both finished, so it prepares on the landed tip. */
         const third = await runWrapper({ repository, args: ['commit', '--no-enforce-only', '--allow-empty', '-m', 'third',], },);
         expect(third.exitCode,).toBe(0,);
         expect(await git({ repository, args: ['log', '-1', '--format=%s',], },),).toBe('third',);
-        expect(await git({ repository, args: ['rev-list', '--count', 'HEAD',], },),).toBe(String(2 + (codes.length === 0 ? 2 : 1),),);
+        expect(await git({ repository, args: ['rev-list', '--count', 'HEAD',], },),).toBe('4',);
+        expect(await git({ repository, args: ['status', '--porcelain',], },),).toBe('',);
         expect(await leftovers(repository,),).toEqual([],);
       },
     },),

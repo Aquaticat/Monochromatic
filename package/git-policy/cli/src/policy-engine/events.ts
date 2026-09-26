@@ -10,6 +10,11 @@ import type {
   PolicyTrigger,
   RepositoryPath,
 } from '../api/policy-types.ts';
+import type {
+  CommitReplayedEvent,
+  LandingRaceLostEvent,
+  ReplayHeadersDroppedEvent,
+} from './events-concurrency.ts';
 
 /**
  Current JSONL schema version.
@@ -218,6 +223,18 @@ export type CoreFindingEvent = {
    Human-readable rejection.
    */
   message: string;
+  /**
+   Conflicting paths of `concurrent-commit/replay-conflict`, in Git path byte order.
+   */
+  paths?: readonly RepositoryPath[];
+  /**
+   Earliest target commit touching a conflicting path.
+   */
+  winningOid?: string;
+  /**
+   Prepared commit left in the object store for cherry-picking.
+   */
+  preparedOid?: string;
 };
 
 /**
@@ -306,7 +323,7 @@ export type FixSummaryEvent = {
  const events: readonly PolicyEvent[] = [];
  ```
  */
-export type PolicyEvent = CommitLandedEvent | ConfigurationWarningEvent | CoreFindingEvent | FindingEvent | FixSummaryEvent | EngineFailureEvent;
+export type PolicyEvent = CommitLandedEvent | CommitReplayedEvent | ConfigurationWarningEvent | CoreFindingEvent | FindingEvent | FixSummaryEvent | EngineFailureEvent | LandingRaceLostEvent | ReplayHeadersDroppedEvent;
 
 /**
  Creates successful policy correction summary.

@@ -189,7 +189,7 @@ require('node:fs').writeFileSync(${JSON.stringify(report,)}, top + ' ' + process
       },
     },),
     it({
-      name: 'a pre-commit hook that changes the commit tree fails the transaction and lands nothing',
+      name: 'a pre-commit hook that stages another path lands it, as native Git commits whatever the hook staged',
       fn: async function testTreeChangingHook(): Promise<void> {
         await using repository = await createLandingRepository();
         await writeWorktreeFile({ repository, name: 'a.txt', content: 'a\n', },);
@@ -203,10 +203,11 @@ require('node:fs').writeFileSync(${JSON.stringify(report,)}, top + ' ' + process
         const baseline = await git({ repository, args: ['rev-parse', 'HEAD',], },);
         /** Commit outcome. */
         const outcome = await runWrapper({ repository, args: ['commit', '-m', 'tree', 'a.txt',], },);
-        expect(outcome.exitCode,).not.toBe(0,);
-        expect(outcome.stderr,).toContain('A commit hook changed the prepared tree',);
-        expect(await git({ repository, args: ['rev-parse', 'HEAD',], },),).toBe(baseline,);
-        expect(await git({ repository, args: ['status', '--porcelain',], },),).toBe('?? a.txt\n?? extra.txt',);
+        expect(outcome.exitCode,).toBe(0,);
+        expect(await git({ repository, args: ['rev-parse', 'HEAD~1',], },),).toBe(baseline,);
+        expect(await git({ repository, args: ['show', '--name-only', '--format=', 'HEAD',], },),).toBe('a.txt\nextra.txt',);
+        // The hook's path joins the real index too, because its entry was unchanged since invocation.
+        expect(await git({ repository, args: ['status', '--porcelain',], },),).toBe('',);
         expect(await leftovers(repository,),).toEqual([],);
       },
     },),

@@ -74,7 +74,7 @@ function outcomeFinding({
    Why this commit cannot move onto the new target.
    */
   const reason = capture.conclusion === 'none'
-    ? 'replaying it onto the new target is not available yet'
+    ? 'the target no longer names a commit to replay it onto'
     : `an ${capture.conclusion === 'amend' ? 'amend' : `${capture.conclusion} conclusion`} is never replayed`;
   return {
     code: 'head-moved',

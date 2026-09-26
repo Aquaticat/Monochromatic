@@ -15,6 +15,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { hasValidInheritedLease, } from '../hook-dispatch/preparation-lease.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { parseCommitRegion, } from '../parser/commit.ts';
+import { createShadowRepository, } from '../shadow-repository/shadow-repository.ts';
 import {
   type ConcurrencyConfig,
   DEFAULT_CONCURRENCY_CONFIG,
@@ -181,6 +182,15 @@ export async function runCommitTransaction({
       invokedAt: capture.invokedAt,
     },
   },);
+  // Before the private index exists, so every object preparation writes lands in the shadow store,
+  // which a concurrent real `gc --prune=now` never sees.
+  await createShadowRepository({
+    gitPath,
+    cwd: layout.effectiveCwd,
+    capture,
+    transactionId: workspace.transactionId,
+    transactionDirectory: workspace.directory,
+  },);
   /**
    Pathspec file materialized once when Git names standard input.
    */
@@ -200,6 +210,7 @@ export async function runCommitTransaction({
     stageIntoIndex: region.hasIncludeFlag,
     stageTrackedChanges: stagedAll,
     baseRevision: base,
+    objectDirectory: workspace.objectDirectory,
   },);
   if (region.hasInteractiveFlag || region.hasPatchFlag)
     await prepareInteractiveSelection({
@@ -236,6 +247,7 @@ export async function runCommitTransaction({
     cwd: layout.effectiveCwd,
     indexPath: workspace.commitIndexPath,
     baseRevision: base,
+    objectDirectory: workspace.objectDirectory,
   },);
   /**
    Selected paths plus tracked paths policies added to the commit.
@@ -250,6 +262,7 @@ export async function runCommitTransaction({
     indexPath: workspace.commitIndexPath,
     paths: candidatePaths,
     baseRevision: base,
+    objectDirectory: workspace.objectDirectory,
   },);
   /**
    Initial exact private candidate-state snapshot.
@@ -325,6 +338,8 @@ export async function runCommitTransaction({
     workspace,
     capture,
     gitPath,
+    args,
+    policyOptions,
     cwd: layout.effectiveCwd,
     repositoryRoot,
     mode,

@@ -16,6 +16,10 @@ import { PATHSPEC_SEPARATOR, } from '../escape-hatch.ts';
 import { normaliseCommitArgs, } from '../parser/commit-normalise.ts';
 import { runShadowGit, } from '../shadow-repository/shadow-refs.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
+import {
+  parseRawCommit,
+  type RawCommit,
+} from './commit-replay-object.ts';
 
 /**
  Module logger.
@@ -89,7 +93,7 @@ const OPTIONAL_VALUE_LETTERS: ReadonlySet<string> = new Set([
 /**
  Environment variables native Git must not inherit, so every object it writes lands in the shadow store.
  */
-const NATIVE_UNSET_VARIABLES: readonly string[] = [
+export const NATIVE_UNSET_VARIABLES: readonly string[] = [
   'GIT_DIR',
   'GIT_WORK_TREE',
   'GIT_COMMON_DIR',
@@ -374,6 +378,10 @@ export type PreparedCommit = Readonly<{
    Whether the commit carries a `gpgsig` or `gpgsig-sha256` header.
    */
   signed: boolean;
+  /**
+   Exact parsed object, the source every replay rebuilds from.
+   */
+  raw: RawCommit;
 }>;
 
 /**
@@ -411,9 +419,9 @@ export async function readPreparedCommit({
   },)).stdout,)
     .trim();
   /**
-   Raw commit object; header lines end at the first empty line.
+   Exact raw commit bytes; the message may use a non-UTF-8 `encoding`.
    */
-  const raw = DECODER.decode((await runShadowGit({
+  const raw = parseRawCommit((await runShadowGit({
     gitPath,
     shadowPath,
     args: [
@@ -422,27 +430,10 @@ export async function readPreparedCommit({
       oid,
     ],
   },)).stdout,);
-  /**
-   Header lines before the message.
-   */
-  const headers = raw.slice(
-    0,
-    raw.includes('\n\n',) ? raw.indexOf('\n\n',) : raw.length,
-  )
-    .split('\n',);
-  /**
-   Tree header.
-   */
-  const treeLine = headers.find(function isTree(line,): boolean {
-    return line.startsWith('tree ',);
-  },);
-  if (treeLine === undefined)
-    throw new TypeError(`Prepared commit ${oid} has no tree header.`,);
   return {
     oid,
-    treeOid: treeLine.slice('tree '.length,),
-    signed: headers.some(function isSignature(line,): boolean {
-      return line.startsWith('gpgsig ',) || line.startsWith('gpgsig-sha256 ',);
-    },),
+    treeOid: raw.treeOid,
+    signed: raw.signed,
+    raw,
   };
 }

@@ -13,12 +13,14 @@ import { computeHookDispatchPlan, } from '../hook-dispatch/hook-dispatch-plan.ts
 import { writeHookShim, } from '../hook-dispatch/hook-shim-writer.ts';
 import { formatPreparationLease, } from '../hook-dispatch/preparation-lease.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
-import { createShadowRepository, } from '../shadow-repository/shadow-repository.ts';
 import type { ConcurrencyConfig, } from '../trust/config-validation-concurrency.ts';
 import {
   type AddedPathTracker,
   settleAddedPathRecords,
 } from './commit-transaction-added-path-tracker.ts';
+import { describeHookChanges, } from './commit-hook-changes.ts';
+import { landWithReplay, } from './commit-landing-loop.ts';
+import { replayOptions, } from './commit-replay-options.ts';
 import { installAddedWorktreeFiles, } from './commit-transaction-added-paths.ts';
 import type { InvocationCapture, } from './commit-transaction-capture.ts';
 import { writePrivateTree, } from './commit-transaction-index.ts';
@@ -32,13 +34,14 @@ import {
   completeNoChangeTransaction,
   NO_CHANGE_NOT_APPLICABLE,
 } from './commit-transaction-no-change.ts';
-import { transactionFailure, } from './commit-transaction-results.ts';
 import { resolvePrivateCommitArgs, } from './commit-transaction-selection.ts';
 import { selectedWorktreeRecords, } from './commit-transaction-selected-worktree.ts';
-import type { CommitTransactionResult, } from './commit-transaction-types.ts';
+import { reachTransactionPhase, } from './commit-transaction-test-phase.ts';
+import type {
+  CommitTransactionPolicyOptions,
+  CommitTransactionResult,
+} from './commit-transaction-types.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
-import { landTransaction, } from './commit-landing.ts';
-import { landingFindingResult, } from './commit-landing-findings.ts';
 import { runPostCommitHook, } from './commit-landing-post-commit-hook.ts';
 import {
   readPreparedCommit,
@@ -46,6 +49,7 @@ import {
   splitCommitInvocation,
   withoutAllFlag,
 } from './commit-preparation-native.ts';
+import { appendEvents, } from './events-concurrency.ts';
 import { withChangedFixSummary, } from './fix-summary.ts';
 import type { PolicyEngineResult, } from './types.ts';
 
@@ -70,6 +74,14 @@ export type SettledCommitTransaction = Readonly<{
    Real Git executable.
    */
   gitPath: string;
+  /**
+   Exact wrapper arguments, which revalidation after a replay hands the policies again.
+   */
+  args: readonly string[];
+  /**
+   Trusted policy options revalidation re-runs policies with.
+   */
+  policyOptions: CommitTransactionPolicyOptions;
   /**
    Effective repository directory.
    */
@@ -272,13 +284,6 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
     inheritedLeaseValid: settled.inheritedLeaseValid,
     environment: process.env,
   },);
-  await createShadowRepository({
-    gitPath,
-    cwd,
-    capture,
-    transactionId: workspace.transactionId,
-    transactionDirectory: workspace.directory,
-  },);
   await writeHookShim({
     hooksDirectory: workspace.hooksDirectory,
     plan,
@@ -301,16 +306,24 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
     gitPath,
     shadowPath: workspace.shadowPath,
   },);
-  if (prepared.treeOid !== intendedTreeOid) {
-    rl.debug(`prepared tree ${prepared.treeOid} differs from intended ${intendedTreeOid}`,);
-    return {
-      policyResult: transactionFailure({
-        previous: pass,
-        message: `A commit hook changed the prepared tree from ${intendedTreeOid} to ${prepared.treeOid}; nothing landed and the private commit ${prepared.oid} was discarded. Stage the hook's changes and commit again.`,
-      },),
-      committed: false,
-    };
-  }
+  /**
+   What preparation hooks staged; the commit keeps it, as native Git does.
+   */
+  const hookChanges = await describeHookChanges({
+    gitPath,
+    cwd,
+    objectDirectory: workspace.objectDirectory,
+    fromTree: intendedTreeOid,
+    toTree: prepared.treeOid,
+  },);
+  rl.debug(`prepared ${prepared.oid}; hooks changed ${String(hookChanges.paths.length,)} paths`,);
+  /**
+   Worktree completions: selected corrections, then hook changes.
+   */
+  const worktreeRecords = [
+    ...selectedWorktreePaths,
+    ...hookChanges.worktreeRecords,
+  ];
   await writeJournalRecord({
     directory: workspace.directory,
     filename: PREPARED_FILENAME,
@@ -323,43 +336,53 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
       intendedTreeOid,
       committedPaths,
       addedPaths: addedPathRecords,
-      selectedWorktreePaths,
+      selectedWorktreePaths: worktreeRecords,
     },
+  },);
+  await reachTransactionPhase('preparation-done',);
+  /**
+   Settled preparation pass with its fix summary.
+   */
+  const settledResult = withChangedFixSummary({
+    result: pass,
+    trigger: 'pre-forward',
+    passes: changedPasses,
+    changedPaths,
   },);
   /**
-   Landing outcome.
+   Replay-relevant options native preparation ran with.
    */
-  const outcome = await landTransaction({
-    gitPath,
-    cwd,
-    capture,
-    workspace,
-    mode,
-    payload: {
-      operation: 'commit',
-      newOid: prepared.oid,
-      landedTreeOid: prepared.treeOid,
+  const options = replayOptions(invocation.commitArgs,);
+  /**
+   Landing, with replay and revalidation after every lost race.
+   */
+  const outcome = await landWithReplay({
+    context: {
+      gitPath,
+      cwd,
+      capture,
+      workspace,
+      args: settled.args,
+      policyOptions: settled.policyOptions,
+      readOnlySelection: settled.readOnlySelection,
+      repositoryRoot,
+      globalArgs: invocation.globalArgs,
+      noVerify: options.noVerify,
     },
+    mode,
+    prepared,
+    settled: settledResult,
+    options,
     committedPaths,
     addedPaths: addedPathRecords,
-    selectedWorktreePaths,
+    worktreeRecords,
+    hookChanges,
     indexLockTimeoutMs: concurrency.indexLock
       .unprovenOwnerTimeoutMs,
-    attempt: 1,
   },);
-  if (outcome.kind !== 'landed')
+  if (outcome.kind === 'failed')
     return {
-      policyResult: landingFindingResult({
-        pass: withChangedFixSummary({
-          result: pass,
-          trigger: 'pre-forward',
-          passes: changedPasses,
-          changedPaths,
-        },),
-        outcome,
-        capture,
-        preparedOid: prepared.oid,
-      },),
+      policyResult: outcome.result,
       committed: false,
     };
   // Before cleanup, so an interruption here leaves the journal for startup recovery to finish the worktree copies.
@@ -368,9 +391,10 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
     cwd,
     repositoryRoot,
     records: [
-      ...addedPathRecords,
-      ...selectedWorktreePaths,
+      ...outcome.addedPaths,
+      ...outcome.worktreeRecords,
     ],
+    objectDirectory: workspace.objectDirectory,
   },);
   workspace.finishTransaction();
   await workspace[Symbol.asyncDispose]();
@@ -383,12 +407,13 @@ export async function concludeCommitTransaction(settled: SettledCommitTransactio
     plan,
   },);
   return {
-    policyResult: withChangedFixSummary({
-      result: pass,
-      trigger: 'pre-forward',
-      passes: changedPasses,
-      changedPaths,
-    },),
+    policyResult: {
+      ...settledResult,
+      events: appendEvents({
+        events: settledResult.events,
+        appended: outcome.events,
+      },),
+    },
     committed: true,
     landedOid: outcome.oid,
   };

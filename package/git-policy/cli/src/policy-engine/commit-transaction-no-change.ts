@@ -174,6 +174,7 @@ export async function completeNoChangeTransaction({
       ...addedPaths,
       ...selectedWorktreePaths,
     ],
+    objectDirectory: workspace.objectDirectory,
   },);
   workspace.finishTransaction();
   /**

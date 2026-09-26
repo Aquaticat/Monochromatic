@@ -216,6 +216,8 @@ function buildCandidate({
  
  @param baseRevision - baseline commit or tree
  
+ @param objectDirectory - object store holding the index's blobs, the real store when absent
+ 
  @returns candidates in requested path order
  
  @throws CommitTransactionGitError when private state cannot back candidates
@@ -226,12 +228,14 @@ async function loadPrivateIndexCandidates({
   indexPath,
   paths,
   baseRevision,
+  objectDirectory,
 }: Readonly<{
   gitPath: string;
   cwd: string;
   indexPath: string;
   paths: readonly string[];
   baseRevision: string;
+  objectDirectory: string | undefined;
 }>,): Promise<readonly CandidateFile[]> {
   /**
    Independent staged and baseline reads for complete path set.
@@ -270,6 +274,7 @@ async function loadPrivateIndexCandidates({
         : [entry.oid,];
     },),
     createError: transactionGitError,
+    ...(objectDirectory === undefined ? {} : { objectDirectory, }),
   },);
   return paths.map(function toCandidate(path,): CandidateFile {
     return buildCandidate({
@@ -299,6 +304,8 @@ async function loadPrivateIndexCandidates({
  
  @param baseRevision - baseline commit or tree the transaction recorded; live `HEAD` outside a transaction
  
+ @param objectDirectory - object store holding the private index's blobs, such as the transaction's shadow store; the real store when absent
+ 
  @returns policy Git facts
  
  @example
@@ -312,12 +319,14 @@ export function createPrivateIndexFacts({
   indexPath,
   paths,
   baseRevision = 'HEAD',
+  objectDirectory,
 }: Readonly<{
   gitPath: string;
   cwd: string;
   indexPath: string;
   paths: readonly string[];
   baseRevision?: string;
+  objectDirectory?: string;
 }>,): LazyPolicyGitFacts {
   return {
     candidates: function candidates(): Promise<readonly CandidateFile[]> {
@@ -327,6 +336,7 @@ export function createPrivateIndexFacts({
         indexPath,
         paths,
         baseRevision,
+        objectDirectory,
       },);
     },
     trackedFiles: function trackedFiles({ pathspecs, },): Promise<readonly TrackedFile[]> {
@@ -336,6 +346,7 @@ export function createPrivateIndexFacts({
         indexPath,
         pathspecs,
         baseRevision,
+        ...(objectDirectory === undefined ? {} : { objectDirectory, }),
       },);
     },
     headOid: async function headOid(): Promise<GitObjectId> {

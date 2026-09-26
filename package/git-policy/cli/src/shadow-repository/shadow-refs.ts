@@ -91,6 +91,12 @@ export type RefSnapshotEntry = Readonly<{
 
  @param input - optional standard input bytes
 
+ @param allowFailure - whether the caller handles a nonzero exit
+
+ @param environment - additions such as the identity a signed replay commits under
+
+ @param cwd - working directory, the shadow itself unless Git must report paths relative to the worktree root
+
  @returns captured output
 
  @example
@@ -104,16 +110,20 @@ export function runShadowGit({
   args,
   input,
   allowFailure = false,
+  environment = {},
+  cwd = shadowPath,
 }: Readonly<{
   gitPath: string;
   shadowPath: string;
   args: readonly string[];
   input?: Uint8Array;
   allowFailure?: boolean;
+  environment?: Readonly<Record<string, string>>;
+  cwd?: string;
 }>,): ReturnType<typeof runTransactionGit> {
   return runTransactionGit({
     gitPath,
-    cwd: shadowPath,
+    cwd,
     args: [
       `--git-dir=${shadowPath}`,
       // The shadow config names the real hooks directory for native preparation; cli-git's own shadow maintenance runs no hooks.
@@ -126,6 +136,7 @@ export function runShadowGit({
     ],
     unsetEnvironment: REPOSITORY_REDIRECT_VARIABLES,
     allowFailure,
+    environment,
     ...(input === undefined ? {} : { input, }),
   },);
 }

@@ -26,7 +26,12 @@ import type { CommitTransactionWorkspace, } from './commit-transaction-workspace
 export type PrivatePatchWorkspace = Readonly<Pick<
   CommitTransactionWorkspace,
   'directory' | 'commitIndexPath'
->>;
+> & {
+  /**
+   Object directory receiving the objects the patch writes; the real store when absent.
+   */
+  objectDirectory?: string;
+}>;
 
 /**
  Module logger.
@@ -91,6 +96,8 @@ export type GitOutput = Readonly<{
  
  @param input - bytes written to standard input instead of an empty stream
  
+ @param objectDirectory - object store receiving every object Git writes, such as a transaction's shadow store whose alternates name the real store; the repository's own store when absent
+ 
  @returns exact captured output
  
  @throws CommitTransactionGitError when Git exits nonzero
@@ -110,6 +117,7 @@ export async function runTransactionGit({
   environment = {},
   unsetEnvironment = [],
   input,
+  objectDirectory,
 }: Readonly<{
   gitPath: string;
   cwd: string;
@@ -120,6 +128,7 @@ export async function runTransactionGit({
   environment?: Readonly<Record<string, string>>;
   unsetEnvironment?: readonly string[];
   input?: Uint8Array;
+  objectDirectory?: string;
 }>,): Promise<GitOutput> {
   /**
    Environment containing only engine-selected index override.
@@ -131,6 +140,7 @@ export async function runTransactionGit({
       },),),
     ...environment,
     ...(indexPath === undefined ? {} : { GIT_INDEX_FILE: indexPath, }),
+    ...(objectDirectory === undefined ? {} : { GIT_OBJECT_DIRECTORY: objectDirectory, }),
   };
   if (stdio === 'inherit') {
     /**
@@ -276,5 +286,6 @@ export async function applyPrivatePatch({
       '--3way',
       patchPath,
     ],
+    ...(workspace.objectDirectory === undefined ? {} : { objectDirectory: workspace.objectDirectory, }),
   },);
 }

@@ -32,6 +32,15 @@ import type { PolicyEngineResult, } from './types.ts';
 const MAXIMUM_CHANGED_PASSES = 8;
 
 /**
+ Workspace fields convergence reads and writes:
+ its directory for snapshots and patch files,
+ the private index it patches,
+ the invocation-time real index for added-path checks,
+ and the shadow store receiving patched blobs.
+ */
+export type ConvergenceWorkspace = Pick<CommitTransactionWorkspace, 'directory' | 'commitIndexPath' | 'capturedIndexPath' | 'objectDirectory'>;
+
+/**
  Converged policy state, or the blocking result that stopped convergence.
  */
 export type CommitConvergence =
@@ -113,7 +122,7 @@ export async function convergeCommitPolicies({
   args: readonly string[];
   gitPath: string;
   cwd: string;
-  workspace: CommitTransactionWorkspace;
+  workspace: ConvergenceWorkspace;
   policyOptions: CommitTransactionPolicyOptions;
   baseRevision: string;
   repositoryRoot: string;
@@ -177,6 +186,7 @@ export async function convergeCommitPolicies({
       indexPath: workspace.commitIndexPath,
       paths: addedPaths.candidatePaths(),
       baseRevision,
+      objectDirectory: workspace.objectDirectory,
     },)
       .candidates();
     /**
@@ -216,6 +226,7 @@ export async function convergeCommitPolicies({
       indexPath: workspace.commitIndexPath,
       paths: addedPaths.candidatePaths(),
       baseRevision,
+      objectDirectory: workspace.objectDirectory,
     },);
     /**
      Private exact snapshot for current changed pass.

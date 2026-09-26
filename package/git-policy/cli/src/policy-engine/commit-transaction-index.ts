@@ -70,6 +70,8 @@ function selectionArguments({
  
  @param baseRevision - recorded base commit, or the empty tree for an unborn base
  
+ @param objectDirectory - store receiving the blobs staging writes, the transaction's shadow store so a real `gc` cannot prune them
+ 
  @example
  ```ts
  await initializeCommitIndex({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', mode: 'index', pathspecs: [], pathspecFileNul: false, baseRevision });
@@ -86,6 +88,7 @@ export async function initializeCommitIndex({
   stageIntoIndex = false,
   stageTrackedChanges = false,
   baseRevision,
+  objectDirectory,
 }: Readonly<{
   workspace: Pick<CommitTransactionWorkspace, 'realIndexPath' | 'capturedIndexPath' | 'commitIndexPath'>;
   gitPath: string;
@@ -97,6 +100,7 @@ export async function initializeCommitIndex({
   stageIntoIndex?: boolean;
   stageTrackedChanges?: boolean;
   baseRevision: string;
+  objectDirectory: string;
 }>,): Promise<void> {
   await copyIndexFile({
     sourcePath: workspace.realIndexPath,
@@ -119,6 +123,7 @@ export async function initializeCommitIndex({
           '--',
           ':/',
         ],
+        objectDirectory,
       },);
     if (!stageIntoIndex)
       return;
@@ -133,6 +138,7 @@ export async function initializeCommitIndex({
         'read-tree',
         baseRevision,
       ],
+      objectDirectory,
     },);
   await runTransactionGit({
     gitPath,
@@ -147,6 +153,7 @@ export async function initializeCommitIndex({
         pathspecFileNul,
       },),
     ],
+    objectDirectory,
   },);
 }
 
@@ -159,6 +166,8 @@ export async function initializeCommitIndex({
  
  @param cwd - repository directory
  
+ @param indexPath - index to write; the workspace's private commit index when absent
+ 
  @returns intended Git tree OID
  
  @example
@@ -170,19 +179,22 @@ export async function writePrivateTree({
   workspace,
   gitPath,
   cwd,
+  indexPath = workspace.commitIndexPath,
 }: Readonly<{
-  workspace: Pick<CommitTransactionWorkspace, 'commitIndexPath'>;
+  workspace: Pick<CommitTransactionWorkspace, 'commitIndexPath' | 'objectDirectory'>;
   gitPath: string;
   cwd: string;
+  indexPath?: string;
 }>,): Promise<GitObjectId> {
   /**
-   Git tree object written from private index.
+   Git tree object written from private index into the shadow store.
    */
   const output = await runTransactionGit({
     gitPath,
     cwd,
-    indexPath: workspace.commitIndexPath,
+    indexPath,
     args: ['write-tree',],
+    objectDirectory: workspace.objectDirectory,
   },);
   /**
    Exact intended tree OID.

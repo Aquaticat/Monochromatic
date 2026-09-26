@@ -127,6 +127,8 @@ export async function listPrivateIndexPaths({
  
  @param baseRevision - recorded base commit, or the empty tree for an unborn base
  
+ @param objectDirectory - object store holding the private index's blobs, read by rename detection
+ 
  @returns repository paths
  
  @example
@@ -139,11 +141,13 @@ export async function listChangedIndexPaths({
   cwd,
   indexPath,
   baseRevision,
+  objectDirectory,
 }: Readonly<{
   gitPath: string;
   cwd: string;
   indexPath: string;
   baseRevision: string;
+  objectDirectory?: string;
 }>,): Promise<readonly string[]> {
   /**
    NUL-delimited changed paths against the recorded base, never live `HEAD`.
@@ -159,6 +163,7 @@ export async function listChangedIndexPaths({
       '-z',
       baseRevision,
     ],
+    ...(objectDirectory === undefined ? {} : { objectDirectory, }),
   },);
   return DECODER.decode(output.stdout,)
     .split('\0',)

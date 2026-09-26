@@ -62,6 +62,11 @@ export type CommitTransactionWorkspace = {
    */
   readonly shadowPath: string;
   /**
+   Shadow object store receiving every object the transaction writes before landing migrates them;
+   its alternates name the real object store.
+   */
+  readonly objectDirectory: string;
+  /**
    Hook dispatcher directory.
    */
   readonly hooksDirectory: string;
@@ -139,6 +144,10 @@ export async function createCommitTransactionWorkspace({ capture, }: Readonly<{
     ),
     realIndexPath: capture.realIndexPath,
     shadowPath,
+    objectDirectory: join(
+      shadowPath,
+      'objects',
+    ),
     hooksDirectory: join(
       directory,
       'hooks',

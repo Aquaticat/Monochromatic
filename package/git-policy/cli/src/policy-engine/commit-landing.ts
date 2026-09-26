@@ -13,8 +13,9 @@
  signing,
  network operations,
  or the hook lock.
- A moved target fails fast here;
- replay is the next slice's seam (`LandingOutcome` kind `head-moved` with `replayable`).
+ A moved target ends the attempt with `head-moved`;
+ when `replayable`,
+ the caller replays and revalidates outside both locks and lands again (`commit-landing-loop.ts`).
 
  @module
  */
@@ -52,6 +53,7 @@ import {
   removePackKeep,
   transactionKeepMessage,
 } from './commit-landing-objects.ts';
+import { reachTransactionPhase, } from './commit-transaction-test-phase.ts';
 import { copyIndexFile, } from './index-file-timestamps.ts';
 
 /**
@@ -91,7 +93,7 @@ export type LandingOutcome =
      */
     current: PreparationBase;
     /**
-     Whether replay could land this commit once replay exists; amends and conclusions never replay.
+     Whether replay can land this commit on the new target; amends, conclusions, normalizations, and a deleted target never replay.
      */
     replayable: boolean;
   }>
@@ -120,9 +122,25 @@ export type LandingPayload =
      */
     newOid: string;
     /**
-     Prepared tree.
+     Prepared or replayed tree.
      */
     landedTreeOid: string;
+    /**
+     Target value the commit's parent names: the preparation base, or the replay parent.
+     */
+    expectedOld: PreparationBase;
+    /**
+     Private index the commit's tree came from.
+     */
+    landedIndexPath: string;
+    /**
+     Whether `landedIndexPath` is the exact index native preparation committed, false after a replay.
+     */
+    exactPrivateIndex: boolean;
+    /**
+     Paths a commit hook changed, reconciled only while their real index entry is unchanged since invocation.
+     */
+    guardedPaths: readonly string[];
   }>
   | Readonly<{
     /**
@@ -154,6 +172,25 @@ function sameTarget({
   if ((left.kind === 'unborn') || (right.kind === 'unborn'))
     return left.kind === right.kind;
   return left.oid === right.oid;
+}
+
+/**
+ Expected old target value of a payload.
+
+ @param payload - landing payload
+
+ @param capture - invocation capture
+
+ @returns replay parent or preparation base
+ */
+function expectedOldTarget({
+  payload,
+  capture,
+}: Readonly<{
+  payload: LandingPayload;
+  capture: InvocationCapture;
+}>,): PreparationBase {
+  return payload.operation === 'commit' ? payload.expectedOld : capture.base;
 }
 
 /**
@@ -320,6 +357,7 @@ export async function landTransaction({
     attempt,
     timeoutMs: indexLockTimeoutMs,
   },);
+  await reachTransactionPhase('landing-locked',);
   /**
    Symbolic `HEAD` target now.
    */
@@ -343,6 +381,13 @@ export async function landTransaction({
     };
   }
   /**
+   Target value the commit's parent names.
+   */
+  const expectedOld = expectedOldTarget({
+    payload,
+    capture,
+  },);
+  /**
    Target value now.
    */
   const current = await resolveRefCommit({
@@ -352,13 +397,13 @@ export async function landTransaction({
   },);
   if (!sameTarget({
     left: current,
-    right: capture.base,
+    right: expectedOld,
   },)) {
     rl.debug(`${capture.targetRef} moved since preparation`,);
     return {
       kind: 'head-moved',
       current,
-      replayable: (payload.operation === 'commit') && (capture.conclusion === 'none'),
+      replayable: (payload.operation === 'commit') && (capture.conclusion === 'none') && (current.kind === 'commit'),
     };
   }
   /**
@@ -370,10 +415,11 @@ export async function landTransaction({
       cwd,
       shadowPath: workspace.shadowPath,
       newOid: payload.newOid,
-      oldBase: capture.base,
+      oldBase: expectedOld,
       keepMessage: transactionKeepMessage(workspace.transactionId,),
     },)
     : undefined;
+  await reachTransactionPhase('objects-migrated',);
   /**
    Exact pre-landing real index snapshot.
    */
@@ -398,11 +444,17 @@ export async function landTransaction({
     mode,
     preLandingIndexPath,
     capturedIndexPath: workspace.capturedIndexPath,
-    landedIndexPath: workspace.commitIndexPath,
     postIndexPath,
     landedTreeOid: payload.landedTreeOid,
     baseRevision: baseRevision(capture,),
     committedPaths,
+    ...(payload.operation === 'commit'
+      ? {
+        landedIndexPath: payload.landedIndexPath,
+        exactPrivateIndex: payload.exactPrivateIndex,
+        guardedPaths: payload.guardedPaths,
+      }
+      : { landedIndexPath: workspace.commitIndexPath, }),
   },);
   workspace.preserveForRecovery();
   await writeJournalRecord({
@@ -413,7 +465,7 @@ export async function landTransaction({
       state: 'landing',
       attempt,
       operation: payload.operation,
-      expectedOld: capture.base,
+      expectedOld,
       ...(payload.operation === 'commit' ? { newOid: payload.newOid, } : {}),
       landedTreeOid: payload.landedTreeOid,
       preLandingIndex: await fileIdentity(preLandingIndexPath,),
@@ -445,11 +497,8 @@ export async function landTransaction({
           === 'detached' ? ['--no-deref',] : []),
         capture.targetRef,
         payload.newOid,
-        capture.base
-          .kind
-          === 'commit' ? capture.base
-            .oid : '0'.repeat(capture.emptyTreeOid
-              .length,),
+        expectedOld.kind === 'commit' ? expectedOld.oid : '0'.repeat(capture.emptyTreeOid
+          .length,),
       ],
       allowFailure: true,
     },);
@@ -461,14 +510,18 @@ export async function landTransaction({
         packName: packName ?? '',
       },);
       workspace.finishTransaction();
+      /**
+       Target value that won the compare-and-swap.
+       */
+      const winner = await resolveRefCommit({
+        gitPath,
+        cwd,
+        ref: capture.targetRef,
+      },);
       return {
         kind: 'head-moved',
-        current: await resolveRefCommit({
-          gitPath,
-          cwd,
-          ref: capture.targetRef,
-        },),
-        replayable: capture.conclusion === 'none',
+        current: winner,
+        replayable: (capture.conclusion === 'none') && (winner.kind === 'commit'),
       };
     }
     await writeJournalRecord({
@@ -480,6 +533,7 @@ export async function landTransaction({
         landedOid: payload.newOid,
       },
     },);
+    await reachTransactionPhase('ref-updated',);
     await removePackKeep({
       objectDirectory: capture.objectDirectory,
       packName: packName ?? '',
@@ -487,6 +541,7 @@ export async function landTransaction({
   }
   await indexLock.installIndex(postIndexPath,);
   await writeIndexInstalledMarker(workspace.directory,);
+  await reachTransactionPhase('index-installed',);
   if (payload.operation === 'commit')
     await reproduceConclusionCleanup({
       gitPath,

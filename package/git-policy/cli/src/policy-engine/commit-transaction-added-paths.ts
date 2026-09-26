@@ -386,6 +386,8 @@ export type AddedWorktreeInstallResult = Readonly<{
 
  @param records - added paths recorded before real Git ran
 
+ @param objectDirectory - store holding blobs that never landed, such as a pre-correction original in the transaction's shadow store; the real store when absent
+
  @returns rewritten and conflicted paths
 
  @throws CommitTransactionGitError when Git cannot supply a recorded blob
@@ -401,11 +403,13 @@ export async function installAddedWorktreeFiles({
   cwd,
   repositoryRoot,
   records,
+  objectDirectory,
 }: Readonly<{
   gitPath: string;
   cwd: string;
   repositoryRoot: string;
   records: readonly AddedPathRecord[];
+  objectDirectory?: string;
 }>,): Promise<AddedWorktreeInstallResult> {
   if (records.length === 0)
     return {
@@ -425,6 +429,7 @@ export async function installAddedWorktreeFiles({
       ];
     },),
     createError: addedPathGitError,
+    ...(objectDirectory === undefined ? {} : { objectDirectory, }),
   },);
   /**
    Paths rewritten so far.
@@ -465,7 +470,7 @@ export async function installAddedWorktreeFiles({
     if (current.kind === 'intended')
       continue;
     if (current.kind === 'conflict') {
-      l.warn(`Worktree copy of ${record.path} changed or disappeared while cli-git completed a policy fix; the committed bytes remain in HEAD and your worktree state was kept. Compare it with HEAD (git diff HEAD -- ${record.path}).`,);
+      l.warn(`Worktree copy of ${record.path} changed or disappeared while cli-git completed the commit; the committed bytes remain in HEAD and your worktree state was kept. Compare it with HEAD (git diff HEAD -- ${record.path}).`,);
       conflicted.push(record.path,);
       continue;
     }

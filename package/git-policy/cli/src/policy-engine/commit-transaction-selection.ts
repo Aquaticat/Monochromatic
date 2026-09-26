@@ -235,6 +235,7 @@ export async function prepareInteractiveSelection({
       ...selectionPathspecs,
     ],
     stdio: 'inherit',
+    objectDirectory: workspace.objectDirectory,
   },);
 }
 

@@ -300,6 +300,87 @@ async function mergeLandedEntries({
 }
 
 /**
+ Explicit-path post-index for paths a hook changed:
+ each takes the landed entry only while the real index still holds the entry captured at invocation;
+ an entry restaged since then is kept and reported.
+
+ @param gitPath - real Git executable
+
+ @param cwd - owning worktree directory
+
+ @param capturedIndexPath - invocation-time index copy
+
+ @param postIndexPath - post-index being written, already a copy of the current real index
+
+ @param landedTreeOid - landed tree
+
+ @param guardedPaths - hook-changed paths outside the selection
+ */
+async function resetGuardedPaths({
+  gitPath,
+  cwd,
+  capturedIndexPath,
+  postIndexPath,
+  landedTreeOid,
+  guardedPaths,
+}: Readonly<{
+  gitPath: string;
+  cwd: string;
+  capturedIndexPath: string;
+  postIndexPath: string;
+  landedTreeOid: string;
+  guardedPaths: readonly string[];
+}>,): Promise<void> {
+  if (guardedPaths.length === 0)
+    return;
+  /**
+   Captured and current entries of every guarded path.
+   */
+  const [captured, current,] = await Promise.all([
+    listStages({
+      gitPath,
+      cwd,
+      indexPath: capturedIndexPath,
+      paths: guardedPaths,
+    },),
+    listStages({
+      gitPath,
+      cwd,
+      indexPath: postIndexPath,
+      paths: guardedPaths,
+    },),
+  ],);
+  /**
+   Paths still holding their pre-hook entry.
+   */
+  const untouched = guardedPaths.filter(function stillCaptured(path,): boolean {
+    /**
+     Whether the entry is unchanged since invocation.
+     */
+    const same = JSON.stringify(captured.get(path,) ?? [],) === JSON.stringify(current.get(path,) ?? [],);
+    if (!same)
+      l.warn(`A commit hook changed ${path}, but it was staged again while the commit ran; the committed bytes are in HEAD and your staged entry was kept. Compare them with git diff --cached -- ${path}.`,);
+    return same;
+  },);
+  if (untouched.length > 0)
+    await runTransactionGit({
+      gitPath,
+      cwd,
+      indexPath: postIndexPath,
+      args: [
+        'reset',
+        '--quiet',
+        landedTreeOid,
+        '--',
+        ...untouched.map(function fromRoot(path,): string {
+          return `:(top,literal)${path}`;
+        },),
+      ],
+      environment: MAGIC_PATHSPECS,
+    },);
+}
+
+/**
  Computes the post-index a landing installs.
 
  @param gitPath - real Git executable
@@ -322,6 +403,10 @@ async function mergeLandedEntries({
 
  @param committedPaths - paths an explicit-path commit carries, including policy-added paths
 
+ @param guardedPaths - paths a commit hook changed, reset in an explicit-path commit only while their real index entry still holds the captured one
+
+ @param exactPrivateIndex - whether `landedIndexPath` is the exact index the landed commit was prepared from, false after a replay
+
  @example
  ```ts
  await computeLandingPostIndex({ gitPath: '/usr/bin/git', cwd: '/repo', mode: 'index', preLandingIndexPath, capturedIndexPath, landedIndexPath, postIndexPath, landedTreeOid, baseRevision, committedPaths: [] });
@@ -338,6 +423,8 @@ export async function computeLandingPostIndex({
   landedTreeOid,
   baseRevision,
   committedPaths,
+  guardedPaths = [],
+  exactPrivateIndex = true,
 }: Readonly<{
   gitPath: string;
   cwd: string;
@@ -349,6 +436,8 @@ export async function computeLandingPostIndex({
   landedTreeOid: string;
   baseRevision: string;
   committedPaths: readonly string[];
+  guardedPaths?: readonly string[];
+  exactPrivateIndex?: boolean;
 }>,): Promise<void> {
   /**
    Tagged post-index logger.
@@ -378,12 +467,24 @@ export async function computeLandingPostIndex({
         ],
         environment: MAGIC_PATHSPECS,
       },);
+    await resetGuardedPaths({
+      gitPath,
+      cwd,
+      capturedIndexPath,
+      postIndexPath,
+      landedTreeOid,
+      guardedPaths: guardedPaths.filter(function outsideSelection(path,): boolean {
+        return !committedPaths.includes(path,);
+      },),
+    },);
     return;
   }
-  if (await snapshotFilesEqual({
+  // A replayed commit's private index holds the replayed tree without the real index's stat data and flags,
+  // so only the exact prepared index may replace the real index wholesale.
+  if (exactPrivateIndex && (await snapshotFilesEqual({
     leftPath: preLandingIndexPath,
     rightPath: capturedIndexPath,
-  },)) {
+  },))) {
     // Nothing restaged since invocation: the private index is exactly what native Git would leave.
     await copyIndexFile({
       sourcePath: landedIndexPath,
