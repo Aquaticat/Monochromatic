@@ -213,6 +213,9 @@ catalogs:
     jspdf:
       specifier: '>=4.2.1'
       version: 4.2.1
+    matcher:
+      specifier: '>=6.1.0'
+      version: 6.1.0
     mitata:
       specifier: '>=1.0.34'
       version: 1.0.34
@@ -2933,6 +2936,30 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  package/module/matcher-fork.fuzz:
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-matcher-fork':
+        specifier: workspace:*
+        version: link:../matcher-fork
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.2
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
+      matcher:
+        specifier: 'catalog:'
+        version: 6.1.0
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -7207,6 +7234,10 @@ packages:
     engines: {node: '>= 20'}
     hasBin: true
 
+  matcher@6.1.0:
+    resolution: {integrity: sha512-sIUMoFfOqpltCE/cimkSZ0wuBAh17C8+P6BMaBXe5biLopo4oUBDYYqJ9NPMrnmg2z9zdujscgBfA4wohhVqOQ==, tarball: https://registry.npmjs.org/matcher/-/matcher-6.1.0.tgz}
+    engines: {node: '>=20'}
+
   mathml-tag-names@4.0.0:
     resolution: {integrity: sha512-aa6AU2Pcx0VP/XWnh8IGL0SYSgQHDT6Ucror2j2mXeFAlN3ahaNs8EZtG1YiticMkSLj3Gt6VPFfZogt7G5iFQ==, tarball: https://registry.npmjs.org/mathml-tag-names/-/mathml-tag-names-4.0.0.tgz}
 
@@ -10384,6 +10415,8 @@ snapshots:
   markdown-table@3.0.4: {}
 
   marked@18.0.11: {}
+
+  matcher@6.1.0: {}
 
   mathml-tag-names@4.0.0: {}
 
