@@ -1332,6 +1332,7 @@ including any policy patch or hook change revalidation made.
 A later lost race can replay the same transaction again with a new event.
 The events of each replay follow the settled preparation pass in this order:
 `landing-race-lost`,
+`landing-reserved` when that race earned the reservation,
 `commit-replayed`,
 `replay-headers-dropped` when it applies,
 and then the revalidation pass's own events,
@@ -1371,6 +1372,21 @@ Emitted each time a landing finds the target ref moved,
 either before its compare-and-swap or through a failed compare-and-swap.
 `attempt` counts this transaction's lost races from `1`,
 and `winningOid` is the target value that won.
+
+### Landing reserved event
+
+```ts
+export type LandingReservedEvent = EventBase & {
+  readonly type: 'landing-reserved';
+  readonly lostRaces: number;
+};
+```
+
+Emitted once when a transaction is granted the landing reservation
+(see "Starvation reservation" in "Transaction protocol"),
+immediately after the `landing-race-lost` event of the race that earned it.
+`lostRaces` is this transaction's lost races at the grant.
+The event changes no exit code.
 
 ### Commit landed event
 
@@ -2368,8 +2384,10 @@ One landing attempt runs these steps:
 
 1.  Wait while a live reservation owned by another transaction exists
     (see "Starvation reservation").
-2.  Acquire the landing lock,
-    then the real `index.lock` under the foreign-lock rules
+2.  Acquire the landing lock.
+    When a live reservation owned by another transaction now exists,
+    release the landing lock and return to step 1.
+    Then acquire the real `index.lock` under the foreign-lock rules
     (see "Foreign `index.lock` classification"),
     and write cli-git's own owner PID file in Git's `core.lockfilePid` format.
 3.  Fail with `concurrent-commit/branch-switched` when `git symbolic-ref -q HEAD`
@@ -2389,6 +2407,8 @@ One landing attempt runs these steps:
     record a lost race,
     emit `landing-race-lost`,
     release both locks,
+    take the landing reservation when this was the `landing.reserveAfterLostRaces`-th lost race
+    (see "Starvation reservation"),
     replay and revalidate outside the locks
     (see "Replay" and "Revalidation after replay"),
     and restart at step 1.
@@ -2525,14 +2545,20 @@ Every replay starts again from the prepared commit and the preparation base,
 whichever earlier replay lost its race.
 
 - The tree comes from
-  `git merge-tree --write-tree --name-only -z --merge-base=<base> <current> <prepared>`,
+  `git merge-tree --write-tree --name-only -z --merge-base=<merge base> <current> <prepared>`,
   run with the worktree root as its working directory so conflicted paths are reported from the repository root.
-  `<base>` is the preparation base,
+  The preparation base is the target at invocation,
   or for a branch that was unborn at preparation a root commit of the empty tree
   that cli-git writes into the shadow store,
   because Git 2.40 accepts only a commit as `--merge-base`
   (`object ... is a tree, not a commit`,
    measured 2026-09-26).
+  `<merge base>` is the preparation base,
+  or,
+  when subsumption keeps any path
+  (see "Subsumption"),
+  a synthetic root commit in the shadow store
+  whose tree is the preparation base's with each subsumed path set to its landed content.
   The output is the tree ID and a NUL;
   on a conflict,
   each conflicted path NUL-terminated follows,
@@ -2601,6 +2627,90 @@ such as a failed `merge-tree` or signing,
 is a `transaction-failed` engine failure with exit `2`.
 Path-level replay and automatic re-preparation are not used.
 
+#### Subsumption
+
+Owner decision 2026-09-26
+(`doc/decision/cli-git-concurrent-commits.md` "Serial landing"):
+for every path both the prepared commit
+(against its preparation base)
+and the landed history
+(preparation base to `<current>`)
+changed,
+the prepared bytes already contain the landed change when that change applies in reverse to them.
+Such a path keeps the prepared entry as it is,
+matching what native sequential commits produce in a shared worktree;
+every other path merges three-way from the preparation base.
+Under the synthetic merge base a subsumed path shows no landed content change,
+so `git merge-tree` takes the prepared bytes,
+while a regular file keeps the base's mode there,
+so a landed mode change still merges three-way with the prepared one.
+
+Paths are listed by two `git diff-tree -r -z --raw --no-renames` runs from the preparation base,
+so a rename counts as a deletion of its old path and an addition of its new one,
+each decided on its own;
+`git merge-tree` still detects renames when it merges the remaining paths.
+Per shared path,
+with base,
+landed,
+and prepared entries:
+
+- The prepared entry equals the landed one in mode and object,
+  or both are absent:
+  subsumed.
+- Otherwise,
+  when any entry is absent
+  (an addition on both sides,
+   a deletion on one,
+   or a deletion against a modification):
+  not subsumed,
+  because a reversed creation or deletion applies only to identical content.
+- Otherwise,
+  when any entry is not a regular file
+  (a symbolic link or a submodule `160000` entry),
+  or any of the three blobs has a NUL byte in its first 8000 bytes
+  (Git's `buffer_is_binary`,
+   so attributes never decide it):
+  not subsumed.
+- Otherwise the path is subsumed when either text check holds:
+  - strict reverse application:
+    the landed hunks with three context lines apply in reverse to the prepared bytes,
+    an exact emulation of `git apply --reverse --check`
+    (no context reduction,
+     no whitespace fixing,
+     no overlapping hunks,
+     anchoring at the file's start and end as Git's `apply.c` does);
+  - one-sided extension:
+    in zero-context hunks from the preparation base,
+    every landed hunk lies inside one prepared hunk,
+    and in each prepared hunk the landed hunks it covers,
+    joined by the base lines between them,
+    are a prefix of the prepared text when both hunks start on the same base line,
+    or a suffix when both end on the same base line.
+    A prepared hunk that replaces exactly the lines a landed deletion removed is a modify/delete conflict and is not subsumed.
+
+Strict reverse application alone never subsumes the case the decision exists for:
+an own edit directly next to the landed edit sits in the landed hunk's context lines,
+so `git apply --reverse --check` and `-C1` reject it,
+and `-C0` accepts it only by dropping all context,
+which also accepts a landed deletion the prepared bytes never made
+(checked 2026-09-26 with Git 2.55.0).
+The one-sided extension accepts it and still rejects own edits on both sides of a landed hunk.
+
+Process count is fixed per replay:
+two `diff-tree` runs;
+when text candidates exist,
+one `cat-file --batch`,
+three `mktree` runs writing single-level trees whose entries are named by index,
+so no patch header carries a user path,
+and three `diff-tree -p --text` runs;
+and when a path is subsumed,
+`read-tree`,
+`update-index -z --index-info`,
+`write-tree`,
+and `hash-object` into `<tx>/replay-base-<r>.index` and the shadow store.
+File bytes and paths are decoded as Latin-1,
+so comparisons are byte-exact and paths encode back unchanged.
+
 #### Revalidation after replay
 
 After a clean merge,
@@ -2654,10 +2764,8 @@ The loop ends when the commit lands,
 its replay conflicts,
 revalidation rejects it,
 or the target cannot take it.
-The reservation after `landing.reserveAfterLostRaces` lost races plugs in before each landing attempt
-(see "Starvation reservation");
-until it exists,
-a commit replays after every lost race.
+The reservation after `landing.reserveAfterLostRaces` lost races is taken before the replay that follows that lost race
+(see "Starvation reservation").
 
 #### Amend, conclusions, and branch switches
 
@@ -2752,20 +2860,47 @@ After both locks are released:
 
 ### Starvation reservation
 
-A transaction that has lost `landing.reserveAfterLostRaces` races writes `reservation-request`
-and asks for the landing reservation.
-The reservation is an owner lock at `<git-dir>/cli-git-transactions/reservation.lock` holding the transaction ID.
+A transaction that has lost `landing.reserveAfterLostRaces` races
+writes `reservation-request`
+(`{"schemaVersion":2,"state":"reservation-request","lostRaces":<n>}`)
+into its transaction directory
+and waits for the landing reservation before it replays.
+The reservation is an owner lock at `<git-dir>/cli-git-transactions/reservation.lock`
+whose owner record also names the transaction ID.
 
 - Reservations are granted oldest invocation first:
-  a free reservation goes to the live requesting transaction with the earliest recorded invocation start time,
+  a free reservation goes to the live requesting transaction with the earliest recorded invocation start time
+  (`createdAt` in `owner.json`),
   with ties broken by transaction ID byte order.
+  A requester takes it only when it is first in that order,
+  re-read on every check.
 - While a live reservation owned by another transaction exists,
   a transaction may prepare,
   replay,
   and revalidate,
-  but waits before landing.
-- The holder releases the reservation after it lands or fails.
-- A dead owner's reservation and request are retired through the owner-liveness check.
+  but waits before landing,
+  and a landing that took the landing lock after a reservation was granted releases it and waits again
+  ("Landing" step 2).
+  So after the grant at most the landing already inside the critical section lands before the holder,
+  and a holder loses at most `landing.reserveAfterLostRaces` + 1 races.
+- The holder releases the reservation and removes its request when its landing loop ends:
+  landed,
+  conflicted,
+  rejected by revalidation,
+  or failed.
+- A dead owner's reservation no longer counts:
+  the owner-liveness check,
+  which counts a Linux zombie as exited,
+  treats it as free,
+  the next requester retires it,
+  and startup recovery retires it as well.
+  A dead requester's request goes with its transaction directory.
+- An invocation nested under a forwarded Git that holds the landing lock
+  (an inherited landing lease,
+   see "Index-writer coordination")
+  neither waits for nor takes the reservation,
+  because its ancestor holds the landing lock the reservation holder waits for.
+- A granted reservation emits `landing-reserved` after that race's `landing-race-lost`.
 
 ### Locks
 
@@ -2960,6 +3095,7 @@ Management help returns before recovery.
 - A published directory without a valid owner record,
   or with malformed state,
   fails closed with the path named and preserves its contents.
+- A reservation lock whose owner is dead is retired after the transactions are recovered.
 
 Recovery validates the expected old OID,
 the landed OID,
@@ -3086,6 +3222,18 @@ Landing and replay:
 
 - disjoint explicit-path commits land in completion order with native parents;
 - non-overlapping hunks in one file replay cleanly;
+- subsumption,
+  each on real repositories:
+  prepared bytes holding the landed edit plus an adjacent own edit land as they are;
+  a far-apart edit is not subsumed and merges;
+  an adjacent edit without the landed one conflicts;
+  identical additions are subsumed while an addition containing the landed one conflicts;
+  delete against modify conflicts either way round and a deletion on both sides is subsumed;
+  binary blobs are subsumed only when identical;
+  a landed mode change merges three-way even when the content is subsumed;
+  an identical gitlink is subsumed and a different one merges without being read as a blob;
+  the strict reverse check agrees with `git apply --reverse --check` on seeded cases;
+  and an adjacent edit captured on top of another commit's edit replays through the wrapper as captured;
 - overlapping hunks fail with `concurrent-commit/replay-conflict` and leave ref,
   real index,
   and worktree exact,
@@ -3165,7 +3313,11 @@ and configuration:
 - the reservation is requested after the configured lost races,
   granted oldest invocation first,
   blocks other landings while held,
-  and is released when a holder is killed;
+  including one that took the landing lock after the grant,
+  and is released when its holder lands,
+  when its replay conflicts,
+  when the holder is killed,
+  and when the holder is a zombie;
 - two preparations serialize their hooks by default and overlap with `hooks.concurrentCommits: true`;
 - an open message editor does not hold the hook lock;
 - concurrency config defaults,
@@ -3271,14 +3423,23 @@ so this suite is an inherent part of the transaction protocol.
   `landing-locked`,
   `objects-migrated`,
   `ref-updated`,
-  and `index-installed`.
+  `index-installed`,
+  and `race-lost`,
+  reached after each lost landing race outside both locks,
+  after any reservation it earned and before the replay.
+  `race-lost` can be reached more than once,
+  so its files carry the occurrence:
+  `race-lost-<n>.reached` and `race-lost-<n>.release`.
   Only this explicitly test-named variable arms a marker;
   a malformed value fails the invocation.
 - Every run checks these invariants:
   - each commit that exited `0` appears exactly once with exactly its captured bytes;
   - no worktree edit is lost;
   - the real index never stages a revert of landed content;
-  - the remote contains every landed OID;
+  - the remote contains every landed OID,
+    except a commit landed on top of an amend of an already-published commit,
+    which instead must surface the non-fast-forward auto-push rejection with exit `0`
+    (`doc/decision/cli-git-concurrent-commits.md` "Amending published history");
   - no shadow repository,
     transaction directory,
     `cli-git` `.keep` file,
