@@ -8,6 +8,7 @@ import { placeHandleGlosses, } from './handle-gloss-place.ts';
 import { restoreCollidingHeadings, } from './heading-collision-restore.ts';
 import { unifyHeadingSeries, } from './heading-series-unify.ts';
 import { restoreArchiveCasing, } from './archive-casing-restore.ts';
+import { unwrapBlockquoteQuotes, } from './blockquote-quote-unify.ts';
 import { restoreArchiveNameCasing, } from './archive-name-casing.ts';
 import { canadianizePage, } from './canadian-forms.ts';
 import { correctPinyinPage, } from './pinyin-tone.ts';
@@ -204,6 +205,15 @@ export function guardPageAssembly(
     archiveOriginalSpans,
   },);
   /**
+   Every quoted blockquote paragraph unwrapped where the archive sets its
+   blockquotes bare (class one hundred sixty-eight).
+   */
+  const blockquotes = unwrapBlockquoteQuotes({
+    slices,
+    replacements: quotes.replacements,
+    archiveOriginalSpans,
+  },);
+  /**
    Rows the page-assembly passes rewrote, the latest pass's text per slice.
    */
   const restoredRows = new Map<number, SliceReplacement>([
@@ -220,6 +230,7 @@ export function guardPageAssembly(
     ...canadian.restored,
     ...pinyinTones.restored,
     ...quotes.restored,
+    ...blockquotes.restored,
   ].map(function bySlice(row,): readonly [
     number,
     SliceReplacement,
@@ -235,7 +246,7 @@ export function guardPageAssembly(
   const guarded = guardFootnoteAssembly({
     targetText,
     slices,
-    replacements: quotes.replacements
+    replacements: blockquotes.replacements
       .filter(function stillChanges(replacement,): boolean {
         // A restoration that brings a slice back to the archive's exact wording
         // is no change for the assembler; its override row below still says
@@ -283,6 +294,7 @@ export function guardPageAssembly(
       ...canadian.findings,
       ...pinyinTones.findings,
       ...quotes.findings,
+      ...blockquotes.findings,
       ...guarded.findings,
     ],
   };
