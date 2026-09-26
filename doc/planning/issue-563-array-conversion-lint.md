@@ -197,4 +197,6 @@ Repo uses of single-argument `Array.from` are 2 deliberate string code-point spl
 
 ## Open questions
 
-- Whether to post the upstream comment drafted in `doc/troubleshooting/oxlint-spread-autofix.md`.
+- Whether to post the three upstream drafts:
+  the oxc issue 26159 comment and the `prefer-spread` issue in `doc/troubleshooting/oxlint-spread-autofix.md`,
+  and the `isGlobalReference` issue in `doc/troubleshooting/oxlint-js-plugin-global-reference-env.md`.
