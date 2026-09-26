@@ -147,6 +147,10 @@ only during staging.
 On `main`'s build every forwarded linked-worktree command took the lock,
 so they failed during staging too.
 
+The same bounded wait made a second `git worktree add` from a linked worktree fail after about one second
+whenever a live copy held settlement,
+although `doc/decision/cli-git-concurrent-commits.md` "Locks" gives a proven-live owner a wait with no time limit.
+
 ### Blocking after death: recovery rejected the owner's own directories
 
 Installation creates selected directories with a private mode and applies source modes only after every entry exists.
@@ -376,12 +380,21 @@ and the tree was restored from Git afterwards:
 ### Upgrade or rebuild cli-git with the fix
 
 This is the complete correction
-(commits `725c6df76` through `f73862c71` on `fix/cli-git-worktree-copy-stalls-and-blocks-linked-worktrees`).
+(commits `725c6df76` through `ef865a280` on `fix/cli-git-worktree-copy-stalls-and-blocks-linked-worktrees`).
 Installation appends intents and identities to a log inside the private stage once per 512-entry batch,
 hard-links staged files into the destination,
 accepts the transaction's own directories on recovery,
 ends failed and orphaned transactions,
 and lets unrelated commands skip recovery while an owner is live.
+Commit `ef865a280` applies the decision's lock model to settlement:
+a worktree-creating command waits for a proven-live owner without a time limit after one stderr line naming its PID,
+retires a dead owner's lock after a re-read,
+and gives an owner record without evidence a bounded wait and a diagnostic.
+The test
+`package/git-policy/cli/src/worktree-copy-settlement-wait.unit.test.ts`
+keeps a second creation waiting 2.5 s behind a live holder and then requires both to succeed;
+with the live-owner branch replaced by the old immediate timeout,
+that test fails.
 
 Tradeoffs:
 
@@ -394,6 +407,12 @@ Tradeoffs:
   so rerun `git worktree add` after fixing the cause.
 - A journal whose worktree was removed or whose stage was deleted is discarded with a notice;
   ignored files in that worktree stay as they were.
+- A second worktree creation now waits as long as the first copy runs
+  (about 24 s for 48,403 entries in the bounded container).
+  A nested wrapped `git worktree add` from a hook that strips `CLI_GIT_WORKTREE_COPY_LEASE` would wait for its own
+  ancestor forever;
+  the inherited lease is what prevents that,
+  as with the landing lock.
 
 ### Skip copying for one creation on an older build
 
@@ -410,9 +429,11 @@ at the cost of leaving it pending.
 
 ## What does not work
 
-- **Raising the lock timeout.**
+- **Raising the lock timeout alone.**
   The owner's installation would still take time proportional to the square of the entry count,
   and unrelated commands would wait longer instead of failing.
+  The accepted design instead removes the timeout only for proven-live owners,
+  after making installation linear and letting unrelated commands skip recovery.
 - **Deleting only `settlement.lock`.**
   It races a live owner;
   after the owner is dead the lock is already reclaimed as stale,
