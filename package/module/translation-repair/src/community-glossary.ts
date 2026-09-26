@@ -19,6 +19,9 @@
 //
 // THE OWNER CURATES IT. A term the archive got wrong is not entered; the
 // renderings are the archive's first, then forms the community also uses.
+// Where no archive renders the term well (药娘 by the owner's ruling, 逆子
+// where the only passage has no archive English), the renderings are the
+// ones the entry's why states.
 
 /**
  One community term and how the community renders it.
@@ -115,6 +118,27 @@ export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
       + 'the term itself can read as derogatory and the neutrality does not carry into English, so the page '
       + 'says "trans girl" or "trans woman", never the Han and never a pinyin form, even where the existing '
       + 'translation or a translator\'s note on the page keeps it',
+  },
+  {
+    // CLASS ONE HUNDRED FIFTY-ONE (shi_Yumiaoya36 and 37, 2026-09-26). The
+    // father's insult 「逆子」 shipped as "rebellious child" on both runs and
+    // in Han on shi_Yumiaoya8. The word is "unfilial son": on a trans
+    // woman's memorial it is her father calling her his son, and "child"
+    // takes the misgendering out of the insult the page reports. No archive
+    // renders the passage (shi_Yumiaoya's archive is partial), so nothing on
+    // any sheet said which.
+    term: '逆子',
+    renderings: [
+      'unfilial son',
+      'undutiful son',
+      'disobedient son',
+      'ungrateful son',
+      'rebellious son',
+    ],
+    refusedForms: [],
+    why: 'a parent\'s insult, "unfilial son"; said by a father of his trans daughter it calls her his son, '
+      + 'so the page keeps "son" inside the quoted insult: "child" or "kid" drops the misgendering the '
+      + 'insult carries, and the Han is never left',
   },
 ];
 
@@ -323,7 +347,7 @@ export function communityRenderingDepartures(
       .map(function toLine(entry,): string {
         return `${candidate.label} carries none of the community's renderings of ${entry.term} (${
           quotedRenderings({ entry, },)
-        }); the archive renders it so`;
+        }); the community glossary renders it so`;
       },);
   },);
 }
