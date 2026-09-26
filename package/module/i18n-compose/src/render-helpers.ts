@@ -144,7 +144,6 @@ function lastCodePointOf(
   /**
    Token split into Unicode code-point strings so astral CJK ranges stay intact.
    */
-  // oxlint-disable-next-line unicorn/prefer-spread -- CJK ranges are code-point ranges; string spread is blocked.
   const characters = Array.from(token,);
   /**
    Final character string from token.

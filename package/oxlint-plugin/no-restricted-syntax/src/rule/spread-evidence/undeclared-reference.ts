@@ -2,9 +2,12 @@
  Scope check for identifiers that no declaration in the linted file binds.
 
  `sourceCode.isGlobalReference` only recognizes globals the lint configuration
- declares, so a Node global such as `Buffer` in a file linted without the Node
- environment reads as neither local nor global. Such an identifier still names
- a host namespace or constructor rather than a local array.
+ declares. Measured on oxlint 1.85.0: without `env`, `Array` and `Object` are
+ global and `Buffer` is not; with the shared config's
+ `env: { browser, node, es2024 }`, `Buffer` is global but `Array` and `Object`
+ are not, because an explicit `env` replaces the default builtin globals. Either
+ way such an identifier names a host namespace or constructor, not a local
+ binding, so this module asks the scope chain whether the file declares it.
 
  @module
  */

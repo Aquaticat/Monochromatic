@@ -19,6 +19,7 @@ import {
   NO_STATIC_MEMBER_NAME,
 } from '../ast-shared.ts';
 import { TYPED_ARRAY_NAMES, } from '../spread-evidence/typed-array-names.ts';
+import { isUndeclaredReference, } from '../spread-evidence/undeclared-reference.ts';
 
 /**
  Sentinel for an array literal whose parent does not accept an arbitrary iterable in its place.
@@ -99,8 +100,10 @@ function iterableConsumerName(
      Constructor being invoked.
      */
     const { callee, } = parent;
-    if ((callee.type !== 'Identifier') || (!context.sourceCode
-      .isGlobalReference(callee,)))
+    if ((callee.type !== 'Identifier') || (!isUndeclaredReference({
+      context,
+      identifier: callee,
+    },)))
       return NOT_ITERABLE_CONSUMER;
     return ITERABLE_CONSTRUCTORS.has(callee.name,) || TYPED_ARRAY_NAMES.has(callee.name,) ? callee.name : NOT_ITERABLE_CONSUMER;
   }
@@ -112,8 +115,10 @@ function iterableConsumerName(
    Receiver of the static method call.
    */
   const { object, } = parent.callee;
-  if ((object.type !== 'Identifier') || (!context.sourceCode
-    .isGlobalReference(object,)))
+  if ((object.type !== 'Identifier') || (!isUndeclaredReference({
+    context,
+    identifier: object,
+  },)))
     return NOT_ITERABLE_CONSUMER;
   /**
    Static method being called.

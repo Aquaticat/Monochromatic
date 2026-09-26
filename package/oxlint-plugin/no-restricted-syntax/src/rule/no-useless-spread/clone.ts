@@ -19,6 +19,7 @@ import type {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { expressionValueKind, } from '../spread-evidence/expression-kind.ts';
+import { isUndeclaredReference, } from '../spread-evidence/undeclared-reference.ts';
 import { valueHint, } from './value-hint.ts';
 
 /**
@@ -177,8 +178,10 @@ export function reportUselessClone(
   const hint = valueHint({
     expression: spread.argument,
     isGlobal: function isGlobal(identifier,): boolean {
-      return context.sourceCode
-        .isGlobalReference(identifier,);
+      return isUndeclaredReference({
+        context,
+        identifier,
+      },);
     },
   },);
   if (literal.type === 'ObjectExpression') {

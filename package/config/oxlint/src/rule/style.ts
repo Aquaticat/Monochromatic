@@ -173,6 +173,13 @@ export const styleRules: DummyRuleMap = {
   // Sometimes method chaining is more concise.
   'eslint/prefer-spread': 'off',
 
+  // Upstream unicorn/prefer-spread rewrites `x.slice()` to `[...x]` by guessing from the name
+  // whether `x` is an array, turning typed-array copies into plain arrays (repo #565).
+  // The project rule fixes only receivers TypeScript proves are arrays, leaves typed arrays and
+  // strings alone, and reports untyped `slice`/`concat` receivers without a fix.
+  'unicorn/prefer-spread': 'off',
+  'no-restricted-syntax/prefer-spread': 'warn',
+
   // Doesn't matter.
   'eslint/sort-imports': 'off',
   'eslint/sort-keys': 'off',

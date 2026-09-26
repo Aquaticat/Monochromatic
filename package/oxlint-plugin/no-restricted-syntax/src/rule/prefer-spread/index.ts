@@ -97,8 +97,10 @@ function reportArrayFrom(
    */
   const { object, } = call.callee;
   if ((object.type !== 'Identifier') || (object.name !== 'Array')
-    || (!context.sourceCode
-      .isGlobalReference(object,)))
+    || (!isUndeclaredReference({
+      context,
+      identifier: object,
+    },)))
     return;
   /**
    Sole ordinary argument, or sentinel.

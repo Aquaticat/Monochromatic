@@ -119,12 +119,12 @@ function normaliseInlineShort(token: string,): readonly string[] {
    */
   const inlineValue = token.slice(valueIndex + 1,);
 
-  /* oxlint-disable unicorn/prefer-spread -- leading is ASCII short-option letters (constrained by SHORT_VALUE_OPTIONS), so code-point iteration here is correct and equivalent to grapheme iteration. */
   /**
-   Cluster letters split into individual short-option characters.
+   Cluster letters split into individual short-option characters. The letters are
+   ASCII (constrained by SHORT_VALUE_OPTIONS), so code-point splitting equals
+   grapheme splitting.
    */
   const leadingLetters = Array.from(leading,);
-  /* oxlint-enable unicorn/prefer-spread */
   /**
    Boolean short options split back into single-letter tokens.
    */

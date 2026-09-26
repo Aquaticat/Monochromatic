@@ -3,6 +3,12 @@
   // Isolated config for prefer-spread tests: every native category is off so
   // upstream unicorn/prefer-spread cannot apply its own fixes during --fix runs.
   "plugins": [],
+  // Mirrors the shared config environment, which drops Array and Object from the global scope.
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2024": true
+  },
   "categories": {
     "correctness": "off",
     "suspicious": "off",
