@@ -8,6 +8,7 @@ import {
   PROCESS_IDENTITY_ABSENT,
   resolveProcessBirthIdentity,
 } from './commit-transaction-process-identity.ts';
+import { startZombie, } from '../owner-lock/zombie-fixture.unit.test.ts';
 
 await describe({
   name: resolveProcessBirthIdentity.name,
@@ -25,6 +26,16 @@ await describe({
         /** Deliberately impossible Linux PID identity. */
         const absent = await resolveProcessBirthIdentity(Number.MAX_SAFE_INTEGER,);
         expect(absent).toBe(PROCESS_IDENTITY_ABSENT,);
+      },
+    },),
+    it({
+      name: 'treats an exited but unreaped Linux process as absent, because a zombie holds nothing',
+      fn: async function testZombieIdentity(): Promise<void> {
+        if (process.platform !== 'linux')
+          return;
+        await using zombie = await startZombie(resolveProcessBirthIdentity,);
+        expect(zombie.identity.startsWith('linux:',)).toBe(true,);
+        expect(await resolveProcessBirthIdentity(zombie.pid,),).toBe(PROCESS_IDENTITY_ABSENT,);
       },
     },),
   ],

@@ -24,9 +24,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import nanoSpawn from 'nano-spawn';
 import { internalTestExports, } from '../../dist/final/node/index.mjs';
+import { startZombie, } from '../owner-lock/zombie-fixture.unit.test.ts';
 
 const {
   acquireOwnerLock,
+  resolveProcessBirthIdentity,
   writeHookShim,
 } = internalTestExports;
 
@@ -264,6 +266,27 @@ await describe({
         expect(await hookReport(fixture,),).toBe('hook did not run',);
         await held[Symbol.asyncDispose]();
         expect(await run,).toBe(0,);
+        expect(await hookReport(fixture,),).not.toBe('hook did not run',);
+      },
+    },),
+    it({
+      name: 'retires a hook lock whose holder exited but was never reaped, instead of waiting forever',
+      fn: async function testZombieHolder(): Promise<void> {
+        if (process.platform !== 'linux')
+          return;
+        await using fixture = await createShimFixture({},);
+        await using zombie = await startZombie(resolveProcessBirthIdentity,);
+        await mkdir(fixture.hookLockPath,);
+        await writeFile(join(fixture.hookLockPath, 'owner.json',), `${JSON.stringify({ schemaVersion: 1, token: 'zombie', ownerPid: zombie.pid, ownerBirthIdentity: zombie.identity, },)}\n`,);
+        /** Shim outcome, bounded so a regression fails instead of hanging. */
+        const outcome = await Promise.race([
+          runShim({ fixture, },),
+          (async function timeout(): Promise<string> {
+            await wait(5_000,);
+            return 'still waiting on the zombie holder';
+          })(),
+        ],);
+        expect(outcome,).toBe(0,);
         expect(await hookReport(fixture,),).not.toBe('hook did not run',);
       },
     },),

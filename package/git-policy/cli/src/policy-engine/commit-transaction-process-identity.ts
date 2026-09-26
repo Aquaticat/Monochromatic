@@ -12,7 +12,22 @@ import nanoSpawn, { SubprocessError, } from 'nano-spawn';
 export const PROCESS_IDENTITY_ABSENT: unique symbol = Symbol('transaction owner process identity absent',);
 
 /**
+ Linux process states of a process that has exited:
+ zombie (exited, not yet reaped by its parent) and dead.
+ */
+const EXITED_LINUX_STATES: ReadonlySet<string> = new Set([
+  'Z',
+  'X',
+],);
+
+/**
  Resolves Linux kernel process start tick.
+
+ A zombie keeps its PID and start tick until its parent reaps it,
+ which never happens under an init that does not reap orphans,
+ such as a container's Node PID 1 after a `SIGKILL` of a whole process group.
+ It holds no files and runs no code,
+ so it counts as exited.
  
  @param pid - process identifier
  
@@ -39,6 +54,8 @@ async function resolveLinuxIdentity(pid: number,): Promise<string | typeof PROCE
     const fields = stat.slice(commandEnd + 2,)
       .trim()
       .split(' ',);
+    if (EXITED_LINUX_STATES.has(fields[0] ?? '',))
+      return PROCESS_IDENTITY_ABSENT;
     /**
      Field twenty-two relative to field-three origin.
      */

@@ -22,6 +22,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { internalTestExports, } from '../../dist/final/node/index.mjs';
+import { startZombie, } from './zombie-fixture.unit.test.ts';
 
 const {
   acquireOwnerLock,
@@ -181,6 +182,32 @@ await describe({
           await using lock = await acquireOwnerLock({ lockDirectory, pollDelayMs: 5, },);
           expect(lock.token,).not.toBe('dead',);
         }
+        expect(await readdir(directory.path,),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'retires a lock whose owner exited but was never reaped, as after SIGKILL in a container without a reaping init',
+      fn: async function testZombieOwner(): Promise<void> {
+        if (process.platform !== 'linux')
+          return;
+        await using directory = await scratch();
+        await using zombie = await startZombie(resolveProcessBirthIdentity,);
+        /** Lock path. */
+        const lockDirectory = join(directory.path, 'hook.lock',);
+        await mkdir(lockDirectory,);
+        await writeFile(join(lockDirectory, 'owner.json',), `${JSON.stringify({ schemaVersion: 1, token: 'zombie', ownerPid: zombie.pid, ownerBirthIdentity: zombie.identity, },)}\n`,);
+        /** Acquisition, bounded so a regression fails instead of hanging. */
+        const acquired = await Promise.race([
+          (async function acquire(): Promise<string> {
+            await using lock = await acquireOwnerLock({ lockDirectory, pollDelayMs: 5, },);
+            return lock.token;
+          })(),
+          (async function timeout(): Promise<string> {
+            await wait(3_000,);
+            return 'still waiting on the zombie owner';
+          })(),
+        ],);
+        expect(acquired,).not.toBe('still waiting on the zombie owner',);
         expect(await readdir(directory.path,),).toEqual([],);
       },
     },),

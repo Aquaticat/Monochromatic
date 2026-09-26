@@ -35,6 +35,7 @@ const PLAN_URL = new URL('./plan.json', import.meta.url);
 const RECORD = 'owner.json';
 const POLL_MS = 20;
 const LINUX_START_FIELD = 19;
+const EXITED_STATES = ['Z', 'X'];
 
 function sleep(milliseconds) {
   return new Promise(function schedule(resolveSleep) {
@@ -69,6 +70,9 @@ async function birthIdentity(pid) {
     try {
       const stat = await readFile('/proc/' + String(pid) + '/stat', 'utf8');
       const fields = stat.slice(stat.lastIndexOf(')') + 2).trim().split(' ');
+      // A zombie keeps its PID and start tick until reaped, which a container init may never do; it holds nothing.
+      if (EXITED_STATES.includes(fields[0]))
+        return null;
       const tick = fields[LINUX_START_FIELD];
       return tick ? 'linux:' + tick : null;
     }
