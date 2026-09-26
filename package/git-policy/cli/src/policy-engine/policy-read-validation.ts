@@ -160,10 +160,48 @@ async function trackedFilesHold({
     .map(async function requestHolds(request,): Promise<boolean> {
       return sameIdentity({
         recorded: request.entries,
-        current: (await facts.trackedFiles({ pathspecs: request.pathspecs, },)).map(trackedIdentity,),
+        current: (await facts.trackedFiles({ pathspecs: request.pathspecs, },)).map(function identify(file,) {
+          return trackedIdentity(file,);
+        },),
       },);
     },),);
   return matches.every(Boolean,);
+}
+
+/**
+ Identities of a candidate list.
+
+ @param files - candidates
+
+ @returns identities in order
+
+ @example
+ ```ts
+ candidateIdentities(await facts.candidates());
+ ```
+ */
+function candidateIdentities(files: readonly CandidateFile[],): unknown {
+  return files.map(function identify(file,) {
+    return candidateIdentity(file,);
+  },);
+}
+
+/**
+ Identities of a push update list.
+
+ @param updates - push updates
+
+ @returns identities in order
+
+ @example
+ ```ts
+ pushUpdateIdentities(await facts.pushUpdates());
+ ```
+ */
+function pushUpdateIdentities(updates: readonly PushUpdate[],): unknown {
+  return updates.map(function identify(update,) {
+    return pushUpdateIdentity(update,);
+  },);
 }
 
 /**
@@ -229,9 +267,7 @@ export async function readSetHolds({
     readHolds({
       recorded: readSet.candidates,
       read: facts.candidates,
-      identify: function identifyCandidates(files: readonly CandidateFile[],): unknown {
-        return files.map(candidateIdentity,);
-      },
+      identify: candidateIdentities,
     },),
     readHolds({
       recorded: readSet.headOid,
@@ -246,9 +282,7 @@ export async function readSetHolds({
     readHolds({
       recorded: readSet.pushUpdates,
       read: facts.pushUpdates,
-      identify: function identifyUpdates(updates: readonly PushUpdate[],): unknown {
-        return updates.map(pushUpdateIdentity,);
-      },
+      identify: pushUpdateIdentities,
     },),
     trackedFilesHold({
       readSet,

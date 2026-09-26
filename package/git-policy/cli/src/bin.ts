@@ -241,9 +241,6 @@ try {
       policyOptions: runtimeResolution.loaded
         .validated
         .policyOptions,
-      policyInputs: runtimeResolution.loaded
-        .validated
-        .policyInputs,
     };
   /**
    Supported commit transaction, including final stable policy pass.

@@ -52,7 +52,8 @@ function hasNoNul(text: string,): boolean {
  ```
  */
 function isSingleLineRevision(rev: string,): boolean {
-  return hasNoNul(rev,) && (!rev.includes('\n',)) && (!rev.includes('\r',))
+  return hasNoNul(rev,) && (!rev.includes('\n',))
+    && (!rev.includes('\r',))
     && (!rev.startsWith('-',));
 }
 
@@ -184,6 +185,16 @@ export function parsePolicyInputs({
 }
 
 /**
+ A policy declaration without `inputs`, which means `'unrestricted'`.
+
+ @example
+ ```ts
+ if (declaration === INPUTS_UNDECLARED) return 'unrestricted';
+ ```
+ */
+export const INPUTS_UNDECLARED: unique symbol = Symbol('policy declares no inputs',);
+
+/**
  Narrows an untrusted declaration member to a callable.
 
  @param value - untrusted member
@@ -206,7 +217,7 @@ function isInputsFunction(value: unknown,): value is (options: unknown) => Polic
 
  @param effectiveId - policy ID named in diagnostics
 
- @returns absent, a function to call with parsed options, or a validated static value
+ @returns {@link INPUTS_UNDECLARED} when absent, a function to call with parsed options, or a validated static value
 
  @throws {@link ConfigValidationError} when a static value is invalid
 
@@ -221,8 +232,10 @@ export function validateInputsDeclaration({
 }: Readonly<{
   value: unknown;
   effectiveId: string;
-}>,): PolicyInputsDeclaration<unknown> | undefined {
-  if ((value === undefined) || isInputsFunction(value,))
+}>,): PolicyInputsDeclaration<unknown> | typeof INPUTS_UNDECLARED {
+  if (value === undefined)
+    return INPUTS_UNDECLARED;
+  if (isInputsFunction(value,))
     return value;
   return parsePolicyInputs({
     value,
@@ -288,7 +301,7 @@ export function resolvePolicyInputs({
   options,
   effectiveId,
 }: Readonly<{
-  declaration: PolicyInputsDeclaration<unknown> | undefined;
+  declaration?: PolicyInputsDeclaration<unknown>;
   options: unknown;
   effectiveId: string;
 }>,): PolicyInputs {

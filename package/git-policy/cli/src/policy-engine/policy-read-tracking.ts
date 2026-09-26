@@ -177,12 +177,18 @@ export function policyFingerprints({
   fingerprints: InputFingerprints;
 }>,): InputFingerprints {
   return new Map(externalInputs(inputs,)
-    .map(function fingerprintOf(input,): readonly [string, InputFingerprint] {
+    .map(function fingerprintOf(input,): readonly [
+      string,
+      InputFingerprint
+    ] {
       /**
        Input key.
        */
       const key = policyInputKey(input,);
-      return [key, fingerprints.get(key,) ?? FINGERPRINT_UNAVAILABLE,];
+      return [
+        key,
+        fingerprints.get(key,) ?? FINGERPRINT_UNAVAILABLE,
+      ];
     },),);
 }
 

@@ -44,7 +44,9 @@ export function declaredPreForwardInputs(policyOptions: CommitTransactionPolicyO
   /**
    Explicit severities.
    */
-  const severities = policyOptions.config?.policies ?? {};
+  const severities = policyOptions.config
+    ?.policies
+    ?? {};
   return (policyOptions.registeredPolicies ?? BUILT_IN_POLICIES)
     .filter(function isEnabledPreForward(policy,): boolean {
       return policy.triggers
@@ -52,10 +54,7 @@ export function declaredPreForwardInputs(policyOptions: CommitTransactionPolicyO
         && ((severities[policy.name] ?? policy.defaultSeverity) !== 'off');
     },)
     .flatMap(function inputsOf(policy,): readonly PolicyInput[] {
-      return externalInputs(effectivePolicyInputs({
-        policy,
-        ...(policyOptions.policyInputs === undefined ? {} : { policyInputs: policyOptions.policyInputs, }),
-      },),);
+      return externalInputs(effectivePolicyInputs(policy,),);
     },);
 }
 

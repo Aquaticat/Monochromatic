@@ -14,29 +14,21 @@
 
  @module
  */
-import { createHash, } from 'node:crypto';
-import { createReadStream, } from 'node:fs';
 import {
-  access,
-  constants,
   lstat,
   readlink,
-  realpath,
-  stat,
 } from 'node:fs/promises';
-import {
-  delimiter,
-  isAbsolute,
-  join,
-  resolve,
-  sep,
-} from 'node:path';
-import { pipeline, } from 'node:stream/promises';
+import { join, } from 'node:path';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { PolicyInput, } from '../api/policy-input-types.ts';
 import { runShadowGit, } from '../shadow-repository/shadow-refs.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
+import {
+  type ExecutableLocation,
+  executableFingerprint,
+  fileDigest,
+} from './policy-input-executable.ts';
 import { mapBounded, } from './map-bounded.ts';
 
 /**
@@ -90,23 +82,15 @@ export type InputFingerprints = ReadonlyMap<string, InputFingerprint>;
 /**
  Where fingerprints are taken.
  */
-export type FingerprintLocation = Readonly<{
+export type FingerprintLocation = ExecutableLocation & Readonly<{
   /**
    Real Git executable.
    */
   gitPath: string;
   /**
-   Worktree root, which `worktree` pathspecs and relative `executable` paths resolve from.
-   */
-  repositoryRoot: string;
-  /**
    Shadow repository whose `HEAD` is the commit's parent, where `revision` inputs resolve.
    */
   shadowPath: string;
-  /**
-   Environment `env` inputs and `PATH` lookup read.
-   */
-  environment: NodeJS.ProcessEnv;
 }>;
 
 /**
@@ -123,77 +107,24 @@ export type FingerprintLocation = Readonly<{
  */
 export function policyInputKey(input: PolicyInput,): string {
   if (input.kind === 'worktree')
-    return JSON.stringify([input.kind, ...input.pathspecs,],);
+    return JSON.stringify([
+      input.kind,
+      ...input.pathspecs,
+    ],);
   if (input.kind === 'executable')
-    return JSON.stringify([input.kind, input.path,],);
+    return JSON.stringify([
+      input.kind,
+      input.path,
+    ],);
   if (input.kind === 'revision')
-    return JSON.stringify([input.kind, input.rev,],);
-  return JSON.stringify([input.kind, input.name,],);
-}
-
-/**
- SHA-256 of a file's bytes, streamed.
-
- @param path - file
-
- @returns hex digest
-
- @example
- ```ts
- await fileDigest('/usr/bin/git');
- ```
- */
-async function fileDigest(path: string,): Promise<string> {
-  /**
-   Streaming hash.
-   */
-  const hash = createHash('sha256',);
-  await pipeline(
-    createReadStream(path,),
-    hash,
-  );
-  return hash.digest('hex',);
-}
-
-/**
- Identity fields of a no-follow or followed stat.
-
- @param path - file
-
- @param follow - whether to follow a final symbolic link
-
- @returns device, inode, size, and modification time in nanoseconds
-
- @example
- ```ts
- await statIdentity({ path: '/usr/bin/git', follow: false });
- ```
- */
-async function statIdentity({
-  path,
-  follow,
-}: Readonly<{
-  path: string;
-  follow: boolean;
-}>,): Promise<readonly string[]> {
-  /**
-   Exact stat.
-   */
-  const stats = follow
-    ? await stat(
-      path,
-      { bigint: true, },
-    )
-    : await lstat(
-      path,
-      { bigint: true, },
-    );
-  return [
-    String(stats.dev,),
-    String(stats.ino,),
-    String(stats.size,),
-    String(stats.mtimeNs,),
-  ];
+    return JSON.stringify([
+      input.kind,
+      input.rev,
+    ],);
+  return JSON.stringify([
+    input.kind,
+    input.name,
+  ],);
 }
 
 /**
@@ -230,14 +161,29 @@ async function worktreePathFingerprint({
      */
     const stats = await lstat(absolute,);
     if (stats.isSymbolicLink())
-      return [path, 'symlink', await readlink(absolute,),];
+      return [
+        path,
+        'symlink',
+        await readlink(absolute,),
+      ];
     if (stats.isFile())
-      return [path, 'file', await fileDigest(absolute,),];
-    return [path, 'other',];
+      return [
+        path,
+        'file',
+        await fileDigest(absolute,),
+      ];
+    return [
+      path,
+      'other',
+    ];
   }
   catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
-      return [path, 'missing',];
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ENOENT'))
+      return [
+        path,
+        'missing',
+      ];
     throw error;
   }
 }
@@ -302,133 +248,6 @@ async function worktreeFingerprint({
 }
 
 /**
- Whether a path is an executable regular file, following links as `execvp` does.
-
- @param path - candidate
-
- @returns whether it can be executed
-
- @example
- ```ts
- await isExecutableFile('/usr/bin/git'); // true
- ```
- */
-async function isExecutableFile(path: string,): Promise<boolean> {
-  try {
-    await access(
-      path,
-      constants.X_OK,
-    );
-    return (await stat(path,)).isFile();
-  }
-  catch (error: unknown) {
-    l.debug(`${path} is not an executable file: ${caughtValueText(error,)}`,);
-    return false;
-  }
-}
-
-/**
- Resolves an `executable` input the way a spawn from the worktree root resolves its command.
-
- @param location - where fingerprints are taken
-
- @param path - declared path or name
-
- @returns resolved path, or undefined when no executable file exists there
-
- @example
- ```ts
- await resolveExecutable({ location, path: 'git' });
- ```
- */
-async function resolveExecutable({
-  location,
-  path,
-}: Readonly<{
-  location: FingerprintLocation;
-  path: string;
-}>,): Promise<string | undefined> {
-  if (isAbsolute(path,) || path.includes('/',) || path.includes(sep,))
-    return resolve(
-      location.repositoryRoot,
-      path,
-    );
-  /**
-   `PATH` candidates in lookup order; an empty entry names the working directory.
-   */
-  const candidates = (location.environment
-    .PATH ?? '').split(delimiter,)
-    .map(function candidate(directory,): string {
-      return resolve(
-        location.repositoryRoot,
-        directory,
-        path,
-      );
-    },);
-  /**
-   Whether each candidate is executable, checked concurrently and read in lookup order.
-   */
-  const executable = await Promise.all(candidates.map(isExecutableFile,),);
-  return candidates.find(function firstExecutable(_candidate, index,): boolean {
-    return executable[index] === true;
-  },);
-}
-
-/**
- Fingerprint of an `executable` input:
- the resolved path with its no-follow identity,
- the final target with its identity,
- and the target's digest.
-
- @param location - where fingerprints are taken
-
- @param path - declared path or name
-
- @returns serialized fingerprint
-
- @example
- ```ts
- await executableFingerprint({ location, path: 'git' });
- ```
- */
-async function executableFingerprint({
-  location,
-  path,
-}: Readonly<{
-  location: FingerprintLocation;
-  path: string;
-}>,): Promise<string> {
-  /**
-   Resolved path.
-   */
-  const resolved = await resolveExecutable({
-    location,
-    path,
-  },);
-  if ((resolved === undefined) || (!(await isExecutableFile(resolved,))))
-    return JSON.stringify(['missing', resolved ?? '',],);
-  /**
-   Final target of every link.
-   */
-  const target = await realpath(resolved,);
-  /**
-   Identity and content, read concurrently.
-   */
-  const [link, targetIdentity, digest,] = await Promise.all([
-    statIdentity({
-      path: resolved,
-      follow: false,
-    },),
-    statIdentity({
-      path: target,
-      follow: true,
-    },),
-    fileDigest(target,),
-  ],);
-  return JSON.stringify([resolved, link, target, targetIdentity, digest,],);
-}
-
-/**
  Resolves every `revision` input in one `git cat-file --batch-check` in the shadow.
 
  @param location - where fingerprints are taken
@@ -447,8 +266,14 @@ async function revisionFingerprints({
   revisions,
 }: Readonly<{
   location: FingerprintLocation;
-  revisions: readonly Readonly<{ kind: 'revision'; rev: string; }>[];
-}>,): Promise<readonly (readonly [string, InputFingerprint])[]> {
+  revisions: readonly Readonly<{
+    kind: 'revision';
+    rev: string
+  }>[];
+}>,): Promise<readonly (readonly [
+  string,
+  InputFingerprint
+])[]> {
   if (revisions.length === 0)
     return [];
   try {
@@ -468,14 +293,29 @@ async function revisionFingerprints({
         .join('\n',)}\n`,),
     },)).stdout,)
       .split('\n',);
-    return revisions.map(function fingerprintOf(input, index,): readonly [string, InputFingerprint] {
-      return [policyInputKey(input,), JSON.stringify([lines[index] ?? '',],),];
+    return revisions.map(function fingerprintOf(
+      input,
+      index,
+    ): readonly [
+      string,
+      InputFingerprint
+    ] {
+      return [
+        policyInputKey(input,),
+        JSON.stringify([lines[index] ?? '',],),
+      ];
     },);
   }
   catch (error: unknown) {
     l.debug(`revision inputs cannot be fingerprinted, so their policies re-run: ${caughtValueText(error,)}`,);
-    return revisions.map(function unavailable(input,): readonly [string, InputFingerprint] {
-      return [policyInputKey(input,), FINGERPRINT_UNAVAILABLE,];
+    return revisions.map(function unavailable(input,): readonly [
+      string,
+      InputFingerprint
+    ] {
+      return [
+        policyInputKey(input,),
+        FINGERPRINT_UNAVAILABLE,
+      ];
     },);
   }
 }
@@ -542,8 +382,14 @@ export async function fingerprintPolicyInputs({
    Distinct inputs by key.
    */
   const distinct = [
-    ...new Map(inputs.map(function keyed(input,): readonly [string, PolicyInput] {
-      return [policyInputKey(input,), input,];
+    ...new Map(inputs.map(function keyed(input,): readonly [
+      string,
+      PolicyInput
+    ] {
+      return [
+        policyInputKey(input,),
+        input,
+      ];
     },),)
       .values(),
   ];
@@ -552,7 +398,10 @@ export async function fingerprintPolicyInputs({
    */
   const revisions = await revisionFingerprints({
     location,
-    revisions: distinct.flatMap(function revisionOf(input,): readonly Readonly<{ kind: 'revision'; rev: string; }>[] {
+    revisions: distinct.flatMap(function revisionOf(input,): readonly Readonly<{
+      kind: 'revision';
+      rev: string
+    }>[] {
       return input.kind === 'revision' ? [input,] : [];
     },),
   },);
@@ -564,7 +413,10 @@ export async function fingerprintPolicyInputs({
       return input.kind !== 'revision';
     },),
     concurrency: FINGERPRINT_CONCURRENCY,
-    map: async function fingerprintOne({ value: input, },): Promise<readonly [string, InputFingerprint]> {
+    map: async function fingerprintOne({ value: input, },): Promise<readonly [
+      string,
+      InputFingerprint
+    ]> {
       return [
         policyInputKey(input,),
         await settle({
@@ -589,5 +441,8 @@ export async function fingerprintPolicyInputs({
     },
   },);
   rl.debug(`fingerprinted ${String(distinct.length,)} policy inputs`,);
-  return new Map([...revisions, ...others,],);
+  return new Map([
+    ...revisions,
+    ...others,
+  ],);
 }

@@ -73,6 +73,12 @@ const DEFAULT_RULES_PATH = 'forbidden-strings.local.txt';
  ```
  */
 export function forbiddenStringsInputs(options: ForbiddenStringsPolicyOptions,): PolicyInputs {
+  /**
+   Rules file the scanner reads, relative to the repository root unless absolute.
+   */
+  const rulesPath = process.env
+    .FORBIDDEN_STRINGS_RULES
+    ?? DEFAULT_RULES_PATH;
   return {
     external: [
       {
@@ -85,7 +91,7 @@ export function forbiddenStringsInputs(options: ForbiddenStringsPolicyOptions,):
       },
       {
         kind: 'worktree',
-        pathspecs: [`:(literal)${process.env.FORBIDDEN_STRINGS_RULES ?? DEFAULT_RULES_PATH}`,],
+        pathspecs: [`:(literal)${rulesPath}`,],
       },
     ],
   };

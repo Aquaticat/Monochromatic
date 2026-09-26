@@ -5,10 +5,7 @@
  */
 import type { GenericSchema, } from 'valibot';
 import type { LazyPolicyGitFacts, } from '../api/context-types.ts';
-import type {
-  PolicyInputs,
-  PolicyInputsDeclaration,
-} from '../api/policy-input-types.ts';
+import type { PolicyInputsDeclaration, } from '../api/policy-input-types.ts';
 import type {
   PolicyContext,
   PolicyFinding,
@@ -44,7 +41,7 @@ export type RuntimePolicyDefinition = {
    */
   readonly options?: GenericSchema<unknown, unknown>;
   /**
-   Declared external inputs; config loading resolves a function form into `policyInputs`.
+   Declared external inputs; config loading replaces a function form with its result for every enabled policy.
    */
   readonly inputs?: PolicyInputsDeclaration<unknown>;
   /**
@@ -113,10 +110,6 @@ export type RunPolicyEngineOptions = Readonly<{
    Runtime-validated option outputs by effective policy ID.
    */
   policyOptions?: ReadonlyMap<string, unknown>;
-  /**
-   Resolved inputs by effective policy ID; a policy absent here uses its static declaration.
-   */
-  policyInputs?: ReadonlyMap<string, PolicyInputs>;
   /**
    Read recording and reuse of earlier runs, present only inside a commit transaction.
    */

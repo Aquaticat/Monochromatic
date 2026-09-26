@@ -37,7 +37,7 @@ export const ABSENT_IDENTITY = 'absent';
 /**
  Object ID, or {@link ABSENT_IDENTITY}.
  */
-export type ObjectIdentity = GitObjectId | typeof ABSENT_IDENTITY;
+export type ObjectIdentity = string;
 
 /**
  Identity of one candidate as a policy saw it.

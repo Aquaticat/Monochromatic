@@ -60,10 +60,6 @@ export type PassReadTracking = Readonly<{
    */
   tracking: PolicyReadTracking;
   /**
-   Resolved inputs by effective policy ID.
-   */
-  policyInputs?: ReadonlyMap<string, PolicyInputs>;
-  /**
    Pass facts memoized for read-set validation.
    */
   validationFacts: LazyPolicyGitFacts;
@@ -117,30 +113,16 @@ export async function checkPolicy({
  else its static declaration,
  else `'unrestricted'`.
 
- @param policy - runtime policy
-
- @param policyInputs - resolved inputs by effective policy ID
+ @param policy - runtime policy, whose function declaration config loading already resolved when enabled
 
  @returns effective inputs
 
  @example
  ```ts
- effectivePolicyInputs({ policy: finalNewlinePolicy }); // { external: [] }
+ effectivePolicyInputs(finalNewlinePolicy); // { external: [] }
  ```
  */
-export function effectivePolicyInputs({
-  policy,
-  policyInputs,
-}: Readonly<{
-  policy: RuntimePolicyDefinition;
-  policyInputs?: ReadonlyMap<string, PolicyInputs>;
-}>,): PolicyInputs {
-  /**
-   Value resolved at config loading.
-   */
-  const resolved = policyInputs?.get(policy.name,);
-  if (resolved !== undefined)
-    return resolved;
+export function effectivePolicyInputs(policy: RuntimePolicyDefinition,): PolicyInputs {
   return (policy.inputs === undefined) || ((typeof policy.inputs) === 'function')
     ? 'unrestricted'
     : policy.inputs;
@@ -228,10 +210,7 @@ export async function checkTrackedPolicy({
   /**
    Declared inputs.
    */
-  const inputs = effectivePolicyInputs({
-    policy,
-    ...(pass.policyInputs === undefined ? {} : { policyInputs: pass.policyInputs, }),
-  },);
+  const inputs = effectivePolicyInputs(policy,);
   if (tracking.reuse) {
     /**
      Reuse or the reason to run.

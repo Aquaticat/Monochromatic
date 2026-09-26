@@ -4,7 +4,6 @@
  @module
  */
 import * as v from 'valibot';
-import type { PolicyInputs, } from '../api/policy-input-types.ts';
 import type {
   PolicySeverity,
   PolicyTrigger,
@@ -18,6 +17,7 @@ import {
 } from './config-validation-concurrency.ts';
 import { ConfigValidationError, } from './config-validation-error.ts';
 import {
+  INPUTS_UNDECLARED,
   resolvePolicyInputs,
   validateInputsDeclaration,
 } from './policy-inputs-schema.ts';
@@ -34,7 +34,7 @@ export type ValidatedConfig = Readonly<{
    */
   recursiveChildren: boolean;
   /**
-   Built-ins followed by namespaced plugins.
+   Built-ins followed by namespaced plugins, each enabled policy carrying its resolved inputs.
    */
   registeredPolicies: readonly RuntimePolicyDefinition[];
   /**
@@ -45,10 +45,6 @@ export type ValidatedConfig = Readonly<{
    Runtime-parsed policy option outputs.
    */
   policyOptions: ReadonlyMap<string, unknown>;
-  /**
-   Resolved inputs of every enabled policy.
-   */
-  policyInputs: ReadonlyMap<string, PolicyInputs>;
   /**
    Concurrent-commit tuning with defaults applied.
    */
@@ -248,7 +244,7 @@ function validatePolicy({
   if (value.options !== undefined)
     assertSchema(value.options,);
   /**
-   Validated static inputs or function, absent for the unrestricted default.
+   Validated static inputs or function, or the undeclared sentinel for the unrestricted default.
    */
   const inputs = validateInputsDeclaration({
     value: value.inputs,
@@ -262,7 +258,7 @@ function validatePolicy({
     triggers: value.triggers
       .filter(isPolicyTrigger,),
     ...(value.options === undefined ? {} : { options: value.options, }),
-    ...(inputs === undefined ? {} : { inputs, }),
+    ...(inputs === INPUTS_UNDECLARED ? {} : { inputs, }),
     check: value.check,
   };
 }
@@ -505,22 +501,20 @@ export function validateConfig(value: unknown,): ValidatedConfig {
     policySeverities[policy.name] = parsed.severity;
   }
   /**
-   Inputs of every enabled policy, resolved after every option parsed.
+   Registry with every enabled policy's inputs resolved after every option parsed.
    */
-  const policyInputs = new Map(registeredPolicies
-    .filter(function isEnabled(policy,): boolean {
-      return policySeverities[policy.name] !== 'off';
-    },)
-    .map(function resolveInputs(policy,): readonly [string, PolicyInputs] {
-      return [
-        policy.name,
-        resolvePolicyInputs({
-          declaration: policy.inputs,
+  const resolvedPolicies = registeredPolicies.map(function resolveInputs(policy,): RuntimePolicyDefinition {
+    return policySeverities[policy.name] === 'off'
+      ? policy
+      : {
+        ...policy,
+        inputs: resolvePolicyInputs({
+          ...(policy.inputs === undefined ? {} : { declaration: policy.inputs, }),
           options: policyOptions.get(policy.name,),
           effectiveId: policy.name,
         },),
-      ];
-    },),);
+      };
+  },);
 
   if (value.trust !== undefined) {
     assertRecord(value.trust,);
@@ -542,10 +536,9 @@ export function validateConfig(value: unknown,): ValidatedConfig {
     recursiveChildren: (value.trust !== undefined) && (value.trust
       .children
       === true),
-    registeredPolicies,
+    registeredPolicies: resolvedPolicies,
     policySeverities,
     policyOptions,
-    policyInputs,
     concurrency,
   };
 }
