@@ -88,7 +88,7 @@ All captured empty and positive states retained Folders,
 Open,
 the actual upper-left browser,
 Back/query/Clear,
-the right Search region and the complete five-outline mode deck.
+the right Search region and the complete four-mode deck.
 At P14 the first browser rows kept their P0 wrapping in these captures.
 At P20 the narrower browser wrapped `Celldweller` to a later line and
 `Clown Core` fell below its initial viewport despite the keyboard being closed.
