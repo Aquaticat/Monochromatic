@@ -1,6 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
+import { panelClause, } from './claim-panel-voters.ts';
 import type { ClaimAttribution, } from './critic-attribution.ts';
 import type { IssueClaim, } from './issue-model.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -158,7 +159,8 @@ export function describeClaimFiling(
 
 /**
  Log line for one adjudicated issue: its fate, then every member claim with
- its filers.
+ its filers and the panel that voted on it (hulicaijia26, 2026-09-26: the
+ owner asked who accepted a translator note as an addition).
 
  @param sliceIndex - chunk position
 
@@ -185,7 +187,7 @@ export function describeIssueFiling(
   },
 ): string {
   /**
-   Each member claim with its filers.
+   Each member claim with its filers and its panel.
    */
   const members = issue.claims
     .map(function toClause(member,): string {
@@ -193,6 +195,11 @@ export function describeIssueFiling(
         filersClause({
           claimId: member.claimId,
           filers,
+        },)
+      }, panel ${
+        panelClause({
+          claimId: member.claimId,
+          issue,
         },)
       }: ${claimBody({ claim: member.claim, },)}`;
     },);
