@@ -1,0 +1,152 @@
+diff --git a/Documentation/config/core.adoc b/Documentation/config/core.adoc
+index a0ebf03..523df1f 100644
+--- a/Documentation/config/core.adoc
++++ b/Documentation/config/core.adoc
+@@ -526,10 +526,13 @@ per-repository basis, or as a more flexible and centralized
+ alternative to having an `init.templateDir` where you've changed
+ default hooks.
+ +
+-You can also disable all hooks entirely by setting `core.hooksPath`
+-to `/dev/null`. This is usually only advisable for expert users and
+-on a per-command basis using configuration parameters of the form
+-`git -c core.hooksPath=/dev/null ...`.
++You can also disable all hooks in the hooks directory by setting
++`core.hooksPath` to `/dev/null`. This is usually only advisable for
++expert users and on a per-command basis using configuration parameters
++of the form `git -c core.hooksPath=/dev/null ...`. Hooks defined with
++`hook.<friendly-name>.command` do not live in the hooks directory and
++still run; set `hook.<event>.enabled` to `false` to switch off every
++hook for an event (see linkgit:git-hook[1]).
+ 
+ core.editor::
+ 	Commands such as `commit` and `tag` that let you edit
+diff --git a/builtin/hook.c b/builtin/hook.c
+index cceeb35..1ea698e 100644
+--- a/builtin/hook.c
++++ b/builtin/hook.c
+@@ -82,7 +82,9 @@ static int list(int argc, const char **argv, const char *prefix,
+ 
+ 		switch (h->kind) {
+ 		case HOOK_TRADITIONAL:
+-			printf("%s%c", _("hook from hookdir"), line_terminator);
++			printf("%s%s%c",
++			       h->event_disabled ? "event-disabled\t" : "",
++			       _("hook from hookdir"), line_terminator);
+ 			break;
+ 		case HOOK_CONFIGURED: {
+ 			const char *name = h->u.configured.friendly_name;
+@@ -95,7 +97,7 @@ static int list(int argc, const char **argv, const char *prefix,
+ 			 * "disabled" surfaces once the event is re-enabled.
+ 			 */
+ 			const char *disability =
+-				h->u.configured.event_disabled ? "event-disabled\t" :
++				h->event_disabled              ? "event-disabled\t" :
+ 				h->u.configured.disabled       ? "disabled\t"       :
+ 								 "";
+ 			if (scope)
+diff --git a/hook.c b/hook.c
+index d10eef4..00f184e 100644
+--- a/hook.c
++++ b/hook.c
+@@ -115,6 +115,8 @@ static void list_hooks_add_default(struct repository *r, const char *hookname,
+ 
+ 	h->kind = HOOK_TRADITIONAL;
+ 	h->u.traditional.path = xstrdup(hook_path);
++	h->event_disabled = r && !!unsorted_string_list_lookup(&r->disabled_events,
++							       hookname);
+ 
+ 	string_list_append(hook_list, hook_path)->util = h;
+ }
+@@ -514,7 +516,7 @@ static void list_hooks_add_configured(struct repository *r,
+ 			entry->command ? xstrdup(entry->command) : NULL;
+ 		hook->u.configured.scope = entry->scope;
+ 		hook->u.configured.disabled = entry->disabled;
+-		hook->u.configured.event_disabled = event_is_disabled;
++		hook->event_disabled = event_is_disabled;
+ 		hook->parallel = entry->parallel;
+ 
+ 		string_list_append(list, friendly_name)->util = hook;
+@@ -559,8 +561,9 @@ int hook_exists(struct repository *r, const char *name)
+ 
+ 	for (size_t i = 0; i < hooks->nr; i++) {
+ 		struct hook *h = hooks->items[i].util;
+-		if (h->kind == HOOK_TRADITIONAL ||
+-		    (!h->u.configured.disabled && !h->u.configured.event_disabled)) {
++		if (h->event_disabled)
++			continue;
++		if (h->kind == HOOK_TRADITIONAL || !h->u.configured.disabled) {
+ 			exists = 1;
+ 			break;
+ 		}
+@@ -583,8 +586,8 @@ static int pick_next_hook(struct child_process *cp,
+ 		if (hook_cb->hook_to_run_index >= hook_list->nr)
+ 			return 0;
+ 		h = hook_list->items[hook_cb->hook_to_run_index++].util;
+-	} while (h->kind == HOOK_CONFIGURED &&
+-		 (h->u.configured.disabled || h->u.configured.event_disabled));
++	} while (h->event_disabled ||
++		 (h->kind == HOOK_CONFIGURED && h->u.configured.disabled));
+ 
+ 	cp->no_stdin = 1;
+ 	strvec_pushv(&cp->env, hook_cb->options->env.v);
+diff --git a/hook.h b/hook.h
+index 27bb1ae..a41afdb 100644
+--- a/hook.h
++++ b/hook.h
+@@ -32,10 +32,16 @@ struct hook {
+ 			const char *command;
+ 			enum config_scope scope;
+ 			bool disabled;
+-			bool event_disabled;
+ 		} configured;
+ 	} u;
+ 
++	/**
++	 * Whether the whole event was switched off via
++	 * `hook.<event>.enabled = false`. Applies to both traditional
++	 * hooks from the hookdir and configured hooks.
++	 */
++	bool event_disabled;
++
+ 	/**
+ 	 * Whether this hook may run in parallel with other hooks for the same
+ 	 * event. Only useful for configured (named) hooks. Traditional hooks
+diff --git a/t/t1800-hook.sh b/t/t1800-hook.sh
+index 0132e77..73db270 100755
+--- a/t/t1800-hook.sh
++++ b/t/t1800-hook.sh
+@@ -1169,6 +1169,34 @@ test_expect_success 'git hook list still shows hooks when event is disabled' '
+ 	test_grep "event-disabled" actual
+ '
+ 
++test_expect_success 'hook.<event>.enabled=false also skips the hook from the hookdir' '
++	test_hook test-hook <<-\EOF &&
++	echo hookdir-ran
++	EOF
++	test_config hook.hook-1.event test-hook &&
++	test_config hook.hook-1.command "echo config-ran" &&
++	test_config hook.test-hook.enabled false &&
++	git hook run --allow-unknown-hook-name test-hook >out 2>err &&
++	test_must_be_empty out &&
++	test_must_be_empty err
++'
++
++test_expect_success 'git hook list shows the hookdir hook as event-disabled' '
++	test_hook test-hook <<-\EOF &&
++	echo hookdir-ran
++	EOF
++	test_config hook.test-hook.enabled false &&
++	git hook list --allow-unknown-hook-name test-hook >actual &&
++	test_grep "^event-disabled	hook from hookdir$" actual
++'
++
++test_expect_success 'hook.<event>.enabled=false skips a failing hookdir pre-commit' '
++	test_hook pre-commit <<-\EOF &&
++	exit 1
++	EOF
++	git -c hook.pre-commit.enabled=false commit --allow-empty -m event-off
++'
++
+ test_expect_success 'friendly-name matching known event name is rejected' '
+ 	test_config hook.pre-commit.event pre-commit &&
+ 	test_config hook.pre-commit.command "echo oops" &&
