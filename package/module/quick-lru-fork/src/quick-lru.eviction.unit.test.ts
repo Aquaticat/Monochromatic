@@ -315,6 +315,48 @@ await describe({
         },);
         lru.evict(1,);
         expect(lru.has('a',),).toBe(true,);
+        expect(lru.size,).toBe(1,);
+        expect(lru.__oldCache.size,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'touches nothing, not even lazy expiry, for a rejected evict count',
+      fn: async () => {
+        using clock = installFakeClock({
+          startMilliseconds: 1_700_000_000_000,
+        },);
+        /**
+         Eviction log that must stay empty across rejected counts.
+         */
+        const evicted: string[] = [];
+        const lru = createQuickLru<string, string>({
+          maxSize: 3,
+          maxAge: 100,
+          onEviction: function recordEviction(key: string, value: string,): void {
+            evicted.push(`${key}=${value}`,);
+          },
+        },);
+        lru.set({
+          key: 'stale',
+          value: 's',
+        },);
+        lru.set({
+          key: 'live',
+          value: 'l',
+          maxAge: Number.POSITIVE_INFINITY,
+        },);
+        clock.advance(200,);
+        for (const count of [
+          0,
+          -3,
+          Number.NaN,
+        ]) {
+          lru.evict(count,);
+          expect(evicted,).toEqual([],);
+          expect(lru.size,).toBe(2,);
+          expect(lru.__oldCache.size,).toBe(0,);
+        }
       },
     },),
 

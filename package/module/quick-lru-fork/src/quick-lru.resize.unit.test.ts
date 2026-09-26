@@ -119,6 +119,7 @@ await describe({
         }
         lru.resize(3,);
         expect(evicted,).toEqual([],);
+        expect(lru.__oldCache.size,).toBe(3,);
         expect([...lru.entriesAscending()].map(function readKey(entry: [string, string],): string {
           return entry[0];
         },),).toEqual([

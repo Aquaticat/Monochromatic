@@ -139,6 +139,7 @@ export function validateMaxSize(maxSize?: number,): number {
  ```
  */
 export function resolveMaxAge(maxAge?: number,): number {
+  // mutation-test-disable-next-line conditional -- proven equivalent: strict `=== 0` already matches only the number 0 and -0, so the typeof gate cannot change the outcome; kept because it is upstream's exact acceptance shape
   if (((typeof maxAge) === 'number') && (maxAge === 0))
     throw new InvalidMaxAgeError();
   // oxlint-disable-next-line typescript/prefer-nullish-coalescing, typescript/strict-boolean-expressions -- mirrors upstream `options.maxAge || Number.POSITIVE_INFINITY` exactly: every falsy value (NaN and falsy non-number junk included) rewrites to Infinity, while `??` and explicit falsy enumeration both diverge on the junk inputs the differential oracle feeds

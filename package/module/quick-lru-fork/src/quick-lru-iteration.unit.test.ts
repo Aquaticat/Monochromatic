@@ -19,6 +19,10 @@ import {
   createQuickLru,
 } from '../dist/final/neutral/index.mjs';
 
+import {
+  installFakeClock,
+} from './test-support.ts';
+
 /**
  Builds a cache holding `a`, `b`, and `c` across the dual-cache boundary:
  `c` sits alone in the recent map while `a` and `b` wait in the old map.
@@ -47,8 +51,43 @@ function createPrimedCache() {
   return lru;
 }
 
+/**
+ Builds a cache whose three items are all past their TTL once the fake
+ clock advances: `a` and `b` wait in the old map while `c` sits in the
+ recent map.
+ @param evicted - Log the cache's eviction callback appends to.
+ 
+ @returns Cache primed for lazy-expiry walk assertions.
+ 
+ @example
+ ```ts
+ const lru = createExpiredCache(evicted,);
+ ```
+ */
+function createExpiredCache(evicted: string[],) {
+  const lru = createQuickLru<string, string>({
+    maxSize: 2,
+    maxAge: 100,
+    onEviction: function recordEviction(key: string, value: string,): void {
+      evicted.push(`${key}=${value}`,);
+    },
+  },);
+  for (const key of [
+    'a',
+    'b',
+    'c',
+  ]) {
+    lru.set({
+      key,
+      value: `value-${key}`,
+    },);
+  }
+  return lru;
+}
+
 await describe({
   name: 'cache iteration',
+  concurrency: 1,
   children: [
     //region Orderings
 
@@ -384,5 +423,113 @@ await describe({
     },),
 
     //endregion forEach
+
+    //region Lazy expiry during walks
+
+    it({
+      name: 'drops expired items from the default iterator with notifications',
+      fn: async () => {
+        using clock = installFakeClock({
+          startMilliseconds: 1_700_000_000_000,
+        },);
+        /**
+         Eviction log recorded by the cache's callback.
+         */
+        const evicted: string[] = [];
+        const lru = createExpiredCache(evicted,);
+        clock.advance(200,);
+        expect([...lru.keys()],).toEqual([],);
+        expect(evicted,).toEqual([
+          'c=value-c',
+          'a=value-a',
+          'b=value-b',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'drops expired items from entriesAscending with notifications',
+      fn: async () => {
+        using clock = installFakeClock({
+          startMilliseconds: 1_700_000_000_000,
+        },);
+        /**
+         Eviction log recorded by the cache's callback.
+         */
+        const evicted: string[] = [];
+        const lru = createExpiredCache(evicted,);
+        clock.advance(200,);
+        expect([...lru.entriesAscending()],).toEqual([],);
+        expect(evicted,).toEqual([
+          'a=value-a',
+          'b=value-b',
+          'c=value-c',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'drops expired items from entriesDescending with notifications',
+      fn: async () => {
+        using clock = installFakeClock({
+          startMilliseconds: 1_700_000_000_000,
+        },);
+        /**
+         Eviction log recorded by the cache's callback.
+         */
+        const evicted: string[] = [];
+        const lru = createExpiredCache(evicted,);
+        clock.advance(200,);
+        expect([...lru.entriesDescending()],).toEqual([],);
+        expect(evicted,).toEqual([
+          'c=value-c',
+          'b=value-b',
+          'a=value-a',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'drops expired old-map duplicates through the raw walk without double notification',
+      fn: async () => {
+        using clock = installFakeClock({
+          startMilliseconds: 1_700_000_000_000,
+        },);
+        /**
+         Eviction log recorded by the cache's callback.
+         */
+        const evicted: string[] = [];
+        const lru = createQuickLru<string, string>({
+          maxSize: 3,
+          maxAge: 100,
+          onEviction: function recordEviction(key: string, value: string,): void {
+            evicted.push(`${key}=${value}`,);
+          },
+        },);
+        for (const key of [
+          'a',
+          'b',
+          'c',
+        ]) {
+          lru.set({
+            key,
+            value: `value-${key}`,
+          },);
+        }
+        lru.set({
+          key: 'a',
+          value: 'value-a-new',
+        },);
+        clock.advance(200,);
+        expect([...lru.entriesAscending()],).toEqual([],);
+        expect(evicted,).toEqual([
+          'b=value-b',
+          'c=value-c',
+          'a=value-a-new',
+        ],);
+      },
+    },),
+
+    //endregion Lazy expiry during walks
   ],
 },);

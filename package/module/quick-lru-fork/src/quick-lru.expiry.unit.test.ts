@@ -125,6 +125,42 @@ await describe({
     },),
 
     it({
+      name: 'removes an expired old-map item lazily on peek',
+      fn: async () => {
+        using clock = installFakeClock({
+          startMilliseconds: CLOCK_START,
+        },);
+        /**
+         Eviction log recorded by the callback below.
+         */
+        const evicted: string[] = [];
+        const lru = createQuickLru<string, string>({
+          maxSize: 2,
+          maxAge: 100,
+          onEviction: function recordEviction(key: string, value: string,): void {
+            evicted.push(`${key}=${value}`,);
+          },
+        },);
+        lru.set({
+          key: 'a',
+          value: 'alpha',
+        },);
+        lru.set({
+          key: 'b',
+          value: 'beta',
+        },);
+        lru.set({
+          key: 'c',
+          value: 'gamma',
+        },);
+        clock.advance(200,);
+        expect(lru.peek('a',),).toBe(undefined,);
+        expect(lru.__oldCache.has('a',),).toBe(false,);
+        expect(evicted,).toEqual(['a=alpha'],);
+      },
+    },),
+
+    it({
       name: 'skips expired items in every ordering while lazily removing them',
       fn: async () => {
         using clock = installFakeClock({
@@ -317,6 +353,34 @@ await describe({
         expect(lru.get('a',),).toBe('alpha',);
         expect(lru.has('a',),).toBe(false,);
         expect(lru.size,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'stores no expiry stamp for an infinite per-item maxAge, matching upstream',
+      fn: async () => {
+        using clock = installFakeClock({
+          startMilliseconds: CLOCK_START,
+        },);
+        const lru = createQuickLru<string, string>({
+          maxSize: 2,
+        },);
+        lru.set({
+          key: 'a',
+          value: 'alpha',
+          maxAge: Number.POSITIVE_INFINITY,
+        },);
+        lru.set({
+          key: 'b',
+          value: 'beta',
+          maxAge: 100,
+        },);
+        lru.set({
+          key: 'c',
+          value: 'gamma',
+        },);
+        expect(lru.__oldCache.get('a',)?.expiry,).toBe(undefined,);
+        expect(lru.__oldCache.get('b',)?.expiry,).toBe(CLOCK_START + 100,);
       },
     },),
 

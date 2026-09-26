@@ -336,6 +336,54 @@ await describe({
     },),
 
     it({
+      name: 'peeks a live old-map item without promoting it',
+      fn: async () => {
+        const lru = createQuickLru<string, string>({
+          maxSize: 2,
+        },);
+        lru.set({
+          key: 'a',
+          value: 'alpha',
+        },);
+        lru.set({
+          key: 'b',
+          value: 'beta',
+        },);
+        lru.set({
+          key: 'c',
+          value: 'gamma',
+        },);
+        expect(lru.peek('a',),).toBe('alpha',);
+        expect(lru.__oldCache.has('a',),).toBe(true,);
+        expect([...lru.entriesAscending()].map(function readKey(entry: [string, string],): string {
+          return entry[0];
+        },),).toEqual([
+          'a',
+          'b',
+          'c',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'reports size from the old map alone while the recent map is empty',
+      fn: async () => {
+        const lru = createQuickLru<string, number>({
+          maxSize: 1.5,
+        },);
+        lru.set({
+          key: 'a',
+          value: 1,
+        },);
+        lru.set({
+          key: 'b',
+          value: 2,
+        },);
+        expect(lru.size,).toBe(2,);
+      },
+    },),
+
+    it({
       name: 'exposes the old map through the __oldCache test hook',
       fn: async () => {
         const lru = createQuickLru<string, number>({

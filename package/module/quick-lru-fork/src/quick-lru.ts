@@ -558,6 +558,7 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
       state.cacheSize = items.length;
     }
     else {
+      // mutation-test-disable-next-line conditional, equality -- proven equivalent: in this branch removeCount is already non-negative, so the guard differs only at 0 where `items.slice(0, 0)` is empty and the emit cannot notify anything
       if (removeCount > 0)
         emitEvictions(items.slice(
           0,
