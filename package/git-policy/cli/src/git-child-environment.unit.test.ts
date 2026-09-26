@@ -24,6 +24,7 @@ import {
   type LandingRepository,
   readText,
   REAL_GIT,
+  runWrapper,
   waitForFile,
   writeNodeProgram,
 } from './policy-engine/commit-landing-fixture.unit.test.ts';
@@ -193,6 +194,20 @@ await describe({
         expect(parseConfigCount('-1',),).toBe(CONFIG_COUNT_MALFORMED,);
         expect(parseConfigCount('',),).toBe(0,);
         expect(parseConfigCount('12',),).toBe(12,);
+      },
+    },),
+    it({
+      name: 'the wrapper injects it into the Git it forwards, keeping caller entries',
+      fn: async function testWrapper(): Promise<void> {
+        await using repository = await createLandingRepository();
+        /** Forwarded `git config` listing both keys. */
+        const outcome = await runWrapper({
+          repository,
+          args: ['config', '--get-regexp', '^(user[.]nickname|core[.]lockfilepid)$',],
+          env: { GIT_CONFIG_COUNT: '1', GIT_CONFIG_KEY_0: 'user.nickname', GIT_CONFIG_VALUE_0: 'kept', },
+        },);
+        expect(outcome.exitCode,).toBe(0,);
+        expect(outcome.stdout,).toBe('user.nickname kept\ncore.lockfilepid true\n',);
       },
     },),
     it({
