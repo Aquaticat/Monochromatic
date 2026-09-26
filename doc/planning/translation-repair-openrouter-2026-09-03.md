@@ -8082,6 +8082,30 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## aiyysk2 read, 2026-09-26: class one hundred fifty-seven live, class one hundred fifty-eight
+
+### What the run did
+
+aiyysk2 ran on `.frozen-dist-2f5875dcf` and SETTLED at 15:07 UTC in 26.7 min, one attempt, 79 slices,
+4,103 calls, 2.57 USD of OpenRouter cost.
+Front matter equal, 13 headings, 3 footnotes, no TA, no double blank line, no error finish;
+110 abstention lines, three unendorsed standings; 13 em-dashes, left as the owner said.
+Class one hundred fifty-seven is live: the threat line reads "Sakurana threatened to take her own life:".
+
+### Class one hundred fifty-eight: 交往 as dating
+
+我之前也没和 MTF 交往过…然后我也不敢去交往 shipped "I'd never dated a trans woman before either" on aiyysk2
+and "I'd never actually dated a trans woman before" on aiyysk1, a romance the original never states.
+The narrator had simply never spent time with trans women; the next paragraph says
+"It was my first time ever talking with a trans woman", and the archive wrote "I'd never actually talked to an MTF person before".
+The pinned corpus carries 交往 three times, all on aiyysk (lines 157, 159 and 185), all ordinary social contact.
+交往 joins the phrasing glossary with "talked to" first.
+The floor matches refused forms as lower-cased substrings (`refusedFormIn`, `translate-community-term.ts`),
+so the refused forms are multi-word ("never dated", "dated a trans", "dating them" and the like)
+and never bare "dated" or "dating", which "updated" and "validating" hold; the guard carries an "updated" case.
+Guard `rendering-glossary-contact.unit.test.ts`, red first; fix `bc20adb69`; suite 1,157 PASS, 0 FAIL (`suite-class158.log`).
+aiyysk3 launched 15:15 UTC on `.frozen-dist-bc20adb69` (pid 830253, scope `pass-aiyysk3`).
+
 ## aiyysk1 read, 2026-09-26: class one hundred fifty-six against a correct archive, class one hundred fifty-seven
 
 ### What the run did

@@ -4777,7 +4777,14 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASS ONE HUNDRED FIFTY-SEVEN BUILT (2026-09-26):
+1.  CLASS ONE HUNDRED FIFTY-EIGHT BUILT (2026-09-26):
+    AIYYSK2 READ (`.frozen-dist-2f5875dcf`): SETTLED at 15:07 UTC in 26.7 min, 2.57 USD; every aiyysk1 check held;
+    class one hundred fifty-seven live ("Sakurana threatened to take her own life:"); recorded under "## aiyysk2 read".
+    交往 shipped "never dated a trans woman" on both runs where the original means never talked to one:
+    it joins the phrasing glossary ("talked to" first, multi-word refused forms since the floor matches substrings;
+    guard red first, fix `bc20adb69`, suite 1,157 PASS, 0 FAIL).
+    aiyysk3 launched 15:15 UTC on `.frozen-dist-bc20adb69` (pid 830253, scope `pass-aiyysk3`); read the 交往 line first.
+    CLASS ONE HUNDRED FIFTY-SEVEN BUILT (2026-09-26):
     AIYYSK1 READ (first run of aiyysk, the `0899e69b1` tree): SETTLED at 14:37 UTC in 37.6 min, 2.70 USD;
     every structural check as the archive, all three 初中 "junior high"; recorded under "## aiyysk1 read" in the pass log.
     以生命相逼 shipped "Sakurana threatened her life" (she staked her own life): it joins the idiom glossary
