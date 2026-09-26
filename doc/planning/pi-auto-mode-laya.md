@@ -106,6 +106,24 @@ Split synthetic examples by source scenario into training, calibration, and froz
 paraphrases of the same case must not leak across those groups.
 Establish the baseline before tuning and evaluate any trained result on unseen cases.
 
+### Complete current AGENTS.md is mandatory
+
+The user added this hard requirement:
+
+> Laya must receive the full current AGENTS.md .
+
+Every evaluated migration decision must include the complete current repository `AGENTS.md`.
+No summary, filtered subset, or silent tokenizer truncation satisfies this requirement.
+Passing the full string into an API that truncates it internally is not full model coverage.
+Measure actual tokens for the file plus question prefix, complete current action, and required context.
+Record the snapshot hash and re-read current content rather than keeping an obsolete startup snapshot.
+Do not substitute separately windowed policy fragments without resolving whether that preserves the requirement.
+
+The existing synthetic corpus supplies scenarios only.
+Its condensed context is not a valid evaluation of this newly required migration input.
+Revise the runner/input preparation before measuring safety or claiming feasibility.
+No Laya inference had run when this requirement arrived.
+
 ## Existing GitHub issues
 
 Checked open and closed issues in `Aquaticat/Monochromatic` on 2026-09-26.
@@ -357,8 +375,10 @@ No inference has run yet.
 
 ## Next action
 
-Finish the Laya CPU execution manifest and input-projection checks for the frozen diagnostic corpus.
-Verify downloaded artifact hashes and run offline inference in bounded isolation.
+Snapshot and measure the full current `AGENTS.md` with the actual Laya checkpoint tokenizers.
+Revise every diagnostic input to carry the complete file and verify model coverage.
+Finish the Laya CPU execution manifest and input-projection checks.
+Verify downloaded artifact hashes and run offline inference in bounded isolation only after the new input gate is explicit.
 Inspect mistakes independently without using reserved results to tune the tested schemas.
 Use that evidence to resolve authority, trust-rule interpretation, context completeness, and cutover.
 Do not require live user-supervised shadowing as the first evidence source.
