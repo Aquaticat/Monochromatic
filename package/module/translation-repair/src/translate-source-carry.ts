@@ -6,12 +6,14 @@ import { declaredLinkNameFindings, } from './translate-declared-link-name.ts';
 import { hanTitleFindings, } from './translate-han-title.ts';
 import { latinTitleFindings, } from './translate-latin-title.ts';
 import { droppedMarkerFindings, } from './translate-marker-drop.ts';
+import { droppedSuicideFindings, } from './translate-suicide-drop.ts';
 import { unwrappedLinkFindings, } from './translate-unwrapped-link.ts';
 
 //region Source carry floors
 // What the original passage carries that every candidate must carry too,
 // read before any judge: its footnote markers (class ninety-two), its
-// second-person address (class ninety-seven), its bracketed work titles
+// second-person address (class ninety-seven), the suicide it names (class
+// one hundred fifty), its bracketed work titles
 // in English (class ninety-eight) and set in quotation marks rather than
 // 《》 (class one hundred forty-one), its community terms as the glossary
 // renders them (class one hundred nineteen), its ordinary words without the
@@ -74,6 +76,15 @@ export function sourceCarryFindings(
   },);
   if (addressFindings.length > 0)
     return addressFindings;
+  /**
+   Suicide the original names and the candidate does not say.
+   */
+  const suicideFindings = droppedSuicideFindings({
+    sourceText,
+    candidateText,
+  },);
+  if (suicideFindings.length > 0)
+    return suicideFindings;
   /**
    Bracketed work titles the candidate left in Han.
    */

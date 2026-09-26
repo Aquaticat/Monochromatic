@@ -220,9 +220,18 @@ export async function gateConsolidationPolish(
      Voice heard or lost.
      */
     const { voice, } = outcome;
-    return voice.heard
-      ? [readConsolidationPolishBallot({ wire: voice.value, },),]
-      : [];
+    if (!voice.heard)
+      return [];
+    /**
+     This voice's ballot, read off the wire.
+     */
+    const ballot = readConsolidationPolishBallot({ wire: voice.value, },);
+    // EVERY BALLOT IS LOGGED WITH ITS REASON, as the consolidate gate's are
+    // (class fifty-six): shi_Yumiaoya36's polish gate settled on neither over
+    // a polish that restored a survived suicide attempt the base had dropped
+    // (class one hundred fifty), and the log carried only the tally.
+    gl.info(`consolidation polish gate ballot ${outcome.modelId}: ${ballot.choice}: ${ballot.reason}`,);
+    return [ballot,];
   },);
   /**
    Panel choice from ballots.
