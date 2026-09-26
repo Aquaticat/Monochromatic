@@ -9,6 +9,9 @@ beyond the private protected-read,
 protected-transfer,
 and cache-removal demonstration.
 The accepted interview choices in that design remain authoritative.
+Q13 B permits qualified semantic effect estimates to support approval for validated inspected script forms,
+without separate code-established effect analysis.
+The stricter code-admitted-operation-family alternative was not selected.
 No production files are changed by this investigation.
 
 The migration replaces the existing reviewed-action path,
@@ -68,7 +71,8 @@ Its proposed fields are:
   and revocation state.
 - Previous blocked effects relevant to recurrence,
   not merely the previous action's broad goal.
-- Code-established admission facts and explicit unresolved fields.
+- Profile-applicability facts and explicit unresolved fields.
+  Applicability is not a hidden requirement to prove the script's effects in code.
 - Axiom-definition,
   adapter,
   model/runtime,
@@ -105,7 +109,10 @@ or whether admitted executable content attempts a specified access.
 Filename mentions,
 quoted commands,
 and printed strings are separate negative examples.
-Unknown target resolution or an unsupported executable body cannot be approved merely because listed access axioms are false.
+When a rule requires an observed canonical target,
+unresolved target identity is missing evidence.
+Other qualified rules may use narrow semantic effect and scope estimates under Q13 B.
+An unsupported input still cannot approve merely because listed access axioms are false.
 
 ### Protected values and environment access
 
@@ -152,7 +159,9 @@ A model may estimate a narrow remaining relation in admitted content,
 but may not invent an endpoint,
 claim ownership of it,
 or turn a missing link into evidence of absence.
-Nested or dynamic flow beyond supported analysis requires review.
+Nested or dynamic flow outside the qualified script forms requires review.
+Within a qualified form,
+Q13 B permits the model to estimate the specified flow relation without separate code proof.
 
 ### Filesystem mutation and privilege changes
 
@@ -182,7 +191,9 @@ explicit prohibitions,
 active grants,
 fixed guards,
 and uncertainty must be composed by code.
-Opaque execution cannot gain approval from a negative checklist of selected hazards.
+A qualified inspected script may be approved using model-estimated effects under Q13 B.
+Qualification must cover effect detection and catalog omissions;
+a low probability on an arbitrary incomplete checklist is not qualification.
 
 ### Introduced executable behavior
 
@@ -202,8 +213,9 @@ malicious,
 or generally acceptable.
 
 A negative answer about one introduced behavior does not establish that all other behaviors are absent.
-Approval requires the rule's positive admission evidence;
-otherwise request human review.
+Approval requires the applicable qualified profile and its evidence and estimate conditions,
+not separate code-established effect analysis.
+Otherwise request human review.
 This is especially important for arbitrary scripts,
 package lifecycle commands,
 and code that loads more executable content.
@@ -337,7 +349,7 @@ Late results are discarded even if the provider continues processing after cance
 
 ## Verification work required before freezing this contract
 
-For each admitted effect,
+For each effect and qualified input form,
 retain independent positive,
 negative,
 quoted,
@@ -368,5 +380,5 @@ protected-transmission rule,
 and threshold bands remain demonstration rules.
 Do not freeze them by documentation alone.
 The next work is to inspect the host provenance path,
-make the admitted first-deployment domains explicit,
+make the first-deployment profile applicability explicit without reinstating the rejected code-proof prerequisite,
 and build corresponding independent fixtures and policy tests in private scratch.
