@@ -5840,7 +5840,7 @@ The persistent per-user process limits are documented in
 
 ## D54 accepts the brief real Gboard font-update banner
 
-After seeing the separate 200% text banner evidence,
+When asked about the separate measured 200% text banner state,
 the user answered:
 “That brief banner is also acceptable.”
 D54 permits the observed `Keyboard font size updated` message to clip the
