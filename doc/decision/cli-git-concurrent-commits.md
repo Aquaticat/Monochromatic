@@ -343,6 +343,21 @@ Evidence:
   so a commit overlapping another repository's `untrust` exited `2`.
   Rules:
   `package/git-policy/cli/SPEC.md` "Recursive enrollment and revocation".
+- Git feature degradation is detected by exercising each feature,
+  added 2026-09-26 (veto open):
+  there is no version gate,
+  and replay plumbing is probed after a commit's first lost race
+  by running `git merge-tree --write-tree --merge-base` on the winning commit
+  (exit 129 means absent),
+  because the usage text changed its spelling between Git 2.40.0 and 2.55.0.
+  Without it the commit fails with `concurrent-commit/head-moved`.
+  Before,
+  Git 2.39.5 ran ordinary commits,
+  and the commit that lost a race exited `2` with `transaction-failed`
+  carrying `git merge-tree` usage text.
+  The container suite runs Git 2.39.5 with the replay-free scenarios and two degradation scenarios.
+  Rules and observations:
+  `package/git-policy/cli/SPEC.md` "Compatibility and degradation".
 - Forwarded index writers coordinate with landings through the cli-git landing lock
   and pre-wait for foreign `index.lock` holders;
   cli-git does not capture Git's stderr to detect a lock failure and re-forward,

@@ -25,9 +25,9 @@ mise run //package/git-policy/cli:test:e2e:concurrent --seed 1 --scenario shared
   then a summary.
   The task exits non-zero when any scenario fails or errors.
 - `--scenario` takes comma-separated scenario names;
-  `--git` takes `2.40.0`,
-  `2.55.0`,
-  or both.
+  `--git` takes comma-separated versions among `2.39.5`,
+  `2.40.0`,
+  and `2.55.0`.
 
 Regenerate the committed trace with real Git on the host.
 It mines this checkout by default;
@@ -45,20 +45,45 @@ mise run //package/git-policy/cli:e2e:concurrent:trace
 
 - Node 24.11.0,
   the floor of `engines.node` in `package.json`;
-- Git 2.40.0 and Git 2.55.0,
+- Git 2.39.5,
+  Git 2.40.0,
+  and Git 2.55.0,
   built from checksum-pinned kernel.org tarballs,
   installed under `/opt/git/<version>`;
 - no Git on the default `PATH`,
   so each scenario picks its Git by `PATH` order;
 - the packed tarball installed with npm at build time under `/opt/cli-git`.
 
-Git 2.40.0 is the declared minimum because it is the first release whose `git merge-tree` accepts `--merge-base`:
+Git 2.40.0 is the oldest release with every feature cli-git uses,
+because it is the first whose `git merge-tree` accepts `--merge-base`:
 `Documentation/RelNotes/2.40.0.adoc` says "`merge-tree` learns a new `--merge-base` option",
 and `--write-tree` itself arrived in 2.38.0.
+Git 2.39.5,
+Debian bookworm's Git,
+proves that cli-git degrades without that option
+(`SPEC.md` "Compatibility and degradation"):
+a commit that loses a landing race fails fast with `concurrent-commit/head-moved` instead of replaying.
 Git 2.55.0 is the current release;
 it builds with its default Rust support enabled.
 Config-based hooks (`hook.<name>.command`) arrived in Git 2.54.0,
-so the config-hook scenarios skip on 2.40.0.
+so the config-hook scenarios skip on 2.39.5 and 2.40.0.
+
+Each scenario declares how it depends on replay plumbing
+(`replayPlumbing` in `scenario-model-fixture.ts`):
+
+- `required`,
+  the default,
+  skips it on 2.39.5,
+  where its commits that lose a landing race would fail fast by design;
+- `unused` runs it on every Git,
+  because none of its commits can lose a landing race:
+  the baselines,
+  `branch-switch-during-commit`,
+  the hook-phase `sigkill-*` scenarios,
+  and the `sigkill-phase-*` scenarios;
+- `absent` runs it only on 2.39.5,
+  to prove the degradation:
+  the `replay-unavailable-*` scenarios.
 
 The run uses `podman run --memory=2g --cpus=2 --rm --network=none`.
 `e2e/` is mounted read-only at `/fixture/e2e`,
@@ -260,6 +285,16 @@ Design scenarios exercise the accepted concurrent-commit design:
   At `landing-locked` the victim holds the landing lock and the real `index.lock`,
   so the bystander must recover both from a dead owner.
   `victim-reached-phase` fails when the victim settled before its marker appeared.
+- `replay-unavailable-fails-fast`,
+  on 2.39.5 only:
+  a commit held in its editor while another lands must exit `1`
+  with exactly one `concurrent-commit/head-moved` core finding
+  and land nothing.
+- `replay-unavailable-disjoint-burst`,
+  on 2.39.5 only:
+  4 to 8 agents commit disjoint files;
+  each lands or fails fast exactly that way,
+  and at least one lands.
 
 Hooks and editors are Node programs (`hook-program-fixture.ts`),
 not shell scripts.
