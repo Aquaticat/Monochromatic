@@ -4773,14 +4773,17 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  XINGZ6011 NEXT (entry `XingZ60`, frozen `2d5113b7d` or newer):
+1.  XINGZ6012 NEXT (entry `XingZ60`, frozen `c49ff687e`):
+    first check the second song credit on slice 95 keeps its bilibili link and `[^9]` and no `contributor-name-restored` line names "Laizi";
     read it by every XingZ6010 check, the register check and the en_CA check,
     then the page-assembly findings `archive-name-casing-restored` and `pinyin-tone-corrected`
     (either may stay silent; any rewrite must be one the archive or the character supports);
-    record it under a new heading above "## hulicaijia20 read" in the pass log;
+    record it under a new heading above "## XingZ6011 read" in the pass log;
     then `hulicaijia` (run hulicaijia21) to see class one hundred thirty-five live:
     "douhua" in the closing quote, no "tofu pudding", "Jiefangbei Pedestrian Street" on every line,
     and "jīn gāng wán’àn" in the amantadine note beside 晚安 "wǎn’ān".
+    XINGZ6011 READ (frozen `2d5113b7d`): INCOMPLETE at 00:26 UTC 2026-09-26 in 96.3 min, "would drop 1 source destination":
+    the restore read 来自 as a signer and replaced the song credit, link and [^9] included, with "Laizi" (class one hundred thirty-eight, `c49ff687e`, guard `bffae3bce`, suite 1140 PASS).
     HULICAIJIA20 READ (frozen `4641ff1d2`): SETTLED at 22:28 UTC 2026-09-25 in 81.9 min;
     class one hundred thirty-four live ("April 29", "May 4", "licorice", no "pharmaceutical sales representative", en_CA clean);
     classes one hundred thirty-five to thirty-seven found and built:

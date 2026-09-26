@@ -8082,6 +8082,40 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## XingZ6011 read, 2026-09-26: a source credit read as a signature (class one hundred thirty-eight)
+
+### What ran
+
+XingZ6011 on frozen `2d5113b7d` (pid 3762102, launched 22:50 UTC 2026-09-25):
+INCOMPLETE at 00:26 UTC in 96.3 min, one attempt, no page or artifact:
+"entry XingZ60 would drop 1 source destination(s)".
+
+### What went wrong
+
+The original credits the second song as
+「——来自《[笼中之鸟](https://www.bilibili.com/video/BV17Q4y1s7j1)》[^9]，作者 洁澄天奏Official」.
+`readSignature` in `corpus-run/attribution-line.ts` ends a signer's name at 《 (class eighty-three),
+so it read 来自 ("from") as the signer.
+With no archive rendering for the line, the pinyin reading "Laizi" stood as the authority,
+and the contributor-name restore rewrote the page's whole credit:
+
+`——From “A Bird in a Cage” ([笼中之鸟](…))[^9], by Jiecheng Tianzou Official` to `——Laizi, by Jiecheng Tianzou Official`.
+
+The link and the `[^9]` marker went with it,
+the page-assembly guard reverted definition 9 as an orphan (`assembly-footnote-reverted orphan-definition gfm 9`),
+and the publish check found the bilibili destination missing.
+The bench's own credit was right.
+
+### What was built
+
+Class one hundred thirty-eight (`c49ff687e`, guard red first `bffae3bce`):
+`readSignature` refuses a name that is a source-credit lead (来自, and 摘自, 出自, 选自, 引自, 转自, 节选自, which say the same).
+A census of the originals found one em-dash line naming a work after something other than a signer's name: this one.
+Lint 0/0, types clean, suite `suite-class138.log` 1140 PASS, no FAIL;
+replayed over the real slice 95 credit: no rewrite.
+A second guard, a name carrying link or marker syntax, could not be made to fail on the current build
+(a page signature with no Han takes itself as the authority), so it was not built.
+
 ## hulicaijia20 read, 2026-09-25: class one hundred thirty-four live; douhua, a name's casing and a pinyin tone (classes one hundred thirty-five to one hundred thirty-seven)
 
 ### What ran
