@@ -146,6 +146,30 @@ await describe({
       },
     },),
     it({
+      name: 'keeps mutual exclusion and leaves nothing behind while many acquirers contend',
+      fn: async function testStress(): Promise<void> {
+        await using directory = await scratch();
+        /** Lock path. */
+        const lockDirectory = join(directory.path, 'landing.lock',);
+        /** Holders inside the critical section, and the most ever seen at once. */
+        const inside = { now: 0, most: 0, entries: 0, };
+        await Promise.all(Array.from({ length: 8, }, async function contender(): Promise<void> {
+          for (const _round of Array.from({ length: 40, },)) {
+            // oxlint-disable-next-line no-await-in-loop -- Each round contends again after its own release.
+            await using _lock = await acquireOwnerLock({ lockDirectory, pollDelayMs: 1, },);
+            inside.now += 1;
+            inside.entries += 1;
+            inside.most = Math.max(inside.most, inside.now,);
+            // oxlint-disable-next-line no-await-in-loop -- Holding the lock across a turn lets others contend.
+            await wait(1,);
+            inside.now -= 1;
+          }
+        },),);
+        expect(inside,).toEqual({ now: 0, most: 1, entries: 8 * 40, },);
+        expect(await readdir(directory.path,),).toEqual([],);
+      },
+    },),
+    it({
       name: 'retires a lock whose owner is dead and acquires it',
       fn: async function testDeadOwner(): Promise<void> {
         await using directory = await scratch();
