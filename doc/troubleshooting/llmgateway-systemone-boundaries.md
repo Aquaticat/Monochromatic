@@ -6,7 +6,9 @@ The auto-mode migration requires narrow axiom estimates,
 complete current policy input,
 qualified model identity,
 and a five-second total assessment budget.
-The user permits one transport retry and conditionally considers future private non-secret inputs.
+The user permits one client transport retry and accepts gateway-internal retries.
+Necessity-based retention without a fixed deletion deadline is accepted for future private non-secret inputs.
+Neither zero retention nor an end-to-end two-attempt cap is required.
 No private upload or production implementation is authorized.
 
 A successful `/v1/systemone` response does not establish all these boundaries.
@@ -241,9 +243,11 @@ not these failure paths in the hosted deployment.
 ## Verified workarounds and present containment
 
 No production workaround has been built or verified.
-Continue public/synthetic-only evaluation until the hosted privacy gate is resolved.
-This prevents private evaluation payloads from reaching either log path,
-but leaves real private runtime assessment unqualified.
+Continue public/synthetic-only evaluation until remaining hosted qualification and cutover authorization are resolved.
+Q12 accepts the necessity-based retention posture;
+zero retention is not a new blocker.
+Public fixtures keep private evaluation payloads out of either log path,
+but do not qualify real private runtime assessment.
 
 The private axiom runner already rejects missing answer IDs and invalid probabilities.
 Its live pilot passed valid-answer checks;
@@ -278,7 +282,7 @@ No provider has been contacted.
     but server-side retention requires evidence and control at that server boundary.
 3.  Supported use:
      native typed questions are documented;
-    a strict end-to-end attempt cap remains unresolved.
+    no strict end-to-end attempt cap is required after Q11 B.
     The user has accepted TypeSafe AUP section 1.5 for this guard-classification evaluation.
 4.  Contribution policy:
      not evaluated because no upstream patch or filing is proposed.
