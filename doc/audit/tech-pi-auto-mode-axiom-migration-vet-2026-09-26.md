@@ -141,6 +141,16 @@ Full-policy runtime acceptance was verified with a consumer-side attention setti
 The tested CPU forwards do not fit the newly accepted interactive budget.
 They used a retired direct-verdict task,
 so their output labels cannot establish axiom quality or reject every authorized Laya configuration.
+The corrected one-Noul full-policy probe subsequently completed with 12,820 actual forward tokens.
+It returned 0.5338 for a predeclared true protected-transfer occurrence axiom
+and took 174.4122996260412 seconds of inference.
+Peak container memory was 6,490,460,160 bytes;
+policy remained current and the container exited 0 without a memory kill.
+The [runtime and warning trace](../troubleshooting/laya-full-agents-context.md)
+records the pinned image and source.
+The tested English CPU configuration fails the five-second interactive budget even for this one axiom.
+This does not reject every authorized Laya runtime/checkpoint or establish a model-quality ranking.
+No full axiom-batch resource benchmark has passed.
 Axiom-batch fit,
 fine-tuning feasibility,
 complete source/maintenance gates,
