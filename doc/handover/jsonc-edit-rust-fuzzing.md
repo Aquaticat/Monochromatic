@@ -154,6 +154,71 @@ the harness or the generator.
    `package/cli/forbidden-strings.fuzz`,
    so task #20 is done and only the rule remains.
 
+## Triage result, 2026-09-26
+
+All three campaign crashes are triaged.
+Two were product defects present in **both** maintained implementations,
+one was an over-strict harness expectation.
+
+1. **Product defect, fixed in both implementations.**
+   A `//` comment ends at CR,
+   LF or CRLF,
+   but both emitters decided trailing form from LF alone (`isSingleLineComment` in
+   `package/module/jsonc-edit/src/emit-comment.ts`,
+   `single_line` in `package/rust-module/jsonc-edit/src/comment_merge.rs`) and split leading bodies
+   on LF alone.
+   A block comment body containing a bare CR was therefore emitted as a line comment that
+   terminated early,
+   leaving the rest of the body as code:
+   the Rust port reported `unterminated block comment (at offset 242)` on its own emission,
+   and the TypeScript package reproduced it as
+   `unexpected character "b" (at offset 12)`.
+   Fixed by counting every terminator for trailing form,
+   preferring a block in leading form when the body carries CR and can be one,
+   and splitting the block-unsafe fallback on every terminator.
+   Guard tests:
+   `block_comment_body_with_cr_survives_round_trip` and
+   `merged_comment_body_with_cr_survives_round_trip` in
+   `package/rust-module/jsonc-edit/src/parse_tests.rs`,
+   and two round-trip cases in
+   `package/module/jsonc-edit/src/stringify.unit.test.ts`.
+   Both were shown failing before the fix.
+2. **Product defect, fixed in both implementations.**
+   Setting the document root to a scalar was accepted,
+   producing a state whose canonical emission (`null`) its own parser rejects.
+   The empty-input edit crash was this,
+   not a harness budget problem:
+   the fuzzer drew an empty address plus a scalar replacement.
+   `jsonc_set` in `package/rust-module/jsonc-edit/src/edit_apply.rs` and `jsoncSet` in
+   `package/module/jsonc-edit/src/edit-set.ts` now refuse a non-container root replacement.
+   Guard test `root_set_to_a_scalar_is_refused` was shown failing with the guard removed and
+   passing with it restored.
+3. **Harness defect, fixed twice over.**
+   `assert_comments_preserved` compared a whole merged body against the emission,
+   and `fuzz_parse_emit_roundtrip` repeated that comparison for generator-recorded bodies.
+   Canonical emission renders a merged multi-line body as one indented `//` line per body line,
+   so the joined body is deliberately not a substring.
+   Both now compare body lines,
+   which still catches a dropped one;
+   the negative control in `src/invariants_tests.rs` still fails when a comment is stripped.
+
+After the fixes,
+`fuzz_reject_and_recover` ran 880092 executions in 123 seconds with no crashes,
+and all three original artifacts replay clean.
+
+Two process lessons worth keeping:
+
+- A replay command built as `./$PWD/target/.../fuzz_x` produced a doubled path,
+   every replay silently failed to execute,
+   and the `grep -c` for `SUMMARY: libFuzzer` read `0`,
+   which looked like "no crash".
+   Four targets were reported clean when one was not.
+   A probe that cannot show a positive result proves nothing;
+   replay the artifact and read the output before believing a clean count.
+- libFuzzer wrote newly discovered units into the second corpus directory as well,
+   polluting the tracked `seed/` tree with binary blobs.
+   Tasks now copy seeds into `corpus/<target>` and pass only that directory.
+
 ## Related records
 
 - `doc/troubleshooting/arbitrary-choose-empty-input.md`:
