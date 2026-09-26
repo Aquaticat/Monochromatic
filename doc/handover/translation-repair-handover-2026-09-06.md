@@ -4777,13 +4777,17 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
+1.  TIANQICHEN6663 READ (2026-09-26, `.frozen-dist-7b87c5a4e`): SETTLED in 39.2 min, classes one hundred sixty and
+    sixty-one live (headpiece, Arona and Atri, "someone she had comforted", "became a small box", "deserved a better
+    life"); class one hundred sixty-two ("type II diabetes" for II型糖尿病) built (guard `a9562aaba`, fix
+    `358a6bdcb`, full suite 1,162 PASS, 0 FAIL); recorded under "## TianqiChen6663 read".
+    TIANQICHEN6664 RUNNING on `.frozen-dist-358a6bdcb` (scope `pass-TianqiChen6664`, pid 2470692):
+    read the diabetes line first.
+    TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built
     (guard `069690562`, fix `7b87c5a4e`, SEEDS pin `52e1280a1`; full suite 1,161 PASS, 0 FAIL);
     recorded under "## TianqiChen6662 read".
-    TIANQICHEN6663 RUNNING on `.frozen-dist-7b87c5a4e` (scope `pass-TianqiChen6663`, pid 2416632):
-    read the 头壳 line, the character names and the three grammar lines first.
     XU_YUSHU1 READ (2026-09-26, `.frozen-dist-8f2b07c37`): INCOMPLETE in 3.3 min at the pictures phase;
     only GLM-5.3-Flash read the handwritten `composition.webp` and no second reader agreed
     (Synthetic and Hyper dry, Qwen with no provider, Kimi withheld); rerun when Synthetic is wet.

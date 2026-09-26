@@ -8082,6 +8082,28 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## TianqiChen6663 read, 2026-09-26: classes one hundred sixty and sixty-one live, class one hundred sixty-two
+
+TianqiChen6663 ran on `.frozen-dist-7b87c5a4e` and SETTLED in 39.2 min, one attempt, 24 slices, 1,565 calls,
+1,822 seats, 67 retry rounds, 0.84 USD of OpenRouter cost, 10 abandoned streams (0.05 USD).
+Front matter equal, 3 headings, no TA, no error finish, no triple blank line, 1 unendorsed standing,
+31 abstention lines; 7 em-dashes against the archive's 6, left as the owner said.
+Synthetic and Hyper stayed dry: Qwen3.8-27B threw 284 of 284 and glm-5.3 112 of 112.
+
+Classes one hundred sixty and sixty-one are live on the page: "within her headpiece" and "Her kigurumi headpiece",
+"her portrayals of Arona and Atri", "someone she had comforted", "Her memory and imprint became a small box" and
+"deserved a better life, didn't she?". None of the six refused forms is on the page.
+
+### Class one hundred sixty-two: type 2 diabetes
+
+身患II型糖尿病 shipped as the archive's "type II diabetes".
+Current English, Diabetes Canada's among it, writes the type with an Arabic numeral.
+The pinned corpus carries the term on this entry alone (and its zh_hant page).
+II型糖尿病 joins the rendering glossary through `rendering-glossary-medical.ts`, spread into `RENDERING_GLOSSARY`,
+refusing "type ii diabetes" and "type-ii diabetes" (guard red first `a9562aaba`, fix `358a6bdcb`;
+full suite 1,162 PASS, 0 FAIL).
+TianqiChen6664 runs on `.frozen-dist-358a6bdcb` to read it live.
+
 ## TianqiChen6662 read, 2026-09-26: classes one hundred sixty and sixty-one
 
 TianqiChen6662 (entry TianqiChen666, Menma) ran on `.frozen-dist-141598127` and SETTLED in 19.7 min, one attempt,
