@@ -118,6 +118,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 // `Modifier` describes layout without production code changes.
 import androidx.compose.ui.Modifier
+// Focus changes precede or accompany the keyboard request in this debug comparison.
+import androidx.compose.ui.focus.onFocusChanged
 // `LocalConfiguration` distinguishes the cover from the inner panel.
 import androidx.compose.ui.platform.LocalConfiguration
 // `LocalDensity` converts physical pixels at runtime instead of storing a fixed dp crease.
@@ -191,6 +193,7 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
             liftWithIme = candidate.contains("-lift-"),
             bannerHeightStress = candidate.contains("-bannerfit-"),
             autoFitStudy = candidate.contains("-autofit-"),
+            preclearStudy = candidate.contains("-preclear-"),
             retainBrowser = candidate.contains("-retain-"))
     } else {
         SearchDeckWide(query = query, onQueryChange = { query = it }, onBack = onBack,
@@ -214,6 +217,9 @@ private fun SearchDeckLeft(query: String, onQueryChange: (String) -> Unit,
 
 /** Minimum reported physical inset used only to select the measured banner-height fixture. */
 private const val BANNER_STRESS_INSET_PX = 1000
+
+/** One-pixel-safe debug envelope above the observed y-1140 Gboard font banner. */
+private val PRECLEAR_REVIEW_HEIGHT = 416.dp
 
 /** Android 17 SDK level used only to guard debug bounding-rectangle inspection. */
 private const val BOUNDING_RECT_API_LEVEL = 37
@@ -285,9 +291,11 @@ private fun ObserveImeAnimation(parentView: View, onAppliedIme: (Int) -> Unit) {
 private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, halfDent: Dp, light: Boolean, pageColor: Color,
     liftWithIme: Boolean, bannerHeightStress: Boolean, autoFitStudy: Boolean,
-    retainBrowser: Boolean) {
+    preclearStudy: Boolean, retainBrowser: Boolean) {
     val density = LocalDensity.current
     val reportedImeInset = WindowInsets.ime.getBottom(density)
+    var queryFocused by remember { mutableStateOf(false) }
+    val preclearActive = preclearStudy && queryFocused
     val observedView = LocalView.current
     var deliveredBottom by remember(density.density, density.fontScale, observedView.width) {
         mutableIntStateOf(0)
@@ -324,7 +332,8 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     val requiredDeckHeight = if (openDeckHeight > 0) openDeckHeight else restingDeckHeight
     val measuredOverflow = requiredDeckHeight == 0 ||
         requiredDeckHeight + dividerPx > availableAboveIme
-    val bannerFit = if (autoFitStudy) keyboardShown && measuredOverflow
+    val bannerFit = if (preclearStudy) preclearActive
+        else if (autoFitStudy) keyboardShown && measuredOverflow
         else bannerHeightStress && reportedImeInset >= BANNER_STRESS_INSET_PX
     SideEffect {
         val visible = if (Build.VERSION.SDK_INT >= 30) platformInsets?.isVisible(imeType) else null
@@ -336,15 +345,17 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
             "rootHeight=${observedView.height} topSafe=$topSafePx " +
             "restingDeck=$restingDeckHeight openDeck=$openDeckHeight " +
             "available=$availableAboveIme " +
-            "visible=$visible boundingRects=$rectangles stress=$bannerFit")
+            "visible=$visible boundingRects=$rectangles stress=$bannerFit " +
+            "queryFocused=$queryFocused preclear=$preclearActive")
     }
     // The platform target selects the layout only. Layout-time imePadding owns
-    // bottom reservation; mixing it with a composition-time delta clipped two recorded frames.
+    // bottom reservation in ordinary studies; preclear has one fixed debug owner.
     Row(modifier = Modifier.fillMaxSize().background(pageColor)
-        .then(if (liftWithIme) Modifier.imePadding() else Modifier)) {
+        .then(if (preclearActive) Modifier.padding(bottom = PRECLEAR_REVIEW_HEIGHT)
+            else if (liftWithIme) Modifier.imePadding() else Modifier)) {
         SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f),
             deckFirst = !liftWithIme, deckFullHeight = liftWithIme, bannerFit = bannerFit,
-            compactForBrowser = retainBrowser && keyboardShown,
+            compactForBrowser = retainBrowser && (keyboardShown || preclearActive),
             onDeckMeasured = { heightPx ->
                 if (autoFitStudy && !keyboardShown && heightPx > restingDeckHeight) {
                     restingDeckHeight = heightPx
@@ -365,7 +376,8 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
         PersistentSearchPane(query = query, onQueryChange = onQueryChange, onBack = onBack,
             unavailable = unavailable, modifier = Modifier.weight(1f),
             startSafe = halfDent + 16.dp, endSafe = 16.dp,
-            includeTopInset = true, pageColor = pageColor)
+            includeTopInset = true, pageColor = pageColor,
+            onQueryFocusChange = { focused -> queryFocused = focused })
     }
 }
 
@@ -434,11 +446,13 @@ private fun SearchDeckWide(query: String, onQueryChange: (String) -> Unit,
 @Composable
 private fun PersistentSearchPane(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, modifier: Modifier,
-    startSafe: Dp, endSafe: Dp, includeTopInset: Boolean, pageColor: Color) {
+    startSafe: Dp, endSafe: Dp, includeTopInset: Boolean, pageColor: Color,
+    onQueryFocusChange: ((Boolean) -> Unit)? = null) {
     Column(modifier = modifier.fillMaxSize().background(pageColor)) {
         if (includeTopInset) Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
         PersistentSearchHeader(query = query, onQueryChange = onQueryChange, onBack = onBack,
-            startSafe = startSafe, endSafe = endSafe, queryWidth = null)
+            startSafe = startSafe, endSafe = endSafe, queryWidth = null,
+            onQueryFocusChange = onQueryFocusChange)
         HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
         Column(modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())
             .windowInsetsPadding(WindowInsets.navigationBars)
@@ -461,7 +475,8 @@ private fun PersistentSearchPane(query: String, onQueryChange: (String) -> Unit,
 /** One divided header keeps its text and action glyphs off the physical crease. */
 @Composable
 private fun PersistentSearchHeader(query: String, onQueryChange: (String) -> Unit,
-    onBack: () -> Unit, startSafe: Dp, endSafe: Dp, queryWidth: Dp?) {
+    onBack: () -> Unit, startSafe: Dp, endSafe: Dp, queryWidth: Dp?,
+    onQueryFocusChange: ((Boolean) -> Unit)? = null) {
     Row(modifier = Modifier.fillMaxWidth().height(72.dp)
         .background(MaterialTheme.colorScheme.surfaceContainerHigh)
         .padding(start = startSafe, end = endSafe), verticalAlignment = Alignment.CenterVertically) {
@@ -470,7 +485,9 @@ private fun PersistentSearchHeader(query: String, onQueryChange: (String) -> Uni
         }
         BasicTextField(value = query, onValueChange = onQueryChange,
             modifier = (if (queryWidth == null) Modifier.weight(1f) else Modifier.width(queryWidth.coerceAtLeast(120.dp)))
-                .height(48.dp).semantics { contentDescription = "Search music" },
+                .height(48.dp)
+                .onFocusChanged { state -> onQueryFocusChange?.invoke(state.isFocused) }
+                .semantics { contentDescription = "Search music" },
             singleLine = true,
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
