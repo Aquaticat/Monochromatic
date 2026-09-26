@@ -1,15 +1,11 @@
 /**
- Disposable real-Git repositories and transaction states for recovery tests.
-
- Transactions are built by the shipped workspace and journal code,
- then their owner is rewritten to a dead or reused process to model a crash at an exact phase.
+ Disposable real-Git repositories, owner identities, and leftover listings for recovery tests.
 
  @module
  */
 import { spawn, } from 'node:child_process';
 import { once, } from 'node:events';
 import {
-  copyFile,
   mkdtemp,
   readdir,
   readFile,
@@ -22,20 +18,8 @@ import { resolveRealGit, } from '@monochromatic-dev/git-executable/ts';
 import nanoSpawn from 'nano-spawn';
 import { internalTestExports, } from '../../dist/final/node/index.mjs';
 
-/**
- Built transaction workspace shape.
- */
-export type CommitTransactionWorkspace = Awaited<ReturnType<typeof internalTestExports.createCommitTransactionWorkspace>>;
-
-/**
- Built prepared journal shape.
- */
-type PreparedTransactionJournal = Awaited<ReturnType<typeof internalTestExports.prepareTransactionJournal>>;
-
 const {
-  createCommitTransactionWorkspace,
   OWNER_FILENAME,
-  prepareTransactionJournal,
   PROCESS_IDENTITY_ABSENT,
   resolveProcessBirthIdentity,
   TRANSACTION_ROOT_NAME,
@@ -47,16 +31,23 @@ const {
 export const REAL_GIT: string = await resolveRealGit();
 
 /**
+ Repository-local configuration pinning identity and signing,
+ because native preparation inherits this process's environment and the host's global configuration.
+ */
+const LOCAL_CONFIG: readonly (readonly [string, string])[] = [
+  ['user.name', 'cli-git recovery fixture',],
+  ['user.email', 'recovery@example.invalid',],
+  ['commit.gpgSign', 'false',],
+];
+
+/**
  Environment isolating fixture Git from host global and system configuration.
  */
 const FIXTURE_ENV: NodeJS.ProcessEnv = {
   ...process.env,
   GIT_CONFIG_GLOBAL: '/dev/null',
   GIT_CONFIG_NOSYSTEM: '1',
-  GIT_AUTHOR_NAME: 'cli-git recovery fixture',
-  GIT_AUTHOR_EMAIL: 'recovery@example.invalid',
-  GIT_COMMITTER_NAME: 'cli-git recovery fixture',
-  GIT_COMMITTER_EMAIL: 'recovery@example.invalid',
+  GIT_EDITOR: ':',
 };
 
 /**
@@ -67,6 +58,10 @@ export type RecoveryRepository = Readonly<{
    Worktree root.
    */
   path: string;
+  /**
+   Git directory.
+   */
+  gitDir: string;
   /**
    Per-transaction registry.
    */
@@ -110,8 +105,6 @@ export type OwnerIdentity = Readonly<{
 
  @param args - Git arguments
 
- @param env - extra environment entries
-
  @returns trimmed standard output
 
  @example
@@ -122,27 +115,18 @@ export type OwnerIdentity = Readonly<{
 export async function runFixtureGit({
   repository,
   args,
-  env = {},
 }: Readonly<{
   repository: string;
   args: readonly string[];
-  env?: NodeJS.ProcessEnv;
 }>,): Promise<string> {
-  /**
-   Completed fixture Git process.
-   */
-  const result = await nanoSpawn(
+  return (await nanoSpawn(
     REAL_GIT,
     [...args,],
     {
       cwd: repository,
-      env: {
-        ...FIXTURE_ENV,
-        ...env,
-      },
+      env: FIXTURE_ENV,
     },
-  );
-  return result.stdout.trim();
+  )).stdout.trim();
 }
 
 /**
@@ -163,58 +147,27 @@ export async function createRecoveryRepository(): Promise<RecoveryRepository> {
     tmpdir(),
     'cli-git-recovery-',
   ),);
-  await runFixtureGit({
-    repository: path,
-    args: ['init', '--quiet', '--initial-branch=main',],
-  },);
-  await writeFile(
-    join(
-      path,
-      'base.txt',
-    ),
-    'base\n',
-  );
-  await runFixtureGit({
-    repository: path,
-    args: ['add', 'base.txt',],
-  },);
-  await runFixtureGit({
-    repository: path,
-    args: ['commit', '--quiet', '--message=baseline',],
-  },);
+  await runFixtureGit({ repository: path, args: ['init', '--quiet', '--initial-branch=main',], },);
+  for (const [key, value,] of LOCAL_CONFIG) {
+    // oxlint-disable-next-line no-await-in-loop -- Config writes to one file are ordered.
+    await runFixtureGit({ repository: path, args: ['config', key, value,], },);
+  }
+  await writeFile(join(path, 'base.txt',), 'base\n',);
+  await runFixtureGit({ repository: path, args: ['add', 'base.txt',], },);
+  await runFixtureGit({ repository: path, args: ['commit', '--quiet', '--message=baseline',], },);
   /**
    Repository Git directory.
    */
-  const gitDir = join(
-    path,
-    '.git',
-  );
+  const gitDir = join(path, '.git',);
   return {
     path,
-    registryRoot: join(
-      gitDir,
-      TRANSACTION_ROOT_NAME,
-    ),
-    legacyDirectory: join(
-      gitDir,
-      'cli-git-transaction',
-    ),
-    indexPath: join(
-      gitDir,
-      'index',
-    ),
-    lockPath: join(
-      gitDir,
-      'index.lock',
-    ),
+    gitDir,
+    registryRoot: join(gitDir, TRANSACTION_ROOT_NAME,),
+    legacyDirectory: join(gitDir, 'cli-git-transaction',),
+    indexPath: join(gitDir, 'index',),
+    lockPath: join(gitDir, 'index.lock',),
     async [Symbol.asyncDispose](): Promise<void> {
-      await rm(
-        path,
-        {
-          recursive: true,
-          force: true,
-        },
-      );
+      await rm(path, { recursive: true, force: true, },);
     },
   };
 }
@@ -242,17 +195,8 @@ export async function stageFile({
   name: string;
   content: string;
 }>,): Promise<void> {
-  await writeFile(
-    join(
-      repository,
-      name,
-    ),
-    content,
-  );
-  await runFixtureGit({
-    repository,
-    args: ['add', name,],
-  },);
+  await writeFile(join(repository, name,), content,);
+  await runFixtureGit({ repository, args: ['add', name,], },);
 }
 
 /**
@@ -268,10 +212,7 @@ export async function stageFile({
  ```
  */
 export function headOid(repository: string,): Promise<string> {
-  return runFixtureGit({
-    repository,
-    args: ['rev-parse', 'HEAD',],
-  },);
+  return runFixtureGit({ repository, args: ['rev-parse', 'HEAD',], },);
 }
 
 /**
@@ -288,11 +229,7 @@ export async function exitedProcessIdentity(): Promise<OwnerIdentity> {
   /**
    Short-lived owner stand-in kept alive until its identity is read.
    */
-  const child = spawn(
-    process.execPath,
-    ['--eval', 'setInterval(() => {}, 1000);',],
-    { stdio: 'ignore', },
-  );
+  const child = spawn(process.execPath, ['--eval', 'setInterval(() => {}, 1000);',], { stdio: 'ignore', },);
   /**
    Child PID assigned at spawn.
    */
@@ -308,143 +245,14 @@ export async function exitedProcessIdentity(): Promise<OwnerIdentity> {
   /**
    Exit notification registered before signalling.
    */
-  const exited = once(
-    child,
-    'exit',
-  );
+  const exited = once(child, 'exit',);
   child.kill('SIGKILL',);
   await exited;
-  return {
-    ownerPid: pid,
-    ownerIdentity,
-  };
+  return { ownerPid: pid, ownerIdentity, };
 }
 
 /**
- Opens a real transaction workspace, which holds the real index lock and publishes its directory.
-
- @param repository - repository root
-
- @returns live workspace owned by the test process
-
- @example
- ```ts
- const workspace = await openTransaction('/tmp/repo');
- ```
- */
-export function openTransaction(repository: string,): Promise<CommitTransactionWorkspace> {
-  return createCommitTransactionWorkspace({
-    gitPath: REAL_GIT,
-    cwd: repository,
-  },);
-}
-
-/**
- Snapshots the real index and writes the prepared journal of an index-mode commit.
-
- @param repository - repository root
-
- @param workspace - open workspace
-
- @returns durable prepared journal
-
- @example
- ```ts
- await journalTransaction({ repository, workspace });
- ```
- */
-export async function journalTransaction({
-  repository,
-  workspace,
-}: Readonly<{
-  repository: string;
-  workspace: CommitTransactionWorkspace;
-}>,): Promise<PreparedTransactionJournal> {
-  await copyFile(
-    workspace.realIndexPath,
-    workspace.originalIndexPath,
-  );
-  await copyFile(
-    workspace.realIndexPath,
-    workspace.commitIndexPath,
-  );
-  /**
-   Tree the commit would record.
-   */
-  const intendedTreeOid = await runFixtureGit({
-    repository,
-    args: ['write-tree',],
-    env: { GIT_INDEX_FILE: workspace.commitIndexPath, },
-  },);
-  await copyFile(
-    workspace.commitIndexPath,
-    workspace.postIndexPath,
-  );
-  return prepareTransactionJournal({
-    workspace,
-    gitPath: REAL_GIT,
-    cwd: repository,
-    mode: 'index',
-    amend: false,
-    selectedPaths: [],
-    addedPaths: [],
-    intendedTreeOid,
-  },);
-}
-
-/**
- Lands the prepared commit the way the transaction does: private index plus nonce-bearing reflog action.
-
- @param repository - repository root
-
- @param workspace - journaled workspace
-
- @param message - commit message
-
- @returns landed commit OID
-
- @example
- ```ts
- await landTransaction({ repository, workspace, message: 'landed' });
- ```
- */
-export async function landTransaction({
-  repository,
-  workspace,
-  message,
-}: Readonly<{
-  repository: string;
-  workspace: CommitTransactionWorkspace;
-  message: string;
-}>,): Promise<string> {
-  await runFixtureGit({
-    repository,
-    args: ['commit', '--quiet', `--message=${message}`,],
-    env: {
-      GIT_INDEX_FILE: workspace.commitIndexPath,
-      GIT_REFLOG_ACTION: workspace.reflogAction,
-    },
-  },);
-  return headOid(repository,);
-}
-
-/**
- Closes the workspace descriptor while keeping its directory and lock, as a crash would.
-
- @param workspace - open workspace
-
- @example
- ```ts
- await abandonTransaction(workspace);
- ```
- */
-export async function abandonTransaction(workspace: CommitTransactionWorkspace,): Promise<void> {
-  workspace.preserveForRecovery();
-  await workspace[Symbol.asyncDispose]();
-}
-
-/**
- Rewrites a JSON record in place, keeping its inode.
+ Rewrites a JSON record in place.
 
  @param path - JSON record path
 
@@ -452,7 +260,7 @@ export async function abandonTransaction(workspace: CommitTransactionWorkspace,)
 
  @example
  ```ts
- await rewriteJsonRecord({ path: '/tmp/repo/.git/cli-git-transactions/id/journal.json', fields: { ownerIdentity: 'linux:0' } });
+ await rewriteJsonRecord({ path: '/tmp/repo/.git/cli-git-transactions/id/owner.json', fields: { ownerIdentity: 'linux:0' } });
  ```
  */
 export async function rewriteJsonRecord({
@@ -465,23 +273,14 @@ export async function rewriteJsonRecord({
   /**
    Current record fields.
    */
-  const current: unknown = JSON.parse(await readFile(
-    path,
-    'utf8',
-  ),);
+  const current: unknown = JSON.parse(await readFile(path, 'utf8',),);
   if (((typeof current) !== 'object') || (current === null))
     throw new Error(`Fixture record is not an object: ${path}`,);
-  await writeFile(
-    path,
-    `${JSON.stringify({
-      ...current,
-      ...fields,
-    },)}\n`,
-  );
+  await writeFile(path, `${JSON.stringify({ ...current, ...fields, },)}\n`,);
 }
 
 /**
- Reassigns a transaction to another owner and creation time in its owner record and journal.
+ Reassigns a transaction to another owner and creation time.
 
  @param directory - transaction directory
 
@@ -504,27 +303,27 @@ export async function reassignOwner({
   createdAt: string;
 }>,): Promise<void> {
   await rewriteJsonRecord({
-    path: join(
-      directory,
-      OWNER_FILENAME,
-    ),
-    fields: {
-      ...owner,
-      createdAt,
-    },
+    path: join(directory, OWNER_FILENAME,),
+    fields: { ...owner, createdAt, },
   },);
-  /**
-   Journal present only after preparation.
-   */
-  const entries = await readdir(directory,);
-  if (entries.includes('journal.json',))
-    await rewriteJsonRecord({
-      path: join(
-        directory,
-        'journal.json',
-      ),
-      fields: owner,
-    },);
+}
+
+/**
+ Lists directory entries.
+
+ @param directory - directory
+
+ @returns sorted entry names; empty when the directory is absent
+ */
+async function entries(directory: string,): Promise<readonly string[]> {
+  try {
+    return (await readdir(directory,)).toSorted();
+  }
+  catch (error: unknown) {
+    if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
+      return [];
+    throw error;
+  }
 }
 
 /**
@@ -539,13 +338,42 @@ export async function reassignOwner({
  await registryEntries('/tmp/repo/.git/cli-git-transactions');
  ```
  */
-export async function registryEntries(registryRoot: string,): Promise<readonly string[]> {
-  try {
-    return (await readdir(registryRoot,)).toSorted();
-  }
-  catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
-      return [];
-    throw error;
-  }
+export function registryEntries(registryRoot: string,): Promise<readonly string[]> {
+  return entries(registryRoot,);
+}
+
+/**
+ Lists what a finished recovery must not leave: shadows, `.keep` files, registry entries, and top-level locks.
+
+ @param repository - disposable repository
+
+ @returns leftover names
+
+ @example
+ ```ts
+ await recoveryLeftovers(repository); // []
+ ```
+ */
+export async function recoveryLeftovers(repository: RecoveryRepository,): Promise<readonly string[]> {
+  /**
+   Candidate locations.
+   */
+  const [shadows, packs, transactions, top,] = await Promise.all([
+    entries(join(repository.gitDir, 'cli-git', 'shadow',),),
+    entries(join(repository.gitDir, 'objects', 'pack',),),
+    entries(repository.registryRoot,),
+    entries(repository.gitDir,),
+  ],);
+  return [
+    ...shadows.map(function shadowName(name,): string {
+      return `shadow/${name}`;
+    },),
+    ...packs.filter(function isKeep(name,): boolean {
+      return name.endsWith('.keep',);
+    },),
+    ...transactions,
+    ...top.filter(function isLock(name,): boolean {
+      return name.endsWith('.lock',);
+    },),
+  ];
 }
