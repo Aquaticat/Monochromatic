@@ -8082,6 +8082,30 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## aiyysk1 read, 2026-09-26: class one hundred fifty-six against a correct archive, class one hundred fifty-seven
+
+### What the run did
+
+aiyysk1, the first run of aiyysk, ran on `.frozen-dist-6cf583ca3-class156` (the `0899e69b1` tree)
+and SETTLED at 14:37 UTC in 37.6 min, one attempt, 78 slices, 3,913 calls, 4,620 seats, 184 retry rounds,
+2.70 USD of OpenRouter cost, 5 abandoned streams (0.03 USD); Synthetic and Hyper dry.
+Front matter equal, 13 headings, 3 footnotes, no TA, no double blank line, no error finish;
+145 abstention lines, one run-off, four unendorsed standings.
+All three 初中 read "junior high" ("a junior high school in Yunfu", "Her junior high chemistry teacher",
+"After finishing junior high school"), the archive's own rendering, so class one hundred fifty-six held against an archive already right.
+The page reads as fluent English throughout, in Canadian spelling ("mould", "meagre").
+
+### Class one hundred fifty-seven: 以生命相逼 reversed
+
+樱奈以生命相逼：「要是被我发现（你伤害自己），我就自杀。」 shipped "Sakurana threatened her life:",
+which tells an English reader Sakurana threatened Shikai; she staked her own life.
+The archive had "threatened her in return". The pinned corpus carries the idiom once, here.
+Under the owner's standing instruction to translate better wherever possible, 以生命相逼 joins the idiom glossary
+with "threatened to take her own life" first and "threatened her life" and its variants refused
+by the source-carry floor before any judge reads the candidate.
+Guard `rendering-glossary-leverage.unit.test.ts`, red first; fix `2f5875dcf`; suite 1,156 PASS, 0 FAIL (`suite-class157.log`).
+aiyysk2 launched 14:43 UTC on `.frozen-dist-2f5875dcf` (pid 257150, scope `pass-aiyysk2`).
+
 ## shihai4h2 read, 2026-09-26: class one hundred fifty-six live
 
 shihai4h2 ran on `.frozen-dist-6cf583ca3-class156`, built from the tree later committed as `0899e69b1`;
