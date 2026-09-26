@@ -1,0 +1,25 @@
+{
+  "$schema": "../../../node_modules/oxlint/configuration_schema.json",
+  // Isolated config for no-useless-spread tests: every native category is off so
+  // upstream unicorn/no-useless-spread cannot apply its own fixes during --fix runs.
+  "plugins": [],
+  "categories": {
+    "correctness": "off",
+    "suspicious": "off",
+    "pedantic": "off",
+    "perf": "off",
+    "style": "off",
+    "restriction": "off",
+    "nursery": "off"
+  },
+  "jsPlugins": [
+    "../../oxlint-plugin/no-restricted-syntax/dist/final/node/index.mjs"
+  ],
+  "ignorePatterns": [
+    "**/dist",
+    "**/node_modules"
+  ],
+  "rules": {
+    "no-restricted-syntax/no-useless-spread": "error"
+  }
+}
