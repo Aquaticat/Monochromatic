@@ -1,0 +1,45 @@
+# cargo-mutants configuration for monochromatic-jsonc-edit.
+#
+# What: excludes the mutants that are provably EQUIVALENT, meaning no test can ever distinguish the
+# mutated program from the original because both compute the identical result on every input. Why: an
+# equivalent mutant is noise in the mutation report rather than a test gap, and listing it here with
+# its proof keeps the score meaningful and stops future runs from re-flagging a known no-op. Every
+# other surviving mutant is a real test gap and must be killed by a test, never excluded.
+#
+# Each entry is a regex matched against the mutant's one-line name, the same text cargo-mutants
+# prints (for example `src/scan.rs:185:31: replace + with * in Scanner<'a>::comment`). The patterns
+# are anchored on line and column on purpose: if the file moves, the exclusion stops matching and the
+# mutant reappears in the report, which is the safe direction. Re-verify the proof at that point
+# rather than re-anchoring it blindly.
+
+exclude_re = [
+  # `from_token` skips the first integer digit with `cursor += 1` and then enters
+  # `while bytes.get(cursor).copied().is_some_and(is_digit) { cursor += 1; ... }`. The character at
+  # `cursor` is guaranteed to be a digit at that point, because the branch above returned
+  # `MissingIntegerDigit` otherwise, so the loop's first iteration consumes exactly the digit the
+  # mutated statement failed to skip. Both forms leave `cursor` one past the same digit run, and the
+  # accumulated value is built inside the loop from the digits it visits, so nothing observable
+  # differs. `*= 1` on a usize is the identity for every reachable value.
+  "src/number\\.rs:213:20: replace \\+= with \\*= in JsoncNumberIdentity::from_token",
+
+  # The block-comment scan is `while self.offset + 1 < self.source.len()`, and `self.offset` is the
+  # body start, so it is at least 2 by the time the loop runs. Widening the bound to `<=` admits one
+  # extra iteration with `offset == len - 1`. That iteration tests `byte() == b'*'` together with
+  # `get(offset + 1) == Some(&b'/')`, and `get(len)` is `None`, so no close delimiter can be found
+  # there; the loop then advances past the end and exits with the same unterminated-comment error.
+  "src/scan\\.rs:185:35: replace < with <= in Scanner<'a>::comment",
+
+  # Same loop, `offset + 1` replaced by `offset - 1`. The offset is at least 2 on every reachable
+  # entry, so the subtraction cannot underflow, and `offset - 1 < len` holds for every offset the
+  # loop can reach. The loop therefore runs to `offset == len + 1` instead of stopping at
+  # `offset == len - 1`. The additional iterations read `byte()` past the end, which is `None` and
+  # never `Some(b'*')`, so no close delimiter is found that the original would have missed, and the
+  # exit is the same unterminated-comment error.
+  "src/scan\\.rs:185:31: replace \\+ with - in Scanner<'a>::comment",
+
+  # Same loop, `offset + 1` replaced by `offset * 1`, which is `offset`. The bound becomes
+  # `offset < len`, again admitting exactly one extra iteration at `offset == len - 1`. As above,
+  # that iteration needs `get(len)` to be `Some(&b'/')` to report a close, and it is `None`, so the
+  # mutated scan finds the same close delimiter at the same position, or none at all.
+  "src/scan\\.rs:185:31: replace \\+ with \\* in Scanner<'a>::comment",
+]

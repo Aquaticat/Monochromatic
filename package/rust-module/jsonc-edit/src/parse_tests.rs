@@ -14,8 +14,9 @@
 /// ```ts
 /// import { parse, emit, JsoncKind, JsoncCommentKind } from './index';
 /// ```
-use crate::value::{JsoncComment, JsoncCommentKind, JsoncKind};
-use crate::{emit_jsonc_value, parse_jsonc};
+use crate::path::JsoncPathSegment;
+use crate::value::{JsoncComment, JsoncCommentKind, JsoncKind, JsoncValue};
+use crate::{emit_jsonc_value, jsonc_set, parse_jsonc, parse_jsonc_edit};
 
 /// Check valid JSONC source remains parseable after a canonical emission.
 #[test]
@@ -452,4 +453,65 @@ fn single_line_value_comment_emits_trailing() {
     let document = parse_jsonc("{\"a\": 1 /* note */}").expect("document parses");
     let emitted = emit_jsonc_value(&document);
     assert!(emitted.contains("1, // note"), "comment did not trail the value in {emitted:?}");
+}
+
+/// What:     Report the indentation of the first emitted line carrying a needle.
+/// Why:      A substring search cannot pin indentation, because a deeper pad contains every shallower
+///           one; the indent has to be measured on its own line.
+fn indent_of_line_containing(emitted: &str, needle: &str) -> usize {
+    for line in emitted.lines() {
+        if line.contains(needle) {
+            return line.len() - line.trim_start().len();
+        }
+    }
+    panic!("no emitted line contains {needle} in {emitted:?}");
+}
+
+/// A lone slash after the root is trailing content, not a comment opener.
+#[test]
+fn trailing_lone_slash_is_rejected() {
+    let error = parse_jsonc("{\"a\":1} /").expect_err("a lone slash must be rejected");
+    assert_eq!(error.message, "unexpected content after JSONC root");
+}
+
+/// Text built through the public constructor keeps a space literal rather than escaping it.
+#[test]
+fn constructed_text_keeps_spaces_literal() {
+    let state = parse_jsonc_edit("{\"s\":1}").expect("document parses");
+    let path = [JsoncPathSegment::Key { key: "s".to_string() }];
+    let replacement = JsoncValue::text_from_units(vec![0x61, 0x20, 0x62]);
+    let edited = jsonc_set(&state.root, &path, replacement).expect("set succeeds");
+    let emitted = emit_jsonc_value(&edited);
+    assert!(emitted.contains("\"a b\""), "space was escaped in {emitted:?}");
+    assert!(!emitted.contains("\\u0020"), "space was escaped in {emitted:?}");
+}
+
+/// Array nesting indents two spaces per level, the same way record nesting does.
+#[test]
+fn array_nesting_indents_each_level() {
+    let document = parse_jsonc("[[[1]]]").expect("nested arrays parse");
+    let emitted = emit_jsonc_value(&document);
+    let pads: Vec<usize> = emitted
+        .lines()
+        .map(|line| return line.len() - line.trim_start().len())
+        .filter(|pad| return *pad > 0)
+        .collect();
+    assert!(pads.contains(&2), "no line indented one level in {emitted:?}");
+    assert!(pads.contains(&4), "no line indented two levels in {emitted:?}");
+}
+
+/// A multi-line value comment inside a nested record is indented to the value's own level.
+#[test]
+fn nested_multi_line_value_comment_is_indented_to_its_level() {
+    let document = parse_jsonc("{\"a\":{\"b\":/*x\ny*/1}}").expect("document parses");
+    let emitted = emit_jsonc_value(&document);
+    assert_eq!(indent_of_line_containing(&emitted, "/*x"), 4, "wrong indent in {emitted:?}");
+}
+
+/// A multi-line comment on a nested array element is indented to the element's own level.
+#[test]
+fn nested_array_element_comment_is_indented_to_its_level() {
+    let document = parse_jsonc("{\"a\":[/*x\ny*/1]}").expect("document parses");
+    let emitted = emit_jsonc_value(&document);
+    assert_eq!(indent_of_line_containing(&emitted, "/*x"), 4, "wrong indent in {emitted:?}");
 }
