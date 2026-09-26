@@ -395,6 +395,28 @@ Success requires printed file/tokenizer hashes, full token counts, and a passing
 Any unexpected execution, write, network dependency, or limit breach stops the probe for review.
 Container is removed on exit; the scratch source/data and output evidence are retained.
 
+### Full-policy tokenizer result
+
+The English tokenizer probe passed with no stderr diagnostic beyond task commands.
+The 64-token positive control behaved as expected.
+For snapshot `f15df716f1a7cb9cb4838686e2cde8f006a87b99c3aa7db87533fb47b8314840`:
+
+- Complete `AGENTS.md`: 11,893 tokens.
+- Full file inside a minimal action/context JSON envelope: 12,501 tokens before the question prefix.
+- Tokenizer SHA-256: `6c8aaa9a542084f2457eab775d4eeb51f92a70c0fd9de28d5edb0ddec3c08d30`.
+- Probe image: `c77564ed8521de45f2326f61286697649ff802f532157985b28d2360e597fcc7`.
+- Process: `proc_3b0b`; exit 0; process-manager elapsed 26 seconds includes image build and probe.
+  This is not an inference-latency measurement.
+
+The file exceeds the English encoder's configured 8,192 positions and Laya's default 512-token sequence cap.
+Neither default setting alone proves a hard mathematical/runtime limit.
+Installed transformers 5.0.0 constructs positions dynamically in
+`models/modernbert/modeling_modernbert.py:923-927` and computes RoPE for supplied positions at `:312-327`.
+Laya `Agent.predict` accepts a per-call `max_len` override.
+Next probe: exercise an actual bounded full-length forward pass,
+record all retained tokens, and distinguish runtime acceptance from decision quality or supported extrapolation.
+Do not substitute truncation or policy window fragments.
+
 ## Research still required
 
 - Finalize open ownership/authority choices in the responsibility ledger.
