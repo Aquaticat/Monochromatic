@@ -93,6 +93,42 @@ submodules,
 `core.hooksPath`,
 `extensions.worktreeConfig`.
 
+## Hook environment probe, 2026-09-25
+
+Disposable fixture,
+real Git 2.55.0.
+Driver scripts and raw reports lived in the session scratchpad;
+the durable write-ups are the `doc/troubleshooting/` docs for these Git hook quirks.
+
+- No plain invocation gives hooks an absolute `GIT_WORK_TREE`:
+  Git rewrites `--work-tree` and `GIT_WORK_TREE` to `.` for hooks.
+- `core.worktree` from `-c`,
+  `GIT_CONFIG_COUNT`,
+  or the admin dir's `config` is ignored,
+  and `-c extensions.worktreeConfig=true` is not honoured.
+  Only `extensions.worktreeConfig` in the real common config plus `<admin>/config.worktree` works,
+  which is a persistent repository config write.
+- `hook.<event>.enabled=false` suppresses config-based hooks but not the hookdir hook,
+  contradicting `git help config`.
+- `-c core.hooksPath=<dir>` does not disable config-based hooks.
+- A dispatcher shim works for hookdir and config-based hooks:
+  `-c core.hooksPath=<shim>` plus `-c hook.<event>.enabled=false` for each event,
+  where each shim event exports `GIT_WORK_TREE="$(pwd)"` and runs
+  `git -c hook.<event>.enabled=true -c core.hooksPath=<original> hook run --ignore-missing <event> -- "$@"`.
+  Hooks saw an absolute work tree and correct subdirectory views,
+  failures propagated,
+  and `post-commit` did not run.
+  Every `-c` leaks to hook children through `GIT_CONFIG_PARAMETERS`.
+- After landing,
+  `git hook run post-commit` in the real worktree runs hookdir and config hooks with no private variables,
+  but without the native `GIT_INDEX_FILE`,
+  `GIT_AUTHOR_*`,
+  and `GIT_EDITOR=:`.
+- A `git stash push --keep-index` and `git stash pop` inside a private pre-commit hook
+  left real index bytes unchanged
+  but transiently reverted the shared worktree's unstaged edit
+  and pushed a transient entry onto the shared `refs/stash`.
+
 ## Decisions
 
 - Meaning: concurrent separate invocations,
@@ -175,6 +211,19 @@ the owner declined an `AGENTS.md` rule.
   the private admin dir stays unregistered,
   so `git worktree list` never shows it.
   The ref is briefly visible to `git for-each-ref` and `git log --all`.
+- Hooks during preparation run through the dispatcher shim.
+  It resolves the repository's own `core.hooksPath`,
+  respects user-disabled events,
+  omits `post-commit`,
+  exports an absolute `GIT_WORK_TREE`,
+  and restores the caller's original `GIT_CONFIG_PARAMETERS` before dispatch.
+  Shim executables follow the repository's no-shell-script rule.
+  `extensions.worktreeConfig` is rejected:
+  it mutates every repository's config and still needs the shim for `post-commit`.
+- `post-commit` runs once after landing through `git hook run post-commit` in the real worktree,
+  with native-equivalent `GIT_INDEX_FILE`,
+  `GIT_AUTHOR_*`,
+  and `GIT_EDITOR=:`.
 - A replay conflict is a `core-finding` JSONL event with exit `1`,
   matching other expected commit rejections.
 - New JSONL events report replays and lost landing races.
@@ -190,11 +239,8 @@ the owner declined an `AGENTS.md` rule.
 
 - Foreign `index.lock` wait bound,
   pending research on whether a live holder is detectable.
-- Hook environment:
-  absolute `GIT_WORK_TREE`,
-  suppressing prepared `post-commit` and running it once after landing,
-  and config-based hooks;
-  pending experiment.
+- Hook concurrency:
+  hooks that mutate shared worktree or `refs/stash` can collide when preparations overlap.
 
 ## Next action
 
