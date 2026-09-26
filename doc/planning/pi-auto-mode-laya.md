@@ -566,6 +566,77 @@ Image: `eb9d352a0e55ae38933a068698435fecada273e7a0d3879d4eca153dc2dae161`.
 Both tested tokenizer families therefore exceed 8,192 tokens for this policy file alone.
 That still does not establish a hard runtime ceiling or long-context decision quality.
 
+### Authorized 8 GiB retry also failed
+
+The user asked how long Laya would take.
+Status inspection established that `proc_8f5d` had already exited.
+Container `laya-full-policy-forward-8g-20260926` reported `OOMKilled: true` and exit 137,
+with memory and memory-plus-swap both 8,589,934,592 bytes.
+It started at 03:22:37.763 and ended at 03:26:41.095 EDT on 2026-09-26.
+It produced no verdict.
+The actual pre-forward tensor check confirmed all 12,676 tokens and all valid input-mask positions.
+The failure should have been surfaced sooner;
+there is no remaining inference run to wait for.
+No completion estimate has been established for the remaining diagnosis/evaluation.
+
+### Head-memory diagnosis and bounded kernel probe
+
+Ranked hypotheses were stated before further tests:
+
+1.  The CPU decision-head native attention path materializes full attention scores.
+2.  The encoder's attention path is responsible.
+3.  Retained intermediate tensors accumulate across stages.
+
+PyTorch source was cloned read-only at tag v2.10.0,
+which resolves to the installed wheel's exact commit
+`449b1768410104d3ed79d3bcfe4ba1d65c7f22c0`.
+Clone: `~/temp/agent/pytorch-laya-2026-09-26`.
+
+`aten/src/ATen/native/transformers/transformer.cpp:107-121`
+passes through `_native_multi_head_attention` even with `need_weights=false`.
+`aten/src/ATen/native/transformers/attention.cpp:383-406`
+materializes `qkt = bmm_nt(q, k)` with shape `[B, num_head, T, T]`,
+then discards it only after attention when weights were not requested.
+For batch 1,
+16 heads,
+12,676 tokens,
+and float32,
+that score tensor alone requires 10,283,582,464 bytes (9.577332496643066 GiB).
+This is source-backed allocation sizing;
+component-level reproduction is still required before attributing the observed failure to this path.
+
+The installed/source `torch.backends.mha.set_fastpath_enabled(False)` disables this fused path.
+The fallback layer passes `need_weights=False` through its self-attention block.
+No PyTorch or Laya source is being edited.
+
+Kernel probe: `~/temp/agent/laya-auto-mode-eval-2026-09-26/head-probe/`.
+It constructs one inference-mode TransformerEncoderLayer with Laya's exact head dimensions,
+then runs sequential native and functional modes at the observed full sequence length.
+The native run must reproduce an OOM at 8 GiB before the functional result is accepted as a useful differential.
+A separate 128-token random-tensor control compares numerical outputs with fixed seed 0,
+using `rtol=1e-5` and `atol=1e-6`.
+These are tensor-kernel controls,
+not Laya safety decisions with shortened policy.
+Every actual Laya decision probe retains full current `AGENTS.md`.
+
+Execution uses the same pinned CPU dependency image and no model weights,
+private histories,
+network,
+host mounts,
+GPU,
+or fixture commands.
+The Containerfile contains no RUN instruction.
+Each container has 8 GiB memory/no extra swap,
+2 CPUs,
+64 processes,
+256 descriptors,
+a 64 MiB temporary area,
+and a 300-second deadline.
+Only one container executes at a time.
+The first-party Node driver captures exit/state and stops on an unexpected outcome.
+A successful kernel differential is not a completed full-policy workaround;
+rerun the unchanged end-to-end policy input afterward.
+
 ## Research still required
 
 - Finalize open ownership/authority choices in the responsibility ledger.
