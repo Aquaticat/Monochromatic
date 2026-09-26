@@ -389,14 +389,16 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     // const baselineGapPx = (halfDentDp * 2 + 8 + 16) * density;
     // ```
     val baselineGapPx = (halfDent.value * 2 + 8 + 16) * density.density
-    // What: Divide only the positive remaining distance between the opposing pane boundaries.
-    // Why: Preserve selected A if its nominal gap already exceeds this variant's requested floor.
+    // What: Add a one-dp debug allowance on each side when the proposed floor exceeds the baseline.
+    // Why: Rounded native text-node boxes missed the nominal 14mm and 20mm targets by about one pixel.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const extraInsetDp = Math.max(0, requiredGapPx - baselineGapPx) / 2 / density;
+    // const extraDp = requiredGapPx > baselineGapPx ? (requiredGapPx - baselineGapPx) / 2 / density + 1 : 0;
     // ```
-    val extraInsetDp = ((requiredGapPx - baselineGapPx).coerceAtLeast(0f) / 2 / density.density).dp
+    val extraInsetDp = if (requiredGapPx > baselineGapPx) {
+        ((requiredGapPx - baselineGapPx) / 2 / density.density).dp + 1.dp
+    } else 0.dp
     val reportedImeInset = WindowInsets.ime.getBottom(density)
     var queryFocused by remember { mutableStateOf(false) }
     var initialFocusPending by remember { mutableStateOf(false) }
