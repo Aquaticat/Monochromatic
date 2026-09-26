@@ -404,7 +404,8 @@ This measured case also reaches manual approval at the five-second deadline.
 The separate single runs do not establish a speedup distribution or numerical parity.
 BF16 is not a verified remedy for the accepted interactive latency requirement.
 
-Image: `89a15652172b2008f4552ee81f08e587e33bae60c68a8a6edff39a23d092bf90`.
+Image:
+ `89a15652172b2008f4552ee81f08e587e33bae60c68a8a6edff39a23d092bf90`.
 Private `result-initial.json` SHA-256:
 `34774def995db9765894893eb81b7b0eb458912e305edbaf0ba504c4550e8245`.
 No GPU,

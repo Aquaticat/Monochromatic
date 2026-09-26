@@ -387,8 +387,10 @@ This case also misses the five-second assessment deadline and would go to manual
 No repeat-run timing band was measured,
 so do not claim a quantified BF16 speedup or numerical parity from the separate runs.
 
-Image: `89a15652172b2008f4552ee81f08e587e33bae60c68a8a6edff39a23d092bf90`.
-Result artifact SHA-256: `34774def995db9765894893eb81b7b0eb458912e305edbaf0ba504c4550e8245`.
+Image:
+ `89a15652172b2008f4552ee81f08e587e33bae60c68a8a6edff39a23d092bf90`.
+Result artifact SHA-256:
+ `34774def995db9765894893eb81b7b0eb458912e305edbaf0ba504c4550e8245`.
 This is configuration-specific runtime evidence,
 not a held-out safety qualification or a rejection of other Laya paths.
 No further inference is currently scheduled.
