@@ -1,6 +1,6 @@
-// Rejected debug-only Search comparison, not a production implementation.
-// D50 superseded all three variants: they hide the unfolded playback deck.
-// Retain only as historical evidence; new candidates must reserve the deck.
+// Historical unfolded Search alternatives hide the deck and remain rejected.
+// The cover host also supports isolated, debug-only result-viewport comparisons.
+// Neither branch implements production Search.
 package dev.monochromatic.musicplayer
 
 // What:     BackHandler maps system Back to the temporary Search destination.
@@ -49,6 +49,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 // `heightIn` sets the minimum native result height without truncating enlarged text.
 import androidx.compose.foundation.layout.heightIn
+// What:     `imePadding` adds current keyboard-height padding to a Compose region.
+// Why:      The scrollable cover list must end above a docked keyboard while typing.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { keyboardInsetPadding } from "./layout";
+// ```
+import androidx.compose.foundation.layout.imePadding
 // `navigationBars` protects scrolled results from the gesture bar.
 import androidx.compose.foundation.layout.navigationBars
 // `padding` keeps actual glyphs away from device and crease bounds.
@@ -132,6 +140,14 @@ internal fun SearchLayoutStudy(candidate: String, hidePositiveHeading: Boolean =
     val cover = LocalConfiguration.current.screenWidthDp < 600
     // This debug marker changes result samples without changing the settled cover layout.
     val overflowStudy = candidate.contains("-overflow-")
+    // What:     `imeViewportStudy` enables a named debug comparison for the cover.
+    // Why:      The otherwise identical overflow candidate remains a failure control.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const imeViewportStudy = candidate.includes("-imeviewport-");
+    // ```
+    val imeViewportStudy = candidate.contains("-imeviewport-")
     val variant = if (candidate.contains("-docked-")) "docked" else if (candidate.contains("-wide-list-")) "wide-list" else "wide-grid"
     val initiallyOpen = !candidate.contains("-player")
     val initialQuery = if (candidate.contains("-results")) "cam" else if (candidate.contains("-none")) "zzq" else ""
@@ -154,7 +170,7 @@ internal fun SearchLayoutStudy(candidate: String, hidePositiveHeading: Boolean =
     if (cover) {
         SearchLayoutCover(query = query, onQueryChange = { query = it }, onBack = onBack,
             unavailable = unavailable, pageColor = pageColor, hidePositiveHeading = hidePositiveHeading,
-            overflowStudy = overflowStudy)
+            overflowStudy = overflowStudy, imeViewportStudy = imeViewportStudy)
         return
     }
     // What:     110px is this panel's approximation of the user's physical 7.5mm dent.
@@ -177,18 +193,41 @@ internal fun SearchLayoutStudy(candidate: String, hidePositiveHeading: Boolean =
     }
 }
 
-/** Keeps the folded design shared while unfolded alternatives answer the open layout question. */
+/** What:     This cover host keeps Search's header above a scrollable result list.
+ *  Why:      A debug-only IME viewport comparison can share the same cover rows.
+ *
+ *  In TS you'd write (pseudocode):
+ *  ```ts
+ *  function SearchLayoutCover(props: CoverSearchProps): UIElement;
+ *  ```
+ */
 @Composable
 private fun SearchLayoutCover(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, pageColor: Color, hidePositiveHeading: Boolean,
-    overflowStudy: Boolean) {
+    overflowStudy: Boolean, imeViewportStudy: Boolean) {
     Column(modifier = Modifier.fillMaxSize().background(pageColor)) {
         Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
         SearchLayoutHeader(query = query, onQueryChange = onQueryChange, onBack = onBack,
             halfClearance = null)
         HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
+        // What:     Kotlin's `if` expression selects keyboard padding or no extra modifier.
+        // Why:      Only the comparison candidate reserves keyboard space below results.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const resultInset = imeViewportStudy ? keyboardInsetPadding() : identityLayout;
+        // ```
+        val resultInset = if (imeViewportStudy) Modifier.imePadding() else Modifier
+        // What:     `then` combines the existing viewport sizing with optional inset padding.
+        // Why:      The fixed header stays put; nested navigation-bar padding avoids overlap.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // renderRows({ layout: combine(fillWidth, fillRemainingHeight, resultInset, navInset) });
+        // ```
         SearchLayoutRows(query = query, unavailable = unavailable,
-            modifier = Modifier.fillMaxWidth().weight(1f).windowInsetsPadding(WindowInsets.navigationBars),
+            modifier = Modifier.fillMaxWidth().weight(1f).then(resultInset)
+                .windowInsetsPadding(WindowInsets.navigationBars),
             halfClearance = null, fullWidth = false, pageColor = pageColor,
             hidePositiveHeading = hidePositiveHeading, overflowStudy = overflowStudy)
     }
