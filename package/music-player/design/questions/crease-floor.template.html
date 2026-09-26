@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E2 · opposing-information minimum separation</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --color-page: #f4f5f9;
+  --color-panel: #ffffff;
+  --color-raised: #e5e8f2;
+  --color-ink: #242733;
+  --color-muted: #4d5261;
+  --color-edge: #666c7c;
+  --color-accent: #344d86;
+  --color-chassis: #17191f;
+  --color-backdrop: rgb(0 0 0 / 80%);
+  --color-crease: #a8502b;
+  --color-information: #354f89;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-page: #0c0e13;
+    --color-panel: #191d26;
+    --color-raised: #2b3040;
+    --color-ink: #f2f3f8;
+    --color-muted: #c4c9d5;
+    --color-edge: #a1a8b8;
+    --color-accent: #b7caff;
+    --color-chassis: #08090c;
+    --color-backdrop: rgb(0 0 0 / 86%);
+    --color-crease: #ffac82;
+    --color-information: #b7caff;
+  }
+}
+* { box-sizing: border-box; }
+body { margin-inline: 0; margin-block: 0; background-color: var(--color-page); color: var(--color-ink); font-family: system-ui, sans-serif; line-height: 1.5; }
+main { max-inline-size: 88rem; margin-inline: auto; padding-inline: clamp(1rem, 3vw, 2.5rem); padding-block: 1rem 4rem; }
+h1 { font-size: clamp(1.8rem, 3vw, 2.6rem); line-height: 1.2; }
+h2 { margin-block: 0.5rem; }
+p { max-inline-size: 90ch; }
+.evidence, .policy, .note {
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.8rem;
+  background-color: var(--color-panel);
+  padding-inline: 1rem;
+  padding-block: 0.7rem;
+}
+.muted { color: var(--color-muted); }
+.evidence img { display: block; inline-size: min(100%, 30rem); block-size: auto; }
+.policies { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 23rem), 1fr)); gap: 1rem; margin-block: 1rem; }
+.policy[data-recommended='true'] { border-width: 0.15rem; border-color: var(--color-accent); }
+.policy ul { padding-inline-start: 1.5rem; }
+.policy li { margin-block: 0.4rem; }
+.ruler { display: grid; gap: 0.55rem; margin-block: 0.8rem; }
+.measure { display: grid; grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr); gap: 0.6rem; align-items: center; }
+.measure .line { display: block; block-size: 0.65rem; border-radius: 0.35rem; background-color: var(--color-information); }
+.measure[data-kind='crease'] .line { inline-size: min(100%, 6.9rem); background-color: var(--color-crease); }
+.measure[data-kind='ten'] .line { inline-size: min(100%, 9.2rem); }
+.measure[data-kind='twelve'] .line { inline-size: min(100%, 11.05rem); }
+.measure[data-kind='boxes'] .line { inline-size: min(100%, 10.45rem); }
+button, textarea { font: inherit; color: var(--color-ink); background-color: var(--color-panel); }
+button {
+  min-inline-size: 3rem;
+  min-block-size: 3rem;
+  padding-inline: 0.8rem;
+  padding-block: 0.3rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.6rem;
+  cursor: pointer;
+}
+button:hover { background-color: var(--color-raised); }
+button:focus-visible, input:focus-visible, textarea:focus-visible, .stage:focus-visible { outline: 0.1875rem solid var(--color-accent); outline-offset: 0.1875rem; }
+fieldset { border-width: 0; padding-inline: 0; padding-block: 0; margin-inline: 0; margin-block: 0.8rem; }
+label { display: block; min-block-size: 3rem; padding-block: 0.45rem; }
+textarea {
+  display: block;
+  inline-size: min(100%, 50rem);
+  min-block-size: 7rem;
+  padding-inline: 0.7rem;
+  padding-block: 0.5rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.4rem;
+}
+output { display: block; white-space: pre-wrap; }
+dialog {
+  inline-size: min(98vw, 65rem);
+  max-inline-size: none;
+  max-block-size: 97vh;
+  padding-inline: 0;
+  padding-block: 0;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.8rem;
+  background-color: var(--color-panel);
+  color: var(--color-ink);
+}
+dialog::backdrop { background-color: var(--color-backdrop); }
+.dialog-bar { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; padding-inline: 0.7rem; padding-block: 0.6rem; }
+.dialog-bar h2 { flex-basis: 100%; }
+.stage { overflow: auto; block-size: min(72vh, 62rem); padding-inline: 0.7rem; padding-block: 0.7rem; background-color: var(--color-raised); }
+.device {
+  --scale: 1;
+  position: relative;
+  inline-size: calc(907px * var(--scale));
+  block-size: calc(937px * var(--scale));
+  margin-inline: auto;
+  border-width: 0.125rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: calc(72px * var(--scale));
+  background-color: var(--color-chassis);
+}
+.screen {
+  position: absolute;
+  inset-inline-start: calc(27px * var(--scale));
+  inset-block-start: calc(27px * var(--scale));
+  inline-size: calc(852px * var(--scale));
+  block-size: calc(883px * var(--scale));
+  overflow: hidden;
+  border-radius: calc(42px * var(--scale));
+  background-color: var(--color-chassis);
+}
+.screen img { display: block; inline-size: 100%; block-size: 100%; }
+.camera, .hinge { position: absolute; background-color: var(--color-chassis); }
+.camera { inset-inline-end: calc(48.41px * var(--scale)); inset-block-start: calc(43.62px * var(--scale)); inline-size: calc(32.41px * var(--scale)); block-size: calc(32.41px * var(--scale)); border-radius: 50%; }
+.hinge { inset-inline-start: calc(431.5px * var(--scale)); inline-size: calc(44px * var(--scale)); block-size: calc(8.8px * var(--scale)); border-radius: 0.25rem; }
+.hinge[data-end='start'] { inset-block-start: 0; }
+.hinge[data-end='end'] { inset-block-end: 0; }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <p class="muted">Music player · selected Search A · Pixel 9 Pro Fold inner panel · E2 policy only</p>
+  <h1>How much total separation should opposing information need?</h1>
+  <p class="note">E2 already keeps meaning-bearing app marks off the approximate physical crease. Its remaining floor is a <strong>total left-to-right separation</strong> between opposing information, not extra blank surface or a margin on each side. The rule is <code>gap ≥ max(min_padding, physical crease width)</code>. Surfaces and hit regions may cross. This question chooses the independent floor, not a layout redesign. The selected Search A, folder browser, deck and D56/D57 remain settled. No new device or IME experiment was done.</p>
+</header>
+<section class="evidence" aria-labelledby="evidence-title">
+  <h2 id="evidence-title">What the existing native capture can and cannot establish</h2>
+  <p>The accepted light 200% typing image is shown at its original 2076 × 2152 physical px. Its display is approximately 852 × 883dp at the measured AVD 390dpi. The approximate crease width is 7.5mm, about 110px, centered at x 1038. Across several selected-A states, the rightmost left text-node box ended at x 965 and the nearest-to-crease right text-node box began at x 1132. Their <strong>projected</strong> horizontal box gap is 167px, about 11.35mm. Those extrema were not necessarily in the same state or at the same height; node boxes do not certify every glyph's paint. This capture does not by itself establish the floor's fit.</p>
+  <img id="capture" src="__CREASE_IMAGE__" width="2076" height="2152" alt="Selected unfolded Search A native panel, with readable left deck and right Search content on opposite sides of the approximate crease">
+  <button id="inspect" type="button">Inspect selected A at device size</button>
+  <h3>Thresholds, not new app screens</h3>
+  <p>These labeled bars compare <strong>total opposing-information distance</strong>, not centered exclusion bands or equal side margins. Their lengths are proportional to the stated millimeters. The 11.35mm box-gap bar is a cross-state proxy, not a measured nearest painted-pair gap or a fit pass for any proposal.</p>
+  <div class="ruler" role="list" aria-label="Approximate physical distance comparison">
+    <div class="measure" data-kind="crease" role="listitem"><span>Crease: 7.5mm</span><span class="line" aria-hidden="true"></span></div>
+    <div class="measure" data-kind="ten" role="listitem"><span>Floor: 10mm</span><span class="line" aria-hidden="true"></span></div>
+    <div class="measure" data-kind="boxes" role="listitem"><span>Box proxy: 11.35mm</span><span class="line" aria-hidden="true"></span></div>
+    <div class="measure" data-kind="twelve" role="listitem"><span>Floor: 12mm</span><span class="line" aria-hidden="true"></span></div>
+  </div>
+</section>
+<section aria-labelledby="choices-title">
+  <h2 id="choices-title">Choose a physical-unit policy</h2>
+  <div class="policies">
+    <article class="policy" data-option="ten" data-recommended="true">
+      <h3>P10 · 10mm independent minimum (Recommended)</h3>
+      <h4>Pros</h4><ul><li>Requires at least 2.5mm of combined clearance beyond this device's approximate 7.5mm crease.</li><li>Sets a stable physical total-separation floor if a later device has a narrower crease.</li></ul>
+      <h4>Cons</h4><ul><li>The measured 11.35mm box proxy is not ink or a same-height opposing pair; compliance remains unverified.</li><li>Could require a different layout in unmeasured states or devices.</li></ul>
+      <p><strong>My read:</strong> Recommend as a moderate independent floor, without asserting that the current art already passes. This 10mm is a proposed separation target, <strong>not</strong> the superseded 10mm estimate of the crease itself.</p>
+    </article>
+    <article class="policy" data-option="crease">
+      <h3>P0 · No independent floor, crease width alone</h3>
+      <h4>Pros</h4><ul><li>The current target's effective threshold stays at its approximately 7.5mm physical crease width.</li><li>Does not impose an invented global floor beyond the already accepted meaning-off-crease rule.</li></ul>
+      <h4>Cons</h4><ul><li>A future narrower crease would lower the effective total-separation threshold.</li><li>There is no independent buffer for opposing information across the fold.</li></ul>
+      <p><strong>My read:</strong> Sound if E2 should track only the actual obstruction, rather than promise a separate baseline. Numerically this option sets <code>min_padding = 0mm</code> in E2, not a new component padding value.</p>
+    </article>
+    <article class="policy" data-option="twelve">
+      <h3>P12 · 12mm independent minimum</h3>
+      <h4>Pros</h4><ul><li>Requires at least 4.5mm of combined clearance beyond this device's approximate crease.</li><li>Provides a stricter target if stronger visual separation is worth possible layout responses.</li></ul>
+      <h4>Cons</h4><ul><li>Exceeds the 11.35mm projected box-gap proxy, but actual painted distance and nearest same-height pair remain unmeasured.</li><li>A state that fails this target would require a visible response; no such response has been built or validated.</li></ul>
+      <p><strong>My read:</strong> Choose if the stricter physical floor is intentional even though current-state fit is unproven; do not infer automatic truncation or layout changes from the proxy alone.</p>
+    </article>
+  </div>
+  <p class="note"><strong>Ranking:</strong> P10 &gt; P0 &gt; P12. P10 exceeds the physical crease while setting a bounded independent target; P0 is second because it honors only the known obstruction rather than creating a stricter unverified target; P12 is third because it exceeds even the available projected box-gap proxy without a built alternative. This is a policy ranking, not a visual fit test. All options still require app information to remain outside the physical crease; none mandates symmetric left/right clearance.</p>
+</section>
+<section aria-labelledby="response-title">
+  <h2 id="response-title">Decision: E2's <code>min_padding</code> only</h2>
+  <p>Which total opposing-information floor should E2 use, if any? Selecting a floor does not certify selected A's current ink clearance or authorize production changes.</p>
+  <form id="answer-form">
+    <fieldset><legend>Choose one floor or correct the premise</legend>
+      <label><input type="radio" name="floor" value="P10"> P10: 10mm independent minimum (recommended)</label>
+      <label><input type="radio" name="floor" value="P0"> P0: no independent minimum, use measured crease width only</label>
+      <label><input type="radio" name="floor" value="P12"> P12: 12mm independent minimum</label>
+      <label><input type="radio" name="floor" value="Other"> Another physical floor or policy</label>
+    </fieldset>
+    <label for="other">Anything else you want settled or changed?</label>
+    <textarea id="other" name="other" placeholder="State a different minimum or correct the formula. Nothing is sent automatically."></textarea>
+  </form>
+  <p><strong>Response path:</strong> Reply in this chat with P10, P0, P12 or your own physical-unit floor and corrections. The form only prepares text.</p>
+  <output id="prepared" form="answer-form" aria-live="polite">Choose a floor or write a correction, then reply in chat.</output>
+</section>
+</main>
+<dialog id="preview" aria-labelledby="preview-title">
+  <div class="dialog-bar">
+    <h2 id="preview-title">Selected inner Search A</h2>
+    <button id="fit" type="button">Fit</button><button id="reset" type="button">Reset 100%</button><button id="zoom-out" type="button">Zoom out</button><button id="zoom-in" type="button">Zoom in</button><button id="close" type="button">Close</button>
+    <p id="scale-label" class="muted" aria-live="polite"></p>
+  </div>
+  <div class="stage" id="stage" role="region" tabindex="0" aria-label="Scrollable unfolded Fold device mock at physical source resolution">
+    <div class="device" id="device"><div class="screen"><img id="preview-image" width="2076" height="2152" alt="Selected Search A native panel"></div><span class="camera" aria-hidden="true"></span><span class="hinge" data-end="start" aria-hidden="true"></span><span class="hinge" data-end="end" aria-hidden="true"></span></div>
+  </div>
+</dialog>
+<script>
+const capture = document.querySelector('#capture');
+const dialog = document.querySelector('#preview');
+const stage = document.querySelector('#stage');
+const device = document.querySelector('#device');
+let scale = 1;
+function showScale() {
+  device.style.setProperty('--scale', String(scale));
+  document.querySelector('#scale-label').textContent = `Source 2076 × 2152 physical px · approximately 852 × 883dp at measured 390dpi · ${Math.round(scale * 100)}% of design dp · reset returns to 100%`;
+}
+document.querySelector('#inspect').addEventListener('click', async () => {
+  const preview = document.querySelector('#preview-image');
+  preview.src = capture.src;
+  await preview.decode();
+  scale = 1;
+  showScale();
+  dialog.showModal();
+  stage.scrollTop = 0;
+  stage.scrollLeft = 0;
+  document.querySelector('#close').focus();
+});
+document.querySelector('#fit').addEventListener('click', () => {
+  const horizontalInset = parseFloat(getComputedStyle(stage).paddingInlineStart) * 2;
+  const verticalInset = parseFloat(getComputedStyle(stage).paddingBlockStart) * 2;
+  scale = Math.min(1, (stage.clientWidth - horizontalInset) / 907, (stage.clientHeight - verticalInset) / 937);
+  showScale();
+});
+document.querySelector('#reset').addEventListener('click', () => { scale = 1; showScale(); });
+document.querySelector('#zoom-out').addEventListener('click', () => { scale = Math.max(0.25, scale - 0.25); showScale(); });
+document.querySelector('#zoom-in').addEventListener('click', () => { scale = Math.min(2, scale + 0.25); showScale(); });
+document.querySelector('#close').addEventListener('click', () => dialog.close());
+dialog.addEventListener('close', () => document.querySelector('#inspect').focus());
+const form = document.querySelector('#answer-form');
+form.addEventListener('input', () => {
+  const selected = form.querySelector('input[name="floor"]:checked');
+  const correction = document.querySelector('#other').value.trim();
+  document.querySelector('#prepared').textContent = [selected?.value, correction].filter(Boolean).join(': ') || 'Choose a floor or write a correction, then reply in chat.';
+});
+</script>
+</body>
+</html>

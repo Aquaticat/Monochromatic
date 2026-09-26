@@ -423,6 +423,16 @@ description = "Validate the sanitized physical inner capture and floating-result
 dir = "{{config_root}}"
 run = "node floating-results-question.mjs validate"
 
+[tasks."build:crease:floor"]
+description = "Build a self-contained E2 opposing-information floor review from selected-A evidence"
+dir = "{{config_root}}"
+run = "node crease-floor-question.mjs build"
+
+[tasks."lint:crease:floor"]
+description = "Validate the E2 floor question and its selected-A native capture"
+dir = "{{config_root}}"
+run = "node crease-floor-question.mjs validate"
+
 [tasks."build:search:historical"]
 description = "Rebuild the archived rejected Fold Search artifact for historical inspection"
 dir = "{{config_root}}"
