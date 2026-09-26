@@ -35,7 +35,9 @@ and then committed in the real worktree from that shell;
 no test or fixture wrote to a real worktree.
 A correction comment is on the commit,
 and issue #575 now covers this environment-override case.
-Rewriting `main` would need the owner's authorization.
+Owner decision 2026-09-26:
+leave the commit in `main`'s history with its correction comment;
+do not rewrite or force-push `main`.
 
 Cleanup done:
 issue #571 closed;
