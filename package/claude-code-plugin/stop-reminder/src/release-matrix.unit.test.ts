@@ -101,11 +101,13 @@ function updated(id: string, status: string,): string {
  
  @param backgroundTasks - `background_tasks` for the synthetic `Stop` payload
  
+ @param optedIn - whether hook process receives forced-continuation opt-in
+ 
  @returns whether the hook refused the stop
  
  @example
  ```ts
- blocksFor({ name: 'clean', lines: [HUMAN], backgroundTasks: [] });
+ blocksFor({ name: 'clean', lines: [HUMAN], backgroundTasks: [], optedIn: true });
  ```
  */
 function blocksFor(
@@ -113,10 +115,12 @@ function blocksFor(
     name,
     lines,
     backgroundTasks,
+    optedIn,
   }: {
     readonly name: string;
     readonly lines: readonly string[];
     readonly backgroundTasks: readonly Record<string, string>[];
+    readonly optedIn: boolean;
   },
 ): boolean {
   /**
@@ -125,6 +129,17 @@ function blocksFor(
   const transcript = join(SCRATCH, `${name.replaceAll(' ', '-',)}.jsonl`,);
 
   writeFileSync(transcript, `${lines.join('\n',)}\n`,);
+
+  /**
+   Hook environment with the ambient opt-in replaced, so each case pins the switch.
+   */
+  const env = {
+    ...Object.fromEntries(Object.entries(process.env,)
+      .filter(([key,],) => key !== 'MONOCHROMATIC_STOP_AUTO_CONTINUE'),),
+    ...(optedIn
+      ? { MONOCHROMATIC_STOP_AUTO_CONTINUE: 'on', }
+      : {}),
+  };
 
   /**
    Hook stdout, containing a block decision or the empty pass-through.
@@ -143,6 +158,7 @@ function blocksFor(
       background_tasks: backgroundTasks,
     },),
     encoding: 'utf8',
+    env,
   },);
 
   return raw.includes('"block"',);
@@ -152,21 +168,28 @@ await describe({
   name: 'stop-reminder release conditions, against the built bundle',
   children: [
     it({
+      name: 'never forces continuation unless opted in',
+      fn: async () => {
+        expect(blocksFor({ name: 'default-off', lines: [HUMAN, TOOL,], backgroundTasks: [], optedIn: false, },),)
+          .toBe(false,);
+      },
+    },),
+    it({
       name: 'blocks a stop when nothing is waiting and the last push did work',
       fn: async () => {
-        expect(blocksFor({ name: 'clean', lines: [HUMAN, TOOL,], backgroundTasks: [], },),).toBe(true,);
+        expect(blocksFor({ name: 'clean', lines: [HUMAN, TOOL,], backgroundTasks: [], optedIn: true, },),).toBe(true,);
       },
     },),
     it({
       name: 'keeps blocking while forced continuations keep producing work',
       fn: async () => {
-        expect(blocksFor({ name: 'worked', lines: [HUMAN, BLOCK, TOOL,], backgroundTasks: [], },),).toBe(true,);
+        expect(blocksFor({ name: 'worked', lines: [HUMAN, BLOCK, TOOL,], backgroundTasks: [], optedIn: true, },),).toBe(true,);
       },
     },),
     it({
       name: 'releases once a forced continuation produced no tool call',
       fn: async () => {
-        expect(blocksFor({ name: 'idle', lines: [HUMAN, BLOCK, TEXT,], backgroundTasks: [], },),).toBe(false,);
+        expect(blocksFor({ name: 'idle', lines: [HUMAN, BLOCK, TEXT,], backgroundTasks: [], optedIn: true, },),).toBe(false,);
       },
     },),
     it({
@@ -176,6 +199,7 @@ await describe({
           name: 'bg-running',
           lines: [HUMAN, TOOL,],
           backgroundTasks: [{ id: 'b1', type: 'shell', status: 'running', },],
+          optedIn: true,
         },),).toBe(false,);
       },
     },),
@@ -186,6 +210,7 @@ await describe({
           name: 'bg-done',
           lines: [HUMAN, TOOL,],
           backgroundTasks: [{ id: 'b1', type: 'shell', status: 'completed', },],
+          optedIn: true,
         },),).toBe(true,);
       },
     },),
@@ -196,6 +221,7 @@ await describe({
           name: 'tasks-done',
           lines: [HUMAN, created('1',), updated('1', 'completed',), TOOL,],
           backgroundTasks: [],
+          optedIn: true,
         },),).toBe(false,);
       },
     },),
@@ -206,6 +232,7 @@ await describe({
           name: 'tasks-open',
           lines: [HUMAN, created('1',), updated('1', 'in_progress',), TOOL,],
           backgroundTasks: [],
+          optedIn: true,
         },),).toBe(true,);
       },
     },),

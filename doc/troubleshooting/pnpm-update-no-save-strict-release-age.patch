@@ -1,0 +1,51 @@
+diff --git a/pnpm/crates/package-manager/src/minimum_release_age.rs b/pnpm/crates/package-manager/src/minimum_release_age.rs
+index 03d6e23..efde8c0 100644
+--- a/pnpm/crates/package-manager/src/minimum_release_age.rs
++++ b/pnpm/crates/package-manager/src/minimum_release_age.rs
+@@ -17,15 +17,15 @@ use pnpm_resolving_npm_resolver::MINIMUM_RELEASE_AGE_VIOLATION_CODE;
+ #[derive(Debug, Display, Error, Diagnostic)]
+ pub enum MinimumReleaseAgeError {
+     #[display(
+-        "minimumReleaseAgeStrict cannot be combined with --no-save: approval would require writing to minimumReleaseAgeExclude in pnpm-workspace.yaml, which --no-save prevents."
++        "minimumReleaseAgeStrict cannot be combined with --no-save: approval would require writing to minimumReleaseAgeExclude in pnpm-workspace.yaml, which --no-save prevents.\n{violations}"
+     )]
+     #[diagnostic(
+         code(ERR_PNPM_STRICT_MIN_RELEASE_AGE_REQUIRES_SAVE),
+         help(
+-            "Drop --no-save so the exclude list can be persisted, or set minimumReleaseAgeStrict: false."
++            "Drop --no-save so the exclude list can be persisted, add these picks to minimumReleaseAgeExclude, or set minimumReleaseAgeStrict: false."
+         )
+     )]
+-    StrictRequiresSave,
++    StrictRequiresSave { violations: String },
+ 
+     #[diagnostic(
+         code(ERR_PNPM_NO_MATURE_MATCHING_VERSION),
+@@ -152,7 +152,9 @@ where
+     }
+ 
+     if policy_excludes == PolicyExcludes::Forbidden {
+-        return Err(MinimumReleaseAgeError::StrictRequiresSave);
++        return Err(MinimumReleaseAgeError::StrictRequiresSave {
++            violations: format_violation_error(&immature),
++        });
+     }
+ 
+     if !can_prompt {
+diff --git a/pnpm/crates/package-manager/src/minimum_release_age/tests.rs b/pnpm/crates/package-manager/src/minimum_release_age/tests.rs
+index df4acec..b94d873 100644
+--- a/pnpm/crates/package-manager/src/minimum_release_age/tests.rs
++++ b/pnpm/crates/package-manager/src/minimum_release_age/tests.rs
+@@ -126,10 +126,10 @@ async fn strict_no_save_is_rejected_only_once_a_pick_is_immature() {
+     .await
+     .expect_err("an immature pick cannot be approved without saving");
+ 
+-    assert!(matches!(error, MinimumReleaseAgeError::StrictRequiresSave));
++    assert!(matches!(error, MinimumReleaseAgeError::StrictRequiresSave { .. }));
+     assert_eq!(
+         error.to_string(),
+-        "minimumReleaseAgeStrict cannot be combined with --no-save: approval would require writing to minimumReleaseAgeExclude in pnpm-workspace.yaml, which --no-save prevents.",
++        "minimumReleaseAgeStrict cannot be combined with --no-save: approval would require writing to minimumReleaseAgeExclude in pnpm-workspace.yaml, which --no-save prevents.\n1 version does not meet the minimumReleaseAge constraint:\n  foo@1.0.0 foo@1.0.0 is too new",
+     );
+     assert!(prompt.messages.is_empty());
+ }

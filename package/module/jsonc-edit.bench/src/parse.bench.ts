@@ -1,8 +1,9 @@
 /**
  Parse benchmark: jsonc-edit against microsoft `jsonc-parser` and
- `jsonc-eslint-parser`, on a clean document (where jsonc-edit takes the native
- `JSON.parse` fast-path) and a commented document (where it uses the structured
- parser). Run with the `bench` task.
+ `jsonc-eslint-parser`, on a clean document and on a commented document.
+ jsonc-edit parses both structurally, so the two inputs differ only in the
+ comment and trailing-comma work each parser must carry. Run with the `bench`
+ task.
  
  @module
  */
@@ -201,12 +202,12 @@ console.log(
   + `clean ${clean.length} B, commented ${commented.length} B\n`,
 );
 
-console.log('CLEAN input (jsonc-edit takes the JSON.parse fast-path):',);
+console.log('CLEAN input (no comments or trailing commas):',);
 measure({ label: 'jsonc-edit parseJsonc', parse: runJsoncEdit, input: clean, },);
 measure({ label: 'microsoft jsonc-parser parseTree', parse: runMicrosoft, input: clean, },);
 measure({ label: 'jsonc-eslint-parser parseForESLint', parse: runEslint, input: clean, },);
 
-console.log('\nCOMMENTED input (jsonc-edit uses the structured parser):',);
+console.log('\nCOMMENTED input (comments and trailing commas):',);
 measure({ label: 'jsonc-edit parseJsonc', parse: runJsoncEdit, input: commented, },);
 measure({ label: 'microsoft jsonc-parser parseTree', parse: runMicrosoft, input: commented, },);
 measure({ label: 'jsonc-eslint-parser parseForESLint', parse: runEslint, input: commented, },);

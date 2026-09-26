@@ -31,7 +31,7 @@ const MAX_PROTOCOL_KIBIBYTES = 16;
 /**
  Byte cap for authentication and completion metadata.
  */
-export const MAX_PROTOCOL_BYTES = MAX_PROTOCOL_KIBIBYTES * BYTES_PER_KIBIBYTE;
+export const MAX_PROTOCOL_BYTES: number = MAX_PROTOCOL_KIBIBYTES * BYTES_PER_KIBIBYTE;
 
 /**
  Domain sentinel for candidate connection with wrong token.

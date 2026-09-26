@@ -7,10 +7,7 @@ import { join, } from 'node:path';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { parseCommitRegion, } from '../parser/commit.ts';
 import { applyPolicyPatches, } from './apply-policy-patches.ts';
-import {
-  createAddedPathTracker,
-  settleAddedPathRecords,
-} from './commit-transaction-added-path-tracker.ts';
+import { createAddedPathTracker, } from './commit-transaction-added-path-tracker.ts';
 import {
   containsExactCandidateSnapshot,
   writeCandidateSnapshot,
@@ -20,13 +17,8 @@ import {
   listChangedIndexPaths,
   listUnmergedIndexPaths,
 } from './commit-transaction-candidates.ts';
-import {
-  initializeCommitIndex,
-  preparePostIndex,
-  writePrivateTree,
-} from './commit-transaction-index.ts';
-import { executePreparedCommit, } from './commit-transaction-finalize.ts';
-import { prepareTransactionJournal, } from './commit-transaction-journal.ts';
+import { concludeCommitTransaction, } from './commit-transaction-conclusion.ts';
+import { initializeCommitIndex, } from './commit-transaction-index.ts';
 import {
   fixCycleFailure,
   fixPassLimitFailure,
@@ -36,11 +28,10 @@ import {
   hasSequencerConclusion,
   materializePathspecFile,
   prepareInteractiveSelection,
-  resolvePrivateCommitArgs,
 } from './commit-transaction-selection.ts';
 import { createCommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
+import { selectedWorktreeRoot, } from './commit-transaction-selected-worktree.ts';
 import { runPolicyEngine, } from './engine.ts';
-import { withFixSummary, } from './fix-summary.ts';
 import type {
   CommitTransactionPolicyOptions,
   CommitTransactionResult,
@@ -206,6 +197,17 @@ export async function runCommitTransaction({
     snapshotPath: initialSnapshot,
   },);
   /**
+   Original selected blobs remain bound to the pre-fix private index.
+   */
+  const initialCandidates = await initialFacts.candidates();
+  /**
+   Canonical worktree root for safe selected-file completion.
+   */
+  const repositoryRoot = await selectedWorktreeRoot({
+    gitPath,
+    cwd: layout.effectiveCwd,
+  },);
+  /**
    Ordered private paths for previously visited exact states.
    */
   const visited: string[] = [initialSnapshot,];
@@ -238,9 +240,20 @@ export async function runCommitTransaction({
    Paths changed by at least one provisional patch.
    */
   const changedPaths = new Set<string>();
+  /**
+   Selected paths actually corrected by the core final-newline policy.
+   */
+  const newlinePaths = new Set<string>();
   while (pass.patches
     .length
     > 0) {
+    for (const event of pass.events) {
+      if ((event.type === 'finding')
+        && (event.policyId === 'final-newline')
+        && (event.fix === 'available')
+        && (event.path !== undefined))
+        newlinePaths.add(event.path,);
+    }
     if (pass.exitCode === 2)
       return {
         policyResult: pass,
@@ -278,7 +291,7 @@ export async function runCommitTransaction({
       trigger: 'pre-forward',
       // Read-only selection never reaches here with patches; every other mode may add unchanged tracked paths.
       addedPathContext: {
-        repositoryRoot: layout.effectiveCwd,
+        repositoryRoot,
         realIndexPath: workspace.originalIndexPath,
         lifecycle: 'commit',
       },
@@ -345,75 +358,22 @@ export async function runCommitTransaction({
       policyResult: pass,
       committed: false,
     };
-  /**
-   Exact intended tree written from stable private candidate state.
-   */
-  const intendedTreeOid = await writePrivateTree({
+  return await concludeCommitTransaction({
     workspace,
     gitPath,
     cwd: layout.effectiveCwd,
-  },);
-  /**
-   Added paths with the blobs their worktree copies receive after landing.
-   */
-  const addedPathRecords = await settleAddedPathRecords({
-    gitPath,
-    cwd: layout.effectiveCwd,
-    indexPath: workspace.commitIndexPath,
-    pending: addedPaths.pending(),
-  },);
-  /**
-   Selected and added paths the commit carries.
-   */
-  const committedPaths = addedPaths.candidatePaths();
-  await preparePostIndex({
-    workspace,
-    gitPath,
-    cwd: layout.effectiveCwd,
-    mode,
-    selectedPaths: committedPaths,
-    intendedTreeOid,
-  },);
-  /**
-   Durable prepared metadata used to detect interrupted ref advancement.
-   */
-  const journal = await prepareTransactionJournal({
-    workspace,
-    gitPath,
-    cwd: layout.effectiveCwd,
+    repositoryRoot,
     mode,
     amend: region.hasAmendFlag,
-    selectedPaths: committedPaths,
-    addedPaths: addedPathRecords,
-    intendedTreeOid,
-  },);
-  /**
-   Real Git arguments against complete private intended index.
-   */
-  const commitArgs = resolvePrivateCommitArgs({
-    args: pass.args,
+    allowEmpty: region.hasAllowEmptyFlag,
+    concludesSequencer,
     pathspecs: region.pathspecs,
-    mode,
-    selectedPrivately: readOnlySelection,
+    readOnlySelection,
+    initialCandidates,
+    newlinePaths,
+    addedPaths,
+    pass,
+    changedPasses,
+    changedPaths: [...changedPaths,],
   },);
-  await executePreparedCommit({
-    workspace,
-    gitPath,
-    spawnCwd: process.cwd(),
-    effectiveCwd: layout.effectiveCwd,
-    commitArgs,
-    intendedTreeOid,
-    originalHead: journal.originalHead,
-    repositoryRoot: layout.effectiveCwd,
-    addedPaths: addedPathRecords,
-  },);
-  return {
-    policyResult: withFixSummary({
-      result: pass,
-      trigger: 'pre-forward',
-      passes: changedPasses,
-      changedPaths: [...changedPaths,],
-    },),
-    committed: true,
-  };
 }

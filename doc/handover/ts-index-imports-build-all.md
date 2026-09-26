@@ -286,7 +286,7 @@ on a hand-merged pilot file:
 - A separate `import type { X } from '.../ts'` alongside a value `import { ... } from '.../ts'` (same specifier) IS a
   duplicate.
    The fix is ONE merged statement with type bindings folded inline as `type X` specifiers
-  (e.g. `import { initPromise, logger, tagged, type Logger } from '@monochromatic-dev/module-logger/ts';`).
+  (e.g. `import { logger, tagged, type Logger } from '@monochromatic-dev/module-logger/ts';`).
    This is
   valid under `verbatimModuleSyntax: true`.
    Aliases preserved as `type Logger as ModuleLogger`,

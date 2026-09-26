@@ -41,6 +41,24 @@ buttons remain available even where Material 3 Expressive recommends newer varia
 The questionnaire must therefore satisfy baseline component guidance without silently
 switching the product to Material 3 Expressive.
 
+**Geometry supersession.**
+ Several historical sections of this audit prescribe
+a 24dp blank pane spacer for the unfolded player.
+ Those describe an older
+prototype,
+ not the current E2 boundary:
+ the user specified about **7.5mm
+of physical visible dent**,
+ and `max(min_padding, crease_width)` separates
+**informational material** in physical coordinates.
+ Pane backgrounds,
+borders,
+ padding and hit regions may cross;
+ a fixed 24dp empty visual gap is
+not required.
+ Do not let baseline M3 pane spacing override this explicit
+device-specific correction.
+
 ## Violations in prototype commit `6e8f248c5`
 
 ### Adaptive layout and scaffold
@@ -711,3 +729,297 @@ These captures establish palette-dependent appearance only.
 after Android roles settle,
  so runtime wallpaper-change propagation remains later
 implementation verification rather than a claim of this design matrix.
+
+## Command-bar study correction (2026-09-23)
+
+The user rejected the first desktop command-bar scenes as visibly non-MD3.
+ The
+Slint renderer made the rasters native,
+ but the component was a generic outlined
+palette with 8px input corners,
+ 8px to 16px container corners,
+ text glyphs in place of
+Material icons,
+ and a system Noto fallback.
+ Its successful form and pixel checks did
+not validate its visual lineage.
+ The first `command-round-s*-c*` captures and their
+ranking are historical experiments,
+ not options to present or carry forward.
+ The
+corrected I/G/R questionnaire built from those scenes was also withdrawn before any
+user choice.
+
+The user's local Material archive at
+`~/Downloads/m3.material.io/components/search/specs/index.html` distinguishes
+**baseline divided** from **M3 Expressive contained** Search.
+ A2 retains baseline
+Material 3,
+ so the guidelines' contained screenshots
+(`components/search/guidelines/images/20.png`,
+ `28.png`,
+ and `37.png`) are a
+visual contrast,
+ not permission to switch styles.
+ The archive's
+`components/search/specs/manifest.json` records original high-resolution URLs for
+`images/34.png` and `images/35.png`;
+ replacing only the archived `=w40` image
+request with `=w1200` exposes the baseline divided measurements at readable size.
+The baseline collapsed field is a filled,
+ 56dp fully rounded bar.
+ On expansion,
+ the
+docked **whole container** is rounded 28dp with a 56dp header and a divider before
+results;
+ the header is not another pill drawn inside that container.
+ The baseline
+full-screen search has sharp outer corners,
+ a 72dp header,
+ and a divider.
+ Leading
+Back and trailing Clear occupy their measured icon slots.
+ Docked results are for
+medium and expanded layouts;
+ compact focused search is full-screen by default.
+A compact desktop dock is an explicit adaptation,
+ not compliance by assertion.
+
+AndroidX Material3 source makes the shape and colors explicit:
+`SearchBarDefaults` in
+`compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/SearchBar.kt`
+reads `SearchBarTokens.ContainerHeight`,
+ `ContainerShape`,
+ and
+`SearchViewTokens.DockedContainerShape`.
+ In the corresponding AndroidX generated
+[search bar tokens][search-bar-tokens],
+ `SearchBarTokens.ContainerHeight` is 56dp,
+ `ContainerShape` is
+`ShapeKeyTokens.CornerFull`,
+ `ContainerColor` is `SurfaceContainerHigh`,
+ and
+`InputTextFont` is `BodyLarge`;
+ the generated [search view tokens][search-view-tokens] set
+`SearchViewTokens.DockedContainerShape` to
+`CornerExtraLarge` (28dp),
+ `FullScreenContainerShape` is `CornerNone`,
+ and
+header heights are 56dp docked and 72dp full-screen.
+ The baseline
+`ExpandedDockedSearchBar` and `ExpandedFullScreenSearchBar` in
+`SearchBar.kt` draw a `HorizontalDivider` between their header and results,
+whereas the contained style is structurally different.
+ AndroidX
+[shape tokens][shape-tokens] assign 28dp to `CornerExtraLarge` and a circle to
+`CornerFull`.
+ These are source-backed
+values,
+ not inferred from the blurred token thumbnails.
+ The archive's list specs
+say baseline list items have square corners,
+ 16dp label padding and 48dp minimum
+targets;
+ the 16dp selected-item corner belongs to **Expressive** lists and must not
+be silently combined with the baseline Search choice.
+ `ListItem.kt:1148-1150`
+chooses [ListTokens.ItemTwoLineContainerHeight][list-tokens] for a two-line item;
+that value is **72dp**,
+ with 24dp leading icons and BodyLarge/BodyMedium label text.
+The corrected Slint study now uses continuous 72px two-line rows.
+ Its 360px
+larger-text test uses 96px rows as an explicit stress adaptation,
+ not a baseline
+token or proof of an automatic breakpoint.
+ The command palette's
+keyboard-current row is a custom focus state,
+ not a persistent selected folder;
+its redundant cues must be identified as a desktop adaptation.
+
+The first MD3 redraw in prototype commit `c5b3fa31f` also mixed the Expressive
+contained pill and rounded selected rows with A2's baseline requirement;
+ it is an
+intermediate experiment,
+ not presentation evidence.
+ The current redraw in prototype
+commits `0e9624dd2` and `7adafa092` keeps the Roboto font and official Material
+icon assets on the prototype branch while adopting
+**baseline divided** anatomy:
+ 56px header,
+ 28px docked outer shape,
+ 1px divider,
+72px full-content header with sharp outer corners,
+ square baseline list rows with
+16px start padding and a disclosed custom keyboard-focus cue.
+ Color roles come from
+`questions/evidence/cover-round-wallpaper-roles-{light,dark}.json` as study input.
+The active native rasters now live at `questions/render/command-md3-*`.
+ At native
+480 × 600px in the light docked scene,
+ pixels at x=200/y=120 (header) are
+`#E7E7F1` (`surfaceContainerHigh`),
+ x=200/y=148 (divider) are `#797A84`
+(`outline`),
+ and x=24/y=223 (keyboard-focus boundary) are `#4E5E8B`
+(`primary`).
+ Dark pairs are `#1E1F26`,
+ `#73757F` and `#BAC5EE`.
+The normalized 56px header contact at
+`questions/evidence/command-md3-baseline-header-comparison.png` places a crop
+from the readable baseline docked spec beside the Slint header,
+ without enlarging
+either logical height.
+ The reference still contains Google's pink measurement
+annotations;
+ it establishes header/divider shape,
+ not an exact palette match or
+accessible behavior.
+ List rows were compared against the separate baseline list
+specs;
+ the spec's search header diagram contains no actual result data.
+ The custom
+keyboard focus uses an outline and state-layer fill rather than an Expressive selected
+corner.
+ Document every desktop
+adaptation rather than labelling it compliant by resemblance.
+ Slint snapshots still
+do not prove accessibility,
+ keyboard interaction,
+ OS window behavior,
+ or global
+hotkey feasibility.
+ No KWin window-management automation is needed for this round.
+
+## D47/D48: one Search page, one integrated header
+
+The user rejected every I/G/R command-bar appearance and chose a Search icon button
+that opens a separate page (D47).
+ The first page prototype stacked a "Search" app
+bar over a query bar;
+ the user removed that redundancy (D48).
+ The desktop-sized prototype
+then used baseline full-content Search anatomy:
+ one 72px header contains Back,
+query and Clear,
+ a 1px `outline` divider separates results,
+ and the page has sharp
+outer corners.
+ On the player,
+ a standard 48px icon-button target holding a 24px Search glyph opens this page;
+no player controls persisted inside **that retired desktop-sized experiment**.
+This was superseded by D50/D51:
+ the unfolded deck must stay visible,
+and selected A lifts it above the measured bottom debug keyboard while Search
+remains on the right.
+ A later real floating Gboard occluded part of that
+deck title at 200% text and both cover result labels at 100% text.
+On a disposable Fold,
+real split inner and full-width cover Gboard keys entered `cam` at
+100% and 200% text;
+the settled deck and result labels stayed visible.
+A Gboard font-update banner briefly clipped the final inner mode,
+so the bottom-keyboard result does not establish D50 for every keyboard state.
+`package/music-player/design/evidence/gboard-geometry.md` records the separate real-keyboard states,
+not a new Material component rule.
+ The separate destination is still visually distinct from a command
+palette or modal overlay.
+
+The same local archive's Search guidelines say an icon button is appropriate when
+search is a secondary action.
+ Its baseline specs and AndroidX
+`SearchViewTokens.FullScreenHeaderContainerHeight` give the 72dp header;
+`ExpandedFullScreenSearchBar` in `SearchBar.kt` draws the divider.
+ The normalized
+source-versus-study contact at
+`questions/evidence/search-page-header-comparison.png` compares the readable
+baseline `components/search/specs/images/34.png` request at `=w1200` (pink source
+measurements retained) to the Slint page header at the same 72px logical height.
+The study's query/result examples are sample content,
+ not an approved index or
+ranking.
+
+The native light/dark study captures at
+`questions/render/search-page-*` show the trigger,
+ empty page,
+ `cam` sample,
+no matches and unavailable library at desktop widths 360 and 480px.
+The 1100px stress viewport covers the player trigger,
+ empty page and illustrative
+results,
+ not the no-match or unavailable states.
+At compact 480px,
+ the rendered header is `#E7E7F1` light / `#1E1F26` dark,
+its divider is `#797A84` / `#73757F`,
+ and the page body remains white / black.
+The Slint source wires Search and Back TouchAreas and gives the input
+`input-type: search`;
+ offscreen rasters do not prove native click delivery,
+ focus
+restoration,
+ screen-reader output,
+ indexing,
+ or a backend.
+ The HTML walkthrough
+is a separate interactive design artifact,
+ not a substitute for native integration
+verification.
+ D21's former global command hotkey and Settings row are not copied
+to Search;
+ D25's Ctrl+F reservation awaits its separate keyboard-map round.
+
+## D49: native Fold geometry replaces desktop-size Search evidence
+
+The user corrected the round's target:
+ all visual design follows the Pixel 9 Pro Fold
+cover panel (1080 × 2424 physical px,
+ approximately 443 × 994dp on this
+390dpi AVD) and unfolded inner panel (2076 × 2152 physical px,
+ about 852 ×
+883dp),
+ as measured in `device-metrics.md`.
+ The former 411 × 923dp cover
+value came from published ppi,
+ not the emulator's Android density.
+Desktop implementation inherits these treatments even if a distinct desktop layout
+would appear more efficient.
+ The 360 × 640,
+ 480 × 600 and 1100 × 640px Slint
+images,
+ their normalized Search header comparison,
+ and the browser walkthrough
+verify a previous desktop-sized experiment only.
+ None measures the D47/D48 page on
+either target panel.
+ The withdrawn debug-only Compose study has opaque captures at both real panel
+resolutions in both schemes,
+ with a player Search target,
+ one 72dp
+Back/query/Clear header,
+ sample results and empty states.
+ It placed the
+unfolded header above a blank left pane and all Search content in the right
+pane.
+ The user rejected that composition.
+ Its pixel and hierarchy checks
+established conformity to an **obsolete** all-paint/all-hit-region connector
+ban,
+ not to the user's clarified E2.
+ Baseline M3 full-content Search guidance
+does not prescribe that disconnected pane allocation;
+ the withdrawn study
+must not be presented as an MD3-endorsed adaptation.
+ The one-header direction D48 remains;
+ D51 later selected the right-side Search
+pane with an IME-lifted left deck.
+ D52 removed the separate positive-results
+query heading so results follow the integrated header directly.
+ A static capture also
+does not prove live search,
+ accessibility focus or result execution.
+ Do not call a Slint-native capture a device-native Android
+proof or ask for a desktop window size as a design input.
+
+[search-bar-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SearchBarTokens.kt
+[search-view-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/SearchViewTokens.kt
+[shape-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ShapeTokens.kt
+[list-tokens]: https://raw.githubusercontent.com/androidx/androidx/androidx-main/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/ListTokens.kt

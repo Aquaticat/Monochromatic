@@ -63,7 +63,7 @@ which were left as historical style comparisons.
 <tr>
 <td>**light-c**</td>
 <td>852×fill</td>
-<td>D34 final light baseline: tonal panes, `outlineVariant` rail line, white 24dp center spacer, and white 16dp picker/transport divider.</td>
+<td>D34 light colors: tonal panes, `outlineVariant` rail line, white center surface and white 16dp picker/transport divider. Its depicted 24dp empty center gap is obsolete under clarified E2; only informative material must clear the user's 7.5mm physical dent.</td>
 </tr>
 <tr>
 <td>**dbtp-a**</td>
@@ -927,15 +927,253 @@ chips, menus, sheets, and text-field specs.
 
 - **P1** — outlined MD3 text-field trigger (56dp, floating Folder label, 4dp corners) plus
   an inset floating menu container (4dp corners, fixed high step in dark) over the list,
-  ending above the deck. Awaiting decision.
+  ending above the deck. Not selected for the provisional baseline.
 - **P2** — same field trigger; the picker replaces the list slot in place while the deck
-  stays visible; caret flips to close. Recommended. Awaiting decision.
-- **P3** — app-bar title plus caret trigger with the P1 floating menu container. Awaiting
-  decision.
-- **P4** — app-bar title trigger with the P2 in-slot container. Awaiting decision.
+  stays visible; caret flips to close. The comparison recommended P2, but the user chose
+  P4 for the provisional baseline.
+- **P3** — app-bar title plus caret trigger with the P1 floating menu container. Not
+  selected for the provisional baseline.
+- **P4** — app-bar title trigger with the P2 in-slot container. Selected by D46 as a
+  **temporary pre-1.x decision**; the user believes a better solution exists.
 
 All four reuse the D28 adaptive rail and the D31 wrapped plain-text names at 48dp with
 primary plus 2dp indicator on the current folder. Captures: `cover-round-cover-picker-*`
 in `questions/render`, dark at 100%, P2 at 200%, and P2 in light under the settled L3
-(D45). Documented deviation: the menu panel exceeds the baseline menu's 112 to 280dp
-width cap because the D31 name wall needs the full panel.
+(D45). Post-decision P4 captures now cover dark 200%, L3 light 100%, and L3 light 200%
+under the same folded native geometry; the original P form remains historical and does
+not contain those later rasters.
+ A separate debug-only interactive P4 study at 200% verified title open/close, Android
+Back, selection dismissal, and keyboard focus retained after Back; TalkBack focus is not
+covered (`questions/evidence/cover-round-cover-picker-p4-interaction.json`).
+ Documented
+P1/P3 deviation: the floating menu panel exceeds the baseline menu's 112 to 280dp width
+cap because the D31 name wall needs the full panel.
+
+## Desktop command-bar visual drafts, withdrawn pending MD3 redraw
+
+The I/G/R questions are independent,
+ and no choice was made.
+ The first S/C matrix
+conflated in-app and global relationships;
+ the second I/G/R native Slint form was
+rejected as visibly non-MD3.
+ The candidates recorded here are historical design
+probes,
+ not current response options.
+ The replacement must use the Search bar/view
+visual and token evidence in `material-3-compliance.md`.
+
+The withdrawn I/G/R variant roles were:
+
+- **I1** dock the action surface below the player header (recommended);
+  **I2** float
+  within the player;
+  **I3** replace the content region.
+  In-app ranking: I1 > I2 >
+  I3,
+  based on source anchoring and retained context.
+- **G1** raise the player when the optional D21 global hotkey is used from another
+  app;
+  **G2** show a detached quick-window concept above that app (recommended).
+  Global
+  ranking: G2 > G1,
+  for preserving the previous task.
+  The OS second window and
+  hotkey are not implemented by this study.
+- **R1** give future Ctrl+F a distinct search destination (recommended);
+  **R2** enter
+  explicit search mode in the command surface.
+  Search relationship ranking: R1 >
+  R2,
+  for dedicated result room rather than mode switching.
+  D25 settles the shortcut
+  reservation only,
+  not this choice.
+
+All in-app variants depict the same typed action query and selected result.
+ Each
+candidate has opaque native Slint captures in both schemes at the current desktop
+app's preferred 480 × 600px size;
+ I1 to I3 also appear at exploratory 1100 × 640px.
+I1 has a 360 × 640px larger-text/long-label stress capture.
+ E1 no-results and E2
+unavailable-action captures are contextual probes,
+ not options.
+ The rejected form was replaced in `questions/current.html` before another review;
+ do not solicit codes from the withdrawn rasters.
+ The withdrawn native rasters are
+`questions/render/command-round-{i,g,r,e}*`.
+ The
+first S × C draft was not shown to the user;
+ its evidence is also historical in
+`questions/evidence/command-round-prior-art.md`.
+ Native static rasters
+do not prove keyboard operation,
+ accessible semantics,
+ focus return,
+ hotkey feasibility,
+search indexing,
+ or real second-window behavior.
+
+## Baseline MD3 divided Search command round (rejected by D47)
+
+The independent I1 to I3,
+ G1 to G2 and R1 to R2 roles remain as documented for the
+withdrawn draft,
+ but all active scenes have been redrawn under A2's baseline MD3
+policy.
+ The native prototype on branch `prototype/music-player-theme-compose` uses
+`command-md3-study.slint` with Roboto and official Material SVGs.
+ It renders the
+baseline expanded docked Search container (28dp outer corners,
+ 56dp flat header,
+1dp divider),
+ the sharp full-content variant (72dp header,
+ divider),
+ and baseline
+72dp two-line square list rows with a custom outline plus state-layer fill for the
+current keyboard result.
+ The collapsed 56dp pill is not incorrectly nested inside the
+expanded view.
+ All color roles are sampled from the documented wallpaper-role
+evidence.
+
+`questions/render/command-md3-{i,g,r,e}*` contains each light/dark native scene
+at the desktop app's preferred 480 × 600px size;
+ I1 to I3 also cover 1100 × 640px,
+and the I1 360 × 640px probe draws a proposed full-content larger-text fallback;
+its static `stress` input does not verify width-driven responsive behavior.
+ E1 no-result and E2
+unavailable-action scenes remain contextual probes,
+ not independent choices.
+The rejected command questionnaire was archived at
+`questions/archive/command-igr-rejected.html` when D47 replaced it.
+ Its normalized 56px baseline-spec versus native
+header comparison is at
+`questions/evidence/command-md3-baseline-header-comparison.png`.
+ None of these
+alternatives has been selected by the user.
+ The Slint surfaces are static and do not
+verify working shortcuts,
+ input focus,
+ screen-reader semantics,
+ real OS window
+ownership,
+ result execution,
+ or search indexing.
+
+## Search button to separate search page (D47/D48, desktop-size experiment retired by D49)
+
+The user rejected all I/G/R command-bar presentations.
+ This earlier Slint prototype has one
+direction rather than an option matrix:
+ a 48px Search button target with a 24px official icon in the player
+opens a separate page,
+ whose single 72px baseline MD3 header merges Back,
+ query
+and Clear (D48).
+ That retired desktop-sized Search experiment replaced the player entirely;
+D50/D51 later required a persistent unfolded deck.
+ No second in-app
+title row remains in the selected Search destination.
+ The throwaway Slint `search-page-study.slint` on the prototype
+branch is committed at `1ecb1f3f7`,
+ with top-bar geometry correction `773c8fc11`
+and merged-header correction `13b38f1f7`.
+ Native 360 × 640 and 480 × 600px light/dark captures show the player trigger,
+empty page,
+ illustrative `cam` results,
+ no results and unavailable library;
+1100 × 640px captures cover the trigger,
+ empty page and illustrative results only
+(`questions/render/search-page-*`,
+ main commit `c65154138`).
+ Search button and Back
+TouchAreas are wired in the design prototype;
+ the static captures do not by
+themselves prove click delivery or focus restoration.
+ The rejected I/G/R form is now archived at
+`questions/archive/command-igr-rejected.html`;
+ The formerly active desktop walkthrough is now retired;
+`questions/current.html` now embeds the selected A-only native Fold review.
+The old HTML
+flow was exercised,
+ but it neither proves the native TouchAreas were activated nor
+measures the target phone geometry.
+D21's global hotkey and Settings row are not inherited by the Search page.
+D25's Ctrl+F reservation remains open with the whole keyboard map.
+ Search targets and result effects/ranking remain design questions;
+D49 makes the Fold the visual source for every platform,
+ and D51 later
+selected A's unfolded pane placement.
+
+## Rejected native Fold Search-page composition (D49)
+
+The debug-only Compose study on `prototype/music-player-theme-compose` captured
+the D47/D48 player trigger and separate one-header Search page on the cover
+(1080 × 2424px,
+ approximately 443 × 994dp at the measured AVD 390dpi) and inner
+display (2076 × 2152px,
+ approximately 852 × 883dp) in both schemes.
+ `questions/render/fold-search-{cover,inner}-*.png` contains opaque
+Android system bars and target-sized results,
+ empty,
+ no-results and unavailable
+states at 100% text;
+ player and results at 200% text are fit checks.
+ Each PNG
+has a paired XML hierarchy in `questions/evidence/` and each panel/scheme has a
+native role JSON;
+ each frame now has measured panel,
+ density,
+ night-mode and
+font-scale metadata in `questions/evidence/`.
+ The rejected unfolded study put Back/query/Clear over an empty left body and
+isolated results or instructions in the right body.
+ The user rejected the
+composition despite the old guard passing.
+ That guard also enforced a mistaken
+reading of connector "content" as all pixels and hit regions;
+ it is not the
+new design acceptance gate.
+ The captures are historical diagnostic evidence,
+not a candidate for endorsement.
+
+The withdrawn split study is archived at
+`questions/archive/search-rejected-fold-review.html`.
+The active `questions/current.html` now shows selected A only,
+ not that old
+walkthrough,
+ gallery or feedback form.
+ The cover chassis preview uses approximately 443 ×
+994 CSS px at 100% AVD dp;
+ the old 411 × 923dp sizing was an unmeasured
+published-ppi estimate.
+ The archived canned rows and HTML walkthrough never proved an actual index,
+result execution,
+ native Back focus or TalkBack speech.
+ D46's provisional P4 cover picker and accepted unfolded
+baseline are contextual only;
+ the desktop Slint captures are history,
+ not a
+matrix to choose from.
+
+## Selected Fold Search A after D52
+
+The three-way keyboard-visible comparison is archived at
+`questions/archive/search-three-way-before-a.html`.
+The user selected A (D51):
+ Search query and results stay together on the unfolded
+right pane,
+ and the existing bottom-left deck lifts above the keyboard while
+typing.
+ D52 removes the duplicate `Results for “cam”` heading from positive
+results on the inner and cover panels.
+ The current A-only rasters in
+`questions/render/search-selected-review-*` are sanitized native captures
+at 100% and 200% text in light/dark.
+ The self-contained
+`questions/current.html` shows the selected state,
+ not a new choice menu.
+Native query input was exercised with a measured 300dp debug-only system IME;
+Gboard geometry and production implementation remain unverified.

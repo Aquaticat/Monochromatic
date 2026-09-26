@@ -156,7 +156,7 @@ function safeParse(
                     canonical re-emission of mutated nodes in splice mode.
  
  @param tomlVersion - Forwarded to `toml-eslint-parser`. Defaults to the
-                      parser's default (currently `'1.0'`).
+                      parser's default (currently `'1.1'` in 1.0.3).
  
  @returns Fresh {@link TomlEditState} with empty deltas.
  

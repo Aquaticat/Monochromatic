@@ -11,7 +11,7 @@
  
  @example
  ```bash
- node /baked/packages/cli/mutation-test/src/container/main.ts
+ node /baked/package/cli/mutation-test/src/container/main.ts
  ```
  */
 

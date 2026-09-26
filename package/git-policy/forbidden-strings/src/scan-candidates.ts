@@ -116,6 +116,68 @@ function scannerEligibleCandidates({
 }
 
 /**
+ Resolves a candidate name within the repository without printing invalid input.
+
+ @param path - candidate path supplied by Git facts
+
+ @param repositoryRoot - repository root of the current policy invocation
+
+ @returns normalized repository-relative pathname for scanner name matching
+
+ @throws {@link ForbiddenStringsPluginError} for paths outside the repository or without a filename
+
+ @example
+ ```ts
+ repositoryCandidateName({ path: 'src/file.ts', repositoryRoot: '/repo' });
+ ```
+ */
+function repositoryCandidateName({
+  path,
+  repositoryRoot,
+}: Readonly<{
+  path: string;
+  repositoryRoot: string;
+}>,): string {
+  /**
+   Absolute Git names are converted to repository-relative paths first.
+   */
+  const relativeName = isAbsolute(path,)
+    ? relative(
+      repositoryRoot,
+      path,
+    )
+    : path;
+  /**
+   Git uses slash separators even on Windows; native absolute paths need the
+   platform separator converted before per-segment validation.
+   */
+  const name = relativeName
+    .split(sep,)
+    .join('/',);
+  /**
+   Each component must name a real Git directory or file, not navigation,
+   an empty name, or a line/control break in the scanner protocol.
+   */
+  const segments = name.split('/',);
+  if ((name.length === 0) || isAbsolute(name,)
+    || segments.some(function invalidSegment(segment,): boolean {
+      if (segment.length === 0)
+        return true;
+      if ((segment === '.') || (segment === '..'))
+        return true;
+      if (segment.includes('\0',))
+        return true;
+      if (segment.includes('\n',))
+        return true;
+      if (segment.includes('\r',))
+        return true;
+      return false;
+    },))
+    throw new ForbiddenStringsPluginError('Invalid forbidden-strings candidate repository path.',);
+  return name;
+}
+
+/**
  Mutable view at EventTarget listener boundary.
  */
 type MutableAbortSignal = {
@@ -227,33 +289,64 @@ export async function scanCandidates({
    */
   using abortRelay = createScannerAbortRelay(signal,);
   /**
-   Disposable exact scanner inputs.
+   Existing scanner-walker exclusions applied before reading candidate bytes.
    */
-  await using materialized = await materializeCandidates(scannerEligibleCandidates({
+  const eligibleCandidates = scannerEligibleCandidates({
     repositoryRoot,
     environment,
     candidates,
-  },),);
+  },);
+  // Validate all logical names before fetching any candidate bytes.
+  eligibleCandidates.forEach(function validateCandidate(candidate,): void {
+    repositoryCandidateName({
+      path: candidate.path,
+      repositoryRoot,
+    },);
+  },);
+  /**
+   Disposable exact scanner inputs, still using synthetic disk names.
+   */
+  await using materialized = await materializeCandidates(eligibleCandidates,);
   if (materialized.paths
     .length
     === 0)
     return [];
   /**
-   Scanner argv: the opt-in embedded-baseline flag (when configured) before
-   explicit temporary-file positionals.
+   Each logical candidate name pairs with a synthetic content operand by
+   position, without recreating repository path grammar in the temp filesystem.
    */
-  const scannerArguments = builtinRules
-    ? [
-      '--builtin-rules',
-      ...materialized.paths,
-    ]
-    : materialized.paths;
+  const logicalNames = materialized.namePaths
+    .map(function candidateName(path,): string {
+      return repositoryCandidateName({
+        path,
+        repositoryRoot,
+      },);
+    },);
+  /**
+   Scanner argv name pairs remain aligned with synthetic content operands.
+   */
+  const nameArguments = logicalNames.flatMap(function nameOperand(name,): readonly string[] {
+    return [
+      '--name-path',
+      name,
+    ];
+  },);
+  /**
+   Scanner argv: optional embedded baseline, real logical names, then exact
+   temporary content files in the same order.
+   */
+  const scannerArguments = [
+    ...(builtinRules ? ['--builtin-rules',] : []),
+    ...nameArguments,
+    ...materialized.paths,
+  ];
   try {
     await nanoSpawn(
       executable,
       [...scannerArguments,],
       {
         cwd: repositoryRoot,
+        env: { ...environment, },
         signal: abortRelay.signal,
       },
     );
@@ -265,15 +358,14 @@ export async function scanCandidates({
     if (error.exitCode === 1)
       return parseScannerOutput({
         stderr: error.stderr,
-        candidateForPath: function candidateForPath(path,): CandidateFile {
+        nameForIndex: function nameForIndex(index,): string {
           /**
-           Exact mapped candidate.
+           Validated real name aligned with scanner's opaque operand index.
            */
-          const candidate = materialized.candidatesByPath
-            .get(path,);
-          if (candidate === undefined)
-            throw new ForbiddenStringsPluginError(`Forbidden-strings scanner reported unknown candidate: ${path}`,);
-          return candidate;
+          const name = logicalNames[index];
+          if (name === undefined)
+            throw new ForbiddenStringsPluginError('Forbidden-strings scanner reported an unknown operand index.',);
+          return name;
         },
       },);
     if (error.signalName !== undefined)

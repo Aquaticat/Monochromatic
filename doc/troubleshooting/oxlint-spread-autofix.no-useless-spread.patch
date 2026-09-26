@@ -1,0 +1,86 @@
+diff --git a/crates/oxc_linter/src/rules/unicorn/no_useless_spread/const_eval.rs b/crates/oxc_linter/src/rules/unicorn/no_useless_spread/const_eval.rs
+index 0daeb1a..a8814fe 100644
+--- a/crates/oxc_linter/src/rules/unicorn/no_useless_spread/const_eval.rs
++++ b/crates/oxc_linter/src/rules/unicorn/no_useless_spread/const_eval.rs
+@@ -194,6 +194,27 @@ impl ConstEval for CallExpression<'_> {
+     }
+ }
+ 
++/// Returns `true` when the hint for `expr` depends on guessing the receiver's
++/// type from a method name alone, e.g. `foo.slice()` or `foo.split()`.
++///
++/// `foo` may be a string, typed array, or iterator, where removing the spread
++/// changes the result type. Fixes based on such hints are not safe.
++pub(super) fn is_method_name_guess(expr: &Expression) -> bool {
++    match expr.get_inner_expression() {
++        Expression::AwaitExpression(expr) => is_method_name_guess(&expr.argument),
++        Expression::SequenceExpression(expr) => {
++            expr.expressions.last().is_some_and(is_method_name_guess)
++        }
++        Expression::ConditionalExpression(cond) => {
++            is_method_name_guess(&cond.consequent) || is_method_name_guess(&cond.alternate)
++        }
++        Expression::CallExpression(call) => {
++            is_split_method(call) || is_functional_array_method(call) || is_array_reduce(call)
++        }
++        _ => false,
++    }
++}
++
+ /// - `Array.from(x)`
+ /// - `Int8Array.from(x)`
+ /// - plus all other typed arrays
+diff --git a/crates/oxc_linter/src/rules/unicorn/no_useless_spread/mod.rs b/crates/oxc_linter/src/rules/unicorn/no_useless_spread/mod.rs
+index c0adf32..d9609ca 100644
+--- a/crates/oxc_linter/src/rules/unicorn/no_useless_spread/mod.rs
++++ b/crates/oxc_linter/src/rules/unicorn/no_useless_spread/mod.rs
+@@ -13,7 +13,7 @@ use oxc_span::{GetSpan, SPAN, Span};
+ 
+ mod const_eval;
+ 
+-use const_eval::{ConstEval, is_array_from, is_new_typed_array};
++use const_eval::{ConstEval, is_array_from, is_method_name_guess, is_new_typed_array};
+ 
+ use crate::{
+     AstNode,
+@@ -428,7 +428,9 @@ fn check_useless_clone<'a>(
+             }
+         }
+ 
+-        ctx.diagnostic_with_fix(clone(span, is_array, name), |fixer| {
++        let fix_kind =
++            if is_method_name_guess(target) { FixKind::DangerousFix } else { FixKind::SafeFix };
++        ctx.diagnostic_with_fix_of_kind(clone(span, is_array, name), fix_kind, |fixer| {
+             fix_by_removing_array_spread(fixer, &array_or_obj_span, spread_elem)
+         });
+     }
+@@ -806,6 +808,29 @@ fn test() {
+             "jsxEl(({\n\tclassName,\n\tonClick: () => console.log('click')\n}));",
+         ),
+     ];
++    let mut fix = fix
++        .into_iter()
++        .map(|(source, expected)| (source, expected, None, FixKind::All))
++        .collect::<Vec<_>>();
++    fix.extend([
++        // Method-name guesses: `text` may be a string, typed array, or iterator,
++        // so removing the spread is only a dangerous fix.
++        ("[...text.slice(0, 3)]", "[...text.slice(0, 3)]", None, FixKind::SafeFix),
++        ("[...text.slice(0, 3)]", "text.slice(0, 3)", None, FixKind::DangerousFix),
++        (r#"[...text.split("|")]"#, r#"[...text.split("|")]"#, None, FixKind::SafeFix),
++        (
++            "[...arr.reduce((a, b) => a.push(b), [])]",
++            "[...arr.reduce((a, b) => a.push(b), [])]",
++            None,
++            FixKind::SafeFix,
++        ),
++        ("[...(foo ? x.map(f) : [])]", "[...(foo ? x.map(f) : [])]", None, FixKind::SafeFix),
++        // Certain array producers keep their safe fix.
++        ("[...Array.from(iterable)]", "Array.from(iterable)", None, FixKind::SafeFix),
++        ("[...Object.keys(foo)]", "Object.keys(foo)", None, FixKind::SafeFix),
++        ("[...await Promise.all(foo)]", "await Promise.all(foo)", None, FixKind::SafeFix),
++        ("[...new Array(3)]", "new Array(3).fill()", None, FixKind::SafeFix),
++    ]);
+     Tester::new(NoUselessSpread::NAME, NoUselessSpread::PLUGIN, pass, fail)
+         .change_rule_path_extension("mjs")
+         .expect_fix(fix)

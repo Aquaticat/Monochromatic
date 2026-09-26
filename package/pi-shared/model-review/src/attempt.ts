@@ -6,7 +6,6 @@
 
 import type {
   Context,
-  SimpleStreamOptions,
   Tool,
 } from '@earendil-works/pi-ai';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -15,6 +14,7 @@ import type {
   ForeignHostCapability,
 } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import type { ReviewSimpleStreamOptions, } from './provider-data.ts';
 import { streamStructuredReview, } from './provider-streams.ts';
 import {
   collectDirectJson,
@@ -114,7 +114,7 @@ function buildAttemptStreamOptions(
     readonly toolChoice?: unknown;
     readonly maxOutputTokens?: number;
   },
-): SimpleStreamOptions {
+): ReviewSimpleStreamOptions {
   return {
     signal,
     ...(auth.apiKey === undefined ? {} : { apiKey: auth.apiKey, }),

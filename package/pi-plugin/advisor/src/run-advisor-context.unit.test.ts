@@ -7,6 +7,7 @@
 import {
   fauxAssistantMessage,
   fauxProvider,
+  getCurrentSystemPrompt,
   type Context,
 } from '@earendil-works/pi-ai';
 import type {
@@ -77,8 +78,10 @@ const advisorConfig: AdvisorConfig = {
  @returns joined user text blocks
  */
 function providerUserText(context: Readonly<Context>,): string {
-  /** First provider message containing serialized Advisor request. */
-  const [message,] = context.messages;
+  /** First user message containing serialized Advisor request, after Pi AI 0.87 leading system message. */
+  const message = context.messages.find(function isUserMessage(candidate,) {
+    return candidate.role === 'user';
+  },);
   if ((message === undefined) || (message.role !== 'user'))
     throw new Error('provider user message missing',);
   if (!Array.isArray(message.content,))
@@ -314,8 +317,8 @@ await describe({
         const requestText = providerUserText(providerContext,);
         expect(requestText,).toContain('retained task evidence',);
         expect(requestText,).not.toContain('stale pre-compaction evidence',);
-        expect(providerContext.systemPrompt,).toContain('/repo/AGENTS.md',);
-        expect(providerContext.systemPrompt,).toContain('PX3: Act on authorized repository work.',);
+        expect(getCurrentSystemPrompt(providerContext.messages,),).toContain('/repo/AGENTS.md',);
+        expect(getCurrentSystemPrompt(providerContext.messages,),).toContain('PX3: Act on authorized repository work.',);
       },
     },),
   ],

@@ -529,10 +529,18 @@ Gating became per-detector:
 the three response-quality detectors still run only on the first stop of a chain,
 while forced continuation re-arms on every stop.
 A trailing question keeps precedence over it.
-`MONOCHROMATIC_STOP_AUTO_CONTINUE` set to `off`,
- `0`,
- `false`,
- or `no` disables it.
+`MONOCHROMATIC_STOP_AUTO_CONTINUE` originally worked as an opt-out kill switch.
+
+Off by default since 2026-09-25 at the user's request.
+The user reports that `claude-opus-5-5` does not end turns on announced-but-undone work,
+so the forced-continuation reason had become a distraction.
+`MONOCHROMATIC_STOP_AUTO_CONTINUE` is now an opt-in switch:
+ `on`,
+ `1`,
+ `true`,
+ or `yes` enables it,
+ and any other value or none leaves it off.
+The response-quality detectors in the same `ccsr` hook stay active.
 
 ### What this does not achieve
 

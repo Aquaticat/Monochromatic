@@ -1,0 +1,636 @@
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."format:oxlint"]
+extends = "format:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"
+
+[tasks."test:unit"]
+extends = "test:unit"
+
+# Unbounded by design (doc/handover/deepmerge-ts-hardening.md, Q4 and Q5):
+# rounds of every property file with a fresh seed, forever, until a
+# counterexample or Ctrl-C. Time is unbounded; memory and CPU are not
+# (AGENTS.md RXI and BOX), so the loop runs inside a capped podman container.
+# The repo is mounted read-only at its host path so pnpm's symlinks resolve,
+# with `label=disable` instead of `:Z` so SELinux never relabels the whole
+# checkout; only the failure directory is writable.
+[tasks.fuzz]
+description = "Unbounded fast-check campaign in a 2 GiB / 2 CPU podman container; stops at the first counterexample and writes its seed and path under dist/fuzz-failure/"
+usage = '''
+flag "--round-runs <runs>" help="fast-check runs per property per round (default 10000)"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync } = await import('node:fs')
+const { dirname, join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const failureDir = join(packageRoot, 'dist', 'fuzz-failure')
+mkdirSync(failureDir, { recursive: true })
+const roundRuns = (process.env.usage_round_runs ?? '10000').trim()
+const nodeMajor = process.versions.node.split('.')[0]
+// DEEPMERGE_FUZZ_TARGET (src/target.ts) may point outside the repo, e.g. at a
+// fork build; forward it as an absolute path and mount its directory read-only.
+const override = process.env.DEEPMERGE_FUZZ_TARGET
+const targetArgs = (override === undefined || override === '')
+  ? []
+  : ['--volume', `${dirname(resolve(override))}:${dirname(resolve(override))}:ro`, '--env', `DEEPMERGE_FUZZ_TARGET=${resolve(override)}`]
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${failureDir}:${failureDir}:rw`,
+  ...targetArgs,
+  '--workdir', packageRoot,
+  '--env', `DEEPMERGE_FUZZ_ROUND_RUNS=${roundRuns}`,
+  '--env', `DEEPMERGE_FUZZ_FAILURE_DIR=${failureDir}`,
+  `docker.io/library/node:${nodeMajor}-slim`,
+  'node', 'src/campaign.ts',
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`Fuzz campaign container exited with ${String(code)}; see ${failureDir}`)
+"""
+
+# Deterministic because the bounded layer uses a fixed seed: the gate reruns
+# the public unit files under NODE_V8_COVERAGE and projects V8 block coverage
+# onto the installed deepmerge-ts dist file. `*.local.*` files are excluded so
+# the committed baseline never depends on embargoed, machine-local tests.
+[tasks."fuzz:coverage"]
+description = "V8 line-coverage reachability gate over the installed deepmerge-ts dist (--write refreezes the baseline); with DEEPMERGE_FUZZ_TARGET, a source-mapped per-file report instead"
+usage = '''
+flag "--write" help="Refreeze the committed baseline from this run instead of checking against it"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { mkdtempSync, rmSync } = await import('node:fs')
+const { glob } = await import('node:fs/promises')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+const root = process.cwd()
+const mode = (process.env.usage_write === 'true') ? 'write' : 'check'
+const dir = mkdtempSync(join(tmpdir(), 'deepmerge-ts-cov-'))
+try {
+  const files = []
+  for await (const file of glob('src/**/*.unit.test.ts')) { if (!file.includes('.local.')) files.push(file) }
+  files.sort()
+  for (const file of files) {
+    execFileSync('node', [file], { stdio: 'inherit', env: { ...process.env, NODE_V8_COVERAGE: dir } })
+  }
+  // A DEEPMERGE_FUZZ_TARGET build (e.g. fork:build output) gets a source-mapped report
+  // instead of the baseline gate, which only describes the npm release.
+  const override = process.env.DEEPMERGE_FUZZ_TARGET
+  if (override !== undefined && override !== '') {
+    execFileSync('node', [`${root}/src/coverage-source.ts`, dir, override], { stdio: 'inherit' })
+  } else {
+    execFileSync('node', [`${root}/src/coverage-report.ts`, mode, dir, `${root}/coverage-baseline.json`], { stdio: 'inherit' })
+  }
+} finally {
+  rmSync(dir, { recursive: true, force: true })
+}
+"""
+
+# Type-level soundness corpus (src/type-case-generate.ts): fixed seed, so the
+# committed output only changes when the generator, seed, or deepmerge-ts does.
+[tasks."generate:type-cases"]
+description = "Regenerate src/type-soundness.generated.ts; lint:types then proves each runtime result fits its static type"
+run = "node src/type-case-generate.ts"
+
+# Builds a deepmerge-ts checkout (for example the Aquaticat/deepmerge-ts fork)
+# with source maps inside a capped container, from a read-only mount, into
+# dist/fork-build/. Point DEEPMERGE_FUZZ_TARGET at dist/fork-build/index.mjs to
+# run the tests and campaign against it, and fuzz:coverage then reports per
+# TypeScript source file through the map.
+[tasks."fork:build"]
+description = "Build a deepmerge-ts checkout with source maps into dist/fork-build/ in a 2 GiB / 2 CPU podman container"
+usage = '''
+flag "--checkout <dir>" required=#true help="Absolute path of the deepmerge-ts checkout to build"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync, rmSync } = await import('node:fs')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const checkout = resolve(process.env.usage_checkout ?? '')
+const out = join(packageRoot, 'dist', 'fork-build')
+rmSync(out, { recursive: true, force: true })
+mkdirSync(out, { recursive: true })
+const nodeMajor = process.versions.node.split('.')[0]
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${checkout}:/checkout:ro`,
+  '--volume', `${out}:/out:rw`,
+  '--volume', `${join(packageRoot, 'src', 'fork-build.ts')}:/fork-build.ts:ro`,
+  `docker.io/library/node:${nodeMajor}-slim`,
+  'node', '/fork-build.ts',
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`fork build container exited with ${String(code)}`)
+console.log(`built ${join(out, 'index.mjs')}`)
+"""
+
+# Declared-type fuzzing (src/declared-type-campaign.ts): generated declared
+# types (unions, optional keys, index signatures, tuples) whose runtime
+# results tsc must accept. Each draw spawns tsc, so every mode runs inside the
+# podman caps with the repo read-only and only dist/declared-type/ writable
+# (plus the generated corpus file for `corpus`).
+[tasks."fuzz:declared-types"]
+description = "Declared-type campaign in a 2 GiB / 2 CPU podman container; writes failing cases and diagnostic counts to dist/declared-type/<seed>/report.json"
+usage = '''
+flag "--seed <seed>" required=#true help="fast-check seed for the draws"
+flag "--size <size>" default="1500" help="Number of cases to draw"
+flag "--no-unions" help="Skip union types, to reach other classes without the known union defects"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync } = await import('node:fs')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'declared-type')
+mkdirSync(out, { recursive: true })
+const nodeMajor = process.versions.node.split('.')[0]
+const noUnions = (process.env.usage_no_unions === 'true') ? ['no-unions'] : []
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:${out}:rw`,
+  '--workdir', packageRoot,
+  `docker.io/library/node:${nodeMajor}-slim`,
+  'node', 'src/declared-type-campaign.ts', 'campaign',
+  (process.env.usage_seed ?? '').trim(), (process.env.usage_size ?? '1500').trim(), ...noUnions,
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`declared-type campaign container exited with ${String(code)}`)
+"""
+
+[tasks."generate:declared-type-cases"]
+description = "Regenerate src/declared-type-soundness.generated.ts from the fixed-seed draw, dropping cases in pinned classes, in a 2 GiB / 2 CPU podman container"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync } = await import('node:fs')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'declared-type')
+const corpus = join(packageRoot, 'src', 'declared-type-soundness.generated.ts')
+mkdirSync(out, { recursive: true })
+const nodeMajor = process.versions.node.split('.')[0]
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:${out}:rw`,
+  '--volume', `${corpus}:${corpus}:rw`,
+  '--workdir', packageRoot,
+  `docker.io/library/node:${nodeMajor}-slim`,
+  'node', 'src/declared-type-campaign.ts', 'corpus',
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`declared-type corpus container exited with ${String(code)}`)
+"""
+
+# Proves the declared-type check can fail: tampers one value per clean case to
+# another kind and requires tsc to reject it, with no stray diagnostics.
+[tasks."fuzz:declared-types:control"]
+description = "Positive control for the declared-type check in a 2 GiB / 2 CPU podman container"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync } = await import('node:fs')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'declared-type')
+mkdirSync(out, { recursive: true })
+const nodeMajor = process.versions.node.split('.')[0]
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:${out}:rw`,
+  '--workdir', packageRoot,
+  `docker.io/library/node:${nodeMajor}-slim`,
+  'node', 'src/declared-type-positive-control.ts',
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`declared-type positive control container exited with ${String(code)}`)
+"""
+
+# Mutation testing of a deepmerge-ts checkout (doc/audit/deepmerge-ts-mutation-2026-09-24.md).
+# StrykerJS and Vitest live only in the image from container/mutation.Containerfile
+# (user decision in doc/handover/deepmerge-ts-hardening.md); every run mounts the
+# checkout read-only at /checkout, this repo read-only at its host path, and
+# dist/mutation/ writable at /out, inside the usual 2 GiB / 2 CPU caps.
+[tasks."mutation:image"]
+description = "Build the pinned StrykerJS + Vitest + esbuild image the mutation tasks run in"
+run = "podman build --tag localhost/deepmerge-ts-mutation:stryker-10.0.0 --file container/mutation.Containerfile container"
+
+[tasks.mutation]
+description = "StrykerJS over a deepmerge-ts checkout with upstream's own Vitest suite; writes dist/mutation/mutation.json"
+depends = ["mutation:image"]
+usage = '''
+flag "--checkout <dir>" required=#true help="Absolute path of the deepmerge-ts checkout to mutate"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync } = await import('node:fs')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'mutation')
+mkdirSync(out, { recursive: true })
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${resolve(process.env.usage_checkout ?? '')}:/checkout:ro`,
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:/out:rw`,
+  '--workdir', packageRoot,
+  'localhost/deepmerge-ts-mutation:stryker-10.0.0',
+  'node', 'src/mutation-score.ts',
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`mutation container exited with ${String(code)}`)
+"""
+
+[tasks."mutation:sweep"]
+description = "Run Stryker's survivors from dist/mutation/mutation.json through every sidecar unit file; --baseline checks the unmutated bundle first"
+depends = ["mutation:image"]
+usage = '''
+flag "--checkout <dir>" required=#true help="Absolute path of the same deepmerge-ts checkout the mutation task used"
+flag "--baseline" help="Only bundle the unmutated checkout and require every sidecar file to pass against it"
+arg "[ids]..." help="Mutant ids to sweep; default every Survived and NoCoverage mutant"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'mutation')
+const mode = (process.env.usage_baseline === 'true') ? ['baseline'] : ['sweep', ...(process.env.usage_ids ?? '').split(' ').filter((id) => id !== '')]
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${resolve(process.env.usage_checkout ?? '')}:/checkout:ro`,
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:/out:rw`,
+  '--workdir', packageRoot,
+  'localhost/deepmerge-ts-mutation:stryker-10.0.0',
+  'node', 'src/mutation-sweep.ts', ...mode,
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`mutation sweep container exited with ${String(code)}`)
+"""
+
+[tasks."mutation:differential"]
+description = "Compare mutant bundles from mutation:sweep with the baseline on fixed-seed generated cases, after a self-comparison and a control mutant"
+depends = ["mutation:image"]
+usage = '''
+flag "--runs <runs>" default="1000" help="Cases per category"
+flag "--control <id>" required=#true help="A mutant the sidecar detects; it must show a difference"
+arg "<ids>..." help="Mutant ids to compare"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'mutation')
+const ids = (process.env.usage_ids ?? '').split(' ').filter((id) => id !== '')
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:/out:rw`,
+  '--workdir', packageRoot,
+  'localhost/deepmerge-ts-mutation:stryker-10.0.0',
+  'node', 'src/mutation-differential.ts', (process.env.usage_runs ?? '1000').trim(), (process.env.usage_control ?? '').trim(), ...ids,
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`mutation differential container exited with ${String(code)}`)
+"""
+
+# Historical recall (doc/audit/deepmerge-ts-recall-2026-09-24.md): does the
+# sidecar detect bugs deepmerge-ts actually shipped and fixed? `recall:setup`
+# fetches every npm release and upstream trees on the host (downloads and
+# `git archive` only) into ~/temp/agent, outside this repo; the runtime,
+# types, and packaging runs each execute inside the podman caps with the repo
+# read-only and only their own dist/recall/<area>/ writable.
+[tasks."recall:setup"]
+description = "Fetch every npm release and the upstream trees the recall ledger names into ~/temp/agent (host; downloads and git archive only)"
+usage = '''
+flag "--clone <dir>" required=#true help="Absolute path of a full-history deepmerge-ts clone with its push URL disabled"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { resolve } = await import('node:path')
+const child = spawn('node', ['src/recall-setup.ts', resolve(process.env.usage_clone ?? '')], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`recall setup exited with ${String(code)}`)
+"""
+
+[tasks."recall:runtime"]
+description = "Rebuild each runtime ledger row's buggy and fixed bundles and run every sidecar unit file against both, in a 2 GiB / 2 CPU podman container; one line per row in dist/recall/runtime/runtime.jsonl"
+depends = ["mutation:image"]
+usage = '''
+flag "--trees <dir>" help="Upstream trees from recall:setup (default ~/temp/agent/deepmerge-ts-recall-trees)"
+arg "[ids]..." help="Ledger row ids from src/recall-ledger-runtime.ts; default every row"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'recall', 'runtime')
+mkdirSync(out, { recursive: true })
+const trees = resolve((process.env.usage_trees ?? '') === '' ? join(homedir(), 'temp', 'agent', 'deepmerge-ts-recall-trees') : (process.env.usage_trees ?? ''))
+const ids = (process.env.usage_ids ?? '').split(' ').filter((id) => id !== '')
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${trees}:/trees:ro`,
+  '--volume', `${out}:/out:rw`,
+  '--workdir', packageRoot,
+  'localhost/deepmerge-ts-mutation:stryker-10.0.0',
+  'node', 'src/recall-runtime.ts', ...ids,
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`recall runtime container exited with ${String(code)}`)
+"""
+
+# The result-type run maps `deepmerge-ts` to each release's declarations and
+# type-checks the whole sidecar with the workspace compiler, so its output
+# directory must sit inside the package (generated tsconfigs resolve the
+# package's node_modules); it is mounted writable at its host path.
+[tasks."recall:types"]
+description = "Type-check the sidecar against npm releases for the type ledger, in a 2 GiB / 2 CPU podman container; `corpus <seed> <size>`, `check <version>...`, or `control <id>`, results in dist/recall/types/results/"
+usage = '''
+flag "--npm <dir>" help="Extracted npm releases from recall:setup (default ~/temp/agent/deepmerge-ts-recall-npm)"
+arg "<mode>" help="corpus, check, or control"
+arg "[args]..." help="corpus: <seed> <size>; check: npm versions; control: one type ledger id"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'recall', 'types')
+mkdirSync(out, { recursive: true })
+const npmDir = resolve((process.env.usage_npm ?? '') === '' ? join(homedir(), 'temp', 'agent', 'deepmerge-ts-recall-npm') : (process.env.usage_npm ?? ''))
+const args = (process.env.usage_args ?? '').split(' ').filter((arg) => arg !== '')
+const nodeMajor = process.versions.node.split('.')[0]
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:${out}:rw`,
+  '--volume', `${npmDir}:${npmDir}:ro`,
+  '--env', `RECALL_NPM_DIR=${npmDir}`,
+  '--workdir', packageRoot,
+  `docker.io/library/node:${nodeMajor}-slim`,
+  'node', 'src/recall-types.ts', (process.env.usage_mode ?? '').trim(), ...args,
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`recall types container exited with ${String(code)}`)
+"""
+
+# Six ways to load each release; the mutation image supplies TypeScript 6.0.2
+# (the last major with `node10` resolution) beside the workspace TypeScript 7.
+[tasks."recall:packaging"]
+description = "Load npm releases six ways (TypeScript bundler, node10, nodenext ESM and CJS; Node import and require) in a 2 GiB / 2 CPU podman container; results in dist/recall/packaging/results.json"
+depends = ["mutation:image"]
+usage = '''
+flag "--npm <dir>" help="Extracted npm releases from recall:setup (default ~/temp/agent/deepmerge-ts-recall-npm)"
+arg "<versions>..." help="npm versions to probe, such as 7.1.5 7.1.6"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'recall', 'packaging')
+mkdirSync(out, { recursive: true })
+const npmDir = resolve((process.env.usage_npm ?? '') === '' ? join(homedir(), 'temp', 'agent', 'deepmerge-ts-recall-npm') : (process.env.usage_npm ?? ''))
+const versions = (process.env.usage_versions ?? '').split(' ').filter((version) => version !== '')
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:${out}:rw`,
+  '--volume', `${npmDir}:${npmDir}:ro`,
+  '--env', `RECALL_NPM_DIR=${npmDir}`,
+  '--workdir', packageRoot,
+  'localhost/deepmerge-ts-mutation:stryker-10.0.0',
+  'node', 'src/recall-packaging.ts', ...versions,
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`recall packaging container exited with ${String(code)}`)
+"""
+
+# Reports count only sidecar files present when the audit started, listed in
+# dist/recall/baseline-files.txt from `git ls-tree` at that commit, so files
+# added since can never raise recall. Light JSON reading, so it runs on the host.
+[tasks."recall:report"]
+description = "Write dist/recall/baseline-files.txt from the audit's starting commit and print the runtime and type recall summaries as JSON"
+usage = '''
+flag "--baseline-commit <rev>" default="e4237dc8f" help="Commit whose sidecar files count toward recall"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync, writeFileSync } = await import('node:fs')
+const { join, relative, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const packagePath = relative(repoRoot, packageRoot)
+const run = async (command, args, capture) => {
+  const child = spawn(command, args, { stdio: ['ignore', capture ? 'pipe' : 'inherit', 'inherit'] })
+  const chunks = []
+  if (capture) child.stdout.on('data', (chunk) => { chunks.push(chunk) })
+  const [code] = await once(child, 'close')
+  if (code !== 0) throw new Error(`${command} ${args.join(' ')} exited with ${String(code)}`)
+  return Buffer.concat(chunks).toString('utf8')
+}
+const listing = await run('git', ['-C', repoRoot, 'ls-tree', '-r', '--name-only', (process.env.usage_baseline_commit ?? 'e4237dc8f').trim(), '--', `${packagePath}/src`], true)
+const files = listing.split('\\n').filter((line) => line !== '').map((line) => line.slice(packagePath.length + 1))
+mkdirSync(join(packageRoot, 'dist', 'recall'), { recursive: true })
+writeFileSync(join(packageRoot, 'dist', 'recall', 'baseline-files.txt'), `${files.join('\\n')}\\n`)
+console.log(`${String(files.length)} baseline files`)
+await run('node', ['src/recall-runtime-report.ts'], false)
+await run('node', ['src/recall-types-report.ts'], false)
+"""
+
+# Unsearched surfaces (doc/audit/deepmerge-ts-surface-2026-09-24.md). The
+# TypeScript matrix and cost sweeps need eleven compiler releases, installed
+# by surface:install into dist/surface/scratch (never this workspace, so the
+# lockfile is untouched). Each run executes inside the podman caps with the
+# repo read-only and only dist/surface/ writable at its host path.
+[tasks."surface:install"]
+description = "Write and install the surface toolchain (TypeScript 4.7 to 7.0 plus probes) into dist/surface/scratch, in a 2 GiB / 2 CPU podman container"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdirSync } = await import('node:fs')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'surface')
+const scratch = join(out, 'scratch')
+mkdirSync(scratch, { recursive: true })
+const nodeMajor = process.versions.node.split('.')[0]
+const inContainer = async (workdir, command) => {
+  const child = spawn('podman', [
+    'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+    '--security-opt', 'label=disable',
+    '--volume', `${repoRoot}:${repoRoot}:ro`,
+    '--volume', `${out}:${out}:rw`,
+    '--workdir', workdir,
+    `docker.io/library/node:${nodeMajor}-slim`,
+    ...command,
+  ], { stdio: 'inherit' })
+  const [code] = await once(child, 'exit')
+  if (code !== 0) throw new Error(`surface install step ${command.join(' ')} exited with ${String(code)}`)
+}
+await inContainer(packageRoot, ['node', 'src/surface-toolchain.ts', scratch])
+await inContainer(scratch, ['npm', 'install', '--no-audit', '--no-fund'])
+"""
+
+[tasks."surface:types"]
+description = "Run the sidecar's type tests under TypeScript releases and compiler flag sets, in a 2 GiB / 2 CPU podman container (needs surface:install)"
+usage = '''
+flag "--configs <list>" default="base" help="Comma-separated flag sets: base, isolated, verbatim, node10, node16, nodenext, no-unchecked-index, no-exact-optional, strict-false, no-strict-null"
+arg "[aliases]..." help="TypeScript aliases such as ts47 ts60 ts70; default every release"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'surface')
+const aliases = (process.env.usage_aliases ?? '').split(' ').filter((alias) => alias !== '')
+const nodeMajor = process.versions.node.split('.')[0]
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:${out}:rw`,
+  '--workdir', packageRoot,
+  `docker.io/library/node:${nodeMajor}-slim`,
+  'node', 'src/surface-type-matrix.ts', join(out, 'scratch'), (process.env.usage_configs ?? 'base').trim(), ...aliases,
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`surface types container exited with ${String(code)}`)
+"""
+
+[tasks."surface:cost"]
+description = "Measure type-checker instantiations and time for wide, deep, and many-argument merges, in a 2 GiB / 2 CPU podman container (needs surface:install)"
+usage = '''
+flag "--alias <alias>" default="ts60" help="TypeScript alias, such as ts60 or ts70"
+flag "--prefix <family>" default="" help="Only case families whose name starts with this prefix"
+flag "--repeat <runs>" default="1" help="Runs per case, to measure the run-to-run band first"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { join, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const out = join(packageRoot, 'dist', 'surface')
+const nodeMajor = process.versions.node.split('.')[0]
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  '--volume', `${out}:${out}:rw`,
+  '--workdir', packageRoot,
+  `docker.io/library/node:${nodeMajor}-slim`,
+  'node', 'src/surface-type-cost.ts', join(out, 'scratch'), (process.env.usage_alias ?? 'ts60').trim(), (process.env.usage_prefix ?? '').trim(), (process.env.usage_repeat ?? '1').trim(),
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`surface cost container exited with ${String(code)}`)
+"""
+
+# Bun and Deno run every sidecar unit file from their official images; only
+# the major is fixed for Bun and Deno tracks latest, matching the audit.
+# DEEPMERGE_FUZZ_TARGET passes through (its directory mounted read-only), so
+# the same task checks the CJS build or a control build.
+[tasks."surface:runtime"]
+description = "Run every sidecar unit file under Bun or Deno in a 2 GiB / 2 CPU podman container"
+usage = '''
+flag "--runtime <name>" required=#true help="bun or deno"
+'''
+shell = "node --input-type=module-typescript -e"
+run = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { dirname, resolve } = await import('node:path')
+const packageRoot = process.cwd()
+const repoRoot = resolve(packageRoot, '../../..')
+const runtime = (process.env.usage_runtime ?? '').trim()
+const denoRun = ['deno', 'run', '--allow-all', '--no-lock', '--node-modules-dir=manual']
+const commands = {
+  bun: { image: 'docker.io/oven/bun:1', command: ['bun', 'src/surface-runtime.ts', 'bun'] },
+  deno: { image: 'docker.io/denoland/deno:latest', command: [...denoRun, 'src/surface-runtime.ts', ...denoRun] },
+}
+if (!Object.hasOwn(commands, runtime)) throw new Error(`--runtime must be bun or deno, got ${runtime}`)
+const { image, command } = commands[runtime]
+const override = process.env.DEEPMERGE_FUZZ_TARGET
+const targetArgs = (override === undefined || override === '')
+  ? []
+  : ['--volume', `${dirname(resolve(override))}:${dirname(resolve(override))}:ro`, '--env', `DEEPMERGE_FUZZ_TARGET=${resolve(override)}`]
+const child = spawn('podman', [
+  'run', '--memory=2g', '--cpus=2', '--rm', '--init',
+  '--security-opt', 'label=disable',
+  '--volume', `${repoRoot}:${repoRoot}:ro`,
+  ...targetArgs,
+  '--workdir', packageRoot,
+  image,
+  ...command,
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`surface runtime container exited with ${String(code)}`)
+"""

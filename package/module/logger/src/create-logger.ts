@@ -1,5 +1,5 @@
-import { withTimeout, } from '@monochromatic-dev/module-async-time/ts';
 import { reportLoggerInternalError, } from './error-format.ts';
+import { withHostTimeout, } from './with-host-timeout.ts';
 
 import type {
   Level,
@@ -14,7 +14,8 @@ import type {
  settles in about 2 ms locally, so this leaves three orders of magnitude for
  a slow but working backend while still bounding shutdown on a wedged one.
  Override per logger through the `flushDeadlineMs` option of
- {@link createLogger}.
+ {@link createLogger}. Hosts without both timer primitives cannot enforce
+ this deadline.
  */
 export const DEFAULT_FLUSH_DEADLINE_MS = 5_000;
 
@@ -24,15 +25,17 @@ export const DEFAULT_FLUSH_DEADLINE_MS = 5_000;
  about 2.4 ms locally, so this leaves three orders of magnitude for a slow
  but working backend probe (a network filesystem, a busy IndexedDB) while a
  verify that never answers (a hung mount, an IndexedDB open blocked by
- another tab) can no longer stall startup. Override per logger through the
- `verifyTimeoutMs` option of {@link createLogger}.
+ another tab) cannot stall startup when the host exposes timers.
+ Override per logger through the `verifyTimeoutMs` option of
+ {@link createLogger}.
  */
 export const DEFAULT_VERIFY_TIMEOUT_MS = 5_000;
 
 /**
  Most records the logger buffers before its sinks have verified. Startup
- lasts at most {@link DEFAULT_VERIFY_TIMEOUT_MS}, so this bounds the memory a
- burst during that window can claim; on overflow the oldest buffered record
+ lasts at most {@link DEFAULT_VERIFY_TIMEOUT_MS} when the host exposes timers,
+ so this bounds the memory a burst during that window can claim; on overflow
+ the oldest buffered record
  is dropped so the newest (usually most diagnostic) context survives, and
  one synthetic `warn` record naming the dropped count is written to every
  available sink once initialization completes.
@@ -83,19 +86,22 @@ async function trackWrite(
  records emitted while an async sink is still verifying buffer internally
  and replay to that sink the moment it verifies. Every sink verifies
  concurrently under its own time limit (`verifyTimeoutMs`, default
- {@link DEFAULT_VERIFY_TIMEOUT_MS}), so one backend that never answers
- cannot starve the others or keep the logger from initializing. A sink
+ {@link DEFAULT_VERIFY_TIMEOUT_MS}) when the host exposes timers, so one
+ backend that never answers cannot starve the others in those runtimes. A sink
  whose `verify` resolves `false`, throws, or runs past the limit is dropped
  and receives no records; an answer that arrives after the limit is
  ignored. A rejected `write` is the sink's own concern and does not disable
  the backend.
  
- `flush()` always resolves: one deadline (`flushDeadlineMs`, default
- {@link DEFAULT_FLUSH_DEADLINE_MS}) wraps startup verification, the
+ With host timers, `flush()` always resolves: one deadline (`flushDeadlineMs`,
+ default {@link DEFAULT_FLUSH_DEADLINE_MS}) wraps startup verification, the
  in-flight write drain, and every sink flush hook together. When it elapses
  the logger reports one breadcrumb, abandons the tracked writes from its
  view (the sinks expose no cancellation, so the underlying work continues),
- and resolves, so a wedged backend cannot hang a shutdown.
+ and resolves, so a wedged backend cannot hang a shutdown. Without both
+ `setTimeout` and `clearTimeout`, a timerless host such as QuickJS-ng awaits
+ operations without deadlines; a custom sink that never settles can then
+ prevent initialization or flush from completing.
  
  @param sinks - Sink adapters to fan each record out to, in priority order.
  
@@ -333,10 +339,11 @@ export function createLogger(
   }
 
   /**
-   Runs one sink's verification under the verify time limit and records the
-   result, replaying buffered startup records to it on success. A rejected
-   verification, a synchronous throw from the verifier, or a verify that
-   runs past `verifyTimeoutMs` drops the sink; a late answer after the limit
+   Runs one sink's verification under the verify time limit when host timers
+   exist, and records the result, replaying buffered startup records on
+   success. A rejected verification, a synchronous throw from the verifier,
+   or a timed verify that runs past `verifyTimeoutMs` drops the sink;
+   a late answer after the limit
    is never observed, so it cannot flip availability afterwards.
    
    @param entryIndex - Sink entry index to verify.
@@ -348,7 +355,7 @@ export function createLogger(
        */
       const entry = getSinkEntry({ entryIndex, },);
       setEntryAvailability({
-        available: await withTimeout({
+        available: await withHostTimeout({
           label: `sink ${entryIndex} verify`,
           ms: verifyTimeoutMs,
           promise: entry.sink
@@ -550,22 +557,30 @@ export function createLogger(
   }
 
   /**
-   Runs {@link drainEverything} under the flush deadline. Resolves once all
-   tracked writes and hooks have settled, or once `flushDeadlineMs` elapses,
-   whichever comes first; a deadline hit reports one breadcrumb and abandons
-   the tracked writes so shutdown proceeds.
+   Runs {@link drainEverything} under the flush deadline when host timers
+   exist. Resolves once all tracked writes and hooks settle, or once the
+   deadline elapses; a deadline hit reports one breadcrumb and abandons the
+   tracked writes. In timerless hosts it waits for all work to settle.
    */
   async function flushAll(): Promise<void> {
     try {
-      await withTimeout({
+      await withHostTimeout({
         label: 'logger flush',
         ms: flushDeadlineMs,
         promise: drainEverything(),
       },);
     }
     catch (error: unknown) {
+      /**
+       Whether the timeout utility's own deadline caused this failure.
+       */
+      const deadlineElapsed = Error.isError(error)
+        ? error.message === `Timed out after ${flushDeadlineMs}ms: logger flush`
+        : false;
       reportLoggerInternalError({
-        context: `flush deadline of ${flushDeadlineMs}ms elapsed; abandoning in-flight sink work`,
+        context: deadlineElapsed
+          ? `flush deadline of ${flushDeadlineMs}ms elapsed; abandoning in-flight sink work`
+          : 'flush failed before completion; abandoning in-flight sink work',
         error,
       },);
       abandonPendingWrites();

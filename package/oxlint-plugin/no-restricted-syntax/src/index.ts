@@ -54,6 +54,7 @@ import { noSwitch, } from './rule/no-switch.ts';
 import { noSync, } from './rule/no-sync.ts';
 import { noTrimLeftRight, } from './rule/no-trim-left-right.ts';
 import { noTryFinally, } from './rule/no-try-finally.ts';
+import { noUselessSpread, } from './rule/no-useless-spread/index.ts';
 import {
   noVariableFunctionExpression,
 } from './rule/no-variable-function-expression.ts';
@@ -62,6 +63,7 @@ import {
 } from './rule/prefer-describe-function-ref-name.ts';
 import { preferCaughtValueText, } from './rule/prefer-caught-value-text.ts';
 import { preferErrorIsError, } from './rule/prefer-error-is-error.ts';
+import { preferSpread, } from './rule/prefer-spread/index.ts';
 import { requireDestructuredParams, } from './rule/require-destructured-params.ts';
 import { requireQueryselectorGeneric, } from './rule/require-queryselector-generic.ts';
 
@@ -113,10 +115,12 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-sync': noSync,
     'no-trim-left-right': noTrimLeftRight,
     'no-try-finally': noTryFinally,
+    'no-useless-spread': noUselessSpread,
     'no-variable-function-expression': noVariableFunctionExpression,
     'prefer-describe-function-ref-name': preferDescribeFunctionRefName,
     'prefer-caught-value-text': preferCaughtValueText,
     'prefer-error-is-error': preferErrorIsError,
+    'prefer-spread': preferSpread,
     'require-destructured-params': requireDestructuredParams,
     'require-queryselector-generic': requireQueryselectorGeneric,
     //endregion Syntax rules

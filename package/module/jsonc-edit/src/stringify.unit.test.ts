@@ -13,7 +13,10 @@ import {
 
 import {
   type StringJsonc,
+  COMMENT_ABSENT,
   emitJsoncValue,
+  jsoncGetComment,
+  jsoncGetKeyComment,
   jsoncStringify,
   parseJsonc,
   parseJsoncEdit,
@@ -78,16 +81,30 @@ await describe({
             expect(roundTrip('{\n  /* k */\n  "a": 1\n}',),).toContain('/* k */',);
           },
         },),
+        it({
+          name: 'multi-line value comment stays on the value after a round trip',
+          fn: async () => {
+            const emitted = roundTrip('{"k":/*value\ncomment*/1}',);
+            // The comment must follow the colon, or reparsing hands it to the key.
+            expect(emitted.includes('":\n'),).toBe(true,);
+            const reparsed = parseJsoncEdit({ source: asJsonc(emitted,), },);
+            expect(jsoncGetComment({ state: reparsed, path: ['k',], },),).toEqual({
+              type: 'block',
+              text: 'value\ncomment',
+            },);
+            expect(jsoncGetKeyComment({ state: reparsed, path: ['k',], },),).toBe(COMMENT_ABSENT,);
+          },
+        },),
       ],
     },),
     describe({
       name: 'value emit',
       children: [
         it({
-          name: 'emitJsoncValue serializes a fast-path leaf as canonical JSON',
+          name: 'emitJsoncValue serializes a structured array with trailing commas',
           fn: async () => {
             expect(emitJsoncValue({ value: parseJsonc({ source: asJsonc('[1,2,3]',), },), },),).toBe(
-              '[\n  1,\n  2,\n  3\n]',
+              '[\n  1,\n  2,\n  3,\n]',
             );
           },
         },),

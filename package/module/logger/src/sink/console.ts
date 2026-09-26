@@ -285,7 +285,11 @@ function emitRun(
         console,
         text,
       );
+      return;
     }
+
+    if ((typeof console.log) === 'function')
+      console.log(text,);
   }
   catch (error: unknown) {
     reportLoggerInternalError({
@@ -374,13 +378,30 @@ function verifyConsole(): Promise<boolean> {
     if ((typeof console) === 'undefined')
       return Promise.resolve(false,);
 
-    /**
-     Sample console method used only to check that debug has an output path:
-     process runtimes use stderr, while fallback runtimes need `console.debug`.
-     */
-    const testFn = hasProcessStderr() ? console.info : console.debug;
-    if ((typeof testFn) !== 'function')
-      return Promise.resolve(false,);
+    // A console with only `log` (QuickJS-ng) can route every level there.
+    // Without `log`, every mapped method must exist or records would vanish.
+    if ((typeof console.log) !== 'function') {
+      /**
+       Console methods required to cover all non-debug severities.
+       */
+      const required = [
+        console.info,
+        console.warn,
+        console.error,
+        console.trace,
+      ];
+      if (!required.every(function isCallable(method: unknown,): boolean {
+        return (typeof method) === 'function';
+      },))
+        return Promise.resolve(false,);
+
+      /**
+       Debug needs either a console method or a process stream.
+       */
+      const debugMethod = hasProcessStderr() ? console.info : console.debug;
+      if ((typeof debugMethod) !== 'function')
+        return Promise.resolve(false,);
+    }
 
     if ((typeof queueMicrotask) !== 'function')
       return Promise.resolve(false,);

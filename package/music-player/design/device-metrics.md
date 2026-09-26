@@ -55,23 +55,39 @@ Physical:
 ## Converted to dp (what you design against)
 
 ```text
-Cover screen   1080 / 2.625  ×  2424 / 2.625   =   ~411 × 923 dp   (density 420dpi)
-Inner display  2076 / 2.4375 ×  2152 / 2.4375  =   ~852 × 883 dp   (density ~390dpi)
+Published-pixel-density estimate for cover: 1080 / 2.625 × 2424 / 2.625 ≈ 411 × 923dp at 420dpi.
+Measured Pixel_9_Pro_Fold AVD cover:     1080 / 2.4375 × 2424 / 2.4375 ≈ 443 × 994dp at 390dpi.
+Measured Pixel_9_Pro_Fold AVD inner:     2076 / 2.4375 × 2152 / 2.4375 ≈ 852 × 883dp at 390dpi.
 ```
 
-The density buckets are inferred from the panel ppi in the usual Android way;
- if you
-need exactness,
- read `Configuration.densityDpi` on the device.
- The **shape** is what
-matters for layout and it is not in doubt.
+The original 411 × 923dp cover estimate came from published panel ppi,
+ not Android
+configuration.
+ Direct `adb shell wm density` and both panel entries in
+`dumpsys display` report **390dpi for both emulator displays**.
+ The current
+opaque Compose captures therefore render at approximately 443 × 994dp on the
+cover,
+ not 411 × 923dp.
+ D49's physical resolutions remain unchanged.
+ Do not
+call an AVD capture 411dp wide or present it at 411 CSS px as "100% dp".
+ An
+unprobed physical handset could use a different logical density;
+ this evidence
+specifically describes the current AVD.
 
 ## Questionnaire frame geometry
 
 Google's current hardware specification confirms an 8-inch inner display at
 2076 × 2152px and an unfolded body measuring 150.2 × 155.2mm in width-first order.
-The questionnaire frame uses those figures rather than treating the active display as
-the outside of the phone.
+The inner questionnaire frame uses those figures rather than treating the active
+display as the outside of the phone.
+ The cover frame originally used 411 × 923
+dp for the same relative chassis proportions;
+ its 100% AVD preview must scale
+that cover body and screen to the measured 443 × 994dp while retaining the
+published physical-pixel screenshot unmodified.
 
 Distributing the 203.2mm display diagonal by the panel's pixel aspect gives an active
 area of approximately 141.08 × 146.24mm.
@@ -87,9 +103,10 @@ uses these coordinates at 100%:
    and 27px block-axis chassis insets.
 - 454 × 937 CSS px for a crop from the fold centre through the right body edge.
 - 426px of physical right-half screen content and 28px of outer chassis in that crop.
-  Under the current expanded layout,
-   the 426px screen half contains 12dp of the centered
-  pane spacer plus the 414dp right pane.
+  In the withdrawn 24dp-spacer prototype,
+   this half contained 12dp of
+  spacer and a 414dp right pane.
+    E2 supersedes that fixed gap.
 
 The user supplied eight current product references on 2026-09-04.
  The straight-on
@@ -129,6 +146,7 @@ Source:
  [Google Pixel phone hardware tech specs][pixel-hardware-specs].
 
 [pixel-hardware-specs]: https://support.google.com/pixelphone/answer/7158570?hl=en
+[emulator-hardware-properties]: https://android.googlesource.com/platform/prebuilts/android-emulator/+/refs/heads/main/linux-x86_64/lib/hardware-properties.ini
 
 ---
 
@@ -254,38 +272,129 @@ record and role-based guards.
    not a landscape tablet.
     Every mockup drawn at 924×600 was wrong in structure.
 2. **The hinge is vertical in portrait.**
-    The 852dp expanded layout uses two 414dp
-   panes around Material's required centered 24dp spacer.
     Each physical screen half is
-   **426dp × 883dp**:
-    12dp of spacer plus one 414dp pane.
-    Each pane is narrow and tall,
-   closer to a phone column than a landscape tablet pane.
-3. **Nothing interactive may cross the crease** (decisions.md E2).
-    A full-width
-   transport row puts the play button on the fold;
-    this is why the deck sits inside
-   one half.
-4. **The cover screen is taller and narrower than a normal phone frame** (411×923
-   versus the 390×844 that was wrongly assumed).
-    At 72dp rows,
-    roughly six track rows
-   fit under a full deck.
+   **426 × 883dp** at the measured AVD density.
+    The previous player
+   prototype placed two 414dp panes around a fixed 24dp blank stripe.
+    E2
+   replaces that mistaken **informational clearance** with
+   `max(min_padding, crease_width)` in physical space.
+    It does not require
+   a blank surface gap or force symmetric visual pane widths;
+    Search need
+   not divide its query and results between the halves.
+3. **Informational material stays visibly clear of the physical crease**
+   (E2).
+    Its center is about 426dp,
+ physical x 1038 on the 2076px inner
+   panel.
+    The old 24dp `[414,438)`dp or `[1009,1068)`px band was a
+   **prototype player spacer**,
+ not a mandatory text-exclusion band or
+   accepted final player gap.
+    The user corrected the visible dent estimate from 10mm to about 7.5mm,
+   approximately 110 **physical px** around center x 1038 on this panel.
+    A conversion to roughly 45dp holds only at the current 390dpi setting;
+    it changes
+   with Android display scaling and is not a design constant.
+    Readable text,
+   results and other meaning-bearing marks must stay outside that
+   approximate band;
+    surfaces,
+    dividers,
+    backgrounds and hit regions
+   may span it.
+    Evaluate visual clearance using native
+   captures,
+ not the obsolete all-pixel-strip guard.
+    D34 white and D41
+   true black describe the player spacer,
+ not mandatory Search colors.
+    Android-owned system bars are
+captured as rendered,
+ not repositioned by the app.
+4. **The physical cover is taller and narrower than the older 390 × 844dp
+   phone mock.**
+    On this AVD its 1080 × 2424px active panel is about 443 ×
+   994dp at 390dpi;
+    judge visible row count from the native captures,
+    not the
+   earlier 411dp estimate.
 5. **Tabletop posture** is detectable on Android only (decisions.md E3).
 
 ---
 
+## Physical crease and informational clearance
+
+The user corrected their first estimate to **about 7.5mm of visible dent**.
+From the published 8-inch diagonal and 2076 × 2152px aspect,
+ the active
+inner panel width is about 141.08mm.
+ At this physical resolution,
+ the
+dent covers approximately `7.5 / 141.08 × 2076 = 110` **panel pixels**.
+Centered at physical x 1038,
+ the approximate information-free interval
+is x `[983,1093)`px.
+ These endpoints inherit the uncertainty of the
+published diagonal and the user's "about 7.5mm" estimate.
+
+Express `max(min_padding, crease_width)` in a common **physical** coordinate
+system before positioning opposing information-bearing regions.
+ The
+crease term is 7.5mm (about 110 panel px here),
+ not a hard-coded dp
+constant.
+ At the AVD's **current** 390dpi scaling,
+ it corresponds to
+about 45dp;
+ changing display scaling changes that dp number but not the
+physical dent.
+ Compose may convert the current physical clearance to
+layout units at rendering time.
+ The numeric `min_padding` for this boundary
+is not yet established;
+ the existing 12dp rule applies to mode-button
+horizontal content padding and cannot be transplanted silently.
+
+This formula is **not** a mandatory unpainted gap between visible panes.
+Borders,
+ padding,
+ backgrounds,
+ input/row surfaces and hit regions can cross
+the crease;
+ their readable text and other informative marks must stay
+clear.
+ Do not derive final player pane widths by subtracting 110px from the
+whole screen unless a candidate actually chooses symmetric content columns.
+
+The Pixel_9_Pro_Fold AVD's `config.ini` separately contains
+`hw.sensor.hinge.areas=1038-0-0-2152`.
+ Google's emulator schema defines
+this as `x-y-width-height`,
+ so the **emulated occlusion area** has width 0.
+That sensor model does **not** negate the user's visible 7.5mm crease.
+Source:
+ [Google emulator hardware properties][emulator-hardware-properties],
+`hw.sensor.hinge.areas`.
+
 ## Viewport sizes to design and test at
 
 ```text
-411 × 923    cover screen (folded)
-852 × 883    inner display (unfolded)
-426 × 883    physical right half of the inner display
-1280 × 800   a reasonable desktop window (not yet specified by the user)
+443 × 994    measured AVD cover screen (folded, 390dpi; physical 1080 × 2424px)
+852 × 883    measured AVD inner display (unfolded, 390dpi; physical 2076 × 2152px)
+426 × 883    right half at current AVD density; physical crease is about 110px wide
+Desktop      inherits Fold visual decisions; its window size is not a design frame (D49)
 ```
 
-Set these as the Design Component preview size so the file is always judged at the
-right dimensions.
+Use the emulator's opaque panel captures at physical resolution.
+ For a review
+scaled to 100% Android dp,
+ display the cover at approximately 443 × 994 CSS px
+and the inner display at approximately 852 × 883 CSS px.
+ Older Design Component
+preview sizes are historical,
+ not substitutes for these native results.
 
 ---
 

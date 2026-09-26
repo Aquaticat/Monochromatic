@@ -7,6 +7,7 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { trailingCommentAt, } from './comments.ts';
+import type { TableNode, } from './document.ts';
 import { TomlPathNotFoundError, } from './errors.ts';
 import { formatPath, } from './path.ts';
 import { locateBlock, } from './resolve-block.ts';
@@ -64,15 +65,46 @@ export function tomlGetCommentAfter(
 }
 
 /**
+ End of a clean table's closing bracket, before any same-line comment.
+
+ The stored header span includes the entire line and newline, so scanning
+ from its end would miss a comment on the header itself.
+
+ @param table - Table whose retained parse-time key anchors comment scanning.
+
+ @returns Key end offset, or `-1` for a synthetic or mismatched header.
+
+ @example
+ ```ts
+ cleanTableKeyEnd(table); // bracket end before trailing comment
+ ```
+ */
+function cleanTableKeyEnd(table: TableNode,): number {
+  if (table.headerOrigin
+    .kind
+    !== 'clean')
+    return -1;
+  if (table.headerOrigin
+    .astNode
+    .type
+    !== 'TOMLTable')
+    return -1;
+  return table.headerOrigin
+    .astNode
+    .key
+    .range[1];
+}
+
+/**
  Clean end offset for a located entry, or `-1` when synthetic.
- 
+
  Char offsets are non-negative, so `-1` unambiguously signals "no clean source
  position" without a nullish union.
- 
+
  @param located - Located block whose clean end offset anchors the scan.
- 
+
  @returns Clean end offset, or `-1` when synthetic.
- 
+
  @example
  ```ts
  endOf({ located: locateBlock({ blocks, path, },), },);
@@ -91,19 +123,11 @@ function endOf(
         .valueRange[1];
   if (located.kind
     === 'table')
-    return located.table
-      .headerOrigin
-      .kind
-      === 'clean' ? located.table
-        .headerOrigin
-        .range[1] : -1;
+    return cleanTableKeyEnd(located.table,);
   /**
    Last array-of-tables instance is where a trailing comment attaches.
    */
   const last = nonNullishOrThrow(located.tables
     .at(-1,),);
-  return last.headerOrigin
-    .kind
-    === 'clean' ? last.headerOrigin
-      .range[1] : -1;
+  return cleanTableKeyEnd(last,);
 }

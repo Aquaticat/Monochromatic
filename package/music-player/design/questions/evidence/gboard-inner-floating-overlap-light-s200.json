@@ -1,0 +1,165 @@
+{
+  "sourceImage": "gboard-float-font200.png",
+  "sourceHierarchy": "gboard-floating-font200.xml",
+  "image": "gboard-inner-floating-overlap-light-s200.png",
+  "avd": "Pixel_9_Pro_Fold",
+  "panel": "inner",
+  "theme": "light",
+  "fontScale": 2,
+  "keyboardMode": "floating-inner",
+  "keyboardBoundsPx": [
+    274,
+    310,
+    1180,
+    1081
+  ],
+  "densityDpi": 390,
+  "gboardVersionCode": 175981944,
+  "apkSha256": "d895072b4f232181c1f24d9db0bfd6b3af7cafae2e25f869cbe21b0039e81f53",
+  "appNodes": [
+    {
+      "text": "Camellia",
+      "description": "",
+      "type": "android.widget.TextView",
+      "bounds": [
+        158,
+        433,
+        440,
+        536
+      ],
+      "focused": false
+    },
+    {
+      "text": "Another Xronixle",
+      "description": "",
+      "type": "android.widget.TextView",
+      "bounds": [
+        258,
+        1042,
+        781,
+        1145
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Track position",
+      "type": "android.view.View",
+      "bounds": [
+        192,
+        1248,
+        846,
+        1355
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Previous track",
+      "type": "android.view.View",
+      "bounds": [
+        354,
+        1410,
+        413,
+        1469
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Pause",
+      "type": "android.view.View",
+      "bounds": [
+        491,
+        1410,
+        550,
+        1469
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Next track",
+      "type": "android.view.View",
+      "bounds": [
+        628,
+        1410,
+        687,
+        1469
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Repeat track",
+      "type": "android.view.View",
+      "bounds": [
+        73,
+        1517,
+        965,
+        1648
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Play in order",
+      "type": "android.view.View",
+      "bounds": [
+        73,
+        1646,
+        965,
+        1777
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Shuffle Camellia",
+      "type": "android.view.View",
+      "bounds": [
+        73,
+        1775,
+        965,
+        1906
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "Shuffle all folders",
+      "type": "android.view.View",
+      "bounds": [
+        73,
+        1904,
+        965,
+        2035
+      ],
+      "focused": false
+    },
+    {
+      "text": "",
+      "description": "",
+      "type": "android.widget.EditText",
+      "bounds": [
+        1249,
+        166,
+        2037,
+        283
+      ],
+      "focused": true
+    },
+    {
+      "text": "Search your music",
+      "description": "",
+      "type": "android.widget.TextView",
+      "bounds": [
+        1132,
+        490,
+        1838,
+        599
+      ],
+      "focused": false
+    }
+  ]
+}

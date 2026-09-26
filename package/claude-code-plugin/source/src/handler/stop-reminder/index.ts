@@ -70,7 +70,7 @@ type StopRemindersOutput = StopOutput;
  
  Pure by construction: every ambient input arrives as a parameter, so each
  branch is reachable in a test without touching process state. An earlier
- revision read the kill switch inside this function, which made the disabled
+ revision read the opt-in switch inside this function, which made the disabled
  branch testable only by mutating `process.env` and left those tests racing
  once the handler became asynchronous.
  
@@ -199,7 +199,7 @@ function stopRemindersDecision(
  */
 async function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): Promise<StopRemindersOutput> {
   /**
-   Whether the kill switch leaves forced continuation enabled.
+   Whether the opt-in switch enables forced continuation.
    */
   const enabled = autoContinueActive();
   /**

@@ -13,7 +13,8 @@
 
 import type { AST, } from 'toml-eslint-parser';
 
-import { keysOf, } from '../path.ts';
+import { keysOf as keyPath, } from '../path.ts';
+
 import { leafToTagged, } from './decode-leaf.ts';
 import type {
   TaggedTree,
@@ -237,7 +238,7 @@ function addTable(
         root,
         path: [
           ...resolvedKey,
-          ...keysOf({ key: entry.key, },),
+          ...keyPath({ key: entry.key, },),
         ],
         content: entry.value,
       },);
@@ -279,7 +280,7 @@ function contentToTagged({ node, }: { readonly node: AST.TOMLNode; },): BuildNod
     for (const entry of node.body)
       addKeyValue({
         root: inline,
-        path: keysOf({ key: entry.key, },),
+        path: keyPath({ key: entry.key, },),
         content: entry.value,
       },);
     return inline;
@@ -313,7 +314,7 @@ export function documentToTagged({
     if (item.type === 'TOMLKeyValue') {
       addKeyValue({
         root: builder,
-        path: keysOf({ key: item.key, },),
+        path: keyPath({ key: item.key, },),
         content: item.value,
       },);
       continue;

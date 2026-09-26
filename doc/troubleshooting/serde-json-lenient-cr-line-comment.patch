@@ -1,0 +1,74 @@
+diff --git a/src/de.rs b/src/de.rs
+index 865d674..2b8719f 100644
+--- a/src/de.rs
++++ b/src/de.rs
+@@ -310,10 +310,10 @@ impl<'de, R: Read<'de>> Deserializer<R> {
+                     self.eat_char();
+                     match tri!(self.peek()) {
+                         Some(b'/') => {
+-                            // TODO: Read until newline.
++                            // CR and LF each end a JSONC line comment; an LF after CR remains whitespace.
+                             loop {
+                                 match tri!(self.peek()) {
+-                                    Some(b'\n') => {
++                                    Some(b'\n' | b'\r') => {
+                                         self.eat_char();
+                                         break;
+                                     }
+diff --git a/tests/cr_comment.rs b/tests/cr_comment.rs
+new file mode 100644
+index 0000000..e9e7863
+--- /dev/null
++++ b/tests/cr_comment.rs
+@@ -0,0 +1,51 @@
++/// What: Verify JSONC line comments end at every supported newline byte.
++/// Why: A bare carriage return must not swallow the following object member.
++///
++/// In TS you'd write (pseudocode):
++/// ```ts
++/// for (const separator of ['\n', '\r\n', '\r']) assert(parse(`{"a":1,// c${separator}"b":2}`).b === 2);
++/// ```
++#[test]
++fn line_comments_stop_at_lf_crlf_and_cr() {
++    // What: Each source has identical members, with only its line-ending bytes changed.
++    // Why: This isolates the line-comment branch rather than object grammar.
++    //
++    // In TS you'd write (pseudocode):
++    // ```ts
++    // const sources = ['{"a":1,// c\n"b":2}', '{"a":1,// c\r\n"b":2}', '{"a":1,// c\r"b":2}'];
++    // ```
++    let sources = ["{\"a\":1,// c\n\"b\":2}", "{\"a\":1,// c\r\n\"b\":2}", "{\"a\":1,// c\r\"b\":2}"];
++    for source in sources {
++        // What: `from_str` builds a regular Serde JSON value from human-authored JSONC.
++        // Why: This test uses the public reader rather than an internal comment helper.
++        //
++        // In TS you'd write (pseudocode):
++        // ```ts
++        // const value = parse(source);
++        // ```
++        let parsed = serde_json_lenient::from_str::<serde_json_lenient::Value>(source).expect("line comment terminator");
++        // What: `.get` returns an optional member; `Some` proves the following key survived.
++        // Why: A parser could otherwise succeed after silently swallowing content.
++        //
++        // In TS you'd write (pseudocode):
++        // ```ts
++        // assert.equal(parsed.b, 2);
++        // ```
++        assert_eq!(parsed.get("b"), Some(&serde_json_lenient::Value::from(2)));
++    }
++}
++
++/// What: Check consecutive line comments separated by carriage returns.
++/// Why: The parser must resume scanning after each line-comment terminator.
++///
++/// In TS you'd write (pseudocode):
++/// ```ts
++/// assert.equal(parse('{"a":1,// x\r// y\r"b":2}').b, 2);
++/// ```
++#[test]
++fn consecutive_cr_line_comments_leave_next_member() {
++    let source = "{\"a\":1,// first\r// second\r\"b\":2}";
++    // The checked parser should return both entries after the second comment ends.
++    let parsed = serde_json_lenient::from_str::<serde_json_lenient::Value>(source).expect("consecutive CR comments");
++    assert_eq!(parsed.get("b"), Some(&serde_json_lenient::Value::from(2)));
++}

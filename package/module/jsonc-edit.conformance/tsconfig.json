@@ -1,3 +1,7 @@
 {
   "extends": "@monochromatic-dev/config-typescript/dom",
+  "include": [
+    "${configDir}/src/**/*.ts",
+    "${configDir}/fixtures/**/*.json",
+  ],
 }

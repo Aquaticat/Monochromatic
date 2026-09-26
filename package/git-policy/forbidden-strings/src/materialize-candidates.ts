@@ -12,6 +12,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import type { CandidateFile, } from '@monochromatic-dev/git-policy-api/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import { ForbiddenStringsPluginError, } from './errors.ts';
 
 /**
  Maximum simultaneous candidate reads and temporary-file writes.
@@ -71,9 +72,9 @@ export type MaterializedCandidates = Readonly<{
    */
   paths: readonly string[];
   /**
-   Exact scanner path to policy candidate lookup.
+   Real candidate names aligned with temporary content paths.
    */
-  candidatesByPath: ReadonlyMap<string, CandidateFile>;
+  namePaths: readonly string[];
   /**
    Removes plugin-owned files.
    */
@@ -189,27 +190,38 @@ export async function materializeCandidates(
   const laneWrites: Promise<void>[] = [];
   for (const lane of lanes)
     laneWrites.push(writeLane(lane,),);
-  await Promise.all(laneWrites,);
+  /**
+   Wait for every lane before cleanup; a rejected lane must not leave another
+   writer racing temporary-root removal.
+   */
+  const writes = await Promise.allSettled(laneWrites,);
+  /**
+   Failed lane flag computed after all lanes have stopped writing.
+   */
+  const failed = (function anyLaneFailed(): boolean {
+    for (const write of writes) {
+      if (write.status === 'rejected')
+        return true;
+    }
+    return false;
+  })();
+  if (failed) {
+    await rm(
+      directory,
+      {
+        recursive: true,
+        force: true,
+      },
+    );
+    // A candidate byte-loader exception may contain the original forbidden
+    // pathname or content. Never propagate its message or cause to host events.
+    throw new ForbiddenStringsPluginError('Forbidden-strings candidate bytes could not be materialized.',);
+  }
   return {
     paths,
-    candidatesByPath: new Map(paths.map(function mapCandidate(
-      path,
-      index,
-    ): readonly [
-      string,
-      CandidateFile
-    ] {
-      /**
-       Candidate aligned with generated path.
-       */
-      const candidate = contentCandidates[index];
-      if (candidate === undefined)
-        throw new Error('Candidate materialization index was not aligned.',);
-      return [
-        path,
-        candidate,
-      ];
-    },),),
+    namePaths: contentCandidates.map(function candidateName(candidate,): string {
+      return candidate.path;
+    },),
     async [Symbol.asyncDispose](): Promise<void> {
       await rm(
         directory,

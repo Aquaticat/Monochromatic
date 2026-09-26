@@ -70,10 +70,9 @@ export const RULE_GUIDANCE: Record<string, RuleGuidance> = {
   },
   'prefer-spread': {
     guidance: [
-      'On an array or arguments object this spread autofix is correct and needs no further action.',
-      'On a string, the resulting `[...str]` then trips typescript/no-misused-spread because code-point spreading breaks grapheme clusters.',
-      'Fix for strings: use a string API (`toLowerCase`/`toUpperCase` comparisons, `includes`, or `charAt` index scans) rather than Array.from, spread, or `for...of` over the string.',
-      'When code-point iteration is genuinely required, keep the spread and add a scoped `oxlint-disable-next-line typescript/no-misused-spread` with justification.',
+      'This is the project replacement for unicorn/prefer-spread: it autofixes only when TypeScript proves the receiver is an array, and leaves typed arrays and strings alone.',
+      'When it reports without a fix, no type was available, so state the copy: `[...receiver]` for an array, the matching typed-array constructor for a typed array, and the string itself for a string.',
+      '`Array.from(value)` stays the explicit conversion for strings, array-likes, and untyped values; the rule only rewrites it when the value is a proven array or typed array.',
     ]
       .join(' ',),
   },
@@ -81,8 +80,8 @@ export const RULE_GUIDANCE: Record<string, RuleGuidance> = {
     guidance: [
       'Spreading a string splits it into code points, which silently breaks grapheme clusters such as emoji and combining marks.',
       'Fix: use a string API instead. `str !== str.toLowerCase()` detects an uppercase letter; `[allowed,].some(function has(c,) { return str.includes(c,); },)` tests character membership; `str.charAt(i,)` inside a counted `for` loop scans by index.',
-      'Do not switch to `Array.from(str)` or `for (const c of str)`: both share the grapheme problem, and unicorn/prefer-spread rewrites `Array.from` straight back into a spread.',
-      'If code-point iteration is genuinely needed and grapheme-incorrectness is acceptable, add a scoped `oxlint-disable-next-line typescript/no-misused-spread -- <why code points, why graphemes are irrelevant here>`.',
+      'Switching to `Array.from(str)` or `for (const c of str)` silences this rule but keeps the grapheme problem; use them only for deliberate code-point iteration, with a comment saying why code points are correct.',
+      'Alternatively, keep the spread with a scoped `oxlint-disable-next-line typescript/no-misused-spread -- <why code points, why graphemes are irrelevant here>`.',
     ]
       .join(' ',),
   },

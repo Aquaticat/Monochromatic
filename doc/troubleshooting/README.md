@@ -88,6 +88,22 @@ Why guarded reads emit missing-Git debug records for expected workspace bin path
 - broad workspace-bin `PATH` inheritance is expected and needed,
    not the defect
 
+### [Pi 0.87 extension API breakage](pi-0-87-extension-api-breakage.md)
+
+Why auto-mode failed every guarded call and reviewers lost their prompt after the Pi 0.87 update:
+
+- hand-copied transcript projection threw on the new `system` message role
+- direct provider dispatch skipped `normalizeContext()`,
+   sending no system prompt and no tools
+- silent `lint:types` hid the accompanying type errors
+
+### [`lint:types` silent pass](task-tsc-shared-chunk-silent-pass.md)
+
+Why every package type check exited 0 without running `tsc`:
+
+- `testing.ts` imported the `tsc-filter.ts` command-line entry
+- rolldown moved its `import.meta.main` guard into a shared chunk where it is false
+
 ### [Pi goal stale global blocker](pi-goal-stale-global-blocker.md)
 
 Retired `@narumitw/pi-goal` behavior and migration:

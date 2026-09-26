@@ -18,8 +18,13 @@ import {
   tomlDelete,
   tomlGet,
   tomlGetValue,
+  tomlFloat,
   tomlHas,
+  tomlInteger,
   tomlKeys,
+  tomlLocalDate,
+  tomlLocalDateTime,
+  tomlLocalTime,
   tomlSet,
   tomlStringify,
 } from '@monochromatic-dev/module-toml-edit/ts';
@@ -65,6 +70,26 @@ function deleteRootOp(): void {
     edit: emptyTomlEdit(),
     path: [],
   },);
+}
+
+/**
+ Reach canonical final-newline handling for synthetic and parsed documents.
+ */
+function canonicalNewlineOps(): void {
+  tomlStringify({ edit: tomlSet({
+    edit: emptyTomlEdit({ canonical: { trailingNewline: false, }, },),
+    path: ['x',],
+    value: 1,
+  },), },);
+  tomlStringify({ edit: parseTomlEdit({
+    source: 'x = 1',
+    mode: 'canonical',
+  },), },);
+  tomlStringify({ edit: parseTomlEdit({
+    source: 'x = 1\n',
+    mode: 'canonical',
+    canonical: { trailingNewline: false, },
+  },), },);
 }
 
 /**
@@ -242,6 +267,17 @@ function pendingProjectionOps(): void {
   },);
 }
 
+/**
+ Reach the public tagged-value factories independently of edit operations.
+ */
+function wrapperOps(): void {
+  tomlInteger(1,);
+  tomlFloat(1,);
+  tomlLocalDate('2026-05-14',);
+  tomlLocalDateTime('2026-05-14T10:00:00',);
+  tomlLocalTime('10:00:00',);
+}
+
 //endregion Capture-free operation bodies
 
 //region Probe sweeps
@@ -258,6 +294,8 @@ function pendingProjectionOps(): void {
 export function exerciseEmptyBase(): void {
   exerciseEditSequence({ base: emptyTomlEdit(), },);
   attempt({ thunk: deleteRootOp, },);
+  canonicalNewlineOps();
+  wrapperOps();
 }
 
 /**

@@ -21,10 +21,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  TomlEditError,
   parseTomlEdit,
+  TomlEditError,
   tomlStringify,
-} from '../dist/final/node/index.mjs';
+} from '@monochromatic-dev/module-toml-edit';
 
 /** Root directory for shared TOML edit fixture data. */
 const fixturesRootDir = fileURLToPath(

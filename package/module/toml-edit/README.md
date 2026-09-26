@@ -12,6 +12,32 @@ Wraps [`toml-eslint-parser`](https://github.com/ota-meshi/toml-eslint-parser) an
 pnpm add @monochromatic-dev/module-toml-edit
 ```
 
+## Mutation testing
+
+Run the repository's container-isolated mutation tester from the repository root:
+
+```sh
+mise run //package/module/toml-edit:test:mutation
+```
+
+The task always passes `--full-suite` because tests are organized across API and cross-path files,
+ not one test file per source file.
+It runs the package's `*.unit.test.ts` tests against each mutant;
+ the fuzz sidecar and conformance runner are separate campaigns.
+The CLI writes `mutation-report.json` at the repository root by default and reports survivors without failing the task.
+Use `--report` to choose another report path.
+The default source scan includes the `src/conformance/` adapters,
+ but the package unit suite does not run the upstream conformance runner;
+ inspect those survivors separately rather than treating them as runtime-library coverage.
+
+Preview mutant and test selection without starting containers,
+ or limit the run to a package-relative source file:
+
+```sh
+mise run //package/module/toml-edit:test:mutation -- --dry-run src/toml-has.ts
+mise run //package/module/toml-edit:test:mutation -- src/toml-has.ts
+```
+
 ## API shape
 
 Free-function API over an immutable `TomlEditState`.
@@ -171,13 +197,18 @@ For paths created by `tomlSet` that did not exist at parse time,
 
 The package re-exports a few internal encoders and emitters with an underscore prefix:
 `_encodeKey`,
+ `_formatPath`,
+ `_isStrictPrefix`,
+ `_isAttachedGap`,
  `_jsValueToTomlText`,
  `_emitContentNode`,
  `_emitStringValue`,
  and `_emitDocument`.
 
 These carry no compatibility promise.
-They exist for observability and the property-based fuzz suite,
+They exist for built-artifact test coverage,
+ observability,
+ and the property-based fuzz suite,
  which exercises them through the built artifact.
 Their signatures may change without a major version bump,
  so application code must not depend on them.

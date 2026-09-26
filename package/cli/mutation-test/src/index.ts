@@ -48,6 +48,7 @@ export {
   GIT_MARKER_DIRECTORIES,
   GIT_MARKER_FILES,
   materialiseGitMarker,
+  RSYNC_EXCLUDES,
 } from './container/worktree.ts';
 export {
   parseCliOptions,

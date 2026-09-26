@@ -237,10 +237,16 @@ export type BudgetModelAuth = {
    API key for the model provider.
    */
   readonly apiKey?: string;
+  /* oxlint-disable no-restricted-syntax/no-nullish-union -- mirrors Pi AI 0.87 `ProviderHeaders = Record<string, string | null>` returned by ModelRegistry auth resolution: `null` is not absence but an instruction to suppress the provider's default header of that name, so the value must reach the provider unchanged. */
   /**
    Custom headers for the request.
+
+   Mirrors Pi AI `ProviderHeaders`:
+   `null` suppresses the provider's default header of that name,
+   so it must reach the provider unchanged rather than be dropped.
    */
-  readonly headers?: Readonly<Record<string, string>>;
+  readonly headers?: Readonly<Record<string, string | null>>;
+  /* oxlint-enable no-restricted-syntax/no-nullish-union */
 };
 
 /**

@@ -9,6 +9,9 @@ The local Promises page is a source of counterexamples, not an accepted teaching
 The user marked the independent review's `Concerns that require real learner observation` section as fine.
 Do not turn that section into a learner-study requirement or an approval gate.
 The [implemented review corrections](../handover/promises-review-corrections.md) supply additional concrete evidence.
+A [planning-only decision outline](teaching-skill-decision-outline.md) and
+[static counterexample replay](teaching-skill-outline-replay.md) exercise this draft;
+neither is an implemented agent skill or final confirmation.
 
 ## Learner framing and prerequisite sequencing
 
@@ -215,11 +218,23 @@ Value-representation counterexamples:
 
 Control-affordance counterexamples:
 
-- A button whose click would do nothing stays enabled and visually unchanged.
+- A button whose click would neither invoke a useful operation nor produce an observable trace
+  stays enabled and visually unchanged.
 - A click leaves no trace on the control, in a record, or in the drawn scene.
+- A fresh numbered button is disabled after settlement even though it could call the resolver
+  and visibly log the ignored attempt that teaches first-settlement-wins.
 - A repeatable action reuses one button whose label cannot tell the first call from the fifth.
+- Every numbered control repeats a full call-history sentence, obscuring the ready control;
+  the current Promise status appears only after that crowded control surface.
 - An interactive analogy inverts its source: the falling object of the source game becomes a
   stationary agent while the line drops agents instead.
+- A factory analogy claims game fidelity while omitting the source's supplied normal/defective
+  cues, delaying a caught pudding's conveyor placement, sending a destroyed defective pudding
+  onto the belt, or treating a performance-grade face as a Promise-outcome indicator.
+- One drawn object is simultaneously the processed material, the durable Promise identity,
+  and the public-looking outcome marking without explaining the distinct lifetimes.
+- A belt labeled as observed outcomes stays empty after the current Promise is observed settled;
+  it records that outcome only when Create makes a later Promise, implying the wrong cause.
 - A value snapshot present in the lesson is dropped from a redesign of the same section.
 
 The Promise lesson uses literal JSON beside live Showify snapshots,
@@ -334,6 +349,44 @@ Counterexamples this must catch:
 
 These distinctions govern what a report can claim.
 They do not reopen the learner-observation concerns that the user accepted as fine.
+
+### Candidate refinement: check the learner's own result
+
+This is a proposed addition, not a user-confirmed requirement or a claim that the
+current Promise lesson lacks feedback.
+[The primary-source research note](teaching-skill-research-feedback.md) distinguishes
+school feedback and metacognition guidance from the food-safety criterion owned by
+University of Minnesota Extension. Transfer to adult or AI teaching remains an inference.
+
+Passing behavior at a consequential learner action or inference:
+
+- Give an observable criterion for the learner's own result using an available,
+  appropriate check. Do not assume a displayed reference result proves their attempt.
+- Distinguish a mismatch from its possible causes. Explain what the observed signal can
+  and cannot establish; do not diagnose an underlying state from a label alone.
+- Offer a bounded next action, a safe stop boundary, or what to report for help when
+  the evidence cannot identify a cause. Give a chance to act on useful feedback.
+
+Counterexamples this candidate should reject:
+
+- A recipe with quantities, units, and a time instruction tells a novice to serve poultry
+  without a verified food-safety check. Existing source-check requirements already count
+  against this; the proposed refinement makes the learner's check explicit.
+- A working Promise reference or raw preview error is treated as a diagnosis of the
+  learner's own result. “Try again” does not distinguish operation start, settlement,
+  and observation when the preview still says Waiting.
+- Identical Waiting text and an empty error record are taken as proof that a Promise
+  remains pending. Disposable learner-code probes produced those same visible signals
+  both without a resolver call and after a literal value was resolved but never rendered.
+
+Do not add an artificial checkpoint after every sentence,
+force deliberately erroneous examples into every subject,
+or make a learner study a prerequisite for using or improving material.
+The current Promise lesson's rejection starter explicitly names the unhandled failure,
+provides a `try`/`catch` hint, and its worked comparison shows the error reason.
+An instrumented disposable variation recorded handler and resolver-call boundaries;
+this is a demonstration of how to gather evidence, not a published lesson change.
+No learner has been observed struggling in either case.
 
 ### Scope proposed for confirmation
 

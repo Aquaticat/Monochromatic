@@ -156,6 +156,9 @@ Merge overlapping rules;
 EPR:
  Naming or technology brainstorming that could benefit from ecosystem precedent:
  research it before offering options.
+Model system named ("think in X"):
+ list its features,
+ ask which to omit.
 
 ### Proactivity calibration
 
@@ -319,13 +322,15 @@ Unvalidated null result means nothing.
 
 QIV:
  Validate scope,
- caches,
- and harness before trusting a null.
-Single-file lint,
- stale cache,
- contract-silenced fixture,
+ cache,
+ harness,
+ generator reach before trusting a null or count;
+ list unexercised surfaces.
+Stale cache,
+ one-file lint,
+ narrow fuzzer,
  wrong assertion:
- each answers a different question than asked.
+ each answers another question.
 
 QNB:
  Comparing timings:
@@ -930,12 +935,12 @@ Includes:
  stress/bench/load runs.
 
 BOX:
- Isolate each heavy run in a bounded container/VM.
-Choose RAM,
- CPU,
- and PID limits from current host headroom.
-State each run's bounds;
- authorization doesn't transfer.
+ Isolate each heavy run in a container/VM whose RAM,
+ CPU and PID limits fit current host headroom;
+ state bounds.
+Third-party benchmarks run mount-free,
+ inputs baked in.
+Authorization doesn't transfer.
 
 DCB:
  Never execute or have agents execute catastrophic commands (`sudo rm -rf /`,
@@ -1610,6 +1615,11 @@ VB6:
  Verification must cross artifact-consumer integration boundary;
  "it compiled"/"it installed" alone isn't verification.
 
+VB7:
+ Markdown ships only after a rendered check
+ (live page or renderer output);
+ lint rule sets miss CommonMark emphasis edge cases.
+
 ATS:
  Android custom interactive elements:
  explicit minimum 48dp layout width + height.
@@ -1727,6 +1737,17 @@ MD6:
  blank line before headers,
  lines under 120 chars.
 
+MD7:
+ Labeled points become an ATX heading plus prose;
+ bold-label bullets cram a heading into a list item.
+
+MD8:
+ Hard wraps end lines only between whole inline spans;
+ keep code spans,
+ emphasis,
+ and link syntax whole on one line,
+ or the closing delimiter renders literally.
+
 WRP:
  Backtick file names,
  identifiers,
@@ -1803,12 +1824,11 @@ Record each workaround/fix and explicitly state it has not been reviewed.
 
 GCE:
  Commit at earliest opportunity,
- before next work step;
- never wait for verification,
- coherence,
- or completion.
+ before the next work step;
+ never wait for verification or completion.
+Broken states commit too:
+ name the breakage in the message.
 Supersedes harness ask-first default.
-Stage explicit scoped pathspecs (CLG).
 
 GCG:
  Commit messages use Conventional Commits `<type>(<scope>): <subject>`;

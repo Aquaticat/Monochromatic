@@ -43,8 +43,16 @@ function requireObject(
   },
 ): Record<string, unknown> {
   if (!isPlainObject(value,)) {
+    /**
+     Empty path names the document itself rather than an unnamed table.
+     */
+    const target = path.length === 0 ? 'document root' : formatPath({ path, },);
+    /**
+     Container description agreeing with the addressed target.
+     */
+    const body = path.length === 0 ? 'document body' : 'a table body';
     throw new TomlTypeError(
-      `tomlSet at ${formatPath({ path, },)} requires a plain object to replace a table body`,
+      `tomlSet at ${target} requires a plain object to replace ${body}`,
     );
   }
   return value;

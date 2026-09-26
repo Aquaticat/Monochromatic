@@ -4,6 +4,7 @@ import {
   mkdtemp,
   readFile,
   rm,
+  rmdir,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -95,7 +96,9 @@ if (args.includes('--is-inside-work-tree')) {
 }
 else if (args.includes('--git-path')) {
   record('recovery-path');
-  console.log(${JSON.stringify(join(gitDirectory, 'cli-git-transaction',),)});
+  console.log(args.includes('index')
+    ? ${JSON.stringify(join(gitDirectory, 'index',),)}
+    : ${JSON.stringify(join(gitDirectory, 'cli-git-transaction',),)});
 }
 else if (args.includes('--is-bare-repository')) {
   record('identity');
@@ -209,6 +212,7 @@ await describe({
           fakeGitSource(repository,),
           { mode: EXECUTABLE_MODE, },
         );
+        await writeFile(join(repository, '.git', 'cli-git-transaction', 'orphan',), 'retained',);
         await chmod(gitPath, EXECUTABLE_MODE,);
 
         /** Captured recovery failure before real Git forwarding. */
@@ -253,6 +257,68 @@ await describe({
           .trim()
           .split('\n');
         expect(invocations,).toEqual(['identity',],);
+      },
+    },),
+    it({
+      name: 'retains an empty pre-journal directory until its owner is verified externally',
+      fn: async () => {
+        await using fixture = await createTempDirectory();
+        /** Isolated repository root. */
+        const repository = join(fixture.path, 'repository',);
+        /** Fake executable path. */
+        const binDirectory = join(fixture.path, 'bin',);
+        /** Transaction directory left by failed pre-journal setup. */
+        const transactionDirectory = join(repository, '.git', 'cli-git-transaction',);
+        /** Lock that prevents deciding whether setup is still active. */
+        const lockPath = join(repository, '.git', 'index.lock',);
+        /** Invocation capture for fake Git. */
+        const capturePath = join(fixture.path, 'git-invocations.txt',);
+        await Promise.all([
+          mkdir(transactionDirectory, { recursive: true, },),
+          mkdir(binDirectory, { recursive: true, },),
+        ],);
+        await Promise.all([
+          writeFile(join(binDirectory, 'git',), fakeGitSource(repository,), { mode: EXECUTABLE_MODE, },),
+          writeFile(lockPath, 'other owner',),
+        ],);
+        /** Shared invocation exercising the shipped wrapper. */
+        const invoke = async (): Promise<string> => (await nanoSpawn(
+          process.execPath,
+          [WRAPPER_PATH, '-C', repository, 'for-each-ref',],
+          {
+            cwd: repository,
+            env: { ...process.env, PATH: binDirectory, CLI_GIT_TEST_CAPTURE: capturePath, },
+          },
+        )).stdout;
+        /** Failure while a lock prevents safe empty-directory removal. */
+        let caught: unknown;
+        try {
+          await invoke();
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(SubprocessError,);
+        if (!(caught instanceof SubprocessError))
+          throw new Error('Expected locked setup to block recovery.',);
+        expect(caught.stderr,).toContain('Empty pre-journal transaction directory',);
+        await rm(lockPath,);
+        /** Lock absence alone does not prove ownership of the empty directory. */
+        let unlocked: unknown;
+        try {
+          await invoke();
+        }
+        catch (error: unknown) {
+          unlocked = error;
+        }
+        expect(unlocked,).toBeInstanceOf(SubprocessError,);
+        if (!(unlocked instanceof SubprocessError))
+          throw new Error('Expected empty recovery state to remain protected.',);
+        expect(unlocked.stderr,).toContain('Empty pre-journal transaction directory',);
+        await rmdir(transactionDirectory,);
+        /** Invocation resumes after fixture owner verifies and removes its own directory. */
+        const result = await invoke();
+        expect(result,).toBe('refs/remotes/origin/main',);
       },
     },),
   ],

@@ -102,6 +102,33 @@ export async function verifyForbiddenLifecycle(env: NodeJS.ProcessEnv,): Promise
     context: 'forbidden direct check',
   },);
 
+  // A name finding must stay masked after the policy adapter emits host events.
+  await writeFile(
+    `${repository}/FORBIDDEN_NAME.txt`,
+    'clean bytes\n',
+  );
+  const named = await execute({
+    command: 'git',
+    args: [
+      'cli-git',
+      'check',
+      '--policy',
+      'security/forbidden-strings',
+      '--',
+      'FORBIDDEN_NAME.txt',
+    ],
+    expectedExit: 1,
+    cwd: repository,
+    env,
+  },);
+  assertJsonl({
+    text: named.stdout,
+    expectedCode: FINDING_CODE,
+    context: 'forbidden pathname check',
+  },);
+  if ((!named.stdout.includes('[REDACTED]',)) || named.stdout.includes('FORBIDDEN_NAME',))
+    throw new Error('Forbidden pathname was not masked in the host event.',);
+
   await execute({
     command: '/usr/bin/git',
     args: [

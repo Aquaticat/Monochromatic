@@ -4,37 +4,35 @@
  @module
  */
 
-import type { AST, } from 'toml-eslint-parser';
-
 import type { TomlPath, } from './types.ts';
 
 /**
- Read-only key spelling, excluding parser locations and parent links that path comparison never consumes.
+ Decoded key segment fields needed by path readers, without parser ownership.
 
  @example
  ```ts
- const segment: KeySegmentView = { type: 'TOMLBare', name: 'server' };
+ const segment: TomlKeySegmentView = { type: 'TOMLBare', name: 'title', };
  ```
  */
-type KeySegmentView = {
-  readonly type: AST.TOMLBare['type'];
-  readonly name: AST.TOMLBare['name'];
-} | {
-  readonly type: AST.TOMLQuoted['type'];
-  readonly value: AST.TOMLQuoted['value'];
-};
+type TomlKeySegmentView =
+  | {
+    readonly type: 'TOMLBare';
+    readonly name: string;
+  }
+  | {
+    readonly type: 'TOMLQuoted';
+    readonly value: string;
+  };
 
 /**
- Ordered key segments are sufficient for path lookup without exposing writable parser structure.
+ Dotted key segments viewed as read-only path data.
 
  @example
  ```ts
- const key: KeyView = { keys: [{ type: 'TOMLBare', name: 'server' }] };
+ const key: TomlKeyView = { keys: [{ type: 'TOMLBare', name: 'title', },], };
  ```
  */
-type KeyView = {
-  readonly keys: readonly KeySegmentView[];
-};
+type TomlKeyView = { readonly keys: readonly TomlKeySegmentView[]; };
 
 /**
  Surface the string form of a key fragment.
@@ -47,10 +45,10 @@ type KeyView = {
  
  @example
  ```ts
- keyNameOf({ key: { type: 'TOMLBare', name: 'foo' }, },); // 'foo'
+ keyNameOf({ key: { type: 'TOMLBare', name: 'foo' } as never, },); // 'foo'
  ```
  */
-export function keyNameOf({ key, }: { readonly key: KeySegmentView; },): string {
+export function keyNameOf({ key, }: { readonly key: TomlKeySegmentView; },): string {
   return key.type
     === 'TOMLBare' ? key.name : key.value;
 }
@@ -67,9 +65,9 @@ export function keyNameOf({ key, }: { readonly key: KeySegmentView; },): string 
  keysOf({ key: tomlKeyForABC, },); // ['a', 'b', 'c']
  ```
  */
-export function keysOf({ key, }: { readonly key: KeyView; },): readonly string[] {
+export function keysOf({ key, }: { readonly key: TomlKeyView; },): readonly string[] {
   return key.keys
-    .map(function nameOf(k: KeySegmentView,) {
+    .map(function nameOf(k: TomlKeySegmentView,) {
     return keyNameOf({ key: k, },);
   },);
 }
@@ -97,27 +95,4 @@ export function formatPath({ path, }: { readonly path: TomlPath; },): string {
       return `.${seg}`;
     },)
     .join('',);
-}
-
-/**
- True when a path segment matches a TOML key string (bare or quoted).
- 
- @returns Resulting boolean.
- 
- @example
- ```ts
- keyMatchesSegment({ keyName: 'foo', segment: 'foo', },); // true
- keyMatchesSegment({ keyName: 'foo', segment: 0, },);     // false
- ```
- */
-export function keyMatchesSegment(
-  {
-    keyName,
-    segment,
-  }: {
-    readonly keyName: string;
-    readonly segment: string | number;
-  },
-): boolean {
-  return ((typeof segment) === 'string') && (segment === keyName);
 }

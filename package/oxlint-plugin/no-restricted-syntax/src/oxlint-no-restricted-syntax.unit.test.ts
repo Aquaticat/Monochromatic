@@ -251,6 +251,8 @@ const SUBSTANTIVE_RULES = [
   'no-function-root-let',
   'no-hasownproperty',
   'no-immediate-mutation',
+  'no-useless-spread',
+  'prefer-spread',
   'no-low-information-symbol-description',
   'no-module-root-let',
   'no-nullish-union',

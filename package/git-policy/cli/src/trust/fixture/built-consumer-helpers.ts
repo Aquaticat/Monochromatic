@@ -33,6 +33,8 @@ export type CommandResult = Readonly<{
  *
  * @param input - optional exact standard input
  *
+ * @param signal - optional cancellation for a bounded adversarial fixture
+ *
  * @returns captured standard streams
  *
  * @example
@@ -47,6 +49,7 @@ export async function execute({
   cwd,
   env,
   input,
+  signal,
 }: Readonly<{
   command: string;
   args: readonly string[];
@@ -54,6 +57,7 @@ export async function execute({
   cwd?: string;
   env?: NodeJS.ProcessEnv;
   input?: string;
+  signal?: AbortSignal;
 }>,): Promise<CommandResult> {
   /**
    * Child process with piped machine-readable streams.
@@ -64,6 +68,7 @@ export async function execute({
     {
     cwd,
     env,
+    signal,
     stdio: [
       input === undefined ? 'ignore' : 'pipe',
       'pipe',

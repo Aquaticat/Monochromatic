@@ -7,6 +7,7 @@
 import {
   fauxAssistantMessage,
   fauxProvider,
+  getCurrentSystemPrompt,
   type Context,
   type Model,
 } from '@earendil-works/pi-ai';
@@ -435,9 +436,9 @@ await describe({
         await executeCommand('faux-provider/reviewer', commandCtx,);
 
         expect(providerContexts,).toHaveLength(2,);
-        expect(providerContexts[0]?.systemPrompt,).toContain('Tool snapshot guidance.',);
-        expect(providerContexts[1]?.systemPrompt,).toContain('Command live guidance.',);
-        expect(providerContexts[1]?.systemPrompt,).not.toContain('Tool snapshot guidance.',);
+        expect(getCurrentSystemPrompt(providerContexts[0]?.messages ?? [],),).toContain('Tool snapshot guidance.',);
+        expect(getCurrentSystemPrompt(providerContexts[1]?.messages ?? [],),).toContain('Command live guidance.',);
+        expect(getCurrentSystemPrompt(providerContexts[1]?.messages ?? [],),).not.toContain('Tool snapshot guidance.',);
       },
     },),
   ],

@@ -15,14 +15,14 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  TomlTypeError,
   emptyTomlEdit,
   parseTomlEdit,
   tomlDelete,
   tomlGetValue,
   tomlSet,
   tomlStringify,
-} from '../dist/final/node/index.mjs';
+  TomlTypeError,
+} from '@monochromatic-dev/module-toml-edit';
 
 await describe({
   name: 'issue #252 delta-accumulation regressions',

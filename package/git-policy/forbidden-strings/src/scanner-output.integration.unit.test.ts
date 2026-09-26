@@ -4,6 +4,7 @@
  @module
  */
 import {
+  mkdir,
   mkdtemp,
   rm,
   writeFile,
@@ -20,9 +21,6 @@ import {
   parseScannerOutput,
   scanCandidates,
 } from '@monochromatic-dev/git-policy-forbidden-strings';
-
-/** Candidate type owned by built parser interface under test. */
-type CandidateFile = ReturnType<Parameters<typeof parseScannerOutput>[0]['candidateForPath']>;
 
 /**
  Release scanner built by the sibling `package/cli/forbidden-strings` crate;
@@ -129,6 +127,8 @@ async function captureRealScannerStderr({
       SCANNER_BINARY,
       [
         '--builtin-rules',
+        '--name-path',
+        CANDIDATE_PATH,
         candidatePath,
       ],
       {
@@ -188,6 +188,8 @@ async function captureRuntimeCacheMissStderr({
       [
         '--rules',
         rulesPath,
+        '--name-path',
+        CANDIDATE_PATH,
         candidatePath,
       ],
       {
@@ -232,19 +234,10 @@ await describe({
             candidatePath,
             cwd: directory.path,
           },),
-          candidateForPath: function candidateForPath(path,): CandidateFile {
-            if (path !== candidatePath)
-              throw new Error(`Unexpected scanner path: ${path}`,);
-            return {
-              targetId: `target:${CANDIDATE_PATH}`,
-              path: CANDIDATE_PATH,
-              revision: 'fixture',
-              mode: 'regular',
-              change: 'added',
-              bytes: function bytes(): Promise<Uint8Array> {
-                return Promise.resolve(new Uint8Array(),);
-              },
-            };
+          nameForIndex: function nameForIndex(index,): string {
+            if (index !== 0)
+              throw new Error('Unexpected scanner operand.',);
+            return CANDIDATE_PATH;
           },
         },);
         expect(findings.length,).toBeGreaterThan(0,);
@@ -286,25 +279,68 @@ await describe({
         expect(stderr,).toContain('"type":"forbidden-strings/cache-warning"',);
         expect(parseScannerOutput({
           stderr,
-          candidateForPath: function candidateForPath(path,): CandidateFile {
-            if (path !== candidatePath)
-              throw new Error(`Unexpected scanner path: ${path}`,);
-            return {
-              targetId: `target:${CANDIDATE_PATH}`,
-              path: CANDIDATE_PATH,
-              revision: 'fixture',
-              mode: 'regular',
-              change: 'added',
-              bytes: function bytes(): Promise<Uint8Array> {
-                return Promise.resolve(new Uint8Array(),);
-              },
-            };
+          nameForIndex: function nameForIndex(index,): string {
+            if (index !== 0)
+              throw new Error('Unexpected scanner operand.',);
+            return CANDIDATE_PATH;
           },
         },),).toEqual([{
           code: 'forbidden-string',
           message: 'Forbidden string matched at line 1 (rule 0).',
           path: CANDIDATE_PATH,
         },],);
+      },
+    },),
+    it({
+      name: 'rejects real candidate name and exact historical bytes without leaking the name',
+      fn: async function testRealCandidateName() {
+        await using directory = await createTestDirectory();
+        /**
+         One authoritative runtime literal shared by pathname and historical bytes.
+         */
+        const token = 'RUNTIME_CACHE_RULE_LONG';
+        /**
+         Candidate path in the repository and disposable scanner runtime source.
+         */
+        const candidatePath = `nested/${token}.txt`;
+        const rulesPath = join(directory.path, 'rules-name.txt',);
+        await writeFile(rulesPath, `${token}\n`,);
+        await mkdir(join(directory.path, 'nested',),);
+        await writeFile(join(directory.path, candidatePath,), 'clean working-tree bytes\n',);
+        /**
+         Exact historical content must win over the clean working-tree file.
+         */
+        const findings = await scanCandidates({
+          executable: SCANNER_BINARY,
+          builtinRules: false,
+          repositoryRoot: directory.path,
+          environment: {
+            ...process.env,
+            FORBIDDEN_STRINGS_RULES: rulesPath,
+            FORBIDDEN_STRINGS_CACHE_DIR: join(directory.path, 'cache-name',),
+          },
+          candidates: [{
+            targetId: 'historical-target',
+            path: candidatePath,
+            revision: 'historical-revision',
+            mode: 'regular',
+            change: 'added',
+            bytes: function historicalBytes(): Promise<Uint8Array> {
+              return Promise.resolve(new TextEncoder().encode(`${token}\n`,),);
+            },
+          },],
+          signal: new AbortController().signal,
+        },);
+        expect(findings,).toEqual([{
+          code: 'forbidden-string',
+          message: 'Forbidden string matched in pathname segment 2 (rule 0).',
+          path: 'nested/[REDACTED]',
+        }, {
+          code: 'forbidden-string',
+          message: 'Forbidden string matched at line 1 (rule 0).',
+          path: 'nested/[REDACTED]',
+        },],);
+        expect(JSON.stringify(findings,),).not.toContain(token,);
       },
     },),
     it({

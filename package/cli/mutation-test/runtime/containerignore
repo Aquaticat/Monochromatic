@@ -1,6 +1,7 @@
 .git
 **/node_modules
 **/dist
+**/.cache
 **/target
 **/output
 **/corpus

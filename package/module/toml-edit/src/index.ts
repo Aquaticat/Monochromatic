@@ -73,6 +73,14 @@ export { tomlGetCommentAfter, } from './toml-get-comment-after.ts';
 
 export { tomlSet, } from './toml-set.ts';
 
+export {
+  tomlFloat,
+  tomlInteger,
+  tomlLocalDate,
+  tomlLocalDateTime,
+  tomlLocalTime,
+} from './wrappers.ts';
+
 export { tomlDelete, } from './toml-delete.ts';
 
 export { tomlSetHeaderComment, } from './toml-set-header-comment.ts';
@@ -102,6 +110,36 @@ export {
 export { encodeKey as _encodeKey, } from './keys.ts';
 
 /**
+ Unstable path formatter exported for built-artifact tests.
+
+ @example
+ ```ts
+ _formatPath({ path: ['a', 0,], }); // 'a[0]'
+ ```
+ */
+export { formatPath as _formatPath, } from './path.ts';
+
+/**
+ Unstable strict-prefix predicate exported for built-artifact tests.
+
+ @example
+ ```ts
+ _isStrictPrefix({ candidate: ['a',], path: ['a', 'b',], }); // true
+ ```
+ */
+export { isStrictPrefix as _isStrictPrefix, } from './path-prefix.ts';
+
+/**
+ Unstable comment-gap classifier exported for built-artifact tests.
+
+ @example
+ ```ts
+ _isAttachedGap('\n');
+ ```
+ */
+export { isAttachedGap as _isAttachedGap, } from './build-comments.ts';
+
+/**
  {@inheritDoc _encodeKey}
  */
 export { jsValueToTomlText as _jsValueToTomlText, } from './values.ts';
@@ -120,25 +158,5 @@ export { emitStringValue as _emitStringValue, } from './emit-value-string.ts';
  {@inheritDoc _encodeKey}
  */
 export { emitDocument as _emitDocument, } from './emit-document.ts';
-
-/**
- Attachment predicate exposed only so package tests exercise the shipped implementation.
-
- @internal
- */
-export { isAttachedGap as _isAttachedGap, } from './build-comments.ts';
-
-/**
- Tagged coercion helpers exposed through the existing unstable test seam.
-
- @internal
- */
-export {
-  tomlFloat as _tomlFloat,
-  tomlInteger as _tomlInteger,
-  tomlLocalDate as _tomlLocalDate,
-  tomlLocalDateTime as _tomlLocalDateTime,
-  tomlLocalTime as _tomlLocalTime,
-} from './wrappers.ts';
 
 //endregion Unstable fuzzing seams

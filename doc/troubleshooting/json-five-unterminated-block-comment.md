@@ -464,6 +464,30 @@ panic: panicked at .../json-five-0.3.1/src/rt/tokenize.rs:155:5:
 internal error: entered unreachable code: Unexpected end of document
 ```
 
+### Independent token-consumer control, 2026-09-24
+
+A separate scratch Rust consumer at `~/temp/agent/json-five-token-probe/`
+ imported published `json-five = "=0.3.1"` and ran `mise run test` inside
+ `podman run --memory=2g --cpus=2 --rm` with only that fixture mounted.
+ Its initially optimistic check of the string following a block comment **failed**.
+ The printed token stream contained a block-comment lexeme `"/*value\ncomment*"`
+ and the following `DoubleQuotedString` lexeme `"/\"\\uD800"`.
+ The comment span's reported end omitted the `/`,
+ and the owned-token constructor then treated that slash as the next string's first byte.
+ The subsequent number token began with `:` rather than its own first digit.
+ This is the same off-by-one `process_comment` incident traced in the Root cause section,
+ not a separate string-decoding defect.
+
+The final bounded consumer suite passed two explicit controls:
+ without a block comment,
+ `source_to_tokens` retained the raw `"\\uD800"` escape and `1.000e+99` spelling and round-tripped byte-identically;
+ with an inserted multi-line block comment,
+ it asserted the truncated comment lexeme and non-identical round trip.
+ A CR-ending line comment was tokenized without absorbing the following array,
+ and JSON5-only single quotes were still admitted lexically.
+ Passing these negative and positive controls does **not** make unpatched 0.3.1 an editor foundation:
+ every supported multi-line block comment still corrupts the public round-trip token stream.
+
 ## Verified workarounds
 
 ### Fail closed at the consumer boundary

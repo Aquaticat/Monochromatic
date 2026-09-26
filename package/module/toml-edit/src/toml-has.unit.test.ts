@@ -13,9 +13,10 @@ import {
 import {
   parseTomlEdit,
   tomlDelete,
+  tomlGetValue,
   tomlHas,
   tomlSet,
-} from '../dist/final/node/index.mjs';
+} from '@monochromatic-dev/module-toml-edit';
 
 await describe({
   name: tomlHas.name,
@@ -56,6 +57,18 @@ await describe({
           value: 1,
         },);
         expect(tomlHas({ edit: e1, path: ['new',], },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'rejects negative and out-of-range array indices',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'arr = [10, 20]\n', },);
+        for (const index of [-1, 2, 3,]) {
+          expect(tomlHas({ edit, path: ['arr', index,], },),).toBe(false,);
+          expect(tomlGetValue({ edit, path: ['arr', index,], },),).toBe(undefined,);
+        }
+        expect(tomlHas({ edit, path: ['arr', 1,], },),).toBe(true,);
       },
     },),
 

@@ -6,6 +6,7 @@
 import {
   access,
   lstat,
+  readdir,
   realpath,
   rm,
 } from 'node:fs/promises';
@@ -20,6 +21,7 @@ import { isMissingPath, } from '../trust/registry-io.ts';
 import { snapshotFilesEqual, } from './commit-transaction-candidate-snapshot.ts';
 import { installAddedWorktreeFiles, } from './commit-transaction-added-paths.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
+import { recoverNormalization, } from './commit-transaction-normalization-recovery.ts';
 import { createOwnedFileLink, } from './commit-transaction-install-link.ts';
 import {
   PROCESS_IDENTITY_ABSENT,
@@ -47,6 +49,7 @@ import {
   headsEqual,
   parsePreparedJournal,
   parseRefUpdated,
+  processIsAlive,
 } from './commit-transaction-recovery-validation.ts';
 
 export { CommitTransactionRecoveryError, } from './commit-transaction-recovery-validation.ts';
@@ -65,6 +68,7 @@ const DECODER = new TextDecoder(
 export type CommitTransactionRecoveryResult =
   | 'none'
   | 'commit-not-created'
+  | 'normalization-installed'
   | 'index-installed'
   | 'already-installed';
 
@@ -82,29 +86,6 @@ async function pathExists(path: string,): Promise<boolean> {
   }
   catch (error: unknown) {
     if (isMissingPath(error,))
-      return false;
-    throw error;
-  }
-}
-
-/**
- Reports whether journal owner process is still alive.
- 
- @param pid - recorded wrapper process ID
- 
- @returns whether signal-zero probe succeeds
- */
-function processIsAlive(pid: number,): boolean {
-  try {
-    process.kill(
-      pid,
-      0,
-    );
-    return true;
-  }
-  catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error)
-      && (error.code === 'ESRCH'))
       return false;
     throw error;
   }
@@ -162,6 +143,8 @@ export async function recoverCommitTransaction({
   );
   if ((!directoryMetadata.isDirectory()) || directoryMetadata.isSymbolicLink())
     throw new CommitTransactionRecoveryError(`Unsafe transaction recovery directory: ${directory}`,);
+  if ((await readdir(directory,)).length === 0)
+    throw new CommitTransactionRecoveryError(`Empty pre-journal transaction directory: ${directory}. Setup may still be active; retry after its owner exits. If no owner remains, inspect the empty directory before removing it.`,);
   /**
    Required prepared journal path.
    */
@@ -302,6 +285,25 @@ export async function recoverCommitTransaction({
    Current lock path.
    */
   const lockPath = `${realIndexPath}.lock`;
+  /**
+   Completion records for added and selected worktree files.
+   */
+  const worktreeRecords = [
+    ...journal.addedPaths,
+    ...(journal.selectedWorktreePaths ?? []),
+  ];
+  if (journal.operation === 'normalize-only')
+    return recoverNormalization({
+      gitPath,
+      cwd: effectiveCwd,
+      directory,
+      journal,
+      currentHead,
+      realIndexPath,
+      stablePostIndexPath,
+      realIsOriginal,
+      realIsIntended,
+    },);
   if (headsEqual({
     expected: journal.originalHead,
     current: currentHead,
@@ -370,7 +372,7 @@ export async function recoverCommitTransaction({
       gitPath,
       cwd: effectiveCwd,
       repositoryRoot: journal.repositoryRoot,
-      records: journal.addedPaths,
+      records: worktreeRecords,
     },);
     await removeRecoveryArtifacts({ directory, },);
     return installationMarked ? 'already-installed' : 'index-installed';
@@ -391,7 +393,7 @@ export async function recoverCommitTransaction({
     gitPath,
     cwd: effectiveCwd,
     repositoryRoot: journal.repositoryRoot,
-    records: journal.addedPaths,
+    records: worktreeRecords,
   },);
   await removeRecoveryArtifacts({ directory, },);
   return 'index-installed';

@@ -41,6 +41,19 @@ extends = "test:unit"
 description = "Build the neutral bundle, then run unit tests against the built dist"
 run = ["mise run build", "mise run test:unit"]
 
+[tasks."test:mutation"]
+description = "Run container-isolated mutation testing against the full toml-edit unit suite"
+usage = 'arg "[args]" var=#true help="Optional mutation-test flags and package-relative source files"'
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+{{vars.parse_usage_args}}
+const args = parseUsageArgs(process.env.usage_args ?? '')
+// The CLI resolves --package from cwd; mise runs package tasks from the package directory.
+process.chdir(monorepoRoot)
+runWorkspaceNode('package/cli/mutation-test', 'cli', ['--package', 'package/module/toml-edit', '--full-suite', ...args])
+"""
+
 [tasks."test:conformance"]
 description = "Run the upstream toml-test suite against the package decode/encode adapters for TOML 1.0 and 1.1"
 shell = "node --input-type=module-typescript -e"

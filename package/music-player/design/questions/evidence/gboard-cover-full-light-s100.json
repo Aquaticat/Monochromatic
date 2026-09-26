@@ -1,0 +1,81 @@
+{
+  "sourceImage": "fold-disposable-cover-gboard-results-100.png",
+  "sourceHierarchy": "fold-disposable-cover-results-100.xml",
+  "image": "gboard-cover-full-light-s100.png",
+  "avd": "Fold_No_Hardware_Probe",
+  "panel": "cover",
+  "theme": "light",
+  "fontScale": 1,
+  "keyboardMode": "pass-cover",
+  "keyboardBoundsPx": [
+    0,
+    1605,
+    1080,
+    2424
+  ],
+  "densityDpi": 390,
+  "gboardVersionCode": 175753756,
+  "apkSha256": "d895072b4f232181c1f24d9db0bfd6b3af7cafae2e25f869cbe21b0039e81f53",
+  "appNodes": [
+    {
+      "text": "cam",
+      "description": "",
+      "type": "android.widget.EditText",
+      "bounds": [
+        156,
+        182,
+        924,
+        299
+      ],
+      "focused": true
+    },
+    {
+      "text": "Camellia",
+      "description": "",
+      "type": "android.widget.TextView",
+      "bounds": [
+        127,
+        374,
+        286,
+        433
+      ],
+      "focused": false
+    },
+    {
+      "text": "Folder · opens this folder",
+      "description": "",
+      "type": "android.widget.TextView",
+      "bounds": [
+        127,
+        433,
+        513,
+        482
+      ],
+      "focused": false
+    },
+    {
+      "text": "Another Xronixle",
+      "description": "",
+      "type": "android.widget.TextView",
+      "bounds": [
+        127,
+        569,
+        432,
+        628
+      ],
+      "focused": false
+    },
+    {
+      "text": "Track · Camellia · reveals track",
+      "description": "",
+      "type": "android.widget.TextView",
+      "bounds": [
+        127,
+        628,
+        602,
+        677
+      ],
+      "focused": false
+    }
+  ]
+}

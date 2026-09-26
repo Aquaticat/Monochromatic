@@ -1,6 +1,12 @@
 /**
  Complete user-visible session-message projection for judge context.
- 
+
+ Entry-to-message conversion is delegated to Pi's exported
+ `sessionEntryToContextMessages`,
+ the same step Pi's interactive transcript renderer runs,
+ and Pi's extension loader resolves that import to the running host.
+ Only per-role visible-field selection lives here.
+
  @module
  */
 
@@ -10,10 +16,11 @@ import type {
   ThinkingContent,
   ToolCall,
 } from '@earendil-works/pi-ai';
-import type {
-  SessionEntry,
-  SessionMessageEntry,
+import {
+  sessionEntryToContextMessages,
+  type SessionEntry,
 } from '@earendil-works/pi-coding-agent';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { CONTEXT_MESSAGE_FLOOR, } from './constants.ts';
@@ -24,9 +31,14 @@ import {
 } from './types.ts';
 
 /**
- Session message union supplied by Pi branch entries.
+ Module logger for transcript projection decisions.
  */
-type SessionAgentMessage = SessionMessageEntry['message'];
+const l = tagged({ tag: 'auto-mode-visible-context', },);
+
+/**
+ Message union produced by Pi's session-entry projection.
+ */
+type SessionAgentMessage = ReturnType<typeof sessionEntryToContextMessages>[number];
 
 /**
  JSON-compatible visible message projection.
@@ -108,12 +120,47 @@ function visibleTextOrImageMessageContent(
 }
 
 /**
+ Omit message whose role this build does not project.
+
+ Mirrors Pi's interactive renderer,
+ which checks role exhaustiveness at compile time and draws nothing for unknown roles at runtime.
+ Parameter type `never` makes `lint:types` fail once installed Pi declarations add a role,
+ while a newer running Pi degrades to omission instead of failing every guarded tool call.
+ Omission only removes judge context;
+ it cannot fabricate user authorization.
+
+ @param message - Pi message outside every role handled by {@link visibleMessage}.
+
+ @returns hidden-message sentinel.
+
+ @example
+ ```ts
+ omitUnknownRoleMessage(message);
+ ```
+ */
+function omitUnknownRoleMessage(
+  message: never,
+): typeof INVISIBLE_MESSAGE {
+  /**
+   Role name reported by newer Pi runtime.
+   */
+  const { role, } = message as { readonly role?: unknown; };
+  l.warn(
+    `omitting Pi session message with role ${
+      JSON.stringify(role,)
+    } from judge context: auto-mode does not know which of its fields the transcript shows`,
+  );
+  return INVISIBLE_MESSAGE;
+}
+
+/**
  Project one Pi message to fields visible in interactive transcript.
  
  Provider signatures,
  token usage,
  timestamps,
  provider identity,
+ system messages,
  and hidden custom messages are omitted because user does not see them.
  
  @param message - Pi session message.
@@ -195,7 +242,11 @@ function visibleMessage(
       tokensBefore: message.tokensBefore,
     };
   }
-  throw new Error('Unsupported Pi session message role.',);
+  // Pi 0.87 persists system prompt and tool loadout as system messages;
+  // interactive transcript renderer draws nothing for them.
+  if (message.role === 'system')
+    return INVISIBLE_MESSAGE;
+  return omitUnknownRoleMessage(message,);
 }
 
 /**
@@ -254,18 +305,16 @@ function visibleMessages(
       pendingVerdict.current = entry.data;
       continue;
     }
-    if (entry.type === 'message') {
+    // Pi's renderer projection: message, custom-message, summary, and compaction entries
+    // become messages; state-only entries become none.
+    for (const message of sessionEntryToContextMessages(entry,)) {
       /**
-       User-visible fields from current persisted message.
+       User-visible fields from current projected message.
        */
-      const projectedVisibleMessage = visibleMessage(entry.message,);
+      const projectedVisibleMessage = visibleMessage(message,);
       if (projectedVisibleMessage === INVISIBLE_MESSAGE)
         continue;
-      /**
-       Persisted message role used to associate guard verdict.
-       */
-      const { role, } = entry.message;
-      if ((role === 'toolResult')
+      if ((message.role === 'toolResult')
         && (pendingVerdict.current !== NO_PENDING_VERDICT)) {
         messages[messages.length] = withGuardVerdict({
           message: projectedVisibleMessage,
@@ -275,33 +324,6 @@ function visibleMessages(
         continue;
       }
       messages[messages.length] = projectedVisibleMessage;
-      continue;
-    }
-    if (entry.type === 'custom_message') {
-      if (entry.display) {
-        messages[messages.length] = {
-          role: 'custom',
-          customType: entry.customType,
-          content: visibleTextOrImageMessageContent(entry.content,),
-          ...(entry.details === undefined ? {} : { details: entry.details, }),
-        };
-      }
-      continue;
-    }
-    if ((entry.type === 'branch_summary') && (entry.summary !== '')) {
-      messages[messages.length] = {
-        role: 'branchSummary',
-        summary: entry.summary,
-        fromId: entry.fromId,
-      };
-      continue;
-    }
-    if (entry.type === 'compaction') {
-      messages[messages.length] = {
-        role: 'compactionSummary',
-        summary: entry.summary,
-        tokensBefore: entry.tokensBefore,
-      };
     }
   }
   return messages;

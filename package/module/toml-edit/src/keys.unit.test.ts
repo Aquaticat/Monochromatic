@@ -13,9 +13,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  _encodeKey as encodeKey,
-} from '../dist/final/node/index.mjs';
+import { _encodeKey as encodeKey, } from '@monochromatic-dev/module-toml-edit';
 
 /** Length of the repeated-character keys exercising the long-input path. */
 const longRunLength = 100_000;
@@ -34,6 +32,14 @@ await describe({
       name: 'single bare char returns unquoted',
       fn: async () => {
         expect(encodeKey({ key: 'a', },),).toBe('a',);
+      },
+    },),
+
+    it({
+      name: 'ASCII letter and digit endpoints remain bare keys',
+      fn: async () => {
+        for (const key of ['A', 'Z', 'a', 'z', '0', '9', 'Az9',])
+          expect(encodeKey({ key, },),).toBe(key,);
       },
     },),
 

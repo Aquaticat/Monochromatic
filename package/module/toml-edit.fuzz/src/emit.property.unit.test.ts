@@ -376,6 +376,31 @@ await describe({
     },),
 
     it({
+      name: '_emitContentNode preserves nested array and inline-table contents',
+      fn: async () => {
+        for (const value of [
+          '[ 1, 2, ]',
+          '[ [ 1, 2, ], [ 3, ], ]',
+          '[ { x = 1 }, { x = 2 } ]',
+          '[\n  1,\n  2,\n]',
+        ]) {
+          const source = `probe = ${value}\n`;
+          const node = tomlGetNode({
+            edit: parseTomlEdit({ source, },),
+            path: ['probe',],
+          },);
+          if ((!('type' in node)) || (node.type !== 'TOMLArray'))
+            throw new Error('Expected array node from array-valued probe',);
+          const emitted = _emitContentNode({ node, options: CANONICAL, },);
+          expect(semanticEquals({
+            left: semanticModel({ source, },),
+            right: semanticModel({ source: `probe = ${emitted}\n`, },),
+          },),).toBe(true,);
+        }
+      },
+    },),
+
+    it({
       name: '_emitStringValue re-emits a parsed string to the same value',
       timeout: RUN.timeout,
       fn: async () => {

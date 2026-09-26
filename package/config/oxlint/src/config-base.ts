@@ -1,6 +1,6 @@
 /**
  Shared oxlint configuration without `jsPlugins`.
- 
+
  Holds every field of the Monochromatic oxlint config except the plugin list:
  the development entry (`index.ts`) and the built Node entry (`index.node.ts`)
  each spread this base and attach their own `jsPlugins` (source-resolved vs
@@ -44,9 +44,18 @@ export const base: OxlintConfig = {
   ],
 
   env: {
+    // Required even with es2026 below. The oxc config reference says `builtin` is "equivalent to es2026";
+    // that is wrong: `es2026` lists only post-ES5 additions, so without `builtin` the JS plugin scope
+    // manager omits Array and Object and `isGlobalReference` returns false for them (measured on oxlint
+    // 1.85.0). An explicit env also replaces oxlint's default `builtin: true` rather than merging with it.
+    // Details: doc/troubleshooting/oxlint-js-plugin-global-reference-env.md.
+    builtin: true,
     browser: true,
     node: true,
-    es2024: true,
+    es2026: true,
+    serviceworker: true,
+    webextensions: true,
+    worker: true
   },
 
   settings: {},

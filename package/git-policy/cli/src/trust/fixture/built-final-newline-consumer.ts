@@ -13,6 +13,8 @@ import {
 } from './built-consumer-helpers.ts';
 import { verifyFinalNewlineExclusions, } from './built-final-newline-exclusions-consumer.ts';
 import { verifyFinalNewlinePartialCommit, } from './built-final-newline-partial-consumer.ts';
+import { verifyFinalNewlineReconciliation, } from './built-final-newline-reconciliation-consumer.ts';
+import { verifyNormalizationRecovery, } from './built-final-newline-normalization-recovery.ts';
 import {
   assertFixtureEqual,
   initializeBareRemote,
@@ -269,7 +271,7 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
   },);
   assertFixtureEqual({
     actual: await readBase64(`${repository}/commit.txt`,),
-    expected: Buffer.from('commit missing',)
+    expected: Buffer.from('commit missing\n',)
       .toString('base64',),
     context: 'packed commit worktree bytes',
   },);
@@ -358,5 +360,7 @@ export async function verifyFinalNewlineConsumer({ env, }: Readonly<{
     context: 'manual-push committed blob bytes',
   },);
   await verifyFinalNewlinePartialCommit({ env, },);
+  await verifyFinalNewlineReconciliation({ env, },);
+  await verifyNormalizationRecovery({ env, },);
   await verifyFinalNewlineExclusions({ env, },);
 }

@@ -1,0 +1,13 @@
+{
+  "testRunner": "vitest",
+  "vitest": { "configFile": "vitest.config.ts" },
+  "mutate": ["src/**/*.ts", "!src/types/**"],
+  "coverageAnalysis": "perTest",
+  "concurrency": 2,
+  "timeoutMS": 10000,
+  "reporters": ["json", "clear-text"],
+  "jsonReporter": { "fileName": "/out/mutation.json" },
+  "clearTextReporter": { "allowColor": false, "logTests": false, "maxTestsToLog": 0 },
+  "tempDirName": "/tmp/stryker-tmp",
+  "cleanTempDir": true
+}

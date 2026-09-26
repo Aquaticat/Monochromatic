@@ -1,0 +1,32 @@
+{
+  "$schema": "../../../node_modules/oxlint/configuration_schema.json",
+  // Isolated config for no-useless-spread tests: every native category is off so
+  // upstream unicorn/no-useless-spread cannot apply its own fixes during --fix runs.
+  "plugins": [],
+  // An explicit env without "builtin" drops Array and Object from the JS plugin global scope;
+  // kept on purpose so the rules stay correct for consumers configured this way.
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2024": true
+  },
+  "categories": {
+    "correctness": "off",
+    "suspicious": "off",
+    "pedantic": "off",
+    "perf": "off",
+    "style": "off",
+    "restriction": "off",
+    "nursery": "off"
+  },
+  "jsPlugins": [
+    "../../oxlint-plugin/no-restricted-syntax/dist/final/node/index.mjs"
+  ],
+  "ignorePatterns": [
+    "**/dist",
+    "**/node_modules"
+  ],
+  "rules": {
+    "no-restricted-syntax/no-useless-spread": "error"
+  }
+}

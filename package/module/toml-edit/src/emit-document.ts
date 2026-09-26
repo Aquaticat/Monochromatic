@@ -21,6 +21,28 @@ import { encodeKey, } from './keys.ts';
 import type { TomlEditState, } from './types.ts';
 
 /**
+ Find the end of content before any terminal newline characters.
+
+ @param text - Canonical output whose trailing newline preference is disabled.
+
+ @returns Last content boundary.
+
+ @example
+ ```ts
+ finalContentEnd('a\n'); // 1
+ ```
+ */
+function finalContentEnd(text: string,): number {
+  /**
+   Cursor walking left from the first position after the text.
+   */
+  let end = text.length;
+  while ((end > 0) && (text[end - 1] === '\n'))
+    end -= 1;
+  return end;
+}
+
+/**
  Emit the full document text for `edit`.
  
  @returns Output TOML text.
@@ -46,19 +68,20 @@ export function emitDocument({ edit, }: { readonly edit: TomlEditState; },): str
     edit,
   },);
   /**
-   Combined output before the synthetic-document trailing-newline fixup.
+   Combined output before canonical trailing-newline handling.
    */
   const result = `${header}${body}`;
-  if (
-    (edit.source
-      === '')
-      && edit.canonical
-      .trailingNewline
-      && (result !== '')
-      && (!result.endsWith('\n',))
-  )
-    return `${result}\n`;
-  return result;
+  if ((edit.source !== '') && (edit.mode !== 'canonical'))
+    return result;
+  if (result === '')
+    return result;
+  if (edit.canonical
+    .trailingNewline)
+    return result.endsWith('\n',) ? result : `${result}\n`;
+  return result.slice(
+    0,
+    finalContentEnd(result,),
+  );
 }
 
 /**

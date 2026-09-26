@@ -16,7 +16,6 @@ import type {
   ScalarKind,
   ValueNode,
 } from './document.ts';
-import { TomlTypeError, } from './errors.ts';
 import type { CanonicalOptions, } from './types.ts';
 import {
   isPlainObject,
@@ -32,7 +31,7 @@ import {
  
  @returns Computed {@link ValueNode}.
  
- @throws {@link TomlTypeError} for `null`, `undefined`, or an unencodable value.
+ @throws `TomlTypeError` from value encoding for `null`, `undefined`, or an unencodable value.
  
  @mutates input - Recursive build can invoke caller-owned proxy, getter, and prototype hooks.
  
@@ -52,11 +51,6 @@ export function buildValueFromInput(
     readonly existing?: ExistingNode;
   },
 ): ValueNode {
-  if ((input === null) || (input === undefined)) {
-    throw new TomlTypeError(
-      `Cannot encode ${String(input,)} as TOML; use tomlDelete to remove a key`,
-    );
-  }
   if (Array.isArray(input,)) {
     /**
      Parse-time element nodes so per-element raw spelling survives an equal re-set.

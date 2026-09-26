@@ -23,17 +23,46 @@ including browser, Firefox ESR, print, and export checks.
 The user then critiqued the settlement experiment's UI/UX across seven rounds:
 confusing layout, silent buttons, disabled-when-no-effect plus numbered one-shot buttons,
 the Rhythm Heaven Groove Yum-Bot Simulator model, a drawn factory scene with the controls
-inside it, the game-faithful remap where the pudding is the Promise,
+inside it, an attempted pudding-as-Promise mapping,
 and the restored resolver-bundle snapshots.
-A matrix of layout-by-cue-color cells awaits the user's choice;
-[the settlement-UX handover](../handover/promises-settlement-ux.md) records the measured
-defects, the research, superseded models, and the next actions.
+The user then clarified that an unused one-shot button remains actionable after settlement
+if it calls the real resolving function and visibly logs the ignored attempt.
+The Promise outcome stays fixed; used buttons and genuinely inert controls stay disabled.
+The user later supplied a screenshot of the shared factory scene and still found it confusing.
+A focused repair shortens the repeated control captions, names each row and current Promise,
+and keeps the fixed outcome and latest ignored-call feedback visible near the controls.
+The scene has browser, Firefox ESR, and PDF text checks, but these do not prove its analogy.
+The user then challenged the factory logic. A source-and-browser audit found that the current
+pudding-as-Promise scene is not faithful to the game's cues, conveyor, laser disposal, or face grading.
+The user delegated the remedy: keep the manual reply-shaped Promise experiment and use Yum-Bot
+as visual inspiration only, without adding a second game or changing the example values.
+The shared scene now has a Promise-ticket prototype with a neutral decorative robot,
+a separate observer display, and earlier Promise records; its browser, Firefox ESR,
+and PDF text checks passed before integration.
+A-neutral was then selected for lesson integration under the user's delegated design choice;
+full-width code and neutral observed-outcome cues avoid the old grid and game-grade confusion.
+A-neutral was generated into the local lesson; its combined suite, Firefox ESR,
+actual downloads, native print, and independent PDF text inventory passed.
+The user then found that an observed outcome entered the belt only after a later Create action.
+The corrected lesson records each outcome when its observer reports it, including the current
+Promise, while leaving the ticket available for ignored calls. The corrected build's
+combined suite, native print, Firefox ESR, actual downloads, and PDF inventory pass;
+the lesson is open in a separate headed tab without reloading the tab observed beforehand.
+[The settlement-UX handover](../handover/promises-settlement-ux.md) records the evidence,
+superseded models, artifact versions, and verification status.
 Earlier critiques rejected a detached opening and forced chat turn-taking.
 The shop opening, reference chat, and reading backgrounds have since been corrected and operationally checked.
 The quick scan is not learner-performance evidence or approval of the final skill.
 The shared-understanding checkpoint was premature and is withdrawn.
 [Proposed acceptance checks](teaching-skill-acceptance.md) are only a working hypothesis.
-The user requires an updated Promise toy before continuing to weed out failure modes.
+The corrected Promise toy is built and the user responded, “This is great. What next?”
+That is positive feedback on this artifact, not a learner-mastery finding or final skill approval.
+[A working cross-domain probe](teaching-skill-transfer-probe.md) now contrasts the user's
+rotated-chicken critique, apples explanation, and Promise corrections.
+Its passing and near-miss cases are hypotheses for critique, not a cooking lesson or final skill.
+[A decision-time outline](teaching-skill-decision-outline.md) and
+[a static replay](teaching-skill-outline-replay.md) now test whether a future skill
+could catch the recorded failures without extending review verbs or assuming mastery.
 No skill design has been confirmed or implemented.
 
 ## Evidence from the user
@@ -1119,17 +1148,132 @@ At the assessment boundary, the lesson and authoring sources were unchanged.
 The later action request authorizes the concrete lesson repairs, not finalization of the teaching skill.
 The pre-change artifact has been preserved separately.
 
+## Interview correction: research before asking
+
+I asked Q1: after imagining a lesson that passes the current checks,
+what concrete way could it still teach badly?
+The user rejected it as a poor question and instructed me to research more.
+The question supplied no researched missing mechanism or consequential choice;
+it delegated discovery of a failure to the user.
+This repeats the previously rejected move of asking the user to diagnose a teaching defect
+before the assistant shows its own reasoned interpretation.
+Q1 is retracted. [Primary-source research](teaching-skill-research-feedback.md)
+now identifies a bounded hypothesis: at a consequential action,
+a learner may need a way to check their own result, interpret a mismatch,
+and choose a safe next step or stop boundary.
+A source-backed cooking criterion and a hypothetical Promise preview mismatch make
+that distinction concrete without claiming an observed learner failure.
+No user-dependent choice is necessary to record this as a candidate refinement;
+asking another question merely to fulfill the earlier promise would repeat the error.
+The settled learner-observation veto remains in force.
+A future `AGENTS.md` rule could require evidence-backed questions rather than open-ended
+requests for the user to invent counterexamples, but the user's no-`AGENTS.md` instruction
+precludes applying it here.
+
+## Learner-result probe after the research
+
+A fresh owned browser session ran `mise run probe:learner-feedback` against the generated
+Promise lesson without touching the user's presented tab.
+The “Handle rejection” starter displayed `Waiting…` plus an unhandled-rejection diagnostic;
+its task and hint explicitly directed the learner to handle the error,
+and the worked comparison showed a useful reason. This is existing feedback, not a found
+regression or evidence that a learner used the hint.
+Two separate disposable learner-code variations displayed the same `Waiting…` with no
+error: one Promise remained unresolved; the other received `"Hello Ada"` without
+updating the page. Learner-visible records of handler and resolver calls distinguished
+those variations while the result text stayed unchanged.
+[The research note](teaching-skill-research-feedback.md) records the sourced cooking
+contrast, controls, and exact measured limits. The proposed skill check now asks for
+an available criterion and bounded next action when the learner's own consequential
+result differs from an expected one. This is not an order to add more controls to the
+current lesson or to claim an adult-teaching effect from school research.
+No non-measurable choice emerged from that probe, so no interview question follows it.
+
+## Candidate decision outline and static replay
+
+[The planning-only outline](teaching-skill-decision-outline.md) places the candidate
+process at decisions about authorized mode, learner goal, causal sequence,
+actionability, independent practice, learner-owned checks, medium, and evidence claims.
+[The replay ledger](teaching-skill-outline-replay.md) applies those branches to the
+quoted cooking failures, apples and callbacks, the rejected API-specification and
+open-ended interview questions, manual resolver semantics, identical Waiting displays,
+print parity, and design praise versus learner mastery.
+An independent review found false passes in the first outline: a cosmetic greeting edit
+could masquerade as independent chat construction, a later Create could masquerade as
+observation, and a review could silently become a rewrite.
+The revised exit criteria require the applicable branch obligations, a destination-level
+learner task, accepted semantic contracts, and evidence sufficient for each claim.
+This is a static specification replay, not evidence of automatic skill invocation or
+compliance by an agent. The model-invocation choice and cross-domain feedback rule
+remain proposed; the user has not confirmed the whole process or asked for implementation.
+
+## Continuation correction and confirmation gate
+
+After the planning outline and static replay, the agent stopped on a status report
+while the skill design still awaited shared-understanding confirmation.
+The user replied: “Why are you stopping? Continue working. If you're waiting on me
+for something, ask me.” This supersedes the earlier deferral of that confirmation.
+The [existing `PXQ` rule](../../AGENTS.md) already says a finished item is not a
+finished queue and forbids a status report that requires “continue”.
+This was a failure to follow that rule, not evidence that the skill was approved.
+The user reiterated, “No need to update AGENTS.md for now.”
+The existing `PXQ` rule covers this failure; no `AGENTS.md` change is planned.
+
+That contract question was asked and rejected. The user answered: “We're far from that
+stage. You didn't even review the Promise example yourself. You didn't call Astra with
+another pi to review it. You didn't confirm with me with your ‘good bad ugly’,
+‘things tried, things that you can't put a finger on’ of that Promise example in mind.”
+The required order is therefore: review the actual lesson, obtain an independent review,
+then discuss grounded findings with the user. Skill-contract confirmation stays gated
+behind that discussion; a written contract is not a substitute for reviewing the artifact.
+
+## Artifact review status
+
+The primary agent's own review is complete and recorded in
+[the Promise lesson self-review](promises-lesson-self-review.md), with measured
+good, bad, and ugly findings, the actions actually tried, and unsettled judgment items.
+The separate Pi session running Astra was started with a bounded read-only prompt,
+produced no output in 1 hour 47 minutes (0-byte stdout; stderr held only model-pattern
+warnings), and the user cancelled it: “forget the other pi with astra. Kill it and
+continue as if the plan didn't ask for a separate Pi Astra review.”
+The process and its child are stopped and no stray browser session remains.
+The user took the troubleshooting write-up for that hang themselves, so no
+`doc/troubleshooting/` entry was created here.
+Scratch evidence: `/home/user/temp/agent/promise-lesson-astra-review{,-output,-stderr}.local.*`.
+No final `SKILL.md` exists. Do not reopen the learner-observation veto or treat a
+working artifact as mastery.
+
+## Interview correction: complements are not a question
+
+After the three repairs, the agent asked the user to choose between paced sittings,
+answer-first summaries, one long read, or no change, while stating that the first two are
+complements and ranking them above the rest.
+The user chose “A+B, of course” and objected to the question itself:
+“There was no need to burn this question on me because you already know and stated how you
+want to proceed based on what's the best. Your ‘complements’ also indicated you know A+B
+overwhelmingly crowds out every possible answer I could give you.”
+
+The failure is the one the existing rules already name: options that are complements were
+presented as alternatives, and a ranking that left one answer standing was still put to the
+user as a choice. When the evidence and the agent's own ranking determine one answer,
+adopt it, record it, and invite veto instead of asking.
+A question is owed to the user only where two paths genuinely hinge on their preference or
+authority, and the options must be mutually exclusive.
+Applied here: both changes were implemented together, and the remaining items
+(the audience seam and the `Waiting…` ambiguity) are decided and recorded with reasons
+rather than offered as a menu.
+The user's instruction to leave `AGENTS.md` unchanged still stands, so this correction lives
+in the planning record only.
+
 ## Next action
 
-The correction handover records the completed lesson repair and verification boundary.
-Resume teaching-skill discovery from these concrete failures when that discussion continues.
-Do not reopen the vetoed learner-observation concerns as approval gates.
-No final skill confirmation has been requested.
-Independent sending and neutral surfaces are implemented and operationally checked;
-those checks do not establish teaching acceptance, learner independence, or mastery.
-The final teaching skill remains unconfirmed and unimplemented.
-Continue discovery from the user's critique of the visibly revised Promise toy.
-Do not replace that critique with another acceptance checklist or an inference from passing tests.
-Write additions in chunks no larger than the requested 200 to 500 lines.
-Do not write the final skill or ask for final confirmation yet.
-Do not edit `AGENTS.md`.
+The three measured defects, the paced sittings, the answer-first takeaways, the audience
+labels, and the `Waiting…` diagnosis exercise are implemented, guarded red-then-green,
+verified, and presented; see [the review record](promises-lesson-self-review.md).
+Hand the presented build to the user for critique before returning to the teaching-skill
+contract: their reading of the repaired lesson is the evidence the contract discussion needs,
+and it is theirs to give, not something to infer from passing guards.
+Remaining recorded items that were deliberately left alone: the capstone's long worked
+comparison sharing one editor with the learner's attempt, the settlement scene's reliance on
+its disclaimer paragraph, and whether manually revealed shop replies prime the wrong model.
+Keep the final skill unimplemented and leave `AGENTS.md` unchanged.

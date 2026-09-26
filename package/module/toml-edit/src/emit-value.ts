@@ -10,7 +10,6 @@
  @module
  */
 
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { AST, } from 'toml-eslint-parser';
 
@@ -46,10 +45,10 @@ export function emitContentNode(
   if (node.type
     === 'TOMLArray') {
     /**
-     Convert foreign parser elements into owned text at the existing ownership boundary.
+     Per-element text so the assembler can join into inline or multi-line form.
      */
     const parts = node.elements
-      .map(function each(el: AST.TOMLNode,): string {
+      .map(function each(el,) {
       return emitContentNode({
         node: el,
         options,
@@ -89,166 +88,7 @@ function emitValueLeaf({ node, }: { readonly node: AST.TOMLValue; },): string {
 }
 
 /**
- Emit a `TOMLArray` with the element at `skipIndex` omitted.
- 
- Used by {@link tomlDelete} on an array element: re-emits the parent array
- via canonical formatting, applying the same inline-vs-multiline
- thresholds as {@link emitContentNode}.
- 
- @returns Computed string.
- 
- @example
- ```ts
- emitArrayWithoutIndex({ array: kvNode.value, skipIndex: 1, options, depth: 0, },);
- ```
- */
-export function emitArrayWithoutIndex(
-  {
-    array,
-    skipIndex,
-    options,
-    depth,
-  }: {
-    readonly array: ForeignBorrowed<AST.TOMLArray>;
-    readonly skipIndex: number;
-    readonly options: CanonicalOptions;
-    readonly depth: number;
-  },
-): string {
-  /**
-   Per-element text with the targeted index dropped before encoding.
-   */
-  const parts = array
-    .elements
-    .flatMap(function each(
-      el: AST.TOMLNode,
-      index,
-    ) {
-      if (index === skipIndex)
-        return [];
-      return [emitContentNode({
-        node: el,
-        options,
-        depth: depth + 1,
-      },),];
-    },);
-  return assembleArrayParts({
-    parts,
-    options,
-    depth,
-  },);
-}
-
-/**
- Emit a `TOMLArray` with one nested element omitted at arbitrary depth.
- 
- `skipPath` is a chain of array indices read outer-to-inner: each
- non-final index selects which element of the current `TOMLArray` to
- recurse into (that element must itself be a `TOMLArray`); the final
- index names the element to omit at the deepest level. A single-element
- `skipPath` reduces to {@link emitArrayWithoutIndex}.
- 
- Used by {@link tomlDelete} on a nested-array element: when the immediate
- parent of the target is a `TOMLArray` whose own parent is another
- `TOMLArray`, the deletion walks up the parent chain to the enclosing
- key-value's outer array and re-emits the whole tree with the target
- element missing.
- 
- @returns Computed string.
- 
- @throws {@link TomlImmutableNodeError} if a non-final `skipPath` index lands on
-         a non-array element (caller-side AST inconsistency).
- 
- @example
- ```ts
- emitArrayWithSkipPath({
-   array: outerArrayNode,
-   skipPath: [0, 1,],
-   options: edit.canonical,
-   depth: 0,
- },);
- ```
- */
-export function emitArrayWithSkipPath(
-  {
-    array,
-    skipPath,
-    options,
-    depth,
-  }: {
-    /**
-     Foreign parser-array ownership enters this exported emitter; descendants inherit its provenance.
-     */
-    readonly array: ForeignBorrowed<AST.TOMLArray>;
-    readonly skipPath: readonly number[];
-    readonly options: CanonicalOptions;
-    readonly depth: number;
-  },
-): string {
-  if (skipPath.length
-    === 0) {
-    throw new TomlImmutableNodeError(
-      'emitArrayWithSkipPath: skipPath must not be empty',
-    );
-  }
-
-  /**
-   Current outer index; selects which child array to recurse into.
-   */
-  const head = nonNullishOrThrow(skipPath[0],);
-  /**
-   Remaining inner-level indices.
-   */
-  const rest = skipPath.slice(1,);
-
-  if (rest.length
-    === 0) {
-    return emitArrayWithoutIndex({
-      array,
-      skipIndex: head,
-      options,
-      depth,
-    },);
-  }
-
-  /**
-   Per-element text where the matching child gets a recursive skip-path emit.
-   */
-  const parts = array.elements
-    .map(function each(
-    el: AST.TOMLNode,
-    i,
-  ) {
-    if (i !== head) {
-      return emitContentNode({
-        node: el,
-        options,
-        depth: depth + 1,
-      },);
-    }
-    if (el.type
-      !== 'TOMLArray') {
-      throw new TomlImmutableNodeError(
-        `emitArrayWithSkipPath: expected TOMLArray at index ${head}, got ${el.type}`,
-      );
-    }
-    return emitArrayWithSkipPath({
-      array: el,
-      skipPath: rest,
-      options,
-      depth: depth + 1,
-    },);
-  },);
-
-  return assembleArrayParts({
-    parts,
-    options,
-    depth,
-  },);
-}
-
-/**
- Shared array-text assembly used by {@link emitContentNode} and {@link emitArrayWithoutIndex}.
+ Shared array-text assembly for parsed and synthetic value rendering.
  
  @returns Computed string.
  
@@ -334,63 +174,6 @@ function emitInlineTable(
     options,
     depth,
   },);
-  return assembleInlineTableParts({ parts, },);
-}
-
-/**
- Emit a `TOMLInlineTable` with one additional key-value entry appended.
- 
- `extraKey` is the encoded dotted-key string (may contain `.`); `extraValue`
- is the encoded value text. The caller is responsible for ensuring the new
- entry does not collide with existing inline-table keys.
- 
- @returns Computed string.
- 
- @throws {@link TomlImmutableNodeError} when `node` is not a `TOMLInlineTable`.
- 
- @example
- ```ts
- emitInlineTableWithExtra({
-   node: inlineTable,
-   options: canonical,
-   depth: 0,
-   extraKey: 'b',
-   extraValue: '1',
- },);
- ```
- */
-export function emitInlineTableWithExtra(
-  {
-    node,
-    options,
-    depth,
-    extraKey,
-    extraValue,
-  }: {
-    readonly node: ForeignBorrowed<AST.TOMLNode>;
-    readonly options: CanonicalOptions;
-    readonly depth: number;
-    readonly extraKey: string;
-    readonly extraValue: string;
-  },
-): string {
-  if (node.type
-    !== 'TOMLInlineTable') {
-    throw new TomlImmutableNodeError(
-      `emitInlineTableWithExtra: expected TOMLInlineTable, got ${node.type}`,
-    );
-  }
-  /**
-   Existing entries plus the new one so the assembler joins them in order.
-   */
-  const parts = [
-    ...emitInlineTableBodyParts({
-      body: node.body,
-      options,
-      depth,
-    },),
-    `${extraKey} = ${extraValue}`,
-  ];
   return assembleInlineTableParts({ parts, },);
 }
 

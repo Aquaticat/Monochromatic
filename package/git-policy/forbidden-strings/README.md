@@ -18,6 +18,16 @@ Its normal rules precedence remains `--rules`,
 `FORBIDDEN_STRINGS_RULES`,
 then `forbidden-strings.local.txt` at repository root.
 
+The adapter writes exact candidate bytes to private synthetic content files,
+then passes each candidate's validated repository-relative name through the scanner's
+paired `--name-path` option.
+The scanner matches each name segment independently and masks the entire offending segment.
+Name findings use a segment position instead of a content line and never report columns.
+An opaque operand index preserves identity when different candidates mask to the same displayed path.
+The adapter validates every output path against its indexed candidate and returns only
+scanner-masked paths in policy events.
+Path-name matching cannot be disabled.
+
 ## Build and test
 
 ```sh

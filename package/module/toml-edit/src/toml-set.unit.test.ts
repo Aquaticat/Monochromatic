@@ -11,16 +11,16 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  TomlImmutableNodeError,
-  TomlTypeError,
-  _tomlFloat as tomlFloat,
-  _tomlInteger as tomlInteger,
   emptyTomlEdit,
   parseTomlEdit,
+  tomlFloat,
   tomlGetValue,
+  tomlInteger,
   tomlSet,
   tomlStringify,
-} from '../dist/final/node/index.mjs';
+  TomlImmutableNodeError,
+  TomlTypeError,
+} from '@monochromatic-dev/module-toml-edit';
 
 await describe({
   name: tomlSet.name,

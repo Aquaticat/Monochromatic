@@ -1,768 +1,293 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Music player design: folded cover screen round</title>
-  <style>
-    :root {
-      color-scheme: light dark;
-      --color-page: #f8f4fc;
-      --color-surface: #fffaff;
-      --color-surface-soft: #f0ebf5;
-      --color-surface-strong: #e5dded;
-      --color-ink: #241f29;
-      --color-ink-soft: #625b68;
-      --color-accent: #65558f;
-      --color-accent-soft: #e9ddff;
-      --color-focus: #49366f;
-      --color-line: #cbc3d2;
-      --color-shadow: rgb(36 31 41 / 18%);
-      --color-backdrop: rgb(20 16 24 / 72%);
-      --color-device: #242124;
-      --color-device-edge: #777177;
-      --color-screen: #000000;
-      font-family: system-ui, sans-serif;
-      background-color: var(--color-page);
-      color: var(--color-ink);
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      min-inline-size: 20rem;
-      margin-block: 0;
-      margin-inline: 0;
-      background-color: var(--color-page);
-    }
-
-    button,
-    input,
-    textarea {
-      font: inherit;
-    }
-
-    button,
-    label {
-      min-block-size: 3rem;
-    }
-
-    button:focus-visible,
-    input:focus-visible,
-    textarea:focus-visible {
-      outline-color: var(--color-focus);
-      outline-offset: 0.1875rem;
-      outline-style: solid;
-      outline-width: 0.1875rem;
-    }
-
-    main {
-      inline-size: min(100% - 2rem, 96rem);
-      margin-inline: auto;
-      padding-block: 2rem 5rem;
-    }
-
-    header {
-      margin-block-end: 1.5rem;
-    }
-
-    h1,
-    h2,
-    h3,
-    p {
-      margin-block-start: 0;
-    }
-
-    h1 {
-      max-inline-size: 19ch;
-      margin-block-end: 1rem;
-      font-size: clamp(2rem, 5vw, 4.5rem);
-      line-height: 0.98;
-    }
-
-    h2 {
-      margin-block-end: 0.75rem;
-      font-size: clamp(1.45rem, 3vw, 2.35rem);
-    }
-
-    h3 {
-      margin-block-end: 0.5rem;
-      font-size: 1.25rem;
-    }
-
-    p,
-    li {
-      line-height: 1.55;
-    }
-
-    .lede {
-      max-inline-size: 76ch;
-      color: var(--color-ink-soft);
-      font-size: 1.1rem;
-    }
-
-    .status {
-      display: inline-flex;
-      align-items: center;
-      min-block-size: 3rem;
-      margin-block-end: 1rem;
-      padding-inline: 1rem;
-      border-color: var(--color-accent);
-      border-style: solid;
-      border-width: 0.0625rem;
-      border-radius: 999rem;
-      background-color: var(--color-accent-soft);
-      font-weight: 700;
-    }
-
-    .panel {
-      margin-block: 1.25rem;
-      padding-block: clamp(1rem, 3vw, 2rem);
-      padding-inline: clamp(1rem, 3vw, 2rem);
-      border-color: var(--color-line);
-      border-style: solid;
-      border-width: 0.0625rem;
-      border-radius: 1.25rem;
-      background-color: var(--color-surface);
-      box-shadow: 0 0.75rem 2rem var(--color-shadow);
-    }
-
-    .requirement-grid,
-    .strategy-grid,
-    .assessment {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
-      gap: 1rem;
-    }
-
-    .requirement,
-    .strategy-card {
-      padding-block: 1rem;
-      padding-inline: 1rem;
-      border-color: var(--color-line);
-      border-style: solid;
-      border-width: 0.0625rem;
-      border-radius: 1rem;
-      background-color: var(--color-surface-soft);
-    }
-
-    .strategy-card[data-recommended] {
-      border-color: var(--color-accent);
-      border-width: 0.125rem;
-      background-color: var(--color-accent-soft);
-    }
-
-    .code {
-      display: inline-block;
-      margin-block-end: 0.5rem;
-      color: var(--color-accent);
-      font-family: ui-monospace, monospace;
-      font-size: 0.85rem;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .role-list {
-      padding-inline-start: 1.25rem;
-    }
-
-    .ranking,
-    .fixed-note {
-      margin-block-start: 1rem;
-      padding-block: 1rem;
-      padding-inline: 1rem;
-      border-radius: 0.9rem;
-      background-color: var(--color-surface-soft);
-    }
-
-    .ranking {
-      border-inline-start-color: var(--color-accent);
-      border-inline-start-style: solid;
-      border-inline-start-width: 0.35rem;
-    }
-
-    .fixed-note {
-      background-color: var(--color-accent-soft);
-    }
-
-    .evidence-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-      gap: 0.75rem;
-      margin-block-start: 1rem;
-    }
-
-    .evidence-card {
-      padding-block: 0.75rem;
-      padding-inline: 0.75rem;
-      border-radius: 0.9rem;
-      background-color: var(--color-surface-soft);
-    }
-
-    .evidence-button {
-      inline-size: 100%;
-      min-inline-size: 3rem;
-      padding-block: 0.65rem;
-      padding-inline: 0.65rem;
-      border-color: var(--color-line);
-      border-style: solid;
-      border-width: 0.0625rem;
-      border-radius: 0.8rem;
-      background-color: var(--color-surface);
-      color: var(--color-ink);
-      cursor: pointer;
-    }
-
-    .evidence-button img {
-      display: block;
-      inline-size: 100%;
-      block-size: auto;
-      border-radius: 0.55rem;
-      background-color: var(--color-screen);
-    }
-
-    .evidence-label {
-      display: block;
-      margin-block-start: 0.55rem;
-      color: var(--color-accent);
-      font-weight: 750;
-    }
-
-    fieldset {
-      margin-block: 1.25rem;
-      margin-inline: 0;
-      padding-block: 1rem;
-      padding-inline: 1rem;
-      border-color: var(--color-line);
-      border-style: solid;
-      border-width: 0.0625rem;
-      border-radius: 1rem;
-    }
-
-    legend {
-      padding-inline: 0.5rem;
-      font-weight: 800;
-    }
-
-    .review-choice {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      align-items: start;
-      gap: 0.75rem;
-      margin-block: 0.5rem;
-      padding-block: 0.75rem;
-      padding-inline: 0.75rem;
-      border-radius: 0.75rem;
-      background-color: var(--color-surface-soft);
-      cursor: pointer;
-    }
-
-    .review-choice[data-recommended] {
-      background-color: var(--color-accent-soft);
-    }
-
-    .review-choice input {
-      inline-size: 1.35rem;
-      block-size: 1.35rem;
-      margin-block-start: 0.15rem;
-      accent-color: var(--color-accent);
-    }
-
-    textarea {
-      inline-size: 100%;
-      min-block-size: 8rem;
-      padding-block: 0.75rem;
-      padding-inline: 0.75rem;
-      border-color: var(--color-line);
-      border-style: solid;
-      border-width: 0.0625rem;
-      border-radius: 0.75rem;
-      background-color: var(--color-surface);
-      color: var(--color-ink);
-      resize: vertical;
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-block-start: 1rem;
-    }
-
-    .action-button,
-    .toolbar-button {
-      min-inline-size: 3rem;
-      padding-inline: 1rem;
-      border-color: var(--color-accent);
-      border-style: solid;
-      border-width: 0.0625rem;
-      border-radius: 999rem;
-      background-color: var(--color-accent);
-      color: var(--color-surface);
-      cursor: pointer;
-      font-weight: 750;
-    }
-
-    .action-button[data-secondary],
-    .toolbar-button {
-      background-color: var(--color-surface);
-      color: var(--color-accent);
-    }
-
-    #output {
-      margin-block-start: 1rem;
-      padding-block: 1rem;
-      padding-inline: 1rem;
-      border-radius: 0.75rem;
-      background-color: var(--color-surface-strong);
-      white-space: pre-wrap;
-    }
-
-    dialog {
-      inline-size: calc(100% - 2rem);
-      max-inline-size: none;
-      block-size: calc(100% - 2rem);
-      max-block-size: none;
-      padding-block: 0;
-      padding-inline: 0;
-      border-color: var(--color-line);
-      border-style: solid;
-      border-width: 0.0625rem;
-      border-radius: 1.25rem;
-      background-color: var(--color-surface);
-      color: var(--color-ink);
-    }
-
-    dialog::backdrop {
-      background-color: var(--color-backdrop);
-    }
-
-    .dialog-shell {
-      display: grid;
-      grid-template-rows: auto 1fr;
-      block-size: 100%;
-    }
-
-    .dialog-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.6rem;
-      padding-block: 0.75rem;
-      padding-inline: 1rem;
-      border-block-end-color: var(--color-line);
-      border-block-end-style: solid;
-      border-block-end-width: 0.0625rem;
-      background-color: var(--color-surface);
-    }
-
-    .dialog-toolbar h2 {
-      flex: 1 1 18rem;
-      margin-block-end: 0;
-      font-size: 1.25rem;
-    }
-
-    #preview-details {
-      flex-basis: 100%;
-      color: var(--color-ink-soft);
-    }
-
-    .preview-stage {
-      overflow: auto;
-      padding-block: 1rem;
-      padding-inline: 1rem;
-      background-color: var(--color-surface-soft);
-    }
-
-    .device-shell {
-      --preview-scale-x: 1;
-      --preview-scale-y: 1;
-      position: relative;
-      inline-size: calc(466px * var(--preview-scale-x));
-      block-size: calc(977px * var(--preview-scale-y));
-      margin-inline: auto;
-      border-color: var(--color-device-edge);
-      border-style: solid;
-      border-width: max(0.0625rem, calc(2px * var(--preview-scale-x)));
-      border-radius: calc(40px * var(--preview-scale-x));
-      background-color: var(--color-device);
-    }
-
-    .device-screen {
-      position: absolute;
-      inset-block-start: calc(27px * var(--preview-scale-y));
-      inset-inline-start: calc(27px * var(--preview-scale-x));
-      inline-size: calc(411px * var(--preview-scale-x));
-      block-size: calc(923px * var(--preview-scale-y));
-      overflow: hidden;
-      border-radius: calc(28px * var(--preview-scale-x));
-      background-color: var(--color-screen);
-    }
-
-    .device-screen img {
-      display: block;
-      inline-size: calc(411px * var(--preview-scale-x));
-      block-size: calc(923px * var(--preview-scale-y));
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --color-page: #121016;
-        --color-surface: #1d1a20;
-        --color-surface-soft: #28242c;
-        --color-surface-strong: #352f3b;
-        --color-ink: #f0e9f2;
-        --color-ink-soft: #d0c4d4;
-        --color-accent: #d0bcff;
-        --color-accent-soft: #3d3351;
-        --color-focus: #e3d5ff;
-        --color-line: #6f6574;
-        --color-shadow: rgb(0 0 0 / 45%);
-        --color-backdrop: rgb(0 0 0 / 78%);
-        --color-device: #080708;
-        --color-device-edge: #777177;
-        --color-screen: #000000;
-      }
-    }
-
-    @media (max-width: 42rem) {
-      main {
-        inline-size: min(100% - 1rem, 96rem);
-        padding-block-start: 1rem;
-      }
-
-      .panel {
-        padding-block: 1rem;
-        padding-inline: 0.75rem;
-      }
-
-      .dialog-toolbar {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .dialog-toolbar h2,
-      #preview-details {
-        grid-column: 1 / -1;
-      }
-
-      .dialog-toolbar h2 {
-        font-size: 1rem;
-      }
-
-      .toolbar-button {
-        min-inline-size: 3rem;
-        padding-inline: 0.25rem;
-        font-size: 0.75rem;
-      }
-
-      #preview-details {
-        font-size: 0.75rem;
-        line-height: 1.3;
-      }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Selected Fold Search, bottom-keyboard study</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --color-page: #f5f6fa;
+  --color-panel: #ffffff;
+  --color-raised: #e9eaf0;
+  --color-ink: #282b34;
+  --color-muted: #525663;
+  --color-edge: #646877;
+  --color-accent: #364e82;
+  --color-device: #17191f;
+  --color-backdrop: rgb(0 0 0 / 78%);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-page: #0d0f14;
+    --color-panel: #1a1d25;
+    --color-raised: #292d38;
+    --color-ink: #e8eaf2;
+    --color-muted: #bdc1ce;
+    --color-edge: #9ea4b2;
+    --color-accent: #b9c9ff;
+    --color-device: #080a0d;
+    --color-backdrop: rgb(0 0 0 / 85%);
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin-inline: 0;
+  margin-block: 0;
+  background-color: var(--color-page);
+  color: var(--color-ink);
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+main {
+  max-inline-size: 100rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 3vw, 3rem);
+  padding-block: 1rem 5rem;
+}
+h1 { font-size: clamp(1.9rem, 3vw, 2.8rem); line-height: 1.2; }
+h2 { margin-block: 2rem 0.6rem; }
+p { max-inline-size: 90ch; }
+button, select { font: inherit; }
+button, select {
+  min-inline-size: 3rem;
+  min-block-size: 3rem;
+  padding-inline: 0.8rem;
+  padding-block: 0.35rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.55rem;
+  background-color: var(--color-panel);
+  color: var(--color-ink);
+}
+button { cursor: pointer; }
+button:hover { background-color: var(--color-raised); }
+button:focus-visible, select:focus-visible, .preview-stage:focus-visible {
+  outline: 0.1875rem solid var(--color-accent);
+  outline-offset: 0.1875rem;
+}
+.note, .capture {
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.8rem;
+  background-color: var(--color-panel);
+}
+.note { padding-inline: 1rem; padding-block: 0.35rem; }
+.muted { color: var(--color-muted); }
+.controls { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: end; margin-block: 1rem; }
+.controls label { display: grid; gap: 0.3rem; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: 1rem; }
+.capture { min-inline-size: 0; padding-inline: 1rem; padding-block: 1rem; }
+.capture h2 { margin-block: 0 0.5rem; }
+.capture picture { display: block; overflow: hidden; max-block-size: 45rem; }
+.capture img { display: block; max-inline-size: 100%; block-size: auto; }
+.capture[data-panel='inner'] img { inline-size: min(100%, 42rem); }
+.capture[data-panel='cover'] img { inline-size: min(100%, 20rem); }
+.capture p { background-color: var(--color-panel); }
+.capture button { margin-block-start: 0.75rem; }
+dialog {
+  inline-size: min(98vw, 96rem);
+  max-inline-size: none;
+  max-block-size: 97vh;
+  padding-inline: 0;
+  padding-block: 0;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.8rem;
+  background-color: var(--color-panel);
+  color: var(--color-ink);
+}
+dialog::backdrop { background-color: var(--color-backdrop); }
+.dialog-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; padding-inline: 0.8rem; padding-block: 0.6rem; }
+.dialog-bar h2 { flex: 1 1 14rem; margin-block: 0; font-size: 1.1rem; }
+.dialog-bar .details { flex-basis: 100%; margin-block: 0; background-color: var(--color-panel); }
+.preview-stage {
+  overflow: auto;
+  block-size: min(73vh, 65rem);
+  padding-inline: 0.8rem;
+  padding-block: 0.8rem;
+  background-color: var(--color-raised);
+}
+.device {
+  --scale: 1;
+  --screen-inline: 852px;
+  --screen-block: 883px;
+  --frame-inline: 907px;
+  --frame-block: 937px;
+  --screen-inset: 27px;
+  --outer-radius: 72px;
+  --inner-radius: 42px;
+  position: relative;
+  inline-size: calc(var(--frame-inline) * var(--scale));
+  block-size: calc(var(--frame-block) * var(--scale));
+  margin-inline: auto;
+  border-width: 0.125rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: calc(var(--outer-radius) * var(--scale));
+  background-color: var(--color-device);
+}
+.device[data-panel='cover'] {
+  --screen-inline: 443.0769px;
+  --screen-block: 994.4615px;
+  --frame-inline: 502.4px;
+  --frame-block: 1053.2px;
+  --screen-inset: 29.1px;
+  --outer-radius: 43.1px;
+  --inner-radius: 30.18px;
+}
+.device-screen {
+  position: absolute;
+  inset-inline-start: calc(var(--screen-inset) * var(--scale));
+  inset-block-start: calc(var(--screen-inset) * var(--scale));
+  inline-size: calc(var(--screen-inline) * var(--scale));
+  block-size: calc(var(--screen-block) * var(--scale));
+  overflow: hidden;
+  border-radius: calc(var(--inner-radius) * var(--scale));
+  background-color: var(--color-device);
+}
+.device-screen img { display: block; inline-size: 100%; block-size: 100%; }
+.camera, .hinge { display: none; position: absolute; background-color: var(--color-device); }
+.device[data-panel='inner'] .camera {
+  display: block;
+  inset-inline-end: calc(48.41px * var(--scale));
+  inset-block-start: calc(43.62px * var(--scale));
+  inline-size: calc(32.41px * var(--scale));
+  block-size: calc(32.41px * var(--scale));
+  border-radius: 50%;
+}
+.device[data-panel='inner'] .hinge {
+  display: block;
+  inset-inline-start: calc(431.5px * var(--scale));
+  inline-size: calc(44px * var(--scale));
+  block-size: calc(8.8px * var(--scale));
+  border-radius: calc(4.8px * var(--scale));
+}
+.hinge[data-end='start'] { inset-block-start: 0; }
+.hinge[data-end='end'] { inset-block-end: 0; }
+</style>
 </head>
 <body>
-  <main>
-    <header>
-      <span class="status">Design only · native folded cover evidence</span>
-      <h1>Choose the cover light surface</h1>
-      <p class="lede">The folded cover screen is rebuilt natively in the settled language: D14 layout, D36 current row, D38 tonal Open, D43 with no in-app volume, 1B transport, 24% seek, and the strict first-fitting mode arrangement. The dark cover inherits D41 and D42 and is evidence only. One choice remains: which light surface treatment the cover uses. It does not authorize production implementation.</p>
-    </header>
-
-    <section class="panel" aria-labelledby="fixed-title">
-      <h2 id="fixed-title">Fixed requirements</h2>
-      <div class="requirement-grid">
-        <article class="requirement">
-          <span class="code">Settled baseline</span>
-          <h3>D14 rebuilt, not repeated</h3>
-          <p>HTML-era cover-c kept rejected patterns: ordinal and play glyph, inline volume, icon-only Open, 16% seek, pre-1B circles. The native study carries the settled replacements instead.</p>
-        </article>
-        <article class="requirement">
-          <span class="code">D43</span>
-          <h3>no in-app volume</h3>
-          <p>No volume icon, slider, or popover appears on any capture. Volume belongs to hardware keys and the system media session.</p>
-        </article>
-        <article class="requirement">
-          <span class="code">Adaptive rule</span>
-          <h3>First fitting arrangement</h3>
-          <p>One row at 85% and 100% text, 2 × 2 at 150%, four rows at 200%. Measured from the native hierarchies, not assumed.</p>
-        </article>
-        <article class="requirement">
-          <span class="code">Native source</span>
-          <h3>Folded cover panel</h3>
-          <p>Opaque 1080 × 2424 physical px at 411 × 923dp behind real Android system bars and insets, Compose Material 3 1.5.0-alpha27, folded device state with the cover display active.</p>
-        </article>
-      </div>
-      <div class="fixed-note"><strong>Folded face:</strong> the captures show no hinge mark and no camera dot on the cover face, so the preview chassis draws bezel and corners only.</div>
-    </section>
-
-    <section class="panel" aria-labelledby="dark-title">
-      <h2 id="dark-title">Dark cover: inherited policy, evidence only</h2>
-      <p>These captures verify that the D41 and D42 inheritance holds on the cover: true-black window and list canvas, fixed <code>#0A0A0D</code> deck, and an Android-generated <code>surfaceContainerLow</code> current row with bold title. No choice is asked here.</p>
-      <div class="evidence-grid">
-        @@DARK_CARDS@@
-      </div>
-    </section>
-
-    <section class="panel" aria-labelledby="picker-decision-title">
-      <h2 id="picker-decision-title">Decision: cover subdirectory picker opened state</h2>
-      <p>Tapping the folder trigger opens the subdirectory picker. The first round's K1 back navigation read as discouraging and the K3 sheet placed the choice far from its trigger, so this round crosses two trigger shapes with two containers, grounded in the Material 3 archive: chips appear in sets and are rounded rectangles, so the lone pill chip is gone; menus are the specified temporary surface and open from fields or buttons; sheets are for secondary content only. Every prototype reuses the settled picker presentation: D28 adaptive letter rail, D31 wrapped plain-text names at 48dp with primary plus 2dp indicator on the current folder, no segmentation, nothing truncated. Dark surfaces follow D41 and D42; light follows D45.</p>
-      <div class="strategy-grid">
-        <article class="strategy-card">
-          <span class="code">P1</span>
-          <h3>Dropdown field plus floating menu panel</h3>
-          <p>An outlined text field in exposed-dropdown form (56dp container, floating Folder label on the outline, 4dp corners, trailing dropdown icon, 12dp side and 16dp icon padding per the text-field specs) carries the folder name; the picker opens as an inset menu container with 4dp corners over the list, ending above the deck. The menu keeps the baseline 4dp corner but exceeds the 280dp menu width cap because the D31 name wall needs the full panel.</p>
-          <ul class="role-list">
-            <li><strong>Pros:</strong> the field shape says choose one of many, matching the exposed dropdown lineage; the menu container is the specified temporary surface; the panel stays local to its trigger.</li>
-            <li><strong>Cons:</strong> a second surface floats over the list; the list itself disappears behind the panel.</li>
-          </ul>
-        </article>
-        <article class="strategy-card" data-recommended>
-          <span class="code">P2 · recommended</span>
-          <h3>Dropdown field plus in-slot picker</h3>
-          <p>The same outlined text-field trigger, but the picker replaces the list slot in place: rail and names occupy the list region while the deck stays visible; the caret flips to close.</p>
-          <ul class="role-list">
-            <li><strong>Pros:</strong> one calm surface with no floating layer; the trigger never moves; the deck and its state stay visible; no back step and no scrim.</li>
-            <li><strong>Cons:</strong> the track list is not visible while choosing.</li>
-          </ul>
-        </article>
-        <article class="strategy-card">
-          <span class="code">P3</span>
-          <h3>App-bar title plus floating menu panel</h3>
-          <p>The folder name sits as the top row's title with a caret; the menu panel is identical to P1.</p>
-          <ul class="role-list">
-            <li><strong>Pros:</strong> calmest top row; no extra container chrome.</li>
-            <li><strong>Cons:</strong> plain title text is a weak trigger affordance; keeps the floating panel's cons.</li>
-          </ul>
-        </article>
-        <article class="strategy-card">
-          <span class="code">P4</span>
-          <h3>App-bar title plus in-slot picker</h3>
-          <p>The title trigger with the in-slot container from P2.</p>
-          <ul class="role-list">
-            <li><strong>Pros:</strong> calmest chrome overall; local; deck visible.</li>
-            <li><strong>Cons:</strong> weakest trigger affordance of the four; list hidden while open.</li>
-          </ul>
-        </article>
-      </div>
-      <p class="ranking"><strong>Ranking: P2 &gt; P4 &gt; P1 &gt; P3.</strong> P2 beats P4 because the outlined field states the selection semantics that a bare title only implies, at the cost of one bordered container. P4 beats P1 because keeping one calm surface in the list slot avoids a floating layer over content the person was just reading. P1 beats P3 because the floating menu at least pairs with a trigger that looks like a control.</p>
-      <div class="evidence-grid">
-        @@PICKER_CARDS@@
-      </div>
-    </section>
-
-    <section class="panel" aria-labelledby="light-settled-title">
-      <h2 id="light-settled-title">Light surface: settled (D45)</h2>
-      <p>The cover light scheme is L3: one flat <code>surfaceContainerLowest</code> surface with <code>outlineVariant</code> hairlines at the top-row and deck seams. The user chose it because L1's ramp plus deck-seam hairline can make a selected first track read as detached from the list. The card below shows the settled light surface under the recommended picker prototype; every prototype inherits it.</p>
-      <div class="evidence-grid">
-        @@LIGHT_CARDS@@
-      </div>
-    </section>
-
-    <section class="panel" aria-labelledby="analysis-title">
-      <h2 id="analysis-title">Analysis</h2>
-      <div class="requirement-grid">
-        <article class="requirement"><h3>Current row on light</h3><p>Every light candidate keeps the D42 generated <code>surfaceContainerLow</code> current row plus bold title on the brightest list canvas, so the settled cue pair carries across schemes.</p></article>
-        <article class="requirement"><h3>Scale behavior</h3><p>The mode control follows the strict first-fitting rule at every preset: one row at 85% and 100%, 2 × 2 at 150%, four rows at 200%. The deck scrolls vertically if it must; nothing truncates.</p></article>
-        <article class="requirement"><h3>Dark inheritance</h3><p>The dark cover keeps the true-black window and list canvas and the fixed deck from D41, with Android-generated accents, foregrounds, and the current-row neutral from D42. The coral seed shows the inheritance under an uncontrolled palette.</p></article>
-        <article class="requirement"><h3>Evidence boundary</h3><p>Each capture relaunches the debug candidate after Android roles settle, so the rasters establish palette-dependent appearance, not live wallpaper refresh.</p></article>
-      </div>
-    </section>
-
-    <section class="panel" aria-labelledby="answer-title">
-      <h2 id="answer-title">Your decision</h2>
-      <form id="review-form">
-        <fieldset>
-          <legend>Choose the cover picker opened state</legend>
-          <label class="review-choice"><input type="radio" name="pickerOpenedState" value="P1 Dropdown field plus floating menu panel" required><span><strong>P1 Dropdown field plus floating menu panel.</strong> Pros: field states choose-one-of-many; menu is the specified temporary surface; local to its trigger. Cons: floating layer over the list.</span></label>
-          <label class="review-choice" data-recommended><input type="radio" name="pickerOpenedState" value="P2 Dropdown field plus in-slot picker" required><span><strong>P2 Dropdown field plus in-slot picker (Recommended).</strong> Pros: one calm surface, trigger stays put, deck visible, no back step. Cons: list hidden while choosing.</span></label>
-          <label class="review-choice"><input type="radio" name="pickerOpenedState" value="P3 App-bar title plus floating menu panel" required><span><strong>P3 App-bar title plus floating menu panel.</strong> Pros: calmest top row. Cons: weak trigger affordance plus the floating panel's cons.</span></label>
-          <label class="review-choice"><input type="radio" name="pickerOpenedState" value="P4 App-bar title plus in-slot picker" required><span><strong>P4 App-bar title plus in-slot picker.</strong> Pros: calmest chrome, local, deck visible. Cons: weakest trigger affordance.</span></label>
-        </fieldset>
-        <label for="other-corrections"><strong>What should change?</strong> Enter “None” if the selection is accepted.</label>
-        <textarea id="other-corrections" name="otherCorrections" required></textarea>
-        <div class="actions">
-          <button class="action-button" type="submit">Prepare answer</button>
-          <button class="action-button" data-secondary type="reset">Clear</button>
-        </div>
-      </form>
-      <div id="output" hidden aria-live="polite"></div>
-      <p class="fixed-note"><strong>Response path:</strong> reply in chat with the light code, for example <code>L1</code>, plus any correction.</p>
-    </section>
-  </main>
-
-  <dialog id="preview-dialog" aria-labelledby="preview-title">
-    <div class="dialog-shell">
-      <div class="dialog-toolbar">
-        <h2 id="preview-title">Native folded cover evidence</h2>
-        <button class="toolbar-button" id="zoom-out" type="button">Zoom out</button>
-        <button class="toolbar-button" id="zoom-in" type="button">Zoom in</button>
-        <button class="toolbar-button" id="fit" type="button">Fit</button>
-        <button class="toolbar-button" id="native" type="button">Native pixels</button>
-        <button class="toolbar-button" id="reset" type="button">Reset 100%</button>
-        <button class="toolbar-button" id="preview-close" type="button">Close preview</button>
-        <span id="preview-details">Source 1080 × 2424 physical px · design 411 × 923dp · 100%</span>
-      </div>
-      <div class="preview-stage" id="preview-stage">
-        <div class="device-shell" id="preview-device">
-          <div class="device-screen"><img id="preview-image" width="411" height="923" alt=""></div>
-        </div>
-      </div>
-    </div>
-  </dialog>
-
-  <script>
-    const dialog = document.querySelector('#preview-dialog');
-    const stage = document.querySelector('#preview-stage');
-    const device = document.querySelector('#preview-device');
-    const previewImage = document.querySelector('#preview-image');
-    const previewTitle = document.querySelector('#preview-title');
-    const previewDetails = document.querySelector('#preview-details');
-    const sourceWidth = 1080;
-    const sourceHeight = 2424;
-    const designWidth = 411;
-    const designHeight = 923;
-    const frameWidth = 466;
-    const frameHeight = 977;
-    const nativeScaleX = sourceWidth / designWidth;
-    const nativeScaleY = sourceHeight / designHeight;
-    const maximumUniformScale = Math.min(nativeScaleX, nativeScaleY);
-    let scaleX = 1;
-    let scaleY = 1;
-    let fitActive = false;
-    let returnTarget = null;
-
-    function updatePreviewDetails() {
-      if (!dialog.open) {
-        return;
-      }
-      const frame = device.getBoundingClientRect();
-      const screen = device.querySelector('.device-screen').getBoundingClientRect();
-      const scrolling = stage.scrollWidth > stage.clientWidth || stage.scrollHeight > stage.clientHeight
-        ? 'scrolling available'
-        : 'no scrolling needed';
-      const percent = Math.round(scaleX * 100);
-      const nextText = `Source 1080 × 2424 physical px · design 411 × 923dp · ${percent}% · ${Math.round(screen.width)} × ${Math.round(screen.height)} CSS px screen · ${Math.round(frame.width)} × ${Math.round(frame.height)} CSS px frame · ${scrolling}`;
-      if (previewDetails.textContent !== nextText) {
-        previewDetails.textContent = nextText;
-      }
-    }
-
-    function applyScale(nextScaleX, nextScaleY = nextScaleX) {
-      scaleX = Math.max(0.08, Math.min(nativeScaleX, nextScaleX));
-      scaleY = Math.max(0.08, Math.min(nativeScaleY, nextScaleY));
-      device.style.setProperty('--preview-scale-x', String(scaleX));
-      device.style.setProperty('--preview-scale-y', String(scaleY));
-      stage.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-      updatePreviewDetails();
-    }
-
-    function fitPreview() {
-      fitActive = true;
-      const availableWidth = Math.max(1, stage.clientWidth - 32);
-      const availableHeight = Math.max(1, stage.clientHeight - 32);
-      const nextScale = Math.min(1, availableWidth / frameWidth, availableHeight / frameHeight);
-      if (Math.abs(scaleX - nextScale) < 0.0001 && Math.abs(scaleY - nextScale) < 0.0001) {
-        updatePreviewDetails();
-        return;
-      }
-      applyScale(nextScale);
-    }
-
-    function settleFitPreview() {
-      fitPreview();
-      fitPreview();
-    }
-
-    document.querySelectorAll('.evidence-button').forEach((button) => {
-      button.addEventListener('click', () => {
-        returnTarget = button;
-        previewTitle.textContent = button.dataset.previewTitle;
-        previewImage.src = button.dataset.previewSrc;
-        previewImage.alt = button.querySelector('img').alt;
-        dialog.showModal();
-        settleFitPreview();
-      });
-    });
-
-    document.querySelector('#zoom-out').addEventListener('click', () => {
-      fitActive = false;
-      applyScale(Math.min(scaleX, scaleY) - 0.1);
-    });
-    document.querySelector('#zoom-in').addEventListener('click', () => {
-      fitActive = false;
-      applyScale(Math.min(maximumUniformScale, Math.max(scaleX, scaleY) + 0.1));
-    });
-    document.querySelector('#fit').addEventListener('click', settleFitPreview);
-    document.querySelector('#native').addEventListener('click', () => {
-      fitActive = false;
-      applyScale(nativeScaleX, nativeScaleY);
-    });
-    document.querySelector('#reset').addEventListener('click', () => {
-      fitActive = false;
-      applyScale(1);
-    });
-    document.querySelector('#preview-close').addEventListener('click', () => dialog.close());
-    dialog.addEventListener('cancel', (event) => {
-      event.preventDefault();
-      dialog.close();
-    });
-    dialog.addEventListener('close', () => {
-      fitActive = false;
-      if (returnTarget) {
-        setTimeout(() => returnTarget.focus(), 100);
-      }
-    });
-    const previewResizeObserver = new ResizeObserver(() => {
-      if (dialog.open && fitActive) {
-        fitPreview();
-      } else {
-        updatePreviewDetails();
-      }
-    });
-    previewResizeObserver.observe(stage);
-
-    const form = document.querySelector('#review-form');
-    const corrections = document.querySelector('#other-corrections');
-    const output = document.querySelector('#output');
-
-    function invalidatePreparedAnswer() {
-      output.hidden = true;
-    }
-
-    corrections.addEventListener('input', () => {
-      corrections.setCustomValidity('');
-      invalidatePreparedAnswer();
-    });
-    form.addEventListener('change', invalidatePreparedAnswer);
-    form.addEventListener('reset', () => {
-      corrections.setCustomValidity('');
-      output.hidden = true;
-    });
-
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      if (corrections.value.trim().length === 0) {
-        corrections.setCustomValidity('Enter a correction or “None”; spaces alone do not complete this field.');
-        corrections.reportValidity();
-        corrections.focus();
-        return;
-      }
-      corrections.setCustomValidity('');
-      const data = new FormData(form);
-      const preparedAnswer = [
-        `Cover picker opened state: ${data.get('pickerOpenedState')}`,
-        `Corrections: ${corrections.value.trim()}`,
-      ].join('\n');
-      output.textContent = preparedAnswer;
-      output.hidden = false;
-      output.scrollIntoView({ behavior: 'auto', block: 'nearest' });
-    });
-  </script>
+<main>
+<header>
+  <p class="muted">Music player · selected design review · Pixel 9 Pro Fold</p>
+  <h1>Search A, without a repeated results heading</h1>
+  <p>The user selected A (D51). On the unfolded panel, Search stays in the right pane and the bottom-left playback deck lifts above the keyboard. The folded cover has one full-width Search destination. The separate <code>Results for “cam”</code> heading is gone on both panels (D52); the query appears once in the Back/query/Clear header, with folder and track results directly beneath it.</p>
+  <div class="note"><p><strong>Design only, with a real-keyboard finding.</strong> On a disposable Fold, real split Gboard on the inner panel and full-width Gboard on the cover let the user type “cam” with the complete deck and results visible in settled 100% and 200% states. The original Fold AVD's floating Gboard still obscured the playback title at 200% and both cover results at 100%. A Gboard font-update banner on the disposable inner panel briefly clipped the final mode until dismissed. A remains the selected design, but these measured failures keep D50 open. The review images show a separate 300dp debug input method, not Gboard. The indexed sanitized real-Gboard captures predate the retained-browser correction; a later disposable-device check confirmed its settled split keyboard with the browser header and full deck, but did not reproduce the transient banner. The Gboard evidence is indexed at <code>package/music-player/design/evidence/gboard-geometry.md</code>. No production implementation was made.</p></div>
+  <p class="muted">Native source: unfolded 2076 × 2152 physical px (approximately 852 × 883dp) and cover 1080 × 2424px (approximately 443 × 994dp) at this AVD's 390dpi. Meaning-bearing app marks stay clear of the approximate 7.5mm physical crease at inner-panel x[983,1093); surfaces may cross it. Minimum informational padding remains open. Status notification content is replaced with a generic clock.</p>
+</header>
+<section aria-labelledby="states-title">
+  <h2 id="states-title">Inspect the selected design on both panels</h2>
+  <p><strong>Changed detail:</strong> The first folder result now starts where the redundant heading was. Inspect whether this transition from header to results reads clearly, especially at 200% text with the keyboard present. Switch to the empty state to see its explanation, which was not removed.</p>
+  <div class="controls">
+    <label for="state">Native state<select id="state"><option value="results">Results, keyboard closed, 100% text</option><option value="typing">Typing “cam”, 200% text</option><option value="empty">Empty Search, 100% text</option></select></label>
+    <label for="scheme">Screenshot scheme<select id="scheme"><option value="system">Follow system</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+  </div>
+  <div class="gallery">
+    <article class="capture" data-panel="inner">
+      <h2>Unfolded: tested bottom keyboard</h2>
+      <picture><img width="2076" height="2152" alt="Selected A: Search results on right and playback deck bottom-left"></picture>
+      <p>With this 300dp debug keyboard, the same Folders/Open browser stays above the lifted deck. Its shortened viewport clips part of the folder rail at 200% text; that small crop is accepted, rather than replacing the browser with a “Current folder” caption. The complete deck, query, and results remain visible. Floating Gboard and a real font-update banner are separate unresolved tests.</p>
+      <button type="button" data-preview="inner">Inspect unfolded at device size</button>
+    </article>
+    <article class="capture" data-panel="cover">
+      <h2>Folded: one Search page</h2>
+      <picture><img width="1080" height="2424" alt="Selected cover Search results directly under the integrated header"></picture>
+      <p>The same query/result relationship uses the full cover width. D50's unfolded-deck constraint does not impose an additional cover deck in Search.</p>
+      <button type="button" data-preview="cover">Inspect cover at device size</button>
+    </article>
+  </div>
+</section>
+<section aria-labelledby="response-title">
+  <h2 id="response-title">Correction path</h2>
+  <p>A is selected. Reply in this chat with any remaining visual correction; please identify the panel and state. The comparison with B and C is archived, not an active choice. Long result names, tall real keyboards, result-list scrolling and the exact minimum information clearance still need follow-up before production.</p>
+</section>
+</main>
+<dialog id="preview" aria-labelledby="preview-title">
+  <div class="dialog-bar">
+    <h2 id="preview-title">Selected Fold Search preview</h2>
+    <button id="fit" type="button">Fit</button>
+    <button id="reset" type="button">Reset 100%</button>
+    <button id="zoom-out" type="button">Zoom out</button>
+    <button id="zoom-in" type="button">Zoom in</button>
+    <button id="close-preview" type="button">Close</button>
+    <p id="scale-label" class="details muted" aria-live="polite"></p>
+  </div>
+  <div class="preview-stage" id="preview-stage" tabindex="0" role="region" aria-label="Scrollable native Fold screen at physical source resolution"><div class="device" id="device" data-panel="inner"><div class="device-screen"><img id="preview-image" alt="Selected Search screen" width="2076" height="2152"></div><span class="camera" aria-hidden="true"></span><span class="hinge" data-end="start" aria-hidden="true"></span><span class="hinge" data-end="end" aria-hidden="true"></span></div></div>
+</dialog>
+<script>
+const captures = __SELECTED_CAPTURES__;
+const state = document.querySelector('#state');
+const scheme = document.querySelector('#scheme');
+const media = window.matchMedia('(prefers-color-scheme: dark)');
+const dialog = document.querySelector('#preview');
+const device = document.querySelector('#device');
+const stage = document.querySelector('#preview-stage');
+const previewImage = document.querySelector('#preview-image');
+const previewTitle = document.querySelector('#preview-title');
+const scaleLabel = document.querySelector('#scale-label');
+let selectedPanel = 'inner';
+let scale = 1;
+let returnTarget;
+function currentScheme() { return scheme.value === 'system' ? (media.matches ? 'dark' : 'light') : scheme.value; }
+function sourceFor(panel) { return captures[panel][state.value][currentScheme()]; }
+function render() {
+  document.querySelectorAll('.capture').forEach(card => {
+    card.querySelector('img').src = sourceFor(card.dataset.panel);
+  });
+  if (dialog.open) updatePreview();
+}
+function geometry() {
+  return device.dataset.panel === 'cover' ?
+    { width: 443.0769, height: 994.4615, frameWidth: 502.4, frameHeight: 1053.2, pixels: [1080, 2424] } :
+    { width: 852, height: 883, frameWidth: 907, frameHeight: 937, pixels: [2076, 2152] };
+}
+function showScale() {
+  device.style.setProperty('--scale', scale);
+  const panel = geometry();
+  scaleLabel.textContent = `Source ${panel.pixels[0]} × ${panel.pixels[1]} physical px · approximately ${Math.round(panel.width)} × ${Math.round(panel.height)}dp at 390dpi · ${Math.round(scale * 100)}% of design dp · reset returns to 100%`;
+}
+function updatePreview() {
+  const panel = geometry();
+  previewImage.src = sourceFor(selectedPanel);
+  previewImage.width = panel.pixels[0];
+  previewImage.height = panel.pixels[1];
+  previewImage.alt = previewTitle.textContent;
+  showScale();
+}
+state.addEventListener('change', render);
+scheme.addEventListener('change', render);
+media.addEventListener('change', () => { if (scheme.value === 'system') render(); });
+document.querySelectorAll('[data-preview]').forEach(button => {
+  button.addEventListener('click', async () => {
+    returnTarget = button;
+    selectedPanel = button.dataset.preview;
+    device.dataset.panel = selectedPanel;
+    previewTitle.textContent = `${selectedPanel === 'cover' ? 'Folded cover' : 'Unfolded inner'} · ${state.options[state.selectedIndex].textContent} · ${currentScheme()}`;
+    updatePreview();
+    await previewImage.decode();
+    scale = 1;
+    dialog.showModal();
+    showScale();
+    stage.scrollTop = 0;
+    stage.scrollLeft = 0;
+    document.querySelector('#close-preview').focus();
+  });
+});
+document.querySelector('#fit').addEventListener('click', () => {
+  const panel = geometry();
+  scale = Math.min(1, (stage.clientWidth - 32) / panel.frameWidth, (stage.clientHeight - 32) / panel.frameHeight);
+  showScale();
+});
+document.querySelector('#reset').addEventListener('click', () => { scale = 1; showScale(); });
+document.querySelector('#zoom-out').addEventListener('click', () => { scale = Math.max(0.25, scale - 0.25); showScale(); });
+document.querySelector('#zoom-in').addEventListener('click', () => { scale = Math.min(2, scale + 0.25); showScale(); });
+document.querySelector('#close-preview').addEventListener('click', () => dialog.close());
+dialog.addEventListener('close', () => returnTarget?.focus());
+render();
+</script>
 </body>
 </html>

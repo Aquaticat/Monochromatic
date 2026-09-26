@@ -35,4 +35,4 @@ export {
   isContinuationLine,
   isDiagnosticLine,
   isNodeModulesDiagnostic,
-} from './tsc-filter.ts';
+} from './tsc-output-filter.ts';

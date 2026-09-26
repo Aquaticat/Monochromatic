@@ -676,6 +676,276 @@ guidelines pages in the local archive (`~/Downloads/m3.material.io`, mirrored in
 its reason.
  Adjacent component pages are not evidence for the component being drawn.
 
+## 5o. A native raster was mistaken for Material 3 visual evidence
+
+The desktop command-bar study used real Slint captures and a validated offline form,
+but drew a generic outlined palette rather than MD3's fully rounded 56dp Search bar,
+28dp docked Search view,
+ official icons,
+ BodyLarge typography and list treatment.
+The user rejected the comparison at sight.
+ Passing screenshot dimensions,
+ color
+samples and Axe on the questionnaire did not establish component lineage.
+
+**The rule.**
+ Before presenting a Material-based visual round,
+ inspect its own local
+archive images and tokens,
+ apply the visible anatomy to the native prototype,
+ and
+compare the rendered component with that reference at the same logical scale.
+Record each intentional platform adaptation and keep prototype renderability,
+form accessibility,
+ and actual visual fidelity as separate verification claims.
+
+## 5p. Desktop mock widths displaced the actual target screens
+
+The Search-page study used Slint-native screenshots at 360 × 640,
+ 480 × 600 and
+1100 × 640px because the desktop app exposed a 480 × 600 preferred size.
+ The user
+corrected the premise:
+ all visual decisions follow the Pixel 9 Pro Fold cover and
+unfolded panels,
+ with desktop inheriting even when that is awkward.
+ The previous
+rasters proved Slint drawing at invented window sizes,
+ not the device result.
+
+**The rule.**
+ For this music player,
+ compose the visual review from native Android
+captures at the measured cover and inner panel physical resolution in both schemes.
+Keep desktop porting and window-size choices subordinate to those visual decisions;
+never relabel a desktop-native screenshot as target-device evidence.
+
+## 5q. The first connector correction banned too much
+
+The first unfolded Compose Search page used `fillMaxWidth()` for its header and
+`ListItem`s.
+ Their surfaces,
+ divider and row hit regions crossed the centred
+24dp connector.
+ I treated the user's objection as a ban on **all app-owned
+pixels and hit regions**,
+ without distinguishing readable information from
+structural paint.
+ The resulting all-black/all-white strip rule forced a
+left-header/right-results split that the user rejected.
+ The user then
+clarified that connector "content" means informational material such as text.
+
+**The corrected rule.**
+ Inspect where readable text,
+ results,
+ labels and
+meaning-bearing marks actually appear.
+ Such information must stay clear of
+the connector;
+ background,
+ input/row surfaces,
+ dividers and hit regions can
+cross it.
+ Do not derive a two-pane Search composition or a mandatory strip
+color from E2.
+ The original full-width mock is not thereby accepted;
+ it
+still needs a compositional review and native evidence under the corrected
+rule.
+ The old full-strip pixel guard and its successful red controls remain
+historical tests of a superseded constraint,
+ not product acceptance criteria.
+
+## 5r. The withdrawn Fold study passed mechanical checks only
+
+The corrected capture contains opaque 1080 × 2424px cover and 2076 × 2152px
+inner screenshots of the player and Search page in both schemes,
+ plus paired
+hierarchies,
+ four Android role records and per-frame state metadata.
+ Direct
+`wm density` and `dumpsys display` probes corrected the cover's unmeasured
+411 × 923dp estimate:
+ this AVD uses 390dpi on **both** panels,
+ so its cover is
+approximately 443 × 994dp.
+ The new capture asserts density,
+ font scale,
+mode,
+ panel and frame dimensions before recording metadata.
+ Its connector guard
+passed all unfolded scenes at 100% and player/results at 200%,
+ checking
+semantic/clickable bounds and **every RGBA pixel** in physical x `[1009,1068)`,
+y `[136,2074)` against D41 black or D34 white.
+ These checks enforced the
+obsolete blanket-strip rule,
+ not the clarified E2.
+ Separate red controls in a
+disposable copy rejected a crossing target,
+ a dark tonal band and one
+near-white pixel;
+ they establish only that the old validator could detect those
+changes,
+ not that the design was appropriate.
+
+The inner 200% player's last mode target is only 94px visible in the initial
+frame (`[73,1980][936,2074]`),
+ so that frame alone cannot prove 48dp
+reachability.
+ A native swipe in its independently scrollable deck moved it to
+`[73,1904][936,2035]`,
+ showing the full 131px target and border above the
+navigation inset that starts at y=2074.
+ The scrolled PNG/XML is kept as
+supplementary evidence;
+ the right track list scrolls independently.
+ A static
+screenshot does not establish Search navigation,
+ focus,
+ TalkBack or result
+execution.
+
+The now-withdrawn self-contained review,
+ archived at `questions/archive/search-rejected-fold-review.html`,
+paired both native panels with measured chassis frames,
+ shows the viewer's system light/dark scheme,
+ starts at
+the player Search target,
+ exercises Back and canned query/unavailable states,
+and ends in free-text correction.
+ Browser interaction checks exercised both
+panel paths,
+ preview fit/reset/zoom/close,
+ top reset when switching scenes,
+return focus,
+ keyboard panning/Escape,
+ and form output.
+ An online fetch to a
+local test endpoint succeeded;
+ with browser offline mode enabled,
+ the same
+fetch failed while the self-contained file reloaded and every embedded image
+decoded.
+ Axe reported no violations in either chrome scheme or in the open
+preview dialog after its scrollable region gained keyboard focus.
+ The preview
+frame retained measured pixel geometry at a 20px root font;
+ the browser
+reported no console or page errors.
+ No KWin automation was used.
+
+## 5s. Connector compliance was mistaken for an acceptable Search composition
+
+The user rejected the unfolded Search page as obviously bad.
+ This correction
+applies to the **left-header/right-results composition**,
+ not to D47's separate
+page,
+ D48's single header,
+ or E2's restriction on information in the connector.
+ The inspected native
+`questions/render/fold-search-inner-open-results-light-s100.png` shows a tonal
+Back/query/Clear header above a completely blank left body,
+ while the results
+heading and two rows sit alone in the right pane.
+ The header visually promises
+content under it,
+ but governs empty space instead.
+ The right pane carries all
+result information at half the screen width;
+ in the 200% capture its supporting
+text wraps while the left body is unused.
+ The empty state makes the split more
+obvious:
+ the query bounds `[156,166][970,283]` are separated from the
+instruction bounds `[1351,1184][1793,1253]` horizontally and vertically
+(`questions/evidence/fold-search-inner-open-empty-dark-s100.xml`).
+
+I saw these screenshots and still called the page ready.
+ I treated E2 as if it
+required the header on one side and content on the other,
+ then verified that
+invented layout for connector pixels,
+ semantics,
+ density,
+ accessibility of
+the HTML wrapper and screenshot provenance.
+ Those checks did not measure
+whether the query and its content read as one page.
+ The failure was not a
+missing screenshot;
+ it was failing to make a visual judgment from the screenshot
+before asking the user to correct it.
+
+**The package-specific gate.**
+ After geometric and accessibility checks,
+ inspect
+every target-panel state as a composition:
+ which region the header appears to
+govern,
+ whether instructions and results visibly belong to their query,
+ whether
+space is needlessly reserved while content is constrained,
+ and what changes at
+200% text.
+ Reject a candidate that fails this review before labeling it
+"active" or requesting user feedback.
+ Keeping informative material off the connector is a boundary constraint,
+not a mandate to split Search into two independent halves.
+ Preserve
+the rejected images as evidence,
+ not as the current design.
+
+## 5t. A physical dent was confused with a dp pane spacer
+
+I first used M3's 24dp expanded-pane spacer as if it were the Pixel Fold's
+physical crease,
+ then banned every painted pixel and hit region from that
+strip.
+ The user clarified that only **informational material** needs to
+clear the dent;
+ decoration,
+ padding,
+ field/list surfaces and hit regions
+can span it.
+ The player's earlier fixed 24dp empty gap and fixed 414dp panes
+are not protected decisions.
+ The user's rule is
+`max(min_padding, crease_width)` for **information clearance**,
+ not a
+mandatory visual gutter between halves.
+
+The user initially estimated 10mm,
+ then corrected the visible dent to
+**about 7.5mm**.
+ With the inner display's approximately 141.08mm active
+width,
+ that is roughly **110 physical px** centered at x 1038 on the
+2076px panel,
+ or x `[983,1093)`px.
+ At the current AVD's 390dpi it converts
+to about 45dp,
+ but dp changes with Android display scaling while the dent
+does not.
+ Use physical millimeters or panel pixels for the invariant and
+convert only at runtime for Compose layout.
+ The emulator's zero-width hinge
+sensor area measures occlusion,
+ not the visible dent.
+ Do not borrow the
+unrelated 12dp mode-control text-padding floor as `min_padding` here.
+
+I initially praised the user's YouTube thumbnail timestamp/title example as
+safe near-crease placement.
+ In the native screenshot those glyphs reach
+within the approximate 7.5mm band;
+ it is a **negative** precedent for
+readable material on the dent.
+ Inspect the center at native physical pixels
+rather than assuming that a familiar app has satisfied this product rule.
+
 ## Standing standards for this project
 
 1. **EVERY question form ends with a free-text field.

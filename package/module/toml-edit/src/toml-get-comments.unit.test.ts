@@ -13,7 +13,7 @@ import {
 import {
   parseTomlEdit,
   tomlGetComments,
-} from '../dist/final/node/index.mjs';
+} from '@monochromatic-dev/module-toml-edit';
 
 await describe({
   name: tomlGetComments.name,

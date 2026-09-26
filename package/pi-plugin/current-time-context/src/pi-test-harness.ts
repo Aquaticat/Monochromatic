@@ -209,8 +209,17 @@ function createBeforeAgentStartEvent(): BeforeAgentStartEvent {
     type: 'before_agent_start',
     prompt: 'Reply with ok.',
     systemPrompt: '',
+    // Pi 0.87 hands handlers collection-complete options; `normalizeBuildSystemPromptOptions` is not exported.
     systemPromptOptions: {
       cwd: process.cwd(),
+      selectedTools: [],
+      toolSnippets: {},
+      toolGuidelines: {},
+      promptGuidelines: [],
+      appendSystemPrompt: '',
+      sections: {},
+      contextFiles: [],
+      skills: [],
     },
   } satisfies BeforeAgentStartEvent;
 }

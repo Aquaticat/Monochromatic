@@ -114,9 +114,16 @@ DIALECT:\n\
     pattern matching the empty string.\n\
 \n\
 OUTPUT:\n\
-    PATH:LINE rule=<token>    (columnless; matched substring is NEVER\n\
-    printed). The token is the rule's section name (baseline rules use\n\
-    their betterleaks id); unnamed legacy rules use the 0-based index.\n\
+    PATH:LINE rule=<token>         Content finding (columnless).\n\
+    PATH:name:SEGMENT rule=<token>  Pathname finding (columnless); SEGMENT\n\
+    counts directory names and filename from 1. Each name is matched\n\
+    separately, always on, with no flag to disable pathname scanning.\n\
+    Every offending pathname segment is replaced with [REDACTED] in all\n\
+    findings; matched substrings are NEVER printed. The token is the\n\
+    rule's section name (baseline uses betterleaks id); unnamed legacy\n\
+    rules use the 0-based index. --name-path PATH pairs a logical name\n\
+    with each positional content file, in order; these findings carry\n\
+    input=N to identify the 0-based operand without exposing its name.\n\
 \n\
 See README.md for the full dialect, set-algebra examples, and CI integration.\n\
 ";
@@ -235,6 +242,14 @@ pub struct Cli {
         help = "Also scan with the embedded betterleaks-ported baseline rules"
     )]
     pub builtin_rules: bool,
+
+    /// Logical repository path for each positional file, in matching order.
+    ///
+    /// Allows clients scanning historical candidate bytes from temporary files
+    /// to name-scan the actual path without exposing their temporary path.
+    /// Each occurrence pairs with one positional file; no `--all` combination.
+    #[arg(long = "name-path", value_name = "PATH", allow_hyphen_values = true)]
+    pub name_paths: Vec<String>,
 
     /// Files to scan when `--all` is absent.
     // What:     `Vec<String>` is an owned, growable array of owned UTF-8 strings.

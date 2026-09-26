@@ -13,6 +13,8 @@
     "typescript": "catalog:"
   },
   "devDependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type": "workspace:*",
     "@monochromatic-dev/oxlint-plugin-shared": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
     "@monochromatic-dev/oxlint-plugin-test-support": "workspace:*",

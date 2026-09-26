@@ -251,7 +251,8 @@ a conflict blocks with exit `2` while its unmerged state remains private.
 Explicit-path mode builds the intended tree from `HEAD` plus selected worktree paths,
 then reconciles only those landed entries into a copy of the original index.
 Explicit `--no-only` mode patches a copy of the complete real index.
-The completed index is installed atomically only after real Git succeeds,
+For a commit that changes the tree,
+ the completed index is installed atomically only after real Git succeeds,
 so policy failures,
 patch conflicts,
 and failed commit hooks leave real index and worktree bytes unchanged by cli-git.
@@ -274,6 +275,16 @@ Successful corrections emit only a `fix-summary` JSONL event.
 At default warning severity,
 ordinary `git add` reports noncanonical final newlines and continues;
 the later patch-capable commit transaction normalizes the exact bytes it commits.
+For selected final-newline corrections whose staged bytes match their worktree copy,
+the wrapper also synchronizes that worktree copy after the commit lands.
+Partial staging is preserved;
+edits detected before installation are kept and reported.
+A noncooperating filesystem writer can still race the final pathname replacement.
+When the settled tree is identical to `HEAD`,
+the wrapper reconciles eligible worktree and index copies,
+reports `commit-normalization/no-change` with exit `1`,
+and does not create an empty commit unless explicitly requested.
+The wrapper applies this behavior in repositories outside Monochromatic too.
 An explicit error override restores blocking behavior.
 
 A durable no-follow transaction directory retains exact original and prepared index snapshots,
@@ -311,6 +322,13 @@ or filesystem identity produces exit `2` without discarding evidence.
 Do not remove the retained directory merely to silence that diagnostic;
 the preserved snapshots and journal are the evidence needed to distinguish an unlanded commit from a landed commit
 whose index installation was interrupted.
+If setup stopped before writing a journal,
+an empty directory has no snapshots to recover,
+but its emptiness does not prove its owner has exited (including when another index location is in use).
+The wrapper preserves it and reports an empty pre-journal diagnostic rather than deleting a possibly active transaction.
+Exclusive index-lock acquisition precedes recovery-directory creation,
+so `EEXIST` cannot leave a new empty directory.
+A preexisting empty directory still fails closed until its ownership has been checked.
 
 Use the namespaced cli-git management commands:
 

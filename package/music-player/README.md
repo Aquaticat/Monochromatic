@@ -335,10 +335,21 @@ filesystem-first model.
  and
 album art remain outside the product direction.
 
-The next navigation primitive is a global,
- track-only search over the already loaded tree.
-Pressing `Control` twice will invoke it.
- Search is not implemented in the current interfaces.
+The planned Search button opens a separate destination with one integrated
+Back/query/Clear header (D47/D48).
+ Folder and track results appear directly
+beneath it without repeating the query as a results heading (D52).
+ On the
+unfolded Pixel 9 Pro Fold,
+ the selected A composition keeps the playback
+deck bottom-left and lifts it above the keyboard while Search occupies the
+right pane (D50/D51).
+ The folded cover has one full-width Search page;
+desktop inherits the Fold's visual direction (D49).
+ `Ctrl+F` remains reserved
+for Search,
+ but the former command-bar global hotkey was not transferred.
+Search is not implemented in the current interfaces.
 
 The scale targets are independent maxima,
  not one combined fixture:

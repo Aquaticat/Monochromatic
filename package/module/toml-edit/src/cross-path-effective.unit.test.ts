@@ -18,7 +18,7 @@ import {
   tomlDelete,
   tomlGetValue,
   tomlSet,
-} from '../dist/final/node/index.mjs';
+} from '@monochromatic-dev/module-toml-edit';
 
 await describe({
   name: 'cross-path effective-value resolution',

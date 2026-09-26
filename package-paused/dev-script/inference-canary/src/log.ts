@@ -13,13 +13,10 @@
  * ```
  */
 import {
-  initPromise,
   logger,
   tagged,
   type Logger,
 } from '@monochromatic-dev/module-logger/ts';
-
-await initPromise;
 
 /**
  * Root tagged logger for all inference canary subsystems.

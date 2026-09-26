@@ -122,6 +122,44 @@ await describe({
             teardown(fixtures,);
           },
         },),
+        it({
+          name: 'built CLI entry runs tsc and exits non-zero on project errors',
+          fn: async () => {
+            const fixtures = setup();
+            const { testDir, } = fixtures;
+            // mise `lint:types` dispatches the built entry; a shared-chunk main guard once made it a silent no-op.
+            const builtCliPath = join(
+              import.meta.dirname,
+              '..',
+              'dist',
+              'final',
+              'node',
+              'tsc-filter.mjs',
+            );
+            const tsconfig = join(testDir, 'tsconfig.json',);
+            writeFileSync(tsconfig, JSON.stringify({
+              compilerOptions: { strict: true, noEmit: true, },
+              include: ['built-entry-error.ts',],
+            },),);
+            writeFileSync(
+              join(testDir, 'built-entry-error.ts',),
+              'const x: number = "not a number";\n',
+            );
+
+            try {
+              await execAsync(`node ${builtCliPath} --noEmit -p ${tsconfig}`,);
+              // Should not reach here; built entry must run tsc and fail on the type error
+              expect(true,).toBe(false,);
+            }
+            catch (error: unknown) {
+              const execError = error as { code: number; stdout: string; };
+              expect(execError.code,).toBeGreaterThan(0,);
+              expect(execError.stdout,).toContain('error TS',);
+            }
+
+            teardown(fixtures,);
+          },
+        },),
       ],
     },),
   ],

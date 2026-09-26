@@ -47,23 +47,102 @@ prepared a visible answer and directed the user to reply in chat;
  it intentionally has no
 clipboard API or copy button.
 
-The active round re-verifies the cover screen natively with D14 cover-c as the HTML-era
-baseline and iterates the subdirectory picker's opened state as four prototypes: P1
-outlined text-field trigger plus floating menu panel, P2 the same field with an in-slot
-picker that keeps the deck visible, P3 app-bar title trigger plus menu panel, P4 title
-plus in-slot picker.
- The trigger is an MD3 outlined text field in exposed-dropdown form
-(56dp container, floating Folder label, 4dp corners, spec paddings); the menu panel keeps
-the baseline 4dp corner but exceeds the 280dp menu width cap because the D31 name wall
-needs the full panel, a deviation disclosed in the form.
- The light surface is settled by
-D45 (L3 flat with hairlines at both seams).
- The round awaits one P code.
- The live
-design backlog,
- its order,
- and the developer-owned items live in `open-questions.md`
-section 0b.
+The folded-cover screen round compared four native subdirectory-picker prototypes:
+P1 outlined text field plus floating menu panel, P2 the same field plus in-slot picker,
+P3 app-bar title plus floating panel, and P4 title plus in-slot picker.
+ D46 selects P4
+as a **temporary pre-1.x decision**: it is the current design baseline, but the user
+believes a better picker exists.
+ Post-decision native P4 captures now cover dark at 200% and accepted L3 light at
+100% and 200%, in addition to dark at 100%; the opened-state visuals fit without mode
+border clipping.
+ A debug-only native interaction study verifies title open/close, Back, same-folder
+dismissal, and keyboard focus retained after Back at 200%; TalkBack focus remains
+unmeasured.
+ The light surface itself is settled by D45 (flat with hairlines
+at both seams).
+ P4 remains provisional and a better picker may be explored before 1.x,
+ without a promised replacement.
+
+D47 replaces the command-bar presentation with a **Search button opening a separate
+page**.
+ D48 merges Back,
+ input and Clear into one baseline MD3 Search header.
+D49 corrects the design target:
+ every platform follows the Pixel 9 Pro Fold cover
+(1080 × 2424px) and unfolded inner display (2076 × 2152px).
+ This AVD reports
+390dpi on both panels,
+ so its native captures represent approximately 443 ×
+994dp on the cover and 852 × 883dp on the inner display.
+ The older 411 × 923dp
+cover estimate was not measured on the AVD.
+ The earlier 360,
+ 480 and 1100px desktop Slint scenes are
+not design evidence for these screens.
+ The native Compose Search study captured both Fold panels,
+ but its unfolded
+page placed the Back/query/Clear header above an empty left pane and isolated
+results in the right pane.
+ The user rejected that composition.
+The withdrawn form and its captures remain archived at
+`questions/archive/search-rejected-fold-review.html`.
+ Its empty connector
+passed a superseded geometric guard but did not make the page usable.
+D50 additionally requires the unfolded playback deck to stay visible during
+Search,
+ including with a keyboard in view.
+ The user selected A (D51):
+ Search stays on the unfolded right,
+ and the
+bottom-left playback deck rises above the keyboard while typing.
+D52 removes the redundant positive-results `Results for “cam”` heading on
+both panels.
+ The former three-way matrix remains at
+`questions/archive/search-three-way-before-a.html`.
+`questions/current.html` now shows only the selected design in light/dark
+at 100% and 200% text.
+The corrected unfolded typing captures keep the **same folder browser** above
+the lifted deck;
+the user accepts a little crop of that browser in short keyboard viewports
+and rejected a substitute `Current folder` caption.
+A system-managed 300dp debug keyboard verified bounded bottom-keyboard
+occlusion and input routing;
+it is not Gboard.
+The linked older real-Gboard PNGs predate this browser correction.
+A later real floating Gboard at 200% text obscured part of the deck title,
+so D50 is not fully met in this tested mode.
+ On the cover at 100% text,
+the floating keyboard obscured both matching result labels while typing.
+ The user's A selection is unchanged.
+A disposable Fold then verified real split inner and full-width cover Gboard
+at 100% and 200% text, with the deck and cover results visible in settled
+states.
+Its Gboard font-update banner briefly clipped the final inner mode;
+D50 remains unmet across the measured floating and transient states.
+The original AVD's active Gboard was updated versionCode `175981944`,
+not the preloaded `175753756`;
+updating the disposable Gboard to that same build did not reproduce the
+floating layout.
+`package/music-player/design/evidence/gboard-geometry.md` indexes sanitized real-keyboard captures
+and measured passing/failing states.
+Selection does not authorize production implementation.
+ Desktop implementation inherits
+the Fold visual choices even if its own proportions would suggest a different layout.
+The rejected command review remains at `questions/archive/command-igr-rejected.html`.
+D21's configurable global hotkey and extra Settings row belonged to the command bar;
+they do not silently move to Search.
+ D25's Ctrl+F reservation remains pending the
+whole keyboard-map pass.
+ Search result actions/ranking,
+ tall-keyboard fit,
+ and final empty/error
+behavior remain to be designed;
+ the
+canned captures are a design review,
+ not a running search index.
+ The live backlog and developer-owned items are in
+`open-questions.md` section 0b.
 
 The preceding accessibility review settled pane-by-pane TalkBack traversal (F1) and
 structured current-track speech (S1).

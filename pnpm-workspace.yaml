@@ -75,6 +75,8 @@ catalog:
   'css-tree': '>=3.2.1'
   'csstype': '>=3.2.3'
   'decircular': '>=1.0.0'
+  # deepmerge-ts.fuzz subject under test; not a runtime dependency anywhere.
+  'deepmerge-ts': '>=8.0.2'
   'dot-prop': '>=10.2.0'
   'electron': '>=43.4.1'
   'execa': '>=10.0.1'
@@ -166,7 +168,12 @@ hoistWorkspacePackages: false
 lockfileIncludeTarballUrl: true
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
-  - '@earendil-works/pi-*'
+  # Pi releases in lockstep with its scope siblings: each pi-* release requires
+  # the same-day chord (`^<same version>`). Excluding only part of the scope
+  # makes every update within the cutoff fail on the rest, so the whole
+  # publisher scope is trusted (user-approved 2026-09-22). See
+  # doc/troubleshooting/pnpm-update-no-save-strict-release-age.md.
+  - '@earendil-works/*'
   - 'cidr-tools@12.1.3'
   - 'ip-bigint@9.0.7'
 minimumReleaseAgeIgnoreMissingTime: false
@@ -364,6 +371,14 @@ packageExtensions:
   mitata:
     optionalDependencies:
       '@mitata/counters': 'catalog:'
+  # @luma.gl/gpgpu 9.4.2 (pulled in by @deck.gl/core 9.4) declares
+  # @luma.gl/webgpu as a required peer, but its dist imports only
+  # @luma.gl/{core,engine,shadertools}. deps-cube renders with WebGL, so mark the
+  # peer optional instead of installing an unused backend.
+  '@luma.gl/gpgpu':
+    peerDependenciesMeta:
+      '@luma.gl/webgpu':
+        optional: true
 packageImportMethod: clone-or-copy
 packages:
   - 'package/*/*'

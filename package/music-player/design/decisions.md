@@ -635,14 +635,84 @@ borderless text index (unf-e) — see open-questions.md #1.
 See device-metrics.md for real dimensions.
  The hinge is **vertical** in portrait.
 
-### E2. Nothing interactive crosses the crease (revised 2026-09-04)
-A **24dp spacer** runs down the centre of the unfolded 852dp expanded layout.
- The
-supplied Material breakpoint guidance requires a 24dp spacer between expanded panes.
-The spacer remains visually centred and contains nothing interactive.
- This invalidated
-an earlier design that put the play button directly on the crease and supersedes the
-older 16dp gutter.
+### E2. Keep information off the fold connector (clarified 2026-09-23)
+The user corrected their initial 10mm estimate to a **visible crease width
+of about 7.5mm for this design**.
+ At the panel's approximately 141.08mm
+active width,
+ this is about **110 physical px** of the 2076px inner display,
+centered at x 1038:
+ approximately x `[983,1093)`px.
+ These are approximate
+physical bounds because the published 8-inch diagonal and the user's dent
+width are approximate.
+
+Where information is arranged on opposing sides of the fold,
+ its clearance
+is **`max(min_padding, crease_width)`** after both terms are expressed in the
+same physical coordinate system.
+ This is **not** a required empty surface
+gap between two panes.
+ Text,
+ labels and other informative marks stay out;
+backgrounds,
+ borders,
+ padding,
+ field/row containers and hit regions may
+span the center.
+ The former fixed 24dp player spacer and fixed 414dp
+pane geometry do not satisfy this rule.
+ D34 white and D41 black remain
+accepted player color treatments where those surfaces are used,
+ not a
+mandated 24dp blank stripe.
+
+Do **not** store `crease_width` as a fixed dp value:
+ dp varies with Android
+display scaling while the physical dent does not.
+ The current AVD density
+of 390dpi would convert about 110px to about 45dp,
+ but that is only a
+runtime conversion for this setting,
+ not the design constant.
+ The AVD's
+zero-width hinge sensor area describes emulated occlusion,
+ not the user's
+visible 7.5mm dent.
+ No other page is required to become two panes.
+
+Here "content" means **information the user must perceive**:
+ keep readable
+text,
+ result data,
+ labels and other meaning-bearing marks visibly clear of the
+crease itself.
+ A continuous page or input surface,
+ row background,
+ divider
+or interaction region may cross the centre.
+ A hit region crossing it does
+not by itself violate E2.
+ Do not infer a fixed 24dp text exclusion from
+the player's spacer,
+ force every surface to its black/white colors,
+ or
+strand a Search query and results in different halves to clear the crease.
+Judge information placement against the physical crease band in native
+panel-pixel captures,
+ then convert only the current layout's coordinates to
+dp for Compose.
+ I
+initially read the user's YouTube timestamp/title observation as praise;
+that was wrong.
+ The captured characters approach the center closely enough
+to fall within the approximate 7.5mm band,
+ so YouTube is a **negative
+near-crease example** for this player's text placement.
+ Android's system-owned bars are outside
+this app-content requirement.
+ The earlier "no app-owned paint or hit region"
+version of E2 was an erroneous interpretation and is withdrawn.
 
 ### E3. Tabletop posture = candidate tabletop-c
 The user’s own proposal,
@@ -963,8 +1033,17 @@ Every rebuilt file **pins its scheme inline on its own root** — the host sets
 
 ### D34. Light uses 1c with white pane spacers and a visible rail line
 Use the `1c` tonal structure.
- The 24dp vertical spacer between panes and the 16dp
-horizontal divider between the folder picker and transport are white.
+ The vertical spacer between panes and the
+16dp horizontal divider between the folder picker and transport are white.
+The original 24dp vertical width does not establish safe placement of
+information across the user's 7.5mm crease.
+ E2 applies
+`max(min_padding, crease_width)` to informative material in physical space;
+borders,
+ backgrounds and padding may cross.
+ D34 settles spacer color where
+that surface is used,
+ not a mandatory blank width.
  Keep the 1dp
 letter-rail boundary in dynamic `outlineVariant`;
  keep pane and track-row outlines
@@ -1187,6 +1266,280 @@ the seams.
 **Rejected.**
  L1 ramp with a deck-seam hairline,
  and L2 pure ramp without hairlines.
+
+### D46. Cover picker opened state = P4, temporary pre-1.x decision (2026-09-23)
+Use P4 as the current design baseline for the folded cover screen:
+ the app-bar folder title
+and caret open the picker in the list slot,
+ leaving the deck visible.
+ This is explicitly a
+**temporary pre-1.x decision**, not final acceptance of the picker interaction or a
+production implementation authorization.
+ The user chose P4 while believing a better
+solution exists;
+ keep a dedicated improvement question open before 1.x rather than
+representing P4 as the ideal solution.
+
+**Why.**
+ P4 is the user's selected working variant from the P1 to P4 native comparison.
+The form's P4 evidence covers dark at 100% text;
+ its dark 200%, L3 light 100%, and L3
+light 200% states were not captured.
+ The dark 200% and L3 light 100% captures depict
+P2; no L3 light 200% picker capture exists.
+Check the selected variant in those states before claiming corresponding visual coverage;
+validate focus and return behavior through native interaction, not screenshots alone.
+ The comparison's
+recommendation was P2;
+ the user's P4 selection takes precedence.
+
+**Post-decision visual check (2026-09-23).**
+ Native folded captures now cover P4 in dark at 200% and L3 light at 100% and 200%
+(`questions/render/cover-round-cover-picker-p4-s200.png` and
+`cover-round-cover-picker-p4-light-s{100,200}.png`, with matching XML).
+ All three are
+opaque 1080 × 2424px cover rasters.
+ The 200% mode group's final target ends at y=2326
+of 2424, with its bottom border visible above the navigation bar.
+ L3's top-row and
+deck hairlines remain separate from the selected folder indicator.
+ These are visual
+checks of the opened state.
+ A separate debug-only interactive P4 study on the folded
+cover at 200% verified closed to open via the title, open to closed via the title and
+Android Back, and dismissal by selecting the current folder.
+ Keyboard activation and
+Back preserved input focus on the trigger; touch dismissal left it unfocused in touch
+mode.
+ `questions/evidence/cover-round-cover-picker-p4-interaction.json` links the native
+hierarchies.
+ TalkBack accessibility focus was not measured.
+ D46 remains provisional.
+
+**Not selected for the temporary baseline.**
+ P1 and P3 use a floating panel;
+ P2 uses
+the MD3 outlined text-field trigger with the in-slot picker.
+ These are comparison
+alternatives,
+ not permanent prohibitions on exploring a better pre-1.x solution.
+
+### D47. Search button opens a separate search page (2026-09-23)
+The user rejected every I/G/R command-bar candidate and directed the design to a
+**separate search page opened by a Search button**.
+ Do not restyle a command palette
+or offer a docked/floating command bar as another option in this round.
+ Show the
+button in the player context,
+ then a coherent Search destination with its own
+identity,
+ query entry,
+ results and Back path.
+ "Separate page" names the
+navigation/interaction destination,
+ **not** a requirement to occupy the whole
+unfolded display.
+ The user explicitly allows a one-half Search screen as one
+possible layout;
+ other layouts remain open.
+ This is a design-only direction,
+not an authorization for production implementation.
+
+**Supersession.**
+ D21's user-facing command-bar surface is superseded by this page.
+Its configurable global hotkey and extra Settings row applied to that command bar;
+do not transfer them to Search or silently keep them as settled page requirements.
+Whether a global invocation exists for the new page is open if the user raises it.
+D25's reservation of Ctrl+F for future search and Ctrl+O for the folder picker remains,
+but the full keyboard map is still a separate unfinished round.
+
+**Still open.**
+ Search targets,
+ result actions/ranking,
+ the search button's exact
+placement on each platform,
+ and page empty/error behavior need visual and interaction
+evidence.
+ These details are not determined merely by choosing a page.
+
+### D48. One integrated top bar on the Search page (2026-09-23)
+The user corrected the first Search-page prototype:
+ it had a separate "Search"
+app bar and query bar.
+ Merge Back,
+ query input,
+ and Clear into **one page-level
+search header**,
+ with results directly beneath it.
+ The Search region must not
+stack a player header above the query or add another in-app title strip.
+Context outside a bounded Search region may remain visible if a candidate uses
+only part of the unfolded display;
+ that layout is permitted,
+ not selected.
+ A baseline M3
+full-content Search header (72dp with a divider) supplies the visual anatomy.
+The player continues to expose a distinct Search button that opens the page
+(D47).
+ This is a design decision,
+ not a production implementation instruction.
+
+### D49. Pixel 9 Pro Fold is the visual source for every platform (2026-09-23)
+The user corrected the desktop Search-page round:
+ all visual decisions follow the
+Pixel 9 Pro Fold's **folded cover** and **unfolded inner** screens.
+ The cover is
+1080 × 2424 physical px,
+ and the inner panel is 2076 × 2152 physical px.
+The original cover estimate of about 411 × 923dp was derived from published
+pixel density,
+ not device configuration.
+ Direct AVD probing reports 390dpi on
+both panels,
+ making its captured cover about 443 × 994dp and its inner display
+about 852 × 883dp;
+ see `device-metrics.md`.
+ This corrects the review scale,
+not the user's physical-panel choice.
+ Desktop
+inherits those treatments even where that is less optimal for a desktop window.
+Do not substitute 360 × 640,
+ 480 × 600,
+ or 1100 × 640 desktop mock windows as
+visual decision targets.
+ The unfolded centre connector keeps **informational material** clear
+under clarified E2;
+ this does not ban continuous surfaces or hit regions.
+ Those native Slint experiments are historical only.
+
+**Effect.**
+ Redraw D47/D48's Search button and one-header Search page on both real
+Fold panels in a debug-only native Android prototype,
+ in light and dark.
+ A desktop
+port or window-size selection does not overrule the chosen Fold geometry or create a
+parallel design vote.
+ Production implementation remains unauthorized.
+
+### D50. The unfolded control deck remains visible (2026-09-24)
+The user requires the playback/control deck to **never be hidden while the
+Fold is unfolded**.
+ This includes the D47 Search destination,
+ regardless
+of whether Search occupies one side or more of the display.
+ A Search layout
+may replace folder or track content,
+ use a temporary pane,
+ or span a
+surface,
+ but it must reserve visible space for the existing deck instead
+of drawing over it or replacing the whole player view.
+ Verify its visibility
+while the query is focused and Android's keyboard is present,
+ not only in
+keyboard-closed screenshots;
+ "never" includes typing.
+ A 200% text probe with real floating Gboard shows a counterexample:
+ its x `[274,1180)`, y `[310,1081)` key surface overlaps the deck
+ title at `[258,1042][781,1145]` on the 2076 × 2152px inner panel.
+ Do not mark D50 fully validated from the debug bottom-IME captures.
+The later real split-keyboard test passed after settling but a Gboard
+font-update banner briefly clipped the final mode;
+D50 also covers that observed typing state.
+ D47's separate-page
+interaction does not supersede this persistent control region.
+
+**Rejected evidence.**
+ The debug-only `search-layout-docked` study overlays
+the deck;
+ `search-layout-wide-list` and `search-layout-wide-grid` replace
+the view containing it.
+ Their native captures do not qualify as review
+choices,
+ regardless of their query/result placement.
+ No production change
+is authorized.
+
+### D51. Search uses the IME-lifted left deck (2026-09-24)
+
+The user selected **A** from the native Fold Search comparison.
+ On the
+unfolded panel,
+ Search's integrated Back/query/Clear header and results stay
+together on the right;
+ the existing playback/control deck remains at the
+bottom-left when the keyboard is closed and lifts above the visible system
+keyboard while typing.
+The upper-left keeps the **same folder browser** when Search is open,
+including while typing;
+its visible viewport may shorten above the IME-lifted deck.
+Do not replace it with a `Current folder` caption or blank it solely because
+the keyboard appeared.
+Search must not hide the deck or its controls (D50).
+At the measured tall keyboard height,
+only part of the existing browser header fits.
+The user accepts a little viewport clipping,
+including around Open,
+rather than a different upper-left composition.
+Do not claim every folder target is reachable while that viewport is short;
+keep the full deck visible.
+ The cover uses one
+full-width Search destination with the same integrated header.
+ D49 makes
+this Fold treatment the visual source for desktop too.
+
+B (fixed upper-left deck) and C (Search left with an upper-right deck) were
+not chosen.
+ Their native captures remain historical comparison evidence,
+not active choices.
+The corrected A-only review was recaptured with the same folder browser
+visible in the shortened upper-left viewport under a 300dp debug IME;
+its unfolded deck and query/results remained visible.
+The older real-Gboard PNGs predate that browser correction.
+A later real Gboard floating-keyboard probe at 200% text obscured part of
+the deck title; moving that keyboard lower obscured more controls.
+This is a validation failure against D50 in the tested floating mode,
+not a change to the user's A selection.
+On the folded cover, the same real floating mode covered both matching
+result labels while a focused `cam` query remained visible.
+A separate disposable Fold AVD verified real Gboard split input on the
+inner panel and full-width input on the cover at 100% and 200% text.
+At settled 200%, its inner IME began at y `1352` and the final mode ended
+at y `1313`; cover result labels stayed above its y `1605` keyboard.
+The original AVD's active Gboard was an update to versionCode `175981944`,
+not the preloaded `175753756`.
+Updating the disposable Gboard to the same version did not reproduce its
+floating behavior, so version alone is not an explanation.
+A Gboard font-update banner on the disposable inner panel temporarily
+raised the IME top to y `1140` and clipped the final mode until dismissed.
+These bounded passing modes and failing states do not change D50 or the
+user's A selection; other heights and app-observed floating insets remain unverified.
+A debug-only app probe subsequently observed the docked bottom inset and
+bounding rectangle;
+its synthetic 415dp banner-height reflow is not a chosen replacement.
+`package/music-player/design/evidence/gboard-geometry.md` indexes sanitized real Gboard evidence;
+its passing split and full-width states do not supersede the floating and
+banner counterexamples.
+This is a **design choice only**;
+ it does not authorize production changes.
+
+### D52. Remove the redundant positive-results heading (2026-09-24)
+
+The user directed removal of the separate `Results for “cam”` text after
+choosing A.
+ Positive Search results start directly beneath the single
+Back/query/Clear header on both Fold panels;
+ do not repeat the query as a
+results heading.
+ The query remains visible in the header,
+ and folder/track
+labels still identify result meaning.
+ Keep the distinct no-results and
+library-unavailable explanations,
+ because they convey states rather than
+repeat a successful query.
+ This is design-only until implementation is
+separately authorized.
 
 ---
 

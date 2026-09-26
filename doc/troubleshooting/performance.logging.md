@@ -1,183 +1,370 @@
-# `l.trace()` at every function entry adds up to 2000% overhead because each call captures a full stack trace; replace with `l.debug()` for routine entry logging
+# `module-logger` at a43e52f: changing `trace` to `debug` does not establish a suppressed-entry speedup
 
 ## Symptom
 
-A code path with `l.trace()` at every function entry shows
-dramatically degraded throughput compared to the same path
-with no logging or with `l.debug()`.
- In a hot loop or
-function-heavy module,
- the slowdown can dominate the
-function's own work.
+[Issue #130](https://github.com/Aquaticat/Monochromatic/issues/130) proposed changing function-entry
+`trace` calls to `debug` because it expected an advantage even with the console sink disabled;
+the issue specifically mentioned caller-side string formatting.
+The former version of this file separately claimed that every trace call captures a stack
+and asserted a 5 to 20 times improvement without a runnable measurement.
+That claim confused the logger call with console emission.
 
-Discovered while profiling function-heavy modules where the
-function bodies themselves run in microseconds but the logged
-runs take milliseconds.
+The production entry call is `parseCss` in `package/module/css-edit/src/parse.ts:42-48`.
+The other production trace in `package/module/jsonc-edit/src/parse-jsonc.ts:42-52` reports
+an exception-driven parser fallback,
+ not function entry.
+ `package/module/logger/src/tagged.ts:67-68`
+forwards the public trace method and is not a call site to migrate.
 
 ## Root cause
 
-`l.trace()` captures a full stack trace via
-`Error.captureStackTrace()` (or the equivalent V8 mechanism)
-on every call:
+The logger creates the same kind of record for either level and dispatches it to every
+available sink.
+ `package/module/logger/src/create-logger.ts:455-472,579-585`:
 
-- V8 collects every call-frame's source location,
-   function
-  name,
-   and column info.
-- The trace is serialised into a multi-line string.
-- The log line is written synchronously to whichever sink the
-  logger is configured with.
+```ts
+function createMethod(level: Level,): (message: string,) => void {
+  return function logAtLevel(message: string,): void {
+    if ((!state.hasAvailableSink) && state
+      .initialized)
+      throw new Error('No logging backends available',);
 
-`l.debug()` skips the stack-trace capture entirely;
- it logs a
-single string.
- The serialisation cost is dominated by the
-stack walk;
- the I/O cost is similar to `console.log`.
+    /**
+     Shared LogRecord forwarded to every available sink; built once per call so all sinks see the same timestamp.
+     */
+    const record: LogRecord = {
+      level,
+      message,
+      timestamp: Date.now(),
+    };
+```
 
-Published microbenchmarks suggest `console.trace()` runs up to
-20x slower than `console.log()` on the same input.
+`package/module/logger/src/create-logger.ts:488-493` dispatches the record:
+
+```ts
+      availableIndices.forEach(function writeToSink(entryIndex,) {
+        writeRecordToEntry({
+          entryIndex,
+          record,
+        },);
+      },);
+```
+
+`package/module/logger/src/create-logger.ts:578-586` binds both levels through that factory:
+
+```ts
+const logger: Logger = {
+  debug: createMethod('debug',),
+  error: createMethod('error',),
+  fatal: createMethod('fatal',),
+  flush: flushAll,
+  info: createMethod('info',),
+  trace: createMethod('trace',),
+  warn: createMethod('warn',),
+};
+```
+
+The entry caller constructs the message before calling the logger;
+`package/module/css-edit/src/parse.ts:42-48` contains:
+
+```ts
+tagged({
+  tag: parseCss.name,
+  l,
+},)
+  .trace(`parsing ${String(source.length,)} characters`,);
+```
+
+The tagged wrapper only prepends its tag,
+ regardless of the level;
+`package/module/logger/src/tagged.ts:48-68` contains:
+
+```ts
+debug: function debug(message: string,): void {
+  l.debug(`${prefix}${message}`,);
+},
+```
+
+`package/module/logger/src/tagged.ts:67-69` similarly forwards trace:
+
+```ts
+trace: function trace(message: string,): void {
+  l.trace(`${prefix}${message}`,);
+},
+```
+
+The console sink suppresses **both** levels when verbose output is off;
+`package/module/logger/src/sink/console.ts:26-29,497-504` contains:
+
+```ts
+const SILENT_LEVELS: ReadonlySet<string> = new Set([
+  'debug',
+  'trace',
+],);
+```
+
+`package/module/logger/src/sink/console.ts:497-504` checks this set:
+
+```ts
+if ((!getVerbose()) && SILENT_LEVELS.has(record.level,))
+  return Promise.resolve();
+```
+
+This suppression occurs **after** message formatting and logger dispatch.
+ It applies to the
+console sink,
+ not every sink:
+ `package/module/logger/src/default-sinks.node.ts:34-42`
+includes `createFileSink()`,
+ whose `write` method appends JSON records
+(`package/module/logger/src/sink/file.ts:266-279`):
+
+```ts
+createConsoleSink(),
+createSessionStorageSink(),
+createLocalStorageSink(),
+createFileSink(),
+```
+
+```ts
+await appendFile(
+  filePath,
+  `${JSON.stringify(record,)}\n`,
+);
+```
+
+Therefore a suppressed console does not imply a zero-cost log call or
+suppressed file output.
+
+With verbose console output enabled,
+ `trace` and `debug` deliberately diverge.
+`package/module/logger/src/sink/console.ts:143-151,255-286` maps trace to `console.trace`;
+debug writes to process stderr when present and otherwise uses `console.debug`:
+
+```ts
+const LEVEL_TO_CONSOLE_METHOD: Record<Level,
+  'debug' | 'error' | 'info' | 'trace' | 'warn'> = {
+    debug: 'debug',
+    error: 'error',
+    fatal: 'error',
+    info: 'info',
+    trace: 'trace',
+    warn: 'warn',
+  };
+```
+
+`package/module/logger/src/sink/console.ts:264-286` selects stderr for debug and
+calls the mapped console method for trace:
+
+```ts
+  if ((level === 'debug') && writeDebugRunToProcessStderr(text,))
+    return;
+  try {
+    /**
+     Name (not the function reference) of the matching `console.*` method; resolved lazily so post-import hot patches still apply.
+     */
+    const method = LEVEL_TO_CONSOLE_METHOD[level];
+    /**
+     Resolved console method looked up by name; may be missing or non-callable in stripped runtimes, which the guard handles.
+     */
+    const consoleFn = console[method];
+    if ((typeof consoleFn) === 'function') {
+      consoleFn.call(
+        console,
+        text,
+      );
+    }
+```
+
+Node 26.8.2 emits stack frames for `console.trace('trace probe')`,
+ unlike
+`console.debug('debug probe')` (probed with both calls in a bounded Node container).
+That occurs when the console emits the trace,
+ not at every `logger.trace()` invocation.
+Changing the `parseCss` call would also change its record level and formatted prefix;
+`package/module/logger/src/sink/console.ts:168-173` formats the prefix as:
+
+```ts
+return `[${record.level}] [${
+  new Date(record.timestamp,)
+    .toISOString()
+}] ${neutralizeControlCharacters(record.message,)}`;
+```
+
+The verbose console output and its diagnostic stack would change too.
 
 ## Verification
 
-Versions under test:
+The logger source was inspected at `a43e52f03bb3021f2b085f480bcde27364cc14b8`.
+The fixture first appears in `e205c9e42`;
+ check out that commit or a descendant,
+then build the unchanged logger with `mise run //package/module/logger:build:js:node`.
+The repeatable fixture is
+[performance.logging.bench.mjs](performance.logging.bench.mjs).
+ It calls a tagged logger
+with the same message construction as `parseCss`,
+ alternates level order after warmup,
+reports individual times in microseconds per call,
+ and separately tests a forced stack
+capture as a positive control.
+ The container is limited to two CPUs,
+ 2 GiB,
+ no network,
+and read-only mounts of the fixture and built logger.
+ Run each mode separately:
 
-- `@monochromatic-dev/module-logger` at workspace HEAD.
-- Bun 1.3.
-  x runtime.
-
-Reproduce:
- take any function-heavy module,
- add `l.trace('fn
-started')` at every entry point,
- run a representative
-workload,
- compare wall time with the same workload using
-`l.debug('fn started')`.
- The trace version runs 5-20x slower
-depending on stack depth and sink configuration.
-
-## Verified workaround
-
-Replace function-entry `l.trace()` calls with `l.debug()`:
-
-```ts
-// Before; with stack-trace overhead
-function myFunction() {
-  l.trace('myFunction started',);
-  // ... function logic
-}
-
-// After; basic debug logging
-function myFunction() {
-  l.debug('myFunction started',);
-  // ... function logic
-}
+```bash
+# From the repository root: no-op sink
+podman run --rm --memory=2g --cpus=2 --pids-limit=128 --network=none \
+  --security-opt=label=disable \
+  --volume="$PWD/doc/troubleshooting:/work/doc/troubleshooting:ro" \
+  --volume="$PWD/package/module/logger/dist/final/node:/work/package/module/logger/dist/final/node:ro" \
+  --workdir=/work docker.io/library/node:26-slim \
+  node doc/troubleshooting/performance.logging.bench.mjs noop
 ```
 
-Benefits:
- eliminates stack-trace capture overhead;
- preserves
-function entry visibility;
- preserves log-level control
-(debug can be disabled in production);
- reduces I/O
-serialisation overhead.
+Run the suppressed and emitted modes with the same container bounds and mounts:
 
-Tradeoff:
- the log entry no longer includes where the function
-was called from;
- if the trace was needed to diagnose a
-particular bug,
- keep `l.trace()` for that narrow case while
-using `l.debug()` for routine entry logging.
- The general rule
-is "use `l.debug()` for entry traces;
- reserve `l.trace()` for
-diagnostic moments that genuinely need the call stack".
+```bash
+# From the repository root: suppressed console
+podman run --rm --memory=2g --cpus=2 --pids-limit=128 --network=none \
+  --security-opt=label=disable \
+  --volume="$PWD/doc/troubleshooting:/work/doc/troubleshooting:ro" \
+  --volume="$PWD/package/module/logger/dist/final/node:/work/package/module/logger/dist/final/node:ro" \
+  --workdir=/work docker.io/library/node:26-slim \
+  node doc/troubleshooting/performance.logging.bench.mjs suppressed
+```
 
-Migration steps:
+```bash
+# From the repository root: emitted console, writing timing JSON to stdout
+podman run --rm --memory=2g --cpus=2 --pids-limit=128 --network=none \
+  --security-opt=label=disable \
+  --volume="$PWD/doc/troubleshooting:/work/doc/troubleshooting:ro" \
+  --volume="$PWD/package/module/logger/dist/final/node:/work/package/module/logger/dist/final/node:ro" \
+  --workdir=/work --env=MONOCHROMATIC_VERBOSE=true docker.io/library/node:26-slim \
+  node doc/troubleshooting/performance.logging.bench.mjs emitted 2>/dev/null
+```
 
-- Search and replace `l.trace(` -> `l.debug(` across the
-  codebase.
-   (Confirm each replacement is a routine entry log
-  rather than a diagnostic trace.
-  )
-- Verify no functionality depends on the captured stack.
-- Profile the function-heavy modules before and after to
-  confirm the improvement.
-- Update the logger configuration to control debug output in
-  production.
+The emitted mode drains each record in its own microtask so console stack costs are visible;
+it does not model bursts grouped into one console call.
+The redirect discards the benchmark's diagnostic console output,
+ not its timing JSON or process exit code.
+Before trusting that redirected output,
+ a separate integration probe initialized the same console sink in the same bounded Node image,
+logged one tagged trace and one tagged debug record,
+ and flushed both.
+Its stdout was empty;
+ its stderr held both entries,
+ trace stack frames,
+ and no logger-internal error.
+Both methods emitted to stderr in this Node runtime,
+ so the observed difference is not a change of output stream.
+Reproduce the output check without redirecting stderr:
 
-## Alternative approaches considered
+```bash
+# From the repository root: verify both enabled console paths
+podman run --rm --memory=2g --cpus=2 --pids-limit=128 --network=none \
+  --security-opt=label=disable \
+  --volume="$PWD/package/module/logger/dist/final/node:/logger:ro" \
+  --env=MONOCHROMATIC_VERBOSE=true docker.io/library/node:26-slim \
+  node --input-type=module -e '
+    import { createLogger, sinks, tagged } from "/logger/index.mjs";
+    const { logger, initPromise } = createLogger({ sinks: [sinks.createConsoleSink()] });
+    await initPromise;
+    const entry = tagged({ tag: "probe", l: logger });
+    entry.trace("trace entry");
+    await logger.flush();
+    entry.debug("debug entry");
+    await logger.flush();
+  '
+```
 
-- **Conditional logging**:
-   gate `l.trace()` behind an env
-  guard so production builds skip it entirely.
-   Tradeoff:
-  every call site grows a conditional;
-   cleaner to use the
-  log-level system.
-- **Structured logging**:
-   switch to a performance-tuned
-  logging library that omits stack capture by default.
-  Tradeoff:
-   ecosystem migration;
-   not justified when the
-  existing logger has the same property via log levels.
-- **Debug-only traces**:
-   keep `l.trace()` only for complex
-  debugging scenarios,
-   not routine function entry.
-   This is
-  the workaround above;
-   restated as guidance.
+On Node 26.8.2 in `node:26-slim`,
+ the ten samples per level were:
+
+- No-op sink:
+   trace 0.399 to 1.296 µs/call;
+   debug 0.389 to 1.650 µs/call.
+  The explicit-stack positive control was 2.994 to 6.926 µs/call and produced
+  a nonzero checksum.
+   The probe can detect stack-capture overhead.
+- Suppressed console:
+   trace 0.335 to 1.286 µs/call;
+   debug 0.333 to 1.930 µs/call.
+  Their bands overlap,
+   so this run does not establish a suppressed-console gain.
+- Emitted console,
+   one flush per record:
+   trace 7.357 to 8.039 µs/call;
+  debug 3.475 to 4.130 µs/call.
+   This comparison changes the emitted stack and
+  recorded level,
+   so it does not establish an equivalent-output speedup.
+
+These numbers cover logger-entry calls,
+ **not** full CSS parsing throughput,
+ browser
+console behavior,
+ or real file-sink throughput.
+ The source comparison explains why
+switching severity cannot avoid caller-side formatting or record construction.
+
+## Verified resolution
+
+Keep the function-entry trace in `parseCss` and the fallback trace in `parseJsonOrMiss`.
+There is no supported suppressed-console improvement from replacing either with debug;
+retaining trace also preserves the diagnostic level and verbose console stack.
+ The tradeoff
+is that verbose console emission continues to pay for its stack,
+ as designed.
+ If a future
+specific caller favors a stack-free debug message,
+ compare that workload and accept the
+change in level/output explicitly rather than applying a workspace-wide substitution.
+No logging-performance rule was added to `AGENTS.md`,
+ at the user's explicit request despite that issue acceptance criterion.
 
 ## What does not work
 
-- Replacing the logger entirely with raw `console.log`:
-  violates the workspace's "use tagged loggers" rule
-  (`AGENTS.md` "Logging") and loses tag-based filtering.
-   The
-  performance fix lives at the call-level (level choice),
-  not the logger-level.
-- Asynchronous trace capture:
-   V8 has no public hook to
-  schedule the stack walk asynchronously;
-   the trace would
-  reflect a future,
-   not the call site.
+- Blindly replacing `l.trace(`:
+   the actual `parseCss` entry uses `tagged(...).trace(`;
+  the literal `l.trace(` in `tagged.ts` is the forwarding implementation.
+- Treating `console.trace()` benchmarks as measurements of a suppressed `logger.trace()`:
+  `package/module/logger/src/create-logger.ts:455-490` creates and forwards a record;
+  `package/module/logger/src/sink/console.ts:497-504` suppresses it before emission.
+- Treating an overlapping timing band as proof of equivalence:
+   the positive control
+  confirms sensitivity to stack work,
+   but this benchmark cannot prove that all
+  implementations or workloads have identical timing.
 
-## Why we do not file this upstream
+## Upstream filing decision
 
-The behaviour is correct by design:
- `trace` is supposed to
-include the stack.
- Walking the 5 constraints:
+This is a repository-owned documentation correction,
+ not a third-party logger defect.
+The `.out-of-scope/` entries contain no matching logger exemption.
+ Issue #130 already
+tracks this exact premise;
+ there is no second issue or additive upstream comment to file.
 
-1. **Is it really upstream's fault?
-   ** No.
-2. **Can upstream fix it?
-   ** Nothing to fix;
-    the stack walk is
-   the feature.
-3. **Are they supporting this use case?
-   ** Yes;
-    `l.trace()`
-   is documented as the "with stack" variant.
-4. **Will they likely fix it?
-   ** N/A.
-5. **Have we prototyped a minimal fix?
-   ** N/A.
+1. **Upstream fault?**
+    No:
+    the severity paths and sink behavior are working as implemented;
+   the former troubleshooting note was wrong.
+2. **Fixable upstream?**
+    Yes:
+    this repository can correct its own documentation.
+3. **Supported use case?**
+    Yes:
+    tagged severity methods and console filtering are public APIs.
+4. **Contribution welcome?**
+    This is our own repository,
+    not an outside contribution.
+5. **Likely fix?**
+    The existing issue requests verification and correction if the premise fails.
+6. **Minimal fix prototyped?**
+    Not applicable to a logger defect:
+    the measured resolution is
+   to retain the calls and correct the documentation.
 
-Decision:
- no upstream report.
- Use the right level for the
-right call site.
-
-## Key takeaway
-
-Use `l.debug()` for routine entry logging to avoid stack-trace
-generation.
- Reserve `l.trace()` for cases where the call stack
-is actually useful for diagnosis.
+There is nothing to add to a separate upstream filing.

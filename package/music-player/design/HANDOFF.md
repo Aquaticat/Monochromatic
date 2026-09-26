@@ -4134,8 +4134,8 @@ twelve-fault mutation harness fails every fault with its intended diagnostic bef
 restoring.
  The questionnaire is re-presented in normal Helium in the current system color
 scheme.
- That K-round form was superseded: L settled by D45 and K replaced by the P
-prototypes below, so the reply is now one P code plus any correction in chat.
+ That K-round form was superseded: L settled by D45 and K was replaced by the
+P prototypes; D46 records the subsequent provisional P4 choice.
 
 ## P prototype iteration and D45
 
@@ -4150,9 +4150,11 @@ exposed-dropdown field versus app-bar title) with two containers (inset floating
 panel versus in-slot picker that replaces the list slot while the deck stays visible):
 P1 field plus menu panel, P2 field plus in-slot, P3 title plus menu panel, P4 title plus
 in-slot.
- Ranking P2 > P4 > P1 > P3: P2's field states the selection semantics a bare title only
-implies; in-slot keeps one calm surface with the deck visible; the floating panel at least
-pairs with a control-like trigger in P1.
+ The comparison ranked P2 > P4 > P1 > P3: P2's field states the selection semantics a
+bare title only implies; in-slot keeps one calm surface with the deck visible; the
+floating panel at least pairs with a control-like trigger in P1.
+ The user subsequently
+chose P4 as the temporary pre-1.x baseline (D46), superseding this recommendation.
  D45 records the settled light surface: L3 flat
 with hairlines at both seams, chosen because L1's ramp plus deck-seam hairline can make a
 selected first track read as detached from the list.
@@ -4187,30 +4189,1456 @@ name wall needs the full panel.
  All picker captures were retaken with the corrected
 field and the standing verification battery plus the eleven-fault harness pass again.
 
-## Current state: awaiting the P decision
+## Current state: P4 provisional, better picker still open (D46, 2026-09-23)
 
-The presented form is the P-only round: four radios (P1 field plus floating menu panel,
-P2 field plus in-slot picker, P3 title plus floating menu panel, P4 title plus in-slot
-picker), eleven embedded rasters (five dark inheritance captures, the four prototypes at
-100%, P2 at 200%, and P2 in light under the settled L3), and the settled-light panel as
-context rather than a question.
- Ranking on offer: P2 > P4 > P1 > P3.
- Verification after the
-MD3 field correction: no overflow at desktop or 390 × 500 in either scheme, Axe zero
-violations and zero incomplete (twenty page passes per scheme, twelve dialog passes),
-eleven preview paths exact, offline reload keeps all eleven rasters with zero network
-resources, and the eleven-fault mutation harness fails every fault with its intended
-diagnostic.
+The user chose P4 (app-bar title and caret opening an in-slot picker with the deck visible)
+while explicitly believing a better solution exists.
+ D46 makes it the temporary pre-1.x
+design baseline, not final acceptance or permission to implement production UI.
+ Do not
+ask for the P choice again.
+ The P-only comparison form is historical evidence: eleven
+rasters include all four options at dark 100%, but dark 200% and L3 light 100% depict
+P2, not P4; no L3 light 200% picker capture exists.
+ The form's P2 > P4 > P1 > P3 ranking is superseded by the user's
+selection.
+ The form itself passed its verification battery after the MD3 field fix:
+no overflow at desktop or 390 × 500 in either scheme, Axe zero violations and zero
+incomplete, eleven preview paths exact, offline reload keeps all eleven rasters with zero
+network resources, and eleven mutation faults fail with their intended diagnostics.
+Those tests validate the historical form, not P4 at the missing font-scale and light
+states or its native focus behavior.
  Commits: prototype `4ff352c1b` for the MD3 text-field trigger and main
-`406663175` for the recapture.
+`406663175` for the recapture; D46 is in `decisions.md`.
 
-After compaction: refresh the presented window before asking again (the open Helium window
-predates the field recapture): close it with the KWin close script after pointing that
-script at the current window id from the window-list script, `gtk-launch helium` on
-`questions/current.html`, activate via the KWin activate script, and confirm active and
-non-minimized.
- Then wait for one P code plus any correction in chat and record it as the
-next decision (D46).
+Post-decision folded native P4 captures in dark at 200% and L3 light at 100% and 200%
+were carried to the design evidence in `1c33fc833`.
+ The opaque 1080 × 2424px rasters
+keep the 200% mode-group bottom border visible, with the L3 hairlines at both seams and
+the selected-folder indicator inside the picker.
+ A separate interactive P4 study in the prototype worktree (commits `c4e75cfd8`,
+`2341294f0`, `1ccb8a027`) was installed on the folded cover at 200%.
+ The hierarchy
+snapshots and checked summary in
+`questions/evidence/cover-round-cover-picker-p4-interaction.json` show title open/close,
+Back closing, same-folder selection dismissal, and keyboard input focus retained on the
+trigger after Back.
+ Touch dismissal leaves keyboard focus unset in touch mode.
+ This
+prototype does not select a different library and its tests do not establish TalkBack
+accessibility focus; keep cover-specific accessibility open.
+ The AVD's original unfolded
+state was restored after the interaction check.
+
+The next recommended surface round is the command bar's content and actions (D21), with
+search targets/results and its relationship to the folder picker (D25) treated as
+separate questions.
+ Revisit the picker before 1.x to explore alternatives; no improved
+replacement is guaranteed or required for this provisional choice to be meaningful.
+Do not quietly promote the temporary baseline to final.
+ The existing P questionnaire
+is comparison evidence, not an unanswered question; subsequent visual reviews show only
+active P4 unless the user explicitly requests the rejected comparison (RVC).
+ The
+keyboard map, cover-specific accessibility, Android media notification, remaining
+light surfaces, desktop size, empty state and display templating stay in the live backlog
+at `open-questions.md` 0b.
+ The user's "What next?"
+asked for a recommendation, not authorization for production changes.
+
+## Command-bar round, first draft withdrawn (2026-09-23)
+
+After P4 visual and keyboard-interaction verification,
+ the next design-only round began
+with a native Slint command study on the prototype branch.
+ Its first matrix (S1 docked,
+S2 floating inside player,
+ S3 detached concept crossed with C1 actions,
+ C2 scopes,
+C3 mixed results) generated twenty rasters,
+ archived in `questions/render/command-round-s*-c*`.
+ No user choice was solicited.
+ An independent review found consequential faults:
+ S3 is complementary to in-app placement,
+ not an exclusive choice;
+ D25 reserves
+shortcuts but does not require separate surfaces;
+ result states differed between C
+variants;
+ wide S1 was anchored into the folder header;
+ selected supporting text
+contrasted only 3.38:1 dark and 3.53:1 light;
+ and the HTML preview used stale image
+dimensions when switching compact and wide.
+ The first revision of `current.html`
+was never presented and has since been replaced.
+ Its prior-art note marks that ranking
+withdrawn.
+ Production code remains untouched.
+
+## Second desktop command-bar draft, visually rejected (2026-09-23)
+
+The new Slint study at prototype branch commits `ee1b2d59c`, `dbbf5116e`,
+`6d533f740`, with its render task at `e70b40e6a`, asks three independent choices:
+I1 docked below header,
+ I2 floating inside player,
+ I3 content replacement;
+ G1 raise
+the player from another app,
+ G2 detached quick-window concept leaving the previous
+app visible;
+ R1 distinct Ctrl+F search destination,
+ R2 explicit search mode in the
+command surface.
+ D25 settles only shortcut reservations,
+ not separation.
+ Rankings:
+I1 > I2 > I3,
+ G2 > G1,
+ R1 > R2.
+ No user selection has been received.
+
+Opaque native Slint captures are in `questions/render/command-round-{i,g,r,e}*`:
+26 dark/light rasters across the independent choices,
+ 1100 × 640px I variants,
+I1 360 × 640px synthetic larger-text stress,
+ and no-results / unavailable-action
+states.
+ The default compact desktop scene is 480 × 600px from
+`package/music-player/desktop-app/ui/app.slint`,
+ not a decision about the default window
+size (11c).
+ Selected foreground versus highlight measured 6.23:1 dark and 7.09:1
+light;
+ normal muted text on the container measures 7.12:1 dark and 5.18:1 light.
+The first S × C captures remain historical and are not in the active form.
+The corrected in-app variants share the typed `open` query and selection;
+ G variants
+share a previous-app scenario;
+ R variants share a sample `cam` query and results.
+The prototype is static:
+ no actual hotkey,
+ OS second window,
+ keyboard navigation,
+TalkBack semantics,
+ focus return,
+ search index,
+ or action execution was built or
+verified.
+ The prior-art and caveats are in
+`questions/evidence/command-round-prior-art.md`.
+
+`questions/current.html` is a self-contained I/G/R questionnaire generated from
+`current.template.html` by `command-question.mjs` through the design `mise` tasks.
+The historical cover questionnaire and its validator remain at
+`questions/archive/cover-p.{html,template.html}` and `build:cover` / `lint:cover`.
+The corrected command validator checks 26 exact native rasters,
+ each card's
+scheme-to-scene mapping,
+ 7 radios in 3 fieldsets,
+ ranking text,
+ preview decode and
+focus restoration,
+ no clipboard/external resources,
+ and dark/light panel roles.
+A fourteen-fault disposable-worktree mutation harness
+(`/home/user/temp/agent/verify-command-guards.mjs`) fails every fault with its intended
+diagnostic and restores to passing.
+ Browser verification of the corrected form:
+0 overflow on desktop and 390 × 500px mobile in both schemes;
+ Axe zero violations
+and zero incomplete for page and modal (18 page passes,
+ 12 modal passes);
+ all 26
+preview paths,
+ including compact/wide transitions,
+ Fit,
+ 100%,
+ zoom direction,
+Escape and focus return;
+ all 12 I × G × R answer combinations,
+ required-field
+rejection,
+ whitespace and invalidation;
+ offline reload decodes all 13 thumbnail
+figures in either scheme with zero network resources,
+ and browser console/errors are
+empty.
+ The first draft's stale-image zoom bug is fixed by decoding before preview
+and stepping zoom relative to the fitted scale.
+
+The user saw this form and rejected the visual design as obviously not MD3.
+Its native capture,
+ form,
+ accessibility and mutation tests were integration checks,
+ not
+proof of visual compliance.
+ No I/G/R answer was given;
+ do not treat any of the
+rankings as chosen or ask the user to decide from the rejected rasters.
+ The opened
+Helium window may still show this old page.
+ The user explicitly said not to use KWin
+window management again.
+
+## Current command-bar correction: use local MD3 component visuals (2026-09-23)
+
+The earlier study painted a generic outlined 8px-corner palette with text glyphs and
+Noto fallback;
+ that is the wrong component anatomy despite using native Slint.
+The user's local MD3 archive has been examined visually,
+ not only as extracted
+text.
+ My first reading of `components/search/guidelines/images/{20,28,37}.png`
+was incomplete:
+ those images show the **Expressive contained** treatment,
+ while A2
+keeps the project on **baseline** M3.
+ Full-resolution baseline divided diagrams
+are recoverable from `components/search/specs/manifest.json`:
+ ask the original
+`images/{34,35}.png` URL for `=w1200` instead of the archived 40px thumb.
+They show a 56dp *collapsed* full-pill field,
+ then a docked expanded container
+rounded 28dp with a 56dp header and divider,
+ or a full-content sharp container
+with a 72dp header and divider.
+ AndroidX `SearchBar.kt` confirms the divider for
+baseline ExpandedDocked/FullScreen Search;
+ SearchBar and SearchView token sources
+supply `surfaceContainerHigh`,
+ BodyLarge text,
+ and the 28dp docked shape.
+The baseline list has square item corners,
+ 16dp padding and 48dp targets;
+ a
+16dp selected-list corner is Expressive and does not belong in this round.
+A current keyboard-result focus treatment is custom desktop behavior,
+ not a
+persistently selected folder state.
+
+The package-local canonical correction is in `material-3-compliance.md` under
+"Command-bar study correction".
+ In the disposable prototype branch,
+ official
+Material SVGs (Search,
+ Back,
+ Clear,
+ Folder,
+ Music,
+ Settings,
+ Pause,
+ Play,
+ More)
+and the AVD's Roboto TrueType face were committed at `2f4fc8b89`.
+The first redraw (`c5b3fa31f`,
+ rendered via `b1caaa373`) used these assets but
+mixed Expressive contained Search and expressive selected-list corners with A2;
+it is also **not** a presentation candidate.
+ The baseline redraw in prototype commits `0e9624dd2` and `7adafa092` now follows
+the divided Search anatomy;
+ its render task at `b1caaa373` produced the 26 opaque
+`questions/render/command-md3-{i,g,r,e}*` scenes committed in main at `f48e533f7`.
+A normalized 56px docked-header comparison with the baseline spec is stored at
+`questions/evidence/command-md3-baseline-header-comparison.png` (`0efdb4e17`).
+Native I1 pixel checks at 480 × 600px:
+ high-container header `#1E1F26` dark /
+`#E7E7F1` light,
+ 1px outline divider `#73757F` / `#797A84`,
+ and the custom
+keyboard-focus outline `#BAC5EE` / `#4E5E8B`.
+ Foreground to focused-row
+contrast measures 10.50:1 dark and 8.84:1 light;
+ focus outline to row measures
+7.71:1 and 4.41:1.
+ The 360px larger-text scene depicts a proposed I1 full-content fallback and
+keeps the long action legible on two lines;
+ the prototype's explicit `stress` input
+chooses that layout,
+ so no width-driven runtime transition has been verified.
+The baseline two-line row height was corrected to 72px from AndroidX
+`ListTokens.ItemTwoLineContainerHeight` in prototype `c88786448` and the main native
+captures were refreshed in `98d83561a`.
+ Its 96px stress rows are an explicit
+larger-text adaptation,
+ not a baseline token.
+ These are design-study checks,
+not production or screen-reader claims.
+
+The rejected `questions/current.html` form has been replaced by a self-contained
+baseline MD3 I/G/R questionnaire (`dd194daf4`),
+ refreshed with the 72px row
+captures and corrected scope prose in `096814d39`.
+ It embeds 26 native rasters
+and the exact header comparison as a 27th image,
+ while preserving the independent
+I/G/R question structure,
+ pro/con rankings,
+ and free-text correction.
+ The command
+validator now checks exact raster-to-card scheme mapping,
+ required choices,
+no clipboard/external resources,
+ baseline header/divider/focus pixels,
+ and the
+reference image.
+ The design package build,
+ lint,
+ unit validator,
+ and historical
+cover validator pass.
+ Fourteen faults in the disposable-worktree mutation harness
+(`/home/user/temp/agent/verify-command-guards.mjs`) each failed with the intended
+diagnostic;
+ the fixture was removed.
+ Browser verification of the new form:
+ zero
+horizontal overflow at desktop and 390 × 500px in both schemes;
+ Axe zero
+violations and zero incomplete for page and modal;
+ all 26 dark/light preview
+paths,
+ compact/wide source switches,
+ Fit/100%/zoom direction,
+ Escape and focus
+return;
+ all 12 I × G × R answers,
+ required-field rejection,
+ whitespace and
+reply invalidation;
+ offline reload decodes all 13 scene thumbnails plus the
+reference with zero network resources in either scheme;
+ no console or page errors.
+
+No user choice has been made from this baseline redesign.
+ The revised
+`questions/current.html` was handed to normal Helium with `gtk-launch helium` on its
+file URL;
+ the launcher returned successfully.
+ No KWin script was used for this presentation,
+per the user's instruction.
+ The artifact itself was exercised in `agent-browser`;
+Helium tab activation was not separately measured.
+ The proposed response path was one I,
+one G,
+ one R,
+ but the user subsequently rejected every choice.
+ The I/G/R ranking and
+response request are now superseded by D47.
+ Production code remains untouched.
+
+## Current design review: Search button and one-bar page (D47/D48, 2026-09-23)
+
+The user replied "None" to I/G/R and directed a Search button opening a separate
+page (D47),
+ not another command-bar appearance.
+ The first Search-page prototype
+stacked a "Search" app bar above its query field;
+ the user corrected that to **one
+integrated top bar** for Back,
+ input and Clear (D48).
+ There are no I/G/R choices
+left to make.
+ D21's command-bar global hotkey and extra Settings row do not
+silently move to Search;
+ D25's Ctrl+F reservation and Ctrl+O picker binding remain
+part of the unfinished whole keyboard map.
+
+The throwaway native Slint source at
+`package/music-player/design/candidates/search-page-study.slint` in the prototype
+worktree is committed at `1ecb1f3f7`,
+ with app-bar positioning corrected in
+`773c8fc11` and the single full-page header in `13b38f1f7`.
+ The Search icon button
+and Back are wired with 48px TouchAreas;
+ the search input is a Slint `TextInput` with
+search semantics and a two-way query value.
+ The static renderer has not been driven
+through native clicks,
+ so do not claim native focus restoration or real search
+indexing.
+ The native screenshot task `prototype:search:render` is at `3eb058213`.
+Main commit `c65154138` carries 26 opaque `questions/render/search-page-*` rasters:
+player button,
+ open-empty page,
+ illustrative `cam` results,
+ no results and unavailable
+library in both schemes at 360 × 640,
+ 480 × 600 and 1100 × 640px (wide has the first
+three states).
+ The page takes the full app surface,
+ hides all player controls,
+ and
+uses a single 72px baseline MD3 Search header with an `outline` divider.
+A normalized 72px header comparison with the local baseline MD3 spec is at
+`questions/evidence/search-page-header-comparison.png` (`d4e4092bf`),
+ with source
+measurement marks retained and metadata stripped.
+
+`questions/current.html` is now the active-only D47/D48 walkthrough,
+ generated by
+`search-page-question.mjs` with `mise run //package/music-player/design:build`.
+It replaces the rejected command review archived at
+`questions/archive/command-igr-rejected.html`.
+ The artifact's Open Search,
+ canned
+`cam`/`zzq` selection,
+ unavailable and Back controls change its native screenshot
+and restore browser focus;
+ they do not trigger the Slint runtime.
+ An independent
+review caught free-form HTML input showing a mismatched fixed `zzq` screenshot;
+commit `c1bdaed4f` replaced it with explicit canned choices and resets the query
+before showing the unavailable capture.
+ The generated form was refreshed at
+`0f426f575`;
+ validator `7b5b9b0bf` guards the synchronization.
+ Gallery previews expose both native
+schemes and exact 100% pixels.
+ No answer code or clipboard control remains;
+ one
+free-text correction field prepares visible text for a chat reply.
+ The native builder,
+package lint and unit validator pass;
+ the historical cover validator also passes.
+Eighteen faults in `/home/user/temp/agent/verify-search-page-guards.mjs` failed
+with their intended diagnostics in a disposable worktree,
+ which was removed.
+ Browser
+verification covered the five synchronized canned flow states and focus return,
+26 preview paths,
+ all
+images decoded offline with zero network resources,
+ both schemes,
+ desktop and
+390 × 500px mobile without horizontal overflow,
+ Axe zero page/dialog violations or
+incomplete checks,
+ free-text empty/whitespace/invalidation,
+ and empty browser
+console/errors.
+ The narrow-screen preview's Zoom out/Zoom in issue was repaired
+by scaling the step to the fitted size (template `d0294ab63`,
+ built HTML
+`1916cbfbc`),
+ then rechecked at 390 × 500px.
+
+The final `questions/current.html` file URL was handed to normal Helium using
+`gtk-launch helium`;
+ the launcher returned successfully.
+ No KWin script was used,
+and Helium active-tab focus was not independently measured.
+ Next,
+ wait for the
+user's correction to the Search button and one-bar page,
+ or confirmation to
+continue other design-only work.
+ No I/G/R code or broad approval is requested.
+The user explicitly prohibited a narrow `AGENTS.md` change and asked to avoid KWin
+window automation.
+ Do not reintroduce production app changes.
+
+Search target scope,
+ result ranking/effects,
+ keyboard bindings,
+ media notification
+and the remaining design backlog stay open.
+
+## Current correction: Fold panels govern desktop too (D49, 2026-09-23)
+
+The user asked what "expanded desktop window" and "narrow desktop width" meant and
+corrected the premise:
+ **everything follows the Pixel 9 Pro Fold cover and unfolded
+screens**;
+ if that is suboptimal on desktop,
+ desktop still inherits.
+ The 360 ×
+640,
+ 480 × 600 and 1100 × 640px Slint Search rasters are historical experiments,
+not the target geometry.
+ At that correction point,
+ `questions/current.html` still embedded the obsolete
+desktop-sized review.
+ It has since been replaced by native Fold-panel evidence;
+see the current section of this handover.
+D49 records cover 1080 × 2424 physical px and unfolded inner 2076 × 2152
+physical px as the only design frames.
+ The original 411 × 923dp cover estimate
+was not measured on the AVD;
+ the current section records its 390dpi correction.
+Desktop window sizing is a developer-owned frame around the inherited treatment,
+not a fresh visual design question.
+ D47's Search button and separate page and D48's
+one Back/query/Clear header remain settled directions;
+ no production work is
+licensed.
+ Package-local `review-notes.md` 5p and
+`material-3-compliance.md` D49 record the failure and evidence boundary.
+
+The existing Pixel_9_Pro_Fold AVD was reprobed:
+ `emulator-5554` reports `device`,
+`sys.boot_completed=1` and unfolded device state 2.
+ It was started in the verified
+windowed host-GPU mode;
+ no KWin scripting was used.
+ The subsequent design-only step added the
+throwaway debug-only Compose Search study,
+ captured player trigger and opened page
+states on both panels in light and dark,
+ and rebuilt the HTML review with those
+opaque native frames.
+ The old Slint pixels remain historical,
+ not target-native
+proof.
+
+## Fold connector correction and native guard (2026-09-23)
+
+The user caught a second scope error:
+ the first debug-only Compose Search page filled
+the unfolded panel and let its 72dp header,
+ divider and result rows traverse the
+connected centre.
+ E2 had only said "nothing interactive";
+ that wording missed
+visible text and row surfaces.
+ I stopped the in-progress capture before copying
+its invalid inner-panel rasters to main.
+ The before-state unfolded dark XML contains
+four semantic or clickable nodes spanning physical x `[1009,1068)`,
+ including
+query text bounds `[156,166][1920,283]` and a result target
+`[39,422][2037,598]`;
+ its connector pixel at `(1038,200)` was
+`#1A1A1F`,
+ not neutral black.
+ This is a red-capable positive control,
+ not
+an inference from code.
+
+At that time I incorrectly rewrote E2 to forbid **all app-owned paint and
+hit regions** across the centered 24dp connector (`[414,438)`dp).
+ The user's
+later clarification retracts that blanket ban;
+ current E2 protects
+informational material only.
+`device-metrics.md` records approximate physical x `[1009,1068)` at 390dpi;
+`review-notes.md` 5q and `open-questions.md` preserve the failure and guard.
+The prototype branch correction `a0c811d09` splits the unfolded Search page into
+414dp left query/header pane,
+ empty 24dp connector,
+ and right results pane.
+The capture script guard at `df4debbd6` checks pixels across that band and every
+visible app text/action node for overlap;
+ a button-only clearance check is
+insufficient.
+ The first guarded capture (`proc_e3b5`) passed dark unfolded states but failed
+at the light player because the previous light palette used a near-white spacer.
+
+The stopped capture left the emulator unfolded in dark mode with `stay_on_while_plugged_in=7`;
+its pre-stop 2.0 font scale was restored after measuring it at 1.0.
+ The prior
+stay-on value was not logged,
+ so do not claim it was restored.
+
+The next guarded run passed every dark unfolded scene at 100% and 200% text,
+ then
+stopped at `fold-search-inner-player-light-s100`:
+ the connector sampled
+`#FAF8FE`,
+ while D34 requires white `#FFFFFF`.
+ No semantic node was needed to
+trigger this failure;
+ the light player wrapper had incorrectly selected the old
+`light-b` palette whose spacer is `scheme.surface`.
+ Prototype commit `73155c653`
+switches that wrapper to the accepted white-spacer light treatment.
+ The fresh
+managed capture (`proc_ca57`) completed all cover and inner states in both schemes
+at 100% text,
+ plus player/results at 200% text.
+ E2,
+ `device-metrics.md` and `review-notes.md` 5q require
+the exact black/white spacer fill as well as no content bounds crossing it.
+After capture,
+ `adb` measured unfolded state 2,
+ night mode yes,
+ font scale 2.0
+and `stay_on_while_plugged_in=7`.
+ The original stay-on value before the first
+interrupted capture was not recorded;
+ do not claim it was restored.
+
+## Withdrawn native Fold Search review (2026-09-23)
+
+Main commit `d983482ed` first preserved the guarded native captures;
+ `1cba72beb`
+recaptured all 28 PNGs with per-frame panel,
+ font-scale,
+ night-mode and
+390dpi metadata,
+ paired XML hierarchies and four Android role JSONs under
+`questions/{render,evidence}/`.
+ Direct `wm density` and `dumpsys display`
+probes report 390dpi on **both** AVD panels:
+ the physical 1080 × 2424px
+cover is about 443 × 994dp,
+ not the old 411 × 923dp published-ppi
+estimate.
+ The 72dp header/divider stay inside the unfolded left 414dp pane;
+results and empty-state messages occupy the right 414dp pane.
+ The centered
+24dp connector is physically empty with D41 black/D34 white fill.
+ Prototype
+commit `896ca78fd` and review validator `search-page-question.mjs` scan every
+RGBA pixel in physical x `[1009,1068)`,
+ y `[136,2074)` and reject semantic or
+clickable app nodes crossing it.
+ The validator also checks native dimensions,
+per-frame provenance,
+ stage labels,
+ roles and header/divider/body samples.
+Disposable red controls reject a crossing target,
+ a dark tonal band and a
+single unsampled near-white pixel on light.
+
+At 200% text the initial inner player's last mode row has only 94px visible
+before the navigation inset y=2074,
+ so do not call that frame full fit.
+ A
+native swipe in the deck moved the row to `[73,1904][936,2035]`,
+ showing its
+full 131px target above the nav bar;
+ the scrolled dark PNG/XML are supplementary
+evidence at `questions/render/fold-search-inner-player-dark-s200-scrolled.png`
+and its `questions/evidence/` XML pair.
+ Right track rows scroll independently.
+
+`questions/current.html` embeds both panel families and schemes,
+ with cover
+preview at about 443 × 994 CSS px and inner at 852 × 883 CSS px for 100% AVD
+dp,
+ a panel-switching player-to-Search walkthrough,
+ 200% player/results stress
+captures,
+ and free-text correction.
+ `mise run
+//package/music-player/design:build`,
+ `:lint` and `:test:unit` passed.
+ Browser
+checks exercised each flow control,
+ previews including fit/reset/zoom,
+ scene
+top reset,
+ keyboard panning,
+ Escape and returned focus,
+ plus response output.
+An online fetch from the self-contained page to a local test endpoint succeeded;
+when the browser was set offline,
+ the same fetch failed while a file reload
+still decoded every embedded image.
+ Axe found no violations in light/dark
+review chrome or the open dialog after its scroll region became keyboard
+focusable;
+ geometry stayed exact with a 20px root font.
+ The browser
+reported no page/console errors.
+ The final browser check reloaded the
+regenerated file,
+ measured 443 × 994dp-equivalent cover display and
+852 × 883dp inner display,
+ and reopened a 200% inner Search result at the top
+after scrolling an earlier preview.
+ The corrected `questions/current.html` was
+launched with `gtk-launch helium file:///var/home/user/Monochromatic/package/music-player/design/questions/current.html`.
+ No KWin automation was used;
+ the launcher exit alone does not prove the
+user has inspected the tab.
+
+This earlier request for correction has been superseded by the user's rejection.
+Static native evidence does not prove a live index,
+ result actions,
+ TalkBack
+focus,
+ or native Back restoration.
+ Design acceptance still cannot authorize
+production implementation.
+
+## Current correction: rejected unfolded Search composition (2026-09-23)
+
+The user called the unfolded page obviously bad and asked why it had been
+presented as acceptable.
+ The inspected
+`questions/render/fold-search-inner-open-results-light-s100.png` shows why:
+ a
+left Back/query/Clear header implies its body is the page's content area,
+ but
+that area is empty;
+ the results heading and rows are isolated across the
+connector in the right pane.
+ The empty-state instruction is similarly remote
+from its query.
+ I saw the native screenshots and failed to reject this
+composition;
+ geometric,
+ provenance,
+ HTML interaction and Axe checks answered
+different questions.
+ No coherent replacement has been designed or accepted.
+
+The user further clarified that "content" in the connector rule means
+**informational material** such as text,
+ not every app-owned surface and hit
+region.
+ The user also clarified that a Search screen need not occupy the
+entire unfolded display:
+ one half is allowed as a possible layout,
+ not a
+selected answer.
+ D47's separate page is an interaction destination,
+ not a
+full-width mandate;
+ D48 keeps query and results together under one integrated
+header within whichever Search region is eventually chosen.
+ The old full-strip black/white pixel guard was my interpretation,
+not the user's requirement;
+ it imposed a false two-pane premise.
+ Preserve its
+capture and test history,
+ but do not use it as a visual acceptance gate.
+The published D47 separate page,
+ D48 one integrated header,
+ and D49 physical
+panel targets remain settled.
+ `review-notes.md` 5s records the failure.
+`questions/current.template.html` and `questions/current.html` now show a
+withdrawn notice and hide the old feedback form/gallery;
+ do not present them
+as an active design review.
+
+E2 now names information,
+ not every painted surface or hit region,
+ as the
+connector exclusion.
+ `device-metrics.md`,
+ `review-notes.md` 5q/5r,
+`material-3-compliance.md`,
+ `open-questions.md`,
+ the rejected candidate
+inventory and both capture validators are marked accordingly.
+ The old pixel
+guard is historical evidence integrity only,
+ not a gate for new designs.
+
+The user declined signing into Photos and explicitly authorized generating
+synthetic photo and message fixtures.
+ I placed three synthetic PNGs in
+`/sdcard/Pictures/FoldPrecedent/` and sent three **emulator-simulated** SMS from
+reserved-looking `5550101`/`5550102` senders.
+ Photos displayed the PNGs but
+its signed-out Search tab only offered backup Settings,
+ so no Photos search
+layout was observed.
+ My first Files `dummy` query was incorrectly scoped to
+Downloads while the images were in Pictures;
+ the user caught this.
+ Copies
+were added to `/sdcard/Download/`,
+ Files was restarted,
+ and the query then
+returned the synthetic image grid.
+
+Direct AVD results are recorded in
+`evidence/fold-search-emulator-precedents.md`:
+ Messages moves from a
+list/detail inbox to a centered unified query/results page on the inner panel;
+Maps keeps query/suggestions/results together on the left with map context on
+the right;
+ Android DocumentsUI keeps a full-width query and results grid under
+it.
+ Cover layouts reflow to one full-width Search column or sheet.
+ These are
+observed patterns,
+ not accepted music-player variants.
+ Search in YouTube
+Music's unsigned local mode was absent;
+ Chrome was stopped at first-run
+consent and no terms were accepted.
+ A scoped precedent researcher found first-party Google foldable examples
+but its isolated worktree could not read the local M3 archive and its
+uncommitted note was removed with that worktree.
+ I read the local extracted
+M3 Search,
+ pane and list-detail pages directly and verified the Google
+foldable-app article;
+ `evidence/fold-search-primary-guidance.md` now records
+those primary provisions and their limits.
+
+The user then opened a YouTube search result on the unfolded AVD and pointed
+to the thumbnail timestamp and adjacent title lettering at the fold.
+ I
+initially praised the placement,
+ but that misread their warning.
+ The user
+first estimated a 10mm visible dent,
+ then corrected it to **about 7.5mm**.
+Using the published 8-inch panel geometry (active width about 141.08mm),
+7.5mm is approximately 110 physical px on the 2076px inner panel,
+ centered
+at x 1038 with approximate bounds `[983,1093)`px.
+ The screenshot's
+near-center timestamp and title lettering enter that band;
+ YouTube is a
+negative text-clearance example,
+ not a model to copy.
+
+The user also corrected my use of dp:
+ **physical crease width must not be
+stored as fixed dp** because Android display scaling changes dp without
+changing the dent.
+ About 45dp is only this 390dpi AVD configuration's
+conversion of 110px.
+ `max(min_padding, crease_width)` defines separation
+of **informational material**, not a visually blank gap between two halves.
+Borders,
+ padding,
+ background surfaces and hit regions may cross.
+ The AVD's
+zero-width hinge-area config is an occlusion model and does not override
+the user's physical dent.
+ E2,
+ D34,
+ `device-metrics.md`,
+ the open backlog
+and the direct app-evidence note now reflect the corrected 7.5mm figure.
+The numeric minimum padding for this particular information boundary is
+still open;
+ do not borrow the unrelated 12dp mode-button text floor.
+
+Next:
+ build and inspect distinct design-only candidates with informational
+material kept clear of the physical 7.5mm crease.
+ The throwaway Compose
+prototype branch now has `SearchLayoutStudy.kt` with docked left Search plus
+player context,
+ a continuous full-width result list,
+ and two-column
+result cards;
+ its debug build and emulator install succeeded.
+ First native
+visual inspection found that docked Search keeps query/results together over a
+dimmed player context,
+ and the two-column alternative keeps both result
+cards under one continuous full-width header.
+ The first full-width list
+alternative showed result text on the far left and type labels on the far
+right with a visually vacant middle;
+ that is not acceptable just because
+the information cleared the dent.
+ The throwaway prototype now paints each
+full-width row as one bounded surface to test whether that composition can
+be rescued;
+ the revised APK installed and its screenshot now connects each
+far-left label to its far-right type within a tonal row,
+ although the empty
+middle remains a consequential con.
+ Native 200% captures of the docked and
+two-column studies show query/result information together without visible
+text clipping;
+ this is a provisional visual observation,
+ not accepted
+interaction or accessibility.
+ The first manual captures omitted status-bar
+icons because the debug activity did not classify `search-layout` as a dark
+candidate;
+ that branch now uses dark system-bar icons,
+ and the docked
+context hides its duplicate Search action.
+ A fresh native screenshot shows
+the icons in place.
+ The completed native matrix contained 44 PNG/XML pairs across cover/inner,
+light/dark,
+ states and 200% results.
+ I inspected the result and empty
+states,
+ but the user then set D50:
+ **the unfolded playback/control deck
+must never be hidden**.
+ Every matrix variant violates it:
+ docked Search
+overlays the deck,
+ while the full-width list and card layouts replace the
+screen containing it.
+ These images are rejected diagnostic evidence in
+the throwaway worktree,
+ not presentable review choices;
+ none was copied
+to main or opened for feedback.
+ Rebuild the alternatives around the
+existing `TransportBlock` ownership boundary,
+ retaining the deck at
+100% and 200%.
+ The throwaway branch now exposes a debug-only
+`SearchFoldDeckHost` around that actual transport component and routes
+`SearchPersistentDeckStudy.kt` with left Search,
+ right Search,
+ and a
+full-width header/two-result composition above the pinned deck.
+ The initial deck-persistent capture run finished,
+ but its entire inner
+matrix predates keyboard testing and is not an active review.
+ With Android's
+query focused at 200% text,
+ Gboard later reported an IME without drawing keys,
+including in Messages;
+ its cause is unresolved.
+ A throwaway debug-only
+`FoldProbeInputMethod` in the same branch instead draws a measured 300dp
+system-managed input window and inserts `cam` through the input connection.
+See `doc/troubleshooting/android-17-fold-emulator-ime-probe.md` for the
+framework source trace,
+ limits,
+ and restoration steps.
+ The first bottom-anchored deck was partially covered;
+ never infer D50 from a
+keyboard-closed capture or that failed layout.
+ The branch now includes a
+right Search with top-left deck,
+ a mirrored left Search with top-right deck,
+and an IME-lifted right Search with the deck bottom-left when closed.
+ Native
+2076 × 2152px manual captures of each with the focused query,
+ `cam`
+results,
+ a visibly rendered probe at 200% text,
+ and all deck controls
+showing have been inspected.
+ The IME-lifted layout also showed controls at
+100% with the probe visible.
+ These are provisional checks,
+ not a Gboard
+simulation or user acceptance.
+ The old left Search and wide results study
+still place the deck below content without IME avoidance;
+ they are not
+viable choices.
+ No candidate is accepted.
+ The ensuing design-only matrix and review are
+recorded in the next section.
+ No KWin automation and no production edits.
+
+## Historical three-way deck-visible Fold Search review (2026-09-24)
+
+The throwaway branch `prototype/music-player-theme-compose` captures three
+inner-panel arrangements in light/dark at 100% keyboard-closed and 200%
+typed-results with a debug-only system IME.
+`package/music-player/android-app/capture-search-choices.mjs` checks the
+2076 × 2152px HWC display,
+ Android's 390dpi,
+ the selected input method,
+queried results,
+ and seven deck-control bounds.
+ `dumpsys window windows`
+measured the input window at `[0,1421][2076,2152]` (731px or approximately
+300dp).
+ Every checked mode and transport control in all three inner layouts
+sat above this window.
+ A positive-control comparison used the rejected
+bottom-deck XML:
+ its last mode bounds `[73,1980][965,2074]` exceed the
+1421px IME top,
+ while A's corresponding bounds `[73,1251][965,1382]`
+clear it.
+ The seven-label guard alone does not prove the seek
+bar,
+ times,
+ target hit regions or text clearance;
+ manual screenshots and a
+separate hierarchy inspection covered those remaining visible marks.
+ No
+meaning-bearing app nodes crossed the approximate x `[983,1093)` band in
+the inspected 100% closed or 200% typing states.
+ The independent minimum
+padding remains unresolved.
+
+The folded cover has a single full-width Search destination in both schemes
+at 100%/200%.
+ A second manual probe inserted `cam` at 200% with an actual
+system input window `[0,1693][1080,2424]`;
+ query and both results remained
+readable.
+ That is probe evidence,
+ not Gboard geometry.
+ The AVD was restored
+to Gboard selected,
+ the probe disabled,
+ inner device state 2 and 100% text.
+
+The self-contained provisional comparison was archived after D51 as
+`questions/archive/search-three-way-before-a.html` with its template.
+ The
+former rejected split study is archived at
+`questions/archive/search-rejected-fold-review.html`.
+That comparison embedded sanitized physical-pixel rasters with a generic
+status clock and a Fold chassis at cited dp size;
+ it does not show a blank
+unpainted crease band.
+ Native source and the sanitizer/build tasks remain
+on the throwaway branch (`capture-search-choices.mjs`,
+`sanitize-search-review.mjs`,
+ `build-search-review.mjs`).
+ The build validator
+matched embedded PNGs to the scrubbed source files.
+ `agent-browser` loaded
+the self-contained artifact,
+ exercised state/scheme selects,
+ all device
+previews,
+ scale controls,
+ radio response and free text,
+ and reported zero
+WCAG 2A/AA axe violations in both review chrome schemes.
+
+My provisional order is A (Search right,
+ bottom-left deck lifted above IME),
+B (Search right,
+ fixed upper-left deck),
+ C (Search left,
+ fixed upper-right deck).
+ A preserves the accepted resting deck location
+better than B;
+ B preserves the deck's accepted side better than C.
+The pros,
+ cons,
+ and full ranking remain in the archived three-way artifact.
+The user subsequently chose A (D51) and removed the repeated positive-results
+heading (D52).
+ The old form no longer asks for a choice.
+ Gboard-specific behavior and
+keyboard heights greater than the measured probe remain unverified.
+ An
+additional 200% native probe typed a long query into A with the keyboard
+visible:
+ the query stayed bounded to the right header,
+ its multiline
+no-results message and all deck controls remained visible.
+ Long **result**
+names and full result-list scrolling still need native follow-up.
+ No
+KWin automation,
+ production implementation,
+ or `AGENTS.md` edit is allowed.
+
+## Selected A after removing the positive-results heading (D51/D52)
+
+The user answered `I pick A` and directed removal of the redundant
+`Results for “cam”` text.
+ D51 records the right Search pane with the deck
+bottom-left when closed and lifted above the system keyboard while typing.
+D52 starts positive folder/track results directly beneath the integrated
+Back/query/Clear header on **both** panels.
+ No-results and unavailable
+explanations remain distinct.
+ B and C are archived comparison evidence,
+not live visual choices.
+ Production implementation is still unauthorized.
+
+The debug-only prototype commit `38d601830` leaves historical
+`SearchLayoutStudy` defaults unchanged;
+ the selected cover route passes
+`hidePositiveHeading = true`,
+ and `PersistentSearchPane` omits the heading
+for the selected unfolded route.
+ `capture-search-selected.mjs` was introduced in commit `970a7dde1` and
+strengthened in `56b800941` to require results in the correct pane,
+ finite
+keyboard bounds and real IME dismissal after Back.
+ Its native run covered
+state 2 inner and state 0 cover at 390dpi,
+ in light and dark at 100%/200%
+text.
+ Each panel has empty,
+ keyboard-visible typed
+results,
+ and keyboard-closed result PNG/XML/metadata pairs.
+ The capture
+checks the actual input-method frame and rejects a repeated positive heading;
+for the unfolded pane it also bounds the deck controls above the keyboard.
+The resulting images show the query in its one header,
+ a folder followed by
+a track,
+ and the unfolded deck above the measured probe.
+ The selected
+hierarchy and metadata pairs are durable in throwaway branch commit
+`36f8a8b8e`,
+ while sanitized selected PNGs are committed in the main
+design evidence folder;
+ raw status/notification pixels were not copied to
+main.
+ At 200% in dark,
+ a matched before/after hierarchy comparison found
+the first folder and track results each moved up 172 physical px on both
+panels;
+ Back,
+ Clear and the unfolded final mode control retained identical
+bounds.
+ This is a positive control that the removed heading affected result
+placement without moving the header or deck.
+ After recapture,
+ device state
+2,
+ font scale 1.0,
+ Night mode yes,
+ Gboard selected,
+ the custom IME
+disabled,
+ and stay-on setting 7 were measured.
+ That debug probe does not verify Gboard's own rendering or taller
+keyboard geometries.
+
+The active,
+ self-contained `package/music-player/design/questions/current.html`
+shows only selected A,
+ across both panels and system light/dark modes,
+ with
+100% results,
+ 200% typing and an empty state.
+ Its source template is
+`questions/current.template.html`.
+ The main design package now owns
+`selected-search-question.mjs`:
+ `mise run //package/music-player/design:build`,
+`lint` and `test:unit` target the **selected** artifact,
+ not the rejected
+one.
+ `search-page-question.mjs` now targets the archived rejected artifact;
+`lint:search:historical` passed against it.
+ The throwaway branch retains
+the screenshot sanitizer and native capture runner.
+ The validator matched
+physical PNG sizes and exact embedded sources,
+ with status notification
+content masked.
+ Historical prototype scripts `capture-search-choices.mjs`
+and `capture-search-deck.mjs` still require the pre-D52 results heading;
+reproduce them only from their pre-D52 source revisions
+(`406b4523a` and `eb1fee1e2`),
+ not from the selected prototype commit.
+ `agent-browser` verified the
+rendered panel images,
+ state/scheme controls,
+ both native device-frame
+previews,
+ fit/reset/zoom/close and focus return.
+ WCAG 2A/AA checks returned
+no violations in light or dark.
+ Browser geometry checks showed the entire
+unfolded and cover raster within each gallery thumbnail,
+ including the
+keyboard region;
+ no rejected layout is shown.
+ A 390 × 844 CSS-pixel
+browser viewport had no horizontal overflow,
+ and the cover device preview's
+Fit control scaled it within that viewport.
+ A preview-dialog scale label produced an
+axe `color-contrast` **incomplete** rather than a violation;
+ manual
+computed foreground/background checks gave 7.32:1 in light and 9.37:1 in
+dark (see `doc/troubleshooting/axe-modal-dialog-contrast.md` for this
+conservative modal overlap path).
+ Browser verification was closed.
+
+A subsequent **real Gboard** test found the side physical-keyboard toolbar
+on fresh Search focus even after changing its preference switches and
+restarting Gboard.
+ The side-toolbar menu's `Show on-screen keyboard`
+action displayed a floating keyboard, and a key tap changed the focused
+query.
+ At 200% text, Gboard's x `[274,1180)`, y `[310,1081)` key surface
+intersected the deck title's `[258,1042][781,1145]` bounds;
+its screenshot showed the title partially covered.
+ Dragging the keyboard
+toward the bottom moved it over additional deck controls, not into a
+docked keyboard.
+ A fresh Search launch returned to the toolbar-only state.
+Repeating the menu action after restoring the original Gboard preferences
+still produced floating keys.
+ `dumpsys window` reported a visible but
+zero-height IME insets source with bottom hint 0;
+Android SDK `InsetsSource.calculateInsets` therefore supplies no bottom
+inset for that source.
+ The floating key touch region is a separate
+WindowManager measurement, not a bottom IME inset.
+These observations **do not overturn D51's selected A** but reveal that
+the currently selected prototype does not meet D50 with the tested real
+floating Gboard arrangement.
+ On the cover panel at 100% text,
+real Gboard key taps entered `cam` but the floating key surface at
+x `[0,830)`, y `[304,1025)` covered both the matching folder label
+`[127,374][286,433]` and track label `[127,569][432,628]`.
+ The
+cover query remained visible, but its results could not be read while
+that keyboard stayed in place.
+ This is a separate result-visibility
+failure from the unfolded deck occlusion.
+ The device's original Gboard preferences
+(off for `Show on-screen keyboard`, on for `Show toolbar`), font scale
+1.0, framework hardware-keyboard setting 0, and selected Gboard were
+restored and verified.
+ Investigation and commands are in
+`doc/troubleshooting/android-17-fold-emulator-ime-probe.md`.
+ A fresh private
+Pixel 9 Pro Fold AVD now exists at
+`/home/user/temp/agent/fold-no-hardware-avd/`, with `hw.keyboard=no`.
+The capped Podman test did not reach Android:
+ without a display its host-GL renderer failed;
+ with container-local Xvfb the emulator raised its guest RAM request to
+4096MB and the kernel killed QEMU at the 2 GiB container memory limit.
+`mvm` cannot currently provision a local VM because `virsh` is absent.
+Do not use `/home/user/temp/agent/probe-fold-gboard.mjs` on the fixture:
+it hard-codes `emulator-5554`.
+ The scratch-only
+`probe-disposable-fold-gboard.mjs` pins `emulator-5580` and checks the
+AVD name before touching settings.
+ With user authorization,
+a 6 GiB/2 CPU container retry passed the earlier cgroup limit,
+but a stale scratch-AVD lock stopped its first launch.
+ After that lock
+was removed with no process holding it,
+the next retry remained `unauthorized` in host ADB and emitted
+`No adb private key exists` and `adb: device unauthorized` from the emulator.
+It used `5.496GB / 6.442GB` when inspected after the user's wait;
+the container was then intentionally killed.
+ Its exit 137 is **not**
+evidence of another out-of-memory event.
+ Android Emulator's current help supports `-skip-adb-auth`,
+but a 6 GiB retry with that flag still exposed `emulator-5580 unauthorized`.
+The disposable AVD's launch parameters confirmed the flag;
+it alone did not solve this measured connection failure.
+The run was stopped on that terminal finding rather than left running
+for another wait.
+ Google's emulator container launcher accepts a supplied
+ADB public key at `/root/.android/adbkey.pub` alongside `-skip-adb-auth`.
+A clean scratch-AVD run with only a read-only copy of the host's
+**public** ADB key,
+`-skip-adb-auth`,
+and the independent five-minute monitor completed boot after 122 seconds.
+`getprop ro.boot.qemu.avd_name` identified `Fold_No_Hardware_Probe` on
+`emulator-5580`.
+The host's private key and shared ADB server were not copied or restarted.
+The debug Search APK was installed only on that disposable AVD.
+The original AVD remains unfolded with its original Gboard selection.
+
+The configuration's `hw.keyboard=no` did **not** make this fixture
+hardware-keyboard-free:
+`dumpsys input` still exposed `AT Translated Set 2 keyboard`,
+and Window Manager reported `qwerty/v/v`.
+The original AVD's **active updated** Gboard was versionCode `175981944`,
+not the preloaded `175753756` originally cited.
+The two AVDs ran the same debug Search APK SHA-256
+`d895072b4f232181c1f24d9db0bfd6b3af7cafae2e25f869cbe21b0039e81f53`.
+The disposable AVD initially used preloaded Gboard,
+then accepted the original AVD's updated APK splits and reported the same
+active versionCode `175981944`.
+Its settled split/full-width layout persisted after that update.
+Neither Gboard version nor `hw.keyboard=no` alone is a demonstrated cause
+of the original AVD's floating mode.
+
+On the disposable inner panel,
+real split Gboard key taps entered `cam` at 100% and 200% text.
+Its settled IME frame began at y `1352` of the 2152px screen;
+all playback controls remained visible,
+with the final mode ending at y `1313` at 200%.
+On the cover,
+real full-width Gboard taps entered `cam` at both scales;
+its IME began at y `1605` of 2424px,
+with both result labels above it.
+Light and dark 200% captures agreed,
+including after the disposable Gboard update.
+Android Back hid the cover keyboard while retaining the query/results;
+refocusing reopened it,
+and Clear plus real-key retyping worked.
+
+This **does not** settle D50 universally.
+On the original AVD,
+floating Gboard still covered the unfolded deck title at 200% and both
+cover result labels at 100%.
+A separate Gboard `Keyboard font size updated` banner on the disposable
+inner panel briefly raised the IME to y `1140`,
+clipping the final mode;
+tapping `OK` returned the IME top to y `1352` and restored the deck.
+Do not dismiss that failing state as capture noise,
+or silently narrow the user's “never hidden” requirement.
+Sanitized physical-panel captures and curated app-node geometry are
+committed under `package/music-player/design/questions/evidence/gboard-*.{png,json}`.
+`package/music-player/design/evidence/gboard-geometry.md` indexes the passing and failing captures,
+records both Gboard versions,
+and explains the current D50 boundary.
+`mise run //package/music-player/design:lint:gboard:evidence` passed.
+Disposable negative controls rejected clipped settled modes,
+a falsely passing banner,
+non-overlapping floating results and an unmasked status pixel;
+restored copies passed after each test.
+Raw screenshots and full hierarchies remain in private agent scratch only.
+
+Remaining design work includes app-observed **floating** keyboard geometry,
+responses to floating and transient IME occlusion,
+result activation/ranking,
+long result names and scrolling,
+taller keyboards,
+and the independent minimum information clearance at the crease.
+The user was not asked to vote again on B or C.
+No KWin automation,
+production implementation,
+or `AGENTS.md` change.
+
+## Banner-height study and upper-left clarification
+
+The user clarified that the upper-left region stays the **same folder
+browser** when Search is open and the keyboard appears.
+Do not blank it or swap it for a different summary;
+the user specifically rejected a `Current folder` caption as useless.
+D51 still places Search on the right and the complete deck bottom-left.
+The browser viewport may shorten without replacing its content.
+The user accepts a little clipping,
+even if the visible portion of Open has less than its normal touch extent;
+no deliberately undersized underlying layout target is required.
+Prototype commit `119e4b559` removed the caption and kept the original
+browser in the keyboard-height study.
+At 200% text with the synthetic 415dp IME starting at y `1141`,
+`Folders` and Open remained visible in the short upper-left viewport,
+but folder rows did not fit.
+The Open parent's visible accessibility bounds were
+`[621,132][953,245]`,
+compared with `[621,148][953,279]` when the keyboard was closed.
+Those bounds alone do not establish the underlying intrinsic target size
+or that off-screen folder rows can be reached while typing.
+The full deck still has priority.
+
+A debug-only 415dp system IME on private `emulator-5580` reproduced the
+observed Gboard banner-height geometry within 1px:
+its IME started at y `1141` rather than the real banner's y `1140`.
+At 200% font scale,
+focused Search in unchanged A clipped `Shuffle all folders` to
+`[73,1076][965,1141]`.
+This is the positive failure control for evaluating a proposed reflow.
+On prototype branch `prototype/music-player-theme-compose`,
+commit `62efa92ad` introduced an **unaccepted** inline title/transport
+band for a measured tall IME,
+omitted an empty browser/deck separator,
+and preserved the original 16dp outer and 8dp group spacing.
+The same synthetic IME left its final mode at `[73,971][1038,1102]` with
+39px below it,
+while the `cam` editor was focused and both matching result labels remained
+above the keyboard.
+The final transport glyph ended at x `965`,
+clear of the approximate x `[983,1093)` crease;
+its clickable parent was `[877,279][994,396]`,
+a 48dp target whose right edge may cross the crease without moving its glyph
+onto the hinge.
+Its title paint appeared intact,
+but accessibility bounds clipped its leading 16px at the scroll viewport;
+recheck this before offering the variant for adoption.
+These are **synthetic IME**, not real Gboard, after-state observations.
+The 415dp stress screenshots and full hierarchies remain in private agent
+scratch;
+they are not the published 300dp selected review captures.
+
+The debug-only app probe logged a settled Compose IME bottom of `1011px`,
+a platform bottom of `1011px`, `isVisible=true`,
+and the app-delivered bounding rectangle
+`Rect(0, 1141 - 2076, 2152)` for the tall system IME.
+At Gboard's settled split inner height,
+it logged `800px` for both bottoms and
+`Rect(0, 1352 - 2076, 2152)`.
+During the synthetic IME appearance,
+Compose reported `759`, then `987`, then `1011px` while the platform
+reported `1011px` in all sampled frames.
+The prototype's `1000px` stress trigger changed its layout only at the
+last sample;
+this is a fixture-selection threshold,
+**not** a demonstrated uninterrupted fit rule.
+A disposable Gboard font-scale toggle from 1.5 to 2.0 did not yield an
+observed second banner,
+but the app restarted and keyboard focus dropped on that transition.
+No claim of nonrecurrence or real-banner reflow is supported.
+The original floating Gboard remains a distinct D50 failure;
+platform visibility alone does not locate floating keys.
+
+The bounded Compose build ran in a 6 GiB/2 CPU Podman container using the
+actual `/home/user/Android/Sdk` toolchain.
+The first isolated build pointed at mise's command-line SDK without installed
+platform/build-tools licenses and failed at dependency resolution;
+the second found the SDK but caught an omitted `layoutDirection` argument in
+`WindowInsets.getRight`;
+subsequent corrected builds passed.
+The isolated container generated a different debug signing certificate,
+so the private disposable app was uninstalled before installing the built
+APK;
+no shared app/device state was modified.
+
+The user settled the upper-left **content** as the unchanged folder browser.
+Prototype commit `67fb04d23` constrained the tall-IME mode group to the
+crease-safe width while keeping that same browser above the deck.
+At 200% text with the 415dp synthetic IME top at y `1141`,
+`Folders`/Open were visible in the shortened header,
+off-screen folder rows were not,
+and the final mode was `[73,990][965,1121]`.
+The `Next track` glyph was `[906,327][965,386]` inside clickable parent
+`[877,298][994,415]`;
+the glyph clears approximate crease x `[983,1093)` while the full
+48dp hit region may cross it.
+The title's ink begins at x `58` in the final synthetic capture,
+but UI Automator clips its text bounds to `[73,265][580,368]` at the
+scroll viewport.
+The complete title is painted in the screenshot;
+its clipped accessibility bounds still need a focused accessibility check
+before treating this tall-IME arrangement as complete.
+With settled real split Gboard top y `1352`,
+the same browser header remained,
+final mode was `[73,1201][965,1332]`,
+and actual key taps after Clear restored `cam` with both results visible.
+The user accepts a little cropping of Open in the short viewport;
+visible accessibility bounds there do not establish intrinsic target size.
+The real font banner was not reproduced after this edit,
+the fixed stress threshold is not an animation-fit rule,
+and floating Gboard remains a separate D50 failure.
+All production work remains unapproved;
+the browser content itself is no longer an open choice.
+
+The corrected selected-A matrix was recaptured on the disposable Fold with
+the installed debug APK SHA-256
+`89af26500614050e27cbf81178bc5b4711f3439b37617c79888ed172cdc2f444`
+and the system-managed **300dp debug IME**.
+The APK was built after prototype code commit `67fb04d23`;
+`25dc2fb01` is the later capture-script checkout revision.
+The scratch metadata's `buildCommit` field records that checkout HEAD,
+**not** an independent proof of the preinstalled APK's build commit.
+The capture checked both physical panels,
+light and dark,
+100% and 200% text,
+complete mode and result bounds,
+then restored the AVD's selected IME and settings.
+For the unfolded typing state,
+it now requires the actual `Folders` browser to remain in UI Automator;
+there is no substitute caption.
+Twelve selected PNGs were sanitized with a generic `9:41` status clock
+and stripped of metadata,
+then `questions/current.html` was rebuilt from them.
+A separate image check validated every PNG's physical dimensions,
+opaque pixels,
+masked upper-left status corner,
+and absence of text/EXIF chunks;
+a disposable red-corner fixture was rejected while the original passed.
+The design build,
+lint,
+unit task,
+and browser preview controls passed after the update.
+The current A-only review now depicts this retained browser,
+not the old blank-left typing capture.
+Older real-Gboard evidence PNGs predate that correction;
+the new real-Gboard recheck measured the corrected settled state but did
+not reproduce the transient font banner or settle floating-keyboard D50.
 
 ## Issue tracking moves to Linear for this session
 

@@ -37,6 +37,34 @@ export class CommitTransactionRecoveryError extends Error {
 }
 
 /**
+ Reports whether journal owner process is still alive.
+
+ @param pid - recorded wrapper process ID
+
+ @returns whether signal-zero probe succeeds
+
+ @example
+ ```ts
+ processIsAlive(process.pid);
+ ```
+ */
+export function processIsAlive(pid: number,): boolean {
+  try {
+    process.kill(
+      pid,
+      0,
+    );
+    return true;
+  }
+  catch (error: unknown) {
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ESRCH'))
+      return false;
+    throw error;
+  }
+}
+
+/**
  Parses original HEAD discriminated value.
  
  @param value - untrusted journal field
@@ -62,17 +90,28 @@ function parseOriginalHead(value: object,): OriginalHead {
  
  @param value - untrusted journal object
  
- @returns validated added-path records
+ @param field - added or selected completion records
+ 
+ @returns validated worktree completion records
  
  @throws CommitTransactionRecoveryError when a record is malformed
  */
-function parseAddedPaths(value: object,): readonly AddedPathRecord[] {
-  if (!('addedPaths' in value))
+function parseAddedPaths({
+  value,
+  field,
+}: Readonly<{
+  value: object;
+  field: 'addedPaths' | 'selectedWorktreePaths';
+}>,): readonly AddedPathRecord[] {
+  if (!(field in value))
     return [];
   /**
    Untrusted records field.
    */
-  const records: unknown = value.addedPaths;
+  const records: unknown = Reflect.get(
+    value,
+    field,
+  );
   if (!Array.isArray(records,))
     throw new CommitTransactionRecoveryError('Prepared transaction added paths are malformed.',);
   return records.map(function parseRecord(record: unknown,): AddedPathRecord {
@@ -143,6 +182,7 @@ export function parsePreparedJournal(bytes: Uint8Array,): PreparedTransactionJou
     || (!Array.isArray(value.selectedPaths))
     || (!value.selectedPaths
       .every(function stringPath(path,) { return (typeof path) === 'string'; },))
+    || (('operation' in value) && (value.operation !== 'normalize-only'))
     || (!('intendedTreeOid' in value))
     || ((typeof value.intendedTreeOid) !== 'string')
     || (!('directoryDevice' in value))
@@ -186,7 +226,15 @@ export function parsePreparedJournal(bytes: Uint8Array,): PreparedTransactionJou
       .filter(function stringPath(path,): path is string {
       return (typeof path) === 'string';
     },),
-    addedPaths: parseAddedPaths(value,),
+    addedPaths: parseAddedPaths({
+      value,
+      field: 'addedPaths',
+    },),
+    selectedWorktreePaths: parseAddedPaths({
+      value,
+      field: 'selectedWorktreePaths',
+    },),
+    ...(('operation' in value) ? { operation: 'normalize-only' as const, } : {}),
     intendedTreeOid: value.intendedTreeOid,
     directoryDevice: value.directoryDevice,
     directoryInode: value.directoryInode,

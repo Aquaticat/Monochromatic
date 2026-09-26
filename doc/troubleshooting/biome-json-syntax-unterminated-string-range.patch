@@ -1,0 +1,16 @@
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -117,8 +117,11 @@
+     let mut text = token.token_text_trimmed();
+     if token.kind() == JsonSyntaxKind::JSON_STRING_LITERAL {
+         // remove string delimiters
+-        // SAFETY: string literal token have a delimiters at the start and the end of the string
+-        let range = TextRange::new(1.into(), text.len() - TextSize::from(1));
++        // An unterminated literal is still a JSON_STRING_LITERAL and can be a lone opening quote,
++        // so clamp the stripped range to an empty one instead of inverting it.
++        let end = text.len().checked_sub(TextSize::from(1)).unwrap_or_default();
++        let start = TextSize::from(1).min(end);
++        let range = TextRange::new(start, end);
+         text = text.slice(range);
+     }
+     text

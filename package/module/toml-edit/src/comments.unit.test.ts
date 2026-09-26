@@ -16,7 +16,7 @@ import {
   parseTomlEdit,
   tomlGetCommentAfter,
   tomlGetCommentsBefore,
-} from '../dist/final/node/index.mjs';
+} from '@monochromatic-dev/module-toml-edit';
 
 /** Length of the repeated-whitespace gaps exercising the long-input path. */
 const longRunLength = 100_000;
@@ -40,6 +40,20 @@ await describe({
     },),
 
     it({
+      name: 'locates comments on an indexed array-of-tables header',
+      fn: async () => {
+        const edit = parseTomlEdit({
+          source: '[[foo]]\nname="a"\n# note\n[[foo]]\nname="b"\n',
+        },);
+        const comments = tomlGetCommentsBefore({ edit, path: ['foo', 1,], },);
+        expect(comments.map(function valueOf(comment,) {
+          return comment.value;
+        },),).toStrictEqual([' note',],);
+        expect(tomlGetCommentsBefore({ edit, path: ['foo', 0,], },),).toStrictEqual([],);
+      },
+    },),
+
+    it({
       name: 'a blank line between comment and key breaks attachment',
       fn: async () => {
         const source = '# header\n\nkey = 1\n';
@@ -57,6 +71,38 @@ await describe({
         const trailing = tomlGetCommentAfter({ edit, path: ['key',], },);
         expect(trailing.comment,).not.toBe(undefined,);
         expect(nonNullishOrThrow(trailing.comment,).value,).toBe(' trailing',);
+      },
+    },),
+
+    it({
+      name: 'trailing comment attaches when the hash immediately follows a value',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'key = 1#tail\n', },);
+        expect(tomlGetCommentAfter({ edit, path: ['key',], },).comment?.value,).toBe('tail',);
+      },
+    },),
+
+    it({
+      name: 'trailing comment attaches at end of file without a newline',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'key = 1 #tail', },);
+        expect(tomlGetCommentAfter({ edit, path: ['key',], },).comment?.value,).toBe('tail',);
+      },
+    },),
+
+    it({
+      name: 'does not mistake a preceding comment for a trailing comment',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: '# before\nkey = 1\n', },);
+        expect(tomlGetCommentAfter({ edit, path: ['key',], },).comment,).toBe(undefined,);
+      },
+    },),
+
+    it({
+      name: 'does not attach a comment on the following line',
+      fn: async () => {
+        const edit = parseTomlEdit({ source: 'key = 1\n# after\n', },);
+        expect(tomlGetCommentAfter({ edit, path: ['key',], },).comment,).toBe(undefined,);
       },
     },),
 

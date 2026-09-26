@@ -222,6 +222,23 @@ pub fn load_from_text(text: &str) -> std::result::Result<LoadedRules, crate::Loa
     })
 }
 
+/// Constructs a cache-free hybrid matcher for pathname unit tests.
+///
+/// These tests must never read or publish artifacts in a user's runtime cache.
+#[cfg(test)]
+pub(crate) fn test_rules(text: &str) -> LoadedRules {
+    let compiled = RuntimeRules::compile(text).expect("compile pathname test rules");
+    let names = compiled.names().to_vec();
+    return LoadedRules {
+        sets: vec![ScanSet {
+            matcher: ScanMatcher::Runtime(compiled),
+            base: 0,
+            names,
+        }],
+        cache_warnings: Vec::new(),
+    };
+}
+
 /// Registers the loader precedence and offset tests (sidecar, lint-exempt).
 #[cfg(test)]
 #[path = "frx_load_tests.rs"]

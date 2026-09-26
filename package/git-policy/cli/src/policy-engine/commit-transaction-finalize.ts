@@ -50,6 +50,8 @@ const DECODER = new TextDecoder(
  
  @param addedPaths - tracked paths policies added to the commit
  
+ @param selectedWorktreePaths - selected newline files eligible for safe synchronization
+ 
  @example
  ```ts
  await executePreparedCommit({ workspace, gitPath: '/usr/bin/git', spawnCwd: '/work', effectiveCwd: '/repo', commitArgs: ['commit'], intendedTreeOid });
@@ -65,6 +67,7 @@ export async function executePreparedCommit({
   originalHead,
   repositoryRoot,
   addedPaths,
+  selectedWorktreePaths,
 }: Readonly<{
   workspace: CommitTransactionWorkspace;
   gitPath: string;
@@ -75,6 +78,7 @@ export async function executePreparedCommit({
   originalHead: OriginalHead;
   repositoryRoot: string;
   addedPaths: readonly AddedPathRecord[];
+  selectedWorktreePaths: readonly AddedPathRecord[];
 }>,): Promise<void> {
   try {
     await runTransactionGit({
@@ -138,7 +142,10 @@ export async function executePreparedCommit({
     gitPath,
     cwd: effectiveCwd,
     repositoryRoot,
-    records: addedPaths,
+    records: [
+      ...addedPaths,
+      ...selectedWorktreePaths,
+    ],
   },);
   workspace.finishTransaction();
 }

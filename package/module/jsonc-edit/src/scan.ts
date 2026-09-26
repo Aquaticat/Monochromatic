@@ -322,8 +322,26 @@ export type CommentScan = {
 };
 
 /**
+ Reports whether an `indexOf` result found a match, dropping the -1 sentinel.
+ 
+ @param offset - Candidate offset from `indexOf`.
+ 
+ @returns Whether that offset exists in the searched source.
+ 
+ @example
+ ```ts
+ ['// a\r\n', '// b'].map((source) => source.indexOf('\r')).filter(isFoundOffset);
+ // => [2]
+ ```
+ */
+function isFoundOffset(offset: number): boolean {
+  return offset !== (-1);
+}
+
+/**
  Scans a `//` line comment starting at the first slash. The body runs to the
- next newline or end of input; the newline itself is not consumed.
+ next line feed, carriage return, or end of input; the terminator itself is not
+ consumed.
  
  @param source - Full JSONC source.
  
@@ -345,18 +363,35 @@ export function scanLineComment({
   readonly index: number;
 },): CommentScan {
   /**
-   Offset of the terminating newline, or -1 when the comment runs to EOF.
+   Offset of the next line feed, or -1 when none follows.
    */
-  const newline = source.indexOf(
+  const lineFeed = source.indexOf(
     '\n',
     index,
   );
   /**
-   Offset just past the comment body.
+   Offset of the next carriage return, or -1 when none follows. A bare CR is a
+   line ending in JSONC source, so a comment must not swallow the rest of the
+   document on classic Mac or mixed line endings.
    */
-  const end = (newline === (-1))
+  const carriageReturn = source.indexOf(
+    '\r',
+    index,
+  );
+  /**
+   Offsets of line endings that actually follow the comment start.
+   */
+  const terminators = [
+    lineFeed,
+    carriageReturn,
+  ].filter(isFoundOffset,);
+  /**
+   Offset of the comment body's end: the earliest line ending, or end of input.
+   The terminator itself is left for whitespace scanning.
+   */
+  const end = (terminators.length === 0)
     ? source.length
-    : newline;
+    : Math.min(...terminators,);
   return {
     text: source.slice(
       index + 2,
