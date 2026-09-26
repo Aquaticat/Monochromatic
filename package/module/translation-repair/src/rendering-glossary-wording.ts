@@ -209,6 +209,27 @@ export const WORDING_GLOSSARY: readonly CommunityTerm[] = [
     why: 'a credit line\'s 作者 names who made the work, and an English credit says "by" before the maker; '
       + '", author" before a name is word for word',
   },
+  // CLASS ONE HUNDRED FIFTY-FIVE (shi_Yumiaoya38, 2026-09-26): the father's
+  // insult 「逆子」——耻辱，没本事 shipped "a disgrace, someone with no
+  // capability", word for word, where shi_Yumiaoya37 wrote "a failure". The
+  // pinned corpus carries 没本事 once, in that insult, with no archive English.
+  {
+    term: '没本事',
+    renderings: [
+      'good-for-nothing',
+      'useless',
+      'a failure',
+      'worthless',
+    ],
+    refusedForms: [
+      'no capability',
+      'no capabilities',
+      'without capability',
+      'lacking capability',
+    ],
+    why: 'a parent\'s insult for a child who will amount to nothing; an English parent says "good-for-nothing" or '
+      + '"useless", and "no capability" is word for word',
+  },
 ];
 
 //endregion Wording renderings
