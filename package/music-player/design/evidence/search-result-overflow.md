@@ -119,11 +119,81 @@ The APK's signing certificate differed from the prior installed debug APK;
 only the disposable AVD's app was uninstalled and reinstalled before this
 same-hash comparison.
 
-Next test the keyboard-closed scroll end,
-IME opening at the end,
-100% text and real settled full-width Gboard,
-while independently checking that the inner selected browser and deck are
-unchanged at both text scales.
-Keep raw status-bearing screenshots and XML private until sanitized.
+## Same-APK controls and other settled keyboard states
+
+The **opt-out** cover candidate on that installed APK kept the result list
+at `[0,330][1080,2365]` while the debug IME visibly began at y `1693`.
+A swipe moved row 1 upward from y `2236` to y `1263`;
+after scrolling to the end,
+row 18 stayed at `[127,2151][765,2254]` after another within-list swipe.
+The native cover screenshot showed results through row 15 above the dark
+keyboard,
+with rows 16 to 18 unavailable until the keyboard was hidden.
+Thus the opt-in candidate's smaller viewport has a same-binary,
+same-data failure control,
+not merely a comparison against an older build.
+
+At **100% text**,
+the opt-in cover viewport again ended at y `1693` under the debug IME.
+Its last row title was `[127,1542][487,1601]` and supporting text
+`[127,1601][513,1650]`;
+the screenshot showed both above the input surface.
+At 200%, hiding the keyboard expanded the viewport to y `2365` and moved
+row 18 to y `[2151,2254]`;
+refocusing shrank the viewport again,
+and a further list swipe returned the last title and support text above
+that keyboard.
+Refocus did **not** automatically preserve the last row's visible position;
+continued scrolling recovered it.
+
+With **real settled full-width Gboard** on the cover,
+the opt-in viewport ended at y `1605` at both 100% and 200% text.
+After scrolling,
+row 18 and its support text occupied y `[1454,1513]` and
+`[1513,1562]` at 100%,
+then `[1394,1497]` and `[1497,1588]` at 200%.
+Both physical-panel screenshots showed the complete final row above Gboard.
+A real `m` key tap changed `cam` to `camm`,
+proving the query field still accepts keyboard input;
+the debug fixture deliberately shows results **only for exactly `cam`**,
+so the resulting empty state does not test real search filtering or ranking.
+
+On the **inner** panel,
+the opt-in marker did not alter the selected A branch.
+At 100%/200% text,
+the spaced and unbroken stress titles remained bounded to x
+`[1220,2037]`,
+while Folders,
+Open,
+the actual folder browser,
+the full bottom-left deck and the right query remained in their selected
+positions in the captured closed states.
+At 100% with the debug IME beginning at y `1421`,
+right-side scrolling exposed row 18 at y `[1270,1329]` and its support
+text at `[1329,1378]` while the browser and the complete deck stayed
+visible.
+At 200% with **real floating Gboard**,
+the key surface still obscured parts of right-pane result labels as well
+as the D53-exempt deck.
+The right-pane overlap is a **separate open decision** (#122),
+not an implied extension of D53 or the accepted D55 folded-cover case.
+A settled real split-keyboard test on this stress fixture was **not**
+performed;
+the earlier split-keyboard findings used short sample results.
+
+These captures support wrapping,
+scrollability and the opt-in cover viewport in the named **settled** states.
+They do not test the IME animation's intermediate frames,
+all keyboard heights,
+result activation,
+ranking or accessibility.
+The inner text-node boxes stay to the right of the approximate crease x
+`[983,1093)` in the inspected stress states;
+the screenshots visibly preserve an unlettered central band,
+but neither measurement certifies every glyph-ink edge or E2's open
+numeric `min_padding`.
+The cover viewport comparison is **not adopted** for production or inserted
+into the accepted A review.
+Raw status-bearing screenshots and hierarchies remain private.
 
 [compose-insets]: https://developer.android.com/develop/ui/compose/system/insets-ui
