@@ -324,7 +324,13 @@ so the harness records the attempt as deliberately killed.
   a killed one appears at most once.
 - `landed-bytes`:
   each selected path holds the bytes captured at invocation,
-  or a clean three-way merge of them onto the landed parent from a candidate preparation base.
+  a clean three-way merge of them onto the landed parent from a candidate preparation base,
+  or,
+  for an explicit-path attempt,
+  the landed parent's bytes when an attempt started later captured exactly those bytes for the same path
+  and its commit lies between `HEAD` before invocation and the parent
+  (capture order kept the later capture's landed bytes,
+  `SPEC.md` "Capture order").
 - `landed-scope` and `landed-branch`:
   a landed commit changes only its selected paths
   and is reachable from the branch `HEAD` named at invocation.
@@ -393,116 +399,65 @@ so filtering never shifts another scenario's decisions.
 Each result line prints a workload digest over labels,
 selections,
 and captured bytes.
-Two consecutive runs of seed 1 printed identical digests for all 54 non-skipped runs.
+Two consecutive runs of seed 1 printed identical digests for all 54 non-skipped runs,
+and the two seed-1 runs of 2026-09-26 against `09b0eb07b` and `9b5f66c40` printed identical digests for `concurrent-trace-replay`.
 Hook barriers make the pinned interleavings identical on replay;
 free-running starts and the `sigkill-offset` kill still depend on process scheduling,
 so a replay reproduces the workload exactly but can land a free-running race differently.
 
 ## Results on the current build
 
-Seeds 1 and 2,
+Seeds 1,
+2,
+and 3,
 2026-09-26,
-packed from `feat/cli-git-concurrent-commits` at `835168405`
-(slice 3 plus subsumption replay,
+packed from `feat/cli-git-concurrent-commits` at `9b5f66c40`
+(slice 3 with subsumption and capture order,
+slice 4 policy read sets,
 the slice 5 landing reservation,
 and the amended-history checker),
 72 scenario runs per seed.
 
 ### Passing
 
-- Every baseline on both Git versions and both seeds:
+- Every baseline on both Git versions and all three seeds:
   19 passes,
   plus `baseline-hooks-config` skipped on 2.40.0.
-- Every concurrency scenario on both versions and both seeds,
-  except `concurrent-trace-replay` below:
-  49 of 50 non-skipped concurrency runs on seed 1
-  and 48 of 50 on seed 2.
-  This includes `amend-during-commits`
-  (the three commits that replay onto a landed amend now surface the non-fast-forward push rejection with exit `0`),
-  `interleaved-index-writers` on 2.40.0,
-  and the new `shared-file-adjacent-edits` and `reservation-after-lost-races`.
-- `concurrent-trace-replay` passes on 2.40.0 with seed 1.
-  Seed 2 on 2.55.0 no longer fails `trace/p5503`:
-  another in-flight commit had added that file,
-  and this commit captured it with 7 lines inserted in the middle,
-  which subsumption now keeps.
+- Every concurrency scenario on both Git versions and all three seeds:
+  50 passes per seed,
+  including `concurrent-trace-replay`,
+  which failed before capture order on seed 1 with 2.55.0 and on seed 2 with both versions,
+  and `shared-file-overlapping-hunks`,
+  where both commits now land because both captures come from one worktree.
 - Skipped on 2.40.0:
   the config-hook scenarios and `foreign-index-lock-holder`,
   which need Git 2.54.0.
 
-### Failing, and why
+### Fixed on the way
 
-`concurrent-trace-replay` still expects every commit to land and still fails:
-seed 1 on 2.55.0,
-seed 2 on both versions.
-Each replay conflict below is genuine under the subsumption rule:
-the committing agent's own edit deleted or rewrote lines that the commit that won the race had just added,
-so its captured bytes do not contain the landed change.
-The trace synthesizer (`editText` in `content-fixture.ts`) replaces a random block of the file,
-which can overlap the block an in-flight commit inserted.
-Hunks are in the file as the winner left it,
-from the diagnostic reruns of the same seeds:
-
-- Seed 1,
-  2.55.0,
-  `t2` against `t1`,
-  `trace/p1538`
-  (added by both):
-  `t1` added 297 lines;
-  `t2`'s bytes are `t1`'s with lines 112 to 113 replaced by 19 new lines
-  (`@@ -109,8 +109,25 @@`).
-- Seed 1,
-  2.55.0,
-  `t12` against `t11`,
-  `trace/p1538`:
-  `t11` replaced base lines 260 to 261 with 24 lines
-  (`@@ -260,2 +260,24 @@`);
-  `t12` deleted lines 283 to 291 of that result,
-  the last line `t11` inserted and the 8 base lines after it
-  (`@@ -280,15 +280,44 @@`).
-- Seed 2,
-  2.40.0,
-  `t4` against `t3`,
-  `trace/p627`
-  (added by both):
-  `t3` added 171 lines;
-  `t4` replaced 30 of them,
-  lines 93 to 122,
-  with 23
-  (`@@ -90,36 +90,29 @@`).
-- Seed 2,
-  2.40.0,
-  `t6` against `t5`,
-  `trace/p234` and `trace/p629`:
-  `t5` replaced base lines 50 to 71 of `p234` with 46 lines,
-  and `t6` replaced 8 of those with 1 line
-  (`@@ -79,14 +79,7 @@`);
-  `t5` added `p629` with 68 lines,
-  and `t6` rewrote 31 of its first 38
-  (`@@ -1,38 +1,45 @@`).
-- Seed 2,
-  2.40.0,
-  `t14` against `t13`,
-  `trace/p636` and `trace/p637`
-  (both added by both):
-  `t14` deleted 3 of the 80 lines `t13` added to `p636`
-  (`@@ -27,9 +27,19 @@`)
-  and 1 of the 288 lines it added to `p637`
-  (`@@ -112,7 +112,51 @@`).
-
-Seed 2 on 2.55.0 also fails `t7` before any replay:
-`git add --all -- trace/p5499 trace/p5500 trace/p5501 trace/p5502 failed: fatal: pathspec 'trace/p5500' did not match any files`.
-The trace window deletes `trace/p5500` in `t7`,
-while the commit that adds it is still in flight,
-so the path is in neither `t7`'s preparation base nor its worktree;
-native `git commit -- trace/p5500` fails the same way.
-The harness only waits for the other worker's `pre-commit` hook before touching a shared path,
-not for its landing.
-
-The scenario was not relaxed.
-Whether it should accept replay conflicts where one in-flight commit rewrites another's fresh lines,
-and deletions of paths another in-flight commit adds,
-is open.
+- The replay conflicts `concurrent-trace-replay` reported under subsumption alone
+  (a commit's own edit rewrote lines another in-flight commit had just added,
+  for example `trace/p1538` on seed 1 with 2.55.0 and `trace/p627` on seed 2 with 2.40.0)
+  are decided by capture order:
+  the later capture's bytes land
+  (`SPEC.md` "Capture order").
+- Seed 2 on 2.55.0 failed `t7` with
+  `fatal: pathspec 'trace/p5500' did not match any files`,
+  because `t7` deleted a path another in-flight commit was adding.
+  The harness now waits for the landing of an in-flight commit that creates a path before another commit removes it
+  (see "Commit-shape trace").
+- A first seed-3 run failed `concurrent-trace-replay` on 2.40.0 with
+  `landed-bytes [t9 d9059a229200 trace/p1015]`:
+  `t9` kept the landed bytes of a path a later capture had landed first,
+  which capture order prescribes and the checker did not accept yet.
+  `landed-bytes` now accepts exactly that case
+  (see "Invariants").
+  The rerun's free-running interleaving did not reach it again.
+- The same first seed-3 run failed `sigkill-phase-landing-locked` on 2.55.0:
+  the bystander exited `2` with `transaction-failed` `ESRCH: no such process, read`,
+  because reading `/proc/<pid>/stat` of the victim while it exited failed with `ESRCH`
+  and the owner-liveness check treated only `ENOENT` as exited.
+  It now treats `ESRCH` as exited too.
 
 ## Open problems
 
