@@ -8082,7 +8082,56 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
-## XingZ6013 read, 2026-09-26: classes one hundred thirty-nine to forty-two live, and classes one hundred forty-five to forty-seven
+## hulicaijia29 read, 2026-09-26: class one hundred forty-four not exercised, and class one hundred forty-eight
+
+### What the run did
+
+hulicaijia29 (frozen `f31fd2ec5`) SETTLED at 07:09 UTC in 85.0 min against hulicaijia28's 24.4,
+about 3.06 USD by the meters (Bedrock 24.39 to 23.14, OpenRouter 54.22 to 52.41).
+Synthetic ran dry at 05:56 UTC and Hyper read dry until 06:55 UTC,
+so glm-5.3 threw 284 of 337 calls and Qwen3.8-27B 465 of 601 as unreachable.
+72 slices, 115 repair issues, 29 accepted, 56 slices where the lanes differed, 41 slices changed on the page.
+
+### The checks
+
+Every hulicaijia28 check held:
+13 headings, 9 footnote markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA,
+no error finish, no double blank line, "douhua" seven times, "Jiefangbei" six times, "licorice" twice.
+The only straight single quotes on the page are the seven JSX photo paths, as the archive has them,
+so class one hundred forty-seven has nothing to curl here.
+Footnote 7's wordplay note is on the page with 烷 corrected to wán.
+
+Class one hundred forty-four was NOT exercised: no issue was filed on chunk 69 this run,
+so nothing disputed the archive and no dispute block reached the slice 69 slate.
+The slate kept the archive's note 3 to 2
+(minimax-m3, google.gemma-4-e2b and Mercury 2.5 citing the page's apparatus;
+deepseek-v4.1-flash and gemma-4-26b-a4b-it calling it an import from the ARCHIVE note).
+
+### Class one hundred forty-eight: a Bedrock Gemma stream held in the provider's queue holds its round
+
+Between 06:05 and 06:55 UTC Bedrock's `google.gemma-4-e2b` went from a 1 s mean stream to 235, 263 and 219 s
+in three of the five ten-minute windows, while `google.gemma-4-26b-a4b` on the same provider stayed at 1 s
+and every other model kept its own pace.
+The streams carry the same signature every time: a first frame at about 15 s and a frame every 15 s after it,
+then content trickling in (70 to 590 content characters over 70 to 305 s), or nothing at all.
+24 calls ran to the 360 s deadline.
+
+With Synthetic and Hyper dry, every bench leaned on the reachable seats,
+and a round of five seats with two unreachable needed Gemma E2B's ballot for its quorum of three:
+the slowest rounds read "3/5 heard, 363791ms to quorum".
+Across the whole pipeline the ten-minute stream count fell from 220 a model to 7 to 21 while it lasted.
+Hyper read wet at 06:55 UTC, the same minute the episode ends in this log, and quorum stopped needing the seat.
+
+The same signature appears in other runs, rarely:
+24 of 68,235 Bedrock Gemma streams across the 200 newest pass logs,
+against 79 in hulicaijia29 alone.
+Without it, no Bedrock Gemma completion in those logs took longer than 27,340 ms
+(over every completion, signature or not: p50 1.4 to 1.5 s, p99 4.2 to 4.5 s);
+with it, completions ran 25 to 304 s.
+No other model separates this way: DeepSeek V4.1 Flash, GLM-5.3-Flash, Kimi-K3 and Qwen3.8-27B complete
+healthy streams at 200 to 350 s, so a bound of this kind is per model, set from the model's own measurement.
+
+## XingZ6013 read, 2026-09-26: classes 139 to 142 live, and classes 145 to 147
 
 ### What the run did
 

@@ -4777,13 +4777,17 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  HULICAIJIA29 RUNNING on `.frozen-dist-f31fd2ec5` (launched 2026-09-26, pid 2414552, scope `pass-hulicaijia29`,
-    log `~/temp/agent/hulicaijia29.log`), the build carrying classes one hundred forty-four to forty-seven,
-    for class one hundred forty-four:
-    read the chunk 69 "issue … filed by X, panel …" line first;
-    only an accepted `accuracy/addition` claim disputes the archive,
-    and only then does the slice 69 slate carry the dispute block the fix bounds.
-    A slate ballot citing the accepted claim as settling the note is class one hundred forty-four not live.
+1.  CLASS ONE HUNDRED FORTY-EIGHT IN PROGRESS (2026-09-26): cut a Bedrock Gemma call at a bound measured per model
+    and hold the model out, so a round stops waiting on a stream held in Bedrock's queue;
+    then relaunch hulicaijia for class one hundred forty-four, which still needs an accepted
+    `accuracy/addition` claim on chunk 69 to be exercised.
+    HULICAIJIA29 READ (frozen `f31fd2ec5`): SETTLED at 07:09 UTC 2026-09-26 in 85.0 min, about 3.06 USD;
+    every hulicaijia28 check held, footnote 7's note on the page;
+    class one hundred forty-four NOT exercised (no issue filed on chunk 69; the slate kept the note 3 to 2);
+    class one hundred forty-seven silent by design (the seven straight single quotes are the archive's JSX paths);
+    class one hundred forty-eight found: Bedrock `google.gemma-4-e2b` at 219 to 263 s a stream from 06:05 to 06:55 UTC,
+    24 deadline cuts at 360 s, rounds waiting on it for quorum with Synthetic and Hyper dry;
+    recorded under "## hulicaijia29 read" in the pass log.
     XINGZ6013 READ (frozen `e387be2cf`): SETTLED at 04:32 UTC 2026-09-26 in 56.3 min;
     classes one hundred thirty-nine to forty-two live;
     class one hundred forty-five (a Han title as a link's whole text escaped the class ninety-eight floor,
