@@ -226,16 +226,23 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     } else 0
     val targetBottom = if (autoFitStudy) maxOf(reportedImeInset, platformBottom) else reportedImeInset
     val keyboardShown = targetBottom > 0
-    var restingDeckHeight by remember { mutableIntStateOf(0) }
+    var restingDeckHeight by remember(density.density, density.fontScale, observedView.width) {
+        mutableIntStateOf(0)
+    }
+    var openDeckHeight by remember(density.density, density.fontScale, observedView.width) {
+        mutableIntStateOf(0)
+    }
     val topSafe = if (Build.VERSION.SDK_INT >= 30) {
         platformInsets?.getInsets(AndroidWindowInsets.Type.statusBars())?.top
     } else null
     val topSafePx = topSafe ?: WindowInsets.safeDrawing.getTop(density)
     val availableAboveIme = (observedView.height - topSafePx - targetBottom).coerceAtLeast(0)
     val dividerPx = with(density) { 16.dp.roundToPx() }
-    // Select the debug reflow when the actually measured closed deck would overflow.
-    // Until its first measurement arrives, reflow conservatively instead of clipping.
-    val measuredOverflow = restingDeckHeight == 0 || restingDeckHeight + dividerPx > availableAboveIme
+    // Prefer the measured open, noncompact deck when available. A cold entry
+    // without one falls back to the larger closed measurement, choosing safety.
+    val requiredDeckHeight = if (openDeckHeight > 0) openDeckHeight else restingDeckHeight
+    val measuredOverflow = requiredDeckHeight == 0 ||
+        requiredDeckHeight + dividerPx > availableAboveIme
     val bannerFit = if (autoFitStudy) keyboardShown && measuredOverflow
         else bannerHeightStress && reportedImeInset >= BANNER_STRESS_INSET_PX
     SideEffect {
@@ -245,7 +252,8 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
         } else null
         Log.i("SearchInsetProbe", "composeBottom=$reportedImeInset platformBottom=$platformBottom " +
             "targetBottom=$targetBottom rootHeight=${observedView.height} topSafe=$topSafePx " +
-            "restingDeck=$restingDeckHeight available=$availableAboveIme " +
+            "restingDeck=$restingDeckHeight openDeck=$openDeckHeight " +
+            "available=$availableAboveIme " +
             "visible=$visible boundingRects=$rectangles stress=$bannerFit")
     }
     // The platform target selects the layout only. Layout-time imePadding owns
@@ -257,6 +265,9 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
             compactForBrowser = retainBrowser && keyboardShown,
             onDeckMeasured = { heightPx ->
                 if (autoFitStudy && !keyboardShown) restingDeckHeight = heightPx
+                // Positive slack proves this sample was not capped by the upper browser.
+                if (autoFitStudy && keyboardShown && !bannerFit &&
+                    availableAboveIme > heightPx + dividerPx) openDeckHeight = heightPx
             }) { slot ->
             if (!keyboardShown || retainBrowser) {
                 SearchFoldFolders(light = light,
