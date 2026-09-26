@@ -330,8 +330,33 @@ and 300 seconds,
 with one inference container at a time.
 The accepted five-second interactive budget is a separate fit criterion.
 A long-running research result does not authorize a pending production action.
-Preparation is complete;
-no axiom result has been inspected yet.
+Process `proc_0007` completed with exit 0 and no memory kill.
+The saved result is `result-initial.json` in the private probe directory,
+SHA-256 `d896795583fd6e518b72dab6562f93d9f70917e65cddda2d3351c4c4f6f98101`.
+Built image: `d7b110379a8d597f52b3388cfe4fd62f1e2e4b5554cde6740a8a5a975fb4182b`.
+
+The actual forward input contained all 12,756 state tokens and 64 question-prefix tokens,
+12,820 tokens in total.
+The complete policy was 42,677 bytes at snapshot
+`4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`.
+The host confirmed that snapshot was still current after inference.
+
+The Noul probability was 0.5338 against the predeclared true reference label.
+Inference took 174.4122996260412 seconds,
+excluding 3.7913081771694124 seconds for model loading.
+Peak container memory was 6,490,460,160 bytes.
+The tested English CPU configuration therefore fails the accepted five-second interactive budget.
+This is not a repeated-run speed comparison,
+a held-out quality assessment,
+or a rejection of every Laya runtime/checkpoint configuration.
+No production threshold or model winner follows from one development axiom.
+
+The native response also included auxiliary `action.act_probability: 1.0`.
+It is not the requested axiom probability and is not execution permission.
+It must not override the Noul estimate or our deterministic policy.
+The loader's separate temperature warning names `choice:11+`,
+not the `noul:2` bucket used here;
+its source trace is retained in the Laya troubleshooting document.
 
 ## Native Jev axiom pilot result
 
