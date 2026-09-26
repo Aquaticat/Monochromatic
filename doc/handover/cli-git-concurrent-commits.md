@@ -81,10 +81,38 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
   per-exit remote checks.
   Observed separately:
   the `linked-worktree-only` policy rejects lint-staged's `git stash` in a main worktree.
-- Slice 2 is running:
-  shadow repository preparation for every commit,
+- Slice 2 landed on the branch
+  (through `ab62a2cd2`):
+  shadow preparation for every commit,
   the hook dispatcher shim,
-  and a fail-fast landing that reports a moved `HEAD` instead of replaying.
+  serial landing that reports `concurrent-commit/head-moved` instead of replaying,
+  and recovery after `SIGKILL` at 11 phases.
+  Build,
+  types,
+  oxlint,
+  unit,
+  and `test:built:trust` were green.
+- Running in parallel,
+  each in its own worktree:
+    - slice 3 in the feature worktree:
+      replay,
+      revalidation,
+      moving private-index objects into the shadow store,
+      native semantics for hooks that restage files,
+      e2e kill-phase markers,
+      and syncing `SPEC.md` with slices 2 and 3;
+    - slice 6 in `/var/home/user/worktrees/ccc-locks` (branch `feat/ccc-locks`):
+      `core.lockfilePid` injection,
+      foreign `index.lock` classification and waits,
+      index-writer coordination,
+      and the narrowed worktree-copy settlement lock;
+    - slice 8 in `/var/home/user/worktrees/ccc-push` (branch `feat/ccc-push`):
+      single-flight auto-push;
+    - an e2e measurement run of the slice 2 build in `/var/home/user/worktrees/ccc-e2e-slice2`
+      (throwaway,
+      detached).
+  `feat/ccc-locks` and `feat/ccc-push` merge into `feat/cli-git-concurrent-commits` after they are green.
+  Slices 4 (read sets and `inputs`) and 5 (reservation) follow slice 3.
 - `SPEC.md` has no placeholders left;
   the shadow snapshots every real ref at invocation so hooks resolve tags and other branches.
 - Private `HEAD` shape chosen from a disposable-repository prototype:
