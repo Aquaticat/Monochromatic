@@ -189,6 +189,28 @@ require('node:fs').writeFileSync(${JSON.stringify(report,)}, top + ' ' + process
       },
     },),
     it({
+      name: 'a pre-commit hook that changes the commit tree fails the transaction and lands nothing',
+      fn: async function testTreeChangingHook(): Promise<void> {
+        await using repository = await createLandingRepository();
+        await writeWorktreeFile({ repository, name: 'a.txt', content: 'a\n', },);
+        await writeWorktreeFile({ repository, name: 'extra.txt', content: 'extra\n', },);
+        await writeHook({
+          repository,
+          event: 'pre-commit',
+          source: `require('node:child_process').execFileSync(${JSON.stringify(REAL_GIT,)}, ['add', 'extra.txt']);`,
+        },);
+        /** Baseline commit. */
+        const baseline = await git({ repository, args: ['rev-parse', 'HEAD',], },);
+        /** Commit outcome. */
+        const outcome = await runWrapper({ repository, args: ['commit', '-m', 'tree', 'a.txt',], },);
+        expect(outcome.exitCode,).not.toBe(0,);
+        expect(outcome.stderr,).toContain('A commit hook changed the prepared tree',);
+        expect(await git({ repository, args: ['rev-parse', 'HEAD',], },),).toBe(baseline,);
+        expect(await git({ repository, args: ['status', '--porcelain',], },),).toBe('?? a.txt\n?? extra.txt',);
+        expect(await leftovers(repository,),).toEqual([],);
+      },
+    },),
+    it({
       name: 'an event the user disabled through hook.<event>.enabled does not run',
       fn: async function testDisabledEvent(): Promise<void> {
         await using repository = await createLandingRepository([['hook.pre-commit.enabled', 'false',],],);
