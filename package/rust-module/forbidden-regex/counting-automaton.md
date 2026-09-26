@@ -241,7 +241,7 @@ testing first,
 
 Fuzzing (`package/rust-module/forbidden-regex.fuzz`,
  a SIBLING crate like `.bench`;
-mirrors `package/fuzz/forbidden-strings`;
+mirrors `package/cli/forbidden-strings.fuzz`;
  cargo-fuzz / libFuzzer,
  nightly from the
 repo-root toolchain):

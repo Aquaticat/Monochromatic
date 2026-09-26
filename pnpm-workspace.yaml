@@ -12,7 +12,10 @@ autoInstallPeers: false
 # while stale .pnpm paths create confusing inspection and TypeScript-cache risk.
 modulesCacheMaxAge: 0
 
+# TODO: Ideally we want all deps here to be TypeScript (little to no JS) and fuzzed.
 catalog:
+  # Approved here despite upstream not fuzzing it because this is a package that doesn't need fuzzing.
+  '@sindresorhus/is': '>=8.1.0'
   '@anthropic-ai/sdk': '>=0.120.0'
   '@changesets/cli': '>=3.0.2'
   '@clack/prompts': '>=1.7.0'
@@ -58,11 +61,16 @@ catalog:
   '@types/mdast': '>=4.0.4'
   '@types/mdx': '>=2.0.14'
   '@types/node': '>=26.2.0'
+  '@types/semver': '>=7.7.1'
   '@types/sinon': '>=22.0.0'
   '@types/sinon-chai': '>=4.0.0'
   '@types/three': '>=0.182.0'
   '@types/unist': '>=3.0.3'
   '@valibot/to-json-schema': '>=1.7.1'
+  'ajv': '>=8.17.1'
+  'ajv-formats': '>=3.0.1'
+  # conf-fork.fuzz vendored upstream-conf oracle dependency; dev-only.
+  'atomically': '>=2.0.3'
   'aws4fetch': '>=1.0.20'
   'better-auth': '>=1.6.9'
   'browserslist': '>=4.28.8'
@@ -74,11 +82,15 @@ catalog:
   # css-edit.bench baseline parser; not a runtime dependency anywhere.
   'css-tree': '>=3.2.1'
   'csstype': '>=3.2.3'
+  # conf-fork.fuzz vendored upstream-conf oracle dependency; dev-only.
+  'debounce-fn': '>=6.0.0'
   'decircular': '>=1.0.0'
   # deepmerge-ts.fuzz subject under test; not a runtime dependency anywhere.
   'deepmerge-ts': '>=8.0.2'
   'dot-prop': '>=10.2.0'
   'electron': '>=43.4.1'
+  # conf-fork.fuzz vendored upstream-conf oracle dependency; dev-only.
+  'env-paths': '>=3.0.0'
   'execa': '>=10.0.1'
   'expect-type': '>=1.4.0'
   'fast-check': '>=4.9.0'
@@ -92,6 +104,7 @@ catalog:
   'hyphen': '>=1.14.1'
   'ignore': '>=7.0.6'
   'isomorphic-git': '>=1.27.0'
+  'json-schema-typed': '>=8.0.1'
   'jsonc-eslint-parser': '>=3.3.0'
   'jsonc-parser': '>=3.3.1'
   'jspdf': '>=4.2.1'
@@ -108,12 +121,25 @@ catalog:
   'oxlint': '>=1.79.0'
   'oxlint-tsgolint': '>=7.0.2001'
   'p-limit': '>=7.3.1'
+  # p-memoize-fork.fuzz differential subject; not a runtime dependency anywhere.
+  'p-memoize': '>=8.0.0'
+  # matcher-fork.fuzz differential subject; not a runtime dependency anywhere.
+  'matcher': '>=6.1.0'
+  # p-map-fork.fuzz differential subject; not a runtime dependency anywhere.
+  'p-map': '>=7.0.8'
+  # pify-fork.fuzz differential subject; not a runtime dependency anywhere.
+  'pify': '>=6.1.0'
+  # make-asynchronous-fork.fuzz differential subject; not a runtime dependency anywhere.
+  'make-asynchronous': '>=2.1.0'
+  # p-waterfall is omitted: package/module/pipe provides sequential async composition.
   'pdfjs-dist': '>=4.0.0'
   'picomatch': '>=4.0.5'
   'postcss': '>=8.5.26'
   'postcss-html': '>=2.0.0'
   'preact': '>=10.26.0'
   'preact-render-to-string': '>=6.5.0'
+  # quick-lru-fork.fuzz differential subject; not a runtime dependency anywhere.
+  'quick-lru': '>=7.3.0'
   'rehype-autolink-headings': '>=7.1.0'
   'rehype-parse': '>=9.0.1'
   'rehype-slug-custom-id': '>=2.0.0'
@@ -128,6 +154,7 @@ catalog:
   'rolldown-plugin-dts': '>=0.28.2'
   'safe-stringify': '>=1.3.0'
   'satteri': '>=0.10.5'
+  'semver': '>=7.8.5'
   'serialize-error': '>=13.0.1'
   'sharp': '>=0.35.3'
   'showify': '>=0.2.8'
@@ -148,6 +175,8 @@ catalog:
   'typebox': '>=1.3.16'
   'typesafe-i18n': '>=5.27.1'
   'typescript': '>=7.0.2'
+  # conf-fork.fuzz vendored upstream-conf oracle dependency; dev-only.
+  'uint8array-extras': '>=1.5.0'
   'unbash': '>=4.0.10'
   'unified': '>=11.0.5'
   'valibot': '>=1.4.2'
@@ -175,6 +204,15 @@ minimumReleaseAgeExclude:
   - '@earendil-works/*'
   - 'cidr-tools@12.1.3'
   - 'ip-bigint@9.0.7'
+  # matcher-fork.fuzz differential subject: upstream matcher 6.1.0 published
+  # 2026-09-25, inside the 24h cutoff; the oracle needs the exact release the
+  # fork was derived from, not an older mature one.
+  - 'matcher@6.1.0'
+  # make-asynchronous-fork.fuzz differential subject: upstream
+  # make-asynchronous 2.1.0 published 2026-09-25, inside the 24h cutoff; the
+  # oracle needs the exact release the fork was derived from, not an older
+  # mature one.
+  - 'make-asynchronous@2.1.0'
 minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
 nodeLinker: isolated

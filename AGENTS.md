@@ -758,6 +758,11 @@ NXR:
 Inspect processes + logs;
  rerun via process tool or bounded execution.
 
+EDR:
+ Parallel tool calls may run unordered,
+ so a command reading a fresh edit can run against the pre-edit file.
+ Batch the dependent run after the edit lands.
+
 1CB:
  At most three `&&`-chained steps per Bash call;
  never `;` chains or loops:
@@ -1410,7 +1415,8 @@ Extend a present boundary when it already owns the responsibility.
 ### Adding new packages
 
 AP1:
- Create directory under the appropriate category in `package/`.
+ Create packages under `package/<category>/<name>`.
+Fuzz sidecars belong beside their owner at `package/<category>/<name>.fuzz`.
 
 AP2:
  Add `mise.toml` with task definitions mirroring sibling packages.
@@ -1437,6 +1443,14 @@ SGD:
 Rename dir + name + consumers together.
 Exemptions:
  `doc/planning/singular-dir-name-invariant.md`.
+
+SBS:
+ Sidecars (`.fuzz`,
+ `.bench`,
+ `.conformance`) sit beside their subject package as `<pkg>.<kind>`,
+ never under a per-kind top-level dir.
+Move dir,
+ name and consumers together.
 
 ## Before declaring work complete
 

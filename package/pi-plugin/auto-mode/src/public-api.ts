@@ -14,11 +14,22 @@ export {
   BYPASS_STATUS_TEXT,
   BYPASS_TOGGLE_KIND,
 } from './bypass.ts';
+/**
+ Approval boundary exported for built-artifact verification.
+
+ @internal
+ */
+export {
+  askUser,
+  notifyAsk,
+  updateWidget,
+} from './ask-user.ts';
 export { findBudgetModel, } from './budget-model.ts';
 export {
   buildContext,
   buildProjectContext,
   getReusableApproval,
+  getTrustDirectives,
   type ProjectContextFile,
 } from './context.ts';
 export {
@@ -54,4 +65,69 @@ export {
   type BudgetModel,
   type VerdictData,
   VERDICT_ENTRY_TYPE,
+  TRUST_ENTRY_TYPE,
+  type SignalContext,
 } from './types.ts';
+
+//region Internal verification exports exercise the same bundled policy as Pi
+
+/**
+ @internal
+ */
+export { analyzeBashCommand, } from './command-parser.ts';
+/**
+ @internal
+ */
+export { looksLikePath, } from './command-refs.ts';
+/**
+ @internal
+ */
+export {
+  contentSignals,
+  textSignals,
+} from './content-signals.ts';
+/**
+ @internal
+ */
+export {
+  decisionForDenyVerdict,
+  evaluate,
+} from './evaluate.ts';
+/**
+ @internal
+ */
+export { linkedWorktreeReadAllowlistedDirs, } from './git-worktree-read-allowlist.ts';
+/**
+ @internal
+ */
+export { formatModelBlockReason, } from './model-feedback.ts';
+/**
+ @internal
+ */
+export {
+  isHomeDotfile,
+  isUnder,
+  pathSignals,
+  resolvePath,
+} from './path-signals.ts';
+/**
+ @internal
+ */
+export { registerProposeTrust, } from './register-propose-trust.ts';
+/**
+ @internal
+ */
+export {
+  bashSignals,
+  hasFlag,
+  shouldFlag,
+} from './signals.ts';
+/**
+ @internal
+ */
+export {
+  agentTempAllowlistedDirs,
+  isTrustedAgentTempDir,
+} from './temp-allowlist.ts';
+
+//endregion Internal verification exports

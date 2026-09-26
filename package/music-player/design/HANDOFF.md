@@ -5467,8 +5467,9 @@ A separate Gboard `Keyboard font size updated` banner on the disposable
 inner panel briefly raised the IME to y `1140`,
 clipping the final mode;
 tapping `OK` returned the IME top to y `1352` and restored the deck.
-Do not dismiss that failing state as capture noise,
-or silently narrow the user's “never hidden” requirement.
+Do not dismiss that measured clip as capture noise.
+D53 to D55 explicitly accept their named real-Gboard overlays;
+do not infer any broader waiver from this historical experiment.
 Sanitized physical-panel captures and curated app-node geometry are
 committed under `package/music-player/design/questions/evidence/gboard-*.{png,json}`.
 `package/music-player/design/evidence/gboard-geometry.md` indexes the passing and failing captures,
@@ -5562,7 +5563,8 @@ A disposable Gboard font-scale toggle from 1.5 to 2.0 did not yield an
 observed second banner,
 but the app restarted and keyboard focus dropped on that transition.
 No claim of nonrecurrence or real-banner reflow is supported.
-The original floating Gboard remains a distinct D50 failure;
+The original floating Gboard remains a distinct measured occlusion,
+now accepted by D53;
 platform visibility alone does not locate floating keys.
 
 The bounded Compose build ran in a 6 GiB/2 CPU Podman container using the
@@ -5601,8 +5603,10 @@ and actual key taps after Clear restored `cam` with both results visible.
 The user accepts a little cropping of Open in the short viewport;
 visible accessibility bounds there do not establish intrinsic target size.
 The real font banner was not reproduced after this edit,
-the fixed stress threshold is not an animation-fit rule,
-and floating Gboard remains a separate D50 failure.
+and the fixed stress threshold is not an animation-fit rule.
+D53 and D54 now accept the separately measured real floating and brief
+banner overlaps;
+this synthetic fixture did not establish either result.
 All production work remains unapproved;
 the browser content itself is no longer an open choice.
 
@@ -5638,7 +5642,144 @@ The current A-only review now depicts this retained browser,
 not the old blank-left typing capture.
 Older real-Gboard evidence PNGs predate that correction;
 the new real-Gboard recheck measured the corrected settled state but did
-not reproduce the transient font banner or settle floating-keyboard D50.
+not reproduce the transient font banner or verify floating-keyboard fit.
+D53 and D54 accept the separately observed overlays,
+not this recheck as proof of visibility.
+
+## Accepted corrected A and next design gate
+
+On 2026-09-25 the user said “Okay, I like it” about the refreshed
+`questions/current.html` review.
+Treat D51's retained folder browser,
+shortened upper-left viewport,
+and tolerated small Open crop as accepted.
+The accepted browser correction does **not** approve the separate 415dp
+synthetic title/transport reflow or production code.
+D53 to D55 explicitly accept three measured real-Gboard overlaps;
+other keyboard configurations remain subject to D50's visibility rule.
+The original floating Gboard reported a zero bottom inset,
+while the real transient banner raised the IME top to y `1140`.
+A fixed debug threshold and settled synthetic fit do not establish
+continuous visibility as other keyboards change height.
+The remaining Search design checks include:
+result effects/ranking,
+long names and scrolling,
+and the minimum informational clearance from the crease.
+Keep the active review limited to accepted A;
+retain experimental keyboard variants in evidence and debug-only sources.
+
+## Corrected A under real floating Gboard
+
+On 2026-09-26 the disposable AVD's Gboard toolbar exposed its actual
+Floating keyboard action.
+With the corrected retained-browser Search prototype at 200% text,
+that keyboard obscured the end of the deck's `4:35` duration.
+Privileged Window Manager reported a touchable key region
+`[936,1147][1842,1918]`;
+UI Automator placed the duration at `[842,1263][965,1341]`.
+The app's public inset probe instead reported `visible=true`,
+`platformBottom=0`,
+and `boundingRects=[]`.
+Thus visibility does not locate the floating keys for a responsive deck.
+The exact debug variant of that first toggle was not recorded.
+After reboot and waking a sleeping display,
+a separate explicit `search-deck-right-lift-retain-results-light` visit
+verified the corrected vertical A layout with APK SHA-256
+`261e608e67029f6361b79a2b26f79851099df9d98f3cdbed637b2e14a4529636`.
+Real floating Gboard occupied `[482,1006][1388,1777]` over the deck title
+`[258,1120][781,1223]`;
+the private screenshot showed the title,
+seek display and transport obscured.
+A real key tap changed the focused query from `cam` to `cadm`.
+The explicit A visit did not retain a noninitial public-insets log;
+do not transplant the first toggle's app measurement into that visit.
+These unsanitized screenshots are private scratch evidence,
+not new active-review cards.
+The source and measured boundary are in
+`doc/troubleshooting/android-17-fold-emulator-ime-probe.md` and
+`package/music-player/design/evidence/gboard-geometry.md`.
+This floating overlap originally failed D50's unqualified visibility
+criterion;
+D53 now accepts this measured state without selecting a new layout.
+No production change has been accepted.
+A later disposable emulator process exited with
+`qemu_thread_create: Resource temporarily unavailable`.
+The user authorized permanent host process-limit changes,
+which are recorded separately in
+`doc/troubleshooting/fedora-44-fold-emulator-user-task-ceiling.md`.
+The disposable container remains capped at 6 GiB/2 CPU.
+The process-limit fix has persistent per-user systemd and PAM files;
+a fresh login process and the active slice both measured `12288`.
+No reboot or long-running emulator-stability test was performed.
+A post-reboot launch initially timed out while the disposable display slept;
+waking it restored the rendered Search hierarchy and a fresh launch passed.
+A later 200% to 100% to 200% font-scale cycle recreated the activity.
+Refocusing the same explicit A layout showed real docked split Gboard at
+y `1352` with complete final mode ending at y `1332` and no banner.
+That does not test a continuously focused banner transition or prove
+that Gboard's original font-update banner cannot recur.
+Continue design-only checks for non-exempt keyboard heights and
+accessibility without changing accepted A or conflating synthetic
+sampled-frame passes with real Gboard.
+
+## Above-IME app panel rejected as a D50 response
+
+Prototype commit `d9a5c549e` added a **debug-only** app-owned panel with
+`NOT_FOCUSABLE` and `NOT_TOUCHABLE` flags over the left deck.
+The tested APK was SHA-256
+`e4bfec8e8eb98187a0afc06ef11d587fd3c87623fe45a37da7b0ffd862c6461e`.
+The same-APK plain A control visibly lost its deck title beneath real
+floating Gboard.
+The marker candidate did paint over Gboard at `[0,717][1038,1793]`,
+but it washed out keys and browser content.
+An uncovered key entered `m`;
+a key beneath the marker did not change the query,
+and `InputDispatcher` logged a dropped untrusted touch from the app overlay.
+After Back hid Gboard,
+the sampled marker still covered the deck.
+This marker is neither a real deck port nor a viable design.
+All screenshots remain private unsanitized scratch artifacts.
+Details and the SDK touch-policy source are in
+`doc/troubleshooting/android-17-fold-emulator-ime-probe.md`.
+The current review remains accepted A;
+D53 and D54 now accept those measured floating and banner overlaps,
+while other keyboard configurations remain unverified.
+No production change was made.
+A separate keep-clear probe at prototype commit `b9c05342f` then
+registered `[0,717][1038,2152]` with Window Manager.
+Real floating Gboard still occupied `[482,1006][1388,1777]` and obscured
+the deck title.
+Manual right and left drags visibly moved its reported key region.
+The rightward region `[1025,1006][1931,1777]` still intersected the
+registered area by 13px;
+the return drag increased that overlap.
+A real key tap entered `d`.
+These drags validate the region measurement,
+not Gboard's cooperation with the hint.
+The app's request reached Window Manager,
+but the source of Gboard's continued overlap is unproven.
+The Android 17 AOSP release source traces submitted keep-clear areas
+through Window Manager to a PiP positioning listener.
+It also treats the IME touch region as an unrestricted area for consumers
+to avoid;
+it does **not** establish that Gboard's internal floating keys
+subscribe to this path.
+No PiP positive control was run,
+so the tested result remains a bounded Gboard observation.
+The best-effort request is **not** a verified automatic D50 response on
+this fixture;
+no universal absence claim follows.
+The tested debug APK SHA-256 was
+`e755bf76ed65e45dc4e4ec57f4f55bdbd948902ca6e1940ddf911474ee8a4dd7`.
+The prototype's changed debug signing certificate required an uninstall
+**only on the disposable AVD** before installing the new APK;
+see `doc/troubleshooting/android-37-debug-apk-signature-update.md`.
+After these measurements,
+`podman stop --time 20` stopped the disposable emulator container;
+Podman warned that `SIGTERM` did not stop it within 20 seconds and used
+`SIGKILL`.
+The next disposable boot and guest-data state need fresh verification.
+The original AVD was not stopped or reconfigured.
 
 ## Issue tracking moves to Linear for this session
 
@@ -5658,3 +5799,330 @@ Option C, codifying the design-acceptance gate in `AGENTS.md`,
 Linear as AQU-487 "docs(agents): gate production work after design acceptance" in Triage,
 with GitHub #508 attached.
  No duplicate issue was opened.
+
+## D53 accepts floating Gboard over the unfolded deck
+
+On 2026-09-26 the user explicitly said that “real floating Gboard still
+obscures the deck” is acceptable.
+D53 narrows D50 **only for that observed movable floating keyboard overlay**.
+The active selected A still puts its real folder browser above the bottom-left
+deck and its integrated query/results together on the right.
+Do not adopt the rejected app-panel or keep-clear probes to chase an overlap
+the user has now accepted.
+The D50 to D52 sections describe the experiment and the original strict
+visibility criterion;
+read them with the scoped D53 to D55 exceptions.
+
+D53 did **not** approve clipping under ordinary settled split or docked
+keyboards.
+D55 separately accepts the measured cover-panel floating keyboard hiding
+both result labels while the query remains visible.
+D54 separately accepts the observed brief full-width font-update banner;
+its measured y `1140` state clipped the final mode,
+and a separate 200% to 100% to 200% font-scale cycle did not re-create it.
+The 416dp anticipatory reservation and inline title/transport reflow remain
+unaccepted debug-only alternatives.
+Long result names,
+result activation/ranking,
+accessibility and the crease clearance remain open.
+No production Search implementation is authorized.
+
+The original `Pixel_9_Pro_Fold` emulator process subsequently exited with
+`SIGSEGV` after its own log reported
+`qemu_thread_create: Resource temporarily unavailable` and `errno 11`.
+This is a host/emulator process failure,
+not evidence that Gboard caused it or that D53 changed the IME.
+Do not restart or mutate that original AVD merely to record the decision;
+the existing captures and separate disposable fixture provide the design
+evidence.
+The persistent per-user process limits are documented in
+`doc/troubleshooting/fedora-44-fold-emulator-user-task-ceiling.md`.
+
+## D54 accepts the brief real Gboard font-update banner
+
+When asked about the separate measured 200% text banner state,
+the user answered:
+“That brief banner is also acceptable.”
+D54 permits the observed `Keyboard font size updated` message to clip the
+last unfolded playback mode until `OK` dismisses it.
+The 415dp debug IME and anticipatory 416dp reservation remain synthetic
+experiments,
+not selected changes to A.
+The accepted layout still keeps the same upper-left folder browser and
+right-hand Search query/results,
+with a complete bottom-left deck under ordinary settled docked/split input.
+D55 separately accepts the measured cover result-label overlap under
+floating Gboard;
+D53 and D54 alone did not decide that case.
+Do not mark every keyboard height or transition verified from these bounded
+exceptions.
+The original AVD exited separately with `qemu_thread_create` failure;
+no emulator restart is needed merely to record this design decision.
+Production implementation is still unauthorized.
+
+## D55 accepts floating Gboard over folded-cover results
+
+The user answered “Also acceptable” when asked separately about the
+sanitized cover capture with real floating Gboard.
+At 100% text,
+its floating key surface covers both matching result labels while the
+focused `cam` query remains visible.
+D55 permits that measured cover overlap without changing the one-page cover
+Search layout or the integrated Back/query/Clear header.
+It does not approve obscuring the query,
+hiding matching labels under ordinary full-width docked Gboard,
+or omitting result activation/ranking.
+D53 still applies only to the unfolded deck;
+D54 still applies only to the brief measured unfolded font-update banner.
+Current A-only HTML text and the decision record describe each scope
+separately;
+raw status-bearing captures remain private,
+while the sanitized cover evidence is indexed in
+`package/music-player/design/evidence/gboard-geometry.md`.
+No production Search code has been authorized.
+
+## Selected Search A crease measurement, E2 floor still open
+
+The accepted inner A screenshots remain the visual source.
+Read-only inspection of private native UI Automator fixtures at 390dpi placed
+left app text bounds no farther than x `965` and the nearest right text bounds
+at x `1132` across the tested Search states.
+Neither set intersected the approximate physical crease x `[983,1093)`;
+those extrema form a **projected node-box gap** of 167px,
+not a measured minimum between painted glyphs at the same height.
+A light typing and dark empty image-band scan found no dark or bright mark,
+respectively,
+inside the sampled central region;
+in-memory crossing marks made each detector respond.
+The selected light typing PNG matched the private prototype capture's app
+pixels after the sanitized status band was excluded.
+Details and limitations are in
+`package/music-player/design/evidence/selected-search-crease-geometry.md`.
+
+E2's `max(min_padding, crease_width)` still lacks a chosen numeric
+`min_padding`.
+Neither the 167px box gap nor 12dp mode-button internal padding sets it.
+Inspect accepted spacing precedent and present visible variants only if a
+larger opposing-information floor would change the accepted A composition.
+Long result names,
+scrolling and distinct screen states require separate crease review.
+No production code or AGENTS rules changed for this measurement.
+
+## Disposable Fold recovered for result-overflow review
+
+A restarted `Fold_No_Hardware_Probe` container exited before boot with
+Android Emulator 37.1.11's `Running multiple emulators with the same AVD`
+FATAL.
+The previous private container had required Podman's `SIGKILL` fallback.
+No `emulator-5580` device,
+matching emulator process,
+private Podman emulator container or holder of its lock files was found.
+The empty `multiinstance.lock` and three-byte `hardware-qemu.ini.lock` were
+moved to a private scratch backup rather than deleted;
+the same 6 GiB/2 CPU container command then reported `ADB_BOOT_READY`.
+The guest remained unfolded at 200% text with Gboard selected,
+and an explicit selected-A Search launch showed Folders,
+Open,
+`cam` and the complete keyboard-closed mode.
+This **joint relocation** proves recovery of this disposable fixture,
+not which lock was decisive or a general emulator fix.
+The original `Pixel_9_Pro_Fold` AVD was not touched.
+The source-bounded incident and backup location are in
+`doc/troubleshooting/android-emulator-37-disposable-avd-lock-after-hard-stop.md`.
+Continue native result-overflow checks in this private fixture only;
+keep raw status-bearing captures out of the review artifact.
+
+## Search result-overflow comparison remains design-only
+
+The private prototype adds a long spaced folder name,
+an unbroken track name and eighteen synthetic folder rows under commit
+`c7e0552ee`.
+On the accepted inner A at 100%/200% text,
+both title types wrap on the **right** without replacing the left Folders/Open
+browser or moving the complete bottom-left deck.
+Inner result 18 was reachable at 100% under a 300dp debug keyboard,
+and at 200% in the prior debug-keyboard probe.
+The projected app text bounds remain outside the approximate x `[983,1093)`
+crease;
+this does not measure every glyph-ink edge or set E2's `min_padding`.
+
+On the cover at 200%,
+the current selected layout's list scrolls behind a bottom debug keyboard.
+After the end of a same-APK swipe sequence,
+row 18 remained at `[127,2151][765,2254]` below the y `1693` keyboard top;
+another upward swipe left it there.
+An opt-in **unaccepted** cover comparison routes
+`search-deck-right-lift-retain-overflow-imeviewport-results-light`
+through the same selected cover header and applies `imePadding()` **only** to
+the result viewport.
+Prototype commits `f4a35e817` and `c4cf948e4` produced installed APK SHA-256
+`0801ea3f44ef84163cbddb2b2f37fbddbb1c293148440381f6f899be7eaee7af`.
+Its viewport ended at the debug keyboard top,
+and the last title,
+icon and supporting line became visible after scrolling at 100%/200%.
+With real **docked full-width** Gboard on the cover,
+the same last row was readable above y `1605` at both scales.
+A real key tap edited the query,
+but this synthetic fixture renders matches only for exactly `cam`;
+it is not a ranking or filtering test.
+At 200%,
+closing then reopening the debug keyboard required another list swipe to
+recover the last visible row.
+These are settled-state checks,
+not intermediate animation or arbitrary-keyboard-height findings.
+
+The opt-in marker does not affect the unfolded branch.
+Real floating Gboard on the inner stress fixture also covered some
+**right-side result lettering**;
+D53 accepts the separate deck overlap,
+not this result-label overlap.
+Track the result question independently as #122.
+Do not adopt the cover viewport comparison or change the selected A review
+until that design refinement is explicitly reviewed.
+Details,
+including the same-APK opt-out failure control and private capture boundaries,
+are in `package/music-player/design/evidence/search-result-overflow.md`.
+The later stop instruction supersedes further non-exempt IME probing.
+Result actions,
+accessibility and E2's open numeric informational floor remain separate;
+no production Search work is authorized.
+
+## Non-exempt stepped IME and reservation comparison
+
+Under the debug-only stepped system keyboard,
+the unchanged selected inner A kept its complete deck and Folders/Open
+browser at **100% text** through measured 400dp and 415dp endpoints.
+At **200% text** and the 400dp endpoint,
+the same vertical deck's last mode lost its rounded bottom and the folder
+header disappeared;
+D54's accepted brief real-Gboard banner does not exempt this separate
+steady synthetic state.
+Details and installed artifact hashes are in
+`package/music-player/design/evidence/ime-transition-height-study.md`.
+
+Prototype commit `f674da786` adds an unaccepted early-inline 200% comparison
+without a fixed keyboard-space reservation.
+On one same-APK 375dp to 400dp in-place jump,
+three of 22 sampled IME-visible frames showed the last mode border hidden;
+the first four and later frames showed it complete.
+The original unaccepted 416dp pre-reservation on the same APK retained all
+five mode borders in 24 sampled IME-visible frames.
+Neither count estimates an unrecorded duration or certifies other IMEs.
+At 100% under a 330dp debug keyboard,
+that pre-reservation left 230px below the complete deck and shortened the
+browser even though the vertical deck already fitted 415dp at 100%.
+A later **unaccepted** scale-scoped reservation comparison was built;
+it avoids that unnecessary 100% tradeoff in the sampled states,
+not to establish universal keyboard compliance.
+
+A bounded TalkBack probe exposed Folders,
+Open,
+query and four mode descriptions in the accessibility hierarchy at 100%
+and 200% with the pre-reserved keyboard.
+The 200% screenshot showed green TalkBack focus on the query with the 400dp
+keyboard present;
+a 100% interaction moved focus to the debug keyboard,
+but did not prove app-mode traversal or activation.
+The guest's original accessibility settings were restored.
+Full screen-reader traversal remains under #118,
+and the D50 timing/space tradeoff remains unaccepted.
+
+## Scale-scoped IME evidence and cover viewport review
+
+The debug-only scale-scoped reservation build from `3541587ec` was installed
+with matching APK SHA-256
+`ecc1ed1a68331564e6925a0d0d65d2be826af5143f4decd0f272a98bb01ee0bb`.
+It reserves 416dp at `fontScale >= 2f` in this prototype,
+while the tested 100% branch retains the selected vertical deck.
+At 100%,
+the sampled 330dp,
+400dp and 415dp states kept the whole deck with Folders/Open.
+At 200%,
+a recorded 375dp to 400dp transition retained five detected mode outlines
+in all 23 sampled frames;
+outline detection is not proof of speech,
+activation or universal keyboard fit.
+A native screenshot labeled 400dp visibly shows a complete deck above the keyboard,
+but the sampled 200% 330dp and purported 400dp hierarchy dumps reported
+identical app bounds.
+Those dumps alone do not establish a separate settled 400dp layout.
+The measured 200% reservation still costs browser space;
+no reservation or inline variant was accepted.
+The bounded findings and capture qualifications are in
+`package/music-player/design/evidence/ime-transition-height-study.md`.
+#114 closes only documentation of this existing comparison,
+not general D50 compliance.
+The user requested **no further IME experiments** without a compelling reason
+argued to them first.
+Do not use synthetic keyboard heights to infer untested real-Gboard behavior.
+
+A separate folded-cover results viewport question is available at
+`package/music-player/design/questions/cover-viewport-review.html`.
+It compares sanitized native 1080 × 2424 captures from the same debug APK:
+the current cover list leaves row 18 behind a 300dp bottom keyboard even
+at the scroll endpoint;
+the cover-only opt-in list can scroll the entire row and its supporting line
+above that keyboard.
+The screenshots replace the full status strip and omit PNG metadata;
+private raw captures must not be published.
+The user answered **R** on 2026-09-26;
+D56 selects the cover-only keyboard-aware results viewport as a design direction.
+The previously published R/C question remains a historical comparison;
+the active selected-A review shows R without the discarded C.
+The selected inner Search and production app remain unchanged.
+Refocus requires another swipe in the measured opt-in state;
+that interaction,
+Back/Clear and result ranking/actions remain #116,
+inner floating-keyboard result-lettering overlap remains #122,
+E2's informational `min_padding` remains #120,
+and full Search accessibility traversal remains #118.
+D56 does not authorize production work or further IME experimentation.
+
+The user answered **A** in the separate inner floating-Gboard question;
+D57 accepts the partially covered middle right-pane result lettering
+in **this captured floating state** while the `cam` query stays visible.
+The historical A/B review is at
+`package/music-player/design/questions/floating-results-review.html`;
+its sanitized inner-panel image keeps all app pixels,
+replaces the complete status strip and omits PNG metadata.
+The active selected-A review shows the accepted state without the rejected
+requirement option.
+Recovery by scrolling,
+reachability and activation of covered rows were not established;
+D57 does not accept their absence or inaccessibility.
+No additional IME testing was performed.
+D53's deck allowance and D55's folded-cover allowance remain distinct;
+D57 does not generalize to other floating placements or ordinary keyboards.
+
+The initial E2 floor form reused one existing mockup and measurement bars.
+The user rejected it as not a visual comparison;
+its P0/P10/P12 menu was never answered.
+A replacement at the **same**
+`package/music-player/design/questions/crease-floor-review.html` now embeds
+separate native Compose captures of P0,
+P14 and P20 in empty and results states at 200% text.
+The debug-only variant source is prototype commit `469819241`;
+the installed APK matched SHA-256
+`9e80c29ccfee72e82574a8884b3e4dca89361f05f73db3fc0231b546c971298c`.
+Only the disposable Fold was used,
+within its inspected 6 GiB/2 CPU Podman cap.
+No new IME experiment or production Search change was made.
+The six full-panel screenshots are status-replaced and metadata-stripped;
+raw captures and full hierarchies stay private.
+
+In the sampled empty state,
+`4:35` and the right heading's projected horizontal box gap changed from
+167px for P0 to 209px for P14 and 297px for P20.
+Those nodes occupy different heights and are **not** a nearest painted pair.
+The complete four-mode deck and actual upper-left browser remain in all
+captured variants.
+With this tested **equal-added-inset allocation**,
+P20 makes `Celldweller` wrap and moves `Clown Core` below the first browser
+viewport even with the keyboard closed;
+its scroll reachability was not tested.
+A total numerical floor does not mandate this allocation or accept
+unreachable browser items.
+See `package/music-player/design/evidence/crease-floor-native-comparison.md`
+for the exact fixture and limits.
+The revised floor decision is pending;
+no `min_padding` is selected and the original AVD remains untouched.

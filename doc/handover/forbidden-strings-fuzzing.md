@@ -1,4 +1,86 @@
-# HANDOVER.forbidden-strings-fuzzing
+# Forbidden-strings fuzzing handover
+
+## Sibling-sidecar relocation, 2026-09-26
+
+The maintainer requires fuzz sidecars at `package/<category>/<name>.fuzz`.
+The scanner stays at `package/cli/forbidden-strings`;
+its harness now lives at `package/cli/forbidden-strings.fuzz`.
+`AGENTS.md` rule `AP1` records this layout.
+The product-cluster proposal in `doc/planning/package-category-rebalance.md` is superseded.
+Other category moves are outside this change.
+
+The complete sidecar directory moved,
+including ignored local corpus and build state.
+The Cargo crate name remains `forbidden-strings-fuzz`;
+its dependency now uses `path = "../forbidden-strings"`.
+The file-enforcer profile map,
+generated configuration,
+corpus ignore,
+Git seed-byte exclusion,
+and repository path references follow the new location.
+The current curated directory is `seed/<target>/`,
+not the historical `seeds/<target>/` spelling in this snapshot.
+
+### Commits
+
+- `25fff4759` changes Git policy's exact-byte seed exclusion before the move.
+- `b9c0e6e48` relocates the sidecar and updates consumers and layout documentation.
+- `3fe9b368e` and `abe8ddc1c` make the touched policy test exercise built output with clean imports.
+
+### Verification
+
+The relocated `list` task discovers all targets.
+The `test` task passes all 6 generator tests;
+`lint:clippy` and the ASAN `build` task pass.
+
+Each fresh ASAN target loaded its read-only seed directory and dictionary
+inside a disposable Fedora 44 container with `--memory=2g --cpus=2`.
+Mutation output went to a container-only tmpfs.
+The targets were `fuzz_cache_envelope`,
+`fuzz_literal_roundtrip`,
+`fuzz_ruleset_scan_invariants`,
+and `fuzz_scan_format`.
+Each completed with `-runs=100 -max_total_time=10 -timeout=5 -rss_limit_mb=1024`.
+This is a relocation smoke check,
+not a long-running fuzz campaign.
+
+The rebuilt Git CLI passed the existing exclusion lifecycle fixture
+through `check`,
+`fix`,
+`commit`,
+and `push` against disposable local repositories and a disposable bare remote.
+The final-newline unit suite,
+scoped Oxlint,
+and CLI and file-enforcer package type checks passed.
+An initial lint failure exposed source imports in the touched test;
+the artifact-import follow-up fixes those imports without suppressions.
+
+SHA-256 checks confirm all 41 seed filenames and bytes survived the move and commit unchanged.
+The new sidecar tracks 54 files,
+including `Cargo.lock` and all seeds;
+its scratch corpus remains untracked.
+Ignore probes match corpus,
+target,
+artifact,
+and coverage output paths.
+The retired category directory is absent.
+An uncapped tracked-file search found no old category path references,
+with new-path matches used as its positive control.
+
+The relocation's 27 changed Markdown files rendered with the installed Marked renderer.
+The sidecar README's rendered layout and command paths were inspected,
+and its relative document links resolve.
+Scratch evidence lives under `~/temp/agent/fuzz-relocation*`.
+
+### Concurrent work
+
+Unrelated fork-package source and workspace changes were left untouched.
+File-enforcer regenerated `mise.toml` as-is,
+including a discovered `conf-fork` bin-directory entry.
+Its unrelated pnpr allow-list output was not included in relocation commits.
+No relocation follow-up remains.
+
+## Historical implementation snapshot
 
 State of the implementation of `~/.claude/plans/setup-fuzzing-for-forbidden-strings-merged.md`
 when context approached compaction.
@@ -334,7 +416,7 @@ Run in order:
    container wrapper.
 7. `mise run //package/cli/forbidden-strings:fuzz:smoke` inside the
    container wrapper.
-8. `git check-ignore -v package/fuzz/forbidden-strings/Cargo.lock`
+8. `git check-ignore --verbose package/cli/forbidden-strings.fuzz/Cargo.lock`
    must return no match.
    Cargo lockfiles are not gitignored.
 9. Sentinel commands from `AGENTS.md` "Git cleanup and worktree safety
@@ -1233,7 +1315,7 @@ integration tests = all green.
 
 - `find . -maxdepth 1 \( -name HEAD -o -name config -o ... \)` -- no
   fuzz output escaped gitignore.
-- `git check-ignore -v package/fuzz/forbidden-strings/Cargo.lock`
+- `git check-ignore --verbose package/cli/forbidden-strings.fuzz/Cargo.lock`
   exits 1.
   This is correct because Cargo lockfiles are not ignored by root `.gitignore`.
 - The post-fix fuzz log shows the panic immediately after

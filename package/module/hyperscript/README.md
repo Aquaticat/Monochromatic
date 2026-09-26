@@ -14,13 +14,17 @@ options object,
 
 The package provides two entry points:
 
-- **`.`**:
-   built JavaScript (bundled,
-   minified)
-- **`./ts`**:
-   raw TypeScript source for workspace consumers
+### Built JavaScript (`.`)
 
-Both expose the same named exports:
+Bundled and minified JavaScript.
+
+### TypeScript source (`./ts`)
+
+Raw TypeScript source for workspace consumers.
+
+### Shared exports
+
+Both entry points expose the same named exports:
 
 <table>
 <thead>
@@ -115,121 +119,162 @@ const styles = $({
 Branded value constructors replace raw strings,
 preventing invalid units and disallowed color functions at the type level:
 
-- **Lengths:
-  ** `cssRem`,
-   `cssEm`,
-   `cssCh`,
-   `cssLh`,
-   `cssVi`,
-   `cssVb`,
-   `cssCqi`,
-   `cssCqb`,
-   `cssDvi`,
-   `cssDvb`,
-   `cssFr`,
-   `cssPercent`
-- **Time:
-  ** `cssS`
-- **Angle:
-  ** `cssTurn`
-- **Color:
-  ** `cssOklch`,
-   `cssColorFn`
-- **Reference:
-  ** `cssVar`,
-   `cssCalc`,
-   `cssMin`,
-   `cssMax`,
-   `cssClamp`
-- **Number:
-  ** `cssNum`,
-   `cssInt`
-- **Transform:
-  ** `cssTranslateX`,
-   `cssTranslateY`,
-   `cssRotate`,
-   `cssScale`
-- **Anchor:
-  ** `cssAnchor`
-- **Composition:
-  ** `cssCubicBezier`,
-   `cssCommaList`,
-   `cssCompounded`
+### Lengths
+
+`cssRem`,
+ `cssEm`,
+ `cssCh`,
+ `cssLh`,
+ `cssVi`,
+ `cssVb`,
+ `cssCqi`,
+ `cssCqb`,
+ `cssDvi`,
+ `cssDvb`,
+`cssFr`,
+ `cssPercent`
+
+### Time
+
+`cssS`
+
+### Angle
+
+`cssTurn`
+
+### Color
+
+`cssOklch`,
+ `cssColorFn`
+
+### Reference
+
+`cssVar`,
+ `cssCalc`,
+ `cssMin`,
+ `cssMax`,
+ `cssClamp`
+
+### Number
+
+`cssNum`,
+ `cssInt`
+
+### Transform
+
+`cssTranslateX`,
+ `cssTranslateY`,
+ `cssRotate`,
+ `cssScale`
+
+### Anchor
+
+`cssAnchor`
+
+### Composition
+
+`cssCubicBezier`,
+ `cssCommaList`,
+ `cssCompounded`
 
 ## Design decisions
 
-- **No cross-dependencies:
-  ** Each factory module is fully self-contained with zero imports
-  from sibling modules or external packages (except `csstype` for h-css type definitions).
-- **Split from module-es:
-  ** These factories were originally subpath exports of
-  `@monochromatic-dev/module-es`.
-   They were extracted because they have zero coupling
-  to the type utilities and general-purpose helpers in that package.
-- **Named factory exports:
-  ** Each module's `$` function is re-exported with a distinct name
-  (`hCss`,
-   `hDom`,
-   `hHtml`,
-   `hXml`) so all four coexist in a single namespace.
-  Consumers typically alias on import:
-   `import { hHtml as h } from '...'`.
-- **Children carry the output type,
-   not the options type.
-  ** Each factory's `children`
-  field accepts pre-built fragments of whatever the factory produces:
+### No cross-dependencies
 
-  - `hHtml` returns `string`;
-     `children` is `readonly string[]`
-  - `hXml` returns `string`;
-     `children` is `readonly string[]`
-  - `hCss` returns `string`;
-     `children` is `readonly string[]`
-  - `hDom` returns `HTMLElement`;
-     `children` is `readonly (Node | string)[]`
+Each factory module is fully self-contained with zero imports from sibling
+modules or external packages,
+ except `csstype` for h-css type definitions.
 
-  Rationale (especially for `hCss`,
-   where `children: readonly CssOptions[]` was considered
-  and rejected):
+### Split from module-es
 
-  1. **Uniform output channel.
-     ** Every CSS-producing thing in a consuming package
-     (literal `$()` call,
-      helper function,
-      imported constant,
-      output of an external tool,
-     hand-written block) speaks the same type:
-      `string`.
-      Modules export
-     `STYLES: string` and splice them into parent `children` arrays without commitment
-     to "built" vs "unbuilt" form.
-  2. **Late binding for non-factory sources.
-     ** Programmatically built children
-     (e.g. a `for`-loop generating `@keyframes` stops) and externally sourced CSS
-     (minifier output,
-      vendored snippets) flow through the same channel as factory
-     output.
-      Restricting `children` to options would force every non-factory source
-     through a `{ raw: string }` wrapper,
-      duplicating the per-node `raw` escape hatch
-     at the structural level.
-  3. **One-node-per-call mental model.
-     ** Each `$()` call serializes its own declarations
-     and concatenates already-built child strings;
-      no recursion into child option trees.
-     The same shape applies to `hHtml`,
-      `hXml`,
-      and `hCss`,
-      keeping the four factories
-     structurally identical.
-  4. **Local error sites.
-     ** Type errors fire on the leaf literal (`$({ rule: 'x',
-       decls: { foo: 'bar' } })`),
-      not on the outermost call after an entire nested tree
-     fails to validate.
+These factories were originally subpath exports of
+`@monochromatic-dev/module-es`.
+They were extracted because they have zero coupling to the type utilities and
+general-purpose helpers in that package.
 
-  `hDom` diverges to `Node | string` because `element.append(...children)` accepts
-  live Node references and text;
-   string entries become text nodes.
-   There is no
-  analogous "string that gets parsed" path for the string-producing factories.
+### Named factory exports
+
+Each module's `$` function is re-exported with a distinct name (`hCss`,
+ `hDom`,
+`hHtml`,
+ `hXml`) so all four coexist in a single namespace.
+ Consumers typically
+alias on import:
+ `import { hHtml as h } from '...'`.
+
+### Prior art
+
+Our `hHtml` crowds out
+[`create-html-element`](https://github.com/sindresorhus/create-html-element)
+as the HTML-string factory here.
+ Thanks to
+[Sindre Sorhus](https://github.com/sindresorhus) for the prior art.
+
+### Children carry the output type, not the options type
+
+Each factory's `children` field accepts pre-built fragments of whatever the
+factory produces:
+
+- `hHtml` returns `string`;
+   `children` is `readonly string[]`
+- `hXml` returns `string`;
+   `children` is `readonly string[]`
+- `hCss` returns `string`;
+   `children` is `readonly string[]`
+- `hDom` returns `HTMLElement`;
+   `children` is `readonly (Node | string)[]`
+
+Rationale,
+ especially for `hCss`,
+ where `children: readonly CssOptions[]` was
+considered and rejected:
+
+#### Uniform output channel
+
+Every CSS-producing thing in a consuming package,
+ such as a literal `$()` call,
+helper function,
+ imported constant,
+ output of an external tool,
+ or hand-written
+block,
+ speaks the same type:
+ `string`.
+ Modules export `STYLES: string` and splice
+them into parent `children` arrays without commitment to "built" vs "unbuilt"
+form.
+
+#### Late binding for non-factory sources
+
+Programmatically built children,
+ such as a `for`-loop generating `@keyframes`
+stops,
+ and externally sourced CSS,
+ such as minifier output or vendored snippets,
+flow through the same channel as factory output.
+ Restricting `children` to
+options would force every non-factory source through a `{ raw: string }` wrapper,
+duplicating the per-node `raw` escape hatch at the structural level.
+
+#### One-node-per-call mental model
+
+Each `$()` call serializes its own declarations and concatenates already-built
+child strings,
+ with no recursion into child option trees.
+ The same shape applies
+to `hHtml`,
+ `hXml`,
+ and `hCss`,
+ keeping the four factories structurally
+identical.
+
+#### Local error sites
+
+Type errors fire on the leaf literal (`$({ rule: 'x', decls: { foo: 'bar' } })`),
+not on the outermost call after an entire nested tree fails to validate.
+
+`hDom` diverges to `Node | string` because `element.append(...children)` accepts
+live Node references and text;
+ string entries become text nodes.
+ There is no
+analogous "string that gets parsed" path for the string-producing factories.

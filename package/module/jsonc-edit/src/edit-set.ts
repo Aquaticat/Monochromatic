@@ -178,6 +178,11 @@ export function jsoncSet({
   readonly path: JsoncPath;
   readonly value: ReadonlyDeep<JsonValue>;
 },): JsoncEditState {
+  // The document contract is a record or array root. Accepting a scalar here would return a state
+  // whose canonical output this package's own parser rejects, so the root keeps its shape. Fuzzing
+  // the Rust port found the same hole there as an emission of `null`.
+  if ((path.length === 0) && (((typeof value) !== 'object') || (value === null)))
+    throw new JsoncTypeError({ message: 'jsoncSet: the document root must stay an object or array', },);
   return {
     root: setAtPath({
       node: state.root,

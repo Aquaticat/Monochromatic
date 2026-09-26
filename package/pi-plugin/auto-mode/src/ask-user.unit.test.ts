@@ -16,9 +16,9 @@ import {
 import {
   askUser,
   notifyAsk,
-} from './ask-user.ts';
-import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';
-import { VERDICT_ENTRY_TYPE, } from './types.ts';
+  DEFAULT_DENY_GUIDANCE,
+  VERDICT_ENTRY_TYPE,
+} from '../dist/final/node/index.mjs';
 
 /** Approval fingerprint for ask-user tests. */
 const READ_ENV_EXAMPLE_APPROVAL_FINGERPRINT = 'read-env-example-fingerprint';
@@ -237,11 +237,11 @@ await describe({
     },),
 
     it({
-      name: 'returns default guidance when UI is unavailable',
-      fn: async function returnsDefaultGuidanceWithoutUi() {
+      name: 'returns an actionable fail-closed denial when UI is unavailable',
+      fn: async function returnsHeadlessGuidance() {
         /** Entries appended while processing the fail-closed denial. */
         const entries: AppendedEntry[] = [];
-        /** Guardrail explanation that stays out of the model-facing no-UI denial. */
+        /** Guardrail explanation that the child must report to its parent. */
         const explanation = 'Manual approval is required for this action.';
         /** Decision returned to the tool-call handler. */
         const decision = await askUser({
@@ -254,7 +254,13 @@ await describe({
         expect(decision.block,).toBe(true,);
         if (!decision.block)
           throw new Error('Expected missing UI to block the tool call.',);
-        expect(decision.reason,).toBe(DEFAULT_DENY_GUIDANCE,);
+        expect(decision.reason,).toContain(explanation,);
+        expect(decision.reason,).toContain('No approval UI is available',);
+        expect(decision.reason,).toContain('bash: deploy production',);
+        expect(decision.reason,).toContain('parent agent',);
+        expect(decision.reason,).toContain('Do not retry',);
+        expect(entries[0],).toEqual({ customType: VERDICT_ENTRY_TYPE,
+          data: { action: 'bash: deploy production', verdict: 'user-deny', reason: 'no UI', }, },);
       },
     },),
 

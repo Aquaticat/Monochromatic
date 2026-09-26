@@ -88,7 +88,7 @@ const SEARCH_FIXED_BEHAVIOR: string = 'This extension uses Exa fast search first
 /**
  Fetch ignored-key fixed behavior text.
  */
-const FETCH_FIXED_BEHAVIOR: string = 'This extension uses Linkup renderJs fetch first and may fall back to Exa contents.';
+const FETCH_FIXED_BEHAVIOR: string = 'This extension fetches mapped GitHub URLs with the gh CLI first, then uses Linkup renderJs fetch, and may fall back to Exa contents.';
 
 //endregion Constants
 
@@ -147,7 +147,7 @@ const LinkupWebFetchParametersSchema: TObject<{
   url: TString;
 }> = typeObject({
   url: typeString({
-    description: 'Absolute URL to fetch with Linkup first and Exa fallback.',
+    description: 'Absolute URL to fetch. Mapped GitHub URLs are fetched with the gh CLI; every other URL uses Linkup first and Exa fallback.',
   },),
 },);
 
@@ -336,7 +336,7 @@ function createLinkupWebSearchTool(
         renderResultsArrayAsJsonl: true,
         removedBlockedUrls: filtered.removedBlockedUrls,
         provider: providerResponse.provider,
-        ...(providerResponse.fallback === undefined ? {} : { fallback: providerResponse.fallback, }),
+        ...(providerResponse.fallbackChain === undefined ? {} : { fallbackChain: providerResponse.fallbackChain, }),
       },);
     },
   },);
@@ -355,12 +355,13 @@ function createLinkupWebFetchTool(
   return defineTool({
     name: LINKUP_WEB_FETCH_TOOL_NAME,
     label: 'Web Fetch',
-    description: `Fetch one page with Linkup renderJs first and Exa contents fallback. Blocked hosts throw before providers are called. Inline Markdown images backed by base64 data URLs are removed after fetch. Output is raw markdown when Linkup returns only a markdown field; otherwise JSON. Model-visible output may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
-    promptSnippet: 'Fetch a known URL with Linkup renderJs first, Exa fallback, and the global blocklist preflight.',
+    description: `Fetch one page, using the gh CLI for mapped GitHub URLs and Linkup renderJs first for everything else, with Exa contents fallback. Blocked hosts throw before providers are called. Inline Markdown images backed by base64 data URLs are removed after fetch. Output is raw markdown when the provider returns only a markdown field; otherwise JSON. Model-visible output may be truncated after ${formatSize(LINKUP_VISIBLE_JSON_MAX_BYTES,)} with a full response temp path.`,
+    promptSnippet: 'Fetch a known URL with the gh CLI for mapped GitHub URLs, Linkup renderJs next, Exa fallback, and the global blocklist preflight.',
     promptGuidelines: [
       'Use web_fetch when the URL is already known and the goal is to read page content.',
-      'web_fetch uses Linkup renderJs=true first and Exa contents fallback; unsupported fetch knobs are ignored with a warning.',
-      'web_fetch returns raw markdown when Linkup responds with only a markdown field; otherwise it returns JSON.',
+      'web_fetch routes github.com, gist.github.com, api.github.com, and raw.githubusercontent.com URLs for repositories, files, directories, issues, pull requests, pull request diffs, commits, comparisons, releases, gists, and REST endpoints through the local gh CLI.',
+      'web_fetch falls back to Linkup renderJs=true and then Exa contents for every other URL, for GitHub pages with no gh mapping, and when gh is missing, unauthenticated, or fails; unsupported fetch knobs are ignored with a warning.',
+      'web_fetch returns raw markdown when the provider responds with only a markdown field; otherwise it returns JSON.',
       'web_fetch refuses configured blocked hosts before any provider network request is made.',
     ],
     parameters: LinkupWebFetchParametersSchema,
@@ -440,7 +441,7 @@ function createLinkupWebFetchTool(
         ignoredKeys,
         fixedBehavior: FETCH_FIXED_BEHAVIOR,
         provider: providerResponse.provider,
-        ...(providerResponse.fallback === undefined ? {} : { fallback: providerResponse.fallback, }),
+        ...(providerResponse.fallbackChain === undefined ? {} : { fallbackChain: providerResponse.fallbackChain, }),
       },);
     },
   },);
@@ -469,8 +470,8 @@ function collectIgnoredKeys(
     input,
     supportedKeys,
   }: {
-    input: object;
-    supportedKeys: readonly string[];
+    readonly input: Readonly<Record<string, unknown>>;
+    readonly supportedKeys: readonly string[];
   },
 ): readonly string[] {
   /**

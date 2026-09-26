@@ -1680,7 +1680,7 @@ symlink,
 submodule,
 and exact excluded candidates.
 The migrated exclusions match hk:
-`package/fuzz/forbidden-strings/corpus/**`,
+`package/cli/forbidden-strings.fuzz/corpus/**`,
 `package/test-fixture/toml-edit/src/**`,
 and `**/dist/final/node/**`.
 

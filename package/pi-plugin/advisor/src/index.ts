@@ -183,7 +183,7 @@ export default async function advisor(
       /**
        Authoritative loaded context files for current agent run.
        */
-      const { contextFiles = [], } = event.systemPromptOptions;
+      const { contextFiles, } = event.systemPromptOptions;
       projectContextState.replace(contextFiles,);
       if (!state.getEnabled())
         return undefined;

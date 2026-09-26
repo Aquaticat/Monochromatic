@@ -266,12 +266,32 @@ When no speed signal separates candidates,
 
 Automatic selection only considers Pi's effective scoped models:
 
-1. Live scope exposed by Pi's extension context.
+1. Nonempty live scope exposed by Pi's extension context.
 2. Startup `--models` patterns.
 3. Merged global and project `enabledModels` settings.
 4. Authenticated registry models when Pi has no scope restriction.
 
 The fixed strategy ranks candidates from every provider in that set.
+Pi SDK sessions,
+including subagents,
+can expose an empty live cycle list without forbidding models.
+That list falls through to argv and configured settings;
+explicit restrictions that match nothing still fail closed.
+
+### Headless subagents
+
+Judge approval works without an interactive UI.
+Judge denial still blocks the tool.
+If manual approval is required but the child has no UI,
+auto-mode returns the blocked action and reason with instructions to report them to its parent.
+It does not repeatedly direct the child to an unavailable approval dialog.
+
+Bypass,
+trust directives,
+and exact-action approvals remain session-local.
+The parent's bypass banner does not disable child guards.
+See the [subagent scope diagnosis](../../../doc/troubleshooting/pi-auto-mode-subagent-model-scope.md)
+for the reproduction and verification boundaries.
 
 ## Skill read allowlist
 

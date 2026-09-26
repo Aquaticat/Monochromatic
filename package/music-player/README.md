@@ -344,7 +344,11 @@ unfolded Pixel 9 Pro Fold,
  the selected A composition keeps the playback
 deck bottom-left and lifts it above the keyboard while Search occupies the
 right pane (D50/D51).
+ D53 and D54 permit only the observed real floating-Gboard and brief
+font-update-banner overlaps with that unfolded deck.
  The folded cover has one full-width Search page;
+D55 permits its observed floating Gboard to obscure matching labels while
+the query remains visible.
 desktop inherits the Fold's visual direction (D49).
  `Ctrl+F` remains reserved
 for Search,

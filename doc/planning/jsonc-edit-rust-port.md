@@ -81,19 +81,101 @@ Progress since adoption:
    mirroring the `forbidden-regex` library-crate jobs.
 - `cargo publish --dry-run --no-verify` packaged and reached the upload step locally.
 
-Blocked on a credential:
- the token in `~/.cargo/credentials.toml` now answers
- `status 403 Forbidden` with `authentication failed`,
- no crates.io token exists among the repository's seven Actions secrets,
- and Trusted Publishing cannot bootstrap a crate that does not exist yet.
-`doc/runbook/publish-crate-first-time.md` carries the user steps
-(mint a short-lived `publish-new` token,
- `cargo login`,
- confirm the dry run,
- then configure the crate's Trusted Publisher and revoke the token),
- after which the agent runs the real publish,
- the registry checks,
- the disposable consumer against the published version and the workflow dispatch.
+- Published:
+   the user minted a bootstrap token after the stored one answered
+   `status 403 Forbidden` with `authentication failed`,
+   and `cargo publish --no-verify` uploaded `monochromatic-jsonc-edit` 0.1.0 on 2026-09-26.
+   Verified from the registry side:
+   `max_stable_version` is `0.1.0`,
+   not yanked,
+   `license` is `LGPL-3.0-or-later`,
+   `crate_size` is `72070` bytes compressed against the `286.9KiB` that
+   `cargo package` reports uncompressed,
+   and the description and repository metadata match the manifest.
+   `https://docs.rs/monochromatic-jsonc-edit/0.1.0/monochromatic_jsonc_edit/` serves `200`
+   with `parse_jsonc`,
+   `emit_jsonc_value`,
+   `jsonc_set_comment` and `JsoncNumberIdentity` listed.
+- Verified as a downstream dependency:
+   a disposable consumer at `~/temp/agent/jsonc-published-consumer-2026-09-26` resolves
+   `monochromatic-jsonc-edit = "0.1.0"` from
+   `registry+https://github.com/rust-lang/crates.io-index` per its `Cargo.lock`,
+   passes the whole API exercise,
+   and the registry-downloaded source passes its own 61 tests including the shared fixtures.
+
+- The release workflow integration was exercised,
+   not just parsed:
+   dispatching `cargo-publish.yml` with `crate=monochromatic-jsonc-edit` and `dry-run=true`
+   (run `36217693067`,
+   2026-09-26) concluded `success`,
+   with `je-detect` success,
+   `je-publish-crate` success including the `Build .crate package (verifies by compile)` and
+   `Publish (dry run)` steps,
+   and the attestation,
+   Trusted Publishing authentication and real publish steps correctly skipped.
+   The other three crates' detect jobs reported no bump and their publish jobs stayed skipped.
+   The OIDC publish path itself is still unexercised,
+   because it only runs for a version that is not yet on crates.io.
+
+- Trusted Publishing is configured and proven.
+   The user saved the crate's publisher row,
+   and dispatching the workflow with **dry-run** unchecked
+   (run `36217828047`,
+   2026-09-26) concluded `success` with `Authenticate with crates.io (Trusted Publishing)`
+   succeeding,
+   which only happens when the OIDC claims match the configured owner,
+   repository,
+   workflow filename and environment.
+   The publish step then logged
+   `monochromatic-jsonc-edit 0.1.0 already on crates.io; skipping publish.`,
+   so no upload occurred:
+   the registry still lists exactly one version,
+   `0.1.0`.
+   `Attest .crate provenance` also succeeded on the same run.
+
+- The bootstrap token was revoked by the user after Trusted Publishing was configured,
+   so the crate now publishes through the workflow's OIDC route only.
+- Property fuzzing exists for the Rust crate:
+   `package/rust-module/jsonc-edit.fuzz` holds four libFuzzer targets
+   (round-trip canonical stability and comment preservation,
+   one-mutation rejection without panic or hang,
+   the exact nesting envelope on both sides,
+   and immutable edits at fuzzer-drawn resolving addresses),
+   a structured `arbitrary` generator,
+   shared invariant checks with negative controls,
+   and thirteen unit tests.
+   The clean bounded campaign ran 13184,
+   160114,
+   625656 and 452889 executions per target inside a 2 GiB and 2 CPU container with no crash
+   artifacts.
+   Five crashes found across the campaigns are triaged in
+   `doc/handover/jsonc-edit-rust-fuzzing.md`:
+   two were product defects fixed in **both** implementations
+   (a comment body carrying a bare CR was emitted as a `//` line that ended early,
+   and setting the root to a scalar produced a document the parser rejects),
+   and three were defects in the harness's own invariants.
+- Mutation testing ran over the crate:
+   485 mutants,
+   397 caught by a failing test,
+   34 caught by timeout,
+   52 unviable,
+   and 2 survivors now excluded with measured proofs in
+   `package/rust-module/jsonc-edit/.cargo/mutants.toml`.
+   Twenty-one of the original twenty-four survivors were real test gaps and are now covered by
+   assertions that name the expected refusal message,
+   indentation level or emission text.
+- Canonical layout is shared contract:
+   the fixture corpus gained `roundTrip`,
+   `rootShape` and `canonicalLayout` sections,
+   the last measured from the TypeScript package and then verified byte for byte against the Rust
+   emitter,
+   so indentation,
+   separators,
+   trailing commas and comment placement cannot drift between the two implementations unnoticed.
+
+Nothing in the port plan is outstanding.
+Future versions publish by bumping `version` in the crate manifest and pushing to `main`,
+or by dispatching `cargo-publish.yml` with **dry-run** unchecked.
 
 ## Existing boundaries
 

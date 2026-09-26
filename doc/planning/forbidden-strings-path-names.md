@@ -71,8 +71,8 @@ The scanner's paired logical-name option preserves both identities separately.
 - `mise run //package/git-policy/cli:test:built:trust` checks packed host events in a
   disposable container; its name-finding fixture asserts that the offending name
   does not appear in host JSON output.
-- `mise run //package/fuzz/forbidden-strings:lint:clippy` checks the expanded fuzz target,
-  and `mise run //package/fuzz/forbidden-strings:test` checks its generator library.
+- `mise run //package/cli/forbidden-strings.fuzz:lint:clippy` checks the expanded fuzz target,
+  and `mise run //package/cli/forbidden-strings.fuzz:test` checks its generator library.
   The fuzz format target recognizes line-break names as fail-closed findings.
   A coverage-guided fuzz campaign was not run.
 

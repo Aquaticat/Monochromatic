@@ -157,47 +157,176 @@ The user rejected that round.
   The wrapper has no test;
   `oxlint-augment.ts` holds testable pure helpers.
 
-## Reframed failure chain
+### Lint speed: built sidecars versus `./ts` source entry (subagent report)
 
-These are separate links;
-a fix at an earlier link can make later ones moot:
+- Issue #238 (closed, commit `05cbf8fd1`) recorded,
+  per oxlint process on a clean fixture,
+  prebuilt 606.2±35.5 ms versus source 910.0±62.0 ms;
+  savings multiply in the `--fix` loop
+  (a three-pass fix chain spawns six oxlint processes).
+- Re-measured through `mise run //package/<pkg>:lint:oxlint`,
+  hyperfine one warmup plus five runs,
+  on a host at load average 28.59 over 16 cores (other sessions),
+  so the band is wide:
+  - `package/module/or-throw` (58 files):
+    built median 1.736 s (spread 0.242 s),
+    `./ts` median 1.785 s (spread 0.100 s).
+  - `package/git-policy/cli` (255 files):
+    built median 3.837 s (spread 0.216 s),
+    `./ts` median 3.970 s (spread 0.107 s).
+  - Differences sit inside or near the run-to-run band;
+    the `--fix` loop was not re-measured.
+- Positive control confirmed the `./ts` config loads all five plugins
+  (`no-restricted-syntax(no-regex)` fired on a probe file).
+- Whole-repo lint took 369.6 s in one fresh-worktree trial
+  with 385 TS2307 errors from unbuilt packages;
+  not representative.
+- Interleaved re-measurement (three arms rotated: built-A, built-B as noise band, `./ts`;
+  3 warmup plus 15 runs each; load average 6 to 13 on 16 cores;
+  fixture adapted from #238, confirmed three fix passes plus three oracle passes):
+  - `format:oxlint` fix loop on `package/module/or-throw`:
+    built medians 6.312 s and 6.309 s,
+    `./ts` median 7.436 s (minimum 7.187 s),
+    so +1.12 s (+18 %), outside the band.
+  - Plain `lint:oxlint`:
+    built medians 1.595 s and 1.634 s,
+    `./ts` median 1.799 s,
+    so about +0.2 s (+12 %), outside the band.
+  - About 0.19 s per oxlint process;
+    `strace` confirmed `./ts` opened plugin source and no dist files.
 
-1. Install state drifts from manifests (merge without `pnpm install`).
-2. The bundler silently turns an unresolvable workspace import into an external.
-3. In-repo lint consumes a gitignored build artifact whose freshness nobody tracks
-   against its inputs (source and installed dependencies),
-   so `pnpm install` alone cannot repair it.
-4. The lint wrapper exits 1 with no findings,
-   and a caller that filters output for diagnostics reads that as clean.
-   Per `AGENTS.md` XIC this is a separate incident until boundaries match.
+### oxlint and rolldown share blame (subagent report; details in troubleshooting docs)
 
-Candidate dissolutions under investigation:
+- `doc/troubleshooting/oxlint-config-load-failure-exit-code.md`:
+  oxlint 1.85.0 exits 1 both for "config or JS plugin failed to load" and for "lint found errors"
+  (`apps/oxlint/src/result.rs` lines 27 to 51 collapse distinct variants);
+  the failure prints on stdout before any formatter,
+  so `--format json` does not change it.
+  Tested consumer-side discriminators:
+  unparsable `--format json` output,
+  or the absence of the `Found N warnings and M errors.` summary line.
+  ESLint documents exit 2 for this case.
+  A prototype upstream patch (exit 2) is drafted, not filed.
+- `doc/troubleshooting/rolldown-unresolved-import-external.md`:
+  warn-and-externalize is deliberate Rollup-compatible behavior;
+  the rolldown docs line claiming otherwise is wrong.
+  A hard-error option was merged and reverted upstream (#9388, #9438; request #9362 open).
+- Decisive for design:
+  rolldown delivers warnings to `onLog` only after `bundle_write` has written every file,
+  so an `onLog` escalation exits 1 but still leaves the broken sidecar on disk,
+  newer than every input,
+  which `shouldBuildOxlintConfig` then treats as current.
+  The issue's first remediation, as worded, would not prevent the persisted artifact.
+  A `resolveId` plugin calling `this.resolve(..., { skipSelf: true })`
+  and `this.error` on null fails before writing (verified by the subagent).
+  A prototype upstream fix (deliver warnings before writing) is drafted, not filed.
 
-- In-repo lint uses the `./ts` source entry,
-  removing link 3 for in-repo use;
-  cost is the #238 lint-time optimization,
-  which must be measured before it is weighed.
-- Tie builds (or lint) to install freshness,
-  removing link 1 for every tool, not only rolldown.
-- Track `config-oxlint` build freshness via task sources/outputs
-  (the `task-util` `depends` helper already supports `--sources`/`--outputs`).
+### mise share of blame (subagent report; details in `doc/troubleshooting/mise-dependency-freshness.md`)
 
-## Open questions (pending facts)
+- mise 2026.9.12 has `mise deps` (alias `prepare`),
+  configured as `[deps.pnpm] auto = true`;
+  experimental, but the repo already sets `experimental = true` (`mise.no-env.toml` line 225).
+  The repo has no `[deps]` table.
+- It hashes root `pnpm-lock.yaml` and `package.json` (blake3),
+  records state only after a successful install, per worktree,
+  and runs before every `mise run` and `mise x`, including child runs;
+  a failed install aborts the run.
+  Throwaway experiment:
+  after `pnpm install --lockfile-only` it reported stale and installed first
+  (positive control);
+  the next run skipped install (negative control).
+- Limits:
+  workspace-member `package.json` files need a `sources` override;
+  it never inspects `node_modules`,
+  so the issue's reproduction (deleting one link) stays invisible;
+  a manual `pnpm install` is not recorded,
+  so the next `mise run` installs again;
+  no cross-process lock.
+  Per-run overhead unresolved within noise.
+- Native task `sources`/`outputs` share the `ensureOxlintConfig` flaw
+  unless an install marker (`node_modules/.modules.yaml`) is a source.
+  Default mtime mode also skips a task whose failed first run wrote outputs;
+  hash mode reruns correctly.
+  Docs say oldest output, code uses newest.
+- Repo policy forbids `depends` (`mise.toml` line 627 comment:
+  "never use depends or post depends, use run only").
+- Enter, cd, and `watch_files` hooks fire only under `mise activate`.
+- The "fanout exited 1 with no error line" report did not reproduce:
+  a fresh-worktree build ended with `package fanout failed:` naming four packages,
+  each with its own earlier error (missing Android NDK, unresolved `canvg`,
+  `libghostty` build order, a `git log` failure).
+- Drafted, not posted:
+  a comment for upstream discussion #8733 with a prototype fix and e2e test
+  (`doc/troubleshooting/mise-dependency-freshness.patch`).
 
-- Measured lint wall time: built sidecars versus `./ts` source entry.
-- What #238 decided and why.
-- Round 2 (2026-09-25) user answers:
-  build guard scope and wrapper behavior are premature, do not decide yet;
-  the stray `~/temp/agent/node_modules/@monochromatic-dev/module-logger` symlink
-  was removed as instructed
-  (`~/temp/agent/node_modules/.monochromatic` left untouched).
-- The user partially blames pnpm and mise;
-  both get their own investigations
-  (troubleshooting docs `doc/troubleshooting/pnpm-stale-node-modules-detection.md`
-   and `doc/troubleshooting/mise-dependency-freshness.md`, subagents running).
-- Lint wall time,
-  built sidecars versus `./ts` source entry (subagent running).
+### pnpm share of blame (subagent report; details in `doc/troubleshooting/pnpm-stale-node-modules-detection.md`)
+
+- `--lockfile-only` writes only `pnpm-lock.yaml` (documented);
+  it skips linking and the installed-state files,
+  and nothing warns afterwards (`pnpm list` exits 0 without the new dependency).
+- No standalone status command exists in pnpm 12.5.1.
+  The `verifyDepsBeforeRun` check compares settings, catalogs, project list,
+  missing `node_modules`, member manifest mtimes,
+  and wanted versus installed lockfile.
+  Usable as a probe today:
+  `pnpm --config.verify-deps-before-run=error exec true`,
+  about 85 ms up to date or stale (30 runs, quiet host),
+  versus 96.9 ms for a no-op `pnpm install --offline`
+  and 215 ms for `--frozen-lockfile --offline` (frozen disables the fast path).
+- The per-run "added 6" in the main checkout is a pnpm bug:
+  49 dangling links to skipped optional platform packages inside
+  typescript, rolldown, oxlint, oxlint-tsgolint, satteri, yuku-parser
+  never satisfy the reinstall check;
+  visible here because the repo sets `modulesCacheMaxAge: 0`.
+  Local repair (not run):
+  delete the dangling links under `node_modules/.pnpm`.
+  Prototype upstream fix and draft issue exist, not filed.
+- A repair install prints `Already up to date` even while it creates a sub-project workspace link.
+
+
+## Failure chain with owners
+
+Separate links;
+a fix at an earlier link can make later ones moot,
+but each link also fails for causes other than #570.
+
+1. Install drift:
+   `node_modules` falls behind manifests.
+   pnpm leaves `--lockfile-only` drift silent and has no status command outside `pnpm run`/`pnpm exec`;
+   mise ships `mise deps` but the repo does not enable it;
+   nothing in the repo gates tasks on install state.
+2. Silent bundling:
+   rolldown warns and externalizes (deliberate, Rollup-compatible),
+   and an `onLog` escalation fires only after output is written;
+   only a `resolveId` guard fails before writing.
+3. Stale persisted artifact:
+   in-repo lint consumes gitignored `dist` sidecars;
+   the repo's hand-rolled `ensureOxlintConfig` mtime check
+   ignores install state and transitive workspace sources,
+   and mise native `sources`/`outputs` would repeat that flaw.
+4. Ambiguous failure signal:
+   oxlint exits 1 for both config-load failure and findings;
+   the wrapper passes that through;
+   a caller filtering output read it as clean.
+
+## Open questions
+
+- Round 3 asked (awaiting answers):
+  policy when a task starts on drifted `node_modules`;
+  which drafted upstream reports to file;
+  whether to repair the main checkout's dangling optional-platform links.
+- Held until install policy is settled:
+  install-gate mechanism (mise deps versus pnpm verify probe);
+  in-repo lint artifact (fixed freshness check versus `./ts` source entry;
+  measured cost of `./ts` is about 0.19 s per oxlint process);
+  build guard (link 2);
+  wrapper signal (link 4).
+- Unrelated incidents seen during research,
+  not in #570 scope:
+  fresh-worktree full build failures
+  (Android NDK, `canvg`, `libghostty` order, `git log`);
+  `package/kwin/key-helper/src/nvim.ts` bare import violating ST3.
 
 ## Commits
 
-- This handover only.
+- Handover and troubleshooting docs only; no code changed.

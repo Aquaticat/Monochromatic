@@ -8,7 +8,7 @@
 //! The engine-swap teardown (#385) deleted the old resharp/`regex`/aho-corasick
 //! internals this module used to re-export; what survives is the forbidden-regex
 //! load and scan path. The scanner-level fuzz targets in
-//! `package/fuzz/forbidden-strings` were retargeted onto that path by #386: the
+//! `package/cli/forbidden-strings.fuzz` were retargeted onto that path by #386: the
 //! literal-escaping roundtrip (`escape_literal` plus `RegexSet`), the columnless
 //! scan-format and ruleset-invariant checks (`load_from_text` plus `scan_file`), and
 //! the two whole-crate construction paths (`compile_from_text`, `load_precompiled`).

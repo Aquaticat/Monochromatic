@@ -91,7 +91,8 @@ The withdrawn form and its captures remain archived at
 passed a superseded geometric guard but did not make the page usable.
 D50 additionally requires the unfolded playback deck to stay visible during
 Search,
- including with a keyboard in view.
+ including with a keyboard in view,
+ except for the measured real-Gboard overlays accepted by D53 and D54.
  The user selected A (D51):
  Search stays on the unfolded right,
  and the
@@ -110,22 +111,28 @@ A system-managed 300dp debug keyboard verified bounded bottom-keyboard
 occlusion and input routing;
 it is not Gboard.
 The linked older real-Gboard PNGs predate this browser correction.
-A later real floating Gboard at 200% text obscured part of the deck title,
-so D50 is not fully met in this tested mode.
- On the cover at 100% text,
-the floating keyboard obscured both matching result labels while typing.
- The user's A selection is unchanged.
+Real floating Gboard at 200% text obscured part of the unfolded deck title;
+D53 accepts that measured overlap.
+On the cover at 100% text,
+the floating keyboard obscured both matching result labels while typing;
+D55 separately accepts that state while the query remains visible.
+The user's A selection is unchanged.
 A disposable Fold then verified real split inner and full-width cover Gboard
 at 100% and 200% text, with the deck and cover results visible in settled
 states.
 Its Gboard font-update banner briefly clipped the final inner mode;
-D50 remains unmet across the measured floating and transient states.
+D54 accepts that measured brief overlap.
+Ordinary settled docked/split keyboards still require the full deck,
+and other keyboard states are not verified by those exceptions.
 The original AVD's active Gboard was updated versionCode `175981944`,
 not the preloaded `175753756`;
 updating the disposable Gboard to that same build did not reproduce the
 floating layout.
 `package/music-player/design/evidence/gboard-geometry.md` indexes sanitized real-keyboard captures
-and measured passing/failing states.
+and bounded accepted overlays.
+The [selected Search A crease measurement](evidence/selected-search-crease-geometry.md)
+records the visible central band and app-node geometry;
+it does not choose E2's still-open minimum opposing-information padding.
 Selection does not authorize production implementation.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.

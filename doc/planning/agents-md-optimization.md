@@ -258,6 +258,38 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
 - HON and VR2 redraft:
    user required that they cannot be read as conflicting;
    the reading-ambiguity clause moves wholly from HON into VR2.
+   Approved.
+- Batch 12 (simplification and linting):
+   15 rules become 10 always-loaded,
+   980 to 596 tokens;
+   IMM shrinks to "Prefer immutable patterns" (user kept it);
+   deletes lint-enforced
+   LN4 (`no-for-in` message names the fix),
+   LN8 (`denyWarnings: true`);
+   merges LN5 into LN3;
+   MXL widens to Rust;
+   MXR and RDC move to `package/rust-linter-plugin/builtin/README.md` with codes kept (219 to 180 tokens).
+   Approved.
+- Batch 13 (logging,
+   security,
+   TSDoc):
+   15 rules become 13,
+   796 to 632 tokens;
+   TSD shrinks to its unenforced `{@inheritDoc}` clause;
+   TD3 merges into TD2;
+   TD8 deleted (`tsdoc/require-example`).
+   Approved.
+- Batch 14 (TypeScript standards,
+   type system,
+   variables):
+   21 rules become 16,
+   968 to 625 tokens;
+   deletes lint-enforced ST9,
+   TQ1,
+   TY1,
+   TY4,
+   VA6;
+   ST9 deletion open (cited as design rationale in about 10 files).
    Proposed,
    awaiting user review.
 - Retired-code references:
@@ -368,6 +400,13 @@ working files lived in the session scratchpad.
 - Proposal code blocks mark sections with Markdown headings,
    not HTML comments.
 
+## Decisions (round 7)
+
+- Keep compact principles that stand in for many lint rules (for example IMM's "Prefer immutable patterns"):
+   one clause prevents many lint round-trips,
+   which spelling out each lint rule would not.
+   Deletion of lint-enforced rules still applies to rules that restate one lint check.
+
 ## Open questions
 
 
@@ -455,15 +494,13 @@ RBK:
  package-specific ones stay beside code.
 ```
 
-### Batch 2 (PX2 and PXQ redrafted self-contained)
+### Batch 2
 
 ```md
 HON:
  Honest;
  research,
  don't deflect.
-One clear reading -> act;
- several -> confirm.
 Unpublished package change = design change,
  not compat break.
 
@@ -953,7 +990,6 @@ WXG:
  then classify the effective source before lock analysis.
 ```
 
-
 ### Batch 9
 
 ```md
@@ -1105,7 +1141,7 @@ WC2:
  commit output as-is.
 ```
 
-### Batch 11 (VR2 pending redraft)
+### Batch 11
 
 ```md
 VRB:
@@ -1141,9 +1177,13 @@ AUT:
  never expanding scope or acting on adjacent undecided choices.
 
 VR2:
- Ambiguous request verb:
- take the narrower reading;
- propose the broader action explicitly.
+ Request with one clear reading:
+ act.
+Readings differing in what to do:
+ confirm first.
+Readings differing only in how far to go:
+ do the narrower,
+ propose the broader explicitly.
 
 ANN:
  Put changes where they belong immediately (other file,
@@ -1176,8 +1216,326 @@ SPG:
  session type filter,
  transcript size check).
 ```
+### Batch 12
+
+```md
+IMM:
+ Prefer immutable patterns.
+
+UTL:
+ Reuse existing repo utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) before writing helpers.
+
+XNC:
+ Name extracted concepts by role and boundary behavior,
+ revealing sentinel and fallback semantics;
+ start simple,
+ refactor only when needed.
+
+ITR:
+ Linear input (strings,
+ flat arrays):
+ iterate;
+ never recurse or rebuild accumulators (`acc + c`).
+Recurse only bounded structural walks;
+ flatten spines with a work stack.
+
+MXL:
+ Over max-lines (TS,
+ Rust):
+ split into sibling files/modules (constants,
+ types,
+ helpers),
+ re-exporting from `index.ts`;
+ never strip docs/`//region` or reformat to fit.
+
+LN1:
+ Lint rules in apparent conflict:
+ restructure (split,
+ extract,
+ rename);
+ never violate one or reformat to silence another.
+
+LN2:
+ Each lint finding is a design signal:
+ name the rule's intent,
+ then write the best code shape satisfying it and the codebase.
+
+LN3:
+ Before suppressing a lint rule:
+ inspect linter source + linted value;
+ try config/allow-list.
+Remaining suppression:
+ justified disable comment plus `.md` doc citing both,
+ proving config fails.
+
+LN6:
+ Suppressing a documented declaration:
+ `/* oxlint-disable rule */`,
+ TSDoc,
+ declaration,
+ `/* oxlint-enable rule */` on the very next line;
+ never `disable-next-line` between TSDoc and declaration.
+
+LN7:
+ Never loosen lint rules without prior approval.
+```
+
+### Batch 12, moved to `package/rust-linter-plugin/builtin/README.md`
+
+```md
+MXR:
+ `.rs` files:
+ 300 code lines max;
+ split into sibling modules.
+`tests/`,
+ `*_tests.rs`,
+ `fuzz/`,
+ `build.rs` exempt;
+ never disable.
+
+RDC:
+ Rustdoc (`///`/`//!`;
+ plain `//` doesn't count) on every documentable `.rs` item,
+ public + private.
+cxx-qt files exempt `use` + trait impls;
+ tests/fuzz exempt;
+ never disable.
+```
+### Batch 13
+
+```md
+LOG:
+ Log extensively:
+ entry points,
+ branch decisions,
+ error paths,
+ async lifecycle;
+ never remove logging to "clean up".
+
+TLG:
+ Production code logs only via tagged loggers from `@monochromatic-dev/module-logger`;
+ raw `console` only for exact terminal output (CLI output,
+ prompts).
+
+LG1:
+ Tag loggers at every module + function boundary with `myFn.name`,
+ re-wrapping with an added tag when passing to a sub-function;
+ never embed tags in message strings.
+
+LG2:
+ Every `catch (error)` uses its binding:
+ log the caught value (even expected) or rethrow.
+
+SYB:
+ Text crossing syntax boundaries obeys destination grammar:
+ encode at final interpolation.
+Never invent comment-string DSLs for relations the type system or AST can express or infer.
+
+STB:
+ Tests for code emitting another syntax include adversarial boundary cases:
+ delimiters,
+ escapes,
+ quotes,
+ newlines,
+ traversal tokens,
+ command separators,
+ source-escaped variants.
+
+TSD:
+ Non-async wrappers document via `{@inheritDoc originalFn}`.
+
+TD1:
+ Comments inside template literals:
+ `${ // comment \n '' }`,
+ never target-language comments or moving the comment outside.
+
+TD2:
+ TSDoc (`/** */`) only directly before declarations;
+ `//` or `/* */` for statements,
+ control flow,
+ imports,
+ returns.
+
+TD4:
+ Comments go on their own line above code,
+ never trailing it.
+
+TD5:
+ Escape `*/` as `*\/` inside TSDoc blocks.
+
+TD6:
+ `@param`/`@returns`:
+ no articles;
+ explain why,
+ not what.
+
+TD7:
+ Async function docs never mention Promise wrapping.
+```
 
 ## Next action
 
-Walk rules batch by batch;
-apply approved batches to `AGENTS.md` with a retired-code mapping.
+Paused before compaction with batch 14 awaiting user answers:
+Q32 (delete ST9,
+or keep it compressed;
+recommended keep) and Q33 (approve the rest).
+
+### Pending batch 14 text
+
+```md
+ST2:
+ Mark logical sections with `//region`/`//endregion`,
+ stating purpose + explanation.
+
+ST3:
+ Cross-package workspace imports use the package's `/ts` subpath (TypeScript source),
+ never built output;
+ rationale:
+ `doc/decision/workspace-ts-source-imports.md`.
+
+ST5:
+ Prefer named imports;
+ import workspace packages by absolute package name.
+
+ST6:
+ Static assets (SVG,
+ HTML,
+ CSS,
+ SQL):
+ `import ... with { type: 'text' }`,
+ not `readFile`;
+ build tooling resolves them.
+
+ST8:
+ Declare functions before calling them in source order,
+ despite hoisting.
+
+TQ2:
+ Export at declaration,
+ not in a trailing `export { }`;
+ never extend typed objects via `Object.assign`.
+
+TQ3:
+ Throw + return early.
+
+XPT:
+ Exporting small helpers through the package API so built-artifact tests reach them is allowed.
+
+TY2:
+ Write `Generator<T>`/`AsyncGenerator<T>` without unused or optional type arguments.
+
+TY3:
+ `as const` for literals;
+ branded types for domain primitives.
+
+TY5:
+ `const` generic parameters with meaningful constraint names.
+
+TY6:
+ Avoid deeply nested conditional types.
+
+TY7:
+ Runtime narrowing:
+ type guards or assertion functions (`asserts value is T`).
+
+TY8:
+ `const` narrowing doesn't reach function declarations:
+ use a helper returning non-null,
+ or a new explicitly typed `const` after the null check.
+
+TY9:
+ Generator overload signatures omit `*`/`async *`;
+ only the implementation has them.
+
+VA5:
+ `satisfies` checks types without widening;
+ destructure dependent values in separate statements.
+```
+
+Proposed compressed ST9 if kept:
+
+```md
+ST9:
+ Functions with 2+ parameters take one destructured object,
+ except callbacks with externally dictated signatures.
+```
+
+### Remaining batches (90 rules)
+
+- Batch 15:
+   PP1 to PP9,
+   PPX,
+   OWB (guidance moves into prefer-readonly diagnostics per round 2),
+   RG1 to RG3 (RG2 recursion clause already absorbed by ITR).
+- Batch 16:
+   TP1 to TP3,
+   DM1,
+   DM2,
+   LFW,
+   RCO,
+   RCI,
+   AP1 to AP5,
+   SGD.
+- Batch 17:
+   PKG,
+   TCV,
+   TC2,
+   GFP,
+   CXL,
+   VUB,
+   VB1 to VB7,
+   ABR,
+   URF,
+   THR,
+   TAE.
+- Batch 18:
+   WR2 to WR5,
+   MD1 to MD8,
+   WRP,
+   DPL,
+   DL1 to DL6,
+   EC1.
+- Batch 19:
+   GCE,
+   GCG,
+   GCB,
+   GCA,
+   CLG,
+   CPN,
+   XCM,
+   AD1 to AD4,
+   SK1 to SK3.
+- Batch 20:
+   ORG,
+   TAG,
+   RLM,
+   NCD,
+   CRN,
+   APG,
+   DGT,
+   DNL,
+   JCH (guidance moves into `tsdoc/check-mutates` diagnostic),
+   EPR.
+
+### Apply phase (after the walk)
+
+- Rewrite `AGENTS.md` from approved text,
+   including section moves and new "User interfaces" heading;
+   regenerate `CLAUDE.md` via file-enforcer.
+- Create `.agents/skills/visual-design-review/SKILL.md` with an imperative description.
+- Add moved rules to their package docs.
+- Rewrite references to retired codes;
+   add forbidden-strings entries for retired codes.
+- Update `doc/philosophy/agents.md` and `doc/agent/regression-suite.md` Case 3.
+- Move JCH and OWB guidance into linter diagnostics.
+
+### Resume notes
+
+Walk scratch files live in the session scratchpad `walk/` directory:
+`bN-after.md` holds proposed text;
+`measure.ts <batch> <CODES>` extracts originals to `bN-before.md`,
+checks RLM,
+and counts Opus 5.5 tokens.
+Scratch is not durable;
+this doc's approved-text sections are canonical.
+Proposal code blocks mark sections with Markdown headings.

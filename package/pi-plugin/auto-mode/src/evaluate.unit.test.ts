@@ -13,15 +13,13 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { askUser, } from './ask-user.ts';
 import {
+  askUser,
   decisionForDenyVerdict,
   evaluate,
-} from './evaluate.ts';
-import {
   VERDICT_ENTRY_TYPE,
   type VerdictData,
-} from './types.ts';
+} from '../dist/final/node/index.mjs';
 
 /** Minimal persisted-entry shape captured by mock extension API. */
 type AppendedEntry = {

@@ -10,8 +10,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { getTrustDirectives, } from './context.ts';
-import { TRUST_ENTRY_TYPE, } from './types.ts';
+import {
+  getTrustDirectives,
+  TRUST_ENTRY_TYPE,
+} from '../dist/final/node/index.mjs';
 
 /** First trust directive fixture. */
 const FIRST_TRUST_RULE = 'Allow .env file access';

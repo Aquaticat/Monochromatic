@@ -39,7 +39,7 @@ use crate::path::JsoncPathSegment;
 /// ```ts
 /// import type { JsoncValue } from './value';
 /// ```
-use crate::value::JsoncValue;
+use crate::value::{JsoncKind, JsoncValue};
 
 /// What:     Return a new document with one address set to a replacement value.
 /// Why:      Setting is the common edit; it replaces an existing value, keeps that address's comment, and
@@ -58,6 +58,17 @@ pub fn jsonc_set(
     path: &[JsoncPathSegment],
     value: JsoncValue,
 ) -> Result<JsoncValue, JsoncEditError> {
+    // What: Refuse a root replacement that is not a container.
+    // Why: The document contract is a record or array root. Accepting a scalar here would return a
+    //      state whose canonical emission the parser rejects, so the invariant would break inside
+    //      the crate's own round trip. Fuzzing found it as an emission of `null`.
+    if path.is_empty() && !matches!(value.kind, JsoncKind::Record { .. } | JsoncKind::Array { .. }) {
+        return Err(JsoncEditError::Type {
+            error: crate::error::JsoncTypeError {
+                message: "jsonc set: the document root must stay an object or array".to_string(),
+            },
+        });
+    }
     return set_value(root, path, value);
 }
 

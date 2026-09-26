@@ -356,6 +356,12 @@ layout units at rendering time.
 is not yet established;
  the existing 12dp rule applies to mode-button
 horizontal content padding and cannot be transplanted silently.
+The [selected Search A measurement](evidence/selected-search-crease-geometry.md)
+reports app-node bounds outside the approximate dent and a 167px projected
+horizontal gap between extrema,
+with sampled pixel-band controls.
+Those bounds are not a chosen `min_padding` or a guarantee that accessibility
+rectangles enclose all painted glyphs.
 
 This formula is **not** a mandatory unpainted gap between visible panes.
 Borders,

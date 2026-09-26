@@ -1,0 +1,88 @@
+diff --git a/crates/rolldown/src/bundle/bundle.rs b/crates/rolldown/src/bundle/bundle.rs
+index 53d6699..3f9621d 100644
+--- a/crates/rolldown/src/bundle/bundle.rs
++++ b/crates/rolldown/src/bundle/bundle.rs
+@@ -9,7 +9,7 @@ use super::super::{
+     scan_stage::{NormalizedScanStageOutput, ScanStage, ScanStageOutput},
+   },
+   types::{bundle_output::BundleOutput, scan_stage_cache::ScanStageCache},
+-  utils::fs_utils::clean_dir,
++  utils::{deliver_warnings::deliver_warnings_to_on_log, fs_utils::clean_dir},
+ };
+ use anyhow::Context;
+ use arcstr::ArcStr;
+@@ -185,6 +185,15 @@ impl<Fs: FileSystem + Clone + 'static> Bundle<Fs> {
+ 
+     let mut output = self.bundle_up(scan_stage_output, /* is_write */ true).await?;
+ 
++    // Let `onLog` see every scan and generate warning before any file is written,
++    // so escalating one to an error leaves no output behind (as in Rollup).
++    // Without a handler, warnings stay on the output for the caller to report.
++    if self.options.on_log.is_some() {
++      let mut pending = std::mem::take(&mut self.warnings);
++      pending.append(&mut output.warnings);
++      deliver_warnings_to_on_log(pending, &self.options).await?;
++    }
++
+     self.fs.create_dir_all(&dist_dir).with_context(|| {
+       format!("Could not create directory for output chunks: {}", dist_dir.display())
+     })?;
+diff --git a/crates/rolldown/src/utils/deliver_warnings.rs b/crates/rolldown/src/utils/deliver_warnings.rs
+new file mode 100644
+index 0000000..0d18393
+--- /dev/null
++++ b/crates/rolldown/src/utils/deliver_warnings.rs
+@@ -0,0 +1,41 @@
++use rolldown_common::{Log, LogLevel, NormalizedBundlerOptions};
++use rolldown_error::{
++  BuildDiagnostic, Diagnostic, DiagnosticOptions, filter_out_disabled_diagnostics,
++};
++
++/// Deliver warnings to the user's `onLog` handler, stopping at the first handler error.
++///
++/// `Bundle::bundle_write` calls this before writing any file, so a handler that
++/// escalates a warning to an error (`defaultHandler('error', log)` or `throw`)
++/// fails the build without leaving output on disk. Rollup behaves the same way,
++/// because it calls `onLog` synchronously while loading modules.
++///
++/// Mirrors `handle_warnings` in `rolldown_binding` and `emit_warnings` in
++/// `rolldown_watcher`, including the batched rendering from #9748.
++pub async fn deliver_warnings_to_on_log(
++  warnings: Vec<BuildDiagnostic>,
++  options: &NormalizedBundlerOptions,
++) -> anyhow::Result<()> {
++  if warnings.is_empty() || options.log_level == Some(LogLevel::Silent) {
++    return Ok(());
++  }
++  let Some(on_log) = options.on_log.as_ref() else {
++    return Ok(());
++  };
++
++  let warnings: Vec<BuildDiagnostic> =
++    filter_out_disabled_diagnostics(warnings, &options.checks).collect();
++  if warnings.is_empty() {
++    return Ok(());
++  }
++
++  let diagnostic_options = DiagnosticOptions { cwd: options.cwd.clone() };
++  let diagnostics: Vec<Diagnostic> =
++    warnings.iter().map(|warning| warning.to_diagnostic_with(&diagnostic_options)).collect();
++  let rendered = Diagnostic::render_batch(&diagnostics, true);
++
++  for (warning, rendered) in warnings.into_iter().zip(rendered) {
++    on_log.call(LogLevel::Warn, Log::from_rendered(&warning, rendered)).await?;
++  }
++  Ok(())
++}
+diff --git a/crates/rolldown/src/utils/mod.rs b/crates/rolldown/src/utils/mod.rs
+index df79dbd..c4578ce 100644
+--- a/crates/rolldown/src/utils/mod.rs
++++ b/crates/rolldown/src/utils/mod.rs
+@@ -2,6 +2,7 @@ pub mod apply_inner_plugins;
+ pub mod augment_chunk_hash;
+ pub mod chunk;
+ pub mod defer_drop;
++pub mod deliver_warnings;
+ pub mod external_import_interop;
+ pub mod file_url;
+ pub mod fs_utils;

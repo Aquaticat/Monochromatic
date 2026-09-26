@@ -9,8 +9,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { formatModelBlockReason, } from './model-feedback.ts';
-import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';
+import {
+  formatModelBlockReason,
+  DEFAULT_DENY_GUIDANCE,
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: formatModelBlockReason.name,

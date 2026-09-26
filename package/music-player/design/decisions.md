@@ -1424,6 +1424,9 @@ parallel design vote.
 ### D50. The unfolded control deck remains visible (2026-09-24)
 The user requires the playback/control deck to **never be hidden while the
 Fold is unfolded**.
+D53 and D54 permit only their explicitly measured floating-Gboard and
+font-update-banner exceptions;
+other keyboard states remain subject to this requirement.
  This includes the D47 Search destination,
  regardless
 of whether Search occupies one side or more of the display.
@@ -1443,9 +1446,10 @@ keyboard-closed screenshots;
  its x `[274,1180)`, y `[310,1081)` key surface overlaps the deck
  title at `[258,1042][781,1145]` on the 2076 × 2152px inner panel.
  Do not mark D50 fully validated from the debug bottom-IME captures.
-The later real split-keyboard test passed after settling but a Gboard
-font-update banner briefly clipped the final mode;
-D50 also covers that observed typing state.
+The real split-keyboard test passed after settling,
+while a Gboard font-update banner briefly clipped the final mode.
+D54 accepts that measured brief banner overlap;
+D50 still governs non-exempt keyboard states.
  D47's separate-page
 interaction does not supersede this persistent control region.
 
@@ -1495,13 +1499,19 @@ not active choices.
 The corrected A-only review was recaptured with the same folder browser
 visible in the shortened upper-left viewport under a 300dp debug IME;
 its unfolded deck and query/results remained visible.
+On 2026-09-25 the user said “Okay, I like it” after reviewing that
+correction.
+This affirms the retained-browser composition,
+not the separate synthetic 415dp title/transport reflow or universal D50
+compliance.
 The older real-Gboard PNGs predate that browser correction.
 A later real Gboard floating-keyboard probe at 200% text obscured part of
 the deck title; moving that keyboard lower obscured more controls.
-This is a validation failure against D50 in the tested floating mode,
-not a change to the user's A selection.
+D53 accepts this specific real floating-Gboard overlap with the unfolded
+deck without changing the user's A selection.
 On the folded cover, the same real floating mode covered both matching
 result labels while a focused `cam` query remained visible.
+D55 accepts that separate observed cover overlap.
 A separate disposable Fold AVD verified real Gboard split input on the
 inner panel and full-width input on the cover at 100% and 200% text.
 At settled 200%, its inner IME began at y `1352` and the final mode ended
@@ -1512,8 +1522,10 @@ Updating the disposable Gboard to the same version did not reproduce its
 floating behavior, so version alone is not an explanation.
 A Gboard font-update banner on the disposable inner panel temporarily
 raised the IME top to y `1140` and clipped the final mode until dismissed.
-These bounded passing modes and failing states do not change D50 or the
-user's A selection; other heights and app-observed floating insets remain unverified.
+D54 accepts that measured brief banner overlap;
+D53 separately accepts the floating-keyboard deck overlap.
+Other D50 states and the user's A selection remain unchanged.
+Other heights remain unverified.
 A debug-only app probe subsequently observed the docked bottom inset and
 bounding rectangle;
 its synthetic 415dp banner-height reflow is not a chosen replacement.
@@ -1540,6 +1552,146 @@ library-unavailable explanations,
 repeat a successful query.
  This is design-only until implementation is
 separately authorized.
+
+### D53. Real floating Gboard may obscure the unfolded deck (2026-09-26)
+
+The user explicitly said that “real floating Gboard still obscures the deck”
+is **acceptable**.
+When real floating Gboard overlays the unfolded playback deck during Search,
+that specific occlusion is an exception to D50's otherwise complete-deck
+visibility requirement.
+Do not move or replace selected Search A merely to make the deck visible
+beneath a user-positioned floating keyboard.
+The actual folder browser remains above the bottom-left deck;
+query and results remain together on the right (D51),
+and D52 still removes the repeated positive-results heading.
+
+This exception does **not** permit clipping or hiding the deck under a
+docked or split keyboard.
+D54 separately accepts the measured transient Gboard font-update banner;
+D53 alone does not generalize to other keyboard overlays.
+D55 separately accepts the observed floating cover keyboard obscuring both
+Search result labels;
+D53 alone does not authorize that cover behavior.
+The synthetic 416dp anticipatory reservation and inline deck reflow remain
+unaccepted debug-only studies.
+This is a design-scope clarification,
+not production authorization or proof that the remaining D50 states pass.
+
+### D54. The brief Gboard font-update banner may clip the deck (2026-09-26)
+
+When asked about the measured `Keyboard font size updated` state,
+the user said “That brief banner is also acceptable.”
+On the disposable Fold at 200% text,
+this real Gboard banner briefly raised the IME top to y `1140` and clipped
+the final mode to `[73,1076][965,1140]` until its `OK` action was tapped.
+D54 accepts **that measured transient system banner overlap** as a second
+exception to D50;
+it is not approval to hide the deck beneath ordinary settled docked or split
+keyboards,
+nor beneath arbitrary taller keyboards or persistent banners.
+The selected A still keeps the actual folder browser above the bottom-left
+deck and the integrated Search query/results on the right.
+
+The synthetic 415dp inline title/transport reflow and 416dp anticipatory
+reservation remain unaccepted debug-only studies;
+no banner-specific layout change is required by this decision alone.
+D55 separately accepts the measured cover result-label overlap;
+D54 alone does not authorize it.
+No production implementation is authorized.
+
+### D55. Real floating Gboard may obscure folded-cover Search matches (2026-09-26)
+
+When asked about the measured cover state and given its sanitized capture
+path,
+the user answered “Also acceptable.”
+At 100% text on the folded cover,
+real floating Gboard covered both matching result labels,
+`Camellia` and `Another Xronixle`,
+while the focused `cam` query remained visible.
+D55 accepts that **specific floating-keyboard result overlap** without
+changing D47's separate cover page,
+D48's single Back/query/Clear header,
+or D52's removal of the repeated positive-results heading.
+It does not approve an obscured query,
+missing or nonfunctional search results,
+or ordinary docked/full-width keyboards hiding matching labels.
+The accepted A review still shows results with its separate debug IME;
+the sanitized real-Gboard capture is the evidence for this exception.
+D53 concerns the unfolded deck,
+D54 concerns the brief unfolded font-update banner,
+and D55 concerns the folded-cover floating keyboard.
+No production implementation is authorized.
+
+### D56. The folded-cover Search result list fits above a bottom keyboard (2026-09-26)
+
+The user chose **R** in the cover-viewport design review.
+For the selected A cover Search page,
+keep the integrated Back/query/Clear header fixed and give **only the scrolling
+results viewport** keyboard-aware bottom space while an ordinary docked or
+full-width keyboard is open.
+Positive matches still start directly beneath the header (D52).
+Long result names retain their wrapping and the last result and supporting
+text must be reachable by scrolling above the keyboard,
+not remain stranded beneath it.
+The selected unfolded Search layout,
+upper-left folder browser and bottom-left deck are unchanged.
+
+The same installed debug APK supplied a 200% text-scale failure control:
+with a 300dp bottom keyboard,
+row 18 remained at y `[2151,2254]` below keyboard top y `1693`
+even after another end-of-list swipe.
+The opt-in cover-only viewport brought its title and supporting line to
+y `[1479,1582]` and `[1582,1673]` above that keyboard.
+At 100%/200%,
+the final row was also scroll-reachable above **settled real full-width Gboard**
+in this debug fixture.
+These are bounded design-study results,
+not validation of animation frames,
+all keyboard geometries,
+real search ranking or activation.
+
+The measured R prototype required another swipe to recover the final row
+after hiding and refocusing the keyboard.
+That refocus behavior and Back/Clear/focus remain open under #116;
+R selects the cover viewport direction,
+not that extra swipe as a requirement.
+C's unchanged cover viewport was rejected for the measured end-of-list
+occlusion.
+D55 remains the separate accepted **floating** cover Gboard exception,
+not a waiver for ordinary full-width input.
+The comparison and limits are in
+`package/music-player/design/evidence/search-result-overflow.md`.
+No production implementation is authorized.
+
+### D57. The observed inner floating Gboard may obscure some Search result lettering (2026-09-26)
+
+The user chose **A** in the separate inner floating-result review.
+At 200% text in the selected A long-results fixture,
+real floating Gboard covered portions of middle **right-pane result labels**
+while the `cam` query stayed readable and later results were visible below
+the keyboard.
+D57 accepts **this specific observed floating overlay** as a bounded
+exception to visual result-lettering visibility.
+It does not extend to other floating placements,
+ordinary docked or split keyboards,
+an obscured query,
+missing matches or nonfunctional result actions.
+Whether the covered rows can be scrolled into clear space,
+reached or activated was **not** established;
+D57 does not accept their absence or inaccessibility.
+
+D53 independently accepts the measured floating-keyboard overlap with the
+left playback deck;
+D55 concerns floating results on the folded cover.
+D56 keeps the folded-cover result list scrollable above ordinary full-width
+keyboards.
+No inner layout move,
+IME placement mechanism,
+production implementation or further device experiment was selected.
+The sanitized native capture and bounded fixture are in
+`package/music-player/design/questions/floating-results-review.html`
+and `package/music-player/design/evidence/search-result-overflow.md`.
 
 ---
 

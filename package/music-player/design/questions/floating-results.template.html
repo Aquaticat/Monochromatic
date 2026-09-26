@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search A · inner floating-keyboard result overlap</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --color-page: #f4f5f9;
+  --color-panel: #ffffff;
+  --color-raised: #e5e8f2;
+  --color-ink: #242733;
+  --color-muted: #4d5261;
+  --color-edge: #666c7c;
+  --color-accent: #344d86;
+  --color-chassis: #17191f;
+  --color-backdrop: rgb(0 0 0 / 80%);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-page: #0c0e13;
+    --color-panel: #191d26;
+    --color-raised: #2b3040;
+    --color-ink: #f2f3f8;
+    --color-muted: #c4c9d5;
+    --color-edge: #a1a8b8;
+    --color-accent: #b7caff;
+    --color-chassis: #08090c;
+    --color-backdrop: rgb(0 0 0 / 86%);
+  }
+}
+* { box-sizing: border-box; }
+body { margin-inline: 0; margin-block: 0; background-color: var(--color-page); color: var(--color-ink); font-family: system-ui, sans-serif; line-height: 1.5; }
+main { max-inline-size: 85rem; margin-inline: auto; padding-inline: clamp(1rem, 3vw, 2.5rem); padding-block: 1rem 4rem; }
+h1 { font-size: clamp(1.8rem, 3vw, 2.6rem); line-height: 1.2; }
+h2 { margin-block: 0.5rem; }
+p { max-inline-size: 85ch; }
+.evidence, .policy, .ranking {
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.8rem;
+  background-color: var(--color-panel);
+  padding-inline: 1rem;
+  padding-block: 0.7rem;
+}
+.muted { color: var(--color-muted); }
+.evidence img { display: block; inline-size: min(100%, 30rem); block-size: auto; }
+.policies { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 25rem), 1fr)); gap: 1rem; margin-block: 1rem; }
+.policy[data-recommended='true'] { border-width: 0.15rem; border-color: var(--color-accent); }
+.policy ul { padding-inline-start: 1.5rem; }
+.policy li { margin-block: 0.4rem; }
+button, textarea { font: inherit; color: var(--color-ink); background-color: var(--color-panel); }
+button {
+  min-inline-size: 3rem;
+  min-block-size: 3rem;
+  padding-inline: 0.8rem;
+  padding-block: 0.3rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.6rem;
+  cursor: pointer;
+}
+button:hover { background-color: var(--color-raised); }
+button:focus-visible, input:focus-visible, textarea:focus-visible, .stage:focus-visible { outline: 0.1875rem solid var(--color-accent); outline-offset: 0.1875rem; }
+fieldset { border-width: 0; padding-inline: 0; padding-block: 0; margin-inline: 0; margin-block: 0.8rem; }
+label { display: block; min-block-size: 3rem; padding-block: 0.45rem; }
+textarea {
+  display: block;
+  inline-size: min(100%, 50rem);
+  min-block-size: 7rem;
+  padding-inline: 0.7rem;
+  padding-block: 0.5rem;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.4rem;
+}
+output { display: block; white-space: pre-wrap; }
+dialog {
+  inline-size: min(98vw, 65rem);
+  max-inline-size: none;
+  max-block-size: 97vh;
+  padding-inline: 0;
+  padding-block: 0;
+  border-width: 0.0625rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: 0.8rem;
+  background-color: var(--color-panel);
+  color: var(--color-ink);
+}
+dialog::backdrop { background-color: var(--color-backdrop); }
+.dialog-bar { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; padding-inline: 0.7rem; padding-block: 0.6rem; }
+.dialog-bar h2 { flex-basis: 100%; }
+.stage { overflow: auto; block-size: min(72vh, 62rem); padding-inline: 0.7rem; padding-block: 0.7rem; background-color: var(--color-raised); }
+.device {
+  --scale: 1;
+  position: relative;
+  inline-size: calc(907px * var(--scale));
+  block-size: calc(937px * var(--scale));
+  margin-inline: auto;
+  border-width: 0.125rem;
+  border-style: solid;
+  border-color: var(--color-edge);
+  border-radius: calc(72px * var(--scale));
+  background-color: var(--color-chassis);
+}
+.screen {
+  position: absolute;
+  inset-inline-start: calc(27px * var(--scale));
+  inset-block-start: calc(27px * var(--scale));
+  inline-size: calc(852px * var(--scale));
+  block-size: calc(883px * var(--scale));
+  overflow: hidden;
+  border-radius: calc(42px * var(--scale));
+  background-color: var(--color-chassis);
+}
+.screen img { display: block; inline-size: 100%; block-size: 100%; }
+.camera, .hinge { position: absolute; background-color: var(--color-chassis); }
+.camera {
+  inset-inline-end: calc(48.41px * var(--scale));
+  inset-block-start: calc(43.62px * var(--scale));
+  inline-size: calc(32.41px * var(--scale));
+  block-size: calc(32.41px * var(--scale));
+  border-radius: 50%;
+}
+.hinge { inset-inline-start: calc(431.5px * var(--scale)); inline-size: calc(44px * var(--scale)); block-size: calc(8.8px * var(--scale)); border-radius: 0.25rem; }
+.hinge[data-end='start'] { inset-block-start: 0; }
+.hinge[data-end='end'] { inset-block-end: 0; }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <p class="muted">Music player · selected Search A · Pixel 9 Pro Fold inner panel · design-only exception question</p>
+  <h1>May this floating Gboard state cover right-side Search lettering?</h1>
+  <p class="evidence"><strong>What to inspect:</strong> In the captured 200% text-scale Search A, the <code>cam</code> query remains visible at upper-right. Real floating Gboard overlaps parts of middle result rows on that right pane while also obscuring the left deck, the separate D53 exception. Later rows remain visible beneath the keyboard in this image. This capture does <strong>not</strong> prove whether covered results can be scrolled into an uncovered area or activated. D55's folded-cover floating-keyboard allowance does not decide this inner result question. No app layout variant has been accepted for this overlap.</p>
+</header>
+<section class="evidence" aria-labelledby="capture-title">
+  <h2 id="capture-title">Observed selected-A composition with real floating Gboard</h2>
+  <p>The image uses the same debug-only long-results fixture that established inner title wrapping and scrolling. It is a native 2076 × 2152 physical-pixel capture at measured 390dpi. The full status strip was replaced with generic status content; the raw image stays private. Inspect the visible query, middle result labels, left folder browser and deck. It is not a mockup of a solution.</p>
+  <img id="floating-capture" src="__FLOATING_IMAGE__" width="2076" height="2152" alt="Unfolded Search A at 200 percent text with real floating Gboard crossing the left playback deck and portions of the right results while the cam query remains clear">
+  <button id="inspect" type="button">Inspect at device size</button>
+</section>
+<section aria-labelledby="choice-title">
+  <h2 id="choice-title">Separate policy choice, not a keyboard-placement mechanism</h2>
+  <div class="policies">
+    <article class="policy" data-option="accept" data-recommended="true">
+      <h3>A · Accept this measured floating overlap (Recommended)</h3>
+      <h4>Pros</h4>
+      <ul><li>Keeps the selected right-side Search and actual left browser/deck without a speculative layout shift.</li><li>Applies only to this captured real floating-Gboard overlap while the query stays unobscured; ordinary docked/split results are not waived.</li></ul>
+      <h4>Cons</h4>
+      <ul><li>Some result lettering is unreadable in this captured frame; scrolling or other recovery was not tested on this fixture.</li><li>This evidence does not establish activation or reachability of the obscured rows.</li></ul>
+      <p><strong>My read:</strong> Accept the specific observed overlay as another scoped exception, not a universal search-results waiver.</p>
+    </article>
+    <article class="policy" data-option="require">
+      <h3>B · Decline this observed result overlap</h3>
+      <h4>Pros</h4>
+      <ul><li>Sets a requirement to keep result lettering readable in the captured floating-keyboard state.</li><li>Does not assume scrolling, moving or dismissing Gboard is necessary for recovery.</li></ul>
+      <h4>Cons</h4>
+      <ul><li>No validated native candidate currently resolves this captured state while preserving A and usable keys; B is a requirement, not a built screen.</li><li>Further device work would need a compelling case presented first under the user's IME-testing stop instruction.</li></ul>
+      <p><strong>My read:</strong> Choose if result lettering must remain readable in this captured state; the remedy stays open and no implementation is implied.</p>
+    </article>
+  </div>
+  <p class="ranking"><strong>Ranking:</strong> A &gt; B because a bounded allowance for this observed overlay keeps the selected composition intact, while declining this overlap leaves a still-unbuilt resolution under the same A constraints. This ranks exception policies, not mechanisms or a built B variant. Neither answer decides other floating placements, result reachability/activation (#116), D56's ordinary folded-cover scrolling, or D50's ordinary unfolded deck requirement.</p>
+</section>
+<section aria-labelledby="response-title">
+  <h2 id="response-title">Decision: inner floating-keyboard result lettering only</h2>
+  <form id="answer-form">
+    <fieldset><legend>Choose the scope of this exception</legend>
+      <label><input type="radio" name="floatingResults" value="Accept A"> Accept A's measured real floating-Gboard overlap with some right-side result lettering while the query stays clear</label>
+      <label><input type="radio" name="floatingResults" value="Decline B"> Decline that same observed overlap; keep the remedy within selected Search A open</label>
+      <label><input type="radio" name="floatingResults" value="Other"> Another boundary or correction</label>
+    </fieldset>
+    <label for="other">Anything else you want settled or changed?</label>
+    <textarea id="other" name="other" placeholder="Describe a correction here. Nothing is sent automatically."></textarea>
+  </form>
+  <p><strong>Response path:</strong> Reply in this chat with “Accept A”, “Decline B”, or your own boundary. The form prepares text but does not submit a decision. Neither answer approves missing/nonfunctional matches, production work or new IME experiments.</p>
+  <output id="prepared" form="answer-form" aria-live="polite">Select a direction or write a correction, then reply in chat.</output>
+</section>
+</main>
+<dialog id="preview" aria-labelledby="preview-title">
+  <div class="dialog-bar">
+    <h2 id="preview-title">Selected A with real floating Gboard</h2>
+    <button id="fit" type="button">Fit</button>
+    <button id="reset" type="button">Reset 100%</button>
+    <button id="zoom-out" type="button">Zoom out</button>
+    <button id="zoom-in" type="button">Zoom in</button>
+    <button id="close" type="button">Close</button>
+    <p id="scale-label" class="muted" aria-live="polite"></p>
+  </div>
+  <div class="stage" id="stage" role="region" tabindex="0" aria-label="Scrollable unfolded Fold device mock at physical source resolution">
+    <div class="device" id="device"><div class="screen"><img id="preview-image" width="2076" height="2152" alt="Floating Gboard over selected Search A results"></div><span class="camera" aria-hidden="true"></span><span class="hinge" data-end="start" aria-hidden="true"></span><span class="hinge" data-end="end" aria-hidden="true"></span></div>
+  </div>
+</dialog>
+<script>
+const capture = document.querySelector('#floating-capture');
+const dialog = document.querySelector('#preview');
+const stage = document.querySelector('#stage');
+const device = document.querySelector('#device');
+let scale = 1;
+function showScale() {
+  device.style.setProperty('--scale', String(scale));
+  document.querySelector('#scale-label').textContent = `Source 2076 × 2152 physical px · approximately 852 × 883dp at measured 390dpi · ${Math.round(scale * 100)}% of design dp · reset returns to 100%`;
+}
+document.querySelector('#inspect').addEventListener('click', async () => {
+  const preview = document.querySelector('#preview-image');
+  preview.src = capture.src;
+  await preview.decode();
+  scale = 1;
+  showScale();
+  dialog.showModal();
+  stage.scrollTop = 0;
+  stage.scrollLeft = 0;
+  document.querySelector('#close').focus();
+});
+document.querySelector('#fit').addEventListener('click', () => {
+  const horizontalInset = parseFloat(getComputedStyle(stage).paddingInlineStart) * 2;
+  const verticalInset = parseFloat(getComputedStyle(stage).paddingBlockStart) * 2;
+  scale = Math.min(1, (stage.clientWidth - horizontalInset) / 907, (stage.clientHeight - verticalInset) / 937);
+  showScale();
+});
+document.querySelector('#reset').addEventListener('click', () => { scale = 1; showScale(); });
+document.querySelector('#zoom-out').addEventListener('click', () => { scale = Math.max(0.25, scale - 0.25); showScale(); });
+document.querySelector('#zoom-in').addEventListener('click', () => { scale = Math.min(2, scale + 0.25); showScale(); });
+document.querySelector('#close').addEventListener('click', () => dialog.close());
+dialog.addEventListener('close', () => document.querySelector('#inspect').focus());
+const form = document.querySelector('#answer-form');
+form.addEventListener('input', () => {
+  const selected = form.querySelector('input[name="floatingResults"]:checked');
+  const correction = document.querySelector('#other').value.trim();
+  document.querySelector('#prepared').textContent = [selected?.value, correction].filter(Boolean).join(': ') || 'Select a direction or write a correction, then reply in chat.';
+});
+</script>
+</body>
+</html>

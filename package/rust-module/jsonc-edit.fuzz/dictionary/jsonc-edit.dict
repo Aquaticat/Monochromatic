@@ -1,0 +1,28 @@
+# JSONC tokens that matter to this parser. libFuzzer splices these into inputs, which reaches
+# comment, separator and escape boundaries far faster than byte-only mutation.
+line_comment="//"
+block_open="/*"
+block_close="*/"
+brace_open="{"
+brace_close="}"
+bracket_open="["
+bracket_close="]"
+comma=","
+colon=":"
+quote="\""
+escape_unicode="\\u0041"
+lone_high_surrogate="\\uD800"
+lone_low_surrogate="\\uDC00"
+number_exponent="1e0"
+number_fraction="1.500"
+number_negative_zero="-0"
+number_big="9007199254740993"
+literal_true="true"
+literal_false="false"
+literal_null="null"
+# libFuzzer dictionaries accept only \xHH, \\ and \" escapes inside quoted strings, so the
+# line terminators are spelled in hex: a literal "\r\n" makes ParseDictionaryFile fail and every
+# target exits immediately with code 0, which looks like a clean run rather than an error.
+crlf="\x0D\x0A"
+cr="\x0D"
+lf="\x0A"

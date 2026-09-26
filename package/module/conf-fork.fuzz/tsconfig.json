@@ -1,0 +1,11 @@
+{
+  "extends": "@monochromatic-dev/config-typescript/dom",
+  "include": [
+    "${configDir}/src/**/*.ts",
+    "${configDir}/src/**/*.astro",
+    "${configDir}/src/**/*.mdx",
+    "${configDir}/*.config.ts",
+    "${configDir}/.astro/types.d.ts",
+    "${configDir}/upstream-conf/**/*.ts"
+  ],
+}

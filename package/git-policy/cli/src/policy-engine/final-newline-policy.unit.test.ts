@@ -8,18 +8,16 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { ABSENT_GIT_VALUE, } from '../api/context-types.ts';
-import type {
-  CandidateFile,
-  PolicyContext,
-  PolicyTrigger,
-} from '../api/policy-types.ts';
 import {
+  ABSENT_GIT_VALUE,
+  type CandidateFile,
+  createFinalNewlinePatch,
+  finalNewlinePolicy,
   isFinalNewlineExcluded,
   normalizeFinalNewline,
-} from './final-newline-normalize.ts';
-import { createFinalNewlinePatch, } from './final-newline-patch.ts';
-import { finalNewlinePolicy, } from './final-newline-policy.ts';
+  type PolicyContext,
+  type PolicyTrigger,
+} from '../../dist/final/node/index.mjs';
 
 /** Text fixture encoder. */
 const ENCODER = new TextEncoder();
@@ -164,15 +162,17 @@ await describe({
     it({
       name: 'matches only exact exclusion families',
       fn: async function testExclusions() {
-        expect(isFinalNewlineExcluded('package/fuzz/forbidden-strings/seed/a',),).toBe(true,);
+        expect(isFinalNewlineExcluded('package/cli/forbidden-strings.fuzz/seed/a',),).toBe(true,);
         expect(isFinalNewlineExcluded('package/rust-module/forbidden-regex.fuzz/seed/a',),).toBe(true,);
         expect(isFinalNewlineExcluded('package/test-fixture/toml-edit/src/a.toml',),).toBe(true,);
         expect(isFinalNewlineExcluded('pkg/dist/final/node/index.mjs',),).toBe(true,);
         expect(isFinalNewlineExcluded('dist/final/node/index.d.mts',),).toBe(true,);
         expect(isFinalNewlineExcluded('pkg/bundle/node/index.mjs',),).toBe(true,);
         expect(isFinalNewlineExcluded('pkg/bundle/node',),).toBe(false,);
-        expect(isFinalNewlineExcluded('package/fuzz/forbidden-strings/corpus/a',),).toBe(false,);
-        expect(isFinalNewlineExcluded('package/fuzz/other/seed/a',),).toBe(false,);
+        expect(isFinalNewlineExcluded('package/cli/forbidden-strings.fuzz/corpus/a',),).toBe(false,);
+        expect(isFinalNewlineExcluded('package/cli/other.fuzz/seed/a',),).toBe(false,);
+        expect(isFinalNewlineExcluded('package/cli/forbidden-strings/seed/a',),).toBe(false,);
+        expect(isFinalNewlineExcluded('package/cli/forbidden-strings.fuzz/seedling/a',),).toBe(false,);
         expect(isFinalNewlineExcluded('pkg/dist/final/browser/index.mjs',),).toBe(false,);
         expect(isFinalNewlineExcluded('pkg/dist/final/node',),).toBe(false,);
       },

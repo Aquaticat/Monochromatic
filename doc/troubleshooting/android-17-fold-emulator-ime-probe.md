@@ -18,7 +18,15 @@ A subsequent probe found a **per-editor Gboard workaround**:
 open the side toolbar's bottom menu and choose `Show on-screen keyboard`.
 Real, floating keys then appeared and a key tap changed the Search query.
 A separate disposable Fold subsequently established bounded split and
-full-width Gboard behavior; it does not erase the original floating failure.
+full-width Gboard behavior;
+it does not erase the measured floating overlap.
+Design decisions D53 and D54 accept that unfolded floating-deck overlap and
+the distinct brief font-update banner,
+respectively.
+D55 separately accepts the measured floating cover keyboard obscuring both
+matching labels while `cam` remains visible.
+None approves obscuring the query or clipping the deck beneath ordinary
+settled split or docked keyboards.
 
 This is distinct from a separate, confirmed app-layout finding:
 under a visible system-managed keyboard, a bottom-anchored Search prototype
@@ -43,9 +51,11 @@ Repeating that action after restoring the original off/on preference switches
 again produced the floating keys, so the preference changes were unnecessary
 for this workaround.
 Do not equate the preference switch with the per-editor action.
-Google's [Pixel Tablet keyboard guidance](https://support.google.com/googlepixeltablet/answer/13555948?hl=en)
+Google's [Pixel Tablet keyboard guidance][pixel-tablet-keyboard]
 describes a Gboard toolbar with a physical keyboard and a Floating keyboard
 mode; it does not establish which layout this Fold emulator should choose.
+
+[pixel-tablet-keyboard]: https://support.google.com/googlepixeltablet/answer/13555948?hl=en
 
 Android's public framework does establish why a replacement IME is a valid
 occlusion probe.
@@ -156,6 +166,59 @@ its absence in the server dump matters.
 Thus this **observed IME source** offers neither a bottom inset nor a
 floating-keyboard bounding rectangle through these framework paths.
 
+A separate real-Gboard check on the disposable `emulator-5580` reproduced
+this geometry with the **retained-browser Search prototype** at 200% text.
+Google's [Pixel Tablet keyboard instructions][pixel-tablet-keyboard]
+identify the keyboard-over-line toolbar icon as **Floating keyboard**.
+Tapping that icon in the disposable Gboard toolbar switched its visible
+full-width keys to a floating key surface over Search.
+The app's `SearchInsetProbe` then logged `visible=true`,
+`platformBottom=0`,
+`composeBottom=0`,
+and `boundingRects=[]`.
+No new IME animation callback appeared in the captured app log for this toggle.
+Privileged `dumpsys window windows`,
+which is **not an app API**,
+reported the Gboard window's touchable region at `[936,1147][1842,1918]`
+plus the navigation region.
+UI Automator placed the deck's `4:35` duration at
+`[842,1263][965,1341]`,
+intersecting the floating keys in x `[936,965)`.
+The resulting screenshot visibly obscured the duration's ending and a strip
+of the playback-mode container.
+This was a real-Gboard counterexample to D50's unqualified deck-visibility
+rule on the disposable AVD,
+not a synthetic height-step result;
+D53 now accepts this specific floating-keyboard overlap.
+The exact launch variant for that first toggle was not recorded;
+the captured public inset data must not be attributed to a specific
+accepted-layout intent extra.
+
+A second check explicitly launched
+`search-deck-right-lift-retain-results-light`,
+the corrected **vertical-deck A layout** without the experimental tall-IME
+reflow or anticipatory reservation.
+The installed debug APK and local build both had SHA-256
+`261e608e67029f6361b79a2b26f79851099df9d98f3cdbed637b2e14a4529636`.
+After the AVD rebooted and its sleeping screen was woken,
+focusing the editor restored real floating Gboard.
+Privileged Window Manager reported a key touch region
+`[482,1006][1388,1777]`;
+UI Automator placed the deck title at `[258,1120][781,1223]`.
+Their intersection is x `[482,781)` and y `[1120,1223]`,
+and the screenshot confirms the title,
+seek display and transport were obscured.
+A real Gboard key tap changed the focused query from `cam` to `cadm`;
+its cursor had been between `a` and `m`.
+The app log for this specific baseline launch did not retain a noninitial
+public-insets sample,
+so its floating rectangle and zero inset are **not** independently
+app-logged for this exact variant.
+The first corrected-prototype public probe and the second exact-variant
+occlusion are separate evidence layers.
+Both screenshots and logs remain unsanitized private scratch evidence,
+not published review assets.
+
 `WindowInsets.java:413-430` describes `isVisible(Type.ime())` as
 independent of overlap with the app window.
 Its implementation checks a boolean map:
@@ -230,12 +293,145 @@ layer above the IME and cover it:
 * screen for its content and cover the input method if needed.  You
 ```
 
-Layering the deck there could instead obscure Gboard keys in the measured
-overlap;
-it is not a verified design for keeping both Search input and the
-complete deck usable.
-This is not proof that every app-observable keyboard API lacks the geometry
-or that floating overlays are impossible to avoid by other means.
+A debug-only test of that layer exists on prototype commit `d9a5c549e`.
+The tested APK SHA-256 was
+`e4bfec8e8eb98187a0afc06ef11d587fd3c87623fe45a37da7b0ffd862c6461e`.
+The same-APK vertical-A control
+`search-deck-right-lift-retain-results-light` showed real floating Gboard
+obscuring the deck title at x `[482,781)` and y `[1120,1223]`.
+The experimental
+`search-deck-right-lift-layerprobe-retain-results-light` added a
+**nonfocusable and not-touchable app panel** over the left pane.
+Window Manager reported that panel at `[0,717][1038,1793]` with
+`NOT_FOCUSABLE NOT_TOUCHABLE LAYOUT_IN_SCREEN` and the real floating
+Gboard touch region at `[482,1006][1388,1777]`.
+The screenshot verified the panel paints **above** the keys,
+but it also washed out both keyboard keys and app content.
+It was only a marker,
+not a duplicate deck or accepted design.
+
+The same SDK's
+`android/view/WindowManager.java:2893-2914` documents the relevant
+cross-UID touch rule for a `FLAG_NOT_TOUCHABLE` window:
+
+```java
+* Starting from Android {@link Build.VERSION_CODES#S}, for security reasons, touch
+* events that pass through windows containing this flag (ie. are within the bounds of the
+* window) will only be delivered to the touch-consuming window if one (or more) of the
+* items below are true:
+* <li><b>Same UID</b>: This window belongs to the same UID that owns the touch-consuming
+*   window.
+* <li><b>Trusted windows</b>: This window is trusted.
+* <li><b>Invisible windows</b>: This window is {@link View#GONE} or
+*   {@link View#INVISIBLE}.
+* <li><b>Fully transparent windows</b>: This window has {@link LayoutParams#alpha}
+*   equal to 0.
+```
+
+The visible app panel belonged to UID `10249`,
+while Gboard belonged to UID `10170`.
+A real tap on an **uncovered** floating key entered `m` in the focused
+Search query.
+A tap on a key **under the panel** left the query at `m`.
+`InputDispatcher` reported
+`Dropping untrusted touch event due to occlusion by dev.monochromatic.musicplayer/10249`.
+That positive and negative pair rejects this panel as a solution:
+painting over the IME prevented typing through the covered area.
+After Android Back hid Gboard,
+the debug marker also remained painted over the browser and deck in the
+sampled frame;
+the candidate's visibility-based cleanup did not run for that state.
+These unsanitized captures are private scratch evidence.
+Do not transplant this panel into production or treat it as D50 compliance.
+
+`View.java:13353-13370` separately offers
+`setPreferKeepClearRects()` as a **best-effort preference** for floating
+windows above an app view;
+the source says the system may ignore it when the request cannot be met.
+`View.java:13449-13454` forwards changed rectangles to its attached
+`ViewRootImpl`,
+and `ViewRootImpl.java:6687-6709` reports changed areas to Window Manager.
+This path does **not** by itself promise movement of Gboard's internal keys.
+The **Android 17 AOSP release branch**,
+rather than a source-identical mapping to this Google system image,
+provides one concrete downstream consumer trace.
+Its
+[DisplayContent.java][aosp-display-content] `:6468-6503`
+collects keep-clear areas from visible windows,
+adds the IME window's touchable region to the **unrestricted** set,
+and dispatches changed areas:
+
+```java
+getKeepClearAreas(restrictedKeepClearAreas, unrestrictedKeepClearAreas);
+mWmService.mDisplayNotificationController.dispatchKeepClearAreasChanged(
+        this, restrictedKeepClearAreas, unrestrictedKeepClearAreas);
+// Inside getKeepClearAreas, for a visible IME window:
+w.getEffectiveTouchableRegion(touchableRegion);
+RegionUtils.forEachRect(touchableRegion, rect -> outUnrestricted.add(rect));
+```
+
+[DisplayWindowListenerController.java][aosp-display-listener] `:124-133`
+forwards those sets to registered display listeners,
+and the Shell [DisplayController.java][aosp-shell-display] `:478-490`
+forwards the callback to its display-change listeners.
+The Android 17 [PipController.java][aosp-pip-controller] `:349-359`
+is one such consumer:
+
+```java
+public void onKeepClearAreasChanged(int displayId, Set<Rect> restricted,
+        Set<Rect> unrestricted) {
+    if (mPipDisplayLayoutState.getDisplayId() == displayId) {
+        mPipBoundsState.setKeepClearAreas(restricted, unrestricted);
+        mMainExecutor.executeDelayed(
+                mMovePipInResponseToKeepClearAreasChangeCallback,
+                PIP_KEEP_CLEAR_AREAS_DELAY);
+    }
+}
+```
+
+`PipController.java:187-205` calls its PiP keep-clear algorithm and,
+when the destination differs,
+animates the **PiP task** to new bounds.
+These source paths establish a PiP use of the hint,
+not a Gboard subscription or a command to move Gboard's internal keys.
+No PiP movement was tested on this fixture,
+and no complete consumer search establishes that Gboard cannot participate
+through another path.
+
+[aosp-display-content]: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android17-release/services/core/java/com/android/server/wm/DisplayContent.java
+[aosp-display-listener]: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android17-release/services/core/java/com/android/server/wm/DisplayWindowListenerController.java
+[aosp-shell-display]: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android17-release/libs/WindowManager/Shell/src/com/android/wm/shell/common/DisplayController.java
+[aosp-pip-controller]: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android17-release/libs/WindowManager/Shell/src/com/android/wm/shell/pip/phone/PipController.java
+
+A second debug-only candidate,
+`search-deck-right-lift-keepclear-retain-results-light`,
+used prototype commit `b9c05342f` and APK SHA-256
+`e755bf76ed65e45dc4e4ec57f4f55bdbd948902ca6e1940ddf911474ee8a4dd7`.
+The app logged a request for `[0,717][1038,2152]`;
+Window Manager reported that exact restricted `keepClearAreas` rectangle
+on the app window.
+Its real floating Gboard still occupied
+`[482,1006][1388,1777]`.
+The key region **partially overlapped** the requested area in x
+`[482,1038)` and y `[1006,1777)`,
+and the screenshot showed its keys over the deck.
+To validate that Window Manager's touch-region probe could show movement,
+a deliberate drag moved Gboard to `[1025,1006][1931,1777]`,
+which still overlapped the requested area by 13px horizontally.
+A reverse drag moved it back to `[528,1006][1434,1777]` while the same
+keep-clear area remained registered.
+Manual movement validates the geometry detector,
+**not** keep-clear cooperation or automatic movement.
+The screenshot after that reverse drag still showed the deck title obscured.
+A tap on a visible floating key entered `d` in the focused query,
+so this was real usable Gboard input rather than a toolbar-only state.
+This test rejects **this rectangle request on this Gboard fixture** as
+an automatic D50 response.
+It does not prove every keep-clear placement or other floating window
+behaves the same way.
+The captures remain private unsanitized scratch evidence.
+The rejected panel and measured keep-clear request do not prove that every
+app-observable keyboard API lacks geometry or that all overlay approaches fail.
 
 ## Verification
 
@@ -319,9 +515,9 @@ or that floating overlays are impossible to avoid by other means.
   `[127,374][286,433]` and track title `Another Xronixle` at
   `[127,569][432,628]`, both fully under Gboard's key surface.
   The captured Search screenshot showed the query but no visible result
-  data until the floating keyboard was dismissed or moved.
-  This is a separate cover Search result-visibility defect,
-  not the unfolded deck-title overlap.
+  data in that observed floating-keyboard position.
+  D55 accepts this separate cover result overlap,
+  not the absence of actual result data or an obscured query.
 
 ### Disposable keyboard-free Fold attempt
 
@@ -472,9 +668,25 @@ with part of its label and container visibly covered.
 Tapping `OK` removed the banner,
 returned the IME source to y `1352`,
 and restored the complete mode at `[73,1182][965,1313]`.
-This measured temporary failure does **not** become a passing state just
+This measured temporary clip does **not** become a visibly complete deck
 because the settled screenshot passes D50.
-Automatic dismissal and recurrence were not established.
+D54 explicitly accepts this brief Gboard banner overlap as an exception;
+automatic dismissal and recurrence were not established.
+
+A later **bounded recurrence attempt** on the disposable AVD used the
+corrected `search-deck-right-lift-retain-results-light` debug candidate
+with APK SHA-256
+`261e608e67029f6361b79a2b26f79851099df9d98f3cdbed637b2e14a4529636`.
+With floating Gboard visible,
+`settings put system font_scale 1.0` recreated Search and hid the keys;
+changing the font scale back to `2.0` recreated it again.
+After a settled refocus,
+Gboard displayed **docked split keys** with touchable region
+`[0,1352][2076,2152]` and no font-update banner.
+UI Automator placed the complete final mode at `[0,1201][1038,1332]`.
+This sequence differs from the first banner's focused scale change.
+It neither reproduces the banner nor proves it cannot recur while typing;
+its unsanitized screenshot remains private scratch evidence.
 
 The debug input method is deliberately synthetic, **not Gboard**.
 Its measured overlap tests bottom-window occlusion and text input integration;
@@ -504,8 +716,10 @@ The Gboard side-toolbar menu's `Show on-screen keyboard` action exposes
 real keys for the focused editor without switching to the debug IME.
 It is a temporary, floating-keyboard action, not a persistent default
 or a docked-keyboard geometry test.
-At 200% text, it covers part of the selected Search deck;
-therefore it is **not** a workaround for D50.
+At 200% text,
+it covers part of the selected Search deck.
+D53 permits that measured floating overlap;
+this action does not prove any docked-keyboard layout passes D50.
 
 For repeatable geometry research without changing the active AVD,
 the disposable Fold can be booted in a 6 GiB/2 CPU container with Xvfb,

@@ -403,6 +403,36 @@ description = "Validate committed real Gboard evidence without private raw scree
 dir = "{{config_root}}"
 run = "node gboard-evidence.mjs validate"
 
+[tasks."build:search:cover-viewport"]
+description = "Build a self-contained cover-only viewport design question from sanitized device captures"
+dir = "{{config_root}}"
+run = "node cover-viewport-question.mjs build"
+
+[tasks."lint:search:cover-viewport"]
+description = "Validate the two sanitized cover viewport states embedded in the design question"
+dir = "{{config_root}}"
+run = "node cover-viewport-question.mjs validate"
+
+[tasks."build:search:floating-results"]
+description = "Build an offline inner floating-Gboard result-overlap policy question"
+dir = "{{config_root}}"
+run = "node floating-results-question.mjs build"
+
+[tasks."lint:search:floating-results"]
+description = "Validate the sanitized physical inner capture and floating-result question"
+dir = "{{config_root}}"
+run = "node floating-results-question.mjs validate"
+
+[tasks."build:crease:floor"]
+description = "Build an E2 floor review from separately captured native Compose variants"
+dir = "{{config_root}}"
+run = "node crease-floor-question.mjs build"
+
+[tasks."lint:crease:floor"]
+description = "Validate the E2 floor question and its native variant captures"
+dir = "{{config_root}}"
+run = "node crease-floor-question.mjs validate"
+
 [tasks."build:search:historical"]
 description = "Rebuild the archived rejected Fold Search artifact for historical inspection"
 dir = "{{config_root}}"
