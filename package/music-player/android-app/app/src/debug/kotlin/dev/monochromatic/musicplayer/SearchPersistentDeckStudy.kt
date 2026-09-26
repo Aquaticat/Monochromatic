@@ -7,6 +7,10 @@ package dev.monochromatic.musicplayer
 import android.os.Build
 import android.util.Log
 import android.view.WindowInsets as AndroidWindowInsets
+// The public system callback reports preparation and bounds for actual inset animations.
+import android.view.WindowInsetsAnimation as AndroidWindowInsetsAnimation
+// A parent View can observe without replacing ComposeView's own inset listener.
+import android.view.View
 
 // What:     BackHandler routes Android Back from temporary Search to the player.
 // Why:      A separate D47 destination needs a visible and system Back path.
@@ -95,6 +99,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 // `Composable` marks these functions as Compose UI descriptions.
 import androidx.compose.runtime.Composable
+// `DisposableEffect` attaches this debug probe only while its Search activity is shown.
+import androidx.compose.runtime.DisposableEffect
 // Log only after Compose applies an inset-triggered recomposition.
 import androidx.compose.runtime.SideEffect
 // `mutableIntStateOf` remembers the closed deck's measured height across IME frames.
@@ -210,6 +216,56 @@ private const val BANNER_STRESS_INSET_PX = 1000
 /** Android 17 SDK level used only to guard debug bounding-rectangle inspection. */
 private const val BOUNDING_RECT_API_LEVEL = 37
 
+/**
+ * What: Log system IME animation events before proposing any pre-emptive layout change.
+ * Why: A recorded in-place height jump clipped the deck despite an eventual compact decision.
+ * In TS you'd write (pseudocode): observeImeAnimation(parentView, onEvent);
+ */
+@Composable
+private fun ObserveImeAnimation(parentView: View) {
+    if (Build.VERSION.SDK_INT < 30) return
+    DisposableEffect(parentView) {
+        val callback = object : AndroidWindowInsetsAnimation.Callback(
+            AndroidWindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE,
+        ) {
+            override fun onPrepare(animation: AndroidWindowInsetsAnimation) {
+                if ((animation.typeMask and AndroidWindowInsets.Type.ime()) != 0) {
+                    Log.i("SearchAnimationProbe", "prepare ime")
+                }
+            }
+
+            override fun onStart(animation: AndroidWindowInsetsAnimation,
+                bounds: AndroidWindowInsetsAnimation.Bounds): AndroidWindowInsetsAnimation.Bounds {
+                if ((animation.typeMask and AndroidWindowInsets.Type.ime()) != 0) {
+                    Log.i("SearchAnimationProbe", "start lower=${bounds.lowerBound.bottom} " +
+                        "upper=${bounds.upperBound.bottom}")
+                }
+                return bounds
+            }
+
+            override fun onProgress(insets: AndroidWindowInsets,
+                runningAnimations: List<AndroidWindowInsetsAnimation>): AndroidWindowInsets {
+                if (runningAnimations.any { animation ->
+                    (animation.typeMask and AndroidWindowInsets.Type.ime()) != 0
+                }) {
+                    val imeBottom = insets.getInsets(AndroidWindowInsets.Type.ime()).bottom
+                    Log.i("SearchAnimationProbe", "progress bottom=$imeBottom")
+                }
+                return insets
+            }
+
+            override fun onEnd(animation: AndroidWindowInsetsAnimation) {
+                if ((animation.typeMask and AndroidWindowInsets.Type.ime()) != 0) {
+                    Log.i("SearchAnimationProbe", "end ime")
+                }
+            }
+        }
+        parentView.setWindowInsetsAnimationCallback(callback)
+        Log.i("SearchAnimationProbe", "installed on ${parentView.javaClass.name}")
+        onDispose { parentView.setWindowInsetsAnimationCallback(null) }
+    }
+}
+
 /** Shows Search in the right track slot while folders and the deck stay on the left. */
 @Composable
 private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
@@ -219,6 +275,11 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     val density = LocalDensity.current
     val reportedImeInset = WindowInsets.ime.getBottom(density)
     val observedView = LocalView.current
+    // The debug callback remains on the view above Compose and continues subtree dispatch.
+    val animationHost = observedView.parent as? View
+    if ((autoFitStudy || bannerHeightStress) && animationHost != null) {
+        ObserveImeAnimation(animationHost)
+    }
     val platformInsets = observedView.rootWindowInsets
     val imeType = if (Build.VERSION.SDK_INT >= 30) AndroidWindowInsets.Type.ime() else 0
     val platformBottom = if (Build.VERSION.SDK_INT >= 30) {
