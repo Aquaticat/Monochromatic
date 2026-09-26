@@ -255,16 +255,19 @@ or final-action question was submitted.
 Results from process `proc_b3f1`,
 exit 0:
 
-- Control: HTTP 200,
+- Control:
+   HTTP 200,
   45,020 request bytes,
   10,457 reported input tokens,
   22 reported output tokens,
   probability 0.98 for the explicit blue field,
   1548.170908 milliseconds total assessment time.
-- First padded request: HTTP 400,
+- First padded request:
+   HTTP 400,
   125,020 request bytes,
   931.8712969999999 milliseconds.
-- Second padded request: HTTP 400,
+- Second padded request:
+   HTTP 400,
   205,020 request bytes,
   3185.840116 milliseconds.
 
@@ -297,8 +300,10 @@ not an authorization-quality result.
 Private client and artifact:
 `~/temp/agent/jev-context-boundary-2026-09-26/probe.mjs`
 and `result-initial.json` in the same directory.
-Client SHA-256: `1b9cbaf2d5451a39b6377a48378189e31c91e74eccb6bd55bd7f64589db0a647`.
-Artifact SHA-256: `a3ca521bc98bcc04330b3ab04dfb05626bc148d06794ca6d039798c6d6b1e3f7`.
+Client SHA-256:
+ `1b9cbaf2d5451a39b6377a48378189e31c91e74eccb6bd55bd7f64589db0a647`.
+Artifact SHA-256:
+ `a3ca521bc98bcc04330b3ab04dfb05626bc148d06794ca6d039798c6d6b1e3f7`.
 The create-new artifact prevents an unchanged rerun from overwriting evidence.
 The probe uses one admitted credential,
 rejects redirects,
