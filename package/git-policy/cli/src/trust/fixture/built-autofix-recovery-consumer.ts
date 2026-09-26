@@ -23,6 +23,10 @@ import {
   verifyReplacedRecoveryLock,
   verifyUnsafeRecoveryDirectory,
 } from './built-autofix-recovery-adversarial.ts';
+import {
+  assertNoTransactionDirectories,
+  resolveSingleTransactionDirectory,
+} from './built-transaction-registry.ts';
 
 /**
  * Executable private hook mode.
@@ -102,10 +106,6 @@ export async function verifyAutofixRecovery({
   env: NodeJS.ProcessEnv;
 }>,): Promise<void> {
   /**
-   * Persistent transaction directory for current main worktree.
-   */
-  const transactionDirectory = `${repository}/.git/cli-git-transaction`;
-  /**
    * Real index lock held by interrupted wrapper.
    */
   const lockPath = `${repository}/.git/index.lock`;
@@ -182,7 +182,8 @@ export async function verifyAutofixRecovery({
     expected: beforeIndex,
     context: 'pre-ref interruption index',
   },);
-  if ((!(await pathExists(transactionDirectory,))) || (!(await pathExists(lockPath,))))
+  await resolveSingleTransactionDirectory(repository,);
+  if (!(await pathExists(lockPath,)))
     throw new Error('pre-ref interruption did not retain recovery artifacts',);
   await execute({
     command: 'git',
@@ -193,7 +194,11 @@ export async function verifyAutofixRecovery({
     cwd: repository,
     env,
   },);
-  if ((await pathExists(transactionDirectory,)) || (await pathExists(lockPath,)))
+  await assertNoTransactionDirectories({
+    repository,
+    context: 'commit-not-created recovery',
+  },);
+  if (await pathExists(lockPath,))
     throw new Error('commit-not-created recovery did not clean artifacts',);
   assertFixtureEqual({
     actual: await readIndex(repository,),
@@ -265,7 +270,8 @@ export async function verifyAutofixRecovery({
   const postRefLandedHead = await resolveFixtureOid({ repository, },);
   if (postRefLandedHead === postRefOriginalHead)
     throw new Error('post-ref interruption did not create commit',);
-  if ((!(await pathExists(transactionDirectory,))) || (!(await pathExists(lockPath,))))
+  await resolveSingleTransactionDirectory(repository,);
+  if (!(await pathExists(lockPath,)))
     throw new Error('post-ref interruption did not retain recovery artifacts',);
   await verifyReplacedRecoveryLock({
     repository,
@@ -281,7 +287,11 @@ export async function verifyAutofixRecovery({
     cwd: repository,
     env,
   },);
-  if ((await pathExists(transactionDirectory,)) || (await pathExists(lockPath,)))
+  await assertNoTransactionDirectories({
+    repository,
+    context: 'commit-created recovery',
+  },);
+  if (await pathExists(lockPath,))
     throw new Error('commit-created recovery did not clean artifacts',);
   assertFixtureEqual({
     actual: (await execute({
@@ -307,7 +317,6 @@ export async function verifyAutofixRecovery({
 
   await verifyCompletedInstallRecovery({
     repository,
-    transactionDirectory,
     lockPath,
     postHookPath,
     killingHookSource: KILL_WRAPPER_SOURCE,
@@ -317,7 +326,6 @@ export async function verifyAutofixRecovery({
 
   await verifyConflictingRecoveryReflog({
     repository,
-    transactionDirectory,
     lockPath,
     postHookPath,
     killingHookSource: KILL_WRAPPER_SOURCE,
@@ -327,7 +335,6 @@ export async function verifyAutofixRecovery({
 
   await verifyUnsafeRecoveryDirectory({
     repository,
-    transactionDirectory,
     env,
   },);
 }

@@ -6,6 +6,7 @@
 import {
   access,
   copyFile,
+  mkdir,
   rename,
   rm,
   symlink,
@@ -15,7 +16,15 @@ import {
   assertIncludes,
   execute,
 } from './built-consumer-helpers.ts';
-import { resolveFixtureOid, } from './built-post-commit-helpers.ts';
+import {
+  assertFixtureEqual,
+  resolveFixtureOid,
+} from './built-post-commit-helpers.ts';
+import {
+  assertNoTransactionDirectories,
+  resolveSingleTransactionDirectory,
+  transactionRegistry,
+} from './built-transaction-registry.ts';
 
 /**
  * Executable private hook mode.
@@ -83,62 +92,72 @@ export async function verifyReplacedRecoveryLock({
 }
 
 /**
- * Proves symlinked recovery directory fails before target reads.
+ * Proves symlinked registry and legacy recovery directories fail before target reads.
  *
  * @param repository - disposable repository
- *
- * @param transactionDirectory - absent private recovery directory path
  *
  * @param env - packed wrapper environment
  *
  * @example
  * ```ts
- * await verifyUnsafeRecoveryDirectory({ repository, transactionDirectory, env });
+ * await verifyUnsafeRecoveryDirectory({ repository, env });
  * ```
  */
 export async function verifyUnsafeRecoveryDirectory({
   repository,
-  transactionDirectory,
   env,
 }: Readonly<{
   repository: string;
-  transactionDirectory: string;
   env: NodeJS.ProcessEnv;
 }>,): Promise<void> {
-  await symlink(
-    '/tmp',
-    transactionDirectory,
-    'dir',
-  );
   /**
-   * Symlinked directory rejection.
+   * Symlinked entries named like a transaction directory and like the legacy journal directory.
    */
-  const symlinked = await execute({
-    command: 'git',
-    args: [
-      'status',
-      '--short',
-    ],
-    expectedExit: 2,
-    cwd: repository,
-    env,
-  },);
-  assertIncludes({
-    text: symlinked.stderr,
-    expected: 'Unsafe transaction recovery directory',
-    context: 'symlinked recovery directory',
-  },);
-  await rm(transactionDirectory,);
+  const unsafeDirectories = [
+    `${transactionRegistry(repository,)}/0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10`,
+    `${repository}/.git/cli-git-transaction`,
+  ];
+  await mkdir(
+    transactionRegistry(repository,),
+    { recursive: true, },
+  );
+  for (const unsafeDirectory of unsafeDirectories) {
+    // oxlint-disable-next-line no-await-in-loop -- Each unsafe entry is checked alone against a clean registry.
+    await symlink(
+      '/tmp',
+      unsafeDirectory,
+      'dir',
+    );
+    /**
+     * Symlinked directory rejection.
+     */
+    // oxlint-disable-next-line no-await-in-loop -- Each unsafe entry is checked alone against a clean registry.
+    const symlinked = await execute({
+      command: 'git',
+      args: [
+        'status',
+        '--short',
+      ],
+      expectedExit: 2,
+      cwd: repository,
+      env,
+    },);
+    assertIncludes({
+      text: symlinked.stderr,
+      expected: 'Unsafe transaction recovery directory',
+      context: `symlinked recovery directory ${unsafeDirectory}`,
+    },);
+    // oxlint-disable-next-line no-await-in-loop -- Each unsafe entry is checked alone against a clean registry.
+    await rm(unsafeDirectory,);
+  }
 }
 
 /**
- * Proves same-OID ref movement without private nonce fails closed.
+ * Interrupts a commit after Git advanced the ref and before the wrapper recorded it.
  *
  * @param repository - disposable repository
  *
- * @param transactionDirectory - private recovery directory
- *
- * @param lockPath - held real-index lock
+ * @param path - file staged for the interrupted commit
  *
  * @param postHookPath - disposable post-commit hook
  *
@@ -148,38 +167,33 @@ export async function verifyUnsafeRecoveryDirectory({
  *
  * @param env - packed wrapper environment
  *
- * @example
- * ```ts
- * await verifyConflictingRecoveryReflog({ repository, transactionDirectory, lockPath, postHookPath, killingHookSource, waitForOrphan, env });
- * ```
+ * @returns landed commit
  */
-export async function verifyConflictingRecoveryReflog({
+async function interruptAfterRef({
   repository,
-  transactionDirectory,
-  lockPath,
+  path,
   postHookPath,
   killingHookSource,
   waitForOrphan,
   env,
 }: Readonly<{
   repository: string;
-  transactionDirectory: string;
-  lockPath: string;
+  path: string;
   postHookPath: string;
   killingHookSource: string;
   waitForOrphan: () => Promise<void>;
   env: NodeJS.ProcessEnv;
-}>,): Promise<void> {
+}>,): Promise<string> {
   await writeFile(
-    `${repository}/conflict-recovery.txt`,
-    'conflict recovery\n',
+    `${repository}/${path}`,
+    `${path}\n`,
   );
   await execute({
     command: '/usr/bin/git',
     args: [
       'add',
       'selected.txt',
-      'conflict-recovery.txt',
+      path,
     ],
     cwd: repository,
   },);
@@ -195,7 +209,7 @@ export async function verifyConflictingRecoveryReflog({
       '--no-only',
       '--quiet',
       '-m',
-      'interrupted conflict provenance',
+      `interrupted ${path}`,
     ],
     expectedExit: -1,
     cwd: repository,
@@ -203,26 +217,117 @@ export async function verifyConflictingRecoveryReflog({
   },);
   await waitForOrphan();
   await rm(postHookPath,);
+  return resolveFixtureOid({ repository, },);
+}
+
+/**
+ * Proves the reflog nonce is found below a later same-commit movement and that a missing nonce fails closed.
+ *
+ * @param repository - disposable repository
+ *
+ * @param lockPath - held real-index lock
+ *
+ * @param postHookPath - disposable post-commit hook
+ *
+ * @param killingHookSource - wrapper-killing hook prefix
+ *
+ * @param waitForOrphan - bounded child-settlement wait
+ *
+ * @param env - packed wrapper environment
+ *
+ * @example
+ * ```ts
+ * await verifyConflictingRecoveryReflog({ repository, lockPath, postHookPath, killingHookSource, waitForOrphan, env });
+ * ```
+ */
+export async function verifyConflictingRecoveryReflog({
+  repository,
+  lockPath,
+  postHookPath,
+  killingHookSource,
+  waitForOrphan,
+  env,
+}: Readonly<{
+  repository: string;
+  lockPath: string;
+  postHookPath: string;
+  killingHookSource: string;
+  waitForOrphan: () => Promise<void>;
+  env: NodeJS.ProcessEnv;
+}>,): Promise<void> {
   /**
-   * Landed OID touched externally without transaction nonce.
+   * Commit landed before a later external same-commit movement.
    */
-  const conflictingLandedHead = await resolveFixtureOid({ repository, },);
+  const deeperLanded = await interruptAfterRef({
+    repository,
+    path: 'deeper-recovery.txt',
+    postHookPath,
+    killingHookSource,
+    waitForOrphan,
+    env,
+  },);
   await execute({
     command: '/usr/bin/git',
     args: [
       'update-ref',
+      '-m',
+      'external movement',
       'HEAD',
-      conflictingLandedHead,
-      conflictingLandedHead,
+      deeperLanded,
+      deeperLanded,
     ],
     cwd: repository,
-    env: {
-      ...env,
-      GIT_REFLOG_ACTION: 'external movement',
-    },
+  },);
+  await execute({
+    command: 'git',
+    args: [
+      'status',
+      '--short',
+    ],
+    cwd: repository,
+    env,
+  },);
+  await assertNoTransactionDirectories({
+    repository,
+    context: 'recovery with nonce below newest reflog entry',
+  },);
+  assertFixtureEqual({
+    actual: (await execute({
+      command: '/usr/bin/git',
+      args: [
+        'diff',
+        '--cached',
+        '--name-only',
+      ],
+      cwd: repository,
+    },)).stdout,
+    expected: '',
+    context: 'recovery with nonce below newest reflog entry staged state',
+  },);
+
+  await interruptAfterRef({
+    repository,
+    path: 'conflict-recovery.txt',
+    postHookPath,
+    killingHookSource,
+    waitForOrphan,
+    env,
   },);
   /**
-   * Same-OID movement without private nonce remains a recovery conflict.
+   * Transaction directory whose nonce entry is deleted.
+   */
+  const transactionDirectory = await resolveSingleTransactionDirectory(repository,);
+  await execute({
+    command: '/usr/bin/git',
+    args: [
+      'reflog',
+      'delete',
+      'HEAD@{0}',
+    ],
+    cwd: repository,
+  },);
+  /**
+   * Ref movement without its nonce remains a recovery conflict.
    */
   const conflictedRecovery = await execute({
     command: 'git',
@@ -236,8 +341,8 @@ export async function verifyConflictingRecoveryReflog({
   },);
   assertIncludes({
     text: conflictedRecovery.stderr,
-    expected: 'Current HEAD reflog does not identify prepared transaction',
-    context: 'same-OID external movement recovery conflict',
+    expected: 'HEAD reflog does not identify prepared transaction',
+    context: 'missing reflog nonce recovery conflict',
   },);
   try {
     await access(transactionDirectory,);

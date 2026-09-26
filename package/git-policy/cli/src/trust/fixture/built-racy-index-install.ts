@@ -19,6 +19,7 @@ import {
   waitForOrphan,
 } from './built-autofix-recovery-consumer.ts';
 import { execute, } from './built-consumer-helpers.ts';
+import { transactionFileExpression, } from './built-transaction-registry.ts';
 import {
   assertEditVisible,
   initializeRacyRepository,
@@ -83,7 +84,7 @@ async function prepareInstallScenario({
     path: 'hold.txt',
     edited: 'racy hold edit\n',
     pinnedSecond,
-  },)}require('node:fs').utimesSync('.git/cli-git-transaction/post.index', ${String(pinnedSecond,)}, ${String(pinnedSecond,)});
+  },)}require('node:fs').utimesSync(${transactionFileExpression('post.index',)}, ${String(pinnedSecond,)}, ${String(pinnedSecond,)});
 `;
 }
 

@@ -5,7 +5,6 @@
  * @module
  */
 import {
-  access,
   readFile,
   rm,
   writeFile,
@@ -19,6 +18,10 @@ import {
   assertFixtureEqual,
   initializePostCommitRepository,
 } from './built-post-commit-helpers.ts';
+import {
+  assertNoTransactionDirectories,
+  resolveSingleTransactionDirectory,
+} from './built-transaction-registry.ts';
 
 /**
  * Exercises both differing and byte-identical prepared index snapshots.
@@ -38,7 +41,6 @@ export async function verifyNormalizationRecovery({ env, }: Readonly<{
   env: NodeJS.ProcessEnv;
 }>,): Promise<void> {
   const repository = '/work/final-newline-normalization-recovery';
-  const transaction = `${repository}/.git/cli-git-transaction`;
   const hook = `${repository}/.git/hooks/post-commit`;
   await initializePostCommitRepository(repository,);
   await writeFile(`${repository}/value.txt`, 'before\n',);
@@ -71,6 +73,8 @@ export async function verifyNormalizationRecovery({ env, }: Readonly<{
       args: ['rev-parse', 'HEAD',],
       cwd: repository,
     },)).stdout.trim();
+    // oxlint-disable-next-line no-await-in-loop -- Each interrupted transaction retains its own directory.
+    const transaction = await resolveSingleTransactionDirectory(repository,);
     const path = `${transaction}/journal.json`;
     const parsed: unknown = JSON.parse(await readFile(path, 'utf8',),);
     if ((typeof parsed !== 'object') || (parsed === null))
@@ -106,15 +110,11 @@ export async function verifyNormalizationRecovery({ env, }: Readonly<{
       expected: '',
       context: `${content} normalization-only recovered index`,
     },);
-    try {
-      // oxlint-disable-next-line no-await-in-loop -- Finished recovery must remove its journal.
-      await access(transaction,);
-      throw new Error(`Normalization recovery retained completed journal for ${content}.`,);
-    }
-    catch (error: unknown) {
-      if (!(Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT')))
-        throw error;
-    }
+    // oxlint-disable-next-line no-await-in-loop -- Finished recovery must remove its journal.
+    await assertNoTransactionDirectories({
+      repository,
+      context: `${content} normalization-only recovery`,
+    },);
   }
 }
 //endregion Normalization-only recovery fixture

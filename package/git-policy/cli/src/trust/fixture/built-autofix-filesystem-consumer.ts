@@ -4,7 +4,6 @@
  * @module
  */
 import {
-  access,
   readFile,
   rm,
   writeFile,
@@ -17,6 +16,7 @@ import {
   assertFixtureEqual,
   resolveFixtureOid,
 } from './built-post-commit-helpers.ts';
+import { assertNoTransactionDirectories, } from './built-transaction-registry.ts';
 
 /**
  * Exercises read-only administrative filesystem failure and next-shim health.
@@ -92,14 +92,10 @@ export async function verifyAutofixFilesystemFailure({
   },);
   if (!locked.stderr.includes('EEXIST'))
     throw new Error(`expected exclusive index lock failure, received ${locked.stderr}`,);
-  try {
-    await access(`${repository}/.git/cli-git-transaction`,);
-    throw new Error('failed lock acquisition created a transaction directory',);
-  }
-  catch (error: unknown) {
-    if (!(Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT')))
-      throw error;
-  }
+  await assertNoTransactionDirectories({
+    repository,
+    context: 'failed lock acquisition',
+  },);
   assertFixtureEqual({
     actual: await readFile(lockPath, 'utf8',),
     expected: 'other owner',
