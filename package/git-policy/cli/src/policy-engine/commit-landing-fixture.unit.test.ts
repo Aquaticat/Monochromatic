@@ -26,7 +26,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { resolveRealGit, } from '@monochromatic-dev/git-executable/ts';
-import nanoSpawn from 'nano-spawn';
+import nanoSpawn, { SubprocessError, } from 'nano-spawn';
 
 /**
  Absolute real Git executable.
@@ -138,6 +138,49 @@ export async function git({
       },
     },
   )).stdout.trim();
+}
+
+/**
+ Runs real Git in a fixture repository and reports failure instead of throwing.
+
+ @param repository - fixture repository
+
+ @param args - Git arguments
+
+ @returns exit code and trimmed standard output
+
+ @example
+ ```ts
+ await gitOutcome({ repository, args: ['merge', 'side'] });
+ ```
+ */
+export async function gitOutcome({
+  repository,
+  args,
+}: Readonly<{
+  repository: LandingRepository;
+  args: readonly string[];
+}>,): Promise<Readonly<{
+  exitCode: number;
+  stdout: string;
+}>> {
+  try {
+    return {
+      exitCode: 0,
+      stdout: await git({
+        repository,
+        args,
+      },),
+    };
+  }
+  catch (error: unknown) {
+    if (!(error instanceof SubprocessError))
+      throw error;
+    return {
+      exitCode: error.exitCode ?? -1,
+      stdout: error.stdout.trim(),
+    };
+  }
 }
 
 /**
