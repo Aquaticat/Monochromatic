@@ -250,6 +250,43 @@ Those provisions do not require every in-place resize to start an
 animation.
 The observed step cannot be fixed by an `onStart` callback that never ran.
 
+A separate debug-only `OnApplyWindowInsetsListener` on that parent received
+bottom `804px` during keyboard show before the animation's `onStart` log;
+the complete final mode still ended before the keyboard.
+For the non-animated 330 to 360dp step,
+it logged bottom `877px` before `SearchInsetProbe` logged the new Compose
+bottom.
+For the critical 375 to 400dp step,
+it logged bottom `975px` before `SearchInsetProbe` selected compact layout.
+These log timestamps do **not** prove that Compose could redraw before the
+keyboard moved.
+`View.java:13048-13086` makes an insets listener replace the parent
+view's `onApplyWindowInsets` policy:
+
+```java
+public void setOnApplyWindowInsetsListener(OnApplyWindowInsetsListener listener) {
+    getListenerInfo().mOnApplyWindowInsetsListener = listener;
+}
+```
+
+Its dispatch branch at `View.java:13081-13089` calls the listener
+**instead of** the view default:
+
+```java
+if (mListenerInfo != null && mListenerInfo.mOnApplyWindowInsetsListener != null) {
+    return mListenerInfo.mOnApplyWindowInsetsListener.onApplyWindowInsets(this, insets);
+} else {
+    return onApplyWindowInsets(insets);
+}
+```
+
+The throwaway listener calls `view.onApplyWindowInsets(insets)` and preserves
+subtree dispatch in this measured fixture.
+That is not evidence that an unrelated existing parent listener could be
+safely replaced in production.
+The next forked experiment will use this early delivery to request a compact
+deck before assessing rendered frames.
+
 ## Remaining boundary
 
 The closed deck's first measured heights changed from `762` to `891` to
