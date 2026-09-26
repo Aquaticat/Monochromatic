@@ -10,6 +10,9 @@ import {
   editText,
   synthesizeText,
 } from './content-fixture.ts';
+import { writeFile, } from 'node:fs/promises';
+import { join, } from 'node:path';
+
 import type { HookEvent, } from './hook-program-fixture.ts';
 import { realGit, } from './repository-fixture.ts';
 import type { AttemptRecord, } from './ledger-fixture.ts';
@@ -431,6 +434,38 @@ export async function stagePartially({
 }
 
 /**
+ Positive control for the observer and checker:
+ one commit lands through the wrapper,
+ then real Git tampers with it so that five invariants must be reported.
+ */
+const checkerPositiveControl: ScenarioDefinition = {
+  name: 'baseline-checker-positive-control',
+  group: 'baseline',
+  summary: 'land one commit, then tamper with real Git; the checker must report exactly the planted violations',
+  expectedViolations: ['index-no-revert', 'landed-bytes', 'no-leftovers', 'remote-contains', 'worktree-preserved',],
+  repository(random,) {
+    return repositoryOptions({ seedFiles: seedTexts({ random, paths: ['a.txt',], },), },);
+  },
+  async run(context,) {
+    /**
+     Seed blob of the path, which the landed commit replaces.
+     */
+    const seedBlob = (await realGit({ repository: context.repository, args: ['rev-parse', 'HEAD:a.txt',], },)).trim();
+    await writeWorktree({ ...context, path: 'a.txt', bytes: synthesizeText({ random: context.random.fork('landed',), size: 300, },), },);
+    /**
+     Landed attempt.
+     */
+    const landed = await (await startAttempt({ ...context, label: 'landed', paths: ['a.txt',], mode: 'explicit', },)).finished;
+    // Tampering bypasses the ledger on purpose, so the worktree no longer holds what the harness wrote.
+    await writeFile(join(context.repository.worktree, 'a.txt',), synthesizeText({ random: context.random.fork('tampered',), size: 300, },),);
+    await realGit({ repository: context.repository, args: ['commit', '--quiet', '--amend', '--no-edit', '--no-verify', '--', 'a.txt',], },);
+    await realGit({ repository: context.repository, args: ['update-index', '--cacheinfo', `100644,${seedBlob},a.txt`,], },);
+    await writeFile(join(context.repository.commonDir, 'refs', 'heads', 'stale.lock',), '',);
+    return [allSucceeded({ name: 'all-commits-succeed', attempts: [landed,], },),];
+  },
+};
+
+/**
  Baseline scenarios in report order.
  */
 export const BASELINE_SCENARIOS: readonly ScenarioDefinition[] = [
@@ -443,6 +478,7 @@ export const BASELINE_SCENARIOS: readonly ScenarioDefinition[] = [
   sigkillRecovery,
   amend,
   lintStaged,
+  checkerPositiveControl,
 ];
 
 //endregion Scenarios

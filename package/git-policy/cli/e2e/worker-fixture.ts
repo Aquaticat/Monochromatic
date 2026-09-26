@@ -524,4 +524,35 @@ export async function reached({
   },);
 }
 
+/**
+ Waits until a process settles or a window passes, whichever comes first.
+ Used where the accepted design gives no hook-visible point before capture:
+ a second agent captures at invocation and then waits for the hook lock,
+ so the harness gives it this window before releasing the first agent.
+
+ @param running - process to watch
+
+ @param windowMs - longest wait
+
+ @returns whether the process settled within the window
+
+ @example
+ ```ts
+ await settleWithin({ running: second.running, windowMs: 1500 });
+ ```
+ */
+export async function settleWithin({
+  running,
+  windowMs,
+}: Readonly<{
+  running: Pick<RunningProcess, 'isSettled'>;
+  windowMs: number;
+}>,): Promise<boolean> {
+  /**
+   Wait outcome; the marker path never exists.
+   */
+  const result = await waitForMarker({ path: '/nonexistent/e2e-settle-window', timeoutMs: windowMs, isSettled: running.isSettled, },);
+  return result === 'settled';
+}
+
 //endregion Barriers

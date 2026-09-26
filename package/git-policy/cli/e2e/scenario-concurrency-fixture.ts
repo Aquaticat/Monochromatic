@@ -45,6 +45,7 @@ import {
   readWorktree,
   releaseAt,
   runWrapper,
+  settleWithin,
   startAttempt,
   writeWorktree,
 } from './worker-fixture.ts';
@@ -75,6 +76,11 @@ const CONCURRENT_TRACE_COMMITS = 16;
  In-flight bound for concurrent trace replay.
  */
 const TRACE_CONCURRENCY = 4;
+
+/**
+ Window the second shared-file agent gets to start and capture before the first is released.
+ */
+const CAPTURE_WINDOW_MS = 1500;
 
 /**
  Lines in the shared file.
@@ -241,6 +247,7 @@ async function runSharedFilePair({
    Second agent.
    */
   const second = await startAttempt({ ...context, label: 'second', paths: ['shared.txt',], mode: 'explicit', },);
+  await settleWithin({ running: second.running, windowMs: CAPTURE_WINDOW_MS, },);
   await releaseAt({ repository: context.repository, token: first.token, event: 'pre-commit', },);
   return await finishAll([first, second,],);
 }

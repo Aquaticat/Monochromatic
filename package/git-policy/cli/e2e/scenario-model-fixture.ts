@@ -90,6 +90,11 @@ export type ScenarioDefinition = Readonly<{
    */
   minimumGit?: string;
   /**
+   Invariants a positive-control scenario must violate, exactly;
+   the scenario passes only when the checker reports this set.
+   */
+  expectedViolations?: readonly string[];
+  /**
    Repository setup derived from the scenario's seeded source.
    */
   repository: (random: SeededRandom,) => RepositoryOptions;
@@ -218,6 +223,56 @@ export function compareVersions(
   return (leftParts ?? []).reduce(function firstDifference(difference, part, index,) {
     return difference === 0 ? part - ((rightParts ?? [])[index] ?? 0) : difference;
   }, 0,);
+}
+
+/**
+ Decides a scenario's verdict.
+ Ordinary scenarios pass with no violations;
+ positive controls pass when the violated invariant names equal `expectedViolations`.
+
+ @param definition - catalog entry
+
+ @param violations - checker output
+
+ @returns verdict, reported violations, and detail
+
+ @example
+ ```ts
+ judge({ definition, violations: [] }).passed; // => true for ordinary scenarios
+ ```
+ */
+export function judge({
+  definition,
+  violations,
+}: Readonly<{
+  definition: Pick<ScenarioDefinition, 'expectedViolations'>;
+  violations: readonly Violation[];
+}>,): Readonly<{ passed: boolean; violations: readonly Violation[]; detail?: string; }> {
+  if (definition.expectedViolations === undefined)
+    return { passed: violations.length === 0, violations, };
+  /**
+   Distinct violated invariant names.
+   */
+  const found = [...new Set(violations.map(function invariantName(violation,) {
+    return violation.invariant;
+  },),),].toSorted();
+  /**
+   Required names, sorted for comparison.
+   */
+  const expected = definition.expectedViolations.toSorted();
+  /**
+   Whether the checker detected exactly the planted violations.
+   */
+  const passed = JSON.stringify(found,) === JSON.stringify(expected,);
+  return passed
+    ? { passed, violations: [], detail: `detected planted violations: ${found.join(', ',)}`, }
+    : {
+      passed,
+      violations: [
+        { invariant: 'positive-control', subject: 'checker', detail: `expected ${expected.join(', ',)}; found ${found.join(', ',)}`, },
+        ...violations,
+      ],
+    };
 }
 
 /**
@@ -350,10 +405,15 @@ export async function runScenario({
      Violated invariants.
      */
     const violations = checkInvariants(observation,);
+    /**
+     Pass decision, inverted for positive controls.
+     */
+    const verdict = judge({ definition, violations, },);
     return {
       ...base,
-      status: violations.length === 0 ? 'pass' : 'fail',
-      violations,
+      status: verdict.passed ? 'pass' : 'fail',
+      violations: verdict.violations,
+      ...(verdict.detail === undefined ? {} : { detail: verdict.detail, }),
       durationMs: Math.round(performance.now() - startedAt,),
       attempts: observation.attempts.map(function summarize(attempt,) {
         return { label: attempt.label, exitCode: attempt.exitCode, killed: attempt.killed, };
