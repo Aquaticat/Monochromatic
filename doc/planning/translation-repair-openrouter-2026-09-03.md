@@ -8082,6 +8082,81 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## hulicaijia30 read, 2026-09-26: class one hundred forty-eight quiet, and class one hundred forty-nine
+
+### What the run did
+
+hulicaijia30 (frozen `1f3d85c29`) SETTLED at 09:12 UTC in 100.6 min against hulicaijia29's 85.0,
+about 2.38 USD by the meters (Bedrock 23.14 to 21.98, OpenRouter 52.40 to 51.18)
+plus Hyper's whole balance (208 to 0).
+Synthetic read dry throughout;
+Hyper read wet from the launch at 07:31 UTC and dry by 09:07 UTC.
+
+The lanes, by the `SLICE-START` and `SLICE-COST` lines (scratch `lane-times.mjs`):
+repair 15.7 min (hulicaijia29 13.7),
+translate 43.6 min (25.7),
+consolidation 22.1 min (34.7).
+The translate lane's p50 slice was 68 s, but eight slices took 1,590 to 2,067 s.
+
+### The checks
+
+Class one hundred forty-eight never fired:
+no `ran past the card's stream bound` line,
+and Bedrock's Gemma streams stayed healthy
+(`google.gemma-4-e2b` 704 streams at 1.5 s mean, 4 s max;
+`google.gemma-4-26b-a4b` 670 at 1.6 s mean, 5 s max).
+Class one hundred forty-four was NOT exercised again:
+no accepted `accuracy/addition` claim on chunk 69.
+The en_CA scan reads the same three US spellings as hulicaijia29 (`center`, `realize`, `mom`).
+
+### Class one hundred forty-nine: a full Hyper request window stalled every Hyper call behind one sleep
+
+Hyper allows 1,000 request starts in a rolling hour (`HYPER_REQUESTS_PER_HOUR`, `request-pace.ts`).
+The pass spent them in its first 33 minutes:
+919 Hyper completions plus refusals and retries by 08:04:20 UTC,
+when the pacer logged `window full (1000 starts in 3600000ms); waiting 1640012ms`.
+That sleep was one chained promise every later Hyper caller queued behind,
+and the deadline signal could not cut it,
+so the log carries eleven `CallTimeoutError` warnings, all at 08:31:40.8 UTC,
+0.1 s after the 1,640,012 ms ran out,
+and the pacer then logged waits of 1 ms to 36 s as the window's oldest starts aged out.
+
+Meanwhile the router kept sending Hyper the models OpenRouter also serves,
+because the meter read wet and nothing else counted as Hyper's capacity.
+On the wire (scratch `stream-times.mjs`),
+minimax-m3 averaged 21.6 s a stream on Hyper against 6.0 s on OpenRouter,
+and DeepSeek V4.1 Flash 15.1 s against 13.9 s.
+The eight translate slices that stalled 27 to 34 minutes are the calls parked behind the window.
+
+Fixed in `eac0b67a8`, guards red first `02c064371`:
+
+- `request-pace.ts`:
+  `take` reserves each start at once, in arrival order,
+  and waits on its own abortable timer (`setTimeout` from `node:timers/promises` with the caller's signal),
+  so an abandoned caller releases its place at once and no caller waits behind another's sleep.
+  `waitMs()` says how long a take would wait now.
+- `pace-saturation.ts`:
+  a provider whose window would make the call wait reads saturated,
+  the same state as a per-model slot limit taken.
+  `routeProviderFor` already overflows a saturated provider to the next usable one
+  and queues on it only when no usable provider stands behind,
+  so a model Hyper alone serves (glm-5.3) still waits its turn there.
+  Any wait above zero counts;
+  no threshold is chosen.
+  Each overflow logs `<model>: hyper's request window is full for another <ms>ms; the call goes to <provider>`.
+- `provider-router.ts` takes `paces`,
+  `hyper-client.ts` exposes `pace.waitMs`,
+  and `corpus-run/run-config.ts` wires Hyper's pacer into the routing client.
+
+Guards:
+`request-pace.unit.test.ts` (a caller that gives up while another take waits is released at once with its own reason;
+`waitMs` reads zero, the remaining window, then zero),
+`provider-router-pace.unit.test.ts` (minimax-m3 goes to OpenRouter while Hyper's window is full,
+stays on Hyper while it has room,
+and glm-5.3 queues on Hyper either way).
+Lint 0/0, types clean, full suite green (`suite-class149.log`, 1151 PASS, 0 FAIL).
+hulicaijia31 launched 09:25 UTC on `.frozen-dist-eac0b67a8` (pid 669977, scope `pass-hulicaijia31`).
+
 ## hulicaijia29 read, 2026-09-26: class one hundred forty-four not exercised, and class one hundred forty-eight
 
 ### What the run did
