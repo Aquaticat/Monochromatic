@@ -339,6 +339,68 @@ async function retireDeadLock({
 }
 
 /**
+ Releases a held lock by renaming it away before deleting it.
+
+ Removing the published directory in place would empty it before `rmdir`,
+ and a concurrent acquirer's `rename` replaces an empty directory,
+ so an in-place removal could delete the next owner's record.
+ The rename frees the published name atomically instead.
+
+ @param lockDirectory - published lock directory
+
+ @param token - token this holder published
+
+ @throws {@link OwnerLockError} when the published or moved lock names another owner
+ */
+async function releaseHeldLock({
+  lockDirectory,
+  token,
+}: Readonly<{
+  lockDirectory: string;
+  token: string;
+}>,): Promise<void> {
+  /**
+   Owner immediately before release.
+   */
+  const current = await readOwnerLockRecord(lockDirectory,);
+  if ((current === LOCK_BUSY) || (current.token !== token))
+    throw new OwnerLockError(`Owner lock ownership changed while held: ${lockDirectory}`,);
+  /**
+   Unique retired name owned only after the rename.
+   */
+  const retiredDirectory = `${lockDirectory}.${randomUUID()}.stale`;
+  await rename(
+    lockDirectory,
+    retiredDirectory,
+  );
+  /**
+   Owner of the directory actually moved.
+   */
+  const moved = await readOwnerLockRecord(retiredDirectory,);
+  if ((moved === LOCK_BUSY) || (moved.token !== token)) {
+    try {
+      await rename(
+        retiredDirectory,
+        lockDirectory,
+      );
+    }
+    catch (error: unknown) {
+      if (!isOccupiedError(error,))
+        throw error;
+      l.warn(`could not restore ${lockDirectory}: ${caughtValueText(error,)}`,);
+    }
+    throw new OwnerLockError(`Owner lock ownership changed during release: ${lockDirectory}`,);
+  }
+  await rm(
+    retiredDirectory,
+    {
+      recursive: true,
+      force: true,
+    },
+  );
+}
+
+/**
  Attempts one publication, retiring a dead owner's lock when one blocks it.
 
  @param lockDirectory - published lock directory
@@ -371,19 +433,10 @@ async function attemptAcquire({
       lockDirectory,
       token: record.token,
       [Symbol.asyncDispose]: async function releaseOwnerLock(): Promise<void> {
-        /**
-         Owner immediately before removal.
-         */
-        const current = await readOwnerLockRecord(lockDirectory,);
-        if ((current === LOCK_BUSY) || (current.token !== record.token))
-          throw new OwnerLockError(`Owner lock ownership changed while held: ${lockDirectory}`,);
-        await rm(
+        await releaseHeldLock({
           lockDirectory,
-          {
-            recursive: true,
-            force: true,
-          },
-        );
+          token: record.token,
+        },);
       },
     };
   }

@@ -158,7 +158,10 @@ async function release(lockDirectory, token) {
   const owner = await readOwner(lockDirectory);
   if (!owner || (owner.token !== token))
     throw new Error('cli-git hook dispatcher: hook lock ownership changed: ' + lockDirectory);
-  await rm(lockDirectory, { recursive: true, force: true });
+  // Renaming frees the published name atomically; emptying it in place would let an acquirer's rename replace it mid-removal.
+  const retiredDirectory = lockDirectory + '.' + randomUUID() + '.stale';
+  await rename(lockDirectory, retiredDirectory);
+  await rm(retiredDirectory, { recursive: true, force: true });
 }
 
 export async function dispatch(event, args) {

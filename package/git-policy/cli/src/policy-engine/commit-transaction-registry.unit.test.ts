@@ -258,7 +258,7 @@ await describe({
             expect(String(fileAdminError,),)
               .toContain('Unsafe transaction recovery directory',);
             await using nameAdmin = await createAdminDirectory();
-            await mkdir(join(nameAdmin.root, 'landing.lock',), { recursive: true, },);
+            await mkdir(join(nameAdmin.root, 'unexpected-entry',), { recursive: true, },);
             /** Listing rejection. */
             const nameAdminError = await rejection(async () => listTransactionEntries(nameAdmin.root,),);
             expect(String(nameAdminError,),)
