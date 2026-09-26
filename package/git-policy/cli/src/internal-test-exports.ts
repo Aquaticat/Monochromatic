@@ -10,6 +10,10 @@
  */
 
 import {
+  type LandingTestExports,
+  landingTestExports,
+} from './internal-test-exports-landing.ts';
+import {
   classifyTransactionOwner,
   createTransactionOwnerRecord,
   encodeTransactionOwner,
@@ -51,7 +55,7 @@ import {
 /**
  Shapes of the transaction internals exposed to built-artifact tests.
  */
-export type InternalTestExports = Readonly<{
+export type InternalTestExports = LandingTestExports & Readonly<{
   /**
    Internal `classifyTransactionOwner`.
    */
@@ -154,6 +158,7 @@ export type InternalTestExports = Readonly<{
  Transaction internals as one plain object, so the single bundled artifact needs no namespace runtime helper.
  */
 export const internalTestExports: InternalTestExports = Object.freeze({
+  ...landingTestExports,
   classifyTransactionOwner,
   CommitTransactionRecoveryError,
   ConfigValidationError,
