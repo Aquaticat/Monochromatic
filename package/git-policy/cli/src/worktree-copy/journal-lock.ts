@@ -578,7 +578,10 @@ export async function tryAcquireWorktreeCopyLock(
      Current bounded lock-publication result.
      */
     const result = await attemptAcquire({
-      lockDirectory: join(root, 'settlement.lock',),
+      lockDirectory: join(
+        root,
+        'settlement.lock',
+      ),
       owner,
     },);
     /* oxlint-enable no-await-in-loop */

@@ -53,7 +53,10 @@ export type JournalState = {
  ```
  */
 export async function beginInstalling(state: JournalState,): Promise<void> {
-  if (state.pending.record.phase === 'installing')
+  if (state.pending
+    .record
+    .phase
+    === 'installing')
     return;
   /**
    Installing record replacing staged phase.
@@ -100,11 +103,14 @@ export async function recordIntents({
    Paths not claimed by an earlier batch or an interrupted owner.
    */
   const unclaimed = relativePaths.filter(function isUnclaimed(relativePath,): boolean {
-    return !state.intended.has(relativePath,);
+    return !state.intended
+      .has(relativePath,);
   },);
-  await state.log.appendIntents(unclaimed,);
+  await state.log
+    .appendIntents(unclaimed,);
   unclaimed.forEach(function claim(relativePath,): void {
-    state.intended.add(relativePath,);
+    state.intended
+      .add(relativePath,);
   },);
 }
 
@@ -133,19 +139,41 @@ export async function recordCreations({
    Creations not recorded before.
    */
   const unrecorded = entries.filter(function isUnrecorded(entry,): boolean {
-    return !state.createdPaths.has(entry.relativePath,);
+    return !state.createdPaths
+      .has(entry.relativePath,);
   },);
-  await state.log.appendCreations(unrecorded,);
+  await state.log
+    .appendCreations(unrecorded,);
   unrecorded.forEach(function remember(entry,): void {
-    state.createdPaths.add(entry.relativePath,);
+    state.createdPaths
+      .add(entry.relativePath,);
   },);
 }
+
+/**
+ Paths a transaction has recorded, as read-only views.
+
+ @example
+ ```ts
+ const recorded: RecordedPaths = { intended: new Set(['cache']), createdPaths: new Set() };
+ ```
+ */
+export type RecordedPaths = Readonly<{
+  /**
+   Selected paths claimed before destination mutation.
+   */
+  intended: ReadonlySet<string>;
+  /**
+   Paths whose creation the transaction proved.
+   */
+  createdPaths: ReadonlySet<string>;
+}>;
 
 /**
  Reports whether this transaction claimed or created a destination path,
  so an interrupted installation may resume at it.
 
- @param state - journal state
+ @param recorded - paths the transaction recorded
 
  @param relativePath - repository path
 
@@ -153,15 +181,18 @@ export async function recordCreations({
 
  @example
  ```ts
- isTransactionPath({ state, relativePath: 'cache' });
+ isTransactionPath({ recorded: state, relativePath: 'cache' });
  ```
  */
 export function isTransactionPath({
-  state,
+  recorded,
   relativePath,
 }: Readonly<{
-  state: JournalState;
+  recorded: RecordedPaths;
   relativePath: string;
 }>,): boolean {
-  return state.intended.has(relativePath,) || state.createdPaths.has(relativePath,);
+  return recorded.intended
+    .has(relativePath,)
+    || recorded.createdPaths
+    .has(relativePath,);
 }

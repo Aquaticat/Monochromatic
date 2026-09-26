@@ -118,20 +118,33 @@ function parseLine({
       return JSON.parse(line,);
     }
     catch (error: unknown) {
-      throw new WorktreeCopyError(`cli-git: worktree-copy install log is corrupt: ${JSON.stringify(path,)}.`, error,);
+      throw new WorktreeCopyError(
+        `cli-git: worktree-copy install log is corrupt: ${JSON.stringify(path,)}.`,
+        error,
+      );
     }
   })();
-  if (((typeof value) === 'object') && (value !== null) && ('intended' in value) && isStringArray(value.intended,)) {
-    value.intended.forEach(assertSafeRepositoryPath,);
-    return { intendedEntries: [...value.intended,], createdEntries: [], };
+  if (((typeof value) === 'object') && (value !== null)
+    && ('intended' in value)
+    && isStringArray(value.intended,)) {
+    value.intended
+      .forEach(assertSafeRepositoryPath,);
+    return {
+      intendedEntries: [...value.intended,],
+      createdEntries: [],
+    };
   }
-  if (((typeof value) === 'object') && (value !== null) && ('created' in value) && isInstalledEntryArray(value.created,)) {
-    value.created.forEach(function safeCreated(entry,): void {
+  if (((typeof value) === 'object') && (value !== null)
+    && ('created' in value)
+    && isInstalledEntryArray(value.created,)) {
+    value.created
+      .forEach(function safeCreated(entry,): void {
       assertSafeRepositoryPath(entry.relativePath,);
     },);
     return {
       intendedEntries: [],
-      createdEntries: value.created.map(function detached(entry,): InstalledWorktreePath {
+      createdEntries: value.created
+        .map(function detached(entry,): InstalledWorktreePath {
         return { ...entry, };
       },),
     };
@@ -152,7 +165,11 @@ function parseLine({
  await readCompleteRecords('/worktrees/.cli-git-worktree-copy-abc/install-log.jsonl');
  ```
  */
-async function readCompleteRecords(path: string,): Promise<Readonly<{ records: InstallLogRecords; completeLength: number; totalLength: number; }>> {
+async function readCompleteRecords(path: string,): Promise<Readonly<{
+  records: InstallLogRecords;
+  completeLength: number;
+  totalLength: number
+}>> {
   await assertPrivateWorktreeCopyPath({
     path,
     role: 'journal file',
@@ -168,7 +185,10 @@ async function readCompleteRecords(path: string,): Promise<Readonly<{ records: I
   /**
    Complete lines in append order.
    */
-  const lines = content.subarray(0, completeLength,)
+  const lines = content.subarray(
+    0,
+    completeLength,
+  )
     .toString('utf8',)
     .split(LINE_END,)
     .filter(function nonempty(line,): boolean {
@@ -215,7 +235,8 @@ async function pathExists(path: string,): Promise<boolean> {
     return true;
   }
   catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ENOENT'))
       return false;
     throw error;
   }
@@ -237,7 +258,10 @@ async function syncDirectory(path: string,): Promise<void> {
   /**
    Read-only directory handle used for metadata fsync.
    */
-  await using handle = await open(path, constants.O_RDONLY,);
+  await using handle = await open(
+    path,
+    constants.O_RDONLY,
+  );
   await handle.sync();
 }
 
@@ -258,15 +282,24 @@ async function syncDirectory(path: string,): Promise<void> {
  */
 export async function openInstallLog(
   stageContainer: string,
-): Promise<AsyncDisposable & Readonly<{ log: InstallLog; recorded: InstallLogRecords; }>> {
+): Promise<AsyncDisposable & Readonly<{
+  log: InstallLog;
+  recorded: InstallLogRecords
+}>> {
   /**
    Tagged install-log logger.
    */
-  const ol = tagged({ tag: openInstallLog.name, l, },);
+  const ol = tagged({
+    tag: openInstallLog.name,
+    l,
+  },);
   /**
    Install-log path.
    */
-  const path = join(stageContainer, INSTALL_LOG_NAME,);
+  const path = join(
+    stageContainer,
+    INSTALL_LOG_NAME,
+  );
   /**
    Whether an interrupted owner left a log.
    */
@@ -276,13 +309,22 @@ export async function openInstallLog(
    */
   const existing = existed
     ? await readCompleteRecords(path,)
-    : { records: { intendedEntries: [], createdEntries: [], }, completeLength: 0, totalLength: 0, };
+    : {
+      records: {
+        intendedEntries: [],
+        createdEntries: [],
+      },
+      completeLength: 0,
+      totalLength: 0,
+    };
   /**
    Exclusive-owner append handle.
    */
   const handle = await open(
     path,
-    constants.O_CREAT | constants.O_WRONLY | constants.O_APPEND | constants.O_NOFOLLOW,
+    constants.O_CREAT | constants.O_WRONLY
+      | constants.O_APPEND
+      | constants.O_NOFOLLOW,
     PRIVATE_FILE_MODE,
   );
   try {
@@ -296,7 +338,10 @@ export async function openInstallLog(
   }
   catch (error: unknown) {
     await handle.close();
-    throw new WorktreeCopyError(`cli-git: could not open worktree-copy install log ${JSON.stringify(path,)}.`, error,);
+    throw new WorktreeCopyError(
+      `cli-git: could not open worktree-copy install log ${JSON.stringify(path,)}.`,
+      error,
+    );
   }
   /**
    Appends one record line and waits until it is durable.
@@ -309,7 +354,10 @@ export async function openInstallLog(
       await handle.sync();
     }
     catch (error: unknown) {
-      throw new WorktreeCopyError(`cli-git: could not persist worktree-copy install log ${JSON.stringify(path,)}.`, error,);
+      throw new WorktreeCopyError(
+        `cli-git: could not persist worktree-copy install log ${JSON.stringify(path,)}.`,
+        error,
+      );
     }
   }
   return {

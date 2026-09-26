@@ -478,7 +478,13 @@ async function removeUnfinishedJournalWrites(path: string,): Promise<void> {
     return name.startsWith(prefix,) && name.endsWith(TEMPORARY_SUFFIX,);
   },);
   await Promise.all(unfinished.map(function removeTemporary(name,): Promise<void> {
-    return rm(join(dirname(path,), name,), { force: true, },);
+    return rm(
+      join(
+        dirname(path,),
+        name,
+      ),
+      { force: true, },
+    );
   },),);
 }
 

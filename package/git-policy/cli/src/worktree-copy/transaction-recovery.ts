@@ -21,6 +21,7 @@ import {
   readPendingWorktreeCopyJournals,
   removeWorktreeCopyJournal,
 } from './journal.ts';
+import type { StagedWorktreeSnapshot, } from './model.ts';
 import {
   completeJournal,
   snapshotFromJournal,
@@ -90,17 +91,22 @@ async function recoverTransaction({
   /**
    Tagged recovery logger.
    */
-  const rl = tagged({ tag: recoverTransaction.name, l, },);
+  const rl = tagged({
+    tag: recoverTransaction.name,
+    l,
+  },);
   /**
    Quoted destination for diagnostics.
    */
-  const destination = JSON.stringify(journal.record.destinationRoot,);
+  const destination = JSON.stringify(journal.record
+    .destinationRoot,);
   /**
    Whether the destination is still a linked worktree of this repository.
    */
   const registration = await destinationRegistration({
     commonDir,
-    destinationRoot: journal.record.destinationRoot,
+    destinationRoot: journal.record
+      .destinationRoot,
   },);
   /**
    Whether the validated private stage still exists.
@@ -114,7 +120,9 @@ async function recoverTransaction({
       notice: `cli-git: discarded an interrupted ignored-state copy for ${destination}, which is no longer a registered worktree.`,
     };
   }
-  if (journal.record.phase === 'complete') {
+  if (journal.record
+    .phase
+    === 'complete') {
     await removeWorktreeCopyJournal(journal,);
     return { recovered: true, };
   }
@@ -131,7 +139,7 @@ async function recoverTransaction({
    */
   const outcome = await completeJournal({
     pending: journal,
-    snapshot: async function recordedSnapshot(intendedEntries,) {
+    snapshot: function recordedSnapshot(intendedEntries,): Promise<StagedWorktreeSnapshot> {
       return snapshotFromJournal({
         journal,
         intendedEntries,
@@ -141,7 +149,8 @@ async function recoverTransaction({
   if (outcome.kind === 'ended') {
     return {
       recovered: false,
-      notice: `cli-git: ended an interrupted ignored-state copy into ${destination} without finishing it. ${outcome.failure.message}`,
+      notice: `cli-git: ended an interrupted ignored-state copy into ${destination} without finishing it. ${outcome.failure
+        .message}`,
     };
   }
   return { recovered: true, };
@@ -182,7 +191,8 @@ export async function recoverWorktreeCopyTransactions(
   return {
     recovered: steps.filter(function completed(step,): boolean {
       return step.recovered;
-    },).length,
+    },)
+      .length,
     notices: steps.flatMap(function noticeOf(step,): readonly string[] {
       return step.notice === undefined ? [] : [step.notice,];
     },),

@@ -92,8 +92,10 @@ export async function snapshotFromJournal({
      Deterministic entries currently retained in staged payload.
      */
     const entries = await collectEntryManifest({
-      root: journal.record.stageRoot,
-      selectedRoots: journal.record.selectedRoots,
+      root: journal.record
+        .stageRoot,
+      selectedRoots: journal.record
+        .selectedRoots,
       excludedRoots: [],
     },);
     /**
@@ -106,20 +108,26 @@ export async function snapshotFromJournal({
       return entryPaths.has(relativePath,);
     },)) {
       throw new WorktreeCopyError(
-        `cli-git: worktree-copy journal intent is absent from private stage ${JSON.stringify(journal.record.stageRoot,)}.`,
+        `cli-git: worktree-copy journal intent is absent from private stage ${JSON.stringify(journal.record
+          .stageRoot,)}.`,
       );
     }
     return {
       entries,
-      selectedRoots: journal.record.selectedRoots,
-      sourceRoot: journal.record.sourceRoot,
-      stageContainer: journal.record.stageContainer,
-      stageRoot: journal.record.stageRoot,
+      selectedRoots: journal.record
+        .selectedRoots,
+      sourceRoot: journal.record
+        .sourceRoot,
+      stageContainer: journal.record
+        .stageContainer,
+      stageRoot: journal.record
+        .stageRoot,
     };
   }
   catch (error: unknown) {
     throw new WorktreeCopyError(
-      `cli-git: could not recover staged ignored state at ${JSON.stringify(journal.record.stageRoot,)}.`,
+      `cli-git: could not recover staged ignored state at ${JSON.stringify(journal.record
+        .stageRoot,)}.`,
       error,
     );
   }
@@ -148,26 +156,45 @@ async function installRecorded({
 }: Readonly<{
   pending: PendingWorktreeCopyJournal;
   snapshot: (intendedEntries: ReadonlySet<string>) => Promise<StagedWorktreeSnapshot>;
-}>,): Promise<Readonly<{ latest: PendingWorktreeCopyJournal; result: InstallationOutcome; }>> {
+}>,): Promise<Readonly<{
+  latest: PendingWorktreeCopyJournal;
+  result: InstallationOutcome
+}>> {
   /**
    Install log with what an interrupted owner recorded.
    */
-  await using opened = await openInstallLog(pending.record.stageContainer,);
+  await using opened = await openInstallLog(pending.record
+    .stageContainer,);
   /**
    Journal state seeded from the header lists older journals carry and from the log.
    */
   const state: JournalState = {
     pending,
     log: opened.log,
-    intended: new Set([...pending.record.intendedEntries, ...opened.recorded.intendedEntries,],),
-    createdPaths: new Set([...pending.record.createdEntries, ...opened.recorded.createdEntries,].map(function createdPath(entry,): string {
+    intended: new Set([
+      ...pending.record
+        .intendedEntries,
+      ...opened.recorded
+        .intendedEntries,
+    ],),
+    createdPaths: new Set([
+      ...pending.record
+        .createdEntries,
+      ...opened.recorded
+        .createdEntries,
+    ].map(function createdPath(entry,): string {
       return entry.relativePath;
     },),),
   };
   /**
    Paths an interrupted owner proved created.
    */
-  const priorCreations: readonly InstalledWorktreePath[] = [...pending.record.createdEntries, ...opened.recorded.createdEntries,];
+  const priorCreations: readonly InstalledWorktreePath[] = [
+    ...pending.record
+      .createdEntries,
+    ...opened.recorded
+      .createdEntries,
+  ];
   /**
    Staged payload matching every recorded intent.
    */
@@ -180,7 +207,8 @@ async function installRecorded({
         kind: 'installed',
         copiedEntries: await installSnapshot({
           snapshot: staged,
-          destinationRoot: pending.record.destinationRoot,
+          destinationRoot: pending.record
+            .destinationRoot,
           journalState: state,
           priorCreations,
         },),
@@ -194,7 +222,10 @@ async function installRecorded({
         kind: 'ended',
         failure: error instanceof WorktreeCopyError
           ? error
-          : new WorktreeCopyError('cli-git: ignored-state installation failed.', error,),
+          : new WorktreeCopyError(
+            'cli-git: ignored-state installation failed.',
+            error,
+          ),
       },
     };
   }
@@ -227,16 +258,23 @@ export async function completeJournal({
   /**
    Tagged completion logger.
    */
-  const cl = tagged({ tag: completeJournal.name, l, },);
+  const cl = tagged({
+    tag: completeJournal.name,
+    l,
+  },);
   /**
    Installation result and latest journal.
    */
-  const { latest, result, } = await installRecorded({
+  const {
+    latest,
+    result,
+  } = await installRecorded({
     pending,
     snapshot,
   },);
   if (result.kind === 'ended')
-    cl.debug(`installation into ${JSON.stringify(pending.record.destinationRoot,)} failed; ending its transaction`,);
+    cl.debug(`installation into ${JSON.stringify(pending.record
+      .destinationRoot,)} failed; ending its transaction`,);
   await removeWorktreeCopyJournal(latest,);
   return result;
 }

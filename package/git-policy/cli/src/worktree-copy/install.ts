@@ -19,6 +19,7 @@ import type {
 import {
   isTransactionPath,
   type JournalState,
+  type RecordedPaths,
   recordCreations,
   recordIntents,
 } from './transaction-journal.ts';
@@ -42,7 +43,7 @@ const INSTALL_BATCH_ENTRIES = 512;
 
  @param destinationRoot - newly registered worktree root
 
- @param journalState - recorded claims and creations of this transaction
+ @param recorded - claims and creations this transaction recorded
 
  @returns selected paths absent from the destination
 
@@ -50,17 +51,17 @@ const INSTALL_BATCH_ENTRIES = 512;
 
  @example
  ```ts
- await preflightDestination({ snapshot, destinationRoot: '/wt', journalState });
+ await preflightDestination({ snapshot, destinationRoot: '/wt', recorded: journalState });
  ```
  */
 async function preflightDestination({
   snapshot,
   destinationRoot,
-  journalState,
+  recorded,
 }: Readonly<{
   snapshot: StagedWorktreeSnapshot;
   destinationRoot: string;
-  journalState: JournalState;
+  recorded: RecordedPaths;
 }>,): Promise<ReadonlySet<string>> {
   /**
    Selected paths not present in the destination.
@@ -85,7 +86,10 @@ async function preflightDestination({
       continue;
     }
     if ((entry.kind === 'directory') && stats.isDirectory()
-      && isTransactionPath({ state: journalState, relativePath: entry.relativePath, },)) {
+      && isTransactionPath({
+        recorded,
+        relativePath: entry.relativePath,
+      },)) {
       continue;
     }
     // oxlint-disable-next-line no-await-in-loop -- exact comparison is required before any destination mutation
@@ -117,8 +121,14 @@ async function preflightDestination({
 function installBatches(entries: readonly WorktreeCopyEntry[],): readonly (readonly WorktreeCopyEntry[])[] {
   return Array.from(
     { length: Math.ceil(entries.length / INSTALL_BATCH_ENTRIES,), },
-    function batchAt(_unused, index,): readonly WorktreeCopyEntry[] {
-      return entries.slice(index * INSTALL_BATCH_ENTRIES, (index + 1) * INSTALL_BATCH_ENTRIES,);
+    function batchAt(
+      _unused,
+      index,
+    ): readonly WorktreeCopyEntry[] {
+      return entries.slice(
+        index * INSTALL_BATCH_ENTRIES,
+        (index + 1) * INSTALL_BATCH_ENTRIES,
+      );
     },
   );
 }
@@ -258,7 +268,7 @@ export async function installSnapshot({
     const absent = await preflightDestination({
       snapshot,
       destinationRoot,
-      journalState,
+      recorded: journalState,
     },);
     for (const batch of installBatches(snapshot.entries,)) {
       // oxlint-disable-next-line no-await-in-loop -- batches install in manifest order so parents precede children

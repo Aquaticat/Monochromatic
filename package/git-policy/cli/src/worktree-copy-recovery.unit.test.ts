@@ -309,7 +309,9 @@ await describe({
 
         expect(result.stderr,).toContain('recovered ignored-state copies for 1 worktree transaction',);
         expect(await readFile(join(destinationRoot, 'cache', 'data.txt',), 'utf8',),).toBe('staged\n',);
-        expect(await permissionMode(join(destinationRoot, 'cache',),),).toBe(SOURCE_DIRECTORY_MODE,);
+        expect(
+          await permissionMode(join(destinationRoot, 'cache',),),
+        ).toBe(SOURCE_DIRECTORY_MODE,);
         expect(await journalNames(repositoryRoot,),).toEqual([],);
         expect(await stageNames(destinationRoot,),).not.toContain('.cli-git-worktree-copy-interrupted',);
         void transaction;
@@ -329,7 +331,9 @@ await describe({
 
         expect(result.stderr,).toContain('recovered ignored-state copies for 1 worktree transaction',);
         expect(await readFile(join(destinationRoot, 'cache', 'data.txt',), 'utf8',),).toBe('staged\n',);
-        expect(await permissionMode(join(destinationRoot, 'cache',),),).toBe(SOURCE_DIRECTORY_MODE,);
+        expect(
+          await permissionMode(join(destinationRoot, 'cache',),),
+        ).toBe(SOURCE_DIRECTORY_MODE,);
         expect(await journalNames(repositoryRoot,),).toEqual([],);
       },
     },),

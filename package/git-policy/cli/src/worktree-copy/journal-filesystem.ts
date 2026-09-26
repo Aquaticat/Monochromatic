@@ -95,8 +95,9 @@ async function lstatOrAbsent(path: string,): Promise<Readonly<Stats> | typeof PA
  ```
  */
 function isMissingPath(error: unknown,): boolean {
-  return Error.isError(error,) && ('code' in error) && ((typeof error.code) === 'string')
-    && MISSING_PATH_CODES.has(String(error.code,),);
+  return Error.isError(error,) && ('code' in error)
+    && ((typeof error.code) === 'string')
+    && MISSING_PATH_CODES.has(error.code,);
 }
 
 /**

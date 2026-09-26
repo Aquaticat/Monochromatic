@@ -194,8 +194,9 @@ export async function ensureParents({
  ```
  */
 function isLinkUnsupported(error: unknown,): boolean {
-  return Error.isError(error,) && ('code' in error) && ((typeof error.code) === 'string')
-    && LINK_UNSUPPORTED_CODES.has(String(error.code,),);
+  return Error.isError(error,) && ('code' in error)
+    && ((typeof error.code) === 'string')
+    && LINK_UNSUPPORTED_CODES.has(error.code,);
 }
 
 /**
@@ -224,9 +225,15 @@ async function installFile({
   /**
    Tagged file-installation logger.
    */
-  const fl = tagged({ tag: installFile.name, l, },);
+  const fl = tagged({
+    tag: installFile.name,
+    l,
+  },);
   try {
-    await link(stagePath, destinationPath,);
+    await link(
+      stagePath,
+      destinationPath,
+    );
     return;
   }
   catch (error: unknown) {

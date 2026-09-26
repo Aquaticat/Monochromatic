@@ -113,8 +113,8 @@ async function synchronizeCreatedWorktree({
    */
   const outcome = await completeJournal({
     pending,
-    snapshot: async function stagedSnapshot() {
-      return snapshot;
+    snapshot: function stagedSnapshot(): Promise<StagedWorktreeSnapshot> {
+      return Promise.resolve(snapshot,);
     },
   },);
   if (outcome.kind === 'ended')

@@ -37,8 +37,10 @@ const l = tagged({ tag: 'cli-git', },);
  ```
  */
 export function reportRecoveredWorktreeCopies(report: RecoveryReport,): void {
-  report.notices.forEach(function writeNotice(notice,): void {
-    process.stderr.write(`${notice}\n`,);
+  report.notices
+    .forEach(function writeNotice(notice,): void {
+    process.stderr
+      .write(`${notice}\n`,);
   },);
   if (report.recovered > 0) {
     process.stderr
