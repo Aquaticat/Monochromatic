@@ -359,5 +359,8 @@ Awaiting owner confirmation of shared understanding.
 
 ## Next action
 
-Collect answers to the open questions;
-no implementation until the owner confirms shared understanding.
+Owner confirms shared understanding.
+Then promote this plan to `doc/decision/`,
+update `package/git-policy/cli/SPEC.md`,
+and open the implementation issue.
+No implementation before confirmation.
