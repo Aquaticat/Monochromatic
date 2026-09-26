@@ -74,7 +74,12 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
     starvation reservation,
     foreign `index.lock` classification and index-writer waits,
     single-flight auto-push,
-    concurrent fixtures and benchmarks.
+    concurrent fixtures and benchmarks,
+    and the container end-to-end suite replaying realistic workloads against fresh dummy repositories
+    (see the decision record section "Container end-to-end verification";
+    inherent to this design,
+    omitted until the owner pointed it out,
+    agent-behavior gap tracked in #572).
 4.  Verify at the user boundary with the packed shadow-bin fixtures,
     then merge `feat/cli-git-concurrent-commits` into `main`.
 
