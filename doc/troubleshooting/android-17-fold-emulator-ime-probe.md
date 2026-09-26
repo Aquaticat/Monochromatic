@@ -291,7 +291,7 @@ The same-APK vertical-A control
 obscuring the deck title at x `[482,781)` and y `[1120,1223]`.
 The experimental
 `search-deck-right-lift-layerprobe-retain-results-light` added a
-**nonfocusable, not-touchable app panel** over the left pane.
+**nonfocusable and not-touchable app panel** over the left pane.
 Window Manager reported that panel at `[0,717][1038,1793]` with
 `NOT_FOCUSABLE NOT_TOUCHABLE LAYOUT_IN_SCREEN` and the real floating
 Gboard touch region at `[482,1006][1388,1777]`.
