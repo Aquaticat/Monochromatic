@@ -10,6 +10,9 @@
 
  Class one hundred sixty-four (TianqiChen6665, 2026-09-26) adds 遇到的却是,
  which shipped as the archive's "made her met with" on an unendorsed standing.
+ Class one hundred sixty-six (TianqiChen6665) adds 在隙中, which shipped as
+ "caught a glimpse through the gaps of those she had comforted", the gaps
+ read as belonging to the people seen through them.
 
  Cat-themed invention throughout; no corpus content appears here.
 
@@ -48,13 +51,19 @@ const DESERVED = '这样勤快的小猫应该会有更好的生活，不是吗�
 const MET = '小猫很勤快，遇到的却是狗的吠叫。';
 
 /**
- Terms classes one hundred sixty-one and sixty-four seed.
+ Original in which the kitten glimpsed a friend through the gap in the fence.
+ */
+const GAP = '小猫在隙中窥见了朋友。';
+
+/**
+ Terms classes one hundred sixty-one, sixty-four and sixty-six seed.
  */
 const SEEDED_TERMS = [
   '化作',
   '被她治愈',
   '应该会有更好的生活',
   '遇到的却是',
+  '在隙中',
 ] as const;
 
 /**
@@ -65,6 +74,7 @@ const REFUSED_CANDIDATES: readonly { readonly sourceText: string; readonly candi
   { sourceText: COMFORTED, candidateText: 'The cats she has healed were all happy.', },
   { sourceText: DESERVED, candidateText: 'Such a hardworking kitten should have had a better life, didn\'t she?', },
   { sourceText: MET, candidateText: 'The kitten was diligent, but fate made her met with the dog\'s barking.', },
+  { sourceText: GAP, candidateText: 'The kitten caught a glimpse through the gaps of those it loved.', },
 ];
 
 /**
@@ -75,13 +85,14 @@ const ACCEPTED_CANDIDATES: readonly { readonly sourceText: string; readonly cand
   { sourceText: COMFORTED, candidateText: 'The cats she had comforted were all happy.', },
   { sourceText: DESERVED, candidateText: 'Such a hardworking kitten deserved a better life, didn\'t she?', },
   { sourceText: MET, candidateText: 'The kitten was diligent, but what she met with was the dog\'s barking.', },
+  { sourceText: GAP, candidateText: 'Through the gap, the kitten glimpsed a friend.', },
 ];
 
 await describe({
   name: 'grammar slips the rendering glossary refuses (class one hundred sixty-one)',
   children: [
     it({
-      name: 'SEEDS 化作, 被她治愈, 应该会有更好的生活 and 遇到的却是',
+      name: 'SEEDS 化作, 被她治愈, 应该会有更好的生活, 遇到的却是 and 在隙中',
       fn: async () => {
         expect(SEEDED_TERMS.filter(function isSeeded(term,): boolean {
           return RENDERING_GLOSSARY.some(function isTerm(entry,): boolean {
