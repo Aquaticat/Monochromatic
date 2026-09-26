@@ -464,6 +464,43 @@ Keep the stopped container temporarily to inspect `State.OOMKilled` rather than 
 Stop and inspect any unexpected execution, network attempt, write boundary, or resource failure.
 Runtime acceptance would not establish long-context accuracy or calibrated safety.
 
+### Forward probe failure and next resource decision
+
+Process `proc_774d` built image
+`f187e4e14fe09c955fda3ea59da84b560c67bb20a13eb8f74332769319ab68fd`
+and loaded Laya 0.3.20 from the intended source path with CPU torch 2.10.0+cpu.
+Model load took 4.264209541 seconds in this run; this is one observation, not a timing comparison.
+For `inline-read-package`, Laya retained all 12,582 state tokens plus a 94-token prefix,
+forming a 12,676-token sequence with no state or instruction truncation.
+The process then died before producing any verdict.
+
+`podman inspect laya-full-policy-forward-20260926` reported `OOMKilled: true`, exit 137,
+with memory and memory-plus-swap both 2,147,483,648 bytes.
+This establishes a container-memory failure, not a model indexing exception or decision-quality result.
+The complete current repository policy still matched the measured hash after failure.
+`free --bytes` reported 30,387,249,152 available bytes after the stopped run.
+
+Transformers also emitted its generic sequence-length warning for 12,582 versus 8,192 tokens.
+Installed `transformers/tokenization_utils_base.py:2988-2995` emits that warning based on token count
+versus `model_max_length`; it does not execute the encoder to establish an indexing failure.
+Keep that warning separate from the confirmed cgroup OOM.
+Laya's loader also warned about clamping `choice:11+` temperature;
+the probe question has 3 choices, not 11 or more, and this warning does not establish calibration for this workload.
+
+A larger Podman experiment needs explicit authorization:
+`AGENTS.md:853-858` (BOX) names the 2 GiB/2 CPU Podman shape or `mvm`.
+An independent Advisor review confirmed that the technology skill's default-isolation deviation language
+should not silently override that named repository boundary.
+Proposed next probe: same full input, 8 GiB memory/no extra swap, 2 CPUs, 300 seconds,
+no network or host mounts, with current memory/policy hashes rechecked before launch.
+No larger-memory run has been started.
+
+A multilingual tokenizer-only probe is prepared in `context-probe-ml/`.
+It uses the same audited Python/tokenizer command tree, full policy snapshot,
+positive control, and 2 GiB/2 CPU/120-second offline bounds as the English tokenizer probe.
+Only the tokenizer data changes to verified hash
+`609d8f4c067cd3950f88594c5a802616cea245823836ef5848ee4fc40aab5b6f`.
+
 ## Research still required
 
 - Finalize open ownership/authority choices in the responsibility ledger.
