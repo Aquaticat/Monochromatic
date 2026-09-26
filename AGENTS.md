@@ -125,6 +125,12 @@ Unsure?
  check tool docs,
  run tool first.
 
+DLY:
+ Suppressing a named diagnostic:
+ distinguish preventing its trigger from hiding its output.
+ A higher threshold delays the diagnostic;
+ verify the requested effect at the emitting boundary.
+
 DGT:
  User-facing diagnostics:
  name affected input and calls plainly.
