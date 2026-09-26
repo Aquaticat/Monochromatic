@@ -23,6 +23,15 @@ const NAME_ENDS: readonly string[] = [
 ];
 
 /**
+ Marks that end a signer's name only after its first character: the ASCII
+ bracket a page writes for the original's 【album】 (「—— Yuli [album], “title”」,
+ class one hundred thirty-nine, XingZ6012), which would otherwise ride into
+ the name up to the comma. At the name's first character the bracket opens a
+ linked name instead, so it ends nothing there.
+ */
+const INNER_NAME_ENDS: readonly string[] = ['[',];
+
+/**
  Words that open a source credit ("from", "excerpted from", "quoted from")
  rather than name a signer: 「——来自《title》，作者 handle」 credits a work, and
  the signer, where there is one, stands after 作者 (class one hundred
@@ -183,13 +192,17 @@ function nameEndAt(
    Earliest mark so far, -1 for none.
    */
   let earliest = -1;
-  for (const mark of NAME_ENDS) {
+  for (const mark of [
+    ...NAME_ENDS,
+    ...INNER_NAME_ENDS,
+  ]) {
     /**
-     Where this mark stands.
+     Where this mark stands; an inner mark is looked for past the name's first
+     character.
      */
     const at = line.indexOf(
       mark,
-      from,
+      INNER_NAME_ENDS.includes(mark,) ? from + 1 : from,
     );
     /**
      Whether this mark stands before any found so far.
