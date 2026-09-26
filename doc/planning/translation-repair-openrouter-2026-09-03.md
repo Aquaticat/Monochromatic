@@ -8095,7 +8095,9 @@ Synthetic and Hyper stayed dry: Qwen3.8-27B threw 266 of 266 and glm-5.3 109 of 
 头壳 (a kigurumi performer's head mask) shipped "within the smallest space inside her head",
 reading it as the wearer's own head; the archive renders 头壳 "headpiece" three times on the same page.
 阿洛娜 and 亚托莉 shipped as the archive's "Alona and Atori"; they are Arona of Blue Archive and Atri of
-ATRI -My Dear Moments-, and no candidate on the run wrote either name (0 of 75 artifact mentions).
+ATRI -My Dear Moments-, and no candidate on the run wrote either name (the artifact carries neither).
+The first full suite on `7b87c5a4e` ran 1,160 PASS and 1 FAIL: the community glossary's SEEDS test pins the
+term list, extended to the nine terms in `52e1280a1`.
 All three join the community glossary through `community-glossary-fandom.ts`, spread into `COMMUNITY_GLOSSARY`,
 refusing "inside her head", "alona" and "atori" where the source carries the term
 (guard red first `069690562`, fix `7b87c5a4e`).
