@@ -13,7 +13,7 @@ export * from './authoring.ts';
 
  @internal
  */
-export * as internalTestExports from './internal-test-exports.ts';
+export { internalTestExports, } from './internal-test-exports.ts';
 
 // Direct execution runs the wrapper; module import remains inert.
 if (import.meta.main)

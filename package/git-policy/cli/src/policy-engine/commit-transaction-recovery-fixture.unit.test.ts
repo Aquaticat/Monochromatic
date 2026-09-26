@@ -25,12 +25,12 @@ import { internalTestExports, } from '../../dist/final/node/index.mjs';
 /**
  Built transaction workspace shape.
  */
-export type CommitTransactionWorkspace = internalTestExports.CommitTransactionWorkspace;
+export type CommitTransactionWorkspace = Awaited<ReturnType<typeof internalTestExports.createCommitTransactionWorkspace>>;
 
 /**
  Built prepared journal shape.
  */
-type PreparedTransactionJournal = internalTestExports.PreparedTransactionJournal;
+type PreparedTransactionJournal = Awaited<ReturnType<typeof internalTestExports.prepareTransactionJournal>>;
 
 const {
   createCommitTransactionWorkspace,

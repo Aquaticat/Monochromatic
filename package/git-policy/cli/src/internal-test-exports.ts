@@ -9,33 +9,30 @@
  @module
  */
 
-export {
+import {
   prepareTransactionJournal,
   recordRefUpdated,
 } from './policy-engine/commit-transaction-journal.ts';
-export type { PreparedTransactionJournal, } from './policy-engine/commit-transaction-journal.ts';
-export {
+import {
   classifyTransactionOwner,
   createTransactionOwnerRecord,
   encodeTransactionOwner,
   parseTransactionOwner,
 } from './policy-engine/commit-transaction-owner.ts';
-export type { TransactionOwnerRecord, } from './policy-engine/commit-transaction-owner.ts';
-export {
+import {
   PROCESS_IDENTITY_ABSENT,
   resolveProcessBirthIdentity,
 } from './policy-engine/commit-transaction-process-identity.ts';
-export {
+import {
   CommitTransactionRecoveryError,
   recoverCommitTransaction,
 } from './policy-engine/commit-transaction-recovery.ts';
-export type { CommitTransactionRecoveryOutcome, } from './policy-engine/commit-transaction-recovery.ts';
-export { findTransactionLandedOid, } from './policy-engine/commit-transaction-recovery-reflog.ts';
-export {
+import { findTransactionLandedOid, } from './policy-engine/commit-transaction-recovery-reflog.ts';
+import {
   inspectRegistryEntry,
   recoverInspectedEntry,
 } from './policy-engine/commit-transaction-recovery-scan.ts';
-export {
+import {
   ensureTransactionRoot,
   isTransactionId,
   LEGACY_TRANSACTION_DIRECTORY_NAME,
@@ -45,5 +42,126 @@ export {
   removeTransactionDirectory,
   TRANSACTION_ROOT_NAME,
 } from './policy-engine/commit-transaction-registry.ts';
-export { createCommitTransactionWorkspace, } from './policy-engine/commit-transaction-workspace.ts';
-export type { CommitTransactionWorkspace, } from './policy-engine/commit-transaction-workspace.ts';
+import { createCommitTransactionWorkspace, } from './policy-engine/commit-transaction-workspace.ts';
+
+/**
+ Shapes of the transaction internals exposed to built-artifact tests.
+ */
+export type InternalTestExports = Readonly<{
+  /**
+   Internal `classifyTransactionOwner`.
+   */
+  classifyTransactionOwner: typeof classifyTransactionOwner;
+  /**
+   Internal `CommitTransactionRecoveryError`.
+   */
+  CommitTransactionRecoveryError: typeof CommitTransactionRecoveryError;
+  /**
+   Internal `createCommitTransactionWorkspace`.
+   */
+  createCommitTransactionWorkspace: typeof createCommitTransactionWorkspace;
+  /**
+   Internal `createTransactionOwnerRecord`.
+   */
+  createTransactionOwnerRecord: typeof createTransactionOwnerRecord;
+  /**
+   Internal `encodeTransactionOwner`.
+   */
+  encodeTransactionOwner: typeof encodeTransactionOwner;
+  /**
+   Internal `ensureTransactionRoot`.
+   */
+  ensureTransactionRoot: typeof ensureTransactionRoot;
+  /**
+   Internal `findTransactionLandedOid`.
+   */
+  findTransactionLandedOid: typeof findTransactionLandedOid;
+  /**
+   Internal `inspectRegistryEntry`.
+   */
+  inspectRegistryEntry: typeof inspectRegistryEntry;
+  /**
+   Internal `isTransactionId`.
+   */
+  isTransactionId: typeof isTransactionId;
+  /**
+   Internal `LEGACY_TRANSACTION_DIRECTORY_NAME`.
+   */
+  LEGACY_TRANSACTION_DIRECTORY_NAME: typeof LEGACY_TRANSACTION_DIRECTORY_NAME;
+  /**
+   Internal `listTransactionEntries`.
+   */
+  listTransactionEntries: typeof listTransactionEntries;
+  /**
+   Internal `OWNER_FILENAME`.
+   */
+  OWNER_FILENAME: typeof OWNER_FILENAME;
+  /**
+   Internal `parseTransactionOwner`.
+   */
+  parseTransactionOwner: typeof parseTransactionOwner;
+  /**
+   Internal `prepareTransactionJournal`.
+   */
+  prepareTransactionJournal: typeof prepareTransactionJournal;
+  /**
+   Internal `PROCESS_IDENTITY_ABSENT`.
+   */
+  PROCESS_IDENTITY_ABSENT: typeof PROCESS_IDENTITY_ABSENT;
+  /**
+   Internal `publishTransactionDirectory`.
+   */
+  publishTransactionDirectory: typeof publishTransactionDirectory;
+  /**
+   Internal `recordRefUpdated`.
+   */
+  recordRefUpdated: typeof recordRefUpdated;
+  /**
+   Internal `recoverCommitTransaction`.
+   */
+  recoverCommitTransaction: typeof recoverCommitTransaction;
+  /**
+   Internal `recoverInspectedEntry`.
+   */
+  recoverInspectedEntry: typeof recoverInspectedEntry;
+  /**
+   Internal `removeTransactionDirectory`.
+   */
+  removeTransactionDirectory: typeof removeTransactionDirectory;
+  /**
+   Internal `resolveProcessBirthIdentity`.
+   */
+  resolveProcessBirthIdentity: typeof resolveProcessBirthIdentity;
+  /**
+   Internal `TRANSACTION_ROOT_NAME`.
+   */
+  TRANSACTION_ROOT_NAME: typeof TRANSACTION_ROOT_NAME;
+}>;
+
+/**
+ Transaction internals as one plain object, so the single bundled artifact needs no namespace runtime helper.
+ */
+export const internalTestExports: InternalTestExports = Object.freeze({
+  classifyTransactionOwner,
+  CommitTransactionRecoveryError,
+  createCommitTransactionWorkspace,
+  createTransactionOwnerRecord,
+  encodeTransactionOwner,
+  ensureTransactionRoot,
+  findTransactionLandedOid,
+  inspectRegistryEntry,
+  isTransactionId,
+  LEGACY_TRANSACTION_DIRECTORY_NAME,
+  listTransactionEntries,
+  OWNER_FILENAME,
+  parseTransactionOwner,
+  prepareTransactionJournal,
+  PROCESS_IDENTITY_ABSENT,
+  publishTransactionDirectory,
+  recordRefUpdated,
+  recoverCommitTransaction,
+  recoverInspectedEntry,
+  removeTransactionDirectory,
+  resolveProcessBirthIdentity,
+  TRANSACTION_ROOT_NAME,
+},);
