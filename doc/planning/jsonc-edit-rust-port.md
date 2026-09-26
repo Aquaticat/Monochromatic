@@ -133,9 +133,47 @@ Progress since adoption:
    `0.1.0`.
    `Attest .crate provenance` also succeeded on the same run.
 
-Remaining,
-and it is user dashboard work per `doc/runbook/publish-crate-first-time.md` step 17:
-revoke the `monochromatic-jsonc-edit-bootstrap` token if that was not already done.
+- The bootstrap token was revoked by the user after Trusted Publishing was configured,
+   so the crate now publishes through the workflow's OIDC route only.
+- Property fuzzing exists for the Rust crate:
+   `package/rust-module/jsonc-edit.fuzz` holds four libFuzzer targets
+   (round-trip canonical stability and comment preservation,
+   one-mutation rejection without panic or hang,
+   the exact nesting envelope on both sides,
+   and immutable edits at fuzzer-drawn resolving addresses),
+   a structured `arbitrary` generator,
+   shared invariant checks with negative controls,
+   and thirteen unit tests.
+   The clean bounded campaign ran 13184,
+   160114,
+   625656 and 452889 executions per target inside a 2 GiB and 2 CPU container with no crash
+   artifacts.
+   Five crashes found across the campaigns are triaged in
+   `doc/handover/jsonc-edit-rust-fuzzing.md`:
+   two were product defects fixed in **both** implementations
+   (a comment body carrying a bare CR was emitted as a `//` line that ended early,
+   and setting the root to a scalar produced a document the parser rejects),
+   and three were defects in the harness's own invariants.
+- Mutation testing ran over the crate:
+   485 mutants,
+   397 caught by a failing test,
+   34 caught by timeout,
+   52 unviable,
+   and 2 survivors now excluded with measured proofs in
+   `package/rust-module/jsonc-edit/.cargo/mutants.toml`.
+   Twenty-one of the original twenty-four survivors were real test gaps and are now covered by
+   assertions that name the expected refusal message,
+   indentation level or emission text.
+- Canonical layout is shared contract:
+   the fixture corpus gained `roundTrip`,
+   `rootShape` and `canonicalLayout` sections,
+   the last measured from the TypeScript package and then verified byte for byte against the Rust
+   emitter,
+   so indentation,
+   separators,
+   trailing commas and comment placement cannot drift between the two implementations unnoticed.
+
+Nothing in the port plan is outstanding.
 Future versions publish by bumping `version` in the crate manifest and pushing to `main`,
 or by dispatching `cargo-publish.yml` with **dry-run** unchecked.
 
