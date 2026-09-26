@@ -181,6 +181,19 @@ The user rejected that round.
 - Whole-repo lint took 369.6 s in one fresh-worktree trial
   with 385 TS2307 errors from unbuilt packages;
   not representative.
+- Interleaved re-measurement (three arms rotated: built-A, built-B as noise band, `./ts`;
+  3 warmup plus 15 runs each; load average 6 to 13 on 16 cores;
+  fixture adapted from #238, confirmed three fix passes plus three oracle passes):
+  - `format:oxlint` fix loop on `package/module/or-throw`:
+    built medians 6.312 s and 6.309 s,
+    `./ts` median 7.436 s (minimum 7.187 s),
+    so +1.12 s (+18 %), outside the band.
+  - Plain `lint:oxlint`:
+    built medians 1.595 s and 1.634 s,
+    `./ts` median 1.799 s,
+    so about +0.2 s (+12 %), outside the band.
+  - About 0.19 s per oxlint process;
+    `strace` confirmed `./ts` opened plugin source and no dist files.
 
 ### oxlint and rolldown share blame (subagent report; details in troubleshooting docs)
 
@@ -305,7 +318,7 @@ but each link also fails for causes other than #570.
 - Held until install policy is settled:
   install-gate mechanism (mise deps versus pnpm verify probe);
   in-repo lint artifact (fixed freshness check versus `./ts` source entry;
-  `--fix` loop measurement running);
+  measured cost of `./ts` is about 0.19 s per oxlint process);
   build guard (link 2);
   wrapper signal (link 4).
 - Unrelated incidents seen during research,
