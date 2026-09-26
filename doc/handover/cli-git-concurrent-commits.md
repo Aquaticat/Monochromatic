@@ -28,8 +28,25 @@ and the concurrent-commit benchmark.
 GitHub's ruleset reported one bypassed violation on the push:
 commit `8ed5daa61` is unsigned and authored by the test fixture identity `T <t@example.invalid>`;
 all 465 other commits in the range are signed by the owner.
-Cause under investigation;
-rewriting `main` would need the owner's authorization.
+Cause:
+the slice 2 subagent exported a smoke-test `HOME` and `GIT_CONFIG_GLOBAL` (identity `T`,
+ no signing) in one shell
+and then committed in the real worktree from that shell;
+no test or fixture wrote to a real worktree.
+A correction comment is on the commit,
+and issue #575 now covers this environment-override case.
+Rewriting `main` would need the owner's authorization.
+
+Cleanup done:
+issue #571 closed;
+the merged worktrees and the local and remote branches
+`feat/cli-git-concurrent-commits*`,
+`fix/cli-git-concurrent-commits-per-commit-cost-grows-with-history`,
+`fix/cli-git-manual-push-scans-already-published-history`,
+and `fix/cli-git-worktree-copy-stalls-and-blocks-linked-worktrees` are removed.
+The first commit through main's rebuilt wrapper (`e06d3d98c`) was signed,
+auto-pushed,
+and left no transaction state.
 
 ## Goal
 
