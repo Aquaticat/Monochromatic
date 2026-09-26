@@ -238,7 +238,7 @@ async function evaluate(
         ctx,
         action,
         approvalFingerprint,
-        explanation: `No judge model available; manual approval required. ${caughtValueText(judgeResult.err,)}`, 
+        explanation: `No judge model available; manual approval required. ${caughtValueText(judgeResult.err,)}`,
       },),
     };
   }
