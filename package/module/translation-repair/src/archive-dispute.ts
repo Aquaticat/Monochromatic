@@ -1,6 +1,10 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
+import {
+  NARRATIVE_DETAIL_IS_NOT_APPARATUS,
+  TRANSLATOR_NOTE_KIND,
+} from './page-apparatus-clause.ts';
 
 //region Archive dispute
 // A slice whose archive rendering the repair lane's adjudicators found to
@@ -225,6 +229,16 @@ export function logArchiveDisputes(
  clause is, so the writer, the slate judge, the gate and the contest read the
  same rule about the same detail.
 
+ THE ONE HUNDRED FORTY-FOURTH CLASS (hulicaijia27 chunk 69, 2026-09-26). The
+ same block made one panel's verdict final on every later sheet, whatever the
+ claim named. The panel accepted the archive's footnote 7, a note explaining
+ the pun between 晚安 and 金刚烷胺, as an addition 3 to 2, and the block told
+ the translate slate that no detail the claim names is apparatus: all four
+ judges voted the note out, one citing the accepted claim. So the block's
+ bar is narrative detail, stated as the page-apparatus clause bounds it,
+ which is what class one hundred eight's softened medication was; a claimed
+ note or gloss goes back to the apparatus rule.
+
  @param dispute - disputed slice
 
  @returns Block naming the claims and the rule, headed for the sheets
@@ -252,9 +266,12 @@ export function archiveDisputeNote(
     String(dispute.acceptedAdditions,)
   } ${DISPUTING_CATEGORY} claim(s) that the archive rendering says what the ORIGINAL never states; the claims: ${
     numbered
-  }. A detail those claims name is not page content and not the page's apparatus, in the archive's wording or `
-    + 'any softer one: a candidate leaving it out has dropped nothing, and a candidate keeping it carries an '
-    + 'accepted addition. Judge such a detail against the ORIGINAL alone.';
+  }. ${NARRATIVE_DETAIL_IS_NOT_APPARATUS} A detail those claims name that says what happened is not page content `
+    + 'and not the page\'s apparatus, in the archive\'s wording or any softer one: a candidate leaving it out has '
+    + 'dropped nothing, and a candidate keeping it carries an accepted addition. Judge such a detail against the '
+    + `ORIGINAL alone. A claim naming only the page's apparatus, a gloss of a name or a term or ${
+      TRANSLATOR_NOTE_KIND
+    }, does not make it an addition: judge it by the page-apparatus rule, as if no claim named it.`;
 }
 
 /**
