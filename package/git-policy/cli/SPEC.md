@@ -1011,9 +1011,21 @@ Installation cost therefore grows linearly with the entry count.
 A trailing log fragment without a line terminator is an unfinished append;
 recovery ignores it and truncates it before appending.
 A completion phase makes stage removal and journal removal recoverable in either crash order.
-A process-birth-identity lock serializes installation and recovery,
-rejects live contention after bounded acquisition,
-and reclaims stale PID reuse safely.
+A process-birth-identity lock serializes installation and recovery.
+An applicable source waits for an owner proven alive without a time limit,
+after writing one stderr line naming the owner's PID and the lock;
+while that owner lives the waiter only reads the owner record,
+and it attempts publication again once the owner releases,
+replaces,
+or no longer runs.
+A dead owner's lock,
+including PID reuse or an exited but unreaped process,
+is retired after re-reading that it still names that owner.
+An owner record that is unreadable or invalid proves nothing,
+so the waiter uses Git's jittered quadratic backoff for up to 1000 ms without a proven owner,
+then fails with a diagnostic listing that evidence and leaves the lock in place.
+The lock is released and retired by renaming it to a unique name before deleting it,
+so a concurrent publication is never emptied in place.
 
 Every later linked-worktree or bare-repository invocation checks for pending journals before forwarding
 without taking the settlement lock,
@@ -3236,7 +3248,8 @@ is retired by the next acquirer.
   `<git-common-dir>/cli-git/push/<encoded-ref>.lock`:
   unbounded wait while their owner lives.
 - Worktree-copy settlement lock:
-  unchanged bounded acquisition,
+  unbounded wait while its owner lives,
+  bounded wait for an owner record without evidence,
   held only by applicable sources
   (see "Linked-worktree ignored-state synchronization").
 

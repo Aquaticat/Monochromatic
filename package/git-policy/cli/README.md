@@ -112,7 +112,11 @@ and path containment before resuming an interrupted installation,
 including directories the interrupted owner created before applying their final modes.
 A journal whose worktree was removed or whose private stage is gone is discarded with a one-line notice.
 While another live cli-git process holds settlement,
-commands that do not create or move worktrees skip recovery rather than wait.
+commands that do not create or move worktrees skip recovery rather than wait,
+and a command that creates or moves worktrees waits for it without a time limit
+after printing one line naming the holder's PID.
+A settlement lock whose owner record proves nothing fails that command after about one second,
+leaving the lock in place.
 Malformed or unsafe recovery state fails closed and remains available for diagnosis.
 
 ## Policy authoring API
