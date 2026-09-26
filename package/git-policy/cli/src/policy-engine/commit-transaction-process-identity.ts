@@ -66,8 +66,9 @@ async function resolveLinuxIdentity(pid: number,): Promise<string | typeof PROCE
     return `linux:${startTick}`;
   }
   catch (error: unknown) {
+    // A process that exits between opening and reading its stat file makes the read fail with ESRCH.
     if (Error.isError(error,) && ('code' in error)
-      && (error.code === 'ENOENT'))
+      && ((error.code === 'ENOENT') || (error.code === 'ESRCH')))
       return PROCESS_IDENTITY_ABSENT;
     throw error;
   }
