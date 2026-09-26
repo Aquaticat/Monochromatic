@@ -26,6 +26,10 @@ import {
   pushTestExports,
 } from './internal-test-exports-push.ts';
 import {
+  type ReadsTestExports,
+  readsTestExports,
+} from './internal-test-exports-reads.ts';
+import {
   type ReplayTestExports,
   replayTestExports,
 } from './internal-test-exports-replay.ts';
@@ -76,6 +80,7 @@ export type InternalTestExports =
   & LandingTestExports
   & LockTestExports
   & PushTestExports
+  & ReadsTestExports
   & ReplayTestExports
   & Readonly<{
   /**
@@ -184,6 +189,7 @@ export const internalTestExports: InternalTestExports = Object.freeze({
   ...landingTestExports,
   ...lockTestExports,
   ...pushTestExports,
+  ...readsTestExports,
   ...replayTestExports,
   classifyTransactionOwner,
   CommitTransactionRecoveryError,

@@ -130,18 +130,16 @@ const POLICY_INPUT_SCHEMA = v.variant(
 );
 
 /**
- Resolved `inputs` value.
+ Resolved `inputs` value other than `'unrestricted'`,
+ validated on its own so an issue names the failing input rather than the whole union.
 
  @example
  ```ts
- v.parse(POLICY_INPUTS_SCHEMA, { external: [] });
+ v.parse(EXTERNAL_INPUTS_SCHEMA, { external: [] });
  ```
  */
-const POLICY_INPUTS_SCHEMA = v.union(
-  [
-    v.literal('unrestricted',),
-    v.strictObject({ external: v.array(POLICY_INPUT_SCHEMA,), },),
-  ],
+const EXTERNAL_INPUTS_SCHEMA = v.strictObject(
+  { external: v.array(POLICY_INPUT_SCHEMA,), },
   'inputs must be \'unrestricted\' or { external: [...] }',
 );
 
@@ -168,11 +166,13 @@ export function parsePolicyInputs({
   value: unknown;
   effectiveId: string;
 }>,): PolicyInputs {
+  if (value === 'unrestricted')
+    return value;
   /**
    Valibot outcome.
    */
   const parsed = v.safeParse(
-    POLICY_INPUTS_SCHEMA,
+    EXTERNAL_INPUTS_SCHEMA,
     value,
   );
   if (!parsed.success)
