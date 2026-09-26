@@ -330,7 +330,7 @@ the design scenarios must fail on today's build.
   nothing recovers them,
   so the bystander and every later commit fail with `EEXIST`.
 
-Earlier runs against the working tree at `2be50139e` also showed
+Earlier runs against a tarball packed from the working tree at `6b9981b7b` also showed
 `content-unavailable` "Incomplete transaction recovery artifacts" exits
 and one `ENOENT` on `lstat .git/cli-git-transaction`
 when a concurrent wrapper's recovery met another invocation's transaction directory mid-lifecycle.
