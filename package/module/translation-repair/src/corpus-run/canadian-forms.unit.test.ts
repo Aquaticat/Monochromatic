@@ -145,6 +145,18 @@ await describe({
       },
     },),
     it({
+      name: 'WRITES the handle word id as ID and leaves an id attribute and longer words (class one hundred sixty-nine)',
+      fn: async () => {
+        expect([
+          rewritten({ text: 'The kitten used this id on every site.', },),
+          rewritten({ text: '<Paw id="left" /> The kitten was idle.', },),
+        ],).toEqual([
+          'The kitten used this ID on every site.',
+          '<Paw id="left" /> The kitten was idle.',
+        ],);
+      },
+    },),
+    it({
       name: 'LEAVES markup, links, code, comments and emphasis untouched',
       fn: async () => {
         /**
