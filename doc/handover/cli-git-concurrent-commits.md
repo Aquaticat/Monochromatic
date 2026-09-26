@@ -112,6 +112,17 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
   and sign off before sending.
   Nothing was filed.
 
+## Owner working instructions
+
+- Work autonomously;
+  when two choices look equally good and promising,
+  build both and let the build show which is better.
+- Use as many worktrees as useful:
+  one per competing prototype,
+  branched from `feat/cli-git-concurrent-commits`.
+- Cull competing prototypes early once one clearly crowds out the others;
+  record the culled option and the evidence in the decision record.
+
 ## Cautions
 
 - Other sessions commit to `main` concurrently
