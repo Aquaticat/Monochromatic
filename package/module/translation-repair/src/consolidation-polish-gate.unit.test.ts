@@ -4,6 +4,7 @@
  @module
  */
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   expect,
@@ -190,6 +191,55 @@ await describe({
         expect(prose.includes('line structure',),).toBe(false,);
         expect(lined,).toContain('Markdown structure, or line structure',);
         expect(lined.includes('LINE BREAKS INSIDE A PARAGRAPH ARE THE PAGE\'S OWN WRAP',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'SHOWS A PROSE SLICE\'S PARAGRAPHS ON ONE LINE EACH, as they render, keeping hard breaks, blockquotes '
+        + 'and a line-structured slice as written (class one hundred fifty-three, XingZ6014, 2026-09-26: the '
+        + 'base stood as the archive\'s one-line paragraph beside a wrapped polish on slices 36, 61 and 64, and '
+        + 'three ballots weighed the polish\'s "added line breaks")',
+      fn: async () => {
+        /**
+         Subject whose base is one line and whose polish is wrapped.
+         */
+        const subject = {
+          sourceText: '猫猫整天在阳光下打盹，再也没有回家。\n\n猫猫说：\n\n> 晚安。',
+          archiveText: 'The cat napped in the sun all day and never came home.',
+          baseText: 'The cat napped in the sun all day and never came home.\n\nThe cat said:  \nfarewell.\n\n'
+            + '> Good night,\n> friend.',
+          polishedText: 'The cat dozed in the sun all day,\n  and never came home.\n\nThe cat said:\\\nfarewell.\n\n'
+            + '> Good night,\n> friend.',
+          mode: { kind: 'comparative', } as const,
+        };
+        /**
+         Candidates as a prose slice's gate reads them.
+         */
+        const prose = messageText({
+          message: nonNullishOrThrow(buildConsolidationPolishGateMessages({
+            subject: {
+              ...subject,
+              lineStructured: false,
+            },
+          },).at(1,),),
+        },);
+        /**
+         Candidates as a line-structured slice's gate reads them.
+         */
+        const lined = messageText({
+          message: nonNullishOrThrow(buildConsolidationPolishGateMessages({
+            subject: {
+              ...subject,
+              lineStructured: true,
+            },
+          },).at(1,),),
+        },);
+        expect(prose,).toContain('The cat dozed in the sun all day, and never came home.',);
+        expect(prose.includes('all day,\n',),).toBe(false,);
+        expect(prose,).toContain('The cat said:  \nfarewell.',);
+        expect(prose,).toContain('The cat said:\\\nfarewell.',);
+        expect(prose,).toContain('> Good night,\n> friend.',);
+        expect(lined,).toContain('The cat dozed in the sun all day,\n  and never came home.',);
       },
     },),
 
