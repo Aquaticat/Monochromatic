@@ -179,6 +179,66 @@ const [code] = await once(child, 'exit')
 if (code !== 0) throw new Error(`Lifecycle latency container exited with ${String(code)}`)
 '''
 
+[tasks.'perf:concurrent-commits']
+description = "Measure packed concurrent-commit throughput, lock holds, and lost races in a bounded container"
+depends = ["pack:npm"]
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFile, spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdir, readFile } = await import('node:fs/promises')
+const { join } = await import('node:path')
+const { promisify } = await import('node:util')
+const packageRoot = process.cwd()
+const evidenceRoot = join(packageRoot, 'dist/perf')
+await mkdir(evidenceRoot, { recursive: true })
+const execute = promisify(execFile)
+const manifest = JSON.parse(await readFile(join(packageRoot, 'package.json'), 'utf8'))
+const tarballName = `${manifest.name.replace('@', '').replace('/', '-')}-${manifest.version}.tgz`
+const tarballPath = join(packageRoot, 'dist/pack', tarballName)
+await readFile(tarballPath)
+const { stdout: revisionOutput } = await execute('/usr/bin/git', ['rev-parse', 'HEAD'], { cwd: packageRoot })
+const revision = revisionOutput.trim()
+const bootstrap = `
+const { execFile } = await import('node:child_process')
+const { mkdir } = await import('node:fs/promises')
+const { promisify } = await import('node:util')
+const run = promisify(execFile)
+await run('apt-get', ['update'])
+await run('apt-get', ['install', '--yes', '--no-install-recommends', 'git'])
+await mkdir('/work', { recursive: true })
+await run('npm', ['init', '--yes'], { cwd: '/work' })
+await run('npm', ['pkg', 'set', 'type=module'], { cwd: '/work' })
+await run('npm', ['install', '--ignore-scripts', '/fixture/cli.tgz'], { cwd: '/work' })
+await import('/work/perf/concurrent-commit-latency-benchmark.ts')
+`
+const child = spawn('podman', [
+  'run',
+  '--memory=2g',
+  '--cpus=2',
+  '--rm',
+  '--env',
+  `CLI_GIT_BENCHMARK_REVISION=${revision}`,
+  '--env',
+  'CLI_GIT_BENCHMARK_OUTPUT=/evidence/concurrent-commit-latency.json',
+  '--volume',
+  `${tarballPath}:/fixture/cli.tgz:ro,Z`,
+  '--volume',
+  `${evidenceRoot}:/evidence:rw,Z`,
+  '--volume',
+  `${join(packageRoot, 'perf')}:/work/perf:ro,Z`,
+  '--tmpfs',
+  '/work:rw,size=1g',
+  'docker.io/library/node:24-slim',
+  'node',
+  '--input-type=module-typescript',
+  '--eval',
+  bootstrap,
+], { stdio: 'inherit' })
+const [code] = await once(child, 'exit')
+if (code !== 0) throw new Error(`Concurrent-commit benchmark container exited with ${String(code)}`)
+'''
+
 [tasks.'e2e:concurrent:trace']
 description = "Mine anonymized commit shapes from repository history with real Git into e2e/commit-shape-trace.json"
 # Runs on the host with /usr/bin/git, bypassing the wrapper; the output holds shapes only
