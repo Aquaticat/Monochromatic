@@ -230,6 +230,53 @@ export const WORDING_GLOSSARY: readonly CommunityTerm[] = [
     why: 'a parent\'s insult for a child who will amount to nothing; an English parent says "good-for-nothing" or '
       + '"useless", and "no capability" is word for word',
   },
+  // CLASS ONE HUNDRED FIFTY-SIX (shihai4h1, 2026-09-26): 初中 shipped as
+  // "junior middle school", 自考 as "self-taught exams" and 压力话 as
+  // "subjected to pressured remarks". 初中 stands in five pinned entries, and
+  // four of the five archive passages that render it write "junior high
+  // school"; shihai4h's archive alone writes "junior middle school". 自考 and
+  // 压力话 stand on shihai4h alone, with no archive English.
+  {
+    term: '初中',
+    renderings: [
+      'junior high school',
+      'junior high',
+      'middle school',
+    ],
+    refusedForms: ['junior middle school',],
+    why: 'the three school years before senior high; a Canadian reader knows them as "junior high", and "junior middle '
+      + 'school" is word for word',
+  },
+  {
+    term: '自考',
+    renderings: [
+      'self-study examinations',
+      'self-study exams',
+      'self-study degree exams',
+    ],
+    refusedForms: [
+      'self-taught exam',
+      'self-taught examination',
+    ],
+    why: 'short for 高等教育自学考试, the state examinations that grant a degree to someone who studied on their own; '
+      + 'their English name is "self-study examinations", and an exam is never "self-taught"',
+  },
+  {
+    term: '压力话',
+    renderings: [
+      'pressured',
+      'nagged',
+      'pressure',
+    ],
+    refusedForms: [
+      'pressured remarks',
+      'pressure remarks',
+      'pressure words',
+      'pressuring words',
+    ],
+    why: 'remarks meant to push someone into line; English says she was pressured or nagged, and "pressured remarks" '
+      + 'is word for word',
+  },
 ];
 
 //endregion Wording renderings
