@@ -118,7 +118,32 @@ await describe({
           issue: ISSUE,
           filers: claimFilersOf({ attributions: ATTRIBUTIONS, },),
         },),).toBe(
-          `chunk 3: issue adjudicated/whisker-tail accepted major: ${LONE_CLAIM_ID} filed by ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER}: accuracy/omission major: Translation omits why the cat left the windowsill.; ${ORPHAN_CLAIM_ID} filed by nobody on record: accuracy/omission major: The cat is called a kitten.`,
+          `chunk 3: issue adjudicated/whisker-tail accepted major: ${LONE_CLAIM_ID} filed by ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER}, panel not on record: accuracy/omission major: Translation omits why the cat left the windowsill.; ${ORPHAN_CLAIM_ID} filed by nobody on record, panel not on record: accuracy/omission major: The cat is called a kitten.`,
+        );
+      },
+    },),
+    it({
+      name: 'NAMES THE PANEL behind each claim, every voter with its vote (hulicaijia26, 2026-09-26: the owner asked who '
+        + 'accepted a translator note as an addition, and the log line named its filer alone)',
+      fn: async () => {
+        expect(describeIssueFiling({
+          sliceIndex: 3,
+          issue: {
+            ...ISSUE,
+            readings: {
+              [LONE_CLAIM_ID]: {
+                ballots: [
+                  { panelistId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, vote: 'supported', weight: 1, },
+                  { panelistId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, vote: 'unsupported', weight: 1, },
+                ],
+                configuredPanelists: 2,
+                tally: { supported: 1, unsupported: 1, ambiguous: 0, sourceDefect: 0, abstain: 0, },
+              },
+            },
+          },
+          filers: claimFilersOf({ attributions: ATTRIBUTIONS, },),
+        },),).toBe(
+          `chunk 3: issue adjudicated/whisker-tail accepted major: ${LONE_CLAIM_ID} filed by ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER}, panel ${SEAT_HYPER_OPENROUTER_VISION_EDITOR} supported, ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER} unsupported: accuracy/omission major: Translation omits why the cat left the windowsill.; ${ORPHAN_CLAIM_ID} filed by nobody on record, panel not on record: accuracy/omission major: The cat is called a kitten.`,
         );
       },
     },),
