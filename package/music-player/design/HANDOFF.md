@@ -5982,9 +5982,9 @@ until that design refinement is explicitly reviewed.
 Details,
 including the same-APK opt-out failure control and private capture boundaries,
 are in `package/music-player/design/evidence/search-result-overflow.md`.
-Proceed with non-exempt IME heights,
-result actions,
-accessibility and E2's open numeric informational floor;
+The later stop instruction supersedes further non-exempt IME probing.
+Result actions,
+accessibility and E2's open numeric informational floor remain separate;
 no production Search work is authorized.
 
 ## Non-exempt stepped IME and reservation comparison
@@ -6011,8 +6011,8 @@ Neither count estimates an unrecorded duration or certifies other IMEs.
 At 100% under a 330dp debug keyboard,
 that pre-reservation left 230px below the complete deck and shortened the
 browser even though the vertical deck already fitted 415dp at 100%.
-A new **unaccepted** scale-scoped reservation comparison is being built;
-it attempts to avoid that unnecessary 100% tradeoff,
+A later **unaccepted** scale-scoped reservation comparison was built;
+it avoids that unnecessary 100% tradeoff in the sampled states,
 not to establish universal keyboard compliance.
 
 A bounded TalkBack probe exposed Folders,
@@ -6026,3 +6026,53 @@ but did not prove app-mode traversal or activation.
 The guest's original accessibility settings were restored.
 Full screen-reader traversal remains under #118,
 and the D50 timing/space tradeoff remains unaccepted.
+
+## Scale-scoped IME evidence and cover viewport review
+
+The debug-only scale-scoped reservation build from `3541587ec` was installed
+with matching APK SHA-256
+`ecc1ed1a68331564e6925a0d0d65d2be826af5143f4decd0f272a98bb01ee0bb`.
+It reserves 416dp at `fontScale >= 2f` in this prototype,
+while the tested 100% branch retains the selected vertical deck.
+At 100%,
+the sampled 330dp,
+400dp and 415dp states kept the whole deck with Folders/Open.
+At 200%,
+a recorded 375dp to 400dp transition retained five detected mode outlines
+in all 23 sampled frames;
+outline detection is not proof of speech,
+activation or universal keyboard fit.
+A native screenshot labeled 400dp visibly shows a complete deck above the keyboard,
+but the sampled 200% 330dp and purported 400dp hierarchy dumps reported
+identical app bounds.
+Those dumps alone do not establish a separate settled 400dp layout.
+The measured 200% reservation still costs browser space;
+no reservation or inline variant was accepted.
+The bounded findings and capture qualifications are in
+`package/music-player/design/evidence/ime-transition-height-study.md`.
+#114 closes only documentation of this existing comparison,
+not general D50 compliance.
+The user requested **no further IME experiments** without a compelling reason
+argued to them first.
+Do not use synthetic keyboard heights to infer untested real-Gboard behavior.
+
+A separate folded-cover results viewport question is available at
+`package/music-player/design/questions/cover-viewport-review.html`.
+It compares sanitized native 1080 × 2424 captures from the same debug APK:
+the current cover list leaves row 18 behind a 300dp bottom keyboard even
+at the scroll endpoint;
+the cover-only opt-in list can scroll the entire row and its supporting line
+above that keyboard.
+The screenshots replace the full status strip and omit PNG metadata;
+private raw captures must not be published.
+The user's answer to the review's explicit R-versus-C question is **pending**.
+Do not change `decisions.md`,
+`questions/current.html`,
+the production app,
+or the selected inner Search for this unaccepted comparison.
+Refocus requires another swipe in the measured opt-in state;
+that interaction,
+Back/Clear and result ranking/actions remain #116,
+inner floating-keyboard result-lettering overlap remains #122,
+E2's informational `min_padding` remains #120,
+and full Search accessibility traversal remains #118.

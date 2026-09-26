@@ -549,8 +549,9 @@ Neither inline reflow nor the 416dp reservation is accepted.
 ## Scale-scoped reservation comparison and stop point
 
 Prototype commit `3541587ec` added an **unaccepted** `-scalereserve-` comparison to the debug-only Search study.
-It uses the earlier 416dp anticipatory bottom reservation only at the tested 200% text scale;
-at 100% it keeps the selected vertical deck and its ordinary IME inset.
+Its debug branch reserves 416dp when `fontScale >= 2f`;
+the captured 200% text scale takes that branch,
+while captured 100% keeps the selected vertical deck and its ordinary IME inset.
 The installed debug APK matched the built SHA-256
 `ecc1ed1a68331564e6925a0d0d65d2be826af5143f4decd0f272a98bb01ee0bb`.
 This fixture does not change production Search or the selected A review.
@@ -567,11 +568,14 @@ not replaced by a caption.
 At 200% text under 330dp,
 the reserved inline deck ended at y `1118` while the keyboard began at y `1348`,
 retaining the 230px clearance **at that scale**.
-At 400dp (keyboard top y `1177`),
-its final mode still ended at y `1118`;
+A native image labeled 400dp showed a keyboard top at approximately y `1177`
+and the complete final mode ending at y `1118`;
 Folders,
 Open,
-query and both short results remained visible in the native capture.
+query and both short results were visible in that image.
+However,
+the companion 200% hierarchy dumps at 330dp and purported 400dp reported identical app bounds;
+those dumps alone do not independently establish a distinct **settled** 400dp endpoint.
 After Back hid the keyboard at 200%,
 the last mode returned to `[73,1904][965,2035]` and the upper-left browser expanded.
 
@@ -580,8 +584,11 @@ an existing five-outline image check found the complete mode in all 23,
 with its last border at video y `558` while the keyboard edge moved from y `619` to y `588`.
 An inspected frame shows the actual painted border,
 not only accessibility node bounds.
-The earlier same-APK early-inline comparison lost the border in 3 of 22 sampled IME-visible frames;
-its pre-reserved control retained all borders in 24 of 24.
+On the earlier early-inline APK,
+that variant lost the border in 3 of 22 sampled IME-visible frames;
+its same-APK pre-reserved control retained all borders in 24 of 24.
+The later scale-scoped APK is a separate recording.
+Detected outlines do not establish mode readability or activation.
 These categorical observations do not measure clip duration,
 every unrecorded frame,
 or any real Gboard transition.

@@ -77,7 +77,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, .stage:focus-
   outline-offset: 0.1875rem;
 }
 fieldset { border-width: 0; padding-inline: 0; padding-block: 0; margin-inline: 0; margin-block: 0.8rem; }
-label { display: block; padding-block: 0.45rem; }
+label { display: block; min-block-size: 3rem; padding-block: 0.45rem; }
 textarea {
   display: block;
   inline-size: min(100%, 50rem);
@@ -110,23 +110,23 @@ dialog::backdrop { background-color: var(--color-backdrop); }
 .device {
   --scale: 1;
   position: relative;
-  inline-size: calc(31.4rem * var(--scale));
-  block-size: calc(65.825rem * var(--scale));
+  inline-size: calc(502.4px * var(--scale));
+  block-size: calc(1053.2px * var(--scale));
   margin-inline: auto;
   border-width: 0.125rem;
   border-style: solid;
   border-color: var(--color-edge);
-  border-radius: calc(2.7rem * var(--scale));
+  border-radius: calc(43.1px * var(--scale));
   background-color: var(--color-chassis);
 }
 .screen {
   position: absolute;
-  inset-inline-start: calc(1.81875rem * var(--scale));
-  inset-block-start: calc(1.81875rem * var(--scale));
-  inline-size: calc(27.69230625rem * var(--scale));
-  block-size: calc(62.15384375rem * var(--scale));
+  inset-inline-start: calc(29.1px * var(--scale));
+  inset-block-start: calc(29.1px * var(--scale));
+  inline-size: calc(443.0769px * var(--scale));
+  block-size: calc(994.4615px * var(--scale));
   overflow: hidden;
-  border-radius: calc(1.88625rem * var(--scale));
+  border-radius: calc(30.18px * var(--scale));
   background-color: var(--color-chassis);
 }
 .screen img { display: block; inline-size: 100%; block-size: 100%; }
@@ -134,7 +134,7 @@ dialog::backdrop { background-color: var(--color-backdrop); }
   position: absolute;
   inset-inline-start: 0;
   inset-block-start: 15%;
-  inline-size: calc(0.35rem * var(--scale));
+  inline-size: calc(5.6px * var(--scale));
   block-size: 70%;
   border-radius: 0.25rem;
   background-color: var(--color-edge);
@@ -148,7 +148,7 @@ dialog::backdrop { background-color: var(--color-backdrop); }
   <h1>Make the last Search match scroll above a docked keyboard?</h1>
   <div class="intro">
     <p><strong>What changed:</strong> Only the folded cover's scrolling results viewport is tested with keyboard-aware bottom space. The integrated Back/query/Clear header and positive results directly beneath it stay the same. The unfolded right-side Search, actual upper-left folder browser and bottom-left playback deck do not change. Neither comparison is accepted as a new design or production work.</p>
-    <p>Inspect the last row and its supporting text at the end of a 200% text-scale result list. Both captures use the same installed debug APK, synthetic long-title fixture, 300dp debug keyboard and 1080 × 2424 physical-pixel cover. The dark keyboard is <strong>not Gboard</strong>; these images do not prove every real keyboard height, transition frame, result action or accessibility traversal.</p>
+    <p>Inspect the last row and its supporting text at the end of a 200% text-scale result list. Both captures use the same installed debug APK, synthetic long-title fixture, 300dp debug keyboard and 1080 × 2424 physical-pixel cover. The dark keyboard is <strong>not Gboard</strong>; these images do not prove every real keyboard height, transition frame, result action or accessibility traversal. The tested APK hash and further settled Gboard evidence are recorded in <code>package/music-player/design/evidence/search-result-overflow.md</code>. All status-strip pixels in these published captures have been replaced with a generic clock and icons; raw captures remain private.</p>
   </div>
 </header>
 <section aria-labelledby="comparison-title">
@@ -161,17 +161,17 @@ dialog::backdrop { background-color: var(--color-backdrop); }
       <h3>Pros</h3>
       <ul><li>Row 18 and its supporting line are readable after scrolling while this bottom keyboard is open.</li><li>The query remains fixed and editable; no repeated positive-results heading appears.</li></ul>
       <h3>Cons</h3>
-      <ul><li>Fewer rows fit at once; after hiding and refocusing the keyboard, another swipe may be needed.</li><li>Only measured settled states are validated, not arbitrary keyboards or animation frames.</li></ul>
+      <ul><li>After hiding and refocusing the keyboard, the measured prototype required another swipe to recover the final row; that refocus behavior remains open under #116.</li><li>Intermediate resizing, other keyboard heights and TalkBack traversal have not been validated.</li></ul>
       <p><strong>My read:</strong> Recommend for this cover-only overflow behavior, subject to your acceptance. It preserves the selected composition while letting the list reach its end.</p>
     </article>
     <article class="choice" data-option="control">
       <h2>C · Keep the current cover viewport</h2>
-      <img id="control-image" src="__CONTROL_IMAGE__" alt="Same folded cover fixture and keyboard, with the final three Camellia archive rows behind the keyboard after scrolling to the list end" width="1080" height="2424">
+      <img id="control-image" src="__CONTROL_IMAGE__" alt="Same folded cover fixture and keyboard, with the final Camellia archive row hidden behind the keyboard after scrolling to the list end" width="1080" height="2424">
       <button type="button" data-preview="control">Inspect C at device size</button>
       <h3>Pros</h3>
-      <ul><li>No additional keyboard-aware viewport behavior or reflow is introduced.</li><li>The closed-keyboard list retains its current layout.</li></ul>
+      <ul><li>No additional keyboard-aware viewport behavior or reflow is introduced.</li><li>It preserves the already selected cover layout when the keyboard opens, at the cost of covered matches.</li></ul>
       <h3>Cons</h3>
-      <ul><li>Rows 16 to 18 remain unreachable above this open bottom keyboard even after another swipe.</li><li>The user must dismiss the keyboard to see those matches, unlike the measured floating-keyboard exception D55.</li></ul>
+      <ul><li>The final row stays at y 2151 to 2254, behind this keyboard beginning at y 1693, even after another end-of-list swipe.</li><li>The user must dismiss the bottom keyboard to see that match; D55 applies only to the measured floating-keyboard overlap.</li></ul>
       <p><strong>My read:</strong> Fallback if keeping the current behavior matters more than accessing every match while typing.</p>
     </article>
   </div>
@@ -179,7 +179,7 @@ dialog::backdrop { background-color: var(--color-backdrop); }
 </section>
 <section aria-labelledby="answer-title">
   <h2 id="answer-title">Decision: folded-cover result viewport only</h2>
-  <p>Do you accept R's keyboard-aware cover result viewport, keep C's present behavior, or prefer another treatment? This question does not reopen selected A, D53 to D55, or the unfinished inner-panel keyboard and accessibility decisions.</p>
+  <p>Do you accept R's keyboard-aware cover result viewport, keep C's present behavior, or prefer another treatment? Acceptance selects only the cover viewport direction, not the observed extra swipe on refocus, Search ranking or actions, Back/Clear/focus behavior (#116), TalkBack traversal (#118), the separate inner floating-keyboard result overlap (#122), or production implementation. Keeping C does not resolve the overflow finding.</p>
   <form id="answer-form">
     <fieldset><legend>Choose one direction, if ready</legend>
       <label><input type="radio" name="coverViewport" value="Accept R"> Accept R, the cover-only keyboard-aware results viewport</label>
@@ -237,7 +237,9 @@ document.querySelectorAll('[data-preview]').forEach(button => {
   });
 });
 document.querySelector('#fit').addEventListener('click', () => {
-  scale = Math.min(1, (stage.clientWidth - 32) / 502.4, (stage.clientHeight - 32) / 1053.2);
+  const horizontalInset = parseFloat(getComputedStyle(stage).paddingInlineStart) * 2;
+  const verticalInset = parseFloat(getComputedStyle(stage).paddingBlockStart) * 2;
+  scale = Math.min(1, (stage.clientWidth - horizontalInset) / 502.4, (stage.clientHeight - verticalInset) / 1053.2);
   renderScale();
 });
 document.querySelector('#reset').addEventListener('click', () => { scale = 1; renderScale(); });

@@ -197,4 +197,26 @@ The cover viewport comparison is **not adopted** for production or inserted
 into the accepted A review.
 Raw status-bearing screenshots and hierarchies remain private.
 
+## Review artifact awaiting selection
+
+`package/music-player/design/questions/cover-viewport-review.html` compares the
+same-APK 200% opt-out failure control with the opt-in end-of-list state;
+it does not replace the selected A review.
+Its public captures are `questions/render/search-cover-viewport-control-s200.png`
+and `questions/render/search-cover-viewport-refinement-s200.png`.
+Every pixel in the top 151px status strip was replaced with the same
+visually checked generic 9:41 clock and signal/battery icon strip from the
+previously published selected-cover review.
+The source-to-public pixel difference below that strip was exactly zero in
+both captures;
+no PNG text,
+profile,
+EXIF or timestamp chunks remained.
+The reference strip itself contains no notification or account text.
+Only the **cover viewport direction** is being asked of the user;
+refocus position,
+Back/Clear/focus,
+ranking/actions and TalkBack traversal remain open.
+The recommendation is not an adopted decision or permission to implement.
+
 [compose-insets]: https://developer.android.com/develop/ui/compose/system/insets-ui
