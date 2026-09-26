@@ -7,6 +7,15 @@ The user requested migration to [Laya] and explicitly requested grilling before 
 Do not implement until shared understanding is confirmed.
 No dependency, production configuration, or runtime changes have been made for this task.
 
+The user subsequently restricted research explicitly:
+
+> Only look at Laya. No alternatives.
+
+Run a Laya-only feasibility and migration audit.
+Do not search for, evaluate, or rank competing technologies.
+The incumbent is a responsibility/parity baseline, not a competing candidate.
+Do not expand this interview into selecting another model provider.
+
 [Laya]: https://github.com/NandhaKishorM/laya
 
 ## Confirmed motivation
@@ -42,7 +51,8 @@ No claim of safety parity, cost savings, or adequate local performance has been 
 Settled: A.
 Auto-mode must make zero coding-plan judge requests, including fallback.
 The main coding agent's normal provider traffic is outside this boundary.
-Whether a separate metered API may receive escalation remains unanswered.
+Do not propose a different model provider as fallback under the Laya-only scope.
+Manual approval is the fallback direction established by Q3.
 
 ### Q3: Safety and interruption tradeoff
 
@@ -61,11 +71,12 @@ Do not treat model confidence alone as proof of safe authorization.
 - Establish a labelled guard-action corpus, including negation and adversarial inputs.
 - Measure current judge calls and costs without exporting private transcripts.
 - Define deployment, error handling, explanations, rollout, rollback, and acceptance criteria.
-- Complete applicable technology vetting before recommending Laya as a safety decision authority.
+- Complete Laya source, provenance, security, and runtime vetting before granting decision authority.
+- Skip competing-candidate discovery and ranking because the user explicitly excluded alternatives.
 
 ## Next action
 
 Inspect the incumbent policy surface and Laya input and deployment boundaries.
-Ask whether metered-API escalation is acceptable.
+Resolve deployment scope and any user-visible policy changes required by the Laya boundary.
 Recompute the remaining interview frontier from the source findings.
 Keep implementation blocked until the complete design is confirmed.
