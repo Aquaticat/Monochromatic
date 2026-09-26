@@ -217,7 +217,7 @@ export async function stageContent({
    Written blob.
    */
   const oid = execFileSync(REAL_GIT, ['hash-object', '-w', '--stdin',], { cwd: repository.path, env: repository.env, input: content, },).toString('utf8',).trim();
-  await git({ repository, args: ['update-index', '--cacheinfo', `100644,${oid},${path}`,], },);
+  await git({ repository, args: ['update-index', '--add', '--cacheinfo', `100644,${oid},${path}`,], },);
   return oid;
 }
 
