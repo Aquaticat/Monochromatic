@@ -238,9 +238,6 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     val measuredOverflow = restingDeckHeight == 0 || restingDeckHeight + dividerPx > availableAboveIme
     val bannerFit = if (autoFitStudy) keyboardShown && measuredOverflow
         else bannerHeightStress && reportedImeInset >= BANNER_STRESS_INSET_PX
-    val extraBottom = if (autoFitStudy && liftWithIme) {
-        with(density) { (targetBottom - reportedImeInset).toDp() }
-    } else 0.dp
     SideEffect {
         val visible = if (Build.VERSION.SDK_INT >= 30) platformInsets?.isVisible(imeType) else null
         val rectangles = if (Build.VERSION.SDK_INT >= BOUNDING_RECT_API_LEVEL) {
@@ -251,8 +248,10 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
             "restingDeck=$restingDeckHeight available=$availableAboveIme " +
             "visible=$visible boundingRects=$rectangles stress=$bannerFit")
     }
+    // The platform target selects the layout only. Layout-time imePadding owns
+    // bottom reservation; mixing it with a composition-time delta clipped two recorded frames.
     Row(modifier = Modifier.fillMaxSize().background(pageColor)
-        .then(if (liftWithIme) Modifier.imePadding().padding(bottom = extraBottom) else Modifier)) {
+        .then(if (liftWithIme) Modifier.imePadding() else Modifier)) {
         SearchFoldDeckHost(light = light, modifier = Modifier.weight(1f),
             deckFirst = !liftWithIme, deckFullHeight = liftWithIme, bannerFit = bannerFit,
             compactForBrowser = retainBrowser && keyboardShown,
