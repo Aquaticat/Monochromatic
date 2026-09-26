@@ -5986,3 +5986,43 @@ Proceed with non-exempt IME heights,
 result actions,
 accessibility and E2's open numeric informational floor;
 no production Search work is authorized.
+
+## Non-exempt stepped IME and reservation comparison
+
+Under the debug-only stepped system keyboard,
+the unchanged selected inner A kept its complete deck and Folders/Open
+browser at **100% text** through measured 400dp and 415dp endpoints.
+At **200% text** and the 400dp endpoint,
+the same vertical deck's last mode lost its rounded bottom and the folder
+header disappeared;
+D54's accepted brief real-Gboard banner does not exempt this separate
+steady synthetic state.
+Details and installed artifact hashes are in
+`package/music-player/design/evidence/ime-transition-height-study.md`.
+
+Prototype commit `f674da786` adds an unaccepted early-inline 200% comparison
+without a fixed keyboard-space reservation.
+On one same-APK 375dp to 400dp in-place jump,
+three of 22 sampled IME-visible frames showed the last mode border hidden;
+the first four and later frames showed it complete.
+The original unaccepted 416dp pre-reservation on the same APK retained all
+five mode borders in 24 sampled IME-visible frames.
+Neither count estimates an unrecorded duration or certifies other IMEs.
+At 100% under a 330dp debug keyboard,
+that pre-reservation left 230px below the complete deck and shortened the
+browser even though the vertical deck already fitted 415dp at 100%.
+A new **unaccepted** scale-scoped reservation comparison is being built;
+it attempts to avoid that unnecessary 100% tradeoff,
+not to establish universal keyboard compliance.
+
+A bounded TalkBack probe exposed Folders,
+Open,
+query and four mode descriptions in the accessibility hierarchy at 100%
+and 200% with the pre-reserved keyboard.
+The 200% screenshot showed green TalkBack focus on the query with the 400dp
+keyboard present;
+a 100% interaction moved focus to the debug keyboard,
+but did not prove app-mode traversal or activation.
+The guest's original accessibility settings were restored.
+Full screen-reader traversal remains under #118,
+and the D50 timing/space tradeoff remains unaccepted.
