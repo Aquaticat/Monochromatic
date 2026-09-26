@@ -8082,6 +8082,52 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## yingying12 read, 2026-09-26: class one hundred fifty-two
+
+### What the run did
+
+yingying12 (frozen `.frozen-dist-0de47d546`, classes one hundred fifty and fifty-one)
+SETTLED at 10:35 UTC in 10.4 min, one attempt,
+Bedrock 20.43 to 20.39 and OpenRouter 48.17 to 48.01 by the meters.
+Synthetic and Hyper read dry throughout.
+
+Every yingying11 check held:
+front matter equal, 1 heading, 2 markers and 2 definitions as the archive,
+the References line kept, "Yingying" in [^2] where the archive has "Sakura",
+"May you" in the second person, no TA, no Han, no double blank line,
+no unendorsed or gate-kept standing, 2 abstention lines.
+Neither the class one hundred fifty nor the class one hundred fifty-one floor applies to this page.
+
+The polish gate's ballot lines (class one hundred fifty's logging) ran three times, 12 ballots:
+the first slice shipped the polish 3 to 1
+("riding her bike", "a toothpaste box marked with the Intel logo; she said it made everyone who went into her washroom burst out laughing").
+
+### Class one hundred fifty-two: the polish gate weighed a prose slice's wrap
+
+The third gate run tied 2 to 2 and the base shipped
+"It is a pity that all this stopped abruptly;
+she lost her life forever in a car accident."
+deepseek-v4.1-flash chose the polish for replacing "the stiff calque";
+inception/mercury-2.5 kept the base because the polish "changes line structure",
+and on the second gate run gemma-4-26b and Mercury both cited the polish's line breaks.
+The comparative policy named "line structure" among what the polish may not change,
+yet on a prose slice both candidates are wrapped at their semantic boundaries by one rule before the gate
+(`consolidation-polish-round.ts`), so where either breaks a line follows from its wording and is nobody's choice.
+
+`comparativePolishPolicy` (`consolidation-polish-gate-wire.ts`) now keeps "line structure" only where the line rule governs the slice
+and otherwise tells the gate that line breaks inside a paragraph are the page's own wrap, never to be weighed;
+`ConsolidationPolishGateSubject` carries the slice's `lineStructured`, threaded from the polish round.
+The required-correction policy never named line structure and is unchanged.
+Guard `7d5d3fe75` (the gate test's prose and line-structured sheets) red on the class one hundred fifty-one build,
+fix `1dd8ebc52`, lint 0/0, types clean.
+
+### Observations not built
+
+- google.gemma-4-e2b's first-gate ballot reason is incoherent ("changing 'riding her bike' to 'riding her bike'");
+  one ballot is not the evidence a cull needs, so its gate ballots are watched on the next runs.
+- "hardcore video Bilibili account" and "items related to electronic devices" stay close to the Chinese;
+  the gate judged them faithful and the polish that would change them lost only on the wrap.
+
 ## shi_Yumiaoya37 read, 2026-09-26: the attempt said, and class one hundred fifty-one
 
 ### What the run did

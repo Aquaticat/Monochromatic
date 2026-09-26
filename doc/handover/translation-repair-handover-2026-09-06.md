@@ -4777,7 +4777,17 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  CLASS ONE HUNDRED FIFTY-ONE BUILT (2026-09-26), NOT YET RUN:
+1.  CLASS ONE HUNDRED FIFTY-TWO BUILT (2026-09-26), RUNNING ON XINGZ6014:
+    yingying12's polish gate tied 2 to 2 and shipped the calque "It is a pity that all this stopped abruptly",
+    both base ballots citing the polish's line breaks on a prose slice both candidates were wrapped by one rule.
+    `comparativePolishPolicy` keeps line structure only where the line rule governs and otherwise tells the gate
+    line breaks inside a paragraph are the page's own wrap; the gate subject carries `lineStructured`.
+    Guard `7d5d3fe75`, fix `1dd8ebc52`; XingZ6014 launched 10:38 UTC on `.frozen-dist-1dd8ebc52`
+    (pid 1441286, scope `pass-XingZ6014`); full suite running to `suite-class152.log`.
+    YINGYING12 READ: SETTLED at 10:35 UTC in 10.4 min on `.frozen-dist-0de47d546`, every yingying11 check held;
+    recorded under "## yingying12 read" in the pass log.
+    Next: read XingZ6014 (the gate ballots on prose slices naming no line structure), then a shi_Yumiaoya run for 逆子.
+    CLASS ONE HUNDRED FIFTY-ONE BUILT (2026-09-26), RAN ON YINGYING12 (NOT EXERCISED; NO 逆子 ON THAT PAGE):
     the father's insult 「逆子」 shipped "rebellious child" on shi_Yumiaoya36 and 37,
     dropping the "son" that misgenders her; 逆子 joins the community glossary
     ("unfilial son" first, Han refused, "child" named to the judges as evidence),
@@ -4787,7 +4797,6 @@ each read off the pass log and the shipped page:
     the class one hundred fifty floor silent (the bench said it); 28 polish-gate ballot lines with reasons;
     every shi_Yumiaoya36 check held; recorded under "## shi_Yumiaoya37 read" in the pass log.
     Unit runner note: PASS lines are one per `describe`, FAIL lines one per test.
-    Next: commit once git is free, then yingying, then XingZ60, then a shi_Yumiaoya run for 逆子.
     CLASS ONE HUNDRED FIFTY BUILT (2026-09-26), RAN ON SHI_YUMIAOYA37:
     shi_Yumiaoya36 shipped "she overdosed in the early hours of January 16" for 吞下大量药物自杀,
     a survived attempt shi_Yumiaoya14 and 35 had rendered "attempted suicide";
