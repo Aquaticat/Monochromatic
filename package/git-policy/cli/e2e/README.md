@@ -322,68 +322,67 @@ so a replay reproduces the workload exactly but can land a free-running race dif
 ## Results on the current build
 
 Seed 1,
-2026-09-25,
-packed from the `feat/cli-git-concurrent-commits` working tree at `976a2c00e`,
-which included other agents' uncommitted slice 1 edits under `src/`
-(the parallel-commit slices are not implemented yet).
-This is the suite's positive control:
-the design scenarios must fail on today's build.
+2026-09-26,
+packed from `feat/cli-git-concurrent-commits` at `51d21a221`
+(slice 3:
+replay,
+revalidation,
+hook-staged trees,
+shadow-store preparation,
+phase markers,
+and the zombie and dead-lander recovery fixes),
+66 scenario runs.
 
 ### Passing
 
 - Every baseline on both Git versions:
   19 passes,
   plus `baseline-hooks-config` skipped on 2.40.0.
-- `branch-switch-during-commit` on both versions:
-  today the held native commit keeps `index.lock`,
-  so the wrapper's `git switch` fails and the commit lands on `main`,
-  which the invariants accept.
-- `sigkill-post-commit` on both versions:
-  native Git has released its locks before `post-commit`.
-- `sigkill-offset`:
-  passed on both versions in one run and failed on 2.40.0 in the replay,
-  because the seeded offset landed before or after the native commit released `index.lock`.
+- On both versions:
+  `concurrent-disjoint-paths`,
+  both shared-file scenarios
+  (non-overlapping hunks land through replay;
+  overlapping hunks end with one `concurrent-commit/replay-conflict`),
+  `hooks-hookdir-concurrent`,
+  `ssh-signing-concurrent`,
+  `lint-staged-stash-concurrent`,
+  `branch-switch-during-commit`,
+  `foreign-index-lock-holder`,
+  `gc-prune-during-commits`,
+  every `sigkill-*` hook and offset scenario,
+  and every `sigkill-phase-*` scenario;
+  `hooks-config-concurrent` on 2.55.0.
+- `concurrent-trace-replay` on 2.40.0 and `interleaved-index-writers` on 2.55.0.
+
+The slice 2 build hung until the scenario timeout in the three `sigkill-*` hook scenarios:
+the harness is PID 1 in the container and never reaps the killed group's orphans,
+and a zombie still answers `kill(pid, 0)` with its start time,
+so lock liveness checks kept waiting on it.
+Owner liveness now treats Linux states `Z` and `X` as exited.
 
 ### Failing, and why
 
-- `concurrent-disjoint-paths`,
-  `hooks-hookdir-concurrent`,
-  `hooks-config-concurrent`,
-  `ssh-signing-concurrent`,
-  `lint-staged-stash-concurrent`,
-  `amend-during-commits`,
-  and `foreign-index-lock-holder` (`all-commits-succeed` or `bystanders-succeed`):
-  every commit after the first exits `2` with `engine-failure` `transaction-failed`,
-  `EEXIST` on `index.lock`
-  (78 such exits in the recorded run).
-  The foreign holder case shows the wrapper does not wait for a live holder.
-- `shared-file-non-overlapping-hunks` (`all-commits-succeed`)
-  and `shared-file-overlapping-hunks` (`conflict-reported`):
-  the second agent exits `2` with the same `EEXIST` instead of landing through replay
-  or failing as a reported conflict.
-- `concurrent-trace-replay` and `interleaved-index-writers`
-  (`all-commits-succeed`,
-  `command-succeeds`):
-  `git add` exits `128` while a commit holds `index.lock`,
-  so later commits of the never-staged new files fail with
-  `error: pathspec ... did not match any file(s) known to git`.
-- `gc-prune-during-commits` (`all-commits-succeed`):
-  `gc --prune=now` deletes the blob the held native commit had written,
-  and that commit fails with `error: invalid object ... for 'held.txt'`.
-- `sigkill-pre-commit`,
-  `sigkill-prepare-commit-msg`,
-  and `sigkill-commit-msg`
-  (`no-leftovers`,
-  `bystander-succeeds`,
-  `follow-up-commit-succeeds`):
-  killing a native clean commit inside a hook leaves `index.lock` and `next-index-<pid>.lock`;
-  nothing recovers them,
-  so the bystander and every later commit fail with `EEXIST`.
-
-Earlier runs against a tarball packed from the working tree at `6b9981b7b` also showed
-`content-unavailable` "Incomplete transaction recovery artifacts" exits
-and one `ENOENT` on `lstat .git/cli-git-transaction`
-when a concurrent wrapper's recovery met another invocation's transaction directory mid-lifecycle.
+- `amend-during-commits` on both versions (`remote-contains`):
+  the amend won the race and landed,
+  and the three commits replayed onto it and exited `0`.
+  The amended history cannot fast-forward the remote,
+  so auto-push cannot publish the three commits on top of it.
+  `remote-contains` exempts amends but not their descendants;
+  this is an invariant question for the auto-push slice,
+  not a lost commit.
+- `concurrent-trace-replay` on 2.55.0 (`all-commits-succeed`):
+  two or three in-flight trace commits edit `trace/p1538`,
+  each writing its edit on top of the worktree bytes that already hold an earlier in-flight commit's edit.
+  Replay merges from each commit's preparation base,
+  so adjacent edits conflict and the later commits exit `1` with `concurrent-commit/replay-conflict`,
+  as the accepted design specifies for overlapping hunks.
+  The scenario expects every commit to land;
+  whether it should accept replay conflicts on shared paths,
+  as the shared-file scenario does,
+  is open.
+- `interleaved-index-writers` on 2.40.0 (`command-succeeds`):
+  a `git add` exited `128` on `index.lock` while a landing held it.
+  Waiting index writers are the index-lock classification slice.
 
 ## Open problems
 
