@@ -87,6 +87,8 @@ export const finalNewlinePolicy: RuntimePolicyDefinition = {
   name: 'final-newline',
   defaultSeverity: 'warn',
   warnSafe: true,
+  // Reads only candidate bytes; its exclusions are fixed paths.
+  inputs: { external: [], },
   triggers: [
     'pre-forward',
     'post-commit',

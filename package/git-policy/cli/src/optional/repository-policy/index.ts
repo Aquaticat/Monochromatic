@@ -115,6 +115,8 @@ export const forbiddenRootContext: PolicyDefinition<undefined, 'forbidden-root-c
   name: 'forbidden-root-context',
   defaultSeverity: 'error',
   warnSafe: true,
+  // Reads only candidate paths through its context.
+  inputs: { external: [], },
   triggers: [
     'pre-forward',
     'direct-check',

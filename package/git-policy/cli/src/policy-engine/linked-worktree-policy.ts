@@ -20,6 +20,8 @@ export const linkedWorktreePolicy: RuntimePolicyDefinition = {
   name: 'linked-worktree-only',
   defaultSeverity: 'error',
   warnSafe: false,
+  // Classifies the effective Git directory and worktree list through Git, which no input kind names.
+  inputs: 'unrestricted',
   triggers: ['pre-forward',],
   check: async function runLinkedWorktreePolicy({ context, }): Promise<readonly PolicyFinding[]> {
     try {

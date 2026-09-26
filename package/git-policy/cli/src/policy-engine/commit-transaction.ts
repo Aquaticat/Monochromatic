@@ -30,6 +30,7 @@ import {
 import { concludeCommitTransaction, } from './commit-transaction-conclusion.ts';
 import { convergeCommitPolicies, } from './commit-transaction-convergence.ts';
 import { initializeCommitIndex, } from './commit-transaction-index.ts';
+import { withPolicyReadTracking, } from './commit-transaction-read-tracking.ts';
 import {
   listChangedIndexPaths,
   listUnmergedIndexPaths,
@@ -287,10 +288,22 @@ export async function runCommitTransaction({
     cwd: layout.effectiveCwd,
   },);
   /**
+   Policy options recording every policy's reads, so a replay can skip policies whose reads still hold.
+   */
+  const trackedOptions = await withPolicyReadTracking({
+    policyOptions,
+    location: {
+      gitPath,
+      repositoryRoot,
+      shadowPath: workspace.shadowPath,
+      environment: process.env,
+    },
+  },);
+  /**
    First policy pass against the initial candidates.
    */
   const firstPass = await runPolicyEngine({
-    ...policyOptions,
+    ...trackedOptions,
     args,
     trigger: 'pre-forward',
     gitFacts: initialFacts,
@@ -314,7 +327,7 @@ export async function runCommitTransaction({
       gitPath,
       cwd: layout.effectiveCwd,
       workspace,
-      policyOptions,
+      policyOptions: trackedOptions,
       baseRevision: base,
       repositoryRoot,
       addedPaths,
@@ -339,7 +352,7 @@ export async function runCommitTransaction({
     capture,
     gitPath,
     args,
-    policyOptions,
+    policyOptions: trackedOptions,
     cwd: layout.effectiveCwd,
     repositoryRoot,
     mode,
