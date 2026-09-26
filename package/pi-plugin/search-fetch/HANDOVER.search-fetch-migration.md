@@ -527,22 +527,43 @@ rather than silently ignoring a flag as the older upstream report described.
 
 Commit `4e990aaf2` carries every fix in this subsection.
 
-### Open questions for the user
+### Settled scope questions
 
-- Should `/actions/runs/{id}` map to `gh run view`,
-   possibly with failed logs?
-   It was left out because run log volume is unbounded and its shape varies by failure.
-- Should GitHub Enterprise Server hosts be supported through `gh api --hostname`?
+Asked together on 2026-09-26 with pros,
+cons,
+and a ranking;
+the user answered neither.
+
+- `/actions/runs/{id}` stays unmapped and falls back to the paid providers.
+   Declined.
+   The summary-only form is small but rarely the wanted content,
+   and the useful form,
+   `gh run view --log-failed`,
+   has unbounded output that would need a second byte cap.
+- Commit lists at `/{owner}/{repo}/commits/{ref}` stay unmapped.
+   Declined.
+   A jq-projected log is bounded and cheap,
+   but it is a summary rather than the page,
+   and faithful coverage would need `--paginate`,
+   which reintroduces unbounded output.
+
+Settled by requirement rather than by asking:
+
+- GitHub Enterprise Server hosts stay unmapped.
    Host detection cannot identify a GHES host from a URL alone,
-   so this needs a config surface.
-- Should the gh route be switchable from `pi-search-fetch.json` for hosts without an authenticated `gh`?
-   The fallback already covers a missing or unauthenticated `gh`,
-   so no flag was added.
-- Should commit lists at `/{owner}/{repo}/commits/{ref}` map to a jq-projected log?
+   so support would need a config surface nobody has asked for.
+   All mapped hosts are github.com.
+- No config flag gates the gh route.
+   A missing,
+   unauthenticated,
+   slow,
+   or failing `gh` already falls back to Linkup and then Exa with the reason recorded in
+   `fallbackChain`,
+   so a flag would only add a way to reach behavior the fallback already provides.
 
 ## Next immediate step
 
 No required implementation step remains for the migration or for GitHub URL routing.
 Future work can rename internal `Linkup*` compatibility type names if desired,
 but public tools and active Pi wiring are already provider-neutral.
-The open questions in the GitHub routing section are the only pending decisions.
+Every scope question in the settled-questions subsection is closed.
