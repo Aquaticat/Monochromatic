@@ -3199,6 +3199,22 @@ is retired by the next acquirer.
   unchanged bounded acquisition,
   held only by applicable sources
   (see "Linked-worktree ignored-state synchronization").
+- Trust registry recursive-operation lock,
+  `<registry-root>/recursive-operation.lock`,
+  taken by every explicit trust,
+  untrust,
+  and recursive enrollment:
+  unbounded wait while its owner lives.
+  The candidate directory and owner record get the registry's private modes
+  and Windows ACL protection before publication
+  (see "Atomicity and permissions").
+  A PID-only owner record written by an earlier build is retired once its PID no longer runs;
+  while that PID runs,
+  and while the lock holds a malformed record or no record,
+  the owner is unproven,
+  and the acquirer backs off with Git's jittered quadratic schedule for up to 1000 ms,
+  then fails with a diagnostic naming the lock and the evidence
+  and leaves the lock in place.
 
 An owner is alive only while its PID names a running process with the recorded birth identity.
 On Linux a process in state `Z`

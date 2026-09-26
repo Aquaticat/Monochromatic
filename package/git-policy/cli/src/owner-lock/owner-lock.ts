@@ -17,7 +17,6 @@ import { constants, } from 'node:fs';
 import {
   mkdir,
   open,
-  readFile,
   rename,
   rm,
 } from 'node:fs/promises';
@@ -29,21 +28,30 @@ import {
   PROCESS_IDENTITY_ABSENT,
   resolveProcessBirthIdentity,
 } from '../policy-engine/commit-transaction-process-identity.ts';
+import {
+  LOCK_BUSY,
+  OWNER_LOCK_RECORD_FILENAME,
+  OWNER_LOCK_SCHEMA_VERSION,
+  OwnerLockError,
+  type OwnerLockRecord,
+  ownerLockHolderIsAlive,
+  readOwnerLockRecord,
+} from './owner-lock-record.ts';
+
+export {
+  LOCK_BUSY,
+  OWNER_LOCK_RECORD_FILENAME,
+  OwnerLockError,
+  type OwnerLockRecord,
+  ownerLockHolderIsAlive,
+  parseOwnerLockRecord,
+  readOwnerLockRecord,
+} from './owner-lock-record.ts';
 
 /**
  Module logger.
  */
 const l = tagged({ tag: 'cli-git', },);
-
-/**
- Owner record filename inside a published lock directory.
- */
-export const OWNER_LOCK_RECORD_FILENAME = 'owner.json';
-
-/**
- Owner-lock record schema version.
- */
-const OWNER_LOCK_SCHEMA_VERSION = 1;
 
 /**
  Private lock directory mode.
@@ -61,37 +69,6 @@ const PRIVATE_FILE_MODE = 0o600;
 const DEFAULT_POLL_DELAY_MS = 20;
 
 /**
- Another live process owns the lock, or a concurrent acquirer replaced it.
- */
-export const LOCK_BUSY: unique symbol = Symbol('owner lock belongs to live process',);
-
-/**
- Durable owner of one published lock.
- */
-export type OwnerLockRecord = Readonly<{
-  /**
-   Record schema version.
-   */
-  schemaVersion: 1;
-  /**
-   Unguessable token distinguishing this acquisition from every other.
-   */
-  token: string;
-  /**
-   Owning process ID.
-   */
-  ownerPid: number;
-  /**
-   Process-birth identity distinguishing the owner from a later process reusing its PID.
-   */
-  ownerBirthIdentity: string;
-  /**
-   Commit transaction the lock is held for, recorded by the landing reservation.
-   */
-  transactionId?: string;
-}>;
-
-/**
  Held owner lock; disposal releases it after proving ownership did not change.
  */
 export type OwnerLock = AsyncDisposable & Readonly<{
@@ -106,115 +83,24 @@ export type OwnerLock = AsyncDisposable & Readonly<{
 }>;
 
 /**
- Owner lock ownership changed while it was held.
+ Complete unpublished candidate lock.
  */
-export class OwnerLockError extends Error {
+export type OwnerLockCandidate = Readonly<{
   /**
-   Creates an ownership failure.
-
-   @param message - diagnostic naming the lock
+   Unpublished candidate directory.
    */
-  public constructor(message: string,) {
-    super(message,);
-    this.name = 'OwnerLockError';
-  }
-}
+  directory: string;
+  /**
+   Complete owner record inside the candidate.
+   */
+  recordPath: string;
+}>;
 
 /**
- Parses an owner record.
-
- @param text - owner record text
-
- @returns validated record
-
- @throws {@link OwnerLockError} when a field is missing or mistyped
-
- @example
- ```ts
- parseOwnerLockRecord('{"schemaVersion":1,"token":"t","ownerPid":1,"ownerBirthIdentity":"linux:1"}');
- ```
+ Hardens a complete unpublished candidate before publication,
+ for a lock living in storage with stricter protection rules than the private modes set at creation.
  */
-export function parseOwnerLockRecord(text: string,): OwnerLockRecord {
-  /**
-   Untrusted parsed JSON value.
-   */
-  const value: unknown = JSON.parse(text,);
-  if (((typeof value) !== 'object')
-    || (value === null)
-    || (!('schemaVersion' in value))
-    || (value.schemaVersion !== OWNER_LOCK_SCHEMA_VERSION)
-    || (!('token' in value))
-    || ((typeof value.token) !== 'string')
-    || (value.token === '')
-    || (!('ownerPid' in value))
-    || ((typeof value.ownerPid) !== 'number')
-    || (!Number.isSafeInteger(value.ownerPid,))
-    || (value.ownerPid < 1)
-    || (!('ownerBirthIdentity' in value))
-    || ((typeof value.ownerBirthIdentity) !== 'string')
-    || (value.ownerBirthIdentity === '')
-    || (('transactionId' in value) && (((typeof value.transactionId) !== 'string') || (value.transactionId === ''))))
-    throw new OwnerLockError('Owner lock record is malformed.',);
-  return {
-    schemaVersion: OWNER_LOCK_SCHEMA_VERSION,
-    token: value.token,
-    ownerPid: value.ownerPid,
-    ownerBirthIdentity: value.ownerBirthIdentity,
-    ...(('transactionId' in value) && ((typeof value.transactionId) === 'string') ? { transactionId: value.transactionId, } : {}),
-  };
-}
-
-/**
- Reads a published owner record, reporting a vanished lock as busy so the caller retries.
-
- @param lockDirectory - published lock directory
-
- @returns owner record or busy sentinel
-
- @example
- ```ts
- await readOwnerLockRecord('/repo/.git/cli-git-transactions/landing.lock');
- ```
- */
-export async function readOwnerLockRecord(lockDirectory: string,): Promise<OwnerLockRecord | typeof LOCK_BUSY> {
-  try {
-    return parseOwnerLockRecord(await readFile(
-      join(
-        lockDirectory,
-        OWNER_LOCK_RECORD_FILENAME,
-      ),
-      'utf8',
-    ),);
-  }
-  catch (error: unknown) {
-    if (Error.isError(error,) && ('code' in error)
-      && ((error.code === 'ENOENT') || (error.code === 'ENOTDIR'))) {
-      l.debug(`owner lock vanished while reading: ${error.message}`,);
-      return LOCK_BUSY;
-    }
-    throw error;
-  }
-}
-
-/**
- Reports whether a recorded owner still runs with the same process birth.
-
- @param record - published owner record
-
- @returns whether the owner is alive
-
- @example
- ```ts
- await ownerLockHolderIsAlive(record);
- ```
- */
-export async function ownerLockHolderIsAlive(record: OwnerLockRecord,): Promise<boolean> {
-  /**
-   Current birth identity of the process the PID names.
-   */
-  const current = await resolveProcessBirthIdentity(record.ownerPid,);
-  return (current !== PROCESS_IDENTITY_ABSENT) && (current === record.ownerBirthIdentity);
-}
+export type OwnerLockCandidatePreparation = (candidate: OwnerLockCandidate) => Promise<void>;
 
 /**
  Reports whether a rename failed because another directory already holds the name.
@@ -222,8 +108,13 @@ export async function ownerLockHolderIsAlive(record: OwnerLockRecord,): Promise<
  @param error - rename failure
 
  @returns whether the destination was occupied
+
+ @example
+ ```ts
+ isOccupiedError(Object.assign(new Error('occupied'), { code: 'ENOTEMPTY' }));
+ ```
  */
-function isOccupiedError(error: unknown,): boolean {
+export function isOccupiedError(error: unknown,): boolean {
   return Error.isError(error,)
     && ('code' in error)
     && ((error.code === 'EEXIST') || (error.code === 'ENOTEMPTY')
@@ -423,14 +314,18 @@ async function releaseHeldLock({
 
  @param record - current owner record
 
+ @param prepareCandidate - hardens the complete candidate before publication
+
  @returns held lock or busy sentinel
  */
 async function attemptAcquire({
   lockDirectory,
   record,
+  prepareCandidate,
 }: Readonly<{
   lockDirectory: string;
   record: OwnerLockRecord;
+  prepareCandidate?: OwnerLockCandidatePreparation;
 }>,): Promise<OwnerLock | typeof LOCK_BUSY> {
   /**
    Unpublished complete candidate.
@@ -440,6 +335,26 @@ async function attemptAcquire({
     candidateDirectory,
     record,
   },);
+  try {
+    await prepareCandidate?.({
+      directory: candidateDirectory,
+      recordPath: join(
+        candidateDirectory,
+        OWNER_LOCK_RECORD_FILENAME,
+      ),
+    },);
+  }
+  catch (error: unknown) {
+    l.debug(`removing unpublished candidate after preparation failed: ${caughtValueText(error,)}`,);
+    await rm(
+      candidateDirectory,
+      {
+        recursive: true,
+        force: true,
+      },
+    );
+    throw error;
+  }
   try {
     await rename(
       candidateDirectory,
@@ -513,9 +428,11 @@ async function currentOwnerRecord(transactionId?: string,): Promise<OwnerLockRec
 
  @param transactionId - commit transaction the lock is held for
 
+ @param prepareCandidate - hardens the complete candidate before publication, for storage with stricter protection rules
+
  @returns held lock, or {@link LOCK_BUSY} while another owner holds it or a dead owner's lock was just retired
 
- @throws {@link OwnerLockError} when the current process identity is unavailable
+ @throws {@link OwnerLockError} when the current process identity is unavailable or the blocking lock's record is malformed
 
  @example
  ```ts
@@ -525,13 +442,16 @@ async function currentOwnerRecord(transactionId?: string,): Promise<OwnerLockRec
 export async function tryAcquireOwnerLock({
   lockDirectory,
   transactionId,
+  prepareCandidate,
 }: Readonly<{
   lockDirectory: string;
   transactionId?: string;
+  prepareCandidate?: OwnerLockCandidatePreparation;
 }>,): Promise<OwnerLock | typeof LOCK_BUSY> {
   return await attemptAcquire({
     lockDirectory,
     record: await currentOwnerRecord(transactionId,),
+    ...(prepareCandidate === undefined ? {} : { prepareCandidate, }),
   },);
 }
 
