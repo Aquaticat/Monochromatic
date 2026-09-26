@@ -211,6 +211,32 @@ require('node:fs').writeFileSync(${JSON.stringify(report,)}, top + ' ' + process
       },
     },),
     it({
+      name: 'a reference-transaction hook sees only the landing\'s update of the real branch, never shadow ref writes',
+      fn: async function testReferenceTransaction(): Promise<void> {
+        await using repository = await createLandingRepository();
+        /** Reference-transaction log. */
+        const log = join(repository.scratch, 'reference-transaction.log',);
+        await writeHook({
+          repository,
+          event: 'reference-transaction',
+          source: `const input = require('node:fs').readFileSync(0, 'utf8');
+require('node:fs').appendFileSync(${JSON.stringify(log,)}, input.split('\\n').filter(Boolean).map((line) => process.argv[2] + ' ' + line + '\\n').join(''));`,
+        },);
+        await writeWorktreeFile({ repository, name: 'a.txt', content: 'a\n', },);
+        /** Baseline commit. */
+        const baseline = await git({ repository, args: ['rev-parse', 'HEAD',], },);
+        /** Commit outcome. */
+        const outcome = await runWrapper({ repository, args: ['commit', '-m', 'observed', 'a.txt',], },);
+        expect(outcome.exitCode,).toBe(0,);
+        /** Landed commit. */
+        const landed = await git({ repository, args: ['rev-parse', 'HEAD',], },);
+        expect((await readText(log,)).split('\n',)
+          .filter(function isCommitted(line,): boolean {
+            return line.startsWith('committed ',);
+          },),).toEqual([`committed ${baseline} ${landed} refs/heads/main`,],);
+      },
+    },),
+    it({
       name: 'an event the user disabled through hook.<event>.enabled does not run',
       fn: async function testDisabledEvent(): Promise<void> {
         await using repository = await createLandingRepository([['hook.pre-commit.enabled', 'false',],],);
