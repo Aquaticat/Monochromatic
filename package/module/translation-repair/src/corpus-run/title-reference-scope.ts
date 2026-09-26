@@ -130,7 +130,7 @@ const TAG_CLOSE = '>';
  ```
  */
 function openingTag({ line, }: { readonly line: string; },): string {
-  if (!line.startsWith(TAG_OPEN,) || line.startsWith(CLOSING_TAG_OPEN,))
+  if ((!line.startsWith(TAG_OPEN,)) || line.startsWith(CLOSING_TAG_OPEN,))
     return '';
   /**
    Offset of the tag's close, -1 for none.
@@ -286,7 +286,7 @@ function framedPageLine(
   },);
   if (sourceStarts.length !== pageStarts.length)
     return -1;
-  return pageStarts[sourceStarts.indexOf(offset,)] ?? -1;
+  return pageStarts[sourceStarts.indexOf(offset,)] ?? (-1);
 }
 
 /**
