@@ -41,15 +41,16 @@ await describe({
   name: communityTermsIn.name,
   children: [
     it({
-      name: 'SEEDS THE FIVE TERMS the bench lost (two the archive had right, one the archive misread too, one the owner renders, one insult the bench ungendered), each with the accepted rendering first',
+      name: 'SEEDS THE SIX TERMS the bench lost (two the archive had right, one the archive misread too, one the owner renders, one insult the bench ungendered, one the bench read as crossdressing), each with the accepted rendering first',
       fn: async () => {
         expect(COMMUNITY_GLOSSARY.map(function termOf(entry,): string {
           return entry.term;
-        },),).toEqual(['自切', '超天酱', '炸柜', '药娘', '逆子',],);
+        },),).toEqual(['自切', '超天酱', '炸柜', '药娘', '逆子', '跨圈',],);
         expect(COMMUNITY_GLOSSARY[0]?.renderings[0],).toBe('self-surgery',);
         expect(COMMUNITY_GLOSSARY[1]?.renderings[0],).toBe('KAngel',);
         expect(COMMUNITY_GLOSSARY[2]?.renderings[0],).toBe('outed',);
         expect(COMMUNITY_GLOSSARY[4]?.renderings[0],).toBe('unfilial son',);
+        expect(COMMUNITY_GLOSSARY[5]?.renderings[0],).toBe('trans community',);
       },
     },),
 
