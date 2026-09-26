@@ -267,7 +267,8 @@ No provider has been contacted.
     Consumer validation can protect response shape,
     but server-side retention requires evidence and control at that server boundary.
 3.  Supported use: native typed questions are documented;
-    a strict end-to-end attempt cap and adversarial code-classification terms remain unresolved.
+    a strict end-to-end attempt cap remains unresolved.
+    The user has accepted TypeSafe AUP section 1.5 for this guard-classification evaluation.
 4.  Contribution policy: not evaluated because no upstream patch or filing is proposed.
 5.  Maintainer willingness: not evaluated;
     no public request or communication was sent.
