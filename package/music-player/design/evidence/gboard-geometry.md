@@ -150,6 +150,19 @@ it is **not** one of the linked sanitized Gboard PNGs.
   not a usable replacement Search design or a public review PNG.
   Its source and exact screen/window evidence are in the same troubleshooting
   document.
+- The separate debug-only `-keepclear-` candidate used APK SHA-256
+  `e755bf76ed65e45dc4e4ec57f4f55bdbd948902ca6e1940ddf911474ee8a4dd7`.
+  App logging and privileged Window Manager agreed that a keep-clear area
+  `[0,717][1038,2152]` was registered.
+  Gboard's floating keys stayed inside it at `[482,1006][1388,1777]`.
+  Dragging the keyboard right moved the observed key region;
+  dragging it back left returned overlap with the registered area and
+  visibly covered the deck title.
+  A real key tap entered `d`.
+  This validates the geometry detector and rejects **this best-effort
+  hint on this fixture** as a D50 response;
+  it does not describe all possible window placements.
+  Raw captures remain private.
 - [Original AVD floating Gboard at 100% cover][floating-cover]:
   real key taps entered `cam`,
   but its x `[0,830)`,

@@ -221,7 +221,14 @@ rounds (2026-09-17):
   The panel also remained over the deck after Back in the sampled state.
   Reject this layering probe;
   it is not approval to obscure keyboard keys or the folder browser.
-  A keep-clear preference remains a distinct untested API lead.
+  A later debug-only keep-clear probe registered
+  `[0,717][1038,2152]` with Window Manager,
+  yet floating Gboard still covered the deck.
+  Manual drags moved the reported key region away and back into that
+  registered area;
+  a real key entered `d` while the title was still obscured.
+  Reject this best-effort request on the tested Gboard fixture,
+  not every possible keyboard configuration.
   A bounded real-banner recurrence attempt changed the disposable font
   scale from 200% to 100% and back while the floating keyboard was open.
   The activity was recreated;

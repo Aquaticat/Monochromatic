@@ -5739,8 +5739,20 @@ Details and the SDK touch-policy source are in
 `doc/troubleshooting/android-17-fold-emulator-ime-probe.md`.
 The current review remains accepted A with D50's floating and banner gaps;
 no production change was made.
-A public keep-clear preference is an untested best-effort lead,
-not a proved Gboard avoidance mechanism.
+A separate keep-clear probe at prototype commit `b9c05342f` then
+registered `[0,717][1038,2152]` with Window Manager.
+Real floating Gboard still occupied `[482,1006][1388,1777]` and obscured
+the deck title.
+Manual right and left drags visibly moved its reported key region,
+including back into the registered keep-clear area;
+a real key tap entered `d`.
+This tests a real Gboard placement response,
+not merely whether the app sent the hint.
+The best-effort request is **not** a verified automatic D50 response on
+this fixture;
+no universal absence claim follows.
+The tested debug APK SHA-256 was
+`e755bf76ed65e45dc4e4ec57f4f55bdbd948902ca6e1940ddf911474ee8a4dd7`.
 The prototype's changed debug signing certificate required an uninstall
 **only on the disposable AVD** before installing the new APK;
 see `doc/troubleshooting/android-37-debug-apk-signature-update.md`.
