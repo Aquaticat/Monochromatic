@@ -21,3 +21,5 @@ export const tail = toppings.slice(1,);
 // Syntax-proven non-arrays.
 export const literal = 'abc'.slice();
 export const view = new Uint8Array(4,).slice();
+// Static methods on globals are not array methods.
+export const bytes = Buffer.concat([],);

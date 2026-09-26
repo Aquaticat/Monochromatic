@@ -493,6 +493,20 @@ await describe({
           },
         },),
         it({
+          name: 'treats global receivers such as Buffer as static-method namespaces when untyped',
+          fn: async () => {
+            using untyped = scratchSource({
+              source: 'export const bytes = Buffer.concat([],);\n',
+              typed: false,
+            },);
+            expect(await reportedKinds({
+              rule: 'prefer-spread',
+              target: untyped.filePath,
+            },),)
+              .toEqual([],);
+          },
+        },),
+        it({
           name: 'reports the issue 565 copy as ambiguous only when no type is available',
           fn: async () => {
             using typed = scratchSource({

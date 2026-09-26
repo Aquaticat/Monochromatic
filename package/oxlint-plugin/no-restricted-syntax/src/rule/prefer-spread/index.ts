@@ -27,6 +27,7 @@ import {
 } from '../ast-shared.ts';
 import { unwrapExpression, } from '../no-immediate-mutation.syntax.ts';
 import { expressionValueKind, } from '../spread-evidence/expression-kind.ts';
+import { isUndeclaredReference, } from '../spread-evidence/undeclared-reference.ts';
 import { copyCall, } from './receiver.ts';
 
 /**
@@ -87,19 +88,25 @@ function reportArrayFrom(
     readonly call: ESTree.CallExpression;
   }>,
 ): void {
-  if (call.optional || (call.callee.type !== 'MemberExpression'))
+  if (call.optional || (call.callee
+    .type
+    !== 'MemberExpression'))
     return;
   /**
    Receiver of the static call.
    */
   const { object, } = call.callee;
-  if ((object.type !== 'Identifier') || (object.name !== 'Array') || (!context.sourceCode.isGlobalReference(object,)))
+  if ((object.type !== 'Identifier') || (object.name !== 'Array')
+    || (!context.sourceCode
+      .isGlobalReference(object,)))
     return;
   /**
    Sole ordinary argument, or sentinel.
    */
   const argument = getSingleNonSpreadArgument({ call, },);
-  if ((argument === NO_SINGLE_ARGUMENT) || (unwrapExpression({ expression: argument, },).type === 'ObjectExpression'))
+  if ((argument === NO_SINGLE_ARGUMENT) || (unwrapExpression({ expression: argument, },)
+    .type
+    === 'ObjectExpression'))
     return;
   /**
    Semantic kind of the converted value.
@@ -121,7 +128,10 @@ function reportArrayFrom(
     node: call,
     messageId: 'preferSpreadOverArrayFrom',
     fix(fixer: ForeignBorrowed<Fixer>,): Fix {
-      return fixer.replaceText(call, replacement,);
+      return fixer.replaceText(
+        call,
+        replacement,
+      );
     },
   },);
 }
@@ -153,7 +163,15 @@ function reportCopyCall(
   /**
    Copy method and receiver, or `none`.
    */
-  const candidate = copyCall({ call, },);
+  const candidate = copyCall({
+    call,
+    isGlobal: function isGlobal(identifier,): boolean {
+      return isUndeclaredReference({
+        context,
+        identifier,
+      },);
+    },
+  },);
   if (candidate.method === 'none')
     return;
   /**
@@ -192,7 +210,10 @@ function reportCopyCall(
     messageId: 'preferSpreadOverCopy',
     data: { method: candidate.method, },
     fix(fixer: ForeignBorrowed<Fixer>,): Fix {
-      return fixer.replaceText(call, replacement,);
+      return fixer.replaceText(
+        call,
+        replacement,
+      );
     },
   },);
 }
