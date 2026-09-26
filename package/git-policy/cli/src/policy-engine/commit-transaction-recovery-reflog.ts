@@ -68,6 +68,74 @@ function parseReflogLine(line: string,): ReflogEntry {
 }
 
 /**
+ Lists the distinct commits whose reflog entries on one ref start with a nonce-bearing subject, at any depth.
+
+ @param gitPath - resolved Git executable
+
+ @param cwd - owning worktree directory
+
+ @param ref - ref whose reflog records the movement
+
+ @param subjectPrefix - nonce-bearing subject prefix
+
+ @returns distinct commits, empty when no entry carries the nonce
+
+ @throws {@link CommitTransactionRecoveryError} when the reflog is unreadable
+
+ @example
+ ```ts
+ await listNonceReflogOids({ gitPath: '/usr/bin/git', cwd: '/repo', ref: 'refs/heads/main', subjectPrefix: 'commit (cli-git 0b6c…):' });
+ ```
+ */
+export async function listNonceReflogOids({
+  gitPath,
+  cwd,
+  ref,
+  subjectPrefix,
+}: Readonly<{
+  gitPath: string;
+  cwd: string;
+  ref: string;
+  subjectPrefix: string;
+}>,): Promise<readonly string[]> {
+  /**
+   Entries Git preselected by fixed-string nonce match, with identity and subject separated without text ambiguity.
+   */
+  const result = await runTransactionGit({
+    gitPath,
+    cwd,
+    args: [
+      'reflog',
+      'show',
+      '--fixed-strings',
+      `--grep-reflog=${subjectPrefix}`,
+      '--format=%H%x00%gs',
+      ref,
+      '--',
+    ],
+    allowFailure: true,
+  },);
+  if (result.exitCode !== 0)
+    throw new CommitTransactionRecoveryError(`${ref} reflog is unreadable: ${result.stderr.trim()}`,);
+  return [
+    ...new Set(
+      DECODER.decode(result.stdout,)
+        .split('\n',)
+        .filter(function nonempty(line,): boolean {
+          return line.length > 0;
+        },)
+        .map(parseReflogLine,)
+        .filter(function carriesNonceAction({ subject, },): boolean {
+          return subject.startsWith(subjectPrefix,);
+        },)
+        .map(function entryOid({ oid, },): string {
+          return oid;
+        },),
+    ),
+  ];
+}
+
+/**
  Finds the one commit whose reflog entry carries the transaction's nonce, at any reflog depth.
 
  @param gitPath - resolved Git executable
@@ -102,52 +170,22 @@ export async function findTransactionLandedOid({
     l,
   },);
   /**
-   Subject prefix native commit writes for the nonce-bearing reflog action.
-   */
-  const nonceSubjectPrefix = `${reflogAction}:`;
-  /**
-   Entries Git preselected by fixed-string nonce match, with identity and subject separated without text ambiguity.
-   */
-  const result = await runTransactionGit({
-    gitPath,
-    cwd,
-    args: [
-      'reflog',
-      'show',
-      '--fixed-strings',
-      `--grep-reflog=${nonceSubjectPrefix}`,
-      '--format=%H%x00%gs',
-      TRANSACTION_REFLOG_REF,
-    ],
-    allowFailure: true,
-  },);
-  if (result.exitCode !== 0)
-    throw new CommitTransactionRecoveryError('Transaction ref movement lacks durable reflog provenance.',);
-  /**
    Distinct commits named by nonce-bearing entries.
    */
-  const landedOids = new Set(
-    DECODER.decode(result.stdout,)
-      .split('\n',)
-      .filter(function nonempty(line,): boolean {
-        return line.length > 0;
-      },)
-      .map(parseReflogLine,)
-      .filter(function carriesNonceAction({ subject, },): boolean {
-        return subject.startsWith(nonceSubjectPrefix,);
-      },)
-      .map(function entryOid({ oid, },): string {
-        return oid;
-      },),
-  );
+  const landedOids = await listNonceReflogOids({
+    gitPath,
+    cwd,
+    ref: TRANSACTION_REFLOG_REF,
+    subjectPrefix: `${reflogAction}:`,
+  },);
   /**
    Sole landed commit when the nonce is unambiguous.
    */
   const [landedOid,] = landedOids;
   if (landedOid === undefined)
     throw new CommitTransactionRecoveryError(`${TRANSACTION_REFLOG_REF} reflog does not identify prepared transaction.`,);
-  if (landedOids.size > 1)
-    throw new CommitTransactionRecoveryError(`${TRANSACTION_REFLOG_REF} reflog names several commits for prepared transaction: ${[...landedOids,].join(', ',)}`,);
+  if (landedOids.length > 1)
+    throw new CommitTransactionRecoveryError(`${TRANSACTION_REFLOG_REF} reflog names several commits for prepared transaction: ${landedOids.join(', ',)}`,);
   rl.debug(`transaction nonce ${reflogAction} names ${landedOid}`,);
   return landedOid;
 }

@@ -205,7 +205,7 @@ export type CoreFindingEvent = {
   /**
    Non-configurable fixed-core identifier.
    */
-  coreId: 'commit-only' | 'commit-normalization';
+  coreId: 'commit-only' | 'commit-normalization' | 'concurrent-commit';
   /**
    Policy identifier is intentionally absent for fixed core.
    */

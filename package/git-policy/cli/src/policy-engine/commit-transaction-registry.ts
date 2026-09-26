@@ -65,6 +65,32 @@ export const STAGING_SUFFIX = '.pending';
 export const RETIRED_SUFFIX = '.retired';
 
 /**
+ Owner-lock directories that live beside transactions in the registry, with their pending and stale candidates.
+ */
+const REGISTRY_LOCK_NAMES: readonly string[] = [
+  'landing.lock',
+  'reservation.lock',
+];
+
+/**
+ Reports whether a registry entry is an owner lock or one of its candidates rather than a transaction.
+
+ @param name - registry entry name
+
+ @returns whether the entry belongs to a registry lock
+
+ @example
+ ```ts
+ isRegistryLockName('landing.lock'); // true
+ ```
+ */
+export function isRegistryLockName(name: string,): boolean {
+  return REGISTRY_LOCK_NAMES.some(function belongsToLock(lockName,): boolean {
+    return (name === lockName) || name.startsWith(`${lockName}.`,);
+  },);
+}
+
+/**
  Canonical `randomUUID` layout: `-` marks separator positions, every other position is one lowercase hex digit.
  */
 const TRANSACTION_ID_TEMPLATE = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
@@ -449,6 +475,9 @@ export async function listTransactionEntries(root: string,): Promise<readonly Tr
     { withFileTypes: true, },
   );
   return entries
+    .filter(function isTransactionEntry(entry,): boolean {
+      return !isRegistryLockName(entry.name,);
+    },)
     .map(function classifyEntry(entry,): TransactionRegistryEntry {
       return classifyRegistryEntry({
         root,

@@ -20,7 +20,6 @@ import {
 } from '../trust/registry-io.ts';
 import { createOwnedFileLink, } from './commit-transaction-install-link.ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { PreparedTransactionJournal, } from './commit-transaction-journal.ts';
 import { removeTransactionDirectory, } from './commit-transaction-registry.ts';
 import {
   assertOwnedLock,
@@ -153,7 +152,7 @@ export async function readRegularRecoveryFile(path: string,): Promise<Uint8Array
  
  @param postIndexPath - prepared exact post index
  
- @param journal - prepared lock identity
+ @param journal - recorded identity of the owned lock
  
  @example
  ```ts
@@ -169,7 +168,7 @@ export async function installRecoveredIndex({
   lockPath: string;
   realIndexPath: string;
   postIndexPath: string;
-  journal: PreparedTransactionJournal;
+  journal: OwnedLockIdentity;
 }>,): Promise<void> {
   /**
    Exact intended post-index bytes from no-follow descriptor.

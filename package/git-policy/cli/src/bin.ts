@@ -11,6 +11,8 @@ import { parseCommitRegion, } from './parser/commit.ts';
 import { printPostCommandOutput, } from './post-command-output.ts';
 import { COMMIT_TRANSACTION_NOT_APPLICABLE, } from './policy-engine/commit-transaction.ts';
 import { runCommitTransactionBoundary, } from './policy-engine/commit-transaction-boundary.ts';
+import { NativeCommitFailedError, } from './policy-engine/commit-preparation-native.ts';
+import { hasValidInheritedLease, } from './hook-dispatch/preparation-lease.ts';
 import {
   CommitTransactionRecoveryError,
   recoverCommitTransaction,
@@ -189,7 +191,8 @@ try {
         gitPath,
       },)
     : undefined;
-  if (!willShortCircuit)
+  // A hook of a live outer transaction inherits its lease; recovery would only find that live owner.
+  if ((!willShortCircuit) && (!(await hasValidInheritedLease(process.env,))))
     await recoverCommitTransaction({
       args: rawArgs,
       gitPath,
@@ -244,6 +247,7 @@ try {
       args: rawArgs,
       gitPath,
       policyOptions,
+      ...(runtimeResolution.loaded === RUNTIME_CONFIG_ABSENT ? {} : { concurrency: runtimeResolution.loaded.validated.concurrency, }),
     },);
   /**
    Stable policy result before real Git forwarding.
@@ -335,10 +339,15 @@ try {
     }
   }
   /**
+   Commit the transaction landed, read later instead of live `HEAD`.
+   */
+  const landedOid = (typeof commitTransaction) === 'symbol' ? undefined : commitTransaction.landedOid;
+  /**
    Whether private-index transaction already executed real Git.
    */
-  const transactionCommitted = ((typeof commitTransaction) !== 'symbol')
-    && commitTransaction.committed;
+  const transactionCommitted = landedOid !== undefined;
+  if ((typeof commitTransaction) !== 'symbol' && (!transactionCommitted))
+    throw new TypeError('A commit transaction that landed nothing must block forwarding.',);
   if (!transactionCommitted) {
     await runGitWithWorktreeCopy({
       args: processedArgs,
@@ -370,6 +379,7 @@ try {
       transformedArgs: processedArgs,
       gitPath,
       cwd: effectiveCwd,
+      ...(landedOid === undefined ? {} : { landedOid, }),
       ...(runtimeResolution.loaded === RUNTIME_CONFIG_ABSENT
         ? {}
         : {
@@ -415,7 +425,7 @@ catch (error) {
     },),],),);
     process.exitCode = 2;
   }
-  else if (error instanceof PolicyDecisionError)
+  else if ((error instanceof PolicyDecisionError) || (error instanceof NativeCommitFailedError))
     process.exitCode = error.exitCode;
   else if (error instanceof ForwardedGitWorktreeCopyError) {
     console.error(error.copyFailureMessage,);

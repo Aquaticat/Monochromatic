@@ -15,6 +15,7 @@ export type CommitTransactionRecoveryAction =
   | 'owner-active'
   | 'vanished'
   | 'staging-unattributed'
+  | 'staging-retained'
   | 'retired-removed';
 
 /**

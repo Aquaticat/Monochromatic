@@ -56,25 +56,9 @@ export type TransactionOwnerRecord = Readonly<{
    */
   ownerIdentity: string;
   /**
-   ISO-8601 creation time ordering dead transactions for recovery.
+   ISO-8601 invocation start time ordering dead transactions for recovery.
    */
   createdAt: string;
-  /**
-   Real index whose lock the transaction holds.
-   */
-  realIndexPath: string;
-  /**
-   Filesystem identity containing the owned lock.
-   */
-  lockFsId: string;
-  /**
-   Device identity of the owned lock object.
-   */
-  lockDevice: string;
-  /**
-   Inode identity of the owned lock object.
-   */
-  lockInode: string;
 }>;
 
 /**
@@ -83,17 +67,11 @@ export type TransactionOwnerRecord = Readonly<{
 export type TransactionOwnerLiveness = 'alive' | 'dead';
 
 /**
- Builds the current process's owner record for a freshly locked transaction.
+ Builds the current process's owner record for a fresh transaction.
 
  @param transactionId - fresh transaction ID
 
- @param realIndexPath - locked real index
-
- @param lockFsId - owned lock filesystem identity
-
- @param lockDevice - owned lock device identity
-
- @param lockInode - owned lock inode identity
+ @param createdAt - ISO-8601 invocation start time
 
  @returns owner record for the current process
 
@@ -101,21 +79,15 @@ export type TransactionOwnerLiveness = 'alive' | 'dead';
 
  @example
  ```ts
- await createTransactionOwnerRecord({ transactionId, realIndexPath, lockFsId, lockDevice, lockInode });
+ await createTransactionOwnerRecord({ transactionId, createdAt: new Date().toISOString() });
  ```
  */
 export async function createTransactionOwnerRecord({
   transactionId,
-  realIndexPath,
-  lockFsId,
-  lockDevice,
-  lockInode,
+  createdAt,
 }: Readonly<{
   transactionId: string;
-  realIndexPath: string;
-  lockFsId: string;
-  lockDevice: string;
-  lockInode: string;
+  createdAt: string;
 }>,): Promise<TransactionOwnerRecord> {
   /**
    Current wrapper process-birth identity.
@@ -131,12 +103,7 @@ export async function createTransactionOwnerRecord({
     transactionId,
     ownerPid: process.pid,
     ownerIdentity,
-    createdAt: new Date()
-      .toISOString(),
-    realIndexPath,
-    lockFsId,
-    lockDevice,
-    lockInode,
+    createdAt,
   };
 }
 
@@ -159,10 +126,6 @@ export function encodeTransactionOwner(owner: TransactionOwnerRecord,): Uint8Arr
     ownerPid: owner.ownerPid,
     ownerIdentity: owner.ownerIdentity,
     createdAt: owner.createdAt,
-    realIndexPath: owner.realIndexPath,
-    lockFsId: owner.lockFsId,
-    lockDevice: owner.lockDevice,
-    lockInode: owner.lockInode,
   },)}\n`,);
 }
 
@@ -198,15 +161,7 @@ export function parseTransactionOwner(bytes: Uint8Array,): TransactionOwnerRecor
     || ((typeof value.ownerIdentity) !== 'string')
     || (value.ownerIdentity === '')
     || (!('createdAt' in value))
-    || ((typeof value.createdAt) !== 'string')
-    || (!('realIndexPath' in value))
-    || ((typeof value.realIndexPath) !== 'string')
-    || (!('lockFsId' in value))
-    || ((typeof value.lockFsId) !== 'string')
-    || (!('lockDevice' in value))
-    || ((typeof value.lockDevice) !== 'string')
-    || (!('lockInode' in value))
-    || ((typeof value.lockInode) !== 'string'))
+    || ((typeof value.createdAt) !== 'string'))
     throw new CommitTransactionRecoveryError('Transaction owner record is malformed.',);
   return {
     schemaVersion: OWNER_SCHEMA_VERSION,
@@ -214,10 +169,6 @@ export function parseTransactionOwner(bytes: Uint8Array,): TransactionOwnerRecor
     ownerPid: value.ownerPid,
     ownerIdentity: value.ownerIdentity,
     createdAt: value.createdAt,
-    realIndexPath: value.realIndexPath,
-    lockFsId: value.lockFsId,
-    lockDevice: value.lockDevice,
-    lockInode: value.lockInode,
   };
 }
 

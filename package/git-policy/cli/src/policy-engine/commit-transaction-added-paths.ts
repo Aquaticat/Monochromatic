@@ -117,6 +117,8 @@ export class AddedPathPreconditionError extends Error {
    @param reason - which state differs from `HEAD`
 
    @param lifecycle - operation adding the path, which decides the remedy text
+
+ @param baseRevision - baseline commit the path must match; live `HEAD` when absent
    */
   constructor({
     path,
@@ -252,6 +254,7 @@ export async function assertAddablePath({
   path,
   oid,
   lifecycle,
+  baseRevision = 'HEAD',
 }: Readonly<{
   gitPath: string;
   cwd: string;
@@ -261,6 +264,7 @@ export async function assertAddablePath({
   path: string;
   oid: GitObjectId;
   lifecycle: AddedPathLifecycle;
+  baseRevision?: string;
 }>,): Promise<AddedPathRecord['gitMode']> {
   /**
    `HEAD`, real index, and private index records for the path.
@@ -270,6 +274,7 @@ export async function assertAddablePath({
       gitPath,
       cwd,
       paths: [path,],
+      revision: baseRevision,
     },),
     loadIndexEntries({
       gitPath,

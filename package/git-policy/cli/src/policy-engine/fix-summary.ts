@@ -58,3 +58,43 @@ export function withFixSummary({
     ],
   };
 }
+
+/**
+ Appends the fix summary only when some pass changed candidate bytes;
+ the event is absent when no bytes changed.
+
+ @param result - final stable policy result
+
+ @param trigger - fixable lifecycle point
+
+ @param passes - changed candidate passes
+
+ @param changedPaths - changed paths
+
+ @returns policy result, with a summary only after a change
+
+ @example
+ ```ts
+ withChangedFixSummary({ result, trigger: 'pre-forward', passes: 0, changedPaths: [] }); // result unchanged
+ ```
+ */
+export function withChangedFixSummary({
+  result,
+  trigger,
+  passes,
+  changedPaths,
+}: Readonly<{
+  result: PolicyEngineResult;
+  trigger: 'pre-forward' | 'direct-fix';
+  passes: number;
+  changedPaths: readonly string[];
+}>,): PolicyEngineResult {
+  return passes === 0
+    ? result
+    : withFixSummary({
+      result,
+      trigger,
+      passes,
+      changedPaths,
+    },);
+}

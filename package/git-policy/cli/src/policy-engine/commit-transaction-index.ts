@@ -1,5 +1,5 @@
 /**
- Private commit-index initialization and prepared installation state.
+ Private commit-index initialization and intended tree.
  
  @module
  */
@@ -66,9 +66,13 @@ function selectionArguments({
  
  @param stageIntoIndex - whether copied index receives selected worktree state
  
+ @param stageTrackedChanges - whether copied index receives every tracked modification and deletion, as `commit -a` does
+ 
+ @param baseRevision - recorded base commit, or the empty tree for an unborn base
+ 
  @example
  ```ts
- await initializeCommitIndex({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', mode: 'index', pathspecs: [], pathspecFileNul: false });
+ await initializeCommitIndex({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', mode: 'index', pathspecs: [], pathspecFileNul: false, baseRevision });
  ```
  */
 export async function initializeCommitIndex({
@@ -80,8 +84,10 @@ export async function initializeCommitIndex({
   pathspecFile,
   pathspecFileNul,
   stageIntoIndex = false,
+  stageTrackedChanges = false,
+  baseRevision,
 }: Readonly<{
-  workspace: CommitTransactionWorkspace;
+  workspace: Pick<CommitTransactionWorkspace, 'realIndexPath' | 'capturedIndexPath' | 'commitIndexPath'>;
   gitPath: string;
   cwd: string;
   mode: 'explicit-path' | 'index';
@@ -89,49 +95,45 @@ export async function initializeCommitIndex({
   pathspecFile?: string;
   pathspecFileNul: boolean;
   stageIntoIndex?: boolean;
+  stageTrackedChanges?: boolean;
+  baseRevision: string;
 }>,): Promise<void> {
   await copyIndexFile({
     sourcePath: workspace.realIndexPath,
-    destinationPath: workspace.originalIndexPath,
+    destinationPath: workspace.capturedIndexPath,
   },);
   if (mode === 'index') {
     await copyIndexFile({
-      sourcePath: workspace.originalIndexPath,
+      sourcePath: workspace.capturedIndexPath,
       destinationPath: workspace.commitIndexPath,
     },);
+    if (stageTrackedChanges)
+      // Whole-tree update of tracked paths, exactly what `commit -a` stages, captured once at invocation.
+      await runTransactionGit({
+        gitPath,
+        cwd,
+        indexPath: workspace.commitIndexPath,
+        args: [
+          'add',
+          '--update',
+          '--',
+          ':/',
+        ],
+      },);
     if (!stageIntoIndex)
       return;
   }
-  else {
-    /**
-     Optional parent tree for unborn-repository compatibility.
-     */
-    const head = await runTransactionGit({
-      gitPath,
-      cwd,
-      args: [
-        'rev-parse',
-        '--verify',
-        'HEAD^{tree}',
-      ],
-      allowFailure: true,
-    },);
+  else
+    // The recorded base, never live `HEAD`: another landing may have moved it since invocation.
     await runTransactionGit({
       gitPath,
       cwd,
       indexPath: workspace.commitIndexPath,
-      args: head.exitCode === 0
-        ? [
-          'read-tree',
-          DECODER.decode(head.stdout,)
-            .trim(),
-        ]
-        : [
-          'read-tree',
-          '--empty',
-        ],
+      args: [
+        'read-tree',
+        baseRevision,
+      ],
     },);
-  }
   await runTransactionGit({
     gitPath,
     cwd,
@@ -169,7 +171,7 @@ export async function writePrivateTree({
   gitPath,
   cwd,
 }: Readonly<{
-  workspace: CommitTransactionWorkspace;
+  workspace: Pick<CommitTransactionWorkspace, 'commitIndexPath'>;
   gitPath: string;
   cwd: string;
 }>,): Promise<GitObjectId> {
@@ -190,64 +192,4 @@ export async function writePrivateTree({
   if (oid.length === 0)
     throw new TypeError('Git returned empty private tree identity.',);
   return oid;
-}
-
-/**
- Prepares exact post-commit index before real Git may advance ref.
- 
- @param workspace - transaction workspace
- 
- @param gitPath - resolved Git executable
- 
- @param cwd - repository directory
- 
- @param mode - transaction commit semantics
- 
- @param selectedPaths - concrete selected paths
- 
- @param intendedTreeOid - exact prepared commit tree
- 
- @example
- ```ts
- await preparePostIndex({ workspace, gitPath: '/usr/bin/git', cwd: '/repo', mode: 'index', selectedPaths: [], intendedTreeOid });
- ```
- */
-export async function preparePostIndex({
-  workspace,
-  gitPath,
-  cwd,
-  mode,
-  selectedPaths,
-  intendedTreeOid,
-}: Readonly<{
-  workspace: CommitTransactionWorkspace;
-  gitPath: string;
-  cwd: string;
-  mode: 'explicit-path' | 'index';
-  selectedPaths: readonly string[];
-  intendedTreeOid: GitObjectId;
-}>,): Promise<void> {
-  if (mode === 'index') {
-    await copyIndexFile({
-      sourcePath: workspace.commitIndexPath,
-      destinationPath: workspace.postIndexPath,
-    },);
-    return;
-  }
-  await copyIndexFile({
-    sourcePath: workspace.originalIndexPath,
-    destinationPath: workspace.postIndexPath,
-  },);
-  await runTransactionGit({
-    gitPath,
-    cwd,
-    indexPath: workspace.postIndexPath,
-    args: [
-      'reset',
-      '--quiet',
-      intendedTreeOid,
-      '--',
-      ...selectedPaths,
-    ],
-  },);
 }

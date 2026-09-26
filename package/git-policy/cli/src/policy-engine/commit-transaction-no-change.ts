@@ -8,14 +8,13 @@ import {
   type AddedPathRecord,
   installAddedWorktreeFiles,
 } from './commit-transaction-added-paths.ts';
+import type { InvocationCapture, } from './commit-transaction-capture.ts';
 import { runTransactionGit, } from './commit-transaction-git.ts';
-import {
-  prepareTransactionJournal,
-  recordIndexInstalled,
-  resolveCurrentHead,
-} from './commit-transaction-journal.ts';
+import type { TransactionMode, } from './commit-transaction-journal-states.ts';
 import type { CommitTransactionResult, } from './commit-transaction-types.ts';
 import type { CommitTransactionWorkspace, } from './commit-transaction-workspace.ts';
+import { landTransaction, } from './commit-landing.ts';
+import { landingFindingResult, } from './commit-landing-findings.ts';
 import { createCoreFindingEvent, } from './events.ts';
 import { withFixSummary, } from './fix-summary.ts';
 import type { PolicyEngineResult, } from './types.ts';
@@ -33,46 +32,13 @@ const DECODER = new TextDecoder(
 );
 
 /**
- Rejects a changed HEAD before or during normalization-only installation.
-
- @param gitPath - real Git executable
-
- @param cwd - effective repository directory
-
- @param expectedOid - commit whose tree was compared with settled selection
-
- @throws TypeError when another commit changed HEAD
-
- @example
- ```ts
- await assertNormalizationHead({ gitPath: '/usr/bin/git', cwd: '/repo', expectedOid: 'abc' });
- ```
- */
-async function assertNormalizationHead({
-  gitPath,
-  cwd,
-  expectedOid,
-}: Readonly<{
-  gitPath: string;
-  cwd: string;
-  expectedOid: string;
-}>,): Promise<void> {
-  /**
-   Current commit identity across public index and worktree mutations.
-   */
-  const current = await resolveCurrentHead({
-    gitPath,
-    cwd,
-  },);
-  if ((current.kind !== 'oid') || (current.oid !== expectedOid))
-    throw new TypeError('HEAD changed during normalization-only reconciliation; recovery retained for inspection.',);
-}
-
-/**
  Completes an index and worktree correction without creating an empty commit.
- Persists a recovery journal before the first public mutation.
+ The normalization lands through the landing critical section against the recorded base,
+ so a base that moved since invocation fails without touching the index.
 
- @param workspace - locked transaction workspace
+ @param workspace - transaction workspace
+
+ @param capture - invocation capture
 
  @param gitPath - real Git executable
 
@@ -86,7 +52,7 @@ async function assertNormalizationHead({
 
  @param intendedTreeOid - completely settled private tree
 
- @param selectedPaths - concrete original selection including policy additions
+ @param committedPaths - concrete original selection including policy additions
 
  @param addedPaths - paths introduced by policies
 
@@ -98,98 +64,103 @@ async function assertNormalizationHead({
 
  @param changedPaths - fixed paths for summary
 
+ @param indexLockTimeoutMs - backoff budget for a foreign `index.lock`
+
  @returns no-commit result or absence when Git still has a commit to make
 
  @example
  ```ts
- await completeNoChangeTransaction({ workspace, gitPath, cwd, repositoryRoot, mode: 'explicit-path', eligible: true, intendedTreeOid, selectedPaths: [], addedPaths: [], selectedWorktreePaths: [], pass, changedPasses: 1, changedPaths: [] });
+ await completeNoChangeTransaction({ workspace, capture, gitPath, cwd, repositoryRoot, mode: 'explicit-path', eligible: true, intendedTreeOid, committedPaths: [], addedPaths: [], selectedWorktreePaths: [], pass, changedPasses: 1, changedPaths: [], indexLockTimeoutMs: 1_000 });
  ```
  */
 export async function completeNoChangeTransaction({
   workspace,
+  capture,
   gitPath,
   cwd,
   repositoryRoot,
   mode,
   eligible,
   intendedTreeOid,
-  selectedPaths,
+  committedPaths,
   addedPaths,
   selectedWorktreePaths,
   pass,
   changedPasses,
   changedPaths,
+  indexLockTimeoutMs,
 }: Readonly<{
   workspace: CommitTransactionWorkspace;
+  capture: InvocationCapture;
   gitPath: string;
   cwd: string;
   repositoryRoot: string;
-  mode: 'explicit-path' | 'index';
+  mode: TransactionMode;
   eligible: boolean;
   intendedTreeOid: string;
-  selectedPaths: readonly string[];
+  committedPaths: readonly string[];
   addedPaths: readonly AddedPathRecord[];
   selectedWorktreePaths: readonly AddedPathRecord[];
   pass: PolicyEngineResult;
   changedPasses: number;
   changedPaths: readonly string[];
+  indexLockTimeoutMs: number;
 }>,): Promise<CommitTransactionResult | typeof NO_CHANGE_NOT_APPLICABLE> {
-  if (!eligible)
+  if ((!eligible) || (capture.base.kind === 'unborn'))
     return NO_CHANGE_NOT_APPLICABLE;
   /**
-   Exact HEAD commit whose immutable tree is compared with settled selection.
+   Tree of the recorded base, never a later moving HEAD.
    */
-  const head = await resolveCurrentHead({
-    gitPath,
-    cwd,
-  },);
-  if (head.kind === 'absent')
-    return NO_CHANGE_NOT_APPLICABLE;
-  /**
-   Tree of that exact commit, rather than a later moving HEAD reference.
-   */
-  const currentTree = await runTransactionGit({
+  const baseTreeOid = DECODER.decode((await runTransactionGit({
     gitPath,
     cwd,
     args: [
       'rev-parse',
       '--verify',
-      `${head.oid}^{tree}`,
+      `${capture.base.oid}^{tree}`,
     ],
+  },)).stdout,)
+    .trim();
+  if (baseTreeOid !== intendedTreeOid)
+    return NO_CHANGE_NOT_APPLICABLE;
+  /**
+   Final stable pass plus accurate fix summary.
+   */
+  const summary = withFixSummary({
+    result: pass,
+    trigger: 'pre-forward',
+    passes: changedPasses,
+    changedPaths,
   },);
   /**
-   Exact current tree for selected comparison.
+   Landing of the normalization.
    */
-  const headTreeOid = DECODER.decode(currentTree.stdout,)
-    .trim();
-  if (headTreeOid !== intendedTreeOid)
-    return NO_CHANGE_NOT_APPLICABLE;
-  await prepareTransactionJournal({
-    workspace,
+  const outcome = await landTransaction({
     gitPath,
     cwd,
+    capture,
+    workspace,
     mode,
-    amend: false,
-    selectedPaths,
+    payload: {
+      operation: 'normalize-only',
+      landedTreeOid: intendedTreeOid,
+    },
+    committedPaths,
     addedPaths,
     selectedWorktreePaths,
-    operation: 'normalize-only',
-    expectedHeadOid: head.oid,
-    intendedTreeOid,
+    indexLockTimeoutMs,
+    attempt: 1,
   },);
-  workspace.preserveForRecovery();
-  await assertNormalizationHead({
-    gitPath,
-    cwd,
-    expectedOid: head.oid,
-  },);
-  await workspace.installIndex(workspace.postIndexPath,);
-  await recordIndexInstalled({ workspace, },);
-  await assertNormalizationHead({
-    gitPath,
-    cwd,
-    expectedOid: head.oid,
-  },);
+  if (outcome.kind !== 'landed')
+    return {
+      committed: false,
+      policyResult: landingFindingResult({
+        pass: summary,
+        outcome,
+        capture,
+        preparedOid: undefined,
+      },),
+    };
   /**
    Worktree copies completed or preserved after concurrent edits.
    */
@@ -202,11 +173,6 @@ export async function completeNoChangeTransaction({
       ...selectedWorktreePaths,
     ],
   },);
-  await assertNormalizationHead({
-    gitPath,
-    cwd,
-    expectedOid: head.oid,
-  },);
   workspace.finishTransaction();
   /**
    Worktree paths whose later edits were retained.
@@ -216,15 +182,6 @@ export async function completeNoChangeTransaction({
    Whether completion retained later worktree edits.
    */
   const hasConflicts = conflicted.length > 0;
-  /**
-   Final stable pass plus accurate fix summary.
-   */
-  const summary = withFixSummary({
-    result: pass,
-    trigger: 'pre-forward',
-    passes: changedPasses,
-    changedPaths,
-  },);
   return {
     committed: false,
     policyResult: {

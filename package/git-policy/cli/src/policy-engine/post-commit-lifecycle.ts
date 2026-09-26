@@ -81,6 +81,8 @@ export type PostCommitLifecycleResult = Readonly<{
  
  @param cwd - effective Git working directory
  
+ @param landedOid - commit a transaction landed; resolved from `HEAD` only after a forwarded commit
+ 
  @param policySeverities - trusted effective severity map
  
  @param registeredPolicies - built-ins and trusted plugins
@@ -101,6 +103,7 @@ export async function runPostCommitLifecycle({
   transformedArgs,
   gitPath,
   cwd,
+  landedOid,
   policySeverities = {},
   registeredPolicies = BUILT_IN_POLICIES,
   policyOptions = new Map(),
@@ -110,6 +113,7 @@ export async function runPostCommitLifecycle({
   transformedArgs: readonly string[];
   gitPath: string;
   cwd: string;
+  landedOid?: string;
   policySeverities?: Readonly<Record<string, PolicySeverity>>;
   registeredPolicies?: readonly RuntimePolicyDefinition[];
   policyOptions?: ReadonlyMap<string, unknown>;
@@ -118,7 +122,7 @@ export async function runPostCommitLifecycle({
   /**
    Exact post-spawn commit identity resolved before fallible policy setup.
    */
-  const oid = await dependencies.resolveLandedCommitOid({
+  const oid = landedOid ?? await dependencies.resolveLandedCommitOid({
     gitPath,
     cwd,
   },);

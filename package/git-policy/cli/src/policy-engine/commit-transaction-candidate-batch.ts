@@ -213,6 +213,8 @@ export async function loadIndexEntries({
  
  @param paths - candidate repository paths
  
+ @param revision - baseline tree-ish: the transaction's preparation base, or live `HEAD` outside a transaction
+ 
  @returns tree record per path present in HEAD
  
  @throws CommitTransactionGitError when HEAD tree metadata is incomplete
@@ -226,10 +228,12 @@ export async function loadHeadTreeEntries({
   gitPath,
   cwd,
   paths,
+  revision = 'HEAD',
 }: Readonly<{
   gitPath: string;
   cwd: string;
   paths: readonly string[];
+  revision?: string;
 }>,): Promise<ReadonlyMap<string, HeadTreeEntry>> {
   /**
    Optional tree records for every chunk, read concurrently over disjoint paths.
@@ -242,7 +246,7 @@ export async function loadHeadTreeEntries({
         args: [
           'ls-tree',
           '-z',
-          'HEAD',
+          revision,
           '--',
           ...chunk,
         ],

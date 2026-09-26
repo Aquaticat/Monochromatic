@@ -10,10 +10,6 @@
  */
 
 import {
-  prepareTransactionJournal,
-  recordRefUpdated,
-} from './policy-engine/commit-transaction-journal.ts';
-import {
   classifyTransactionOwner,
   createTransactionOwnerRecord,
   encodeTransactionOwner,
@@ -117,10 +113,6 @@ export type InternalTestExports = Readonly<{
    */
   parseTransactionOwner: typeof parseTransactionOwner;
   /**
-   Internal `prepareTransactionJournal`.
-   */
-  prepareTransactionJournal: typeof prepareTransactionJournal;
-  /**
    Internal `PROCESS_IDENTITY_ABSENT`.
    */
   PROCESS_IDENTITY_ABSENT: typeof PROCESS_IDENTITY_ABSENT;
@@ -128,10 +120,6 @@ export type InternalTestExports = Readonly<{
    Internal `publishTransactionDirectory`.
    */
   publishTransactionDirectory: typeof publishTransactionDirectory;
-  /**
-   Internal `recordRefUpdated`.
-   */
-  recordRefUpdated: typeof recordRefUpdated;
   /**
    Internal `recoverCommitTransaction`.
    */
@@ -181,10 +169,8 @@ export const internalTestExports: InternalTestExports = Object.freeze({
   listTransactionEntries,
   OWNER_FILENAME,
   parseTransactionOwner,
-  prepareTransactionJournal,
   PROCESS_IDENTITY_ABSENT,
   publishTransactionDirectory,
-  recordRefUpdated,
   recoverCommitTransaction,
   recoverInspectedEntry,
   removeTransactionDirectory,
