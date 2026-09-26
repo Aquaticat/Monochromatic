@@ -10,15 +10,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   ABSENT_GIT_VALUE,
+  type CandidateFile,
   createFinalNewlinePatch,
   finalNewlinePolicy,
   isFinalNewlineExcluded,
   normalizeFinalNewline,
-} from '../../dist/final/node/index.mjs';
-import type {
-  CandidateFile,
-  PolicyContext,
-  PolicyTrigger,
+  type PolicyContext,
+  type PolicyTrigger,
 } from '../../dist/final/node/index.mjs';
 
 /** Text fixture encoder. */
