@@ -29,10 +29,6 @@ const VALID_FIELDS: Readonly<Record<string, unknown>> = {
   ownerPid: 100,
   ownerIdentity: 'linux:1',
   createdAt: '2026-01-01T00:00:00.000Z',
-  realIndexPath: '/repo/.git/index',
-  lockFsId: 'fs',
-  lockDevice: '1',
-  lockInode: '2',
 };
 
 /**
@@ -94,10 +90,7 @@ await describe({
             /** Current process owner record. */
             const owner = await createTransactionOwnerRecord({
               transactionId: '0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10',
-              realIndexPath: '/repo/.git/index',
-              lockFsId: 'fs',
-              lockDevice: '1',
-              lockInode: '2',
+              createdAt: '2026-01-01T00:00:00.000Z',
             },);
             expect(owner.ownerPid,).toBe(process.pid,);
             /** Encoded record bytes. */
