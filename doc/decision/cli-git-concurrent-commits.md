@@ -266,6 +266,27 @@ Evidence:
   Additions on both sides are checked against an empty base.
   Rules and evidence:
   `package/git-policy/cli/SPEC.md` "Subsumption".
+- Capture order,
+  owner decision 2026-09-26:
+  every capture from a worktree takes a short per-worktree capture lock
+  and records a monotonically increasing capture sequence number,
+  giving a total order of captured disk states.
+  For a path that both the prepared commit and a commit landed since its base captured from the same worktree,
+  the later capture's bytes land:
+  a prepared commit captured later lands its own bytes,
+  and one captured earlier keeps the landed bytes for that path.
+  This records what native sequential commits would record from the shared disk.
+  Paths changed from anywhere else
+  (another worktree or clone,
+  a native commit that bypassed cli-git)
+  still go through subsumption,
+  then three-way merge.
+  Evidence:
+  the container `concurrent-trace-replay` scenario still conflicted under subsumption
+  wherever a later capture rewrote lines an earlier in-flight commit had just added.
+  Accepted cost:
+  a later capture from a stale editor buffer reverts the earlier edit,
+  exactly as native Git would.
 - Forwarded index writers coordinate with landings through the cli-git landing lock
   and pre-wait for foreign `index.lock` holders;
   cli-git does not capture Git's stderr to detect a lock failure and re-forward,
