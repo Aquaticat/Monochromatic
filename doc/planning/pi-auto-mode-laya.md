@@ -92,6 +92,20 @@ Do not require the user to supervise a live shadow rollout to collect the initia
 Neither incumbent verdicts nor Laya output are ground truth.
 This authorizes evaluation, not product changes, fine-tuning, or a completed cutover design.
 
+### Fine-tuning scope
+
+The user added:
+
+> I am also not against fine-tuning Laya.
+
+Fine-tuning is an eligible follow-up if baseline errors warrant it.
+Do not assume the user requires pretrained-only integration.
+This expresses openness, not a decision to start training or use paid/external compute.
+Existing no-upload and no-raw-history-commit boundaries remain active.
+Split synthetic examples by source scenario into training, calibration, and frozen held-out groups;
+paraphrases of the same case must not leak across those groups.
+Establish the baseline before tuning and evaluate any trained result on unseen cases.
+
 ## Existing GitHub issues
 
 Checked open and closed issues in `Aquaticat/Monochromatic` on 2026-09-26.
