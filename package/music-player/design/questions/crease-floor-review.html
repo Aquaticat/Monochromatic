@@ -56,7 +56,7 @@ p { max-inline-size: 90ch; }
 .policy ul { padding-inline-start: 1.5rem; }
 .policy li { margin-block: 0.4rem; }
 .ruler { display: grid; gap: 0.55rem; margin-block: 0.8rem; }
-.measure { display: grid; grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr); gap: 0.6rem; align-items: center; }
+.measure { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: 0.6rem; align-items: center; }
 .measure .track { display: block; inline-size: min(100%, 12rem); }
 .measure .line { display: block; block-size: 0.65rem; border-radius: 0.35rem; background-color: var(--color-information); }
 .measure[data-kind='crease'] .line { inline-size: 62.5%; background-color: var(--color-crease); }
