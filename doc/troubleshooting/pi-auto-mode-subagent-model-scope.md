@@ -192,8 +192,10 @@ child `read` tool,
 and completion delivery.
 A loopback OpenAI-compatible SSE server supplied the judge verdict.
 No live credentials or user files were used.
-Each child issued one guarded read outside its workspace;
+Each child issued one guarded read outside its workspace.
+For available-judge scenarios,
 the server verified a `render_verdict` request containing that exact path.
+Unavailable-judge scenarios verified that no request escaped the configured restriction.
 
 The session-local harness is retained at
 `~/temp/agent/auto-mode-subagent-host.mjs`
@@ -202,6 +204,7 @@ It invokes finite scripted prompts,
 caps each host at 20 seconds,
 closes piped stdin,
 and disposes its temporary homes and server.
+The final host run also captured stderr and rejected bare `context canceled` shutdown errors.
 The permanent SDK regression is the repository-owned reproduction;
 the session-local harness additionally verifies the installed third-party integration.
 
@@ -214,6 +217,8 @@ deny foreground: one judge request, read blocked, parent received child result
 deny background: one judge request, read blocked, parent received child result
 ask foreground: one judge request, read blocked with parent guidance, parent received child result
 ask background: one judge request, read blocked with parent guidance, parent received child result
+unavailable judge foreground: no judge request, read blocked with selection error and parent guidance
+unavailable judge background: no judge request, read blocked with selection error and parent guidance
 ```
 
 Working catalog:
@@ -233,12 +238,26 @@ Fail-closed catalog:
 - Explicit empty or unmatched argv/settings restrictions.
 - Judge denial.
 - Approval-required action in a headless child.
+- No eligible judge in a real foreground or background child;
+  its result preserves the original selection error,
+  action,
+  and no-retry guidance.
 
 Not exercised:
 external paid-provider availability,
 interactive forwarding of child approval requests,
 or automatic inheritance of parent bypass and trust.
 The latter integrations were not added.
+
+All affected-package unit suites,
+TypeScript checks,
+and Oxlint checks passed for auto-mode,
+shared model selection,
+and Advisor.
+The changed Markdown files passed lint and were rendered with Marked;
+rendered headings,
+code blocks,
+and lists were inspected.
 
 ## Verified workarounds
 
