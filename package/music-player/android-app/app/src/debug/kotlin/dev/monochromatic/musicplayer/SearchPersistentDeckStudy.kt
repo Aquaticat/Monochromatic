@@ -155,10 +155,13 @@ import androidx.compose.ui.unit.dp
 internal fun SearchPersistentDeckStudy(candidate: String) {
     val light = candidate.endsWith("-light")
     val cover = LocalConfiguration.current.screenWidthDp < 600
+    // The stress marker changes only sample result data, never accepted Search geometry.
+    val overflowStudy = candidate.contains("-overflow-")
     if (cover) {
         val state = if (candidate.contains("-player")) "player" else if (candidate.contains("-results")) "results"
             else if (candidate.contains("-none")) "none" else if (candidate.contains("-unavailable")) "unavailable" else "empty"
-        SearchLayoutStudy(candidate = "search-layout-docked-$state${if (light) "-light" else ""}",
+        val overflowSuffix = if (overflowStudy) "-overflow" else ""
+        SearchLayoutStudy(candidate = "search-layout-docked-$state$overflowSuffix${if (light) "-light" else ""}",
             hidePositiveHeading = true)
         return
     }
@@ -196,7 +199,8 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
             preclearStudy = candidate.contains("-preclear-"),
             retainBrowser = candidate.contains("-retain-"),
             layerProbe = candidate.contains("-layerprobe-"),
-            keepClearProbe = candidate.contains("-keepclear-"))
+            keepClearProbe = candidate.contains("-keepclear-"),
+            overflowStudy = overflowStudy)
     } else {
         SearchDeckWide(query = query, onQueryChange = { query = it }, onBack = onBack,
             unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor)
@@ -294,7 +298,7 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, halfDent: Dp, light: Boolean, pageColor: Color,
     liftWithIme: Boolean, bannerHeightStress: Boolean, autoFitStudy: Boolean,
     preclearStudy: Boolean, retainBrowser: Boolean, layerProbe: Boolean,
-    keepClearProbe: Boolean) {
+    keepClearProbe: Boolean, overflowStudy: Boolean) {
     val density = LocalDensity.current
     val reportedImeInset = WindowInsets.ime.getBottom(density)
     var queryFocused by remember { mutableStateOf(false) }
@@ -413,6 +417,7 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
             unavailable = unavailable, modifier = Modifier.weight(1f),
             startSafe = halfDent + 16.dp, endSafe = 16.dp,
             includeTopInset = true, pageColor = pageColor,
+            overflowStudy = overflowStudy,
             onQueryFocusChange = { focused ->
                 if (preclearStudy && focused && !queryFocused) initialFocusPending = true
                 if (preclearStudy && !focused) {
@@ -490,7 +495,7 @@ private fun SearchDeckWide(query: String, onQueryChange: (String) -> Unit,
 private fun PersistentSearchPane(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, modifier: Modifier,
     startSafe: Dp, endSafe: Dp, includeTopInset: Boolean, pageColor: Color,
-    onQueryFocusChange: ((Boolean) -> Unit)? = null) {
+    overflowStudy: Boolean = false, onQueryFocusChange: ((Boolean) -> Unit)? = null) {
     Column(modifier = modifier.fillMaxSize().background(pageColor)) {
         if (includeTopInset) Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
         PersistentSearchHeader(query = query, onQueryChange = onQueryChange, onBack = onBack,
@@ -501,8 +506,26 @@ private fun PersistentSearchPane(query: String, onQueryChange: (String) -> Unit,
             .windowInsetsPadding(WindowInsets.navigationBars)
             .padding(start = startSafe, end = endSafe)) {
             if (query == "cam" && !unavailable) {
-                PersistentResultLine(title = "Camellia", detail = "Folder · opens this folder", kind = "Folder")
-                PersistentResultLine(title = "Another Xronixle", detail = "Track · Camellia · reveals track", kind = "Track")
+                if (overflowStudy) {
+                    PersistentResultLine(title = overflowFolderTitle,
+                        detail = "Folder · opens this folder", kind = "Folder")
+                    PersistentResultLine(title = overflowTrackTitle,
+                        detail = overflowTrackDetail, kind = "Track")
+                    // What: `repeat` invokes this block for each synthetic row index.
+                    // Why: Enough fixture rows must exist to exercise vertical result scrolling.
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // for (let index = 0; index < 18; index += 1) renderResult(index);
+                    // ```
+                    repeat(18) { index ->
+                        PersistentResultLine(title = "Camellia archive ${index + 1}",
+                            detail = "Folder · opens this folder", kind = "Folder")
+                    }
+                } else {
+                    PersistentResultLine(title = "Camellia", detail = "Folder · opens this folder", kind = "Folder")
+                    PersistentResultLine(title = "Another Xronixle", detail = "Track · Camellia · reveals track", kind = "Track")
+                }
             } else {
                 Text(if (unavailable) "Library unavailable" else if (query.isEmpty()) "Search your music"
                     else "No results for “$query”",

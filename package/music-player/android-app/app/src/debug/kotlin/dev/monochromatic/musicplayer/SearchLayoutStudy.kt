@@ -130,6 +130,8 @@ import androidx.compose.ui.unit.dp
 internal fun SearchLayoutStudy(candidate: String, hidePositiveHeading: Boolean = false) {
     val light = candidate.endsWith("-light")
     val cover = LocalConfiguration.current.screenWidthDp < 600
+    // This debug marker changes result samples without changing the settled cover layout.
+    val overflowStudy = candidate.contains("-overflow-")
     val variant = if (candidate.contains("-docked-")) "docked" else if (candidate.contains("-wide-list-")) "wide-list" else "wide-grid"
     val initiallyOpen = !candidate.contains("-player")
     val initialQuery = if (candidate.contains("-results")) "cam" else if (candidate.contains("-none")) "zzq" else ""
@@ -151,7 +153,8 @@ internal fun SearchLayoutStudy(candidate: String, hidePositiveHeading: Boolean =
     val pageColor = if (light) MaterialTheme.colorScheme.surfaceContainerLowest else Color.Black
     if (cover) {
         SearchLayoutCover(query = query, onQueryChange = { query = it }, onBack = onBack,
-            unavailable = unavailable, pageColor = pageColor, hidePositiveHeading = hidePositiveHeading)
+            unavailable = unavailable, pageColor = pageColor, hidePositiveHeading = hidePositiveHeading,
+            overflowStudy = overflowStudy)
         return
     }
     // What:     110px is this panel's approximation of the user's physical 7.5mm dent.
@@ -177,7 +180,8 @@ internal fun SearchLayoutStudy(candidate: String, hidePositiveHeading: Boolean =
 /** Keeps the folded design shared while unfolded alternatives answer the open layout question. */
 @Composable
 private fun SearchLayoutCover(query: String, onQueryChange: (String) -> Unit,
-    onBack: () -> Unit, unavailable: Boolean, pageColor: Color, hidePositiveHeading: Boolean) {
+    onBack: () -> Unit, unavailable: Boolean, pageColor: Color, hidePositiveHeading: Boolean,
+    overflowStudy: Boolean) {
     Column(modifier = Modifier.fillMaxSize().background(pageColor)) {
         Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
         SearchLayoutHeader(query = query, onQueryChange = onQueryChange, onBack = onBack,
@@ -186,7 +190,7 @@ private fun SearchLayoutCover(query: String, onQueryChange: (String) -> Unit,
         SearchLayoutRows(query = query, unavailable = unavailable,
             modifier = Modifier.fillMaxWidth().weight(1f).windowInsetsPadding(WindowInsets.navigationBars),
             halfClearance = null, fullWidth = false, pageColor = pageColor,
-            hidePositiveHeading = hidePositiveHeading)
+            hidePositiveHeading = hidePositiveHeading, overflowStudy = overflowStudy)
     }
 }
 
@@ -290,7 +294,7 @@ private fun SearchLayoutInput(query: String, onQueryChange: (String) -> Unit, mo
 @Composable
 private fun SearchLayoutRows(query: String, unavailable: Boolean, modifier: Modifier,
     halfClearance: androidx.compose.ui.unit.Dp?, fullWidth: Boolean, pageColor: Color,
-    hidePositiveHeading: Boolean = false) {
+    hidePositiveHeading: Boolean = false, overflowStudy: Boolean = false) {
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         if (query != "cam" || unavailable) {
             SearchLayoutEmpty(query = query, unavailable = unavailable,
@@ -301,11 +305,27 @@ private fun SearchLayoutRows(query: String, unavailable: Boolean, modifier: Modi
             Text("Results for “cam”", modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 8.dp),
                 style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         }
-        SearchLayoutRow(title = "Camellia", detail = "Folder · opens this folder", kind = "Folder",
+        SearchLayoutRow(title = if (overflowStudy) overflowFolderTitle else "Camellia",
+            detail = "Folder · opens this folder", kind = "Folder",
             halfClearance = halfClearance, fullWidth = fullWidth, pageColor = pageColor)
         if (fullWidth) Spacer(modifier = Modifier.height(8.dp))
-        SearchLayoutRow(title = "Another Xronixle", detail = "Track · Camellia · reveals track", kind = "Track",
-            halfClearance = halfClearance, fullWidth = fullWidth, pageColor = pageColor)
+        SearchLayoutRow(title = if (overflowStudy) overflowTrackTitle else "Another Xronixle",
+            detail = if (overflowStudy) overflowTrackDetail else "Track · Camellia · reveals track",
+            kind = "Track", halfClearance = halfClearance, fullWidth = fullWidth, pageColor = pageColor)
+        if (overflowStudy) {
+            // What: `repeat` invokes the following block for each synthetic row index.
+            // Why: The existing cover result viewport must demonstrate scroll reachability.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // for (let index = 0; index < 18; index += 1) renderResult(index);
+            // ```
+            repeat(18) { index ->
+                SearchLayoutRow(title = "Camellia archive ${index + 1}",
+                    detail = "Folder · opens this folder", kind = "Folder",
+                    halfClearance = halfClearance, fullWidth = fullWidth, pageColor = pageColor)
+            }
+        }
     }
 }
 
