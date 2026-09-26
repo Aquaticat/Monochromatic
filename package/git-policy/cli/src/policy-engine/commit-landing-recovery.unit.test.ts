@@ -77,7 +77,9 @@ await describe({
         expect(status.stdout,).toBe('?? a.txt\n',);
         expect(await leftovers(repository,),).toEqual([],);
         expect(await git({ repository, args: ['rev-parse', 'HEAD',], },),).toBe(baseline,);
-        expect(await readFile(join(repository.gitDir, 'index',),),).toEqual(indexBefore,);
+        expect(
+          await readFile(join(repository.gitDir, 'index',),),
+        ).toEqual(indexBefore,);
       },
     },),
     it({

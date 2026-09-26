@@ -222,7 +222,7 @@ await describe({
     },),
     it({
       name: 'recognizes owner-lock entries and their candidates as registry locks, not transactions',
-      fn: function testRegistryLockNames(): void {
+      fn: async function testRegistryLockNames(): Promise<void> {
         expect([
           'landing.lock',
           'landing.lock.0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10.pending',
