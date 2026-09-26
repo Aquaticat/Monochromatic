@@ -59,7 +59,7 @@ The recordings demonstrate that combining the sampled difference with
 `imePadding()` did **not** yield a reliable reservation in this fixture.
 They do not establish an AndroidX bug or prove the precise callback order.
 The experiment's raw logs are in private scratch as
-`fixed-ime-transition.log` and
+`fixed-before-preclear-ime-transition.log` and
 `auto-reserve-failed-ime-transition.log`;
 full videos and extracted frames have matching names there.
 
@@ -335,7 +335,28 @@ The user accepted **minor** browser/Open cropping in the earlier review,
 not this loss of the visible Open action throughout ordinary typing.
 Prototype commit `5e07bdfbb` omits that additional navigation inset only
 inside the pre-reserved debug candidate.
-Its fit and focus-lifetime behavior are pending a device check.
+With debug APK SHA-256
+`198a92671b912ca296d4ac41fa0f6e98cc4304b460d48e23a60c2724d74cd895`,
+its 330dp state retained `Folders` and Open in the shortened upper-left
+viewport,
+and the final mode ended at y `1118`.
+The same APK's in-place 375 to 400dp `screenrecord` sampled 21
+IME-visible frames of the pre-reserved candidate;
+the five-outline check found its complete final mode in every sampled frame.
+A fixed-trigger control on that APK sampled 23 IME-visible frames and
+lacked the last mode border in 19 of them.
+The pre-reserved frames also show title,
+metadata,
+seek,
+transport and Search results while the IME top moves.
+These counts identify a **bounded** passing synthetic run with a positive
+failure control,
+not every unrecorded frame or a real-Gboard banner guarantee.
+Pre-reserving the banner-sized space under the ordinary 330dp keyboard
+leaves about 210 physical px of unused space above that keyboard and keeps
+the upper-left browser at its shortened header.
+The user has **not** selected that visible tradeoff;
+the active A-only review continues to show the accepted deck arrangement.
 
 ## Remaining boundary
 
