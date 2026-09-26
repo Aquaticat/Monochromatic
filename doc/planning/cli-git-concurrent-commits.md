@@ -129,6 +129,57 @@ the durable write-ups are the `doc/troubleshooting/` docs for these Git hook qui
   but transiently reverted the shared worktree's unstaged edit
   and pushed a transient entry onto the shared `refs/stash`.
 
+## Foreign `index.lock` research, 2026-09-25
+
+Git source at commit `0f8e75abebff` plus experiments with real Git 2.55.0.
+
+- Git's only index lock is the `O_EXCL` file;
+  there is no advisory lock,
+  and the fd is `O_CLOEXEC`.
+- Native `git commit -a`,
+  `-i`,
+  `-o`,
+  interactive,
+  and partial commits close the lock fd but keep `index.lock` on disk through
+  pre-commit,
+  prepare-commit-msg,
+  the editor,
+  and commit-msg
+  (`builtin/commit.c`, lines 402 to 550 and 1957).
+  Measured:
+  a 3 second hook meant 3 seconds of lock with no holder.
+  So no open holder does not mean abandoned.
+- Plain `git commit` of staged changes releases the lock before hooks run.
+- `git status` held the lock for a median of about 3.2 ms in a 10,000-file fixture.
+- `core.lockfilePid=true`
+  (default false,
+  present in 2.55.0)
+  writes `index~pid.lock` with the owner PID;
+  Git's own `EEXIST` message uses `kill(pid, 0)` to call a lock stale,
+  and Git never deletes it.
+- Git has no index lock timeout;
+  its other lock timeouts
+  (`core.packedRefsTimeout`,
+  `core.configLockTimeout`,
+  1000 ms defaults)
+  retry with quadratic backoff and jitter.
+- After `kill -9`,
+  the lock and PID file remained,
+  and an orphaned hook still pointed `GIT_INDEX_FILE` at the lock.
+- Holder scans must compare device and inode,
+  not paths;
+  `/proc` visibility stops at other users,
+  `hidepid`,
+  PID namespaces,
+  and network filesystems.
+  macOS denial is silent.
+  On Windows,
+  a `DELETE` probe could delay Git's own rename.
+- `git help stash`:
+  `pop` without an argument takes `stash@{0}`,
+  the latest entry of shared `refs/stash`,
+  so hook A's pop after hook B's push restores B's stash.
+
 ## Decisions
 
 - Meaning: concurrent separate invocations,
@@ -237,8 +288,7 @@ the owner declined an `AGENTS.md` rule.
 
 ## Open questions
 
-- Foreign `index.lock` wait bound,
-  pending research on whether a live holder is detectable.
+- Foreign `index.lock` owner classification and wait bound.
 - Hook concurrency:
   hooks that mutate shared worktree or `refs/stash` can collide when preparations overlap.
 
