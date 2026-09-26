@@ -21,7 +21,11 @@ Derived from [`conf`](https://github.com/sindresorhus/conf) by
  the on-disk and encryption wire formats,
  validation behavior,
  migration bookkeeping,
- and error message texts come from `conf` 15.1.0.
+ and error message texts come from `conf`'s GitHub source at fork time
+ (commit `83e267178f`, version-labeled 15.1.0).
+ npm `conf` 15.1.0 predates that commit and differs observably,
+ so the fuzz sidecar's differential oracle pins the forked snapshot
+ instead of the npm release.
  Upstream's copyright and permission notice are preserved verbatim in
 `LICENSES/MIT.txt`;
  this fork's own code is licensed `LGPL-3.0-or-later AND MIT`
@@ -251,4 +255,10 @@ mise run //package/module/conf-fork:test:container
 
 # Container-isolated oxc mutation testing
 mise run //package/module/conf-fork:test:mutation
+
+# Property fuzzing and the upstream differential oracle
+mise run //package/module/conf-fork.fuzz:fuzz
+
+# Coverage-reachability gate over this package's src
+mise run //package/module/conf-fork.fuzz:fuzz:coverage
 ```
