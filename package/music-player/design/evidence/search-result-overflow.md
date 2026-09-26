@@ -78,14 +78,52 @@ not a claim about production Search (which is not yet implemented).
 D55 accepts results obscured by **floating real Gboard**,
 not these results hidden behind an ordinary bottom-aligned keyboard.
 
-## Next comparison
+## Opt-in cover viewport comparison at 200% text
 
-Prototype a separate cover variant whose result viewport reserves the
-reported bottom IME height while keeping the same fixed header and native
-result rows.
-Require the last row to become readable while `cam` remains focused,
-then compare keyboard-closed and typing states at 100%/200% text.
-Do not infer success from an app-node rectangle alone;
-verify the rendered state before capturing it.
-Any raw captures stay private until their status regions and metadata are
-sanitized for a user review.
+Prototype commits `f4a35e817` and `c4cf948e4` add a **separate,
+unaccepted** `-imeviewport-` comparison to the selected Search candidate.
+The selected Search cover delegation keeps the positive-heading suppression,
+so the first result still begins directly beneath the integrated header.
+Only the cover result viewport receives Compose `imePadding()`;
+Back,
+query and Clear remain in the fixed header.
+The [Android Compose insets guide][compose-insets] describes keyboard inset
+padding as resizing scrollable content during IME changes and consuming
+nested system-bar insets.
+That describes the intended API behavior,
+not a substitute for the rendered device check.
+
+The newly built and installed debug APK matched SHA-256
+`0801ea3f44ef84163cbddb2b2f37fbddbb1c293148440381f6f899be7eaee7af`.
+On the disposable folded 1080 × 2424 panel at 390dpi and 200% text,
+its keyboard-closed result viewport was `[0,330][1080,2365]` and the
+first long title started at y `350` with **no heading**.
+After the query took focus,
+the 300dp debug keyboard began at y `1693`;
+the viewport ended at that same y instead of continuing behind it.
+A within-list upward swipe visibly moved row 1 from y `2236` to y `1246`,
+validating that this fixture responds to scrolling.
+At the bottom,
+`Camellia archive 18` occupied `[127,1479][765,1582]` and its supporting
+text occupied `[127,1582][847,1673]`,
+both above the keyboard.
+A further upward swipe left row 18 at exactly the same bounds.
+The native 1080 × 2424 screenshot showed the complete last title,
+its folder icon and supporting copy immediately above the debug keyboard.
+A first explicit screenshot inadvertently targeted the black **inactive
+inner** display;
+the verified cover capture used display ID `4619827551948147201`.
+These controls support a **settled 200% debug-IME viewport pass**,
+not a real-Gboard or frame-transition pass.
+The APK's signing certificate differed from the prior installed debug APK;
+only the disposable AVD's app was uninstalled and reinstalled before this
+same-hash comparison.
+
+Next test the keyboard-closed scroll end,
+IME opening at the end,
+100% text and real settled full-width Gboard,
+while independently checking that the inner selected browser and deck are
+unchanged at both text scales.
+Keep raw status-bearing screenshots and XML private until sanitized.
+
+[compose-insets]: https://developer.android.com/develop/ui/compose/system/insets-ui
