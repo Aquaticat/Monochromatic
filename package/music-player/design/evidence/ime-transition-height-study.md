@@ -169,6 +169,38 @@ This is an in-place **endpoint** result,
 not proof of visibility on every intervening rendered frame or on
 cold entry directly into an intermediate keyboard height.
 
+## Recorded in-place height jump
+
+On the same debug APK used for the ascending and descending steps,
+the adjustable IME moved from 375dp (y `1238`) to 400dp (y `1177`)
+while the `cam` editor remained focused.
+A native half-resolution `screenrecord` sampled the unchanged fixed-trigger
+control in 24 frames and the measured-fit variant in 28 frames.
+The control was missing the final mode's bottom outline in 20 recorded
+IME-visible frames;
+the measured-fit variant was missing it in 10.
+In the latter,
+frame 001 showed the full mode with IME top y `619` in video pixels,
+frames 004 to 013 showed only earlier mode boundaries after the IME top
+reached y `588`,
+and frame 014 showed the full mode again.
+The current branch was logged as compact with platform bottom `975px`,
+but **that log does not prove it was drawn before the clipped frames**.
+The same candidate therefore still fails D50 during this in-place resize,
+even though both endpoint hierarchies pass.
+
+The recordings and extracted frames stay in private scratch as
+`fixed-height-jump.mp4`,
+`auto-height-jump.mp4` and matching `*-height-jump-frames/` directories.
+FFmpeg's `image2` muxer reported non-monotonically increasing timestamps
+while extracting each full frame count;
+do not infer the duration of the failure from nominal frame rate.
+The five-outline check's fixed control establishes it detects a real clipped
+mode,
+but no sampled-frame pass would prove every unrecorded instant.
+A response must act before or alongside IME geometry movement,
+not only after the app recomposes from its new bottom inset.
+
 ## Remaining boundary
 
 The closed deck's first measured heights changed from `762` to `891` to
@@ -176,10 +208,12 @@ The closed deck's first measured heights changed from `762` to `891` to
 A later focused transition logged a stored `1071px` height,
 but this capture did not isolate when that earlier sample was taken.
 No single early `onSizeChanged` value proves full-content demand.
-Verify the revised open-height guard across rendered frames of an in-place
-height change,
-keyboard dismissal and refocus,
-and cold entry at a height where both deck arrangements fit.
+Investigate whether the system dispatches an IME animation preparation or
+start callback before this in-place height jump is drawn,
+then test whether its target is usable to prepare the deck in time.
+Keyboard dismissal,
+refocus,
+and cold entry at a height where both deck arrangements fit remain open.
 Check title paint and accessibility bounds separately;
 acceptance of a cropped **browser** does not allow a cropped deck.
 A real Gboard banner recurrence and floating Gboard remain independent,
