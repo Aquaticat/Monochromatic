@@ -168,6 +168,28 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    798 to 541 tokens;
    retires MA3 and FLG (into QGR,
    the more-cited code).
+   Approved as shown.
+- Batch 4 (visual and device rules):
+   CXD,
+   HDM,
+   SCF,
+   PRV,
+   VHI stay always-loaded,
+   reworded general (359 to 340 tokens);
+   QVE,
+   PFG,
+   QVM,
+   MXQ,
+   HFM,
+   RVC,
+   PXF move to a new `visual-design-review` skill;
+   ZDV,
+   BZF,
+   ANB,
+   AVP,
+   M1T,
+   ATS move to `package/music-player/design/review-notes.md`
+   (830 tokens leave `AGENTS.md` in total).
    Proposed,
    awaiting user review.
 
@@ -461,6 +483,69 @@ TSK:
  one task-list item per major area,
  each independently verifiable;
  never one umbrella item.
+```
+
+### Batch 3
+
+```md
+DVP:
+ Target device available:
+ probe its settings + limits before web research;
+ external sources only explain probe results or fill gaps.
+
+QAB:
+ Predicting a change's (or revert's) effect from unchanged code is inference:
+ apply it in a fork,
+ measure,
+ then conclude.
+
+QPC:
+ "No difference" counts only from a probe proven able to show one:
+ run a positive control first (a case that must move).
+
+QIV:
+ Before trusting a null or count,
+ validate scope,
+ cache,
+ harness,
+ generator reach (stale cache,
+ one-file lint,
+ narrow fuzzer,
+ wrong assertion);
+ list unexercised surfaces.
+
+QNB:
+ Comparing noisy measurements (timings,
+ benchmarks,
+ model or provider outcomes):
+ measure run-to-run spread on unchanged input first;
+ smaller differences are noise.
+
+QGR:
+ Settled decisions determining one answer:
+ adopt + record unasked,
+ even while grilling.
+Flagged choices (veto-open adoptions,
+ open questions):
+ ask same turn with options;
+ never park them in docs.
+
+QCS:
+ Under a quality-over-cost guideline,
+ options differing only in price aren't user questions:
+ pick the one buying more evidence or better output,
+ record it,
+ invite veto.
+
+QSP:
+ Never bundle separable decisions into one option set or offer complements as alternatives;
+ "both,
+ in this order" must be reachable.
+
+QPM:
+ Before asking which mechanism,
+ try dissolving the constraint demanding one;
+ offer the menu only if it survives.
 ```
 
 ## Next action
