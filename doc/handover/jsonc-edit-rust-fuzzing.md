@@ -160,7 +160,8 @@ All three campaign crashes are triaged.
 Two were product defects present in **both** maintained implementations,
 one was an over-strict harness expectation.
 
-1. **Product defect, fixed in both implementations.**
+1. **Product defect,
+   fixed in both implementations.**
    A `//` comment ends at CR,
    LF or CRLF,
    but both emitters decided trailing form from LF alone (`isSingleLineComment` in
@@ -183,7 +184,8 @@ one was an over-strict harness expectation.
    and two round-trip cases in
    `package/module/jsonc-edit/src/stringify.unit.test.ts`.
    Both were shown failing before the fix.
-2. **Product defect, fixed in both implementations.**
+2. **Product defect,
+   fixed in both implementations.**
    Setting the document root to a scalar was accepted,
    producing a state whose canonical emission (`null`) its own parser rejects.
    The empty-input edit crash was this,
@@ -193,7 +195,8 @@ one was an over-strict harness expectation.
    `package/module/jsonc-edit/src/edit-set.ts` now refuse a non-container root replacement.
    Guard test `root_set_to_a_scalar_is_refused` was shown failing with the guard removed and
    passing with it restored.
-3. **Harness defect, fixed twice over.**
+3. **Harness defect,
+   fixed twice over.**
    `assert_comments_preserved` compared a whole merged body against the emission,
    and `fuzz_parse_emit_roundtrip` repeated that comparison for generator-recorded bodies.
    Canonical emission renders a merged multi-line body as one indented `//` line per body line,
