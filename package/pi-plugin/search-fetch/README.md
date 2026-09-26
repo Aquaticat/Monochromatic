@@ -73,8 +73,79 @@ the tool returns the inner results array as JSONL,
 one result object per line.
 Other search response shapes are returned as JSON.
 
-`web_fetch` fetches through Linkup first to preserve rendered-page behavior.
-It may fall back to Exa contents when Linkup is unavailable and Exa credentials are configured.
+`web_fetch` routes GitHub URLs through the local `gh` CLI before any paid provider.
+Every other URL fetches through Linkup first to preserve rendered-page behavior.
+Linkup failures fall back to Exa contents when Exa credentials are configured.
+
+GitHub hosts carrying a `gh` mapping:
+
+- `github.com` and `www.github.com`
+- `gist.github.com`
+- `api.github.com`
+- `raw.githubusercontent.com`
+
+Mapped GitHub URL shapes and the `gh` work each one uses:
+
+- repository home page:
+   `gh repo view` returning repository metadata and the README
+- `blob`/`raw`/`blame` file URLs:
+   `gh api` contents read with the raw media type
+- `tree` directory URLs:
+   `gh api` contents read projected to tab-separated `type`/`name`/`size` lines
+- numbered `issues` URLs:
+   `gh issue view` for the body plus `gh issue view --comments` for the thread
+- numbered `pull` URLs:
+   `gh pr view` for the body plus `gh pr view --comments` for the thread
+- `pull` changed-file URLs:
+   `gh pr diff`
+- `commit` URLs:
+   `gh api` with the diff media type
+- `compare` URLs:
+   `gh api` with the diff media type
+- `releases` URLs:
+   `gh release list`
+- `releases/tag` URLs:
+   `gh release view` with an explicit `--repo`
+- gist URLs:
+   `gh gist view`
+- `api.github.com` URLs:
+   `gh api` with the same path and query
+
+GitHub shapes with no `gh` mapping fall through to the paid provider chain:
+
+- owner and organization pages
+- `actions` runs
+- `wiki` pages
+- `discussions`
+- `projects`
+- `pulse` and other graph pages
+- release asset downloads
+
+One git reference may itself contain slashes,
+ so blob and tree URLs are ambiguous.
+The planner builds one ordered attempt per split point with the shortest reference first.
+The first attempt whose `gh` call exits zero answers.
+
+Each `gh` invocation runs in a temporary working directory so no ambient repository context reaches it.
+One invocation carries a fixed 60-second deadline and a 32 MiB captured output ceiling.
+
+These outcomes all fall back to Linkup and then Exa:
+
+- missing `gh` executable
+- unauthenticated `gh`
+- exceeded deadline
+- exceeded output ceiling
+- non-zero `gh` exit
+- unmapped GitHub shape
+
+Tool-result details record every fallback step as `fallbackChain`.
+A cancelled tool call never falls back.
+
+`gh` output returns in the same single-field `{ "markdown": ... }` shape Linkup uses,
+ so the model sees raw text.
+Output that is not valid UTF-8 returns a one-line notice naming the captured byte count instead of replacement
+characters.
+ Font and image blobs take that path.
 
 Linkup fetch uses fixed behavior:
 
@@ -82,7 +153,7 @@ Linkup fetch uses fixed behavior:
 - `extractImages: false`
 - `includeRawHtml: false`
 
-Blocked fetch hosts throw before any network request is made.
+Blocked fetch hosts throw before any `gh` invocation or provider network request is made.
 
 After fetching,
 the extension removes Markdown inline images backed by base64 `data:image/` URLs from the model-visible response.
