@@ -360,6 +360,58 @@ The agreed workflow would request manual approval rather than wait for this resu
 That fallback-based interactive workflow remains possible.
 Other runtime/checkpoint configurations were not measured by this probe.
 
+### CPU BF16 also missed the assessment deadline
+
+A direct CPU flag probe found `avx512_bf16`,
+`avx512f`,
+and `avx2`.
+At the pinned Laya revision,
+`laya/agent.py:455-458` exposes the consumer setting:
+
+```python
+# laya/agent.py:455-458
+elif self.device.type == "cpu":
+    if os.environ.get("LAYA_CPU_AMP", "").lower() in ("bf16", "bfloat16"):
+        self.amp_enabled = True
+        self.dtype = torch.bfloat16
+```
+
+`laya/agent.py:181-193` enters autocast when the mode is enabled:
+
+```python
+# laya/agent.py:190-193, selected statements
+if not enabled:
+    return nullcontext()
+return torch.autocast(device_type=device.type, dtype=dtype)
+```
+
+The separate private variant at `~/temp/agent/laya-axiom-bf16-2026-09-26`
+changed only this configuration and added mode/fallback assertions.
+It retained the same checkpoint,
+full policy,
+Noul,
+synthetic scenario,
+and resource limits.
+Process `proc_57da` exited 0 with no memory kill.
+The mode remained enabled through inference;
+all 12,820 actual forward tokens were preserved and the policy remained current.
+
+The axiom probability was 0.5339.
+Inference took 152.4031641939655 seconds,
+excluding 2.8198068970814347 seconds for loading.
+Peak container memory was 5,656,580,096 bytes.
+This measured case also reaches manual approval at the five-second deadline.
+The separate single runs do not establish a speedup distribution or numerical parity.
+BF16 is not a verified remedy for the accepted interactive latency requirement.
+
+Image: `89a15652172b2008f4552ee81f08e587e33bae60c68a8a6edff39a23d092bf90`.
+Private `result-initial.json` SHA-256:
+`34774def995db9765894893eb81b7b0eb458912e305edbaf0ba504c4550e8245`.
+No GPU,
+training,
+network,
+or additional memory allowance was used.
+
 ### The loader warning names a different question bucket
 
 Laya emitted this `RuntimeWarning` at loader construction:
