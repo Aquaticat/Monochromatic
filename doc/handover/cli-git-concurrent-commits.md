@@ -37,10 +37,29 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
   (`doc/decision/cli-git-concurrent-commits.md`).
 - Implementation issue:
    #571.
-- A code-mapping pass is writing
-  `package/git-policy/cli/doc/concurrent-commits-implementation-plan.md`
-  in the worktree (uncommitted until reviewed).
-- No implementation code exists yet.
+- Implementation plan committed on the branch:
+  `package/git-policy/cli/doc/concurrent-commits-implementation-plan.md`.
+- The owner went to sleep on 2026-09-25 and asked for autonomous work,
+  building both options when two look equally good.
+  Agent-made decisions are recorded,
+  veto open,
+  in the decision record section "Implementation-time decisions".
+- Running in parallel on the branch
+  (each commits with explicit pathspecs and retries on `index.lock`):
+  the `SPEC.md` and `README.md` rewrite,
+  slice 1 (per-transaction journals and live-owner-skipping recovery),
+  and the container end-to-end suite
+  (expected to fail its concurrency scenarios until later slices land,
+  which is its positive control).
+- A prototype in disposable repositories compares private `HEAD` shapes
+  (detached,
+  symbolic pending ref,
+  per-worktree ref,
+  shadow repository with private refs and the real object store)
+  so hooks see the real branch name,
+  plus sequencer-conclusion state copying and replay header preservation
+  (`git commit-tree` against `git replay`).
+  Slice 2 waits on it.
 
 ## Evidence produced this session
 
@@ -61,12 +80,12 @@ instead of all but the first failing on `index.lock` `EEXIST` (issue #560 was a 
 
 ## Next actions
 
-1.  Review and commit the implementation plan.
-2.  Update `package/git-policy/cli/SPEC.md` and `README.md` for the new transaction protocol,
-    policy `inputs` declaration,
-    config keys,
-    and JSONL events.
-3.  Implement in separately verifiable slices:
+1.  Review the `SPEC.md`,
+    slice 1,
+    and end-to-end suite results as they arrive.
+2.  Choose the private `HEAD` shape from the prototype,
+    then implement slice 2.
+3.  Implement the remaining slices in the plan's order:
     per-transaction journals and recovery,
     private `HEAD` preparation with the hook dispatcher shim,
     landing critical section with replay,
