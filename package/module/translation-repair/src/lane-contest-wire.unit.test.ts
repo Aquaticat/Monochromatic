@@ -178,6 +178,7 @@ await describe({
         // never states and the repair lane's own adjudicators had accepted as
         // an invented addition.
         const subject = {
+          lineStructured: false,
           sourceText: '猫睡了。',
           incumbentText: 'The cat slept after chasing a moth.',
           repairText: 'The cat chased a moth and slept.',
@@ -218,6 +219,7 @@ await describe({
         // is the correct inference from the wrong evidence.
         const messages = buildLaneContestMessages({
           subject: {
+            lineStructured: false,
             sourceText: '猫睡了。',
             incumbentText: 'Mittens (Whiskers) slept.',
             repairText: 'Mittens (Whiskers) slept.',
@@ -239,6 +241,7 @@ await describe({
         // detail, and three of five contest judges shown only the original
         // called the repair candidate unsupported for carrying it.
         const subject = {
+          lineStructured: false,
           sourceText: '猫有一个弟弟。',
           incumbentText: 'Mittens has a younger brother who also naps in boxes.',
           repairText: 'Mittens has a younger brother who also naps in boxes.',
@@ -268,6 +271,7 @@ await describe({
       fn: async () => {
         const messages = buildLaneContestMessages({
           subject: {
+            lineStructured: false,
             sourceText: '小猫最爱的玩偶是超天酱。',
             incumbentText: 'Her favourite plush toy was KAngel.',
             repairText: 'Her favourite plush toy was KAngel.',
@@ -286,6 +290,7 @@ await describe({
       fn: async () => {
         const system = buildLaneContestMessages({
           subject: {
+            lineStructured: false,
             sourceText: '---\nname: 猫猫\n---\n',
             incumbentText: '---\nname: EntryId\n---\n',
             repairText: '---\nname: EntryId\n---\n',
@@ -304,6 +309,7 @@ await describe({
       fn: async () => {
         const messages = buildLaneContestMessages({
           subject: {
+            lineStructured: false,
             sourceText: '---\nname: 猫猫\n---\n',
             incumbentText: '---\nname: EntryId\n---\n',
             repairText: '---\nname: EntryId\n---\n',
@@ -328,6 +334,7 @@ await describe({
         // person", which is a claim, rather than as an absent section.
         const messages = buildLaneContestMessages({
           subject: {
+            lineStructured: false,
             sourceText: '猫睡了。',
             incumbentText: 'The cat slept.',
             repairText: 'The cat slept.',
@@ -350,6 +357,7 @@ await describe({
         // which LANE ships, kept the old wording and this test held it there.
         const policy = buildLaneContestMessages({
           subject: {
+            lineStructured: false,
             sourceText: '猫睡了。',
             incumbentText: 'x',
             repairText: 'y',
@@ -390,6 +398,7 @@ await describe({
       fn: async () => {
         const asked = buildLaneContestMessages({
           subject: {
+            lineStructured: false,
             sourceText: SIZED_SOURCE,
             incumbentText: PAGE_HEAVY,
             repairText: PAGE_HEAVY,
@@ -408,6 +417,7 @@ await describe({
       fn: async () => {
         const asked = buildLaneContestMessages({
           subject: {
+            lineStructured: false,
             sourceText: SIZED_SOURCE,
             incumbentText: IN_PROPORTION,
             repairText: IN_PROPORTION,
@@ -425,6 +435,7 @@ await describe({
       fn: async () => {
         const policy = buildLaneContestMessages({
           subject: {
+            lineStructured: false,
             sourceText: SIZED_SOURCE,
             incumbentText: IN_PROPORTION,
             repairText: IN_PROPORTION,
@@ -452,6 +463,7 @@ await describe({
          Subject every case shares.
          */
         const subject = {
+          lineStructured: false,
           sourceText: '猫猫在书店的阁楼里睡觉。',
           incumbentText: 'The cat slept in the bookshop attic.',
           repairText: 'The cat sleeps in the bookshop attic.',

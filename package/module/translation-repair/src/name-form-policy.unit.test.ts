@@ -62,7 +62,7 @@ const sheets = [
   },
   {
     name: 'lane contest',
-    text: systemText(buildLaneContestMessages({ subject: { sourceText: SOURCE, incumbentText: ARCHIVE, repairText: ARCHIVE, translateText: ARCHIVE, identityContext: IDENTITY, }, },),),
+    text: systemText(buildLaneContestMessages({ subject: { lineStructured: false, sourceText: SOURCE, incumbentText: ARCHIVE, repairText: ARCHIVE, translateText: ARCHIVE, identityContext: IDENTITY, }, },),),
   },
 ];
 

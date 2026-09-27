@@ -62,9 +62,9 @@ await describe({
       name: 'SHOWS named candidate counts to lane and consolidation gates',
       fn: async () => {
         /** The lane gate must distinguish physical and rendered lines. */
-        const lane = buildLaneContestMessages({ subject: { sourceText: SOURCE, incumbentText: '', repairText: FLAT, translateText: KEPT, }, },);
+        const lane = buildLaneContestMessages({ subject: { lineStructured: false, sourceText: SOURCE, incumbentText: '', repairText: FLAT, translateText: KEPT, }, },);
         /** The final gate cannot prefer a flat polish for wording alone. */
-        const gate = buildConsolidateGateMessages({ subject: { sourceText: SOURCE, incumbentText: '', standingText: KEPT, consolidatedText: FLAT, }, },);
+        const gate = buildConsolidateGateMessages({ subject: { lineStructured: false, sourceText: SOURCE, incumbentText: '', standingText: KEPT, consolidatedText: FLAT, }, },);
         expect(JSON.stringify(lane,),).toContain(CONTRACT,);
         expect(JSON.stringify(gate,),).toContain(CONTRACT,);
         expect(JSON.stringify(lane,),).toContain('CANDIDATE',);

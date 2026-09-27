@@ -112,6 +112,9 @@ export function laneContestRunShape(
 
  @param archiveDisputeNote - accepted additions shown against the archive
  rendering, absent on an undisputed slice (class one hundred eight)
+
+ @param lineStructured - whether the line rule governs the slice, which
+ puts the judge line clause on the sheet (ledger S15)
  
  @returns Hash keying this slice`s ballots
  
@@ -131,6 +134,7 @@ export function laneContestSliceKey(
     translateText,
     repairDamageClaims = [],
     archiveDisputeNote,
+    lineStructured,
   }: {
     readonly runShape: string;
     readonly sourceText: string;
@@ -141,6 +145,7 @@ export function laneContestSliceKey(
     readonly translateText: string;
     readonly repairDamageClaims?: readonly string[];
     readonly archiveDisputeNote?: string;
+    readonly lineStructured: boolean;
   },
 ): string {
   return hashContent({
@@ -176,6 +181,9 @@ export function laneContestSliceKey(
           'dispute',
           archiveDisputeNote,
         ]),
+      // The line clause changes the question the same way (ledger S15); a
+      // prose slice keys exactly as before.
+      ...(lineStructured ? ['line-structured',] : []),
     ],),
   },);
 }

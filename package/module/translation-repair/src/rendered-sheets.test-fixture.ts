@@ -196,6 +196,7 @@ export function renderedSheets(): readonly RenderedSheet[] {
       text: joined({
         messages: buildLaneContestMessages({
           subject: {
+            lineStructured: false,
             sourceText: SOURCE,
             incumbentText: ARCHIVE,
             repairText: REPAIR,
@@ -211,6 +212,7 @@ export function renderedSheets(): readonly RenderedSheet[] {
       text: joined({
         messages: buildConsolidateGateMessages({
           subject: {
+            lineStructured: false,
             sourceText: SOURCE,
             incumbentText: ARCHIVE,
             consolidatedText: REPAIR,

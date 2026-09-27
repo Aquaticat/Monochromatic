@@ -34,6 +34,7 @@ import {
  One contested slice, standing in for a corpus passage.
  */
 const SUBJECT = {
+  lineStructured: false,
   sourceText: '猫睡了。',
   incumbentText: 'The cat slept all afternoon in the sun.',
   repairText: 'The cat slept all afternoon.',

@@ -39,6 +39,7 @@ const DISPUTE_NOTE = 'ARCHIVE RENDERING DISPUTED: the repair lane\'s adjudicator
  One gated slice, standing in for a corpus passage.
  */
 const SUBJECT: GateSubject = {
+  lineStructured: false,
   sourceText: '猫在窗台上睡觉。',
   incumbentText: 'The cat sleeps on the sill, purring.',
   consolidatedText: 'The cat sleeps on the window sill.',
@@ -326,6 +327,7 @@ await describe({
       fn: async () => {
         const asked = buildConsolidateGateMessages({
           subject: {
+            lineStructured: false,
             sourceText: SIZED_SOURCE,
             incumbentText: PAGE_HEAVY,
             consolidatedText: PAGE_HEAVY,
@@ -344,6 +346,7 @@ await describe({
       fn: async () => {
         const asked = buildConsolidateGateMessages({
           subject: {
+            lineStructured: false,
             sourceText: SIZED_SOURCE,
             incumbentText: IN_PROPORTION,
             consolidatedText: IN_PROPORTION,
@@ -361,6 +364,7 @@ await describe({
       fn: async () => {
         const policy = buildConsolidateGateMessages({
           subject: {
+            lineStructured: false,
             sourceText: SIZED_SOURCE,
             incumbentText: IN_PROPORTION,
             consolidatedText: IN_PROPORTION,
@@ -422,6 +426,7 @@ await describe({
         /** What the judge is shown over a consolidation that lost 自切. */
         const shown = exchangeFor({
           subject: {
+            lineStructured: false,
             sourceText: '那只猫讲起自切的经历时，朋友们都安静地听着。',
             incumbentText: 'When the cat told of her self-surgery, her friends listened quietly.',
             consolidatedText: 'When the cat told of her operation, her friends sat quietly.',

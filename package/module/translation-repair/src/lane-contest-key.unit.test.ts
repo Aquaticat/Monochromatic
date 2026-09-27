@@ -71,6 +71,7 @@ function catInputs(): Parameters<typeof laneContestSliceKey>[0] {
     incumbentKind: 'present',
     repairText: REPAIR_NAP,
     translateText: TRANSLATE_NAP,
+    lineStructured: false,
   };
 }
 

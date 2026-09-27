@@ -184,6 +184,7 @@ export async function gateAndShip(
       incumbentText: subject.incumbentText,
       consolidatedText: decided.text,
       standingText,
+      lineStructured,
       ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
       ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
       ...identity,

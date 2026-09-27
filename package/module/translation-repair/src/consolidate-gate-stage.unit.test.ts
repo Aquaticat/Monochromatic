@@ -32,6 +32,7 @@ import {
  One gated slice, standing in for a corpus passage.
  */
 const SUBJECT = {
+  lineStructured: false,
   sourceText: '猫睡了一下午。',
   incumbentText: 'The cat slept all afternoon in the sun.',
   consolidatedText: 'The cat slept all afternoon.',
@@ -172,6 +173,7 @@ await describe({
           },),
           modelIds: ROSTER,
           subject: {
+            lineStructured: false,
             sourceText: '---\nname: 猫猫\n---\n',
             incumbentText: '---\nname: EntryId\n---\n',
             consolidatedText: '---\nname: Maomao Cat\n---\n',

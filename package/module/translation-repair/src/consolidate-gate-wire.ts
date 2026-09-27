@@ -10,6 +10,7 @@ import {
   readCandidateNames,
 } from './contest-ballot-wire.ts';
 import { contestSizeNote, } from './contest-size-note.ts';
+import { JUDGE_LINE_STRUCTURE_CLAUSE, } from './candidate-judge-rules.ts';
 import { FRONT_MATTER_DECISION_RULE, } from './front-matter-translation.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
@@ -235,6 +236,14 @@ export type ConsolidateGateSubject = {
   readonly standingText: string;
 
   /**
+   Whether the line-structure rule governs this slice, so the judges read
+   what a line-structured original asks (ledger S15). REQUIRED, NOT
+   DEFAULTED: a default of false would hide every governed slice, the H2
+   failure again.
+   */
+  readonly lineStructured: boolean;
+
+  /**
    Why the deterministic publication rule refused the standing, when it
    did: a standing that cannot ship is shown as such, so refusing the
    consolidation is not mistaken for keeping something (class fifty-six,
@@ -409,6 +418,7 @@ export function buildConsolidateGateMessages(
     (subject.syntax === 'front-matter')
       ? `${CONTEST_POLICY}\n\n${FRONT_MATTER_DECISION_RULE}`
       : CONTEST_POLICY,
+    subject.lineStructured ? JUDGE_LINE_STRUCTURE_CLAUSE : '',
     renderedBreakPrompt({
       sourceText: subject.sourceText,
       archiveText: subject.incumbentText,

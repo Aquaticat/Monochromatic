@@ -2,6 +2,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import { communityRenderingsBlock, } from './community-glossary.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
+import { JUDGE_LINE_STRUCTURE_CLAUSE, } from './candidate-judge-rules.ts';
 import { FRONT_MATTER_DECISION_RULE, } from './front-matter-translation.ts';
 import {
   CONTEST_POLICY,
@@ -356,6 +357,14 @@ export type LaneContestSubject = {
   readonly archiveDisputeNote?: string;
 
   /**
+   Whether the line-structure rule governs this slice, so the judges read
+   what a line-structured original asks (ledger S15). REQUIRED, NOT
+   DEFAULTED: a default of false would hide every governed slice, the H2
+   failure again.
+   */
+  readonly lineStructured: boolean;
+
+  /**
    Corroborated added-damage claims the introduced-defect probe raised
    against the repair candidate, one line each, absent when none.
    
@@ -550,6 +559,7 @@ export function buildLaneContestMessages(
     (subject.syntax === 'front-matter')
       ? `${CONTEST_POLICY}\n\n${FRONT_MATTER_DECISION_RULE}`
       : CONTEST_POLICY,
+    subject.lineStructured ? JUDGE_LINE_STRUCTURE_CLAUSE : '',
     renderedBreakPrompt({
       sourceText: subject.sourceText,
       archiveText: subject.incumbentText,

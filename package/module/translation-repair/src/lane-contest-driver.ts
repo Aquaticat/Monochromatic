@@ -410,6 +410,11 @@ export async function contestDocumentLanes(
         ? {}
         : { archiveDisputeNote, };
       /**
+       Whether the line rule governs this slice: the judges read it, the key
+       names it, and the winner is validated under it (ledger S15, H2).
+       */
+      const lineStructured = lineStructuredSlices.has(row.sliceIndex,);
+      /**
        Key these ballots resume under.
        */
       const key = laneContestSliceKey({
@@ -422,6 +427,7 @@ export async function contestDocumentLanes(
         translateText: row.translateText,
         ...damageFragment,
         ...disputeFragment,
+        lineStructured,
       },);
 
       /**
@@ -461,6 +467,7 @@ export async function contestDocumentLanes(
                 ...((referenceContext === undefined) ? {} : { referenceContext, }),
                 ...damageFragment,
                 ...disputeFragment,
+                lineStructured,
               },
               signal,
               exchangeTimeoutMs: perCallTimeoutMs,
@@ -494,7 +501,7 @@ export async function contestDocumentLanes(
               repairText: row.repairText,
               translateText: row.translateText,
               ...((syntax === undefined) ? {} : { syntax, }),
-              lineStructured: lineStructuredSlices.has(row.sliceIndex,),
+              lineStructured,
               declared: declaredNamePairs,
             },);
             /**
