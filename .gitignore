@@ -68,6 +68,7 @@ cache/
 .cache/
 .wrangler/
 temp/
+tmp/
 .temp/
 .tmp*
 *.tmp
