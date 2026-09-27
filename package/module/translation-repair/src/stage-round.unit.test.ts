@@ -20,6 +20,7 @@
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   expect,
@@ -67,10 +68,17 @@ const SLOW_MS = 40;
 const CLOCK_SLACK_MS = 2;
 
 /**
- Exchange deadline, which is when a hanging voice stops hanging:
- a round that waited on one before quorum would take this long to reach it.
+ Exchange deadline the rounds are given; the scripted client arms none.
  */
 const EXCHANGE_TIMEOUT_MS = 10_000;
+
+/**
+ How far past the first real answer a round's quorum mark may land.
+ Half the grace: scheduling between the answer's return and the round's mark
+ stays far under it even at 0.2 CPU, while a round that spent a grace's worth
+ of waiting before quorum lands a whole grace past it.
+ */
+const QUORUM_MARK_SLACK_MS = GRACE_MS / 2;
 
 /**
  Roster the rounds ask, named from the catalog because model identifiers are
@@ -185,9 +193,13 @@ async function untilAborted({ signal, }: { readonly signal: AbortSignal; },): Pr
  @param slowModelId - model that answers after {@link SLOW_MS}
  
  @param hangingModelId - model that answers only when the round abandons it
- 
+
+ @param answeredAt - clock readings of each answer as it is returned, in
+ answer order, so a case can anchor the round's figures on when voices really
+ answered rather than on a delay a loaded machine stretches
+
  @returns Client the round can drive
- 
+
  @example
  ```ts
  const client = scheduledClient({ slowModelId, hangingModelId, },);
@@ -197,9 +209,11 @@ function scheduledClient(
   {
     slowModelId,
     hangingModelId,
+    answeredAt = [],
   }: {
     readonly slowModelId?: RosterModelId;
     readonly hangingModelId?: RosterModelId;
+    readonly answeredAt?: number[];
   },
 ): SyntheticClient {
   return {
@@ -222,6 +236,7 @@ function scheduledClient(
       const scripted: unknown = { meow: request.modelId, };
       if (!request.validate(scripted,))
         throw new Error('scripted payload failed the guard',);
+      answeredAt.push(Date.now(),);
       return {
         kind: 'ok',
         value: scripted,
@@ -337,11 +352,20 @@ await describe({
          Every message the round logged.
          */
         const said: string[] = [];
+        /**
+         When each voice really answered.
+         */
+        const answeredAt: number[] = [];
+        /**
+         Clock before the round starts, at or before its own start mark.
+         */
+        const startedAt = Date.now();
 
         await runGatherRound({
           client: scheduledClient({
             slowModelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             hangingModelId: SEAT_SYNTHETIC_VISION_WITHHELD,
+            answeredAt,
           },),
           modelIds: ROSTER,
           messages: [{ role: 'user', content: 'meow', },],
@@ -365,11 +389,16 @@ await describe({
         // The window really was spent: the hanging voice never answered, so
         // the round waited it out rather than finishing at quorum.
         expect(timings.inGraceMs,).toBeGreaterThanOrEqual(GRACE_MS - CLOCK_SLACK_MS,);
-        // Quorum stood on an answering voice, not on the hanging one, which
-        // ends only at the exchange deadline. Bounded by that deadline rather
-        // than by the grace window: time to the first answer grows with load
-        // (398 ms against a 250 ms grace at 0.2 CPU, 2026-09-27).
-        expect(timings.toQuorumMs,).toBeLessThan(EXCHANGE_TIMEOUT_MS,);
+        // Quorum stood on the first voice that answered, so the round did no
+        // waiting before it. Anchored on when that voice really answered
+        // rather than compared with the grace: time to the first answer grows
+        // with load (398 ms against a 250 ms grace at 0.2 CPU, 2026-09-27).
+        /**
+         Milliseconds from before the round started to the first answer, never
+         shorter than the round's own reading of that instant.
+         */
+        const firstAnswerMs = nonNullishOrThrow(answeredAt[0],) - startedAt;
+        expect(timings.toQuorumMs,).toBeLessThan(firstAnswerMs + QUORUM_MARK_SLACK_MS,);
         // The three numbers describe one round rather than three measurements.
         expect(timings.totalMs,).toBe(timings.toQuorumMs + timings.inGraceMs,);
       },
