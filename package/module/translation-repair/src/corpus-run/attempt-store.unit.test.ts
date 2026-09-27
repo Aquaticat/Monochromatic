@@ -110,6 +110,47 @@ async function readWritten(
   return await readAttemptMap(attemptsPath,);
 }
 
+/**
+ Reads one attempts file while `console.warn`, where the tagged logger's
+ `warn` sink resolves, is diverted into a list.
+
+ @param contents - exact file bytes
+
+ @returns Warnings the read printed
+
+ @example
+ ```ts
+ const warned = await warningsReading({ contents: '{"Kitten":', },);
+ ```
+ */
+async function warningsReading(
+  { contents, }: { readonly contents: string; },
+): Promise<readonly string[]> {
+  await using scratch = await scratchDir();
+  /**
+   Warnings the read printed.
+   */
+  const lines: string[] = [];
+  /**
+   `console.warn` as it was, put back once the read returns.
+   */
+  const warned = console.warn;
+  console.warn = (...parts: readonly unknown[]) => {
+    lines.push(parts.map(String,)
+      .join(' ',),);
+  };
+  await using restore = {
+    [Symbol.asyncDispose]: async () => {
+      console.warn = warned;
+    },
+  };
+  await readWritten({
+    directory: scratch.path,
+    contents,
+  },);
+  return lines;
+}
+
 await describe({
   name: readAttemptMap.name,
   children: [
@@ -242,6 +283,41 @@ await describe({
             contents: '{}',
           },),
         ).toStrictEqual({},);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'readAttemptMap announcements',
+  // SEQUENTIAL: each case diverts the one global `console.warn` across an
+  // await, and concurrent cases would capture each other's lines.
+  concurrency: 1,
+  children: [
+    it({
+      name: 'SAYS it starts the counts over for malformed JSON and for JSON that is no object, and names a '
+        + 'count it read as zero, since each silently forgets which entries kept failing (ledger A11)',
+      fn: async () => {
+        expect((await warningsReading({ contents: '{"Mittens": 2,', },)).length,).toBe(1,);
+        expect((await warningsReading({ contents: '42', },)).length,).toBe(1,);
+
+        /**
+         Warnings for a count that is no number.
+         */
+        const coerced = await warningsReading({
+          contents: JSON.stringify({
+            Mittens: 'many',
+            Marmalade: 5,
+          },),
+        },);
+        expect(coerced.length,).toBe(1,);
+        expect(coerced[0],).toContain('Mittens',);
+      },
+    },),
+    it({
+      name: 'STAYS QUIET for a well-formed map, so the lines above are worth reading',
+      fn: async () => {
+        expect(await warningsReading({ contents: '{"Mittens": 2}', },),).toStrictEqual([],);
       },
     },),
   ],
