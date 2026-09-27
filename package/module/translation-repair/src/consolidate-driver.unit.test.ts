@@ -138,13 +138,62 @@ type ConsolidationConcurrency = {
 /**
  A client that refuses to be used, so any call at all is a failure rather
  than a slow test.
+
+ NO RETRIES since 2026-09-27 (ledger T5): the positive controls that expect
+ this refusal waited through five production backoffs first, about 25 s of
+ the file's 11.8 s under four-way parallel runs; the refusal still propagates
+ unchanged.
  */
 const REFUSING_CLIENT = createSyntheticClient({
   apiKey: 'test-key',
+  retryPolicy: {
+    limit: 0,
+    baseMs: 1,
+  },
   transport: async function refusingTransport() {
     throw new Error('the driver bought a call it should not have',);
   },
 },);
+
+/**
+ A refusing client that counts the calls it refused, for a positive control
+ that has to show the roster was reached.
+
+ THE COUNT IS THE EVIDENCE (ledger T5). The controls read the refusal off a
+ thrown error until 2026-09-27, and that error only reached them because five
+ production backoffs outlasted the driver's 5 s signal: with the backoff gone
+ the refusal is a lost voice, the slice exits `failed`, and nothing is thrown.
+
+ @returns Client beside the number of calls it refused
+
+ @example
+ ```ts
+ const { client, calls, } = countingRefusingClient();
+ ```
+ */
+function countingRefusingClient(): {
+  readonly client: SyntheticClient;
+  readonly calls: { count: number; };
+} {
+  /**
+   Calls refused so far.
+   */
+  const calls = { count: 0, };
+  return {
+    client: createSyntheticClient({
+      apiKey: 'test-key',
+      retryPolicy: {
+        limit: 0,
+        baseMs: 1,
+      },
+      transport: async function refuseAndCount() {
+        calls.count += 1;
+        throw new Error('the driver bought a call it should not have',);
+      },
+    },),
+    calls,
+  };
+}
 
 /**
  Builds a client that records every request body and answers none of them.
@@ -800,23 +849,20 @@ await describe({
          */
         const messages: string[] = [];
         /**
-         What the driver did when handed an empty cache.
+         Roster that refuses every call and counts it.
          */
-        let raised: unknown;
-        try {
-          await driveWith({
-            contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
-            messages,
-          },);
-        } catch (error: unknown) {
-          raised = error;
-        }
+        const { client, calls, } = countingRefusingClient();
+        await driveWith({
+          client,
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+          messages,
+        },);
 
-        expect(raised,).toBeInstanceOf(Error,);
-        expect(String(raised,).includes('bought a call it should not have',),).toBe(true,);
-        expect(messages.some(function namesAbortedExit(line,): boolean {
+        expect(calls.count,).toBeGreaterThan(0,);
+        // BOUGHT, NOT RESUMED: every voice refused, the slice still computed.
+        expect(messages.some(function namesComputedExit(line,): boolean {
           return line.includes(`${SLICE_COST_MARKER} lane=consolidation chunk=0`,)
-            && line.endsWith('exit=aborted',);
+            && line.endsWith('exit=computed',);
         },),).toBe(true,);
       },
     },),
@@ -828,9 +874,18 @@ await describe({
           { kind: 'settled-neither', },
           { kind: 'quorum-not-met', },
         ] as const).map(async function driveVerdict(verdict,): Promise<void> {
-          const raised: unknown = await (async function captureRefusal(): Promise<unknown> {
+          /**
+           Roster that refuses every call and counts it.
+           */
+          const { client, calls, } = countingRefusingClient();
+          /**
+           What the driver threw, if anything: a roster that answers nothing
+           interrupts the entry as an outage.
+           */
+          const raised: unknown = await (async function captureOutage(): Promise<unknown> {
             try {
               await driveWith({
+                client,
                 contests: [{
                   sliceIndex: 0,
                   verdict,
@@ -842,10 +897,10 @@ await describe({
             catch (error) {
               return error;
             }
-            return 'driver unexpectedly settled';
+            return 'no interruption';
           })();
-          expect(raised,).toBeInstanceOf(Error,);
-          expect(String(raised,).includes('bought a call it should not have',),).toBe(true,);
+          expect(calls.count,).toBeGreaterThan(0,);
+          expect(String(raised,),).toContain('provider-unavailable',);
         },),);
       },
     },),
