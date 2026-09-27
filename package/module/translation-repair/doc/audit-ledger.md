@@ -700,7 +700,7 @@ Status: open.
 
 ### E7: the sheet-leak label list has fallen behind the sheets
 
-Status: open.
+Status: fixed with F-8; a fenced block no longer depends on the list.
 `translate-sheet-leak.ts` lists seven labels;
 `REJECTED CANDIDATE N`,
 `WHAT THE JUDGES FOUND`
@@ -835,7 +835,11 @@ the message prints "1 lines".
 
 ### F-8: the sheet-leak floor misses six labels its own sheets print
 
-Status: open (with E7).
+Status: fixed with E7; every fenced header line is refused whatever its label,
+and the list gains the missing heads for unfenced copies.
+The guard calls the floor directly: through the composed verdict the added block is refused by the block comparison first,
+which hid the gap.
+Replayed (`floor-replay.mjs sheetLeakFindings`): no refusal before or after, so the fence rule refuses no page text.
 
 ### F-9: the neutral-pronoun floor never reads the original
 
