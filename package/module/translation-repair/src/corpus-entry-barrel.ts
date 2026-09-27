@@ -46,5 +46,12 @@ export {
   type PageAgreement,
   pageAgreement,
 } from './corpus-run/page-agreement.ts';
+export {
+  type CorpusPairReader,
+  type CorpusPairText,
+  type RepublishOutcome,
+  type RepublishRow,
+  republishSettledPages,
+} from './corpus-run/page-republish.ts';
 
 //endregion Corpus entry barrel

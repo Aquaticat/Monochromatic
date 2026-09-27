@@ -57,6 +57,7 @@ import {
   spendCeilingOverrideNote,
 } from './spend-ceiling.ts';
 import { lockRunsDir, } from './runs-lock.ts';
+import { republishRunPages, } from './pass-republish.ts';
 import { listResumableEntries, } from './slice-cache-store.ts';
 import {
   createRunClient,
@@ -533,6 +534,17 @@ async function runCorpusPass(): Promise<void> {
     );
     return;
   }
+
+  // AFTER THE PLAN RETURNS, which promises no write, and after the build
+  // guards, so a page is rewritten only under a build the operator let resume
+  // here: every page the artifacts here say should ship differently, or that
+  // is missing, is rewritten from its artifact before any entry runs (ledger
+  // A16c).
+  await republishRunPages({
+    runsDir,
+    artifactsDir,
+    publishDir,
+  },);
 
   /**
    Wall-clock start of the processing loop.
