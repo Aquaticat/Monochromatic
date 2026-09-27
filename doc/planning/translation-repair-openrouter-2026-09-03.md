@@ -8082,6 +8082,45 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## TianqiChen66614 read, 2026-09-27: SETTLED, class one hundred eighty-two
+
+TianqiChen66614 ran on `.frozen-dist-768408d1d` and SETTLED at 02:58 UTC in 716 s (11.9 min),
+the fastest run on this entry,
+24 slices published, 23 changed.
+The full suite at `b75ec5c51` read 1,168 PASS, 0 FAIL.
+
+Classes one hundred eighty and eighty-one are live.
+The robot line reads "her friends and family never forgot her image as the “high-performance robot.”";
+both hormone sentences say "hormones";
+no `”.` or `”,` is left on the page,
+and "a trusted “teacher,”" carries its comma inside.
+The second quote appears once.
+The seats glm-5.3 and Qwen3.8-27B threw on every call (no provider on Synthetic or Hyper),
+as on the runs before it.
+
+Class one hundred eighty-two:
+the source's 暗藏心底的梦想因为柜门炸开屡屡受阻 shipped as
+"The dreams she kept locked in her heart were blocked again and again, each time the closet door blew open."
+The figure stayed literal,
+and "each time" turned the source's cause (因为) into a repeated event.
+柜门炸开 is 炸柜 written out,
+and the community glossary's 炸柜 entry (class seventy-two) never matched it.
+The census found it on this page alone in the pin.
+Built as a community-glossary entry beside 炸柜 with the same renderings ("outed", "blown out of the closet")
+and a why naming the cause;
+guard `cb8450ebb` (`community-glossary-closet.unit.test.ts`), red first,
+fix `2a0f947b5`, lint 0/0, types clean.
+
+Observation not built:
+the kigurumi quote 我会在离开我们的时候以kigurumi的记忆结束 shipped as
+"when I leave you all, they will end with the memories of kigurumi",
+a memory ending with memories,
+where the source's subject is 我.
+The archive reads "they" too ("and they will end with it when I leave"),
+and no glossary or floor reaches a one-sentence reading without fitting to it.
+
+TianqiChen66615 runs on `.frozen-dist-2a0f947b5` to read the closet sentence first.
+
 ## TianqiChen66613 read, 2026-09-27: SETTLED, classes one hundred eighty and eighty-one
 
 TianqiChen66613 ran on `.frozen-dist-ca5e56240` and SETTLED at 02:40 UTC in 947 s (15.8 min),

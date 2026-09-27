@@ -4831,11 +4831,20 @@ each read off the pass log and the shipped page:
     outside the closing quote on a Canadian page (class one hundred eighty-one, `placeClosingPunctuation`
     in the typography restoration and an en_CA policy sentence; the archive has it inside 224 times to 32);
     the suite at `768408d1d` was red on the class one hundred forty-two attribute guard's incidental
-    `“hi”.`, updated in `b75ec5c51`; recorded under "## TianqiChen66613 read".
-    TIANQICHEN66614 RUNNING on `.frozen-dist-768408d1d` (scope `pass-TianqiChen66614`, pid 1092114, waiter
-    `wait-TianqiChen66614.mjs`): read the robot line first ("friends and family", the period inside the
-    quote), then the hormone sentence, then any `”.` or `”,` left on the page (archive-standing slices keep
-    theirs), then the second quote once and classes 160 to 178 holding.
+    `“hi”.`, updated in `b75ec5c51`; full suite at `b75ec5c51` 1,168 PASS, 0 FAIL; recorded under
+    "## TianqiChen66613 read".
+    TIANQICHEN66614 READ (`.frozen-dist-768408d1d`): SETTLED in 11.9 min, 24 slices, 23 changed; classes one
+    hundred eighty and eighty-one live (the robot line "her friends and family never forgot her image as the
+    “high-performance robot.”", both hormone sentences "hormones", no `”.` or `”,` on the page, a trusted
+    “teacher,” inside); the second quote once; class one hundred eighty-two built: 因为柜门炸开屡屡受阻 as
+    "blocked again and again, each time the closet door blew open", the 炸柜 entry never matching the
+    spread-out spelling (`community-glossary.ts`, guard `cb8450ebb`, fix `2a0f947b5`); observation not built: the kigurumi quote's second clause "they will end with the memories
+    of kigurumi" where the source's subject is 我 (the archive also reads "they"); recorded under
+    "## TianqiChen66614 read".
+    TIANQICHEN66615 RUNNING on `.frozen-dist-2a0f947b5` (scope `pass-TianqiChen66615`, pid 1139417, waiter
+    `wait-TianqiChen66615.mjs`): read the closet sentence first ("outed", the cause kept), then the robot
+    line, the hormone sentences and the closing punctuation again, then the second quote once and classes
+    160 to 181 holding.
     TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built
