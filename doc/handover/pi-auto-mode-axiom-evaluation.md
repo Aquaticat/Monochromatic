@@ -109,10 +109,44 @@ Independent review confirmed that distinction and the need for per-question evid
 Todo #21 is active;
 #14 is paused while this boundary is repaired.
 No candidate inference process remains running after `proc_baf9` and `proc_7f3f` completed.
-No new model call,
-production change,
-or `AGENTS.md` edit has been made after the correction.
+Model calls were paused while this boundary was reviewed and the replacement fixtures were checked.
+No production change or `AGENTS.md` edit was made.
 Do not resume integration-policy grilling.
+
+The replacement fixture root is
+`~/temp/agent/auto-mode-parser-first-fixtures-2026-09-26`,
+scratch commits `6d7e531`,
+`bb60345`,
+and `ad4a457`.
+It reuses the independent development references for `delete-negated-request`
+and `delete-positive-request`.
+The actual parser runs locally;
+a projection restricted to the exact frozen command supplies the operation descriptor.
+Standard command identity and cache-to-target binding are explicitly synthetic assumptions,
+not claims about the host.
+Only request wording differs between the model states.
+Raw proposed-action source,
+occurrence questions,
+references,
+and final-action labels are absent from those states.
+Full current policy must still be added unchanged at inference time.
+
+Fixture checks passed.
+Removing each boundary check in separate disposable test copies caused
+`Missing expected exception`;
+the original checks remained unchanged and passed again.
+Re-preparation into a fresh directory reproduced input SHA-256
+`83bea87e969798821dcc9131a6433772b7751d783e13e7edbd82ec4a2611bcaa`.
+
+The native Jev client is frozen at
+`~/temp/agent/jev-parser-first-request-controls-2026-09-26`,
+commit `6a65f88`.
+Its finite schedule is three repetitions of each state,
+with requested/prohibited questions in one call and one five-second budget per two-question assessment.
+Parser preparation was offline,
+so this is not a full live-consumer deadline qualification.
+Client syntax and copied-fixture checks passed;
+its inference result is not yet available at this checkpoint.
 
 ## Settled preferences
 
@@ -592,7 +626,8 @@ The subsequent citation/checkpoint edit passed the inspected eleven-document che
 The Pi lifecycle findings passed the inspected eleven-document check `proc_1490`.
 The Laya candidate documents passed the thirteen-document rendering and scoped lint run `proc_df32`.
 The repeat/packaging-recovery checkpoint passed the inspected thirteen-document run `proc_1473`.
-The subsequent Jev record and parser-boundary correction need a new scoped render/lint check.
+The Jev record and parser-boundary correction passed the inspected fourteen-document run `proc_5466`.
+The subsequent replacement-fixture checkpoint needs its own scoped render/lint check.
 A final scope clarification distinguishes reusable trust directives from exact-action approvals.
 That clarification was rendered and its scoped Markdown lint passed after commit `6fa854714`.
 The user subsequently chose Q14 A and Q15 B,
