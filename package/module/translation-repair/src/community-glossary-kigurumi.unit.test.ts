@@ -4,9 +4,10 @@
  can be translated better do it"), two words of the kigurumi and fan
  community join the fandom glossary. 变娃 (the performers' word for putting on
  the costume and becoming the doll) shipped as "in this game of becoming a
- doll", and English "doll up" means dressing smartly; 治愈 (the comfort a
- person or work gives, as in 治愈系) shipped as "those she had healed", which
- reads as curing a wound or an illness.
+ doll", and English "doll up" means dressing smartly. 治愈 (the fan sense of
+ healing, as in 治愈系) first led with "comforted"; the owner disagreed
+ (2026-09-27), since the page writes 安慰 where it means comfort and
+ "healing" is the fandom's own English, so "healed" leads.
 
  Cat-themed invention throughout; no corpus content appears here.
 
@@ -31,9 +32,9 @@ import {
 const SUITED = '这次变娃娃，猫真的要和娃娃融为一体了。';
 
 /**
- Original in which the cat glimpses the kittens its visits comforted.
+ Original in which the cat glimpses the kittens its visits healed.
  */
-const COMFORTED = '猫看见了被它治愈的小猫们。';
+const HEALED = '猫看见了被它治愈的小猫们。';
 
 /**
  First rendering the glossary seeds for a term.
@@ -66,10 +67,13 @@ await describe({
   name: 'kigurumi and fan words the community glossary renders (class one hundred eighty-four)',
   children: [
     it({
-      name: 'SEEDS 变娃 with "put on the kigurumi" first and 治愈 with "comforted" first',
+      name: 'SEEDS 变娃 with "put on the kigurumi" first and 治愈 with "healed" first, set apart from 安慰',
       fn: async () => {
         expect(firstRendering({ term: '变娃', },),).toBe('put on the kigurumi',);
-        expect(firstRendering({ term: '治愈', },),).toBe('comforted',);
+        expect(firstRendering({ term: '治愈', },),).toBe('healed',);
+        expect(COMMUNITY_GLOSSARY.find(function isTerm(entry,): boolean {
+          return entry.term === '治愈';
+        },)?.why,).toContain('安慰',);
       },
     },),
     it({
@@ -78,7 +82,7 @@ await describe({
         expect(communityTermsIn({ text: SUITED, },).map(function termOf(entry,): string {
           return entry.term;
         },),).toContain('变娃',);
-        expect(communityTermsIn({ text: COMFORTED, },).map(function termOf(entry,): string {
+        expect(communityTermsIn({ text: HEALED, },).map(function termOf(entry,): string {
           return entry.term;
         },),).toContain('治愈',);
       },
@@ -93,15 +97,15 @@ await describe({
       },
     },),
     it({
-      name: 'PASSES the kigurumi sense and the comfort sense',
+      name: 'PASSES the kigurumi sense and the healing sense',
       fn: async () => {
         expect(validateTranslatedSlice({
           sourceText: SUITED,
           candidateText: 'This time, in its kigurumi, the cat truly became one with the doll.',
         },).kind,).toBe('valid',);
         expect(validateTranslatedSlice({
-          sourceText: COMFORTED,
-          candidateText: 'The cat saw the kittens it had comforted.',
+          sourceText: HEALED,
+          candidateText: 'The cat saw the kittens it had healed.',
         },).kind,).toBe('valid',);
       },
     },),
