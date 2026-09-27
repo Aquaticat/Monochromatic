@@ -87,6 +87,11 @@ export type RebuiltPreparation = {
    is the run's own carve.
    */
   readonly unrecorded: readonly RecipeHalf[];
+
+  /**
+   Whether the rebuild is the run's own carve, taken as a complete recipe.
+   */
+  readonly reproduced: boolean;
 };
 
 /**
@@ -272,6 +277,7 @@ export function rebuildPreparation(
       ...((blockPairings === undefined) ? {} : { blockPairings, }),
     },),
     unrecorded,
+    reproduced: unrecorded.length === 0,
   };
 }
 
