@@ -22,7 +22,7 @@
  ```
  */
 export const KEPT_SUBJECT_RULE: string =
-  'A clause keeps the subject the ORIGINAL writes: where 我 (or a named person) does something, the English says that I (or that person) does it, and never hands the verb to another subject (they, the memories, the page) to make the sentence smoother; the English already on the page moving a subject is a mistranslation to correct, not a reading to keep.';
+  'A clause keeps the subject the ORIGINAL writes: where 我 (or a named person) does something, the English makes I (or that person) the one who does it, and never hands the verb to another subject (they, the memories, the page) to make the sentence smoother; the English already on the page moving a subject is a mistranslation to correct, not a reading to keep.';
 
 /**
  Idiomatic English over the Chinese construction, the lesson of the entries
