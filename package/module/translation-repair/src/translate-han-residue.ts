@@ -28,6 +28,11 @@ import { untranslatedFindings, } from './translate-untranslated.ts';
 //   the glossary floors cut it, so the two floors never disagree on one;
 // - a line carrying kana and no Latin letter, a Japanese quotation kept as
 //   the archives keep their lyrics beside the English;
+// - a run carrying kana with its English in parentheses right after it, a
+//   phrase in a language other than the original's own kept in its wording
+//   with its meaning alongside, as the editor and critic sheets ask (a
+//   Chinese term in the same shape stays refused: the original's own
+//   language is rendered in English, the Han after it at most);
 // - a run the ORIGINAL and the PAGE AS IT STANDS both carry, which the
 //   page's translator kept on purpose (the 澪 a name is written with, a
 //   hidden line inside an element). THE FLOOR IS RELATIVE TO THE PAGE: it
@@ -89,6 +94,11 @@ export type HanRun = {
    Whether its line carries kana and no Latin letter in prose.
    */
   readonly kanaLine: boolean;
+
+  /**
+   Whether it carries kana and an English gloss in parentheses follows it.
+   */
+  readonly foreignGloss: boolean;
 };
 
 /**
@@ -219,7 +229,7 @@ function isKanaLine({ units, }: { readonly units: readonly string[]; },): boolea
   /**
    Whether any unit is kana.
    */
-  const carriesKana = units.some(function kana(character,): boolean {
+  const kanaSeen = units.some(function kana(character,): boolean {
     return isKana({ character, },);
   },);
   /**
@@ -228,7 +238,7 @@ function isKanaLine({ units, }: { readonly units: readonly string[]; },): boolea
   const carriesLatin = units.some(function latin(character,): boolean {
     return isLatinLetter({ character, },);
   },);
-  return carriesKana && (!carriesLatin);
+  return kanaSeen && (!carriesLatin);
 }
 
 /**
@@ -289,6 +299,98 @@ function runEnd(
       return at;
   }
   return line.length;
+}
+
+/**
+ Closing quotation marks a quoted phrase may end in before its gloss.
+ */
+const CLOSING_QUOTES: ReadonlySet<string> = new Set([
+  '"',
+  '\'',
+  '”',
+  '’',
+  '」',
+  '』',
+  '*',
+],);
+
+/**
+ Whether a run carries kana, which marks it Japanese rather than the
+ original's own Chinese.
+
+ @param run - characters of a run
+
+ @returns Whether some unit is hiragana or katakana
+
+ @example
+ ```ts
+ carriesKana({ run: '頑張って', },); // true
+ ```
+ */
+function carriesKana({ run, }: { readonly run: string; },): boolean {
+  for (let at = 0; at < run.length; at += 1) {
+    if (isKana({ character: run.charAt(at,), },))
+      return true;
+  }
+  return false;
+}
+
+/**
+ Whether an English gloss in parentheses follows a run on its line: past
+ spaces and closing quotation marks, an opening parenthesis whose content
+ up to its closing one carries a Latin letter.
+
+ @param line - one line of the text
+
+ @param flags - prose flags of that line's units
+
+ @param from - offset just past the run
+
+ @returns Whether the gloss follows
+
+ @example
+ ```ts
+ glossFollows({ line: '頑張って (do your best)', flags, from: 4, },); // true
+ ```
+ */
+function glossFollows(
+  {
+    line,
+    flags,
+    from,
+  }: {
+    readonly line: string;
+    readonly flags: readonly boolean[];
+    readonly from: number;
+  },
+): boolean {
+  /**
+   Offset of the first unit that is neither a space nor a closing quote.
+   */
+  const open = (function pastQuotes(): number {
+    for (let at = from; at < line.length; at += 1) {
+      /**
+       Unit under the cursor.
+       */
+      const character = line.charAt(at,);
+      if ((character !== ' ') && (!CLOSING_QUOTES.has(character,)))
+        return at;
+    }
+    return line.length;
+  })();
+  if ((!GLOSS_OPENERS.has(line.charAt(open,),)) || (flags[open] !== true))
+    return false;
+  for (let at = open + 1; at < line.length; at += 1) {
+    /**
+     Unit inside the parentheses.
+     */
+    const character = line.charAt(at,);
+    if (GLOSS_CLOSERS.has(character,))
+      return false;
+    if (isLatinLetter({ character, },))
+      return true;
+  }
+  return false;
 }
 
 /**
@@ -370,6 +472,12 @@ function lineRuns(
         run,
         glossed: depth > 0,
         kanaLine,
+        foreignGloss: carriesKana({ run, },)
+          && glossFollows({
+            line,
+            flags,
+            from: end,
+          },),
       },);
     }
     at = end;
@@ -514,6 +622,7 @@ export function hanResidueFindings(
          Whether a gloss, a kana line or the page's own keeping excuses it.
          */
         const excused = found.glossed
+          || found.foreignGloss
           || found.kanaLine
           || kept.has(found.run,);
         return !excused;

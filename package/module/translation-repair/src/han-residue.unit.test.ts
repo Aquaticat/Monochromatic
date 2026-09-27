@@ -146,6 +146,24 @@ await describe({
       },
     },),
     it({
+      name: 'PASSES A JAPANESE PHRASE KEPT WITH ITS ENGLISH IN PARENTHESES after it, as the foreign-phrase rule asks, '
+        + 'and refuses a Chinese term in the same shape',
+      fn: async () => {
+        expect(hanResidueFindings({
+          sourceText: '猫总是说“頑張って”。',
+          candidateText: 'The cat always said “頑張って” (do your best).',
+        },),).toEqual([],);
+        expect(hanResidueFindings({
+          sourceText: '猫总是说“頑張って”。',
+          candidateText: 'The cat always said 頑張って every morning.',
+        },).join(' ',),).toContain('"頑張って"',);
+        expect(hanResidueFindings({
+          sourceText: '猫拿到了大证。',
+          candidateText: 'The cat got her 大证 (formal diagnosis).',
+        },).join(' ',),).toContain('"大证"',);
+      },
+    },),
+    it({
       name: 'READS PROSE BY UTF-16 UNIT, so a character outside the basic plane before a code span neither '
         + 'unmasks the span nor masks the prose after it',
       fn: async () => {
