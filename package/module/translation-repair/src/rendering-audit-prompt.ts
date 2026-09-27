@@ -202,7 +202,7 @@ export function buildRenderingAuditMessages(
           ? []
           : [
             '',
-            'IDENTITY EVIDENCE, licensed for this document, not a defect when the candidate follows it:',
+            'DECLARED NAMES, licensed for this document, not a defect when the candidate follows it:',
             fence,
             subject.identityContext,
             fence,

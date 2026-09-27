@@ -162,7 +162,7 @@ export function buildRefineMessages(
    */
   const identityBlock = identityContext === undefined
     ? ''
-    : `\n\nDECLARED NAMES AND HANDLES, which must survive exactly:\n${identityContext}`;
+    : `\n\nDECLARED NAMES, which must survive exactly:\n${fence}\n${identityContext}\n${fence}`;
   /**
    The pages the original cites and their rule as fenced lines, none when it
    cites nowhere. CLASS FORTY-ONE (Mio25 slice 2, 2026-09-17): a refiner that

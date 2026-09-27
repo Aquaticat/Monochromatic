@@ -274,5 +274,43 @@ await describe({
         expect(sheet,).toContain('CANDIDATE "base" (rejected naturalness evidence only)',);
       },
     },),
+
+    it({
+      name: 'FENCES THE DECLARED NAMES like every other enclosed text, with the fence the ORIGINAL takes (ledger S20)',
+      fn: async () => {
+        /**
+         Declared identity the gate is shown.
+         */
+        const identityContext = '- name: ORIGINAL declares "咪咪", TRANSLATION declares "Mittens"';
+
+        /**
+         Lines of the gate's user sheet.
+         */
+        const lines = messageText({
+          message: nonNullishOrThrow(buildConsolidationPolishGateMessages({
+            subject: {
+              sourceText: '咪咪需要关爱。',
+              archiveText: 'Mittens needed care.',
+              baseText: 'Mittens needed care.',
+              polishedText: 'Mittens needed affection.',
+              lineStructured: false,
+              identityContext,
+              mode: { kind: 'comparative', },
+            },
+          },)[1],),
+        },)
+          .split('\n',);
+
+        /**
+         Where the declared names open, and where the original does.
+         */
+        const at = lines.indexOf('DECLARED NAMES:',);
+        const original = lines.indexOf('ORIGINAL (Chinese):',);
+        expect(at,).toBeGreaterThan(-1,);
+        expect(lines[at + 2],).toBe(identityContext,);
+        expect(lines[at + 1],).toBe(lines[original + 1],);
+        expect(lines[at + 3],).toBe(lines[original + 1],);
+      },
+    },),
   ],
 },);

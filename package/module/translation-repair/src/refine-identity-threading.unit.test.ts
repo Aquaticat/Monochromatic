@@ -64,7 +64,7 @@ const l = tagged({ tag: 'refine-identity-threading-test', },);
 /**
  Heading the rewriter sheet gives the declared-name block.
  */
-const IDENTITY_FENCE = 'DECLARED NAMES AND HANDLES, which must survive exactly:';
+const IDENTITY_FENCE = 'DECLARED NAMES, which must survive exactly:';
 
 /**
  Marker no prompt constant and no other fixture carries, so a match in a sheet

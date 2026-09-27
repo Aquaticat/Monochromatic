@@ -291,16 +291,6 @@ export function buildConsolidationPolishGateMessages(
   { subject, }: { readonly subject: ConsolidationPolishGateSubject; },
 ): readonly ChatMessage[] {
   /**
-   Declared identity block or no lines.
-   */
-  const identity = (subject.identityContext === undefined)
-    ? []
-    : [
-      'DECLARED NAMES:',
-      subject.identityContext,
-      '',
-    ];
-  /**
    Gate mode naming whether base remains available.
    */
   const { mode, } = subject;
@@ -373,6 +363,16 @@ export function buildConsolidationPolishGateMessages(
       ...((subject.referenceContext === undefined) ? [] : [subject.referenceContext,]),
     ],
   },);
+  /**
+   Declared names fenced like every other enclosed text, or no lines.
+   */
+  const identity = (subject.identityContext === undefined)
+    ? []
+    : [
+      'DECLARED NAMES:',
+      `${fence}\n${subject.identityContext}\n${fence}`,
+      '',
+    ];
   /**
    The references and their rule, or nothing when the original cites nowhere.
    */

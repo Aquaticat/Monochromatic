@@ -237,7 +237,7 @@ export function buildAbsoluteNaturalnessReviewMessages(
   const identity = (subject.identityContext === undefined)
     ? []
     : [
-      'DECLARED NAMES AND HANDLES (intentional forms, not naturalness defects):',
+      'DECLARED NAMES (intentional forms, not naturalness defects):',
       `${fence}\n${subject.identityContext}\n${fence}`,
       '',
     ];

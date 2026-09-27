@@ -180,7 +180,7 @@ await describe({
             role: 'user',
             subject: PLAIN_SUBJECT,
           },)
-            .includes('IDENTITY EVIDENCE',),
+            .includes('DECLARED NAMES',),
         ).toBe(false,);
       },
     },),
@@ -194,7 +194,7 @@ await describe({
             identityContext: '猫猫 is rendered Maomao throughout.',
           },
         },);
-        expect(asked.includes('IDENTITY EVIDENCE',),).toBe(true,);
+        expect(asked.includes('DECLARED NAMES',),).toBe(true,);
         expect(asked.includes('猫猫 is rendered Maomao throughout.',),).toBe(true,);
       },
     },),
