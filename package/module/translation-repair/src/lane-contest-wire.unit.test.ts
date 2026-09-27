@@ -197,6 +197,15 @@ await describe({
           ?.content ?? '';
         expect(asked,).toContain('The translation invents the moth.',);
         expect(asked.indexOf('ARCHIVE RENDERING DISPUTED',),).toBeGreaterThan(asked.indexOf('CANDIDATE "translate"',),);
+        // LEDGER S20: the note is fenced like every other enclosed text.
+        /** Lines of the sheet, and where the note stands in them. */
+        const lines = asked.split('\n',);
+        const at = lines.findIndex(function isNote(line,): boolean {
+          return line.endsWith('The translation invents the moth.',);
+        },);
+        const fence = lines[at + 1] ?? '';
+        expect(fence.length,).toBeGreaterThan(0,);
+        expect(lines[at - 1],).toBe(`${fence} ARCHIVE RENDERING DISPUTED ${fence}`,);
       },
     },),
     it({

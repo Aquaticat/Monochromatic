@@ -278,7 +278,11 @@ await describe({
         expect(note.startsWith('ARCHIVE RENDERING DISPUTED',),).toBe(true,);
         expect(note,).toContain(`(1) accuracy/mistranslation major: ${WRONG_COLOUR.summary}`,);
         expect(note,).toContain('departs from the ORIGINAL',);
-        expect(note,).toContain('mistranslated, omitted or left untranslated is not the page\'s authority',);
+        // LEDGER S20: a non-translation claim is a reading too.
+        expect(note,).toContain(
+          'mistranslated, omitted, left untranslated or no translation of the ORIGINAL at all is not the page\'s '
+            + 'authority',
+        );
         // No addition was accepted, so the addition rule stays off the sheet.
         expect(note,).not.toContain('carries an accepted addition',);
       },

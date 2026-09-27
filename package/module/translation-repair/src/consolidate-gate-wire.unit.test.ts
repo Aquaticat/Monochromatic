@@ -451,6 +451,13 @@ await describe({
         },);
         expect(shown,).toContain(DISPUTE_NOTE,);
         expect(shown.indexOf('ARCHIVE RENDERING DISPUTED',),).toBeGreaterThan(shown.indexOf('CANDIDATE "standing"',),);
+        // LEDGER S20: the note is fenced like every other enclosed text.
+        /** Lines of the sheet, and where the note stands in them. */
+        const lines = shown.split('\n',);
+        const at = lines.indexOf(DISPUTE_NOTE,);
+        const fence = lines[at + 1] ?? '';
+        expect(fence.length,).toBeGreaterThan(0,);
+        expect(lines[at - 1],).toBe(`${fence} ARCHIVE RENDERING DISPUTED ${fence}`,);
       },
     },),
     it({

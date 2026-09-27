@@ -517,7 +517,8 @@ export function archiveDisputeNote(
    claim names.
    */
   const misreadingRule = carriesMisreading
-    ? ' A reading those claims name as mistranslated, omitted or left untranslated is not the page\'s authority, '
+    ? ' A reading those claims name as mistranslated, omitted, left untranslated or no translation of the ORIGINAL '
+      + 'at all is not the page\'s authority, '
       + 'in the archive\'s wording or a near copy of it: render what the ORIGINAL says there, and weigh a candidate '
       + 'keeping the archive\'s reading as carrying an accepted error.'
     : '';

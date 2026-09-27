@@ -439,7 +439,9 @@ export function buildLaneContestMessages(
   const disputeBlock = ((subject.archiveDisputeNote === undefined) || (subject.archiveDisputeNote === ''))
     ? []
     : [
+      `${fence} ARCHIVE RENDERING DISPUTED ${fence}`,
       subject.archiveDisputeNote,
+      fence,
       '',
     ];
 
