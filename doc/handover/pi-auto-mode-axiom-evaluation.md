@@ -494,6 +494,17 @@ The user's actual Voyage data-use opt-out setting remains uninspected.
 
 ## Active work and next action
 
+The user asked: "Are we overengineering now?"
+The agent agrees that source tracing and audit tooling expanded without a decision-focused stopping point.
+Task #34 is paused,
+not completed;
+its evidence and unresolved gates remain intact.
+The proposed next step is a bounded candidate-evidence summary identifying only unknowns that could change the decision.
+That scope proposal is not yet an accepted candidate choice or implementation plan.
+No constraint is waived,
+and old process-completion notifications do not authorize resuming the paused source expansion.
+No background process was running when the pause was recorded.
+
 The published Noul baseline #6 and conditional source-feasibility assessment #7 are complete within their stated scopes.
 Remaining Laya profile qualification is #25.
 Jev work is split into #26 client failure boundaries and #27 broader parser-first semantic controls;
