@@ -1057,10 +1057,33 @@ optional kernel imports,
 and Torch named-dimension source were read;
 no export-shape compatibility is claimed.
 
+#32 first-party handoff controls now passed as `proc_4968`:
+copying occurred while the fixture container was alive,
+a valid digest was acknowledged,
+and a wrong digest was refused.
+`proc_b105` removed only the committed hash equality check in an owned derivative;
+the wrong digest then received an acknowledgement and the expected test failed.
+Raw evidence is retained at private `19702d3` and `393aa5e`.
+Only the four owned exited copy controls were removed after retention.
+No model-sized throughput is measured.
+
+Capture controls `proc_68ff` also passed under two GiB/two CPUs/60 seconds.
+Direct capture retained the valid `2..8` range and symbolic ONNX axis.
+A fixed reshape accepted its fixed input but rejected that incompatible direct range.
+The combined ONNX wrapper with `fallback=False` returned a graph fixed at length four.
+Its structural checker passed;
+that is not the originally requested variable contract.
+Source and the non-isolated deferred-assert flag difference are recorded in
+[the shape-contract note](../troubleshooting/pytorch-onnx-shape-refinement.md).
+Source is private `7e3e4a7`,
+raw/result/artifact bytes `d53a844`.
+The named capture-control container is retained pending evidence closure.
+
 Next for #32:
-freeze and verify input/precision/shape checks,
+use the demonstrated explicit-capture composition,
+freeze and verify actual full-policy input/precision/shape checks,
 checkpoint integrity,
-the bounded artifact-transfer protocol,
+model-sized artifact-transfer integration,
 and the complete producer execution manifest.
 Then attempt the CPU-only export within existing ceilings and preserve unresolved consumer gates.
 Do not reuse the toy manifest as authorization for a checkpoint export.

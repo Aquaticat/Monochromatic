@@ -911,10 +911,31 @@ recheck it before and after any actual model experiment.
 Source review also covers ModernBERT SDPA/mask/default-RoPE branches and the optional kernel-hub import boundary.
 Pinned Torch `torch/export/dynamic_shapes.py:106-183` defines named dynamic dimensions,
 but Laya exportability with those dimensions is untested.
-The actual input/precision/shape checks,
-checkpoint hash gate,
-full execution manifest,
-and bounded artifact-transfer controls remain to be built and exercised.
+First-party live-container copy controls passed in `proc_4968`:
+a matching digest received acknowledgement,
+and a wrong digest did not.
+Removing only the committed copy-hash equality check exposed an incorrect acknowledgement
+and failed the expected test in `proc_b105`.
+Evidence is retained at private `19702d3` and `393aa5e`;
+only the four owned exited copy-control containers were removed after retention.
+This does not measure model-sized transfer throughput.
+
+Guard-model-free capture controls `proc_68ff` passed and are retained at private `d53a844`.
+Direct capture preserved a valid requested range `2..8` through conversion of an existing exported program.
+A fixed reshape succeeded without that range and rejected the incompatible direct range.
+The combined ONNX wrapper instead returned a fixed-length graph despite `fallback=False`.
+The [shape-contract note](../troubleshooting/pytorch-onnx-shape-refinement.md)
+records source,
+exact cases,
+diagnostics,
+and the non-isolated flag difference.
+The proposed producer will use explicit capture and inspect actual constraints before conversion;
+this toy evidence does not establish Laya capture compatibility.
+
+Actual full-policy input/precision/shape checks,
+checkpoint hash validation,
+complete producer manifest,
+and model-sized artifact-transfer integration remain to be built and exercised.
 No consumer or provenance requirement is waived.
 
 ## Fine-tuning source findings

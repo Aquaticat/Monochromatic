@@ -417,10 +417,24 @@ the producer must explicitly select and verify the pinned source tree.
 Source/preflight checkpoints are private `9af16ad` and `ae0cf7e`.
 The upstream exporter invokes `agent.model` directly with a random sixteen-token example;
 that is neither full-policy evidence nor the measured BF16 autocast `predict` path.
-The separate full-policy FP32 input/shape checks,
-artifact-transfer controls,
-and producer execution manifest remain preparation work.
-No Laya import or checkpoint export occurred in this preflight.
+First-party artifact-copy controls `proc_4968` accepted the valid digest and refused the wrong digest.
+The hash-guard omission `proc_b105` exposed an incorrect acknowledgement and failed its expected test.
+Only the four owned exited copy-control containers were removed after evidence retention.
+Guard-model-free capture controls `proc_68ff` retained a valid direct dynamic range through ONNX conversion,
+rejected a conflicting direct range after a fixed-shape positive control,
+and observed the combined ONNX wrapper return a fixed-length graph despite `fallback=False`.
+Source and qualification limits are in the
+[shape-contract note](../troubleshooting/pytorch-onnx-shape-refinement.md).
+Private evidence checkpoints are `19702d3`,
+`393aa5e`,
+and `d53a844`.
+The producer plan uses explicit capture and actual-constraint inspection;
+Laya compatibility,
+full-policy FP32 input checks,
+checkpoint hashing,
+model-sized transfer integration,
+and the complete producer manifest remain preparation work.
+No Laya import or checkpoint export occurred in these controls.
 
 ### Jev through LLM Gateway
 
