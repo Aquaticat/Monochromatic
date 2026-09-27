@@ -44,6 +44,18 @@ export const FANDOM_GLOSSARY: readonly CommunityTerm[] = [
     refusedForms: ['atori',],
     why: 'Atri, the robot heroine of ATRI -My Dear Moments-; the official English name, never a transliteration',
   },
+  // CLASS ONE HUNDRED SEVENTY-EIGHT (TianqiChen66610, 2026-09-26): the archive
+  // glossed the performer's "high-performance robot" image as "a cute
+  // character she cosplayed as"; the owner named the character, Atri, whose
+  // catchphrase the phrase is.
+  {
+    term: '高性能机器人',
+    renderings: ['high-performance robot',],
+    refusedForms: [],
+    why: 'Atri\'s own description of herself in ATRI -My Dear Moments- (her catchphrase "Because I\'m '
+      + 'high-performance!"); a performer remembered as the "high-performance robot" is remembered as her Atri, so '
+      + 'a note naming Atri is the reference, not an addition',
+  },
 ];
 
 //endregion Fandom glossary
