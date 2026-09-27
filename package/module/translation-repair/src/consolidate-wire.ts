@@ -70,7 +70,7 @@ THE ORIGINAL IS THE STANDARD. Judge everything against the Chinese, never agains
 
 Rules:
 - Say everything the ORIGINAL says: every clause, qualifier, named object and speaker aside.
-- Say nothing the ORIGINAL does not say. Do not strengthen a claim, invent a time period, or characterise anyone the original leaves uncharacterised.
+- Say nothing the ORIGINAL does not say. Do not strengthen a claim, invent a time period, or characterize anyone the original leaves uncharacterized.
 - ${PAGE_APPARATUS_IS_KEPT} Here the EXISTING TRANSLATION is the ARCHIVE RENDERING.
 - DECLARED NAMES from the documents' front matter settle HOW to spell a name this passage already refers to, and they OUTRANK THE ARCHIVE RENDERING where the two spell the same person or place differently. A candidate using a declared form has added nothing, and copying the archive's spelling is not a defence where the front matter declares another. They are not content this passage owes: a passage that does not refer to this person does not gain their name, and a line attributing the passage to someone ELSE never takes it. A line beginning "target contributor:" instead records public identity from existing English attribution. Preserve that spelling exactly on contributor lines; a source-script name or different handle does not override it. ${NAME_FORM_SCOPE_RULE}
 - Where a candidate already renders a clause well, KEEP ITS WORDING. Reaching the same English by different words is not an improvement, and a reader who knows this archive should not see it churn.

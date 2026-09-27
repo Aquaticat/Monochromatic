@@ -55,7 +55,7 @@ export const TRANSLATOR_NOTE_KIND: string = 'a translator\'s note explaining a p
  ```
  */
 export const NARRATIVE_DETAIL_IS_NOT_APPARATUS: string = 'WHAT HAPPENED IS NEVER APPARATUS: an event, an action,'
-  + ' a method, a time, a cause or a characterisation the ORIGINAL does not state is an addition even where'
+  + ' a method, a time, a cause or a characterization the ORIGINAL does not state is an addition even where'
   + ' nothing in the ORIGINAL contradicts it.';
 
 /**

@@ -51,7 +51,7 @@ export const CONTEST_POLICY: string = [
   'Answer two questions about each candidate first, and let the choice follow from them.',
   '',
   'UNSUPPORTED: does the candidate state something the Chinese does not say?',
-  'An invented time period, an invented characterisation, a strengthened claim: all unsupported.',
+  'An invented time period, an invented characterization, a strengthened claim: all unsupported.',
   `Apparatus the archive supplies, such as a name, a spelled-out referent, a gloss of a name or a term, or ${TRANSLATOR_NOTE_KIND}, is NOT unsupported: keeping it is correct.`,
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
   '',

@@ -108,9 +108,11 @@ function isLetter({ character, }: { readonly character: string; },): boolean {
 function wordsOf({ text, }: { readonly text: string; },): readonly string[] {
   /**
    Words closed so far and the one being read, as one list whose last item
-   may be empty.
+   may be empty. Code points on purpose, not graphemes: only an ASCII letter
+   continues a word, and any other code point closes it whatever grapheme it
+   belongs to.
    */
-  const words = [...text,].reduce<string[]>(
+  const words = Array.from(text,).reduce<string[]>(
     function readCharacter(
       read,
       character,

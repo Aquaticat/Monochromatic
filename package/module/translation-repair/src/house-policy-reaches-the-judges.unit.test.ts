@@ -133,13 +133,14 @@ await describe({
       },
     },),
     it({
-      name: 'TELLS a judge how a handle with no declared, archive or corpus rendering is written: pinyin as one '
-        + 'capitalised word with its literal meaning in parentheses at its first appearance (class eighty-three, '
+      name: 'TELLS a judge how a handle with no declared, archive or corpus rendering is written: pinyin in '
+        + 'capitalized groups of two syllables (owner, 2026-09-22), with its literal meaning in parentheses at its '
+        + 'first appearance (class eighty-three, '
         + 'XingZ622, 2026-09-22: 锦心 shipped in Han, 洁澄天奏 as "Jiecheng Tianzou" and "洁澄天奏Official", 雨狸 as '
         + '"Yu Li" and "雨狸" on one page; the judges filled the gap with "keep the original form")',
       fn: async () => {
         expect(system.includes('romanized as the handle is read',),).toBe(true,);
-        expect(system.includes('capitalised groups of two syllables',),).toBe(true,);
+        expect(system.includes('capitalized groups of two syllables',),).toBe(true,);
         expect(system.includes('never one joined word',),).toBe(true,);
         expect(system.includes('literal meaning in parentheses the first time it appears on the page',),).toBe(true,);
         expect(system.includes('never left in Han, never rendered by its meaning alone',),).toBe(true,);

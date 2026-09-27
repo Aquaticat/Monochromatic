@@ -99,8 +99,52 @@ function joined(
  ```
  */
 export function renderedSheets(): readonly RenderedSheet[] {
+  /**
+   Editor exchange, whose messages the sheet joins.
+   */
+  const editorPlan = buildEditorMessages({
+    sourceText: SOURCE,
+    targetText: ARCHIVE,
+    envelopes: [],
+    issues: [],
+  },);
+  /**
+   Refiner exchange, whose messages the sheet joins.
+   */
+  const refinePlan = buildRefineMessages({
+    sourceText: SOURCE,
+    envelopes: [],
+    identityContext: IDENTITY,
+    referenceContext: REFERENCES,
+  },);
+  /**
+   Translate writer exchange, whose messages the sheet joins.
+   */
+  const translatePlan = buildTranslateMessages({
+    sourceText: SOURCE,
+    existingText: ARCHIVE,
+    identityContext: IDENTITY,
+  },);
+  /**
+   Coverage exchange, whose messages the sheet joins.
+   */
+  const coveragePlan = buildCoverageMessages({
+    sourcePassage: SOURCE,
+    translationText: ARCHIVE,
+  },);
+  /**
+   Resolution exchange, whose messages the sheet joins.
+   */
+  const resolutionPlan = buildResolutionMessages({
+    sourceText: SOURCE,
+    patchedText: ARCHIVE,
+    issues: [],
+  },);
   return [
-    { name: 'house policy', text: HOUSE_POLICY_BLOCK, },
+    {
+      name: 'house policy',
+      text: HOUSE_POLICY_BLOCK,
+    },
     {
       name: 'critic',
       text: joined({
@@ -115,33 +159,19 @@ export function renderedSheets(): readonly RenderedSheet[] {
     {
       name: 'editor',
       text: joined({
-        messages: buildEditorMessages({
-          sourceText: SOURCE,
-          targetText: ARCHIVE,
-          envelopes: [],
-          issues: [],
-        },).messages,
+        messages: editorPlan.messages,
       },),
     },
     {
       name: 'refiner',
       text: joined({
-        messages: buildRefineMessages({
-          sourceText: SOURCE,
-          envelopes: [],
-          identityContext: IDENTITY,
-          referenceContext: REFERENCES,
-        },).messages,
+        messages: refinePlan.messages,
       },),
     },
     {
       name: 'translate writer',
       text: joined({
-        messages: buildTranslateMessages({
-          sourceText: SOURCE,
-          existingText: ARCHIVE,
-          identityContext: IDENTITY,
-        },).messages,
+        messages: translatePlan.messages,
       },),
     },
     {
@@ -214,7 +244,12 @@ export function renderedSheets(): readonly RenderedSheet[] {
         messages: buildCandidateSelectMessages({
           task: TRANSLATE_SELECTION_TASK,
           criteria: translateSelectionCriteria({ lineStructured: false, },),
-          evidence: [{ label: 'ORIGINAL (Chinese)', text: SOURCE, },],
+          evidence: [
+            {
+              label: 'ORIGINAL (Chinese)',
+              text: SOURCE,
+            },
+          ],
           rendered: [
             ARCHIVE,
             REPAIR,
@@ -226,10 +261,7 @@ export function renderedSheets(): readonly RenderedSheet[] {
     {
       name: 'coverage',
       text: joined({
-        messages: buildCoverageMessages({
-          sourcePassage: SOURCE,
-          translationText: ARCHIVE,
-        },).messages,
+        messages: coveragePlan.messages,
       },),
     },
     {
@@ -259,11 +291,7 @@ export function renderedSheets(): readonly RenderedSheet[] {
     {
       name: 'resolution',
       text: joined({
-        messages: buildResolutionMessages({
-          sourceText: SOURCE,
-          patchedText: ARCHIVE,
-          issues: [],
-        },).messages,
+        messages: resolutionPlan.messages,
       },),
     },
   ];
