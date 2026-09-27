@@ -207,7 +207,7 @@ function copyingClient(): SyntheticClient {
       const value: unknown = (schema === 'translation_report')
         ? { translation, }
         : {
-          best: (purring === -1) ? 1 : (purring + 1),
+          best: (purring === (-1)) ? 1 : (purring + 1),
           reason: 'keeps the purr',
         };
       if (!request.validate(value,))
@@ -375,6 +375,19 @@ await describe({
         expect((surface.stageInput.disputedWordings ?? []).some(function refusesIncumbent(wording,): boolean {
           return wording.text === surface.stageInput.incumbentText;
         },),).toBe(false,);
+        // THE CONTROL: with no stand-in the archive is the incumbent, and its
+        // judged part is refused with it.
+        const withheld = translateSliceInput({
+          slice,
+          prepared,
+          disputedWordings: [{
+            text: slice.target.text,
+            reason: 'the archive rendering the adjudicators disputed',
+          },],
+        },);
+        expect((withheld.stageInput.disputedWordings ?? []).some(function refusesIncumbent(wording,): boolean {
+          return wording.text === withheld.stageInput.incumbentText;
+        },),).toBe(true,);
       },
     },),
     it({

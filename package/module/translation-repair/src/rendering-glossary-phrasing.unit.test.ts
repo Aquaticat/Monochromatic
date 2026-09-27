@@ -4,10 +4,10 @@
  translated better do it"), 摆烂 and 万千世界, both shipped as calques on one
  page, join the rendering glossary.
 
- The class seeded three more entries keyed on one sentence's construction
- (原因是多方面的, 特例, 陷入癫狂). The glossary audit of 2026-09-27 took them out
- for the idiomatic English rule on every sheet, which
- `glossary-dictionary-terms.unit.test.ts` guards.
+ The class seeded three more entries keyed on one sentence's construction.
+ The glossary audit of 2026-09-27 took them out for the idiomatic English
+ rule on every sheet, which `glossary-dictionary-terms.unit.test.ts` guards,
+ and which names them.
 
  Cat-themed invention throughout; no corpus content appears here.
 

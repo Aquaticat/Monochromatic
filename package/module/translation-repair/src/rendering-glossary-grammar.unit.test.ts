@@ -4,11 +4,10 @@
  better do it"), 化作 joins the rendering glossary; one page shipped it as the
  archive's doubled preposition ("turned into in"), a slip no lane repaired.
 
- The class seeded seven more entries keyed on one sentence's grammar (被她治愈,
- 应该会有更好的生活, 遇到的却是, 在隙中, 一切都会有机会, 离开我们的时候,
- 所以她是个). The glossary audit of 2026-09-27 took them out for the general
- grammatical English rule on every sheet, which
- `glossary-dictionary-terms.unit.test.ts` guards.
+ The class seeded seven more entries keyed on one sentence's grammar. The
+ glossary audit of 2026-09-27 took them out for the general grammatical
+ English rule on every sheet, which `glossary-dictionary-terms.unit.test.ts`
+ guards, and which names them.
 
  Cat-themed invention throughout; no corpus content appears here.
 

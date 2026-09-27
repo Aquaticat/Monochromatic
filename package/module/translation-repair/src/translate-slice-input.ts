@@ -3,7 +3,10 @@ import type {
   SliceSyntax,
 } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
-import type { DisputedWording, } from './disputed-wording.ts';
+import {
+  type DisputedWording,
+  disputedWordingFindings,
+} from './disputed-wording.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import { attestedDetailLines, } from './reference-attest-match.ts';
@@ -202,10 +205,22 @@ export function translateSliceInput(
    */
   const [firstDisputed,] = disputedWordings;
   /**
-   The refused wordings with the archive's judged part among them, which is
-   the incumbent the stage reads where a target-only run was held out.
+   What the rule says of the archive text the stage reads as a disputed
+   wording, none where it is not one: an eligible stand-in is not, and its
+   judged part is then not refused either.
    */
-  const refused = ((firstDisputed === undefined) || (judgedText === archiveText))
+  const archiveFindings = disputedWordingFindings({
+    candidateText: archiveText,
+    disputedWordings,
+  },);
+  /**
+   The refused wordings with the archive's judged part among them where the
+   archive text is itself refused, since the judged part is then the
+   incumbent the stage reads.
+   */
+  const refused = ((firstDisputed === undefined)
+    || (archiveFindings.length === 0)
+    || (judgedText === archiveText))
     ? disputedWordings
     : [
       ...disputedWordings,

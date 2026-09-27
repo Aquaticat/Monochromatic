@@ -1401,3 +1401,56 @@ so a replacement refused there ships the floor-refused archive as the lane's tex
 (shihai4h2 slice 14 kept a 1665-code-point archive against a 102-character source);
 the consolidation then refuses it as a standing.
 The disputed case no longer does this; the floor-refused case needs the stage's eligibility on the record.
+
+## Process mistakes in this audit
+
+These are the agent's own mistakes while fixing, recorded for the prevention doc.
+
+### M1: `;` in shell commands
+
+Status: recurring.
+At least five times on 2026-09-27
+(`sed ... ; sed`, `node <guard> ; rg`, `rg ... ; ls`, `xargs <lint> ; rg`, and one by the fixture agent),
+against the rule of at most three `&&` and no `;`.
+Prevention: a report that should run after a failing command is `a || b`, never `a ; b`.
+
+### M2: a wording change committed without the full suite
+
+Status: fixed in `0cf2017b3`.
+`e8f0b0369` reworded house-policy sentences and bumped a cache version with single-file runs only;
+three pins broke (the version 17 key literal, the corner-bracket sentence, the place-as-means sentence).
+Prevention: any sheet wording or cache version change runs the full suite before its commit,
+and a version bump repins its key literal in the same commit.
+
+### M3: a guard whose first red was a link failure
+
+Status: fixed by the prep export `refactor(module-translation-repair): export archiveStandInFor`.
+`archive-dispute-standing.unit.test.ts` first failed because `archiveStandInFor` was not exported,
+which says nothing about behaviour.
+Prevention: read each FAIL reason of a red run; a missing export gets its own prep commit first.
+
+### M4: a guard committed red with a lint warning
+
+Status: fixed in the following fix commit.
+`88fdb1923` carried a `no-mixed-operators` warning because the lint step sat in an `&&` chain whose `rg` succeeded on warnings.
+Prevention: commit only after the lint line reads `Found 0 warnings and 0 errors`.
+
+### M5: a new condition guarded on one branch only
+
+Status: fixed (guard `88fdb1923`).
+`bd98bdc70` refused the judged part of the incumbent whenever a target-only run was held out,
+which refused an eligible stand-in with a trailing transcript;
+the guard had no eligible stand-in with a held-out run, and review found it.
+Prevention: a guard for a new condition covers every combination of the inputs it branches on,
+with a positive control that must move.
+
+### M6: edits attempted on files not read
+
+Status: recurring, harmless (the tool refuses).
+Prevention: read the region with the Read tool before editing it.
+
+### M7: an adopted reading parked in docs across a compaction
+
+Status: fixed (owner confirmed "English letters" on 2026-09-27).
+The "kept in English letters" reading waited in the planning doc for a veto instead of being asked.
+Prevention: a reading adopted without the owner's answer is asked in the same turn.
