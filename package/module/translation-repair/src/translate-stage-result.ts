@@ -9,6 +9,7 @@ import type {
   TranslateCandidateValue,
   TranslateOrigin,
 } from './translate-candidates.ts';
+import type { TieBasis, } from './translate-runoff-tie.ts';
 import type { TranslateSlateEntry, } from './translate-slate.ts';
 
 //region Translate stage result
@@ -131,6 +132,18 @@ export type TranslateStageResult = {
    where the round decided, rejected, or backed the whole slate.
    */
   readonly runoffFinalists?: readonly Candidate<TranslateCandidateValue>[];
+
+  /**
+   How a slate declined in its challenge round shipped anyway over wording
+   that cannot ship (owner, 2026-09-27, "Preference + polish"): the
+   preference that chose the candidate, and the reasons of the ballots that
+   did not back it, which a later correction round checks against the
+   ORIGINAL. Absent wherever the judges chose or a tie was broken.
+   */
+  readonly shippedPastDecline?: {
+    readonly basis: TieBasis;
+    readonly objections: readonly string[];
+  };
 
   /**
    Position of the text that actually shipped, which differs from the

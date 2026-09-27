@@ -626,6 +626,11 @@ export async function settleConsolidation(
         // consolidation producers; leaving the judges out of it would have the
         // judges mark down exactly the unmerging the producers were told to do.
         lineStructured,
+        // WORDING THAT CANNOT SHIP IS WITHHELD, NOT ABSENT (owner answer
+        // 2026-09-27, "Preference + polish"): the judges are told a declined
+        // slate still ships by preference, and a challenge round declined
+        // with nothing left to narrow does, where it stopped the entry.
+        withheldStanding: !standingEligible,
         signal,
         perCallTimeoutMs,
         l: sl,
@@ -636,6 +641,8 @@ export async function settleConsolidation(
         : await judgeTranslateSlate(judging,);
     }
     catch (error) {
+      // Only a slate with nothing to ship reaches here now: no candidate, or
+      // no voice heard.
       if ((standingEligible) || (!(error instanceof TranslateAbsenceError)))
         throw error;
       throw new ConsolidationStandingIneligibleError({

@@ -74,8 +74,14 @@ import type { LaneText, } from './translate-candidates.ts';
  VERSION 17 sends the gate's objections over an ineligible standing to the
  polish as an objection correction (owner, 2026-09-27). Version 16
  settlements polished comparatively and never saw the objections.
+
+ VERSION 18 ships a slate declined twice over an ineligible standing by
+ preference and sends its reasons to the polish beside the gate's, and tells
+ the slate judges so (owner, 2026-09-27, "Preference + polish"). Version 17
+ raised on that slate and stopped the entry, and its polish sheet carried
+ one set of objections.
  */
-export const CONSOLIDATE_CACHE_VERSION = 17;
+export const CONSOLIDATE_CACHE_VERSION = 18;
 
 /**
  What a line-structured slice appends to its key material.

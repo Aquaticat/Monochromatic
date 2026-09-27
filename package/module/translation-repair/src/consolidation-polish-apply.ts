@@ -12,7 +12,7 @@ import {
   polishConsolidation,
 } from './consolidation-polish.ts';
 import { NaturalnessRepairInterruptedError, } from './naturalness-repair-interrupted-error.ts';
-import type { ObjectionOrigin, } from './refine-selection-context.ts';
+import type { ObjectionGroup, } from './refine-selection-context.ts';
 
 //region Final consolidation polish application
 
@@ -35,9 +35,9 @@ import type { ObjectionOrigin, } from './refine-selection-context.ts';
  @param eligible - whether baseline has approval to cross publication boundary
 
  @param objections - what the gate or slate judges held against the text
- over a standing the deterministic rule refused, corrected where the
- ORIGINAL supports it (owner, 2026-09-27); omitted or empty keeps the
- comparative polish
+ over a standing the deterministic rule refused, by the judges it comes
+ from, corrected where the ORIGINAL supports it (owner, 2026-09-27); omitted,
+ or no group carrying an objection, keeps the comparative polish
 
  @param signal - cancellation for whole settlement
  
@@ -73,10 +73,7 @@ export async function applyFinalPolish(
     readonly sliceIndex: number;
     readonly polishConfig?: ConsolidationPolishConfig;
     readonly eligible: boolean;
-    readonly objections?: {
-      readonly origin: ObjectionOrigin;
-      readonly reasons: readonly string[];
-    };
+    readonly objections?: readonly ObjectionGroup[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -99,9 +96,15 @@ export async function applyFinalPolish(
     },);
   }
   /**
-   Reasons the gate or slate judges objected with, empty for none.
+   Sets of judges that objected with at least one reason.
    */
-  const objectionReasons = objections?.reasons ?? [];
+  const objectionGroups = (objections ?? []).filter(function objected(group,): boolean {
+    /**
+     What this set of judges raised.
+     */
+    const { objections: raised, } = group;
+    return raised.length > 0;
+  },);
   /**
    Final naturalness decision over approved surviving baseline.
    */
@@ -121,13 +124,12 @@ export async function applyFinalPolish(
     sliceIndex,
     ...((polishConfig === undefined) ? {} : { config: polishConfig, }),
     eligible,
-    ...(((objections === undefined) || (objectionReasons.length === 0))
+    ...((objectionGroups.length === 0)
       ? {}
       : {
         mode: {
           kind: 'objection-correction',
-          origin: objections.origin,
-          objections: objectionReasons,
+          groups: objectionGroups,
         },
       }),
     signal,

@@ -57,17 +57,21 @@ function objectionPolishFindings(
   if (mode.kind !== 'objection-correction')
     return [];
   /**
-   Judges and what they objected with.
+   Each set of judges with how many objections it raised.
    */
-  const {
-    origin,
-    objections,
-  } = mode;
-  return [
-    `polish-objection-correction (${origin}: ${String(objections.length,)} objection(s), ${
-      corrected ? 'corrected' : 'base kept'
-    })`,
-  ];
+  const counted = mode.groups
+    .map(function countOf(group,): string {
+      /**
+       Judges and what they objected with.
+       */
+      const {
+        origin,
+        objections,
+      } = group;
+      return `${origin}: ${String(objections.length,)} objection(s)`;
+    },)
+    .join(', ',);
+  return [`polish-objection-correction (${counted}, ${corrected ? 'corrected' : 'base kept'})`,];
 }
 
 /**

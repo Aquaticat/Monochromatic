@@ -66,12 +66,13 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  Version 10 replaces identical decline retry with distinct challenge task.
  Version 11 continues absent passages from latest rejection evidence.
  Version 12 excludes archive fallback that fails deterministic source floor.
+ Version 13 ships a withheld archive slice past a declined follow-up round.
  These questions changed without input fields.
  
  The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  leaves this alone.
  */
-const LEGACY_WINDOWLESS_KEY = 'e3f85c77f819ac32acae01adab73e0a3ad63633b1c7ad39ef487011fe6d12efb';
+const LEGACY_WINDOWLESS_KEY = '2ea4fff1692ab7d0f3db0809f6d22a039301c6d63ab751e86ec454af9aec818d';
 
 /**
  One slice's key, with whatever this case wants to vary.

@@ -8,6 +8,13 @@ import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { selectFence, } from './prompt-fence.ts';
+import { KEEPS_TRUSTED_TEXT, } from './select-decline-consequence.ts';
+
+export {
+  KEEPS_TRUSTED_TEXT,
+  LEAVES_PASSAGE_UNTRANSLATED,
+  SHIPS_BY_PREFERENCE,
+} from './select-decline-consequence.ts';
 
 //region Candidate selection wire format
 // Free-text candidates cannot be voted on the way claims are: two editors fixing
@@ -233,34 +240,6 @@ export const CANDIDATE_SELECT_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
     },
   },
 };
-
-/**
- What a decline costs where the caller HAS something to fall back on.
- 
- The ordinary case, and the reason declining is safe to encourage: the editor
- and refiner lanes keep the text they were given, and the translate lane keeps
- the archive's own wording. A caller with nothing to keep has to say so
- instead, since a judge told this while it is false is being asked for caution
- by a promise nobody can honour.
- 
- @example
- ```ts
- const consequence = KEEPS_TRUSTED_TEXT;
- ```
- */
-export const KEEPS_TRUSTED_TEXT: string = 'the caller keeps text it already trusts when you decline';
-
-/**
- What a decline costs where the caller has NOTHING to fall back on.
- 
- @example
- ```ts
- const consequence = LEAVES_PASSAGE_UNTRANSLATED;
- ```
- */
-export const LEAVES_PASSAGE_UNTRANSLATED: string =
-  'there is no existing translation of this passage, so declining every candidate leaves it untranslated '
-  + 'rather than falling back on anything';
 
 /**
  Builds the judge prompt: the task, the evidence, and the anonymized

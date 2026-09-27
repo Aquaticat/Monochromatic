@@ -228,6 +228,10 @@ export async function gateAndShip(
     sliceIndex,
   },);
 
+  /**
+   How the slate shipped past two declines, absent where it chose.
+   */
+  const { shippedPastDecline, } = decided;
   return await applyFinalPolish({
     client,
     settlement: {
@@ -253,15 +257,23 @@ export async function gateAndShip(
     ...((polishConfig === undefined) ? {} : { polishConfig, }),
     eligible: (terminal === 'consolidated') || standingMayShip,
     // OVER AN INELIGIBLE STANDING every gate verdict ships the consolidation,
-    // so what the gate held against it goes to the polish (owner, 2026-09-27).
-    ...(standingEligible
-      ? {}
-      : {
-        objections: {
+    // so what the gate held against it goes to the polish, and so do the
+    // reasons of a slate that shipped it by preference past two declines
+    // (owner, 2026-09-27, fourteenth and fifteenth addenda).
+    objections: [
+      ...((shippedPastDecline === undefined)
+        ? []
+        : [{
+          origin: 'consolidation slate',
+          objections: shippedPastDecline.objections,
+        },] as const),
+      ...(standingEligible
+        ? []
+        : [{
           origin: 'consolidation gate',
-          reasons: gateObjectionsOf({ ballots: gated.ballots, },),
-        },
-      }),
+          objections: gateObjectionsOf({ ballots: gated.ballots, },),
+        },] as const),
+    ],
     signal,
     perCallTimeoutMs,
     l,

@@ -10,7 +10,8 @@ import {
 import { POLISH_GATE_HOUSE_RULES, } from './polish-gate-house-rules.ts';
 import { selectFence, } from './prompt-fence.ts';
 import {
-  type ObjectionOrigin,
+  type ObjectionGroup,
+  objectingJudgesOf,
   objectionsHeading,
   type RefineStageMode,
 } from './refine-selection-context.ts';
@@ -91,19 +92,21 @@ The base already failed absolute naturalness review. It is evidence for preservi
  as the fallback (owner, 2026-09-27, the fourteenth and fifteenth addenda of
  `doc/decision/translation-repair-ineligible-standing.md`).
 
- @param origin - judges the objections come from
+ @param groups - objections by the judges they come from
 
  @returns Policy naming the objections as claims and the base as the fallback
 
  @example
  ```ts
- const policy = objectionCorrectionPolishPolicy({ origin: 'consolidation gate', },);
+ const policy = objectionCorrectionPolishPolicy({ groups, },);
  ```
  */
 function objectionCorrectionPolishPolicy(
-  { origin, }: { readonly origin: ObjectionOrigin; },
+  { groups, }: { readonly groups: readonly ObjectionGroup[]; },
 ): string {
-  return `You are deciding whether a correction may replace an English memorial passage the ${origin} objected to.
+  return `You are deciding whether a correction may replace an English memorial passage the ${
+    objectingJudgesOf({ groups, },)
+  } objected to.
 
 THE ORIGINAL CHINESE IS THE FIDELITY STANDARD. First check both candidates for unsupported statements and dropped content, and check each objection against the ORIGINAL: an objection is a claim, not a fact.
 
@@ -318,9 +321,15 @@ export function buildConsolidationPolishGateMessages(
   /**
    What the gate or slate judges objected to, on an objection correction.
    */
-  const objections = (mode.kind === 'objection-correction')
-    ? mode.objections
+  const objectionGroups = (mode.kind === 'objection-correction')
+    ? mode.groups
     : [];
+  /**
+   Every objection, whichever judges raised it, for the fence.
+   */
+  const objections = objectionGroups.flatMap(function objectionsOf(group,): readonly string[] {
+    return group.objections;
+  },);
   /**
    Prior failed strategies correction gate must not repeat.
    */
@@ -395,19 +404,19 @@ export function buildConsolidationPolishGateMessages(
   /**
    The judges' objections as quoted review data, absent on any other mode.
    */
-  const objectionEvidence = (mode.kind === 'objection-correction')
-    ? [
-      `${objectionsHeading({ origin: mode.origin, },)}:`,
+  const objectionEvidence = objectionGroups.flatMap(function groupEvidence(group,): readonly string[] {
+    return [
+      `${objectionsHeading({ origin: group.origin, },)}:`,
       `${fence}\n${
-        objections
+        group.objections
           .map(function listed(objection,): string {
             return `- ${objection}`;
           },)
           .join('\n',)
       }\n${fence}`,
       '',
-    ]
-    : [];
+    ];
+  },);
   /**
    Base label matching whether it remains publishable.
    */
@@ -422,7 +431,7 @@ export function buildConsolidationPolishGateMessages(
   const policy = comparative
     ? comparativePolishPolicy({ lineStructured: subject.lineStructured, },)
     : ((mode.kind === 'objection-correction')
-      ? objectionCorrectionPolishPolicy({ origin: mode.origin, },)
+      ? objectionCorrectionPolishPolicy({ groups: mode.groups, },)
       : REQUIRED_CORRECTION_POLISH_POLICY);
   return [
     {

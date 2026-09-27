@@ -282,6 +282,38 @@ stopping the entry with valid proposals on the slate
 - The judges' reasons become required corrections for the final polish,
     as the fourteenth addendum does for the gate's objections.
 - The sheet tells the slate judges what a decline now costs.
+- Landed:
+    `settleAbsentDecline` in `translate-runoff-tie.ts` ships the preferred candidate
+    where the caller ships past a decline,
+    the round is the challenge,
+    and no run-off is left to narrow;
+    a tie among some candidates still narrows first.
+    The record is `judged` with the finding
+    `translate-slate-declined-shipped-by-preference (<basis>)`
+    and `shippedPastDecline`,
+    which carries the reasons of every ballot that did not back the shipped candidate.
+- `judgeTranslateSlate` takes `withheldStanding`
+    (the judges are told `SHIPS_BY_PREFERENCE`, `select-decline-consequence.ts`,
+    in place of a sentence saying the passage has no translation)
+    and `shipPastDecline`, which defaults to it.
+    The consolidation passes `withheldStanding` wherever the standing is ineligible.
+- The polish's objection correction carries groups
+    (`ObjectionGroup`, `refine-selection-context.ts`),
+    each under its own heading:
+    the slate's reasons and the gate's objections reach the same polish,
+    and the finding counts each
+    (`polish-objection-correction (consolidation slate: N objection(s), consolidation gate: M objection(s), ...)`).
+- The translate lane (sixteenth addendum's extension):
+    `runTranslateStage` passes `incumbentWithheld` where the archive's own wording fails the floor;
+    the first production round still defers to the follow-up round,
+    which carries the judges' rejection evidence,
+    and only the follow-up round ships past a decline.
+    Before this,
+    such a content slice rethrew the absence and stopped the entry.
+- `CONSOLIDATE_CACHE_VERSION` 18 and `TRANSLATE_SLICE_CACHE_VERSION` 13,
+    key literals repinned in the same commit.
+- Guard shown to fail first (`37128bf6c`, `slate-decline-ships-by-preference.unit.test.ts`);
+    `consolidate-settle.unit.test.ts` pinned the stop and now pins the ship.
 
 ## Addendum 2026-09-27, fourteenth: the gate's objections over an ineligible standing go to the polish
 

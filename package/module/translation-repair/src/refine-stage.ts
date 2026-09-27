@@ -245,12 +245,7 @@ export async function runRefineStage(
           : { priorNaturalnessCorrections: mode.priorCorrections, }),
       }
       : {}),
-    ...((mode.kind === 'objection-correction')
-      ? {
-        objections: mode.objections,
-        objectionOrigin: mode.origin,
-      }
-      : {}),
+    ...((mode.kind === 'objection-correction') ? { objectionGroups: mode.groups, } : {}),
   },);
 
   /**

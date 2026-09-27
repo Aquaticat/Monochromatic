@@ -22,6 +22,14 @@ import type { TranslateFollowupEvidence, } from './translate-wire.ts';
 // (doc/planning/translation-repair-no-loop-design.md). A second rejection
 // rethrows the absence, which the slice attempt settles as an unfilled slice
 // rather than a thrown entry.
+//
+// WORDING THAT EXISTS AND CANNOT SHIP IS NOT AN ABSENCE (owner answer
+// 2026-09-27, "Preference + polish"). An archive rendering the floor refuses
+// reaches this stage as an absent incumbent, and a second rejection there
+// rethrew into a content slice, which the slice attempt rethrows in turn, so
+// the entry stopped. The follow-up round now ships its preferred candidate
+// past a declined challenge round instead; the first round still defers to
+// the follow-up, which is the designed re-ask.
 
 /**
  Everything one produce-and-judge round needs, shared by both rounds.
@@ -34,6 +42,7 @@ type TranslateRoundInput = ForeignBorrowed<{
   readonly incumbentText: string;
   readonly incumbentKind: IncumbentKind;
   readonly incumbentEligible: boolean;
+  readonly incumbentWithheld: boolean;
   readonly identityContext?: string;
   readonly referenceContext?: string;
   readonly attestedLines?: readonly string[];
@@ -134,6 +143,10 @@ async function produceAndJudgeOnce(
           ...((input.pictureContext === undefined) ? {} : { pictureContext: input.pictureContext, }),
           ...((input.syntax === undefined) ? {} : { syntax: input.syntax, }),
           lineStructured: input.lineStructured,
+          withheldStanding: input.incumbentWithheld,
+          // Only the follow-up round ships past a decline; the first defers
+          // to it.
+          shipPastDecline: input.incumbentWithheld && (followupEvidence !== undefined),
           signal: input.signal,
           perCallTimeoutMs: input.perCallTimeoutMs,
           l: input.l,
@@ -183,7 +196,11 @@ async function produceAndJudgeOnce(
  @param incumbentKind - whether fallback text exists and passes deterministic source floor
  
  @param incumbentEligible - whether existing text may appear on candidate slate
- 
+
+ @param incumbentWithheld - whether the absent incumbent is wording that
+ exists and cannot ship, so the follow-up round ships by preference past a
+ decline rather than rethrowing (owner, 2026-09-27)
+
  @param signal - caller abort honored by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -210,6 +227,7 @@ export async function runTranslateRepairs(
     incumbentText,
     incumbentKind,
     incumbentEligible = true,
+    incumbentWithheld = false,
     identityContext,
     referenceContext,
     attestedLines,
@@ -231,6 +249,7 @@ export async function runTranslateRepairs(
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;
     readonly incumbentEligible?: boolean;
+    readonly incumbentWithheld?: boolean;
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly attestedLines?: readonly string[];
@@ -257,6 +276,7 @@ export async function runTranslateRepairs(
     incumbentText,
     incumbentKind,
     incumbentEligible,
+    incumbentWithheld,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((attestedLines === undefined) ? {} : { attestedLines, }),

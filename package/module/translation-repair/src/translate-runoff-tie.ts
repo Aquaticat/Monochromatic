@@ -33,6 +33,16 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
 // the translate lane's text; then slate order. A tie among some of the
 // candidates still narrows through the class eighty-two loop, a first round
 // is still challenged, and a round with an incumbent keeps it as before.
+//
+// THE SAME ORDER SHIPS PAST A DECLINE where the passage has wording that
+// cannot ship (owner answer 2026-09-27, "Preference + polish"): a standing
+// the deterministic rule refused, or an archive rendering the floor refuses
+// or the adjudicators disputed. hulicaijia14 stopped its entry on such a
+// slate, declined twice with valid proposals on it. A challenge round
+// declined there with nothing left to narrow ships its preferred candidate,
+// and the reasons of the ballots that did not back it travel with the record
+// for the consolidation's polish to check against the ORIGINAL. A passage
+// with no wording at all still raises.
 
 /**
  How a run-off tie was broken, as the finding names it.
@@ -96,6 +106,13 @@ type RankedFinalist<ValueT,> = {
 export const RUNOFF_TIE_BROKEN_FINDING = 'translate-runoff-tie-broken';
 
 /**
+ Finding a slate declined in its challenge round records where it ships by
+ preference over wording that cannot ship, followed by its basis in
+ parentheses (owner, 2026-09-27, "Preference + polish").
+ */
+export const SHIPPED_PAST_DECLINE_FINDING = 'translate-slate-declined-shipped-by-preference';
+
+/**
  Preference of a finalist: the repair lane's text first, the translate
  lane's next, a writer's proposal last.
 
@@ -133,6 +150,45 @@ function preferenceOf<ValueT,>(
       rank: 1,
       basis: 'translate lane',
     };
+}
+
+/**
+ A candidate at its one-based position on the round's sheet.
+ */
+type PlacedCandidate<ValueT,> = {
+  readonly index: number;
+  readonly candidate: Candidate<ValueT>;
+};
+
+/**
+ Candidates ranked by preference, best first, slate order breaking equal
+ preference.
+
+ @param finalists - candidates at their positions
+
+ @returns Every candidate with its rank and basis, best first
+
+ @example
+ ```ts
+ const [chosen,] = rankedByPreference({ finalists, },);
+ ```
+ */
+function rankedByPreference<ValueT,>(
+  { finalists, }: { readonly finalists: readonly PlacedCandidate<ValueT>[]; },
+): readonly RankedFinalist<ValueT>[] {
+  return finalists
+    .map(function withPreference(finalist,): RankedFinalist<ValueT> {
+      return {
+        ...finalist,
+        ...preferenceOf({ candidate: finalist.candidate, },),
+      };
+    },)
+    .toSorted(function byPreference(
+      left: RankedFinalist<ValueT>,
+      right: RankedFinalist<ValueT>,
+    ): number {
+      return (left.rank === right.rank) ? left.index - right.index : left.rank - right.rank;
+    },);
 }
 
 /**
@@ -183,28 +239,20 @@ export function breakRunoffTie<ValueT,>(
    Tied finalists with their preference, best first, slate order breaking
    equal preference.
    */
-  const [chosen,] = tied
-    .flatMap(function withCandidate(drawn,): readonly RankedFinalist<ValueT>[] {
+  const [chosen,] = rankedByPreference({
+    finalists: tied.flatMap(function withCandidate(drawn,): readonly PlacedCandidate<ValueT>[] {
       /**
        Finalist at this one-based position.
        */
       const candidate = candidates[drawn.index - 1];
       return (candidate === undefined)
         ? []
-        : [
-          {
-            index: drawn.index,
-            candidate,
-            ...preferenceOf({ candidate, },),
-          },
-        ];
-    },)
-    .toSorted(function byPreference(
-      left: RankedFinalist<ValueT>,
-      right: RankedFinalist<ValueT>,
-    ): number {
-      return (left.rank === right.rank) ? left.index - right.index : left.rank - right.rank;
-    },);
+        : [{
+          index: drawn.index,
+          candidate,
+        },];
+    },),
+  },);
   if (chosen === undefined)
     return { kind: 'unbroken', };
   return {
@@ -217,9 +265,141 @@ export function breakRunoffTie<ValueT,>(
 }
 
 /**
+ Ships the preferred candidate of a challenge round the judges declined over
+ wording that cannot ship (owner, 2026-09-27, "Preference + polish"), with
+ the reasons of every ballot that did not back it as objections for a later
+ correction round.
+
+ @param outcome - the declined challenge round
+
+ @param rotated - candidates in the order the judges saw them
+
+ @param keepIncumbent - the stage's record shape, whose slate and counts the
+ shipped candidate keeps
+
+ @param declineFindings - findings the decline reports
+
+ @param declined - the decline in the stage's vocabulary, raised if the
+ round offered nothing to ship
+
+ @param l - logger of the judging stage
+
+ @returns The shipped candidate's record
+
+ @throws {@link TranslateAbsenceError} when the round offered no candidate
+
+ @example
+ ```ts
+ return shipPreferredPastDecline({ outcome, rotated, keepIncumbent, declineFindings, declined, l, },);
+ ```
+ */
+function shipPreferredPastDecline(
+  {
+    outcome,
+    rotated,
+    keepIncumbent,
+    declineFindings,
+    declined,
+    l,
+  }: {
+    readonly outcome: Extract<SelectionOutcome<TranslateCandidateValue>, { readonly kind: 'declined'; }>;
+    readonly rotated: readonly Candidate<TranslateCandidateValue>[];
+    readonly keepIncumbent: Omit<TranslateStageResult, 'decision' | 'findings'>;
+    readonly declineFindings: readonly string[];
+    readonly declined: TranslateAbsenceReason;
+    readonly l: Logger;
+  },
+): TranslateStageResult {
+  /**
+   The round's candidates by preference, best first.
+   */
+  const [chosen,] = rankedByPreference({
+    finalists: rotated.map(function placed(
+      candidate,
+      position,
+    ): PlacedCandidate<TranslateCandidateValue> {
+      return {
+        index: position + 1,
+        candidate,
+      };
+    },),
+  },);
+  if (chosen === undefined) {
+    throw new TranslateAbsenceError({
+      reason: declined,
+      findings: declineFindings,
+    },);
+  }
+  /**
+   What the ballots that did not back the shipped candidate said, once each.
+   */
+  const objections = [
+    ...new Set(
+      outcome.ballots
+        .filter(function backedOther(ballot,): boolean {
+          /**
+           What the judge named and why.
+           */
+          const {
+            best,
+            reason,
+          } = ballot;
+          return (best !== chosen.index) && (reason.trim() !== '');
+        },)
+        .map(function reasonOf(ballot,): string {
+          return ballot.reason;
+        },),
+    ),
+  ];
+  /**
+   Weight the shipped candidate drew, zero where nobody named it.
+   */
+  const drawn = outcome.perCandidate
+    .find(function atChosen(weighed,): boolean {
+      return weighed.index === chosen.index;
+    },);
+  /**
+   The shipped candidate's value and author.
+   */
+  const {
+    value,
+    producer,
+  } = chosen.candidate;
+  l.warn(
+    `translate stage: challenge round declined (${outcome.disposition}) over wording that cannot ship; shipping `
+      + `candidate ${String(chosen.index,)} from ${describeProducer(producer,)} by ${chosen.basis}, with ${
+        String(objections.length,)
+      } objection(s) recorded`,
+  );
+  return {
+    ...keepIncumbent,
+    text: value.text,
+    origin: value.origin,
+    producer,
+    decision: 'judged',
+    voteWeight: drawn?.weight ?? 0,
+    tally: outcome.tally,
+    ballots: outcome.ballots,
+    findings: [
+      ...declineFindings,
+      `${SHIPPED_PAST_DECLINE_FINDING} (${chosen.basis})`,
+    ],
+    selectedIndex: chosen.index,
+    shippedIndex: chosen.index,
+    perCandidate: outcome.perCandidate,
+    shippedPastDecline: {
+      basis: chosen.basis,
+      objections,
+    },
+  };
+}
+
+/**
  What a declined round ships where the slice has no incumbent: the preferred
- finalist where a challenge round tied across every candidate, else the
- absence error the retry reads.
+ finalist where a challenge round tied across every candidate; the preferred
+ candidate where the passage has wording that cannot ship and the challenge
+ round leaves nothing to narrow (owner, 2026-09-27); else the absence error
+ the retry reads.
 
  @param challenged - whether this round challenges an earlier decline
 
@@ -236,16 +416,21 @@ export function breakRunoffTie<ValueT,>(
 
  @param finalists - candidates a partial tie backed, for the next run-off
 
+ @param shipPastDecline - whether a challenge round declined with nothing
+ left to narrow ships its preferred candidate: the passage has wording that
+ cannot ship, as opposed to none at all, and the caller has no further round
+ to ask
+
  @param l - logger of the judging stage
 
  @returns The shipped finalist's record
 
  @throws {@link TranslateAbsenceError} when no tie across every candidate
- was broken
+ was broken and nothing ships past the decline
 
  @example
  ```ts
- return settleAbsentDecline({ challenged: true, outcome, rotated, keepIncumbent, declineFindings, declined, l, },);
+ return settleAbsentDecline({ challenged: true, outcome, rotated, keepIncumbent, declineFindings, declined, shipPastDecline: false, l, },);
  ```
  */
 export function settleAbsentDecline(
@@ -257,6 +442,7 @@ export function settleAbsentDecline(
     declineFindings,
     declined,
     finalists,
+    shipPastDecline,
     l,
   }: {
     readonly challenged: boolean;
@@ -266,6 +452,7 @@ export function settleAbsentDecline(
     readonly declineFindings: readonly string[];
     readonly declined: TranslateAbsenceReason;
     readonly finalists?: readonly Candidate<TranslateCandidateValue>[];
+    readonly shipPastDecline: boolean;
     readonly l: Logger;
   },
 ): TranslateStageResult {
@@ -278,6 +465,29 @@ export function settleAbsentDecline(
       perCandidate: outcome.perCandidate,
     },)
     : { kind: 'unbroken', };
+  /**
+   Whether a further run-off could narrow this round's question, which the
+   retry asks before anything ships by preference.
+   */
+  const narrows = (finalists !== undefined) && (finalists.length < rotated.length);
+  /**
+   Whether this decline ships by preference: no tie was broken, the caller
+   ships past a decline, this is the challenge round, and no run-off is left.
+   */
+  const shipsByPreference = (tie.kind === 'unbroken')
+    && shipPastDecline
+    && challenged
+    && (!narrows);
+  if (shipsByPreference) {
+    return shipPreferredPastDecline({
+      outcome,
+      rotated,
+      keepIncumbent,
+      declineFindings,
+      declined,
+      l,
+    },);
+  }
   if (tie.kind === 'unbroken') {
     throw new TranslateAbsenceError({
       reason: declined,

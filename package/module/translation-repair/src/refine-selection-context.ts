@@ -20,6 +20,49 @@ import { citedReferenceEvidence, } from './cited-reference-rule.ts';
 export type ObjectionOrigin = 'consolidation gate' | 'consolidation slate';
 
 /**
+ What one set of judges objected to.
+
+ @example
+ ```ts
+ const group: ObjectionGroup = { origin: 'consolidation gate', objections: ['adds a purr'], };
+ ```
+ */
+export type ObjectionGroup = {
+  /**
+   Judges the objections come from.
+   */
+  readonly origin: ObjectionOrigin;
+
+  /**
+   Each objecting judge's reason as written, a claim to check against the
+   ORIGINAL rather than a fact.
+   */
+  readonly objections: readonly string[];
+};
+
+/**
+ Names every set of objecting judges, for a sentence.
+
+ @param groups - objections by the judges they come from
+
+ @returns The judges joined with "and"
+
+ @example
+ ```ts
+ objectingJudgesOf({ groups, },); // => 'consolidation slate and consolidation gate'
+ ```
+ */
+export function objectingJudgesOf(
+  { groups, }: { readonly groups: readonly ObjectionGroup[]; },
+): string {
+  return groups
+    .map(function originOf(group,): string {
+      return group.origin;
+    },)
+    .join(' and ',);
+}
+
+/**
  One prior correction outcome that failed to replace rejected text.
  
  @example
@@ -80,15 +123,11 @@ export type RefineStageMode =
     readonly kind: 'objection-correction';
 
     /**
-     Judges the objections come from.
+     Objections by the judges they come from, each set under its own
+     heading: the slate's reasons where it was declined twice and the gate's
+     where it objected (fourteenth and fifteenth addenda).
      */
-    readonly origin: ObjectionOrigin;
-
-    /**
-     Each objecting judge's reason as written, a claim to check against the
-     ORIGINAL rather than a fact.
-     */
-    readonly objections: readonly string[];
+    readonly groups: readonly ObjectionGroup[];
   };
 
 /**
@@ -202,7 +241,9 @@ export function buildRefineSelectionContext(
   }
   if (mode.kind === 'objection-correction') {
     return {
-      task: `Each candidate corrects the CURRENT English translation where the ${mode.origin} objected to it.`,
+      task: `Each candidate corrects the CURRENT English translation where the ${
+        objectingJudgesOf({ groups: mode.groups, },)
+      } objected to it.`,
       criteria: [
         'Faithful to the Chinese ORIGINAL: nothing it does not say, and nothing it says left out.',
         'Resolves each objection the ORIGINAL supports. An objection is a claim: one the ORIGINAL does not '
@@ -222,14 +263,17 @@ export function buildRefineSelectionContext(
           text: repairedText,
         },
         ...referenceEvidence,
-        {
-          label: objectionsHeading({ origin: mode.origin, },),
-          text: mode.objections
-            .map(function listed(objection,): string {
-              return `- ${objection}`;
-            },)
-            .join('\n',),
-        },
+        ...mode.groups
+          .map(function groupEvidence(group,): SelectEvidence {
+            return {
+              label: objectionsHeading({ origin: group.origin, },),
+              text: group.objections
+                .map(function listed(objection,): string {
+                  return `- ${objection}`;
+                },)
+                .join('\n',),
+            };
+          },),
       ],
       declineConsequence: 'the CURRENT text ships unchanged, with the objections recorded',
     };

@@ -6,10 +6,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import { describeProducer, } from './candidate-select-model.ts';
 import { selectBestCandidate, } from './candidate-select-record.ts';
-import {
-  KEEPS_TRUSTED_TEXT,
-  LEAVES_PASSAGE_UNTRANSLATED,
-} from './candidate-select-wire.ts';
+import { declineConsequenceFor, } from './select-decline-consequence.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import { translatedSlateCriteria, } from './translated-slate-criteria.ts';
@@ -108,6 +105,17 @@ export type TranslateJudgeResponsibility =
  @param runoff - whether this judging is the challenge round's run-off over
  finalists the prior round backed, which the ballot floor then decides under
  the weight minimum (class seventy-three)
+
+ @param withheldStanding - whether an absent incumbent stands for wording
+ that exists and cannot ship (a standing the deterministic rule refused, an
+ archive rendering the floor refused or the adjudicators disputed) rather
+ than a passage with none, which the judges are told (owner, 2026-09-27,
+ "Preference + polish")
+
+ @param shipPastDecline - whether a challenge round declined with nothing
+ left to narrow ships its preferred candidate; defaults to the withheld
+ standing, and a caller with a further round of its own (the translate
+ lane's follow-up production) defers it to that round
  
  @param signal - caller abort honored by every exchange
  
@@ -148,6 +156,8 @@ export async function judgeTranslateSlate(
     lineStructured,
     responsibility = 'initial-selection',
     runoff = false,
+    withheldStanding = false,
+    shipPastDecline = withheldStanding,
     signal,
     perCallTimeoutMs,
     l,
@@ -179,6 +189,8 @@ export async function judgeTranslateSlate(
     readonly lineStructured: boolean;
     readonly responsibility?: TranslateJudgeResponsibility;
     readonly runoff?: boolean;
+    readonly withheldStanding?: boolean;
+    readonly shipPastDecline?: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -378,9 +390,12 @@ export async function judgeTranslateSlate(
     // keeps text it already trusts; at an anchor there is no such text, so that
     // sentence asks for caution by promising a fallback that does not exist and
     // buys a missing passage with it.
-    declineConsequence: (incumbentKind === 'absent')
-      ? LEAVES_PASSAGE_UNTRANSLATED
-      : KEEPS_TRUSTED_TEXT,
+    // Wording that exists and cannot ship is neither: a declined challenge
+    // round ships by preference there (owner, 2026-09-27).
+    declineConsequence: declineConsequenceFor({
+      incumbentKind,
+      withheldStanding,
+    },),
     task,
     runoff,
     criteria: translatedSlateCriteria({
@@ -571,6 +586,7 @@ export async function judgeTranslateSlate(
       declined,
       // Conditional spread keeps the field absent where the whole slate stands.
       ...((narrowed.kind === 'narrowed') ? { finalists: narrowed.finalists, } : {}),
+      shipPastDecline,
       l: tl,
     },);
   }

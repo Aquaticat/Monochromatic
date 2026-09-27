@@ -270,9 +270,10 @@ await describe({
         // candidates on target-authoritative contributor identity. Version 16
         // continues unendorsed final selection from prior failed settlement.
         // Version 17 (2026-09-27) sends gate objections over an ineligible
-        // standing to the polish as an objection correction.
+        // standing to the polish as an objection correction. Version 18 ships a
+        // slate declined twice there by preference, its reasons to the polish.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          '947615e9d143b87a256a4d6b1e66f2941959fe63f714c1bfbdcc7cdc74bf80a0',
+          '05ec2ff735b335e20383afda9ec083ab71624c433dc54bca2f1e05765f677eca',
         );
       },
     },),

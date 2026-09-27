@@ -1327,27 +1327,20 @@ await describe({
       },
     },),
     it({
-      name: 'FAILS THE SLICE AT ONCE when the standing is ineligible and every judge declines the slate, '
-        + 'under the ineligible standing\'s own name with the judges\' refusal as the cause, rather than '
-        + 'as a passage the archive never carried',
+      name: 'SHIPS THE PROPOSAL BY PREFERENCE when the standing is ineligible and every judge declines the '
+        + 'slate in both rounds, rather than stopping the entry (owner, 2026-09-27, "Preference + polish", '
+        + 'superseding the stop this case pinned since class fifty-four)',
       fn: async () => {
-        /**
-         What the settlement threw.
-         */
-        let thrown: unknown;
-        try {
-          await settleWith({
-            voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
-            validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
-            judgeReply: judgeBallot({ best: 0, },),
-            standingEligible: false,
-          },);
-        } catch (error) {
-          thrown = error;
-        }
-        expect(thrown instanceof ConsolidationStandingIneligibleError,).toBe(true,);
-        expect((thrown as ConsolidationStandingIneligibleError).message,).toContain('slate-declined-standing',);
-        expect(Error.isError((thrown as ConsolidationStandingIneligibleError).cause,),).toBe(true,);
+        const { settled, } = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: judgeBallot({ best: 0, },),
+          gateReply: gateBallot({ choice: 'consolidated', },),
+          standingEligible: false,
+        },);
+        expect(settled.terminal,).toBe('consolidated',);
+        expect(settled.findings.includes('translate-slate-declined-shipped-by-preference (slate order)',),)
+          .toBe(true,);
       },
     },),
 

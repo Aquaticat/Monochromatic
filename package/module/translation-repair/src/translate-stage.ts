@@ -233,6 +233,10 @@ export async function runTranslateStage(
     incumbentText,
     incumbentKind: effectiveIncumbentKind,
     incumbentEligible,
+    // Wording that exists and fails the floor is withheld, not absent: its
+    // slice ships by preference past a declined follow-up round (owner,
+    // 2026-09-27).
+    incumbentWithheld: (incumbentKind === 'present') && (!incumbentEligible),
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((attestedLines === undefined) ? {} : { attestedLines, }),

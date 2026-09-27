@@ -472,8 +472,10 @@ Status: open.
 
 ### S17: the consolidation slate is told a decline leaves the passage untranslated where it stops the entry
 
-Status: open.
+Status: fixed with the fifteenth addendum
+(`select-decline-consequence.ts`: a withheld standing tells the judges a declined slate ships by preference).
 `candidate-select-wire.ts` via `translate-judge.ts`.
+The translate lane told the same falsehood over an archive the floor refuses, fixed in the same change.
 
 ### S18: measurement sheets drift
 
@@ -1336,3 +1338,42 @@ Status: open.
 Four class dates match only the local day of their commit
 (class seventy-seven, one hundred seventy-six, one hundred seventy-seven, one hundred seventy-eight);
 `corpus-run/run-seats-wait.ts:14-18` and `corpus-run/run-seats.ts:66-67` give clock times with no zone.
+
+## Found while fixing
+
+### X1: the translate lane stopped the entry on a rejected slate over an archive the floor refuses
+
+Status: fixed with the fifteenth addendum's translate-lane extension (sixteenth addendum).
+`translate-stage.ts` treats an archive failing the floor as an absent incumbent;
+two rejected production rounds rethrew `TranslateAbsenceError`,
+and `translate-slice-attempt.ts` rethrows it for a content slice,
+so the entry stopped.
+Guard: `slate-decline-ships-by-preference.unit.test.ts` (the translate stage case).
+
+### X2: a scripted gather-stage test's seat rotation depends on its prompt text
+
+Status: open (test fragility, with T1 to T9).
+`stage-fanout-window.ts` picks the seats to ask by an FNV-1a hash of the prompt modulo the roster size,
+so rewording a fixture changes which scripted seat is heard;
+`reference-attest.unit.test.ts` and `reference-attest-confirm.unit.test.ts` failed against a passing HEAD on a reworded fixture
+until phrases matching HEAD's rotation were chosen.
+A test that depends on which seat is heard should pin the rotation rather than inherit it from its text.
+
+### X3: comments and TSDoc quoting corpus text or handles in source files
+
+Status: open (with D11).
+`reference-attest-match.ts:18-19,29-30,48-50`,
+`translate-suicide-drop.ts:4-21` (quotes a method, a date and handles),
+`rendering-glossary-phrasing.ts:56,76-79`,
+`archive-original-note.ts:37-53`,
+`markdown-blocks.ts:13`,
+`bilingual-pair-bound.ts:25`,
+`bilingual-line-clause.ts:19`,
+`corpus-run/run-config.ts:106`,
+`image-asset.ts:45`,
+`image-reading-stage.ts:98`;
+and in untouched tests, names in comments and test names
+(XingZ60 32, hakureico 23, Toka_ls 6, gqt 6, Yumao 5, aiyysk 3, lintong 3, 羽毛 3, Ling 2, Hanasaka 1),
+Yumao and 羽毛 as string literals.
+The owner defers sanitization to the project's end;
+the method quote in `translate-suicide-drop.ts` is the one the reader-protection rule covers now.

@@ -79,8 +79,14 @@ import type { SliceReplacement, } from './splice-slices.ts';
  
  VERSION 12 excludes archive wording that fails deterministic source floor
  and treats it as absent fallback until stage-local translation settles.
+
+ VERSION 13 tells the judges of a slice whose archive wording is withheld
+ that a declined slate still ships by preference, and ships the follow-up
+ round's preferred candidate past a declined challenge round (owner,
+ 2026-09-27, "Preference + polish"); version 12 told them the passage had no
+ translation and stopped the entry on that decline.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 12;
+export const TRANSLATE_SLICE_CACHE_VERSION = 13;
 
 /**
  Models the translate lane seats.
