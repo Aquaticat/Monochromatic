@@ -161,6 +161,11 @@ const LANE_TEXTS_KEY_LABEL = 'lane-texts';
  
  @param polishConfig - naturalness roles and document guard facts
  
+ @param declaredNamePairs - names the front matter declares, source beside
+ rendering, which the standing and slate floors read; folded in only when
+ there are any (ledger A13: they reached the key only through the identity
+ context, which lists the same fields in other words)
+ 
  @returns Stable string for the key
  
  @example
@@ -174,6 +179,7 @@ export function consolidateRunShape(
     identityContext,
     referenceContext,
     polishConfig,
+    declaredNamePairs,
   }: {
     readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
@@ -195,6 +201,7 @@ export function consolidateRunShape(
         polishConfig.declaredNames,
         polishConfig.definitions,
       ]),
+    ...((declaredNamePairs.length === 0) ? [] : [declaredNamePairs,]),
   ],);
 }
 
