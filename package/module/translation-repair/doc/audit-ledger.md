@@ -1245,13 +1245,14 @@ Paths below are package-relative.
 
 ### D1: the README says the editor roster check still requires disinterested judges
 
-Status: open.
+Status: fixed in `4397d7d2a`.
 `README.md:301-303`; `repair-contract.ts:224-229` says the 2026-08-14 ruling removed that requirement,
 and the check refuses only repeats, no editor, or judge capacity short of the minimum weight.
 
 ### D2: the schema generation the pass writes is misstated in three places
 
-Status: open.
+Status: Markdown fixed in `4397d7d2a` (generations 1 and 2 use the chunk spelling, 3 is mixed);
+the two `.ts` comments below are open.
 `doc/configuration.md:326`, `:334`, `:352` say generation 4 and three generations;
 `artifact-schema-version.ts:34` says V7;
 `corpus-run/artifact-two-lane-contract.ts:36` says V12.
@@ -1261,7 +1262,8 @@ and reads generations 1 to 14.
 
 ### D3: pull-request runs are documented through a variable nothing reads
 
-Status: open.
+Status: fixed in `4397d7d2a` (two probe variables were also missing);
+two repo docs outside the package still name the variable (D18).
 `doc/configuration.md:293-295` names `TRANSLATION_REPAIR_CORPUS_DIR` and an uncommitted fork;
 production reads `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` and `TRANSLATION_REPAIR_CORPUS_COMMIT`
 (`corpus-run/corpus-pin-override.ts`), documented nowhere in the package.
@@ -1269,13 +1271,13 @@ production reads `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` and `TRANSLATION_REPAIR_C
 
 ### D4: the OpenRouter checker substitute is misnamed
 
-Status: open.
+Status: fixed in `4397d7d2a`, then superseded by `f10de5198`, which replaced the substitute with the measured order.
 `doc/design-commitments.md:177` says gemma-4-26b-a4b-it;
 `corpus-run/run-seats.ts:113` has `google.gemma-4-e2b`.
 
 ### D5: the removed preparation layer is described in the present tense
 
-Status: open.
+Status: fixed in `4397d7d2a`; two `.ts` comments still describe it (D16).
 `doc/seats-and-calibration.md:50-239` names about fifteen identifiers,
 four artefacts and two mise tasks removed in `cbedea357`;
 `:124` claims a bootstrap build dependency `mise.toml` no longer has.
@@ -1283,7 +1285,7 @@ four artefacts and two mise tasks removed in `cbedea357`;
 
 ### D6: stale constants and counts in the docs
 
-Status: open.
+Status: Markdown fixed in `4397d7d2a`; `corpus-run/run-config.ts:785` is open.
 `doc/pictures.md:89` says 8 MiB (7 MiB since 2026-08-22, `image-reading-stage.ts:120`);
 `doc/configuration.md:18` says a run without the Synthetic key throws (every key is optional,
 `corpus-run/run-providers.ts:94-130`);
@@ -1299,7 +1301,7 @@ the picture reader count is four or five in `README.md:353`, `doc/pictures.md:54
 
 ### D7: the OpenRouter routing description is stale
 
-Status: open.
+Status: fixed in `4397d7d2a`.
 `doc/configuration.md:73,81-85` and `doc/roster-changes.md:25-31`
 against `model-cards.ts:209,320-328` and `openrouter-catalog.ts:98-100,263`.
 
@@ -1354,7 +1356,8 @@ Status: open.
 
 ### D11: status and hygiene
 
-Status: open.
+Status: Markdown fixed in `4397d7d2a` except the ALL-CAPS paragraphs it did not touch (D19);
+`seat-tally.ts:326` is open.
 `doc/status.md` puts its history under the current heading,
 names a consolidation cache generation 14 that collides with artifact schema generation 14,
 says `assertFinalSelectionSettled` remains (removed in `1ba8f713a`),
@@ -1370,10 +1373,57 @@ mixed list markers in the README.
 
 ### D12: class dates and clock times
 
-Status: open.
+Status: open (`.ts` only; every Markdown clock time carries a zone, checked in `4397d7d2a`).
 Four class dates match only the local day of their commit
 (class seventy-seven, one hundred seventy-six, one hundred seventy-seven, one hundred seventy-eight);
 `corpus-run/run-seats-wait.ts:14-18` and `corpus-run/run-seats.ts:66-67` give clock times with no zone.
+
+### D13: a setting documented as read by launch logs that nothing reads
+
+Status: open.
+`corpus-run/run-config.ts:875-879`: the `RUN_CORPUS_PIN_SETTING` TSDoc says "for launch logs",
+but nothing reads it, so no launch line names where the corpus pin came from.
+
+### D14: an invalid Hyper request rate is not refused
+
+Status: open.
+`request-pace.ts:305` falls back to the default rate for an invalid `TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR`,
+where every other dial refuses an invalid value.
+
+### D15: probe variables exported empty are used as given
+
+Status: open.
+`corpus-run/damage-sample.ts:267` and `corpus-run/score-verify.ts:199` read their variables with `??`,
+so an exported-empty `DAMAGE_SAMPLE_SEED` or `VERIFY_SHEET_BASENAME` is used rather than defaulted or refused.
+
+### D16: stale comments on providers and removed features
+
+Status: open.
+`corpus-run/budget-sample.ts:14-27,54-55` says "both providers" (four);
+`block-pairing-question.ts:41` and `block-pairing-protocol.ts:63` mention replay and receipt planning
+that `cbedea357` removed;
+the `SLICE_SPELLED_KEYS` TSDoc in `artifact-key-vocabulary.ts` says generation 3 writes the slice spelling
+and its header compares generations 1 and 2 with 4.
+
+### D17: the recovery round re-asks only the last round's unreadable seats
+
+Status: open (tracked as P2).
+`stage-quorum.ts` sets `unreadable = answeredBadly` each round,
+so a seat that answered unreadably in an earlier round is not re-asked; the README now states this behaviour.
+
+### D18: repo docs name a corpus variable nothing reads
+
+Status: open.
+`doc/runbook/translation-repair-corpus-pass.md:38` and `doc/handover/translation-repair-handover-2026-08-29.md:379`
+name `TRANSLATION_REPAIR_CORPUS_DIR`.
+
+### D19: ALL-CAPS emphasis left in untouched paragraphs
+
+Status: open.
+`README.md`, `doc/configuration.md`, `doc/design-commitments.md`, `doc/pictures.md`,
+`doc/provider-availability.md`, `doc/roster-changes.md`, `doc/seats-and-calibration.md`,
+`doc/slice-context.md` and `doc/status.md` keep ALL-CAPS emphasis in paragraphs the D fixes did not reach
+(the docs agent's report of 2026-09-27 lists the lines).
 
 ## Found while fixing
 
