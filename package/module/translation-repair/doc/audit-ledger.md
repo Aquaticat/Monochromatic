@@ -836,3 +836,81 @@ Status: open.
 the declared-link floor refuses Zhihu @-mentions the archive rendered as the user's slug (owner ruling).
 Plausible, unproven: nothing re-floors a lanes-agreed would-ship text,
 and the repair lane never calls `validateTranslatedSlice`.
+
+## Test suite
+
+Probes: `~/temp/agent/audit-tests/`
+(a runtime harness logging every `expect` that runs, `scan-corpus.mjs` and `classify-hits.mjs` for corpus text,
+`run-container.mjs` for load runs, `magic-*.tsv`, `untested-dist-functions.tsv`, `coverage-holes.txt`).
+
+### T1: an assertion that never runs
+
+Status: open.
+`document-preparation.unit.test.ts` "inherits the line-structure verdict from the enclosing CHUNK":
+its loop runs zero times, because the verse fixture is too short to subdivide.
+
+### T2: vacuous checks and catch-only asserts
+
+Status: open.
+32 `expect(<using binding>).not.toBe(undefined)` on disposables that are always objects
+(`writer-grace-override`, `corpus-run/slice-overlap`, `grace-override`, `corpus-run/pass-entry`, `corpus-run/artifact-pool-names`);
+`assembly-content-survival.unit.test.ts` has no boundary case for its six-letter floor or its two-use cap;
+`prompt-uniqueness-client.unit.test.ts` asserts only inside `catch`.
+
+### T3: tests pinning wrong or retired behaviour
+
+Status: open.
+`dropped-covers-the-page.unit.test.ts` pins the silent-original wording of S6;
+`corpus-run/contributor-name-restore.unit.test.ts` pins handle restorations that drop the literal gloss the house rule requires,
+under a name citing the owner's "with the literal translation in parentheses";
+`consolidate-gate-wire.unit.test.ts`'s class fifty-six name still says a kept standing would stop the entry;
+`consolidate-standing-verdict.unit.test.ts` names "still stops the entry" and never asserts it.
+
+### T4: corpus text and real personal data in about 45 test files
+
+Status: open.
+A real birth date and hometown, a suicide-site sentence, method sentences, self-harm scars,
+real names, handles and entry ids, and verbatim or near-verbatim corpus lines,
+many under a header claiming "no corpus content appears here".
+`package.json` `files` includes `src`, so the tests would ship with the package.
+The owner said sanitization of the repository comes after the project;
+the fixture rule (cat-themed invention) stands, so these are fixed as fixtures.
+
+### T5: flaky timing
+
+Status: open.
+`lane-contest-stage.unit.test.ts` "RECORDS RAW HALF-QUORUM BALLOTS" fails 2 of 5 at 0.2 CPU
+(positive control: the `podman run` in `~/temp/agent/audit-tests/run-container.mjs`);
+its sibling case, the naturalness-review grace case,
+settle-by-timer checks in `synthetic-client`, `hyper-client` and `provider-router`,
+and the driver trio's `peak` checks are the same shape by reading;
+wall-clock floors in `transient-retry`, `budget-hold-wait`, `stage-round` and the benchmark have no slack.
+Real sleeps: `stage-quorum` waits 30 s ignoring the abort signal;
+`synthetic-client` and `lane-contest-driver` run production backoff.
+
+### T6: names claiming more than they check
+
+Status: open.
+`bedrock-catalog` "EVERY ROUTE" checks one route;
+`synthetic-catalog` pins a literal price;
+`block-pairing-protocol` compares a wrapper to its own builder;
+the driver trio never asserts the second call answers first.
+
+### T7: magic numbers
+
+Status: open.
+`roster-reach`, `request-pace`, `synthetic-catalog`, `deepseek-v41-admission`, `synthetic-client`, `repair-slice-key`,
+`anthropic-request` (a cap that should be computed from the exported caps),
+and vote weights not derived from exported constants in `candidate-select` and `candidate-select-decision`.
+
+### T8: untested exported functions
+
+Status: open.
+76 public functions named by no test;
+a coverage sample shows `isPaymentRefusal`, `statedWaitMsOf`, `routedJson`, `secondOpinionsFrom` and others never called,
+and the decision reply's refusal branches never exercised.
+
+### T9: every test run writes a log into `node_modules/.monochromatic/`
+
+Status: open.
+1,220,455 files there; the tests are not hermetic.
