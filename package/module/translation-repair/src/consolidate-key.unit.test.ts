@@ -57,7 +57,10 @@ const BALLOT: LaneContestBallot = {
  The slice every case keys, which each varies one field of.
  */
 const SLICE = {
-  runShape: consolidateRunShape({ modelIds: ROSTER, },),
+  runShape: consolidateRunShape({
+    modelIds: ROSTER,
+    declaredNamePairs: [],
+  },),
   sourceText: '猫在窗边睡着了。',
   incumbentText: 'The cat slept by the window.',
   repairText: 'The cat fell asleep by the window.',
@@ -81,8 +84,12 @@ await describe({
     it({
       name: 'SEPARATES FINAL POLISH CONFIGURATION from consolidation without naturalness stage',
       fn: async () => {
-        expect(consolidateRunShape({ modelIds: ROSTER, },),).not.toBe(
+        expect(consolidateRunShape({
+          modelIds: ROSTER,
+          declaredNamePairs: [],
+        },),).not.toBe(
           consolidateRunShape({
+            declaredNamePairs: [],
             modelIds: ROSTER,
             polishConfig: {
               refinerModelIds: [ROSTER[0],],
@@ -147,6 +154,7 @@ await describe({
          The same run with one more seat.
          */
         const wider = consolidateRunShape({
+          declaredNamePairs: [],
           modelIds: [...ROSTER, SEAT_SYNTHETIC_VISION_WITHHELD,] as const,
         },);
 
@@ -164,6 +172,7 @@ await describe({
          The same roster over a pair that declares a name.
          */
         const named = consolidateRunShape({
+          declaredNamePairs: [],
           modelIds: ROSTER,
           identityContext: 'the subject goes by Whiskers',
         },);
@@ -182,6 +191,7 @@ await describe({
          The same roster over a pair whose original cites a page.
          */
         const cited = consolidateRunShape({
+          declaredNamePairs: [],
           modelIds: ROSTER,
           referenceContext: '- reference 1 https://blog.example/mittens ("In memory of Mittens"): Mittens had an older sister who was also a tabby.',
         },);
@@ -193,10 +203,32 @@ await describe({
           consolidateSliceKey({
             ...SLICE,
             runShape: consolidateRunShape({
+              declaredNamePairs: [],
               modelIds: ROSTER,
               referenceContext: '',
             },),
           },),
+        );
+      },
+    },),
+
+    it({
+      name: 'SEPARATES TWO PAIRS THAT DECLARE DIFFERENT NAME PAIRS, which the standing and slate floors '
+        + 'read, rather than trusting the identity context to carry them (ledger A13)',
+      fn: async () => {
+        /**
+         The same roster over a pair whose front matter declares a name.
+         */
+        const declared = consolidateRunShape({
+          modelIds: ROSTER,
+          declaredNamePairs: [{
+            source: '毛毛',
+            rendering: 'Mittens',
+          },],
+        },);
+
+        expect(consolidateSliceKey(SLICE,),).not.toBe(
+          consolidateSliceKey({ ...SLICE, runShape: declared, },),
         );
       },
     },),

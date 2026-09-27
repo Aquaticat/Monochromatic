@@ -786,7 +786,10 @@ await describe({
          Exact first-slice question driver derives.
          */
         const key = consolidateSliceKey({
-          runShape: consolidateRunShape({ modelIds: ROSTER, },),
+          runShape: consolidateRunShape({
+            modelIds: ROSTER,
+            declaredNamePairs: [],
+          },),
           sourceText: '原文0',
           incumbentText: 'archive wording for slice 0',
           repairText: 'repair wording for slice 0',
