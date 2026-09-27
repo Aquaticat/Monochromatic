@@ -15,9 +15,12 @@ Main-worktree work is documentation only.
 Private prototypes,
 local history inspection,
 and synthetic evaluation are authorized.
-No raw histories may be uploaded or committed,
-no ongoing transcript capture is authorized,
-and training or separately rented compute requires further authorization.
+Do not commit raw histories or start ongoing transcript capture.
+Training and separately rented compute require further authorization.
+The user now authorizes all task-relevant assessment content through LLM Gateway to Jev,
+including private or sensitive content.
+This supersedes the earlier no-private-input restriction for that route;
+it does not request unrelated bulk exports or authorize other recipients.
 Public/synthetic API probes using the supplied credentials remain authorized.
 Complete current `AGENTS.md` must be preserved,
 with stale results rejected after a policy change.
@@ -28,6 +31,47 @@ Current references:
 - [Effect and authorization contract](../planning/pi-auto-mode-effect-contract.md).
 - [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-26.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
+
+## Gateway input authorization and access boundary
+
+The user declined dashboard access and stated:
+
+> But I can say it only records metadata.
+> I'm approving sending anything and everything to LLMGateway/Jev.
+
+Record metadata-only logging as user-reported configuration,
+not independent inspection or a guarantee about every internal diagnostic field.
+The explicit input authorization covers task-relevant assessment content,
+including private or sensitive content,
+through the named LLM Gateway/Jev route.
+It supersedes Q8 A's earlier private-input eligibility restriction for that route.
+Do not ask for the same permission again or keep dashboard inspection as a prerequisite.
+
+The authorization concerns assessor inputs,
+not the tool actions being assessed.
+It does not authorize unrelated bulk exports,
+other recipients,
+ongoing capture,
+training,
+paid compute,
+or production cutover.
+Data minimization and the complete-current-policy requirement remain in force.
+Existing vendor terms and the separate prohibition on using Jev outputs as Laya training labels are unchanged.
+
+Stop account-settings access attempts.
+The Safari MCP fallback had attempted its configured Mac SSH endpoint solely to locate an authenticated browser;
+hostname resolution failed and no Safari session opened.
+The Mac is not needed for inference or files,
+and the agent must not retry it for this task.
+The user offered clarification rather than dashboard access.
+No login form or account-setting mutation was submitted.
+
+Todo #20 was superseded and deleted,
+not marked technically verified.
+Todo #24 records this authorization/context change;
+#14 no longer depends on dashboard access.
+Candidate qualification and final shared-design confirmation remain incomplete.
+No `AGENTS.md` edit is authorized by this clarification.
 
 ## Sequencing correction
 
@@ -107,7 +151,8 @@ not a revocation of Q13 B's qualified semantic-effect eligibility for validated 
 Independent review confirmed that distinction and the need for per-question evidence quarantine.
 
 Todo #21 tracks this correction and fixture verification;
-#14 remains unqualified and actual account settings remain open under #20.
+#14 remains unqualified.
+The later user-reported metadata setting and input authorization supersede the account-access task.
 The original `proc_baf9` and `proc_7f3f` completed.
 The replacement Laya run is recorded separately under #6.
 Model calls were paused while this boundary was reviewed and the replacement fixtures were checked.
@@ -190,8 +235,11 @@ Do not reopen these choices:
   Prefer LLM Gateway over OpenRouter.
 - Additional manual approvals are acceptable.
   First deployment is this Linux workstation.
-- Q8 A permits considering future private non-secret runtime input after the remaining audit and cutover acceptance.
-  It is not permission for private uploads now.
+- The later gateway input authorization supersedes Q8 A for LLM Gateway/Jev:
+  all task-relevant assessment content is authorized,
+  including private or sensitive content.
+  No dashboard access will be provided;
+  do not pursue it or treat it as a remaining input-consent gate.
 - Q9a A presents explicit human-confirmed scope alongside new grant wording.
 - Q9b A permits qualified semantic reuse of accepted prose grants.
 - Q10a accepts a five-second total assessment wait,
@@ -597,9 +645,13 @@ The latter measured 262.319438 to 741.3148530000001 milliseconds per assessment,
 with complete submitted policy and passing freshness checks.
 Its quotation estimates are historical outputs of a wrongly delegated task,
 not evidence for selecting or rejecting Jev.
-Gateway account settings remain unverified under #20:
+Gateway account settings were not independently verified:
 the available browser profile reached login,
 and the inference-key API does not expose retention settings.
+The user subsequently declined dashboard access,
+reported metadata-only logging,
+and authorized all assessment content through LLM Gateway/Jev.
+Do not pursue further account-settings access or treat its absence as a consent blocker.
 Do not reopen the accepted AUP,
 retention,
 or gateway-internal retry choices.
