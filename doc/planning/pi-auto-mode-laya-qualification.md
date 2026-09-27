@@ -117,3 +117,170 @@ and research runtime from deadline-qualified assessment.
 No held-out calibration,
 model ranking,
 or production policy profile is selected here.
+
+The input and syntax checks passed before execution.
+Scratch commits `9f62f00` and `1e2e544` freeze the tranche.
+Process `proc_c075` runs the sequential batch;
+its outcome has not yet been inspected.
+Native Noul is rounded to four decimal places in the pinned implementation.
+This tranche does not capture raw logits:
+reported ties cannot establish identical underlying representations,
+and no repeat-run variability band has been measured.
+
+## Other runtime paths inspected
+
+### TypeScript split ONNX
+
+`laya-ts/scripts/export_onnx.py:154-159` declares a symbolic sequence dimension with maximum 8,192.
+Its default verification lengths are 16 and 512,
+with a choice-type reference input in `_run_ref()`.
+That does not qualify Noul at the required full-policy length.
+No claim is made that a generated graph must reject every longer input;
+no ONNX export or full-policy ONNX inference has been run here.
+
+`laya-ts/src/providers.ts:437-445` selects CPU,
+CUDA,
+or DirectML for the encoder,
+but places the head on CPU.
+The web factory selects WebGPU/WASM for the encoder and WASM for the head.
+Those are distinct execution paths,
+not evidence that the entire model runs on an accelerator.
+The existing source remains inspectable;
+these runtime alternatives are unqualified rather than silently substituted.
+
+### Python ONNX
+
+`laya/onnx_agent.py` provides a separate monolithic ONNX path,
+selecting CUDA when advertised and otherwise CPU.
+It shares sequence construction and temperature handling with the PyTorch implementation.
+`scripts/export_onnx.py` declares dynamic axes,
+which differs from the TypeScript split exporter.
+Neither path has received a full-policy artifact/runtime check in this evaluation.
+Do not generalize one exporter's declared shape or the CPU PyTorch timings to both paths.
+
+## Fine-tuning source findings
+
+The pinned notebook is
+`notebooks/laya_finetune_typed_decisions_2xT4_kaggle.ipynb`.
+No notebook install,
+training,
+calibration fit,
+Hub publication,
+or GPU allocation has been run.
+
+Preprocessing calls `build_sequence` using the downloaded checkpoint's configuration
+before the later worker changes `max_len` and `head_max_len`.
+The worker loads already materialized token items.
+Changing configuration at that point does not itself re-encode them.
+The current English checkpoint uses a 512-token default;
+a full-policy training recipe cannot simply adopt this notebook unchanged.
+A tokenization-only source probe verified this path without a model forward.
+It produced a 512-token item,
+which stayed at 512 after changing the worker settings;
+explicit re-encoding produced 1,024 tokens,
+while the complete input at the original head budget needed 12,553.
+Its short-state control needed 47 tokens.
+
+The notebook now withholds shuffled question-item indices from optimization before fitting temperatures.
+The README says calibration samples come from training items;
+distinguish their origin in the benchmark's train split from whether those exact items enter optimization.
+The current source does not send held-out item indices to its training loop.
+However,
+question-item separation is not whole-state or scenario-family separation:
+sibling questions can share a state across both subsets.
+The actual split code was exercised on 6,000 synthetic question items grouped into 1,200 states.
+Its 400 calibration items represented 345 states,
+and every one of those states also had another question in training.
+A whole-state split control had zero overlap.
+This proves that the split unit permits state overlap;
+it does not measure the real benchmark's calibration bias.
+
+Process `proc_610b` passed with zero model forwards and optimizer steps.
+Private root:
+`~/temp/agent/laya-training-input-audit-2026-09-26`.
+Scratch commits `9f921f1` and `c20421f` retain the harness and result.
+Result SHA-256:
+`b1895a4b37b3907e9a9cbec8037a2d4ce40f2ca0a1a41fc32f02d77495fcfa04`.
+The [training-input trace](../troubleshooting/laya-finetune-input-boundaries.md)
+records source excerpts,
+controls,
+and execution limits.
+
+The pinned typed-decisions model card separately states that its published temperatures
+were fitted on training items and that inherited per-option buckets override them.
+An updated notebook does not retroactively recalibrate published weights/configuration.
+Source:
+[typed-decisions model card](https://huggingface.co/convaiinnovations/laya-typed-decisions).
+
+The [dataset card](https://huggingface.co/datasets/LocalLLaMA/typed-decisions)
+describes gold as averages of teacher-endpoint distributions,
+not independent correctness.
+It labels specialist versus generalist comparisons as different tasks.
+Its Apache-2.0 declaration does not identify every teacher-service right.
+No benchmark gold or Jev output is adopted as our training reference.
+The existing independently authored guard references remain separate.
+
+The [browser-specialization example](https://huggingface.co/cklxx/laya-browser/blob/main/code/finetune/README.md)
+uses a different task and input format,
+including reduced page text and expanded option descriptions.
+It is precedent for specialization,
+not evidence of full-policy guard performance.
+Its other model dependencies were not evaluated as candidates.
+
+### Stored-weight accounting
+
+A bounded first-party reader inspected safetensors JSON headers only,
+without importing a model runtime or performing training.
+Artifact:
+`~/temp/agent/laya-weight-metadata-2026-09-26.json`.
+English stores 394,781,696 encoder elements and 26,512,134 head/other elements;
+multilingual stores 306,939,648 encoder elements and 14,969,350 head/other elements.
+The counts include stored buffers such as `temperature`,
+not only trainable parameters.
+Hypothetical FP32 parameter/gradient/two-moment storage is recorded with its assumptions.
+It excludes activations,
+workspaces,
+distributed buffers,
+copies,
+and allocator overhead;
+it does not prove training fits the allowed resources.
+
+## Local accelerator inventory and documentation
+
+Read-only device probes identified PCI `1002:7480`,
+Navi 33,
+and KFD `gfx_target_version 110002` on render minor 128.
+`/sys/class/drm/card1/device/mem_info_vram_total` reported 8,573,157,376 bytes;
+`mem_info_vram_used` reported 6,922,715,136 bytes at one instant.
+These are inventory values,
+not stable headroom or performance measurements.
+The host identifies as Bazzite 44,
+with kernel `7.2.0-ogc6.1.fc44.x86_64`.
+No accelerator was initialized or used.
+
+A frozen dependency-only query at
+`~/temp/agent/laya-runtime-fit-query-schedule-2026-09-26.json`
+searched
+`ROCm Radeon RX 7600 Navi 33 gfx1102 Linux PyTorch support matrix 2026`.
+Radius returned eight results,
+search ID `search_0f8272bec9d8726db2041c534173d3a8`.
+Archived version results were not treated as current compatibility evidence.
+
+[PyTorch HIP documentation](https://docs.pytorch.org/docs/stable/notes/hip.html)
+explains that HIP reuses `torch.cuda` interfaces.
+The CUDA spelling in Laya source therefore does not establish NVIDIA-only execution.
+The [ROCm matrix](https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html)
+retrieved as ROCm 10.0.0 lists Radeon RX 7600/gfx1102.
+[TheRock GPU readiness](https://github.com/ROCm/TheRock/blob/main/SUPPORTED_GPUS.md)
+marks Linux gfx1102 build,
+sanity testing,
+and release readiness,
+while warning that development-package availability alone is not runtime proof.
+These documents do not verify this Bazzite/kernel/runtime combination or Laya's operators.
+The current probe image remains CPU-only torch 2.10.0.
+No install,
+device passthrough,
+GPU inference,
+training,
+or performance claim follows from this lookup.
+Any accelerator experiment would need separately established resource authorization and isolation.
