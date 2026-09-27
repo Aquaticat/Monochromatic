@@ -499,7 +499,7 @@ Remaining Laya profile qualification is #25.
 Jev work is split into #26 client failure boundaries and #27 broader parser-first semantic controls;
 neither is a production implementation.
 
-Task #26 is active at
+Task #26 completed its experimental-client scope at
 `~/temp/agent/jev-client-failure-boundary-2026-09-27`.
 Source freeze `e1f0066` defines fifteen ordinary scenarios and five isolated guard-omission controls.
 It copies the previously tested client and helpers,
@@ -532,7 +532,7 @@ No client case or model call ran.
 This is first-party image packaging evidence,
 not a Jev/gateway failure.
 
-Task #28 repairs that runtime boundary before #26 resumes.
+Task #28 repaired that runtime boundary before #26 resumed.
 The added installed x86-64 library is from `libatomic-16.2.1-2.fc44.x86_64`,
 source RPM `gcc-16.2.1-2.fc44.src.rpm`,
 SHA-256 `b08060687ffb5768003b0c283cac5bddaa84ea5526d4d7bcb5994af98af5a130`.
@@ -566,13 +566,70 @@ Verifier `05c3536` passed as `proc_afa3`,
 checking recorded outcomes,
 expected failure categories,
 and actual exited-container resource configuration.
-Task #26 is finishing the rendered/scoped documentation check;
-#27 remains the separate semantic-quality work.
+Task #26 is complete within this experimental scope.
+The sixteen-document render and scoped Markdown lint passed as `proc_53c2`,
+and the main worktree was clean after that check.
+Task #27 is now active as separate semantic-quality work.
 See the [client-boundary record](../planning/pi-auto-mode-jev-qualification.md#local-client-failure-boundary-controls).
 These controls cannot establish hosted cancellation/billing,
 TLS behavior,
 model quality,
 or real Pi fallback behavior.
+
+### Broader semantic-control preparation
+
+Task #27 uses `~/temp/agent/auto-mode-semantic-controls-2026-09-27`.
+The initial source freeze `469d51a` prepared and checked 23 development states:
+15 request texts and 8 eligible-prose texts,
+with 46 conditional binary references.
+Each selected source is queried for a positive relation and an explicit prohibition,
+not a final action.
+Neutral texts prevent treating those predicates as complementary probabilities.
+An unresolved referent and an unverified authority witness remain model-free exclusion controls.
+No candidate request has run for this tranche;
+the original 24 reserved scenarios remain unqueried.
+
+Review corrections are frozen at `ee6dca2`.
+Canonical `cases-v2.json` declares synthetic eligibility/binding assumptions explicitly;
+active preparation no longer overwrites an authored false value.
+Supplied resource aliases are explicit facts.
+The same semantic scope rules apply to requests and prose grants.
+Preservation wording can explicitly prohibit removal;
+this is not a literal search for the word `not`.
+Both prose predicates explicitly exclude policy text as evidence of what the selected prose says,
+while the client still includes complete current `AGENTS.md` unchanged.
+
+The reviewer called `Inspect package metadata.` a newly authored ablation.
+That was incorrect:
+both frozen transfer-scope scenarios already contain that exact request text.
+Preparation now checks its exact original source and request-only reference axes.
+The reviewer also proposed different containment rules for requests and grants;
+that asymmetry was not adopted.
+`review-disposition.json` records the accepted changes and rejected inferences.
+
+The actual sender imports `wire.mjs` for serialization;
+its tests inspect that component's JSON with metadata sentinels,
+not a sibling reconstruction alone.
+`client-source.json` checks unchanged transport/response and post-result deadline blocks
+against the previously tested client.
+That source comparison does not requalify every failure path or a live consumer.
+Process `proc_5ea7` passed the reviewed fixture and actual-serializer checks,
+plus four isolated source/question/authority/binding guard omissions.
+Every original control passed;
+each omitted guard produced its expected assertion failure without modifying the original.
+Current input SHA-256:
+`c22b1607f5653eb926dfadfe9fdcc925e875ce7fa7efa3de779f7d77a3262a4b`.
+Next:
+freeze generated artifacts and perform the authorized native Jev development calls.
+These controls do not exhaust destination mismatches,
+conditional grants,
+or effect-language qualification.
+No calibration,
+training,
+threshold selection,
+production change,
+account access,
+or Mac access is authorized by this preparation.
 
 Todo #18 completed the current development fixture and assessment tranche.
 It did not qualify a production model or policy.
