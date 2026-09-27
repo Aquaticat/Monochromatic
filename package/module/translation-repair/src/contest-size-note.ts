@@ -14,7 +14,8 @@ import {
 // EVIDENCE, NOT A FAULT NAME, and that distinction is the whole design. A named
 // fault in the FAR LONGER direction would contradict `CONTEST_POLICY` itself,
 // which already tells judges that where the Chinese is silent rather than
-// contradicting, keeping page-only content is CORRECT. A candidate preserving a
+// contradicting, keeping page apparatus or a whole page region the archive
+// carries is CORRECT. A candidate preserving a
 // long page-only region is far longer than the Chinese AND is the right
 // candidate, so a name there would instruct a judge to penalise exactly the
 // behaviour that rule protects. That is the shape of the criterion `#143`
@@ -245,14 +246,20 @@ export function contestSizeNote(
  what they ask the judge to do, which is the property that made two named
  faults attractive in the first place, and they carry it without asserting a
  fault where the existing rule says the behaviour is correct.
+
+ SILENT SURPLUS IS PAGE CONTENT ONLY WHERE THE ARCHIVE CARRIES IT (ledger S7).
+ The note exists for the looping candidate (10381 characters against a
+ 56-character original), and the sentence that called any surplus the Chinese
+ is silent about page content told the judge the loop's repetition was a page
+ region to keep. Surplus the archive does not carry is the candidate's own.
  */
 export const SIZE_NOTE_POLICY: string = [
   'A SIZE NOTE MAY APPEAR WITH THE PASSAGES, reporting how many characters each rendering runs against the Chinese.',
   'It is evidence about where to look, never a verdict, and it names no fault by itself.',
   'Where a rendering is FAR SHORTER than the Chinese, it may have left Chinese content unrendered: put the DROPPED question to that rendering in particular.',
   'Where a rendering is FAR LONGER than the Chinese, two readings are open, and the surplus text decides between them.',
-  'Surplus the Chinese is SILENT about is page content, so the DROPPED-ALSO rule governs it and the shorter candidate is the one that lost something.',
-  'Surplus that CONTRADICTS the Chinese, or that reads as belonging to a different passage, is unsupported.',
+  'Surplus the ARCHIVE RENDERING also carries, where the Chinese is SILENT about it, is page content: the DROPPED-ALSO rule governs it and the shorter candidate is the one that lost something.',
+  'Surplus the archive rendering does not carry is the rendering\'s own and is unsupported: a passage repeated or looping, or text the Chinese never states. So is surplus that CONTRADICTS the Chinese, or that reads as belonging to a different passage.',
   'SIZE ALONE SETTLES NEITHER READING. A line-structured original, and one the archive spells out at length, both produce a large ratio with nothing wrong.',
 ].join('\n',);
 

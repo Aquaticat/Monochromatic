@@ -288,5 +288,15 @@ await describe({
         expect(SIZE_NOTE_POLICY,).toContain('line-structured original',);
       },
     },),
+
+    it({
+      name: 'CALLS silent surplus page content only where the archive carries it, so a looping candidate\'s '
+        + 'surplus is unsupported (ledger S7: the note exists for a loop and once called its surplus page content)',
+      fn: async function loopSurplusIsUnsupported() {
+        expect(SIZE_NOTE_POLICY,).toContain('Surplus the ARCHIVE RENDERING also carries',);
+        expect(SIZE_NOTE_POLICY,).toContain('a passage repeated or looping',);
+        expect(SIZE_NOTE_POLICY.includes('Surplus the Chinese is SILENT about is page content',),).toBe(false,);
+      },
+    },),
   ],
 },);
