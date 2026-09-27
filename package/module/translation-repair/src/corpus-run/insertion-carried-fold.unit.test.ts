@@ -19,6 +19,7 @@ import {
 
 import {
   CARRIED_FOLDED_FINDING,
+  CARRIED_SHIFTED_FINDING,
   type CarriedInsertion,
   type ChunkPair,
   foldCarriedInsertions,
@@ -351,6 +352,97 @@ function chainedPair(): PreparedDocumentPair {
   };
 }
 
+/**
+ Kitten's question, the first of two quoted lines.
+ */
+const ASK_SOURCE = '「你喜欢小猫吗？」';
+
+/**
+ Kitten's second quoted line, which the archive renders inside the first
+ line's quote.
+ */
+const PURR_SOURCE = '「被抱着的时候，小猫会呼噜！」';
+
+/**
+ Archive's quote rendering both lines in one block.
+ */
+const QUOTE_TARGET = '> Do you like the kitten?\n>\n> The kitten purrs when held!';
+
+/**
+ Original of the shifted shape: both quoted lines, the nap, the bath.
+ */
+const SHIFTED_SOURCE_TEXT = `${HEADING_SOURCE}\n\n${ASK_SOURCE}\n\n${PURR_SOURCE}\n\n${NAP_SOURCE}\n\n${BATH_SOURCE}\n`;
+
+/**
+ Archive of the shifted shape: one quote for both lines, then the nap, then
+ the bath.
+ */
+const SHIFTED_TARGET_TEXT = `${HEADING_TARGET}\n\n${QUOTE_TARGET}\n\n${NAP_TARGET}\n\n${BATH_TARGET}\n`;
+
+/**
+ The prepared pair the pairing left one off: the question holds the whole
+ quote, the purr is paired with the nap's rendering, and the nap stands
+ carried with that rendering as its evidence.
+
+ @returns Prepared pair with five slices, the nap at position 3
+
+ @example
+ ```ts
+ const prepared = shiftedPair();
+ ```
+ */
+function shiftedPair(): PreparedDocumentPair {
+  return {
+    sourceText: SHIFTED_SOURCE_TEXT,
+    targetText: SHIFTED_TARGET_TEXT,
+    lineStructuredSliceIndices: new Set(),
+    declaredNames: [],
+    alignmentFindings: [],
+    unclaimedTargetBlocks: [],
+    alignmentPairCount: 5,
+    slices: [
+      {
+        source: contentOver({ sliceIndex: 0, text: SHIFTED_SOURCE_TEXT, fragment: HEADING_SOURCE, },),
+        target: contentOver({ sliceIndex: 0, text: SHIFTED_TARGET_TEXT, fragment: HEADING_TARGET, },),
+      },
+      {
+        source: contentOver({ sliceIndex: 1, text: SHIFTED_SOURCE_TEXT, fragment: ASK_SOURCE, },),
+        target: contentOver({ sliceIndex: 1, text: SHIFTED_TARGET_TEXT, fragment: QUOTE_TARGET, },),
+      },
+      {
+        source: contentOver({ sliceIndex: 2, text: SHIFTED_SOURCE_TEXT, fragment: PURR_SOURCE, },),
+        target: contentOver({ sliceIndex: 2, text: SHIFTED_TARGET_TEXT, fragment: NAP_TARGET, },),
+      },
+      {
+        source: contentOver({ sliceIndex: 3, text: SHIFTED_SOURCE_TEXT, fragment: NAP_SOURCE, },),
+        target: makeInsertionChunk({ sliceIndex: 3, offset: SHIFTED_TARGET_TEXT.indexOf(BATH_TARGET,), },),
+      },
+      {
+        source: contentOver({ sliceIndex: 4, text: SHIFTED_SOURCE_TEXT, fragment: BATH_SOURCE, },),
+        target: contentOver({ sliceIndex: 4, text: SHIFTED_TARGET_TEXT, fragment: BATH_TARGET, },),
+      },
+    ],
+  };
+}
+
+/**
+ The nap of the shifted shape admitted as carried on its rendering.
+
+ @returns Admission carrying the nap at position 3
+
+ @example
+ ```ts
+ const admission = shiftedCarried();
+ ```
+ */
+function shiftedCarried(): InsertionAdmission {
+  return {
+    positions: new Set(),
+    carried: [{ position: 3, sliceIndex: 3, sourceText: NAP_SOURCE, evidence: [NAP_TARGET, NAP_TARGET,], },],
+    findings: [],
+  };
+}
+
 await describe({
   name: foldCarriedInsertions.name,
   children: [
@@ -551,6 +643,67 @@ await describe({
         expect(blocked.admission.carried?.length,).toBe(2,);
         expect(blocked.asides.length,).toBe(2,);
         expect(blocked.asides[0],).toContain('blank space',);
+      },
+    },),
+    it({
+      name: 'SHIFTS the carrier\'s own source to its far neighbour where the carrier\'s archive span renders the carried passage alone (class one hundred seventy-nine)',
+      fn: async () => {
+        // THE FAILURE THIS CLOSES. TianqiChen66611 (2026-09-26): the pairing
+        // gave the second quoted line the archive's next paragraph, whose
+        // English renders the carried passage after it; the second line's
+        // English sat inside the first line's quote. The plain fold widened
+        // the carrier over both sources, so the carrier rendered the second
+        // line again beside the passage and the page carried it twice.
+        const shifted = foldCarriedInsertions({
+          prepared: shiftedPair(),
+          admission: shiftedCarried(),
+        },);
+        expect(shifted.prepared.slices[1]?.source.text,).toBe(`${ASK_SOURCE}\n\n${PURR_SOURCE}`,);
+        expect(shifted.prepared.slices[1]?.source.sliceIndex,).toBe(1,);
+        expect(shifted.prepared.slices[1]?.target.text,).toBe(QUOTE_TARGET,);
+        expect(shifted.prepared.slices[2]?.source.text,).toBe(NAP_SOURCE,);
+        expect(shifted.prepared.slices[2]?.source.sliceIndex,).toBe(2,);
+        expect(shifted.prepared.slices[2]?.target.text,).toBe(NAP_TARGET,);
+        expect(shifted.prepared.slices[4]?.source.text,).toBe(BATH_SOURCE,);
+        expect(shifted.admission.carried,).toEqual([],);
+        expect(shifted.admission.folded,).toEqual([{ position: 3, sliceIndex: 3, carrierSliceIndex: 2, },],);
+        expect(shifted.findings,).toEqual([
+          `${CARRIED_FOLDED_FINDING} (slice 3 into slice 2)`,
+          `${CARRIED_SHIFTED_FINDING} (slice 2's own source joins slice 1: slice 2's archive span renders slice 3's `
+          + 'passage alone)',
+        ],);
+        expect(shifted.asides,).toEqual([],);
+
+        /**
+         The question's source ending short of a mark the pairing left to
+         nobody: the purr cannot join it, so the plain fold stands.
+         */
+        const gapped = shiftedPair();
+        /**
+         The question's source cut one code point short.
+         */
+        const apart: PreparedDocumentPair = {
+          ...gapped,
+          slices: gapped.slices.map(function shortenAsk(slice,): ChunkPair {
+            if (slice.target.sliceIndex !== 1)
+              return slice;
+            return {
+              ...slice,
+              source: {
+                ...slice.source,
+                endOffset: slice.source.endOffset - 1,
+                text: slice.source.text.slice(0, -1,),
+              },
+            };
+          },),
+        };
+        const plain = foldCarriedInsertions({
+          prepared: apart,
+          admission: shiftedCarried(),
+        },);
+        expect(plain.prepared.slices[1]?.source.text,).toBe(ASK_SOURCE.slice(0, -1,),);
+        expect(plain.prepared.slices[2]?.source.text,).toBe(`${PURR_SOURCE}\n\n${NAP_SOURCE}`,);
+        expect(plain.findings,).toEqual([`${CARRIED_FOLDED_FINDING} (slice 3 into slice 2)`,],);
       },
     },),
   ],
