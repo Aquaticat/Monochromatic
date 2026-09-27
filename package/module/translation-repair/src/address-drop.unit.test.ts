@@ -101,5 +101,89 @@ await describe({
         },).kind,).toBe('invalid',);
       },
     },),
+    it({
+      name: 'ACCEPTS third-person pronouns that render the original\'s own, block by block, and 你 that addresses '
+        + 'nobody (ledger F-1: the archive-against-itself replay refused correct English in seven slices)',
+      fn: async () => {
+        // SHAPES, each invented: a closing wish rendered as an imperative beside
+        // pronouns for the original's own 他; the address in one block and a
+        // pronoun the English adds in another; 其 rendered "she"; a cry whose
+        // "you" English drops beside pronouns for the original's own 她; 迷你
+        // (mini); 你们好 (hello, everyone); an idiom (你追我赶).
+        /**
+         Pairs a correct rendering answers.
+         */
+        const accepted: readonly (readonly [string, string,])[] = [
+          [
+            '他说，「猫咪早已走远。」我们不会忘记他，感谢他留下的爪印。咪咪，愿你安睡。',
+            'He said, “The cat has long gone.” We will not forget him, and we thank him for the pawprints '
+              + 'he left.\nSleep well, Mimi.',
+          ],
+          [
+            '> 啊，玩你的毛线球\n\n确是一只小猫呢',
+            '> Ah, go play with the yarn.\n\nA little cat she is~',
+          ],
+          [
+            '> 当你看到此消息。\n>\n> 「纪念其在猫窝留下的足迹。」',
+            '> When this message appeared:\n>\n> “In memory of the pawprints she left in the cat bed.”',
+          ],
+          [
+            '「喵！你怎么了！」我不断地呼喊着她。',
+            '“Meow! What’s wrong!” I kept calling out to her.',
+          ],
+          [
+            '她买了一个迷你猫窝。',
+            'She bought a mini cat bed.',
+          ],
+          [
+            '你们好，她是小橘。',
+            'Hello, everyone: she is Little Orange.',
+          ],
+          [
+            '她和小黑在院子里你追我赶。',
+            'She and Little Black chased each other around the yard.',
+          ],
+        ];
+        expect(accepted.filter(function refusedWrongly([sourceText, candidateText,],): boolean {
+          return validateTranslatedSlice({
+            sourceText,
+            candidateText,
+          },).kind !== 'valid';
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'STILL REFUSES a person switch: a pronoun more than the original writes where its address stood',
+      fn: async () => {
+        /**
+         Pairs that turn the address into narration.
+         */
+        const refused: readonly (readonly [string, string,])[] = [
+          [
+            '可惜这一切戛然而止，她睡着了。\n\n愿在你的下一个世界，你还有同样的好奇心。',
+            'It is a pity all this stopped when she fell asleep.\n\nMay she still have the same curiosity in '
+              + 'her next world.',
+          ],
+          [
+            '橘子，那天晚上你请我吃的鱼干真好吃。',
+            'The dried fish she treated me to that night was delicious, Orange.',
+          ],
+          [
+            '我很遗憾没有多为 ta 拍照。\n\n希望你去往没有雷雨的世界。',
+            'I regret not taking more photos of them.\n\nI hope they have found a world without thunderstorms.',
+          ],
+          [
+            '她说她很累。你要好好的。',
+            'She said she was tired. May she be well.',
+          ],
+        ];
+        expect(refused.filter(function acceptedWrongly([sourceText, candidateText,],): boolean {
+          return validateTranslatedSlice({
+            sourceText,
+            candidateText,
+          },).kind !== 'invalid';
+        },),).toEqual([],);
+      },
+    },),
   ],
 },);
