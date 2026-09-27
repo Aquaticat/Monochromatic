@@ -8,7 +8,8 @@
  way. The choice is the thing the contest counts, so the wording of a finding
  may never cost a voice.
  
- Fixtures are cat-themed invention mirroring corpus structure only.
+ Fixtures mirror corpus structure only. Cat-themed invention throughout; no
+ corpus content appears here.
  
  @module
  */
@@ -170,16 +171,16 @@ await describe({
   name: buildLaneContestMessages.name,
   children: [
     it({
-      name: 'SHOWS THE DISPUTE NOTE after both candidates on a disputed slice, and no such heading elsewhere (class one hundred eight, CuspariaKLSY11 slice 3, 2026-09-24)',
+      name: 'SHOWS THE DISPUTE NOTE after both candidates on a disputed slice, and no such heading elsewhere (class one hundred eight, one entry\'s slice 3, 2026-09-24)',
       fn: async () => {
-        // THE FAILURE THIS CLOSES. CuspariaKLSY11 slice 3: a contest ballot
-        // preferred the repair candidate for carrying "the medication she
-        // took that night", which the original never states and the repair
-        // lane's own adjudicators had accepted as an invented addition.
+        // THE FAILURE THIS CLOSES. One entry's slice 3: a contest ballot
+        // preferred the repair candidate for carrying a detail the original
+        // never states and the repair lane's own adjudicators had accepted as
+        // an invented addition.
         const subject = {
           sourceText: '猫睡了。',
-          incumbentText: 'The cat slept after swallowing its pills.',
-          repairText: 'The cat took its pills and slept.',
+          incumbentText: 'The cat slept after chasing a moth.',
+          repairText: 'The cat chased a moth and slept.',
           translateText: 'The cat slept.',
         };
         const bare = buildLaneContestMessages({ subject, },)
@@ -189,12 +190,12 @@ await describe({
         const asked = buildLaneContestMessages({
           subject: {
             ...subject,
-            archiveDisputeNote: 'ARCHIVE RENDERING DISPUTED: the repair lane\'s adjudicators accepted 1 accuracy/addition claim(s); (1) accuracy/addition critical: The translation invents the pills.',
+            archiveDisputeNote: 'ARCHIVE RENDERING DISPUTED: the repair lane\'s adjudicators accepted 1 accuracy/addition claim(s); (1) accuracy/addition critical: The translation invents the moth.',
           },
         },)
           .at(1,)
           ?.content ?? '';
-        expect(asked,).toContain('The translation invents the pills.',);
+        expect(asked,).toContain('The translation invents the moth.',);
         expect(asked.indexOf('ARCHIVE RENDERING DISPUTED',),).toBeGreaterThan(asked.indexOf('CANDIDATE "translate"',),);
       },
     },),
@@ -224,15 +225,15 @@ await describe({
       name: 'SHOWS the pages the original cites with the candidate rule after the passages, and no such '
         + 'heading when it cites none (class thirty-six, 2026-09-16)',
       fn: async () => {
-        // THE FAILURE THIS CLOSES. Mio20: the panel had the blog and rejected
-        // the addition claim, the repair lane kept "who is also trans", and
-        // three of five contest judges shown only the original called the
-        // repair candidate unsupported for carrying it.
+        // THE FAILURE THIS CLOSES. One run: the panel had the cited page and
+        // rejected the addition claim, the repair lane kept the attested
+        // detail, and three of five contest judges shown only the original
+        // called the repair candidate unsupported for carrying it.
         const subject = {
-          sourceText: '猫有一个姐姐。',
-          incumbentText: 'Mittens has an older sister who is also a tabby.',
-          repairText: 'Mittens has an older sister who is also a tabby.',
-          translateText: 'Mittens has an older sister.',
+          sourceText: '猫有一个弟弟。',
+          incumbentText: 'Mittens has a younger brother who also naps in boxes.',
+          repairText: 'Mittens has a younger brother who also naps in boxes.',
+          translateText: 'Mittens has a younger brother.',
         };
         const bare = buildLaneContestMessages({ subject, },)
           .at(1,)
@@ -241,13 +242,13 @@ await describe({
         const asked = buildLaneContestMessages({
           subject: {
             ...subject,
-            referenceContext: '- reference 1 https://blog.example/mittens ("In memory of Mittens"): Mittens had an older sister who was also a tabby.',
+            referenceContext: '- reference 1 https://blog.example/mittens ("In memory of Mittens"): Mittens had a younger brother who also napped in boxes.',
           },
         },)
           .at(1,)
           ?.content ?? '';
         expect(asked,).toContain('CITED REFERENCES, EVIDENCE ONLY',);
-        expect(asked,).toContain('also a tabby',);
+        expect(asked,).toContain('also naps in boxes',);
         expect(asked,).toContain('never count it unsupported',);
         expect(asked.indexOf('CITED REFERENCES',),).toBeGreaterThan(asked.indexOf('CANDIDATE "translate":',),);
       },
@@ -258,10 +259,10 @@ await describe({
       fn: async () => {
         const messages = buildLaneContestMessages({
           subject: {
-            sourceText: '她最喜欢的角色是超天酱。',
-            incumbentText: 'Her favourite character was KAngel.',
-            repairText: 'Her favourite character was KAngel.',
-            translateText: 'Her favourite character was Choco-chan.',
+            sourceText: '小猫最爱的玩偶是超天酱。',
+            incumbentText: 'Her favourite plush toy was KAngel.',
+            repairText: 'Her favourite plush toy was KAngel.',
+            translateText: 'Her favourite plush toy was Choco-chan.',
           },
         },);
         const asked = messages.at(1,)?.content ?? '';
@@ -435,7 +436,7 @@ await describe({
   children: [
     it({
       name: 'SHOWS corroborated added-damage claims against the repair candidate as evidence after both '
-        + 'candidates, and SHOWS NOTHING of the kind when there are none (keyword233, 2026-09-03: the '
+        + 'candidates, and SHOWS NOTHING of the kind when there are none (one entry, 2026-09-03: the '
         + 'contest chose a tense-damaged repair lane 7 of 7 without ever seeing the claim)',
       fn: async () => {
         /**

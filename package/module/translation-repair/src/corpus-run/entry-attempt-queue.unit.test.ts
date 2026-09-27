@@ -14,7 +14,9 @@
  
  Every effect is injected, so no case here reads a corpus, calls a provider,
  or waits on anything.
- 
+
+ Cat-themed invention throughout; no corpus content appears here.
+
  @module
  */
 
@@ -168,7 +170,7 @@ await describe({
           await attemptOrder({
             scripts: [
               {
-                id: 'aiyysk',
+                id: 'mainecoon',
                 cachedAfter: [
                   5,
                   5,
@@ -188,10 +190,10 @@ await describe({
             ],
           },),
         ).toEqual([
-          'aiyysk',
+          'mainecoon',
           'tabby',
           'whiskers',
-          'aiyysk',
+          'mainecoon',
         ],);
       },
     },),
@@ -205,7 +207,7 @@ await describe({
           await attemptOrder({
             scripts: [
               {
-                id: 'xingz',
+                id: 'siamese',
                 cachedAfter: [
                   45,
                   64,
@@ -216,9 +218,9 @@ await describe({
             ],
           },),
         ).toEqual([
-          'xingz',
-          'xingz',
-          'xingz',
+          'siamese',
+          'siamese',
+          'siamese',
         ],);
       },
     },),

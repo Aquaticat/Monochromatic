@@ -1,10 +1,10 @@
 /**
- Guards class one hundred eighty-four (TianqiChen66616, 2026-09-27): under the
+ Guards class one hundred eighty-four (2026-09-27): under the
  owner's standing instruction of 2026-09-25 ("whenever you see anything that
  can be translated better do it"), two words of the kigurumi and fan
  community join the fandom glossary. 变娃 (the performers' word for putting on
- the costume and becoming the doll) shipped as "in this game of becoming a
- doll", and English "doll up" means dressing smartly. 治愈 (the fan sense of
+ the costume and becoming the doll) shipped on one page as a game of becoming
+ a doll, and English "doll up" means dressing smartly. 治愈 (the fan sense of
  healing, as in 治愈系) first led with "comforted"; the owner disagreed
  (2026-09-27), since the page writes 安慰 where it means comfort and
  "healing" is the fandom's own English, so "healed" leads.
@@ -27,14 +27,14 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Original in which the cat puts on its kigurumi and becomes one with the doll.
+ Original in which the cat puts on its kigurumi for the first time at a convention.
  */
-const SUITED = '这次变娃娃，猫真的要和娃娃融为一体了。';
+const SUITED = '周末的漫展上，猫第一次变娃娃，还拍了很多照片。';
 
 /**
- Original in which the cat glimpses the kittens its visits healed.
+ Original in which the cat's purring heals a sleepless kitten.
  */
-const HEALED = '猫看见了被它治愈的小猫们。';
+const HEALED = '那只总是失眠的小猫，被它治愈了。';
 
 /**
  First rendering the glossary seeds for a term.
@@ -92,7 +92,7 @@ await describe({
       fn: async () => {
         expect(validateTranslatedSlice({
           sourceText: SUITED,
-          candidateText: 'This time, all dolled up, the cat truly became one with the doll.',
+          candidateText: 'At the weekend comic convention, the cat got all dolled up for the first time and took lots of photos.',
         },).kind,).toBe('invalid',);
       },
     },),
@@ -101,11 +101,11 @@ await describe({
       fn: async () => {
         expect(validateTranslatedSlice({
           sourceText: SUITED,
-          candidateText: 'This time, in its kigurumi, the cat truly became one with the doll.',
+          candidateText: 'At the weekend comic convention, the cat put on its kigurumi for the first time and took lots of photos.',
         },).kind,).toBe('valid',);
         expect(validateTranslatedSlice({
           sourceText: HEALED,
-          candidateText: 'The cat saw the kittens it had healed.',
+          candidateText: 'The kitten who could never sleep was healed by it.',
         },).kind,).toBe('valid',);
       },
     },),

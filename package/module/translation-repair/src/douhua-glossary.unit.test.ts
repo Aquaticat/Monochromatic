@@ -1,8 +1,8 @@
 /**
- Guards class one hundred thirty-five (hulicaijia20, 2026-09-25): 豆花 is
- seeded as "douhua", since the page's front matter, the archive and every
- other slice wrote "douhua" while the closing quote shipped "tofu pudding",
- one food under two names on one page.
+ Guards class one hundred thirty-five (2026-09-25): 豆花 is seeded as
+ "douhua", since one page's front matter, archive and every other slice wrote
+ "douhua" while the closing quote shipped "tofu pudding", one food under two
+ names on one page.
 
  Cat-themed invention throughout; no corpus content appears here.
 
@@ -21,9 +21,9 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Original in which the cat is likened to douhua.
+ Original in which the cat sniffs at a bowl of douhua.
  */
-const LIKE_DOUHUA = '在我看来，猫就像豆花一样吧。';
+const LIKE_DOUHUA = '猫凑过去闻了闻那碗豆花。';
 
 await describe({
   name: '豆花 on the sheets (class one hundred thirty-five)',
@@ -42,11 +42,11 @@ await describe({
         expect([
           validateTranslatedSlice({
             sourceText: LIKE_DOUHUA,
-            candidateText: 'To me, the cat was something like tofu pudding.',
+            candidateText: 'The cat leaned in and sniffed the bowl of tofu pudding.',
           },).kind,
           validateTranslatedSlice({
             sourceText: LIKE_DOUHUA,
-            candidateText: 'To me, the cat was something like douhua.',
+            candidateText: 'The cat leaned in and sniffed the bowl of douhua.',
           },).kind,
         ],).toEqual(['invalid', 'valid',],);
       },

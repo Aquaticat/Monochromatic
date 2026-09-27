@@ -3,6 +3,8 @@
  reach no run, take their paired originals with them, and stand as
  boundaries for the originals either side of them.
  
+ Cat-themed invention throughout; no corpus content appears here.
+ 
  @module
  */
 
@@ -32,12 +34,12 @@ const WIDE_BUDGET = 100_000;
  Four originals: an intro, a letter, a closing line and a footnote definition
  the archive never rendered.
  */
-const SOURCE_TEXT = '她留下了一封信。\n\n> 我其实未曾离去\n\n是时候说晚安了。\n\n[^1]: 即 Google App Engine\n';
+const SOURCE_TEXT = '她在门口放了一封信。\n\n> 罐头在第二个柜子里\n\n是时候去睡午觉了。\n\n[^1]: 即 Cat Nap Planner\n';
 
 /**
  Three renderings: the intro, the letter and the closing line.
  */
-const TARGET_TEXT = 'She left a letter.\n\n> I am never gone,\n\nTime to say goodnight.\n';
+const TARGET_TEXT = 'She put a letter by the door.\n\n> The cans are in the second cupboard,\n\nTime for an afternoon nap.\n';
 
 /**
  Blocks of a text.

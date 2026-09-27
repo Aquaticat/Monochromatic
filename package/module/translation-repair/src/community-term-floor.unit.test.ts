@@ -1,5 +1,5 @@
 /**
- Guards class one hundred nineteen (shi_Yumiaoya19, 2026-09-24): the
+ Guards class one hundred nineteen (2026-09-24): the
  community term 药娘 (and 小药娘, which carries it) shipped in Han where
  two earlier runs wrote "little HRT girl" and "little yaoniang". The owner
  answered on 2026-09-24 that the word is disrespectful, used neutrally by
@@ -29,27 +29,27 @@ import {
 /**
  Original calling the cat by the term.
  */
-const NAMED = '这只猫是一只很普通的小药娘[^1]。';
+const NAMED = '这只猫是一只爱晒太阳的小药娘[^1]。';
 
 /**
  Rendering that left the term in Han.
  */
-const LEFT = 'This cat was a very ordinary 小药娘[^1].';
+const LEFT = 'This cat was a sun-loving 小药娘[^1].';
 
 /**
  Rendering that wrote the term in pinyin.
  */
-const PINYIN = 'This cat was a very ordinary little yaoniang[^1].';
+const PINYIN = 'This cat was a sun-loving little yaoniang[^1].';
 
 /**
  Rendering that wrote the hyphenated pinyin.
  */
-const HYPHENATED = 'This cat was bullied by a yao-niang[^1].';
+const HYPHENATED = 'This cat napped beside a yao-niang[^1].';
 
 /**
  Rendering in the owner's English.
  */
-const RENDERED = 'This cat was a very ordinary trans girl[^1].';
+const RENDERED = 'This cat was a sun-loving trans girl[^1].';
 
 await describe({
   name: 'a community term the glossary renders (class one hundred nineteen)',
@@ -108,7 +108,7 @@ await describe({
         },).kind,).toBe('invalid',);
         expect(validateTranslatedSlice({
           sourceText: NAMED,
-          candidateText: 'This cat was a very ordinary little Yaoniang[^1].',
+          candidateText: 'This cat was a sun-loving little Yaoniang[^1].',
         },).kind,).toBe('invalid',);
       },
     },),

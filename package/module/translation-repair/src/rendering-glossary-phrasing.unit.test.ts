@@ -1,9 +1,8 @@
 /**
- Guards class one hundred twenty-nine (shi_Yumiaoya30, 2026-09-25): under the
- owner's standing instruction of 2026-09-25 ("whenever you see anything that
- can be translated better do it"), 摆烂 (shipped as "turned to one of giving
- up") and 万千世界 (shipped as "this myriad world") join the rendering
- glossary.
+ Guards class one hundred twenty-nine (2026-09-25): under the owner's
+ standing instruction of 2026-09-25 ("whenever you see anything that can be
+ translated better do it"), 摆烂 and 万千世界, both shipped as calques on one
+ page, join the rendering glossary.
 
  The class seeded three more entries keyed on one sentence's construction
  (原因是多方面的, 特例, 陷入癫狂). The glossary audit of 2026-09-27 took them out
@@ -27,14 +26,14 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Original in which the cat stops trying to catch mice.
+ Original in which the cat stops resisting bath time.
  */
-const GAVE_UP = '猫对抓老鼠进入了摆烂状态。';
+const GAVE_UP = '一到洗澡时间，猫就开始摆烂。';
 
 /**
- Original in which a camera keeps watching the world for the cat.
+ Original in which the cat on the windowsill eyes the world every day.
  */
-const WIDE_WORLD = '那台相机将继续观察这万千世界。';
+const WIDE_WORLD = '窗台上的猫每天都好奇地打量着这万千世界。';
 
 /**
  Terms class one hundred twenty-nine seeds, as the audit left them.
@@ -48,17 +47,17 @@ const SEEDED_TERMS = [
  Candidates the page's calques would ship, each with the original it renders.
  */
 const REFUSED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
-  { sourceText: GAVE_UP, candidateText: 'The cat\'s attitude to mousing turned to one of giving up.', },
-  { sourceText: GAVE_UP, candidateText: 'The cat slacked off on mousing.', },
-  { sourceText: WIDE_WORLD, candidateText: 'That camera will go on watching this myriad world.', },
+  { sourceText: GAVE_UP, candidateText: 'Whenever bath time came, the cat\'s attitude turned to one of giving up.', },
+  { sourceText: GAVE_UP, candidateText: 'Whenever bath time came, the cat slacked off.', },
+  { sourceText: WIDE_WORLD, candidateText: 'Every day the cat on the windowsill eyed this myriad world with curiosity.', },
 ];
 
 /**
  Candidates carrying the English meaning, each with the original it renders.
  */
 const ACCEPTED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
-  { sourceText: GAVE_UP, candidateText: 'The cat stopped trying to catch mice.', },
-  { sourceText: WIDE_WORLD, candidateText: 'That camera will go on watching this vast world.', },
+  { sourceText: GAVE_UP, candidateText: 'Whenever bath time came, the cat just gave up.', },
+  { sourceText: WIDE_WORLD, candidateText: 'Every day the cat on the windowsill eyed this vast world with curiosity.', },
 ];
 
 await describe({

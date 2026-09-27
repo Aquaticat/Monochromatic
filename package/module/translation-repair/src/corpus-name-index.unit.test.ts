@@ -1,7 +1,7 @@
 /**
- Guards class seventy-eight (shi_Yumiaoya, 2026-09-22): a person the source
- names by a Han handle reached the page as a transliteration of nothing
- ("Xiaoguantang" for a handle whose pinyin it is not) while the corpus
+ Guards class seventy-eight (2026-09-22): a person the source names by a Han
+ handle reached the page as a transliteration of nothing (a romanization the
+ handle's pinyin does not support) while the corpus
  itself declares that person's English name in their own entry's front
  matter, because the sheets' declared names come only from the page's own
  archive. Every entry's front matter is readable at the pin, so the names
@@ -33,8 +33,8 @@ import {
 const ENTRIES = [
   {
     id: 'gum',
-    sourceText: '---\nname: 奇妙的猫糖\ninfo:\n  alias: 猫糖\n---\n\n猫糖是一只热爱生活的猫。\n',
-    targetText: '---\nname: Magic Cat Candy\ninfo:\n  alias: Cat Candy, meow1219\n---\n\nCat Candy was a cat who loved life.\n',
+    sourceText: '---\nname: 奇妙的猫糖\ninfo:\n  alias: 猫糖\n---\n\n猫糖是一只爱吃鱼干的猫。\n',
+    targetText: '---\nname: Magic Cat Candy\ninfo:\n  alias: Cat Candy, meow1219\n---\n\nCat Candy was a cat who loved dried fish.\n',
   },
   {
     id: 'slice',
@@ -66,7 +66,7 @@ const HEADING = 'NAMES OF OTHER PEOPLE IN THIS ARCHIVE whose declared handle thi
   + 'transliteration; where the handle is an ordinary word here, it is a word and stays translated):';
 
 await describe({
-  name: 'the corpus names the people an entry mentions as their own entries render them (class seventy-eight, shi_Yumiaoya)',
+  name: 'the corpus names the people an entry mentions as their own entries render them (class seventy-eight)',
   children: [
     it({
       name: 'INDEXES every Han name or alias an entry declares against the English forms its own translation '
@@ -97,7 +97,7 @@ await describe({
       fn: async () => {
         const names = corpusNamesOf({ entries: ENTRIES, },);
         const lines = corpusNameLines({
-          text: '醒来之后，她听到了奇妙的猫糖和单鱼相继离世的噩耗。\n',
+          text: '醒来之后，她听说奇妙的猫糖和单鱼一起去了鱼市。\n',
           names,
           ownId: 'slice',
         },);

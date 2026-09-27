@@ -1,9 +1,8 @@
 /**
- Guards class forty-three (Mio26, 2026-09-17): a detail one voice extracted
- and both quotes verified is put to the bench again as a yes-or-no candidate,
- and the voices that answered the open question with an empty list get to
- confirm it. Fixtures are cat-themed invention. No corpus content appears
- here.
+ Guards class forty-three (2026-09-17): a detail one voice extracted and both
+ quotes verified is put to the bench again as a yes-or-no candidate, and the
+ voices that answered the open question with an empty list get to confirm it.
+ Cat-themed invention throughout; no corpus content appears here.
 
  @module
  */
@@ -43,27 +42,27 @@ const ROSTER: readonly RosterModelId[] = [
 ] as RosterModelId[];
 
 /**
- Original naming a sister and nothing more about her.
+ Original naming a younger brother and nothing more about him.
  */
-const SOURCE_TEXT = '猫有一个姐姐。';
+const SOURCE_TEXT = '猫有一个弟弟。';
 
 /**
  Archive carrying the detail the reference states.
  */
-const ARCHIVE_TEXT = 'The cat has an older sister who is also a tabby.';
+const ARCHIVE_TEXT = 'The cat has a younger brother who also dozes on the windowsill.';
 
 /**
  One reference stating it.
  */
-const REFERENCE_CONTEXT = 'REFERENCE 1 https://example.invalid/cat-diary: Mittens had an older sister who was also a tabby.';
+const REFERENCE_CONTEXT = 'REFERENCE 1 https://example.invalid/cat-notes: Mittens had a younger brother who also dozed on the windowsill.';
 
 /**
  The item one voice extracts.
  */
-const SISTER_ITEM = {
-  archiveQuote: 'an older sister who is also a tabby',
+const BROTHER_ITEM = {
+  archiveQuote: 'a younger brother who also dozes on the windowsill',
   reference: 1,
-  referenceQuote: 'an older sister who was also a tabby',
+  referenceQuote: 'a younger brother who also dozed on the windowsill',
 };
 
 /**
@@ -144,7 +143,7 @@ await describe({
         const attestation = await attestCitedReferences({
           client: twoRoundClient({
             prompts,
-            extraction: { [ROSTER[2] ?? '']: { attested: [SISTER_ITEM,], }, },
+            extraction: { [ROSTER[2] ?? '']: { attested: [BROTHER_ITEM,], }, },
             confirmation: {
               [ROSTER[0] ?? '']: { confirmed: [1,], },
               [ROSTER[1] ?? '']: { confirmed: [1,], },
@@ -161,7 +160,7 @@ await describe({
           l,
         },);
         expect(prompts.some(function isConfirm(sheet,) {
-          return sheet.includes('CANDIDATE',) && sheet.includes(SISTER_ITEM.referenceQuote,);
+          return sheet.includes('CANDIDATE',) && sheet.includes(BROTHER_ITEM.referenceQuote,);
         },),).toBe(true,);
         expect(attestation.details,).toHaveLength(1,);
         expect(attestation.details[0]?.voices,).toBe(attestation.details[0]?.heard,);
@@ -175,7 +174,7 @@ await describe({
         const attestation = await attestCitedReferences({
           client: twoRoundClient({
             prompts: [],
-            extraction: { [ROSTER[2] ?? '']: { attested: [SISTER_ITEM,], }, },
+            extraction: { [ROSTER[2] ?? '']: { attested: [BROTHER_ITEM,], }, },
             confirmation: { [ROSTER[2] ?? '']: { confirmed: [1,], }, },
           },),
           modelIds: ROSTER,
@@ -221,7 +220,7 @@ await describe({
           referenceContext: REFERENCE_CONTEXT,
           candidates: [
             {
-              ...SISTER_ITEM,
+              ...BROTHER_ITEM,
               voices: 1,
               heard: 4,
             },
@@ -231,8 +230,8 @@ await describe({
           return messageText({ message, },);
         },).join('\n',);
         expect(sheet,).toContain('CANDIDATE 1',);
-        expect(sheet,).toContain(SISTER_ITEM.archiveQuote,);
-        expect(sheet,).toContain(SISTER_ITEM.referenceQuote,);
+        expect(sheet,).toContain(BROTHER_ITEM.archiveQuote,);
+        expect(sheet,).toContain(BROTHER_ITEM.referenceQuote,);
         expect(isReferenceAttestConfirmWire({ confirmed: [1, 2,], },),).toBe(true,);
         expect(isReferenceAttestConfirmWire({ confirmed: ['1',], },),).toBe(false,);
         expect(isReferenceAttestConfirmWire({ attested: [], },),).toBe(false,);
@@ -244,7 +243,7 @@ await describe({
         const kept = confirmedDetails({
           candidates: [
             {
-              ...SISTER_ITEM,
+              ...BROTHER_ITEM,
               voices: 1,
               heard: 4,
             },
@@ -273,7 +272,7 @@ await describe({
           needed: 2,
         },);
         expect(kept,).toHaveLength(1,);
-        expect(kept[0]?.archiveQuote,).toBe(SISTER_ITEM.archiveQuote,);
+        expect(kept[0]?.archiveQuote,).toBe(BROTHER_ITEM.archiveQuote,);
         expect(kept[0]?.voices,).toBe(2,);
         expect(kept[0]?.heard,).toBe(3,);
       },

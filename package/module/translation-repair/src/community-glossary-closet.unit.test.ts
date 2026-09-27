@@ -1,9 +1,8 @@
 /**
- Guards class one hundred eighty-two (TianqiChen66614, 2026-09-27): under the
- owner's standing instruction of 2026-09-25 ("whenever you see anything that
- can be translated better do it"), 柜门炸开, the closet door blown open, joins
- the community glossary beside 炸柜. The page shipped "blocked again and again,
- each time the closet door blew open", a literal figure that also turned the
+ Guards class one hundred eighty-two (2026-09-27): under the owner's standing
+ instruction of 2026-09-25 ("whenever you see anything that can be translated
+ better do it"), 柜门炸开, the closet door blown open, joins the community
+ glossary beside 炸柜. One page shipped a literal figure that also turned the
  source's cause (因为) into a repeated event, while the glossary's 炸柜 entry,
  which says outed, never matched the spread-out spelling.
 
@@ -24,9 +23,9 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Original in which the cat's plans stall because its closet door was blown open.
+ Original in which the cat's birthday party is called off because its closet door was blown open.
  */
-const STALLED = '猫藏在心底的计划因为柜门炸开屡屡受阻。';
+const STALLED = '猫的生日派对因为柜门炸开被临时取消了。';
 
 await describe({
   name: 'the spread-out closet word the community glossary renders (class one hundred eighty-two)',

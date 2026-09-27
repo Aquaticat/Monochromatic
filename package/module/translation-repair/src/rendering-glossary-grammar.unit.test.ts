@@ -1,9 +1,8 @@
 /**
- Guards class one hundred sixty-one (TianqiChen6662, 2026-09-26): under the
- owner's standing instruction of 2026-09-25 ("whenever you see anything that
- can be translated better do it"), 化作 joins the rendering glossary; it
- shipped as the archive's "turned into in a small box", a slip no lane
- repaired.
+ Guards class one hundred sixty-one (2026-09-26): under the owner's standing
+ instruction of 2026-09-25 ("whenever you see anything that can be translated
+ better do it"), 化作 joins the rendering glossary; one page shipped it as the
+ archive's doubled preposition ("turned into in"), a slip no lane repaired.
 
  The class seeded seven more entries keyed on one sentence's grammar (被她治愈,
  应该会有更好的生活, 遇到的却是, 在隙中, 一切都会有机会, 离开我们的时候,
@@ -28,9 +27,9 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Original in which the kitten's fur becomes a small ball.
+ Original in which a snowflake on the windowsill becomes a droplet.
  */
-const BECOMING = '小猫的毛化作一个小小的毛球。';
+const BECOMING = '雪花落在窗台上，化作一滴小小的水珠。';
 
 await describe({
   name: 'grammar slips the rendering glossary refuses (class one hundred sixty-one)',
@@ -48,7 +47,7 @@ await describe({
       fn: async () => {
         expect(validateTranslatedSlice({
           sourceText: BECOMING,
-          candidateText: 'The kitten\'s fur turned into in a small ball.',
+          candidateText: 'The snowflake landed on the windowsill and turned into in a tiny droplet.',
         },).kind,).toBe('invalid',);
       },
     },),
@@ -57,7 +56,7 @@ await describe({
       fn: async () => {
         expect(validateTranslatedSlice({
           sourceText: BECOMING,
-          candidateText: 'The kitten\'s fur turned into a small ball.',
+          candidateText: 'The snowflake landed on the windowsill and turned into a tiny droplet.',
         },).kind,).toBe('valid',);
       },
     },),

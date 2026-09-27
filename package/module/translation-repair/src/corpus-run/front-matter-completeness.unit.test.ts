@@ -11,6 +11,8 @@
  bytes, which this guard recomputes from the two documents rather than
  trusting the preparation.
  
+ Cat-themed invention throughout; no corpus content appears here.
+ 
  @module
  */
 
@@ -203,36 +205,36 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A PAGE THAT CHANGES A STANDING ARCHIVE\'S FRONT MATTER, the ninth hakureico pass: '
-        + 'name: Kagurazaka Chika over the archive\'s Hanasaka, and ACCEPTS the archive\'s bytes',
+      name: 'REFUSES A PAGE THAT CHANGES A STANDING ARCHIVE\'S FRONT MATTER, one entry\'s ninth pass: '
+        + 'a rendered name over the archive\'s own, and ACCEPTS the archive\'s bytes',
       fn: async () => {
         /**
          The ninth pass's source metadata.
          */
-        const hakureicoSource = '---\nname: 神楽坂千歌\ninfo:\n    alias: 千歌, Hanasaka, Hakureico\n---\n\n正文。\n';
+        const mooncatSource = '---\nname: 月见小猫\ninfo:\n    alias: 小月, Tsukimi, Mooncat\n---\n\n正文。\n';
         /**
          The archive's editorial metadata.
          */
-        const hakureicoArchive = '---\nname: Hanasaka\ninfo:\n    alias: Kagurazaka Hanasaka, Hakureico\n---\n\nBody.\n';
+        const mooncatArchive = '---\nname: Tsukimi\ninfo:\n    alias: Tsukimi Koneko, Mooncat\n---\n\nBody.\n';
         /**
          What the guard threw for the translate lane's rendering.
          */
         const refusal = thrownBy({
           run: () => assertFrontMatterComplete({
-            entryId: 'hakureico',
-            sourceText: hakureicoSource,
-            archiveText: hakureicoArchive,
-            pageText: '---\nname: Kagurazaka Chika\ninfo:\n    alias: Kagurazaka Chika, Chika, Hanasaka, Hakureico\n---\n\nBody.\n',
+            entryId: 'mooncat',
+            sourceText: mooncatSource,
+            archiveText: mooncatArchive,
+            pageText: '---\nname: Tsukimi Kitten\ninfo:\n    alias: Tsukimi Kitten, Kitten, Tsukimi, Mooncat\n---\n\nBody.\n',
             slices: [],
           },),
         },);
         expect(refusal,).toBeInstanceOf(FrontMatterCompletenessError,);
         expect((refusal as Error).message,).toContain('archive-front-matter',);
         expect(() => assertFrontMatterComplete({
-          entryId: 'hakureico',
-          sourceText: hakureicoSource,
-          archiveText: hakureicoArchive,
-          pageText: hakureicoArchive,
+          entryId: 'mooncat',
+          sourceText: mooncatSource,
+          archiveText: mooncatArchive,
+          pageText: mooncatArchive,
           slices: [],
         },),).not.toThrow();
       },
@@ -359,17 +361,17 @@ await describe({
 
     it({
       name: 'ACCEPTS A VISIBLE NAME THAT IS THE DIRECTORY ID when the id is the pinyin of the '
-        + 'source name and nothing else in the front matter is Latin (Huasheng, 2026-09-07)',
+        + 'source name and nothing else in the front matter is Latin (one entry, 2026-09-07)',
       fn: async () => {
         /**
-         Source naming the person 林童 with a distinct alias.
+         Source naming the person 猫童 with a distinct alias.
          */
-        const pinyinSourceText = '---\nname: 林童\ninfo:\n  alias: 小林\n---\n\n正文。\n';
+        const pinyinSourceText = '---\nname: 猫童\ninfo:\n  alias: 小童\n---\n\n正文。\n';
 
         /**
          Page naming the person by the pinyin, which is the id.
          */
-        const pinyinPageText = '---\nname: lintong\ninfo:\n  alias: 小林\n---\n\nBody.\n';
+        const pinyinPageText = '---\nname: maotong\ninfo:\n  alias: 小童\n---\n\nBody.\n';
 
         /**
          Parsed source metadata.
@@ -385,15 +387,15 @@ await describe({
 
         expect(namesDirectoryId({
           metadata: target,
-          entryId: 'lintong',
+          entryId: 'maotong',
         },),).toBe(true,);
         expect(namesDirectoryId({
           metadata: source,
-          entryId: 'lintong',
+          entryId: 'maotong',
         },),).toBe(false,);
         // The id stands as the pinyin, so the archive stands and ships with no slice.
         expect(() => assertFrontMatterComplete({
-          entryId: 'lintong',
+          entryId: 'maotong',
           sourceText: pinyinSourceText,
           archiveText: pinyinPageText,
           pageText: pinyinPageText,
@@ -405,7 +407,7 @@ await describe({
     it({
       name: 'ACCEPTS A VISIBLE NAME THAT IS THE DIRECTORY ID when the source names the person so '
         + 'too, since the handle is then the name: eight of the pinned corpus\'s 92 entries '
-        + '(keyword233, Mio, mone among them) are named after their directory in both languages',
+        + 'are named after their directory in both languages',
       fn: async () => {
         /**
          Source page whose name is the directory id, as a handle-named entry's is.

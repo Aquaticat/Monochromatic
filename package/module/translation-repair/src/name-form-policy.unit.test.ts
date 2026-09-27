@@ -2,6 +2,8 @@
  Verifies measured quoted-form scope reaches writers, critics and selectors.
  Live evidence chooses the remedy; these checks only lock down its integration.
  
+ Cat-themed invention throughout; no corpus content appears here.
+ 
  @module
  */
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
@@ -17,11 +19,11 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /** Invented character/name contrast, not a quotation to copy untranslated. */
-const SOURCE = '> 林？不是，我叫 Lin。';
+const SOURCE = '> 喵？不是，我叫 Miu。';
 /** Archive keeps the spelling being discussed rather than normalizing it. */
-const ARCHIVE = '> “林”? No, I go by Lin.';
+const ARCHIVE = '> “喵”? No, I go by Miu.';
 /** Declared identity applies to references, not the denied character form. */
-const IDENTITY = '- name: ORIGINAL declares "Lin", TRANSLATION declares "Lin"';
+const IDENTITY = '- name: ORIGINAL declares "Miu", TRANSLATION declares "Miu"';
 /** Shared rule's specific scope, rather than a general fidelity promise. */
 const SCOPE = 'retain the form under discussion';
 

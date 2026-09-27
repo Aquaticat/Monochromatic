@@ -74,9 +74,9 @@ const LOWERCASE_LETTERS = 'abcdefghijklmnopqrstuvwxyz';
 const SOURCE_TEXT = '猫在窗台上睡觉。';
 
 /**
- Original likening the cat to a car that will be phased out.
+ Original in which a neighbour's car keeps the cat awake.
  */
-const GAS_CAR = '猫就如同燃油车一样，终究会消逝。';
+const GAS_CAR = '猫说邻居那辆旧燃油车吵得它睡不着。';
 
 /**
  Original naming the teacher in charge of the cat's grade.
@@ -191,9 +191,9 @@ await describe({
       name: 'REFUSES "petrol car" and "head of year", ACCEPTS the Canadian words',
       fn: async () => {
         expect([
-          validateTranslatedSlice({ sourceText: GAS_CAR, candidateText: 'The cat was like a petrol car, bound to fade away.', },).kind,
+          validateTranslatedSlice({ sourceText: GAS_CAR, candidateText: 'The cat said the neighbour\'s old petrol car kept it awake.', },).kind,
           validateTranslatedSlice({ sourceText: GRADE_HEAD, candidateText: 'The head of year was kind to the cat.', },).kind,
-          validateTranslatedSlice({ sourceText: GAS_CAR, candidateText: 'The cat was like a gas-powered car, bound to fade away.', },).kind,
+          validateTranslatedSlice({ sourceText: GAS_CAR, candidateText: 'The cat said the neighbour\'s old gas-powered car kept it awake.', },).kind,
           validateTranslatedSlice({ sourceText: GRADE_HEAD, candidateText: 'The grade coordinator was kind to the cat.', },).kind,
         ],).toEqual(['invalid', 'invalid', 'valid', 'valid',],);
       },

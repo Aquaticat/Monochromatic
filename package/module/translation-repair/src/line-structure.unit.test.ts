@@ -2,16 +2,16 @@
  Tests for the computed line-structure predicate.
  
  Its thresholds were chosen from a corpus measurement rather than by taste,
- and they are measured on the SOURCE side. That is load-bearing: `Toka_ls`'s
+ and they are measured on the SOURCE side. That is load-bearing: one entry's
  Chinese verse has a median node length of 22 and the English rendering of the
  same chunk has 99, so the same predicate reading the translation would never
  fire. The original's shape is what a repair must preserve.
  
- The case that fixes the thresholds is real: `Toka_ls`'s verse has a median block
+ The case that fixes the thresholds is real: that entry's verse has a median block
  length of 22 while its prose chunks sit at 49 and 87. A threshold of 20 would
  have missed the verse, which is why the boundary is tested here directly.
  
- Fixtures are cat-themed invention.
+ Cat-themed invention throughout; no corpus content appears here.
  
  @module
  */
@@ -61,11 +61,11 @@ await describe({
         expect(isLineStructured({
           text: slice({
             blocks: [
-              '北斗狭长，化作流苏；',
-              '溪流曲折，化作音符；',
-              '无瑕的猫穿行其间；',
-              '如梦中精灵，静静走过；',
-              '然而阴影深处，黑暗潜伏。',
+              '月光细长，铺满窗台；',
+              '风铃叮当，唤醒屋檐；',
+              '顽皮的猫跃上屋脊；',
+              '像夜里的影子，轻轻落下；',
+              '直到天色发白，才肯回家。',
             ],
           },),
         },),).toBe(true,);
@@ -187,7 +187,7 @@ await describe({
     it({
       name: 'speaks about the ORIGINAL, not the current text, because the '
         + 'predicate reads the source and the two disagree on exactly the case '
-        + 'this exists for: Toka_ls has 21 source blocks at median 22 against '
+        + 'this exists for: one entry has 21 source blocks at median 22 against '
         + '18 target blocks at median 101, so an addendum asserting the CURRENT '
         + 'text is line-structured told the editor something untrue about the '
         + 'text in front of it',
@@ -205,7 +205,7 @@ await describe({
 
     it({
       name: 'forbids the failure that was actually observed, not only reflow. '
-        + 'The editor replaced three correct Toka_ls lines with invented text, '
+        + 'The editor replaced three correct lines of one entry with invented text, '
         + 'one carrying a correct translation of a DIFFERENT line, and a rule '
         + 'that only preserved line counts would have permitted every one',
       fn: async () => {
@@ -238,7 +238,7 @@ await describe({
   children: [
     it({
       name: 'governs EVERY slice carved from a line-structured chunk, including '
-        + 'slices too small for the predicate to judge on their own. Toka_ls '
+        + 'slices too small for the predicate to judge on their own. One entry '
         + 'measured the cost of the alternative: its verse chunk trips at 21 '
         + 'blocks, median 22, subdivides into seven slices, and only one of the '
         + 'seven still trips, so deciding per slice dropped the rule on six '
@@ -364,7 +364,7 @@ await describe({
         + 'whose prose dominates the chunk median. Chunk-only governance loses '
         + 'these: measured across the 92 entries at the pinned corpus commit it '
         + 'covers 195 slices against slice-only 55, yet four entries go '
-        + 'BACKWARDS, interrgned from 5 to 1 and three others from 1 to 0. The '
+        + 'BACKWARDS, one from 5 to 1 and three others from 1 to 0. The '
         + 'union cannot lose to either reading',
       fn: async () => {
         /**

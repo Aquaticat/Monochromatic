@@ -1,6 +1,6 @@
 /**
- Guards class seventy-one (mikaela_khara, 2026-09-19): the author's handle
- 铨铨 reached the page as "Quan" in one line of dialogue while the archive
+ Guards class seventy-one (2026-09-19): the author's Han handle reached the
+ page as a plain romanization in one line of dialogue while the archive
  renders the same handle as a stylised form in its link text and in every
  other line, because no sheet told the bench how this page renders that name.
  The source's `[铨](url)` and the archive's `[Rendered](url)` share an href,
@@ -20,7 +20,7 @@ import {
 import { pageNameLines, } from '../dist/final/node/index.mjs';
 
 await describe({
-  name: 'a page names its people and linked titles as the archive renders them (class seventy-one, mikaela_khara)',
+  name: 'a page names its people and linked titles as the archive renders them (class seventy-one)',
   children: [
     it({
       name: 'READS a same-href link whose Han text the archive renders, and a signature pair, into sheet lines',
@@ -66,7 +66,7 @@ await describe({
       },
     },),
     it({
-      name: 'SAYS a linked title that names the person takes the declared form inside it (class eighty-six, yingying3 2026-09-22: the archive\'s "Sakura" inside a blog title carried as the title\'s authority against the declared "Yingying")',
+      name: 'SAYS a linked title that names the person takes the declared form inside it (class eighty-six, 2026-09-22: the archive\'s other form of the name inside a blog title carried as the title\'s authority against the declared form)',
       fn: async () => {
         const lines = pageNameLines({
           sourceText: '[永别了，猫猫。](https://example.invalid/farewell)\n',
@@ -104,10 +104,10 @@ await describe({
       fn: async () => {
         const lines = pageNameLines({
           sourceText: '[Maomao](https://example.invalid/same) and '
-            + '[猫猫说：河水很冰，很冷吧，这世上若有来生，一定要守护你，直到梦醒](https://example.invalid/long) and '
+            + '[猫猫说：今天的太阳很暖，很软吧，要是明天还这样晴，一定陪你晒到傍晚](https://example.invalid/long) and '
             + '[白猫](https://example.invalid/source-only)\n\n——橘猫, 2024 年 1 月 1 日\n\n——黑猫, 2024 年 1 月 2 日\n',
           targetText: '[Maomao](https://example.invalid/same) and '
-            + '[Maomao said the river was cold](https://example.invalid/long)\n\n——Ginger, January 1, 2024\n',
+            + '[Maomao said the sun was warm](https://example.invalid/long)\n\n——Ginger, January 1, 2024\n',
         },);
         expect(lines,).toEqual([],);
       },

@@ -1,10 +1,13 @@
 /**
  Tests for the archive's footnote labels following the original's.
  
- THE NINETEENTH CLASS, found by the yuki418330012 page of 2026-09-08: the
- original writes 洲洲[^2] and 真理[^1], the archive had Zhouzhou[^1] and
- Zhenli[^2] with definitions to match, and the page shipped the original's
- markers above the archive's definitions, each pointing at the other's note.
+ THE NINETEENTH CLASS, found on one page of 2026-09-08: the original writes
+ two names with their notes numbered against first appearance, the archive
+ renumbered them by first appearance with definitions to match, and the page
+ shipped the original's markers above the archive's definitions, each
+ pointing at the other's note.
+
+ Cat-themed invention throughout; no corpus content appears here.
  
  @module
  */
@@ -26,15 +29,15 @@ import {
 //region Fixtures
 
 /**
- Original: the godmother is the second note, the younger sister the first.
+ Original: the old cat who took her in is the second note, the kitten next door the first.
  */
-const SOURCE_TEXT = '## 生平\n\n洲洲[^2]收留了她，真理[^1]帮助她。\n\n[^1]: 比她小，像姐姐一样。\n\n[^2]: 干妈？像母女一样。\n';
+const SOURCE_TEXT = '## 生平\n\n团团[^2]收留了她，豆豆[^1]陪伴她。\n\n[^1]: 隔壁的小猫，总爱跟着她。\n\n[^2]: 收留她的老猫，像妈妈一样。\n';
 
 /**
  Archive: renumbered by first appearance, definitions to match.
  */
-const TARGET_TEXT = '## Life\n\nZhouzhou[^1] took her in, and Zhenli[^2] helped her.\n\n'
-  + '[^1]: A substitute parent? Like mother and daughter.\n\n[^2]: Younger than her, like a sister.\n';
+const TARGET_TEXT = '## Life\n\nTuantuan[^1] took her in, and Doudou[^2] kept her company.\n\n'
+  + '[^1]: The old cat who took her in, like a mother.\n\n[^2]: The kitten next door, always following her.\n';
 
 //endregion Fixtures
 
@@ -95,8 +98,8 @@ await describe({
           map: reading.map,
         },);
         expect(relabelled,).toBe(
-          '## Life\n\nZhouzhou[^2] took her in, and Zhenli[^1] helped her.\n\n'
-            + '[^2]: A substitute parent? Like mother and daughter.\n\n[^1]: Younger than her, like a sister.\n',
+          '## Life\n\nTuantuan[^2] took her in, and Doudou[^1] kept her company.\n\n'
+            + '[^2]: The old cat who took her in, like a mother.\n\n[^1]: The kitten next door, always following her.\n',
         );
         // A SECOND READING OF THE RELABELLED ARCHIVE CHANGES NOTHING.
         expect(
@@ -140,16 +143,16 @@ await describe({
 
     it({
       name: 'leaves a slice whose two sides reference different counts of notes out of the reading, naming it, '
-        + 'and reads the map off the rest (the archive of hakureico carries no [^2] at all)',
+        + 'and reads the map off the rest (one archive carries no [^2] at all)',
       fn: async () => {
         /**
          The reading over a slice with one marker against two and a slice
          with a swap.
          */
         const reading = footnoteRelabelOf(prepareDocumentPair({
-          sourceText: '## 甲\n\n她[^1]和他[^2]。\n\n## 乙\n\n洲洲[^4]，真理[^3]。\n\n'
+          sourceText: '## 甲\n\n她[^1]和他[^2]。\n\n## 乙\n\n团团[^4]，豆豆[^3]。\n\n'
             + '[^1]: 一。\n\n[^2]: 二。\n\n[^3]: 三。\n\n[^4]: 四。\n',
-          targetText: '## A\n\nShe[^1] and he.\n\n## B\n\nZhouzhou[^3], Zhenli[^4].\n\n'
+          targetText: '## A\n\nShe[^1] and he.\n\n## B\n\nTuantuan[^3], Doudou[^4].\n\n'
             + '[^1]: One.\n\n[^3]: Three.\n\n[^4]: Four.\n',
         },),);
         if (reading.kind !== 'relabel')

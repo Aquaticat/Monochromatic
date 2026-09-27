@@ -1,6 +1,7 @@
 /**
  Tests for front matter splitting.
- Fixtures mirror corpus structure only; every value is cat-themed invention.
+ Fixtures mirror corpus structure only. Cat-themed invention throughout; no
+ corpus content appears here.
  
  @module
  */
@@ -110,24 +111,24 @@ await describe({
       name: 'reads front matter written with CRLF, which the fixed `\\n` fences '
         + 'refused outright. One corpus original uses Windows line endings, and '
         + 'the consequence was not a missing field: the whole YAML block parsed '
-        + 'as BODY, where `---` became a thematic break and `name: Ara` became a '
+        + 'as BODY, where `---` became a thematic break and `name: Nori` became a '
         + 'setext heading, so the critics received the metadata as content and '
         + 'the identity context was empty for that entry',
       fn: async () => {
         /**
          Same document in both line endings.
          */
-        const lf = splitFrontMatter({ text: '---\nname: Ara\n---\n\nBody.\n', },);
+        const lf = splitFrontMatter({ text: '---\nname: Nori\n---\n\nBody.\n', },);
 
         /**
          Windows-flavoured counterpart.
          */
         const crlf = splitFrontMatter({
-          text: '---\r\nname: Ara\r\n---\r\n\r\nBody.\r\n',
+          text: '---\r\nname: Nori\r\n---\r\n\r\nBody.\r\n',
         },);
 
-        expect(lf.frontMatter?.data,).toEqual({ name: 'Ara', },);
-        expect(crlf.frontMatter?.data,).toEqual({ name: 'Ara', },);
+        expect(lf.frontMatter?.data,).toEqual({ name: 'Nori', },);
+        expect(crlf.frontMatter?.data,).toEqual({ name: 'Nori', },);
       },
     },),
 
@@ -139,12 +140,12 @@ await describe({
          CRLF document whose body is one paragraph.
          */
         const split = splitFrontMatter({
-          text: '---\r\nname: Ara\r\n---\r\n\r\nBody.\r\n',
+          text: '---\r\nname: Nori\r\n---\r\n\r\nBody.\r\n',
         },);
 
         expect(split.body.trim(),).toBe('Body.',);
         expect(split.bodyOffset,).toBe(
-          '---\r\nname: Ara\r\n---\r\n'.length,
+          '---\r\nname: Nori\r\n---\r\n'.length,
         );
       },
     },),
@@ -181,13 +182,13 @@ await describe({
         + 'the opening one has ended',
       fn: async () => {
         expect(
-          splitFrontMatter({ text: '---\r\nname: Ara\r\n---', },).frontMatter?.data,
-        ).toEqual({ name: 'Ara', },);
+          splitFrontMatter({ text: '---\r\nname: Nori\r\n---', },).frontMatter?.data,
+        ).toEqual({ name: 'Nori', },);
         expect(
           splitFrontMatter({ text: '---\r\n---\r\nBody\r\n', },).frontMatter?.data,
         ).toBe(null,);
         expect(
-          splitFrontMatter({ text: '---\r\nname: Ara\r\n', },).frontMatter,
+          splitFrontMatter({ text: '---\r\nname: Nori\r\n', },).frontMatter,
         ).toBe(undefined,);
       },
     },),

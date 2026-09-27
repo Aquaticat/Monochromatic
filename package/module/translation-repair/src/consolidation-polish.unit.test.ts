@@ -4,6 +4,8 @@
  recorded evidence on the settlement, never withholding authority and
  never buying a correction round.
  
+ Cat-themed invention throughout; no corpus content appears here.
+ 
  @module
  */
 
@@ -40,38 +42,38 @@ const ROSTER = [
 /**
  Literal but faithful base wording.
  */
-const BASE = 'She faced life proactively and spent a good time with everyone, while doing her best to stay hopeful and connected to the people around her.';
+const BASE = 'She viewed rainy days proactively and spent many a cozy afternoon with the other cats, while doing her best to stay curious and close to the cats around her.';
 
 /**
  Faithful idiomatic rewrite, as a refiner emits it: one line.
  */
-const POLISHED = 'She maintained a positive outlook on life and spent some good times with everyone, doing her best to stay hopeful and connected to those around her.';
+const POLISHED = 'She kept a cheerful outlook on rainy days and spent many cozy afternoons with the other cats, doing her best to stay curious and close to those around her.';
 
 /**
  The same rewrite as the page carries it: wrapped at its semantic boundary
- before the gate sees it (keyword233, 2026-09-03: a gate judge preferred the
+ before the gate sees it (one entry, 2026-09-03: a gate judge preferred the
  unwrapped rewrite for "removing the stilted line breaks" and the page
  shipped single-line).
  */
-const WRAPPED_POLISHED = 'She maintained a positive outlook on life and spent some good times with everyone,\n'
-  + 'doing her best to stay hopeful and connected to those around her.';
+const WRAPPED_POLISHED = 'She kept a cheerful outlook on rainy days and spent many cozy afternoons with the other cats,\n'
+  + 'doing her best to stay curious and close to those around her.';
 
 /**
  The base wording as the wrap would write it: a refinement that is exactly
  this changes nothing and must not ship as a change.
  */
-const WRAPPED_BASE = 'She faced life proactively and spent a good time with everyone,\n'
-  + 'while doing her best to stay hopeful and connected to the people around her.';
+const WRAPPED_BASE = 'She viewed rainy days proactively and spent many a cozy afternoon with the other cats,\n'
+  + 'while doing her best to stay curious and close to the cats around her.';
 
 /**
  Short literal prose final polish must still review.
  */
-const SHORT_BASE = 'She had a good time with everyone.';
+const SHORT_BASE = 'She had many cozy afternoons with the other cats.';
 
 /**
  Faithful idiomatic rewrite of short prose.
  */
-const SHORT_POLISHED = 'She spent some happy times with everyone.';
+const SHORT_POLISHED = 'She spent many snug afternoons with the other cats.';
 
 /**
  Target-authoritative contributor attribution baseline.
@@ -314,7 +316,7 @@ await describe({
       fn: async () => {
         const polish = await polishConsolidation({
           client,
-          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          sourceText: '她总是乐观地看待下雨天，和猫友们度过了许多惬意的午后。',
           archiveText: BASE,
           baseText: BASE,
           lineStructured: false,
@@ -393,7 +395,7 @@ await describe({
 
         const wrapped = await polishConsolidation({
           client: rewritingClient({ newText: POLISHED, },),
-          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          sourceText: '她总是乐观地看待下雨天，和猫友们度过了许多惬意的午后。',
           archiveText: BASE,
           baseText: BASE,
           lineStructured: false,
@@ -411,7 +413,7 @@ await describe({
         // The gate was asked about the wrapped bytes as they render: on a
         // prose slice each paragraph is shown one line, so where the wrap
         // broke the line is nothing the gate can weigh (class one hundred
-        // fifty-three, XingZ6014: a one-line base beside a wrapped polish).
+        // fifty-three, one entry: a one-line base beside a wrapped polish).
         expect(gateSubjects.length,).toBeGreaterThan(0,);
         expect(gateSubjects.every((subject,) => subject.includes(JSON.stringify(POLISHED,).slice(1, -1),),),).toBe(true,);
         expect(gateSubjects.some((subject,) => subject.includes(JSON.stringify(WRAPPED_POLISHED,).slice(1, -1),),),).toBe(false,);
@@ -420,7 +422,7 @@ await describe({
         // written; a wrap here would break the line count the rule protects.
         const governed = await polishConsolidation({
           client: rewritingClient({ newText: POLISHED, },),
-          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          sourceText: '她总是乐观地看待下雨天，和猫友们度过了许多惬意的午后。',
           archiveText: BASE,
           baseText: BASE,
           lineStructured: true,
@@ -439,7 +441,7 @@ await describe({
         // change: the slice keeps the base byte for byte and says why.
         const rewrapOnly = await polishConsolidation({
           client: rewritingClient({ newText: WRAPPED_BASE, },),
-          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          sourceText: '她总是乐观地看待下雨天，和猫友们度过了许多惬意的午后。',
           archiveText: BASE,
           baseText: BASE,
           lineStructured: false,
@@ -468,7 +470,7 @@ await describe({
       fn: async () => {
         const polish = await polishConsolidation({
           client,
-          sourceText: '她和大家度过了一段不错的时光。',
+          sourceText: '她和猫友们度过了许多惬意的午后。',
           archiveText: SHORT_BASE,
           baseText: SHORT_BASE,
           lineStructured: false,
@@ -511,7 +513,7 @@ await describe({
       fn: async () => {
         const polish = await polishConsolidation({
           client: singleRoundClient({ reviewAcceptableByRound: [false,], },),
-          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          sourceText: '她总是乐观地看待下雨天，和猫友们度过了许多惬意的午后。',
           archiveText: BASE,
           baseText: BASE,
           lineStructured: false,
@@ -553,7 +555,7 @@ await describe({
               false,
             ],
           },),
-          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          sourceText: '她总是乐观地看待下雨天，和猫友们度过了许多惬意的午后。',
           archiveText: BASE,
           baseText: BASE,
           lineStructured: false,
@@ -592,7 +594,7 @@ await describe({
         // not withhold the entry.
         const polish = await polishConsolidation({
           client: singleRoundClient({ reviewAcceptableByRound: [], },),
-          sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+          sourceText: '她总是乐观地看待下雨天，和猫友们度过了许多惬意的午后。',
           archiveText: BASE,
           baseText: BASE,
           lineStructured: false,
@@ -632,7 +634,7 @@ await describe({
         ] = await Promise.all([
           polishConsolidation({
             client: singleRoundClient({ reviewAcceptableByRound: [false,], },),
-            sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+            sourceText: '她总是乐观地看待下雨天，和猫友们度过了许多惬意的午后。',
             archiveText: BASE,
             baseText: BASE,
             lineStructured: false,
@@ -644,7 +646,7 @@ await describe({
           },),
           polishConsolidation({
             client: singleRoundClient({ reviewAcceptableByRound: [], },),
-            sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+            sourceText: '她总是乐观地看待下雨天，和猫友们度过了许多惬意的午后。',
             archiveText: BASE,
             baseText: BASE,
             lineStructured: false,
@@ -670,7 +672,7 @@ await describe({
     it({
       name: 'ACCEPTS AN UNENDORSED STANDING THAT SHIPPED WITH ITS FINDING, whose polish never ran over the '
         + 'unsafe baseline (the no-loop single attempt), and still REFUSES every other body slice without a '
-        + 'settled polish: the Toka_ls rerun of 2026-09-02 ended INCOMPLETE after 117 minutes on exactly '
+        + 'settled polish: one entry\'s rerun of 2026-09-02 ended INCOMPLETE after 117 minutes on exactly '
         + 'this record',
       fn: async () => {
         assertFinalNaturalnessComplete({
@@ -697,7 +699,7 @@ await describe({
 
     it({
       name: 'SHOWS THE REVIEWER EVERY BODY BLOCK and records that count, so a blockquote candidate with '
-        + 'no refinable paragraph still gives a reviewer one paragraph to cite (Toka_ls slice 10, '
+        + 'no refinable paragraph still gives a reviewer one paragraph to cite (one entry, slice 10, '
         + '2026-09-02: zero refinable paragraphs, six of nine ballots refused as out of range), and the '
         + 'completeness guard recomputes the same set',
       fn: async () => {
@@ -705,7 +707,7 @@ await describe({
          A letter in blockquote, which the polish may not edit but a reviewer
          must still be able to cite.
          */
-        const poem = '> By the time you read this letter,\n> I should already be living on in everyone’s memories.\n>\n> From the moment we met,\n> time really flew by.';
+        const poem = '> By the time you read this note,\n> I should already be sunbathing on the neighbour’s balcony.\n>\n> From the moment we met,\n> the cans always came on time.';
         expect(reviewParagraphsOf({ text: poem, },),).toEqual([poem,],);
         expect(reviewParagraphsOf({ text: `${poem}\n\nA closing paragraph.`, },),)
           .toEqual([poem, 'A closing paragraph.',],);
@@ -713,7 +715,7 @@ await describe({
 
         const polish = await polishConsolidation({
           client: singleRoundClient({ reviewAcceptableByRound: [true,], },),
-          sourceText: '> 当你读到这封信的时候，\n> 我应该已经活在大家的回忆里了。\n>\n> 从我们相遇开始，\n> 时间过得真快。',
+          sourceText: '> 当你读到这张纸条的时候，\n> 我应该已经在邻居家的阳台上晒太阳了。\n>\n> 从我们相遇开始，\n> 罐头总是准时出现。',
           archiveText: poem,
           baseText: poem,
           lineStructured: true,

@@ -12,7 +12,7 @@
  ballot here would turn an abstention into a lost voice and change what a
  quorum means.
  
- Fixtures are cat-themed invention.
+ Cat-themed invention throughout; no corpus content appears here.
  
  @module
  */
@@ -44,17 +44,17 @@ await describe({
           criteria: ['Faithful.',],
           evidence: [{
             label: 'ORIGINAL (Chinese)',
-            text: '在她自切后，家人的态度好转很多。',
+            text: '那只猫讲起自切的经历时，朋友们都安静地听着。',
           },],
           rendered: [
-            'After she attempted self-surgery, her family became more accepting.',
-            'After she began cutting herself, her family became more accepting.',
+            'When the cat told of her self-surgery, her friends listened quietly.',
+            'When the cat told of her operation, her friends listened quietly.',
           ],
         };
         /** What the judge is shown with the original passed. */
         const shown = buildCandidateSelectMessages({
           ...request,
-          sourceText: '在她自切后，家人的态度好转很多。',
+          sourceText: '那只猫讲起自切的经历时，朋友们都安静地听着。',
         },).at(1,)?.content ?? '';
         expect(shown,).toContain('COMMUNITY RENDERINGS, evidence to weigh, not a verdict:',);
         expect(shown,).toContain('- CANDIDATE 2 carries none of the community\'s renderings of 自切',);

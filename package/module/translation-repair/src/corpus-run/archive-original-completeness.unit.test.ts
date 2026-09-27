@@ -2,6 +2,8 @@
  Tests for the publication guard that keeps a sealed span as the archive has
  it.
  
+ Cat-themed invention throughout; no corpus content appears here.
+ 
  @module
  */
 
@@ -19,7 +21,7 @@ import {
 /**
  Archive with a sealed letter.
  */
-const ARCHIVE = 'Intro.\n\n<!-- note -->\n\n> I am never gone,\n\nTime to sleep friends.\n';
+const ARCHIVE = 'Intro.\n\n<!-- note -->\n\n> The cans are in the cupboard,\n\nTime for a nap, friends.\n';
 
 /**
  The sealed span: from the note's end to the archive's end.
@@ -38,7 +40,7 @@ await describe({
       fn: async () => {
         expect(function guard(): void {
           assertArchiveOriginalComplete({
-            entryId: 'hakureico',
+            entryId: 'mooncat',
             archiveText: ARCHIVE,
             pageText: ARCHIVE.replace(
               'Intro.',
@@ -56,7 +58,7 @@ await describe({
       fn: async () => {
         expect(function guard(): void {
           assertArchiveOriginalComplete({
-            entryId: 'hakureico',
+            entryId: 'mooncat',
             archiveText: ARCHIVE,
             pageText: 'Anything.\n',
             spans: [],
@@ -71,23 +73,23 @@ await describe({
       fn: async () => {
         expect(function guard(): void {
           assertArchiveOriginalComplete({
-            entryId: 'hakureico',
+            entryId: 'mooncat',
             archiveText: ARCHIVE,
             pageText: ARCHIVE.replace(
-              'I am never gone,',
-              'I am never really gone,',
+              'The cans are in the cupboard,',
+              'The cans are in the top cupboard,',
             ),
             spans: [ SPAN, ],
           },);
         },).toThrow(ArchiveOriginalCompletenessError,);
         expect(function guard(): void {
           assertArchiveOriginalComplete({
-            entryId: 'hakureico',
+            entryId: 'mooncat',
             archiveText: ARCHIVE,
             pageText: 'Nothing of it.\n',
             spans: [ SPAN, ],
           },);
-        },).toThrow('entry hakureico page does not carry archive-original span 0',);
+        },).toThrow('entry mooncat page does not carry archive-original span 0',);
       },
     },),
   ],

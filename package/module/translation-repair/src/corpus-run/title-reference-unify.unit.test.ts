@@ -1,9 +1,8 @@
 /**
- Guards class one hundred (XingZ630, 2026-09-23): a section title the
- original writes once as a heading and again in brackets (a linked credit,
- a footnote's 「title」篇, a song credit's 《title》) reached the page in two
- English renderings, "Bird in a Cage" over "The Caged Bird" and "Zero-Layer
- Prayer" over "Zero-Degree Prayer", because each slice is judged alone. The
+ Guards class one hundred (2026-09-23): a section title the original writes
+ once as a heading and again in brackets (a linked credit, a footnote's
+ 「title」篇, a song credit's 《title》) reached one page in two English
+ renderings each, because each slice is judged alone. The
  page decides once, where every heading is in view: a reference to a
  heading takes the heading's rendering. Cat-themed invention throughout; no
  corpus content appears here.
@@ -35,7 +34,7 @@ import {
 
  @example
  ```ts
- const slice = pair({ sliceIndex: 0, source: '### 笼中猫', target: '', },);
+ const slice = pair({ sliceIndex: 0, source: '### 窗边猫', target: '', },);
  ```
  */
 function pair(
@@ -76,37 +75,37 @@ function pair(
 const SLICES: readonly ChunkPair[] = [
   pair({
     sliceIndex: 0,
-    source: '<h3 align = "center">笼中猫</h3>',
+    source: '<h3 align = "center">窗边猫</h3>',
     target: '',
   },),
   pair({
     sliceIndex: 1,
-    source: '——出自《[笼中猫](https://example.test/cat)》',
+    source: '——出自《[窗边猫](https://example.test/cat)》',
     target: '',
   },),
   pair({
     sliceIndex: 2,
-    source: '### 零重猫愿',
+    source: '### 午后猫语',
     target: '',
   },),
   pair({
     sliceIndex: 3,
-    source: '[^6]: 见后文「零重猫愿」篇开头。',
+    source: '[^6]: 另见「午后猫语」篇末尾。',
     target: '',
   },),
   pair({
     sliceIndex: 4,
-    source: '—— 雨猫《零重猫愿》',
+    source: '—— 云猫《午后猫语》',
     target: '',
   },),
   pair({
     sliceIndex: 5,
-    source: '—— 雨猫【梦】《零重猫愿》',
+    source: '—— 云猫【梦】《午后猫语》',
     target: '',
   },),
   pair({
     sliceIndex: 6,
-    source: '[^5]: 出自《猫经》。\n\n[^6]: 见后文「零重猫愿」篇开头。',
+    source: '[^5]: 出自《猫经》。\n\n[^6]: 另见「午后猫语」篇末尾。',
     target: '',
   },),
 ];
@@ -117,11 +116,11 @@ const SLICES: readonly ChunkPair[] = [
 const HEADINGS = [
   {
     sliceIndex: 0,
-    replacementText: '<h3 align = "center">Cat in a Cage</h3>',
+    replacementText: '<h3 align = "center">Cat by the Window</h3>',
   },
   {
     sliceIndex: 2,
-    replacementText: '### Zero-Layer Cat Prayer',
+    replacementText: '### Afternoon Cat Murmurs',
   },
 ] as const;
 
@@ -140,40 +139,40 @@ await describe({
             ...HEADINGS,
             {
               sliceIndex: 1,
-              replacementText: '——From [The Caged Cat](https://example.test/cat)',
+              replacementText: '——From [The Window Cat](https://example.test/cat)',
             },
             {
               sliceIndex: 3,
-              replacementText: '[^6]: See the beginning of the section “Zero-Degree Cat Prayer”.',
+              replacementText: '[^6]: See the end of the section “Afternoon Cat Talk”.',
             },
             {
               sliceIndex: 4,
-              replacementText: '—— Yumao 《Zero Cat Prayer》',
+              replacementText: '—— Yunmao 《Cat Talk》',
             },
             {
               sliceIndex: 5,
-              replacementText: '—— Yumao, from “Dream,” Zero-Degree Cat Prayer (零重猫愿)',
+              replacementText: '—— Yunmao, from “Dream,” Afternoon Cat Talk (午后猫语)',
             },
             {
               sliceIndex: 6,
-              replacementText: '[^5]: From “The Cat Sutra”.\n\n[^6]: See the section “Zero-Degree Cat Prayer”.',
+              replacementText: '[^5]: From “The Cat Sutra”.\n\n[^6]: See the section “Afternoon Cat Talk”.',
             },
           ],
         },);
         expect(unified.replacements.map(function textOf(row,): string {
           return row.replacementText;
         },),).toEqual([
-          '<h3 align = "center">Cat in a Cage</h3>',
-          '### Zero-Layer Cat Prayer',
-          '——From [Cat in a Cage](https://example.test/cat)',
-          '[^6]: See the beginning of the section “Zero-Layer Cat Prayer”.',
-          '—— Yumao 《Zero-Layer Cat Prayer》',
-          '—— Yumao, from “Dream,” Zero-Layer Cat Prayer (零重猫愿)',
-          '[^5]: From “The Cat Sutra”.\n\n[^6]: See the section “Zero-Layer Cat Prayer”.',
+          '<h3 align = "center">Cat by the Window</h3>',
+          '### Afternoon Cat Murmurs',
+          '——From [Cat by the Window](https://example.test/cat)',
+          '[^6]: See the end of the section “Afternoon Cat Murmurs”.',
+          '—— Yunmao 《Afternoon Cat Murmurs》',
+          '—— Yunmao, from “Dream,” Afternoon Cat Murmurs (午后猫语)',
+          '[^5]: From “The Cat Sutra”.\n\n[^6]: See the section “Afternoon Cat Murmurs”.',
         ],);
         expect(unified.restored.length,).toBe(5,);
         expect(unified.findings.join('\n',),).toContain(
-          'title-reference-unified (slice 3: "Zero-Degree Cat Prayer" to "Zero-Layer Cat Prayer"',
+          'title-reference-unified (slice 3: "Afternoon Cat Talk" to "Afternoon Cat Murmurs"',
         );
       },
     },),
@@ -192,8 +191,8 @@ await describe({
             ),
             pair({
               sliceIndex: 3,
-              source: '[^6]: 见后文「零重猫愿」篇开头。',
-              target: '[^6]: See the section “Zero-Degree Cat Prayer”.',
+              source: '[^6]: 另见「午后猫语」篇末尾。',
+              target: '[^6]: See the section “Afternoon Cat Talk”.',
             },),
             ...SLICES.slice(
               4,
@@ -204,11 +203,11 @@ await describe({
             ...HEADINGS,
             {
               sliceIndex: 1,
-              replacementText: '——From [Cat in a Cage](https://example.test/cat)',
+              replacementText: '——From [Cat by the Window](https://example.test/cat)',
             },
             {
               sliceIndex: 4,
-              replacementText: '—— Yumao, “Zero Cat Prayer,” from “Dream”',
+              replacementText: '—— Yunmao, “Cat Talk,” from “Dream”',
             },
           ],
         },);
@@ -233,12 +232,12 @@ await describe({
             ),
             pair({
               sliceIndex: 3,
-              source: '—— 雨猫《零重猫愿》\n\n<Ring text="☿☿" size="1rem"/>',
+              source: '—— 云猫《午后猫语》\n\n<Ring text="☿☿" size="1rem"/>',
               target: '',
             },),
             pair({
               sliceIndex: 4,
-              source: '—— 雨猫《零重猫愿》，出自《猫经》',
+              source: '—— 云猫《午后猫语》，出自《猫经》',
               target: '',
             },),
           ],
@@ -246,27 +245,27 @@ await describe({
             ...HEADINGS,
             {
               sliceIndex: 3,
-              replacementText: '—— Yumao "Zero Cat Prayer"\n\n<Ring text="☿☿" size="1rem"/>',
+              replacementText: '—— Yunmao "Cat Talk"\n\n<Ring text="☿☿" size="1rem"/>',
             },
             {
               sliceIndex: 4,
-              replacementText: '—— Yumao “Zero-Layer Cat Prayer”, from “The Cat Sutra”',
+              replacementText: '—— Yunmao “Afternoon Cat Murmurs”, from “The Cat Sutra”',
             },
           ],
         },);
         expect(unified.replacements.map(function textOf(row,): string {
           return row.replacementText;
         },),).toEqual([
-          '<h3 align = "center">Cat in a Cage</h3>',
-          '### Zero-Layer Cat Prayer',
-          '—— Yumao "Zero-Layer Cat Prayer"\n\n<Ring text="☿☿" size="1rem"/>',
-          '—— Yumao “Zero-Layer Cat Prayer”, from “The Cat Sutra”',
+          '<h3 align = "center">Cat by the Window</h3>',
+          '### Afternoon Cat Murmurs',
+          '—— Yunmao "Afternoon Cat Murmurs"\n\n<Ring text="☿☿" size="1rem"/>',
+          '—— Yunmao “Afternoon Cat Murmurs”, from “The Cat Sutra”',
         ],);
         expect(unified.findings.length,).toBe(1,);
       },
     },),
     it({
-      // CLASS ONE HUNDRED TWENTY (XingZ6010, 2026-09-24). The credit rendered
+      // CLASS ONE HUNDRED TWENTY (2026-09-24). The credit rendered
       // the title bare, the only quoted span left was the next heading's
       // `align = "center"`, spaced around its equals sign, and the pass wrote
       // the title into the attribute.
@@ -280,37 +279,37 @@ await describe({
           slices: [
             pair({
               sliceIndex: 0,
-              source: '<h3 align = "center">九重猫</h3>',
+              source: '<h3 align = "center">七彩猫</h3>',
               target: '',
             },),
             pair({
               sliceIndex: 1,
-              source: '—— 雨猫【梦】《九重猫》\n\n<h3 align = "center">零重猫愿</h3>',
+              source: '—— 云猫【梦】《七彩猫》\n\n<h3 align = "center">午后猫语</h3>',
               target: '',
             },),
           ],
           replacements: [
             {
               sliceIndex: 0,
-              replacementText: '<h3 align = "center">Nonuple Cat</h3>',
+              replacementText: '<h3 align = "center">Rainbow Cat</h3>',
             },
             {
               sliceIndex: 1,
-              replacementText: '—— Yumao 【Dream】 Nonuple Cat\n\n<h3 align = "center">Zero-Layer Cat Prayer</h3>',
+              replacementText: '—— Yunmao 【Dream】 Rainbow Cat\n\n<h3 align = "center">Afternoon Cat Murmurs</h3>',
             },
           ],
         },);
         expect(unified.replacements.map(function textOf(row,): string {
           return row.replacementText;
         },),).toEqual([
-          '<h3 align = "center">Nonuple Cat</h3>',
-          '—— Yumao 【Dream】 Nonuple Cat\n\n<h3 align = "center">Zero-Layer Cat Prayer</h3>',
+          '<h3 align = "center">Rainbow Cat</h3>',
+          '—— Yunmao 【Dream】 Rainbow Cat\n\n<h3 align = "center">Afternoon Cat Murmurs</h3>',
         ],);
         expect(unified.restored,).toEqual([],);
       },
     },),
     it({
-      // CLASS ONE HUNDRED FORTY-SIX (XingZ6013, 2026-09-26). The second song
+      // CLASS ONE HUNDRED FORTY-SIX (2026-09-26). The second song
       // credit rendered its title in pinyin inside a slice whose summary
       // quotes a line, so the quote search found two spans, neither the
       // heading's, and stood aside; the credit line the original writes in
@@ -329,7 +328,7 @@ await describe({
             ),
             pair({
               sliceIndex: 3,
-              source: '<summary>「猫说晚安」</summary>\n\n<p style="text-align: end;">—— 雨猫【梦】《零重猫愿》</p>',
+              source: '<summary>「猫说晚安」</summary>\n\n<p style="text-align: end;">—— 云猫【梦】《午后猫语》</p>',
               target: '',
             },),
           ],
@@ -338,7 +337,7 @@ await describe({
             {
               sliceIndex: 3,
               replacementText: '<summary>“The cat said goodnight”</summary>\n\n'
-                + '<p style="text-align: end;">—— Yumao 【Dream】 “Ling Chong Mao Yuan”</p>',
+                + '<p style="text-align: end;">—— Yunmao 【Dream】 “Wu Hou Mao Yu”</p>',
             },
           ],
         },);
@@ -346,7 +345,7 @@ await describe({
           return row.replacementText;
         },)[2],).toBe(
           '<summary>“The cat said goodnight”</summary>\n\n'
-            + '<p style="text-align: end;">—— Yumao 【Dream】 “Zero-Layer Cat Prayer”</p>',
+            + '<p style="text-align: end;">—— Yunmao 【Dream】 “Afternoon Cat Murmurs”</p>',
         );
         expect(unified.findings.join('\n',),).not.toContain('title-reference-ambiguous',);
       },

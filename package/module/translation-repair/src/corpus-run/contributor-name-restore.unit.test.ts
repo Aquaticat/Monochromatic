@@ -1,10 +1,8 @@
 /**
- Guards class sixty-seven (XingZ616, 2026-09-19): a contributor's name in a
- section heading was translated word for word ("Painted Capital",
- "Impermanence") while the archive renders the same person's signature as
- the handle the human translator knew ("HiYku", "Ann"), and one lane even
- rewrote the archive's handle in the signature into a transliteration
- ("Huidu"). A name the original signs with is a person; the page renders it
+ Guards class sixty-seven (2026-09-19): a contributor's name in a section
+ heading was translated word for word while the archive renders the same
+ person's signature as the handle the human translator knew, and one lane
+ even rewrote the archive's handle in the signature into a transliteration. A name the original signs with is a person; the page renders it
  one way everywhere, the archive's way when the archive carries the
  signature, else the page's own signature rendering. Cat-themed invention
  throughout; no corpus content appears here.
@@ -96,12 +94,12 @@ const UNCARRIED = pair({
  */
 const SIGNED_TWICE = pair({
   sliceIndex: 2,
-  source: '它唱了。\n\n<p style="text-align: end;">—— 雨猫【妄想症】《九重现实》</p>\n\n它又唱了。\n\n<p style="text-align: end;">—— 雨猫【妄想症】《零重祈愿》</p>',
+  source: '它唱了。\n\n<p style="text-align: end;">—— 云猫【白日梦】《七彩梦境》</p>\n\n它又唱了。\n\n<p style="text-align: end;">—— 云猫【白日梦】《午后猫语》</p>',
   target: '',
 });
 
 await describe({
-  name: 'a contributor name is rendered one way across headings and signatures (class sixty-seven, XingZ616)',
+  name: 'a contributor name is rendered one way across headings and signatures (class sixty-seven)',
   children: [
     it({
       name: 'RESTORES the archive\'s handle into a heading translated word for word and into a respelt signature',
@@ -149,8 +147,8 @@ await describe({
     },),
     it({
       name: 'ROMANISES a handle the archive never rendered when the page leaves it in Han: one capitalised '
-        + 'word of pinyin in the heading and the signature (class eighty-three, XingZ622, 2026-09-22: 锦心 '
-        + 'shipped as 锦心 in the Part Ten heading and signature where XingZ619 wrote Jinxin and XingZ620 Jin Xin; '
+        + 'word of pinyin in the heading and the signature (class eighty-three, 2026-09-22: one handle '
+        + 'shipped in Han in a heading and signature where earlier runs wrote two different pinyin spellings; '
         + 'owner 2026-09-22: pinyin, with the literal translation in parentheses)',
       fn: async () => {
         const restored = restoreContributorNames({
@@ -185,18 +183,18 @@ await describe({
     },),
     it({
       name: 'RENDERS a signer no heading names one way across the page: the second signature takes the first '
-        + 'signature\'s rendering, and a signature left in Han takes the pinyin (class eighty-three, XingZ622: '
-        + '雨狸 shipped as "Yu Li" on one song attribution and 雨狸 on the next)',
+        + 'signature\'s rendering, and a signature left in Han takes the pinyin (class eighty-three: one '
+        + 'signer shipped in pinyin on one song attribution and in Han on the next)',
       fn: async () => {
         const restored = restoreContributorNames({
           slices: [SIGNED_TWICE,],
           replacements: [{
             sliceIndex: 2,
-            replacementText: 'It sang.\n\n<p style="text-align: end;">—— Yu Mao【Paranoia】“Nonuple Reality”</p>\n\nIt sang again.\n\n<p style="text-align: end;">—— 雨猫【Paranoia】《Ling Chong Qi Yuan》</p>',
+            replacementText: 'It sang.\n\n<p style="text-align: end;">—— Yun Mao【Daydream】“Rainbow Dreamland”</p>\n\nIt sang again.\n\n<p style="text-align: end;">—— 云猫【Daydream】《Wu Hou Mao Yu》</p>',
           },],
         },);
         expect(restored.replacements[0]?.replacementText,)
-          .toBe('It sang.\n\n<p style="text-align: end;">—— Yu Mao【Paranoia】“Nonuple Reality”</p>\n\nIt sang again.\n\n<p style="text-align: end;">—— Yu Mao【Paranoia】《Ling Chong Qi Yuan》</p>',);
+          .toBe('It sang.\n\n<p style="text-align: end;">—— Yun Mao【Daydream】“Rainbow Dreamland”</p>\n\nIt sang again.\n\n<p style="text-align: end;">—— Yun Mao【Daydream】《Wu Hou Mao Yu》</p>',);
         expect(restored.findings.length,).toBe(1,);
       },
     },),

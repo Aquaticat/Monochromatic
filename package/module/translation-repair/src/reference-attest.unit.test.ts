@@ -5,7 +5,7 @@
  carry, the overlap test, the claim screen that rejects an addition claim on
  an attested detail before the panel, and the stage over a scripted bench.
 
- Fixtures are cat-themed invention. No corpus content appears here.
+ Cat-themed invention throughout; no corpus content appears here.
 
  @module
  */
@@ -58,35 +58,35 @@ const ROSTER = [
 ] as const;
 
 /**
- Invented original: says the cat has a sister, nothing about her coat.
+ Invented original: says the cat has a younger brother, nothing about his habits.
  */
-const SOURCE_TEXT = '喵喵来自小镇。\n她有一个姐姐。\n她很聪明。\n';
+const SOURCE_TEXT = '喵喵来自小镇。\n她有一个弟弟。\n她很聪明。\n';
 
 /**
- Invented archive: adds that the sister is also a tabby, which the cited
+ Invented archive: adds that the brother also sits by the stove, which the cited
  page says, and adds that she wears a bell, which nothing says.
  */
-const ARCHIVE_TEXT = 'Mittens is from a small town.\nShe has an older sister who is also a tabby.\nShe wears a bell.\nShe is very clever.\n';
+const ARCHIVE_TEXT = 'Mittens is from a small town.\nShe has a younger brother who also sits by the stove.\nShe wears a bell.\nShe is very clever.\n';
 
 /**
  Reference lines as `citedReferenceBlock` renders them.
  */
-const REFERENCE_CONTEXT = '- reference 1 https://cats.example/posts/in-memory-of-mittens ("In memory of Mittens"): Mittens had an older sister who was also a tabby. Both loved the sun.\n- reference 2 https://cats.example/about: could not be fetched (error)';
+const REFERENCE_CONTEXT = '- reference 1 https://cats.example/posts/in-memory-of-mittens ("In memory of Mittens"): Mittens had a younger brother who also sat by the stove. Both loved the sun.\n- reference 2 https://cats.example/about: could not be fetched (error)';
 
 /**
  One well-formed attested item.
  */
-const SISTER_ITEM = {
-  archiveQuote: 'She has an older sister who is also a tabby.',
+const BROTHER_ITEM = {
+  archiveQuote: 'She has a younger brother who also sits by the stove.',
   reference: 1,
-  referenceQuote: 'Mittens had an older sister who was also a tabby.',
+  referenceQuote: 'Mittens had a younger brother who also sat by the stove.',
 } as const;
 
 /**
- The sister detail as the merge produces it.
+ The brother detail as the merge produces it.
  */
-const SISTER_DETAIL: AttestedDetail = {
-  ...SISTER_ITEM,
+const BROTHER_DETAIL: AttestedDetail = {
+  ...BROTHER_ITEM,
   voices: 2,
   heard: 4,
 };
@@ -102,7 +102,7 @@ const SISTER_DETAIL: AttestedDetail = {
 
  @example
  ```ts
- const claim = targetClaim({ category: 'accuracy/addition', quotedText: 'also a tabby', },);
+ const claim = targetClaim({ category: 'accuracy/addition', quotedText: 'also sits by the stove', },);
  ```
  */
 function targetClaim(
@@ -195,7 +195,7 @@ await describe({
         expect(messages[0]?.content,).toContain('character for character',);
         expect(messages[1]?.content,).toContain('ARCHIVE RENDERING',);
         expect(messages[1]?.content,).toContain(REFERENCE_CONTEXT,);
-        expect(isReferenceAttestWire({ attested: [SISTER_ITEM,], },),).toBe(true,);
+        expect(isReferenceAttestWire({ attested: [BROTHER_ITEM,], },),).toBe(true,);
         expect(isReferenceAttestWire({ attested: [], },),).toBe(true,);
         expect(isReferenceAttestWire({ attested: [{ archiveQuote: 'a', reference: '1', referenceQuote: 'b', },], },),).toBe(false,);
         expect(isReferenceAttestWire({ attested: 'none', },),).toBe(false,);
@@ -205,22 +205,22 @@ await describe({
     it({
       name: 'VERIFIES both quotes word for word, whitespace ignored, and discards an item whose quote is not found',
       fn: async () => {
-        expect(quoteIsIn({ quote: 'older  sister who', text: 'an older sister who is', },),).toBe(true,);
+        expect(quoteIsIn({ quote: 'younger  brother who', text: 'a younger brother who also', },),).toBe(true,);
         expect(quoteIsIn({ quote: '', text: 'anything', },),).toBe(false,);
-        expect(compacted({ text: '喵喵 的姐姐也是 tabby。', },),).toBe('喵喵的姐姐也是tabby。',);
-        // Mio22: a voice spaced the reference's Chinese around its Latin tokens.
-        expect(quoteIsIn({ quote: '喵喵 的姐姐也是 tabby 。', text: '……喵喵的姐姐也是tabby。……', },),).toBe(true,);
+        expect(compacted({ text: '喵喵 的弟弟也睡 box。', },),).toBe('喵喵的弟弟也睡box。',);
+        // One run: a voice spaced the reference's Chinese around its Latin tokens.
+        expect(quoteIsIn({ quote: '喵喵 的弟弟也睡 box 。', text: '……喵喵的弟弟也睡box。……', },),).toBe(true,);
         /**
          Three items: one true, one paraphrased, one pointing at the unfetched page.
          */
         const verified = verifiedAttestations({
           modelId: ROSTER[0],
           items: [
-            SISTER_ITEM,
+            BROTHER_ITEM,
             {
-              archiveQuote: 'She has an elder sister who is a tabby too.',
+              archiveQuote: 'She has a little brother who sits by the stove too.',
               reference: 1,
-              referenceQuote: SISTER_ITEM.referenceQuote,
+              referenceQuote: BROTHER_ITEM.referenceQuote,
             },
             {
               archiveQuote: 'She wears a bell.',
@@ -232,27 +232,27 @@ await describe({
           referenceContext: REFERENCE_CONTEXT,
         },);
         expect(verified,).toHaveLength(1,);
-        expect(verified[0]?.item.archiveQuote,).toBe(SISTER_ITEM.archiveQuote,);
+        expect(verified[0]?.item.archiveQuote,).toBe(BROTHER_ITEM.archiveQuote,);
       },
     },),
     it({
       name: 'MERGES overlapping quotes from distinct voices into one detail and drops one short of the quorum',
       fn: async () => {
         /**
-         Two voices on the sister, quoting different spans of the same sentence,
+         Two voices on the brother, quoting different spans of the same sentence,
          one voice alone on the bell.
          */
         const details = mergedAttestations({
           verified: [
             {
               modelId: ROSTER[0],
-              item: SISTER_ITEM,
+              item: BROTHER_ITEM,
             },
             {
               modelId: ROSTER[1],
               item: {
-                ...SISTER_ITEM,
-                archiveQuote: 'older sister who is also a tabby',
+                ...BROTHER_ITEM,
+                archiveQuote: 'younger brother who also sits by the stove',
               },
             },
             {
@@ -269,7 +269,7 @@ await describe({
           needed: 2,
         },);
         expect(details,).toHaveLength(1,);
-        expect(details[0]?.archiveQuote,).toBe(SISTER_ITEM.archiveQuote,);
+        expect(details[0]?.archiveQuote,).toBe(BROTHER_ITEM.archiveQuote,);
         expect(details[0]?.voices,).toBe(2,);
         expect(details[0]?.heard,).toBe(4,);
         /**
@@ -279,11 +279,11 @@ await describe({
           verified: [
             {
               modelId: ROSTER[0],
-              item: SISTER_ITEM,
+              item: BROTHER_ITEM,
             },
             {
               modelId: ROSTER[0],
-              item: SISTER_ITEM,
+              item: BROTHER_ITEM,
             },
           ],
           archiveText: ARCHIVE_TEXT,
@@ -299,9 +299,9 @@ await describe({
         /**
          Lines for the sheets.
          */
-        const lines = attestedDetailLines({ details: [SISTER_DETAIL,], },);
+        const lines = attestedDetailLines({ details: [BROTHER_DETAIL,], },);
         expect(lines,).toHaveLength(1,);
-        expect(lines[0],).toContain('- attested: the ARCHIVE\'s "She has an older sister who is also a tabby." is stated by reference 1',);
+        expect(lines[0],).toContain('- attested: the ARCHIVE\'s "She has a younger brother who also sits by the stove." is stated by reference 1',);
         expect(lines[0],).toContain('2 of 4 voices',);
         expect(CITED_REFERENCE_RULE,).toContain('attested',);
         expect(CITED_REFERENCE_CANDIDATE_RULE,).toContain('attested',);
@@ -311,24 +311,24 @@ await describe({
       name: 'FINDS the detail a claim quote overlaps, by containment or by intersecting spans, and none otherwise',
       fn: async () => {
         expect(attestedDetailsOverlapping({
-          quote: 'who is also a tabby',
+          quote: 'who also sits by the stove',
           text: ARCHIVE_TEXT,
-          details: [SISTER_DETAIL,],
+          details: [BROTHER_DETAIL,],
         },),).toHaveLength(1,);
         expect(attestedDetailsOverlapping({
-          quote: 'older sister who is also a tabby.\nShe wears',
+          quote: 'younger brother who also sits by the stove.\nShe wears',
           text: ARCHIVE_TEXT,
-          details: [SISTER_DETAIL,],
+          details: [BROTHER_DETAIL,],
         },),).toHaveLength(1,);
         expect(attestedDetailsOverlapping({
           quote: 'She wears a bell.',
           text: ARCHIVE_TEXT,
-          details: [SISTER_DETAIL,],
+          details: [BROTHER_DETAIL,],
         },),).toHaveLength(0,);
         expect(attestedDetailsOverlapping({
           quote: '',
           text: ARCHIVE_TEXT,
-          details: [SISTER_DETAIL,],
+          details: [BROTHER_DETAIL,],
         },),).toHaveLength(0,);
       },
     },),
@@ -336,14 +336,14 @@ await describe({
       name: 'REJECTS an addition claim on an attested detail before the panel and leaves every other claim alone',
       fn: async () => {
         /**
-         Three claims: the attested sister, the unattested bell, a
-         mistranslation on the sister.
+         Three claims: the attested brother, the unattested bell, a
+         mistranslation on the brother.
          */
         const screened = screenAttestedAdditions({
           claims: [
             targetClaim({
               category: 'accuracy/addition',
-              quotedText: 'who is also a tabby',
+              quotedText: 'who also sits by the stove',
             },),
             targetClaim({
               category: 'accuracy/addition',
@@ -351,10 +351,10 @@ await describe({
             },),
             targetClaim({
               category: 'accuracy/mistranslation',
-              quotedText: 'older sister',
+              quotedText: 'younger brother',
             },),
           ],
-          attested: [SISTER_DETAIL,],
+          attested: [BROTHER_DETAIL,],
           targetText: ARCHIVE_TEXT,
         },);
         expect(screened.claims,).toHaveLength(2,);
@@ -363,7 +363,7 @@ await describe({
             return claim.spans[0]?.quotedText ?? '';
           },),).toEqual([
           'She wears a bell.',
-          'older sister',
+          'younger brother',
         ],);
         expect(screened.issues,).toHaveLength(1,);
         expect(screened.issues[0]?.status,).toBe('rejected',);
@@ -377,7 +377,7 @@ await describe({
         const untouched = screenAttestedAdditions({
           claims: [targetClaim({
             category: 'accuracy/addition',
-            quotedText: 'who is also a tabby',
+            quotedText: 'who also sits by the stove',
           },),],
           attested: [],
           targetText: ARCHIVE_TEXT,
@@ -387,7 +387,7 @@ await describe({
       },
     },),
     it({
-      name: 'ATTESTS over a scripted bench: two of four voices verify the sister, one voice alone invents a bell, the lines say so',
+      name: 'ATTESTS over a scripted bench: two of four voices verify the brother, one voice alone invents a bell, the lines say so',
       fn: async () => {
         /**
          Prompts seen.
@@ -400,11 +400,11 @@ await describe({
           client: scriptedClient({
             prompts,
             replies: {
-              [ROSTER[0]]: { attested: [SISTER_ITEM,], },
+              [ROSTER[0]]: { attested: [BROTHER_ITEM,], },
               [ROSTER[1]]: { attested: [
                 {
-                  ...SISTER_ITEM,
-                  archiveQuote: 'an older sister who is also a tabby',
+                  ...BROTHER_ITEM,
+                  archiveQuote: 'a younger brother who also sits by the stove',
                 },
                 {
                   archiveQuote: 'She wears a bell.',
@@ -430,7 +430,7 @@ await describe({
         expect(prompts.length >= 2,).toBe(true,);
         expect(prompts[0],).toContain('ARCHIVE RENDERING',);
         expect(attestation.details,).toHaveLength(1,);
-        expect(attestation.details[0]?.archiveQuote,).toBe(SISTER_ITEM.archiveQuote,);
+        expect(attestation.details[0]?.archiveQuote,).toBe(BROTHER_ITEM.archiveQuote,);
         expect(attestation.details[0]?.voices,).toBe(2,);
         expect(attestation.lines[0],).toContain('is stated by reference 1',);
         expect(attestation.findings.join('\n',),).toContain('discarded 1 of 4 items',);

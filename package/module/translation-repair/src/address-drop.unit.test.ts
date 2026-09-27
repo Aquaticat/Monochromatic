@@ -1,5 +1,5 @@
 /**
- Guards class ninety-seven (yingying5, 2026-09-23): a candidate that renders
+ Guards class ninety-seven (2026-09-23): a candidate that renders
  a passage the original addresses in the second person (你, 您) with no
  second-person pronoun and a third-person one instead is refused before any
  judge reads it, since a pronoun the original writes is rendered as written
@@ -21,17 +21,17 @@ import { validateTranslatedSlice, } from '../dist/final/node/index.mjs';
 /**
  Original wish addressing the cat directly.
  */
-const ADDRESSED = '愿在你的下一个世界，你还有同样的开朗去追你想追的蝴蝶吧！';
+const ADDRESSED = '明天早上，你还要陪我去院子里追那只黄蝴蝶哦！';
 
 /**
  Rendering that keeps the address.
  */
-const KEPT = 'May you still have the same cheer to chase the butterflies you want to chase in your next world!';
+const KEPT = 'Tomorrow morning, you still have to come chase that yellow butterfly in the yard with me!';
 
 /**
  Rendering that turned the address into narration.
  */
-const NARRATED = 'May she still have the same cheer to chase the butterflies she wanted to chase in her next world!';
+const NARRATED = 'Tomorrow morning, she still has to come chase that yellow butterfly in the yard with me!';
 
 await describe({
   name: 'a second-person address the original passage carries (class ninety-seven)',
@@ -92,8 +92,8 @@ await describe({
       name: 'STILL REFUSES 你看 as a verb with its object or complement (被你看到, 你看到了) where the address drops',
       fn: async () => {
         expect(validateTranslatedSlice({
-          sourceText: '那只猫的伤口，也被你看到了呢。',
-          candidateText: 'Even the cat’s wound was seen by her.',
+          sourceText: '那只猫偷吃鱼干的样子，全被你看到了。',
+          candidateText: 'Even the cat sneaking dried fish was seen by her.',
         },).kind,).toBe('invalid',);
         expect(validateTranslatedSlice({
           sourceText: '你看到她睡着了吗？',

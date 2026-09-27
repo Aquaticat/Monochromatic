@@ -1,6 +1,8 @@
 /**
  Tests fidelity-first naturalness gate policy and settlement.
  
+ Cat-themed invention throughout; no corpus content appears here.
+ 
  @module
  */
 
@@ -91,10 +93,10 @@ await describe({
       fn: async () => {
         const system = buildConsolidationPolishGateMessages({
           subject: {
-            sourceText: '猫猫积极地面对生活。',
-            archiveText: 'The cat approached life positively.',
-            baseText: 'The cat faced life proactively.',
-            polishedText: 'The cat maintained a positive outlook on life.',
+            sourceText: '猫猫乐观地看待每一场雨。',
+            archiveText: 'The cat viewed each rainstorm optimistically.',
+            baseText: 'The cat faced each rainstorm proactively.',
+            polishedText: 'The cat kept a cheerful outlook through every rainstorm.',
             lineStructured: false,
             mode: { kind: 'comparative', },
           },
@@ -108,7 +110,7 @@ await describe({
     it({
       name: 'TELLS THE GATE THE HOUSE RULES in both modes, so a polish moving the life of a person who has '
         + 'died into the past tense is the rule applied and not an unsupported change (class one hundred '
-        + 'four, CuspariaKLSY9, 2026-09-23: the gate refused the past-tense polish 4 of 4 as "an unsupported '
+        + 'four, one entry, 2026-09-23: the gate refused the past-tense polish 4 of 4 as "an unsupported '
         + 'change" about "a living person")',
       fn: async () => {
         /**
@@ -155,18 +157,18 @@ await describe({
 
     it({
       name: 'TELLS THE GATE A PROSE SLICE\'S LINE BREAKS ARE THE PAGE\'S WRAP, and keeps line structure only '
-        + 'where the line rule governs (class one hundred fifty-two, yingying12, 2026-09-26: the polish '
-        + 'replacing the calque "It is a pity that all this stopped abruptly" tied 2 to 2, both base ballots '
+        + 'where the line rule governs (class one hundred fifty-two, one entry, 2026-09-26: the polish '
+        + 'replacing a calque tied 2 to 2, both base ballots '
         + 'citing its "line structure" on a slice both candidates were wrapped by the same rule)',
       fn: async () => {
         /**
          Subject shared by both line policies.
          */
         const subject = {
-          sourceText: '可惜这一切戛然而止，猫猫再也没有回来。',
-          archiveText: 'It is a pity that all this stopped abruptly; the cat never came back.',
-          baseText: 'It is a pity that all this stopped abruptly;\nthe cat never came back.',
-          polishedText: 'Sadly, it all ended there:\nthe cat never came home.',
+          sourceText: '可惜那场捉迷藏戛然而止，猫猫躲进了衣柜。',
+          archiveText: 'What a shame that the hide-and-seek game stopped abruptly; the cat hid in the wardrobe.',
+          baseText: 'What a shame that the hide-and-seek game stopped abruptly;\nthe cat hid in the wardrobe.',
+          polishedText: 'Sadly, the game ended there:\nthe cat hid in the wardrobe.',
           mode: { kind: 'comparative', } as const,
         };
         /**
@@ -196,7 +198,7 @@ await describe({
 
     it({
       name: 'SHOWS A PROSE SLICE\'S PARAGRAPHS ON ONE LINE EACH, as they render, keeping hard breaks, blockquotes '
-        + 'and a line-structured slice as written (class one hundred fifty-three, XingZ6014, 2026-09-26: the '
+        + 'and a line-structured slice as written (class one hundred fifty-three, one entry, 2026-09-26: the '
         + 'base stood as the archive\'s one-line paragraph beside a wrapped polish on slices 36, 61 and 64, and '
         + 'three ballots weighed the polish\'s "added line breaks")',
       fn: async () => {

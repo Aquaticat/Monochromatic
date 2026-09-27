@@ -7,7 +7,8 @@
  behaviour on this vocabulary: a finding written as a phrase never costs a
  voice, and an annotated name still names its candidate.
  
- Fixtures are cat-themed invention mirroring corpus structure only.
+ Fixtures mirror corpus structure only. Cat-themed invention throughout; no
+ corpus content appears here.
  
  @module
  */
@@ -199,7 +200,7 @@ await describe({
     },),
     it({
       name: 'TELLS THE JUDGE WHEN THE STANDING CANNOT SHIP, naming the deterministic refusal (class '
-        + 'fifty-six, XingZ606 slice 33, 2026-09-18): a gate that kept an untranslated pronoun over a valid '
+        + 'fifty-six, one entry\'s slice 33, 2026-09-18): a gate that kept an untranslated pronoun over a valid '
         + 'consolidation was never told the text it kept would stop the entry; and says nothing of it when '
         + 'the standing is eligible',
       fn: async () => {
@@ -220,7 +221,7 @@ await describe({
     },),
     it({
       name: 'TELLS THE JUDGE THE CONSOLIDATION SHIPS over a standing that cannot ship (class one hundred '
-        + 'eighty-five, TianqiChen66619 slice 9, 2026-09-27): a gate preferring such a standing ships the '
+        + 'eighty-five, one entry\'s slice 9, 2026-09-27): a gate preferring such a standing ships the '
         + 'slate\'s choice with the preference recorded, so a sheet saying the choice stops the entry misleads '
         + 'the judge about what the ballot does',
       fn: async () => {
@@ -421,10 +422,10 @@ await describe({
         /** What the judge is shown over a consolidation that lost 自切. */
         const shown = exchangeFor({
           subject: {
-            sourceText: '在她自切后，家人的态度好转很多。',
-            incumbentText: 'After she attempted self-surgery, her family became more accepting.',
-            consolidatedText: 'After she began cutting herself, her family grew more accepting.',
-            standingText: 'After her self-surgery, her family became more accepting.',
+            sourceText: '那只猫讲起自切的经历时，朋友们都安静地听着。',
+            incumbentText: 'When the cat told of her self-surgery, her friends listened quietly.',
+            consolidatedText: 'When the cat told of her operation, her friends sat quietly.',
+            standingText: 'When she told of her self-surgery, her friends listened quietly.',
           },
         },);
         expect(shown,).toContain('COMMUNITY RENDERINGS, evidence to weigh, not a verdict:',);
@@ -437,7 +438,7 @@ await describe({
 },);
 
 await describe({
-  name: 'consolidate gate wire dispute note (class one hundred eight, CuspariaKLSY11 slice 3, 2026-09-24)',
+  name: 'consolidate gate wire dispute note (class one hundred eight, one entry\'s slice 3, 2026-09-24)',
   children: [
     it({
       name: 'SHOWS the dispute note after the candidates on a disputed slice, so keeping the stand-in\'s softened addition is not the safe choice',

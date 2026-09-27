@@ -6,7 +6,8 @@
  looks like an ordinary long pass while it happens, so every shape that could
  parse to nothing throws instead.
  
- Entry ids are real corpus ids, since the flag's whole job is to name them.
+ Entry ids are invented, since the flag reads any id the same way.
+ Cat-themed invention throughout; no corpus content appears here.
  
  @module
  */
@@ -31,7 +32,7 @@ import {
  
  @example
  ```ts
- const argv = argvWith({ rest: ['--only', 'Toka_ls',], },);
+ const argv = argvWith({ rest: ['--only', 'Tabby_01',], },);
  ```
  */
 function argvWith({ rest, }: { readonly rest: readonly string[]; },): readonly string[] {
@@ -56,13 +57,13 @@ await describe({
     },),
 
     it({
-      name: 'reads one id, which is the case this exists for: Toka_ls sat at '
+      name: 'reads one id, which is the case this exists for: one entry sat at '
         + 'position 22 of 71 pending entries, about fourteen hours away, for a '
         + 'question one entry answers',
       fn: async () => {
         expect([...readOnlyIds({
-          argv: argvWith({ rest: ['--only', 'Toka_ls',], },),
-        },),],).toEqual(['Toka_ls',],);
+          argv: argvWith({ rest: ['--only', 'Tabby_01',], },),
+        },),],).toEqual(['Tabby_01',],);
       },
     },),
 
@@ -72,8 +73,8 @@ await describe({
         + 'it names',
       fn: async () => {
         expect([...readOnlyIds({
-          argv: argvWith({ rest: ['--only', 'Toka_ls, XingZ60 ,Acheron',], },),
-        },),].toSorted(),).toEqual(['Acheron', 'Toka_ls', 'XingZ60',],);
+          argv: argvWith({ rest: ['--only', 'Tabby_01, Ginger42 ,Calico',], },),
+        },),].toSorted(),).toEqual(['Calico', 'Ginger42', 'Tabby_01',],);
       },
     },),
 
@@ -82,8 +83,8 @@ await describe({
         + 'after its own and the position is not ours to fix',
       fn: async () => {
         expect([...readOnlyIds({
-          argv: argvWith({ rest: ['--plan', '--only', 'Toka_ls',], },),
-        },),],).toEqual(['Toka_ls',],);
+          argv: argvWith({ rest: ['--plan', '--only', 'Tabby_01',], },),
+        },),],).toEqual(['Tabby_01',],);
       },
     },),
 

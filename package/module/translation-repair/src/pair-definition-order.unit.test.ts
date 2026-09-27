@@ -3,6 +3,8 @@
  definition blocks named as order-free, a crossing definition pair kept out
  of the slicing and read by label.
  
+ Cat-themed invention throughout; no corpus content appears here.
+ 
  @module
  */
 
@@ -23,10 +25,10 @@ import {
 //region Fixtures
 
 /**
- Original: the sister is the first note, the substitute parent the second.
+ Original: the kitten next door is the first note, the old cat who took her in the second.
  */
 const SOURCE = parseDocument({
-  text: '## 生平\n\n洲洲[^2]收留了她，真理[^1]帮助她。\n\n[^1]: 比她小，像姐姐一样。\n\n[^2]: 干妈？像母女一样。\n',
+  text: '## 生平\n\n团团[^2]收留了她，豆豆[^1]陪伴她。\n\n[^1]: 隔壁的小猫，总爱跟着她。\n\n[^2]: 收留她的老猫，像妈妈一样。\n',
 },);
 
 /**
@@ -34,8 +36,8 @@ const SOURCE = parseDocument({
  original's when paired by content.
  */
 const TARGET = parseDocument({
-  text: '## Life\n\nZhouzhou[^1] took her in.\n\nZhenli[^2] helped her.\n\n'
-    + '[^1]: A substitute parent? Like mother and daughter.\n\n[^2]: Younger than her, like a sister.\n',
+  text: '## Life\n\nTuantuan[^1] took her in.\n\nDoudou[^2] kept her company.\n\n'
+    + '[^1]: The old cat who took her in, like a mother.\n\n[^2]: The kitten next door, always following her.\n',
 },);
 
 //endregion Fixtures
@@ -86,7 +88,7 @@ await describe({
       name: 'keeps crossing definition pairs out of the slicing and reads them by label for the relabel',
       fn: async () => {
         /**
-         The pairing six of eight voices gave on the third yuki launch: body
+         The pairing six of eight voices gave on one entry's third launch: body
          paired in order, definitions paired by content, crossing.
          */
         const split = splitDefinitionPairs({

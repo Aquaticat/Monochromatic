@@ -13,6 +13,8 @@
  answers with a well-formed reply nobody notices is misaddressed. Each case
  asserts how many calls each route served, which is the router's own positive
  control.
+
+ Cat-themed invention throughout; no corpus content appears here.
  
  Fixtures are cat-themed invention. No corpus content appears here.
  
@@ -111,19 +113,19 @@ const FRESH = 'The cat fell asleep beside the window. She woke at four in the af
 /**
  Idiomatic final rewrite used to prove standing-text polish reachability.
  */
-const POLISHABLE_STANDING = 'She faced life proactively and spent a good time with everyone, while doing her best to stay hopeful and connected to the people around her.';
+const POLISHABLE_STANDING = 'She viewed rainy days proactively and spent many a cozy afternoon with the other cats, while doing her best to stay curious and close to the cats around her.';
 
 /**
  Faithful idiomatic rewrite of polishable standing text, as the refiner emits it.
  */
-const POLISHED_STANDING = 'She maintained a positive outlook on life and spent some good times with everyone, doing her best to stay hopeful and connected to those around her.';
+const POLISHED_STANDING = 'She kept a cheerful outlook on rainy days and spent many cozy afternoons with the other cats, doing her best to stay curious and close to those around her.';
 
 /**
  That rewrite as it ships: wrapped at its semantic boundary before the polish
- gate judged it (keyword233, 2026-09-03).
+ gate judged it (one entry, 2026-09-03).
  */
-const WRAPPED_POLISHED_STANDING = 'She maintained a positive outlook on life and spent some good times with everyone,\n'
-  + 'doing her best to stay hopeful and connected to those around her.';
+const WRAPPED_POLISHED_STANDING = 'She kept a cheerful outlook on rainy days and spent many cozy afternoons with the other cats,\n'
+  + 'doing her best to stay curious and close to those around her.';
 
 /**
  Builds one voice as the producing half hands them over.
@@ -628,7 +630,7 @@ await describe({
     it({
       name: 'BUYS NOTHING AT ALL FOR A SLATE THE GUARD REJECTED ENTIRELY, and records it as '
         + 'incumbent-only rather than as a decision. This is the case the band pair hit twice: '
-        + 'Zha_Ke#1 finished its repair round with five candidates and zero valid ones, in both runs, '
+        + 'one entry finished its repair round with five candidates and zero valid ones, in both runs, '
         + 'and a consolidation shipped at both',
       fn: async () => {
         const { settled, served, } = await settleWith({
@@ -796,7 +798,7 @@ await describe({
           client: standingPolishClient({ servedSchemas, }),
           roster: ROSTER,
           subject: {
-            sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+            sourceText: '她总是乐观地看待下雨天，和猫友们度过了许多惬意的午后。',
             incumbentText: POLISHABLE_STANDING,
           },
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
@@ -837,7 +839,7 @@ await describe({
           client: standingPolishClient({ servedSchemas, }),
           roster: ROSTER,
           subject: {
-            sourceText: '她曾积极地面对生活，和大家度过了一段不错的时光。',
+            sourceText: '她总是乐观地看待下雨天，和猫友们度过了许多惬意的午后。',
             incumbentText: POLISHABLE_STANDING,
           },
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
@@ -932,7 +934,7 @@ await describe({
 
     it({
       name: 'WITHHOLDS AN INELIGIBLE STANDING FROM THE SLATE AND SHIPS THE PROPOSAL BOTH ROUNDS BACKED, '
-        + 'recording the withholding: the owner\'s decision of 2026-09-04 after luxuanwen3 shipped an '
+        + 'recording the withholding: the owner\'s decision of 2026-09-04 after one entry shipped an '
         + 'archive front matter the gate had refused and lost the entry at assembly',
       fn: async () => {
         const { settled, served, } = await settleWith({
@@ -959,7 +961,7 @@ await describe({
 
     it({
       name: 'SHIPS THE PROPOSAL THE SLATE CHOSE when the standing is ineligible and the gate prefers it '
-        + 'anyway (class one hundred eighty-five, TianqiChen66619 slice 9, 2026-09-27): a standing the '
+        + 'anyway (class one hundred eighty-five, one entry\'s slice 9, 2026-09-27): a standing the '
         + 'deterministic rule refused cannot ship whatever the gate thinks of it, and the owner\'s '
         + '2026-09-04 rule prefers the best valid proposal and fails the slice only where there is none',
       fn: async () => {
@@ -997,7 +999,7 @@ await describe({
 
     it({
       name: 'SHIPS THE PROPOSAL THE SLATE CHOSE when the standing is ineligible and the gate settles on '
-        + 'neither (class fifty-four, XingZ604 slice 13, 2026-09-18): the gate\'s indecision is not a '
+        + 'neither (class fifty-four, one entry\'s slice 13, 2026-09-18): the gate\'s indecision is not a '
         + 'refusal, and with nothing eligible to keep the owner\'s 2026-09-04 rule prefers the best valid '
         + 'proposal; an eligible standing still keeps the slice on the same indecision',
       fn: async () => {
@@ -1033,7 +1035,7 @@ await describe({
     },),
     it({
       name: 'SHIPS THE PROPOSAL THE SLATE CHOSE when the gate settles on neither over an eligible standing '
-        + 'every contest ballot called flawed (class one hundred seventy-seven, TianqiChen66610 slice 13, '
+        + 'every contest ballot called flawed (class one hundred seventy-seven, one entry\'s slice 13, '
         + 'owner answer 2026-09-26: "Slate\'s choice"); a gate that refuses the proposal still keeps the standing',
       fn: async () => {
         const { settled, } = await settleWith({
@@ -1062,7 +1064,7 @@ await describe({
       },
     },),
     it({
-      name: 'JUDGES THE LANE TEXTS OVER AN EMPTY STANDING (class eighty-seven, XingZ623 slice 89, '
+      name: 'JUDGES THE LANE TEXTS OVER AN EMPTY STANDING (class eighty-seven, one entry\'s slice 89, '
         + '2026-09-22): the contest declined both lanes at a passage the archive never carried, so nothing '
         + 'stood, and the no-standing-text exit ran ahead of the class forty offer; the translate lane\'s '
         + 'text passed the rule and was never put to a judge, the slice shipped nothing and the entry '
@@ -1114,8 +1116,8 @@ await describe({
     },),
 
     it({
-      name: 'CHALLENGES A TIED SLATE ONCE when the standing is ineligible (class fifty-five, XingZ605 '
-        + 'slice 13, 2026-09-18): the translate lane\'s run-off challenge of class fifty-three reaches the '
+      name: 'CHALLENGES A TIED SLATE ONCE when the standing is ineligible (class fifty-five, one '
+        + 'entry\'s slice 13, 2026-09-18): the translate lane\'s run-off challenge of class fifty-three reaches the '
         + 'consolidation, whose tie over a withheld standing otherwise stops the entry; an eligible '
         + 'standing keeps the slice on the same tie without a second round',
       fn: async () => {
@@ -1176,7 +1178,7 @@ await describe({
     },),
     it({
       name: 'RUNS THE RUN-OFF OVER AN ELIGIBLE STANDING when every contest ballot called the archive '
-        + 'flawed (class one hundred six, zheermao8 slice 9, 2026-09-24): the tie is challenged and a '
+        + 'flawed (class one hundred six, one entry\'s slice 9, 2026-09-24): the tie is challenged and a '
         + 'round that decides ships its choice; a run-off that stays undecided ships the standing '
         + 'rather than stopping the slice',
       fn: async () => {
@@ -1285,8 +1287,8 @@ await describe({
       },
     },),
     it({
-      name: 'SHOWS THE GATE WHY THE STANDING CANNOT SHIP when it is ineligible (class fifty-six, XingZ606 '
-        + 'slice 33, 2026-09-18), and shows nothing of the kind over an eligible standing',
+      name: 'SHOWS THE GATE WHY THE STANDING CANNOT SHIP when it is ineligible (class fifty-six, one '
+        + 'entry\'s slice 33, 2026-09-18), and shows nothing of the kind over an eligible standing',
       fn: async () => {
         /**
          Why the deterministic rule refused the standing, as the run log words it.

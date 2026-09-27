@@ -1,10 +1,9 @@
 /**
- Guards class one hundred thirty-four (hulicaijia19, 2026-09-25) on the
- sheets: the house policy's Canadian English bullet names the date order and
- the licorice spelling, and 药代 (a person who sells medication on others'
- behalf) is seeded, since the page read "In her role as a pharmaceutical
- sales representative", the general sense of the abbreviation, where the
- story means she sold medication.
+ Guards class one hundred thirty-four (2026-09-25) on the sheets: the house
+ policy's Canadian English bullet names the date order and the licorice
+ spelling, and 药代 (a person who sells medication on others' behalf) is
+ seeded, since one page read it as a pharmaceutical sales representative, the
+ general sense of the abbreviation, where the story means she sold medication.
 
  Cat-themed invention throughout; no corpus content appears here.
 
@@ -29,9 +28,9 @@ import {
 const DATE_RULE = 'Dates are written month first (April 29, May 4, March 13, 2024), never day first (29th April, 4 May).';
 
 /**
- Original in which the cat sells medication for others.
+ Original in which the cat's years selling medication take her to many pharmacies.
  */
-const MEDICATION_SELLER = '猫凭借着她作为药代的身份，常常买药。';
+const MEDICATION_SELLER = '猫做药代的那几年，每天都要跑好几家药店。';
 
 await describe({
   name: 'dates, licorice and 药代 on the sheets (class one hundred thirty-four)',
@@ -62,11 +61,11 @@ await describe({
         expect([
           validateTranslatedSlice({
             sourceText: MEDICATION_SELLER,
-            candidateText: 'In her role as a pharmaceutical sales representative, the cat often bought pills.',
+            candidateText: 'In her years as a pharmaceutical sales representative, the cat visited several pharmacies every day.',
           },).kind,
           validateTranslatedSlice({
             sourceText: MEDICATION_SELLER,
-            candidateText: 'Since the cat sold medication on the side, she often bought pills.',
+            candidateText: 'In the years she spent selling medication, the cat visited several pharmacies every day.',
           },).kind,
         ],).toEqual(['invalid', 'valid',],);
       },

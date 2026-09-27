@@ -1,10 +1,9 @@
 /**
- Guards class one hundred thirty-one (shi_Yumiaoya32, 2026-09-25): under the
- owner's standing instruction of 2026-09-25 ("whenever you see anything that
- can be translated better do it"), words on the page join the rendering
- glossary. 辅导员 shipped as "her counselor" (a therapist to an English
- reader), 矫正机构 as "a correctional facility" (a prison), 营救计划 as "a
- rescue plan" and ICU 抢救了六天 as "six days of resuscitation in the ICU".
+ Guards class one hundred thirty-one (2026-09-25): under the owner's standing
+ instruction of 2026-09-25 ("whenever you see anything that can be translated
+ better do it"), words on one page join the rendering glossary. 辅导员 (whose
+ calque reads as a therapist to an English reader), 矫正机构 (whose calque
+ reads as a prison), 营救计划 and ICU 抢救 each shipped as a calque.
 
  The glossary audit of 2026-09-27 took out the class's entries keyed on one
  sentence's words (主动提出, 代替, 性格非常好) for the idiomatic English rule,
@@ -29,24 +28,24 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Original in which the cat's university advisor sends it away.
+ Original in which the cat's university advisor helps it choose courses.
  */
-const ADVISER = '猫的辅导员把它送去了别处。';
+const ADVISER = '猫的辅导员帮它选了下学期的课。';
 
 /**
- Original in which the cat is sent to a behaviour-correction centre.
+ Original in which the news reports a behaviour-correction centre closing.
  */
-const CORRECTION = '猫被送入了矫正机构。';
+const CORRECTION = '新闻里说，那家矫正机构已经被关停了。';
 
 /**
- Original in which the cats campaign to free their friend.
+ Original in which the cats plan to rescue a kitten stuck in a tree.
  */
-const FREE = '猫们展开了营救计划。';
+const FREE = '猫们商量了一个营救计划，要把树上的小猫接下来。';
 
 /**
- Original in which doctors fight for six days to save the cat.
+ Original in which the vet works through the night to save a weak kitten.
  */
-const INTENSIVE_CARE = '猫在 ICU 抢救了六天。';
+const SAVED_KITTEN = '小猫出生时很虚弱，兽医连夜抢救了它。';
 
 /**
  Terms class one hundred thirty-one seeds, as the audit left them.
@@ -62,18 +61,18 @@ const SEEDED_TERMS = [
  Candidates the page's calques would ship, each with the original it renders.
  */
 const REFUSED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
-  { sourceText: ADVISER, candidateText: 'The cat\'s counselor sent it somewhere else.', },
-  { sourceText: CORRECTION, candidateText: 'The cat was sent to a correctional facility.', },
+  { sourceText: ADVISER, candidateText: 'The cat\'s counselor helped it pick next term\'s courses.', },
+  { sourceText: CORRECTION, candidateText: 'The news said the correctional facility had been shut down.', },
 ];
 
 /**
  Candidates carrying the English meaning, each with the original it renders.
  */
 const ACCEPTED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
-  { sourceText: ADVISER, candidateText: 'The cat\'s student advisor sent it somewhere else.', },
-  { sourceText: CORRECTION, candidateText: 'The cat was sent to a behaviour-correction centre.', },
-  { sourceText: FREE, candidateText: 'The cats launched a campaign to free their friend.', },
-  { sourceText: INTENSIVE_CARE, candidateText: 'Doctors fought for six days in the ICU to save the cat.', },
+  { sourceText: ADVISER, candidateText: 'The cat\'s student advisor helped it pick next term\'s courses.', },
+  { sourceText: CORRECTION, candidateText: 'The news said the behaviour-correction centre had been shut down.', },
+  { sourceText: FREE, candidateText: 'The cats worked out a rescue to bring the kitten down from the tree.', },
+  { sourceText: SAVED_KITTEN, candidateText: 'The kitten was weak at birth, and the vet worked through the night to save it.', },
 ];
 
 await describe({

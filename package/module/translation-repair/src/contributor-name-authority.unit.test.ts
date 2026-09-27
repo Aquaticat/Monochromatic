@@ -1,7 +1,8 @@
 /**
  Tests target-authoritative contributor identity extraction.
  
- Fixtures are invented and mirror archive attribution grammar only.
+ Fixtures mirror archive attribution grammar only. Cat-themed invention
+ throughout; no corpus content appears here.
  
  @module
  */
@@ -21,11 +22,11 @@ await describe({
       name: 'READS PLAIN AND LINKED TARGET IDENTITIES without URL',
       fn: async () => {
         expect(archiveContributorNameForms({
-          text: 'Contributors for this entry: One Among Us, Yumiao, [Kotori](https://example.test/kotori)',
+          text: 'Contributors for this entry: The Cat Archive, Whisker, [Pebble](https://example.test/pebble)',
         },),).toEqual([
-          'One Among Us',
-          'Yumiao',
-          'Kotori',
+          'The Cat Archive',
+          'Whisker',
+          'Pebble',
         ],);
       },
     },),
@@ -43,8 +44,8 @@ await describe({
       name: 'KEEPS COMMA INSIDE PARENTHETICAL ROLE NOTE with identity',
       fn: async () => {
         expect(archiveContributorNameForms({
-          text: 'Contributor for this entry: Mika (translation, review)',
-        },),).toEqual(['Mika (translation, review)',],);
+          text: 'Contributor for this entry: Pumpkin (translation, review)',
+        },),).toEqual(['Pumpkin (translation, review)',],);
       },
     },),
 

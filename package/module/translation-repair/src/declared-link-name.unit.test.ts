@@ -1,5 +1,5 @@
 /**
- Guards class one hundred fourteen (yingying9, 2026-09-24): a linked title
+ Guards class one hundred fourteen (2026-09-24): a linked title
  that names the person the front matter declares shipped the archive's other
  form of the name although the page-name glossary (class eighty-six) said the
  title takes the declared form. Two of three translate judges chose the
@@ -35,19 +35,19 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Original definition linking a farewell post whose title names the cat.
+ Original definition linking a breakfast post whose title names the cat.
  */
-const SOURCE = '[^2]: [再见了。我想你了，咪咪。](https://example.invalid/farewell-mimi.html)';
+const SOURCE = '[^2]: [早安。今天也要乖乖吃饭哦，咪咪。](https://example.invalid/breakfast-mimi.html)';
 
 /**
  Archive's rendering, naming the cat by another form.
  */
-const ARCHIVE = '[^2]: [Goodbye. I miss you, Whiskers.](https://example.invalid/farewell-mimi.html)';
+const ARCHIVE = '[^2]: [Good morning. Eat all your breakfast today, Whiskers.](https://example.invalid/breakfast-mimi.html)';
 
 /**
  Rendering carrying the declared form inside the title.
  */
-const DECLARED = '[^2]: [Goodbye. I miss you, Mittens.](https://example.invalid/farewell-mimi.html)';
+const DECLARED = '[^2]: [Good morning. Eat all your breakfast today, Mittens.](https://example.invalid/breakfast-mimi.html)';
 
 /**
  Name pairs the front matter declares on this page.

@@ -1,8 +1,6 @@
 /**
- Guards class one hundred twenty-three (shi_Yumiaoya23, 2026-09-25): the
- page shipped 师范学院 as "a normal college" and 觉醒了学霸属性 as
- "awakened her top-student trait", word-for-word renderings an English reader
- stumbles on. The owner answered on 2026-09-25 that anything which can be
+ Guards class one hundred twenty-three (2026-09-25): one page shipped
+ 师范学院 and 学霸 as word-for-word calques an English reader stumbles on. The owner answered on 2026-09-25 that anything which can be
  translated better should be. The rendering glossary carries such words onto
  every sheet with the English the page uses, and refuses a known calque before
  any judge reads it, as the community glossary does for the community's
@@ -34,7 +32,7 @@ const COLLEGE = '这只猫进入了一所师范学院。';
 /**
  Original calling the cat a top student.
  */
-const TOP_STUDENT = '这只猫在三年级觉醒了学霸属性。';
+const TOP_STUDENT = '考试前一晚，这只猫的学霸属性突然发作了。';
 
 /**
  Original naming an institution whose official English carries "Normal".
@@ -94,7 +92,7 @@ await describe({
         expect(verdict.findings.join('\n',),).not.toContain('community term',);
         expect(validateTranslatedSlice({
           sourceText: TOP_STUDENT,
-          candidateText: 'In third grade the cat awakened her top-student trait.',
+          candidateText: 'The night before the exam, the cat\'s top-student trait suddenly kicked in.',
         },).kind,).toBe('invalid',);
         expect(validateTranslatedSlice({
           sourceText: COLLEGE,
@@ -111,7 +109,7 @@ await describe({
         },).kind,).toBe('valid',);
         expect(validateTranslatedSlice({
           sourceText: TOP_STUDENT,
-          candidateText: 'In third grade the cat suddenly became a top student.',
+          candidateText: 'The night before the exam, the cat suddenly turned into a top student.',
         },).kind,).toBe('valid',);
         expect(validateTranslatedSlice({
           sourceText: OFFICIAL,

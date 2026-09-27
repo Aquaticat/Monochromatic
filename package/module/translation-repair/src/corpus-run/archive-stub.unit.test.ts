@@ -1,12 +1,14 @@
 /**
  Tests the stub-marker strip the archive passes through before preparation.
  
- THE CASE IS XIEPT2: an archive page that is front matter, `(To-Do)`, an HTML
+ THE CASE IS ONE ARCHIVE: a page that is front matter, `(To-Do)`, an HTML
  comment of translator hints and nothing else, which the pipeline published
  with the marker standing over a finished translation. Here the marker goes
  with one blank line, the comment and the front matter stay byte for byte,
  and a marker inside a comment, a code fence, front matter or a sentence is
  left alone.
+ 
+ Cat-themed invention throughout; no corpus content appears here.
  
  @module
  */
@@ -26,23 +28,23 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- XIEPT2's archive opening as the corpus stores it.
+ A stub archive opening shaped as the corpus stores one.
  */
-const XIEPT2_OPENING = [
+const STUB_OPENING = [
   '---',
-  'name: Xiafeng Grape',
+  'name: Juzi Orange',
   'info:',
-  '    alias: Grape',
+  '    alias: Juzi',
   '---',
   '',
   '(To-Do)',
   '',
   '<!-- 翻译提示：',
   '',
-  '这篇文章有时候是作者视角。',
+  '这篇文章偶尔用猫的口吻。',
   '',
   '-->',
-  '<!-- 起床战争：Bed Wars -->',
+  '<!-- 猫爬架：Cat Tree -->',
   '',
   '## Experience',
   '',
@@ -51,19 +53,19 @@ const XIEPT2_OPENING = [
 /**
  The same opening with the marker and its blank gone.
  */
-const XIEPT2_STRIPPED = [
+const STUB_STRIPPED = [
   '---',
-  'name: Xiafeng Grape',
+  'name: Juzi Orange',
   'info:',
-  '    alias: Grape',
+  '    alias: Juzi',
   '---',
   '',
   '<!-- 翻译提示：',
   '',
-  '这篇文章有时候是作者视角。',
+  '这篇文章偶尔用猫的口吻。',
   '',
   '-->',
-  '<!-- 起床战争：Bed Wars -->',
+  '<!-- 猫爬架：Cat Tree -->',
   '',
   '## Experience',
   '',
@@ -105,11 +107,11 @@ await describe({
   name: stripStubMarkers.name,
   children: [
     it({
-      name: 'REMOVES the XIEPT2 marker with its following blank line and KEEPS the front matter and the '
+      name: 'REMOVES the stub marker with its following blank line and KEEPS the front matter and the '
         + 'comments byte for byte',
       fn: async () => {
-        const { text, stripped, } = stripStubMarkers({ text: XIEPT2_OPENING, },);
-        expect(text,).toBe(XIEPT2_STRIPPED,);
+        const { text, stripped, } = stripStubMarkers({ text: STUB_OPENING, },);
+        expect(text,).toBe(STUB_STRIPPED,);
         expect(stripped,).toEqual([{
           lineNumber: 7,
           text: '(To-Do)',

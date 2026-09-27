@@ -13,7 +13,7 @@
  for a log, since an invalid candidate is handed back to its author rather
  than dropped, so the cases assert on what those sentences say.
  
- Fixtures are cat-themed invention. No corpus content appears here.
+ Cat-themed invention throughout; no corpus content appears here.
  
  @module
  */
@@ -60,8 +60,8 @@ In the morning it dozes on the windowsill[^1].
 
     it({
       name: 'REPORTS the neutral pronoun left untranslated, naming the spelling and its count, and stays '
-        + 'quiet on the same letters inside a word or a handle (SS3B_0016 slice 5, 2026-09-04: "a small '
-        + 'room for Ta" shipped on a page that says they everywhere else)',
+        + 'quiet on the same letters inside a word or a handle (one entry, slice 5, 2026-09-04: an '
+        + 'untranslated Ta shipped on a page that says they everywhere else)',
       fn: async () => {
         const verdict = validateTranslatedSlice({
           sourceText: SOURCE_TEXT,
@@ -194,7 +194,7 @@ In the morning it dozes on the windowsill.
 
     it({
       name: 'ACCEPTS EITHER DESTINATION where the page rewrote the original\'s link, '
-        + 'and REFUSES neither or both: the luxuanwen3 archive links x.com where the '
+        + 'and REFUSES neither or both: one archive links x.com where the '
         + 'original links twitter.com, and owing a candidate both left nothing that could ship',
       fn: async () => {
         /**
@@ -263,17 +263,17 @@ In the morning it dozes on the windowsill.
       name: 'COMPARES an original that carries an HTML comment rather than answering unknown, whether '
         + 'the translation carries the comment rendered or leaves it out, since the document reader '
         + 'masks comments before its strict parse and the slice reader must read the same grammar '
-        + '(yulianNyanner, 2026-09-06: every commented slice was inadmissible on both gates)',
+        + '(one entry, 2026-09-06: every commented slice was inadmissible on both gates)',
       fn: async () => {
         /**
          Original with a translator note between its blocks.
          */
-        const sourceText = '## 猫猫\n\n<!-- （本段为客观叙述） -->\n\n猫猫在窗台上打盹。';
+        const sourceText = '## 猫猫\n\n<!-- （这一段用猫的口吻来写） -->\n\n猫猫在窗台上打盹。';
 
         expect(
           validateTranslatedSlice({
             sourceText,
-            candidateText: '## The cat\n\n<!-- (This section is an objective description.) -->\n\nThe cat dozes on the windowsill.',
+            candidateText: '## The cat\n\n<!-- (This paragraph is written in the cat\'s voice.) -->\n\nThe cat dozes on the windowsill.',
           },).kind,
         ).toBe('valid',);
         expect(
@@ -286,7 +286,7 @@ In the morning it dozes on the windowsill.
         expect(
           validateTranslatedSlice({
             sourceText,
-            candidateText: '<!-- (This section is an objective description.) -->\n\nThe cat dozes on the windowsill.',
+            candidateText: '<!-- (This paragraph is written in the cat\'s voice.) -->\n\nThe cat dozes on the windowsill.',
           },).kind,
         ).toBe('invalid',);
       },
@@ -395,7 +395,7 @@ In the morning it dozes on the windowsill.
 
     it({
       name: 'ACCEPTS the original\'s two hard-broken stanzas where the page splits the poem into '
-        + 'five paragraphs, and still REFUSES one stanza (Huasheng, 2026-09-07)',
+        + 'five paragraphs, and still REFUSES one stanza (one entry, 2026-09-07)',
       fn: async () => {
         /**
          Poem as the source writes it, lines ending in `<br/>`.
@@ -620,7 +620,7 @@ In the morning it dozes on the windowsill.
     },),
     it({
       name: 'REFUSES a translation that drops the container closer its original owns, and ACCEPTS one '
-        + 'that carries it (Huasheng, 2026-09-07)',
+        + 'that carries it (one entry, 2026-09-07)',
       fn: async () => {
         expect(validateTranslatedSlice({
           sourceText: '它醒了。\n\n</details>',

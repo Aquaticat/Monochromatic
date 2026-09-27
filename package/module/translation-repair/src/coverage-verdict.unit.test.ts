@@ -6,7 +6,8 @@
  is not there. A claim nobody can anchor is therefore neither proof of coverage
  nor a vote for absence.
  
- Fixtures are cat-themed invention mirroring corpus structure only.
+ Fixtures mirror corpus structure only. Cat-themed invention throughout; no
+ corpus content appears here.
  
  @module
  */
@@ -274,26 +275,26 @@ await describe({
     it({
       name: 'records only the FULL votes\' regions as evidence: a partial voter quotes what it found instead, '
         + 'which may sit anywhere on the page, and a lane rewriting that sentence must not stop the entry '
-        + '(the sixth yuki418330012 pass of 2026-09-09)',
+        + '(one entry\'s sixth pass of 2026-09-09)',
       fn: async () => {
         /** Translation carrying the credits and an unrelated sentence. */
-        const pageText = 'She had tried many times before.\n\nContributors: Zhenli, Sansan.\n';
+        const pageText = 'She had chased the red dot many times before.\n\nContributors: Tuantuan, Doudou.\n';
         const verdict = judgeCoverage({
           voices: [
             voiceOf({
               modelId: 'hf:cat/Cat-A' as RosterModelId,
               coverage: 'full',
-              quote: 'Contributors: Zhenli, Sansan.',
+              quote: 'Contributors: Tuantuan, Doudou.',
             },),
             voiceOf({
               modelId: 'hf:cat/Cat-B' as RosterModelId,
               coverage: 'full',
-              quote: 'Contributors: Zhenli, Sansan.',
+              quote: 'Contributors: Tuantuan, Doudou.',
             },),
             voiceOf({
               modelId: 'hf:cat/Cat-C' as RosterModelId,
               coverage: 'partial',
-              quote: 'She had tried many times before.',
+              quote: 'She had chased the red dot many times before.',
             },),
           ],
           document: {
@@ -306,8 +307,8 @@ await describe({
         expect(verdict.kind,).toBe('carried',);
         expect(verdict.anchoredPartial,).toBe(1,);
         expect(verdict.evidence,).toStrictEqual([
-          'Contributors: Zhenli, Sansan.',
-          'Contributors: Zhenli, Sansan.',
+          'Contributors: Tuantuan, Doudou.',
+          'Contributors: Tuantuan, Doudou.',
         ],);
       },
     },),

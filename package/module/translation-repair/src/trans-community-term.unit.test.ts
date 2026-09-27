@@ -1,10 +1,9 @@
 /**
- Guards class one hundred fifty-four (shi_Yumiaoya38, 2026-09-26): 跨圈,
- the community's short form of 跨性别圈子, shipped as "the crossdressing
- community" on one of the page's four uses while the other three read "the
- trans community", and shi_Yumiaoya37 had read it "across different
- communities". The archive renders it "the Trans Community" (shihai4h's
- heading). The glossary seeds the term with that rendering, and a candidate
+ Guards class one hundred fifty-four (2026-09-26): 跨圈, the community's
+ short form of 跨性别圈子, shipped as "the crossdressing community" on one of
+ a page's four uses while the other three read "the trans community", and an
+ earlier run had read it "across different communities". The archive renders
+ it "the Trans Community" (one entry's heading). The glossary seeds the term with that rendering, and a candidate
  writing "crossdressing community" for it is refused before any judge reads
  it. Cat-themed invention throughout; no corpus content appears here.
 
@@ -25,17 +24,17 @@ import {
 /**
  Original naming the community.
  */
-const NAMED = '此后，猫猫在跨圈内结识了很多朋友。';
+const NAMED = '猫猫在跨圈的聚会上分到了最大的一块蛋糕。';
 
 /**
  Rendering that read the community as a crossdressing one.
  */
-const MISREAD = 'After that, the cat made many friends in the crossdressing community.';
+const MISREAD = 'At a crossdressing community party, the cat got the biggest slice of cake.';
 
 /**
  Rendering in the archive's words.
  */
-const RENDERED = 'After that, the cat made many friends in the trans community.';
+const RENDERED = 'At a trans community party, the cat got the biggest slice of cake.';
 
 await describe({
   name: 'the trans community the glossary renders (class one hundred fifty-four)',

@@ -1,9 +1,10 @@
 /**
  Tests the notes an entry carries, rendered as identity-context lines.
  
- THE CASES ARE THE CORPUS'S: XIEPT2's one source footnote and its archive of
- seventeen editor comments (a translation hint and a glossary), yulianNyanner's
- comment glossary, and a multi-line definition that must fold onto one line.
+ THE CASES MIRROR THE CORPUS'S SHAPES: one source footnote, an archive's
+ editor comments (a translation hint and a glossary), a comment glossary under
+ a heading, and a multi-line definition that must fold onto one line.
+ Cat-themed invention throughout; no corpus content appears here.
  
  @module
  */
@@ -26,12 +27,12 @@ import {
 /**
  Original carrying one footnote and one comment.
  */
-const SOURCE_TEXT = '---\nname: 葡萄\n---\n\n她做代购[^1]。\n\n<!-- 起床战争：Bed Wars -->\n\n[^1]: 意为个人「代购」境外漫画书籍\n';
+const SOURCE_TEXT = '---\nname: 橘子\n---\n\n她开了一家猫粮铺[^1]。\n\n<!-- 猫爬架：Cat Tree -->\n\n[^1]: 意为专卖「进口」猫粮的小店\n';
 
 /**
  Archive carrying a multi-line comment and a two-line footnote.
  */
-const TARGET_TEXT = '---\nname: Putao\n---\n\n<!-- 翻译提示：\n\n这篇文章有时候是作者视角。 -->\n\nShe ran a buying service[^1].\n\n[^1]: A personal buying service\n    for comics from abroad.\n';
+const TARGET_TEXT = '---\nname: Juzi\n---\n\n<!-- 翻译提示：\n\n这篇文章偶尔用猫的口吻。 -->\n\nShe ran a cat-food shop[^1].\n\n[^1]: A small shop selling\n    imported cat food.\n';
 
 await describe({
   name: foldedLine.name,
@@ -52,7 +53,7 @@ await describe({
     it({
       name: 'STRIPS the delimiters and keeps the tail of an unterminated comment',
       fn: async () => {
-        expect(commentBody({ comment: '<!-- 起床战争：Bed Wars -->', },),).toBe(' 起床战争：Bed Wars ',);
+        expect(commentBody({ comment: '<!-- 猫爬架：Cat Tree -->', },),).toBe(' 猫爬架：Cat Tree ',);
         expect(commentBody({ comment: '<!-- never closed', },),).toBe(' never closed',);
       },
     },),
@@ -78,31 +79,31 @@ await describe({
           sourceDocument,
           targetDocument,
         },),).toEqual([
-          '- ORIGINAL note: [^1]: 意为个人「代购」境外漫画书籍',
-          '- ARCHIVE note: [^1]: A personal buying service for comics from abroad.',
-          '- ORIGINAL editor comment before the first heading: 起床战争：Bed Wars',
-          '- ARCHIVE editor comment before the first heading: 翻译提示： 这篇文章有时候是作者视角。',
+          '- ORIGINAL note: [^1]: 意为专卖「进口」猫粮的小店',
+          '- ARCHIVE note: [^1]: A small shop selling imported cat food.',
+          '- ORIGINAL editor comment before the first heading: 猫爬架：Cat Tree',
+          '- ARCHIVE editor comment before the first heading: 翻译提示： 这篇文章偶尔用猫的口吻。',
         ],);
       },
     },),
 
     it({
       name: 'ANCHORS a comment to the heading it sits under, naming that heading on the line, since a '
-        + 'note that says "this title" or "here" was carried into every slice of yulianNyanner without '
+        + 'note that says "this title" or "here" was carried into every slice of one entry without '
         + 'its position and seven of eight judges bound it to the wrong heading (2026-09-06)',
       fn: async () => {
         /**
          Two sections, a note under the second, and one note before any heading.
          */
         const document = parseDocument({
-          text: '<!-- 全文为客观叙述 -->\n\n## 小猫\n\n它睡了。\n\n### 大猫\n\n<!-- 这里标题对应的英文词是 Tomcat -->\n\n它醒了。\n',
+          text: '<!-- 全篇用第三人称讲猫的故事 -->\n\n## 小猫\n\n它睡了。\n\n### 大猫\n\n<!-- 此处小标题译作 Tomcat -->\n\n它醒了。\n',
         },);
         expect(commentNoteLines({
           document,
           side: 'ORIGINAL',
         },),).toEqual([
-          '- ORIGINAL editor comment before the first heading: 全文为客观叙述',
-          '- ORIGINAL editor comment under heading 大猫: 这里标题对应的英文词是 Tomcat',
+          '- ORIGINAL editor comment before the first heading: 全篇用第三人称讲猫的故事',
+          '- ORIGINAL editor comment under heading 大猫: 此处小标题译作 Tomcat',
         ],);
       },
     },),

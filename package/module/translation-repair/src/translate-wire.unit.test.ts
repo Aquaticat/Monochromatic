@@ -9,6 +9,8 @@
  every reshaped slice. The two texts disagree about shape on real entries, so
  this is not a hypothetical.
  
+ Cat-themed invention throughout; no corpus content appears here.
+ 
  @module
  */
 
@@ -151,7 +153,7 @@ await describe({
       name: 'RANKS the verse rule above the keep-the-page rule, and only on verse',
       fn: async () => {
         // Both rules reach one prompt on a line-structured chunk and they point
-        // opposite ways: on `Toka_ls` the Chinese runs 21 blocks against the
+        // opposite ways: on one entry the Chinese runs 21 blocks against the
         // rendering's 18, so one says keep 18 and the other says restore 21.
         // The guard cannot settle it either way, being a kind-sequence floor
         // that passes a candidate carrying MORE blocks than the page, so the
@@ -187,15 +189,15 @@ await describe({
 /**
  One attested line as the sheets carry it, cat-themed.
  */
-const ATTESTED_LINE = '- attested: the ARCHIVE\'s "She has an older sister who is also a tabby." is stated by reference 1 '
-  + '("Mittens had an older sister who was also a tabby."), 3 of 4 voices checked word for word';
+const ATTESTED_LINE = '- attested: the ARCHIVE\'s "She has a younger brother who also naps in boxes." is stated by reference 1 '
+  + '("Mittens had a younger brother who also napped in boxes."), 3 of 4 voices checked word for word';
 
 /**
  Whole sheet for a slice whose entry attested one detail.
  */
 const attestedMessages = buildTranslateMessages({
   sourceText: SOURCE_TEXT,
-  existingText: 'She has an older sister who is also a tabby.',
+  existingText: 'She has a younger brother who also naps in boxes.',
   attestedLines: [ATTESTED_LINE,],
 },)
   .messages
@@ -209,7 +211,7 @@ const attestedMessages = buildTranslateMessages({
  */
 const unattestedMessages = buildTranslateMessages({
   sourceText: SOURCE_TEXT,
-  existingText: 'She has an older sister who is also a tabby.',
+  existingText: 'She has a younger brother who also naps in boxes.',
 },)
   .messages
   .map(function toContent(message,): string {
@@ -223,7 +225,7 @@ await describe({
     it({
       name: 'CARRIES the attested lines and the rule to keep them, since a translator shown only the '
         + 'ORIGINAL drops the archive detail the reference states and the lane contest then picks the '
-        + 'lane that never had it (Mio23 slice 2)',
+        + 'lane that never had it (one entry, slice 2)',
       fn: async () => {
         expect(attestedMessages.includes('ATTESTED DETAILS',),).toBe(true,);
         expect(attestedMessages.includes(ATTESTED_LINE,),).toBe(true,);
@@ -241,7 +243,7 @@ await describe({
 },);
 
 await describe({
-  name: 'translate wire dispute note (class one hundred eight, CuspariaKLSY11 slice 3, 2026-09-24)',
+  name: 'translate wire dispute note (class one hundred eight, one entry\'s slice 3, 2026-09-24)',
   children: [
     it({
       name: 'SHOWS the dispute note beside the existing translation on a disputed slice, so the translator does not keep the accepted addition as wording worth keeping',

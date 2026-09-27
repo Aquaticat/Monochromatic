@@ -6,7 +6,7 @@
  own, and nothing downstream could tell that a repair outcome and a translate
  outcome for "slice 4" described different spans.
  
- Fixtures are cat-themed invention. No corpus content appears here.
+ Cat-themed invention throughout; no corpus content appears here.
  
  @module
  */
@@ -172,8 +172,8 @@ await describe({
         + 'archive\'s rendering, and none for a source holding no term (owner, 2026-09-09)',
       fn: async () => {
         const { identityContext, } = prepareDocumentPair({
-          sourceText: `${SOURCE_TEXT}\n\n她最喜欢的角色是超天酱。\n`,
-          targetText: `${TARGET_TEXT}\n\nHer favourite character was KAngel.\n`,
+          sourceText: `${SOURCE_TEXT}\n\n小猫最爱的玩偶是超天酱。\n`,
+          targetText: `${TARGET_TEXT}\n\nHer favourite plush toy was KAngel.\n`,
         },);
         expect(identityContext,).toContain('COMMUNITY TERMS',);
         expect(identityContext,).toContain('- 超天酱: "KAngel", "Needy Streamer Overload" (',);

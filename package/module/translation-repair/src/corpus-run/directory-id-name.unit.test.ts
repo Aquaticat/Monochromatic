@@ -2,14 +2,14 @@
  Tests for the three ways a directory id may stand as a page's visible name
  although the source names the person otherwise.
  
- WHY. On 2026-09-07 the Huasheng page was refused for naming 椛笙 by its
- pinyin, which is the directory id. The owner's answer was the pinyin check
+ WHY. On 2026-09-07 one page was refused for naming the person by the
+ pinyin of the name, which is the directory id. The owner's answer was the pinyin check
  and the alias exemption, read on both front matters, since there has to be
  an English rendering of the name in the front matter. Each clause has a case
  that passes and the refusal has a case that stays.
  
- Fixtures are cat-themed invention where the rule allows; the pinyin cases
- need real characters, and use common ones.
+ Cat-themed invention throughout; no corpus content appears here. The pinyin
+ cases need real characters, and use common ones.
  
  @module
  */
@@ -35,7 +35,7 @@ import {
  
  @example
  ```ts
- const block = blockOf({ text: '---\nname: 林童\n---\n', },);
+ const block = blockOf({ text: '---\nname: 猫童\n---\n', },);
  ```
  */
 function blockOf({ text, }: { readonly text: string; },) {
@@ -52,24 +52,24 @@ function blockOf({ text, }: { readonly text: string; },) {
  Page whose visible name is the id and whose alias is in the source script
  only, so nothing but the id itself can let it stand.
  */
-const ID_ONLY_PAGE = '---\nname: lintong\ninfo:\n  alias: 林童\n---\n\nBody.\n';
+const ID_ONLY_PAGE = '---\nname: maotong\ninfo:\n  alias: 猫童\n---\n\nBody.\n';
 
 await describe({
   name: directoryIdNameStands.name,
   children: [
     it({
       name: 'STANDS where the id is the pinyin of the source name, letters compared without case or '
-        + 'tone (Huasheng, 2026-09-07)',
+        + 'tone (one entry, 2026-09-07)',
       fn: async () => {
         expect(directoryIdNameStands({
-          entryId: 'lintong',
-          source: blockOf({ text: '---\nname: 林童\ninfo:\n  alias: 林童\n---\n', },),
+          entryId: 'maotong',
+          source: blockOf({ text: '---\nname: 猫童\ninfo:\n  alias: 猫童\n---\n', },),
           page: blockOf({ text: ID_ONLY_PAGE, },),
           archives: [],
         },),).toBe(true,);
         expect(directoryIdNameStands({
-          entryId: 'LinTong',
-          source: blockOf({ text: '---\nname: 林童\ninfo:\n  alias: 林童\n---\n', },),
+          entryId: 'MaoTong',
+          source: blockOf({ text: '---\nname: 猫童\ninfo:\n  alias: 猫童\n---\n', },),
           page: blockOf({ text: ID_ONLY_PAGE, },),
           archives: [],
         },),).toBe(true,);
@@ -82,9 +82,9 @@ await describe({
       fn: async () => {
         // 单 reads dan, shan and chan; the common reading is dan.
         expect(directoryIdNameStands({
-          entryId: 'shanpian',
-          source: blockOf({ text: '---\nname: 单片\ninfo:\n  alias: 单片\n---\n', },),
-          page: blockOf({ text: '---\nname: shanpian\ninfo:\n  alias: 单片\n---\n', },),
+          entryId: 'shanmao',
+          source: blockOf({ text: '---\nname: 单猫\ninfo:\n  alias: 单猫\n---\n', },),
+          page: blockOf({ text: '---\nname: shanmao\ninfo:\n  alias: 单猫\n---\n', },),
           archives: [],
         },),).toBe(true,);
       },
@@ -95,9 +95,9 @@ await describe({
         + 'person\'s own',
       fn: async () => {
         expect(directoryIdNameStands({
-          entryId: 'MioCat',
-          source: blockOf({ text: '---\nname: 澪猫\ninfo:\n  alias: 澪猫, MioCat\n---\n', },),
-          page: blockOf({ text: '---\nname: MioCat\ninfo:\n  alias: 澪猫\n---\n', },),
+          entryId: 'SnowPuff',
+          source: blockOf({ text: '---\nname: 雪团\ninfo:\n  alias: 雪团, SnowPuff\n---\n', },),
+          page: blockOf({ text: '---\nname: SnowPuff\ninfo:\n  alias: 雪团\n---\n', },),
           archives: [],
         },),).toBe(true,);
       },
@@ -140,15 +140,15 @@ await describe({
         + 'more',
       fn: async () => {
         expect(directoryIdNameStands({
-          entryId: 'lin',
-          source: blockOf({ text: '---\nname: 林童\ninfo:\n  alias: 林童\n---\n', },),
-          page: blockOf({ text: '---\nname: lin\ninfo:\n  alias: 林童\n---\n', },),
+          entryId: 'mao',
+          source: blockOf({ text: '---\nname: 猫童\ninfo:\n  alias: 猫童\n---\n', },),
+          page: blockOf({ text: '---\nname: mao\ninfo:\n  alias: 猫童\n---\n', },),
           archives: [],
         },),).toBe(false,);
         expect(directoryIdNameStands({
-          entryId: 'lintongcat',
-          source: blockOf({ text: '---\nname: 林童\ninfo:\n  alias: 林童\n---\n', },),
-          page: blockOf({ text: '---\nname: lintongcat\ninfo:\n  alias: 林童\n---\n', },),
+          entryId: 'maotongcat',
+          source: blockOf({ text: '---\nname: 猫童\ninfo:\n  alias: 猫童\n---\n', },),
+          page: blockOf({ text: '---\nname: maotongcat\ninfo:\n  alias: 猫童\n---\n', },),
           archives: [],
         },),).toBe(false,);
       },

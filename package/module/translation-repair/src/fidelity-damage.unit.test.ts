@@ -6,7 +6,8 @@
  every other word alone. A fixture that quietly failed either would produce a
  number that reads exactly like a good one.
  
- Fixtures are cat-themed invention mirroring corpus structure only.
+ Fixtures mirror corpus structure only. Cat-themed invention throughout; no
+ corpus content appears here.
  
  @module
  */
@@ -305,8 +306,8 @@ await describe({
         + 'reads exactly as well, so nothing but the original can decide it',
       fn: async () => {
         /** Chinese carrying the same digits the English renders. */
-        const sourceText = '小猫于2004年9月1日出生，来自江西宜春。她有3只玩具老鼠。';
-        const cleanText = 'Marmalade was born on 1 September 2004 in Yichun, Jiangxi. She owns 3 toy mice.';
+        const sourceText = '小猫于2011年3月7日出生，来自猫爪镇。她有3只玩具老鼠。';
+        const cleanText = 'Marmalade was born on 7 March 2011 in Pawford. She owns 3 toy mice.';
         const attempt = alterSharedNumber({
           cleanText,
           sourceText,
@@ -323,16 +324,16 @@ await describe({
         // The year the source states is gone, and what replaced it is stated
         // nowhere on either side.
         expect(attempt.damagedText
-          .includes('2004',),).toBe(false,);
+          .includes('2011',),).toBe(false,);
         /** Where the year sits in the damaged text. */
         const yearAt = attempt.damagedText
-          .indexOf('September ',) + 'September '.length;
+          .indexOf('March ',) + 'March '.length;
 
         /** Year the damaged text now states. */
         const statedYear = attempt.damagedText
           .slice(
             yearAt,
-            yearAt + '2004'.length,
+            yearAt + '2011'.length,
           );
         expect(sourceText.includes(statedYear,),).toBe(false,);
       },

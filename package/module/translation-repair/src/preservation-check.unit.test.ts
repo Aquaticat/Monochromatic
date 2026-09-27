@@ -7,7 +7,7 @@
  in earlier drafts of the gate. Both would have rejected repairs a human
  graded sound, which for a gate is the expensive direction.
  
- Fixtures are cat-themed invention.
+ Cat-themed invention throughout; no corpus content appears here.
  
  @module
  */
@@ -118,7 +118,7 @@ await describe({
     },),
 
     it({
-      name: 'treats "10th" becoming "10" as FORMATTING rather than a lost '
+      name: 'treats "17th" becoming "17" as FORMATTING rather than a lost '
         + 'number. An earlier draft called any token starting with a digit a '
         + 'number and rejected a repair a human graded sound over exactly this',
       fn: async () => {
@@ -126,8 +126,8 @@ await describe({
          Ordinal rewritten as a bare numeral.
          */
         const verdict = checkPreservation({
-          before: 'On the evening of July 10th, she climbed the tallest fence.',
-          after: 'It was the night of July 10, at the tallest fence.',
+          before: 'On the morning of March 17th, she climbed the tallest fence.',
+          after: 'It was the dawn of March 17, at the tallest fence.',
           licensedQuotes: ['she climbed the tallest fence',],
         },);
 

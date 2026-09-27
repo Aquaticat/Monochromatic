@@ -2,6 +2,8 @@
  Tests for moving the archive's footnote definitions into the original's
  order.
  
+ Cat-themed invention throughout; no corpus content appears here.
+ 
  @module
  */
 
@@ -39,11 +41,11 @@ await describe({
       name: 'moves a contiguous run of definitions into the order asked for, keeping the gap between them',
       fn: async () => {
         /**
-         The yuki archive after the relabel: labels the original's, order
+         One archive after the relabel: labels the original's, order
          still the archive's.
          */
         const reordered = reorderFootnoteDefinitions({
-          text: '---\nname: Yuki\n---\n\nZhouzhou[^2] and Zhenli[^1].\n\n[^2]: A substitute parent.\n\n[^1]: Younger.\n',
+          text: '---\nname: Mimi\n---\n\nTuantuan[^2] and Doudou[^1].\n\n[^2]: The old cat.\n\n[^1]: The kitten.\n',
           order: [
             '1',
             '2',
@@ -51,7 +53,7 @@ await describe({
         },);
         expect(reordered.changed,).toBe(true,);
         expect(reordered.text,).toBe(
-          '---\nname: Yuki\n---\n\nZhouzhou[^2] and Zhenli[^1].\n\n[^1]: Younger.\n\n[^2]: A substitute parent.\n',
+          '---\nname: Mimi\n---\n\nTuantuan[^2] and Doudou[^1].\n\n[^1]: The kitten.\n\n[^2]: The old cat.\n',
         );
       },
     },),

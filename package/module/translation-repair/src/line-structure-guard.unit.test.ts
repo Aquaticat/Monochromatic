@@ -12,8 +12,8 @@
  The blind spot has a test of its own rather than a comment, so a later
  instrument that closes it fails here and has to say so.
  
- Fixtures are cat-themed invention, with the original in Simplified Chinese as
- every source in this corpus is. No corpus content appears here.
+ Fixtures take the original in Simplified Chinese as every source in this
+ corpus is. Cat-themed invention throughout; no corpus content appears here.
  
  @module
  */
@@ -149,18 +149,18 @@ await describe({
     it({
       name:
         'REFUSES A RENDERING THAT REPEATS A LINE the original carries once, and accepts a refrain the '
-        + 'original itself repeats (class seventy-four, shi_Yumiaoya6, 2026-09-21): a bilingual attribution '
+        + 'original itself repeats (class seventy-four, 2026-09-21): a bilingual attribution '
         + 'rendered once from its Chinese and once from its own English is the same line twice',
       fn: async () => {
         /** Original quoting a film line in Chinese with its English beside it, attribution likewise. */
-        const bilingual = '> 如果再也见不到猫，祝你早安。\n>\n> And in case I don’t see the cat, good morning.\n>\n'
+        const bilingual = '> 愿每只猫都能找到属于它的阳光。\n>\n> May every cat find a sunbeam that’s all its own.\n>\n'
           + '> 出自《猫的世界》\n>\n> From *The Cat Show*';
         /** Findings on a rendering carrying the attribution twice. */
         const doubled = compareLineCounts({
           lineStructured: true,
           sourceText: bilingual,
-          candidateText: '> If I never see the cat again, good morning.\n>\n'
-            + '> And in case I don’t see the cat, good morning.\n>\n> From *The Cat Show*\n>\n> From *The Cat Show*',
+          candidateText: '> May every cat find its own sunshine.\n>\n'
+            + '> May every cat find a sunbeam that’s all its own.\n>\n> From *The Cat Show*\n>\n> From *The Cat Show*',
         },);
         expect(doubled.length,).toBe(1,);
         expect(doubled[0],).toContain('repeats the line',);
@@ -210,15 +210,15 @@ await describe({
       name:
         'OWES NO SEPARATE LINE FOR A HAN LINE WHOSE ENGLISH STANDS BESIDE IT in the original, since '
         + 'that line is already rendered by its neighbour and carrying both would quote it twice; '
-        + 'the prose lines around the pair are still owed one each (class forty-seven, shi_Yumiaoya2)',
+        + 'the prose lines around the pair are still owed one each (class forty-seven)',
       fn: async () => {
         /**
          Bilingual farewell: each Chinese line stands beside its English original.
          */
         const bilingual = [
-          '> 如果再也不能见到你，祝你早安。',
+          '> 愿你的每个午觉都晒得到太阳。',
           '>',
-          '> And in case I never see you again, good morning.',
+          '> May every nap of yours find the sun.',
           '>',
           '> 出自《猫的世界》',
           '>',
@@ -232,7 +232,7 @@ await describe({
           lineStructured: true,
           sourceText: bilingual,
           candidateText: [
-            '> And in case I never see you again, good morning.',
+            '> May every nap of yours find the sun.',
             '>',
             '> From *The Cat Show*',
             '',
@@ -245,7 +245,7 @@ await describe({
           lineStructured: true,
           sourceText: bilingual,
           candidateText: [
-            '> And in case I never see you again, good morning.',
+            '> May every nap of yours find the sun.',
             '>',
             '> From *The Cat Show*',
             '',

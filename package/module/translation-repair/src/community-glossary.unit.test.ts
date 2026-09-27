@@ -4,7 +4,8 @@
  on the sheet as evidence, in any casing, with an empty candidate skipped
  (owner, 2026-09-09).
  
- Fixtures quote the two seeded terms and cat-themed invention otherwise.
+ Fixtures quote the seeded terms as single words. Cat-themed invention
+ throughout; no corpus content appears here.
  
  @module
  */
@@ -25,17 +26,17 @@ import {
 /**
  Original carrying one seeded term.
  */
-const SOURCE = '在她自切后，家人的态度好转很多。';
+const SOURCE = '那只猫讲起自切的经历时，朋友们都安静地听着。';
 
 /**
  Rendering that carries the community's word.
  */
-const KEPT = 'After she attempted self-surgery, her family became more accepting.';
+const KEPT = 'When the cat told of her self-surgery, her friends listened quietly.';
 
 /**
- Rendering that lost it, as the seventh yuki page shipped.
+ Rendering that lost it, as one archive page shipped.
  */
-const LOST = 'After she began cutting herself, her family became more accepting.';
+const LOST = 'When the cat told of her operation, her friends listened quietly.';
 
 await describe({
   name: communityTermsIn.name,
@@ -112,15 +113,15 @@ await describe({
       fn: async () => {
         /** Departures over the kept and the ungendered insult. */
         const departures = communityRenderingDepartures({
-          sourceText: '黑猫多次与父亲争吵，被骂作「逆子」。',
+          sourceText: '黑猫打翻了父亲的茶杯，被骂作「逆子」。',
           candidates: [
             {
               label: 'CANDIDATE 1',
-              text: 'The black cat argued with her father many times and was called an “unfilial son”.',
+              text: 'The black cat knocked over her father’s teacup and was called an “unfilial son”.',
             },
             {
               label: 'CANDIDATE 2',
-              text: 'The black cat argued with her father many times and was called a “rebellious child”.',
+              text: 'The black cat knocked over her father’s teacup and was called a “rebellious child”.',
             },
           ],
         },);

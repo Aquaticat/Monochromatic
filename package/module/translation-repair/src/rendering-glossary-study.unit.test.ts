@@ -1,5 +1,5 @@
 /**
- Guards class one hundred fifty-six (shihai4h1, 2026-09-26): under the
+ Guards class one hundred fifty-six (2026-09-26): under the
  owner's standing instruction of 2026-09-25 ("whenever you see anything that
  can be translated better do it"), three words from a student's life join the
  rendering glossary. 初中 shipped as "junior middle school" where four of the
@@ -25,19 +25,19 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Original in which the cat's grades were poor in junior high.
+ Original in which the cat joined the choir in junior high.
  */
-const JUNIOR_HIGH = '猫在初中时成绩不好。';
+const JUNIOR_HIGH = '猫在初中时加入了合唱团。';
 
 /**
- Original in which the cat passes the self-study examinations.
+ Original in which the cat prepares for the self-study examinations.
  */
-const SELF_STUDY = '猫参加自考考上了大学。';
+const SELF_STUDY = '猫一边打工，一边准备明年的自考。';
 
 /**
- Original in which the cat is nagged at home.
+ Original in which relatives nag the cat at New Year.
  */
-const NAGGED = '猫在家经常被说压力话。';
+const NAGGED = '每到过年，亲戚们总爱对猫说压力话。';
 
 /**
  Terms class one hundred fifty-six seeds.
@@ -52,18 +52,18 @@ const SEEDED_TERMS = [
  Candidates the page's calques would ship, each with the original it renders.
  */
 const REFUSED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
-  { sourceText: JUNIOR_HIGH, candidateText: 'The cat had poor grades in junior middle school.', },
-  { sourceText: SELF_STUDY, candidateText: 'The cat took self-taught exams and got into university.', },
-  { sourceText: NAGGED, candidateText: 'At home the cat was often subjected to pressured remarks.', },
+  { sourceText: JUNIOR_HIGH, candidateText: 'The cat joined the choir in junior middle school.', },
+  { sourceText: SELF_STUDY, candidateText: 'The cat worked part-time while preparing for next year\'s self-taught exams.', },
+  { sourceText: NAGGED, candidateText: 'Every New Year the relatives loved to make pressured remarks to the cat.', },
 ];
 
 /**
  Candidates carrying the English meaning, each with the original it renders.
  */
 const ACCEPTED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
-  { sourceText: JUNIOR_HIGH, candidateText: 'The cat had poor grades in junior high school.', },
-  { sourceText: SELF_STUDY, candidateText: 'The cat passed the self-study examinations and got into university.', },
-  { sourceText: NAGGED, candidateText: 'At home the cat was constantly pressured and nagged.', },
+  { sourceText: JUNIOR_HIGH, candidateText: 'The cat joined the choir in junior high school.', },
+  { sourceText: SELF_STUDY, candidateText: 'The cat worked part-time while preparing for next year\'s self-study examinations.', },
+  { sourceText: NAGGED, candidateText: 'Every New Year the relatives loved to pressure and nag the cat.', },
 ];
 
 await describe({

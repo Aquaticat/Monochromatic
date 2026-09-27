@@ -1,3 +1,12 @@
+/**
+ Tests for the identity context: declared names, the lines built from them,
+ and the pronoun the original uses for its subject.
+
+ Cat-themed invention throughout; no corpus content appears here.
+
+ @module
+ */
+
 import {
   describe,
   expect,
@@ -13,7 +22,7 @@ import {
 
 /**
  Clause the pronoun line carries where the original writes more than one
- form (class eighty-one, XingZ621 slice 14, 2026-09-22).
+ form (class eighty-one, one entry's slice 14, 2026-09-22).
  */
 const AS_WRITTEN = 'each form is rendered as written where it stands (她 is she, 他 is he, TA is singular they), and';
 
@@ -100,7 +109,7 @@ await describe({
           name: 'renders both sides of a transliterated name, the graded false-positive shape',
           fn: async () => {
             /**
-             Mirrors the Acheron and BI4PBV shape: the two sides declare
+             Mirrors a graded entry shape: the two sides declare
              names matching neither phonetically nor semantically.
              */
             const lines = collectIdentityLines({
@@ -241,11 +250,11 @@ await describe({
         it({
           name: 'NAMES THE PRONOUN THE ORIGINAL USES FOR ITS SUBJECT with its count, read off the '
             + 'whole document, since a subjectless Chinese sentence is about the person the page is '
-            + 'about (the Toka_ls "they" of 2026-09-02, all eight judges reasoning that the '
+            + 'about (one entry\'s "they" of 2026-09-02, all eight judges reasoning that the '
             + 'sentence had no pronoun while the page used 她 twenty times on sixteen lines)',
           fn: async () => {
             expect(sourcePronounLines({
-              text: '毛毛睁开双眼。她笑了。\n\n偶尔灵感迸发，左右推敲。\n\n她走了。',
+              text: '毛毛睁开双眼。她笑了。\n\n偶尔追着毛线球，满屋乱跑。\n\n她走了。',
             },),).toEqual(['- pronoun: ORIGINAL refers to this person as "她" (2 times)',],);
           },
         },),
@@ -253,7 +262,7 @@ await describe({
         it({
           name: 'PICKS THE DOMINANT FORM and breaks a tie towards 她, then 他, then TA, counting TA '
             + 'in every spelling the sources use (TA in 2 entries, Ta in 7, ta in 8 of the pinned '
-            + 'corpus; the SS3B_0016 page of 2026-09-04 shipped a bare Ta the counter had not seen)',
+            + 'corpus; one page of 2026-09-04 shipped a bare Ta the counter had not seen)',
           fn: async () => {
             expect(sourcePronounLines({ text: '他来了。他走了。她笑了。', },),)
               .toEqual([`- pronoun: ORIGINAL refers to this person as "他" (2 times), and also writes "她" (1 times); ${
@@ -274,7 +283,7 @@ await describe({
 
         it({
           name: 'NAMES EVERY FORM THE ORIGINAL WRITES with its count where the page mixes them, and says each '
-            + 'is rendered as written where it stands (class eighty-one, XingZ621 slice 14, 2026-09-22: the '
+            + 'is rendered as written where it stands (class eighty-one, one entry\'s slice 14, 2026-09-22: the '
             + 'line named 她 fifty-one times alone on a page whose Part One writes TA forty times, and the '
             + 'bench split between "she" on the line and "they" on the TA rule until the entry stopped)',
           fn: async () => {
@@ -299,7 +308,7 @@ await describe({
         it({
           name: 'LEAVES COMPOUNDS OUT OF THE COUNT: 他们, 她们, 其他, 其他人 and 他人 contain the '
             + 'character without being the pronoun, so a page about a woman with a few "others" '
-            + 'in it still reads 她; the pinned corpus\'s XIEPT2 carries 77 她 against 17 他, of '
+            + 'in it still reads 她; one entry of the pinned corpus carries 77 她 against 17 他, of '
             + 'which 9 are 他们, 5 其他 and 3 他人',
           fn: async () => {
             expect(sourcePronounLines({ text: '她来了。他们走了。其他人笑了。他人说。她们唱歌。其他', },),)

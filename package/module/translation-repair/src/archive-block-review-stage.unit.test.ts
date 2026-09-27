@@ -3,7 +3,7 @@
  the single-round contract: reviewer indecision retains the block with
  findings and never buys a second round.
  
- Fixtures are cat-themed invention.
+ Cat-themed invention throughout; no corpus content appears here.
  
  @module
  */
@@ -182,7 +182,7 @@ await describe({
     it({
       name: 'RETAINS the block with an unresolved finding when post-anchor voices fall below exact-half '
         + 'participation, buying no naturalness review: a heard roster whose support does not anchor is '
-        + 'a verdict, not an outage (it ended XIEPT2 in 114 seconds on 2026-09-02 as '
+        + 'a verdict, not an outage (it ended one entry in 114 seconds on 2026-09-02 as '
         + '"provider-unavailable" with every seat answering), and the no-loop design retains an '
         + 'unresolved block with its findings',
       fn: async () => {
@@ -231,7 +231,7 @@ await describe({
     },),
     it({
       name: 'RETAINS the block when the bench answered but the cap cut most replies before their content: '
-        + 'an answer nobody could read is not silence (class thirty-one: Mio13 was interrupted '
+        + 'an answer nobody could read is not silence (class thirty-one: one entry was interrupted '
         + '"provider-unavailable" on 2026-09-16 at 4 of 12 heard with every provider wet, seven seats '
         + 'having spent their whole completion cap reasoning about the first chat translation)',
       fn: async () => {
@@ -388,13 +388,13 @@ await describe({
       },
     },),
     it({
-      name: 'WITHHOLDS a revision whose block shape is not the block\'s own, so a one-paragraph label ships as the archive wrote it (class seventy-seven, zheermao2 2026-09-21: a four-block letter replaced the intro line)',
+      name: 'WITHHOLDS a revision whose block shape is not the block\'s own, so a one-paragraph label ships as the archive wrote it (class seventy-seven, 2026-09-21: a four-block letter replaced the intro line)',
       fn: async () => {
         const prompts: string[] = [];
         /** Label block under review: one paragraph. */
         const label = 'English translation of the letter the cat sent:';
         /** Revision a reviewer wrote instead: four blocks of a letter, the third cut mid-sentence. */
-        const letter = 'Good evening,\n\nI just refreshed my inbox. I would like to hug you.\n\nBut please believe me, the stories that are living are much more\n\nWarm wishes\nThe Cat';
+        const letter = 'Good evening,\n\nI just finished my supper. I would like to sit on your lap.\n\nBut trust me, the sunny spot on the porch is far more\n\nWarm purrs\nThe Cat';
         const outcome = await runArchiveBlockReviewStage({
           client: scriptedClient({
             prompts,
@@ -433,7 +433,7 @@ await describe({
       },
     },),
     it({
-      name: 'WITHHOLDS a removal of a footnote definition the page still references, so the note ships as the archive wrote it (class eighty-four, hulicaijia12 2026-09-22: [^10] removed as unsupported, its marker left dangling)',
+      name: 'WITHHOLDS a removal of a footnote definition the page still references, so the note ships as the archive wrote it (class eighty-four, 2026-09-22: [^10] removed as unsupported, its marker left dangling)',
       fn: async () => {
         const prompts: string[] = [];
         /** Definition block under review: a translator's note the source never carried. */

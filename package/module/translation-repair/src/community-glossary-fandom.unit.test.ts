@@ -1,5 +1,5 @@
 /**
- Guards class one hundred sixty (TianqiChen6662, 2026-09-26): under the
+ Guards class one hundred sixty (2026-09-26): under the
  owner's standing instruction of 2026-09-25 ("whenever you see anything that
  can be translated better do it"), three fandom words join the community
  glossary. 头壳, a kigurumi performer's head mask, shipped as "inside her
@@ -24,9 +24,9 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Original in which the kitten performs in a kigurumi head.
+ Original in which the kitten dances on stage in a kigurumi head.
  */
-const HEAD = '小猫戴着头壳，在最狭小的空间里撑起了整个世界。';
+const HEAD = '小猫戴着头壳，在舞台上给小朋友们跳了一支舞。';
 
 /**
  Original in which the kitten dresses as the two characters.
@@ -46,7 +46,7 @@ const SEEDED_TERMS = [
  Candidates the page's misreadings would ship, each with the original it renders.
  */
 const REFUSED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
-  { sourceText: HEAD, candidateText: 'Inside her head, the kitten held up a whole world in the smallest space.', },
+  { sourceText: HEAD, candidateText: 'Inside her head, the kitten danced for the children on stage.', },
   { sourceText: CHARACTERS, candidateText: 'The kitten dressed up as Alona and Atori.', },
 ];
 
@@ -54,12 +54,12 @@ const REFUSED_CANDIDATES: readonly { readonly sourceText: string; readonly candi
  Candidates carrying the community's words, each with the original it renders.
  */
 const ACCEPTED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
-  { sourceText: HEAD, candidateText: 'Inside the headpiece, the kitten held up a whole world in the smallest space.', },
+  { sourceText: HEAD, candidateText: 'Inside the headpiece, the kitten danced for the children on stage.', },
   { sourceText: CHARACTERS, candidateText: 'The kitten dressed up as Arona and Atri.', },
-  // CLASS ONE HUNDRED SIXTY-THREE (TianqiChen6664, 2026-09-26): the refused
+  // CLASS ONE HUNDRED SIXTY-THREE (2026-09-26): the refused
   // form "inside her head" is the start of the rendering "inside her
   // headpiece", and every candidate for the slice was refused on it.
-  { sourceText: HEAD, candidateText: 'Inside her headpiece, the kitten held up a whole world in the smallest space.', },
+  { sourceText: HEAD, candidateText: 'Inside her headpiece, the kitten danced for the children on stage.', },
 ];
 
 /**
@@ -68,7 +68,7 @@ const ACCEPTED_CANDIDATES: readonly { readonly sourceText: string; readonly cand
  */
 const MIXED_CANDIDATE = {
   sourceText: HEAD,
-  candidateText: 'Inside her headpiece, and inside her head, the kitten held up a whole world.',
+  candidateText: 'Inside her headpiece, and inside her head, the kitten danced.',
 } as const;
 
 await describe({
@@ -107,9 +107,9 @@ await describe({
     it({
       name: 'SEEDS 高性能机器人 as Atri\'s own words (class one hundred seventy-eight)',
       fn: async () => {
-        // TianqiChen66610 (2026-09-26): the archive glossed the performer's
-        // "high-performance robot" image as "a cute character she cosplayed
-        // as"; the owner named the character: Atri, whose catchphrase it is.
+        // One entry (2026-09-26): the archive glossed the performer's
+        // "high-performance robot" image away as a character she cosplayed;
+        // the owner named the character: Atri, whose catchphrase it is.
         /**
          The seeded entry.
          */
