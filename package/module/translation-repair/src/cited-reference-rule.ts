@@ -9,6 +9,11 @@
  Mio19 deletion: four critics reported "older sister who is also trans" as
  an addition because the ORIGINAL does not say it, and the blog the
  ORIGINAL cites does.
+
+ PRECEDENCE IS STATED IN THE RULE (ledger S8): the narrative bound on the same
+ sheets calls an event or a characterization the ORIGINAL does not state an
+ addition, and neither rule limited reader protection, so a method a cited
+ page stated read as accurate detail to keep.
  */
 export const CITED_REFERENCE_RULE: string = 'CITED REFERENCES are what the pages the ORIGINAL itself links say, fetched once and kept.'
   + ' A detail the TRANSLATION carries that the ORIGINAL does not state but a cited reference states'
@@ -17,6 +22,11 @@ export const CITED_REFERENCE_RULE: string = 'CITED REFERENCES are what the pages
   + ' The references are evidence for judging what the TRANSLATION already says and nothing else:'
   + ' they never license adding to the TRANSLATION, never outrank the ORIGINAL where the two disagree,'
   + ' and never license a defect elsewhere.'
+  + ' An event, an action or a characterization a cited reference states is covered too:'
+  + ' the rule that what happened is never apparatus is about detail no source states,'
+  + ' and a cited reference is the ORIGINAL\'s own source.'
+  + ' Reader protection outranks the references: a method, a substance, a dose, or a place that was the means'
+  + ' stays out however plainly a reference states it.'
   + ' Lines marked attested name TRANSLATION details a reference states, checked word for word:'
   + ' a claim that one of them is an addition is void.';
 
@@ -71,6 +81,11 @@ export const CITED_REFERENCE_CANDIDATE_RULE: string = 'CITED REFERENCES are what
   + ' The references are evidence for judging what a rendering already says and nothing else:'
   + ' they never license adding to a rendering, never outrank the ORIGINAL where the two disagree,'
   + ' and never license a finding elsewhere.'
+  + ' An event, an action or a characterization a cited reference states is covered too:'
+  + ' the rule that what happened is never apparatus is about detail no source states,'
+  + ' and a cited reference is the ORIGINAL\'s own source.'
+  + ' Reader protection outranks the references: a method, a substance, a dose, or a place that was the means'
+  + ' stays out however plainly a reference states it.'
   + ' Lines marked attested name archive details a reference states, checked word for word:'
   + ' a rendering is never unsupported for carrying one, and one that drops it drops accurate detail.';
 

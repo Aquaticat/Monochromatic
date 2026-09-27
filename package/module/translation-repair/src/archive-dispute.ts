@@ -3,8 +3,8 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { DisputedWording, } from './disputed-wording.ts';
 import {
+  APPARATUS_KINDS,
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
-  TRANSLATOR_NOTE_KIND,
 } from './page-apparatus-clause.ts';
 
 //region Archive dispute
@@ -508,9 +508,10 @@ export function archiveDisputeNote(
     ? ` ${NARRATIVE_DETAIL_IS_NOT_APPARATUS} A detail those addition claims name that says what happened is not `
       + 'page content and not the page\'s apparatus, in the archive\'s wording or any softer one: a candidate '
       + 'leaving it out has dropped nothing, and a candidate keeping it carries an accepted addition. Judge such a '
-      + `detail against the ORIGINAL alone. A claim naming only the page's apparatus, a gloss of a name or a term or ${
-        TRANSLATOR_NOTE_KIND
-      }, does not make it an addition: judge it by the page-apparatus rule, as if no claim named it.`
+      + 'detail against the ORIGINAL alone: the adjudicators weighed any cited references before accepting the '
+      + `claim, so a cited reference does not reopen it. A claim naming only the page's apparatus (${
+        APPARATUS_KINDS
+      }) does not make it an addition: judge it by the page-apparatus rule, as if no claim named it.`
     : '';
   /**
    Rule for a reading an accepted mistranslation, omission or untranslated
