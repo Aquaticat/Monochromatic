@@ -1065,7 +1065,14 @@ and a wrong digest was refused.
 the wrong digest then received an acknowledgement and the expected test failed.
 Raw evidence is retained at private `19702d3` and `393aa5e`.
 Only the four owned exited copy controls were removed after retention.
-No model-sized throughput is measured.
+Streaming-copy control `proc_cca7` also passed with 268,435,456 bytes,
+one-MiB chunks,
+a 64-MiB Node heap,
+and one GiB/one CPU in the container.
+Evidence is at private `ce5ca63`.
+No full-model transfer throughput or combined memory fit is measured.
+Forced exit loses uncopied tmpfs contents;
+retain durable logs/partial host copies without claiming complete artifact recovery.
 
 Capture controls `proc_68ff` also passed under two GiB/two CPUs/60 seconds.
 Direct capture retained the valid `2..8` range and symbolic ONNX axis.
@@ -1077,7 +1084,30 @@ Source and the non-isolated deferred-assert flag difference are recorded in
 [the shape-contract note](../troubleshooting/pytorch-onnx-shape-refinement.md).
 Source is private `7e3e4a7`,
 raw/result/artifact bytes `d53a844`.
-The named capture-control container is retained pending evidence closure.
+The owned exited capture and scaled-copy containers were removed after evidence retention;
+quarantined artifacts remain.
+
+#33 addresses a separate first-party audit-hook coverage gap.
+`proc_c2b6` confirmed the archived hook did not match synthetic
+`os.fork`,
+`os.forkpty`,
+`os.posix_spawn`,
+or `pty.spawn` events.
+No process operation was called by that probe,
+and it does not show that any prior canary spawned a process.
+Do not treat the original selected controls as complete Python process-event coverage.
+Archived sources/results remain unchanged.
+
+Producer-only `export-laya/boundary.py` now has SHA-256
+`733dc5654f774a56f2e291c9a6a38264b7a27939bbb9e7f40022aa854cad463d`.
+`proc_da6c` passed its 12 rejection/three allowance controls,
+and all eight process-family/four non-process omissions failed as expected.
+Evidence is private `29e60e9`,
+`d805954`,
+and `1ca9658`.
+This is live Python-hook dispatch with synthetic events,
+not a native syscall sandbox or actual process-API exercise.
+Repeat applicable controls on the eventual derived producer image.
 
 Next for #32:
 use the demonstrated explicit-capture composition,

@@ -420,6 +420,12 @@ that is neither full-policy evidence nor the measured BF16 autocast `predict` pa
 First-party artifact-copy controls `proc_4968` accepted the valid digest and refused the wrong digest.
 The hash-guard omission `proc_b105` exposed an incorrect acknowledgement and failed its expected test.
 Only the four owned exited copy-control containers were removed after evidence retention.
+Streaming control `proc_cca7` then verified a 268,435,456-byte transfer under one GiB/one CPU,
+using one-MiB chunks and a 64-MiB Node heap.
+This is not full-model throughput or combined memory-fit evidence.
+The owned scaled-copy and capture-control containers were removed after retention.
+A forced kill loses uncopied tmpfs contents;
+only logs and already copied host bytes survive.
 Guard-model-free capture controls `proc_68ff` retained a valid direct dynamic range through ONNX conversion,
 rejected a conflicting direct range after a fixed-shape positive control,
 and observed the combined ONNX wrapper return a fixed-length graph despite `fallback=False`.
@@ -435,6 +441,27 @@ checkpoint hashing,
 model-sized transfer integration,
 and the complete producer manifest remain preparation work.
 No Laya import or checkpoint export occurred in these controls.
+
+Task #33 corrected a separate owned-hook process-event gap.
+Synthetic probe `proc_c2b6` confirmed the archived hook did not match
+`os.fork`,
+`os.forkpty`,
+`os.posix_spawn`,
+or `pty.spawn`.
+The names are documented in the
+[CPython 3.13.15 event catalogue](https://docs.python.org/3.13/library/audit_events.html).
+This withdraws any reading of the original controls as complete Python process-event coverage;
+it does not establish that any prior canary called those operations.
+Producer-only hook `733dc5654f774a56f2e291c9a6a38264b7a27939bbb9e7f40022aa854cad463d`
+passed 12 rejection/three allowance controls in `proc_da6c`;
+each of eight process-family/four non-process omissions failed its named expectation.
+Archived sources and results remain unchanged.
+Evidence is private `29e60e9`,
+`d805954`,
+and `1ca9658`.
+These are synthetic-event dispatch checks,
+not actual process-API tests or native syscall confinement.
+Repeat applicable controls on the derived producer image before checkpoint execution.
 
 ### Jev through LLM Gateway
 

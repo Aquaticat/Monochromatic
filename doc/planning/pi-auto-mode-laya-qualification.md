@@ -918,7 +918,12 @@ Removing only the committed copy-hash equality check exposed an incorrect acknow
 and failed the expected test in `proc_b105`.
 Evidence is retained at private `19702d3` and `393aa5e`;
 only the four owned exited copy-control containers were removed after retention.
-This does not measure model-sized transfer throughput.
+Streaming-copy control `proc_cca7` then transferred and verified 268,435,456 bytes
+under one GiB/one CPU with one-MiB chunks and a 64-MiB Node heap.
+Its raw record is at private `ce5ca63`.
+This does not measure full-model transfer throughput or memory fit.
+Forced container exit loses uncopied tmpfs data;
+only durable logs and already copied host bytes survive.
 
 Guard-model-free capture controls `proc_68ff` passed and are retained at private `d53a844`.
 Direct capture preserved a valid requested range `2..8` through conversion of an existing exported program.
@@ -931,6 +936,28 @@ diagnostics,
 and the non-isolated flag difference.
 The proposed producer will use explicit capture and inspect actual constraints before conversion;
 this toy evidence does not establish Laya capture compatibility.
+
+A separate owned-hook correction is recorded by #33.
+Synthetic probe `proc_c2b6` confirmed the archived canary hook rejected its existing process families
+but did not match `os.fork`,
+`os.forkpty`,
+`os.posix_spawn`,
+or `pty.spawn`.
+These names are documented in the
+[CPython 3.13.15 event catalogue](https://docs.python.org/3.13/library/audit_events.html).
+Withdraw any interpretation of the original controls as complete Python process-event coverage.
+This is not evidence that a prior canary invoked those operations.
+
+Producer-only hook `export-laya/boundary.py` adds those event names.
+`proc_da6c` passed 12 rejection/three allowance controls;
+each of eight process-family and four non-process omissions failed its named test.
+The original sources stayed unchanged during mutation testing.
+Evidence is at private `29e60e9`,
+`d805954`,
+and `1ca9658`.
+Python audit dispatch is not native syscall confinement;
+source review and kernel isolation remain required.
+Applicable controls must run against the derived producer image before checkpoint loading.
 
 Actual full-policy input/precision/shape checks,
 checkpoint hash validation,
