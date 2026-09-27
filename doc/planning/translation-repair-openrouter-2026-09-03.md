@@ -8186,6 +8186,7 @@ The reading was wrong on three counts:
 The owner chose "Healed first (Recommended)" over removing the entry.
 Guard `2234f1a92` red first, fix `23f4e15d6`:
 the entry leads with "healed" and its why says never to flatten 治愈 into "comforted" where the page keeps 安慰 apart.
+Lint 0/0; the full suite at `23f4e15d6` read 1,169 PASS, 0 FAIL.
 TianqiChen66618 was stopped a few minutes in, and TianqiChen66619 launched on `.frozen-dist-23f4e15d6`.
 
 Guard `644f23cf5` (`community-glossary-kigurumi.unit.test.ts`), red first (three of four),
