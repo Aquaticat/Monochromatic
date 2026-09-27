@@ -18,18 +18,45 @@ import {
 // the translate lane's incumbent and as the consolidation's standing where
 // the contest chose neither lane, so the disputed rendering is neither a
 // candidate nor a fallback anywhere downstream.
+//
+// CLASS ONE HUNDRED SEVENTY-SIX (TianqiChen66610 slice 13, owner answer
+// 2026-09-26: "Major+ accuracy"). The adjudicators accepted major
+// mistranslation claims against the archive's gloss of the character a
+// performer was remembered as, the gate tied 2 to 2, and the archive shipped
+// because only additions disputed it. Any accepted accuracy claim at major
+// severity or worse now disputes the archive as well; additions keep
+// disputing at any severity.
 
 /**
- Claim category that disputes the archive rendering.
+ Claim category that disputes the archive rendering at any severity.
  */
-const DISPUTING_CATEGORY = 'accuracy/addition';
+const ADDITION_CATEGORY = 'accuracy/addition';
+
+/**
+ Category family whose other claims dispute the archive at a disputing
+ severity.
+ */
+const ACCURACY_FAMILY = 'accuracy/';
+
+/**
+ Severities at which a non-addition accuracy claim disputes the archive.
+ */
+const DISPUTING_SEVERITIES: ReadonlySet<string> = new Set([
+  'major',
+  'critical',
+],);
+
+/**
+ How the findings and the sheets name what disputes the archive.
+ */
+const DISPUTING_RULE = 'accuracy/addition at any severity, any other accuracy claim at major or worse';
 
 /**
  One disputed slice and the text standing in for its archive rendering.
 
  @example
  ```ts
- const dispute: ArchiveDispute = { sliceIndex: 3, standIn: repairedText, acceptedAdditions: 2, acceptedClaims: [], };
+ const dispute: ArchiveDispute = { sliceIndex: 3, standIn: repairedText, acceptedClaims: [], };
  ```
  */
 export type ArchiveDispute = {
@@ -44,13 +71,8 @@ export type ArchiveDispute = {
   readonly standIn: string;
 
   /**
-   How many `accuracy/addition` claims the adjudicators accepted.
-   */
-  readonly acceptedAdditions: number;
-
-  /**
-   Those claims, each as "category severity: summary", for the sheets that
-   judge or write against the stand-in (class one hundred eight).
+   Accepted disputing claims, each as "category severity: summary", for the
+   sheets that judge or write against the stand-in (class one hundred eight).
    */
   readonly acceptedClaims: readonly string[];
 };
@@ -91,19 +113,48 @@ type DisputeEntry = readonly [
 ];
 
 /**
- Names the accepted addition claims against one chunk's archive rendering.
+ Whether an accepted claim disputes the archive rendering: an addition at any
+ severity, or another accuracy claim at major severity or worse.
+
+ @param category - category the claim was filed under
+
+ @param severity - severity the claim carries
+
+ @returns Whether the claim disputes the archive
+
+ @example
+ ```ts
+ disputesArchive({ category: 'accuracy/mistranslation', severity: 'major', },); // true
+ ```
+ */
+function disputesArchive(
+  {
+    category,
+    severity,
+  }: {
+    readonly category: string;
+    readonly severity: string;
+  },
+): boolean {
+  if (category === ADDITION_CATEGORY)
+    return true;
+  return category.startsWith(ACCURACY_FAMILY,) && DISPUTING_SEVERITIES.has(severity,);
+}
+
+/**
+ Names the accepted disputing claims against one chunk's archive rendering.
 
  @param issues - adjudicated issues of the chunk
 
- @returns Claims of the disputing category inside accepted issues, each as
+ @returns Disputing claims inside accepted issues, each as
  "category severity: summary"
 
  @example
  ```ts
- const claims = acceptedAdditionClaimsOf({ issues: chunk.issues, },);
+ const claims = acceptedDisputingClaimsOf({ issues: chunk.issues, },);
  ```
  */
-function acceptedAdditionClaimsOf(
+function acceptedDisputingClaimsOf(
   { issues, }: { readonly issues: readonly AdjudicatedIssue[]; },
 ): readonly string[] {
   return issues
@@ -114,11 +165,7 @@ function acceptedAdditionClaimsOf(
       return issue.claims;
     },)
     .filter(function disputes(member,): boolean {
-      /**
-       Category the claim was filed under.
-       */
-      const { category, } = member.claim;
-      return category === DISPUTING_CATEGORY;
+      return disputesArchive(member.claim,);
     },)
     .map(function toBody(member,): string {
       /**
@@ -151,9 +198,9 @@ export function archiveDisputesOf(
   return new Map(chunks
     .flatMap(function toDispute(chunk,): readonly DisputeEntry[] {
       /**
-       Accepted addition claims against this chunk's archive rendering.
+       Accepted disputing claims against this chunk's archive rendering.
        */
-      const acceptedClaims = acceptedAdditionClaimsOf({ issues: chunk.issues, },);
+      const acceptedClaims = acceptedDisputingClaimsOf({ issues: chunk.issues, },);
       if (acceptedClaims.length === 0)
         return [];
       return [[
@@ -161,7 +208,6 @@ export function archiveDisputesOf(
         {
           sliceIndex: chunk.sliceIndex,
           standIn: chunk.repairedText,
-          acceptedAdditions: acceptedClaims.length,
           acceptedClaims,
         },
       ],];
@@ -183,10 +229,14 @@ export function archiveDisputesOf(
 export function describeArchiveDispute(
   { dispute, }: { readonly dispute: ArchiveDispute; },
 ): string {
+  /**
+   Claims the finding counts.
+   */
+  const { acceptedClaims, } = dispute;
   return `translate-archive-disputed (slice ${String(dispute.sliceIndex,)}): the repair lane's adjudicators accepted ${
-    String(dispute.acceptedAdditions,)
-  } ${DISPUTING_CATEGORY} claim(s) against the archive rendering, so the repair lane's text stands in for it `
-    + '(class one hundred seven)';
+    String(acceptedClaims.length,)
+  } disputing claim(s) (${DISPUTING_RULE}) against the archive rendering, so the repair lane's text stands in for it `
+    + '(classes one hundred seven and one hundred seventy-six)';
 }
 
 /**
@@ -252,9 +302,13 @@ export function archiveDisputeNote(
   { dispute, }: { readonly dispute: ArchiveDispute; },
 ): string {
   /**
+   Claims the note names.
+   */
+  const { acceptedClaims, } = dispute;
+  /**
    Claims numbered the way a ballot can cite them.
    */
-  const numbered = dispute.acceptedClaims
+  const numbered = acceptedClaims
     .map(function toLine(
       claim,
       index,
@@ -262,16 +316,44 @@ export function archiveDisputeNote(
       return `(${String(index + 1,)}) ${claim}`;
     },)
     .join('; ',);
+  /**
+   Whether any accepted claim is an addition, which brings the apparatus rule.
+   */
+  const carriesAddition = acceptedClaims.some(function isAddition(claim,): boolean {
+    return claim.startsWith(`${ADDITION_CATEGORY} `,);
+  },);
+  /**
+   Whether any accepted claim is another accuracy claim, which brings the
+   reading rule (class one hundred seventy-six).
+   */
+  const carriesMisreading = acceptedClaims.some(function isMisreading(claim,): boolean {
+    return !claim.startsWith(`${ADDITION_CATEGORY} `,);
+  },);
+  /**
+   Rule for a detail an accepted addition names.
+   */
+  const additionRule = carriesAddition
+    ? ` ${NARRATIVE_DETAIL_IS_NOT_APPARATUS} A detail those addition claims name that says what happened is not `
+      + 'page content and not the page\'s apparatus, in the archive\'s wording or any softer one: a candidate '
+      + 'leaving it out has dropped nothing, and a candidate keeping it carries an accepted addition. Judge such a '
+      + `detail against the ORIGINAL alone. A claim naming only the page's apparatus, a gloss of a name or a term or ${
+        TRANSLATOR_NOTE_KIND
+      }, does not make it an addition: judge it by the page-apparatus rule, as if no claim named it.`
+    : '';
+  /**
+   Rule for a reading an accepted mistranslation, omission or untranslated
+   claim names.
+   */
+  const misreadingRule = carriesMisreading
+    ? ' A reading those claims name as mistranslated, omitted or left untranslated is not the page\'s authority, '
+      + 'in the archive\'s wording or a near copy of it: render what the ORIGINAL says there, and weigh a candidate '
+      + 'keeping the archive\'s reading as carrying an accepted error.'
+    : '';
   return `ARCHIVE RENDERING DISPUTED: the repair lane's adjudicators accepted ${
-    String(dispute.acceptedAdditions,)
-  } ${DISPUTING_CATEGORY} claim(s) that the archive rendering says what the ORIGINAL never states; the claims: ${
+    String(acceptedClaims.length,)
+  } claim(s) (${DISPUTING_RULE}) that the archive rendering departs from the ORIGINAL; the claims: ${
     numbered
-  }. ${NARRATIVE_DETAIL_IS_NOT_APPARATUS} A detail those claims name that says what happened is not page content `
-    + 'and not the page\'s apparatus, in the archive\'s wording or any softer one: a candidate leaving it out has '
-    + 'dropped nothing, and a candidate keeping it carries an accepted addition. Judge such a detail against the '
-    + `ORIGINAL alone. A claim naming only the page's apparatus, a gloss of a name or a term or ${
-      TRANSLATOR_NOTE_KIND
-    }, does not make it an addition: judge it by the page-apparatus rule, as if no claim named it.`;
+  }.${additionRule}${misreadingRule}`;
 }
 
 /**

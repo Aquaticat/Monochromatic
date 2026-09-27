@@ -53,7 +53,6 @@ const noteDispute = archiveDisputeNote({
   dispute: {
     sliceIndex: 9,
     standIn: '[^3]: That is, the fish mentioned earlier.',
-    acceptedAdditions: 1,
     acceptedClaims: [
       'accuracy/addition major: The translation of footnote 3 adds the pun explanation from the ARCHIVE note, '
         + 'whereas the ORIGINAL footnote only says that it refers to the fish mentioned earlier.',
