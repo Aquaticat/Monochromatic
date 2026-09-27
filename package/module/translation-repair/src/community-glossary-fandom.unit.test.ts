@@ -105,6 +105,22 @@ await describe({
       },
     },),
     it({
+      name: 'SEEDS 高性能机器人 as Atri\'s own words (class one hundred seventy-eight)',
+      fn: async () => {
+        // TianqiChen66610 (2026-09-26): the archive glossed the performer's
+        // "high-performance robot" image as "a cute character she cosplayed
+        // as"; the owner named the character: Atri, whose catchphrase it is.
+        /**
+         The seeded entry.
+         */
+        const entry = COMMUNITY_GLOSSARY.find(function isRobot(candidate,): boolean {
+          return candidate.term === '高性能机器人';
+        },);
+        expect(entry?.renderings[0],).toBe('high-performance robot',);
+        expect(entry?.why.includes('Atri',),).toBe(true,);
+      },
+    },),
+    it({
       name: 'REFUSES a refused form standing apart even where the rendering appears elsewhere',
       fn: async () => {
         expect(validateTranslatedSlice(MIXED_CANDIDATE,).kind,).toBe('invalid',);
