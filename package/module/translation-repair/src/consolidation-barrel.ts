@@ -98,6 +98,7 @@ export {
   type StandingVerdict,
 } from './consolidate-standing-verdict.ts';
 export { laneTextsForSlate, } from './consolidate-lane-offer.ts';
+export { archiveStandInFor, } from './consolidate-archive-stand-in.ts';
 export { archiveFlawedByAll, } from './consolidate-archive-flawed.ts';
 export {
   CONSOLIDATE_CACHE_VERSION,
