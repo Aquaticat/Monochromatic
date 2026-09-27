@@ -21,6 +21,12 @@ import {
 
 import { neutralPronounFindings, } from '../dist/final/node/index.mjs';
 
+/**
+ Original writing the neutral pronoun, so an untranslated one is owed its
+ rendering.
+ */
+const WRITES_TA = 'TA 在窗台上打盹，Ta 的尾巴垂下来。我们给 ta 留了一个房间。';
+
 await describe({
   name: neutralPronounFindings.name,
   children: [
@@ -28,9 +34,28 @@ await describe({
       name: 'stays quiet on a translation that renders the pronoun, which is the case that must not fire',
       fn: async () => {
         expect(neutralPronounFindings({
+          sourceText: WRITES_TA,
           candidateText: 'They dozed on the windowsill, and their tail hung down. We set a room for them.',
         },),).toStrictEqual([],);
-        expect(neutralPronounFindings({ candidateText: '', },),).toStrictEqual([],);
+        expect(neutralPronounFindings({
+          sourceText: WRITES_TA,
+          candidateText: '',
+        },),).toStrictEqual([],);
+      },
+    },),
+
+    it({
+      name: 'READS THE ORIGINAL: an English TA or Ta where the original writes no neutral pronoun is English, '
+        + 'not the pronoun left untranslated (ledger F-9: 助教 as "The TA", a "Ta!" of thanks)',
+      fn: async () => {
+        expect(neutralPronounFindings({
+          sourceText: '助教批改了猫的作业。',
+          candidateText: 'The TA graded the cat\'s homework.',
+        },),).toStrictEqual([],);
+        expect(neutralPronounFindings({
+          sourceText: '「谢啦！」橘猫说。',
+          candidateText: '“Ta!” said the ginger cat.',
+        },),).toStrictEqual([],);
       },
     },),
 
@@ -38,6 +63,7 @@ await describe({
       name: 'NAMES each spelling kept and its count, in the order TA, Ta, ta',
       fn: async () => {
         const findings = neutralPronounFindings({
+          sourceText: WRITES_TA,
           candidateText: 'TA dozed. Then Ta woke, and ta stretched; Ta purred.',
         },);
 
@@ -52,6 +78,7 @@ await describe({
         + 'since none of those makes it part of a longer word',
       fn: async () => {
         const findings = neutralPronounFindings({
+          sourceText: WRITES_TA,
           candidateText: 'A room for Ta, to give Ta\'s memorial warmth. “Ta” 的 (Ta)',
         },);
 
@@ -64,6 +91,7 @@ await describe({
         + 'form, which are what a bare word-boundary check would have counted',
       fn: async () => {
         expect(neutralPronounFindings({
+          sourceText: WRITES_TA,
           candidateText: 'DATA and STATION stay with @ta_cat at https://example.org/ta/ and meta.ta, ta-da, ta9.',
         },),).toStrictEqual([],);
       },
