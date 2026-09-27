@@ -60,8 +60,11 @@ export const FANDOM_GLOSSARY: readonly CommunityTerm[] = [
   // as "in this game of becoming a doll" and 被她治愈 as "those she had
   // healed". Kigurumi players call putting on the costume 变娃 (a Chinese
   // report on the hobby: 偶装玩家会将穿上偶装称作"变娃"); English "doll up"
-  // means dressing smartly, so it is refused. 治愈 refuses nothing, since
-  // "healed her heart" is English too; the why names the sense.
+  // means dressing smartly, so it is refused. 治愈 first led with
+  // "comforted"; the owner disagreed (2026-09-27), since the same page writes
+  // 安慰 where it means comfort, "healing" is the fandom's own English for
+  // 治愈系 and the archive reads "those she has healed". It leads with
+  // "healed" and refuses nothing.
   {
     term: '变娃',
     renderings: [
@@ -79,15 +82,14 @@ export const FANDOM_GLOSSARY: readonly CommunityTerm[] = [
   {
     term: '治愈',
     renderings: [
-      'comforted',
-      'cheered up',
-      'lifted the spirits of',
+      'healed',
+      'soothed',
       'cured',
     ],
     refusedForms: [],
-    why: 'of people or feelings, the comfort a person or a work gives (治愈系, "healing" in the fan sense): the '
-      + 'people she comforted, not the people she healed, which reads as curing a wound; "cured" only where the '
-      + 'passage speaks of an illness',
+    why: 'of people or feelings, the healing a person or a work gives (治愈系, "healing" in the fan sense): the '
+      + 'people she healed; a stronger word than 安慰, which is comfort, so never flatten 治愈 into "comforted" '
+      + 'where the page keeps the two apart; "cured" only where the passage speaks of an illness',
   },
 ];
 
