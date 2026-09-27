@@ -8082,6 +8082,66 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Whole-package audit, 2026-09-27: class one hundred eighty-six onward
+
+The owner asked:
+"audit the whole translation-repair pkg for all the mistakes we've made and fix all of them",
+"try to prevent recurrence by recording them and what to do in pkg-local docs",
+and "Mistakes made, ever, for this pkg, not just today."
+Then:
+"You don't need to immediately start/restart a costly run if you believe further fixes should be done before
+launching it."
+No run launches until the fixes land;
+TianqiChen66620 was stopped at 17 min before slice 9.
+
+Every finding,
+its evidence path,
+fix,
+guard and status lives in `package/module/translation-repair/doc/audit-ledger.md`.
+
+### The owner's answers
+
+- The 治愈 correction:
+    one of the three reasons given was a misquotation (the page writes 安抚, not 安慰);
+    the owner was told, and "healed first" stands on the other two.
+- "Objections to polish":
+    over an ineligible standing the gate's objections become required corrections for the polish
+    (fourteenth addendum of `doc/decision/translation-repair-ineligible-standing.md`).
+- "Allow it, because it's the proper name of an org.":
+    小药娘 inside mikaela_khara's registered company name is not the term
+    (`doc/decision/translation-repair-community-glossary.md`).
+- "Italics for works" (`doc/decision/translation-repair-title-style.md`).
+- ""took medication" is fine, because it's not replicable.":
+    `doc/decision/translation-repair-reader-protection-cause-of-death.md`.
+- "Preference + polish":
+    a slate rejected twice over an ineligible standing ships by the class one hundred seventy-four order,
+    its reasons sent to the polish (fifteenth addendum).
+
+### Landed so far
+
+- `0b8788dae`: the gate sheet no longer says an ineligible standing stops the entry.
+- `cc96eca77` (class one hundred eighty-six): glossary terms,
+    renderings and refused forms match at word boundaries with tone marks,
+    case,
+    hyphens and CJK spacing folded;
+    a lowercase or line-start OD is held (14 XingZ60 runs had shipped it).
+- `9eba04abb`: medication with nothing to copy may stay;
+    titles of works stand in italics.
+- `f3cd0ef83`: an organization's proper name is not the 药娘 term.
+- `00eed316e`: the translate writer gets the ordered tense rule,
+    and its no-addition rule no longer excuses the existing translation's narrative.
+- `9858a7acb`: production translators receive the archive dispute note.
+- `b45000747`: every rendered sheet is in Canadian spelling,
+    guarded through a shared rendered-sheets fixture.
+- `e8f0b0369`: nine house-policy wordings,
+    among them the house rules outranking any other rule on the same sheet.
+    One reading was adopted without an owner answer:
+    a term with no English equivalent is "kept in English letters (translated literally, or romanized where it is a
+    name), never left in Han", which the owner may veto.
+- `ce824d933`: the typed decision seat reads the house rules and the community block.
+
+The full suite passed 1174 at `b45000747`.
+
 ## TianqiChen66619 read, 2026-09-27: INCOMPLETE at slice 9, class one hundred eighty-five
 
 TianqiChen66619 ran on `.frozen-dist-23f4e15d6` and stopped INCOMPLETE after 755,525 ms

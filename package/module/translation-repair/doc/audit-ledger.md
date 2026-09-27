@@ -26,7 +26,7 @@ Files: `src/community-glossary.ts`,
 
 ### C1: refused forms match as raw substrings
 
-Status: open (task #371).
+Status: fixed in `cc96eca77` (guard `glossary-match.unit.test.ts`), "head mask" added to 头壳.
 `renderingCarries` and `refusedFormIn` in `src/translate-community-term.ts` check no word boundary,
 and a rendering excuses a refused form only when it opens inside the occurrence and runs past its end.
 The built floor refuses "inside her head mask",
@@ -68,7 +68,7 @@ Guard: 猫可以治愈人 with "a healing cat" and 猫是药娘 with "a transgen
 
 ### C4: renderings count as present inside unrelated words
 
-Status: open (task #371).
+Status: fixed in `cc96eca77`.
 "cured" inside "secured",
 "outed" inside "shouted",
 "atri" inside "psychiatric" hide real departures.
@@ -123,13 +123,13 @@ Status: open (task #372).
 
 ### C8: comments cut on the floor side only
 
-Status: open (task #371).
+Status: fixed in `cc96eca77`.
 The floor cuts HTML comments;
 `communityRenderingDepartures` and the sheet term lines do not.
 
 ### C9: the two floor messages name the term differently
 
-Status: open (task #371).
+Status: fixed in `cc96eca77` (the term is now `OD`, so both messages name it alike).
 One uses the trimmed term,
 the other the raw one.
 
@@ -148,7 +148,7 @@ Files: `src/rendering-glossary*.ts`.
 
 ### R1: " OD" misses lowercase and line-start OD, and SHIPPED
 
-Status: open (task #371).
+Status: fixed in `cc96eca77`; the three false comments corrected there and in this ledger.
 hulicaijia opens a paragraph with `OD`;
 XingZ60 writes lowercase `od` four times.
 XingZ6014 shipped "I hate od, / so once z60 started od,"
@@ -170,7 +170,7 @@ Status: open (task #372).
 
 ### R3: 未成年 "minor trans" fires inside transgression, translation, transfer
 
-Status: open (task #371 boundaries, task #372 forms).
+Status: fixed in `cc96eca77` (boundaries, and "minor transgender" added).
 
 ### R4: 滑档 refuses ordinary motion verbs
 
@@ -229,7 +229,7 @@ Status: open (task #372).
 
 ### R14: refusal overreach without boundaries
 
-Status: open (task #371).
+Status: fixed in `cc96eca77` by boundaries.
 "wish form" in "a wish formed",
 "threatened her life" in "lifelong",
 "head of year" in "ahead of year-end",
@@ -294,7 +294,7 @@ Status: open, by reading.
 
 ### K6: the house policy writes "capitalised" and "judgement"
 
-Status: open.
+Status: fixed in `b45000747`; `sheet-canadian-spelling.unit.test.ts` now reads every rendered sheet.
 Its spelling test checks four forms.
 
 ### K7: `prose-ranges.ts` protects too much
@@ -334,7 +334,7 @@ Status: open.
 
 ### G1: the gate sheet says choosing an ineligible standing stops the entry
 
-Status: open (task #373).
+Status: fixed in `0b8788dae`; decision addenda thirteen to fifteen record the owner's answers.
 Since class one hundred eighty-five (`419605ff4`) a gate preferring an ineligible standing ships the slate's choice,
 but `buildConsolidateGateMessages` still says 'Choosing "standing" stops this entry with no page',
 and the `standingEligible` TSDoc in `src/consolidate-settle-gate.ts` says a gate keeping it ends the slice.
@@ -349,7 +349,7 @@ Paths are under `src/`.
 
 ### S1: the translate writer keeps the existing translation's tense, against the house tense rule on the same sheet
 
-Status: open.
+Status: fixed in `00eed316e` (guard `b16350d39`), with the translate writer's no-addition rule.
 `translate-wire.ts` says "KEEP THE TENSE OF THE EXISTING TRANSLATION where one is shown";
 `house-policy.ts` says a life told in the present is brought to the past.
 Class eighty-five fixed the same wording on the consolidation writer only,
@@ -358,7 +358,7 @@ Fix: the consolidation writer's ordered tense rule.
 
 ### S2: production translate writers never see ARCHIVE RENDERING DISPUTED
 
-Status: open.
+Status: fixed in `9858a7acb` (guard `translate-produce-dispute.unit.test.ts`).
 `translate-stage-repair.ts` spreads `archiveDisputeNote` into `produceTranslateSlate`,
 which never declares or forwards it;
 a capturing client shows 0 of 2 translator sheets carry the note.
@@ -367,7 +367,7 @@ Fix: declare and forward it; guard through `produceTranslateSlate`.
 
 ### S3: the typed decision seat (Jev) votes without the house rules or community renderings
 
-Status: open.
+Status: fixed in `ce824d933` (guard `decision-seat-policy.unit.test.ts`).
 `selectDecision` in `candidate-select-decision.ts` builds criteria,
 evidence and candidates only;
 the chat seat carries `JUDGE_POLICY_BLOCK` and `communityRenderingsBlock`.
@@ -417,7 +417,7 @@ neither limits reader protection
 
 ### S9: reader-protection bullet contradicts itself on "took medication"
 
-Status: open, owner confirmation of the condition.
+Status: resolved by the owner, 2026-09-27: "took medication" is not replicable and may stay (`9eba04abb`).
 `house-policy.ts` keeps "took medication" vague as a method
 and allows "at most that she had taken medication" for any medication tied to a death.
 Proposed condition: the allowance holds only where medication was not the means.
@@ -667,7 +667,7 @@ XingZ6011 lost 96.3 min to it on 2026-09-26.
 
 ### E2: the reader-protection bullet prescribes "she ended her life" for deaths and attempts alike
 
-Status: open.
+Status: fixed in `e8f0b0369`.
 The bullet opens on "a death or an attempt" and its sample says "the page says that she ended her life",
 the class seventy-nine shape;
 class one hundred twenty-four's later sentence contradicts it.
