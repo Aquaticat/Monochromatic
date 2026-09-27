@@ -97,6 +97,35 @@ The measured synthetic layout demonstrates that this split permits shared states
 It does not quantify leakage or calibration inflation in the real benchmark.
 The guard's future qualification requires its own state/family separation rather than adopting this split unit implicitly.
 
+### Fit and serving temperature intervals differ
+
+The inspected notebook's `fit_one_temp` at lines 202-218 ends with:
+
+```python
+# notebooks/laya_finetune_typed_decisions_2xT4_kaggle.ipynb
+return float(torch.clamp(log_t.exp(), 0.1, 10.0).item())
+```
+
+The serving helper uses different bounds at `laya/common.py:376-390`:
+
+```python
+# laya/common.py
+TEMP_MIN = 0.5
+TEMP_MAX = 5.0
+
+return min(hi, max(lo, t))
+```
+
+`laya/agent.py:390-407` normalizes loaded per-type and option-count temperatures through that helper.
+A future exported fit therefore needs validation after loading,
+not merely inspection of its stored number.
+This source-range observation does not establish that an unrun fit would leave the serving interval.
+No fit,
+optimizer step,
+or synthetic trained checkpoint was created to make that claim.
+The measured Noul baseline selected valid temperatures;
+its observed `choice:11+` warning concerns a different bucket.
+
 ### Published checkpoint calibration is a separate artifact
 
 The pinned typed-decisions configuration at model revision
@@ -203,6 +232,11 @@ Any future authorized guard-training recipe would need:
 
 These are candidate-feasibility requirements,
 not permission to start training.
+The [source-supported feasibility note](../planning/pi-auto-mode-laya-finetune-feasibility.md)
+distinguishes whole-model adaptation,
+head-training boundaries,
+community examples,
+and the unmeasured resource/quality questions.
 
 ## What does not work as evidence
 

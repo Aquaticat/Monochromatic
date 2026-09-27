@@ -217,7 +217,8 @@ runtime,
 semantic-grant,
 calibration,
 and consumer qualification is tracked separately in #25 and the current audit.
-Source-supported fine-tuning feasibility remains #7.
+The [fine-tuning feasibility note](pi-auto-mode-laya-finetune-feasibility.md)
+records the source-supported mechanisms and their unmeasured boundaries under #7.
 Additional paraphrase/semantic-flip controls could characterize input-form sensitivity;
 they would not by themselves prove training benefit or distinguish all the potential causes recorded here.
 

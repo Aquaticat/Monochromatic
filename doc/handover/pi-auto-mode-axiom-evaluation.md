@@ -659,7 +659,48 @@ and isolation remain unverified.
 
 The corrected published-Noul baseline is tracked under #6.
 Broader probability qualification and remaining configurations are retained under #25;
-fine-tuning feasibility remains #7.
+source-supported fine-tuning feasibility is recorded under #7 in the
+[feasibility note](../planning/pi-auto-mode-laya-finetune-feasibility.md).
+
+The inspected notebook adapts encoder and head with an RLCD/soft-cross-entropy loop.
+Laya also exposes `detach_encoder` and head-checkpointing boundaries;
+its gradient tests were read but not executed because they perform optimizer steps.
+No source-supported mechanism establishes a guard-quality improvement,
+training-memory fit,
+or a remedy for the measured latency.
+The already measured preparation/grouping gaps remain applicable.
+New source inspection also records the notebook's fit interval of 0.1 to 10
+versus the serving clamp of 0.5 to 5,
+without claiming an unrun fit would leave the serving interval.
+
+The README-linked stuntd source was inspected only as a frozen-encoder/head-training precedent,
+not a promoted assessor or selected dependency.
+Clone:
+`~/temp/agent/stuntd-laya-finetune-source-2026-09-27`,
+revision `102a63116ef597231e3b2aa1455dea583e099cc0`,
+manifest version 0.1.1,
+Apache-2.0.
+No install,
+service,
+capture,
+training,
+or test suite ran.
+Its advertised provider-answer capture/distillation workflow is not authorized here;
+manual import exists but is not a qualified guard-training pipeline.
+Its trained heads use a choice representation,
+its layouts do not assert complete-policy retention,
+and its holdout is reused for temperature/operating-point selection and reported metrics.
+Do not borrow its demo performance or treat training-time encoder caching as a serving-latency result.
+
+The browser-specialization README was read at Hugging Face commit
+`642bacc1cb65f55c0af6e0e1178b6d48634a327a`.
+It documents a different task and shortened state;
+its reported hardware,
+quality,
+and timing are not this guard's measurements.
+The conclusion is conditional source feasibility only,
+not a training or production recommendation.
+
 Keep the agreed resource bounds and distinguish measured deadline misses from rejecting every fallback workflow.
 Training and rented compute still require separate authorization.
 

@@ -20,6 +20,10 @@ Its observations do not establish whether fine-tuning is necessary,
 whether a frozen encoder contains sufficient transferable features,
 or whether either training mechanism would produce a qualified probability profile.
 The two request states are not a training/calibration/final-qualification corpus.
+Laya's `README.md:1021-1041` also documents a neutral-key two-option `choice` formulation
+as an alternative to label-sensitive Noul.
+That existing representation remains unqualified for this guard under #25;
+the baseline does not establish that training is the necessary next remedy.
 
 The user authorized all task-relevant assessment content through LLM Gateway/Jev,
 not Laya training,
@@ -61,10 +65,10 @@ Laya's notebook
 `notebooks/laya_finetune_typed_decisions_2xT4_kaggle.ipynb:110-132`
 converts Noul references into false/true target distributions.
 An independently authored binary reference can therefore be represented as a two-entry target;
-there is no need to train on final approve/deny labels.
+final approve/deny labels are not substitutes for those axiom references.
 Missing labels must not use the notebook's default 0.5 values as a substitute for unknown evidence.
 
-At notebook lines 275-282,
+At notebook lines 275 to 282,
 the optimizer receives both parameter groups:
 
 ```python
@@ -79,9 +83,10 @@ optimizer = torch.optim.AdamW([
 
 The inspected recipe does not freeze the encoder.
 Its loop combines a noisy-logit policy-gradient objective with soft cross-entropy guidance
-at lines 319-340.
-These are learning objectives for the typed outputs,
-not evidence that this guard's semantics or operating regime have been learned.
+at lines 319 to 340.
+Here "policy gradient" names an optimization method over typed outputs,
+not authority to learn or choose the guard's final actions.
+The objective's presence is not evidence that this guard's semantics or operating regime have been learned.
 
 ### Detached or frozen encoder with head training
 
@@ -110,8 +115,8 @@ A concrete separate trainer exists in stuntd.
 `_HEAD_PREFIXES` retains the transformer head,
 scorer,
 and type embedding.
-Its `_fit` at lines 340-360 uses cross-entropy over those trainable parameters.
-The optional cache at lines 276-332 records frozen encoder outputs for training epochs.
+Its `_fit` at lines 340 to 360 uses cross-entropy over those trainable parameters.
+The optional cache at lines 276 to 332 records frozen encoder outputs for training epochs.
 That training cache is not a serving-latency result:
 `stuntd/serve/decider.py:204-218` still calls the model forward path when its score computation is invoked.
 
@@ -156,14 +161,14 @@ Do not repeat the historical same-item-fit claim as current notebook behavior.
 Published checkpoints remain separate artifacts.
 
 There are additional fit/serve conditions to qualify.
-The notebook's `fit_one_temp` at lines 202-218 can return values clamped to 0.1 through 10.
+The notebook's `fit_one_temp` at lines 202 to 218 can return values clamped to 0.1 through 10.
 `laya/common.py:376-390` applies a serving interval of 0.5 through 5.
 A future fitted value must be checked after loading and runtime normalization;
 this interval difference does not prove any unrun fit would land outside the serving interval.
 The current Noul baseline did not change or fit temperatures.
 Its unrelated `choice:11+` warning must not be attributed to its Noul values.
 
-The notebook performs CUDA FP16 autocast at lines 306-315 and 393-403,
+The notebook performs CUDA FP16 autocast at lines 306 to 315 and 393 to 403,
 whereas the measured CPU inference profile uses BF16.
 That difference is a validation requirement,
 not an assertion that either precision is faulty.
@@ -200,10 +205,12 @@ and device timings are not estimates for this task.
 ## Resource and execution limits
 
 The Laya notebook explicitly launches two workers for its Kaggle T4 environment
-at lines 443-457,
-uses NCCL/CUDA initialization at lines 221-227,
-and uses microbatches of eight at lines 266-278.
+at lines 443 to 457,
+uses NCCL/CUDA initialization at lines 221 to 227,
+and uses microbatches of eight at lines 266 to 278.
 It is not the bounded CPU inference recipe already measured here.
+The [PyTorch HIP documentation](https://docs.pytorch.org/docs/stable/notes/hip.html)
+explains that HIP reuses `torch.cuda` interfaces.
 CUDA API spelling alone does not establish an NVIDIA-only impossibility on other builds;
 no AMD training/runtime fit was tested.
 
@@ -220,7 +227,7 @@ not the explicit container budget used in this investigation.
 Any future experiment needs an explicit bounded allocation and validated stop conditions.
 
 Neither inspected recipe contains an inference architecture-pruning or smaller-encoder distillation step.
-The Laya notebook exports the model state and encoder configuration at lines 416-428;
+The Laya notebook exports the model state and encoder configuration at lines 416 to 428;
 stuntd freezes the encoder rather than replacing it.
 These sources establish no remedy for the measured per-forward deadline misses.
 Do not infer a speedup from changing weights,
@@ -228,9 +235,9 @@ training fewer parameters,
 or training-time encoder caching.
 
 Do not run the notebook end to end as a convenience command.
-Its install/download preparation is unpinned at lines 64-102,
+Its install/download preparation is unpinned at lines 64 to 102,
 its saved-item loader uses `weights_only=False` at line 251,
-and its publication cell creates a public Hub repository and uploads a folder at lines 803-813.
+and its publication cell creates a public Hub repository and uploads a folder at lines 803 to 813.
 Those actions need separate execution,
 data,
 training,

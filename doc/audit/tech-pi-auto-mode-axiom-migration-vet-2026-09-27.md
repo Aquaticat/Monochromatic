@@ -195,7 +195,29 @@ accelerator/alternative-runtime,
 full-context quality,
 calibration,
 and consumer qualification is carried forward explicitly in #25 and this audit.
-Source-supported fine-tuning feasibility remains #7.
+The [source-supported fine-tuning assessment](../planning/pi-auto-mode-laya-finetune-feasibility.md)
+records encoder/head adaptation and detached/frozen-encoder training boundaries.
+It establishes a path to an experiment,
+not demonstrated guard quality,
+training-memory fit,
+or an inference-latency remedy.
+The current notebook's preprocessing/grouping findings remain material;
+its fit/serve temperature intervals and FP16-training/BF16-serving difference also need qualification.
+Published native representation alternatives remain separate from a training intervention.
+
+README-linked stuntd 0.1.1 source at
+`102a63116ef597231e3b2aa1455dea583e099cc0`
+was inspected only as a Laya head-training precedent,
+not promoted as another assessor or selected dependency.
+Its provider-answer distillation workflow is not authorized here,
+and its choice-head layout and holdout reuse are not guard qualification.
+No stuntd installation,
+server,
+capture,
+training,
+or test suite ran.
+The browser-specialization example also uses a different task and shortened state;
+its reported performance is not this guard's evidence.
 No accelerator or training was run.
 
 ### Jev through LLM Gateway
