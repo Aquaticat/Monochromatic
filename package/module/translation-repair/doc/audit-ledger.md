@@ -839,7 +839,9 @@ Status: open (with E7).
 
 ### F-9: the neutral-pronoun floor never reads the original
 
-Status: open.
+Status: fixed; the floor takes the original and asks only where it writes TA, Ta or ta.
+Replayed (`floor-replay.mjs neutralPronounFindings`): the same four refusals before and after,
+each on an original that writes the pronoun; the false ones were constructed controls, now guarded.
 "The TA graded the cat's homework." (助教) and "Ta!" are refused.
 
 ### F-10: `assertHeadingsStayDistinct` goes silent when heading counts differ
@@ -1645,7 +1647,10 @@ Prevention: read each FAIL reason of a red run; a missing export gets its own pr
 Status: fixed in the following fix commit.
 `88fdb1923` carried a `no-mixed-operators` warning
 because the lint step sat in an `&&` chain whose `rg` succeeded on warnings.
-Prevention: commit only after the lint line reads `Found 0 warnings and 0 errors`.
+Recurred on 2026-09-27: the F-9 guard went in red with seven type errors,
+because it passed `sourceText` to a floor that did not yet take it.
+Prevention: commit only after the lint line reads `Found 0 warnings and 0 errors`;
+a guard that needs a new parameter gets a prep commit adding the parameter first.
 
 ### M5: a new condition guarded on one branch only
 
