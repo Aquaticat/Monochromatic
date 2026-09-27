@@ -219,6 +219,22 @@ await describe({
       },
     },),
     it({
+      name: 'TELLS THE JUDGE THE CONSOLIDATION SHIPS over a standing that cannot ship (class one hundred '
+        + 'eighty-five, TianqiChen66619 slice 9, 2026-09-27): a gate preferring such a standing ships the '
+        + 'slate\'s choice with the preference recorded, so a sheet saying the choice stops the entry misleads '
+        + 'the judge about what the ballot does',
+      fn: async () => {
+        const shown = shownFor({
+          subject: {
+            ...SUBJECT,
+            standingRefusal: 'Your translation carries the pronoun untranslated as "Ta" (1 time)',
+          },
+        },);
+        expect(shown,).not.toContain('stops this entry',);
+        expect(shown,).toContain('"consolidated" ships whichever you choose',);
+      },
+    },),
+    it({
       name: 'shows the original as the standard and the archive as evidence',
       fn: async () => {
         const shown = exchangeFor({ subject: SUBJECT, },);
