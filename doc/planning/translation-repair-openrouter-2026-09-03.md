@@ -8082,6 +8082,64 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## TianqiChen66619 read, 2026-09-27: INCOMPLETE at slice 9, class one hundred eighty-five
+
+TianqiChen66619 ran on `.frozen-dist-23f4e15d6` and stopped INCOMPLETE after 755,525 ms
+(`TALLY TianqiChen666 status=INCOMPLETE`),
+so the 治愈 and 变娃 checks have no page to read.
+Slice 9 carries the refrain 你看头壳里，她在最狭小的空间中撑起了最完美的世界.
+
+### What the log shows
+
+- The repair lane's adjudicators accepted four disputing claims against the archive's
+    "intolerant world" rendering,
+    so the repair text stood in for it (classes one hundred seven and one hundred seventy-six).
+- The lane contest chose the repair text 5 of 7 usable,
+    every ballot calling the archive flawed,
+    and the address floor refused it:
+    "the ORIGINAL passage writes 你 or 您 once,
+    and your translation carries no "you" but "she" in its place".
+- The consolidation withheld the refused standing,
+    offered the translate lane text beside the proposals,
+    and the gate went 2 standing,
+    1 neither,
+    1 consolidated of 4 usable,
+    the two standing ballots holding "wasn't she" and "for you" in the consolidated text against it.
+    `requireShippableTerminal` raised `gate-kept-standing` and the entry stopped.
+- The consolidation's slate and gate lines named no slice,
+    so slice 9's ballots were read out of the interleaved log by time alone.
+
+### Class one hundred eighty-five
+
+Three defects,
+each fixed with its guard shown failing first:
+
+- The address floor (`translate-address-drop.ts`) counted 你看,
+    the imperative "look",
+    as an address.
+    The standing's "she" rendered the original's own 她,
+    and the floor pushed the bench into writing "for you" to pass.
+    The corpus census found 你看 or 你瞧 opening a clause on TianqiChen666 (three times),
+    hulicaijia and XingZ60,
+    and 你看 as a verb with an object on zhangyubaka (被你看到) and Rentable_A (替你看管).
+    A clause-opening 你看 or 你瞧 with no complement is no longer counted
+    (guard `5cdeebb58`, fix `e5b69c658`).
+- A gate that preferred an ineligible standing stopped the entry although the slate had chosen a valid
+    proposal.
+    The class fifty-four note had kept that stop,
+    reading the owner's 2026-09-04 "else fail the slice at once" as covering a gate's preference;
+    the rule fails the slice only where no valid proposal exists.
+    `shipPastForfeitStanding` (renamed from `shipPastUndecidedGate`) now ships the slate's choice with
+    `gate-preferred-ineligible-standing` recorded
+    (guards `e7e6f706a` and `44e27ca0e`, fix `419605ff4`).
+- Every consolidation purchase is now tagged `[slice N]`,
+    as the lane contest already was
+    (guard `44e27ca0e`, fix `2f26f440d`).
+
+Lint 0/0 and types clean at `2f26f440d`;
+the full suite passes 1169 with none failing (`suite-class185.log`).
+TianqiChen66620 launched on `.frozen-dist-2f26f440d` (scope `pass-TianqiChen66620`, pid 1459739).
+
 ## Glossary audit and TianqiChen66616 read, 2026-09-27: class one hundred eighty-four
 
 ### The owner's correction

@@ -4879,10 +4879,20 @@ each read off the pass log and the shipped page:
     disagree here." then "Healed first (Recommended)"): the page writes 安慰 where it means comfort,
     "healing" is the fandom English for 治愈系 and the archive wrote "healed"; the entry leads with "healed"
     (guard `2234f1a92`, fix `23f4e15d6`). TIANQICHEN66618 (`.frozen-dist-06a2c5c05`) stopped for it.
-    TIANQICHEN66619 RUNNING on `.frozen-dist-23f4e15d6` (scope `pass-TianqiChen66619`, pid 1299515, waiter
-    `wait-TianqiChen66619.mjs`): read 变娃娃 ("in kigurumi", no "game of becoming a doll") and 被她治愈
-    ("healed", past tense, not "comforted") first, then the kigurumi quote's subject and the closet
-    sentence under the five general rules, then classes 160 to 183 holding.
+    TIANQICHEN66619 READ (`.frozen-dist-23f4e15d6`): INCOMPLETE at slice 9 after 755,525 ms, class one
+    hundred eighty-five: the address floor counted the imperative 你看 as an address (guard `5cdeebb58`, fix
+    `e5b69c658`); a gate preferring an ineligible standing stopped the entry although the slate chose a
+    valid proposal, now the slate's choice ships with `gate-preferred-ineligible-standing` (guards
+    `e7e6f706a`, `44e27ca0e`, fix `419605ff4`); consolidation lines now carry `[slice N]` (fix `2f26f440d`).
+    Full suite at `2f26f440d`: 1169 PASS, 0 FAIL (`suite-class185.log`).
+    TIANQICHEN66620 RUNNING on `.frozen-dist-2f26f440d` (scope `pass-TianqiChen66620`, pid 1459739, waiter
+    `wait-TianqiChen66620.mjs`): read slice 9 ("Look inside the headpiece", no forced "for you"), 变娃娃
+    ("in kigurumi") and 被她治愈 ("healed", past tense) first, then the kigurumi quote's subject and the
+    closet sentence, then classes 160 to 185 holding.
+    AUDIT IN PROGRESS (owner 2026-09-27: "audit the whole translation-repair pkg for all the mistakes we've
+    made and fix all of them", "Mistakes made, ever, for this pkg"): findings land in the planning doc and
+    the package-local prevention doc. The community glossary audit found the 治愈 correction's 安慰
+    contrast is a misquotation: TianqiChen666 writes 安抚 (line 89), not 安慰; the owner must hear this.
     TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built
