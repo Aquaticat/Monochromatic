@@ -1032,8 +1032,37 @@ No-inference/guard-load flags are program-scope declarations,
 not measured counters.
 Only the owned exited canary container was removed after verification and source-copy retention;
 the immutable image and quarantined files remain.
-Next for #25:
-prepare a separately frozen Laya-specific producer experiment and preserve unresolved consumer gates.
+#30 is complete within its bounded frontend scope.
+Final main render/lint `proc_fd07` and private README renders `proc_dfcb` passed;
+main checkpoint is `1e788cff9`.
+
+#32 now blocks broader #25 and prepares the separate Laya producer.
+Private source/preflight `9af16ad` and result `ae0cf7e` live in `export-laya/`.
+Metadata-only `proc_cce5` matched 24 Laya and four selected Transformers source files in the actual image.
+It found no baseline kernels or ORT module;
+Torch/Transformers/tokenizers/safetensors versions were recorded.
+Checkpoint file sizes matched but content hashes were not checked by that metadata command.
+The preinstalled Laya location remains present,
+so the eventual producer must select and verify `/input/source/laya` explicitly.
+No Laya import,
+checkpoint load,
+or export occurred in #32.
+
+The pinned upstream exporter calls `agent.model` directly with random sixteen-token input.
+The owned producer must instead use complete current policy and an existing development axiom,
+and distinguish explicit FP32 export from the previously measured BF16 `predict` path.
+Current policy SHA remained `4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`.
+ModernBERT SDPA/mask/RoPE,
+optional kernel imports,
+and Torch named-dimension source were read;
+no export-shape compatibility is claimed.
+
+Next for #32:
+freeze and verify input/precision/shape checks,
+checkpoint integrity,
+the bounded artifact-transfer protocol,
+and the complete producer execution manifest.
+Then attempt the CPU-only export within existing ceilings and preserve unresolved consumer gates.
 Do not reuse the toy manifest as authorization for a checkpoint export.
 The MIT license,
 build metadata,

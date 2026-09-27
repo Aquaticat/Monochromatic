@@ -406,6 +406,22 @@ accelerator execution,
 or training has occurred.
 The toy frontend success does not waive Laya-specific producer or consumer gates.
 
+Task #32 begins separate producer preparation in private `export-laya/`.
+Metadata-only preflight `proc_cce5` matched 24 pinned Laya source files and four selected Transformers files
+in the actual frontend image.
+It found no baseline kernels or ORT module and recorded the inherited runtime versions.
+Checkpoint sizes matched,
+but no checkpoint content hashes or model execution were checked by this command.
+The preinstalled Laya location remains present;
+the producer must explicitly select and verify the pinned source tree.
+Source/preflight checkpoints are private `9af16ad` and `ae0cf7e`.
+The upstream exporter invokes `agent.model` directly with a random sixteen-token example;
+that is neither full-policy evidence nor the measured BF16 autocast `predict` path.
+The separate full-policy FP32 input/shape checks,
+artifact-transfer controls,
+and producer execution manifest remain preparation work.
+No Laya import or checkpoint export occurred in this preflight.
+
 ### Jev through LLM Gateway
 
 Jev/gateway is a hosted service.

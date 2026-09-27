@@ -880,6 +880,43 @@ A retained `LeafSpec` FutureWarning is defined by PyTorch `torch/utils/_pytree.p
 and displayed through Python `copyreg.py:99`.
 No warning was filtered and no claim extends these observations to other consumers.
 
+### Laya producer preparation
+
+Task #32 separates the next checkpoint producer from the completed toy experiment.
+No checkpoint export has run.
+Private `export-laya/` source/preflight preparation is recorded at `9af16ad`;
+metadata result `proc_cce5` is retained at `ae0cf7e`.
+The actual frontend image matched 24 pinned Laya source files and four selected Transformers source files.
+It reported Torch 2.10.0+cpu,
+Transformers 5.0.0,
+tokenizers 0.22.2,
+and safetensors 0.8.0.
+No baseline `kernels` or ORT module was located.
+Checkpoint sizes matched,
+but that metadata probe did not hash model contents or import candidates.
+A preinstalled Laya package is present;
+any producer must explicitly select and verify the pinned source tree instead.
+
+Pinned `scripts/export_onnx.py` invokes `agent.model` directly with a random sixteen-token example,
+not the complete-policy `predict` path.
+The autocast wrapper is in `laya/agent.py:691-717`;
+exporting the model directly must not be labeled the measured BF16 `predict` profile.
+The proposed first producer uses the upstream-default English checkpoint and explicit CPU/FP32,
+not a checkpoint-quality ranking.
+Complete policy plus an existing development axiom must replace the random example.
+The policy hash remained `4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`
+at this source-review checkpoint;
+recheck it before and after any actual model experiment.
+
+Source review also covers ModernBERT SDPA/mask/default-RoPE branches and the optional kernel-hub import boundary.
+Pinned Torch `torch/export/dynamic_shapes.py:106-183` defines named dynamic dimensions,
+but Laya exportability with those dimensions is untested.
+The actual input/precision/shape checks,
+checkpoint hash gate,
+full execution manifest,
+and bounded artifact-transfer controls remain to be built and exercised.
+No consumer or provenance requirement is waived.
+
 ## Fine-tuning source findings
 
 The pinned notebook is
