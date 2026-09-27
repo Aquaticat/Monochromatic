@@ -523,3 +523,115 @@ the identity block goes by four headings.
 TianqiChen66620 (`.frozen-dist-2f26f440d`) was stopped by this session at 17 min,
 on the owner's 2026-09-27 instruction to launch only once no further fix is due;
 slice 9 was not reached.
+
+## History, classes 93 to 185
+
+Notes: `~/temp/agent/audit-history-93-185/notes.md`
+(families F1 to F19, a per-class list, probes `probe-siblings.mjs`, `fixture-corpus.mjs`, `guard-order.mjs`, `verify-hashes.mjs`).
+All 95 recorded guard commits precede their fixes;
+of 221 cited hashes only `0e0bd1a8c` (named in `811d908a9`'s message) does not resolve.
+
+### H1: a rejection of every valid proposal still stops the entry
+
+Status: open, owner ruling needed.
+`translate-runoff-tie.ts` breaks only a challenge round's tie;
+any other decline throws,
+and `consolidate-settle.ts` turns it into `ConsolidationStandingIneligibleError` over an ineligible standing
+(the hulicaijia14 shape).
+
+### H2: the lane contest winner is validated without `lineStructured`
+
+Status: open.
+`lane-contest-eligibility.ts` passes `declared` only;
+with the class one hundred two fixture the floor says invalid and `laneContestChoiceVerdict` says it may ship.
+
+### H3: the 治愈 misquote
+
+Status: owner told 2026-09-27; the comment,
+why and `community-glossary-kigurumi.unit.test.ts` still carry 安慰 (task #372).
+The comment also calls the reasons the owner's,
+though the owner wrote only "I kinda disagree here".
+
+### H4: the repair lane's own sheets never see the archive dispute
+
+Status: open (class one hundred eight's open half).
+
+### H5: the translate lane and the consolidation never re-seat under a hold
+
+Status: open.
+`corpus-run/pass-reseat.ts` and `corpus-run/pass-consolidate.ts` only wait.
+
+### H6: the absolute naturalness review is shown wrapped prose and no house rules
+
+Status: open (with S13).
+
+### H7: the consolidation writer and the translate judge see picture transcripts with no scope rule
+
+Status: open (with S16).
+
+### H8: the introduced-defect probe has no declared names or glossary
+
+Status: open (class one hundred fourteen's open half).
+
+### H9: observations left unbuilt after the owner said to fix everything
+
+Status: open, to re-check on current pages:
+更多人 omitted,
+螐 in three treatments and the album in two forms,
+"Yuli" with no literal gloss,
+同类 narrowed.
+
+### H10: stale statements against the code
+
+Status: open.
+`doc/slice-context.md` says a slate over an eligible standing keeps its single round on a decline
+and that a tie or rejection is re-asked once;
+the TSDoc in `consolidate-settle.ts` says the same.
+
+### H11: the address floor counts the 你 in 迷你
+
+Status: open (latent).
+
+### H12: minimax-m3 ignores OpenRouter endpoints one at a time and names none measured
+
+Status: open.
+
+### H13: the seeds test pins the whole term list
+
+Status: open.
+`community-glossary.unit.test.ts` went red three times on additions.
+
+### H14: Freud's "id" becomes "ID"
+
+Status: open (latent).
+
+### H15: fixtures carry corpus text
+
+Status: open.
+`address-drop.unit.test.ts` (two fixtures),
+`consolidation-polish-gate.unit.test.ts`,
+`rendering-glossary-idiom.unit.test.ts`,
+`suicide-drop.unit.test.ts`,
+`community-glossary.unit.test.ts`,
+`consolidate-gate-wire.unit.test.ts`.
+
+### Process mistakes, classes 93 to 185
+
+- Passes ran a stale build (a nested `cp` copy),
+    launched from uncommitted trees,
+    or launched on builds whose full suite was red
+    (hulicaijia30, shi_Yumiaoya38, TianqiChen66614, TianqiChen66618, TianqiChen6663, yingying9).
+- A failing test was reported inside a PASS count and never fixed
+    (the `lane-contest-stage` grace case, five times).
+- A suite ran on a build other than the one committed (class one hundred fifty).
+- PASS counts before 2026-09-26 counted describe blocks, not tests.
+- A commit message names a hash that does not exist (`811d908a9` names `0e0bd1a8c`).
+- Doc facts not taken from the source (launch times, counts, a stale handover line).
+- Class one hundred forty-eight's fix has no planning-doc entry.
+- Launch mistakes: a wrong entry id,
+    a waiter watching the old pid,
+    a build in the run's cgroup killed by systemd-oomd.
+- Results claimed without a validated probe (the en_CA scan's false positives;
+    class one hundred ten not replayed on real texts).
+- Evidence misquoted to the owner and rulings misread (治愈's 安慰; class fifty-four's reading of "else fail").
+- Shell rule slips in this session: a `;` in a suite command and in a test command.
