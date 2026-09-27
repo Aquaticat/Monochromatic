@@ -219,14 +219,43 @@ multilingual,
 and typed-decisions.
 All used the same shared states and predicate wording,
 with default labels and the unchanged reviewed runtime.
-Its terminal output was inspected;
-full artifact verification,
-summary,
-and candidate interpretation remain under #6.
+Its result is retained in `44b8770`,
+SHA-256 `46b481b7d55ddb72d8f265a0fc16050548b1fa0a14a85bdd428b912d63230807`.
+Verification `proc_46f0` checked input/reference identities,
+complete forward tokens/masks,
+freshness,
+and actual exited-container image/timestamps/resource configuration.
+The measured summary is retained in `017a584`.
+Interpretation check `proc_3f2c` measured the ordinal differences and verified checkpoint temperature configs.
+Neither check ran another model forward.
 This task's inference batch is finished;
 do not rerun it as if the result were missing.
-The [Laya qualification record](../planning/pi-auto-mode-laya-qualification.md#corrected-request-language-tranche)
-records resources and the single-question versus paired-Jev distinction.
+
+The [corrected observations](../planning/pi-auto-mode-laya-qualification.md#corrected-native-noul-observations)
+record all probabilities and resources.
+There are two synthetic states and four conditional state/predicate references,
+not twelve independent scenarios.
+Each cell was measured once.
+All same-checkpoint predicate pairs moved in the expected ordinal direction at returned precision;
+robust sensitivity,
+calibration,
+thresholds,
+and ranking remain unestablished.
+Every forward exceeded five seconds,
+and all inputs exceeded the encoder-declared 8,192 positions.
+No cause or fine-tuning remedy is established.
+The `choice:11+` warning is not a warning about the selected Noul bucket.
+
+The native baseline scope is #6;
+remaining profile/representation/runtime qualification is explicitly retained in #25.
+Source-supported fine-tuning feasibility is #7.
+The corrected controls cover request text,
+not overall policy prohibitions or eligible prose-grant matching.
+References depend on the supplied synthetic operation/cache bindings.
+Jev serving independence remains unknown,
+not a proven effective sample size of one or three.
+No extra inference tranche is required merely to record these bounded observations;
+new controls would not by themselves establish training benefit.
 
 ## Settled preferences
 
@@ -628,9 +657,9 @@ Device/driver/operator fit,
 resource authorization,
 and isolation remain unverified.
 
-Broader probability qualification,
-remaining configurations,
-and fine-tuning feasibility remain open under todos #6 and #7.
+The corrected published-Noul baseline is tracked under #6.
+Broader probability qualification and remaining configurations are retained under #25;
+fine-tuning feasibility remains #7.
 Keep the agreed resource bounds and distinguish measured deadline misses from rejecting every fallback workflow.
 Training and rented compute still require separate authorization.
 

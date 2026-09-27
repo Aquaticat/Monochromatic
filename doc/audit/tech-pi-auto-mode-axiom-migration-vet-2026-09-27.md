@@ -161,17 +161,41 @@ The qualification record retains their exact source/weight/tokenizer identities.
 
 This candidate remains at targeted evidence,
 not validated or recommended.
-The corrected parser-first request/prohibition batch `proc_12af` completed;
-its detailed interpretation remains candidate work,
-not a fitted profile.
-No probability result constitutes automatic tool authorization.
-The tested full-policy CPU paths do not establish an interactive five-second profile.
-Manual fallback remains allowed;
-this does not reject every runtime or the entire candidate family.
-Accelerator and alternative-runtime qualification,
+The corrected parser-first request/prohibition batch `proc_12af` completed.
+Artifact/input/freshness and exited-container configuration checks passed in `proc_46f0`.
+Result SHA-256:
+`46b481b7d55ddb72d8f265a0fc16050548b1fa0a14a85bdd428b912d63230807`.
+The twelve observations cover two conditional synthetic request states
+and four independent state/predicate references across three checkpoints.
+The qualification record retains every scalar and resource measurement.
+
+Each same-checkpoint predicate pair moved in the expected ordinal direction at the returned precision.
+Each cell was measured once;
+this is not robust sensitivity,
+calibration,
+a threshold,
+or a ranking.
+The references rely on the supplied synthetic operation/target binding,
+not an observed live filesystem or authority collector.
+No eligible prose-grant matching is qualified by these request-text controls.
+
+Every measured forward exceeded five seconds before other assessment costs,
+and all forward lengths exceeded the encoder-declared 8,192 positions.
+No complete live guard or fallback workflow was exercised.
+Manual fallback remains permitted by the user;
+it is not a measured deployment result or grounds for rejecting every Laya runtime.
+The probability values do not establish a cause or a fine-tuning remedy.
+Verified configuration distinguishes the unused `choice:11+` warning
+from the selected Noul temperatures;
+no value was changed or fitted.
+
+The bounded published-Noul baseline is #6.
+Remaining representation,
+accelerator/alternative-runtime,
 full-context quality,
 calibration,
-and consumer checks remain unresolved.
+and consumer qualification is carried forward explicitly in #25 and this audit.
+Source-supported fine-tuning feasibility remains #7.
 No accelerator or training was run.
 
 ### Jev through LLM Gateway
