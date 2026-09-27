@@ -269,12 +269,14 @@ await describe({
           apiKey: 'test-key',
           transport,
         },);
+        /** A caller ceiling under the seat's cap, so the body must carry the caller's. */
+        const requested = Math.floor(COMPLETION_CAP[SEAT_SYNTHETIC_TEXT_EVERYWHERE] / 2,);
         /** Reply of one exchange with every knob set. */
         const reply = await client.chatText({
           modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
           messages: MESSAGES,
           signal: new AbortController().signal,
-          maxTokens: 2_048,
+          maxTokens: requested,
           responseFormat: {
             type: 'json_schema',
             json_schema: { name: 'cat_verdict', schema: { type: 'object', }, },
@@ -292,7 +294,7 @@ await describe({
         const body: unknown = JSON.parse(exchanges[0]?.bodyJson ?? '{}',);
         expect(isJsonRecord(body,) ? body.model : '',).toBe(SEAT_SYNTHETIC_TEXT_EVERYWHERE,);
         expect(isJsonRecord(body,) ? body.stream : false,).toBe(true,);
-        expect(isJsonRecord(body,) ? body.max_tokens : 0,).toBe(2_048,);
+        expect(isJsonRecord(body,) ? body.max_tokens : 0,).toBe(requested,);
         // The serving stack does not honor sampling knobs reliably;
         // no call may carry one.
         expect(isJsonRecord(body,) && ('temperature' in body),).toBe(false,);
@@ -1240,8 +1242,8 @@ await describe({
     it({
       name: 'reads quota snapshots through the transport',
       fn: async () => {
-        /** Recorded quotas body with invented numbers. */
-        const quotasBody = JSON.stringify({
+        /** Recorded quotas with invented numbers. */
+        const quotas = {
           weeklyTokenLimit: {
             nextRegenAt: '2026-07-17T00:10:00.000Z',
             percentRemaining: 87.5,
@@ -1253,7 +1255,9 @@ await describe({
             max: 640,
             limited: false,
           },
-        },);
+        } as const;
+        /** The same quotas as the wire carries them. */
+        const quotasBody = JSON.stringify(quotas,);
         /** Transport replaying the quotas body. */
         const { transport, exchanges, } = recordedTransport({
           replies: [{ status: 200, bodyText: quotasBody, },],
@@ -1262,8 +1266,8 @@ await describe({
         const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
         /** Snapshot of the recorded quota state. */
         const snapshot = await client.quotas({ signal: new AbortController().signal, },);
-        expect(snapshot.fiveHour.remaining,).toBe(613.4,);
-        expect(snapshot.weekly.percentRemaining,).toBe(87.5,);
+        expect(snapshot.fiveHour.remaining,).toBe(quotas.rollingFiveHourLimit.remaining,);
+        expect(snapshot.weekly.percentRemaining,).toBe(quotas.weeklyTokenLimit.percentRemaining,);
         expect(exchanges[0]?.url,).toBe('https://api.synthetic.new/v2/quotas',);
         expect(exchanges[0]?.method,).toBe('GET',);
       },
