@@ -13,7 +13,8 @@
  @module
  */
 
-import { wait, } from '@monochromatic-dev/module-async-time/ts';
+import { setTimeout as abortableWait, } from 'node:timers/promises';
+
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -155,8 +156,15 @@ function scriptedClient(
       }
       if (role === 'failing')
         throw new Error('scripted transport failure',);
-      if (role === 'slow')
-        await wait(SLOW_MS,);
+      // ABORTABLE, so the slow seat stops waiting when the round cuts it;
+      // `wait` from module-async-time takes no signal.
+      if (role === 'slow') {
+        await abortableWait(
+          SLOW_MS,
+          undefined,
+          { signal: request.signal, },
+        );
+      }
 
       /**
        Scripted payload for the answering call.
