@@ -1103,3 +1103,97 @@ decision-seat structural losses marked reachable;
 decision-seat prompts reach 30,203 of a 32,000-token context and `ce824d933` adds the house rules to them with no size check;
 the Bedrock stream bound spans the whole retry ladder;
 card prices differ from the endpoint bought.
+
+## Repair lane
+
+Probes and notes: `~/temp/agent/audit-repair/notes.md`
+(`seat-probe.mjs`, `regress-check.mjs`, `dispute-standin.mjs`, `ride-along.mjs`, `preservation-vacuous.mjs`).
+
+### L1: every checker verdict rests on two voices
+
+Status: open (with A5).
+Qwen3.8-27B is seated as a checker with no provider serving it, so every reading is 2 of 3;
+a 1 to 1 split is the most common outcome,
+`regressed` never fired though checkers voted `worse` 55 times,
+and XingZ6014 slice 87 resolved an issue on one ballot, which shipped.
+
+### L2: the archive-dispute stand-in is the archive's own wording whenever the repair lost
+
+Status: open, owner call on which rule follows.
+60 of 87 disputed slices;
+the translate lane then keeps it as lane agreement and no contest runs;
+a withdrawn text also becomes a stand-in.
+
+### L3: edits the checkers did not confirm ship inside a selected patch
+
+Status: open.
+TianqiChen66616 slice 3 shipped "it left a trace of her turned to ash" (one ballot worse),
+the patch having won on one resolved minor omission.
+
+### L4: the editor preservation gate can never reject anything
+
+Status: open.
+Envelopes and licensed quotes are the same quotes;
+`residualTokens` is 0 on 536 of 540 regions.
+
+### L5: wrong panel acceptances
+
+Status: open.
+Glosses of works outside the panel's apparatus list;
+a supplied object outside its forced-difference line;
+footnote-carried attributions judged dropped;
+an MDX editor comment deleted;
+鲨鲨 (a plush shark) taken for a person;
+a neutral "correctly renders" claim accepted and cut into an envelope.
+
+### L6: the lane contest runs on insertion slices the repair lane does not apply to
+
+Status: open.
+31 wasted contests on XingZ6014.
+
+### L7: the lane contest is shown probe claims about a patch that lost
+
+Status: open.
+
+### L8: a heard ballot with no usable verdict still counts toward quorum
+
+Status: open.
+
+### L9: the dispute rule reads the critic's filed severity, not the adjudicated one
+
+Status: open, owner confirmation of "Major+" meaning.
+
+### L10: the attestation screen only looks at addition claims
+
+Status: open.
+
+### L11: refinement on a slice whose patch lost gets no recheck
+
+Status: open (class one hundred eight's open half, with H4).
+
+### L12: logging gaps in the repair lane
+
+Status: open (with A11).
+No chunk index on critic,
+editor,
+checker,
+refine,
+select and probe lines under overlap;
+ballot irregularities never logged.
+
+### L13: stale TSDoc and comments
+
+Status: open.
+"must ship unchanged",
+"Nothing ships from any of them",
+"judges that wrote none of them",
+"no stage decided by a single model",
+the dispute header,
+the preservation-check claims.
+
+### L14: smaller items
+
+Status: open.
+The resolution checker sheet has no identity, references or claim quotes;
+editors write neighbouring text into an envelope;
+`selectChunkPatch` tells judges a decline keeps the trusted text while an indecision ships the strongest patch.
