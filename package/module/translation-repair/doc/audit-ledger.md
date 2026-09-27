@@ -891,7 +891,7 @@ the fixture rule (cat-themed invention) stands, so these are fixed as fixtures.
 
 ### T5: flaky timing
 
-Status: partly fixed.
+Status: fixed; the finding text below the measurements is as first recorded.
 The contest case's delayed seats never answer, on an abortable timer: 5 of 5 pass at 0.2 CPU
 (`~/temp/agent/audit-tests/t5-fix-summary.log`).
 The naturalness-review sibling measured 5 of 5 at 0.2 CPU before any change and is left as it is:
@@ -910,7 +910,15 @@ the `benchmark` fake's two 2 s waits, now a fake clock the benchmark reads (`544
 the `stage-round-refill` slow seat, now abortable (`9441af9de`, 1.94 s to 0.46 s),
 and `transient-retry`'s backoff, which is the behaviour under test and stays.
 Long `settleWithin` and `armCallDeadline` timers are armed and cleared and cost no wall time.
-The settle-by-timer checks and wall-clock floors in this finding stay open.
+The shapes read into the rest were measured, 8 runs each at 0.2 CPU
+(`~/temp/agent/audit-tests/t5-rest-summary.log`, `t5-peak-summary.log`):
+`synthetic-client`, `hyper-client`, `provider-router`, `transient-retry`, `budget-hold-wait`,
+`refine-phase` and `lane-contest-driver` passed 8 of 8 and are left as they are
+(a floor on a wait only grows under load; the `transient-retry` ceiling is a daily refusal's wait).
+`stage-round` failed 1 of 8: time to the first answer (398 ms) passed the 250 ms grace it was compared with;
+it is now anchored on when the first voice really answered (`c10d62663`), 16 of 16 after.
+`consolidate-driver` failed 1 of 8 on the T6 order check this audit added,
+ordered by 20 ms against 5 ms sleeps; both overlap cases now order by a gate (`d76d2424a`, M11).
 `lane-contest-stage.unit.test.ts` "RECORDS RAW HALF-QUORUM BALLOTS" fails 2 of 5 at 0.2 CPU
 (positive control: the `podman run` in `~/temp/agent/audit-tests/run-container.mjs`);
 its sibling case, the naturalness-review grace case,
@@ -922,7 +930,8 @@ Real sleeps: `stage-quorum` waits 30 s ignoring the abort signal;
 
 ### T6: names claiming more than they check
 
-Status: fixed in `292939dab`, `6baf52dbe`, `bc80c8c14` and `6d7d83c1b`;
+Status: fixed in `292939dab`, `6baf52dbe`, `bc80c8c14` and `6d7d83c1b`,
+whose order checks were timing-ordered and are made deterministic in `d76d2424a` (M11);
 the "trio" is two files (refine phase, consolidation driver) whose names claim the second call answers first.
 `bedrock-catalog` "EVERY ROUTE" checks one route;
 `synthetic-catalog` pins a literal price;
@@ -931,14 +940,24 @@ the driver trio never asserts the second call answers first.
 
 ### T7: magic numbers
 
-Status: open.
+Status: fixed in `c0ce1a2c5`, `7a4d521ed`, `962770574`, `04a9f499a` and `e2c887ee7`;
+`roster-reach` under E9.
 `roster-reach`, `request-pace`, `synthetic-catalog`, `deepseek-v41-admission`, `synthetic-client`, `repair-slice-key`,
 `anthropic-request` (a cap that should be computed from the exported caps),
 and vote weights not derived from exported constants in `candidate-select` and `candidate-select-decision`.
+The rule applied: a measured provider fact or owner limit is pinned once, where it is owned
+(`hyper-catalog`, the GLM wire facts, the account limit in `request-pace`), with its source named;
+every other test derives from the export.
+Kept as pins, deliberately: `repair-slice-key`'s key literals, which exist to fail when a key changes,
+and `request-pace`'s account limit.
+`completion-cap` gained the only check that a pooled card name resolves to one shared figure;
+before, the DeepSeek test's 13,082 literal was its only cover.
 
 ### T8: untested exported functions
 
-Status: open.
+Status: open; recounted 2026-09-27 at 79 of 1,178 barrel-exported functions
+(`~/temp/agent/audit-repair/untested-exports.mjs`, list in `untested-exports.json`),
+queued after the findings that change a run's output.
 76 public functions named by no test;
 a coverage sample shows `isPaymentRefusal`, `statedWaitMsOf`, `routedJson`,
 `secondOpinionsFrom` and others never called,
@@ -1669,5 +1688,18 @@ so two `unicorn(consistent-function-scoping)` warnings from `0aa800ab4` (2026-09
 stood in `provider-budget.ts` and `openrouter-client.ts` for 24 days;
 a whole-package run (`oxlint-wrapper.mjs src`, 1666 files, about 30 to 50 s) showed them at once.
 Prevention: before a batch is called done, lint the whole `src` tree and read its summary line.
+
+### M11: a fix for one test defect written in the shape of another
+
+Status: fixed in `d76d2424a` and `a9230202d`.
+The T6 fix made two tests assert that the second call finishes first,
+and ordered the calls by 20 ms against 5 ms sleeps, which is the T5 shape;
+`consolidate-driver` then failed 1 of 8 at 0.2 CPU.
+Twice more a comment stated how a check fails before any mutation showed it:
+`e40ccf6d2` said a hanging voice ends at the exchange deadline (the fixture arms none, so the bound could never fail),
+and the gate comment said the case fails on the run deadline (the file exits 13 on the unsettled wait).
+Both are corrected, with commit comments on `e40ccf6d2` and `c10d62663`.
+Prevention: an ordering claim in a test is enforced by a gate, never by a head start;
+a comment that says how a check fails is written after the mutation that shows it.
 Prevention: a model-for-role choice is measured on that role's task before anything is asked;
 only what a measurement cannot settle goes to the owner.
