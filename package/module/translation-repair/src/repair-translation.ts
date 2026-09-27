@@ -4,7 +4,11 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import { contextRoot, } from './log-context.ts';
+import {
+  contextRoot,
+  inSliceLogContext,
+  sliceTagged,
+} from './log-context.ts';
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
@@ -148,9 +152,11 @@ export async function repairPreparedDocument(
   /**
    Logger pre-tagged with this function's name.
    */
-  const rl = tagged({
-    tag: repairPreparedDocument.name,
-    l: parentLogger,
+  const rl = sliceTagged({
+    l: tagged({
+      tag: repairPreparedDocument.name,
+      l: parentLogger,
+    },),
   },);
 
   /**
@@ -216,24 +222,31 @@ export async function repairPreparedDocument(
       item: slice,
       position: slicePosition,
     },) {
-      /**
-       Seating the caller read for this slice, empty when the given roster stands.
-       */
-      const seating: RepairSliceSeating = (beforeSlice === undefined) ? {} : await beforeSlice();
-      return await settleRepairSlice({
-        client,
-        prepared,
-        models: seating.repairModels ?? models,
-        ...((beforeSlice === undefined) ? {} : { reseat: beforeSlice, }),
-        ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
-        slice,
-        slicePosition,
-        runShape,
-        ...((sliceCache === undefined) ? {} : { sliceCache, }),
-        twins,
-        signal,
-        perCallTimeoutMs,
-        l: rl,
+      return await inSliceLogContext({
+        lane: 'repair',
+        sliceIndex: slice.target
+          .sliceIndex,
+        run: async function settleRepairInContext() {
+          /**
+           Seating the caller read for this slice, empty when the given roster stands.
+           */
+          const seating: RepairSliceSeating = (beforeSlice === undefined) ? {} : await beforeSlice();
+          return await settleRepairSlice({
+            client,
+            prepared,
+            models: seating.repairModels ?? models,
+            ...((beforeSlice === undefined) ? {} : { reseat: beforeSlice, }),
+            ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
+            slice,
+            slicePosition,
+            runShape,
+            ...((sliceCache === undefined) ? {} : { sliceCache, }),
+            twins,
+            signal,
+            perCallTimeoutMs,
+            l: rl,
+          },);
+        },
       },);
     },
   },);

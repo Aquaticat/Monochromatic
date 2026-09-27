@@ -12,6 +12,7 @@ import {
   frontMatterContestEligibility,
   laneContestChoiceVerdict,
 } from './lane-contest-eligibility.ts';
+import { inSliceLogContext, } from './log-context.ts';
 import { mapOverlapped, } from './overlapped-map.ts';
 import {
   type ArtifactContestSlice,
@@ -344,228 +345,234 @@ export async function contestDocumentLanes(
     items: eligibleRows,
     overlap,
     oneItem: async function contestOne({ item: row, }): Promise<ArtifactContestSlice> {
-      /**
-       Original of this slice, which every ledger row carries.
-       */
-      const sourceText = sourceTexts.get(row.sliceIndex,);
-      if (sourceText === undefined) {
-        throw new Error(
-          `lane contest: slice ${String(row.sliceIndex,)} is compared and does not appear in the repair ledger`,
-        );
-      }
+      return await inSliceLogContext({
+        lane: 'contest',
+        sliceIndex: row.sliceIndex,
+        run: async function contestInContext(): Promise<ArtifactContestSlice> {
+          /**
+           Original of this slice, which every ledger row carries.
+           */
+          const sourceText = sourceTexts.get(row.sliceIndex,);
+          if (sourceText === undefined) {
+            throw new Error(
+              `lane contest: slice ${String(row.sliceIndex,)} is compared and does not appear in the repair ledger`,
+            );
+          }
 
-      /**
-       Syntax role shared by prompt and cache key.
-       */
-      const syntax = frontMatterSlices.has(row.sliceIndex,)
-        ? 'front-matter' as const
-        : undefined;
-      /**
-       Source-backed candidate admission for syntax-bearing contest.
-       */
-      const eligibility = (syntax === 'front-matter')
-        ? frontMatterContestEligibility({
-          sourceText,
-          incumbentText: row.incumbentText,
-          repairText: row.repairText,
-          translateText: row.translateText,
-        },)
-        : undefined;
-      /**
-       Candidate names prompt marks unavailable before panel votes.
-       */
-      const ineligibleCandidates = (eligibility === undefined)
-        ? []
-        : CONTEST_CANDIDATES
-          .filter(function isIneligible(candidate,): boolean {
-            return eligibility[candidate] === 'ineligible';
-          },);
-      /**
-       Probe claims against this slice's repair text, empty for most slices.
-       */
-      const repairDamageClaims = damageClaimsBySlice.get(row.sliceIndex,) ?? [];
-      // Logged so a run's log witnesses whether the judges were shown any claim,
-      // which the ballots alone do not say.
-      if (repairDamageClaims.length > 0) {
-        dl.info(
-          `slice ${String(row.sliceIndex,)}: ${String(repairDamageClaims.length,)} corroborated damage claims `
-            + 'shown to the judges',
-        );
-      }
-      /**
-       Those claims as the optional subject and key field, absent when none.
-       */
-      const damageFragment = (repairDamageClaims.length === 0)
-        ? {}
-        : { repairDamageClaims, };
-      /**
-       Accepted additions against this slice's archive rendering, absent for
-       most slices (class one hundred eight).
-       */
-      const archiveDisputeNote = disputeNotesBySlice.get(row.sliceIndex,);
-      /**
-       That note as the optional subject and key field, absent when none.
-       */
-      const disputeFragment = (archiveDisputeNote === undefined)
-        ? {}
-        : { archiveDisputeNote, };
-      /**
-       Whether the line rule governs this slice: the judges read it, the key
-       names it, and the winner is validated under it (ledger S15, H2).
-       */
-      const lineStructured = lineStructuredSlices.has(row.sliceIndex,);
-      /**
-       Key these ballots resume under.
-       */
-      const key = laneContestSliceKey({
-        runShape,
-        sourceText,
-        incumbentText: row.incumbentText,
-        incumbentKind: row.incumbentKind,
-        ...((syntax === undefined) ? {} : { syntax, }),
-        repairText: row.repairText,
-        translateText: row.translateText,
-        ...damageFragment,
-        ...disputeFragment,
-        lineStructured,
-      },);
-
-      /**
-       Ballots an earlier run already bought for this slice, if any.
-       */
-      const resumed = cache
-        .resumed
-        .get(key,);
-
-      /**
-       What the roster settled here, bought, resumed, or reused from a twin.
-       */
-      const outcome = await (async function resumeOrBuy(): Promise<LaneContestOutcome> {
-        if (resumed !== undefined)
-          return resumed;
-        /**
-         Twin's persisted ballots or this row's fresh purchase.
-         */
-        const asked = await reuseTwinOrBuy({
-          key,
-          memo: twins,
-          buy: async function buyThisRow(): Promise<BoughtLaneContest> {
-            /**
-             Ballots bought for this question.
-             */
-            const rawBought = await contestLaneSlice({
-              client,
-              modelIds,
-              subject: {
-                sourceText,
-                incumbentText: row.incumbentText,
-                repairText: row.repairText,
-                translateText: row.translateText,
-                ...((syntax === undefined) ? {} : { syntax, }),
-                ...((ineligibleCandidates.length === 0) ? {} : { ineligibleCandidates, }),
-                ...((identityContext === undefined) ? {} : { identityContext, }),
-                ...((referenceContext === undefined) ? {} : { referenceContext, }),
-                ...damageFragment,
-                ...disputeFragment,
-                lineStructured,
-              },
-              signal,
-              exchangeTimeoutMs: perCallTimeoutMs,
-              // Tagged with the slice so each ballot line the stage writes
-              // says which passage it judged.
-              l: tagged({
-                l: dl,
-                tag: `slice ${String(row.sliceIndex,)}`,
-              },),
-              // Conditional spread keeps the knob absent instead of undefined.
-              ...((fanOut === undefined) ? {} : { fanOut, }),
-            },);
-            /**
-             Effective result after inadmissible raw choices are excluded.
-             */
-            const bought = applyLaneContestEligibility({
-              outcome: rawBought,
-              ...((eligibility === undefined) ? {} : { eligibility, }),
-            },);
-            // Gather rounds degrade torn-down calls to silence. A quorum that
-            // arrived before the abort must not make the abandoned entry look
-            // done or become warm-run evidence.
-            /**
-             Verdict on whether selected lane can cross final publication
-             boundary, with the findings for the log.
-             */
-            const choiceVerdict = laneContestChoiceVerdict({
-              outcome: bought,
+          /**
+           Syntax role shared by prompt and cache key.
+           */
+          const syntax = frontMatterSlices.has(row.sliceIndex,)
+            ? 'front-matter' as const
+            : undefined;
+          /**
+           Source-backed candidate admission for syntax-bearing contest.
+           */
+          const eligibility = (syntax === 'front-matter')
+            ? frontMatterContestEligibility({
               sourceText,
               incumbentText: row.incumbentText,
               repairText: row.repairText,
               translateText: row.translateText,
-              ...((syntax === undefined) ? {} : { syntax, }),
-              lineStructured,
-              declared: declaredNamePairs,
-            },);
-            /**
-             Whether selected lane can cross final publication boundary.
-             */
-            const choiceMayShip = choiceVerdict.mayShip;
-            if (!choiceMayShip) {
-              /**
-               Findings joined for the log line.
-               */
-              const findings = choiceVerdict.findings
-                .join(' ',);
+            },)
+            : undefined;
+          /**
+           Candidate names prompt marks unavailable before panel votes.
+           */
+          const ineligibleCandidates = (eligibility === undefined)
+            ? []
+            : CONTEST_CANDIDATES
+              .filter(function isIneligible(candidate,): boolean {
+                return eligibility[candidate] === 'ineligible';
+              },);
+          /**
+           Probe claims against this slice's repair text, empty for most slices.
+           */
+          const repairDamageClaims = damageClaimsBySlice.get(row.sliceIndex,) ?? [];
+          // Logged so a run's log witnesses whether the judges were shown any claim,
+          // which the ballots alone do not say.
+          if (repairDamageClaims.length > 0) {
+            dl.info(
+              `slice ${String(row.sliceIndex,)}: ${String(repairDamageClaims.length,)} corroborated damage claims `
+                + 'shown to the judges',
+            );
+          }
+          /**
+           Those claims as the optional subject and key field, absent when none.
+           */
+          const damageFragment = (repairDamageClaims.length === 0)
+            ? {}
+            : { repairDamageClaims, };
+          /**
+           Accepted additions against this slice's archive rendering, absent for
+           most slices (class one hundred eight).
+           */
+          const archiveDisputeNote = disputeNotesBySlice.get(row.sliceIndex,);
+          /**
+           That note as the optional subject and key field, absent when none.
+           */
+          const disputeFragment = (archiveDisputeNote === undefined)
+            ? {}
+            : { archiveDisputeNote, };
+          /**
+           Whether the line rule governs this slice: the judges read it, the key
+           names it, and the winner is validated under it (ledger S15, H2).
+           */
+          const lineStructured = lineStructuredSlices.has(row.sliceIndex,);
+          /**
+           Key these ballots resume under.
+           */
+          const key = laneContestSliceKey({
+            runShape,
+            sourceText,
+            incumbentText: row.incumbentText,
+            incumbentKind: row.incumbentKind,
+            ...((syntax === undefined) ? {} : { syntax, }),
+            repairText: row.repairText,
+            translateText: row.translateText,
+            ...damageFragment,
+            ...disputeFragment,
+            lineStructured,
+          },);
 
-              /**
-               Why each excluded lane was inadmissible, which the floor
-               finding alone does not say; empty off the metadata slice.
-               */
-              const inadmissible = (syntax === 'front-matter')
-                ? describeInadmissibleLanes({
+          /**
+           Ballots an earlier run already bought for this slice, if any.
+           */
+          const resumed = cache
+            .resumed
+            .get(key,);
+
+          /**
+           What the roster settled here, bought, resumed, or reused from a twin.
+           */
+          const outcome = await (async function resumeOrBuy(): Promise<LaneContestOutcome> {
+            if (resumed !== undefined)
+              return resumed;
+            /**
+             Twin's persisted ballots or this row's fresh purchase.
+             */
+            const asked = await reuseTwinOrBuy({
+              key,
+              memo: twins,
+              buy: async function buyThisRow(): Promise<BoughtLaneContest> {
+                /**
+                 Ballots bought for this question.
+                 */
+                const rawBought = await contestLaneSlice({
+                  client,
+                  modelIds,
+                  subject: {
+                    sourceText,
+                    incumbentText: row.incumbentText,
+                    repairText: row.repairText,
+                    translateText: row.translateText,
+                    ...((syntax === undefined) ? {} : { syntax, }),
+                    ...((ineligibleCandidates.length === 0) ? {} : { ineligibleCandidates, }),
+                    ...((identityContext === undefined) ? {} : { identityContext, }),
+                    ...((referenceContext === undefined) ? {} : { referenceContext, }),
+                    ...damageFragment,
+                    ...disputeFragment,
+                    lineStructured,
+                  },
+                  signal,
+                  exchangeTimeoutMs: perCallTimeoutMs,
+                  // Tagged with the slice so each ballot line the stage writes
+                  // says which passage it judged.
+                  l: tagged({
+                    l: dl,
+                    tag: `slice ${String(row.sliceIndex,)}`,
+                  },),
+                  // Conditional spread keeps the knob absent instead of undefined.
+                  ...((fanOut === undefined) ? {} : { fanOut, }),
+                },);
+                /**
+                 Effective result after inadmissible raw choices are excluded.
+                 */
+                const bought = applyLaneContestEligibility({
+                  outcome: rawBought,
+                  ...((eligibility === undefined) ? {} : { eligibility, }),
+                },);
+                // Gather rounds degrade torn-down calls to silence. A quorum that
+                // arrived before the abort must not make the abandoned entry look
+                // done or become warm-run evidence.
+                /**
+                 Verdict on whether selected lane can cross final publication
+                 boundary, with the findings for the log.
+                 */
+                const choiceVerdict = laneContestChoiceVerdict({
+                  outcome: bought,
                   sourceText,
                   incumbentText: row.incumbentText,
                   repairText: row.repairText,
                   translateText: row.translateText,
-                },)
-                : [];
+                  ...((syntax === undefined) ? {} : { syntax, }),
+                  lineStructured,
+                  declared: declaredNamePairs,
+                },);
+                /**
+                 Whether selected lane can cross final publication boundary.
+                 */
+                const choiceMayShip = choiceVerdict.mayShip;
+                if (!choiceMayShip) {
+                  /**
+                   Findings joined for the log line.
+                   */
+                  const findings = choiceVerdict.findings
+                    .join(' ',);
 
-              /**
-               Verdict findings and the lanes' reasons as one line.
-               */
-              const reported = [
-                findings,
-                ...inadmissible,
-              ].join(' ',);
-              dl.warn(
-                `slice ${String(row.sliceIndex,)}: contest winner fails publication invariants and remains retryable: ${reported}`,
-              );
-            }
-            /**
-             Whether this purchase became reusable evidence.
-             */
-            const persisted = await persistLaneContestOutcome({
-              key,
-              outcome: bought,
-              cache,
-              choiceMayShip,
-              signal,
+                  /**
+                   Why each excluded lane was inadmissible, which the floor
+                   finding alone does not say; empty off the metadata slice.
+                   */
+                  const inadmissible = (syntax === 'front-matter')
+                    ? describeInadmissibleLanes({
+                      sourceText,
+                      incumbentText: row.incumbentText,
+                      repairText: row.repairText,
+                      translateText: row.translateText,
+                    },)
+                    : [];
+
+                  /**
+                   Verdict findings and the lanes' reasons as one line.
+                   */
+                  const reported = [
+                    findings,
+                    ...inadmissible,
+                  ].join(' ',);
+                  dl.warn(
+                    `slice ${String(row.sliceIndex,)}: contest winner fails publication invariants and remains retryable: ${reported}`,
+                  );
+                }
+                /**
+                 Whether this purchase became reusable evidence.
+                 */
+                const persisted = await persistLaneContestOutcome({
+                  key,
+                  outcome: bought,
+                  cache,
+                  choiceMayShip,
+                  signal,
+                },);
+                return {
+                  outcome: bought,
+                  persisted,
+                };
+              },
+              persistedOf: storedContestOf,
+              l: dl,
             },);
-            return {
-              outcome: bought,
-              persisted,
-            };
-          },
-          persistedOf: storedContestOf,
-          l: dl,
-        },);
-        if (asked.kind === 'reused')
-          return asked.twin;
-        return asked.bought
-          .outcome;
-      })();
-      return describeContestSlice({
-        sliceIndex: row.sliceIndex,
-        outcome,
-        ...((eligibility === undefined) ? {} : { eligibility, }),
+            if (asked.kind === 'reused')
+              return asked.twin;
+            return asked.bought
+              .outcome;
+          })();
+          return describeContestSlice({
+            sliceIndex: row.sliceIndex,
+            outcome,
+            ...((eligibility === undefined) ? {} : { eligibility, }),
+          },);
+        },
       },);
     },
   },);

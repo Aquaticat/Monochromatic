@@ -12,6 +12,10 @@ import {
   admitInsertions,
   type InsertionAdmission,
 } from './insertion-admission.ts';
+import {
+  inSliceLogContext,
+  sliceTagged,
+} from './log-context.ts';
 import { mapOverlapped, } from './overlapped-map.ts';
 import { attestedDetailLines, } from './reference-attest-match.ts';
 import { assertRostersConfigured, } from './roster-configuration.ts';
@@ -155,9 +159,11 @@ export async function translateDocument(
   /**
    Logger tagged with this driver.
    */
-  const tl = tagged({
-    tag: translateDocument.name,
-    l,
+  const tl = sliceTagged({
+    l: tagged({
+      tag: translateDocument.name,
+      l,
+    },),
   },);
 
   /**
@@ -221,39 +227,46 @@ export async function translateDocument(
       item: slice,
       position: slicePosition,
     },) {
-      if (beforeSlice !== undefined)
-        await beforeSlice();
-      /**
-       Whether production evidence permits filling this source-only slice.
-       */
-      const insertionAdmitted = admission
-        .positions
-        .has(slicePosition,);
-      /**
-       Whether source-only passage needs no local rendering.
-       */
-      const insertionCarried = carriedPositions.has(slicePosition,);
-      /**
-       Dispute over this slice's archive rendering, absent for most slices.
-       */
-      const archiveDispute = archiveDisputes?.get(slice.target
-        .sliceIndex,);
-      return await settleTranslateSlice({
-        client,
-        prepared,
-        models,
-        slice,
-        slicePosition,
-        insertionAdmitted,
-        insertionCarried,
-        pictureReadings,
-        runShape,
-        ...((sliceCache === undefined) ? {} : { sliceCache, }),
-        twins,
-        ...((archiveDispute === undefined) ? {} : { archiveDispute, }),
-        signal,
-        perCallTimeoutMs,
-        l: tl,
+      return await inSliceLogContext({
+        lane: 'translate',
+        sliceIndex: slice.target
+          .sliceIndex,
+        run: async function settleTranslateInContext() {
+          if (beforeSlice !== undefined)
+            await beforeSlice();
+          /**
+           Whether production evidence permits filling this source-only slice.
+           */
+          const insertionAdmitted = admission
+            .positions
+            .has(slicePosition,);
+          /**
+           Whether source-only passage needs no local rendering.
+           */
+          const insertionCarried = carriedPositions.has(slicePosition,);
+          /**
+           Dispute over this slice's archive rendering, absent for most slices.
+           */
+          const archiveDispute = archiveDisputes?.get(slice.target
+            .sliceIndex,);
+          return await settleTranslateSlice({
+            client,
+            prepared,
+            models,
+            slice,
+            slicePosition,
+            insertionAdmitted,
+            insertionCarried,
+            pictureReadings,
+            runShape,
+            ...((sliceCache === undefined) ? {} : { sliceCache, }),
+            twins,
+            ...((archiveDispute === undefined) ? {} : { archiveDispute, }),
+            signal,
+            perCallTimeoutMs,
+            l: tl,
+          },);
+        },
       },);
     },
   },);

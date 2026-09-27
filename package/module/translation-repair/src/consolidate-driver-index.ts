@@ -75,4 +75,63 @@ export function indexConsolidationInputs(
   };
 }
 
+/**
+ One comparison row beside the contest record that settled it.
+
+ @example
+ ```ts
+ const contested: ContestedRow = { row, contest, };
+ ```
+ */
+export type ContestedRow = {
+  /**
+   Both lanes' texts at this slice.
+   */
+  readonly row: ProjectedLanes['comparison'][number];
+
+  /**
+   What the contest settled here.
+   */
+  readonly contest: ArtifactContestSlice;
+};
+
+/**
+ Comparison rows beside the contests that settled them, in document order;
+ a slice the contest never answered is left out.
+
+ @param projected - both lane ledgers and comparison
+
+ @param contestBySlice - contest record per slice it answered
+
+ @returns Rows the consolidation settles
+
+ @example
+ ```ts
+ const eligibleRows = contestedRows({ projected, contestBySlice, },);
+ ```
+ */
+export function contestedRows(
+  {
+    projected,
+    contestBySlice,
+  }: {
+    readonly projected: ProjectedLanes;
+    readonly contestBySlice: ReadonlyMap<number, ArtifactContestSlice>;
+  },
+): readonly ContestedRow[] {
+  return projected.comparison
+    .flatMap(function withContest(row,): readonly ContestedRow[] {
+      /**
+       What the contest settled here, absent where it never ran.
+       */
+      const contest = contestBySlice.get(row.sliceIndex,);
+      return (contest === undefined)
+        ? []
+        : [{
+          row,
+          contest,
+        },];
+    },);
+}
+
 //endregion Consolidation driver index

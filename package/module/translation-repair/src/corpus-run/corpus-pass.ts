@@ -24,6 +24,7 @@ import {
   smallBandIds,
 } from './band-order.ts';
 import { readOnlyIds, } from './entry-filter.ts';
+import { inEntryLogContext, } from '../log-context.ts';
 import { collectEligiblePairs, } from './pass-eligibility.ts';
 import type { EntryOutcome, } from './pass-entry-contract.ts';
 import {
@@ -572,17 +573,24 @@ async function runCorpusPass(): Promise<void> {
         attempts,
       },);
 
-      return settleEntry({
-        client,
-        entry,
-        artifactsDir,
-        publishDir,
-        declinedDir,
-        sliceCacheDir,
-        tip,
-        pipelineDigest,
-        hardCapMs: HARD_CAP_MS,
-        baseSignal: neverAbort,
+      // Every line and ledger record written for this entry names it (ledger A11).
+      return await inEntryLogContext({
+        entry: entry.id,
+        generation: pipelineDigest,
+        run: async function settleInContext(): Promise<EntryOutcome> {
+          return await settleEntry({
+            client,
+            entry,
+            artifactsDir,
+            publishDir,
+            declinedDir,
+            sliceCacheDir,
+            tip,
+            pipelineDigest,
+            hardCapMs: HARD_CAP_MS,
+            baseSignal: neverAbort,
+          },);
+        },
       },);
     },
   },);

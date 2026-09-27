@@ -26,20 +26,21 @@ import {
 } from './corpus-run/artifact-two-lane-consolidate.ts';
 import type { ArtifactContestSlice, } from './corpus-run/artifact-two-lane-contest.ts';
 import type { ProjectedLanes, } from './corpus-run/artifact-two-lane-derive.ts';
-import { indexConsolidationInputs, } from './consolidate-driver-index.ts';
+import {
+  contestedRows,
+  indexConsolidationInputs,
+} from './consolidate-driver-index.ts';
 import {
   type BoughtConsolidation,
   laneChoiceOf,
-  storedConsolidationOf,
 } from './consolidate-driver-records.ts';
+import { acquireConsolidation, } from './consolidate-driver-acquire.ts';
 import type { SliceNeighbourContext, } from './fidelity-window.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import { armSliceCost, } from './slice-cost-log.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
-import {
-  reuseTwinOrBuy,
-  type TwinMemo,
-} from './twin-memo.ts';
+import type { TwinMemo, } from './twin-memo.ts';
+import { inSliceLogContext, } from './log-context.ts';
 import { mapOverlapped, } from './overlapped-map.ts';
 import { ConsolidationLedgerGapError, } from './consolidation-ledger-gap.ts';
 import { NaturalnessCompletenessError, } from './naturalness-completeness-error.ts';
@@ -215,19 +216,10 @@ export async function consolidateDocument(
   /**
    Comparison rows beside contests that selected them, in document order.
    */
-  const eligibleRows = projected.comparison
-    .flatMap(function withContest(row,) {
-      /**
-       What the contest settled here, absent where it never ran.
-       */
-      const contest = contestBySlice.get(row.sliceIndex,);
-      return (contest === undefined)
-        ? []
-        : [{
-          row,
-          contest,
-        },];
-    },);
+  const eligibleRows = contestedRows({
+    projected,
+    contestBySlice,
+  },);
 
   /**
    Cache-eligible purchases in this document, shared by identical questions.
@@ -244,308 +236,278 @@ export async function consolidateDocument(
         contest,
       },
     },): Promise<ArtifactConsolidateSlice> {
-    if (beforeSlice !== undefined)
-      await beforeSlice();
-    /**
-     Original of this slice, which every ledger row carries.
-     */
-    const sourceText = sourceTexts.get(row.sliceIndex,);
-    if (sourceText === undefined)
-      throw new ConsolidationLedgerGapError({ sliceIndex: row.sliceIndex, },);
-
-    /**
-     Wall-time bracket making this slice visible before and after settlement.
-     */
-    using cost = armSliceCost({
-      l: dl,
-      lane: 'consolidation',
-      sliceIndex: row.sliceIndex,
-      sourceChars: sourceText.length,
-      signal,
-    },);
-    cost.left({ exit: 'failed', },);
-
-    /**
-     Lane contest selected, or refusal of both.
-     */
-    const choice = laneChoiceOf({ verdict: contest.verdict, },);
-    /**
-     Archive wording as this settlement takes it, the repair lane's text on
-     a disputed slice (class one hundred seven), and whether a kept standing
-     is that stand-in.
-     */
-    const {
-      incumbentText,
-      standInShips,
-      disputeNote,
-      disputedWordings,
-    } = archiveStandInFor({
-      ...((archiveDisputes === undefined) ? {} : { archiveDisputes, }),
-      sliceIndex: row.sliceIndex,
-      incumbentText: row.incumbentText,
-      choice,
-      l: dl,
-    },);
-    /**
-     Wording the contest left standing, which ships without this stage
-     where the gate passes it.
-     */
-    const laneStanding = standingTextFor({
-      choice,
-      repairText: row.repairText,
-      translateText: row.translateText,
-      incumbentText,
-    },);
-    /**
-     Whether the line-structure rule governs this slice.
-     
-     READ ONCE, because four places below need this same answer: the sheet
-     the producers are shown, the guard that reads their proposals, the key
-     the settlement resumes under, and the wrap. Asking the set four times
-     is how four answers drift into three.
-     */
-    const lineStructured = lineStructuredSlices.has(row.sliceIndex,);
-    /**
-     Syntax role shared by every consolidation phase and cache key.
-     */
-    const syntax = frontMatterSlices.has(row.sliceIndex,)
-      ? 'front-matter' as const
-      : undefined;
-
-    /**
-     Deterministic eligibility and contest endorsement of the standing text,
-     and the wording the settlement runs against: the lane's standing, or
-     the incumbent where the standing failed the gate and the incumbent
-     passes it (owner, 2026-09-09).
-     */
-    const {
-      standingValid,
-      standingMayShip,
-      settlementText: standingText,
-      findings: standingFindings,
-      incumbentStandsIn,
-      standingRefusal,
-    } = readStandingVerdict({
-      sourceText,
-      standingText: laneStanding,
-      incumbentText,
-      ...((syntax === undefined) ? {} : { syntax, }),
-      lineStructured,
-      choice,
-      contestVerdict: contest.verdict,
-      sliceIndex: row.sliceIndex,
-      l: dl,
-      declared: declaredNamePairs,
-      disputedWordings,
-    },);
-
-    /**
-     Lane texts the slate offers beside the proposals: each lane's rendering
-     that passes the deterministic rule and is not the standing, whenever
-     the standing is neither contest-endorsed nor eligible (class forty,
-     2026-09-17, `consolidate-lane-offer.ts`).
-     */
-    const laneTexts = laneTextsForSlate({
-      sourceText,
-      incumbentText,
-      repairText: row.repairText,
-      translateText: row.translateText,
-      standingText,
-      standingMayShip,
-      standingEligible: standingValid,
-      ...((syntax === undefined) ? {} : { syntax, }),
-      lineStructured,
-      declared: declaredNamePairs,
-      disputedWordings,
-    },);
-
-    /**
-     What the pictures near this slice were read to say, empty where none
-     were.
-     
-     MISSING AND EMPTY ARE ONE STATE, folded here on purpose. A slice near no
-     readable picture gets an empty block from the windowing, and a slice the
-     map never mentions is a slice in exactly that position, so distinguishing
-     them would only let the sheet and the key disagree about which spelling
-     the caller happened to use.
-     */
-    const pictureContext = pictureContextBySlice.get(row.sliceIndex,) ?? '';
-
-    /**
-     Passages either side of this slice, folded the same way and for the same
-     reason: a lone slice has an empty window and a slice the map never
-     mentions is a slice in exactly that position.
-     */
-    const neighbours = neighbourContextBySlice.get(row.sliceIndex,)
-      ?? {
-        sourceText: '',
-        incumbentText: '',
-      };
-
-    /**
-     Slice as both halves take it.
-     */
-    const subject = {
-      sourceText,
-      incumbentText,
-      repairText: row.repairText,
-      translateText: row.translateText,
-      ballots: contest.ballots,
-      ...((syntax === undefined) ? {} : { syntax, }),
-      lineStructured,
-      declared: declaredNamePairs,
-      ...((identityContext === undefined) ? {} : { identityContext, }),
-      ...((referenceContext === undefined) ? {} : { referenceContext, }),
-      ...((disputeNote === undefined) ? {} : { archiveDisputeNote: disputeNote, }),
-      ...((disputedWordings.length === 0) ? {} : { disputedWordings, }),
-      // Omitted rather than empty, matching the context above it, so a producer
-      // shown no readings is shown no heading promising any.
-      ...((pictureContext === '') ? {} : { pictureContext, }),
-      // THE WINDOW REACHES THE JUDGING HALF ONLY, for now. The producer sheet
-      // has no block for it, so putting it here promises nothing to a producer
-      // and gives `settleConsolidation` what its judges need. Whether the
-      // producers should have it too is a real question and `#178` records it
-      // as an explicit exclusion rather than answering it in passing.
-      ...((neighbours.sourceText === '') ? {} : { neighbouringSourceText: neighbours.sourceText, }),
-      ...((neighbours.incumbentText === '')
-        ? {}
-        : { neighbouringIncumbentText: neighbours.incumbentText, }),
-    };
-
-    /**
-     Key this settlement resumes under.
-     */
-    const key = consolidateSliceKey({
-      runShape,
-      sourceText,
-      incumbentText,
-      ...((syntax === undefined) ? {} : { syntax, }),
-      repairText: row.repairText,
-      translateText: row.translateText,
-      standingText,
-      ballots: contest.ballots,
-      lineStructured,
-      pictureContext,
-      neighbouringSourceText: neighbours.sourceText,
-      neighbouringIncumbentText: neighbours.incumbentText,
-      laneTexts,
-      ...((disputeNote === undefined) ? {} : { archiveDisputeNote: disputeNote, }),
-    },);
-
-    /**
-     A settlement an earlier run already bought for this slice, if any.
-     */
-    const resumed = cache
-      .resumed
-      .get(key,);
-
-    /**
-     What the roster settled here, bought, resumed, or reused from a twin.
-     */
-    const acquired = await (async function resumeOrBuy(): Promise<{
-      readonly settlement: ConsolidationSettlement;
-      readonly exit: 'computed' | 'resumed' | 'reused';
-    }> {
-      if (resumed !== undefined) {
-        return {
-          settlement: resumed,
-          exit: 'resumed',
-        };
-      }
-
-      /**
-       Twin's persisted settlement or this row's fresh purchase.
-       */
-      const asked = await reuseTwinOrBuy({
-        key,
-        memo: twins,
-        buy: async function buyThisRow(): Promise<BoughtConsolidation> {
+      return await inSliceLogContext({
+        lane: 'consolidation',
+        sliceIndex: row.sliceIndex,
+        run: async function consolidateInContext(): Promise<ArtifactConsolidateSlice> {
+          if (beforeSlice !== undefined)
+            await beforeSlice();
           /**
-           Settlement bought for this question.
+           Original of this slice, which every ledger row carries.
            */
-          const bought = await buyConsolidationSlice({
-            client,
-            roster: modelIds,
-            judgeModelIds,
-            subject,
-            standingText,
-            lineStructured,
+          const sourceText = sourceTexts.get(row.sliceIndex,);
+          if (sourceText === undefined)
+            throw new ConsolidationLedgerGapError({ sliceIndex: row.sliceIndex, },);
+
+          /**
+           Wall-time bracket making this slice visible before and after settlement.
+           */
+          using cost = armSliceCost({
+            l: dl,
+            lane: 'consolidation',
             sliceIndex: row.sliceIndex,
-            ...((polishConfig === undefined) ? {} : { polishConfig, }),
+            sourceChars: sourceText.length,
+            signal,
+          },);
+          cost.left({ exit: 'failed', },);
+
+          /**
+           Lane contest selected, or refusal of both.
+           */
+          const choice = laneChoiceOf({ verdict: contest.verdict, },);
+          /**
+           Archive wording as this settlement takes it, the repair lane's text on
+           a disputed slice (class one hundred seven), and whether a kept standing
+           is that stand-in.
+           */
+          const {
+            incumbentText,
+            standInShips,
+            disputeNote,
+            disputedWordings,
+          } = archiveStandInFor({
+            ...((archiveDisputes === undefined) ? {} : { archiveDisputes, }),
+            sliceIndex: row.sliceIndex,
+            incumbentText: row.incumbentText,
+            choice,
+            l: dl,
+          },);
+          /**
+           Wording the contest left standing, which ships without this stage
+           where the gate passes it.
+           */
+          const laneStanding = standingTextFor({
+            choice,
+            repairText: row.repairText,
+            translateText: row.translateText,
+            incumbentText,
+          },);
+          /**
+           Whether the line-structure rule governs this slice.
+           
+           READ ONCE, because four places below need this same answer: the sheet
+           the producers are shown, the guard that reads their proposals, the key
+           the settlement resumes under, and the wrap. Asking the set four times
+           is how four answers drift into three.
+           */
+          const lineStructured = lineStructuredSlices.has(row.sliceIndex,);
+          /**
+           Syntax role shared by every consolidation phase and cache key.
+           */
+          const syntax = frontMatterSlices.has(row.sliceIndex,)
+            ? 'front-matter' as const
+            : undefined;
+
+          /**
+           Deterministic eligibility and contest endorsement of the standing text,
+           and the wording the settlement runs against: the lane's standing, or
+           the incumbent where the standing failed the gate and the incumbent
+           passes it (owner, 2026-09-09).
+           */
+          const {
+            standingValid,
+            standingMayShip,
+            settlementText: standingText,
+            findings: standingFindings,
+            incumbentStandsIn,
+            standingRefusal,
+          } = readStandingVerdict({
+            sourceText,
+            standingText: laneStanding,
+            incumbentText,
+            ...((syntax === undefined) ? {} : { syntax, }),
+            lineStructured,
+            choice,
+            contestVerdict: contest.verdict,
+            sliceIndex: row.sliceIndex,
+            l: dl,
+            declared: declaredNamePairs,
+            disputedWordings,
+          },);
+
+          /**
+           Lane texts the slate offers beside the proposals: each lane's rendering
+           that passes the deterministic rule and is not the standing, whenever
+           the standing is neither contest-endorsed nor eligible (class forty,
+           2026-09-17, `consolidate-lane-offer.ts`).
+           */
+          const laneTexts = laneTextsForSlate({
+            sourceText,
+            incumbentText,
+            repairText: row.repairText,
+            translateText: row.translateText,
+            standingText,
             standingMayShip,
             standingEligible: standingValid,
-            ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
-            standingFindings,
-            laneTexts,
-            // A tied slate over this eligible standing is run off where every
-            // contest ballot called the archive flawed (class one hundred
-            // six). Derived from the ballots the key already carries.
-            runoffOverStanding: archiveFlawedByAll({
-              verdict: contest.verdict,
-              ballots: contest.ballots,
-            },),
-            signal,
-            perCallTimeoutMs,
-            // Tagged with the slice so every producer, slate, gate and
-            // settlement line names the passage it bought (class one hundred
-            // eighty-five: parallel slices wrote their ballots unlabelled).
-            l: tagged({
-              l: dl,
-              tag: `slice ${String(row.sliceIndex,)}`,
-            },),
+            ...((syntax === undefined) ? {} : { syntax, }),
+            lineStructured,
+            declared: declaredNamePairs,
+            disputedWordings,
           },);
 
           /**
-           Whether purchase became reusable evidence.
+           What the pictures near this slice were read to say, empty where none
+           were.
+           
+           MISSING AND EMPTY ARE ONE STATE, folded here on purpose. A slice near no
+           readable picture gets an empty block from the windowing, and a slice the
+           map never mentions is a slice in exactly that position, so distinguishing
+           them would only let the sheet and the key disagree about which spelling
+           the caller happened to use.
            */
-          const persisted = await persistConsolidationSettlement({
-            key,
-            settlement: bought,
-            cache,
-            standingMayShip,
-            signal,
-          },);
-          return {
-            settlement: bought,
-            persisted,
+          const pictureContext = pictureContextBySlice.get(row.sliceIndex,) ?? '';
+
+          /**
+           Passages either side of this slice, folded the same way and for the same
+           reason: a lone slice has an empty window and a slice the map never
+           mentions is a slice in exactly that position.
+           */
+          const neighbours = neighbourContextBySlice.get(row.sliceIndex,)
+            ?? {
+              sourceText: '',
+              incumbentText: '',
+            };
+
+          /**
+           Slice as both halves take it.
+           */
+          const subject = {
+            sourceText,
+            incumbentText,
+            repairText: row.repairText,
+            translateText: row.translateText,
+            ballots: contest.ballots,
+            ...((syntax === undefined) ? {} : { syntax, }),
+            lineStructured,
+            declared: declaredNamePairs,
+            ...((identityContext === undefined) ? {} : { identityContext, }),
+            ...((referenceContext === undefined) ? {} : { referenceContext, }),
+            ...((disputeNote === undefined) ? {} : { archiveDisputeNote: disputeNote, }),
+            ...((disputedWordings.length === 0) ? {} : { disputedWordings, }),
+            // Omitted rather than empty, matching the context above it, so a producer
+            // shown no readings is shown no heading promising any.
+            ...((pictureContext === '') ? {} : { pictureContext, }),
+            // THE WINDOW REACHES THE JUDGING HALF ONLY, for now. The producer sheet
+            // has no block for it, so putting it here promises nothing to a producer
+            // and gives `settleConsolidation` what its judges need. Whether the
+            // producers should have it too is a real question and `#178` records it
+            // as an explicit exclusion rather than answering it in passing.
+            ...((neighbours.sourceText === '') ? {} : { neighbouringSourceText: neighbours.sourceText, }),
+            ...((neighbours.incumbentText === '')
+              ? {}
+              : { neighbouringIncumbentText: neighbours.incumbentText, }),
           };
+
+          /**
+           Key this settlement resumes under.
+           */
+          const key = consolidateSliceKey({
+            runShape,
+            sourceText,
+            incumbentText,
+            ...((syntax === undefined) ? {} : { syntax, }),
+            repairText: row.repairText,
+            translateText: row.translateText,
+            standingText,
+            ballots: contest.ballots,
+            lineStructured,
+            pictureContext,
+            neighbouringSourceText: neighbours.sourceText,
+            neighbouringIncumbentText: neighbours.incumbentText,
+            laneTexts,
+            ...((disputeNote === undefined) ? {} : { archiveDisputeNote: disputeNote, }),
+          },);
+
+          /**
+           What the roster settled here, bought, resumed, or reused from a twin.
+           */
+          const acquired = await acquireConsolidation({
+            key,
+            cache,
+            twins,
+            buy: async function buyThisRow(): Promise<BoughtConsolidation> {
+              /**
+               Settlement bought for this question.
+               */
+              const bought = await buyConsolidationSlice({
+                client,
+                roster: modelIds,
+                judgeModelIds,
+                subject,
+                standingText,
+                lineStructured,
+                sliceIndex: row.sliceIndex,
+                ...((polishConfig === undefined) ? {} : { polishConfig, }),
+                standingMayShip,
+                standingEligible: standingValid,
+                ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
+                standingFindings,
+                laneTexts,
+                // A tied slate over this eligible standing is run off where every
+                // contest ballot called the archive flawed (class one hundred
+                // six). Derived from the ballots the key already carries.
+                runoffOverStanding: archiveFlawedByAll({
+                  verdict: contest.verdict,
+                  ballots: contest.ballots,
+                },),
+                signal,
+                perCallTimeoutMs,
+                // Tagged with the slice so every producer, slate, gate and
+                // settlement line names the passage it bought (class one hundred
+                // eighty-five: parallel slices wrote their ballots unlabelled).
+                l: tagged({
+                  l: dl,
+                  tag: `slice ${String(row.sliceIndex,)}`,
+                },),
+              },);
+
+              /**
+               Whether purchase became reusable evidence.
+               */
+              const persisted = await persistConsolidationSettlement({
+                key,
+                settlement: bought,
+                cache,
+                standingMayShip,
+                signal,
+              },);
+              return {
+                settlement: bought,
+                persisted,
+              };
+            },
+            l: dl,
+          },);
+          /**
+           Final polish decision before artifact projection.
+           */
+          const { settlement, } = acquired;
+          /**
+           Final polish state deciding whether any exact text may leave stage.
+           */
+          const { polish, } = settlement;
+          if (polish?.kind === 'unsettled') {
+            cost.left({ exit: 'unsettled', },);
+            throw new NaturalnessCompletenessError({ sliceIndex: row.sliceIndex, },);
+          }
+          cost.left({ exit: acquired.exit, },);
+          return describeConsolidateSlice({
+            sliceIndex: row.sliceIndex,
+            settlement,
+            incumbentStandsIn: incumbentStandsIn || standInShips,
+          },);
         },
-        persistedOf: storedConsolidationOf,
-        l: dl,
       },);
-      if (asked.kind === 'reused') {
-        return {
-          settlement: asked.twin,
-          exit: 'reused',
-        };
-      }
-      /**
-       Fresh settlement unwrapped after memo accounting.
-       */
-      const { settlement, } = asked.bought;
-      return {
-        settlement,
-        exit: 'computed',
-      };
-    })();
-    /**
-     Final polish decision before artifact projection.
-     */
-    const { settlement, } = acquired;
-    /**
-     Final polish state deciding whether any exact text may leave stage.
-     */
-    const { polish, } = settlement;
-    if (polish?.kind === 'unsettled') {
-      cost.left({ exit: 'unsettled', },);
-      throw new NaturalnessCompletenessError({ sliceIndex: row.sliceIndex, },);
-    }
-    cost.left({ exit: acquired.exit, },);
-    return describeConsolidateSlice({
-      sliceIndex: row.sliceIndex,
-      settlement,
-      incumbentStandsIn: incumbentStandsIn || standInShips,
-    },);
     },
   },);
 }
