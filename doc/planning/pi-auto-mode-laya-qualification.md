@@ -803,6 +803,11 @@ No export invocation has reproduced those paths here,
 and `verify=True` is not a demonstrated strict publication gate in this evaluation.
 External weight-data files are part of the artifact boundary,
 not just the graph filename.
+The pinned ONNX Script 0.7.2 compatibility facade additionally resolves `check_model`
+to an explicitly documented no-op.
+The [checker-boundary note](../troubleshooting/onnxscript-export-checker-boundary.md)
+traces that source combination and distinguishes it from a runtime reproduction.
+A separate structural checker and numerical parity gate remain unexecuted requirements.
 
 ## Fine-tuning source findings
 

@@ -320,6 +320,19 @@ This closes tag matching only,
 not imports,
 native linkage,
 or full-policy execution.
+ONNX Runtime's exact wheel GitHub SLSA query `proc_7c61` returned HTTP 404.
+Model-free `proc_50f2` read its principal ELF members without loading them
+and found self-reported short source `f2c39fe` and Release build-description strings.
+The retained byte occurrences are not authenticated attribution or observed runtime return values.
+Public source-build documentation points to the inspected Azure pipeline tree;
+its Linux and 1ES template chain remains under review.
+These incomplete routes do not prove all build provenance unavailable.
+
+The pinned ONNX Script compatibility facade resolves `check_model` to a documented no-op.
+The [source-only checker note](../troubleshooting/onnxscript-export-checker-boundary.md)
+traces the callable and lists the unexecuted checker/parity cases.
+PyTorch's successful checker-status branch is not independently verified structural validity
+for that dependency combination.
 Remaining work includes complete dependency/source/native build inspection
 and a frozen CPU-only execution manifest before installation/export.
 No ONNX export,

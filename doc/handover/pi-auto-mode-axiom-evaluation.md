@@ -868,7 +868,11 @@ its `torch_2_9` facade exists and delegates shared functions to `torch_2_8`.
 Follow-up `proc_216f` extracted fourteen named execution/release boundary files.
 The inspected `torch_2_8` facade delegates shared functions again to `torch_2_6`,
 whose inspected `onnxscript/_framework_apis/torch_2_6.py:19` delegates shared functions to `torch_2_5`;
-that delegated facade remains to be read.
+`proc_50f2` extracted that delegated facade,
+whose `check_model` explicitly performs no validation.
+The source-only checker finding and unexecuted verification cases are recorded in
+[the checker-boundary note](../troubleshooting/onnxscript-export-checker-boundary.md).
+Do not treat PyTorch's checker-status flag as independently verified structural validity.
 The `torch_2_8` optimizer also invokes ONNX fusion rewriting.
 `proc_1445` extracted ten further facade/build/release files.
 ONNX `.github/workflows/release_linux_cibw.yml:84-100`
@@ -876,7 +880,18 @@ sets hardening/lite-protobuf flags and invokes ABI3 validation;
 its fetched protoc/protobuf artifacts and nested build configuration still require source review.
 ORT `tools/ci_build/github/azure-pipelines/py-packaging-pipeline.yml:63,87`
 references the 1ES official template and a CPU packaging stage;
-those and the exact artifact/build link remain open.
+the CPU stage was subsequently read and delegates Linux work to `templates/py-linux.yml`.
+That template,
+the 1ES parent,
+and the exact artifact/build link remain open.
+`proc_7c61` queried GitHub SLSA attestations for the exact ORT wheel digest and returned HTTP 404.
+`proc_50f2` inspected two ELF members without loading them:
+both contain self-reported short source `f2c39fe` and `Release` build-description strings.
+One additional string-like occurrence in the Python binding is retained without causal interpretation.
+Those bytes are not authenticated build attribution.
+Radius search `search_f84e73a53a2e7063537376f86458e539`
+and the official source-build document supplied no exact-wheel attestation;
+this is not proof that all provenance routes are exhausted.
 
 Additional clean source clones:
 `ml-dtypes-laya-2026-09-27` at `6bc762dd106292e1aa0d5de98d3867d6b642f209`,
