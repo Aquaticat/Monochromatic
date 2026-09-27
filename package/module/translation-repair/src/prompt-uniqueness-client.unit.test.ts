@@ -126,12 +126,9 @@ await describe({
           },
         };
         const client = promptUniqueClient({ inner, },);
-        try {
-          await client.chatText(REQUEST,);
-        }
-        catch (error) {
-          expect(error,).toBeInstanceOf(Error,);
-        }
+        // ASSERTED OUTSIDE A CATCH: a first call that did not throw would
+        // otherwise pass untested (ledger T2).
+        await expect(client.chatText(REQUEST,),).rejects.toThrow('connection reset before payload',);
         expect(await client.chatText(REQUEST,),).toEqual({ text: 'recovered payload', },);
         expect(providerCalls,).toBe(2,);
       },
@@ -157,20 +154,8 @@ await describe({
           },
         };
         const client = promptUniqueClient({ inner, },);
-        try {
-          await client.chatText(REQUEST,);
-        }
-        catch (error) {
-          expect(error,).toBeInstanceOf(MalformedCompletionError,);
-        }
-        let repeated: unknown;
-        try {
-          await client.chatText(REQUEST,);
-        }
-        catch (error) {
-          repeated = error;
-        }
-        expect(repeated,).toBeInstanceOf(MalformedCompletionError,);
+        await expect(client.chatText(REQUEST,),).rejects.toThrow(MalformedCompletionError,);
+        await expect(client.chatText(REQUEST,),).rejects.toThrow(MalformedCompletionError,);
         expect(providerCalls,).toBe(1,);
       },
     },),
