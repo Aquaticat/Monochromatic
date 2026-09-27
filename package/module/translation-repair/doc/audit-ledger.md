@@ -1387,15 +1387,61 @@ cross-slice passes decide on a page the footnote guard may still change.
 
 ### A16: low items
 
-Status: open for the lock and the write order.
+Status: open for the lock's check order, page republishing and the verifier's exit (A16a to A16c).
 A lane wording's triple newline ships: not a defect.
 Owner, 2026-09-27: "There is no need to eliminate extra newlines, because markdown doesn't care",
 recorded in `doc/design-commitments.md`.
 Measured before the ruling: 30 of 272 published pages carry a run of three newlines, most where the archive does too;
 a wording whose trailing newline the archive span lacks adds one at the seam (XingZ616 slice 78),
 and one that drops it joins no paragraphs (the page still carries the separator).
-Still open: the runs lock judges liveness by pid only,
-and the page is written before the artifact.
+Asked the same day, the owner kept the A3 carriage-return fold.
+
+#### A16a: the runs lock judged liveness by pid alone
+
+A lock left by a killed pass named a pid the kernel later hands to any process,
+and after a reboot pids start again from the bottom;
+the lock then read as held by that unrelated process,
+and the refusal told the operator the holder was alive.
+Fixed in `ebf768e66` (prep `dc6826f6b`, red guard `0eac33216`):
+the lock records host, boot, pid namespace and start ticks (`process-identity.ts`),
+is taken over only on positive evidence (a later boot, a free pid, another start time),
+holds when another namespace or machine took it,
+and the refusal states how it judged (`runs-lock-holder.ts`).
+Every one of the 96 locks on disk predates the fields and judges as gone by pid, as the old code did;
+all of them come from killed runs, since every run directory holding an artifact had released its lock.
+Still open: the fix compares hostnames before boot ids,
+and `os.hostname()` can change within one boot (DHCP, `hostnamectl`),
+after which every stale lock on the machine would read as another machine's and hold forever.
+A boot id is random per boot, so equal boot ids already prove the same machine.
+This host's static and kernel hostnames agree today (`bazzite`).
+
+#### Write order: kept by design
+
+The page is written before the artifact,
+because a pass skips an entry once its artifact exists,
+so publishing first makes "done implies published" true by construction (`publish-fixed.ts`, `pass-entry-persist.ts`).
+A crash between the two writes leaves a page no artifact records;
+none exists among the 214 pages in 372 run directories (a planted page was found, as a positive control).
+The owner then ruled that a run always ships (`doc/design-commitments.md`),
+so such a page ships and is reported, never refused.
+
+#### A16b: the verifier exits 1 on findings
+
+Status: open.
+Owner, 2026-09-27: `verify-published` prints every finding and exits 0,
+keeping exit 2 for a run it could not read at all.
+Its messages also promise what no longer holds once a pass republishes
+(`SETTLED AND NEVER PUBLISHED ... A resumed pass skips it`),
+and three comments name `pass-entry.ts` as the home of the write order,
+which moved to `pass-entry-persist.ts` when that file was split at the line cap.
+
+#### A16c: no pass republishes a missing or disagreeing page
+
+Status: open.
+Owner, 2026-09-27: a pass starting in a runs directory rewrites from its artifact any page that is missing
+or that differs from what the artifact says ships.
+Following from that rule and the archive-note rule,
+a decline removes a page an earlier crash left for the entry.
 
 ### A17: a handle every writer left in Han ships romanised with no literal meaning
 
@@ -1949,6 +1995,16 @@ the ruling was in no package doc, so neither the audit that filed A16 nor the fi
 Owner, 2026-09-27: "There is no need to eliminate extra newlines, because markdown doesn't care. I believe I said this before."
 Prevention: an owner ruling goes into `doc/design-commitments.md` (or its decision record) the turn it is given,
 and a finding is checked against those commitments before any fix starts.
+
+### M17: a file split at the line cap, with comments elsewhere still naming the old file
+
+Status: open under A16b.
+`pass-entry.ts` was split at its line budget and the write order moved to `pass-entry-persist.ts`,
+yet `published-page-check.ts`, `verify-published.ts` and a `publish-fixed.unit.test.ts` case name still
+credit `pass-entry.ts` with it.
+A reader sent there finds no write at all.
+Prevention: every split runs `rg` for the backticked old filename across `src`, tests and `doc`,
+and each hit that names a moved responsibility is repointed in the same commit.
 
 ### M16: a commit message claiming records not yet written, and a hash typed rather than resolved
 
