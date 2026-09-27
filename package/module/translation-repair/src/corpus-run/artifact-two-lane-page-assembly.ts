@@ -33,14 +33,19 @@ import type { SliceReplacement, } from '../splice-slices.ts';
  */
 export type ArtifactPageAssembly = {
   /**
-   Slices whose composed text the guard trimmed, with the text the page
-   carries: the composed text with an orphan definition block cut.
+   Slices whose text the page-assembly passes or the guard rewrote, with the
+   text the page carries: an orphan definition block cut, a heading or name
+   restored, a date or word in its Canadian form, and the like. NAMED FOR THE
+   FIRST REWRITE IT RECORDED, which was a trim. A withdrawn slice appears
+   here too where a pass rewrote the archive text standing there (ledger K5),
+   and this row is what the page carries.
    */
   readonly trimmed: readonly SliceReplacement[];
 
   /**
-   Slices whose composed text the guard took back, so the page carries the
-   archive's own wording there, or nothing at an anchor.
+   Slices whose lane row the guard took back, so the page carries the
+   archive's own wording there (as a `trimmed` row gives it, where a pass
+   rewrote it), or nothing at an anchor.
    */
   readonly withdrawn: readonly number[];
 

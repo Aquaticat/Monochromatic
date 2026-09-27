@@ -18,9 +18,10 @@ import { restoreTypography, } from '../restore-typography.ts';
 // left, and the artifact records what each stage DECIDED rather than what
 // survived all of them. Deriving that is this file's whole job.
 //
-// NAMED "WOULD SHIP" RATHER THAN "SHIPPED", deliberately. No stage assembles a
-// document out of these decisions, so nothing here has been published; this is
-// what a publication would carry if one were built today. The founding defect
+// NAMED "WOULD SHIP" RATHER THAN "SHIPPED", deliberately. `publish-fixed.ts`
+// writes a page from exactly these readings, but a reading exists whether or
+// not a page was written for it, so the name claims no publication: this is
+// what a page composed from these decisions carries. The founding defect
 // of this family was `repairDisposition: 'shipped'`, a name that went on
 // asserting a publication after the stage that performed it stopped being last.
 // A name claiming less than it can prove is the correction.

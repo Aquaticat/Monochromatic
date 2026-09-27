@@ -15,7 +15,9 @@ import { nameAuthorities, } from './contributor-name-authorities.ts';
 // the Part Ten heading shipped "Jinxin" bare and the signature under it
 // "Jinxin (Brocade Heart)", and the first song credit "Yuli" bare with
 // "Yuli (Rain Fox)" on the next. THE PAGE DECIDES ONCE, HERE, where every
-// appearance is in view: for each handle the archive never rendered, the
+// appearance in the rows the lanes wrote is in view (the archive's own text is
+// read by no one here, and a handle it rendered is not placed): for each
+// handle the archive never rendered, the
 // first appearance in a replaced slice takes the gloss the bench wrote
 // anywhere on the page (the earliest one where they differ) and every later
 // appearance drops its gloss. A handle the bench never glossed is left as it

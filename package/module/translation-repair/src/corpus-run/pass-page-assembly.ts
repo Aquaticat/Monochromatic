@@ -97,7 +97,7 @@ export function settledPageArtifact(
   for (const finding of pageAssembly.findings)
     l.warn(`page assembly: ${finding}`,);
   /**
-   Slices the guard trimmed.
+   Slices the passes or the guard rewrote, trims among them.
    */
   const trimmedCount = pageAssembly.trimmed
     .length;
@@ -108,7 +108,7 @@ export function settledPageArtifact(
     .length;
   if ((trimmedCount > 0) || (withdrawnCount > 0)) {
     l.warn(
-      `page assembly trimmed ${String(trimmedCount,)} slices and withdrew ${
+      `page assembly rewrote ${String(trimmedCount,)} slices and withdrew ${
         String(withdrawnCount,)
       }; the findings say why`,
     );

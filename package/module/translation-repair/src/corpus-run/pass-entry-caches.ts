@@ -9,13 +9,15 @@ import {
 } from './slice-cache-store.ts';
 
 //region Pass entry caches
-// The four stores one entry resumes from, opened together, split out of
+// The four stores one entry opens before its lanes run, opened together, split out of
 // `pass-entry.ts` at its line budget. Each lives in its own namespace under the
 // entry's cache directory so one entry's caches are retired together and no
 // lane can resume another's slices.
 
 /**
- Every cache one entry's stages read and write.
+ The caches one entry opens before its lanes run; the pairing caches open in
+ `pass-prepare.ts`, the contest's in `pass-contest.ts` and the
+ consolidation's in `pass-consolidate.ts`, where those stages start.
  
  @example
  ```ts

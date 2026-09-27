@@ -165,7 +165,9 @@ async function runEntryPipeline(
       },);
 
     /**
-     The four stores this entry resumes from (`pass-entry-caches.ts`).
+     The four stores this entry opens before its lanes run
+     (`pass-entry-caches.ts`); the pairing, contest and consolidation stores
+     open where those stages start.
      
      INSIDE the try, because opening touches the filesystem and can fail.
      Opened outside, one unreadable cache directory ended the whole pass at

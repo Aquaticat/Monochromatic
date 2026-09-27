@@ -188,8 +188,10 @@ export function shippableReplacements(
  before it makes "done implies published" true by construction, and a resumed
  pass skips an entry whose page is already there.
  
- BYTE-FAITHFUL, WITH NOTHING APPLIED HERE. The readings arrive wrapped as the
- stage that settled them left them, so re-wrapping at this site would change
+ BYTE-FAITHFUL, WITH NOTHING APPLIED HERE. The readings arrive as
+ `wouldShipTextPerSlice` gives them: wrapped as the stage that settled them
+ left them, in the archive's quote style, and with the page-assembly rows in
+ place. Re-wrapping at this site would change
  text both deciders already approved, which is the defect `#162` closed at the
  consolidation. Nothing normalizes the trailing newline either: the archive
  text is preserved byte for byte outside the slices that were replaced.
