@@ -1,4 +1,3 @@
-import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 
@@ -17,6 +16,7 @@ import {
 import {
   type AttemptMap,
   readAttemptMap,
+  writeAttemptMap,
 } from './attempt-store.ts';
 import {
   countSettledPerBand,
@@ -567,14 +567,10 @@ async function runCorpusPass(): Promise<void> {
     attempt: async function attempt({ entry, },): Promise<EntryOutcome> {
       attempts[entry.id] = (attempts[entry.id] ?? 0) + 1;
       // Persisted before the attempt so a crash still records that it happened.
-      await writeFile(
+      await writeAttemptMap({
         attemptsPath,
-        `${JSON.stringify(
-          attempts,
-          undefined,
-          2,
-        )}\n`,
-      );
+        attempts,
+      },);
 
       return settleEntry({
         client,

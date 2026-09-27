@@ -25,13 +25,17 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   mkdtemp,
+  readdir,
   rm,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
-import { readAttemptMap, } from '../../dist/final/node/index.mjs';
+import {
+  readAttemptMap,
+  writeAttemptMap,
+} from '../../dist/final/node/index.mjs';
 
 /**
  Throwaway directory holding one case's attempts file, removed on scope exit.
@@ -318,6 +322,37 @@ await describe({
       name: 'STAYS QUIET for a well-formed map, so the lines above are worth reading',
       fn: async () => {
         expect(await warningsReading({ contents: '{"Mittens": 2}', },),).toStrictEqual([],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: writeAttemptMap.name,
+  children: [
+    it({
+      name: 'WRITES a map the reader reads back whole, leaving no partial file beside it',
+      fn: async () => {
+        await using scratch = await scratchDir();
+        /**
+         Path the attempts file occupies.
+         */
+        const attemptsPath = join(
+          scratch.path,
+          'attempts.json',
+        );
+        await writeAttemptMap({
+          attemptsPath,
+          attempts: {
+            Mittens: 2,
+            Marmalade: 5,
+          },
+        },);
+        expect(await readAttemptMap(attemptsPath,),).toStrictEqual({
+          Mittens: 2,
+          Marmalade: 5,
+        },);
+        expect(await readdir(scratch.path,),).toStrictEqual(['attempts.json',],);
       },
     },),
   ],

@@ -84,6 +84,7 @@ export { formatRepairSheet, } from './repair-sheet.ts';
 export {
   type AttemptMap,
   readAttemptMap,
+  writeAttemptMap,
 } from './corpus-run/attempt-store.ts';
 export {
   createRunClient,
