@@ -1,3 +1,4 @@
+import { placeClosingPunctuation, } from './closing-punctuation.ts';
 import { nestedSinglePairs, } from './nested-single-quotes.ts';
 import {
   bindsWord,
@@ -410,9 +411,14 @@ export function restoreTypography(
     }
     // The ellipsis form is the third convention a page can mix, found on
     // 2026-09-07 after the two quote forms were settled; same inputs, same
-    // silence where the document shows both forms.
+    // silence where the document shows both forms. The closing punctuation
+    // (class one hundred eighty-one) swaps units in place, so the mask still
+    // reads the rebuilt text.
     return restoreEllipsis({
-      replacement: rebuilt.join('',),
+      replacement: placeClosingPunctuation({
+        text: rebuilt.join('',),
+        mask,
+      },),
       replaced,
       convention,
     },);

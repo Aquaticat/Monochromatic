@@ -161,6 +161,20 @@ export const PHRASING_GLOSSARY: readonly CommunityTerm[] = [
     why: 'a pre-release phone made for testing; the phone world calls it a "prototype" or "engineering sample", never an '
       + '"engineering phone"',
   },
+  // CLASS ONE HUNDRED EIGHTY (TianqiChen66613, 2026-09-27): 亲友都没有忘记 shipped
+  // as the archive's "close friends never forgot", dropping the family. The
+  // pin carries 亲友 in two paragraphs on two entries, neither writing another
+  // word for friends beside it, so "close friends" is refused outright.
+  {
+    term: '亲友',
+    renderings: [
+      'friends and family',
+      'family and friends',
+      'loved ones',
+    ],
+    refusedForms: ['close friends',],
+    why: 'relatives and friends together; "close friends" drops the family the word names',
+  },
 ];
 
 //endregion Phrasing renderings

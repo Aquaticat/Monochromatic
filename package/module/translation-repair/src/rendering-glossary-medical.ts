@@ -25,6 +25,22 @@ export const MEDICAL_GLOSSARY: readonly CommunityTerm[] = [
     why: 'the common adult-onset diabetes; current English writes the type with an Arabic numeral, "type 2 diabetes", '
       + 'never the dated "type II"',
   },
+  // CLASS ONE HUNDRED EIGHTY (TianqiChen66613, 2026-09-27): 激素一点一点进入
+  // 她的身体 shipped as "the medication entered her system", hiding the
+  // hormones the passage is about. Seeded without a refused form: the census
+  // of the pin finds 激素 in seven paragraphs on five entries, and two of them
+  // also write 药物 or 药, where "medication" renders that word.
+  {
+    term: '激素',
+    renderings: [
+      'hormones',
+      'hormone',
+      'estrogen',
+    ],
+    refusedForms: [],
+    why: 'hormones, on these pages nearly always the hormones of transition (雌激素 is estrogen); "medication" hides '
+      + 'what the passage is about',
+  },
 ];
 
 //endregion Medical renderings
