@@ -174,11 +174,11 @@ Part of [the package README](../README.md).
   `lanes`,
   `lane contest`,
   `consolidation`),
-  and `OPENROUTER_CHECKER_SUBSTITUTE` (`google.gemma-4-e2b` since 2026-09-24, in `src/corpus-run/run-seats.ts`:
-  no editor or refiner seat,
-  served by Bedrock alone,
-  and provisional)
-  takes the vacated checker seat so the roster keeps the floor the checker contract holds;
+  and the checker bench is the first three of `RUN_CHECKER_ORDER` (`src/corpus-run/run-config.ts`,
+  ranked by the checker benchmark of 2026-09-27)
+  that a wet provider serves,
+  padded with ranked seats no provider serves only while fewer than three are served,
+  so the bench keeps the floor the checker contract holds;
   both checker assertions run on the derived roster before each phase.
   An unreadable view seats the full bench.
   The static benches in `run-config.ts` are the Synthetic-wet ones,

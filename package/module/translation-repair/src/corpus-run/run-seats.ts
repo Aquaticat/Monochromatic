@@ -21,6 +21,7 @@ import { reachOf, } from '../roster-reach.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { TranslateModels, } from '../translate-document-contract.ts';
 import {
+  RUN_CHECKER_ORDER,
   RUN_DECISION_JUDGES,
   RUN_LATE_JUDGES,
   RUN_MODELS,
@@ -53,8 +54,8 @@ import {
 // the owner decided on 2026-09-03 to withhold it wherever only OpenRouter
 // would buy it (`doc/decision/translation-repair-openrouter-fallback.md`).
 // That reaches its checker seat too, and a checker roster of two is below the
-// hard floor `assertCheckerQuorumReachable` holds, so a disinterested
-// substitute takes the seat on those phases.
+// hard floor `assertCheckerQuorumReachable` holds, so the next checker of the
+// measured order (`RUN_CHECKER_ORDER`) a wet provider serves takes the seat.
 //
 // WHERE A MODEL WOULD BE SERVED is the router's own answer: the first provider
 // in `PROVIDER_ORDER` that serves the model and reads wet, holds folded in
@@ -94,23 +95,6 @@ export const HYPER_SLOW_JUDGES: ReadonlySet<RosterModelId> = new Set<RosterModel
  authorisation to drop a model from a role.
  */
 export const HYPER_SLOW_SELECT_JUDGES: ReadonlySet<RosterModelId> = holdSet({ hold: 'hyper-slow-select', },);
-
-/**
- Checker seated in place of a withheld one, so the roster keeps its floor.
-
- `gemma-4-26b-a4b-it` held this seat from 2026-09-03 (no editor or refiner
- seat, so a checker judging text it helped write never arose; 40 of 40 writer
- rounds with zero cuts and 5 of 289 asks thrown on the stub-fix XIEPT2 run;
- above the pooled null as a writer) and took the third static checker seat on
- 2026-09-24 when the owner culled gpt-oss-120b from every role.
- `google.gemma-4-e2b` takes the substitute seat on the same ground: no editor
- or refiner seat, seated as a judge by the Bedrock fidelity probe of
- 2026-09-07 and as a writer by the producer calibration of 2026-09-08, and
- served by Bedrock alone, the provider the withheld Synthetic-served checkers
- never sit on. PROVISIONAL: no checker-side measurement exists for any model,
- and the owner may veto it.
- */
-export const OPENROUTER_CHECKER_SUBSTITUTE: RosterModelId = 'google.gemma-4-e2b';
 
 /**
  Every bench one entry runs with, derived from one reading.
@@ -154,7 +138,8 @@ export type JudgeSeats = {
   readonly slateJudges: readonly RosterModelId[];
 
   /**
-   Checkers, the static roster with any withheld seat substituted.
+   Checkers: the best-ranked of the measured order this reading serves,
+   padded with unserved ranked seats only while fewer than three are served.
    */
   readonly checkers: readonly RosterModelId[];
 
@@ -238,8 +223,7 @@ export function judgeSeatsFor(
    A SEAT WITHHELD ON OPENROUTER READS AS UNSERVED THERE since 2026-09-09
    (`reachOf`), so the router can never re-route it there mid-phase; what
    this reader withholds is the seat whose only wet provider would have been
-   OpenRouter, which is the same seat as before and keeps the substitute
-   checker sitting where it did.
+   OpenRouter, which is the same seat as before.
    
    @param modelId - seat under question
    
@@ -295,29 +279,44 @@ export function judgeSeatsFor(
    */
   const slateJudges = lateJudges.filter(seatedForSelect,);
   /**
-   The static checker roster, whose size is the floor to keep.
+   The static checker roster, whose size is the bench's width.
    */
   const staticCheckers = RUN_MODELS.checkerModelIds;
   /**
-   Static checkers still seated by this reading.
+   Whether a wet provider would take a seat's calls under this reading.
+
+   @param modelId - seat under question
+
+   @returns True when the router would send the seat's calls somewhere
    */
-  const keptCheckers = staticCheckers.filter(seated,);
+  function served(modelId: RosterModelId,): boolean {
+    return servedBy(modelId,) !== NO_PROVIDER;
+  }
   /**
-   Whether a checker seat was withheld and the substitute can take it.
+   Measured checkers this reading does not withhold, in rank order.
    */
-  const substituteSits = (keptCheckers.length < staticCheckers.length)
-    && (!keptCheckers.includes(OPENROUTER_CHECKER_SUBSTITUTE,))
-    && seated(OPENROUTER_CHECKER_SUBSTITUTE,);
+  const seatable = RUN_CHECKER_ORDER.filter(seated,);
   /**
-   Checkers with the substitute seated where one was withheld, unless the
-   substitute already sits or is itself withheld.
+   The bench: the best-ranked checkers a wet provider serves, then, only
+   while fewer than the width are served, the next-ranked seats no
+   provider serves, which a stage reads as unreachable (the owner's rule
+   of 2026-09-09) rather than the bench falling below the contract's floor.
+
+   UNTIL 2026-09-27 THE STATIC THREE SAT WHOEVER SERVED THEM, with one
+   substitute for a withheld seat: five of the six runs before that day
+   read Synthetic and Hyper dry and asked Qwen3.8-27B, which nobody served,
+   beside two checkers the benchmark then measured at 35 fixes resolved and
+   9 unchanged texts wrongly resolved of 85 each (ledger L1).
    */
-  const checkers = substituteSits
-    ? [
-      ...keptCheckers,
-      OPENROUTER_CHECKER_SUBSTITUTE,
-    ]
-    : keptCheckers;
+  const checkers = [
+    ...seatable.filter(served,),
+    ...seatable.filter(function unserved(modelId,): boolean {
+      return !served(modelId,);
+    },),
+  ].slice(
+    0,
+    staticCheckers.length,
+  );
   // THE DERIVED ROSTER MUST PASS WHAT THE STATIC ONE PASSES AT LOAD, or a
   // phase would start with a checker stage the contract refuses.
   assertCheckerIndependence({

@@ -89,6 +89,7 @@ export {
   createRunClient,
   readHeadSha,
   resolveRunsDir,
+  RUN_CHECKER_ORDER,
   RUN_DECISION_JUDGES,
   RUN_LATE_JUDGES,
   OWNER_CULLED,
@@ -110,7 +111,6 @@ export {
   HYPER_SLOW_SELECT_JUDGES,
   type JudgeSeats,
   judgeSeatsFor,
-  OPENROUTER_CHECKER_SUBSTITUTE,
 } from './corpus-run/run-seats.ts';
 export {
   awaitBenchQuorum,

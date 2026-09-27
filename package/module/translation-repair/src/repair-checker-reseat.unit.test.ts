@@ -22,7 +22,7 @@ import {
   checkerBenchAtStage,
   CheckerQuorumError,
   standingSeating,
-  OPENROUTER_CHECKER_SUBSTITUTE,
+  SEAT_OPENROUTER_ONLY_CHECKER,
   type RepairModels,
   type RepairSliceSeating,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -57,7 +57,7 @@ const SEATED: RepairModels = {
 const FRESH_CHECKERS = [
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  OPENROUTER_CHECKER_SUBSTITUTE,
+  SEAT_OPENROUTER_ONLY_CHECKER,
 ];
 
 await describe({

@@ -151,3 +151,20 @@ The card stays for the catalogs and the unit fixture seat `SEAT_SYNTHETIC_TEXT_E
 so the blocklist is untouched
 (the 2026-09-24 addendum of the seating decision).
 The roster is eleven chat seats plus the decision-only seat.
+
+The checker seats were measured on 2026-09-27
+(`RUN_CHECKER_ORDER` in `src/corpus-run/run-config.ts` carries the numbers).
+Each candidate answered the resolution sheet for 85 settled fixes
+and for the same 85 issues against the unchanged archive text,
+where not fixed is certain.
+The order is Qwen3.8-27B, Mimo v2.6 Flash, Kimi-K3, `google.gemma-4-31b` and Mercury 2.5,
+and a reading seats the first three a wet provider serves.
+`gemma-4-26b-a4b-it` left the checker role, and only that role,
+for calling 40 of the 85 unchanged texts fixed;
+`google.gemma-4-e2b` left the substitute seat for calling 50 of the 85 real fixes not fixed.
+The owner approved Mimo v2.6 Flash, Mimo v2.6 Pro and Solar Mini 4 on OpenRouter the same day.
+Mimo v2.6 Flash joined with a card that holds it out of every judge, writer and reader seat until measured there.
+Mimo v2.6 Pro read below Flash on both halves while sharing 8 of its 9 errors,
+and Solar Mini 4 called 78 of the 85 unchanged texts fixed;
+neither holds a card.
+The roster is twelve chat seats plus the decision-only seat.

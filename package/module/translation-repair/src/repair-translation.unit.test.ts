@@ -20,7 +20,7 @@ import {
   prepareDocumentPair,
   repairPreparedDocument,
   repairTranslation,
-  OPENROUTER_CHECKER_SUBSTITUTE,
+  SEAT_OPENROUTER_ONLY_CHECKER,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -1230,7 +1230,7 @@ Meow meow meow meow.
           checkerModelIds: [
             SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-            OPENROUTER_CHECKER_SUBSTITUTE,
+            SEAT_OPENROUTER_ONLY_CHECKER,
           ],
         };
         await repairPreparedDocument({
@@ -1250,7 +1250,7 @@ Meow meow meow meow.
           beforeSlice: async (): Promise<RepairSliceSeating> => ({ repairModels: reseated, }),
         },);
         expect(asked.length,).toBeGreaterThan(0,);
-        expect(asked,).toContain(OPENROUTER_CHECKER_SUBSTITUTE,);
+        expect(asked,).toContain(SEAT_OPENROUTER_ONLY_CHECKER,);
         expect(asked,).not.toContain(SEAT_SYNTHETIC_VISION_WITHHELD,);
       },
     },),
@@ -1281,7 +1281,7 @@ Meow meow meow meow.
           checkerModelIds: [
             SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
             SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-            OPENROUTER_CHECKER_SUBSTITUTE,
+            SEAT_OPENROUTER_ONLY_CHECKER,
           ],
         };
         /**
@@ -1309,7 +1309,7 @@ Meow meow meow meow.
           },
         },);
         expect(asked.length,).toBeGreaterThan(0,);
-        expect(asked,).toContain(OPENROUTER_CHECKER_SUBSTITUTE,);
+        expect(asked,).toContain(SEAT_OPENROUTER_ONLY_CHECKER,);
         expect(asked,).not.toContain(SEAT_SYNTHETIC_VISION_WITHHELD,);
         expect(hook.calls,).toBeGreaterThan(prepared.slices.length,);
       },

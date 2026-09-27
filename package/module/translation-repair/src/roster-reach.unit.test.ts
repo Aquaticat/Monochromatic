@@ -35,6 +35,7 @@ import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
+  SEAT_OPENROUTER_ONLY_CHECKER,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -102,7 +103,7 @@ await describe({
   name: 'ROSTER_MODEL_IDS',
   children: [
     it({
-      name: 'registers twelve distinct approved models without duplicating identities across providers',
+      name: 'registers thirteen distinct approved models without duplicating identities across providers',
       fn: async () => {
         // Eight until 2026-09-01, when the post-blocklist candidate refresh
         // admitted glm-5.3 and the same-day conformance probe culled the
@@ -114,8 +115,10 @@ await describe({
         // Eleven since 2026-09-16, when the owner removed the two dated DeepSeek V4 models.
         // Twelve since 2026-09-18, when the owner approved Jev 1.13, a
         // decision-only seat served by OpenRouter's decisions endpoint alone.
-        expect(ROSTER_MODEL_IDS.length,).toBe(12,);
-        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(12,);
+        // Thirteen since 2026-09-27, when the owner approved Mimo v2.6 Flash,
+        // which only OpenRouter serves and which the checker benchmark seated.
+        expect(ROSTER_MODEL_IDS.length,).toBe(13,);
+        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(13,);
       },
     },),
 
@@ -393,6 +396,7 @@ await describe({
           SEAT_SYNTHETIC_VISION_WITHHELD,
           SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           SEAT_HYPER_VISION,
+          SEAT_OPENROUTER_ONLY_CHECKER,
         ],);
       },
     },),

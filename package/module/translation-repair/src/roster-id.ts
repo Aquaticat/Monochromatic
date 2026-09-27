@@ -50,6 +50,7 @@ export const ROSTER_MODEL_IDS = [
   'google.gemma-4-e2b',
   'google.gemma-4-31b',
   'inception/mercury-2.5',
+  'xiaomi/mimo-v2.6-flash',
   'typesafe/jev-1.13',
 ] as const;
 
@@ -133,6 +134,7 @@ export const OPENROUTER_SERVED_IDS = [
   'google/gemma-4-26b-a4b-it',
   'deepseek/deepseek-v4.1-flash',
   'inception/mercury-2.5',
+  'xiaomi/mimo-v2.6-flash',
 ] as const;
 
 /**

@@ -380,6 +380,49 @@ export const RUN_SELECT_JUDGES: readonly RosterModelId[] = [
 ];
 
 /**
+ Checkers in the order the checker benchmark of 2026-09-27 ranks them; the
+ bench a reading seats is the first three a wet provider serves
+ (`run-seats.ts`), and the static bench is the first three.
+
+ THE BENCHMARK (`~/temp/agent/audit-repair/checker-cases.mjs`,
+ `checker-bench.mjs`): 85 accepted issues from twelve settled runs, each
+ shown once against the patch every heard checker had called fixed and once
+ against the unchanged archive text, where not fixed is certain. Ranked on
+ that certain half first, then on the fixes, unusable answers and latency:
+ Qwen3.8-27B 82 and 80, Mimo v2.6 Flash 82 and 79, Kimi-K3 78 and 81,
+ `google.gemma-4-31b` 76 and 82, Mercury 2.5 73 and 76 with 11 unusable.
+ The fix half is circular for Qwen3.8-27B and Kimi-K3, whose ballots defined
+ those cases, and independent for the other three. Differences of a few
+ cases are inside the noise of 85; the order decides only which served
+ seats fill the bench.
+
+ MEASURED OUT OF THE CHECKER ROLE ON THAT BENCHMARK, and only that role:
+ `gemma-4-26b-a4b-it` called 40 of 85 unchanged texts fixed, and
+ `google.gemma-4-e2b`, the substitute since 2026-09-24, called 50 of 85
+ real fixes not fixed; together they resolved 35 fixes and wrongly resolved
+ 9 unchanged texts where every bench of three from this order resolved 81 or
+ 82 and wrongly resolved 2 to 5. Solar Mini 4 called 78 of 85 unchanged
+ texts fixed and Mimo v2.6 Pro read below Flash on both halves while sharing
+ 8 of its 9 errors; neither holds a card.
+
+ NONE OF THESE EDITS OR REFINES, so the independence the contract checks
+ holds on every bench this order can seat.
+ */
+export const RUN_CHECKER_ORDER: readonly RosterModelId[] = [
+  'hf:Qwen/Qwen3.8-27B',
+  'xiaomi/mimo-v2.6-flash',
+  'hf:moonshotai/Kimi-K3',
+  'google.gemma-4-31b',
+  'inception/mercury-2.5',
+];
+
+/**
+ Places on the checker bench: the contract's floor, so a split verdict
+ still reads as a majority.
+ */
+const CHECKER_BENCH_WIDTH = 3;
+
+/**
  Role roster for a corpus run: SEVEN of the nine critique and adjudicate (six while Synthetic is dry), THREE edit
  against each other, THREE refine the result for naturalness, and three check
  the shipped repair.
@@ -663,19 +706,19 @@ export const RUN_MODELS: RepairModels = {
   // against that independent vote.
   //
   // GPT-OSS LEFT EVERY ROLE on 2026-09-24 at the owner's instruction (the
-  // card's own note has the two misreadings). `gemma-4-26b-a4b-it` takes the
-  // third checker seat rather than shrinking below the floor of three: it was
-  // the substitute checker since 2026-09-03 for holding no editor or refiner
-  // seat, sat as the third checker on every Synthetic-dry reading since, and
-  // is still PROVISIONAL, since no checker-side measurement exists for any
-  // model. `google.gemma-4-e2b` becomes the substitute on the same ground
-  // (`run-seats.ts`).
+  // card's own note has the two misreadings). `gemma-4-26b-a4b-it` took the
+  // third checker seat then, unmeasured as a checker, with
+  // `google.gemma-4-e2b` as the substitute.
+  //
+  // MEASURED SINCE 2026-09-27: the checker benchmark ranks the seats
+  // ({@link RUN_CHECKER_ORDER}), both Gemma sizes left the checker role on
+  // it, and the static bench is the top three of that order. A reading
+  // seats the first three a wet provider serves (`run-seats.ts`).
   checkerSelfCertificationPermitted: true,
-  checkerModelIds: [
-    'hf:Qwen/Qwen3.8-27B',
-    'hf:moonshotai/Kimi-K3',
-    'gemma-4-26b-a4b-it',
-  ],
+  checkerModelIds: RUN_CHECKER_ORDER.slice(
+    0,
+    CHECKER_BENCH_WIDTH,
+  ),
 };
 
 // Refuse invalid production role composition at configuration load rather than

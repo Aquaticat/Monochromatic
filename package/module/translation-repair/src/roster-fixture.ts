@@ -78,6 +78,12 @@ export const SEAT_BEDROCK_ONLY_VISION_UNSEATED = 'google.gemma-4-31b' as const;
 export const SEAT_OPENROUTER_ONLY = 'inception/mercury-2.5' as const;
 
 /**
+ Only OpenRouter serves it; reads pictures, unmeasured as a reader; a
+ measured checker and held out of every other seat until measured there.
+ */
+export const SEAT_OPENROUTER_ONLY_CHECKER = 'xiaomi/mimo-v2.6-flash' as const;
+
+/**
  Only OpenRouter's decisions endpoint serves it; no chat reach, no
  pictures; held out of every seat until measured.
  */

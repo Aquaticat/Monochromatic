@@ -373,7 +373,11 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     // Bedrock p99 over 125 calls, the thinnest measurement in the table.
     completionCap: 8_194,
     // Stayed out of the judge seats on the 2026-09-07 fidelity probe; reads
-    // pictures since the 2026-09-08 transcription measurement.
+    // pictures since the 2026-09-08 transcription measurement. Checks since
+    // the checker benchmark of 2026-09-27 (76 of 85 unchanged texts called
+    // not fixed, 82 of 85 fixes called fixed, sharing the fewest errors
+    // with the other checkers); the checker seat is not a judge seat, so
+    // the hold stands for the fidelity probe it names.
     holds: ['judge-unmeasured',],
   },
   'inception/mercury-2.5': {
@@ -396,6 +400,32 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     // by the seating rule it leaves the translator seat and keeps the
     // consolidation seat, the shape of deepseek-v4-pro-0813's exit.
     holds: ['translator-dropped',],
+  },
+  'xiaomi/mimo-v2.6-flash': {
+    // Read from https://openrouter.ai/api/v1/models on 2026-09-27
+    // (`mise run roster-card -- openrouter xiaomi/mimo-v2.6-flash`).
+    openrouter: {
+      id: 'xiaomi/mimo-v2.6-flash',
+      readsImages: true,
+      maxOutputLength: 131_072,
+      promptUsdPerMillion: 0.14,
+      completionUsdPerMillion: 0.28,
+      ignoredEndpoints: [],
+      preferredEndpoints: [],
+      rawCharsPerToken: 'unmeasured',
+    },
+    // No completed-call distribution of its own yet.
+    completionCap: 'pooled-p99',
+    // Owner, 2026-09-27: approved on OpenRouter with Mimo v2.6 Pro. Checks
+    // since the checker benchmark that day (82 of 85 unchanged texts called
+    // not fixed, 79 of 85 fixes called fixed, median 349 ms); Pro read 81
+    // and 76 at ten times the latency, sharing 8 of Flash's 9 errors, so
+    // Pro holds no card. Every other role waits for its own measurement.
+    holds: [
+      'judge-unmeasured',
+      'writer-unmeasured',
+      'reader-unmeasured',
+    ],
   },
   'typesafe/jev-1.13': {
     decisions: {

@@ -24,7 +24,9 @@ import {
 import {
   type BudgetView,
   lanesHooksFor,
-  OPENROUTER_CHECKER_SUBSTITUTE,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_OPENROUTER_ONLY_CHECKER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../../dist/final/node/index.mjs';
 
@@ -101,9 +103,10 @@ await describe({
   name: `${lanesHooksFor.name} (class one hundred three)`,
   children: [
     it({
-      name: 'RE-SEATS THE REPAIR LANE before a chunk while a hold runs, so a checker seat a dry-out took '
-        + 'is filled by the substitute (class one hundred three, zheermao7, 2026-09-23: ten of twelve '
-        + 'checker rounds on one voice after Synthetic ran dry two minutes into the lane)',
+      name: 'RE-SEATS THE REPAIR LANE before a chunk while a hold runs, so the checker seats a dry-out took '
+        + 'are filled by the next measured checkers a wet provider serves (class one hundred three, '
+        + 'zheermao7, 2026-09-23: ten of twelve checker rounds on one voice after Synthetic ran dry two '
+        + 'minutes into the lane)',
       fn: async () => {
         const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
         rig.holds.synthetic = DRY_HOLD_MS;
@@ -117,7 +120,11 @@ await describe({
          */
         const seating = await hooks.beforeSlice({ lane: 'repair', },);
         expect(seating.repairModels,).toBeDefined();
-        expect(seating.repairModels?.checkerModelIds,).toContain(OPENROUTER_CHECKER_SUBSTITUTE,);
+        expect(seating.repairModels?.checkerModelIds,).toEqual([
+          SEAT_OPENROUTER_ONLY_CHECKER,
+          SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+          SEAT_OPENROUTER_ONLY,
+        ],);
         expect(seating.repairModels?.checkerModelIds,).not.toContain(SEAT_SYNTHETIC_VISION_WITHHELD,);
         expect(rig.counter.reads,).toBe(1,);
       },

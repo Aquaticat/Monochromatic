@@ -28,6 +28,7 @@ import {
   SEAT_HYPER_VISION,
   SEAT_OPENROUTER_DECISIONS,
   SEAT_OPENROUTER_ONLY,
+  SEAT_OPENROUTER_ONLY_CHECKER,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -147,6 +148,16 @@ const CLAIMS: readonly {
     reach: ['openrouter',],
     reads: false,
     holds: ['translator-dropped',],
+  },
+  {
+    seat: SEAT_OPENROUTER_ONLY_CHECKER,
+    reach: ['openrouter',],
+    reads: true,
+    holds: [
+      'judge-unmeasured',
+      'writer-unmeasured',
+      'reader-unmeasured',
+    ],
   },
   {
     seat: SEAT_OPENROUTER_DECISIONS,

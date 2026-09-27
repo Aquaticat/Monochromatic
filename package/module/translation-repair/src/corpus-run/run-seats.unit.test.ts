@@ -6,7 +6,8 @@
  did (Toka_ls, 2026-09-02), withheld while Hyper would serve it; Kimi-K3,
  withheld from the select seats while Hyper would serve it and from every
  seat while only OpenRouter would (the owner's cost decision of 2026-09-03),
- with a substitute checker keeping the roster's floor; the full bench when
+ with the next served checker of the measured order keeping the bench's
+ width; the full bench when
  the view cannot be read; and the static drops holding either way.
  
  @module
@@ -24,10 +25,10 @@ import {
   HYPER_SLOW_JUDGES,
   HYPER_SLOW_SELECT_JUDGES,
   judgeSeatsFor,
-  OPENROUTER_CHECKER_SUBSTITUTE,
   OPENROUTER_WITHHELD,
   OWNER_CULLED,
   ROSTER_MODEL_IDS,
+  RUN_CHECKER_ORDER,
   RUN_LATE_JUDGES,
   RUN_MODELS,
   RUN_READER_MODELS,
@@ -42,6 +43,7 @@ import {
   SEAT_OPENROUTER_DECISIONS,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_OPENROUTER_ONLY,
+  SEAT_OPENROUTER_ONLY_CHECKER,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -195,6 +197,8 @@ await describe({
         },).toSorted(),).toEqual([
           SEAT_BEDROCK_ONLY_VISION_UNSEATED,
           SEAT_OPENROUTER_DECISIONS,
+          // Measured as a checker on 2026-09-27 and nowhere else yet.
+          SEAT_OPENROUTER_ONLY_CHECKER,
           // Culled from every role by the owner on 2026-09-24; its card
           // stays for the catalogs and this fixture.
           SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -275,15 +279,16 @@ await describe({
       name: 'WITHHOLDS THE OPENROUTER-WITHHELD MODEL FROM EVERY SEAT when only OpenRouter would serve it, '
         + 'the owner\'s decision of 2026-09-03 on cost, THE WRITING AND READING SEATS INCLUDED, since the '
         + 'first OpenRouter-only pass bought six translations from it while every bench had it out, and '
-        + 'SEATS THE SUBSTITUTE CHECKER so the roster keeps the floor the contract holds',
+        + 'SEATS THE SERVED CHECKERS OF THE MEASURED ORDER FIRST so the bench keeps its width',
       fn: async () => {
         expect(OPENROUTER_WITHHELD.has(KIMI,),).toBe(true,);
         expect(RUN_MODELS.checkerModelIds.includes(KIMI,),).toBe(true,);
         expect(RUN_TRANSLATORS.includes(KIMI,),).toBe(true,);
         expect(RUN_READER_MODELS.includes(KIMI,),).toBe(true,);
-        expect(RUN_MODELS.checkerModelIds.includes(OPENROUTER_CHECKER_SUBSTITUTE,),).toBe(false,);
-        expect(RUN_MODELS.editorModelIds.includes(OPENROUTER_CHECKER_SUBSTITUTE,),).toBe(false,);
-        expect((RUN_MODELS.refinerModelIds ?? []).includes(OPENROUTER_CHECKER_SUBSTITUTE,),).toBe(false,);
+        for (const checker of RUN_CHECKER_ORDER) {
+          expect(RUN_MODELS.editorModelIds.includes(checker,),).toBe(false,);
+          expect((RUN_MODELS.refinerModelIds ?? []).includes(checker,),).toBe(false,);
+        }
 
         const seats = judgeSeatsFor({ dry: OPENROUTER_ONLY, },);
         expect(seats.wideSeats.includes(KIMI,),).toBe(false,);
@@ -291,7 +296,13 @@ await describe({
         expect(seats.lateJudges.includes(KIMI,),).toBe(false,);
         expect(seats.slateJudges.includes(KIMI,),).toBe(false,);
         expect(seats.checkers.includes(KIMI,),).toBe(false,);
-        expect(seats.checkers.includes(OPENROUTER_CHECKER_SUBSTITUTE,),).toBe(true,);
+        expect(seats.checkers.slice(
+          0,
+          2,
+        ),).toEqual([
+          SEAT_OPENROUTER_ONLY_CHECKER,
+          SEAT_OPENROUTER_ONLY,
+        ],);
         expect(seats.checkers.length,).toBe(RUN_MODELS.checkerModelIds.length,);
         expect(seats.repairModels.checkerModelIds,).toEqual(seats.checkers,);
         expect(seats.translators.includes(KIMI,),).toBe(false,);
