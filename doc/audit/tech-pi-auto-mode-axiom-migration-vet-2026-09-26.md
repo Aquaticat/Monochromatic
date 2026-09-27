@@ -188,7 +188,22 @@ whole-guard accuracy,
 or model ranking follows.
 The [current Laya qualification record](../planning/pi-auto-mode-laya-qualification.md)
 retains every observation and the frozen artifact identities.
-Unchanged-image repetitions and named-checkpoint/grant-axis probes are the next bounded evidence,
+Unchanged-image repetitions subsequently retained the same four-decimal probabilities across three runs each
+for the blue control and literal false case.
+Their inference ranges were 141.59633065015078 to 142.77544056624174 seconds
+and 143.68281278014183 to 174.7530222190544 seconds respectively.
+Those measurements do not establish timing or probability variability for every other input.
+No single-run speedup is claimed.
+
+The named-checkpoint/grant-axis follow-up first stopped before model loading
+because its inherited image had only the English artifact ledger.
+That is a first-party probe packaging failure,
+not model evidence.
+The corrected image's full ledger passed actual baked verification,
+with a failing old-image control and a failing guard-removal test.
+Sequential inference is active as `proc_7f3f`;
+no new probability result has been inspected yet.
+This is candidate evaluation,
 not production implementation.
 
 A separate actual-preprocessing/split probe ran without a model forward or optimizer step.

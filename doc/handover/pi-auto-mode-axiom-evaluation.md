@@ -358,15 +358,21 @@ Inputs were 12,574 or 12,782 actual forward tokens,
 beyond the declared 8,192 positions.
 Retained input is not context-quality qualification.
 
-Process `proc_3890` is the active unchanged-image repetition batch.
+The unchanged-image repetition batch `proc_3890` completed and was inspected.
 Private root:
-`~/temp/agent/laya-label-repeat-2026-09-26`,
-frozen at scratch commit `9b72a56`.
-It repeats the default blue control and literal false case twice each,
-using exactly the same inference image and baked inputs.
-Do not poll it or predict its result;
-inspect its terminal notification.
-No other inference may run concurrently.
+`~/temp/agent/laya-label-repeat-2026-09-26`.
+Scratch commit `9b72a56` froze it;
+`498c492` retains results and the measured summary.
+Including the original run,
+the blue control returned 0.5378 in all three observations
+and the literal false case returned 0.5403 in all three.
+Their inference ranges were 141.59633065015078 to 142.77544056624174 seconds
+and 143.68281278014183 to 174.7530222190544 seconds respectively.
+The latter measured spread is 31.07020943891257 seconds;
+do not credit single-run timing differences inside that range to a configuration change.
+This does not establish variation for every other input or label assignment.
+Result SHA-256:
+`06ed361cfcf1d066e70e4f32f0b182a499e6aa94235c4bb7e89bb5394c4f5142`.
 
 A fourteen-trial follow-up is frozen at
 `~/temp/agent/laya-checkpoint-axioms-2026-09-26`,
@@ -374,10 +380,27 @@ scratch commit `4c1022a`.
 It tests the same control/quotation states with default Noul on multilingual and typed-decisions,
 plus the existing cache grant pair on English under all three label assignments.
 Fixture and driver checks passed.
-Process `proc_6cf8` builds its image only;
-its successful-exit notification is context-level.
-Inspect the build result before inference,
-and start its `probe` task only after `proc_3890` finishes and is inspected.
+Image build `proc_6cf8` passed,
+but initial run `proc_0f87` stopped before model loading with
+`Checkpoint artifact ledger is incomplete`.
+The inherited image ledger contained English artifacts only.
+That was a first-party probe packaging error,
+not a Laya capability failure.
+Scratch commit `87d36cf` retains the failed result and copied ledger;
+`6d9274f` explicitly bakes the complete reviewed ledger and adds staged/baked checks.
+Removing the new guard caused `Missing expected exception (ArtifactLedgerError)`;
+restoring it passed.
+The actual old image failed the new baked check.
+
+Corrected process `proc_7f3f` is active.
+Its baked-image check passed with all fifteen artifacts and three checkpoint identities,
+without importing a model.
+Corrected image:
+`eaf3c7508954f11c879bbc7162c81d9504aaa9e0c9356c4e21a1f21361c70cca`.
+The inference artifact is `result-ledger-fixed.json`;
+its eventual result has not been inspected.
+Only this process may run Laya inference now.
+Wait for its terminal notification rather than polling.
 No checkpoint is silently substituted,
 no temperature is refitted,
 and no reserved case is used.
@@ -488,6 +511,8 @@ current audit,
 and handover.
 The subsequent citation/checkpoint edit passed the inspected eleven-document check `proc_3a0f`.
 The Pi lifecycle findings passed the inspected eleven-document check `proc_1490`.
+The Laya candidate documents passed the thirteen-document rendering and scoped lint run `proc_df32`.
+The later repeat/packaging-recovery checkpoint needs a subsequent scoped check.
 A final scope clarification distinguishes reusable trust directives from exact-action approvals.
 That clarification was rendered and its scoped Markdown lint passed after commit `6fa854714`.
 The user subsequently chose Q14 A and Q15 B,

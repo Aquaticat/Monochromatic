@@ -190,8 +190,16 @@ The unchanged-image repetition tranche at
 is frozen in scratch commit `9b72a56`.
 It adds two runs each of the default blue control and literal false case,
 using the original image and input bytes.
-This measures variation for those inputs only,
+It completed as `proc_3890`,
+with results retained in scratch commit `498c492`.
+Including the original observations,
+reported P(true) remained 0.5378 for the blue control
+and 0.5403 for the literal false case across three runs each.
+The timing ranges were 141.59633065015078 to 142.77544056624174 seconds
+and 143.68281278014183 to 174.7530222190544 seconds respectively.
+These are unchanged-image variation measurements for those inputs only,
 not every labeling or state.
+No speedup is credited to the earlier single-cell timing differences.
 
 The named-checkpoint/grant tranche at
 `~/temp/agent/laya-checkpoint-axioms-2026-09-26`
@@ -203,9 +211,21 @@ It includes:
 - The existing cache cross-clause/joint-scope grant pair on English under all three label assignments,
   giving six conditional permission-text trials.
 
-Fixture and driver checks passed before any of those new inference calls.
-Inference waits until the repetition tranche is finished;
-only image construction can overlap it.
+Fixture and driver checks passed before the first attempt,
+but `proc_0f87` then stopped before model loading because the inherited image's ledger contained only English artifacts.
+No probability or checkpoint-quality finding follows from that packaging error.
+The failed evidence is retained in scratch commit `87d36cf`.
+
+Commit `6d9274f` explicitly copies the complete reviewed ledger
+and adds a guard against the frozen manifest.
+The real old image fails the new baked-ledger check.
+Removing the guard causes `Missing expected exception (ArtifactLedgerError)`;
+restoration passes.
+Corrected process `proc_7f3f` passed actual baked-image verification with fifteen artifacts
+and then started sequential inference after the repeat batch finished.
+Its corrected image is
+`eaf3c7508954f11c879bbc7162c81d9504aaa9e0c9356c4e21a1f21361c70cca`.
+The inference result is pending inspection.
 Every checkpoint remains explicitly selected and digest-checked,
 with complete policy and the original resource limits.
 No training,
