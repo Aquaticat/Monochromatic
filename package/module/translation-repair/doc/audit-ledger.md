@@ -927,8 +927,12 @@ and the decision reply's refusal branches never exercised.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
-Status: open.
+Status: open, owned by `module-logger` (issue #576, measurements added 2026-09-27).
 1,220,455 files there; the tests are not hermetic.
+Measured on 2026-09-27: most of that count is the deliberate `translation-repair-runs*` run directories;
+the logs themselves are 34,919 top-level `*.log.jsonl` files (846 MB with the runs),
+about 22 added per unit suite run,
+and the logger's file sink (`package/module/logger/src/sink/file.ts`) reads no switch that could turn it off in tests.
 
 ## Page assembly and the corpus-run driver
 
@@ -1543,8 +1547,9 @@ At least five times on 2026-09-27
 (`sed ... ; sed`, `node <guard> ; rg`, `rg ... ; ls`, `xargs <lint> ; rg`, and one by the fixture agent),
 against the rule of at most three `&&` and no `;`;
 twice more later that day (`node <test> | rg ; node <test> | rg`, and one `rg` then `awk` by the docs agent),
-and once a shell `for` loop over line numbers, which the same rule forbids.
-The `;` one also hid which of two files failed, since both counts printed as one number.
+and once a shell `for` loop over line numbers, which the same rule forbids,
+and once `<test> | rg ... ; true` to force a zero exit.
+The first `;` one also hid which of two files failed, since both counts printed as one number.
 Prevention: a report that should run after a failing command is `a || b`, never `a ; b`;
 two independent checks are two tool calls.
 
