@@ -195,10 +195,9 @@ await describe({
     },),
 
     it({
-      name: 'STILL RESOLVES on a lone unopposed author, because half a vote outweighs none. Recorded '
-        + 'as accepted rather than fixed: a half cannot block an author nobody contradicts, and '
-        + 'nothing in the arithmetic picks a number that would',
-      fn: async function loneAuthorStillCarries() {
+      name: 'NO LONGER RESOLVES on a lone unopposed author: half a vote outweighs none, but one cast '
+        + 'ballot resolves nothing since 2026-09-27, whoever cast it',
+      fn: async function loneAuthorNoLongerCarries() {
         expect(fateOf({
           votes: { [AUTHOR]: 'fixed', },
           authorship: WROTE_WHISKER,
@@ -206,7 +205,7 @@ await describe({
           fixed: 0.5,
           notFixed: 0,
           worse: 0,
-          resolved: true,
+          resolved: false,
           regressed: false,
         },);
       },

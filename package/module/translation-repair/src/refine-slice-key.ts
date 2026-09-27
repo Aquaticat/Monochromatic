@@ -47,8 +47,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  VERSION 4 moves because refinement output is re-admitted under lane-contest
  winner contributor floor;
  old cached rewrite could bypass new admission question.
+
+ VERSION 5 (2026-09-27) moves with the retention recheck: one cast checker
+ ballot no longer resolves an issue (`MIN_RESOLUTION_BALLOTS`), so a
+ refinement retained on one confirming ballot is now rolled back.
  */
-export const REFINE_CACHE_VERSION = 4;
+export const REFINE_CACHE_VERSION = 5;
 
 /**
  Everything about this run that changes what the voices are ASKED.

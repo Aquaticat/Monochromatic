@@ -292,8 +292,14 @@ import type { RepairModels, } from './repair-contract.ts';
  a version-30 file would carry issues naming nobody, so an entry would mix
  attributed and unattributed issues, which is the confusion the field exists
  to end.
+
+ VERSION 32, on 2026-09-27, because what `resolved` means moved: one cast
+ checker ballot resolves nothing (`MIN_RESOLUTION_BALLOTS`). Candidate
+ selection counts resolved issues, so a slice settled under version 31 may
+ have shipped a patch whose only confirmation was one checker, and resuming
+ it would carry that decision past the floor.
  */
-export const SLICE_CACHE_VERSION = 31;
+export const SLICE_CACHE_VERSION = 32;
 /**
  Everything about a repair run that changes what the models are ASKED, folded
  into every cache key.

@@ -87,7 +87,7 @@ await describe({
         + 'change to the FIXTURE INPUTS below moves it too, and must not, because those inputs are '
         + 'already part of the key and invalidate their own entries',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(31,);
+        expect(SLICE_CACHE_VERSION,).toBe(32,);
 
         // MOVED THREE TIMES ON 2026-08-20, FOR THREE DIFFERENT REASONS, which
         // is the whole point of keeping the note.
@@ -136,8 +136,11 @@ await describe({
         // VERSION 31 ON 2026-09-24 moved it the ordinary way: the version is
         // key input and the record grew `filedBy` on every adjudicated issue,
         // so the derivation moved and the version moved with it.
+        //
+        // VERSION 32 ON 2026-09-27 the same way: one cast checker ballot no
+        // longer resolves an issue, which changes what a settled slice shipped.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('e9df510bd4696df6d836b6e7f01aa272d250eac73262371441d6686d8f053461',);
+          .toBe('6b44be9a56f39b571074aebe89fce488e8019d39b220fd6d89a930a1614f5f2f',);
       },
     },),
     it({

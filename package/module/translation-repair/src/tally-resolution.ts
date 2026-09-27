@@ -18,6 +18,13 @@ import {
 // `SELF_VOTE_WEIGHT`, matching the discount selection already applies.
 
 /**
+ Cast ballots an issue needs before it can read as resolved: two, so one
+ checker never decides that a defect is gone. Counted in ballots rather
+ than weight, as `MIN_SELECTION_BALLOTS` is for a slate winner.
+ */
+export const MIN_RESOLUTION_BALLOTS = 2;
+
+/**
  One checker's resolved verdicts over one sheet.
  
  @example
@@ -133,7 +140,8 @@ export type IssueResolutionTally = {
   readonly worse: number;
 
   /**
-   Whether fixed verdicts strictly outweigh the rest of the cast votes.
+   Whether fixed verdicts strictly outweigh the rest of the cast votes, with
+   at least {@link MIN_RESOLUTION_BALLOTS} ballots cast.
    */
   readonly resolved: boolean;
 
@@ -220,11 +228,19 @@ function weightBehind(
  halved exactly as one calling it `fixed` is, because what is being weighed is
  the stake in the text, not which way the answer points.
  
- KNOWN AND ACCEPTED: a lone author voting `fixed` with nobody opposing still
- resolves the issue, since half of a vote still outweighs none. A half cannot
- block an unopposed author, and nothing in the arithmetic picks a number that
- would.
- 
+ ONE CAST BALLOT RESOLVES NOTHING, whatever its weight, since 2026-09-27
+ ({@link MIN_RESOLUTION_BALLOTS}). This was previously accepted, since half a vote
+ outweighs none, and it reached far past the lone author: 759 of 8,788
+ recorded readings over 403 run directories resolved on one ballot, 756 of
+ them inside a selected patch, where a checker omitted the issue or the
+ bench had one voice left. The owner's rule of 2026-08-12 is that no single
+ model decides.
+
+ `regressed` KEEPS NO FLOOR. It only ranks a candidate below one that
+ regressed nothing and never ships text, and on a two-voice bench a lone
+ `worse` already ties rather than regresses: the checkers voted `worse` 55
+ times over the recent runs and `regressed` never fired (ledger L1).
+
  @param issueIds - issue ids under check
  
  @param ballots - resolved ballots keyed by checker id
@@ -307,7 +323,7 @@ export function tallyResolutionChecks(
         fixed,
         notFixed,
         worse,
-        resolved: fixed > (notFixed + worse),
+        resolved: (fixed > (notFixed + worse)) && (cast.length >= MIN_RESOLUTION_BALLOTS),
         regressed: worse > (fixed + notFixed),
       },
     ];
