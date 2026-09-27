@@ -92,6 +92,11 @@ export type ProducedSlate = {
  @param identityContext - declared names from both sides' front matter,
  omitted when neither declares anything
 
+ @param archiveDisputeNote - why the existing translation shown is the
+ repair lane's stand-in and which of its details are accepted additions, so
+ no translator keeps them as page content (class one hundred eight; never
+ forwarded until the audit of 2026-09-27)
+
  @param attestedLines - archive details a cited reference states, shown to
  the translators so their renderings carry them (class thirty-nine)
  
@@ -128,6 +133,7 @@ export async function produceTranslateSlate(
     incumbentKind = 'present',
     incumbentEligible = true,
     identityContext,
+    archiveDisputeNote,
     pictureContext,
     attestedLines,
     syntax,
@@ -145,6 +151,7 @@ export async function produceTranslateSlate(
     readonly incumbentKind?: IncumbentKind;
     readonly incumbentEligible?: boolean;
     readonly identityContext?: string;
+    readonly archiveDisputeNote?: string;
     readonly pictureContext?: string;
     readonly attestedLines?: readonly string[];
     readonly syntax?: SliceSyntax;
@@ -173,6 +180,7 @@ export async function produceTranslateSlate(
     existingText: incumbentText,
     incumbentKind,
     ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
     ...((attestedLines === undefined) ? {} : { attestedLines, }),
     ...((syntax === undefined) ? {} : { syntax, }),
