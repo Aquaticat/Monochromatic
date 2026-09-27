@@ -225,5 +225,63 @@ await describe({
         expect(placed.restored,).toEqual([],);
       },
     },),
+    it({
+      name: 'NEVER READS link text in parentheses as a gloss, and leaves that appearance as it stands (ledger A6: '
+        + 'the first close parenthesis ended the "gloss" inside a link, which the pass then moved)',
+      fn: async () => {
+        const placed = placeHandleGlosses({
+          slices: [HEADED,],
+          replacements: [{
+            sliceIndex: 0,
+            replacementText: '### Ten: Jinmao\n\nJinmao ([her song](https://example.test/one)) woke.\n\n'
+              + '<p style="text-align: end;">——Jinmao (Brocade Cat), February 10, 2025</p>',
+          },],
+        },);
+        // The prose appearance keeps its link; the heading, the first
+        // appearance, takes the signature's gloss, and the signature drops it.
+        expect(bySlice({ replacements: placed.replacements, },).get(0,),).toBe(
+          '### Ten: Jinmao (Brocade Cat)\n\nJinmao ([her song](https://example.test/one)) woke.\n\n'
+            + '<p style="text-align: end;">——Jinmao, February 10, 2025</p>',
+        );
+      },
+    },),
+    it({
+      name: 'REACHES a fixed point: a second run over its own output changes nothing (ledger A6)',
+      fn: async () => {
+        /**
+         Slices of the page.
+         */
+        const slices = [
+          HEADED,
+          ...CREDITED,
+        ];
+        const first = placeHandleGlosses({
+          slices,
+          replacements: [
+            {
+              sliceIndex: 0,
+              replacementText: '### Ten: Jinmao\n\nIt woke.\n\n'
+                + '<p style="text-align: end;">——Jinmao (Brocade Cat), February 10, 2025</p>',
+            },
+            {
+              sliceIndex: 1,
+              replacementText: '> Lyrics one\n\n<p style="text-align: end;">—— Yumao ([Delusion](https://example.test/one)) '
+                + '“Song One”</p>',
+            },
+            {
+              sliceIndex: 2,
+              replacementText: '> Lyrics two\n\n'
+                + '<p style="text-align: end;">—— Yumao (Rain Cat) [Delusion] “Song Two”</p>',
+            },
+          ],
+        },);
+        const second = placeHandleGlosses({
+          slices,
+          replacements: first.replacements,
+        },);
+        expect(second.findings,).toEqual([],);
+        expect(second.restored,).toEqual([],);
+      },
+    },),
   ],
 },);

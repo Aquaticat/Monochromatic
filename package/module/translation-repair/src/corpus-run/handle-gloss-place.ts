@@ -33,6 +33,19 @@ const GLOSS_OPEN = ' (';
 const GLOSS_CLOSE = ')';
 
 /**
+ What a literal meaning never holds: link and image syntax, a nested
+ parenthesis, a code span, a tag, a web address (ledger A6).
+ */
+const GLOSS_BREAKERS: readonly string[] = [
+  '[',
+  ']',
+  '(',
+  '`',
+  '<',
+  '://',
+];
+
+/**
  One appearance of a rendering on the page.
  */
 type Appearance = {
@@ -182,6 +195,21 @@ function appearancesIn(
         end: past,
         gloss: '',
       },);
+      continue;
+    }
+    // A PARENTHESIS HOLDING MARKUP IS NO GLOSS (ledger A6). The first close
+    // parenthesis ends a link's destination, so `Jinmao ([her song](url))`
+    // read the link as a gloss, moved it onto the heading and stripped it
+    // from its sentence, leaving "Jinmao) woke." That appearance is neither
+    // the first nor a later one: it stands as the writer left it.
+    if (GLOSS_BREAKERS.some(function breaks(breaker,): boolean {
+      return text.slice(
+        past + GLOSS_OPEN.length,
+        close,
+      )
+        .includes(breaker,);
+    },)) {
+      from = close + 1;
       continue;
     }
     found.push({
