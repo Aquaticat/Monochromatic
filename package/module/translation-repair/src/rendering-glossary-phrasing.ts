@@ -1,50 +1,24 @@
 import type { CommunityTerm, } from './community-glossary.ts';
 
 //region Phrasing renderings
-// CLASS ONE HUNDRED TWENTY-NINE (shi_Yumiaoya30, 2026-09-25): 原因是多方面的
-// shipped as "There were many sides to the cause", 这个特例 as "this
-// exception, Yumiao, received", 摆烂 as "turned to one of giving up",
-// 陷入癫狂 as "pushed her mental state into madness" and 万千世界 as "this
-// myriad world". 陷入癫狂 keys on the verb, since XingZ60 writes 癫狂 alone
-// for an outlook others call mad; lxy writes 偶尔摆烂 for taking it easy.
-// Kept beside `rendering-glossary.ts`, which spreads these entries into
-// `RENDERING_GLOSSARY`, so neither file outgrows the line budget.
+// CLASS ONE HUNDRED TWENTY-NINE (shi_Yumiaoya30, 2026-09-25): 摆烂 shipped as
+// "turned to one of giving up" and 万千世界 as "this myriad world". lxy writes
+// 偶尔摆烂 for taking it easy. Kept beside `rendering-glossary.ts`, which
+// spreads these entries into `RENDERING_GLOSSARY`, so neither file outgrows
+// the line budget.
+//
+// THE GLOSSARY AUDIT OF 2026-09-27 took out the entries here that were keyed
+// on one sentence's construction rather than on a word (原因是多方面的, 特例,
+// 陷入癫狂, 环境的问题, kigurumi的记忆结束); their lessons are the idiomatic
+// English, grammatical English and kept-subject rules of
+// `english-usage-policy.ts`, on every sheet. 交往 stays as a word but refuses
+// nothing, since "dated" is its English wherever the passage speaks of romance.
 
 /**
  Phrasings the pinned corpus carries whose word-for-word rendering reads
  badly in English, with the English the page uses.
  */
 export const PHRASING_GLOSSARY: readonly CommunityTerm[] = [
-  {
-    term: '原因是多方面的',
-    renderings: [
-      'had many causes',
-      'had more than one cause',
-      'many things led to',
-    ],
-    refusedForms: [
-      'many sides to the cause',
-      'many-sided',
-      'multifaceted cause',
-      'multi-faceted cause',
-      'many aspects to the cause',
-    ],
-    why: 'a death or event with several causes; the page says it "had many causes", never that the cause had "sides"',
-  },
-  {
-    term: '特例',
-    renderings: [
-      'as an exception',
-      'an exception',
-      'made an exception',
-    ],
-    refusedForms: [
-      'this exception,',
-      'this special case,',
-      'the special case,',
-    ],
-    why: 'someone let off the usual rule; the page says "Yumiao, as an exception," never "this exception, Yumiao,"',
-  },
   {
     term: '摆烂',
     renderings: [
@@ -66,22 +40,6 @@ export const PHRASING_GLOSSARY: readonly CommunityTerm[] = [
       + 'never an attitude "of giving up" and never the English slang "slacked off"',
   },
   {
-    term: '陷入癫狂',
-    renderings: [
-      'drove her to the edge of madness',
-      'drove her half mad',
-      'to the brink of madness',
-    ],
-    refusedForms: [
-      'mental state into madness',
-      'mental state into insanity',
-      'mental state into a frenzy',
-      'mental state into mania',
-    ],
-    why: 'grief or shock that unhinges someone; the page says it drove her to the edge of madness, never that it '
-      + 'pushed a "mental state" into madness',
-  },
-  {
     term: '万千世界',
     renderings: [
       'this vast world',
@@ -98,10 +56,10 @@ export const PHRASING_GLOSSARY: readonly CommunityTerm[] = [
   // CLASS ONE HUNDRED FIFTY-EIGHT (aiyysk2, 2026-09-26): 没和 MTF 交往过 shipped
   // twice as "I'd never dated a trans woman", a romance the original never
   // states; the next paragraph calls it "my first time ever talking with a
-  // trans woman" and the archive wrote "never actually talked to". The pinned
-  // corpus carries 交往 three times, all on aiyysk, all ordinary social contact.
-  // Refused forms match as substrings, so none is bare "dated" or "dating",
-  // which "updated" and "validating" hold.
+  // trans woman" and the archive wrote "never actually talked to". The audit
+  // of 2026-09-27 dropped the refused dating forms: 交往 does mean dating
+  // where the passage speaks of romance, so the why carries the condition and
+  // the judges read it.
   {
     term: '交往',
     renderings: [
@@ -109,43 +67,16 @@ export const PHRASING_GLOSSARY: readonly CommunityTerm[] = [
       'interacted with',
       'spent time with',
       'got to know',
+      'dated',
     ],
-    refusedForms: [
-      'never dated',
-      'dated a trans',
-      'dated an mtf',
-      'dated them',
-      'dating a trans',
-      'dating them',
-      'date them',
-      'normal dating',
-    ],
-    why: 'spending time with people and getting to know them; unless the passage speaks of romance, English says '
-      + '"talked to" or "spent time with", never "dated"',
+    refusedForms: [],
+    why: 'keeping company with people and getting to know them; it means dating only where the passage speaks of '
+      + 'romance, so elsewhere English says "talked to" or "spent time with", and "dated" there invents a romance',
   },
-  // CLASS ONE HUNDRED FIFTY-NINE (aiyysk2, 2026-09-26): 我没有怎么在乎环境的问题
-  // shipped "I cared all that much about the environment" (the archive: "not
-  // really the environment itself that I mind"), which reads as nature and
-  // pollution where she meant the crowded place she lived; 工程机 shipped
+  // CLASS ONE HUNDRED FIFTY-NINE (aiyysk2, 2026-09-26): 工程机 shipped
   // "engineering phone" three times (the archive too), where the phone world
-  // says "prototype" or "engineering sample". The pinned corpus carries
-  // 环境的问题 once and 工程机 three times, all on aiyysk.
-  {
-    term: '环境的问题',
-    renderings: [
-      'my surroundings',
-      'where I was living',
-      'my living conditions',
-    ],
-    refusedForms: [
-      'about the environment',
-      'the environment itself',
-      'environmental issue',
-      'environmental problem',
-    ],
-    why: 'the place someone lives and what it is like; "the environment" alone reads as nature and pollution in English, '
-      + 'so the page says "my surroundings"',
-  },
+  // says "prototype" or "engineering sample". The pinned corpus carries 工程机
+  // three times, all on aiyysk.
   {
     term: '工程机',
     renderings: [
@@ -174,21 +105,6 @@ export const PHRASING_GLOSSARY: readonly CommunityTerm[] = [
     ],
     refusedForms: ['close friends',],
     why: 'relatives and friends together; "close friends" drops the family the word names',
-  },
-  // CLASS ONE HUNDRED EIGHTY-THREE (TianqiChen66614, 2026-09-27):
-  // 我会在离开我们的时候以kigurumi的记忆结束 shipped as "when I leave you all,
-  // they will end with the memories of kigurumi", memories ending with
-  // memories. The subject is 我; the archive's "they will end with it" moved
-  // it too, so the bench kept the archive's reading. One page in the pin.
-  {
-    term: 'kigurumi的记忆结束',
-    renderings: [
-      'I will end with memories of kigurumi',
-      'I will leave with my memories of kigurumi',
-    ],
-    refusedForms: ['they will end with',],
-    why: 'the speaker (我) ends with memories of kigurumi; handing the clause to "they" makes the memories end with '
-      + 'themselves',
   },
 ];
 

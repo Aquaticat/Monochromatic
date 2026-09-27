@@ -5,7 +5,10 @@
  narrator who had never spent time with trans women, and was too shy to
  approach them, shipped as someone who had "never dated a trans woman", a
  romance the original never states. The glossary seeds English for ordinary
- social contact and refuses the dating reading.
+ social contact. It refused the dating reading until the glossary audit of
+ 2026-09-27, which dropped the refusal: 交往 does mean dating where the
+ passage speaks of romance, so the entry's why carries the condition
+ (`glossary-dictionary-terms.unit.test.ts` passes "dated" there).
 
  Cat-themed invention throughout; no corpus content appears here.
 
@@ -44,12 +47,8 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES "never dated" and passes ordinary contact',
+      name: 'PASSES ordinary contact',
       fn: async () => {
-        expect(validateTranslatedSlice({
-          sourceText: CONTACT,
-          candidateText: 'The kitten had never dated a barn cat, so it was afraid to approach them.',
-        },).kind,).toBe('invalid',);
         expect(validateTranslatedSlice({
           sourceText: CONTACT,
           candidateText: 'The kitten had never really talked to a barn cat, so it was afraid to approach them.',

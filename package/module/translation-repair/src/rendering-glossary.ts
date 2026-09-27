@@ -6,7 +6,6 @@ import { GRAMMAR_GLOSSARY, } from './rendering-glossary-grammar.ts';
 import { IDIOM_GLOSSARY, } from './rendering-glossary-idiom.ts';
 import { MEDICAL_GLOSSARY, } from './rendering-glossary-medical.ts';
 import { PHRASING_GLOSSARY, } from './rendering-glossary-phrasing.ts';
-import { SLANG_GLOSSARY, } from './rendering-glossary-slang.ts';
 import { WORDING_GLOSSARY, } from './rendering-glossary-wording.ts';
 
 //region Rendering glossary
@@ -74,8 +73,11 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
       + 'student, so the page says that, never that she "awakened" a "trait" or "attribute"',
   },
   // CLASS ONE HUNDRED TWENTY-FIVE (shi_Yumiaoya25, 2026-09-25): 滑档二本
-  // shipped as "slid down into a second-tier admission slot" and 用这种方式告诉
-  // as "using this way to tell". Each form appears once in the pinned corpus.
+  // shipped as "slid down into a second-tier admission slot". Each form
+  // appears once in the pinned corpus. The class seeded 用这种方式 too; the
+  // glossary audit of 2026-09-27 took it out, a construction rather than a
+  // word, and the idiomatic English rule of `english-usage-policy.ts` states
+  // its lesson.
   {
     term: '二本',
     renderings: [
@@ -110,24 +112,6 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
     ],
     why: 'a gaokao applicant whose score met none of the schools she applied to and who was placed at a lower '
       + 'tier; the page says she missed her chosen schools and ended up at the lower-tier one',
-  },
-  {
-    term: '用这种方式',
-    renderings: [
-      'this was her way of',
-      'in this way',
-      'by doing so',
-    ],
-    refusedForms: [
-      'using this way to',
-      'use this way to',
-      'used this way to',
-      // shi_Yumiaoya26 wrote the same calque with another noun.
-      'using this method to',
-      'use this method to',
-      'used this method to',
-    ],
-    why: '"use this way to" is not English and "use this method to" is the same calque; the page writes "this was her way of telling" or "in this way"',
   },
   // CLASS ONE HUNDRED TWENTY-SIX (shi_Yumiaoya27, 2026-09-25): 年级组长
   // shipped as "the grade leader", 未成年药娘 as "a minor trans girl", 骨灰骰子
@@ -260,9 +244,9 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
   // CLASS ONE HUNDRED SIXTY-TWO (TianqiChen6663, 2026-09-26): medical terms,
   // kept in `rendering-glossary-medical.ts`.
   ...MEDICAL_GLOSSARY,
-  // CLASS ONE HUNDRED SIXTY-SEVEN (TianqiChen6665, 2026-09-26): game slang,
-  // kept in `rendering-glossary-slang.ts`.
-  ...SLANG_GLOSSARY,
+  // CLASS ONE HUNDRED SIXTY-SEVEN (TianqiChen6665, 2026-09-26) seeded one
+  // card-game line here; the glossary audit of 2026-09-27 took it out for the
+  // game jargon rule of `english-usage-policy.ts`.
 ];
 
 /**

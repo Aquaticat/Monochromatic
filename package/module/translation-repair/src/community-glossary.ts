@@ -179,8 +179,8 @@ export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
       'blown out of the closet',
     ],
     refusedForms: [],
-    why: '炸柜 written out: being outed against one\'s will, not coming out; where the source says 因为, '
-      + 'the outing is the cause of what follows ("after she was outed"), not an event repeated each time',
+    why: '炸柜 written out, the closet door blown open: being outed against one\'s will, not coming out, and '
+      + 'never a literal door',
   },
   ...FANDOM_GLOSSARY,
 ];

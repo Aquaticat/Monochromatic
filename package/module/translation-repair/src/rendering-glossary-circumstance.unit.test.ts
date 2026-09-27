@@ -6,7 +6,10 @@
  nature and pollution where the speaker meant the place she lived; 工程机 as
  "engineering phone", which names nothing in English, where the phone world
  says "prototype" or "engineering sample". The glossary seeds the English
- each should take and refuses the calques.
+ each should take and refuses the calques. The glossary audit of 2026-09-27
+ took 环境的问题 out, a word joined to a noun by one sentence, for the
+ idiomatic English rule's "a word takes the sense its context gives it"
+ (`glossary-dictionary-terms.unit.test.ts`).
 
  Cat-themed invention throughout; no corpus content appears here.
 
@@ -25,11 +28,6 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Original in which the cat minds its hunger more than where it lives.
- */
-const SURROUNDINGS = '猫没怎么在乎环境的问题，只想吃鱼。';
-
-/**
  Original in which the cat finds a prototype phone that will not boot.
  */
 const PROTOTYPE = '猫捡到一台工程机，开不了机。';
@@ -37,16 +35,12 @@ const PROTOTYPE = '猫捡到一台工程机，开不了机。';
 /**
  Terms class one hundred fifty-nine seeds.
  */
-const SEEDED_TERMS = [
-  '环境的问题',
-  '工程机',
-] as const;
+const SEEDED_TERMS = ['工程机',] as const;
 
 /**
  Candidates the page's calques would ship, each with the original it renders.
  */
 const REFUSED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
-  { sourceText: SURROUNDINGS, candidateText: 'The cat did not care much about the environment; it only wanted fish.', },
   { sourceText: PROTOTYPE, candidateText: 'The cat found an engineering phone that would not boot.', },
 ];
 
@@ -54,7 +48,6 @@ const REFUSED_CANDIDATES: readonly { readonly sourceText: string; readonly candi
  Candidates carrying the English meaning, each with the original it renders.
  */
 const ACCEPTED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
-  { sourceText: SURROUNDINGS, candidateText: 'The cat did not care much about its surroundings; it only wanted fish.', },
   { sourceText: PROTOTYPE, candidateText: 'The cat found a prototype phone that would not boot.', },
 ];
 
@@ -62,7 +55,7 @@ await describe({
   name: 'circumstance and hardware words the rendering glossary renders (class one hundred fifty-nine)',
   children: [
     it({
-      name: 'SEEDS 环境的问题 and 工程机',
+      name: 'SEEDS 工程机',
       fn: async () => {
         expect(SEEDED_TERMS.filter(function isSeeded(term,): boolean {
           return RENDERING_GLOSSARY.some(function isTerm(entry,): boolean {

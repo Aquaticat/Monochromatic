@@ -9,6 +9,11 @@
  enormous influence on her death" and 贴贴计划 as "her cuddling plan"; the
  glossary seeds the English each should take and refuses the calques.
 
+ The glossary audit of 2026-09-27 took out 相关医院 and 巨大的影响 (ordinary
+ words joined by one sentence) for the idiomatic English rule, and dropped
+ the refused forms of 三剑客, 喘不过气 and 密密麻麻 that are the right English
+ for the same word elsewhere (`glossary-dictionary-terms.unit.test.ts`).
+
  Cat-themed invention throughout; no corpus content appears here.
 
  @module
@@ -56,16 +61,6 @@ const APPLICATIONS = '猫的志愿填写出现巨大失误。';
 const FATE = '命运的齿轮就此转动。';
 
 /**
- Original in which the cat seeks hospital treatment.
- */
-const HOSPITAL = '猫积极去相关医院治疗。';
-
-/**
- Original in which the cat's owners played a large part in its death.
- */
-const LARGE_PART = '猫的主人对她的死也有着巨大的影响。';
-
-/**
  Original in which the cat meets companions through cuddle meetups.
  */
 const CUDDLES = '猫在她的贴贴计划中认识了许多同伴。';
@@ -80,8 +75,6 @@ const SEEDED_TERMS = [
   '密密麻麻',
   '志愿填写',
   '命运的齿轮',
-  '相关医院',
-  '巨大的影响',
   '贴贴计划',
 ] as const;
 
@@ -89,14 +82,9 @@ const SEEDED_TERMS = [
  Candidates the page's calques would ship, each with the original it renders.
  */
 const REFUSED_CANDIDATES: readonly { readonly sourceText: string; readonly candidateText: string; }[] = [
-  { sourceText: TRIO, candidateText: 'The cat was also a devoted viewer of the Three Musketeers car show.', },
   { sourceText: GAS_CAR, candidateText: 'The cat was like a fuel-powered car, bound to fade away.', },
-  { sourceText: CRUSHING, candidateText: 'The pressure of schoolwork left the cat breathless.', },
-  { sourceText: SCARS, candidateText: 'The cat\'s paws were covered in densely packed scars.', },
   { sourceText: APPLICATIONS, candidateText: 'The cat made a major mistake in its application preferences.', },
   { sourceText: FATE, candidateText: 'And so the gears of fate began to turn.', },
-  { sourceText: HOSPITAL, candidateText: 'The cat actively sought treatment at the relevant hospitals.', },
-  { sourceText: LARGE_PART, candidateText: 'The cat\'s owners also had an enormous influence on her death.', },
   { sourceText: CUDDLES, candidateText: 'Through her cuddling plan the cat met many companions.', },
 ];
 
@@ -110,8 +98,6 @@ const ACCEPTED_CANDIDATES: readonly { readonly sourceText: string; readonly cand
   { sourceText: SCARS, candidateText: 'The cat\'s paws were covered in scars.', },
   { sourceText: APPLICATIONS, candidateText: 'The cat made a serious mistake on its university applications.', },
   { sourceText: FATE, candidateText: 'And so the wheels of fate began to turn.', },
-  { sourceText: HOSPITAL, candidateText: 'The cat actively sought hospital treatment.', },
-  { sourceText: LARGE_PART, candidateText: 'The cat\'s owners also played a large part in her death.', },
   { sourceText: CUDDLES, candidateText: 'Through her cuddle meetups the cat met many companions.', },
 ];
 
@@ -119,7 +105,7 @@ await describe({
   name: 'idiom calques the rendering glossary refuses (class one hundred thirty)',
   children: [
     it({
-      name: 'SEEDS 三剑客, 燃油车, 喘不过气, 密密麻麻, 志愿填写, 命运的齿轮, 相关医院, 巨大的影响 and 贴贴计划',
+      name: 'SEEDS 三剑客, 燃油车, 喘不过气, 密密麻麻, 志愿填写, 命运的齿轮 and 贴贴计划',
       fn: async () => {
         expect(SEEDED_TERMS.filter(function isSeeded(term,): boolean {
           return RENDERING_GLOSSARY.some(function isTerm(entry,): boolean {

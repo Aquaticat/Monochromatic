@@ -10,7 +10,13 @@ import type { CommunityTerm, } from './community-glossary.ts';
 // pinned corpus on that entry alone. Kept beside `rendering-glossary.ts`, which
 // spreads these entries into `RENDERING_GLOSSARY`, so neither file outgrows the
 // line budget.
-
+//
+// THE GLOSSARY AUDIT OF 2026-09-27 took out 相关医院 and 巨大的影响, two
+// ordinary words joined by one sentence (the lesson, a filler word English
+// does without, is the idiomatic English rule of `english-usage-policy.ts`),
+// and dropped the refused forms of 三剑客, 喘不过气 and 密密麻麻 that are the
+// right English for the same word elsewhere: any famous trio is "the Three
+// Musketeers", a runner is "out of breath", writing is "densely packed".
 /**
  Idioms and set phrases the pinned corpus carries whose word-for-word
  rendering reads badly in English, with the English the page uses.
@@ -19,17 +25,16 @@ export const IDIOM_GLOSSARY: readonly CommunityTerm[] = [
   {
     term: '三剑客',
     renderings: [
+      'trio',
+      'the Three Musketeers',
       'the Top Gear trio',
-      'Clarkson, Hammond and May',
-      'the three presenters',
     ],
     refusedForms: [
-      'three musketeers',
       'three swordsmen',
       'sanjianke',
     ],
-    why: 'the three presenters of Top Gear and The Grand Tour; English viewers call them "the Top Gear trio", never '
-      + '"the Three Musketeers"',
+    why: 'a famous trio, after the Three Musketeers; the three presenters of Top Gear and The Grand Tour are "the Top '
+      + 'Gear trio" to English viewers, so the page names that trio rather than the musketeers',
   },
   {
     term: '燃油车',
@@ -54,30 +59,27 @@ export const IDIOM_GLOSSARY: readonly CommunityTerm[] = [
   {
     term: '喘不过气',
     renderings: [
-      'crushing',
       'could barely breathe',
+      'suffocating',
       'overwhelmed',
-    ],
-    refusedForms: [
-      'breathless',
       'out of breath',
     ],
-    why: 'pressure so heavy it smothers; "breathless" in English means excited or winded, so the page says the pressure '
-      + 'was crushing or that she could barely breathe under it',
+    refusedForms: [],
+    why: 'unable to catch one\'s breath; said of pressure or grief it means smothered, and English says the pressure '
+      + 'was suffocating or she could barely breathe under it, since "breathless" reads as excited; said of running it '
+      + 'is "out of breath"',
   },
   {
     term: '密密麻麻',
     renderings: [
-      'covered in scars',
-      'a mass of scars',
-      'thick with scars',
-    ],
-    refusedForms: [
+      'covered in',
+      'a mass of',
+      'thick with',
       'densely packed',
-      'densely-packed',
-      'dense scars',
     ],
-    why: 'so many that they crowd together; the page says her arms were covered in scars, never "densely packed scars"',
+    refusedForms: [],
+    why: 'so many that they crowd together; English takes the noun\'s own idiom, an arm "covered in" scars or a page '
+      + '"densely packed" with writing, never "densely packed scars"',
   },
   {
     term: '志愿填写',
@@ -108,37 +110,6 @@ export const IDIOM_GLOSSARY: readonly CommunityTerm[] = [
       'gears of destiny',
     ],
     why: 'the moment a life\'s course is set; the English idiom is "the wheels of fate began to turn", never "gears"',
-  },
-  {
-    term: '相关医院',
-    renderings: [
-      'hospital treatment',
-      'treatment in hospital',
-      'psychiatric treatment',
-    ],
-    refusedForms: [
-      'relevant hospital',
-      'related hospital',
-    ],
-    why: '相关 here only says the hospitals suited to her illness; the page says she sought hospital treatment, never '
-      + '"the relevant hospitals"',
-  },
-  {
-    term: '巨大的影响',
-    renderings: [
-      'played a large part in',
-      'played a big part in',
-      'had a great deal to do with',
-    ],
-    refusedForms: [
-      'influence on her death',
-      'influence on his death',
-      'influence on their death',
-      'impact on her death',
-      'effect on her death',
-    ],
-    why: 'people who helped bring about a death; English says they "played a large part in her death", never that '
-      + 'they had an "influence on" it',
   },
   {
     term: '贴贴计划',

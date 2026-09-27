@@ -4,9 +4,10 @@
  can be translated better do it"), two calques on the page join the rendering
  glossary. 滑档二本 shipped as "slid down into a second-tier admission slot",
  where the English is that she missed her chosen schools and ended up at a
- second-tier university; 用这种方式告诉 shipped as "using this way to tell",
- which is not English. Each form appears once in the pinned corpus, on that
- page.
+ second-tier university. Each form appears once in the pinned corpus, on
+ that page. The class also seeded 用这种方式 ("using this way to tell"); the
+ glossary audit of 2026-09-27 took it out, a construction rather than a word,
+ for the idiomatic English rule (`glossary-dictionary-terms.unit.test.ts`).
 
  Cat-themed invention throughout; no corpus content appears here.
 
@@ -29,11 +30,6 @@ import {
  second-tier university.
  */
 const ADMISSION = '这只猫志愿填错了，滑档二本。';
-
-/**
- Original in which the cat tells everyone something by its nap.
- */
-const MEANS = '这只猫只是用这种方式告诉大家要多睡觉。';
 
 /**
  Entry the glossary holds for a term, or undefined.
@@ -66,12 +62,11 @@ await describe({
   name: 'calques the rendering glossary refuses (class one hundred twenty-five)',
   children: [
     it({
-      name: 'SEEDS 滑档, 二本 and 用这种方式 with the English the page uses',
+      name: 'SEEDS 滑档 and 二本 with the English the page uses',
       fn: async () => {
         expect(entryFor({ term: '二本', },).renderings[0],).toBe('second-tier university',);
         expect(entryFor({ term: '二本', },).refusedForms,).toContain('admission slot',);
         expect(entryFor({ term: '滑档', },).refusedForms,).toContain('slid down',);
-        expect(entryFor({ term: '用这种方式', },).refusedForms,).toContain('using this way to',);
       },
     },),
     it({
@@ -82,18 +77,8 @@ await describe({
           candidateText: 'The cat filled in the wrong choices and slid down into a second-tier admission slot.',
         },).kind,).toBe('invalid',);
         expect(validateTranslatedSlice({
-          sourceText: MEANS,
-          candidateText: 'The cat was only using this way to tell everyone to sleep more.',
-        },).kind,).toBe('invalid',);
-        expect(validateTranslatedSlice({
           sourceText: ADMISSION,
           candidateText: 'The cat filled in the wrong choices and slipped to a second-tier university.',
-        },).kind,).toBe('invalid',);
-        // shi_Yumiaoya26 dodged the refused form with "using this method to
-        // tell", the same calque with another noun.
-        expect(validateTranslatedSlice({
-          sourceText: MEANS,
-          candidateText: 'The cat was only using this method to tell everyone to sleep more.',
         },).kind,).toBe('invalid',);
       },
     },),
@@ -103,10 +88,6 @@ await describe({
         expect(validateTranslatedSlice({
           sourceText: ADMISSION,
           candidateText: 'The cat filled in the wrong choices, missed its chosen schools and ended up at a second-tier university.',
-        },).kind,).toBe('valid',);
-        expect(validateTranslatedSlice({
-          sourceText: MEANS,
-          candidateText: 'This was only the cat\'s way of telling everyone to sleep more.',
         },).kind,).toBe('valid',);
       },
     },),
