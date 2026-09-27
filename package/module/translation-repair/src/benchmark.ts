@@ -65,6 +65,20 @@ const DEFAULT_PER_CALL_TIMEOUT_MS = 600_000;
 export const MIN_DISPATCH_BUDGET_MS = 30_000;
 
 /**
+ Default clock the run budget is read on.
+
+ @returns Milliseconds since the epoch
+
+ @example
+ ```ts
+ const startedAt = readWallClock();
+ ```
+ */
+function readWallClock(): number {
+  return Date.now();
+}
+
+/**
  Whole benchmark result: raw graded attempts plus the aggregate scorecard.
  
  @example
@@ -159,7 +173,10 @@ function gradeHits(
  @param runBudgetMs - wall budget for the whole run;
  once it cannot fit another call, remaining attempts record as skipped,
  and the scorecard reports the resulting coverage
- 
+
+ @param now - clock the run budget is read on; the wall clock by default,
+ so a test can spend the budget without sleeping
+
  @returns Graded attempts plus the aggregate scorecard
  
  @throws {@link import('./seeded-error.ts').SeedApplicationError} when a seed spec is misconfigured
@@ -178,6 +195,7 @@ export async function runCriticBenchmark(
     signal,
     perCallTimeoutMs = DEFAULT_PER_CALL_TIMEOUT_MS,
     runBudgetMs,
+    now = readWallClock,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly entries: readonly BenchmarkEntry[];
@@ -185,6 +203,7 @@ export async function runCriticBenchmark(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs?: number;
     readonly runBudgetMs?: number;
+    readonly now?: () => number;
   }>,
 ): Promise<CriticBenchmarkResult> {
   /**
@@ -198,7 +217,7 @@ export async function runCriticBenchmark(
   /**
    Clock start the run budget counts from.
    */
-  const runStartedAt = Date.now();
+  const runStartedAt = now();
 
   /**
    Reads the run budget still available; unbounded without a budget.
@@ -213,7 +232,7 @@ export async function runCriticBenchmark(
   function remainingBudgetMs(): number {
     return runBudgetMs === undefined
       ? Number.POSITIVE_INFINITY
-      : runBudgetMs - (Date.now() - runStartedAt);
+      : runBudgetMs - (now() - runStartedAt);
   }
 
   /**
@@ -262,7 +281,7 @@ export async function runCriticBenchmark(
     } = entry;
     /**
      Runs one deadline-guarded exchange and grades it;
-     declared first so the transient retry below reads top-down.
+     declared before the transient retry that calls it, so the retry reads top-down.
      The client arms the deadline inside the per-model slot,
      so queue wait never counts and a retry gets the full budget.
      Skips without dispatching when the run budget cannot fit
