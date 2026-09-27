@@ -272,8 +272,9 @@ await describe({
         // Version 17 (2026-09-27) sends gate objections over an ineligible
         // standing to the polish as an objection correction. Version 18 ships a
         // slate declined twice there by preference, its reasons to the polish.
+        // Version 19 refuses disputed wordings and keys the dispute note.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          '05ec2ff735b335e20383afda9ec083ab71624c433dc54bca2f1e05765f677eca',
+          'd878148715ff3a34866a8602c8ba988ac6fe986d5f2cd45bb4cc53da9d8d865b',
         );
       },
     },),

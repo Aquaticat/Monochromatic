@@ -6,6 +6,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
+import type { DisputedWording, } from './disputed-wording.ts';
 import type { ConsolidateGateOutcome, } from './consolidate-gate-stage.ts';
 import { gateAndShip, } from './consolidate-settle-gate.ts';
 import {
@@ -170,6 +171,12 @@ export type ConsolidationSubject = {
    an undisputed slice (class one hundred eight, 2026-09-24).
    */
   readonly archiveDisputeNote?: string;
+
+  /**
+   Wordings a disputed slice refuses as proposal, absent on an undisputed
+   slice (owner, 2026-09-27, "No eligible standing").
+   */
+  readonly disputedWordings?: readonly DisputedWording[];
 
   /**
    What the pictures near this slice were read to say.

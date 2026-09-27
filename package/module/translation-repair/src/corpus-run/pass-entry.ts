@@ -4,7 +4,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { armCallDeadline, } from '../call-deadline.ts';
 import { runDocumentLanes, } from '../document-lanes.ts';
-import { archiveDisputesOf, } from '../archive-dispute.ts';
+import { archiveDisputesOfRepair, } from '../archive-dispute.ts';
 import {
   entryArchiveOriginalOf,
   recordEntryDecline,
@@ -434,10 +434,7 @@ async function runEntryPipeline(
       contests: contestSlices,
       // THE SAME READING THE LANES MADE, so the consolidation's stand-in is
       // the text the translate lane judged over (class one hundred seven).
-      archiveDisputes: archiveDisputesOf({
-        chunks: lanes.repair
-          .chunks,
-      },),
+      archiveDisputes: archiveDisputesOfRepair({ repair: lanes.repair, },),
       frontMatterSlices,
       pictureReadings,
       entryCacheDir,

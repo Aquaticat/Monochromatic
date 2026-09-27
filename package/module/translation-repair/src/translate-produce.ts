@@ -15,6 +15,7 @@ import {
   buildTranslateCandidates,
   type TranslateCandidateValue,
 } from './translate-candidates.ts';
+import type { DisputedWording, } from './disputed-wording.ts';
 import { floorTranslateVoices, } from './translate-floor.ts';
 import { repairInvalidCandidates, } from './translate-repair.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
@@ -110,6 +111,10 @@ export type ProducedSlate = {
  @param declared - name pairs the front matter declares, which the
  publication rule reads for a linked title naming a declared person (class
  one hundred fourteen)
+
+ @param disputedWordings - wordings a disputed slice refuses, so a translator
+ copying the archive there is sent back and then withheld (owner,
+ 2026-09-27); none elsewhere
  
  @param signal - caller abort honored by every exchange
  
@@ -140,6 +145,7 @@ export async function produceTranslateSlate(
     followupEvidence,
     lineStructured,
     declared = [],
+    disputedWordings = [],
     signal,
     perCallTimeoutMs,
     l,
@@ -158,6 +164,7 @@ export async function produceTranslateSlate(
     readonly followupEvidence?: TranslateFollowupEvidence;
     readonly lineStructured: boolean;
     readonly declared?: readonly DeclaredNamePair[];
+    readonly disputedWordings?: readonly DisputedWording[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -228,6 +235,7 @@ export async function produceTranslateSlate(
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     declared,
+    disputedWordings,
     priorMessages: plan.messages,
     signal,
     perCallTimeoutMs,
@@ -246,6 +254,7 @@ export async function produceTranslateSlate(
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     declared,
+    disputedWordings,
   },);
   /**
    Slate of distinct proposals with the incumbent among them.

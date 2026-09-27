@@ -278,6 +278,7 @@ export async function consolidateDocument(
       incumbentText,
       standInShips,
       disputeNote,
+      disputedWordings,
     } = archiveStandInFor({
       ...((archiveDisputes === undefined) ? {} : { archiveDisputes, }),
       sliceIndex: row.sliceIndex,
@@ -335,6 +336,7 @@ export async function consolidateDocument(
       sliceIndex: row.sliceIndex,
       l: dl,
       declared: declaredNamePairs,
+      disputedWordings,
     },);
 
     /**
@@ -354,6 +356,7 @@ export async function consolidateDocument(
       ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
       declared: declaredNamePairs,
+      disputedWordings,
     },);
 
     /**
@@ -394,6 +397,7 @@ export async function consolidateDocument(
       ...((identityContext === undefined) ? {} : { identityContext, }),
       ...((referenceContext === undefined) ? {} : { referenceContext, }),
       ...((disputeNote === undefined) ? {} : { archiveDisputeNote: disputeNote, }),
+      ...((disputedWordings.length === 0) ? {} : { disputedWordings, }),
       // Omitted rather than empty, matching the context above it, so a producer
       // shown no readings is shown no heading promising any.
       ...((pictureContext === '') ? {} : { pictureContext, }),
@@ -425,6 +429,7 @@ export async function consolidateDocument(
       neighbouringSourceText: neighbours.sourceText,
       neighbouringIncumbentText: neighbours.incumbentText,
       laneTexts,
+      ...((disputeNote === undefined) ? {} : { archiveDisputeNote: disputeNote, }),
     },);
 
     /**

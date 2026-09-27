@@ -26,6 +26,7 @@ import {
   type ArchiveDispute,
   archiveDisputeNote,
   describeArchiveDispute,
+  disputedWordingsOf,
 } from './archive-dispute.ts';
 
 //region Translate slice
@@ -138,11 +139,18 @@ export async function settleTranslateSlice(
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
+    // THE STAND-IN ONLY WHERE IT MAY STAND; elsewhere the archive stays the
+    // incumbent and is refused with the repair lane's text (owner,
+    // 2026-09-27, "No eligible standing").
     ...((archiveDispute === undefined)
       ? {}
       : {
-        archiveStandIn: archiveDispute.standIn,
+        ...(archiveDispute.standInEligible ? { archiveStandIn: archiveDispute.standIn, } : {}),
         archiveDisputeNote: archiveDisputeNote({ dispute: archiveDispute, },),
+        disputedWordings: disputedWordingsOf({
+          dispute: archiveDispute,
+          archiveText: pageWording,
+        },),
       }),
   },);
   /**
@@ -158,8 +166,18 @@ export async function settleTranslateSlice(
    so a kept or refused surface still changes the page (class one hundred
    seven).
    */
-  const standInDiffers = (archiveDispute !== undefined)
+  const standInDiffers = (archiveDispute?.standInEligible === true)
     && (archiveText !== pageWording);
+  /**
+   Whether the incumbent is wording the slice refuses, so no refusal below
+   may keep it: there is nothing to keep, and the consolidation's floors judge
+   what the stage chose (owner, 2026-09-27).
+   */
+  const incumbentRefused = (archiveDispute !== undefined) && (!archiveDispute.standInEligible);
+  /**
+   Whether there is incumbent wording a replacement could damage.
+   */
+  const guardedIncumbent = (incumbentKind === 'present') && (!incumbentRefused);
 
   if (protectedText !== '')
     l.info(
@@ -224,7 +242,7 @@ export async function settleTranslateSlice(
    an ordinary unchanged one, which is the exact wrong-success state absent
    mode exists to remove.
    */
-  const refused = (incumbentKind === 'present')
+  const refused = guardedIncumbent
     && wantsReplacement
     && (alignment.kind === 'incumbent-dominates-source');
 
@@ -238,7 +256,7 @@ export async function settleTranslateSlice(
    and 8.71: a near miss and nowhere near. Counting quoted passages catches
    both, and over sixty-nine natural rows it caught nothing else.
    */
-  const losesQuote = (incumbentKind === 'present')
+  const losesQuote = guardedIncumbent
     && wantsReplacement
     && (!refused)
     && dropsQuotedPassage({
@@ -271,7 +289,7 @@ export async function settleTranslateSlice(
    
    Only a slice whose archive text is being replaced can lose a name from it.
    */
-  const guardsThisSlice = (incumbentKind === 'present')
+  const guardsThisSlice = guardedIncumbent
     && wantsReplacement
     && (!refused);
   /**

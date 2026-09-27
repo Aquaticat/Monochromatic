@@ -39,7 +39,7 @@ const UNTRANSLATED_FINDING = 'Your translation repeats the ORIGINAL untranslated
  const bare = withoutWhitespace({ text: '> 猫 \r\n>\n', },); // '>猫>'
  ```
  */
-function withoutWhitespace({ text, }: { readonly text: string; },): string {
+export function withoutWhitespace({ text, }: { readonly text: string; },): string {
   /**
    Characters kept, in order.
    */

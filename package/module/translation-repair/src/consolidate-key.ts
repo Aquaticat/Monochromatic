@@ -80,8 +80,15 @@ import type { LaneText, } from './translate-candidates.ts';
  the slate judges so (owner, 2026-09-27, "Preference + polish"). Version 17
  raised on that slate and stopped the entry, and its polish sheet carried
  one set of objections.
+
+ VERSION 19 refuses a disputed slice's archive wording, and the repair
+ lane's text where the checkers confirmed no repair of the disputed reading,
+ as standing, incumbent, lane offer and proposal, and keys the dispute note
+ (owner, 2026-09-27, "No eligible standing"). Version 18 stood the repair
+ lane's text in for the archive whatever the checkers said, and keyed a
+ disputed slice like an undisputed one.
  */
-export const CONSOLIDATE_CACHE_VERSION = 18;
+export const CONSOLIDATE_CACHE_VERSION = 19;
 
 /**
  What a line-structured slice appends to its key material.
@@ -239,6 +246,9 @@ export function consolidateRunShape(
  absent or empty where the standing was an endorsed eligible lane (class
  forty, 2026-09-17)
 
+ @param archiveDisputeNote - the dispute note a disputed slice is settled
+ under, absent on an undisputed one
+
  @returns Hash keying this slice's settlement
 
  @example
@@ -261,6 +271,7 @@ export function consolidateSliceKey(
     neighbouringSourceText,
     neighbouringIncumbentText,
     laneTexts = [],
+    archiveDisputeNote,
   }: {
     readonly runShape: string;
     readonly sourceText: string;
@@ -275,6 +286,7 @@ export function consolidateSliceKey(
     readonly neighbouringSourceText?: string;
     readonly neighbouringIncumbentText?: string;
     readonly laneTexts?: readonly LaneText[];
+    readonly archiveDisputeNote?: string;
   },
 ): string {
   return hashContent({
@@ -347,6 +359,16 @@ export function consolidateSliceKey(
         : [
           LANE_TEXTS_KEY_LABEL,
           laneTexts,
+        ]),
+      // THE DISPUTE NOTE, appended only when present: a slice settled under
+      // accepted claims against its archive, whose archive the rule may refuse,
+      // asks a different question from the same texts undisputed (owner,
+      // 2026-09-27, "No eligible standing").
+      ...(((archiveDisputeNote === undefined) || (archiveDisputeNote === ''))
+        ? []
+        : [
+          'dispute',
+          archiveDisputeNote,
         ]),
     ],),
   },);

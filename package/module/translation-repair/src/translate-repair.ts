@@ -5,6 +5,10 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
+import {
+  type DisputedWording,
+  disputedWordingFindings,
+} from './disputed-wording.ts';
 import { CONTRIBUTOR_AUTHORITY_FINDING, } from './contributor-translation-guard.ts';
 import { producedVolumeBound, } from './produced-volume-bound.ts';
 import { attemptStageCall, } from './stage-call.ts';
@@ -83,6 +87,10 @@ export type RepairOutcome = {
  @param declared - name pairs the front matter declares, which the
  publication rule reads for a linked title naming a declared person (class
  one hundred fourteen)
+
+ @param disputedWordings - wordings a disputed slice refuses, which a
+ candidate copying one is sent back over rather than collapsed into (owner,
+ 2026-09-27, "No eligible standing")
  
  @param l - stage logger
  
@@ -103,6 +111,7 @@ async function repairOneCandidate(
     syntax,
     lineStructured,
     declared = [],
+    disputedWordings = [],
     priorMessages,
     signal,
     perCallTimeoutMs,
@@ -116,6 +125,7 @@ async function repairOneCandidate(
     readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
     readonly declared?: readonly DeclaredNamePair[];
+    readonly disputedWordings?: readonly DisputedWording[];
     readonly priorMessages: readonly ChatMessage[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -128,9 +138,22 @@ async function repairOneCandidate(
   // a revision would break the match and destroy the `translate-matched-incumbent`
   // signal, on exactly the slices where the incumbent diverges from its source
   // and the match is most worth knowing about.
-  if (collapseKey({ text: voice.value
+  //
+  // NOT ON A DISPUTED SLICE, whose incumbent is refused rather than kept: a
+  // copy of it is sent back like any other refused text (owner, 2026-09-27).
+  /**
+   What the rule says of this candidate as a disputed wording, none where it
+   is not one.
+   */
+  const disputedCopy = disputedWordingFindings({
+    candidateText: voice.value
+      .translation,
+    disputedWordings,
+  },);
+  if ((collapseKey({ text: voice.value
     .translation, },)
     === collapseKey({ text: incumbentText, },))
+    && (disputedCopy.length === 0))
     return {
       voice,
       findings: [],
@@ -147,6 +170,7 @@ async function repairOneCandidate(
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     declared,
+    disputedWordings,
   },);
   if (validation.kind === 'valid')
     return {
@@ -255,6 +279,7 @@ async function repairOneCandidate(
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     declared,
+    disputedWordings,
   },);
 
   // A revision that still fails is NOT taken. The model was asked to fix these
@@ -316,6 +341,10 @@ async function repairOneCandidate(
  @param declared - name pairs the front matter declares, which the
  publication rule reads for a linked title naming a declared person (class
  one hundred fourteen)
+
+ @param disputedWordings - wordings a disputed slice refuses, which a
+ candidate copying one is sent back over rather than collapsed into (owner,
+ 2026-09-27, "No eligible standing")
  
  @param l - stage logger
  
@@ -336,6 +365,7 @@ export async function repairInvalidCandidates(
     syntax,
     lineStructured = false,
     declared = [],
+    disputedWordings = [],
     priorMessages,
     signal,
     perCallTimeoutMs,
@@ -349,6 +379,7 @@ export async function repairInvalidCandidates(
     readonly syntax?: SliceSyntax;
     readonly lineStructured?: boolean;
     readonly declared?: readonly DeclaredNamePair[];
+    readonly disputedWordings?: readonly DisputedWording[];
     readonly priorMessages: readonly ChatMessage[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -372,6 +403,7 @@ export async function repairInvalidCandidates(
         ...((syntax === undefined) ? {} : { syntax, }),
         lineStructured,
         declared,
+        disputedWordings,
         priorMessages,
         signal,
         perCallTimeoutMs,

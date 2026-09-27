@@ -1,4 +1,5 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
+import type { DisputedWording, } from './disputed-wording.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 
 import type { SliceSyntax, } from './chunk-document.ts';
@@ -276,6 +277,12 @@ export type ConsolidateSubject = {
    a linked title naming a declared person (class one hundred fourteen).
    */
   readonly declared?: readonly DeclaredNamePair[];
+
+  /**
+   Wordings a disputed slice refuses as proposal, absent on an undisputed
+   slice (owner, 2026-09-27, "No eligible standing").
+   */
+  readonly disputedWordings?: readonly DisputedWording[];
 };
 
 /**

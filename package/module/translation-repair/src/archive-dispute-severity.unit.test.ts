@@ -104,6 +104,7 @@ await describe({
           chunks: [{
             sliceIndex: 1,
             repairedText: REPAIRED,
+            resolvedIssueIds: [],
             issues: [acceptedIssue({
               category: 'accuracy/mistranslation',
               summary: DOWNGRADED,
@@ -123,6 +124,7 @@ await describe({
           chunks: [{
             sliceIndex: 2,
             repairedText: REPAIRED,
+            resolvedIssueIds: [],
             issues: [acceptedIssue({
               category: 'accuracy/mistranslation',
               summary: UPGRADED,
@@ -141,6 +143,7 @@ await describe({
           chunks: [{
             sliceIndex: 3,
             repairedText: REPAIRED,
+            resolvedIssueIds: [],
             issues: [acceptedIssue({
               category: 'accuracy/addition',
               summary: MINOR_ADDITION,

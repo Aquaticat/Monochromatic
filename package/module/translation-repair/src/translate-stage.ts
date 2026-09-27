@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
+import type { DisputedWording, } from './disputed-wording.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import { assertJudgeableProducerRoster, } from './repair-contract.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -115,6 +116,10 @@ function floorFindings({ verdict, }: { readonly verdict: SliceValidation; },): r
  @param declared - name pairs the front matter declares, which the
  publication rule reads for a linked title naming a declared person (class
  one hundred fourteen)
+
+ @param disputedWordings - wordings a disputed slice refuses, which excludes
+ the archive as incumbent and withholds a translator copying it (owner,
+ 2026-09-27, "No eligible standing"); none elsewhere
  
  @param signal - caller abort honored by every exchange
  
@@ -158,6 +163,7 @@ export async function runTranslateStage(
     syntax,
     lineStructured,
     declared = [],
+    disputedWordings = [],
     signal,
     perCallTimeoutMs,
     l,
@@ -178,6 +184,7 @@ export async function runTranslateStage(
     readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
     readonly declared?: readonly DeclaredNamePair[];
+    readonly disputedWordings?: readonly DisputedWording[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -205,6 +212,7 @@ export async function runTranslateStage(
         ...((syntax === undefined) ? {} : { syntax, }),
         lineStructured,
         declared,
+        disputedWordings,
       },),
     },)
     : [];
@@ -247,6 +255,7 @@ export async function runTranslateStage(
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     declared,
+    disputedWordings,
     signal,
     perCallTimeoutMs,
     l,

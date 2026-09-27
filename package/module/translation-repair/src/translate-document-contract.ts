@@ -85,8 +85,13 @@ import type { SliceReplacement, } from './splice-slices.ts';
  round's preferred candidate past a declined challenge round (owner,
  2026-09-27, "Preference + polish"); version 12 told them the passage had no
  translation and stopped the entry on that decline.
+
+ VERSION 14 keeps a disputed archive off the slate as incumbent and as a
+ copied candidate, stands the repair lane's text in only where the checkers
+ confirmed every disputing issue resolved, and keys the dispute note (owner,
+ 2026-09-27, "No eligible standing").
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 13;
+export const TRANSLATE_SLICE_CACHE_VERSION = 14;
 
 /**
  Models the translate lane seats.

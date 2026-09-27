@@ -1,5 +1,5 @@
 import {
-  archiveDisputesOf,
+  archiveDisputesOfRepair,
   logArchiveDisputes,
 } from './archive-dispute.ts';
 import {
@@ -406,7 +406,7 @@ export async function runDocumentLanes(
    add what the original never states; the repair text stands in for the
    archive on the translate lane (class one hundred seven).
    */
-  const archiveDisputes = archiveDisputesOf({ chunks: repair.chunks, },);
+  const archiveDisputes = archiveDisputesOfRepair({ repair, },);
   logArchiveDisputes({
     disputes: archiveDisputes,
     l: dl,

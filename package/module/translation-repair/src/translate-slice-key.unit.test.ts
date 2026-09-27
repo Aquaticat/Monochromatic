@@ -67,12 +67,13 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  Version 11 continues absent passages from latest rejection evidence.
  Version 12 excludes archive fallback that fails deterministic source floor.
  Version 13 ships a withheld archive slice past a declined follow-up round.
+ Version 14 refuses disputed archive wording and keys the dispute note.
  These questions changed without input fields.
  
  The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  leaves this alone.
  */
-const LEGACY_WINDOWLESS_KEY = '2ea4fff1692ab7d0f3db0809f6d22a039301c6d63ab751e86ec454af9aec818d';
+const LEGACY_WINDOWLESS_KEY = '70b755335b8de20d69ef1fbcde6671d034c41490d724a285f8e3fabb4eaab517';
 
 /**
  One slice's key, with whatever this case wants to vary.

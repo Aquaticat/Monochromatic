@@ -1,4 +1,5 @@
 import type { SliceSyntax, } from './chunk-document.ts';
+import type { DisputedWording, } from './disputed-wording.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
@@ -43,6 +44,9 @@ const REFUSED_FINDING = 'translate-candidate-refused';
  reads for a linked title naming a declared person (class one hundred
  fourteen); none leaves that floor silent
 
+ @param disputedWordings - wordings a disputed slice refuses, so a candidate
+ copying the archive there is withheld (owner, 2026-09-27); none elsewhere
+
  @returns Candidates the rule accepts, with a finding per candidate withheld
 
  @example
@@ -58,6 +62,7 @@ export function floorTranslateVoices(
     syntax,
     lineStructured,
     declared = [],
+    disputedWordings = [],
   }: {
     readonly voices: readonly HeardVoice<TranslateReportWire>[];
     readonly sourceText: string;
@@ -65,6 +70,7 @@ export function floorTranslateVoices(
     readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
     readonly declared?: readonly DeclaredNamePair[];
+    readonly disputedWordings?: readonly DisputedWording[];
   },
 ): {
   readonly voices: readonly HeardVoice<TranslateReportWire>[];
@@ -89,6 +95,7 @@ export function floorTranslateVoices(
       ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
       declared,
+      disputedWordings,
     },);
     // A RULE THAT CANNOT SAY keeps the candidate: only a refusal withholds.
     if (validation.kind !== 'invalid')

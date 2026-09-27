@@ -39,10 +39,16 @@ export {
   archiveDisputeNote,
   archiveDisputeNotesOf,
   archiveDisputesOf,
+  archiveDisputesOfRepair,
   describeArchiveDispute,
   type DisputableChunk,
+  disputedWordingsOf,
   logArchiveDisputes,
 } from './archive-dispute.ts';
+export {
+  type DisputedWording,
+  disputedWordingFindings,
+} from './disputed-wording.ts';
 export {
   assertSliceIndexing,
   indexingSentence,

@@ -1121,7 +1121,7 @@ and XingZ6014 slice 87 resolved an issue on one ballot, which shipped.
 
 ### L2: the archive-dispute stand-in is the archive's own wording whenever the repair lost
 
-Status: owner answered 2026-09-27 ("No eligible standing");
+Status: fixed with guard `23cbbdaaa` (owner answer 2026-09-27, "No eligible standing");
 sixteenth addendum of `doc/decision/translation-repair-ineligible-standing.md`, read issue by issue
 (the stand-in stands only where the checkers confirmed every disputing issue resolved: 1 of 87 measured).
 60 of 87 disputed slices;
@@ -1377,3 +1377,27 @@ and in untouched tests, names in comments and test names
 Yumao and 羽毛 as string literals.
 The owner defers sanitization to the project's end;
 the method quote in `translate-suicide-drop.ts` is the one the reader-protection rule covers now.
+
+### X4: the consolidation producers' repair turn re-checked revisions without the declared names
+
+Status: fixed with the sixteenth addendum.
+`consolidate-produce.ts` validated each proposal with `subject.declared`
+and passed no `declared` to `repairInvalidCandidates`,
+so a revision that dropped a declared name passed the re-check.
+
+### X5: neither slice key named the archive dispute
+
+Status: fixed with the sixteenth addendum.
+`translateSliceKey` and `consolidateSliceKey` hashed the texts but not the dispute note,
+so a slice judged under accepted claims could resume a record settled for the same texts undisputed,
+and with the archive as incumbent on an unresolved dispute the texts would be identical.
+
+### X6: the translate lane's refusals keep an archive the floor refuses
+
+Status: open.
+`translate-slice.ts` gates its alignment, quote-loss and declared-name refusals on the slice having archive wording,
+not on that wording passing the floor,
+so a replacement refused there ships the floor-refused archive as the lane's text
+(shihai4h2 slice 14 kept a 1665-code-point archive against a 102-character source);
+the consolidation then refuses it as a standing.
+The disputed case no longer does this; the floor-refused case needs the stage's eligibility on the record.

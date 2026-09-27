@@ -262,6 +262,28 @@ and no contest ran.
     Before this change a content slice whose archive could not stand stopped the entry on such a rejection;
     extending the fifteenth addendum to the translate lane is the adopted reading, open to veto.
 - Cost: more slices reach the consolidation.
+- Landed:
+    `archiveDisputesOf` reads `resolvedIssueIds` and the withdrawn slices into `ArchiveDispute.standInEligible`;
+    `disputedWordingsOf` names the refused wordings
+    (the archive's own always, the repair lane's text where it may not stand);
+    `validateTranslatedSlice` refuses a text that is one of them in all but whitespace
+    (`disputed-wording.ts`),
+    so every existing floor path applies:
+    the translate stage excludes the archive as incumbent,
+    the repair turn sends a copy back instead of collapsing it into the incumbent,
+    the translate floor withholds it,
+    and the consolidation refuses it as standing, incumbent stand-in, lane offer and proposal.
+    The translate lane's "keep the archive" refusals (alignment, quote loss, declared names)
+    do not apply where the archive is refused.
+- Both slice keys carry the dispute note,
+    which neither did:
+    a disputed slice whose incumbent is the archive would have shared its key with the same slice undisputed.
+    `CONSOLIDATE_CACHE_VERSION` 19 and `TRANSLATE_SLICE_CACHE_VERSION` 14.
+- Found on the way:
+    the consolidation producers' repair turn re-checked a revision without the declared names its first check read;
+    it now reads both.
+- Guard shown to fail first (`23cbbdaaa`, `archive-dispute-standing.unit.test.ts`;
+    the translate stage shipped the disputed wording the judges preferred).
 
 ## Addendum 2026-09-27, fifteenth: a slate rejected twice over an ineligible standing ships by preference, its reasons to the polish
 

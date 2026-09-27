@@ -4,7 +4,9 @@ import {
   type ArchiveDispute,
   archiveDisputeNote,
   describeArchiveDispute,
+  disputedWordingsOf,
 } from './archive-dispute.ts';
+import type { DisputedWording, } from './disputed-wording.ts';
 import type { LaneChoice, } from './lane-contest-wire.ts';
 
 //region Consolidation archive stand-in
@@ -13,6 +15,12 @@ import type { LaneChoice, } from './lane-contest-wire.ts';
 // standing reads, and where the contest chose neither lane the kept standing
 // is that stand-in, which the page must then be written with rather than
 // left as the contest found it.
+//
+// ONLY WHERE THE STAND-IN MAY STAND (owner answer 2026-09-27, "No eligible
+// standing"). Where the checkers confirmed no repair of the disputed reading,
+// the archive's own wording stays the incumbent every sheet shows as
+// evidence, and it and the repair lane's text are disputed wordings the
+// standing verdict, the lane offer and the producers' floor refuse.
 
 /**
  Archive wording as one consolidation settlement takes it.
@@ -28,8 +36,9 @@ import type { LaneChoice, } from './lane-contest-wire.ts';
  @param l - driver logger
 
  @returns Wording standing as the archive here, whether a kept standing is
- the stand-in the page must carry, and the sheet note on a disputed slice
- (class one hundred eight)
+ the stand-in the page must carry, the sheet note on a disputed slice (class
+ one hundred eight), and the wordings the slice refuses, none on an
+ undisputed one
 
  @example
  ```ts
@@ -54,6 +63,7 @@ export function archiveStandInFor(
   readonly incumbentText: string;
   readonly standInShips: boolean;
   readonly disputeNote?: string;
+  readonly disputedWordings: readonly DisputedWording[];
 } {
   /**
    Dispute over this slice's archive rendering, absent for most slices.
@@ -63,6 +73,26 @@ export function archiveStandInFor(
     return {
       incumbentText,
       standInShips: false,
+      disputedWordings: [],
+    };
+  }
+  /**
+   Wordings this slice refuses.
+   */
+  const disputedWordings = disputedWordingsOf({
+    dispute,
+    archiveText: incumbentText,
+  },);
+  if (!dispute.standInEligible) {
+    l.info(
+      `${describeArchiveDispute({ dispute, },)}; the archive stays the consolidation's incumbent, refused with the `
+        + 'repair lane\'s text as a standing',
+    );
+    return {
+      incumbentText,
+      standInShips: false,
+      disputeNote: archiveDisputeNote({ dispute, },),
+      disputedWordings,
     };
   }
   l.info(`${describeArchiveDispute({ dispute, },)}; the stand-in is the consolidation's incumbent`,);
@@ -70,6 +100,7 @@ export function archiveStandInFor(
     incumbentText: dispute.standIn,
     standInShips: choice === 'neither',
     disputeNote: archiveDisputeNote({ dispute, },),
+    disputedWordings,
   };
 }
 

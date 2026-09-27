@@ -177,6 +177,7 @@ export async function produceConsolidations(
         ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
         lineStructured: subject.lineStructured,
         ...((subject.declared === undefined) ? {} : { declared: subject.declared, }),
+        ...((subject.disputedWordings === undefined) ? {} : { disputedWordings: subject.disputedWordings, }),
       },),
     };
   }
@@ -201,6 +202,10 @@ export async function produceConsolidations(
     pageText: subject.incumbentText,
     ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
     lineStructured: subject.lineStructured,
+    // THE SAME FLOOR THE FIRST CHECK READS: declared names were left out of
+    // this re-check until the audit, and the disputed wordings join them.
+    ...((subject.declared === undefined) ? {} : { declared: subject.declared, }),
+    ...((subject.disputedWordings === undefined) ? {} : { disputedWordings: subject.disputedWordings, }),
     priorMessages: messages,
     signal,
     perCallTimeoutMs,

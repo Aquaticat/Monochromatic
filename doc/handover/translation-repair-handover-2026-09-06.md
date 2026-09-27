@@ -4893,7 +4893,13 @@ each read off the pass log and the shipped page:
     made and fix all of them", "Mistakes made, ever, for this pkg"): every finding, fix and status is in
     `package/module/translation-repair/doc/audit-ledger.md`; the planning doc section "Whole-package audit,
     2026-09-27" lists the owner's answers and the commits. The owner was told the 治愈 安慰 misquotation.
-    Open work is tracked as tasks 376 to 381 plus 369 (prevention doc) and 372 (glossary content).
+    Open work is tracked as tasks 377 to 381 plus 369 (prevention doc) and 372 (glossary content).
+    LANDED SINCE (2026-09-27): the dispute rule reads the panel severity (L9, guard `b15ba5464`, fix
+    `6a0f68cec`); a slate declined twice over wording that cannot ship ships by preference with its
+    reasons to the polish, on the translate lane too (fifteenth addendum, guard `37128bf6c`); the
+    corpus-derived fixtures of 58 test files replaced with invention; a disputed reading the repair did not
+    fix leaves no eligible standing (sixteenth addendum, guard `23cbbdaaa`), with both slice keys naming the
+    dispute. Cache versions: consolidate 19, translate slice 14. Owner's newest answers all implemented.
     TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built

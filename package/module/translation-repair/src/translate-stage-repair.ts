@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
+import type { DisputedWording, } from './disputed-wording.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
@@ -53,6 +54,7 @@ type TranslateRoundInput = ForeignBorrowed<{
   readonly syntax?: SliceSyntax;
   readonly lineStructured: boolean;
   readonly declared?: readonly DeclaredNamePair[];
+  readonly disputedWordings?: readonly DisputedWording[];
   readonly signal: AbortSignal;
   readonly perCallTimeoutMs: number;
   readonly l: Logger;
@@ -107,6 +109,7 @@ async function produceAndJudgeOnce(
     ...((followupEvidence === undefined) ? {} : { followupEvidence, }),
     lineStructured: input.lineStructured,
     ...((input.declared === undefined) ? {} : { declared: input.declared, }),
+    ...((input.disputedWordings === undefined) ? {} : { disputedWordings: input.disputedWordings, }),
     signal: input.signal,
     perCallTimeoutMs: input.perCallTimeoutMs,
     l: input.l,
@@ -201,6 +204,9 @@ async function produceAndJudgeOnce(
  exists and cannot ship, so the follow-up round ships by preference past a
  decline rather than rethrowing (owner, 2026-09-27)
 
+ @param disputedWordings - wordings a disputed slice refuses as candidates
+ (owner, 2026-09-27, "No eligible standing")
+
  @param signal - caller abort honored by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -238,6 +244,7 @@ export async function runTranslateRepairs(
     syntax,
     lineStructured,
     declared,
+    disputedWordings,
     signal,
     perCallTimeoutMs,
     l,
@@ -260,6 +267,7 @@ export async function runTranslateRepairs(
     readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
     readonly declared?: readonly DeclaredNamePair[];
+    readonly disputedWordings?: readonly DisputedWording[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -287,6 +295,7 @@ export async function runTranslateRepairs(
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     ...((declared === undefined) ? {} : { declared, }),
+    ...((disputedWordings === undefined) ? {} : { disputedWordings, }),
     signal,
     perCallTimeoutMs,
     l,

@@ -1,4 +1,5 @@
 import type { SliceSyntax, } from './chunk-document.ts';
+import type { DisputedWording, } from './disputed-wording.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import type { LaneText, } from './translate-candidates.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
@@ -56,6 +57,10 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
  reads for a linked title naming a declared person (class one hundred
  fourteen); none leaves that floor silent
 
+ @param disputedWordings - wordings a disputed slice refuses, which no lane
+ text equal to one may carry onto the slate (owner, 2026-09-27, "No eligible
+ standing"); none on an undisputed slice
+
  @returns Lane texts to put on the slate, repair before translate; none when
  the standing is an endorsed eligible lane
 
@@ -76,6 +81,7 @@ export function laneTextsForSlate(
     syntax,
     lineStructured = false,
     declared = [],
+    disputedWordings = [],
   }: {
     readonly sourceText: string;
     readonly incumbentText: string;
@@ -87,6 +93,7 @@ export function laneTextsForSlate(
     readonly syntax?: SliceSyntax;
     readonly lineStructured?: boolean;
     readonly declared?: readonly DeclaredNamePair[];
+    readonly disputedWordings?: readonly DisputedWording[];
   },
 ): readonly LaneText[] {
   if (standingMayShip && standingEligible)
@@ -123,6 +130,7 @@ export function laneTextsForSlate(
       ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
       declared,
+      disputedWordings,
     },);
     return validation.kind === 'valid';
   },);

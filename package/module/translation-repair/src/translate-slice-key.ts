@@ -122,6 +122,9 @@ export function translateRunShape(
  @param neighbouringIncumbentText - archive English of the sections either
  side, shown so a passage missing here can be recognised next door rather than
  read as one the archive never had
+
+ @param archiveDisputeNote - the dispute note a disputed slice is judged
+ under, absent on an undisputed one
  
  @returns Hash keying this slice's record
  
@@ -141,6 +144,7 @@ export function translateSliceKey(
     neighbouringIncumbentText,
     neighbouringSourceText,
     pictureContext,
+    archiveDisputeNote,
   }: {
     readonly runShape: string;
     readonly sourceText: string;
@@ -151,6 +155,7 @@ export function translateSliceKey(
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly pictureContext?: string;
+    readonly archiveDisputeNote?: string;
   },
 ): string {
   return hashContent({
@@ -212,6 +217,16 @@ export function translateSliceKey(
         : [
           'pictures',
           pictureContext,
+        ]),
+      // THE DISPUTE NOTE, appended only when present like the fields above: a
+      // slice judged under accepted claims against its archive asks a different
+      // question from the same slice undisputed, and one whose archive is
+      // refused asks another (owner, 2026-09-27).
+      ...((archiveDisputeNote === undefined) || (archiveDisputeNote === '')
+        ? []
+        : [
+          'dispute',
+          archiveDisputeNote,
         ]),
     ],),
   },);

@@ -1,5 +1,8 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
-import type { ArchiveDispute, } from './archive-dispute.ts';
+import {
+  type ArchiveDispute,
+  archiveDisputeNote,
+} from './archive-dispute.ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
@@ -327,9 +330,10 @@ export async function settleTranslateSlice(
     .text;
   /**
    Repair lane's text standing in for a disputed archive rendering, absent
-   on the rest (class one hundred seven).
+   on the rest (class one hundred seven) and where the checkers confirmed no
+   repair of the disputed reading (owner, 2026-09-27).
    */
-  const standIn = archiveDispute?.standIn;
+  const standIn = (archiveDispute?.standInEligible === true) ? archiveDispute.standIn : undefined;
   /**
    Cross-run key for it.
    */
@@ -348,6 +352,9 @@ export async function settleTranslateSlice(
     neighbouringIncumbentText,
     neighbouringSourceText,
     pictureContext: pictures.context,
+    ...((archiveDispute === undefined)
+      ? {}
+      : { archiveDisputeNote: archiveDisputeNote({ dispute: archiveDispute, },), }),
   },);
 
   /**

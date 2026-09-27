@@ -1,6 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
+import type { DisputedWording, } from './disputed-wording.ts';
 import {
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
   TRANSLATOR_NOTE_KIND,
@@ -16,8 +17,17 @@ import {
 // stood because an eligible standing keeps its single round. Here such a
 // slice is a dispute: the repair lane's text stands in for the archive as
 // the translate lane's incumbent and as the consolidation's standing where
-// the contest chose neither lane, so the disputed rendering is neither a
-// candidate nor a fallback anywhere downstream.
+// the contest chose neither lane.
+//
+// ONLY WHERE THE REPAIR FIXED IT (owner answer 2026-09-27, "No eligible
+// standing"). The repair lane's text is the archive's own wording wherever
+// its accuracy patch lost at the checkers, or a refinement keeping the
+// reading, so the stand-in carried the disputed reading on 86 of 87 measured
+// disputed slices. It stands in now only where the checkers confirmed every
+// disputing issue resolved and the lane kept the slice; elsewhere the archive
+// wording and the repair lane's text are disputed wordings the deterministic
+// rule refuses (`disputed-wording.ts`), so neither is a candidate, a fallback,
+// a standing or a lane offer anywhere downstream.
 //
 // CLASS ONE HUNDRED SEVENTY-SIX (TianqiChen66610 slice 13, owner answer
 // 2026-09-26: "Major+ accuracy"). The adjudicators accepted major
@@ -72,9 +82,19 @@ export type ArchiveDispute = {
   readonly sliceIndex: number;
 
   /**
-   Repair lane's text for the slice, which stands in for the archive.
+   Repair lane's text for the slice, which stands in for the archive where
+   {@link ArchiveDispute.standInEligible} says it may.
    */
   readonly standIn: string;
+
+  /**
+   Whether the checkers confirmed every disputing issue resolved in the
+   repair lane's text and the lane kept the slice, so the text may stand in
+   for the archive. Where not, the slice has no eligible standing and both
+   the archive's wording and the repair lane's text are refused (owner,
+   2026-09-27, "No eligible standing").
+   */
+  readonly standInEligible: boolean;
 
   /**
    Accepted disputing claims, each as "category severity: summary", for the
@@ -84,13 +104,14 @@ export type ArchiveDispute = {
 };
 
 /**
- What the reading needs of a repaired chunk: its position, its text and its
- adjudicated issues. A structural subset of `ChunkRepairOutcome`, so a guard
- can build one without the rest of the record.
+ What the reading needs of a repaired chunk: its position, its text, its
+ adjudicated issues and which of them the checkers confirmed resolved. A
+ structural subset of `ChunkRepairOutcome`, so a guard can build one without
+ the rest of the record.
 
  @example
  ```ts
- const chunk: DisputableChunk = { sliceIndex: 3, repairedText, issues, };
+ const chunk: DisputableChunk = { sliceIndex: 3, repairedText, issues, resolvedIssueIds: [], };
  ```
  */
 export type DisputableChunk = {
@@ -108,6 +129,20 @@ export type DisputableChunk = {
    Adjudicated issues of this chunk.
    */
   readonly issues: readonly AdjudicatedIssue[];
+
+  /**
+   Accepted issues the checkers confirmed fixed in the winning text; empty
+   when unchanged won.
+   */
+  readonly resolvedIssueIds: readonly string[];
+};
+
+/**
+ One accepted issue carrying disputing claims.
+ */
+type DisputingIssue = {
+  readonly issueId: string;
+  readonly claims: readonly string[];
 };
 
 /**
@@ -149,27 +184,31 @@ function disputesArchive(
 }
 
 /**
- Names the accepted disputing claims against one chunk's archive rendering.
+ Names the accepted issues carrying disputing claims against one chunk's
+ archive rendering.
 
  @param issues - adjudicated issues of the chunk
 
- @returns Disputing claims inside accepted issues, each as
+ @returns Each such issue with its disputing claims, each as
  "category severity: summary" with the panel's severity
 
  @example
  ```ts
- const claims = acceptedDisputingClaimsOf({ issues: chunk.issues, },);
+ const disputing = disputingIssuesOf({ issues: chunk.issues, },);
  ```
  */
-function acceptedDisputingClaimsOf(
+function disputingIssuesOf(
   { issues, }: { readonly issues: readonly AdjudicatedIssue[]; },
-): readonly string[] {
+): readonly DisputingIssue[] {
   return issues
     .filter(function isAccepted(issue,): boolean {
       return issue.status === 'accepted';
     },)
-    .flatMap(function toClaims(issue,): readonly string[] {
-      return issue.claims
+    .flatMap(function toDisputing(issue,): readonly DisputingIssue[] {
+      /**
+       This issue's disputing claims.
+       */
+      const claims = issue.claims
         .filter(function disputes(member,): boolean {
           /**
            Category the critic filed the claim under.
@@ -190,6 +229,12 @@ function acceptedDisputingClaimsOf(
           } = member.claim;
           return `${category} ${issue.severity}: ${summary}`;
         },);
+      return (claims.length === 0)
+        ? []
+        : [{
+          issueId: issue.issueId,
+          claims,
+        },];
     },);
 }
 
@@ -198,33 +243,141 @@ function acceptedDisputingClaimsOf(
 
  @param chunks - every chunk the repair lane settled
 
+ @param withdrawnSliceIndices - slices whose repair the assembly withdrew,
+ whose text never stands in
+
  @returns Disputes keyed by slice index, in chunk order
 
  @example
  ```ts
- const disputes = archiveDisputesOf({ chunks: repair.chunks, },);
+ const disputes = archiveDisputesOf({ chunks: repair.chunks, withdrawnSliceIndices: repair.withdrawnSliceIndices, },);
  ```
  */
 export function archiveDisputesOf(
-  { chunks, }: { readonly chunks: readonly DisputableChunk[]; },
+  {
+    chunks,
+    withdrawnSliceIndices = [],
+  }: {
+    readonly chunks: readonly DisputableChunk[];
+    readonly withdrawnSliceIndices?: readonly number[];
+  },
 ): ReadonlyMap<number, ArchiveDispute> {
+  /**
+   Slices the assembly withdrew.
+   */
+  const withdrawn = new Set(withdrawnSliceIndices,);
   return new Map(chunks
     .flatMap(function toDispute(chunk,): readonly DisputeEntry[] {
       /**
-       Accepted disputing claims against this chunk's archive rendering.
+       Accepted issues disputing this chunk's archive rendering.
        */
-      const acceptedClaims = acceptedDisputingClaimsOf({ issues: chunk.issues, },);
-      if (acceptedClaims.length === 0)
+      const disputing = disputingIssuesOf({ issues: chunk.issues, },);
+      if (disputing.length === 0)
         return [];
+      /**
+       Issues the checkers confirmed fixed in the repair lane's text.
+       */
+      const resolved = new Set(chunk.resolvedIssueIds,);
       return [[
         chunk.sliceIndex,
         {
           sliceIndex: chunk.sliceIndex,
           standIn: chunk.repairedText,
-          acceptedClaims,
+          // ISSUE BY ISSUE (sixteenth addendum): one disputing issue the
+          // checkers did not confirm fixed leaves its reading in the text.
+          standInEligible: (!withdrawn.has(chunk.sliceIndex,))
+            && disputing.every(function isResolved(issue,): boolean {
+              return resolved.has(issue.issueId,);
+            },),
+          acceptedClaims: disputing.flatMap(function claimsOf(issue,): readonly string[] {
+            return issue.claims;
+          },),
         },
       ],];
     },),);
+}
+
+/**
+ Reads the disputed slices off a repair lane result, the one reading the
+ translate lane and the consolidation both take.
+
+ @param repair - the repair lane's chunks and the slices its assembly withdrew
+
+ @returns Disputes keyed by slice index, in chunk order
+
+ @example
+ ```ts
+ const disputes = archiveDisputesOfRepair({ repair: lanes.repair, },);
+ ```
+ */
+export function archiveDisputesOfRepair(
+  {
+    repair,
+  }: {
+    readonly repair: {
+      readonly chunks: readonly DisputableChunk[];
+      readonly withdrawnSliceIndices: readonly number[];
+    };
+  },
+): ReadonlyMap<number, ArchiveDispute> {
+  return archiveDisputesOf({
+    chunks: repair.chunks,
+    withdrawnSliceIndices: repair.withdrawnSliceIndices,
+  },);
+}
+
+/**
+ The wordings a disputed slice refuses: the archive's own always, and the
+ repair lane's text where it may not stand in (owner, 2026-09-27, "No
+ eligible standing").
+
+ @param dispute - disputed slice
+
+ @param archiveText - archive's own wording of the slice
+
+ @returns Each refused wording with why, none twice
+
+ @example
+ ```ts
+ const disputedWordings = disputedWordingsOf({ dispute, archiveText, },);
+ ```
+ */
+export function disputedWordingsOf(
+  {
+    dispute,
+    archiveText,
+  }: {
+    readonly dispute: ArchiveDispute;
+    readonly archiveText: string;
+  },
+): readonly DisputedWording[] {
+  /**
+   Claims the adjudicators accepted against the archive.
+   */
+  const { acceptedClaims, } = dispute;
+  /**
+   The archive's own wording, which every accepted claim is against.
+   */
+  const archive: DisputedWording = {
+    text: archiveText,
+    reason: `the archive rendering the repair lane's adjudicators disputed (${
+      String(acceptedClaims.length,)
+    } accepted claim(s))`,
+  };
+  /**
+   Whether the repair lane's text is refused beside it.
+   */
+  const repairRefused = (!dispute.standInEligible) && (dispute.standIn !== archiveText);
+  return [
+    ...((archiveText.trim() === '') ? [] : [archive,]),
+    ...(repairRefused
+      ? [{
+        text: dispute.standIn,
+        reason: 'the repair lane\'s text for a disputed slice, which the checkers did not confirm resolves the '
+          + 'disputed reading',
+      },]
+      : []),
+  ];
 }
 
 /**
@@ -246,9 +399,15 @@ export function describeArchiveDispute(
    Claims the finding counts.
    */
   const { acceptedClaims, } = dispute;
+  /**
+   What the dispute leaves standing.
+   */
+  const outcome = dispute.standInEligible
+    ? 'so the repair lane\'s text stands in for it'
+    : 'and the checkers confirmed no repair of it, so the slice has no eligible standing (owner, 2026-09-27)';
   return `translate-archive-disputed (slice ${String(dispute.sliceIndex,)}): the repair lane's adjudicators accepted ${
     String(acceptedClaims.length,)
-  } disputing claim(s) (${DISPUTING_RULE}) against the archive rendering, so the repair lane's text stands in for it `
+  } disputing claim(s) (${DISPUTING_RULE}) against the archive rendering, ${outcome} `
     + '(classes one hundred seven and one hundred seventy-six)';
 }
 

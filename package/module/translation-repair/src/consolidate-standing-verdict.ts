@@ -1,5 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
+import type { DisputedWording, } from './disputed-wording.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import {
   describeStandingVerdict,
@@ -90,7 +91,11 @@ export type StandingVerdict = {
  @param declared - name pairs the front matter declares, which the rule
  reads for a linked title naming a declared person (class one hundred
  fourteen); none leaves that floor silent
- 
+
+ @param disputedWordings - wordings a disputed slice refuses as standing and
+ as incumbent (owner, 2026-09-27, "No eligible standing"); none on an
+ undisputed slice
+
  @returns Deterministic eligibility and contest endorsement of the wording
  the settlement runs against, that wording, and the replacement finding
  when the incumbent stands in
@@ -114,6 +119,7 @@ export function readStandingVerdict(
     sliceIndex,
     l,
     declared = [],
+    disputedWordings = [],
   }: {
     readonly sourceText: string;
     readonly standingText: string;
@@ -125,6 +131,7 @@ export function readStandingVerdict(
     readonly sliceIndex: number;
     readonly l: Logger;
     readonly declared?: readonly DeclaredNamePair[];
+    readonly disputedWordings?: readonly DisputedWording[];
   },
 ): StandingVerdict {
   /**
@@ -137,6 +144,7 @@ export function readStandingVerdict(
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     declared,
+    disputedWordings,
   },);
   /**
    Whether standing text itself passes syntax-bearing publication rules.
@@ -184,6 +192,7 @@ export function readStandingVerdict(
       ...((syntax === undefined) ? {} : { syntax, }),
       lineStructured,
       declared,
+      disputedWordings,
     },);
   if (incumbentValidation?.kind === 'valid') {
     l.warn(

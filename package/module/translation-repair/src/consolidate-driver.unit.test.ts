@@ -896,7 +896,7 @@ await describe({
             ballots: [],
             usable: RECOVERY_ROSTER.length,
           },],
-          archiveDisputes: new Map([[0, { sliceIndex: 0, standIn, acceptedClaims: ['accuracy/addition major: The cat did not swallow pills.',], },],],),
+          archiveDisputes: new Map([[0, { sliceIndex: 0, standIn, standInEligible: true, acceptedClaims: ['accuracy/addition major: The cat did not swallow pills.',], },],],),
         },);
         expect(slices[0]?.terminal,).toBe('gate-kept-standing',);
         expect(slices[0]?.shipped,).toEqual({

@@ -3,6 +3,7 @@ import type {
   SliceSyntax,
 } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
+import type { DisputedWording, } from './disputed-wording.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import { attestedDetailLines, } from './reference-attest-match.ts';
@@ -53,6 +54,12 @@ export type TranslateSliceStageInput = {
    eight).
    */
   readonly archiveDisputeNote?: string;
+  /**
+   Wordings a disputed slice refuses as incumbent and as candidate, present
+   only where the stand-in may not stand (owner, 2026-09-27, "No eligible
+   standing").
+   */
+  readonly disputedWordings?: readonly DisputedWording[];
   /**
    Supplied source neighbors retain their context-only role.
    */
@@ -127,6 +134,10 @@ export type TranslateSliceInput = {
  @param archiveDisputeNote - sheet note naming the accepted additions the
  stand-in answers for, so no writer or judge reads them as page content
  (class one hundred eight)
+
+ @param disputedWordings - wordings a disputed slice refuses, where the
+ stand-in may not stand; the judged part of the archive is refused with
+ them when a target-only run was held out (owner, 2026-09-27)
  
  @returns Stage surface and protected archive material without changing the operation being measured
  
@@ -144,11 +155,13 @@ export function translateSliceInput(
     pictureContext,
     archiveStandIn,
     archiveDisputeNote,
+    disputedWordings = [],
   }: {
     readonly slice: ChunkPair;
     readonly prepared: PreparedDocumentPair;
     readonly archiveStandIn?: string;
     readonly archiveDisputeNote?: string;
+    readonly disputedWordings?: readonly DisputedWording[];
     readonly neighbouringSourceText?: string;
     readonly neighbouringIncumbentText?: string;
     readonly pictureContext?: string;
@@ -184,6 +197,23 @@ export function translateSliceInput(
    (class thirty-nine).
    */
   const attestedLines = attestedDetailLines({ details: prepared.attestedDetails ?? [], },);
+  /**
+   First refused wording, whose reason the judged part shares.
+   */
+  const [firstDisputed,] = disputedWordings;
+  /**
+   The refused wordings with the archive's judged part among them, which is
+   the incumbent the stage reads where a target-only run was held out.
+   */
+  const refused = ((firstDisputed === undefined) || (judgedText === archiveText))
+    ? disputedWordings
+    : [
+      ...disputedWordings,
+      {
+        text: judgedText,
+        reason: firstDisputed.reason,
+      },
+    ];
   return {
     archiveText,
     protectedText,
@@ -198,6 +228,7 @@ export function translateSliceInput(
       ...((prepared.referenceContext === undefined) ? {} : { referenceContext: prepared.referenceContext, }),
       ...((attestedLines.length === 0) ? {} : { attestedLines, }),
       ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
+      ...((refused.length === 0) ? {} : { disputedWordings: refused, }),
       ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
       ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
       ...((pictureContext === undefined) ? {} : { pictureContext, }),

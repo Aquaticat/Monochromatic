@@ -126,6 +126,7 @@ await describe({
             {
               sliceIndex: 3,
               repairedText: REPAIRED,
+              resolvedIssueIds: [],
               issues: [
                 issueOf({ status: 'accepted', claim: INVENTED, },),
                 issueOf({ status: 'accepted', claim: WRONG_COLOUR, },),
@@ -157,11 +158,13 @@ await describe({
             {
               sliceIndex: 5,
               repairedText: REPAIRED,
+              resolvedIssueIds: [],
               issues: [issueOf({ status: 'accepted', claim: WRONG_COLOUR, },),],
             },
             {
               sliceIndex: 6,
               repairedText: REPAIRED,
+              resolvedIssueIds: [],
               issues: [issueOf({ status: 'accepted', claim: INVENTED_HOUR, },),],
             },
           ],
@@ -182,16 +185,19 @@ await describe({
             {
               sliceIndex: 0,
               repairedText: REPAIRED,
+              resolvedIssueIds: [],
               issues: [issueOf({ status: 'rejected', claim: INVENTED, },),],
             },
             {
               sliceIndex: 1,
               repairedText: REPAIRED,
+              resolvedIssueIds: [],
               issues: [issueOf({ status: 'needs-human', claim: INVENTED, },),],
             },
             {
               sliceIndex: 2,
               repairedText: REPAIRED,
+              resolvedIssueIds: [],
               issues: [
                 issueOf({ status: 'accepted', claim: NEAR_SYNONYM, },),
                 issueOf({ status: 'accepted', claim: UNGRAMMATICAL, },),
@@ -200,6 +206,7 @@ await describe({
             {
               sliceIndex: 4,
               repairedText: REPAIRED,
+              resolvedIssueIds: [],
               issues: [],
             },
           ],
@@ -214,6 +221,7 @@ await describe({
           dispute: {
             sliceIndex: 3,
             standIn: REPAIRED,
+            standInEligible: true,
             acceptedClaims: [
               `accuracy/addition major: ${INVENTED.summary}`,
               `accuracy/mistranslation major: ${WRONG_COLOUR.summary}`,
@@ -238,6 +246,7 @@ await describe({
           dispute: {
             sliceIndex: 3,
             standIn: REPAIRED,
+            standInEligible: true,
             acceptedClaims: [
               `accuracy/addition critical: ${INVENTED.summary}`,
               'accuracy/addition major: The translation adds an unverified detail about the roof.',
@@ -262,6 +271,7 @@ await describe({
           dispute: {
             sliceIndex: 5,
             standIn: REPAIRED,
+            standInEligible: true,
             acceptedClaims: [`accuracy/mistranslation major: ${WRONG_COLOUR.summary}`,],
           },
         },);
