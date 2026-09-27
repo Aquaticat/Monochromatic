@@ -858,7 +858,8 @@ A first version counted one heading as a repeat and would have refused yingying'
 
 ### F-11: the glossary floors refuse a glossed Han title the title floor allows
 
-Status: open (latent).
+Status: fixed; the glossary floors read the candidate with the accepted title occurrences cut.
+Latent: no replayed slice carries such a title, and the community floor adds no refusal.
 
 ### F-12: low items
 
