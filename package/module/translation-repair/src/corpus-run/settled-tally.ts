@@ -1,6 +1,11 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { SettledArtifact, } from './artifact-two-lane-contract.ts';
 import type { ArtifactDeliveryRow, } from './artifact-two-lane-vocabulary.ts';
-import { wouldShipTextFor, } from './would-ship-text.ts';
+import {
+  type WouldShipReading,
+  wouldShipTextPerSlice,
+} from './would-ship-text.ts';
 
 //region Settled tally
 // The one line a settled entry prints, once BOTH lanes have run.
@@ -20,6 +25,21 @@ import { wouldShipTextFor, } from './would-ship-text.ts';
 // EVERYTHING IS READ OFF THE ARTIFACT, not recomputed beside it. A log line
 // that disagrees with the file it describes is worse than no log line, and the
 // only way to be sure is to have one source.
+
+/**
+ One slice as the page carries it, beside the archive wording it replaces.
+ */
+type ShippedSlice = {
+  /**
+   What the page carries at this slice.
+   */
+  readonly reading: WouldShipReading;
+
+  /**
+   Archive wording at this slice.
+   */
+  readonly incumbentText: string;
+};
 
 /**
  Counts slices whose delivery carries a change.
@@ -101,6 +121,37 @@ export function settledTallyLine(
     },);
 
   /**
+   Archive wording per slice, which each page reading is compared against.
+   */
+  const incumbents = new Map(artifact.comparison
+    .map(function toEntry(row,): readonly [
+      number,
+      string,
+    ] {
+      return [
+        row.sliceIndex,
+        row.incumbentText,
+      ];
+    },),);
+
+  /**
+   Every slice as the page carries it, in comparison-row order.
+   */
+  const shipped: readonly ShippedSlice[] = wouldShipTextPerSlice({ artifact, },)
+    .map(function besideIncumbent(
+      {
+        sliceIndex,
+        reading,
+      },
+    ): ShippedSlice {
+      return {
+        reading,
+        // Every reading comes from a comparison row, so its slice is keyed.
+        incumbentText: nonNullishOrThrow(incumbents.get(sliceIndex,),),
+      };
+    },);
+
+  /**
    Slices where a document assembled today would carry wording the archive
    did not.
    
@@ -112,42 +163,32 @@ export function settledTallyLine(
    entirely, and on an entry nobody has decided reads two sets of proposals
    as the outcome.
    
+   READ AS THE PAGE CARRIES IT, after the archive's typography (ledger A10):
+   counting the reading before typography called a wording that differed from
+   the archive only in its quote style a change, and hulicaijia31 logged 34
+   changed slices where its page carried 31.
+   
    ZERO IS THE HONEST ANSWER on an undecided entry, and it is meant to be
    read beside `selection=pending-human-decision` on the same line: two
    lanes proposed changes and, as things stand, a document would carry none
    of them. That is `#175`, stated in the log rather than left to inference.
    */
-  const pageChanged = artifact.comparison
-    .filter(function pageCarriesAChange(row,): boolean {
-      /**
-       What would stand at this slice.
-       */
-      const reading = wouldShipTextFor({
-        artifact,
-        row,
-      },);
-
-      if (reading.kind === 'nothing-ships')
-        return false;
-      return reading.text !== row.incumbentText;
-    },);
+  const pageChanged = shipped.filter(function pageCarriesAChange(
+    {
+      reading,
+      incumbentText,
+    }: ShippedSlice,
+  ): boolean {
+    return (reading.kind === 'wording') && (reading.text !== incumbentText);
+  },);
 
   /**
    Slices where nothing at all would stand, which is neither a change nor a
    retention and would be invisible inside either count.
    */
-  const pageSilent = artifact.comparison
-    .filter(function pageCarriesNothing(row,): boolean {
-      /**
-       What would stand at this slice.
-       */
-      const reading = wouldShipTextFor({
-        artifact,
-        row,
-      },);
-
-      return reading.kind === 'nothing-ships';
-    },);
+  const pageSilent = shipped.filter(function pageCarriesNothing({ reading, }: ShippedSlice,): boolean {
+    return reading.kind === 'nothing-ships';
+  },);
 
   return [
     `TALLY ${artifact.id}`,
