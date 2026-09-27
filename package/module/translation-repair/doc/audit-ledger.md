@@ -1022,3 +1022,84 @@ Status: open.
 A lane wording's triple newline ships;
 the runs lock judges liveness by pid only;
 the page is written before the artifact.
+
+## Providers, routing and seating
+
+Probes and full report: `~/temp/agent/audit-providers/report.txt`.
+
+### P1: the Bedrock ledger records completed calls only
+
+Status: open.
+873 Bedrock streams ended unledgered across the logs (cut and overrun);
+`bedrockIsDry` has no margin for calls in flight,
+and the ledger reads 6.97 USD left.
+
+### P2: the recovery round never re-asks a seat that answered unreadably before the last round
+
+Status: open.
+`stage-quorum.ts` overwrites the unreadable list each round and returns the seat to `pending`,
+where the prompt-uniqueness cache answers it with the same bytes;
+TianqiChen66620 slice 15's gate settled on neither 2 to 2 with one such voice lost.
+
+### P3: seats the phase knows are unreachable fill the round-0 window
+
+Status: open (with A5).
+Every retry round 1 had one or two refused seats in round 0,
+and rounds ran to the 360 s deadline instead of the grace.
+
+### P4: the recall benchmark still seats gpt-oss-120b
+
+Status: open (latent).
+`repair-benchmark.ts` default judges;
+`reachOf` ignores `OWNER_CULLED`.
+
+### P5: the archive-block-review guard rejects a shape its prompt never forbids
+
+Status: open.
+All 11 guard rejections in five runs are editorial-context with a non-empty `sourceQuote`.
+
+### P6: the seat tally cannot see an unusable reply
+
+Status: open.
+`SEAT inception/mercury-2.5 asked=1007 usable=1007 unusable=0` beside 40 schema losses.
+
+### P7: abandoned-spend estimates mix units
+
+Status: open.
+
+### P8: a complete JSON value followed by more text is lost
+
+Status: open.
+36 in five runs, 760 across all logs, mostly mercury.
+
+### P9: the router's cross-provider re-ask never runs in production
+
+Status: open, owner call (it would break the prompt-uniqueness rule).
+
+### P10: the deepseek-v4.1-flash card is stale against its own measurement rule
+
+Status: open.
+
+### P11: owner-rule enforcement relies on absence rather than a guard
+
+Status: open.
+Qwen3.8-27B and glm-5.3 stay off OpenRouter only because their cards lack an OpenRouter block;
+no test covers every client body for thinking parameters.
+
+### P12: log lines that cannot be attributed
+
+Status: open (with A11).
+Retry lines never name the model;
+"ms to quorum" printed when quorum never stood;
+`EveryProviderDryError` omits Bedrock;
+`run-config.ts` says Qwen is withheld whenever Synthetic is dry.
+
+### P13: low items
+
+Status: open.
+`transient-retry.ts` backoff ignores the caller's abort;
+a payment refusal clears on any meter movement;
+decision-seat structural losses marked reachable;
+decision-seat prompts reach 30,203 of a 32,000-token context and `ce824d933` adds the house rules to them with no size check;
+the Bedrock stream bound spans the whole retry ladder;
+card prices differ from the endpoint bought.
