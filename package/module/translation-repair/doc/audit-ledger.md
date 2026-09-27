@@ -744,3 +744,95 @@ Status: open (latent).
 - A question put to the owner whose example contradicted its label (class eighty-three).
 - Observations recorded and not fixed that later became classes
     (84, 85, 75 and 76, 79, 67 and 68, 71, 106).
+
+## Floor replay over archives and settled pages
+
+Probes: `~/temp/agent/audit-floor-replay/`
+(`replay.mjs`, `fires.json`, `classification.json`, `controls.json`, `page-checks.json`, `han-residue.json`).
+Archive against itself: 1277 slices, 75 refused;
+every settled would-ship slice: 5520 slices, 233 refused,
+every true fire from a run built before its floor.
+
+### F-1: the address floor refuses correct English whenever any third-person pronoun appears anywhere in the slice
+
+Status: open.
+The `thirdPerson` filter in `droppedAddressFindings` scans the whole slice;
+the header names 干干你的 as left to the judges and the built floor refuses it.
+Also counted as addresses: 迷你,
+你们好,
+你追我赶,
+你我,
+generic 你.
+False archive refusals: BI4PBV s3, Zha_Ke s3 (a vocative), Y1Ran s18, Xu_Yushu s15, lintong s1;
+hulicaijia8 and hulicaijia13 had "“Sis! What's wrong!” I kept calling out to her" refused.
+Fix: refuse only a surplus of third-person pronouns over the original's own,
+and drop the non-address patterns.
+
+### F-2: publication checks cannot re-verify pages an earlier build published
+
+Status: open.
+`inArchiveTypography` re-applies today's typography to old artifacts,
+so 77 of 209 pages built before class one hundred eighty-one no longer reproduce by splice.
+Fix: record the per-slice text shipped at publish and verify against it.
+
+### F-3: no floor refuses a Han name or line left in English prose
+
+Status: open.
+shihai4h2 shipped "Wrong,\n小柿子." (the archive has "Wrong.");
+the identity context shows the archive's untranslated Han alias as the English declaration.
+Fix: a Han-residue floor outside comments,
+code,
+destinations and attributes, excusing a parenthesized gloss;
+mark a Han-only TRANSLATION value as untranslated.
+
+### F-4: the suicide floor refuses ordinary English and its census counted entries, not slices
+
+Status: open.
+Refuses "attempts on her own life",
+"died by her own hand",
+and a canonical English quotation whose Chinese added 自杀;
+the message hardcodes "she".
+
+### F-5: a source the strict grammar refuses turns off floors that need no grammar
+
+Status: open.
+`validateTranslatedSlice` returns `unknown` before the untranslated,
+line-count and neutral-pronoun checks;
+stages disagree on what `unknown` means.
+
+### F-6: `carveSettled` does not carve as the pipeline did
+
+Status: open.
+It omits `includeFrontMatter`, `frontMatterAuthority` and `sealArchiveOriginal`,
+shifting slice indices by one on archive-authority entries.
+
+### F-7: the line-structure floor counts HTML comment lines
+
+Status: open.
+yulianNyanner s8 and s12 archives refused;
+the message prints "1 lines".
+
+### F-8: the sheet-leak floor misses six labels its own sheets print
+
+Status: open (with E7).
+
+### F-9: the neutral-pronoun floor never reads the original
+
+Status: open.
+"The TA graded the cat's homework." (助教) and "Ta!" are refused.
+
+### F-10: `assertHeadingsStayDistinct` goes silent when heading counts differ
+
+Status: open (latent).
+
+### F-11: the glossary floors refuse a glossed Han title the title floor allows
+
+Status: open (latent).
+
+### F-12: low items
+
+Status: open.
+`ArchiveOriginalCompletenessError` stores neither entry nor span;
+the declared-link floor refuses Zhihu @-mentions the archive rendered as the user's slug (owner ruling).
+Plausible, unproven: nothing re-floors a lanes-agreed would-ship text,
+and the repair lane never calls `validateTranslatedSlice`.
