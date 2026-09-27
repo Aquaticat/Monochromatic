@@ -10,8 +10,9 @@ import { titleText, } from './translate-han-title.ts';
 // credit of the XingZ60 tail shipped "— Yuli【妄想症Paranoia】《Zero-Layer
 // Prayer》": the title rendered, the Chinese title marks kept around it.
 // 《》 are Chinese punctuation with no meaning in English prose, where a
-// work's title stands in quotation marks, the way every other credit on the
-// page reads (——from “Bird in a Cage”). Read pages had shipped 《Nonuple
+// song's title stands in quotation marks, the way every other credit on the
+// page reads (——from “Bird in a Cage”), and a longer work's in italics
+// (owner, 2026-09-27). Read pages had shipped 《Nonuple
 // Reality》, 《Zero-Layer Prayer》 and the original's own English poem title
 // in the marks. A candidate bracketing a title that carries Latin letters
 // and no Han in 《》 is refused HERE before any judge reads it, unless the

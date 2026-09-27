@@ -2,7 +2,8 @@
  Guards class one hundred forty-one (XingZ6012, 2026-09-26): the second song
  credit shipped "— Yuli【妄想症Paranoia】《Zero-Layer Prayer》", an English title
  inside the Chinese title marks. 《》 carry no meaning in English prose, where
- a work's title stands in quotation marks, so a candidate that brackets a
+ a song's title stands in quotation marks and a longer work's in italics, so
+ a candidate that brackets a
  title with no Han in 《》 is refused before any judge reads it, unless the
  page it would replace writes the same bracketed title.
 
