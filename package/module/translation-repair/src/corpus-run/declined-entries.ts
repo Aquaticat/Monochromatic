@@ -139,11 +139,11 @@ export async function writeDeclinedEntry(
 
  Read as no declines, it would send every declined entry back through the
  pipeline and drop it from `verify-published`'s count. The message names the
- filesystem reason alone, never the path, which can name a person.
+ filesystem code alone, never the path, which can name a person.
 
  @example
  ```ts
- throw new DeclinedEntriesUnreadableError({ reason: 'EACCES', cause: error, },);
+ throw new DeclinedEntriesUnreadableError({ filesystemCode: 'EACCES', cause: error, },);
  ```
  */
 export class DeclinedEntriesUnreadableError extends Error {
@@ -155,21 +155,22 @@ export class DeclinedEntriesUnreadableError extends Error {
   /**
    Builds the unlistable-directory failure.
 
-   @param reason - filesystem code the listing failed with
+   @param filesystemCode - code the listing failed with, or the class name
+   where there is none
 
    @param cause - failure the listing raised
    */
   constructor(
     {
-      reason,
+      filesystemCode,
       cause,
     }: {
-      readonly reason: string;
+      readonly filesystemCode: string;
       readonly cause: unknown;
     },
   ) {
     super(
-      `the decline directory could not be listed (${reason}); a pass reading it as no declines would re-run every declined entry`,
+      `the decline directory could not be listed (${filesystemCode}); a pass reading it as no declines would re-run every declined entry`,
       { cause, },
     );
     this.name = 'DeclinedEntriesUnreadableError';
@@ -202,11 +203,11 @@ async function recordEntries(
     /**
      Filesystem code the listing failed with.
      */
-    const reason = filesystemReason({ error, },);
-    if (reason === 'ENOENT')
+    const filesystemCode = filesystemReason({ error, },);
+    if (filesystemCode === 'ENOENT')
       return [];
     throw new DeclinedEntriesUnreadableError({
-      reason,
+      filesystemCode,
       cause: error,
     },);
   }
