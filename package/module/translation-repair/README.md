@@ -252,11 +252,15 @@ is folded into that neighbour at the admission (`corpus-run/insertion-carried-fo
 where the archive spread it over both neighbours, into the one holding the larger share),
 so both lanes write it as part of the slice that carries it and the publish guard has nothing to find.
 
-Any source passage still unfilled fails entry before contest,
-artifact and publication;
-a known gap never becomes settled page.
-This includes a passage admitted for translation when provider outage leaves every translator unheard:
-entry reports error and keeps slice cache for retry.
+A source passage still unfilled after the single translation round and its one follow-up
+ships as a recorded gap, not a refusal:
+the artifact records it (`lanes.translate.unfilled`),
+the log names each one (`corpus-run/pass-entry.ts`),
+and the page carries no text there.
+Under the no-loop design of 2026-09-01 an insertion is recovered supplementary content,
+so its absence is a gap rather than a missing required page.
+A passage admitted for translation when a provider outage leaves every translator unheard is different:
+the entry stops INCOMPLETE and keeps its slice cache for a later run.
 
 ## Contract
 
