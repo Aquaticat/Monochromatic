@@ -252,11 +252,41 @@ export function validateTranslatedSlice(
   // fallback for exactly this, so a slice can reach here that no skeleton can
   // be read from, and inventing a comparison across two grammars would
   // manufacture findings rather than find any.
-  if (source.kind === 'unparseable')
+  //
+  // THE FLOORS THAT NEED NO GRAMMAR STILL RUN (ledger F-5): a candidate left
+  // untranslated, merging the lines of a governed slice, or keeping the
+  // neutral pronoun is refused whatever the original's grammar, since none of
+  // those reads a block.
+  if (source.kind === 'unparseable') {
+    /**
+     Findings of the floors that read text rather than blocks.
+     */
+    const grammarFree = [
+      ...untranslatedFindings({
+        sourceText,
+        candidateText,
+      },),
+      ...compareLineCounts({
+        lineStructured,
+        sourceText,
+        candidateText,
+        pageText,
+      },),
+      ...neutralPronounFindings({
+        sourceText,
+        candidateText,
+      },),
+    ];
+    if (grammarFree.length > 0)
+      return {
+        kind: 'invalid',
+        findings: grammarFree,
+      };
     return {
       kind: 'unknown',
       detail: `original could not be read: ${source.detail}`,
     };
+  }
 
   /**
    Shape the candidate carries.
