@@ -147,6 +147,24 @@ await describe({
     },),
 
     it({
+      name: 'COUNTS NO COMMENT LINE AS A LINE OWED, since a translator\'s note is no line of the passage (ledger F-7: '
+        + 'an archive that kept one of two notes was refused as merging), and names one line as "1 line"',
+      fn: async () => {
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: `<!-- 这里的猫是橘猫 -->\n${ORIGINAL}\n<!-- (本段为第一人称) -->`,
+          candidateText: `<!-- (First person.) -->\n${KEPT_APART}`,
+        },).length,).toBe(0,);
+        const [finding,] = compareLineCounts({
+          lineStructured: true,
+          sourceText: '猫醒了。\n太阳很暖。',
+          candidateText: 'The cat wakes and the sun is warm.',
+        },);
+        expect(finding,).toContain('carries 1 line of content',);
+      },
+    },),
+
+    it({
       name:
         'REFUSES A RENDERING THAT REPEATS A LINE the original carries once, and accepts a refrain the '
         + 'original itself repeats (class seventy-four, 2026-09-21): a bilingual attribution '
