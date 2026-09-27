@@ -642,10 +642,19 @@ Other source-specific ranges and evidence limits are in the
 These controls do not exhaust destination mismatches,
 conditional grants,
 or effect-language qualification.
-Task #27 is finishing its rendered documentation record,
-not declaring a qualified production profile.
-Then continue #25 and the remaining Jev profile/consumer gates,
-without resuming integration-policy interviewing prematurely.
+Task #27 is complete within this bounded development scope,
+not a qualified production profile.
+Main records are committed at `582626258` and `7c6bfdb92`;
+sixteen-document rendering and scoped lint passed as `proc_9051`.
+Private summary `c811cf1` and README renderer `511d5a0` are retained;
+the private rendered check passed and both worktrees were clean.
+Task #25 is now active:
+inspect the published native binary-choice representation and remaining runtime paths,
+without assuming a latency remedy,
+training permission,
+or accelerator authorization.
+The remaining Jev profile/consumer gates stay open,
+and integration-policy interviewing remains deferred.
 No calibration,
 training,
 threshold selection,
