@@ -16,7 +16,7 @@ import {
 import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
-import { verifyArtifactAgainstPreparation, } from './artifact-two-lane-corpus-verify.ts';
+import { verifyArtifactMeasurements, } from './artifact-two-lane-corpus-verify.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
 import {
@@ -58,9 +58,12 @@ import {
 //     name it cannot derive from the source and has every reason to call it a
 //     fabrication. That is the defect `#36` was opened for, and rediscovering
 //     it as "defects" would poison every name-bearing slice.
-// -   Provenance. `verifyArtifactAgainstPreparation` is the only check that
-//     the recorded preparation identity describes these two documents, since
-//     the artifact stores measurements of the pair rather than the pair.
+// -   Provenance. The rebuild's rows are checked against the rows the run
+//     recorded, and the artifact's measurements against the rebuild, since the
+//     artifact stores measurements of the pair rather than the pair. NOT the
+//     recorded identity (ledger A12b): it also hashes the declared names as the
+//     run's build worded them, so no rebuild today names itself as the run did,
+//     and every settled artifact read REFUSED.
 //
 // RE-PREPARED WITH THE RECIPE THE ARTIFACT RECORDS, through
 // `rebuildPreparation`, never with the bare deterministic carve. The pass
@@ -228,32 +231,39 @@ function verifySettled(
     readonly rebuilt: RebuiltPreparation;
   },
 ): SettledVerification {
+  /**
+   Whether the rebuild's rows are the run's carve, and the recipe halves it
+   had to default.
+   */
+  const {
+    reproduction,
+    unrecorded,
+  } = rebuilt;
+  if (reproduction.kind === 'moved') {
+    return (unrecorded.length === 0)
+      ? {
+        kind: 'refused',
+        detail: reproduction.detail,
+      }
+      : {
+        kind: 'unverifiable',
+        unrecorded,
+        detail: reproduction.detail,
+      };
+  }
   try {
-    verifyArtifactAgainstPreparation({
+    verifyArtifactMeasurements({
       artifact,
       prepared: rebuilt.prepared,
     },);
     return { kind: 'verified', };
   }
   catch (error) {
-    /**
-     What the check objected to.
-     */
-    const detail = refusalText({ error, },);
-
-    /**
-     Recipe halves the rebuild had to guess.
-     */
-    const { unrecorded, } = rebuilt;
-    if (unrecorded.length === 0)
-      return {
-        kind: 'refused',
-        detail,
-      };
+    // The rows reproduced, so a defaulted recipe half cannot explain a
+    // measurement the rebuild does not have: it is a refusal either way.
     return {
-      kind: 'unverifiable',
-      unrecorded,
-      detail,
+      kind: 'refused',
+      detail: refusalText({ error, },),
     };
   }
 }

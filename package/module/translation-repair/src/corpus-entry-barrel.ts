@@ -32,5 +32,6 @@ export {
   finishedEntryIds,
 } from './corpus-run/pass-finished.ts';
 export { openNamespacedCache, } from './corpus-run/slice-cache-namespace.ts';
+export { verifyArtifactMeasurements, } from './corpus-run/artifact-two-lane-corpus-verify.ts';
 
 //endregion Corpus entry barrel

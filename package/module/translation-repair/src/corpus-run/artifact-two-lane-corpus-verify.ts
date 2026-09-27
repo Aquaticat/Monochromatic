@@ -155,42 +155,9 @@ export function verifyArtifactAgainstPreparation(
       }, so it describes a different slicing of some pair of documents`,
     },);
   }
-  assertMeasured({
-    recorded: preparation.sliceCount,
-    actual: prepared.slices
-      .length,
-    path: `${artifact.id}.preparation.sliceCount`,
-  },);
-  assertMeasured({
-    recorded: preparation.sourceChars,
-    actual: prepared.sourceText
-      .length,
-    path: `${artifact.id}.preparation.sourceChars`,
-  },);
-  assertMeasured({
-    recorded: preparation.targetChars,
-    actual: prepared.targetText
-      .length,
-    path: `${artifact.id}.preparation.targetChars`,
-  },);
-  assertMeasured({
-    recorded: preparation.sourceBytes,
-    actual: sourceBytesOf({ text: prepared.sourceText, },),
-    path: `${artifact.id}.preparation.sourceBytes`,
-  },);
-  assertMeasured({
-    recorded: preparation.alignmentPairCount,
-    actual: prepared.alignmentPairCount,
-    path: `${artifact.id}.preparation.alignmentPairCount`,
-  },);
-  translating({
-    check: function findings(): void {
-      assertFindingsDescribePreparation({
-        prepared,
-        reported: preparation.alignmentFindings,
-      },);
-    },
-    path: `${artifact.id}.preparation.alignmentFindings`,
+  verifyArtifactMeasurements({
+    artifact,
+    prepared,
   },);
 
   // BOTH LEDGERS ROW BY ROW, against the slices the preparation produced. This
@@ -228,6 +195,81 @@ export function verifyArtifactAgainstPreparation(
       },);
     },
     path: `${artifact.id}.lanes.translate.delivery`,
+  },);
+}
+
+/**
+ Checks what a parsed artifact measured of its preparation against a
+ preparation: slice count, document sizes, alignment pairs and findings, and
+ each lane's own slice count.
+ 
+ SPLIT FROM THE IDENTITY CHECK (ledger A12b). The recorded identity also
+ hashes the declared names as the run's build worded them, so a preparation
+ rebuilt today never names itself as the run did; a rebuild whose rows
+ reproduce the run's carve (`artifact-two-lane-rebuild-rows.ts`) is verified
+ by these measurements instead.
+ 
+ @param artifact - artifact as the version 2 reader returned it
+ 
+ @param prepared - preparation to measure against
+ 
+ @throws {@link ArtifactParseError} when a recorded measurement is not this
+ preparation's
+ 
+ @example
+ ```ts
+ verifyArtifactMeasurements({ artifact, prepared: rebuilt.prepared, },);
+ ```
+ */
+export function verifyArtifactMeasurements(
+  {
+    artifact,
+    prepared,
+  }: {
+    readonly artifact: ParsedTwoLaneArtifact;
+    readonly prepared: PreparedDocumentPair;
+  },
+): void {
+  /**
+   What the artifact says about the slicing.
+   */
+  const { preparation, } = artifact;
+  assertMeasured({
+    recorded: preparation.sliceCount,
+    actual: prepared.slices
+      .length,
+    path: `${artifact.id}.preparation.sliceCount`,
+  },);
+  assertMeasured({
+    recorded: preparation.sourceChars,
+    actual: prepared.sourceText
+      .length,
+    path: `${artifact.id}.preparation.sourceChars`,
+  },);
+  assertMeasured({
+    recorded: preparation.targetChars,
+    actual: prepared.targetText
+      .length,
+    path: `${artifact.id}.preparation.targetChars`,
+  },);
+  assertMeasured({
+    recorded: preparation.sourceBytes,
+    actual: sourceBytesOf({ text: prepared.sourceText, },),
+    path: `${artifact.id}.preparation.sourceBytes`,
+  },);
+  assertMeasured({
+    recorded: preparation.alignmentPairCount,
+    actual: prepared.alignmentPairCount,
+    path: `${artifact.id}.preparation.alignmentPairCount`,
+  },);
+  translating({
+    check: function findings(): void {
+      assertFindingsDescribePreparation({
+        prepared,
+        reported: preparation.alignmentFindings,
+      },);
+    },
+    path: `${artifact.id}.preparation.alignmentFindings`,
   },);
   translating({
     check: function repairCounts(): void {
