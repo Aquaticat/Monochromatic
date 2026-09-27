@@ -3,6 +3,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { isJsonRecord, } from './json-guard.ts';
+import { APPARATUS_KINDS, } from './page-apparatus-clause.ts';
 import { selectFence, } from './prompt-fence.ts';
 
 //region Archive block review wire
@@ -103,7 +104,7 @@ export function buildArchiveBlockReviewMessages(
     content: `Review English archive wording that block pairing did not connect to any Chinese source block. The source fence contains the aligned section and any CORROBORATED PICTURE SOURCE SUPPORT transcribed from pictures that section references. Both are source support. An archive block translating that picture text is not an unsupported insertion merely because the source prose does not repeat it.
 
 Decide the block's role, source faithfulness, and English quality before classifying it:
-- "editorial-context": only verifiable translation-side apparatus such as a contributor credit, citation, translation label, navigation or formatting. A label may introduce content in the next archive block; it need not contain that content itself. Factual biography, events and quoted dialogue are not merely apparatus. Keep useful apparatus; revise it only for a demonstrable defect in its actual context.
+- "editorial-context": only verifiable translation-side apparatus: a translation label, navigation or formatting, or page apparatus (${APPARATUS_KINDS}). A label may introduce content in the next archive block; it need not contain that content itself. Factual biography, events and quoted dialogue are not merely apparatus. Keep useful apparatus; revise it only for a demonstrable defect in its actual context.
 - "revise": a factual claim is unsupported, contradictory or misplaced, or the English has a clear unintended error. Faithful content with an obvious typo still needs this disposition. Supply the COMPLETE corrected ENGLISH block, not an excerpt; an empty replacement is appropriate only when removal of the whole block is justified. Keep every already-correct part of the wording and structure. A more literal alternative, a source abbreviation already rendered idiomatically in English, or a stylistic preference is not by itself a correction. Render ordinary source-language speech and interjections into natural English rather than copying them into the replacement. Do not duplicate an utterance or move it to a different speaker or response slot. Parallel reader transcriptions of one picture are alternative witnesses, not additional messages. If unclear source layout would require guessing, do not invent a reconstruction. sourceQuote may cite the part a revision preserves, but does not license the original block.
 - "source-supported": factual source content is faithfully rendered in English and no necessary correction remains. Copy one exact character-for-character span from the aligned section or one corroborated picture transcription into sourceQuote, not from the English archive, a heading or a reader label.
 

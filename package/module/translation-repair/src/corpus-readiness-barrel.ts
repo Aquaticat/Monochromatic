@@ -64,6 +64,7 @@ export {
   type ArchiveBlockReviewOutcome,
   runArchiveBlockReviewStage,
 } from './archive-block-review-stage.ts';
+export { buildArchiveBlockReviewMessages, } from './archive-block-review-wire.ts';
 export {
   archiveBlockIdentity,
   repairArchiveBlocks,

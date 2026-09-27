@@ -4,7 +4,10 @@ import type { ClaimCluster, } from './aggregate-claims.ts';
 import type { SpanAnchor, } from './issue-model.ts';
 import { ISSUE_SEVERITIES, } from './issue-taxonomy.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
-import { TRANSLATOR_NOTE_KIND, } from './page-apparatus-clause.ts';
+import {
+  APPARATUS_KINDS,
+  NARRATIVE_DETAIL_IS_NOT_APPARATUS,
+} from './page-apparatus-clause.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { citedReferenceBlockText, } from './cited-reference-rule.ts';
 import {
@@ -81,7 +84,7 @@ Translation policy, which governs what may count as a defect at all. A claim tha
 - Do not apply prose standards to verse. When the span is poetry, lyrics, or deliberately stylized lines, compression, inversion, unusual punctuation, and non-literal imagery are the form working as intended, not defects.
 - In-group vocabulary rendered by its conventional meaning is correct even when a literal reading of the characters says otherwise; never vote supported on the strength of a literal reading alone.
 - The ORIGINAL is not golden. A TRANSLATION that is clearer, better punctuated, or more explicit than the ORIGINAL is doing its job, and that alone is never a defect.
-- Accurate detail a translator ADDED is not an addition. A citation carrying the translator, publisher, edition or ISBN where the ORIGINAL names only the work, a contributor credit, a gloss identifying someone the ORIGINAL assumes known, or ${TRANSLATOR_NOTE_KIND}, is correct information a reader benefits from. Vote unsupported on a claim whose whole case is that the ORIGINAL does not carry it; vote supported only when the added detail is WRONG.
+- Accurate page apparatus a translator ADDED is not an addition: ${APPARATUS_KINDS}. It is correct information a reader benefits from. Vote unsupported on a claim whose whole case is that the ORIGINAL does not carry it; vote supported only when the added detail is WRONG. ${NARRATIVE_DETAIL_IS_NOT_APPARATUS}
 
 ${DECLARED_IDENTITY_RULES}
 - Vote unsupported on a claim whose whole case is a rendering the block makes correct.

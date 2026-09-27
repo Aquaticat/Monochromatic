@@ -2,8 +2,8 @@ import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import { SIZE_NOTE_POLICY, } from './contest-size-note.ts';
 import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
 import {
+  APPARATUS_KINDS,
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
-  TRANSLATOR_NOTE_KIND,
 } from './page-apparatus-clause.ts';
 import {
   DECLARED_NAME_REFERENCE_EXEMPTION,
@@ -52,7 +52,7 @@ export const CONTEST_POLICY: string = [
   '',
   'UNSUPPORTED: does the candidate state something the Chinese does not say?',
   'An invented time period, an invented characterization, a strengthened claim: all unsupported.',
-  `Apparatus the archive supplies, such as a name, a spelled-out referent, a gloss of a name or a term, or ${TRANSLATOR_NOTE_KIND}, is NOT unsupported: keeping it is correct.`,
+  `Apparatus the archive supplies (${APPARATUS_KINDS}) is NOT unsupported: keeping it is correct.`,
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
   '',
   'DROPPED: does the candidate omit something the Chinese does say?',
@@ -60,7 +60,7 @@ export const CONTEST_POLICY: string = [
   '',
   'DROPPED ALSO COVERS WHAT THE ARCHIVE CARRIES AND THE CHINESE DOES NOT SAY.',
   'The archive rendering is the page as it stands, not only evidence about the original, so a candidate leaving out something it carries deletes that from the page.',
-  'Where the Chinese is SILENT rather than contradicting, dropping it is a fault of this kind, and keeping it is correct.',
+  'Where the Chinese is SILENT rather than contradicting, dropping page apparatus the archive carries, or a whole region of the page, is a fault of this kind, and keeping it is correct; a narrative detail the archive adds to a passage is not kept on the archive\'s word, since what happened is never apparatus.',
   'THE SEVEREST CASE IS A WHOLE REGION. Where the archive carries a quoted letter, a list, a details section or any block the candidate does not, that is dropped content, NOT a candidate being faithful to a shorter original.',
   'A passage the Chinese states in one line can stand beside a page region the archive spells out at length, and the shorter candidate is the one that lost something.',
   '',

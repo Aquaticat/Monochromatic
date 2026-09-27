@@ -9,7 +9,10 @@ import {
   DECLARED_IDENTITY_RULES,
   declaredNamesBlock,
 } from './declared-identity-rule.ts';
-import { TRANSLATOR_NOTE_KIND, } from './page-apparatus-clause.ts';
+import {
+  APPARATUS_KINDS,
+  NARRATIVE_DETAIL_IS_NOT_APPARATUS,
+} from './page-apparatus-clause.ts';
 import { citedReferenceBlockText, } from './cited-reference-rule.ts';
 import { FOREIGN_PHRASE_NAME_TITLE_SCOPE, } from './foreign-phrase-scope.ts';
 import { selectFence, } from './prompt-fence.ts';
@@ -95,7 +98,7 @@ Obligatory differences between the two languages are never defects. Each languag
 - Punctuation and quotation conventions differ. Adding quotation marks, italics, or other marks the TRANSLATION's conventions call for, to set off speech, a title, or a nickname the ORIGINAL marks by other means or not at all, is not an addition.
 - A distinction one language marks and the other does not (Chinese marks plural address in a pronoun; English does not) cannot be carried over. Rendering it with the only available form is not an omission. Do not report a defect when the TRANSLATION has no means to make the distinction.
 - Where the ORIGINAL leaves a connection to context that the TRANSLATION's reader cannot recover, making it explicit is legitimate. Report it only if the added reading is unsupported by the ORIGINAL, not merely because it is absent from the words.
-- ACCURATE detail a translator added is not an addition defect. A citation naming the translator, publisher, edition or ISBN where the ORIGINAL names only the work; a contributor credit; a gloss identifying a person, place or work the ORIGINAL assumes its reader knows; ${TRANSLATOR_NOTE_KIND}: each of these is correct information a reader benefits from, and reporting it as unsupported content leads to it being deleted. Report such detail ONLY when it is WRONG, and then say what is wrong with it.
+- ACCURATE page apparatus a translator added is not an addition defect: ${APPARATUS_KINDS}. Each of these is correct information a reader benefits from, and reporting it as unsupported content leads to it being deleted. Report such detail ONLY when it is WRONG, and then say what is wrong with it. ${NARRATIVE_DETAIL_IS_NOT_APPARATUS}
 
 ${DECLARED_IDENTITY_RULES}
 - Never report a rendering the block makes correct as a defect.

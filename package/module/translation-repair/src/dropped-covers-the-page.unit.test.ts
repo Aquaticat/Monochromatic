@@ -56,6 +56,22 @@ await describe({
     },),
 
     it({
+      name: 'SCOPES the silent-keeps sentence to apparatus and whole regions, never a narrative detail (ledger S6)',
+      fn: async () => {
+        // "Dropping it is a fault, keeping it is correct" once covered any
+        // detail the archive carried, which contradicted the narrative bound
+        // later in the same policy: an invented event read as a keep the
+        // Chinese is silent about.
+        expect(CONTEST_POLICY,).toContain(
+          'dropping page apparatus the archive carries, or a whole region of the page',
+        );
+        expect(CONTEST_POLICY,).toContain(
+          'a narrative detail the archive adds to a passage is not kept on the archive\'s word',
+        );
+      },
+    },),
+
+    it({
       name: 'NAMES a whole region as the severest case, since the small examples did not cover a will',
       fn: async () => {
         // A judge reading only "a name or a spelled-out referent" did not apply

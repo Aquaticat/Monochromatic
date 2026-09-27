@@ -141,7 +141,11 @@ export {
 } from './contest-ballot-wire.ts';
 export { BILINGUAL_LINE_CLAUSE, } from './bilingual-line-clause.ts';
 export { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
-export { PAGE_APPARATUS_IS_KEPT, } from './page-apparatus-clause.ts';
+export {
+  APPARATUS_KINDS,
+  NARRATIVE_DETAIL_IS_NOT_APPARATUS,
+  PAGE_APPARATUS_IS_KEPT,
+} from './page-apparatus-clause.ts';
 export {
   type CoverageAnswer,
   runCoverageStage,

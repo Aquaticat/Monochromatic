@@ -41,6 +41,23 @@ export const TRANSLATOR_NOTE_KIND: string = 'a translator\'s note explaining a p
   + ' nothing the ORIGINAL does not)';
 
 /**
+ Every kind of page apparatus, listed once (ledger S5): the critic, the panel,
+ the contest, the writers and the archive block review each carried their own
+ shorter list, and a kind missing from one list read to that sheet as an
+ addition.
+
+ @example
+ ```ts
+ const rule = `Apparatus the archive supplies (${APPARATUS_KINDS}) is kept.`;
+ ```
+ */
+export const APPARATUS_KINDS: string = 'a gloss of a name or a term (a line or a parenthesis saying what it means), '
+  + 'a gloss identifying a person, place or work the ORIGINAL assumes its reader knows, '
+  + `${TRANSLATOR_NOTE_KIND}, an explanatory aside, a spelled-out referent (the name a pronoun stands for), `
+  + 'a contributor credit, and a citation\'s translator, publisher, edition or ISBN where the ORIGINAL names only '
+  + 'the work';
+
+/**
  The bound on apparatus: narrative detail is an addition however silent the
  original is about it.
 
@@ -73,9 +90,7 @@ export const NARRATIVE_DETAIL_IS_NOT_APPARATUS: string = 'WHAT HAPPENED IS NEVER
  */
 export const PAGE_APPARATUS_IS_KEPT: string = [
   'WHAT THE EXISTING TRANSLATION CARRIES AND THE ORIGINAL IS SILENT ABOUT IS KEPT IN PLACE:',
-  'a gloss of a name or a term (a line or a parenthesis saying what it means),',
-  `${TRANSLATOR_NOTE_KIND},`,
-  'an explanatory aside, a spelled-out referent, a contributor credit, a citation\'s translator.',
+  `${APPARATUS_KINDS}.`,
   'It is the page\'s own apparatus: it explains the text and asserts nothing about what happened,',
   'so a candidate carrying it where the page has it has added nothing, and a candidate leaving it out',
   'has dropped page content.',
