@@ -732,10 +732,58 @@ installation,
 or extra inference was performed during the batch.
 After completing the native-choice documentation checks,
 continue the pinned ONNX exporter/dependency investigation.
-The prepared scripts `extract-exporter-followup.mjs` and `runtime-inventory.mjs`
-in the ONNX audit root have not run yet;
-the latter is a bounded standard-library-only image inventory,
-not an inference or installation.
+Model-free inspection `proc_b4a9` completed those scripts.
+The actual image had NumPy 2.5.3,
+Transformers 5.0.0,
+and Torch 2.10.0+cpu distribution records.
+The inspected path had no ONNX,
+ONNX IR,
+ONNX Runtime,
+ONNX Script,
+or protobuf distribution records;
+top-level probes for the first four module names were also absent.
+No package was imported or installed and no model ran.
+The pinned `_compat` source is now read;
+its dynamic-axis conversion,
+export,
+optimization,
+and save paths remain source evidence,
+not executed export qualification.
+`_core.py:1576-1695` has warning/status-and-return verification-error paths,
+so do not assume `verify=True` alone is a strict publication gate.
+
+Primary metadata probe `proc_8cdc` reported ONNX 1.23.0,
+ONNX Script 0.7.2,
+ONNX IR 1.0.0,
+ONNX Runtime 1.30.0,
+and protobuf 7.36.2.
+These are observed releases,
+not selected or vetted dependencies.
+The first filename filter covered `cp313` and pure-Python tags,
+not every compatible ABI;
+an empty ONNX result must not become a no-wheel claim.
+Follow-up `proc_c248` completed the full fixed-release file inventory and standard-library target probe.
+The target reports Python 3.13.15,
+`cpython-313-x86_64-linux-gnu`,
+GIL enabled,
+and glibc 2.41.
+The complete ONNX file list contains a `cp312-abi3` x86-64 manylinux wheel;
+the initial `cp313`-only filter was not an availability proof.
+ONNX Runtime lists both ordinary `cp313` and free-threaded `cp313t` files;
+do not silently substitute the latter for this target.
+No filename is yet an import,
+compatibility,
+provenance,
+or qualified-export result.
+Next:
+verify tag matching,
+complete dependency/source/artifact review,
+and freeze a bounded CPU-only export/consumer manifest before any installation or export.
+The ONNX audit root is committed through `dec8447`;
+no distribution download,
+installation,
+export,
+or inference has occurred in this follow-up.
 The probability field remains the predeclared true option,
 and recorded temperature means source-selected configuration,
 not a separately captured decoder intermediate.

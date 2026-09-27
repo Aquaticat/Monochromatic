@@ -729,7 +729,13 @@ The matching PyTorch 2.10 source at revision
 defaults to `dynamo=True`,
 `verify=False`,
 and `fallback=False`.
-Its delegated `_compat` path remains to be inspected before conversion/failure conclusions.
+The delegated `_compat` path has now been inspected from the same pinned Git objects.
+It converts legacy dynamic axes when needed,
+exports,
+converts opset,
+optimizes,
+and saves when a destination is supplied.
+Legacy fallback is conditional on the explicit flag.
 The file was read from its Git object because the existing checkout is sparse;
 no third-party worktree was changed.
 
@@ -741,7 +747,35 @@ These are source findings,
 not a reproduced ONNX incident,
 latency comparison,
 or an upstream fix.
-No export or additional model forward was started while the sequential native-choice batch runs.
+No export or additional model forward was started during the sequential native-choice batch.
+
+Model-free inventory `proc_b4a9` found the inspected image lacked distribution records for
+ONNX,
+ONNX IR,
+ONNX Runtime,
+ONNX Script,
+and protobuf;
+the exporter/runtime module-location checks were also absent.
+The target probe `proc_c248` reported ordinary CPython 3.13.15,
+x86-64 Linux,
+GIL enabled,
+and glibc 2.41.
+Primary PyPI metadata and full release-file lists are retained in the private audit root,
+not installed or selected as dependencies.
+The ONNX release includes a `cp312-abi3` wheel;
+a prior `cp313`-only filename filter was not proof of unavailability.
+Artifact provenance,
+transitive requirements,
+actual import/runtime compatibility,
+and a bounded export/consumer manifest remain pending.
+
+Source-only follow-up in
+`torch/onnx/_internal/exporter/_core.py:1576-1695`
+shows warning/status-and-return paths for verification problems.
+No export invocation has reproduced those paths here,
+and `verify=True` is not a demonstrated strict publication gate in this evaluation.
+External weight-data files are part of the artifact boundary,
+not just the graph filename.
 
 ## Fine-tuning source findings
 
