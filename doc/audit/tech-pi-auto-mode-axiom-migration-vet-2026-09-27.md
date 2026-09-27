@@ -2,19 +2,37 @@
 
 ## Metadata
 
-- Status: in progress; authorization-context transition and targeted evidence, no recommendation.
-- Started: 2026-09-27.
-- Last updated: 2026-09-27.
-- Subject: Pi auto-mode axiom migration.
-- Owner: `auto-mode-authorized-input-evaluation`.
-- Governing skill commit: `a05818ad70a40e5769a36de669697ba109891b31`.
-- Governing skill SHA-256: `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
-- Compatibility fingerprint: `51edb8223a030345de584932d5273ecd90ead6753011d84fefb7b9505f218d67`.
-- Prior compatible report: none; the prior context restricted private assessment inputs.
-- Scope override: user-authorized Laya, relevant Voyage products/models, and Jev only.
-- Rubric: not scored; no finalist ranking or adoption is selected.
+- Status:
+   in progress;
+   authorization-context transition and targeted evidence,
+   no recommendation.
+- Started:
+   2026-09-27.
+- Last updated:
+   2026-09-27.
+- Subject:
+   Pi auto-mode axiom migration.
+- Owner:
+   `auto-mode-authorized-input-evaluation`.
+- Governing skill commit:
+   `a05818ad70a40e5769a36de669697ba109891b31`.
+- Governing skill SHA-256:
+   `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
+- Compatibility fingerprint:
+   `51edb8223a030345de584932d5273ecd90ead6753011d84fefb7b9505f218d67`.
+- Prior compatible report:
+   none;
+   the prior context restricted private assessment inputs.
+- Scope override:
+   user-authorized Laya,
+   relevant Voyage products/models,
+   and Jev only.
+- Rubric:
+   not scored;
+   no finalist ranking or adoption is selected.
 
-Fingerprint input, with sorted keys and set-valued arrays:
+Fingerprint input,
+ with sorted keys and set-valued arrays:
 
 ```json
 {
