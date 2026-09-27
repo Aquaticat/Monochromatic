@@ -322,5 +322,46 @@ await describe({
         },);
       },
     },),
+    it({
+      name: 'REFUSES A WINNER MERGING THE LINES OF A GOVERNED SLICE, and passes the same winner where no line '
+        + 'rule governs and the lane keeping the lines where one does (ledger H2)',
+      fn: async () => {
+        /**
+         Two-line verse slice whose translate lane merged its lines.
+         */
+        const verse = {
+          outcome: outcomeFor({ choice: 'translate', },),
+          sourceText: '猫在窗台上，\n狗在门口边。',
+          incumbentText: 'A cat on the windowsill,\na dog beside the door.',
+          repairText: 'A cat upon the windowsill,\na dog beside the door.',
+          translateText: 'A cat upon the windowsill and a dog beside the door.',
+        };
+
+        /**
+         Verdict where the line-structure rule governs the slice.
+         */
+        const governed = laneContestChoiceVerdict({
+          ...verse,
+          lineStructured: true,
+        },);
+        expect(governed.mayShip,).toBe(false,);
+        expect(governed.findings.join(' ',),).toContain('LINE-STRUCTURED',);
+        expect(laneContestChoiceVerdict({
+          ...verse,
+          lineStructured: false,
+        },),).toEqual({
+          mayShip: true,
+          findings: [],
+        },);
+        expect(laneContestChoiceVerdict({
+          ...verse,
+          outcome: outcomeFor({ choice: 'repair', },),
+          lineStructured: true,
+        },),).toEqual({
+          mayShip: true,
+          findings: [],
+        },);
+      },
+    },),
   ],
 },);

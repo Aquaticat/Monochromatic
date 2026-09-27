@@ -106,6 +106,26 @@ const METADATA_ARCHIVE = '---\nname: CatEntry\ninfo:\n  alias: Maomao\n---\n';
 const METADATA_TRANSLATED = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
 
 /**
+ Two-line verse original, each line its own unit.
+ */
+const VERSE_SOURCE = '猫在窗台上，\n狗在门口边。';
+
+/**
+ Archive's English for the verse, one line per line.
+ */
+const VERSE_ARCHIVE = 'A cat on the windowsill,\na dog beside the door.';
+
+/**
+ Repair lane's verse, keeping both lines.
+ */
+const VERSE_KEPT = 'A cat upon the windowsill,\na dog beside the door.';
+
+/**
+ Translate lane's verse, merging both lines into one.
+ */
+const VERSE_MERGED = 'A cat upon the windowsill and a dog beside the door.';
+
+/**
  Builds one ledger row, which is where the driver reads the original.
  
  @param sliceIndex - slice this row names
@@ -292,6 +312,61 @@ function catProjection(
         translateText: pair[1],
       },);
     },),
+  };
+}
+
+/**
+ Builds one verse slice whose repair lane keeps the lines and whose translate
+ lane merges them.
+
+ @returns Projection carrying the verse original and its archive English
+
+ @example
+ ```ts
+ const projected = verseProjection();
+ ```
+ */
+function verseProjection(): ProjectedLanes {
+  /**
+   Cat projection over the two verse wordings, before the verse original and
+   archive replace the nap ones.
+   */
+  const base = catProjection({
+    pairs: [
+      [
+        VERSE_KEPT,
+        VERSE_MERGED,
+      ],
+    ],
+  },);
+  return {
+    delivery: {
+      repair: base.delivery
+        .repair
+        .map(function versed(row,): ArtifactDeliveryRow {
+          return {
+            ...row,
+            sourceText: VERSE_SOURCE,
+            incumbentText: VERSE_ARCHIVE,
+          };
+        },),
+      translate: base.delivery
+        .translate
+        .map(function versed(row,): ArtifactDeliveryRow {
+          return {
+            ...row,
+            sourceText: VERSE_SOURCE,
+            incumbentText: VERSE_ARCHIVE,
+          };
+        },),
+    },
+    comparison: base.comparison
+      .map(function versed(row,): ArtifactComparisonRow {
+        return {
+          ...row,
+          incumbentText: VERSE_ARCHIVE,
+        };
+      },),
   };
 }
 
@@ -762,6 +837,51 @@ await describe({
         },);
         expect(twin.admitted,).toBe(single.admitted * 2,);
         expect(twin.persisted,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'REBUYS A WINNER MERGING THE LINES OF A GOVERNED SLICE instead of persisting it (ledger H2), '
+        + 'while the same winner persists where no line rule governs and the lane keeping the lines '
+        + 'persists where one does',
+      fn: async () => {
+        /**
+         Merged winner where the line-structure rule governs the slice.
+         */
+        const governed = await drive({
+          pairs: [],
+          projected: verseProjection(),
+          lineStructuredSlices: new Set([0,],),
+          answerChoice: 'translate',
+          answering: true,
+        },);
+
+        /**
+         Same merged winner where no line rule governs.
+         */
+        const free = await drive({
+          pairs: [],
+          projected: verseProjection(),
+          answerChoice: 'translate',
+          answering: true,
+        },);
+
+        /**
+         Line-keeping winner of the governed slice.
+         */
+        const kept = await drive({
+          pairs: [],
+          projected: verseProjection(),
+          lineStructuredSlices: new Set([0,],),
+          answerChoice: 'repair',
+          answering: true,
+        },);
+        expect(governed.admitted,).toBe(ROSTER.length,);
+        expect(governed.persisted,).toEqual([],);
+        expect(free.persisted
+          .length,).toBe(1,);
+        expect(kept.persisted
+          .length,).toBe(1,);
       },
     },),
 
