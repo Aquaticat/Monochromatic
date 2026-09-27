@@ -261,8 +261,12 @@ so one failed `uv_thread_create` makes the wait endless.
 The same code is at `src/node_platform.cc:258-279` on `main` (fetched 2026-09-27).
 
 Why the Claude Code timeout did not end this process is unknown.
-`/proc/2224691/status` shows SIGTERM neither blocked nor ignored,
+`/proc/2224691/status` showed SIGTERM neither blocked nor ignored,
 but caught (`SigCgt: 0000000100004002`).
+On 2026-09-27 `kill -TERM 2224691` ended it at once
+(`ps -p 2224691` printed no process right after),
+so a timeout that delivers SIGTERM does end this hang;
+the 2026-09-26 process apparently never received one.
 
 Incident B did not cause incident A.
 The kernel logged no pids rejection after 2026-09-26 02:21:15,
