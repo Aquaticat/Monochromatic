@@ -136,6 +136,9 @@ await describe({
         expect(system.includes('Never invent a third spelling',),).toBe(true,);
         expect(system.includes('target contributor:',),).toBe(true,);
         expect(system.includes('Preserve that spelling exactly on contributor lines',),).toBe(true,);
+        // Ledger S10: "keep them exactly" covered a name the archive left in
+        // Han, which the residue floor refuses.
+        expect(system.includes('A name the existing translation left in Han is not a rendering to keep',),).toBe(true,);
       },
     },),
     it({

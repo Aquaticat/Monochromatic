@@ -64,6 +64,15 @@ await describe({
       },
     },),
     it({
+      name: 'NEVER TELLS the refiner to keep a word left in the original language (ledger S10)',
+      fn: async () => {
+        // Precedence alone left the sentence standing as an instruction the
+        // house rules then overrule; the sheet now says the same thing they do.
+        expect(sheetNamed({ name: 'refiner', },),).not.toContain('any word left in the original language',);
+        expect(sheetNamed({ name: 'refiner', },),).toContain('in the form the house rules give it',);
+      },
+    },),
+    it({
       name: 'NEVER PRESCRIBES "ended her life" for an attempt she survived',
       fn: async () => {
         expect(HOUSE_POLICY_BLOCK,).not.toContain('the page says that she ended her life, and keeps',);

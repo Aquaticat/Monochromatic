@@ -292,6 +292,11 @@ await describe({
         expect(refinerSheets.every(function carriesObjection(sheet,): boolean {
           return sheet.includes(OBJECTION,) && sheet.includes('OBJECTIONS FROM THE CONSOLIDATION GATE',);
         },),).toBe(true,);
+        // Ledger S10: the objection branch's survival sentence names the
+        // house form too.
+        expect(refinerSheets.every(function namesHouseForm(sheet,): boolean {
+          return sheet.includes('in the form the house rules give it',);
+        },),).toBe(true,);
         expect(settled.findings.some(function namesObjectionPolish(finding,): boolean {
           return finding.startsWith('polish-objection-correction',);
         },),).toBe(true,);

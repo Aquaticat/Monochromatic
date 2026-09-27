@@ -32,6 +32,24 @@ import {
 // so this is a shape real documents contain rather than an invented one.
 
 /**
+ The form the surviving tokens take through a rewrite.
+
+ WRITTEN AGAINST "any word left in the original language" (ledger S10). The
+ sheet once told the rewriter to keep every such word, every date and every
+ handle unchanged, beside house rules rendering Han, Ta, titles, handles,
+ shorthand and day-first dates. Precedence in the house block settles the
+ disagreement; this clause removes it, so the sheet says what the house rules
+ say.
+
+ @example
+ ```ts
+ const rule = \`Every date survives, \${SURVIVAL_FORM}.\`;
+ ```
+ */
+const SURVIVAL_FORM = 'in the form the house rules give it (a date month first, a work by its English title); '
+  + 'a word left in Han, a Ta or a piece of chat shorthand is not kept as it stands but rendered as those rules say';
+
+/**
  Messages plus the paragraph numbering they were built from.
  
  @example
@@ -253,8 +271,8 @@ Preserve meaning, not Chinese grammar. Do not retain source-language word order 
 
 ${
           correctingObjections
-            ? 'Every number, date, name, handle, link and footnote marker survives a rewrite. Beyond what a supported objection asks, do not add information, drop information, soften a statement, sharpen a statement, or change who did what to whom.'
-            : 'These must survive a rewrite unchanged: every number, date, name, handle, link, footnote marker, and any word left in the original language. Do not add information, drop information, soften a statement, sharpen a statement, or change who did what to whom.'
+            ? `Every number, date, name, handle, link and footnote marker survives a rewrite, ${SURVIVAL_FORM}. Beyond what a supported objection asks, do not add information, drop information, soften a statement, sharpen a statement, or change who did what to whom.`
+            : `These must survive a rewrite: every number, date, name, handle, link and footnote marker, ${SURVIVAL_FORM}. Do not add information, drop information, soften a statement, sharpen a statement, or change who did what to whom.`
         }${correctionPolicy}
 
 Reply with ONLY a JSON object of shape {"rewrites": [{"paragraph": 1, "newText": "..."}]}. Include only the paragraphs you are changing. No prose, no code fences.`,
