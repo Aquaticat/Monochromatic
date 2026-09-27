@@ -17,7 +17,38 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { prepareDocumentPair, } from '../dist/final/node/index.mjs';
+import {
+  isLineStructured,
+  prepareDocumentPair,
+} from '../dist/final/node/index.mjs';
+
+/**
+ Lines in the verse fixture: enough for the slice budget to split the section
+ into four with a short tail.
+ */
+const VERSE_LINES = 50;
+
+/**
+ Stanza the verse fixture repeats, source side.
+ */
+const VERSE_SOURCE: readonly string[] = [
+  '猫猫走过屋顶',
+  '月亮照在窗台',
+  '风吹过树梢',
+  '夜里没有声音',
+  '猫猫回到家中',
+];
+
+/**
+ Stanza the verse fixture repeats, target side.
+ */
+const VERSE_TARGET: readonly string[] = [
+  'The cat walks the roof',
+  'The moon lights the sill',
+  'Wind moves the branches',
+  'No sound in the night',
+  'The cat comes home',
+];
 
 /**
  Original with front matter declaring a name, and two sections.
@@ -381,37 +412,59 @@ The cat also likes sunbathing.
         + 'a verse section subdividing into short slices does not lose the rule '
         + 'on the slices that need it most',
       fn: async () => {
+        // FIFTY BLANK-LINE-SEPARATED LINES, the shape the predicate reads, long
+        // enough that the slice budget splits the one section into four and the
+        // last slice holds too few lines to read as verse on its own. Until
+        // 2026-09-27 this case used five lines joined by single newlines: one
+        // block, one slice, never line-structured, so its loop ran zero times
+        // (ledger T1).
         /**
-         Verse-shaped section: many short lines, which is what the predicate
-         reads.
+         Stanza lines the fixture repeats, source and target in step.
          */
-        const verse = `## 诗
-
-猫猫走过屋顶
-月亮照在窗台
-风吹过树梢
-夜里没有声音
-猫猫回到家中
-`;
-        const { slices, lineStructuredSliceIndices, } = prepareDocumentPair({
-          sourceText: verse,
-          targetText: `## Verse
-
-The cat walks the roof
-The moon lights the sill
-Wind moves the branches
-No sound in the night
-The cat comes home
-`,
+        const lines = Array.from({ length: VERSE_LINES, }, function lineAt(
+          _unused,
+          index,
+        ): {
+          readonly source: string;
+          readonly target: string;
+        } {
+          /**
+           Which of the five stanza lines this one repeats.
+           */
+          const stanza = index % VERSE_SOURCE.length;
+          return {
+            source: `${VERSE_SOURCE[stanza] ?? ''}${String(index,)}`,
+            target: `${VERSE_TARGET[stanza] ?? ''} ${String(index,)}`,
+          };
         },);
-        // Either every slice of a governed chunk is governed or none is; what
-        // must never happen is an index that belongs to no slice.
-        for (const index of lineStructuredSliceIndices) {
-          expect(slices.some(function hasIndex(slice,): boolean {
-            return slice.target
-              .sliceIndex === index;
-          },),).toBe(true,);
-        }
+        const { slices, lineStructuredSliceIndices, } = prepareDocumentPair({
+          sourceText: `## 诗\n\n${
+            lines
+              .map(function sourceOf({ source, },): string {
+                return source;
+              },)
+              .join('\n\n',)
+          }\n`,
+          targetText: `## Verse\n\n${
+            lines
+              .map(function targetOf({ target, },): string {
+                return target;
+              },)
+              .join('\n\n',)
+          }\n`,
+        },);
+        /**
+         Slices whose own text is not line-structured.
+         */
+        const notVerseAlone = slices.filter(function readsAsProse(slice,): boolean {
+          return !isLineStructured({ text: slice.source.text, },);
+        },);
+        expect(slices.length,).toBeGreaterThan(1,);
+        // THE POSITIVE CONTROL: some slice is governed only by its chunk.
+        expect(notVerseAlone.length,).toBeGreaterThan(0,);
+        expect(lineStructuredSliceIndices.size,).toBe(slices.length,);
+        for (const slice of slices)
+          expect(lineStructuredSliceIndices.has(slice.target.sliceIndex,),).toBe(true,);
       },
     },),
 
