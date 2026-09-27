@@ -1,7 +1,4 @@
-import {
-  mkdir,
-  writeFile,
-} from 'node:fs/promises';
+import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -15,7 +12,12 @@ import {
   producerModelIds,
   type SelectionBallot,
 } from './candidate-select-model.ts';
+import { writeFileAtomic, } from './corpus-run/atomic-write.ts';
 import { errorName, } from './error-name.ts';
+import {
+  currentLogContext,
+  type LogContext,
+} from './log-context.ts';
 
 //region Candidate ledger
 // WHAT EACH MODEL ACTUALLY WROTE, and what the judges said about it.
@@ -202,6 +204,13 @@ export type LedgerRound = {
    Winning position, or that nothing was chosen.
    */
   readonly selectedIndex: number | 'declined';
+
+  /**
+   Entry, pipeline, lane and slice the contest was judged for, each empty
+   where it was judged outside one (ledger A11): without them a round could
+   not be joined to the artifact that shipped its winner.
+   */
+  readonly context: LogContext;
 };
 
 /**
@@ -303,6 +312,7 @@ export async function recordContest<ValueT,>(
     },),
     ballots,
     selectedIndex,
+    context: currentLogContext(),
   };
 
   /**
@@ -325,18 +335,19 @@ export async function recordContest<ValueT,>(
       dir,
       { recursive: true, },
     );
-    await writeFile(
-      join(
+    // ATOMIC, so a report listing the directory mid-run never parses half a
+    // round (ledger A11).
+    await writeFileAtomic({
+      path: join(
         dir,
         fileName,
       ),
-      JSON.stringify(
+      text: JSON.stringify(
         round,
         null,
         2,
       ),
-      'utf8',
-    );
+    },);
   } catch (error) {
     // NAMED, NOT QUOTED. A filesystem error quotes a path, and a run directory
     // path can name a person.
