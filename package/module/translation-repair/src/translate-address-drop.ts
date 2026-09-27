@@ -1,3 +1,8 @@
+import {
+  addressCount,
+  hanThirdPersonCount,
+} from './translate-address-original.ts';
+
 //region Second-person address the passage carries
 // CLASS NINETY-SEVEN (yingying5, 2026-09-23). The original's closing wish
 // addresses the deceased directly (愿在你的下一个世界……), the archive wrote
@@ -14,157 +19,15 @@
 // one in its place fails. The corpus census of 2026-09-23 found 67 of 92
 // archive pages carrying 你, and of 31 aligned blocks six without "you": four
 // greetings, colloquial drops or misalignments and two person switches.
-
-/**
- Characters that address someone in the second person.
- */
-const ADDRESS_CHARACTERS: ReadonlySet<string> = new Set([
-  '你',
-  '您',
-]);
-
-/**
- Character that turns an address character into a greeting.
- */
-const GREETING_TAIL = '好';
-
-// CLASS ONE HUNDRED EIGHTY-FIVE (TianqiChen66619, 2026-09-27). The page's
-// refrain 你看头壳里，她在最狭小的空间中撑起了最完美的世界 opens with 你看,
-// the imperative "look", which English writes without "you"; the floor read
-// it as an address, refused the standing "Look inside the headpiece: she
-// built…" whose "she" rendered the original's own 她, the bench forced a
-// "for you" into its proposals to pass, the gate preferred the refused
-// standing, and the entry stopped INCOMPLETE at slice 9. 你看 or 你瞧 opening
-// a clause, with no complement making the verb its own (被你看到, 替你看管,
-// 你看到了吗 stay addresses), is the imperative and is not counted.
-
-/**
- Verbs that, after 你 at the head of a clause, make the imperative "look".
- */
-const LOOK_VERBS: ReadonlySet<string> = new Set([
-  '看',
-  '瞧',
-]);
-
-/**
- Characters that, right after 看 or 瞧, give the verb a result, an aspect or
- an object of its own (看到, 看见, 看管, 看书), so the 你 before it is an
- address rather than the imperative.
- */
-const LOOK_COMPLEMENTS: ReadonlySet<string> = new Set([
-  '到',
-  '见',
-  '过',
-  '着',
-  '了',
-  '完',
-  '懂',
-  '清',
-  '出',
-  '管',
-  '待',
-  '望',
-  '护',
-  '守',
-  '病',
-  '书',
-]);
-
-/**
- Characters after which a clause opens: whitespace, sentence and clause
- punctuation, brackets, quotation marks and the markdown marks that open a
- line.
- */
-const CLAUSE_OPENERS: ReadonlySet<string> = new Set([
-  ' ',
-  '\t',
-  '\n',
-  '\r',
-  '　',
-  '。',
-  '！',
-  '？',
-  '，',
-  '、',
-  '；',
-  '：',
-  '…',
-  '—',
-  '「',
-  '」',
-  '『',
-  '』',
-  '“',
-  '”',
-  '‘',
-  '’',
-  '（',
-  '）',
-  '《',
-  '》',
-  '【',
-  '】',
-  '(',
-  ')',
-  '[',
-  ']',
-  '"',
-  '\'',
-  '!',
-  '?',
-  ',',
-  '.',
-  ';',
-  ':',
-  '~',
-  '～',
-  '>',
-  '*',
-  '_',
-  '-',
-]);
-
-/**
- Whether the address character at an offset opens the imperative "look"
- (你看, 你瞧) at the head of a clause, which English writes without "you".
-
- @param text - original passage, comments already cut
-
- @param at - offset of the address character
-
- @returns True for the imperative; false where the verb takes a complement
- or the 你 sits inside a clause
-
- @example
- ```ts
- opensLookImperative({ text: '。你看窗外', at: 1, },); // true
- opensLookImperative({ text: '被你看到', at: 1, },); // false
- ```
- */
-function opensLookImperative(
-  {
-    text,
-    at,
-  }: {
-    readonly text: string;
-    readonly at: number;
-  },
-): boolean {
-  if (!LOOK_VERBS.has(text.charAt(at + 1,),))
-    return false;
-  if (LOOK_COMPLEMENTS.has(text.charAt(at + 2,),))
-    return false;
-  if (at === 0)
-    return true;
-  /**
-   Unit just before the address character; every clause opener is one unit.
-   */
-  const before = text.charAt(at - 1,);
-  if (CLAUSE_OPENERS.has(before,))
-    return true;
-  // A doubled imperative (你看你看) opens its second half after the first.
-  return LOOK_VERBS.has(before,) && (text.charAt(at - 2,) === '你');
-}
+//
+// LEDGER F-1 (2026-09-27): read block by block where the texts have as many
+// blocks, and "in its place" means a third-person pronoun beyond the ones the
+// original writes there; `translate-address-original.ts` reads the original.
+// Replayed over 1,264 archive slices and 3,975 would-ship slices, refusals
+// fell from 25 to 13 with none added. THE COUNT HAS A LIMIT: English writes
+// pronouns Chinese leaves out, so a block whose 你 is generic ("逼着你干",
+// "makes you do") beside a subject-dropped description can still show a
+// surplus with no switch in it (lintong slice 1 is the one left).
 
 /**
  English second-person pronouns, lower case.
@@ -255,37 +118,39 @@ export function withoutComments({ text, }: { readonly text: string; },): string 
 }
 
 /**
- How many times a passage addresses someone in the second person, greetings
- and the clause-opening imperative "look" left out.
+ A passage's blocks: runs of lines between blank lines.
 
- @param text - original passage, comments already cut
+ @param text - passage, comments already cut
 
- @returns Count of address characters opening neither a greeting nor the
- imperative
+ @returns Blocks in order, blank runs dropped
 
  @example
  ```ts
- addressCount({ text: '你好，你来了。你看窗外。', },); // 1
+ blocksOf({ text: 'a\nb\n\nc', },); // ['a\nb', 'c']
  ```
  */
-function addressCount({ text, }: { readonly text: string; },): number {
+function blocksOf({ text, }: { readonly text: string; },): readonly string[] {
   /**
-   Addresses counted so far.
+   Lines of each block so far; a blank line opens the next.
    */
-  let count = 0;
-  for (let at = 0; at < text.length; at += 1) {
-    if (!ADDRESS_CHARACTERS.has(text.charAt(at,),))
-      continue;
-    if (text.charAt(at + 1,) === GREETING_TAIL)
-      continue;
-    if (opensLookImperative({
-      text,
-      at,
-    },))
-      continue;
-    count += 1;
+  const blocks: string[][] = [[],];
+  for (const line of text.split('\n',)) {
+    /**
+     Block the line joins: the last one open.
+     */
+    const open = blocks.at(-1,);
+    if (line.trim() === '')
+      blocks.push([],);
+    else
+      open?.push(line,);
   }
-  return count;
+  return blocks
+    .filter(function hasLines(lines: readonly string[],): boolean {
+      return lines.length > 0;
+    },)
+    .map(function joined(lines: readonly string[],): string {
+      return lines.join('\n',);
+    },);
 }
 
 /**
@@ -373,15 +238,121 @@ function wordEnd(
 }
 
 /**
+ How many third-person pronouns an original passage writes: the Han ones,
+ and the romanised TA or ta.
+
+ @param text - original passage, comments already cut
+
+ @returns Count of third-person pronouns
+
+ @example
+ ```ts
+ thirdPersonCount({ text: '她说 ta 的其他猫', },); // 2
+ ```
+ */
+function thirdPersonCount({ text, }: { readonly text: string; },): number {
+  /**
+   Romanised third-person pronouns among the passage's Latin words.
+   */
+  const romanised = latinWords({ text, },)
+    .filter(function isTa(word,): boolean {
+      return word === 'ta';
+    },);
+  return hanThirdPersonCount({ text, },) + romanised.length;
+}
+
+/**
+ A block of the original and the rendering's block in the same place.
+ */
+type SideBySide = {
+  readonly original: string;
+  readonly rendering: string;
+};
+
+/**
+ One block where the address turned into narration: how often the original
+ addresses someone there, how many third-person pronouns it writes there, and
+ the ones the rendering carries instead.
+ */
+type SwitchedBlock = {
+  readonly addresses: number;
+  readonly written: number;
+  readonly rendered: readonly string[];
+};
+
+/**
+ Reads one pair of blocks for a person switch.
+
+ @param original - block of the original, comments already cut
+
+ @param rendering - the rendering's block in the same place
+
+ @returns The switch, or none where the block addresses nobody, the rendering
+ keeps a second-person pronoun, or its third-person pronouns do not outnumber
+ the original's own
+
+ @example
+ ```ts
+ switchedBlock({ original: '愿你安好。', rendering: 'May she be well.', },);
+ ```
+ */
+function switchedBlock(
+  {
+    original,
+    rendering,
+  }: {
+    readonly original: string;
+    readonly rendering: string;
+  },
+): readonly SwitchedBlock[] {
+  /**
+   How often the block addresses someone.
+   */
+  const addresses = addressCount({ text: original, },);
+  if (addresses === 0)
+    return [];
+  /**
+   Words of the rendering's block.
+   */
+  const words = latinWords({ text: rendering, },);
+  if (words.some(function secondPerson(word,): boolean {
+    return SECOND_PERSON.has(word,);
+  },))
+    return [];
+  /**
+   Third-person pronouns the rendering carries.
+   */
+  const rendered = words.filter(function isThird(word,): boolean {
+    return THIRD_PERSON.has(word,);
+  },);
+  /**
+   Third-person pronouns the original writes in the same block.
+   */
+  const written = thirdPersonCount({ text: original, },);
+  if (rendered.length <= written)
+    return [];
+  return [
+    {
+      addresses,
+      written,
+      rendered,
+    },
+  ];
+}
+
+/**
  Findings for a candidate that renders a passage the original addresses in
- the second person with a third-person pronoun and no second-person one.
+ the second person with a third-person pronoun and no second-person one:
+ read block by block where the two texts have as many blocks, else whole, and
+ refused only where the rendering's third-person pronouns outnumber the
+ original's own.
 
  @param sourceText - original slice
 
  @param candidateText - candidate under validation
 
- @returns One finding, or none where the address is kept or no pronoun stands
- in its place
+ @returns One finding, or none where the address is kept or no surplus pronoun
+ stands in its place
 
  @example
  ```ts
@@ -398,31 +369,81 @@ export function droppedAddressFindings(
   },
 ): readonly string[] {
   /**
-   How often the original addresses someone, greetings left out.
+   Original outside its comments.
    */
-  const addresses = addressCount({ text: withoutComments({ text: sourceText, },), },);
-  if (addresses === 0)
+  const original = withoutComments({ text: sourceText, },);
+  /**
+   Candidate outside its comments.
+   */
+  const rendering = withoutComments({ text: candidateText, },);
+  /**
+   Blocks of the original.
+   */
+  const originalBlocks = blocksOf({ text: original, },);
+  /**
+   Blocks of the candidate.
+   */
+  const renderingBlocks = blocksOf({ text: rendering, },);
+  /**
+   Blocks read side by side, or the whole texts where the counts differ.
+   */
+  const pairs: readonly SideBySide[] = (originalBlocks.length === renderingBlocks.length)
+    ? originalBlocks.map(function paired(
+      block,
+      index,
+    ): SideBySide {
+      return {
+        original: block,
+        rendering: renderingBlocks[index] ?? '',
+      };
+    },)
+    : [
+      {
+        original,
+        rendering,
+      },
+    ];
+  /**
+   Blocks where the address turned into narration.
+   */
+  const switched = pairs.flatMap(switchedBlock,);
+  if (switched.length === 0)
     return [];
   /**
-   Words of the candidate outside its comments.
+   How often the original addresses someone in those blocks, and how many
+   third-person pronouns it writes there.
    */
-  const words = latinWords({ text: withoutComments({ text: candidateText, },), },);
-  if (words.some(function secondPerson(word,): boolean {
-    return SECOND_PERSON.has(word,);
-  },))
-    return [];
+  const {
+    addresses,
+    written,
+  } = switched.reduce(
+    function addBlock(
+      sum,
+      block,
+    ): {
+      readonly addresses: number;
+      readonly written: number;
+    } {
+      return {
+        addresses: sum.addresses + block.addresses,
+        written: sum.written + block.written,
+      };
+    },
+    {
+      addresses: 0,
+      written: 0,
+    },
+  );
   /**
-   Third-person pronouns the candidate carries instead.
+   Third-person pronouns the rendering carries in those blocks.
    */
-  const thirdPerson = [...new Set(words.filter(function isThird(word,): boolean {
-    return THIRD_PERSON.has(word,);
-  },),),];
-  if (thirdPerson.length === 0)
-    return [];
+  const rendered = switched.flatMap(function words(block,): readonly string[] {
+    return block.rendered;
+  },);
   /**
    Third-person pronouns quoted for the finding.
    */
-  const quoted = thirdPerson
+  const quoted = [...new Set(rendered,),]
     .map(function quote(word,): string {
       return `"${word}"`;
     },)
@@ -432,7 +453,7 @@ export function droppedAddressFindings(
    */
   const times = (addresses === 1) ? 'once' : `${String(addresses,)} times`;
   return [
-    `Your translation drops the address in the second person the ORIGINAL carries: the ORIGINAL passage writes 你 or 您 ${times}, and your translation carries no "you" but ${quoted} in its place. A pronoun the ORIGINAL writes is rendered as written where it stands: address the person the ORIGINAL addresses.`,
+    `Your translation drops the address in the second person the ORIGINAL carries: where the ORIGINAL writes 你 or 您 ${times}, your translation carries no "you" and more third-person pronouns than the ORIGINAL writes there (${quoted}: ${String(rendered.length,)} against ${String(written,)}), so a pronoun stands where the address stood. A pronoun the ORIGINAL writes is rendered as written where it stands: address the person the ORIGINAL addresses.`,
   ];
 }
 

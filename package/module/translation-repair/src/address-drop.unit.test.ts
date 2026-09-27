@@ -116,7 +116,7 @@ await describe({
         const accepted: readonly (readonly [string, string,])[] = [
           [
             '他说，「猫咪早已走远。」我们不会忘记他，感谢他留下的爪印。咪咪，愿你安睡。',
-            'He said, “The cat has long gone.” We will not forget him, and we thank him for the pawprints '
+            'He said, “The cat has long gone.” We will not forget him, and we are grateful for the pawprints '
               + 'he left.\nSleep well, Mimi.',
           ],
           [
