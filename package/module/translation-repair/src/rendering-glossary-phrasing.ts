@@ -175,6 +175,21 @@ export const PHRASING_GLOSSARY: readonly CommunityTerm[] = [
     refusedForms: ['close friends',],
     why: 'relatives and friends together; "close friends" drops the family the word names',
   },
+  // CLASS ONE HUNDRED EIGHTY-THREE (TianqiChen66614, 2026-09-27):
+  // 我会在离开我们的时候以kigurumi的记忆结束 shipped as "when I leave you all,
+  // they will end with the memories of kigurumi", memories ending with
+  // memories. The subject is 我; the archive's "they will end with it" moved
+  // it too, so the bench kept the archive's reading. One page in the pin.
+  {
+    term: 'kigurumi的记忆结束',
+    renderings: [
+      'I will end with memories of kigurumi',
+      'I will leave with my memories of kigurumi',
+    ],
+    refusedForms: ['they will end with',],
+    why: 'the speaker (我) ends with memories of kigurumi; handing the clause to "they" makes the memories end with '
+      + 'themselves',
+  },
 ];
 
 //endregion Phrasing renderings
