@@ -36,6 +36,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  inEntryLogContext,
+  inSliceLogContext,
   recordContest,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
@@ -448,6 +450,44 @@ await describe({
 
         expect((await ledgerIn({ dir: pointed.dir, },)).length,)
           .toBe(0,);
+      },
+    },),
+    it({
+      name: 'NAMES the entry, pipeline, lane and slice a contest was judged for, so a reader can join it '
+        + 'to the artifact that shipped it (ledger A11)',
+      fn: async () => {
+        /**
+         Throwaway this case writes into.
+         */
+        const dir = await throwawayDir({ mark: 'context', },);
+        using pointed = runsDirPointedAt({ dir, },);
+        await inEntryLogContext({
+          entry: 'Tabby',
+          generation: 'nap-3',
+          run: async function judgeTheEntry(): Promise<void> {
+            await inSliceLogContext({
+              lane: 'translate',
+              sliceIndex: 4,
+              run: async function judgeTheSlice(): Promise<void> {
+                await recordContest({
+                  task: 'render this passage',
+                  candidates: CANDIDATES,
+                  ballots: BALLOTS,
+                  selectedIndex: 2,
+                  l,
+                },);
+              },
+            },);
+          },
+        },);
+        expect((await ledgerIn({ dir: pointed.dir, },)).map(function contextOf(round,): unknown {
+          return (round as { readonly context?: unknown; }).context;
+        },),).toStrictEqual([{
+          entry: 'Tabby',
+          generation: 'nap-3',
+          lane: 'translate',
+          slice: '4',
+        },],);
       },
     },),
   ],
