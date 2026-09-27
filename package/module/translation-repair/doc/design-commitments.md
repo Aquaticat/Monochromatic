@@ -235,3 +235,13 @@ Part of [the package README](../README.md).
   The corpus reader already folds the archive to LF,
   so the fold keeps each published page on one line-ending convention,
   and a stray CR shows in diffs and tools even where Markdown renders it alike.
+- **A run always ships.**
+  Owner, 2026-09-27,
+  rejecting a `verify-published` that would refuse a run over a page no artifact records:
+  "One of the rules is no matter what, we must ship."
+  A check reports what it finds and repairs what it can;
+  it never withholds a run's pages.
+  A page whose artifact a crash lost between the two writes (`publish-fixed.ts`) therefore ships,
+  reported as `PUBLISHED AND NOT SETTLED`;
+  measured on 2026-09-27,
+  no such page exists among the 214 pages in 372 run directories.
