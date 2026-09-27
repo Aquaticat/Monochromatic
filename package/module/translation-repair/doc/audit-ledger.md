@@ -914,3 +914,111 @@ and the decision reply's refusal branches never exercised.
 
 Status: open.
 1,220,455 files there; the tests are not hermetic.
+
+## Page assembly and the corpus-run driver
+
+Probes: `~/temp/agent/audit-assembly/`
+(`replay2.out`, `categorize.out`, `chain-probe.out`, `fixtures.out`, `seats-probe.mjs`, `tally-check.out`, `findings.txt`).
+Replaying stored decisions through the current reader reproduces 93 recent pages byte for byte;
+the other 41 differ only by typography code that changed after they ran.
+
+### A1: an archive "Under Construction" placeholder ships, replacing a source heading on 8 pages
+
+Status: open.
+`corpus-run/archive-stub.ts` knows `to-do`, `todo`, `tbd`, `wip` in one bracket layer;
+XingZ60's archive writes ``>>> `Under Construction` ``,
+all 17 shipped XingZ60 pages carry it,
+and 8 have no rendering of the source heading 七句破题.
+
+### A2: a Han handle left in English prose (with F-3)
+
+Status: open.
+shihai4h1 and shihai4h2 shipped "Wrong,\n小柿子."
+
+### A3: CRLF from a model wording ships inside an LF page
+
+Status: open.
+mikaela17 lines 223 to 225 end in `\r`;
+`foldCarriageReturns` runs only at the corpus read.
+
+### A4: archive link destinations rewritten to the source's Chinese-site ones
+
+Status: open, owner call on the rule.
+shihai4h2 links PTSD to zh.wikipedia where the archive links en.wikipedia;
+aiyysk links source.android.google.cn where the archive links source.android.com.
+
+### A5: seats with no wet provider are seated anyway
+
+Status: open.
+`corpus-run/run-seats.ts` `seated()` returns true on `NO_PROVIDER`;
+TianqiChen66620 seated Qwen3.8-27B and glm-5.3 with no provider serving them,
+logged 360 `NoProviderForModelError` lines,
+and counted both in every quorum denominator.
+
+### A6: the handle-gloss pass moves a link title's translation onto a handle
+
+Status: open.
+`handle-gloss-place.ts` accepts any same-line parenthesis, link text included,
+reads only replaced slices,
+and is not at a fixed point when run twice.
+
+### A7: deterministic page refusals are labelled ERROR and re-attempted
+
+Status: open.
+`entry-error-outcome.ts` omits `CollapsedHeadingError`, `UnparseablePageError`, `PublishedPageDisagreesError`,
+`UnansweredContestSliceError` and `SliceSpliceError` from the stopped set.
+
+### A8: the README says an unfilled passage fails the entry; the code ships it as a gap
+
+Status: open.
+
+### A9: the DONE line undercounts on a resume into a directory holding a decline
+
+Status: open (by reading).
+
+### A10: TALLY `pageChanged` reads before typography
+
+Status: open.
+
+### A11: logging gaps
+
+Status: open.
+Client-layer loggers carry no entry
+(3279 of 5914 lines of TianqiChen66616.log, SPEND lines among them);
+the repair and translate lanes' lines carry no slice under overlap;
+`slice-cache-namespace.ts` swallows a `SyntaxError`;
+`attempt-store.ts` resets a malformed attempts file silently and writes it non-atomically;
+ledger records carry no entry, slice, lane or generation.
+
+### A12: `rebuildPreparation` silently fails to reproduce a folded entry
+
+Status: open.
+mikaela15 records 34 slices and rebuilds to 32 with nothing named.
+
+### A13: the consolidation cache key omits the dispute note and the declared name pairs
+
+Status: open.
+Identity and reference context are in the run shape already.
+
+### A14: stale comments and README claims
+
+Status: open.
+"No stage assembles a document",
+"as the page will carry it" for withdrawn slices,
+"every appearance is in view",
+"four stores",
+"as the stage left them",
+and every pass rewrite logged as "trimmed".
+
+### A15: withdrawn-slice siblings of K5
+
+Status: open (structural, no corpus instance).
+`restoredOnly` does not exclude `halves.withheld`;
+cross-slice passes decide on a page the footnote guard may still change.
+
+### A16: low items
+
+Status: open.
+A lane wording's triple newline ships;
+the runs lock judges liveness by pid only;
+the page is written before the artifact.

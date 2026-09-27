@@ -229,6 +229,26 @@ and the gate went 2 standing,
     and the sheet wording in `consolidate-gate-wire.unit.test.ts`.
     Fixed in `419605ff4` and the sheet fix `0b8788dae`.
 
+## Addendum 2026-09-27, fifteenth: a slate rejected twice over an ineligible standing ships by preference, its reasons to the polish
+
+Owner's answer of 2026-09-27 ("Preference + polish"),
+asked by the whole-package audit:
+over an ineligible standing a slate the judges declined twice
+(the first round and its `decline-challenge`)
+raised in `translate-runoff-tie.ts`,
+and `consolidate-settle.ts` turned that into `ConsolidationStandingIneligibleError`,
+stopping the entry with valid proposals on the slate
+(the hulicaijia14 shape).
+
+- The slice ships one valid proposal by the tenth addendum's order:
+    the repair lane's text,
+    then the translate lane's text,
+    then slate order;
+    the rejection is recorded as a finding.
+- The judges' reasons become required corrections for the final polish,
+    as the fourteenth addendum does for the gate's objections.
+- The sheet tells the slate judges what a decline now costs.
+
 ## Addendum 2026-09-27, fourteenth: the gate's objections over an ineligible standing go to the polish
 
 Owner's answer of 2026-09-27 ("Objections to polish"),
