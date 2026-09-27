@@ -924,7 +924,7 @@ Latent: no replayed slice carries such a title, and the community floor adds no 
 
 ### F-12: low items
 
-Status: the first two fixed; the plausible pair still open.
+Status: the first two fixed; the plausible pair measured and closed, no gap in the current build.
 `ArchiveOriginalCompletenessError` stores neither entry nor span;
 the declared-link floor refuses Zhihu @-mentions the archive rendered as the user's slug; owner, 2026-09-27, "Account handle": an @-mention of a declared person may carry the account handle the page writes under the same link.
 
@@ -934,6 +934,19 @@ carries an @-handle the page writes under that href, and its finding offers the 
 a link naming the person without a mention still owes the declared form.
 Measured through the composed verdict: the GLaDOSister s8 and Kotori s8 archives went from refused to passing;
 zhangyubaka s18 is refused first by the suicide floor, one of its eight kept refusals.
+
+The plausible pair, read from the code:
+a lanes-agreed text is the translate lane's delivered text, which is a candidate `translate-floor.ts` passed
+through `validateTranslatedSlice` with `lineStructured`, `declared` and `disputedWordings`,
+and then only the semantic wrap, which splits prose lines, never joins them, and skips governed slices;
+a repair-lane text ships otherwise only through the contest verdict (line structure read since H2)
+or the consolidation's `readStandingVerdict`, both of which call the floor.
+So the repair lane not calling `validateTranslatedSlice` leaves no unfloored path to the page.
+Re-flooring every would-ship wording of the settled artifacts with today's floors
+(`~/temp/agent/audit-floor-replay/refloor-by-decider.mjs`) refuses 163 of 1,961 contest winners,
+51 of 853 consolidations, 11 of 269 lanes-agreed texts, 82 of 909 polishes and 7 of 163 page-assembly rows;
+those artifacts were written by builds before the floors this audit added or tightened,
+so the numbers measure how far the floors moved, not a live gap.
 Plausible, unproven: nothing re-floors a lanes-agreed would-ship text,
 and the repair lane never calls `validateTranslatedSlice`.
 
