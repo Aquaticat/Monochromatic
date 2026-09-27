@@ -758,7 +758,17 @@ every true fire from a run built before its floor.
 
 ### F-1: the address floor refuses correct English whenever any third-person pronoun appears anywhere in the slice
 
-Status: open.
+Status: fixed; the floor reads block by block and refuses only a surplus third-person pronoun.
+Replayed old against new over 1,264 archive slices and 3,975 would-ship slices
+(`~/temp/agent/audit-floor-replay/address-replay.mjs`): refusals 25 to 13, none added.
+Cleared: every false refusal named here but lintong s1,
+plus Huasheng s3 (an address rendered by name, no pronoun in its place),
+MTF_0615 s8, Rentable_A s4 and windward0032 s4, s15 and s18 (omissions the judges read).
+Kept: the person switches (Huasheng s7, Mizuki_Yuuki s5, yingying s2 twice, XingZ60 s110 and s112),
+the indirect-speech conversions this finding counted as switches (Xu_Yushu s12, shihai4h s15),
+Xu_Yushu s28 (an omitted quote whose refusal asks for it back),
+lintong s1 (the count's limit: a generic 你 beside a subject-dropped description),
+and mikaela_khara s17, whose would-ship text belongs to another slice (the F-6 carving).
 The `thirdPerson` filter in `droppedAddressFindings` scans the whole slice;
 the header names 干干你的 as left to the judges and the built floor refuses it.
 Also counted as addresses: 迷你,
@@ -918,7 +928,8 @@ The shapes read into the rest were measured, 8 runs each at 0.2 CPU
 `stage-round` failed 1 of 8: time to the first answer (398 ms) passed the 250 ms grace it was compared with;
 it is now anchored on when the first voice really answered (`c10d62663`), 16 of 16 after.
 `consolidate-driver` failed 1 of 8 on the T6 order check this audit added,
-ordered by 20 ms against 5 ms sleeps; both overlap cases now order by a gate (`d76d2424a`, M11).
+ordered by 20 ms against 5 ms sleeps; both overlap cases now order by a gate (`d76d2424a`, M11),
+16 of 16 each at 0.2 CPU after (`t5-gate-summary.log`).
 `lane-contest-stage.unit.test.ts` "RECORDS RAW HALF-QUORUM BALLOTS" fails 2 of 5 at 0.2 CPU
 (positive control: the `podman run` in `~/temp/agent/audit-tests/run-container.mjs`);
 its sibling case, the naturalness-review grace case,
