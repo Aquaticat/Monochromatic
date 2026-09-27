@@ -196,7 +196,6 @@ await describe({
         // invoking shell exported chose the pool that was just measured.
         expect(process.env[REQUIRED_COMMIT_VAR],).toBe(undefined,);
         expect(process.env[POOL_ALL_VAR],).toBe(undefined,);
-        expect(quiet,).not.toBe(undefined,);
       },
     },),
   ],

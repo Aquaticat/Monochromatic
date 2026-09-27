@@ -950,7 +950,6 @@ await describe({
             hardCapMs: 60_000,
             baseSignal: new AbortController().signal,
           },);
-          expect(dial,).not.toBe(undefined,);
         }
 
         /**
@@ -978,7 +977,6 @@ await describe({
             hardCapMs: 60_000,
             baseSignal: new AbortController().signal,
           },);
-          expect(dial,).not.toBe(undefined,);
         }
 
         expect(serial.repair.peak,).toBeGreaterThan(0,);

@@ -91,7 +91,6 @@ await describe({
           source: 'fallback',
         },);
         expect(process.env[OVERLAP_VAR],).toBe(undefined,);
-        expect(dial,).not.toBe(undefined,);
       },
     },),
 
@@ -105,7 +104,6 @@ await describe({
           overlap: 4,
           source: OVERLAP_VAR,
         },);
-        expect(dial,).not.toBe(undefined,);
       },
     },),
 
@@ -126,7 +124,6 @@ await describe({
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect((refusal as Error).message,).toContain(OVERLAP_VAR,);
         expect((refusal as Error).message,).toContain('four',);
-        expect(dial,).not.toBe(undefined,);
       },
     },),
 
@@ -141,7 +138,6 @@ await describe({
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect((refusal as Error).message,).toContain('whole number',);
         expect((refusal as Error).message,).toContain('1.5',);
-        expect(dial,).not.toBe(undefined,);
       },
     },),
 
@@ -166,7 +162,6 @@ await describe({
           expect(refusal,).toBeInstanceOf(StatedRefusalError,);
           expect((refusal as Error).message,).toContain('canonical decimal',);
           expect((refusal as Error).message,).toContain(spelling,);
-          expect(dial,).not.toBe(undefined,);
         }
       },
     },),
@@ -186,7 +181,6 @@ await describe({
 
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect((refusal as Error).message,).toContain('at least 1',);
-        expect(dial,).not.toBe(undefined,);
       },
     },),
 
@@ -198,7 +192,6 @@ await describe({
 
         expect(CALIBRATION_OVERLAP,).toBe(4,);
         expect(readOverlap({ fallback: CALIBRATION_OVERLAP, },),).toBe(4,);
-        expect(dial,).not.toBe(undefined,);
       },
     },),
 
@@ -209,7 +202,6 @@ await describe({
         using dial = dialSaying({ says: '1', },);
 
         expect(readOverlap({ fallback: CALIBRATION_OVERLAP, },),).toBe(1,);
-        expect(dial,).not.toBe(undefined,);
       },
     },),
   ],

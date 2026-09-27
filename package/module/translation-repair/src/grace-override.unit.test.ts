@@ -326,7 +326,6 @@ await describe({
         },);
         expect(process.env[STRAGGLER_GRACE_VAR],).toBe(String(CALIBRATION_STRAGGLER_GRACE_MS,),);
         expect(resolveStragglerGraceMs({ fallback: FALLBACK, },),).toBe(CALIBRATION_STRAGGLER_GRACE_MS,);
-        expect(dial,).not.toBe(undefined,);
       },
     },),
 
@@ -340,7 +339,6 @@ await describe({
           source: 'override',
         },);
         expect(process.env[STRAGGLER_GRACE_VAR],).toBe('180000',);
-        expect(dial,).not.toBe(undefined,);
       },
     },),
 
@@ -355,7 +353,6 @@ await describe({
 
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect((refusal as Error).message,).toContain(STRAGGLER_GRACE_VAR,);
-        expect(dial,).not.toBe(undefined,);
       },
     },),
   ],

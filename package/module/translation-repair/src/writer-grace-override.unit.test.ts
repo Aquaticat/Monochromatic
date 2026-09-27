@@ -315,8 +315,6 @@ await describe({
           source: 'built-in',
         },);
         expect(writerRoundGraceMs(),).toBe(WRITER_GRACE_MS,);
-        expect(round,).not.toBe(undefined,);
-        expect(writer,).not.toBe(undefined,);
       },
     },),
 
@@ -335,8 +333,6 @@ await describe({
           roundMs: ROUND,
           source: 'built-in',
         },);
-        expect(round,).not.toBe(undefined,);
-        expect(writer,).not.toBe(undefined,);
       },
     },),
 
@@ -356,8 +352,6 @@ await describe({
           source: 'round-window',
         },);
         expect(writerRoundGraceMs(),).toBe(LONG_ROUND,);
-        expect(round,).not.toBe(undefined,);
-        expect(writer,).not.toBe(undefined,);
       },
     },),
 
@@ -379,8 +373,6 @@ await describe({
           roundMs: ROUND,
           source: 'built-in',
         },);
-        expect(round,).not.toBe(undefined,);
-        expect(writer,).not.toBe(undefined,);
       },
     },),
 
@@ -403,8 +395,6 @@ await describe({
           source: 'writer-dial',
         },);
         expect(writerRoundGraceMs(),).toBe(WRITER,);
-        expect(round,).not.toBe(undefined,);
-        expect(writer,).not.toBe(undefined,);
       },
     },),
 
@@ -423,8 +413,6 @@ await describe({
           roundMs: STRAGGLER_GRACE_MS,
           source: 'writer-dial',
         },);
-        expect(round,).not.toBe(undefined,);
-        expect(writer,).not.toBe(undefined,);
       },
     },),
 
@@ -442,8 +430,6 @@ await describe({
           roundMs: LONG_ROUND,
           source: 'round-window',
         },);
-        expect(round,).not.toBe(undefined,);
-        expect(writer,).not.toBe(undefined,);
       },
     },),
 
@@ -466,8 +452,6 @@ await describe({
 
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect((refusal as Error).message,).toContain(WRITER_GRACE_VAR,);
-        expect(round,).not.toBe(undefined,);
-        expect(writer,).not.toBe(undefined,);
       },
     },),
 
@@ -493,8 +477,6 @@ await describe({
 
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect((refusal as Error).message,).toContain(STRAGGLER_GRACE_VAR,);
-        expect(round,).not.toBe(undefined,);
-        expect(writer,).not.toBe(undefined,);
       },
     },),
   ],
