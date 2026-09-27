@@ -30,7 +30,8 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // `stage-fanout-window.ts` applied to them: quorum plus one seat first, in
 // the prompt's rotation, the rest only when a voice is lost, up to
 // `STAGE_RETRY_ROUNDS` retry rounds these stages did not have before. A seat
-// that answered unreadably is not re-asked, as before.
+// that answered unreadably is not re-asked, as before, nor is a seat the
+// router refused, whose place in its round passes to the next pending seat.
 //
 // ONE OUTCOME PER SEAT ASKED, IN ROSTER ORDER. A seat lost in one round and
 // heard in the next appears once, heard; a seat the window spared does not
@@ -170,12 +171,15 @@ export async function runWindowedRounds<ValueT,>(
     const outcomes = await runGatherRound<ValueT>({
       ...roundRequest,
       modelIds: asking,
+      // A refused seat hands its place to the next pending one in this round.
+      reserve: pending.slice(asking.length,),
       heardNeeded: heardNeeded - heardSeats.size,
     },);
     /* oxlint-enable no-await-in-loop */
+    // The window, then every reserve seat the round took, leave `pending`.
     pending.splice(
       0,
-      asking.length,
+      outcomes.length,
     );
     for (const outcome of outcomes) {
       /**
@@ -191,9 +195,12 @@ export async function runWindowedRounds<ValueT,>(
       );
       if (voice.heard)
         heardSeats.add(modelId,);
-      // A seat that answered unreadably had its chance; only a seat that
-      // never delivered an answer is owed another ask.
-      else if (!voice.answered)
+      // A seat that answered unreadably had its chance, and a seat the router
+      // refused has no wet provider until the next seat reading; only a seat
+      // lost in transport or to the grace is owed another ask. The refused
+      // seat was re-asked every retry round until 2026-09-27, the
+      // `hulicaijia` defect `stage-quorum.ts` fixed on 2026-09-09.
+      else if ((!voice.answered) && (!voice.unreachable))
         pending.push(modelId,);
     }
   }

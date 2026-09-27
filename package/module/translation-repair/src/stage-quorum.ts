@@ -387,10 +387,14 @@ export async function gatherStageVoices<ValueT,>(
       const outcomes = await runGatherRound<ValueT>({
         ...roundRequest,
         modelIds: asking,
+        // A REFUSED SEAT HANDS ITS PLACE TO THE NEXT PENDING ONE in this
+        // round (`stage-round.ts`), so the seats past the window are its
+        // reserve and the ones it took leave `pending` below.
+        reserve: pending.slice(asking.length,),
         heardNeeded: quorumNeeded - collected.length,
       },);
       /* oxlint-enable no-await-in-loop */
-      for (const modelId of asking)
+      for (const { modelId, } of outcomes)
         asked.add(modelId,);
 
       /**
@@ -428,7 +432,7 @@ export async function gatherStageVoices<ValueT,>(
       // `hulicaijia`'s retry rounds on Qwen3.8-27B, Kimi-K3 and glm-5.3
       // (2026-09-09) while the seats that could answer waited.
       pending = [
-        ...pending.slice(asking.length,),
+        ...pending.slice(outcomes.length,),
         ...stillLost.filter(function stillReachable(modelId,): boolean {
           return !unreachableSeats.has(modelId,);
         },),

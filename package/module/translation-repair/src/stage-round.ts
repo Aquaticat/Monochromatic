@@ -176,6 +176,29 @@ async function awaitHeard<ValueT,>(
 }
 
 /**
+ Whether the router refused a seat for want of a wet provider, the one loss
+ that frees the seat's place in its round.
+
+ @param outcome - one seat's outcome
+
+ @returns True for a refusal, false for a voice or any other loss
+
+ @example
+ ```ts
+ refusedByRouter({ outcome, },);
+ ```
+ */
+function refusedByRouter<ValueT,>(
+  { outcome, }: { readonly outcome: RoundOutcome<ValueT>; },
+): boolean {
+  /**
+   What came back for the seat.
+   */
+  const { voice, } = outcome;
+  return (!voice.heard) && voice.unreachable;
+}
+
+/**
  Runs one fan-out round and abandons whatever is still in flight once quorum
  has stood for {@link STRAGGLER_GRACE_MS}.
  
@@ -198,14 +221,20 @@ async function awaitHeard<ValueT,>(
  @param l - logger of the calling stage
  
  @param heardNeeded - voices still needed for quorum, which starts the grace
- 
+
+ @param reserve - pending seats past this round's window, in the order the
+ gather would ask them; a seat the router refuses for want of a wet provider
+ hands its place to the next of these at once, so the refusal costs the
+ round no voice. Empty where the round asks the whole bench.
+
  @param graceMs - window granted after quorum before stragglers are abandoned;
  defaults to {@link STRAGGLER_GRACE_MS}, or to what
  `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` overrides it with, and exists so a
  test can bound its own wall time
  
- @returns One outcome per model asked, in roster order
- 
+ @returns One outcome per model asked: the window's in roster order, then
+ each reserve seat taken, in the order the round took it
+
  @example
  ```ts
  const outcomes = await runGatherRound({ ..., heardNeeded: 2, },);
@@ -224,6 +253,7 @@ export async function runGatherRound<ValueT,>(
     stage,
     l,
     heardNeeded,
+    reserve = [],
     graceMs = resolveStragglerGraceMs({ fallback: STRAGGLER_GRACE_MS, },),
     decision,
   }: ForeignBorrowed<{
@@ -238,6 +268,7 @@ export async function runGatherRound<ValueT,>(
     readonly stage: string;
     readonly l: Logger;
     readonly heardNeeded: number;
+    readonly reserve?: readonly RosterModelId[];
     readonly graceMs?: number;
     readonly decision?: StageDecision;
   }>,
@@ -284,11 +315,29 @@ export async function runGatherRound<ValueT,>(
   const startedAt = Date.now();
 
   /**
-   Every ask, in flight together.
+   Reserve seats this round took in place of refused ones, in the order it
+   took them; their outcomes sit after the window's.
    */
-  const asks = modelIds.map(async function askOnce(
-    modelId,
-    index,
+  const taken: RosterModelId[] = [];
+
+  /**
+   Asks one seat and records its outcome at its position.
+
+   @param modelId - seat asked
+
+   @param position - window index, or the window's length plus the order
+   the reserve seat was taken in
+
+   @returns Seat's answer, its recorded silence, or its refusal
+   */
+  async function askOnce(
+    {
+      modelId,
+      position,
+    }: {
+      readonly modelId: RosterModelId;
+      readonly position: number;
+    },
   ): Promise<RoundOutcome<ValueT>> {
     try {
       /**
@@ -312,7 +361,7 @@ export async function runGatherRound<ValueT,>(
         },),
       };
       arrived.set(
-        index,
+        position,
         outcome,
       );
       return outcome;
@@ -343,11 +392,55 @@ export async function runGatherRound<ValueT,>(
         },
       };
       arrived.set(
-        index,
+        position,
         abandoned,
       );
       return abandoned;
     }
+  }
+
+  /**
+   Every window slot, in flight together. A slot asks its window seat and,
+   while the router refuses the seat it asked for want of a wet provider,
+   the next reserve seat in its place.
+
+   THE REFUSAL COMES BACK IN THE SAME MILLISECOND, so without this a window
+   holding a seat the reading seated but no provider serves asked one voice
+   fewer than it meant to: the spare was spent on nothing, and the round
+   waited for its slowest remaining voice or fell through to a retry round.
+   TianqiChen66620 (2026-09-27) closed 269 of 421 rounds a seat short with
+   no grace, 2,852 s of the 4,575 s its rounds took. The refused seat stays
+   on the bench, as the owner's rule of 2026-09-09 has it
+   (`doc/decision/translation-repair-short-bench-share.md`); only its place
+   in this round passes on.
+   */
+  const asks = modelIds.map(async function askSlot(
+    modelId,
+    index,
+  ): Promise<RoundOutcome<ValueT>> {
+    /**
+     Outcome of the seat this slot asked most recently.
+     */
+    let outcome = await askOnce({
+      modelId,
+      position: index,
+    },);
+    /**
+     Reserve seat next in line, if any is left.
+     */
+    let next = reserve[taken.length];
+    while (refusedByRouter({ outcome, },)
+      && (next !== undefined)
+      && (!roundSignal.aborted)) {
+      taken.push(next,);
+      /* oxlint-disable-next-line no-await-in-loop -- each reserve seat is asked only after the seat before it in this slot was refused */
+      outcome = await askOnce({
+        modelId: next,
+        position: (modelIds.length + taken.length) - 1,
+      },);
+      next = reserve[taken.length];
+    }
+    return outcome;
   },);
 
   await awaitHeard({
@@ -397,10 +490,14 @@ export async function runGatherRound<ValueT,>(
   signal.throwIfAborted();
 
   /**
-   Every model's outcome in roster order, with a recorded silence at any
-   position this round never filled.
+   Every model's outcome, the window's in roster order and then each reserve
+   seat taken, with a recorded silence at any position this round never
+   filled.
    */
-  const outcomes = modelIds.map(function toOutcome(
+  const outcomes = [
+    ...modelIds,
+    ...taken,
+  ].map(function toOutcome(
     modelId,
     index,
   ): RoundOutcome<ValueT> {
@@ -435,7 +532,7 @@ export async function runGatherRound<ValueT,>(
   // the stage label, the roster size and the clock. A run directory holds
   // unlicensed corpus wording, and this line is written on every gather.
   l.info(
-    `${stage} round: ${String(heard,)}/${String(modelIds.length,)} heard, `
+    `${stage} round: ${String(heard,)}/${String(outcomes.length,)} heard, `
       + `${String(finishedAt - startedAt,)}ms total, `
       + `${String(quorumAt - startedAt,)}ms to quorum, `
       + `${String(finishedAt - quorumAt,)}ms in grace`,
