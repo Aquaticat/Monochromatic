@@ -70,6 +70,16 @@ export const UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING: string = 'undecided-gate-shi
   + 'slate judges chose ships as the best valid text';
 
 /**
+ Finding recorded on a settlement whose gate settled on neither rendering
+ over an eligible standing every contest ballot called flawed, so the
+ proposal the slate chose shipped (class one hundred seventy-seven,
+ TianqiChen66610 slice 13, owner answer 2026-09-26: "Slate's choice").
+ */
+export const FLAWED_STANDING_GATE_SHIPS_PROPOSAL_FINDING: string = 'undecided-gate-ships-proposal (standing flawed '
+  + 'by every contest ballot): the gate settled on neither rendering over a standing every contest ballot called '
+  + 'flawed, so the proposal the slate judges chose ships';
+
+/**
  Raised when a slice's standing text has failed the deterministic gate and
  the settlement still ends with nothing valid to ship.
  */
@@ -218,9 +228,19 @@ export function requireShippableTerminal(
  valid proposal; a gate that REFUSES the consolidation by quorum still
  keeps the standing and still stops the slice.
 
+ CLASS ONE HUNDRED SEVENTY-SEVEN (TianqiChen66610 slice 13, owner answer
+ 2026-09-26: "Slate's choice"). The standing was eligible, but every contest
+ ballot had called it flawed; the class one hundred six run-off ran, the slate
+ chose a valid proposal, and the gate tied 2 to 2, so the condemned archive
+ shipped. A standing the whole contest condemned is no conservative default
+ either, so the same indecision ships the slate's choice there too.
+
  @param outcome - what the gate settled
 
  @param standingEligible - whether the standing passed the deterministic gate
+
+ @param standingFlawedByAll - whether every contest ballot called the
+ standing flawed (`consolidate-archive-flawed.ts`)
 
  @param l - stage logger, told when the rule applies
 
@@ -229,24 +249,37 @@ export function requireShippableTerminal(
 
  @example
  ```ts
- const gated = shipPastUndecidedGate({ outcome, standingEligible, l, },);
+ const gated = shipPastUndecidedGate({ outcome, standingEligible, standingFlawedByAll, l, },);
  ```
  */
 export function shipPastUndecidedGate(
   {
     outcome,
     standingEligible,
+    standingFlawedByAll = false,
     l,
   }: {
     readonly outcome: ConsolidateGateOutcome;
     readonly standingEligible: boolean;
+    readonly standingFlawedByAll?: boolean;
     readonly l: Logger;
   },
 ): ConsolidateGateOutcome {
-  if (standingEligible || (outcome.choice !== 'neither'))
+  if (outcome.choice !== 'neither')
     return outcome;
+  /**
+   Whether the standing is no conservative default to keep: ineligible, or
+   condemned by every contest ballot.
+   */
+  const standingForfeit = (!standingEligible) || standingFlawedByAll;
+  if (!standingForfeit)
+    return outcome;
+  /**
+   Why the standing is not kept, for the log and the finding.
+   */
+  const why = standingEligible ? 'a standing every contest ballot called flawed' : 'an ineligible standing';
   l.warn(
-    `consolidate gate: settled on neither over an ineligible standing, so the proposal the slate chose ships (${
+    `consolidate gate: settled on neither over ${why}, so the proposal the slate chose ships (${
       String(outcome.usable,)
     } usable ballots)`,
   );
@@ -255,7 +288,7 @@ export function shipPastUndecidedGate(
     ships: 'consolidated',
     findings: [
       ...outcome.findings,
-      UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING,
+      standingEligible ? FLAWED_STANDING_GATE_SHIPS_PROPOSAL_FINDING : UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING,
     ],
   };
 }

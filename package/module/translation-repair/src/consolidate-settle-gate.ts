@@ -60,6 +60,10 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
  @param standingRefusal - why the deterministic gate refused the standing,
  shown to the gate judges so keeping it is not taken for the safe choice
  
+ @param standingFlawedByAll - whether every contest ballot called the
+ standing flawed, so an undecided gate ships the slate's choice over it
+ (class one hundred seventy-seven)
+
  @param identity - front matter identity as the gate takes it
  
  @param signal - cancellation for the whole settlement
@@ -93,6 +97,7 @@ export async function gateAndShip(
     standingMayShip,
     standingEligible,
     standingRefusal,
+    standingFlawedByAll = false,
     identity,
     signal,
     perCallTimeoutMs,
@@ -111,6 +116,7 @@ export async function gateAndShip(
     readonly standingMayShip: boolean;
     readonly standingEligible: boolean;
     readonly standingRefusal?: string;
+    readonly standingFlawedByAll?: boolean;
     readonly identity: SettlementIdentity;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -144,6 +150,7 @@ export async function gateAndShip(
   const gated = shipPastUndecidedGate({
     outcome: gate,
     standingEligible,
+    standingFlawedByAll,
     l,
   },);
 

@@ -693,6 +693,7 @@ export async function settleConsolidation(
     standingMayShip,
     standingEligible,
     ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
+    standingFlawedByAll: runoffOverStanding,
     identity,
     signal,
     perCallTimeoutMs,
