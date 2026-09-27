@@ -4,8 +4,8 @@
 
 - Status:
    in progress;
-   authorization-context transition and targeted evidence,
-   no recommendation.
+   bounded candidate checkpoint and decision-changing checks,
+   no adoption recommendation.
 - Started:
    2026-09-27.
 - Last updated:
@@ -144,6 +144,96 @@ Current requirements and evidence are maintained in:
 - [Laya qualification](../planning/pi-auto-mode-laya-qualification.md).
 - [Jev qualification](../planning/pi-auto-mode-jev-qualification.md).
 - [Voyage interface fit](../planning/pi-auto-mode-voyage-fit.md).
+
+## Decision checkpoint after scope correction
+
+The user questioned the expanding audit and then asked to continue working.
+Continue with decision-changing evidence,
+not exhaustive source expansion.
+Task #34 remains paused.
+No candidate is currently qualified for production adoption.
+
+### Jev through LLM Gateway
+
+The tested interface returns native narrow-claim probabilities.
+The corrected 23-state tranche returned 46 valid scalars in 257.74 to 473.56 milliseconds per submitted assessment.
+The experimental client also passed its recorded malformed-response,
+freshness,
+late-result,
+and cancellation controls.
+These are reasons to continue this route,
+not a calibrated error-rate claim.
+
+The limits that matter next are preparation-inclusive timing and semantic qualification.
+Parser preparation was outside the live timing envelope.
+A false-reference prose prohibition returned 0.54,
+and no threshold or calibration profile is selected.
+See [Jev qualification](../planning/pi-auto-mode-jev-qualification.md).
+Accepted input consent and the declined dashboard/Mac access remain settled,
+not new blockers.
+
+### Laya
+
+The tested native binary-choice CPU profiles fail the five-second constraint:
+the fastest recorded single-question prediction was 73.56364870304242 seconds,
+before other assessment work.
+All inputs in that binary-choice tranche exceeded the declared 8,192-position encoder context.
+The successful full-policy ONNX export proves structural export,
+not inference speed or semantic-context qualification.
+
+Laya supplies a local native probability interface,
+but no tested admissible profile currently meets the required deadline.
+Other runtimes are unqualified,
+not universally disproved.
+Park the ONNX/source-build expansion rather than turning every possible route into another project.
+See [Laya qualification](../planning/pi-auto-mode-laya-qualification.md).
+
+### Voyage
+
+The tested reranker supplies relevance scores,
+not arbitrary-axiom truth probabilities.
+A separately trained or calibrated adapter is neither selected nor qualified;
+no auxiliary retrieval role is selected.
+It therefore does not currently satisfy the primary assessor interface.
+This does not reject every possible Voyage composition.
+See [Voyage interface fit](../planning/pi-auto-mode-voyage-fit.md).
+
+### Research priority and stop rule
+
+Research priority is Jev before Laya before Voyage,
+not a finalist or adoption ranking.
+Jev precedes Laya because its tested native-probability requests meet their submitted-question budget,
+whereas the measured Laya profiles fail even before preparation costs.
+Laya precedes Voyage because it already supplies the required probability interface;
+Voyage would add an unqualified mapping before addressing that requirement.
+
+The next check is one bounded Jev preparation-inclusive batch using existing development fixtures.
+Cover structured read,
+parsed removal,
+and parsed transfer preparation with request and eligible-prose inputs.
+Move parser/projection and question construction inside the same five-second clock as serialization,
+transport,
+response validation,
+and freshness checks.
+Retain the existing fixed route,
+complete policy,
+zero client retries,
+and no coding-plan fallback.
+No assessed operation is executed.
+
+Stop the batch on any contract/deadline failure;
+otherwise stop after its frozen cases.
+Do not tune prompts,
+select thresholds,
+query reserved scenarios,
+open a new runtime branch,
+or add another audit framework in response.
+Passing qualifies only the tested experimental preparation envelope,
+not live authority collection,
+final policy decisions,
+production latency guarantees,
+or adoption.
+Report the remaining decision blockers instead of silently expanding the batch.
 
 ## Candidate ledger
 

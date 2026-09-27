@@ -500,8 +500,17 @@ The agent agrees that source tracing and audit tooling expanded without a decisi
 Task #34 is paused,
 not completed;
 its evidence and unresolved gates remain intact.
-The proposed next step is a bounded candidate-evidence summary identifying only unknowns that could change the decision.
-That scope proposal is not yet an accepted candidate choice or implementation plan.
+The user subsequently asked to continue working after that narrower proposal.
+Task #35 consolidates candidate evidence and identifies only unknowns that could change the decision.
+The [current decision checkpoint](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-27.md)
+keeps adoption unqualified and prioritizes a bounded Jev preparation-inclusive budget check.
+Use existing development fixtures and the existing client,
+not another runtime or audit framework.
+Stop after the frozen batch or its first contract/deadline failure;
+do not tune prompts,
+choose thresholds,
+or query reserved scenarios.
+No candidate choice or production implementation is authorized by this continuation.
 No constraint is waived,
 and old process-completion notifications do not authorize resuming the paused source expansion.
 No background process was running when the pause was recorded.
