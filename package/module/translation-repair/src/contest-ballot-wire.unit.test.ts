@@ -76,6 +76,9 @@ await describe({
         expect(CONTEST_POLICY.includes('Reader protection outranks completeness',),).toBe(true,);
         expect(CONTEST_POLICY.includes('Chinese marks no tense',),).toBe(true,);
         expect(CONTEST_POLICY.includes('THE HOUSE RULE WINS',),).toBe(true,);
+        // Ledger S6: the precedence line once named only a criterion, and this
+        // sheet asks questions and has no criteria.
+        expect(CONTEST_POLICY,).toContain('A CRITERION OR ANY OTHER RULE YOU HAVE BEEN GIVEN',);
       },
     },),
     it({

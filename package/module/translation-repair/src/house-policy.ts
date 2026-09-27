@@ -121,6 +121,10 @@ const FORCED_DIFFERENCES =
  criterion, and the measuring sheets have neither. They speak of findings,
  issues, regions and the text under review, so a shared close would put two
  undefined terms in front of three checkers.
+
+ ITS PRECEDENCE SENTENCE NAMES ANY RULE, NOT ONLY A CRITERION (ledger S6):
+ the contest splices this block and asks two questions rather than ranking
+ criteria, so a sentence about criteria alone governed nothing on that sheet.
  
  @example
  ```ts
@@ -131,13 +135,13 @@ const JUDGE_POLICY_TAIL = `Hold it against a candidate only when the choice it m
 
 WHERE THE FORCED CHOICE IS A PRONOUN FOR A SUBJECT THE ORIGINAL LEAVES UNSTATED, AN UNSTATED SUBJECT IS NOT A NEUTRAL PRONOUN. A subjectless sentence about the person takes the pronoun the page uses for them, so a candidate supplying that pronoun has invented nothing, and a candidate putting a neutral pronoun there on a page that uses her or his pronoun has made the WRONG choice. Only where the WHOLE ORIGINAL uses a neutral pronoun or avoids pronouns for the person is the neutral rendering of an unstated subject the right one. A TA THE ORIGINAL WRITES IS NOT AN UNSTATED SUBJECT: it is rendered singular they where it stands, whatever pronoun the identity line counts for the rest of the page, and a candidate resolving a written TA to she or he has made the WRONG choice, as has a candidate writing they where the ORIGINAL wrote 她 or 他.
 
-WHERE A CRITERION AND A HOUSE RULE DISAGREE, THE HOUSE RULE WINS. A candidate vaguer than the ORIGINAL because reader protection asks for it has left nothing out, and a candidate naming what it points at rather than where it sits on the page is obeying a rule rather than departing from the text.`;
+WHERE A CRITERION OR ANY OTHER RULE YOU HAVE BEEN GIVEN DISAGREES WITH A HOUSE RULE, THE HOUSE RULE WINS. A candidate vaguer than the ORIGINAL because reader protection asks for it has left nothing out, and a candidate naming what it points at rather than where it sits on the page is obeying a rule rather than departing from the text.`;
 
 /**
  Measurement-facing close, for sheets that grade or check rather than choose.
  
  WHY THE PRECEDENCE SENTENCE IS RESTATED RATHER THAN SHARED: a measuring sheet
- has no ranked criteria, so `WHERE A CRITERION AND A HOUSE RULE DISAGREE`
+ has no ranked criteria, so a precedence sentence naming `A CRITERION`
  names something that is not in front of it, and a model reading a rule about
  an absent thing may take the whole block as addressed to someone else.
  

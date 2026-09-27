@@ -58,7 +58,7 @@ await describe({
       fn: async () => {
         expect(SHOWN,).toContain('House rules this corpus is written under',);
         expect(SHOWN,).toContain('Reader protection outranks completeness',);
-        expect(SHOWN,).toContain('WHERE A CRITERION AND A HOUSE RULE DISAGREE, THE HOUSE RULE WINS',);
+        expect(SHOWN,).toContain('WHERE A CRITERION OR ANY OTHER RULE YOU HAVE BEEN GIVEN DISAGREES WITH A HOUSE RULE, THE HOUSE RULE WINS',);
         expect(SHOWN,).toContain('state.policy',);
       },
     },),
