@@ -815,7 +815,8 @@ the message hardcodes "she".
 
 ### F-5: a source the strict grammar refuses turns off floors that need no grammar
 
-Status: open.
+Status: fixed for the floors; the disagreement over `unknown` moves to X10.
+The untranslated, line-count and neutral-pronoun floors run before `unknown` is returned.
 `validateTranslatedSlice` returns `unknown` before the untranslated,
 line-count and neutral-pronoun checks;
 stages disagree on what `unknown` means.
@@ -1618,6 +1619,22 @@ A heuristic scan of the 1666 source files flagged 35 lines, the rest being templ
 The trailing-comma drift in some test files is not a finding:
 `package/config/oxlint/src/overrides.ts` lets tests lay out calls freely and no config enables `comma-dangle`.
 
+### X10: a slice carved through an element can never settle, and the stages disagree on `unknown`
+
+Status: open, with #379 (carving).
+NIGHT81473140 slice 22 of the deterministic carve opens a `<blockquote>` that closes in a later slice,
+so the strict grammar refuses the original (`end-tag-mismatch` at 1:1) and the verdict is `unknown`.
+The producers read `unknown` as a pass (`translate-floor.ts` keeps any voice not `invalid`;
+`translate-repair.ts` lets it stand with a `translate-unvalidated` finding),
+while every gate reads it as a refusal (`translate-stage.ts` keeps the incumbent off the slate;
+`lane-contest-eligibility.ts`, `consolidate-lane-offer.ts`, `consolidate-standing-verdict.ts`
+and `consolidation-polish-round.ts` accept only `valid`),
+and a candidate that mirrors the cut fails the strict grammar itself and is refused as unparseable.
+The slice can therefore never settle, and the entry stops.
+The root is the carve cutting an element; once carving keeps elements whole,
+`unknown` means an original the upstream MDX compile would also refuse, where refusing is right.
+One slice of 1,277 in the replay; no run has reached it (no settled artifact exists for the entry).
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing, recorded for the prevention doc.
@@ -1706,6 +1723,8 @@ The Mimo candidates were first scored by raw fetch without `zdr`;
 through the run client Mimo v2.6 Flash reaches only DeepInfra, its one zero-retention endpoint,
 and scored 81 and 80 at 3.9 s median against 82 and 79 at 0.35 s.
 A measurement for a seat is taken on the route the run uses.
+Prevention: a model-for-role choice is measured on that role's task before anything is asked;
+only what a measurement cannot settle goes to the owner.
 
 ### M9: a ledger claim written from a summary rather than measured
 
@@ -1734,5 +1753,13 @@ and the gate comment said the case fails on the run deadline (the file exits 13 
 Both are corrected, with commit comments on `e40ccf6d2` and `c10d62663`.
 Prevention: an ordering claim in a test is enforced by a gate, never by a head start;
 a comment that says how a check fails is written after the mutation that shows it.
-Prevention: a model-for-role choice is measured on that role's task before anything is asked;
-only what a measurement cannot settle goes to the owner.
+
+### M12: a floor change committed with its own test file run, not the full suite
+
+Status: fixed in `b1dc34af2`.
+The F-9 fix (the neutral-pronoun floor reads the original) ran only `translate-neutral-pronoun.unit.test.ts`;
+`translate-validate.unit.test.ts` pinned the old behaviour and failed until the F-5 work ran it.
+The ledger edit that moved M9 also cut M8 in two, because the region was read short of M8's end;
+M8's prevention sat under M11 until this entry's commit.
+Prevention: a floor change runs the full suite before its commit, as M2 already asks of sheet wording;
+a region is read to the next heading before text is inserted after it.
