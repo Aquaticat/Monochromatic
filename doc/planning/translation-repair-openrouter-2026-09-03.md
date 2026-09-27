@@ -8171,6 +8171,8 @@ seeded in `community-glossary-fandom.ts`:
 
 Guard `644f23cf5` (`community-glossary-kigurumi.unit.test.ts`), red first (three of four),
 fix `06a2c5c05`, lint 0/0, types clean.
+The full suite at `06a2c5c05` was red on the community seeds pin, which lists every seeded term;
+the two terms joined it in `6a6cd1a84`, and the suite there read 1,169 PASS, 0 FAIL.
 TianqiChen66617 (`.frozen-dist-5860bc0b1`) was stopped a few minutes in when the fix landed.
 TianqiChen66618 launched on `.frozen-dist-06a2c5c05`.
 
