@@ -12,7 +12,10 @@
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -47,6 +50,37 @@ import {
  Logger for the driver under test.
  */
 const l = tagged({ tag: 'translate-document-test', },);
+
+/**
+ Logger keeping every message, for the cases that read what the lane logged.
+
+ @param messages - destination in emission order
+
+ @returns Logger appending every level to destination
+
+ @example
+ ```ts
+ const logger = capturingLogger({ messages, },);
+ ```
+ */
+function capturingLogger({ messages, }: { readonly messages: string[]; },): Logger {
+  /**
+   Keeps one emitted message.
+   */
+  function keep(message: string,): void {
+    messages.push(message,);
+  }
+
+  return {
+    debug: keep,
+    error: keep,
+    fatal: keep,
+    flush: async function flush(): Promise<void> {},
+    info: keep,
+    trace: keep,
+    warn: keep,
+  };
+}
 
 /**
  Original document: two sections, each one paragraph.
@@ -469,6 +503,7 @@ async function runDriver(
     beforeSlice,
     archiveDisputes,
     sheets,
+    messages,
   }: {
     readonly sourceText?: string;
     readonly targetText?: string;
@@ -485,6 +520,7 @@ async function runDriver(
     readonly persisted?: Map<string, TranslateSliceRecord>;
     readonly calls?: CallLog;
     readonly beforeSlice?: () => Promise<void>;
+    readonly messages?: string[];
   },
 ) {
   /**
@@ -567,7 +603,7 @@ async function runDriver(
         );
       },
     },
-    l,
+    l: (messages === undefined) ? l : capturingLogger({ messages, },),
   },);
   return {
     result,
@@ -1515,6 +1551,41 @@ The cat is doing the sleeping on the windowsill.
           .changedSliceIndices,).not.toContain(anchorIndex,);
         expect(anchored.result
           .translatedText,).not.toContain('晒太阳',);
+      },
+    },),
+    it({
+      name: 'NAMES THE SLICE on every slate and judge line when slices run side by side (ledger A11: '
+        + 'the translate lane\'s lines carried no slice under overlap)',
+      fn: async () => {
+        /**
+         Messages the lane logged.
+         */
+        const messages: string[] = [];
+        await runDriver({
+          overlap: 2,
+          messages,
+        },);
+        /**
+         Lines the slate producers and judges wrote.
+         */
+        const staged = messages.filter(function fromSlate(line,): boolean {
+          return line.includes('[produceTranslateSlate]',) || line.includes('[judgeTranslateSlate]',);
+        },);
+        expect(staged.length,).toBeGreaterThan(0,);
+        expect(staged.every(function namesSlice(line,): boolean {
+          return line.includes('[translate slice ',);
+        },),).toBe(true,);
+        expect([
+          0,
+          1,
+        ].map(function linesFor(sliceIndex,): boolean {
+          return staged.some(function namesThis(line,): boolean {
+            return line.includes(`[translate slice ${String(sliceIndex,)}]`,);
+          },);
+        },),).toStrictEqual([
+          true,
+          true,
+        ],);
       },
     },),
   ],

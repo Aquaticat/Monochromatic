@@ -2236,5 +2236,61 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           expect(ballot,).not.toContain('TRANSLATION declares',);
       },
     },),
+    it({
+      name: 'NAMES THE SLICE on each slice\'s start line when slices run side by side (ledger A11: '
+        + 'the repair lane\'s lines carried no slice under overlap)',
+      fn: async () => {
+        /**
+         Messages the lane logged.
+         */
+        const messages: string[] = [];
+        /**
+         Document the lane repairs, one slice per block.
+         */
+        const prepared = prepareDocumentPair({
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+        },);
+        await repairPreparedDocument({
+          client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+          prepared,
+          models: MODELS,
+          signal: new AbortController().signal,
+          overlap: 2,
+          parentLogger: {
+            debug: function keep(message: string,): void {
+              messages.push(message,);
+            },
+            error: function keep(message: string,): void {
+              messages.push(message,);
+            },
+            fatal: function keep(message: string,): void {
+              messages.push(message,);
+            },
+            flush: async function flush(): Promise<void> {},
+            info: function keep(message: string,): void {
+              messages.push(message,);
+            },
+            trace: function keep(message: string,): void {
+              messages.push(message,);
+            },
+            warn: function keep(message: string,): void {
+              messages.push(message,);
+            },
+          },
+        },);
+        /**
+         Start lines, one per slice.
+         */
+        const started = messages.filter(function isStart(line,): boolean {
+          return line.includes('SLICE-START',);
+        },);
+        expect(started.length,).toBe(prepared.slices.length,);
+        expect(started.every(function namesItsSlice(line,): boolean {
+          return line.includes(`[repair slice ${line.slice(line.indexOf('chunk=',) + 'chunk='.length,)
+            .split(' ',)[0] ?? ''}]`,);
+        },),).toBe(true,);
+      },
+    },),
   ],
 },);
