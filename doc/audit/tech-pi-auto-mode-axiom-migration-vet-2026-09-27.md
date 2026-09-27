@@ -246,6 +246,44 @@ not calibration.
 Parser preparation was offline,
 so its request deadlines do not qualify the complete live consumer.
 
+A broader source-isolated tranche `proc_061a` completed 23 development states
+and 46 native semantic scalars.
+The actual parser supplies structure for frozen literal forms;
+resource aliases and eligible-prose authority remain explicit synthetic assumptions.
+Each model request receives one selected text source and a supplied operation,
+not raw Bash,
+reference truth,
+an occurrence question,
+or a final-action question.
+The actual sender uses the tested serializer;
+fixture/wire checks and four isolated guard omissions passed as `proc_5ea7`.
+Result `71999e7` retains SHA-256
+`feaefa79220c71e878491f6fbb7108e54ed3564f7ae8f576d0ae01a9eabd2320`.
+Verification `proc_768d` reconstructed every request/state hash
+and checked current complete policy,
+source identities,
+references,
+and scalar ranges.
+Reported usage was 245,441 input and 943 output tokens.
+Every paired assessment met its submitted-question budget;
+durations across different cells were 257.7406569999994 to 473.556852 milliseconds,
+not a repeatability band or complete consumer timing.
+
+The cache cross-clause prose returned positive scope 0.06 and explicit prohibition 0.54
+against false references for both.
+The [qualification record](../planning/pi-auto-mode-jev-qualification.md#broader-source-isolated-semantic-controls)
+retains source-specific ranges and this observation without relabeling,
+prompt tuning,
+threshold selection,
+or a guessed internal cause.
+The tranche does not exhaust destination mismatches,
+conditional grants,
+semantic-effect estimates,
+calibration,
+or live-consumer behavior.
+All 24 original reserved scenarios remain unqueried.
+No training or production selection follows.
+
 A separate local client-boundary suite `proc_edaf` passed fifteen scenarios
 and five isolated guard-omission controls,
 with no vendor/model calls or real credentials.

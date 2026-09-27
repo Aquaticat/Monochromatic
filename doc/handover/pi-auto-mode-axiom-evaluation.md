@@ -586,8 +586,7 @@ Each selected source is queried for a positive relation and an explicit prohibit
 not a final action.
 Neutral texts prevent treating those predicates as complementary probabilities.
 An unresolved referent and an unverified authority witness remain model-free exclusion controls.
-No candidate request has run for this tranche;
-the original 24 reserved scenarios remain unqueried.
+The original 24 reserved scenarios remain unqueried.
 
 Review corrections are frozen at `ee6dca2`.
 Canonical `cases-v2.json` declares synthetic eligibility/binding assumptions explicitly;
@@ -619,11 +618,34 @@ Every original control passed;
 each omitted guard produced its expected assertion failure without modifying the original.
 Current input SHA-256:
 `c22b1607f5653eb926dfadfe9fdcc925e875ce7fa7efa3de779f7d77a3262a4b`.
-Next:
-freeze generated artifacts and perform the authorized native Jev development calls.
+Generated artifacts were frozen at `eaad3d7`.
+Native probe `proc_061a` completed 23 sequential requests and 46 scalar observations.
+It reported 245,441 input and 943 output tokens;
+paired assessments took 257.7406569999994 to 473.556852 milliseconds across different cells.
+Every assessment passed policy freshness and its submitted-question budget.
+Result `71999e7` retains SHA-256
+`feaefa79220c71e878491f6fbb7108e54ed3564f7ae8f576d0ae01a9eabd2320`.
+Verifier `proc_768d` reconstructed all actual request/state hashes
+and rechecked source identities,
+references,
+current policy,
+and scalar ranges.
+
+The cache cross-clause prose returned positive scope 0.06 and explicit prohibition 0.54,
+against false references for both.
+The 0.54 observation is preserved without relabeling,
+threshold selection,
+prompt tuning,
+or a claimed internal cause.
+Other source-specific ranges and evidence limits are in the
+[broader qualification record](../planning/pi-auto-mode-jev-qualification.md#broader-source-isolated-semantic-controls).
 These controls do not exhaust destination mismatches,
 conditional grants,
 or effect-language qualification.
+Task #27 is finishing its rendered documentation record,
+not declaring a qualified production profile.
+Then continue #25 and the remaining Jev profile/consumer gates,
+without resuming integration-policy interviewing prematurely.
 No calibration,
 training,
 threshold selection,
