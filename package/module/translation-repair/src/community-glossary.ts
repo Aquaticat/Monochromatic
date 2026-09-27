@@ -62,6 +62,14 @@ export type CommunityTerm = {
    One line of why, for the sheet.
    */
   readonly why: string;
+
+  /**
+   Source contexts in which the term stands inside an organization's proper
+   name, where it is not the term (owner, 2026-09-27: "Allow it, because
+   it's the proper name of an org."); an occurrence inside one is read as
+   absent by the floor, the sheet lines and the departures.
+   */
+  readonly properNameContexts?: readonly string[];
 };
 
 /**
@@ -128,6 +136,12 @@ export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
       + 'the term itself can read as derogatory and the neutrality does not carry into English, so the page '
       + 'says "trans girl" or "trans woman", never the Han and never a pinyin form, even where the existing '
       + 'translation or a translator\'s note on the page keeps it',
+    // OWNER, 2026-09-27: mikaela_khara's registered company carries the word
+    // in its name, and a company's proper name keeps its own form.
+    properNameContexts: [
+      '小药娘网络科技',
+      '以小药娘做字号',
+    ],
   },
   {
     // CLASS ONE HUNDRED FIFTY-ONE (shi_Yumiaoya36 and 37, 2026-09-26). The
@@ -240,15 +254,31 @@ export function communityTermsIn(
   },
 ): readonly CommunityTerm[] {
   /**
-   Original folded once, its comments cut, for every term.
+   Original with its comments cut, read once for every term.
    */
-  const folded = foldForGlossary({ text: withoutComments({ text, },), },);
+  const uncommented = withoutComments({ text, },);
   return glossary.filter(function present(entry,): boolean {
+    /**
+     Original with every proper name that carries the term cut out, so an
+     organization's name is not read as the term.
+     */
+    const unnamed = (entry.properNameContexts ?? []).reduce(
+      function cutName(
+        remaining,
+        context,
+      ): string {
+        return remaining.replaceAll(
+          context,
+          ' ',
+        );
+      },
+      uncommented,
+    );
     /**
      Bounded starts of the term in the original.
      */
     const starts = formStarts({
-      folded,
+      folded: foldForGlossary({ text: unnamed, },),
       form: foldForGlossary({ text: entry.term, },),
       end: 'inflected',
     },);
