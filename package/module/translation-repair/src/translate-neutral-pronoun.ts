@@ -222,23 +222,59 @@ function countSpelling(
 }
 
 /**
- Names an untranslated neutral pronoun in a candidate, written for the model
- that wrote the candidate.
- 
- @param candidateText - translation as the model returned it
- 
- @returns One finding naming each spelling found with its count, or nothing
- when the candidate carries none
- 
+ Whether the original writes the neutral pronoun at all, in any spelling.
+
+ @param sourceText - original slice
+
+ @returns True where it stands as a word at least once
+
  @example
  ```ts
- neutralPronounFindings({ candidateText: 'We set up a room for Ta.', },);
+ originalWritesPronoun({ sourceText: 'TA 睡了。', },);
+ // => true
+ ```
+ */
+function originalWritesPronoun({ sourceText, }: { readonly sourceText: string; },): boolean {
+  return PRONOUN_SPELLINGS.some(function written(spelling,): boolean {
+    return countSpelling({
+      text: sourceText,
+      spelling,
+    },) > 0;
+  },);
+}
+
+/**
+ Names an untranslated neutral pronoun in a candidate, written for the model
+ that wrote the candidate.
+
+ ONLY WHERE THE ORIGINAL WRITES THE PRONOUN (ledger F-9): an English TA (a
+ teaching assistant, for 助教) or a "Ta!" of thanks in a passage whose
+ original writes no TA, Ta or ta is English, not the pronoun left standing.
+
+ @param sourceText - original slice
+
+ @param candidateText - translation as the model returned it
+
+ @returns One finding naming each spelling found with its count, or nothing
+ when the original writes no neutral pronoun or the candidate carries none
+
+ @example
+ ```ts
+ neutralPronounFindings({ sourceText: '给 Ta 一个房间。', candidateText: 'We set up a room for Ta.', },);
  // => ['Your translation carries the pronoun untranslated as "Ta" (1 time): ...']
  ```
  */
 export function neutralPronounFindings(
-  { candidateText, }: { readonly candidateText: string; },
+  {
+    sourceText,
+    candidateText,
+  }: {
+    readonly sourceText: string;
+    readonly candidateText: string;
+  },
 ): readonly string[] {
+  if (!originalWritesPronoun({ sourceText, },))
+    return [];
   /**
    Each spelling the candidate keeps, with its count.
    */

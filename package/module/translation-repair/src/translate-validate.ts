@@ -374,7 +374,10 @@ export function validateTranslatedSlice(
       candidate: actual.atoms,
       referenceName: atomSource,
     },),
-    ...neutralPronounFindings({ candidateText, },),
+    ...neutralPronounFindings({
+      sourceText,
+      candidateText,
+    },),
   ];
   if (findings.length === 0)
     return {
