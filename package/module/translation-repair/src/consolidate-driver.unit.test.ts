@@ -925,10 +925,10 @@ await describe({
       },
     },),
     it({
-      name: 'FAILS THE SLICE AT ONCE when the repair-lane standing dropped a source destination and '
-        + 'the gate kept it: the publisher refuses such an entry (DroppedDestinationError), so shipping '
-        + 'the standing would only defer the refusal past the rest of the paid run, which is what the '
-        + 'owner ruled out on 2026-09-04',
+      name: 'SHIPS THE SLATE\'S VALID CHOICE when the repair-lane standing dropped a source destination and '
+        + 'the gate preferred it: the publisher refuses such a standing (DroppedDestinationError), and the '
+        + 'owner\'s 2026-09-04 rule prefers the best valid proposal, failing the slice only where there is '
+        + 'none (class one hundred eighty-five)',
       fn: async () => {
         const destination = 'https://example.test/cat-record';
         const sourceText = `[猫猫的记录](${destination})。`;
@@ -948,24 +948,13 @@ await describe({
             translate: [],
           },
         } as unknown as ProjectedLanes;
-        /**
-         What the drive threw for a standing the gate refused and the slate
-         could not replace.
-         */
-        let thrown: unknown;
-        try {
-          await driveWith({
-            client,
-            modelIds: RECOVERY_ROSTER,
-            projected,
-            contests: [contestSettling({ sliceIndex: 0, lane: 'repair', }),],
-          },);
-        } catch (error) {
-          thrown = error;
-        }
-        expect(thrown instanceof ConsolidationStandingIneligibleError,).toBe(true,);
-        expect((thrown as ConsolidationStandingIneligibleError).sliceIndex,).toBe(0,);
-        expect((thrown as ConsolidationStandingIneligibleError).message,).toContain('gate-kept-standing',);
+        const { slices, } = await driveWith({
+          client,
+          modelIds: RECOVERY_ROSTER,
+          projected,
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', }),],
+        },);
+        expect(slices[0]?.terminal,).toBe('consolidated',);
       },
     },),
     it({
@@ -1294,6 +1283,42 @@ await describe({
           0,
           1,
         ],);
+      },
+    },),
+
+    it({
+      name: 'NAMES THE SLICE on every line the settlement writes (class one hundred eighty-five: '
+        + 'TianqiChen66619 consolidated slices in parallel and its slate and gate ballots named no slice, '
+        + 'so slice 9\'s ballots could not be told from its neighbours\')',
+      fn: async () => {
+        /**
+         Operational messages of one bought slice.
+         */
+        const messages: string[] = [];
+        await driveWith({
+          client: recordingClient().client,
+          projected: twinSliceDocument(),
+          contests: [contestSettling({ sliceIndex: 1, lane: 'repair', },),],
+          messages,
+        },);
+        /**
+         Lines the slice's purchase wrote: its producers, slate, gate and
+         settlement.
+         */
+        const settling = messages.filter(function fromPurchase(line,): boolean {
+          return [
+            '[settleConsolidation]',
+            '[produceConsolidations]',
+            '[judgeTranslateSlate]',
+            '[gateConsolidatedSlice]',
+          ].some(function carries(tag,): boolean {
+            return line.includes(tag,);
+          },);
+        },);
+        expect(settling.length,).toBeGreaterThan(0,);
+        expect(settling.every(function namesSlice(line,): boolean {
+          return line.includes('[slice 1]',);
+        },),).toBe(true,);
       },
     },),
 
