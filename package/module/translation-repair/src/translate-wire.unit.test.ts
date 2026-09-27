@@ -233,6 +233,17 @@ await describe({
       },
     },),
     it({
+      name: 'LICENSES ONLY THE ATTESTED DETAILS and the apparatus from the existing translation, never its other '
+        + 'content the ORIGINAL does not state (ledger S20)',
+      fn: async () => {
+        expect(attestedMessages.includes(
+          'They license nothing else: from the existing translation carry only these and its apparatus, never '
+            + 'other content the ORIGINAL does not state.',
+        ),).toBe(true,);
+        expect(attestedMessages.includes('nor the existing translation carries',),).toBe(false,);
+      },
+    },),
+    it({
       name: 'CARRIES neither the block nor the rule when nothing was attested',
       fn: async () => {
         expect(unattestedMessages.includes('ATTESTED DETAILS',),).toBe(false,);

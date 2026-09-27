@@ -131,8 +131,8 @@ export const TRANSLATE_ATTESTED_RULE: string = 'ATTESTED DETAILS lists details t
   + 'page the ORIGINAL itself cites states, each checked word for word. Every one is accurate detail the '
   + 'translator took from the ORIGINAL\'s own references: carry every one in your rendering, in the existing '
   + 'translation\'s words where they fit. The ORIGINAL not stating it is not a reason to drop it, and a '
-  + 'rendering that drops one drops accurate detail from the page. They license nothing else: never add '
-  + 'what neither the ORIGINAL nor the existing translation carries.';
+  + 'rendering that drops one drops accurate detail from the page. They license nothing else: from the existing '
+  + 'translation carry only these and its apparatus, never other content the ORIGINAL does not state.';
 
 /**
  Instruction added whenever the sheet shows the pictures block.
