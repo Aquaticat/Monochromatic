@@ -183,5 +183,75 @@ await describe({
         },),).toEqual(['translate',],);
       },
     },),
+    it({
+      name: 'PASSES AN @-MENTION CARRYING THE ACCOUNT HANDLE THE PAGE WRITES, or the declared form, and refuses '
+        + 'any other handle, offering the page\'s (owner, 2026-09-27, "Account handle")',
+      fn: async () => {
+        /**
+         Original question title @-mentioning the declared cat.
+         */
+        const sourceText = '[如何评价论坛用户@咪咪？](https://example.invalid/question/7)';
+
+        /**
+         Archive's rendering, carrying the account handle.
+         */
+        const pageText = '[What do you think of forum user @mi-mi-42 ?](https://example.invalid/question/7)';
+        expect(validateTranslatedSlice({
+          sourceText,
+          candidateText: pageText,
+          pageText,
+          declared: PAIRS,
+        },).kind,).toBe('valid',);
+        expect(validateTranslatedSlice({
+          sourceText,
+          candidateText: '[What do you think of forum user @Mittens?](https://example.invalid/question/7)',
+          pageText,
+          declared: PAIRS,
+        },).kind,).toBe('valid',);
+
+        /**
+         Verdict on a rendering carrying a handle the page never wrote.
+         */
+        const other = validateTranslatedSlice({
+          sourceText,
+          candidateText: '[What do you think of forum user @mimi?](https://example.invalid/question/7)',
+          pageText,
+          declared: PAIRS,
+        },);
+        expect(other.kind,).toBe('invalid',);
+        expect((other.kind === 'invalid') ? other.findings.join(' ',) : '',).toContain(
+          'may instead carry the account handle the existing translation writes there (@mi-mi-42)',
+        );
+      },
+    },),
+    it({
+      name: 'KEEPS THE DECLARED FORM owed where the original names the cat without an @-mention, whatever handle '
+        + 'the page writes',
+      fn: async () => {
+        /**
+         Original diary link naming the cat, no mention.
+         */
+        const sourceText = '[咪咪的日记](https://example.invalid/diary)';
+
+        /**
+         Page's rendering carrying a handle in place of the name.
+         */
+        const pageText = '[Diary of @mi-mi-42](https://example.invalid/diary)';
+
+        /**
+         Verdict on the page's own handle outside a mention.
+         */
+        const verdict = validateTranslatedSlice({
+          sourceText,
+          candidateText: pageText,
+          pageText,
+          declared: PAIRS,
+        },);
+        expect(verdict.kind,).toBe('invalid',);
+        expect((verdict.kind === 'invalid') ? verdict.findings.join(' ',) : '',).toContain(
+          'does not carry "Mittens"',
+        );
+      },
+    },),
   ],
 },);

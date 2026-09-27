@@ -148,6 +148,7 @@ export function sourceCarryFindings(
     sourceText,
     candidateText,
     declared,
+    pageText,
   },);
 }
 
