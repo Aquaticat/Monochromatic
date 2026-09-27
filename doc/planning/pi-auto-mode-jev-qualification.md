@@ -330,7 +330,8 @@ The changed task is not a measured model improvement.
 Uncached independence,
 hosted token preservation,
 and upstream identity remain unverified.
-No final action was generated or authorized.
+No final-action question was submitted,
+and no assessed tool action was authorized.
 
 ## Broader source-isolated semantic controls
 
