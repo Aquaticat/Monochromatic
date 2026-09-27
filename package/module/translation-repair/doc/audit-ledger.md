@@ -848,13 +848,13 @@ Probes: `~/temp/agent/audit-tests/`
 
 ### T1: an assertion that never runs
 
-Status: open.
+Status: fixed in `9603ff7a8`; shown to fail with chunk inheritance disabled (3 of 4 slices governed).
 `document-preparation.unit.test.ts` "inherits the line-structure verdict from the enclosing CHUNK":
 its loop runs zero times, because the verse fixture is too short to subdivide.
 
 ### T2: vacuous checks and catch-only asserts
 
-Status: open.
+Status: fixed in `75900e601` (oxlint does not flag an unused `using` binding), `5955c9d8e` and `38f59b737`.
 32 `expect(<using binding>).not.toBe(undefined)` on disposables that are always objects
 (`writer-grace-override`, `corpus-run/slice-overlap`, `grace-override`, `corpus-run/pass-entry`,
 `corpus-run/artifact-pool-names`);
@@ -1598,5 +1598,10 @@ Solar Mini 4 is out of the checker seat on its first reading:
 78 of 85 positives called fixed,
 but only 7 of 85 unchanged archive texts called not-fixed,
 so it calls almost any text fixed.
+Result: the ranked order in `RUN_CHECKER_ORDER` (L1).
+The Mimo candidates were first scored by raw fetch without `zdr`;
+through the run client Mimo v2.6 Flash reaches only DeepInfra, its one zero-retention endpoint,
+and scored 81 and 80 at 3.9 s median against 82 and 79 at 0.35 s.
+A measurement for a seat is taken on the route the run uses.
 Prevention: a model-for-role choice is measured on that role's task before anything is asked;
 only what a measurement cannot settle goes to the owner.
