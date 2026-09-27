@@ -1025,6 +1025,36 @@ await describe({
       },
     },),
     it({
+      name: 'SHIPS THE PROPOSAL THE SLATE CHOSE when the gate settles on neither over an eligible standing '
+        + 'every contest ballot called flawed (class one hundred seventy-seven, TianqiChen66610 slice 13, '
+        + 'owner answer 2026-09-26: "Slate\'s choice"); a gate that refuses the proposal still keeps the standing',
+      fn: async () => {
+        const { settled, } = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
+          gateReply: gateBallot({ choice: 'neither', },),
+          runoffOverStanding: true,
+        },);
+        expect(settled.terminal,).toBe('consolidated',);
+        expect(settled.text.replaceAll('\n', ' ',),).toBe(FRESH,);
+        expect(settled.gate?.choice,).toBe('neither',);
+        expect(settled.findings.some(function namesFlawedStanding(finding,): boolean {
+          return finding.startsWith('undecided-gate-ships-proposal (standing flawed by every contest ballot)',);
+        },),).toBe(true,);
+
+        const refused = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
+          gateReply: gateBallot({ choice: 'standing', },),
+          runoffOverStanding: true,
+        },);
+        expect(refused.settled.terminal,).toBe('gate-kept-standing',);
+        expect(refused.settled.text,).toBe(STANDING,);
+      },
+    },),
+    it({
       name: 'JUDGES THE LANE TEXTS OVER AN EMPTY STANDING (class eighty-seven, XingZ623 slice 89, '
         + '2026-09-22): the contest declined both lanes at a passage the archive never carried, so nothing '
         + 'stood, and the no-standing-text exit ran ahead of the class forty offer; the translate lane\'s '
