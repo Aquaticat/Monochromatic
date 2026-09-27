@@ -454,7 +454,7 @@ await describe({
         expect(preparationIdentity({ prepared: rebuilt.prepared, },),).toBe(
           preparationIdentity({ prepared: crossed, },),
         );
-        expect(rebuilt.reproduced,).toBe(true,);
+        expect(rebuilt.reproduction,).toStrictEqual({ kind: 'reproduced', },);
       },
     },),
     it({
@@ -489,7 +489,7 @@ await describe({
           targetText: `${TARGET_DOC}\nThe cat naps again.\n`,
         },);
         expect(rebuilt.unrecorded,).toEqual([],);
-        expect(rebuilt.reproduced,).toBe(false,);
+        expect(rebuilt.reproduction.kind,).toBe('moved',);
       },
     },),
     it({

@@ -3,13 +3,13 @@ import {
   type PreparedDocumentPair,
 } from '../document-preparation.ts';
 import type { BlockPair, } from '../pair-blocks-wire.ts';
-import { preparationIdentity, } from '../preparation-identity.ts';
 import type { SectionPair, } from '../pair-sections-wire.ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V12,
   ARTIFACT_SCHEMA_VERSION_V5,
 } from './artifact-two-lane-contract.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
+import { carveDivergence, } from './artifact-two-lane-rebuild-rows.ts';
 
 //region Preparation rebuilt from a settled artifact
 // Carving a document pair the way the run that settled it carved it.
@@ -33,9 +33,10 @@ import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.t
 // interior gap unplaced on both sides as one merge, and mikaela15, settled at
 // the commit before it, rebuilt to 32 of its recorded 34 slices with an empty
 // gap list. And the artifact records the carve after the pass folded carried
-// passages into their carriers, while nothing records the fold. So the
-// rebuild compares its identity with the recorded one and says whether it
-// reproduced the run's carve.
+// passages into their carriers, while nothing records the fold (TianqiChen66614
+// rebuilds with slices 13 and 14 moved). So the rebuild compares its carve with
+// the rows the run recorded and says where it departs
+// (`artifact-two-lane-rebuild-rows.ts` says why rows rather than identity).
 
 /**
  One half of the pairing recipe a settled artifact may fail to record.
@@ -99,11 +100,32 @@ export type RebuiltPreparation = {
   readonly unrecorded: readonly RecipeHalf[];
 
   /**
-   Whether the rebuild is the run's own carve: its identity equals the one
-   the artifact records.
+   Whether the rebuild is the run's own carve, read off the rows the run
+   recorded.
    */
-  readonly reproduced: boolean;
+  readonly reproduction: RebuildReproduction;
 };
+
+/**
+ Whether a rebuild is the run's carve, and where it departs when it is not.
+ 
+ @example
+ ```ts
+ const reproduction: RebuildReproduction = { kind: 'moved', detail: '32 slices rebuilt where the run recorded 34', };
+ ```
+ */
+export type RebuildReproduction =
+  | {
+    readonly kind: 'reproduced';
+  }
+  | {
+    readonly kind: 'moved';
+
+    /**
+     First departure from the recorded rows.
+     */
+    readonly detail: string;
+  };
 
 /**
  Turns a recorded section decider back into the list preparation consumed.
@@ -270,12 +292,9 @@ export function rebuildPreparation(
   /**
    Whose front matter the recorded slicing carried, read off the file and
    never recomputed: a later change to the rule must not re-slice an older
-   file; and the identity of the carve the run recorded.
+   file.
    */
-  const {
-    frontMatterAuthority,
-    identity: recordedIdentity,
-  } = artifact.preparation;
+  const { frontMatterAuthority, } = artifact.preparation;
   /**
    Slicing carved from the recipe.
    */
@@ -292,10 +311,22 @@ export function rebuildPreparation(
     ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
     ...((blockPairings === undefined) ? {} : { blockPairings, }),
   },);
+  /**
+   First departure from the run's recorded carve, empty for none.
+   */
+  const divergence = carveDivergence({
+    artifact,
+    prepared,
+  },);
   return {
     prepared,
     unrecorded,
-    reproduced: preparationIdentity({ prepared, },) === recordedIdentity,
+    reproduction: (divergence === '')
+      ? { kind: 'reproduced', }
+      : {
+        kind: 'moved',
+        detail: divergence,
+      },
   };
 }
 
