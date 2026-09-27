@@ -905,10 +905,10 @@ five production backoffs outlasted `driveWith`'s 5 s abort,
 so they asserted a timeout, not a roster call;
 they now count transport calls under a zero-retry client and assert the observed exits.
 A sweep of all 729 test files for timers of 500 ms or more
-(`~/temp/agent/audit-repair/long-timer-sweep.json`) leaves these real waits:
-the `benchmark` fake's two 2 s waits,
-the `stage-round-refill` slow seat (1.5 s, ignoring the abort signal),
-and `transient-retry`'s backoff, which is the behaviour under test.
+(`~/temp/agent/audit-repair/long-timer-sweep.json`) found three more real waits:
+the `benchmark` fake's two 2 s waits, now a fake clock the benchmark reads (`544169f98`, 2.36 s to 0.59 s),
+the `stage-round-refill` slow seat, now abortable (`9441af9de`, 1.94 s to 0.46 s),
+and `transient-retry`'s backoff, which is the behaviour under test and stays.
 Long `settleWithin` and `armCallDeadline` timers are armed and cleared and cost no wall time.
 The settle-by-timer checks and wall-clock floors in this finding stay open.
 `lane-contest-stage.unit.test.ts` "RECORDS RAW HALF-QUORUM BALLOTS" fails 2 of 5 at 0.2 CPU
@@ -1555,6 +1555,20 @@ says the reachable share sizes every gather.
 A windowed stage whose reachable seats cannot meet the bench quorum spends its retry rounds and closes short
 without the `stage-short-bench` finding the gathers carry.
 
+### X9: code indented against its nesting, which no check reads
+
+Status: fixed in `632ef5fbc` and `f7b766fa4`; enforcement is issue #577.
+`runCriticBenchmark`'s inner attempt, its `try` body and its retry block sat two to three levels too deep
+for about 190 lines of `benchmark.ts`;
+a test body in `repair-translation.unit.test.ts` dropped two spaces for about 60 lines,
+and the stall case in `stream-idle-guard.unit.test.ts` left an argument and its assertions too shallow.
+All were lint-clean: the dprint TypeScript plugin was retired for `oxlint-plugin-stylistic`,
+which has no indentation rule.
+A heuristic scan of the 1666 source files flagged 35 lines, the rest being template-literal ends
+(`~/temp/agent/audit-repair/indent-scan.mjs`).
+The trailing-comma drift in some test files is not a finding:
+`package/config/oxlint/src/overrides.ts` lets tests lay out calls freely and no config enables `comma-dangle`.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing, recorded for the prevention doc.
@@ -1567,7 +1581,8 @@ At least five times on 2026-09-27
 against the rule of at most three `&&` and no `;`;
 twice more later that day (`node <test> | rg ; node <test> | rg`, and one `rg` then `awk` by the docs agent),
 and once a shell `for` loop over line numbers, which the same rule forbids,
-and once `<test> | rg ... ; true` to force a zero exit.
+and once `<test> | rg ... ; true` to force a zero exit;
+twice more still (`<test> > log ; echo "exit $?"`, and `rg --files ... ; rg <config>`).
 The first `;` one also hid which of two files failed, since both counts printed as one number.
 Prevention: a report that should run after a failing command is `a || b`, never `a ; b`;
 two independent checks are two tool calls.
@@ -1611,12 +1626,6 @@ both files viewed with `sed` rather than the Read tool.
 Prevention: read the region with the Read tool before editing it;
 a `sed` or `rg` view does not count as a read.
 
-### M9: a ledger claim written from a summary rather than measured
-
-Status: corrected in P3.
-P3 said rounds ran to the 360 s deadline; the two runs it cited had no round past 181 s.
-Prevention: a timing or count in a finding is read off the log it cites before the finding is written.
-
 ### M7: an adopted reading parked in docs across a compaction
 
 Status: fixed (owner confirmed "English letters" on 2026-09-27).
@@ -1625,7 +1634,7 @@ Prevention: a reading adopted without the owner's answer is asked in the same tu
 
 ### M8: asked the owner a measurable question
 
-Status: corrected; measurement running.
+Status: corrected; measured, and the bench reseated in L1.
 The agent asked which model should fill the third checker seat,
 offering gemma-4-31b, Mercury 2.5, a stop, or no change,
 when checker quality on the role's own sheet is measurable.
@@ -1645,5 +1654,20 @@ The Mimo candidates were first scored by raw fetch without `zdr`;
 through the run client Mimo v2.6 Flash reaches only DeepInfra, its one zero-retention endpoint,
 and scored 81 and 80 at 3.9 s median against 82 and 79 at 0.35 s.
 A measurement for a seat is taken on the route the run uses.
+
+### M9: a ledger claim written from a summary rather than measured
+
+Status: corrected in P3.
+P3 said rounds ran to the 360 s deadline; the two runs it cited had no round past 181 s.
+Prevention: a timing or count in a finding is read off the log it cites before the finding is written.
+
+### M10: lint run on changed files only
+
+Status: fixed in `13c3f51af`.
+Every batch linted the files it touched,
+so two `unicorn(consistent-function-scoping)` warnings from `0aa800ab4` (2026-09-03)
+stood in `provider-budget.ts` and `openrouter-client.ts` for 24 days;
+a whole-package run (`oxlint-wrapper.mjs src`, 1666 files, about 30 to 50 s) showed them at once.
+Prevention: before a batch is called done, lint the whole `src` tree and read its summary line.
 Prevention: a model-for-role choice is measured on that role's task before anything is asked;
 only what a measurement cannot settle goes to the owner.
