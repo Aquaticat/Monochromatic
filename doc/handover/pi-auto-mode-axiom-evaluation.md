@@ -494,7 +494,8 @@ The user's actual Voyage data-use opt-out setting remains uninspected.
 
 ## Active work and next action
 
-The user asked: "Are we overengineering now?"
+The user asked:
+"Are we overengineering now?"
 The agent agrees that source tracing and audit tooling expanded without a decision-focused stopping point.
 Task #34 is paused,
 not completed;
