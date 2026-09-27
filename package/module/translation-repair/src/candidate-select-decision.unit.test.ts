@@ -77,7 +77,9 @@ await describe({
             return candidate.rendered;
           },),
         },);
-        expect(decision.state,).toEqual({
+        // The properties this case exists for, not the whole state: the
+        // house rules joined it on 2026-09-27 (`decision-seat-policy.unit.test.ts`).
+        expect(decision.state,).toMatchObject({
           task: 'Pick the best rendering.',
           criteria: {
             '1': 'faithful to the original',

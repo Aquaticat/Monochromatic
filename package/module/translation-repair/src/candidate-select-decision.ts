@@ -4,7 +4,12 @@ import {
   KEEPS_TRUSTED_TEXT,
   type SelectEvidence,
 } from './candidate-select-wire.ts';
+import {
+  communityRenderingsBlock,
+  type RenderingCandidate,
+} from './community-glossary.ts';
 import type { DecisionAnswer, } from './decision-contract.ts';
+import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
 import type { StageDecision, } from './stage-decision-call.ts';
 
 //region Candidate selection as a typed question
@@ -15,6 +20,12 @@ import type { StageDecision, } from './stage-decision-call.ts';
 // answers with a number and a distribution and never a reason, so the
 // ballot's `reason` carries the distribution, which is the audit trail a
 // typed judge can give.
+//
+// THE HOUSE RULES TRAVEL IN THE STATE (the whole-package audit, 2026-09-27).
+// The state once carried the criteria alone, so the seat read "every
+// proposition of the ORIGINAL is rendered" with no word of reader
+// protection, the tense order or the precedence line, and never heard of a
+// community departure the chat seat was told of.
 
 /**
  One evidence block as the state carries it.
@@ -55,6 +66,36 @@ const UNREPORTED = 'unreported';
 export const NO_TYPED_ANSWER: unique symbol = Symbol('decision seat replied without choosing a candidate number (select stage, 2026-09-18)',);
 
 /**
+ Reads a decision seat's answers into a select ballot.
+
+ @param answers - answers by question name
+
+ @returns Ballot whose reason carries the distribution, or the marker no
+ guard admits when the seat chose no candidate
+
+ @example
+ ```ts
+ readTypedBallot({ best: { type: 'choice', choice: 1, }, },);
+ ```
+ */
+function readTypedBallot(
+  answers: Readonly<Record<string, DecisionAnswer>>,
+): CandidateBallotAsSent | typeof NO_TYPED_ANSWER {
+  /**
+   Answer to the one question, when it is a choice.
+   */
+  const { best, } = answers;
+  if ((best === undefined) || (best.type !== 'choice'))
+    return NO_TYPED_ANSWER;
+  return {
+    best: best.choice,
+    reason: `${TYPED_BALLOT_REASON}: probabilities ${JSON.stringify(best.probabilities ?? {},)}, confidence ${
+      (best.confidence === undefined) ? UNREPORTED : String(best.confidence,)
+    }`,
+  };
+}
+
+/**
  Builds the select stage's question for a decision seat.
 
  @param task - what the candidates are attempting, in one sentence
@@ -66,6 +107,9 @@ export const NO_TYPED_ANSWER: unique symbol = Symbol('decision seat replied with
  @param rendered - candidate texts in caller-fixed order
 
  @param declineConsequence - what the caller does when every judge declines
+
+ @param sourceText - original the candidates render, which names the
+ community renderings a candidate lacks; omitted where the caller has none
 
  @returns State, one choice question and the reading into a ballot
 
@@ -81,14 +125,34 @@ export function selectDecision(
     evidence,
     rendered,
     declineConsequence = KEEPS_TRUSTED_TEXT,
+    sourceText,
   }: {
     readonly task: string;
     readonly criteria: readonly string[];
     readonly evidence: readonly SelectEvidence[];
     readonly rendered: readonly string[];
     readonly declineConsequence?: string;
+    readonly sourceText?: string;
   },
 ): StageDecision {
+  /**
+   Community renderings a candidate lacks, as the chat sheet names them;
+   empty where the caller passed no original or none departs.
+   */
+  const communityRenderings = (sourceText === undefined)
+    ? []
+    : communityRenderingsBlock({
+      sourceText,
+      candidates: rendered.map(function toCandidate(
+        text,
+        index,
+      ): RenderingCandidate {
+        return {
+          label: `CANDIDATE ${String(index + 1,)}`,
+          text,
+        };
+      },),
+    },);
   /**
    Options: the decline, then one per candidate by its one-based number.
    */
@@ -113,6 +177,8 @@ export function selectDecision(
   return {
     state: {
       task,
+      policy: JUDGE_POLICY_BLOCK,
+      ...((communityRenderings.length === 0) ? {} : { communityRenderings: communityRenderings.join('\n',), }),
       criteria: Object.fromEntries(criteria.map(function rule(
         text,
         index,
@@ -147,27 +213,16 @@ export function selectDecision(
     questions: {
       best: {
         type: 'choice',
-        instructions: `${task} Decide by the numbered rules in state.criteria, earlier ones outranking later ones. `
+        instructions: `${task} Decide by the numbered rules in state.criteria, earlier ones outranking later ones, `
+          + 'under the house rules in state.policy, which outrank every criterion where the two disagree. '
+          + 'Where state.communityRenderings is present, weigh it as evidence, not a verdict. '
           + 'You do not know which system produced which candidate. Judge only the texts in state.candidates '
           + `against state.evidence. Choose ${String(CANDIDATE_NONE,)} when NO candidate is acceptable; `
           + `${declineConsequence}.`,
         criteria: options,
       },
     },
-    read: function readBallot(answers: Readonly<Record<string, DecisionAnswer>>,): CandidateBallotAsSent | typeof NO_TYPED_ANSWER {
-      /**
-       Answer to the one question, when it is a choice.
-       */
-      const { best, } = answers;
-      if ((best === undefined) || (best.type !== 'choice'))
-        return NO_TYPED_ANSWER;
-      return {
-        best: best.choice,
-        reason: `${TYPED_BALLOT_REASON}: probabilities ${JSON.stringify(best.probabilities ?? {},)}, confidence ${
-          (best.confidence === undefined) ? UNREPORTED : String(best.confidence,)
-        }`,
-      };
-    },
+    read: readTypedBallot,
   };
 }
 

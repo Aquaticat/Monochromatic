@@ -268,6 +268,7 @@ export async function decideBestCandidate<ValueT,>(
         return candidate.rendered;
       },),
       ...((declineConsequence === undefined) ? {} : { declineConsequence, }),
+      ...((sourceText === undefined) ? {} : { sourceText, }),
     },),
     stage: 'select',
     l,
