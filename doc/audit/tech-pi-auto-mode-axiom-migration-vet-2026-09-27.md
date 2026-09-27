@@ -611,6 +611,25 @@ selected-operation,
 external-data/native-schema,
 and bounded-execution gates stay open.
 
+The complete Linux/Wasm reusable workflows and delegated run-build/setup-tool embedded sources
+were retained by `proc_56d2` at private `4e0e7a2` and read without execution.
+The run wrapper's constructed command includes automatic NVIDIA detection,
+conditional GPU access,
+host mounts,
+unnumbered build parallelism,
+and an internal vcpkg cache flag.
+Those defaults do not implement this study's bounded CPU contract.
+The setup source verifies newly downloaded archives,
+but returns existing tool-cache hits before that hash path and executes vcpkg bootstrap on its extraction path.
+No unmodified CI wrapper is admitted,
+and no source build or upstream installer was run.
+The [attribution source trace](../troubleshooting/onnxruntime-artifact-attribution.md)
+contains exact locations and excerpts;
+private `consumer-build-delegation-notes.json` at `c73ee3c` preserves scope limits.
+This does not diagnose cache corruption,
+explain empty historical artifact listings,
+or rule out an independently inspected bounded source build.
+
 ### Jev through LLM Gateway
 
 Jev/gateway is a hosted service.

@@ -1260,6 +1260,27 @@ This preserves an attributable source route without claiming whole-consumer admi
 Continue helper/import-time and selected-operation review;
 no reference evaluator has been imported or run.
 
+The deferred Linux/Wasm reusable workflows and delegated run-build/setup-tool embedded sources
+have now been read completely.
+`proc_56d2` retained their identities at private `4e0e7a2`;
+findings are in `consumer-build-delegation-notes.json` at `c73ee3c`.
+The CI run wrapper probes NVIDIA availability independently of requested providers,
+conditionally adds GPU access,
+and mounts host paths without this study's resource/isolation settings.
+Do not invoke it as the bounded CPU experiment.
+The setup source checks newly downloaded archives but returns existing tool-cache hits first;
+its vcpkg path executes a bootstrap script.
+No cache fault,
+artifact-list deletion cause,
+or global source-build impossibility is inferred.
+No upstream action or build was executed.
+The [artifact-attribution source trace](../troubleshooting/onnxruntime-artifact-attribution.md)
+records exact paths and excerpts.
+The next prepared source extraction is `prepare:reference-core-sources`,
+covering ONNX schema binding,
+serialization,
+and dtype boundaries without compilation or evaluator execution.
+
 Continue unresolved consumer provenance,
 numerical parity,
 execution fit,

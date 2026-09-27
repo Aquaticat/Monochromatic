@@ -98,6 +98,99 @@ It is not a reproduced cache-correctness defect or an attribution mechanism for 
 The action was not run.
 A denied anonymous request to one Azure base-image route also does not prove every source-build route needs it.
 
+### CI defaults do not match the bounded CPU study
+
+`proc_56d2` retained both complete reusable workflows and delegated action sources at private `4e0e7a2`.
+The Linux wrapper's input at `.github/workflows/reusable_linux_build.yml:61` to `65`
+sets a false upload default:
+
+```yaml
+# .github/workflows/reusable_linux_build.yml:61-65
+upload_build_output:
+  description: 'Whether to upload the build output directory as an artifact (used when tests are skipped)'
+  required: false
+  type: boolean
+  default: false
+```
+
+Its upload condition is `if: inputs.upload_build_output == true` at line 208.
+The Wasm wrapper's upload condition is:
+
+```yaml
+# .github/workflows/linux-wasm-ci-build-and-test-workflow.yml:178-179
+- name: Upload WASM artifacts
+  if: ${{ inputs.skip_publish != true }}
+```
+
+These source conditions do not establish why previously queried runs currently list no artifacts.
+The Linux wrapper's permission declaration `attestations: write` at line 85
+is not evidence that an attestation was emitted.
+
+The embedded `run-build-script-in-docker/index.js:38` to `55` probes `nvidia-smi`,
+independently of the requested execution-provider list.
+Its command construction at lines 150 to 164 includes:
+
+```js
+// Embedded src/run-build-script-in-docker/index.js:157-160
+'--build_shared_lib',
+'--parallel',
+'--use_vcpkg',
+'--use_vcpkg_ms_internal_asset_cache',
+```
+
+The Docker argument construction at lines 215 to 255 includes:
+
+```js
+// Embedded src/run-build-script-in-docker/index.js:215-216,218-220, separate excerpts
+const dockerArgs = ['run', '--rm'];
+if (gpuAvailable) dockerArgs.push('--gpus', 'all');
+dockerArgs.push('--volume', `${workspaceDir}:/onnxruntime_src`);
+dockerArgs.push('--volume', `${runnerTempDir}:/onnxruntime_src/build`);
+dockerArgs.push('--volume', `${hostCacheDir}:${containerHomeDir}/.cache`); // Use determined container home
+```
+
+That constructed argument list does not supply this study's memory,
+CPU,
+network,
+read-only,
+or no-host-mount boundaries.
+Do not run this CI wrapper as the bounded CPU experiment.
+This is a mismatch between study constraints and upstream CI defaults,
+not an upstream defect finding.
+
+The embedded `setup-build-tools/index.js:60` to `108` verifies SHA-512 after an archive download.
+However,
+`cacheTool` at lines 177 to 199 can return an existing tool-cache entry first:
+
+```js
+// Embedded src/setup-build-tools/index.js:179-183
+const cachedDir = tc.find(toolName, version, archKey);
+if (cachedDir) {
+  core.info(`Found cached ${toolName} at: ${cachedDir}`);
+  return cachedDir;
+}
+```
+
+Requested download hashes therefore do not authenticate an unmeasured cache hit.
+No cache corruption is inferred.
+For vcpkg,
+lines 157 to 174 and 310 to 315 select and execute a bootstrap script:
+
+```js
+// Embedded src/setup-build-tools/index.js:160-162,172,314, separate excerpts
+const bootstrapScriptName = platform === 'win32' ? 'bootstrap-vcpkg.bat' : 'bootstrap-vcpkg.sh';
+const bootstrapScriptPath = path.join(extractedPath, bootstrapScriptName);
+const bootstrapArgs = ['-disableMetrics'];
+await exec.exec(bootstrapScriptPath, bootstrapArgs, options);
+await bootstrapVcpkg(extractedActual);
+```
+
+The bootstrap and tool-cache dependency command trees remain uninspected and unexecuted.
+No action,
+installer,
+or source build was run.
+A standalone source-build experiment would need separately inspected materials and an owned bounded launcher.
+
 ## Verification
 
 Private evidence repository:
