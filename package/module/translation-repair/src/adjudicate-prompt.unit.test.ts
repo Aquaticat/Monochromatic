@@ -197,6 +197,37 @@ await describe({
     },),
 
     it({
+      name: 'CARRIES THE DECLARED NAMES before the documents and the rule reading them (ledger S4), and no block '
+        + 'when the page declares nothing',
+      fn: async () => {
+        /** Sheet built with one declared name. */
+        const plan = buildAdjudicationMessages({
+          sourceText: '咪咪在睡觉。',
+          targetText: 'Mittens is asleep.',
+          clusters: CLUSTERS,
+          identityContext: '- name: ORIGINAL declares "咪咪", TRANSLATION declares "Mittens"',
+        },);
+        /** System half, where standing rules live. */
+        const system = plan.messages[0]?.content ?? '';
+        /** Sheet text shown to the panelist. */
+        const sheet = plan.messages[1]?.content ?? '';
+        expect(sheet,).toContain('- name: ORIGINAL declares "咪咪", TRANSLATION declares "Mittens"',);
+        expect(sheet.indexOf('DECLARED NAMES',),).toBeGreaterThan(-1,);
+        expect(sheet.indexOf('DECLARED NAMES',),).toBeLessThan(sheet.indexOf('咪咪在睡觉。',),);
+        expect(system,).toContain('Declared identity, when a DECLARED NAMES block precedes the documents:',);
+        expect(system,).toContain('Vote unsupported on a claim whose whole case is a rendering the block makes correct.',);
+        /** Sheet built without declarations. */
+        const bare = buildAdjudicationMessages({
+          sourceText: '咪咪在睡觉。',
+          targetText: 'Mittens is asleep.',
+          clusters: CLUSTERS,
+        },).messages[1]?.content ?? '';
+        expect(bare,).not
+          .toContain('DECLARED NAMES',);
+      },
+    },),
+
+    it({
       name: 'keeps proposer identity out of the sheet',
       fn: async () => {
         /** Plan for the two-cluster sheet. */

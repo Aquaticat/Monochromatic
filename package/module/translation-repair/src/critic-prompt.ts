@@ -5,7 +5,10 @@ import {
   ISSUE_SEVERITIES,
 } from './issue-taxonomy.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
-import { NAME_FORM_SCOPE_RULE, } from './name-form-policy.ts';
+import {
+  DECLARED_IDENTITY_RULES,
+  declaredNamesBlock,
+} from './declared-identity-rule.ts';
 import { TRANSLATOR_NOTE_KIND, } from './page-apparatus-clause.ts';
 import { citedReferenceBlockText, } from './cited-reference-rule.ts';
 import { selectFence, } from './prompt-fence.ts';
@@ -93,12 +96,8 @@ Obligatory differences between the two languages are never defects. Each languag
 - Where the ORIGINAL leaves a connection to context that the TRANSLATION's reader cannot recover, making it explicit is legitimate. Report it only if the added reading is unsupported by the ORIGINAL, not merely because it is absent from the words.
 - ACCURATE detail a translator added is not an addition defect. A citation naming the translator, publisher, edition or ISBN where the ORIGINAL names only the work; a contributor credit; a gloss identifying a person, place or work the ORIGINAL assumes its reader knows; ${TRANSLATOR_NOTE_KIND}: each of these is correct information a reader benefits from, and reporting it as unsupported content leads to it being deleted. Report such detail ONLY when it is WRONG, and then say what is wrong with it.
 
-Declared identity, when an IDENTITY block precedes the documents:
-- That block reproduces what the two documents' own metadata declares about names, alternate handles, and place names. Those declarations are AUTHORITATIVE evidence, not guesses.
-- When used to refer to its entity, a name, handle, or place name in the TRANSLATION that matches a declared value is CORRECT, even when it corresponds to the ORIGINAL neither phonetically nor semantically. Transliteration across Chinese, Japanese, and English readings is normal here. Never report such a rendering as a wrong term, an unsubstantiated substitution, a fabrication, or an addition. ${NAME_FORM_SCOPE_RULE}
-- Likewise, the TRANSLATION carrying only its own declared name where the ORIGINAL carries its own is not an omission of the original name.
-- The identity block is evidence about naming ONLY. It never licenses a defect in the surrounding prose.
-- Lines in that block beginning "ORIGINAL note", "ARCHIVE note", "ORIGINAL editor comment" or "ARCHIVE editor comment" reproduce footnotes and editors' comments the two documents carry, and lines beginning "web lookup" reproduce what a web search returned for a work the ORIGINAL names. They establish vocabulary and titles for the terms they name and nothing else: a rendering that follows them is CORRECT for that term, a web lookup is evidence to weigh rather than a declaration, and none of them licenses a defect elsewhere. An "editor comment" line says where the comment sits ("under heading X" or "before the first heading"); a comment that speaks of "this title", "this section" or "here" speaks of that heading and its section and no other, and settles nothing about any other heading.
+${DECLARED_IDENTITY_RULES}
+- Never report a rendering the block makes correct as a defect.
 
 If the TRANSLATION is not a translation of the ORIGINAL at all (unrelated content, gibberish, a different document), report exactly one issue: category accuracy/non-translation, severity critical, targetQuote copied from the start of the TRANSLATION body. Do not enumerate further issues for such a pair.
 If only one section is unrelated while the rest translates the original, report accuracy/non-translation for that section alone, anchored by its quotes, alongside any other issues.
@@ -172,11 +171,10 @@ export function buildCriticMessages(
    Placed BEFORE the documents so the declarations are read as given facts
    rather than as a footnote to evidence already weighed.
    */
-  const identityBlock = ((identityContext === undefined) || (identityContext.length === 0))
-    ? ''
-    : `${fence} IDENTITY ${fence}
-${identityContext}
-`;
+  const identityBlock = declaredNamesBlock({
+    fence,
+    ...((identityContext === undefined) ? {} : { identityContext, }),
+  },);
 
   /**
    The passages either side, or nothing when this slice stands alone.

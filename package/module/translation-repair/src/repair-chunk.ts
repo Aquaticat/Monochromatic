@@ -251,6 +251,7 @@ export async function repairChunk(
   const panel = await runPanelStage({
     ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
+    ...((identityContext === undefined) ? {} : { identityContext, }),
     client,
     panelModelIds: models.panelModelIds,
     sourceText,

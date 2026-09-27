@@ -7,6 +7,10 @@ import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { TRANSLATOR_NOTE_KIND, } from './page-apparatus-clause.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { citedReferenceBlockText, } from './cited-reference-rule.ts';
+import {
+  DECLARED_IDENTITY_RULES,
+  declaredNamesBlock,
+} from './declared-identity-rule.ts';
 import { REPAIR_EVIDENCE_ROLE, } from './repair-evidence-role.ts';
 import {
   ACCURACY_CATEGORY_SCOPE,
@@ -78,6 +82,9 @@ Translation policy, which governs what may count as a defect at all. A claim tha
 - In-group vocabulary rendered by its conventional meaning is correct even when a literal reading of the characters says otherwise; never vote supported on the strength of a literal reading alone.
 - The ORIGINAL is not golden. A TRANSLATION that is clearer, better punctuated, or more explicit than the ORIGINAL is doing its job, and that alone is never a defect.
 - Accurate detail a translator ADDED is not an addition. A citation carrying the translator, publisher, edition or ISBN where the ORIGINAL names only the work, a contributor credit, a gloss identifying someone the ORIGINAL assumes known, or ${TRANSLATOR_NOTE_KIND}, is correct information a reader benefits from. Vote unsupported on a claim whose whole case is that the ORIGINAL does not carry it; vote supported only when the added detail is WRONG.
+
+${DECLARED_IDENTITY_RULES}
+- Vote unsupported on a claim whose whole case is a rendering the block makes correct.
 
 Optionally re-grade a supported claim's severity: one of ${ISSUE_SEVERITIES.join(', ',)}.
 For every GROUP holding more than one claim, also state whether its claims describe one single defect (sameDefect true) or genuinely distinct defects (sameDefect false).
@@ -161,7 +168,11 @@ export type AdjudicationPromptPlan = {
  
  @param referenceContext - what the pages the original links say (class
  thirty-five), evidence for judging addition claims
- 
+
+ @param identityContext - declared names and handles both documents carry,
+ so a claim against a declared name is judged against the declaration
+ (ledger S4); absent when the page declares none
+
  @returns Messages plus index maps for ballot resolution
  
  @example
@@ -178,6 +189,7 @@ export function buildAdjudicationMessages(
     neighbouringSourceText,
     documentSourceText,
     referenceContext,
+    identityContext,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
@@ -186,6 +198,7 @@ export function buildAdjudicationMessages(
     readonly neighbouringSourceText?: string;
     readonly documentSourceText?: string;
     readonly referenceContext?: string;
+    readonly identityContext?: string;
   },
 ): AdjudicationPromptPlan {
   /**
@@ -255,6 +268,7 @@ ${evidence}`;
       neighbouringIncumbentText ?? '',
       documentSourceText ?? '',
       referenceContext ?? '',
+      identityContext ?? '',
       ...groupBlocks,
     ],
   },);
@@ -297,6 +311,15 @@ ${documentSourceText}
 ${fence} This original document is additional evidence for checking claims about the CURRENT TRANSLATION. It does not expand that editable scope or require translating the rest of the document here. ${fence}
 `;
 
+  /**
+   Declared identity before the documents, read as given facts as the critic
+   reads it (ledger S4), or nothing when the page declares nothing.
+   */
+  const identityBlock = declaredNamesBlock({
+    fence,
+    ...((identityContext === undefined) ? {} : { identityContext, }),
+  },);
+
   return {
     messages: [
       {
@@ -305,7 +328,7 @@ ${fence} This original document is additional evidence for checking claims about
       },
       {
         role: 'user',
-        content: `${fence} ORIGINAL ${fence}
+        content: `${identityBlock}${fence} ORIGINAL ${fence}
 ${sourceText}
 ${fence} TRANSLATION ${fence}
 ${targetText}

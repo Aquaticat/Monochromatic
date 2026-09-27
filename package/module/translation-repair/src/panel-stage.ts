@@ -128,6 +128,9 @@ type PanelPacketResult = {
  @param referenceContext - what the original's cited pages say (class
  thirty-five), evidence for addition claims
  
+ @param identityContext - declared names and handles, which the panel judges
+ a claim against a declared name by (ledger S4)
+ 
  @param signal - caller cancellation
  
  @param perCallTimeoutMs - deadline per exchange
@@ -153,6 +156,7 @@ export async function runPanelStage(
     neighbouringSourceText,
     documentSourceText,
     referenceContext,
+    identityContext,
     signal,
     perCallTimeoutMs,
     l,
@@ -167,6 +171,7 @@ export async function runPanelStage(
     readonly neighbouringSourceText?: string;
     readonly documentSourceText?: string;
     readonly referenceContext?: string;
+    readonly identityContext?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -194,6 +199,7 @@ export async function runPanelStage(
         ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
         ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
         ...((referenceContext === undefined) ? {} : { referenceContext, }),
+        ...((identityContext === undefined) ? {} : { identityContext, }),
       },),
     };
   },);

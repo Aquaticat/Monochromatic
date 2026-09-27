@@ -233,9 +233,9 @@ await describe({
              */
             const content = user?.content ?? '';
 
-            expect(content,).toContain('IDENTITY',);
+            expect(content,).toContain('DECLARED NAMES',);
             // Declarations must precede the evidence they license.
-            expect(content.indexOf('IDENTITY',),).toBeLessThan(
+            expect(content.indexOf('DECLARED NAMES',),).toBeLessThan(
               content.indexOf('ORIGINAL',),
             );
           },
@@ -249,7 +249,7 @@ await describe({
               targetText: 'Mittens is adorable.',
             },);
 
-            expect(user?.content,).not.toContain('IDENTITY',);
+            expect(user?.content,).not.toContain('DECLARED NAMES',);
           },
         },),
 

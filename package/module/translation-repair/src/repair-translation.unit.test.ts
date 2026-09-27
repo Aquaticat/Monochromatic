@@ -2152,5 +2152,89 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
         }
       },
     },),
+
+    it({
+      name: 'SHOWS THE PANEL THE DECLARED NAMES the front matter carries (ledger S4), and no block where it '
+        + 'declares none',
+      fn: async () => {
+        /**
+         Panel ballot prompts one run sent.
+
+         @param sourceText - original document
+
+         @param targetText - translation document
+
+         @returns Each panel ballot's whole prompt text
+
+         @example
+         ```ts
+         const ballots = await ballotsFor({ sourceText: SOURCE_TEXT, targetText: TARGET_TEXT, },);
+         ```
+         */
+        async function ballotsFor(
+          {
+            sourceText,
+            targetText,
+          }: {
+            readonly sourceText: string;
+            readonly targetText: string;
+          },
+        ): Promise<readonly string[]> {
+          /** Panel ballot prompts, in order. */
+          const ballots: string[] = [];
+
+          /** Client that records panel prompts and otherwise follows the script. */
+          const recording: SyntheticClient = {
+            chatText: async () => {
+              throw new Error('chatText unused by the repair pipeline',);
+            },
+            chatJson: async <ValueT,>(
+              request: ChatJsonRequest<ValueT>,
+            ): Promise<ChatJsonOutcome<ValueT>> => {
+              if (request.responseFormat?.json_schema.name === 'panel_ballot') {
+                ballots.push(request.messages
+                  .map(function toText(message,) {
+                    return messageText({ message, },);
+                  },)
+                  .join('\n',),);
+              }
+              return await scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },)
+                .chatJson(request,);
+            },
+            quotas: async () => {
+              throw new Error('quotas unused',);
+            },
+          };
+          await repairTranslation({
+            client: recording,
+            sourceText,
+            targetText,
+            models: MODELS,
+            signal: new AbortController().signal,
+          },);
+          return ballots;
+        }
+
+        /** Ballots over documents whose front matter declares the cat. */
+        const declared = await ballotsFor({
+          sourceText: `---\nname: 猫猫\n---\n\n${SOURCE_TEXT}`,
+          targetText: `---\nname: Mimi\n---\n\n${TARGET_TEXT}`,
+        },);
+        expect(declared.length,).toBeGreaterThan(0,);
+        for (const ballot of declared) {
+          expect(ballot,).toContain('DECLARED NAMES',);
+          expect(ballot,).toContain('TRANSLATION declares "Mimi"',);
+        }
+
+        /** Ballots over documents declaring nothing. */
+        const bare = await ballotsFor({
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+        },);
+        expect(bare.length,).toBeGreaterThan(0,);
+        for (const ballot of bare)
+          expect(ballot,).not.toContain('TRANSLATION declares',);
+      },
+    },),
   ],
 },);
