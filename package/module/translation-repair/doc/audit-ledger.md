@@ -1738,7 +1738,8 @@ twice more later that day (`node <test> | rg ; node <test> | rg`, and one `rg` t
 and once a shell `for` loop over line numbers, which the same rule forbids,
 and once `<test> | rg ... ; true` to force a zero exit;
 twice more still (`<test> > log ; echo "exit $?"`, and `rg --files ... ; rg <config>`),
-and once more during H2 (`<test> > log && rg --count FAIL log ; rg <name> log`).
+and once more during H2 (`<test> > log && rg --count FAIL log ; rg <name> log`),
+and once during S19 (`sleep 1 && rg --count PASS log ; tail <output>`), a foreground sleep as well.
 The first `;` one also hid which of two files failed, since both counts printed as one number.
 Prevention: a report that should run after a failing command is `a || b`, never `a ; b`;
 two independent checks are two tool calls.
@@ -1853,3 +1854,12 @@ The ledger edit that moved M9 also cut M8 in two, because the region was read sh
 M8's prevention sat under M11 until this entry's commit.
 Prevention: a floor change runs the full suite before its commit, as M2 already asks of sheet wording;
 a region is read to the next heading before text is inserted after it.
+
+### M13: a pin search that quoted a whole clause
+
+Status: caught by the full suite before commit (`112b399a5`).
+Before rewording `KEPT_SUBJECT_RULE` the search for pins quoted the clause "says that I (or that person)";
+`source-subject-policy.unit.test.ts` pins it split across two string lines, so the search found nothing
+and the full suite failed on it.
+Prevention: search for a pin of a sentence by a fragment of four words or fewer, and by each end of the sentence;
+the full suite before commit (M2) stays the backstop.
