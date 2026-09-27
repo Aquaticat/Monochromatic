@@ -148,8 +148,9 @@ await describe({
     it({
       name: 'ROMANISES a handle the archive never rendered when the page leaves it in Han: one capitalised '
         + 'word of pinyin in the heading and the signature (class eighty-three, 2026-09-22: one handle '
-        + 'shipped in Han in a heading and signature where earlier runs wrote two different pinyin spellings; '
-        + 'owner 2026-09-22: pinyin, with the literal translation in parentheses)',
+        + 'shipped in Han in a heading and signature where earlier runs wrote two different pinyin spellings). '
+        + 'The pinyin only: the literal meaning the owner\'s rule adds belongs to the gloss pass, which has none '
+        + 'to place when no writer glossed the handle (ledger A17)',
       fn: async () => {
         const restored = restoreContributorNames({
           slices: [UNCARRIED,],

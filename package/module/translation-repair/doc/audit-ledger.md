@@ -863,7 +863,10 @@ Status: fixed in `75900e601` (oxlint does not flag an unused `using` binding), `
 
 ### T3: tests pinning wrong or retired behaviour
 
-Status: open.
+Status: partly fixed.
+The two standing tests are renamed to what they assert;
+the restore test no longer claims the owner's whole rule, and the behaviour gap it pinned is A17;
+`dropped-covers-the-page.unit.test.ts` moves with S6.
 `dropped-covers-the-page.unit.test.ts` pins the silent-original wording of S6;
 `corpus-run/contributor-name-restore.unit.test.ts` pins handle restorations
 that drop the literal gloss the house rule requires,
@@ -1041,6 +1044,20 @@ Status: open.
 A lane wording's triple newline ships;
 the runs lock judges liveness by pid only;
 the page is written before the artifact.
+
+### A17: a handle every writer left in Han ships romanised with no literal meaning
+
+Status: open (found while fixing T3).
+The owner's rule of 2026-09-22 is pinyin as one capitalised word with the literal meaning in parentheses
+at the first appearance.
+`contributor-name-restore.ts` romanises a handle the page left in Han,
+and `handle-gloss-place.ts` places only a gloss some writer wrote,
+since it cannot invent a meaning;
+so when every writer left the handle in Han the page ships the bare pinyin.
+No floor refuses a candidate that leaves a handle in Han
+(`translate-untranslated.ts` refuses only a whole slice returned untranslated),
+so the writers are never asked for the gloss.
+The fix belongs at the writers: a floor naming the declared handle a candidate left in Han.
 
 ## Providers, routing and seating
 
