@@ -7,6 +7,7 @@
  @module
  */
 
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -21,23 +22,6 @@ import {
   inSliceLogContext,
   sliceTagged,
 } from '../dist/final/node/index.mjs';
-
-/**
- Waits a turn of the event loop, so concurrent work interleaves.
-
- @example
- ```ts
- await nextTurn();
- ```
- */
-async function nextTurn(): Promise<void> {
-  await new Promise(function afterTimer(resolve,) {
-    setTimeout(
-      resolve,
-      0,
-    );
-  },);
-}
 
 /**
  Collects what `console.info`, where the tagged logger's `info` sink resolves,
@@ -127,7 +111,8 @@ await describe({
               lane: 'translate',
               sliceIndex,
               run: async () => {
-                await nextTurn();
+                // A timer turn, so the two slices interleave.
+                await wait(0,);
                 return currentLogContext().slice;
               },
             },);
