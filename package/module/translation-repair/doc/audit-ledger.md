@@ -891,7 +891,26 @@ the fixture rule (cat-themed invention) stands, so these are fixed as fixtures.
 
 ### T5: flaky timing
 
-Status: open.
+Status: partly fixed.
+The contest case's delayed seats never answer, on an abortable timer: 5 of 5 pass at 0.2 CPU
+(`~/temp/agent/audit-tests/t5-fix-summary.log`).
+The naturalness-review sibling measured 5 of 5 at 0.2 CPU before any change and is left as it is:
+its fake answers in microtasks, so the race read into it does not occur.
+Real sleeps removed: the `stage-quorum` stall (30.49 s to 0.51 s),
+the contest driver's production backoff (27.4 s to 0.55 s),
+and the client's malformed-body case (11.98 s to 0.76 s).
+`consolidate-driver` ran 10.24 s, 0.77 s after the fix:
+its two positive controls ("reaches the roster" cases) passed only because
+five production backoffs outlasted `driveWith`'s 5 s abort,
+so they asserted a timeout, not a roster call;
+they now count transport calls under a zero-retry client and assert the observed exits.
+A sweep of all 729 test files for timers of 500 ms or more
+(`~/temp/agent/audit-repair/long-timer-sweep.json`) leaves these real waits:
+the `benchmark` fake's two 2 s waits,
+the `stage-round-refill` slow seat (1.5 s, ignoring the abort signal),
+and `transient-retry`'s backoff, which is the behaviour under test.
+Long `settleWithin` and `armCallDeadline` timers are armed and cleared and cost no wall time.
+The settle-by-timer checks and wall-clock floors in this finding stay open.
 `lane-contest-stage.unit.test.ts` "RECORDS RAW HALF-QUORUM BALLOTS" fails 2 of 5 at 0.2 CPU
 (positive control: the `podman run` in `~/temp/agent/audit-tests/run-container.mjs`);
 its sibling case, the naturalness-review grace case,
