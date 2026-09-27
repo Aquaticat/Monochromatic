@@ -70,7 +70,8 @@ await describe({
       },
     },),
     it({
-      name: 'ACCEPTS a bracketed title that keeps Han beside its Latin letters',
+      name: 'ACCEPTS a bracketed title that keeps Han beside its Latin letters when its English stands beside it '
+        + '(bare, the Han residue floor refuses it: ledger F-3)',
       fn: async () => {
         expect(validateTranslatedSlice({
           sourceText: '她最爱的游戏是《喵萌DX》。',

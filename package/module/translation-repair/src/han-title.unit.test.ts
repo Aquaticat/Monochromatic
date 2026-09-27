@@ -4,10 +4,11 @@
  no Latin letter and the page the candidate would replace never wrote it,
  is refused before any judge reads it, since a work the original names is
  called by its English title on the page. A title translated, a title kept
- beside its English in parentheses, a title that already carries Latin
- letters, a title the page itself keeps, and a title standing inside an
- HTML comment are all left to the judges. Cat-themed invention throughout;
- no corpus content appears here.
+ beside its English in parentheses, a title the page itself keeps, and a
+ title standing inside an HTML comment are all left to the judges. A title
+ that already carries Latin letters is not this floor's: the Han residue
+ floor reads its Han (ledger F-3), refusing it bare and passing it glossed.
+ Cat-themed invention throughout; no corpus content appears here.
 
  @module
  */
@@ -49,6 +50,11 @@ const LATIN_NAMED = '她最爱的专辑是《Nyan物语》。';
  Rendering that kept the Latin-bearing title as written.
  */
 const LATIN_KEPT = 'Her favourite album was 《Nyan物语》.';
+
+/**
+ Rendering that kept the Latin-bearing title with its English beside it.
+ */
+const LATIN_GLOSSED = 'Her favourite album was 《Nyan物语》 (Nyan Story).';
 
 /**
  Original naming the song through a link inside the brackets.
@@ -105,7 +111,25 @@ await describe({
       },
     },),
     it({
-      name: 'ACCEPTS the title translated, glossed, Latin-bearing, kept by the page, or standing in a comment',
+      name: 'REFUSES A LATIN-BEARING TITLE LEFT BARE through the Han residue floor, not this one, where it once '
+        + 'fell between this floor and the Latin title floor (ledger F-3)',
+      fn: async () => {
+        /**
+         Verdict on the rendering that kept the Latin-bearing title bare.
+         */
+        const verdict = validateTranslatedSlice({
+          sourceText: LATIN_NAMED,
+          candidateText: LATIN_KEPT,
+        },);
+        expect(verdict.kind,).toBe('invalid',);
+        if (verdict.kind !== 'invalid')
+          throw new Error('unreachable',);
+        expect(verdict.findings.join('\n',),).toContain('leaves Han standing',);
+        expect(verdict.findings.join('\n',),).not.toContain('leaves the title',);
+      },
+    },),
+    it({
+      name: 'ACCEPTS the title translated, glossed, Latin-bearing and glossed, kept by the page, or standing in a comment',
       fn: async () => {
         expect(validateTranslatedSlice({
           sourceText: NAMED,
@@ -117,7 +141,7 @@ await describe({
         },).kind,).toBe('valid',);
         expect(validateTranslatedSlice({
           sourceText: LATIN_NAMED,
-          candidateText: LATIN_KEPT,
+          candidateText: LATIN_GLOSSED,
         },).kind,).toBe('valid',);
         expect(validateTranslatedSlice({
           sourceText: NAMED,

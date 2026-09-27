@@ -1,7 +1,12 @@
+import { carriesLatinLetter, } from './han-only-text.ts';
 import {
-  carriesLatinLetter,
-  isHanOnly,
-} from './han-only-text.ts';
+  bracketedTitles,
+  LINE_END,
+  LINK_MIDDLE,
+  LINK_OPEN,
+  TITLE_CLOSE,
+  TITLE_OPEN,
+} from './han-title-read.ts';
 import { withoutComments, } from './translate-address-drop.ts';
 
 //region Han title floor
@@ -23,16 +28,6 @@ import { withoutComments, } from './translate-address-drop.ts';
 // hundred forty-five).
 
 /**
- Opening title bracket.
- */
-const TITLE_OPEN = '《';
-
-/**
- Closing title bracket.
- */
-const TITLE_CLOSE = '》';
-
-/**
  Opening parenthesis of a gloss.
  */
 const GLOSS_OPEN = '(';
@@ -41,140 +36,6 @@ const GLOSS_OPEN = '(';
  Closing parenthesis of a gloss.
  */
 const GLOSS_CLOSE = ')';
-
-/**
- Newline, which no title or gloss crosses.
- */
-const LINE_END = '\n';
-
-/**
- Opening of a Markdown link's text.
- */
-const LINK_OPEN = '[';
-
-/**
- Separator between a Markdown link's text and its destination.
- */
-const LINK_MIDDLE = '](';
-
-/**
- Closing of a Markdown link's destination.
- */
-const LINK_CLOSE = ')';
-
-/**
- Title as it names the work: the link text where the brackets hold a
- Markdown link, the bracketed text itself otherwise.
-
- @param bracketed - text between 《 and 》
-
- @returns Text that names the work
-
- @example
- ```ts
- titleText({ bracketed: '[猫猫摇篮曲](https://example.test/song)', },); // '猫猫摇篮曲'
- ```
- */
-export function titleText({ bracketed, }: { readonly bracketed: string; },): string {
-  /**
-   Whether the brackets hold a link's shape end to end.
-   */
-  const linkShaped = bracketed.startsWith(LINK_OPEN,) && bracketed.endsWith(LINK_CLOSE,);
-  if (!linkShaped)
-    return bracketed;
-  /**
-   Where the link text ends, -1 for no link.
-   */
-  const middle = bracketed.indexOf(LINK_MIDDLE,);
-  if (middle === (-1))
-    return bracketed;
-  return bracketed.slice(
-    LINK_OPEN.length,
-    middle,
-  );
-}
-
-/**
- Whether a bracketed title is one the floor reads: on one line, in Han
- alone, and not read already.
-
- @param title - text between the brackets
-
- @param titles - titles read so far
-
- @returns True for a fresh Han-only title
-
- @example
- ```ts
- isFreshHanTitle({ title: '猫猫摇篮曲', titles: [], },); // true
- ```
- */
-function isFreshHanTitle(
-  {
-    title,
-    titles,
-  }: {
-    readonly title: string;
-    readonly titles: readonly string[];
-  },
-): boolean {
-  if (title.includes(LINE_END,))
-    return false;
-  if (titles.includes(title,))
-    return false;
-  return isHanOnly({ text: title, },);
-}
-
-/**
- Every distinct title an original brackets in 《》 whose only form is Han,
- in order of first appearance.
-
- @param text - original passage with its comments cut
-
- @returns Titles without their brackets
-
- @example
- ```ts
- hanTitles({ text: '她最爱的歌是《猫猫摇篮曲》。', },); // ['猫猫摇篮曲']
- ```
- */
-function hanTitles({ text, }: { readonly text: string; },): readonly string[] {
-  /**
-   Titles read so far.
-   */
-  const titles: string[] = [];
-  for (
-    let open = text.indexOf(TITLE_OPEN,);
-    open !== (-1);
-    open = text.indexOf(
-      TITLE_OPEN,
-      open + 1,
-    )
-  ) {
-    /**
-     Where that title closes, -1 for never.
-     */
-    const close = text.indexOf(
-      TITLE_CLOSE,
-      open + 1,
-    );
-    if (close === (-1))
-      break;
-    /**
-     Title between the brackets, the link text where they hold a link.
-     */
-    const title = titleText({ bracketed: text.slice(
-      open + 1,
-      close,
-    ), },);
-    if (isFreshHanTitle({
-      title,
-      titles,
-    },))
-      titles.push(title,);
-  }
-  return titles;
-}
 
 /**
  Whether a parenthesis opened at an offset closes on the same line with a
@@ -594,11 +455,18 @@ function cutAt(
 }
 
 /**
- A candidate with every occurrence of the original's Han titles that this
- floor accepts (glossed, or inside parentheses after the English) cut out,
- so another floor reading the candidate for Han words does not refuse a word
- inside a title kept the way this floor allows (ledger F-11: 《高考猫》 (The
- Exam Cat) refused for 高考). A bare occurrence is left for this floor.
+ A candidate with every occurrence of the original's Han-carrying titles
+ that this floor's shape accepts (glossed, or inside parentheses after the
+ English) cut out, so another floor reading the candidate for Han words does
+ not refuse a word inside a title kept the way this floor allows (ledger
+ F-11: 《高考猫》 (The Exam Cat) refused for 高考). A bare occurrence is left
+ for the floors that read it.
+
+ TITLES CARRYING LATIN LETTERS ARE CUT TOO (ledger F-3), though this floor's
+ findings read only Han-only titles: a glossed 《喵萌DX》 (Meowmeow DX) passes
+ the Han residue floor as a glossed Han-only title does, and a bare one is
+ left for that floor to refuse, where before it fell between this floor and
+ the Latin title floor, each naming the other.
 
  @param sourceText - original passage
 
@@ -621,7 +489,10 @@ export function withoutGlossedTitles(
     readonly candidateText: string;
   },
 ): string {
-  return hanTitles({ text: withoutComments({ text: sourceText, },), },)
+  return bracketedTitles({
+    text: withoutComments({ text: sourceText, },),
+    form: 'carrying-han',
+  },)
     .reduce(
       function cutGlossed(
         text,
@@ -678,7 +549,10 @@ export function hanTitleFindings(
    Candidate with its comments cut.
    */
   const candidate = withoutComments({ text: candidateText, },);
-  return hanTitles({ text: withoutComments({ text: sourceText, },), },)
+  return bracketedTitles({
+    text: withoutComments({ text: sourceText, },),
+    form: 'han-only',
+  },)
     .filter(function leftBare(title,): boolean {
       if (pageText.includes(title,))
         return false;

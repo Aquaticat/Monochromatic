@@ -76,6 +76,27 @@ export function isHanOnly({ text, }: { readonly text: string; },): boolean {
 }
 
 /**
+ Whether a text carries a Han ideograph at all, whatever else it carries.
+
+ @param text - run of text under the question
+
+ @returns True for a run with some Han in it
+
+ @example
+ ```ts
+ carriesHan({ text: 'Nyan物语', },); // true
+ carriesHan({ text: 'Nyan', },); // false
+ ```
+ */
+export function carriesHan({ text, }: { readonly text: string; },): boolean {
+  for (const character of text) {
+    if (isHanCharacter({ character, },))
+      return true;
+  }
+  return false;
+}
+
+/**
  Whether a span of a text carries a Latin letter.
 
  @param text - text read

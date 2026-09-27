@@ -2,6 +2,7 @@ import {
   type ProtectedRange,
   protectedRanges,
 } from './corpus-run/prose-ranges.ts';
+import { isLatinLetter, } from './han-only-text.ts';
 import { isIdeograph, } from './preservation-tokens.ts';
 import { withoutComments, } from './translate-address-drop.ts';
 import { withoutGlossedTitles, } from './translate-han-title.ts';
@@ -122,26 +123,6 @@ function isRunCharacter({ character, }: { readonly character: string; },): boole
   return isIdeograph(character,)
     || isKana({ character, },)
     || (character === ITERATION_MARK);
-}
-
-/**
- Whether a character is an ASCII letter.
-
- @param character - one code unit
-
- @returns Whether it is A to Z in either case
-
- @example
- ```ts
- isLatinLetter({ character: 'q', },); // true
- ```
- */
-function isLatinLetter({ character, }: { readonly character: string; },): boolean {
-  /**
-   Character folded to lower case.
-   */
-  const lower = character.toLowerCase();
-  return (lower >= 'a') && (lower <= 'z');
 }
 
 /**

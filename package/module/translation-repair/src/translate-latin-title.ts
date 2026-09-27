@@ -3,7 +3,7 @@ import {
   isHanCharacter,
 } from './han-only-text.ts';
 import { withoutComments, } from './translate-address-drop.ts';
-import { titleText, } from './translate-han-title.ts';
+import { titleText, } from './han-title-read.ts';
 
 //region Latin title floor
 // CLASS ONE HUNDRED FORTY-ONE (XingZ6012, 2026-09-26). The second song
@@ -18,7 +18,9 @@ import { titleText, } from './translate-han-title.ts';
 // and no Han in 《》 is refused HERE before any judge reads it, unless the
 // page it would replace writes the same bracketed title (the XingZ60 archive
 // keeps one such line). A bracketed title that keeps Han (《舞萌DX》) is left
-// to the Han title floor and the judges; comments are cut.
+// to the Han residue floor (`translate-han-residue.ts`, ledger F-3), which
+// refuses its Han unless an English gloss stands beside it, and to the
+// judges; comments are cut.
 
 /**
  Opening title mark.
