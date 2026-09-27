@@ -1,3 +1,4 @@
+import { CANDIDATE_DECLARED_NAMES_RULES, } from './candidate-judge-rules.ts';
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import { SIZE_NOTE_POLICY, } from './contest-size-note.ts';
 import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
@@ -5,10 +6,6 @@ import {
   APPARATUS_KINDS,
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
 } from './page-apparatus-clause.ts';
-import {
-  DECLARED_NAME_REFERENCE_EXEMPTION,
-  NAME_FORM_SCOPE_RULE,
-} from './name-form-policy.ts';
 
 //region Contest ballot wire
 // The parts every two-way contest shares: the question, the reply schema, and
@@ -66,11 +63,7 @@ export const CONTEST_POLICY: string = [
   '',
   SIZE_NOTE_POLICY,
   '',
-  'DECLARED NAMES ARE ATTESTED FACTS about this person, taken from the documents\' own front matter.',
-  DECLARED_NAME_REFERENCE_EXEMPTION,
-  'When referring to a person or place, declared names settle HOW to spell that reference and OUTRANK the archive rendering where it uses another spelling.',
-  NAME_FORM_SCOPE_RULE,
-  'Declared identities are NOT extra content a passage owes: a candidate that does not name this person has dropped nothing, and a line attributing the passage to someone ELSE never takes this person\'s name.',
+  CANDIDATE_DECLARED_NAMES_RULES,
   '',
   JUDGE_POLICY_BLOCK,
   '',

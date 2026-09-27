@@ -121,6 +121,9 @@ export async function applyFinalPolish(
     ...((subject.referenceContext === undefined)
       ? {}
       : { referenceContext: subject.referenceContext, }),
+    ...((subject.archiveDisputeNote === undefined)
+      ? {}
+      : { archiveDisputeNote: subject.archiveDisputeNote, }),
     sliceIndex,
     ...((polishConfig === undefined) ? {} : { config: polishConfig, }),
     eligible,

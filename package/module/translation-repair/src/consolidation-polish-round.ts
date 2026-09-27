@@ -164,6 +164,9 @@ export function reviewParagraphsOf(
  @param referenceContext - what the pages the original cites say, with
  their rule, when the original cites any (class forty-one)
  
+ @param archiveDisputeNote - accepted claims against the archive rendering
+ on a disputed slice, which the gate reads (ledger S12)
+ 
  @param mode - comparative polish or required correction findings
  
  @param sliceIndex - prepared slice position
@@ -193,6 +196,7 @@ export async function runConsolidationPolishRound(
     lineStructured,
     identityContext,
     referenceContext,
+    archiveDisputeNote,
     mode,
     sliceIndex,
     config,
@@ -208,6 +212,7 @@ export async function runConsolidationPolishRound(
     readonly lineStructured: boolean;
     readonly identityContext?: string;
     readonly referenceContext?: string;
+    readonly archiveDisputeNote?: string;
     readonly mode: RefineStageMode;
     readonly sliceIndex: number;
     readonly config: ConsolidationPolishConfig;
@@ -372,6 +377,7 @@ export async function runConsolidationPolishRound(
       lineStructured,
       ...((identityContext === undefined) ? {} : { identityContext, }),
       ...((referenceContext === undefined) ? {} : { referenceContext, }),
+      ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
     },
     signal,
     exchangeTimeoutMs: perCallTimeoutMs,

@@ -1,6 +1,12 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import {
+  CANDIDATE_APPARATUS_RULE,
+  CANDIDATE_DECLARED_NAMES_RULES,
+  JUDGE_LINE_STRUCTURE_CLAUSE,
+} from './candidate-judge-rules.ts';
 import { citedReferenceCandidateLines, } from './cited-reference-rule.ts';
+import { communityRenderingsBlock, } from './community-glossary.ts';
 import {
   CONTEST_REFUSAL,
   isStringList,
@@ -172,6 +178,12 @@ export type ConsolidationPolishGateSubject = {
    (class forty-one).
    */
   readonly referenceContext?: string;
+
+  /**
+   The accepted claims against the archive rendering on a disputed slice, the
+   note the consolidate gate read before approving the base (ledger S12).
+   */
+  readonly archiveDisputeNote?: string;
 };
 
 /**
@@ -368,6 +380,40 @@ export function buildConsolidationPolishGateMessages(
       ...objections,
       ...((subject.identityContext === undefined) ? [] : [subject.identityContext,]),
       ...((subject.referenceContext === undefined) ? [] : [subject.referenceContext,]),
+      ...((subject.archiveDisputeNote === undefined) ? [] : [subject.archiveDisputeNote,]),
+    ],
+  },);
+  /**
+   Why the archive rendering is disputed, fenced as the consolidate gate
+   fences it, or nothing on an undisputed slice.
+   */
+  const disputeBlock = ((subject.archiveDisputeNote === undefined) || (subject.archiveDisputeNote === ''))
+    ? []
+    : [
+      `${fence} ARCHIVE RENDERING DISPUTED ${fence}`,
+      subject.archiveDisputeNote,
+      fence,
+      '',
+    ];
+  /**
+   Community renderings a candidate lacks where the original carries the
+   term, the evidence the consolidate gate weighs (ledger S12).
+   */
+  const communityBlock = communityRenderingsBlock({
+    sourceText: subject.sourceText,
+    candidates: [
+      {
+        label: 'ARCHIVE RENDERING',
+        text: subject.archiveText,
+      },
+      {
+        label: 'CANDIDATE "base"',
+        text: subject.baseText,
+      },
+      {
+        label: 'CANDIDATE "polished"',
+        text: subject.polishedText,
+      },
     ],
   },);
   /**
@@ -443,7 +489,20 @@ export function buildConsolidationPolishGateMessages(
   return [
     {
       role: 'system',
-      content: `${policy}\n\n${POLISH_GATE_HOUSE_RULES}`,
+      // The page rules every other candidate sheet reads (ledger S12), the
+      // line rule where it governs in every mode (ledger S15), then the house
+      // rules.
+      content: [
+        policy,
+        CANDIDATE_APPARATUS_RULE,
+        CANDIDATE_DECLARED_NAMES_RULES,
+        subject.lineStructured ? JUDGE_LINE_STRUCTURE_CLAUSE : '',
+        POLISH_GATE_HOUSE_RULES,
+      ]
+        .filter(function hasRule(part,): boolean {
+          return part !== '';
+        },)
+        .join('\n\n',),
     },
     {
       role: 'user',
@@ -462,6 +521,8 @@ export function buildConsolidationPolishGateMessages(
         `${fence}\n${shownPolished}\n${fence}`,
         '',
         ...referenceBlock,
+        ...disputeBlock,
+        ...communityBlock,
         ...correctionEvidence,
         ...priorEvidence,
         ...objectionEvidence,

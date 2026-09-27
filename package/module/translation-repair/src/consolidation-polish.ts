@@ -94,6 +94,9 @@ function objectionPolishFindings(
  @param referenceContext - what the pages the original cites say, with
  their rule, when the original cites any (class forty-one)
  
+ @param archiveDisputeNote - accepted claims against the archive rendering
+ on a disputed slice, for the gate (ledger S12)
+ 
  @param sliceIndex - prepared slice position
  
  @param config - model roles and document-wide guard facts
@@ -127,6 +130,7 @@ export async function polishConsolidation(
     lineStructured,
     identityContext,
     referenceContext,
+    archiveDisputeNote,
     sliceIndex,
     config,
     eligible = true,
@@ -143,6 +147,7 @@ export async function polishConsolidation(
     readonly lineStructured: boolean;
     readonly identityContext?: string;
     readonly referenceContext?: string;
+    readonly archiveDisputeNote?: string;
     readonly sliceIndex: number;
     readonly config?: ConsolidationPolishConfig;
     readonly eligible?: boolean;
@@ -182,6 +187,7 @@ export async function polishConsolidation(
     lineStructured,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
+    ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
     mode,
     sliceIndex,
     config,
