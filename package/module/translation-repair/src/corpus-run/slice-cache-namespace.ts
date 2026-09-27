@@ -9,6 +9,7 @@ import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { SliceCache, } from '../slice-cache.ts';
+import { writeFileAtomic, } from './atomic-write.ts';
 import {
   readDirectoryNames,
   readNamespaceGeneration,
@@ -347,9 +348,12 @@ export async function loadNamespacedSlices<ValueT,>(
         rl.warn(`${namespace.marker}: ${name} is not a resumable value for this lane; it will be recomputed`,);
     }
     catch (error) {
-      // A half-written file (SyntaxError) is recomputed; other faults surface.
+      // A half-written file (SyntaxError) is recomputed, and SAID, since the
+      // slice is bought again (ledger A11); other faults surface. Persisting
+      // is atomic now, so this marks a file written before that or by hand.
       if (!(error instanceof SyntaxError))
         throw error;
+      rl.warn(`${namespace.marker}: ${name} does not parse (${error.name}); it will be recomputed`,);
     }
   }
   return resumed;
@@ -442,21 +446,23 @@ export async function openNamespacedCache<ValueT,>(
       key,
       serialized,
     },): Promise<void> {
-      await writeFile(
-        join(
+      // ATOMIC (ledger A11): a direct write cut short left a slice the next
+      // open could not parse, and the slice was bought again.
+      await writeFileAtomic({
+        path: join(
           dir,
           sliceFileName({
             key,
             namespace,
           },),
         ),
-        `${
+        text: `${
           envelopedSlice({
             key,
             serialized,
           },)
         }\n`,
-      );
+      },);
     },
   };
 }
