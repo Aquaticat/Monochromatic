@@ -73,5 +73,33 @@ await describe({
         },).kind,).toBe('valid',);
       },
     },),
+    it({
+      name: 'ACCEPTS 你看 and 你瞧 opening a clause as the imperative "look", which English writes without "you" '
+        + '(class one hundred eighty-five: the rendering\'s "she" rendered the original\'s own 她)',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: '所以她是只温柔的猫吧。你看窗台上，她在最小的角落里睡出了最甜的梦。',
+          candidateText: 'So she was a gentle cat. Look at the windowsill: in the smallest corner she dreamed '
+            + 'the sweetest dream.',
+        },).kind,).toBe('valid',);
+        expect(validateTranslatedSlice({
+          sourceText: '「你瞧你瞧，她又醒了！」',
+          candidateText: '“Look, look, she’s awake again!”',
+        },).kind,).toBe('valid',);
+      },
+    },),
+    it({
+      name: 'STILL REFUSES 你看 as a verb with its object or complement (被你看到, 你看到了) where the address drops',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: '那只猫的伤口，也被你看到了呢。',
+          candidateText: 'Even the cat’s wound was seen by her.',
+        },).kind,).toBe('invalid',);
+        expect(validateTranslatedSlice({
+          sourceText: '你看到她睡着了吗？',
+          candidateText: 'Did she see her fall asleep?',
+        },).kind,).toBe('invalid',);
+      },
+    },),
   ],
 },);
