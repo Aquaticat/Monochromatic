@@ -26,5 +26,9 @@ export {
   declinedEntryIds,
   writeDeclinedEntry,
 } from './corpus-run/declined-entries.ts';
+export {
+  entriesFinishedThisRun,
+  finishedEntryIds,
+} from './corpus-run/pass-finished.ts';
 
 //endregion Corpus entry barrel

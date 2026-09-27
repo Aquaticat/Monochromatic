@@ -35,10 +35,10 @@ import {
 } from './pass-generation-guard.ts';
 import { assertResumableSchemaGeneration, } from './pass-schema-guard.ts';
 import {
-  countSettled,
-  artifactBackedIds,
-} from './pass-settled.ts';
-import { declinedEntryIds, } from './declined-entries.ts';
+  entriesFinishedThisRun,
+  finishedEntryIds,
+} from './pass-finished.ts';
+import { countSettled, } from './pass-settled.ts';
 import { prepareRunsLayout, } from './runs-layout.ts';
 import { digestPipeline, } from './pipeline-digest.ts';
 import {
@@ -304,10 +304,10 @@ async function runCorpusPass(): Promise<void> {
   /**
    Entry ids already carrying an artifact this pass, or a decline record.
    */
-  const done = new Set([
-    ...(await artifactBackedIds({ artifactsDir, },)),
-    ...(await declinedEntryIds({ declinedDir, },)),
-  ],);
+  const done = await finishedEntryIds({
+    artifactsDir,
+    declinedDir,
+  },);
 
   /**
    Attempt counts from prior runs, or empty on the first.
@@ -597,10 +597,12 @@ async function runCorpusPass(): Promise<void> {
   const total = await countSettled({ artifactsDir, },);
 
   /**
-   New artifacts written this run: every settled entry adds one, and only
-   not-yet-done entries were eligible.
+   Entries this run processed.
    */
-  const processed = total - done.size;
+  const processed = await entriesFinishedThisRun({
+    before: done,
+    artifactsDir,
+  },);
   console.log(
     `DONE processed=${String(processed,)} of pending=${String(pending.length,)}; artifacts=${String(total,)}/${String(CORPUS_PAIR_TARGET,)} elapsed=${String(Date.now() - start,)}ms`,
   );
