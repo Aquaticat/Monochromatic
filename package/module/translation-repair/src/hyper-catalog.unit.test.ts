@@ -54,8 +54,8 @@ await describe({
     },),
 
     it({
-      name: 'LOWERS the answer ceiling to what a model can actually emit, which two of the nine '
-        + 'cannot reach: asking for more than a model emits buys a truncation and reports it as a '
+      name: 'LOWERS the answer ceiling to what a model can actually emit, where a model cannot '
+        + 'reach the bound: asking for more than a model emits buys a truncation and reports it as a '
         + 'schema mismatch, sending a reader to the prompt instead of to the ceiling',
       fn: async () => {
         expect(answerCeilingFor({ modelId: 'gpt-oss-120b', },),).toBe(13_107,);

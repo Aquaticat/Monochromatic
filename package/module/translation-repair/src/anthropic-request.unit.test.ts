@@ -24,9 +24,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  answerCeilingFor,
   buildAnthropicBody,
   EmptyConversationError,
-  SEAT_HYPER_VISION,
+  HYPER_MODELS,
+  hyperServesLabel,
   speakingTurns,
   systemTextOf,
 } from '../dist/final/node/index.mjs';
@@ -277,15 +279,28 @@ await describe({
       name: 'ASKS FOR THE PER-MODEL CEILING where the caller named none, which is the lower of '
         + "#156's measured bound and the model's own cap",
       fn: async () => {
-        expect(buildAnthropicBody({
-          modelId: 'gpt-oss-120b',
-          messages: catMessages,
-        },).max_tokens,).toBe(13_107,);
-
-        expect(buildAnthropicBody({
-          modelId: SEAT_HYPER_VISION,
-          messages: catMessages,
-        },).max_tokens,).toBe(32_000,);
+        // The ceilings themselves are measurements pinned in
+        // `hyper-catalog.unit.test.ts`; this case pins that the body asks for them.
+        /**
+         Ceiling asked for and ceiling owed, per catalog model.
+         */
+        const asked = Object.keys(HYPER_MODELS,).map(function askedAndOwed(modelId,): readonly [number, number,] {
+          if (!hyperServesLabel(modelId,))
+            throw new Error(`catalog key ${modelId} is not a served label`,);
+          return [
+            buildAnthropicBody({
+              modelId,
+              messages: catMessages,
+            },).max_tokens,
+            answerCeilingFor({ modelId, },),
+          ];
+        },);
+        // Ceilings that differ across models, or one constant ask would pass too.
+        expect(new Set(asked.map(function owedOf([, owed,],): number {
+          return owed;
+        },),).size,).toBeGreaterThan(1,);
+        for (const [sent, owed,] of asked)
+          expect(sent,).toBe(owed,);
       },
     },),
 
@@ -293,17 +308,26 @@ await describe({
       name: "LOWERS the ask to the caller's ceiling, and never raises it above the model's, so a "
         + 'caller cannot ask for a length the model would truncate',
       fn: async () => {
-        expect(buildAnthropicBody({
-          modelId: 'kimi-k3',
-          messages: catMessages,
-          maxTokens: 900,
-        },).max_tokens,).toBe(900,);
+        /**
+         The model's own ceiling, which the caller's may only lower.
+         */
+        const ceiling = answerCeilingFor({ modelId: 'kimi-k3', },);
+        /**
+         A caller ceiling under the model's.
+         */
+        const lower = Math.floor(ceiling / 2,);
 
         expect(buildAnthropicBody({
           modelId: 'kimi-k3',
           messages: catMessages,
-          maxTokens: 900_000,
-        },).max_tokens,).toBe(16_000,);
+          maxTokens: lower,
+        },).max_tokens,).toBe(lower,);
+
+        expect(buildAnthropicBody({
+          modelId: 'kimi-k3',
+          messages: catMessages,
+          maxTokens: ceiling * 2,
+        },).max_tokens,).toBe(ceiling,);
       },
     },),
 

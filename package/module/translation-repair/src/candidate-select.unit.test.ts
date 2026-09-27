@@ -20,7 +20,9 @@ import {
   applyPatchOperations,
   CANDIDATE_NONE,
   chunkCandidateOf,
+  FULL_VOTE_WEIGHT,
   hashContent,
+  MIN_SELECTION_WEIGHT,
   NoProviderForModelError,
   ProducerRosterError,
   rosterQuorumSize,
@@ -32,6 +34,7 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
+  SELF_VOTE_WEIGHT,
   selectBestCandidate,
   selectChunkPatch,
   selectPerEnvelope,
@@ -475,6 +478,8 @@ await describe({
       fn: async () => {
         /** Quorum over the seated bench. */
         const quorum = rosterQuorumSize({ rosterSize: WIDE_BENCH.length, },);
+        /** Seats the dry day leaves reachable. */
+        const reachable = WIDE_BENCH.length - DRY_SEATS.length;
         /** GLM-5.3-Flash backs its own text at half weight, Qwen backs it at full, gpt-oss declines. */
         const outcome = await runShortBench({
           ballots: {
@@ -486,12 +491,12 @@ await describe({
         expect(outcome.kind,).toBe('selected',);
         if (outcome.kind !== 'selected')
           throw new Error('unreachable',);
-        expect(outcome.voteWeight,).toBe(1.5,);
+        expect(outcome.voteWeight,).toBe(SELF_VOTE_WEIGHT + FULL_VOTE_WEIGHT,);
         expect(outcome.tally.judgesAvailable,).toBe(WIDE_BENCH.length,);
-        expect(outcome.tally.ballots,).toBe(3,);
+        expect(outcome.tally.ballots,).toBe(reachable,);
         expect(outcome.findings,).toContain(
-          `select-short-bench (reachable 3 of ${String(WIDE_BENCH.length,)}, minimum ${
-            ((2 * 3) / quorum).toFixed(2,)
+          `select-short-bench (reachable ${String(reachable,)} of ${String(WIDE_BENCH.length,)}, minimum ${
+            ((MIN_SELECTION_WEIGHT * reachable) / quorum).toFixed(2,)
           })`,
         );
         // Every dry seat is reported lost, as before; the finding above is
@@ -506,24 +511,34 @@ await describe({
         + 'decides: two of eight reachable puts the minimum at one full ballot, and a lone full '
         + 'ballot is declined as one judge alone rather than seated',
       fn: async () => {
+        /** Quorum over the seated bench. */
+        const quorum = rosterQuorumSize({ rosterSize: WIDE_BENCH.length, },);
+        /** The dry day's seats and the GLM seat. */
+        const unreachable = [
+          ...DRY_SEATS,
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+        ];
+        /** Seats left reachable. */
+        const reachable = WIDE_BENCH.length - unreachable.length;
         /** Only Qwen and gpt-oss reachable; Qwen names candidate 1 at full weight, gpt-oss declines. */
         const outcome = await runShortBench({
           ballots: {
             [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
             [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: 0,
           },
-          unreachable: [
-            ...DRY_SEATS,
-            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          ],
+          unreachable,
         },);
+        // The scaled minimum is one full ballot, so only the two-ballot floor declines it.
+        expect((MIN_SELECTION_WEIGHT * reachable) / quorum,).toBe(FULL_VOTE_WEIGHT,);
         expect(outcome.kind,).toBe('declined',);
         if (outcome.kind !== 'declined')
           throw new Error('unreachable',);
         expect(outcome.reason,).toBe('winner named by one judge alone',);
         expect(outcome.disposition,).toBe('indecision',);
         expect(outcome.findings,).toContain(
-          `select-short-bench (reachable 2 of ${String(WIDE_BENCH.length,)}, minimum 1.00)`,
+          `select-short-bench (reachable ${String(reachable,)} of ${String(WIDE_BENCH.length,)}, minimum ${
+            ((MIN_SELECTION_WEIGHT * reachable) / quorum).toFixed(2,)
+          })`,
         );
       },
     },),
@@ -587,7 +602,8 @@ await describe({
         // count would read 3; one of the three was its own author's, so the
         // weight reads 2.5. Candidate 1 sits at 1.5 rather than 2 for the same
         // reason, which is the margin the discount exists to create.
-        expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,).toBe(2.5,);
+        expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,)
+          .toBe((2 * FULL_VOTE_WEIGHT) + SELF_VOTE_WEIGHT,);
         expect(outcome.tally.abstentions,).toBe(0,);
         // The self-vote is recorded rather than assumed away, so its rate is
         // readable from artifacts instead of argued about.
@@ -606,18 +622,20 @@ await describe({
         + 'models agreeing to the byte IS the corroboration, and it is the one '
         + 'case where the weights do not require an outside voice',
       fn: async () => {
-        const { outcome, } = await runCollapsedSelection({
-          contributors: [
-            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-            SEAT_SYNTHETIC_VISION_WITHHELD,
-            SEAT_HYPER_OPENROUTER_UNMEASURED,
-          ],
-        },);
+        /** Models that wrote the one collapsed candidate. */
+        const contributors = [
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          SEAT_SYNTHETIC_VISION_WITHHELD,
+          SEAT_HYPER_OPENROUTER_UNMEASURED,
+        ];
+        const { outcome, } = await runCollapsedSelection({ contributors, },);
+        // Enough self votes to reach the minimum, which this case needs to mean anything.
+        expect(contributors.length * SELF_VOTE_WEIGHT,).toBeGreaterThanOrEqual(MIN_SELECTION_WEIGHT,);
         expect(outcome.kind,).toBe('selected',);
         expect(outcome.kind === 'selected' ? outcome.value : '',).toBe('collapsed',);
-        expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,).toBe(2,);
-        expect(outcome.tally.selfVotes,).toBe(4,);
+        expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,).toBe(contributors.length * SELF_VOTE_WEIGHT,);
+        expect(outcome.tally.selfVotes,).toBe(contributors.length,);
       },
     },),
 
@@ -1131,7 +1149,7 @@ await describe({
         },);
         expect(outcome.kind,).toBe('selected',);
         expect(outcome.kind === 'selected' ? outcome.value : '',).toBe('first',);
-        expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,).toBe(1.5,);
+        expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,).toBe(SELF_VOTE_WEIGHT + FULL_VOTE_WEIGHT,);
         expect(outcome.tally.abstentions,).toBe(2,);
         expect(outcome.findings,).toContain('select-runoff-under-minimum',);
       },
