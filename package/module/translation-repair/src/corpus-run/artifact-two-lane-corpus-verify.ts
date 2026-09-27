@@ -159,6 +159,15 @@ export function verifyArtifactAgainstPreparation(
     artifact,
     prepared,
   },);
+  translating({
+    check: function findings(): void {
+      assertFindingsDescribePreparation({
+        prepared,
+        reported: preparation.alignmentFindings,
+      },);
+    },
+    path: `${artifact.id}.preparation.alignmentFindings`,
+  },);
 
   // BOTH LEDGERS ROW BY ROW, against the slices the preparation produced. This
   // is the check the standalone reader has no way to make: it can see that the
@@ -200,14 +209,17 @@ export function verifyArtifactAgainstPreparation(
 
 /**
  Checks what a parsed artifact measured of its preparation against a
- preparation: slice count, document sizes, alignment pairs and findings, and
- each lane's own slice count.
+ preparation: slice count, document sizes, alignment pairs, and each lane's
+ own slice count.
  
  SPLIT FROM THE IDENTITY CHECK (ledger A12b). The recorded identity also
- hashes the declared names as the run's build worded them, so a preparation
- rebuilt today never names itself as the run did; a rebuild whose rows
- reproduce the run's carve (`artifact-two-lane-rebuild-rows.ts`) is verified
- by these measurements instead.
+ hashes the declared names as the run's build worded them, and the recorded
+ alignment findings include the roster pairing rounds' own (mikaela16's six
+ are all `block-pairing` lines), which a rebuild never runs, so it reports
+ none over the same rows. A preparation rebuilt today matches neither; a
+ rebuild whose rows reproduce the run's carve
+ (`artifact-two-lane-rebuild-rows.ts`) is verified by these measurements
+ instead.
  
  @param artifact - artifact as the version 2 reader returned it
  
@@ -261,15 +273,6 @@ export function verifyArtifactMeasurements(
     recorded: preparation.alignmentPairCount,
     actual: prepared.alignmentPairCount,
     path: `${artifact.id}.preparation.alignmentPairCount`,
-  },);
-  translating({
-    check: function findings(): void {
-      assertFindingsDescribePreparation({
-        prepared,
-        reported: preparation.alignmentFindings,
-      },);
-    },
-    path: `${artifact.id}.preparation.alignmentFindings`,
   },);
   translating({
     check: function repairCounts(): void {
