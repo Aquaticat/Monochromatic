@@ -6,7 +6,6 @@
  @module
  */
 
-import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
@@ -33,13 +32,38 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Delay of the deliberately slow budget-test clients;
- one call sinks the remaining budget under the dispatch floor.
- Deliberately long: the first dispatch must fit inside the budget
- headroom (half of this) even when a loaded full-suite run slows entry
- preparation, or the test flakes all-skipped.
+ Time one budget-test call spends on the fake clock;
+ the budget holds half of it past the dispatch floor,
+ so one call sinks the rest under the floor.
+ The fake clock moves only when a call does,
+ so a loaded machine can neither skip the first dispatch nor slow the file.
  */
 const BUDGET_CALL_DELAY_MS = 2_000;
+
+/**
+ Fake wall clock a budget test advances by one call's time per call.
+ */
+type FakeClock = {
+  ms: number;
+};
+
+/**
+ Reader handing the benchmark a fake clock's time.
+
+ @param clock - clock the test's calls advance
+
+ @returns Clock reader for `runCriticBenchmark`'s `now`
+
+ @example
+ ```ts
+ const now = readerOf({ clock, },);
+ ```
+ */
+function readerOf({ clock, }: { readonly clock: FakeClock; },): () => number {
+  return function readFakeClock(): number {
+    return clock.ms;
+  };
+}
 
 /**
  Invented zh source with a butterfly sentence the seed will delete from the
@@ -426,15 +450,17 @@ await describe({
     it({
       name: 'skips what the run budget cannot fit and reports coverage',
       fn: async () => {
+        /** Clock the calls advance. */
+        const clock: FakeClock = { ms: 0, };
         /**
-         Fake client whose calls take one measurable delay each.
+         Fake client whose calls each take one call's time on the clock.
          */
         const slowClient: SyntheticClient = {
           ...fakeClient,
           chatJson: async function slowChatJson<ValueT,>(
             request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
           ): Promise<ChatJsonOutcome<ValueT>> {
-            await wait(BUDGET_CALL_DELAY_MS,);
+            clock.ms += BUDGET_CALL_DELAY_MS;
             return await fakeClient.chatJson(request,);
           },
         };
@@ -456,6 +482,7 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           signal: new AbortController().signal,
           runBudgetMs: MIN_DISPATCH_BUDGET_MS + (BUDGET_CALL_DELAY_MS / 2),
+          now: readerOf({ clock, },),
         },);
 
         expect(result.attempts.map(function toKind(attempt,) {
@@ -479,16 +506,18 @@ await describe({
     it({
       name: 'keeps a dispatched failure when the budget kills its retry',
       fn: async () => {
+        /** Clock the call advances. */
+        const clock: FakeClock = { ms: 0, };
         /**
-         Fake client that burns delay and returns a truncated mismatch,
-         so the single retry is earned but the budget cannot fit it.
+         Fake client that spends one call's time and returns a truncated
+         mismatch, so the single retry is earned but the budget cannot fit it.
          */
         const truncatingSlowClient: SyntheticClient = {
           ...fakeClient,
           chatJson: async function truncatingSlowChatJson<ValueT,>(): Promise<
             ChatJsonOutcome<ValueT>
           > {
-            await wait(BUDGET_CALL_DELAY_MS,);
+            clock.ms += BUDGET_CALL_DELAY_MS;
             return {
               kind: 'schema-mismatch',
               rawText: '<think>still thinking about cats',
@@ -509,6 +538,7 @@ await describe({
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           signal: new AbortController().signal,
           runBudgetMs: MIN_DISPATCH_BUDGET_MS + (BUDGET_CALL_DELAY_MS / 2),
+          now: readerOf({ clock, },),
         },);
 
         expect(result.attempts,).toHaveLength(1,);
