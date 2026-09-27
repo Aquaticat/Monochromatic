@@ -40,5 +40,11 @@ export {
   type StartTicksRead,
   startTicksOf,
 } from './corpus-run/process-identity.ts';
+export {
+  type AgreementSource,
+  type EntryAgreement,
+  type PageAgreement,
+  pageAgreement,
+} from './corpus-run/page-agreement.ts';
 
 //endregion Corpus entry barrel

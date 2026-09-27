@@ -9,10 +9,11 @@ import {
   PEOPLE_DIR,
 } from './publish-fixed.ts';
 import {
+  type EntryAgreement,
+  pageAgreement,
+} from './page-agreement.ts';
+import {
   type PageLengthCheck,
-  pageCarriesEveryWording,
-  pageWeighsWhatItShould,
-  pageWeightRefutes,
   pairPublishedPages,
 } from './published-page-check.ts';
 import {
@@ -178,20 +179,6 @@ function weighedAs(
 }
 
 /**
- What one entry's report concluded.
- 
- THREE ANSWERS, NOT TWO. A page that carries every wording but whose length
- could not be checked is not the evidence a weighed page is, and the closing
- line used to claim the length for both.
- 
- @example
- ```ts
- const agreement: EntryAgreement = 'agreed-unweighed';
- ```
- */
-type EntryAgreement = 'agreed-weighed' | 'agreed-unweighed' | 'disagreed';
-
-/**
  Reports one entry, returning whether its page agreed with its artifact.
  
  @param runsDir - run directory both halves live under
@@ -228,33 +215,22 @@ async function reportEntry(
   }
 
   /**
-   What the page turned out to carry.
+   The page judged against its artifact, by the one definition a pass also
+   republishes on (`page-agreement.ts`).
    */
   const {
-    wordings,
-    silentSlices,
-    missing,
-  } = pageCarriesEveryWording({
+    agreement,
+    wording: {
+      wordings,
+      silentSlices,
+      missing,
+    },
+    weight,
+    wrongLength,
+  } = pageAgreement({
     artifact: read.artifact,
     pageText: read.pageText,
   },);
-
-  /**
-   What the page should weigh against what it does, or that the artifact
-   predates the stored archive text and nothing can be weighed.
-   */
-  const weight = pageWeighsWhatItShould({
-    artifact: read.artifact,
-    archive: read.artifact
-      .preparation
-      .archiveText,
-    pageText: read.pageText,
-  },);
-
-  /**
-   Whether the length says the page lost or gained text nobody decided on.
-   */
-  const wrongLength = pageWeightRefutes({ weight, },);
 
   console.log(
     `${entryId}: wordings=${String(wordings,)} silent=${String(silentSlices,)} `
@@ -272,11 +248,7 @@ async function reportEntry(
     );
   }
 
-  if (wrongLength)
-    return 'disagreed';
-  if (missing.length > 0)
-    return 'disagreed';
-  return (weight.kind === 'unweighable') ? 'agreed-unweighed' : 'agreed-weighed';
+  return agreement;
 }
 
 /**

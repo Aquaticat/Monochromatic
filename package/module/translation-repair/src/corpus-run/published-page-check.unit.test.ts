@@ -17,6 +17,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type AgreementSource,
+  pageAgreement,
   pageCarriesEveryWording,
   pageWeighsWhatItShould,
   pageWeightRefutes,
@@ -783,6 +785,99 @@ await describe({
           unpublished: [],
           unsettled: ['Mittens',],
         },);
+      },
+    },),
+  ],
+},);
+
+/**
+ {@link artifactOver} under {@link ONE_SWAP}, carrying the archive it stored
+ or the statement that it stored none.
+
+ @param archiveText - what the artifact says it stored
+
+ @returns Artifact the agreement reads
+
+ @example
+ ```ts
+ const artifact = storing({ archiveText: { kind: 'unrecorded', }, },);
+ ```
+ */
+function storing(
+  { archiveText, }: { readonly archiveText: { readonly kind: 'stored'; readonly text: string; } | { readonly kind: 'unrecorded'; }; },
+): AgreementSource {
+  return {
+    ...artifactOver(ONE_SWAP,),
+    preparation: { archiveText, },
+  };
+}
+
+await describe({
+  name: pageAgreement.name,
+  children: [
+    it({
+      name: 'AGREES, WEIGHED, on the page a correct publish writes: the control the other verdicts rest on',
+      fn: async () => {
+        expect(pageAgreement({
+          artifact: storing({
+            archiveText: {
+              kind: 'stored',
+              text: ARCHIVE_PAGE,
+            },
+          },),
+          pageText: SWAPPED_PAGE,
+        },).agreement,).toBe('agreed-weighed',);
+      },
+    },),
+    it({
+      name: 'AGREES UNWEIGHED where the artifact predates the stored archive, never as weighed',
+      fn: async () => {
+        expect(pageAgreement({
+          artifact: storing({ archiveText: { kind: 'unrecorded', }, },),
+          pageText: SWAPPED_PAGE,
+        },).agreement,).toBe('agreed-unweighed',);
+      },
+    },),
+    it({
+      name: 'DISAGREES on a page missing a wording its artifact ships',
+      fn: async () => {
+        /**
+         What the archive-only page came to.
+         */
+        const judged = pageAgreement({
+          artifact: storing({
+            archiveText: {
+              kind: 'stored',
+              text: ARCHIVE_PAGE,
+            },
+          },),
+          pageText: ARCHIVE_PAGE,
+        },);
+        expect(judged.agreement,).toBe('disagreed',);
+        expect(judged.wording.missing.length,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'DISAGREES on a page carrying every wording but cut between them, on its length alone',
+      fn: async () => {
+        /**
+         What the cut page came to.
+         */
+        const judged = pageAgreement({
+          artifact: storing({
+            archiveText: {
+              kind: 'stored',
+              text: ARCHIVE_PAGE,
+            },
+          },),
+          pageText: SWAPPED_PAGE.replace(
+            ', and nobody decided anything about that',
+            '',
+          ),
+        },);
+        expect(judged.agreement,).toBe('disagreed',);
+        expect(judged.wording.missing,).toEqual([],);
+        expect(judged.wrongLength,).toBe(true,);
       },
     },),
   ],
