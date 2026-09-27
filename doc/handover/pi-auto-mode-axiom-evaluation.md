@@ -29,6 +29,27 @@ Current references:
 - [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-26.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
 
+## Sequencing correction
+
+The user stopped the integration-policy interview and asked whether investigation of Laya,
+Jev,
+and Voyage-rerank was finished.
+It was not.
+The agent moved into Q14 and Q15 prematurely.
+Return to candidate investigation before further integration-policy questions or contract implementation.
+Do not treat completed access checks or limited probes as completed candidate evaluation.
+
+The user nevertheless answered Q14 A and Q15 B.
+Those answers are recorded in the settled preferences section;
+they do not authorize production implementation or mean the shared design is confirmed.
+The user explicitly requested no `AGENTS.md` edit for now and asked to save the correction in this handover.
+Do not apply the previously proposed AXQ rule or another corrective agent-guidance edit.
+
+This handover supersedes pending-question wording and the unaccepted Q15 A recommendation
+in older planning/audit records.
+Do not repeat Q14 or Q15.
+Defer the dependent inheritance/revocation-linkage interview until candidate research is ready.
+
 ## Settled preferences
 
 Do not reopen these choices:
@@ -56,6 +77,15 @@ Do not reopen these choices:
   for validated inspected script forms,
   without separate code-established effect analysis.
   Do not reinstate the rejected code-proof-only prerequisite under another name.
+- Q14 A makes trust-directive reset effective across branches of the same session ID.
+  Navigation must not reactivate those reset directives.
+  This answer does not expand reset to exact-action approval records
+  or decide revocation in already-forked separate sessions.
+- Q15 B permits eligible human-confirmed trust directives to inherit into a new forked session
+  through verified lineage and a valid original human witness.
+  Copied text or an entry ID alone does not establish authority.
+  Cross-session revocation linkage remains unresolved and is deferred,
+  not an invitation to resume integration grilling now.
 
 Fixed checks,
 provenance,
@@ -284,40 +314,59 @@ Do not select thresholds from these development observations or infer whole-guar
 Scratch commit `cf8a7fc` retains the result and quote control.
 
 Todo #11 is complete for Voyage interface/feature fit only.
-Todo #16 is in progress for the complete effect/authorization contract
-and its code-owned witness/freshness tests.
+Todo #16 is paused pending the candidate-research priority correction.
+Its effect/authorization contract and code-owned witness/freshness tests remain incomplete.
 The inventory honors Q13 B.
 Joint permission binding is required even within one grant:
 separate operation and target mentions cannot be combined across clauses.
 Standalone directive prohibitions must also survive alternative permission witnesses.
 
-Next work should address:
+Next work is candidate investigation,
+starting with the remaining Laya assessment rather than further grant-lifecycle design.
 
-- A verified original-request witness,
-  stable binding to the actual entry/branch,
-  collector failure,
-  input transforms,
-  queues,
-  resumption,
-  and context edits.
-  Use metadata references rather than duplicate transcript capture.
-- Independent per-axiom truth labels beyond the initial six cases.
-  Preserve the original 24 reserved scenarios;
-  do not fit definitions or thresholds to reserved model results.
-- Same-grant operation/resource/destination/condition binding,
-  stale grants,
-  branch switches,
-  revocations,
-  old machine-approval reuse,
-  and pending prompt changes.
-- Total deadline and permitted client-retry failure paths,
-  cancellation,
-  missing estimates,
-  modalities,
-  and real consumer integration in disposable fixtures.
-- Remaining model/service gates and comparable qualification for authorized candidates.
-  Voyage relevance scores are not automatically axiom probabilities.
-  No winner or adoption-ready recommendation exists.
+### Laya investigation still incomplete
+
+Full-policy runtime and isolated Noul observations are available.
+Broader axiom evaluation,
+other relevant authorized configurations,
+and fine-tuning feasibility remain open under todos #6 and #7.
+Keep the agreed resource bounds and distinguish a measured deadline miss from rejection of every fallback workflow.
+Training and rented compute still require separate authorization.
+
+### Jev investigation still incomplete
+
+Native development batches,
+context overflow probes,
+and pinned gateway-source observations are available.
+Broader qualification and outstanding model/service evidence remain open under todos #2 and #14.
+The 15-case development batch is not calibration or a complete evaluation.
+Do not reopen the accepted AUP,
+retention,
+or gateway-internal retry choices.
+
+### Voyage-rerank investigation has bounded findings
+
+Todo #11 completed interface and raw-feature fit work only.
+It did not qualify an axiom probability mapping,
+auxiliary role,
+or the entire service.
+Keep relevance scores distinct from truth probabilities and explicitly state which remaining questions affect eligibility.
+Do not treat the withdrawn final-verdict pilot as quality evidence or silently introduce training.
+
+### Deferred integration work
+
+Original-request witnesses,
+grant-writer provenance,
+branch/fork binding,
+revocation finalization,
+old approval reuse,
+manual prompts,
+deadline/retry/cancellation paths,
+and real Pi consumer integration remain recorded work,
+not the current interview frontier.
+Preserve the original 24 reserved scenarios;
+do not tune definitions or thresholds to reserved model results.
+No winner or adoption-ready recommendation exists.
 
 ## Artifacts and commit checkpoints
 
@@ -348,16 +397,11 @@ and handover.
 The subsequent citation/checkpoint edit passed the inspected eleven-document check `proc_3a0f`.
 The Pi lifecycle findings passed the inspected eleven-document check `proc_1490`.
 A final scope clarification distinguishes reusable trust directives from exact-action approvals.
-Q14 asks whether trust-directive reset is session-wide across branches or remains branch-local;
-already-forked sessions are outside that question.
-Q15 asks whether an ordinary session-scoped trust directive needs new confirmation in a new forked session ID
-or can inherit through verified lineage plus a valid original human witness.
-Q9b's prose matching does not settle inheritance.
-The in-memory probe does not qualify persisted replay.
-A is recommended for both,
-with benefits,
-tradeoffs,
-and rankings recorded in the effect contract.
-Neither is adopted yet;
-ask this frontier and wait rather than implementing either policy.
-No candidate has a qualified production selection.
+That clarification was rendered and its scoped Markdown lint passed after commit `6fa854714`.
+The user subsequently chose Q14 A and Q15 B,
+while correcting the premature integration interview.
+This handover records those answers and the return to candidate investigation.
+The in-memory probe still does not qualify persisted replay.
+Do not ask the deferred inheritance/revocation questions yet.
+No candidate has a qualified production selection,
+and no production implementation is authorized.
