@@ -635,3 +635,112 @@ Status: open.
     class one hundred ten not replayed on real texts).
 - Evidence misquoted to the owner and rulings misread (治愈's 安慰; class fifty-four's reading of "else fail").
 - Shell rule slips in this session: a `;` in a suite command and in a test command.
+
+## History, classes 1 to 92 and before numbering
+
+Notes: `~/temp/agent/audit-history-1-92/`
+(`notes-classes-01-44.md`, `notes-classes-45-76.md`, `verify-hashes.out`: 213 cited hashes, none missing).
+Families found there:
+narrow fix leaving siblings,
+a gate or tie stopping the entry over a valid proposal,
+two readers of one text applying different rules,
+sheet text contradicting another rule or the code,
+a rule's sample wording steering output,
+a check placed after the last decision (publish-only),
+a decision made without evidence the pipeline holds,
+silence counted as a vote,
+an enumerated list where a general rule was needed,
+a fallback hiding a failure,
+missing log context,
+slice-by-slice judging blind to page consistency,
+a fix introducing a regression,
+provider replies misclassified.
+
+### E1: destination loss is caught only at publish, and the refusal names neither destination nor slice
+
+Status: open.
+`corpus-run/publish-fixed.ts` throws after all spending;
+no page-assembly pass names a destination;
+`corpus-run/destinations-line.ts` and `corpus-run/pass-entry.ts` claim the addresses are in the run log,
+false on the refusal path.
+XingZ6011 lost 96.3 min to it on 2026-09-26.
+
+### E2: the reader-protection bullet prescribes "she ended her life" for deaths and attempts alike
+
+Status: open.
+The bullet opens on "a death or an attempt" and its sample says "the page says that she ended her life",
+the class seventy-nine shape;
+class one hundred twenty-four's later sentence contradicts it.
+
+### E3: stages running their own rounds count unreachable seats in their quorum
+
+Status: open.
+`absolute-naturalness-review-stage.ts` sizes on `modelIds.length`,
+so a false "quorum not met" skips the confirmation;
+`pair-blocks-stage.ts` and `pair-sections-stage.ts` time their grace the same way.
+`reachableQuorum` exists (`stage-reachable-quorum.ts`).
+
+### E4: an empty standing with no valid lane text fails at publish, not at once
+
+Status: open (class eighty-seven's open path).
+
+### E5: floor refusals and panel votes the log cannot explain
+
+Status: open.
+`translate-produce.ts` returns floor refusals as findings with no log line;
+a panel verdict carries no reason.
+
+### E6: a malformed archive competes in repair selection as though it parsed
+
+Status: open.
+`repair-chunk-verdict.ts` passes `UNCHANGED_MEASUREMENTS` with `integrityOk` true.
+
+### E7: the sheet-leak label list has fallen behind the sheets
+
+Status: open.
+`translate-sheet-leak.ts` lists seven labels;
+`REJECTED CANDIDATE N`,
+`WHAT THE JUDGES FOUND`
+and `PRIOR FAILED CONSOLIDATION STRATEGY` are fenced but not listed.
+
+### E8: more fixtures paraphrase corpus content
+
+Status: open.
+`archive-footnote-relabel.unit.test.ts`,
+`pair-definition-order.unit.test.ts`,
+`coverage-verdict.unit.test.ts` (names from the corpus).
+
+### E9: tests pin roster sizes to literals
+
+Status: open.
+`roster-reach.unit.test.ts`,
+`corpus-run/owner-cull.unit.test.ts`.
+
+### E10: the page-name glossary reads raw documents
+
+Status: open, impact unmeasured.
+`page-name-glossary.ts` does no front-matter split and no comment or code-fence masking.
+
+### E11: the retry-wait parser is case-sensitive and knows only h, m and s
+
+Status: open (latent).
+
+### E12: the English-original recognizer is a list of exact wordings
+
+Status: open (latent).
+
+### Process mistakes, classes 1 to 92 and before
+
+- A suite called green when red (`e7307d304` for `d70087757`) and a miscounted PASS total.
+- Runs launched on red builds (CuspariaKLSY3 on a real defect; others red on fixtures),
+    on stale builds (two green runs that never executed the new code),
+    or with the wrong roster or entry id.
+- Results claimed without reading the output (the owner: "You didn't even look at its actual output.")
+    and reads that declared no defect where one stood.
+- Early fixes committed their tests inside the fix;
+    red-first commits start with class five.
+- A test file in the wrong shape registered nothing and exited 0.
+- A mechanical lint autofix changed behaviour (`92c5192ee`).
+- A question put to the owner whose example contradicted its label (class eighty-three).
+- Observations recorded and not fixed that later became classes
+    (84, 85, 75 and 76, 79, 67 and 68, 71, 106).
