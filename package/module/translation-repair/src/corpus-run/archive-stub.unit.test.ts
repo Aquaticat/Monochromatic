@@ -100,6 +100,29 @@ await describe({
         }
       },
     },),
+    it({
+      name: 'READS a placeholder in blockquote markers or a code span as a marker (ledger A1: one archive '
+        + 'writes a nested blockquote of inline code saying Under Construction where the original has a heading)',
+      fn: async () => {
+        for (const paragraph of [
+          '>>> `Under Construction`',
+          '> Under Construction',
+          '> > (WIP)',
+          '`TODO`',
+        ]) {
+          expect(isStubMarkerParagraph({ paragraph, },),).toBe(true,);
+        }
+        for (const paragraph of [
+          '> The tabby\'s house was under construction all spring.',
+          '>>> ``',
+          '>',
+          '``TODO``',
+          '> To be continued!',
+        ]) {
+          expect(isStubMarkerParagraph({ paragraph, },),).toBe(false,);
+        }
+      },
+    },),
   ],
 },);
 

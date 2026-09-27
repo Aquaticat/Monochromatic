@@ -10,9 +10,14 @@ import { maskHtmlComments, } from '../mask-html-comments.ts';
 // is to give a good result even when the originals are bad."
 // (`doc/decision/translation-repair-good-result-over-bad-original.md`).
 //
-// MEASURED AGAINST THE PINNED CORPUS, 92 English pages: one stub marker, that
-// one. The token set is what the corpus shows plus the obvious English
+// MEASURED AGAINST THE PINNED CORPUS, 92 English pages: two stub markers.
+// XIEPT2's `(To-Do)`, and XingZ60's ``>>> `Under Construction` `` standing
+// where the original has the heading 七句破题 (ledger A1), which shipped on
+// all 17 XingZ60 pages until the strip read blockquote markers and a code
+// span. The token set is what the corpus shows plus the obvious English
 // variants; Chinese placeholders have no instance and are not guessed at.
+// "To be continued" is not one: its two instances are a person's own words
+// and a translation of 未完待续.
 //
 // THE COMMENTS STAY. `entry-notes.ts` reads every archive HTML comment as an
 // "ARCHIVE editor comment" line of the identity block, which is where the
@@ -29,6 +34,7 @@ export const STUB_MARKER_TOKENS: ReadonlySet<string> = new Set([
   'todo',
   'tbd',
   'wip',
+  'under construction',
 ],);
 
 /**
@@ -95,13 +101,85 @@ export type StrippedStubMarker = {
 };
 
 /**
+ Blockquote marker a placeholder may stand behind, at any depth.
+ */
+const QUOTE_MARKER = '>';
+
+/**
+ Delimiter of the one code span a placeholder may wear.
+ */
+const CODE_SPAN = '`';
+
+/**
+ Text without its leading blockquote markers, however deeply nested.
+
+ ONE PASS over the leading characters, stopping at the first that is neither
+ a marker nor the space between markers (ledger A1, a nested blockquote of
+ inline code). Every character before that one is ASCII, so its code-point
+ index is also its UTF-16 index and the slice is exact.
+
+ @param text - trimmed paragraph
+
+ @returns Text after the last leading marker, trimmed
+
+ @example
+ ```ts
+ withoutQuoteMarkers({ text: '>> > TBD', },); // 'TBD'
+ ```
+ */
+function withoutQuoteMarkers({ text, }: { readonly text: string; },): string {
+  /**
+   Index of the first character past the markers, or -1 when none is.
+   */
+  const contentStart = Array.from(text,)
+    .findIndex(function isContent(character,): boolean {
+      return (character !== QUOTE_MARKER) && (character !== ' ');
+    },);
+  return (contentStart === (-1))
+    ? ''
+    : text.slice(contentStart,)
+      .trim();
+}
+
+/**
+ Text without one code span around the whole of it.
+
+ @param text - paragraph after its quote markers
+
+ @returns Text inside the span, or the text unchanged when it wears none
+
+ @example
+ ```ts
+ withoutCodeSpan({ text: '`WIP`', },); // 'WIP'
+ ```
+ */
+function withoutCodeSpan({ text, }: { readonly text: string; },): string {
+  /**
+   Whether one span wraps the whole text with something inside it that is not
+   itself a delimiter, so a double-backtick span is left as it is.
+   */
+  const wears = text.startsWith(CODE_SPAN,)
+    && text.endsWith(CODE_SPAN,)
+    && (text.length > (CODE_SPAN.length + CODE_SPAN.length))
+    && (!text.startsWith(CODE_SPAN.repeat(2,),));
+  return wears
+    ? text
+      .slice(
+        CODE_SPAN.length,
+        -CODE_SPAN.length,
+      )
+      .trim()
+    : text;
+}
+
+/**
  Whether one paragraph is nothing but a placeholder token.
- 
- @param paragraph - paragraph text, whitespace and one layer of brackets
- tolerated
- 
+
+ @param paragraph - paragraph text; whitespace, blockquote markers at any
+ depth, one code span and one layer of brackets tolerated
+
  @returns Whether it names no content
- 
+
  @example
  ```ts
  isStubMarkerParagraph({ paragraph: '(To-Do)', },);
@@ -109,9 +187,10 @@ export type StrippedStubMarker = {
  */
 export function isStubMarkerParagraph({ paragraph, }: { readonly paragraph: string; },): boolean {
   /**
-   Paragraph without its surrounding whitespace.
+   Paragraph without its surrounding whitespace, its blockquote markers and
+   one code span.
    */
-  const trimmed = paragraph.trim();
+  const trimmed = withoutCodeSpan({ text: withoutQuoteMarkers({ text: paragraph.trim(), },), },);
   /**
    Paragraph without one layer of brackets, when it wore one.
    */
