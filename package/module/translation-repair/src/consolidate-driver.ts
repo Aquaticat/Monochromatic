@@ -481,7 +481,13 @@ export async function consolidateDocument(
             },),
             signal,
             perCallTimeoutMs,
-            l: dl,
+            // Tagged with the slice so every producer, slate, gate and
+            // settlement line names the passage it bought (class one hundred
+            // eighty-five: parallel slices wrote their ballots unlabelled).
+            l: tagged({
+              l: dl,
+              tag: `slice ${String(row.sliceIndex,)}`,
+            },),
           },);
 
           /**
