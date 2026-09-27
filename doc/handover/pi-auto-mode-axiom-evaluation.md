@@ -815,7 +815,32 @@ not complete content-type detection,
 or executable trust.
 ONNX's compatibility `version.py` has an empty `git_version`;
 ORT's build-info Python file names the package/version only.
-Neither inspected field supplies native source-to-build identity.
+Neither inspected Python field supplies native source-to-build identity.
+A separate GitHub SLSA v1 attestation check `proc_ae6d` succeeded for the exact ONNX wheel,
+SHA-256 `f336004196a22fbdc16c62e7f26f20635af1826db6147c80ff3b4b8d428fc7ef`,
+requiring the pinned `ee3ccbd2b2344299d3a4506c2954a47b2181a485` source digest,
+repository,
+release-workflow identity,
+and GitHub-hosted signer.
+`proc_20d1` checked the returned certificate/subject fields
+and confirmed rejection of an all-zero source pin.
+The verified signed attribution does not establish build correctness,
+reproducibility,
+ABI compatibility,
+or other packages' provenance.
+The earlier PyPI publication-bundle metadata remains separately unverified.
+
+`proc_b5ee` read actual-image metadata for the transitive surface:
+NumPy 2.5.3,
+packaging 26.3,
+typing-extensions 4.16.0,
+SymPy 1.14.0,
+and mpmath 1.3.0 are present;
+`ml-dtypes` and `flatbuffers` are absent.
+`proc_20d1` retained full primary release file lists for observed `ml-dtypes` 0.6.0
+and `flatbuffers` 25.12.19.
+Neither package is selected or installed.
+Private checkpoint `c141ba6` precedes the retained negative-control/transitive metadata results.
 No ONNX export or model inference has occurred in this follow-up.
 
 Pinned source clones are under the private scratch root:
@@ -831,8 +856,11 @@ ONNX `onnx-laya-2026-09-27` is also a clean sparse shallow checkout:
 `v1.23.0` / `ee3ccbd2b2344299d3a4506c2954a47b2181a485`.
 Its clone completed as `proc_eae8`.
 Source extraction `proc_82ca` copied selected ONNX Script files into the owned audit root;
-its `torch_2_9` facade exists and delegates shared functions to `torch_2_8`,
-which remains to be inspected.
+its `torch_2_9` facade exists and delegates shared functions to `torch_2_8`.
+Follow-up `proc_216f` extracted fourteen named execution/release boundary files.
+The inspected `torch_2_8` facade delegates shared functions again to `torch_2_6`,
+which remains to be inspected;
+its optimizer also invokes ONNX fusion rewriting.
 The MIT license,
 build metadata,
 version-only setup logic,

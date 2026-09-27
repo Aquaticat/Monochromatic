@@ -269,6 +269,50 @@ The existing CPU/memory/research-time bounds and complete-policy requirement are
 Recorded temperature is source-selected configuration,
 not a separately captured decoder intermediate.
 
+Alternative ONNX investigation remains model-free and outside the production worktree.
+The private audit root is `~/temp/agent/laya-onnx-source-audit-2026-09-27`.
+Pinned source identities and inspected exporter/runtime boundaries are retained there.
+`proc_1753` downloaded six exact public wheel artifacts for static inspection,
+33,930,000 bytes total,
+with size and SHA-256 matches against primary metadata.
+`proc_539d` rechecked baked bytes and read archive metadata/member inventories
+without installing or importing these packages.
+The parser ran in a two-GiB/two-CPU,
+network-free,
+mount-free container with a sixty-second ceiling.
+It did not verify every `RECORD` entry or establish native compatibility.
+
+A separate signed-artifact check `proc_ae6d` verified the ONNX 1.23.0
+`cp312-abi3` x86-64 wheel against GitHub SLSA v1 provenance,
+requiring repository `onnx/onnx`,
+its `.github/workflows/create_release.yml` signer,
+source digest `ee3ccbd2b2344299d3a4506c2954a47b2181a485`,
+and a GitHub-hosted signer.
+Artifact SHA-256 is `f336004196a22fbdc16c62e7f26f20635af1826db6147c80ff3b4b8d428fc7ef`.
+`proc_20d1` checked returned certificate/subject fields and confirmed an intentionally wrong source pin is rejected.
+This is verified signed source/workflow attribution for that exact artifact,
+not a build-correctness,
+reproducibility,
+or runtime-fit result.
+The initial PyPI publication-bundle inspection remains distinct and did not verify its signatures.
+No provenance finding is transferred to another package.
+
+Actual-image metadata `proc_b5ee` found packaging 26.3,
+typing-extensions 4.16.0,
+SymPy 1.14.0,
+mpmath 1.3.0,
+and NumPy 2.5.3;
+`ml-dtypes` and `flatbuffers` distribution records were absent.
+Primary metadata now retains observed `ml-dtypes` 0.6.0 and `flatbuffers` 25.12.19 release files,
+not selected or vetted installations.
+Remaining work includes proper tag matching,
+complete dependency/source/native build inspection,
+and a frozen CPU-only execution manifest before installation/export.
+No ONNX export,
+ONNX inference,
+accelerator execution,
+or training has occurred.
+
 ### Jev through LLM Gateway
 
 Jev/gateway is a hosted service.
