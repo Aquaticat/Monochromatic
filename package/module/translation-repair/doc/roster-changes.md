@@ -28,7 +28,13 @@ on XingZ607 Morph answered its judge calls at 11 s median,
 DeepInfra at 45 s with 89 of the 97 cut streams,
 Wafer at 26 s with the rest,
 and on DeepInfra the seat set the quorum time in 553 of 2,320 rounds
-(the pass log's "deepseek-v4.1-flash routed off DeepInfra and Wafer" heading dated 2026-09-19).
+(the pass log's heading on routing `deepseek-v4.1-flash` off DeepInfra and Wafer, dated 2026-09-19).
+On 2026-09-23 the price sort fell to endpoints that reason at length by default,
+so the card also ignores OpenInference (class ninety-one, XingZ624 and XingZ625),
+DekaLLM and Sail Research (class ninety-three, XingZ626),
+and its `preferredEndpoints` names Morph ahead of the price sort.
+Class ninety-three also names Wafer ahead of the price sort for `hf:zai-org/GLM-5.3-Flash`.
+The request shape is under `TRANSLATION_REPAIR_OPENROUTER_API_KEY` in [Configuration](configuration.md).
 
 `typesafe/jev-1.13` joined on 2026-09-18 as the first decision-only seat:
 a model OpenRouter serves through its decisions endpoint
@@ -99,7 +105,8 @@ Hyper's live catalog still listed `glm-5.2` but no GLM-5.3-Flash spelling on 202
 That replacement left the roster at nine models.
 
 Nemotron-3-Super left every active stage and the callable Synthetic catalog on 2026-08-29 at owner's instruction.
-In adjacent required-correction reviews it first proposed concrete wording and then was sole reviewer rejecting that wording.
+In adjacent required-correction reviews it first proposed concrete wording
+and then was sole reviewer rejecting that wording.
 The roster now has eight models.
 Broad-stage quorum consequently moves from five to four,
 which equals entire Synthetic side;

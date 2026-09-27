@@ -41,206 +41,57 @@ The [reviewed fixture record](../../../../doc/planning/translation-repair-review
 records the replacement references and each verified delta.
 No existing role is retroactively removed solely on the old fixture diagnosis.
 
-## Prepared writer inputs
+## Block pairing question and protocol
 
-The `producer-input-*` runner this section describes was torn down in `cbedea357` (2026-09-16)
-with the rest of the provider-free preparation layer;
-the section stays for the artifacts and standings it produced.
-
-The legacy writer sampler is not approved for further admission measurements.
-It can attach archive body obligations to a source heading.
-Its native CLI is not yet gated on a reviewed preparation plan;
-the private paid launcher remains blocked.
-See the [writer-input work record](../../../../doc/planning/translation-repair-writer-unit-scope-2026-09-11.md).
-The frozen parent selection is not acquisition approval or a final forty-round writer plan.
-`readFrozenPreparationSelection` checks its independently expected bytes and preserves ordered parent identities,
-reference inventory,
-historical sampler provenance and unresolved source obligations.
-This is a partial identity projection,
-not a complete nested-schema or population audit.
-It does not verify referenced files,
-re-run selection or approve a correspondence root.
-The independently expected whole-artifact digest binds sampler metadata that is not projected.
-`readPreparationSelectionEvidence` additionally matches an exact caller-loaded supporting-byte inventory,
-returns owned raw snapshots and extents in frozen order,
-and does not open paths or assign semantic roles or approval.
-The I/O owner must size-bound inputs before loading them.
-Byte inputs must be genuine branded `Uint8Array` views,
-including `Buffer`;
-byte-view proxies are refused.
-Matching is point-in-time evidence;
-a downstream owner must rehash bytes rather than trusting a mutable returned record.
-Its byte-binding boundary is verified independently of the still-unfinished reviewed root and acquisition owner.
-`buildPreparationRootInputs` owns fresh byte matching,
-independent corpus configuration,
-current native population reconstruction and exact frozen-parent lookup without resampling.
-It checks the consumed frame/note/carry relationships,
-preserves source obligations,
-and derives writer-parent and definition-only registrations from the complete selected entries.
-Unaligned definitions remain namespace data;
-unused support remains `opaque-selection-support` rather than gaining authority from its filename.
-The result says `scope: 'unqualified-preparation-root-inputs'`.
-Persisted `registry[*].freeOrder` uses explicit numeric arrays,
-while native pairing questions retain their in-memory sets.
-Older artifacts containing empty objects in those fields do not establish empty definition-order domains;
-use a freshly qualified reconstruction rather than filling missing values.
-It creates no providers,
-section override,
-reviewed phase or writer approval.
-Its native corpus and full-suite regression checks
-do not establish independent correctness of the shared parser/aligner.
-The writer-input work record reports the listed boundary mutation proof
-and remaining reviewed-root,
-phase and acquisition integration work.
-The separate `runtime:seal` task builds a Linux x64 GNU application-runtime candidate under
-`node_modules/.sealed-runtime-candidate`,
-with the native parser asset and a relative-path `sealed-runtime.json` inventory.
-The normal build retains its existing dependency policy.
-A candidate must be copied into a fresh frozen directory before reviewed use;
-the build neither approves execution nor implements the required pre-import target/environment gate.
-The separate `bootstrap:seal` task builds `producer-prepare.mjs` and `producer-bootstrap.json`
-under `node_modules/.producer-bootstrap-candidate`.
-Its CLI accepts `--launch`,
-`--launch-sha256` and `--launch-bytes` from independently recorded launch authority.
-The trusted caller authenticates the frozen bootstrap and host before invoking Node.
-The host owns private output creation,
-native creation inspection,
-bounded start/cleanup and output verification;
-the child checks context and runtime bytes before importing `producer-prepare-app.mjs`.
-The tested frozen CLI reconstructs the unchanged 40-parent input artifact on the pinned corpus,
-with byte equality to the prior native serialization and independent container-absence verification.
-This is unqualified input reconstruction,
-not a reviewed root,
-phase,
-writer plan or publication result.
-Current-artifact native qualification exercises pre-import and pre-start refusals,
-output retention,
-file replacement,
-exclusive collision and interruption/cleanup boundaries.
-The committed CLI tests and private native qualification suites have distinct owners and scopes;
-see `producer-input-verification.md`,
-removed with the runner in `cbedea357`.
-Native qualification is not presented as exhaustive package-path or portable CI regression coverage.
-Package `test:unit` depends on the separate bootstrap build.
-For explicitly prebuilt artifacts,
-`--skip-deps` skips task dependencies;
-`--no-deps` only skips automatic dependency preparation.
-
-The separate inert `producer-input-comparison.mjs` entry exports `runProducerInputComparison`.
-It owns request primitives,
-authenticates the fixed bootstrap launch,
-derives only a private `outputParent`,
-then verifies and compares the actual persisted input file.
-A mismatch retains the output and `comparison.json` before rejecting.
-Successful results and `ProducerInputComparisonError` expose `loggerCallbackFailures`:
-a detached frozen list of callback names observed to throw,
-in canonical logger order.
-Logger exceptions do not cancel the comparison or replace its primary failure;
-explicit `AbortSignal` cancellation remains independent.
-Live cancellation is forwarded into an owned native signal without copying caller reasons
-or consulting own public signal accessors.
-The temporary subscription preserves propagation resistance and is removed on exit.
-Synthetic or replayed events do not substitute for native aborted state,
-and an unreadable composite observation cannot authorize success.
-Proven native cancellation retains interruption precedence over a prior unreadable observation.
-Failure-path subscription cleanup precedes the terminal error snapshot;
-its fixed observation warning does not replace the primary failure.
-Fallible interruption registration completes before child creation;
-the actual-close observer is installed before the child is attached to that scope.
-These guarantees do not cover corrupted native internals or a hostile runtime.
-The snapshot follows terminal logging and failure-record activity.
-It is not written retroactively into `comparison.json` or `failure.json`.
-Only an actual failure-record I/O refusal may supersede the primary failure as `storage`.
-During initial request capture,
-getter failures become fresh contract refusals;
-a caught comparison-shaped Error does not supply operation kind,
-directory or callback observations.
-The observer neither proves message delivery nor contains blocking callbacks,
-process exit,
-filesystem mutation or unobserved promises returned from void level callbacks.
-The [comparison work record](../../../../doc/planning/translation-repair-preparation-plan-and-journal-2026-09-14.md)
-separates implemented behavior from current qualification and remaining work.
-
-`readRegisteredPreparationParent` shares complete-document and parent-coordinate preflight with receipt reconstruction,
-while allowing structural planning without inventing model evidence.
-
-`blockPairingQuestion` shares current local block numbering,
-definition-order exemptions and the unchanged historical cache key.
-`blockPairingProtocol` shares the stage's actual messages and an owned copy of its response schema.
-It does not include provider bodies,
+`blockPairingQuestion` (`src/block-pairing-question.ts`) builds the question block pairing asks of one aligned parent:
+the original and archive blocks under the local numbering,
+the definition-order exemptions,
+and the existing versioned cache key.
+It buys no calls.
+`blockPairingProtocol` (`src/block-pairing-protocol.ts`) builds the stage's actual messages
+and an owned copy of its response schema without creating a provider;
+it carries no provider bodies,
 model caps or attempt identity,
-so it is not itself a complete question receipt.
-`prepareBlockPairing` retains production singleton,
-empty,
-queried,
-cached and fallback behavior.
-`qualifyPreparedBlockPairing` separately replays current outcomes against the supplied configured electorate,
-requires its usable quorum,
-and verifies the complete preparation handoff and findings.
-It distinguishes independent relation endorsement from deterministic media ownership,
-source insertions and policy-backed target declines.
-Historical caches and unresolved fallback do not qualify.
+so it is not a complete record of a question asked.
+`prepareBlockPairing` (`src/prepare-block-pairing.ts`) prepares one aligned parent through the production path:
+singletons and empty sides take their zero-call paths,
+historical cache records stay historical,
+and only a queried result carries the seats' final outcomes.
 
-Every returned value says `qualification: 'pairing-only'`.
-Zero-question results report structural relations,
-source insertions and archive blocks without source,
-not invented model votes or automatic writing eligibility.
-`readPreparationReceipt` compares terminal data with independently supplied namespace,
-configuration,
-question and electorate expectations,
-then returns only owned raw final seat outcomes.
-`readPreparationOccurrence` checks complete current document hashes and registered parent indexes,
-reparses the documents and rebuilds current definition interpretation,
-container ownership,
-alignment findings and preparation handoff.
-Its `scope: 'receipt-bound-occurrence'` result is not qualification.
+## History: the provider-free preparation layer
 
-`createPreparationAttempt` creates a fresh private namespace with exclusive fixed-name files,
-content sync and an independently returned exact plan digest and byte extent.
-`verifyPreparationAttempt` checks those expected bytes and observed file identities within the registered extent.
-Neither operation grants semantic plan approval,
-leases,
-original-creation authentication or containing-directory power-loss durability.
+From 2026-09-10 to 2026-09-15 this package grew a provider-free preparation layer
+for preparing writer-calibration inputs without calling a provider.
+It held frozen parent selection and its evidence readers
+(`readFrozenPreparationSelection`, `readPreparationSelectionEvidence`),
+root-input reconstruction (`buildPreparationRootInputs`),
+preparation attempts, receipts, occurrences and definition relations
+(`createPreparationAttempt`, `verifyPreparationAttempt`, `readPreparationReceipt`,
+`readPreparationOccurrence`, `readRegisteredPreparationParent`, `readPreparationDefinitionRelations`),
+pairing qualification and request capture (`qualifyPreparedBlockPairing`, `captureBlockPairingRequests`),
+and a sealed producer-input runner (`runProducerInputComparison`, `ProducerInputComparisonError`)
+with its build outputs `producer-prepare.mjs`, `producer-bootstrap.json`,
+`producer-input-comparison.mjs` and `sealed-runtime.json`.
+The `runtime:seal` and `bootstrap:seal` tasks built the sealed runtime and the bootstrap,
+and the package's `test:unit` task depended on `bootstrap:seal`.
 
-`readPreparationDefinitionRelations` snapshots a registration,
-reconstructs its terminal receipt against complete current documents,
-and only then projects usable evidence to the registered definition domain.
-Its internal evidence core does not run body/media normalization or fallback handoff;
-those remain in the full `readPreparationOccurrence` consumer.
-Its `qualification: 'pairing-only'` and `scope: 'footnote-definitions'` result retains the checked occurrence binding
-and endorsed definition endpoints.
-An empty projection invents no correspondence,
-and no body pairing,
-media claim,
-target decline or full-parent writing qualification follows from it.
-The definition-only consumer is verified against the native footnote operation,
-full-handoff failure and media-claim controls,
-with isolated guard proofs.
-It does not supply the owning journal's conditional review or acquisition gate.
-
-The owning journal must still establish exclusive attempt provenance,
-derive actual configuration and provider-body identities,
-verify allowed target transitions and bind source channels and dependencies.
-A target rewrite requires reparse,
-repreparation and newly bound evidence.
-A registered same-attempt receipt can supply an unchanged exact question after an unrelated rewrite,
-but no old coordinates or handoff survive that reuse.
-Changed questions cannot reuse the old receipt.
-
-`captureBlockPairingRequests` materializes the shared protocol through individual native provider clients
-with a mandatory non-serving transport and refused accounting.
-It records exact header-free projections and conservative stage/route/HTTP bounds,
-not current budgets or admission evidence.
-Its digest covers the emitted materialization data;
-the owning journal must independently verify the selected runtime and request configuration.
-Native retry and route-fallback tests compare against separately constructed provider clients.
-
-This check does not replace the separately reviewed native execution gate,
-which remains unimplemented.
+No pass or probe entry reached any of it.
+With the owner's authorization of 2026-09-16,
+`cbedea357` removed the layer,
+its tests and fixtures,
+both seal tasks,
+the `test:unit` dependency
+and `producer-input-verification.md`.
+The block pairing functions in `Block pairing question and protocol` are what survived.
+What was built and verified is recorded in
+the [writer-input work record](../../../../doc/planning/translation-repair-writer-unit-scope-2026-09-11.md)
+and in the
+[comparison work record](../../../../doc/planning/translation-repair-preparation-plan-and-journal-2026-09-14.md);
+`git show cbedea357` lists every removed file.
 
 ## Historical writer and editor runners
 
-Two other runners rank models on the job the seat actually does.
+Two runners rank models on the job the seat actually does.
 Both spend quota,
 both write nothing to a corpus,
 and both take a slice count after `--`.
@@ -455,7 +306,7 @@ which is what separates a seat that answered from one that never did.
 Checkers self-certify there,
 and only there.
 Production forbids a checker from proving its own repair,
-and seating all ten as editors leaves nobody independent to check.
+and seating all nine models of `RUN_ROSTER` as editors leaves nobody independent to check.
 Rotating editors out instead would reintroduce the survivorship the shape exists to avoid.
 
 It is safe for that measurement because checking runs after selection:

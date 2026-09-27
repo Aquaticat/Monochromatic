@@ -106,7 +106,12 @@ Replacement scheduler must dispatch dependency-independent nodes concurrently
 up to dated live-measured per-provider and per-model limits.
 Dependency edges still serialize work whose prompt consumes prior output.
 Concurrency and request-rate limits are separate constraints and must be measured separately.
-Production uses 5 Synthetic slots per active model and can expose 20 aggregate slots across the four-model roster.
+Production uses 5 Synthetic slots per active model (`SYNTHETIC_PER_MODEL_CONCURRENCY` in `src/synthetic-client.ts`,
+measured on 2026-08-30 with four active models).
+A run now routes two roster models to Synthetic, `hf:Qwen/Qwen3.8-27B` and `hf:moonshotai/Kimi-K3`,
+so Synthetic exposes 10 aggregate slots:
+`hf:zai-org/GLM-5.3-Flash` is withheld from Synthetic (`synthetic-withheld` on its card)
+and `hf:openai/gpt-oss-120b` left every role (`owner-culled`), both on 2026-09-24.
 A width-10 gpt-oss arm returned 3 HTTP 429 responses,
 so model size does not justify a larger setting.
 Hyper has no local concurrency ceiling;
@@ -200,18 +205,18 @@ and how to read the output back once it has exited.
 Read-back tools,
 none of which spends quota or calls a model:
 
--   `verify-published` reads the published tree back against the artifacts that produced it,
-    and refuses a run whose pages disagree with what its artifacts promised.
--   `meter-report` says what each provider was doing while the run was asking,
-    which is availability WHEN WE WERE ASKING rather than availability.
--   `run-timing-report` says where the wall clock went,
-    splitting each round into work and straggler waiting,
-    and reports achieved rather than configured concurrency.
--   `spend-report` prices the metered seats against a DATED rate table,
-    and counts subscription seats without pricing them.
--   `ledger-report` says who produced each candidate and how often judges chose it.
-    Its `--model` view prints corpus wording,
-    so it must not be pasted anywhere.
+- `verify-published` reads the published tree back against the artifacts that produced it,
+  and refuses a run whose pages disagree with what its artifacts promised.
+- `meter-report` says what each provider was doing while the run was asking,
+  which is availability at the moments the run asked rather than availability in general.
+- `run-timing-report` says where the wall clock went,
+  splitting each round into work and straggler waiting,
+  and reports achieved rather than configured concurrency.
+- `spend-report` prices the metered seats against a rate table carrying its date,
+  and counts subscription seats without pricing them.
+- `ledger-report` says who produced each candidate and how often judges chose it.
+  Its `--model` view prints corpus wording,
+  so it must not be pasted anywhere.
 
 The runbook carries the exact invocation and the expected output for each,
 including what each one prints when the run recorded nothing for it,
@@ -284,24 +289,42 @@ const result = await repairTranslation({
   editors,
   selection judges,
   and resolution checkers.
-  A stage that loses voices retries exactly the lost ones until at least half its roster is heard.
+  A stage that gathers voices (`gatherStageVoices` in `src/stage-quorum.ts`)
+  needs a quorum of at least half its roster, rounded up;
+  when the router has refused seats for want of a wet provider and fewer than that remain,
+  the quorum is half the reachable seats, rounded up, and at least two (`src/stage-reachable-quorum.ts`).
+  Each round asks a window of what quorum still needs plus one spare seat,
+  from a bench rotated by the prompt (`src/stage-fanout-window.ts`),
+  and a window seat the router refuses for want of a wet provider
+  hands its place in that round to the next seat not yet asked (`runGatherRound` in `src/stage-round.ts`);
+  up to three retry rounds (`STAGE_RETRY_ROUNDS`) ask the seats not yet asked before the ones lost,
+  and never re-ask a seat the router refused.
+  Once the rounds end, one recovery round re-asks, with a note saying why,
+  each seat whose answer in the last round arrived but could not be read.
+  A stage still short of quorum proceeds on what it heard and records the shortfall as findings.
+  The six stages that record every seat's own outcome
+  take the same window and retry rounds through `runWindowedRounds` (`src/stage-windowed-rounds.ts`),
+  with no recovery round.
   An optional `editorRuleAddendum` splices one extra machine-enforced
   rule line into the editor prompt for calibration experiments.
 - No single model decides the repaired text.
   Every editor in `editorModelIds` rewrites the chunk independently,
   each proposal passes the same deterministic apply gate,
   and judges drawn from `judgeModelIds` choose what ships.
-  Selection seats the WHOLE judge roster,
+  Selection seats the whole judge roster,
   producers included,
-  and counts a judge's ballot for its OWN candidate at half weight;
+  and counts a judge's ballot for its own candidate at half weight;
   every other ballot it casts carries full weight,
   including one for another producer's candidate.
   A winner needs weight 2,
   so on these rosters no candidate is selected by its own authors alone.
-  `assertJudgeableEditorRoster` still requires two judges with no stake in the set,
-  which is now a policy rather than an arithmetic necessity:
-  it keeps a whole slate from being ranked only by the models that wrote it.
-  `checkerModelIds` should likewise exclude every editor,
+  `assertJudgeableEditorRoster` (`src/repair-contract.ts`) no longer requires judges outside the editor roster:
+  the ruling of 2026-08-14 allows self-judging at reduced weight instead.
+  It refuses a roster that repeats an editor or a judge,
+  seats no editor,
+  or seats too few judges for any text the editors write to reach the minimum weight,
+  since such a roster could not decide a round however it voted.
+  `checkerModelIds` should exclude every editor,
   so nothing certifies text it wrote.
 - Judging runs at two granularities.
   Per envelope,
@@ -350,7 +373,7 @@ one file per subject:
 
 - [Reading the pictures a document shows](doc/pictures.md):
   the deterministic reader,
-  the four model readers,
+  the model readers (six when every provider is wet),
   what is sent and what is not.
 - [Evidence beside a slice](doc/slice-context.md):
   the neighbouring passages,
@@ -365,8 +388,11 @@ one file per subject:
 - [Configuration](doc/configuration.md):
   credentials,
   where a run writes,
-  bounding and choosing a run,
+  bounding,
+  pacing and choosing a run,
+  probe tools,
   kill and relaunch,
+  which corpus a run reads,
   pooling artifacts,
   schema generations.
 - [Current roster changes](doc/roster-changes.md):

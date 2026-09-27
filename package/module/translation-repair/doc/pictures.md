@@ -44,18 +44,22 @@ a reader that declines to read (`reads-as-refusal`) is still re-asked and still 
 The refused reply's opening is logged,
 since it carries the model's words about the picture and never the picture's text.
 
-## Four readers, and a reader asked again
+## Several readers, and a reader asked again
 
 A reading may be used only when a second model,
 shown the same picture and not the first model's answer,
 agrees with the first at the corroboration threshold.
 A single reading is refused rather than passed along with a caveat.
 
-The cross-provider vision sub-roster remains four after Synthetic GLM-5.3-Flash replaced GLM-5.2.
-The replacement reads images on Synthetic but has no inherited Charm Hyper route.
+The cross-provider vision sub-roster is six models when every provider is wet:
+`RUN_READER_MODELS` in `src/corpus-run/run-config.ts` takes every roster model some provider can show a picture,
+less the ones held as unmeasured readers and the ones the owner culled.
+Each entry seats its readers off the meters (`src/corpus-run/pass-seated-pictures.ts`),
+so a model withheld on the provider that would serve it reads nothing that entry.
 Corroboration still requires independent agreement,
 and a declined reading is still asked again up to four times.
-The retry measurement that follows predates the third reader and must not be read as its measured refusal rate.
+The corpus-wide retry measurement predates the current reader roster
+and must not be read as any current reader's refusal rate.
 
 Measured over the whole corpus,
 119 reader and picture pairs reached a model,
@@ -86,7 +90,8 @@ a vision model tokenizes a picture by resolution in tiles,
 not by base64 length.
 Sent unchanged,
 an asset four times that ceiling comes back read for 2631 characters.
-A plain 8 MiB ceiling remains,
+A plain 7 MiB ceiling remains (`READING_MAX_BYTES` in `src/image-reading-stage.ts`,
+8 MiB until 2026-08-22, when that was found to permit request bodies the gateway rejects),
 which nothing in the reference corpus approaches.
 
 The provider accepts `image/jpeg`,

@@ -2,20 +2,31 @@
 
 Part of [the package README](../README.md).
 
-Every knob is an environment variable,
-and none of them had been written down before 2026-08-24.
-Values are read once per invocation.
+Every setting the package reads from the environment is listed here,
+beside the two command-line flags in `Choosing what a run attempts`;
+none of them had been written down before 2026-08-24.
+Most values are read once per invocation;
+an entry says so where its value is read per entry or per round instead.
+Git's repository-routing variables are not settings:
+every corpus `git` call drops them rather than reading them (`src/corpus-git-context.ts`).
 
-An EXPORTED-BUT-EMPTY variable counts as unset throughout,
+An exported-but-empty variable counts as unset,
 which is deliberate rather than incidental:
 an empty export is an ordinary shell accident,
 and reading one as an instruction has cost this package a defect before.
+The two variables under `Probe tools` are the exception:
+each uses an empty export as given.
 
 ## Credentials
 
 -   `TRANSLATION_REPAIR_SYNTHETIC_API_KEY`.
-    Bearer token for the first provider.
-    A run that reaches a model call without it throws.
+    Bearer token for the first provider,
+    Synthetic.
+    Optional like every other provider key:
+    a run starts on whichever provider keys are present,
+    and only a run with no provider key at all is refused,
+    the stated refusal (exit 6) described under `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`
+    (`configureProviders` in `src/corpus-run/run-providers.ts`).
 
 -   `TRANSLATION_REPAIR_EXA_API_KEY`.
     Key for the Exa search endpoint,
@@ -69,20 +80,25 @@ and reading one as an instruction has cost this package a defect before.
     OpenRouter,
     the paid per-token fallback the owner chose on
     2026-09-03 (`doc/decision/translation-repair-openrouter-fallback.md`).
-    OPTIONAL AND LOUD like the second.
-    Every request carries `provider: { zdr: true, require_parameters: true, ignore: [...] }`,
+    Optional and loud like the second.
+    Every request carries `provider: { zdr: true, require_parameters: true, sort: 'price', ignore: [...] }`
+    (`OPENROUTER_PROVIDER_PREFERENCES` and `openRouterProviderPreferencesFor` in `src/openrouter-catalog.ts`),
     so only zero-data-retention endpoints that support `response_format` may serve a passage,
-    and the catalog row's `ignoredEndpoints` keeps a measured-broken upstream off the wire
-    (Parasail for MiniMax M3 since 2026-09-03:
-    it answered into the reasoning channel and left content empty;
-    ModelRun for MiniMax M3 since 2026-09-04:
-    it timed out 119 of 300 streams in-stream,
-    and CoreWeave answers the same schema request 4 of 4;
-    OpenInference,
-    Parasail and Reka for DeepSeek V4 Flash,
-    Reka and Io Net for Qwen3.8-27B,
-    and Reka for GLM-5.3 since 2026-09-04,
-    each cutting a quarter or more of at least twenty streams at the straggler grace in a day's runs).
+    and among those the cheapest serves (`sort: 'price'` since 2026-09-09, the owner's instruction to stop bleeding).
+    The card's `ignoredEndpoints` (`src/model-cards.ts`) keeps a measured-broken or measured-slow upstream off the wire:
+    Parasail and ModelRun for `minimax-m3`
+    (Parasail since 2026-09-03, when it answered into the reasoning channel and left content empty;
+    ModelRun since 2026-09-04, when it timed out 119 of 300 streams in-stream
+    while CoreWeave answered the same schema request 4 of 4),
+    and DeepInfra, Wafer, OpenInference, DekaLLM and Sail Research for `deepseek-v4.1-flash`
+    (the first two after XingZ607 on 2026-09-18, the last three after XingZ624 to XingZ626 on 2026-09-23).
+    A card whose `preferredEndpoints` is not empty also sends `order`,
+    which names those endpoints ahead of the price sort and leaves `allow_fallbacks` unset:
+    Wafer for `hf:zai-org/GLM-5.3-Flash` and Morph for `deepseek-v4.1-flash`, both since 2026-09-23,
+    because the price sort had landed those seats on endpoints that reason at length by default.
+    The ignores once kept for DeepSeek V4 Flash, `hf:Qwen/Qwen3.8-27B` and `glm-5.3` left with their OpenRouter rows:
+    the last two have been off the OpenRouter catalog since 2026-09-09 (`openrouter-dropped` on their cards),
+    and DeepSeek V4 Flash left the roster on 2026-09-16.
     Slugs are the ones `GET /api/v1/providers` lists,
     not display names lower-cased:
     `open-inference`,
@@ -111,11 +127,12 @@ and reading one as an instruction has cost this package a defect before.
     the owner's 200 USD of prepaid credits of 2026-09-07,
     expiring early next year and never to be topped up,
     to be spent freely until then.
-    OPTIONAL AND LOUD like the second and third.
-    Under the account's zero-data-retention mode the served models are the three Gemma 4 sizes and gpt-oss-120b,
+    Optional and loud like the second and third.
+    Under the account's zero-data-retention mode the served models are the three Gemma 4 sizes
+    and `openai.gpt-oss-120b`,
     on the `bedrock-mantle` host in us-east-1 over raw fetch and chat completions:
     the Gemma sizes under `/openai/v1` ending on `[DONE]`,
-    gpt-oss-120b under `/v1` ending on its usage chunk
+    `openai.gpt-oss-120b` under `/v1` ending on its usage chunk
     (`bedrock-catalog.ts` records the probes).
     The provider exposes no balance to a bearer key,
     so every priced call appends one line to a durable ledger and the `METERS` line's `bedrockUsd=`
@@ -191,14 +208,15 @@ Do not read a run with a dark seat as a comparison of the roster.
     so an operator who set it must not be left believing a run is bounded some way it is not.
     A run that overrides logs `CAP OVERRIDDEN` above its work.
 
-    THERE IS A FLOOR,
+    There is a floor,
     and it is one model exchange.
     A ceiling at or below `RUN_PER_CALL_TIMEOUT_MS`,
     currently 360_000,
     cuts every attempt before any exchange can return,
     so nothing caches,
-    every attempt reports no progress,
-    and the queue drops the entry as stalled after its second try.
+    the attempt reports no progress,
+    and the queue drops the entry as stalled after its first try
+    (`readAttemptOutcome` in `src/corpus-run/entry-reattempt.ts`).
     A run in that state logs `CAP TOO TIGHT` naming both numbers.
     It is warned rather than refused,
     because cutting mid-exchange is exactly what a test of the stall path wants.
@@ -219,6 +237,61 @@ Without the earned rule a stuck entry would spend the whole soft budget.
 
 A re-attempt logs `REATTEMPT <id> queued`,
 naming what the attempt bought.
+
+## Pacing a run
+
+These move how much a run keeps in flight and how long a round waits,
+each for one launch and without a rebuild.
+The decisions behind the built-in values,
+and how the editor calibration differs from the pass,
+are in [Deciding who fills a seat](seats-and-calibration.md),
+section `Historical writer and editor runners`.
+
+-   `TRANSLATION_REPAIR_SLICE_OVERLAP`.
+    How many slices a driver keeps in flight at once.
+    The corpus pass defaults to 4 (`PASS_OVERLAP` in `src/corpus-run/pass-overlap.ts`,
+    `doc/decision/translation-repair-pass-overlap.md`, 2026-09-06),
+    and so does the editor calibration (`CALIBRATION_OVERLAP` in `src/corpus-run/slice-overlap.ts`);
+    `1` reproduces the sequential driver.
+    The pass reads it once per entry and prints `OVERLAP <id> value=N source=...`,
+    where the source is `fallback` or the variable's name.
+    Anything but a canonical decimal whole number of at least 1 is refused.
+
+-   `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS`.
+    How long a round keeps waiting on stragglers once quorum stands,
+    in milliseconds.
+    Built in at 120000 (`STRAGGLER_GRACE_MS` in `src/stage-round.ts`);
+    the editor calibration adopts 300000 when the variable is unset
+    (`CALIBRATION_STRAGGLER_GRACE_MS` in `src/grace-override.ts`).
+    Every round reads it when it gathers,
+    and a pass whose window differs from the built-in prints `STRAGGLER GRACE OVERRIDDEN` at launch.
+    Anything but a whole number of milliseconds from 1 to 2147483647,
+    the longest delay a timer holds,
+    is refused.
+
+-   `TRANSLATION_REPAIR_WRITER_GRACE_MS`.
+    The same window for the writer rounds alone
+    (editor, refiner, translate and consolidation producers),
+    since a cut writer voice is a whole candidate lost.
+    Built in at 180000 (`WRITER_GRACE_MS` in `src/writer-grace-override.ts`,
+    the owner's decision of 2026-09-06 in `doc/decision/translation-repair-straggler-grace.md`);
+    when it is unset and the round window is longer,
+    the writers follow the round window instead.
+    Every writer round reads it when it gathers,
+    and a launch prints `WRITER GRACE built in` or `WRITER GRACE OVERRIDDEN`
+    unless the writers follow the round window.
+    It is refused by the same rule as the round window.
+
+-   `TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR`.
+    How many Hyper requests may start in any rolling hour,
+    retries and credit reads included;
+    the rest queue in arrival order instead of being refused with HTTP 429.
+    Defaults to 1,000,
+    the account's limit as the owner stated it (`HYPER_REQUESTS_PER_HOUR` in `src/request-pace.ts`).
+    It is read once, when the Hyper client is built.
+    Unlike every other dial here,
+    a value that is not a positive number is not refused:
+    it silently leaves the default.
 
 ## Choosing what a run attempts
 
@@ -246,6 +319,21 @@ passed after `--`:
     Use it to check a run's setup,
     selection and credentials for no quota.
     Measured at 1.88 seconds with no stream opened.
+
+## Probe tools
+
+Two probe tasks read a variable of their own,
+without the package prefix:
+
+-   `DAMAGE_SAMPLE_SEED`.
+    Seed for the `damage-sample` draw of shipped regions,
+    `damage-round-one` when unset (`src/corpus-run/damage-sample.ts`);
+    set a new one to draw a fresh sample for a later round.
+
+-   `VERIFY_SHEET_BASENAME`.
+    Which graded sheet `score-verify` joins to its manifest,
+    read as `<basename>-sheet.md` under the runs directory;
+    `probe-verify` when unset (`src/corpus-run/score-verify.ts`).
 
 ## A source change while a pass is in flight means kill and relaunch
 
@@ -290,18 +378,51 @@ They still share provider capacity,
 so elapsed times are operational results rather than matched performance comparison.
 Record each pipeline digest and corpus commit separately.
 
-Production `corpus-pass` currently has no pull-request input flag.
-Pull-request 386 run uses uncommitted throwaway fork that changes only corpus commit
-and exposes corpus clone path through `TRANSLATION_REPAIR_CORPUS_DIR`.
-For another pull request,
-prepare equivalent source-distinct worktree,
-use exact commit in isolated corpus clone or minimal Git fixture,
+## Which corpus a run reads
+
+Every corpus read resolves through one pin,
+a clone directory and a commit (`RUN_CORPUS_PIN` in `src/corpus-run/run-config.ts`).
+Either half can be overridden without editing source,
+which is what a fixture run against an unmerged corpus pull request needs.
+Both are read once,
+when `src/corpus-run/run-config.ts` loads,
+by `readCorpusPinSetting` in `src/corpus-run/corpus-pin-override.ts`.
+Unset and blank both mean the built-in half;
+anything else that is not valid is refused as a stated refusal rather than replaced by the built-in,
+because a run against the wrong corpus would record its conclusions as the pinned corpus's.
+
+-   `TRANSLATION_REPAIR_CORPUS_CLONE_DIR`.
+    Absolute path of the corpus Git clone every read runs `git` in;
+    the clone must hold the pinned commit.
+    Defaults to `one-among-us/data` under the running user's home.
+    A relative path is refused.
+
+-   `TRANSLATION_REPAIR_CORPUS_COMMIT`.
+    Commit every read resolves against,
+    written as one full 40-character lowercase hexadecimal name.
+    Defaults to `CORPUS_COMMIT_SHA` in `src/corpus-source.ts`,
+    the milestone-one benchmark pin.
+    An abbreviated name is refused,
+    since clones can resolve an abbreviation differently.
+
+A settled artifact records the commit it read as `corpusSha` (`src/corpus-run/pass-entry-artifact.ts`),
+so an overridden run's artifacts name the commit they came from.
+No launch line prints which half came from the environment,
+so record both values with the run's provenance.
+
+Production `corpus-pass` has no pull-request flag;
+these two variables replace the uncommitted source fork the 2026-08-29 pull-request runs needed.
+For a corpus pull request,
+point `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` at an isolated corpus clone or minimal Git fixture
+holding the exact head commit,
+set `TRANSLATION_REPAIR_CORPUS_COMMIT` to that commit,
+write into a throwaway `TRANSLATION_REPAIR_RUNS_DIR`,
 run `--plan --only <entry>` first,
-and retain provenance mapping fixture bytes to pull-request head.
-Supply credentials through trusted worktree environment;
-copying secret values into command,
-log,
-or provenance file is forbidden.
+and retain provenance mapping the fixture bytes to the pull-request head.
+Supply credentials through the trusted worktree environment;
+copying secret values into a command,
+a log,
+or a provenance file is forbidden.
 
 ## Pooling artifacts across builds
 
@@ -323,33 +444,40 @@ and readers refuse to mix generations unless told to.
 
 ## Schema generations, which the drift opt-in does not cover
 
-The pass writes SCHEMA GENERATION 4,
-and refuses to resume into a directory holding another one.
-That refusal is separate from the build guard above and is not waved past by
-`TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT`:
-drift is an opinion about which BUILD filled a pool,
+The pass writes schema generation 14
+(`ARTIFACT_SCHEMA_VERSION_V14`, `src/corpus-run/artifact-two-lane-build.ts`),
+and refuses to resume into a directory holding another one (`src/corpus-run/pass-schema-guard.ts`).
+That refusal is separate from the build guard in `Pooling artifacts across builds`
+and is not waved past by `TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT`:
+drift is an opinion about which build filled a pool,
 and its remedy works because every file still answers the same questions.
 A file of another schema generation cannot answer them at all.
 
-Three generations record the same two-lane shape and differ only in how four keys are spelled.
-Generation 4 spells all four the current way:
+Generation 1 recorded one lane at the top level.
+Generations 2 to 4 record the same two-lane shape and differ only in how four keys are spelled,
+and generations 5 to 14 keep generation 4's spelling while each changes what the file records
+(the version notes in `src/artifact-schema-version.ts` and `src/corpus-run/artifact-two-lane-contract.ts`).
+Generations 4 to 14 spell all four keys the current way:
 
 -   `changedSliceIndices`,
-    which generation 2 spelled `shippedChunkIndices`.
+    which generations 1 and 2 spelled `shippedChunkIndices`.
 -   `withdrawnSliceIndices`,
-    which generation 2 spelled `withdrawnChunkIndices`.
+    which generations 1 and 2 spelled `withdrawnChunkIndices`.
 -   `sliceCritics`,
-    which generation 2 spelled `chunkCritics`.
+    which generations 1 and 2 spelled `chunkCritics`.
 -   `sliceIndex`,
-    which generations 2 AND 3 spelled `chunkIndex`.
+    which generations 1 to 3 spelled `chunkIndex`.
 
-Generation 3 is therefore a MIXTURE:
+Generation 3 is therefore a mixture:
 the change-set arrays already carry their current names there,
 and the index does not.
-That is why the reader holds a table rather than a flag.
-A reader holding a flag reads every generation 3 artifact's index as ABSENT.
+That is why the reader holds a table rather than a flag (`src/artifact-key-vocabulary.ts`).
+A reader holding a flag would read every generation 3 artifact's index as absent.
 
-All three generations are READ.
+The schema reader knows every generation from 1 to 14
+(`KNOWN_ARTIFACT_SCHEMA_VERSIONS` in `src/artifact-schema-version.ts`),
+and the key table has a spelling for each;
+a reader that needs a shape a generation lacks refuses that generation by name.
 The reader takes the spelling from the version the file records,
 so nothing is ever tried under two spellings,
 and a stamp over another generation's keys is refused rather than read as a file missing the keys it names.

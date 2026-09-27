@@ -207,13 +207,14 @@ straddles two slices,
 or whose source does not abut the carrier's stays carried as before,
 and the publish guard still reads it.
 
-
 ## A carried passage the archive rendered across both neighbours
 
 Class one hundred eleven (`mikaela13`, 2026-09-24):
-the archive may render a source-only passage partly inside the earlier paired neighbour's span and partly inside the later one's
+the archive may render a source-only passage partly inside the earlier paired neighbour's span
+and partly inside the later one's
 (the HRT sentences in slice 10's paragraph, the "originally just" clause on slice 12's own line).
-The fold (`corpus-run/insertion-carried-anchor.ts`, `corpus-run/insertion-carried-decide.ts`) places each quoted region block by block:
+The fold (`corpus-run/insertion-carried-anchor.ts`, `corpus-run/insertion-carried-decide.ts`)
+places each quoted region block by block:
 every block must sit in a paired slice next to the carried one,
 the carrier is the neighbour holding the larger share of the quoted text (the earlier on a tie),
 and the sources must abut.
@@ -222,12 +223,10 @@ the carrier renders the passage.
 A stand-aside names its reason in a `stays carried:` warn line,
 and every passage still carried prints its evidence regions at the admission.
 
-
 Two carried passages in a row (`mikaela14`):
 a passage's neighbours are the nearest paired slices on each side, looking past insertions,
 the abutting check refuses a fold across a source the carrier has not absorbed,
 and the fold passes repeat until nothing more folds, at most once per carried passage.
-
 
 ## An interior gap unplaced on both sides
 
@@ -240,10 +239,10 @@ the first pair opens the rendering and the rest continue it on both sides,
 so the gap is one slice whose source is every unplaced original and whose span is every unplaced block.
 Leading, trailing and one-sided gaps are unchanged.
 
-
 ## What the consolidate gate is told about an ineligible standing
 
-Since class fifty-six (2026-09-18) a gate over a standing the deterministic publication rule refused is told so on its sheet,
+Since class fifty-six (2026-09-18)
+a gate over a standing the deterministic publication rule refused is told so on its sheet,
 with the rule's finding,
 so that keeping it is not taken for the safe choice.
 Every gate ballot is logged with its model,
@@ -292,7 +291,8 @@ A candidate that repeats the original in all but whitespace is refused by the ru
 ## When a tied slate is challenged as a run-off
 
 A translate slate the judges decline is put to the same panel once more under a distinct responsibility.
-Since class fifty-three (2026-09-18) that second round is a run-off when the first was a tie at a slice with nothing to fall back on
+Since class fifty-three (2026-09-18)
+that second round is a run-off when the first was a tie at a slice with nothing to fall back on
 (an anchor,
 or a content slice whose archive text the deterministic floor refuses):
 only the candidates that drew a ballot are offered,
@@ -313,7 +313,8 @@ A picture's text reaches the sheets only once two readers agree about it
 (trigram overlap at or above the corroboration threshold).
 Since class fifty-two (2026-09-17) that agreement is looked for over every pair of readings,
 not the first two:
-the vision bench has five seats,
+the vision bench seats more than two readers
+(six when every provider is wet, `RUN_READER_MODELS` in `src/corpus-run/run-config.ts`),
 and on XingZ601 the two readings the old rule compared stood just under the line
 while a third agreed with both.
 A reading no other reading vouches for stays out of the corroborated set.
@@ -467,7 +468,8 @@ and shi_Yumiaoya1 was refused for a profile link the author had commented out.
 
 ## One container's halves
 
-A container whose blocks fall in different slices puts its opening tag at the head of one slice and its closing tag at the foot of another
+A container whose blocks fall in different slices
+puts its opening tag at the head of one slice and its closing tag at the foot of another
 (`container-extents.ts`;
 class nine masks the lone tag so each slice reads on its own).
 Since class fifty-seven (2026-09-18) the two slices are known to each other:
@@ -503,7 +505,9 @@ the original's blank-line separated blocks are counted against the archive's
 When the original writes more,
 at least that many of its blocks have no rendering of their own,
 and a source-only slice inside the roster found absent is admitted on that deficit,
-`insertion-container-deficit-admitted (slice N inside details of slices A to B: the original writes S blocks there, the archive T)`,
+recorded as `insertion-container-deficit-admitted`
+with the slice, the container and the slices it spans, and both block counts
+(`src/corpus-run/insertion-container-deficit.ts`),
 in document order while the deficit lasts.
 This is what admits an interior omission on a page whose translated part runs long,
 where the whole-page budget has nothing to spend.
@@ -512,7 +516,8 @@ Since class sixty-nine (XingZ618,
 2026-09-19) the deficit decides a split verdict too:
 a minority anchored claim is no majority,
 the missing block is the second signal,
-and the row is admitted with `insertion-split-in-container-deficit (slice N, full F, partial P, absent A of K asked; no majority, the block deficit decides)` beside the deficit finding;
+and the row is admitted with `insertion-split-in-container-deficit` beside the deficit finding,
+naming the slice and its full, partial and absent counts out of the seats asked;
 a verdict a majority carried stays out.
 
 ## The untranslated tail

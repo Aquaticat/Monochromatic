@@ -4,7 +4,10 @@ Part of [the package README](../README.md).
 
 ## Where it stands on 2026-09-24
 
-The sections after this one are the milestone history and stay as evidence.
+The sections `Milestone and generation history`,
+`Superseded consolidation cache generation 14 operation history`
+and `Terminal quality-refusal audit, 2026-08-29 (superseded)`
+are history and stay as evidence.
 The current operating state is kept in the handover
 (`doc/handover/translation-repair-handover-2026-09-06.md`,
 "2026-09-24, 04:30 UTC" and "What to do next")
@@ -23,6 +26,7 @@ one hundred ten defect classes have been found on read pages and fixed with guar
 the pipeline is not production ready by the rule in `doc/planning/translation-repair-readiness-signal.md`
 (a class is still found on roughly every other read).
 
+## Milestone and generation history
 
 Milestone one (detection) is complete:
 the seven-critic ensemble reached 0.981 recall on seeded errors over the reference corpus,
@@ -102,7 +106,7 @@ from reporting a defect that is not there,
 and only the second is what precision measures.
 Counting them as false positives had dragged strict to 0.680 while every other reading rose,
 which described the instrument rather than the detector.
-Read the milestone-two figures above as recall claims only:
+Read the milestone-two figures as recall claims only:
 they say the ensemble finds seeded defects,
 not that what it reports is right.
 Nothing here should be taken as evidence that an accepted issue is a real one until this gate is measured and passes.
@@ -120,7 +124,7 @@ So a shadow-mode probe reading clean is currently false assurance,
 not evidence,
 and repair quality claims should be read as unestablished until that instrument is fixed.
 
-Every number above comes from a graded measurement rather than a self-report.
+Every milestone figure in this section comes from a graded measurement rather than a self-report.
 Where a stage grades itself the figure is named as telemetry and excluded:
 `runIntroducedDefectProbe` ships in shadow mode for exactly that reason,
 and the checker stage's resolution rate is a stage self-report,
@@ -425,7 +429,7 @@ or is the standing (the 2026-09-09 addendum of `doc/decision/translation-repair-
 Since `b7a0b4f5f` (2026-09-09,
 the owner's answer to the glossary question) `community-glossary.ts` beside the corpus pin lists the community's
 terms (自切 as "self-surgery",
-超天酱 as "KAngel" of *Needy Streamer Overload*,
+超天酱 as "KAngel" of the game Needy Streamer Overload,
 the archive's renderings),
 the terms an entry's source carries ride in its identity context as `COMMUNITY TERMS`,
 and the select,
@@ -559,7 +563,7 @@ zero-data-retention and `require_parameters` preferences,
 prints `cached=N` on the `SPEND` line off `usage.prompt_tokens_details.cached_tokens`,
 writes a `SPEND ... estimated=abandoned` line reckoned from the delivered characters for every stream a round
 abandoned,
-and no longer serves Qwen3.8-27B or glm-5.3 (`OPENROUTER_DROPPED_SEATS`),
+and no longer serves `hf:Qwen/Qwen3.8-27B` or `glm-5.3` (`OPENROUTER_DROPPED_SEATS`),
 after the reckoning of 2026-09-09 found 58 USD of a 200 USD day in abandoned streams the endpoints billed to the end
 and the anchor judge routed to endpoints at twice the listing price.
 Since `efc9a4f3c` (2026-09-09,
@@ -709,7 +713,7 @@ Since `8bf9deec0` (2026-09-08,
 the seventeenth class) a reply whose JSON opening was written twice,
 an abandoned fragment and then the whole object
 (`{"best": 1{"best": 1, ...}`,
-the shape reasoning streams from Bedrock's gpt-oss-120b and OpenRouter's Makora route deliver),
+the shape reasoning streams from Bedrock's `openai.gpt-oss-120b` and OpenRouter's Makora route deliver),
 is read past the fragment (`json-false-start.ts`,
 each brace inside the first 256 characters tried as the start until one parses),
 the caller's guard still judges what was read,
@@ -779,7 +783,8 @@ The `info.location` contributor comment restored source-script attribution over 
 and body consolidation reintroduced several literal collocations after repair lane's naturalness pass had finished.
 Mechanical agreement therefore remains necessary and insufficient.
 
-Metadata validation now compares contributor attribution at same YAML path and preserves established target spelling after
+Metadata validation now compares contributor attribution at same YAML path
+and preserves established target spelling after
 `, by `;
 translate,
 contest,
@@ -791,7 +796,8 @@ and consolidation cache generations advanced.
 Artifact generation 6 adds auditable body-only naturalness polish after consolidation fidelity gate.
 Measured refiner roles propose rewrites,
 existing selection chooses candidate,
-then separate fidelity-first naturalness gate lets polished wording replace approved base only when meaning and structure remain intact.
+then separate fidelity-first naturalness gate lets polished wording replace approved base
+only when meaning and structure remain intact.
 Front matter never enters polish.
 Artifact records base,
 proposal,
@@ -817,7 +823,8 @@ Complete-page guard refused both attempts as `invalid-page`;
 second attempt added no cache record and queue stopped rather than repeating same work.
 
 Missing trailing newline on generated metadata was investigated and rejected as root cause.
-Positive control parsed exact generated candidate plus actual archive body successfully because body begins with line break.
+Positive control parsed exact generated candidate plus actual archive body successfully
+because body begins with line break.
 Temporary boundary restoration and cache bumps were reverted in `03b698e40`.
 
 Artifact generation 7 records source text and deterministic archive,
@@ -908,7 +915,8 @@ and requires every clear issue in a changed paragraph to be fixed before reply.
 Refinement and consolidation cache generations advance because earlier replies answered weaker question.
 
 Prompt pressure alone is not publication proof.
-Artifact generation 8 adds independent absolute naturalness review over exact would-ship body text after comparative fidelity gate,
+Artifact generation 8 adds independent absolute naturalness review over exact would-ship body text
+after comparative fidelity gate,
 including unchanged text when refiners propose nothing.
 Every requested roster seat remains accounted as usable or unavailable,
 but exact-half usable quorum starts bounded straggler grace and is also minimum for approval.
@@ -934,13 +942,15 @@ Generations 6 and 7 remain readable but cannot satisfy schema-8 publication boun
 Full package suite passes 858 groups with no failures,
 and OXLint and TypeScript checks are clean.
 
-The first fresh schema-8 run correctly rejected body text after every absolute reviewer found material naturalness defects.
+The first fresh schema-8 run correctly rejected body text
+after every absolute reviewer found material naturalness defects.
 It wrote no page,
 artifact,
 or consolidation cache.
 That run also exposed a correction-routing defect:
 correction refiners saw the findings,
-but candidate selectors still received the generic comparative-polish question and a tie restored wording already known to be unpublishable.
+but candidate selectors still received the generic comparative-polish question
+and a tie restored wording already known to be unpublishable.
 Consolidation cache generation 8 makes required correction a distinct non-fallback mode.
 Correction rewriters and selectors now receive structured paragraph findings as fenced evidence;
 selectors are told unchanged text cannot ship,
@@ -960,8 +970,10 @@ Both attempts wrote no page,
 artifact,
 or consolidation cache;
 `verify-published` correctly refused to call the empty run clean.
-Artifact schema 9 and consolidation cache generation 9 permit one further correction only after exact first corrected text receives a new material rejection.
-Artifact schema 10 (2026-09-02) shows the absolute reviewer every body block of the candidate and records the paragraph count and digests of those blocks;
+Artifact schema 9 and consolidation cache generation 9 permit one further correction
+only after exact first corrected text receives a new material rejection.
+Artifact schema 10 (2026-09-02) shows the absolute reviewer every body block of the candidate
+and records the paragraph count and digests of those blocks;
 schemas 8 and 9 recorded the refinable paragraphs alone,
 which left a blockquote candidate with nothing a reviewer could cite,
 and the reader recomputes the set the writing generation used.
@@ -984,7 +996,8 @@ Another fresh affected rerun remains required before accepting output.
 Two fresh schema-9 `Weideriche_` validations after the GLM-5.3-Flash roster replacement each attempted the entry twice,
 failed absolute naturalness on body slice 1,
 and wrote no page or artifact.
-The first exposed reviewers treating Markdown soft breaks as visible sentence breaks even though target MDX renders them as spaces.
+The first exposed reviewers treating Markdown soft breaks as visible sentence breaks
+even though target MDX renders them as spaces.
 Absolute-review instructions now require flow findings to survive rendered soft-break normalization;
 a replay over same rejected candidate text and reconstructed context then received nine usable approvals.
 The second fresh run still rejected genuinely awkward body wording after both corrections.
@@ -1003,11 +1016,13 @@ Consolidation cache generation 10 prevents warm reuse of settlements bought unde
 correction-generation,
 selection,
 or fidelity-gate questions.
-The next eight-seat validation proved relative correction selection still allowed every judge to choose best available text before exact absolute review rejected it.
-Generation 11 makes required correction absolute eligibility explicit:
+The next eight-seat validation proved relative correction selection
+still allowed every judge to choose best available text before exact absolute review rejected it.
+Consolidation cache generation 11 makes required correction absolute eligibility explicit:
 rewriters are instructed to perform separate finding-led and sentence-level native-English passes,
 inherited wording gets no presumption from omission in finding list,
-and selectors must assess each candidate independently and decline every candidate when each remains materially unnatural.
+and selectors must assess each candidate independently
+and decline every candidate when each remains materially unnatural.
 
 Prompt strengthening alone was insufficient.
 A newly generated correction fixed demonstrated phrase but introduced another idiomatic defect;
@@ -1016,10 +1031,10 @@ More importantly,
 same exact failed candidate was rejected by original run and first replay,
 then accepted by all eight seats in later replay.
 One absolute-review draw is therefore not stable enough for publication approval.
-Generation 11 now requires one sequential exact-half-quorum confirmation after first acceptance.
+Consolidation cache generation 11 now requires one sequential exact-half-quorum confirmation after first acceptance.
 Any rejection heard before either bounded settlement remains immediately decisive and feeds bounded correction;
 an acceptance ships only after second quorum acceptance of exact candidate.
-Generation 12 applies exact-half required participation to every direct roster round;
+Consolidation cache generation 12 applies exact-half required participation to every direct roster round;
 no stage waits on every provider seat as requirement.
 Participation quorum is distinct from existing two-vote corroboration thresholds for pairing and comparative gates.
 Sequential naturalness approvals may contain different responding halves;
@@ -1031,10 +1046,12 @@ artifact reader independently checks final-candidate identity,
 paragraph digests,
 roster order,
 and confirmation order.
-Final-naturalness completeness guard checks settled runtime state and does not duplicate artifact reader's digest validation.
+Final-naturalness completeness guard checks settled runtime state
+and does not duplicate artifact reader's digest validation.
 Legacy schema-9 records without field remain readable.
-Generation 13 landed in `1d16d89c4` and removes two-correction ceiling.
-Generation 14 landed in `cf14b379b` and threads every reviewed rejection into failed-strategy evidence
+Consolidation cache generation 13 landed in `1d16d89c4` and removes two-correction ceiling.
+Consolidation cache generation 14 landed in `cf14b379b`
+and threads every reviewed rejection into failed-strategy evidence
 while durably storing first raw model payload by canonical prompt under run root.
 Commit `6369228d5` detects exact repeated correction task before dispatch and pauses it as `INCOMPLETE`.
 Interrupted invocation reconstructs exact correction state from payloads without provider resends,
@@ -1113,9 +1130,13 @@ and a JSX string literal curled by the fix for the one before,
 after which the publisher reads the whole would-ship page under the MDX grammar and refuses one it cannot
 parse (`corpus-run/page-grammar.ts`).
 
-## Superseded generation-14 operation history
+## Superseded consolidation cache generation 14 operation history
 
-This section records behavior of generation 14 and is not standing guidance.
+This section records behavior of consolidation cache generation 14
+(`CONSOLIDATE_CACHE_VERSION` 14 in the version notes of `src/consolidate-key.ts`,
+introduced by `cf14b379b` on 2026-08-29),
+not of artifact schema generation 14,
+and is not standing guidance.
 The finite producer constraints in `Standing redesign constraints`
 replace its unbounded correction and suspension rules.
 
@@ -1234,10 +1255,18 @@ completion evidence,
 and objective.
 Concurrent runs share provider capacity and are not matched runtime arms.
 
-## Terminal quality-refusal audit, 2026-08-29
+## Terminal quality-refusal audit, 2026-08-29 (superseded)
+
+This is the audit as recorded on 2026-08-29 and is not standing guidance.
+Its continuous-correction design was superseded:
+`1ba8f713a` (2026-09-01) made consolidation a single attempt
+and turned the final-selection gate into the reporter `finalSelectionFindings`,
+and the finite producer constraints in `Standing redesign constraints` in the package README
+replace its unbounded correction.
+Present tense in this section describes the pipeline of that day.
 
 Naturalness rejection no longer ends with `do not publish`:
-generation 14 continuously corrects,
+consolidation cache generation 14 continuously corrects,
 checkpoints payloads,
 and pauses only on operational interruption or exact deterministic task cycle.
 Publication gates remain strict.
@@ -1291,8 +1320,11 @@ Audited terminal and bypass findings are integrated as follows:
   or exact evidence cycle repeats.
   Identical unsafe twins share one recovery chain;
   only final safe settlement persists.
-  `assertFinalSelectionSettled` remains a defensive invariant,
-  classified as `INCOMPLETE` rather than whole-entry quality retry.
+  `assertFinalSelectionSettled` was then a defensive invariant,
+  classified as `INCOMPLETE` rather than whole-entry quality retry;
+  `1ba8f713a` (2026-09-01) removed it,
+  and `finalSelectionFindings` reports the same condition beside the tally
+  (`src/corpus-run/final-selection-completeness.ts`).
 - One-sided front-matter support landed in `56a47cb81` and creates insertion slice for source-only metadata,
   deterministically admits it,
   and validates candidate against source YAML shape when archive has none.
@@ -1300,7 +1332,7 @@ Audited terminal and bypass findings are integrated as follows:
   Missing/misplaced slice and contradictory assembled-page structure pause as `INCOMPLETE` invariants;
   incumbent fallback and candidate YAML/schema invalidity remain handled before publication.
 - `assertContributorNamesComplete` throws when final attribution drops target-authoritative public form.
-  Generation 15 landed in `5211c54dd` and floors translation candidates,
+  Consolidation cache generation 15 landed in `5211c54dd` and floors translation candidates,
   excludes unrepairable violator voices without fabricated authorship,
   rejects unsafe ordinary lane winners,
   and floors consolidation and polish candidates.
@@ -1324,7 +1356,7 @@ Audited terminal and bypass findings are integrated as follows:
   Missing or unavailable image-dependent evidence pauses as `INCOMPLETE` before lanes,
   so visual content cannot bypass publication review.
 
-On fresh generation-14 corpus path,
+On a fresh corpus path under consolidation cache generation 14,
 `assertFinalNaturalnessComplete` is runtime persistence invariant after continuous naturalness,
 not ordinary quality outcome.
 Existing artifact readers do not invoke it.
@@ -1356,5 +1388,5 @@ Hyper catalog drift check,
 and declined-archive seam remain open.
 Read milestone figures as history:
 they were measured under earlier pipeline shapes and none is readiness claim.
-Current evidence and traces are in `doc/audit/translation-repair-output-reading-20260826.md`
+The evidence and traces of that period are in `doc/audit/translation-repair-output-reading-20260826.md`
 and `doc/planning/translation-repair-corpus-overlap-measurement.md`.

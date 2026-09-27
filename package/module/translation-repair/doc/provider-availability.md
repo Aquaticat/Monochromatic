@@ -64,10 +64,12 @@ These checks establish wire and modality compatibility,
 not actual-output quality.
 Fresh schema-9 passage validation remains mandatory before this replacement contributes readiness evidence.
 
-## Running out of budget is normal, and the two providers run out differently
+## Running out of budget is normal, and the four providers run out differently
 
-THEY ARE NOT THE SAME KIND OF LIMIT,
-and an earlier version of this section had Charm Hyper backwards.
+They are not the same kind of limit,
+and a former version of this section had Charm Hyper backwards.
+There is one meter per provider,
+in `PROVIDER_ORDER` (Synthetic, Bedrock, Hyper, OpenRouter; `src/provider-name.ts`).
 
 Charm Hyper is a PREPAID BALANCE,
 priced per token and per model.
@@ -87,7 +89,14 @@ That one does refill on its own schedule,
 and the account owner can sometimes reset it,
 but not reliably and not on demand.
 
-Plan a pass around both facts rather than around a clean window,
+OpenRouter is paid credit the owner tops up,
+read from `GET /api/v1/credits` as purchased less used and printed as `openrouterUsd`.
+Amazon Bedrock is prepaid credit that expires and is never topped up;
+the provider shows no balance to a bearer key,
+so `bedrockUsd` is the configured credit less the sum of the package's own spend ledger
+(`TRANSLATION_REPAIR_BEDROCK_LEDGER` and `TRANSLATION_REPAIR_BEDROCK_CREDIT_USD` in [Configuration](configuration.md)).
+
+Plan a pass around these facts rather than around a clean window,
 because a clean window still cannot be arranged.
 
 A provider that is out of budget does not fail a run.
@@ -99,27 +108,33 @@ the five Hyper-only models were refused,
 the five Synthetic-served models kept streaming,
 and both meter endpoints kept reading.
 
-TWO CONSEQUENCES FOR READING A RUN.
-A per-entry cost measured while a provider is dry is not the cost a two-provider run pays,
+Two consequences for reading a run.
+A per-entry cost measured while a provider is dry is not the cost a run with every provider wet pays,
 and should be labelled with the outage.
 Any quality figure measured then rests on whoever was awake,
-so five of ten models contributed nothing to it.
+as on 2026-08-24, when five of ten models contributed nothing to it.
 
 ## Measuring how much of the time each provider was there
 
-Three writer seats sit on models only Charm Hyper serves,
-and until 2026-08-24 the argument for them rested on a quality pass
+On 2026-08-24 three writer seats sat on models only Charm Hyper served,
+and until then the argument for them rested on a quality pass
 plus an availability adjustment that was reasoned about rather than measured.
 
-The budget layer already read both meters every sixty seconds and already knew dry from wet,
+The budget layer already read its meters every sixty seconds and already knew dry from wet,
 but said so at `debug` level,
 which a run does not record.
 It now says so at `info`,
-as one line per reading:
+as one line per reading,
+here from 2026-08-24, when two providers were metered:
 
 ```text
 [info] [2026-08-24T19:22:07.104Z] [translation-repair] [takeReading] METERS synthetic=wet hyper=dry syntheticWeekly=97% syntheticFiveHour=48/50 syntheticThrottled=no hyperBalance=0
 ```
+
+Since Bedrock joined on 2026-09-07 the line carries four states,
+one per provider in `PROVIDER_ORDER`,
+then every number each meter reported,
+`bedrockUsd=` and `openrouterUsd=` among them (`src/provider-budget.ts`).
 
 Three states,
 not two.
@@ -185,7 +200,9 @@ and every outage that ended a run reads as open-ended forever.
 mise run //package/module/translation-repair:budget-sample > sample.log 2>&1
 ```
 
-One reading of both meter endpoints.
+One reading of all four providers' meters;
+it refuses unless all four provider keys are set,
+since a sample missing a provider would read as that provider answering (`src/corpus-run/budget-sample.ts`).
 No model is called and no token is produced;
 a live run took 2.4 seconds.
 Capture both streams:
