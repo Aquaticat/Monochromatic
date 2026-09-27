@@ -1387,7 +1387,7 @@ cross-slice passes decide on a page the footnote guard may still change.
 
 ### A16: low items
 
-Status: open for the lock's check order, page republishing and the verifier's exit (A16a to A16c).
+Status: A16a fixed; open for page republishing and the verifier's exit (A16b, A16c).
 A lane wording's triple newline ships: not a defect.
 Owner, 2026-09-27: "There is no need to eliminate extra newlines, because markdown doesn't care",
 recorded in `doc/design-commitments.md`.
@@ -1409,11 +1409,13 @@ holds when another namespace or machine took it,
 and the refusal states how it judged (`runs-lock-holder.ts`).
 Every one of the 96 locks on disk predates the fields and judges as gone by pid, as the old code did;
 all of them come from killed runs, since every run directory holding an artifact had released its lock.
-Still open: the fix compares hostnames before boot ids,
+That fix compared hostnames before boot ids,
 and `os.hostname()` can change within one boot (DHCP, `hostnamectl`),
 after which every stale lock on the machine would read as another machine's and hold forever.
-A boot id is random per boot, so equal boot ids already prove the same machine.
-This host's static and kernel hostnames agree today (`bazzite`).
+Fixed in `25ae252a1` (red guard committed just before it):
+a boot id is random per boot, so equal boot ids prove the same machine,
+and the hostname decides only between a later boot here (gone) and another machine (held).
+This host's static and kernel hostnames agree today (`bazzite`), so no lock here met that order.
 
 #### Write order: kept by design
 
