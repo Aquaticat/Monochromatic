@@ -91,6 +91,10 @@ import { envelopeContext, } from './editor-envelope-context.ts';
  
  @param documentSourceText - same-entry original evidence beyond the local window
  
+ @param identityContext - declared names and handles, for the judges (ledger S14)
+ 
+ @param referenceContext - what the pages the original cites say (ledger S14)
+ 
  @param signal - caller abort honored by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -114,6 +118,8 @@ export async function selectPerEnvelope(
     targetText,
     neighbouringSourceText,
     documentSourceText,
+    identityContext,
+    referenceContext,
     signal,
     perCallTimeoutMs,
     l,
@@ -126,6 +132,8 @@ export async function selectPerEnvelope(
     readonly targetText: string;
     readonly neighbouringSourceText?: string;
     readonly documentSourceText?: string;
+    readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -239,6 +247,8 @@ export async function selectPerEnvelope(
         ...repairSelectionSourceEvidence({
           ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
           ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
+          ...((identityContext === undefined) ? {} : { identityContext, }),
+          ...((referenceContext === undefined) ? {} : { referenceContext, }),
         },),
       ],
       signal,
@@ -294,6 +304,10 @@ export async function selectPerEnvelope(
  
  @param documentSourceText - same-entry original evidence beyond the local window
  
+ @param identityContext - declared names and handles, for the judges (ledger S14)
+ 
+ @param referenceContext - what the pages the original cites say (ledger S14)
+ 
  @param indecisionFallback - patch adopted when judges answered but failed to
  converge; callers must pass a patch that actually repairs something
  
@@ -322,6 +336,8 @@ export async function selectChunkPatch(
     sourceText,
     neighbouringSourceText,
     documentSourceText,
+    identityContext,
+    referenceContext,
     indecisionFallback,
     rejectionFallback,
     signal,
@@ -334,6 +350,8 @@ export async function selectChunkPatch(
     readonly sourceText: string;
     readonly neighbouringSourceText?: string;
     readonly documentSourceText?: string;
+    readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly indecisionFallback: Candidate<PatchOutcome>;
     readonly rejectionFallback: PatchOutcome;
     readonly signal: AbortSignal;
@@ -387,6 +405,8 @@ export async function selectChunkPatch(
       ...repairSelectionSourceEvidence({
         ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
         ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
+        ...((identityContext === undefined) ? {} : { identityContext, }),
+        ...((referenceContext === undefined) ? {} : { referenceContext, }),
       },),
       {
         label: 'EXISTING ENGLISH BEFORE REPAIR, comparison context for what was already carried and what each candidate changes; not independent factual authority',

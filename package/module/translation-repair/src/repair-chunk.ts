@@ -339,6 +339,8 @@ export async function repairChunk(
    */
   const editor = await runEditorStage({
     ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
+    ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     client,
     editorModelIds: models.editorModelIds,
     judgeModelIds: models.judgeModelIds,

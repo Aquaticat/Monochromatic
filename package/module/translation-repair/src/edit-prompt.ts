@@ -1,6 +1,12 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
+import { citedReferenceBlockText, } from './cited-reference-rule.ts';
+import { communityRenderingsBlock, } from './community-glossary.ts';
+import {
+  DECLARED_IDENTITY_RULES,
+  declaredNamesBlock,
+} from './declared-identity-rule.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 import { FOREIGN_PHRASE_NAME_TITLE_SCOPE, } from './foreign-phrase-scope.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
@@ -224,6 +230,12 @@ CONTEXT: ...${before}«REGION ${regionNumber}»${after}...`;
  @param editorRuleAddendum - extra rule line appended to the enforced
  rule list, for prompt calibration experiments
  
+ @param identityContext - declared names and handles, which the critic and
+ the panel read before the issues reached this sheet (ledger S14)
+ 
+ @param referenceContext - what the pages the original cites say, read by
+ the same stages (ledger S14)
+ 
  @returns Messages plus the envelope numbering order
  
  @example
@@ -240,6 +252,8 @@ export function buildEditorMessages(
     editorRuleAddendum,
     neighbouringIncumbentText,
     neighbouringSourceText,
+    identityContext,
+    referenceContext,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
@@ -248,6 +262,8 @@ export function buildEditorMessages(
     readonly editorRuleAddendum?: string;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
+    readonly identityContext?: string;
+    readonly referenceContext?: string;
   },
 ): EditorPromptPlan {
   /**
@@ -275,9 +291,40 @@ export function buildEditorMessages(
       targetText,
       neighbouringSourceText ?? '',
       neighbouringIncumbentText ?? '',
+      identityContext ?? '',
+      referenceContext ?? '',
       ...blocks,
     ],
   },);
+
+  /**
+   Declared names, the pages the original cites, and the community
+   renderings the translation lacks, each absent when the page has none: the
+   evidence the critic, the panel and the selection judges read (ledger
+   S14).
+   */
+  const pageEvidence = [
+    declaredNamesBlock({
+      fence,
+      ...((identityContext === undefined) ? {} : { identityContext, }),
+    },),
+    citedReferenceBlockText({
+      fence,
+      ...((referenceContext === undefined) ? {} : { referenceContext, }),
+    },),
+    communityRenderingsBlock({
+      sourceText,
+      candidates: [{
+        label: 'TRANSLATION',
+        text: targetText,
+      },],
+    },)
+      .join('\n',),
+  ]
+    .filter(function isPresent(part,): boolean {
+      return part !== '';
+    },)
+    .join('',);
 
   /**
    The passages either side, or nothing when this slice stands alone.
@@ -298,7 +345,7 @@ ${fence} ${NEARBY_RULE} ${fence}
    System prompt with the calibration addendum composed in as one more
    machine-enforced rule, before the reply-shape block.
    */
-  const systemPrompt = editorRuleAddendum === undefined
+  const baseSystemPrompt = editorRuleAddendum === undefined
     ? EDITOR_SYSTEM_PROMPT
     : `${EDITOR_RULES_HEAD}
 - ${editorRuleAddendum}
@@ -306,6 +353,14 @@ ${fence} ${NEARBY_RULE} ${fence}
 ${HOUSE_POLICY_BLOCK}
 
 ${EDITOR_REPLY_BLOCK}`;
+
+  /**
+   The sheet's rules, with the rules for reading the declared names where
+   the page declares any.
+   */
+  const systemPrompt = ((identityContext === undefined) || (identityContext === ''))
+    ? baseSystemPrompt
+    : `${baseSystemPrompt}\n\n${DECLARED_IDENTITY_RULES}\n- Never change a rendering the block makes correct.`;
 
   return {
     messages: [
@@ -315,7 +370,7 @@ ${EDITOR_REPLY_BLOCK}`;
       },
       {
         role: 'user',
-        content: `${fence} ORIGINAL ${fence}
+        content: `${pageEvidence}${fence} ORIGINAL ${fence}
 ${sourceText}
 ${fence} TRANSLATION ${fence}
 ${targetText}

@@ -112,6 +112,10 @@ export type EditorStageResult = {
  
  @param documentSourceText - same-entry evidence forwarded to selectors, not an editor coverage expansion
  
+ @param identityContext - declared names and handles, for the editors and both selections (ledger S14)
+ 
+ @param referenceContext - what the pages the original cites say, for the same readers (ledger S14)
+ 
  @param signal - caller abort honored by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -141,6 +145,8 @@ export async function runEditorStage(
     neighbouringIncumbentText,
     neighbouringSourceText,
     documentSourceText,
+    identityContext,
+    referenceContext,
     signal,
     perCallTimeoutMs,
     l,
@@ -152,6 +158,8 @@ export async function runEditorStage(
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly documentSourceText?: string;
+    readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly sourceText: string;
     readonly targetText: string;
     readonly envelopes: readonly EditableEnvelope[];
@@ -167,6 +175,15 @@ export async function runEditorStage(
   },);
 
   /**
+   Declared names and references for the editors and both selections, each
+   absent when the page has none (ledger S14).
+   */
+  const pageFragment = {
+    ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
+  };
+
+  /**
    Editor sheet shared by every editor, so their candidates answer the same
    question and stay comparable.
    */
@@ -175,6 +192,7 @@ export async function runEditorStage(
     targetText,
     envelopes,
     issues,
+    ...pageFragment,
     ...(editorRuleAddendum === undefined ? {} : { editorRuleAddendum, }),
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
@@ -285,6 +303,7 @@ export async function runEditorStage(
     targetText,
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
+    ...pageFragment,
     signal,
     perCallTimeoutMs,
     l,
@@ -316,6 +335,7 @@ export async function runEditorStage(
   const chunkSelection = await selectChunkPatch({
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((documentSourceText === undefined) ? {} : { documentSourceText, }),
+    ...pageFragment,
     client,
     candidates: chunkSet.candidates,
     judgeModelIds,
