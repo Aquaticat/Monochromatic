@@ -1024,7 +1024,9 @@ await describe({
           'sectionPairing',
           'blockPairing',
         ],);
-        expect(verification.detail,).toContain('preparation.identity',);
+        // The first departure from the recorded rows, which is what the verdict
+        // now reads rather than the identity (ledger A12b).
+        expect(verification.detail,).toContain('slice',);
       },
     },),
   ],
