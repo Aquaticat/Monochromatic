@@ -260,198 +260,198 @@ export async function runCriticBenchmark(
       applications,
       plantedSeedIds,
     } = entry;
-          /**
-           Runs one deadline-guarded exchange and grades it;
-           declared first so the transient retry below reads top-down.
-           The client arms the deadline inside the per-model slot,
-           so queue wait never counts and a retry gets the full budget.
-           Skips without dispatching when the run budget cannot fit
-           another call.
-           
-           @returns Graded record of one exchange
-           
-           @example
-           ```ts
-           const first = await attemptOnce();
-           ```
-           */
-          async function attemptOnce(): Promise<CriticAttemptRecord> {
-          /**
-           Run budget left at dispatch time.
-           */
-          const remaining = remainingBudgetMs();
-          if (remaining < MIN_DISPATCH_BUDGET_MS) {
-            rl.warn(
-              `${modelId} on ${entry.entryId}: run budget exhausted, skipping`,
-            );
-            return {
-              modelId,
-              entryId: entry.entryId,
-              outcomeKind: 'skipped',
-              detail: 'run-budget-exhausted',
-              resolvedClaimCount: 0,
-              unresolvedReasons: [],
-              seededHitIds: [],
-              plantedSeedIds,
-            };
-          }
+    /**
+     Runs one deadline-guarded exchange and grades it;
+     declared first so the transient retry below reads top-down.
+     The client arms the deadline inside the per-model slot,
+     so queue wait never counts and a retry gets the full budget.
+     Skips without dispatching when the run budget cannot fit
+     another call.
+     
+     @returns Graded record of one exchange
+     
+     @example
+     ```ts
+     const first = await attemptOnce();
+     ```
+     */
+    async function attemptOnce(): Promise<CriticAttemptRecord> {
+      /**
+       Run budget left at dispatch time.
+       */
+      const remaining = remainingBudgetMs();
+      if (remaining < MIN_DISPATCH_BUDGET_MS) {
+        rl.warn(
+          `${modelId} on ${entry.entryId}: run budget exhausted, skipping`,
+        );
+        return {
+          modelId,
+          entryId: entry.entryId,
+          outcomeKind: 'skipped',
+          detail: 'run-budget-exhausted',
+          resolvedClaimCount: 0,
+          unresolvedReasons: [],
+          seededHitIds: [],
+          plantedSeedIds,
+        };
+      }
 
-          try {
-          /**
-           Outcome of this model's review.
-           */
-          const outcome = await client.chatJson({
-            modelId,
-            messages,
-            signal,
-            // A budget smaller than the deadline caps the exchange too:
-            // the run must not outlive its budget by a whole deadline.
-            exchangeTimeoutMs: Math.min(
-              perCallTimeoutMs,
-              remaining,
-            ),
-            responseFormat: CRITIC_RESPONSE_FORMAT,
-            validate: isCriticReportWire,
-          },);
+      try {
+        /**
+         Outcome of this model's review.
+         */
+        const outcome = await client.chatJson({
+          modelId,
+          messages,
+          signal,
+          // A budget smaller than the deadline caps the exchange too:
+          // the run must not outlive its budget by a whole deadline.
+          exchangeTimeoutMs: Math.min(
+            perCallTimeoutMs,
+            remaining,
+          ),
+          responseFormat: CRITIC_RESPONSE_FORMAT,
+          validate: isCriticReportWire,
+        },);
 
-          /**
-           Usage block pulled out for the token spread.
-           */
-          const { usage, } = outcome;
+        /**
+         Usage block pulled out for the token spread.
+         */
+        const { usage, } = outcome;
 
-          /**
-           Completion tokens carried onto the record when reported.
-           */
-          const tokenSpread = usage === undefined
-            ? {}
-            : { completionTokens: usage.completion_tokens, };
+        /**
+         Completion tokens carried onto the record when reported.
+         */
+        const tokenSpread = usage === undefined
+          ? {}
+          : { completionTokens: usage.completion_tokens, };
 
-          if (outcome.kind === 'refusal-shaped') {
-            return {
-              modelId,
-              entryId: entry.entryId,
-              outcomeKind: 'refusal-shaped',
-              detail: outcome.marker,
-              resolvedClaimCount: 0,
-              unresolvedReasons: [],
-              seededHitIds: [],
-              plantedSeedIds,
-              ...tokenSpread,
-            };
-          }
-          if (outcome.kind === 'schema-mismatch') {
-            return {
-              modelId,
-              entryId: entry.entryId,
-              outcomeKind: 'schema-mismatch',
-              detail: outcome.detail,
-              resolvedClaimCount: 0,
-              unresolvedReasons: [],
-              seededHitIds: [],
-              plantedSeedIds,
-              ...tokenSpread,
-            };
-          }
-
-          /**
-           Resolutions of every wire issue in report order.
-           */
-          const resolutions = outcome
-            .value
-            .issues
-            .map(function resolveOne(wire,) {
-              return resolveCriticIssue({
-                wire,
-                documents,
-              },);
-            },);
-
-          /**
-           Claims that survived resolution and validation.
-           */
-          const claims = resolutions.flatMap(function toClaim(resolution,) {
-            return resolution.resolved
-              ? [resolution.claim,]
-              : [];
-          },);
-
+        if (outcome.kind === 'refusal-shaped') {
           return {
             modelId,
             entryId: entry.entryId,
-            outcomeKind: 'ok',
-            detail: '',
-            resolvedClaimCount: claims.length,
-            unresolvedReasons: resolutions.flatMap(function toReason(resolution,) {
-              return resolution.resolved
-                ? []
-                : [resolution.reason,];
-            },),
-            seededHitIds: gradeHits({
-              claims,
-              applications,
-            },),
+            outcomeKind: 'refusal-shaped',
+            detail: outcome.marker,
+            resolvedClaimCount: 0,
+            unresolvedReasons: [],
+            seededHitIds: [],
             plantedSeedIds,
             ...tokenSpread,
           };
         }
-        catch (error) {
-          if (error instanceof SyntheticHttpError) {
-            return {
-              modelId,
-              entryId: entry.entryId,
-              outcomeKind: 'http-error',
-              detail: `HTTP ${String(error.status,)}`,
-              resolvedClaimCount: 0,
-              unresolvedReasons: [],
-              seededHitIds: [],
-              plantedSeedIds,
-            };
-          }
-          // Aborts must always win so user steering can stop a fan-out;
-          // any other transport failure is attempt data for the scorecard.
-          if (signal.aborted)
-            throw error;
+        if (outcome.kind === 'schema-mismatch') {
+          return {
+            modelId,
+            entryId: entry.entryId,
+            outcomeKind: 'schema-mismatch',
+            detail: outcome.detail,
+            resolvedClaimCount: 0,
+            unresolvedReasons: [],
+            seededHitIds: [],
+            plantedSeedIds,
+            ...tokenSpread,
+          };
+        }
+
+        /**
+         Resolutions of every wire issue in report order.
+         */
+        const resolutions = outcome
+          .value
+          .issues
+          .map(function resolveOne(wire,) {
+            return resolveCriticIssue({
+              wire,
+              documents,
+            },);
+          },);
+
+        /**
+         Claims that survived resolution and validation.
+         */
+        const claims = resolutions.flatMap(function toClaim(resolution,) {
+          return resolution.resolved
+            ? [resolution.claim,]
+            : [];
+        },);
+
+        return {
+          modelId,
+          entryId: entry.entryId,
+          outcomeKind: 'ok',
+          detail: '',
+          resolvedClaimCount: claims.length,
+          unresolvedReasons: resolutions.flatMap(function toReason(resolution,) {
+            return resolution.resolved
+              ? []
+              : [resolution.reason,];
+          },),
+          seededHitIds: gradeHits({
+            claims,
+            applications,
+          },),
+          plantedSeedIds,
+          ...tokenSpread,
+        };
+      }
+      catch (error) {
+        if (error instanceof SyntheticHttpError) {
           return {
             modelId,
             entryId: entry.entryId,
             outcomeKind: 'http-error',
-            detail: `transport: ${refusalText({ error, },)}`,
+            detail: `HTTP ${String(error.status,)}`,
             resolvedClaimCount: 0,
             unresolvedReasons: [],
             seededHitIds: [],
             plantedSeedIds,
           };
         }
-        }
+        // Aborts must always win so user steering can stop a fan-out;
+        // any other transport failure is attempt data for the scorecard.
+        if (signal.aborted)
+          throw error;
+        return {
+          modelId,
+          entryId: entry.entryId,
+          outcomeKind: 'http-error',
+          detail: `transport: ${refusalText({ error, },)}`,
+          resolvedClaimCount: 0,
+          unresolvedReasons: [],
+          seededHitIds: [],
+          plantedSeedIds,
+        };
+      }
+    }
 
-          /**
-           First graded attempt.
-           */
-          const first = await attemptOnce();
-          if (!isRetryableAttempt({ record: first, },))
-            return first;
+    /**
+     First graded attempt.
+     */
+    const first = await attemptOnce();
+    if (!isRetryableAttempt({ record: first, },))
+      return first;
 
-          // Truncation and HTTP failure are serving-stack weather: identical
-          // input flips between completion and ceiling blowout per pass, and
-          // bursts shed 5xx past the client's own transport retries. One
-          // fresh attempt recovers most of them; strictly one, since a
-          // second failure means this pair defeats this model today.
-          rl.warn(
-            `${modelId} on ${entry.entryId}: ${first.outcomeKind} (${first.detail}), retrying once`,
-          );
+    // Truncation and HTTP failure are serving-stack weather: identical
+    // input flips between completion and ceiling blowout per pass, and
+    // bursts shed 5xx past the client's own transport retries. One
+    // fresh attempt recovers most of them; strictly one, since a
+    // second failure means this pair defeats this model today.
+    rl.warn(
+      `${modelId} on ${entry.entryId}: ${first.outcomeKind} (${first.detail}), retrying once`,
+    );
 
-          /**
-           Second and final attempt; its outcome stands either way.
-           */
-          const second = await attemptOnce();
-          // The budget died between the attempts: the dispatched first
-          // failure stands; a skipped marker would erase real attempt data.
-          if (second.outcomeKind === 'skipped')
-            return first;
-          return {
-            ...second,
-            retriedFirstAttemptDetail: first.detail,
-          };
+    /**
+     Second and final attempt; its outcome stands either way.
+     */
+    const second = await attemptOnce();
+    // The budget died between the attempts: the dispatched first
+    // failure stands; a skipped marker would erase real attempt data.
+    if (second.outcomeKind === 'skipped')
+      return first;
+    return {
+      ...second,
+      retriedFirstAttemptDetail: first.detail,
+    };
   }
 
   /**
