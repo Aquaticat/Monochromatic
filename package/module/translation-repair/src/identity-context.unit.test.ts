@@ -141,6 +141,29 @@ await describe({
         },),
 
         it({
+          name: 'NAMES THE TRANSLATION ITEMS STILL IN HAN as no English rendering, item by item, and leaves a '
+            + 'Latin-only value and the ORIGINAL side unmarked (ledger F-3)',
+          fn: async () => {
+            /**
+             Aliases the archive copied from the original, two still in Han.
+             */
+            const mixed = collectIdentityLines({
+              sourceData: { info: { alias: '小橘子, 猫猫、u3', }, },
+              targetData: { info: { alias: '小橘子, 猫猫、u3', }, },
+            },).join('\n',);
+            expect(mixed,).toContain(
+              'TRANSLATION declares "小橘子, 猫猫、u3" (of which "小橘子" and "猫猫" are still in Han, '
+                + 'which is no English rendering)',
+            );
+            expect(mixed,).toContain('ORIGINAL declares "小橘子, 猫猫、u3", TRANSLATION',);
+            expect(collectIdentityLines({
+              sourceData: { info: { alias: '小橘子', }, },
+              targetData: { info: { alias: 'Xiao Juzi', }, },
+            },).join('\n',),).not.toContain('still in Han',);
+          },
+        },),
+
+        it({
           name: 'returns no lines when neither side declares anything',
           fn: async () => {
             expect(

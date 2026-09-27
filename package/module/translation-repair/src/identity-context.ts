@@ -1,3 +1,4 @@
+import { hanItemsClause, } from './identity-han-items.ts';
 import { isJsonRecord, } from './json-guard.ts';
 
 //region Identity context
@@ -205,7 +206,8 @@ function renderField(
         : '(nothing)'
     }, TRANSLATION declares ${
       isDeclared(targetValue,)
-        ? `"${targetValue}"`
+        // LEDGER F-3: an item still in Han is named as no English rendering.
+        ? `"${targetValue}"${hanItemsClause({ value: targetValue, },)}`
         : '(nothing)'
     }`,
   ];
