@@ -454,6 +454,42 @@ await describe({
         expect(preparationIdentity({ prepared: rebuilt.prepared, },),).toBe(
           preparationIdentity({ prepared: crossed, },),
         );
+        expect(rebuilt.reproduced,).toBe(true,);
+      },
+    },),
+    it({
+      name:
+        'SAYS it did not reproduce the run\'s carve where the recipe is complete and the carve still moved '
+        + '(ledger A12: mikaela15 recorded 34 slices, rebuilt to 32 after the class one hundred twelve '
+        + 'slicer change, and nothing said so)',
+      fn: async () => {
+        /**
+         How the run carved it.
+         */
+        const crossed = prepareDocumentPair({
+          sourceText: SOURCE_DOC,
+          targetText: TARGET_DOC,
+          sectionPairing: [{
+            source: 0,
+            target: 1,
+          },],
+          blockPairings: new Map(),
+        },);
+
+        /**
+         Rebuild over an archive that since gained a paragraph, standing in
+         for any change that moves the carve under a complete recipe.
+         */
+        const rebuilt = rebuildPreparation({
+          artifact: writeAndRead({
+            prepared: crossed,
+            strip: [],
+          },),
+          sourceText: SOURCE_DOC,
+          targetText: `${TARGET_DOC}\nThe cat naps again.\n`,
+        },);
+        expect(rebuilt.unrecorded,).toEqual([],);
+        expect(rebuilt.reproduced,).toBe(false,);
       },
     },),
     it({
