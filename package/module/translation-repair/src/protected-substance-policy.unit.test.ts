@@ -44,7 +44,7 @@ const SUBSTANCE_CLASS =
 const PLACE_AS_MEANS =
   'A place that is itself the means (a rooftop, a high floor, a bridge, a railway line, deep water) is a method too: '
   + 'the page keeps where it happened when that tells a reader nothing to copy (a city, a hotel, a hospital), '
-  + 'and otherwise says that she ended her life without saying where she went to do it.';
+  + 'and otherwise says that she ended her life, or attempted to, without saying where she went to do it.';
 
 /**
  Cat-themed source, since neither sheet varies with what it is given.

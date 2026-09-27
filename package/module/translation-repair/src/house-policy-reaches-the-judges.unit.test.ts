@@ -160,7 +160,7 @@ await describe({
         + 'source\'s brackets around the English name)',
       fn: async () => {
         expect(system.includes('Corner brackets 「」 are Chinese quotation marks',),).toBe(true,);
-        expect(system.includes('around a name or a term they are dropped',),).toBe(true,);
+        expect(system.includes('around a name or a term used to refer to its thing they are dropped',),).toBe(true,);
       },
     },),
     it({

@@ -269,8 +269,10 @@ await describe({
         // rejections and durably replays raw model payloads. Version 15 floors
         // candidates on target-authoritative contributor identity. Version 16
         // continues unendorsed final selection from prior failed settlement.
+        // Version 17 (2026-09-27) sends gate objections over an ineligible
+        // standing to the polish as an objection correction.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          '3804be24336a7186d34e22259d2b7669a2fa274059b62f5a76194ffc7c3ee2ac',
+          '947615e9d143b87a256a4d6b1e66f2941959fe63f714c1bfbdcc7cdc74bf80a0',
         );
       },
     },),
