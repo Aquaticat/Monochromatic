@@ -67,6 +67,12 @@ const SLOW_MS = 40;
 const CLOCK_SLACK_MS = 2;
 
 /**
+ Exchange deadline, which is when a hanging voice stops hanging:
+ a round that waited on one before quorum would take this long to reach it.
+ */
+const EXCHANGE_TIMEOUT_MS = 10_000;
+
+/**
  Roster the rounds ask, named from the catalog because model identifiers are
  never invented.
  */
@@ -340,7 +346,7 @@ await describe({
           modelIds: ROSTER,
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 10_000,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'cat-stage',
@@ -359,8 +365,11 @@ await describe({
         // The window really was spent: the hanging voice never answered, so
         // the round waited it out rather than finishing at quorum.
         expect(timings.inGraceMs,).toBeGreaterThanOrEqual(GRACE_MS - CLOCK_SLACK_MS,);
-        // Quorum stood on the first voice, long before the window closed.
-        expect(timings.toQuorumMs,).toBeLessThan(timings.inGraceMs,);
+        // Quorum stood on an answering voice, not on the hanging one, which
+        // ends only at the exchange deadline. Bounded by that deadline rather
+        // than by the grace window: time to the first answer grows with load
+        // (398 ms against a 250 ms grace at 0.2 CPU, 2026-09-27).
+        expect(timings.toQuorumMs,).toBeLessThan(EXCHANGE_TIMEOUT_MS,);
         // The three numbers describe one round rather than three measurements.
         expect(timings.totalMs,).toBe(timings.toQuorumMs + timings.inGraceMs,);
       },
@@ -381,7 +390,7 @@ await describe({
           modelIds: ROSTER,
           messages: [{ role: 'user', content: 'meow', },],
           signal: new AbortController().signal,
-          exchangeTimeoutMs: 10_000,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
           responseFormat: MEOW_FORMAT,
           validate: isMeowReply,
           stage: 'cat-stage',
