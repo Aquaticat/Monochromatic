@@ -254,3 +254,15 @@ Part of [the package README](../README.md).
   Following from the same two rules rather than from an answer,
   a decline removes a page an earlier crash left for the entry,
   so the archive ships as the archive's note says it must.
+  That question told the owner no page had ever disagreed with its artifact,
+  a count that had only checked pages exist (ledger M18).
+  Judged by the build of 2026-09-27, 77 of the 214 stored pages disagree,
+  every one written after the publish-time agreement check existed and so agreeing with its own build:
+  the would-ship reader applies `restoreTypography` when it reads,
+  and two later fixes there (class 181, punctuation inside a closing quote;
+  class 147, a nested quotation curled as a pair) account for 69 of them.
+  Told this, the owner chose again, the same day,
+  that a pass rewrites such pages to the running build's reading:
+  a page the publish-time checks refuse stays as it was and is reported.
+  A pass meets an older build's pages only on a resume the operator opted into,
+  since the build-generation guard refuses one otherwise.

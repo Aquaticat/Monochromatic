@@ -1436,6 +1436,11 @@ Its messages also promise what no longer holds once a pass republishes
 (`SETTLED AND NEVER PUBLISHED ... A resumed pass skips it`),
 and three comments name `pass-entry.ts` as the home of the write order,
 which moved to `pass-entry-persist.ts` when that file was split at the line cap.
+It also calls a page "disagreed" when only the reader moved:
+run over every stored page on 2026-09-27 it reports 77 of 214,
+all of them pages that agreed with the build that wrote them (A16c).
+Where the artifact's `pipelineDigest` is not the verifier's own build,
+a disagreement is today's reading of an older settlement and must say so.
 
 #### A16c: no pass republishes a missing or disagreeing page
 
@@ -1444,6 +1449,21 @@ Owner, 2026-09-27: a pass starting in a runs directory rewrites from its artifac
 or that differs from what the artifact says ships.
 Following from that rule and the archive-note rule,
 a decline removes a page an earlier crash left for the entry.
+The first answer rested on a count that had only checked pages exist (M18).
+The agreement census, `page-agreement.ts` over the 214 stored pages with the build of 2026-09-27:
+137 agree at their weighed length and 77 disagree, and the extracted verdict matches the old composition on all 214.
+None of the 77 predates `c36d597b5` (2026-08-24), which refuses a disagreeing page before it is written,
+so each agreed with its own build.
+The would-ship reader applies `restoreTypography` at read time,
+and two fixes of 2026-09-26 changed it: `768408d1d` sets closing punctuation inside a quote (class 181),
+`f4adc4c9f` curls a nested quotation as a pair (class 147).
+By where each missing wording first departs from its page:
+33 only by punctuation the reader now sets inside a closing quote,
+20 only by a quote it now curls, 16 by both;
+6 carry every wording and are a character long or short,
+and 2 depart elsewhere too (a straight double quote, and one letter).
+Told this, the owner chose again that a pass rewrites such pages to the running build's reading
+(`doc/design-commitments.md`).
 
 ### A17: a handle every writer left in Han ships romanised with no literal meaning
 
@@ -1997,6 +2017,16 @@ the ruling was in no package doc, so neither the audit that filed A16 nor the fi
 Owner, 2026-09-27: "There is no need to eliminate extra newlines, because markdown doesn't care. I believe I said this before."
 Prevention: an owner ruling goes into `doc/design-commitments.md` (or its decision record) the turn it is given,
 and a finding is checked against those commitments before any fix starts.
+
+### M18: a count put to the owner that measured something narrower than the option it backed
+
+Status: corrected by re-asking, 2026-09-27 (A16c).
+A question said a page had never disagreed with its artifact, "0 of 214 pages across 372 run directories";
+the script behind the number had compared which files exist and never judged a page against its artifact.
+The owner chose on that premise; judged, 77 of 214 disagree.
+Prevention: every number in a question option names the check that produced it,
+and a claim about a state is backed by a run of the instrument that decides that state,
+with its positive control, before the question is asked.
 
 ### M17: a file split at the line cap, with comments elsewhere still naming the old file
 
