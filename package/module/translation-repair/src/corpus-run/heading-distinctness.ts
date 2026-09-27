@@ -11,8 +11,14 @@ import { parseDocument, } from '../parse-document.ts';
 // source among the 92 repeats a heading, and no archive renders two distinct
 // source headings identically, so this floor refuses nothing the archives
 // would ship. Where the original itself repeats a heading, identical renderings
-// are allowed, and where the heading counts differ the block-structure floors
-// own the question and this one says nothing rather than pair by position.
+// are allowed, and where the heading counts differ nothing is paired by
+// position.
+//
+// LEDGER F-10 (2026-09-27): "nothing paired" had meant "nothing checked", so a
+// page that dropped a heading as well as collapsing two passed. Repeats need no
+// pairing: a page heading repeated more often than the original repeats any
+// heading of its own renders two distinct source headings as one, whatever the
+// counts.
 
 /**
  Node kind the parser gives a heading.
@@ -104,6 +110,78 @@ function headingWordsOf(
 }
 
 /**
+ Most often any one heading occurs among some headings.
+
+ @param headings - heading words of one document
+
+ @returns Highest occurrence count, zero for none
+
+ @example
+ ```ts
+ mostRepeated({ headings: ['Cat', 'Dog', 'Cat',], },);
+ // => 2
+ ```
+ */
+function mostRepeated({ headings, }: { readonly headings: readonly string[]; },): number {
+  /**
+   Occurrences by heading.
+   */
+  const counts = new Map<string, number>();
+  for (const heading of headings) {
+    counts.set(
+      heading,
+      (counts.get(heading,) ?? 0) + 1,
+    );
+  }
+  return Math.max(
+    0,
+    ...counts.values(),
+  );
+}
+
+/**
+ Whether two headings that differ in the source read the same at the same
+ positions, where the counts allow pairing by position.
+
+ @param source - source headings by position
+
+ @param page - page headings by position
+
+ @returns True for a collapse at paired positions
+
+ @example
+ ```ts
+ collapsedAtPositions({ source: ['甲', '乙',], page: ['A', 'A',], },);
+ // => true
+ ```
+ */
+function collapsedAtPositions(
+  {
+    source,
+    page,
+  }: {
+    readonly source: readonly string[];
+    readonly page: readonly string[];
+  },
+): boolean {
+  if (source.length !== page.length)
+    return false;
+  return page.some(function repeatsAnother(
+    words,
+    index,
+  ): boolean {
+    return page.some(function earlierSameWordsOtherSource(
+      other,
+      otherIndex,
+    ): boolean {
+      return (otherIndex < index)
+        && (other === words)
+        && (source[otherIndex] !== source[index]);
+    },);
+  },);
+}
+
+/**
  Refuses a would-ship page on which two different source headings read the
  same.
  
@@ -142,26 +220,23 @@ export function assertHeadingsStayDistinct(
    */
   const page = headingWordsOf({ text: pageText, },);
 
-  if (source.length !== page.length)
-    return;
-
   /**
-   Whether some later page heading repeats an earlier one whose source differed.
+   Whether a page heading repeats, and more often than any source heading
+   does; a heading standing once is no collapse, even where the original has
+   none (the archive adds a "Description" heading to an original without one).
    */
-  const collapsed = page.some(function repeatsAnother(
-    words,
-    index,
-  ): boolean {
-    return page.some(function earlierSameWordsOtherSource(
-      other,
-      otherIndex,
-    ): boolean {
-      return (otherIndex < index)
-        && (other === words)
-        && (source[otherIndex] !== source[index]);
-    },);
+  const overRepeated = mostRepeated({ headings: page, },) > Math.max(
+    1,
+    mostRepeated({ headings: source, },),
+  );
+  /**
+   Whether headings collapse at paired positions, where the counts agree.
+   */
+  const collapsedInPlace = collapsedAtPositions({
+    source,
+    page,
   },);
-  if (!collapsed)
+  if ((!overRepeated) && (!collapsedInPlace))
     return;
 
   throw new CollapsedHeadingError({
