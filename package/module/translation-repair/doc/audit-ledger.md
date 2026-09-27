@@ -513,7 +513,16 @@ against the house rendering of 姐姐.
 
 ### S14: the editor sheet has no identity context or cited references
 
-Status: open.
+Status: fixed (`a8f5cb490` export prep, `fa949b78f` criteria, `f16d5e8bf` evidence).
+The editor sheet shows the declared names with `DECLARED_IDENTITY_RULES`,
+the cited references with their rule, and the community renderings the translation lacks;
+both editor selections read the declared names and references through `repairSelectionSourceEvidence`.
+The envelope criterion's tense now follows the house tense rule, not the surrounding English;
+both editor faithfulness criteria carry the declared-name exemption and `PAGE_APPARATUS_IS_KEPT`;
+every refine selection mode reads `HOUSE_FORM_CORRECTION_KEEPS_MEANING`.
+`house-form-corrections.ts` holds the one house-form list the polish gate, refiner, review and refine selection share.
+Guards: `selection-criteria-house.unit.test.ts`, `editor-page-evidence.unit.test.ts`.
+Original finding:
 Its selection judges see community departures the editors were never told of.
 The editor and refine selection criteria lag the slate criteria,
 and "Fits the surrounding text in register and tense" makes the surrounding English the tense authority.
@@ -528,7 +537,10 @@ Guard: `judge-line-structure.unit.test.ts`.
 
 ### S16: the picture scope rule never reached the consolidation writer or the slate
 
-Status: open.
+Status: fixed (`efa502d21`).
+The consolidation writer reads `TRANSLATE_PICTURE_SCOPE_RULE` when it shows pictures;
+the translate judge, which also judges the consolidation slate, reads `JUDGE_PICTURE_SCOPE_RULE` in the pictures label.
+Guards: `consolidate-wire.unit.test.ts`, `document-pictures-reach-the-wire.unit.test.ts`.
 
 ### S17: the consolidation slate is told a decline leaves the passage untranslated where it stops the entry
 
@@ -539,7 +551,11 @@ The translate lane told the same falsehood over an archive the floor refuses, fi
 
 ### S18: measurement sheets drift
 
-Status: open.
+Status: fixed.
+The rendering audit's tense line and the measurement tail's attempts and places landed in `e8f0b0369`;
+`b6df6d5ee` gives the introduced-defect probe's drop rule the apparatus exception.
+Guard: `probe-page-rules.unit.test.ts`.
+Original finding:
 The rendering audit counts a tense English supplies as `altered-time`;
 the introduced-defect probe says dropping wording the ORIGINAL never had is a correct repair,
 against the apparatus clause;
@@ -669,11 +685,15 @@ so folding the subject would have broken every artifact read.
 
 ### H7: the consolidation writer and the translate judge see picture transcripts with no scope rule
 
-Status: open (with S16).
+Status: fixed with S16 (`efa502d21`).
 
 ### H8: the introduced-defect probe has no declared names or glossary
 
-Status: open (class one hundred fourteen's open half).
+Status: fixed (`b6df6d5ee`).
+The probe shows the declared names with their rules and the community renderings over each region's BEFORE and AFTER;
+`runIntroducedDefectProbe` and `proveRepairedChunk` take a required `identityContext` string, empty for none,
+since the repo forbids nullish unions and an optional field would let a caller omit it silently.
+Guard: `probe-page-rules.unit.test.ts`.
 
 ### H9: observations left unbuilt after the owner said to fix everything
 
