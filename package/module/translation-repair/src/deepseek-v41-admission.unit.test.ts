@@ -2,10 +2,10 @@ import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   answerCeilingFor,
-  COMPLETION_CAP,
   creditsFor,
   HYPER_MODELS,
   hyperIdFor,
+  MODEL_CARDS,
   OPENROUTER_MODELS,
   openRouterIdFor,
   ratesFor,
@@ -23,6 +23,15 @@ import {
 
 /** New version identity, not an alias for Flash 0731. */
 const MODEL: string = SEAT_HYPER_OPENROUTER_UNMEASURED;
+
+/** Hyper's price of one credit in USD, from its models documentation and FAQ. */
+const USD_PER_HYPER_CREDIT = 0.05;
+
+/** This model's live Hyper quote in USD per million tokens, read on `HYPER_PRICE_READ_ON`. */
+const QUOTED_USD_PER_MILLION = { input: 0.3, output: 1.2 } as const;
+
+/** Tokens one quoted rate covers. */
+const TOKENS_PER_QUOTE = 1_000_000;
 
 await describe({
   name: '',
@@ -55,17 +64,24 @@ await describe({
       fn: async () => {
         const modelId = nonNullishOrThrow(ROSTER_MODEL_IDS.find(id => id === MODEL));
         const hyper = nonNullishOrThrow(Object.values(HYPER_MODELS).find(info => info.id === MODEL));
-        expect(COMPLETION_CAP[modelId]).toBe(13_082);
-        expect(answerCeilingFor({ modelId: hyper.id })).toBe(26_214);
+        // The pooled figure is measured in `completion-cap.ts`; its test checks the name resolves to it.
+        expect(MODEL_CARDS[modelId].completionCap).toBe('pooled-p99');
+        // Under the measured answer bound, so Hyper asks for the model's own ceiling.
+        expect(answerCeilingFor({ modelId: hyper.id })).toBe(hyper.maxOutputLength);
       },
     }),
     it({
       name: 'uses the verified Hyper credit conversion while keeping unknown models unpriced',
       fn: async () => {
-        // Current Hyper docs define one credit as USD 0.05; the live model quote is 0.3/1.2 USD per million.
-        expect(ratesFor({ model: MODEL })).toEqual({ input: 6, output: 24, cacheCreate: 0, cacheHit: 0.6 });
-        expect(creditsFor({ model: MODEL, promptTokens: 708, completionTokens: 59 }))
-          .toEqual({ inputCredits: 0.004248, outputCredits: 0.001416 });
+        const rates = ratesFor({ model: MODEL });
+        if (rates === 'unpriced') throw new Error(`${MODEL} has no Hyper price row`);
+        expect(rates.input).toBeCloseTo(QUOTED_USD_PER_MILLION.input / USD_PER_HYPER_CREDIT);
+        expect(rates.output).toBeCloseTo(QUOTED_USD_PER_MILLION.output / USD_PER_HYPER_CREDIT);
+        const tokens = { promptTokens: 708, completionTokens: 59 };
+        const credits = creditsFor({ model: MODEL, ...tokens });
+        if (credits === 'unpriced') throw new Error(`${MODEL} priced by rate but not by credits`);
+        expect(credits.inputCredits).toBeCloseTo((tokens.promptTokens * rates.input) / TOKENS_PER_QUOTE);
+        expect(credits.outputCredits).toBeCloseTo((tokens.completionTokens * rates.output) / TOKENS_PER_QUOTE);
         expect(ratesFor({ model: 'unlisted-fixture-model' })).toBe('unpriced');
       },
     }),

@@ -13,9 +13,36 @@ import {
 import {
   COMPLETION_CAP,
   completionCapFor,
+  MODEL_CARDS,
   ROSTER_MODEL_IDS,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
 } from '../dist/final/node/index.mjs';
+
+/**
+ Caps the roster's cards resolve to, for the cards naming one pooled percentile.
+
+ @param pool - pooled percentile's name as a card writes it
+
+ @returns Every distinct cap those cards carry
+
+ @example
+ ```ts
+ const caps = capsNaming({ pool: 'pooled-p99', },);
+ ```
+ */
+function capsNaming({ pool, }: { readonly pool: 'pooled-p90' | 'pooled-p99'; },): readonly number[] {
+  return [
+    ...new Set(
+      ROSTER_MODEL_IDS
+        .filter(function names(modelId,): boolean {
+          return MODEL_CARDS[modelId].completionCap === pool;
+        },)
+        .map(function capOf(modelId,): number {
+          return COMPLETION_CAP[modelId];
+        },),
+    ),
+  ];
+}
 
 await describe({
   name: completionCapFor.name,
@@ -38,6 +65,20 @@ await describe({
         const cap = COMPLETION_CAP[SEAT_HYPER_OPENROUTER_UNMEASURED];
         expect(completionCapFor({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, requested: cap - 1, },),).toBe(cap - 1,);
         expect(completionCapFor({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, requested: cap + 1, },),).toBe(cap,);
+      },
+    },),
+    it({
+      name: 'RESOLVES a card naming a pooled percentile to that one pooled figure, the 99th above the 90th, so a '
+        + 'model with no calls of its own is capped like every other such model',
+      fn: async () => {
+        /**
+         Caps of the cards naming each pool.
+         */
+        const p90 = capsNaming({ pool: 'pooled-p90', },);
+        const p99 = capsNaming({ pool: 'pooled-p99', },);
+        expect(p90,).toHaveLength(1,);
+        expect(p99,).toHaveLength(1,);
+        expect(p99[0],).toBeGreaterThan(p90[0] ?? Number.POSITIVE_INFINITY,);
       },
     },),
   ],
