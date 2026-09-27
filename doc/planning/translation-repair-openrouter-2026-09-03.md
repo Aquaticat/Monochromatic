@@ -8082,6 +8082,87 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## TianqiChen66612 killed and TianqiChen66613 launched on class one hundred seventy-nine, 2026-09-27
+
+TianqiChen66612 ran on `.frozen-dist-325c448ba` (classes one hundred seventy-six to seventy-eight)
+and was killed by pid at 02:23 UTC, 10.5 minutes into the repair lane,
+under ALWAYS KILL AND RELAUNCH once `ca5e56240` landed.
+Its admission printed no fold line: the pairing did not leave the robot paragraph carried this time,
+so class one hundred seventy-nine had nothing to act on there.
+Its waiter first watched the pid of TianqiChen66611
+(the script had been derived by `sed` from the 66611 waiter and kept the old pid);
+fixed and rerun.
+
+TianqiChen66613 launched at 02:26 UTC on `.frozen-dist-ca5e56240`
+(scope `pass-TianqiChen66613`, pid 1066103, overlap 8).
+Read first the admission's `carried on` lines and any `insertion-carried-shifted` finding,
+then slice 13: the Atri line, any `translate-archive-disputed` finding, and the gate
+(`undecided-gate-ships-proposal (standing flawed by every contest ballot)` if it tied),
+then quote 2 once on the page, then the stray closing quote (class one hundred seventy-five).
+
+## TianqiChen66611 read, 2026-09-27: SETTLED, quote 2 twice, class one hundred seventy-nine
+
+TianqiChen66611 ran on `.frozen-dist-c3c96f289` and SETTLED in 1,103 s (18.4 min),
+25 slices, 22 changed on the page.
+Slice 13's robot paragraph shipped as
+"her friends and family never forgot her “high-performance robot” image",
+the fandom glossary line not yet built on that build.
+
+Class one hundred seventy-nine:
+the pairing gave source 13 (the second quoted line) the archive's robot paragraph,
+while the second line's English sat inside slice 12's quote,
+and left source 14 (the robot paragraph) carried with its evidence in slice 13's span.
+The class one hundred ten fold widened slice 13 over sources 13 and 14,
+so slice 13 rendered the second quote again beside the paragraph
+and the page carried that quote twice.
+Fixed in `ca5e56240` (guard red first `96652536f`):
+`insertion-carried-shift.ts` decides a shift where the carried passage's evidence sits in the carrier alone
+and touches every block of the carrier's archive span;
+the carrier then takes the carried source under its own index,
+and its own source joins the paired slice on its far side
+where the two sources abut across blank space alone
+(finding `insertion-carried-shifted (slice N's own source joins slice M: ...)`).
+Anywhere else the plain fold stands, so no source is ever dropped.
+The neighbour helpers moved to `insertion-carried-neighbours.ts`,
+`AnchorHolder` carries the block id,
+and the admission now logs every carried passage's evidence, folded or not
+(the 66611 log carried no evidence line for the folded slice 14).
+Replayed over the real slices 11 to 15 with the robot paragraph as the evidence
+(`replay-179.mjs`): slice 12 took both quotes against its quote block,
+slice 13 took the robot paragraph alone.
+Lint 0/0, types clean, full suite 1,165 PASS with the load-sensitive `lane-contest-stage` grace-window case failing under
+the parallel run and passing alone (`suite-class179.log`), as on the class one hundred ten suite.
+
+Observation, not a class:
+the repair lane's text for slice 13 carried a doubled full stop ("image.. Right up to");
+it never reached the page, and no published page under `~/temp/agent` carries one.
+
+## TianqiChen66610 read, 2026-09-26: SETTLED, classes one hundred seventy-five to seventy-eight
+
+TianqiChen66610 ran on `.frozen-dist-7390294ff` and SETTLED in 17.0 min.
+Class one hundred seventy-four was not exercised (no tie).
+
+- Class one hundred seventy-five: slice 16 shipped a straight stray closing quote the curly stray-quote floor missed;
+    fixed in `c3c96f289` (guard `3f04e53cb`), the floor reading a straight double quote by its shape.
+- Slice 13 shipped the archive's gloss of the "high-performance robot" image
+    as "a cute character she cosplayed as":
+    the repair lane's adjudicators accepted major mistranslation claims against it,
+    but only additions disputed the archive (class one hundred seventy-six),
+    every contest ballot called the archive flawed and the gate tied 2 to 2,
+    which kept the standing (class one hundred seventy-seven),
+    and nothing named the character (class one hundred seventy-eight).
+- Owner's answers of 2026-09-26:
+    "Major+ accuracy, also "high-performance robot" is referring to Atri (search)."
+    and "Slate's choice (Recommended)".
+    Atri is the robot heroine of ATRI -My Dear Moments-, whose catchphrase is "Because I'm high-performance!".
+- Class one hundred seventy-six: `25b9eaec7` (guard `bd6ad35e8`), the eleventh addendum of
+    `doc/decision/translation-repair-ineligible-standing.md`.
+- Class one hundred seventy-seven: `325c448ba` (guard `6243c68d0`), the twelfth addendum.
+- Class one hundred seventy-eight: 高性能机器人 seeded in `community-glossary-fandom.ts`
+    with Atri named in its note (`55d6a72db`, guard `754c8211f`, glossary pin `842ffe399`).
+- Observation, not built: slice 1's critics missed the omission of 更多人.
+- Full suite after class one hundred seventy-seven: 1,166 PASS, 0 FAIL.
+
 ## TianqiChen6669 read, 2026-09-26: INCOMPLETE on a run-off tie, class one hundred seventy-four
 
 TianqiChen6669 ran on `.frozen-dist-fce655de0` and stopped INCOMPLETE after 1,458 s (24.3 min),

@@ -4810,10 +4810,23 @@ each read off the pass log and the shipped page:
     fix `8db508b0a`, class fifty-three test updated `7390294ff`), shipping by repair lane, then translate lane,
     then slate order; tenth ineligible-standing addendum; suite 1,166 PASS, 0 FAIL; recorded under
     "## TianqiChen6669 read".
-    TIANQICHEN66610 RUNNING on `.frozen-dist-7390294ff` (scope `pass-TianqiChen66610`, pid 877799):
-    read slice 4 first (any `translate-runoff-tie-broken` finding and what shipped), then "there will be
-    hope", "when I leave" and "So she was a girl" on all four lines (170 to 172), the italic Anohana title
-    (173), then classes 160 to 169 holding; TianqiChen6669 left no page, so compare against TianqiChen6668's.
+    TIANQICHEN66610 READ (`.frozen-dist-7390294ff`): SETTLED in 17.0 min; class one hundred seventy-five (a
+    straight stray closing quote on slice 16; guard `3f04e53cb`, fix `c3c96f289`); slice 13 shipped the
+    archive's "a cute character she cosplayed as" on a 2 to 2 gate. Owner's answers of 2026-09-26: "Major+
+    accuracy, also "high-performance robot" is referring to Atri (search)." and "Slate's choice
+    (Recommended)"; built as classes one hundred seventy-six (major accuracy claims dispute the archive,
+    `25b9eaec7`), seventy-seven (an undecided gate over a standing every contest ballot condemned ships the
+    slate's choice, `325c448ba`) and seventy-eight (高性能机器人 seeded as Atri's words, `55d6a72db`);
+    eleventh and twelfth ineligible-standing addenda; recorded under "## TianqiChen66610 read".
+    TIANQICHEN66611 READ (`.frozen-dist-c3c96f289`): SETTLED in 18.4 min; the second quote on the page twice,
+    the fold widening a carrier whose archive span rendered only the carried robot paragraph (class one
+    hundred seventy-nine; `insertion-carried-shift.ts`, guard `96652536f`, fix `ca5e56240`, replayed over
+    the real slices); recorded under "## TianqiChen66611 read".
+    TIANQICHEN66612 (`.frozen-dist-325c448ba`) killed 10.5 min in for class one hundred seventy-nine.
+    TIANQICHEN66613 RUNNING on `.frozen-dist-ca5e56240` (scope `pass-TianqiChen66613`, pid 1066103, waiter
+    `wait-TianqiChen66613.mjs`): read the admission's `carried on` lines and any `insertion-carried-shifted`
+    finding first, then slice 13 (the Atri line, any `translate-archive-disputed` finding, the gate), then
+    the second quote once on the page, then class one hundred seventy-five.
     TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built

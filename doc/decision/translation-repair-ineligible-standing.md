@@ -189,6 +189,53 @@ and the decline named `slate-declined-standing`.
 - Guard shown to fail first (`c6ec06788`),
     fixed in `adca69d4e`.
 
+## Addendum 2026-09-26, twelfth: an undecided gate over a standing every contest ballot condemned ships the slate's choice
+
+Owner's answer of 2026-09-26: "Slate's choice (Recommended)".
+TianqiChen66610 slice 13 shipped the archive's gloss of the performer's "high-performance robot" image
+as "a cute character she cosplayed as":
+every contest ballot called the archive flawed,
+the class one hundred six run-off ran,
+the slate chose a valid proposal,
+and the gate tied 2 to 2,
+which settles on neither and so kept the standing.
+
+- `shipPastUndecidedGate` in `consolidate-ineligible-standing.ts` takes `standingFlawedByAll`,
+    passed from `settleConsolidation` as `runoffOverStanding` through `gateAndShip`.
+    A gate settled on neither ships the slate's valid choice
+    where the standing is ineligible (class fifty-four, unchanged)
+    or where every contest ballot called it flawed (new),
+    with the finding `undecided-gate-ships-proposal (standing flawed by every contest ballot)`
+    (`FLAWED_STANDING_GATE_SHIPS_PROPOSAL_FINDING`).
+- Unchanged: a gate that chose the standing keeps it (`gate-kept-standing`);
+    a gate over an eligible standing that no contest condemned keeps it on neither.
+- Guard shown to fail first (`6243c68d0`, `consolidate-settle.unit.test.ts`),
+    fixed in `325c448ba`.
+
+## Addendum 2026-09-26, eleventh: an accepted accuracy claim at major severity disputes the archive
+
+Owner's answer of 2026-09-26: "Major+ accuracy".
+On TianqiChen66610 slice 13 the repair lane's adjudicators accepted major mistranslation claims
+against the archive's gloss,
+but only `accuracy/addition` made a class one hundred seven dispute,
+so the archive stayed an eligible standing and shipped on the tied gate.
+
+- `disputesArchive` in `archive-dispute.ts`:
+    an accepted `accuracy/addition` claim disputes the archive at any severity (as before),
+    and any other accepted `accuracy/` claim disputes it at `major` or `critical`.
+    Minor mistranslations and claims outside accuracy do not.
+- `ArchiveDispute.acceptedClaims` carries every disputing claim;
+    the separate addition list is gone.
+- The ARCHIVE RENDERING DISPUTED note names the rule,
+    brings the addition rule only where an addition was accepted,
+    and brings a reading rule where another accuracy claim was:
+    a reading those claims name is not the page's authority,
+    and a candidate keeping it carries an accepted error.
+- The finding names the rule:
+    `accuracy/addition at any severity, any other accuracy claim at major or worse`.
+- Guard shown to fail first (`bd6ad35e8`, `archive-dispute.unit.test.ts`),
+    fixed in `25b9eaec7`.
+
 ## Addendum 2026-09-26, tenth: a challenge round tied across every valid candidate ships one by preference
 
 Taken under the rule of 2026-09-04 ("prefer the best valid proposal, else fail the slice at once")
