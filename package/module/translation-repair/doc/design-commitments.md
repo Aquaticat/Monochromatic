@@ -218,3 +218,13 @@ Part of [the package README](../README.md).
   and its control is the case that matters,
   since a probe that reads rephrasing as
   damage would flag every refinement the lane ships and would look identical to a clean run while doing it.
+- **Whitespace Markdown renders the same is not a defect.**
+  Owner, 2026-09-27:
+  "There is no need to eliminate extra newlines, because markdown doesn't care."
+  A run of blank lines where the archive has one,
+  or a wording whose edge newlines differ from its archive span's,
+  renders as the archive does,
+  so no pass, floor or finding acts on it.
+  Spacing that changes rendering is another matter:
+  a list's items loose or tight (`list-spread-restore.ts`),
+  or two paragraphs joined by a single newline.

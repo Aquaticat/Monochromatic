@@ -1373,10 +1373,15 @@ cross-slice passes decide on a page the footnote guard may still change.
 
 ### A16: low items
 
-Status: open.
-A lane wording's triple newline ships;
-the runs lock judges liveness by pid only;
-the page is written before the artifact.
+Status: open for the lock and the write order.
+A lane wording's triple newline ships: not a defect.
+Owner, 2026-09-27: "There is no need to eliminate extra newlines, because markdown doesn't care",
+recorded in `doc/design-commitments.md`.
+Measured before the ruling: 30 of 272 published pages carry a run of three newlines, most where the archive does too;
+a wording whose trailing newline the archive span lacks adds one at the seam (XingZ616 slice 78),
+and one that drops it joins no paragraphs (the page still carries the separator).
+Still open: the runs lock judges liveness by pid only,
+and the page is written before the artifact.
 
 ### A17: a handle every writer left in Han ships romanised with no literal meaning
 
@@ -1920,6 +1925,16 @@ Also during A11, a wrap script matched the first line of a multi-line signature 
 the diff showed it before anything was committed, and the four files were restored from HEAD.
 Prevention for scripted rewrites: print each located boundary and read the diff before lint or commit.
 Once more during A12b (`<test> | rg ... ; echo done`).
+
+### M15: a finding carried and a fix started against an owner ruling
+
+Status: corrected; the ruling is now in `doc/design-commitments.md`.
+A16 listed a triple newline as a defect, and a seam-spacing guard was written for it,
+though the owner had said extra newlines need no fixing, since Markdown renders them alike;
+the ruling was in no package doc, so neither the audit that filed A16 nor the fix read it.
+Owner, 2026-09-27: "There is no need to eliminate extra newlines, because markdown doesn't care. I believe I said this before."
+Prevention: an owner ruling goes into `doc/design-commitments.md` (or its decision record) the turn it is given,
+and a finding is checked against those commitments before any fix starts.
 
 ### M14: a reproduction check committed without a positive control
 
