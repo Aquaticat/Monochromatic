@@ -225,7 +225,9 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS the tense rule on verse, where a second shape rule arrives',
+      name: 'CARRIES THE ORDERED TENSE RULE onto the translate writer, prose and verse, and never tells it to keep the '
+        + 'existing translation\'s tense (the whole-package audit of 2026-09-27: class seventy-six\'s wording '
+        + 'survived on this sheet beside the house rule saying the opposite)',
       fn: async () => {
         // The verse rule outranks the shape rule by #150. It must not be read
         // as outranking this one, which is about neither shape nor lines.
@@ -240,9 +242,17 @@ await describe({
           },).messages,
         },);
 
-        expect(prose,).toContain('KEEP THE TENSE OF THE EXISTING TRANSLATION where one is shown.',);
-        expect(verse,).toContain('KEEP THE TENSE OF THE EXISTING TRANSLATION where one is shown.',);
+        expect(prose,).not.toContain('KEEP THE TENSE OF THE EXISTING TRANSLATION',);
+        expect(verse,).not.toContain('KEEP THE TENSE OF THE EXISTING TRANSLATION',);
+        expect(prose,).toContain('ONE TENSE, IN THIS ORDER.',);
+        expect(prose,).toContain(
+          'a line of the life the EXISTING TRANSLATION tells in the present is moved to the past',
+        );
+        expect(verse,).toContain('ONE TENSE, IN THIS ORDER.',);
         expect(verse,).toContain('This is not the shape rule and the verse rule does not displace it.',);
+        // The rule after the apparatus clause must not reopen what the clause
+        // closes: the existing translation's narrative is no licence to add.
+        expect(prose,).not.toContain('and the existing translation does not already carry',);
       },
     },),
   ],
