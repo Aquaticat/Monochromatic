@@ -6,7 +6,7 @@ Candidate investigation continues before further integration-policy questions.
 The earlier native development and overflow probes are useful evidence,
 not production qualification.
 See the [axiom record](pi-auto-mode-axioms.md)
-and [current audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-26.md).
+and [current audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-27.md).
 No model winner,
 threshold,
 account mutation,

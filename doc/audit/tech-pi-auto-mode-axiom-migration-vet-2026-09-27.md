@@ -131,10 +131,8 @@ Current requirements and evidence are maintained in:
 
 ### Laya
 
-Base category:
-inspectable open-source local technology.
-Overlays:
-incumbent replacement,
+Laya is an inspectable open-source local component.
+Its overlays are incumbent replacement,
 high-trust execution,
 native runtime,
 and sensitive data.
@@ -143,8 +141,7 @@ multilingual,
 and typed-decisions checkpoints.
 The qualification record retains their exact source/weight/tokenizer identities.
 
-Status:
-targeted evidence,
+This candidate remains at targeted evidence,
 not validated or recommended.
 The corrected parser-first request/prohibition batch `proc_12af` completed;
 its detailed interpretation remains candidate work,
@@ -161,9 +158,8 @@ No accelerator or training was run.
 
 ### Jev through LLM Gateway
 
-Base categories are separate:
-hosted Jev/gateway service,
-and the inspectable local client used to reach it.
+Jev/gateway is a hosted service.
+The inspectable local client used to reach it is a separate component and base classification.
 Overlays include incumbent replacement,
 high-trust client execution,
 and sensitive data.
@@ -173,8 +169,7 @@ with `typesafe/jev-1.13.0`.
 OpenRouter is secondary;
 the new private-input authorization is not silently extended to it or another provider.
 
-Status:
-targeted evidence,
+These components remain at targeted evidence,
 not validated or recommended.
 The corrected request-language probe `proc_8bd7` completed six requests
 and twelve estimates over two development states.
@@ -208,14 +203,12 @@ Jev-output-derived Laya training remains unauthorized and subject to the recorde
 
 ### Voyage
 
-Base category:
-hosted service for the inspected APIs.
-Overlays include incumbent replacement and sensitive data.
+The inspected Voyage APIs are a hosted-service component.
+Its overlays include incumbent replacement and sensitive data.
 The authorized scope is relevant Voyage products/models,
 not an unrestricted vendor survey.
 
-Status:
-bounded interface/raw-feature fit completed,
+Bounded interface/raw-feature fit work is complete,
 not a validated probability profile or selected auxiliary role.
 The inspected APIs return vectors or indexed relevance,
 not native arbitrary-axiom truth probabilities.

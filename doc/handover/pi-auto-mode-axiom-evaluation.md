@@ -29,7 +29,7 @@ Current references:
 
 - [Axiom architecture and interview answers](../planning/pi-auto-mode-axioms.md).
 - [Effect and authorization contract](../planning/pi-auto-mode-effect-contract.md).
-- [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-26.md).
+- [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-27.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
 
 ## Gateway input authorization and access boundary
@@ -212,16 +212,19 @@ and limitations.
 The corresponding Laya tranche is frozen at
 `~/temp/agent/laya-parser-first-request-controls-2026-09-26`,
 commit `01473ec`.
-Process `proc_12af` is running bounded image construction,
+Process `proc_12af` completed bounded image construction,
 actual-image preflight,
 and twelve sequential single-question Noul trials across English,
 multilingual,
 and typed-decisions.
-All use the same shared states and predicate wording,
+All used the same shared states and predicate wording,
 with default labels and the unchanged reviewed runtime.
-No result has been inspected yet.
-Only this Laya batch may infer;
-wait for its terminal notification rather than polling.
+Its terminal output was inspected;
+full artifact verification,
+summary,
+and candidate interpretation remain under #6.
+This task's inference batch is finished;
+do not rerun it as if the result were missing.
 The [Laya qualification record](../planning/pi-auto-mode-laya-qualification.md#corrected-request-language-tranche)
 records resources and the single-question versus paired-Jev distinction.
 
@@ -690,15 +693,32 @@ and `5b6200b34` for their contract implications.
 Only scoped documentation was committed in the main worktree.
 Unrelated music-player work and `tmp/` must not be reset or cleaned.
 
-The current audit fingerprint is
-`4a2938840ff56544f24ad0d2dd543431c94baa1e18db815adb8ee68af297ea8d`.
+The current authorization-context audit fingerprint is
+`51edb8223a030345de584932d5273ecd90ead6753011d84fefb7b9505f218d67`.
+The prior `4a2938840ff56544f24ad0d2dd543431c94baa1e18db815adb8ee68af297ea8d` report is archived,
+not relabelled.
+Commit `a44920f9c` records that context fork.
+`~/temp/agent/auto-mode-current-audit.json` identifies the current path and full fingerprint.
+
 Audit updates use private per-path locks,
 pre-edit hash checks,
 and atomic sibling-file renames.
-The helper is `~/temp/agent/auto-mode-route-audit-update.mjs`,
-which now accepts a JSON file of exact replacement pairs as its argument.
-The formatter helper is `~/temp/agent/auto-mode-doc-format-current.mjs`.
-Update its explicit path list when adding scoped documents.
+The helper is `~/temp/agent/auto-mode-route-audit-update.mjs`;
+it reads the current-context manifest and accepts exact replacement pairs as its argument.
+Do not run old-context amendment files unchanged.
+The formatter is `~/temp/agent/auto-mode-doc-format-current.mjs`.
+Both select reports by full metadata fingerprint,
+then last-updated date and lexical path,
+not by assuming one filename per subject.
+The shared helper and disposable tests are in
+`~/temp/agent/auto-mode-report-context-2026-09-27`.
+Commits `ebec922` and `15e755f` retain the context checks and a failing full-fingerprint-filter omission control.
+Update the formatter's explicit path list when adding scoped documents.
+
+Do not generalize the earlier interrupted-lock recovery into a stale-lock rule.
+The governing skill requires an absent process and a recorded start older than thirty minutes.
+An empty record cannot establish those facts;
+leave uncertain locks in place and report the conflict.
 
 The nine-document format/render/lint run `proc_0fea` passed and its output was inspected.
 Commit `618d05404` retained the resulting provenance and handover formatting.

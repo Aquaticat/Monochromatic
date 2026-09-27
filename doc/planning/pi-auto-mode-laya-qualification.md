@@ -74,14 +74,15 @@ host mount,
 or reserved case is introduced.
 
 Fixture and driver checks passed.
-Process `proc_12af` is running image construction,
+Process `proc_12af` completed image construction,
 actual-image policy/trial/probe/ledger checks,
-then the finite sequential inference schedule.
+and the finite sequential inference schedule.
 Each inference retains the accepted 8 GiB,
 two CPU,
 no-added-swap,
 300-second research ceiling.
-No result is inspected yet.
+The terminal output was inspected;
+full result-artifact verification and candidate interpretation remain under #6.
 Jev's corrected probe asks both predicates together,
 whereas these Laya trials retain one question per container for the previously bounded forward shape.
 This is not a strict whole-request batching or latency comparison,
