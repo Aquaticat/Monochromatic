@@ -180,6 +180,8 @@ const NAMED_PARTS: Record<string, string> = {
   'String(MINIMUM_CHECKER_COUNT,)': 'count',
   'String(overlap,)': 'count',
   'String(spanIndex,)': 'count',
+  'String(startOffset,)': 'character offset into the archive page',
+  'String(endOffset,)': 'character offset into the archive page',
   'String(PASSING_BODY_BYTES,)': 'count',
   'variable': 'environment variable name',
   'String(line,)': 'one-based line number in a file',

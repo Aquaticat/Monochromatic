@@ -92,5 +92,41 @@ await describe({
         },).toThrow('entry mooncat page does not carry archive-original span 0',);
       },
     },),
+
+    it({
+      name: 'CARRIES THE ENTRY, SPAN AND OFFSETS as fields, so a caller finds the span without parsing the '
+        + 'message (ledger F-12)',
+      fn: async () => {
+        /**
+         Refusal thrown for the page that lost the span.
+         */
+        const refusal = (function thrown(): unknown {
+          try {
+            assertArchiveOriginalComplete({
+              entryId: 'mooncat',
+              archiveText: ARCHIVE,
+              pageText: 'Nothing of it.\n',
+              spans: [ SPAN, ],
+            },);
+          }
+          catch (error: unknown) {
+            return error;
+          }
+          throw new Error('the guard did not refuse the page',);
+        })();
+        expect(refusal,).toBeInstanceOf(ArchiveOriginalCompletenessError,);
+        expect({
+          entryId: (refusal as ArchiveOriginalCompletenessError).entryId,
+          spanIndex: (refusal as ArchiveOriginalCompletenessError).spanIndex,
+          startOffset: (refusal as ArchiveOriginalCompletenessError).startOffset,
+          endOffset: (refusal as ArchiveOriginalCompletenessError).endOffset,
+        },).toEqual({
+          entryId: 'mooncat',
+          spanIndex: 0,
+          startOffset: SPAN.startOffset,
+          endOffset: SPAN.endOffset,
+        },);
+      },
+    },),
   ],
 },);

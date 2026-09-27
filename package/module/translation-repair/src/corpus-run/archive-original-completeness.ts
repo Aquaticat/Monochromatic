@@ -16,38 +16,75 @@ import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 
 /**
  Refusal when a sealed span does not reach the page as the archive has it.
- 
+
+ CARRIES WHAT IT NAMES (ledger F-12): the entry, the span's index and the
+ span's archive offsets are fields, so a caller can find the span without
+ parsing the message, as the sibling completeness errors allow.
+
  @example
  ```ts
- throw new ArchiveOriginalCompletenessError({ entryId: 'hakureico', spanIndex: 0, });
+ throw new ArchiveOriginalCompletenessError({ entryId: 'hakureico', spanIndex: 0, startOffset: 120, endOffset: 480, });
  ```
  */
 export class ArchiveOriginalCompletenessError extends Error {
   /**
-   Message names entry and span index only.
+   Message names entry, span index and offsets only.
    */
   readonly messageNamesOnly: true = true;
 
   /**
+   Entry whose page lost the span.
+   */
+  readonly entryId: string;
+
+  /**
+   Which recorded span the page does not carry.
+   */
+  readonly spanIndex: number;
+
+  /**
+   Where the span starts in the archive page.
+   */
+  readonly startOffset: number;
+
+  /**
+   Where the span ends in the archive page, exclusive.
+   */
+  readonly endOffset: number;
+
+  /**
    Builds refusal.
-   
+
    @param entryId - entry refused
-   
+
    @param spanIndex - which recorded span the page does not carry
+
+   @param startOffset - span's first offset in the archive page
+
+   @param endOffset - span's exclusive end in the archive page
    */
   public constructor(
     {
       entryId,
       spanIndex,
+      startOffset,
+      endOffset,
     }: {
       readonly entryId: string;
       readonly spanIndex: number;
+      readonly startOffset: number;
+      readonly endOffset: number;
     },
   ) {
     super(
-      `entry ${entryId} page does not carry archive-original span ${String(spanIndex,)} as the archive has it`,
+      `entry ${entryId} page does not carry archive-original span ${String(spanIndex,)} (archive offsets `
+        + `${String(startOffset,)} to ${String(endOffset,)}) as the archive has it`,
     );
     this.name = 'ArchiveOriginalCompletenessError';
+    this.entryId = entryId;
+    this.spanIndex = spanIndex;
+    this.startOffset = startOffset;
+    this.endOffset = endOffset;
   }
 }
 
@@ -95,6 +132,8 @@ export function assertArchiveOriginalComplete(
       throw new ArchiveOriginalCompletenessError({
         entryId,
         spanIndex,
+        startOffset: span.startOffset,
+        endOffset: span.endOffset,
       },);
   }
 }
