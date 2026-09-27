@@ -9,6 +9,7 @@ import {
   textCarriesForm,
 } from './glossary-match.ts';
 import { withoutComments, } from './translate-address-drop.ts';
+import { withoutGlossedTitles, } from './translate-han-title.ts';
 
 //region Community term floor
 // CLASS ONE HUNDRED NINETEEN (shi_Yumiaoya19, 2026-09-24). The glossary put
@@ -218,9 +219,14 @@ export function communityTermFindings(
   if (carried.length === 0)
     return [];
   /**
-   Candidate with its comments cut.
+   Candidate with its comments cut, and with the original's Han titles cut
+   where the title floor accepts them as kept (glossed), since a word inside
+   such a title is the title's, not a word left untranslated (ledger F-11).
    */
-  const candidate = withoutComments({ text: candidateText, },);
+  const candidate = withoutGlossedTitles({
+    sourceText,
+    candidateText: withoutComments({ text: candidateText, },),
+  },);
   return carried.flatMap(function findingsFor(entry,): readonly string[] {
     if (textCarriesForm({
       text: candidate,

@@ -499,6 +499,148 @@ function carriesBare(
 }
 
 /**
+ Offsets of the occurrences of a title this floor accepts: those not
+ standing bare.
+
+ @param text - candidate text
+
+ @param title - Han title as the original brackets it
+
+ @returns Offsets in order
+
+ @example
+ ```ts
+ acceptedStarts({ text: '《猫》 (Cat)', title: '猫', },); // [1]
+ ```
+ */
+function acceptedStarts(
+  {
+    text,
+    title,
+  }: {
+    readonly text: string;
+    readonly title: string;
+  },
+): readonly number[] {
+  /**
+   Accepted offsets found so far.
+   */
+  const starts: number[] = [];
+  for (
+    let start = text.indexOf(title,);
+    start !== (-1);
+    start = text.indexOf(
+      title,
+      start + title.length,
+    )
+  ) {
+    if (!standsBare({
+      text,
+      title,
+      start,
+    },))
+      starts.push(start,);
+  }
+  return starts;
+}
+
+/**
+ A text with a title cut out at some offsets.
+
+ @param text - candidate text
+
+ @param title - title to cut
+
+ @param starts - offsets of the occurrences to cut, in order
+
+ @returns The text without those occurrences
+
+ @example
+ ```ts
+ cutAt({ text: '《猫》 (Cat)', title: '猫', starts: [1,], },); // '《》 (Cat)'
+ ```
+ */
+function cutAt(
+  {
+    text,
+    title,
+    starts,
+  }: {
+    readonly text: string;
+    readonly title: string;
+    readonly starts: readonly number[];
+  },
+): string {
+  /**
+   Where each kept piece begins: the text's start, then just past each cut.
+   */
+  const pieceStarts = [
+    0,
+    ...starts.map(function pastCut(start,): number {
+      return start + title.length;
+    },),
+  ];
+  return pieceStarts
+    .map(function piece(
+      from,
+      index,
+    ): string {
+      return text.slice(
+        from,
+        starts[index] ?? text.length,
+      );
+    },)
+    .join('',);
+}
+
+/**
+ A candidate with every occurrence of the original's Han titles that this
+ floor accepts (glossed, or inside parentheses after the English) cut out,
+ so another floor reading the candidate for Han words does not refuse a word
+ inside a title kept the way this floor allows (ledger F-11: 《高考猫》 (The
+ Exam Cat) refused for 高考). A bare occurrence is left for this floor.
+
+ @param sourceText - original passage
+
+ @param candidateText - rendering, comments already cut
+
+ @returns The rendering without its accepted title occurrences
+
+ @example
+ ```ts
+ withoutGlossedTitles({ sourceText: '《高考猫》', candidateText: '《高考猫》 (The Exam Cat)', },);
+ // => '《》 (The Exam Cat)'
+ ```
+ */
+export function withoutGlossedTitles(
+  {
+    sourceText,
+    candidateText,
+  }: {
+    readonly sourceText: string;
+    readonly candidateText: string;
+  },
+): string {
+  return hanTitles({ text: withoutComments({ text: sourceText, },), },)
+    .reduce(
+      function cutGlossed(
+        text,
+        title,
+      ): string {
+        return cutAt({
+          text,
+          title,
+          starts: acceptedStarts({
+            text,
+            title,
+          },),
+        },);
+      },
+      candidateText,
+    );
+}
+
+/**
  Findings against a candidate that leaves a work's title the original
  brackets in 《》 in Han, one per title; empty where every such title is
  rendered, glossed, or kept by the page the candidate would replace.
