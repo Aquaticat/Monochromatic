@@ -5,9 +5,11 @@
  */
 
 import {
+  mkdir,
   mkdtemp,
   readFile,
   rm,
+  writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
@@ -119,6 +121,56 @@ await describe({
           reason: 'archive-original',
           note: '这篇文章的原文即英文',
         },);
+      },
+    },),
+    it({
+      name: 'SKIPS a directory named like a record, as the artifact listing does (ledger A9b)',
+      fn: async () => {
+        await using root = await throwawayRoot();
+        /**
+         Directory of records.
+         */
+        const declinedDir = join(
+          root.path,
+          DECLINED_DIR,
+        );
+        await mkdir(join(
+          declinedDir,
+          'Tabby.json',
+        ), { recursive: true, },);
+        await writeDeclinedEntry({
+          declinedDir,
+          record: {
+            id: 'Calico',
+            tip: 'abc',
+            pipelineDigest: 'sha256:0',
+            corpusSha: 'def',
+            timestamp: '2026-09-27T00:00:00.000Z',
+            reason: 'archive-original',
+            note: 'the cat wrote this page in English herself',
+          },
+        },);
+        expect([ ...await declinedEntryIds({ declinedDir, },), ],).toStrictEqual(['Calico',],);
+      },
+    },),
+    it({
+      name: 'REFUSES a decline path it cannot list rather than reading it as no declines (ledger A9b)',
+      fn: async () => {
+        await using root = await throwawayRoot();
+        /**
+         A regular file standing where the directory belongs.
+         */
+        const declinedDir = join(
+          root.path,
+          DECLINED_DIR,
+        );
+        await writeFile(
+          declinedDir,
+          'a cat napped here\n',
+        );
+        await expect(declinedEntryIds({ declinedDir, },),)
+          .rejects
+          .toThrow('ENOTDIR',);
       },
     },),
   ],
