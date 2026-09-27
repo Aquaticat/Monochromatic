@@ -322,6 +322,130 @@ function closingHalfAlone(): WouldShipSource {
   } as unknown as WouldShipSource;
 }
 
+/**
+ Archive paragraph carrying a day-first date and a reference to a note
+ defined in the next slice.
+ */
+const DATED_PARAGRAPH = 'The cat napped on 29 April 2024 by the window[^1].\n\n';
+
+/**
+ Archive definition of that note.
+ */
+const DATED_NOTE = '[^1]: Its favourite spot.\n';
+
+/**
+ Original paragraph beside that archive paragraph.
+ */
+const DATED_SOURCE_PARAGRAPH = '猫猫在2024年4月29日在窗边打盹〔1〕。\n\n';
+
+/**
+ Original definition beside that archive definition.
+ */
+const DATED_SOURCE_NOTE = '〔1〕：它最喜欢的位置。\n';
+
+/**
+ The dated paragraph and the note, one content slice each.
+ */
+const DATED_SLICES: readonly ChunkPair[] = [
+  {
+    source: {
+      kind: 'content',
+      sliceIndex: 0,
+      nodes: [],
+      startOffset: 0,
+      endOffset: DATED_SOURCE_PARAGRAPH.length,
+      text: DATED_SOURCE_PARAGRAPH,
+    },
+    target: {
+      kind: 'content',
+      sliceIndex: 0,
+      nodes: [],
+      startOffset: 0,
+      endOffset: DATED_PARAGRAPH.length,
+      text: DATED_PARAGRAPH,
+    },
+  },
+  {
+    source: {
+      kind: 'content',
+      sliceIndex: 1,
+      nodes: [],
+      startOffset: DATED_SOURCE_PARAGRAPH.length,
+      endOffset: DATED_SOURCE_PARAGRAPH.length + DATED_SOURCE_NOTE.length,
+      text: DATED_SOURCE_NOTE,
+    },
+    target: {
+      kind: 'content',
+      sliceIndex: 1,
+      nodes: [],
+      startOffset: DATED_PARAGRAPH.length,
+      endOffset: DATED_PARAGRAPH.length + DATED_NOTE.length,
+      text: DATED_NOTE,
+    },
+  },
+];
+
+/**
+ Builds a source whose consolidation rewrote the dated paragraph without its
+ note reference, which the footnote guard takes back.
+
+ @returns Narrow artifact source read by the publication assembler
+
+ @example
+ ```ts
+ const artifact = droppingTheReference();
+ ```
+ */
+function droppingTheReference(): WouldShipSource {
+  /**
+   Lane wording that lost the reference.
+   */
+  const unreferenced = 'The cat napped by the window on the 29th of April.\n\n';
+  return {
+    comparison: [
+      {
+        sliceIndex: 0,
+        incumbentKind: 'present',
+        incumbentText: DATED_PARAGRAPH,
+        repairText: DATED_PARAGRAPH,
+        translateText: unreferenced,
+        laneRelation: 'translate-only',
+        repairOutcome: { kind: 'decided', acceptedText: DATED_PARAGRAPH, },
+        translateOutcome: { kind: 'decided', acceptedText: unreferenced, },
+        decisionComparison: { kind: 'comparable', verdict: 'different', },
+        repairDelivery: { kind: 'incumbent-retained', },
+        translateDelivery: { kind: 'replacement-shipped', },
+      },
+      {
+        sliceIndex: 1,
+        incumbentKind: 'present',
+        incumbentText: DATED_NOTE,
+        repairText: DATED_NOTE,
+        translateText: DATED_NOTE,
+        laneRelation: 'both-kept',
+        repairOutcome: { kind: 'decided', acceptedText: DATED_NOTE, },
+        translateOutcome: { kind: 'decided', acceptedText: DATED_NOTE, },
+        decisionComparison: { kind: 'comparable', verdict: 'same', },
+        repairDelivery: { kind: 'incumbent-retained', },
+        translateDelivery: { kind: 'incumbent-retained', },
+      },
+    ],
+    consolidation: {
+      kind: 'settled',
+      slices: [{
+        sliceIndex: 0,
+        terminal: 'consolidated',
+        shipped: { kind: 'consolidated', text: unreferenced, },
+        rewrapped: false,
+        demoted: false,
+        verdicts: [],
+        gate: { kind: 'not-asked', },
+      },],
+    },
+    laneSelection: { kind: 'contested', slices: [], },
+  } as unknown as WouldShipSource;
+}
+
 await describe({
   name: guardPageAssembly.name,
   children: [
@@ -446,6 +570,28 @@ await describe({
         expect(assembly.findings.some(function namesFold(finding,): boolean {
           return finding.includes('Windows line ending',);
         },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'RUNS THE PAGE PASSES OVER THE ARCHIVE TEXT OF A SLICE IT WITHDRAWS, as over any untouched slice, '
+        + 'so the page carries its date month first (ledger K5: a withdrawn slice shipped the archive text '
+        + 'the passes never read)',
+      fn: async () => {
+        const assembly = guardPageAssembly({
+          artifact: droppingTheReference(),
+          slices: DATED_SLICES,
+          sourceText: `${DATED_SOURCE_PARAGRAPH}${DATED_SOURCE_NOTE}`,
+          targetText: `${DATED_PARAGRAPH}${DATED_NOTE}`,
+        },);
+        // The lane's row is still recorded as taken back.
+        expect(assembly.withdrawn,).toEqual([0,],);
+        expect(assembly.trimmed
+          .filter(function atSliceZero(row,): boolean {
+            return row.sliceIndex === 0;
+          },)
+          .map(function carried(row,): string {
+            return row.replacementText;
+          },),).toEqual(['The cat napped on April 29, 2024 by the window[^1].\n\n',],);
       },
     },),
   ],
