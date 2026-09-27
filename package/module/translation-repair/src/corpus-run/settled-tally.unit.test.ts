@@ -44,6 +44,21 @@ const MENDED_NAP = 'The cat is asleep on the windowsill.';
 const FRESH_BOWL = 'The cat has a bowl of its own.';
 
 /**
+ Archive wording with the page's curly apostrophe.
+ */
+const ARCHIVE_BOWL = 'The cat\u2019s bowl is full.';
+
+/**
+ Same wording with a straight apostrophe, as a model writes it.
+ */
+const STRAIGHT_BOWL = 'The cat\'s bowl is full.';
+
+/**
+ Wording that changes what the archive says.
+ */
+const EMPTY_BOWL = 'The cat\'s bowl is empty.';
+
+/**
  Artifact these cases render.
  
  Built as a literal rather than through the builder, because what is under
@@ -69,6 +84,7 @@ function catArtifact(): SettledArtifact {
     timestamp: '2026-08-16T00:00:00.000Z',
     preparation: {
       identity: `sha256-preparation-v1:${'d'.repeat(64,)}`,
+      archiveText: ARCHIVE_NAP,
       sliceCount: 2,
       sourceChars: 18,
       targetChars: ARCHIVE_NAP.length,
@@ -202,7 +218,59 @@ function catArtifact(): SettledArtifact {
     // hiding: leaving it out made this fixture claim a shape no pipeline
     // writes, and the first reader to reach for the field found undefined.
     consolidation: { kind: 'not-run', },
+    pageAssembly: {
+      trimmed: [],
+      withdrawn: [],
+      findings: [],
+    },
   } as unknown as SettledArtifact;
+}
+
+/**
+ The same entry after a page-assembly pass rewrote its first slice, over an
+ archive that writes curly apostrophes.
+
+ @param trimmedText - wording the pass recorded for that slice
+
+ @returns Artifact whose first slice the page-assembly record decides
+
+ @example
+ ```ts
+ const artifact = trimmedArtifact({ trimmedText: STRAIGHT_BOWL, },);
+ ```
+ */
+function trimmedArtifact({ trimmedText, }: { readonly trimmedText: string; },): SettledArtifact {
+  /**
+   Entry the pass ran over.
+   */
+  const base = catArtifact();
+  return {
+    ...base,
+    preparation: {
+      ...base.preparation,
+      archiveText: ARCHIVE_BOWL,
+      targetChars: ARCHIVE_BOWL.length,
+    },
+    comparison: base.comparison.map(function withBowl(row,): SettledArtifact['comparison'][number] {
+      return (row.sliceIndex === 0)
+        ? {
+          ...row,
+          incumbentText: ARCHIVE_BOWL,
+          translateText: ARCHIVE_BOWL,
+        }
+        : row;
+    },),
+    pageAssembly: {
+      trimmed: [
+        {
+          sliceIndex: 0,
+          replacementText: trimmedText,
+        },
+      ],
+      withdrawn: [],
+      findings: ['bowl pass: slice 0 rewritten',],
+    },
+  };
 }
 
 /**
@@ -216,8 +284,24 @@ function catArtifact(): SettledArtifact {
  ```
  */
 function renderedFields(): Record<string, string> {
+  return fieldsOf({ artifact: catArtifact(), },);
+}
+
+/**
+ Splits one artifact's line into its `key=value` pairs.
+
+ @param artifact - entry whose line is rendered
+
+ @returns Every field of the rendered line, keyed
+
+ @example
+ ```ts
+ const fields = fieldsOf({ artifact: catArtifact(), },);
+ ```
+ */
+function fieldsOf({ artifact, }: { readonly artifact: SettledArtifact; },): Record<string, string> {
   return Object.fromEntries(
-    settledTallyLine({ artifact: catArtifact(), },)
+    settledTallyLine({ artifact, },)
       .split(' ',)
       .filter(function isField(token,): boolean {
         return token.includes('=',);
@@ -364,6 +448,18 @@ await describe({
         // The slice with no incumbent at all: nothing stands there, which is
         // neither a change nor a retention and would be invisible inside either.
         expect(fields.pageSilent,).toBe('1',);
+      },
+    },),
+    it({
+      name: 'COUNTS a slice by what the page carries after typography, so a wording differing from the '
+        + 'archive only in apostrophe style is no change (ledger A10)',
+      fn: async () => {
+        expect(fieldsOf({ artifact: trimmedArtifact({ trimmedText: STRAIGHT_BOWL, },), },).pageChanged,)
+          .toBe('0',);
+
+        // Positive control: a wording that changes the words still counts.
+        expect(fieldsOf({ artifact: trimmedArtifact({ trimmedText: EMPTY_BOWL, },), },).pageChanged,)
+          .toBe('1',);
       },
     },),
   ],
