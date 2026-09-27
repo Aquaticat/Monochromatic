@@ -1200,9 +1200,37 @@ Those results are private `da0c6c8`;
 they establish no currently listed artifacts for those runs,
 not why artifacts are absent or that every source-build route is unavailable.
 Pinned source copies/ledger from `proc_95f3` are in private `consumer-source/` and `consumer-source-ledger.json`.
-The Web script's public workflow route and the Linux reusable build route remain source follow-ups.
-No new consumer artifact has been downloaded or executed,
-and these route-specific results are not a universal provenance-absence conclusion.
+The Linux reusable build and publication paths remain source follow-ups.
+The pinned build action `8bad63a3c05d448311dfa8e5f531171c97471aa1` was cloned read-only;
+`proc_4aee` extracted its embedded sources without running its bundle.
+The inspected checksum/cache logic is not a complete build-input receipt.
+The ORT tag is lightweight;
+GitHub reports the source commit's signature as valid,
+which does not authenticate a binary build.
+Private `consumer-attribution-followup.json` retains those distinctions and review corrections.
+
+The official CPU archive was then acquired inertly in `proc_7524` with matching release size/hash.
+`proc_ca7c` passed bounded standard-library parsing and byte-identity controls,
+without disk extraction or candidate-library loading.
+Its 41-member archive expands to 30,464,000 bytes.
+Archive and wheel shared libraries each have 28,985,152 bytes,
+but their SHA-256 values differ:
+archive `245a6f8c38127551057a1cd1ffd59f0a186a227ade4f3492dea2494eb565542e`,
+wheel `c902c70b3003c0e99fada202f37478c515ae9bba7944c2b2abd0017bae0c82ed`.
+The cause is not established.
+Plans/source/results are private `0081038`,
+`eacbbe7`,
+`6101efa`,
+and `739ede1`.
+The [attribution troubleshooting note](../troubleshooting/onnxruntime-artifact-attribution.md)
+records source excerpts,
+controls,
+and limits.
+No new consumer has been installed or executed,
+and these route-specific results do not establish universal provenance absence.
+Continue source/build-route inspection and consider the already pinned ONNX package's reference evaluator
+as another CPU consumer source path,
+without assuming it is qualified or meets the deadline.
 
 Continue unresolved consumer provenance,
 numerical parity,

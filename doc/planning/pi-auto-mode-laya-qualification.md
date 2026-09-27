@@ -1042,7 +1042,8 @@ Official `onnxruntime-node@1.30.0` and `onnxruntime-web@1.30.0` metadata returne
 Both returned integrity and registry-signature records,
 but neither returned `gitHead` or a `dist.attestations` pointer.
 Those signatures have not been verified here and are not a build/source attestation.
-No consumer archive or npm tarball was downloaded or executed by this phase.
+Those metadata requests did not download or execute a consumer archive or npm tarball.
+The inert CPU archive follow-up is recorded separately.
 
 Pinned ORT `js/node/script/install.js` imports its helper/proxy modules before parsing its installation flag.
 `install-metadata.js` selects `cuda12` for Linux x64 by default,
@@ -1070,6 +1071,47 @@ not verified artifact attribution or runtime readiness.
 Missing pointers,
 HTTP 404s,
 and the inspected private-registry HTTP 401 do not establish universal provenance unavailability.
+
+#### Build-action and inert archive follow-up
+
+The official build-action clone at `8bad63a3c05d448311dfa8e5f531171c97471aa1` was inspected without execution.
+Its embedded source computes a Docker context/argument/UID checksum before a cache-miss step may copy `deps.txt`.
+That tag alone is not a complete build receipt.
+The ORT release tag resolves directly to a commit;
+GitHub reports a valid signature on the source commit,
+not on the consumer binary build.
+The [source trace and attribution limits](../troubleshooting/onnxruntime-artifact-attribution.md)
+retain exact paths and excerpts.
+
+`proc_7524` acquired the CPU archive as inert data;
+its 11,306,877-byte size and SHA-256 matched the retained official release metadata.
+`proc_ca7c` then used the existing inspection image to hash archive and baked-wheel members,
+without extracting files or loading a candidate library.
+The bounded reader inventoried 41 members and 30,464,000 decompressed bytes.
+Both shared libraries have 28,985,152 bytes,
+but the archive library's SHA-256 is
+`245a6f8c38127551057a1cd1ffd59f0a186a227ade4f3492dea2494eb565542e`,
+while the wheel library's is
+`c902c70b3003c0e99fada202f37478c515ae9bba7944c2b2abd0017bae0c82ed`.
+Equal-input and one-byte-change controls passed before the comparison.
+The cause of the different bytes is unestablished;
+do not transfer attribution between those members or infer a runtime defect.
+Actual limits were two GiB,
+one CPU,
+zero added swap,
+16 processes,
+and 64 file descriptors;
+the container ceiling was 30 seconds.
+Private checkpoints `0081038`,
+`eacbbe7`,
+`6101efa`,
+and `739ede1` retain the plan,
+acquisition,
+reader,
+and results.
+No native consumer execution or inference admission follows from this inspection.
+SLSA is not the only possible attribution mechanism,
+but source mapping and build-input review remain required.
 
 ## Fine-tuning source findings
 

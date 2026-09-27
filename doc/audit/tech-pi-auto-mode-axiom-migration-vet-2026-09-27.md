@@ -540,9 +540,44 @@ Each artifact listing returned 200 with no artifacts currently listed;
 raw metadata is private `da0c6c8`.
 That observation does not identify a deletion/retention cause or exhaust source-build routes.
 Pinned source copies and their ledger were materialized without modifying upstream checkouts.
-No new consumer archive/package was downloaded,
-installed,
-or executed.
+Those metadata requests did not download a consumer artifact.
+The subsequent inert CPU archive acquisition `proc_7524` matched its frozen 11,306,877-byte size and release digest.
+Hash-only standard-library inspection `proc_ca7c` inventoried 41 members and 30,464,000 decompressed bytes.
+The archive and wheel shared libraries both have 28,985,152 bytes,
+but their SHA-256 values differ:
+archive `245a6f8c38127551057a1cd1ffd59f0a186a227ade4f3492dea2494eb565542e`,
+wheel `c902c70b3003c0e99fada202f37478c515ae9bba7944c2b2abd0017bae0c82ed`.
+Equal-input and one-byte-difference controls passed.
+The cause of the different bytes remains unknown.
+There was no disk extraction,
+candidate-library loading,
+or model inference.
+Actual limits were two GiB,
+one CPU,
+zero added swap,
+16 processes,
+and 64 file descriptors,
+with a 30-second container ceiling.
+Private `0081038`,
+`eacbbe7`,
+`6101efa`,
+and `739ede1` retain plan/source/results.
+
+The pinned build-action embedded source was read after `proc_4aee` extracted it inertly.
+Its context/argument/UID checksum precedes a conditional dependency-file copy;
+the tag alone is not complete build-input evidence.
+The ORT release tag is lightweight,
+and GitHub reports a valid signature on the source commit,
+not on a consumer binary build.
+The [artifact-attribution trace](../troubleshooting/onnxruntime-artifact-attribution.md)
+records source excerpts,
+observations,
+and review corrections.
+SLSA is not the only possible attribution mechanism,
+but source mapping and build-input review remain required.
+No consumer has been installed or executed.
+The source-build route and the already pinned ONNX reference-evaluator source path remain investigations,
+not qualified runtimes or adopted alternatives.
 
 ### Jev through LLM Gateway
 
