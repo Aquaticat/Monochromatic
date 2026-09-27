@@ -20,6 +20,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   decideBestCandidate,
+  FULL_VOTE_WEIGHT,
   NO_TYPED_ANSWER,
   type RosterModelId,
   SEAT_OPENROUTER_DECISIONS,
@@ -176,7 +177,8 @@ await describe({
         if (outcome.kind !== 'selected')
           throw new Error('selected by construction',);
         expect(outcome.selectedIndex,).toBe(2,);
-        expect(outcome.voteWeight,).toBe(3,);
+        // Every written judge and the decision seat, none of them a contributor, at full weight.
+        expect(outcome.voteWeight,).toBe((CHAT_JUDGES.length + 1) * FULL_VOTE_WEIGHT,);
         /**
          The decision seat's ballot.
          */
