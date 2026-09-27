@@ -11,13 +11,14 @@ Do not confuse this with the separately measured Laya CPU latency or attention-m
 
 ## Source identities
 
-- PyTorch 2.10 source: `449b1768410104d3ed79d3bcfe4ba1d65c7f22c0`.
-- ONNX Script 0.7.2 source: `082bfa28e959a4c0639d91b62663c6c59c4dfc42`.
-- Private evidence root: `~/temp/agent/laya-onnx-source-audit-2026-09-27`.
-- Source ledgers: `torch-exporter-ledger.json`,
-  `runtime-boundary-source-ledger.json`,
-  `release-followup-source-ledger.json`,
-  and `build-details-source-ledger.json`.
+PyTorch 2.10 is pinned at `449b1768410104d3ed79d3bcfe4ba1d65c7f22c0`.
+ONNX Script 0.7.2 is pinned at `082bfa28e959a4c0639d91b62663c6c59c4dfc42`.
+
+Private evidence lives at `~/temp/agent/laya-onnx-source-audit-2026-09-27`.
+Its source ledgers are `torch-exporter-ledger.json`,
+`runtime-boundary-source-ledger.json`,
+`release-followup-source-ledger.json`,
+and `build-details-source-ledger.json`.
 
 Third-party checkouts were not edited.
 Git objects were materialized into the owned evidence directory for reading.
@@ -62,7 +63,7 @@ a flag named `verify` is not by itself a strict artifact-publication condition.
 
 ## Verification and limits
 
-Working evidence:
+### Working evidence
 
 - The delegated source paths were resolved from pinned Git objects.
 - The actual runtime image's missing ONNX dependency records were measured without candidate imports.
@@ -71,7 +72,7 @@ Working evidence:
   and the separate ONNX wheel's signed source attribution passed their recorded checks.
   None is a graph-correctness test.
 
-Unverified execution cases:
+### Unverified execution cases
 
 - An invalid graph returning through the actual imported compatibility facade.
 - The same graph being rejected by the actual `onnx.checker` API.
@@ -108,14 +109,31 @@ No new upstream issue or comment was sent.
 
 ### Upstream filing decision
 
-1.  Upstream fault: not established.
-    The compatibility function explicitly documents its deliberate no-op behavior.
-2.  Fixability: relevant source is available,
-    but no defect requiring a change has been reproduced.
-3.  Supported use: export compatibility is supported;
-    mandatory structural validation is not promised by this function's current body/docstring.
-4.  Contribution policy: not assessed for a filing because no reportable defect has been established.
-5.  Maintainer intent: the source explicitly says the checker was removed for false positives and overhead.
-    Do not infer agreement to restore it.
-6.  Prototype: none.
-    The conditions requiring an upstream-fix prototype are not satisfied.
+#### Upstream fault
+
+Not established.
+The compatibility function explicitly documents its deliberate no-op behavior.
+
+#### Fixability
+
+Relevant source is available,
+but no defect requiring a change has been reproduced.
+
+#### Supported use
+
+Export compatibility is supported;
+mandatory structural validation is not promised by this function's current body/docstring.
+
+#### Contribution policy
+
+Not assessed for a filing because no reportable defect has been established.
+
+#### Maintainer intent
+
+The source explicitly says the checker was removed for false positives and overhead.
+Do not infer agreement to restore it.
+
+#### Prototype
+
+None.
+The conditions requiring an upstream-fix prototype are not satisfied.
