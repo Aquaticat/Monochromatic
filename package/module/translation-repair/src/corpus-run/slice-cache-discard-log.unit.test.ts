@@ -46,6 +46,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   discardNamespace,
+  openNamespacedCache,
   type SliceNamespace,
 } from '../../dist/final/node/index.mjs';
 
@@ -204,6 +205,54 @@ async function discarding(
   };
 }
 
+/**
+ Diverts `console.warn`, where the tagged logger's `warn` sink resolves, into
+ a list until disposed.
+
+ @param lines - where diverted warnings are appended
+
+ @returns Capture restoring `console.warn` on disposal
+
+ @example
+ ```ts
+ using capture = warningsInto({ lines, },);
+ ```
+ */
+function warningsInto(
+  { lines, }: { readonly lines: string[]; },
+): Disposable {
+  /**
+   `console.warn` as it was, put back on disposal.
+   */
+  const warned = console.warn;
+  console.warn = (...parts: readonly unknown[]) => {
+    lines.push(parts.map(String,)
+      .join(' ',),);
+  };
+  return {
+    [Symbol.dispose]: () => {
+      console.warn = warned;
+    },
+  };
+}
+
+/**
+ Accepts any stored object, so the envelope decides what resumes; the loader
+ hands a guard nothing at all for a file that is no envelope.
+
+ @param value - stored record, or nothing
+
+ @returns Whether a record is there
+
+ @example
+ ```ts
+ await openNamespacedCache({ dir, generation, namespace, isValue: anyRecord, },);
+ ```
+ */
+function anyRecord(value: unknown,): value is object {
+  return ((typeof value) === 'object') && (value !== null);
+}
+
 //endregion Fixtures
 
 await describe({
@@ -289,6 +338,82 @@ await describe({
 
         expect(lines.length,).toBe(1,);
         expect(lines[0],).toContain('filled by (unstamped)',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: openNamespacedCache.name,
+  // Sequential for the same reason as the discard cases: `console.warn` is one
+  // binding held across an await.
+  concurrency: 1,
+  children: [
+    it({
+      name: 'WARNS about a slice file that does not parse, naming it, since that slice is bought again '
+        + '(ledger A11)',
+      fn: async () => {
+        /**
+         Cache this lane filled under the running pipeline: one slice torn
+         mid-write, one that parses but is no envelope this loader wrote.
+         */
+        const dir = await cacheHolding({ names: ['mittens.b.json',], },);
+        await writeFile(
+          join(
+            dir,
+            MITTENS.marker,
+          ),
+          'nap-3\n',
+          'utf8',
+        );
+        await writeFile(
+          join(
+            dir,
+            'mittens.a.json',
+          ),
+          '{"key":"a","val',
+          'utf8',
+        );
+
+        /**
+         Warnings the open printed.
+         */
+        const lines: string[] = [];
+        {
+          using capture = warningsInto({ lines, },);
+          /**
+           Cache as the lane opens it.
+           */
+          const cache = await openNamespacedCache({
+            dir,
+            generation: 'nap-3',
+            namespace: MITTENS,
+            isValue: anyRecord,
+          },);
+          expect(cache.resumed.size,).toBe(0,);
+        }
+        await rm(
+          dir,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+
+        // Positive control: the refused envelope was already announced, so the
+        // capture sees this loader's warnings.
+        expect(lines.filter(function namesB(line,): boolean {
+          return line.includes('mittens.b.json',);
+        },).length,).toBe(1,);
+
+        /**
+         Warnings naming the torn slice.
+         */
+        const torn = lines.filter(function namesA(line,): boolean {
+          return line.includes('mittens.a.json',);
+        },);
+        expect(torn.length,).toBe(1,);
+        expect(torn[0],).toContain('recomputed',);
       },
     },),
   ],
