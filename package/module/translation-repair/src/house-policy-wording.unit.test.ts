@@ -1,0 +1,131 @@
+/**
+ Guards the whole-package audit of 2026-09-27 on the house policy's own
+ wording, each sentence a place where the rule said something other than
+ what the corpus and the owner's rulings ask:
+
+ - no producing sheet said the house rules outrank the sheet's own rules, so
+   the refiner's "keep every word left in the original language" sat beside
+   the rule rendering Ta, titles and handles, unresolved;
+ - the reader-protection sample "the page says that she ended her life" stood
+   in a bullet opening on "a death or an attempt", the class seventy-nine
+   shape class one hundred twenty-four's later sentence contradicts;
+ - "Entries are written in the third person" against contributors writing
+   我, whom the kept-subject rule renders as I;
+ - "MtF is trans woman, as 药娘 is" narrower than the owner's "trans girl or
+   trans woman";
+ - "kept and glossed" never said the kept term is not left in Han, and runs
+   shipped "大证 (...)" in English prose;
+ - the positional-word rule read as a ban on "earlier" and "below" in any
+   sense;
+ - the corner-bracket rule's second example kept quotation marks the rule
+   said are dropped;
+ - the measuring sheets' reader-protection line named deaths only;
+ - the rendering audit called a tense English supplies an altered time.
+
+ @module
+ */
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import { HOUSE_POLICY_BLOCK, } from '../dist/final/node/index.mjs';
+import { renderedSheets, } from './rendered-sheets.test-fixture.ts';
+
+/**
+ Rendered text of one named sheet.
+
+ @param name - stage the sheet is written for
+
+ @returns Sheet text, empty where no sheet has the name
+
+ @example
+ ```ts
+ sheetNamed({ name: 'resolution', },);
+ ```
+ */
+function sheetNamed({ name, }: { readonly name: string; },): string {
+  return renderedSheets().find(function named(sheet,): boolean {
+    return sheet.name === name;
+  },)?.text ?? '';
+}
+
+await describe({
+  name: 'the house policy says what the corpus and the owner ask (audit of 2026-09-27)',
+  children: [
+    it({
+      name: 'SAYS THE HOUSE RULES OUTRANK any other rule on the same sheet',
+      fn: async () => {
+        expect(HOUSE_POLICY_BLOCK,).toContain(
+          'where another rule on the same sheet disagrees with one of them, the house rule wins',
+        );
+      },
+    },),
+    it({
+      name: 'NEVER PRESCRIBES "ended her life" for an attempt she survived',
+      fn: async () => {
+        expect(HOUSE_POLICY_BLOCK,).not.toContain('the page says that she ended her life, and keeps',);
+        expect(HOUSE_POLICY_BLOCK,).toContain(
+          'the page says that she ended her life, or, where she survived, that she attempted suicide',
+        );
+      },
+    },),
+    it({
+      name: 'KEEPS A CONTRIBUTOR\'S FIRST PERSON while the entry narrates the person in the third',
+      fn: async () => {
+        expect(HOUSE_POLICY_BLOCK,).not.toContain('- Entries are written in the third person.',);
+        expect(HOUSE_POLICY_BLOCK,).toContain('written in the first person (我) stay in the first person',);
+      },
+    },),
+    it({
+      name: 'RENDERS MtF AND 药娘 as the owner ruled: trans woman or trans girl',
+      fn: async () => {
+        expect(HOUSE_POLICY_BLOCK,).toContain('MtF is trans woman or trans girl, as 药娘 is',);
+      },
+    },),
+    it({
+      name: 'KEEPS A TERM WITH NO ENGLISH EQUIVALENT in English letters, never in Han',
+      fn: async () => {
+        expect(HOUSE_POLICY_BLOCK,).toContain(
+          'is kept in English letters (translated literally, or romanized where it is a name), never left in Han',
+        );
+      },
+    },),
+    it({
+      name: 'BANS POSITIONAL REFERENCES, not the words "earlier" or "below" about time, height or rank',
+      fn: async () => {
+        expect(HOUSE_POLICY_BLOCK,).not.toContain(
+          'Do not write "below", "above", "the following" or "earlier" in English prose.',
+        );
+        expect(HOUSE_POLICY_BLOCK,).toContain('about time, height or rank',);
+      },
+    },),
+    it({
+      name: 'DROPS CORNER BRACKETS around a name used to refer, and quotes one being introduced',
+      fn: async () => {
+        expect(HOUSE_POLICY_BLOCK,).toContain('around a name or a term used to refer to its thing they are dropped',);
+        expect(HOUSE_POLICY_BLOCK,).toContain('around a name or a word being introduced or talked about',);
+      },
+    },),
+    it({
+      name: 'TELLS THE MEASURING SHEETS reader protection covers attempts and a place that was the means',
+      fn: async () => {
+        expect(sheetNamed({ name: 'resolution', },),).toContain(
+          'about how a death or an attempt happened, where it happened when the place was the means, or about a '
+            + 'medication',
+        );
+      },
+    },),
+    it({
+      name: 'NEVER CALLS A TENSE English supplies an altered time on the rendering audit',
+      fn: async () => {
+        expect(sheetNamed({ name: 'rendering audit', },),).not.toContain('tense, date, duration',);
+        expect(sheetNamed({ name: 'rendering audit', },),).toContain(
+          'a tense English supplies for tenseless Chinese is never this defect',
+        );
+      },
+    },),
+  ],
+},);
