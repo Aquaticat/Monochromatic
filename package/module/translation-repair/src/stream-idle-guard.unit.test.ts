@@ -368,7 +368,7 @@ await describe({
               await drainBody({
                 response: stalled,
                 guard,
-            label: 'hf:whiskers',
+                label: 'hf:whiskers',
                 callerSignal: new AbortController().signal,
               },);
             }
@@ -376,12 +376,12 @@ await describe({
               caught = error;
             }
             // The stall is now the CAUSE of a cut rather than the thrown value
-        // itself, because the drain also has to hand back whatever the stream
-        // delivered before it stopped. The distinction this case exists for is
-        // unchanged: a stall must still be identifiable as a stall rather than
-        // as the platform abort that carried it out.
-        expect(caught,).toBeInstanceOf(StreamCutShortError,);
-        expect((caught as StreamCutShortError).cause,).toBeInstanceOf(StreamStalledError,);
+            // itself, because the drain also has to hand back whatever the stream
+            // delivered before it stopped. The distinction this case exists for is
+            // unchanged: a stall must still be identifiable as a stall rather than
+            // as the platform abort that carried it out.
+            expect(caught,).toBeInstanceOf(StreamCutShortError,);
+            expect((caught as StreamCutShortError).cause,).toBeInstanceOf(StreamStalledError,);
           },
         },),
 

@@ -1855,68 +1855,68 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
 猫猫喜欢在窗台上晒太阳。猫猫也喜欢追蝴蝶。
 `;
 
-        /**
-         Its archive wording, likewise written twice.
-         */
-        const RENDERED = `## Alpha
+          /**
+           Its archive wording, likewise written twice.
+           */
+          const RENDERED = `## Alpha
 
 The cat loves sunbathing on the windowsill. The cat hates butterflies.
 `;
 
-        /**
-         Critic calls one slice of it costs, measured rather than assumed:
-         the roster retries a lost voice, so the count per slice belongs to
-         the gather rather than to the critic list length.
-         */
-        const single = { critic: 0, };
-        await repairTranslation({
-          client: steeringClient({
-            base: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
-            controller: new AbortController(),
-            calls: single,
-            silentCritics: true,
-          },),
-          sourceText: SECTION,
-          targetText: RENDERED,
-          models: MODELS,
-          signal: new AbortController().signal,
-          overlap,
-        },);
+          /**
+           Critic calls one slice of it costs, measured rather than assumed:
+           the roster retries a lost voice, so the count per slice belongs to
+           the gather rather than to the critic list length.
+           */
+          const single = { critic: 0, };
+          await repairTranslation({
+            client: steeringClient({
+              base: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+              controller: new AbortController(),
+              calls: single,
+              silentCritics: true,
+            },),
+            sourceText: SECTION,
+            targetText: RENDERED,
+            models: MODELS,
+            signal: new AbortController().signal,
+            overlap,
+          },);
 
-        /**
-         Critic calls same section twice costs.
-         */
-        const twin = { critic: 0, };
+          /**
+           Critic calls same section twice costs.
+           */
+          const twin = { critic: 0, };
 
-        /**
-         Slices that reached the cache, which must stay empty.
-         */
-        const store = new Map<string, string>();
-        const result = await repairTranslation({
-          client: steeringClient({
-            base: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
-            controller: new AbortController(),
-            calls: twin,
-            silentCritics: true,
-          },),
-          sourceText: `${SECTION}\n${SECTION}`,
-          targetText: `${RENDERED}\n${RENDERED}`,
-          models: MODELS,
-          signal: new AbortController().signal,
-          overlap,
-          sliceCache: {
-            resumed: new Map<string, ChunkRepairOutcome>(),
-            persist: async ({
-              key,
-              serialized,
-            },) => {
-              store.set(
+          /**
+           Slices that reached the cache, which must stay empty.
+           */
+          const store = new Map<string, string>();
+          const result = await repairTranslation({
+            client: steeringClient({
+              base: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+              controller: new AbortController(),
+              calls: twin,
+              silentCritics: true,
+            },),
+            sourceText: `${SECTION}\n${SECTION}`,
+            targetText: `${RENDERED}\n${RENDERED}`,
+            models: MODELS,
+            signal: new AbortController().signal,
+            overlap,
+            sliceCache: {
+              resumed: new Map<string, ChunkRepairOutcome>(),
+              persist: async ({
                 key,
                 serialized,
-              );
+              },) => {
+                store.set(
+                  key,
+                  serialized,
+                );
+              },
             },
-          },
-        },);
+          },);
           expect(result.sliceCount,).toBe(2,);
           expect(twin.critic,).toBe(single.critic * 2,);
           expect(store.size,).toBe(0,);
