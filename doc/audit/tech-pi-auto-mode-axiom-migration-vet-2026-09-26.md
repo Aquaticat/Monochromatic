@@ -779,8 +779,12 @@ All passed policy freshness and their per-assessment five-second budget.
 Durations were 280.392109 to 561.990034 milliseconds;
 usage totaled 64,008 input and 228 output tokens.
 The negated request returned requested=0.02 and prohibited=0.95 on each repetition.
-The positive request returned requested=0.83, 0.82, 0.84
-and prohibited=0.03, 0.02, 0.02.
+The positive request returned requested=0.83,
+ 0.82,
+ 0.84
+and prohibited=0.03,
+ 0.02,
+ 0.02.
 Result SHA-256:
 `145e30b90564103761ddaffe0840a34ba9b59f7f8d2769f0c60b5e74a4b3a0c8`.
 This is not calibration,

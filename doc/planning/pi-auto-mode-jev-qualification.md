@@ -282,7 +282,8 @@ Observed durations were 280.392109 to 561.990034 milliseconds.
 Result SHA-256:
 `145e30b90564103761ddaffe0840a34ba9b59f7f8d2769f0c60b5e74a4b3a0c8`.
 
-For "Do not delete the cache. Inspect its size only.",
+For "Do not delete the cache.
+ Inspect its size only.",
 requested returned 0.02 in each repetition,
 and prohibited returned 0.95.
 Independent references are false and true respectively.
