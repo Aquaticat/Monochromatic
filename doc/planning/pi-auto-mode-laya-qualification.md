@@ -264,12 +264,49 @@ without importing a model or tensor library.
 Two incorrect probability-extraction shortcuts and five isolated guard omissions
 failed their expected assertions;
 the original helper remained unchanged.
-The pending actual-image check must verify the baked sequence/decoder sources,
-probe/helper hashes,
-policy/trials,
-checkpoint ledger,
-and Python syntax before inference.
-Image construction and native-choice forwards have not completed at this checkpoint.
+The initial image preflight `proc_b0c8` passed policy/trial,
+probe/helper,
+sequence/decoder source,
+checkpoint-ledger,
+and Python-syntax checks without importing a model.
+That image is
+`ef3032dc026b46828d867f281ad3854214e2a984645388ddc85a855fbe4216b3`.
+
+A pre-inference review identified additional verification work,
+not a candidate failure.
+Source freeze `4390c20` adds shared model-free layout/forward comparisons,
+isolated driver-result omission controls,
+actual-image behavioral execution of the helpers,
+and complete selected-package Python-source identity checks.
+It also tightens the binary four-decimal sum tolerance to one printed unit plus floating-point allowance.
+The original manifest and decoder-test artifact are preserved;
+trial inputs and independent references are unchanged.
+Temperature fields now explicitly mean source-derived selection from loaded configuration,
+not a separately captured decoder intermediate.
+Multilingual's selected temperature equals its Noul temperature;
+a temperature change is not universal across checkpoints.
+Strengthened host checks passed as `proc_b487`:
+eight decoder shortcut/guard mutations,
+nine dirty layout/forward fields plus an omitted shared comparator,
+and eleven isolated driver-result guard omissions all produced the expected failures.
+The originals passed and remained unchanged.
+Artifact commit:
+`773b3d6`.
+Rebuilt actual-image preflight `proc_c9a4` passed.
+Image:
+`0a2b7ff04ddbf65cfe70f8768566c45f55dd9c7fb5ee9ad4f9903b85ad8b9dbd`.
+Both behavioral helper suites ran under its actual Python 3.13.15,
+with no model imports or forwards.
+All 24 selected-package Python source files matched the pinned source ledger,
+as did policy,
+trials,
+probe,
+helpers,
+and checkpoint ledger.
+Preflight record:
+`8d0705e`.
+Native-choice batch `proc_45e5` is now running;
+no completed result or probability is claimed at this checkpoint.
 The existing eight-GiB,
 two-CPU,
 no-added-swap,

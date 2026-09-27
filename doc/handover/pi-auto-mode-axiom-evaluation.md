@@ -670,11 +670,34 @@ and selected binary temperature bucket,
 so this is not a pure label rename or a claimed timing remedy.
 `proc_7472` passed fixture checks and model-free decoder tests on host Python 3.14.7,
 including seven failing shortcut/guard mutations with the original unchanged.
-The image and native-choice forwards are not yet verified.
-Next:
-freeze generated artifacts,
-build/check the actual image,
-then run the authorized bounded sequential probe.
+The first image preflight passed as `proc_b0c8` without a model forward.
+Pre-inference review led to strengthened source `4390c20`:
+shared layout/forward comparisons,
+isolated driver-result checks,
+tighter probability-sum validation,
+complete selected-package Python source identity,
+and actual-image helper execution.
+Trial inputs and independent references did not change.
+`proc_b487` passed eight decoder mutations,
+nine dirty input fields plus a shared-comparator omission,
+and eleven isolated result-guard omissions.
+Artifacts are retained at `773b3d6`.
+
+Reviewed image preflight `proc_c9a4` passed under actual image Python 3.13.15;
+both helper suites executed without model imports/forwards,
+and all 24 package Python files matched the pinned ledger.
+Image:
+`0a2b7ff04ddbf65cfe70f8768566c45f55dd9c7fb5ee9ad4f9903b85ad8b9dbd`.
+Record:
+`8d0705e`.
+Native-choice batch `proc_45e5` is running from the private root.
+No result is claimed yet.
+Do not poll or restart it;
+its terminal notification supplies the next inspection point.
+Continue read-only runtime/source investigation while it runs.
+The probability field remains the predeclared true option,
+and recorded temperature means source-selected configuration,
+not a separately captured decoder intermediate.
 Preserve eight GiB,
 two CPUs,
 no added swap/network/mounts/accelerator devices,

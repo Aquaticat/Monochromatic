@@ -220,6 +220,31 @@ The browser-specialization example also uses a different task and shortened stat
 its reported performance is not this guard's evidence.
 No accelerator or training was run.
 
+The next native representation probe uses binary `choice` with fixed `A=false`,
+`B=true` mapping,
+retaining the corrected request states and independent references.
+It is not a latency remedy,
+label-insensitivity validation,
+or a production profile.
+Private source is at `~/temp/agent/laya-parser-first-choice-controls-2026-09-27`;
+`4390c20` freezes strengthened layout/forward/result contracts,
+and `773b3d6` retains their model-free mutation evidence.
+Actual-image preflight `proc_c9a4` passed behavior checks under image Python 3.13.15
+and matched all 24 selected-package Python sources,
+policy/trials,
+probe/helpers,
+and checkpoint ledger.
+Image:
+`0a2b7ff04ddbf65cfe70f8768566c45f55dd9c7fb5ee9ad4f9903b85ad8b9dbd`.
+Preflight record:
+`8d0705e`.
+No model import or forward occurred during those helper checks.
+The twelve-trial sequential native-choice batch `proc_45e5` is running;
+no result is claimed at this checkpoint.
+The existing CPU/memory/research-time bounds and complete-policy requirement are unchanged.
+Recorded temperature is source-selected configuration,
+not a separately captured decoder intermediate.
+
 ### Jev through LLM Gateway
 
 Jev/gateway is a hosted service.
