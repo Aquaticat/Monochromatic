@@ -473,13 +473,27 @@ seven other sheets carry the block with no precedence sentence.
 
 ### S11: the polish gate's preface was read as licensing the base's tense
 
-Status: open.
+Status: fixed (`091307d14`).
+The preface calls a present-tense line of the life in the base a tense the house rules correct,
+never a reason to keep the base;
+`HOUSE_CORRECTION_IS_AN_IMPROVEMENT` in `polish-gate-house-rules.ts` tells the comparative and objection gates
+to prefer a polish that only applies a house rule,
+and the comparative refiner is told such a paragraph is a rewrite to make.
+Guards: `consolidation-polish-gate.unit.test.ts`, `house-policy-wording.unit.test.ts`.
+Original finding:
 "a present-tense line about their life is the base's choice" was quoted by a TianqiChen66616 ballot;
 the comparative policy never prefers a polish whose only change is a house correction.
 
 ### S12: the polish gate lacks blocks the consolidate gate carries
 
-Status: open.
+Status: fixed (`1a004389a`).
+`candidate-judge-rules.ts` holds the contest's declared-names lines (moved out of `CONTEST_POLICY`, text byte-identical),
+an apparatus rule in candidate vocabulary, and a judge line clause;
+the polish gate reads all three, the community renderings block and the dispute note,
+threaded `applyFinalPolish` to `polishConsolidation` to `runConsolidationPolishRound` to the gate subject.
+The bilingual clause arrives with the line clause (S15).
+Guards: `polish-gate-page-rules.unit.test.ts`, the dispute assertion in `consolidation-polish-apply.unit.test.ts`.
+Original finding:
 Apparatus,
 name scope,
 community renderings,
@@ -488,7 +502,12 @@ bilingual clause.
 
 ### S13: the absolute naturalness review has no house rules yet its findings are required fixes
 
-Status: open.
+Status: fixed (`3e4cf0441`).
+The review splices `MEASUREMENT_POLICY_BLOCK` with its own verdict line,
+drops "deliberate source-language kinship terms" for "a term the house rules keep in English letters with its gloss",
+and counts a departure from a house rule of form as a material defect.
+Guard: `naturalness-review-sheet.unit.test.ts`.
+Original finding:
 It tells the reviewer to preserve source-language kinship terms,
 against the house rendering of 姐姐.
 
@@ -501,7 +520,11 @@ and "Fits the surrounding text in register and tense" makes the surrounding Engl
 
 ### S15: the bilingual and line-structure rules are missing on the contest and both gates
 
-Status: open.
+Status: fixed (`1a004389a` for the polish gate, `070db03dd` for the lane contest and the consolidate gate).
+`JUDGE_LINE_STRUCTURE_CLAUSE` carries the bilingual clause;
+both subjects take a required `lineStructured`,
+and the lane contest key appends a mark when the rule governs.
+Guard: `judge-line-structure.unit.test.ts`.
 
 ### S16: the picture scope rule never reached the consolidation writer or the slate
 
@@ -637,7 +660,12 @@ Status: open.
 
 ### H6: the absolute naturalness review is shown wrapped prose and no house rules
 
-Status: open (with S13).
+Status: fixed with S13 (`3e4cf0441`).
+The subject takes a required `lineStructured`; on prose the wire folds each paragraph for display only.
+The subject's texts stay exact:
+`absolute-naturalness-review-stage.ts` digests them
+and `corpus-run/artifact-two-lane-read-naturalness-digest.ts` recomputes those digests from the shipped text,
+so folding the subject would have broken every artifact read.
 
 ### H7: the consolidation writer and the translate judge see picture transcripts with no scope rule
 
@@ -1786,7 +1814,8 @@ and once `<test> | rg ... ; true` to force a zero exit;
 twice more still (`<test> > log ; echo "exit $?"`, and `rg --files ... ; rg <config>`),
 and once more during H2 (`<test> > log && rg --count FAIL log ; rg <name> log`),
 and once during S19 (`sleep 1 && rg --count PASS log ; tail <output>`), a foreground sleep as well,
-and once during S5 (`build > log && tsc | rg --count ; true`).
+and once during S5 (`build > log && tsc | rg --count ; true`),
+and once during S12 (`rg --count <file> ; rg --line-number <file>`).
 A related shape, `<test A> | rg --count FAIL || <test B> | rg --count FAIL`, never ran B when A went red (S10);
 and `mise run --cd <package> build` once, against CM5.
 The first `;` one also hid which of two files failed, since both counts printed as one number.
