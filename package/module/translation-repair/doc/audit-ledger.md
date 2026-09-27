@@ -45,7 +45,7 @@ Guard: 小猫戴着头壳 passes "inside her head mask" and "inside her headgear
 
 ### C2: the 药娘 floor refuses a registered company name
 
-Status: open, owner ruling needed.
+Status: fixed in `f3cd0ef83`, guarded in `6fbcfa2d8` (owner, 2026-09-27: "Allow it, because it's the proper name of an org.").
 mikaela_khara names a registered company 小药娘网络科技 (`page.md` lines 194 and 202);
 the archive writes "XiaoYaoNiang(XYN)" and its translator's note gives the English name "XYN (Tianjin) Technology".
 The floor refuses the archive and every mikaela run that rendered the name.
@@ -536,7 +536,7 @@ of 221 cited hashes only `0e0bd1a8c` (named in `811d908a9`'s message) does not r
 
 ### H1: a rejection of every valid proposal still stops the entry
 
-Status: open, owner ruling needed.
+Status: fixed in `ee6d31e88`, guarded in `37128bf6c` (owner, 2026-09-27, "Preference + polish"); only a slate with no candidate or no voice heard still stops, having nothing to ship.
 `translate-runoff-tie.ts` breaks only a challenge round's tie;
 any other decline throws,
 and `consolidate-settle.ts` turns it into `ConsolidationStandingIneligibleError` over an ineligible standing
@@ -926,7 +926,7 @@ Latent: no replayed slice carries such a title, and the community floor adds no 
 
 Status: open.
 `ArchiveOriginalCompletenessError` stores neither entry nor span;
-the declared-link floor refuses Zhihu @-mentions the archive rendered as the user's slug (owner ruling).
+the declared-link floor refuses Zhihu @-mentions the archive rendered as the user's slug; owner, 2026-09-27, "Account handle": an @-mention of a declared person may carry the account handle the page writes under the same link.
 Plausible, unproven: nothing re-floors a lanes-agreed would-ship text,
 and the repair lane never calls `validateTranslatedSlice`.
 
@@ -1092,7 +1092,7 @@ mikaela17 lines 223 to 225 end in `\r`;
 
 ### A4: archive link destinations rewritten to the source's Chinese-site ones
 
-Status: open, owner call on the rule.
+Status: open; owner, 2026-09-27, "Archive's English": where the archive links the English counterpart of the original's destination, the page keeps the archive's destination. Measured: 12 archive-only destinations in 92 entries, 3 of them localized (two zh.wikipedia to en.wikipedia, one source.android.google.cn to source.android.com) and 2 differing only by www.
 shihai4h2 links PTSD to zh.wikipedia where the archive links en.wikipedia;
 aiyysk links source.android.google.cn where the archive links source.android.com.
 
