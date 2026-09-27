@@ -186,7 +186,8 @@ no added swap,
 no network or host mounts,
 300 seconds,
 and one inference container at a time.
-No inference is currently scheduled.
+Those historical probes are finished.
+Current inference status is recorded in the candidate-investigation section.
 Detailed source and resource evidence:
 [Laya troubleshooting](../troubleshooting/laya-full-agents-context.md).
 
@@ -326,11 +327,102 @@ starting with the remaining Laya assessment rather than further grant-lifecycle 
 
 ### Laya investigation still incomplete
 
-Full-policy runtime and isolated Noul observations are available.
-Broader axiom evaluation,
-other relevant authorized configurations,
+Todo #6 is active again after the user's explicit instruction to keep working.
+The [Laya qualification record](../planning/pi-auto-mode-laya-qualification.md)
+tracks the bounded candidate work;
+no integration interview has resumed.
+
+Process `proc_c075` completed twelve English CPU BF16 trials with full policy,
+no OOM kills,
+and passing freshness/forward-input checks.
+Private root:
+`~/temp/agent/laya-axiom-labels-2026-09-26`.
+Scratch commits `9f62f00` and `1e2e544` freeze inputs/driver;
+`baed175` retains the result.
+Result SHA-256:
+`5db4e9aefe3f6d0c3b89437a1c1102f6bf16c9070220582123b47bb8a11ced3f`.
+Image:
+`3f57df19a7dd3297bd712336ea63e4b3b493c27deffe2893a2e7e02a4f062823`.
+
+The default color control returned 0.5378 for blue against true
+and 0.5894 for orange against false.
+Opaque assignments changed that ordering in this single run.
+Literal/executed read estimates were 0.5403/0.5398 by default,
+0.5182/0.5187 for false=A and true=B,
+and 0.5241/0.5231 for the reverse assignment.
+Noul is rounded to four decimals;
+no raw logits were captured and no significance or calibration is established.
+All trials exceeded five seconds of inference,
+with measured durations from 141.08666695607826 to 173.88067755522206 seconds.
+Inputs were 12,574 or 12,782 actual forward tokens,
+beyond the declared 8,192 positions.
+Retained input is not context-quality qualification.
+
+Process `proc_3890` is the active unchanged-image repetition batch.
+Private root:
+`~/temp/agent/laya-label-repeat-2026-09-26`,
+frozen at scratch commit `9b72a56`.
+It repeats the default blue control and literal false case twice each,
+using exactly the same inference image and baked inputs.
+Do not poll it or predict its result;
+inspect its terminal notification.
+No other inference may run concurrently.
+
+A fourteen-trial follow-up is frozen at
+`~/temp/agent/laya-checkpoint-axioms-2026-09-26`,
+scratch commit `4c1022a`.
+It tests the same control/quotation states with default Noul on multilingual and typed-decisions,
+plus the existing cache grant pair on English under all three label assignments.
+Fixture and driver checks passed.
+Process `proc_6cf8` builds its image only;
+its successful-exit notification is context-level.
+Inspect the build result before inference,
+and start its `probe` task only after `proc_3890` finishes and is inspected.
+No checkpoint is silently substituted,
+no temperature is refitted,
+and no reserved case is used.
+
+The model-free preparation probe `proc_610b` passed at
+`~/temp/agent/laya-training-input-audit-2026-09-26`.
+Scratch commits `9f921f1` and `c20421f` retain it.
+Result SHA-256:
+`b1895a4b37b3907e9a9cbec8037a2d4ce40f2ca0a1a41fc32f02d77495fcfa04`.
+Image:
+`9887ea1741517968a5caa5f0a479205d419669ae7fd9b2f81d1ad9b7db6252b6`.
+An item encoded at 512 stayed at 512 after worker configuration changed;
+explicit re-encoding produced 1,024,
+while complete input required 12,553.
+The actual question-item splitter overlapped 345 synthetic states between training/calibration;
+a whole-state control overlapped none.
+This is not a measurement of the real dataset's bias.
+No model forward or optimizer step was performed.
+See the [source trace](../troubleshooting/laya-finetune-input-boundaries.md).
+
+The current notebook withholds calibration item indices from optimization,
+which differs from the still-unqualified calibration of the published typed-decisions checkpoint.
+Do not conflate those artifacts or assume every phrase about training items means identical optimizer samples.
+The benchmark card describes teacher agreement rather than independent truth.
+No benchmark gold or Jev output is authorized as our training labels.
+
+Read-only GPU inventory identified PCI `1002:7480`,
+KFD target `110002`,
+and 8,573,157,376 VRAM bytes,
+with 6,922,715,136 used at one instant.
+The host is Bazzite 44 with kernel `7.2.0-ogc6.1.fc44.x86_64`.
+Current AMD documentation lists gfx1102,
+and PyTorch HIP reuses the CUDA interface spelling;
+NVIDIA-only or GPU-impossible claims would be unsupported.
+No accelerator runtime was initialized,
+installed,
+or allocated.
+Device/driver/operator fit,
+resource authorization,
+and isolation remain unverified.
+
+Broader probability qualification,
+remaining configurations,
 and fine-tuning feasibility remain open under todos #6 and #7.
-Keep the agreed resource bounds and distinguish a measured deadline miss from rejection of every fallback workflow.
+Keep the agreed resource bounds and distinguish measured deadline misses from rejecting every fallback workflow.
 Training and rented compute still require separate authorization.
 
 ### Jev investigation still incomplete

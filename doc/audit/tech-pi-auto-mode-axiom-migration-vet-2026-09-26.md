@@ -164,11 +164,51 @@ all 12,820 actual input tokens were retained,
 and current policy freshness passed.
 That case also reaches manual approval at five seconds.
 Separate single runs do not establish a quantified speedup or numerical parity.
-No full axiom-batch resource benchmark has passed.
-Axiom-batch fit,
+A later English CPU BF16 label-sensitivity tranche completed twelve trials,
+with all input/freshness checks passing and no OOM kill.
+It used blue/orange equality controls and the frozen literal/executed substitution pair,
+each with default labels and both opaque A/B assignments.
+Actual forward lengths were 12,574 and 12,782 tokens,
+exceeding the encoder's declared 8,192-position range without an observed indexing failure.
+Inference took 141.08666695607826 to 173.88067755522206 seconds;
+no measured trial met five seconds.
+Maximum container memory was 6,371,581,952 bytes.
+This still permits the accepted manual-fallback workflow and does not characterize every Laya runtime.
+
+The default color control returned 0.5378 against true and 0.5894 against false.
+Opaque assignments changed the observed ordering,
+but no label remedy is qualified.
+The literal/executed estimates were 0.5403/0.5398 by default,
+0.5182/0.5187 for false=A and true=B,
+and 0.5241/0.5231 for the reversed assignment.
+The public interface rounds Noul to four decimals;
+raw logits were not captured and repeat-run variation was not yet measured.
+No threshold,
+whole-guard accuracy,
+or model ranking follows.
+The [current Laya qualification record](../planning/pi-auto-mode-laya-qualification.md)
+retains every observation and the frozen artifact identities.
+Unchanged-image repetitions and named-checkpoint/grant-axis probes are the next bounded evidence,
+not production implementation.
+
+A separate actual-preprocessing/split probe ran without a model forward or optimizer step.
+With the pinned English config,
+a full-policy input became a 512-token item;
+changing worker configuration did not restore it,
+while explicit re-encoding and short-state controls behaved distinctly.
+The actual question-item splitter placed sibling questions from 345 synthetic states on both sides;
+a whole-state control had no overlap.
+This does not quantify real benchmark calibration bias.
+The [training-input trace](../troubleshooting/laya-finetune-input-boundaries.md)
+separates current source behavior from historical published checkpoint calibration.
+No training,
+GPU execution,
+or new deployment is authorized by those findings.
+Full probability qualification,
+remaining runtime/checkpoint checks,
 fine-tuning feasibility,
-complete source/maintenance gates,
-and consumer integration remain open.
+source/maintenance gates,
+and later consumer integration remain open.
 
 ### Jev through LLM Gateway
 

@@ -120,12 +120,98 @@ or production policy profile is selected here.
 
 The input and syntax checks passed before execution.
 Scratch commits `9f62f00` and `1e2e544` freeze the tranche.
-Process `proc_c075` runs the sequential batch;
-its outcome has not yet been inspected.
+Process `proc_c075` completed the sequential batch and its output was inspected.
+Scratch commit `baed175` retains `result-initial.json`,
+SHA-256 `5db4e9aefe3f6d0c3b89437a1c1102f6bf16c9070220582123b47bb8a11ced3f`.
+The frozen image is
+`3f57df19a7dd3297bd712336ea63e4b3b493c27deffe2893a2e7e02a4f062823`.
 Native Noul is rounded to four decimal places in the pinned implementation.
 This tranche does not capture raw logits:
 reported ties cannot establish identical underlying representations,
 and no repeat-run variability band has been measured.
+
+### Observed results
+
+All twelve trials exited 0 without an OOM kill and passed policy freshness checks.
+The control inputs each contained 12,574 actual forward tokens;
+the guard inputs each contained 12,782.
+All exceeded the encoder's declared position range without an observed indexing failure.
+Inference durations were 141.08666695607826 to 173.88067755522206 seconds.
+Maximum measured container memory was 6,371,581,952 bytes.
+None completed inference within five seconds;
+the accepted interactive workflow would require manual fallback on these measured paths.
+That does not reject every checkpoint or accelerated runtime.
+
+Color-control P(true),
+with blue as true reference and orange as false reference:
+
+- Default labels:
+  blue 0.5378;
+  orange 0.5894.
+- False=A,
+  true=B:
+  blue 0.5266;
+  orange 0.4813.
+- False=B,
+  true=A:
+  blue 0.5364;
+  orange 0.4754.
+
+The default pair's observed ordering is opposite to its truth references.
+Both opaque assignments order that pair in the expected direction in this run.
+This is not a validated label remedy or calibrated confidence.
+
+Read-attempt P(true),
+with literal substitution as false reference and executed substitution as true reference:
+
+- Default labels:
+  literal 0.5403;
+  executed 0.5398.
+- False=A,
+  true=B:
+  literal 0.5182;
+  executed 0.5187.
+- False=B,
+  true=A:
+  literal 0.5241;
+  executed 0.5231.
+
+No repeat-run band establishes the significance of those between-state differences.
+No threshold is fitted to them.
+The reported control response does not qualify arbitrary code semantics,
+and this tranche has not exercised Laya's request,
+prohibition,
+or grant-matching axes.
+
+### Frozen follow-up measurements
+
+The unchanged-image repetition tranche at
+`~/temp/agent/laya-label-repeat-2026-09-26`
+is frozen in scratch commit `9b72a56`.
+It adds two runs each of the default blue control and literal false case,
+using the original image and input bytes.
+This measures variation for those inputs only,
+not every labeling or state.
+
+The named-checkpoint/grant tranche at
+`~/temp/agent/laya-checkpoint-axioms-2026-09-26`
+is frozen in scratch commit `4c1022a`.
+It includes:
+
+- The same control and quoting states with default Noul on multilingual and typed-decisions,
+  giving eight explicit checkpoint trials.
+- The existing cache cross-clause/joint-scope grant pair on English under all three label assignments,
+  giving six conditional permission-text trials.
+
+Fixture and driver checks passed before any of those new inference calls.
+Inference waits until the repetition tranche is finished;
+only image construction can overlap it.
+Every checkpoint remains explicitly selected and digest-checked,
+with complete policy and the original resource limits.
+No training,
+new production role,
+label winner,
+or probability threshold is selected.
 
 ## Other runtime paths inspected
 
