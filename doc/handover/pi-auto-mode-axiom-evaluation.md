@@ -494,6 +494,61 @@ The user's actual Voyage data-use opt-out setting remains uninspected.
 
 ## Active work and next action
 
+The published Noul baseline #6 and conditional source-feasibility assessment #7 are complete within their stated scopes.
+Remaining Laya profile qualification is #25.
+Jev work is split into #26 client failure boundaries and #27 broader parser-first semantic controls;
+neither is a production implementation.
+
+Task #26 is active at
+`~/temp/agent/jev-client-failure-boundary-2026-09-27`.
+Source freeze `e1f0066` defines fifteen ordinary scenarios and five isolated guard-omission controls.
+It copies the previously tested client and helpers,
+replacing only disposable endpoint/policy paths and a clock import for the explicit post-result deadline control.
+Real loopback HTTP exercises redirects,
+malformed/oversized replies,
+synthetic echoes,
+header/body stalls,
+and disposable policy/input changes.
+No vendor/model call,
+real credential,
+training,
+assessed-action execution,
+account access,
+or Mac access occurs.
+
+The exact workstation Node v26.10.0 binary is baked into an already used Debian-based image;
+its SHA-256 is `ab9c8eecf9f82d6693cdc3accced17034065c8d96213b0aa76a7e803d20ae1da`.
+The container has 2 GiB,
+two CPUs,
+no added swap,
+no external network or host mounts,
+and a ninety-second ceiling.
+Source checks and image construction passed.
+Image:
+`e571de1b4573b6dd16d6b2f220c436b1d131467ec43a016e1f523963a087907e`.
+Process `proc_fe79` stopped at runtime preflight with exit 127:
+`node: error while loading shared libraries: libatomic.so.1: cannot open shared object file: No such file or directory`.
+No client case or model call ran.
+This is first-party image packaging evidence,
+not a Jev/gateway failure.
+
+Task #28 repairs that runtime boundary before #26 resumes.
+The added installed x86-64 library is from `libatomic-16.2.1-2.fc44.x86_64`,
+source RPM `gcc-16.2.1-2.fc44.src.rpm`,
+SHA-256 `b08060687ffb5768003b0c283cac5bddaa84ea5526d4d7bcb5994af98af5a130`.
+Its bytes independently match the RPM digest record;
+RPM verification also reported `.......T.`,
+which was not removed by changing the host file.
+ELF inspection found `libc.so.6` dependency requirements `GLIBC_2.2.5` and `GLIBC_2.14`.
+The initial manifest and failure remain separate artifacts.
+Process `proc_819e` is rebuilding after the manifest/dependency correction;
+actual Node startup and the baked library digest must pass before the suite starts.
+Wait for terminal notifications rather than polling.
+These controls cannot establish hosted cancellation/billing,
+TLS behavior,
+model quality,
+or real Pi fallback behavior.
+
 Todo #18 completed the current development fixture and assessment tranche.
 It did not qualify a production model or policy.
 The frozen private repository is `~/temp/agent/auto-mode-axiom-fixtures-2026-09-26`.
