@@ -231,7 +231,7 @@ and no contest ran.
     and a selected patch on 5;
     the checkers confirmed a disputing issue resolved on 1,
     and that on one ballot (ledger L1).
-- Reading adopted, open to veto:
+- Reading confirmed by the owner on 2026-09-27 ("Issue by issue"):
     the question named the archive's own wording,
     and its reason
     (a reading the panel found wrong never ships because the fix lost)
@@ -260,7 +260,8 @@ and no contest ran.
 - A slate rejected twice there ships by the fifteenth addendum,
     on the translate lane as in the consolidation.
     Before this change a content slice whose archive could not stand stopped the entry on such a rejection;
-    extending the fifteenth addendum to the translate lane is the adopted reading, open to veto.
+    extending the fifteenth addendum to the translate lane was confirmed by the owner on 2026-09-27
+    ("Ship by preference").
 - Cost: more slices reach the consolidation.
 - Landed:
     `archiveDisputesOf` reads `resolvedIssueIds` and the withdrawn slices into `ArchiveDispute.standInEligible`;

@@ -8137,7 +8137,7 @@ guard and status lives in `package/module/translation-repair/doc/audit-ledger.md
     among them the house rules outranking any other rule on the same sheet.
     One reading was adopted without an owner answer:
     a term with no English equivalent is "kept in English letters (translated literally, or romanized where it is a
-    name), never left in Han", which the owner may veto.
+    name), never left in Han", which the owner confirmed on 2026-09-27 ("English letters").
 - `ce824d933`: the typed decision seat reads the house rules and the community block.
 
 The full suite passed 1174 at `b45000747`.
