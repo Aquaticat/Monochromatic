@@ -597,11 +597,12 @@ async function runCorpusPass(): Promise<void> {
   const total = await countSettled({ artifactsDir, },);
 
   /**
-   Entries this run processed.
+   Entries this run finished, an artifact or a decline each.
    */
   const processed = await entriesFinishedThisRun({
     before: done,
     artifactsDir,
+    declinedDir,
   },);
   console.log(
     `DONE processed=${String(processed,)} of pending=${String(pending.length,)}; artifacts=${String(total,)}/${String(CORPUS_PAIR_TARGET,)} elapsed=${String(Date.now() - start,)}ms`,
