@@ -377,7 +377,9 @@ the fix carries the policy in the decision state (about 4k tokens against a 32k 
 
 ### S4: the adjudication panel has no identity context
 
-Status: open.
+Status: fixed; the panel sheet carries the fenced DECLARED NAMES block and the shared declared-identity rules
+(`declared-identity-rule.ts`, moved out of the critic), threaded from `repairChunk` through `runPanelStage`;
+guarded end to end in `repair-translation.unit.test.ts`, shown red with the thread cut.
 `buildAdjudicationMessages` takes no `identityContext`,
 so a claim against a declared name can be supported and dispute the archive.
 
@@ -488,7 +490,10 @@ not attempts or a place that was the means.
 
 ### S19: house-policy wording defects
 
-Status: open.
+Status: fixed. Most bullets were already fixed in the current text (the corner-bracket example, italic titles, positional words,
+first-person contributors, "trans girl", English letters for terms, Canadian spellings in rule text);
+the OD rule now keeps OD unnamed where it is the means of a death or an attempt,
+and `KEPT_SUBJECT_RULE` makes I (or that person) the one who does it.
 
 - "OD is overdose" is prescribed where OD is a suicide method (Susiethegamer),
     which reader protection keeps vague.
@@ -512,7 +517,13 @@ Status: open.
 
 ### S20: smaller sheet defects
 
-Status: open.
+Status: fixed, item by item.
+The attested-details rule licenses only the attested details and the apparatus from the existing translation;
+the critic and editor foreign-phrase rules carry one shared sentence taking names and titles out of their scope,
+and the Han residue floor passes a Japanese phrase with its English gloss after it (would-ship refusals 68 to 66);
+the restoration judge is told references come from archives written before the house rules;
+the dispute note names non-translation and is fenced on the contest and gate;
+the identity block is labelled DECLARED NAMES and fenced on every sheet, and the house policy names it so.
 The translate writer's "does not already carry" reopens archive narrative;
 the critic's foreign-phrase rule conflicts with the title rule;
 the restoration judge states a false reason;
@@ -618,7 +629,7 @@ the TSDoc in `consolidate-settle.ts` says the same.
 
 ### H11: the address floor counts the 你 in 迷你
 
-Status: open (latent).
+Status: fixed with F-1 in `d0c788468` (`addressesNobody` in `translate-address-original.ts`, guarded in `address-drop.unit.test.ts`).
 
 ### H12: minimax-m3 ignores OpenRouter endpoints one at a time and names none measured
 
