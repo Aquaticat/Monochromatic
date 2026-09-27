@@ -610,7 +610,7 @@ Status: open (latent).
 
 ### H15: fixtures carry corpus text
 
-Status: open.
+Status: fixed in `98054d72b` (every file below rewritten with invention).
 `address-drop.unit.test.ts` (two fixtures),
 `consolidation-polish-gate.unit.test.ts`,
 `rendering-glossary-idiom.unit.test.ts`,
@@ -708,7 +708,7 @@ and `PRIOR FAILED CONSOLIDATION STRATEGY` are fenced but not listed.
 
 ### E8: more fixtures paraphrase corpus content
 
-Status: open.
+Status: fixed in `98054d72b` (every file below rewritten with invention).
 `archive-footnote-relabel.unit.test.ts`,
 `pair-definition-order.unit.test.ts`,
 `coverage-verdict.unit.test.ts` (names from the corpus).
@@ -873,7 +873,12 @@ under a name citing the owner's "with the literal translation in parentheses";
 
 ### T4: corpus text and real personal data in about 45 test files
 
-Status: open.
+Status: fixtures fixed in `98054d72b` (58 test files).
+A rescan on 2026-09-27 (`~/temp/agent/audit-tests/scan-corpus.mjs`, previous hits kept as `*-before.json`)
+left shared markup, public facts, glossary entries that are dictionary terms by design,
+and corpus quotes in comments and test names that cite an incident
+(for example `name-gloss-restore.unit.test.ts:3`, `owner-cull.unit.test.ts:4`);
+those wait for the owner's sanitization pass after the project.
 A real birth date and hometown, a suicide-site sentence, method sentences, self-harm scars,
 real names, handles and entry ids, and verbatim or near-verbatim corpus lines,
 many under a header claiming "no corpus content appears here".
