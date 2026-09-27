@@ -601,7 +601,7 @@ Status: open.
 
 ### H13: the seeds test pins the whole term list
 
-Status: open.
+Status: fixed in `992d6c984` (properties and named renderings, the owner's 药娘 and 治愈 included).
 `community-glossary.unit.test.ts` went red three times on additions.
 
 ### H14: Freud's "id" becomes "ID"
@@ -715,7 +715,7 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
 
 ### E9: tests pin roster sizes to literals
 
-Status: open.
+Status: fixed in `87f95d62f` (no provider spelling for two roster models; the contract's checker floor).
 `roster-reach.unit.test.ts`,
 `corpus-run/owner-cull.unit.test.ts`.
 
@@ -903,7 +903,8 @@ Real sleeps: `stage-quorum` waits 30 s ignoring the abort signal;
 
 ### T6: names claiming more than they check
 
-Status: open.
+Status: fixed in `292939dab`, `6baf52dbe`, `bc80c8c14` and `6d7d83c1b`;
+the "trio" is two files (refine phase, consolidation driver) whose names claim the second call answers first.
 `bedrock-catalog` "EVERY ROUTE" checks one route;
 `synthetic-catalog` pins a literal price;
 `block-pairing-protocol` compares a wrapper to its own builder;
