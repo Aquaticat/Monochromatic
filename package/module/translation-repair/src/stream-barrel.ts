@@ -55,5 +55,13 @@ export {
   type StreamBound,
   StreamBoundError,
 } from './stream-bound.ts';
+export {
+  contextRoot,
+  currentLogContext,
+  inEntryLogContext,
+  inSliceLogContext,
+  type LogContext,
+  sliceTagged,
+} from './log-context.ts';
 
 //endregion Stream barrel
