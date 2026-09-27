@@ -1,4 +1,7 @@
-import { withoutComments, } from './translate-address-drop.ts';
+import {
+  blocksOf,
+  withoutComments,
+} from './translate-address-drop.ts';
 
 //region A suicide the passage names
 // CLASS ONE HUNDRED FIFTY (shi_Yumiaoya36, 2026-09-26). The original's
@@ -20,6 +23,17 @@ import { withoutComments, } from './translate-address-drop.ts';
 // archives without those passages, and two render a quoted line without the
 // word (自杀痛苦 as "the pain of dying", 别自杀 as "please don't follow her"),
 // which the floor now refuses as a standing.
+//
+// LEDGER F-4 (2026-09-27). That census counted entries, not slices. Replayed
+// slice by slice over 1,264 archive slices and 3,975 would-ship slices, the
+// floor refused 11, and three of those were correct English: an attempt on a
+// life said as "attempts on her own life", and one quotation of a published
+// work given in its published English, whose Chinese translation had added
+// 自杀. An attempt on a life, a death by one's own hand (after a death word,
+// so a hand that only wrote does not count) and an attributed quotation of a
+// work (quoted block closing on a dash and a title in 《》) now pass; the
+// other eight refusals, each dropping or blurring the word, stand, and none
+// was added. The finding no longer assumes the person is "she".
 
 /**
  Words the original names a suicide with.
@@ -103,6 +117,36 @@ const POSSESSIVES: ReadonlySet<string> = new Set([
 const OWN = 'own';
 
 /**
+ Nouns that take "on" and a life to name a suicide attempt ("an attempt on
+ her own life").
+ */
+const ATTEMPT_NOUNS: ReadonlySet<string> = new Set([
+  'attempt',
+  'attempts',
+]);
+
+/**
+ Words after which "by her own hand" names how a death came ("died by her own
+ hand"); after any other word the hand only wrote or made something.
+ */
+const DEATH_WORDS: ReadonlySet<string> = new Set([
+  'die',
+  'died',
+  'dies',
+  'dead',
+  'death',
+  'perished',
+]);
+
+/**
+ Nouns "by her own" takes to name a death by suicide.
+ */
+const HAND_NOUNS: ReadonlySet<string> = new Set([
+  'hand',
+  'hands',
+]);
+
+/**
  Whether a character is an ASCII letter.
 
  @param character - one UTF-16 unit
@@ -154,27 +198,31 @@ function wordsOf({ text, }: { readonly text: string; },): readonly string[] {
 }
 
 /**
- Whether the words after a life verb name a life: an optional possessive, an
- optional "own" after it, then "life" or "lives".
+ Whether the words at an offset close on one of some nouns: an optional
+ possessive, an optional "own" after it, then the noun.
 
  @param words - rendering's words in order
 
- @param after - offset of the word just past the verb
+ @param after - offset of the word just past the verb or preposition
 
- @returns True where the phrase closes on a life noun
+ @param nouns - nouns the phrase may close on
+
+ @returns True where the phrase closes on one of them
 
  @example
  ```ts
- closesOnLife({ words: ['took', 'her', 'own', 'life',], after: 1, },); // true
+ closesOn({ words: ['took', 'her', 'own', 'life',], after: 1, nouns: LIFE_NOUNS, },); // true
  ```
  */
-function closesOnLife(
+function closesOn(
   {
     words,
     after,
+    nouns,
   }: {
     readonly words: readonly string[];
     readonly after: number;
+    readonly nouns: ReadonlySet<string>;
   },
 ): boolean {
   /**
@@ -185,16 +233,17 @@ function closesOnLife(
    Offset past "own", where it follows the possessive.
    */
   const pastOwn = ((pastPossessive > after) && (words[pastPossessive] === OWN)) ? pastPossessive + 1 : pastPossessive;
-  return LIFE_NOUNS.has(words[pastOwn] ?? '',);
+  return nouns.has(words[pastOwn] ?? '',);
 }
 
 /**
  Whether a run of words says a suicide: a word on the suicide stem, a kill
- verb before a reflexive, or a life verb whose phrase closes on a life.
+ verb before a reflexive, a life verb whose phrase closes on a life, an
+ attempt on a life, or a death by one's own hand.
 
  @param words - rendering's words in order
 
- @returns True where any of the three stands
+ @returns True where any of the five stands
 
  @example
  ```ts
@@ -210,10 +259,73 @@ function saysSuicide({ words, }: { readonly words: readonly string[]; },): boole
       return true;
     if (KILL_VERBS.has(word,))
       return REFLEXIVES.has(words[index + 1] ?? '',);
-    return LIFE_VERBS.has(word,) && closesOnLife({
+    if (ATTEMPT_NOUNS.has(word,)) {
+      return (words[index + 1] === 'on') && closesOn({
+        words,
+        after: index + 2,
+        nouns: LIFE_NOUNS,
+      },);
+    }
+    if ((word === 'by') && DEATH_WORDS.has(words[index - 1] ?? '',)) {
+      return closesOn({
+        words,
+        after: index + 1,
+        nouns: HAND_NOUNS,
+      },);
+    }
+    return LIFE_VERBS.has(word,) && closesOn({
       words,
       after: index + 1,
+      nouns: LIFE_NOUNS,
     },);
+  },);
+}
+
+/**
+ Dashes that open an attribution line under a quotation.
+ */
+const ATTRIBUTION_DASHES: readonly string[] = [
+  '——',
+  '—',
+  '―',
+];
+
+/**
+ Whether a block is a quotation of a published work: every line quoted, the
+ last closing on an attribution dash and a work title in 《》. Such a block is
+ rendered in the work's published English, which need not carry the word a
+ Chinese translation of it added (ledger F-4: a Camus line).
+
+ @param block - block of the original
+
+ @returns True for an attributed quotation of a work
+
+ @example
+ ```ts
+ quotesPublishedWork({ block: '> 「……」\n> ——喵喵《猫的神话》', },); // true
+ ```
+ */
+function quotesPublishedWork({ block, }: { readonly block: string; },): boolean {
+  /**
+   Lines of the block.
+   */
+  const lines = block.split('\n',);
+  if (!lines.every(function quoted(line,): boolean {
+    return line.trimStart()
+      .startsWith('>',);
+  },))
+    return false;
+  /**
+   Last line with its quotation marks stripped.
+   */
+  const attribution = (lines.at(-1,) ?? '')
+    .replaceAll(
+      '>',
+      '',
+    )
+    .trim();
+  return attribution.includes('《',) && ATTRIBUTION_DASHES.some(function opens(dash,): boolean {
+    return attribution.startsWith(dash,);
   },);
 }
 
@@ -243,9 +355,13 @@ export function droppedSuicideFindings(
   },
 ): readonly string[] {
   /**
-   The original outside its comments.
+   The original outside its comments and its quotations of published works.
    */
-  const original = withoutComments({ text: sourceText, },);
+  const original = blocksOf({ text: withoutComments({ text: sourceText, },), },)
+    .filter(function ownWords(block,): boolean {
+      return !quotesPublishedWork({ block, },);
+    },)
+    .join('\n\n',);
   /**
    Words the original names the suicide with.
    */
@@ -257,7 +373,7 @@ export function droppedSuicideFindings(
   if (saysSuicide({ words: wordsOf({ text: withoutComments({ text: candidateText, },), },), },))
     return [];
   return [
-    `Your translation drops the suicide the ORIGINAL names: the ORIGINAL passage writes ${named.join(' and ',)}, and your translation carries no wording for suicide at all. A death by suicide is said to be a suicide, and a survived attempt is still an attempt: say that she attempted suicide or tried to end her life, keeping the means as vague as the house rule asks.`,
+    `Your translation drops the suicide the ORIGINAL names: the ORIGINAL passage writes ${named.join(' and ',)}, and your translation carries no wording for suicide at all. A death by suicide is said to be a suicide, and a survived attempt is still an attempt: say that the person attempted suicide or tried to end their life, with the pronoun the page uses for them, keeping the means as vague as the house rule asks.`,
   ];
 }
 

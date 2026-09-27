@@ -129,7 +129,7 @@ export function withoutComments({ text, }: { readonly text: string; },): string 
  blocksOf({ text: 'a\nb\n\nc', },); // ['a\nb', 'c']
  ```
  */
-function blocksOf({ text, }: { readonly text: string; },): readonly string[] {
+export function blocksOf({ text, }: { readonly text: string; },): readonly string[] {
   /**
    Lines of each block so far; a blank line opens the next.
    */
