@@ -511,6 +511,39 @@ five-second assessment fit,
 ORT provenance,
 or adoption.
 
+### ONNX consumer route follow-up
+
+Task #34 is read-only source/publication investigation,
+not consumer qualification.
+`proc_e2cd` retained official metadata at private `9186a80`.
+The ORT 1.30.0 Linux x64 CPU archive is reported as 11,306,877 bytes,
+SHA-256 `a5ed5a3cac51fbb2e90da632ae43d19212faaa20e76484e62bcb7c23ddb3b3fd`;
+its exact-subject GitHub attestation endpoint returned HTTP 404.
+Official Node/Web 1.30.0 package metadata returned integrity and registry signatures,
+but no `gitHead` or `dist.attestations` pointer.
+Registry signatures were not verified here and are not build/source attestations.
+
+Pinned Node installer source selects CUDA 12 provider downloads for Linux x64 by default;
+its helper/proxy imports occur before the skip-flag check.
+No installer was run.
+The inspected npm packaging stages aggregate Azure/1ES build artifacts;
+exact registry-artifact linkage remains unresolved.
+The Web artifact-pull source names public workflow 152051496,
+so a separate finite schedule queried the exact ORT source pin rather than its default main branch.
+
+`proc_8a42` found one successful Web run and 63 successful runs at the pin,
+with every returned page retained at private `62a42e5`.
+`proc_5b37` then queried selected Linux CI,
+Linux CPU minimal,
+and Web CI runs.
+Each artifact listing returned 200 with no artifacts currently listed;
+raw metadata is private `da0c6c8`.
+That observation does not identify a deletion/retention cause or exhaust source-build routes.
+Pinned source copies and their ledger were materialized without modifying upstream checkouts.
+No new consumer archive/package was downloaded,
+installed,
+or executed.
+
 ### Jev through LLM Gateway
 
 Jev/gateway is a hosted service.

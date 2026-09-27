@@ -1028,6 +1028,49 @@ ORT provenance,
 or production adoption follows from this producer result.
 No consumer or provenance requirement is waived.
 
+### CPU consumer publication routes
+
+Task #34 continues source/build attribution before any ONNX consumer execution.
+`proc_e2cd` read official release and package-registry metadata;
+private results are at `9186a80`.
+The Linux x64 CPU archive for ORT 1.30.0 is reported as 11,306,877 bytes,
+SHA-256 `a5ed5a3cac51fbb2e90da632ae43d19212faaa20e76484e62bcb7c23ddb3b3fd`.
+Its exact-subject GitHub attestation lookup returned HTTP 404,
+separately from the original Python-wheel lookup.
+
+Official `onnxruntime-node@1.30.0` and `onnxruntime-web@1.30.0` metadata returned 200.
+Both returned integrity and registry-signature records,
+but neither returned `gitHead` or a `dist.attestations` pointer.
+Those signatures have not been verified here and are not a build/source attestation.
+No consumer archive or npm tarball was downloaded or executed by this phase.
+
+Pinned ORT `js/node/script/install.js` imports its helper/proxy modules before parsing its installation flag.
+`install-metadata.js` selects `cuda12` for Linux x64 by default,
+with CUDA/shared/TensorRT provider downloads from NuGet feeds.
+The installer was read,
+not run;
+do not silently install it during the CPU-only investigation.
+The inspected npm packaging stages aggregate platform artifacts through Azure/1ES pipelines;
+exact registry-artifact linkage remains unresolved.
+
+`js/web/script/pull-prebuilt-wasm-artifacts.ts` identifies public GitHub workflow `152051496`
+and `Release_wasm` artifacts.
+It defaults to `main`,
+so the owned follow-up schedule uses the exact ORT source pin instead.
+The script itself was not run.
+Public-CI metadata `proc_8a42` found one successful Web run and 63 successful runs at the source pin.
+All returned pages are retained at private `62a42e5`.
+Selected Linux CI,
+Linux CPU minimal,
+and Web CI artifact listings in `proc_5b37` each returned 200 with no artifacts listed.
+Raw listings are private `da0c6c8`.
+This does not identify a retention/deletion cause or exhaust other source-build routes.
+The public-CI metadata query is a separate route investigation,
+not verified artifact attribution or runtime readiness.
+Missing pointers,
+HTTP 404s,
+and the inspected private-registry HTTP 401 do not establish universal provenance unavailability.
+
 ## Fine-tuning source findings
 
 The pinned notebook is

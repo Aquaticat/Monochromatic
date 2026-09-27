@@ -1170,9 +1170,41 @@ Artifacts remain quarantined and unpromoted;
 the owned exited producer container was removed after host-side evidence rechecking.
 Its immutable image and quarantined graph/data remain.
 
-Next:
-finish result documentation/rendering and close bounded #32,
-then resume #25's unresolved consumer provenance,
+#32 is complete within the bounded producer scope.
+Main checkpoint `cfb8b55e4`,
+eighteen-document render/scoped lint `proc_65f4`,
+and private renders `proc_15b3` passed;
+the worktrees were clean after those checks.
+
+#34 now blocks broader #25 and investigates official CPU consumer publication/source-build routes.
+The finite private schedule is `consumer-route-schedule.json` at `ece382b`.
+Metadata process `proc_e2cd` completed;
+raw responses and summary are private `9186a80`.
+The initial official release listing names the Linux x64 CPU archive at 11,306,877 bytes,
+with digest `a5ed5a3cac51fbb2e90da632ae43d19212faaa20e76484e62bcb7c23ddb3b3fd`.
+That release metadata is not authenticated source/build attribution.
+That CPU archive's exact-subject GitHub attestation lookup returned HTTP 404.
+Official `onnxruntime-node@1.30.0` and `onnxruntime-web@1.30.0` metadata both returned 200.
+Both advertise integrity and registry-signature records,
+but neither returned `gitHead` or a `dist.attestations` pointer.
+Those unverified registry signatures are not build/source attribution.
+Node's package metadata declares a postinstall entry point;
+Web declares a prebuilt-Wasm pull script.
+Inspect their pinned publication/build/install paths and primary attestation routes next.
+`proc_8a42` found a successful Web CI run and 63 successful runs at the exact source pin,
+with all query pages retained at private `62a42e5`.
+The selected Linux CI `34444839882`,
+Linux CPU minimal `34444839366`,
+and Web CI `34444840015` artifact listings each returned 200 with an empty list in `proc_5b37`.
+Those results are private `da0c6c8`;
+they establish no currently listed artifacts for those runs,
+not why artifacts are absent or that every source-build route is unavailable.
+Pinned source copies/ledger from `proc_95f3` are in private `consumer-source/` and `consumer-source-ledger.json`.
+The Web script's public workflow route and the Linux reusable build route remain source follow-ups.
+No new consumer artifact has been downloaded or executed,
+and these route-specific results are not a universal provenance-absence conclusion.
+
+Continue unresolved consumer provenance,
 numerical parity,
 execution fit,
 and context/semantic qualification.
