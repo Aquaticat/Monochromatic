@@ -958,33 +958,40 @@ await describe({
     },),
 
     it({
-      name: 'FAILS THE SLICE AT ONCE when the standing is ineligible and the gate keeps it, naming the '
-        + 'slice and the terminal, rather than shipping wording the page guard will refuse after the '
-        + 'rest of the run has been paid for',
+      name: 'SHIPS THE PROPOSAL THE SLATE CHOSE when the standing is ineligible and the gate prefers it '
+        + 'anyway (class one hundred eighty-five, TianqiChen66619 slice 9, 2026-09-27): a standing the '
+        + 'deterministic rule refused cannot ship whatever the gate thinks of it, and the owner\'s '
+        + '2026-09-04 rule prefers the best valid proposal and fails the slice only where there is none',
       fn: async () => {
-        /**
-         What the settlement threw.
-         */
-        let thrown: unknown;
-        try {
-          await settleWith({
-            voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
-            validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
-            judgeReply: judgeBallot({
-              best: positionOfText({
-                texts: [FRESH,],
-                wanted: FRESH,
-                incumbentText: '',
-              },),
+        const { settled, served, } = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: judgeBallot({
+            best: positionOfText({
+              texts: [FRESH,],
+              wanted: FRESH,
+              incumbentText: '',
             },),
-            gateReply: gateBallot({ choice: 'standing', },),
-            standingEligible: false,
-          },);
-        } catch (error) {
-          thrown = error;
-        }
-        expect(thrown instanceof ConsolidationStandingIneligibleError,).toBe(true,);
-        expect((thrown as ConsolidationStandingIneligibleError).message,).toContain('gate-kept-standing',);
+          },),
+          gateReply: gateBallot({ choice: 'standing', },),
+          standingEligible: false,
+        },);
+        expect(settled.terminal,).toBe('consolidated',);
+        expect(settled.text.replaceAll('\n', ' ',),).toBe(FRESH,);
+        expect(settled.findings.some(function namesPreference(finding,): boolean {
+          return finding.startsWith('gate-preferred-ineligible-standing',);
+        },),).toBe(true,);
+        expect(settled.gate?.choice,).toBe('standing',);
+        expect(served.gate,).toBeGreaterThan(0,);
+
+        const eligible = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
+          gateReply: gateBallot({ choice: 'standing', },),
+        },);
+        expect(eligible.settled.terminal,).toBe('gate-kept-standing',);
+        expect(eligible.settled.text,).toBe(STANDING,);
       },
     },),
 
