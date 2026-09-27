@@ -73,5 +73,25 @@ await describe({
           .toEqual({ kind: 'untouched', },);
       },
     },),
+    it({
+      name: 'READS A WITHDRAWN SLICE THAT ALSO CARRIES A ROW as that row: the lane\'s wording was taken back and '
+        + 'the page passes rewrote the archive text standing there (ledger K5)',
+      fn: async () => {
+        expect(pageAssemblyOverrideAt({
+          pageAssembly: {
+            trimmed: [{
+              sliceIndex: 7,
+              replacementText: 'The cat napped on April 29, 2024.',
+            },],
+            withdrawn: [7,],
+            findings: [],
+          },
+          sliceIndex: 7,
+        },),).toEqual({
+          kind: 'trimmed',
+          text: 'The cat napped on April 29, 2024.',
+        },);
+      },
+    },),
   ],
 },);
