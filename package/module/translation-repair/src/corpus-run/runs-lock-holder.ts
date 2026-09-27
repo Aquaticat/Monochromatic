@@ -416,11 +416,14 @@ function byIdAlone({ pid, }: { readonly pid: number; },): Liveness {
 /**
  Judges whether a lock's holder still runs.
 
- In order: another machine or another id namespace cannot be judged from
- here, so the lock holds; a later boot means it ended; then the start time
- under the id says whether the id still names the holder. Where the start
- time cannot be read (no `/proc`, a hidden process) or the lock records none,
- the id alone answers, and the refusal says so.
+ In order: a later boot of this machine means it ended, while another
+ machine cannot be judged from here, so its lock holds; so does one from
+ another id namespace of this boot; then
+ the start time under the id says whether the id still names the holder. The
+ boot decides whether the machine is this one, and the hostname is asked only
+ where the boots differ, since a hostname can change within a boot. Where the
+ start time cannot be read (no `/proc`, a hidden process) or the lock records
+ none, the id alone answers, and the refusal says so.
 
  @param holder - who the lock names
 
@@ -448,14 +451,21 @@ export async function holderLiveness(
   const { identity, } = holder;
   if (identity.kind === 'unrecorded')
     return byIdAlone({ pid: holder.pid, },);
-  if (identity.host !== hostname()) {
-    return {
-      state: 'held',
-      judgedBy: 'host',
-    };
+  /**
+   Whether the lock names this machine by name. Asked only where the boots
+   differ or cannot be compared: a hostname can change within one boot (DHCP,
+   `hostnamectl`), and a boot id, random per boot, already proves the same
+   machine.
+   */
+  const sameName = identity.host === hostname();
+  if (here.kind === 'unread') {
+    return sameName
+      ? byIdAlone({ pid: holder.pid, },)
+      : {
+        state: 'held',
+        judgedBy: 'host',
+      };
   }
-  if (here.kind === 'unread')
-    return byIdAlone({ pid: holder.pid, },);
   /**
    This host's boot and namespace.
    */
@@ -464,10 +474,15 @@ export async function holderLiveness(
     pidNamespace,
   } = here.here;
   if (identity.bootId !== bootId) {
-    return {
-      state: 'gone',
-      judgedBy: 'boot',
-    };
+    return sameName
+      ? {
+        state: 'gone',
+        judgedBy: 'boot',
+      }
+      : {
+        state: 'held',
+        judgedBy: 'host',
+      };
   }
   if (identity.pidNamespace !== pidNamespace) {
     return {
