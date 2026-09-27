@@ -92,7 +92,7 @@ name:  OpType: Identity
 ```
 
 A separately exported arithmetic graph passed explicit file-based checking and ONNX IR reload.
-Independent verifier `proc_c941` checked the actual exited image,
+Host-side recheck `proc_c941` checked the actual exited image,
 baked sources,
 resource evidence,
 and quarantined artifact hashes.
@@ -100,6 +100,9 @@ Graph inspection `proc_8bd0` found one `Add` node,
 no model-local functions,
 and a 512-byte external initializer.
 No numerical inference was performed on that graph.
+This follows the inspected deserialization-only program,
+not its literal `inferenceExecuted: false` scope declaration.
+The host-side recheck is not an independently authored code review.
 
 ### Unverified execution cases
 

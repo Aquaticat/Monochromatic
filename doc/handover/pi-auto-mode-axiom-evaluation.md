@@ -999,7 +999,7 @@ only its four owned exited resource-control containers were removed after retent
 The valid checker control passed and the undeclared-input control raised `onnx.checker.ValidationError`.
 Only the expected staged native imports occurred outside synthetic controls.
 
-`proc_c941` independently checked actual exited-image identity,
+Host-side recheck `proc_c941` verified actual exited-image identity,
 baked source hashes,
 quarantined bytes,
 and resource evidence.
@@ -1025,9 +1025,15 @@ full-policy context behavior,
 assessment latency,
 or ORT consumer qualification.
 
-Next:
-finish recording/rendering #30,
-then resume #25 with a separately frozen Laya-specific producer experiment and unresolved consumer gates.
+`proc_9941` passed the seventeen-document render/scoped lint checkpoint.
+The host-side recheck is separate execution,
+not independent authorship or code review.
+No-inference/guard-load flags are program-scope declarations,
+not measured counters.
+Only the owned exited canary container was removed after verification and source-copy retention;
+the immutable image and quarantined files remain.
+Next for #25:
+prepare a separately frozen Laya-specific producer experiment and preserve unresolved consumer gates.
 Do not reuse the toy manifest as authorization for a checkpoint export.
 The MIT license,
 build metadata,

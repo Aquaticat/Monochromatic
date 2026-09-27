@@ -840,7 +840,7 @@ and kernel/resource postflight.
 No guard checkpoint was loaded,
 no training or accelerator work ran,
 and no artifact was promoted.
-`proc_c941` independently checked the actual exited image,
+A separate host-side check `proc_c941` re-read the actual exited image,
 baked source hashes,
 quarantined bytes,
 and retained records.
@@ -862,6 +862,11 @@ one `Add` node,
 no model-local functions,
 and one float initializer backed by a 512-byte external-data file.
 Both graph and data hashes are retained in the verified summary.
+The float type follows `TensorProto.DataType.FLOAT = 1` in pinned ONNX `onnx/onnx.in.proto:608-611`.
+The no-inference/no-guard-load fields are scope declarations backed by the inspected program,
+not instrumentation counters.
+The host-side recheck was authored in this session,
+not an independent code review.
 This establishes only the exact frontend's ORT-free toy path,
 not the complete Laya path or numerical equivalence.
 

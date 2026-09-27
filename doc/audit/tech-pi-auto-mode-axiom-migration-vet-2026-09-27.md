@@ -375,7 +375,7 @@ toy export,
 exported-graph checking,
 IR reload,
 and pre/post source/file/kernel checks.
-Independent verifier `proc_c941` checked the actual exited image,
+Host-side recheck `proc_c941` checked the actual exited image,
 baked sources,
 resource records,
 and quarantined bytes.
@@ -390,6 +390,8 @@ The fixed toy exporter is not a Laya checkpoint trial,
 a numerical-equivalence test,
 or an assessment-latency measurement.
 All resulting files remain quarantined and unpromoted despite structural validation.
+The host-side recheck is not independent authorship or code review;
+no-inference/guard-load flags describe the inspected program rather than measured counters.
 Resource-control repair #31 retained an initial exit-code expectation failure
 and fresh passing controls `proc_7082`.
 The timed control terminated with CLI255/OCI-1,
