@@ -133,16 +133,22 @@ type ConsolidationConcurrency = {
    later call answering first rather than assume it (ledger T6).
    */
   readonly finished: number[];
+
+  /**
+   Gate the first-started call holds on until the second-started call has
+   finished, where a case needs the second to answer first and both to be in
+   flight at once whatever the machine's load.
+   */
+  readonly secondFinished?: PromiseWithResolvers<undefined>;
 };
 
 /**
  A client that refuses to be used, so any call at all is a failure rather
  than a slow test.
 
- NO RETRIES since 2026-09-27 (ledger T5): the positive controls that expect
- this refusal waited through five production backoffs first, about 25 s of
- the file's 11.8 s under four-way parallel runs; the refusal still propagates
- unchanged.
+ NO RETRIES since 2026-09-27 (ledger T5): two positive controls that expect
+ this refusal passed only by outlasting five production backoffs, and the file
+ took 10.24 s; 0.77 s without them. The refusal still propagates unchanged.
  */
 const REFUSING_CLIENT = createSyntheticClient({
   apiKey: 'test-key',
@@ -716,9 +722,17 @@ async function driveWith(
           activity.peak,
           activity.now,
         );
-        await wait(startPosition === 0 ? 20 : 5,);
+        // ORDERED BY A GATE where the case supplies one: a 20 ms against 5 ms
+        // head start let the first call finish first 1 time in 8 at 0.2 CPU
+        // (2026-09-27). A driver that never overlaps leaves the first call held,
+        // so the case fails on the run's deadline rather than passing.
+        await (((startPosition === 0) && (activity.secondFinished !== undefined))
+          ? activity.secondFinished.promise
+          : wait(startPosition === 0 ? 20 : 5,));
         activity.now -= 1;
         activity.finished.push(startPosition,);
+        if (startPosition === 1)
+          activity.secondFinished?.resolve(undefined,);
         return await client.chatJson(request,);
       },
       quotas: client.quotas,
@@ -1276,13 +1290,14 @@ await describe({
         },);
 
         /**
-         Two-slice activity.
+         Two-slice activity, gated so the second call answers first.
          */
         const overlapped: ConsolidationConcurrency = {
           now: 0,
           peak: 0,
           started: 0,
           finished: [],
+          secondFinished: Promise.withResolvers<undefined>(),
         };
         const overlapClient = recordingClient();
         const { slices, } = await driveWith({

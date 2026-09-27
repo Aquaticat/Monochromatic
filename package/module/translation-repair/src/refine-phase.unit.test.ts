@@ -145,6 +145,13 @@ type RefinerConcurrency = {
    later call answering first rather than assume it (ledger T6).
    */
   readonly finished: number[];
+
+  /**
+   Gate the first-started call holds on until the second-started call has
+   finished, where a case needs the second to answer first and both to be in
+   flight at once whatever the machine's load.
+   */
+  readonly secondFinished?: PromiseWithResolvers<undefined>;
 };
 
 /**
@@ -190,9 +197,18 @@ function measuringRefiners(
           activity.peak,
           activity.now,
         );
-        await wait(startPosition === 0 ? 20 : 5,);
+        // ORDERED BY A GATE where the case supplies one: the head start alone
+        // let the first call finish first 1 time in 8 at 0.2 CPU in the
+        // consolidation driver's twin of this fixture (2026-09-27). A phase that
+        // never overlaps leaves the first call held, and the file fails on the
+        // unsettled wait rather than passing.
+        await (((startPosition === 0) && (activity.secondFinished !== undefined))
+          ? activity.secondFinished.promise
+          : wait(startPosition === 0 ? 20 : 5,));
         activity.now -= 1;
         activity.finished.push(startPosition,);
+        if (startPosition === 1)
+          activity.secondFinished?.resolve(undefined,);
       }
       return await inner.chatJson(request,);
     },
@@ -764,13 +780,14 @@ await describe({
         },);
 
         /**
-         Overlapped activity.
+         Overlapped activity, gated so the second refiner answers first.
          */
         const overlapped: RefinerConcurrency = {
           now: 0,
           peak: 0,
           started: 0,
           finished: [],
+          secondFinished: Promise.withResolvers<undefined>(),
         };
         const phase = await runRefinePhase({
           declaredNames: [],
