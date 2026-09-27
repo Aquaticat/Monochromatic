@@ -56,6 +56,7 @@ await describe({
           client,
           modelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
           subject: {
+            lineStructured: false,
             sourceText: '猫在睡觉。',
             candidateText: 'The cat is sleeping.',
             paragraphs: ['The cat is sleeping.',],

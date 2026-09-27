@@ -1,8 +1,10 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
+import { MEASUREMENT_POLICY_BLOCK, } from './house-policy.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { selectFence, } from './prompt-fence.ts';
+import { foldSoftBreaks, } from './soft-break-fold.ts';
 
 //region Absolute naturalness review wire
 
@@ -74,6 +76,15 @@ export type AbsoluteNaturalnessReviewSubject = {
    Structurally refinable paragraphs in displayed one-based order.
    */
   readonly paragraphs: readonly string[];
+
+  /**
+   Whether the line rule governs the passage. On prose the sheet shows each
+   paragraph on one line, as it renders (ledger H6); the texts above stay
+   exact, since the review digests them and the artifact reader recomputes
+   those digests from the shipped text. REQUIRED, NOT DEFAULTED, the H2
+   lesson.
+   */
+  readonly lineStructured: boolean;
 
   /**
    Declared names and public handles candidate must treat as intentional.
@@ -242,6 +253,16 @@ export function buildAbsoluteNaturalnessReviewMessages(
       '',
     ];
   /**
+   A text as the reviewer reads it: on prose, each paragraph as it renders.
+
+   @param text - candidate or paragraph text
+
+   @returns Text shown on the sheet
+   */
+  function shown({ text, }: { readonly text: string; },): string {
+    return subject.lineStructured ? text : foldSoftBreaks({ text, },);
+  }
+  /**
    Numbered refinable paragraphs findings must locate.
    */
   const paragraphs = subject.paragraphs
@@ -249,7 +270,7 @@ export function buildAbsoluteNaturalnessReviewMessages(
       paragraph,
       index,
     ): string {
-      return `PARAGRAPH ${String(index + 1,)}\n${fence}\n${paragraph}\n${fence}`;
+      return `PARAGRAPH ${String(index + 1,)}\n${fence}\n${shown({ text: paragraph, },)}\n${fence}`;
     },)
     .join('\n\n',);
   return [
@@ -264,11 +285,15 @@ Mark acceptable only when the whole candidate reads as idiomatic, publication-re
 
 Perform two independent scans before deciding. First inspect every sentence for local grammar, collocation, word order, and reference defects. Then set those observations aside and reread each complete paragraph plus the whole passage for flow, register, repetition, and any defect the local scan missed. For an unacceptable candidate, return the union of material defects from both scans rather than only the first defect that proves rejection.
 
-Do not reject merely because another optional style is possible. Preserve memorial tone, deliberate source-language kinship terms with their glosses, names, handles, links, Markdown, and line structure. Judge naturalness only; do not rewrite the passage or decide factual fidelity.
+Do not reject merely because another optional style is possible. Preserve memorial tone, names, handles, links, Markdown, line structure, and a term the house rules keep in English letters with its gloss. Judge naturalness only; do not rewrite the passage or decide factual fidelity. A departure from a house rule of form is a material defect to report: a word left in Han, a Ta left standing, chat shorthand carried across, a spelling other than Canadian, a day-first date, or the life of a person who has died told in the present tense.
 
-Single newlines inside one numbered paragraph, unless marked as explicit Markdown hard breaks, are soft breaks that render as spaces. Preserve them and do not report their source layout as choppy flow. A flow defect is material only if it remains after replacing each soft break with a space.
+A prose candidate is shown with each paragraph on one line, as it renders. Single newlines inside one numbered paragraph, where they appear, unless marked as explicit Markdown hard breaks, are soft breaks that render as spaces. Preserve them and do not report their source layout as choppy flow. A flow defect is material only if it remains after replacing each soft break with a space.
 
-For an unacceptable candidate, return one concise actionable finding per material defect and cover every material defect you see. Every finding must name the one-based PARAGRAPH number shown in the sheet. Report only defects in those numbered, structurally correctable paragraphs. For an acceptable candidate, findings must be empty.`,
+For an unacceptable candidate, return one concise actionable finding per material defect and cover every material defect you see. Every finding must name the one-based PARAGRAPH number shown in the sheet. Report only defects in those numbered, structurally correctable paragraphs. For an acceptable candidate, findings must be empty.
+
+${MEASUREMENT_POLICY_BLOCK}
+
+In this review, a candidate obeying a house rule is never unacceptable for it, and no finding may ask it to break one.`,
     },
     {
       role: 'user',
@@ -277,8 +302,10 @@ For an unacceptable candidate, return one concise actionable finding per materia
         'ORIGINAL (Chinese, context only):',
         `${fence}\n${subject.sourceText}\n${fence}`,
         '',
-        'EXACT ENGLISH CANDIDATE THAT WOULD SHIP:',
-        `${fence}\n${subject.candidateText}\n${fence}`,
+        subject.lineStructured
+          ? 'EXACT ENGLISH CANDIDATE THAT WOULD SHIP:'
+          : 'ENGLISH CANDIDATE THAT WOULD SHIP, each paragraph on one line as it renders:',
+        `${fence}\n${shown({ text: subject.candidateText, },)}\n${fence}`,
         '',
         'STRUCTURALLY CORRECTABLE PARAGRAPHS:',
         paragraphs,

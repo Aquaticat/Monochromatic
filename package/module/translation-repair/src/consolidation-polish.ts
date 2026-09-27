@@ -208,6 +208,7 @@ export async function polishConsolidation(
       // finding in a blockquote or a list as well as in a paragraph the polish
       // could have edited; the artifact reader recomputes the same set.
       paragraphs: reviewParagraphsOf({ text: initial.text, }),
+      lineStructured,
       ...((identityContext === undefined) ? {} : { identityContext, }),
     },
     signal,

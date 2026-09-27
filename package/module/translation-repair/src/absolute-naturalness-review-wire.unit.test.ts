@@ -56,6 +56,7 @@ await describe({
       fn: async () => {
         const messages = buildAbsoluteNaturalnessReviewMessages({
           subject: {
+            lineStructured: false,
             sourceText: '猫猫在窗台上睡觉。',
             candidateText: 'The cat sleeps on the windowsill.',
             paragraphs: ['The cat sleeps on the windowsill.',],
@@ -86,6 +87,7 @@ await describe({
       fn: async () => {
         /** Shared exact candidate subject for both responsibilities. */
         const subject = {
+          lineStructured: false,
           sourceText: '猫猫在窗台上睡觉。',
           candidateText: 'The cat sleeps on the windowsill.',
           paragraphs: ['The cat sleeps on the windowsill.',],

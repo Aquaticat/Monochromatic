@@ -271,6 +271,7 @@ export function renderedSheets(): readonly RenderedSheet[] {
       text: joined({
         messages: buildAbsoluteNaturalnessReviewMessages({
           subject: {
+            lineStructured: false,
             sourceText: SOURCE,
             candidateText: ARCHIVE,
             paragraphs: [ARCHIVE,],

@@ -212,6 +212,7 @@ async function runReview(
     client,
     modelIds,
     subject: {
+      lineStructured: false,
       sourceText: '猫猫在窗台上睡觉。',
       candidateText: 'The cat sleeps on the windowsill.',
       paragraphs: ['The cat sleeps on the windowsill.',],

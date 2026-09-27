@@ -81,6 +81,9 @@ export async function recordArchiveBlockNaturalness(
     sourceText,
     candidateText: blockText,
     paragraphs: [blockText,],
+    // An unclaimed archive block is page prose no line rule governs, so the
+    // reviewer reads it as the page renders it (ledger H6).
+    lineStructured: false,
   };
   /**
    First responsibility searches for defects.

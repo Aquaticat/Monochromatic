@@ -77,7 +77,7 @@ function requestFor(client: SyntheticClient,): Parameters<typeof reviewAbsoluteN
     client,
     modelIds: ROSTER,
     quorumOver: WIDE_BENCH,
-    subject: { sourceText: '猫睡在窗台上。', candidateText: TEXT, paragraphs: [TEXT,], },
+    subject: { lineStructured: false, sourceText: '猫睡在窗台上。', candidateText: TEXT, paragraphs: [TEXT,], },
     signal: AbortSignal.timeout(5_000,),
     exchangeTimeoutMs: 5_000,
     graceMs: 0,
