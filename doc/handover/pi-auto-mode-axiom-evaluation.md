@@ -788,10 +788,35 @@ ONNX Runtime,
 and both protobuf variant files returned 404.
 Do not equate publication metadata with build provenance/trust,
 or a missing PyPI object with unavailable source.
-No distribution download,
-installation,
-export,
-or inference has occurred in this follow-up.
+Inert artifact download `proc_1753` then fetched the six exact inventoried wheel files,
+33,930,000 bytes total,
+with every size and SHA-256 matching primary metadata.
+This includes both protobuf variants for inspection,
+not simultaneous installation or a production dependency choice.
+Download source `ab61900` and inspection preparation `6dd4403` remain private.
+Static archive/metadata inspection `proc_539d` completed under two GiB,
+two CPUs,
+no network or host mounts,
+and a sixty-second container ceiling.
+Image `61ed561dda2431cbf59b05db9e293287de5460835132defb22905ca8b39d226c`
+rechecked the baked archive hashes,
+package names/versions,
+metadata,
+and filename inventories without installing or importing packages.
+ONNX has one shared-library filename match,
+ONNX Runtime three,
+and native protobuf one.
+ONNX Script,
+ONNX IR,
+and pure-Python protobuf have none.
+These are filename matches,
+not complete content-type detection,
+`RECORD` verification,
+or executable trust.
+ONNX's compatibility `version.py` has an empty `git_version`;
+ORT's build-info Python file names the package/version only.
+Neither inspected field supplies native source-to-build identity.
+No ONNX export or model inference has occurred in this follow-up.
 
 Pinned source clones are under the private scratch root:
 ONNX Script `onnxscript-laya-2026-09-27`,
