@@ -1,15 +1,26 @@
 # Pi auto-mode axiom migration vetting
 
+## Superseded authorization context
+
+This report preserves the earlier no-private-input evaluation context.
+The user subsequently authorized all task-relevant assessment content through LLM Gateway/Jev
+and declined dashboard access.
+Current authority and remaining gates are in the
+[new context audit](tech-pi-auto-mode-axiom-migration-vet-2026-09-27.md).
+The original fingerprint and dated observations remain unchanged.
+Old access and upload restrictions in this record are historical,
+not instructions to reopen the user's settled consent.
+
 ## Metadata
 
 - Status:
-   in progress;
-   targeted route audit,
+   archived;
+   superseded authorization context,
    no recommendation.
 - Started:
    2026-09-26.
 - Last updated:
-   2026-09-26.
+   2026-09-27.
 - Subject:
    Pi auto-mode axiom migration.
 - Owner:
@@ -858,9 +869,8 @@ without imposing a separate code-proof-only admission requirement.
 The [effect contract inventory](../planning/pi-auto-mode-effect-contract.md)
 records this distinction and remaining integration paths.
 
-## Current outcome
+## Historical outcome
 
-In progress,
-no recommendation.
-The latest interview choices are documented,
-but do not constitute final design confirmation or adoption.
+This context was superseded while evaluation remained in progress.
+No recommendation or production adoption was issued.
+The new context audit carries current authority and remaining gates.
