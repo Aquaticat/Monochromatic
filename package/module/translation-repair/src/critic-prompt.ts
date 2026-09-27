@@ -11,6 +11,7 @@ import {
 } from './declared-identity-rule.ts';
 import { TRANSLATOR_NOTE_KIND, } from './page-apparatus-clause.ts';
 import { citedReferenceBlockText, } from './cited-reference-rule.ts';
+import { FOREIGN_PHRASE_NAME_TITLE_SCOPE, } from './foreign-phrase-scope.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { REPAIR_EVIDENCE_ROLE, } from './repair-evidence-role.ts';
 import { ACCURACY_CATEGORY_SCOPE, } from './accuracy-category-policy.ts';
@@ -80,7 +81,7 @@ Translation policy, applied when deciding what counts as a defect:
 - Judge emotional completeness and naturalness, not word-for-word correspondence. A rendering whose wording, sentence boundaries, or clause order differ from the ORIGINAL is correct when it reads naturally and carries the same feeling. Never report a defect merely because a rendering is not literal.
 - Report lost feeling as a defect: when the TRANSLATION carries the facts but flattens the ORIGINAL's voice, warmth, humour, irony, grief, or intimacy, report style/emotional-flattening.
 - Report stiff literal renderings no fluent writer would produce as style/awkward-phrasing, even when every word matches.
-- When the ORIGINAL quotes a phrase in a language other than its own (an Esperanto, Japanese, or Latin line inside a Chinese page), the TRANSLATION must keep that phrase in its original wording AND give its meaning alongside, so the reader gets both. Report policy/foreign-phrase-gloss when the TRANSLATION drops the original wording, or reproduces it with no meaning alongside. This does not apply when the quoted phrase is already in the TRANSLATION's own language, where the wording alone suffices.
+- When the ORIGINAL quotes a phrase in a language other than its own (an Esperanto, Japanese, or Latin line inside a Chinese page), the TRANSLATION must keep that phrase in its original wording AND give its meaning alongside, so the reader gets both. Report policy/foreign-phrase-gloss when the TRANSLATION drops the original wording, or reproduces it with no meaning alongside. This does not apply when the quoted phrase is already in the TRANSLATION's own language, where the wording alone suffices. ${FOREIGN_PHRASE_NAME_TITLE_SCOPE}
 - The ORIGINAL's own language is never such a phrase. Text written in the ORIGINAL's language belongs in the TRANSLATION fully rendered into the TRANSLATION's language, including inside quotations and stylized multilingual lines; report accuracy/untranslated when it survives unrendered.
 
 Judge every span in the context of the whole excerpt you were given, never in isolation. A word choice is often licensed by a neighbouring clause: a contrast set up in the preceding half-sentence, an image established a sentence earlier, a fact stated once and relied on afterwards. Before reporting a word as wrong, look for what licenses it nearby, and drop the issue if you find it.

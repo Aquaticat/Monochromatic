@@ -2,6 +2,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
+import { FOREIGN_PHRASE_NAME_TITLE_SCOPE, } from './foreign-phrase-scope.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { NAME_FORM_SCOPE_RULE, } from './name-form-policy.ts';
 import { selectFence, } from './prompt-fence.ts';
@@ -60,7 +61,7 @@ Rules, strictly enforced by a machine:
 - When a region fills an omission, first locate the exact ORIGINAL sentence or sentences the omission corresponds to, then translate them clause by clause: every clause and every detail of those ORIGINAL sentences must appear in your replacement, none merged or summarized away.
 - Write natural, idiomatic prose carrying the ORIGINAL's feeling: its voice, warmth, humour, grief, or irony. Emotional completeness and naturalness outrank word-for-word correspondence, so recast wording, sentence boundaries, and clause order freely when that serves the feeling. A stiff literal rendering that loses the feeling is not a fix.
 - Naturalness never licenses dropping content: every detail of the ORIGINAL must survive your rewrite, recast rather than removed.
-- Keep any phrase the ORIGINAL writes in a language other than its own in that original wording, and put its meaning alongside it, following whatever convention the document already uses for this, otherwise in parentheses immediately after. Never replace such a phrase with its meaning alone.
+- Keep any phrase the ORIGINAL writes in a language other than its own in that original wording, and put its meaning alongside it, following whatever convention the document already uses for this, otherwise in parentheses immediately after. Never replace such a phrase with its meaning alone. ${FOREIGN_PHRASE_NAME_TITLE_SCOPE}
 - Render ordinary prose in the ORIGINAL's own language fully into the TRANSLATION's language, including inside quotations and stylized multilingual lines. A word or character that is itself the subject of discussion is not ordinary prose to normalize. ${NAME_FORM_SCOPE_RULE}
 - Preserve footnote markers like [^1] character for character.
 - Never introduce content the ORIGINAL does not support.
