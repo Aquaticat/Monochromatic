@@ -6,7 +6,9 @@ The compatibility-facade finding remains source-only.
 A separate bounded frontend canary has now imported the dependencies,
 exported a toy graph,
 and exercised the actual ONNX checker directly.
-No Laya export or compatibility-facade runtime failure is claimed.
+A later English Laya producer also passed explicit structural checking,
+as recorded in the [producer result](../planning/pi-auto-mode-laya-qualification.md#laya-producer-preparation-and-result).
+No compatibility-facade runtime failure is claimed.
 The risk is treating PyTorch's successful checker-status branch as proof that a graph passed structural validation.
 Do not confuse this with the separately measured Laya CPU latency or attention-memory results.
 
@@ -108,7 +110,7 @@ The host-side recheck is not an independently authored code review.
 
 - An invalid graph returning through the actual imported compatibility facade.
 - Numerical parity of an exported graph against its source computation.
-- Laya-specific export and full-policy input behavior.
+- Numerical or semantic full-policy behavior of the structurally exported Laya artifact.
 - Failed verification leaving artifacts that a qualified consumer correctly refuses to promote.
 
 The direct-checker catalog does not close these cases.

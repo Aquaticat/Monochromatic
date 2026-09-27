@@ -400,8 +400,8 @@ Actual CPU quota/period and NanoCpus representations were both verified,
 and maximum-runtime `--timeout` remained distinct from stop grace.
 Source/native review and the frozen command manifest continue to gate any candidate execution;
 no ORT provenance requirement is waived by separating producer and consumer experiments.
-No Laya ONNX export,
-ONNX Runtime inference,
+The separate English FP32 Laya producer now has successful export evidence.
+No ONNX Runtime inference,
 accelerator execution,
 or training has occurred.
 The toy frontend success does not waive Laya-specific producer or consumer gates.
@@ -434,13 +434,9 @@ Source and qualification limits are in the
 Private evidence checkpoints are `19702d3`,
 `393aa5e`,
 and `d53a844`.
-The producer plan uses explicit capture and actual-constraint inspection;
-Laya compatibility,
-full-policy FP32 input checks,
-checkpoint hashing,
-model-sized transfer integration,
-and the complete producer manifest remain preparation work.
-No Laya import or checkpoint export occurred in these controls.
+The producer uses explicit capture and actual-constraint inspection.
+No Laya import or checkpoint export occurred in those copy/shape controls;
+the later real-tokenizer controls and checkpoint attempt have separate evidence.
 
 Task #33 corrected a separate owned-hook process-event gap.
 Synthetic probe `proc_c2b6` confirmed the archived hook did not match
@@ -461,7 +457,59 @@ Evidence is private `29e60e9`,
 and `1ca9658`.
 These are synthetic-event dispatch checks,
 not actual process-API tests or native syscall confinement.
-Repeat applicable controls on the derived producer image before checkpoint execution.
+Those controls passed on the derived producer image as `proc_f772`;
+repeat them if its identity changes.
+
+The first full-policy English FP32 producer passed as `proc_5da8`.
+Image `5da5309750c91f4ebac7000bcde671bb87795c2c067259ec6001022f484b0e2e`
+and manifest `7828170f30b5f44cbb22619089eedde5ab91e5428358c4719c39abf3502e4f79`
+were frozen before checkpoint execution.
+`proc_a121` verified ten producer files and 36 inherited source files;
+`proc_2d25` passed 14 layout and 27 graph-contract cases using the baked helpers.
+These do not constitute exhaustive branch/fuzz coverage or individual necessity proof for every redundant check.
+
+The attempt checked all five checkpoint hashes before loading,
+asserted CPU/FP32/evaluation state,
+and retained complete current policy in the actual capture inputs and exported program's example inputs.
+The input comprised 42,677 policy bytes and 12,678 tokens,
+including 12,591 state and 87 prefix tokens.
+Policy SHA remained `4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`
+through the host freshness checks.
+Captured range `2..20000` and shared sequence axis `s53` survived conversion.
+Structural/external-data checking,
+IR reload,
+source postflight,
+and hash-checked quarantine copies passed.
+The graph has 4,355 nodes,
+39 standard-domain operator kinds,
+no local functions,
+and 203 external tensors.
+
+The graph is 7,412,394 bytes,
+SHA-256 `24c550312500bc57a1aa07c1a5dda2c42774a63dd77e128f25250a5b98be47d3`;
+external data is 1,685,258,240 bytes,
+SHA-256 `9489d054cbafcc53a841c39aa195c84638f5ffc52a51c1dad90b9fcaf7b09d08`.
+The container exited zero without OOM.
+Pre-handoff memory peak was 4,739,661,824 bytes,
+not a final lifetime peak or minimum requirement.
+The child's 24.631399751175195-second timer includes export and handoff,
+not numerical inference or total assessment.
+`proc_3e43` re-derived copied hashes and checked exited-image identity,
+policy,
+range/axis correspondence,
+and operator inventory.
+This is same-session executable checking,
+not independent review.
+Raw/summary checkpoints are private `d4ee2b9` and `80dd553`;
+result SHA-256 is `ea90423b4c181160dc24c7c69d78ab3445194c1808a0e798021494c301c7b21b`.
+
+All stderr is retained and artifacts remain quarantined/unpromoted.
+Producer success does not qualify ONNX numerical parity,
+semantic context beyond 8,192 positions,
+consumer range enforcement,
+five-second assessment fit,
+ORT provenance,
+or adoption.
 
 ### Jev through LLM Gateway
 

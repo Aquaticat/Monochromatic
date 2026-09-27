@@ -1046,7 +1046,9 @@ The preinstalled Laya location remains present,
 so the eventual producer must select and verify `/input/source/laya` explicitly.
 No Laya import,
 checkpoint load,
-or export occurred in #32.
+or export occurred in that metadata preflight.
+Later layout controls imported Laya without weights;
+the separately frozen producer attempt is recorded with its own result.
 
 The pinned upstream exporter calls `agent.model` directly with random sixteen-token input.
 The owned producer must instead use complete current policy and an existing development axiom,
@@ -1107,16 +1109,74 @@ Evidence is private `29e60e9`,
 and `1ca9658`.
 This is live Python-hook dispatch with synthetic events,
 not a native syscall sandbox or actual process-API exercise.
-Repeat applicable controls on the eventual derived producer image.
+The full suite passed on the actual derived producer image as `proc_f772`.
+Repeat it for a changed image.
 
-Next for #32:
-use the demonstrated explicit-capture composition,
-freeze and verify actual full-policy input/precision/shape checks,
-checkpoint integrity,
-model-sized artifact-transfer integration,
-and the complete producer execution manifest.
-Then attempt the CPU-only export within existing ceilings and preserve unresolved consumer gates.
-Do not reuse the toy manifest as authorization for a checkpoint export.
+#32's first full-policy producer passed as `proc_5da8`.
+`proc_ee64` froze the existing English negated-request/choice fixture and current full policy.
+`proc_a512` built image `5da5309750c91f4ebac7000bcde671bb87795c2c067259ec6001022f484b0e2e`.
+`proc_a121` checked ten baked producer files and 36 inherited sources;
+`proc_2d25` passed 14 real-tokenizer/layout and 27 graph/external-data cases.
+Those cases are not exhaustive fuzz/branch coverage or individual omission proof for every redundant check.
+The runtime manifest is private `8a01e7a`,
+with baked manifest SHA-256 `7828170f30b5f44cbb22619089eedde5ab91e5428358c4719c39abf3502e4f79`.
+
+The attempt verified five checkpoint hashes before loading,
+asserted CPU/FP32/evaluation state,
+and used the demonstrated direct-capture composition.
+It retained 42,677 policy bytes,
+12,591 state tokens,
+87 prefix tokens,
+and 12,678 total tokens.
+Current policy SHA remained `4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`
+through launch,
+quarantine acknowledgement,
+exit,
+and host recheck.
+
+Direct capture retained range `2..20000`;
+both token/mask inputs retained shared symbol `s53`.
+Structural checking,
+external-reference checks,
+IR reload,
+source postflight,
+and copied hashes passed.
+The graph has 4,355 nodes,
+39 standard-domain operator kinds,
+no local functions,
+and 203 external tensors.
+Pre-handoff cgroup memory peak was 4,739,661,824 bytes,
+not the final lifetime peak or a minimum requirement.
+The child's timer including handoff was 24.631399751175195 seconds;
+this is research export timing,
+not inference or a total assessment.
+Container exit was zero with no OOM.
+
+`producer-quarantine-initial/laya.onnx` is 7,412,394 bytes,
+SHA-256 `24c550312500bc57a1aa07c1a5dda2c42774a63dd77e128f25250a5b98be47d3`.
+Its data companion is 1,685,258,240 bytes,
+SHA-256 `9489d054cbafcc53a841c39aa195c84638f5ffc52a51c1dad90b9fcaf7b09d08`.
+Raw results are private `d4ee2b9`;
+summary is `80dd553`.
+Result SHA-256 is `ea90423b4c181160dc24c7c69d78ab3445194c1808a0e798021494c301c7b21b`.
+`proc_3e43` re-derived host hashes and checked the actual exited image,
+policy,
+range/axis binding,
+and operator inventory.
+It is executable same-session rechecking,
+not independent review or numerical equivalence.
+All warnings remain in raw stderr.
+Artifacts remain quarantined and unpromoted;
+the owned exited producer container was removed after host-side evidence rechecking.
+Its immutable image and quarantined graph/data remain.
+
+Next:
+finish result documentation/rendering and close bounded #32,
+then resume #25's unresolved consumer provenance,
+numerical parity,
+execution fit,
+and context/semantic qualification.
+Do not treat producer success as qualified inference or reuse these timings as the five-second assessment result.
 The MIT license,
 build metadata,
 version-only setup logic,

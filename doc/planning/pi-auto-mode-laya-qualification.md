@@ -794,10 +794,12 @@ Those metadata/signature checks installed or imported no candidate package.
 Tag matching does not prove imports,
 native linkage,
 or model execution.
-The image still lacks those additional distribution records.
+That baseline image lacked those additional distribution records;
+the subsequent frontend image stages its explicitly selected package set.
 
-Laya-specific export,
-full-policy behavior,
+The first English FP32 producer now has successful capture/export evidence.
+Other producer profiles,
+full-policy semantic behavior,
 numerical parity,
 and consumer qualification remain pending.
 The separate guard-model-free frontend canary now has measured import/export evidence.
@@ -813,7 +815,7 @@ The pinned ONNX Script 0.7.2 compatibility facade additionally resolves `check_m
 to an explicitly documented no-op.
 The [checker-boundary note](../troubleshooting/onnxscript-export-checker-boundary.md)
 traces that source combination and distinguishes it from a runtime reproduction.
-Independent structural checking has now been exercised on a toy graph;
+Explicit structural checking has now been exercised on toy graphs and the English producer artifact;
 Laya-specific numerical parity remains unexecuted.
 
 ### Guard-model-free frontend canary
@@ -880,10 +882,11 @@ A retained `LeafSpec` FutureWarning is defined by PyTorch `torch/utils/_pytree.p
 and displayed through Python `copyreg.py:99`.
 No warning was filtered and no claim extends these observations to other consumers.
 
-### Laya producer preparation
+### Laya producer preparation and result
 
-Task #32 separates the next checkpoint producer from the completed toy experiment.
-No checkpoint export has run.
+Task #32 separates the checkpoint producer from the completed toy experiment.
+The first bounded English FP32 producer passed as `proc_5da8`;
+the preparation evidence and result have distinct scopes.
 Private `export-laya/` source/preflight preparation is recorded at `9af16ad`;
 metadata result `proc_cce5` is retained at `ae0cf7e`.
 The actual frontend image matched 24 pinned Laya source files and four selected Transformers source files.
@@ -934,8 +937,9 @@ records source,
 exact cases,
 diagnostics,
 and the non-isolated flag difference.
-The proposed producer will use explicit capture and inspect actual constraints before conversion;
-this toy evidence does not establish Laya capture compatibility.
+The producer used explicit capture and actual-constraint checks before conversion.
+The toy controls alone do not establish Laya capture compatibility;
+that evidence comes from the separately recorded checkpoint attempt.
 
 A separate owned-hook correction is recorded by #33.
 Synthetic probe `proc_c2b6` confirmed the archived canary hook rejected its existing process families
@@ -957,12 +961,71 @@ Evidence is at private `29e60e9`,
 and `1ca9658`.
 Python audit dispatch is not native syscall confinement;
 source review and kernel isolation remain required.
-Applicable controls must run against the derived producer image before checkpoint loading.
+The complete boundary suite passed on the derived producer image as `proc_f772` before checkpoint loading.
+Repeat applicable controls if that image changes.
 
-Actual full-policy input/precision/shape checks,
-checkpoint hash validation,
-complete producer manifest,
-and model-sized artifact-transfer integration remain to be built and exercised.
+The derived image is `5da5309750c91f4ebac7000bcde671bb87795c2c067259ec6001022f484b0e2e`.
+`proc_a121` checked ten baked producer files and 36 inherited source files,
+including eight selected Torch export files against the pinned Git source.
+`proc_2d25` exercised 14 real-tokenizer/layout cases and 27 graph/external-data cases with the baked helpers.
+Those cases do not establish exhaustive branch/fuzz coverage or independent necessity of every redundant check.
+
+The frozen runtime manifest is private `8a01e7a`.
+`proc_5da8` verified all five checkpoint content hashes before loading,
+asserted CPU/FP32/evaluation state,
+retained complete current policy and exact tensors,
+and captured the named sequence range before ONNX conversion.
+The input had 42,677 policy bytes,
+12,591 state tokens,
+87 prefix tokens,
+and 12,678 total tokens.
+Policy SHA-256 remained `4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`
+at launch,
+quarantine acknowledgement,
+and result release checks.
+
+The captured range is `2..20000` with shared input symbol `s53`.
+The graph contains 4,355 nodes,
+39 standard-domain operator kinds,
+no model-local functions,
+and 203 external tensors.
+Explicit structural checking,
+external-path/extent checks,
+IR reload,
+source postflight,
+and hash-checked quarantine handoff passed.
+The container exited zero without OOM.
+Its pre-handoff cgroup memory peak was 4,739,661,824 bytes,
+not a final lifetime peak or minimum requirement.
+The child's research timer including handoff was 24.631399751175195 seconds;
+this is not an inference or total-assessment timing.
+
+The graph has 7,412,394 bytes and SHA-256
+`24c550312500bc57a1aa07c1a5dda2c42774a63dd77e128f25250a5b98be47d3`.
+Its external data has 1,685,258,240 bytes and SHA-256
+`9489d054cbafcc53a841c39aa195c84638f5ffc52a51c1dad90b9fcaf7b09d08`.
+Host-side recheck `proc_3e43` re-derived the copied hashes,
+checked actual exited-image identity,
+current policy,
+and range/axis/inventory bindings.
+It is same-session executable checking,
+not independent authorship or numerical validation.
+Raw results are at private `d4ee2b9` and summary at `80dd553`;
+result SHA-256 is `ea90423b4c181160dc24c7c69d78ab3445194c1808a0e798021494c301c7b21b`.
+
+All stderr remains retained:
+the unused `choice:11+` temperature warning,
+tokenizer position-limit warning,
+optional torchvision registrations,
+and LeafSpec deprecation.
+No warning was filtered.
+The graph/data remain quarantined and unpromoted.
+No ONNX numerical inference,
+semantic-context qualification beyond 8,192 positions,
+calibration,
+five-second assessment fit,
+ORT provenance,
+or production adoption follows from this producer result.
 No consumer or provenance requirement is waived.
 
 ## Fine-tuning source findings
