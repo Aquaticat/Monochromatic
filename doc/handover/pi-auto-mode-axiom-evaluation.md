@@ -50,6 +50,70 @@ in older planning/audit records.
 Do not repeat Q14 or Q15.
 Defer the dependent inheritance/revocation-linkage interview until candidate research is ready.
 
+## Parser-boundary correction
+
+The user corrected the candidate probe:
+
+> "single-quoted example" - that's not the way.
+> These are not reasoning models and we have a bash parser.
+
+The agent wrongly delegated Bash quotation/substitution interpretation to the models
+and treated the resulting estimates as candidate-quality evidence.
+Withdraw that comparison across Laya,
+Jev,
+and Voyage.
+Quarantine aggregate quality scores that mix those code-owned questions with semantic questions.
+Retain raw outputs as historical observations,
+and retain transport,
+resource,
+runtime,
+and input-preservation measurements only for their original envelopes.
+Do not transfer those measurements automatically to revised inputs.
+Color-field controls are interface checks,
+not guard competence tests.
+Prose-only observations need a field/input audit before reuse;
+do not discard their independent references or silently qualify the mixed batches.
+
+Actual incumbent verification:
+`~/temp/agent/auto-mode-parser-boundary-2026-09-26/probe.mjs`
+called `src/command-parser.ts`'s `analyzeBashCommand`,
+which delegates to the shared `analyzeShellCommand` and installed `unbash` 4.0.11.
+On the exact frozen literal fixture it returned `hasCommandSubstitution: false`
+and no `cat` command.
+On the double-quoted counterpart it returned `true`
+and a `cat` command whose argument is `/work/project/.env`.
+No command was executed and no model was called.
+The existing shared-analyzer test at `src/index.unit.test.ts:89`
+already checks the same distinction using `date`.
+
+The flattened `allFiles` list also contains a path-shaped printed string in the literal case.
+It must not be treated as a list of proven reads.
+Command records,
+source spellings,
+redirect kinds,
+and context belong together.
+The parser is not a universal proof of runtime reachability,
+command identity after dynamic resolution,
+or successful file access.
+
+The next probe must not ask models to reconstruct syntax facts supplied by the parser.
+Use code-established facts with explicit scope and provenance;
+query only a genuinely remaining narrow semantic relation.
+For the next limited tranche,
+that means trusted request/prohibition or eligible prose-grant language,
+without raw Bash occurrence questions or final-action labels.
+This is a probe-scope correction,
+not a revocation of Q13 B's qualified semantic-effect eligibility for validated inspected forms.
+Independent review confirmed that distinction and the need for per-question evidence quarantine.
+
+Todo #21 is active;
+#14 is paused while this boundary is repaired.
+No candidate inference process remains running after `proc_baf9` and `proc_7f3f` completed.
+No new model call,
+production change,
+or `AGENTS.md` edit has been made after the correction.
+Do not resume integration-policy grilling.
+
 ## Settled preferences
 
 Do not reopen these choices:
@@ -392,15 +456,20 @@ Removing the new guard caused `Missing expected exception (ArtifactLedgerError)`
 restoring it passed.
 The actual old image failed the new baked check.
 
-Corrected process `proc_7f3f` is active.
+Corrected process `proc_7f3f` completed and was inspected.
 Its baked-image check passed with all fifteen artifacts and three checkpoint identities,
 without importing a model.
 Corrected image:
 `eaf3c7508954f11c879bbc7162c81d9504aaa9e0c9356c4e21a1f21361c70cca`.
-The inference artifact is `result-ledger-fixed.json`;
-its eventual result has not been inspected.
-Only this process may run Laya inference now.
-Wait for its terminal notification rather than polling.
+Scratch commit `570fb5b` retains `result-ledger-fixed.json`,
+SHA-256 `8ef510d6437cb0817db2cb532d8285364540fd5278a4453aa1f661e0ce2425cc`.
+All fourteen trials passed input/freshness checks and exited 0 without OOM kills.
+None completed inference within five seconds.
+Multilingual measured 73.18491603527218 to 76.15995599981397 seconds;
+typed-decisions measured 146.92294748313725 to 174.76137589570135 seconds;
+English grant trials measured 148.34310482395813 to 179.10930500691757 seconds.
+The [qualification record](../planning/pi-auto-mode-laya-qualification.md)
+retains the raw values and their withdrawn quotation-quality interpretation.
 No checkpoint is silently substituted,
 no temperature is refitted,
 and no reserved case is used.
@@ -455,6 +524,16 @@ context overflow probes,
 and pinned gateway-source observations are available.
 Broader qualification and outstanding model/service evidence remain open under todos #2 and #14.
 The 15-case development batch is not calibration or a complete evaluation.
+Its mixed quality aggregate is quarantined by the parser-boundary correction.
+The [Jev qualification record](../planning/pi-auto-mode-jev-qualification.md)
+records completed read-only metadata/service research and the eighteen-request shared-control batch `proc_baf9`.
+The latter measured 262.319438 to 741.3148530000001 milliseconds per assessment,
+with complete submitted policy and passing freshness checks.
+Its quotation estimates are historical outputs of a wrongly delegated task,
+not evidence for selecting or rejecting Jev.
+Gateway account settings remain unverified under #20:
+the available browser profile reached login,
+and the inference-key API does not expose retention settings.
 Do not reopen the accepted AUP,
 retention,
 or gateway-internal retry choices.
@@ -512,7 +591,8 @@ and handover.
 The subsequent citation/checkpoint edit passed the inspected eleven-document check `proc_3a0f`.
 The Pi lifecycle findings passed the inspected eleven-document check `proc_1490`.
 The Laya candidate documents passed the thirteen-document rendering and scoped lint run `proc_df32`.
-The later repeat/packaging-recovery checkpoint needs a subsequent scoped check.
+The repeat/packaging-recovery checkpoint passed the inspected thirteen-document run `proc_1473`.
+The subsequent Jev record and parser-boundary correction need a new scoped render/lint check.
 A final scope clarification distinguishes reusable trust directives from exact-action approvals.
 That clarification was rendered and its scoped Markdown lint passed after commit `6fa854714`.
 The user subsequently chose Q14 A and Q15 B,

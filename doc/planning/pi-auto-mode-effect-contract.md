@@ -51,6 +51,44 @@ Consequently,
 a new finite policy cannot claim semantic parity merely because it returns the same action labels on examples.
 Every retired behavior needs a new rule owner or an explicit manual-review disposition.
 
+## Parser facts precede model questions
+
+The user's parser-boundary correction supersedes any reading of this inventory
+that delegates Bash syntax interpretation to a model.
+`src/command-parser.ts` delegates to
+`package/agent-harness-shared/shell-command-analyzer/src/analyzer.ts`.
+The shared analyzer retains commands,
+argument source spellings,
+redirect read/write kinds,
+expansion flags,
+and function-definition versus immediate-control-flow context.
+`src/visit-word.ts` traverses double-quoted expansions rather than single-quoted literal contents.
+
+An actual call through the auto-mode wrapper on the frozen quoting pair
+returned no substitution and no `cat` command for the literal case,
+and substitution plus `cat /work/project/.env` for the expanded case.
+The private parser-only probe is
+`~/temp/agent/auto-mode-parser-boundary-2026-09-26/probe.mjs`.
+Neither command was executed.
+The existing shared-analyzer test `src/index.unit.test.ts:89`
+already covers the quotation rule with `date`.
+
+Do not use `allFiles` as proof of reads:
+the literal fixture contributes a path-shaped printed string there.
+Nor does `executedCommands` prove runtime reachability or successful access in arbitrary control flow.
+Keep each fact's scope,
+source,
+and unresolved dependencies explicit.
+Parser facts and supported command semantics are code-owned inputs to policy,
+not occurrence questions delegated back to a model.
+
+The next candidate tranche is limited to remaining narrow natural-language relations
+against explicit supplied facts,
+without raw Bash interpretation or a model-produced final action.
+This limited tranche does not replace Q13 B:
+qualified semantic-effect estimates for validated inspected forms remain eligible where code has not established the effect.
+Unsupported evidence is not converted into a false occurrence claim.
+
 ## Assessment snapshot
 
 The evidence-collection module must produce an owned immutable snapshot before inference.
@@ -104,11 +142,11 @@ and allowlist eligibility.
 The existing lexical fallback for unresolved targets is not a successful canonicalization proof.
 Model estimates must not certify filesystem facts that were not observed.
 
-Semantic questions may concern whether a trusted request names this operation or resource,
-or whether admitted executable content attempts a specified access.
-Filename mentions,
-quoted commands,
-and printed strings are separate negative examples.
+Semantic questions may concern whether a trusted request names this operation or resource.
+A qualified remaining semantic-effect question may concern inspected executable content under Q13 B,
+not syntax facts already established by the parser.
+Bash quotation and substitution contrasts belong first in parser/fact-derivation controls,
+not model-quality comparisons.
 When a rule requires an observed canonical target,
 unresolved target identity is missing evidence.
 Other qualified rules may use narrow semantic effect and scope estimates under Q13 B.

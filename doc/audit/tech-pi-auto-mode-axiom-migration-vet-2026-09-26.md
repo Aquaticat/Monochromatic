@@ -67,6 +67,39 @@ Fingerprint input,
 }
 ```
 
+## Parser-boundary correction
+
+The user rejected the raw-Bash quotation probe:
+these are not reasoning models,
+and the existing parser owns that syntax distinction.
+Withdraw quotation-based quality comparisons for all candidates
+and quarantine mixed aggregates containing code-owned occurrence questions.
+The raw values remain historical observations,
+not grounds for candidate selection or rejection.
+Color controls are interface checks,
+not guard competence.
+Prose-only observations require per-question/input review before reuse.
+Runtime and input-preservation results remain scoped to their original envelopes.
+
+The actual auto-mode `analyzeBashCommand` wrapper,
+shared analyzer,
+and installed `unbash` 4.0.11 distinguished the exact frozen fixture pair:
+no substitution/no `cat` command for the literal,
+substitution plus `cat /work/project/.env` for the expanded case.
+Neither command ran and no model was called.
+The existing shared-analyzer test `src/index.unit.test.ts:89`
+already covers the quotation rule with `date`.
+The [handover correction](../handover/pi-auto-mode-axiom-evaluation.md#parser-boundary-correction)
+retains the probe and scope limits.
+
+Parser-derived syntax is not universal proof of runtime reachability or successful reads.
+The next limited candidate tranche must use explicit code-established facts
+and ask remaining narrow semantic-language relations rather than reconstructing Bash.
+This does not revoke Q13 B's qualified semantic-effect eligibility for validated inspected forms.
+No production change,
+training,
+or `AGENTS.md` edit follows from this correction.
+
 ## Scope and authority
 
 This report supersedes the initial Laya-only audit for current selection work.
@@ -201,8 +234,14 @@ That is a first-party probe packaging failure,
 not model evidence.
 The corrected image's full ledger passed actual baked verification,
 with a failing old-image control and a failing guard-removal test.
-Sequential inference is active as `proc_7f3f`;
-no new probability result has been inspected yet.
+Corrected inference completed as `proc_7f3f`,
+with fourteen passing input/freshness/resource observations and no OOM kills.
+No trial met five seconds.
+Multilingual inference took 73.18491603527218 to 76.15995599981397 seconds;
+typed-decisions took 146.92294748313725 to 174.76137589570135 seconds;
+English grant trials took 148.34310482395813 to 179.10930500691757 seconds.
+The qualification record retains all values and their withdrawn quotation-quality interpretation.
+No corrected-input timing or general candidate rejection follows.
 This is candidate evaluation,
 not production implementation.
 
@@ -298,8 +337,9 @@ The topic control distinguished package evidence from a recipe.
 The literal and executed substitution cases both returned 0.66015625 despite opposite read references.
 Cache-grant relevance was 0.69921875 against false and 0.70703125 against true.
 Transfer-grant relevance was 0.66796875 against false and 0.6640625 against true.
-The returned scalar alone does not separate the quoted pair in this batch,
-and transfer relevance ordered the contrast opposite to intended claim support.
+The quoted-pair quality interpretation is withdrawn because its distinction belongs to the parser.
+The historical transfer relevance ordering is opposite to its independently authored claim references,
+but remains an unqualified feature observation rather than a probability comparison.
 These are feature observations,
 not calibrated error rates or an upstream relevance-contract failure.
 Gate:
@@ -437,7 +477,8 @@ A later frozen development batch completed 15 native requests,
 retaining 153 model estimates and 27 code-resolved empty-grant values.
 Three ambiguous references were excluded,
 leaving 150 scored estimates with 24 positive and 126 negative references.
-The model-only mean squared error was 0.010025333333333322.
+The historical mixed model-only mean squared error was 0.010025333333333322.
+Its candidate-quality interpretation is withdrawn because code-owned questions were included.
 These are development observations,
 not calibration or representative workload accuracy.
 No final action was requested or executed.
@@ -456,8 +497,9 @@ The literal single-quoted command-substitution case received 0.86 for a read att
 The actual substitution counterpart received 0.95 against true.
 Official GNU Bash quoting documentation and a harmless printf-only control verified the syntactic distinction
 without executing a corpus command or accessing a fixture data file.
-This is not a measured production interruption or proof of systematic miscalibration.
+Using this parser-owned distinction as a model-quality counterexample was incorrect.
 The actual static routing/proof path was not exercised by this model-only batch.
+A subsequent actual-parser probe verified the positive and negative syntax-extraction cases.
 
 Joint permission comparisons returned 0.37 versus 0.98 for cache removal
 and 0.24 versus 0.96 for protected transfer,
@@ -660,6 +702,58 @@ No vendor contact,
 account modification,
 private upload,
 or new hosted hostile-content batch occurred in this audit phase.
+
+## Jev service qualification follow-up
+
+The [current Jev qualification record](../planning/pi-auto-mode-jev-qualification.md)
+records new metadata and operational sources,
+not a recommendation.
+Four read-only HTTP metadata requests passed as `proc_13bf`,
+with zero model calls and no account mutations.
+Both public and authenticated no-training catalogues included `typesafe/jev-1.13.0`,
+priced at `0.042e-6` per input token and zero per output token.
+The key-status endpoint reported `devPlan: none`
+and did not expose retention settings.
+Catalogue pricing excludes unverified account billing mode and applicable top-up fees.
+
+The health endpoint self-reported `v0.0.0-85d00d8`.
+GitHub identifies its commit as the immediate child of the previously audited source revision,
+with support/UI-only changed paths.
+This is source-version corroboration,
+not independent deployed-binary or model attestation.
+
+Actual organization settings remain unverified:
+BrowserOS connection failed,
+Chrome auto-connect found no debug-enabled instance,
+and the available named profile reached the gateway login page.
+The browser was closed without submitting authentication or changing settings.
+Todo #20 tracks that gate.
+Accepted necessity-based retention is unchanged;
+no ZDR or fixed-deletion requirement is added.
+
+Primary company and investor sources identify Polar Lights LLC as gateway operator
+and corroborate TypeSafe's announced $40 million seed round led by DCVC.
+Neither funding nor public trust-center claims establish operational safety.
+Official monitor pages expose a ninety-day window,
+while quarterly incident archives were followed across the requested year.
+TypeSafe reported API latency/instability incidents and a separate console incident.
+Empty incident archive pages do not prove zero downtime or complete reporting.
+The gateway's PAYG terms offer no standard SLA,
+and its scheduled content-filter restriction remains an availability concern,
+not an observed suspension.
+Workforce history,
+representative customer complaints,
+and complete breach history remain low-signal in the bounded source set.
+No private security report was accessed or vendor contacted.
+
+A subsequent shared-control probe completed eighteen requests and sixty-six model estimates
+with policy freshness and per-assessment five-second checks passing.
+Reported usage was 194,856 input and 1,398 output tokens;
+observed durations were 262.319438 to 741.3148530000001 milliseconds.
+The quotation estimates are retained as historical outputs of a wrongly delegated task,
+not candidate-quality evidence.
+The qualification record retains the frozen inputs and result hashes.
+No corrected-input performance or calibration claim follows.
 
 ## Authorization host evidence
 

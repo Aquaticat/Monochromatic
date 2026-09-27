@@ -12,6 +12,14 @@ A public synthetic probe returned identical relevance values for literal and exe
 despite opposite independently authored read-attempt references.
 It also ranked a cross-clause transfer grant above a correctly bound transfer grant.
 These observations do not violate the documented relevance contract.
+The user subsequently corrected the task boundary:
+Bash quotation interpretation belongs to our existing parser,
+not these models.
+The quotation-based candidate-quality comparison is withdrawn.
+The [parser verification](../handover/pi-auto-mode-axiom-evaluation.md#parser-boundary-correction)
+records the actual incumbent's positive and negative outputs.
+Historical scores remain raw observations;
+the relevance-versus-probability contract distinction does not depend on them.
 
 ## Contract trace and cause
 

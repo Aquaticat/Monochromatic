@@ -18,11 +18,32 @@ not general axiom quality.
 The FP32 and BF16 protected-transfer observations remain separate single measurements.
 No coding-plan provider may judge or supply fallback.
 
+## Parser-boundary correction
+
+The user rejected the raw-Bash quotation task:
+these are not reasoning models,
+and the repository already has a Bash parser.
+The actual incumbent parser distinguishes the frozen literal/substitution pair;
+see the [verified correction](../handover/pi-auto-mode-axiom-evaluation.md#parser-boundary-correction).
+Withdraw quotation-based model-quality comparisons in this record.
+Their raw outputs remain historical observations,
+not grounds for selecting or rejecting Laya.
+Color controls check the tested interface,
+not guard competence.
+Timing and forward-input evidence remain scoped to the original probe envelopes.
+Semantic grant observations require their own field/input review before reuse.
+
+The next tranche must consume explicit code-established facts
+and test genuinely remaining semantic relations,
+not ask a model to reconstruct Bash execution.
+Q13 B remains accepted;
+this correction is not universal code-proof-only script admission.
+
 ## Questions the remaining work must answer
 
 - Does the tested complete-policy Noul representation respond to positive/negative evidence,
   or mainly to option labels?
-- How does that behavior carry to an independently labelled executable-versus-quoted contrast?
+- Which remaining semantic relations need estimates after the incumbent parser supplies its facts?
 - Which published Laya checkpoints and runtimes can preserve the required policy,
   and what is known versus untested about their supported context and platform?
 - What source-supported fine-tuning paths exist,
@@ -225,7 +246,61 @@ Corrected process `proc_7f3f` passed actual baked-image verification with fiftee
 and then started sequential inference after the repeat batch finished.
 Its corrected image is
 `eaf3c7508954f11c879bbc7162c81d9504aaa9e0c9356c4e21a1f21361c70cca`.
-The inference result is pending inspection.
+Process `proc_7f3f` completed and its result was inspected.
+Scratch commit `570fb5b` retains `result-ledger-fixed.json`,
+SHA-256 `8ef510d6437cb0817db2cb532d8285364540fd5278a4453aa1f661e0ce2425cc`.
+All fourteen trials exited 0 without an OOM kill,
+retained the required input,
+and passed freshness checks.
+None completed inference within five seconds.
+
+Multilingual's default-label observations were:
+
+- Blue control:
+  0.9318 against true.
+- Orange control:
+  0.7876 against false.
+- Literal substitution:
+  0.7820 against false.
+- Executed substitution:
+  0.7833 against true.
+
+Its forward inputs contained 12,040 to 12,239 tokens.
+Inference took 73.18491603527218 to 76.15995599981397 seconds,
+with 4,680,527,872 bytes maximum container memory.
+These are single-cell observations,
+not a replicated speed ratio or a qualified long-context profile.
+
+Typed-decisions returned 0.5822/0.5429 for blue/orange
+and 0.5899/0.5906 for literal/executed substitution.
+Forward inputs contained 12,574 to 12,782 tokens;
+inference took 146.92294748313725 to 174.76137589570135 seconds,
+with 5,259,608,064 bytes maximum memory.
+Its published specialist calibration is not adopted for guard use.
+
+The English cache-grant pair returned:
+
+- Default:
+  cross-clause false reference 0.5285;
+  joint-scope true reference 0.5427.
+- False=A,
+  true=B:
+  0.5285 and 0.5305 respectively.
+- False=B,
+  true=A:
+  0.5339 for both.
+
+That last tie is at the public four-decimal interface,
+not evidence of identical hidden logits.
+These grant trials contained 12,832 to 12,835 forward tokens
+and took 148.34310482395813 to 179.10930500691757 seconds,
+with 5,284,241,408 bytes maximum memory.
+No mapping or threshold is selected from them.
+These tests do not cover every effect,
+request/prohibition axis,
+checkpoint framing,
+binary-choice formulation,
+or accelerated runtime.
 Every checkpoint remains explicitly selected and digest-checked,
 with complete policy and the original resource limits.
 No training,

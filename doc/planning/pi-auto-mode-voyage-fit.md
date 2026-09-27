@@ -10,6 +10,18 @@ or auxiliary role is selected.
 The old final-verdict document-ranking pilot remains withdrawn as quality evidence.
 Do not rerun that task formulation or relabel relevance as permission.
 
+## Parser-boundary correction
+
+The user rejected raw-Bash quotation interpretation as model work:
+the existing parser already establishes that distinction.
+Withdraw the quotation-pair comparison as candidate-quality evidence.
+Its equal returned scalars remain historical raw-feature observations,
+not grounds for accepting or rejecting Voyage in the corrected role.
+Mixed-input semantic fields require per-question/input review before reuse.
+The published distinction between relevance and truth probability is independent of that mistaken test;
+it remains an interface fact.
+See the [actual parser verification](../handover/pi-auto-mode-axiom-evaluation.md#parser-boundary-correction).
+
 ## Published interface evidence
 
 The [current model overview](https://www.mongodb.com/docs/voyageai/models/)
@@ -208,7 +220,8 @@ The read-attempt group returned:
   0.66015625,
   reference true.
 
-The returned score alone cannot distinguish the quoted and executed cases in this batch.
+Those historical returned scalars are equal,
+but the parser owns this distinction and the model-quality comparison is withdrawn.
 A scalar-only mapping could assign uncertainty to both;
 this is not proof that every future classifier or Voyage representation is unusable.
 
