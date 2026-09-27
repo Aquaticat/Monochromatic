@@ -201,7 +201,7 @@ await describe({
     it({
       name: 'TELLS THE JUDGE WHEN THE STANDING CANNOT SHIP, naming the deterministic refusal (class '
         + 'fifty-six, one entry\'s slice 33, 2026-09-18): a gate that kept an untranslated pronoun over a valid '
-        + 'consolidation was never told the text it kept would stop the entry; and says nothing of it when '
+        + 'consolidation was never told the text it kept could not ship; and says nothing of it when '
         + 'the standing is eligible',
       fn: async () => {
         /**

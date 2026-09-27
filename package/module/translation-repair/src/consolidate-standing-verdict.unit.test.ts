@@ -148,8 +148,8 @@ await describe({
     },),
 
     it({
-      name: 'WITHHOLDS BOTH where the incumbent fails the gate too, naming both refusals, so the '
-        + 'rule of 2026-09-04 still stops the entry',
+      name: 'WITHHOLDS BOTH where the incumbent fails the gate too, naming both refusals, so neither '
+        + 'text is offered to the slate and no stand-in is claimed',
       fn: async () => {
         const { l, warnings, } = capturing();
         /**
