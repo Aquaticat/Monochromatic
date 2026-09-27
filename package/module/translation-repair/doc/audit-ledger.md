@@ -815,13 +815,48 @@ Fix: record the per-slice text shipped at publish and verify against it.
 
 ### F-3: no floor refuses a Han name or line left in English prose
 
-Status: open.
+Status: fixed; the floor in `translate-han-residue.ts`, the identity flag in `identity-han-items.ts`.
 shihai4h2 shipped "Wrong,\n小柿子." (the archive has "Wrong.");
 the identity context shows the archive's untranslated Han alias as the English declaration.
 Fix: a Han-residue floor outside comments,
 code,
 destinations and attributes, excusing a parenthesized gloss;
 mark a Han-only TRANSLATION value as untranslated.
+
+The floor refuses a run of Han (with any kana and 々 inside it) in the candidate's prose,
+read outside `protectedRanges` with comments and title-floor-accepted titles cut.
+It excuses a parenthesized gloss, a kana line with no Latin letter (a Japanese quotation kept beside its English),
+and a run the original and the page both carry.
+THE FLOOR IS RELATIVE TO THE PAGE, chosen so the archive's deliberate keeps (the 澪 a name is written with,
+Japanese lyric lines, a hidden line inside an element) do not fail their own slices;
+it refuses Han a candidate adds, not Han the archive already carries from the original.
+It runs with the untranslated floor in both the readable and unparseable branches (the F-5 lesson),
+and a copied original is named once, by the untranslated floor.
+
+Measured with a prototype over the census (`~/temp/agent/audit-floor-replay/han-residue-census.mjs`,
+`han-residue-prototype.mjs`), then with the built floor (`han-residue-port.mjs`), no per-slice delta:
+of 1,264 archive slices 14 carry Han in prose and 4 are refused;
+of 3,975 would-ship slices 98 carry Han and 68 are refused.
+The four archive refusals are one entry's quotations the archive left untranslated
+and respelt in traditional characters where the original writes simplified (一抹陽光 against 一抹阳光),
+so on those slices the incumbent cannot stand in and a lane must translate them: chosen, not overlooked.
+Every would-ship refusal matches a house rule:
+handles left in Han (小柿子, 锦心, 雨狸, 洁澄天奏 and others), terms (大证, 贴贴, 药娘),
+titles, a corner-bracketed word, and the Chinese half of a pair the original gives in both languages.
+
+Two mistakes surfaced on the way, both fixed.
+A bracketed title carrying both Han and Latin letters (《舞萌DX》) fell between the Han title floor,
+which reads Han-only titles, and the Latin title floor, which reads Latin-only ones,
+each header naming the other;
+a pin asserted a bare 《Nyan物语》 in English prose valid.
+`withoutGlossedTitles` now cuts every glossed title carrying Han,
+so a glossed mixed title passes as a glossed Han-only title does and a bare one is refused by the residue floor.
+And the first port of the floor iterated a line by code point against flags indexed by UTF-16 unit,
+which would have shifted every flag after a character outside the basic plane;
+lint caught the spread, and a guard now pins the alignment.
+
+The identity line now names each TRANSLATION item written in Han alone as still in Han and no English rendering,
+item by item, since the shihai4h value mixes Han items with a Latin one (`小柿子, 猫小泪, u3`).
 
 ### F-4: the suicide floor refuses ordinary English and its census counted entries, not slices
 
@@ -1046,7 +1081,7 @@ and 8 have no rendering of the source heading 七句破题.
 
 ### A2: a Han handle left in English prose (with F-3)
 
-Status: open.
+Status: fixed with F-3; the shape is refused at validation, and the identity line no longer offers the Han as English.
 shihai4h1 and shihai4h2 shipped "Wrong,\n小柿子."
 
 ### A3: CRLF from a model wording ships inside an LF page
