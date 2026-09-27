@@ -881,6 +881,49 @@ await describe({
       },
     },),
     it({
+      name: 'VERIFIES an artifact whose rows the rebuild reproduces though its recorded identity differs, '
+        + 'since the identity also hashes the declared names as the run\'s build worded them (ledger A12: '
+        + 'every settled artifact read REFUSED)',
+      fn: async () => {
+        await using corpus = await makeCorpus();
+        await using archive = await makeArchive();
+
+        /**
+         The run's carve of the pair the entry id resolves to.
+         */
+        const prepared = prepareDocumentPair({
+          sourceText: SOURCE_PAGE,
+          targetText: TARGET_PAGE,
+        },);
+        await writeArtifact({
+          archiveDir: archive.archiveDir,
+          runSet: 'first',
+          // The same carve, its declared names worded as an older build
+          // worded them.
+          prepared: {
+            ...prepared,
+            identityContext: `${prepared.identityContext ?? ''}\n- an older wording of the cat's names`,
+          },
+          corpusSha: corpus.commitSha,
+          entryId: ENTRY_ID,
+        },);
+
+        /**
+         Artifact read against today's rebuild of that carve.
+         */
+        const reading = await readArtifactSubjects({
+          archiveDir: archive.archiveDir,
+          runSetDir: 'first',
+          runSet: 'first',
+          artifactFile: `${ENTRY_ID}.json`,
+          cloneDir: corpus.cloneDir,
+        },);
+
+        expect(reading.verification
+          .kind,).toBe('verified',);
+      },
+    },),
+    it({
       name:
         'VERIFIES an artifact built over a roster-paired preparation, by rebuilding with the recipe it '
         + 'records: the bare carve disagrees with it, and until the rebuild every such artifact read '
