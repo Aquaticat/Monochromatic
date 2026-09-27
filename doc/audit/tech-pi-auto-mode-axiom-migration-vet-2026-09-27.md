@@ -314,8 +314,16 @@ free-threaded,
 newer-glibc,
 other-architecture,
 and older-specific-ABI controls did not.
-Full additional release metadata identified matching `ml-dtypes` and `flatbuffers` wheel filenames,
-but those artifacts have not been downloaded.
+Full additional release metadata identified matching `ml-dtypes` and `flatbuffers` wheel filenames.
+`proc_d7e6` subsequently downloaded both as inert artifacts with matching primary sizes and hashes.
+`proc_51be` verified ML dtypes' signed publication attribution against its exact source/workflow/tag.
+Its predicate is PyPI publication,
+not SLSA build provenance.
+A changed-signature harness initially failed on an incorrect diagnostic-text assumption;
+the preserved GitHub CLI rejection was `Error: verifying with issuer "sigstore.dev"`.
+Repaired paired controls `proc_9927` passed original/changed/original statuses zero/one/zero,
+with only one signature byte changed.
+This does not identify the internal rejection stage or qualify native execution.
 This closes tag matching only,
 not imports,
 native linkage,
@@ -326,6 +334,14 @@ and found self-reported short source `f2c39fe` and Release build-description str
 The retained byte occurrences are not authenticated attribution or observed runtime return values.
 Public source-build documentation points to the inspected Azure pipeline tree;
 its Linux and 1ES template chain remains under review.
+The inspected Linux CPU recipe uses an Azure-hosted base tag and authenticated package feeds.
+An initial anonymous manifest lookup returned a registry challenge;
+`proc_43ea` then followed the documented anonymous bearer flow and the token endpoint returned
+401 `UNAUTHORIZED`.
+No user credentials,
+refresh-token request,
+image-layer download,
+or binary execution occurred.
 These incomplete routes do not prove all build provenance unavailable.
 
 The pinned ONNX Script compatibility facade resolves `check_model` to a documented no-op.

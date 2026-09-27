@@ -841,6 +841,32 @@ and mpmath 1.3.0 are present;
 and `flatbuffers` 25.12.19.
 Neither package is selected or installed.
 Private checkpoint `81b50b0` retains those negative-control/transitive metadata results.
+`proc_d7e6` subsequently downloaded the tag-matched ML dtypes and flatbuffers wheels as inert files,
+with matching primary-metadata sizes and SHA-256 values.
+ML dtypes publication metadata returned HTTP 200;
+flatbuffers returned HTTP 404.
+`proc_51be` verified the ML dtypes publication signature,
+exact workflow/tag identity,
+and source digest `6bc762dd106292e1aa0d5de98d3867d6b642f209`.
+The adapter only re-enveloped existing certificate,
+transparency,
+payload,
+and signature fields for GitHub CLI 2.101.0;
+verification remained in `gh`.
+This is publication attribution,
+not a SLSA build predicate or native-runtime qualification.
+
+Signature-control harness #29 initially failed as `proc_7fdb`:
+`gh` rejected the changed bundle,
+but the harness incorrectly required the word `signature` in its diagnostic.
+The actual diagnostic was `Error: verifying with issuer "sigstore.dev"`.
+Original failure evidence is preserved at private `6415ebd`.
+The repaired harness `8001c47` proves only one signature byte changed
+and brackets it with fresh original-bundle calls.
+`proc_9927` passed original/changed/original statuses zero/one/zero;
+its raw paired results were inspected.
+The generic issuer message does not identify the internal rejection stage.
+The original failing command stopped before combined-wheel preparation or inspection.
 `proc_ae26` used the actual image's packaging 26.3 source,
 hash-checked against five reviewed files,
 under a 128-MiB/one-CPU/ten-second model-free manifest.
@@ -892,6 +918,20 @@ Those bytes are not authenticated build attribution.
 Radius search `search_f84e73a53a2e7063537376f86458e539`
 and the official source-build document supplied no exact-wheel attestation;
 this is not proof that all provenance routes are exhausted.
+The subsequently read `templates/py-linux.yml` passes authenticated feed settings into its build container.
+Its CPU Dockerfile and `Dockerfile.manylinux2_28_cpu` both reference the same Azure-hosted base tag.
+`proc_2e52` received a registry 401 challenge;
+`proc_43ea` followed the documented anonymous bearer-token flow and the token endpoint also returned
+401 `UNAUTHORIZED`.
+No user credentials,
+refresh-token request,
+image-layer download,
+or binary execution occurred.
+This blocks anonymous access to that inspected build-image route,
+not every possible public source-build route.
+The export-only path is being considered separately from an ORT consumer:
+PyTorch's non-verification path returns before runtime verification,
+but optional ONNX Script evaluator calls still need review and an actual probe.
 
 Additional clean source clones:
 `ml-dtypes-laya-2026-09-27` at `6bc762dd106292e1aa0d5de98d3867d6b642f209`,

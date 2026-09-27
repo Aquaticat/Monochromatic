@@ -785,7 +785,12 @@ All six inspected wheels matched supported target tags,
 including ONNX's `cp312-abi3` file.
 Full additional release metadata yielded one matching `ml-dtypes` 0.6.0 wheel
 and the `flatbuffers` 25.12.19 pure-Python wheel.
-Those additional wheels have not been downloaded.
+`proc_d7e6` subsequently downloaded those additional wheels as inert inspection artifacts,
+with matching primary hashes.
+ML dtypes publication attribution verified in `proc_51be`;
+paired original/changed-signature/original controls passed in `proc_9927` after correcting a harness diagnostic assumption.
+That publication predicate is not SLSA build provenance.
+No candidate package was installed or imported.
 Tag matching does not prove imports,
 native linkage,
 or model execution.
