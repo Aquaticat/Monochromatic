@@ -28,6 +28,11 @@ import {
   providerServing,
   reachOf,
   type RosterModelId,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_OPENROUTER_ONLY_CHECKER,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -44,9 +49,9 @@ const PROVIDERS = [
  Checkers the benchmark measured calling unchanged text fixed or real fixes
  not fixed, far below every seated checker.
  */
-const MEASURED_OUT: readonly string[] = [
-  'gemma-4-26b-a4b-it',
-  'google.gemma-4-e2b',
+const MEASURED_OUT: readonly RosterModelId[] = [
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_BEDROCK_ONLY_TEXT,
 ];
 
 /**
@@ -174,9 +179,9 @@ await describe({
           openrouter: false,
         };
         expect(judgeSeatsFor({ dry, },).checkers,).toEqual([
-          'hf:Qwen/Qwen3.8-27B',
-          'xiaomi/mimo-v2.6-flash',
-          'hf:moonshotai/Kimi-K3',
+          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          SEAT_OPENROUTER_ONLY_CHECKER,
+          SEAT_SYNTHETIC_VISION_WITHHELD,
         ],);
       },
     },),

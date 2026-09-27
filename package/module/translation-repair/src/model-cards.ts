@@ -410,6 +410,15 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       maxOutputLength: 131_072,
       promptUsdPerMillion: 0.14,
       completionUsdPerMillion: 0.28,
+      // DEEPINFRA IS THE ONLY ENDPOINT THE RUN CAN REACH, so no preference is
+      // named. Of the two endpoints listed on 2026-09-27 only DeepInfra is on
+      // OpenRouter's zero-data-retention list (`/api/v1/endpoints/zdr`), and
+      // every request carries `zdr: true`; Xiaomi's own endpoint is not, so
+      // `order: ['xiaomi']` changed nothing (17 of 17 calls still DeepInfra).
+      // Through the run client the 170 checker sheets answered at 3,859 ms
+      // median and 22,406 ms at the ninetieth percentile, one stream cut
+      // short; by raw fetch without `zdr` they answered at 349 and 809 ms,
+      // which is the non-retaining route this pipeline does not use.
       ignoredEndpoints: [],
       preferredEndpoints: [],
       rawCharsPerToken: 'unmeasured',
@@ -417,10 +426,11 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     // No completed-call distribution of its own yet.
     completionCap: 'pooled-p99',
     // Owner, 2026-09-27: approved on OpenRouter with Mimo v2.6 Pro. Checks
-    // since the checker benchmark that day (82 of 85 unchanged texts called
-    // not fixed, 79 of 85 fixes called fixed, median 349 ms); Pro read 81
-    // and 76 at ten times the latency, sharing 8 of Flash's 9 errors, so
-    // Pro holds no card. Every other role waits for its own measurement.
+    // since the checker benchmark that day: through the run client 81 of 85
+    // unchanged texts called not fixed and 80 of 85 fixes called fixed (82
+    // and 79 by raw fetch). Pro read 81 and 76 by raw fetch at ten times
+    // Flash's latency there, sharing 8 of Flash's 9 errors, so Pro holds no
+    // card. Every other role waits for its own measurement.
     holds: [
       'judge-unmeasured',
       'writer-unmeasured',

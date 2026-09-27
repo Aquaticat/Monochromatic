@@ -389,12 +389,16 @@ export const RUN_SELECT_JUDGES: readonly RosterModelId[] = [
  shown once against the patch every heard checker had called fixed and once
  against the unchanged archive text, where not fixed is certain. Ranked on
  that certain half first, then on the fixes, unusable answers and latency:
- Qwen3.8-27B 82 and 80, Mimo v2.6 Flash 82 and 79, Kimi-K3 78 and 81,
- `google.gemma-4-31b` 76 and 82, Mercury 2.5 73 and 76 with 11 unusable.
- The fix half is circular for Qwen3.8-27B and Kimi-K3, whose ballots defined
- those cases, and independent for the other three. Differences of a few
- cases are inside the noise of 85; the order decides only which served
- seats fill the bench.
+ Qwen3.8-27B 82 and 80, Mimo v2.6 Flash 81 and 80 through the run client
+ (its only zero-retention endpoint, 3.9 s median, 22 s at the ninetieth
+ percentile), Kimi-K3 78 and 81, `google.gemma-4-31b` 76 and 82, Mercury
+ 2.5 73 and 76 with 11 unusable.
+ The fix half is circular for every model that sat on those runs' checker
+ benches, Qwen3.8-27B, Kimi-K3, `gemma-4-26b-a4b-it` and `google.gemma-4-e2b`,
+ whose unanimous ballots defined those cases, and independent for the other
+ three; the certain half is independent for all. Differences of a few cases
+ are inside the noise of 85; the order decides only which served seats fill
+ the bench.
 
  MEASURED OUT OF THE CHECKER ROLE ON THAT BENCHMARK, and only that role:
  `gemma-4-26b-a4b-it` called 40 of 85 unchanged texts fixed, and
