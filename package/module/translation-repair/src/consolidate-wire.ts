@@ -17,6 +17,7 @@ import { PAGE_APPARATUS_IS_KEPT, } from './page-apparatus-clause.ts';
 import {
   TRANSLATE_FRONT_MATTER_RULE,
   TRANSLATE_LINE_STRUCTURE_RULE,
+  TRANSLATE_PICTURE_SCOPE_RULE,
 } from './translate-wire.ts';
 import { CITED_REFERENCE_CANDIDATE_RULE, } from './cited-reference-rule.ts';
 
@@ -437,6 +438,7 @@ export function buildConsolidateMessages(
       : 'A prior consolidation strategy failed to replace unendorsed standing wording. Use its slate, ballots, gate ballots, terminal, and findings as failed-strategy evidence. Produce a materially different solution rather than repeating rejected wording.'),
     (subject.syntax === 'front-matter' ? TRANSLATE_FRONT_MATTER_RULE : ''),
     (subject.lineStructured ? TRANSLATE_LINE_STRUCTURE_RULE : ''),
+    (((subject.pictureContext ?? '') === '') ? '' : TRANSLATE_PICTURE_SCOPE_RULE),
     renderedBreakPrompt({
       sourceText: subject.sourceText,
       archiveText: subject.incumbentText,

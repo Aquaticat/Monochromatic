@@ -33,6 +33,7 @@ import {
   type TranslateStageResult,
 } from './translate-stage-result.ts';
 import { citedReferenceEvidence, } from './cited-reference-rule.ts';
+import { JUDGE_PICTURE_SCOPE_RULE, } from './translate-wire.ts';
 
 //region Translate judge
 
@@ -419,7 +420,9 @@ export async function judgeTranslateSlate(
         ? []
         : [
           {
-            label: 'WHAT THE PICTURES HERE SAY, transcribed by two readers that agreed',
+            // The scope rides in the label (ledger S16, H7): read with no rule,
+            // a neighbouring picture's transcript looked like faithful content.
+            label: `WHAT THE PICTURES HERE SAY, transcribed by two readers that agreed; ${JUDGE_PICTURE_SCOPE_RULE}`,
             text: pictureContext,
           },
         ]),

@@ -539,6 +539,13 @@ await describe({
             return request.content.includes(CORROBORATED_READING_TEXT,);
           },),
         ).toBe(true,);
+        // Ledger H7: the judge read the transcript with no scope rule, so a
+        // candidate rendering a neighbouring picture's words looked faithful.
+        expect(
+          sent.some(function carriesScope(request,): boolean {
+            return request.content.includes('it is not part of the ORIGINAL passage: a candidate rendering',);
+          },),
+        ).toBe(true,);
       },
     },),
 

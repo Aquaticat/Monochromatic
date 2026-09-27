@@ -160,6 +160,25 @@ export const TRANSLATE_PICTURE_SCOPE_RULE: string = 'WHAT THE PICTURES HERE SAY 
   + 'the page twice.';
 
 /**
+ The same scope for a judge, spliced into the label of the pictures evidence
+ on the translate slate and the consolidation slate (ledger S16, H7).
+
+ WRITTEN FOR A JUDGE: the writer's rule tells a producer what to render; a
+ judge reading the transcript with no rule saw a candidate rendering a
+ neighbouring picture's words as faithful, and one leaving a picture component
+ bare as having dropped them.
+
+ @example
+ ```ts
+ const label = `WHAT THE PICTURES HERE SAY; ${JUDGE_PICTURE_SCOPE_RULE}`;
+ ```
+ */
+export const JUDGE_PICTURE_SCOPE_RULE: string = 'it is not part of the ORIGINAL passage: a candidate '
+  + 'rendering a picture\'s words the passage does not write out and the existing '
+  + 'translation of this passage does not carry has added them, and a candidate keeping a picture component exactly '
+  + 'as the ORIGINAL has it has dropped nothing.';
+
+/**
  Instruction for visible YAML page metadata.
  */
 export const TRANSLATE_FRONT_MATTER_RULE: string = 'The passage is complete YAML front matter, including its '

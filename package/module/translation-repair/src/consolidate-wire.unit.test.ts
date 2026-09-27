@@ -285,6 +285,15 @@ await describe({
       },
     },),
     it({
+      name: 'TELLS the writer what the pictures block is for, and only when it shows one (ledger S16: the scope '
+        + 'rule reached the translate writer alone)',
+      fn: async () => {
+        expect(sheetFor({ subject: { ...bare, pictureContext: 'a photograph of a tabby on a fence', }, },),)
+          .toContain('WHAT THE PICTURES HERE SAY transcribes the pictures in and beside this passage',);
+        expect(sheetFor({ subject: bare, },).includes('WHAT THE PICTURES HERE SAY transcribes',),).toBe(false,);
+      },
+    },),
+    it({
       name: 'SHOWS the pages the original cites with the candidate rule between the candidates and the '
         + 'findings (class thirty-six, 2026-09-16)',
       fn: async () => {
