@@ -1292,11 +1292,28 @@ It now lists with file types and throws `DeclinedEntriesUnreadableError` on ever
 
 ### A10: TALLY `pageChanged` reads before typography
 
-Status: open.
+Status: fixed in `e0354d62d` (guard `48c573f20`).
+The TALLY now reads each slice through `wouldShipTextPerSlice`, as the publisher does.
+Replayed over the stored artifacts: hulicaijia31 34 to 31 and hulicaijia20 41 to 40, the audit's page counts;
+TianqiChen66610 and TianqiChen66614 unchanged.
+The test fixture now states `archiveText` and `pageAssembly`, which the contract requires.
 
 ### A11: logging gaps
 
-Status: open.
+Status: fixed.
+The slice cache persists atomically and warns on a file that does not parse (`972682353`, guard `03af65966`).
+The attempt store warns on each reset and each count read as zero, and writes atomically (`b9d5c8009`, guard `e68733836`).
+`src/log-context.ts` (`907805225`) carries an `AsyncLocalStorage` context:
+the pass runs each entry under its name and pipeline,
+and the repair, translate, contest and consolidation drivers run each slice under its lane and index (`99c35e526`).
+Every module root logger reads it (`842c1feff`),
+the repair and translate lane loggers add the slice to every line,
+and ledger rounds record it and are written atomically (`fdcd003ef`).
+Guards: three calls queued behind one `p-limit` slot each write a SPEND line naming their own slice (`d0e912a0c`),
+so the provider queue keeps the context;
+the lanes' lines at overlap 2 (`d14346bb4`); a ledger round's context (`2e5d2ab38`);
+and a source scan that fails on a plain module root (`07151e084`), which finds all 41 on the tree before `842c1feff`.
+The consolidation driver's slice body was indented against its nesting (the X9 shape) and is now indented to it.
 Client-layer loggers carry no entry
 (3279 of 5914 lines of TianqiChen66616.log, SPEND lines among them);
 the repair and translate lanes' lines carry no slice under overlap;
@@ -1874,6 +1891,10 @@ and once during S12 (`rg --count <file> ; rg --line-number <file>`),
 and a foreground `sleep 1 && tail <log>` during #379.
 During A6 a test file was edited while the full suite ran,
 against the rule that nothing the suite reads changes until it finishes.
+Twice more during A11 (`node --print ... ; ls`, and `rg <roots> | rg --invert-match ; rg --count`).
+Also during A11, a wrap script matched the first line of a multi-line signature as its end;
+the diff showed it before anything was committed, and the four files were restored from HEAD.
+Prevention for scripted rewrites: print each located boundary and read the diff before lint or commit.
 A related shape, `<test A> | rg --count FAIL || <test B> | rg --count FAIL`, never ran B when A went red (S10);
 and `mise run --cd <package> build` once, against CM5.
 The first `;` one also hid which of two files failed, since both counts printed as one number.
