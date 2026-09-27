@@ -4539,9 +4539,16 @@ Built as `5bda732de`.
     (guard red first, fix, suite),
     then the running pass is killed and relaunched;
     a read never reports an "observation not built" or "not fixed" for a translation.
-    Where no general rule reaches the sentence,
-    a phrasing-glossary entry keyed on the source phrase, with the wrong form refused, is the fix
-    (class one hundred eighty-three is the pattern).
+    The fix is general:
+    a sentence-level error (a moved subject, a calque, a grammar slip) takes a rule on every sheet
+    (`english-usage-policy.ts` through `house-policy.ts`),
+    and the glossaries hold dictionary terms only:
+    words, set phrases, names and the community's vocabulary,
+    never a fragment of one sentence
+    (owner, 2026-09-27: "'kigurumi的记忆结束' - this isn't really a dictionary keyword though?").
+    A glossary word refuses only forms that are wrong wherever the word stands;
+    a form that is right for the same word in another context
+    (交往 of a romance, 喘不过气 after a run) goes in the why, not the refusals.
     The owner had to say this twice on 2026-09-26 and 2026-09-27
     (the TianqiChen66614 kigurumi quote was reported unbuilt).
     The rule is deliberately not in the root `AGENTS.md`.
@@ -4852,14 +4859,26 @@ each read off the pass log and the shipped page:
     spread-out spelling (`community-glossary.ts`, guard `cb8450ebb`, fix `2a0f947b5`, suite 1,169 PASS,
     0 FAIL); class one hundred eighty-three built after the owner's "Always fix and re-launch": the
     kigurumi quote's second clause "they will end with the memories of kigurumi" where the source's
-    subject is 我 (the archive also reads "they"), seeded in `rendering-glossary-phrasing.ts` with "they
-    will end with" refused (guard `42b937ce6`, fix `730d11579`); recorded under
-    "## TianqiChen66614 read".
+    subject is 我 (the archive also reads "they"), first seeded as a phrasing-glossary entry (guard
+    `42b937ce6`, fix `730d11579`); recorded under "## TianqiChen66614 read".
+    GLOSSARY AUDIT (owner 2026-09-27: "'kigurumi的记忆结束' - this isn't really a dictionary keyword
+    though?" and "Also check if other items in the glossary have the same problems and fix them too."):
+    twenty-three sentence-keyed entries removed and their lessons made five rules on every sheet
+    (`english-usage-policy.ts`: kept subject, idiomatic English, grammatical English, credit "by", game
+    jargon); 交往, 喘不过气, 密密麻麻, 营救 and 三剑客 refuse nothing, the context in the why; 抢救 seeded
+    (guard `1bd589eb2`, fix `5860bc0b1`); recorded in the planning doc under "Glossary audit and
+    TianqiChen66616 read".
     TIANQICHEN66615 (`.frozen-dist-2a0f947b5`) killed about 9 min in for class one hundred eighty-three.
-    TIANQICHEN66616 RUNNING on `.frozen-dist-730d11579` (scope `pass-TianqiChen66616`, pid 1166090, waiter
-    `wait-TianqiChen66616.mjs`): read the closet sentence ("outed", the cause kept) and the kigurumi quote
-    ("I will end with memories of kigurumi") first, then the robot line, the hormone sentences and the
-    closing punctuation, then the second quote once and classes 160 to 181 holding.
+    TIANQICHEN66616 READ (`.frozen-dist-730d11579`): SETTLED in 17.1 min, 24 slices; classes one hundred
+    eighty-two ("repeatedly blocked because she was outed") and eighty-three ("I will end with my memories
+    of kigurumi when I leave") live; class one hundred eighty-four: 变娃娃 as "in this game of becoming a
+    doll" and 被她治愈 as "those she had healed", both seeded as fandom words in
+    `community-glossary-fandom.ts` (guard `644f23cf5`, fix `06a2c5c05`, seeds pin `6a6cd1a84`).
+    TIANQICHEN66617 (`.frozen-dist-5860bc0b1`) stopped a few minutes in for class one hundred eighty-four.
+    TIANQICHEN66618 RUNNING on `.frozen-dist-06a2c5c05` (scope `pass-TianqiChen66618`, pid 1261036, waiter
+    `wait-TianqiChen66618.mjs`): read 变娃娃 ("in kigurumi", no "game of becoming a doll") and 被她治愈
+    ("comforted", not "healed") first, then the kigurumi quote's subject and the closet sentence under the
+    five general rules, then classes 160 to 183 holding.
     TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built

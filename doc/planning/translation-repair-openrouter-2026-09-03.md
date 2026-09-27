@@ -8082,6 +8082,98 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## Glossary audit and TianqiChen66616 read, 2026-09-27: class one hundred eighty-four
+
+### The owner's correction
+
+The owner answered the class one hundred eighty-three entry:
+"'kigurumi的记忆结束' - this isn't really a dictionary keyword though?"
+and "Also check if other items in the glossary have the same problems and fix them too."
+A glossary holds dictionary terms only:
+words, set phrases, names and community vocabulary.
+A lesson learned from one sentence becomes a general rule on every sheet,
+since a rule reaches the next page's sentence
+and an entry keyed on one sentence's words never fires again.
+
+### What the audit changed
+
+Guard `1bd589eb2` (`glossary-dictionary-terms.unit.test.ts`), red first;
+fix `5860bc0b1`.
+
+Twenty-three rendering-glossary entries were keyed on one sentence and are removed:
+用这种方式, 原因是多方面的, 特例, 陷入癫狂, 环境的问题, 相关医院, 巨大的影响,
+主动提出, ICU 抢救, 代替, 性格非常好, 人生中的第一颗, 留下了巨大的创伤, ，作者,
+被她治愈, 应该会有更好的生活, 遇到的却是, 在隙中, 一切都会有机会, 离开我们的时候,
+所以她是个, the UNO line and kigurumi的记忆结束.
+`rendering-glossary-slang.ts` and the credit, life-event and slang tests went with them.
+
+Their lessons are five rules in `english-usage-policy.ts`,
+which `house-policy.ts` splices into `HOUSE_POLICY_BLOCK` on every sheet:
+
+- `KEPT_SUBJECT_RULE`: a clause keeps the subject the original writes.
+- `IDIOMATIC_ENGLISH_RULE`: the English an English writer would use, never the Chinese construction.
+- `GRAMMATICAL_ENGLISH_RULE`: covers the bare verb after make or let, matching tag questions and point of view.
+- `CREDIT_BY_RULE`: "by", "lyrics by" or "music by" before a maker's name.
+- `GAME_JARGON_RULE`: a game's word takes that game's English term.
+
+Some words refused a form that is right in other contexts.
+Each now refuses nothing and names the condition in its why:
+交往 ("dated" where the passage speaks of romance),
+喘不过气 ("out of breath" after a run),
+密密麻麻 ("densely packed"),
+营救 ("rescue")
+and 三剑客 ("the Three Musketeers").
+抢救 is seeded with "emergency treatment" first.
+The guard asserts the rules on the translate and select sheets,
+the removed keys absent,
+and the context-right forms valid.
+Lint 0/0, types clean.
+The full suite read 1,167 PASS with one FAIL,
+the load-sensitive `lane-contest-stage` grace-window case,
+which passed when run alone (as on `suite-class110.log`).
+
+### TianqiChen66616 read
+
+TianqiChen66616 ran on `.frozen-dist-730d11579`, the class one hundred eighty-three build before the audit.
+It SETTLED in 1,028 s (17.1 min):
+24 slices, 22 differing from the archive, 93 repair issues with 40 accepted.
+
+Classes one hundred eighty-two and eighty-three are live on the page:
+
+- "the dreams she kept hidden in her heart were repeatedly blocked because she was outed."
+- "and I will end with my memories of kigurumi when I leave."
+
+The robot line,
+"hormones",
+closing punctuation inside the quotes
+and the second quote once all hold.
+
+### Class one hundred eighty-four
+
+Two fandom words shipped in their everyday sense:
+
+- 这次的变娃娃，真的要融为一体了 shipped as
+  "in this game of becoming a doll, you really will become one with it".
+  Kigurumi players call putting on the costume 变娃;
+  a Chinese report on the hobby says 偶装玩家会将穿上偶装称作"变娃".
+  English "doll up" means dressing smartly.
+- 被她治愈的人 shipped as "those she had healed",
+  which reads as curing a wound.
+  The removed sentence entry had even offered "she had healed".
+
+Both are dictionary words,
+seeded in `community-glossary-fandom.ts`:
+
+- 变娃 renders as "put on the kigurumi", "in kigurumi" or "became the doll".
+  It refuses "dolled up" and "dolling up".
+- 治愈 renders as "comforted", "cheered up", "lifted the spirits of" or "cured".
+  It refuses nothing, since "healed her heart" is English too.
+
+Guard `644f23cf5` (`community-glossary-kigurumi.unit.test.ts`), red first (three of four),
+fix `06a2c5c05`, lint 0/0, types clean.
+TianqiChen66617 (`.frozen-dist-5860bc0b1`) was stopped a few minutes in when the fix landed.
+TianqiChen66618 launched on `.frozen-dist-06a2c5c05`.
+
 ## TianqiChen66614 read, 2026-09-27: SETTLED, class one hundred eighty-two
 
 TianqiChen66614 ran on `.frozen-dist-768408d1d` and SETTLED at 02:58 UTC in 716 s (11.9 min),
@@ -8128,9 +8220,11 @@ guard `42b937ce6` (`rendering-glossary-subject.unit.test.ts`), red first,
 fix `730d11579`, lint 0/0, types clean.
 TianqiChen66615 was killed about 9 min in and TianqiChen66616 launched on `.frozen-dist-730d11579`.
 The rule now stands in the handover:
-a read never reports a translation as "not built";
-where no general rule reaches the sentence,
-a phrasing-glossary entry with the wrong form refused is the fix.
+a read never reports a translation as "not built".
+The entry itself was wrong in kind and is removed by the glossary audit.
+The owner said a sentence fragment is not a dictionary keyword,
+so the lesson became `KEPT_SUBJECT_RULE` on every sheet
+(see "Glossary audit and TianqiChen66616 read").
 
 ## TianqiChen66613 read, 2026-09-27: SETTLED, classes one hundred eighty and eighty-one
 
