@@ -828,7 +828,8 @@ shifting slice indices by one on archive-authority entries.
 
 ### F-7: the line-structure floor counts HTML comment lines
 
-Status: open.
+Status: fixed; content lines are read outside comments and one line reads "1 line".
+Replayed (`floor-replay.mjs compareLineCounts`): refusals 23 to 21, the two cleared being these slices, none added.
 yulianNyanner s8 and s12 archives refused;
 the message prints "1 lines".
 
