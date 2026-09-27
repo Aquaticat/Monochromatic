@@ -33,5 +33,12 @@ export {
 } from './corpus-run/pass-finished.ts';
 export { openNamespacedCache, } from './corpus-run/slice-cache-namespace.ts';
 export { verifyArtifactMeasurements, } from './corpus-run/artifact-two-lane-corpus-verify.ts';
+export {
+  type HostIdentity,
+  hostIdentity,
+  type HostRead,
+  type StartTicksRead,
+  startTicksOf,
+} from './corpus-run/process-identity.ts';
 
 //endregion Corpus entry barrel
