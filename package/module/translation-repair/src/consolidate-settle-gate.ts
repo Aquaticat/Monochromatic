@@ -5,7 +5,7 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import { gateConsolidatedSlice, } from './consolidate-gate-stage.ts';
 import {
   requireShippableTerminal,
-  shipPastUndecidedGate,
+  shipPastForfeitStanding,
 } from './consolidate-ineligible-standing.ts';
 import type {
   ConsolidationSettlement,
@@ -144,10 +144,10 @@ export async function gateAndShip(
   },);
 
   /**
-   Gate outcome as it ships, the neither verdict over an ineligible
-   standing resolved toward the slate's choice.
+   Gate outcome as it ships: a neither verdict over a forfeit standing, or
+   any preference for an ineligible one, resolved toward the slate's choice.
    */
-  const gated = shipPastUndecidedGate({
+  const gated = shipPastForfeitStanding({
     outcome: gate,
     standingEligible,
     standingFlawedByAll,

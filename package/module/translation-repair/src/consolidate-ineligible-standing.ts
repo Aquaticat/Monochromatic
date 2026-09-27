@@ -80,6 +80,15 @@ export const FLAWED_STANDING_GATE_SHIPS_PROPOSAL_FINDING: string = 'undecided-ga
   + 'flawed, so the proposal the slate judges chose ships';
 
 /**
+ Finding recorded on a settlement whose gate preferred a standing the
+ deterministic rule refused, so the proposal the slate chose shipped (class
+ one hundred eighty-five, TianqiChen66619 slice 9, 2026-09-27).
+ */
+export const GATE_PREFERRED_INELIGIBLE_STANDING_FINDING: string = 'gate-preferred-ineligible-standing: the gate '
+  + 'preferred a standing text that failed the deterministic publication rule, which cannot ship, so the proposal '
+  + 'the slate judges chose ships as the best valid text; the gate ballots name what they held against it';
+
+/**
  Raised when a slice's standing text has failed the deterministic gate and
  the settlement still ends with nothing valid to ship.
  */
@@ -225,8 +234,7 @@ export function requireShippableTerminal(
  text is a conservative default, and with an ineligible standing there is
  nothing conservative to keep: the entry stopped at 4h53m over a text the
  judges had already endorsed. The owner's 2026-09-04 rule prefers the best
- valid proposal; a gate that REFUSES the consolidation by quorum still
- keeps the standing and still stops the slice.
+ valid proposal.
 
  CLASS ONE HUNDRED SEVENTY-SEVEN (TianqiChen66610 slice 13, owner answer
  2026-09-26: "Slate's choice"). The standing was eligible, but every contest
@@ -234,6 +242,17 @@ export function requireShippableTerminal(
  chose a valid proposal, and the gate tied 2 to 2, so the condemned archive
  shipped. A standing the whole contest condemned is no conservative default
  either, so the same indecision ships the slate's choice there too.
+
+ CLASS ONE HUNDRED EIGHTY-FIVE (TianqiChen66619 slice 9, 2026-09-27). The
+ gate preferred an ineligible standing 2 of 4 over the slate's valid choice,
+ and the entry stopped. The class fifty-four note had kept that stop ("a
+ gate that refuses the consolidation by quorum still keeps the standing"),
+ which read the owner's "else fail the slice at once" as covering a gate's
+ preference; the rule fails the slice only where no valid proposal exists,
+ and a standing the deterministic rule refused cannot ship whatever the gate
+ thinks of it. So a gate that prefers an ineligible standing ships the
+ slate's choice too, with the finding naming the preference; an eligible
+ standing the gate prefers still ships as before.
 
  @param outcome - what the gate settled
 
@@ -249,10 +268,10 @@ export function requireShippableTerminal(
 
  @example
  ```ts
- const gated = shipPastUndecidedGate({ outcome, standingEligible, standingFlawedByAll, l, },);
+ const gated = shipPastForfeitStanding({ outcome, standingEligible, standingFlawedByAll, l, },);
  ```
  */
-export function shipPastUndecidedGate(
+export function shipPastForfeitStanding(
   {
     outcome,
     standingEligible,
@@ -265,6 +284,21 @@ export function shipPastUndecidedGate(
     readonly l: Logger;
   },
 ): ConsolidateGateOutcome {
+  if ((outcome.choice === 'standing') && (!standingEligible)) {
+    l.warn(
+      `consolidate gate: preferred an ineligible standing, which cannot ship, so the proposal the slate chose ships (${
+        String(outcome.usable,)
+      } usable ballots)`,
+    );
+    return {
+      ...outcome,
+      ships: 'consolidated',
+      findings: [
+        ...outcome.findings,
+        GATE_PREFERRED_INELIGIBLE_STANDING_FINDING,
+      ],
+    };
+  }
   if (outcome.choice !== 'neither')
     return outcome;
   /**
