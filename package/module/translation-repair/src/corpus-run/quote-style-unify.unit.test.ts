@@ -150,10 +150,13 @@ await describe({
     it({
       name: 'LEAVES tag attributes and code spans straight',
       fn: async () => {
+        // The period moves inside the curled quote (class one hundred
+        // eighty-one, Canadian Press style); the attribute and the code span
+        // stay as written.
         expect(firstSlice({
           archive: '<Ring text="meow" /> The cat typed `say "hi"` and said "hi".',
           replacement: '“Purr,” said the cat. “Warm.” “Soft.” It’s the cat’s nap.',
-        },),).toBe('<Ring text="meow" /> The cat typed `say "hi"` and said “hi”.',);
+        },),).toBe('<Ring text="meow" /> The cat typed `say "hi"` and said “hi.”',);
       },
     },),
   ],
