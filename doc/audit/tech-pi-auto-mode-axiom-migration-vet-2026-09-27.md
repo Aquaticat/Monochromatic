@@ -239,8 +239,32 @@ Image:
 Preflight record:
 `8d0705e`.
 No model import or forward occurred during those helper checks.
-The twelve-trial sequential native-choice batch `proc_45e5` is running;
-no result is claimed at this checkpoint.
+The twelve-trial sequential native-choice batch `proc_45e5` completed.
+Raw result `09555a4` retains SHA-256
+`0bf8adc3b90e8e9eb0ea7fef0d5e7b9c8ace6382ff8b526745320095de37ee3b`.
+Verifier `proc_7fd1` checked source/current-policy identity,
+references,
+true-slot extraction,
+actual marker/type checks,
+and exited-container image/configuration/timestamps/non-OOM states.
+All 149,936 forward tokens passed retention checks;
+every sequence exceeded the encoder's declared 8,192 positions.
+Returned mapped probabilities and checkpoint-specific observations are retained in the
+[choice record](../planning/pi-auto-mode-laya-qualification.md#native-binary-choice-observations).
+Every measured single-question `predict()` call exceeded five seconds:
+73.56364870304242 to 144.56432593706995 seconds across different cells.
+These measured complete-policy CPU BF16 checkpoint/profile combinations therefore miss the total assessment budget.
+This is not a whole-consumer timing,
+repeatability band,
+calibration,
+causal comparison,
+or rejection of all Laya runtimes.
+The two states have complementary reference pairs,
+not absence/conflict controls or twelve independent scenarios.
+No label robustness,
+threshold,
+training remedy,
+or production selection follows.
 The existing CPU/memory/research-time bounds and complete-policy requirement are unchanged.
 Recorded temperature is source-selected configuration,
 not a separately captured decoder intermediate.

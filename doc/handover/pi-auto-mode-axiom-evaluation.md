@@ -690,10 +690,34 @@ Image:
 `0a2b7ff04ddbf65cfe70f8768566c45f55dd9c7fb5ee9ad4f9903b85ad8b9dbd`.
 Record:
 `8d0705e`.
-Native-choice batch `proc_45e5` is running from the private root.
-No result is claimed yet.
-Do not poll or restart it;
-its terminal notification supplies the next inspection point.
+Native-choice batch `proc_45e5` completed all twelve trials.
+Raw result `09555a4` retains SHA-256
+`0bf8adc3b90e8e9eb0ea7fef0d5e7b9c8ace6382ff8b526745320095de37ee3b`.
+Verifier `proc_7fd1` passed actual source/current-policy,
+reference,
+marker/type,
+image,
+exited-container configuration/timestamp,
+and non-OOM checks.
+Total forward input was 149,936 tokens;
+every tested sequence exceeded the declared 8,192 positions.
+All twelve native `predict()` calls exceeded five seconds,
+with 73.56364870304242 to 144.56432593706995 seconds across different cells.
+Those measured CPU BF16 combinations miss the total budget;
+this does not reject all Laya runtimes or qualify full consumer timing.
+
+Mapped `probabilities.B` values,
+ordered negated-request requested/prohibited then positive-request requested/prohibited:
+English 0.5429/0.5782/0.6128/0.4368;
+multilingual 0.3486/0.3905/0.5813/0.1471;
+typed-decisions 0.5571/0.5159/0.5902/0.4831.
+Each cell ran once.
+Do not turn these four conditional references into independent scenarios,
+classification accuracy,
+calibration,
+label robustness,
+or a cause/threshold claim.
+The fixture has neither absence nor conflict controls.
 Read-only ONNX follow-up is at `~/temp/agent/laya-onnx-source-audit-2026-09-27`.
 It read the monolithic exporter/runtime and split exporter,
 plus the matching PyTorch 2.10 export entry point from its Git object without changing the sparse checkout.
@@ -705,7 +729,13 @@ Split export uses float32 and writes graph files before parity checks,
 so file existence is not a verified artifact.
 No ONNX export,
 installation,
-or extra inference was performed while this batch runs.
+or extra inference was performed during the batch.
+After completing the native-choice documentation checks,
+continue the pinned ONNX exporter/dependency investigation.
+The prepared scripts `extract-exporter-followup.mjs` and `runtime-inventory.mjs`
+in the ONNX audit root have not run yet;
+the latter is a bounded standard-library-only image inventory,
+not an inference or installation.
 The probability field remains the predeclared true option,
 and recorded temperature means source-selected configuration,
 not a separately captured decoder intermediate.

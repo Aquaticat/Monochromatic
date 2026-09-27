@@ -400,7 +400,8 @@ The axiom probability was 0.5339.
 Inference took 152.4031641939655 seconds,
 excluding 2.8198068970814347 seconds for loading.
 Peak container memory was 5,656,580,096 bytes.
-This measured case also reaches manual approval at the five-second deadline.
+This result cannot support approval within five seconds;
+the live manual/headless path has not been demonstrated.
 The separate single runs do not establish a speedup distribution or numerical parity.
 BF16 is not a verified remedy for the accepted interactive latency requirement.
 
@@ -456,6 +457,56 @@ No temperature override or checkpoint edit was made.
 The native Noul response includes `action.act_probability` from an auxiliary head.
 Only `noul` is the requested P(true).
 The auxiliary value cannot create authorization or override deterministic policy.
+
+### Native binary choice also missed the measured CPU budget
+
+The native-choice follow-up used fixed `A=false`,
+`B=true` labels over the corrected request/prohibition states,
+not the withdrawn Bash-quotation task.
+Its [qualification record](../planning/pi-auto-mode-laya-qualification.md#native-binary-choice-observations)
+retains each checkpoint's probabilities and limits.
+The true-option scalar comes from `probabilities.B`,
+not the selected key or either confidence field.
+
+Process `proc_45e5` completed twelve one-question trials,
+and read-only verifier `proc_7fd1` confirmed input/source/policy identities,
+reference pairing,
+actual marker/type checks,
+and exited-container settings/non-OOM exits.
+Image:
+`0a2b7ff04ddbf65cfe70f8768566c45f55dd9c7fb5ee9ad4f9903b85ad8b9dbd`.
+Result SHA-256:
+`0bf8adc3b90e8e9eb0ea7fef0d5e7b9c8ace6382ff8b526745320095de37ee3b`.
+
+The first-party clock at
+`laya-parser-first-choice-controls-2026-09-27/probe.py:206-208`
+surrounds the native prediction call:
+
+```python
+# probe.py:206-208
+started = time.perf_counter()
+result = agent.predict(state, questions, max_len=needed)
+elapsed = time.perf_counter() - started
+```
+
+Every observed call took more than five seconds:
+73.56364870304242 to 144.56432593706995 seconds across different cells.
+Loading,
+probe startup,
+outer preparation,
+and final consumer/policy work are excluded.
+Thus these measured complete-policy CPU BF16 checkpoint/profile combinations do not meet the total deadline.
+They do not establish a runtime-wide impossibility,
+a speedup distribution,
+a causal performance explanation,
+or a qualified manual fallback.
+All 149,936 forward tokens passed retention checks;
+every sequence exceeded the encoder's declared 8,192 positions,
+which remains a separate semantic-context qualification limit.
+No training,
+accelerator execution,
+new production representation,
+or threshold followed.
 
 ## What does not work
 

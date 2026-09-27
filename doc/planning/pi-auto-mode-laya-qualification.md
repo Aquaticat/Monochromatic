@@ -305,8 +305,18 @@ helpers,
 and checkpoint ledger.
 Preflight record:
 `8d0705e`.
-Native-choice batch `proc_45e5` is now running;
-no completed result or probability is claimed at this checkpoint.
+Native-choice batch `proc_45e5` completed all twelve trials.
+Result commit:
+`09555a4`.
+Result SHA-256:
+`0bf8adc3b90e8e9eb0ea7fef0d5e7b9c8ace6382ff8b526745320095de37ee3b`.
+Verifier `proc_7fd1` checked current policy/source identities,
+reference pairing,
+actual marker/type checks,
+and the retained exited containers' image,
+timestamps,
+resource settings,
+and successful non-OOM exits.
 The existing eight-GiB,
 two-CPU,
 no-added-swap,
@@ -314,6 +324,102 @@ no-network/mount/device,
 sequential,
 300-second-per-container research bounds remain in force.
 They do not relax the five-second complete-assessment requirement.
+
+## Native binary-choice observations
+
+The fixed `A=false`,
+`B=true` native-choice profile completed twelve single-question `predict()` calls.
+All retained the complete policy and checked token/mask/marker/type inputs.
+Total actual forward input was 149,936 tokens.
+Every tested sequence exceeded its encoder's declared 8,192 positions.
+Execution and tensor retention do not establish supported semantic long-context operation
+or prove that the model used the retained policy.
+
+For each checkpoint,
+values are ordered as negated-request requested,
+negated-request prohibited,
+positive-request requested,
+and positive-request prohibited.
+They are returned four-decimal `probabilities.B` values under the external mapping,
+not winner confidence or native guard verdicts.
+
+### English choice
+
+Values:
+0.5429,
+0.5782,
+0.6128,
+and 0.4368.
+Single-question prediction durations were 141.3607240510173 to 143.86707545956597 seconds.
+Forward sequences contained 12,670 to 12,678 tokens.
+Maximum observed container memory was 6,408,929,280 bytes.
+
+### Multilingual choice
+
+Values:
+0.3486,
+0.3905,
+0.5813,
+and 0.1471.
+Single-question prediction durations were 73.56364870304242 to 74.65005224011838 seconds.
+Forward sequences contained 12,132 to 12,140 tokens.
+Maximum observed container memory was 5,314,678,784 bytes.
+
+### Typed-decisions choice
+
+Values:
+0.5571,
+0.5159,
+0.5902,
+and 0.4831.
+Single-question prediction durations were 141.41502294316888 to 144.56432593706995 seconds.
+Forward sequences contained 12,670 to 12,678 tokens.
+Maximum observed container memory was 6,051,201,024 bytes.
+
+### Choice interpretation limits
+
+Every measured `predict()` call alone exceeded five seconds.
+Consequently these checkpoint/profile combinations,
+with the complete-policy input,
+PyTorch CPU BF16,
+functional-attention workaround,
+and two-CPU/eight-GiB containers,
+do not meet the total five-second assessment requirement.
+The clock excludes loading,
+probe startup,
+outer preparation,
+and final policy/consumer work.
+It is not a whole-guard measurement or a rejection of every Laya runtime/configuration.
+
+Each cell was observed once.
+Durations across cells are not a repeatability band;
+memory peaks are observations,
+not minimum requirements or general fit margins.
+The two states share complementary reference pairs and have no both-false absence or both-true conflict case.
+They do not establish separable-axis behavior,
+calibration,
+error rates,
+label robustness,
+or a threshold.
+References remain conditional on the synthetic command identity and cache binding,
+not live effects or authority.
+
+Comparison with default Noul changes prefix/type,
+labels,
+type embedding,
+and selected temperature for English/typed-decisions.
+Multilingual's temperature remains 1,
+but its other representation changes remain.
+Neither quality nor speed differences isolate a cause.
+No production representation,
+training remedy,
+ranking,
+or calibration was selected.
+All 24 original reserved scenarios remain unqueried.
+Remaining ONNX/runtime,
+semantic-grant,
+held-out,
+and consumer work stays under #25 and the broader audit.
 
 ## Questions the remaining work must answer
 
