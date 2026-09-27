@@ -164,6 +164,24 @@ When `/dev/tty` fails (no controlling terminal),
 logs a debug record,
 and that first record still creates a log file.
 
+#### Other hook plugins
+
+The same pseudo-terminal `strace` harness,
+fed a `UserPromptSubmit` payload to `cccr`
+and a `PreToolUse` `Bash` payload (`git status`) to `ccgr` and `ccbof`:
+
+- `cccr` (bundle last changed in `ece5b7553`):
+  no `mkdir` and no log file.
+- `ccgr` and `ccbof` (bundles last changed in `ece5b7553`):
+  each created a log file holding only the probe record.
+- `ccgr` and `ccbof` current source,
+  run with `node package/claude-code-plugin/<name>/src/index.ts`:
+  normal hook output and no log file.
+- `ccssh` was not run,
+  because its housekeeping mutates the workspace.
+- `ccsr`'s bundle was rebuilt in `d80bc4216` (2026-09-25),
+  after the lazy-logger fix.
+
 #### Stall history
 
 The logger names each file with the time taken just before `open(O_CREAT)`,
