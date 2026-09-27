@@ -1454,3 +1454,23 @@ Prevention: read the region with the Read tool before editing it.
 Status: fixed (owner confirmed "English letters" on 2026-09-27).
 The "kept in English letters" reading waited in the planning doc for a veto instead of being asked.
 Prevention: a reading adopted without the owner's answer is asked in the same turn.
+
+### M8: asked the owner a measurable question
+
+Status: corrected; measurement running.
+The agent asked which model should fill the third checker seat,
+offering gemma-4-31b, Mercury 2.5, a stop, or no change,
+when checker quality on the role's own sheet is measurable.
+Owner, 2026-09-27: "Why don't you measure? Also Mercury 2.5 is really cheap so it's fine."
+Measurement: `~/temp/agent/audit-repair/checker-cases.mjs` builds 85 pairs from twelve runs
+(a unanimous-fixed patch, and the same issue against the unchanged archive, where not-fixed is certain);
+`checker-bench.mjs` and `checker-bench-raw.mjs` score each candidate on the resolution sheet.
+The owner approved Mimo v2.6 Flash and Mimo v2.6 Pro on OpenRouter the same day,
+then Solar Mini 4 (`upstage/solar-mini4`);
+all three are among the candidates.
+Solar Mini 4 is out of the checker seat on its first reading:
+78 of 85 positives called fixed,
+but only 7 of 85 unchanged archive texts called not-fixed,
+so it calls almost any text fixed.
+Prevention: a model-for-role choice is measured on that role's task before anything is asked;
+only what a measurement cannot settle goes to the owner.
