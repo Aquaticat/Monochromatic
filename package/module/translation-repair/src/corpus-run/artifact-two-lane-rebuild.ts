@@ -3,6 +3,7 @@ import {
   type PreparedDocumentPair,
 } from '../document-preparation.ts';
 import type { BlockPair, } from '../pair-blocks-wire.ts';
+import { preparationIdentity, } from '../preparation-identity.ts';
 import type { SectionPair, } from '../pair-sections-wire.ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V12,
@@ -26,6 +27,15 @@ import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.t
 // Whether that default was what the run actually used is then a question the
 // identity check answers: a match proves the slicing is reproduced, and a
 // mismatch beside a named gap is not evidence that the slicing moved.
+//
+// A COMPLETE RECIPE IS NOT A REPRODUCTION (ledger A12). The slicer that reads
+// the recipe changes too: class one hundred twelve (`a43c5d88d`) reads an
+// interior gap unplaced on both sides as one merge, and mikaela15, settled at
+// the commit before it, rebuilt to 32 of its recorded 34 slices with an empty
+// gap list. And the artifact records the carve after the pass folded carried
+// passages into their carriers, while nothing records the fold. So the
+// rebuild compares its identity with the recorded one and says whether it
+// reproduced the run's carve.
 
 /**
  One half of the pairing recipe a settled artifact may fail to record.
@@ -83,13 +93,14 @@ export type RebuiltPreparation = {
 
   /**
    Recipe halves the artifact does not record, each rebuilt as the
-   deterministic default; empty when the recipe is complete and the rebuild
-   is the run's own carve.
+   deterministic default; empty when the recipe is complete, which alone
+   does not make the rebuild the run's carve.
    */
   readonly unrecorded: readonly RecipeHalf[];
 
   /**
-   Whether the rebuild is the run's own carve, taken as a complete recipe.
+   Whether the rebuild is the run's own carve: its identity equals the one
+   the artifact records.
    */
   readonly reproduced: boolean;
 };
@@ -259,25 +270,32 @@ export function rebuildPreparation(
   /**
    Whose front matter the recorded slicing carried, read off the file and
    never recomputed: a later change to the rule must not re-slice an older
-   file.
+   file; and the identity of the carve the run recorded.
    */
-  const { frontMatterAuthority, } = artifact.preparation;
+  const {
+    frontMatterAuthority,
+    identity: recordedIdentity,
+  } = artifact.preparation;
+  /**
+   Slicing carved from the recipe.
+   */
+  const prepared = prepareDocumentPair({
+    sourceText,
+    targetText,
+    includeFrontMatter: artifact.artifactSchemaVersion >= ARTIFACT_SCHEMA_VERSION_V5,
+    ...((frontMatterAuthority === undefined) ? {} : { frontMatterAuthority, }),
+    // SEALED AGAIN ONLY FROM THE GENERATION THAT SEALED, read off the
+    // version rather than the record: the spans are recomputed from the
+    // archive text because the block correction round moves offsets, and an
+    // older file's slicing never sealed anything.
+    sealArchiveOriginal: artifact.artifactSchemaVersion >= ARTIFACT_SCHEMA_VERSION_V12,
+    ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
+    ...((blockPairings === undefined) ? {} : { blockPairings, }),
+  },);
   return {
-    prepared: prepareDocumentPair({
-      sourceText,
-      targetText,
-      includeFrontMatter: artifact.artifactSchemaVersion >= ARTIFACT_SCHEMA_VERSION_V5,
-      ...((frontMatterAuthority === undefined) ? {} : { frontMatterAuthority, }),
-      // SEALED AGAIN ONLY FROM THE GENERATION THAT SEALED, read off the
-      // version rather than the record: the spans are recomputed from the
-      // archive text because the block correction round moves offsets, and an
-      // older file's slicing never sealed anything.
-      sealArchiveOriginal: artifact.artifactSchemaVersion >= ARTIFACT_SCHEMA_VERSION_V12,
-      ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
-      ...((blockPairings === undefined) ? {} : { blockPairings, }),
-    },),
+    prepared,
     unrecorded,
-    reproduced: unrecorded.length === 0,
+    reproduced: preparationIdentity({ prepared, },) === recordedIdentity,
   };
 }
 
