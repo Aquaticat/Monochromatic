@@ -113,3 +113,25 @@ A bench with one reachable seat,
 or none,
 still reads as an outage,
 which is what the two-voice floor is for.
+
+## Addendum 2026-09-27: a refused seat hands its round place on
+
+The rule is unchanged:
+a seat no wet provider serves stays on the seated bench,
+and the quorum and the short-bench findings read it as unreachable.
+What changed is the round it was asked in.
+A window seat the router refused in the same millisecond had spent the round's spare place,
+so the round waited for its slowest reachable voice with no grace or fell through to a retry round:
+TianqiChen66620 closed 269 of 421 rounds a seat short with no grace,
+2,852 s of the 4,575 s its rounds took.
+Since `84a6caa02` a refused window seat hands its place in that round to the next pending seat
+(`runGatherRound`'s `reserve` in `stage-round.ts`),
+and the windowed stages (`stage-windowed-rounds.ts`) no longer re-ask a refused seat in later rounds,
+which the gathers had stopped doing on 2026-09-09.
+The windowed stages still size their quorum over the seated bench rather than the reachable one
+(audit ledger X8, open).
+
+The checker bench is the one bench that does not keep an unserved seat while a served one is available:
+since 2026-09-27 it is the first three of the measured checker order a wet provider serves,
+padded with unserved ranked seats only while fewer than three are served
+(`run-seats.ts`, audit ledger L1).

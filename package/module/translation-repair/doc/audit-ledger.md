@@ -529,7 +529,8 @@ slice 9 was not reached.
 ## History, classes 93 to 185
 
 Notes: `~/temp/agent/audit-history-93-185/notes.md`
-(families F1 to F19, a per-class list, probes `probe-siblings.mjs`, `fixture-corpus.mjs`, `guard-order.mjs`, `verify-hashes.mjs`).
+(families F1 to F19, a per-class list, probes `probe-siblings.mjs`, `fixture-corpus.mjs`, `guard-order.mjs`,
+`verify-hashes.mjs`).
 All 95 recorded guard commits precede their fixes;
 of 221 cited hashes only `0e0bd1a8c` (named in `811d908a9`'s message) does not resolve.
 
@@ -855,7 +856,8 @@ its loop runs zero times, because the verse fixture is too short to subdivide.
 
 Status: open.
 32 `expect(<using binding>).not.toBe(undefined)` on disposables that are always objects
-(`writer-grace-override`, `corpus-run/slice-overlap`, `grace-override`, `corpus-run/pass-entry`, `corpus-run/artifact-pool-names`);
+(`writer-grace-override`, `corpus-run/slice-overlap`, `grace-override`, `corpus-run/pass-entry`,
+`corpus-run/artifact-pool-names`);
 `assembly-content-survival.unit.test.ts` has no boundary case for its six-letter floor or its two-use cap;
 `prompt-uniqueness-client.unit.test.ts` asserts only inside `catch`.
 
@@ -863,7 +865,8 @@ Status: open.
 
 Status: open.
 `dropped-covers-the-page.unit.test.ts` pins the silent-original wording of S6;
-`corpus-run/contributor-name-restore.unit.test.ts` pins handle restorations that drop the literal gloss the house rule requires,
+`corpus-run/contributor-name-restore.unit.test.ts` pins handle restorations
+that drop the literal gloss the house rule requires,
 under a name citing the owner's "with the literal translation in parentheses";
 `consolidate-gate-wire.unit.test.ts`'s class fifty-six name still says a kept standing would stop the entry;
 `consolidate-standing-verdict.unit.test.ts` names "still stops the entry" and never asserts it.
@@ -909,7 +912,8 @@ and vote weights not derived from exported constants in `candidate-select` and `
 
 Status: open.
 76 public functions named by no test;
-a coverage sample shows `isPaymentRefusal`, `statedWaitMsOf`, `routedJson`, `secondOpinionsFrom` and others never called,
+a coverage sample shows `isPaymentRefusal`, `statedWaitMsOf`, `routedJson`,
+`secondOpinionsFrom` and others never called,
 and the decision reply's refusal branches never exercised.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
@@ -920,7 +924,8 @@ Status: open.
 ## Page assembly and the corpus-run driver
 
 Probes: `~/temp/agent/audit-assembly/`
-(`replay2.out`, `categorize.out`, `chain-probe.out`, `fixtures.out`, `seats-probe.mjs`, `tally-check.out`, `findings.txt`).
+(`replay2.out`, `categorize.out`, `chain-probe.out`, `fixtures.out`, `seats-probe.mjs`, `tally-check.out`,
+`findings.txt`).
 Replaying stored decisions through the current reader reproduces 93 recent pages byte for byte;
 the other 41 differ only by typography code that changed after they ran.
 
@@ -951,11 +956,18 @@ aiyysk links source.android.google.cn where the archive links source.android.com
 
 ### A5: seats with no wet provider are seated anyway
 
-Status: open.
+Status: kept by decision; its costs fixed under P3 and L1.
 `corpus-run/run-seats.ts` `seated()` returns true on `NO_PROVIDER`;
 TianqiChen66620 seated Qwen3.8-27B and glm-5.3 with no provider serving them,
 logged 360 `NoProviderForModelError` lines,
 and counted both in every quorum denominator.
+This is the owner's rule of 2026-09-09 (`doc/decision/translation-repair-short-bench-share.md`, "The rule"):
+a seat no wet provider serves stays on the judge benches,
+so the quorum and the `stage-short-bench` findings mark a page decided on a thin bench.
+Withholding it would hide exactly that.
+Its costs were the round-0 place a refusal spent (P3, fixed)
+and the checker bench it left short (L1, fixed);
+what remains is the log volume of one refusal line per ask.
 
 ### A6: the handle-gloss pass moves a link title's translation onto a handle
 
@@ -1045,9 +1057,15 @@ TianqiChen66620 slice 15's gate settled on neither 2 to 2 with one such voice lo
 
 ### P3: seats the phase knows are unreachable fill the round-0 window
 
-Status: open (with A5).
-Every retry round 1 had one or two refused seats in round 0,
-and rounds ran to the 360 s deadline instead of the grace.
+Status: fixed with guard `9466786dc`, fix `84a6caa02`.
+Every retry round 1 had one or two refused seats in round 0.
+The first reading of this entry said rounds then ran to the 360 s deadline;
+that was wrong: no round in TianqiChen66619 or TianqiChen66620 ran past 181 s.
+The real cost: a seat refused in the same millisecond spent the round's spare place,
+so the round waited for its slowest reachable voice with no grace or fell through to a retry round.
+TianqiChen66620 closed 269 of 421 rounds a seat short with no grace, 2,852 s of the 4,575 s its rounds took.
+A refused window seat now hands its place to the next pending seat within the round
+(`runGatherRound` `reserve`), and the seat stays on the bench as the 2026-09-09 rule has it.
 
 ### P4: the recall benchmark still seats gpt-oss-120b
 
@@ -1102,7 +1120,8 @@ Status: open.
 `transient-retry.ts` backoff ignores the caller's abort;
 a payment refusal clears on any meter movement;
 decision-seat structural losses marked reachable;
-decision-seat prompts reach 30,203 of a 32,000-token context and `ce824d933` adds the house rules to them with no size check;
+decision-seat prompts reach 30,203 of a 32,000-token context
+and `ce824d933` adds the house rules to them with no size check;
 the Bedrock stream bound spans the whole retry ladder;
 card prices differ from the endpoint bought.
 
@@ -1113,11 +1132,23 @@ Probes and notes: `~/temp/agent/audit-repair/notes.md`
 
 ### L1: every checker verdict rests on two voices
 
-Status: open (with A5).
+Status: fixed: the ballot floor with guard `8c4fc28e1`, fix `30e66051e`;
+the measured bench with guard `f037a3eae`, fix `f10de5198`.
 Qwen3.8-27B is seated as a checker with no provider serving it, so every reading is 2 of 3;
 a 1 to 1 split is the most common outcome,
 `regressed` never fired though checkers voted `worse` 55 times,
 and XingZ6014 slice 87 resolved an issue on one ballot, which shipped.
+Measured on 2026-09-27: 759 of 8,788 recorded checker readings over 403 run directories resolved on one cast ballot,
+756 inside a selected patch.
+The checker benchmark (85 settled fixes, and the same 85 issues against the unchanged archive text)
+scored the bench that dominant reading seated, `gemma-4-26b-a4b-it` and `google.gemma-4-e2b` with Qwen3.8-27B unserved,
+at 35 fixes resolved and 9 unchanged texts wrongly resolved;
+the all-wet bench scored 82 and 4, and every bench of three from the measured order 81 or 82 and 2 to 5.
+Fixed two ways: one cast ballot resolves nothing (`MIN_RESOLUTION_BALLOTS`,
+`SLICE_CACHE_VERSION` 32, `REFINE_CACHE_VERSION` 5),
+and the bench is the first three of `RUN_CHECKER_ORDER` a wet provider serves,
+padded with unserved ranked seats only while fewer than three are served.
+`regressed` keeps no floor: it only ranks a candidate and never ships text.
 
 ### L2: the archive-dispute stand-in is the archive's own wording whenever the repair lost
 
@@ -1245,7 +1276,8 @@ Status: open.
 ### D5: the removed preparation layer is described in the present tense
 
 Status: open.
-`doc/seats-and-calibration.md:50-239` names about fifteen identifiers, four artefacts and two mise tasks removed in `cbedea357`;
+`doc/seats-and-calibration.md:50-239` names about fifteen identifiers,
+four artefacts and two mise tasks removed in `cbedea357`;
 `:124` claims a bootstrap build dependency `mise.toml` no longer has.
 `blockPairingQuestion`, `blockPairingProtocol` and `prepareBlockPairing` survive.
 
@@ -1253,9 +1285,12 @@ Status: open.
 
 Status: open.
 `doc/pictures.md:89` says 8 MiB (7 MiB since 2026-08-22, `image-reading-stage.ts:120`);
-`doc/configuration.md:18` says a run without the Synthetic key throws (every key is optional, `corpus-run/run-providers.ts:94-130`);
-`doc/configuration.md:201` says a stalled entry drops after its second try (its first, `corpus-run/entry-reattempt.ts:214-223`);
-the picture reader count is four or five in `README.md:353`, `doc/pictures.md:54`, `doc/slice-context.md:316` and `image-reading-stage.ts:17,21` (six);
+`doc/configuration.md:18` says a run without the Synthetic key throws (every key is optional,
+`corpus-run/run-providers.ts:94-130`);
+`doc/configuration.md:201` says a stalled entry drops after its second try (its first,
+`corpus-run/entry-reattempt.ts:214-223`);
+the picture reader count is four or five in `README.md:353`, `doc/pictures.md:54`,
+`doc/slice-context.md:316` and `image-reading-stage.ts:17,21` (six);
 `README.md:109` says 20 Synthetic slots across four models (two models, 10);
 `README.md:287` misdescribes stage quorum retries (`stage-quorum.ts:337-376`);
 `doc/seats-and-calibration.md:458` says ten editors (nine);
@@ -1265,7 +1300,8 @@ the picture reader count is four or five in `README.md:353`, `doc/pictures.md:54
 ### D7: the OpenRouter routing description is stale
 
 Status: open.
-`doc/configuration.md:73,81-85` and `doc/roster-changes.md:25-31` against `model-cards.ts:209,320-328` and `openrouter-catalog.ts:98-100,263`.
+`doc/configuration.md:73,81-85` and `doc/roster-changes.md:25-31`
+against `model-cards.ts:209,320-328` and `openrouter-catalog.ts:98-100,263`.
 
 ### D8: comments name functions that never existed
 
@@ -1355,7 +1391,8 @@ Guard: `slate-decline-ships-by-preference.unit.test.ts` (the translate stage cas
 Status: open (test fragility, with T1 to T9).
 `stage-fanout-window.ts` picks the seats to ask by an FNV-1a hash of the prompt modulo the roster size,
 so rewording a fixture changes which scripted seat is heard;
-`reference-attest.unit.test.ts` and `reference-attest-confirm.unit.test.ts` failed against a passing HEAD on a reworded fixture
+`reference-attest.unit.test.ts` and `reference-attest-confirm.unit.test.ts`
+failed against a passing HEAD on a reworded fixture
 until phrases matching HEAD's rotation were chosen.
 A test that depends on which seat is heard should pin the rotation rather than inherit it from its text.
 
@@ -1402,6 +1439,26 @@ so a replacement refused there ships the floor-refused archive as the lane's tex
 the consolidation then refuses it as a standing.
 The disputed case no longer does this; the floor-refused case needs the stage's eligibility on the record.
 
+### X7: windowed stages re-ask a seat the router refused
+
+Status: fixed with guard `9466786dc`, fix `84a6caa02`.
+`stage-windowed-rounds.ts` put every seat that never answered back on its pending list,
+a refused one included,
+so the lane contest, pairing, the gate, the naturalness review and the polish gate
+re-asked a seat no wet provider served in every retry round
+(a four-seat fixture asked it four times).
+`stage-quorum.ts` fixed the same defect on 2026-09-09 (`hulicaijia`); this path never got it.
+
+### X8: windowed stages size quorum over the seated bench
+
+Status: open.
+`runWindowedRounds` takes `heardNeeded` from `rosterQuorumSize` over the seated bench
+and never applies `reachableQuorum`,
+though the 2026-09-09 addendum of `doc/decision/translation-repair-short-bench-share.md`
+says the reachable share sizes every gather.
+A windowed stage whose reachable seats cannot meet the bench quorum spends its retry rounds and closes short
+without the `stage-short-bench` finding the gathers carry.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing, recorded for the prevention doc.
@@ -1411,8 +1468,12 @@ These are the agent's own mistakes while fixing, recorded for the prevention doc
 Status: recurring.
 At least five times on 2026-09-27
 (`sed ... ; sed`, `node <guard> ; rg`, `rg ... ; ls`, `xargs <lint> ; rg`, and one by the fixture agent),
-against the rule of at most three `&&` and no `;`.
-Prevention: a report that should run after a failing command is `a || b`, never `a ; b`.
+against the rule of at most three `&&` and no `;`;
+twice more later that day (`node <test> | rg ; node <test> | rg`, and one `rg` then `awk` by the docs agent),
+and once a shell `for` loop over line numbers, which the same rule forbids.
+The `;` one also hid which of two files failed, since both counts printed as one number.
+Prevention: a report that should run after a failing command is `a || b`, never `a ; b`;
+two independent checks are two tool calls.
 
 ### M2: a wording change committed without the full suite
 
@@ -1432,7 +1493,8 @@ Prevention: read each FAIL reason of a red run; a missing export gets its own pr
 ### M4: a guard committed red with a lint warning
 
 Status: fixed in the following fix commit.
-`88fdb1923` carried a `no-mixed-operators` warning because the lint step sat in an `&&` chain whose `rg` succeeded on warnings.
+`88fdb1923` carried a `no-mixed-operators` warning
+because the lint step sat in an `&&` chain whose `rg` succeeded on warnings.
 Prevention: commit only after the lint line reads `Found 0 warnings and 0 errors`.
 
 ### M5: a new condition guarded on one branch only
@@ -1447,7 +1509,16 @@ with a positive control that must move.
 ### M6: edits attempted on files not read
 
 Status: recurring, harmless (the tool refuses).
-Prevention: read the region with the Read tool before editing it.
+Twice more on 2026-09-27 (`tally-resolution.unit.test.ts`, `roster-fixture.ts`),
+both files viewed with `sed` rather than the Read tool.
+Prevention: read the region with the Read tool before editing it;
+a `sed` or `rg` view does not count as a read.
+
+### M9: a ledger claim written from a summary rather than measured
+
+Status: corrected in P3.
+P3 said rounds ran to the 360 s deadline; the two runs it cited had no round past 181 s.
+Prevention: a timing or count in a finding is read off the log it cites before the finding is written.
 
 ### M7: an adopted reading parked in docs across a compaction
 

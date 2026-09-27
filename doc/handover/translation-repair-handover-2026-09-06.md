@@ -4900,6 +4900,13 @@ each read off the pass log and the shipped page:
     corpus-derived fixtures of 58 test files replaced with invention; a disputed reading the repair did not
     fix leaves no eligible standing (sixteenth addendum, guard `23cbbdaaa`), with both slice keys naming the
     dispute. Cache versions: consolidate 19, translate slice 14. Owner's newest answers all implemented.
+    THEN (2026-09-27): the checker seats were measured (owner: "Why don't you measure?"; Mimo v2.6 Flash, Mimo
+    v2.6 Pro and Solar Mini 4 approved on OpenRouter). The checker bench is the first three of
+    `RUN_CHECKER_ORDER` (Qwen3.8-27B, Mimo v2.6 Flash, Kimi-K3, gemma-4-31b, Mercury 2.5) a wet provider serves;
+    gemma-4-26b and gemma-4-e2b left the checker role; one cast checker ballot resolves nothing (guard
+    `8c4fc28e1`; repair slice cache 32, refine 5); a refused seat hands its round place to the next pending
+    seat and windowed stages no longer re-ask it (guard `9466786dc`, fix `84a6caa02`). Ledger A5, P3, L1,
+    X7, X8 (open), M8, M9; benchmark scripts in `~/temp/agent/audit-repair/checker-bench*.mjs`.
     TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built
