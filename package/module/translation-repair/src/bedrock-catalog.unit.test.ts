@@ -86,6 +86,14 @@ await describe({
           baseUrl: 'https://mantle.invalid',
           servedId: SEAT_BEDROCK_ONLY_TEXT,
         },),).toBe('https://mantle.invalid/openai/v1/chat/completions',);
+        // EVERY SERVED ID, as the name says (ledger T6): one row checked could
+        // not see another row's route ignoring the host.
+        for (const info of Object.values(BEDROCK_MODELS,)) {
+          expect(bedrockChatUrlFor({
+            baseUrl: 'https://mantle.invalid',
+            servedId: info.id,
+          },).startsWith('https://mantle.invalid/',),).toBe(true,);
+        }
       },
     },),
 

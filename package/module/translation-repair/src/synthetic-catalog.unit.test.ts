@@ -22,7 +22,10 @@ await describe({
     it({
       name: 'TRACKS CURRENT KIMI-K3 REQUEST-WEIGHT DENOMINATOR independently of roster identity',
       fn: async () => {
-        expect(SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN,).toBe(0.000003,);
+        // AGAINST KIMI-K3'S OWN CARD rather than a literal (ledger T6): a
+        // literal passed whatever Kimi-K3's listed price became.
+        expect(SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN,)
+          .toBe(SYNTHETIC_MODELS['hf:moonshotai/Kimi-K3'].promptDollarsPerToken,);
       },
     },),
 
