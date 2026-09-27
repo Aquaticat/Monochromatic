@@ -8082,6 +8082,40 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## TianqiChen66613 read, 2026-09-27: SETTLED, classes one hundred eighty and eighty-one
+
+TianqiChen66613 ran on `.frozen-dist-ca5e56240` and SETTLED at 02:40 UTC in 947 s (15.8 min),
+24 slices, every page slice changed, 115 repair issues with 67 accepted.
+The pairing placed 24 of 24 original and 21 of 21 archive blocks,
+so no passage was carried and class one hundred seventy-nine had nothing to act on.
+The second quote stands once on the page, in its own blockquote as the source's second 「」 paragraph.
+The robot line reads "her close friends never forgot her image as the “high-performance robot”."
+
+Three slips, built as two classes under the standing instruction of 2026-09-25:
+
+- 亲友 ("relatives and friends") shipped as the archive's "close friends", dropping the family.
+  The pin carries 亲友 in two paragraphs on two entries (TianqiChen666 and MTF_0615),
+  neither with another word for friends beside it,
+  so the phrasing glossary refuses "close friends" and seeds "friends and family" (class one hundred eighty).
+- 激素一点一点进入她的身体 shipped as "the medication entered her system bit by bit",
+  where TianqiChen66611 had "hormones".
+  The pin carries 激素 in seven paragraphs on five entries,
+  two of them also writing 药 or 药物 where "medication" renders that word,
+  so the medical glossary seeds "hormones" without a refused form (class one hundred eighty).
+- The period sat outside the closing quote (`“high-performance robot”.`) on a page that also wrote `“Old Man Chen,”`.
+  Canadian Press style sets a period or comma inside, and the archive does so 224 times to 32 across the pin.
+  `placeClosingPunctuation` in `closing-punctuation.ts` moves the mark inside
+  a curly closing double quote in prose during the typography restoration,
+  leaving an ellipsis, a question or exclamation mark, a quotation already ending in its own mark,
+  and code or markup alone; the en_CA policy bullet says the same (class one hundred eighty-one).
+  Archive text that no candidate replaces keeps its own placement.
+
+Guards red first at `53c7f1f2f`, fix `768408d1d`, lint 0/0, types clean.
+The first suite at `768408d1d` failed one case, the class one hundred forty-two attribute guard,
+which had asserted `said “hi”.` incidentally; its point (attribute and code span straight) holds,
+and `b75ec5c51` expects `said “hi.”`.
+TianqiChen66614 launched at 02:46 UTC on `.frozen-dist-768408d1d` (scope `pass-TianqiChen66614`, pid 1092114).
+
 ## TianqiChen66612 killed and TianqiChen66613 launched on class one hundred seventy-nine, 2026-09-27
 
 TianqiChen66612 ran on `.frozen-dist-325c448ba` (classes one hundred seventy-six to seventy-eight)

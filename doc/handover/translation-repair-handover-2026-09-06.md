@@ -4823,10 +4823,19 @@ each read off the pass log and the shipped page:
     hundred seventy-nine; `insertion-carried-shift.ts`, guard `96652536f`, fix `ca5e56240`, replayed over
     the real slices); recorded under "## TianqiChen66611 read".
     TIANQICHEN66612 (`.frozen-dist-325c448ba`) killed 10.5 min in for class one hundred seventy-nine.
-    TIANQICHEN66613 RUNNING on `.frozen-dist-ca5e56240` (scope `pass-TianqiChen66613`, pid 1066103, waiter
-    `wait-TianqiChen66613.mjs`): read the admission's `carried on` lines and any `insertion-carried-shifted`
-    finding first, then slice 13 (the Atri line, any `translate-archive-disputed` finding, the gate), then
-    the second quote once on the page, then class one hundred seventy-five.
+    TIANQICHEN66613 READ (`.frozen-dist-ca5e56240`): SETTLED in 15.8 min, 24 slices, every page slice
+    changed; the pairing placed 24 of 24 original and 21 of 21 archive blocks, so nothing was carried and
+    class one hundred seventy-nine not exercised; the second quote once, the robot line "her image as the
+    “high-performance robot”"; three slips built: 亲友 as the archive's "close friends" and 激素 as
+    "medication" (class one hundred eighty, glossary; guard `53c7f1f2f`, fix `768408d1d`), the period
+    outside the closing quote on a Canadian page (class one hundred eighty-one, `placeClosingPunctuation`
+    in the typography restoration and an en_CA policy sentence; the archive has it inside 224 times to 32);
+    the suite at `768408d1d` was red on the class one hundred forty-two attribute guard's incidental
+    `“hi”.`, updated in `b75ec5c51`; recorded under "## TianqiChen66613 read".
+    TIANQICHEN66614 RUNNING on `.frozen-dist-768408d1d` (scope `pass-TianqiChen66614`, pid 1092114, waiter
+    `wait-TianqiChen66614.mjs`): read the robot line first ("friends and family", the period inside the
+    quote), then the hormone sentence, then any `”.` or `”,` left on the page (archive-standing slices keep
+    theirs), then the second quote once and classes 160 to 178 holding.
     TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built
