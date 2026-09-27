@@ -139,6 +139,12 @@ type RefinerConcurrency = {
   now: number;
   peak: number;
   started: number;
+
+  /**
+   Start positions in the order their calls finished, so a test can show a
+   later call answering first rather than assume it (ledger T6).
+   */
+  readonly finished: number[];
 };
 
 /**
@@ -186,6 +192,7 @@ function measuringRefiners(
         );
         await wait(startPosition === 0 ? 20 : 5,);
         activity.now -= 1;
+        activity.finished.push(startPosition,);
       }
       return await inner.chatJson(request,);
     },
@@ -738,6 +745,7 @@ await describe({
           now: 0,
           peak: 0,
           started: 0,
+          finished: [],
         };
         await runRefinePhase({
           declaredNames: [],
@@ -762,6 +770,7 @@ await describe({
           now: 0,
           peak: 0,
           started: 0,
+          finished: [],
         };
         const phase = await runRefinePhase({
           declaredNames: [],
@@ -780,6 +789,10 @@ await describe({
         },);
         expect(serial.peak,).toBe(1,);
         expect(overlapped.peak,).toBe(2,);
+        // THE SECOND REFINER DID ANSWER FIRST: the call started first is not
+        // the first to finish, so the input-order check below is exercised.
+        expect(overlapped.finished,).toContain(0,);
+        expect(overlapped.finished[0],).not.toBe(0,);
         expect(phase.outcomes.map(function toIndex(outcome,) {
           return outcome.sliceIndex;
         },),).toEqual([
