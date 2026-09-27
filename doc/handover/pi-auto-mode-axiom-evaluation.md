@@ -655,6 +655,31 @@ training permission,
 or accelerator authorization.
 The remaining Jev profile/consumer gates stay open,
 and integration-policy interviewing remains deferred.
+
+Laya's new private root is
+`~/temp/agent/laya-parser-first-choice-controls-2026-09-27`,
+source freeze `08d6e90`.
+It plans twelve native binary-choice forwards over the corrected two-state request fixture,
+with one question/container and fixed `A=false`,
+`B=true` mapping.
+Reference truths stay outside model inputs;
+no Jev output becomes a label.
+Source inspection verified the changed type prefix,
+type embedding,
+and selected binary temperature bucket,
+so this is not a pure label rename or a claimed timing remedy.
+`proc_7472` passed fixture checks and model-free decoder tests on host Python 3.14.7,
+including seven failing shortcut/guard mutations with the original unchanged.
+The image and native-choice forwards are not yet verified.
+Next:
+freeze generated artifacts,
+build/check the actual image,
+then run the authorized bounded sequential probe.
+Preserve eight GiB,
+two CPUs,
+no added swap/network/mounts/accelerator devices,
+and the 300-second research ceiling per container;
+no production deadline is relaxed.
 No calibration,
 training,
 threshold selection,

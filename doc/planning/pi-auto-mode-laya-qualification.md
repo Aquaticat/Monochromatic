@@ -222,6 +222,62 @@ records the source-supported mechanisms and their unmeasured boundaries under #7
 Additional paraphrase/semantic-flip controls could characterize input-form sensitivity;
 they would not by themselves prove training benefit or distinguish all the potential causes recorded here.
 
+## Native binary-choice preparation
+
+Task #25 now tests the documented native binary `choice` alternative,
+without assuming it repairs the CPU deadline or selecting a production representation.
+Private root:
+`~/temp/agent/laya-parser-first-choice-controls-2026-09-27`.
+Source freeze `08d6e90` defines twelve single-question trials:
+the same two corrected request states and four conditional reference fields
+across the three named checkpoints.
+The fixed mapping is `A=false`,
+`B=true`,
+preserving Noul's semantic option order.
+This is not a label/position-insensitivity study.
+
+The pinned source remains clean at `4066d5d5fbf08b66c6757ddeedbd797bd7655bc0`.
+`laya/common.py:113` writes the question type into the prefix;
+`laya/common.py:185` adds its indexed type embedding after the encoder.
+Choice uses index 0 and Noul index 2.
+The native choice decoder at `laya/agent.py:784-793` returns a probability per criterion key.
+This probe extracts `probabilities.B`,
+not the winning label,
+normalized-entropy `confidence`,
+`answer_confidence`,
+or the auxiliary action score.
+
+Published English and typed-decisions configs select
+`choice:2 = 1.9063563346862793`;
+multilingual has no option-count bucket and uses choice temperature 1.
+The usual bucket precedence still applies.
+No temperature is fitted or changed,
+and the `choice:11+` warning does not describe this binary bucket.
+The representation changes type/prefix,
+labels,
+and potentially temperature together;
+no single-cause inference follows from an output difference.
+
+Preparation and model-free checks passed as `proc_7472`.
+The decoder controls ran on host Python 3.14.7,
+without importing a model or tensor library.
+Two incorrect probability-extraction shortcuts and five isolated guard omissions
+failed their expected assertions;
+the original helper remained unchanged.
+The pending actual-image check must verify the baked sequence/decoder sources,
+probe/helper hashes,
+policy/trials,
+checkpoint ledger,
+and Python syntax before inference.
+Image construction and native-choice forwards have not completed at this checkpoint.
+The existing eight-GiB,
+two-CPU,
+no-added-swap,
+no-network/mount/device,
+sequential,
+300-second-per-container research bounds remain in force.
+They do not relax the five-second complete-assessment requirement.
+
 ## Questions the remaining work must answer
 
 - Does the tested complete-policy Noul representation respond to positive/negative evidence,
