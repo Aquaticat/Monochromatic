@@ -221,7 +221,7 @@ await describe({
           },
         },),).toBe(
           'translate-archive-disputed (slice 3): the repair lane\'s adjudicators accepted 2 disputing claim(s) '
-            + '(accuracy/addition at any severity, any other accuracy claim at major or worse) against the archive '
+            + '(accuracy/addition at any severity, any other accuracy claim the panel settled at major or worse) against the archive '
             + 'rendering, so the repair lane\'s text stands in for it (classes one hundred seven and one hundred '
             + 'seventy-six)',
         );

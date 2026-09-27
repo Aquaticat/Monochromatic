@@ -379,7 +379,8 @@ so the archive stayed an eligible standing and shipped on the tied gate.
     a reading those claims name is not the page's authority,
     and a candidate keeping it carries an accepted error.
 - The finding names the rule:
-    `accuracy/addition at any severity, any other accuracy claim at major or worse`.
+    `accuracy/addition at any severity, any other accuracy claim at major or worse`
+    (since the seventeenth addendum, "any other accuracy claim the panel settled at major or worse").
 - Guard shown to fail first (`bd6ad35e8`, `archive-dispute.unit.test.ts`),
     fixed in `25b9eaec7`.
 

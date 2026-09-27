@@ -26,6 +26,12 @@ import {
 // because only additions disputed it. Any accepted accuracy claim at major
 // severity or worse now disputes the archive as well; additions keep
 // disputing at any severity.
+//
+// THE SEVERITY IS THE PANEL'S (owner answer 2026-09-27: "Adjudicated"). The
+// rule first read each claim's severity as its critic filed it: on XingZ6014
+// a claim filed major disputed slice 66 though the panel settled the issue
+// minor, and slice 19 went undisputed though the panel settled its issue
+// major. The issue's settled severity is what the rule and the note read.
 
 /**
  Claim category that disputes the archive rendering at any severity.
@@ -49,7 +55,7 @@ const DISPUTING_SEVERITIES: ReadonlySet<string> = new Set([
 /**
  How the findings and the sheets name what disputes the archive.
  */
-const DISPUTING_RULE = 'accuracy/addition at any severity, any other accuracy claim at major or worse';
+const DISPUTING_RULE = 'accuracy/addition at any severity, any other accuracy claim the panel settled at major or worse';
 
 /**
  One disputed slice and the text standing in for its archive rendering.
@@ -118,7 +124,8 @@ type DisputeEntry = readonly [
 
  @param category - category the claim was filed under
 
- @param severity - severity the claim carries
+ @param severity - severity the panel settled on the claim's issue, never
+ the critic's filing (owner, 2026-09-27)
 
  @returns Whether the claim disputes the archive
 
@@ -147,7 +154,7 @@ function disputesArchive(
  @param issues - adjudicated issues of the chunk
 
  @returns Disputing claims inside accepted issues, each as
- "category severity: summary"
+ "category severity: summary" with the panel's severity
 
  @example
  ```ts
@@ -161,22 +168,28 @@ function acceptedDisputingClaimsOf(
     .filter(function isAccepted(issue,): boolean {
       return issue.status === 'accepted';
     },)
-    .flatMap(function toClaims(issue,) {
-      return issue.claims;
-    },)
-    .filter(function disputes(member,): boolean {
-      return disputesArchive(member.claim,);
-    },)
-    .map(function toBody(member,): string {
-      /**
-       Claim as the critic filed it.
-       */
-      const {
-        category,
-        severity,
-        summary,
-      } = member.claim;
-      return `${category} ${severity}: ${summary}`;
+    .flatMap(function toClaims(issue,): readonly string[] {
+      return issue.claims
+        .filter(function disputes(member,): boolean {
+          /**
+           Category the critic filed the claim under.
+           */
+          const { category, } = member.claim;
+          return disputesArchive({
+            category,
+            severity: issue.severity,
+          },);
+        },)
+        .map(function toBody(member,): string {
+          /**
+           Claim's category and summary as the critic filed them.
+           */
+          const {
+            category,
+            summary,
+          } = member.claim;
+          return `${category} ${issue.severity}: ${summary}`;
+        },);
     },);
 }
 
