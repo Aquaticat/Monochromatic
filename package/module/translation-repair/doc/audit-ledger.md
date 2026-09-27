@@ -1163,8 +1163,9 @@ Status: open.
 
 ### L9: the dispute rule reads the critic's filed severity, not the adjudicated one
 
-Status: owner answered 2026-09-27 ("Adjudicated");
-seventeenth addendum of `doc/decision/translation-repair-ineligible-standing.md`.
+Status: fixed in `6a0f68cec`, guard `b15ba5464`
+(owner answer 2026-09-27, "Adjudicated";
+seventeenth addendum of `doc/decision/translation-repair-ineligible-standing.md`).
 
 ### L10: the attestation screen only looks at addition claims
 
@@ -1200,3 +1201,138 @@ Status: open.
 The resolution checker sheet has no identity, references or claim quotes;
 editors write neighbouring text into an envelope;
 `selectChunkPatch` tells judges a decline keeps the trusted text while an indecision ships the strongest patch.
+
+## Docs and comments against code
+
+Probe scripts: `~/temp/agent/audit-docs2/`
+(`backticks.mjs`, `repo-wide.mjs`, `examples.mjs`, `owner-quotes.mjs`, `hygiene.mjs`, `class-dates.mjs`, `pairing.mjs`).
+Roster values were computed from `src/corpus-run/run-config.ts` itself:
+`RUN_ROSTER` 9 seats, `RUN_READER_MODELS` 6, 7 wide seats, 8 late judges.
+Paths below are package-relative.
+
+### D1: the README says the editor roster check still requires disinterested judges
+
+Status: open.
+`README.md:301-303`; `repair-contract.ts:224-229` says the 2026-08-14 ruling removed that requirement,
+and the check refuses only repeats, no editor, or judge capacity short of the minimum weight.
+
+### D2: the schema generation the pass writes is misstated in three places
+
+Status: open.
+`doc/configuration.md:326`, `:334`, `:352` say generation 4 and three generations;
+`artifact-schema-version.ts:34` says V7;
+`corpus-run/artifact-two-lane-contract.ts:36` says V12.
+The pass writes V14 (`corpus-run/artifact-two-lane-build.ts:260`, `corpus-run/pass-schema-guard.ts:426`)
+and reads generations 1 to 14.
+`artifact-schema-version.ts:42-90` stops its history at version 9.
+
+### D3: pull-request runs are documented through a variable nothing reads
+
+Status: open.
+`doc/configuration.md:293-295` names `TRANSLATION_REPAIR_CORPUS_DIR` and an uncommitted fork;
+production reads `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` and `TRANSLATION_REPAIR_CORPUS_COMMIT`
+(`corpus-run/corpus-pin-override.ts`), documented nowhere in the package.
+`doc/configuration.md:5` claims every knob is listed and omits six.
+
+### D4: the OpenRouter checker substitute is misnamed
+
+Status: open.
+`doc/design-commitments.md:177` says gemma-4-26b-a4b-it;
+`corpus-run/run-seats.ts:113` has `google.gemma-4-e2b`.
+
+### D5: the removed preparation layer is described in the present tense
+
+Status: open.
+`doc/seats-and-calibration.md:50-239` names about fifteen identifiers, four artefacts and two mise tasks removed in `cbedea357`;
+`:124` claims a bootstrap build dependency `mise.toml` no longer has.
+`blockPairingQuestion`, `blockPairingProtocol` and `prepareBlockPairing` survive.
+
+### D6: stale constants and counts in the docs
+
+Status: open.
+`doc/pictures.md:89` says 8 MiB (7 MiB since 2026-08-22, `image-reading-stage.ts:120`);
+`doc/configuration.md:18` says a run without the Synthetic key throws (every key is optional, `corpus-run/run-providers.ts:94-130`);
+`doc/configuration.md:201` says a stalled entry drops after its second try (its first, `corpus-run/entry-reattempt.ts:214-223`);
+the picture reader count is four or five in `README.md:353`, `doc/pictures.md:54`, `doc/slice-context.md:316` and `image-reading-stage.ts:17,21` (six);
+`README.md:109` says 20 Synthetic slots across four models (two models, 10);
+`README.md:287` misdescribes stage quorum retries (`stage-quorum.ts:337-376`);
+`doc/seats-and-calibration.md:458` says ten editors (nine);
+`corpus-run/run-config.ts:785` says a 90 minute entry ceiling (420);
+`doc/provider-availability.md:67,114,121` frames two providers (four meters).
+
+### D7: the OpenRouter routing description is stale
+
+Status: open.
+`doc/configuration.md:73,81-85` and `doc/roster-changes.md:25-31` against `model-cards.ts:209,320-328` and `openrouter-catalog.ts:98-100,263`.
+
+### D8: comments name functions that never existed
+
+Status: open.
+`image-reading-pair.ts:393` names `runStageRound` (`runGatherRound`);
+`declined-target-runs.ts:44` names `pairBlocksAcrossRoster` (`pairBlocksWithRoster`);
+`artifact-key-vocabulary.ts:19,47,104` miscounts its keys and misdates a table.
+
+### D9: examples call the wrong function or pass keys it does not take
+
+Status: open.
+Wrong callee or keys:
+`contributor-translation-guard.ts:22`,
+`corpus-run/displacement-probe.ts:110`,
+`delivery-coherence.ts:174,245`,
+`editor-ensemble.ts:314`,
+`consolidate-slice-buy.ts` (`buyConsolidationAttempt`),
+`corpus-run/artifact-two-lane-read-naturalness-seat.ts:98`,
+`corpus-run/pass-archive.ts:28`,
+`restore-typography.ts:94-105` (no `@param` for `mask`).
+These omit a required key:
+`apply-patch.ts:194` and `editor-ensemble.ts:472` (`preservation`),
+`corpus-run/artifact-two-lane-consolidate.ts:446` (`sliceIndex`),
+`corpus-run/artifact-two-lane-read-contest.ts:68` (`keys`, `generation`, `comparison`),
+`corpus-run/artifact-two-lane-read-rows.ts:52,140,278` (`keys`),
+`corpus-run/band-order.ts:140` (`settledPerBand`),
+`corpus-run/bench-sample.ts:81` (`pin`),
+`corpus-run/pass-entry-artifact.ts:56` (`pageAssembly`),
+`corpus-run/pass-entry.ts:586` (`publishDir`, `declinedDir`),
+`corpus-run/rendering-audit-settled-input.ts:282` (`runSetDir`),
+`corpus-run/title-reference-locate.ts:411` and `corpus-run/title-reference-marks.ts:193` (`rendering`),
+`document-readings.ts:74` (`readOcr`),
+`front-matter.ts:320` (`openLength`),
+`lane-slice-text.ts:196` (`notApplicableHere`),
+`pair-agreement.ts:175` (`pairings`, `needed`, `pairingShape`),
+`refine-eligibility.ts:224` (`minimumChars`),
+`refine-slice-settle.ts:460` (`refineContributors`),
+`repair-chunk-verdict.ts:108` and `repair-refine-step.ts:95` (`declaredNames`),
+`repair-contract.ts:254` (`role`),
+`sample-manifest.ts:166` (`generation`),
+`slice-cost-log.ts:189` (`signal`),
+`stream-drain.ts:191` (`label`).
+The probe checked `function` declarations only, not arrow functions, methods or types.
+
+### D10: owner quotes not in the record
+
+Status: open.
+`provider-name.ts:11` quotes the owner in the first person where the records hold a paraphrase;
+`translate-runoff-tie.ts:25` truncates "prefer the best valid proposal, else fail the slice at once".
+
+### D11: status and hygiene
+
+Status: open.
+`doc/status.md` puts its history under the current heading,
+names a consolidation cache generation 14 that collides with artifact schema generation 14,
+says `assertFinalSelectionSettled` remains (removed in `1ba8f713a`),
+and calls a 2026-08-26 audit current evidence.
+ALL-CAPS emphasis across the docs,
+lines over 120 characters in `doc/slice-context.md` and `doc/status.md`,
+positional references (`doc/configuration.md:328`, `doc/status.md:105,123`),
+an italic (`doc/status.md:428`),
+unbackticked model ids,
+double blank lines,
+mixed list markers in the README.
+`seat-tally.ts:326` cites an untracked script.
+
+### D12: class dates and clock times
+
+Status: open.
+Four class dates match only the local day of their commit
+(class seventy-seven, one hundred seventy-six, one hundred seventy-seven, one hundred seventy-eight);
+`corpus-run/run-seats-wait.ts:14-18` and `corpus-run/run-seats.ts:66-67` give clock times with no zone.

@@ -207,6 +207,8 @@ on the eleventh addendum's rule.
 - An accepted `accuracy/addition` claim still disputes at any severity.
 - The ARCHIVE RENDERING DISPUTED note names each claim with the panel's severity,
     so the severity printed beside a claim is the one the rule read.
+- Guard shown to fail first (`b15ba5464`, `archive-dispute-severity.unit.test.ts`),
+    fixed in `6a0f68cec`.
 
 ## Addendum 2026-09-27, sixteenth: a disputed reading the repair did not fix leaves the slice no eligible standing
 
