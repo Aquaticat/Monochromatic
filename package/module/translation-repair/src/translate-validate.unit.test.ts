@@ -64,7 +64,9 @@ In the morning it dozes on the windowsill[^1].
         + 'untranslated Ta shipped on a page that says they everywhere else)',
       fn: async () => {
         const verdict = validateTranslatedSlice({
-          sourceText: SOURCE_TEXT,
+          // AN ORIGINAL THAT WRITES Ta, as the slice this case stands for did:
+          // the floor asks only where the original writes the pronoun (F-9).
+          sourceText: SOURCE_TEXT.replace('它', 'Ta ',),
           candidateText: `## A Day in the Cat's Life
 
 In the morning Ta dozes on the windowsill[^1], and Ta's DATA stays with @ta_cat.
@@ -256,6 +258,22 @@ In the morning it dozes on the windowsill.
           candidateText: 'The cat dozes on the windowsill.',
         },);
         expect(validation.kind,).toBe('unknown',);
+      },
+    },),
+
+    it({
+      name: 'STILL RUNS THE FLOORS THAT NEED NO GRAMMAR where the ORIGINAL cannot be parsed: a candidate left '
+        + 'untranslated or keeping the neutral pronoun is refused, since neither needs a block to compare '
+        + '(ledger F-5)',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: '猫猫 <未闭合 的标签 在这里。',
+          candidateText: '猫猫 <未闭合 的标签 在这里。',
+        },).kind,).toBe('invalid',);
+        expect(validateTranslatedSlice({
+          sourceText: 'TA 在睡觉 <未闭合 的标签 在这里。',
+          candidateText: 'TA is sleeping here.',
+        },).kind,).toBe('invalid',);
       },
     },),
 
