@@ -1950,6 +1950,14 @@ Owner, 2026-09-27: "There is no need to eliminate extra newlines, because markdo
 Prevention: an owner ruling goes into `doc/design-commitments.md` (or its decision record) the turn it is given,
 and a finding is checked against those commitments before any fix starts.
 
+### M16: a commit message claiming records not yet written, and a hash typed rather than resolved
+
+Status: corrected by a commit comment on `5ab33539f`.
+Its message said A13, A14 and K5 were already in the ledger; they were recorded in the next commit.
+The first attempt at that comment named a full hash typed out by hand, which GitHub refused as no commit.
+Prevention: a commit message states only what `git show --stat` of that commit shows;
+every hash is resolved with `git rev-parse` in the same command that uses it.
+
 ### M14: a reproduction check committed without a positive control
 
 Status: corrected in `7c444de3e`, with a commit comment on `2c4207912`.
