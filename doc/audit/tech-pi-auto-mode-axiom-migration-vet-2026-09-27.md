@@ -246,6 +246,25 @@ not calibration.
 Parser preparation was offline,
 so its request deadlines do not qualify the complete live consumer.
 
+A separate local client-boundary suite `proc_edaf` passed fifteen scenarios
+and five isolated guard-omission controls,
+with no vendor/model calls or real credentials.
+Result SHA-256:
+`155941906eb24d4bd18591fbbb6927c632d90069ab670c75d3b3bd5a76450272`.
+The success control retained six paired-question assessment records;
+all fourteen failure scenarios retained none.
+Real loopback HTTP exercised rejection and cancellation,
+while a separate scripted clock tested post-result deadline rejection.
+`proc_afa3` verified retained outcomes and actual exited-container settings.
+The qualification/troubleshooting records distinguish the initial missing-library packaging failure
+from these client results.
+No optional one-retry path,
+TLS,
+hosted cancellation/billing,
+actual action/grant/branch freshness,
+or real Pi fallback behavior is qualified by this suite.
+Mock replies are not model-quality evidence.
+
 The previous gateway-source and service audits remain relevant at their recorded scope.
 No-training terms are distinct from no-retention guarantees.
 The user has accepted necessity-based retention,

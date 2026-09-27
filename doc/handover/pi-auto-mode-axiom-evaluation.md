@@ -541,9 +541,34 @@ RPM verification also reported `.......T.`,
 which was not removed by changing the host file.
 ELF inspection found `libc.so.6` dependency requirements `GLIBC_2.2.5` and `GLIBC_2.14`.
 The initial manifest and failure remain separate artifacts.
-Process `proc_819e` is rebuilding after the manifest/dependency correction;
-actual Node startup and the baked library digest must pass before the suite starts.
-Wait for terminal notifications rather than polling.
+Process `proc_819e` rebuilt the image after the manifest/dependency correction.
+Actual preflight `proc_b908` passed:
+Node v26.10.0 started and the baked library digest matched.
+Task #28 is complete.
+
+Suite `proc_edaf` then passed all fifteen scenarios and five named guard-omission controls,
+with no vendor/model calls.
+Corrected image:
+`bb388e4205d3451bc39fa7e8062d0d4c6b1dd5ea3400edfc889ec4e56bcae2d3`.
+The positive control retained six paired-question assessment records;
+every failure scenario retained none.
+Both stalled transports produced observed connection cancellation before fixture cleanup.
+The late-result branch used a scripted clock,
+not a latency measurement.
+No bare shutdown error or synthetic credential/echo text was accepted in child diagnostics.
+
+The immutable v1 artifact's `recordedEstimates` field names assessment records,
+not individual scalar probabilities.
+Do not turn the mock replies into model-quality or calibration evidence.
+Raw result commit `81243f7` retains SHA-256
+`155941906eb24d4bd18591fbbb6927c632d90069ab670c75d3b3bd5a76450272`.
+Verifier `05c3536` passed as `proc_afa3`,
+checking recorded outcomes,
+expected failure categories,
+and actual exited-container resource configuration.
+Task #26 is finishing the rendered/scoped documentation check;
+#27 remains the separate semantic-quality work.
+See the [client-boundary record](../planning/pi-auto-mode-jev-qualification.md#local-client-failure-boundary-controls).
 These controls cannot establish hosted cancellation/billing,
 TLS behavior,
 model quality,

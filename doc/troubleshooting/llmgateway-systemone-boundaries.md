@@ -316,6 +316,79 @@ bounds response size to 64 KiB,
 and caps its Node heap at 256 MiB.
 Its README and mise task retain the complete execution manifest.
 
+## Local client harness and runtime preflight
+
+A separate first-party client harness at
+`~/temp/agent/jev-client-failure-boundary-2026-09-27`
+uses loopback HTTP and synthetic credentials,
+not the hosted gateway.
+The [qualification record](../planning/pi-auto-mode-jev-qualification.md#local-client-failure-boundary-controls)
+retains the successful controls and their limits.
+The original client source is from
+`~/temp/agent/jev-parser-first-request-controls-2026-09-26/probe.mjs`,
+commit `6a65f88`.
+Its deadline/response-bound statements at `probe.mjs:38-69` include:
+
+```javascript
+// jev-parser-first-request-controls-2026-09-26/probe.mjs, selected statements
+const deadline = started + 5000;
+const remaining = Math.floor(deadline - performance.now());
+assert(responseBytes <= 65536, 'Response exceeds fixed bound');
+assert(elapsedMs <= 5000, 'Assessment exceeded total deadline and is discarded');
+```
+
+The fetch call at line 51 supplies `redirect: 'error'`
+and `signal: AbortSignal.timeout(remaining)`.
+`checkFrozen` at lines 16 to 20 hashes the inputs,
+references,
+and source ledger;
+its post-response call is at line 67.
+The actual helper at
+`auto-mode-cloud-eval-2026-09-26/policy.mjs:24-27`
+re-reads the policy after evaluation:
+
+```javascript
+// auto-mode-cloud-eval-2026-09-26/policy.mjs
+const result = await evaluate(snapshot);
+const current = readPolicy(path);
+if (snapshot.sha256 !== current.sha256)
+  throw new PolicyChangedError({ before: snapshot.sha256, after: current.sha256 });
+```
+
+The harness preserves those checks except in explicitly isolated omission controls.
+
+The initial test image reused a cached Node 24 Debian base
+and copied the workstation's Node v26.10.0 executable into it.
+Runtime preflight `proc_fe79` reported exit 127:
+
+```text
+# Private container Node startup, before any client case
+node: error while loading shared libraries: libatomic.so.1: cannot open shared object file: No such file or directory
+```
+
+Host `ldd` identified `/usr/lib64/libatomic.so.1` as a dependency of that executable.
+The missing dependency was added from the already installed
+`libatomic-16.2.1-2.fc44.x86_64`,
+source RPM `gcc-16.2.1-2.fc44.src.rpm`.
+Its SHA-256,
+`b08060687ffb5768003b0c283cac5bddaa84ea5526d4d7bcb5994af98af5a130`,
+independently matched the RPM file-digest record.
+RPM verification also emitted `.......T.`;
+no host file was modified to remove that diagnostic.
+ELF dependency inspection reported only `libc.so.6`,
+requiring `GLIBC_2.2.5` and `GLIBC_2.14`.
+No package was downloaded or installed on the workstation.
+
+Corrected image:
+`bb388e4205d3451bc39fa7e8062d0d4c6b1dd5ea3400edfc889ec4e56bcae2d3`.
+Preflight `proc_b908` verified actual Node startup and the baked library digest.
+The suite then verified the exact executable SHA-256,
+`ab9c8eecf9f82d6693cdc3accced17034065c8d96213b0aa76a7e803d20ae1da`,
+and frozen client/helper inputs before testing.
+The Debian libraries remain an environment difference from the workstation.
+The original failed image and manifest are preserved;
+this packaging error is not a Jev failure or an upstream defect.
+
 ## Verified workarounds and present containment
 
 No production workaround has been built or verified.

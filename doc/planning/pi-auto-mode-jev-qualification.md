@@ -332,6 +332,88 @@ hosted token preservation,
 and upstream identity remain unverified.
 No final action was generated or authorized.
 
+## Local client failure-boundary controls
+
+Private harness:
+`~/temp/agent/jev-client-failure-boundary-2026-09-27`.
+It uses the client frozen in `6a65f88`,
+its actual policy/response helpers,
+disposable files,
+and real loopback HTTP.
+Endpoint and policy-file paths are test seams;
+the post-result deadline control additionally supplies a scripted clock dependency.
+No vendor/model call,
+real credential,
+training,
+assessed command,
+account access,
+or Mac access occurred.
+
+Source freeze `e1f0066` predates the checks.
+An initial image lacked `libatomic.so.1` and failed Node startup before any client case.
+The repaired runtime passed actual startup/library-hash checks in `proc_b908`.
+The [runtime and scope record](../troubleshooting/llmgateway-systemone-boundaries.md#local-client-harness-and-runtime-preflight)
+preserves that packaging failure separately from service evidence.
+
+Suite `proc_edaf` passed fifteen ordinary scenarios and five isolated guard omissions.
+Commit `81243f7` retains the result;
+`05c3536` retains the read-only verifier.
+Verification `proc_afa3` checked saved outcomes,
+expected error categories,
+and the actual exited container's image/timestamps/resource settings.
+Result SHA-256:
+`155941906eb24d4bd18591fbbb6927c632d90069ab670c75d3b3bd5a76450272`.
+The container used Node v26.10.0,
+2 GiB,
+two CPUs,
+no added swap,
+no external network or host mounts,
+and a ninety-second ceiling.
+
+The positive control completed six paired-question assessments.
+HTTP 503,
+malformed JSON,
+a different catalogue label,
+a missing answer,
+an out-of-range probability,
+request/response size limits,
+synthetic credential echo,
+redirect,
+header/body stalls,
+late-result clock,
+and policy/input changes each stopped without a retained assessment record.
+The oversized request did not reach the server.
+Every received normal-fixture request retained the complete supplied policy.
+
+Both stalled transports closed before fixture cleanup.
+Their parent-observed client-process lifetimes were 5038.489968 and 5038.829765 milliseconds,
+including process startup.
+Those values are not production assessment timings.
+The separate late-result test used a clock returning a post-deadline value;
+it is not a measured six-second network request.
+The unchanged client made zero transport retries.
+No permitted one-retry implementation was exercised.
+
+Removing the corresponding checks in disposable source copies produced the named regressions:
+`redirect-followed`,
+`late-result-recorded`,
+`stale-policy-result-recorded`,
+`invalid-probability-recorded`,
+and `stalled-transport-not-cancelled`.
+Original source hashes remained unchanged.
+Synthetic credential/echo text and bare shutdown errors were not accepted in child diagnostics.
+
+The immutable artifact's `recordedEstimates` field counts assessment records,
+not individual probability scalars.
+Mock replies are not model-quality or calibration data.
+These controls do not verify TLS,
+deployed gateway behavior,
+upstream cancellation/billing,
+model identity,
+real action/grant/branch freshness,
+or Pi manual/headless behavior.
+They do not authorize production implementation or qualify the complete consumer deadline.
+
 ## Historical shared control and question-set measurements
 
 The existing fifteen-scenario batch remains development evidence.
