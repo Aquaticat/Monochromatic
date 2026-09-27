@@ -23,6 +23,7 @@ import {
 import {
   contestDocumentLanes,
   createSyntheticClient,
+  DEFAULT_RETRY_POLICY,
   persistLaneContestOutcome,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -398,6 +399,12 @@ async function drive(
    */
   const inner = createSyntheticClient({
     apiKey: 'test-key',
+    // THE PRODUCTION RETRY COUNT WITHOUT ITS WAITS (ledger T5): the failing
+    // fixture answered 500 and slept through the real backoff, 27.4 s a run.
+    retryPolicy: {
+      limit: DEFAULT_RETRY_POLICY.limit,
+      baseMs: 1,
+    },
     transport: async function cannedTransport(exchange,) {
       calls.push(exchange.label,);
       if (!answering) {
