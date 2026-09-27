@@ -615,6 +615,28 @@ which differs from the TypeScript split exporter.
 Neither path has received a full-policy artifact/runtime check in this evaluation.
 Do not generalize one exporter's declared shape or the CPU PyTorch timings to both paths.
 
+Read-only follow-up is retained at `~/temp/agent/laya-onnx-source-audit-2026-09-27`.
+The monolithic exporter does not pass `dynamo` or `verify`.
+The matching PyTorch 2.10 source at revision
+`449b1768410104d3ed79d3bcfe4ba1d65c7f22c0`,
+`torch/onnx/__init__.py:export`,
+defaults to `dynamo=True`,
+`verify=False`,
+and `fallback=False`.
+Its delegated `_compat` path remains to be inspected before conversion/failure conclusions.
+The file was read from its Git object because the existing checkout is sparse;
+no third-party worktree was changed.
+
+The split exporter explicitly converts the model to float32
+and writes graphs before its verification calls.
+Its introductory claim about checking before writing must not be used as an artifact-publication guarantee.
+A failed verification must not promote an existing output file.
+These are source findings,
+not a reproduced ONNX incident,
+latency comparison,
+or an upstream fix.
+No export or additional model forward was started while the sequential native-choice batch runs.
+
 ## Fine-tuning source findings
 
 The pinned notebook is

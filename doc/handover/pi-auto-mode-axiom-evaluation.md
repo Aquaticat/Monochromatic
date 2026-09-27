@@ -694,7 +694,18 @@ Native-choice batch `proc_45e5` is running from the private root.
 No result is claimed yet.
 Do not poll or restart it;
 its terminal notification supplies the next inspection point.
-Continue read-only runtime/source investigation while it runs.
+Read-only ONNX follow-up is at `~/temp/agent/laya-onnx-source-audit-2026-09-27`.
+It read the monolithic exporter/runtime and split exporter,
+plus the matching PyTorch 2.10 export entry point from its Git object without changing the sparse checkout.
+Monolithic export inherits `dynamo=True`,
+`verify=False`,
+and `fallback=False`;
+its delegated `_compat` implementation and runtime package inventory remain next source checks.
+Split export uses float32 and writes graph files before parity checks,
+so file existence is not a verified artifact.
+No ONNX export,
+installation,
+or extra inference was performed while this batch runs.
 The probability field remains the predeclared true option,
 and recorded temperature means source-selected configuration,
 not a separately captured decoder intermediate.
