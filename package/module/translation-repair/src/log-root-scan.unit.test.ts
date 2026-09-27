@@ -1,0 +1,156 @@
+/**
+ Guards against a module root logger that names no entry or slice (ledger
+ A11), by reading the source: every module's root is a context root, so a
+ line it writes inside an entry names that entry and slice.
+
+ A root written as a plain `tagged` call reads nothing from the context, and
+ its lines under an entry are the unattributed 3279 of 5943 that
+ TianqiChen66616.log carried. Test files and test fixtures log outside any
+ entry and are not read.
+
+ @module
+ */
+
+import {
+  readdir,
+  readFile,
+} from 'node:fs/promises';
+import { join, } from 'node:path';
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+/**
+ Source directory this scan reads, which is the one holding this file.
+ */
+const SOURCE_DIR = import.meta.dirname;
+
+/**
+ How a context-less root begins, at module scope.
+ */
+const PLAIN_ROOT = ' = tagged({ tag: \'';
+
+/**
+ How a context root begins, at module scope.
+ */
+const CONTEXT_ROOT = ' = contextRoot({ tag: \'';
+
+/**
+ Module-scope declarations in one file's text that build a root of one kind.
+
+ @param text - file contents
+
+ @param shape - how the root's initializer begins
+
+ @returns Lines declaring such a root
+
+ @example
+ ```ts
+ rootsIn({ text: "const l = tagged({ tag: 'cat', },);", shape: PLAIN_ROOT, },); // one line
+ ```
+ */
+function rootsIn(
+  {
+    text,
+    shape,
+  }: {
+    readonly text: string;
+    readonly shape: string;
+  },
+): readonly string[] {
+  return text
+    .split('\n',)
+    .filter(function declaresRoot(line,): boolean {
+      return line.startsWith('const ',) && line.includes(shape,);
+    },);
+}
+
+/**
+ Source files the scan reads: every `.ts` under `src` but tests and fixtures.
+
+ @returns Paths relative to the source directory
+
+ @example
+ ```ts
+ const files = await sourceFiles();
+ ```
+ */
+async function sourceFiles(): Promise<readonly string[]> {
+  return (await readdir(
+    SOURCE_DIR,
+    { recursive: true, },
+  ))
+    .filter(function isSource(name,): boolean {
+      return name.endsWith('.ts',)
+        && (!name.endsWith('.test.ts',))
+        && (!name.endsWith('.test-fixture.ts',))
+        && (!name.endsWith('.d.ts',));
+    },);
+}
+
+await describe({
+  name: 'module root loggers',
+  children: [
+    it({
+      name: 'SEES a plain root in a line of text, the positive control for the scan below',
+      fn: async () => {
+        expect(rootsIn({
+          text: 'import { tagged, } from \'x\';\nconst l = tagged({ tag: \'whiskers\', },);\n',
+          shape: PLAIN_ROOT,
+        },).length,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'BUILDS every module root as a context root, so its lines name the entry and slice (ledger A11)',
+      fn: async () => {
+        /**
+         Every root declaration per source file.
+         */
+        const scanned = await Promise.all((await sourceFiles()).map(async function scanOne(name,): Promise<{
+          readonly name: string;
+          readonly plain: readonly string[];
+          readonly context: readonly string[];
+        }> {
+          /**
+           File contents.
+           */
+          const text = await readFile(
+            join(
+              SOURCE_DIR,
+              name,
+            ),
+            'utf8',
+          );
+          return {
+            name,
+            plain: rootsIn({
+              text,
+              shape: PLAIN_ROOT,
+            },),
+            context: rootsIn({
+              text,
+              shape: CONTEXT_ROOT,
+            },),
+          };
+        },),);
+
+        // The scan read real roots, so an empty list below is not a scan that
+        // read nothing.
+        expect(scanned.filter(function hasContextRoot({ context, },): boolean {
+          return context.length > 0;
+        },).length,).toBeGreaterThan(0,);
+
+        expect(scanned
+          .filter(function hasPlainRoot({ plain, },): boolean {
+            return plain.length > 0;
+          },)
+          .map(function named({ name, },): string {
+            return name;
+          },),).toStrictEqual([],);
+      },
+    },),
+  ],
+},);
