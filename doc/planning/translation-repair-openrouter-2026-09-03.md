@@ -8109,17 +8109,28 @@ The census found it on this page alone in the pin.
 Built as a community-glossary entry beside 炸柜 with the same renderings ("outed", "blown out of the closet")
 and a why naming the cause;
 guard `cb8450ebb` (`community-glossary-closet.unit.test.ts`), red first,
-fix `2a0f947b5`, lint 0/0, types clean.
+fix `2a0f947b5`, lint 0/0, types clean, full suite 1,169 PASS, 0 FAIL.
 
-Observation not built:
+Class one hundred eighty-three:
 the kigurumi quote 我会在离开我们的时候以kigurumi的记忆结束 shipped as
 "when I leave you all, they will end with the memories of kigurumi",
 a memory ending with memories,
 where the source's subject is 我.
 The archive reads "they" too ("and they will end with it when I leave"),
-and no glossary or floor reaches a one-sentence reading without fitting to it.
-
-TianqiChen66615 runs on `.frozen-dist-2a0f947b5` to read the closet sentence first.
+so the bench kept the archive's reading.
+The first report called this an observation not built;
+the owner answered "Always fix and re-launch."
+Built as a phrasing-glossary entry keyed on kigurumi的记忆结束
+(one page in the pin),
+"I will end with memories of kigurumi" first and "they will end with" refused,
+which makes the archive's rendering ineligible for the slice;
+guard `42b937ce6` (`rendering-glossary-subject.unit.test.ts`), red first,
+fix `730d11579`, lint 0/0, types clean.
+TianqiChen66615 was killed about 9 min in and TianqiChen66616 launched on `.frozen-dist-730d11579`.
+The rule now stands in the handover:
+a read never reports a translation as "not built";
+where no general rule reaches the sentence,
+a phrasing-glossary entry with the wrong form refused is the fix.
 
 ## TianqiChen66613 read, 2026-09-27: SETTLED, classes one hundred eighty and eighty-one
 

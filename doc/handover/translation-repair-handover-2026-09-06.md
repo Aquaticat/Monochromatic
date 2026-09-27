@@ -4533,6 +4533,17 @@ Built as `5bda732de`.
     a page finished on a superseded build is not readiness evidence;
     a known fix lands before the launch.
     The 19:53 launch was killed under it after 264 calls.
+-   The owner's rule of 2026-09-27:
+    "Always fix and re-launch."
+    Every rendering a read finds that can be translated better is fixed in the same turn
+    (guard red first, fix, suite),
+    then the running pass is killed and relaunched;
+    a read never reports an "observation not built" or "not fixed" for a translation.
+    Where no general rule reaches the sentence,
+    a phrasing-glossary entry keyed on the source phrase, with the wrong form refused, is the fix
+    (class one hundred eighty-three is the pattern).
+    The owner had to say this twice on 2026-09-26 and 2026-09-27
+    (the TianqiChen66614 kigurumi quote was reported unbuilt).
     The rule is deliberately not in the root `AGENTS.md`.
 
 ## Costs
@@ -4838,13 +4849,17 @@ each read off the pass log and the shipped page:
     “high-performance robot.”", both hormone sentences "hormones", no `”.` or `”,` on the page, a trusted
     “teacher,” inside); the second quote once; class one hundred eighty-two built: 因为柜门炸开屡屡受阻 as
     "blocked again and again, each time the closet door blew open", the 炸柜 entry never matching the
-    spread-out spelling (`community-glossary.ts`, guard `cb8450ebb`, fix `2a0f947b5`); observation not built: the kigurumi quote's second clause "they will end with the memories
-    of kigurumi" where the source's subject is 我 (the archive also reads "they"); recorded under
+    spread-out spelling (`community-glossary.ts`, guard `cb8450ebb`, fix `2a0f947b5`, suite 1,169 PASS,
+    0 FAIL); class one hundred eighty-three built after the owner's "Always fix and re-launch": the
+    kigurumi quote's second clause "they will end with the memories of kigurumi" where the source's
+    subject is 我 (the archive also reads "they"), seeded in `rendering-glossary-phrasing.ts` with "they
+    will end with" refused (guard `42b937ce6`, fix `730d11579`); recorded under
     "## TianqiChen66614 read".
-    TIANQICHEN66615 RUNNING on `.frozen-dist-2a0f947b5` (scope `pass-TianqiChen66615`, pid 1139417, waiter
-    `wait-TianqiChen66615.mjs`): read the closet sentence first ("outed", the cause kept), then the robot
-    line, the hormone sentences and the closing punctuation again, then the second quote once and classes
-    160 to 181 holding.
+    TIANQICHEN66615 (`.frozen-dist-2a0f947b5`) killed about 9 min in for class one hundred eighty-three.
+    TIANQICHEN66616 RUNNING on `.frozen-dist-730d11579` (scope `pass-TianqiChen66616`, pid 1166090, waiter
+    `wait-TianqiChen66616.mjs`): read the closet sentence ("outed", the cause kept) and the kigurumi quote
+    ("I will end with memories of kigurumi") first, then the robot line, the hormone sentences and the
+    closing punctuation, then the second quote once and classes 160 to 181 holding.
     TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built
