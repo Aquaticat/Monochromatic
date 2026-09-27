@@ -2,10 +2,11 @@
 
 ## Status and symptom
 
-This is a source-only finding during the private Laya ONNX investigation.
-No ONNX export,
-candidate-package import,
-or resulting runtime failure has been reproduced.
+The compatibility-facade finding remains source-only.
+A separate bounded frontend canary has now imported the dependencies,
+exported a toy graph,
+and exercised the actual ONNX checker directly.
+No Laya export or compatibility-facade runtime failure is claimed.
 The risk is treating PyTorch's successful checker-status branch as proof that a graph passed structural validation.
 Do not confuse this with the separately measured Laya CPU latency or attention-memory results.
 
@@ -72,26 +73,62 @@ a flag named `verify` is not by itself a strict artifact-publication condition.
   and the separate ONNX wheel's signed source attribution passed their recorded checks.
   None is a graph-correctness test.
 
+### Actual checker catalog
+
+Private `export-canary/canary.py` ran in `proc_dfe2` with ONNX 1.23.0,
+ONNX Script 0.7.2,
+ONNX IR 1.0.0,
+ML dtypes 0.6.0,
+and Python-backend protobuf 7.36.2.
+Its mise task was `probe:export-canary` in the private evidence repository.
+
+The valid `Identity` graph passed `onnx.checker.check_model`.
+The otherwise comparable graph with an undeclared input raised `onnx.checker.ValidationError`:
+
+```text
+Nodes in a graph must be topologically sorted, however input 'undeclared' of node:
+name:  OpType: Identity
+ is not output of any previous nodes.
+```
+
+A separately exported arithmetic graph passed explicit file-based checking and ONNX IR reload.
+Independent verifier `proc_c941` checked the actual exited image,
+baked sources,
+resource evidence,
+and quarantined artifact hashes.
+Graph inspection `proc_8bd0` found one `Add` node,
+no model-local functions,
+and a 512-byte external initializer.
+No numerical inference was performed on that graph.
+
 ### Unverified execution cases
 
 - An invalid graph returning through the actual imported compatibility facade.
-- The same graph being rejected by the actual `onnx.checker` API.
-- A valid exported graph passing an independently invoked checker and numerical parity test.
-- Failed verification leaving artifacts that the consumer correctly refuses to promote.
+- Numerical parity of an exported graph against its source computation.
+- Laya-specific export and full-policy input behavior.
+- Failed verification leaving artifacts that a qualified consumer correctly refuses to promote.
 
-These cases remain pending the dependency/native execution gates.
-No clean/failing runtime catalog or exported-graph correctness claim is asserted yet.
+The direct-checker catalog does not close these cases.
 See the [qualification record](../planning/pi-auto-mode-laya-qualification.md#python-onnx).
 
 ## Verified workarounds
 
-None yet.
-The planned consumer must invoke structural checking explicitly,
-validate numerical parity independently,
+Explicit structural checking passed the valid/invalid controls and exported toy graph.
+The exercised consumer-side call was:
+
+```python
+# export-canary/canary.py, inside the contained experiment
+onnx.checker.check_model('/out/toy.onnx')
+```
+
+This avoids relying on the compatibility facade's status flag,
+but establishes structure only,
+not output equivalence or guard quality.
+The planned consumer must still validate numerical parity independently,
 identify every graph/external-data artifact,
 and promote only after all required checks pass.
-That is an unexecuted requirement,
-not a verified workaround or production implementation.
+The canary always retains `promoted: false`;
+no production implementation or complete publication workaround is qualified.
 
 ## What does not work as evidence
 
@@ -101,6 +138,43 @@ not a verified workaround or production implementation.
   compatible wheel tag,
   or verified build attribution does not establish model correctness.
 - No evidence here establishes that all PyTorch or ONNX Script versions behave this way.
+
+## Separate retained exporter diagnostics
+
+PyTorch 2.10 `torch/onnx/_internal/exporter/_registration.py:108-111` handles absent optional vision operators:
+
+```python
+# torch/onnx/_internal/exporter/_registration.py:108-111
+if namespace == "torchvision":
+    if importlib.util.find_spec("torchvision") is None:
+        logger.warning("torchvision is not installed. Skipping %s", qualified_name)
+        return None
+```
+
+The canary retained this warning for `torchvision::nms`,
+`torchvision::roi_align`,
+`torchvision::roi_pool`,
+and `torchvision::deform_conv2d`.
+Its parsed `Add` graph consumes none of those registrations.
+This is not evidence that a consumer needing those operators can omit them.
+No extra dependency was installed to silence the warnings.
+
+A `FutureWarning` displayed at Python `copyreg.py:99` has its text defined in
+PyTorch `torch/utils/_pytree.py:1328-1332`:
+
+```python
+# torch/utils/_pytree.py:1328-1332
+@deprecated(
+    "`isinstance(treespec, LeafSpec)` is deprecated, "
+    "use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.",
+    category=FutureWarning,
+)
+```
+
+Both diagnostic classes remain unchanged in `export-canary/run-initial.json`.
+Neither establishes the cause of the compatibility-facade behavior,
+and neither prevented the observed toy result.
+No upstream fault or future-version compatibility conclusion follows.
 
 ## Upstream filing artifact
 

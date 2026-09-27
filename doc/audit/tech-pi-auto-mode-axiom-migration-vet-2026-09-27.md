@@ -345,8 +345,10 @@ or binary execution occurred.
 These incomplete routes do not prove all build provenance unavailable.
 
 The pinned ONNX Script compatibility facade resolves `check_model` to a documented no-op.
-The [source-only checker note](../troubleshooting/onnxscript-export-checker-boundary.md)
-traces the callable and lists the unexecuted checker/parity cases.
+The [checker-boundary note](../troubleshooting/onnxscript-export-checker-boundary.md)
+traces the callable,
+records independent toy checker controls,
+and distinguishes remaining facade/parity cases.
 PyTorch's successful checker-status branch is not independently verified structural validity
 for that dependency combination.
 Combined inert inspection `proc_1a40` and full RECORD checks `proc_74cf` completed for all eight retained wheels.
@@ -364,9 +366,30 @@ A separate guard-model-free frontend canary is frozen under private `export-cana
 Its five-wheel profile excludes ORT,
 flatbuffers,
 and native protobuf.
-No candidate package has yet been staged into its runtime image or imported.
-The fixed toy exporter is not a Laya checkpoint trial;
-all resulting files remain quarantined pending independent validation.
+Build `proc_2888` staged the five packages in image
+`67e3fbe2fe272445ac3503daf9b606bcfb2215d286df77da3cf6103571a01fb8`.
+Original/omitted guard controls passed as `proc_b473`.
+Canary `proc_dfe2` passed imports,
+valid/invalid explicit ONNX checker controls,
+toy export,
+exported-graph checking,
+IR reload,
+and pre/post source/file/kernel checks.
+Independent verifier `proc_c941` checked the actual exited image,
+baked sources,
+resource records,
+and quarantined bytes.
+The two-GiB/two-CPU canary recorded a whole-container memory peak of 337,326,080 bytes.
+Result SHA-256 is `ce4915838f8935383dfd2e17773e2fb410cc950507e3fe9cf525bb19dbfe52a9`.
+Graph inspection `proc_8bd0` found one `Add`,
+no model-local functions,
+and a 512-byte external initializer in the 1,323-byte graph's data companion.
+Retained torchvision-registration and LeafSpec warnings were traced separately;
+none was filtered.
+The fixed toy exporter is not a Laya checkpoint trial,
+a numerical-equivalence test,
+or an assessment-latency measurement.
+All resulting files remain quarantined and unpromoted despite structural validation.
 Resource-control repair #31 retained an initial exit-code expectation failure
 and fresh passing controls `proc_7082`.
 The timed control terminated with CLI255/OCI-1,
@@ -375,10 +398,11 @@ Actual CPU quota/period and NanoCpus representations were both verified,
 and maximum-runtime `--timeout` remained distinct from stop grace.
 Source/native review and the frozen command manifest continue to gate any candidate execution;
 no ORT provenance requirement is waived by separating producer and consumer experiments.
-No ONNX export,
-ONNX inference,
+No Laya ONNX export,
+ONNX Runtime inference,
 accelerator execution,
 or training has occurred.
+The toy frontend success does not waive Laya-specific producer or consumer gates.
 
 ### Jev through LLM Gateway
 

@@ -974,7 +974,7 @@ independent valid/invalid checker controls,
 and quarantined graph/data output.
 It is not a Laya checkpoint trial or a five-second assessment measurement.
 Source `3393f3d` and inputs `cfa9bfc` precede later pre-execution review changes.
-No exporter image has been built and no candidate package imported yet.
+This preparation checkpoint preceded the image build and candidate imports.
 
 #31 records a resource-validation repair before #30 proceeds.
 The installed Podman help and actual HostConfig contradicted review claims that `--timeout`
@@ -988,14 +988,47 @@ and distinct runtime/stop-timeout values.
 The parent now normalizes the exit representation,
 checks omitted resource fields,
 and the canary has pre/post kernel-limit checks.
-The latter are still unexecuted.
+Those kernel checks passed in the subsequent `proc_dfe2` canary.
 The pre-review source manifest is archived and refreshed hashes retained.
 #31 evidence is retained at private `326e6c3`;
 only its four owned exited resource-control containers were removed after retention.
+#30 execution now passed:
+`proc_2888` built image `67e3fbe2fe272445ac3503daf9b606bcfb2215d286df77da3cf6103571a01fb8`;
+`proc_b473` passed the original guard and five individual omission expectations;
+`proc_dfe2` imported the five frontend packages and completed the toy export/check/reload path without ORT.
+The valid checker control passed and the undeclared-input control raised `onnx.checker.ValidationError`.
+Only the expected staged native imports occurred outside synthetic controls.
+
+`proc_c941` independently checked actual exited-image identity,
+baked source hashes,
+quarantined bytes,
+and resource evidence.
+The observed whole-canary memory peak was 337,326,080 bytes under the two-GiB/two-CPU profile.
+`proc_8bd0` parsed the graph without inference:
+one `Add` node,
+no model-local functions,
+and a 512-byte external float initializer.
+The graph is 1,323 bytes.
+Result SHA-256 is `ce4915838f8935383dfd2e17773e2fb410cc950507e3fe9cf525bb19dbfe52a9`.
+Raw results are at private `39f76be`;
+verification source/evidence follows at `4d17745` and `be07523`.
+
+Torchvision registration warnings and the LeafSpec FutureWarning remain in the raw stderr.
+Their source and scope are documented in the
+[checker-boundary note](../troubleshooting/onnxscript-export-checker-boundary.md#separate-retained-exporter-diagnostics).
+No warning was filtered.
+The graph/data remain quarantined and unpromoted.
+This proves the exact frontend's toy path only,
+not Laya exportability,
+numerical parity,
+full-policy context behavior,
+assessment latency,
+or ORT consumer qualification.
+
 Next:
-build the frozen #30 image,
-run its original/omitted guard controls,
-and only then attempt the canary.
+finish recording/rendering #30,
+then resume #25 with a separately frozen Laya-specific producer experiment and unresolved consumer gates.
+Do not reuse the toy manifest as authorization for a checkpoint export.
 The MIT license,
 build metadata,
 version-only setup logic,

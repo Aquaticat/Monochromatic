@@ -790,16 +790,17 @@ with matching primary hashes.
 ML dtypes publication attribution verified in `proc_51be`;
 paired original/changed-signature/original controls passed in `proc_9927` after correcting a harness diagnostic assumption.
 That publication predicate is not SLSA build provenance.
-No candidate package was installed or imported.
+Those metadata/signature checks installed or imported no candidate package.
 Tag matching does not prove imports,
 native linkage,
 or model execution.
 The image still lacks those additional distribution records.
 
-Complete dependency/native-source review,
-actual import/runtime compatibility,
-and a bounded export/consumer manifest remain pending.
-No ONNX export or inference has run.
+Laya-specific export,
+full-policy behavior,
+numerical parity,
+and consumer qualification remain pending.
+The separate guard-model-free frontend canary now has measured import/export evidence.
 
 Source-only follow-up in
 `torch/onnx/_internal/exporter/_core.py:1576-1695`
@@ -812,7 +813,67 @@ The pinned ONNX Script 0.7.2 compatibility facade additionally resolves `check_m
 to an explicitly documented no-op.
 The [checker-boundary note](../troubleshooting/onnxscript-export-checker-boundary.md)
 traces that source combination and distinguishes it from a runtime reproduction.
-A separate structural checker and numerical parity gate remain unexecuted requirements.
+Independent structural checking has now been exercised on a toy graph;
+Laya-specific numerical parity remains unexecuted.
+
+### Guard-model-free frontend canary
+
+Private source and evidence are in
+`~/temp/agent/laya-onnx-source-audit-2026-09-27/export-canary`.
+Image build `proc_2888` staged only ONNX 1.23.0,
+ONNX Script 0.7.2,
+ONNX IR 1.0.0,
+ML dtypes 0.6.0,
+and pure-Python protobuf 7.36.2.
+ORT,
+flatbuffers,
+and native protobuf were excluded from the staged import tree.
+The original first-party guard and five individual omission controls passed their expected outcomes as `proc_b473`.
+
+Canary `proc_dfe2` passed package imports,
+explicit valid/invalid ONNX checker controls,
+fixed arithmetic Torch export,
+exported-graph checking,
+IR reload,
+source/file freshness,
+and kernel/resource postflight.
+No guard checkpoint was loaded,
+no training or accelerator work ran,
+and no artifact was promoted.
+`proc_c941` independently checked the actual exited image,
+baked source hashes,
+quarantined bytes,
+and retained records.
+
+Image identity is `67e3fbe2fe272445ac3503daf9b606bcfb2215d286df77da3cf6103571a01fb8`.
+Result SHA-256 is `ce4915838f8935383dfd2e17773e2fb410cc950507e3fe9cf525bb19dbfe52a9`.
+The container had two GiB memory,
+no swap allowance,
+two CPUs,
+a 180-second runtime ceiling,
+no network,
+no host mounts,
+and no added devices.
+Its observed whole-canary memory peak was 337,326,080 bytes,
+not a minimum requirement or a Laya measurement.
+
+`proc_8bd0` parsed the actual 1,323-byte graph:
+one `Add` node,
+no model-local functions,
+and one float initializer backed by a 512-byte external-data file.
+Both graph and data hashes are retained in the verified summary.
+This establishes only the exact frontend's ORT-free toy path,
+not the complete Laya path or numerical equivalence.
+
+PyTorch `_registration.py:110` skipped absent torchvision registrations for
+`nms`,
+`roi_align`,
+`roi_pool`,
+and `deform_conv2d`.
+The parsed toy graph consumes none of them.
+A retained `LeafSpec` FutureWarning is defined by PyTorch `torch/utils/_pytree.py:1328-1332`
+and displayed through Python `copyreg.py:99`.
+No warning was filtered and no claim extends these observations to other consumers.
 
 ## Fine-tuning source findings
 
