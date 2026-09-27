@@ -846,8 +846,15 @@ await describe({
         const { transport, } = recordedTransport({
           replies: [{ status: 200, bodyText: '{"unexpected":true}', },],
         },);
-        /** Client under test. */
-        const client = createSyntheticClient({ apiKey: 'test-key', transport, },);
+        /**
+         Client under test, on a tiny test backoff: a malformed body is
+         retried, and the production backoff slept 12.2 s here (ledger T5).
+         */
+        const client = createSyntheticClient({
+          apiKey: 'test-key',
+          transport,
+          retryPolicy: { limit: 2, baseMs: 1, },
+        },);
         /** Value caught from the malformed exchange. */
         let caught: unknown;
         try {
