@@ -6,6 +6,10 @@ import {
 } from '../chunk-document.ts';
 import { isInsertionChunk, } from '../chunk-placement.ts';
 import { readCorpusFile, } from '../corpus-source.ts';
+import {
+  type ChunkSlice,
+  governedSliceIndices,
+} from '../line-structure-inherit.ts';
 import { parseDocument, } from '../parse-document.ts';
 import {
   SLICE_CHAR_BUDGET,
@@ -233,6 +237,27 @@ async function main(): Promise<void> {
     `TRANSLATE section subdivides into ${String(slices.length,)} slices; probing the first ${String(PROBE_SLICES,)}`,
   );
 
+  /**
+   Slices the line-structure rule governs, decided by the pipeline's own
+   function over this section and its slices, so the sheet below is the one a
+   run shows rather than one missing the rule (ledger H2).
+   */
+  const governed = governedSliceIndices({
+    chunks: [
+      {
+        sourceText: sourceSection,
+        slices: slices.map(function toSlice(cut,): ChunkSlice {
+          return {
+            index: cut.target
+              .sliceIndex,
+            sourceText: cut.source
+              .text,
+          };
+        },),
+      },
+    ],
+  },);
+
   /* oxlint-disable no-await-in-loop -- sequential by design so this never competes with a running corpus pass for per-model stream slots */
   for (const slice of slices.slice(
     0,
@@ -261,6 +286,8 @@ async function main(): Promise<void> {
       sourceText: sliceSource,
       existingText: sliceTarget,
       incumbentKind: isInsertionChunk(slice.target,) ? 'absent' : 'present',
+      lineStructured: governed.has(slice.target
+        .sliceIndex,),
     },);
 
     try {

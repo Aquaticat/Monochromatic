@@ -544,9 +544,34 @@ and `consolidate-settle.ts` turns it into `ConsolidationStandingIneligibleError`
 
 ### H2: the lane contest winner is validated without `lineStructured`
 
-Status: open.
+Status: fixed in `a0fd3cc7c`, guarded in `b867b3180`.
 `lane-contest-eligibility.ts` passes `declared` only;
 with the class one hundred two fixture the floor says invalid and `laneContestChoiceVerdict` says it may ship.
+
+What that cost, read from the code rather than assumed:
+the verdict gates only persistence and the log line in `lane-contest-driver.ts`,
+and the consolidation's `readStandingVerdict` does pass `lineStructured`,
+so the merged winner never shipped unrefused;
+it was written to the slice cache and twin memo as warm-run evidence,
+which is what the verdict exists to prevent.
+
+The fix makes `lineStructured` required on `laneContestChoiceVerdict` and `laneContestChoiceMayShip`,
+and threads `prepared.lineStructuredSliceIndices` through `runPassContest` and `contestDocumentLanes`.
+Required rather than defaulted, because the defect was an optional flag reading false where a caller left it off.
+The guards are a verdict case and a driver case (merged winner of a governed slice not persisted;
+the same winner persisted where no rule governs; the line-keeping lane persisted where one does);
+removing the flag from the validation call turned both red at their `mayShip` and `persisted` assertions.
+
+The same family was checked across the package:
+every other production `validateTranslatedSlice`, `laneTextsForSlate`, `repairInvalidCandidates` and
+`buildTranslateMessages` caller passes `lineStructured`,
+the two front-matter calls in `lane-contest-eligibility.ts` return before any line check,
+and `corpus-run/translate-probe.ts`, the `#70` prototype still runnable as the `translate-probe` task, omitted it.
+The probe now decides governance with the pipeline's own `governedSliceIndices` over its section and slices.
+Replayed offline over its entry, none of its three probed slices is governed,
+so its sheet is unchanged there;
+the positive control (a governed two-line slice) adds 882 characters of line rule to the sheet.
+The probe calls providers and prints no sheet, so no live run was made for this.
 
 ### H3: the 治愈 misquote
 
@@ -1648,7 +1673,8 @@ against the rule of at most three `&&` and no `;`;
 twice more later that day (`node <test> | rg ; node <test> | rg`, and one `rg` then `awk` by the docs agent),
 and once a shell `for` loop over line numbers, which the same rule forbids,
 and once `<test> | rg ... ; true` to force a zero exit;
-twice more still (`<test> > log ; echo "exit $?"`, and `rg --files ... ; rg <config>`).
+twice more still (`<test> > log ; echo "exit $?"`, and `rg --files ... ; rg <config>`),
+and once more during H2 (`<test> > log && rg --count FAIL log ; rg <name> log`).
 The first `;` one also hid which of two files failed, since both counts printed as one number.
 Prevention: a report that should run after a failing command is `a || b`, never `a ; b`;
 two independent checks are two tool calls.
