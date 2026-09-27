@@ -1323,8 +1323,32 @@ ledger records carry no entry, slice, lane or generation.
 
 ### A12: `rebuildPreparation` silently fails to reproduce a folded entry
 
-Status: open.
+Status: fixed in `7c444de3e` (prep `f46f5a7b7`, guard `27e9ec7ea`).
 mikaela15 records 34 slices and rebuilds to 32 with nothing named.
+Attributed: mikaela15 settled at `caac222a6`, before `a43c5d88d` (class one hundred twelve) read an interior gap
+unplaced on both sides as one merge; its section 2 leaves original blocks 3 to 7 unpaired,
+which the run carved as source-only slices and today's slicer merges.
+The artifact also records the carve after the carried-insertion fold, and nothing records the fold:
+TianqiChen66614 rebuilds with position 13 moved (its log folds slice 15 into 14 and shifts 14's original into 13).
+`RebuiltPreparation` claimed an empty gap list meant the run's own carve;
+it now carries `reproduction`, read off the recorded rows (`artifact-two-lane-rebuild-rows.ts`),
+naming the first departure.
+`2c4207912` first read it off the recorded identity, which called every settled artifact moved
+(see A12b); a commit comment on it records the correction.
+Over stored artifacts: mikaela16, mikaela17 and TianqiChen66610 reproduce;
+mikaela15 (32 of 34), hulicaijia31 (71 of 72) and TianqiChen66614 (position 13) move.
+
+### A12b: the rendering audit refuses every settled artifact
+
+Status: fixed in `da9ca20b0` and `487146cd2` (guard `ce97e60a2`, repin `d280961b0`; found while fixing A12).
+`verifySettled` required the recorded preparation identity,
+which also hashes the declared names as the run's build worded them,
+and the recorded alignment findings, which include the roster pairing rounds' own (mikaela16's six);
+a rebuild reproduces neither, so mikaela16, mikaela17 and TianqiChen66610,
+whose rows match slice for slice, all printed REFUSED on `preparation.identity`.
+A rebuild is now verified by its rows and by `verifyArtifactMeasurements`
+(slice count, document sizes, alignment pairs, each lane's slice count);
+the identity and findings checks stay in `verifyArtifactAgainstPreparation` for a preparation the run itself built.
 
 ### A13: the consolidation cache key omits the dispute note and the declared name pairs
 
@@ -1895,6 +1919,18 @@ Twice more during A11 (`node --print ... ; ls`, and `rg <roots> | rg --invert-ma
 Also during A11, a wrap script matched the first line of a multi-line signature as its end;
 the diff showed it before anything was committed, and the four files were restored from HEAD.
 Prevention for scripted rewrites: print each located boundary and read the diff before lint or commit.
+Once more during A12b (`<test> | rg ... ; echo done`).
+
+### M14: a reproduction check committed without a positive control
+
+Status: corrected in `7c444de3e`, with a commit comment on `2c4207912`.
+The A12 fix compared the rebuilt identity with the recorded one, checked only against a synthetic fixture,
+and was committed before any stored artifact was run through it;
+every stored artifact then read as moved, mikaela17 among them though its rows matched slice for slice.
+The same shape recurred one step later, when the rendering audit's rows-plus-measurements check
+was committed with the alignment findings in it and every reproduced carve still refused.
+Prevention: a check that classifies real artifacts runs over stored ones before its commit,
+with at least one that must pass and one that must fail (QPC), and every class it can print is read.
 A related shape, `<test A> | rg --count FAIL || <test B> | rg --count FAIL`, never ran B when A went red (S10);
 and `mise run --cd <package> build` once, against CM5.
 The first `;` one also hid which of two files failed, since both counts printed as one number.
