@@ -28,6 +28,144 @@ const ADDRESS_CHARACTERS: ReadonlySet<string> = new Set([
  */
 const GREETING_TAIL = '好';
 
+// CLASS ONE HUNDRED EIGHTY-FIVE (TianqiChen66619, 2026-09-27). The page's
+// refrain 你看头壳里，她在最狭小的空间中撑起了最完美的世界 opens with 你看,
+// the imperative "look", which English writes without "you"; the floor read
+// it as an address, refused the standing "Look inside the headpiece: she
+// built…" whose "she" rendered the original's own 她, the bench forced a
+// "for you" into its proposals to pass, the gate preferred the refused
+// standing, and the entry stopped INCOMPLETE at slice 9. 你看 or 你瞧 opening
+// a clause, with no complement making the verb its own (被你看到, 替你看管,
+// 你看到了吗 stay addresses), is the imperative and is not counted.
+
+/**
+ Verbs that, after 你 at the head of a clause, make the imperative "look".
+ */
+const LOOK_VERBS: ReadonlySet<string> = new Set([
+  '看',
+  '瞧',
+]);
+
+/**
+ Characters that, right after 看 or 瞧, give the verb a result, an aspect or
+ an object of its own (看到, 看见, 看管, 看书), so the 你 before it is an
+ address rather than the imperative.
+ */
+const LOOK_COMPLEMENTS: ReadonlySet<string> = new Set([
+  '到',
+  '见',
+  '过',
+  '着',
+  '了',
+  '完',
+  '懂',
+  '清',
+  '出',
+  '管',
+  '待',
+  '望',
+  '护',
+  '守',
+  '病',
+  '书',
+]);
+
+/**
+ Characters after which a clause opens: whitespace, sentence and clause
+ punctuation, brackets, quotation marks and the markdown marks that open a
+ line.
+ */
+const CLAUSE_OPENERS: ReadonlySet<string> = new Set([
+  ' ',
+  '\t',
+  '\n',
+  '\r',
+  '　',
+  '。',
+  '！',
+  '？',
+  '，',
+  '、',
+  '；',
+  '：',
+  '…',
+  '—',
+  '「',
+  '」',
+  '『',
+  '』',
+  '“',
+  '”',
+  '‘',
+  '’',
+  '（',
+  '）',
+  '《',
+  '》',
+  '【',
+  '】',
+  '(',
+  ')',
+  '[',
+  ']',
+  '"',
+  '\'',
+  '!',
+  '?',
+  ',',
+  '.',
+  ';',
+  ':',
+  '~',
+  '～',
+  '>',
+  '*',
+  '_',
+  '-',
+]);
+
+/**
+ Whether the address character at an offset opens the imperative "look"
+ (你看, 你瞧) at the head of a clause, which English writes without "you".
+
+ @param text - original passage, comments already cut
+
+ @param at - offset of the address character
+
+ @returns True for the imperative; false where the verb takes a complement
+ or the 你 sits inside a clause
+
+ @example
+ ```ts
+ opensLookImperative({ text: '。你看窗外', at: 1, },); // true
+ opensLookImperative({ text: '被你看到', at: 1, },); // false
+ ```
+ */
+function opensLookImperative(
+  {
+    text,
+    at,
+  }: {
+    readonly text: string;
+    readonly at: number;
+  },
+): boolean {
+  if (!LOOK_VERBS.has(text.charAt(at + 1,),))
+    return false;
+  if (LOOK_COMPLEMENTS.has(text.charAt(at + 2,),))
+    return false;
+  if (at === 0)
+    return true;
+  /**
+   Unit just before the address character; every clause opener is one unit.
+   */
+  const before = text.charAt(at - 1,);
+  if (CLAUSE_OPENERS.has(before,))
+    return true;
+  // A doubled imperative (你看你看) opens its second half after the first.
+  return LOOK_VERBS.has(before,) && (text.charAt(at - 2,) === '你');
+}
+
 /**
  English second-person pronouns, lower case.
  */
@@ -118,15 +256,16 @@ export function withoutComments({ text, }: { readonly text: string; },): string 
 
 /**
  How many times a passage addresses someone in the second person, greetings
- left out.
+ and the clause-opening imperative "look" left out.
 
  @param text - original passage, comments already cut
 
- @returns Count of address characters not opening a greeting
+ @returns Count of address characters opening neither a greeting nor the
+ imperative
 
  @example
  ```ts
- addressCount({ text: '你好，你来了。', },); // 1
+ addressCount({ text: '你好，你来了。你看窗外。', },); // 1
  ```
  */
 function addressCount({ text, }: { readonly text: string; },): number {
@@ -138,6 +277,11 @@ function addressCount({ text, }: { readonly text: string; },): number {
     if (!ADDRESS_CHARACTERS.has(text.charAt(at,),))
       continue;
     if (text.charAt(at + 1,) === GREETING_TAIL)
+      continue;
+    if (opensLookImperative({
+      text,
+      at,
+    },))
       continue;
     count += 1;
   }
