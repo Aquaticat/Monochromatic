@@ -32,14 +32,16 @@ function claimOf(
   {
     category,
     summary,
+    severity = 'major',
   }: {
     readonly category: IssueClaim['category'];
     readonly summary: string;
+    readonly severity?: IssueClaim['severity'];
   },
 ): IssueClaim {
   return {
     category,
-    severity: 'major',
+    severity,
     summary,
     spans: [],
   };
@@ -60,7 +62,7 @@ function issueOf(
   return {
     issueId: `adjudicated/${claim.summary}`,
     status,
-    severity: 'major',
+    severity: claim.severity,
     claims: [{ claimId: `issue/${claim.summary}`, claim, },],
     tallies: {},
   };
@@ -80,6 +82,32 @@ const INVENTED = claimOf({
 const WRONG_COLOUR = claimOf({
   category: 'accuracy/mistranslation',
   summary: 'The translation says the cat was grey where the original says black.',
+},);
+
+/**
+ Minor claim that the archive rendered a near-synonym.
+ */
+const NEAR_SYNONYM = claimOf({
+  category: 'accuracy/mistranslation',
+  summary: 'The translation says the cat dozed where the original says it napped.',
+  severity: 'minor',
+},);
+
+/**
+ Minor claim that the archive invented the time of day.
+ */
+const INVENTED_HOUR = claimOf({
+  category: 'accuracy/addition',
+  summary: 'The translation adds that it was noon, which the original never states.',
+  severity: 'minor',
+},);
+
+/**
+ Major claim outside accuracy, about the rendering's grammar.
+ */
+const UNGRAMMATICAL = claimOf({
+  category: 'fluency/grammar',
+  summary: 'The translation\'s second sentence has no verb.',
 },);
 
 /**
@@ -107,16 +135,47 @@ await describe({
           ],
         },);
         expect([...disputes.keys(),],).toEqual([3,],);
-        expect(disputes.get(3,),).toEqual({
-          sliceIndex: 3,
-          standIn: REPAIRED,
-          acceptedAdditions: 1,
-          acceptedClaims: [`accuracy/addition major: ${INVENTED.summary}`,],
-        },);
+        expect(disputes.get(3,)?.standIn,).toBe(REPAIRED,);
+        // Class one hundred seventy-six: the accepted major mistranslation
+        // disputes the archive beside the addition.
+        expect(disputes.get(3,)?.acceptedClaims,).toEqual([
+          `accuracy/addition major: ${INVENTED.summary}`,
+          `accuracy/mistranslation major: ${WRONG_COLOUR.summary}`,
+        ],);
       },
     },),
     it({
-      name: 'STANDS ASIDE where the addition claim was rejected or left to a human, where only other categories were accepted, and where nothing was filed',
+      name: 'NAMES A DISPUTE where an accepted accuracy claim of major severity or worse stands alone, and where an accepted addition is minor (class one hundred seventy-six, owner answer 2026-09-26: "Major+ accuracy")',
+      fn: async () => {
+        // THE FAILURE THIS CLOSES. TianqiChen66610 slice 13: the repair lane's
+        // adjudicators accepted major mistranslation claims against the
+        // archive's gloss of a character the performer was remembered as, the
+        // gate tied 2 to 2, and the archive shipped because only additions
+        // disputed it.
+        const disputes = archiveDisputesOf({
+          chunks: [
+            {
+              sliceIndex: 5,
+              repairedText: REPAIRED,
+              issues: [issueOf({ status: 'accepted', claim: WRONG_COLOUR, },),],
+            },
+            {
+              sliceIndex: 6,
+              repairedText: REPAIRED,
+              issues: [issueOf({ status: 'accepted', claim: INVENTED_HOUR, },),],
+            },
+          ],
+        },);
+        expect([...disputes.keys(),],).toEqual([
+          5,
+          6,
+        ],);
+        expect(disputes.get(5,)?.acceptedClaims,).toEqual([`accuracy/mistranslation major: ${WRONG_COLOUR.summary}`,],);
+        expect(disputes.get(6,)?.acceptedClaims,).toEqual([`accuracy/addition minor: ${INVENTED_HOUR.summary}`,],);
+      },
+    },),
+    it({
+      name: 'STANDS ASIDE where the addition claim was rejected or left to a human, where only a minor mistranslation or a claim outside accuracy was accepted, and where nothing was filed',
       fn: async () => {
         const disputes = archiveDisputesOf({
           chunks: [
@@ -133,7 +192,10 @@ await describe({
             {
               sliceIndex: 2,
               repairedText: REPAIRED,
-              issues: [issueOf({ status: 'accepted', claim: WRONG_COLOUR, },),],
+              issues: [
+                issueOf({ status: 'accepted', claim: NEAR_SYNONYM, },),
+                issueOf({ status: 'accepted', claim: UNGRAMMATICAL, },),
+              ],
             },
             {
               sliceIndex: 4,
@@ -152,12 +214,16 @@ await describe({
           dispute: {
             sliceIndex: 3,
             standIn: REPAIRED,
-            acceptedAdditions: 2,
-            acceptedClaims: [],
+            acceptedClaims: [
+              `accuracy/addition major: ${INVENTED.summary}`,
+              `accuracy/mistranslation major: ${WRONG_COLOUR.summary}`,
+            ],
           },
         },),).toBe(
-          'translate-archive-disputed (slice 3): the repair lane\'s adjudicators accepted 2 accuracy/addition '
-            + 'claim(s) against the archive rendering, so the repair lane\'s text stands in for it (class one hundred seven)',
+          'translate-archive-disputed (slice 3): the repair lane\'s adjudicators accepted 2 disputing claim(s) '
+            + '(accuracy/addition at any severity, any other accuracy claim at major or worse) against the archive '
+            + 'rendering, so the repair lane\'s text stands in for it (classes one hundred seven and one hundred '
+            + 'seventy-six)',
         );
       },
     },),
@@ -172,7 +238,6 @@ await describe({
           dispute: {
             sliceIndex: 3,
             standIn: REPAIRED,
-            acceptedAdditions: 2,
             acceptedClaims: [
               `accuracy/addition critical: ${INVENTED.summary}`,
               'accuracy/addition major: The translation adds an unverified detail about the roof.',
@@ -186,6 +251,26 @@ await describe({
         expect(note,).toContain('in the archive\'s wording or any softer one',);
         expect(note,).toContain('has dropped nothing',);
         expect(note,).toContain('carries an accepted addition',);
+        // No mistranslation was accepted, so the note says nothing of one.
+        expect(note,).not.toContain('mistranslated',);
+      },
+    },),
+    it({
+      name: 'WRITES THE SHEET NOTE for an accepted mistranslation, saying the archive\'s reading is not the page\'s authority (class one hundred seventy-six)',
+      fn: async () => {
+        const note = archiveDisputeNote({
+          dispute: {
+            sliceIndex: 5,
+            standIn: REPAIRED,
+            acceptedClaims: [`accuracy/mistranslation major: ${WRONG_COLOUR.summary}`,],
+          },
+        },);
+        expect(note.startsWith('ARCHIVE RENDERING DISPUTED',),).toBe(true,);
+        expect(note,).toContain(`(1) accuracy/mistranslation major: ${WRONG_COLOUR.summary}`,);
+        expect(note,).toContain('departs from the ORIGINAL',);
+        expect(note,).toContain('mistranslated, omitted or left untranslated is not the page\'s authority',);
+        // No addition was accepted, so the addition rule stays off the sheet.
+        expect(note,).not.toContain('carries an accepted addition',);
       },
     },),
   ],
