@@ -228,3 +228,10 @@ Part of [the package README](../README.md).
   Spacing that changes rendering is another matter:
   a list's items loose or tight (`list-spread-restore.ts`),
   or two paragraphs joined by a single newline.
+  Carriage returns are kept apart by a second ruling:
+  asked whether this one retires `corpus-run/line-ending-fold.ts`,
+  which folds a model's CRLF to LF at page assembly (ledger A3),
+  the owner kept the fold on 2026-09-27.
+  The corpus reader already folds the archive to LF,
+  so the fold keeps each published page on one line-ending convention,
+  and a stray CR shows in diffs and tools even where Markdown renders it alike.
