@@ -1232,6 +1232,34 @@ Continue source/build-route inspection and consider the already pinned ONNX pack
 as another CPU consumer source path,
 without assuming it is qualified or meets the deadline.
 
+The reference-evaluator investigation now uses pinned ONNX 1.23.0 source
+`ee3ccbd2b2344299d3a4506c2954a47b2181a485`.
+`proc_1d32` extracted its initial source set;
+`proc_cd31` extracted 196 directly imported operator modules,
+retained at private `8310324`.
+The standard-library AST-only probe `proc_8a61` inventoried 205 Python files and 977 declared imports,
+and mapped all 39 retained graph operator kinds to direct class-name/version candidates for opset 18.
+Private `3d04920` and `3d3e422` retain source and results.
+This does not prove runtime registration,
+shape/dtype support,
+parity,
+or deadline fit.
+The operator package eagerly imports its registry modules,
+so reviewing only the selected graph operators would miss import-time paths.
+The inventory includes conditional and type-checking imports;
+`PIL.Image` occurs inside the unselected `ImageDecoder._run`,
+not as a demonstrated requirement for this graph.
+`proc_cb23` extracted the seven additional helper modules,
+retained at `57c013e`.
+`proc_f95b` then matched all 212 current Python source copies,
+527,164 bytes,
+to the retained ONNX wheel/source map,
+verified unchanged from historical `fbbf53f`.
+The join result is private `0528dbc`.
+This preserves an attributable source route without claiming whole-consumer admission.
+Continue helper/import-time and selected-operation review;
+no reference evaluator has been imported or run.
+
 Continue unresolved consumer provenance,
 numerical parity,
 execution fit,

@@ -1113,6 +1113,47 @@ No native consumer execution or inference admission follows from this inspection
 SLSA is not the only possible attribution mechanism,
 but source mapping and build-input review remain required.
 
+#### Reference-evaluator source route
+
+The already pinned ONNX 1.23.0 package provides another CPU source path to investigate:
+`onnx.reference.ReferenceEvaluator`.
+Its existing wheel attribution is separate from ORT's unresolved artifact routes.
+It is not a native-free runtime:
+its Python implementation uses NumPy and the ONNX schema/data stack.
+No evaluator import or execution has occurred.
+
+`proc_cd31` extracted 196 direct operator-import sources without executing them.
+`proc_8a61` parsed 205 Python files with the standard-library AST parser,
+inventoried 977 import declarations,
+and mapped the frozen graph's 39 main-domain operator kinds to direct class candidates for opset 18.
+The mapping follows the inspected numeric-suffix registration/selection rule;
+it does not prove actual registration,
+supported shape/dtype combinations,
+parity,
+or five-second assessment fit.
+The package imports its registry modules eagerly,
+so import-time review is broader than the selected graph operators.
+Conditional and type-checking imports remain distinguished from executed dependencies.
+Source at the pinned revision:
+`onnx/reference/ops/__init__.py:8`,
+`onnx/reference/ops/_op_list.py:280` to `511` and `519` to `629`,
+and `onnx/reference/ops/_helpers.py:11` to `67`.
+
+After the additional helper extraction,
+`proc_f95b` matched all 212 currently materialized Python files,
+totaling 527,164 bytes,
+to the historical exact-wheel/source map from `fbbf53f`.
+It also rehashed current source copies and verified that historical map was unchanged from its commit.
+The result is retained at private `0528dbc`;
+this is not a fresh consumer run or wholesale runtime admission.
+The source pin remains `ee3ccbd2b2344299d3a4506c2954a47b2181a485`,
+and the ONNX wheel remains
+`f336004196a22fbdc16c62e7f26f20635af1826db6147c80ff3b4b8d428fc7ef`.
+Remaining work includes helper/import-time paths,
+selected operator bodies,
+external-data and native-schema boundaries,
+and a bounded manifest before any evaluator execution.
+
 ## Fine-tuning source findings
 
 The pinned notebook is

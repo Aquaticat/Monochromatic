@@ -579,6 +579,38 @@ No consumer has been installed or executed.
 The source-build route and the already pinned ONNX reference-evaluator source path remain investigations,
 not qualified runtimes or adopted alternatives.
 
+Reference source extraction `proc_cd31` retained 196 direct operator-import modules at private `8310324`.
+AST-only inventory `proc_8a61` covered 205 Python files and 977 import declarations,
+and mapped all 39 retained graph operator kinds to direct class/version candidates for opset 18.
+Source/results are private `3d04920` and `3d3e422`.
+The actual cgroup limits were 512 MiB,
+one CPU,
+zero added swap,
+and 16 processes;
+the configured container ceiling was 30 seconds.
+There was no candidate import or evaluator run.
+The mapping is not proof of runtime registration,
+shape/dtype support,
+parity,
+or deadline fit.
+The eager import path is `onnx/reference/ops/__init__.py:8` into `_op_list.py:280` to `511`,
+with selection at `_op_list.py:519` to `629` and registration helper `_helpers.py:11` to `67`.
+Import-time scope therefore exceeds the selected graph operators;
+conditional/type-checking imports are not automatically runtime requirements.
+
+After helper extraction `proc_cb23`,
+`proc_f95b` rehashed all 212 current Python source copies,
+totaling 527,164 bytes,
+and matched them to the historical exact-wheel/source map,
+verified unchanged from `fbbf53f`.
+The result is private `0528dbc`.
+This preserves a concrete source-to-artifact route through the already attributed ONNX wheel,
+not a provenance waiver for ORT or whole-consumer admission.
+Remaining helper/import-time,
+selected-operation,
+external-data/native-schema,
+and bounded-execution gates stay open.
+
 ### Jev through LLM Gateway
 
 Jev/gateway is a hosted service.
