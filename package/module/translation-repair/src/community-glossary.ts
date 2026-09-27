@@ -167,6 +167,21 @@ export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
     why: 'short for 跨性别圈子, the trans community; the archive renders it "the Trans Community", and it '
       + 'never means crossdressing (女装) or "across communities"',
   },
+  {
+    // CLASS ONE HUNDRED EIGHTY-TWO (TianqiChen66614, 2026-09-27). 炸柜
+    // written out, the closet door blown open; the 炸柜 entry never matched
+    // it. The page shipped "blocked again and again, each time the closet
+    // door blew open" for 因为柜门炸开屡屡受阻, keeping the figure literal and
+    // reading the cause as a repeated event. One page in the pin carries it.
+    term: '柜门炸开',
+    renderings: [
+      'outed',
+      'blown out of the closet',
+    ],
+    refusedForms: [],
+    why: '炸柜 written out: being outed against one\'s will, not coming out; where the source says 因为, '
+      + 'the outing is the cause of what follows ("after she was outed"), not an event repeated each time',
+  },
   ...FANDOM_GLOSSARY,
 ];
 

@@ -45,7 +45,7 @@ await describe({
       fn: async () => {
         expect(COMMUNITY_GLOSSARY.map(function termOf(entry,): string {
           return entry.term;
-        },),).toEqual(['自切', '超天酱', '炸柜', '药娘', '逆子', '跨圈', '头壳', '阿洛娜', '亚托莉', '高性能机器人',],);
+        },),).toEqual(['自切', '超天酱', '炸柜', '药娘', '逆子', '跨圈', '柜门炸开', '头壳', '阿洛娜', '亚托莉', '高性能机器人',],);
         expect(COMMUNITY_GLOSSARY[0]?.renderings[0],).toBe('self-surgery',);
         expect(COMMUNITY_GLOSSARY[1]?.renderings[0],).toBe('KAngel',);
         expect(COMMUNITY_GLOSSARY[2]?.renderings[0],).toBe('outed',);
