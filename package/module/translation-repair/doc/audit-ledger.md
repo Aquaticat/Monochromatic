@@ -800,7 +800,14 @@ mark a Han-only TRANSLATION value as untranslated.
 
 ### F-4: the suicide floor refuses ordinary English and its census counted entries, not slices
 
-Status: open.
+Status: fixed; an attempt on a life, a death by one's own hand after a death word,
+and an attributed quotation of a published work pass, and the finding no longer says "she".
+Replayed old against new over the same 5,239 slices
+(`~/temp/agent/audit-floor-replay/floor-replay.mjs droppedSuicideFindings`): refusals 11 to 8, none added;
+the three cleared are the correct English this finding names (one phrasing, one quotation in two builds),
+and each of the eight kept drops or blurs the word.
+The header's entry census is corrected by the slice replay.
+"Died by her own hand" had no replay case; it is guarded by an invented one.
 Refuses "attempts on her own life",
 "died by her own hand",
 and a canonical English quotation whose Chinese added 自杀;
