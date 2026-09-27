@@ -98,6 +98,21 @@ await describe({
     },),
 
     it({
+      name: 'STILL REFUSES a collapse where the counts differ, reading repeats rather than positions: a page '
+        + 'heading repeated more often than the original repeats any heading renders two distinct ones as one '
+        + '(ledger F-10: the floor went silent whenever a heading was also dropped or added)',
+      fn: async () => {
+        expect(function publishCollapsedAndShort(): void {
+          assertHeadingsStayDistinct({
+            entryId: 'Cat',
+            sourceText: '## 小猫\n\n它睡了。\n\n## 大猫\n\n它醒了。\n\n## 老猫\n\n它吃了。\n',
+            pageText: '## Cat\n\nIt sleeps.\n\n## Cat\n\nIt wakes and eats.\n',
+          },);
+        },).toThrow(CollapsedHeadingError,);
+      },
+    },),
+
+    it({
       name: 'COMPARES headings by their words rather than their marks, so a level or trailing-space '
         + 'difference between two identical page headings does not hide a collapse',
       fn: async () => {
