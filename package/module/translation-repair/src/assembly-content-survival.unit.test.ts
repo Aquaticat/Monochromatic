@@ -65,6 +65,19 @@ await describe({
         expect(distinctiveWords({ archiveText: 'the cat sat on the mat', },).length,).toBe(0,);
       },
     },),
+    it({
+      name: 'HOLDS BOTH BOUNDARIES: six letters counts and five does not; two uses count and three do not',
+      fn: async () => {
+        /** Six- and five-letter words once each, and two long words used twice and thrice. */
+        const words = distinctiveWords({
+          archiveText: 'purred tabby. biscuit biscuit. whisker whisker whisker.',
+        },);
+        expect(words,).toContain('purred',);
+        expect(words,).not.toContain('tabby',);
+        expect(words,).toContain('biscuit',);
+        expect(words,).not.toContain('whisker',);
+      },
+    },),
   ],
 },);
 
