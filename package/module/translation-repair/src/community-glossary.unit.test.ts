@@ -44,14 +44,50 @@ await describe({
     it({
       name: 'SEEDS THE TERMS the bench lost (two the archive had right, one the archive misread too, one the owner renders, one insult the bench ungendered, one the bench read as crossdressing, the fandom words the bench misread or the archive glossed away), each with the accepted rendering first',
       fn: async () => {
-        expect(COMMUNITY_GLOSSARY.map(function termOf(entry,): string {
+        // PROPERTIES AND NAMED TERMS, NOT THE WHOLE LIST (ledger H13): pinning
+        // every term in order went red on each of three additions and said
+        // nothing an addition could break.
+        /**
+         Seeded terms in order.
+         */
+        const terms = COMMUNITY_GLOSSARY.map(function termOf(entry,): string {
           return entry.term;
-        },),).toEqual(['自切', '超天酱', '炸柜', '药娘', '逆子', '跨圈', '柜门炸开', '头壳', '阿洛娜', '亚托莉', '高性能机器人', '变娃', '治愈',],);
-        expect(COMMUNITY_GLOSSARY[0]?.renderings[0],).toBe('self-surgery',);
-        expect(COMMUNITY_GLOSSARY[1]?.renderings[0],).toBe('KAngel',);
-        expect(COMMUNITY_GLOSSARY[2]?.renderings[0],).toBe('outed',);
-        expect(COMMUNITY_GLOSSARY[4]?.renderings[0],).toBe('unfilial son',);
-        expect(COMMUNITY_GLOSSARY[5]?.renderings[0],).toBe('trans community',);
+        },);
+        expect(new Set(terms,).size,).toBe(terms.length,);
+        for (const entry of COMMUNITY_GLOSSARY) {
+          expect(entry.renderings.length,).toBeGreaterThan(0,);
+          for (const rendering of entry.renderings)
+            expect(rendering.trim(),).not.toBe('',);
+        }
+        /**
+         First, accepted rendering of one seeded term.
+
+         @param term - seeded term
+
+         @returns Its first rendering
+
+         @throws {@link Error} when the term is not seeded or has no rendering
+         */
+        function acceptedFor(term: string,): string {
+          /**
+           The term's first rendering, if the term is seeded.
+           */
+          const accepted = COMMUNITY_GLOSSARY.find(function isTerm(entry,): boolean {
+            return entry.term === term;
+          },)
+            ?.renderings[0];
+          if (accepted === undefined)
+            throw new Error(`${term} is not seeded`,);
+          return accepted;
+        }
+        expect(acceptedFor('自切',),).toBe('self-surgery',);
+        expect(acceptedFor('超天酱',),).toBe('KAngel',);
+        expect(acceptedFor('炸柜',),).toBe('outed',);
+        expect(acceptedFor('逆子',),).toBe('unfilial son',);
+        expect(acceptedFor('跨圈',),).toBe('trans community',);
+        // The owner's renderings: 药娘 as "trans girl" or "trans woman", and 治愈 leading with "healed".
+        expect(acceptedFor('药娘',),).toBe('trans girl',);
+        expect(acceptedFor('治愈',),).toBe('healed',);
       },
     },),
 
