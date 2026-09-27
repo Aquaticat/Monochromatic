@@ -8,6 +8,7 @@ import { placeHandleGlosses, } from './handle-gloss-place.ts';
 import { restoreCollidingHeadings, } from './heading-collision-restore.ts';
 import { unifyHeadingSeries, } from './heading-series-unify.ts';
 import { restoreArchiveCasing, } from './archive-casing-restore.ts';
+import { restoreArchiveDestinations, } from './archive-destination-restore.ts';
 import { restoreArchiveItalicTitles, } from './archive-italic-title-restore.ts';
 import { unwrapBlockquoteQuotes, } from './blockquote-quote-unify.ts';
 import { restoreArchiveNameCasing, } from './archive-name-casing.ts';
@@ -224,6 +225,15 @@ export function guardPageAssembly(
     archiveOriginalSpans,
   },);
   /**
+   Every link the archive gave its own destination pointed back at it
+   (ledger A4, owner 2026-09-27, "Archive's English").
+   */
+  const destinations = restoreArchiveDestinations({
+    slices,
+    replacements: italics.replacements,
+    archiveOriginalSpans,
+  },);
+  /**
    Rows the page-assembly passes rewrote, the latest pass's text per slice.
    */
   const restoredRows = new Map<number, SliceReplacement>([
@@ -242,6 +252,7 @@ export function guardPageAssembly(
     ...quotes.restored,
     ...blockquotes.restored,
     ...italics.restored,
+    ...destinations.restored,
   ].map(function bySlice(row,): readonly [
     number,
     SliceReplacement,
@@ -257,7 +268,7 @@ export function guardPageAssembly(
   const guarded = guardFootnoteAssembly({
     targetText,
     slices,
-    replacements: italics.replacements
+    replacements: destinations.replacements
       .filter(function stillChanges(replacement,): boolean {
         // A restoration that brings a slice back to the archive's exact wording
         // is no change for the assembler; its override row below still says
@@ -307,6 +318,7 @@ export function guardPageAssembly(
       ...quotes.findings,
       ...blockquotes.findings,
       ...italics.findings,
+      ...destinations.findings,
       ...guarded.findings,
     ],
   };
