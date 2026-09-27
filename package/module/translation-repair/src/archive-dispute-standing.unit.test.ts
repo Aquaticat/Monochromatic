@@ -30,13 +30,21 @@ import {
   type ChatJsonRequest,
   laneTextsForSlate,
   messageText,
+  prepareDocumentPair,
   readStandingVerdict,
   type RosterModelId,
   runTranslateStage,
   type SyntheticClient,
+  translateSliceInput,
   translateSliceKey,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
+
+/**
+ Picture marker the archive carries on its own line, which lets a trailing
+ transcript be held out of writing and judging as a target-only run.
+ */
+const MARKER = `<PhotoScroll photos={['${['$', '{path}',].join('',)}/photos/letter.webp']} />`;
 
 /**
  Logger the stages write through, whose output is not under test.
@@ -341,6 +349,32 @@ await describe({
         expect(result.findings.some(function withheldCopy(finding,): boolean {
           return finding.startsWith('translate-candidate-refused',);
         },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'LEAVES AN ELIGIBLE STAND-IN UNREFUSED where a target-only run is held out of it, refusing only the '
+        + 'archive',
+      fn: async () => {
+        const prepared = prepareDocumentPair({
+          sourceText: `猫睡了。\n\n${MARKER}`,
+          targetText: `The cat slept, purring loudly.\n\n${MARKER}\n\n> Dear cat, rest well.`,
+        },);
+        const [slice,] = prepared.slices;
+        if (slice === undefined)
+          throw new Error('fixture requires a prepared slice',);
+        const surface = translateSliceInput({
+          slice,
+          prepared,
+          archiveStandIn: `The cat slept.\n\n${MARKER}\n\n> Dear cat, rest well.`,
+          disputedWordings: [{
+            text: slice.target.text,
+            reason: 'the archive rendering the adjudicators disputed',
+          },],
+        },);
+        expect(surface.protectedText,).toBe('> Dear cat, rest well.',);
+        expect((surface.stageInput.disputedWordings ?? []).some(function refusesIncumbent(wording,): boolean {
+          return wording.text === surface.stageInput.incumbentText;
+        },),).toBe(false,);
       },
     },),
     it({
