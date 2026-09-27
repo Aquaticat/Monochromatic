@@ -275,24 +275,27 @@ export function pageAssemblyOverrideAt(
     readonly sliceIndex: number;
   },
 ): PageAssemblyOverride {
-  if (pageAssembly
-    .withdrawn
-    .includes(sliceIndex,))
-    return { kind: 'withdrawn', };
   /**
-   The trimmed replacement for this slice, if any.
+   The trimmed replacement for this slice, if any: READ FIRST, because a slice
+   the guard took back carries one where a page pass rewrote the archive text
+   standing there (ledger K5), and that text is what the page carries.
    */
   const trimmed = pageAssembly
     .trimmed
     .find(function namesIt(replacement,): boolean {
       return replacement.sliceIndex === sliceIndex;
     },);
-  if (trimmed === undefined)
-    return { kind: 'untouched', };
-  return {
-    kind: 'trimmed',
-    text: trimmed.replacementText,
-  };
+  if (trimmed !== undefined) {
+    return {
+      kind: 'trimmed',
+      text: trimmed.replacementText,
+    };
+  }
+  if (pageAssembly
+    .withdrawn
+    .includes(sliceIndex,))
+    return { kind: 'withdrawn', };
+  return { kind: 'untouched', };
 }
 
 //endregion Artifact page assembly

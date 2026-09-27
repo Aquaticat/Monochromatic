@@ -1,9 +1,7 @@
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
-import { withholdLoneContainerHalves, } from '../assembly-container-halves.ts';
-import { guardFootnoteAssembly, } from '../assembly-integrity.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
-import { runPagePasses, } from './page-assembly-passes.ts';
+import { settlePageRounds, } from './page-assembly-rounds.ts';
 import { shippableReplacements, } from './publish-fixed.ts';
 import type { WouldShipSource, } from './would-ship-text.ts';
 
@@ -75,40 +73,34 @@ export function guardPageAssembly(
       return replacement.replacementText !== incumbentBySlice.get(replacement.sliceIndex,);
     },);
   /**
-   Replacements less any container half whose partner ships nothing (class
-   fifty-seven), so the guard never reads a closing tag with no opening.
+   Rounds of the passes and the guard until one takes nothing back, each over
+   the rows the ones before left (ledger K5).
    */
-  const halves = withholdLoneContainerHalves({
-    slices,
-    replacements,
-  },);
-  /**
-   What every page-assembly pass made of those replacements.
-   */
-  const passes = runPagePasses({
+  const {
+    final,
+    takenBack,
+    earlierFindings,
+  } = settlePageRounds({
     slices,
     sourceText,
     targetText,
-    replacements: halves.replacements,
+    replacements,
     archiveOriginalSpans,
+    incumbentBySlice,
   },);
   /**
-   The guard's reading of the composed page.
+   The settling round's passes and guard.
    */
-  const guarded = guardFootnoteAssembly({
-    targetText,
-    slices,
-    replacements: passes.replacements
-      .filter(function stillChanges(replacement,): boolean {
-        // A restoration that brings a slice back to the archive's exact wording
-        // is no change for the assembler; its override row below still says
-        // what the page carries.
-        return replacement.replacementText !== incumbentBySlice.get(replacement.sliceIndex,);
-      },),
-  },);
+  const {
+    halves,
+    passes,
+    guarded,
+  } = final;
   /**
-   Restored slices the footnote guard neither trimmed nor withdrew, which
-   ride the same override a trimmed slice does: the page carries this text.
+   Rewritten rows the footnote guard neither trimmed nor withdrew, which ride
+   the same override a trimmed slice does: the page carries this text. A slice
+   an earlier round took back is among them where a pass rewrote its archive
+   text, and that row wins over its withdrawal.
    */
   const restoredOnly = [...passes.restored
     .values(),]
@@ -128,11 +120,9 @@ export function guardPageAssembly(
       ...guarded.trimmed,
       ...restoredOnly,
     ],
-    withdrawn: [
-      ...halves.withheld,
-      ...guarded.revertedChunkIndices,
-    ],
+    withdrawn: takenBack,
     findings: [
+      ...earlierFindings,
       ...halves.findings,
       ...passes.findings,
       ...guarded.findings,
