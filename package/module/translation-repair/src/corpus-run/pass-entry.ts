@@ -408,6 +408,7 @@ async function runEntryPipeline(
       lanes,
       projected,
       frontMatterSlices,
+      lineStructuredSlices: prepared.lineStructuredSliceIndices,
       ...((prepared.identityContext === undefined)
         ? {}
         : { identityContext: prepared.identityContext, }),

@@ -332,7 +332,9 @@ type CatRig = {
  @param projected - optional explicit lane projection
  
  @param frontMatterSlices - syntax-bearing positions
- 
+
+ @param lineStructuredSlices - positions the line-structure rule governs
+
  @param answerChoice - lane every scripted ballot selects
  
  @param overlap - most contested slices in flight
@@ -355,6 +357,7 @@ async function drive(
     resumed = new Map<string, LaneContestOutcome>(),
     projected,
     frontMatterSlices = new Set(),
+    lineStructuredSlices = new Set(),
     answerChoice = 'translate',
     overlap = 1,
     activity,
@@ -368,6 +371,7 @@ async function drive(
     readonly resumed?: ReadonlyMap<string, LaneContestOutcome>;
     readonly projected?: ProjectedLanes;
     readonly frontMatterSlices?: ReadonlySet<number>;
+    readonly lineStructuredSlices?: ReadonlySet<number>;
     readonly answerChoice?: LaneContestOutcome['choice'];
     readonly overlap?: number;
     readonly activity?: ContestConcurrency;
@@ -491,6 +495,7 @@ async function drive(
     projected: askedProjection,
     modelIds: ROSTER,
     frontMatterSlices,
+    lineStructuredSlices,
     cache,
     signal: (abortOnCall === undefined)
       ? AbortSignal.timeout(30_000,)

@@ -281,6 +281,12 @@ export type LaneContestChoiceVerdict = {
  
  @param syntax - explicit syntax role, absent for ordinary prose
  
+ @param lineStructured - whether the line-structure rule governs this slice,
+ so a winner merging its lines is refused like any other broken floor.
+ REQUIRED, NOT DEFAULTED (ledger H2): the optional form read false wherever a
+ caller left it off, and this verdict was that caller, persisting a merged
+ rendering of a governed slice as warm-run evidence
+ 
  @param declared - name pairs the front matter declares, which the rule
  reads for a linked title naming a declared person (class one hundred
  fourteen); none leaves that floor silent
@@ -289,7 +295,7 @@ export type LaneContestChoiceVerdict = {
  
  @example
  ```ts
- const verdict = laneContestChoiceVerdict({ outcome, sourceText, incumbentText, repairText, translateText, },);
+ const verdict = laneContestChoiceVerdict({ outcome, sourceText, incumbentText, repairText, translateText, lineStructured: false, },);
  ```
  */
 export function laneContestChoiceVerdict(
@@ -300,6 +306,7 @@ export function laneContestChoiceVerdict(
     repairText,
     translateText,
     syntax,
+    lineStructured,
     declared = [],
   }: {
     readonly outcome: LaneContestOutcome;
@@ -308,6 +315,7 @@ export function laneContestChoiceVerdict(
     readonly repairText: string;
     readonly translateText: string;
     readonly syntax?: SliceSyntax;
+    readonly lineStructured: boolean;
     readonly declared?: readonly DeclaredNamePair[];
   },
 ): LaneContestChoiceVerdict {
@@ -344,6 +352,7 @@ export function laneContestChoiceVerdict(
     candidateText,
     pageText: incumbentText,
     ...((syntax === undefined) ? {} : { syntax, }),
+    lineStructured,
     declared,
   },);
   if (validation.kind === 'valid')
@@ -383,6 +392,12 @@ export function laneContestChoiceVerdict(
  
  @param syntax - explicit syntax role, absent for ordinary prose
  
+ @param lineStructured - whether the line-structure rule governs this slice,
+ so a winner merging its lines is refused like any other broken floor.
+ REQUIRED, NOT DEFAULTED (ledger H2): the optional form read false wherever a
+ caller left it off, and this verdict was that caller, persisting a merged
+ rendering of a governed slice as warm-run evidence
+ 
  @param declared - name pairs the front matter declares, which the rule
  reads for a linked title naming a declared person (class one hundred
  fourteen); none leaves that floor silent
@@ -391,7 +406,7 @@ export function laneContestChoiceVerdict(
  
  @example
  ```ts
- const mayShip = laneContestChoiceMayShip({ outcome, sourceText, incumbentText, repairText, translateText, syntax: 'front-matter', });
+ const mayShip = laneContestChoiceMayShip({ outcome, sourceText, incumbentText, repairText, translateText, syntax: 'front-matter', lineStructured: false, });
  ```
  */
 export function laneContestChoiceMayShip(
@@ -402,6 +417,7 @@ export function laneContestChoiceMayShip(
     repairText,
     translateText,
     syntax,
+    lineStructured,
     declared = [],
   }: {
     readonly outcome: LaneContestOutcome;
@@ -410,6 +426,7 @@ export function laneContestChoiceMayShip(
     readonly repairText: string;
     readonly translateText: string;
     readonly syntax?: SliceSyntax;
+    readonly lineStructured: boolean;
     readonly declared?: readonly DeclaredNamePair[];
   },
 ): boolean {
@@ -423,6 +440,7 @@ export function laneContestChoiceMayShip(
     repairText,
     translateText,
     ...((syntax === undefined) ? {} : { syntax, }),
+    lineStructured,
     declared,
   },);
   return verdict.mayShip;

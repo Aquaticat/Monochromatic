@@ -152,6 +152,7 @@ await describe({
           incumbentText: ARCHIVE,
           repairText: ARCHIVE,
           translateText: DECLARED,
+          lineStructured: false,
           declared: PAIRS,
         },).mayShip,).toBe(false,);
         expect(readStandingVerdict({

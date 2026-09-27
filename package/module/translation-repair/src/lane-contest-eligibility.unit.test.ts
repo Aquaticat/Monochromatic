@@ -157,6 +157,7 @@ await describe({
           incumbentText: ARCHIVE,
           repairText: ARCHIVE,
           translateText: TRANSLATED,
+          lineStructured: false,
           syntax: 'front-matter',
         },),).toBe(false,);
       },
@@ -171,6 +172,7 @@ await describe({
           incumbentText: ARCHIVE,
           repairText: ARCHIVE,
           translateText: TRANSLATED,
+          lineStructured: false,
           syntax: 'front-matter',
         },),).toBe(true,);
       },
@@ -185,6 +187,7 @@ await describe({
           incumbentText: 'Contributors for this entry: [Snow](https://example.test/snow)',
           repairText: 'Contributors for this entry: Snowflake',
           translateText: 'Contributors for this entry: [Snow](https://example.test/snow)',
+          lineStructured: false,
         },),).toBe(false,);
       },
     },),
@@ -198,6 +201,7 @@ await describe({
           incumbentText: 'Cat.',
           repairText: 'Cat.',
           translateText: 'A cat.',
+          lineStructured: false,
         },),).toBe(true,);
         expect(laneContestChoiceMayShip({
           outcome: outcomeFor({ choice: 'neither', },),
@@ -205,6 +209,7 @@ await describe({
           incumbentText: ARCHIVE,
           repairText: ARCHIVE,
           translateText: TRANSLATED,
+          lineStructured: false,
           syntax: 'front-matter',
         },),).toBe(true,);
       },
@@ -227,6 +232,7 @@ await describe({
           incumbentText: ARCHIVE,
           repairText: ARCHIVE,
           translateText: TRANSLATED,
+          lineStructured: false,
           syntax: 'front-matter',
         },);
         expect(verdict.mayShip,).toBe(false,);
@@ -244,6 +250,7 @@ await describe({
           incumbentText: ARCHIVE,
           repairText: ARCHIVE,
           translateText: TRANSLATED,
+          lineStructured: false,
           syntax: 'front-matter',
         },),).toEqual({
           mayShip: true,
@@ -296,6 +303,7 @@ await describe({
           incumbentText: ARCHIVE,
           repairText: ARCHIVE,
           translateText: TRANSLATED,
+          lineStructured: false,
           syntax: 'front-matter',
         },),).toEqual({
           mayShip: false,
@@ -307,6 +315,7 @@ await describe({
           incumbentText: 'Cat.',
           repairText: 'Cat.',
           translateText: 'A cat.',
+          lineStructured: false,
         },),).toEqual({
           mayShip: true,
           findings: [],

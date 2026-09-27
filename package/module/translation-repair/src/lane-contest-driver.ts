@@ -206,7 +206,11 @@ export async function persistLaneContestOutcome(
  @param referenceContext - what the pages the original cites say, when any
  
  @param frontMatterSlices - syntax-bearing metadata slice indexes
- 
+
+ @param lineStructuredSlices - slice indexes the line-structure rule governs,
+ which the publication verdict reads so a winner merging a governed slice's
+ lines is neither persisted nor twin-memoized (ledger H2)
+
  @param cache - per-entry store of ballots already bought
  
  @param signal - abort shared with the rest of the entry
@@ -224,7 +228,7 @@ export async function persistLaneContestOutcome(
  
  @example
  ```ts
- const slices = await contestDocumentLanes({ client, projected, modelIds, frontMatterSlices, cache, signal, perCallTimeoutMs, l, },);
+ const slices = await contestDocumentLanes({ client, projected, modelIds, frontMatterSlices, lineStructuredSlices, cache, signal, perCallTimeoutMs, l, },);
  ```
  */
 export async function contestDocumentLanes(
@@ -235,6 +239,7 @@ export async function contestDocumentLanes(
     identityContext,
     referenceContext,
     frontMatterSlices,
+    lineStructuredSlices,
     cache,
     damageClaimsBySlice = new Map<number, readonly string[]>(),
     disputeNotesBySlice = new Map<number, string>(),
@@ -251,6 +256,7 @@ export async function contestDocumentLanes(
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly frontMatterSlices: ReadonlySet<number>;
+    readonly lineStructuredSlices: ReadonlySet<number>;
     readonly cache: SliceCache<LaneContestOutcome>;
     /**
      Corroborated added-damage claims against the repair lane, per slice,
@@ -488,6 +494,7 @@ export async function contestDocumentLanes(
               repairText: row.repairText,
               translateText: row.translateText,
               ...((syntax === undefined) ? {} : { syntax, }),
+              lineStructured: lineStructuredSlices.has(row.sliceIndex,),
               declared: declaredNamePairs,
             },);
             /**

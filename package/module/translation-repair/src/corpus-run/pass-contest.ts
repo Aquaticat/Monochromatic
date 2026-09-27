@@ -36,7 +36,10 @@ import { readJudgeSeats, } from './run-seats-read.ts';
  @param projected - both lane ledgers and the comparison the contest reads
  
  @param frontMatterSlices - syntax-bearing metadata positions
- 
+
+ @param lineStructuredSlices - positions the line-structure rule governs, so
+ the contest's publication verdict refuses a winner merging their lines
+
  @param identityContext - declared names both documents carry, when any
 
  @param referenceContext - what the pages the original cites say, when any
@@ -55,7 +58,7 @@ import { readJudgeSeats, } from './run-seats-read.ts';
  
  @example
  ```ts
- const contests = await runPassContest({ client, lanes, projected, frontMatterSlices, entryCacheDir, pipelineDigest, signal, overlap, l, },);
+ const contests = await runPassContest({ client, lanes, projected, frontMatterSlices, lineStructuredSlices, entryCacheDir, pipelineDigest, signal, overlap, l, },);
  ```
  */
 export async function runPassContest(
@@ -64,6 +67,7 @@ export async function runPassContest(
     lanes,
     projected,
     frontMatterSlices,
+    lineStructuredSlices,
     identityContext,
     referenceContext,
     declaredNamePairs,
@@ -77,6 +81,7 @@ export async function runPassContest(
     readonly lanes: DocumentLanesResult;
     readonly projected: ProjectedLanes;
     readonly frontMatterSlices: ReadonlySet<number>;
+    readonly lineStructuredSlices: ReadonlySet<number>;
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly declaredNamePairs?: readonly DeclaredNamePair[];
@@ -104,6 +109,7 @@ export async function runPassContest(
     // while Synthetic is dry (`run-seats.ts`).
     modelIds: seats.lateJudges,
     frontMatterSlices,
+    lineStructuredSlices,
     // The probe's corroborated claims, shown to the judges and acted on by
     // nobody (`repair-damage-evidence.ts`).
     damageClaimsBySlice: damageClaimLinesBySlice({ lane: lanes.repair, },),
