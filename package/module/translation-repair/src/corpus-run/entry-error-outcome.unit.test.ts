@@ -11,6 +11,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  CollapsedHeadingError,
   ConsolidationStandingIneligibleError,
   ContributorCompletenessError,
   DroppedDestinationError,
@@ -19,8 +20,12 @@ import {
   NaturalnessCompletenessError,
   NaturalnessRepairInterruptedError,
   PromptPayloadStoreError,
+  PublishedPageDisagreesError,
+  SliceSpliceError,
   TranslationRepairInterruptedError,
+  UnansweredContestSliceError,
   UnfilledPageError,
+  UnparseablePageError,
   VisualEvidenceInterruptedError,
 } from '../../dist/final/node/index.mjs';
 
@@ -51,6 +56,21 @@ await describe({
         },],
       },),
       new VisualEvidenceInterruptedError({ unavailableCount: 1, }),
+      // Ledger A7: deterministic page and artifact refusals, which a retry
+      // resuming the same cached slices reproduces exactly.
+      new CollapsedHeadingError({ entryId: 'Cat', sourceDistinct: 2, pageDistinct: 1, }),
+      new UnparseablePageError({ entryId: 'Cat', refusal: 'at 3:12 (mdx-jsx)', }),
+      new PublishedPageDisagreesError({
+        entryId: 'Cat',
+        disagreement: {
+          kind: 'weight-off',
+          actual: 10,
+          expected: 12,
+          exact: true,
+        },
+      },),
+      new UnansweredContestSliceError({ message: 'slice 3 differs across lanes and the contest names it nowhere', },),
+      new SliceSpliceError({ message: 'two replacements name one slice', },),
     ] as const).map(function stoppedError(error,) {
       return it({
         name: `MAPS ${error.name} to INCOMPLETE stopped work`,

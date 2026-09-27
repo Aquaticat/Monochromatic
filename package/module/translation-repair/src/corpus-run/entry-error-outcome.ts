@@ -11,6 +11,11 @@ import { TranslationRepairInterruptedError, } from '../translation-repair-interr
 import { VisualEvidenceInterruptedError, } from './visual-evidence-completeness.ts';
 import type { EntryOutcome, } from './pass-entry-contract.ts';
 import { tallyErrorText, } from './tally-error-text.ts';
+import { CollapsedHeadingError, } from './heading-distinctness.ts';
+import { UnparseablePageError, } from './page-grammar.ts';
+import { PublishedPageDisagreesError, } from './published-page-disagreement.ts';
+import { UnansweredContestSliceError, } from './would-ship-text.ts';
+import { SliceSpliceError, } from '../splice-slices.ts';
 
 //region Entry failure scheduling
 
@@ -62,7 +67,14 @@ export function entryErrorOutcome(
     || (error instanceof PromptPayloadStoreError)
     || (error instanceof TranslationRepairInterruptedError)
     || (error instanceof UnfilledPageError)
-    || (error instanceof VisualEvidenceInterruptedError);
+    || (error instanceof VisualEvidenceInterruptedError)
+    // Ledger A7: deterministic refusals of the assembled page or the artifact,
+    // which a retry resuming the same cached slices reproduces exactly.
+    || (error instanceof CollapsedHeadingError)
+    || (error instanceof UnparseablePageError)
+    || (error instanceof PublishedPageDisagreesError)
+    || (error instanceof UnansweredContestSliceError)
+    || (error instanceof SliceSpliceError);
   return stopped
     ? {
       status: 'INCOMPLETE',
