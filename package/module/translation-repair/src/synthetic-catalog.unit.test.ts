@@ -40,7 +40,12 @@ await describe({
         }
       },
     },),
+  ],
+},);
 
+await describe({
+  name: 'synthetic catalog',
+  children: [
     it({
       name: 'keeps every catalog entry internally coherent',
       fn: async () => {
@@ -72,7 +77,7 @@ await describe({
     },),
 
     it({
-      name: 'spans four vendor families across four distinct models',
+      name: 'spans one model per vendor family, so no alias counts one model twice',
       fn: async () => {
         /** Distinct families in the catalog. */
         const families = new Set(
@@ -86,16 +91,18 @@ await describe({
           'qwen',
           'zai',
         ],);
-        // Four, not the eleven ids the models endpoint lists: syn:large:text,
+        // Not every id the models endpoint lists: syn:large:text,
         // syn:large:vision, syn:small:text, and syn:small:vision each alias a
         // model already counted here. Admitting one would seat a single model
-        // twice on a voting panel and count one opinion as two confirmations.
+        // twice on a voting panel and count one opinion as two confirmations,
+        // and would put a second entry under a family already present.
         //
-        // FIVE RATHER THAN SIX FROM 2026-08-24, when the owner blocklisted
-        // `zai-org/GLM-4.7-Flash`, then four from 2026-08-29 when the owner
-        // removed Nemotron from every stage. The Z.ai family remains represented
-        // by GLM-5.3-Flash; the NVIDIA family leaves the callable catalog.
-        expect(Object.keys(SYNTHETIC_MODELS,),).toHaveLength(4,);
+        // HISTORY, NOT AN ASSERTION: five rather than six from 2026-08-24, when
+        // the owner blocklisted `zai-org/GLM-4.7-Flash`, then four from
+        // 2026-08-29 when the owner removed Nemotron from every stage. The Z.ai
+        // family remains represented by GLM-5.3-Flash; the NVIDIA family leaves
+        // the callable catalog.
+        expect(families.size,).toBe(Object.keys(SYNTHETIC_MODELS,).length,);
         expect(Object.hasOwn(
           SYNTHETIC_MODELS,
           'hf:zai-org/GLM-4.7-Flash',
