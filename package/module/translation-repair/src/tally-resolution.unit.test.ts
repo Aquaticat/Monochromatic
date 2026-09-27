@@ -178,5 +178,34 @@ await describe({
         expect(tallies['adjudicated/paw']?.fixed,).toBe(0,);
       },
     },),
+
+    it({
+      name: 'ONE CAST BALLOT RESOLVES NOTHING, while two agreeing ballots do: one model never decides '
+        + 'that a defect is gone (759 of 8,788 readings over 403 run directories resolved on one '
+        + 'ballot, 756 inside a selected patch; XingZ6014 slice 87 shipped one)',
+      fn: async () => {
+        /** The first issue heard by one checker alone; the second by two agreeing ones. */
+        const tallies = tallyResolutionChecks({
+          issueIds: ISSUE_IDS,
+          authorship: UNATTRIBUTED_TEXT,
+          ballots: {
+            a: {
+              verdicts: {
+                'adjudicated/whisker': 'fixed',
+                'adjudicated/paw': 'fixed',
+              },
+              findings: [],
+            },
+            b: {
+              verdicts: { 'adjudicated/paw': 'fixed', },
+              findings: [],
+            },
+          },
+        },);
+        expect(tallies['adjudicated/whisker']?.fixed,).toBe(1,);
+        expect(tallies['adjudicated/whisker']?.resolved,).toBe(false,);
+        expect(tallies['adjudicated/paw']?.resolved,).toBe(true,);
+      },
+    },),
   ],
 },);
