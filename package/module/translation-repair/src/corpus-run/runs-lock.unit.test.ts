@@ -296,11 +296,7 @@ await describe({
         expect((await readFile(path, 'utf8',)).includes('somebody-else',),).toBe(true,);
         expect(await releaseIfOwned({
           path,
-          holder: {
-            pid: process.pid,
-            startedAt: '2026-08-14T00:00:00.000Z',
-            token: 'somebody-else',
-          },
+          holder: { token: 'somebody-else', },
         },),).toBe('released',);
       },
     },),

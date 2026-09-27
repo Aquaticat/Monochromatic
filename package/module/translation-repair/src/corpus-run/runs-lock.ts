@@ -7,10 +7,18 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-
 import { contextRoot, } from '../log-context.ts';
-import { refusalText, } from '../refusal-text.ts';
-import { readRunJson, } from '../run-json-read.ts';
+import {
+  hostIdentity,
+  startTicksOf,
+} from './process-identity.ts';
+import {
+  type HeldJudgement,
+  holderLiveness,
+  type LockHolder,
+  lockFileText,
+  readHolder,
+} from './runs-lock-holder.ts';
 
 //region Runs lock
 // ONE pass at a time per runs directory.
@@ -31,7 +39,8 @@ import { readRunJson, } from '../run-json-read.ts';
 //   wins and the earlier entry's work is simply gone.
 //
 // The atomic rename in `writeFileAtomic` protects a READER from a half-written
-// file. It says nothing about two writers, which is this.
+// file. It says nothing about two writers, which is this. Who holds a lock and
+// whether it still runs is `runs-lock-holder.ts`.
 
 /**
  Logger every lock line goes through; the lock takes no caller-supplied one.
@@ -44,92 +53,53 @@ const lockLog = contextRoot({ tag: 'runs-lock', },);
 const LOCK_FILE = 'pass.lock';
 
 /**
- What a lock file records about its holder.
- 
- @example
- ```ts
- const holder: LockHolder = { pid: 1234, startedAt: '2026-08-15T00:00:00.000Z', };
- ```
+ What each judgement lets a refusal say about its holder.
  */
-type LockHolder = Readonly<{
-  /**
-   Process holding it.
-   */
-  pid: number;
-
-  /**
-   When it took the lock, for a message a human can act on.
-   */
-  startedAt: string;
-
-  /**
-   Random per-acquisition token, so a release removes only the lock this
-   acquisition wrote and never a later holder's (`#243`). Empty on locks
-   written before the token existed, which therefore never read as ours.
-   */
-  token: string;
-}>;
-
-/**
- What a lock file turned out to say.
- 
- A named outcome rather than an absent holder, because "no readable holder"
- is a state a refusal has to describe, and a message that cannot say whether
- the lock named nobody or could not be read at all leaves an operator
- guessing.
- 
- @example
- ```ts
- const read: HolderRead = { kind: 'unreadable', };
- ```
- */
-type HolderRead =
-  | Readonly<{
-    /**
-     Lock file named a process.
-     */
-    kind: 'holder';
-
-    /**
-     Who it named.
-     */
-    holder: LockHolder;
-  }>
-  | Readonly<{
-    /**
-     Lock file said nothing this can act on.
-     */
-    kind: 'unreadable';
-  }>;
+const HELD_BECAUSE: Readonly<Record<HeldJudgement, string>> = {
+  identity: 'It names a process running now that started when the lock was taken, so the holder is alive.',
+  pid: 'It was judged by process id alone, since the lock records no start time or this host could '
+    + 'not read one: the id is in use, possibly by a process that received it after the holder ended. '
+    + 'If no pass runs under that id, delete the lock file.',
+  namespace: 'It was taken in another process-id namespace (a container, say), where its id counts '
+    + 'differently, so whether its holder runs cannot be judged from here.',
+  host: 'It was taken on another machine, whose processes this one cannot see, so whether its holder '
+    + 'runs cannot be judged from here.',
+  race: 'Another pass took it over at the same moment as this one.',
+};
 
 /**
  Raised when another pass already owns this runs directory.
  */
 export class RunsDirectoryBusyError extends Error {
   /**
-   Declares this message safe to forward: it names a process id, its start time and the directory.
+   Declares this message safe to forward: it names a process id, its start
+   time, the directory, and a fixed phrase saying how the holder was judged.
    */
   readonly messageNamesOnly: true = true;
 
   /**
-   Names the holder and the two ways forward.
+   Names the holder, how it was judged, and the two ways forward.
    
    @param runsDir - directory whose lock is held
    
    @param holder - what the lock file records, absent when unreadable
    
+   @param judgedBy - how the holder was judged to hold it
+   
    @example
    ```ts
-   throw new RunsDirectoryBusyError({ runsDir, holder, },);
+   throw new RunsDirectoryBusyError({ runsDir, holder, judgedBy: 'identity', },);
    ```
    */
   constructor(
     {
       runsDir,
       holder,
+      judgedBy,
     }: {
       readonly runsDir: string;
       readonly holder?: LockHolder;
+      readonly judgedBy: HeldJudgement;
     },
   ) {
     super(
@@ -149,95 +119,10 @@ export class RunsDirectoryBusyError extends Error {
         '',
         'Point this run at another directory with TRANSLATION_REPAIR_RUNS_DIR,',
         'or stop the other pass. A lock whose process is gone is taken over',
-        'automatically, so this means the holder is alive.',
+        `automatically. ${HELD_BECAUSE[judgedBy]}`,
       ].join('\n',),
     );
     this.name = 'RunsDirectoryBusyError';
-  }
-}
-
-/**
- Whether a process id is alive.
- 
- Signal zero performs the permission and existence checks without delivering
- anything, so it answers exactly this question. A process owned by another
- user answers EPERM, which is still alive.
- 
- @param pid - process id from a lock file
- 
- @returns Whether something is running under it
- 
- @example
- ```ts
- const held = isAlive({ pid: 1234, },);
- ```
- */
-function isAlive({ pid, }: { readonly pid: number; },): boolean {
-  try {
-    process.kill(
-      pid,
-      0,
-    );
-    return true;
-  }
-  catch (error) {
-    // EPERM means it exists and belongs to someone else, which is held rather
-    // than free. Logged rather than swallowed, since taking a lock away from a
-    // live process is the one outcome this must never produce silently.
-    if (Error.isError(error,) && ('code' in error)
-      && (error.code === 'EPERM')) {
-      lockLog.warn(
-        `process ${String(pid,)} exists but is not ours; treating the lock as held`,
-      );
-      return true;
-    }
-    return false;
-  }
-}
-
-/**
- Reads what a lock file claims, or nothing when it claims nothing readable.
- 
- @param path - lock file path
- 
- @returns Holder it records, absent when the file is unreadable or malformed
- 
- @example
- ```ts
- const holder = await readHolder({ path, },);
- ```
- */
-async function readHolder(
-  { path, }: { readonly path: string; },
-): Promise<HolderRead> {
-  try {
-    /**
-     Lock file contents as parsed JSON.
-     */
-    const parsed: unknown = await readRunJson({ path, },);
-
-    if (((typeof parsed) !== 'object') || (parsed === null))
-      return { kind: 'unreadable', };
-    if ((!('pid' in parsed)) || ((typeof parsed.pid) !== 'number'))
-      return { kind: 'unreadable', };
-    if ((!('startedAt' in parsed)) || ((typeof parsed.startedAt) !== 'string'))
-      return { kind: 'unreadable', };
-
-    return {
-      kind: 'holder',
-      holder: {
-        pid: parsed.pid,
-        startedAt: parsed.startedAt,
-        token: (('token' in parsed) && ((typeof parsed.token) === 'string')) ? parsed.token : '',
-      },
-    };
-  }
-  catch (error) {
-    // A lock file that cannot be read is not a lock anyone can respect, and
-    // saying so is better than either honouring it forever or ignoring it
-    // silently.
-    lockLog.warn(`${path} unreadable (${refusalText({ error, },)})`,);
-    return { kind: 'unreadable', };
   }
 }
 
@@ -280,7 +165,7 @@ async function claim(
       path,
       'wx',
     );
-    await handle.writeFile(`${JSON.stringify(holder,)}\n`,);
+    await handle.writeFile(lockFileText({ holder, },),);
     return true;
   }
   catch (error) {
@@ -333,12 +218,31 @@ export async function lockRunsDir(
   );
 
   /**
+   This host, and when this process started, so the next pass can tell this
+   process from a later one given the same id (ledger A16).
+   */
+  const [
+    here,
+    started,
+  ] = await Promise.all([
+    hostIdentity(),
+    startTicksOf({ pid: process.pid, },),
+  ],);
+
+  /**
    What this pass writes into the lock file.
    */
   const holder: LockHolder = {
     pid: process.pid,
     startedAt: new Date().toISOString(),
     token: randomUUID(),
+    identity: ((here.kind === 'read') && (started.kind === 'read'))
+      ? {
+        kind: 'recorded',
+        ...here.here,
+        startTicks: started.startTicks,
+      }
+      : { kind: 'unrecorded', },
   };
 
   if (!await claim({
@@ -356,16 +260,25 @@ export async function lockRunsDir(
        */
       const { holder: heldBy, } = existing;
 
-      if (isAlive({ pid: heldBy.pid, },))
+      /**
+       Whether that process still runs, and on what evidence.
+       */
+      const liveness = await holderLiveness({
+        holder: heldBy,
+        here,
+      },);
+
+      if (liveness.state === 'held')
         throw new RunsDirectoryBusyError({
           runsDir,
           holder: heldBy,
+          judgedBy: liveness.judgedBy,
         },);
 
       lockLog.info(
         `taking over a stale lock in ${runsDir} from gone process ${
           String(heldBy.pid,)
-        }`,
+        } (judged by ${liveness.judgedBy})`,
       );
     }
     else
@@ -390,6 +303,7 @@ export async function lockRunsDir(
       throw new RunsDirectoryBusyError({
         runsDir,
         ...(winner.kind === 'unreadable' ? {} : { holder: winner.holder, }),
+        judgedBy: 'race',
       },);
     }
   }
@@ -460,15 +374,15 @@ export async function evictStaleLock(
  
  @param path - lock file
  
- @param holder - holder this acquisition wrote
- 
+ @param holder - holder this acquisition wrote, of which only its token decides
+
  @returns `released` when the file was ours and is gone, `kept` otherwise
- 
+
  @example
  ```ts
  const outcome = await releaseIfOwned({ path, holder, },);
  ```
- 
+
  @internal
  */
 export async function releaseIfOwned(
@@ -477,7 +391,7 @@ export async function releaseIfOwned(
     holder,
   }: {
     readonly path: string;
-    readonly holder: LockHolder;
+    readonly holder: Pick<LockHolder, 'token'>;
   },
 ): Promise<'released' | 'kept'> {
   /**

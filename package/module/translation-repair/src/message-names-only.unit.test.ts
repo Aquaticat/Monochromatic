@@ -260,6 +260,7 @@ const NAMED_PARTS: Record<string, string> = {
   'file': 'file path',
   'from': 'file path',
   'holder.startedAt': 'timestamp',
+  'HELD_BECAUSE[judgedBy]': 'fixed authored phrase saying how a runs-lock holder was judged alive',
   'judgeModelIds.join(\', \',)': 'model ids from the catalog',
   'kind': 'mdast node type name or closed tally/reading/archive-evidence failure-kind literal',
   'relPath': 'operator-supplied repository-relative archive path, never document text',
