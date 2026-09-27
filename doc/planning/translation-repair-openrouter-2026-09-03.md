@@ -8158,16 +8158,35 @@ Two fandom words shipped in their everyday sense:
   a Chinese report on the hobby says 偶装玩家会将穿上偶装称作"变娃".
   English "doll up" means dressing smartly.
 - 被她治愈的人 shipped as "those she had healed",
-  which reads as curing a wound.
-  The removed sentence entry had even offered "she had healed".
+  which this read first called a medical reading.
+  The owner disagreed (see "The 治愈 correction").
 
 Both are dictionary words,
 seeded in `community-glossary-fandom.ts`:
 
 - 变娃 renders as "put on the kigurumi", "in kigurumi" or "became the doll".
   It refuses "dolled up" and "dolling up".
-- 治愈 renders as "comforted", "cheered up", "lifted the spirits of" or "cured".
-  It refuses nothing, since "healed her heart" is English too.
+- 治愈 renders as "healed", "soothed" or "cured".
+  It refuses nothing.
+
+### The 治愈 correction
+
+The first build (`06a2c5c05`) led 治愈 with "comforted",
+and its why said "healed" reads as curing a wound.
+The owner answered "'被她治愈 should read "comforted", not "healed".' - I kinda disagree here."
+The reading was wrong on three counts:
+
+- The page writes 安慰 where it means comfort (可爱的女孩会继续安慰大家),
+  so "comforted" for 治愈 collapses the writer's two words into the weaker one.
+- 治愈系 is "healing" in the fandom's own English (iyashikei, "healing anime"),
+  and a kigurumi doll beside it makes the emotional sense plain.
+- The archive's translator wrote "those she has healed";
+  only the tense was wrong, and the past-tense rule covers that.
+
+The owner chose "Healed first (Recommended)" over removing the entry.
+Guard `2234f1a92` red first, fix `23f4e15d6`:
+the entry leads with "healed" and its why says never to flatten 治愈 into "comforted" where the page keeps 安慰 apart.
+TianqiChen66618 was stopped a few minutes in, and TianqiChen66619 launched on `.frozen-dist-23f4e15d6`.
 
 Guard `644f23cf5` (`community-glossary-kigurumi.unit.test.ts`), red first (three of four),
 fix `06a2c5c05`, lint 0/0, types clean.

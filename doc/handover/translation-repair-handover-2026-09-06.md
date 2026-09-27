@@ -4875,10 +4875,14 @@ each read off the pass log and the shipped page:
     doll" and 被她治愈 as "those she had healed", both seeded as fandom words in
     `community-glossary-fandom.ts` (guard `644f23cf5`, fix `06a2c5c05`, seeds pin `6a6cd1a84`).
     TIANQICHEN66617 (`.frozen-dist-5860bc0b1`) stopped a few minutes in for class one hundred eighty-four.
-    TIANQICHEN66618 RUNNING on `.frozen-dist-06a2c5c05` (scope `pass-TianqiChen66618`, pid 1261036, waiter
-    `wait-TianqiChen66618.mjs`): read 变娃娃 ("in kigurumi", no "game of becoming a doll") and 被她治愈
-    ("comforted", not "healed") first, then the kigurumi quote's subject and the closet sentence under the
-    five general rules, then classes 160 to 183 holding.
+    治愈 CORRECTION (owner 2026-09-27: "'被她治愈 should read "comforted", not "healed".' - I kinda
+    disagree here." then "Healed first (Recommended)"): the page writes 安慰 where it means comfort,
+    "healing" is the fandom English for 治愈系 and the archive wrote "healed"; the entry leads with "healed"
+    (guard `2234f1a92`, fix `23f4e15d6`). TIANQICHEN66618 (`.frozen-dist-06a2c5c05`) stopped for it.
+    TIANQICHEN66619 RUNNING on `.frozen-dist-23f4e15d6` (scope `pass-TianqiChen66619`, pid 1299515, waiter
+    `wait-TianqiChen66619.mjs`): read 变娃娃 ("in kigurumi", no "game of becoming a doll") and 被她治愈
+    ("healed", past tense, not "comforted") first, then the kigurumi quote's subject and the closet
+    sentence under the five general rules, then classes 160 to 183 holding.
     TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
     check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
     sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built
