@@ -393,6 +393,25 @@ await describe({
       },
     },),
     it({
+      name: 'TAKES OVER a stale lock from this boot whose recorded hostname differs, since a hostname can '
+        + 'change within one boot and a boot id already proves the same machine',
+      fn: async () => {
+        const runsDir = await scratch();
+        await writeOwnLock({
+          runsDir,
+          identity: {
+            ...(await ownIdentity()),
+            host: 'renamed-by-dhcp',
+            startTicks: '1',
+          },
+        },);
+
+        await using _lock = await lockRunsDir({ runsDir, },);
+
+        expect(await readdir(runsDir,),).toEqual(['pass.lock',],);
+      },
+    },),
+    it({
       name: 'REFUSES a lock naming this very process as it started, the control that a match still holds',
       fn: async () => {
         const runsDir = await scratch();
