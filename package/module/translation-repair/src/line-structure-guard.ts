@@ -3,6 +3,7 @@ import {
   pairBoundFindings,
 } from './bilingual-pair-bound.ts';
 import { isIdeograph, } from './preservation-tokens.ts';
+import { withoutComments, } from './translate-address-drop.ts';
 
 //region Line structure guard
 // WHY THIS IS NOT IN `translate-validate.ts`, where it was first written and
@@ -40,22 +41,26 @@ function carriesContent({ line, }: { readonly line: string; },): boolean {
 
 /**
  Lines of one passage that carry content, in order.
- 
+
  BLANK LINES ARE NOT COUNTED. They separate blocks rather than carry text,
  and a rendering that writes a different number of them has not merged
  anything.
- 
+
+ NOR ARE HTML COMMENTS (ledger F-7, yulianNyanner slices 8 and 12): a
+ translator's note is no line of the passage, and an archive that kept one
+ of the original's two notes was refused as merging lines.
+
  @param text - passage to read
- 
+
  @returns Lines carrying content
- 
+
  @example
  ```ts
  const lines = contentLines({ text: candidateText, },);
  ```
  */
 function contentLines({ text, }: { readonly text: string; },): readonly string[] {
-  return text
+  return withoutComments({ text, },)
     .split('\n',)
     .filter(function kept(line,): boolean {
       return carriesContent({ line, },);
@@ -405,7 +410,7 @@ export function compareLineCounts(
   return [
     `This slice is LINE-STRUCTURED: every line stands as its own unit, so your `
       + `rendering owes one line per line of the ORIGINAL and may never merge two `
-      + `into one. Yours carries ${String(carried,)} lines of content where the `
+      + `into one. Yours carries ${(carried === 1) ? '1 line' : `${String(carried,)} lines`} of content where the `
       + `ORIGINAL has ${String(owed,)}. Put back the line breaks you merged, keeping `
       + `the wording you chose.`,
     ...repeats,
