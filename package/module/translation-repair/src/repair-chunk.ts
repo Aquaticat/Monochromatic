@@ -400,6 +400,7 @@ export async function repairChunk(
     acceptedIssues,
     authorship: appliedEnvelopes.authorship,
     ...windowFragment,
+    identityContext: identityContext ?? '',
     signal,
     perCallTimeoutMs,
     l,

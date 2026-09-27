@@ -106,6 +106,7 @@ async function probeOnce(
     baselineText,
     regions: [region,],
     issues,
+    identityContext: '',
     disclosure,
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,

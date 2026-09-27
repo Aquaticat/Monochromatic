@@ -88,6 +88,7 @@ async function probeWithheld(
     baselineText: relabelCase.baselineText,
     regions: [relabelCase.region,],
     issues: [],
+    identityContext: '',
     signal: new AbortController().signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l: tagged({ tag: 'probe-verify', },),

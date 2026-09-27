@@ -131,6 +131,10 @@ export const EMPTY_INTRODUCED_DEFECT_REPORT: IntroducedDefectReport = {
  
  @param issues - accepted issues, shown so probers can discount them
  
+ @param identityContext - declared names and handles, or the empty string on a page
+ declaring none; REQUIRED so no caller omits it by accident (ledger H8, the
+ H2 lesson)
+ 
  @param signal - caller abort honored by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -156,6 +160,7 @@ export async function runIntroducedDefectProbe(
     disclosure = PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
     neighbouringIncumbentText,
     neighbouringSourceText,
+    identityContext,
     signal,
     perCallTimeoutMs,
     l,
@@ -170,6 +175,7 @@ export async function runIntroducedDefectProbe(
     readonly disclosure?: PriorIssueDisclosure;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
+    readonly identityContext: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -190,6 +196,7 @@ export async function runIntroducedDefectProbe(
     disclosure,
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
+    ...((identityContext === '') ? {} : { identityContext, }),
   },);
 
   /**

@@ -312,6 +312,7 @@ async function main(): Promise<void> {
       baselineText: built.baselineText,
       regions: [built.region,],
       issues: [],
+      identityContext: '',
       signal: new AbortController().signal,
       perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
       l: tagged({ tag: 'damage-sample', },),

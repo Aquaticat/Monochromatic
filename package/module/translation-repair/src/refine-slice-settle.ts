@@ -346,6 +346,9 @@ export async function settleRefinedSlice(
     ],
     issues: outcome.issues,
     editKind: 'naturalness-refinement',
+    // The declared names, since this probe's verdict can roll the slice back
+    // (ledger H8).
+    identityContext: identityContext ?? '',
     // THE SAME WINDOW THE ACCURACY LANE'S PROBE GETS, which is what makes the
     // two lanes' damage telemetry comparable at all. Without it this auditor
     // reasons about a slice in isolation while its counterpart reasons about

@@ -69,6 +69,7 @@ async function probeOne(
     baselineText: arm.baselineText,
     regions: [arm.region,],
     issues: arm.issues,
+    identityContext: '',
     editKind: arm.editKind,
     disclosure: arm.disclosure,
     signal: new AbortController().signal,

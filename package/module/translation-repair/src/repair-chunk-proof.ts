@@ -89,6 +89,9 @@ export type ChunkProof = {
  
  @param neighbouringIncumbentText - archive English of those passages
  
+ @param identityContext - declared names and handles for the probe, or the
+ empty string on a page declaring none (ledger H8)
+ 
  @param signal - caller abort honoured by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -115,6 +118,7 @@ export async function proveRepairedChunk(
     authorship,
     neighbouringSourceText,
     neighbouringIncumbentText,
+    identityContext,
     signal,
     perCallTimeoutMs,
     l,
@@ -130,6 +134,7 @@ export async function proveRepairedChunk(
     readonly authorship: Authorship;
     readonly neighbouringSourceText?: string;
     readonly neighbouringIncumbentText?: string;
+    readonly identityContext: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -192,6 +197,7 @@ export async function proveRepairedChunk(
     regions: repairRegions,
     issues: acceptedIssues,
     ...windowFragment,
+    identityContext,
     // Withheld on purpose: rendering the accepted issues into the prompt was
     // measured to silence this stage, and `introduced-defect-screen.ts` now
     // dismisses a claim that merely restates one.

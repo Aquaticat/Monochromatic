@@ -3,10 +3,19 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import {
+  communityRenderingsBlock,
+  type RenderingCandidate,
+} from './community-glossary.ts';
+import {
+  DECLARED_IDENTITY_RULES,
+  declaredNamesBlock,
+} from './declared-identity-rule.ts';
+import {
   isJsonArray,
   isJsonRecord,
 } from './json-guard.ts';
 import { MEASUREMENT_POLICY_BLOCK, } from './house-policy.ts';
+import { APPARATUS_KINDS, } from './page-apparatus-clause.ts';
 import { selectFence, } from './prompt-fence.ts';
 import type { RepairRegion, } from './repair-region.ts';
 
@@ -155,7 +164,7 @@ THE ORIGINAL IS THE ONLY STANDARD OF ACCURACY. The BEFORE text is a translation 
 
 Rules:
 - A change that brings the AFTER text CLOSER to the ORIGINAL is NEVER damage, however much text it rewrites.
-- Content the AFTER text drops is damage ONLY IF THE ORIGINAL SUPPORTS IT. Dropping wording the ORIGINAL never had is a correct repair, not an omission.
+- Content the AFTER text drops is damage ONLY IF THE ORIGINAL SUPPORTS IT. Dropping wording the ORIGINAL never had is a correct repair, not an omission, unless it is page apparatus (${APPARATUS_KINDS}): the page keeps its apparatus, so dropping it is damage.
 - Wording the AFTER text adds is damage only if the ORIGINAL does not support it.
 - "It was in the BEFORE text" is NOT a reason. Say what the ORIGINAL says and how the AFTER text departs from it.
 - Do NOT report a listed pre-existing issue merely because the replacement failed to fix it. That is not damage.
@@ -215,8 +224,21 @@ const PROBE_HOUSE_RULE_CLAUSE =
  ```
  */
 function probeSystemPrompt(
-  { editKind, }: { readonly editKind: ProbedEditKind; },
+  {
+    editKind,
+    declaresNames,
+  }: {
+    readonly editKind: ProbedEditKind;
+    readonly declaresNames: boolean;
+  },
 ): string {
+  /**
+   Rules for reading the declared names, where the page declares any
+   (ledger H8).
+   */
+  const identityRules = declaresNames
+    ? `\n\n${DECLARED_IDENTITY_RULES}\n- A declared name the AFTER text uses to refer to its entity is never an introduced defect.`
+    : '';
   return `You are a strict bilingual translation reviewer auditing an edit for collateral damage.
 ${PROBE_FRAMING[editKind]}
 ${PROBE_RULES_HEAD}
@@ -224,7 +246,7 @@ ${PROBE_CREATED_CLAUSE[editKind]}
 
 ${MEASUREMENT_POLICY_BLOCK}
 
-${PROBE_HOUSE_RULE_CLAUSE}
+${PROBE_HOUSE_RULE_CLAUSE}${identityRules}
 
 ${PROBE_RULES_TAIL}`;
 }
@@ -381,6 +403,7 @@ export function buildIntroducedDefectMessages(
     disclosure = 'rendered',
     neighbouringIncumbentText,
     neighbouringSourceText,
+    identityContext,
   }: {
     readonly sourceText: string;
     readonly baselineText: string;
@@ -390,6 +413,7 @@ export function buildIntroducedDefectMessages(
     readonly disclosure?: PriorIssueDisclosure;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
+    readonly identityContext?: string;
   },
 ): IntroducedDefectPromptPlan {
   /**
@@ -413,6 +437,7 @@ export function buildIntroducedDefectMessages(
       // the hole the dynamic fence exists to close.
       neighbouringSourceText ?? '',
       neighbouringIncumbentText ?? '',
+      identityContext ?? '',
       ...regions.flatMap(function toTexts(region,) {
         return [
           region.before,
@@ -466,21 +491,56 @@ ${fence} AFTER ${String(index + 1,)} ${fence}
 ${region.editorAfter}`;
   },);
 
+  /**
+   Declared names, or nothing on a page declaring none (ledger H8).
+   */
+  const identityBlock = declaredNamesBlock({
+    fence,
+    ...((identityContext === undefined) ? {} : { identityContext, }),
+  },);
+
+  /**
+   Community renderings each region's BEFORE or AFTER text lacks, so an edit
+   losing the community word reads as a loss (ledger H8).
+   */
+  const communityBlock = communityRenderingsBlock({
+    sourceText,
+    candidates: regions.flatMap(function toCandidates(
+      region,
+      index,
+    ): readonly RenderingCandidate[] {
+      return [
+        {
+          label: `BEFORE ${String(index + 1,)}`,
+          text: region.before,
+        },
+        {
+          label: `AFTER ${String(index + 1,)}`,
+          text: region.editorAfter,
+        },
+      ];
+    },),
+  },)
+    .join('\n',);
+
   return {
     messages: [
       {
         role: 'system',
-        content: probeSystemPrompt({ editKind, },),
+        content: probeSystemPrompt({
+          editKind,
+          declaresNames: identityBlock !== '',
+        },),
       },
       {
         role: 'user',
-        content: `${fence} ORIGINAL ${fence}
+        content: `${identityBlock}${fence} ORIGINAL ${fence}
 ${sourceText}
 ${fence} BASELINE TRANSLATION ${fence}
 ${baselineText}
 ${nearbyBlock}${fence} REPLACED REGIONS ${fence}
 ${blocks.join('\n\n',)}
-${fence} END ${fence}`,
+${communityBlock}${fence} END ${fence}`,
       },
     ],
     envelopeIds: regions.map(function toId(region,) {
