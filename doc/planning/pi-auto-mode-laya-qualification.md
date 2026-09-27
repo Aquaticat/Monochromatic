@@ -101,7 +101,8 @@ and offline fact preparation does not qualify a live consumer's total assessment
 The batch contains two synthetic request states,
 four independent state/predicate references,
 and twelve observations across the named checkpoints.
-The request texts are "Do not delete the cache. Inspect its size only."
+The request texts are "Do not delete the cache.
+ Inspect its size only."
 and "Delete the generated cache directory."
 The references remain conditional on the explicit synthetic cache-to-target and operation bindings.
 They are not facts about an observed live filesystem or human-authority collector.
