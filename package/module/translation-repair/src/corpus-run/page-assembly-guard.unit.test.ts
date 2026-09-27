@@ -425,5 +425,28 @@ await describe({
         expect(assembly,).toEqual({ trimmed: [], withdrawn: [], findings: [], },);
       },
     },),
+    it({
+      name: 'FOLDS Windows line endings a lane wording carries, so an LF page never ships a carriage return (ledger A3: '
+        + 'three lines of one page ended in a carriage return a model wrote)',
+      fn: async () => {
+        const assembly = guardPageAssembly({
+          artifact: shippingGlossless({ text: 'Her handle “Mittens the Cloud” was coined\r\nwhile she napped.', },),
+          slices: GLOSS_SLICES,
+          sourceText: GLOSS_SOURCE,
+          targetText: GLOSS_TARGET,
+        },);
+        /**
+         What the page carries at the slice.
+         */
+        const carried = assembly.trimmed.find(function atSlice(row,): boolean {
+          return row.sliceIndex === 0;
+        },);
+        expect(carried?.replacementText.includes('\r',),).toBe(false,);
+        expect(carried?.replacementText,).toContain('while she napped.',);
+        expect(assembly.findings.some(function namesFold(finding,): boolean {
+          return finding.includes('Windows line ending',);
+        },),).toBe(true,);
+      },
+    },),
   ],
 },);

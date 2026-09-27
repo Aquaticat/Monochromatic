@@ -15,6 +15,7 @@ import { restoreArchiveNameCasing, } from './archive-name-casing.ts';
 import { canadianizePage, } from './canadian-forms.ts';
 import { correctPinyinPage, } from './pinyin-tone.ts';
 import { restoreJsxAttributes, } from './jsx-attribute-restore.ts';
+import { foldReplacementLineEndings, } from './line-ending-fold.ts';
 import { restoreListSpread, } from './list-spread-restore.ts';
 import { restoreNameGlossLines, } from './name-gloss-restore.ts';
 import { shippableReplacements, } from './publish-fixed.ts';
@@ -99,6 +100,11 @@ export function guardPageAssembly(
     replacements,
   },);
   /**
+   Every replacement with a model's Windows line endings folded to LF, before
+   any pass reads it (ledger A3).
+   */
+  const lineEndings = foldReplacementLineEndings({ replacements: halves.replacements, },);
+  /**
    Headings a lane rewrote into another section's, restored to the archive's
    before the footnote guard reads the page (class forty-five).
    */
@@ -106,7 +112,7 @@ export function guardPageAssembly(
     sourceText,
     targetText,
     slices,
-    replacements: halves.replacements,
+    replacements: lineEndings.replacements,
   },);
   /**
    Contributor names rendered one way across headings and signatures (class
@@ -237,6 +243,7 @@ export function guardPageAssembly(
    Rows the page-assembly passes rewrote, the latest pass's text per slice.
    */
   const restoredRows = new Map<number, SliceReplacement>([
+    ...lineEndings.restored,
     ...restoration.restored,
     ...names.restored,
     ...glosses.restored,
@@ -303,6 +310,7 @@ export function guardPageAssembly(
     ],
     findings: [
       ...halves.findings,
+      ...lineEndings.findings,
       ...restoration.findings,
       ...names.findings,
       ...glosses.findings,
