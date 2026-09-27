@@ -3,25 +3,8 @@ import { withholdLoneContainerHalves, } from '../assembly-container-halves.ts';
 import { guardFootnoteAssembly, } from '../assembly-integrity.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
-import { restoreContributorNames, } from './contributor-name-restore.ts';
-import { placeHandleGlosses, } from './handle-gloss-place.ts';
-import { restoreCollidingHeadings, } from './heading-collision-restore.ts';
-import { unifyHeadingSeries, } from './heading-series-unify.ts';
-import { restoreArchiveCasing, } from './archive-casing-restore.ts';
-import { restoreArchiveDestinations, } from './archive-destination-restore.ts';
-import { restoreArchiveItalicTitles, } from './archive-italic-title-restore.ts';
-import { unwrapBlockquoteQuotes, } from './blockquote-quote-unify.ts';
-import { restoreArchiveNameCasing, } from './archive-name-casing.ts';
-import { canadianizePage, } from './canadian-forms.ts';
-import { correctPinyinPage, } from './pinyin-tone.ts';
-import { restoreJsxAttributes, } from './jsx-attribute-restore.ts';
-import { foldReplacementLineEndings, } from './line-ending-fold.ts';
-import { restoreListSpread, } from './list-spread-restore.ts';
-import { restoreNameGlossLines, } from './name-gloss-restore.ts';
+import { runPagePasses, } from './page-assembly-passes.ts';
 import { shippableReplacements, } from './publish-fixed.ts';
-import type { SliceReplacement, } from '../splice-slices.ts';
-import { unifyQuoteStyle, } from './quote-style-unify.ts';
-import { unifyTitleReferences, } from './title-reference-unify.ts';
 import type { WouldShipSource, } from './would-ship-text.ts';
 
 //region Page assembly guard
@@ -100,182 +83,22 @@ export function guardPageAssembly(
     replacements,
   },);
   /**
-   Every replacement with a model's Windows line endings folded to LF, before
-   any pass reads it (ledger A3).
+   What every page-assembly pass made of those replacements.
    */
-  const lineEndings = foldReplacementLineEndings({ replacements: halves.replacements, },);
-  /**
-   Headings a lane rewrote into another section's, restored to the archive's
-   before the footnote guard reads the page (class forty-five).
-   */
-  const restoration = restoreCollidingHeadings({
+  const passes = runPagePasses({
+    slices,
     sourceText,
     targetText,
-    slices,
-    replacements: lineEndings.replacements,
-  },);
-  /**
-   Contributor names rendered one way across headings and signatures (class
-   sixty-seven).
-   */
-  const names = restoreContributorNames({
-    slices,
-    replacements: restoration.replacements,
-  },);
-  /**
-   Every romanised handle's literal meaning at its first appearance alone
-   (class eighty-eight).
-   */
-  const glosses = placeHandleGlosses({
-    slices,
-    replacements: names.replacements,
-  },);
-  /**
-   The original's numbered heading series rendered in one style (class
-   sixty-eight).
-   */
-  const series = unifyHeadingSeries({
-    slices,
-    replacements: glosses.replacements,
-  },);
-  /**
-   Every tag attribute at the archive's value (class ninety-nine).
-   */
-  const attributes = restoreJsxAttributes({
-    slices,
-    replacements: series.replacements,
-  },);
-  /**
-   Every reference to a section title as the heading renders it (class one
-   hundred).
-   */
-  const titles = unifyTitleReferences({
-    slices,
-    replacements: attributes.replacements,
-  },);
-  /**
-   The archive's gloss line of a name wherever the shipped text carries the
-   name unglossed (class one hundred five).
-   */
-  const glossLines = restoreNameGlossLines({
-    slices,
-    replacements: titles.replacements,
-  },);
-  /**
-   Every list at the archive's spacing between its items (class one hundred
-   seventeen).
-   */
-  const lists = restoreListSpread({
-    slices,
-    replacements: glossLines.replacements,
-  },);
-  /**
-   Every word the archive writes only in capitals at the archive's form
-   (class one hundred twenty-one).
-   */
-  const casing = restoreArchiveCasing({
-    slices,
-    replacements: lists.replacements,
-  },);
-  /**
-   Every multi-word name the archive writes title case at the archive's form
-   (class one hundred thirty-six).
-   */
-  const nameCasing = restoreArchiveNameCasing({
-    slices,
-    replacements: casing.replacements,
-  },);
-  /**
-   Every date month first and every listed word in its Canadian spelling, on
-   every slice the page carries (class one hundred thirty-four).
-   */
-  const canadian = canadianizePage({
-    slices,
-    replacements: nameCasing.replacements,
+    replacements: halves.replacements,
     archiveOriginalSpans,
   },);
-  /**
-   Every pinyin syllable of a Han and pinyin pair in its character's tone,
-   on every slice the page carries (class one hundred thirty-seven).
-   */
-  const pinyinTones = correctPinyinPage({
-    slices,
-    replacements: canadian.replacements,
-    archiveOriginalSpans,
-  },);
-  /**
-   Every slice's prose quote marks in the page's majority style (class one
-   hundred forty-two).
-   */
-  const quotes = unifyQuoteStyle({
-    slices,
-    replacements: pinyinTones.replacements,
-    archiveOriginalSpans,
-  },);
-  /**
-   Every quoted blockquote paragraph unwrapped where the archive sets its
-   blockquotes bare (class one hundred sixty-eight).
-   */
-  const blockquotes = unwrapBlockquoteQuotes({
-    slices,
-    replacements: quotes.replacements,
-    archiveOriginalSpans,
-  },);
-  /**
-   Every quoted archive title in the archive's italics (class one hundred
-   seventy-three).
-   */
-  const italics = restoreArchiveItalicTitles({
-    slices,
-    replacements: blockquotes.replacements,
-    archiveOriginalSpans,
-  },);
-  /**
-   Every link the archive gave its own destination pointed back at it
-   (ledger A4, owner 2026-09-27, "Archive's English").
-   */
-  const destinations = restoreArchiveDestinations({
-    slices,
-    replacements: italics.replacements,
-    archiveOriginalSpans,
-  },);
-  /**
-   Rows the page-assembly passes rewrote, the latest pass's text per slice.
-   */
-  const restoredRows = new Map<number, SliceReplacement>([
-    ...lineEndings.restored,
-    ...restoration.restored,
-    ...names.restored,
-    ...glosses.restored,
-    ...series.restored,
-    ...attributes.restored,
-    ...titles.restored,
-    ...glossLines.restored,
-    ...lists.restored,
-    ...casing.restored,
-    ...nameCasing.restored,
-    ...canadian.restored,
-    ...pinyinTones.restored,
-    ...quotes.restored,
-    ...blockquotes.restored,
-    ...italics.restored,
-    ...destinations.restored,
-  ].map(function bySlice(row,): readonly [
-    number,
-    SliceReplacement,
-  ] {
-    return [
-      row.sliceIndex,
-      row,
-    ];
-  },),);
   /**
    The guard's reading of the composed page.
    */
   const guarded = guardFootnoteAssembly({
     targetText,
     slices,
-    replacements: destinations.replacements
+    replacements: passes.replacements
       .filter(function stillChanges(replacement,): boolean {
         // A restoration that brings a slice back to the archive's exact wording
         // is no change for the assembler; its override row below still says
@@ -287,7 +110,8 @@ export function guardPageAssembly(
    Restored slices the footnote guard neither trimmed nor withdrew, which
    ride the same override a trimmed slice does: the page carries this text.
    */
-  const restoredOnly = [...restoredRows.values(),]
+  const restoredOnly = [...passes.restored
+    .values(),]
     .filter(function untouchedByGuard(row,): boolean {
       /**
        Whether the guard already owns this slice's override.
@@ -310,23 +134,7 @@ export function guardPageAssembly(
     ],
     findings: [
       ...halves.findings,
-      ...lineEndings.findings,
-      ...restoration.findings,
-      ...names.findings,
-      ...glosses.findings,
-      ...series.findings,
-      ...attributes.findings,
-      ...titles.findings,
-      ...glossLines.findings,
-      ...lists.findings,
-      ...casing.findings,
-      ...nameCasing.findings,
-      ...canadian.findings,
-      ...pinyinTones.findings,
-      ...quotes.findings,
-      ...blockquotes.findings,
-      ...italics.findings,
-      ...destinations.findings,
+      ...passes.findings,
       ...guarded.findings,
     ],
   };
