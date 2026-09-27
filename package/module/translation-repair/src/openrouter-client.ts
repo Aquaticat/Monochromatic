@@ -178,6 +178,33 @@ function wholeMessage(attemptReply: TransportReply,): void {
 }
 
 /**
+ Spells one roster model the way this provider names it.
+
+ @param modelId - roster model the caller addressed
+
+ @returns Wire identifier for the request body
+
+ @throws {@link OpenRouterModelNotServedError} when this provider serves no such model
+
+ @example
+ ```ts
+ const served = servedIdFor({ modelId, },);
+ ```
+ */
+function servedIdFor(
+  { modelId, }: { readonly modelId: RosterModelId; },
+): OpenRouterServedId {
+  /**
+   Spelling this provider uses, or that it serves no such model.
+   */
+  const spelling = openRouterIdFor({ modelId, },);
+
+  if (!spelling.served)
+    throw new OpenRouterModelNotServedError({ modelId, },);
+  return spelling.id;
+}
+
+/**
  Builds one client over injected transport, speaking chat completions.
  
  @param apiKey - bearer token; never logged
@@ -259,33 +286,6 @@ export function createOpenRouterClient(
       created,
     );
     return created;
-  }
-
-  /**
-   Spells one roster model the way this provider names it.
-   
-   @param modelId - roster model the caller addressed
-   
-   @returns Wire identifier for the request body
-   
-   @throws {@link OpenRouterModelNotServedError} when this provider serves no such model
-   
-   @example
-   ```ts
-   const served = servedIdFor({ modelId, },);
-   ```
-   */
-  function servedIdFor(
-    { modelId, }: { readonly modelId: RosterModelId; },
-  ): OpenRouterServedId {
-    /**
-     Spelling this provider uses, or that it serves no such model.
-     */
-    const spelling = openRouterIdFor({ modelId, },);
-
-    if (!spelling.served)
-      throw new OpenRouterModelNotServedError({ modelId, },);
-    return spelling.id;
   }
 
   /**

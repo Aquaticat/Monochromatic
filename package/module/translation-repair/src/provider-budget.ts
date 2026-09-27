@@ -521,6 +521,22 @@ export function createProviderBudgets(
   }
 
   /**
+   The hold left on one provider, in the shape a provider record is built from.
+
+   @param provider - provider to check
+
+   @returns Milliseconds of hold left
+
+   @example
+   ```ts
+   const holds = providerRecord({ of: holdLeftOn, },);
+   ```
+   */
+  function holdLeftOn(provider: ProviderName,): number {
+    return holdLeft({ provider, },);
+  }
+
+  /**
    Starts a reading now, whatever the cache's age, for everyone who reads
    after it.
    
@@ -705,11 +721,7 @@ export function createProviderBudgets(
     },
 
     holds: function holds(): ProviderRecord<number> {
-      return providerRecord({
-        of: function left(provider,): number {
-          return holdLeft({ provider, },);
-        },
-      },);
+      return providerRecord({ of: holdLeftOn, },);
     },
   };
 }
