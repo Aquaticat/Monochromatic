@@ -1119,7 +1119,9 @@ and XingZ6014 slice 87 resolved an issue on one ballot, which shipped.
 
 ### L2: the archive-dispute stand-in is the archive's own wording whenever the repair lost
 
-Status: open, owner call on which rule follows.
+Status: owner answered 2026-09-27 ("No eligible standing");
+sixteenth addendum of `doc/decision/translation-repair-ineligible-standing.md`, read issue by issue
+(the stand-in stands only where the checkers confirmed every disputing issue resolved: 1 of 87 measured).
 60 of 87 disputed slices;
 the translate lane then keeps it as lane agreement and no contest runs;
 a withdrawn text also becomes a stand-in.
@@ -1161,7 +1163,8 @@ Status: open.
 
 ### L9: the dispute rule reads the critic's filed severity, not the adjudicated one
 
-Status: open, owner confirmation of "Major+" meaning.
+Status: owner answered 2026-09-27 ("Adjudicated");
+seventeenth addendum of `doc/decision/translation-repair-ineligible-standing.md`.
 
 ### L10: the attestation screen only looks at addition claims
 
