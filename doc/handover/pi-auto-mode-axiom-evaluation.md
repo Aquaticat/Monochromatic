@@ -779,11 +779,40 @@ Next:
 verify tag matching,
 complete dependency/source/artifact review,
 and freeze a bounded CPU-only export/consumer manifest before any installation or export.
-The ONNX audit root is committed through `dec8447`;
-no distribution download,
+The ONNX audit root retains the full file/ABI inventory at `b9b04dd`
+and unverified publication metadata at `eb8dd6d`.
+Integrity API probe `proc_4216` returned publish attestations for ONNX and ONNX IR,
+with matching subject digests but no cryptographic verification.
+The exact queried ONNX Script,
+ONNX Runtime,
+and both protobuf variant files returned 404.
+Do not equate publication metadata with build provenance/trust,
+or a missing PyPI object with unavailable source.
+No distribution download,
 installation,
 export,
 or inference has occurred in this follow-up.
+
+Pinned source clones are under the private scratch root:
+ONNX Script `onnxscript-laya-2026-09-27`,
+`v0.7.2` / `082bfa28e959a4c0639d91b62663c6c59c4dfc42`;
+ONNX IR `onnx-ir-laya-2026-09-27`,
+`v1.0.0` / `014085ef19fb4467a0f4e539cee1bcc4703c8824`;
+ONNX Runtime `onnxruntime-laya-2026-09-27`,
+`v1.30.0` / `f2c39fe2f838cf35ce7da92824f5a5e3ee6e88a7`.
+They are clean sparse shallow checkouts,
+not modified or executed.
+ONNX `onnx-laya-2026-09-27` is also a clean sparse shallow checkout:
+`v1.23.0` / `ee3ccbd2b2344299d3a4506c2954a47b2181a485`.
+Its clone completed as `proc_eae8`.
+Source extraction `proc_82ca` copied selected ONNX Script files into the owned audit root;
+its `torch_2_9` facade exists and delegates shared functions to `torch_2_8`,
+which remains to be inspected.
+The MIT license,
+build metadata,
+version-only setup logic,
+and primary CI matrix were read;
+this is not complete source/build/consumer qualification.
 The probability field remains the predeclared true option,
 and recorded temperature means source-selected configuration,
 not a separately captured decoder intermediate.
