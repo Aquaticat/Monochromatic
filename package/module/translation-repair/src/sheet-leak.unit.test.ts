@@ -13,7 +13,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { validateTranslatedSlice, } from '../dist/final/node/index.mjs';
+import {
+  sheetLeakFindings,
+  validateTranslatedSlice,
+} from '../dist/final/node/index.mjs';
 
 /**
  Original with a picture component and a rule below it.
@@ -58,6 +61,51 @@ await describe({
         expect(result.kind,).toBe('invalid',);
         if (result.kind === 'invalid')
           expect(result.findings.join('\n',),).toContain('WHAT THE PICTURES HERE SAY',);
+      },
+    },),
+    ...[
+      'WHAT THE JUDGES FOUND, claims to check against the original',
+      'PRIOR FAILED CONSOLIDATION STRATEGY',
+      'REQUIRED FINDINGS from independent absolute-quality review',
+      'PRIOR CORRECTION STRATEGIES THAT FAILED; choose a materially different approach',
+      'ORIGINAL (Chinese), the standard',
+      'SURROUNDING ORIGINAL (Chinese), context only',
+      'REJECTED CANDIDATE 1',
+      'A LABEL NO LIST NAMES YET',
+    ].map(function refusesFenced(label,) {
+      return it({
+        name: `REFUSES the fenced "${label}" block (ledger F-8 and E7: the label list had fallen behind the sheets)`,
+        fn: async () => {
+          // THE FLOOR ITSELF, not the composed verdict: there the added block
+          // is refused by the block comparison first, which says nothing
+          // about whether this floor reads the label.
+          expect(sheetLeakFindings({
+            sourceText: '猫在睡觉。',
+            pageText: 'The cat is sleeping.',
+            candidateText: `The cat is sleeping.\n\n===== ${label} =====\n- the cat is asleep`,
+          },).length,).toBeGreaterThan(0,);
+        },
+      },);
+    },),
+    it({
+      name: 'REFUSES a sheet head copied without its fence, and ACCEPTS a setext underline and a fenced line the '
+        + 'original and the page carry',
+      fn: async () => {
+        expect(sheetLeakFindings({
+          sourceText: '猫在睡觉。',
+          pageText: '',
+          candidateText: 'The cat is sleeping.\n\nWHAT THE JUDGES FOUND: the cat is asleep.',
+        },).length,).toBeGreaterThan(0,);
+        expect(sheetLeakFindings({
+          sourceText: '猫的日记\n=====\n\n猫在睡觉。',
+          pageText: '',
+          candidateText: 'The Cat\'s Diary\n=====\n\nThe cat is sleeping.',
+        },),).toStrictEqual([],);
+        expect(sheetLeakFindings({
+          sourceText: '===== 猫 =====\n\n猫在睡觉。',
+          pageText: '===== Cat =====\n\nThe cat is sleeping.',
+          candidateText: '===== Cat =====\n\nThe cat is sleeping.',
+        },),).toStrictEqual([],);
       },
     },),
     it({
