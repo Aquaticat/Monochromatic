@@ -106,9 +106,10 @@ This is a probe-scope correction,
 not a revocation of Q13 B's qualified semantic-effect eligibility for validated inspected forms.
 Independent review confirmed that distinction and the need for per-question evidence quarantine.
 
-Todo #21 is active;
-#14 is paused while this boundary is repaired.
-No candidate inference process remains running after `proc_baf9` and `proc_7f3f` completed.
+Todo #21 tracks this correction and fixture verification;
+#14 remains unqualified and actual account settings remain open under #20.
+The original `proc_baf9` and `proc_7f3f` completed.
+The replacement Laya run is recorded separately under #6.
 Model calls were paused while this boundary was reviewed and the replacement fixtures were checked.
 No production change or `AGENTS.md` edit was made.
 Do not resume integration-policy grilling.
@@ -145,8 +146,39 @@ Its finite schedule is three repetitions of each state,
 with requested/prohibited questions in one call and one five-second budget per two-question assessment.
 Parser preparation was offline,
 so this is not a full live-consumer deadline qualification.
-Client syntax and copied-fixture checks passed;
-its inference result is not yet available at this checkpoint.
+Client syntax and copied-fixture checks passed.
+Process `proc_8bd7` subsequently completed all six requests;
+`63861bd` retains the result,
+SHA-256 `145e30b90564103761ddaffe0840a34ba9b59f7f8d2769f0c60b5e74a4b3a0c8`.
+All passed freshness and their two-question five-second budget.
+The negated request returned requested=0.02 and prohibited=0.95 on each repetition.
+The positive request returned requested=0.83,
+0.82,
+0.84 and prohibited=0.03,
+0.02,
+0.02.
+These are repeated observations of two development states,
+not calibration or a production threshold.
+The [Jev qualification record](../planning/pi-auto-mode-jev-qualification.md#parser-first-request-language-controls)
+retains timing,
+usage,
+and limitations.
+
+The corresponding Laya tranche is frozen at
+`~/temp/agent/laya-parser-first-request-controls-2026-09-26`,
+commit `01473ec`.
+Process `proc_12af` is running bounded image construction,
+actual-image preflight,
+and twelve sequential single-question Noul trials across English,
+multilingual,
+and typed-decisions.
+All use the same shared states and predicate wording,
+with default labels and the unchanged reviewed runtime.
+No result has been inspected yet.
+Only this Laya batch may infer;
+wait for its terminal notification rather than polling.
+The [Laya qualification record](../planning/pi-auto-mode-laya-qualification.md#corrected-request-language-tranche)
+records resources and the single-question versus paired-Jev distinction.
 
 ## Settled preferences
 
@@ -627,7 +659,25 @@ The Pi lifecycle findings passed the inspected eleven-document check `proc_1490`
 The Laya candidate documents passed the thirteen-document rendering and scoped lint run `proc_df32`.
 The repeat/packaging-recovery checkpoint passed the inspected thirteen-document run `proc_1473`.
 The Jev record and parser-boundary correction passed the inspected fourteen-document run `proc_5466`.
-The subsequent replacement-fixture checkpoint needs its own scoped render/lint check.
+Repeat the scoped formatter/render/lint workflow after further documentation edits.
+
+A subsequent audit-update Bash call reported `Command timed out after 30 seconds`.
+The expected amendment had not landed,
+no updater remained,
+and its scoped lock was empty.
+An initial inspection wrongly assumed valid JSON;
+checking bytes before parsing corrected that inspection.
+The open-file inspection was validated with a held-descriptor positive control,
+then found no file user after the descriptor closed.
+The empty lock was preserved,
+not deleted,
+at `~/temp/agent/auto-mode-interrupted-audit-lock-1952303.empty`.
+Evidence is `~/temp/agent/auto-mode-audit-lock-recovery.json`.
+Process-managed rerun `proc_41a0` passed,
+and the expected report section was verified in the resulting file.
+The timeout cause was not established;
+this was not Laya inference or Jev model-quality evidence.
+Todo #22 is complete.
 A final scope clarification distinguishes reusable trust directives from exact-action approvals.
 That clarification was rendered and its scoped Markdown lint passed after commit `6fa854714`.
 The user subsequently chose Q14 A and Q15 B,

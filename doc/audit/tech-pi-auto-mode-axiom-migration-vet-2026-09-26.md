@@ -755,6 +755,50 @@ not candidate-quality evidence.
 The qualification record retains the frozen inputs and result hashes.
 No corrected-input performance or calibration claim follows.
 
+## Parser-first semantic-language tranche
+
+Replacement fixtures call the actual parser locally and use an exact-fixture projection
+to supply one operation descriptor.
+Standard command identity and cache-to-target binding are explicit synthetic assumptions,
+not observed host facts or a complete effect proof.
+The model states omit proposed Bash source,
+occurrence questions,
+independent truth,
+and final actions.
+Complete current policy remains unchanged.
+Shared input SHA-256 is
+`83bea87e969798821dcc9131a6433772b7751d783e13e7edbd82ec4a2611bcaa`.
+Separate omissions of the raw-action and occurrence-question boundary checks each produced
+`Missing expected exception`;
+the unchanged originals passed.
+
+The corrected Jev probe `proc_8bd7` completed six requests
+with two semantic questions each,
+three repetitions of each development state.
+All passed policy freshness and their per-assessment five-second budget.
+Durations were 280.392109 to 561.990034 milliseconds;
+usage totaled 64,008 input and 228 output tokens.
+The negated request returned requested=0.02 and prohibited=0.95 on each repetition.
+The positive request returned requested=0.83, 0.82, 0.84
+and prohibited=0.03, 0.02, 0.02.
+Result SHA-256:
+`145e30b90564103761ddaffe0840a34ba9b59f7f8d2769f0c60b5e74a4b3a0c8`.
+This is not calibration,
+a model improvement claim,
+or twelve independent scenarios.
+Offline parser preparation means it is not full live-consumer deadline qualification.
+
+The corresponding Laya inputs are frozen in scratch commit `01473ec`.
+Process `proc_12af` is running the bounded build/preflight/inference sequence:
+four single-question Noul trials per English,
+multilingual,
+and typed-decisions checkpoint,
+under unchanged default labels and the previously reviewed runtime.
+No result is inspected yet.
+The one-question container shape differs from Jev's paired request,
+so no strict whole-request batching or latency comparison is implied.
+The qualification records retain full scope and resource limits.
+
 ## Authorization host evidence
 
 A later isolated method-composition probe exercised installed Pi 0.87.1 prompt/command dispatch,

@@ -39,6 +39,53 @@ not ask a model to reconstruct Bash execution.
 Q13 B remains accepted;
 this correction is not universal code-proof-only script admission.
 
+## Corrected request-language tranche
+
+A replacement is frozen at
+`~/temp/agent/laya-parser-first-request-controls-2026-09-26`,
+commit `01473ec`.
+It uses the shared parser-first states and independent request/prohibition references
+also used by the [corrected Jev probe](pi-auto-mode-jev-qualification.md#parser-first-request-language-controls).
+The model receives the supplied operation descriptor,
+request text,
+and complete current policy,
+not proposed Bash source or an occurrence question.
+The descriptor's standard-command identity and cache-to-target binding are explicitly synthetic assumptions,
+not observed host facts or a complete effect proof.
+
+The schedule is four single-question Noul trials for each named checkpoint:
+English,
+multilingual,
+and typed-decisions.
+Default labels are retained.
+The existing Python probe,
+weights,
+tokenizers,
+temperatures,
+CPU BF16 path,
+and functional-attention workaround are inherited unchanged from the verified three-checkpoint image.
+Only public trial data and complete policy are replaced.
+No training,
+accelerator,
+new dependency,
+network,
+host mount,
+or reserved case is introduced.
+
+Fixture and driver checks passed.
+Process `proc_12af` is running image construction,
+actual-image policy/trial/probe/ledger checks,
+then the finite sequential inference schedule.
+Each inference retains the accepted 8 GiB,
+two CPU,
+no-added-swap,
+300-second research ceiling.
+No result is inspected yet.
+Jev's corrected probe asks both predicates together,
+whereas these Laya trials retain one question per container for the previously bounded forward shape.
+This is not a strict whole-request batching or latency comparison,
+and offline fact preparation does not qualify a live consumer's total assessment deadline.
+
 ## Questions the remaining work must answer
 
 - Does the tested complete-policy Noul representation respond to positive/negative evidence,
