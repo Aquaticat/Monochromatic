@@ -162,7 +162,8 @@ after XingZ604 stopped INCOMPLETE at 4h53m on its slice 13.
     the consolidation when the standing is ineligible,
     recording `undecided-gate-ships-proposal` on the settlement,
     and `gateAndShip` wraps and ships that outcome.
-    A gate that refuses the consolidation at quorum still keeps the standing and still stops the slice;
+    A gate that refuses the consolidation at quorum still keeps the standing and still stops the slice
+    (superseded by the thirteenth addendum);
     an eligible standing keeps the slice on indecision exactly as before.
 - Guard shown to fail first (`b8b32e28d`):
     `consolidate-settle.unit.test.ts`
@@ -188,6 +189,45 @@ and the decline named `slate-declined-standing`.
 - A slate declined twice still ends the slice as before.
 - Guard shown to fail first (`c6ec06788`),
     fixed in `adca69d4e`.
+
+## Addendum 2026-09-27, thirteenth: a gate preferring an ineligible standing ships the slate's choice
+
+Taken under the rule of 2026-09-04
+("prefer the best valid proposal,
+else fail the slice at once")
+after TianqiChen66619 stopped INCOMPLETE at 755,525 ms on slice 9:
+the address floor refused the contest's repair text,
+so the standing was ineligible,
+the slate chose a valid proposal,
+and the gate went 2 standing,
+1 neither,
+1 consolidated of 4 usable.
+`requireShippableTerminal` refused `gate-kept-standing` and the entry stopped.
+
+- The first addendum and the third kept that stop,
+    reading "else fail the slice at once" as covering a gate's preference.
+    The rule's failure is for a slice with no valid proposal;
+    here the slate had chosen one,
+    and a standing the deterministic rule refused cannot ship whatever the gate thinks of it.
+- `shipPastForfeitStanding` (renamed from `shipPastUndecidedGate`,
+    `consolidate-ineligible-standing.ts`) ships the slate's choice when the gate prefers an ineligible standing,
+    recording `gate-preferred-ineligible-standing`
+    (`GATE_PREFERRED_INELIGIBLE_STANDING_FINDING`);
+    the gate ballots name what they held against the consolidation.
+- Over an ineligible standing every gate verdict therefore ships the consolidation.
+    The gate sheet said choosing the standing stops the entry;
+    it now says the consolidation ships whichever the judge chooses
+    and the ballot records what the judge holds against it.
+- Unchanged: over an eligible standing a gate that prefers it keeps it.
+- Open for the owner:
+    whether the gate should still run over an ineligible standing,
+    whose ballots now change nothing that ships,
+    or whether a gate objection at quorum there should send the consolidation back for a repair round.
+- Guards shown to fail first:
+    `e7e6f706a` (`consolidate-settle.unit.test.ts`),
+    `44e27ca0e` (`consolidate-driver.unit.test.ts`),
+    and the sheet wording in `consolidate-gate-wire.unit.test.ts`.
+    Fixed in `419605ff4` and the sheet fix that follows it.
 
 ## Addendum 2026-09-26, twelfth: an undecided gate over a standing every contest ballot condemned ships the slate's choice
 
@@ -506,7 +546,9 @@ and the log said nothing of why.
     choice and reason.
 - A gate that refuses at quorum still stops the slice:
     the rule of 2026-09-04 is unchanged,
-    the judges are informed.
+    the judges are informed
+    (superseded by the thirteenth addendum,
+    and the sheet no longer says choosing the standing stops the entry).
 - Guards shown to fail first (`90e5e2a19`):
     `consolidate-gate-wire.unit.test.ts` (the block on the sheet,
     absent over an eligible standing)

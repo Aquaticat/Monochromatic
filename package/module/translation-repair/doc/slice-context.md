@@ -244,12 +244,14 @@ Leading, trailing and one-sided gaps are unchanged.
 ## What the consolidate gate is told about an ineligible standing
 
 Since class fifty-six (2026-09-18) a gate over a standing the deterministic publication rule refused is told so on its sheet,
-with the rule's finding and the consequence
-(choosing the standing stops the entry with no page),
+with the rule's finding,
 so that keeping it is not taken for the safe choice.
 Every gate ballot is logged with its model,
 choice and reason.
-A gate that refuses the consolidation at quorum still stops the slice.
+Since class one hundred eighty-five (2026-09-27) the sheet says the consolidation ships whichever the judge chooses
+and the ballot records what the judge holds against it;
+until then it said choosing the standing stops the entry,
+which stopped being true when that class shipped the slate's choice past such a preference.
 
 ## When the consolidation slate ties over an ineligible standing
 
@@ -270,7 +272,11 @@ over an ineligible standing
 where the archive and the contest winner both left the original's neutral pronoun untranslated)
 the consolidation ships with `undecided-gate-ships-proposal` recorded,
 because the owner's rule prefers the best valid proposal and the gate refused nothing.
-A gate that refuses the consolidation at quorum still stops the slice.
+Since class one hundred eighty-five (2026-09-27,
+TianqiChen66619 slice 9) a gate preferring the ineligible standing at quorum ships the slate's choice as well,
+with `gate-preferred-ineligible-standing` recorded:
+the owner's rule fails the slice only where no valid proposal exists,
+and a standing the rule refused cannot ship whatever the gate thinks of it.
 
 ## What the translate slate carries
 

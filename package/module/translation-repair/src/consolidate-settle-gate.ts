@@ -54,8 +54,9 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
  @param standingMayShip - whether unchanged baseline has prior endorsement
  
  @param standingEligible - whether the standing passed the deterministic
- gate; a gate that keeps an ineligible standing ends the slice, and one
- that settles on neither over it ships the proposal the slate chose
+ gate; over an ineligible standing every gate verdict ships the proposal
+ the slate chose, a preference for the standing or a neither verdict
+ recorded as a finding (classes fifty-four and one hundred eighty-five)
 
  @param standingRefusal - why the deterministic gate refused the standing,
  shown to the gate judges so keeping it is not taken for the safe choice

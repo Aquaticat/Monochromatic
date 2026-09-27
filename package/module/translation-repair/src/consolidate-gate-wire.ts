@@ -304,8 +304,9 @@ export function buildConsolidateGateMessages(
       `CANDIDATE "standing" CANNOT SHIP: the deterministic publication rule refused it (${
         subject.standingRefusal
       }).`,
-      'Choosing "standing" stops this entry with no page. Choose it only when "consolidated" misrepresents '
-        + 'the ORIGINAL; a rendering the rule refuses is not the safer choice.',
+      '"consolidated" ships whichever you choose, and your ballot records what you hold against it. Choose '
+        + '"standing" only when "consolidated" misrepresents the ORIGINAL, and name how in your findings; a '
+        + 'rendering the rule refuses is not the safer choice.',
       '',
     ];
   /**
