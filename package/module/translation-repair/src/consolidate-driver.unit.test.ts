@@ -127,6 +127,12 @@ type ConsolidationConcurrency = {
   now: number;
   peak: number;
   started: number;
+
+  /**
+   Start positions in the order their calls finished, so a test can show a
+   later call answering first rather than assume it (ledger T6).
+   */
+  readonly finished: number[];
 };
 
 /**
@@ -663,6 +669,7 @@ async function driveWith(
         );
         await wait(startPosition === 0 ? 20 : 5,);
         activity.now -= 1;
+        activity.finished.push(startPosition,);
         return await client.chatJson(request,);
       },
       quotas: client.quotas,
@@ -1200,6 +1207,7 @@ await describe({
           now: 0,
           peak: 0,
           started: 0,
+          finished: [],
         };
         const serialClient = recordingClient();
         await driveWith({
@@ -1219,6 +1227,7 @@ await describe({
           now: 0,
           peak: 0,
           started: 0,
+          finished: [],
         };
         const overlapClient = recordingClient();
         const { slices, } = await driveWith({
@@ -1232,6 +1241,10 @@ await describe({
         },);
         expect(serial.peak,).toBe(1,);
         expect(overlapped.peak,).toBe(2,);
+        // THE SECOND PRODUCER DID ANSWER FIRST: the call started first is not
+        // the first to finish, so the comparison-order check below is exercised.
+        expect(overlapped.finished,).toContain(0,);
+        expect(overlapped.finished[0],).not.toBe(0,);
         expect(slices.map(function toIndex(slice,) {
           return slice.sliceIndex;
         },),).toEqual([
@@ -1392,6 +1405,7 @@ await describe({
             now: 0,
             peak: 0,
             started: 0,
+            finished: [],
           };
           const singleClient = answeringClient();
           const single = await driveWith({
@@ -1409,6 +1423,7 @@ await describe({
             now: 0,
             peak: 0,
             started: 0,
+            finished: [],
           };
           const twinClient = answeringClient();
           const twin = await driveWith({
