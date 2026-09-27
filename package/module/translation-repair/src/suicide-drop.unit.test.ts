@@ -112,6 +112,53 @@ await describe({
       },
     },),
     it({
+      name: 'ACCEPTS an attempt on a life, a death by one\'s own hand, and a quotation of a published work in its '
+        + 'published English (ledger F-4: the replay refused "attempts on her own life" and a canonical quotation '
+        + 'whose Chinese translation added 自杀)',
+      fn: async () => {
+        expect(verdictKind({
+          sourceText: ATTEMPT,
+          candidateText: 'That winter the ginger cat made an attempt on her own life; after a long rest she slowly '
+            + 'recovered.',
+        },),).toBe('valid',);
+        expect(verdictKind({
+          sourceText: '尽管经历了数次自杀尝试，老猫仍然每天晒太阳。',
+          candidateText: 'Despite several attempts on his own life, the old cat still sunned himself every day.',
+        },),).toBe('valid',);
+        expect(verdictKind({
+          sourceText: '黑猫自尽了。',
+          candidateText: 'The black cat died by her own hand.',
+        },),).toBe('valid',);
+        expect(verdictKind({
+          sourceText: '> 「这场游戏由清醒过渡到逃遁。我们应该沿着这条线索去理解自杀。」\n>\n> ——喵喵《猫的神话》',
+          candidateText: '> One must follow and understand this game that leads from lucidity to flight.\n>\n'
+            + '> — Meow Meow, *The Myth of the Cat*',
+        },),).toBe('valid',);
+      },
+    },),
+    it({
+      name: 'STILL REFUSES a hand that only wrote, an unattributed quotation without the word, and names no '
+        + 'pronoun the passage did not choose',
+      fn: async () => {
+        expect(verdictKind({
+          sourceText: '橘猫自杀前，亲手写了一封信。',
+          candidateText: 'Before she left, the ginger cat wrote a letter by her own hand.',
+        },),).toBe('invalid',);
+        expect(verdictKind({
+          sourceText: '> 「千万别自杀。」',
+          candidateText: '> “Please don’t go.”',
+        },),).toBe('invalid',);
+        /**
+         Verdict on a drop about a cat the passage calls 他.
+         */
+        const verdict = validateTranslatedSlice({
+          sourceText: '黑猫自杀了。',
+          candidateText: 'The black cat passed away.',
+        },);
+        expect(verdict.kind === 'invalid' ? verdict.findings.join('\n',) : '',).not.toContain(' she ',);
+      },
+    },),
+    it({
       name: 'REFUSES the same drop for 自尽 and 轻生',
       fn: async () => {
         expect(verdictKind({
