@@ -14,6 +14,8 @@
  @module
  */
 
+import { setTimeout as abortableWait, } from 'node:timers/promises';
+
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
@@ -289,8 +291,13 @@ function stallingClient(
         }
 
         // Longer than any deadline this suite sets, so the round's own bound is
-        // the only thing that can end it.
-        await wait(STALL_MS,);
+        // the only thing that can end it. ABORTABLE since 2026-09-27 (ledger
+        // T5): a plain timer kept every suite run alive 30 s past the case.
+        await abortableWait(
+          STALL_MS,
+          undefined,
+          { signal: request.signal, },
+        );
       }
 
       /**
