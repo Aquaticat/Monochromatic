@@ -7,7 +7,10 @@ import {
   namesOneOf,
   readCandidateNames,
 } from './contest-ballot-wire.ts';
-import { POLISH_GATE_HOUSE_RULES, } from './polish-gate-house-rules.ts';
+import {
+  HOUSE_CORRECTION_IS_AN_IMPROVEMENT,
+  POLISH_GATE_HOUSE_RULES,
+} from './polish-gate-house-rules.ts';
 import { selectFence, } from './prompt-fence.ts';
 import {
   type ObjectionGroup,
@@ -75,7 +78,9 @@ function comparativePolishPolicy(
 
 THE ORIGINAL CHINESE IS THE FIDELITY STANDARD. First check both candidates for unsupported statements and dropped content. Naturalness can never compensate for either fault.
 
-Only if both candidates are equally faithful, judge natural English. Reject literal Chinese collocations, calqued verb-object combinations, stiff emotional descriptions, and grammar that a careful native editor would rewrite. Prefer polished only when it is clearly more idiomatic without changing meaning, detail, tone, names, links, ${kept}. Otherwise choose base. Answer neither when no clear naturalness improvement exists.`;
+Only if both candidates are equally faithful, judge natural English. Reject literal Chinese collocations, calqued verb-object combinations, stiff emotional descriptions, and grammar that a careful native editor would rewrite. Prefer polished only when it is clearly more idiomatic without changing meaning, detail, tone, names, links, ${kept}. Otherwise choose base. Answer neither when no clear naturalness improvement exists.
+
+${HOUSE_CORRECTION_IS_AN_IMPROVEMENT}`;
 }
 
 /**
@@ -110,7 +115,9 @@ function objectionCorrectionPolishPolicy(
 
 THE ORIGINAL CHINESE IS THE FIDELITY STANDARD. First check both candidates for unsupported statements and dropped content, and check each objection against the ORIGINAL: an objection is a claim, not a fact.
 
-The base ships if you refuse the correction, with the objections recorded. Choose polished when it resolves an objection the ORIGINAL supports and adds, drops, softens or sharpens nothing else. Choose base when polished acts on an objection the ORIGINAL does not support, or changes anything the ORIGINAL does not ask for. Answer neither when polished resolves nothing the ORIGINAL supports.`;
+The base ships if you refuse the correction, with the objections recorded. Choose polished when it resolves an objection the ORIGINAL supports and adds, drops, softens or sharpens nothing else. Choose base when polished acts on an objection the ORIGINAL does not support, or changes anything the ORIGINAL does not ask for. Answer neither when polished resolves nothing the ORIGINAL supports.
+
+${HOUSE_CORRECTION_IS_AN_IMPROVEMENT}`;
 }
 
 /**

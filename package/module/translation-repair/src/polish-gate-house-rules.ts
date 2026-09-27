@@ -12,6 +12,27 @@ import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
 // polish gate joins them, with the tense point made where the gate reads it.
 
 /**
+ What makes a polish better when its English is no more idiomatic: it brings
+ the base into line with a house rule.
+
+ WRITTEN AGAINST TWO POLICIES THAT NEVER PREFERRED IT (ledger S11). The
+ comparative policy preferred polished only when it was "clearly more
+ idiomatic", so a polish whose one change was the past tense for a life that
+ has ended read as no improvement; the objection policy chose base for any
+ change "the ORIGINAL does not ask for", which a house correction is.
+
+ @example
+ ```ts
+ const policy = `Otherwise choose base. ${HOUSE_CORRECTION_IS_AN_IMPROVEMENT}`;
+ ```
+ */
+export const HOUSE_CORRECTION_IS_AN_IMPROVEMENT: string = 'A HOUSE CORRECTION IS AN IMPROVEMENT. Where polished '
+  + 'differs from the base by bringing it into line with a house rule (the past tense for a life that has ended, '
+  + 'singular they for a TA, English for a word left in Han, Canadian spelling, a month-first date, shorthand '
+  + 'spelled out), that change adds and drops nothing and is one the house rules ask for: prefer polished for it '
+  + 'when the two are otherwise equally faithful, even where its English is no more idiomatic.';
+
+/**
  House rules the polish gate reads after its fidelity policy: the tense the
  house rule sets is not a change of meaning, and the rest of the block.
 
@@ -20,7 +41,7 @@ import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
  const system = `${COMPARATIVE_POLISH_POLICY}\n\n${POLISH_GATE_HOUSE_RULES}`;
  ```
  */
-export const POLISH_GATE_HOUSE_RULES: string = `A TENSE THE HOUSE RULES SET IS NOT A CHANGE OF MEANING. The Chinese marks no tense, so a polished text that moves the narrative of a life that has ended into the past tense, or holds one tense where the base mixed two, has added nothing and dropped nothing; choose base over it only for a fault of another kind. The person these pages remember has died; a present-tense line about their life is the base's choice, not a fact the polish contradicts.
+export const POLISH_GATE_HOUSE_RULES: string = `A TENSE THE HOUSE RULES SET IS NOT A CHANGE OF MEANING. The Chinese marks no tense, so a polished text that moves the narrative of a life that has ended into the past tense, or holds one tense where the base mixed two, has added nothing and dropped nothing; choose base over it only for a fault of another kind. The person these pages remember has died; a present-tense line about their life in the base is a tense the house rules correct, never a fact the polish contradicts and never a reason to keep the base.
 
 ${JUDGE_POLICY_BLOCK}`;
 //endregion Polish gate house rules

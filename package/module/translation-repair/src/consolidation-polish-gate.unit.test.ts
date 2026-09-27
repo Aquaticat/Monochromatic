@@ -156,6 +156,53 @@ await describe({
     },),
 
     it({
+      name: 'NEVER CALLS the base\'s present tense its choice, and PREFERS a polish whose change is a house '
+        + 'correction in the comparative and objection modes (ledger S11: a TianqiChen66616 ballot quoted "a '
+        + 'present-tense line about their life is the base\'s choice", and neither policy preferred a polish '
+        + 'that only applied a house rule)',
+      fn: async () => {
+        /**
+         Subject whose polish only moves a life into the past tense.
+         */
+        const subject = {
+          sourceText: '猫猫喜欢向日葵。',
+          archiveText: 'The cat loves sunflowers.',
+          baseText: 'The cat loves sunflowers.',
+          polishedText: 'The cat loved sunflowers.',
+          lineStructured: false,
+        };
+        /**
+         System half of the comparative sheet.
+         */
+        const comparative = buildConsolidationPolishGateMessages({
+          subject: {
+            ...subject,
+            mode: { kind: 'comparative', },
+          },
+        },).at(0,)?.content ?? '';
+        /**
+         System half of the objection sheet.
+         */
+        const objection = buildConsolidationPolishGateMessages({
+          subject: {
+            ...subject,
+            mode: {
+              kind: 'objection-correction',
+              groups: [{
+                origin: 'consolidation gate',
+                objections: ['The base drops the tabby\'s name.',],
+              },],
+            },
+          },
+        },).at(0,)?.content ?? '';
+        for (const system of [comparative, objection,]) {
+          expect(system.includes('is the base\'s choice',),).toBe(false,);
+          expect(system,).toContain('A HOUSE CORRECTION IS AN IMPROVEMENT',);
+        }
+      },
+    },),
+
+    it({
       name: 'TELLS THE GATE A PROSE SLICE\'S LINE BREAKS ARE THE PAGE\'S WRAP, and keeps line structure only '
         + 'where the line rule governs (class one hundred fifty-two, one entry, 2026-09-26: the polish '
         + 'replacing a calque tied 2 to 2, both base ballots '

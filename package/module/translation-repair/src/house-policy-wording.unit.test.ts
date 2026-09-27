@@ -73,6 +73,15 @@ await describe({
       },
     },),
     it({
+      name: 'TELLS the comparative refiner a house correction is a rewrite to make, since the polish gate now '
+        + 'prefers one (ledger S11)',
+      fn: async () => {
+        // The sheet asked only whether a paragraph read awkwardly, so a life
+        // told in the present tense in fluent English was left alone.
+        expect(sheetNamed({ name: 'refiner', },),).toContain('bringing it into line is a clear improvement',);
+      },
+    },),
+    it({
       name: 'NEVER PRESCRIBES "ended her life" for an attempt she survived',
       fn: async () => {
         expect(HOUSE_POLICY_BLOCK,).not.toContain('the page says that she ended her life, and keeps',);
