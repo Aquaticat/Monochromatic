@@ -764,10 +764,37 @@ Primary PyPI metadata and full release-file lists are retained in the private au
 not installed or selected as dependencies.
 The ONNX release includes a `cp312-abi3` wheel;
 a prior `cp313`-only filename filter was not proof of unavailability.
-Artifact provenance,
-transitive requirements,
+Later model-free artifact inspection downloaded six exact wheels,
+verified their primary-metadata hashes,
+and read archive headers/member inventories without installing or importing candidate packages.
+`proc_ae6d` verified GitHub SLSA attribution for the exact ONNX wheel
+against the pinned source commit and release workflow;
+`proc_20d1` checked certificate/subject fields and rejected a deliberately wrong source digest.
+These results are retained in the [current audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-27.md).
+They do not establish build correctness or another dependency's provenance.
+
+`proc_ae26` ran the reviewed packaging 26.3 tag matcher on the actual target.
+Positive native,
+ABI3,
+and compressed pure-Python controls matched;
+free-threaded,
+newer-glibc,
+other-architecture,
+and older-specific-ABI controls did not.
+All six inspected wheels matched supported target tags,
+including ONNX's `cp312-abi3` file.
+Full additional release metadata yielded one matching `ml-dtypes` 0.6.0 wheel
+and the `flatbuffers` 25.12.19 pure-Python wheel.
+Those additional wheels have not been downloaded.
+Tag matching does not prove imports,
+native linkage,
+or model execution.
+The image still lacks those additional distribution records.
+
+Complete dependency/native-source review,
 actual import/runtime compatibility,
 and a bounded export/consumer manifest remain pending.
+No ONNX export or inference has run.
 
 Source-only follow-up in
 `torch/onnx/_internal/exporter/_core.py:1576-1695`

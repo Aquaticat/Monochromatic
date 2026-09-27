@@ -305,8 +305,22 @@ and NumPy 2.5.3;
 `ml-dtypes` and `flatbuffers` distribution records were absent.
 Primary metadata now retains observed `ml-dtypes` 0.6.0 and `flatbuffers` 25.12.19 release files,
 not selected or vetted installations.
-Remaining work includes proper tag matching,
-complete dependency/source/native build inspection,
+Actual-target tag matching `proc_ae26` passed using hash-checked,
+reviewed packaging 26.3 sources in the existing Python 3.13.15 image.
+All six inspected WHEEL tag sets matched,
+including ONNX's ABI3 wheel.
+Native/ABI3/compressed-pure positive controls matched;
+free-threaded,
+newer-glibc,
+other-architecture,
+and older-specific-ABI controls did not.
+Full additional release metadata identified matching `ml-dtypes` and `flatbuffers` wheel filenames,
+but those artifacts have not been downloaded.
+This closes tag matching only,
+not imports,
+native linkage,
+or full-policy execution.
+Remaining work includes complete dependency/source/native build inspection
 and a frozen CPU-only execution manifest before installation/export.
 No ONNX export,
 ONNX inference,

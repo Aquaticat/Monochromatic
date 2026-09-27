@@ -775,9 +775,9 @@ No filename is yet an import,
 compatibility,
 provenance,
 or qualified-export result.
+Target tag matching has now passed as `proc_ae26`.
 Next:
-verify tag matching,
-complete dependency/source/artifact review,
+complete dependency/source/artifact review
 and freeze a bounded CPU-only export/consumer manifest before any installation or export.
 The ONNX audit root retains the full file/ABI inventory at `b9b04dd`
 and unverified publication metadata at `eb8dd6d`.
@@ -840,7 +840,15 @@ and mpmath 1.3.0 are present;
 `proc_20d1` retained full primary release file lists for observed `ml-dtypes` 0.6.0
 and `flatbuffers` 25.12.19.
 Neither package is selected or installed.
-Private checkpoint `c141ba6` precedes the retained negative-control/transitive metadata results.
+Private checkpoint `81b50b0` retains those negative-control/transitive metadata results.
+`proc_ae26` used the actual image's packaging 26.3 source,
+hash-checked against five reviewed files,
+under a 128-MiB/one-CPU/ten-second model-free manifest.
+All six inspected WHEEL tag sets matched;
+positive native/ABI3/compressed-pure controls and negative free-threaded/newer-glibc/other-architecture/older-specific-ABI controls passed.
+New-release filename matching selected no runtime dependency,
+but identified matching `ml-dtypes` and `flatbuffers` files for further inspection.
+Results are committed at private `cb6c69b`.
 No ONNX export or model inference has occurred in this follow-up.
 
 Pinned source clones are under the private scratch root:
@@ -859,8 +867,25 @@ Source extraction `proc_82ca` copied selected ONNX Script files into the owned a
 its `torch_2_9` facade exists and delegates shared functions to `torch_2_8`.
 Follow-up `proc_216f` extracted fourteen named execution/release boundary files.
 The inspected `torch_2_8` facade delegates shared functions again to `torch_2_6`,
-which remains to be inspected;
-its optimizer also invokes ONNX fusion rewriting.
+whose inspected `onnxscript/_framework_apis/torch_2_6.py:19` delegates shared functions to `torch_2_5`;
+that delegated facade remains to be read.
+The `torch_2_8` optimizer also invokes ONNX fusion rewriting.
+`proc_1445` extracted ten further facade/build/release files.
+ONNX `.github/workflows/release_linux_cibw.yml:84-100`
+sets hardening/lite-protobuf flags and invokes ABI3 validation;
+its fetched protoc/protobuf artifacts and nested build configuration still require source review.
+ORT `tools/ci_build/github/azure-pipelines/py-packaging-pipeline.yml:63,87`
+references the 1ES official template and a CPU packaging stage;
+those and the exact artifact/build link remain open.
+
+Additional clean source clones:
+`ml-dtypes-laya-2026-09-27` at `6bc762dd106292e1aa0d5de98d3867d6b642f209`,
+and `flatbuffers-laya-2026-09-27` at `7e163021e59cca4f8e1e35a7c828b5c6b7915953`.
+ML dtypes uses scikit-build-core/CMake,
+NumPy headers,
+and its Eigen submodule;
+no root `setup.py` was found by the initial file read.
+No build or installation ran.
 The MIT license,
 build metadata,
 version-only setup logic,
