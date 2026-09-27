@@ -31,5 +31,6 @@ export {
   entriesFinishedThisRun,
   finishedEntryIds,
 } from './corpus-run/pass-finished.ts';
+export { openNamespacedCache, } from './corpus-run/slice-cache-namespace.ts';
 
 //endregion Corpus entry barrel
