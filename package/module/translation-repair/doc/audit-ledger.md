@@ -924,9 +924,16 @@ Latent: no replayed slice carries such a title, and the community floor adds no 
 
 ### F-12: low items
 
-Status: open.
+Status: the first two fixed; the plausible pair still open.
 `ArchiveOriginalCompletenessError` stores neither entry nor span;
 the declared-link floor refuses Zhihu @-mentions the archive rendered as the user's slug; owner, 2026-09-27, "Account handle": an @-mention of a declared person may carry the account handle the page writes under the same link.
+
+The error now carries `entryId`, `spanIndex`, `startOffset` and `endOffset` as fields, and its message the offsets (guard shown red with one field unset).
+The declared-link floor passes a rendering whose link text, under the href of an original @-mention of the declared person,
+carries an @-handle the page writes under that href, and its finding offers the handle;
+a link naming the person without a mention still owes the declared form.
+Measured through the composed verdict: the GLaDOSister s8 and Kotori s8 archives went from refused to passing;
+zhangyubaka s18 is refused first by the suicide floor, one of its eight kept refusals.
 Plausible, unproven: nothing re-floors a lanes-agreed would-ship text,
 and the repair lane never calls `validateTranslatedSlice`.
 
@@ -1092,9 +1099,18 @@ mikaela17 lines 223 to 225 end in `\r`;
 
 ### A4: archive link destinations rewritten to the source's Chinese-site ones
 
-Status: open; owner, 2026-09-27, "Archive's English": where the archive links the English counterpart of the original's destination, the page keeps the archive's destination. Measured: 12 archive-only destinations in 92 entries, 3 of them localized (two zh.wikipedia to en.wikipedia, one source.android.google.cn to source.android.com) and 2 differing only by www.
+Status: fixed by the page-assembly pass `corpus-run/archive-destination-restore.ts`; owner, 2026-09-27, "Archive's English": where the archive links the English counterpart of the original's destination, the page keeps the archive's destination. Measured: 12 archive-only destinations in 92 entries, 3 of them localized (two zh.wikipedia to en.wikipedia, one source.android.google.cn to source.android.com) and 2 differing only by www.
 shihai4h2 links PTSD to zh.wikipedia where the archive links en.wikipedia;
 aiyysk links source.android.google.cn where the archive links source.android.com.
+
+The pass pairs the links of a slice whose original and archive carry equal counts by position,
+and keeps a replacement only where the original destination appears nowhere on the archive page,
+the archive destination nowhere in the original, and the original destination is replaced one way.
+Over 92 entries it reads six replacements:
+the three localizations, a `www.` host, twitter.com to x.com, and a moved path on one host,
+the last three the same kind of deliberate archive choice, kept under the same answer and open to the owner's veto;
+a swap of two destinations both sides carry (noname3031) is left alone.
+Replayed over settled artifacts it changes shihai4h s21, aiyysk s76 and s77, and luxuanwen3 s1.
 
 ### A5: seats with no wet provider are seated anyway
 
