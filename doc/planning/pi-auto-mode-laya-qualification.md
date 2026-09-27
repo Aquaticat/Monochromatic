@@ -9,9 +9,10 @@ and Voyage-rerank before further integration-policy questions.
 See the [current handover](../handover/pi-auto-mode-axiom-evaluation.md).
 No production implementation,
 training,
-private upload,
 new hardware allocation,
 or `AGENTS.md` edit is authorized by this plan.
+The later user authorization separately permits all task-relevant assessment content through LLM Gateway/Jev;
+it does not authorize training or another hosted recipient.
 
 The earlier full-policy English CPU runs establish retained input and measured runtime,
 not general axiom quality.

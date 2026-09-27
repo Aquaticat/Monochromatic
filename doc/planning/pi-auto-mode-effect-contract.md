@@ -169,10 +169,14 @@ listing a name,
 printing example text,
 and intentionally exposing that value.
 
-Required evidence containing a credential cannot be uploaded as assessment content.
-If code cannot produce sufficient admissible non-secret evidence without altering the question's meaning,
-use a qualified local path or manual review.
-Do not use remote assessment to decide whether transmitting its own required input was authorized.
+The user has now explicitly authorized all task-relevant assessment content through LLM Gateway/Jev,
+including private or sensitive content.
+That input permission is established by the human,
+not by a model estimating whether its own request may be sent.
+Do not extend it to another assessment provider or an unrelated tool action.
+Do not read or export additional credentials merely because the permitted input scope is broad.
+Collect only the evidence needed for the scoped assessment.
+Missing or unqualified evidence still requires the appropriate local/manual handling.
 Complete current `AGENTS.md` is never silently redacted or shortened to make a request eligible.
 
 ### Outbound transfer and legitimate credential use

@@ -7,9 +7,14 @@ complete current policy input,
 qualified model identity,
 and a five-second total assessment budget.
 The user permits one client transport retry and accepts gateway-internal retries.
-Necessity-based retention without a fixed deletion deadline is accepted for future private non-secret inputs.
+Necessity-based retention without a fixed deletion deadline is accepted.
 Neither zero retention nor an end-to-end two-attempt cap is required.
-No private upload or production implementation is authorized.
+The user subsequently authorized all task-relevant assessment content through LLM Gateway/Jev,
+including private or sensitive content,
+and declined dashboard access.
+Metadata-only logging is user-reported configuration,
+not independent verification of every diagnostic field.
+Production implementation remains unauthorized.
 
 A successful `/v1/systemone` response does not establish all these boundaries.
 The public source normalizes the model name,
@@ -314,15 +319,22 @@ Its README and mise task retain the complete execution manifest.
 ## Verified workarounds and present containment
 
 No production workaround has been built or verified.
-Continue public/synthetic-only evaluation until remaining hosted qualification and cutover authorization are resolved.
+The user now authorizes all task-relevant assessment inputs through LLM Gateway/Jev,
+including private or sensitive content.
+Do not keep the superseded public/synthetic-only restriction or seek dashboard access.
 Q12 accepts the necessity-based retention posture;
 zero retention is not a new blocker.
-Public fixtures keep private evaluation payloads out of either log path,
-but do not qualify real private runtime assessment.
+Earlier public fixtures kept private payloads out of the tested log paths,
+but input consent and production correctness qualification are separate.
 
-The private axiom runner already rejects missing answer IDs and invalid probabilities.
-Its live pilot passed valid-answer checks;
-failure-path mutation coverage and a five-second total-budget implementation remain pending.
+The private axiom runner rejects missing answer IDs and invalid probabilities.
+Expanded schema/range mutation checks passed,
+and later experimental clients enforce one five-second budget for their submitted question sets.
+The [qualification record](../planning/pi-auto-mode-jev-qualification.md)
+retains the measured scope.
+Complete live-consumer deadline,
+cancellation,
+and failure-path qualification remain pending.
 Sanitizing an error after it reaches the client cannot remove content already logged upstream.
 
 ## What does not work

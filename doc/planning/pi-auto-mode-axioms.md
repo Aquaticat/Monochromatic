@@ -41,6 +41,30 @@ records actual incumbent-parser verification and the revised next-probe scope.
 Keep historical runtime/input observations tied to their original envelopes.
 This does not revoke Q13 B or impose universal code-proof-only script admission.
 
+## Hosted input authorization update
+
+The user subsequently declined dashboard access,
+reported metadata-only logging,
+and approved sending "anything and everything" to LLM Gateway/Jev.
+All task-relevant assessment content is now authorized through that named route,
+including private or sensitive content.
+This supersedes Q8 A's earlier input restriction for that route.
+Do not seek dashboard/account-settings access or retry the Mac fallback.
+The logging statement is user-reported,
+not independent technical verification.
+
+This authorizes assessor inputs,
+not the tool actions being assessed,
+unrelated bulk exports,
+other assessment providers/routes,
+ongoing transcript capture,
+raw-history commits,
+training,
+separately rented compute,
+or production cutover.
+Use only evidence needed for the assessment and keep complete current `AGENTS.md`.
+The remaining correctness and final shared-design gates are unchanged.
+
 ## Settled requirements
 
 - Zero coding-plan judge calls,
@@ -53,8 +77,11 @@ This does not revoke Q13 B or impose universal code-proof-only script admission.
   or silent truncation.
 - Read and fingerprint the policy before assessment;
   a changed policy invalidates the pending result before it can authorize an action.
-- Existing histories may be inspected locally to create synthetic cases.
-  Do not upload raw histories or commit them.
+- Existing histories may be inspected locally to create evaluation cases.
+  Task-relevant assessment content is authorized for LLM Gateway/Jev.
+  Do not commit raw histories,
+  start ongoing capture,
+  or perform unrelated bulk exports.
 - Laya fine-tuning is in scope for assessment,
   not automatically authorized training or external compute.
 - Authorized model scope:
@@ -733,16 +760,19 @@ Q9b A,
 accepted the Q10a recommendation,
 and chose Q10b B.
 
-### Q8: Conditional future hosted private content
+### Q8: Historical conditional hosted-input preference
 
-The user will consider sending the minimal private non-secret runtime action/context needed for assessment
+The user initially allowed considering minimal private non-secret runtime input
 after a satisfactory routing and retention audit.
-This keeps hosted assessment eligible for private work,
-while acknowledging the additional service exposure.
-It is not authorization to upload private data now or to implement the cutover.
-Complete current `AGENTS.md` remains mandatory.
-Raw-history uploads and credentials as assessment content remain excluded.
-Public/synthetic-only was not selected as the permanent boundary.
+That answer kept hosted assessment eligible,
+but did not itself authorize private uploads or production cutover.
+It excluded raw-history uploads and credentials as assessment content at that checkpoint.
+
+The later hosted input authorization supersedes those input restrictions for LLM Gateway/Jev:
+all task-relevant assessment content is authorized,
+including private or sensitive content.
+Dashboard access will not be provided and must not remain a prerequisite.
+Complete current `AGENTS.md` and separate production-cutover authorization remain mandatory.
 
 ### Q9a: Human-confirmed explicit scope for new grants
 
@@ -821,7 +851,9 @@ Do not impose zero retention or a fixed maximum as an additional adoption constr
 The user answered after being told that no-training differs from no-retention
 and that gateway metadata-only error diagnostics may preserve echoed input.
 This is acceptance of that retention posture,
-not proof of the account's actual configuration or authorization to upload private data now.
+not proof of the account's actual configuration.
+The later separate input authorization permits all task-relevant assessment content on the named route;
+metadata-only logging remains user-reported rather than independently inspected.
 Complete the remaining routing,
 input,
 security,
@@ -850,9 +882,9 @@ The user explicitly stated that TypeSafe AUP section 1.5 is acceptable.
 Do not keep that section as an unresolved blocker for this guard-classification evaluation
 or require provider clarification solely about it.
 This acceptance does not authorize executing hostile fixture commands,
-uploading private histories,
 training on Jev outputs,
 or implementing the production migration.
+Assessment-input transmission is separately authorized by the user's later LLM Gateway/Jev approval.
 Retention and retry scope were separately settled by Q11 and Q12.
 No special provider exception or contractual amendment has been established.
 

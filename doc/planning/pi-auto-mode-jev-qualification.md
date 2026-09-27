@@ -9,9 +9,11 @@ See the [axiom record](pi-auto-mode-axioms.md)
 and [current audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-26.md).
 No model winner,
 threshold,
-private upload,
-account change,
+account mutation,
 or production cutover is selected.
+The user has separately authorized all task-relevant assessment content through LLM Gateway/Jev,
+including private or sensitive content,
+and declined dashboard access.
 The accepted AUP,
 necessity-based retention,
 and gateway-internal retry choices remain settled.
@@ -77,9 +79,22 @@ configuration,
 or upstream model.
 No claim about provider substitution follows.
 
-## Actual account settings remain unverified
+## User-reported logging and declined dashboard access
 
-Read-only bridges attempted:
+The user stated that the service records only metadata,
+will not provide dashboard access,
+and explicitly approved sending "anything and everything" to LLM Gateway/Jev.
+Record that logging statement as user-reported configuration,
+not independent inspection or a guarantee about every diagnostic field.
+All task-relevant assessment inputs on the named route are authorized,
+including private or sensitive content.
+Stop account-settings access attempts and do not retry the Mac fallback.
+This is not authorization for assessed tool actions,
+other assessment providers/routes,
+training,
+or production cutover.
+
+Historical read-only bridges attempted before that clarification:
 
 - BrowserOS MCP connection failed with `fetch failed`.
 - `agent-browser --auto-connect` found no running debug-enabled Chrome.
@@ -92,8 +107,17 @@ The named browser session was closed.
 No credential was requested or exported,
 no sign-up/OAuth consent was submitted,
 and no account setting changed.
-Todo #20 tracks the authenticated-account gate.
-No global claim is made that account settings are inaccessible by every possible tool.
+A later named-profile recheck `proc_ded1` recorded only `other-origin`,
+not an authenticated dashboard claim,
+and closed its owned session.
+The Safari MCP fallback failed to resolve its configured Mac hostname;
+no Safari session was opened.
+Neither attempt established account settings.
+
+Todo #20 was superseded and deleted rather than marked technically verified.
+Dashboard inspection is no longer an input-consent prerequisite and must not be pursued.
+Actual cache/routing details remain uninspected evidence limits,
+not a reason to bypass the user's access decision.
 The user has not required ZDR or a fixed deletion deadline.
 
 ## Frozen operational research schedule
