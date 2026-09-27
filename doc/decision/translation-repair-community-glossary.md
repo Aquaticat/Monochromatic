@@ -76,3 +76,24 @@ where the archive has `KAngel` of *Needy Streamer Overload*.
     `consolidate-gate-wire.unit.test.ts`,
     `document-preparation.unit.test.ts`;
     with them `candidate-select-wire.unit.test.ts` and `community-glossary.unit.test.ts`.
+
+## Addendum 2026-09-27: an organization's proper name keeps its own form
+
+Asked by the whole-package audit:
+mikaela_khara names her registered company 天津小药娘网络科技工作室
+(「…就以小药娘做字号」 and 这是小药娘网络科技的雏形),
+the archive writes "XiaoYaoNiang(XYN)"
+and its translator's note gives the registered English name "XYN (Tianjin) Technology".
+The class one hundred nineteen floor refused the pinyin there too,
+so the archive and every mikaela run that wrote the name were refused.
+The owner answered:
+"Allow it, because it's the proper name of an org."
+
+- An entry may list the source contexts in which its term stands inside an organization's proper name
+    (`properNameContexts` on `CommunityTerm`);
+    an occurrence inside one is not the term,
+    so the floor,
+    the sheet lines and the departures read the passage as if it did not carry it there.
+- 药娘 lists 小药娘网络科技 and 以小药娘做字号.
+    The ruling of 2026-09-24 is unchanged everywhere else:
+    the word is refused in Han and in pinyin even where the archive keeps it.

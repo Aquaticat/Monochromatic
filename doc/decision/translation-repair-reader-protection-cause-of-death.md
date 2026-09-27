@@ -61,3 +61,22 @@ and one page must say it the same way everywhere.
   sentence and carries the postscript as the ORIGINAL states it; the next XIEPT2 run applies it (about
   two hours on Hyper alone at 1,000 requests an hour, the owner's call on timing).
 - A critic that reports the vaguer postscript as an omission is wrong by the rule's own words, as before.
+
+## Addendum 2026-09-27: "took medication" gives nothing to copy and may stay
+
+Asked by the whole-package audit,
+which found the house policy saying both that "took medication" is a method kept vague
+and (class one hundred twenty-two) that the page says at most that she had taken medication,
+the owner answered:
+""took medication" is fine, because it's not replicable.
+Replicability is the test, and I believe I said this and it was written in docs before."
+
+- The rule's test has been replicability since the first correction in this document.
+    The 2026-09-03 addendum recorded the owner's choice to match XIEPT2's postscript to its obituary block on that page,
+    and the house policy generalized it into "method words with no substance and no dose are still a method";
+    that generalization went past the test for medication.
+- Medication named without a substance,
+    a dose or where to obtain it ("took medication", "had taken medication", "overdosed") tells a reader nothing to copy
+    and may stay as the ORIGINAL states it.
+    Method words that do tell a reader how (jumped, hanged, cut, breathed in gas) stay vague as before.
+- One page still says it one way everywhere (the 2026-09-03 addendum's consistency clause is unchanged).

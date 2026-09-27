@@ -227,7 +227,22 @@ and the gate went 2 standing,
     `e7e6f706a` (`consolidate-settle.unit.test.ts`),
     `44e27ca0e` (`consolidate-driver.unit.test.ts`),
     and the sheet wording in `consolidate-gate-wire.unit.test.ts`.
-    Fixed in `419605ff4` and the sheet fix that follows it.
+    Fixed in `419605ff4` and the sheet fix `0b8788dae`.
+
+## Addendum 2026-09-27, fourteenth: the gate's objections over an ineligible standing go to the polish
+
+Owner's answer of 2026-09-27 ("Objections to polish"),
+asked on the thirteenth addendum's open question.
+Over a standing the deterministic rule refused every gate verdict ships the slate's choice,
+so the gate's ballots changed nothing on the page.
+
+- The consolidation still ships;
+    the thirteenth addendum stands.
+- What the gate ballots held against the consolidation
+    (their unsupported and dropped findings and their reasons)
+    becomes required corrections for the final polish that already runs on the slice,
+    so the round's evidence improves the text instead of only being recorded.
+- The gate sheet tells the judge so.
 
 ## Addendum 2026-09-26, twelfth: an undecided gate over a standing every contest ballot condemned ships the slate's choice
 
