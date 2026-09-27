@@ -56,6 +56,39 @@ export const FANDOM_GLOSSARY: readonly CommunityTerm[] = [
       + 'high-performance!"); a performer remembered as the "high-performance robot" is remembered as her Atri, so '
       + 'a note naming Atri is the reference, not an addition',
   },
+  // CLASS ONE HUNDRED EIGHTY-FOUR (TianqiChen66616, 2026-09-27): 变娃娃 shipped
+  // as "in this game of becoming a doll" and 被她治愈 as "those she had
+  // healed". Kigurumi players call putting on the costume 变娃 (a Chinese
+  // report on the hobby: 偶装玩家会将穿上偶装称作"变娃"); English "doll up"
+  // means dressing smartly, so it is refused. 治愈 refuses nothing, since
+  // "healed her heart" is English too; the why names the sense.
+  {
+    term: '变娃',
+    renderings: [
+      'put on the kigurumi',
+      'in kigurumi',
+      'became the doll',
+    ],
+    refusedForms: [
+      'dolled up',
+      'dolling up',
+    ],
+    why: 'kigurumi players\' word for putting on the costume (head, bodysuit) and becoming the character, who '
+      + 'then stays silent; not a game, and never "doll up", which in English means dressing smartly',
+  },
+  {
+    term: '治愈',
+    renderings: [
+      'comforted',
+      'cheered up',
+      'lifted the spirits of',
+      'cured',
+    ],
+    refusedForms: [],
+    why: 'of people or feelings, the comfort a person or a work gives (治愈系, "healing" in the fan sense): the '
+      + 'people she comforted, not the people she healed, which reads as curing a wound; "cured" only where the '
+      + 'passage speaks of an illness',
+  },
 ];
 
 //endregion Fandom glossary

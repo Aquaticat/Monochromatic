@@ -40,17 +40,26 @@ const COMFORTED = '猫看见了被它治愈的小猫们。';
 
  @param term - Han form to look up
 
- @returns Leading rendering, or undefined where the term is not seeded
+ @returns Leading rendering the glossary offers for the term
+
+ @throws Error when the glossary lacks the term or seeds it with no rendering,
+ which is the failure this guard exists to show
 
  @example
  ```ts
  const first = firstRendering({ term: '变娃', },);
  ```
  */
-function firstRendering({ term, }: { readonly term: string; },): string | undefined {
-  return COMMUNITY_GLOSSARY.find(function isTerm(entry,): boolean {
+function firstRendering({ term, }: { readonly term: string; },): string {
+  /**
+   Leading rendering of the seeded entry, if any.
+   */
+  const [first,] = COMMUNITY_GLOSSARY.find(function isTerm(entry,): boolean {
     return entry.term === term;
-  },)?.renderings[0];
+  },)?.renderings ?? [];
+  if (first === undefined)
+    throw new Error(`community glossary does not seed ${term}`,);
+  return first;
 }
 
 await describe({
