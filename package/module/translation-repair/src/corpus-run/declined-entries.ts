@@ -1,8 +1,12 @@
-import { mkdir, } from 'node:fs/promises';
+import type { Dirent, } from 'node:fs';
+import {
+  mkdir,
+  readdir,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { writeFileAtomic, } from './atomic-write.ts';
-import { namesIn, } from './directory-listing.ts';
+import { filesystemReason, } from './directory-listing.ts';
 
 //region Declined entries
 // WHAT A PASS LEAVES BEHIND FOR AN ENTRY IT DECLINED, and how the next pass
@@ -131,10 +135,90 @@ export async function writeDeclinedEntry(
 }
 
 /**
+ The decline directory is there and could not be listed.
+
+ Read as no declines, it would send every declined entry back through the
+ pipeline and drop it from `verify-published`'s count. The message names the
+ filesystem reason alone, never the path, which can name a person.
+
+ @example
+ ```ts
+ throw new DeclinedEntriesUnreadableError({ reason: 'EACCES', cause: error, },);
+ ```
+ */
+export class DeclinedEntriesUnreadableError extends Error {
+  /**
+   Declares this message safe to forward: it names a filesystem code alone.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Builds the unlistable-directory failure.
+
+   @param reason - filesystem code the listing failed with
+
+   @param cause - failure the listing raised
+   */
+  constructor(
+    {
+      reason,
+      cause,
+    }: {
+      readonly reason: string;
+      readonly cause: unknown;
+    },
+  ) {
+    super(
+      `the decline directory could not be listed (${reason}); a pass reading it as no declines would re-run every declined entry`,
+      { cause, },
+    );
+    this.name = 'DeclinedEntriesUnreadableError';
+  }
+}
+
+/**
+ What the decline directory holds, typed so a non-file is never a record.
+
+ @param declinedDir - directory of decline records
+
+ @returns Its entries, none for an absent directory
+
+ @throws {@link DeclinedEntriesUnreadableError} for any other listing failure
+
+ @example
+ ```ts
+ const entries = await recordEntries({ declinedDir, },);
+ ```
+ */
+async function recordEntries(
+  { declinedDir, }: { readonly declinedDir: string; },
+): Promise<readonly Dirent[]> {
+  try {
+    return await readdir(
+      declinedDir,
+      { withFileTypes: true, },
+    );
+  } catch (error) {
+    /**
+     Filesystem code the listing failed with.
+     */
+    const reason = filesystemReason({ error, },);
+    if (reason === 'ENOENT')
+      return [];
+    throw new DeclinedEntriesUnreadableError({
+      reason,
+      cause: error,
+    },);
+  }
+}
+
+/**
  Entry ids a runs dir carries a decline record for.
  
  An absent directory is no declines, not an error: a runs dir written before
- declines existed, or one whose pass declined nothing, has none.
+ declines existed, or one whose pass declined nothing, has none. Any other
+ listing failure throws, and a name that is not a regular file is no record,
+ as the artifact listing reads its own directory (ledger A9b).
  
  @param declinedDir - directory of decline records
  
@@ -148,14 +232,14 @@ export async function writeDeclinedEntry(
 export async function declinedEntryIds(
   { declinedDir, }: { readonly declinedDir: string; },
 ): Promise<ReadonlySet<string>> {
-  /**
-   What the directory holds, or why it could not be read.
-   */
-  const reading = await namesIn({ dir: declinedDir, },);
-  if (reading.kind === 'unreadable')
-    return new Set<string>();
   return new Set(
-    reading.names
+    (await recordEntries({ declinedDir, },))
+      .filter(function isRecordFile(entry,): boolean {
+        return entry.isFile();
+      },)
+      .map(function toName({ name, },): string {
+        return name;
+      },)
       .filter(function isRecord(name,): boolean {
         return name.endsWith(RECORD_SUFFIX,);
       },)

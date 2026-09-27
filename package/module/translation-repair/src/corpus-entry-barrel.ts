@@ -21,6 +21,7 @@ export type {
 export { settleEntry, } from './corpus-run/pass-entry.ts';
 export {
   DECLINED_DIR,
+  DeclinedEntriesUnreadableError,
   type DeclinedEntryRecord,
   type DeclineReason,
   declinedEntryIds,
