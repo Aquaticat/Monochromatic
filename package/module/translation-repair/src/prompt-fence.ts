@@ -16,12 +16,12 @@
 /**
  Shortest fence used when nothing enclosed competes with it.
  */
-const PROMPT_FENCE_MIN = 5;
+export const PROMPT_FENCE_MIN = 5;
 
 /**
  Fence character.
  */
-const FENCE_CHARACTER = '=';
+export const FENCE_CHARACTER = '=';
 
 /**
  Longest unbroken run of the fence character anywhere in one text.
