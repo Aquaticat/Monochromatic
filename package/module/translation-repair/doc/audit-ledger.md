@@ -850,7 +850,11 @@ each on an original that writes the pronoun; the false ones were constructed con
 
 ### F-10: `assertHeadingsStayDistinct` goes silent when heading counts differ
 
-Status: open (latent).
+Status: fixed; a page heading repeated more often than the original repeats any heading refuses whatever the counts.
+Measured (`~/temp/agent/audit-floor-replay/heading-replay.mjs`) over 92 archive pages and 213 fixed run pages:
+only yuliannyanner3 refused, as before.
+A first version counted one heading as a repeat and would have refused yingying's archive and 12 runs
+(an added heading on an original with none); caught by the measurement before commit.
 
 ### F-11: the glossary floors refuse a glossed Han title the title floor allows
 
