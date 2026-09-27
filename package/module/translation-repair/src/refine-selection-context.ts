@@ -1,6 +1,7 @@
 import type { AbsoluteNaturalnessFinding, } from './absolute-naturalness-review-wire.ts';
 import type { SelectEvidence, } from './candidate-select-wire.ts';
 import { citedReferenceEvidence, } from './cited-reference-rule.ts';
+import { HOUSE_FORM_CORRECTION_KEEPS_MEANING, } from './house-form-corrections.ts';
 
 //region Refinement selection context
 // Keeps exploratory refinement and required correction from asking selectors
@@ -222,9 +223,9 @@ export function buildRefineSelectionContext(
     return {
       task: 'Each candidate is a revision of the CURRENT English translation below, meant to read more naturally without changing what it says.',
       criteria: [
-        'Says exactly what the CURRENT text says: nothing added, dropped, softened, sharpened, or reattributed.',
+        `Says exactly what the CURRENT text says: nothing added, dropped, softened, sharpened, or reattributed. ${HOUSE_FORM_CORRECTION_KEEPS_MEANING}`,
         'Faithful to the Chinese ORIGINAL.',
-        'Reads more naturally than the CURRENT text by a clear margin.',
+        'Reads more naturally than the CURRENT text by a clear margin, or brings it into line with a house rule of form.',
       ],
       evidence: [
         {
@@ -249,7 +250,7 @@ export function buildRefineSelectionContext(
         'Resolves each objection the ORIGINAL supports. An objection is a claim: one the ORIGINAL does not '
           + 'support is ignored, and a candidate acting on it has introduced an error.',
         'Changes nothing an objection the ORIGINAL supports does not concern, beyond a clear naturalness fix '
-          + 'that keeps the meaning.',
+          + `that keeps the meaning. ${HOUSE_FORM_CORRECTION_KEEPS_MEANING}`,
         'Reads as natural English.',
       ],
       evidence: [
@@ -308,7 +309,7 @@ export function buildRefineSelectionContext(
       'Hard eligibility floor, not a ranking preference: a candidate must preserve exact meaning, resolve every REQUIRED FINDING, and contain no material naturalness defect a careful native editor would change.',
       'Before comparing candidates, assess each candidate in isolation against absolute publication quality. Improvement over CURRENT or another candidate is irrelevant to eligibility.',
       'For each candidate, scan every sentence for grammar, collocation, word order, and reference defects, then reread complete affected paragraphs for flow, register, repetition, and defects introduced outside REQUIRED FINDINGS.',
-      'Says exactly what the CURRENT text says: nothing added, dropped, softened, sharpened, or reattributed.',
+      `Says exactly what the CURRENT text says: nothing added, dropped, softened, sharpened, or reattributed. ${HOUSE_FORM_CORRECTION_KEEPS_MEANING}`,
       'Faithful to the Chinese ORIGINAL.',
       'Resolves every REQUIRED FINDING across each affected paragraph.',
       'Treats findings as a minimum, not an edit whitelist: reward additional material naturalness fixes that preserve exact meaning.',

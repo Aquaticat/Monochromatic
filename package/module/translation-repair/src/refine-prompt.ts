@@ -2,6 +2,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { AbsoluteNaturalnessFinding, } from './absolute-naturalness-review-wire.ts';
 import { citedReferenceCandidateLines, } from './cited-reference-rule.ts';
+import { HOUSE_FORM_CORRECTIONS, } from './house-form-corrections.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { selectFence, } from './prompt-fence.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
@@ -249,7 +250,7 @@ export function buildRefineMessages(
   const baselinePolicy = correctingObjections
     ? `The ${objectingJudgesOf({ groups: objectionGroups, },)} objected to the current wording for the reasons quoted below. Each objection is a claim, not a fact: check it against the ORIGINAL. Where the ORIGINAL supports an objection, correct the paragraph it concerns: remove what the ORIGINAL does not say, and restore what it says and the translation leaves out. Where the ORIGINAL does not support an objection, leave that wording alone. Change nothing else, apart from a clear naturalness fix or a house correction that keeps the meaning. Return an empty list when no objection is supported; the current wording then ships with the objections recorded.`
     : (renderedFindings.length === 0)
-    ? 'The translation below is already correct as far as anyone has determined. Nobody has claimed any of it is wrong. Your only question per paragraph is whether an English reader would find it awkward, and whether you can fix that without touching meaning.\n\nRewrite a paragraph ONLY when the improvement is clear and obvious. A paragraph a house rule corrects (a life told in the present tense, a Ta, a word left in Han, a spelling other than Canadian, a day-first date, chat shorthand) is one: bringing it into line is a clear improvement that changes no meaning. If a paragraph otherwise reads acceptably, leave it out of your reply entirely. Returning an empty list is a correct and common answer, and is much better than proposing a change you would not defend.'
+    ? `The translation below is already correct as far as anyone has determined. Nobody has claimed any of it is wrong. Your only question per paragraph is whether an English reader would find it awkward, and whether you can fix that without touching meaning.\n\nRewrite a paragraph ONLY when the improvement is clear and obvious. A paragraph short of a house rule of form is one: bringing it into line is a clear improvement that changes no meaning (${HOUSE_FORM_CORRECTIONS}). If a paragraph otherwise reads acceptably, leave it out of your reply entirely. Returning an empty list is a correct and common answer, and is much better than proposing a change you would not defend.`
     : 'The current wording failed an independent absolute publication-quality review for the quoted findings below. It cannot remain unchanged. Correct every listed finding while preserving exact meaning. Return an empty list only if no faithful correction exists; that answer refuses publication rather than approving the current wording.';
 
   return {

@@ -1,6 +1,7 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
+import { HOUSE_FORM_CORRECTIONS, } from './house-form-corrections.ts';
 import { MEASUREMENT_POLICY_BLOCK, } from './house-policy.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { selectFence, } from './prompt-fence.ts';
@@ -285,7 +286,7 @@ Mark acceptable only when the whole candidate reads as idiomatic, publication-re
 
 Perform two independent scans before deciding. First inspect every sentence for local grammar, collocation, word order, and reference defects. Then set those observations aside and reread each complete paragraph plus the whole passage for flow, register, repetition, and any defect the local scan missed. For an unacceptable candidate, return the union of material defects from both scans rather than only the first defect that proves rejection.
 
-Do not reject merely because another optional style is possible. Preserve memorial tone, names, handles, links, Markdown, line structure, and a term the house rules keep in English letters with its gloss. Judge naturalness only; do not rewrite the passage or decide factual fidelity. A departure from a house rule of form is a material defect to report: a word left in Han, a Ta left standing, chat shorthand carried across, a spelling other than Canadian, a day-first date, or the life of a person who has died told in the present tense.
+Do not reject merely because another optional style is possible. Preserve memorial tone, names, handles, links, Markdown, line structure, and a term the house rules keep in English letters with its gloss. Judge naturalness only; do not rewrite the passage or decide factual fidelity. A departure from a house rule of form is a material defect to report; the house form is ${HOUSE_FORM_CORRECTIONS}.
 
 A prose candidate is shown with each paragraph on one line, as it renders. Single newlines inside one numbered paragraph, where they appear, unless marked as explicit Markdown hard breaks, are soft breaks that render as spaces. Preserve them and do not report their source layout as choppy flow. A flow defect is material only if it remains after replacing each soft break with a space.
 

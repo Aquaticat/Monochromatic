@@ -1,3 +1,4 @@
+import { HOUSE_FORM_CORRECTIONS, } from './house-form-corrections.ts';
 import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
 
 //region Polish gate house rules
@@ -27,9 +28,8 @@ import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
  ```
  */
 export const HOUSE_CORRECTION_IS_AN_IMPROVEMENT: string = 'A HOUSE CORRECTION IS AN IMPROVEMENT. Where polished '
-  + 'differs from the base by bringing it into line with a house rule (the past tense for a life that has ended, '
-  + 'singular they for a TA, English for a word left in Han, Canadian spelling, a month-first date, shorthand '
-  + 'spelled out), that change adds and drops nothing and is one the house rules ask for: prefer polished for it '
+  + `differs from the base by bringing it into line with a house rule of form (${HOUSE_FORM_CORRECTIONS}), `
+  + 'that change adds and drops nothing and is one the house rules ask for: prefer polished for it '
   + 'when the two are otherwise equally faithful, even where its English is no more idiomatic.';
 
 /**
