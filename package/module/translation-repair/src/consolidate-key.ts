@@ -1,3 +1,4 @@
+import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import type { ConsolidationPolishConfig, } from './consolidation-polish-model.ts';
 import { hashContent, } from './document-node.ts';
@@ -164,7 +165,7 @@ const LANE_TEXTS_KEY_LABEL = 'lane-texts';
  
  @example
  ```ts
- const runShape = consolidateRunShape({ modelIds, identityContext, },);
+ const runShape = consolidateRunShape({ modelIds, identityContext, declaredNamePairs: [], },);
  ```
  */
 export function consolidateRunShape(
@@ -178,6 +179,7 @@ export function consolidateRunShape(
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly polishConfig?: ConsolidationPolishConfig;
+    readonly declaredNamePairs: readonly DeclaredNamePair[];
   },
 ): string {
   return JSON.stringify([

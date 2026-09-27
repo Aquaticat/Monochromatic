@@ -211,6 +211,7 @@ export async function consolidateDocument(
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((polishConfig === undefined) ? {} : { polishConfig, }),
+    declaredNamePairs,
   },);
 
   /**
