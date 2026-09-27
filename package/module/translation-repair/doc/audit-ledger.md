@@ -667,7 +667,12 @@ though the owner wrote only "I kinda disagree here".
 
 ### H4: the repair lane's own sheets never see the archive dispute
 
-Status: open (class one hundred eight's open half).
+Status: fixed (`d91b338d7`).
+The editor and the checker read `ADDITION_IS_REMOVED_NOT_SOFTENED` (`addition-repair-rule.ts`):
+an accepted addition is fixed only by removing the detail, and a softer restatement keeps it,
+which the checker answers not-fixed.
+Class one hundred eight measured the repair lane softening an accepted invented event into milder wording.
+Guard: `addition-repair-rule.unit.test.ts`.
 
 ### H5: the translate lane and the consolidation never re-seat under a hold
 
@@ -1835,7 +1840,8 @@ twice more still (`<test> > log ; echo "exit $?"`, and `rg --files ... ; rg <con
 and once more during H2 (`<test> > log && rg --count FAIL log ; rg <name> log`),
 and once during S19 (`sleep 1 && rg --count PASS log ; tail <output>`), a foreground sleep as well,
 and once during S5 (`build > log && tsc | rg --count ; true`),
-and once during S12 (`rg --count <file> ; rg --line-number <file>`).
+and once during S12 (`rg --count <file> ; rg --line-number <file>`),
+and a foreground `sleep 1 && tail <log>` during #379.
 A related shape, `<test A> | rg --count FAIL || <test B> | rg --count FAIL`, never ran B when A went red (S10);
 and `mise run --cd <package> build` once, against CM5.
 The first `;` one also hid which of two files failed, since both counts printed as one number.
