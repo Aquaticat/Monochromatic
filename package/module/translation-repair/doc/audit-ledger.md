@@ -385,7 +385,21 @@ so a claim against a declared name can be supported and dispute the archive.
 
 ### S5: the apparatus list differs across six sheets
 
-Status: open.
+Status: fixed (`e7e3f9c17`, `2329042f4`, `914ccb21d`).
+`APPARATUS_KINDS` in `page-apparatus-clause.ts` is the one list,
+the union of every kind any sheet named;
+the critic, the panel, the contest, the writers' clause, the archive block review,
+its selector (`ARCHIVE_BLOCK_SELECTION_CRITERIA`)
+and the dispute note read it,
+and the critic, the panel and the selector gained `NARRATIVE_DETAIL_IS_NOT_APPARATUS`.
+Guards: `apparatus-kinds.unit.test.ts`, the selection-prompt assertion in `archive-block-review-stage.unit.test.ts`.
+Left as measured:
+the block review's deterministic `editorial-context` check still counts only fixed-prefix, contributor, image and comment blocks,
+so a reviewer calling a gloss block `editorial-context` is not counted;
+the block then ships as the archive wrote it unless a revise vote wins selection,
+and the selector now reads the apparatus kinds.
+The unclaimed-block census found no footnote or gloss block in the corpus.
+Original finding:
 `PAGE_APPARATUS_IS_KEPT`,
 `CONTEST_POLICY`,
 the critic,
@@ -398,7 +412,12 @@ votes on or writes against the archive.
 
 ### S6: `CONTEST_POLICY` still says keep what the Chinese is silent about
 
-Status: open.
+Status: fixed (`e7e3f9c17`, `fa892a7da`).
+The silent-keeps sentence covers page apparatus and whole regions
+and says a narrative detail the archive adds to a passage is not kept on the archive's word;
+the judge tail's precedence sentence names "a criterion or any other rule you have been given".
+Guards: `dropped-covers-the-page.unit.test.ts`, `contest-ballot-wire.unit.test.ts`, `decision-seat-policy.unit.test.ts`.
+Original finding:
 "Where the Chinese is SILENT rather than contradicting, dropping it is a fault of this kind,
 and keeping it is correct" sits beside `NARRATIVE_DETAIL_IS_NOT_APPARATUS`;
 the CuspariaKLSY11 gate ballot kept "took medication that night" on that wording.
@@ -406,13 +425,24 @@ The JUDGE tail's precedence line names criteria this sheet lacks.
 
 ### S7: `SIZE_NOTE_POLICY` calls silent surplus in any far-longer rendering page content
 
-Status: open.
+Status: fixed (`d94f6787b`).
+Silent surplus is page content only where the archive rendering also carries it;
+surplus the archive does not carry, a passage repeated or looping included, is unsupported.
+Guard: `contest-size-note.unit.test.ts`.
+Original finding:
 The note exists for a looping candidate,
 and its sentence tells the judge the loop's surplus is page content.
 
 ### S8: the narrative bound and the cited-reference rule have no precedence
 
-Status: open.
+Status: fixed (`914ccb21d`).
+Both reference rules say an event or a characterization a cited reference states is covered,
+since the narrative bound is about detail no source states,
+and that reader protection outranks the references;
+`TRANSLATE_ATTESTED_RULE` says reader protection outranks the attested details;
+the dispute note says the adjudicators weighed the references before accepting the claim.
+Guard: `reference-precedence.unit.test.ts`.
+Original finding:
 A characterization a cited reference states is ACCURATE on one rule and an addition on the other;
 neither limits reader protection
 (`cited-reference-rule.ts`, `TRANSLATE_ATTESTED_RULE`, `misreadingRule`).
@@ -426,7 +456,12 @@ Proposed condition: the allowance holds only where medication was not the means.
 
 ### S10: the refiner keeps "any word left in the original language" and every date unchanged
 
-Status: open.
+Status: fixed.
+The block-level precedence sentence landed in `e8f0b0369`;
+`81962c75a` rewrites the refiner's survival sentence in both branches to name the house form
+and adds to the translate writer that a name the archive left in Han is not a rendering to keep.
+Guards: `house-policy-wording.unit.test.ts`, `consolidate-objection-polish.unit.test.ts`, `translate-wire.unit.test.ts`.
+Original finding:
 Contradicts the house block on Han,
 Ta,
 titles,
@@ -1750,7 +1785,10 @@ and once a shell `for` loop over line numbers, which the same rule forbids,
 and once `<test> | rg ... ; true` to force a zero exit;
 twice more still (`<test> > log ; echo "exit $?"`, and `rg --files ... ; rg <config>`),
 and once more during H2 (`<test> > log && rg --count FAIL log ; rg <name> log`),
-and once during S19 (`sleep 1 && rg --count PASS log ; tail <output>`), a foreground sleep as well.
+and once during S19 (`sleep 1 && rg --count PASS log ; tail <output>`), a foreground sleep as well,
+and once during S5 (`build > log && tsc | rg --count ; true`).
+A related shape, `<test A> | rg --count FAIL || <test B> | rg --count FAIL`, never ran B when A went red (S10);
+and `mise run --cd <package> build` once, against CM5.
 The first `;` one also hid which of two files failed, since both counts printed as one number.
 Prevention: a report that should run after a failing command is `a || b`, never `a ; b`;
 two independent checks are two tool calls.
@@ -1760,7 +1798,8 @@ two independent checks are two tool calls.
 Status: fixed in `0cf2017b3`.
 `e8f0b0369` reworded house-policy sentences and bumped a cache version with single-file runs only;
 three pins broke (the version 17 key literal, the corner-bracket sentence, the place-as-means sentence).
-Prevention: any sheet wording or cache version change runs the full suite before its commit,
+Prevention: any sheet wording or cache version change runs the full suite right after its commit
+(GCE puts the commit first) and before the next change builds on it,
 and a version bump repins its key literal in the same commit.
 
 ### M3: a guard whose first red was a link failure
