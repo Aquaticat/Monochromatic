@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from './log-context.ts';
 import type { BedrockClient, } from './bedrock-client.ts';
 import {
   bedrockIsDry,
@@ -31,7 +32,7 @@ import type {
 /**
  Logger root for the meter readers.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  What one provider's meter said, keeping a meter that could not be read

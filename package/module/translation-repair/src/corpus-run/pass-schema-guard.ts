@@ -1,8 +1,8 @@
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from '../log-context.ts';
 import { refusalText, } from '../refusal-text.ts';
 import { ARTIFACT_SCHEMA_VERSION_V14, } from './artifact-two-lane-contract.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
@@ -136,7 +136,7 @@ function generationLine(
 /**
  Logger for the guard's own lines; the guard takes no caller-supplied logger.
  */
-const gl = tagged({ tag: 'pass-schema-guard', },);
+const gl = contextRoot({ tag: 'pass-schema-guard', },);
 
 /**
  Ways forward every refusal here ends with, in the order an operator should

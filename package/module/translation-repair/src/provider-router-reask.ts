@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { contextRoot, } from './log-context.ts';
 import type { ModelReach, } from './budget-routing.ts';
 import type {
   ChatJsonOutcome,
@@ -47,7 +48,7 @@ import type { SlotLedger, } from './provider-router-slots.ts';
 /**
  Logger root for the re-ask.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  What the router lends the re-ask.

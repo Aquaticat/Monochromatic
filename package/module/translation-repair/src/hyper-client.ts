@@ -2,6 +2,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import pLimit, { type LimitFunction, } from 'p-limit';
 
+import { contextRoot, } from './log-context.ts';
 import {
   extractAnthropicCompletion,
   requireAnthropicTerminator,
@@ -98,7 +99,7 @@ export const HYPER_PER_MODEL_CONCURRENCY: number = Number.POSITIVE_INFINITY;
 /**
  Logger root for this package's model-facing shell.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Refusal raised when a roster model has no spelling on this provider.

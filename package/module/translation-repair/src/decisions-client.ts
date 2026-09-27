@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { contextRoot, } from './log-context.ts';
 import { armCallDeadline, } from './call-deadline.ts';
 import { SyntheticHttpError, } from './completion-shape.ts';
 import {
@@ -49,7 +50,7 @@ const HTTP_SUCCESS_CEILING = 300;
 /**
  Logger root for this client.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Builds the client of the decisions endpoint.

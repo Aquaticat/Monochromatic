@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from './log-context.ts';
 import type { BedrockClient, } from './bedrock-client.ts';
 import type { HyperClient, } from './hyper-client.ts';
 import type { OpenRouterClient, } from './openrouter-client.ts';
@@ -94,7 +95,7 @@ const RATE_LIMIT_BACKOFF_MS = BUDGET_FRESH_MS;
 /**
  Logger root for the budget layer.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Which providers currently have NO budget to spend, keyed by name.

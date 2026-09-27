@@ -9,6 +9,8 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from './log-context.ts';
+
 //region Lookup cache
 // Durable cache of web lookups, across runs and entries.
 //
@@ -22,7 +24,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 /**
  Logger root for the cache.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Environment variable overriding where lookups are cached.

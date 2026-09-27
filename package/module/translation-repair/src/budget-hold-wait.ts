@@ -1,6 +1,7 @@
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from './log-context.ts';
 import { EveryProviderDryError, } from './budget-routing.ts';
 import type {
   BudgetView,
@@ -33,7 +34,7 @@ import type { RosterModelId, } from './roster-id.ts';
 /**
  Logger root for the wait.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  How often a call waiting out a provider hold checks whether it was aborted.

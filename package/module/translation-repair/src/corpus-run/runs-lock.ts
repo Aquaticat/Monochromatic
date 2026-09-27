@@ -7,8 +7,8 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from '../log-context.ts';
 import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
 
@@ -36,7 +36,7 @@ import { readRunJson, } from '../run-json-read.ts';
 /**
  Logger every lock line goes through; the lock takes no caller-supplied one.
  */
-const lockLog = tagged({ tag: 'runs-lock', },);
+const lockLog = contextRoot({ tag: 'runs-lock', },);
 
 /**
  Name of the lock file inside a runs directory.

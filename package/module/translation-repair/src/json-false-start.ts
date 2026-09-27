@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from './log-context.ts';
 import { parseModelJson, } from './model-content.ts';
 
 //region Json false start
@@ -18,7 +19,7 @@ import { parseModelJson, } from './model-content.ts';
 /**
  Logger root for the false-start reader.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Characters of the answer within which an abandoned opening may sit.

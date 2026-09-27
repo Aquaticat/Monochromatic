@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from './log-context.ts';
 import { stripChannelMarker, } from './channel-marker.ts';
 import type {
   ChatJsonOutcome,
@@ -57,7 +58,7 @@ import { detectRefusalShape, } from './refusal.ts';
 /**
  Logger root for the provider-neutral reply reader.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Usage fragment carried onto every outcome, present only when reported.

@@ -11,6 +11,7 @@ import {
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from './log-context.ts';
 import { errorName, } from './error-name.ts';
 import { isJsonRecord, } from './json-guard.ts';
 
@@ -38,7 +39,7 @@ import { isJsonRecord, } from './json-guard.ts';
 /**
  Logger root for the ledger.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Decimals the spend is logged to: a call costs fractions of a cent.

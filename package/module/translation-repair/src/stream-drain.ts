@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { contextRoot, } from './log-context.ts';
 import type { IdleGuard, } from './stream-idle-guard.ts';
 import type { StreamWireFormat, } from './stream-wire-format.ts';
 import {
@@ -28,7 +29,7 @@ import {
 /**
  Logger root for the stream drain.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Stops pulling from a stream that will not stop on its own.

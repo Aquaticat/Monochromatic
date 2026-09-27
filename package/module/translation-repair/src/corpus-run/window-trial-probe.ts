@@ -1,7 +1,7 @@
 import { join, } from 'node:path';
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from '../log-context.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import {
   isMissingCorpusObject,
@@ -94,7 +94,7 @@ const PROTOCOL_LOG_CHARS = 12;
 /**
  Logger the run writes under.
  */
-const l = tagged({ tag: 'window-trial', },);
+const l = contextRoot({ tag: 'window-trial', },);
 
 /**
  Both sides of one entry, or the fact that it carries only one.

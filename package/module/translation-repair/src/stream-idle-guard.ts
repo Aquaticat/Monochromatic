@@ -1,5 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from './log-context.ts';
+
 //region Stream idle guard
 // Distinguishes a dead stream from a long one, which a total-duration deadline
 // cannot do.
@@ -85,7 +87,7 @@ export const STREAM_IDLE_MS = 600_000;
 /**
  Logger root for the stream guard.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Raised when a stream produced no bytes for longer than its idle window.

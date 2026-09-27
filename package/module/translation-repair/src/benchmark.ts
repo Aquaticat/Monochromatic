@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { contextRoot, } from './log-context.ts';
 import { isRetryableAttempt, } from './attempt-retry.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { SyntheticHttpError, } from './completion-shape.ts';
@@ -46,7 +47,7 @@ export type { BenchmarkEntry, } from './prepare-entry.ts';
 /**
  Logger root for the benchmark shell.
  */
-const l = tagged({ tag: 'translation-repair-benchmark', },);
+const l = contextRoot({ tag: 'translation-repair-benchmark', },);
 
 /**
  Default per-call deadline.

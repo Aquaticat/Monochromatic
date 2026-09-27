@@ -10,6 +10,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from './log-context.ts';
 import { fetchCitedReference, } from './cited-reference-fetch.ts';
 import { citedReferenceUrlsOf, } from './cited-reference-scan.ts';
 import { foldedLine, } from './entry-notes.ts';
@@ -24,7 +25,7 @@ import { EXA_API_KEY_VAR, } from './work-title-search.ts';
 /**
  Logger root for the lookup.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Record for one url, from the cache or bought and cached.

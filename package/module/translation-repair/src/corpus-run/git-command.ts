@@ -1,6 +1,7 @@
 import { access, } from 'node:fs/promises';
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { contextRoot, } from '../log-context.ts';
+
 
 //region Git command
 // WHICH GIT this package spawns, decided once and shared.
@@ -15,7 +16,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 /**
  Logger for the probe's one line; the command takes no caller-supplied one.
  */
-const gitLog = tagged({ tag: 'git-command', },);
+const gitLog = contextRoot({ tag: 'git-command', },);
 
 /**
  Real git binary, preferred over the PATH entry.

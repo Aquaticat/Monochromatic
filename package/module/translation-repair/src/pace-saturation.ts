@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from './log-context.ts';
 import type {
   ModelReach,
   ProviderChoice,
@@ -55,7 +56,7 @@ export type ProviderPaces = {
 /**
  Logger root for the pace saturation.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  How long each provider's request window would make a call wait now, zero

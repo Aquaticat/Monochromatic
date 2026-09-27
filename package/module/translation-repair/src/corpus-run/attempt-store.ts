@@ -2,6 +2,7 @@ import { readFile, } from 'node:fs/promises';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from '../log-context.ts';
 import { isJsonRecord, } from '../json-guard.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 
@@ -20,7 +21,7 @@ import { writeFileAtomic, } from './atomic-write.ts';
 /**
  Logger root for the attempt store.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Attempt counts keyed by entry id, for fewest-attempts-first ordering.

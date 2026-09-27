@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from './log-context.ts';
 import type { StreamProgress, } from './stream-idle-guard.ts';
 
 //region Stream cut
@@ -27,7 +28,7 @@ import type { StreamProgress, } from './stream-idle-guard.ts';
 /**
  Logger root for stream reporting.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Characters of generated text to show in the log line.

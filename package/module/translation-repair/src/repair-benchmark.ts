@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { contextRoot, } from './log-context.ts';
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { BenchmarkEntry, } from './prepare-entry.ts';
@@ -46,7 +47,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 /**
  Logger root for the repair benchmark shell.
  */
-const l = tagged({ tag: 'translation-repair-repair-benchmark', },);
+const l = contextRoot({ tag: 'translation-repair-repair-benchmark', },);
 
 /**
  Budget floor under which no new entry dispatches;

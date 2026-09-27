@@ -8,6 +8,7 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from '../log-context.ts';
 import type { SliceCache, } from '../slice-cache.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import {
@@ -59,7 +60,7 @@ export {
 /**
  Logger root for the namespaced slice cache.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  File suffix every persisted slice carries.

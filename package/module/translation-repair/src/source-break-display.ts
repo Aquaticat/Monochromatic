@@ -3,6 +3,7 @@ import type { RootContent, } from 'mdast';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
+import { contextRoot, } from './log-context.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import { MdxParseError, } from './parse-mdx.ts';
 import { parseSliceBody, } from './parse-slice-body.ts';
@@ -12,7 +13,7 @@ import type { IncumbentKind, } from './translate-absence.ts';
 /**
  Module diagnostics expose counts and parser status, never source wording.
  */
-const l = tagged({ tag: 'source-break-display', },);
+const l = contextRoot({ tag: 'source-break-display', },);
 
 /**
  Parser-proven Markdown break span in canonical source coordinates.

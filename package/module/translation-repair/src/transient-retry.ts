@@ -3,6 +3,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { contextRoot, } from './log-context.ts';
 import { SyntheticHttpError, } from './completion-shape.ts';
 import { isSelfEndedStream, } from './stream-overrun.ts';
 import type { ModelTransport, } from './synthetic-transport.ts';
@@ -104,7 +105,7 @@ export const DEFAULT_RETRY_POLICY: RetryPolicy = {
 /**
  Logger root for the transport retry layer.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Phrase a rate-limit refusal uses to name its wait:

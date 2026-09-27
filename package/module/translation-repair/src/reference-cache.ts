@@ -17,13 +17,14 @@ import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from './log-context.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { lookupCacheDir, } from './lookup-cache.ts';
 
 /**
  Logger root for the cache.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Subdirectory of the lookup cache the references live in.

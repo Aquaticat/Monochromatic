@@ -1,3 +1,4 @@
+import { contextRoot, } from './log-context.ts';
 import type {
   ChannelDelta,
   DeltaScanner,
@@ -5,7 +6,6 @@ import type {
 } from './stream-delta-scan.ts';
 import { errorName, } from './error-name.ts';
 import { isJsonRecord, } from './json-guard.ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 //region Anthropic delta scan
 // The SAME `DeltaScanner` the OpenAI-shaped path produces, fed by Anthropic
@@ -41,7 +41,7 @@ const DATA_PREFIX = 'data:';
 /**
  Logger root for this scanner.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  One optional space servers put between the colon and the payload.

@@ -2,6 +2,8 @@ import { setTimeout as sleepFor, } from 'node:timers/promises';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from './log-context.ts';
+
 //region Request pace
 // A sliding-window pacer that lets at most `perWindow` requests START in any
 // `windowMs`, queueing the rest, so a provider's request-rate limit is met by
@@ -45,7 +47,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 /**
  Logger root for the pacer.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Length of Hyper's window: a rolling hour, in milliseconds.

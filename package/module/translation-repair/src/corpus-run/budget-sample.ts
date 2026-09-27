@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from '../log-context.ts';
 import { createBedrockClient, } from '../bedrock-client.ts';
 import { bedrockLedgerFromEnv, } from '../bedrock-ledger.ts';
 import { createHyperClient, } from '../hyper-client.ts';
@@ -35,7 +36,7 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 /**
  Logger root for this probe.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  How long one sample may take before it is abandoned.

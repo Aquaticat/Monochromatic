@@ -4,6 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { contextRoot, } from './log-context.ts';
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
@@ -50,7 +51,7 @@ export {
 /**
  Logger root for repair pipeline.
  */
-const l = tagged({ tag: 'translation-repair-pipeline', },);
+const l = contextRoot({ tag: 'translation-repair-pipeline', },);
 
 /**
  Default per-call deadline for pipeline exchanges.

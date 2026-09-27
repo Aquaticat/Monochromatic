@@ -1,4 +1,5 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { contextRoot, } from './log-context.ts';
 import { hashContent, } from './document-node.ts';
 import {
   alterSharedNumber,
@@ -28,7 +29,7 @@ export const MIN_REVIEWED_REFERENCE_CHARS = 400;
 /**
  Reference verification logger.
  */
-const l = tagged({ tag: 'fidelity-reference', },);
+const l = contextRoot({ tag: 'fidelity-reference', },);
 
 /**
  Runs the existing damage mechanism selected during source review.

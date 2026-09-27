@@ -4,6 +4,7 @@ import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import spawn from 'nano-spawn';
 
+import { contextRoot, } from '../log-context.ts';
 import type {
   ModelCaller,
   SyntheticClient,
@@ -1027,7 +1028,7 @@ export async function resolveRunsDir(): Promise<string> {
 /**
  Logger root for the corpus-run wiring layer.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Builds caller that should remain unreachable while unconfigured provider is dry.

@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from './log-context.ts';
 import type { ExtractedCompletion, } from './completion-shape.ts';
 import type { ProviderName, } from './provider-name.ts';
 import { noteRunSpend, } from './run-spend-meter.ts';
@@ -35,7 +36,7 @@ import { noteRunSpend, } from './run-spend-meter.ts';
 /**
  Logger root for spend reporting.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Marker word a reader finds the line by.

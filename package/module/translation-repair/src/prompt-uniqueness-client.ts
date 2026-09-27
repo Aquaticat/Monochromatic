@@ -1,6 +1,6 @@
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { contextRoot, } from './log-context.ts';
 import { readJsonOutcome, } from './chat-json-outcome.ts';
 import { MalformedCompletionError, } from './completion-shape.ts';
 import type {
@@ -22,7 +22,7 @@ import {
 /**
  Logger root for privacy-safe payload reuse telemetry.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Serializes JSON-like prompt value with stable object-key order.

@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import { contextRoot, } from './log-context.ts';
 import {
   HOLD_POLL_MS,
   NOBODY_REFUSED,
@@ -98,7 +99,7 @@ import {
 /**
  Logger root for the routing layer.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Refusal raised when no provider can take one call at all.

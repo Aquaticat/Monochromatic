@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { contextRoot, } from './log-context.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import {
   type ExtractedCompletion,
@@ -9,7 +10,7 @@ import {
 /**
  Logger root for the Anthropic completion reader.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 //region Anthropic completion
 // Reassembles one drained Anthropic Messages stream into the same

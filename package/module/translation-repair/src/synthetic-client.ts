@@ -2,6 +2,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import pLimit, { type LimitFunction, } from 'p-limit';
 
+import { contextRoot, } from './log-context.ts';
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
@@ -69,7 +70,7 @@ export const SYNTHETIC_PER_MODEL_CONCURRENCY = 5;
 /**
  Logger root for this package's model-facing shell.
  */
-const l = tagged({ tag: 'translation-repair', },);
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Raised when a roster model is addressed to Synthetic and Synthetic has no row for it.
