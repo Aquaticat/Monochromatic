@@ -724,8 +724,10 @@ async function driveWith(
         );
         // ORDERED BY A GATE where the case supplies one: a 20 ms against 5 ms
         // head start let the first call finish first 1 time in 8 at 0.2 CPU
-        // (2026-09-27). A driver that never overlaps leaves the first call held,
-        // so the case fails on the run's deadline rather than passing.
+        // (2026-09-27). A driver that never overlaps leaves the first call held
+        // and the file exits 13 on the unsettled wait rather than passing
+        // (measured with the driver forced serial; the run's timeout signal
+        // does not hold the process open).
         await (((startPosition === 0) && (activity.secondFinished !== undefined))
           ? activity.secondFinished.promise
           : wait(startPosition === 0 ? 20 : 5,));
