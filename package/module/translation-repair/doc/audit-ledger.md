@@ -289,7 +289,12 @@ Status: open.
 
 ### K5: withdrawn slices ship raw archive text
 
-Status: open, by reading.
+Status: fixed in `3497e0041` (prep `ab4373cd2`, guards `4014d49c4` and `66fe334ce`).
+The page passes and the footnote guard now run again over the rows left once the guard takes a row back,
+until a round takes nothing back (`corpus-run/page-assembly-rounds.ts`);
+the withdrawal stays recorded, and a row a pass wrote over the archive text wins over it.
+No stored artifact carries an instance: of 265, only shi_Yumiaoya7 withdraws a slice, an anchor with no archive text.
+Guard output is byte-identical to the build before on six stored artifacts, shi_Yumiaoya7 among them.
 `restoredOnly` drops the Canadian row of a withdrawn slice and the archive text ships unconverted.
 
 ### K6: the house policy writes "capitalised" and "judgement"
@@ -1352,12 +1357,18 @@ the identity and findings checks stay in `verifyArtifactAgainstPreparation` for 
 
 ### A13: the consolidation cache key omits the dispute note and the declared name pairs
 
-Status: open.
-Identity and reference context are in the run shape already.
+Status: fixed in `c8f2a2af3` (prep `bcf31dae2`, guard `69d47d61f`).
+Identity and reference context are in the run shape already,
+and the dispute note has been in the slice key since X5.
+The declared name pairs reached the key only through the identity context,
+which renders the same front matter name and alias fields in other words;
+`consolidateRunShape` now takes them as a required parameter and folds them in when there are any.
 
 ### A14: stale comments and README claims
 
-Status: open.
+Status: fixed in `55d895820`.
+"As the page will carry it" (README, `canadian-forms.ts`, `page-slice-rewrite.ts`) is true since the K5 rounds,
+so those lines stand.
 "No stage assembles a document",
 "as the page will carry it" for withdrawn slices,
 "every appearance is in view",
@@ -1367,7 +1378,10 @@ and every pass rewrite logged as "trimmed".
 
 ### A15: withdrawn-slice siblings of K5
 
-Status: open (structural, no corpus instance).
+Status: fixed with K5 in `3497e0041`.
+A withheld container half enters the rounds as a withdrawn row does,
+and a row a pass writes for it wins over the withholding;
+cross-slice passes now decide on the page the guard leaves.
 `restoredOnly` does not exclude `halves.withheld`;
 cross-slice passes decide on a page the footnote guard may still change.
 
