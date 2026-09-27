@@ -18,6 +18,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  assertCheckerQuorumReachable,
   type BudgetView,
   judgeSeatsFor,
   OWNER_CULLED,
@@ -106,7 +107,10 @@ await describe({
             expect(bench.includes(SEAT_SYNTHETIC_TEXT_EVERYWHERE,),).toBe(false,);
           }
         }
-        expect(RUN_MODELS.checkerModelIds.length,).toBe(3,);
+        // THE CONTRACT'S OWN FLOOR rather than a literal count (ledger E9).
+        expect(function checkerFloorHolds(): void {
+          assertCheckerQuorumReachable({ checkerModelIds: RUN_MODELS.checkerModelIds, },);
+        },).not.toThrow();
       },
     },),
   ],

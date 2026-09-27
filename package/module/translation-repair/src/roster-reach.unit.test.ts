@@ -19,6 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  bedrockIdFor,
   bedrockServesLabel,
   DEFAULT_JUDGE_MODEL_IDS,
   HYPER_ORIGIN_NAMES_ARE_SERVED,
@@ -26,6 +27,7 @@ import {
   hyperIdFor,
   hyperServesLabel,
   isDecisionSeat,
+  openRouterIdFor,
   openRouterServesLabel,
   reachOf,
   readsImages,
@@ -103,8 +105,11 @@ await describe({
   name: 'ROSTER_MODEL_IDS',
   children: [
     it({
-      name: 'registers thirteen distinct approved models without duplicating identities across providers',
+      name: 'registers distinct approved models, and no provider spelling stands for two of them',
       fn: async () => {
+        // THE COUNT IS HISTORY, NOT AN ASSERTION, since 2026-09-27 (ledger
+        // E9): a literal size failed on every approved roster change and said
+        // nothing about duplication across providers, which is the property.
         // Eight until 2026-09-01, when the post-blocklist candidate refresh
         // admitted glm-5.3 and the same-day conformance probe culled the
         // refresh's two automatic-only Qwen3.8 routes before seating.
@@ -117,8 +122,20 @@ await describe({
         // decision-only seat served by OpenRouter's decisions endpoint alone.
         // Thirteen since 2026-09-27, when the owner approved Mimo v2.6 Flash,
         // which only OpenRouter serves and which the checker benchmark seated.
-        expect(ROSTER_MODEL_IDS.length,).toBe(13,);
-        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(13,);
+        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(ROSTER_MODEL_IDS.length,);
+        for (const spellingOf of [hyperIdFor, openRouterIdFor, bedrockIdFor,]) {
+          /**
+           This provider's spellings of the roster models it serves.
+           */
+          const spellings = ROSTER_MODEL_IDS.flatMap(function spelled(modelId,): readonly string[] {
+            /**
+             How the provider spells this model, if it serves it.
+             */
+            const spelling = spellingOf({ modelId, },);
+            return spelling.served ? [spelling.id,] : [];
+          },);
+          expect(new Set(spellings,).size,).toBe(spellings.length,);
+        }
       },
     },),
 
