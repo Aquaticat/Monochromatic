@@ -940,7 +940,62 @@ ML dtypes uses scikit-build-core/CMake,
 NumPy headers,
 and its Eigen submodule;
 no root `setup.py` was found by the initial file read.
-No build or installation ran.
+No candidate import or exporter image build has run at this checkpoint.
+
+Subsequent static checks completed:
+`proc_1a40` inspected all eight inert wheels in image
+`c42c66d018ce437903fa8bfd0b511623d9f7e97a3ce17ba6ca8aae8b2c832ecf`;
+`proc_74cf` verified every non-self RECORD entry against the archive's exact file set.
+`proc_17d5` mapped Python members to pinned Git blob identities.
+All ONNX Script,
+ONNX IR,
+ML dtypes,
+and flatbuffers Python members matched.
+ONNX matched 504 of 510;
+the six unmatched paths are protobuf code/wrappers with identified generator rules.
+Each protobuf variant matched 43 of 58;
+the fifteen remaining paths are generated protobuf/defaults outputs requiring their generation boundary review.
+Both protobuf variants have identical Python-member paths and hashes.
+`proc_8b0d` exercised matching,
+changed-content,
+and missing-source controls;
+separate equality and missing-source guard omissions failed their expected tests.
+No source clone changed and no dependency code was imported by these checks.
+
+#30 now carries a guard-model-free frontend canary in the private audit's `export-canary/` directory.
+It selects five exact frontend wheels,
+including pure-Python protobuf,
+while leaving ORT,
+flatbuffers,
+and native protobuf outside the import tree.
+The prepared experiment uses explicit non-verifying/non-fallback export flags,
+a deterministic arithmetic buffer,
+independent valid/invalid checker controls,
+and quarantined graph/data output.
+It is not a Laya checkpoint trial or a five-second assessment measurement.
+Source `3393f3d` and inputs `cfa9bfc` precede later pre-execution review changes.
+No exporter image has been built and no candidate package imported yet.
+
+#31 records a resource-validation repair before #30 proceeds.
+The installed Podman help and actual HostConfig contradicted review claims that `--timeout`
+was stop grace and that `--cpus=2` lacked quota/period fields.
+`proc_fe02` terminated the finite timed control,
+but its Node assertion guessed exit 137 instead of observed CLI 255/OCI -1.
+Initial evidence remains at private `adf9d82`.
+Corrected fresh controls `proc_7082` passed natural/timed outcomes,
+resource/configuration assertions,
+and distinct runtime/stop-timeout values.
+The parent now normalizes the exit representation,
+checks omitted resource fields,
+and the canary has pre/post kernel-limit checks.
+The latter are still unexecuted.
+The pre-review source manifest is archived and refreshed hashes retained.
+#31 evidence is retained at private `326e6c3`;
+only its four owned exited resource-control containers were removed after retention.
+Next:
+build the frozen #30 image,
+run its original/omitted guard controls,
+and only then attempt the canary.
 The MIT license,
 build metadata,
 version-only setup logic,

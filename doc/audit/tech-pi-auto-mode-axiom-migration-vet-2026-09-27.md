@@ -349,8 +349,32 @@ The [source-only checker note](../troubleshooting/onnxscript-export-checker-boun
 traces the callable and lists the unexecuted checker/parity cases.
 PyTorch's successful checker-status branch is not independently verified structural validity
 for that dependency combination.
-Remaining work includes complete dependency/source/native build inspection
-and a frozen CPU-only execution manifest before installation/export.
+Combined inert inspection `proc_1a40` and full RECORD checks `proc_74cf` completed for all eight retained wheels.
+Python source mapping `proc_17d5` matched every inspected ONNX Script,
+ONNX IR,
+ML dtypes,
+and flatbuffers Python member to its pinned Git blob.
+ONNX's six and each protobuf variant's fifteen source-tree exceptions have identified generation boundaries,
+not unexplained changed-file matches.
+`proc_8b0d` verified matching/changed/missing controls and independent omission failures.
+These are artifact/source checks,
+not runtime correctness or adoption.
+
+A separate guard-model-free frontend canary is frozen under private `export-canary/`.
+Its five-wheel profile excludes ORT,
+flatbuffers,
+and native protobuf.
+No candidate package has yet been staged into its runtime image or imported.
+The fixed toy exporter is not a Laya checkpoint trial;
+all resulting files remain quarantined pending independent validation.
+Resource-control repair #31 retained an initial exit-code expectation failure
+and fresh passing controls `proc_7082`.
+The timed control terminated with CLI255/OCI-1,
+while the finite untimed control completed.
+Actual CPU quota/period and NanoCpus representations were both verified,
+and maximum-runtime `--timeout` remained distinct from stop grace.
+Source/native review and the frozen command manifest continue to gate any candidate execution;
+no ORT provenance requirement is waived by separating producer and consumer experiments.
 No ONNX export,
 ONNX inference,
 accelerator execution,
