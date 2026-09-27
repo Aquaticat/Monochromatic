@@ -12,7 +12,8 @@
  @module
  */
 
-import { wait, } from '@monochromatic-dev/module-async-time/ts';
+import { setTimeout as abortableWait, } from 'node:timers/promises';
+
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -65,6 +66,12 @@ const l = tagged({ tag: 'lane-contest-stage-test', },);
  Per-call bound, generous because the transport answers instantly.
  */
 const EXCHANGE_TIMEOUT_MS = 5_000;
+
+/**
+ Delay of a seat that never answers inside a round: past the exchange
+ bound, and cut when the round abandons the call, so no timer outlives it.
+ */
+const NEVER_ANSWERS_MS = EXCHANGE_TIMEOUT_MS * 2;
 
 /**
  Builds one ballot body.
@@ -127,7 +134,13 @@ function cannedClient(
        This model's reply text.
        */
       const content = replyByModel[at] ?? replyByModel[0] ?? '';
-      await wait(delayByModel[at] ?? 0,);
+      // ABORTABLE, so a seat the round abandons stops waiting when the round
+      // cuts it; `wait` from module-async-time takes no signal.
+      await abortableWait(
+        delayByModel[at] ?? 0,
+        undefined,
+        { signal: exchange.signal, },
+      );
       return {
         status: 200,
         bodyText: `data: ${
@@ -220,11 +233,15 @@ await describe({
               ballot({ choice: 'translate', },),
               ballot({ choice: 'translate', },),
             ],
+            // NEVER, NOT 100 MS (ledger T5): at 0.2 CPU the two prompt seats
+            // took longer than 100 ms and the delayed ones arrived too, 2 of 5
+            // runs; seats that answer only past the exchange bound are
+            // abandoned at quorum whatever the machine's speed.
             delayByModel: [
               0,
               0,
-              100,
-              100,
+              NEVER_ANSWERS_MS,
+              NEVER_ANSWERS_MS,
             ],
           },),
           modelIds: ELIGIBILITY_ROSTER,
