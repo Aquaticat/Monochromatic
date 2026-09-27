@@ -1192,7 +1192,13 @@ the other 41 differ only by typography code that changed after they ran.
 
 ### A1: an archive "Under Construction" placeholder ships, replacing a source heading on 8 pages
 
-Status: open.
+Status: fixed in `6a0a8cbf6`.
+`archive-stub.ts` now reads a paragraph under blockquote markers and inside one code span,
+and knows the token `under construction`.
+A census over the 92 archives strips exactly two paragraphs,
+XIEPT2 line 8 `(To-Do)` and XingZ60 line 358;
+dogesir_'s "To be continued!" (the person's own words) and mikaela_khara's 未完待续 are no placeholders and stay.
+XingZ60's archive ends at 三句承题, so the source sections after it are source-only and left to pairing.
 `corpus-run/archive-stub.ts` knows `to-do`, `todo`, `tbd`, `wip` in one bracket layer;
 XingZ60's archive writes ``>>> `Under Construction` ``,
 all 17 shipped XingZ60 pages carry it,
@@ -1205,7 +1211,9 @@ shihai4h1 and shihai4h2 shipped "Wrong,\n小柿子."
 
 ### A3: CRLF from a model wording ships inside an LF page
 
-Status: open.
+Status: fixed in `f582157a9`.
+`corpus-run/line-ending-fold.ts` folds every replacement first in the page-assembly guard,
+before any other pass reads it, and records each changed slice as a row the page carries.
 mikaela17 lines 223 to 225 end in `\r`;
 `foldCarriageReturns` runs only at the corpus read.
 
@@ -1241,24 +1249,46 @@ what remains is the log volume of one refusal line per ask.
 
 ### A6: the handle-gloss pass moves a link title's translation onto a handle
 
-Status: open.
+Status: fixed in `2c6e42c27`.
+A parenthesis holding a bracket, a nested parenthesis, a backtick, a tag or `://` is no gloss,
+and that appearance stands as the writer left it.
+The first fixture was vacuous (the authority step never read the linked signer);
+the positive control led to a prose-link fixture, which reproduced the bug.
+The fixed-point test passes on the old build too, so it guards the property only.
+Reading replaced slices only is by design: the archive's own text is never rewritten.
 `handle-gloss-place.ts` accepts any same-line parenthesis, link text included,
 reads only replaced slices,
 and is not at a fixed point when run twice.
 
 ### A7: deterministic page refusals are labelled ERROR and re-attempted
 
-Status: open.
+Status: fixed in `b11fd5409`.
 `entry-error-outcome.ts` omits `CollapsedHeadingError`, `UnparseablePageError`, `PublishedPageDisagreesError`,
 `UnansweredContestSliceError` and `SliceSpliceError` from the stopped set.
 
 ### A8: the README says an unfilled passage fails the entry; the code ships it as a gap
 
-Status: open.
+Status: fixed in `d721449e2`.
+The README now says an unfilled passage ships as a recorded gap and an outage stops the entry INCOMPLETE.
 
 ### A9: the DONE line undercounts on a resume into a directory holding a decline
 
-Status: open (by reading).
+Status: fixed in `ead0a2d98` (prep `517facb2d`, guard `4127bfdcb`).
+The pass skipped entries with an artifact or a decline,
+then reported artifacts after the run less the size of that set.
+The guard went red on the old formula with 0 where the run finished two entries,
+and -1 where it finished none on a runs dir holding one decline.
+`corpus-run/pass-finished.ts` reads the finished set the same way before and after the run
+and counts the ids new to it.
+
+### A9b: the decline listing reads an unlistable directory as no declines
+
+Status: fixed in `150819e64` (guard `325f2d732`, found while fixing A9).
+`declinedEntryIds` returned no declines on any listing failure (EACCES, ENOTDIR),
+which would re-run every declined entry and drop it from `verify-published`'s count,
+and it counted a directory named like a record,
+the drift `pass-settled.ts` already records for artifacts.
+It now lists with file types and throws `DeclinedEntriesUnreadableError` on every failure but absence.
 
 ### A10: TALLY `pageChanged` reads before typography
 
@@ -1842,6 +1872,8 @@ and once during S19 (`sleep 1 && rg --count PASS log ; tail <output>`), a foregr
 and once during S5 (`build > log && tsc | rg --count ; true`),
 and once during S12 (`rg --count <file> ; rg --line-number <file>`),
 and a foreground `sleep 1 && tail <log>` during #379.
+During A6 a test file was edited while the full suite ran,
+against the rule that nothing the suite reads changes until it finishes.
 A related shape, `<test A> | rg --count FAIL || <test B> | rg --count FAIL`, never ran B when A went red (S10);
 and `mise run --cd <package> build` once, against CM5.
 The first `;` one also hid which of two files failed, since both counts printed as one number.
