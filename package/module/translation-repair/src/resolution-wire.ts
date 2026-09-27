@@ -1,6 +1,7 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
+import { ADDITION_IS_REMOVED_NOT_SOFTENED, } from './addition-repair-rule.ts';
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import { MEASUREMENT_POLICY_BLOCK, } from './house-policy.ts';
 import {
@@ -71,6 +72,8 @@ For EVERY issue, judge the REVISED translation:
 - fixed: the defect is gone and the fix reads correctly
 - not-fixed: the defect is still present, in the same or another form
 - worse: the revision introduced new damage around this issue
+
+${ADDITION_IS_REMOVED_NOT_SOFTENED} For such an issue, such a restatement is not-fixed.
 
 ${MEASUREMENT_POLICY_BLOCK}
 

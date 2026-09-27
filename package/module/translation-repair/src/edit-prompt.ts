@@ -1,6 +1,7 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
+import { ADDITION_IS_REMOVED_NOT_SOFTENED, } from './addition-repair-rule.ts';
 import { citedReferenceBlockText, } from './cited-reference-rule.ts';
 import { communityRenderingsBlock, } from './community-glossary.ts';
 import {
@@ -71,6 +72,7 @@ Rules, strictly enforced by a machine:
 - Render ordinary prose in the ORIGINAL's own language fully into the TRANSLATION's language, including inside quotations and stylized multilingual lines. A word or character that is itself the subject of discussion is not ordinary prose to normalize. ${NAME_FORM_SCOPE_RULE}
 - Preserve footnote markers like [^1] character for character.
 - Never introduce content the ORIGINAL does not support.
+- ${ADDITION_IS_REMOVED_NOT_SOFTENED}
 - When the CURRENT TEXT is line-structured, meaning short lines separated by blank lines rather than paragraphs, the line is the unit: keep one output line per input line, in the same order, and recast only within a line. Never merge, split, reorder or invent lines.
 - Omit a region entirely when you cannot fix it faithfully; a skipped region stays unchanged.
 - THE HOUSE RULES BELOW OUTRANK EVERY RULE IN THIS LIST. Where a detail is absent from the TRANSLATION because reader protection asks for it, the region is not an omission to fill and the issue reporting it is wrong: omit that region entirely rather than restoring the detail.`;
