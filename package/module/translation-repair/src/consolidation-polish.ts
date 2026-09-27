@@ -13,6 +13,7 @@ import {
   reviewParagraphsOf,
   runConsolidationPolishRound,
 } from './consolidation-polish-round.ts';
+import type { RefineStageMode, } from './refine-selection-context.ts';
 
 export type {
   ConsolidationNaturalnessAudit,
@@ -26,7 +27,48 @@ export type {
 // proposal and standing text, the deterministic gate applies, and the
 // absolute review that follows is recorded evidence, never withholding
 // authority. There is no correction loop and no re-ask under any verdict
-// (doc/planning/translation-repair-no-loop-design.md).
+// (doc/planning/translation-repair-no-loop-design.md). An objection
+// correction (owner, 2026-09-27) is that same one round, asked a different
+// question.
+
+/**
+ Finding naming an objection correction and whether it changed the text.
+
+ @param mode - mode the round ran in
+
+ @param corrected - whether the round replaced the base
+
+ @returns One finding on an objection correction, none otherwise
+
+ @example
+ ```ts
+ objectionPolishFindings({ mode, corrected: true, },);
+ ```
+ */
+function objectionPolishFindings(
+  {
+    mode,
+    corrected,
+  }: {
+    readonly mode: RefineStageMode;
+    readonly corrected: boolean;
+  },
+): readonly string[] {
+  if (mode.kind !== 'objection-correction')
+    return [];
+  /**
+   Judges and what they objected with.
+   */
+  const {
+    origin,
+    objections,
+  } = mode;
+  return [
+    `polish-objection-correction (${origin}: ${String(objections.length,)} objection(s), ${
+      corrected ? 'corrected' : 'base kept'
+    })`,
+  ];
+}
 
 /**
  Polishes final body text and lets fidelity-first roster approve replacement.
@@ -53,7 +95,11 @@ export type {
  @param config - model roles and document-wide guard facts
  
  @param eligible - whether approved base may cross publication boundary
- 
+
+ @param mode - comparative polish, or an objection correction carrying what
+ the gate or slate judges held against the base (owner, 2026-09-27); the
+ base stays the fallback either way
+
  @param signal - caller cancellation
  
  @param perCallTimeoutMs - per-exchange ceiling
@@ -80,6 +126,7 @@ export async function polishConsolidation(
     sliceIndex,
     config,
     eligible = true,
+    mode = { kind: 'comparative', },
     signal,
     perCallTimeoutMs,
     l,
@@ -95,6 +142,7 @@ export async function polishConsolidation(
     readonly sliceIndex: number;
     readonly config?: ConsolidationPolishConfig;
     readonly eligible?: boolean;
+    readonly mode?: RefineStageMode;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -130,7 +178,7 @@ export async function polishConsolidation(
     lineStructured,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
-    mode: { kind: 'comparative', },
+    mode,
     sliceIndex,
     config,
     signal,
@@ -190,6 +238,10 @@ export async function polishConsolidation(
       confirmations: initialConfirmed.confirmations,
     },
     findings: [
+      ...objectionPolishFindings({
+        mode,
+        corrected: initial.text !== baseText,
+      },),
       ...initial.findings,
       ...reviewEvidence,
     ],

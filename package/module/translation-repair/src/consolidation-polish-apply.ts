@@ -12,6 +12,7 @@ import {
   polishConsolidation,
 } from './consolidation-polish.ts';
 import { NaturalnessRepairInterruptedError, } from './naturalness-repair-interrupted-error.ts';
+import type { ObjectionOrigin, } from './refine-selection-context.ts';
 
 //region Final consolidation polish application
 
@@ -32,7 +33,12 @@ import { NaturalnessRepairInterruptedError, } from './naturalness-repair-interru
  @param polishConfig - measured naturalness roles and document facts
  
  @param eligible - whether baseline has approval to cross publication boundary
- 
+
+ @param objections - what the gate or slate judges held against the text
+ over a standing the deterministic rule refused, corrected where the
+ ORIGINAL supports it (owner, 2026-09-27); omitted or empty keeps the
+ comparative polish
+
  @param signal - cancellation for whole settlement
  
  @param perCallTimeoutMs - bound on any single exchange
@@ -55,6 +61,7 @@ export async function applyFinalPolish(
     sliceIndex,
     polishConfig,
     eligible,
+    objections,
     signal,
     perCallTimeoutMs,
     l,
@@ -66,6 +73,10 @@ export async function applyFinalPolish(
     readonly sliceIndex: number;
     readonly polishConfig?: ConsolidationPolishConfig;
     readonly eligible: boolean;
+    readonly objections?: {
+      readonly origin: ObjectionOrigin;
+      readonly reasons: readonly string[];
+    };
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -88,6 +99,10 @@ export async function applyFinalPolish(
     },);
   }
   /**
+   Reasons the gate or slate judges objected with, empty for none.
+   */
+  const objectionReasons = objections?.reasons ?? [];
+  /**
    Final naturalness decision over approved surviving baseline.
    */
   const polish = await polishConsolidation({
@@ -106,6 +121,15 @@ export async function applyFinalPolish(
     sliceIndex,
     ...((polishConfig === undefined) ? {} : { config: polishConfig, }),
     eligible,
+    ...(((objections === undefined) || (objectionReasons.length === 0))
+      ? {}
+      : {
+        mode: {
+          kind: 'objection-correction',
+          origin: objections.origin,
+          objections: objectionReasons,
+        },
+      }),
     signal,
     perCallTimeoutMs,
     l,

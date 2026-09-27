@@ -70,8 +70,12 @@ import type { LaneText, } from './translate-candidates.ts';
  VERSION 16 continuously replaces unendorsed standing wording using prior
  consolidation slate, ballots, gate ballots, terminal, and findings.
  Version 15 could resume settlement final publication guard rejects.
+
+ VERSION 17 sends the gate's objections over an ineligible standing to the
+ polish as an objection correction (owner, 2026-09-27). Version 16
+ settlements polished comparatively and never saw the objections.
  */
-export const CONSOLIDATE_CACHE_VERSION = 16;
+export const CONSOLIDATE_CACHE_VERSION = 17;
 
 /**
  What a line-structured slice appends to its key material.

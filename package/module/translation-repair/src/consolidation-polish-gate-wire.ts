@@ -9,7 +9,11 @@ import {
 } from './contest-ballot-wire.ts';
 import { POLISH_GATE_HOUSE_RULES, } from './polish-gate-house-rules.ts';
 import { selectFence, } from './prompt-fence.ts';
-import type { RefineStageMode, } from './refine-selection-context.ts';
+import {
+  type ObjectionOrigin,
+  objectionsHeading,
+  type RefineStageMode,
+} from './refine-selection-context.ts';
 import { foldSoftBreaks, } from './soft-break-fold.ts';
 
 //region Consolidation polish gate wire
@@ -81,6 +85,30 @@ const REQUIRED_CORRECTION_POLISH_POLICY = `You are deciding whether a proposed c
 THE ORIGINAL CHINESE IS THE FIDELITY STANDARD. First check both candidates for unsupported statements and dropped content. Naturalness can never compensate for either fault.
 
 The base already failed absolute naturalness review. It is evidence for preserving exact meaning, not an approved fallback, and must not win merely because improvement is unclear. Choose polished only when it remains equally faithful, resolves every REQUIRED FINDING, and reads as publication-quality natural English. Choose base only when polished adds, drops, softens, sharpens, or reattributes meaning; the caller will then refuse publication rather than ship base. Answer neither when polished preserves fidelity but fails a REQUIRED FINDING or remains unnatural.`;
+
+/**
+ Fidelity-first policy when judges objected to the base and it still ships
+ as the fallback (owner, 2026-09-27, the fourteenth and fifteenth addenda of
+ `doc/decision/translation-repair-ineligible-standing.md`).
+
+ @param origin - judges the objections come from
+
+ @returns Policy naming the objections as claims and the base as the fallback
+
+ @example
+ ```ts
+ const policy = objectionCorrectionPolishPolicy({ origin: 'consolidation gate', },);
+ ```
+ */
+function objectionCorrectionPolishPolicy(
+  { origin, }: { readonly origin: ObjectionOrigin; },
+): string {
+  return `You are deciding whether a correction may replace an English memorial passage the ${origin} objected to.
+
+THE ORIGINAL CHINESE IS THE FIDELITY STANDARD. First check both candidates for unsupported statements and dropped content, and check each objection against the ORIGINAL: an objection is a claim, not a fact.
+
+The base ships if you refuse the correction, with the objections recorded. Choose polished when it resolves an objection the ORIGINAL supports and adds, drops, softens or sharpens nothing else. Choose base when polished acts on an objection the ORIGINAL does not support, or changes anything the ORIGINAL does not ask for. Answer neither when polished resolves nothing the ORIGINAL supports.`;
+}
 
 /**
  Subject shown to naturalness gate.
@@ -280,17 +308,23 @@ export function buildConsolidationPolishGateMessages(
   /**
    Required findings rendered only at prompt boundary.
    */
-  const requiredFindings = comparative
-    ? []
-    : mode
+  const requiredFindings = (mode.kind === 'required-naturalness-correction')
+    ? mode
       .findings
       .map(function renderFinding(finding,): string {
         return `Paragraph ${String(finding.paragraph,)}: ${finding.problem}`;
-      },);
+      },)
+    : [];
+  /**
+   What the gate or slate judges objected to, on an objection correction.
+   */
+  const objections = (mode.kind === 'objection-correction')
+    ? mode.objections
+    : [];
   /**
    Prior failed strategies correction gate must not repeat.
    */
-  const priorCorrections = comparative
+  const priorCorrections = (mode.kind !== 'required-naturalness-correction')
     ? []
     : (mode.priorCorrections ?? [])
       .map(function renderPrior(
@@ -325,6 +359,7 @@ export function buildConsolidationPolishGateMessages(
       shownPolished,
       ...requiredFindings,
       ...priorCorrections,
+      ...objections,
       ...((subject.identityContext === undefined) ? [] : [subject.identityContext,]),
       ...((subject.referenceContext === undefined) ? [] : [subject.referenceContext,]),
     ],
@@ -358,19 +393,41 @@ export function buildConsolidationPolishGateMessages(
       '',
     ];
   /**
+   The judges' objections as quoted review data, absent on any other mode.
+   */
+  const objectionEvidence = (mode.kind === 'objection-correction')
+    ? [
+      `${objectionsHeading({ origin: mode.origin, },)}:`,
+      `${fence}\n${
+        objections
+          .map(function listed(objection,): string {
+            return `- ${objection}`;
+          },)
+          .join('\n',)
+      }\n${fence}`,
+      '',
+    ]
+    : [];
+  /**
    Base label matching whether it remains publishable.
    */
   const baseLabel = comparative
     ? 'CANDIDATE "base" (already approved):'
-    : 'CANDIDATE "base" (rejected naturalness evidence only):';
+    : ((mode.kind === 'objection-correction')
+      ? 'CANDIDATE "base" (ships if the correction is refused):'
+      : 'CANDIDATE "base" (rejected naturalness evidence only):');
+  /**
+   Policy matching the mode.
+   */
+  const policy = comparative
+    ? comparativePolishPolicy({ lineStructured: subject.lineStructured, },)
+    : ((mode.kind === 'objection-correction')
+      ? objectionCorrectionPolishPolicy({ origin: mode.origin, },)
+      : REQUIRED_CORRECTION_POLISH_POLICY);
   return [
     {
       role: 'system',
-      content: `${
-        comparative
-          ? comparativePolishPolicy({ lineStructured: subject.lineStructured, },)
-          : REQUIRED_CORRECTION_POLISH_POLICY
-      }\n\n${POLISH_GATE_HOUSE_RULES}`,
+      content: `${policy}\n\n${POLISH_GATE_HOUSE_RULES}`,
     },
     {
       role: 'user',
@@ -391,6 +448,7 @@ export function buildConsolidationPolishGateMessages(
         ...referenceBlock,
         ...correctionEvidence,
         ...priorEvidence,
+        ...objectionEvidence,
         `Return JSON: choice one of "polished", "base", "${CONTEST_REFUSAL}";`,
         'unsupported and dropped each a list naming any of "polished", "base";',
         'reason one sentence.',

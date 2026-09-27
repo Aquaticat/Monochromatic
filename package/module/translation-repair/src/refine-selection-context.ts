@@ -5,6 +5,19 @@ import { citedReferenceEvidence, } from './cited-reference-rule.ts';
 //region Refinement selection context
 // Keeps exploratory refinement and required correction from asking selectors
 // contradictory questions about whether current wording may remain.
+//
+// OBJECTION CORRECTION (owner, 2026-09-27, the fourteenth and fifteenth
+// addenda of `doc/decision/translation-repair-ineligible-standing.md`). Over a
+// standing the deterministic rule refused, the consolidation ships whatever
+// the gate or the slate judges held against it, so their objections become
+// corrections to make where the ORIGINAL supports them. Unlike required
+// naturalness correction the text still ships unchanged when no candidate
+// earns its place: an objection is a claim, and the base remains the fallback.
+
+/**
+ Judges whose objections an objection correction answers.
+ */
+export type ObjectionOrigin = 'consolidation gate' | 'consolidation slate';
 
 /**
  One prior correction outcome that failed to replace rejected text.
@@ -59,7 +72,43 @@ export type RefineStageMode =
      Earlier failed strategies next correction must not repeat.
      */
     readonly priorCorrections?: readonly PriorNaturalnessCorrection[];
+  }
+  | {
+    /**
+     Correction of what judges objected to, the input remaining the fallback.
+     */
+    readonly kind: 'objection-correction';
+
+    /**
+     Judges the objections come from.
+     */
+    readonly origin: ObjectionOrigin;
+
+    /**
+     Each objecting judge's reason as written, a claim to check against the
+     ORIGINAL rather than a fact.
+     */
+    readonly objections: readonly string[];
   };
+
+/**
+ Heading every sheet gives an objection correction's objections.
+
+ @param origin - judges the objections come from
+
+ @returns Heading naming the judges and what the objections are
+
+ @example
+ ```ts
+ objectionsHeading({ origin: 'consolidation gate', },);
+ // => 'OBJECTIONS FROM THE CONSOLIDATION GATE, claims to check against the ORIGINAL'
+ ```
+ */
+export function objectionsHeading(
+  { origin, }: { readonly origin: ObjectionOrigin; },
+): string {
+  return `OBJECTIONS FROM THE ${origin.toUpperCase()}, claims to check against the ORIGINAL`;
+}
 
 /**
  Inputs candidate selector receives after refinement generation.
@@ -149,6 +198,40 @@ export function buildRefineSelectionContext(
         },
         ...referenceEvidence,
       ],
+    };
+  }
+  if (mode.kind === 'objection-correction') {
+    return {
+      task: `Each candidate corrects the CURRENT English translation where the ${mode.origin} objected to it.`,
+      criteria: [
+        'Faithful to the Chinese ORIGINAL: nothing it does not say, and nothing it says left out.',
+        'Resolves each objection the ORIGINAL supports. An objection is a claim: one the ORIGINAL does not '
+          + 'support is ignored, and a candidate acting on it has introduced an error.',
+        'Changes nothing an objection the ORIGINAL supports does not concern, beyond a clear naturalness fix '
+          + 'that keeps the meaning.',
+        'Reads as natural English.',
+      ],
+      evidence: [
+        {
+          label: 'ORIGINAL (Chinese)',
+          text: sourceText,
+        },
+        {
+          label: 'CURRENT English translation, which ships unchanged unless a candidate resolves an objection '
+            + 'the ORIGINAL supports',
+          text: repairedText,
+        },
+        ...referenceEvidence,
+        {
+          label: objectionsHeading({ origin: mode.origin, },),
+          text: mode.objections
+            .map(function listed(objection,): string {
+              return `- ${objection}`;
+            },)
+            .join('\n',),
+        },
+      ],
+      declineConsequence: 'the CURRENT text ships unchanged, with the objections recorded',
     };
   }
   /**

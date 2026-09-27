@@ -66,6 +66,11 @@ const ARCHIVE = 'The cat fell asleep by the window and woke at four in the after
 const FRESH = 'The cat fell asleep beside the window, purring for you. She woke at four.';
 
 /**
+ Label the selector sheet puts before each candidate's number.
+ */
+const CANDIDATE_LABEL = 'CANDIDATE ';
+
+/**
  What the gate judges hold against the consolidation.
  */
 const OBJECTION = 'The consolidated text adds "purring for you", which the original never says.';
@@ -97,16 +102,22 @@ function candidateNumberOf(
    Where the text stands on the sheet.
    */
   const at = sheet.indexOf(text,);
-  if (at === -1)
+  if (at === (-1))
     return 0;
   /**
-   Where the nearest candidate label before it opens.
+   Where the nearest candidate label's number opens.
    */
-  const label = sheet.lastIndexOf(
-    'CANDIDATE ',
+  const numberAt = sheet.lastIndexOf(
+    CANDIDATE_LABEL,
     at,
-  );
-  return Number.parseInt(sheet.slice(label + 'CANDIDATE '.length,), 10,);
+  ) + CANDIDATE_LABEL.length;
+  return Number(sheet.slice(
+    numberAt,
+    sheet.indexOf(
+      '\n',
+      numberAt,
+    ),
+  ),);
 }
 
 /**

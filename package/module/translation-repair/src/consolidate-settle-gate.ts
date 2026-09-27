@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from './chat-contract.ts';
 import { gateConsolidatedSlice, } from './consolidate-gate-stage.ts';
+import type { GateBallot, } from './consolidate-gate-wire.ts';
 import {
   requireShippableTerminal,
   shipPastForfeitStanding,
@@ -27,6 +28,54 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
 // THE SETTLEMENT'S LAST TWO STEPS, gate what won the slate and wrap what
 // ships, split out of `consolidate-settle.ts` at the line cap on 2026-09-04.
 // The order and the reasons are that file's; this one only carries them out.
+
+/**
+ What the gate held against the consolidation: the reason of every ballot
+ that did not choose it or named it unsupported or dropping content, once
+ each (owner, 2026-09-27, the fourteenth addendum of
+ `doc/decision/translation-repair-ineligible-standing.md`).
+
+ @param ballots - every usable gate ballot
+
+ @returns Objecting reasons in ballot order, empty when no ballot objected
+
+ @example
+ ```ts
+ gateObjectionsOf({ ballots, },);
+ ```
+ */
+export function gateObjectionsOf(
+  { ballots, }: { readonly ballots: readonly GateBallot[]; },
+): readonly string[] {
+  /**
+   Reasons of the ballots that objected, trimmed.
+   */
+  const reasons = ballots
+    .filter(function objects(ballot,): boolean {
+      /**
+       What the ballot chose and what it named.
+       */
+      const {
+        choice,
+        unsupported,
+        dropped,
+      } = ballot;
+      return (choice !== 'consolidated')
+        || unsupported.includes('consolidated',)
+        || dropped.includes('consolidated',);
+    },)
+    .map(function reasonOf(ballot,): string {
+      /**
+       Why the ballot objected.
+       */
+      const { reason, } = ballot;
+      return reason.trim();
+    },)
+    .filter(function stated(reason,): boolean {
+      return reason !== '';
+    },);
+  return [...new Set(reasons,),];
+}
 
 /**
  Gates the consolidation the judges chose, wraps what ships, and polishes it.
@@ -203,6 +252,16 @@ export async function gateAndShip(
     sliceIndex,
     ...((polishConfig === undefined) ? {} : { polishConfig, }),
     eligible: (terminal === 'consolidated') || standingMayShip,
+    // OVER AN INELIGIBLE STANDING every gate verdict ships the consolidation,
+    // so what the gate held against it goes to the polish (owner, 2026-09-27).
+    ...(standingEligible
+      ? {}
+      : {
+        objections: {
+          origin: 'consolidation gate',
+          reasons: gateObjectionsOf({ ballots: gated.ballots, },),
+        },
+      }),
     signal,
     perCallTimeoutMs,
     l,

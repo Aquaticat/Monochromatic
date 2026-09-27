@@ -212,7 +212,9 @@ export async function runRefineStage(
   const unchanged: RefineStageResult = {
     refinedText: repairedText,
     changed: false,
-    disposition: (mode.kind === 'comparative') ? 'fallback' : 'no-correction',
+    // Only a required naturalness correction leaves no fallback: the text it
+    // corrects failed review. An objection correction ships its input unchanged.
+    disposition: (mode.kind === 'required-naturalness-correction') ? 'no-correction' : 'fallback',
     contributors: [],
     heard: [],
     rounds: [],
@@ -235,14 +237,20 @@ export async function runRefineStage(
     envelopes,
     ...(identityContext === undefined ? {} : { identityContext, }),
     ...(referenceContext === undefined ? {} : { referenceContext, }),
-    ...((mode.kind === 'comparative')
-      ? {}
-      : {
+    ...((mode.kind === 'required-naturalness-correction')
+      ? {
         naturalnessFindings: mode.findings,
         ...((mode.priorCorrections === undefined)
           ? {}
           : { priorNaturalnessCorrections: mode.priorCorrections, }),
-      }),
+      }
+      : {}),
+    ...((mode.kind === 'objection-correction')
+      ? {
+        objections: mode.objections,
+        objectionOrigin: mode.origin,
+      }
+      : {}),
   },);
 
   /**
@@ -438,9 +446,9 @@ export async function runRefineStage(
     /**
      Consequence matching whether input remains publication-admissible.
      */
-    const declineAction = (mode.kind === 'comparative')
-      ? 'keeping the repaired text'
-      : 'required correction remains unresolved';
+    const declineAction = (mode.kind === 'required-naturalness-correction')
+      ? 'required correction remains unresolved'
+      : 'keeping the repaired text';
     rl.info(`${outcome.reason}; ${declineAction}`,);
     return {
       ...unchanged,

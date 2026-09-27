@@ -299,7 +299,7 @@ export async function runConsolidationPolishRound(
   if (demoted) {
     l.info('semantic wrap: the polish matched the base once wrapped, so the slice keeps what it had',);
     return {
-      disposition: (mode.kind === 'comparative') ? 'fallback' : 'no-correction',
+      disposition: (mode.kind === 'required-naturalness-correction') ? 'no-correction' : 'fallback',
       text: baseText,
       proposedText: polished,
       changed: false,
@@ -343,7 +343,7 @@ export async function runConsolidationPolishRound(
   },);
   if (validation.kind !== 'valid') {
     return {
-      disposition: (mode.kind === 'comparative') ? 'fallback' : 'no-correction',
+      disposition: (mode.kind === 'required-naturalness-correction') ? 'no-correction' : 'fallback',
       text: baseText,
       proposedText: polished,
       changed: false,
@@ -385,7 +385,7 @@ export async function runConsolidationPolishRound(
     : baseText;
   return {
     disposition: (text === baseText)
-      ? ((mode.kind === 'comparative') ? 'fallback' : 'no-correction')
+      ? ((mode.kind === 'required-naturalness-correction') ? 'no-correction' : 'fallback')
       : 'selected',
     text,
     proposedText: polished,
