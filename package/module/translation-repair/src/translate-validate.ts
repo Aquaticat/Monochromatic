@@ -19,7 +19,7 @@ import { definitionLeakFindings, } from './translate-definition-leak.ts';
 import { leakedEscapeFindings, } from './translate-escape-leak.ts';
 import { sourceCarryFindings, } from './translate-source-carry.ts';
 import { sheetLeakFindings, } from './translate-sheet-leak.ts';
-import { untranslatedFindings, } from './translate-untranslated.ts';
+import { untranslatedOrResidueFindings, } from './translate-han-residue.ts';
 import {
   readSliceSkeleton,
   type SliceSkeleton,
@@ -254,17 +254,18 @@ export function validateTranslatedSlice(
   // manufacture findings rather than find any.
   //
   // THE FLOORS THAT NEED NO GRAMMAR STILL RUN (ledger F-5): a candidate left
-  // untranslated, merging the lines of a governed slice, or keeping the
-  // neutral pronoun is refused whatever the original's grammar, since none of
-  // those reads a block.
+  // untranslated or leaving Han in its English (F-3), merging the lines of a
+  // governed slice, or keeping the neutral pronoun is refused whatever the
+  // original's grammar, since none of those reads a block.
   if (source.kind === 'unparseable') {
     /**
      Findings of the floors that read text rather than blocks.
      */
     const grammarFree = [
-      ...untranslatedFindings({
+      ...untranslatedOrResidueFindings({
         sourceText,
         candidateText,
+        pageText,
       },),
       ...compareLineCounts({
         lineStructured,
@@ -388,9 +389,11 @@ export function validateTranslatedSlice(
         candidateBreaks: actual.explicitBreaks,
       },)
       : []),
-    ...untranslatedFindings({
+    // LEDGER F-3: the copied original, or Han left standing in English prose.
+    ...untranslatedOrResidueFindings({
       sourceText,
       candidateText,
+      pageText,
     },),
     ...compareLineCounts({
       lineStructured,

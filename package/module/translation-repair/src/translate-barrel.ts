@@ -82,6 +82,12 @@ export {
 export { floorTranslateVoices, } from './translate-floor.ts';
 export { untranslatedFindings, } from './translate-untranslated.ts';
 export {
+  type HanRun,
+  hanResidueFindings,
+  hanRuns,
+  untranslatedOrResidueFindings,
+} from './translate-han-residue.ts';
+export {
   attemptTranslateSlice,
   type SliceAttempt,
 } from './translate-slice-attempt.ts';
