@@ -245,3 +245,12 @@ Part of [the package README](../README.md).
   reported as `PUBLISHED AND NOT SETTLED`;
   measured on 2026-09-27,
   no such page exists among the 214 pages in 372 run directories.
+  Asked the same day how the rule reaches the two findings that then still exited 1,
+  the owner chose repair and a clean exit:
+  a pass starting in a runs directory rewrites from its artifact any page that is missing
+  or that differs from what the artifact says ships,
+  and `verify-published` prints every finding and exits 0,
+  keeping its separate exit 2 for a run it could not read at all.
+  Following from the same two rules rather than from an answer,
+  a decline removes a page an earlier crash left for the entry,
+  so the archive ships as the archive's note says it must.
