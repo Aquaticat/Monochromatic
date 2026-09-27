@@ -99,6 +99,10 @@ await describe({
             expect(system,).toContain('Reader protection outranks completeness',);
             expect(system,).toContain('Chinese marks no tense',);
             expect(system,).toContain('is restored rather than partial',);
+            // LEDGER S20: the reference comes from an archive written before
+            // the house rules, so the reason given must not say otherwise.
+            expect(system,).toContain('the REFERENCE was cut from a translation written before those rules',);
+            expect(system,).not.toContain('written under the same rules',);
           },
         },),
       ],

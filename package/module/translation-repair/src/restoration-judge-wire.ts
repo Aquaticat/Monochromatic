@@ -77,7 +77,7 @@ Information not supported by the ORIGINAL Chinese is never restored, even if it 
 
 ${MEASUREMENT_POLICY_BLOCK}
 
-A repaired sentence vaguer than the ORIGINAL Chinese because a house rule asks for it is restored rather than partial: the REFERENCE was cut from a translation written under the same rules and asks for no more than it carried. Where the repaired translation carries a detail a house rule keeps out, that is not a better restoration and no verdict is raised for it.
+A repaired sentence vaguer than the ORIGINAL Chinese because a house rule asks for it is restored rather than partial: the REFERENCE was cut from a translation written before those rules, so any detail it carries beyond them is what the rule keeps out, not information the repair lost. Where the repaired translation carries a detail a house rule keeps out, that is not a better restoration and no verdict is raised for it.
 
 Reply with ONLY a JSON object of shape {"judgments": [{"reference": 1, "verdict": "restored"}]}. No prose, no code fences.
 Every reference number must appear exactly once.`;
