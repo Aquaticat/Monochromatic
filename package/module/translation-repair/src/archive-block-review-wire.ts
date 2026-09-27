@@ -3,7 +3,10 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { isJsonRecord, } from './json-guard.ts';
-import { APPARATUS_KINDS, } from './page-apparatus-clause.ts';
+import {
+  APPARATUS_KINDS,
+  NARRATIVE_DETAIL_IS_NOT_APPARATUS,
+} from './page-apparatus-clause.ts';
 import { selectFence, } from './prompt-fence.ts';
 
 //region Archive block review wire
@@ -150,6 +153,28 @@ export function isArchiveBlockReviewWire(value: unknown,): value is ArchiveBlock
   // retention needs an anchor; the revision still faces independent selection.
   return (value.disposition === 'revise') || (value.sourceQuote === '');
 }
+
+/**
+ Criteria the correction selector ranks an archive block's candidates by.
+
+ APPARATUS IS NAMED IN THE FIRST CRITERION (ledger S5): "remove every factual
+ claim not supported by the original" read a translator's note or a gloss the
+ original never states as such a claim, so a single revise vote proposing its
+ removal reached a selector told to prefer the removal. The reviewers were
+ told the same kinds are apparatus; the selector now reads them too, with the
+ narrative bound beside them.
+
+ @example
+ ```ts
+ const rules = ARCHIVE_BLOCK_SELECTION_CRITERIA.join('\n',);
+ ```
+ */
+export const ARCHIVE_BLOCK_SELECTION_CRITERIA: readonly string[] = [
+  `Remove every factual claim not supported by the original document. Page apparatus (${APPARATUS_KINDS}) is not such a claim: retain it unless it is wrong. ${NARRATIVE_DETAIL_IS_NOT_APPARATUS}`,
+  'Retain source-supported meaning and verifiable editorial apparatus.',
+  'Preserve valid Markdown and contributor identities.',
+  'Prefer clear natural English without adding information.',
+];
 
 /**
  Structured output constraint for archive-block reviews.

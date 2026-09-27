@@ -64,7 +64,10 @@ export {
   type ArchiveBlockReviewOutcome,
   runArchiveBlockReviewStage,
 } from './archive-block-review-stage.ts';
-export { buildArchiveBlockReviewMessages, } from './archive-block-review-wire.ts';
+export {
+  ARCHIVE_BLOCK_SELECTION_CRITERIA,
+  buildArchiveBlockReviewMessages,
+} from './archive-block-review-wire.ts';
 export {
   archiveBlockIdentity,
   repairArchiveBlocks,

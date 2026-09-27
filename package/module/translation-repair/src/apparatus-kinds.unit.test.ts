@@ -28,6 +28,7 @@ import {
 
 import {
   APPARATUS_KINDS,
+  ARCHIVE_BLOCK_SELECTION_CRITERIA,
   buildAdjudicationMessages,
   buildArchiveBlockReviewMessages,
   buildCriticMessages,
@@ -128,6 +129,14 @@ await describe({
       fn: async () => {
         expect(blockReview,).toContain(APPARATUS_KINDS,);
         expect(blockReview,).toContain('a gloss of a name or a term',);
+      },
+    },),
+    it({
+      name: 'GIVES the archive block selector the whole list and the narrative bound, where its first criterion '
+        + 'said to remove every claim the original does not state',
+      fn: async () => {
+        expect(ARCHIVE_BLOCK_SELECTION_CRITERIA[0],).toContain(APPARATUS_KINDS,);
+        expect(ARCHIVE_BLOCK_SELECTION_CRITERIA[0],).toContain(NARRATIVE_DETAIL_IS_NOT_APPARATUS,);
       },
     },),
     it({

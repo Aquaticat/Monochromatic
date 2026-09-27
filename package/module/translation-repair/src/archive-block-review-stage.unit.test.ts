@@ -384,6 +384,11 @@ await describe({
         for (const prompt of selectionPrompts) {
           for (const modelId of ROSTER)
             expect(prompt.includes(modelId,),).toBe(false,);
+          // Ledger S5: the selector's first criterion once read a translator's
+          // note or a gloss as a claim to remove; every judge now reads the
+          // apparatus exemption and the narrative bound beside it.
+          expect(prompt,).toContain('is not such a claim: retain it unless it is wrong',);
+          expect(prompt,).toContain('WHAT HAPPENED IS NEVER APPARATUS',);
         }
       },
     },),

@@ -17,6 +17,7 @@ import {
 import {
   type ArchiveBlockReviewWire,
   ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT,
+  ARCHIVE_BLOCK_SELECTION_CRITERIA,
   buildArchiveBlockReviewMessages,
   isArchiveBlockReviewWire,
 } from './archive-block-review-wire.ts';
@@ -306,12 +307,7 @@ export async function runArchiveBlockReviewStage(
     judgeModelIds: modelIds,
     sourceText,
     task: 'Choose whether to retain or correct one unclaimed English archive block for publication.',
-    criteria: [
-      'Remove every factual claim not supported by the original document.',
-      'Retain source-supported meaning and verifiable editorial apparatus.',
-      'Preserve valid Markdown and contributor identities.',
-      'Prefer clear natural English without adding information.',
-    ],
+    criteria: ARCHIVE_BLOCK_SELECTION_CRITERIA,
     evidence: archiveBlockSelectionEvidence({
       sourceText,
       targetText,
