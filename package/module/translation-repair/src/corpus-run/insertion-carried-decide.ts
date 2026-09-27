@@ -7,6 +7,8 @@ import {
   type AnchorHolder,
   anchorRegion,
 } from './insertion-carried-anchor.ts';
+import { pairedNeighbours, } from './insertion-carried-neighbours.ts';
+import { shiftReceiver, } from './insertion-carried-shift.ts';
 
 //region Carried insertion fold decision
 // WHICH NEIGHBOUR CARRIES A PASSAGE. The rule is in the fold's own region
@@ -14,6 +16,8 @@ import {
 // paired slice next to the carried one, the carrier the neighbour holding the
 // larger share of the quoted text (the earlier on a tie), the two sources
 // abutting across blank space alone. Every stand-aside names its reason.
+// Where the carrier's span renders the passage alone, the decision is a
+// shift (insertion-carried-shift.ts, class one hundred seventy-nine).
 
 /**
  One carried passage's fold decision.
@@ -22,6 +26,16 @@ export type FoldDecision =
   | {
     readonly kind: 'fold';
     readonly carrierPosition: number;
+  }
+  | {
+    /**
+     Fold where the carrier's archive span renders the passage alone, so the
+     carrier's own source moves to its far neighbour (class one hundred
+     seventy-nine).
+     */
+    readonly kind: 'shift';
+    readonly carrierPosition: number;
+    readonly receiverPosition: number;
   }
   | {
     readonly kind: 'aside';
@@ -33,105 +47,9 @@ export type FoldDecision =
   };
 
 /**
- Nearest paired slice on one side of a position, looking past insertions.
-
- @param slices - prepared slices
-
- @param position - where the carried slice stands
-
- @param step - direction: -1 for earlier, 1 for later
-
- @returns Position of that slice, none where only insertions lie that way
-
- @example
- ```ts
- const earlier = pairedNeighbourToward({ slices, position: 3, step: -1, },);
- ```
+ One neighbour's share of the anchored text.
  */
-function pairedNeighbourToward(
-  {
-    slices,
-    position,
-    step,
-  }: {
-    readonly slices: readonly ChunkPair[];
-    readonly position: number;
-    readonly step: number;
-  },
-): readonly number[] {
-  /**
-   Positions on that side, nearest first.
-   */
-  const thatWay = slices
-    .map(function positionOf(
-      _slice,
-      index,
-    ): number {
-      return index;
-    },)
-    .filter(function onSide(index,): boolean {
-      return (step < 0) ? (index < position) : (index > position);
-    },)
-    .toSorted(function nearestFirst(
-      a,
-      b,
-    ): number {
-      return Math.abs(a - position,) - Math.abs(b - position,);
-    },);
-  /**
-   The nearest paired one.
-   */
-  const nearest = thatWay.find(function isPaired(index,): boolean {
-    /**
-     Slice at that position.
-     */
-    const slice = slices[index];
-    return (slice !== undefined) && (!isInsertionChunk(slice.target,));
-  },);
-  return (nearest === undefined) ? [] : [nearest,];
-}
-
-/**
- Nearest paired slices on either side of a carried passage, earlier first.
- A carried passage next to another carried passage looks past it: on
- mikaela14 (2026-09-24) slice 12 folded into slice 13 and slice 11, whose
- evidence sat in slice 13's span too, was refused for having a folded
- insertion between; the abutting check still refuses a fold across a source
- the carrier has not absorbed.
-
- @param slices - prepared slices
-
- @param position - where the carried slice stands
-
- @returns The paired neighbours found, earlier first
-
- @example
- ```ts
- const neighbours = pairedNeighbours({ slices, position: 2, },);
- ```
- */
-function pairedNeighbours(
-  {
-    slices,
-    position,
-  }: {
-    readonly slices: readonly ChunkPair[];
-    readonly position: number;
-  },
-): readonly number[] {
-  return [
-    ...pairedNeighbourToward({
-      slices,
-      position,
-      step: -1,
-    },),
-    ...pairedNeighbourToward({
-      slices,
-      position,
-      step: 1,
-    },),
-  ];
-}
+type NeighbourShare = Pick<AnchorHolder, 'codePoints' | 'position'>;
 
 /**
  The neighbour holding the larger share of the anchored text, the earlier on
@@ -160,7 +78,7 @@ function carrierAmong(
   /**
    Each neighbour's share of the quoted text.
    */
-  const shares = neighbours.map(function shareOf(position,): AnchorHolder {
+  const shares = neighbours.map(function shareOf(position,): NeighbourShare {
     return {
       position,
       codePoints: holders
@@ -183,7 +101,7 @@ function carrierAmong(
   const largest = shares.reduce(function larger(
     best,
     next,
-  ): AnchorHolder {
+  ): NeighbourShare {
     return (next.codePoints > best.codePoints) ? next : best;
   },);
   return largest.position;
@@ -200,7 +118,7 @@ function carrierAmong(
 
  @param candidate - carried passage under decision
 
- @returns Fold into the carrier, or standing aside with the reason
+ @returns Fold into the carrier, a shift, or standing aside with the reason
 
  @example
  ```ts
@@ -333,6 +251,25 @@ export function decideFold(
     return {
       kind: 'aside',
       reason: `the original writes more than blank space between the carried source and slice ${String(carrierIndex,)}`,
+    };
+  }
+  /**
+   The far neighbour taking the carrier's own source, where the carrier's
+   span renders the passage alone.
+   */
+  const [receiverPosition,] = shiftReceiver({
+    slices,
+    sourceText,
+    target,
+    holders,
+    carrierPosition,
+    carriedPosition: candidate.position,
+  },);
+  if (receiverPosition !== undefined) {
+    return {
+      kind: 'shift',
+      carrierPosition,
+      receiverPosition,
     };
   }
   return {

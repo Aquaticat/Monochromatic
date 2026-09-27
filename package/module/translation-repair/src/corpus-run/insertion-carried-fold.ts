@@ -1,5 +1,4 @@
 import type { ChunkPair, } from '../chunk-document.ts';
-import type { ContentChunk, } from '../chunk-placement.ts';
 import type {
   CarriedInsertion,
   FoldedInsertion,
@@ -9,6 +8,11 @@ import { parseDocument, } from '../parse-document.ts';
 import type { PreparedDocumentPair, } from '../prepared-document-pair.ts';
 import type { AnchorTarget, } from '../validate-issue.ts';
 import { decideFold, } from './insertion-carried-decide.ts';
+import {
+  shiftedFinding,
+  shiftSlices,
+  widenSource,
+} from './insertion-carried-shift.ts';
 
 //region Carried insertion fold
 // THE PASSAGE BELONGS WITH ITS RENDERING. A carried insertion is a source-only
@@ -36,6 +40,12 @@ import { decideFold, } from './insertion-carried-decide.ts';
 // tie), whose source must abut the carried source across blank space alone.
 // The other neighbour keeps its own source; the words of the passage it
 // rendered are the carrier's to write now.
+//
+// THE CARRIER'S SPAN MAY RENDER THE PASSAGE ALONE. On TianqiChen66611
+// (2026-09-26) the pairing left one off and the plain fold made the carrier
+// render its own source twice over; insertion-carried-shift.ts moves the
+// carrier's own source to its far neighbour instead (class one hundred
+// seventy-nine).
 //
 // EVERY STAND-ASIDE SAYS WHY, so a log reader can tell a passage the archive
 // really scattered from one the fold could not place.
@@ -74,93 +84,6 @@ type FoldState = {
    */
   readonly asides: readonly string[];
 };
-
-/**
- The carrier's source widened over the carried passage.
-
- @param sourceText - whole original
-
- @param carrier - carrier slice
-
- @param carried - carried slice
-
- @returns Carrier with its source covering both spans, in document order
-
- @example
- ```ts
- const widened = widenCarrier({ sourceText, carrier, carried, },);
- ```
- */
-function widenCarrier(
-  {
-    sourceText,
-    carrier,
-    carried,
-  }: {
-    readonly sourceText: string;
-    readonly carrier: ChunkPair;
-    readonly carried: ChunkPair;
-  },
-): ChunkPair {
-  /**
-   Both sources, earlier first.
-   */
-  const ordered = [
-    carrier.source,
-    carried.source,
-  ]
-    .toSorted(function byStart(
-      a,
-      b,
-    ): number {
-      return a.startOffset - b.startOffset;
-    },);
-  /**
-   Starts of both spans.
-   */
-  const starts = ordered.map(function start(chunk,): number {
-    return chunk.startOffset;
-  },);
-  /**
-   Ends of both spans.
-   */
-  const ends = ordered.map(function end(chunk,): number {
-    return chunk.endOffset;
-  },);
-  /**
-   Where the widened span starts.
-   */
-  const startOffset = Math.min(...starts,);
-  /**
-   Where it ends.
-   */
-  const endOffset = Math.max(...ends,);
-  /**
-   Stable index the carrier's source reports under.
-   */
-  const carrierSourceIndex = carrier.source
-    .sliceIndex;
-  /**
-   The widened source.
-   */
-  const source: ContentChunk = {
-    kind: 'content',
-    sliceIndex: carrierSourceIndex,
-    nodes: ordered.flatMap(function nodesOf(chunk,): ContentChunk['nodes'] {
-      return chunk.nodes;
-    },),
-    startOffset,
-    endOffset,
-    text: sourceText.slice(
-      startOffset,
-      endOffset,
-    ),
-  };
-  return {
-    ...carrier,
-    source,
-  };
-}
 
 /**
  One pass over the passages still carried: each folded in turn over the
@@ -212,7 +135,7 @@ function foldPass(
       /**
        The carrier as the earlier folds left it, absent on a stand-aside.
        */
-      const carrier = (decision.kind === 'fold') ? state.slices[decision.carrierPosition] : undefined;
+      const carrier = (decision.kind === 'aside') ? undefined : state.slices[decision.carrierPosition];
       /**
        The carried slice.
        */
@@ -243,26 +166,53 @@ function foldPass(
         };
       }
       /**
-       Carrier over both sources.
-       */
-      const widened = widenCarrier({
-        sourceText,
-        carrier,
-        carried: carriedSlice,
-      },);
-      /**
        Stable index the lanes report the carrier under.
        */
       const carrierSliceIndex = carrier.target
         .sliceIndex;
-      return {
-        slices: state.slices
+      /**
+       The receiver of a shift, absent on a plain fold.
+       */
+      const receiver = (decision.kind === 'shift') ? state.slices[decision.receiverPosition] : undefined;
+      /**
+       Slices after this fold: on a shift the carrier holds the carried source
+       and its own joins the receiver (class one hundred seventy-nine); on a
+       plain fold the carrier widens over both.
+       */
+      const nextSlices = (decision.kind === 'shift')
+        ? shiftSlices({
+          sourceText,
+          slices: state.slices,
+          carrierPosition: decision.carrierPosition,
+          receiverPosition: decision.receiverPosition,
+          carried: carriedSlice,
+        },)
+        : state.slices
           .map(function replaceCarrier(
             slice,
             position,
           ): ChunkPair {
-            return (position === decision.carrierPosition) ? widened : slice;
-          },),
+            return (position === decision.carrierPosition)
+              ? widenSource({
+                sourceText,
+                widened: carrier,
+                absorbed: carriedSlice,
+              },)
+              : slice;
+          },);
+      /**
+       The shift's own finding, none on a plain fold.
+       */
+      const shiftFindings = (receiver === undefined)
+        ? []
+        : [shiftedFinding({
+          carrierSliceIndex,
+          receiverSliceIndex: receiver.target
+            .sliceIndex,
+          carriedSliceIndex: candidate.sliceIndex,
+        },),];
+      return {
+        slices: nextSlices,
         kept: state.kept,
         folded: [
           ...state.folded,
@@ -277,6 +227,7 @@ function foldPass(
           `${CARRIED_FOLDED_FINDING} (slice ${String(candidate.sliceIndex,)} into slice ${
             String(carrierSliceIndex,)
           })`,
+          ...shiftFindings,
         ],
         asides: state.asides,
       };

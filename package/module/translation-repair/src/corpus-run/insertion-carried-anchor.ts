@@ -24,7 +24,7 @@ import type { AnchorTarget, } from '../validate-issue.ts';
 
  @example
  ```ts
- const holder: AnchorHolder = { position: 2, codePoints: 40, };
+ const holder: AnchorHolder = { position: 2, codePoints: 40, nodeId: 'block/3', };
  ```
  */
 export type AnchorHolder = {
@@ -37,6 +37,12 @@ export type AnchorHolder = {
    Code points of the region inside that block.
    */
   readonly codePoints: number;
+
+  /**
+   Archive block the share sits in, so the shift (class one hundred
+   seventy-nine) can tell whether the evidence touches every block of a span.
+   */
+  readonly nodeId: string;
 };
 
 /**
@@ -178,6 +184,7 @@ export function anchorRegion(
           return {
             position,
             codePoints,
+            nodeId: anchor.nodeId,
           };
         },);
     },);

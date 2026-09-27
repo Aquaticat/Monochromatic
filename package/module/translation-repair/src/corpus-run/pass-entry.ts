@@ -316,10 +316,11 @@ async function runEntryPipeline(
     // fold could not place.
     for (const aside of foldAsides)
       foldLogger.warn(aside,);
-    // Every passage still carried prints the regions its coverage rests on,
-    // so a carried-evidence-lost stop at publish can be read against the
+    // Every carried passage, folded or not, prints the regions its coverage
+    // rests on, so a carried-evidence-lost stop at publish or a fold's choice
+    // of carrier (class one hundred seventy-nine) can be read against the
     // admission without the artifact.
-    for (const carried of translateInsertionAdmission.carried ?? []) {
+    for (const carried of admissionAsRead.carried ?? []) {
       /**
        Regions the coverage voices quoted, one JSON string each.
        */

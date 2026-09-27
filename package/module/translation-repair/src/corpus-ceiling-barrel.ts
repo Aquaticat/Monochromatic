@@ -45,3 +45,4 @@ export {
   CARRIED_FOLDED_FINDING,
   foldCarriedInsertions,
 } from './corpus-run/insertion-carried-fold.ts';
+export { CARRIED_SHIFTED_FINDING, } from './corpus-run/insertion-carried-shift.ts';
