@@ -142,6 +142,7 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
     ],
     refusedForms: [
       'minor trans',
+      'minor transgender',
       'minor girl',
       'minor boy',
     ],
@@ -180,19 +181,26 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
       'psychological bullying',
     ],
     refusedForms: [
-      'spiritually bull',
-      'spiritual bull',
+      'spiritually bullied',
+      'spiritually bullying',
+      'spiritually bully',
+      'spiritual bullying',
+      'spiritual bully',
+      'spiritual bullies',
     ],
     why: 'bullying by words and pressure rather than by force; the page keeps the adjective ("psychologically '
       + 'bullied"), never "spiritual"',
   },
   // CLASS ONE HUNDRED TWENTY-SEVEN (owner, 2026-09-25: "overdosing", "sailor
   // uniform", "National College Entrance Examination"), answering the three
-  // renderings the shi_Yumiaoya27 read left as written. OD carries its leading
-  // space: every OD in the pinned corpus stands after one, and a bare OD would
-  // match the MOD entry s5ehfr9 writes.
+  // renderings the shi_Yumiaoya27 read left as written. OD once carried a
+  // leading space so it would not match the MOD entry s5ehfr9 writes, on the
+  // claim that every OD in the pinned corpus stands after one; that was false
+  // (hulicaijia opens a paragraph with OD, XingZ60 writes a lowercase od four
+  // times), and XingZ6010 and XingZ6014 shipped "I hate od". Word boundaries
+  // (`glossary-match.ts`, class one hundred eighty-six) keep MOD out instead.
   {
-    term: ' OD',
+    term: 'OD',
     renderings: [
       'overdosing',
       'overdose',

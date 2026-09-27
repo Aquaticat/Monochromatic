@@ -9,8 +9,8 @@ import type { CommunityTerm, } from './community-glossary.ts';
 // "headpiece" on the same page, so that rendering leads. Kept beside
 // `community-glossary.ts`, which spreads these entries into
 // `COMMUNITY_GLOSSARY`, so neither file outgrows the line budget. Refused forms
-// match as lower-cased substrings, and each applies only where the source
-// carries its term.
+// match in any case at word boundaries (`glossary-match.ts`), and each applies
+// only where the source carries its term.
 
 /**
  Fandom words and character names the pinned corpus carries, with the English
@@ -22,6 +22,7 @@ export const FANDOM_GLOSSARY: readonly CommunityTerm[] = [
     renderings: [
       'headpiece',
       'kigurumi head',
+      'head mask',
       'mask',
     ],
     refusedForms: [
@@ -83,7 +84,10 @@ export const FANDOM_GLOSSARY: readonly CommunityTerm[] = [
     term: '治愈',
     renderings: [
       'healed',
+      'healing',
+      'heals',
       'soothed',
+      'soothing',
       'cured',
     ],
     refusedForms: [],

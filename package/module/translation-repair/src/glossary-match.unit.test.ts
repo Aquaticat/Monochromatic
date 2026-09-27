@@ -54,6 +54,9 @@ const REFUSED: readonly FloorCase[] = [
   { sourceText: '小猫未成年时犯过一些小错。', candidateText: 'The kitten was a minor trans girl who erred.', },
   { sourceText: '猫是药娘。', candidateText: 'The cat was a Yào Niáng.', },
   { sourceText: '猫是药娘。', candidateText: 'The cats were yaoniangs.', },
+  { sourceText: '小猫是个小药娘。', candidateText: 'The kitten was a little xiaoyaoniang.', },
+  { sourceText: '小猫未成年时犯过一些小错。', candidateText: 'The kitten, a minor transgender girl, erred.', },
+  { sourceText: '小猫被精神霸凌。', candidateText: 'The kitten was spiritually bullied.', },
 ];
 
 /**

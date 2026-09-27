@@ -3,6 +3,11 @@ import {
   type CommunityTerm,
   communityTermsIn,
 } from './community-glossary.ts';
+import {
+  foldForGlossary,
+  formStarts,
+  textCarriesForm,
+} from './glossary-match.ts';
 import { withoutComments, } from './translate-address-drop.ts';
 
 //region Community term floor
@@ -17,7 +22,8 @@ import { withoutComments, } from './translate-address-drop.ts';
 // a rendering inflects and the judges still choose among renderings. The
 // owner added the same day that the term is refused even where the existing
 // translation keeps it, so the page's own text earns no exception; comments
-// are cut on both sides.
+// are cut on both sides. Every match reads word boundaries
+// (`glossary-match.ts`, class one hundred eighty-six).
 
 /**
  Accepted renderings quoted for a finding.
@@ -43,79 +49,39 @@ function renderingList(
 }
 
 /**
- Every index at which a needle starts in a text, overlapping starts included.
-
- @param text - lower-cased candidate text
-
- @param needle - lower-cased form looked for
-
- @returns Start indices in ascending order, empty where the needle is absent
-
- @example
- ```ts
- occurrenceStarts({ text: 'head and head', needle: 'head', },);
- // => [0, 9]
- ```
- */
-function occurrenceStarts(
-  {
-    text,
-    needle,
-  }: {
-    readonly text: string;
-    readonly needle: string;
-  },
-): readonly number[] {
-  /**
-   Starts found so far; a linear cursor scan, since the text is unbounded.
-   */
-  const starts: number[] = [];
-  /**
-   Index the next search starts from.
-   */
-  let cursor = text.indexOf(needle,);
-  while (cursor !== (-1)) {
-    starts.push(cursor,);
-    cursor = text.indexOf(
-      needle,
-      cursor + 1,
-    );
-  }
-  return starts;
-}
-
-/**
- Whether a refused-form occurrence is the opening of a longer accepted
- rendering, as "inside her head" opens "inside her headpiece" (class one
- hundred sixty-three). A rendering excuses the occurrence only when it starts
- inside the occurrence and runs past its end; one that ends inside it ("a
- minor" in "a minor trans girl") excuses nothing.
+ Whether an accepted rendering of the entry carries a refused-form occurrence
+ as part of itself: it contains the occurrence ("whisker head cover" holding
+ "head"), or it opens inside the occurrence and runs past its end ("inside
+ her head" opening "inside her headpiece", class one hundred sixty-three). A
+ rendering that ends inside the occurrence ("a minor" in "a minor trans
+ girl") excuses nothing, and a rendering of another entry excuses nothing
+ either, since it names another word.
 
  @param entry - term whose renderings may excuse the occurrence
 
- @param lowered - lower-cased candidate text
+ @param folded - folded candidate text
 
  @param start - index the refused-form occurrence starts at
 
  @param end - index just past the refused-form occurrence
 
- @returns True where an accepted rendering carries the occurrence inside it
+ @returns True where an accepted rendering carries the occurrence
 
  @example
  ```ts
- renderingCarries({ entry, lowered: 'inside her headpiece', start: 0, end: 15, },);
- // => true
+ renderingCarries({ entry, folded: 'inside her head mask', start: 0, end: 15, },);
+ // => true where "head mask" is an accepted rendering
  ```
  */
 function renderingCarries(
   {
     entry,
-    lowered,
+    folded,
     start,
     end,
   }: {
     readonly entry: CommunityTerm;
-    readonly lowered: string;
+    readonly folded: string;
     readonly start: number;
     readonly end: number;
   },
@@ -124,24 +90,38 @@ function renderingCarries(
     .renderings
     .some(function carries(rendering,): boolean {
       /**
-       Rendering in lower case, matched as the refused forms are.
+       Rendering folded as the candidate is.
        */
-      const needle = rendering.toLowerCase();
-      return occurrenceStarts({
-        text: lowered,
-        needle,
+      const form = foldForGlossary({ text: rendering, },);
+      return formStarts({
+        folded,
+        form,
+        end: 'open',
       },)
-        .some(function spans(renderingStart,): boolean {
-          return (renderingStart >= start)
+        .some(function covers(renderingStart,): boolean {
+          /**
+           Index just past this rendering occurrence.
+           */
+          const renderingEnd = renderingStart + form.length;
+          /**
+           Whether the rendering holds the whole occurrence.
+           */
+          const contains = (renderingStart <= start) && (renderingEnd >= end);
+          /**
+           Whether the rendering opens inside the occurrence and runs past it.
+           */
+          const continuesPast = (renderingStart > start)
             && (renderingStart < end)
-            && ((renderingStart + needle.length) > end);
+            && (renderingEnd > end);
+          return contains || continuesPast;
         },);
     },);
 }
 
 /**
- First form the entry refuses that a text writes, in any casing, where some
- occurrence is not the opening of an accepted rendering (`renderingCarries`).
+ First form the entry refuses that a text writes at word boundaries, a plural
+ included, where some occurrence is not carried by an accepted rendering
+ (`renderingCarries`).
 
  @param entry - term whose refused forms are looked for
 
@@ -165,29 +145,30 @@ function refusedFormIn(
   },
 ): string {
   /**
-   Text in lower case, since a form is refused in any casing.
+   Candidate folded once for every form.
    */
-  const lowered = text.toLowerCase();
+  const folded = foldForGlossary({ text, },);
   /**
    Refused form the text writes, undefined where it writes none.
    */
   const found = entry
     .refusedForms
-    .find(function written(form,): boolean {
+    .find(function written(refusedForm,): boolean {
       /**
-       Form in lower case, matched against the lowered text.
+       Refused form folded as the candidate is.
        */
-      const needle = form.toLowerCase();
-      return occurrenceStarts({
-        text: lowered,
-        needle,
+      const form = foldForGlossary({ text: refusedForm, },);
+      return formStarts({
+        folded,
+        form,
+        end: 'plural',
       },)
         .some(function standsApart(start,): boolean {
           return !renderingCarries({
             entry,
-            lowered,
+            folded,
             start,
-            end: start + needle.length,
+            end: start + form.length,
           },);
         },);
     },);
@@ -231,7 +212,7 @@ export function communityTermFindings(
    Terms the original carries outside its comments.
    */
   const carried = communityTermsIn({
-    text: withoutComments({ text: sourceText, },),
+    text: sourceText,
     glossary,
   },);
   if (carried.length === 0)
@@ -241,16 +222,13 @@ export function communityTermFindings(
    */
   const candidate = withoutComments({ text: candidateText, },);
   return carried.flatMap(function findingsFor(entry,): readonly string[] {
-    /**
-     Term as the finding names it, without the leading space a Latin term
-     (" OD") carries so it does not match inside a longer word.
-     */
-    const shownTerm = entry
-      .term
-      .trim();
-    if (candidate.includes(entry.term,)) {
+    if (textCarriesForm({
+      text: candidate,
+      form: entry.term,
+      end: 'inflected',
+    },)) {
       return [
-        `Your translation leaves the ${noun} ${shownTerm} untranslated. Render it as ${
+        `Your translation leaves the ${noun} ${entry.term} untranslated. Render it as ${
           renderingList({ entry, },)
         }: ${entry.why}.`,
       ];

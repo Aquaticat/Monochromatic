@@ -1,4 +1,9 @@
 import { FANDOM_GLOSSARY, } from './community-glossary-fandom.ts';
+import {
+  foldForGlossary,
+  formStarts,
+} from './glossary-match.ts';
+import { withoutComments, } from './translate-address-drop.ts';
 
 //region Community glossary
 // THE COMMUNITY'S WORDS, beside the corpus pin (`corpus-source.ts`), by the
@@ -114,8 +119,10 @@ export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
     ],
     refusedForms: [
       'yaoniang',
-      'yao-niang',
       'yao niang',
+      'xiaoyaoniang',
+      'xiao yaoniang',
+      'xiao yao niang',
     ],
     why: 'a disrespectful word for trans women on hormone therapy that some of the community use neutrally; '
       + 'the term itself can read as derogatory and the neutrality does not carry into English, so the page '
@@ -206,11 +213,12 @@ export type RenderingCandidate = {
 };
 
 /**
- Glossary terms a text carries.
- 
- AN INDEX SCAN PER TERM, since each term is a fixed string and the glossary
- is short.
- 
+ Glossary terms a text carries outside its comments.
+
+ AN INDEX SCAN PER TERM at word boundaries (`glossary-match.ts`), since each
+ term is a fixed string and the glossary is short; a Latin term (OD, jk 裙)
+ matches in any case and spacing, and never inside a longer word (MOD).
+
  @param text - original text to read
  
  @param glossary - terms to look for; defaults to the corpus glossary
@@ -231,8 +239,20 @@ export function communityTermsIn(
     readonly glossary?: readonly CommunityTerm[];
   },
 ): readonly CommunityTerm[] {
+  /**
+   Original folded once, its comments cut, for every term.
+   */
+  const folded = foldForGlossary({ text: withoutComments({ text, },), },);
   return glossary.filter(function present(entry,): boolean {
-    return text.includes(entry.term,);
+    /**
+     Bounded starts of the term in the original.
+     */
+    const starts = formStarts({
+      folded,
+      form: foldForGlossary({ text: entry.term, },),
+      end: 'inflected',
+    },);
+    return starts.length > 0;
   },);
 }
 
@@ -306,8 +326,10 @@ export function communityTermLines(
 }
 
 /**
- Whether a text carries any accepted rendering of a term, in any casing.
- 
+ Whether a text carries any accepted rendering of a term outside its
+ comments, in any casing, opening at a word boundary and free to inflect
+ ("healed" in "healed", never "cured" in "secured").
+
  @param text - candidate text
  
  @param entry - term whose renderings are looked for
@@ -330,12 +352,20 @@ function carriesRendering(
   },
 ): boolean {
   /**
-   Candidate lowered once for every rendering.
+   Candidate folded once, its comments cut, for every rendering.
    */
-  const lowered = text.toLowerCase();
+  const folded = foldForGlossary({ text: withoutComments({ text, },), },);
   return entry.renderings
     .some(function occurs(rendering,): boolean {
-      return lowered.includes(rendering.toLowerCase(),);
+      /**
+       Bounded starts of the rendering in the candidate.
+       */
+      const starts = formStarts({
+        folded,
+        form: foldForGlossary({ text: rendering, },),
+        end: 'open',
+      },);
+      return starts.length > 0;
     },);
 }
 

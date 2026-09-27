@@ -3,9 +3,9 @@
  "sailor uniform", "National College Entrance Examination"): the owner
  answered three renderings the shi_Yumiaoya27 read had left as written. OD
  shipped as "ODing", jk 裙 as "jk skirt" and 高考 as "Gaokao"; the rendering
- glossary seeds the owner's English and refuses the rest. The OD term carries
- its leading space because every OD in the pinned corpus stands after one and
- a bare OD would match the MOD another entry writes.
+ glossary seeds the owner's English and refuses the rest. MOD stays out by
+ word boundaries (`glossary-match.unit.test.ts` holds a lowercase and a
+ line-start OD), not by the leading space the term once carried.
 
  Cat-themed invention throughout; no corpus content appears here.
 
