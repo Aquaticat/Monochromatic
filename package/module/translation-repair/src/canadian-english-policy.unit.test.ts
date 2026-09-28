@@ -174,7 +174,8 @@ await describe({
       },
     },),
     it({
-      name: 'the house policy writes its own words in Canadian spelling',
+      name: 'the house policy carries none of the four -ise forms it once wrote (every word of every sheet: '
+        + 'sheet-canadian-spelling.unit.test.ts)',
       fn: async () => {
         expect(POLICY_BRITISH_FORMS.filter(function present(form,): boolean {
           return HOUSE_POLICY_BLOCK.includes(form,);

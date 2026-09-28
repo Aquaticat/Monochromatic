@@ -274,7 +274,8 @@ await describe({
       },
     },),
     it({
-      name: 'RESPELLS the closed word list in lower case and leaves capitalised names',
+      name: 'RESPELLS LISTED WORDS in lower case mid-sentence, and leaves a capital mid-sentence or after a title, '
+        + 'which names someone',
       fn: async () => {
         expect([
           rewritten({ text: 'The cat licked compound liquorice tablets.', },),
@@ -300,7 +301,8 @@ await describe({
       },
     },),
     it({
-      name: 'LEAVES markup, links, code, comments and emphasis untouched',
+      name: 'LEAVES tag attributes, a link destination, code, a comment and a capitalised title in emphasis '
+        + 'untouched, and rewrites the prose between them',
       fn: async () => {
         /**
          Text whose every rewritable word sits where the page's form is not prose.
