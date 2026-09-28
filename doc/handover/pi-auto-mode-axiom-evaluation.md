@@ -91,7 +91,9 @@ Q16 and Laya #34 remain paused.
 
 ## Implication and proposed next experiment
 
-The user's "Okay, and?" corrected the metrics-only closeout.
+The user's "Okay,
+ and?"
+ corrected the metrics-only closeout.
 Reports must connect observed failures to a concrete next engineering step,
 not stop at "unqualified".
 `AGENTS.md` remains untouched as requested.

@@ -300,7 +300,9 @@ probability `0.40343016758414674`:
 
 ## What the result means for the next experiment
 
-The user's "Okay, and?" identified a reporting gap:
+The user's "Okay,
+ and?"
+ identified a reporting gap:
 metrics and an unqualified status do not explain the next engineering action.
 A model-free follow-up inspected only the completed evidence,
 without new calls,

@@ -917,7 +917,9 @@ Q16 and Laya #34 remain paused.
 
 ### Practical implication from the model-free postmortem
 
-The user's "Okay, and?" required an engineering implication rather than another metrics-only closeout.
+The user's "Okay,
+ and?"
+ required an engineering implication rather than another metrics-only closeout.
 Task #56 inspected the retained concrete-head evidence only.
 `diagnose-permission-features.mjs` at private `36e688a`
 passed collision/order positive and negative controls and checked frozen evidence hashes,
