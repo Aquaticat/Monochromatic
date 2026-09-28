@@ -56,6 +56,21 @@ Whiskers chases butterflies.
 `;
 
 /**
+ Original of two paragraphs, for the repetition case.
+ */
+const TWO_PARAGRAPH_SOURCE = '猫每天早上数篱笆上的麻雀。\n\n后来她在炉子旁边睡到晚饭。\n';
+
+/**
+ First archive paragraph, carrying specific words.
+ */
+const COUNTING = 'Mittens counted the sparrows along the garden fence every morning.';
+
+/**
+ Second archive paragraph.
+ */
+const SLEEPING = 'Later she slept beside the kitchen stove until dinner.';
+
+/**
  Wording of the referencing slice with its marker dropped.
  */
 const DROPS_THE_MARKER = 'The cat sleeps on the windowsill.';
@@ -349,6 +364,47 @@ await describe({
         expect(result.changedSliceIndices,).toEqual([],);
         expect(said.some(function mentionsWithdrawal(line,): boolean {
           return line.includes('withdrew 1 replacements at assembly',);
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'LOCATES A REPETITION in the log, naming the slices and the phrase, which the finding never does '
+        + '(ledger L12)',
+      fn: async () => {
+        /**
+         Prepared pair of two paragraphs, which the slicer keeps as one slice.
+         */
+        const prepared = await prepareDocumentPair({
+          sourceText: TWO_PARAGRAPH_SOURCE,
+          targetText: `${COUNTING}\n\n${SLEEPING}\n`,
+        },);
+
+        /**
+         Lines the assembly wrote.
+         */
+        const said: string[] = [];
+
+        assembleTranslation({
+          prepared,
+          settled: prepared.slices.map(function toRecord(slice,): TranslateSliceRecord {
+            return recordFor({
+              sliceIndex: slice.target.sliceIndex,
+              incumbentText: slice.target.text,
+              // The second paragraph repeats the first's specifics.
+              outputText: slice.target.text.replace(
+                SLEEPING,
+                `${SLEEPING} Mittens counted the sparrows along the garden fence.`,
+              ),
+            },);
+          },),
+          unfilled: [],
+          resumedSliceCount: 0,
+          findings: [],
+          l: capturingLogger({ said, },),
+        },);
+
+        expect(said.some(function locates(line,): boolean {
+          return line.includes('introduced repetition in slices 0 (',) && line.includes('sparrows along the garden',);
         },),).toBe(true,);
       },
     },),
