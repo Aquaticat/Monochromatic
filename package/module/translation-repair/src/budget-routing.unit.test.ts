@@ -591,12 +591,22 @@ await describe({
           throw new Error('an all-dry refusal by construction',);
 
         /**
-         The clause saying which providers are out of budget, read apart from
-         the sentences after it, which name Bedrock again for its refill: a
-         check over the whole message passed with Bedrock gone from the list.
+         The message cut at the sentence after the out-of-budget list, so the
+         list is read apart from the sentences that name Bedrock again for its
+         refill: a check over the whole message passed with Bedrock gone from
+         the list.
          */
-        const [outOfBudget = '',] = thrown.message.split('Nothing further can be bought',);
+        const parts = thrown.message.split('Nothing further can be bought',);
+
+        /**
+         The list itself; the whole message only if the split found nothing,
+         which the assertion's `parts` count refuses.
+         */
+        const [outOfBudget = '',] = parts;
         expect({
+          // THE SPLIT MUST FIND ITS SENTENCE, or the "list" is the whole
+          // message and the refill sentence's "Bedrock" passes it again.
+          parts: parts.length,
           unlisted: ['Synthetic', 'Hyper', 'Bedrock', 'OpenRouter',].filter(function missingFromList(name,): boolean {
             return !outOfBudget.includes(name,);
           },),
@@ -604,6 +614,7 @@ await describe({
           cited: !thrown.message.includes('no reading cited',),
           reading: thrown.message.includes('bedrock dry',),
         },).toEqual({
+          parts: 2,
           unlisted: [],
           neverRefills: true,
           cited: true,
