@@ -307,8 +307,8 @@ so "In 2021 May 4 was a Tuesday" stays;
 every year-first date in the pinned archive carries a suffix.
 A comma-joined year before a day-first date is joined only where the date ends its clause,
 so "In 2020, 4 May was a holiday" becomes "In 2020, May 4 was a holiday".
-The replay rewrites 266 dates across the 364 pages and leaves no day-first, month-first ordinal,
-year-first or unclosed-year date in prose.
+The replay on `2efc90630` rewrites 269 dates across the 364 pages and leaves no day-first, month-first ordinal,
+year-first, unclosed-year or abbreviated-month date in prose.
 
 ### K5: withdrawn slices ship raw archive text
 
@@ -345,7 +345,8 @@ No day-first date in the 364 pages is followed by a capitalised word, so the rul
 An ordinal day's article and "of" go with it ("the 4th of May" is "May 4");
 a bare day keeps its article ("the 4 May deadline" is "the May 4 deadline").
 A month or year running into digits or letters refuses the date.
-A mutation check broke each of 14 guards in turn; the Canadian form tests failed every time.
+A mutation check broke each of 15 guards in turn (the tag-bracket opener after `2efc90630`);
+the Canadian form tests failed every time.
 
 ### K9: quoted lowercase English is respelled though the README says it is kept
 
