@@ -12,7 +12,11 @@ import { PAGE_APPARATUS_IS_KEPT, } from './page-apparatus-clause.ts';
  no addition, and the page's own apparatus is kept.
  */
 const EDITOR_FAITHFULNESS = 'Faithfulness to the ORIGINAL: no content added, dropped, or altered in meaning. '
-  + `${DECLARED_NAME_REFERENCE_EXEMPTION} ${PAGE_APPARATUS_IS_KEPT}`;
+  // Ledger L14(b): the chunk judges selected a candidate repeating a sentence
+  // 3 times over every artifact, and Carena0442 slice 14 shipped two.
+  + 'Saying something twice is adding content unless the ORIGINAL says it again at that place: a candidate that '
+  + 'repeats a sentence the passage already carries elsewhere, or carries what a neighbouring passage says, adds '
+  + `content. ${DECLARED_NAME_REFERENCE_EXEMPTION} ${PAGE_APPARATUS_IS_KEPT}`;
 
 /**
  What the per-envelope selection asks.

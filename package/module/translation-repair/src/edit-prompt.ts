@@ -52,6 +52,21 @@ const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT AND MUST NOT BE EDITED. '
   + 'neighbour OUGHT to carry it';
 
 /**
+ Saying something twice is adding content, stated for the editors (ledger
+ L14(b)). The audit found editors writing neighbouring text into a region,
+ and 56 of 6,222 chunk candidates over every artifact carried a sentence
+ more often than the slice's archive English did. NEARBY_RULE forbids copying
+ the NEARBY blocks and nothing forbade repeating the translation outside the
+ region, which this sheet shows whole. Conditioned on the ORIGINAL because
+ the omission rules above say to translate ALL of the missing content, and a
+ refrain the TRANSLATION rendered once is such content.
+ */
+const REPEATED_CONTENT_EDITOR_RULE = 'Write into a region only what the ORIGINAL says at that place. A sentence the '
+  + 'TRANSLATION already carries outside the region, or content a NEARBY ORIGINAL passage says, goes into it only '
+  + 'when the ORIGINAL says it again at that place, as a refrain the TRANSLATION rendered once; otherwise the page '
+  + 'says it twice.';
+
+/**
  Characters of surrounding document shown on each side of a region,
  so editors locate it even when the base text recurs elsewhere.
  */
@@ -129,6 +144,7 @@ Rules, strictly enforced by a machine:
 - Render ordinary prose in the ORIGINAL's own language fully into the TRANSLATION's language, including inside quotations and stylized multilingual lines. A word or character that is itself the subject of discussion is not ordinary prose to normalize. ${NAME_FORM_SCOPE_RULE}
 - ${MARKUP_ATOM_RULE}
 - Never introduce content the ORIGINAL does not support.
+- ${REPEATED_CONTENT_EDITOR_RULE}
 - ${ADDITION_IS_REMOVED_NOT_SOFTENED}
 - When the CURRENT TEXT is line-structured, meaning short lines separated by blank lines rather than paragraphs, the line is the unit: keep one output line per input line, in the same order, and recast only within a line. Never merge, split, reorder or invent lines.
 - Omit a region entirely when you cannot fix it faithfully; a skipped region stays unchanged.
