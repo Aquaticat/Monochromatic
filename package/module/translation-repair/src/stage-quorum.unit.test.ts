@@ -26,6 +26,7 @@ import {
 import {
   gatherStageVoices,
   NoProviderForModelError,
+  RECOVERY_NUDGE,
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_ONLY,
@@ -1036,10 +1037,11 @@ await describe({
         expect(gather.voices,).toHaveLength(1,);
         expect(gather.quorumMet,).toBe(false,);
         expect(gather.findings,).toContain('stage-quorum-unmet (checker 1/3)',);
-        // Initial ask, every retry round, and the one recovery round that
-        // follows them: the loop spends its rounds chasing quorum and the
-        // recovery round reads the unusable answers once more regardless.
-        expect(calls[SEAT_SYNTHETIC_VISION_NO_OPENROUTER],).toBe(5,);
+        // The initial ask and the one recovery round (ledger P2): a seat that
+        // answered in a shape nothing could read is not re-asked in the retry
+        // rounds, where the prompt-uniqueness cache would serve it the same
+        // bytes, only in the recovery round, whose nudge makes the prompt new.
+        expect(calls[SEAT_SYNTHETIC_VISION_NO_OPENROUTER],).toBe(2,);
       },
     },),
 
@@ -1109,6 +1111,74 @@ await describe({
 
         // A full roster leaves nothing to report as missing.
         expect(gather.findings,).toHaveLength(0,);
+      },
+    },),
+
+    it({
+      name: 'RECOVERS A SEAT UNREADABLE IN ANY ROUND, not only the last (ledger P2): a seat that answered '
+        + 'unreadably and was then silent on the same prompt fell off the recovery list, and TianqiChen66620 '
+        + 'slice 15 settled 2 to 2 with such a voice lost',
+      fn: async () => {
+        /** Call log shared with the scripted client. */
+        const calls: Record<string, number> = {};
+        /** Seat that answers unreadably first, is silent on the same prompt, and answers the nudge. */
+        const recovering = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
+        /** Seat that never delivers. */
+        const silent = SEAT_SYNTHETIC_VISION_WITHHELD;
+        /** Client scripting the three seats. */
+        const client: SyntheticClient = {
+          chatText: async () => {
+            throw new Error('chatText unused',);
+          },
+          chatJson: async <ValueT,>(
+            request: ChatJsonRequest<ValueT>,
+          ): Promise<ChatJsonOutcome<ValueT>> => {
+            calls[request.modelId] = (calls[request.modelId] ?? 0) + 1;
+            /** Whether this ask carries the recovery nudge. */
+            const nudged = request.messages.at(-1,)?.content === RECOVERY_NUDGE.content;
+            if (request.modelId === silent)
+              throw new Error('scripted transport failure',);
+            if ((request.modelId === recovering) && (!nudged)) {
+              if (calls[request.modelId] === 1) {
+                return {
+                  kind: 'schema-mismatch',
+                  rawText: '',
+                  detail: 'scripted unreadable answer',
+                };
+              }
+              throw new Error('scripted transport failure',);
+            }
+            /** Scripted payload for the answering call. */
+            const scripted: unknown = { meow: request.modelId, };
+            if (!request.validate(scripted,))
+              throw new Error('scripted payload failed the guard',);
+            return {
+              kind: 'ok',
+              value: scripted,
+              rawText: JSON.stringify(scripted,),
+            };
+          },
+          quotas: async () => {
+            throw new Error('quotas unused',);
+          },
+        };
+        /** Gather over the three seats. */
+        const gather = await gatherStageVoices({
+          client,
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, recovering, silent,],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'gate',
+          l,
+          graceMs: RECOVERY_GRACE_MS,
+        },);
+        expect(gather.voices.map(function seatOf(voice,): string {
+          return voice.modelId;
+        },),).toContain(recovering,);
+        expect(gather.quorumMet,).toBe(true,);
       },
     },),
 
