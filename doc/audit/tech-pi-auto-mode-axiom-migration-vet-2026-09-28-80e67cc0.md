@@ -504,6 +504,43 @@ or auxiliary deployment is selected.
 The design interview remains paused;
 Q16 remains unanswered.
 
+## User-selected composed-estimator design
+
+The user selected B and delegated the method:
+"You come up with something yourself."
+The prior scope question is no longer unanswered.
+This authorizes composed-estimator research design,
+not parameter fitting,
+training,
+private Voyage input,
+production thresholds,
+or implementation.
+Q16 remains unanswered.
+
+The [selected research design](../planning/pi-auto-mode-voyage-composed-estimator.md)
+uses selected source and code-owned operation as the query,
+with support/complement hypothesis documents for each narrow axiom.
+Each document retains complete current policy.
+Each axiom keeps its own raw score pair,
+margin,
+and common level;
+no score normalization or cross-axiom probability arithmetic is introduced.
+
+A future regularized logistic truth head per source-kind/axiom role is proposed,
+not fitted.
+Calibration and accepted-subset behavior need independent evidence;
+a sigmoid output alone would not qualify it.
+The first planned no-fitting test has at most twelve calls over existing read profiles,
+including declared repeat and document-order controls.
+New hypothesis wording will be frozen before calls and never revised from their outputs.
+
+Entailment-style hypothesis research supplies structural precedent,
+not proof that Voyage is an NLI model.
+Published lexical/template instability and selective-calibration findings constrain the validation design.
+No third-party research code or weights are executed.
+The original reserved scenarios remain unopened,
+and the design interview remains paused.
+
 ## Current outcome
 
 Direct Lite scoring access is established,

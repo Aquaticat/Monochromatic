@@ -300,9 +300,31 @@ new providers,
 new Pro calls,
 and the paused Laya source branch remain outside this step.
 Q16 is unanswered and the integration interview stays paused.
-The next design separates paired raw hypothesis features,
-a future fitted probability adapter,
-and code-owned abstention/freshness/authority boundaries.
+Task #43 defines the [paired-hypothesis composition](../planning/pi-auto-mode-voyage-composed-estimator.md).
+Selected source plus parsed/structured operation becomes the query;
+claim/complement hypotheses become documents,
+with complete current policy in each document.
+The request/prose pair uses two API calls in the proposed representation,
+not a promised latency result.
+Each axiom retains its own support/complement pair,
+margin,
+and common level;
+no cross-axiom normalization or probability interpretation is allowed.
+
+A future per-role regularized logistic head would be supervised truth estimation,
+not automatic conversion of relevance.
+Fitting and production cutoffs remain unauthorized.
+Abstention and probability quality must be validated on accepted cases,
+with fresh group-separated data before deployment claims.
+The first planned no-fitting mechanism test targets four existing read profiles,
+with repeats and order reversals on both source kinds,
+for at most twelve calls.
+It tests old feature collisions and source sensitivity,
+not a probability profile.
+No new NLI model,
+SDK,
+provider,
+or training implementation is adopted.
 
 ## Sequencing correction
 
