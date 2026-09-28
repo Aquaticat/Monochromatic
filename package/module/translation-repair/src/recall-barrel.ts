@@ -25,7 +25,6 @@ export {
   type SeedRestoration,
 } from './lexical-restoration.ts';
 export {
-  DEFAULT_JUDGE_MODEL_IDS,
   MIN_REPAIR_DISPATCH_BUDGET_MS,
   type RepairAttemptRecord,
   type RepairBenchmarkResult,

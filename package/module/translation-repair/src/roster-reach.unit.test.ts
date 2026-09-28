@@ -21,7 +21,6 @@ import {
 import {
   bedrockIdFor,
   bedrockServesLabel,
-  DEFAULT_JUDGE_MODEL_IDS,
   HYPER_ORIGIN_NAMES_ARE_SERVED,
   HYPER_ORIGIN_ROSTER_IDS,
   hyperIdFor,
@@ -177,17 +176,16 @@ await describe({
   name: 'active stage model exclusions',
   children: [
     it({
-      name: 'KEEPS owner-removed models out of callable production roster and benchmark defaults',
+      name: 'KEEPS owner-removed models out of the callable production roster',
       fn: async () => {
         /**
-         Every model reachable through whole-roster production stages or
-         explicit benchmark defaults. Narrow production roles are statically
-         constrained to same roster type, so a departed literal fails types.
+         Every model reachable through whole-roster production stages. Narrow
+         production roles are statically constrained to same roster type, so a
+         departed literal fails types; the benchmarks take their judges from a
+         bench the run derives, since a hand-listed default outlived the
+         owner's cull (ledger P4).
          */
-        const activeStageModelIds = new Set<string>([
-          ...ROSTER_MODEL_IDS,
-          ...DEFAULT_JUDGE_MODEL_IDS,
-        ],);
+        const activeStageModelIds = new Set<string>(ROSTER_MODEL_IDS,);
 
         for (const departedModelId of DEPARTED_MODEL_IDS)
           expect(activeStageModelIds.has(departedModelId,),).toBe(false,);

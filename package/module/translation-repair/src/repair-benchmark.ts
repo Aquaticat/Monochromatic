@@ -56,20 +56,6 @@ const l = contextRoot({ tag: 'translation-repair-repair-benchmark', },);
 export const MIN_REPAIR_DISPATCH_BUDGET_MS = 120_000;
 
 /**
- Default restoration-judge roster: three established vendor families kept
- distinct so no single family decides. GLM-5.3-Flash does not inherit its
- predecessor's benchmark role without replacement-specific quality evidence.
- GPT-OSS replaces departed Nemotron because it already holds production
- checker and whole-roster judge roles; benchmark-specific calibration remains
- required before treating that replacement as independently established.
- */
-export const DEFAULT_JUDGE_MODEL_IDS: readonly RosterModelId[] = [
-  'hf:openai/gpt-oss-120b',
-  'hf:Qwen/Qwen3.8-27B',
-  'hf:moonshotai/Kimi-K3',
-];
-
-/**
  Judge exchange deadline when the benchmark sets no per-call timeout;
  grading is a shorter task than repair, so four minutes is generous.
  */
@@ -202,14 +188,15 @@ export type RepairBenchmarkResult = {
  
  @param judge - restoration-judge seam; tests inject a scripted one
  
- @param judgeModelIds - bilingual judge roster;
- defaults to {@link DEFAULT_JUDGE_MODEL_IDS}
+ @param judgeModelIds - bilingual judge roster, from the caller's seated
+ bench; no default, since a hand-listed one outlived the owner's cull
+ (ledger P4)
  
  @returns Graded attempts plus the aggregate scorecard
  
  @example
  ```ts
- const { scorecard, } = await runRepairBenchmark({ client, entries, models, signal, },);
+ const { scorecard, } = await runRepairBenchmark({ client, entries, models, signal, judgeModelIds, },);
  console.log(scorecard.seededRepairRate,);
  ```
  */
@@ -225,7 +212,7 @@ export async function runRepairBenchmark(
     repair = repairTranslation,
     judge = runRestorationJudge,
     derivability = runDerivabilityProbe,
-    judgeModelIds = DEFAULT_JUDGE_MODEL_IDS,
+    judgeModelIds,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly entries: readonly BenchmarkEntry[];
@@ -237,7 +224,7 @@ export async function runRepairBenchmark(
     readonly repair?: typeof repairTranslation;
     readonly judge?: typeof runRestorationJudge;
     readonly derivability?: typeof runDerivabilityProbe;
-    readonly judgeModelIds?: readonly RosterModelId[];
+    readonly judgeModelIds: readonly RosterModelId[];
   }>,
 ): Promise<RepairBenchmarkResult> {
   /**

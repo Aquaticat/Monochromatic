@@ -15,7 +15,6 @@ import {
   applySeededErrors,
   computeRepairScorecard,
   contentWords,
-  DEFAULT_JUDGE_MODEL_IDS,
   gradeSeedDetection,
   hashContent,
   measureSeedRestoration,
@@ -25,7 +24,6 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   subdivideChunkPair,
-  syntheticEntryFor,
   type ChunkPair,
   type RepairAttemptRecord,
   type RepairModels,
@@ -793,6 +791,7 @@ await describe({
         /** Benchmark over one entry. */
         const { records, scorecard, } = await runRepairBenchmark({
           client: UNUSED_CLIENT,
+          judgeModelIds: MODELS.judgeModelIds,
           entries: [
             {
               entryId: 'whiskers',
@@ -824,6 +823,7 @@ await describe({
         /** Benchmark whose budget is already exhausted at start. */
         const skipped = await runRepairBenchmark({
           client: UNUSED_CLIENT,
+          judgeModelIds: MODELS.judgeModelIds,
           entries: [
             {
               entryId: 'whiskers',
@@ -843,6 +843,7 @@ await describe({
         /** Benchmark whose repair throws. */
         const errored = await runRepairBenchmark({
           client: UNUSED_CLIENT,
+          judgeModelIds: MODELS.judgeModelIds,
           entries: [
             {
               entryId: 'whiskers',
@@ -858,27 +859,6 @@ await describe({
         },);
         expect(errored.records[0]?.outcomeKind,).toBe('error',);
         expect(errored.records[0]?.detail,).toContain('scripted transport collapse',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: 'DEFAULT_JUDGE_MODEL_IDS',
-  children: [
-    it({
-      name: 'names only cataloged models, distinctly',
-      fn: async () => {
-        // ASKED OF THE LOOKUP RATHER THAN OF THE RECORD since 2026-08-24. The
-        // roster now spans two providers, so a roster id is no longer always a
-        // key of one provider's catalog, and indexing that record with one
-        // would need an assertion that the id is one of its keys. These three
-        // judges are all Synthetic-served, which is the stronger claim and the
-        // one worth keeping.
-        for (const modelId of DEFAULT_JUDGE_MODEL_IDS)
-          expect(syntheticEntryFor({ modelId, },).served,).toBe(true,);
-        expect(new Set(DEFAULT_JUDGE_MODEL_IDS,).size,)
-          .toBe(DEFAULT_JUDGE_MODEL_IDS.length,);
       },
     },),
   ],

@@ -372,6 +372,14 @@ export const RUN_DECISION_JUDGES: readonly RosterModelId[] = DECISION_ONLY_ROSTE
   },);
 
 /**
+ Restoration judges the recall benchmark seats: the wide seats, the chat
+ bench that judges both lanes' slates. DERIVED, NOT LISTED (ledger P4): the
+ benchmark's own default named three judges by hand, and two days after the
+ owner's cull of 2026-09-24 one of them was the culled seat.
+ */
+export const RECALL_JUDGE_MODEL_IDS: readonly RosterModelId[] = RUN_WIDE_SEATS;
+
+/**
  Judges for both lanes' slates: the wide seats, then the seated
  decision-only seats, in that order so a ballot index reads the same
  whichever bench a reader has in mind.
