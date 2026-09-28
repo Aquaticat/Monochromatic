@@ -39,6 +39,12 @@ const SOURCE_TEXT = '小猫在窗台上睡到中午。[^1]';
 const TARGET_TEXT = 'Mittens slept on the sill until noon.[^1]';
 
 /**
+ Identity context of a page with notes, as `entry-notes.ts` writes it; the
+ editor states the declared-identity rules only when a page has one.
+ */
+const IDENTITY_CONTEXT = '- ORIGINAL note: [^1]: 摘自猫咪日记。\n- ARCHIVE note: [^1]: From the cat diary.';
+
+/**
  System instructions of a message list.
 
  @param messages - one sheet's messages
@@ -62,9 +68,14 @@ function systemOf({ messages, }: { readonly messages: readonly ChatMessage[]; },
  System instructions of the three sheets the accepted omission claims passed through.
  */
 const SHEETS: Readonly<Record<string, string>> = {
-  critic: systemOf({ messages: buildCriticMessages({ sourceText: SOURCE_TEXT, targetText: TARGET_TEXT, },), },),
+  critic: systemOf({ messages: buildCriticMessages({ sourceText: SOURCE_TEXT, targetText: TARGET_TEXT, identityContext: IDENTITY_CONTEXT, },), },),
   panel: systemOf({
-    messages: buildAdjudicationMessages({ sourceText: SOURCE_TEXT, targetText: TARGET_TEXT, clusters: [], },).messages,
+    messages: buildAdjudicationMessages({
+      sourceText: SOURCE_TEXT,
+      targetText: TARGET_TEXT,
+      clusters: [],
+      identityContext: IDENTITY_CONTEXT,
+    },).messages,
   },),
   editor: systemOf({
     messages: buildEditorMessages({
@@ -72,6 +83,7 @@ const SHEETS: Readonly<Record<string, string>> = {
       targetText: TARGET_TEXT,
       envelopes: [],
       issues: [],
+      identityContext: IDENTITY_CONTEXT,
     },).messages,
   },),
 };
