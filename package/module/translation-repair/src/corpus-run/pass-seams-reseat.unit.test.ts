@@ -27,6 +27,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  admitPassInsertions,
   type ArtifactComparisonRow,
   type ArtifactContestSlice,
   type ArtifactDeliveryRow,
@@ -35,6 +36,8 @@ import {
   type ChatJsonRequest,
   type DocumentLanesResult,
   judgeSeatsFor,
+  makeInsertionChunk,
+  type PreparedDocumentPair,
   type PipelineDigest,
   prepareDocumentPair,
   type ProjectedLanes,
@@ -417,6 +420,126 @@ await describe({
           controlAskedLost: control.includes(LOST_SEAT,),
           movedAskedAny: moved.length > 0,
           movedAskedLost: moved.includes(LOST_SEAT,),
+        },).toEqual({
+          controlAskedLost: true,
+          movedAskedAny: true,
+          movedAskedLost: false,
+        },);
+      },
+    },),
+  ],
+},);
+
+/**
+ The one seat the roster loses when Synthetic goes dry.
+ */
+const LOST_ROSTER_SEAT = (function lostRosterSeat(): RosterModelId {
+  /**
+   Roster while Synthetic is dry.
+   */
+  const dry = new Set(judgeSeatsFor({ dry: SYNTHETIC_DRY, },).roster,);
+  /**
+   Seats the dry-out takes from the roster.
+   */
+  const lost = judgeSeatsFor({ dry: ALL_WET, },).roster.filter(function gone(seat,): boolean {
+    return !dry.has(seat,);
+  },);
+  if (lost.length === 0)
+    throw new Error('the fixture views seat the same roster, so the admission case cannot tell a wired hook apart',);
+  return lost[0] as RosterModelId;
+})();
+
+/**
+ A page whose one slice is a source-only passage, over an archive long enough
+ that page shortfall corroborates nothing.
+ */
+const GAP: PreparedDocumentPair = {
+  sourceText: `${SOURCE}\n${'猫在窗台晒太阳。'.repeat(20,)}`,
+  targetText: `## Cats\n\n${'The cat sleeps in warm sunlight. '.repeat(20,)}`,
+  slices: [{
+    source: {
+      kind: 'content',
+      sliceIndex: 0,
+      nodes: [],
+      startOffset: 0,
+      endOffset: SOURCE.length,
+      text: SOURCE,
+    },
+    target: makeInsertionChunk({
+      sliceIndex: 0,
+      offset: 0,
+    },),
+  },],
+  lineStructuredSliceIndices: new Set(),
+  declaredNames: [],
+  alignmentFindings: [],
+  unclaimedTargetBlocks: [],
+  alignmentPairCount: 1,
+};
+
+/**
+ Runs the insertion admission seam over the one gap, every seat answering that
+ the archive carries none of it.
+
+ @param later - view every reading after the lanes' own answers
+
+ @returns Seats the coverage calls asked
+
+ @example
+ ```ts
+ const asked = await admissionAsked({ later: SYNTHETIC_DRY, },);
+ ```
+ */
+async function admissionAsked({ later, }: { readonly later: BudgetView; },): Promise<readonly RosterModelId[]> {
+  /**
+   Seat of every call.
+   */
+  const asked: RosterModelId[] = [];
+  /**
+   Client whose first reading stands for the lanes' own, which seated the
+   roster the admission starts on.
+   */
+  const client = viewChangingClient({
+    later,
+    asked,
+    answer: JSON.stringify({
+      coverage: 'none',
+      quote: '',
+      reason: 'the archive carries none of it',
+    },),
+  },);
+  // THE LANES' READING, taken before the admission as `runPassEntry` takes it.
+  await client.providerDryness({ signal: new AbortController().signal, },);
+  await admitPassInsertions({
+    client,
+    prepared: GAP,
+    modelIds: judgeSeatsFor({ dry: ALL_WET, },).roster,
+    overlap: 1,
+    signal: AbortSignal.timeout(30_000,),
+    entryId: 'CatEntry',
+  },);
+  return asked;
+}
+
+await describe({
+  name: 'insertion admission seam re-seats under a hold (ledger X14)',
+  children: [
+    it({
+      name: 'THE INSERTION SEAM WIRES ITS HOOK: a candidate after a dry-out is asked of the roster the hook '
+        + 're-read, never the seat the dry-out took, which an admission whose view never changes does ask',
+      fn: async () => {
+        /**
+         Seats asked while every provider stays wet.
+         */
+        const control = await admissionAsked({ later: ALL_WET, },);
+        /**
+         Seats asked once Synthetic reads dry after the lanes' reading.
+         */
+        const moved = await admissionAsked({ later: SYNTHETIC_DRY, },);
+        expect({
+          controlAskedLost: control.includes(LOST_ROSTER_SEAT,),
+          movedAskedAny: moved.length > 0,
+          movedAskedLost: moved.includes(LOST_ROSTER_SEAT,),
         },).toEqual({
           controlAskedLost: true,
           movedAskedAny: true,

@@ -20,13 +20,17 @@ import {
   decidePassInsertionAdmission,
   makeInsertionChunk,
   messageText,
+  SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   TranslationRepairInterruptedError,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChunkPair,
+  type CoverageSeating,
   type InsertionAdmission,
   type PreparedDocumentPair,
   type RosterModelId,
@@ -800,6 +804,132 @@ await describe({
           l,
         },);
         expect([...admission.positions,],).toEqual([],);
+      },
+    },),
+  ],
+},);
+
+/**
+ Roster a hook hands back after a dry-out, none of it the fixture's own.
+ */
+const RESEATED_ROSTER: readonly RosterModelId[] = [
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_ONLY,
+  SEAT_OPENROUTER_ONLY,
+];
+
+/**
+ Builds a client recording which seat every coverage call asked, each
+ answering that the archive carries none of the passage.
+
+ @param asked - sink for the seat of every call
+
+ @returns Client serving only the coverage stage
+
+ @example
+ ```ts
+ const client = seatRecordingCoverageClient({ asked: [], },);
+ ```
+ */
+function seatRecordingCoverageClient(
+  { asked, }: { readonly asked: RosterModelId[]; },
+): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText unused by coverage',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      asked.push(request.modelId,);
+      /**
+       Coverage reply every seat gives.
+       */
+      const value: unknown = {
+        coverage: 'none',
+        quote: '',
+        reason: 'scripted',
+      };
+      if (!request.validate(value,))
+        throw new Error('scripted coverage reply failed wire guard',);
+      return {
+        kind: 'ok',
+        value: value as ValueT,
+        rawText: JSON.stringify(value,),
+      };
+    },
+    quotas: async () => {
+      throw new Error('quotas unused by coverage',);
+    },
+  };
+}
+
+/**
+ Admits the one scripted gap, recording the seats asked.
+
+ @param beforeCandidate - hook handing the candidate its roster, none for a
+ caller with no hook
+
+ @returns Seats the coverage calls asked
+
+ @example
+ ```ts
+ const asked = await coverageSeatsAsked({},);
+ ```
+ */
+async function coverageSeatsAsked(
+  { beforeCandidate, }: { readonly beforeCandidate?: () => Promise<CoverageSeating>; },
+): Promise<readonly RosterModelId[]> {
+  /**
+   Seat of every call.
+   */
+  const asked: RosterModelId[] = [];
+  await decidePassInsertionAdmission({
+    client: seatRecordingCoverageClient({ asked, },),
+    prepared: preparedGap({
+      sourcePassage: '猫在院子里追蝴蝶。',
+      targetText: LONG_TARGET,
+    },),
+    modelIds: ROSTER,
+    overlap: 1,
+    signal: new AbortController().signal,
+    perCallTimeoutMs: 1_000,
+    l,
+    ...((beforeCandidate === undefined) ? {} : { beforeCandidate, }),
+  },);
+  return asked;
+}
+
+await describe({
+  name: `${decidePassInsertionAdmission.name} re-seated under a hold (ledger X12)`,
+  children: [
+    it({
+      name: 'ASKS A CANDIDATE OF THE ROSTER ITS HOOK RETURNS, so a roster re-read after a provider dry-out is '
+        + 'the one asked whether the archive carries the passage, rather than the roster read before it',
+      fn: async () => {
+        /**
+         Seats a caller with no hook asked.
+         */
+        const control = await coverageSeatsAsked({},);
+        /**
+         Seats asked when the hook re-seats the candidate elsewhere.
+         */
+        const moved = await coverageSeatsAsked({
+          beforeCandidate: async (): Promise<CoverageSeating> => ({ modelIds: RESEATED_ROSTER, }),
+        },);
+        expect({
+          controlOnRoster: (control.length > 0) && control.every(function onRoster(seat,): boolean {
+            return ROSTER.includes(seat,);
+          },),
+          movedAskedAny: moved.length > 0,
+          outsideReseated: moved.filter(function outside(seat,): boolean {
+            return !RESEATED_ROSTER.includes(seat,);
+          },),
+        },).toEqual({
+          controlOnRoster: true,
+          movedAskedAny: true,
+          outsideReseated: [],
+        },);
       },
     },),
   ],

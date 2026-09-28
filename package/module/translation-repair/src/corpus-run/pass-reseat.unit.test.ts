@@ -29,6 +29,7 @@ import {
   consolidationHooksFor,
   consolidationPolishConfiguration,
   contestHooksFor,
+  insertionHooksFor,
   judgeSeatsFor,
   lanesHooksFor,
   picturesHooksFor,
@@ -553,6 +554,67 @@ await describe({
           l,
         },);
         expect(await hooks.beforePicture(),).toEqual({},);
+        expect(rig.counter.reads,).toBe(0,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${insertionHooksFor.name} (ledger X12)`,
+  children: [
+    it({
+      name: 'RE-SEATS THE INSERTION ADMISSION before a candidate while a hold runs, under its own phase, handing '
+        + 'the candidate the reading\'s roster, and keeps it once the hold has ended',
+      fn: async () => {
+        const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
+        rig.holds.synthetic = DRY_HOLD_MS;
+        /**
+         Every line the hook wrote.
+         */
+        const lines: string[] = [];
+        const hooks = insertionHooksFor({
+          client: rig.client,
+          signal: new AbortController().signal,
+          l: capturingLogger({ messages: lines, },),
+        },);
+        /**
+         Seating the hook hands the candidate under the hold.
+         */
+        const underHold = await hooks.beforeCandidate();
+        rig.holds.synthetic = 0;
+        /**
+         Seating handed over once the hold has ended.
+         */
+        const afterHold = await hooks.beforeCandidate();
+        /**
+         Roster a reading of this view seats.
+         */
+        const { roster, } = judgeSeatsFor({ dry: BEDROCK_AND_OPENROUTER, },);
+        expect({
+          underHold,
+          afterHold,
+          reads: rig.counter.reads,
+          logged: lines.includes(`JUDGE SEATS phase=insertion admission candidate re-seated under a hold: roster=${roster.join(',',)}`,),
+        },).toEqual({
+          underHold: { modelIds: roster, },
+          afterHold: { modelIds: roster, },
+          reads: 1,
+          logged: true,
+        },);
+      },
+    },),
+    it({
+      name: 'COSTS NOTHING while nothing is held: no dryness read and no roster, so the candidate keeps the one '
+        + 'the admission started on',
+      fn: async () => {
+        const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
+        const hooks = insertionHooksFor({
+          client: rig.client,
+          signal: new AbortController().signal,
+          l,
+        },);
+        expect(await hooks.beforeCandidate(),).toEqual({},);
         expect(rig.counter.reads,).toBe(0,);
       },
     },),
