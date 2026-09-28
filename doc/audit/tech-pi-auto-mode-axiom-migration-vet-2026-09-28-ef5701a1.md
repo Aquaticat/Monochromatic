@@ -745,3 +745,38 @@ The concrete wording stays unchanged.
 The intended schedule remains 108 core plus twelve fit-only repeat/order calls;
 no old exposed bank becomes fresh validation,
 and no validation-driven tuning or original reserved-scenario release follows.
+
+## Fresh concrete-head corpus
+
+The [fresh concrete-coordinate fitting protocol](../planning/pi-auto-mode-voyage-concrete-fit.md)
+now has a frozen corpus in `~/temp/agent/voyage-concrete-heads-2026-09-28/corpus`.
+`proc_3a17` constructed 108 fully fresh selected sources,
+36 per fit/validation/test partition,
+with nine episode groups per partition.
+Each group keeps its two declared family variants and both source kinds together.
+Every role has eighteen rows,
+six positive and twelve negative references.
+This is designed prevalence with same-agent labeling,
+not workload sampling or independent annotation.
+
+The positive-controlled exact-text check found zero overlap with 166 unique texts in named prior exposed banks.
+The original reserved bank was not read and no overlap claim is made against it.
+`proc_fff3` passed projection,
+source/reference/group invariants,
+parser boundaries,
+fit-only controls,
+and an isolated partition-guard omission.
+Inputs/control source is `572660e`;
+corpus freeze is `95f7fef`.
+The 22-file manifest SHA-256 is
+`362c56a0a7849c35391109ba082ddedd95612c6cdd79ef31a0dee015b648bddb`.
+Private corpus documentation was rendered and linted before freezing.
+No feature query or semantic-head fit has run in this new phase.
+
+Only unchanged owned implementation sources were copied into the new experiment;
+no prior learned parameters or feature results were copied.
+The next gate is the complete execution/source freeze against this corpus,
+then the fixed 84-call pretest,
+offline fit,
+candidate lock,
+and 36-call fresh test.

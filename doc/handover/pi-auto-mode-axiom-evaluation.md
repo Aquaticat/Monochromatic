@@ -1073,6 +1073,23 @@ freeze fully fresh 36-source fit/validation/test partitions with nine episode gr
 then fit the same four fixed-objective heads on the unchanged concrete coordinates in the same offline sandbox.
 The new phase remains 108 core plus twelve fit-only controls,
 with no tuning from validation and a fresh locked test.
+The [fresh concrete fitting protocol](../planning/pi-auto-mode-voyage-concrete-fit.md)
+now has 108 authored sources in
+`~/temp/agent/voyage-concrete-heads-2026-09-28/corpus`,
+with nine episode groups per partition.
+`proc_3a17` found no exact overlap with 166 named prior exposed texts;
+`proc_fff3` passed grouping,
+reference,
+projection,
+parser,
+and partition-omission controls.
+Corpus freeze `95f7fef` has SHA-256
+`362c56a0a7849c35391109ba082ddedd95612c6cdd79ef31a0dee015b648bddb`.
+No feature call or semantic fit has run in that new phase.
+Only unchanged owned implementation sources were copied;
+old learned parameters/results were not copied.
+Next is the execution freeze for #55,
+not refitting from the exposed old test.
 Do not retune the completed candidate on its exposed test data.
 Do not resume Q16 or Laya #34.
 
