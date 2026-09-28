@@ -68,6 +68,30 @@ function panelFixture(input: { readonly disjoint?: boolean; readonly rejectThird
   return { client, captures, };
 }
 
+/**
+ Logger keeping every line it is handed, whatever its level.
+ @param lines - sink each emitted line is appended to
+ @returns Logger writing only to that sink
+ @example
+ ```ts
+ const l = capturingLogger({ lines: said, });
+ ```
+ */
+function capturingLogger({ lines, }: { readonly lines: string[]; }): Logger {
+  /**
+   Retains one emitted line.
+   @param line - emitted line
+   @example
+   ```ts
+   keep('panel stage: 2 preplanned cluster packets');
+   ```
+   */
+  function keep(line: string): void {
+    lines.push(line);
+  }
+  return { debug: keep, error: keep, fatal: keep, info: keep, trace: keep, warn: keep, flush: async function flush(): Promise<void> {}, };
+}
+
 /** Fixture call retains source boundaries and the wider configured electorate. */
 function panelInput(client: SyntheticClient) {
   return {
@@ -213,10 +237,7 @@ await describe({
         const fixture = panelFixture();
         /** Lines the stage wrote. */
         const said: string[] = [];
-        /** Logger keeping every line, whatever its level. */
-        const keep = (line: string): number => said.push(line);
-        const captured: Logger = { debug: keep, error: keep, fatal: keep, info: keep, trace: keep, warn: keep, flush: async () => {}, };
-        const result = await runPanelStage({ ...panelInput(fixture.client), l: captured, });
+        const result = await runPanelStage({ ...panelInput(fixture.client), l: capturingLogger({ lines: said, }), });
         const [rejected, accepted,] = result.issues;
         /** Weight the rejected claim drew against it, as the stage tallied it. */
         const against = rejected?.tallies['claim-first']?.unsupported ?? 0;
