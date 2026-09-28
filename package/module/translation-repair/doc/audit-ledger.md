@@ -3643,12 +3643,24 @@ The handle case is already a house rule every sheet carries, so nothing is added
 
 ### X17: the rendered-sheets fixture claims every model-facing sheet and holds fifteen
 
-Status: open, found wiring H16.
-`rendered-sheets.test-fixture.ts` says it renders "EVERY MODEL-FACING SHEET" so a guard about what the models read
+Status: fixed in `9ebc80985` (production names `4429fd4b3` and `b98638490`, spelling `ffc03346d`), 2026-09-28;
+found wiring H16.
+`rendered-sheets.test-fixture.ts` said it renders "EVERY MODEL-FACING SHEET" so a guard about what the models read
 checks every sheet at once;
-it holds fifteen and omits the reference attestation and its confirmation, the section and block pairing rounds,
-the archive block review and its selection slate, and the picture reading.
-The house-rule and Canadian-spelling guards that read it have never read those sheets.
+it held fifteen: of the 24 `build…Messages` builders the package defines it rendered 14,
+and it rendered none of the picture readers, the other selection slates, their decline texts or the typed decision.
+The fixture now renders all of them, split into four sibling fixtures under max-lines.
+Rendering them from production text took names for four texts built inline where they are sent
+(the picture reader's request, the translate challenge task, the archive slate's task and decline),
+each moved byte for byte, and exports for the rest.
+The first read found one defect: the picture readers' instruction said "summarise", which en_CA writes "summarize";
+the picture reading key hashes the instruction, so no version moves.
+The full suite then passed on `ffc03346d` (0 FAIL).
+Prevention: `rendered-sheets-census.unit.test.ts` scans `src` for every exported `build…Messages` function
+and fails when no fixture renders it (over the old fixture it lists ten).
+Sheets built without that naming
+(the slates' tasks, criteria and decline texts, the picture readers, the typed decision)
+are not in the census; a new one of those still needs its own entry.
 
 ### X18: the preparation dropped the attestation's findings when the archive was corrected
 
@@ -3760,7 +3772,10 @@ During X2 an edit script was patched with an inline `python3 - <<'EOF'` heredoc 
 where scripts go through the Write tool and run in a call of their own.
 Once more during H9 (`rg --files-with-matches <term> <clone> ; rg --files-with-matches <term> <other clone>`).
 Once more during X12's preparation half, in a positive control (`rg <scan> <scratch> <src> ; echo "rg exit $?"`).
-Once more during X20 (`rg <old reader> src/ ; mise run build > log`), a leftover check chained to the build.
+Once more during X20 (`rg <old reader> src/ ; mise run build > log`), a leftover check chained to the build,
+and twice during X17: `git diff | rg --count <long lines> ; true`, to force a zero exit when nothing matched,
+the same form recorded above once already, and `rg --count FAIL log ; rg --count PASS log` reading the suite,
+where `rg --count FAIL log || true` then a second call is the recorded form.
 
 ### M19: a suite run against a stale build after a mutation was restored
 
