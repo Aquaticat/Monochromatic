@@ -12,7 +12,10 @@ export {
 export {
   type ArchiveOriginalReading,
   type ArchiveOriginalSpan,
+  archiveNoteReadingsOf,
   archiveOriginalReadingOf,
+  type NoteReading,
+  type NoteWithReading,
   readNote,
   sealedNodeIds,
 } from './archive-original-note.ts';

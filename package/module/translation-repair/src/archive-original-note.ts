@@ -25,9 +25,13 @@ export { sealedNodeIds, } from './sealed-node-ids.ts';
 // letter (a SPAN: everything below the note), and `cheonwoomaeng` carries
 // `这篇文章的原文即英文，作者的第一语言为英语，请翻译时不要动本篇。` (the WHOLE PAGE:
 // do not touch this page when translating). The readings are keyed to the
-// marks those two notes carry, and every note read is logged by the caller
-// with its reading, so a third wording is visible in the log as `advisory`
-// rather than silently unsealed.
+// marks those two notes carry. A note that speaks of an original and of
+// English in a wording no mark knows reads as an unmarked claim: it seals
+// nothing, since a guessed seal could decline a whole page, and the pass logs
+// every note with its reading and warns on an unmarked claim
+// (`corpus-run/pass-decline.ts`), so a third wording is seen rather than
+// silently unsealed. Until ledger E12 (2026-09-28) this comment promised that
+// log and no code wrote it.
 //
 // NOT THE QUOTES NOTE. `hakureico`'s first note (`本文的大部分引用原文都是英文，
 // 引用部分请仅修语法和可能造成误解的错误`) says MOST quoted passages were English
@@ -65,6 +69,24 @@ const SPAN_MARKS = [
   '以下',
   '原文',
   '英文',
+] as const;
+
+/**
+ Words a note uses for an original, lower case.
+ */
+const ORIGINAL_TERMS = [
+  '原文',
+  'original',
+] as const;
+
+/**
+ Words a note uses for English, lower case, the pinned corpus's misspelling
+ on `gqt` among them.
+ */
+const ENGLISH_TERMS = [
+  '英文',
+  'english',
+  'engish',
 ] as const;
 
 /**
@@ -133,9 +155,27 @@ export type ArchiveOriginalReading = {
 };
 
 /**
- How one note reads under the marks.
+ How one note reads under the marks: it seals the whole page, it seals a
+ span, it speaks of an English original in a wording no mark knows (ledger
+ E12: sealing nothing, since a guess could decline a page, but logged by the
+ pass so a new wording is seen), or it is advice to the lanes.
  */
-type NoteReading = 'whole-page' | 'span' | 'advisory';
+export type NoteReading = 'whole-page' | 'span' | 'unmarked-original-claim' | 'advisory';
+
+/**
+ One editor comment and how it reads.
+ */
+export type NoteWithReading = Readonly<{
+  /**
+   What the translators wrote, folded onto one line.
+   */
+  note: string;
+
+  /**
+   How it reads under the marks.
+   */
+  reading: NoteReading;
+}>;
 
 /**
  One editor comment, folded, beside where its seal would start.
@@ -184,7 +224,15 @@ export function readNote(
     return note.includes(mark,);
   },))
     return 'span';
-  return 'advisory';
+  /**
+   Whether the note speaks of an original and of English at all.
+   */
+  const claims = ORIGINAL_TERMS.some(function namesOriginal(term,): boolean {
+    return lowered.includes(term,);
+  },) && ENGLISH_TERMS.some(function namesEnglish(term,): boolean {
+    return lowered.includes(term,);
+  },);
+  return claims ? 'unmarked-original-claim' : 'advisory';
 }
 
 /**
@@ -219,6 +267,31 @@ function documentNotes(
       return {
         note: foldedLine({ text: commentBody({ comment, },), },),
         endOffset: finding.endOffset,
+      };
+    },);
+}
+
+/**
+ Every editor comment of an archive and how it reads, in document order,
+ for the pass to log (ledger E12).
+
+ @param document - parsed archive
+
+ @returns Each note beside its reading
+
+ @example
+ ```ts
+ const notes = archiveNoteReadingsOf({ document, },);
+ ```
+ */
+export function archiveNoteReadingsOf(
+  { document, }: { readonly document: RepairDocument; },
+): readonly NoteWithReading[] {
+  return documentNotes({ document, },)
+    .map(function withReading({ note, },): NoteWithReading {
+      return {
+        note,
+        reading: readNote({ note, },),
       };
     },);
 }

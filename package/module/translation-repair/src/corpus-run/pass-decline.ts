@@ -3,6 +3,7 @@ import { rm, } from 'node:fs/promises';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
+  archiveNoteReadingsOf,
   type ArchiveOriginalReading,
   archiveOriginalReadingOf,
 } from '../archive-original-note.ts';
@@ -27,12 +28,14 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
 // budget.
 
 /**
- Reads what an entry's archive notes say about whose text the page is.
- 
+ Reads what an entry's archive notes say about whose text the page is, and
+ logs every note with its reading, warning on one that speaks of an English
+ original in a wording no mark knows, which seals nothing (ledger E12).
+
  @param entry - corpus pair, text already read
- 
+
  @returns The reading, off the archive as inherited
- 
+
  @example
  ```ts
  const reading = entryArchiveOriginalOf({ entry, },);
@@ -41,9 +44,27 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
 export function entryArchiveOriginalOf(
   { entry, }: { readonly entry: CorpusPair; },
 ): ArchiveOriginalReading {
-  return archiveOriginalReadingOf({
-    document: parseDocument({ text: entry.targetText, },),
-  },);
+  /**
+   Entry logger.
+   */
+  const el = tagged({ tag: entry.id, },);
+  /**
+   The archive as inherited.
+   */
+  const document = parseDocument({ text: entry.targetText, },);
+  for (const {
+    note,
+    reading,
+  } of archiveNoteReadingsOf({ document, },)) {
+    if (reading === 'unmarked-original-claim') {
+      el.warn(
+        `ARCHIVE NOTE entry=${entry.id} reading=${reading}: the note speaks of an English original in a `
+          + `wording no mark reads, so nothing is sealed; add its mark if it seals (${note})`,
+      );
+    } else
+      el.info(`ARCHIVE NOTE entry=${entry.id} reading=${reading}: ${note}`,);
+  }
+  return archiveOriginalReadingOf({ document, },);
 }
 
 /**
