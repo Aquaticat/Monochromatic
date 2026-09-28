@@ -483,5 +483,72 @@ await describe({
         }
       },
     },),
+
+    it({
+      name: 'READS A ROUND CLOSED ON A SHORT BENCH by the seats it counted out of reach (ledger E3): five '
+        + 'asked over a bench of eight, two refused, three accepting is acceptable only beside that count, '
+        + 'and a count wider than the bench is refused',
+      fn: async () => {
+        /**
+         The round as the stage writes it, before its count of seats out of reach.
+         */
+        const shortRound = {
+          quorumOver: 8,
+          candidateDigest: hashContent({ content: FINAL_TEXT, },),
+          paragraphCount: 1,
+          seats: [
+            unusableSeat({ modelId: 'hf:cat/Cat-A', },),
+            unusableSeat({ modelId: 'hf:cat/Cat-B', },),
+            acceptableSeat({ modelId: 'hf:cat/Cat-C', },),
+            acceptableSeat({ modelId: 'hf:cat/Cat-D', },),
+            acceptableSeat({ modelId: 'hf:cat/Cat-E', },),
+          ],
+          usable: 3,
+          verdict: 'acceptable',
+          findings: [],
+        };
+        /**
+         Review whose one round carries the given count, or none.
+
+         @param unreachable - seats counted out of reach, absent as in a stored artifact
+
+         @returns Review value as an artifact carries it
+         */
+        function reviewCounting(
+          { unreachable, }: { readonly unreachable?: number; },
+        ): unknown {
+          return {
+            correctionCount: 0,
+            rounds: [{
+              ...shortRound,
+              ...((unreachable === undefined) ? {} : { unreachable, }),
+            },],
+          };
+        }
+        /**
+         Reads a review under the generation that records its quorum basis.
+
+         @param value - review to read
+
+         @returns Parsed review
+         */
+        function read(value: unknown,): unknown {
+          return parseNaturalnessReview({
+            value,
+            path: 'consolidation.slices[0].polish.review',
+            finalText: FINAL_TEXT,
+            quorumBasisRequired: true,
+          },);
+        }
+
+        /**
+         The short round read back with its count.
+         */
+        const readBack = read(reviewCounting({ unreachable: 5, },),);
+        expect(readBack,).toEqual(reviewCounting({ unreachable: 5, },),);
+        expect(() => read(reviewCounting({}),),).toThrow();
+        expect(() => read(reviewCounting({ unreachable: 9, },),),).toThrow();
+      },
+    },),
   ],
 },);

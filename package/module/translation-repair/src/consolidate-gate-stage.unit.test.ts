@@ -20,12 +20,19 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   createSyntheticClient,
   gateConsolidatedSlice,
+  NoProviderForModelError,
+  type RosterModelId,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   settleGateBallots,
+  type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -126,6 +133,62 @@ function cannedClient(
       };
     },
   },);
+}
+
+/**
+ Five seats, so three refused leave a bench short of its quorum of three.
+ */
+const FIVE_SEATS: readonly RosterModelId[] = [
+  ...ROSTER,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_VISION,
+];
+
+/**
+ Builds a client whose router refuses some seats for want of a wet
+ provider, every other seat backing the consolidation.
+
+ @param refused - seats the router refuses
+
+ @returns Scripted client
+
+ @example
+ ```ts
+ const client = refusingClient({ refused: FIVE_SEATS.slice(0, 3,), },);
+ ```
+ */
+function refusingClient(
+  { refused, }: { readonly refused: readonly RosterModelId[]; },
+): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText unused by the gate',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      if (refused.includes(request.modelId,)) {
+        throw new NoProviderForModelError({
+          modelId: request.modelId,
+          reason: 'every provider serving this cat is out of budget',
+        },);
+      }
+      /**
+       Ballot backing the consolidation.
+       */
+      const value: unknown = JSON.parse(ballot({ choice: 'consolidated', },),);
+      if (!request.validate(value,))
+        throw new Error('scripted gate ballot failed the guard',);
+      return {
+        kind: 'ok',
+        value,
+        rawText: JSON.stringify(value,),
+      };
+    },
+    quotas: async () => {
+      throw new Error('quotas unused by the gate',);
+    },
+  };
 }
 
 /**
@@ -290,6 +353,23 @@ await describe({
         expect(outcome.usable,).toBe(1,);
         expect(outcome.ships,).toBe('standing',);
         expect(outcome.findings.length,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'SAYS THE BENCH WAS SHORT when the router refused seats (ledger X8): three of five refused, two '
+        + 'ballots settle the gate, and the finding records the reachable share the gathers already record',
+      fn: async () => {
+        const outcome = await gateConsolidatedSlice({
+          fanOut: 'whole-bench',
+          client: refusingClient({ refused: FIVE_SEATS.slice(0, 3,), },),
+          modelIds: FIVE_SEATS,
+          subject: SUBJECT,
+          signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          l,
+        },);
+        expect(outcome.ships,).toBe('consolidated',);
+        expect(outcome.findings,).toContain('stage-short-bench (consolidate-gate reachable 2 of 5, quorum 2)',);
       },
     },),
     it({

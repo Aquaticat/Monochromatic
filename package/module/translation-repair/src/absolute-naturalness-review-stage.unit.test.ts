@@ -16,6 +16,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  NoProviderForModelError,
   reviewAbsoluteNaturalness,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
@@ -109,9 +110,11 @@ function capturingLogger({ messages, }: { readonly messages: string[]; },): Logg
  @param rejecting - model returning actionable rejection
  
  @param delayed - whether rejecting model answers after accepting peers
- 
+
+ @param refused - models the router refuses for want of a wet provider
+
  @returns Scripted absolute reviewer
- 
+
  @example
  ```ts
  const client = reviewClient({ rejecting: ROSTER[2], delayed: true, });
@@ -122,10 +125,12 @@ function reviewClient(
     unavailable = [],
     rejecting,
     delayed = false,
+    refused = [],
   }: {
     readonly unavailable?: readonly RosterModelId[];
     readonly rejecting?: RosterModelId;
     readonly delayed?: boolean;
+    readonly refused?: readonly RosterModelId[];
   },
 ): SyntheticClient {
   return {
@@ -135,6 +140,12 @@ function reviewClient(
     chatJson: async <ValueT,>(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
+      if (refused.includes(request.modelId,)) {
+        throw new NoProviderForModelError({
+          modelId: request.modelId,
+          reason: 'every provider serving this cat is out of budget',
+        },);
+      }
       if (delayed && (request.modelId === rejecting))
         await wait(30,);
       if (unavailable.includes(request.modelId,)) {
@@ -185,9 +196,12 @@ function reviewClient(
  @param modelIds - reviewer roster, defaulting to three-seat fixture
  
  @param graceMs - bounded time to retain post-quorum responses
- 
+
+ @param quorumOver - wider bench the quorum is taken over, absent for the
+ seats asked
+
  @returns Absolute review outcome
- 
+
  @example
  ```ts
  const review = await runReview({ client, });
@@ -199,11 +213,13 @@ async function runReview(
     messages,
     modelIds = ROSTER,
     graceMs = 0,
+    quorumOver,
   }: {
     readonly client: SyntheticClient;
     readonly messages?: string[];
     readonly modelIds?: readonly RosterModelId[];
     readonly graceMs?: number;
+    readonly quorumOver?: number;
   },
 ): ReturnType<typeof reviewAbsoluteNaturalness> {
   return await reviewAbsoluteNaturalness({
@@ -211,6 +227,7 @@ async function runReview(
     fanOut: 'whole-bench',
     client,
     modelIds,
+    ...((quorumOver === undefined) ? {} : { quorumOver, }),
     subject: {
       lineStructured: false,
       sourceText: '猫猫在窗台上睡觉。',
@@ -342,6 +359,46 @@ await describe({
         },);
         expect(review.verdict,).toBe('quorum-not-met',);
         expect(review.usable,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'SIZES ON THE SEATS THAT COULD ANSWER when the router refuses some, and records how many were '
+        + 'out of reach (ledger E3; XingZ624, 2026-09-23): five seats asked over a bench of eight, as a '
+        + 'confirmation asks, two refused out of budget and three accepting pass, where a quorum of '
+        + 'four had refused them',
+      fn: async () => {
+        /**
+         Five seats asked, as the discovery before it asked them.
+         */
+        const asked = PROVIDER_GROUPED_ROSTER.slice(0, 5,);
+        const review = await runReview({
+          client: reviewClient({ refused: asked.slice(0, 2,), },),
+          modelIds: asked,
+          quorumOver: PROVIDER_GROUPED_ROSTER.length,
+        },);
+        expect(review.verdict,).toBe('acceptable',);
+        expect(review.usable,).toBe(3,);
+        expect(review.unreachable,).toBe(5,);
+      },
+    },),
+
+    it({
+      name: 'STILL REFUSES THE SAME SHAPE WHEN THE TWO WERE LOST RATHER THAN REFUSED, the control that '
+        + 'shows only the router\'s refusal moves the quorum',
+      fn: async () => {
+        /**
+         Five seats asked.
+         */
+        const asked = PROVIDER_GROUPED_ROSTER.slice(0, 5,);
+        const review = await runReview({
+          client: reviewClient({ unavailable: asked.slice(0, 2,), },),
+          modelIds: asked,
+          quorumOver: PROVIDER_GROUPED_ROSTER.length,
+        },);
+        expect(review.verdict,).toBe('quorum-not-met',);
+        expect(review.usable,).toBe(3,);
+        expect(review.unreachable,).toBe(3,);
       },
     },),
   ],

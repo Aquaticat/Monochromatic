@@ -15,6 +15,7 @@ import {
 
 import {
   firstRoundWindow,
+  NoProviderForModelError,
   runWindowedRounds,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_VISION,
@@ -86,9 +87,11 @@ const l = tagged({ tag: 'stage-windowed-rounds-test', },);
  @param failsAlways - seats whose every ask throws
  
  @param unreadable - seats that answer a shape the guard refuses
- 
+
+ @param refused - seats the router refuses for want of a wet provider
+
  @returns Client plus the seats asked, in call order
- 
+
  @example
  ```ts
  const { client, asked, } = scriptedClient({ failsOnce: [], failsAlways: [], unreadable: [], },);
@@ -99,10 +102,12 @@ function scriptedClient(
     failsOnce,
     failsAlways,
     unreadable,
+    refused = [],
   }: {
     readonly failsOnce: readonly RosterModelId[];
     readonly failsAlways: readonly RosterModelId[];
     readonly unreadable: readonly RosterModelId[];
+    readonly refused?: readonly RosterModelId[];
   },
 ): { readonly client: SyntheticClient; readonly asked: RosterModelId[]; } {
   /**
@@ -123,6 +128,12 @@ function scriptedClient(
         request: ChatJsonRequest<ValueT>,
       ): Promise<ChatJsonOutcome<ValueT>> => {
         asked.push(request.modelId,);
+        if (refused.includes(request.modelId,)) {
+          throw new NoProviderForModelError({
+            modelId: request.modelId,
+            reason: 'every provider serving this cat is out of budget',
+          },);
+        }
         if (failsAlways.includes(request.modelId,))
           throw new Error('scripted loss',);
         if (failsOnce.includes(request.modelId,) && (!thrown.has(request.modelId,))) {
@@ -161,9 +172,13 @@ function scriptedClient(
  @param script - which seats fail or answer unreadably
  
  @param fanOut - window or whole bench, absent for the production default
- 
- @returns Outcomes plus the seats asked in call order
- 
+
+ @param quorumOver - wider bench the quorum is taken over, absent for the
+ seats asked
+
+ @returns Outcomes, the quorum closed on and the seats counted out of reach,
+ plus the seats asked in call order
+
  @example
  ```ts
  const { outcomes, asked, } = await runBench({ script: { failsOnce: [], failsAlways: [], unreadable: [], }, },);
@@ -173,13 +188,19 @@ async function runBench(
   {
     script,
     fanOut,
+    quorumOver,
   }: {
     readonly script: Parameters<typeof scriptedClient>[0];
     readonly fanOut?: 'window' | 'whole-bench';
+    readonly quorumOver?: number;
   },
 ) {
   const { client, asked, } = scriptedClient(script,);
-  const { outcomes, } = await runWindowedRounds({
+  const {
+    outcomes,
+    quorum,
+    unreachable,
+  } = await runWindowedRounds({
     client,
     modelIds: BENCH,
     messages: [{ role: 'user', content: 'meow?', },],
@@ -191,12 +212,23 @@ async function runBench(
     l,
     graceMs: 50,
     ...((fanOut === undefined) ? {} : { fanOut, }),
+    ...((quorumOver === undefined) ? {} : { quorumOver, }),
   },);
   return {
     outcomes,
+    quorum,
+    unreachable,
     asked,
   };
 }
+
+/**
+ Seats the router refuses in the short-bench cases: four of the six.
+ */
+const FOUR_REFUSED: readonly RosterModelId[] = BENCH.slice(
+  0,
+  4,
+);
 
 await describe({
   name: runWindowedRounds.name,
@@ -276,6 +308,68 @@ await describe({
         },);
         expect(wholeRun.asked.toSorted(),).toEqual([...BENCH,].toSorted(),);
         expect(wholeRun.outcomes,).toHaveLength(BENCH.length,);
+      },
+    },),
+    it({
+      name: 'CLOSES ON THE REACHABLE SHARE when the router refuses seats (ledger X8; the short-bench rule '
+        + 'of 2026-09-09): four of six refused leaves two that can answer, so the rounds close on those '
+        + 'two and say the bench was short, where they used to chase a quorum of three',
+      fn: async () => {
+        const run = await runBench({
+          script: { failsOnce: [], failsAlways: [], unreadable: [], refused: FOUR_REFUSED, },
+        },);
+        expect(run.quorum,).toStrictEqual({
+          needed: 2,
+          reachable: 2,
+          benchQuorum: QUORUM,
+          short: true,
+        },);
+        expect(run.unreachable,).toBe(FOUR_REFUSED.length,);
+        expect(run.outcomes.filter(function isHeard(outcome,): boolean {
+          return outcome.voice.heard;
+        },),).toHaveLength(2,);
+      },
+    },),
+    it({
+      name: 'COUNTS THE BENCH SEATS IT MAY NOT ASK AS OUT OF REACH, the way a confirmation asks only the '
+        + 'seats the discovery asked (ledger E3): over a bench of eight with six asked, the quorum stays '
+        + 'four while the asked seats can meet it and drops to the reachable share when they cannot',
+      fn: async () => {
+        /**
+         Bench the quorum is taken over, two seats wider than the six asked.
+         */
+        const wider = BENCH.length + 2;
+        const oneRefused = await runBench({
+          script: { failsOnce: [], failsAlways: [], unreadable: [], refused: BENCH.slice(0, 1,), },
+          quorumOver: wider,
+        },);
+        expect(oneRefused.unreachable,).toBe(3,);
+        expect(oneRefused.quorum.short,).toBe(false,);
+        expect(oneRefused.quorum.needed,).toBe(4,);
+
+        const threeRefused = await runBench({
+          script: { failsOnce: [], failsAlways: [], unreadable: [], refused: BENCH.slice(0, 3,), },
+          quorumOver: wider,
+        },);
+        expect(threeRefused.unreachable,).toBe(5,);
+        expect(threeRefused.quorum,).toStrictEqual({
+          needed: 2,
+          reachable: 3,
+          benchQuorum: 4,
+          short: true,
+        },);
+      },
+    },),
+    it({
+      name: 'SIZES THE WHOLE-BENCH ROUND THE SAME WAY, from the seats its one round saw refused',
+      fn: async () => {
+        const run = await runBench({
+          script: { failsOnce: [], failsAlways: [], unreadable: [], refused: FOUR_REFUSED, },
+          fanOut: 'whole-bench',
+        },);
+        expect(run.unreachable,).toBe(FOUR_REFUSED.length,);
+        expect(run.quorum.short,).toBe(true,);
+        expect(run.quorum.needed,).toBe(2,);
       },
     },),
   ],
