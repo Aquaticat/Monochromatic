@@ -12,6 +12,7 @@
  @module
  */
 
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -23,6 +24,11 @@ import {
   type RosterModelId,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
+
+/**
+ Logger the floor writes its withheld lines to, which no case here reads.
+ */
+const l = tagged({ tag: 'unwrapped-link-test', },);
 
 /**
  Original definition linking a post by its title.
@@ -108,6 +114,7 @@ await describe({
           sourceText: SOURCE,
           incumbentText: LINKED,
           lineStructured: false,
+          l,
         },);
         expect(floored.voices.map(function text(voice,): string {
           return voice.value.translation;

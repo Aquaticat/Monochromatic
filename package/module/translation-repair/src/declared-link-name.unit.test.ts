@@ -132,6 +132,7 @@ await describe({
           incumbentText: ARCHIVE,
           lineStructured: false,
           declared: PAIRS,
+          l,
         },);
         expect(floored.voices.map(function text(voice,): string {
           return voice.value.translation;

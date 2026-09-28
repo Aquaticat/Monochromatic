@@ -255,6 +255,7 @@ export async function produceTranslateSlate(
     lineStructured,
     declared,
     disputedWordings,
+    l: tl,
   },);
   /**
    Slate of distinct proposals with the incumbent among them.

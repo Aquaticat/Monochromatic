@@ -110,6 +110,25 @@ export function floorConsolidateSlate(
   const survived = validity.filter(function isValid({ validation, },): boolean {
     return validation.kind === 'valid';
   },);
+  /**
+   Voices withheld beside those survivors, named in the log because the
+   artifact alone records them (ledger E5).
+   */
+  const withheld = validity
+    .filter(function isRefused({ validation, },): boolean {
+      return validation.kind !== 'valid';
+    },)
+    .map(function toModelId(checked,): string {
+      return checked.modelId;
+    },);
+
+  if ((survived.length > 0) && (withheld.length > 0)) {
+    l.info(
+      `consolidation slate: withheld ${withheld.join(', ',)}, whose proposals did not pass the structural guard; ${
+        String(survived.length,)
+      } remain for the judges`,
+    );
+  }
 
   if (survived.length > 0)
     return {

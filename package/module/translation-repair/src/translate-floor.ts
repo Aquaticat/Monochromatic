@@ -1,3 +1,8 @@
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
+
 import type { SliceSyntax, } from './chunk-document.ts';
 import type { DisputedWording, } from './disputed-wording.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
@@ -47,11 +52,15 @@ const REFUSED_FINDING = 'translate-candidate-refused';
  @param disputedWordings - wordings a disputed slice refuses, so a candidate
  copying the archive there is withheld (owner, 2026-09-27); none elsewhere
 
+ @param l - stage logger, which names each candidate withheld: the finding
+ reaches only the artifact, and a slate thinned with nothing in the log reads
+ as judges choosing among fewer voices (ledger E5)
+
  @returns Candidates the rule accepts, with a finding per candidate withheld
 
  @example
  ```ts
- const floored = floorTranslateVoices({ voices, sourceText, incumbentText, lineStructured, },);
+ const floored = floorTranslateVoices({ voices, sourceText, incumbentText, lineStructured, l, },);
  ```
  */
 export function floorTranslateVoices(
@@ -63,6 +72,7 @@ export function floorTranslateVoices(
     lineStructured,
     declared = [],
     disputedWordings = [],
+    l,
   }: {
     readonly voices: readonly HeardVoice<TranslateReportWire>[];
     readonly sourceText: string;
@@ -71,11 +81,19 @@ export function floorTranslateVoices(
     readonly lineStructured: boolean;
     readonly declared?: readonly DeclaredNamePair[];
     readonly disputedWordings?: readonly DisputedWording[];
+    readonly l: Logger;
   },
 ): {
   readonly voices: readonly HeardVoice<TranslateReportWire>[];
   readonly findings: readonly string[];
 } {
+  /**
+   Logger tagged with this floor.
+   */
+  const fl = tagged({
+    tag: floorTranslateVoices.name,
+    l,
+  },);
   /**
    Findings for the candidates withheld, in voice order.
    */
@@ -106,6 +124,9 @@ export function floorTranslateVoices(
     const reason = validation.findings
       .join(' ',);
     findings.push(`${REFUSED_FINDING} (${voice.modelId}): ${reason}`,);
+    fl.warn(
+      `withheld ${voice.modelId} from the judges: the publication rule still refuses its candidate after its repair turn: ${reason}`,
+    );
     return false;
   },);
   return {

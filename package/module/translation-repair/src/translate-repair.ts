@@ -1,4 +1,7 @@
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
@@ -58,6 +61,26 @@ export type RepairOutcome = {
    */
   readonly findings: readonly string[];
 };
+
+/**
+ What becomes of a refused candidate whose author revised nothing usable, in
+ the words the run log uses.
+
+ @param contributorViolation - whether it respelled a contributor name, which
+ no defence keeps
+
+ @returns Clause finishing a log line about that candidate
+
+ @example
+ ```ts
+ l.warn(`${modelId} gave no usable answer, so ${unrevisedFate({ contributorViolation, },)}`,);
+ ```
+ */
+function unrevisedFate({ contributorViolation, }: { readonly contributorViolation: boolean; },): string {
+  return contributorViolation
+    ? 'its candidate is dropped, since a contributor respelling is not defensible'
+    : 'its candidate goes on as written, for the floor to judge';
+}
 
 /**
  Validates one candidate and, when it fails, asks its author about it.
@@ -132,6 +155,13 @@ async function repairOneCandidate(
     readonly l: Logger;
   }>,
 ): Promise<RepairOutcome> {
+  /**
+   Logger tagged with this candidate's turn.
+   */
+  const rl = tagged({
+    tag: repairOneCandidate.name,
+    l,
+  },);
   // A candidate that reproduced the incumbent is about to COLLAPSE into it, and
   // the incumbent is never validated, so validating this copy would spend a
   // follow-up call to repair text that is not going to be on the ballot. Worse,
@@ -172,26 +202,33 @@ async function repairOneCandidate(
     declared,
     disputedWordings,
   },);
+  // A PASS ON A DOWNGRADED PAGE IS RECORDED, never silent. The strict grammar
+  // refuses a span cut through an element, and the page side falls back to
+  // plain markdown so the floor still has blocks to compare. That reading is
+  // looser than the one a candidate is held to, so a pass under it is weaker
+  // evidence and says so here.
+  if ((validation.kind === 'valid') && (validation.pageGrammar === 'relaxed')) {
+    rl.info(`${voice.modelId}: candidate passed against a page read as plain markdown, since strict MDX refused the page`,);
+    return {
+      voice,
+      findings: ['translate-page-downgraded (page read as plain markdown; strict MDX refused it)',],
+    };
+  }
   if (validation.kind === 'valid')
     return {
       voice,
-      // A PASS ON A DOWNGRADED PAGE IS RECORDED, never silent. The strict
-      // grammar refuses a span cut through an element, and the page side falls
-      // back to plain markdown so the floor still has blocks to compare. That
-      // reading is looser than the one a candidate is held to, so a pass under
-      // it is weaker evidence and says so here.
-      findings: (validation.pageGrammar === 'relaxed')
-        ? ['translate-page-downgraded (page read as plain markdown; strict MDX refused it)',]
-        : [],
+      findings: [],
     };
 
   // Nothing to compare against says nothing about the candidate, so it stands
   // as written and the gap is recorded rather than charged to the model.
-  if (validation.kind === 'unknown')
+  if (validation.kind === 'unknown') {
+    rl.warn(`${voice.modelId}: candidate not validated (${validation.detail}), so it stands as written`,);
     return {
       voice,
       findings: [`translate-unvalidated (${validation.detail})`,],
     };
+  }
 
   /**
    What validation found, recorded whatever the author answers.
@@ -205,6 +242,17 @@ async function repairOneCandidate(
    */
   const contributorViolation = validation.findings
     .includes(CONTRIBUTOR_AUTHORITY_FINDING,);
+  /**
+   What becomes of the original candidate when no revision is taken, as the
+   log says it.
+   */
+  const fate = unrevisedFate({ contributorViolation, },);
+  rl.warn(
+    `${voice.modelId}: candidate fails the publication rule, so its author is asked about it: ${
+      validation.findings
+        .join(' ',)
+    }`,
+  );
   /**
    Characters of finding text this answer has to address.
    
@@ -239,9 +287,10 @@ async function repairOneCandidate(
     responseFormat: TRANSLATE_REPAIR_RESPONSE_FORMAT,
     validate: isTranslateRepairWire,
     stage: 'translate-repair',
-    l,
+    l: rl,
   },);
   if (!answer.heard) {
+    rl.warn(`${voice.modelId} gave no usable answer to its findings, so ${fate}`,);
     return {
       ...((contributorViolation) ? {} : { voice, }),
       findings: [
@@ -260,6 +309,7 @@ async function repairOneCandidate(
     explanation,
   } = answer.value;
   if (resolution !== 'revised') {
+    rl.warn(`${voice.modelId} answered ${resolution} to its findings (${explanation}), so ${fate}`,);
     return {
       ...((contributorViolation) ? {} : { voice, }),
       findings: [
@@ -286,6 +336,7 @@ async function repairOneCandidate(
   // findings and did not, so nothing says the new text is better, while the
   // original is at least what it produced with the whole sheet in front of it.
   if (rechecked.kind === 'invalid') {
+    rl.warn(`${voice.modelId}: revision still fails the publication rule and is not taken, so ${fate}`,);
     return {
       ...((contributorViolation) ? {} : { voice, }),
       findings: [
@@ -294,7 +345,7 @@ async function repairOneCandidate(
       ],
     };
   }
-  l.info(`translate-repair: ${voice.modelId} revised its candidate`,);
+  rl.info(`translate-repair: ${voice.modelId} revised its candidate`,);
   return {
     voice: {
       modelId: voice.modelId,
