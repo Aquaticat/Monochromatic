@@ -177,5 +177,43 @@ await describe({
         expect(result.findings,).toStrictEqual([],);
       },
     },),
+
+    it({
+      name: 'SPLITS a same-defect merge whose neutral member is held from its accepted minor member, so the held claim reaches no editor through its partner',
+      fn: async () => {
+        /** Claim filed neutral. */
+        const heldMember = member({ suffix: 'bell', severity: 'neutral', },);
+        /** Claim filed minor. */
+        const acceptedMember = member({ suffix: 'basket', severity: 'minor', },);
+        /** Cluster holding both. */
+        const clusterId = 'cluster/bell-basket';
+        /** Ballot supporting both and calling them one defect. */
+        const merging: PanelBallot = {
+          verdicts: {
+            [heldMember.claimId]: { vote: 'supported', },
+            [acceptedMember.claimId]: { vote: 'supported', },
+          },
+          mergeOpinions: { [clusterId]: true, },
+          findings: [],
+        };
+        /** Unanimous support and merge. */
+        const result = tallyVotes({
+          configuredPanelists: 3,
+          clusters: [
+            {
+              clusterId,
+              position: 10,
+              members: [heldMember, acceptedMember,],
+            },
+          ],
+          ballots: { a: merging, b: merging, c: merging, },
+        },);
+        expect(result.issues.map(function statusOf(issue,) {
+          return issue.status;
+        },),)
+          .toStrictEqual(['needs-human', 'accepted',],);
+        expect(result.findings,).toContain(`neutral-held-for-human (${heldMember.claimId})`,);
+      },
+    },),
   ],
 },);
