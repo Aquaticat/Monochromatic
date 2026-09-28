@@ -16,6 +16,11 @@ import {
 import { restoreTargetOnlyRun, } from './target-only-run.ts';
 import { assessSliceAlignment, } from './translate-alignment.ts';
 import {
+  ARCHIVE_INELIGIBLE_FINDING,
+  type ArchiveFloorVerdict,
+  archiveFloorVerdict,
+} from './translate-archive-floor.ts';
+import {
   type TranslateModels,
   type TranslateSliceRecord,
   TRANSLATE_SLICE_CACHE_VERSION,
@@ -127,6 +132,17 @@ export async function settleTranslateSlice(
   } = slice.target;
 
   /**
+   Wordings a disputed slice refuses, none elsewhere; the stage and the
+   archive floor below read the same list.
+   */
+  const disputedWordings = (archiveDispute === undefined)
+    ? []
+    : disputedWordingsOf({
+      dispute: archiveDispute,
+      archiveText: pageWording,
+    },);
+
+  /**
    Shared pre-stage protection and governance, without publication-disposition decisions.
    */
   const {
@@ -147,10 +163,7 @@ export async function settleTranslateSlice(
       : {
         ...(archiveDispute.standInEligible ? { archiveStandIn: archiveDispute.standIn, } : {}),
         archiveDisputeNote: archiveDisputeNote({ dispute: archiveDispute, },),
-        disputedWordings: disputedWordingsOf({
-          dispute: archiveDispute,
-          archiveText: pageWording,
-        },),
+        disputedWordings,
       }),
   },);
   /**
@@ -201,9 +214,36 @@ export async function settleTranslateSlice(
   },);
 
   /**
+   The publication rule's answer on the archive a refusal below would keep,
+   asked only where one could keep it (ledger X6): the consolidation refuses
+   such an archive as a standing, so keeping it here only withheld the
+   judges' replacement from the slate. Admitted where nothing would be kept.
+   */
+  const archiveFloor: ArchiveFloorVerdict = (guardedIncumbent && (stageResult.text !== incumbentText))
+    ? archiveFloorVerdict({
+      slice,
+      prepared,
+      archiveText,
+      disputedWordings,
+    },)
+    : { admitted: true, };
+  if (!archiveFloor.admitted) {
+    l.warn(
+      `translate slice ${String(sliceIndex,)}: the archive fails the publication rule (${archiveFloor.reason}); `
+        + 'no refusal keeps it',
+    );
+  }
+
+  /**
+   Whether a refusal below may keep the archive: there is one to damage and
+   the publication rule admits it.
+   */
+  const keepsArchive = guardedIncumbent && archiveFloor.admitted;
+
+  /**
    What this slice reports, the stage's own findings plus one line per picture
    nobody could read.
-   
+
    A PICTURE THAT WENT UNREAD IS NOT THE SAME AS A SLICE SHOWING NONE, and
    without this line the two are identical in every artifact. The reading is
    evidence the translators and judges were promised and did not get, so a
@@ -213,6 +253,7 @@ export async function settleTranslateSlice(
     ...stageResult.findings,
     ...pictureFindings,
     ...((archiveDispute === undefined) ? [] : [describeArchiveDispute({ dispute: archiveDispute, },),]),
+    ...(archiveFloor.admitted ? [] : [ARCHIVE_INELIGIBLE_FINDING,]),
   ];
 
   /**
@@ -242,7 +283,7 @@ export async function settleTranslateSlice(
    an ordinary unchanged one, which is the exact wrong-success state absent
    mode exists to remove.
    */
-  const refused = guardedIncumbent
+  const refused = keepsArchive
     && wantsReplacement
     && (alignment.kind === 'incumbent-dominates-source');
 
@@ -256,7 +297,7 @@ export async function settleTranslateSlice(
    and 8.71: a near miss and nowhere near. Counting quoted passages catches
    both, and over sixty-nine natural rows it caught nothing else.
    */
-  const losesQuote = guardedIncumbent
+  const losesQuote = keepsArchive
     && wantsReplacement
     && (!refused)
     && dropsQuotedPassage({
@@ -289,7 +330,7 @@ export async function settleTranslateSlice(
    
    Only a slice whose archive text is being replaced can lose a name from it.
    */
-  const guardsThisSlice = guardedIncumbent
+  const guardsThisSlice = keepsArchive
     && wantsReplacement
     && (!refused);
   /**

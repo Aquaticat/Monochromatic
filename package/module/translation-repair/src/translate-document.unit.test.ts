@@ -1350,7 +1350,7 @@ On the windowsill there is being a bird.
     },),
     it({
       name: 'KEEPS NO ARCHIVE THE PUBLICATION RULE REFUSES, so the judges\' replacement goes on to the '
-        + 'consolidation instead of an archive it will refuse as a standing (ledger X6: 47 such archives in the '
+        + 'consolidation instead of an archive it will refuse as a standing (ledger X6: up to 47 such archives in the '
         + 'run logs, 46 lacking a link the original carries and 1 keeping the untranslated pronoun, the floor '
         + 'this fixture trips)',
       fn: async () => {
