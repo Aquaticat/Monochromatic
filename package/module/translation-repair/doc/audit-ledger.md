@@ -3939,6 +3939,30 @@ and the suite that caught it ran once, after the audit-area-six commits.
 The scan now reads fences line by line; a fixture quoting a fence passes, the same fixture missing a key is still found,
 and a mutant restoring the old close fails 2 assertions. The suite after it: 0 FAIL, 1,301 PASS lines.
 
+### B18: letter, digit and hex tests kept in many copies, and prose scanners that test ASCII letters only
+
+Status: in progress, 2026-09-28.
+Letter tests were kept as named functions in eleven modules (`72bbe6500` merged them into `ascii-letters.ts`)
+and inline in more (M48), several named for Latin while testing ASCII only,
+so an accented letter ends a word for every scanner that reads English prose with one.
+The settled pages carry 4 such words in 17,492 (2 of 40 entries), which is why nothing has visibly broken.
+Done so far, each with the same admitted characters as before unless stated:
+
+- `9375057c5`: `latin-letters.ts` holds the Latin blocks and combining marks the glossary's form edges and
+  the Canadian spelling pass each kept; the glossary edges now also admit Latin Extended Additional,
+  of which only letters NFD keeps whole reach folded text, and none occurs in the pinned corpus or the settled pages
+  (control U+00E4 found twice). The sheet hashes are unchanged, and mutants dropping the sign exclusion,
+  the Additional block or the marks are each caught.
+- `4197af843`: the inline letter-or-digit, digit and lower-case hex tests route through `ascii-letters.ts`;
+  one of the digit tests (`image-reading-sense.ts`) was never called.
+- `1c3286271`: eight source files opened with a blank line, each since its first commit.
+
+Still to do: the prose scanners switch to Latin letters one at a time, each measured old against new
+over the pinned sources, archive targets and settled pages;
+and the three `opensTag` copies move to what the MDX compiler reads after `<`
+(`micromark-extension-mdx-jsx`: a space, tab or line end leaves it text;
+`/`, `>` or an identifier start, which includes Han, opens a tag; anything else fails to compile).
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing, recorded for the prevention doc.
@@ -3992,6 +4016,11 @@ Once more during audit area six (B14), counting call sites after removing four r
 Twice more in the same area:
 `rg <predicate> <files> ; rg --files <script dir>`, a lookup chained to an unrelated listing,
 and `for_sig() { :; } ; rg <signature>`, a shell function defined and followed by `;` in one call.
+Once more during B18 (`rg <leftovers> | rg --invert-match <files> ; <lint> src`), a leftover search chained to a lint.
+Also during B18, calls made while background tasks ran:
+ledger edits and reads while a mutation run went, and reads of the MDX parser's source while the full suite went,
+against the rule that the wait for a background task is to end the turn.
+None touched a file the running task read, which the rule does not make an exception for.
 
 ### M19: a suite run against a stale build after a mutation was restored
 
@@ -4136,6 +4165,16 @@ Prevention: a red guard is read case by case before the fix
 (each failing case must fail for the reason its label names),
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
+
+### M49: a commit message that named a cause before it was looked up
+
+Status: happened 2026-09-28 (B18); corrected by a commit comment on `1c3286271` the same hour.
+The message said the blank first lines were left when imports were written or removed.
+`git blame` of each file's first line, run after the push, showed every one came in with its file's first commit,
+and no import removal left one.
+Prevention: a commit message states only what its diff and the checks run show;
+a cause goes in only after the command that shows it (blame, log, a probe) has run,
+and otherwise the message says what changed and nothing about why it was there.
 
 ### M48: a census of a rule that searched the names of functions holding it
 
