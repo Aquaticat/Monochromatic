@@ -31,10 +31,13 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   readDocumentPictures,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChunkPair,
   type PairedReading,
+  type PictureReaderSeating,
   type RosterModelId,
   type SliceCache,
   type SyntheticClient,
@@ -673,6 +676,142 @@ await describe({
 
         expect(readings.size,).toBe(0,);
         expect(asked.length,).toBe(0,);
+      },
+    },),
+  ],
+},);
+
+/**
+ Readers a hook hands back after a dry-out, neither of them the fixture's own.
+ */
+const RESEATED_READERS: readonly RosterModelId[] = [
+  SEAT_HYPER_VISION,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+];
+
+/**
+ Reads one picture on the fixture readers, recording the models asked and the
+ keys looked up.
+
+ @param beforePicture - hook handing the picture its readers, none for a
+ caller with no hook
+
+ @returns Models asked and keys looked up, in order
+
+ @example
+ ```ts
+ const { asked, looked, } = await readOnePicture({},);
+ ```
+ */
+async function readOnePicture(
+  { beforePicture, }: { readonly beforePicture?: () => Promise<PictureReaderSeating>; },
+): Promise<{
+  readonly asked: readonly RosterModelId[];
+  readonly looked: readonly string[];
+}> {
+  /**
+   Client recording every reader it was asked for.
+   */
+  const agreeing = agreeingClient();
+  /**
+   Every key the reading looked up.
+   */
+  const looked: string[] = [];
+  /**
+   Store holding nothing, recording each lookup.
+   */
+  const recordedMiss = {
+    get: function recordKey(key: string,): undefined {
+      looked.push(key,);
+      return undefined;
+    },
+  };
+  await readDocumentPictures({
+    readOcr: sawText,
+    client: agreeing.client,
+    slices: [sliceOf({
+      text: showing({ assetName: 'noticeboard.webp', },),
+      sliceIndex: 0,
+    },),],
+    assets: new Map([['noticeboard.webp', bytesOf({ seed: 7, },),],],),
+    readerModelIds: READERS,
+    cache: {
+      resumed: recordedMiss as unknown as ReadonlyMap<string, PairedReading>,
+      persist: async function keepNothing(): Promise<void> {},
+    },
+    signal: AbortSignal.timeout(30_000,),
+    perCallTimeoutMs: 30_000,
+    l,
+    ...((beforePicture === undefined) ? {} : { beforePicture, }),
+  },);
+  return {
+    asked: agreeing.asked,
+    looked,
+  };
+}
+
+await describe({
+  name: `${readDocumentPictures.name} re-seated under a hold (ledger X12)`,
+  children: [
+    it({
+      name: 'SEATS A PICTURE ON THE READERS ITS HOOK RETURNS, as every phase that buys item by item seats its '
+        + 'items, so readers re-read after a provider dry-out are the ones asked rather than those read before it',
+      fn: async () => {
+        /**
+         Models a caller with no hook asked.
+         */
+        const control = await readOnePicture({},);
+        /**
+         Models asked when the hook re-seats the picture elsewhere.
+         */
+        const moved = await readOnePicture({
+          beforePicture: async (): Promise<PictureReaderSeating> => ({ readerModelIds: RESEATED_READERS, }),
+        },);
+        expect({
+          controlOnReaders: (control.asked.length > 0) && control.asked.every(function onReaders(seat,): boolean {
+            return READERS.includes(seat,);
+          },),
+          movedAskedAny: moved.asked.length > 0,
+          outsideReseated: moved.asked.filter(function outside(seat,): boolean {
+            return !RESEATED_READERS.includes(seat,);
+          },),
+        },).toEqual({
+          controlOnReaders: true,
+          movedAskedAny: true,
+          outsideReseated: [],
+        },);
+      },
+    },),
+    it({
+      name: 'KEYS A RE-SEATED PICTURE BY THE READERS IT RUNS ON, so a reading the readers before the dry-out '
+        + 'made is never resumed for it, while a hook handing back the starting readers keys it as a caller '
+        + 'with no hook does',
+      fn: async () => {
+        /**
+         Keys a caller with no hook looked up.
+         */
+        const starting = await readOnePicture({},);
+        /**
+         Keys looked up when the hook re-seats the picture elsewhere.
+         */
+        const moved = await readOnePicture({
+          beforePicture: async (): Promise<PictureReaderSeating> => ({ readerModelIds: RESEATED_READERS, }),
+        },);
+        /**
+         Keys looked up when the hook hands back the starting readers.
+         */
+        const kept = await readOnePicture({
+          beforePicture: async (): Promise<PictureReaderSeating> => ({ readerModelIds: READERS, }),
+        },);
+        expect({
+          lookups: [starting.looked.length, moved.looked.length, kept.looked.length,],
+          movedDiffers: moved.looked[0] !== starting.looked[0],
+          keptMatches: kept.looked[0] === starting.looked[0],
+        },).toEqual({
+          lookups: [1, 1, 1,],
+          movedDiffers: true,
+          keptMatches: true,
+        },);
       },
     },),
   ],

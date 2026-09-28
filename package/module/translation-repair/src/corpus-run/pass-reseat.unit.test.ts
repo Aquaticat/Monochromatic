@@ -28,6 +28,7 @@ import {
   contestHooksFor,
   judgeSeatsFor,
   lanesHooksFor,
+  picturesHooksFor,
   prepareDocumentPair,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_OPENROUTER_ONLY,
@@ -439,6 +440,61 @@ await describe({
           l,
         },);
         expect(await hooks.beforeSlice(),).toEqual({},);
+        expect(rig.counter.reads,).toBe(0,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${picturesHooksFor.name} (ledger X12)`,
+  children: [
+    it({
+      name: 'RE-SEATS THE PICTURE READINGS before a picture while a hold runs, as it does every phase that '
+        + 'buys item by item, handing the picture the reading\'s readers, and keeps them once the hold has ended',
+      fn: async () => {
+        const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
+        rig.holds.synthetic = DRY_HOLD_MS;
+        const hooks = picturesHooksFor({
+          client: rig.client,
+          signal: new AbortController().signal,
+          l,
+        },);
+        /**
+         Seating the hook hands the picture under the hold.
+         */
+        const underHold = await hooks.beforePicture();
+        rig.holds.synthetic = 0;
+        /**
+         Seating handed over once the hold has ended.
+         */
+        const afterHold = await hooks.beforePicture();
+        /**
+         Readers a reading of this view seats.
+         */
+        const { readers, } = judgeSeatsFor({ dry: BEDROCK_AND_OPENROUTER, },);
+        expect({
+          underHold,
+          afterHold,
+          reads: rig.counter.reads,
+        },).toEqual({
+          underHold: { readerModelIds: readers, },
+          afterHold: { readerModelIds: readers, },
+          reads: 1,
+        },);
+      },
+    },),
+    it({
+      name: 'COSTS NOTHING while nothing is held: no dryness read and no readers, so the picture keeps those '
+        + 'the readings started on',
+      fn: async () => {
+        const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
+        const hooks = picturesHooksFor({
+          client: rig.client,
+          signal: new AbortController().signal,
+          l,
+        },);
+        expect(await hooks.beforePicture(),).toEqual({},);
         expect(rig.counter.reads,).toBe(0,);
       },
     },),
