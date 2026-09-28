@@ -17,6 +17,7 @@ import {
 } from './repair-contract.ts';
 import { repairReplacements, } from './repair-replacements.ts';
 import { collectDefinitions, } from './refine-envelope.ts';
+import { inSliceLogContext, } from './log-context.ts';
 import { settleRefinePhaseSlice, } from './refine-phase-slice.ts';
 import { refineRunShape, } from './refine-slice-key.ts';
 import type { RefinedSliceSettlement, } from './refine-slice-settle.ts';
@@ -214,22 +215,31 @@ export async function runRefinePhase(
     items: outcomes,
     overlap,
     oneItem: async function settleOne({ item: outcome, },) {
-      return await settleRefinePhaseSlice({
-        client,
-        outcome,
-        slices,
-        models,
-        ...((reseat === undefined) ? {} : { reseat, }),
-        refinerModelIds,
-        runShape,
-        definitions,
-        ...(identityContext === undefined ? {} : { identityContext, }),
-        ...(referenceContext === undefined ? {} : { referenceContext, }),
-        declaredNames,
-        ...((refineCache === undefined) ? {} : { refineCache, }),
-        signal,
-        perCallTimeoutMs,
-        l,
+      // UNDER THE SLICE'S LOG CONTEXT, as the accuracy pass settles each slice
+      // (ledger A11): refinement runs slices side by side under overlap, and
+      // its round lines named no slice until ledger L12.
+      return await inSliceLogContext({
+        lane: 'repair',
+        sliceIndex: outcome.sliceIndex,
+        run: async function settleRefineInContext() {
+          return await settleRefinePhaseSlice({
+            client,
+            outcome,
+            slices,
+            models,
+            ...((reseat === undefined) ? {} : { reseat, }),
+            refinerModelIds,
+            runShape,
+            definitions,
+            ...(identityContext === undefined ? {} : { identityContext, }),
+            ...(referenceContext === undefined ? {} : { referenceContext, }),
+            declaredNames,
+            ...((refineCache === undefined) ? {} : { refineCache, }),
+            signal,
+            perCallTimeoutMs,
+            l,
+          },);
+        },
       },);
     },
   },);
