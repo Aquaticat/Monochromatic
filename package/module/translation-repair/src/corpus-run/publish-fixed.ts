@@ -55,6 +55,7 @@ import {
 } from './heading-distinctness.ts';
 import { assertPageParses, } from './page-grammar.ts';
 import {
+  archiveKeptDefects,
   type PublishDefect,
   publishDefects,
 } from './publish-defects.ts';
@@ -341,7 +342,7 @@ export async function publishFixedPage(
   /**
    Failed content checks the page ships with.
    */
-  const defects = publishDefects({
+  const failedChecks = publishDefects({
     steps: [
       {
         check: 'front-matter',
@@ -403,6 +404,18 @@ export async function publishFixedPage(
       },
     ],
   },);
+  /**
+   Every defect the page ships with: the failed content checks, then the
+   slices the archive kept because no wording passed the rule (owner,
+   2026-09-27, "Keep archive, ship").
+   */
+  const defects: readonly PublishDefect[] = [
+    ...failedChecks,
+    ...archiveKeptDefects({
+      entryId,
+      consolidation: artifact.consolidation,
+    },),
+  ];
   for (const {
     check,
     message,

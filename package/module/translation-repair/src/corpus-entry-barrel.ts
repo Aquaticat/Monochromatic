@@ -58,6 +58,7 @@ export {
   republishSettledPages,
 } from './corpus-run/page-republish.ts';
 export {
+  archiveKeptDefects,
   defectsLine,
   type PublishCheck,
   type PublishCheckStep,

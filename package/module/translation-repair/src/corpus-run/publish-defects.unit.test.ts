@@ -19,10 +19,42 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  archiveKeptDefects,
   defectsLine,
   type PublishCheckStep,
   publishDefects,
+  type WouldShipSource,
 } from '../../dist/final/node/index.mjs';
+
+/**
+ One consolidation slice as an artifact records it, shipping the kind given.
+
+ @param sliceIndex - slice the record answers
+
+ @param kind - what it ships
+
+ @returns Slice record, carrying only what the defect reads beside its kind
+
+ @example
+ ```ts
+ const slice = sliceShipping({ sliceIndex: 1, kind: 'archive', },);
+ ```
+ */
+function sliceShipping(
+  {
+    sliceIndex,
+    kind,
+  }: {
+    readonly sliceIndex: number;
+    readonly kind: 'archive' | 'unchanged';
+  },
+): Record<string, unknown> {
+  return {
+    sliceIndex,
+    terminal: 'incumbent-only',
+    shipped: { kind, },
+  };
+}
 
 /**
  Refusal the whisker check throws when the page fails it.
@@ -201,6 +233,61 @@ await describe({
             },
           ],
         },),).toBe('DEFECTS WhiskerCat checks=front-matter,destinations',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: archiveKeptDefects.name,
+  children: [
+    it({
+      name: 'REPORTS NOTHING where the consolidation did not run or kept no archive, the control the report rests on',
+      fn: async () => {
+        expect(archiveKeptDefects({
+          entryId: 'WhiskerCat',
+          consolidation: { kind: 'not-run', } as WouldShipSource['consolidation'],
+        },),).toStrictEqual([],);
+        expect(archiveKeptDefects({
+          entryId: 'WhiskerCat',
+          consolidation: {
+            kind: 'settled',
+            slices: [sliceShipping({
+              sliceIndex: 0,
+              kind: 'unchanged',
+            },),],
+          } as unknown as WouldShipSource['consolidation'],
+        },),).toStrictEqual([],);
+      },
+    },),
+    it({
+      name: 'NAMES EVERY SLICE THE ARCHIVE KEPT in one defect, since no wording there passed the rule '
+        + '(owner, 2026-09-27, "Keep archive, ship")',
+      fn: async () => {
+        expect(archiveKeptDefects({
+          entryId: 'WhiskerCat',
+          consolidation: {
+            kind: 'settled',
+            slices: [
+              sliceShipping({
+                sliceIndex: 1,
+                kind: 'archive',
+              },),
+              sliceShipping({
+                sliceIndex: 2,
+                kind: 'unchanged',
+              },),
+              sliceShipping({
+                sliceIndex: 4,
+                kind: 'archive',
+              },),
+            ],
+          } as unknown as WouldShipSource['consolidation'],
+        },),).toStrictEqual([{
+          check: 'no-valid-wording',
+          message: 'entry WhiskerCat kept the archive at slice 1, slice 4, where no wording passed the '
+            + 'deterministic publication rule',
+        },],);
       },
     },),
   ],

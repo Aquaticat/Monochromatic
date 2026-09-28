@@ -1,3 +1,5 @@
+import type { WouldShipSource, } from './would-ship-text.ts';
+
 //region Publish defects
 // A SETTLED PAGE SHIPS WITH ITS DEFECTS REPORTED (the owner, 2026-09-27,
 // `doc/design-commitments.md`). The publish-time content checks used to
@@ -25,7 +27,8 @@ export type PublishCheck =
   | 'contributor-names'
   | 'destinations'
   | 'front-matter'
-  | 'headings';
+  | 'headings'
+  | 'no-valid-wording';
 
 /**
  One failed content check the page shipped with.
@@ -107,6 +110,54 @@ export function publishDefects(
       },];
     }
   },);
+}
+
+/**
+ Reports the slices where no wording passed the deterministic rule, so the
+ archive kept them (owner, 2026-09-27, "Keep archive, ship").
+
+ READ OFF THE ARTIFACT, not caught from a check: the consolidation already
+ settled these slices, and its record is the one place that names them.
+
+ @param entryId - entry the page belongs to
+
+ @param consolidation - what the third rendering settled over the entry
+
+ @returns One defect naming every such slice, or none
+
+ @example
+ ```ts
+ const defects = archiveKeptDefects({ entryId: 'BookshopCat', consolidation: artifact.consolidation, },);
+ ```
+ */
+export function archiveKeptDefects(
+  {
+    entryId,
+    consolidation,
+  }: {
+    readonly entryId: string;
+    readonly consolidation: WouldShipSource['consolidation'];
+  },
+): readonly PublishDefect[] {
+  if (consolidation.kind !== 'settled')
+    return [];
+  /**
+   Slices the archive kept, named as the message prints them.
+   */
+  const kept = consolidation.slices
+    .filter(function keptTheArchive({ shipped, },): boolean {
+      return shipped.kind === 'archive';
+    },)
+    .map(function named({ sliceIndex, },): string {
+      return `slice ${String(sliceIndex,)}`;
+    },);
+  if (kept.length === 0)
+    return [];
+  return [{
+    check: 'no-valid-wording',
+    message: `entry ${entryId} kept the archive at ${kept.join(', ',)}, where no wording passed the `
+      + 'deterministic publication rule',
+  },];
 }
 
 /**
