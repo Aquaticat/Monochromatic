@@ -1,9 +1,9 @@
 /**
  Tests for the typed half of a stage exchange (2026-09-18): a decision seat
  is asked the stage's question through the client's `decide` and never the
- sheet; a stage with no question or a client with no decisions transport
- loses that voice without a chat call; a router refusal reads as an
- unreachable seat. Cat-themed invention.
+ sheet; a stage with no question, a client with no decisions transport, a
+ router refusal and a state past the seat's context all read as a seat out
+ of reach, without a chat call. Cat-themed invention.
 
  @module
  */
@@ -21,6 +21,7 @@ import {
   SEAT_OPENROUTER_DECISIONS,
   type StageDecision,
   type SyntheticClient,
+  SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -140,8 +141,9 @@ await describe({
     },),
 
     it({
-      name: 'LOSES ITS VOICE without a chat call when the stage has no question or the client no '
-        + 'decisions transport, and reads as unreachable when the router refuses',
+      name: 'READS AS OUT OF REACH without a chat call when the stage has no question or the client no '
+        + 'decisions transport (ledger P13: no round can ask it, so no quorum may wait on it), and when the '
+        + 'router refuses',
       fn: async () => {
         const noQuestion = await attemptStageCall({
           ...SHARED,
@@ -154,7 +156,7 @@ await describe({
         expect(noQuestion,).toEqual({
           heard: false,
           answered: false,
-          unreachable: false,
+          unreachable: true,
         },);
 
         const noTransport = await attemptStageCall({
@@ -165,7 +167,7 @@ await describe({
         expect(noTransport,).toEqual({
           heard: false,
           answered: false,
-          unreachable: false,
+          unreachable: true,
         },);
 
         const refused = await attemptStageCall({
@@ -184,6 +186,49 @@ await describe({
           heard: false,
           answered: false,
           unreachable: true,
+        },);
+      },
+    },),
+
+    it({
+      name: 'READS AS OUT OF REACH FOR THE BALLOT when the endpoint refuses a state past the seat\'s context '
+        + '(ledger P13: probed 2026-09-28, HTTP 400 max_tokens_exceeded, never a truncation), and as a lost '
+        + 'voice on any other 400',
+      fn: async () => {
+        const overContext = await attemptStageCall({
+          ...SHARED,
+          client: clientWith({
+            decide: async () => {
+              throw new SyntheticHttpError({
+                status: 400,
+                bodyText: String.raw`{"error":{"message":"HTTP 400: {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}}","code":400}}`,
+              },);
+            },
+          },),
+          decision: DECISION,
+        },);
+        expect(overContext,).toEqual({
+          heard: false,
+          answered: false,
+          unreachable: true,
+        },);
+
+        const otherRefusal = await attemptStageCall({
+          ...SHARED,
+          client: clientWith({
+            decide: async () => {
+              throw new SyntheticHttpError({
+                status: 400,
+                bodyText: String.raw`{"error":{"message":"HTTP 400: {\"detail\":{\"error_type\":\"invalid_question\"}}","code":400}}`,
+              },);
+            },
+          },),
+          decision: DECISION,
+        },);
+        expect(otherRefusal,).toEqual({
+          heard: false,
+          answered: false,
+          unreachable: false,
         },);
       },
     },),
