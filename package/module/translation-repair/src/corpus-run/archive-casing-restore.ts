@@ -132,6 +132,9 @@ export function latinWords(
      Where this run starts.
      */
     const start = at;
+    // The opening letter is taken before the loop, so the run always advances
+    // whatever the loop's test admits.
+    at += 1;
     while ((at < text.length) && isLatinLetterOrMark({ character: text.charAt(at,), },))
       at += 1;
     words.push({

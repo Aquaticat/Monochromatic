@@ -145,23 +145,31 @@ await describe({
       },
     },),
     it({
-      name: 'READS an accented name as one word, composed or with a combining accent, and restores its capitals (ledger B18)',
+      name: 'READS an accented name as one word, accented inside or first, composed or with a combining accent, and restores its capitals (ledger B18)',
       fn: async () => {
         // An ASCII letter test split `CHÂTEAU` at its accent into `CH` and
         // `TEAU`, and the shipped `Château` into `Ch` and a lower-case `teau`,
-        // so the name was never read and never restored.
-        for (const accent of ['Â', 'A\u{0302}',]) {
+        // and read `ÉTOILE` from its second letter, so neither name was ever
+        // restored.
+        for (
+          const [capitals, titled,] of [
+            ['CHÂTEAU', 'Château',],
+            ['CHA\u{0302}TEAU', 'Cha\u{0302}teau',],
+            ['ÉTOILE', 'Étoile',],
+            ['E\u{0301}TOILE', 'E\u{0301}toile',],
+          ] as const
+        ) {
           /**
            Archive slices writing the station in capitals, body and footnote.
            */
           const slices = [
             pair({
               sliceIndex: 0,
-              target: `The cats waited at CH${accent}TEAU Station[^1].`,
+              target: `The cats waited at ${capitals} Station[^1].`,
             },),
             pair({
               sliceIndex: 1,
-              target: `[^1]: CH${accent}TEAU Station is where the kittens nap.`,
+              target: `[^1]: ${capitals} Station is where the kittens nap.`,
             },),
           ];
           /**
@@ -172,13 +180,13 @@ await describe({
             replacements: [
               {
                 sliceIndex: 0,
-                replacementText: `The cats waited at Ch${accent.toLowerCase()}teau Station[^1].`,
+                replacementText: `The cats waited at ${titled} Station[^1].`,
               },
             ],
           },);
           expect(restored.replacements.map(function textOf(row,): string {
             return row.replacementText;
-          },),).toEqual([`The cats waited at CH${accent}TEAU Station[^1].`,],);
+          },),).toEqual([`The cats waited at ${capitals} Station[^1].`,],);
         }
       },
     },),
