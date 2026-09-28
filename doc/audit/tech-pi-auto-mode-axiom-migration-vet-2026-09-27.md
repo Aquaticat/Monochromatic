@@ -9,7 +9,7 @@
 - Started:
    2026-09-27.
 - Last updated:
-   2026-09-27.
+   2026-09-28.
 - Subject:
    Pi auto-mode axiom migration.
 - Owner:
@@ -164,10 +164,11 @@ and cancellation controls.
 These are reasons to continue this route,
 not a calibrated error-rate claim.
 
-The limits that matter next are preparation-inclusive timing and semantic qualification.
-Parser preparation was outside the live timing envelope.
-A false-reference prose prohibition returned 0.54,
-and no threshold or calibration profile is selected.
+The remaining gates are semantic qualification and the live consumer.
+The bounded preparation-inclusive batch now covers the tested warm single-operation envelopes,
+not production timing guarantees.
+A false-reference prose prohibition returned 0.54 in the prior tranche and 0.58 in the new batch;
+no threshold or calibration profile is selected.
 See [Jev qualification](../planning/pi-auto-mode-jev-qualification.md).
 Accepted input consent and the declined dashboard/Mac access remain settled,
 not new blockers.
@@ -207,33 +208,52 @@ whereas the measured Laya profiles fail even before preparation costs.
 Laya precedes Voyage because it already supplies the required probability interface;
 Voyage would add an unqualified mapping before addressing that requirement.
 
-The next check is one bounded Jev preparation-inclusive batch using existing development fixtures.
-Cover structured read,
-parsed removal,
-and parsed transfer preparation with request and eligible-prose inputs.
-Move parser/projection and question construction inside the same five-second clock as serialization,
-transport,
+The frozen preparation-inclusive batch completed in `proc_647a`.
+Request and eligible-prose sources shared one five-second clock per operation,
+including actual parser/structured-input projection,
+question construction,
+serialization,
+both sequential calls,
 response validation,
 and freshness checks.
-Retain the existing fixed route,
-complete policy,
-zero client retries,
-and no coding-plan fallback.
-No assessed operation is executed.
+Cache removal took 977.2364449999999 milliseconds,
+structured read took 675.6790840000001 milliseconds,
+and parsed transfer took 702.3758939999998 milliseconds.
+Module/process startup and research-log writes were excluded.
+These are individual warm-profile observations,
+not a latency distribution or a production guarantee.
 
-Stop the batch on any contract/deadline failure;
-otherwise stop after its frozen cases.
-Do not tune prompts,
+The batch made six client calls and returned twelve scalars,
+with zero client retries and complete current policy in every call.
+No coding-plan fallback or assessed operation was part of the inspected program.
+Local controls `proc_b912` rejected preparation expiry before dispatch and a late second response;
+omitting the final deadline check exposed late aggregate acceptance.
+Host-side recheck `proc_4bb3` passed source/policy identities and actual body reconstruction,
+including equality with corresponding prior-tranche request bodies.
+This is separate execution,
+not independent authorship.
+
+Private root is `~/temp/agent/auto-mode-semantic-controls-2026-09-27/budget`.
+Checkpoints `0576589`,
+`bd65fa7`,
+`236e36c`,
+and `36bb87b` retain source,
+controls/freeze,
+raw results,
+and verified summary.
+Result SHA-256 is
+`b5e4de5972b5f9368feb801216d6fbde4b5f4fd74e113fc4d6a021eb6c0f1025`.
+Usage was 64,053 input and 246 output tokens.
+
+The planned batch is finished.
+Do not automatically repeat it,
+tune prompts,
 select thresholds,
 query reserved scenarios,
-open a new runtime branch,
-or add another audit framework in response.
-Passing qualifies only the tested experimental preparation envelope,
-not live authority collection,
-final policy decisions,
-production latency guarantees,
-or adoption.
-Report the remaining decision blockers instead of silently expanding the batch.
+or reopen source/runtime branches.
+Semantic qualification remains a decision blocker;
+live authority and final policy behavior remain implementation/consumer gates.
+No adoption or production change follows.
 
 ## Candidate ledger
 

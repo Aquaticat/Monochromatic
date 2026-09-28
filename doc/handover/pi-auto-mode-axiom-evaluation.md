@@ -529,21 +529,30 @@ full policy-finalizer,
 accuracy,
 or production latency qualification.
 The batch is finished.
-The aggregate audit edit is temporarily blocked by task #37:
-its updater raised `Report amendment point changed` before writing,
-leaving an owned lock with PID `326366`,
-recorded start `2026-09-28T00:31:04.142Z`,
-and unchanged report hash.
-The failed replacement payload is preserved;
-a corrected payload has been checked against the unchanged report.
-`proc_6110` only signals when the thirty-minute age can be rechecked.
-Recovery must still verify recorded age,
-absent owner,
-lock identity,
-and report identity;
-no model call or source-audit expansion is part of that bookkeeping.
-Next scope must address the remaining semantic qualification/design gate,
-not automatically add experiments or resume source tracing.
+Task #37 resolved the aggregate-audit bookkeeping failure after the required lock interval.
+The updater had raised `Report amendment point changed` before writing.
+Recovery verified the recorded owner's absence,
+a recorded age of 2,142,404 milliseconds,
+exact lock identity,
+unchanged report bytes,
+and absence of a partial report file.
+The lock and failure payload were preserved before the corrected atomic edit.
+Receipts are `~/temp/agent/auto-mode-budget-audit-lock-recovery.json`
+and `~/temp/agent/auto-mode-budget-abandoned-lock-326366.json`.
+This establishes no exception for fresh or empty locks.
+
+The user explicitly chose B:
+keep integration/design questions deferred and complete a bounded Jev semantic-qualification study first.
+Task #38 drafts that protocol under the existing semantic-control repository's `qualification/` directory.
+Draft `0e49860` defines a fixed semantic coverage matrix and reuses the existing diagnostic band catalog,
+without selecting a production threshold.
+Freeze cases,
+reference labels,
+scoring,
+acceptance criteria,
+and stopping conditions before model calls.
+The original reserved scenarios remain unqueried.
+This new user-authorized study does not reopen source/runtime exploration or permit prompt tuning.
 Do not tune prompts,
 choose thresholds,
 or query reserved scenarios from this batch.
