@@ -912,10 +912,16 @@ and drop the non-address patterns.
 
 ### F-2: publication checks cannot re-verify pages an earlier build published
 
-Status: open.
+Status: closed by A16b and A16c, by the owner's choice rather than by the fix first proposed.
 `inArchiveTypography` re-applies today's typography to old artifacts,
 so 77 of 209 pages built before class one hundred eighty-one no longer reproduce by splice.
-Fix: record the per-slice text shipped at publish and verify against it.
+Fix first proposed: record the per-slice text shipped at publish and verify against it.
+Re-measured on 2026-09-27 as 77 of 214 (A16c), and put to the owner,
+who chose that a pass rewrites such pages to the running build's reading.
+`verify-published` now names such a disagreement `READ BY ANOTHER BUILD` with both digests,
+and a pass resumed in the directory republishes the page, after which it verifies;
+a record proving an old page equals what its own build shipped would serve no reader,
+since the page is rewritten rather than kept.
 
 ### F-3: no floor refuses a Han name or line left in English prose
 
@@ -2072,9 +2078,13 @@ Status: corrected by re-asking, 2026-09-27 (A16c).
 A question said a page had never disagreed with its artifact, "0 of 214 pages across 372 run directories";
 the script behind the number had compared which files exist and never judged a page against its artifact.
 The owner chose on that premise; judged, 77 of 214 disagree.
+The ledger already said so: F-2 recorded 77 of 209 pages that no longer reproduce by splice,
+so a search of this file before asking would have caught the claim.
 Prevention: every number in a question option names the check that produced it,
 and a claim about a state is backed by a run of the instrument that decides that state,
-with its positive control, before the question is asked.
+with its positive control, before the question is asked;
+and the ledger is searched for the state (`rg` over `doc/audit-ledger.md` and `doc/status.md`)
+before any claim that it has never occurred.
 
 ### M17: a file split at the line cap, with comments elsewhere still naming the old file
 
