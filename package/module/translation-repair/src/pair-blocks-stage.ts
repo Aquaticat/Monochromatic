@@ -41,18 +41,10 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  
  @example
  ```ts
- const outcome: BlockPairingOutcome = { pairs: [], heard: 0, usable: 0, cacheEligible: false, findings: [], outcomes: [], };
+ const outcome: BlockPairingOutcome = { pairs: [], heard: 0, usable: 0, cacheEligible: false, findings: [], };
  ```
  */
 export type BlockPairingOutcome = {
-  /**
-   Final outcome of every asked seat, in roster order, including unreadable replies.
-   Counts cannot identify which model supplied which relation; frozen preparation
-   recipes retain these outcomes to reproduce the existing reader and agreement.
-   A heard wire still needs semantic range/order validation before it is usable.
-   */
-  readonly outcomes: readonly RoundOutcome<BlockPairingWire>[];
-
   /**
    Correspondences enough voices named, in document order.
    */

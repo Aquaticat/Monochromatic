@@ -144,12 +144,9 @@ await describe({
           exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
           l,
         },);
-        expect(outcome.pairs.length,).toBe(2,);
+        expect(outcome.pairs,).toEqual([{ source: 0, target: 0, }, { source: 1, target: 1, },],);
+        expect(outcome.heard,).toBe(ROSTER.length,);
         expect(outcome.usable,).toBe(2,);
-        expect(outcome.outcomes,).toEqual(ROSTER.map(modelId => ({
-          modelId,
-          voice: { heard: true, value: { pairs: [{ source: 0, target: 0, }, { source: 1, target: 1, },], }, },
-        })),);
       },
     },),
     it({
@@ -273,14 +270,15 @@ await describe({
         expect(outcome.pairs.length,).toBe(0,);
         expect(outcome.usable,).toBe(0,);
         expect(outcome.findings.join(' ',),).toContain('no-usable-voice',);
-        expect(outcome.outcomes,).toEqual(ROSTER.map(modelId => ({
-          modelId,
-          voice: { heard: true, value: { pairs: [{ source: 9, target: 0, },], }, },
-        })),);
+        // HEARD BUT UNUSABLE, each seat named: the replies arrived in shape and
+        // were refused by the reader, not lost on the way.
+        expect(outcome.heard,).toBe(ROSTER.length,);
+        expect(outcome.findings.filter(finding => finding.startsWith('block-pairing unusable',),),)
+          .toHaveLength(ROSTER.length,);
       },
     },),
     it({
-      name: 'retains asked missing voices without inventing pair ballots',
+      name: 'counts an off-shape reply as unheard rather than as a ballot',
       fn: async () => {
         const outcome = await pairBlocksWithRoster({
           fanOut: 'whole-bench',
@@ -294,10 +292,8 @@ await describe({
         },);
         expect(outcome.pairs,).toEqual([],);
         expect(outcome.heard,).toBe(0,);
-        expect(outcome.outcomes,).toEqual(ROSTER.map(modelId => ({
-          modelId,
-          voice: { heard: false, answered: true, unreachable: false, unreadable: 'off-shape', },
-        })),);
+        expect(outcome.usable,).toBe(0,);
+        expect(outcome.findings.join(' ',),).toContain(`no-usable-voice (0 heard of ${String(ROSTER.length,)})`,);
       },
     },),
   ],

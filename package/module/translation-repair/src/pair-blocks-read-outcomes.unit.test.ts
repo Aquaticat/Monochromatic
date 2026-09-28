@@ -13,7 +13,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 const roster = [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_HYPER_OPENROUTER_VISION_EDITOR,] as const;
-const l = tagged({ tag: 'pairing-recipe-reading-test', },);
+const l = tagged({ tag: 'pairing-outcome-reading-test', },);
 
 await describe({
   name: readBlockPairingOutcomes.name,
@@ -30,12 +30,11 @@ await describe({
         expect(result.pairs,).toEqual([{ source: 0, target: 0, },],);
         expect(result.heard,).toBe(2,);
         expect(result.usable,).toBe(2,);
-        expect(result.outcomes,).toEqual(outcomes,);
         expect(readBlockPairingOutcomes({ outcomes: structuredClone(outcomes,), modelIds: roster, sourceCount: 2, targetCount: 2, l, },),).toEqual(result,);
       },
     },),
     it({
-      name: 'retains schema-heard invalid indexes as unusable evidence rather than accepting their relations',
+      name: 'reads schema-valid replies naming blocks out of range as unusable rather than accepting their relations',
       fn: async () => {
         const outcomes: readonly RoundOutcome<BlockPairingWire>[] = roster.map(modelId => ({
           modelId,
@@ -47,7 +46,6 @@ await describe({
         expect(result.usable,).toBe(0,);
         expect(result.cacheEligible,).toBe(false,);
         expect(result.findings.filter(finding => finding.includes('unusable')),).toHaveLength(3,);
-        expect(result.outcomes,).toEqual(outcomes,);
       },
     },),
     it({
@@ -60,12 +58,11 @@ await describe({
         expect(result.pairs,).toEqual([],);
         expect(result.heard,).toBe(0,);
         expect(result.usable,).toBe(0,);
-        expect(result.outcomes,).toEqual(outcomes,);
         expect(result.findings,).toEqual(['block-pairing no-usable-voice (0 heard of 3)',],);
       },
     },),
     it({
-      name: 'uses the original definition exemptions when reading stored voice usability',
+      name: 'exempts definition blocks from the order rule only when told which blocks are definitions',
       fn: async () => {
         const outcomes: readonly RoundOutcome<BlockPairingWire>[] = roster.map(modelId => ({
           modelId,
@@ -77,7 +74,6 @@ await describe({
         expect(ordinary.usable,).toBe(0,);
         expect(definitions.usable,).toBe(3,);
         expect(definitions.cacheEligible,).toBe(false,);
-        expect(definitions.outcomes,).toEqual(outcomes,);
       },
     },),
     it({
@@ -94,10 +90,10 @@ await describe({
       },
     },),
     it({
-      name: 'records an empty asked-seat list without inventing silent model outcomes',
+      name: 'reads an empty reply list as no usable voice over the configured seats',
       fn: async () => {
         const result = readBlockPairingOutcomes({ outcomes: [], modelIds: roster, sourceCount: 2, targetCount: 2, l, },);
-        expect(result.outcomes,).toEqual([],);
+        expect(result.heard,).toBe(0,);
         expect(result.cacheEligible,).toBe(false,);
         expect(result.findings,).toEqual(['block-pairing no-usable-voice (0 heard of 3)',],);
       },

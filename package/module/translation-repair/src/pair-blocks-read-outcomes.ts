@@ -43,7 +43,7 @@ const AGREEMENT_NEEDED = 2;
  
  @param l - caller logger retaining preparation identity
  
- @returns Agreed relations, final seat evidence and unchanged usability findings
+ @returns Agreed relations, heard and usable counts, cache eligibility and findings
  
  @throws {@link import('./pair-blocks-evidence-identity.ts').PairingEvidenceError} when seat identities cannot represent the configured electorate
  
@@ -131,7 +131,6 @@ export function readBlockPairingOutcomes(
       usable: 0,
       cacheEligible: false,
       findings,
-      outcomes,
     };
   }
   /**
@@ -170,7 +169,6 @@ export function readBlockPairingOutcomes(
     usable: pairings.length,
     cacheEligible: dropped.length === 0,
     findings,
-    outcomes,
   };
 }
 

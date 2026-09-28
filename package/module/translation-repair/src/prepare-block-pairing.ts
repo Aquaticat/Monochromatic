@@ -26,7 +26,7 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 /**
  Prepares one already-aligned parent without buying unrelated section or block questions.
  Singletons and empty sides retain their zero-call paths.
- Historical cache records remain historical; only a queried result carries final seat outcomes.
+ A cached section reuses its stored relations and findings without asking again.
  
  @param client - existing production model client
  
@@ -155,11 +155,6 @@ export async function prepareBlockPairing(
     },);
     return finishPreparedBlockPairing({
       pairs: media.pairs,
-      evidence: {
-        kind: 'cached',
-        key,
-        record: cached,
-      },
       findings: [
         ...cached.findings,
         ...media.findings
@@ -210,11 +205,6 @@ export async function prepareBlockPairing(
     },);
   return finishPreparedBlockPairing({
     pairs,
-    evidence: {
-      kind: 'queried',
-      key,
-      outcome,
-    },
     findings,
     pair,
     pairIndex,

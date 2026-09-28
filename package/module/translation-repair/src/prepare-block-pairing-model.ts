@@ -1,63 +1,23 @@
-import type {
-  BlockPairingOutcome,
-  PairedSectionRecord,
-} from './pair-blocks-stage.ts';
 import type { BlockPair, } from './pair-blocks-wire.ts';
 import type { DefinitionLabelPair, } from './pair-definition-order.ts';
 
-//region One parent pairing's acquisition evidence
-// Cache records retain their historical authority; they do not acquire unrecorded seat outcomes on resume.
+//region One section's pairing result
+// What one aligned section's pairing hands document preparation. Whether the
+// relations came from the cache or from the roster is not carried: the
+// provider-free preparation layer that read it was removed in `cbedea357`, and
+// nothing in a pass reads it (ledger D20).
 
 /**
- How a questioned parent obtained the relations preparation consumed.
- A cache record without seat outcomes is not newly corroborated evidence.
- 
- @example
- ```ts
- const evidence: PreparedBlockEvidence = { kind: 'cached', key, record };
- ```
- */
-export type PreparedBlockEvidence =
-  | {
-    /**
-     Historical record reused without a new call.
-     */
-    readonly kind: 'cached';
-    /**
-     Question identity under the existing pairing-cache version.
-     */
-    readonly key: string;
-    /**
-     Exactly the historical record, without invented ballots.
-     */
-    readonly record: PairedSectionRecord;
-  }
-  | {
-    /**
-     Existing stage supplied final asked-seat outcomes on this call.
-     */
-    readonly kind: 'queried';
-    /**
-     Question identity under the same pairing-cache version.
-     */
-    readonly key: string;
-    /**
-     Raw final seat outcomes and their existing interpretation.
-     */
-    readonly outcome: BlockPairingOutcome;
-  };
+ Observations shared by paired and deliberately unpaired section outcomes.
 
-/**
- Observations shared by paired and deliberately unpaired parent outcomes.
- 
  @example
  ```ts
- const details = { findings: [], definitionPairs: [] }; 
+ const details = { findings: [], definitionPairs: [] };
  ```
  */
 type PreparedBlockDetails = {
   /**
-   Original stage, cache and structural-normalization findings in order.
+   Stage, cache and structural-normalization findings in the order they arose.
    */
   readonly findings: readonly string[];
   /**
@@ -67,11 +27,11 @@ type PreparedBlockDetails = {
 };
 
 /**
- One indexed parent's preparation result without inventing a correspondence on fallback.
- Only `paired` contributes a map entry to pure document preparation.
- The other kinds preserve the production distinction between an implicit singleton,
- an empty side and an unresolved question.
- 
+ One aligned section's pairing result, without inventing a correspondence on fallback.
+ Only `paired` contributes a map entry to document preparation.
+ The other kinds keep apart a structural singleton, an empty side and a
+ question the roster or the cache could not settle.
+
  @example
  ```ts
  if (result.kind === 'paired') blockPairings.set(pairIndex, result.pairs);
@@ -80,27 +40,19 @@ type PreparedBlockDetails = {
 export type PreparedBlockPairing = PreparedBlockDetails & (
   | {
     /**
-     Relations survived the existing preparation normalization.
+     Relations survived preparation's media and definition normalization.
      */
     readonly kind: 'paired';
     /**
-     Exact map value supplied to the production slicer, even when empty after definition separation.
+     Map value handed to the slicer, even when empty after definition separation.
      */
     readonly pairs: readonly BlockPair[];
-    /**
-     Acquisition state, not a semantic-correctness label.
-     */
-    readonly evidence: PreparedBlockEvidence;
   }
   | {
     /**
-     A questioned parent contributed no explicit map entry.
+     The section was asked about, or found in the cache, and settled on no relation.
      */
     readonly kind: 'fallback';
-    /**
-     Question outcome or historical cache record that did not establish a pairing.
-     */
-    readonly evidence: PreparedBlockEvidence;
   }
   | {
     /**
@@ -110,4 +62,4 @@ export type PreparedBlockPairing = PreparedBlockDetails & (
   }
 );
 
-//endregion One parent pairing's acquisition evidence
+//endregion One section's pairing result

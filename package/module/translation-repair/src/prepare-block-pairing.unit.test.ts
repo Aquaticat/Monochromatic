@@ -3,6 +3,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
   alignDocumentSections,
+  blockPairingQuestion,
   createSyntheticClient,
   parseDocument,
   prepareBlockPairing,
@@ -56,7 +57,7 @@ await describe({
   name: prepareBlockPairing.name,
   children: [
     it({
-      name: 'shares cold cache bytes and warm findings without inventing new cached seat outcomes',
+      name: 'caches the cold round and resumes its pairs and findings warm without asking again',
       fn: async () => {
         const f = fixture();
         const cold = await prepareBlockPairing(f.input);
@@ -64,7 +65,6 @@ await describe({
         expect(f.calls).toHaveLength(2);
         expect(f.writes).toHaveLength(1);
         if (cold.kind !== 'paired') throw new Error('expected explicit pairing');
-        expect(cold.evidence.kind).toBe('queried');
         expect(cold.findings.join(' ')).toContain('section 7 paired 2 of 2');
         const [storedRecord] = f.writes;
         if (storedRecord === undefined) throw new Error('expected persisted parent record');
@@ -77,8 +77,6 @@ await describe({
         expect(warm.findings).toEqual(cold.findings);
         if (warm.kind !== 'paired') throw new Error('expected warm explicit pairing');
         expect(warm.pairs).toEqual(cold.pairs);
-        expect(warm.evidence.kind).toBe('cached');
-        expect('outcome' in warm.evidence).toBe(false);
       },
     },),
     it({
@@ -97,7 +95,7 @@ await describe({
         const f = fixture();
         const initial = await prepareBlockPairing(f.input);
         if (initial.kind !== 'paired') throw new Error('expected cacheable initial pairing');
-        f.stored.set(initial.evidence.key, { pairs: [], findings: ['historical unresolved parent'], });
+        f.stored.set(blockPairingQuestion({ pair: f.input.pair }).key, { pairs: [], findings: ['historical unresolved parent'], });
         const result = await prepareBlockPairing(f.input);
         expect(result.kind).toBe('fallback');
         expect(result.findings).toEqual(['historical unresolved parent']);
@@ -117,8 +115,8 @@ await describe({
         expect(result.kind).toBe('fallback');
         expect(result.findings.join(' ')).toContain('fell back to scoring');
         expect(f.writes).toHaveLength(test.writes);
-        if (result.kind !== 'fallback') throw new Error('expected unresolved question');
-        expect(result.evidence.kind).toBe('queried');
+        // ASKED, NOT IMPLICIT: the roster was put the question and settled nothing.
+        expect(f.calls).toHaveLength(2);
       },
     },)),
     it({
@@ -167,7 +165,7 @@ await describe({
         const f = fixture({ sourceText: '[^1]: 猫。\n\n[^2]: 盒子。', targetText: '[^b]: Box.\n\n[^a]: Cat.' });
         const initial = await prepareBlockPairing(f.input);
         if (initial.kind !== 'paired') throw new Error('expected cacheable definition pairing');
-        f.stored.set(initial.evidence.key, { pairs: [{ source: 0, target: 1 }, { source: 1, target: 0 }], findings: [] });
+        f.stored.set(blockPairingQuestion({ pair: f.input.pair }).key, { pairs: [{ source: 0, target: 1 }, { source: 1, target: 0 }], findings: [] });
         const result = await prepareBlockPairing(f.input);
         if (result.kind !== 'paired') throw new Error('expected explicit definition-separated map entry');
         expect(result.pairs).toEqual([]);

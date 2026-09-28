@@ -8,10 +8,7 @@ import {
   crossingFinding,
   splitDefinitionPairs,
 } from './pair-definition-order.ts';
-import type {
-  PreparedBlockEvidence,
-  PreparedBlockPairing,
-} from './prepare-block-pairing-model.ts';
+import type { PreparedBlockPairing, } from './prepare-block-pairing-model.ts';
 
 //region Pairing handoff after acquisition and media normalization
 // Both cold and warm paths preserve the same definition-order behavior and fallback semantics.
@@ -21,9 +18,7 @@ import type {
  Empty acquired relations retain the scorer fallback rather than becoming an explicit empty map entry.
  
  @param pairs - acquired relations after existing media-adjacency normalization
- 
- @param evidence - actual acquisition path, with no invented cache votes
- 
+
  @param findings - observations already reported by acquisition and normalization
  
  @param pair - parent nodes whose definition labels are being separated
@@ -36,20 +31,18 @@ import type {
  
  @example
  ```ts
- const result = finishPreparedBlockPairing({ pairs, evidence, findings, pair, pairIndex: 2, l });
+ const result = finishPreparedBlockPairing({ pairs, findings, pair, pairIndex: 2, l });
  ```
  */
 export function finishPreparedBlockPairing(
   {
     pairs,
-    evidence,
     findings,
     pair,
     pairIndex,
     l,
   }: {
     readonly pairs: readonly BlockPair[];
-    readonly evidence: PreparedBlockEvidence;
     readonly findings: readonly string[];
     readonly pair: ChunkPair;
     readonly pairIndex: number;
@@ -67,7 +60,6 @@ export function finishPreparedBlockPairing(
     pl.warn(`section ${String(pairIndex,)}: no agreed pairing, keeping the deterministic aligner`,);
     return {
       kind: 'fallback',
-      evidence,
       findings,
       definitionPairs: [],
     };
@@ -88,7 +80,6 @@ export function finishPreparedBlockPairing(
     kind: 'paired',
     pairs: split.forSlicing,
     definitionPairs: split.definitionPairs,
-    evidence,
     findings: split.crossing ? [
       ...findings,
       crossingFinding({ pairIndex, },),

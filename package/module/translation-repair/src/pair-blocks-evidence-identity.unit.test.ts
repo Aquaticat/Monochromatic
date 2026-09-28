@@ -47,7 +47,9 @@ await describe({
         const outcomes = [heard(roster[0]), heard(roster[2]),];
         const result = readBlockPairingOutcomes({ outcomes, modelIds: roster, sourceCount: 2, targetCount: 2, l, },);
         expect(result.pairs,).toEqual(wire.pairs,);
-        expect(result.outcomes,).toEqual(outcomes,);
+        // The two asked seats are heard; the spared third is neither heard nor counted as a ballot.
+        expect(result.heard,).toBe(2,);
+        expect(result.usable,).toBe(2,);
       },
     },),
     it({

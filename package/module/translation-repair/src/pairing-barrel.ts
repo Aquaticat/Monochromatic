@@ -28,10 +28,7 @@ export {
   type BlockPairingQuestion,
 } from './block-pairing-question.ts';
 export { blockPairingQuestionKey, } from './block-pairing-question-key.ts';
-export {
-  type PreparedBlockEvidence,
-  type PreparedBlockPairing,
-} from './prepare-block-pairing-model.ts';
+export { type PreparedBlockPairing, } from './prepare-block-pairing-model.ts';
 export {
   admitInsertions,
   type CarriedInsertion,

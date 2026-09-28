@@ -40,8 +40,8 @@ await describe({
         const acquired = await prepareBlockPairing({ client, modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER],
           pair, pairIndex: 0, targetContainers: target.containers, signal: new AbortController().signal, exchangeTimeoutMs: 5_000, l });
         expect(calls).toBe(2);
-        if ((acquired.kind !== 'paired') || (acquired.evidence.kind !== 'queried')) throw new Error('fixture requires current acquired relations');
-        expect(new Set(acquired.evidence.outcome.outcomes.map(outcome => outcome.modelId)).size).toBe(2);
+        if (acquired.kind !== 'paired') throw new Error('fixture requires current acquired relations');
+        expect(acquired.findings.join(' ')).toContain('from 2 usable voices of 2 heard');
         const prepared = prepareDocumentPair({ sourceText, targetText, frontMatterAuthority: 'archive', blockPairings: new Map([[0, acquired.pairs]]) });
         const heading = prepared.slices.find(slice => (slice.source.nodes.length === 1) && (slice.source.nodes[0]?.kind === 'heading'));
         const body = prepared.slices.find(slice => (slice.source.nodes.length === 1) && (slice.source.nodes[0]?.kind === 'paragraph'));
