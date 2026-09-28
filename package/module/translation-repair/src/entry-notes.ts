@@ -1,4 +1,7 @@
-import type { RepairDocument, } from './parse-document.ts';
+import {
+  isCommentFinding,
+  type RepairDocument,
+} from './parse-document.ts';
 
 //region Entry notes
 // The notes an entry carries, rendered as identity-context lines so a sheet
@@ -276,8 +279,7 @@ export function commentNoteLines(
 ): readonly string[] {
   return document.parseFindings
     .filter(function isComment(finding,): boolean {
-      return (finding.kind === 'html-comment-skipped')
-        || (finding.kind === 'unterminated-html-comment');
+      return isCommentFinding({ finding, },);
     },)
     .map(function toPlacedBody(finding,): {
       readonly anchor: string;

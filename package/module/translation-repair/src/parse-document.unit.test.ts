@@ -13,6 +13,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   hashContent,
+  isCommentFinding,
   parseDocument,
 } from '../dist/final/node/index.mjs';
 
@@ -290,6 +291,26 @@ await describe({
         for (const node of doc.nodes) {
           expect(node.text,).toBe(doc.text.slice(node.startOffset, node.endOffset,),);
         }
+      },
+    },),
+    it({
+      name: 'A COMMENT FINDING is a masked comment or one left open, and no other tolerance event',
+      fn: async () => {
+        expect(([
+          'html-comment-skipped',
+          'unterminated-html-comment',
+          'invisible-line-masked',
+          'mdx-downgraded',
+        ] as const).map(function reads(kind,): boolean {
+          return isCommentFinding({
+            finding: {
+              kind,
+              startOffset: 0,
+              endOffset: 1,
+              detail: 'a cat walked across the keyboard',
+            },
+          },);
+        },),).toEqual([true, true, false, false,],);
       },
     },),
   ],

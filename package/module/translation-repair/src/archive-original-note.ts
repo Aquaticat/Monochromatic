@@ -2,7 +2,10 @@ import {
   commentBody,
   foldedLine,
 } from './entry-notes.ts';
-import type { RepairDocument, } from './parse-document.ts';
+import {
+  isCommentFinding,
+  type RepairDocument,
+} from './parse-document.ts';
 
 export { sealedNodeIds, } from './sealed-node-ids.ts';
 
@@ -252,8 +255,7 @@ function documentNotes(
 ): readonly PlacedNote[] {
   return document.parseFindings
     .filter(function isComment(finding,): boolean {
-      return (finding.kind === 'html-comment-skipped')
-        || (finding.kind === 'unterminated-html-comment');
+      return isCommentFinding({ finding, },);
     },)
     .map(function toNote(finding,): PlacedNote {
       /**

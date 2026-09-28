@@ -90,6 +90,7 @@ export {
   SpanContiguityError,
 } from './span-contiguity.ts';
 export {
+  isCommentFinding,
   parseDocument,
   type RepairDocument,
 } from './parse-document.ts';

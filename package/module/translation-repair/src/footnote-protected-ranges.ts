@@ -3,7 +3,10 @@ import { archiveOriginalReadingOf, } from './archive-original-note.ts';
 import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 import type { FootnoteLabelRewrite, } from './footnote-label-rewrite.ts';
 import { FootnoteRewriteError, } from './footnote-rewrite-error.ts';
-import { parseDocument, } from './parse-document.ts';
+import {
+  isCommentFinding,
+  parseDocument,
+} from './parse-document.ts';
 
 //region Declared English-original protection
 // Both the sealed bytes and their owning declaration must remain outside any moved region.
@@ -65,7 +68,7 @@ export function footnoteProtectedRanges({ text, }: { readonly text: string; },):
      */
     const comment = document.parseFindings
       .find(function owns(finding,): boolean {
-      return ((finding.kind === 'html-comment-skipped') || (finding.kind === 'unterminated-html-comment'))
+      return isCommentFinding({ finding, },)
         && (finding.endOffset === span.startOffset);
     },);
     if (comment === undefined)
