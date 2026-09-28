@@ -117,9 +117,21 @@ SHA-256 `cc3d89ed87a33b542912a52f858bd18bbcc683114247502fc16f37cd2241abf5`.
 
 No diagnostic band passed:
 
-- 80/20: 47 correct, 5 wrong, 20 unresolved; all errors were cross-clause positive-relation false positives.
-- 90/10: 37 correct, 0 wrong, 35 unresolved; no request positive-relation false case resolved.
-- 95/05: 19 correct, 0 wrong, 53 unresolved; request positive relations were all unresolved,
+- 80/20:
+   47 correct,
+   5 wrong,
+   20 unresolved;
+   all errors were cross-clause positive-relation false positives.
+- 90/10:
+   37 correct,
+   0 wrong,
+   35 unresolved;
+   no request positive-relation false case resolved.
+- 95/05:
+   19 correct,
+   0 wrong,
+   53 unresolved;
+   request positive relations were all unresolved,
   and request prohibition lacked novel false coverage.
 
 The read canary pair and shared original transfer anchor do not count toward novel coverage;
@@ -987,6 +999,42 @@ or reserved-case use occurred.
 The user's actual Voyage data-use opt-out setting remains uninspected.
 
 ## Active work and next action
+
+### Current checkpoint
+
+The bounded Drex access and semantic phases are complete at their recorded scopes.
+No diagnostic Drex band qualified and no extra Drex call or calibration follows automatically.
+Resume authorized Voyage task #48 after the result-document checks.
+Do not resume Q16 or Laya #34.
+
+Voyage's corpus manifest remains
+`e59f9ac8f70811a1d05654d6c6014584019653b68617e4a3b909b81144fc0eb0`.
+Its fixed study plan retains the original `ad6e5a89` authorization context;
+the current `ef5701a1` context preserves that Voyage authority and adds only bounded public/synthetic Drex evaluation.
+Do not rewrite the old manifest merely to replace its historical context identifier.
+
+The private Voyage feature protocol/assessor is adapted but not yet query-frozen.
+The four-head offline consumer passed its mathematical controls in `proc_9b8c`.
+Fit-base image:
+`6f45a4444f866fd6ff13665b85258f8bd9dfb366ee9476dcb6c14a6bde34ea6d`.
+Control result SHA-256:
+`24883888f0e9cdfa1c2c31928d915d1211904902013ed7653d5df09ae6c4389f`.
+These are toy features,
+not fitted semantic heads.
+
+Before Voyage queries,
+finish the feature-client controls,
+fit-input/parameter artifact preparation,
+fixed evaluator,
+and test-release gate.
+Freeze that execution manifest.
+Then collect the declared fit/validation features,
+fit only in the offline sandbox,
+lock the candidate/evaluator,
+and perform the single locked-test phase.
+No fresh semantic Voyage source has been queried yet.
+
+### Historical bounded-checkpoint sequence
 
 The user asked:
 "Are we overengineering now?"

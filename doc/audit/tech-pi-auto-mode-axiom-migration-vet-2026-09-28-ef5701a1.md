@@ -367,9 +367,21 @@ These observations are not latency guarantees or controlled provider comparisons
 
 No frozen diagnostic band passed:
 
-- 80/20: 47 correct, 5 wrong, 20 unresolved; coverage passed but the error gate failed.
-- 90/10: 37 correct, 0 wrong, 35 unresolved; no request positive-relation false case resolved.
-- 95/05: 19 correct, 0 wrong, 53 unresolved; all request positive-relation cases were unresolved,
+- 80/20:
+   47 correct,
+   5 wrong,
+   20 unresolved;
+   coverage passed but the error gate failed.
+- 90/10:
+   37 correct,
+   0 wrong,
+   35 unresolved;
+   no request positive-relation false case resolved.
+- 95/05:
+   19 correct,
+   0 wrong,
+   53 unresolved;
+   all request positive-relation cases were unresolved,
   and request prohibition lacked a novel resolved-false case.
 
 All five 80/20 errors were positive-relation false positives on cross-clause inputs:
@@ -385,7 +397,8 @@ against a false reference.
 The [semantic report](../planning/pi-auto-mode-drex-qualification.md) retains the exact source examples and scope.
 No represented action was executed.
 
-Raw result commit: `9bdf3fa`.
+Raw result commit:
+ `9bdf3fa`.
 Result SHA-256:
 `cc3d89ed87a33b542912a52f858bd18bbcc683114247502fc16f37cd2241abf5`.
 Verifier SHA-256:
