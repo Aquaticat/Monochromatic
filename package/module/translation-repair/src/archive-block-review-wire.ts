@@ -145,13 +145,17 @@ export function isArchiveBlockReviewWire(value: unknown,): value is ArchiveBlock
     return false;
   if ((typeof value.finding) !== 'string')
     return false;
-  if (value.disposition === 'source-supported')
-    return value.sourceQuote
-      .trim()
-      !== '';
-  // Revision proposals may cite the part they preserve. Only source-supported
-  // retention needs an anchor; the revision still faces independent selection.
-  return (value.disposition === 'revise') || (value.sourceQuote === '');
+  // Only source-supported retention needs an anchor. A revision may cite the
+  // part it preserves and still faces independent selection; an
+  // editorial-context reply may quote the source beside it, which nothing
+  // reads, since the stage checks the block itself (ledger P5, 2026-09-28:
+  // all 11 guard rejections over five runs were that shape, and the prompt
+  // never asked for an empty quote there; `dc51b02d9` fixed only `revise`).
+  if (value.disposition !== 'source-supported')
+    return true;
+  return value.sourceQuote
+    .trim()
+    !== '';
 }
 
 /**
