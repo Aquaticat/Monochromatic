@@ -16,7 +16,10 @@ import { laneTextsForSlate, } from './consolidate-lane-offer.ts';
 import { persistConsolidationSettlement, } from './consolidate-persistence.ts';
 import type { ConsolidationSettlement, } from './consolidate-settle.ts';
 import { buyConsolidationSlice, } from './consolidate-slice-buy.ts';
-import type { ConsolidateSliceSeating, } from './consolidate-slice-seating.ts';
+import type {
+  ConsolidateRoster,
+  ConsolidateSliceSeating,
+} from './consolidate-slice-seating.ts';
 import { readStandingVerdict, } from './consolidate-standing-verdict.ts';
 import {
   standingTextFor,
@@ -205,16 +208,38 @@ export async function consolidateDocument(
   },);
 
   /**
-   What this run asks, folded into every key.
+   What a run on one roster asks, folded into every key it settles, so a
+   slice seated on a re-read roster is keyed by the roster that settled it.
+
+   @param roster - writers, judges and naturalness roles the slice runs on
+
+   @returns Run shape for that roster
    */
-  const runShape = consolidateRunShape({
+  function shapeFor({ roster, }: { readonly roster: ConsolidateRoster; },): string {
+    return consolidateRunShape({
+      modelIds: roster.modelIds,
+      judgeModelIds: roster.judgeModelIds,
+      ...((identityContext === undefined) ? {} : { identityContext, }),
+      ...((referenceContext === undefined) ? {} : { referenceContext, }),
+      ...((roster.polishConfig === undefined) ? {} : { polishConfig: roster.polishConfig, }),
+      declaredNamePairs,
+    },);
+  }
+
+  /**
+   Roster the consolidation started on, which every slice runs on until a
+   hold re-seats one.
+   */
+  const startingRoster: ConsolidateRoster = {
     modelIds,
     judgeModelIds,
-    ...((identityContext === undefined) ? {} : { identityContext, }),
-    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((polishConfig === undefined) ? {} : { polishConfig, }),
-    declaredNamePairs,
-  },);
+  };
+
+  /**
+   What this run asks on its starting roster, folded into every key.
+   */
+  const runShape = shapeFor({ roster: startingRoster, },);
 
   /**
    Comparison rows beside contests that selected them, in document order.
@@ -243,8 +268,19 @@ export async function consolidateDocument(
         lane: 'consolidation',
         sliceIndex: row.sliceIndex,
         run: async function consolidateInContext(): Promise<ArtifactConsolidateSlice> {
-          if (beforeSlice !== undefined)
-            await beforeSlice();
+          // A SLICE RUNS ON THE ROSTER ITS HOOK HANDS OVER (ledger H5,
+          // 2026-09-28), as both lanes' slices do: the hook only waited, so a
+          // dry-out inside the consolidation left every later slice on the
+          // writers and judges read before it.
+          /**
+           Seating the hook hands this slice: a roster read under a hold, or
+           none, which keeps the roster the consolidation started on.
+           */
+          const seating: ConsolidateSliceSeating = (beforeSlice === undefined) ? {} : await beforeSlice();
+          /**
+           Writers, judges and naturalness roles this slice runs on.
+           */
+          const sliceRoster = seating.roster ?? startingRoster;
           /**
            Original of this slice, which every ledger row carries.
            */
@@ -415,7 +451,7 @@ export async function consolidateDocument(
            Key this settlement resumes under.
            */
           const key = consolidateSliceKey({
-            runShape,
+            runShape: (seating.roster === undefined) ? runShape : shapeFor({ roster: seating.roster, },),
             sourceText,
             incumbentText,
             ...((syntax === undefined) ? {} : { syntax, }),
@@ -444,13 +480,13 @@ export async function consolidateDocument(
                */
               const bought = await buyConsolidationSlice({
                 client,
-                roster: modelIds,
-                judgeModelIds,
+                roster: sliceRoster.modelIds,
+                judgeModelIds: sliceRoster.judgeModelIds,
                 subject,
                 standingText,
                 lineStructured,
                 sliceIndex: row.sliceIndex,
-                ...((polishConfig === undefined) ? {} : { polishConfig, }),
+                ...((sliceRoster.polishConfig === undefined) ? {} : { polishConfig: sliceRoster.polishConfig, }),
                 standingMayShip,
                 standingEligible: standingValid,
                 ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
