@@ -407,6 +407,10 @@ import type { RepairModels, } from './repair-contract.ts';
  its note, on the critic, panel, editor and introduced-defect probe sheets
  (ledger L5, `868e848d3`); checked on 2026-09-28 after TianqiChen66621: no
  slice-cache file newer than 00:26 on 2026-09-27 remains.
+
+ Rides inside 34 too: the critic and panel sheets share one block of
+ obligatory differences, which replaces the panel's line on small words
+ (ledger L5, `64a4bf63a`); same check, same result.
  */
 export const SLICE_CACHE_VERSION = 34;
 /**

@@ -2150,7 +2150,7 @@ the strip dropping its new refusals, and the sheet lists inverted are each caugh
 
 ### L5: wrong panel acceptances
 
-Status: partly fixed; the sub-items below each carry their own status.
+Status: fixed or closed, item by item below (2026-09-28).
 Found in the audit:
 glosses of works outside the panel's apparatus list;
 a supplied object outside its forced-difference line;
@@ -2239,16 +2239,33 @@ with the definitions it cites from outside the window, first from the slices, th
 Its wire guard passed with every lane's documents replaced by the empty string or by the other side's text,
 because the notes reached the sheets through the DECLARED NAMES block regardless; that is what exposed the premise (M32).
 
-#### Remaining L5 sub-items
+#### The other sub-items
 
-Status: open.
-The forced-difference line of the panel sheet (`adjudicate-prompt.ts`, "Fluency-serving additions are not additions")
-names conjunctions, connectives, pronouns and small words, not a subject or object English grammar needs
-(Tq16 slice 20, "this side of me").
-Whether the house rule glossing a handle in parentheses reaches the panel as licensing the gloss (Cu11 slice 1),
-and whether the DECLARED NAMES block covers a page-wide archive rendering of a handle (XZ14 slice 49).
-鲨鲨, a plush shark, taken for a person 4 to 0 critical (hu31 slice 39): a model error with the full original shown;
-check what the sheet showed before calling it out of reach.
+Each checked on a rendered sheet first (M32), with `l5-obligatory-render.mjs` and `l5-handle-render.mjs`.
+
+The panel's obligatory differences (Tq16 slice 20, an addition claim against "of me" English had to state):
+fixed in `64a4bf63a` (guard `1c3d0cf36`, mutation checked).
+Rendered sheets showed the critic carried a whole obligatory-difference block and the panel none of it,
+only a line on conjunctions, connectives, pronouns and small words.
+`obligatory-differences.ts` states the block once in neutral voice, now naming a possessor and a connective too,
+and both sheets carry it with a line in their own voice; it replaces the panel's narrower line.
+Rides inside repair 34, no slice-cache file newer than the last bump remaining.
+
+A handle's literal gloss claimed as an addition (Cu11 slice 1): covered by today's sheets.
+Both the critic and the panel render the house rule giving a romanized handle its literal meaning in parentheses
+on first mention, and the apparatus kinds naming a gloss of a name as accurate apparatus;
+the run predates S5, which put the shared apparatus list on the panel.
+
+A heading rendered "Ann" (XZ14 slice 49): not a wrong acceptance by any rule the owner has set.
+The original heading has the shape "label: name" and the archive renders every section heading as the name alone;
+the accepted claims argue the label was dropped, and the owner's ruling on headings is "judges decide".
+The patch lost at the checkers, so the archive heading shipped.
+
+鲨鲨, a plush shark, taken for a person (hu31 slice 39): no sheet change.
+The accepted claim (settled major, a mistranslation claim calling 鲨鲨 a person) lost at the checkers,
+so the page kept the archive's wording; the run predates stored panel reasons,
+and the reason-before-vote change (owner, 2026-09-27) is the structural answer to a panel voting on a misreading.
+
 Closed elsewhere: Tq16 slice 0's gloss of a work (S5's `APPARATUS_KINDS`), sh2 slice 38's MDX comment (L4).
 
 ### L6: the lane contest runs on insertion slices the repair lane does not apply to
