@@ -98,6 +98,13 @@ await describe({
         expect(words.has('the',),).toBe(false,);
       },
     },),
+    it({
+      name: 'folds an accented word to one word, composed or combining, instead of cutting it at the accent (ledger B18)',
+      fn: async () => {
+        expect([...contentWords({ text: 'The château kept Émilie; the cha\u{0302}teau kept Emilie\'s yarn.', },),].toSorted(),)
+          .toEqual(['chateau', 'emilie', 'emilie\'s', 'kept', 'yarn',],);
+      },
+    },),
   ],
 },);
 

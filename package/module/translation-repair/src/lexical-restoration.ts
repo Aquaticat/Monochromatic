@@ -1,3 +1,9 @@
+import {
+  continuesLatinWord,
+  foldLatinWord,
+  isLatinWordCharacter,
+} from './latin-letters.ts';
+
 //region Lexical restoration grade
 // The retired first-pass restoration grader, kept as a cheap lower-bound
 // signal alongside the bilingual judge. It measures how much of the
@@ -18,13 +24,19 @@ const CONTENT_WORD_MIN_CHARS = 4;
 export const RESTORATION_WORD_THRESHOLD: number = 1 / 2;
 
 /**
- Distinct lowercase content words of one text,
- by linear scan over alphanumeric runs; no regex needed.
- 
+ Distinct folded content words of one text, by linear scan over runs of Latin
+ letters, digits and apostrophes; no regex needed.
+
+ A run opens on a Latin letter, a digit or an apostrophe and goes on through
+ them and combining marks, and each run is folded (`foldLatinWord`), so
+ `château`, `cha\u{0302}teau` and `chateau` are one word whose length is its
+ letters. The scan once took ASCII letters only and read a combining mark as a
+ separator, which cut every accented word into fragments (ledger B18).
+
  @param text - text whose vocabulary is collected
- 
- @returns Distinct words at least {@link CONTENT_WORD_MIN_CHARS} long
- 
+
+ @returns Distinct words at least {@link CONTENT_WORD_MIN_CHARS} letters long
+
  @example
  ```ts
  contentWords({ text: 'The cat naps.', },);
@@ -34,11 +46,6 @@ export function contentWords(
   { text, }: { readonly text: string; },
 ): ReadonlySet<string> {
   /**
-   Lowercased input for case-free comparison.
-   */
-  const lowered = text.toLowerCase();
-
-  /**
    Distinct words collected by the scan.
    */
   const words = new Set<string>();
@@ -47,36 +54,39 @@ export function contentWords(
    Start of the run currently being scanned; -1 outside a run.
    */
   let runStart = -1;
-  // Code-unit scan: every word character tested below is ASCII, so
-  // surrogate halves and combining marks simply read as non-word
-  // separators, which is exactly what vocabulary collection wants.
-  for (let index = 0; index < lowered.length; index += 1) {
+  // One pass past the end, so the last run closes like any other.
+  for (let index = 0; index <= text.length; index += 1) {
     /**
-     Code unit under the cursor.
+     Code unit under the cursor, empty past the end.
      */
-    const character = lowered.charAt(index,);
+    const character = text.charAt(index,);
 
     /**
-     Whether this character continues a word run.
+     Whether this character opens a run or goes on with the open one.
      */
-    const isWordChar = ((character >= 'a') && (character <= 'z'))
-      || ((character >= '0') && (character <= '9'))
-      || (character === '\'');
-    if (isWordChar && (runStart === (-1))) {
-      runStart = index;
+    const inRun = (runStart === (-1))
+      ? (isLatinWordCharacter({ character, },) || (character === '\''))
+      : (continuesLatinWord({ character, },) || (character === '\''));
+    if (inRun) {
+      if (runStart === (-1))
+        runStart = index;
       continue;
     }
-    if ((!isWordChar) && (runStart !== (-1))) {
-      if ((index - runStart) >= CONTENT_WORD_MIN_CHARS)
-        words.add(lowered.slice(
+    if (runStart !== (-1)) {
+      /**
+       Closed run, folded.
+       */
+      const word = foldLatinWord({
+        word: text.slice(
           runStart,
           index,
-        ),);
+        ),
+      },);
+      if (word.length >= CONTENT_WORD_MIN_CHARS)
+        words.add(word,);
       runStart = -1;
     }
   }
-  if ((runStart !== (-1)) && ((lowered.length - runStart) >= CONTENT_WORD_MIN_CHARS))
-    words.add(lowered.slice(runStart,),);
 
   return words;
 }
