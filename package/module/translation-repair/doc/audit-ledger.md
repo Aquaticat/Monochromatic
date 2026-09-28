@@ -3427,7 +3427,8 @@ The phase table mutant survived only because the spec left out `corpus-run/run-s
 requiring every call to ask the roster last handed over and each round to be reached,
 and added a seam case whose archive carries an unclaimed block.
 The attestation had no guard a fixture could reach, since `preparePassEntry` read the linked pages off the web.
-`attestPassReferences` now takes the round out of it with a required hook (`keepBench` for a caller with none,
+`attestPassReferences` now takes the round out of it with a required hook
+(`keepBench` in `bench-seating.ts` for a caller with none,
 since the repo models absence without nullish unions),
 and `preparePassEntry` takes an injected reference reader, as it takes `readPictures`,
 so a case drives the whole preparation and requires every call to ask the roster the hook hands over.
@@ -3497,20 +3498,45 @@ and the lanes hooks are spread into `runDocumentLanes` inside `runPassEntry`, wh
 
 ### X15: the pairing keys are not injective
 
-Status: open; next after X12.
+Status: fixed in `692ebe3c0` (red guard `aee557392`, section kind pinned in `c89bbda4f`),
+as hardening: measured, no pinned input reaches the aliasing.
+`pairingQuestionKey` (`pairing-question-key.ts`) now builds both keys from one JSON value of fixed shape
+(version, question kind, both sides' texts, pictures, roster),
+which JSON escapes injectively and which keeps a section key and a block key apart over the same texts.
+The block goldens were recaptured, and the two embedded NUL cases they had pinned to one key now differ;
+three tests that joined the key by hand name its material and call the encoder instead (the M39 lesson).
+Rides inside version 3: checked again on 2026-09-28, the newest slice-cache file is still from 00:26 on 2026-09-27.
+Mutation checked with a control: nine mutants caught (the question kind, roster, pictures, version,
+sides swapped, texts flattened, and each key passing the other's kind or dropping its pictures),
+after `c89bbda4f` pinned the section round's kind, which no test had named;
+the full suite then passed (0 FAIL, 1279 PASS).
+The draw keys hash joined fields as well and need nothing:
+`sample-draw.ts` fixes its seed and kind within each sort, so two keys meet only when their ids do,
+and `damage-sample.ts` separates with NUL, which neither its fixed domain,
+its seed (`DAMAGE_SAMPLE_SEED`, an environment value, or a literal) nor an id can carry.
+
+Found as:
 Both pairing keys, `roundKey` (`prepare-section-round.ts`)
 and `blockPairingQuestionKey` (`block-pairing-question-key.ts`),
-join the texts of both sides with NUL and mark the side boundary with one more NUL element,
-so an empty text beside the boundary aliases across it:
-original `[a, '']` against translation `[c]` and original `[a]` against translation `['', c]` hash the same bytes.
-The block key's TSDoc names only an embedded NUL as its aliasing path,
-and keeps its layout so that every key without pictures keeps its historical bytes;
-X13 moved every pairing key inside version 3, so no historical bytes remain to keep,
-and no slice-cache file postdates the version 3 bump, so an injective layout orphans nothing.
-Whether a section or block text can be empty is not measured; an injective encoding removes the question.
+joined the texts of both sides with NUL and marked the side boundary with one more NUL element,
+so an empty text beside the boundary aliased across it:
+original `[a, '']` against translation `[c]` and original `[a]` against translation `['', c]` hashed the same bytes,
+as did a NUL inside a text across a block boundary,
+and UTF-8 folded every lone surrogate into U+FFFD.
+The block key's TSDoc named only an embedded NUL as its aliasing path,
+and kept its layout so that every key without pictures kept its historical bytes;
+X13 had moved every pairing key inside version 3, so no historical bytes remained to keep.
+Measured 2026-09-28 (`~/temp/agent/audit-glossary-fix/x15-empty-text-probe.mjs`):
+over all 92 pinned pairs, 570 sections and 5,063 blocks, the archive side normalized as the preparation reads it,
+no section or block text is empty and none holds a NUL,
+and no parser edge case tried (front matter alone, a bare heading, a thematic break, an empty code block,
+quote, list item or footnote, a comment, a picture, a component) yields an empty text,
+since a node's text is its own non-empty span.
 
 Found as:
 Reading `prepare-section-round.ts` whole after its raw NUL bytes had hidden it from every line search (M40).
+The golden file also cited a scratch baseline (`question-baseline-QWeptI`, from `62cedf6fa`) that no longer exists;
+the recapture removed that line.
 
 ## Process mistakes in this audit
 
@@ -3897,6 +3923,10 @@ a hash no command had produced was written into this ledger as a red guard's,
 and caught on reading the edit back, before any commit.
 Once more on 2026-09-28: `c1dd889b5` said the preparation hook now takes `BenchSeating`
 before any preparation hook existed (it came in `aa635056a`); a commit comment on it corrects the message.
+The same day `d00123df3` was typed `test` while it also changed production code
+(`attestPassReferences`, the injected reference reader, `keepBench`); a commit comment names the right type.
+Prevention for the type: read `git diff --cached --stat` before choosing it;
+any file outside tests makes the commit more than `test`.
 
 ### M14: a reproduction check committed without a positive control
 
@@ -3913,6 +3943,9 @@ and `mise run --cd <package> build` once, against CM5.
 The first `;` one also hid which of two files failed, since both counts printed as one number.
 Prevention: a report that should run after a failing command is `a || b`, never `a ; b`;
 two independent checks are two tool calls.
+Once more on 2026-09-28, in narration: the X15 slice-cache check was announced with an empty-directory control
+the command did not contain; its second `find`, printing the newest file's time, served as one,
+and the narration was corrected before the result was used.
 
 ### M2: a wording change committed without the full suite
 
