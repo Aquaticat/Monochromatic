@@ -101,15 +101,19 @@ export function quoteDepth({ text, }: { readonly text: string; },): number {
 }
 
 /**
- Deepest quote an edit may write in its region: one level always, and the
- nesting of the line the region starts in, of the replaced text and of the
- original.
+ Deepest quote an edit may write in its region: one level always, the
+ nesting of every whole line the region touches, and the original's.
+
+ WHOLE LINES, read from their starts. A region may start mid-line, and its
+ replaced text's first characters are then words, not markers: read as a line
+ of its own, a region starting at an emoticon like `>>_<<` would itself allow
+ two levels.
 
  @param targetText - whole text the region sits in
 
  @param startOffset - where the region starts
 
- @param baseText - text the region replaces
+ @param endOffset - where the region ends
 
  @param sourceText - the original, empty where the caller has none
 
@@ -117,19 +121,19 @@ export function quoteDepth({ text, }: { readonly text: string; },): number {
 
  @example
  ```ts
- const bound = quoteDepthBound({ targetText, startOffset, baseText, sourceText, },);
+ const bound = quoteDepthBound({ targetText, startOffset, endOffset, sourceText, },);
  ```
  */
 export function quoteDepthBound(
   {
     targetText,
     startOffset,
-    baseText,
+    endOffset,
     sourceText,
   }: {
     readonly targetText: string;
     readonly startOffset: number;
-    readonly baseText: string;
+    readonly endOffset: number;
     readonly sourceText: string;
   },
 ): number {
@@ -142,20 +146,18 @@ export function quoteDepthBound(
   ) + 1;
 
   /**
-   End of that line.
+   End of the line the region ends in.
    */
   const lineEnd = targetText.indexOf(
     '\n',
-    startOffset,
+    endOffset,
   );
   return Math.max(
     1,
-    quotePrefix({ line: targetText.slice(
+    quoteDepth({ text: targetText.slice(
       lineStart,
       (lineEnd === (-1)) ? targetText.length : lineEnd,
-    ), },)
-      .depth,
-    quoteDepth({ text: baseText, },),
+    ), },),
     quoteDepth({ text: sourceText, },),
   );
 }

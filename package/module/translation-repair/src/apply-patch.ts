@@ -357,7 +357,7 @@ export function applyPatchOperations(
       bound: quoteDepthBound({
         targetText,
         startOffset: envelope.startOffset,
-        baseText: envelope.baseText,
+        endOffset: envelope.endOffset,
         sourceText: (preservation.mode === 'enforce') ? preservation.sourceText : '',
       },),
       startsLine: (envelope.startOffset === 0) || (targetText[envelope.startOffset - 1] === '\n'),
