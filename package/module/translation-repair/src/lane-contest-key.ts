@@ -54,6 +54,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  inflected and bounded, and the grammatical English house rule states the
  doubled preposition. The terms, renderings and whys reach the identity
  context, which the key hashes.
+
+ Rides inside 6 too: the contest sheet no longer shows the accuracy probe's
+ claims on a slice whose patch lost, since the repair candidate there never
+ carried the patched text (ledger L7); checked on 2026-09-28: still no
+ slice-cache file newer than 00:26 on 2026-09-27.
  */
 export const LANE_CONTEST_CACHE_VERSION = 6;
 

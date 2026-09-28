@@ -12,7 +12,9 @@ import type { RegionDefectTally, } from './introduced-defect-screen.ts';
 // text (`introducedDefects`) and the naturalness rewrite against the repaired
 // text (`refinementDefects`, present only where the rewrite shipped,
 // `refine-slice-settle.ts`). The candidate the judges see is the text after
-// both, so damage either edit added is damage in it. keyword233 on 2026-09-03
+// both, so damage either edit added is damage in it; the accuracy repair's
+// only where its patch won the slice, since a lost patch is not in the text
+// (ledger L7). keyword233 on 2026-09-03
 // (`~/temp/agent/keyword233-seats-20260903`): the rewrite moved a paragraph
 // into the present tense, three probers corroborated it, and the contest chose
 // against the repair 5 of 7 on that tense without being shown the claims,
@@ -54,6 +56,14 @@ export type ProbedChunk = {
    Slice this chunk's text ships at.
    */
   readonly sliceIndex: number;
+
+  /**
+   Whether the accuracy repair's patched text won its selection. Where it
+   lost, the repair lane ships the archive or a rewrite of it, never the
+   patched text its probe quoted, so that probe's claims describe text the
+   judges' candidate does not carry (ledger L7).
+   */
+  readonly accuracyPatchSelected: boolean;
 
   /**
    Accuracy repair's probe report, absent where the chunk changed nothing and
@@ -174,7 +184,11 @@ function corroboratedLinesOf(
  failed a deterministic check and the last two are not about added damage.
  
  FROM BOTH EDITS: the accuracy repair's claims first, then the naturalness
- rewrite's, each line naming its edit.
+ rewrite's, each line naming its edit. The accuracy repair's only where its
+ patch won: a lost patch never reaches the candidate the judges read, and
+ XingZ6014 slice 3 showed them damage quoting "she came out as trans", which
+ its repair candidate did not carry (ledger L7). The rewrite's claims stand
+ either way, since the rewrite ships over whatever the accuracy stage kept.
  
  @param lane - repair lane result, read for its probed chunks
  
@@ -199,9 +213,11 @@ export function damageClaimLinesBySlice(
          */
         const lines = [
           ...corroboratedLinesOf({
-            regions: chunk.introducedDefects
-              ?.regions
-              ?? [],
+            regions: chunk.accuracyPatchSelected
+              ? (chunk.introducedDefects
+                ?.regions
+                ?? [])
+              : [],
             stage: 'accuracy repair',
           },),
           ...corroboratedLinesOf({
