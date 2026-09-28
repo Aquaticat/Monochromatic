@@ -14,7 +14,10 @@
  @module
  */
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -83,6 +86,38 @@ const SHORT_HOLD_MS = 40;
  Logger the hooks write to.
  */
 const l = tagged({ tag: 'pass-reseat-test', },);
+
+/**
+ Builds a logger keeping every message, so a case can read the line a hook
+ wrote and the phase it names.
+
+ @param messages - destination in emission order
+
+ @returns Logger appending every level to the destination
+
+ @example
+ ```ts
+ const lines: string[] = [];
+ const hooks = contestHooksFor({ client, signal, l: capturingLogger({ messages: lines, },), },);
+ ```
+ */
+function capturingLogger({ messages, }: { readonly messages: string[]; },): Logger {
+  /**
+   Keeps one message.
+   */
+  function keep(message: string,): void {
+    messages.push(message,);
+  }
+  return {
+    debug: keep,
+    error: keep,
+    fatal: keep,
+    info: keep,
+    trace: keep,
+    warn: keep,
+    flush: async function flush(): Promise<void> {},
+  };
+}
 
 /**
  Builds a client whose holds can change between chunks and which counts
@@ -327,11 +362,15 @@ await describe({
       fn: async () => {
         const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
         rig.holds.synthetic = DRY_HOLD_MS;
+        /**
+         Every line the hook wrote.
+         */
+        const lines: string[] = [];
         const hooks = consolidationHooksFor({
           client: rig.client,
           signal: new AbortController().signal,
           prepared: PREPARED,
-          l,
+          l: capturingLogger({ messages: lines, },),
         },);
         /**
          Seating the hook hands the slice under the hold.
@@ -362,14 +401,21 @@ await describe({
           judgeModelIds: seats.slateJudges,
           ...((polish.kind === 'configured') ? { polishConfig: polish.config, } : {}),
         };
+        /**
+         Line naming the phase the reading waited on and the roster it seated.
+         */
+        const reseatLine = `JUDGE SEATS phase=consolidation slice re-seated under a hold: writers=${seats.writers.join(',',)} `
+          + `slateJudges=${seats.slateJudges.join(',',)} polish=${polish.kind}`;
         expect({
           underHold,
           afterHold,
           reads: rig.counter.reads,
+          logged: lines.includes(reseatLine,),
         },).toEqual({
           underHold: { roster, },
           afterHold: { roster, },
           reads: 1,
+          logged: true,
         },);
       },
     },),
@@ -400,10 +446,14 @@ await describe({
       fn: async () => {
         const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
         rig.holds.synthetic = DRY_HOLD_MS;
+        /**
+         Every line the hook wrote.
+         */
+        const lines: string[] = [];
         const hooks = contestHooksFor({
           client: rig.client,
           signal: new AbortController().signal,
-          l,
+          l: capturingLogger({ messages: lines, },),
         },);
         /**
          Seating the hook hands the slice under the hold.
@@ -422,10 +472,12 @@ await describe({
           underHold,
           afterHold,
           reads: rig.counter.reads,
+          logged: lines.includes(`JUDGE SEATS phase=lane contest slice re-seated under a hold: judges=${lateJudges.join(',',)}`,),
         },).toEqual({
           underHold: { modelIds: lateJudges, },
           afterHold: { modelIds: lateJudges, },
           reads: 1,
+          logged: true,
         },);
       },
     },),
@@ -455,10 +507,14 @@ await describe({
       fn: async () => {
         const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
         rig.holds.synthetic = DRY_HOLD_MS;
+        /**
+         Every line the hook wrote.
+         */
+        const lines: string[] = [];
         const hooks = picturesHooksFor({
           client: rig.client,
           signal: new AbortController().signal,
-          l,
+          l: capturingLogger({ messages: lines, },),
         },);
         /**
          Seating the hook hands the picture under the hold.
@@ -477,10 +533,12 @@ await describe({
           underHold,
           afterHold,
           reads: rig.counter.reads,
+          logged: lines.includes(`JUDGE SEATS phase=pictures picture re-seated under a hold: readers=${readers.join(',',)}`,),
         },).toEqual({
           underHold: { readerModelIds: readers, },
           afterHold: { readerModelIds: readers, },
           reads: 1,
+          logged: true,
         },);
       },
     },),
