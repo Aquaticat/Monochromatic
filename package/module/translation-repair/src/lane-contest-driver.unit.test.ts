@@ -1374,7 +1374,7 @@ await describe({
         await contestOneSlice({ client: judgeRecordingClient({ asked: [], },), looked: starting, },);
         /**
          Keys looked up when the hook re-seats the slice elsewhere.
-               */
+         */
         const moved: string[] = [];
         await contestOneSlice({
           client: judgeRecordingClient({ asked: [], },),
