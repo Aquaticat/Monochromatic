@@ -1,4 +1,7 @@
-import { isAsciiAlphanumeric, } from './ascii-letters.ts';
+import {
+  continuesLatinWord,
+  isLatinCapital,
+} from './latin-letters.ts';
 import { isHanCharacter, } from './han-only-text.ts';
 
 //region Preservation tokens
@@ -95,11 +98,14 @@ const LEADING_MARKS = ' \t\n\r"“‘\'(>[-*';
 const MIN_NAME_LENGTH = 3;
 
 /**
- Reports whether a character starts a word made of letters or digits.
+ Reports whether a character belongs to a word: a Latin letter (accented or
+ not), an ASCII digit, a combining mark, an apostrophe or a hyphen. With
+ ASCII letters only, `Émile` lost its first letter and `Château` split in two
+ (ledger B18).
  
  @param character - single character
  
- @returns True for an ASCII letter or a digit
+ @returns True for a character a word runs on through
  
  @example
  ```ts
@@ -107,7 +113,7 @@ const MIN_NAME_LENGTH = 3;
  ```
  */
 function isWordCharacter(character: string,): boolean {
-  return isAsciiAlphanumeric({ character, },)
+  return continuesLatinWord({ character, },)
     || (character === '\'')
     || (character === '-');
 }
@@ -133,7 +139,7 @@ export function isIdeograph(character: string,): boolean {
 /**
  Splits text into comparable content tokens.
  
- Stop words drop out, single ASCII characters drop out, and ideographs survive
+ Stop words drop out, one-character words drop out, and ideographs survive
  individually because a one-character Chinese token is a full word.
  
  @param text - text to tokenize
@@ -234,7 +240,7 @@ export function properNouns(
      Character at this position.
      */
     const character = text[index] ?? '';
-    if ((character < 'A') || (character > 'Z'))
+    if (!isLatinCapital({ character, },))
       continue;
     if ((index > 0) && isWordCharacter(text[index - 1] ?? '',))
       continue;

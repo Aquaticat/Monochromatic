@@ -14,6 +14,7 @@ export {
   continuesLatinWord,
   foldLatinWord,
   isCombiningMark,
+  isLatinCapital,
   isLatinLetter,
   isLatinLetterOrMark,
   isLatinWordCharacter,

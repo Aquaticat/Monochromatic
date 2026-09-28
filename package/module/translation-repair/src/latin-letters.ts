@@ -82,6 +82,23 @@ export function isLatinLetter({ character, }: { readonly character: string; },):
 }
 
 /**
+ Whether one character is a capital Latin letter, accented or not.
+
+ @param character - one UTF-16 unit, empty past a text's edge
+
+ @returns True for a Latin letter its lower case changes
+
+ @example
+ ```ts
+ isLatinCapital({ character: 'É', },); // true
+ isLatinCapital({ character: 'é', },); // false
+ ```
+ */
+export function isLatinCapital({ character, }: { readonly character: string; },): boolean {
+  return isLatinLetter({ character, },) && (character.toLowerCase() !== character);
+}
+
+/**
  Whether one character belongs to a Latin word: a Latin letter or an ASCII
  digit.
 

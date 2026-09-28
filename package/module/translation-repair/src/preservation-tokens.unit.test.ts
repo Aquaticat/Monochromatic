@@ -122,6 +122,18 @@ await describe({
     },),
 
     it({
+      name: 'keeps an accented word whole, accent composed or combining, where ASCII letters alone cut it (ledger B18)',
+      fn: async () => {
+        expect(contentTokens({ text: 'Émile napped at the Cafe\u{0301}', },),)
+          .toEqual([
+            'émile',
+            'napped',
+            'cafe\u{0301}',
+          ],);
+      },
+    },),
+
+    it({
       name: 'keeps a digit run, since a year or a count is content whose loss '
         + 'is exactly the kind of deletion this gate exists to notice',
       fn: async () => {
@@ -264,6 +276,19 @@ await describe({
         + 'the absence',
       fn: async () => {
         expect(namesIn({ text: '', },),).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'finds a name opening on an accented capital or carrying an accent, which ASCII capitals '
+        + 'alone missed, so the gate notices it lost (ledger B18)',
+      fn: async () => {
+        expect(namesIn({ text: 'A cat met Émile and Château Miaou.', },),)
+          .toEqual([
+            'château',
+            'miaou',
+            'émile',
+          ],);
       },
     },),
   ],

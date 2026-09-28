@@ -18,6 +18,7 @@ import {
   continuesLatinWord,
   foldLatinWord,
   isCombiningMark,
+  isLatinCapital,
   isLatinLetter,
   isLatinLetterOrMark,
   isLatinWordCharacter,
@@ -184,6 +185,16 @@ await describe({
           't',
           'x',
           'z',
+        ],);
+      },
+    },),
+    it({
+      name: 'ADMITS as capitals the upper-case Latin letters among the probes, accented or not',
+      fn: async () => {
+        expect(admitted(isLatinCapital,),).toEqual([
+          'Z',
+          '\u{00C0}',
+          '\u{1E00}',
         ],);
       },
     },),
