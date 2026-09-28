@@ -66,6 +66,39 @@ await describe({
       },
     },),
     it({
+      name: 'READS AN HTML HEADING the archive renders otherwise, paired among the HTML headings alone, so one '
+        + 'HTML heading only one side carries costs no Markdown heading its pair (ledger X20)',
+      fn: async () => {
+        /**
+         Page whose archive carries both kinds of heading.
+         */
+        const both = pageNameLines({
+          sourceText: '## 左右\n\n<h3 align="center">猫之歌</h3>\n\n猫唱歌。\n',
+          targetText: '## Conflict\n\n<h3 align="center">Song of the Cat</h3>\n\nThe cat sings.\n',
+        },);
+        /**
+         Page whose archive dropped the HTML heading.
+         */
+        const htmlDropped = pageNameLines({
+          sourceText: '## 左右\n\n<h3 align="center">猫之歌</h3>\n\n猫唱歌。\n',
+          targetText: '## Conflict\n\nThe cat sings.\n',
+        },);
+        expect({
+          htmlPaired: both.includes('- 猫之歌 (heading): "Song of the Cat"',),
+          markdownPaired: both.includes('- 左右 (heading): "Conflict"',),
+          markdownKept: htmlDropped.includes('- 左右 (heading): "Conflict"',),
+          htmlUnpaired: htmlDropped.some(function namesSong(line,): boolean {
+            return line.startsWith('- 猫之歌',);
+          },),
+        },).toEqual({
+          htmlPaired: true,
+          markdownPaired: true,
+          markdownKept: true,
+          htmlUnpaired: false,
+        },);
+      },
+    },),
+    it({
       name: 'SAYS a linked title that names the person takes the declared form inside it (class eighty-six, 2026-09-22: the archive\'s other form of the name inside a blog title carried as the title\'s authority against the declared form)',
       fn: async () => {
         const lines = pageNameLines({
