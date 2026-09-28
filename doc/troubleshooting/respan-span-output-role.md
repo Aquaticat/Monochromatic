@@ -46,27 +46,27 @@ The initial request included complete current policy,
 but received the quoted `422`.
 A separately frozen correction received HTTP `200` and valid native triples:
 
-- Original source: `425d58a`;
-  input freeze: `813501b`.
-- Corrected source: `ef1bca2`;
-  input freeze: `097f056`;
-  successful result: `d309fe5`.
-- Environment: Node `v26.10.0`,
-  Linux workstation,
-  direct Respan route,
-  scoped `AUTO_MODE_RESPAN_API_KEY` only.
-- Policy: 42,677 bytes,
-  SHA-256 `4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`.
-- Corrected request: 48,212 bytes;
-  returned input-token count: 13,151.
-- Observed corrected assessment duration: `609.983842` ms,
-  including preparation and final source/policy checks,
-  excluding module/process startup and result-file writing.
-- Native probability triples passed finite-number,
-  range,
-  ID/order,
-  model,
-  and sum checks with frozen sum tolerance `0.00001`.
+Original source is `425d58a`;
+its input freeze is `813501b`.
+Corrected source is `ef1bca2`;
+its input freeze is `097f056`,
+and successful result is `d309fe5`.
+
+The Linux workstation ran Node `v26.10.0` against direct Respan,
+with scoped `AUTO_MODE_RESPAN_API_KEY` only.
+Complete policy had 42,677 bytes,
+SHA-256 `4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`.
+The corrected request had 48,212 bytes;
+the returned input-token count was 13,151.
+
+The corrected assessment took `609.983842` ms,
+including preparation and final source/policy checks,
+excluding module/process startup and result-file writing.
+Native probability triples passed finite-number,
+range,
+ID/order,
+model,
+and sum checks with frozen sum tolerance `0.00001`.
 
 The executed corrected command was:
 

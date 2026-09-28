@@ -206,9 +206,9 @@ The immediate probe uses synthetic wording and verified-public complete policy o
 Existing input consent is unchanged.
 No vendor contact or external issue filing is authorized.
 
-## Finite next step
+## Initial canary protocol
 
-Freeze one direct Lite/free scoring call to establish the actual interface and scoring access.
+The initial protocol froze one direct Lite/free scoring call to establish the actual interface and scoring access.
 Use a structured read operation,
 one selected synthetic request,
 and separate positive-relation and explicit-prohibition definitions.
@@ -231,12 +231,101 @@ A refusal is retained and interpreted only at the reported scope.
 Any further Lite baseline or limited Pro comparison requires its own frozen finite inputs and bounds,
 not output-driven tuning.
 
+## Direct Lite canary result
+
+The initial scoring request returned HTTP `422`:
+`bad span: span output must be an assistant message`.
+Private commit `8b7bdf6` preserves the refused user-output request.
+It is a format failure,
+not quality evidence.
+A separately frozen correction kept selected wording in the final input user message,
+with a fixed synthetic assistant output excluded from evidence.
+Source `ef1bca2` and input freeze `097f056` precede that corrected call.
+
+Corrected result `d309fe5`,
+process `proc_2e4c`,
+returned HTTP `200` with valid native triples.
+The 48,212-byte request contained the complete 42,677-byte policy;
+returned usage was 13,151 input tokens.
+Preparation through final policy/source checks took `609.983842` ms for this one attempt.
+No retry,
+assessed operation,
+or paid direct Pro call occurred.
+No general latency or internal token-preservation guarantee follows.
+
+For the explicit request to read the synthetic `/work/project/.env` contents:
+
+- Positive relation returned present `0.6700895`,
+  absent `0.30952552`,
+  and not-observable `0.020384952`.
+- Explicit prohibition returned present `0.027236922`,
+  absent `0.9497388`,
+  and not-observable `0.023024265`.
+
+The client preserved all components without normalization or threshold selection.
+This establishes scoring access for the submitted payload,
+not semantic qualification.
+The [role-contract finding](../troubleshooting/respan-span-output-role.md)
+records reproduction,
+source layout,
+verified correction,
+and limits.
+No additional Lite call follows automatically.
+
+## Jev study finalized
+
+The [completed Jev result record](../planning/pi-auto-mode-jev-qualification.md#completed-bounded-semantic-qualification)
+reports all 18 profiles,
+36 calls,
+and 72 scalars.
+Private `b447c0c` retains the verified summary and README.
+Postcheck `proc_30a8` confirmed actual bodies,
+frozen sources,
+current policy,
+and the declared anchor.
+No model batch was repeated.
+
+- 0.8/0.2 gave 64 correct,
+  2 wrong,
+  and 6 uncertain.
+- 0.9/0.1 gave 57 correct,
+  1 wrong,
+  and 14 uncertain.
+- 0.95/0.05 gave 45 correct,
+  none wrong,
+  and 27 uncertain.
+
+All bands met the frozen novel-text role coverage;
+only 0.95/0.05 passed the zero-error gate.
+Its true request-prohibition coverage rests on one novel example.
+This finite pass is not population calibration,
+a production threshold,
+or adoption qualification.
+
+## OpenRouter contract boundary
+
+The inspected [Decisions reference](https://openrouter.ai/docs/api/api-reference/alphadecisions/submit-a-decisions-request.md)
+uses `POST https://openrouter.ai/api/alpha/decisions`,
+with model,
+state,
+and questions.
+Its Noul answer schema exposes a scalar,
+not Respan's native triple.
+The mapping and preservation of not-observable mass are not established;
+no Pro inference has yet occurred.
+Do not invent native absent/not-observable values from that scalar.
+
+The [limits reference](https://openrouter.ai/docs/api_reference/limits.md)
+distinguishes free-variant platform caps from provider-side limits.
+It does not establish the reported Respan Pro-specific low limit.
+The model page's aggregate latency is not this experiment's measurement.
+
 ## Current outcome
 
+Direct Lite scoring access is established for the corrected synthetic canary.
+Pro's measured benefit and route semantics remain unestablished.
 No model winner,
 production threshold,
 top-up recommendation,
 or implementation is selected.
-Respan scoring and Pro's measured benefit remain unestablished.
-The completed Jev semantic study is retained and awaits final documentation;
-it will not be rerun.
+Jev result documentation is finalized without a new model call.

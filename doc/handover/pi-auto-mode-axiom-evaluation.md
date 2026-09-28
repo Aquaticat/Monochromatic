@@ -89,8 +89,14 @@ Do not treat not-observable as absence or silently normalize it away.
 Metadata status and filtered-model routes returned `403` with the provided key and `401` with invalid controls.
 The controllers withheld the actual error wording,
 so the cause is unknown.
-No further metadata retry is planned;
-one frozen free scoring call will test the actual interface and retain sanitized error detail.
+No further metadata retry is planned.
+The initial scoring canary returned `422` because output must be an assistant message.
+The separately frozen correction kept the request in input and added a fixed synthetic assistant output.
+It returned `200` with valid native triples in `609.983842` ms,
+including full-policy preparation and final checks.
+Private result `d309fe5` retains this single observation;
+see the [role-contract finding](../troubleshooting/respan-span-output-role.md).
+No threshold or semantic qualification follows from the canary.
 
 This is an additive candidate change,
 not permission to restart the paused ONNX source expansion.
@@ -119,11 +125,14 @@ Task #39 checks the supplied resource before unrelated work.
 The active audit context is `80e67cc07b2eb898054d15ddd04e91bb689fbb4c8ebb77aee5c4ba3cd6f9a8d2`;
 the earlier Respan context and all prior reports remain unchanged.
 A public raw GitHub fetch matched all 42,677 bytes of current policy.
-The immediate free scoring probe uses synthetic wording plus that verified-public policy,
+The completed free scoring probe used synthetic wording plus that verified-public policy,
 with freshness rechecked before dispatch and release.
 The current audit records unresolved terms and data-handling questions without revoking existing input consent.
-Finish task #38's result bookkeeping after the scoring resource check,
-without rerunning its completed model batch.
+OpenRouter's inspected Decisions schema exposes Noul answers;
+its mapping to Respan's native triples is not yet established.
+Do not invent an absence probability or discard not-observable mass.
+Task #38's result documentation is finalized after the scoring resource check,
+without rerunning its model batch.
 
 ## Sequencing correction
 
@@ -596,7 +605,7 @@ This establishes no exception for fresh or empty locks.
 
 The user explicitly chose B:
 keep integration/design questions deferred and complete a bounded Jev semantic-qualification study first.
-Task #38 drafts that protocol under the existing semantic-control repository's `qualification/` directory.
+Task #38 completed that study under the existing semantic-control repository's `qualification/` directory.
 Draft `0e49860` defines a fixed semantic coverage matrix and reuses the existing diagnostic band catalog,
 without selecting a production threshold.
 Scorer/control source `7d26d64` and local results `f5ff3d2` passed in `proc_e4d3`.
@@ -611,8 +620,30 @@ The frozen semantic batch subsequently completed in `proc_5f18`,
 with raw results at private `c7df3c1`.
 The 0.95/0.05 diagnostic band met the finite benchmark gate;
 no production threshold was selected.
-Postcheck `proc_30a8` succeeded by notification,
-but its output and final result documentation remain pending while task #39 verifies the newly supplied resource.
+Postcheck `proc_30a8` output was inspected:
+current policy,
+frozen sources,
+actual request bodies,
+and the declared anchor matched.
+Private `b447c0c` retains its verified summary and README.
+Results for 0.8/0.2 were 64 correct,
+2 wrong,
+and 6 uncertain;
+0.9/0.1 gave 57 correct,
+1 wrong,
+and 14 uncertain;
+0.95/0.05 gave 45 correct,
+none wrong,
+and 27 uncertain.
+All bands met minimum novel-text role coverage,
+but only 0.95/0.05 passed the zero-error gate.
+Its true request-prohibition coverage rests on one novel example.
+The [completed result record](../planning/pi-auto-mode-jev-qualification.md#completed-bounded-semantic-qualification)
+retains binding errors,
+timing,
+token counts,
+identities,
+and limitations.
 Do not repeat the completed study.
 For any separately authorized future study,
 freeze cases,
