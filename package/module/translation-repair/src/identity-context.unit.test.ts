@@ -329,6 +329,15 @@ await describe({
         },),
 
         it({
+          name: 'LEAVES TA INSIDE AN ACCENTED WORD OUT: an accented letter before it or a tone mark after it '
+            + 'makes a longer word, which ASCII letters alone read as the pronoun (ledger B18)',
+          fn: async () => {
+            expect(sourcePronounLines({ text: '她来了。小猫叫 CaféTA。Ta\u{0300} 是拼音。', },),)
+              .toEqual(['- pronoun: ORIGINAL refers to this person as "她" (1 times)',],);
+          },
+        },),
+
+        it({
           name: 'LEAVES COMPOUNDS OUT OF THE COUNT: 他们, 她们, 其他, 其他人 and 他人 contain the '
             + 'character without being the pronoun, so a page about a woman with a few "others" '
             + 'in it still reads 她; one entry of the pinned corpus carries 77 她 against 17 他, of '

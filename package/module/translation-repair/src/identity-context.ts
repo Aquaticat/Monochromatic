@@ -1,6 +1,6 @@
 import { hanItemsClause, } from './identity-han-items.ts';
 import { isJsonRecord, } from './json-guard.ts';
-import { isAsciiLetter, } from './ascii-letters.ts';
+import { isLatinLetterOrMark, } from './latin-letters.ts';
 
 //region Identity context
 // Corpus pages declare who the entry is about in YAML front matter, and the two
@@ -405,10 +405,12 @@ function countNeutralSpelling(
     )
   ) {
     /**
-     Whether letters sit either side, which makes this a longer word.
+     Whether a Latin letter sits either side, or a combining mark after it,
+     which makes this a longer word: `éTA` or the tone-marked `TA\u{0300}`
+     is not the pronoun (ledger B18).
      */
-    const insideWord = isAsciiLetter({ character: text.charAt(at - 1,), },)
-      || isAsciiLetter({ character: text.charAt(at + spelling.length,), },);
+    const insideWord = isLatinLetterOrMark({ character: text.charAt(at - 1,), },)
+      || isLatinLetterOrMark({ character: text.charAt(at + spelling.length,), },);
     /**
      Whether the occurrence is the plural, which is not the subject's pronoun.
      */
