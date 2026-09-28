@@ -1,3 +1,4 @@
+import type { AdjacentSliceText, } from './assembly-adjacent-repetition.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import {
   type AssemblyContractFault,
@@ -426,6 +427,59 @@ export function deriveShippedIndices(
       },
     },);
   return shipped;
+}
+
+/**
+ What each slice contributed to the assembled document, in document order.
+
+ Read off the SURVIVING replacements rather than the lane's wishes, so a
+ row the footnote guard took back is not counted as wording that shipped.
+ Both lanes kept their own copy of this reading (audit area six,
+ 2026-09-28), and the adjacent-repetition check reads its output in each.
+
+ @param slices - prepared slices in document order
+
+ @param survivingReplacements - what `guardFootnoteAssembly` let stand
+
+ @returns Each slice's shipped wording: its surviving replacement, else the
+ archive's
+
+ @example
+ ```ts
+ const shippedSlices = shippedSliceTexts({ slices, survivingReplacements: guarded.replacements, },);
+ ```
+ */
+export function shippedSliceTexts(
+  {
+    slices,
+    survivingReplacements,
+  }: {
+    readonly slices: readonly ChunkPair[];
+    readonly survivingReplacements: readonly SliceReplacement[];
+  },
+): readonly AdjacentSliceText[] {
+  return slices.map(function shippedFor(slice,): AdjacentSliceText {
+    /**
+     This slice's index and the wording the archive had there.
+     */
+    const {
+      sliceIndex,
+      text: incumbentText,
+    } = slice.target;
+
+    /**
+     Surviving replacement for this slice, absent when the incumbent stood.
+     */
+    const replacement = survivingReplacements.find(function atSlice(candidate,): boolean {
+      return candidate.sliceIndex === sliceIndex;
+    },);
+    return {
+      sliceIndex,
+      text: (replacement === undefined)
+        ? incumbentText
+        : replacement.replacementText,
+    };
+  },);
 }
 
 //endregion Assembly invariant

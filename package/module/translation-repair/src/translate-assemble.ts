@@ -2,16 +2,14 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { withholdLoneContainerHalves, } from './assembly-container-halves.ts';
 import { guardFootnoteAssembly, } from './assembly-integrity.ts';
-import {
-  adjacentRepetitionFindings,
-  type AdjacentSliceText,
-} from './assembly-adjacent-repetition.ts';
+import { adjacentRepetitionFindings, } from './assembly-adjacent-repetition.ts';
 import { repetitionFindings, } from './assembly-repetition.ts';
 import { repetitionLogLines, } from './assembly-damage-log.ts';
 import {
   assertReplacementsChange,
   deriveShippedIndices,
   orderedChangeSets,
+  shippedSliceTexts,
 } from './assembly-invariant.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import { buildSliceSelections, } from './slice-selection.ts';
@@ -210,37 +208,11 @@ export function assembleTranslation(
 
   /**
    What each slice contributed to the assembled document, in document order.
-   
-   Read off the SURVIVING replacements rather than the lane's wishes, so a
-   translation the footnote guard took back is not counted as wording that
-   shipped.
    */
-  const shippedSlices: readonly AdjacentSliceText[] = prepared
-    .slices
-    .map(function shippedFor(slice,): AdjacentSliceText {
-      /**
-       This slice's index and the wording the archive had there.
-       */
-      const {
-        sliceIndex,
-        text: incumbentText,
-      } = slice.target;
-
-      /**
-       Surviving replacement for this slice, absent when the incumbent stood.
-       */
-      const replacement = guarded
-        .replacements
-        .find(function atSlice(candidate,): boolean {
-          return candidate.sliceIndex === sliceIndex;
-        },);
-      return {
-        sliceIndex,
-        text: (replacement === undefined)
-          ? incumbentText
-          : replacement.replacementText,
-      };
-    },);
+  const shippedSlices = shippedSliceTexts({
+    slices: prepared.slices,
+    survivingReplacements: guarded.replacements,
+  },);
 
   /**
    Both index sets, checked against each other and put in document order.

@@ -1,10 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { guardFootnoteAssembly, } from './assembly-integrity.ts';
-import {
-  adjacentRepetitionFindings,
-  type AdjacentSliceText,
-} from './assembly-adjacent-repetition.ts';
+import { adjacentRepetitionFindings, } from './assembly-adjacent-repetition.ts';
 import { contentSurvivalFindings, } from './assembly-content-survival.ts';
 import {
   contentLossLogLines,
@@ -15,6 +12,7 @@ import {
   assertReplacementsChange,
   deriveShippedIndices,
   orderedChangeSets,
+  shippedSliceTexts,
 } from './assembly-invariant.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import { buildSliceCriticRecords, } from './critic-attribution.ts';
@@ -138,35 +136,11 @@ export function assembleRepair(
 
   /**
    What each slice contributed to the assembled document, in document order.
-   
-   Read off the SURVIVING replacements rather than the lane's wishes, so a
-   repair the footnote guard took back is not counted as wording that shipped.
    */
-  const shippedSlices: readonly AdjacentSliceText[] = slices
-    .map(function shippedFor(slice,): AdjacentSliceText {
-      /**
-       This slice's index and the wording the archive had there.
-       */
-      const {
-        sliceIndex,
-        text: incumbentText,
-      } = slice.target;
-
-      /**
-       Surviving replacement for this slice, absent when the incumbent stood.
-       */
-      const replacement = guarded
-        .replacements
-        .find(function atSlice(candidate,): boolean {
-          return candidate.sliceIndex === sliceIndex;
-        },);
-      return {
-        sliceIndex,
-        text: (replacement === undefined)
-          ? incumbentText
-          : replacement.replacementText,
-      };
-    },);
+  const shippedSlices = shippedSliceTexts({
+    slices,
+    survivingReplacements: guarded.replacements,
+  },);
 
   /**
    How many slices the document CARRIES a repair for.
