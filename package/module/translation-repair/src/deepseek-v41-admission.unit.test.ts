@@ -54,8 +54,9 @@ await describe({
         const hyper = Object.values(HYPER_MODELS).find(info => info.id === MODEL);
         const openrouter = Object.values(OPENROUTER_MODELS).find(info => info.id === `deepseek/${MODEL}`);
         expect(hyper).toMatchObject({ maxOutputLength: 26_214, readsImages: true });
+        // Morph's listed price, the endpoint the seat buys (ledger P13, 2026-09-28), not the catalog's 0.3 and 1.2.
         expect(openrouter).toMatchObject({ maxOutputLength: 384_000, readsImages: true,
-          promptUsdPerMillion: 0.3, completionUsdPerMillion: 1.2, ignoredEndpoints: ['deepinfra', 'wafer', 'open-inference', 'dekallm', 'sail-research'],
+          promptUsdPerMillion: 0.12, completionUsdPerMillion: 0.468, ignoredEndpoints: ['deepinfra', 'wafer', 'open-inference', 'dekallm', 'sail-research'],
           preferredEndpoints: ['morph'] });
       },
     }),
