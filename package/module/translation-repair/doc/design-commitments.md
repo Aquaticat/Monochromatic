@@ -263,6 +263,17 @@ Part of [the package README](../README.md).
   class 147, a nested quotation curled as a pair) account for 69 of them.
   Told this, the owner chose again, the same day,
   that a pass rewrites such pages to the running build's reading:
-  a page the publish-time checks refuse stays as it was and is reported.
+  a page that does not parse stays as it was and is reported.
   A pass meets an older build's pages only on a resume the operator opted into,
   since the build-generation guard refuses one otherwise.
+- **A settled page ships with its defects reported.**
+  Owner, 2026-09-27, asked whether the publish-time checks keep refusing a settled entry
+  (front matter, sealed English originals, contributor names, link destinations, merged headings,
+  and whether the page parses), with the archive's page shipping in its place:
+  "Ship with the defect".
+  The page ships and each failed check is reported, in the run log and on a line a grep over a pass totals;
+  a page that does not parse still refuses, since it would break the site build.
+  Measured before the ruling: seven real entries were refused for one dropped link destination each,
+  about 10.3 hours of settling discarded (ledger E1).
+  The check that a page carries what its artifact says ships is not one of these:
+  it guards the assembly itself, and a page failing it is a defect in the code, not in the text.
