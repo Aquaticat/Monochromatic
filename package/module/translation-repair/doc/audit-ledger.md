@@ -1849,8 +1849,13 @@ Status: open (latent).
 
 ### P5: the archive-block-review guard rejects a shape its prompt never forbids
 
-Status: open.
+Status: fixed in `8e994bc77` (guard `930096761`; mutation checked with a control).
 All 11 guard rejections in five runs are editorial-context with a non-empty `sourceQuote`.
+The prompt asks for "exact source support or empty" and never ties the empty value to that disposition,
+and nothing reads an editorial-context quote: the stage checks the block itself.
+`dc51b02d9` fixed the same slip for `revise` on 2026-09-09 and left this one,
+the guard-stricter-than-its-prompt family.
+Only source-supported retention now needs an anchor. Archive-block reviews are not cached, so no version moved.
 
 ### P6: the seat tally cannot see an unusable reply
 
