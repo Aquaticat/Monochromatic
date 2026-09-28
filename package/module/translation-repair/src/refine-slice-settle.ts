@@ -347,8 +347,9 @@ export async function settleRefinedSlice(
     ],
     issues: outcome.issues,
     editKind: 'naturalness-refinement',
-    // The declared names, since this probe's verdict can roll the slice back
-    // (ledger H8).
+    // The declared names (ledger H8). The report decides nothing that ships,
+    // as in the accuracy lane, but damage telemetry read without them would
+    // count a declared name kept as written as a defect.
     identityContext: identityContext ?? '',
     // THE SAME WINDOW THE ACCURACY LANE'S PROBE GETS, which is what makes the
     // two lanes' damage telemetry comparable at all. Without it this auditor

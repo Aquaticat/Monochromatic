@@ -1,5 +1,6 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
+import { lostMarkupAtoms, } from './markup-atom-preservation.ts';
 import { checkPreservation, } from './preservation-check.ts';
 
 import { hashContent, } from './document-node.ts';
@@ -78,6 +79,14 @@ export type PreservationMode =
      issue quoted is licensed to disappear.
      */
     readonly licensedQuotes: ReadonlyMap<string, readonly string[]>;
+
+    /**
+     Text each envelope's addition claims quoted, keyed by envelope id, the
+     only quotes whose markup atoms an edit may remove (ledger L4).
+     REQUIRED, like the mode itself, so a caller that forgets it refuses
+     every addition removal rather than licensing all of them.
+     */
+    readonly removableQuotes: ReadonlyMap<string, readonly string[]>;
   }
   | {
     /**
@@ -345,6 +354,27 @@ export function applyPatchOperations(
               .join(', ',)})`
             : `preservation-bulk-loss (${preserved.lossFraction
               .toFixed(2,)})`,
+        },);
+        continue;
+      }
+
+      /**
+       Markup atoms the edit lost that no addition claim quoted, which the
+       rules above cannot see inside a licensed quote (ledger L4).
+       */
+      const lostMarkup = lostMarkupAtoms({
+        before: envelope.baseText,
+        after: restored,
+        removableQuotes: preservation.removableQuotes
+          .get(envelope.envelopeId,)
+          ?? [],
+      },);
+      if (lostMarkup.length > 0) {
+        // Kinds only, never the atoms: a destination or a code span is page
+        // content, and the reason is stored.
+        rejected.push({
+          operation,
+          reason: `preservation-lost-markup (${[...new Set(lostMarkup,),].join(', ',)})`,
         },);
         continue;
       }

@@ -2,7 +2,10 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
-import { buildLicensedQuotes, } from './licensed-quotes.ts';
+import {
+  buildLicensedQuotes,
+  buildRemovableQuotes,
+} from './licensed-quotes.ts';
 import type { PatchOutcome, } from './apply-patch.ts';
 import {
   NOBODY_WROTE_IT,
@@ -233,11 +236,16 @@ export async function runEditorStage(
 
   /**
    Defect text each envelope's issues quoted, which the preservation gate
-   treats as licensed to disappear.
+   treats as licensed to disappear, and the addition claims' quotes, whose
+   markup atoms alone an edit may remove (ledger L4).
    */
   const preservation = {
     mode: 'enforce',
     licensedQuotes: buildLicensedQuotes({
+      envelopes,
+      issues,
+    },),
+    removableQuotes: buildRemovableQuotes({
       envelopes,
       issues,
     },),

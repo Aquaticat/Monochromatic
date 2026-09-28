@@ -14,6 +14,8 @@ import {
   type AdjudicatedIssue,
   type AdjudicationStatus,
   applyPatchOperations,
+  buildLicensedQuotes,
+  buildRemovableQuotes,
   deriveEditableEnvelopes,
   EnvelopeOverlapError,
   hashContent,
@@ -400,6 +402,7 @@ await describe({
           preservation: {
             mode: 'enforce',
             licensedQuotes: new Map([['envelope/credit', ['Contributor for this entry:',],],],),
+            removableQuotes: new Map(),
           },
         },);
 
@@ -420,6 +423,8 @@ await describe({
 
  @param newText - what the editor writes over it
 
+ @param removableQuotes - quotes an addition claim made, none by default
+
  @returns Outcome of the enforced application
 
  @example
@@ -431,9 +436,11 @@ function editInsideQuote(
   {
     baseText,
     newText,
+    removableQuotes = [],
   }: {
     readonly baseText: string;
     readonly newText: string;
+    readonly removableQuotes?: readonly string[];
   },
 ) {
   /**
@@ -458,6 +465,7 @@ function editInsideQuote(
     preservation: {
       mode: 'enforce',
       licensedQuotes: new Map([[envelope.envelopeId, [baseText,],],],),
+      removableQuotes: new Map([[envelope.envelopeId, removableQuotes,],],),
     },
   },);
 }
@@ -553,6 +561,122 @@ await describe({
           newText: 'The cat slept by the door[^2].',
         },);
         expect(outcome.applied,).toHaveLength(1,);
+      },
+    },),
+
+    it({
+      name: 'APPLIES the removal of a footnote reference inside text an addition claim quoted, since removing '
+        + 'the detail an addition quotes is the fix and the reference goes with it',
+      fn: async () => {
+        const outcome = editInsideQuote({
+          baseText: 'The cat napped by the door, a gift from the neighbours[^3].',
+          newText: 'The cat napped by the door.',
+          removableQuotes: [', a gift from the neighbours[^3]',],
+        },);
+        expect(outcome.applied,).toHaveLength(1,);
+      },
+    },),
+
+    it({
+      name: 'REJECTS the loss of an atom outside the addition quote though an addition claim shares the '
+        + 'envelope: the licence is the quote, not the envelope',
+      fn: async () => {
+        const outcome = editInsideQuote({
+          baseText: 'The cat napped[^1] by the door, a gift from the neighbours[^3].',
+          newText: 'The cat napped by the door.',
+          removableQuotes: [', a gift from the neighbours[^3]',],
+        },);
+        expect(outcome.rejected[0]?.reason,).toBe('preservation-lost-markup (footnote-reference)',);
+      },
+    },),
+
+    it({
+      name: 'REJECTS losing one of two copies of the same atom, since a multiset that counted each value '
+        + 'once would pass it',
+      fn: async () => {
+        const outcome = editInsideQuote({
+          baseText: 'The cat[^1] and the kitten[^1] slept.',
+          newText: 'The cat[^1] and the kitten slept.',
+        },);
+        expect(outcome.rejected[0]?.reason,).toBe('preservation-lost-markup (footnote-reference)',);
+      },
+    },),
+
+    it({
+      name: 'APPLIES an edit that moves an atom to another clause, since the ruling protects that it '
+        + 'survives, not where',
+      fn: async () => {
+        const outcome = editInsideQuote({
+          baseText: 'The cat[^1] napped by the door.',
+          newText: 'The cat napped by the door[^1].',
+        },);
+        expect(outcome.applied,).toHaveLength(1,);
+      },
+    },),
+
+    it({
+      name: 'names each lost kind once and never the atom\'s text, which is page content stored with the '
+        + 'refusal',
+      fn: async () => {
+        const outcome = editInsideQuote({
+          baseText: 'See [the tabby](https://example.org/a) and [the kitten](https://example.org/b) today.',
+          newText: 'See the tabby and the kitten today.',
+        },);
+        expect(outcome.rejected[0]?.reason,).toBe('preservation-lost-markup (link-destination)',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: buildRemovableQuotes.name,
+  children: [
+    it({
+      name: 'licenses the quotes of addition CLAIMS only, so a mistranslation claim grouped into the same '
+        + 'issue licenses no removal',
+      fn: async () => {
+        /** An issue grouping an addition claim with a mistranslation claim. */
+        const grouped: AdjudicatedIssue = {
+          issueId: 'adjudicated/grouped',
+          status: 'accepted',
+          severity: 'major',
+          claims: [
+            {
+              claimId: 'issue/added',
+              claim: {
+                category: 'accuracy/addition',
+                severity: 'major',
+                summary: 'The fed sentence is not in the source.',
+                spans: [span({ startOffset: 0, endOffset: 24, },),],
+              },
+            },
+            {
+              claimId: 'issue/drifted',
+              claim: {
+                category: 'accuracy/mistranslation',
+                severity: 'major',
+                summary: 'The butterflies drift from the source.',
+                spans: [span({ startOffset: 20, endOffset: 51, },),],
+              },
+            },
+          ],
+          tallies: {},
+        };
+        /** One envelope over both spans. */
+        const { envelopes, } = deriveEditableEnvelopes({
+          issues: [grouped,],
+          targetText: TARGET_TEXT,
+        },);
+        /** The quotes each builder licenses, by envelope. */
+        const removable = buildRemovableQuotes({ envelopes, issues: [grouped,], },);
+        const licensed = buildLicensedQuotes({ envelopes, issues: [grouped,], },);
+        expect([...removable.values(),].flat(),).toStrictEqual([TARGET_TEXT.slice(0, 24,),],);
+        expect([...licensed.values(),].flat().toSorted(),).toStrictEqual(
+          [
+            TARGET_TEXT.slice(0, 24,),
+            TARGET_TEXT.slice(20, 51,),
+          ].toSorted(),
+        );
       },
     },),
   ],

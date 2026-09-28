@@ -2,6 +2,8 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { DisputedWording, } from './disputed-wording.ts';
+// Claim category that disputes the archive rendering at any severity.
+import { ADDITION_CATEGORY, } from './issue-taxonomy.ts';
 import {
   APPARATUS_KINDS,
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
@@ -42,11 +44,6 @@ import {
 // a claim filed major disputed slice 66 though the panel settled the issue
 // minor, and slice 19 went undisputed though the panel settled its issue
 // major. The issue's settled severity is what the rule and the note read.
-
-/**
- Claim category that disputes the archive rendering at any severity.
- */
-const ADDITION_CATEGORY = 'accuracy/addition';
 
 /**
  Category family whose other claims dispute the archive at a disputing

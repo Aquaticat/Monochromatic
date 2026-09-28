@@ -1,4 +1,6 @@
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
+import type { IssueClaim, } from './issue-model.ts';
+import { ADDITION_CATEGORY, } from './issue-taxonomy.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 
 //region Licensed quotes
@@ -7,32 +9,65 @@ import type { EditableEnvelope, } from './patch-model.ts';
 // replaced span has to survive.
 
 /**
- Collects the defect text each envelope's accepted issues quoted.
- 
+ Admits every claim, since any accepted issue's quote licenses rewording.
+
+ @returns Always true
+
+ @example
+ ```ts
+ admitsEveryClaim();
+ ```
+ */
+function admitsEveryClaim(): boolean {
+  return true;
+}
+
+/**
+ Admits addition claims only, the one category whose fix is a removal.
+
+ @param claim - claim under test
+
+ @returns Whether it is an addition claim
+
+ @example
+ ```ts
+ isAdditionClaim(claim,);
+ ```
+ */
+function isAdditionClaim(claim: IssueClaim,): boolean {
+  return claim.category === ADDITION_CATEGORY;
+}
+
+/**
+ Collects, per envelope, the target-side text its issues' admitted claims
+ quoted.
+
  TARGET-SIDE SPANS ONLY. A source-side quote is Chinese prose that never
  appears in the English being edited, so licensing it would license nothing
  and only slow the lookup.
- 
+
  @param envelopes - envelopes about to be edited
- 
+
  @param issues - adjudicated issues for the chunk
- 
+
+ @param admits - which claims' quotes count
+
  @returns Quotes keyed by envelope id
- 
+
  @example
  ```ts
- const licensedQuotes = buildLicensedQuotes({ envelopes, issues, },);
+ const quotes = quotesByEnvelope({ envelopes, issues, admits: () => true, },);
  ```
- 
- @internal
  */
-export function buildLicensedQuotes(
+function quotesByEnvelope(
   {
     envelopes,
     issues,
+    admits,
   }: {
     readonly envelopes: readonly EditableEnvelope[];
     readonly issues: readonly AdjudicatedIssue[];
+    readonly admits: (claim: IssueClaim,) => boolean;
   },
 ): ReadonlyMap<string, readonly string[]> {
   /**
@@ -42,6 +77,9 @@ export function buildLicensedQuotes(
     return [
       issue.issueId,
       issue.claims
+        .filter(function isAdmitted(member,): boolean {
+          return admits(member.claim,);
+        },)
         .flatMap(function toQuotes(member,): readonly string[] {
         return member.claim
           .spans
@@ -66,6 +104,77 @@ export function buildLicensedQuotes(
       },),
     ] as const;
   },),);
+}
+
+/**
+ Collects the defect text each envelope's accepted issues quoted.
+
+ @param envelopes - envelopes about to be edited
+
+ @param issues - adjudicated issues for the chunk
+
+ @returns Quotes keyed by envelope id
+
+ @example
+ ```ts
+ const licensedQuotes = buildLicensedQuotes({ envelopes, issues, },);
+ ```
+
+ @internal
+ */
+export function buildLicensedQuotes(
+  {
+    envelopes,
+    issues,
+  }: {
+    readonly envelopes: readonly EditableEnvelope[];
+    readonly issues: readonly AdjudicatedIssue[];
+  },
+): ReadonlyMap<string, readonly string[]> {
+  return quotesByEnvelope({
+    envelopes,
+    issues,
+    admits: admitsEveryClaim,
+  },);
+}
+
+/**
+ Collects the text each envelope's addition claims quoted, whose markup atoms
+ an edit may remove (ledger L4): removing the detail an addition quotes is the
+ fix, and a footnote or a piece of inline code the translator added goes with
+ it.
+
+ CLAIM BY CLAIM, NOT ISSUE BY ISSUE. An issue groups claims, and a quote an
+ addition claim did not make licenses no removal because a sibling claim of
+ another category shares its issue.
+
+ @param envelopes - envelopes about to be edited
+
+ @param issues - adjudicated issues for the chunk
+
+ @returns Addition quotes keyed by envelope id
+
+ @example
+ ```ts
+ const removableQuotes = buildRemovableQuotes({ envelopes, issues, },);
+ ```
+
+ @internal
+ */
+export function buildRemovableQuotes(
+  {
+    envelopes,
+    issues,
+  }: {
+    readonly envelopes: readonly EditableEnvelope[];
+    readonly issues: readonly AdjudicatedIssue[];
+  },
+): ReadonlyMap<string, readonly string[]> {
+  return quotesByEnvelope({
+    envelopes,
+    issues,
+    admits: isAdditionClaim,
+  },);
 }
 
 //endregion Licensed quotes

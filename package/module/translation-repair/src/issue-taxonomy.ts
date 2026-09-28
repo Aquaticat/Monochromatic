@@ -101,6 +101,21 @@ export const ISSUE_CATEGORIES = [
 export type IssueCategory = typeof ISSUE_CATEGORIES[number];
 
 /**
+ Extra information a critic says has no counterpart in the original, the one
+ category whose fix is a removal (`addition-repair-rule.ts`).
+
+ ONE CONSTANT, read by the attestation screen, the archive dispute rule and
+ the preservation gate's markup licence (ledger L4); the first two had each
+ kept their own copy of the string.
+
+ @example
+ ```ts
+ const isAddition = claim.category === ADDITION_CATEGORY;
+ ```
+ */
+export const ADDITION_CATEGORY: IssueCategory = 'accuracy/addition';
+
+/**
  Family segment derived from category slugs,
  so families can never drift from the category list they group.
  

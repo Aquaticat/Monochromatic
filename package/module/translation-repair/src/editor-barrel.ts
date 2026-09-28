@@ -23,7 +23,16 @@ export {
   CHUNK_SELECTION_CRITERIA,
   ENVELOPE_SELECTION_CRITERIA,
 } from './editor-selection-sheet.ts';
-export { buildLicensedQuotes, } from './licensed-quotes.ts';
+export {
+  buildLicensedQuotes,
+  buildRemovableQuotes,
+} from './licensed-quotes.ts';
+export { lostMarkupAtoms, } from './markup-atom-preservation.ts';
+export {
+  type MarkupAtom,
+  type MarkupAtomKind,
+  scanMarkupAtoms,
+} from './markup-atom-scan.ts';
 export {
   applyCandidate,
   selectChunkPatch,

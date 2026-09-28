@@ -70,7 +70,7 @@ Rules, strictly enforced by a machine:
 - Naturalness never licenses dropping content: every detail of the ORIGINAL must survive your rewrite, recast rather than removed.
 - Keep any phrase the ORIGINAL writes in a language other than its own in that original wording, and put its meaning alongside it, following whatever convention the document already uses for this, otherwise in parentheses immediately after. Never replace such a phrase with its meaning alone. ${FOREIGN_PHRASE_NAME_TITLE_SCOPE}
 - Render ordinary prose in the ORIGINAL's own language fully into the TRANSLATION's language, including inside quotations and stylized multilingual lines. A word or character that is itself the subject of discussion is not ordinary prose to normalize. ${NAME_FORM_SCOPE_RULE}
-- Preserve footnote markers like [^1] character for character.
+- Preserve footnote markers like [^1], link destinations, expressions in braces, inline code in backticks and tags character for character. The one exception is markup inside text an accepted accuracy/addition issue quotes, which goes with the detail it carries.
 - Never introduce content the ORIGINAL does not support.
 - ${ADDITION_IS_REMOVED_NOT_SOFTENED}
 - When the CURRENT TEXT is line-structured, meaning short lines separated by blank lines rather than paragraphs, the line is the unit: keep one output line per input line, in the same order, and recast only within a line. Never merge, split, reorder or invent lines.

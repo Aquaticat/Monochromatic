@@ -4,6 +4,9 @@ import {
   computeIssueClaimId,
   type IssueClaim,
 } from './issue-model.ts';
+// The one category the screen reads: extra information the critic says has
+// no counterpart in the original.
+import { ADDITION_CATEGORY, } from './issue-taxonomy.ts';
 import {
   type AttestedDetail,
   attestedDetailsOverlapping,
@@ -15,12 +18,6 @@ import {
 // editor never hears of it (class thirty-seven, 2026-09-16). The panel is
 // where Mio21 lost the clause, three ballots to two, with the references on
 // the sheet.
-
-/**
- The one category the screen reads: extra information the critic says has
- no counterpart in the original.
- */
-const ADDITION_CATEGORY = 'accuracy/addition';
 
 /**
  Claims after the screen: those the panel hears, and the issues recorded for
