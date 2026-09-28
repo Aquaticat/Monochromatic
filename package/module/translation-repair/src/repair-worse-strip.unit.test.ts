@@ -331,5 +331,36 @@ await describe({
         },);
       },
     },),
+    it({
+      name: 'KEEPS A CONFIRMED EDIT one checker voted worse, since the ruling strips only what the checkers did '
+        + 'not confirm',
+      fn: async () => {
+        /**
+         Checker calls, counted.
+         */
+        const resolutionCalls = { count: 0, };
+        const result = await repairTranslation({
+          client: scriptedClient({
+            flyVerdicts: [
+              'fixed',
+              'fixed',
+              'worse',
+            ],
+            resolutionCalls,
+          },),
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: MODELS,
+          signal: new AbortController().signal,
+        },);
+        expect({
+          flyKept: result.repairedText.includes(FLY_REPAIR,),
+          checkerRounds: resolutionCalls.count / CHECKERS.length,
+        },).toEqual({
+          flyKept: true,
+          checkerRounds: 1,
+        },);
+      },
+    },),
   ],
 },);
