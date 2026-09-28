@@ -3975,12 +3975,60 @@ Done so far, each with the same admitted characters as before unless stated:
 - `3e28464fa`: those three scans were one scan in three copies; `latinWordSpans` and `lowerCaseLatinWords`
   in `latin-letters.ts` replace them, matching HEAD on every measure above.
   Mutants making the shared scan ASCII at the start or in the loop are caught by 6 assertions each.
+- `bdc0112e6`: heading affinity's `latinTokens` come from the shared scan, folded by the new `foldLatinWord`
+  (NFD, marks dropped, lower case), so a handle written with its accent composed, combining or left off
+  scores against itself; `Kätzchen` no longer reads as `tzchen`.
+  Token sets differ on the 13 inputs with such letters, and `prepareDocumentPair`'s slices on none of 92 pairs;
+  with affinity disabled XingZ60's slicing moves, so the comparison sees this path.
+- `ee99ee294`: the preservation gate's `contentTokens` run on Latin letters, digits and marks, and `properNouns`
+  opens a name on any capital Latin letter (the new `isLatinCapital`), so a deleted `Émile` counts as a name lost.
+  Token lists differ on 13 inputs and names on 9; `checkPreservation` replayed over 9,456 recorded repair regions
+  (`preservation-replay.mjs`) changes no verdict, while raising the minimum name length flips 92.
+- `a5ae23a8f`: the neutral-pronoun count no longer counts `TA` inside an accented word or before a combining mark.
+  `sourcePronounLines` is unchanged on all 92 sources; counting occurrences inside words makes 31 differ.
+- `23d2bea2a`: a missed quote's note counts accented words as one Latin token (diagnostic only).
+- `fa0983503`: the picture-reading refusal screen reads accented words whole;
+  the pre-letter build discarded a short reading of a `Noël` card as a refusal (`no` plus `l`),
+  and the current build keeps it while real refusals still refuse.
+  Word lists change on the 11 inputs with such letters; no recorded picture readings were replayed.
+- `5f82122aa`: the quote and refusal tests add words opening on an accented letter,
+  which closed mutants that tested only a word's first character against ASCII.
+- `b4029fa3d`: content survival and the damage log read `foldedLatinWords`,
+  so `château` is one specific of seven letters instead of `ch` and `teau`, both too short to count.
+  Survival counts change on 6 of 131 archive-to-settled and archive-to-itself pairs, each by one accented word,
+  and one settled page's lost list gains one such word.
+- `435ba036f`: the lexical restoration grade (read by the recall benchmark only) folds accented words;
+  word sets change on the 11 inputs with such letters and on no other.
+- `c72cee0cf`: the line guard reads an accented-only line (`Å` beside its Han line) as the original's own English;
+  the pre-letter build refuses that fixture's one-line rendering and the current build accepts it.
+  `compareLineCounts` is unchanged on 131 pairs; forcing `isOwnEnglish` false makes 31 differ.
+- `59e6f47c4`: the italic title restore reads a title opening on an accented capital (`Été des chats`).
+  `archiveItalicSpans` is unchanged over 92 preparations; accepting any first character makes 18 differ.
+- `94dca38d8` and `d107043be`: handle gloss placement reads word edges as Latin letters, digits and marks,
+  where it had read any cased letter (so a kaomoji's Greek or Cyrillic letter joined a handle's word)
+  and no combining mark (so a gloss could land between a letter and its accent).
+  Page assembly replayed over 222 settled artifacts changes nothing; with the edge test always true, 7 differ.
+  The first commit's test never reached the path it named (M53); the second puts the accented word where
+  the pre-letter build does insert the gloss before the accent.
+- `d8a90d528`: a handle's reading keeps a space from an accented word beside it (`YumaoÉmile` no longer).
+  `nameAuthorities` is unchanged over 92 preparations; tagging every romanised run changes one signer rendering.
+- `81f2ce048`: a ballot finding naming a longer accented word (`tabbyé`, or a combining accent) blames no candidate;
+  the wire reads model replies, so no corpus replay applies, and the test pins both spellings.
+- `b44711b68`: block alignment tokens are folded Latin word and digit runs instead of ASCII runs by code point.
+  Token sets change on 13 inputs, and `prepareDocumentPair`'s slices on none of 92 pairs;
+  with tokens disabled the slicing of 10 pairs moves.
+- `baed88f59`: tests written negated (`(character < '0') || (character > '9')`) route through `ascii-letters.ts`:
+  four whole-text digit tests become `isAsciiDigits` and a lower-case letter test `isAsciiLowerLetter`,
+  each admitting the same characters as before, the empty text included.
+  The full suite after it: 0 FAIL, 1,303 PASS.
 
 The census bounds every switch: the characters an ASCII test and a Latin letter-or-mark test disagree on
 occur in 2 of 92 sources (7 characters), 9 of 92 archive pages (20) and 2 of 40 settled pages (4).
 
-Still to do: the other prose scanners switch to Latin letters one at a time, each measured old against new
-over the pinned sources, archive targets and settled pages;
+Still to do:
+the Canadian date and spelling passes read words with `isCasedLetter`, which takes no combining mark,
+so a month or a word written with a combining accent ends at the accent where its composed spelling does not;
+the apostrophe reading (`quote-neighbours.ts`) reads a combining mark before a straight quote as no word;
 and the three `opensTag` copies move to what the MDX compiler reads after `<`
 (`micromark-extension-mdx-jsx`: a space, tab or line end leaves it text;
 `/`, `>` or an identifier start, which includes Han, opens a tag; anything else fails to compile).
@@ -4188,6 +4236,18 @@ Prevention: a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
 
+### M53: a test committed for a defect it never reached
+
+Status: happened 2026-09-28 (B18); `94dca38d8`'s test, fixed by `d107043be` the same hour.
+The test for gloss placement beside a combining accent put the accented handle in a signature,
+where the pass never establishes a signer's rendering, so it placed nothing under either build;
+the commit named a defect its own test could not show,
+and a mutant restoring the old edge test survived it.
+The fixture checks run for the address, refusal and line switches against the pre-letter build
+(`.cache/dist-before-letters/`) were skipped for this one.
+Prevention: a test added for a defect is run against the build before the fix, and must fail there,
+before the fix is committed; a test that passes on both builds is rewritten until it reaches the path.
+
 ### M52: a positive control applied by line number after an edit moved the line
 
 Status: happened 2026-09-28 (B18); caught because the control read 0, and rerun.
@@ -4256,6 +4316,11 @@ not the names of functions known to hold it:
 range comparisons on characters and on character codes, literal alphabets,
 case-fold comparisons, and regex classes and properties,
 each query with a positive control.
+The shape search itself then missed the negated form, `(character < '0') || (character > '9')`,
+which held four whole-text digit tests and a lower-case letter test (`baed88f59`);
+a search for reversed operands (`'0' <= character`) and for character-code arithmetic found none,
+while its control pattern matched 2.
+So every shape is searched in both its asserted and its negated spelling.
 
 ### M47: a type declared while the same shape was already exported under the same name
 

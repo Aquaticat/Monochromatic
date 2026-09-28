@@ -58,6 +58,7 @@ guarded one branch of a new condition (M5);
 asked a function that never reads the entry guarded (M29);
 matched a word the message carries twice (M34);
 used fixtures that never reached the sites they named (M42, X18's first fixture),
+among them a test committed for a defect it passed on under the build before the fix (M53),
 or that could not tell the claimed order from another (M44);
 and mutation runs could not report a catch, or left out the test pinning the mutated token (M27, M41),
 or read a test run that crashed before any verdict as a survivor (M50);
@@ -65,6 +66,7 @@ and a positive control addressed by line number changed nothing and read as a nu
 
 The rule: a red guard is read case by case before the fix, and each case must fail for the reason its name gives;
 after the fix every case turns green.
+A test added for a defect runs against the build before the fix and must fail there before the fix is committed.
 A guard over several sites asserts that each site is reached, one assertion per site,
 and a hook under test hands a different answer each call.
 An order or a precedence claim is tested with a fixture mixing every source it draws from.
@@ -87,14 +89,16 @@ a teardown's audit listed only the sites it happened to see (M35);
 a key was censused by its builders' names rather than by the material it hashes (M39);
 raw NUL bytes made a source file binary to every line search (M40);
 a lint and a probe ran over an empty or self-matching list (M45);
-a census of a letter test searched the names of functions holding it and missed every inline copy (M48);
+a census of a letter test searched the names of functions holding it and missed every inline copy,
+and the search by shape then missed the same test written negated (M48);
 a search for an entry id printed corpus text (M36).
 
 The rule: a search whose result licenses a change runs uncapped over all of `src` (or `--count` first),
 then narrows.
 A census of a rule searches every way the rule can be written, not the names of functions known to hold it:
 for a character test, range comparisons on characters and on codes, literal alphabets,
-case-fold comparisons, and regex classes and properties.
+case-fold comparisons, and regex classes and properties,
+each shape in its asserted and its negated spelling.
 A null result counts only after a positive control shows the search can match.
 A generated list's line count is printed before anything consumes it.
 A probe's output goes outside the tree it searches.
