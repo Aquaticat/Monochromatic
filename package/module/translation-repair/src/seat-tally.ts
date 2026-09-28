@@ -327,7 +327,8 @@ export function seatTallyClient(
     },
     quotas: inner.quotas,
     // THE TYPED EXCHANGE IS A SEAT ASKED TOO, tallied under the same three
-    // outcomes so `pass-spend.mjs` counts a decision seat beside the rest.
+    // outcomes, so the SEAT lines count a decision seat beside the rest and a
+    // decision seat that never answers usably is named dark like any other.
     ...((innerDecide === undefined)
       ? {}
       : {
