@@ -21,8 +21,10 @@ export {
   BedrockModelNotServedError,
   createBedrockClient,
 } from './bedrock-client.ts';
+export { ledgerAbandonedAttempt, } from './bedrock-abandoned-attempt.ts';
 export {
   BEDROCK_COST_UNREPORTED,
+  bedrockAttemptBound,
   bedrockCostOf,
 } from './bedrock-cost.ts';
 export {

@@ -23,7 +23,7 @@ import {
   type OpenRouterServedId,
   openRouterProviderPreferencesFor,
 } from './openrouter-catalog.ts';
-import { exchangeReportingAbandon, } from './openrouter-abandoned-spend.ts';
+import { reportAbandonedSpend, } from './openrouter-abandoned-spend.ts';
 import {
   CACHED_UNREPORTED,
   openRouterCachedTokensOf,
@@ -402,34 +402,44 @@ export function createOpenRouterClient(
       },);
 
       /**
-       Raw reply from the transport seam, retried on transient statuses;
-       a stream that ends before its usage block writes its reckoned spend
-       line on the way out, since 2026-09-09.
+       Size of the body every attempt sends, for the reckoning.
        */
-      const reply = await exchangeReportingAbandon({
-        servedId,
-        requestBodyBytes: Buffer.byteLength(bodyJson,),
-        maxTokens,
-        exchange: async function attempt() {
-          return await exchangeWithRetry({
-            transport,
-            exchange: {
-              url: chatUrl,
-              label: servedId,
-              method: 'POST',
-              headers,
-              bodyJson,
-              signal: exchangeSignal,
-              // Conditional spread keeps the knob absent instead of undefined.
-              ...(request.maxAnswerChars === undefined
-                ? {}
-                : { maxAnswerChars: request.maxAnswerChars, }),
-            },
-            policy: retryPolicy,
-            // A TRUNCATED BODY IS A TRANSPORT FAILURE WEARING A SUCCESS STATUS,
-            // so the ladder reads it inside its own try and retries the attempt.
-            verify: wholeMessage,
+      const requestBodyBytes = Buffer.byteLength(bodyJson,);
+
+      /**
+       Raw reply from the transport seam, retried on transient statuses;
+       every attempt that delivered something and failed writes its reckoned
+       spend line, the ones the ladder retried included (since 2026-09-09 for
+       the last attempt, ledger P1 for the rest).
+       */
+      const reply = await exchangeWithRetry({
+        transport,
+        exchange: {
+          url: chatUrl,
+          label: servedId,
+          method: 'POST',
+          headers,
+          bodyJson,
+          signal: exchangeSignal,
+          // Conditional spread keeps the knob absent instead of undefined.
+          ...(request.maxAnswerChars === undefined
+            ? {}
+            : { maxAnswerChars: request.maxAnswerChars, }),
+        },
+        policy: retryPolicy,
+        // A TRUNCATED BODY IS A TRANSPORT FAILURE WEARING A SUCCESS STATUS,
+        // so the ladder reads it inside its own try and retries the attempt.
+        verify: wholeMessage,
+        onAbandonedAttempt: function reckonAbandoned({ deliveredChars, },): Promise<void> {
+          reportAbandonedSpend({
+            servedId,
+            deliveredChars,
+            requestBodyBytes,
+            maxTokens,
           },);
+          // The ladder's contract is asynchronous for the Bedrock ledger's
+          // write; this reckoning is a log line and a meter, both synchronous.
+          return Promise.resolve();
         },
       },);
 

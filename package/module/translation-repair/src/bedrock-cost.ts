@@ -74,4 +74,58 @@ export function bedrockCostOf(
   return promptUsd + completionUsd;
 }
 
+/**
+ The most one attempt could have been billed, off what it sent.
+
+ A BOUND, NOT AN ESTIMATE (ledger P1, 2026-09-28). An attempt the endpoint
+ accepted and this pipeline stopped reading reports no usage, and whether
+ Bedrock bills output past a cancel is unmeasured (OpenRouter's endpoints
+ were measured billing to the end, `completion-cap.ts`). This ledger is the
+ only guard on the owner's card, where an under-read is the failure, so the
+ attempt is priced at no more prompt tokens than its body had bytes and no
+ more completion tokens than its `max_tokens`. Abandoned attempts were 874 of
+ about 190,000 Bedrock calls in the logs, so the over-read is small.
+ 
+ @param servedId - model the attempt went to, whose row carries the prices
+ 
+ @param requestBodyBytes - size of the body the attempt sent
+ 
+ @param maxTokens - `max_tokens` the body carried
+ 
+ @returns Token counts and their price at the bound
+ 
+ @example
+ ```ts
+ const bound = bedrockAttemptBound({ servedId: 'google.gemma-4-e2b', requestBodyBytes: 30_000, maxTokens: 1_149, },);
+ ```
+ */
+export function bedrockAttemptBound(
+  {
+    servedId,
+    requestBodyBytes,
+    maxTokens,
+  }: {
+    readonly servedId: BedrockServedId;
+    readonly requestBodyBytes: number;
+    readonly maxTokens: number;
+  },
+): {
+  readonly promptTokens: number;
+  readonly completionTokens: number;
+  readonly usd: number
+} {
+  /**
+   Prices for this model, per million tokens each way.
+   */
+  const {
+    promptUsdPerMillion,
+    completionUsdPerMillion,
+  } = BEDROCK_MODELS[servedId];
+  return {
+    promptTokens: requestBodyBytes,
+    completionTokens: maxTokens,
+    usd: ((requestBodyBytes * promptUsdPerMillion) + (maxTokens * completionUsdPerMillion)) / PRICE_UNIT_TOKENS,
+  };
+}
+
 //endregion Bedrock cost

@@ -217,6 +217,7 @@ export {
   SYNTHETIC_PER_MODEL_CONCURRENCY,
 } from './synthetic-client.ts';
 export {
+  type AbandonedAttempt,
   DEFAULT_RETRY_POLICY,
   exchangeWithRetry,
   type RetryPolicy,

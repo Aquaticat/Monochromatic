@@ -14,6 +14,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { contextRoot, } from './log-context.ts';
 import { errorName, } from './error-name.ts';
 import { isJsonRecord, } from './json-guard.ts';
+import type { SpendReckoning, } from './spend-line.ts';
 
 //region Bedrock ledger
 // THE METER THIS PROVIDER DOES NOT HAVE. Synthetic reports quotas, Charm Hyper
@@ -194,6 +195,14 @@ export type BedrockLedgerEntry = {
    Completion tokens the provider reported.
    */
   readonly completionTokens: number;
+
+  /**
+   Why the counts and cost are reckoned rather than reported, absent on a
+   call whose usage the provider reported: an attempt the endpoint accepted
+   and never finished is noted at the most it could have been billed
+   (ledger P1).
+   */
+  readonly estimated?: SpendReckoning;
 };
 
 /**
@@ -376,6 +385,7 @@ function entryOf(
     usd,
     promptTokens,
     completionTokens,
+    estimated,
   } = parsed;
   if ((typeof at) !== 'string')
     throw new BedrockLedgerShapeError({
@@ -403,12 +413,19 @@ function entryOf(
       line,
       detail: 'token counts are not numbers',
     },);
+  if ((estimated !== undefined) && (estimated !== 'abandoned')
+    && (estimated !== 'abandoned-bound'))
+    throw new BedrockLedgerShapeError({
+      line,
+      detail: 'estimated is not a reckoning this package writes',
+    },);
   return {
     at,
     model,
     usd,
     promptTokens,
     completionTokens,
+    ...((estimated === undefined) ? {} : { estimated, }),
   };
 }
 

@@ -26,7 +26,6 @@ import {
 import {
   deliveredCharsOf,
   estimateAbandonedSpend,
-  exchangeReportingAbandon,
   MODEL_CARDS,
   OPENROUTER_MODELS,
   reportAbandonedSpend,
@@ -172,68 +171,28 @@ await describe({
   name: reportAbandonedSpend.name,
   children: [
     it({
-      name: 'WRITES a SPEND line marked estimated=abandoned for a cut stream, in the grammar the '
+      name: 'WRITES a SPEND line marked estimated=abandoned for one abandoned attempt, in the grammar the '
         + 'reader already parses, and moves the run meter by the reckoned USD',
       fn: async () => {
         resetRunSpend();
         /**
          Line the report logged.
          */
-        const report = reportAbandonedSpend({
+        const line = reportAbandonedSpend({
           servedId: 'minimax/minimax-m3',
-          error: CUT,
+          deliveredChars: TEN_TOKENS_RAW,
           requestBodyBytes: 4_000,
           maxTokens: ROOMY_MAX_TOKENS,
         },);
-        if (report === 'not-reported')
-          throw new Error('expected a line',);
-        expect(report.line.startsWith('SPEND provider=openrouter model=minimax/minimax-m3 prompt=1000 completion=10 cost=',),).toBe(true,);
-        expect(report.line.endsWith(' estimated=abandoned',),).toBe(true,);
-        expect(runSpendUsd({ provider: 'openrouter', },),).toBeGreaterThan(0,);
-      },
-    },),
-
-    it({
-      name: 'WRITES NOTHING for an error that says nothing about what was delivered, since a reckoning '
-        + 'off nothing would be a number nobody measured',
-      fn: async () => {
-        resetRunSpend();
-        expect(reportAbandonedSpend({
-          servedId: 'minimax/minimax-m3',
-          error: new Error('HTTP 502',),
-          requestBodyBytes: 4_000,
-          maxTokens: ROOMY_MAX_TOKENS,
-        },),).toBe('not-reported',);
-        expect(runSpendUsd({ provider: 'openrouter', },),).toBe(0,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: exchangeReportingAbandon.name,
-  children: [
-    it({
-      name: 'RETURNS the exchange\'s reply untouched when it completes, and on a cut stream writes '
-        + 'the reckoned line and rethrows the same error',
-      fn: async () => {
-        resetRunSpend();
-        expect(await exchangeReportingAbandon({
-          servedId: 'minimax/minimax-m3',
-          requestBodyBytes: 10,
-          maxTokens: ROOMY_MAX_TOKENS,
-          exchange: async () => ({ status: 200, bodyText: 'data: [DONE]\n\n', }),
-        },),).toEqual({ status: 200, bodyText: 'data: [DONE]\n\n', },);
-        expect(runSpendUsd({ provider: 'openrouter', },),).toBe(0,);
-        await expect(exchangeReportingAbandon({
-          servedId: 'minimax/minimax-m3',
-          requestBodyBytes: 4_000,
-          maxTokens: ROOMY_MAX_TOKENS,
-          exchange: async () => {
-            throw CUT;
-          },
-        },),).rejects.toBe(CUT,);
-        expect(runSpendUsd({ provider: 'openrouter', },),).toBeGreaterThan(0,);
+        expect({
+          opens: line.startsWith('SPEND provider=openrouter model=minimax/minimax-m3 prompt=1000 completion=10 cost=',),
+          marked: line.endsWith(' estimated=abandoned',),
+          metered: runSpendUsd({ provider: 'openrouter', },) > 0,
+        },).toEqual({
+          opens: true,
+          marked: true,
+          metered: true,
+        },);
       },
     },),
   ],

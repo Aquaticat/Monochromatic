@@ -8,6 +8,7 @@ import { contextRoot, } from './log-context.ts';
 import { SyntheticHttpError, } from './completion-shape.ts';
 import { isStreamBoundCut, } from './stream-bound.ts';
 import { isSelfEndedStream, } from './stream-overrun.ts';
+import { deliveredCharsOf, } from './stream-delivered-chars.ts';
 import { retryAfterMsOf, } from './retry-stated-wait.ts';
 import type { ModelTransport, } from './synthetic-transport.ts';
 
@@ -256,6 +257,28 @@ type ExchangeAttemptOutcome =
   };
 
 /**
+ What the ladder hands a caller for one attempt that delivered something and
+ then failed.
+ 
+ @example
+ ```ts
+ const attempt: AbandonedAttempt = { deliveredChars: 812, error, };
+ ```
+ */
+export type AbandonedAttempt = {
+  /**
+   Raw wire characters the attempt delivered: a refused reply's whole body,
+   or what the error that ended the stream says it had read.
+   */
+  readonly deliveredChars: number;
+
+  /**
+   Failure that ended the attempt.
+   */
+  readonly error: unknown;
+};
+
+/**
  Performs one transport attempt, capturing non-abort throws as data.
  A caller abort rethrows immediately:
  user steering is never a transient failure.
@@ -263,6 +286,11 @@ type ExchangeAttemptOutcome =
  @param transport - HTTP seam performing the attempt
  
  @param exchange - request handed to the transport verbatim
+ 
+ @param verify - caller's read of a reply the status accepted
+ 
+ @param onAbandonedAttempt - told of this attempt before anything else is
+ decided about its failure, when it delivered something
  
  @mutates exchange - the delegated transport attempt may invoke getters
  while serializing, and the exchange's `signal` rides into the attempt;
@@ -280,17 +308,25 @@ async function attemptExchange(
     transport,
     exchange,
     verify,
+    onAbandonedAttempt,
   }: {
     readonly transport: ModelTransport;
     readonly exchange: ForeignBorrowed<Parameters<ModelTransport>[0]>;
     readonly verify?: (reply: Awaited<ReturnType<ModelTransport>>,) => void;
+    readonly onAbandonedAttempt?: (attempt: AbandonedAttempt,) => Promise<void>;
   },
 ): Promise<ExchangeAttemptOutcome> {
+  /**
+   The reply the transport returned, kept so a check that refuses it can say
+   how much it carried; empty until the transport answers.
+   */
+  const answered: Awaited<ReturnType<ModelTransport>>[] = [];
   try {
     /**
      Reply this attempt produced, not yet read.
      */
     const reply = await transport(exchange,);
+    answered.push(reply,);
 
     // READ INSIDE THIS TRY ON PURPOSE. A body that is not a whole message is a
     // transport failure wearing a success status: the exchange returned 200 and
@@ -307,6 +343,26 @@ async function attemptExchange(
     };
   }
   catch (error) {
+    // EVERY ATTEMPT THAT DELIVERED SOMETHING WAS BILLED (ledger P1,
+    // 2026-09-28), and told here, before any of the rethrows below, because
+    // the attempts this ladder ends without retrying leave by those. A reply
+    // the check refused carried its whole body; a stream that ended early
+    // says on its error what it had read. A failure that delivered nothing
+    // reached no endpoint's meter and is not told. A caller whose telling
+    // fails (a ledger that cannot be written) fails the call with that error.
+    /**
+     Raw characters this attempt delivered, or that nothing says.
+     */
+    const delivered = (answered[0] === undefined) ? deliveredCharsOf({ error, },) : answered[0]
+      .bodyText
+      .length;
+    if (delivered !== 'nothing-known') {
+      await onAbandonedAttempt?.({
+        deliveredChars: delivered,
+        error,
+      },);
+    }
+
     // A caller abort is steering, not weather; it must propagate untouched.
     if (exchange.signal
       .aborted)
@@ -365,6 +421,10 @@ async function attemptExchange(
  attempt so an incomplete body counts as a failed attempt rather than a
  success the caller has to fail on afterwards. Absent leaves every 200 whole
  
+ @param onAbandonedAttempt - told of every attempt that delivered something
+ and then failed, the retried ones included, so a caller can record what the
+ endpoint billed for it (ledger P1)
+ 
  @mutates exchange - delegated transport attempts may invoke getters while
  serializing, and the exchange's `signal` rides into each attempt;
  see the transport's own contract
@@ -384,11 +444,13 @@ export async function exchangeWithRetry(
     exchange,
     policy = DEFAULT_RETRY_POLICY,
     verify,
+    onAbandonedAttempt,
   }: {
     readonly transport: ModelTransport;
     readonly exchange: ForeignBorrowed<Parameters<ModelTransport>[0]>;
     readonly policy?: RetryPolicy;
     readonly verify?: (reply: Awaited<ReturnType<ModelTransport>>,) => void;
+    readonly onAbandonedAttempt?: (attempt: AbandonedAttempt,) => Promise<void>;
   },
 ): Promise<Awaited<ReturnType<ModelTransport>>> {
   /**
@@ -416,6 +478,9 @@ export async function exchangeWithRetry(
       ...(verify === undefined
         ? {}
         : { verify, }),
+      ...(onAbandonedAttempt === undefined
+        ? {}
+        : { onAbandonedAttempt, }),
     },);
 
     /**

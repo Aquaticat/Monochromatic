@@ -10,6 +10,7 @@ import {
   bedrockChatUrlFor,
   type BedrockServedId,
 } from './bedrock-catalog.ts';
+import { ledgerAbandonedAttempt, } from './bedrock-abandoned-attempt.ts';
 import {
   BEDROCK_COST_UNREPORTED,
   bedrockCostOf,
@@ -402,8 +403,20 @@ export function createBedrockClient(
       },);
 
       /**
+       Ceiling this call sends, which also bounds what an abandoned attempt
+       is ledgered at (ledger P1).
+       */
+      const maxTokens = completionCapFor({
+        modelId: request.modelId,
+        // Conditional spread keeps the knob absent instead of undefined.
+        ...(request.maxTokens === undefined
+          ? {}
+          : { requested: request.maxTokens, }),
+      },);
+
+      /**
        Exactly what goes on the wire, hoisted so its size can be measured.
-       
+
        NO THINKING PARAMETER, NO TOKEN BUDGET AND NO REASONING EFFORT, EVER,
        the owner's standing instruction of 2026-08-25, recorded in full at
        the Synthetic body; the Gemma 4 cards recommend a reasoning effort
@@ -417,13 +430,7 @@ export function createBedrockClient(
         // THE MEASURED CEILING ON EVERY CALL since 2026-09-09
         // (`completion-cap.ts`): the credit behind this provider is never
         // topped up, and a runaway reply spends it.
-        max_tokens: completionCapFor({
-          modelId: request.modelId,
-          // Conditional spread keeps the knob absent instead of undefined.
-          ...(request.maxTokens === undefined
-            ? {}
-            : { requested: request.maxTokens, }),
-        },),
+        max_tokens: maxTokens,
         // Conditional spread keeps the optional knob absent instead of undefined.
         ...(request.responseFormat === undefined
           ? {}
@@ -431,9 +438,19 @@ export function createBedrockClient(
       },);
 
       /**
-       Raw reply from the transport seam, retried on transient statuses.
+       Raw reply from the transport seam, retried on transient statuses;
+       every attempt Bedrock accepted and this pipeline did not finish is
+       ledgered at its bound as it fails (ledger P1).
        */
       const reply = await exchangeWithRetry({
+        onAbandonedAttempt: async function ledgerAbandoned(): Promise<void> {
+          await ledgerAbandonedAttempt({
+            servedId,
+            requestBodyBytes: Buffer.byteLength(bodyJson,),
+            maxTokens,
+            ledger,
+          },);
+        },
         transport: attemptTransport,
         exchange: {
           url: bedrockChatUrlFor({

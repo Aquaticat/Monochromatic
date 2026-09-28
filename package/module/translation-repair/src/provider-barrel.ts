@@ -204,12 +204,10 @@ export {
 } from './openrouter-cached-tokens.ts';
 export {
   type AbandonedSpendEstimate,
-  type AbandonedSpendReport,
-  deliveredCharsOf,
   estimateAbandonedSpend,
-  exchangeReportingAbandon,
   reportAbandonedSpend,
 } from './openrouter-abandoned-spend.ts';
+export { deliveredCharsOf, } from './stream-delivered-chars.ts';
 export {
   createOpenRouterClient,
   OPENROUTER_PER_MODEL_CONCURRENCY,
@@ -219,6 +217,7 @@ export {
 export {
   reportSpend,
   SPEND_MARKER,
+  type SpendReckoning,
 } from './spend-line.ts';
 export {
   noteRunSpend,
