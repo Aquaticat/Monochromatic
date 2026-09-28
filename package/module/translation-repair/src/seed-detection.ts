@@ -1,9 +1,4 @@
-import {
-  alignDocumentSections,
-  type ChunkPair,
-} from './chunk-document.ts';
-import { parseDocument, } from './parse-document.ts';
-import { subdivideChunkPair, } from './slice-pair.ts';
+import { prepareDocumentPair, } from './document-preparation.ts';
 import type { RepairIssueRecord, } from './repair-record.ts';
 import {
   seedHitByRegion,
@@ -90,17 +85,10 @@ export function gradeSeedDetection(
   },
 ): Readonly<Record<string, SeedDetectionVerdict>> {
   /**
-   The same alignment the pipeline computed.
-   */
-  const alignment = alignDocumentSections({
-    source: parseDocument({ text: sourceText, },),
-    target: parseDocument({ text: seededText, },),
-  },);
+   The same SLICES the pipeline repaired, from the preparation the repair
+   entry itself calls (`repairTranslation`, at its default budget, which the
+   benchmark never overrides).
 
-  /**
-   The same SLICES the pipeline repaired, rebuilt the same way the driver
-   builds them.
-   
    Issue records carry a slice index, not a pair index, because the driver
    subdivides every aligned pair before repairing it. Indexing the pair list
    with a slice index was silently wrong for any document that subdivided at
@@ -108,16 +96,17 @@ export function gradeSeedDetection(
    absent, and within the pair count it mixed a pair's start offset with a
    slice-local span offset. Detection collapsed toward counting only seeds
    that happened to land in the first slice of a pair.
+
+   AND A RE-CARVE IS NOT THE PREPARATION (audit area six, 2026-09-28). This
+   rebuilt the slices by aligning sections and subdividing them, which leaves
+   out the front-matter slice the preparation leads with whenever both
+   documents carry visible metadata, as all 92 pinned pairs do; every index
+   then read the slice after the one its issue was written against.
    */
-  const slices: ChunkPair[] = [];
-  for (const pair of alignment.pairs) {
-    slices.push(...subdivideChunkPair({
-      pair,
-      sourceText,
-      targetText: seededText,
-      baseIndex: slices.length,
-    },),);
-  }
+  const { slices, } = prepareDocumentPair({
+    sourceText,
+    targetText: seededText,
+  },);
 
   /**
    Every target-side span in whole-document coordinates, carrying the status

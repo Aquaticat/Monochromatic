@@ -11,20 +11,17 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  alignDocumentSections,
   applySeededErrors,
   computeRepairScorecard,
   contentWords,
   gradeSeedDetection,
   hashContent,
   measureSeedRestoration,
-  parseDocument,
+  prepareDocumentPair,
   runRepairBenchmark,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  subdivideChunkPair,
-  type ChunkPair,
   type RepairAttemptRecord,
   type RepairModels,
   type repairTranslation,
@@ -536,21 +533,11 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
         /** Original the seeded translation is graded against. */
         const sourceText = `## 简介\n\n${filler}\n\n猫猫在太阳下打盹。猫猫也追蝴蝶。碗是满的。\n`;
 
-        /** Slices the driver would build over the seeded pair. */
-        const slices: ChunkPair[] = [];
-        for (
-          const pair of alignDocumentSections({
-            source: parseDocument({ text: sourceText, },),
-            target: parseDocument({ text: seededText, },),
-          },).pairs
-        ) {
-          slices.push(...subdivideChunkPair({
-            pair,
-            sourceText,
-            targetText: seededText,
-            baseIndex: slices.length,
-          },),);
-        }
+        /** Slices the repair entry prepares over the seeded pair. */
+        const { slices, } = prepareDocumentPair({
+          sourceText,
+          targetText: seededText,
+        },);
 
         /** Slice whose target region covers the planted seed. */
         const slicePosition = slices.findIndex(function covers(slice,) {
