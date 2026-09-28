@@ -23,6 +23,42 @@ export const TRANSLATE_SELECTION_TASK: string =
   'Each candidate is a complete English translation of the Chinese ORIGINAL below, for a memorial archive.';
 
 /**
+ The task a challenge round asks after a prior panel declined the exact slate:
+ substantively distinct, so the round is a new question rather than a re-ask.
+ Named here beside the first round's task so the rendered-sheets fixture reads
+ the same sentence the judges do (ledger X17).
+ */
+export const TRANSLATE_CHALLENGE_TASK: string = `${TRANSLATE_SELECTION_TASK} A prior panel declined this exact slate. `
+  + 'Challenge that result: first identify which candidates are individually ineligible, then compare only '
+  + 'eligible candidates and select one when any faithfully renders the passage.';
+
+/**
+ Substantive responsibility assigned to one slate judging pass.
+ */
+export type TranslateJudgeResponsibility =
+  | 'initial-selection'
+  | 'decline-challenge';
+
+/**
+ The task one slate judging pass asks: the first round's, or the challenge
+ round's after a prior panel declined the exact slate.
+
+ @param responsibility - which pass this is
+
+ @returns Task sentence the judges read
+
+ @example
+ ```ts
+ const task = translateSelectionTask({ responsibility: 'decline-challenge', },);
+ ```
+ */
+export function translateSelectionTask(
+  { responsibility, }: { readonly responsibility: TranslateJudgeResponsibility; },
+): string {
+  return (responsibility === 'initial-selection') ? TRANSLATE_SELECTION_TASK : TRANSLATE_CHALLENGE_TASK;
+}
+
+/**
  What the faithfulness rule says about a name the documents declare.
  
  NAMED SEPARATELY so it can be asserted on, and so the sentence a judge

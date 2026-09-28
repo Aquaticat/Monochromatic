@@ -68,6 +68,9 @@ export {
   TRANSLATE_LINE_STRUCTURE_CRITERION,
   TRANSLATE_SELECTION_CRITERIA,
   translateSelectionCriteria,
+  TRANSLATE_CHALLENGE_TASK,
+  type TranslateJudgeResponsibility,
+  translateSelectionTask,
   TRANSLATE_SELECTION_TASK,
 } from './translate-selection-sheet.ts';
 export { judgeTranslateSlate, } from './translate-judge.ts';
@@ -141,7 +144,11 @@ export {
   readCandidateNames,
 } from './contest-ballot-wire.ts';
 export { BILINGUAL_LINE_CLAUSE, } from './bilingual-line-clause.ts';
-export { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
+export {
+  HOUSE_POLICY_BLOCK,
+  JUDGE_POLICY_BLOCK,
+} from './house-policy.ts';
+export { translatedSlateCriteria, } from './translated-slate-criteria.ts';
 export {
   APPARATUS_KINDS,
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
@@ -239,6 +246,7 @@ export {
   IMAGE_READING_PERSPECTIVES,
   isTransientReadingReason,
   readImageAsset,
+  imageReadingText,
   READING_INSTRUCTION,
 } from './image-reading-stage.ts';
 export { readDocumentPictures, } from './document-readings.ts';

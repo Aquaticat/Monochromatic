@@ -21,7 +21,9 @@ export {
 export { collectEnvelopeProposals, } from './editor-proposals.ts';
 export {
   CHUNK_SELECTION_CRITERIA,
+  CHUNK_SELECTION_TASK,
   ENVELOPE_SELECTION_CRITERIA,
+  ENVELOPE_SELECTION_TASK,
 } from './editor-selection-sheet.ts';
 export {
   buildLicensedQuotes,

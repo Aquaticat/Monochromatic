@@ -90,6 +90,24 @@ export const IMAGE_READING_PERSPECTIVES = [
 export type ImageReadingPerspective = typeof IMAGE_READING_PERSPECTIVES[number];
 
 /**
+ The text a reader is sent beside the picture: the instruction, then the
+ responsibility this reading takes. Named so the rendered-sheets fixture reads
+ what the readers read (ledger X17).
+
+ @param perspective - reading responsibility this call takes
+
+ @returns Text part of the reading request
+
+ @example
+ ```ts
+ const text = imageReadingText({ perspective: IMAGE_READING_PERSPECTIVES[0], },);
+ ```
+ */
+export function imageReadingText({ perspective, }: { readonly perspective: ImageReadingPerspective; },): string {
+  return `${READING_INSTRUCTION}\n\nREADING RESPONSIBILITY:\n${perspective}`;
+}
+
+/**
  Most bytes a picture may occupy in a reading request.
  
  WHAT THE GATEWAY WILL CARRY, not what the model will read. The model is the
@@ -299,7 +317,7 @@ export async function readImageAsset(
       content: [
         {
           type: 'text',
-          text: `${READING_INSTRUCTION}\n\nREADING RESPONSIBILITY:\n${perspective}`,
+          text: imageReadingText({ perspective, },),
         },
         {
           type: 'image_url',

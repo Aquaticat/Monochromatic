@@ -21,7 +21,10 @@ import type { TranslateCandidateValue, } from './translate-candidates.ts';
 import { runoffFinalists, } from './translate-runoff.ts';
 import { settleAbsentDecline, } from './translate-runoff-tie.ts';
 import type { ProducedSlate, } from './translate-produce.ts';
-import { TRANSLATE_SELECTION_TASK, } from './translate-selection-sheet.ts';
+import {
+  type TranslateJudgeResponsibility,
+  translateSelectionTask,
+} from './translate-selection-sheet.ts';
 import {
   describeSlate,
   NOT_ON_SLATE,
@@ -37,12 +40,6 @@ import { JUDGE_PICTURE_SCOPE_RULE, } from './translate-wire.ts';
 
 //region Translate judge
 
-/**
- Substantive responsibility assigned to one slate judging pass.
- */
-export type TranslateJudgeResponsibility =
-  | 'initial-selection'
-  | 'decline-challenge';
 // The half of the translate stage that CHOOSES: a slate that already exists is
 // put to the judges, and one candidate ships.
 //
@@ -375,9 +372,7 @@ export async function judgeTranslateSlate(
   /**
    Substantively distinct task after prior panel declined exact slate.
    */
-  const task = (responsibility === 'initial-selection')
-    ? TRANSLATE_SELECTION_TASK
-    : `${TRANSLATE_SELECTION_TASK} A prior panel declined this exact slate. Challenge that result: first identify which candidates are individually ineligible, then compare only eligible candidates and select one when any faithfully renders the passage.`;
+  const task = translateSelectionTask({ responsibility, },);
   /**
    Judges' verdict over the whole-slice candidates.
    */
