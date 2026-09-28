@@ -4,6 +4,7 @@ import type { BedrockStreamEnd, } from './bedrock-catalog.ts';
 import { MalformedCompletionError, } from './completion-shape.ts';
 import { errorName, } from './error-name.ts';
 import { isJsonRecord, } from './json-guard.ts';
+import { ssePayloadOf, } from './sse-data-line.ts';
 import { requireStreamTerminator, } from './stream-completion.ts';
 
 //region Bedrock stream end
@@ -20,11 +21,6 @@ import { requireStreamTerminator, } from './stream-completion.ts';
  Logger root for the stream-end checks.
  */
 const l = contextRoot({ tag: 'translation-repair', },);
-
-/**
- Prefix of a data line in a server-sent event stream.
- */
-const DATA_PREFIX = 'data: ';
 
 /**
  Terminal sentinel the shared reader requires.
@@ -45,16 +41,19 @@ const DONE_LINE = 'data: [DONE]\n';
  */
 function isUsageChunk(rawLine: string,): boolean {
   /**
-   Line without surrounding whitespace.
+   Payload the line carries, read the way every other stream reader here
+   reads it (`sse-data-line.ts`): this reader spelled the prefix with its
+   space, so a usage chunk sent in the tight `data:{...}` form never counted
+   and a whole stream was refused as cut off (audit area six, 2026-09-28).
    */
-  const line = rawLine.trim();
-  if (!line.startsWith(DATA_PREFIX,))
+  const payload = ssePayloadOf({ line: rawLine, },);
+  if (payload === '')
     return false;
   try {
     /**
      Parsed chunk, unknown until checked.
      */
-    const chunk: unknown = JSON.parse(line.slice(DATA_PREFIX.length,),);
+    const chunk: unknown = JSON.parse(payload,);
     return isJsonRecord(chunk,) && isJsonRecord(chunk.usage,);
   } catch (error) {
     // A line that will not parse is not a usage chunk; the shared reader

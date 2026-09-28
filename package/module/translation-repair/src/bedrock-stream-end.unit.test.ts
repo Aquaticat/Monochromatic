@@ -94,6 +94,19 @@ await describe({
         },).not.toThrow();
       },
     },),
+
+    it({
+      name: 'ACCEPTS A USAGE CHUNK SENT IN THE TIGHT FORM, `data:{...}` being the same message as '
+        + '`data: {...}` (audit area six: the prefix was spelled with its space)',
+      fn: async () => {
+        expect(function tight(): void {
+          requireBedrockStreamEnd({
+            bodyText: `${CONTENT_CHUNK}${USAGE_CHUNK.replace('data: ', 'data:',)}`,
+            streamEnd: 'usage-chunk',
+          },);
+        },).not.toThrow();
+      },
+    },),
   ],
 },);
 
