@@ -1,5 +1,5 @@
 import { SyntheticHttpError, } from './completion-shape.ts';
-import { retryAfterMsOf, } from './transient-retry.ts';
+import { retryAfterMsOf, } from './retry-stated-wait.ts';
 
 /**
  How subscription reports spent allowance.

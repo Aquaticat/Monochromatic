@@ -219,9 +219,9 @@ export {
 export {
   DEFAULT_RETRY_POLICY,
   exchangeWithRetry,
-  retryAfterMsOf,
   type RetryPolicy,
 } from './transient-retry.ts';
+export { retryAfterMsOf, } from './retry-stated-wait.ts';
 export {
   createRequestPace,
   HYPER_PACE_WINDOW_MS,
