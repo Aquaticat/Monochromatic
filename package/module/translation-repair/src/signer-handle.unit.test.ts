@@ -118,6 +118,34 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES A PLACEHOLDER IN THE PARENTHESES, the one wrong meaning that can be predicted: a writer '
+        + 'echoing the finding\'s own words back would otherwise ship glossed',
+      fn: async () => {
+        for (const placeholder of [
+          'its literal meaning in English',
+          'literal meaning',
+          'Meaning',
+        ]) {
+          expect(findingsFor({
+            candidateText: `The cat sleeps on the windowsill.\n\n—— Jumao (${placeholder}), 2021`,
+          },).join(' ',),).toContain('Jumao',);
+        }
+      },
+    },),
+    it({
+      name: 'GIVES NO TEMPLATE TO COPY: the finding names the reading and shows the house rule\'s example',
+      fn: async () => {
+        /**
+         Findings against the bare reading.
+         */
+        const findings = findingsFor({
+          candidateText: 'The cat sleeps on the windowsill.\n\n—— Jumao, 2021',
+        },).join(' ',);
+        expect(findings,).not.toContain('(its literal meaning',);
+        expect(findings,).toContain('Jinxin (Brocade Heart)',);
+      },
+    },),
+    it({
       name: 'LEAVES A SIGNER THE ARCHIVE RENDERS IN LATIN LETTERS to the archive\'s authority, and one a '
         + 'declared pair renders to the declaration',
       fn: async () => {
