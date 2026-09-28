@@ -233,6 +233,16 @@ so a valid proposal is still preferred wherever one exists.
     fixed in `7f79ada48` (settlement),
     `002f21f43` (artifact and reading)
     and `e7d409fdd` (report).
+- Checked at the user boundary the same day, spending nothing:
+    a real `corpus-pass --only mikaela_khara` over a scratch copy of its artifact,
+    with slices 11 and 13 set to the archive-kept record,
+    republished the page with the archive's wording at both
+    (the unedited page carries it at neither),
+    and `verify-published` agreed 1 of 1 at the expected length.
+    The agreement census over the 214 stored pages reads identically before and after the change
+    (137 agree, 77 disagree, none refused).
+    The `DEFECTS` line itself is unit-verified only;
+    the first live `no-valid-wording` line is to be read when a run prints one.
 
 ## Addendum 2026-09-27, seventeenth: the major-or-worse rule reads the panel's severity
 
