@@ -13,6 +13,10 @@ import {
 } from './stage-fanout-window.ts';
 import { STAGE_RETRY_ROUNDS, } from './stage-quorum.ts';
 import {
+  type ReachableQuorum,
+  reachableQuorum,
+} from './stage-reachable-quorum.ts';
+import {
   type RoundOutcome,
   runGatherRound,
 } from './stage-round.ts';
@@ -39,6 +43,31 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // same seat twice and never records a silence nobody was asked to break.
 
 /**
+ What windowed rounds came to.
+
+ @example
+ ```ts
+ const { outcomes, quorum, unreachable, } = await runWindowedRounds({ ... },);
+ ```
+ */
+export type WindowedRounds<ValueT,> = Readonly<{
+  /**
+   One outcome per seat asked, in roster order.
+   */
+  outcomes: readonly RoundOutcome<ValueT>[];
+
+  /**
+   Quorum the rounds closed on.
+   */
+  quorum: ReachableQuorum;
+
+  /**
+   Seats of the bench the quorum counted out of reach.
+   */
+  unreachable: number;
+}>;
+
+/**
  Asks a bench through windowed rounds and returns one outcome per seat
  asked.
  
@@ -62,19 +91,20 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  
  @param l - stage logger
  
- @param heardNeeded - voices quorum needs, computed over the whole bench
- 
+ @param quorumOver - bench the quorum is taken over, when the seats asked are
+ part of a wider one; the seats asked by default
+
  @param graceMs - straggler window after quorum, when a test bounds it
- 
+
  @param fanOut - window by default; whole bench once for a fixture scripting
  every seat
- 
+
  @returns Outcomes for the seats asked, in roster order, heard where a
- round heard them and lost otherwise
- 
+ round heard them and lost otherwise, beside the quorum the rounds closed on
+
  @example
  ```ts
- const outcomes = await runWindowedRounds({ client, modelIds, messages, signal, exchangeTimeoutMs, responseFormat, validate, stage: 'gate', l, heardNeeded: 3, },);
+ const { outcomes, } = await runWindowedRounds({ client, modelIds, messages, signal, exchangeTimeoutMs, responseFormat, validate, stage: 'gate', l, },);
  ```
  */
 export async function runWindowedRounds<ValueT,>(
@@ -89,7 +119,7 @@ export async function runWindowedRounds<ValueT,>(
     validate,
     stage,
     l,
-    heardNeeded,
+    quorumOver = modelIds.length,
     graceMs,
     fanOut = 'window',
   }: ForeignBorrowed<{
@@ -103,11 +133,22 @@ export async function runWindowedRounds<ValueT,>(
     readonly validate: (value: unknown,) => value is ValueT;
     readonly stage: string;
     readonly l: Logger;
-    readonly heardNeeded: number;
+    readonly quorumOver?: number;
     readonly graceMs?: number;
     readonly fanOut?: FanOutMode;
   }>,
-): Promise<readonly RoundOutcome<ValueT>[]> {
+): Promise<WindowedRounds<ValueT>> {
+  /**
+   Quorum the rounds are sized on.
+   */
+  const quorum = reachableQuorum({
+    benchSize: quorumOver,
+    unreachable: 0,
+  },);
+  /**
+   Voices that quorum needs.
+   */
+  const heardNeeded = quorum.needed;
   /**
    Everything a round needs except who to ask and how many to wait for.
    */
@@ -124,11 +165,15 @@ export async function runWindowedRounds<ValueT,>(
     ...((graceMs === undefined) ? {} : { graceMs, }),
   };
   if (fanOut === 'whole-bench') {
-    return await runGatherRound<ValueT>({
-      ...roundRequest,
-      modelIds,
-      heardNeeded,
-    },);
+    return {
+      outcomes: await runGatherRound<ValueT>({
+        ...roundRequest,
+        modelIds,
+        heardNeeded,
+      },),
+      quorum,
+      unreachable: 0,
+    };
   }
 
   /**
@@ -204,13 +249,17 @@ export async function runWindowedRounds<ValueT,>(
         pending.push(modelId,);
     }
   }
-  return modelIds.flatMap(function inRosterOrder(modelId,): readonly RoundOutcome<ValueT>[] {
-    /**
-     What this seat's last ask came to, absent when the window spared it.
-     */
-    const outcome = latest.get(modelId,);
-    return (outcome === undefined) ? [] : [outcome,];
-  },);
+  return {
+    outcomes: modelIds.flatMap(function inRosterOrder(modelId,): readonly RoundOutcome<ValueT>[] {
+      /**
+       What this seat's last ask came to, absent when the window spared it.
+       */
+      const outcome = latest.get(modelId,);
+      return (outcome === undefined) ? [] : [outcome,];
+    },),
+    quorum,
+    unreachable: 0,
+  };
 }
 
 //endregion Stage windowed rounds

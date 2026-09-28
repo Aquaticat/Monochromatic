@@ -243,7 +243,7 @@ export async function reviewAbsoluteNaturalness(
   /**
    Every requested outcome after every seat has settled or reached deadline.
    */
-  const outcomes = await runWindowedRounds({
+  const { outcomes, } = await runWindowedRounds({
     client,
     modelIds,
     messages: buildAbsoluteNaturalnessReviewMessages({
@@ -266,7 +266,7 @@ export async function reviewAbsoluteNaturalness(
     },
     stage: 'absolute-naturalness-review',
     l: rl,
-    heardNeeded: quorumNeeded,
+    quorumOver,
     ...((graceMs === undefined) ? {} : { graceMs, }),
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),

@@ -317,7 +317,7 @@ await describe({
           roles,
         } = refusedFirstBench();
         /** Outcomes under test. */
-        const outcomes = await runWindowedRounds({
+        const { outcomes, } = await runWindowedRounds({
           client: scriptedClient({
             roles,
             calls,
@@ -330,7 +330,6 @@ await describe({
           validate: isPurrReply,
           stage: 'lane-contest',
           l,
-          heardNeeded: 3,
           graceMs: GRACE_MS,
         },);
         /** Seats heard. */
@@ -378,7 +377,7 @@ await describe({
           validate: isPurrReply,
           stage: 'consolidate-gate',
           l,
-          heardNeeded: 3,
+          quorumOver: 6,
           graceMs: GRACE_MS,
         },);
         expect(calls[SEAT_HYPER_OPENROUTER_VISION_EDITOR],).toBe(1,);

@@ -19,7 +19,6 @@ import {
   type PolishChoice,
   readConsolidationPolishBallot,
 } from './consolidation-polish-gate-wire.ts';
-import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -196,7 +195,7 @@ export async function gateConsolidationPolish(
   /**
    One outcome per requested voice.
    */
-  const outcomes = await runWindowedRounds({
+  const { outcomes, } = await runWindowedRounds({
     client,
     modelIds,
     messages: buildConsolidationPolishGateMessages({ subject, },),
@@ -206,7 +205,6 @@ export async function gateConsolidationPolish(
     validate: isConsolidationPolishGateWire,
     stage: 'consolidation-polish-gate',
     l: gl,
-    heardNeeded: rosterQuorumSize({ rosterSize: modelIds.length, },),
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),
   },);

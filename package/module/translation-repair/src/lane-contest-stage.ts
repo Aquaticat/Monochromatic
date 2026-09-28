@@ -16,7 +16,6 @@ import {
   type LaneContestSubject,
   readLaneContestBallot,
 } from './lane-contest-wire.ts';
-import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -373,19 +372,14 @@ export async function contestLaneSlice(
     tag: contestLaneSlice.name,
   },);
 
-  /**
-   Exact-half voices required before grace begins.
-   
-   Deterministic exclusions can make fast ballots inadmissible,
-   but they do not make unreliable whole-roster participation mandatory.
-   An eligible side lacking corroboration therefore fails closed as neither.
-   */
-  const heardNeeded = rosterQuorumSize({ rosterSize: modelIds.length, },);
-
+  // EXACT-HALF VOICES ARE NEEDED BEFORE GRACE BEGINS, sized by the rounds on
+  // the bench. Deterministic exclusions can make fast ballots inadmissible,
+  // but they do not make unreliable whole-roster participation mandatory. An
+  // eligible side lacking corroboration therefore fails closed as neither.
   /**
    One reply per voice, heard or lost.
    */
-  const outcomes = await runWindowedRounds({
+  const { outcomes, } = await runWindowedRounds({
     client,
     modelIds,
     messages: buildLaneContestMessages({ subject, },),
@@ -395,7 +389,6 @@ export async function contestLaneSlice(
     validate: isLaneContestWire,
     stage: 'lane-contest',
     l: cl,
-    heardNeeded,
     ...((graceMs === undefined) ? {} : { graceMs, }),
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),

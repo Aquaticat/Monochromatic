@@ -179,7 +179,7 @@ async function runBench(
   },
 ) {
   const { client, asked, } = scriptedClient(script,);
-  const outcomes = await runWindowedRounds({
+  const { outcomes, } = await runWindowedRounds({
     client,
     modelIds: BENCH,
     messages: [{ role: 'user', content: 'meow?', },],
@@ -189,7 +189,6 @@ async function runBench(
     validate: isMeowReply,
     stage: 'meow',
     l,
-    heardNeeded: QUORUM,
     graceMs: 50,
     ...((fanOut === undefined) ? {} : { fanOut, }),
   },);

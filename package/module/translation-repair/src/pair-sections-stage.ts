@@ -19,7 +19,6 @@ import {
   SectionPairingError,
 } from './pair-sections-wire.ts';
 import { agreePairs, } from './pair-agreement.ts';
-import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -161,7 +160,7 @@ function readUsablePairings(
     findings,
     l,
   }: {
-    readonly outcomes: Awaited<ReturnType<typeof runWindowedRounds>>;
+    readonly outcomes: Awaited<ReturnType<typeof runWindowedRounds>>['outcomes'];
     readonly sourceCount: number;
     readonly targetCount: number;
     readonly findings: string[];
@@ -265,7 +264,7 @@ export async function pairSectionsWithRoster(
   /**
    Every voice's reply, heard or lost.
    */
-  const outcomes = await runWindowedRounds({
+  const { outcomes, } = await runWindowedRounds({
     client,
     modelIds,
     messages: buildSectionPairingMessages({
@@ -278,7 +277,6 @@ export async function pairSectionsWithRoster(
     validate: isSectionPairingWire,
     stage: 'section-pairing',
     l: pl,
-    heardNeeded: rosterQuorumSize({ rosterSize: modelIds.length, },),
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),
   },);

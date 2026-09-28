@@ -16,7 +16,6 @@ import {
   isConsolidateGateWire,
   readConsolidateGateBallot,
 } from './consolidate-gate-wire.ts';
-import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -223,7 +222,7 @@ export async function gateConsolidatedSlice(
   /**
    One reply per voice, heard or lost.
    */
-  const outcomes = await runWindowedRounds({
+  const { outcomes, } = await runWindowedRounds({
     client,
     modelIds,
     messages: buildConsolidateGateMessages({ subject, },),
@@ -233,7 +232,6 @@ export async function gateConsolidatedSlice(
     validate: isConsolidateGateWire,
     stage: 'consolidate-gate',
     l: gl,
-    heardNeeded: rosterQuorumSize({ rosterSize: modelIds.length, },),
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),
   },);

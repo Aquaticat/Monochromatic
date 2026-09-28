@@ -15,7 +15,6 @@ import {
 } from './pair-blocks-wire.ts';
 import { readBlockPairingOutcomes, } from './pair-blocks-read-outcomes.ts';
 import { assertPairingSeats, } from './pair-blocks-evidence-identity.ts';
-import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RoundOutcome, } from './stage-round.ts';
@@ -212,7 +211,7 @@ export async function pairBlocksWithRoster(
   /**
    Every voice's reply, heard or lost.
    */
-  const outcomes = await runWindowedRounds({
+  const { outcomes, } = await runWindowedRounds({
     client,
     modelIds,
     messages,
@@ -222,7 +221,6 @@ export async function pairBlocksWithRoster(
     validate: isBlockPairingWire,
     stage: 'block-pairing',
     l: pl,
-    heardNeeded: rosterQuorumSize({ rosterSize: modelIds.length, },),
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
