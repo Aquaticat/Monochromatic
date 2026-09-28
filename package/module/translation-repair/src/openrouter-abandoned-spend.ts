@@ -29,10 +29,11 @@ import { StreamDegenerateError, } from './stream-runaway-watch.ts';
 
 /**
  Median of recorded model medians for an unmeasured version, not a pooled-stream percentile.
- The measured rows retain 132, 137, 137, 297 and 386; their middle value is 137.
+ The cards measured on 2026-09-28 (ledger P7) carry 0.9, 126, 130, 138, 228, 286, 292 and 302;
+ the middle of the eight is 183, halfway between 138 and 228.
  This remains an explicitly abandoned-call estimate, never reported usage.
  */
-const UNMEASURED_RAW_CHARS_PER_TOKEN = 137;
+const UNMEASURED_RAW_CHARS_PER_TOKEN = 183;
 
 /**
  Raw stream characters per completion token, the 50th percentile over every

@@ -66,7 +66,9 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       // 9 s). The pipeline sends no reasoning parameter by the owner's rule,
       // so the seat names the measured endpoint instead.
       preferredEndpoints: ['wafer',],
-      rawCharsPerToken: 297,
+      // Raw characters per completion token, median of 15,239 streams since 2026-09-21 (ledger P7,
+      // 2026-09-28).
+      rawCharsPerToken: 302,
     },
     // Hyper p99 over 886 calls; Synthetic 16,342 over 4,775; OpenRouter
     // 13,070 over 1,853.
@@ -129,7 +131,9 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       completionUsdPerMillion: 15,
       ignoredEndpoints: [],
       preferredEndpoints: [],
-      rawCharsPerToken: 137,
+      // Raw characters per completion token, median of 500 streams, none since 2026-09-21 (ledger P7,
+      // 2026-09-28).
+      rawCharsPerToken: 138,
     },
     // Hyper p99 over 2,777 calls; OpenRouter 8,254 over 488; Synthetic
     // 4,350 over 7,051.
@@ -165,7 +169,9 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       completionUsdPerMillion: 0.17,
       ignoredEndpoints: [],
       preferredEndpoints: [],
-      rawCharsPerToken: 137,
+      // Raw characters per completion token, median of 1,326 streams, none since 2026-09-21 (ledger P7,
+      // 2026-09-28).
+      rawCharsPerToken: 286,
     },
     bedrock: {
       id: 'openai.gpt-oss-120b',
@@ -218,7 +224,9 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
         'modelrun',
       ],
       preferredEndpoints: [],
-      rawCharsPerToken: 137,
+      // Raw characters per completion token, median of 45,307 streams since 2026-09-21 (ledger P7,
+      // 2026-09-28).
+      rawCharsPerToken: 130,
     },
     // Hyper p99 over 27,361 calls; OpenRouter 718 over 6,657.
     completionCap: 10_822,
@@ -238,7 +246,9 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       completionUsdPerMillion: 0.34,
       ignoredEndpoints: [],
       preferredEndpoints: [],
-      rawCharsPerToken: 137,
+      // Raw characters per completion token, median of 1,797 streams; the 40 since 2026-09-21 read 289 (ledger P7,
+      // 2026-09-28).
+      rawCharsPerToken: 292,
     },
     bedrock: {
       id: 'google.gemma-4-26b-a4b',
@@ -337,7 +347,9 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
         'sail-research',
       ],
       preferredEndpoints: ['morph',],
-      rawCharsPerToken: 'unmeasured',
+      // Raw characters per completion token, median of 47,186 streams since 2026-09-21; all time reads 257 (ledger P7,
+      // 2026-09-28).
+      rawCharsPerToken: 228,
     },
     // Approved 2026-09-11; no completed-call distribution of its own yet.
     completionCap: 'pooled-p99',
@@ -401,7 +413,9 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       completionUsdPerMillion: 0.15,
       ignoredEndpoints: [],
       preferredEndpoints: [],
-      rawCharsPerToken: 137,
+      // Raw characters per completion token, median of 37,281 streams since 2026-09-21: it bills far more tokens than it streams (ledger P7,
+      // 2026-09-28).
+      rawCharsPerToken: 0.9,
     },
     // Own p99 3,063 over 136 OpenRouter calls, under the pooled 90th.
     completionCap: 'pooled-p90',
@@ -433,7 +447,9 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       // which is the non-retaining route this pipeline does not use.
       ignoredEndpoints: [],
       preferredEndpoints: [],
-      rawCharsPerToken: 'unmeasured',
+      // Raw characters per completion token, median of 264 streams, all since 2026-09-21 (ledger P7,
+      // 2026-09-28).
+      rawCharsPerToken: 126,
     },
     // No completed-call distribution of its own yet.
     completionCap: 'pooled-p99',

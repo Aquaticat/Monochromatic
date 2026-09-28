@@ -188,7 +188,7 @@ export type SyntheticCard = ServedCard<SyntheticServedId> & {
 
  @example
  ```ts
- const card: OpenRouterCard = { id: 'minimax/minimax-m3', readsImages: true, maxOutputLength: 512_000, promptUsdPerMillion: 0.3, completionUsdPerMillion: 1.2, ignoredEndpoints: ['parasail',], preferredEndpoints: [], rawCharsPerToken: 137, };
+ const card: OpenRouterCard = { id: 'minimax/minimax-m3', readsImages: true, maxOutputLength: 512_000, promptUsdPerMillion: 0.3, completionUsdPerMillion: 1.2, ignoredEndpoints: ['parasail',], preferredEndpoints: [], rawCharsPerToken: 130, };
  ```
  */
 export type OpenRouterCard = ServedCard<OpenRouterServedId> & {
