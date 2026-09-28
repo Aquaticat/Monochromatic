@@ -87,6 +87,41 @@ export type PriorNaturalnessCorrection = {
 };
 
 /**
+ Renders prior failed corrections as evidence against repeating them, one
+ block per attempt in the order tried.
+
+ The refine selection context and the consolidation gate's correction sheet
+ each kept their own copy of this rendering (audit area six, 2026-09-28);
+ two sheets showing one history two ways would let the judges and the
+ selectors read different evidence.
+
+ @param priors - failed corrections, oldest first
+
+ @returns One rendered block per attempt
+
+ @example
+ ```ts
+ renderPriorCorrections({ priors: [{ candidateText: 'The cat slept.', findings: ['It repeats itself.',], },], },);
+ // ['Attempt 1 candidate:\nThe cat slept.\nFindings:\nIt repeats itself.']
+ ```
+ */
+export function renderPriorCorrections(
+  { priors, }: { readonly priors: readonly PriorNaturalnessCorrection[]; },
+): readonly string[] {
+  return priors.map(function renderPrior(
+    prior,
+    index,
+  ): string {
+    /**
+     Prior findings rendered in original order.
+     */
+    const findings = prior.findings
+      .join('\n',);
+    return `Attempt ${String(index + 1,)} candidate:\n${prior.candidateText}\nFindings:\n${findings}`;
+  },);
+}
+
+/**
  Why refinement is running and whether unchanged text remains admissible.
  
  @example
@@ -290,18 +325,7 @@ export function buildRefineSelectionContext(
   /**
    Failed prior strategies rendered as evidence against repetition.
    */
-  const priorCorrections = (mode.priorCorrections ?? [])
-    .map(function renderPrior(
-      prior,
-      index,
-    ): string {
-      /**
-       Prior findings rendered in original order.
-       */
-      const findings = prior.findings
-        .join('\n',);
-      return `Attempt ${String(index + 1,)} candidate:\n${prior.candidateText}\nFindings:\n${findings}`;
-    },)
+  const priorCorrections = renderPriorCorrections({ priors: mode.priorCorrections ?? [], },)
     .join('\n\n',);
   return {
     task: 'The CURRENT English translation failed an independent absolute-quality review. Choose a faithful correction that resolves every REQUIRED FINDING. Decline every candidate when each one still contains any material naturalness defect.',

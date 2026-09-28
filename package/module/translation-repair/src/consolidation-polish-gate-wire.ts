@@ -23,6 +23,7 @@ import {
   objectingJudgesOf,
   objectionsHeading,
   type RefineStageMode,
+  renderPriorCorrections,
 } from './refine-selection-context.ts';
 import { foldSoftBreaks, } from './soft-break-fold.ts';
 
@@ -344,18 +345,7 @@ export function buildConsolidationPolishGateMessages(
    */
   const priorCorrections = (mode.kind !== 'required-naturalness-correction')
     ? []
-    : (mode.priorCorrections ?? [])
-      .map(function renderPrior(
-        prior,
-        index,
-      ): string {
-        /**
-         Prior findings rendered in original order.
-         */
-        const findings = prior.findings
-          .join('\n',);
-        return `Attempt ${String(index + 1,)} candidate:\n${prior.candidateText}\nFindings:\n${findings}`;
-      },);
+    : renderPriorCorrections({ priors: mode.priorCorrections ?? [], },);
   /**
    Base as the judge reads it: on prose, each paragraph as it renders.
    */
