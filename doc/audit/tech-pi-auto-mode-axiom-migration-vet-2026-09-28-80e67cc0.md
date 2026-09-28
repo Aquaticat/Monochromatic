@@ -570,6 +570,52 @@ private input,
 new provider,
 or deployment is authorized by this freeze.
 
+## Paired-hypothesis mechanism result
+
+`proc_07cb` completed all twelve frozen calls and forty-eight raw scores.
+All two-source sets met their shared five-second clocks.
+Both old opposite-reference positive-relation collisions differed in the new full raw vector.
+The request pair still had margin `-0.015625` for both sources,
+but common levels `0.5546875` and `0.57421875`.
+A margin-only map,
+including fixed-temperature pairwise softmax,
+would still give identical outputs for that observed pair.
+Retaining common level preserves observed information;
+it does not prove that the information will generalize as truth evidence.
+
+All four predeclared direct-positive/prohibition source contrasts moved the relevant margin
+in the reference-consistent relative direction.
+Declared exact-repeat and reversed-order controls matched their baselines at the sampled inputs.
+These observations are not a general noise bound,
+position-invariance result,
+classifier,
+or calibration guarantee.
+No probability head was fitted.
+
+Raw result `c1d8afe` is SHA-256
+`4041969d518eadcd485552dfe5a5cdeb6afaa245a571cc1078044362bf41d138`.
+Model-free recheck `proc_85c0` passed current policy,
+frozen source,
+actual request bodies,
+retained response bytes,
+index decoding,
+feature extraction,
+and comparisons.
+Private `6637e1a` retains the verified summary and README.
+Reported usage was 558,508 tokens;
+paired-set times were `861.5615699999998` to `1410.065077` ms,
+not a latency guarantee or a cross-method speed comparison.
+
+The [complete mechanism result](../planning/pi-auto-mode-voyage-composed-estimator.md#mechanism-result)
+supports investigating the proposed representation beyond a single scalar,
+not deploying it or automatically fitting a probability adapter.
+Separate fitting/training authorization and fresh group-separated evidence remain required.
+No new provider,
+reserved scenario,
+private Voyage input,
+production cutoff,
+or implementation is selected.
+
 ## Current outcome
 
 Direct Lite scoring access is established,

@@ -275,6 +275,106 @@ probability,
 fit,
 or deployment qualification follows from this preparation checkpoint.
 
+## Mechanism result
+
+`proc_07cb` completed the frozen twelve calls and forty-eight raw scores.
+All six two-source sets met their shared five-second deadlines.
+No wording,
+reference,
+feature transform,
+or outcome rule changed from the outputs.
+
+Both old opposite-reference positive-relation pairs differed in their full new raw vectors.
+For request sources:
+
+- Direct positive returned support `0.546875` and complement `0.5625`.
+  Its margin was `-0.015625` and level `0.5546875`.
+- Cross-clause binding returned support `0.56640625` and complement `0.58203125`.
+  Its margin was also `-0.015625`,
+  but level was `0.57421875`.
+
+For approved prose:
+
+- Direct positive returned support `0.546875` and complement `0.55859375`,
+  giving margin `-0.01171875` and level `0.552734375`.
+- Cross-clause binding returned support `0.578125` and complement `0.59375`,
+  giving margin `-0.015625` and level `0.5859375`.
+
+This supports retaining both coordinates rather than only the contrast.
+Any function of the request margin alone still gives the same output for that observed opposite-reference pair.
+Fixed-temperature pairwise softmax is one such function;
+it would discard the observed common-level difference.
+None of these raw numbers is a truth probability.
+
+All four direct-positive/prohibition comparisons moved the corresponding margin in the predeclared relative direction.
+The exact-repeat and reversed-order controls matched their baselines at every sampled raw component.
+These observations do not establish a global noise bound,
+position invariance,
+robust classification,
+or calibration.
+The possibility that common level encodes an unhelpful shortcut remains a held-out validation concern.
+
+Raw result is retained at private `c1d8afe`,
+SHA-256 `4041969d518eadcd485552dfe5a5cdeb6afaa245a571cc1078044362bf41d138`.
+Manifest SHA-256 is `352b275cfbad1bb5f76d00bfeca6dc716748eb0b7795104a801979a0e4d04c5f`.
+`proc_85c0` reconstructed all actual request bodies,
+reparsed retained response bytes,
+rechecked current policy and frozen sources,
+and reproduced feature extraction and comparisons.
+Private `6637e1a` retains the verified summary and README.
+No model call was made during verification.
+
+Reported usage totaled 558,508 tokens.
+Observed paired-set times were `861.5615699999998` to `1410.065077` ms.
+Do not turn those observations into a latency guarantee or a comparison with another representation's timings.
+
+The feature mechanism produced additional distinguishing information on the targeted examples.
+It has not produced an estimator of truth probability.
+The logistic adapter remains unfitted,
+and no selector or production cutoff is active.
+Any fitting stage still needs separate authorization and fresh group-separated evidence.
+No automatic larger run,
+template hunt,
+or training follows.
+
+## Proposed next authorization
+
+The next proposed experiment would fit only the local probability heads,
+not Voyage's model weights.
+It is not authorized or running.
+
+Proposed ceiling:
+120 Voyage feature calls on fresh public/synthetic inputs,
+with complete policy,
+no retries,
+and a frozen schedule before dispatch.
+The intended core is a 36-source fit partition,
+a 36-source selection/calibration partition,
+and a 36-source locked test partition,
+with at most twelve predeclared repeat/control calls.
+Each partition covers the existing operation/source-kind/semantic-family dimensions with separately authored episodes;
+siblings stay together and all old queried texts remain development diagnostics.
+This is an exploratory calibration study,
+not enough evidence by itself for a population-risk or deployment guarantee.
+
+Local fitting would run CPU-only with a 2 GiB memory ceiling,
+2 CPUs,
+network disabled,
+no credentials,
+and a 60-second wall-clock ceiling per fit invocation.
+A frozen source/execution manifest and local solver controls would precede fitting.
+No training dependency or command tree is selected merely by these bounds.
+
+The output would be candidate parameters and independently partitioned evaluation evidence.
+No production cutoff,
+provider adoption,
+private upload,
+reserved-scenario query,
+base-model fine-tuning,
+or deployed approval path is included.
+If authorization is not granted,
+stop with the unfitted design and mechanism evidence already retained.
+
 ## Later validation boundary
 
 Any fitting stage needs new authorization and its own frozen protocol.

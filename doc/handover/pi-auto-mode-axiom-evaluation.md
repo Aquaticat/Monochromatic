@@ -343,6 +343,53 @@ and one document-order reversal of each.
 All 58 source/input files and complete policy are hash-bound.
 No model output from this probe is a probability or permission decision.
 
+`proc_07cb` completed all twelve calls and forty-eight raw scores.
+Private `c1d8afe` retains raw results.
+Both old opposite-reference positive-relation pairs differed in the new full vector.
+The request pair still had identical margin `-0.015625`,
+but levels `0.5546875` and `0.57421875`;
+margin-only or fixed-temperature pairwise softmax would still collapse that observed pair.
+All four direct-positive/prohibition comparisons moved margins in the reference-consistent relative direction.
+The declared repeat and reversed-order controls matched sampled baselines.
+These are mechanism observations,
+not robust separation,
+noise bounds,
+calibration,
+or fitting authorization.
+
+`proc_85c0` rechecked current policy,
+frozen sources,
+actual bodies,
+raw responses,
+feature extraction,
+and comparisons with no model call.
+Private `6637e1a` retains the verified summary and README.
+All paired sets were within five seconds;
+observed durations were `861.5615699999998` to `1410.065077` ms.
+The [mechanism result](../planning/pi-auto-mode-voyage-composed-estimator.md#mechanism-result)
+records the full vectors and limitations.
+The proposed logistic adapter remains unfitted;
+separate authorization is still required before any parameter fitting or training.
+No automatic template revision,
+larger model batch,
+or deployment follows.
+
+A next fitting experiment is proposed,
+not authorized:
+at most 120 public/synthetic Voyage feature calls,
+including fresh fit,
+selection/calibration,
+and locked test partitions plus predeclared controls.
+Only local probability heads would be fitted,
+CPU-only within 2 GiB and 2 CPUs,
+network/credential-free with a 60-second per-fit ceiling.
+No Voyage weight training,
+private input,
+original reserved case,
+production cutoff,
+or deployment is included.
+Do not start this stage without the separate fitting authorization retained in option B's boundary.
+
 ## Sequencing correction
 
 The user stopped the integration-policy interview and asked whether investigation of Laya,
