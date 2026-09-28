@@ -1,4 +1,5 @@
 import type { ChunkPair, } from '../chunk-document.ts';
+import { isLatinCapital, } from '../latin-letters.ts';
 
 //region Archive italic spans
 // The words the archive sets in single-star italics, read for class one
@@ -15,7 +16,8 @@ const STAR_ITEM = '* ';
 
 /**
  Whether a span reads as a title: no space at either edge and a capital Latin
- letter first, as a work's name opens.
+ letter first, accented or not, as a work's name opens (`Émile`); the test
+ took A to Z only until ledger B18.
 
  @param span - words between two stars
 
@@ -33,8 +35,7 @@ function titleLike({ span, }: { readonly span: string; },): boolean {
   const first = span.charAt(0,);
   return (span.length > 0)
     && (span.trim() === span)
-    && (first >= 'A')
-    && (first <= 'Z');
+    && isLatinCapital({ character: first, },);
 }
 
 /**

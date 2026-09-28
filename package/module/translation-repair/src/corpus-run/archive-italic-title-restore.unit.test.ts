@@ -164,5 +164,15 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'RESTORES a title that opens on an accented capital, which a test of A to Z alone never read as a title '
+        + '(ledger B18)',
+      fn: async () => {
+        expect(secondSlice({
+          archive: 'The cat loved *Été des chats*.',
+          replacement: 'The kitten loved “Été des chats”.',
+        },),).toBe('The kitten loved *Été des chats*.',);
+      },
+    },),
   ],
 },);
