@@ -102,6 +102,55 @@ type PanelPacketResult = {
 };
 
 /**
+ One issue's decision as the run log says it: status, severity, and the
+ weight behind every vote state on each member claim.
+
+ LOGGED BECAUSE THE ARTIFACT ALONE CARRIED IT (ledger E5). The stage wrote
+ only its packet count, so an issue the editor then served had nothing in the
+ log saying the panel accepted it, or how narrowly. The ballots stay in the
+ artifact's `readings`; this is the line a reader of the log needs.
+
+ @param issue - issue as the tally decided it
+
+ @returns One line naming the issue, its fate and its weights
+
+ @example
+ ```ts
+ packetLogger.info(describePanelDecision(issue,),);
+ ```
+ */
+function describePanelDecision(issue: AdjudicatedIssue,): string {
+  /**
+   Weights per member claim, in claim order.
+   */
+  const weights = issue.claims
+    .map(function weightsOf({ claimId, },): string {
+      /**
+       Weights this claim drew, absent for a claim the tally never counted.
+       */
+      const tally = issue.tallies[claimId];
+      // SAID RATHER THAN ZEROED: zeros would read as a tally in which no
+      // ballot carried weight, which is a different fact.
+      if (tally === undefined)
+        return `${claimId}: no tally`;
+      /**
+       Weight behind each vote state.
+       */
+      const {
+        supported,
+        unsupported,
+        ambiguous,
+        sourceDefect,
+        abstain,
+      } = tally;
+      return `${claimId}: supported ${String(supported,)}, unsupported ${String(unsupported,)}, ambiguous ${
+        String(ambiguous,)
+      }, source-defect ${String(sourceDefect,)}, abstain ${String(abstain,)}`;
+    },);
+  return `${issue.issueId} ${issue.status} at ${issue.severity}; ${weights.join('; ',)}`;
+}
+
+/**
  Reviews precomputed clusters independently within one fixed panel stage.
  Ballots cannot create another packet or change its membership. Sequential
  packet execution bounds provider fan-out; the existing model window and
@@ -280,6 +329,8 @@ export async function runPanelStage(
         configuredPanelists: panelModelIds.length,
         ...(adjudicationConfig === undefined ? {} : { config: adjudicationConfig, }),
       },);
+      for (const issue of issues)
+        packetLogger.info(describePanelDecision(issue,),);
       return {
         issues,
         heardIds: gather.voices
