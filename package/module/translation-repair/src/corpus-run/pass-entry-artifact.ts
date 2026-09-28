@@ -50,7 +50,7 @@ import {
  
  @example
  ```ts
- const artifact = settledEntryArtifact({ entryId, tip, pipelineDigest, durationMs, prepared, lanes, contestSlices, consolidateSlices, },);
+ const artifact = settledEntryArtifact({ entryId, tip, pipelineDigest, durationMs, prepared, lanes, contestSlices, consolidateSlices, pageAssembly, },);
  ```
  */
 export function settledEntryArtifact(

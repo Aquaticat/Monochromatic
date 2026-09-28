@@ -294,7 +294,7 @@ type StripState = {
  
  @example
  ```ts
- const { text, stripped, } = stripStubMarkers({ text: archive, },);
+ const { text, stripped, lines, } = stripStubMarkersWithOrigins({ text: archive, },);
  ```
  */
 export function stripStubMarkersWithOrigins(

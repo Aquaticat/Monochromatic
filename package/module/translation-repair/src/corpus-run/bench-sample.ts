@@ -75,7 +75,7 @@ export type BenchSlice = {
  
  @example
  ```ts
- const slices = await sliceEntry({ entryId: 'Mittens', },);
+ const slices = await sliceEntry({ entryId: 'Mittens', pin, },);
  ```
  */
 async function sliceEntry(

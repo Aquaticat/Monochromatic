@@ -492,7 +492,7 @@ export async function selectChunkPatch(
  
  @example
  ```ts
- const patch = applyCandidate({ targetText, envelopes, operations, },);
+ const patch = applyCandidate({ targetText, envelopes, operations, preservation, },);
  ```
  */
 export function applyCandidate(

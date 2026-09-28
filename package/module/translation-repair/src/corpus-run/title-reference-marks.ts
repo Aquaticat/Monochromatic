@@ -187,7 +187,7 @@ function spansBetween(
 
  @example
  ```ts
- locateMarked({ pageText: '《Cat》', pairs: [['《', '》']], kind: 'bracket', },);
+ locateMarked({ pageText: '《Cat》', pairs: [['《', '》']], kind: 'bracket', rendering: 'Cat', },);
  ```
  */
 export function locateMarked(

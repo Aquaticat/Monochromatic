@@ -107,7 +107,7 @@ type EntryDisplacement = {
  
  @example
  ```ts
- const reading = readEntry({ entryId, source, target, },);
+ const reading = readEntry({ entryId, prepared, },);
  ```
  */
 function readEntry(

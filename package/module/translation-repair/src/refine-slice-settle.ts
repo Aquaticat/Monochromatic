@@ -524,7 +524,7 @@ export async function settleRefinedSlice(
  
  @example
  ```ts
- const retained = await retainsResolvedIssues({ client, checkerModelIds, outcome, sourceText, refinedText, signal, perCallTimeoutMs, l, },);
+ const retained = await retainsResolvedIssues({ client, checkerModelIds, outcome, refineContributors, sourceText, refinedText, signal, perCallTimeoutMs, l, },);
  ```
  */
 async function retainsResolvedIssues(

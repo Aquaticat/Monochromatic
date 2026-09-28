@@ -308,13 +308,16 @@ function parseFrontMatterYaml(
  
  @param rawEnd - end index (exclusive) of raw front matter slice
  
+ @param openLength - length of the opening fence line, newline included, which
+ is where the YAML starts
+ 
  @returns Split with parsed front matter and offset-adjusted body
  
  @throws {@link FrontMatterParseError} when YAML between fences refuses to parse
  
  @example
  ```ts
- buildSplit({ text: '---\nname: n\n---\n', closeStart: 11, rawEnd: 16, },);
+ buildSplit({ text: '---\nname: n\n---\n', closeStart: 11, rawEnd: 16, openLength: 4, },);
  ```
  */
 function buildSplit(

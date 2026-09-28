@@ -193,7 +193,7 @@ function endedOutcome({ error, }: { readonly error: unknown; },): StreamOutcome 
  
  @example
  ```ts
- const bodyText = await drainBody({ response, guard, callerSignal, },);
+ const bodyText = await drainBody({ response, guard, callerSignal, label, },);
  ```
  */
 export async function drainBody(

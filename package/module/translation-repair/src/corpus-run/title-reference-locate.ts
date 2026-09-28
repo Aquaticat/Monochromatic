@@ -405,7 +405,7 @@ function shifted(
 
  @example
  ```ts
- locateTitleRendering({ sourceText: '《猫》', pageText: '《Cat》', title: '猫', },); // bracket 1 to 4
+ locateTitleRendering({ sourceText: '《猫》', pageText: '《Cat》', title: '猫', rendering: 'Cat', },); // bracket 1 to 4
  ```
  */
 export function locateTitleRendering(

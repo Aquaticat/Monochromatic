@@ -578,7 +578,7 @@ async function runEntryPipeline(
  
  @example
  ```ts
- const outcome = await settleEntry({ client, entry, artifactsDir, sliceCacheDir, tip, pipelineDigest, hardCapMs, baseSignal, },);
+ const outcome = await settleEntry({ client, entry, artifactsDir, publishDir, declinedDir, sliceCacheDir, tip, pipelineDigest, hardCapMs, baseSignal, },);
  ```
  */
 export async function settleEntry(

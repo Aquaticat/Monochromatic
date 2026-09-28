@@ -134,7 +134,7 @@ export function smallBandIds(
  
  @example
  ```ts
- const ranks = rankWithinBands({ entries, },);
+ const ranks = rankWithinBands({ entries, settledPerBand, },);
  ```
  */
 export function rankWithinBands(

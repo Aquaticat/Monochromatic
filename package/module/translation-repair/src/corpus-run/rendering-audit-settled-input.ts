@@ -286,7 +286,7 @@ function verifySettled(
  
  @example
  ```ts
- const reading = await readArtifactSubjects({ archiveDir, runSet, artifactFile, cloneDir, },);
+ const reading = await readArtifactSubjects({ archiveDir, runSetDir, runSet, artifactFile, cloneDir, },);
  ```
  */
 export async function readArtifactSubjects(

@@ -46,7 +46,7 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
  
  @example
  ```ts
- const row = parseDeliveryRow({ value, path: 'lanes.repair.delivery[0]', },);
+ const row = parseDeliveryRow({ value, path: 'lanes.repair.delivery[0]', keys, },);
  ```
  */
 export function parseDeliveryRow(
@@ -134,7 +134,7 @@ export function parseDeliveryRow(
  
  @example
  ```ts
- const row = parseComparisonRow({ value, path: 'comparison[0]', },);
+ const row = parseComparisonRow({ value, path: 'comparison[0]', keys, },);
  ```
  */
 export function parseComparisonRow(
@@ -272,7 +272,7 @@ export function parseComparisonRow(
  
  @example
  ```ts
- const row = parseEvidenceRow({ value, path: 'lanes.repair.result.sliceTexts[0]', },);
+ const row = parseEvidenceRow({ value, path: 'lanes.repair.result.sliceTexts[0]', keys, },);
  ```
  */
 export function parseEvidenceRow(

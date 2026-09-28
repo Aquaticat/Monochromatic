@@ -459,7 +459,7 @@ export type ArtifactConsolidateSlice = {
  
  @example
  ```ts
- const polish = artifactPolishOf({ settlement, });
+ const polish = artifactPolishOf({ settlement, sliceIndex, },);
  ```
  */
 function artifactPolishOf(

@@ -217,7 +217,7 @@ export class EnvelopeOverlapError extends Error {
  
  @example
  ```ts
- const { patchedText, rejected, } = applyPatchOperations({ targetText, envelopes, operations, },);
+ const { patchedText, rejected, } = applyPatchOperations({ targetText, envelopes, operations, preservation, },);
  ```
  */
 export function applyPatchOperations(

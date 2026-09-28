@@ -26,7 +26,7 @@ import {
  
  @example
  ```ts
- const archive = passArchiveText({ text: 'non‑binary', l, });
+ const { text, lines, } = passArchiveWithOrigins({ text: 'non‑binary', l, });
  ```
  */
 export function passArchiveWithOrigins(

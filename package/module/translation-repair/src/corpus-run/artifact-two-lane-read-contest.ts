@@ -62,7 +62,7 @@ import {
  
  @example
  ```ts
- const slice = parseContestSlice({ value, path, },);
+ const slice = parseContestSlice({ value, path, keys, generation, comparison, },);
  ```
  */
 function parseContestSlice(

@@ -160,7 +160,7 @@ export type SampleManifest = {
  
  @example
  ```ts
- const manifest = buildSampleManifest({ sample, seed, corpusSha, },);
+ const manifest = buildSampleManifest({ sample, seed, corpusSha, generation, },);
  ```
  */
 export function buildSampleManifest(

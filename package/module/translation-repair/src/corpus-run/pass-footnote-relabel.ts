@@ -82,7 +82,7 @@ export type RelabelledArchive = {
  
  @example
  ```ts
- const relabel = relabelArchiveFootnotes({ entryId, slices, definitionPairs, sourceText, archiveText, l, },);
+ const relabel = attemptArchiveFootnoteRelabel({ entryId, slices, definitionPairs, sourceText, archiveText, l, },);
  ```
  */
 function attemptArchiveFootnoteRelabel(

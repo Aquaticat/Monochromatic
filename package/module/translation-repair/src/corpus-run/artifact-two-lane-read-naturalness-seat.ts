@@ -96,7 +96,7 @@ function parseFinding(
  
  @example
  ```ts
- const findings = parseFindings({ value: [], path: 'review.findings', });
+ const findings = parseNaturalnessFindings({ value: [], path: 'review.findings', });
  ```
  */
 export function parseNaturalnessFindings(

@@ -248,7 +248,7 @@ export function assertJudgeableEditorRoster(
  
  @example
  ```ts
- assertJudgeableProducerRoster({ producerModelIds, judgeModelIds, },);
+ assertJudgeableProducerRoster({ producerModelIds, judgeModelIds, role: 'editor', },);
  ```
  */
 export function assertJudgeableProducerRoster(

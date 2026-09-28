@@ -144,7 +144,7 @@ function settlementState(
  
  @example
  ```ts
- const verdict = settleChunkVerdict({ sliceIndex, incumbentText, patchedText, measurements, },);
+ const verdict = settleChunkVerdict({ sliceIndex, incumbentText, patchedText, measurements, declaredNames, },);
  ```
  */
 export function settleChunkVerdict(

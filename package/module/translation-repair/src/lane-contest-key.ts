@@ -187,7 +187,7 @@ export function laneContestRunShape(
  
  @example
  ```ts
- const key = laneContestSliceKey({ runShape, sourceText, incumbentText, incumbentKind, repairText, translateText, },);
+ const key = laneContestSliceKey({ runShape, sourceText, incumbentText, incumbentKind, repairText, translateText, lineStructured, },);
  ```
  */
 export function laneContestSliceKey(

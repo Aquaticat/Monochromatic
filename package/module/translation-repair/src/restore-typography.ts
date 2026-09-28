@@ -95,12 +95,15 @@ function possessiveClitic(
  Counts straight double quotes without building a character array.
  
  @param text - text to scan
- 
- @returns How many straight double quotes it holds
+
+ @param mask - which units of the text are prose rather than code or markup;
+ a quote outside prose is not counted, since it is not the text's typography
+
+ @returns How many straight double quotes its prose holds
  
  @example
  ```ts
- countStraightDoubles({ text: 'a "b" c', },);
+ countStraightDoubles({ text: 'a "b" c', mask: proseMask({ text: 'a "b" c', },), },);
  ```
  */
 function countStraightDoubles(

@@ -19,7 +19,7 @@ export const CONTRIBUTOR_AUTHORITY_FINDING = 'Target-authoritative contributor i
  
  @example
  ```ts
- const findings = contributorAuthorityFindings({ pageText, candidateText, });
+ const findings = contributorAuthorityFindings({ texts: [pageText, candidateText,], },);
  ```
  */
 export function contributorAuthorityFindings(

@@ -169,7 +169,7 @@ function candidatesCoOccur<PairT extends IndexPair,>(
  
  @example
  ```ts
- const winner = bestVoted({ candidates, },);
+ const winner = bestVoted({ candidates, pairings, needed, pairingShape, },);
  ```
  */
 function bestVoted<PairT extends IndexPair,>(

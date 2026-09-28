@@ -171,7 +171,7 @@ export class DeliveryCoherenceError extends Error {
  
  @example
  ```ts
- assertReplacementRow({ record, at, carries: 'incumbent', },);
+ assertReplacementRow({ record, sliceIndex, carries: 'incumbent', },);
  ```
  */
 function assertReplacementRow(
@@ -242,7 +242,7 @@ function assertReplacementRow(
  
  @example
  ```ts
- assertNothingHidden({ record, at, },);
+ assertNothingHidden({ record, sliceIndex, },);
  ```
  */
 function assertNothingHidden(

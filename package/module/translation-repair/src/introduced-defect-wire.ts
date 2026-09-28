@@ -221,7 +221,7 @@ const PROBE_HOUSE_RULE_CLAUSE =
  
  @example
  ```ts
- const prompt = probeSystemPrompt({ editKind: 'accuracy-repair', },);
+ const prompt = probeSystemPrompt({ editKind: 'accuracy-repair', declaresNames: false, },);
  ```
  */
 function probeSystemPrompt(

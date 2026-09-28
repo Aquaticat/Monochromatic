@@ -99,7 +99,7 @@ type ConsolidationBuyInput = {
  
  @example
  ```ts
- const settlement = await buyConsolidationSlice({
+ const settlement = await buyConsolidationAttempt({
    client,
    roster,
    subject,

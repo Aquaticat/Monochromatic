@@ -68,7 +68,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  
  @example
  ```ts
- const readings = await readDocumentPictures({ client, slices, assets, readerModelIds, cache, signal, perCallTimeoutMs, l, },);
+ const readings = await readDocumentPictures({ client, readOcr, slices, assets, readerModelIds, cache, signal, perCallTimeoutMs, l, },);
  ```
  */
 export async function readDocumentPictures(

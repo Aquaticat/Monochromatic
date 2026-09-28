@@ -87,7 +87,7 @@ import { UnpreparedSliceError, } from './unprepared-slice.ts';
  
  @example
  ```ts
- const phase = await refineSettledSlices({ client, targetText, slices, outcomes, models, signal, perCallTimeoutMs, l, },);
+ const phase = await refineSettledSlices({ client, targetText, slices, outcomes, models, declaredNames, signal, perCallTimeoutMs, l, },);
  ```
  
  @internal

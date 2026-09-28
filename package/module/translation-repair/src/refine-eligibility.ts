@@ -218,7 +218,7 @@ function carriesHardBreak({ text, }: { readonly text: string; },): boolean {
  
  @example
  ```ts
- const verdict = judgeParagraph({ node, degraded: false, },);
+ const verdict = judgeParagraph({ node, degraded: false, minimumChars, },);
  ```
  */
 function judgeParagraph(
