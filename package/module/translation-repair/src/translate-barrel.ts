@@ -242,6 +242,11 @@ export {
   READING_INSTRUCTION,
 } from './image-reading-stage.ts';
 export { readDocumentPictures, } from './document-readings.ts';
+export { type PictureReaderSeating, } from './picture-reader-seating.ts';
+export {
+  type PicturesHooks,
+  picturesHooksFor,
+} from './corpus-run/pass-pictures-reseat.ts';
 export { imageReadingKey, } from './image-reading-key.ts';
 export {
   SIDE_LEGEND,

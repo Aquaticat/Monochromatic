@@ -13,6 +13,7 @@ import {
   readImagePair,
 } from './image-reading-pair.ts';
 import { photoReferences, } from './photo-reference.ts';
+import type { PictureReaderSeating, } from './picture-reader-seating.ts';
 
 import type { SliceCache, } from './slice-cache.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -57,6 +58,9 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  @param perCallTimeoutMs - deadline per exchange
  
  @param l - driver logger
+
+ @param beforePicture - awaited before each picture the readers are asked about,
+ handing it the readers it runs on; none keeps the given ones
  
  @returns What reading produced per asset name, including refusals
  
@@ -83,6 +87,7 @@ export async function readDocumentPictures(
     signal,
     perCallTimeoutMs,
     l,
+    beforePicture,
   }: {
     readonly client: SyntheticClient;
     readonly readOcr: OcrReader;
@@ -94,6 +99,7 @@ export async function readDocumentPictures(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly beforePicture?: () => Promise<PictureReaderSeating>;
   },
 ): Promise<ReadonlyMap<string, PairedReading>> {
   /**
@@ -152,6 +158,9 @@ export async function readDocumentPictures(
       continue;
     }
 
+    /* oxlint-disable no-await-in-loop -- current cache protocol settles each picture before advancing so restart has one ordered frontier; replacement DAG must preserve restart while exposing independent assets */
+    if (beforePicture !== undefined)
+      await beforePicture();
     /**
      Where this reading is stored, derived from what it was asked rather than
      from what came back: readings are not deterministic, and a key over their
@@ -176,7 +185,6 @@ export async function readDocumentPictures(
       continue;
     }
 
-    /* oxlint-disable no-await-in-loop -- current cache protocol settles each picture before advancing so restart has one ordered frontier; replacement DAG must preserve restart while exposing independent assets */
     /**
      What the roster made of it now.
      */

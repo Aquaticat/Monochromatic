@@ -12,6 +12,7 @@ import {
   RUN_CORPUS_PIN,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import { picturesHooksFor, } from './pass-pictures-reseat.ts';
 import { readJudgeSeats, } from './run-seats-read.ts';
 
 //region Seated picture reading
@@ -102,6 +103,15 @@ export async function readSeatedPictures(
     l,
     ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
     ...((priorReadings === undefined) ? {} : { priorReadings, }),
+    // EVERY PICTURE RE-SEATS UNDER A HOLD (ledger X12,
+    // `pass-pictures-reseat.ts`), with a memo per call, since each call
+    // already reads the seats afresh.
+    beforePicture: picturesHooksFor({
+      client,
+      signal,
+      l,
+    },)
+      .beforePicture,
   },);
 }
 

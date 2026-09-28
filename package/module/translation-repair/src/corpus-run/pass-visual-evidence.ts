@@ -9,6 +9,7 @@ import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { CorpusPin, } from '../corpus-source.ts';
 import type { SliceCache, } from '../slice-cache.ts';
 import { photoReferences, } from '../photo-reference.ts';
+import type { PictureReaderSeating, } from '../picture-reader-seating.ts';
 import { gatherEntryPictures, } from './entry-pictures.ts';
 import { assertVisualEvidenceComplete, } from './visual-evidence-completeness.ts';
 
@@ -45,6 +46,9 @@ export type PassVisualEvidenceReader = (args: {
  @param visualEvidenceReader - optional integration-test evidence seam
  
  @param priorReadings - completed evidence retained within this pinned entry
+
+ @param beforePicture - per-picture hook handing each picture the readers it
+ runs on (ledger X12)
  
  @returns Corroborated or reviewed no-text evidence by asset
  
@@ -69,6 +73,7 @@ export async function readPassVisualEvidence(
     l,
     visualEvidenceReader,
     priorReadings = new Map(),
+    beforePicture,
   }: {
     readonly client: SyntheticClient;
     readonly slices: readonly ChunkPair[];
@@ -81,6 +86,7 @@ export async function readPassVisualEvidence(
     readonly l: Logger;
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
     readonly priorReadings?: ReadonlyMap<string, PairedReading>;
+    readonly beforePicture?: () => Promise<PictureReaderSeating>;
   },
 ): Promise<ReadonlyMap<string, PairedReading>> {
   /**
@@ -127,6 +133,7 @@ export async function readPassVisualEvidence(
       signal,
       perCallTimeoutMs,
       l,
+      ...((beforePicture === undefined) ? {} : { beforePicture, }),
     },)
     : await visualEvidenceReader({ slices, },);
   assertVisualEvidenceComplete({
