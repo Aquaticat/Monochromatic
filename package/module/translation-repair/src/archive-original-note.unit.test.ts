@@ -18,6 +18,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  archiveNoteReadingsOf,
   archiveOriginalReadingOf,
   parseDocument,
   readNote,
@@ -56,8 +57,44 @@ await describe({
   name: readNote.name,
   children: [
     it({
+      name: 'READS A NOTE THAT SPEAKS OF AN ENGLISH ORIGINAL in a wording no mark knows as an unmarked claim, '
+        + 'which seals nothing but is logged, and a note that does not as advisory (ledger E12)',
+      fn: async () => {
+        expect([
+          readNote({ note: 'This entry was originally written in English by the cat.', },),
+          readNote({ note: '猫的原文是英文，请保留', },),
+          readNote({ note: QUOTES_NOTE, },),
+          readNote({ note: '起床战争：Bed Wars', },),
+          readNote({ note: '请不要改动猫的名字', },),
+        ],).toEqual([
+          'unmarked-original-claim',
+          'unmarked-original-claim',
+          'unmarked-original-claim',
+          'advisory',
+          'advisory',
+        ],);
+        /**
+         An archive whose only note speaks of an English original in an
+         unknown wording.
+         */
+        const document = parseDocument({
+          text: '## Nap\n\n<!-- This entry was originally written in English by the cat. -->\n\nThe cat slept.\n',
+        },);
+        expect({
+          reading: archiveOriginalReadingOf({ document, },),
+          notes: archiveNoteReadingsOf({ document, },),
+        },).toEqual({
+          reading: { kind: 'none', },
+          notes: [{
+            note: 'This entry was originally written in English by the cat.',
+            reading: 'unmarked-original-claim',
+          },],
+        },);
+      },
+    },),
+    it({
       name: 'reads the whole-page marks as whole-page, the below-original-English marks as a span, and '
-        + 'the quotes note as advisory',
+        + 'the quotes note as no seal',
       fn: async () => {
         expect(readNote({ note: WHOLE_PAGE_NOTE, },),).toBe('whole-page',);
         expect(readNote({ note: '请翻译时不要动本篇', },),).toBe('whole-page',);
@@ -67,7 +104,7 @@ await describe({
         expect(readNote({ note: '(Original Language: Engish)', },),).toBe('whole-page',);
         expect(readNote({ note: '(original language: English)', },),).toBe('whole-page',);
         expect(readNote({ note: SPAN_NOTE, },),).toBe('span',);
-        expect(readNote({ note: QUOTES_NOTE, },),).toBe('advisory',);
+        expect(readNote({ note: QUOTES_NOTE, },),).not.toBe('span',);
         expect(readNote({ note: '起床战争：Bed Wars', },),).toBe('advisory',);
       },
     },),
