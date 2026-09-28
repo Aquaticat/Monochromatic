@@ -336,17 +336,27 @@ const MEOW_FORMAT: JsonSchemaResponseFormat = {
  Client scripted per model: fails until the model's remaining failure
  budget is spent, then answers; records every call.
  
+ A FAILURE IS AN UNREADABLE ANSWER unless `transport` says otherwise. In a
+ run the prompt-uniqueness client replays an unreadable answer for the same
+ prompt, so only the recovery round's nudged prompt can recover one (ledger
+ P2); a transport failure is the weather the retry rounds exist for.
+ 
  @param failuresByModel - failures each model serves before answering
  
  @param calls - shared call log the test asserts on
+ 
+ @param transport - whether each failure is a transport failure rather than
+ an unreadable answer
  */
 function flakyClient(
   {
     failuresByModel,
     calls,
+    transport = false,
   }: {
     readonly failuresByModel: Readonly<Record<string, number>>;
     readonly calls: Record<string, number>;
+    readonly transport?: boolean;
   },
 ): SyntheticClient {
   return {
@@ -362,6 +372,8 @@ function flakyClient(
        Failures this model still owes.
        */
       const owed = failuresByModel[request.modelId] ?? 0;
+      if (transport && ((calls[request.modelId] ?? 0) <= owed))
+        throw new Error('scripted transport failure',);
       if ((calls[request.modelId] ?? 0) <= owed) {
         return {
           kind: 'schema-mismatch',
@@ -944,6 +956,7 @@ await describe({
               },),
             ),
             calls,
+            transport: true,
           },),
           modelIds: roster,
           messages: [{ role: 'user', content: 'meow', },],
@@ -1265,6 +1278,7 @@ await describe({
           client: flakyClient({
             failuresByModel: { [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 2, },
             calls,
+            transport: true,
           },),
           modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
           messages: [{ role: 'user', content: 'meow', },],

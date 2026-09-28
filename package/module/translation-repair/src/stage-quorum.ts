@@ -342,15 +342,6 @@ export async function gatherStageVoices<ValueT,>(
       messages,
     },);
 
-    /**
-     Models whose last loss was an answer nothing could read, in roster order.
-     
-     SEPARATE FROM `pending`, because the two are re-asked for opposite
-     reasons. A pending model is one quorum still NEEDS. One of these is a
-     model quorum does not need and whose voice is recoverable anyway, since
-     it reached the end of its work and only the shape defeated the guard.
-     */
-    let unreadable: readonly RosterModelId[] = [];
     for (let round = 0; round <= maxRetryRounds; round += 1) {
       if (pending.length === 0)
         break;
@@ -431,14 +422,32 @@ export async function gatherStageVoices<ValueT,>(
       // rounds for a seat no wet provider serves, and re-queuing it spent
       // `hulicaijia`'s retry rounds on Qwen3.8-27B, Kimi-K3 and glm-5.3
       // (2026-09-09) while the seats that could answer waited.
+      //
+      // NOR IS A SEAT THAT ANSWERED UNREADABLY, until the recovery round
+      // (ledger P2). A retry round sends the same prompt, which the
+      // prompt-uniqueness cache answers with the same bytes, and the loop
+      // once overwrote its list of such seats every round, so a seat that
+      // answered badly and was then silent on the re-ask fell off it
+      // (TianqiChen66620 slice 15 settled 2 to 2 with one lost).
       pending = [
         ...pending.slice(outcomes.length,),
-        ...stillLost.filter(function stillReachable(modelId,): boolean {
-          return !unreachableSeats.has(modelId,);
+        ...stillLost.filter(function stillOwed(modelId,): boolean {
+          return (!unreachableSeats.has(modelId,)) && (!answeredBadly.includes(modelId,));
         },),
       ];
-      unreadable = answeredBadly;
     }
+
+    /**
+     Seats still unreadable after every quorum round, in roster order: every
+     seat whose latest answer nothing could read, whichever round it came in.
+     SEPARATE FROM `pending`, because the two are re-asked for opposite
+     reasons. A pending model is one quorum still NEEDS. One of these is a
+     model whose voice is recoverable, since it reached the end of its work
+     and only the shape defeated the guard.
+     */
+    const unreadable = modelIds.filter(function stillUnreadable(modelId,): boolean {
+      return unreadableSeats.has(modelId,);
+    },);
 
     // ONE RECOVERY ROUND, OUTSIDE THE QUORUM LOOP AND AFTER IT.
     //
@@ -466,8 +475,10 @@ export async function gatherStageVoices<ValueT,>(
       /**
        Second reading of the voices that finished but could not be read.
        
-       NEEDING NONE OF THEM IS THE BOUND. Quorum already stands, so this round
-       is entitled to no more than a straggler window: `heardNeeded: 0` leaves
+       NEEDING NONE OF THEM IS THE BOUND. Quorum usually stands by now, and
+       where the quorum rounds ran out short the recovered voices still count
+       toward it; either way this round is entitled to no more than a
+       straggler window: `heardNeeded: 0` leaves
        `runGatherRound` with nothing to wait for, which opens the grace window
        at once and abandons whatever has not arrived when it closes. Asking
        for all of them instead would let one re-ask that hangs hold the whole
