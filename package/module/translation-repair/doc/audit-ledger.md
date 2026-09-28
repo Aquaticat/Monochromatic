@@ -2920,7 +2920,10 @@ Status: fixed in `4397d7d2a`, then superseded by `f10de5198`, which replaced the
 
 ### D5: the removed preparation layer is described in the present tense
 
-Status: fixed in `4397d7d2a`; two `.ts` comments still describe it (D16).
+Status: fixed in `4397d7d2a`;
+the `.ts` comments still describing it, which this entry counted as two, ran through eight source files
+and were rewritten under D16 (`5a5079549`),
+and the two fields kept only for it were removed under D20 (`89a15887a`).
 `doc/seats-and-calibration.md:50-239` names about fifteen identifiers,
 four artefacts and two mise tasks removed in `cbedea357`;
 `:124` claims a bootstrap build dependency `mise.toml` no longer has.
@@ -2928,7 +2931,8 @@ four artefacts and two mise tasks removed in `cbedea357`;
 
 ### D6: stale constants and counts in the docs
 
-Status: Markdown fixed in `4397d7d2a`; `corpus-run/run-config.ts:785` is open.
+Status: Markdown fixed in `4397d7d2a`; `corpus-run/run-config.ts:785` fixed in `79b749388`
+(the comment was right when written on 2026-07-26, at a 90 minute cap, and went stale at each raise).
 `doc/pictures.md:89` says 8 MiB (7 MiB since 2026-08-22, `image-reading-stage.ts:120`);
 `doc/configuration.md:18` says a run without the Synthetic key throws (every key is optional,
 `corpus-run/run-providers.ts:94-130`);
@@ -2950,14 +2954,19 @@ against `model-cards.ts:209,320-328` and `openrouter-catalog.ts:98-100,263`.
 
 ### D8: comments name functions that never existed
 
-Status: open.
+Status: fixed in `8ce84fb73`, which also fixed D16's `SLICE_SPELLED_KEYS` part.
 `image-reading-pair.ts:393` names `runStageRound` (`runGatherRound`);
 `declined-target-runs.ts:44` names `pairBlocksAcrossRoster` (`pairBlocksWithRoster`);
 `artifact-key-vocabulary.ts:19,47,104` miscounts its keys and misdates a table.
 
 ### D9: examples call the wrong function or pass keys it does not take
 
-Status: open.
+Status: fixed in `d43933e6e` (red guard `d181e7c9b`, `tsdoc-example-scan.unit.test.ts`),
+which scans every source file's `@example` against the function it documents.
+Mutation check: dropping the callee report, the key check, a required key from a source example,
+or counting defaulted keys as required was each caught; the control survived.
+The scan flags an example only when it never names its function,
+since an example may pass a predicate by name rather than call it.
 Wrong callee or keys:
 `contributor-translation-guard.ts:22`,
 `corpus-run/displacement-probe.ts:110`,
@@ -2993,14 +3002,15 @@ The probe checked `function` declarations only, not arrow functions, methods or 
 
 ### D10: owner quotes not in the record
 
-Status: open.
+Status: fixed in `7b2d382bc`; the first cites the paraphrase's decision record, the second quotes in full.
 `provider-name.ts:11` quotes the owner in the first person where the records hold a paraphrase;
 `translate-runoff-tie.ts:25` truncates "prefer the best valid proposal, else fail the slice at once".
 
 ### D11: status and hygiene
 
 Status: Markdown fixed in `4397d7d2a` except the ALL-CAPS paragraphs it did not touch (D19);
-`seat-tally.ts:326` is open.
+`seat-tally.ts:326` fixed in `59fb991c7`, which gives the decision-seat tally its real reason
+(the SEAT lines and the dark-seat report).
 `doc/status.md` puts its history under the current heading,
 names a consolidation cache generation 14 that collides with artifact schema generation 14,
 says `assertFinalSelectionSettled` remains (removed in `1ba8f713a`),
@@ -3016,37 +3026,67 @@ mixed list markers in the README.
 
 ### D12: class dates and clock times
 
-Status: open (`.ts` only; every Markdown clock time carries a zone, checked in `4397d7d2a`).
-Four class dates match only the local day of their commit
+Status: fixed in `3a1706795` (every Markdown clock time carries a zone, checked in `4397d7d2a`).
+The owner answered "Major+ accuracy" and "Slate's choice" at 01:59:59 UTC on 2026-09-27,
+and six places carried the local day before it.
+Of the four dates named here, class one hundred seventy-eight's was right
+(its run began at 20:12 UTC on 2026-09-26),
+and the class seventy-seven site carries no date to correct.
+A census of every owner-answer date against the transcript timestamps belongs to #367.
+The finding as first recorded:
+four class dates match only the local day of their commit
 (class seventy-seven, one hundred seventy-six, one hundred seventy-seven, one hundred seventy-eight);
 `corpus-run/run-seats-wait.ts:14-18` and `corpus-run/run-seats.ts:66-67` give clock times with no zone.
 
 ### D13: a setting documented as read by launch logs that nothing reads
 
-Status: open.
+Status: fixed in `0df81f0c1`: `corpus-pass` prints `CORPUS PIN OVERRIDDEN`
+naming the clone, the commit and each one's source whenever either comes from the environment;
+`doc/configuration.md` said no launch line did until `f921e8f0e`.
 `corpus-run/run-config.ts:875-879`: the `RUN_CORPUS_PIN_SETTING` TSDoc says "for launch logs",
 but nothing reads it, so no launch line names where the corpus pin came from.
 
 ### D14: an invalid Hyper request rate is not refused
 
-Status: open.
+Status: fixed in `f69912818` (red guard `2fc22b098`): a set value that is not a positive number is a stated refusal.
 `request-pace.ts:305` falls back to the default rate for an invalid `TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR`,
 where every other dial refuses an invalid value.
 
 ### D15: probe variables exported empty are used as given
 
-Status: open.
+Status: fixed in `ea0493bd5` (red guard `89caeda65`): both read through `textSettingOf`,
+which folds an exported-empty variable into its fallback as `artifact-pool.ts` does.
 `corpus-run/damage-sample.ts:267` and `corpus-run/score-verify.ts:199` read their variables with `??`,
 so an exported-empty `DAMAGE_SAMPLE_SEED` or `VERIFY_SHEET_BASENAME` is used rather than defaulted or refused.
 
 ### D16: stale comments on providers and removed features
 
-Status: open.
+Status: fixed in `5a5079549`, the fence test in `9f20342b1`;
+the `SLICE_SPELLED_KEYS` part in `8ce84fb73` (D8).
 `corpus-run/budget-sample.ts:14-27,54-55` says "both providers" (four);
 `block-pairing-question.ts:41` and `block-pairing-protocol.ts:63` mention replay and receipt planning
 that `cbedea357` removed;
 the `SLICE_SPELLED_KEYS` TSDoc in `artifact-key-vocabulary.ts` says generation 3 writes the slice spelling
 and its header compares generations 1 and 2 with 4.
+
+The two block-pairing sites were a family, not a pair (M35).
+A search for the removed layer's vocabulary (receipt, replay, recipe, retally, qualification, calibration pool)
+found the same framing in `block-pairing-question-key.ts`, `pair-blocks-read-outcomes.ts`, `pair-blocks-stage.ts`,
+`prepare-block-pairing.ts`, `queried-block-pairing-details.ts` and `prepare-with-pairing.ts`,
+and in two test names; all were rewritten to say what the code does now.
+`budget-sample.ts` now names the four meters (three endpoints and the Bedrock spend ledger)
+and its `@throws` names `StatedRefusalError`.
+
+Found while fixing:
+`pair-blocks-wire.ts` and `pair-sections-wire.ts` said their fence guards against a run of backticks
+and gave a backtick fence in their examples;
+`selectFence` has fenced with `=` since `b111fc376`, before either sheet was written.
+The section sheet's fence test fed a fixture holding backticks only,
+so a builder that ignored the content and fenced with a fixed `=====` passed it:
+that mutant survived, the block sheet's twin was caught, and the control survived.
+The fixture now carries a setext underline,
+and the test first checks that the line it reads is the fence around that fixture;
+the mutant is now caught by both files' runs.
 
 ### D17: the recovery round re-asks only the last round's unreadable seats
 
@@ -3057,7 +3097,11 @@ so a seat that answered unreadably in an earlier round was not re-asked.
 
 ### D18: repo docs name a corpus variable nothing reads
 
-Status: open.
+Status: fixed in `f921e8f0e`.
+The variable belonged to the uncommitted fork the pull-request 386 runs used on 2026-08-29;
+production has read `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` and `TRANSLATION_REPAIR_CORPUS_COMMIT`
+since `b0a79eb66` (2026-09-01).
+The runbook now names those; the handover keeps its history with a note saying so.
 `doc/runbook/translation-repair-corpus-pass.md:38` and `doc/handover/translation-repair-handover-2026-08-29.md:379`
 name `TRANSLATION_REPAIR_CORPUS_DIR`.
 
@@ -3068,6 +3112,19 @@ Status: open.
 `doc/provider-availability.md`, `doc/roster-changes.md`, `doc/seats-and-calibration.md`,
 `doc/slice-context.md` and `doc/status.md` keep ALL-CAPS emphasis in paragraphs the D fixes did not reach
 (the docs agent's report of 2026-09-27 lists the lines).
+
+### D20: pairing fields kept only for the removed preparation layer
+
+Status: fixed in `89a15887a`, found while fixing D16.
+`BlockPairingOutcome.outcomes` (`919e517e4`, 2026-09-11) carried every asked seat's reply,
+and `PreparedBlockPairing.evidence` with its type `PreparedBlockEvidence` (`536cd7445`, 2026-09-11)
+said whether a section's relations came from the cache or the roster;
+both were added for the receipt and replay layer `cbedea357` removed,
+and after it only tests read them.
+Removed by the criterion `cbedea357` itself used: nothing a pass or probe reaches reads them.
+The pairing cache stores `{ pairs, findings }` alone, before and after, so no cache version moves.
+The tests that read the fields now assert heard and usable counts, findings, exact pairs and call counts;
+the census of those tests first named four files, and the type check named two more (M33).
 
 ## Found while fixing
 
@@ -3255,6 +3312,9 @@ and once during P10 (`rg <run> | head ; ls <agent dir> | rg`), after that entry 
 While the P14 mutation run went, a foreground `sleep 1 && tail <log>` and two more checks of its log,
 against the rules that forbid a foreground sleep and any call while a background task runs;
 the task notifies on completion, so the wait is to end the turn.
+Once during D14 (`mise run corpus-pass -- --plan > log 2>&1 ; rg <log>`),
+and once during D16 (`rg <backtick> | rg <fence> ; rg <example fence>`),
+both searches whose second half ran regardless.
 
 ### M19: a suite run against a stale build after a mutation was restored
 
@@ -3394,6 +3454,20 @@ Prevention: a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
 
+### M35: a teardown that kept what only its consumers read, and an audit that listed the sites it saw
+
+Status: fixed under D16 and D20, 2026-09-28.
+`cbedea357` removed the receipt, replay and calibration layer by import closure,
+which finds modules nothing reaches but not comments, fields and test names inside modules that stay:
+the surviving pairing modules kept describing the removed consumers,
+and two fields survived that only those consumers read.
+The audit then recorded that remnant as the two comments it had met (D5, D16),
+where the removed layer's vocabulary found the same framing across eight source files.
+Prevention: a removal is followed by a search of `src` for the removed layer's own words
+(its module names and the concepts its commits introduced),
+and by a census of every export and field whose only readers were removed, tests included;
+an audit finding about a remnant searches that vocabulary before it writes a site list.
+
 ### M34: a guard that looked for a word the message carries twice
 
 Status: caught by the mutation check, 2026-09-28 (P12); the guard was tightened before the entry closed.
@@ -3411,6 +3485,10 @@ and `roster-reach.unit.test.ts`, past the cap, still imported it;
 the build's type check named it, and an uncapped search then showed no other user.
 Prevention: a search whose result decides what to change runs uncapped, or with `--count` first;
 `head` is for reading samples, never for a census.
+Again during D20, capped by scope rather than by `head`:
+the readers of the removed fields were searched in four named test files,
+and the type check named `pair-blocks-evidence-identity.unit.test.ts` and `prepare-block-scope.unit.test.ts`.
+A census searches the whole of `src`, then narrows.
 
 ### M32: a fix that supplies context a model lacks, built without reading the sheet it goes on
 
