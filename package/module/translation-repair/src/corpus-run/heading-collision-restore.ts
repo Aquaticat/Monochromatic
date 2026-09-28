@@ -2,6 +2,7 @@ import type { ChunkPair, } from '../chunk-document.ts';
 import { headingWords, } from '../entry-notes.ts';
 import { parseDocument, } from '../parse-document.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
+import { slicesInOrder, } from './assembly-page-text.ts';
 
 //region Heading collision restore
 // CLASS FORTY-FIVE (hulicaijia6, 2026-09-17). The repair lane rendered the
@@ -142,23 +143,7 @@ export function restoreCollidingHeadings(
   /**
    Page headings in document order, each with its slice.
    */
-  const page: readonly PageHeading[] = slices
-    .toSorted(function byIndex(
-      left,
-      right,
-    ): number {
-      /**
-       Left slice index.
-       */
-      const leftIndex = left.target
-        .sliceIndex;
-      /**
-       Right slice index.
-       */
-      const rightIndex = right.target
-        .sliceIndex;
-      return leftIndex - rightIndex;
-    },)
+  const page: readonly PageHeading[] = slicesInOrder({ slices, },)
     .flatMap(function headingsOf(slice,): readonly PageHeading[] {
       /**
        Index of this slice.

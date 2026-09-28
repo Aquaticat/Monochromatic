@@ -87,6 +87,43 @@ export function slicesInOrder({ slices, }: { readonly slices: readonly ChunkPair
 }
 
 /**
+ Rows a pass changed, read position by position against the rows it was
+ given.
+
+ The casing restore and the name gloss restore each kept their own copy of
+ this comparison (audit area six, 2026-09-28).
+
+ @param before - rows as the pass received them
+
+ @param after - the same rows, in the same order, as the pass left them
+
+ @returns Rows of `after` whose text differs from the row at their position
+
+ @example
+ ```ts
+ const restored = rowsChangedBy({ before: replacements, after: rewritten, },);
+ ```
+ */
+export function rowsChangedBy(
+  {
+    before,
+    after,
+  }: {
+    readonly before: readonly SliceReplacement[];
+    readonly after: readonly SliceReplacement[];
+  },
+): readonly SliceReplacement[] {
+  return after.filter(function changed(
+    row,
+    index,
+  ): boolean {
+    return row.replacementText
+      !== before[index]
+      ?.replacementText;
+  },);
+}
+
+/**
  Replacements with a pass's rewritten slices folded in: an existing
  replacement is rewritten in place, a slice the archive alone carried gains
  one.

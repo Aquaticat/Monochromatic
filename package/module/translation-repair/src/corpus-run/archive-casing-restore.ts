@@ -1,6 +1,9 @@
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
-import { slicesInOrder, } from './assembly-page-text.ts';
+import {
+  rowsChangedBy,
+  slicesInOrder,
+} from './assembly-page-text.ts';
 
 import {
   applySpanRewrites,
@@ -392,15 +395,9 @@ export function restoreArchiveCasing(
   /**
    Rows this pass changed.
    */
-  const restored = rewritten.filter(function changed(
-    row,
-    index,
-  ): boolean {
-    /**
-     Row as it came in.
-     */
-    const before = replacements[index];
-    return row.replacementText !== before?.replacementText;
+  const restored = rowsChangedBy({
+    before: replacements,
+    after: rewritten,
   },);
   return {
     replacements: rewritten,
