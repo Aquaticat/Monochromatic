@@ -1,3 +1,8 @@
+import {
+  isLatinLetter,
+  isLatinLetterOrMark,
+} from './latin-letters.ts';
+
 //region Reading refusal
 // WHETHER A MODEL DECLINED TO READ A PICTURE, rather than read it.
 //
@@ -100,7 +105,9 @@ const PICTURE_WORDS: readonly string[] = [
 ];
 
 /**
- Whether a character can sit inside one of the words above.
+ Whether a character can sit inside one of the words above: a Latin letter,
+ accented or not, a combining mark, or an apostrophe. ASCII letters alone cut
+ `café` to `caf` (ledger B18).
  
  APOSTROPHE INCLUDED so `can't` and `isn't` stay single words rather than
  splitting into a fragment that matches nothing. Both the straight and the
@@ -116,8 +123,26 @@ const PICTURE_WORDS: readonly string[] = [
  ```
  */
 function continuesWord({ character, }: { readonly character: string; },): boolean {
-  return ((character >= 'a') && (character <= 'z'))
-    || ((character >= 'A') && (character <= 'Z'))
+  return isLatinLetterOrMark({ character, },)
+    || (character === '\'')
+    || (character === '’');
+}
+
+/**
+ Whether a character can open one of the words above: a Latin letter or an
+ apostrophe, never a combining mark, which belongs to the letter before it.
+ 
+ @param character - character to weigh
+ 
+ @returns Whether a word may start with it
+ 
+ @example
+ ```ts
+ const opens = opensWord({ character: 'N', },);
+ ```
+ */
+function opensWord({ character, }: { readonly character: string; },): boolean {
+  return isLatinLetter({ character, },)
     || (character === '\'')
     || (character === '’');
 }
@@ -125,8 +150,9 @@ function continuesWord({ character, }: { readonly character: string; },): boolea
 /**
  Splits text into lowercased Latin words.
  
- A LINEAR SCAN rather than a pattern, per `RG1`: the rule is "runs of letters
- and apostrophes are words, everything else separates them", which a scan
+ A LINEAR SCAN rather than a pattern, per `RG1`: the rule is "runs of Latin
+ letters, combining marks and apostrophes are words, everything else
+ separates them", which a scan
  states directly, runs in one pass, and cannot backtrack. The typographic
  apostrophe is folded onto the straight one so a word list needs only one
  spelling of each contraction.
@@ -164,7 +190,13 @@ export function latinWords({ text, }: { readonly text: string; },): readonly str
   }
 
   for (const character of text) {
-    if (continuesWord({ character, },)) {
+    /**
+     Whether the character opens a word or goes on with the one being built.
+     */
+    const inWord = (current.length === 0)
+      ? opensWord({ character, },)
+      : continuesWord({ character, },);
+    if (inWord) {
       current.push((character === '’') ? '\'' : character,);
       continue;
     }

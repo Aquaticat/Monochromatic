@@ -121,6 +121,16 @@ await describe({
     },),
 
     it({
+      name: 'READS AN ACCENTED WORD WHOLE, so Noël holds no "no" and a reading of a Noël card is a reading; '
+        + 'ASCII letters alone cut it to "no" and "l", and the screen discarded the reading (ledger B18)',
+      fn: async () => {
+        expect(readsAsRefusal({ reading: 'The image shows a Noël card and a sleeping cat.', },),).toBe(false,);
+        expect(readsAsRefusal({ reading: 'The picture shows a sign reading Café Noe\u{0308}l.', },),).toBe(false,);
+        expect(latinWords({ text: 'Café Noe\u{0308}l', },),).toEqual(['café', 'noe\u{0308}l',],);
+      },
+    },),
+
+    it({
       name: 'REFUSES A REPLY PADDED WITH NEWLINES, because the padding is not the reply. Measuring '
         + 'length before trimming would let a refusal buy its way past the bound with whitespace',
       fn: async () => {
