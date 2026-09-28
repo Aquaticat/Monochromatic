@@ -1042,6 +1042,16 @@ Task #53 is a separate fixed follow-up:
 twenty-four unchanged concrete-hypothesis calls for the remaining four exposed families,
 plus four contemporary abstract read controls.
 It adds no fitting or new held-out claim.
+The [broader concrete-semantic protocol](../planning/pi-auto-mode-voyage-concrete-semantics.md)
+is frozen at `fabcb3e`/`aa7abb0`.
+Manifest SHA-256:
+`4609410c5560c5e29695fbf8463a1c970fcc56f18ccfe358e3ff5e541b1a8066`.
+`proc_e5d4` passed unchanged body,
+full-policy,
+role/polarity,
+collision,
+temporal,
+and deadline controls before the twenty-eight-call tranche.
 Do not retune the completed candidate on its exposed test data.
 Do not resume Q16 or Laya #34.
 

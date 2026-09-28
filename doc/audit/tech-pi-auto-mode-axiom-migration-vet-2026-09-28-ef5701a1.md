@@ -680,3 +680,16 @@ original reserved scenario,
 training,
 new provider,
 or deployment is part of that follow-up.
+
+The [broader concrete-semantic protocol](../planning/pi-auto-mode-voyage-concrete-semantics.md)
+is frozen at source `fabcb3e` and input/control checkpoint `aa7abb0`.
+Its 154-file manifest SHA-256 is
+`4609410c5560c5e29695fbf8463a1c970fcc56f18ccfe358e3ff5e541b1a8066`.
+`proc_e5d4` passed exact unchanged concrete/abstract bodies,
+full-policy preservation,
+full-role/polarity comparisons,
+positive/negative collision controls,
+temporal-control sensitivity,
+and shared clocks with an isolated deadline omission.
+The twenty-eight calls remain separately bounded;
+no result is inferred before dispatch.
