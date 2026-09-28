@@ -638,6 +638,7 @@ await describe({
           channel: 'reasoning',
           distinctRatio: 0.0037,
           charsSeen: 131_475,
+          rawChars: 131_475,
         },);
 
         /**
@@ -689,6 +690,7 @@ await describe({
           label: 'hf:whiskers',
           channel: 'content',
           charsSeen: 32_000,
+          rawChars: 32_000,
           cap: 32_000,
         },);
 

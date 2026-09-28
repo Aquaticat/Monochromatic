@@ -68,6 +68,11 @@ const TOKENS_PER_MILLION = 1_000_000;
 /**
  Reads what an abandoned stream had delivered off the error that ended it.
  
+ RAW WIRE CHARACTERS FROM EVERY ERROR (ledger P7, 2026-09-28): the ratio this
+ is divided by is raw characters per token, and an overrun or a degenerate
+ ending was read by one channel's decoded count, about a hundredth of the raw
+ figure (`completion=5` for 1,633 content characters on shihai4h2).
+ 
  @param error - whatever the exchange threw
  
  @returns Raw characters delivered, or that the error says nothing about it
@@ -88,9 +93,9 @@ export function deliveredCharsOf(
     return partialText.length;
   }
   if (error instanceof StreamOverrunError)
-    return error.charsSeen;
+    return error.rawChars;
   if (error instanceof StreamDegenerateError)
-    return error.charsSeen;
+    return error.rawChars;
   return 'nothing-known';
 }
 
@@ -128,11 +133,14 @@ export type AbandonedSpendEstimate = {
  
  @param requestBodyBytes - size of the request body that was sent
  
+ @param maxTokens - `max_tokens` the call sent, past which the endpoint bills
+ nothing, so neither does the reckoning (ledger P7)
+ 
  @returns Token halves and their price
  
  @example
  ```ts
- const estimate = estimateAbandonedSpend({ servedId, deliveredChars: 3860, requestBodyBytes: 4000, },);
+ const estimate = estimateAbandonedSpend({ servedId, deliveredChars: 3860, requestBodyBytes: 4000, maxTokens: 1149, },);
  ```
  */
 export function estimateAbandonedSpend(
@@ -140,10 +148,12 @@ export function estimateAbandonedSpend(
     servedId,
     deliveredChars,
     requestBodyBytes,
+    maxTokens,
   }: {
     readonly servedId: OpenRouterServedId;
     readonly deliveredChars: number;
     readonly requestBodyBytes: number;
+    readonly maxTokens: number;
   },
 ): AbandonedSpendEstimate {
   /**
@@ -152,9 +162,13 @@ export function estimateAbandonedSpend(
   const info = OPENROUTER_MODELS[servedId];
 
   /**
-   Completion tokens the delivered characters stand for.
+   Completion tokens the delivered characters stand for, never past the
+   ceiling the call sent.
    */
-  const completionTokens = Math.round(deliveredChars / RAW_CHARS_PER_COMPLETION_TOKEN[servedId],);
+  const completionTokens = Math.min(
+    Math.round(deliveredChars / RAW_CHARS_PER_COMPLETION_TOKEN[servedId],),
+    maxTokens,
+  );
 
   /**
    Prompt tokens the body's bytes stand for.
@@ -200,11 +214,13 @@ export type AbandonedSpendReport =
  
  @param requestBodyBytes - size of the request body that was sent
  
+ @param maxTokens - `max_tokens` the call sent
+ 
  @returns Line logged in a record, or that the error carried nothing to reckon from
  
  @example
  ```ts
- const line = reportAbandonedSpend({ servedId, error, requestBodyBytes: 4000, },);
+ const line = reportAbandonedSpend({ servedId, error, requestBodyBytes: 4000, maxTokens: 1149, },);
  ```
  */
 export function reportAbandonedSpend(
@@ -212,10 +228,12 @@ export function reportAbandonedSpend(
     servedId,
     error,
     requestBodyBytes,
+    maxTokens,
   }: {
     readonly servedId: OpenRouterServedId;
     readonly error: unknown;
     readonly requestBodyBytes: number;
+    readonly maxTokens: number;
   },
 ): AbandonedSpendReport {
   /**
@@ -232,6 +250,7 @@ export function reportAbandonedSpend(
     servedId,
     deliveredChars: delivered,
     requestBodyBytes,
+    maxTokens,
   },);
   return {
     line: reportSpend({
@@ -258,6 +277,8 @@ export function reportAbandonedSpend(
  
  @param requestBodyBytes - size of the request body that was sent
  
+ @param maxTokens - `max_tokens` the call sent
+ 
  @param exchange - the transport exchange to perform
  
  @returns Whatever the exchange returned
@@ -266,17 +287,19 @@ export function reportAbandonedSpend(
  
  @example
  ```ts
- const reply = await exchangeReportingAbandon({ servedId, requestBodyBytes, exchange, },);
+ const reply = await exchangeReportingAbandon({ servedId, requestBodyBytes, maxTokens, exchange, },);
  ```
  */
 export async function exchangeReportingAbandon(
   {
     servedId,
     requestBodyBytes,
+    maxTokens,
     exchange,
   }: {
     readonly servedId: OpenRouterServedId;
     readonly requestBodyBytes: number;
+    readonly maxTokens: number;
     readonly exchange: () => Promise<TransportReply>;
   },
 ): Promise<TransportReply> {
@@ -288,6 +311,7 @@ export async function exchangeReportingAbandon(
       servedId,
       error,
       requestBodyBytes,
+      maxTokens,
     },);
     throw error;
   }

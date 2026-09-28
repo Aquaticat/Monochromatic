@@ -367,6 +367,18 @@ export function createOpenRouterClient(
       },);
 
       /**
+       Ceiling this call sends, which also bounds what an abandoned stream
+       is reckoned to have cost (ledger P7).
+       */
+      const maxTokens = completionCapFor({
+        modelId: request.modelId,
+        // Conditional spread keeps the knob absent instead of undefined.
+        ...(request.maxTokens === undefined
+          ? {}
+          : { requested: request.maxTokens, }),
+      },);
+
+      /**
        Exactly what goes on the wire, hoisted so its size can be measured.
        
        NO THINKING PARAMETER AND NO REASONING BUDGET, EVER, the owner's
@@ -382,13 +394,7 @@ export function createOpenRouterClient(
         stream: true,
         stream_options: { include_usage: true, },
         provider: openRouterProviderPreferencesFor({ servedId, },),
-        max_tokens: completionCapFor({
-          modelId: request.modelId,
-          // Conditional spread keeps the knob absent instead of undefined.
-          ...(request.maxTokens === undefined
-            ? {}
-            : { requested: request.maxTokens, }),
-        },),
+        max_tokens: maxTokens,
         // Conditional spread keeps the optional knob absent instead of undefined.
         ...(request.responseFormat === undefined
           ? {}
@@ -403,6 +409,7 @@ export function createOpenRouterClient(
       const reply = await exchangeReportingAbandon({
         servedId,
         requestBodyBytes: Buffer.byteLength(bodyJson,),
+        maxTokens,
         exchange: async function attempt() {
           return await exchangeWithRetry({
             transport,

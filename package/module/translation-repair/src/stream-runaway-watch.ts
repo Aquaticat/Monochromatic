@@ -416,7 +416,7 @@ export function watchRunaway(
  
  @example
  ```ts
- throw new StreamDegenerateError({ label, channel: 'reasoning', distinctRatio: 0.02, charsSeen: 400_000, },);
+ throw new StreamDegenerateError({ label, channel: 'reasoning', distinctRatio: 0.02, charsSeen: 400_000, rawChars: 36_000_000, },);
  ```
  */
 export class StreamDegenerateError extends Error {
@@ -451,6 +451,14 @@ export class StreamDegenerateError extends Error {
   readonly charsSeen: number;
 
   /**
+   Raw wire characters the stream delivered before the call was ended,
+   envelope included: the unit the abandoned-spend reckoning divides by its
+   measured raw-characters-per-token ratio (ledger P7). `charsSeen` counts
+   one channel's decoded characters, about a hundredth of it.
+   */
+  readonly rawChars: number;
+
+  /**
    @param label - what was being called, for the message
    
    @param channel - channel that ran away
@@ -459,6 +467,8 @@ export class StreamDegenerateError extends Error {
    
    @param charsSeen - characters produced on that channel
    
+   @param rawChars - raw wire characters delivered before the end
+   
    @example
    ```ts
    const error = new StreamDegenerateError({
@@ -466,6 +476,7 @@ export class StreamDegenerateError extends Error {
      channel: 'reasoning',
      distinctRatio: 0.02,
      charsSeen: 400_000,
+     rawChars: 36_000_000,
    },);
    ```
    */
@@ -475,11 +486,13 @@ export class StreamDegenerateError extends Error {
       channel,
       distinctRatio,
       charsSeen,
+      rawChars,
     }: {
       readonly label: string;
       readonly channel: StreamChannel;
       readonly distinctRatio: number;
       readonly charsSeen: number;
+      readonly rawChars: number;
     },
   ) {
     super(
@@ -491,6 +504,7 @@ export class StreamDegenerateError extends Error {
     this.channel = channel;
     this.distinctRatio = distinctRatio;
     this.charsSeen = charsSeen;
+    this.rawChars = rawChars;
   }
 }
 

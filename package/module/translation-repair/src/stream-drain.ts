@@ -85,20 +85,25 @@ async function stopReading(
  
  @param verdict - runaway verdict to report
  
+ @param rawChars - raw wire characters the stream delivered, which the
+ abandoned-spend reckoning prices (ledger P7)
+ 
  @returns Error naming why this call was ended
  
  @example
  ```ts
- throw runawayError({ label, verdict, },);
+ throw runawayError({ label, verdict, rawChars, },);
  ```
  */
 function runawayError(
   {
     label,
     verdict,
+    rawChars,
   }: {
     readonly label: string;
     readonly verdict: Extract<RunawayVerdict, { readonly kind: 'overrun' | 'runaway'; }>;
+    readonly rawChars: number;
   },
 ): StreamDegenerateError | StreamOverrunError {
   if (verdict.kind === 'overrun')
@@ -107,6 +112,7 @@ function runawayError(
       channel: verdict.channel,
       charsSeen: verdict.charsSeen,
       cap: verdict.cap,
+      rawChars,
     },);
 
   return new StreamDegenerateError({
@@ -114,6 +120,7 @@ function runawayError(
     channel: verdict.channel,
     distinctRatio: verdict.distinctRatio,
     charsSeen: verdict.charsSeen,
+    rawChars,
   },);
 }
 
@@ -302,6 +309,8 @@ export async function drainBody(
         throw runawayError({
           label,
           verdict: runaway,
+          rawChars: guard.progress()
+            .chars,
         },);
       }
     }

@@ -32,7 +32,7 @@ import type { StreamChannel, } from './stream-delta-scan.ts';
  
  @example
  ```ts
- throw new StreamOverrunError({ label, channel: 'content', charsSeen: 40_000, cap: 32_000, },);
+ throw new StreamOverrunError({ label, channel: 'content', charsSeen: 40_000, cap: 32_000, rawChars: 3_600_000, },);
  ```
  */
 export class StreamOverrunError extends Error {
@@ -67,6 +67,14 @@ export class StreamOverrunError extends Error {
   readonly cap: number;
 
   /**
+   Raw wire characters the stream delivered before the call was ended,
+   envelope included: the unit the abandoned-spend reckoning divides by its
+   measured raw-characters-per-token ratio (ledger P7). `charsSeen` counts
+   one channel's decoded characters, about a hundredth of it.
+   */
+  readonly rawChars: number;
+
+  /**
    @param label - what was being called, for the message
    
    @param channel - channel that exceeded its bound
@@ -75,6 +83,8 @@ export class StreamOverrunError extends Error {
    
    @param cap - bound that was exceeded
    
+   @param rawChars - raw wire characters delivered before the end
+   
    @example
    ```ts
    const error = new StreamOverrunError({
@@ -82,6 +92,7 @@ export class StreamOverrunError extends Error {
      channel: 'content',
      charsSeen: 26_000,
      cap: 32_000,
+     rawChars: 2_340_000,
    },);
    ```
    */
@@ -91,11 +102,13 @@ export class StreamOverrunError extends Error {
       channel,
       charsSeen,
       cap,
+      rawChars,
     }: {
       readonly label: string;
       readonly channel: StreamChannel;
       readonly charsSeen: number;
       readonly cap: number;
+      readonly rawChars: number;
     },
   ) {
     super(
@@ -107,6 +120,7 @@ export class StreamOverrunError extends Error {
     this.channel = channel;
     this.charsSeen = charsSeen;
     this.cap = cap;
+    this.rawChars = rawChars;
   }
 }
 

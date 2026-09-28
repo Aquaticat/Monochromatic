@@ -647,6 +647,7 @@ await describe({
           channel: 'reasoning',
           distinctRatio: 0.0021,
           charsSeen: 412_000,
+          rawChars: 412_000,
         },);
 
         expect(error.name,).toBe('StreamDegenerateError',);

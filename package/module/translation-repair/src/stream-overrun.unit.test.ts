@@ -327,6 +327,7 @@ await describe({
               channel: 'reasoning',
               distinctRatio: 0.02,
               charsSeen: 400_000,
+              rawChars: 400_000,
             },),
           },),
         ).toBe(true,);
@@ -337,6 +338,7 @@ await describe({
               label: 'editor',
               channel: 'content',
               charsSeen: 40_000,
+              rawChars: 40_000,
               cap: 32_000,
             },),
           },),
@@ -385,6 +387,7 @@ await describe({
             label: 'editor',
             channel: 'content',
             charsSeen: 40_000,
+            rawChars: 40_000,
             cap: 32_000,
           },),
         },);
