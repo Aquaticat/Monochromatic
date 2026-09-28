@@ -333,6 +333,33 @@ export function bedrockLedgerPathFrom(
 }
 
 /**
+ Reckoning marks a ledger line may carry, the ones `spend-line.ts` names.
+ */
+const RECKONINGS: readonly SpendReckoning[] = [
+  'abandoned',
+  'abandoned-bound',
+  'unreported-bound',
+];
+
+/**
+ Whether a parsed field is a reckoning mark this package writes.
+
+ @param value - field as the line carries it
+
+ @returns Whether it names a reckoning
+
+ @example
+ ```ts
+ if (isReckoning(estimated,)) return { ...entry, estimated, };
+ ```
+ */
+function isReckoning(value: unknown,): value is SpendReckoning {
+  return RECKONINGS.some(function isThis(reckoning,): boolean {
+    return reckoning === value;
+  },);
+}
+
+/**
  Reads one ledger line as an entry, naming the line when it will not read.
  
  @param text - one line of the file
@@ -413,8 +440,16 @@ function entryOf(
       line,
       detail: 'token counts are not numbers',
     },);
-  if ((estimated !== undefined) && (estimated !== 'abandoned')
-    && (estimated !== 'abandoned-bound'))
+  if (estimated === undefined) {
+    return {
+      at,
+      model,
+      usd,
+      promptTokens,
+      completionTokens,
+    };
+  }
+  if (!isReckoning(estimated,))
     throw new BedrockLedgerShapeError({
       line,
       detail: 'estimated is not a reckoning this package writes',
@@ -425,7 +460,7 @@ function entryOf(
     usd,
     promptTokens,
     completionTokens,
-    ...((estimated === undefined) ? {} : { estimated, }),
+    estimated,
   };
 }
 

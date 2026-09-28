@@ -39,19 +39,20 @@ import { noteRunSpend, } from './run-spend-meter.ts';
 const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
- Why a line's counts and cost are reckoned rather than reported, on an
- attempt the wire never finished: `abandoned` is an estimate off what the
- stream delivered, and `abandoned-bound` is the most the attempt could have
- been billed, no more prompt tokens than its body had bytes and no more
- completion tokens than its `max_tokens` (ledger P1, Bedrock, whose ledger
- guards the owner's card and must not under-read).
+ Why a line's counts and cost are reckoned rather than reported: `abandoned`
+ is an estimate off what an unfinished stream delivered; `abandoned-bound`
+ and `unreported-bound` are the most an attempt could have been billed, no
+ more prompt tokens than its body had bytes and no more completion tokens than
+ its `max_tokens`, for an attempt left unfinished or one that finished with
+ no usage block (ledger P1, Bedrock, whose ledger guards the owner's card and
+ must not under-read).
 
  @example
  ```ts
  const reckoning: SpendReckoning = 'abandoned-bound';
  ```
  */
-export type SpendReckoning = 'abandoned' | 'abandoned-bound';
+export type SpendReckoning = 'abandoned' | 'abandoned-bound' | 'unreported-bound';
 
 /**
  Marker word a reader finds the line by.

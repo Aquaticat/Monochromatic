@@ -1,19 +1,22 @@
 import type { BedrockServedId, } from './bedrock-catalog.ts';
 import { bedrockAttemptBound, } from './bedrock-cost.ts';
 import type { BedrockLedger, } from './bedrock-ledger.ts';
-import { reportSpend, } from './spend-line.ts';
+import {
+  reportSpend,
+  type SpendReckoning,
+} from './spend-line.ts';
 
-//region Bedrock abandoned attempt
-// AN ATTEMPT BEDROCK ACCEPTED IS SPEND WHETHER OR NOT IT FINISHED (ledger P1,
-// 2026-09-28). The ledger is the only guard on the owner's card, and it noted
-// completed calls only: 873 Bedrock streams across the logs ended cut or
-// overrun and none reached it. The retry ladder now tells the client of every
-// attempt that delivered something and failed, retried ones included, and
-// this writes each at its bound, on the SPEND line and in the ledger, before
-// the ladder decides anything else about the failure.
+//region Bedrock bound ledger
+// AN ATTEMPT BEDROCK ACCEPTED IS SPEND WHETHER OR NOT ITS USAGE ARRIVED
+// (ledger P1, 2026-09-28). The ledger is the only guard on the owner's card,
+// and it noted completed calls with usage only: 873 Bedrock streams across the
+// logs ended cut or overrun and none reached it, and a whole call whose stream
+// carried no usage block would not have either (none of 190,009 logged calls
+// did). Each such attempt is written at its bound, on the SPEND line and in
+// the ledger, marked with why its figures are reckoned.
 
 /**
- Writes one abandoned attempt at the most it could have been billed.
+ Writes one attempt at the most it could have been billed.
 
  @param servedId - model the attempt went to
 
@@ -21,23 +24,28 @@ import { reportSpend, } from './spend-line.ts';
 
  @param maxTokens - `max_tokens` the body carried
 
+ @param reckoning - why no reported usage prices it: abandoned before its
+ end, or finished without a usage block
+
  @param ledger - the spend record the meter is read off
 
  @example
  ```ts
- await ledgerAbandonedAttempt({ servedId, requestBodyBytes, maxTokens, ledger, },);
+ await ledgerAtBound({ servedId, requestBodyBytes, maxTokens, reckoning: 'abandoned-bound', ledger, },);
  ```
  */
-export async function ledgerAbandonedAttempt(
+export async function ledgerAtBound(
   {
     servedId,
     requestBodyBytes,
     maxTokens,
+    reckoning,
     ledger,
   }: {
     readonly servedId: BedrockServedId;
     readonly requestBodyBytes: number;
     readonly maxTokens: number;
+    readonly reckoning: Extract<SpendReckoning, 'abandoned-bound' | 'unreported-bound'>;
     readonly ledger: BedrockLedger;
   },
 ): Promise<void> {
@@ -60,7 +68,7 @@ export async function ledgerAbandonedAttempt(
       },
     },
     costUsd: bound.usd,
-    estimated: 'abandoned-bound',
+    estimated: reckoning,
   },);
   await ledger.note({
     at: new Date().toISOString(),
@@ -68,8 +76,8 @@ export async function ledgerAbandonedAttempt(
     usd: bound.usd,
     promptTokens: bound.promptTokens,
     completionTokens: bound.completionTokens,
-    estimated: 'abandoned-bound',
+    estimated: reckoning,
   },);
 }
 
-//endregion Bedrock abandoned attempt
+//endregion Bedrock bound ledger

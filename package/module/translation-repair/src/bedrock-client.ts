@@ -10,7 +10,7 @@ import {
   bedrockChatUrlFor,
   type BedrockServedId,
 } from './bedrock-catalog.ts';
-import { ledgerAbandonedAttempt, } from './bedrock-abandoned-attempt.ts';
+import { ledgerAtBound, } from './bedrock-bound-ledger.ts';
 import {
   BEDROCK_COST_UNREPORTED,
   bedrockCostOf,
@@ -444,10 +444,11 @@ export function createBedrockClient(
        */
       const reply = await exchangeWithRetry({
         onAbandonedAttempt: async function ledgerAbandoned(): Promise<void> {
-          await ledgerAbandonedAttempt({
+          await ledgerAtBound({
             servedId,
             requestBodyBytes: Buffer.byteLength(bodyJson,),
             maxTokens,
+            reckoning: 'abandoned-bound',
             ledger,
           },);
         },
@@ -514,28 +515,36 @@ export function createBedrockClient(
       rl.debug(
         `<- ${servedId}: ${String(textLength,)} chars${formatUsageNote({ extracted, },)}`,
       );
-      reportSpend({
-        provider: 'bedrock',
-        label: servedId,
-        extracted,
-        // Conditional spread keeps the field absent where nothing was priced.
-        ...((cost === BEDROCK_COST_UNREPORTED)
-          ? {}
-          : { costUsd: cost, }),
-      },);
       /**
        Usage the provider reported, absent where it did not.
        */
       const { usage, } = extracted;
-      if ((cost !== BEDROCK_COST_UNREPORTED) && (usage !== undefined)) {
-        await ledger.note({
-          at: new Date().toISOString(),
-          model: servedId,
-          usd: cost,
-          promptTokens: usage.prompt_tokens,
-          completionTokens: usage.completion_tokens,
+      // A WHOLE CALL WITH NO USAGE WAS STILL BILLED (ledger P1): it is written
+      // at its bound, on the SPEND line and in the ledger, rather than
+      // printed with its counts unreported and left out of the ledger.
+      if ((cost === BEDROCK_COST_UNREPORTED) || (usage === undefined)) {
+        await ledgerAtBound({
+          servedId,
+          requestBodyBytes: Buffer.byteLength(bodyJson,),
+          maxTokens,
+          reckoning: 'unreported-bound',
+          ledger,
         },);
+        return extracted;
       }
+      reportSpend({
+        provider: 'bedrock',
+        label: servedId,
+        extracted,
+        costUsd: cost,
+      },);
+      await ledger.note({
+        at: new Date().toISOString(),
+        model: servedId,
+        usd: cost,
+        promptTokens: usage.prompt_tokens,
+        completionTokens: usage.completion_tokens,
+      },);
       return extracted;
     },);
   }
