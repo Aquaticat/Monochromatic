@@ -27,7 +27,9 @@
    user-authorized Laya,
    relevant Voyage products/models,
    Jev,
-   direct Respan Lite/free and limited Pro observations, local Voyage-feature probability heads, and bounded public/synthetic Nace Drex evaluation.
+   direct Respan Lite/free and limited Pro observations,
+   local Voyage-feature probability heads,
+   and bounded public/synthetic Nace Drex evaluation.
 - Rubric:
    not scored;
    no finalist ranking or production adoption.
@@ -279,7 +281,8 @@ Reported usage totaled 22,347 input and 94 output tokens.
 Provider evaluation-time fields are not the shared assessment clock.
 No calibration profile or production threshold is selected.
 
-Raw result commit: `e639234`.
+Raw result commit:
+ `e639234`.
 Result SHA-256:
 `3e18de5385d1a2433db6b7c20f96d4330b08b74f7bc4e383d90caab647548a5d`.
 Manifest SHA-256:
