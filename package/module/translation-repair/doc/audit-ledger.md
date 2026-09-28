@@ -850,7 +850,23 @@ Status: fixed with F-1 in `d0c788468` (`addressesNobody` in `translate-address-o
 
 ### H12: minimax-m3 ignores OpenRouter endpoints one at a time and names none measured
 
-Status: open.
+Status: fixed in `db1d285c6` (red guard `6f31a3479`): the card sends `provider.order` Together then CoreWeave,
+fallbacks allowed, as the DeepSeek and GLM cards name theirs.
+Measured 2026-09-28 (`~/temp/agent/audit-glossary-fix/h12-endpoints.mjs`, pass-run logs only):
+since the 2026-09-04 ignores the price sort sent 59,745 streams to CoreWeave, 9,177 to Together and 8 to Venice.
+The listing of 2026-09-28 marks structured outputs on CoreWeave, Together and ModelRun alone,
+and OpenRouter routes a `response_format` request only to endpoints supporting it (provider-selection docs);
+all three are FP4 (Together's own model table, where OpenRouter lists it unknown),
+and the fp8 endpoints, the model's own among them, list no structured outputs.
+Over 2026-09-21 to 2026-09-28 Together served 7,601 streams at p50 1.9 s and p90 5.5 s, 18 not completed;
+CoreWeave 37,870 at p50 2.7 s and p90 9.7 s, 99 not completed; observed, not controlled for load.
+Precision being equal, speed chose the order; Together's listed price (0.30 and 1.20) is the card's.
+The ignore comment said both ignored endpoints "cut a quarter or more of at least twenty streams";
+`d55d83082` measured Parasail answering into the reasoning channel with content empty
+and ModelRun timing out 119 of 300 streams in-stream, and the comment now says so.
+No cache version moves: routing is in no key.
+Mutation check: emptying the named endpoints and swapping their order were each caught by four cases
+across the catalog and client tests; the control survived; the full suite then ran green (0 of 1260 failing).
 
 ### H13: the seeds test pins the whole term list
 
@@ -3342,6 +3358,7 @@ both searches whose second half ran regardless,
 and once reading the suite after D20 (`rg --count FAIL log ; rg --count PASS log`).
 During X2 an edit script was patched with an inline `python3 - <<'EOF'` heredoc chained after `sed`,
 where scripts go through the Write tool and run in a call of their own.
+Once more during H9 (`rg --files-with-matches <term> <clone> ; rg --files-with-matches <term> <other clone>`).
 
 ### M19: a suite run against a stale build after a mutation was restored
 
@@ -3480,6 +3497,15 @@ Prevention: a red guard is read case by case before the fix
 (each failing case must fail for the reason its label names),
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
+
+### M36: a search for an entry id printed corpus lines
+
+Status: happened 2026-09-28 during H9; nothing was written to a file or a commit.
+Looking for which entry an H9 observation came from, an `rg --only-matching` over the session transcript
+took up to 120 characters after a corpus term, and printed lines of the poem around it,
+against the rule that probes print ids, indices, counts, code points and markup only.
+Prevention: find an entry by `--files-with-matches` over the pinned clone, or by `--count` first;
+an `--only-matching` pattern never carries wildcard context around corpus text.
 
 ### M35: a teardown that kept what only its consumers read, and an audit that listed the sites it saw
 
