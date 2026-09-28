@@ -218,7 +218,9 @@ await describe({
         const { logger, lines, } = capturingLogger();
         await runPanelStage({
           client: CLIENT,
-          panelModelIds: [...VOICES,],
+          // THREE, so every panelist sits on the packet: a packet seats three,
+          // and one left off it casts no ballot to be irregular.
+          panelModelIds: [...VOICES,].slice(0, 3,),
           sourceText: SOURCE_TEXT,
           targetText: TARGET_TEXT,
           clusters: aggregateClaims({ claims: [CLAIM,], },).clusters,
