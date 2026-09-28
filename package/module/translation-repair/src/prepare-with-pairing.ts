@@ -176,15 +176,23 @@ export async function prepareDocumentPairWithRoster(
    Whole translation document, parsed beside the source.
    */
   const target = parseDocument({ text: targetText, },);
-  if (beforeSection !== undefined)
-    await beforeSection();
+  // EVERY ROUND IS ASKED OF THE ROSTER ITS HOOK HANDS OVER (ledger X12,
+  // 2026-09-28): the preparation read its roster once, so a dry-out inside it
+  // left every later section on the roster read before it. The pairing keys
+  // fold the roster that answers (ledger X13), so a re-seated round is keyed
+  // by it.
+  /**
+   Seating the hook hands the section round: a roster read under a hold, or
+   none, which keeps the one the preparation started on.
+   */
+  const sectionSeating: BenchSeating = (beforeSection === undefined) ? {} : await beforeSection();
   /**
    Section correspondence is bought only where the deterministic aligner refused.
    Block questions require this alignment to exist before they can be posed.
    */
   const sectionRound = await buySectionPairing({
     client,
-    modelIds,
+    modelIds: sectionSeating.modelIds ?? modelIds,
     source,
     target,
     signal,
@@ -223,14 +231,16 @@ export async function prepareDocumentPairWithRoster(
   for (const [pairIndex, pair,] of alignment.pairs
     .entries()) {
     /* oxlint-disable no-await-in-loop -- parent rounds remain sequential rather than multiplying the provider fanout */
-    if (beforeSection !== undefined)
-      await beforeSection();
+    /**
+     Seating the hook hands this section's block round.
+     */
+    const blockSeating: BenchSeating = (beforeSection === undefined) ? {} : await beforeSection();
     /**
      This section's pairing, from structure, the cache or the roster.
      */
     const round = await prepareBlockPairing({
       client,
-      modelIds,
+      modelIds: blockSeating.modelIds ?? modelIds,
       pair,
       pairIndex,
       targetContainers: target.containers,

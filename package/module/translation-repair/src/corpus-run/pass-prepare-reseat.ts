@@ -6,10 +6,15 @@ import {
 import type { BenchSeating, } from '../bench-seating.ts';
 import type { PairedPreparation, } from '../prepare-with-pairing.ts';
 import { preparePassEntry, } from './pass-prepare.ts';
+import {
+  type Reseated,
+  reseatHookFor,
+} from './pass-reseat-hook.ts';
 import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import type { RunClient, } from './run-client-contract.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
+import type { JudgeSeats, } from './run-seats.ts';
 import {
   readJudgeSeats,
   type SeatReadingClient,
@@ -34,23 +39,40 @@ export type PreparationHooks = {
 };
 
 /**
- Seating that keeps the roster the preparation started on.
+ What the preparation takes from a seat reading: the roster, as
+ `runPassPreparation` seats it.
 
- @returns No roster, so the given one stands
+ @param seats - benches as of this item
+
+ @returns Roster the item is asked of, beside the line naming it
 
  @example
  ```ts
- const seating = await keepBench();
+ const { seating, line, } = preparationSeatingOf({ seats, },);
  ```
  */
-function keepBench(): Promise<BenchSeating> {
-  return Promise.resolve({},);
+function preparationSeatingOf(
+  { seats, }: { readonly seats: JudgeSeats; },
+): Reseated<BenchSeating> {
+  /**
+   Roster the item is asked of, for the line.
+   */
+  const roster = seats.roster
+    .join(',',);
+  return {
+    seating: { modelIds: seats.roster, },
+    line: `stage re-seated under a hold: roster=${roster}`,
+  };
 }
 
 /**
  Builds the preparation's per-item hook.
 
- @param _ - run client, entry abort and entry logger the re-seating will read
+ @param client - run client whose dryness view and holds are the router's own
+
+ @param signal - entry abort the readings honour
+
+ @param l - entry logger
 
  @returns Per-item reader, handing each item the roster it is asked of
 
@@ -60,13 +82,26 @@ function keepBench(): Promise<BenchSeating> {
  ```
  */
 export function preparationHooksFor(
-  _: {
+  {
+    client,
+    signal,
+    l,
+  }: {
     readonly client: SeatReadingClient;
     readonly signal: AbortSignal;
     readonly l: Logger;
   },
 ): PreparationHooks {
-  return { beforeItem: keepBench, };
+  return {
+    beforeItem: reseatHookFor<BenchSeating>({
+      client,
+      signal,
+      phase: 'preparation',
+      unseated: {},
+      seatingOf: preparationSeatingOf,
+      l,
+    },),
+  };
 }
 
 /**

@@ -225,6 +225,26 @@ export async function preparePassEntry(
     logger: l,
   },);
   /**
+   Roster a stage asks now: the one the hook hands over under a hold, or the
+   one the preparation started on (ledger X12). The attestation is one round,
+   so it is re-seated at its start; the pairing and the review take the hook
+   itself and re-seat per section and per block.
+
+   @returns Roster the next stage is asked of
+
+   @example
+   ```ts
+   const roster = await rosterNow();
+   ```
+   */
+  async function rosterNow(): Promise<readonly RosterModelId[]> {
+    /**
+     What the hook hands over, nothing where no hook was given.
+     */
+    const seating: BenchSeating = (beforeItem === undefined) ? {} : await beforeItem();
+    return seating.modelIds ?? modelIds;
+  }
+  /**
    Archive details a reference states, attested by the bench with quotes
    checked word for word (class thirty-seven, 2026-09-16): the repair lane
    screens addition claims against them before the panel, and every sheet
@@ -239,7 +259,7 @@ export async function preparePassEntry(
     }
     : await attestCitedReferences({
       client,
-      modelIds,
+      modelIds: await rosterNow(),
       sourceText,
       archiveText,
       referenceContext: referenceLines,

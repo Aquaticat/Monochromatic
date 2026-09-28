@@ -271,17 +271,21 @@ export async function repairArchiveBlocks(
       block.startOffset,
       block.endOffset,
     );
-    if (beforeBlock !== undefined) {
-      // oxlint-disable-next-line no-await-in-loop -- Blocks settle in document order, each asked of the bench as it stands.
-      await beforeBlock();
-    }
+    // EACH BLOCK IS REVIEWED BY THE ROSTER ITS HOOK HANDS OVER (ledger X12,
+    // 2026-09-28): a dry-out inside the review left every later block on the
+    // roster read before it.
+    /* oxlint-disable no-await-in-loop -- Reverse-offset block corrections must settle in document order, each block asked of the bench as it stands. */
+    /**
+     Seating the hook hands this block: a roster read under a hold, or none,
+     which keeps the one the review started on.
+     */
+    const blockSeating: BenchSeating = (beforeBlock === undefined) ? {} : await beforeBlock();
     /**
      Stage-local retained or revised outcome.
      */
-    // oxlint-disable-next-line no-await-in-loop -- Reverse-offset block corrections must settle in document order.
     const outcome = await runArchiveBlockReviewStage({
       client,
-      modelIds,
+      modelIds: blockSeating.modelIds ?? modelIds,
       sourceText: sourceContexts.get(identity,) ?? '',
       targetText,
       blockText,
@@ -290,6 +294,7 @@ export async function repairArchiveBlocks(
       exchangeTimeoutMs,
       l,
     },);
+    /* oxlint-enable no-await-in-loop */
     if (outcome.kind === 'retained') {
       findings.push(`archive block reviewed and retained: ${identity}`);
       continue;
