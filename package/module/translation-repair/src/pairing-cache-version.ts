@@ -26,6 +26,12 @@
  every round hears; checked on 2026-09-28: still no slice-cache file newer
  than 00:26 on 2026-09-27.
 
+ Rides inside 3 too: a reply that could not be used is re-asked once,
+ nudged, of the same model on another provider through the uniqueness
+ wrapper's claims (ledger P9, `7011d72cc`), which changes whose voices every
+ round hears; checked on 2026-09-28: still no slice-cache file newer than
+ 00:26 on 2026-09-27.
+
  @example
  ```ts
  const material = [PAIRING_CACHE_VERSION, sourceText, targetText,];

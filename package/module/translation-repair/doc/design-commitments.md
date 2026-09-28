@@ -353,6 +353,11 @@ Part of [the package README](../README.md).
   "Enable with the nudge".
   The re-ask carries the recovery nudge, so its prompt digest differs from the first ask's
   and prompt uniqueness holds (ledger P9).
+  REFINED FOR QUALITY, 2026-09-28, under the standing directive below:
+  the re-ask's nudge is worded apart from the stage recovery round's,
+  since the round re-asks every seat still unreadable and a shared wording would make its prompt
+  this re-ask's digest, answered from the claims with the reply that already failed;
+  and a refusal-shaped reply is re-asked elsewhere too, with a nudge neutral on why the reply could not be used.
 - **The quality of the end result decides; a choice made for it is not a design decision.**
   Owner, 2026-09-28, standing directive, answering two questions put as design choices
   (which fix-shaped refusals the L4 markup gate should let through, and whether the L11 probe stays in shadow):

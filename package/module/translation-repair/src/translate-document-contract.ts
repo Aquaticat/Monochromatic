@@ -147,6 +147,12 @@ import type { SliceReplacement, } from './splice-slices.ts';
  `translate-archive-ineligible` (ledger X6, `6445a2e35`), which changes a
  refused slice's text and findings; checked on 2026-09-28: still no
  slice-cache file newer than 00:26 on 2026-09-27.
+
+ Rides inside 15 too: a reply that could not be used is re-asked once,
+ nudged, of the same model on another provider through the uniqueness
+ wrapper's claims (ledger P9, `7011d72cc`), which changes whose voices every
+ round hears; checked on 2026-09-28: still no slice-cache file newer than
+ 00:26 on 2026-09-27.
  */
 export const TRANSLATE_SLICE_CACHE_VERSION = 15;
 

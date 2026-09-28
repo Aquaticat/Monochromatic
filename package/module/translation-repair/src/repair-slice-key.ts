@@ -374,6 +374,12 @@ import type { RepairModels, } from './repair-contract.ts';
  stated on the editor sheet (ledger L4, `b07f8ac48` and `ab84cbfd7`), which
  changes the editor's question and which edits a chunk may apply; checked on
  2026-09-28: still no slice-cache file newer than 00:26 on 2026-09-27.
+
+ Rides inside 33 too: a reply that could not be used is re-asked once,
+ nudged, of the same model on another provider through the uniqueness
+ wrapper's claims (ledger P9, `7011d72cc`), which changes whose voices every
+ round hears; checked on 2026-09-28: still no slice-cache file newer than
+ 00:26 on 2026-09-27.
  */
 export const SLICE_CACHE_VERSION = 33;
 /**

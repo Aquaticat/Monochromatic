@@ -128,6 +128,12 @@ import type { LaneText, } from './translate-candidates.ts';
  read rather than lost (ledger P8, `cac097368`), which changes whose voices
  every round hears; checked on 2026-09-28: still no slice-cache file newer
  than 00:26 on 2026-09-27.
+
+ Rides inside 20 too: a reply that could not be used is re-asked once,
+ nudged, of the same model on another provider through the uniqueness
+ wrapper's claims (ledger P9, `7011d72cc`), which changes whose voices every
+ round hears; checked on 2026-09-28: still no slice-cache file newer than
+ 00:26 on 2026-09-27.
  */
 export const CONSOLIDATE_CACHE_VERSION = 20;
 

@@ -896,6 +896,8 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
     and a `;` before an `echo` closing a TianqiChen666 refusal count;
     after the crash that heredoc slip repeated during L11 (the edit script for `refine-slice-settle.ts`).
     Prevention: write a script with the Write tool and run it in its own call.
+    During P9 a `;` joined a lint count to the commit of the red guard,
+    and the staging read only the count of expected type errors, not the full summary (read afterwards: those six only).
 - A capped search taken as complete (QRY): before `7ceffe055` changed two card prices,
     the search for tests pinning the old ones ran through `head --lines=10`,
     which cut off `deepseek-v41-admission.unit.test.ts`; the full suite caught it and `bc69e2336` fixed it.
@@ -1898,7 +1900,30 @@ Rides inside all six cache versions.
 
 ### P9: the router's cross-provider re-ask never runs in production
 
-Status: owner ruled 2026-09-28, "Enable with the nudge" (`design-commitments.md`); implementation pending.
+Status: fixed in `7011d72cc` (guard `4d16f4318`); owner ruled 2026-09-28, "Enable with the nudge" (`design-commitments.md`).
+`promptUniqueClient` buys every JSON reply through `chatText` and reads it itself,
+so the router's `chatJson`, where the re-ask lived, was never called in a run.
+The router now tags each reply with the provider that served it (`servedBy`)
+and serves a request carrying `otherThan` on another wet provider serving the model
+(`routedTextElsewhere`, reusing the second-opinion routing, the slot take and the budget-refusal handling),
+throwing `NoProviderForModelError` where none can take it.
+The uniqueness wrapper re-asks a reply that could not be used through its own claim path (`nudged-reask.ts`),
+so the nudged exchange is claimed and stored like the first and a resumed run replays both;
+the payload store replays the tag, and a payload stored before it existed is not re-asked.
+The first answer stands when the re-ask cannot happen or fails, and the nudged prompt's claim is released.
+Decided for quality, recorded under the commitment: the re-ask carries `CROSS_PROVIDER_NUDGE`,
+worded apart from the recovery round's `RECOVERY_NUDGE`, since a shared wording would make the round's prompt
+this re-ask's digest, answered from the claims with the reply that already failed;
+and it fires on a refusal-shaped reply as on a schema mismatch, as the router's never-run re-ask did,
+with a nudge neutral on why the reply could not be used.
+`NoProviderForModelError` moved to its own module so the re-ask can raise it without an import cycle.
+Reach (`p9-reach.mjs`, every log under the agent directory, unit-test logs included):
+157,945 unusable-reply lines, 122,593 on models another provider serves today;
+the TianqiChen666 logs hold 134, so the re-ask adds at most a few exchanges per run.
+Mutation check (`p9-mutants.json`): the re-ask bypassing the claims, never re-asking, sharing the recovery nudge,
+dropping the hint, the router ignoring the hint or dropping the tag, and the store dropping the tag are each caught;
+the comment-wording control survives.
+Cache: rides inside all six versions, with an account in each.
 
 ### P10: the deepseek-v4.1-flash card is stale against its own measurement rule
 
