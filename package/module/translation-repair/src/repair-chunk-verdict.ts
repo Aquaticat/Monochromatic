@@ -76,6 +76,48 @@ export type ChunkVerdict = {
 };
 
 /**
+ What a slice settled on, in the words of the settlement line.
+
+ THREE KINDS OF UNCHANGED (ledger L12): the archive beat the patch on the
+ measurements, the patch won and its operations wrote no byte, or the patch
+ won and was refused for dropping a declared name. The line said "unchanged"
+ for all three, so the log could not tell a lost repair from one that wrote
+ nothing.
+
+ @param changed - whether the returned wording differs from the archive's
+
+ @param patchSelected - whether the patched candidate beat the archive
+
+ @param refused - whether the winning patch was refused for a declared name
+
+ @returns State phrase the line opens with
+
+ @example
+ ```ts
+ settlementState({ changed: false, patchSelected: false, refused: false, },); // 'unchanged, the archive won'
+ ```
+ */
+function settlementState(
+  {
+    changed,
+    patchSelected,
+    refused,
+  }: {
+    readonly changed: boolean;
+    readonly patchSelected: boolean;
+    readonly refused: boolean;
+  },
+): string {
+  if (changed)
+    return 'repaired';
+  if (refused)
+    return 'unchanged, the patch won and was refused for dropping a declared name';
+  if (patchSelected)
+    return 'unchanged, the patch won and wrote nothing';
+  return 'unchanged, the archive won';
+}
+
+/**
  Runs the slate for one slice and reads both verdicts off the winner.
  
  The unchanged translation always competes, so it is built here rather than by
@@ -306,6 +348,12 @@ export function settleChunkFromChecks(
  
  @param changed - whether the returned wording differs from the archive's
  
+ @param patchSelected - whether the patched candidate beat the archive, which
+ tells a lost repair from one that wrote nothing
+ 
+ @param refused - whether the winning patch was refused for dropping a
+ declared name
+ 
  @param resolvedCount - accepted issues the checkers found resolved
  
  @param creditableCount - accepted issues an applied envelope actually served
@@ -320,13 +368,15 @@ export function settleChunkFromChecks(
  
  @example
  ```ts
- const line = describeChunkSettlement({ sliceIndex, changed, resolvedCount, ... },);
+ const line = describeChunkSettlement({ sliceIndex, changed, patchSelected, refused, resolvedCount, ... },);
  ```
  */
 export function describeChunkSettlement(
   {
     sliceIndex,
     changed,
+    patchSelected,
+    refused,
     resolvedCount,
     creditableCount,
     acceptedCount,
@@ -334,13 +384,19 @@ export function describeChunkSettlement(
   }: {
     readonly sliceIndex: number;
     readonly changed: boolean;
+    readonly patchSelected: boolean;
+    readonly refused: boolean;
     readonly resolvedCount: number;
     readonly creditableCount: number;
     readonly acceptedCount: number;
     readonly unenvelopedCount: number;
   },
 ): string {
-  return `chunk ${String(sliceIndex,)}: ${changed ? 'repaired' : 'unchanged'}, ${
+  return `chunk ${String(sliceIndex,)}: ${settlementState({
+    changed,
+    patchSelected,
+    refused,
+  },)}, ${
     String(resolvedCount,)
   }/${String(creditableCount,)} served accepted issues resolved (${
     String(acceptedCount,)

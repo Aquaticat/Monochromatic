@@ -124,6 +124,10 @@ export function settleShippedPatch(
   l.info(describeChunkSettlement({
     sliceIndex,
     changed: settled.changed,
+    patchSelected: settled.patchSelected,
+    refused: settled.droppedDeclaredNames
+      .length
+      > 0,
     resolvedCount: settled.resolvedIssueIds
       .length,
     creditableCount: appliedEnvelopes.creditableIssues
