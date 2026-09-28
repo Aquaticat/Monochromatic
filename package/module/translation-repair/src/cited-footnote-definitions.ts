@@ -93,7 +93,7 @@ function continuesAfterBlank({ line, }: { readonly line: string; },): boolean {
 
  @example
  ```ts
- definitionEnd({ lines: ['[^1]: A.', '', 'Next.',], start: 0, },); // 1
+ definitionEnd({ lines: ['[^1]: A.', '', 'Next.',], start: 0, },); // 2, the blank line trimmed later
  ```
  */
 function definitionEnd(

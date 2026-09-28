@@ -149,5 +149,30 @@ await describe({
         expect(beside?.sourceText,).toBe('晚饭是鱼。[^2]',);
       },
     },),
+
+    it({
+      name: 'ENDS A DEFINITION AT A BLANK LINE unless indented text follows, reads one indented by up to three spaces, and takes the first of two definitions of a label, as GFM does',
+      fn: async () => {
+        /** Four slices whose last defines note a with a later paragraph, an afterword and a repeat. */
+        const slices = [
+          pairOf({ sliceIndex: 0, source: '猫咪打了个哈欠。[^a]', target: 'The cat yawned.[^a]', },),
+          pairOf({ sliceIndex: 1, source: '猫咪伸了个懒腰。', target: 'The cat stretched.', },),
+          pairOf({ sliceIndex: 2, source: '猫咪睡着了。', target: 'The cat fell asleep.', },),
+          pairOf({
+            sliceIndex: 3,
+            source: '[^a]: 第一段。\n\n    第二段。\n\n后记。\n\n[^a]: 重复的定义。',
+            target: '  [^a]: First paragraph.\n\n    Second paragraph.\n\nAfterword.',
+          },),
+        ];
+        /** Window of the first slice. */
+        const beside = sliceNeighbourContexts({ slices, },)
+          .get(0,);
+
+        expect(beside?.sourceText,).toBe('猫咪伸了个懒腰。\n\n[^a]: 第一段。\n\n    第二段。',);
+        expect(beside?.incumbentText,).toBe(
+          'The cat stretched.\n\n  [^a]: First paragraph.\n\n    Second paragraph.',
+        );
+      },
+    },),
   ],
 },);
