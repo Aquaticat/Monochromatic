@@ -124,6 +124,18 @@ await describe({
       },
     },),
     it({
+      name: 'READS AN EXAMPLE WHOLE when a string in it quotes a fence, since only a line of backticks closes one '
+        + '(audit area six: a backtick run mid-line was read as the close, and the keys after it as missing)',
+      fn: async () => {
+        expect(exampleFindingsOf({
+          text: documented({ example: 'feedCat({ note: \'a ``` b\', kibble, },);', declaration: FEED_CAT, },),
+        },),).toEqual([],);
+        expect(exampleFindingsOf({
+          text: documented({ example: 'feedCat({ note: \'a ``` b\', water: 1, },);', declaration: FEED_CAT, },),
+        },),).toEqual([{ name: 'feedCat', line: 9, problem: 'leaves out kibble', },],);
+      },
+    },),
+    it({
       name: 'FINDS NOTHING IN THIS PACKAGE\'S SOURCE: every function declaration\'s example calls it with its '
         + 'required keys (ledger D9 listed 29 that did not, and this scan first read 42)',
       fn: async () => {

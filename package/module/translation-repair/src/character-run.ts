@@ -19,7 +19,7 @@
 
  @example
  ```ts
- longestRunOf({ text: 'a ``` b', character: '`', },); // 3
+ longestRunOf({ text: 'a === b', character: '=', },); // 3
  ```
  */
 export function longestRunOf(

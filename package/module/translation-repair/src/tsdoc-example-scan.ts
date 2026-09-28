@@ -46,7 +46,65 @@ export type ExampleFinding = {
 };
 
 /**
+ Shortest run of backticks that opens a fenced code block.
+ */
+const FENCE_MIN = 3;
+
+/**
+ A TSDoc line past its margin: leading space and an optional `*`.
+
+ @param line - one line of a TSDoc block
+
+ @returns The line's text as Markdown reads it
+
+ @example
+ ```ts
+ pastMargin({ line: '  * ```ts', },); // '```ts'
+ ```
+ */
+function pastMargin({ line, }: { readonly line: string; },): string {
+  /**
+   The line without its leading space.
+   */
+  const trimmed = line.trimStart();
+  return trimmed.startsWith('*',) ? trimmed.slice(1,)
+    .trimStart() : trimmed;
+}
+
+/**
+ Backticks a TSDoc line opens with, past its margin.
+
+ @param line - one line of a TSDoc block
+
+ @returns Length of the leading backtick run, zero when there is none
+
+ @example
+ ```ts
+ fenceRunOf({ line: ' ````ts', },); // 4
+ ```
+ */
+function fenceRunOf({ line, }: { readonly line: string; },): number {
+  /**
+   The line as Markdown reads it.
+   */
+  const text = pastMargin({ line, },);
+  /**
+   Offset past the leading backticks.
+   */
+  let run = 0;
+  while (text.charAt(run,) === '`')
+    run += 1;
+  return run;
+}
+
+/**
  The code of a TSDoc block's example, between its fences.
+
+ READ AS COMMONMARK READS IT (audit area six, 2026-09-28): the closing fence is
+ a line of backticks alone, at least as long as the opening one. This took the
+ next three backticks anywhere as the close, so an example quoting a fence
+ inside a string (`longestRunOf({ text: 'a ``` b', ... })`) was cut short and
+ read as leaving out its later keys.
 
  @param doc - the block, `/**` through its close
 
@@ -62,34 +120,50 @@ function exampleCodeOf({ doc, }: { readonly doc: string; },): string {
    Where the example tag sits.
    */
   const tag = doc.indexOf('@example',);
+  if (tag === NOT_FOUND)
+    return '';
 
   /**
-   The opening fence after it.
+   Lines from the tag on.
    */
-  const fence = (tag === NOT_FOUND) ? NOT_FOUND : doc.indexOf(
-    '```',
-    tag,
-  );
+  const lines = doc.slice(tag,)
+    .split('\n',);
 
   /**
-   Where the fence line ends.
+   The opening fence's line.
    */
-  const codeStart = (fence === NOT_FOUND) ? NOT_FOUND : doc.indexOf(
-    '\n',
-    fence,
-  );
+  const opening = lines.findIndex(function opens(line,): boolean {
+    return fenceRunOf({ line, },) >= FENCE_MIN;
+  },);
+  if (opening === NOT_FOUND)
+    return '';
 
   /**
-   The closing fence.
+   Backticks the opening fence carries, which the closing one must match.
    */
-  const close = (codeStart === NOT_FOUND) ? NOT_FOUND : doc.indexOf(
-    '```',
-    codeStart,
-  );
-  return (close === NOT_FOUND) ? '' : doc.slice(
-    codeStart,
-    close,
-  );
+  const openRun = fenceRunOf({ line: lines[opening] ?? '', },);
+
+  /**
+   The closing fence's line: backticks alone, at least as many.
+   */
+  const closing = lines.findIndex(function closes(
+    line,
+    index,
+  ): boolean {
+    /**
+     The line as Markdown reads it, without trailing space.
+     */
+    const text = pastMargin({ line, },)
+      .trimEnd();
+    return (index > opening)
+      && (text.length >= openRun)
+      && (fenceRunOf({ line, },) === text.length);
+  },);
+  return (closing === NOT_FOUND) ? '' : lines.slice(
+    opening + 1,
+    closing,
+  )
+    .join('\n',);
 }
 
 /**
