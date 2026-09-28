@@ -19,7 +19,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  awaitBenchQuorum,
   reachableSeats,
   readJudgeSeats,
   rosterQuorumSize,
@@ -403,76 +402,6 @@ await describe({
         },);
         expect(returns.counter.reads,).toBe(2,);
         expect(seats.translators,).toEqual(RUN_TRANSLATORS,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: awaitBenchQuorum.name,
-  children: [
-    it({
-      name: 'COSTS NOTHING while nothing is held: no dryness read, no wait, so a pass under wet providers '
-        + 'asks its meters exactly as often as before',
-      fn: async () => {
-        const script = scriptedViews({ views: [BEDROCK_ALONE,], },);
-        const waited = await awaitBenchQuorum({
-          client: viewClient({ providerDryness: script.read, },),
-          phase: 'consolidation',
-          signal: new AbortController().signal,
-          l,
-          pollMs: 5,
-        },);
-        expect(waited,).toBe(0,);
-        expect(script.counter.reads,).toBe(0,);
-      },
-    },),
-    it({
-      name: 'WAITS OUT THE SHORTEST HOLD before the chunk when a bench the phase leans on cannot reach '
-        + 'quorum, the fourth hakureico pass: a 923 s hold two minutes into consolidation',
-      fn: async () => {
-        const script = scriptedViews({
-          views: [
-            BEDROCK_ALONE,
-            ALL_WET,
-          ],
-        },);
-        const waited = await awaitBenchQuorum({
-          client: viewClient({
-            providerDryness: script.read,
-            providerHolds: () => ({
-              ...NO_HOLDS,
-              hyper: 40,
-            }),
-          },),
-          phase: 'consolidation',
-          signal: new AbortController().signal,
-          l,
-          pollMs: 5,
-        },);
-        expect(waited,).toBe(40,);
-        expect(script.counter.reads,).toBe(2,);
-      },
-    },),
-    it({
-      name: 'LETS THE CHUNK START when a provider is held but every bench can still reach quorum',
-      fn: async () => {
-        const script = scriptedViews({ views: [ALL_WET,], },);
-        const waited = await awaitBenchQuorum({
-          client: viewClient({
-            providerDryness: script.read,
-            providerHolds: () => ({
-              ...NO_HOLDS,
-              openrouter: 60_000,
-            }),
-          },),
-          phase: 'lanes',
-          signal: new AbortController().signal,
-          l,
-          pollMs: 5,
-        },);
-        expect(waited,).toBe(0,);
-        expect(script.counter.reads,).toBe(1,);
       },
     },),
   ],

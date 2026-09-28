@@ -35,10 +35,13 @@ import {
 // Hyper's daily limit named 923 s two minutes into consolidation, after the
 // phase had seated, so eighteen chunks ran on the two Bedrock seats, slice 5's
 // slate declined under quorum-not-met with a standing text the block floor
-// had refused, and the entry stopped INCOMPLETE. So every driver now asks
-// `awaitBenchQuorum` before each chunk, which costs nothing while no hold is
-// running (one synchronous read of the holds) and waits out the shortest
-// hold once when a bench the phase leans on cannot reach quorum.
+// had refused, and the entry stopped INCOMPLETE. So every phase that buys slice
+// by slice (both lanes, the lane contest and the consolidation) now takes
+// this reading again before a slice while a hold runs, which waits out the
+// shortest hold once when a bench the phase leans on cannot reach quorum, and
+// seats the slice on what it read (`pass-reseat-hook.ts`, ledger H5 and X12).
+// `awaitBenchQuorum` did the waiting alone until the last of those hooks moved
+// onto the shared re-seat on 2026-09-28, and was removed.
 
 /**
  Client surface the readings need: the router's dryness view and holds.
@@ -323,63 +326,6 @@ export async function readJudgeSeats(
       + `waited=${String(waitMs,)}ms`,
   );
   return seats;
-}
-
-/**
- Waits, before one chunk starts, until the benches its phase leans on can
- reach quorum again, when a named hold is keeping them from it.
- 
- COSTS NOTHING WHILE NOTHING IS HELD: one synchronous read of the holds and
- no dryness read, so a pass under wet providers asks its meters exactly as
- often as before.
- 
- @param client - run client whose dryness view and holds are the router's own
- 
- @param phase - phase the chunk belongs to, which names the benches
- 
- @param signal - entry abort the wait honours
- 
- @param l - entry logger, which records the shortfall and the wait
- 
- @param pollMs - how often a wait checks for abort
- 
- @returns How long was waited, zero when the chunk could start at once
- 
- @example
- ```ts
- await awaitBenchQuorum({ client, phase: 'consolidation', signal, l, },);
- ```
- */
-export async function awaitBenchQuorum(
-  {
-    client,
-    phase,
-    signal,
-    l,
-    pollMs = HOLD_POLL_MS,
-  }: {
-    readonly client: SeatReadingClient;
-    readonly phase: JudgeSeatPhase;
-    readonly signal: AbortSignal;
-    readonly l: Logger;
-    readonly pollMs?: number;
-  },
-): Promise<number> {
-  if (shortestHold({ holds: client.providerHolds(), },) === 0)
-    return 0;
-  /**
-   The reading, any named hold waited out.
-   */
-  const { waitMs, } = await readDrynessPastShortBench({
-    client,
-    phase,
-    signal,
-    l,
-    pollMs,
-  },);
-  if (waitMs > 0)
-    l.info(`JUDGE SEATS phase=${phase} chunk resumes after waiting ${String(waitMs,)}ms`,);
-  return waitMs;
 }
 
 //endregion Seat readings past a named hold

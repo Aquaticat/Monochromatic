@@ -115,7 +115,6 @@ export {
   judgeSeatsFor,
 } from './corpus-run/run-seats.ts';
 export {
-  awaitBenchQuorum,
   readJudgeSeats,
   type SeatReadingClient,
 } from './corpus-run/run-seats-read.ts';
