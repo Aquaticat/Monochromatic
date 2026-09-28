@@ -443,3 +443,64 @@ await describe({
     },),
   ],
 },);
+
+await describe({
+  name: 'the round line when quorum never stood (ledger P12)',
+  children: [
+    it({
+      name: 'SAYS NO QUORUM STOOD rather than timing a quorum that never did: "select round: 3/5 heard, 18766ms '
+        + 'total, 18766ms to quorum" was logged for a round that needed four voices',
+      fn: async () => {
+        /**
+         Every message the round logged.
+         */
+        const said: string[] = [];
+        /**
+         Client answering every seat at once but one, which fails at once.
+         */
+        const answering = scheduledClient({},);
+        await runGatherRound({
+          client: {
+            ...answering,
+            chatJson: async function failingOne<ValueT,>(
+              request: Parameters<typeof answering.chatJson>[0],
+            ): Promise<Awaited<ReturnType<typeof answering.chatJson<ValueT>>>> {
+              if (request.modelId === SEAT_SYNTHETIC_VISION_WITHHELD)
+                throw new Error('refused at once',);
+              return await answering.chatJson(request as Parameters<typeof answering.chatJson<ValueT>>[0],);
+            },
+          },
+          modelIds: ROSTER,
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'cat-stage',
+          l: capturingLogger({ said, },),
+          heardNeeded: ROSTER.length,
+          graceMs: GRACE_MS,
+        },);
+        /**
+         The round's own line.
+         */
+        const lines = said.filter(function isRound(message,): boolean {
+          return message.includes(' round: ',);
+        },);
+        expect({
+          lines: lines.length,
+          noQuorum: lines.some(function says(line,): boolean {
+            return line.includes(`no quorum (${String(ROSTER.length - 1,)} of ${String(ROSTER.length,)} needed)`,);
+          },),
+          claimsQuorum: lines.some(function claims(line,): boolean {
+            return line.includes('to quorum',);
+          },),
+        },).toEqual({
+          lines: 1,
+          noQuorum: true,
+          claimsQuorum: false,
+        },);
+      },
+    },),
+  ],
+},);
