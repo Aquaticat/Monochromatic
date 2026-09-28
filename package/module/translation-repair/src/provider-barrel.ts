@@ -216,8 +216,10 @@ export {
   OpenRouterModelNotServedError,
 } from './openrouter-client.ts';
 export {
+  isSpendReckoning,
   reportSpend,
   SPEND_MARKER,
+  SPEND_RECKONINGS,
   type SpendReckoning,
 } from './spend-line.ts';
 export {

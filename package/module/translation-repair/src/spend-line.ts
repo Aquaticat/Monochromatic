@@ -47,12 +47,49 @@ const l = contextRoot({ tag: 'translation-repair', },);
  no usage block (ledger P1, Bedrock, whose ledger guards the owner's card and
  must not under-read).
 
+ ONE LIST FOR EVERY READER (ledger P14): the Bedrock ledger and the spend
+ reader recognise the marks this writer puts on a line from here, so a mark
+ added to the writer cannot go unread by either.
+
+ @example
+ ```ts
+ const known = SPEND_RECKONINGS.includes('abandoned-bound',);
+ ```
+ */
+export const SPEND_RECKONINGS = [
+  'abandoned',
+  'abandoned-bound',
+  'unreported-bound',
+] as const;
+
+/**
+ Why a line's counts and cost are reckoned rather than reported; see
+ `SPEND_RECKONINGS`.
+
  @example
  ```ts
  const reckoning: SpendReckoning = 'abandoned-bound';
  ```
  */
-export type SpendReckoning = 'abandoned' | 'abandoned-bound' | 'unreported-bound';
+export type SpendReckoning = typeof SPEND_RECKONINGS[number];
+
+/**
+ Whether a field names a reckoning this package writes.
+
+ @param value - field as a line or ledger entry carries it
+
+ @returns Whether it is one of `SPEND_RECKONINGS`
+
+ @example
+ ```ts
+ if (isSpendReckoning(estimated,)) return { ...entry, estimated, };
+ ```
+ */
+export function isSpendReckoning(value: unknown,): value is SpendReckoning {
+  return SPEND_RECKONINGS.some(function isThis(reckoning,): boolean {
+    return reckoning === value;
+  },);
+}
 
 /**
  Marker word a reader finds the line by.

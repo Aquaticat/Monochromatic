@@ -71,6 +71,7 @@ await describe({
             prompt: 5_120,
             completion: 3_072,
             costUsd: 'unreported',
+            reckoning: 'reported',
           },);
       },
     },),
@@ -102,6 +103,7 @@ await describe({
             prompt: 2_263,
             completion: 117,
             costUsd: 0.00032778,
+            reckoning: 'reported',
           },);
       },
     },),
@@ -123,6 +125,7 @@ await describe({
             prompt: 342,
             completion: 400,
             costUsd: 0.00015646,
+            reckoning: 'reported',
           },);
         expect(
           readSpendLine({
@@ -146,6 +149,7 @@ await describe({
             prompt: 12,
             completion: 34,
             costUsd: 0.000546,
+            reckoning: 'reported',
           },);
       },
     },),
@@ -176,6 +180,7 @@ await describe({
             prompt: 12,
             completion: 34,
             costUsd: 'unreported',
+            reckoning: 'reported',
           },);
       },
     },),
@@ -198,6 +203,7 @@ await describe({
             prompt: 'unreported',
             completion: 'unreported',
             costUsd: 'unreported',
+            reckoning: 'reported',
           },);
       },
     },),
@@ -219,6 +225,7 @@ await describe({
             prompt: 1,
             completion: 2,
             costUsd: 'unreported',
+            reckoning: 'reported',
           },);
       },
     },),
@@ -345,6 +352,7 @@ await describe({
               unreportedCalls: 0,
               costUsd: 0,
               costedCalls: 0,
+              reckonedCalls: 0,
             },
           ],);
       },
@@ -392,6 +400,7 @@ await describe({
               unreportedCalls: 1,
               costUsd: 0,
               costedCalls: 0,
+              reckonedCalls: 0,
             },
           ],);
       },

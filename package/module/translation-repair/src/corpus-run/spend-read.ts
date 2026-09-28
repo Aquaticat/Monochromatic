@@ -1,4 +1,8 @@
-import { SPEND_MARKER, } from '../spend-line.ts';
+import {
+  isSpendReckoning,
+  SPEND_MARKER,
+  type SpendReckoning,
+} from '../spend-line.ts';
 
 //region Spend read
 // Reads `SPEND` lines back out of run logs and totals them per model.
@@ -74,6 +78,8 @@ export type SpendUsd = number | typeof UNREPORTED;
    model: 'qwen3.8-max',
    prompt: 5120,
    completion: 3072,
+   costUsd: 'unreported',
+   reckoning: 'reported',
  };
  ```
  */
@@ -103,6 +109,14 @@ export type SpendRecord = {
    the line carried the field.
    */
   readonly costUsd: SpendUsd;
+
+  /**
+   Why the counts and cost are reckoned rather than reported, or that the wire
+   reported them. The writer marks an abandoned attempt and a bound with
+   `estimated=` so a total can keep them apart, and this reader dropped the
+   field until ledger P14, counting every such line as a reported call.
+   */
+  readonly reckoning: SpendReckoning | 'reported';
 };
 
 /**
@@ -383,12 +397,23 @@ export function readSpendLine(
   if (costUsd === 'unreadable')
     return 'unreadable';
 
+  /**
+   Reckoning mark, absent on a line the wire reported.
+   */
+  const estimated = named.get('estimated',);
+
+  // A MARK THIS PACKAGE NEVER WRITES IS A DAMAGED RECORD, not a reported
+  // call: counting it as reported is the misreading ledger P14 fixed.
+  if ((estimated !== undefined) && (!isSpendReckoning(estimated,)))
+    return 'unreadable';
+
   return {
     provider,
     model,
     prompt,
     completion,
     costUsd,
+    reckoning: estimated ?? 'reported',
   };
 }
 
@@ -453,6 +478,13 @@ export type SeatSpend = {
    over the rest.
    */
   readonly costedCalls: number;
+
+  /**
+   Calls whose counts and cost were reckoned rather than reported (ledger
+   P14), carried beside the totals like the unreported ones, so a reader sees
+   how much of the seat's figures rests on an estimate or a bound.
+   */
+  readonly reckonedCalls: number;
 };
 
 /**
@@ -544,6 +576,7 @@ export function tallySpend(
       unreportedCalls: 0,
       costUsd: 0,
       costedCalls: 0,
+      reckonedCalls: 0,
     };
 
     /**
@@ -569,6 +602,7 @@ export function tallySpend(
         unreportedCalls: running.unreportedCalls + (reported ? 0 : 1),
         costUsd: running.costUsd + ((record.costUsd === UNREPORTED) ? 0 : record.costUsd),
         costedCalls: running.costedCalls + (costed ? 1 : 0),
+        reckonedCalls: running.reckonedCalls + ((record.reckoning === 'reported') ? 0 : 1),
       },
     );
   }

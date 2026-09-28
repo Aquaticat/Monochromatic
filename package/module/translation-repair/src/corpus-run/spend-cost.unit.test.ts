@@ -239,6 +239,7 @@ await describe({
               unreportedCalls: 0,
               costUsd: 0,
               costedCalls: 0,
+              reckonedCalls: 0,
               inputCredits: 40,
               outputCredits: 120,
               totalCredits: 160,

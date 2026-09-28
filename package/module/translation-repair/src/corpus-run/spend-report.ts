@@ -31,6 +31,25 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 const PERCENT = 100;
 
 /**
+ Says how many of a seat's calls were reckoned rather than reported (ledger
+ P14), nothing where none were.
+
+ @param seat - seat with its counts
+
+ @returns Suffix for the seat's line
+
+ @example
+ ```ts
+ console.log(`${line}${reckonedNote({ seat, },)}`,);
+ ```
+ */
+function reckonedNote({ seat, }: { readonly seat: SeatSpend; },): string {
+  return (seat.reckonedCalls === 0)
+    ? ''
+    : `, ${String(seat.reckonedCalls,)} of them reckoned rather than reported`;
+}
+
+/**
  Renders a credit figure at the precision the provider quotes balances in.
  
  @param credits - what something came to
@@ -79,7 +98,8 @@ function pricedLine(
   return `  ${seat.model}: ${asCredits({ credits: seat.totalCredits, },)} credits (${share}) `
     + `over ${String(seat.calls,)} calls, `
     + `in ${String(seat.promptTokens,)}=${asCredits({ credits: seat.inputCredits, },)} `
-    + `out ${String(seat.completionTokens,)}=${asCredits({ credits: seat.outputCredits, },)}`;
+    + `out ${String(seat.completionTokens,)}=${asCredits({ credits: seat.outputCredits, },)}${
+     reckonedNote({ seat, },)}`;
 }
 
 /**
@@ -150,7 +170,8 @@ function usdLine(
 
   return `  ${seat.model}: ${asUsd({ usd: seat.costUsd, },)} USD (${share}) `
     + `over ${String(seat.calls,)} calls, `
-    + `in ${String(seat.promptTokens,)} out ${String(seat.completionTokens,)}${floor}`;
+    + `in ${String(seat.promptTokens,)} out ${String(seat.completionTokens,)}${floor}${
+     reckonedNote({ seat, },)}`;
 }
 
 /**
@@ -167,7 +188,8 @@ function usdLine(
  */
 function tokensOnlyLine({ seat, }: { readonly seat: SeatSpend; },): string {
   return `  ${seat.model}: ${String(seat.calls,)} calls, `
-    + `in ${String(seat.promptTokens,)} out ${String(seat.completionTokens,)}`;
+    + `in ${String(seat.promptTokens,)} out ${String(seat.completionTokens,)}${
+     reckonedNote({ seat, },)}`;
 }
 
 /**
@@ -330,6 +352,28 @@ async function reportSpendCost(): Promise<void> {
   }
 
   printCost({ cost: priceTally({ tally, },), },);
+
+  /**
+   Calls across every seat whose counts and cost were reckoned.
+   */
+  const reckonedCalls = tally.seats
+    .reduce(
+      function sum(
+        total,
+        seat,
+      ): number {
+    return total + seat.reckonedCalls;
+  },
+      0,
+    );
+
+  if (reckonedCalls > 0) {
+    console.log(
+      `RECKONED, NOT REPORTED: ${String(reckonedCalls,)} calls were written as reckonings, an attempt `
+        + 'abandoned before it finished or a Bedrock attempt at its bound, so their tokens and cost in the '
+        + 'figures above are estimates or bounds rather than what the wire said (ledger P14)',
+    );
+  }
 }
 
 if (import.meta.main)

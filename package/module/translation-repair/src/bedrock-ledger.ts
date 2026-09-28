@@ -14,7 +14,10 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { contextRoot, } from './log-context.ts';
 import { errorName, } from './error-name.ts';
 import { isJsonRecord, } from './json-guard.ts';
-import type { SpendReckoning, } from './spend-line.ts';
+import {
+  isSpendReckoning,
+  type SpendReckoning,
+} from './spend-line.ts';
 
 //region Bedrock ledger
 // THE METER THIS PROVIDER DOES NOT HAVE. Synthetic reports quotas, Charm Hyper
@@ -341,33 +344,6 @@ export function bedrockLedgerPathFrom(
 }
 
 /**
- Reckoning marks a ledger line may carry, the ones `spend-line.ts` names.
- */
-const RECKONINGS: readonly SpendReckoning[] = [
-  'abandoned',
-  'abandoned-bound',
-  'unreported-bound',
-];
-
-/**
- Whether a parsed field is a reckoning mark this package writes.
-
- @param value - field as the line carries it
-
- @returns Whether it names a reckoning
-
- @example
- ```ts
- if (isReckoning(estimated,)) return { ...entry, estimated, };
- ```
- */
-function isReckoning(value: unknown,): value is SpendReckoning {
-  return RECKONINGS.some(function isThis(reckoning,): boolean {
-    return reckoning === value;
-  },);
-}
-
-/**
  Reads one ledger line as an entry, naming the line when it will not read.
  
  @param text - one line of the file
@@ -457,7 +433,7 @@ function entryOf(
       completionTokens,
     };
   }
-  if (!isReckoning(estimated,))
+  if (!isSpendReckoning(estimated,))
     throw new BedrockLedgerShapeError({
       line,
       detail: 'estimated is not a reckoning this package writes',
