@@ -29,13 +29,19 @@ import {
   preparePassEntry,
   repairArchiveBlocks,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_OPENROUTER_DECISIONS,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_OPENROUTER_ONLY_CHECKER,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
+  type BenchSeating,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type PairedReading,
   type PipelineDigest,
+  type RosterModelId,
   type SyntheticClient,
   type UnclaimedTargetBlock,
 } from '../../dist/final/node/index.mjs';
@@ -320,6 +326,110 @@ await describe({
               return finding.includes('unclaimed archive blocks remain after the single correction round',);
             },),
         ).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+/**
+ Review roster a hook hands back after a dry-out, none of it the fixture's own.
+ */
+const RESEATED: readonly RosterModelId[] = [
+  SEAT_HYPER_ONLY,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_OPENROUTER_DECISIONS,
+  SEAT_OPENROUTER_ONLY_CHECKER,
+];
+
+/**
+ Reviews one unclaimed block, recording the seats asked.
+
+ @param beforeBlock - hook handing the block its roster, none for a caller
+ with no hook
+
+ @returns Seats the review calls asked
+
+ @example
+ ```ts
+ const asked = await reviewSeatsAsked({},);
+ ```
+ */
+async function reviewSeatsAsked(
+  { beforeBlock, }: { readonly beforeBlock?: () => Promise<BenchSeating>; },
+): Promise<readonly RosterModelId[]> {
+  /**
+   Seat of every call.
+   */
+  const asked: RosterModelId[] = [];
+  /**
+   Scripted reviewer removing the block.
+   */
+  const inner = correctionClient({
+    replacementFor: function replacement(): string {
+      return '';
+    },
+  },);
+  /**
+   One archive block the pairing left unclaimed.
+   */
+  const targetText = 'The cat won an award.';
+  /**
+   That block.
+   */
+  const blocks = [blockAt({ targetText, blockText: targetText, blockId: 'block/0', }),];
+  await repairArchiveBlocks({
+    client: {
+      chatText: inner.chatText,
+      chatJson: async (request,) => {
+        asked.push(request.modelId,);
+        return await inner.chatJson(request,);
+      },
+      quotas: inner.quotas,
+    },
+    modelIds: ROSTER,
+    targetText,
+    sourceContexts: new Map(blocks.map(function context(block,): readonly [string, string] {
+      return [archiveBlockIdentity({ block, targetText, }), '猫在睡觉。',] as const;
+    },),),
+    blocks,
+    signal: new AbortController().signal,
+    exchangeTimeoutMs: 5_000,
+    l,
+    ...((beforeBlock === undefined) ? {} : { beforeBlock, }),
+  },);
+  return asked;
+}
+
+await describe({
+  name: `${repairArchiveBlocks.name} re-seated under a hold (ledger X12)`,
+  children: [
+    it({
+      name: 'REVIEWS EACH BLOCK ON THE ROSTER ITS HOOK RETURNS, so a roster re-read after a provider dry-out '
+        + 'reviews the blocks after it rather than the roster read before it',
+      fn: async () => {
+        /**
+         Seats a caller with no hook asked.
+         */
+        const control = await reviewSeatsAsked({},);
+        /**
+         Seats asked when the hook re-seats the block elsewhere.
+         */
+        const moved = await reviewSeatsAsked({
+          beforeBlock: async (): Promise<BenchSeating> => ({ modelIds: RESEATED, }),
+        },);
+        expect({
+          controlOnRoster: (control.length > 0) && control.every(function onRoster(seat,): boolean {
+            return (ROSTER as readonly RosterModelId[]).includes(seat,);
+          },),
+          movedAskedAny: moved.length > 0,
+          outsideReseated: moved.filter(function outside(seat,): boolean {
+            return !RESEATED.includes(seat,);
+          },),
+        },).toEqual({
+          controlOnRoster: true,
+          movedAskedAny: true,
+          outsideReseated: [],
+        },);
       },
     },),
   ],

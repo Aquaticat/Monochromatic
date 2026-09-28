@@ -45,6 +45,7 @@ import {
   type RunClient,
   runPassConsolidation,
   runPassContest,
+  runPassPreparation,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -536,6 +537,71 @@ await describe({
          Seats asked once Synthetic reads dry after the lanes' reading.
          */
         const moved = await admissionAsked({ later: SYNTHETIC_DRY, },);
+        expect({
+          controlAskedLost: control.includes(LOST_ROSTER_SEAT,),
+          movedAskedAny: moved.length > 0,
+          movedAskedLost: moved.includes(LOST_ROSTER_SEAT,),
+        },).toEqual({
+          controlAskedLost: true,
+          movedAskedAny: true,
+          movedAskedLost: false,
+        },);
+      },
+    },),
+  ],
+},);
+
+/**
+ Runs the preparation seam over a two-paragraph page, which the pairing's
+ block round asks about, every seat pairing the blocks in order.
+
+ @param later - view every reading after the preparation's own answers
+
+ @returns Seats the preparation's calls asked
+
+ @example
+ ```ts
+ const asked = await preparationAsked({ later: SYNTHETIC_DRY, },);
+ ```
+ */
+async function preparationAsked({ later, }: { readonly later: BudgetView; },): Promise<readonly RosterModelId[]> {
+  /**
+   Seat of every call.
+   */
+  const asked: RosterModelId[] = [];
+  await using cacheDir = await throwawayCacheDir();
+  await runPassPreparation({
+    client: viewChangingClient({
+      later,
+      asked,
+      answer: JSON.stringify({ pairs: [{ source: 0, target: 0, }, { source: 1, target: 1, },], },),
+    },),
+    entryId: 'CatEntry',
+    entryCacheDir: cacheDir.dir,
+    pipelineDigest: DIGEST,
+    readPictures: async () => new Map(),
+    sourceText: `${SOURCE}\n\n它梦见了鱼。`,
+    targetText: `${ARCHIVE}\n\nIt dreamed of fish.`,
+    signal: AbortSignal.timeout(30_000,),
+  },);
+  return asked;
+}
+
+await describe({
+  name: 'preparation seam re-seats under a hold (ledger X14)',
+  children: [
+    it({
+      name: 'THE PREPARATION SEAM WIRES ITS HOOK: a pairing round after a dry-out asks the roster the hook '
+        + 're-read, never the seat the dry-out took, which a preparation whose view never changes does ask',
+      fn: async () => {
+        /**
+         Seats asked while every provider stays wet.
+         */
+        const control = await preparationAsked({ later: ALL_WET, },);
+        /**
+         Seats asked once Synthetic reads dry after the preparation's own reading.
+         */
+        const moved = await preparationAsked({ later: SYNTHETIC_DRY, },);
         expect({
           controlAskedLost: control.includes(LOST_ROSTER_SEAT,),
           movedAskedAny: moved.length > 0,

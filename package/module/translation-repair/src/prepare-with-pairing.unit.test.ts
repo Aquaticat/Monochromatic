@@ -30,7 +30,12 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
+  type BenchSeating,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type PairedSectionRecord,
+  type RosterModelId,
+  type SyntheticClient,
   type SliceCache,
 } from '../dist/final/node/index.mjs';
 
@@ -477,6 +482,116 @@ await describe({
         expect(calls,).toBe(0,);
         expect(warm.findings,).toEqual(cold.findings,);
         expect(warm.prepared.blockPairing,).toEqual(cold.prepared.blockPairing,);
+      },
+    },),
+  ],
+},);
+
+/**
+ Roster a hook hands back after a dry-out, none of it the fixture's own.
+ */
+const RESEATED: readonly RosterModelId[] = [
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+];
+
+/**
+ Builds a client recording which seat every call asked, each pairing the two
+ blocks in order.
+
+ @param asked - sink for the seat of every call
+
+ @returns Client serving only the pairing rounds
+
+ @example
+ ```ts
+ const client = pairingSeatClient({ asked: [], },);
+ ```
+ */
+function pairingSeatClient({ asked, }: { readonly asked: RosterModelId[]; },): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText not used',);
+    },
+    chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> => {
+      asked.push(request.modelId,);
+      /**
+       Pairing every seat gives.
+       */
+      const value: unknown = { pairs: [{ source: 0, target: 0, }, { source: 1, target: 1, },], };
+      if (!request.validate(value,))
+        throw new Error('scripted pairing reply failed validator',);
+      return { kind: 'ok', value, rawText: JSON.stringify(value,), };
+    },
+    quotas: async () => {
+      throw new Error('quotas not used',);
+    },
+  };
+}
+
+/**
+ Prepares the two-block fixture, recording the seats asked.
+
+ @param beforeSection - hook handing each round its roster, none for a caller
+ with no hook
+
+ @returns Seats the pairing calls asked
+
+ @example
+ ```ts
+ const asked = await pairingSeatsAsked({},);
+ ```
+ */
+async function pairingSeatsAsked(
+  { beforeSection, }: { readonly beforeSection?: () => Promise<BenchSeating>; },
+): Promise<readonly RosterModelId[]> {
+  /**
+   Seat of every call.
+   */
+  const asked: RosterModelId[] = [];
+  await prepareDocumentPairWithRoster({
+    client: pairingSeatClient({ asked, },),
+    modelIds: ROSTER,
+    sourceText: SOURCE_TEXT,
+    targetText: TARGET_TEXT,
+    signal: new AbortController().signal,
+    exchangeTimeoutMs: 5_000,
+    l,
+    ...((beforeSection === undefined) ? {} : { beforeSection, }),
+  },);
+  return asked;
+}
+
+await describe({
+  name: `${prepareDocumentPairWithRoster.name} re-seated under a hold (ledger X12)`,
+  children: [
+    it({
+      name: 'ASKS EACH PAIRING ROUND OF THE ROSTER ITS HOOK RETURNS, so a roster re-read after a provider '
+        + 'dry-out pairs the sections after it rather than the roster read before it',
+      fn: async () => {
+        /**
+         Seats a caller with no hook asked.
+         */
+        const control = await pairingSeatsAsked({},);
+        /**
+         Seats asked when the hook re-seats the rounds elsewhere.
+         */
+        const moved = await pairingSeatsAsked({
+          beforeSection: async (): Promise<BenchSeating> => ({ modelIds: RESEATED, }),
+        },);
+        expect({
+          controlOnRoster: (control.length > 0) && control.every(function onRoster(seat,): boolean {
+            return (ROSTER as readonly RosterModelId[]).includes(seat,);
+          },),
+          movedAskedAny: moved.length > 0,
+          outsideReseated: moved.filter(function outside(seat,): boolean {
+            return !RESEATED.includes(seat,);
+          },),
+        },).toEqual({
+          controlOnRoster: true,
+          movedAskedAny: true,
+          outsideReseated: [],
+        },);
       },
     },),
   ],

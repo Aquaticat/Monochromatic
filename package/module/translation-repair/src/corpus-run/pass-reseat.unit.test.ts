@@ -33,6 +33,7 @@ import {
   judgeSeatsFor,
   lanesHooksFor,
   picturesHooksFor,
+  preparationHooksFor,
   prepareDocumentPair,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_OPENROUTER_ONLY,
@@ -615,6 +616,67 @@ await describe({
           l,
         },);
         expect(await hooks.beforeCandidate(),).toEqual({},);
+        expect(rig.counter.reads,).toBe(0,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${preparationHooksFor.name} (ledger X12)`,
+  children: [
+    it({
+      name: 'RE-SEATS THE PREPARATION before an item while a hold runs, under its own phase, handing the item '
+        + 'the reading\'s roster, and keeps it once the hold has ended, so every later stage stays re-seated',
+      fn: async () => {
+        const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
+        rig.holds.synthetic = DRY_HOLD_MS;
+        /**
+         Every line the hook wrote.
+         */
+        const lines: string[] = [];
+        const hooks = preparationHooksFor({
+          client: rig.client,
+          signal: new AbortController().signal,
+          l: capturingLogger({ messages: lines, },),
+        },);
+        /**
+         Seating the hook hands the item under the hold.
+         */
+        const underHold = await hooks.beforeItem();
+        rig.holds.synthetic = 0;
+        /**
+         Seating handed over once the hold has ended.
+         */
+        const afterHold = await hooks.beforeItem();
+        /**
+         Roster a reading of this view seats.
+         */
+        const { roster, } = judgeSeatsFor({ dry: BEDROCK_AND_OPENROUTER, },);
+        expect({
+          underHold,
+          afterHold,
+          reads: rig.counter.reads,
+          logged: lines.includes(`JUDGE SEATS phase=preparation stage re-seated under a hold: roster=${roster.join(',',)}`,),
+        },).toEqual({
+          underHold: { modelIds: roster, },
+          afterHold: { modelIds: roster, },
+          reads: 1,
+          logged: true,
+        },);
+      },
+    },),
+    it({
+      name: 'COSTS NOTHING while nothing is held: no dryness read and no roster, so the item keeps the one '
+        + 'the preparation started on',
+      fn: async () => {
+        const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
+        const hooks = preparationHooksFor({
+          client: rig.client,
+          signal: new AbortController().signal,
+          l,
+        },);
+        expect(await hooks.beforeItem(),).toEqual({},);
         expect(rig.counter.reads,).toBe(0,);
       },
     },),
