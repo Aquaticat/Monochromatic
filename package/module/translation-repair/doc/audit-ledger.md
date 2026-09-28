@@ -919,6 +919,13 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
     The heredoc repeat came after the rule "a Bash call that holds `<<` holds nothing else" was recorded,
     so the prevention stays the same and is now applied without exception:
     edit scripts go through the Write tool and run alone.
+- The Write tool decodes `\u2028` and `\u2029` in the content it is given into the raw characters
+    (it left `\u0085` as text), so a source file written with those escapes held raw line separators,
+    which `no-multi-str` flagged in `sheet-line-text.ts` and which reached `sheet-line-text.unit.test.ts` unflagged.
+    Found by reading the bytes; fixed by a Python pass writing the escape text.
+    Prevention: a file whose source must spell a line separator as an escape is written or patched by a script
+    that builds the escape from its parts, then checked with `rg` for the raw characters,
+    against a positive control that proves the search can match one.
 - A capped search taken as complete (QRY): before `7ceffe055` changed two card prices,
     the search for tests pinning the old ones ran through `head --lines=10`,
     which cut off `deepseek-v41-admission.unit.test.ts`; the full suite caught it and `bc69e2336` fixed it.
@@ -2407,7 +2414,7 @@ the preservation-check claims.
 
 ### L14: smaller items
 
-Status: (a) fixed; (b), (c) and (d) open.
+Status: (a) and (d) fixed; (b) and (c) open.
 
 #### L14(a): the resolution checker sheet carried none of the panel's evidence
 
@@ -2475,7 +2482,8 @@ It tells judges a decline keeps the trusted text while an indecision ships the s
 
 #### L14(d): model-written and quoted text rendered raw on line-based sheets
 
-Status: open, found while fixing L14(a).
+Status: fixed in `3be658509`, guarded red first in `25d549aea`, with every line end pinned in `bfc458ad3`;
+found while fixing L14(a).
 The panel sheet renders each evidence quote raw after `- evidence (SIDE): `,
 and both the panel and checker sheets render each claim summary raw.
 349 quotes and 3 of 23,714 summaries over every artifact carry a line break,
@@ -2483,6 +2491,25 @@ so their later lines stand as unlabelled lines between claims.
 None opened a `CLAIM`, `GROUP`, `ISSUE` or `REGION` line in the artifacts measured,
 but a quote or summary may,
 and a forged opening line renumbers every ballot after it.
+The same raw summary split the filing log lines (`claim-filers.ts`),
+so every line after the first lost its chunk tag,
+and the grading sheet rendered quotes raw where the repair sheet folded them.
+
+The fix (`sheet-line-text.ts`):
+a summary is one sentence of prose and folds onto one line with `flattenSpace`
+(moved there from `introduced-defect-screen.ts`, since the probe wire now needs it and the screen imports the wire);
+a panel quote is evidence and keeps its lines,
+each later one indented under its evidence item by `indentContinuation`,
+so 99 percent of panel quotes stay byte-identical;
+the grading sheet folds quotes as the repair sheet did;
+the checker JSON also escapes NEL, LS and PS, which `JSON.stringify` leaves raw.
+The helper treats LF, VT, FF, CR, NEL, LS and PS as line ends and CR LF as one;
+none of the 45,860 quotes carried VT, FF, NEL, LS or PS
+(`~/temp/agent/audit-glossary-fix/l14-unicode-breaks.mjs`), so those are covered for the class, not for a seen case.
+Mutation check: 20 mutants over each fold, the indent, CR LF and each line end, all caught,
+with the control surviving in a separate run
+(the first spec's control pattern opened and closed the region, so the harness skipped it).
+Cache: rides inside repair 34 and refine 5, same check, same result.
 
 ## Docs and comments against code
 

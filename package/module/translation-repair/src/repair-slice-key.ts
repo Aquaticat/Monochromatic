@@ -423,6 +423,12 @@ import type { RepairModels, } from './repair-contract.ts';
  changes the ballots that decide resolution and strip edits; checked again on
  2026-09-28: the only slice-cache file not older than 00:26 on 2026-09-27 is
  the consolidation entry written that minute.
+
+ Rides inside 34 too: claim summaries fold onto one line on the panel,
+ checker, editor and probe sheets, and a panel quote keeps its later lines
+ indented under its evidence item (ledger L14(d), `3be658509`), which changes
+ the sheets of any slice whose claims carry a line break; same check, same
+ result.
  */
 export const SLICE_CACHE_VERSION = 34;
 /**

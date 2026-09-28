@@ -137,6 +137,10 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  `resolution-sheet-evidence.ts`), and one worse ballot rolls the rewrite
  back; checked again on 2026-09-28: the only slice-cache file not older than
  00:26 on 2026-09-27 is the consolidation entry written that minute.
+
+ Rides inside 5 too: claim summaries fold onto one line on the probe and
+ recheck sheets the phase sends (ledger L14(d), `3be658509`); same check, same
+ result.
  */
 export const REFINE_CACHE_VERSION = 5;
 
