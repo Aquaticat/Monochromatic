@@ -332,6 +332,9 @@ Part of [the package README](../README.md).
   "Recheck the rewrite".
   The rewrite faces a checker round against the slice's accepted issues and the regression probe,
   and a rewrite the checkers find worse keeps the text before it (ledger L11).
+  DECIDED FOR QUALITY, 2026-09-28, under the standing directive below:
+  a rewrite the regression probe admits a claim against keeps the text before it too;
+  175 of 2,144 kept rewrites carried one, and a graded reading of flagged regions found six of ten true.
 - **Inside a licensed quote, an edit keeps the markup atoms its issue does not license it to remove.**
   Owner, 2026-09-28, asked what the editor's preservation gate should protect inside a quote an edit may change,
   where it could never reject anything:

@@ -101,6 +101,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  (ledger L11, `462c514ee`), so a stored settlement may now be a rollback and
  carries that round's readings; checked on 2026-09-28: still no slice-cache
  file newer than 00:26 on 2026-09-27.
+
+ Rides inside 5 too: a rewrite the damage probe admits a claim against now
+ keeps the text before it, with no report attached (ledger L11, `d41ad44c4`),
+ so a stored settlement may be that rollback; checked on 2026-09-28: still no
+ slice-cache file newer than 00:26 on 2026-09-27.
  */
 export const REFINE_CACHE_VERSION = 5;
 

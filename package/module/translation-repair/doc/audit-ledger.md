@@ -2190,8 +2190,10 @@ and rolls the whole slice back when a confirmed issue is no longer resolved or a
 the threshold the owner ruled the same day for a patch's unconfirmed edits (L3).
 A `fixed` ballot on an open issue credits nothing: the round is a rollback gate.
 Rejected and needs-human issues buy no round.
-The introduced-defect probe already ran on every kept rewrite, in the shadow role it has in the accuracy lane,
+The introduced-defect probe already ran on every kept rewrite,
 and its comment claiming every rewritten slice had its issues repaired is corrected.
+Its role was first left as in the accuracy lane, deciding nothing directly;
+the owner's answer to that question (2026-09-28) made it a quality call, below.
 Scope beyond the question's wording: an accepted issue a winning patch left open is checked by the same rule,
 since the rewrite was never shown it either; the ruling's mechanism, not a new one.
 Mutation check (`l11-mutants.json`): leaving the open issues out of the round, never rolling back on them,
@@ -2199,6 +2201,26 @@ a worse majority in place of one ballot, dropping the status filter, and crediti
 the comment-wording control survives.
 Cache: rides inside refine version 5 with an account in `refine-slice-key.ts`.
 
+THE PROBE ROLLS A REWRITE BACK, decided for quality under the owner's standing directive
+(guard `9e01c7133`, fix `d41ad44c4`).
+Measured over every run (`l11-probe-census.mjs`): 175 of 2,144 kept rewrites carried a claim the screen admitted
+(151 added damage, 25 removal), against 409 of 3,081 accuracy reports;
+only 9 carried two or more, so requiring agreement would catch almost none.
+`corroborated` in the report means the differential bore the quote out, one prober's claim sufficing;
+the `ClaimTotals` comment saying a second prober confirmed it was wrong and is corrected.
+The one graded reading of flagged regions (`doc/planning/translation-repair-roster-calibration-2026-09-01.md`,
+2026-09-03) found six of ten true, three false and one borderline,
+so rolling back reverts roughly twice as many damaged rewrites as fluent ones,
+and what comes back is text a checker round or the archive already stood behind.
+A rewrite with any admitted claim now keeps the text before it,
+with `refine-rolled-back-by-probe (<added> added-damage and <dropped> removal claims ...)` in the findings;
+its report is not attached, because the lane contest reads `refinementDefects` as evidence against the text that ships.
+The probe module's header no longer says nothing reads the report.
+Over an accuracy patch the probe still decides nothing directly:
+a rollback there would discard edits fixing panel-confirmed defects on the same six-in-ten signal.
+Mutation check (`l11b-mutants.json`): never rolling back, ignoring added-damage claims, ignoring removal claims,
+and attaching the report on a rollback are each caught; the comment-wording control survives.
+Cache: rides inside refine version 5 with an account in `refine-slice-key.ts`.
 ### L12: logging gaps in the repair lane
 
 Status: open (with A11).
