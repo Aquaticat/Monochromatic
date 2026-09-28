@@ -34,7 +34,7 @@ import {
 // The audit of 2026-09-26 widened the pass. Inflections of listed stems and
 // the forms the house policy names (ledger K3). A capitalised word opening a
 // sentence or standing in a title-case heading, which the first pass took for
-// a name (ledger K11: the archive's "## Heaven’s Favor" for 上天的眷顾); a
+// a name (ledger K11, K14: `Chinatsu_Suzuki/page.en.md:29`, a heading); a
 // capital mid-sentence, after a title, before another capital, inside
 // emphasis or in capitals still names someone or a work and keeps its
 // spelling. English the original itself writes keeps its spelling (ledger

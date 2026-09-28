@@ -36,7 +36,7 @@ function parent({ sourceText, targetText, }: {
 }
 
 await describe({ name: blockPairingQuestion.name, children: [
-  it({ name: 'preserves the established numbered texts and version-two cache key', fn: async (): Promise<void> => {
+  it({ name: 'preserves the established numbered texts and version-three cache key', fn: async (): Promise<void> => {
     /** Complete source and archive paragraphs. */
     const pair = parent({ sourceText: '猫睡了。\n\n它喜欢盒子。', targetText: 'The cat slept.\n\nShe loves boxes.', },);
     /** Actual shared question. */
@@ -45,7 +45,7 @@ await describe({ name: blockPairingQuestion.name, children: [
     expect(question.targetBlocks,).toEqual([{ index: 0, text: 'The cat slept.', }, { index: 1, text: 'She loves boxes.', },]);
     expect(question.freeOrder,).toEqual({ source: new Set(), target: new Set(), });
     expect(question.key,).toBe(createHash('sha256',)
-      .update('2\u0000猫睡了。\u0000它喜欢盒子。\u0000\u0000\u0000The cat slept.\u0000She loves boxes.', 'utf8',)
+      .update('3\u0000猫睡了。\u0000它喜欢盒子。\u0000\u0000\u0000The cat slept.\u0000She loves boxes.', 'utf8',)
       .digest('hex',));
   }, },),
   it({ name: 'numbers definition exemptions within the current parent on each side', fn: async (): Promise<void> => {

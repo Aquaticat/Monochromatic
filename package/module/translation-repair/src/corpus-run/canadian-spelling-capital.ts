@@ -17,8 +17,8 @@ import {
 // Whether a capitalised listed word's capital opens a sentence or styles a
 // title-case heading, so the word is respelled with its capital kept, or
 // names someone or a work, so it keeps its spelling (ledger K11: the first
-// pass took every capital for a name, and the archive's "## Heaven’s Favor"
-// for 上天的眷顾 shipped American).
+// pass took every capital for a name, and a title-case archive heading with an
+// American spelling shipped unconverted, `Chinatsu_Suzuki/page.en.md:29`).
 
 /**
  Characters that may open a line before its first word: space, heading,

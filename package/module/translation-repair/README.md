@@ -187,11 +187,21 @@ writes every date month first
 (day first, year first, a range sharing one month, an abbreviated month),
 with the month in full, no ordinal suffix and the year set off by commas on both sides
 ("On 4th May 2024 the cat" becomes "On May 4, 2024, the cat"),
-and respells a closed list of lower-case words (colour, centre, grey, licorice, realize and others),
-outside front matter, markup, attributes, links, code, comments and spans sealed as the English original;
+and respells a closed list of words with no second sense
+(the -our and -ise families with their inflections, and pairs such as centre, counsellor, enrolment,
+grey, licorice, judgment and program; `src/corpus-run/canadian-spelling-words.ts`),
+outside front matter, tags, attributes, link destinations, code, comments,
+identifiers, paths and spans sealed as the English original;
 each change prints `canadian-form-rewritten`.
-Names, titles and quoted English keep their own spelling,
-so a capitalised word is never respelled.
+Where Canadian sources disagree, McGill's language guidelines decide
+(counsellor, enrolment, program), and fulfill and skillful, on which McGill is silent, stand as written.
+Names, titles and quoted English keep their own spelling:
+a capital mid-sentence, after a title such as "Mr.", before another capital,
+in a sentence-case heading, in emphasis or in capitals throughout is kept,
+while a capital that opens a sentence or styles a title-case heading is respelled with its capital
+("## The Cat’s Favor" becomes "## The Cat’s Favour"),
+and a word the slice's original itself writes in English keeps its spelling.
+"Mum" becomes "mom" after a possessive and as a capitalised form of address.
 The convention covers translated pages only, not the repository's own prose
 (owner, 2026-09-25: "Translated pages only").
 

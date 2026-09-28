@@ -68,7 +68,7 @@ await describe({
         expect(cold.findings.join(' ')).toContain('section 7 paired 2 of 2');
         const [storedRecord] = f.writes;
         if (storedRecord === undefined) throw new Error('expected persisted parent record');
-        const expectedKey = createHash('sha256').update('2\u0000猫睡了。\u0000它喜欢盒子。\u0000\u0000\u0000The cat slept.\u0000She loves boxes.', 'utf8').digest('hex');
+        const expectedKey = createHash('sha256').update('3\u0000猫睡了。\u0000它喜欢盒子。\u0000\u0000\u0000The cat slept.\u0000She loves boxes.', 'utf8').digest('hex');
         expect(storedRecord.key).toBe(expectedKey);
         expect(storedRecord.serialized).toBe(JSON.stringify({ pairs: [{ source: 0, target: 0 }, { source: 1, target: 1 }], findings: cold.findings }));
         const warm = await prepareBlockPairing(f.input);

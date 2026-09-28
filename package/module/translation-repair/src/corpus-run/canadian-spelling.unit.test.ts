@@ -3,8 +3,8 @@
  K3, K7, K9, K10, K11, H14): inflections of listed stems and forms the house
  policy names were left ("honoring", "counselor", "summarised", "judgement",
  "programmes", "my mum"), a capitalised word opening a sentence or standing
- in a title-case heading was never respelled ("## Heaven’s Favor" shipped on
- an archive slice), quoted English the original carries was respelled, an
+ in a title-case heading was never respelled (the heading at `Chinatsu_Suzuki/page.en.md:29`
+ shipped unconverted), quoted English the original carries was respelled, an
  underscore or slash beside a word stopped it, "id" inside "idée" or "id3"
  became "ID", and a quote mark in a JSX comment or a stray backtick shielded
  the rest of the text.

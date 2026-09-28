@@ -288,12 +288,25 @@ A hyphen opens one only right after the date before it ("2 June-3 July"), so "CO
 
 ### K3: the closed word list leaves non-Canadian forms, including ones the house policy names
 
-Status: open.
+Status: fixed in `1873b23dc` (guards `8ef3bdaec`).
 Missing inflections of listed stems,
 "judgement" and "summarise" shipped on XingZ6012 to XingZ6014,
 "counselor",
 "programmes",
 "my mum".
+The list is now built from -our and -ise stem families,
+each crossed only with endings that keep the Canadian letter
+(`src/corpus-run/canadian-spelling-stems.ts`: "honourable" but "honorary", "humourless" but "humorous"),
+plus explicit pairs (`canadian-spelling-pairs.ts`).
+Where Canadian sources split, McGill's language guidelines, the house policy's source, decide:
+"counsellor, not counselor", "enrolment, not enrollment", "program, not programme";
+"fulfill" and "skillful", on which McGill is silent and the Ryerson guide writes with two l's, stand.
+"mum" becomes "mom" after a possessive and as a capitalised form of address.
+A replay over the 364 archive and settled pages makes 52 distinct respellings, every one correct
+(counselor 39, enrollment 25, harbor 9, splendor 7, quarreled 6, marginalised 4 and the -ise verbs among them),
+and leaves only forms Canadian shares or the owner's sources leave open.
+A test holds 25 words that must never change (humorous, humoral, honorary, laborious, coloration,
+analyses, paralyses, meter, check, tire, license, practice, fulfill, skillful, the root -ise words and others).
 
 ### K4: ordinal and year-first dates left alone
 
@@ -327,8 +340,13 @@ Its spelling test checks four forms.
 
 ### K7: `prose-ranges.ts` protects too much
 
-Status: open.
+Status: fixed in `1873b23dc` and `dc325d847` (guards `8ef3bdaec`, `18c2bc00f`).
 A quote mark inside a JSX comment and a stray backtick protect the rest of the text.
+A JSX expression now skips its comments, a quote mark with no partner on its line inside an expression
+is a stray apostrophe (a tag's attribute value may still run on across lines),
+and a backtick run closes only at a run of the same length inside its paragraph, else it is literal (CommonMark).
+The Han-residue floor reads these ranges too, so the change rides inside translate 15 and consolidation 20
+and moved lane contest to 6 (M28).
 
 ### K8: small wrong rewrites
 
@@ -350,23 +368,63 @@ the Canadian form tests failed every time.
 
 ### K9: quoted lowercase English is respelled though the README says it is kept
 
-Status: open.
+Status: fixed in `1873b23dc` (guard `8ef3bdaec`).
+Every page rewrite now receives the slice's original (`page-slice-rewrite.ts`),
+and a word the original writes in English in its prose keeps its spelling.
+No pinned source carries a listed English word outside markup attributes, so the corpus holds no instance;
+the unit case and its mutant are the evidence.
 
 ### K10: underscore and slash edges
 
-Status: open.
+Status: fixed in `1873b23dc` (guard `8ef3bdaec`).
+An underscore or a dot stops a word only with a letter or digit on its far side (an identifier, a file name);
+a slash stops it only inside a token that reads as a path or address
+(a leading `/`, `~`, `./` or `../`, a dotted name, a colon, an equals sign or a backslash).
+No corpus instance.
 
 ### K11: capitalized listed words at a sentence start are never respelled
 
-Status: open.
+Status: fixed in `1873b23dc` and `70a2a73ca` (guard `8ef3bdaec`, cases `031275d29`).
+A capital opening a sentence, a paragraph or a marked line, or styling a title-case heading,
+is respelled and keeps its capital
+(`canadian-spelling-capital.ts`).
+A capital mid-sentence, after a title or an initial, before another capital,
+in a sentence-case heading, in emphasis or in capitals throughout still names someone or a work;
+"Gray" and "Id" stay capitalised as names wherever they stand.
+A line that only continues its paragraph opens no sentence.
+No sentence-start instance in the corpus; see K14 for the heading instance.
 
 ### K12: test names claim more than they check
 
-Status: open.
+Status: fixed in `403db3c6e`.
+The audit's specifics were not recorded, so the Canadian test names were read afresh against their checks.
+Three overclaimed:
+"LEAVES markup, links, code, comments and emphasis untouched" (link text and emphasised lower-case words are rewritten),
+"RESPELLS the closed word list in lower case" (capitals now respell too),
+and "the house policy writes its own words in Canadian spelling" (it checks four -ise forms;
+`sheet-canadian-spelling.unit.test.ts` checks every word).
 
 ### K13: the house policy's "-re" line omits "meter" the device
 
-Status: open.
+Status: fixed in `403db3c6e`; accounted inside translate 15, consolidation 20, repair 33 and refine 5.
+The line now names metre for the unit and meter for the device that measures.
+
+### K14: a title-case heading is never respelled
+
+Status: fixed in `1873b23dc` (guard `8ef3bdaec`).
+Found by the spelling census of 2026-09-28: the pinned archive's `Chinatsu_Suzuki/page.en.md:29`,
+a section heading translating its original's line 29, carries an American -or spelling in title case,
+and the first pass took the capital for a name.
+Title case makes capitals styling, so a listed word there is respelled with its capital;
+a sentence-case heading's mid-line capital still names someone.
+The replay respells it.
+
+### Spelling mutation check
+
+26 guards broken one at a time, with an unchanged-source control that must pass:
+24 caught at first, and the two survivors (the combining-accent branch, the JSX-comment skip)
+were caught once `18c2bc00f` gave them cases only they can pass.
+A first run reported every mutant alive because its filter dropped every assertion line (M27).
 
 ## Consolidation gate
 
@@ -2333,6 +2391,42 @@ Each version file says the bump is enforced by nothing and was missed before.
 Prevention: a commit that changes a floor, a sheet, a threshold or a settlement rule in the translate, consolidation
 or repair path names in its message which cache version it moves, or why none moves;
 and before any run launches, the versions are checked against `git log` since each one last moved.
+
+### M26: a lint autofix changed what the code does
+
+Status: caught before it reached a run; corrected in `70a2a73ca`, 2026-09-28.
+`oxlint --fix` applied `unicorn(prefer-set-has)` to a string: `prefix.includes('- ')` became
+`new Set(prefix).has('- ')`, a set of single characters that no two-character list marker can match,
+so a list item's first word never opened a sentence.
+The red guard caught it; the commit before the fix had been made after the autofix, unreviewed.
+The date modules' autofix (`e9065faef` to `2efc90630`) was read line by line afterwards and is layout only.
+Prevention: commit before `--fix`, read `git diff` after it for anything but layout,
+and run the guards on the fixed code before trusting it.
+
+### M27: a mutation harness that could not report a catch
+
+Status: caught by its own result, 2026-09-28; the verdicts were discarded and the check rerun.
+The spelling mutation script dropped every output line containing "Error: " to skip the suite's summary line,
+and every assertion failure reads "AssertionError: ", so all 26 mutants printed SURVIVED.
+A null result from a probe never shown able to fail is no result (the M21 family, one level up).
+Prevention: every mutation run opens with controls,
+an unchanged source that must pass and a mutant that must fail, before any verdict is read.
+
+### M28: the M25 correction checked three of six cache versions
+
+Status: corrected in the commit that moved the lane contest to 6 and pairing to 3, 2026-09-28.
+M25's check walked the translate, consolidation and repair versions and stopped there.
+The lane contest (version 5 since 2026-08-29) kept its number through changes to its sheet, its eligibility floor,
+its windows and its quorum, and its ballots were cached under version 5 on fifteen days of changing sheets;
+pairing (version 2 since 2026-08-29) kept its number through windowed rounds and bench-sized quorums;
+refine (version 5 since 03:34 on 2026-09-27) carried house-rule changes with no account.
+Found while accounting for K13, whose house-rule line reaches every one of those sheets.
+The page-assembly Canadian pass is outside every key, but the prose ranges it shares with the Han-residue floor are not;
+that too was nearly missed.
+Prevention: M25's pre-launch check lists every `*CACHE_VERSION` constant in `src`
+(`rg 'CACHE_VERSION[A-Z_]* = ' src`), not the ones remembered,
+and for each one runs `git log` since it last moved over every file its stage's sheet or floors import,
+the shared house rules and prose ranges included.
 
 ### M15: a finding carried and a fix started against an owner ruling
 
