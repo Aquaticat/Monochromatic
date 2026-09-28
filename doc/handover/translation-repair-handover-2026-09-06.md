@@ -4932,13 +4932,15 @@ each read off the pass log and the shipped page:
     real defect filed neutral (`fb6c06cca`), guards `266a0891a`, `aa7f4e360`, `c53d5c717`, `925b85a8f`, all
     mutants caught; `SLICE_CACHE_VERSION` 34 (`ef20e7978`), the first number spent while a run held the last
     (TianqiChen66621 wrote 28 slice-cache files under 33); docs `dd9bd179c`. Full suite after `ef20e7978`:
-    1,230 passed, 0 failed. RESTART, 2026-09-28 ~11:00: the waiter task died with the session; the pass itself
-    runs in its systemd scope `pass-TianqiChen66621` (pid 431565). Relaunch the waiter in the background:
-    `mise exec -- node ~/temp/agent/audit-glossary-fix/wait-TianqiChen66621.mjs`.
-    L5 IN PROGRESS, the footnote sub-item (ledger L5, "Footnote definitions outside the slice"): census and
-    design recorded there; next, run `l5-footnote-window.mjs`, then red guard in `fidelity-window.ts`.
-    NEXT AFTER L5: L10, L14, L12, L13 and the D series; read TianqiChen66621 when it ends. DEFERRED PAST
-    THE LAUNCH: L6 (task 401), H5's consolidation half.
+    1,230 passed, 0 failed. After the restart the waiter was relaunched; TIANQICHEN66621 SETTLED in 52.8 min:
+    24 slices, 148 repair issues, 91 accepted, 85 resolved, every slice changed, no DEFECTS line; its page is
+    `~/temp/agent/TianqiChen66621/fixed/people/TianqiChen666/page.en.md`, not yet read against the source.
+    L5 FOOTNOTE ITEM: PREMISE REFUTED. Seven commits threaded footnote definitions into every window on the
+    audit's claim that no sheet showed them; entry notes have carried every definition to every sheet since
+    `12ed82cee`, so the change was reverted (`80a18dd53`) and M32 records the mistake. The remedy in progress is
+    `DECLARED_IDENTITY_RULES`' framing, which calls note lines vocabulary for the terms they name "and nothing else".
+    NEXT: that rule fix with its cache accounts, the rest of L5, then read TianqiChen66621's page; then L10,
+    L14, L12, L13 and the D series. DEFERRED PAST THE LAUNCH: L6 (task 401), H5's consolidation half.
     Probe scripts, the single-file runner (`run-files.ts`) and the mutation harness (`mutants.ts`, JSON spec)
     live in `~/temp/agent/audit-glossary-fix/`, which survives a reboot; the scratchpad did not.
     AUDIT IN PROGRESS (owner 2026-09-27: "audit the whole translation-repair pkg for all the mistakes we've
