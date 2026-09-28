@@ -10,6 +10,11 @@ import {
   type TagReading,
 } from './tag-attributes.ts';
 
+import {
+  applySpanRewrites,
+  type SpanRewrite,
+} from './span-rewrites.ts';
+
 //region JSX attribute restore
 // CLASS NINETY-NINE (XingZ630, 2026-09-23). The original's dotted section
 // markers `<DottedNumber n="二"/>` to `<DottedNumber n="七"/>` reached the
@@ -141,8 +146,8 @@ function attributeRewrites(
 }
 
 /**
- Page text with the rewrites applied, from the last forward so earlier
- offsets stay true.
+ Page text with the rewrites applied, through the applier every page pass
+ shares (`span-rewrites.ts`).
 
  @param text - page text of the slice
 
@@ -164,19 +169,17 @@ function applyRewrites(
     readonly rewrites: readonly AttributeRewrite[];
   },
 ): string {
-  return rewrites.toReversed()
-    .reduce(
-      function apply(
-        current,
-        rewrite,
-      ): string {
-        return `${current.slice(
-          0,
-          rewrite.start,
-        )}${rewrite.value}${current.slice(rewrite.end,)}`;
-      },
-      text,
-    );
+  return applySpanRewrites({
+    text,
+    rewrites: rewrites.map(function asSpan(rewrite,): SpanRewrite {
+      return {
+        start: rewrite.start,
+        end: rewrite.end,
+        to: rewrite.value,
+      };
+    },),
+  },)
+    .text;
 }
 
 /**

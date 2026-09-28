@@ -11,6 +11,8 @@ import {
   protectedRanges,
 } from './prose-ranges.ts';
 
+import { applySpanRewrites, } from './span-rewrites.ts';
+
 //region Canadian forms
 // CLASS ONE HUNDRED THIRTY-FOUR (hulicaijia19, 2026-09-25): the page is
 // Canadian English (class one hundred thirty-two, owner 2026-09-25: "The
@@ -136,8 +138,8 @@ export function canadianizeText(
    */
   const ranges = protectedRanges({ text, },);
   /**
-   Every rewrite, dates and spellings, in order; a date's span never holds a
-   listed word, so the two never overlap.
+   Every rewrite, dates and spellings; a date's span never holds a listed
+   word, so the two never overlap, and the applier withholds any that would.
    */
   const rewrites: readonly FormRewrite[] = [
     ...monthFirstDates({
@@ -149,46 +151,18 @@ export function canadianizeText(
       ranges,
       kept: englishWordsOf({ source, },),
     },),
-  ].toSorted(function byStart(
-    left,
-    right,
-  ): number {
-    return left.start - right.start;
-  },);
+  ];
   /**
-   Text rebuilt around the rewrites.
+   Text with the rewrites applied, and the rewrites that were.
    */
-  const rebuilt = rewrites.reduce(
-    function splice(
-      built,
-      rewrite,
-    ): {
-      readonly parts: readonly string[];
-      readonly from: number
-    } {
-      return {
-        parts: [
-          ...built.parts,
-          text.slice(
-            built.from,
-            rewrite.start,
-          ),
-          rewrite.to,
-        ],
-        from: rewrite.end,
-      };
-    },
-    {
-      parts: [] as readonly string[],
-      from: 0,
-    },
-  );
+  const rebuilt = applySpanRewrites({
+    text,
+    rewrites,
+  },);
   return {
-    text: [
-      ...rebuilt.parts,
-      text.slice(rebuilt.from,),
-    ].join('',),
-    changed: rewrites.map(function describe(rewrite,): string {
+    text: rebuilt.text,
+    changed: rebuilt.applied
+      .map(function describe(rewrite,): string {
       return `"${rewrite.from}" to "${rewrite.to}"`;
     },),
   };

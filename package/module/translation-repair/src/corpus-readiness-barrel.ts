@@ -26,6 +26,10 @@ export {
   canadianizeText,
 } from './corpus-run/canadian-forms.ts';
 export { restoreListSpread, } from './corpus-run/list-spread-restore.ts';
+export {
+  applySpanRewrites,
+  type SpanRewrite,
+} from './corpus-run/span-rewrites.ts';
 export { restoreNameGlossLines, } from './corpus-run/name-gloss-restore.ts';
 export { unifyQuoteStyle, } from './corpus-run/quote-style-unify.ts';
 export { unwrapBlockquoteQuotes, } from './corpus-run/blockquote-quote-unify.ts';

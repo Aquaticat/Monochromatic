@@ -12,6 +12,8 @@ import {
   protectedRanges,
 } from './prose-ranges.ts';
 
+import { applySpanRewrites, } from './span-rewrites.ts';
+
 //region Archive name casing
 // CLASS ONE HUNDRED THIRTY-SIX (hulicaijia20, 2026-09-25): the archive names
 // a street "Jiefangbei Pedestrian Street" mid-sentence in the body and again
@@ -146,7 +148,8 @@ function recaseNames(
   readonly rewrites: readonly NameRewrite[];
 } {
   /**
-   Every rewrite any form asks for, longest first where two start together.
+   Every rewrite any form asks for; the applier orders them, the longer first
+   where two start together, and withholds any that overlaps one before it.
    */
   const asked = [...forms,]
     .flatMap(function rewritesFor(form,): readonly NameRewrite[] {
@@ -175,65 +178,17 @@ function recaseNames(
         .filter(function restorable({ from, },): boolean {
           return (from !== form) && from.startsWith(`${firstWord} `,);
         },);
-    },)
-    .toSorted(function byStart(
-      left,
-      right,
-    ): number {
-      return (left.start - right.start) || (right.end - left.end);
     },);
   /**
-   Rewrites kept, none overlapping an earlier one.
+   Text with the rewrites applied, and the rewrites that were.
    */
-  const rewrites = asked.reduce<NameRewrite[]>(
-    function apart(
-      kept,
-      rewrite,
-    ): NameRewrite[] {
-      /**
-       Last rewrite kept.
-       */
-      const previous = kept.at(-1,);
-      if ((previous === undefined) || (rewrite.start >= previous.end))
-        kept.push(rewrite,);
-      return kept;
-    },
-    [],
-  );
-  /**
-   Text rebuilt around the rewrites.
-   */
-  const rebuilt = rewrites.reduce(
-    function splice(
-      built,
-      rewrite,
-    ): {
-      readonly parts: readonly string[];
-      readonly from: number;
-    } {
-      return {
-        parts: [
-          ...built.parts,
-          text.slice(
-            built.from,
-            rewrite.start,
-          ),
-          rewrite.to,
-        ],
-        from: rewrite.end,
-      };
-    },
-    {
-      parts: [] as readonly string[],
-      from: 0,
-    },
-  );
+  const rebuilt = applySpanRewrites({
+    text,
+    rewrites: asked,
+  },);
   return {
-    text: [
-      ...rebuilt.parts,
-      text.slice(rebuilt.from,),
-    ].join('',),
-    rewrites,
+    text: rebuilt.text,
+    rewrites: rebuilt.applied,
   };
 }
 

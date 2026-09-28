@@ -2,6 +2,11 @@ import type { ChunkPair, } from '../chunk-document.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import { slicesInOrder, } from './assembly-page-text.ts';
 
+import {
+  applySpanRewrites,
+  type SpanRewrite,
+} from './span-rewrites.ts';
+
 //region Archive casing restore
 // THE ONE HUNDRED AND TWENTY-FIRST CLASS (mikaela17, 2026-09-25). The archive
 // writes a romanised station name in capitals, "XIAWAFANG Station", in the
@@ -292,42 +297,26 @@ function recase(
         },));
     },);
   /**
-   Text rebuilt around the rewritten words.
+   Text with the words upper-cased, and the words that were.
    */
-  const pieces = targets.reduce(
-    function splice(
-      built,
-      {
-        word,
-        start,
-      },
-    ): {
-      readonly parts: readonly string[];
-      readonly from: number;
-    } {
+  const rebuilt = applySpanRewrites({
+    text,
+    rewrites: targets.map(function toRewrite({
+      word,
+      start,
+    },): SpanRewrite & { readonly word: string; } {
       return {
-        parts: [
-          ...built.parts,
-          text.slice(
-            built.from,
-            start,
-          ),
-          word.toUpperCase(),
-        ],
-        from: start + word.length,
+        start,
+        end: start + word.length,
+        to: word.toUpperCase(),
+        word,
       };
-    },
-    {
-      parts: [] as readonly string[],
-      from: 0,
-    },
-  );
+    },),
+  },);
   return {
-    text: [
-      ...pieces.parts,
-      text.slice(pieces.from,),
-    ].join('',),
-    changed: targets.map(function spelling({ word, },): string {
+    text: rebuilt.text,
+    changed: rebuilt.applied
+      .map(function spelling({ word, },): string {
       return word;
     },),
   };

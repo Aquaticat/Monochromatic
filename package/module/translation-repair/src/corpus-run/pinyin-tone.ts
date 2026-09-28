@@ -12,6 +12,8 @@ import {
   protectedRanges,
 } from './prose-ranges.ts';
 
+import { applySpanRewrites, } from './span-rewrites.ts';
+
 //region Pinyin tone
 // CLASS ONE HUNDRED THIRTY-SEVEN (hulicaijia20, 2026-09-25): the archive's
 // translator note glossed 金刚烷胺 as "jīn gāng wǎn’àn" to show the pun on
@@ -445,39 +447,16 @@ export function correctPinyinTones(
     rewrites.push(...asked,);
   }
   /**
-   Text rebuilt around the rewrites.
+   Text with the rewrites applied, and the rewrites that were.
    */
-  const rebuilt = rewrites.reduce(
-    function splice(
-      built,
-      rewrite,
-    ): {
-      readonly parts: readonly string[];
-      readonly from: number;
-    } {
-      return {
-        parts: [
-          ...built.parts,
-          text.slice(
-            built.from,
-            rewrite.start,
-          ),
-          rewrite.to,
-        ],
-        from: rewrite.end,
-      };
-    },
-    {
-      parts: [] as readonly string[],
-      from: 0,
-    },
-  );
+  const rebuilt = applySpanRewrites({
+    text,
+    rewrites,
+  },);
   return {
-    text: [
-      ...rebuilt.parts,
-      text.slice(rebuilt.from,),
-    ].join('',),
-    changed: rewrites.map(function describe(rewrite,): string {
+    text: rebuilt.text,
+    changed: rebuilt.applied
+      .map(function describe(rewrite,): string {
       return `"${rewrite.from}" to "${rewrite.to}" for ${rewrite.character}`;
     },),
   };
