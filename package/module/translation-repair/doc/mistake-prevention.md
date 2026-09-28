@@ -80,10 +80,14 @@ a teardown's audit listed only the sites it happened to see (M35);
 a key was censused by its builders' names rather than by the material it hashes (M39);
 raw NUL bytes made a source file binary to every line search (M40);
 a lint and a probe ran over an empty or self-matching list (M45);
+a census of a letter test searched the names of functions holding it and missed every inline copy (M48);
 a search for an entry id printed corpus text (M36).
 
 The rule: a search whose result licenses a change runs uncapped over all of `src` (or `--count` first),
 then narrows.
+A census of a rule searches every way the rule can be written, not the names of functions known to hold it:
+for a character test, range comparisons on characters and on codes, literal alphabets,
+case-fold comparisons, and regex classes and properties.
 A null result counts only after a positive control shows the search can match.
 A generated list's line count is printed before anything consumes it.
 A probe's output goes outside the tree it searches.

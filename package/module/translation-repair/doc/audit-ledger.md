@@ -3274,6 +3274,23 @@ as bare capitals, where the other docs span them; one of them was written on 202
 One line named a log file bare as well.
 A probe over every package Markdown file found none outside this ledger.
 
+### D22: task-list numbers used as references across the package
+
+Status: open, found 2026-09-28 while recording M48.
+The owner's rule forbids task-list numbers in commit messages and docs, because they resolve to unrelated GitHub issues.
+A census (`~/temp/agent/audit-glossary-fix/hash-number-census.mjs`) found 588 of them in 331 package files:
+368 in source files, 182 in test files, 21 in Markdown and 17 in `mise.toml` task descriptions,
+126 distinct numbers from 36 to 474.
+Of those checked against the repository's issues, every one names unrelated work
+(catalog readers, a nested Wayland fixture, webapp ports), and the three real issues cited (576 to 578) are excluded.
+The numbers also fail as internal references:
+the transcripts show one number given to two or more different tasks in different sessions
+(the number cited 58 times names both a picture-reader measurement and the relocation question),
+so a reader cannot recover which was meant.
+No rendered model-facing sheet carries one (38 sheets, 0 found; a control line is found).
+Fix: each reference becomes what it named, from its own context:
+a ledger entry, a doc heading, a commit, or the prose that already states the finding, with the number dropped.
+
 ## Found while fixing
 
 ### X1: the translate lane stopped the entry on a rejected slate over an archive the floor refuses
@@ -3972,6 +3989,9 @@ the same form recorded above once already, and `rg --count FAIL log ; rg --count
 where `rg --count FAIL log || true` then a second call is the recorded form.
 Once more during audit area six (B14), counting call sites after removing four readers
 (`remove-functions.mjs <file> && rg --count <old name> <files> ; rg --count <other name> <file>`).
+Twice more in the same area:
+`rg <predicate> <files> ; rg --files <script dir>`, a lookup chained to an unrelated listing,
+and `for_sig() { :; } ; rg <signature>`, a shell function defined and followed by `;` in one call.
 
 ### M19: a suite run against a stale build after a mutation was restored
 
@@ -4116,6 +4136,30 @@ Prevention: a red guard is read case by case before the fix
 (each failing case must fail for the reason its label names),
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
+
+### M48: a census of a rule that searched the names of functions holding it
+
+Status: happened 2026-09-28 (audit area six, letter predicates); found when the prose-scanner switch widened its search.
+The ASCII letter merge replaced 11 local copies, found by searching for named predicates and their bodies,
+and the plan for switching prose scanners to Latin letters was drawn from the same list.
+The same test written inline was never searched:
+`(character >= 'a') && (character <= 'z')` inside a larger function,
+character-code ranges (`align-blocks.ts`), literal alphabets and digit strings,
+case-fold tests (`lower !== upper`), and regex classes and properties (`\p{L}`).
+A search by shape found inline letter tests in 13 more source files and a test file,
+among them prose scanners the plan lacked
+(`reading-refusal.ts`, `assembly-content-survival.ts`, `lexical-restoration.ts`, `line-structure-guard.ts`,
+`archive-italic-spans.ts`), plus digit and hex tests,
+and further definitions of a word character
+(`\p{L}\p{N}` in `declared-name-survival.ts`, cased letters by regex in `quote-neighbours.ts`,
+cased letters by case fold in `canadian-date-parts.ts`, `handle-gloss-place.ts` and `prose-ranges.ts`).
+It also found three `opensTag` definitions that disagree on which character after `<` opens a tag.
+Prevention (the prevention doc's copies family):
+a census of a rule searches every way the rule can be written,
+not the names of functions known to hold it:
+range comparisons on characters and on character codes, literal alphabets,
+case-fold comparisons, and regex classes and properties,
+each query with a positive control.
 
 ### M47: a type declared while the same shape was already exported under the same name
 
