@@ -700,5 +700,32 @@ await describe({
         expect(noted[1]?.estimated,).toBeUndefined();
       },
     },),
+    it({
+      name: 'LEDGERS A WHOLE CALL WHOSE STREAM REPORTED NO USAGE at its bound, marked so, since the call was '
+        + 'billed whatever the stream said; none of 190,009 logged Bedrock calls lacked usage, and the guard '
+        + 'on the owner\'s card must not rest on that',
+      fn: async () => {
+        const { client, noted, exchanges, } = recordedClient({
+          reply: {
+            status: 200,
+            bodyText: [
+              chunkOf({ delta: { role: 'assistant', content: '', }, },),
+              chunkOf({ delta: { content: '{"spot":"sunbeam"}', }, },),
+              'data: [DONE]\n\n',
+            ].join('',),
+          },
+        },);
+        await client.chatText({
+          modelId: SEAT_BEDROCK_ONLY_TEXT,
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: SIGNAL,
+        },);
+        expect(noted,).toHaveLength(1,);
+        expect(noted[0],).toMatchObject({
+          ...boundOf({ bodyJson: exchanges[0]?.bodyJson ?? '', },),
+          estimated: 'unreported-bound',
+        },);
+      },
+    },),
   ],
 },);
