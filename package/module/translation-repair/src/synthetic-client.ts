@@ -1,6 +1,5 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import pLimit, { type LimitFunction, } from 'p-limit';
 
 import { contextRoot, } from './log-context.ts';
 import type {
@@ -10,7 +9,8 @@ import type {
   ChatTextRequest,
   SyntheticClient,
 } from './chat-contract.ts';
-import { readJsonOutcome, } from './chat-json-outcome.ts';
+import { chatJsonThrough, } from './chat-json-through.ts';
+import { perModelLimiter, } from './per-model-limiter.ts';
 import { completionCapFor, } from './completion-cap.ts';
 import { SyntheticHttpError, } from './completion-shape.ts';
 import { isSuccessStatus, } from './http-success.ts';
@@ -189,10 +189,9 @@ export function createSyntheticClient(
   },
 ): SyntheticClient {
   /**
-   Per-model limiters keyed by model, created lazily;
-   bounded by catalog size.
+   Per-model limiter, created lazily for each model (`per-model-limiter.ts`).
    */
-  const limiters = new Map<RosterModelId, LimitFunction>();
+  const limiterFor = perModelLimiter({ perModelConcurrency, },);
 
   /**
    Headers shared by every exchange.
@@ -201,37 +200,6 @@ export function createSyntheticClient(
     'Authorization': `Bearer ${apiKey}`,
     'Content-Type': 'application/json',
   };
-
-  /**
-   Returns the model's limiter, creating its slots on first use.
-   
-   @param modelId - model whose slot the exchange needs
-   
-   @returns Limiter granting the model `perModelConcurrency` slots
-   
-   @example
-   ```ts
-   const limit = limiterFor('hf:zai-org/GLM-5.3-Flash',);
-   ```
-   */
-  function limiterFor(modelId: RosterModelId,): LimitFunction {
-    /**
-     Existing limiter when this model was called before.
-     */
-    const existing = limiters.get(modelId,);
-    if (existing !== undefined)
-      return existing;
-
-    /**
-     Fresh limiter for first use of this model.
-     */
-    const created = pLimit(perModelConcurrency,);
-    limiters.set(
-      modelId,
-      created,
-    );
-    return created;
-  }
 
   /**
    Free-text chat exchange; bounded per model.
@@ -415,59 +383,9 @@ export function createSyntheticClient(
   }
 
   /**
-   Schema-validated chat exchange.
-   Content that parses and passes the guard wins even when it quotes
-   refusal-like phrasing; the refusal scan runs only on parse failure.
-   
-   THE LADDER ITSELF LIVES IN `chat-json-outcome.ts`, because none of it is
-   about this provider: it reads text a model wrote and decides whether that
-   text is an answer. The second provider runs the same steps on replies that
-   arrived over a different protocol entirely.
-   
-   @param request - exchange plus content guard
-   
-   @mutates request - `JSON.stringify` may invoke toJSON methods or getters while the delegated exchange serializes messages and response format
-   
-   @returns Outcome as data: ok, refusal-shaped, or schema-mismatch
-   
-   @throws {@link SyntheticHttpError} on non-success status
-   
-   @example
-   ```ts
-   const outcome = await client.chatJson({ modelId, messages, signal, validate: isVerdict, },);
-   ```
+   JSON exchange over this client's `chatText` (`chat-json-through.ts`).
    */
-  async function chatJson<ValueT,>(
-    request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
-  ): Promise<ChatJsonOutcome<ValueT>> {
-    /**
-     Raw text reply of the underlying exchange.
-     */
-    const reply = await chatText({
-      modelId: request.modelId,
-      messages: request.messages,
-      signal: request.signal,
-      // Conditional spreads keep optional knobs absent instead of undefined.
-      ...(request.exchangeTimeoutMs === undefined
-        ? {}
-        : { exchangeTimeoutMs: request.exchangeTimeoutMs, }),
-      ...(request.maxAnswerChars === undefined
-        ? {}
-        : { maxAnswerChars: request.maxAnswerChars, }),
-      ...(request.maxTokens === undefined
-        ? {}
-        : { maxTokens: request.maxTokens, }),
-      ...(request.responseFormat === undefined
-        ? {}
-        : { responseFormat: request.responseFormat, }),
-    },);
-
-    return readJsonOutcome({
-      modelId: request.modelId,
-      reply,
-      validate: request.validate,
-    },);
-  }
+  const chatJson = chatJsonThrough({ chatText, },);
 
   /**
    Reads the current quota snapshot.

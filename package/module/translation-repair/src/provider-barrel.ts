@@ -27,6 +27,8 @@ export {
 } from './schema-prompt.ts';
 export { extractAnthropicCompletion, } from './anthropic-completion.ts';
 export { readJsonOutcome, } from './chat-json-outcome.ts';
+export { chatJsonThrough, } from './chat-json-through.ts';
+export { perModelLimiter, } from './per-model-limiter.ts';
 export { isSuccessStatus, } from './http-success.ts';
 export {
   createRoutingClient,
