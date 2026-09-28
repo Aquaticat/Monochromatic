@@ -321,6 +321,10 @@ Part of [the package README](../README.md).
   An edit whose issue drew at least one worse ballot is stripped from the patch,
   and the reduced patch faces one more checker round before it ships;
   a not-fixed edit with no worse ballot stays (ledger L3).
+  CORRECTED AFTER THE RULING: the question put the stripped share at 40 of the 691 issues,
+  counting only the ties and the worse majority;
+  at least one worse ballot is 58 issues in 31 patches over every run,
+  and 15 issues in 6 of 51 patches on TianqiChen666 (`ride-along-split.mjs`, recounted 2026-09-28).
 - **A rewrite after a lost patch is rechecked before it ships.**
   Owner, 2026-09-28, asked what happens when the naturalness stage rewrites the archive
   after the accuracy patch lost, which shipped with no checker round
