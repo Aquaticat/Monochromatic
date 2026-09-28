@@ -20,17 +20,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  buildSettledTwoLaneArtifact,
-  NO_PAGE_ASSEMBLY,
-  type DocumentLanesResult,
   parseSettledTwoLaneArtifact,
-  type PipelineDigest,
   preparationIdentity,
   type PreparedDocumentPair,
   prepareDocumentPair,
   rebuildPreparation,
-  type SliceDeliveryRecord,
 } from '../../dist/final/node/index.mjs';
+import { settledArtifactText, } from './settled-artifact.test-fixture.ts';
 
 /**
  Two sections, equal shape, so the deterministic aligner pairs by index and a
@@ -53,124 +49,6 @@ const BLOCKY_SOURCE = '## 第一节\n\n猫猫在窗台上睡觉。\n\n猫猫喜�
  Translation of the same three blocks.
  */
 const BLOCKY_TARGET = '## Section one\n\nThe cat sleeps on the sill.\n\nThe cat likes the sun.\n\nThe cat has a bowl.\n';
-
-/**
- Digest every fixture artifact claims.
- */
-const DIGEST = 'sha256-tree-v1:'.concat('c'.repeat(64,),) as unknown as PipelineDigest;
-
-/**
- Wording a lane writes where the archive holds none.
- */
-const FRESH_LINE = 'The cat has been given a line.';
-
-/**
- Rows that keep every slice the archive has wording for, and fill every
- insertion, which is enough for the builder's own checks.
- 
- A PAIRED PREPARATION LEAVES INSERTIONS: a section or block the pairing did
- not claim is placed as an insertion slice whose archive wording is absent,
- and the builder refuses a row calling that wording present.
- 
- @param prepared - preparation the rows describe
- 
- @returns One row per slice
- 
- @example
- ```ts
- const rows = keptEverything({ prepared, },);
- ```
- */
-function keptEverything(
-  { prepared, }: { readonly prepared: PreparedDocumentPair; },
-): readonly SliceDeliveryRecord[] {
-  return prepared.slices
-    .map(function toRow(slice,): SliceDeliveryRecord {
-      /**
-       Archive wording of this slice, empty at an insertion.
-       */
-      const incumbentText = slice.target
-        .text;
-
-      /**
-       Whether the archive holds wording here at all.
-       */
-      const absent = slice.target
-        .kind === 'insertion';
-      if (absent)
-        return {
-          sliceIndex: slice.target
-            .sliceIndex,
-          sourceText: slice.source
-            .text,
-          incumbentKind: 'absent',
-          incumbentText,
-          outcome: {
-            kind: 'decided',
-            acceptedText: FRESH_LINE,
-          },
-          shippedText: FRESH_LINE,
-          delivery: { kind: 'replacement-shipped', },
-        };
-      return {
-        sliceIndex: slice.target
-          .sliceIndex,
-        sourceText: slice.source
-          .text,
-        incumbentKind: 'present',
-        incumbentText,
-        outcome: {
-          kind: 'decided',
-          acceptedText: incumbentText,
-        },
-        shippedText: incumbentText,
-        delivery: { kind: 'incumbent-retained', },
-      };
-    },);
-}
-
-/**
- Raw lane result consistent with rows that kept everything.
- 
- @param rows - rows the result reports
- 
- @returns Evidence core the builder projects
- 
- @example
- ```ts
- const result = rawResultFor({ rows, },);
- ```
- */
-function rawResultFor(
-  { rows, }: { readonly rows: readonly SliceDeliveryRecord[]; },
-): Record<string, unknown> {
-  /**
-   Slices the rows say shipped a replacement, which are the insertions.
-   */
-  const shipped = rows
-    .filter(function wasShipped(row,): boolean {
-      return row.delivery
-        .kind === 'replacement-shipped';
-    },)
-    .map(function indexOf(row,): number {
-      return row.sliceIndex;
-    },);
-  return {
-    sliceCount: rows.length,
-    changedSliceIndices: shipped,
-    withdrawnSliceIndices: [],
-    changedSliceCount: shipped.length,
-    withdrawnSliceCount: 0,
-    sliceTexts: rows.map(function toEvidence(row,): Record<string, unknown> {
-      return {
-        sliceIndex: row.sliceIndex,
-        incumbentKind: row.incumbentKind,
-        incumbentText: row.incumbentText,
-        outcome: row.outcome,
-      };
-    },),
-  };
-}
 
 /**
  Builds an artifact over a preparation and reads it back through JSON.
@@ -201,62 +79,12 @@ function writeAndRead(
   },
 ): ReturnType<typeof parseSettledTwoLaneArtifact> {
   /**
-   Rows the lanes report.
+   The artifact as a file on disk carries it.
    */
-  const rows = keptEverything({ prepared, },);
-
-  /**
-   Identity both ledgers claim.
-   */
-  const identity = preparationIdentity({ prepared, },);
-
-  /**
-   Lanes consistent with the preparation.
-   */
-  const lanes = {
-    alignmentFindings: [...prepared.alignmentFindings,],
-    repair: {
-      ...rawResultFor({ rows, },),
-      repairedText: prepared.targetText,
-      status: 'unchanged',
-    },
-    translate: {
-      ...rawResultFor({ rows, },),
-      translatedText: prepared.targetText,
-      status: 'complete',
-    },
-    repairDelivery: {
-      preparationIdentity: identity,
-      records: rows,
-    },
-    translateDelivery: {
-      preparationIdentity: identity,
-      records: rows,
-    },
-  } as unknown as DocumentLanesResult;
-
-  /**
-   Artifact as the builder writes it, in its serialized form: what a reader
-   holds is the bytes a file carries, and a clone would keep things JSON drops.
-   */
-  const serialized = JSON.stringify(buildSettledTwoLaneArtifact({
-    pageAssembly: NO_PAGE_ASSEMBLY,
-    entryId: 'CatEntry1',
-    tip: 'a'.repeat(40,),
-    pipelineDigest: DIGEST,
-    corpusSha: 'b'.repeat(40,),
-    callConfig: { perCallTimeoutMs: 600_000, },
-    durationMs: 1_234,
+  const written = JSON.parse(settledArtifactText({
     prepared,
-    lanes,
-    laneSelection: { kind: 'pending-human-decision', },
-    consolidation: { kind: 'not-run', },
-  },),);
-
-  /**
-   Those bytes read back.
-   */
-  const written = JSON.parse(serialized,) as Record<string, unknown>;
+    entryId: 'CatEntry1',
+  },),) as Record<string, unknown>;
 
   /**
    Preparation record, with the named keys removed.
