@@ -318,13 +318,25 @@ export async function contestDocumentLanes(
   const eligible = new Set(contestEligibleIndexes({ comparison: projected.comparison, },),);
 
   /**
-   What this run asks, folded into every key.
+   What a run on one bench asks, folded into every key it settles, so a
+   slice seated on re-read judges is keyed by the judges that voted on it.
+
+   @param judges - bench the slice runs on
+
+   @returns Run shape for that bench
    */
-  const runShape = laneContestRunShape({
-    modelIds,
-    ...((identityContext === undefined) ? {} : { identityContext, }),
-    ...((referenceContext === undefined) ? {} : { referenceContext, }),
-  },);
+  function shapeFor({ judges, }: { readonly judges: readonly RosterModelId[]; },): string {
+    return laneContestRunShape({
+      modelIds: judges,
+      ...((identityContext === undefined) ? {} : { identityContext, }),
+      ...((referenceContext === undefined) ? {} : { referenceContext, }),
+    },);
+  }
+
+  /**
+   What this run asks on its starting bench, folded into every key.
+   */
+  const runShape = shapeFor({ judges: modelIds, },);
 
   /**
    Comparison rows whose lane wordings differ, in document order.
@@ -355,8 +367,19 @@ export async function contestDocumentLanes(
         lane: 'contest',
         sliceIndex: row.sliceIndex,
         run: async function contestInContext(): Promise<ArtifactContestSlice> {
-          if (beforeSlice !== undefined)
-            await beforeSlice();
+          // A SLICE RUNS ON THE JUDGES ITS HOOK HANDS OVER (ledger X12,
+          // 2026-09-28), as the lanes' and the consolidation's slices do: the
+          // contest read its judges once, so a dry-out inside it left every
+          // later slice on the judges read before it.
+          /**
+           Seating the hook hands this slice: judges read under a hold, or none,
+           which keeps those the contest started on.
+           */
+          const seating: LaneContestSliceSeating = (beforeSlice === undefined) ? {} : await beforeSlice();
+          /**
+           Judges this slice runs on.
+           */
+          const sliceModelIds = seating.modelIds ?? modelIds;
           /**
            Original of this slice, which every ledger row carries.
            */
@@ -431,7 +454,7 @@ export async function contestDocumentLanes(
            Key these ballots resume under.
            */
           const key = laneContestSliceKey({
-            runShape,
+            runShape: (seating.modelIds === undefined) ? runShape : shapeFor({ judges: seating.modelIds, },),
             sourceText,
             incumbentText: row.incumbentText,
             incumbentKind: row.incumbentKind,
@@ -468,7 +491,7 @@ export async function contestDocumentLanes(
                  */
                 const rawBought = await contestLaneSlice({
                   client,
-                  modelIds,
+                  modelIds: sliceModelIds,
                   subject: {
                     sourceText,
                     incumbentText: row.incumbentText,
