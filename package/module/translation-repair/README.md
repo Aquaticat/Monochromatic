@@ -452,3 +452,11 @@ one file per subject:
   the milestone and generation history since 2026-07.
 - [Redaction timing](doc/redaction-timing.md):
   when redaction happens.
+- [The audit ledger](doc/audit-ledger.md):
+  every finding of the whole-package audit of 2026-09-27 and after,
+  with its measurement, its fix and its guard,
+  and every mistake made while fixing.
+- [Preventing this package's mistakes](doc/mistake-prevention.md):
+  the ledger's mistakes grouped by family,
+  the rule that prevents each and what enforces it,
+  and the checklist before a run launches.

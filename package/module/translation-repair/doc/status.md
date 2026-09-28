@@ -35,11 +35,14 @@ The baseline, read from TianqiChen66620's slice cache (it settled no artifact):
 270 of 464 panel ballots supported, 58.2%, over 110 issues in 36 of its 110 cached slices.
 A drop of the size that change caused (72% to 65% on one entry) is reported to the owner with the reasons it cites.
 
-Still open in the ledger, in the order they are being taken:
-X10 (a slice carved through an element), the test-suite findings (T, H13, H15, E8, E9),
-the Canadian-forms findings (K1 to K13, H14), the glossary content findings (C, R),
-and the provider, repair-lane and documentation findings (P, L, D, X, E10 to E12),
-then the package-local prevention doc for the M families.
+Still open in the ledger on the evening of 2026-09-28, read off each entry's status line:
+T8 (exported functions with no test, recounted with its blind spots),
+T9 (every test run writes a log into `node_modules`, owned by `module-logger`, issue #576),
+and L6 (the lane contest on insertion slices, designed and deferred past the next launch);
+M1 and M6 recur.
+Every other finding the ledger names is fixed, measured and decided, or ruled on by the owner.
+The mistakes are grouped by family, with the checklist before a run launches,
+in [Preventing this package's mistakes](mistake-prevention.md).
 
 ## Where it stood on 2026-09-24
 
