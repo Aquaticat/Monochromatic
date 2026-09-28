@@ -282,16 +282,27 @@ normalization,
 repeat,
 or automatic interview resumption follows.
 
-A candidate-scope question offered stopping Voyage's primary-assessor investigation at this bounded finding
+A candidate-scope question offered stopping Voyage's primary-assessor investigation
 or defining a separate composed-estimator study before further design.
-The first option was recommended,
-not adopted.
-The question tool was aborted;
-no user answer or additional authorization was received.
-Do not infer either choice,
-fit or train a mapping,
-expand model calls,
-or resume Q16 from that interruption.
+The question tool was initially aborted.
+The user subsequently chose B and said:
+"You come up with something yourself."
+The agent must design the concrete method rather than return the design problem to the user.
+
+This selects composed-estimator research,
+not a production model,
+threshold,
+or implementation.
+The offered B boundary still requires separate authorization before parameter fitting or training.
+Private Voyage inputs,
+reserved scenarios,
+new providers,
+new Pro calls,
+and the paused Laya source branch remain outside this step.
+Q16 is unanswered and the integration interview stays paused.
+The next design separates paired raw hypothesis features,
+a future fitted probability adapter,
+and code-owned abstention/freshness/authority boundaries.
 
 ## Sequencing correction
 
