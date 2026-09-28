@@ -277,7 +277,8 @@ export async function settleRefinedSlice(
 
   /**
    Whether every issue the checkers had confirmed is still confirmed in the
-   refined text.
+   refined text, and no accepted issue the text never fixed drew a worse
+   ballot on it.
    */
   const retained = await retainsResolvedIssues({
     client,
@@ -363,10 +364,14 @@ export async function settleRefinedSlice(
     // visible it is the redundancy it was.
     ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
     ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
-    // Withheld for the same reason the accuracy stage withholds, and with more
-    // force here: this lane rewrites text whose accepted issues were ALREADY
-    // repaired, so listing them describes defects that are no longer present
-    // and excuses damage to wording that was correct.
+    // Withheld for the reason the accuracy stage withholds: a prober told what
+    // to excuse raised almost nothing, and `introduced-defect-screen.ts`
+    // dismisses a claim quoting wording an accepted issue complained about
+    // instead. That screen is right on both kinds of slice this lane rewrites:
+    // where the patch won, the complaint names wording the repair replaced;
+    // where it lost (1,218 of 2,144 refined slices over every run, ledger L11),
+    // the defect is still in `T1`, and a rewrite that keeps it introduced
+    // nothing.
     disclosure: PRODUCTION_PRIOR_ISSUE_DISCLOSURE,
     signal,
     perCallTimeoutMs,
@@ -426,7 +431,8 @@ export async function settleRefinedSlice(
 }
 
 /**
- Whether a refinement kept every issue the checkers had already confirmed.
+ Whether a refinement kept every issue the checkers had already confirmed,
+ and made no accepted issue `T1` leaves open worse.
  
  Rolls back the WHOLE slice when it did not. Checkers report per ISSUE while
  refinement happens per paragraph, and an issue can span paragraphs, so which
@@ -454,6 +460,14 @@ export async function settleRefinedSlice(
  @param l - pipeline logger
  
  @returns Whether refinement may ship, plus findings
+ 
+ AN OPEN ISSUE IS ROLLED BACK ON ONE WORSE BALLOT, the threshold the owner
+ ruled for a patch's unconfirmed edits the same day (ledger L3): the checkers
+ were never going to call an issue the patch did not fix `fixed`, so
+ `not-fixed` is the text as it stood and `worse` is the only verdict that
+ says the rewrite damaged it. A `fixed` ballot credits nothing; the round is
+ a rollback gate, and a resolution it recorded would rest on a round no panel
+ or selection ever weighed.
  
  @example
  ```ts
@@ -500,10 +514,34 @@ async function retainsResolvedIssues(
         .includes(issue.issueId,);
     },);
 
-  // Nothing was proved about this slice, so a refinement cannot un-prove it.
-  // This is the common case: the lane's whole target is text with no accepted
-  // issue, and spending a checker round there would buy nothing.
-  if (confirmed.length === 0)
+  /**
+   Accepted issues `T1` does not resolve, which the rewrite was never shown:
+   every accepted issue of a slice whose accuracy patch lost, where the
+   rewrite is of the archive, and any a winning patch left open. LEDGER L11,
+   the owner's ruling of 2026-09-28 ("Recheck the rewrite"): 1,218 of 2,144
+   refined slices over every run rewrote the archive after the patch lost,
+   457 of them over accepted issues, and none had a checker round.
+   */
+  const open = outcome.issues
+    .filter(function isOpen(issue,) {
+      return (issue.status === 'accepted')
+        && (!outcome.resolvedIssueIds
+          .includes(issue.issueId,));
+    },);
+
+  /**
+   Every issue the round rules on, confirmed first.
+   */
+  const checked = [
+    ...confirmed,
+    ...open,
+  ];
+
+  // Nothing was proved about this slice and no defect is known in it, so a
+  // refinement can neither un-prove nor worsen one. This is the common case:
+  // the lane's whole target is text with no accepted issue, and spending a
+  // checker round there would buy nothing.
+  if (checked.length === 0)
     return {
       retained: true,
       findings: [],
@@ -520,7 +558,7 @@ async function retainsResolvedIssues(
     checkerModelIds,
     sourceText,
     patchedText: refinedText,
-    issues: confirmed,
+    issues: checked,
     authorship: collectRefinedAuthors({
       editorAuthorship: outcome.authorship,
       refineContributors,
@@ -542,15 +580,37 @@ async function retainsResolvedIssues(
     .map(function toId(issue,) {
       return issue.issueId;
     },);
-  if (regressed.length === 0)
+
+  /**
+   Open issues at least one checker found the refinement made worse.
+   */
+  const worsened = open
+    .filter(function madeItWorse(issue,) {
+      return (checker.tallies[issue.issueId]
+        ?.worse
+        ?? 0)
+        > 0;
+    },)
+    .map(function toId(issue,) {
+      return issue.issueId;
+    },);
+
+  /**
+   Every issue the rollback answers for.
+   */
+  const lost = [
+    ...regressed,
+    ...worsened,
+  ];
+  if (lost.length === 0)
     return {
       retained: true,
-      findings: [`refine-recheck-passed (${String(confirmed.length,)} issues)`,],
+      findings: [`refine-recheck-passed (${String(checked.length,)} issues)`,],
       readings: checker.readings,
     };
   return {
     retained: false,
-    findings: [`refine-rolled-back (${regressed.join(', ',)})`,],
+    findings: [`refine-rolled-back (${lost.join(', ',)})`,],
     readings: checker.readings,
   };
 }
