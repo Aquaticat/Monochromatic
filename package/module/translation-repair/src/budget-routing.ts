@@ -218,10 +218,27 @@ export function openRouterIsDry(
 }
 
 /**
+ Balance at or under which Bedrock reads dry, in USD: what calls already
+ started can still spend once the reading says the credit is gone.
+ 
+ MEASURED, NOT PICKED (ledger P1, 2026-09-28). The meter is read once a
+ 60 s freshness window, and a call started inside one lands after it, as
+ late as its stream runs. The most Bedrock spend any span of one window plus
+ the longest Bedrock stream on record (363,790 ms) held, over every pass-run
+ log (`p1-window-measure2-runs.mjs`), is 1.3245 USD over 822 calls
+ (XingZ628). Both seated Gemma models now carry a 60 s stream bound, so that
+ span over-covers them; the owner's card is the side an under-read reaches,
+ and a margin left unspent only sends the last calls to OpenRouter.
+ */
+export const BEDROCK_DRY_MARGIN_USD = 1.33;
+
+/**
  Whether Bedrock's ledger says nothing more can be bought there.
  THE SAME RULE AS THE OTHER TWO BALANCES, on a balance this package keeps
  itself: past the owner's credit the account would bill the owner's card,
- which the owner said never to reach ("I will NEVER top it up").
+ which the owner said never to reach ("I will NEVER top it up"). DRY WITH
+ {@link BEDROCK_DRY_MARGIN_USD} STILL LEFT, which the calls in flight when
+ the reading went stale can spend.
  
  @param credits - most recent ledger reading
  
@@ -235,7 +252,7 @@ export function openRouterIsDry(
 export function bedrockIsDry(
   { credits, }: { readonly credits: BedrockCredits; },
 ): boolean {
-  return credits.remainingUsd <= 0;
+  return credits.remainingUsd <= BEDROCK_DRY_MARGIN_USD;
 }
 
 /**

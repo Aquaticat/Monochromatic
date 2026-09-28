@@ -131,6 +131,7 @@ export {
   hyperMeterLevel,
   type ModelReach,
   NO_PROVIDER,
+  BEDROCK_DRY_MARGIN_USD,
   bedrockIsDry,
   bedrockMeterLevel,
   openRouterIsDry,
