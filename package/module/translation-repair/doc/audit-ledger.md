@@ -2414,7 +2414,7 @@ the preservation-check claims.
 
 ### L14: smaller items
 
-Status: (a) to (d) fixed; (e) open.
+Status: (a) to (d) fixed; (e) closed as a census artifact, with two sites unclassified.
 
 #### L14(a): the resolution checker sheet carried none of the panel's evidence
 
@@ -2550,7 +2550,7 @@ Cache: rides inside repair 34, same check, same result.
 
 #### L14(e): a repaired text repeating a sentence no recorded stage wrote
 
-Status: open, found while measuring L14(b).
+Status: closed as a census artifact at 7 of 9 sites; 2 unclassified; found while measuring L14(b).
 In 9 slices the repaired text carries a sentence more often than the archive English
 while no chunk candidate of the slice does and no repair region's replacement carries it:
 6 whose rounds were chunk and envelope selection
@@ -2561,6 +2561,26 @@ At Mio12-20260910 slice 14 the repeated sentence is 12 characters,
 absent from the archive English and from both candidates,
 and the repaired text is 36 characters longer than the selected candidate,
 so a step after selection wrote it (`~/temp/agent/audit-glossary-fix/l14b-origin.mjs`, `l14b-mio.mjs`).
+
+What that step did (`l14e-lines.mjs`, `l14e-all.mjs`, `l14e-substr.mjs`):
+at all 9 sites the repaired text holds more lines than the archive English and the selected candidate
+(1 or 3 lines becoming 11 to 17, and 76 becoming 91 or 92),
+so a later step set the text on the ORIGINAL's lines,
+and the "repeated sentences" are short verse fragments (a single word and a comma, a four-word line)
+that the census's sentence rule counts only once they stand on their own lines.
+Counted as substrings, 7 of the 9 carry the fragment exactly as often as the archive English or the candidate:
+nothing was said twice, and the census, not a stage, made the repeat.
+Two carry a fragment more often:
+TianqiChen66613 slice 12 (archive 1, candidate and repaired text 2)
+and XingZ6010 slice 38, refined without an accuracy patch (archive and candidate 0, refined text 4).
+Neither ORIGINAL repeats a line of text (`l14e-source.mjs`; only markup lines repeat),
+but a refrain within a line is not excluded, and the slice's own ORIGINAL is not in the artifact,
+so both stay unclassified.
+Candidate kept out: the refine sheet states no rule about saying something twice,
+and the L14(b) rule, conditioned on the ORIGINAL, would carry over;
+its only case is the unclassified XingZ6010 slice 38, so it waits for evidence.
+Lesson for any later census of repetition: count substrings as well as split sentences,
+since setting a text on its lines changes what a sentence splitter sees.
 
 #### L14(d): model-written and quoted text rendered raw on line-based sheets
 
