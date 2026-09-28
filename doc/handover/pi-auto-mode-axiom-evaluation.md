@@ -146,6 +146,35 @@ Do not invent an absence probability or discard not-observable mass.
 Task #38's result documentation is finalized after the scoring resource check,
 without rerunning its model batch.
 
+Task #40 is the bounded direct Lite semantic study,
+using Jev's existing 18-profile matrix and pre-query references,
+not Jev outputs or new scenarios.
+Private source `e931518` and input/control freeze `4104ade` precede live queries.
+`proc_02ba` passed parser,
+serializer,
+native-mass,
+coverage/error,
+anchor,
+and shared-deadline controls.
+All 61 source/input files,
+including diagnostic constants,
+are hash-frozen.
+There was no exact text overlap with the prior Respan canary;
+an injected matching control verified that result.
+The original declared anchor remains excluded from novel coverage.
+The [native qualification protocol](../planning/pi-auto-mode-respan-qualification.md)
+sets at most 36 direct free calls,
+one shared five-second clock per source pair,
+zero retries,
+and first-failure stop.
+Apply upper cutoffs separately to native present and absent mass;
+never infer absence from low present probability.
+No additional Pro call,
+threshold selection,
+training,
+reserved-scenario query,
+or source-audit restart is part of this study.
+
 ## Sequencing correction
 
 The user stopped the integration-policy interview and asked whether investigation of Laya,

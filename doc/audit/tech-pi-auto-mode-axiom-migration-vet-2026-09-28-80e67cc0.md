@@ -150,7 +150,8 @@ Sources accessed on 2026-09-28:
 
 Published architecture and benchmark statements are vendor claims,
 not serving-identity or calibration evidence.
-Full-policy capacity and truncation remain unmeasured.
+Maximum input capacity and internal truncation behavior remain unmeasured;
+a complete-policy request was accepted in the canary.
 
 ## Resource verification
 
@@ -372,3 +373,29 @@ production threshold,
 top-up recommendation,
 or implementation is selected.
 Jev result documentation is finalized without a new model call.
+
+Task #40 freezes the [direct Lite semantic protocol](../planning/pi-auto-mode-respan-qualification.md),
+reusing the existing Jev matrix and pre-query references without reading its model outputs.
+Private source `e931518` and input/control freeze `4104ade` precede candidate queries.
+Local controls `proc_02ba` passed,
+including native uncertainty,
+source isolation,
+parser projection,
+error/coverage/anchor omissions,
+and the shared-deadline boundary.
+All 61 source/input files are hash-frozen.
+An exact-match positive control verified that the differently worded canary has no literal source-text overlap.
+The original anchor remains excluded from novel coverage.
+
+At most 36 direct free calls will score 72 native triples.
+Each request/prose pair shares five seconds,
+with zero retries and first-failure stop.
+Both present and absent mass use the existing upper diagnostic cutoffs;
+not-observable mass is retained,
+not complemented or normalized away.
+No new scenario,
+Pro call,
+threshold selection,
+reserved-scenario query,
+training,
+or paused source-audit restart is authorized by this study.
