@@ -993,9 +993,14 @@ stages disagree on what `unknown` means.
 
 ### F-6: `carveSettled` does not carve as the pipeline did
 
-Status: open.
+Status: fixed in `c7f534353` (red guard `83f35d955`), with A18.
 It omits `includeFrontMatter`, `frontMatterAuthority` and `sealArchiveOriginal`,
 shifting slice indices by one on archive-authority entries.
+`carveSettled` now carves through `rebuildPreparation`, which reads every flag off the artifact,
+so the probes, the rendering audit and republishing share one carve,
+and it reports whether the carve reproduces the run's rows (the displacement probe warns when it does not).
+`includeFrontMatter` defaults to true, so only the authority and the seal moved a carve;
+the guard carves an archive-authority entry, which the old code sliced with an extra metadata slice.
 
 ### F-7: the line-structure floor counts HTML comment lines
 
@@ -1522,7 +1527,17 @@ The fix belongs at the writers: a floor naming the declared handle a candidate l
 
 ### A18: the rendering audit rebuilds a carve over the corpus copy, not the archive the run carved
 
-Status: open (found while fixing A16c).
+Status: fixed in `c7f534353` (red guard `83f35d955`), at the root:
+`rebuildPreparation` carves over the archive the artifact stored,
+and over the corpus copy only for an artifact written before that text was stored,
+so the rendering audit, `carveSettled` (F-6) and republishing all carve as the run did.
+Re-carving all 265 stored artifacts with the fix: 246 reproduce the run's rows and 15 move,
+each with a cause already recorded (mikaela15's class 112 slicer change, TianqiChen666's unrecorded fold,
+and the August pairing experiments), and 4 cannot be read (3 artifacts that do not parse, 1 corpus read);
+hulicaijia31 now reproduces.
+The A12 guard had stood in for a moved carve with an archive that gained a paragraph,
+which the stored archive now overrides; it now changes the original instead.
+Found while fixing A16c.
 `readArtifactSubjects` in `rendering-audit-settled-input.ts` reads the archive English at the artifact's commit
 and carves over it,
 but a pass reshapes the archive before it carves (`passArchiveText`, a heading relabel, `repairArchiveBlocks`),
