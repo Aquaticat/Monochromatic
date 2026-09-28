@@ -260,8 +260,9 @@ export function refineRunShape(
  @param resolvedIssueIds - subset the checkers had already confirmed, which
  decides what a rollback is measured against
  
- @param nonTranslationStanding - whether critics ruled this slice untranslated,
- which skips the lane outright
+ @param nonTranslationStanding - whether critics ruled this slice untranslated;
+ it skipped the lane until ledger L15 and is evidence only since; it stays in the
+ key, where it only splits slices more finely than the question does
  
  @param neighbouringSourceText - original of the passages either side, shown to
  the probe auditing what this rewrite damaged. In the key because a rewrite

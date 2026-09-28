@@ -184,17 +184,13 @@ export async function settleRefinedSlice(
     readonly l: Logger;
   }>,
 ): Promise<RefinedSliceOutcome> {
-  // A slice the critics ruled non-translation shipped deliberately untouched;
-  // rewriting it for fluency would undo that decision.
-  if (outcome.nonTranslationStanding)
-    return {
-      outcome,
-      findings: [],
-      asked: false,
-      // Nothing was offered to a rewriter, so nobody rewrote anything.
-      refinedBy: [],
-      refinersHeard: [],
-    };
+  // NO STOP ON STANDING NON-TRANSLATION VOTES (ledger L15). This returned the
+  // slice unrefined on the reading that such a slice shipped deliberately
+  // untouched, which stopped being true on 2026-08-16: question 3, answer B
+  // keeps the critics as evidence rather than deciding anything and removes
+  // every early return they owned, and the repair lane has changed 8 of the
+  // 10 such slices over every artifact. The votes still ride on the outcome
+  // and in this lane's key.
 
   /**
    Eligible paragraphs of this slice's repaired text.
