@@ -19,10 +19,13 @@ import {
 import {
   COMPLETION_CAP,
   createOpenRouterClient,
+  estimateAbandonedSpend,
   InStreamProviderError,
   OPENROUTER_CHAT_URL,
   OPENROUTER_CREDITS_URL,
   OpenRouterModelNotServedError,
+  resetRunSpend,
+  runSpendUsd,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_VISION_WITHHELD,
@@ -72,6 +75,11 @@ function chunkOf(
 }
 
 /**
+ USD the captured call's usage block reported.
+ */
+const RECORDED_COST_USD = 0.00015646;
+
+/**
  Whole stream the captured call answered with, answer and cost included.
  */
 const RECORDED_STREAM = [
@@ -86,7 +94,7 @@ const RECORDED_STREAM = [
         prompt_tokens: 342,
         completion_tokens: 400,
         total_tokens: 742,
-        cost: 0.00015646,
+        cost: RECORDED_COST_USD,
         is_byok: false,
       },
     },
@@ -399,6 +407,69 @@ await describe({
         }
         expect(thrown instanceof SyntheticHttpError,).toBe(true,);
         expect((thrown as SyntheticHttpError).status,).toBe(402,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'every billed OpenRouter attempt is reckoned (ledger P1)',
+  children: [
+    it({
+      name: 'RECKONS A TRUNCATED ATTEMPT THE LADDER RETRIED beside the whole one it reported: the reckoning '
+        + 'wrapped the whole ladder, so an attempt refused and retried inside it left no line',
+      fn: async () => {
+        resetRunSpend();
+        /**
+         Stream that stopped before its terminator.
+         */
+        const truncated = chunkOf({ delta: { content: '{"spot":', }, },);
+        /**
+         Exchanges the transport saw.
+         */
+        const exchanges: TransportExchange[] = [];
+        /**
+         Client whose first stream stops early and whose second is whole.
+         */
+        const client = createOpenRouterClient({
+          apiKey: 'test-key',
+          transport: async function truncatedThenWhole(exchange,) {
+            exchanges.push(exchange,);
+            return (exchanges.length === 1)
+              ? { status: 200, bodyText: truncated, }
+              : { status: 200, bodyText: RECORDED_STREAM, };
+          },
+          retryPolicy: {
+            limit: 1,
+            baseMs: 1,
+          },
+        },);
+        await client.chatText({
+          modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: SIGNAL,
+        },);
+        /**
+         Body the refused attempt sent.
+         */
+        const bodyJson = exchanges[0]?.bodyJson ?? '';
+        /**
+         Body as sent.
+         */
+        const body = JSON.parse(bodyJson,) as {
+          readonly model: Parameters<typeof estimateAbandonedSpend>[0]['servedId'];
+          readonly max_tokens: number;
+        };
+        /**
+         What the refused attempt is reckoned to have cost.
+         */
+        const reckoned = estimateAbandonedSpend({
+          servedId: body.model,
+          deliveredChars: truncated.length,
+          requestBodyBytes: Buffer.byteLength(bodyJson,),
+          maxTokens: body.max_tokens,
+        },);
+        expect(runSpendUsd({ provider: 'openrouter', },),).toBeCloseTo(RECORDED_COST_USD + reckoned.usd, 12,);
       },
     },),
   ],

@@ -35,6 +35,7 @@ import {
   exchangeWithRetry,
   type ModelTransport,
   retryAfterMsOf,
+  StreamCutShortError,
   StreamDegenerateError,
   StreamOverrunError,
   SyntheticHttpError,
@@ -738,6 +739,154 @@ await describe({
           7_200_000,
           0,
         ],);
+      },
+    },),
+  ],
+},);
+
+/**
+ Reply a stream answered 200 with and stopped before its terminator.
+ */
+const TRUNCATED_REPLY: TransportReply = {
+  status: 200,
+  bodyText: 'data: {"purr":',
+};
+
+/**
+ Refuses a success reply without its terminator, as every client's check does.
+
+ @param reply - one attempt's reply
+
+ @throws Error when the reply stops before `[DONE]`
+
+ @example
+ ```ts
+ requireDone(reply,);
+ ```
+ */
+function requireDone(reply: TransportReply,): void {
+  if ((reply.status === 200) && (!reply.bodyText.includes('[DONE]',)))
+    throw new Error('stream ended without its [DONE] terminator',);
+}
+
+/**
+ Successful reply carrying its terminator.
+ */
+const WHOLE_REPLY: TransportReply = {
+  status: 200,
+  bodyText: 'data: {"purr":"loud"}\n\ndata: [DONE]\n\n',
+};
+
+/**
+ Runs one ladder over a script, recording the attempts it reported abandoned.
+
+ @param script - one entry per attempt
+
+ @returns Raw characters each reported attempt delivered, and whether the ladder threw
+
+ @example
+ ```ts
+ const { reported, threw, } = await abandonedAttempts({ script: [TRUNCATED_REPLY, WHOLE_REPLY,], },);
+ ```
+ */
+async function abandonedAttempts(
+  { script, }: { readonly script: readonly (TransportReply | Error)[]; },
+): Promise<{ readonly reported: readonly number[]; readonly threw: boolean; }> {
+  /**
+   Raw characters of each attempt the ladder reported.
+   */
+  const reported: number[] = [];
+  try {
+    await exchangeWithRetry({
+      transport: scriptedTransport({
+        script,
+        calls: { count: 0, },
+      },),
+      exchange: exchangeWith({ signal: new AbortController().signal, },),
+      policy: FAST_POLICY,
+      verify: requireDone,
+      onAbandonedAttempt: async function record({ deliveredChars, },): Promise<void> {
+        reported.push(deliveredChars,);
+      },
+    },);
+    return {
+      reported,
+      threw: false,
+    };
+  }
+  catch (error) {
+    // The outcome is the assertion; the error itself is not.
+    void error;
+    return {
+      reported,
+      threw: true,
+    };
+  }
+}
+
+await describe({
+  name: 'every billed attempt is reported (ledger P1)',
+  children: [
+    it({
+      name: 'REPORTS AN ATTEMPT THE CHECK REFUSED AND THE LADDER RETRIED, with the raw characters its body '
+        + 'carried: the endpoint accepted it and billed what it streamed, and 3,864 such retries across the '
+        + 'logs left no spend line',
+      fn: async () => {
+        expect(await abandonedAttempts({ script: [TRUNCATED_REPLY, WHOLE_REPLY,], },),).toEqual({
+          reported: [TRUNCATED_REPLY.bodyText.length,],
+          threw: false,
+        },);
+      },
+    },),
+    it({
+      name: 'REPORTS A CUT STREAM THE LADDER RETRIED, with what it had delivered',
+      fn: async () => {
+        /**
+         Stream cut after some text.
+         */
+        const cut = new StreamCutShortError({
+          label: 'hf:whiskers',
+          partialText: 'data: {"purr":"lo',
+          progress: {
+            firstByteMs: 10,
+            maxGapMs: 5,
+            elapsedMs: 40,
+            chars: 17,
+          },
+          cause: new Error('reset',),
+        },);
+        expect(await abandonedAttempts({ script: [cut, WHOLE_REPLY,], },),).toEqual({
+          reported: [cut.partialText.length,],
+          threw: false,
+        },);
+      },
+    },),
+    it({
+      name: 'REPORTS AN ATTEMPT THE LADDER ENDS WITHOUT RETRYING, which leaves by another path than the retries',
+      fn: async () => {
+        /**
+         Overrun this system chose to end.
+         */
+        const overrun = new StreamOverrunError({
+          label: 'hf:whiskers',
+          channel: 'content',
+          charsSeen: 900,
+          cap: 800,
+          rawChars: 81_000,
+        },);
+        expect(await abandonedAttempts({ script: [overrun,], },),).toEqual({
+          reported: [overrun.rawChars,],
+          threw: true,
+        },);
+      },
+    },),
+    it({
+      name: 'REPORTS NOTHING FOR A FAILURE THAT DELIVERED NOTHING, since no endpoint billed it',
+      fn: async () => {
+        expect(await abandonedAttempts({ script: [new Error('connection reset',), WHOLE_REPLY,], },),).toEqual({
+          reported: [],
+          threw: false,
+        },);
       },
     },),
   ],

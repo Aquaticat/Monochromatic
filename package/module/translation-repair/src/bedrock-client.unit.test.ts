@@ -19,6 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  BEDROCK_MODELS,
   BedrockModelNotServedError,
   COMPLETION_CAP,
   createBedrockClient,
@@ -28,6 +29,7 @@ import {
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_WITHHELD,
+  StreamOverrunError,
   SyntheticHttpError,
   type BedrockLedger,
   type BedrockLedgerEntry,
@@ -203,6 +205,45 @@ function memoryLedger({ remainingUsd = 150, }: { readonly remainingUsd?: number;
 }
 
 /**
+ What an abandoned attempt could have been billed, off the body it sent:
+ no more prompt tokens than the body has bytes, and no more completion tokens
+ than its `max_tokens` (ledger P1).
+ 
+ @param bodyJson - body the attempt sent
+ 
+ @returns Entry fields the ledger should hold for it
+ 
+ @example
+ ```ts
+ const bound = boundOf({ bodyJson: exchanges[0]?.bodyJson ?? '', },);
+ ```
+ */
+function boundOf(
+  { bodyJson, }: { readonly bodyJson: string; },
+): Pick<BedrockLedgerEntry, 'completionTokens' | 'model' | 'promptTokens' | 'usd'> & { readonly estimated: string; } {
+  /**
+   Body as sent.
+   */
+  const body = JSON.parse(bodyJson,) as { readonly model: keyof typeof BEDROCK_MODELS; readonly max_tokens: number; };
+  /**
+   Prices of the model it asked.
+   */
+  const prices = BEDROCK_MODELS[body.model];
+  /**
+   Bytes the body carried.
+   */
+  const promptTokens = Buffer.byteLength(bodyJson,);
+  return {
+    model: body.model,
+    promptTokens,
+    completionTokens: body.max_tokens,
+    usd: ((promptTokens * prices.promptUsdPerMillion) + (body.max_tokens * prices.completionUsdPerMillion))
+      / 1_000_000,
+    estimated: 'abandoned-bound',
+  };
+}
+
+/**
  Builds a client over a transport that records what it was sent.
  
  @param reply - what the chat endpoint answers
@@ -364,9 +405,10 @@ await describe({
 
     it({
       name: 'REFUSES a Gemma-route stream cut off before its sentinel as malformed rather than '
-        + 'returning the fragment, since a stream that stopped early comes back as 200',
+        + 'returning the fragment, since a stream that stopped early comes back as 200, and LEDGERS it at '
+        + 'what it could have been billed, since the endpoint accepted it (ledger P1)',
       fn: async () => {
-        const { client, noted, } = recordedClient({
+        const { client, noted, exchanges, } = recordedClient({
           reply: {
             status: 200,
             bodyText: chunkOf({ delta: { content: '{"spot":', }, },),
@@ -388,7 +430,8 @@ await describe({
         }
         expect(thrown,).toBeInstanceOf(Error,);
         expect((thrown as Error).name,).toBe('MalformedCompletionError',);
-        expect(noted,).toHaveLength(0,);
+        expect(noted,).toHaveLength(1,);
+        expect(noted[0],).toMatchObject(boundOf({ bodyJson: exchanges[0]?.bodyJson ?? '', },),);
       },
     },),
 
@@ -565,6 +608,96 @@ await describe({
           cut: true,
           calls: 1,
         },);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'every billed Bedrock attempt reaches the ledger (ledger P1)',
+  children: [
+    it({
+      name: 'LEDGERS A STREAM THIS PIPELINE ENDED, at what it could have been billed: 873 Bedrock streams ended '
+        + 'cut or overrun across the logs and none reached the ledger, the only guard on the owner\'s card',
+      fn: async () => {
+        /**
+         Exchanges the transport saw.
+         */
+        const exchanges: TransportExchange[] = [];
+        /**
+         Ledger the client writes to.
+         */
+        const { ledger, noted, } = memoryLedger({},);
+        /**
+         Client whose one stream overruns.
+         */
+        const client = createBedrockClient({
+          apiKey: 'test-key',
+          ledger,
+          baseUrl: 'https://mantle.invalid',
+          transport: async function overrunning(exchange,) {
+            exchanges.push(exchange,);
+            throw new StreamOverrunError({
+              label: 'google.gemma-4-e2b',
+              channel: 'content',
+              charsSeen: 900,
+              cap: 800,
+              rawChars: 81_000,
+            },);
+          },
+          retryPolicy: {
+            limit: 2,
+            baseMs: 1,
+          },
+        },);
+        await expect(client.chatText({
+          modelId: SEAT_BEDROCK_ONLY_TEXT,
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: SIGNAL,
+        },),).rejects.toBeInstanceOf(StreamOverrunError,);
+        expect(noted,).toHaveLength(1,);
+        expect(noted[0],).toMatchObject(boundOf({ bodyJson: exchanges[0]?.bodyJson ?? '', },),);
+      },
+    },),
+    it({
+      name: 'LEDGERS EVERY BILLED ATTEMPT OF A RETRIED CALL, the refused one at its bound and the whole one '
+        + 'at its reported usage',
+      fn: async () => {
+        /**
+         Exchanges the transport saw.
+         */
+        const exchanges: TransportExchange[] = [];
+        /**
+         Ledger the client writes to.
+         */
+        const { ledger, noted, } = memoryLedger({},);
+        /**
+         Client whose first stream stops early and whose second is whole.
+         */
+        const client = createBedrockClient({
+          apiKey: 'test-key',
+          ledger,
+          baseUrl: 'https://mantle.invalid',
+          transport: async function truncatedThenWhole(exchange,) {
+            exchanges.push(exchange,);
+            return (exchanges.length === 1)
+              ? { status: 200, bodyText: chunkOf({ delta: { content: '{"spot":', }, },), }
+              : { status: 200, bodyText: GEMMA_STREAM, };
+          },
+          retryPolicy: {
+            limit: 1,
+            baseMs: 1,
+          },
+        },);
+        await client.chatText({
+          modelId: SEAT_BEDROCK_ONLY_TEXT,
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: SIGNAL,
+        },);
+        expect(noted,).toHaveLength(2,);
+        expect(noted[0],).toMatchObject(boundOf({ bodyJson: exchanges[0]?.bodyJson ?? '', },),);
+        expect(noted[1],).toMatchObject({ promptTokens: 90, completionTokens: 10, },);
+        expect(noted[1]?.estimated,).toBeUndefined();
       },
     },),
   ],
