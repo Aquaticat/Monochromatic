@@ -876,10 +876,10 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
     launched from uncommitted trees,
     or launched on builds whose full suite was red
     (hulicaijia30, shi_Yumiaoya38, TianqiChen66614, TianqiChen66618, TianqiChen6663, yingying9).
-- A failing test was reported inside a PASS count and never fixed
+- A failing test was reported inside a `[PASS]` count and never fixed
     (the `lane-contest-stage` grace case, five times).
 - A suite ran on a build other than the one committed (class one hundred fifty).
-- PASS counts before 2026-09-26 counted describe blocks, not tests.
+- `[PASS]` counts before 2026-09-26 counted describe blocks, not tests.
 - A commit message names a hash that does not exist (`811d908a9` names `0e0bd1a8c`).
 - Doc facts not taken from the source (launch times, counts, a stale handover line).
 - Class one hundred forty-eight's fix has no planning-doc entry.
@@ -929,7 +929,7 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
     and treat an inline `-c` script as the heredoc slip in another form.
     During P1 the do-nothing placeholder came back as a background `sleep 1` while a mutation run finished.
 - A census read logs it should not have (QIV): the first P7 card ratios and P1 counts read every `.log`
-    under the agent directory, where unit-test suites and prototype test logs carry fixture SPEND and stream lines;
+    under the agent directory, where unit-test suites and prototype test logs carry fixture `SPEND` and stream lines;
     mimo's median moved from 126 to 93 once kept to pass-run logs.
     Prevention: a log census keeps logs that open with `START tip=` and says so in its header.
 - The mutation harness (`mutants.ts`) counted only failures that said `AssertionError`,
@@ -1168,7 +1168,7 @@ A mutant that never reads the claim fails the guard.
 
 ### Process mistakes, classes 1 to 92 and before
 
-- A suite called green when red (`e7307d304` for `d70087757`) and a miscounted PASS total.
+- A suite called green when red (`e7307d304` for `d70087757`) and a miscounted `[PASS]` total.
 - Runs launched on red builds (CuspariaKLSY3 on a real defect; others red on fixtures),
     on stale builds (two green runs that never executed the new code),
     or with the wrong roster or entry id.
@@ -1583,7 +1583,7 @@ Reading replaced slices only is by design: the archive's own text is never rewri
 reads only replaced slices,
 and is not at a fixed point when run twice.
 
-### A7: deterministic page refusals are labelled ERROR and re-attempted
+### A7: deterministic page refusals are labelled `ERROR` and re-attempted
 
 Status: fixed in `b11fd5409`.
 `entry-error-outcome.ts` omits `CollapsedHeadingError`, `UnparseablePageError`, `PublishedPageDisagreesError`,
@@ -1592,9 +1592,9 @@ Status: fixed in `b11fd5409`.
 ### A8: the README says an unfilled passage fails the entry; the code ships it as a gap
 
 Status: fixed in `d721449e2`.
-The README now says an unfilled passage ships as a recorded gap and an outage stops the entry INCOMPLETE.
+The README now says an unfilled passage ships as a recorded gap and an outage stops the entry `INCOMPLETE`.
 
-### A9: the DONE line undercounts on a resume into a directory holding a decline
+### A9: the `DONE` line undercounts on a resume into a directory holding a decline
 
 Status: fixed in `ead0a2d98` (prep `517facb2d`, guard `4127bfdcb`).
 The pass skipped entries with an artifact or a decline,
@@ -1613,10 +1613,10 @@ and it counted a directory named like a record,
 the drift `pass-settled.ts` already records for artifacts.
 It now lists with file types and throws `DeclinedEntriesUnreadableError` on every failure but absence.
 
-### A10: TALLY `pageChanged` reads before typography
+### A10: `TALLY` `pageChanged` reads before typography
 
 Status: fixed in `e0354d62d` (guard `48c573f20`).
-The TALLY now reads each slice through `wouldShipTextPerSlice`, as the publisher does.
+The `TALLY` now reads each slice through `wouldShipTextPerSlice`, as the publisher does.
 Replayed over the stored artifacts: hulicaijia31 34 to 31 and hulicaijia20 41 to 40, the audit's page counts;
 TianqiChen66610 and TianqiChen66614 unchanged.
 The test fixture now states `archiveText` and `pageAssembly`, which the contract requires.
@@ -1632,13 +1632,13 @@ and the repair, translate, contest and consolidation drivers run each slice unde
 Every module root logger reads it (`842c1feff`),
 the repair and translate lane loggers add the slice to every line,
 and ledger rounds record it and are written atomically (`fdcd003ef`).
-Guards: three calls queued behind one `p-limit` slot each write a SPEND line naming their own slice (`d0e912a0c`),
+Guards: three calls queued behind one `p-limit` slot each write a `SPEND` line naming their own slice (`d0e912a0c`),
 so the provider queue keeps the context;
 the lanes' lines at overlap 2 (`d14346bb4`); a ledger round's context (`2e5d2ab38`);
 and a source scan that fails on a plain module root (`07151e084`), which finds all 41 on the tree before `842c1feff`.
 The consolidation driver's slice body was indented against its nesting (the X9 shape) and is now indented to it.
 Client-layer loggers carry no entry
-(3279 of 5914 lines of TianqiChen66616.log, SPEND lines among them);
+(3279 of 5914 lines of `TianqiChen66616.log`, `SPEND` lines among them);
 the repair and translate lanes' lines carry no slice under overlap;
 `slice-cache-namespace.ts` swallows a `SyntaxError`;
 `attempt-store.ts` resets a malformed attempts file silently and writes it non-atomically;
@@ -1668,7 +1668,7 @@ Status: fixed in `da9ca20b0` and `487146cd2` (guard `ce97e60a2`, repin `d280961b
 which also hashes the declared names as the run's build worded them,
 and the recorded alignment findings, which include the roster pairing rounds' own (mikaela16's six);
 a rebuild reproduces neither, so mikaela16, mikaela17 and TianqiChen66610,
-whose rows match slice for slice, all printed REFUSED on `preparation.identity`.
+whose rows match slice for slice, all printed `REFUSED` on `preparation.identity`.
 A rebuild is now verified by its rows and by `verifyArtifactMeasurements`
 (slice count, document sizes, alignment pairs, each lane's slice count);
 the identity and findings checks stay in `verifyArtifactAgainstPreparation` for a preparation the run itself built.
@@ -1887,7 +1887,7 @@ The ledger is the only guard on the owner's card, and it noted completed calls w
     a stream that ended early what its error says it read.
     Bedrock writes each at its bound
     (no more prompt tokens than body bytes, no more completion tokens than `max_tokens`),
-    marked `abandoned-bound`, on the SPEND line and in the ledger (`bedrock-bound-ledger.ts`),
+    marked `abandoned-bound`, on the `SPEND` line and in the ledger (`bedrock-bound-ledger.ts`),
     since whether Bedrock bills output past a cancel is unmeasured and an under-read is the failure.
     OpenRouter writes its reckoned line per attempt; it wrapped the whole ladder,
     so an attempt refused and retried inside it left no line.
@@ -1901,12 +1901,12 @@ The ledger is the only guard on the owner's card, and it noted completed calls w
     Per-call reservations were considered and not taken:
     the cached reading, not the calls in flight, is what lets a run spend past zero.
 - Reckoned share: `a88a87b11` (guard `4364caf88`).
-    The reading carries `reckonedUsd` and the METERS line `bedrockReckonedUsd`,
+    The reading carries `reckonedUsd` and the `METERS` line `bedrockReckonedUsd`,
     so a reader sees how much of what is left rests on reckoning.
 - One-time correction of the live ledger, 2026-09-28 (`p1-ledger-correction.ts`).
     1,055 Bedrock streams in pass-run logs never reached it
     (344 on gemma-4-26b-a4b, 693 on gemma-4-e2b, 14 on gpt-oss-120b, 4 on gemma-4-31b):
-    cut, overrun, or completed with no SPEND line after, an attempt the whole-message check refused.
+    cut, overrun, or completed with no `SPEND` line after, an attempt the whole-message check refused.
     Each is reckoned at its model's 99th-percentile prompt over paired calls,
     and its generated characters at the model's 10th-percentile characters per token.
     1.3184 USD, four lines marked `abandoned`; remaining 6.3413 to 5.0229 USD.
@@ -3010,7 +3010,7 @@ Status: fixed in `7b2d382bc`; the first cites the paraphrase's decision record, 
 
 Status: Markdown fixed in `4397d7d2a` except the ALL-CAPS paragraphs it did not touch (D19);
 `seat-tally.ts:326` fixed in `59fb991c7`, which gives the decision-seat tally its real reason
-(the SEAT lines and the dark-seat report).
+(the `SEAT` lines and the dark-seat report).
 `doc/status.md` puts its history under the current heading,
 names a consolidation cache generation 14 that collides with artifact schema generation 14,
 says `assertFinalSelectionSettled` remains (removed in `1ba8f713a`),
@@ -3107,7 +3107,12 @@ name `TRANSLATION_REPAIR_CORPUS_DIR`.
 
 ### D19: ALL-CAPS emphasis left in untouched paragraphs
 
-Status: open.
+Status: fixed in `069b4df46`.
+Emphasis became sentence case, bold where the stress carries meaning;
+the three seat states `producer-silence.ts` prints became code spans in prose rather than labelled bullets.
+A probe over every package Markdown file, not only the list below,
+found four more in `doc/repetition.md` and four in this ledger, fixed in the same commit.
+Kept: the owner's words quoted in `doc/status.md` and sheet text quoted in this ledger.
 `README.md`, `doc/configuration.md`, `doc/design-commitments.md`, `doc/pictures.md`,
 `doc/provider-availability.md`, `doc/roster-changes.md`, `doc/seats-and-calibration.md`,
 `doc/slice-context.md` and `doc/status.md` keep ALL-CAPS emphasis in paragraphs the D fixes did not reach
@@ -3125,6 +3130,15 @@ Removed by the criterion `cbedea357` itself used: nothing a pass or probe reache
 The pairing cache stores `{ pairs, findings }` alone, before and after, so no cache version moves.
 The tests that read the fields now assert heard and usable counts, findings, exact pairs and call counts;
 the census of those tests first named four files, and the type check named two more (M33).
+
+### D21: log-line and status names in this ledger outside code spans
+
+Status: fixed, found while fixing D19.
+Eighteen lines of this ledger named a line or status the package prints
+(`SPEND`, `METERS`, `SEAT`, `TALLY`, `DONE`, `ERROR`, `INCOMPLETE`, `REFUSED`, `SURVIVED`, `[PASS]`, `[FAIL]`)
+as bare capitals, where the other docs span them; one of them was written on 2026-09-28 closing D11.
+One line named a log file bare as well.
+A probe over every package Markdown file found none outside this ledger.
 
 ## Found while fixing
 
@@ -3314,7 +3328,8 @@ against the rules that forbid a foreground sleep and any call while a background
 the task notifies on completion, so the wait is to end the turn.
 Once during D14 (`mise run corpus-pass -- --plan > log 2>&1 ; rg <log>`),
 and once during D16 (`rg <backtick> | rg <fence> ; rg <example fence>`),
-both searches whose second half ran regardless.
+both searches whose second half ran regardless,
+and once reading the suite after D20 (`rg --count FAIL log ; rg --count PASS log`).
 
 ### M19: a suite run against a stale build after a mutation was restored
 
@@ -3408,7 +3423,7 @@ and run the guards on the fixed code before trusting it.
 
 Status: caught by its own result, 2026-09-28; the verdicts were discarded and the check rerun.
 The spelling mutation script dropped every output line containing "Error: " to skip the suite's summary line,
-and every assertion failure reads "AssertionError: ", so all 26 mutants printed SURVIVED.
+and every assertion failure reads "AssertionError: ", so all 26 mutants printed `SURVIVED`.
 A null result from a probe never shown able to fail is no result (the M21 family, one level up).
 Prevention: every mutation run opens with controls,
 an unchanged source that must pass and a mutant that must fail, before any verdict is read.
@@ -3600,7 +3615,7 @@ and a version bump repins its key literal in the same commit.
 Status: fixed by the prep export `refactor(module-translation-repair): export archiveStandInFor`.
 `archive-dispute-standing.unit.test.ts` first failed because `archiveStandInFor` was not exported,
 which says nothing about behaviour.
-Prevention: read each FAIL reason of a red run; a missing export gets its own prep commit first.
+Prevention: read each `[FAIL]` reason of a red run; a missing export gets its own prep commit first.
 
 ### M4: a guard committed red with a lint warning
 
