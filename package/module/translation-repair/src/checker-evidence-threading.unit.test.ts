@@ -78,13 +78,17 @@ const REFERENCE_CONTEXT = `- https://cats.invalid/sill: the cat suns on the sill
 
 /**
  Invented original with one mistranslated sentence.
+
+ NO HEADING: preparation writes the archive's rendering of a heading into the
+ identity context as a line of its own, so a heading gives the control page
+ a DECLARED NAMES block, which the checkers are rightly shown.
  */
-const SOURCE_TEXT = '## 简介\n\n猫猫喜欢在窗台上晒太阳。\n';
+const SOURCE_TEXT = '猫猫喜欢在窗台上晒太阳。\n';
 
 /**
  Invented archive with that sentence mistranslated.
  */
-const TARGET_TEXT = '## Introduction\n\nThe cat hates sunbathing on the windowsill.\n';
+const TARGET_TEXT = 'The cat hates sunbathing on the windowsill.\n';
 
 /**
  Repair of the sentence, which every checker confirms.
