@@ -791,8 +791,18 @@ Guard: `addition-repair-rule.unit.test.ts`.
 
 ### H5: the translate lane and the consolidation never re-seat under a hold
 
-Status: open.
+Status: translate half fixed in `29a424b76` (guard `3d9079ea7`; mutation checked with a control, three mutants caught);
+consolidation half deferred past the TianqiChen666 launch.
 `corpus-run/pass-reseat.ts` and `corpus-run/pass-consolidate.ts` only wait.
+The fourth stage of one family: classes one hundred three, one hundred nine and one hundred thirteen
+fixed re-seating for one repair stage at a time.
+The per-slice hook now reads the seats while a hold runs for either lane and keeps each lane's latest roster;
+the lanes driver passes a translate roster through, and `translateDocument` seats the slice on it
+and keys it by that roster (`shapeFor`), so no cache version moves: a slice nobody re-seated keys as before.
+The consolidation half waits on a design: `consolidateRunShape` folds the roster into every key once,
+so per-slice seating there must fold each slice's bench into its key.
+Measured 2026-09-28 (`~/temp/agent/audit-glossary-fix/h5-census.mjs`): no hold began inside a consolidation phase
+in any TianqiChen666 run (9 holds in 20 logs, none inside), against 983 inside in 25 of 4,121 logs overall.
 
 ### H6: the absolute naturalness review is shown wrapped prose and no house rules
 
@@ -884,6 +894,10 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
     then a `;` between two `rg --count` probes of the built declarations,
     a heredoc that wrote a script followed by an unchained command that ran it,
     and a `;` before an `echo` closing a TianqiChen666 refusal count.
+- A capped search taken as complete (QRY): before `7ceffe055` changed two card prices,
+    the search for tests pinning the old ones ran through `head --lines=10`,
+    which cut off `deepseek-v41-admission.unit.test.ts`; the full suite caught it and `bc69e2336` fixed it.
+    Prevention: a search whose empty or short result licenses a change runs uncapped.
 
 ## History, classes 1 to 92 and before numbering
 
