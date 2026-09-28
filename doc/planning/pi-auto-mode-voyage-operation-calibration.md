@@ -225,5 +225,40 @@ It was corrected before any control result or model call.
 `test:syntax` subsequently parsed all 44 current owned JavaScript entrypoints successfully.
 Completed prior-study controllers and evidence were not rerun or overwritten.
 
-Fresh corpus construction and the final listed-code/input freeze remain the next gate.
-No semantic feature call or semantic-head fit has run for this comparison.
+## Fresh corpus checkpoint
+
+`72abba2` authored the new source-language banks;
+`proc_76ce` constructed the original unqueried draft.
+Independent review identified two direct cache templates that said files rather than entries,
+which could narrow permission relative to removing directory contents.
+`7c5cf10` preserved the complete original draft in `corpus-before-scope-review/`
+and clarified those templates before any provider output.
+No evidence was deleted or retained only in git history.
+
+`proc_7bd5` constructed and checked the clarified corpus.
+The measured change reaches six validation/cache sources;
+labels,
+episodes,
+partitions,
+and call schedule remain identical.
+`e3d5e50` retains the corrected 324-source bank,
+81 episode groups,
+reference/projection checks,
+and partition-guard omission control.
+The exact-text check found zero overlap with 274 unique named prior exposed texts,
+with known-overlap and injected-source positive controls.
+It did not inspect the original reserved bank.
+
+`proc_58fc` rendered/linted the corpus description and parsed all 56 current owned JavaScript files.
+Corpus freeze `bba0ac2` binds 25 files;
+manifest SHA-256:
+`cda55790d2145a2c2b30582e545e5d19dcbbd6dc1e70086c056f8dab23e82309`.
+`proc_25f0` prepared all 336 shared request identities from the new corpus,
+retaining every one of the 42,677 current public policy bytes in every hypothesis document.
+Execution freeze `55c7236` binds 295 listed files;
+manifest SHA-256:
+`db1ca9345a4e373cab696446cf839f2e731ab8db023cc7731e1c7e802df491de`.
+The fresh inputs are not the old exposed examples used in local consumer controls.
+No semantic feature request or semantic-head fit preceded these freezes.
+The next step is the fixed 228-call pretest phase,
+then both offline fits and the shared locked test.

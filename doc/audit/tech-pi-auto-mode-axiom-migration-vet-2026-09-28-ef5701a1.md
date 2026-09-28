@@ -1053,4 +1053,45 @@ the correction preceded any control result or provider call.
 `test:syntax` then parsed all 44 current owned JavaScript entrypoints.
 The [consumer checkpoint](../planning/pi-auto-mode-voyage-operation-calibration.md#verified-consumer-checkpoint)
 records source/image identities and remaining fresh-corpus freeze work.
-No semantic feature call or semantic-head fit has run.
+No semantic feature call or semantic-head fit had run at the consumer checkpoint.
+
+### Frozen fresh shared corpus and requests
+
+`72abba2` authored the new source-language banks,
+and `proc_76ce` constructed the original unqueried corpus.
+Independent pre-query review identified two cache-positive templates using files where entries matched the projected scope.
+`7c5cf10` preserved the complete original source/data/control revision in `corpus-before-scope-review/`,
+then clarified that wording without using provider outputs.
+No evidence was deleted or retained only in git history.
+
+`proc_7bd5` reconstructed and verified the current 324-source bank in 81 episode groups.
+The measured delta is six validation/cache source texts;
+labels,
+partitions,
+episodes,
+and schedule remain identical.
+Each conditional cell has eighteen rows and six positives per partition.
+Source/projection,
+family references,
+grouping,
+parser boundaries,
+fit-only controls,
+and partition-guard omission checks passed.
+The exact-text check found zero overlap with 274 unique named prior exposed texts,
+with known-overlap and injected-source positive controls.
+The original reserved bank was not inspected.
+
+`proc_58fc` rendered/linted the corpus description and parsed all 56 current owned JavaScript files.
+Corpus freeze `bba0ac2` binds 25 files,
+SHA-256 `cda55790d2145a2c2b30582e545e5d19dcbbd6dc1e70086c056f8dab23e82309`.
+`proc_25f0` prepared all 336 shared request identities from that new corpus,
+with all 42,677 current public policy bytes in each hypothesis document.
+Execution freeze `55c7236` binds 295 listed files,
+SHA-256 `db1ca9345a4e373cab696446cf839f2e731ab8db023cc7731e1c7e802df491de`.
+It retains the disclosed non-hermetic host boundary.
+
+No semantic feature request or semantic-head fit preceded the freezes.
+The next authorized step is the fixed 228-call pretest,
+both separate offline fits,
+both-candidate lock,
+and 108-call shared fresh test.

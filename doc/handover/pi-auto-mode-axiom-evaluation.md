@@ -90,10 +90,25 @@ The original `proc_33bf` syntax failure is retained;
 no model call preceded its correction.
 These are local/numeric controls,
 not semantic evaluation.
-Next is #59:
-new 324-source corpus,
-fresh projections and labels,
-then the complete listed-code/input freeze before any feature query.
+Task #59 constructed and checked the fresh 324-source corpus in 81 episode groups.
+`proc_7bd5` verified the corrected source/reference bank,
+including a pre-query files-to-entries scope clarification in six validation/cache sources.
+The original complete draft remains in `corpus-before-scope-review/`;
+references,
+partitions,
+episodes,
+and schedule are unchanged.
+Corpus freeze `bba0ac2` has SHA-256
+`cda55790d2145a2c2b30582e545e5d19dcbbd6dc1e70086c056f8dab23e82309`.
+`proc_25f0` prepared all 336 fresh request identities with full policy.
+Execution freeze `55c7236` binds 295 listed files,
+SHA-256 `db1ca9345a4e373cab696446cf839f2e731ab8db023cc7731e1c7e802df491de`.
+No semantic feature call or semantic fit preceded those freezes.
+Next is #60:
+228 shared pretest calls,
+both separate offline fits,
+both-candidate lock,
+then 108 shared fresh test calls.
 No new provider,
 private input,
 base-model training,
