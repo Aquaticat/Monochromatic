@@ -93,21 +93,27 @@ await describe({
   name: 'canadianizeText and canadianizePage (class one hundred thirty-four)',
   children: [
     it({
-      name: 'WRITES day-first dates month first, with a comma before a year',
+      name: 'WRITES day-first dates month first, with a comma before a year and after it where the sentence '
+        + 'goes on (ledger K1: the Language Portal of Canada sets the year off on both sides)',
       fn: async () => {
         expect([
           rewritten({ text: 'On 4th May, the cat napped.', },),
           rewritten({ text: '29th April was the cat\'s birthday.', },),
           rewritten({ text: 'The cat was born on 13 March 2024 in a box.', },),
+          rewritten({ text: 'On 4 May 2024 at 22:55 the cat napped.', },),
+          rewritten({ text: 'The cat was born on 13 March 2024.', },),
         ],).toEqual([
           'On May 4, the cat napped.',
           'April 29 was the cat\'s birthday.',
-          'The cat was born on March 13, 2024 in a box.',
+          'The cat was born on March 13, 2024, in a box.',
+          'On May 4, 2024, at 22:55 the cat napped.',
+          'The cat was born on March 13, 2024.',
         ],);
       },
     },),
     it({
-      name: 'LEAVES month-first dates, numbers that are no day, words that only look like months, and a range',
+      name: 'LEAVES month-first dates with nothing to change, numbers that are no day, and words that only look '
+        + 'like months or start a name (ledger K8)',
       fn: async () => {
         /**
          Texts that must come back unchanged.
@@ -117,16 +123,96 @@ await describe({
           'The cat ate 40 May beetles.',
           'The cat may 4 times a day nap.',
           'The cat napped on 32 March, which is no date.',
-          'From 1st to 3rd June the cat slept.',
+          'The cat chased 5 May beetles.',
+          'She read 3 April Fools’ jokes to the cat.',
+          'The cat met 2 June Carter fans.',
+          'The cat was born 4 May2024.',
+          'Born 4 May 2024a.',
+          'On the 5th, the cat napped.',
         ];
         expect(unchanged.map(function rewrite(text,): string {
           return rewritten({ text, },);
-        },),).toEqual([
-          'On March 13 the cat napped.',
-          'The cat ate 40 May beetles.',
-          'The cat may 4 times a day nap.',
-          'The cat napped on 32 March, which is no date.',
-          'From 1st to 3rd June the cat slept.',
+        },),).toEqual(unchanged,);
+      },
+    },),
+    it({
+      name: 'WRITES A RANGE ONCE, month first, whichever end carries the month, across a line break too, and '
+        + 'dates each end of a range whose ends both carry one (ledger K2)',
+      fn: async () => {
+        expect([
+          rewritten({ text: 'From 1st to 3rd June the cat slept.', },),
+          rewritten({ text: 'The cat slept from 1st\nto 3rd June.', },),
+          rewritten({ text: 'The cat slept from 1st and\n3rd June.', },),
+          rewritten({ text: 'The cat slept from 3 June to 5 July.', },),
+          rewritten({ text: 'The cat napped on 5 June and 6 June.', },),
+          rewritten({ text: 'The cat napped 2 June–3 July.', },),
+        ],).toEqual([
+          'From June 1 to 3 the cat slept.',
+          'The cat slept from June 1\nto 3.',
+          'The cat slept from June 1 and\n3.',
+          'The cat slept from June 3 to July 5.',
+          'The cat napped on June 5 and June 6.',
+          'The cat napped June 2–July 3.',
+        ],);
+      },
+    },),
+    it({
+      name: 'WRITES A DATE AFTER A WORD THAT ONLY LOOKS LIKE A RANGE, and one a list marker or a dash opens '
+        + '(ledger K2)',
+      fn: async () => {
+        expect([
+          rewritten({ text: 'The cat stayed until 4 May.', },),
+          rewritten({ text: 'The shelter was closed till 4 May.', },),
+          rewritten({ text: 'The vet visit moved to 4 May.', },),
+          rewritten({ text: '- 4 May: the cat napped.', },),
+          rewritten({ text: 'The cat napped—4 May, to be exact.', },),
+          rewritten({ text: 'On 4 May the cat napped.', },),
+        ],).toEqual([
+          'The cat stayed until May 4.',
+          'The shelter was closed till May 4.',
+          'The vet visit moved to May 4.',
+          '- May 4: the cat napped.',
+          'The cat napped—May 4, to be exact.',
+          'On May 4 the cat napped.',
+        ],);
+      },
+    },),
+    it({
+      name: 'DROPS THE ARTICLE AND "OF" of a day-first date, and a month-first ordinal\'s suffix (ledger K4, K8)',
+      fn: async () => {
+        expect([
+          rewritten({ text: 'It happened on the 4th May.', },),
+          rewritten({ text: 'The 29th April was her birthday.', },),
+          rewritten({ text: 'On the 4th of May the cat napped.', },),
+          rewritten({ text: 'The cat was found on December 29th.', },),
+          rewritten({ text: 'On May 14th, 2023 the cat was taken home.', },),
+          rewritten({ text: 'The cat slept from May 11th to 13th.', },),
+        ],).toEqual([
+          'It happened on May 4.',
+          'April 29 was her birthday.',
+          'On May 4 the cat napped.',
+          'The cat was found on December 29.',
+          'On May 14, 2023, the cat was taken home.',
+          'The cat slept from May 11 to 13.',
+        ],);
+      },
+    },),
+    it({
+      name: 'WRITES YEAR-FIRST DATES AND ABBREVIATED MONTHS month first in full (ledger K4), and closes a year '
+        + 'the page already wrote month first',
+      fn: async () => {
+        expect([
+          rewritten({ text: 'On 2021 July 20th, the cat napped.', },),
+          rewritten({ text: '> @whiskers 2023 Feb 25th:', },),
+          rewritten({ text: 'The cat was archived at 2023, 31 Mar.', },),
+          rewritten({ text: 'On 4 Sept 2024 the cat napped.', },),
+          rewritten({ text: 'On December 21, 2023 the cat left.', },),
+        ],).toEqual([
+          'On July 20, 2021, the cat napped.',
+          '> @whiskers February 25, 2023:',
+          'The cat was archived at March 31, 2023.',
+          'On September 4, 2024, the cat napped.',
+          'On December 21, 2023, the cat left.',
         ],);
       },
     },),
