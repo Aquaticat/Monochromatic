@@ -2054,7 +2054,44 @@ Cache: rides inside all six versions, with an account in each.
 
 ### P10: the deepseek-v4.1-flash card is stale against its own measurement rule
 
-Status: open.
+Status: the card and the nudge fixed 2026-09-28, each guarded and mutation-checked; the census command is open.
+The card named the pooled 99th percentile as "no completed-call distribution of its own yet" after 67,353 calls,
+and the recovery round told a model whose reply the cap cut that its shape was wrong.
+
+- The cap: `4943d74d5`.
+    Re-read over pass-run logs alone (`p10-cap-measure.mjs`, `p10-cap-cuts.mjs`), 499,820 completed calls.
+    By the rule (the highest provider p99 with at least 100 calls, floored at the pooled 90th),
+    deepseek-v4.1-flash reads 13,082 on Hyper, the cap itself: 75 of 4,062 Hyper calls ran to it, 74 with no content.
+    OpenRouter reads 7,531 over 63,291; of its 237 calls at the cap, the 70 that pair with a stream line are
+    69 runaways and one answer.
+    The card now carries `13_082` as its own number; the runtime value does not move.
+    Mimo keeps the pool with its 78 calls named, under the 100 the rule reads.
+    Every other card's cap comment now says it is the 2026-09-09 reading.
+- Why the caps stand (`completion-cap.ts`, re-read paragraph).
+    Every call since 2026-09-09 carries its cap, so a re-read can confirm or lower a cap and never shows a longer answer.
+    Seven seat and provider pairs run to their cap on more than one percent of calls since then,
+    against the table's "under one percent", and where a cut call pairs with its stream nearly every one streamed no content.
+    The re-read's pool (p90 2,607, p99 10,822) is mostly capped calls, nearly a third of them Bedrock Gemma,
+    so the pooled constants stay.
+    The re-read's scope differs from the 2026-09-09 table's (pass-run logs only, where the table read every log),
+    which is why Kimi-K3 on Hyper reads 8,496 against the table's 10,921 and minimax-m3 on Hyper 12,207
+    (pre-cap calls) against 10,822; neither is a defect, and no cap moves on them.
+- The nudge: `ce0ef7b51` (guard `0be7b4437`), decided for quality (`design-commitments.md`).
+    A lost voice that answered carries its cause (`cut-short` for `truncated-completion` or `truncated-thinking`,
+    `off-shape` otherwise), and the recovery round asks each cause with its own wording (`recovery-nudge.ts`),
+    both groups in one window.
+    The off-shape wording is unchanged, so a stored payload for it still replays.
+    The red guard's probe read both seats re-asked and heard with the same nudge.
+    The cross-provider re-ask keeps its neutral wording, which is true of a cut reply too.
+
+Mutation check (`p10-mutants.json`): one wording for both causes, a cause that never reads cut,
+one blind to cut thinking, the stage call dropping the cause, the round ignoring it or dropping the cut group,
+the deepseek card back on the placeholder, and the all-dry refusal without its split sentence are each caught;
+the control survives.
+Cache: the cut-short nudge changes what such a seat is asked, so it rides inside all six versions
+with an account in each (`dd2d454ab`); same slice-cache check, same result.
+Open: the census kept as a command (`p10-cap-measure.mjs` and `p10-cap-cuts.mjs` made a package task with a fixture test),
+named in the pre-launch checks, since a unit test cannot read the logs and a dated test would be a time bomb.
 
 ### P11: owner-rule enforcement relies on absence rather than a guard
 
@@ -2158,6 +2195,15 @@ that refusal, a stage with no typed question and a client with no decisions tran
 now read as out of reach, so the gather sizes its quorum without the seat and never re-asks it
 (the 2026-09-09 short-bench rule and the owner's "Count as out of reach").
 Rides inside the translate (15), repair (33) and refine (5) cache versions with written accounts.
+
+### P14: the spend report reads reckoned lines as measured calls
+
+Status: open, found 2026-09-28 while scoping the P10 census.
+`spend-read.ts` never reads the `estimated=` field, so `spend-report` counts every reckoned `SPEND` line
+(an abandoned OpenRouter attempt, and since P1 a Bedrock attempt at its bound) as a call the provider reported,
+with the reckoned tokens and cost summed in.
+2,178 such lines sit in 138 top-level logs under the agent directory.
+The writer changed under P1 and P7; the reader did not.
 
 ## Repair lane
 
@@ -3180,7 +3226,8 @@ Twice during E1 and E4:
 and a heredoc appended to a test file with the lint command on the next line,
 two commands no `&&` joined.
 Once more while closing P6 (`rg <transcript> | head ; rg <transcript> | sort | head`),
-looking up how earlier ledger commits were render-checked.
+looking up how earlier ledger commits were render-checked,
+and once during P10 (`rg <run> | head ; ls <agent dir> | rg`), after that entry was committed.
 
 ### M19: a suite run against a stale build after a mutation was restored
 
