@@ -12,7 +12,8 @@ probability profile,
 or deployment.
 The first mechanism stage performed no fitting or training.
 The user subsequently approved scoped local-head and preprocessing fitting and added:
-"Yes. You can run Voyage as much as you like."
+"Yes.
+ You can run Voyage as much as you like."
 Base-model training and production use remain unauthorized.
 Private Voyage inputs,
 original reserved scenarios,

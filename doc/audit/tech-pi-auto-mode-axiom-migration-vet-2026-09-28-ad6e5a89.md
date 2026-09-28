@@ -27,7 +27,8 @@
    user-authorized Laya,
    relevant Voyage products/models,
    Jev,
-   direct Respan Lite/free and limited Pro observations, with newly authorized local Voyage-feature probability heads.
+   direct Respan Lite/free and limited Pro observations,
+   with newly authorized local Voyage-feature probability heads.
 - Rubric:
    not scored;
    no finalist ranking or production adoption.

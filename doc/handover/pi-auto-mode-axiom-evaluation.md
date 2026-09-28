@@ -379,7 +379,8 @@ larger model batch,
 or deployment follows.
 
 The user approved the next local-head fitting experiment and added:
-"Yes. You can run Voyage as much as you like."
+"Yes.
+ You can run Voyage as much as you like."
 Voyage inference volume is authorized as needed for the task;
 120 calls is an initial planning bound,
 not a user-imposed global ceiling.
