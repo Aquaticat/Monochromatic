@@ -50,6 +50,14 @@ export {
 } from './corpus-run/artifact-two-lane-consolidate.ts';
 export { consolidateDocument, } from './consolidate-driver.ts';
 export {
+  type ConsolidateRoster,
+  type ConsolidateSliceSeating,
+} from './consolidate-slice-seating.ts';
+export {
+  type ConsolidationHooks,
+  consolidationHooksFor,
+} from './corpus-run/pass-consolidate-reseat.ts';
+export {
   type ConsolidationNaturalnessAudit,
   type ConsolidationNaturalnessCorrectionAudit,
   type ConsolidationPolish,

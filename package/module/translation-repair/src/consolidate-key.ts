@@ -226,7 +226,7 @@ const LANE_TEXTS_KEY_LABEL = 'lane-texts';
  gives: it changes how long a voice has to answer, not what it is asked.
  
  @param modelIds - roster asked to produce, judge and gate
- 
+
  @param identityContext - names and handles both documents declare
 
  @param referenceContext - what the pages the original cites say, folded in
@@ -255,6 +255,7 @@ export function consolidateRunShape(
     declaredNamePairs,
   }: {
     readonly modelIds: readonly RosterModelId[];
+    readonly judgeModelIds?: readonly RosterModelId[];
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly polishConfig?: ConsolidationPolishConfig;

@@ -53,6 +53,7 @@ import {
   TranslationRepairInterruptedError,
   type ArchiveDispute,
   type ArtifactContestSlice,
+  type ConsolidateSliceSeating,
   type ConsolidationSettlement,
   type ConsolidationTerminal,
   type ProjectedLanes,
@@ -681,7 +682,7 @@ async function driveWith(
     readonly neighbourContextBySlice?: ReadonlyMap<number, SliceNeighbourContext>;
     readonly modelIds?: readonly RosterModelId[];
     readonly overlap?: number;
-    readonly beforeSlice?: () => Promise<void>;
+    readonly beforeSlice?: () => Promise<ConsolidateSliceSeating>;
     readonly activity?: ConsolidationConcurrency;
     readonly messages?: string[];
     readonly writes?: string[];
@@ -834,8 +835,9 @@ await describe({
           contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
           resumed: new Map<string, ConsolidationSettlement>([[key, settled,],]),
           messages,
-          beforeSlice: async (): Promise<void> => {
+          beforeSlice: async (): Promise<ConsolidateSliceSeating> => {
             before.calls += 1;
+            return {};
           },
         },);
         expect(before.calls,).toBe(1,);

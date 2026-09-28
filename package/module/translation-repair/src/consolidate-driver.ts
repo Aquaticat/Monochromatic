@@ -16,6 +16,7 @@ import { laneTextsForSlate, } from './consolidate-lane-offer.ts';
 import { persistConsolidationSettlement, } from './consolidate-persistence.ts';
 import type { ConsolidationSettlement, } from './consolidate-settle.ts';
 import { buyConsolidationSlice, } from './consolidate-slice-buy.ts';
+import type { ConsolidateSliceSeating, } from './consolidate-slice-seating.ts';
 import { readStandingVerdict, } from './consolidate-standing-verdict.ts';
 import {
   standingTextFor,
@@ -179,7 +180,7 @@ export async function consolidateDocument(
      Awaited before each slice starts, so a caller can hold the slice back
      while a named provider hold keeps the bench from quorum.
      */
-    readonly beforeSlice?: () => Promise<void>;
+    readonly beforeSlice?: () => Promise<ConsolidateSliceSeating>;
     readonly l: Logger;
   },
 ): Promise<readonly ArtifactConsolidateSlice[]> {
