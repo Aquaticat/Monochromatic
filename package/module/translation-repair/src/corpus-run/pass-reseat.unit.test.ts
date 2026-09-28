@@ -222,6 +222,37 @@ await describe({
         },);
       },
     },),
+    it({
+      name: 'KEEPS EACH LANE\'S SEATING APART: a repair chunk re-seated under a hold hands the translate lane '
+        + 'nothing once the hold has ended, since the translate lane has not read its own',
+      fn: async () => {
+        const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
+        rig.holds.synthetic = DRY_HOLD_MS;
+        const hooks = lanesHooksFor({
+          client: rig.client,
+          signal: new AbortController().signal,
+          entryId: 'mittens',
+        },);
+        /**
+         Seating the repair lane took under the hold.
+         */
+        const repair = await hooks.beforeSlice({ lane: 'repair', },);
+        rig.holds.synthetic = 0;
+        /**
+         Seating the translate lane is handed once the hold has ended.
+         */
+        const translate = await hooks.beforeSlice({ lane: 'translate', },);
+        expect({
+          repairSeated: repair.repairModels !== undefined,
+          translate,
+          reads: rig.counter.reads,
+        },).toEqual({
+          repairSeated: true,
+          translate: {},
+          reads: 1,
+        },);
+      },
+    },),
   ],
 },);
 
