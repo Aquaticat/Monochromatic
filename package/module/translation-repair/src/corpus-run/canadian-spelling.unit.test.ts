@@ -208,7 +208,7 @@ await describe({
       },
     },),
     it({
-      name: 'READS PROSE PAST a quote mark in a JSX comment, a stray backtick, and a code span of two backticks '
+      name: 'READS PROSE PAST a quote mark in a JSX comment or expression, a stray backtick, and a code span of two backticks '
         + '(ledger K7)',
       fn: async () => {
         expect([
@@ -216,11 +216,15 @@ await describe({
           respelled({ text: 'The cat`s favorite toy was gray.', },),
           respelled({ text: '``code `color` here`` and favorite', },),
           respelled({ text: 'A `color\n\nand her favorite` toy.', },),
+          respelled({ text: '<Cat name={cat\'s} /> Her favorite color was gray.', },),
+          respelled({ text: '<Paw alt="the cat\'s\nfavorite paw" /> Her color.', },),
         ],).toEqual([
           '{/* cat\'s note */} Her favourite colour was grey.',
           'The cat`s favourite toy was grey.',
           '``code `color` here`` and favourite',
           'A `colour\n\nand her favourite` toy.',
+          '<Cat name={cat\'s} /> Her favourite colour was grey.',
+          '<Paw alt="the cat\'s\nfavorite paw" /> Her colour.',
         ],);
       },
     },),

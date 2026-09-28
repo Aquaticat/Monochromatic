@@ -194,6 +194,50 @@ function codeSpanEnd(
 }
 
 /**
+ Whether a quote mark opened just before one offset closes on its line.
+
+ @param text - text under scan
+
+ @param at - offset just past the opening mark
+
+ @param quote - the opening mark
+
+ @returns Whether the same mark stands again before the next line break
+
+ @example
+ ```ts
+ closesOnLine({ text: "{cat's} nap", at: 5, quote: "'", },); // false
+ ```
+ */
+function closesOnLine(
+  {
+    text,
+    at,
+    quote,
+  }: {
+    readonly text: string;
+    readonly at: number;
+    readonly quote: string;
+  },
+): boolean {
+  /**
+   Where the partner stands, or minus one.
+   */
+  const close = text.indexOf(
+    quote,
+    at,
+  );
+  /**
+   Where the line ends, or minus one.
+   */
+  const newline = text.indexOf(
+    '\n',
+    at,
+  );
+  return (close !== (-1)) && ((newline === (-1)) || (close < newline));
+}
+
+/**
  Where a JavaScript comment opening at one offset ends.
 
  @param text - text under scan
@@ -306,10 +350,22 @@ function pastConstruct(
         state.quote = '';
       continue;
     }
-    if ((character === '"') || (character === '\'')
-      || (character === '`'))
+    /**
+     Whether an attribute value may run on across lines here, as a tag's
+     does; a JavaScript string in an expression ends on its line, so a quote
+     mark with no partner there is a stray apostrophe, not a string.
+     */
+    const multiline = isTag && (state.depth === 0);
+    if (character === '`')
       state.quote = character;
-    else if (character === '{')
+    else if ((character === '"') || (character === '\'')) {
+      if (multiline || closesOnLine({
+        text,
+        at: state.at,
+        quote: character,
+      },))
+        state.quote = character;
+    } else if (character === '{')
       state.depth += 1;
     else if (character === '}') {
       state.depth -= 1;
