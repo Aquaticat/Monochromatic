@@ -1,0 +1,229 @@
+/**
+ Guards ledger H16 at the preparation: a page repeating a title the archive
+ leaves unpaired carries one settled rendering of it in the identity context
+ every slice sheet reads, asked of the roster the preparation's hook hands over
+ (ledger X12), and a page repeating none asks nothing.
+
+ Fixtures are cat-themed invention; no corpus content appears here.
+
+ @module
+ */
+
+import {
+  mkdtemp,
+  rm,
+} from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
+
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import {
+  type BenchSeating,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  PAGE_TITLE_LEXICON_RESPONSE_FORMAT,
+  type PipelineDigest,
+  preparePassEntry,
+  type RosterModelId,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  type SyntheticClient,
+} from '../../dist/final/node/index.mjs';
+
+/**
+ Logger the preparation writes to, whose lines are not under test.
+ */
+const l = tagged({ tag: 'pass-prepare-page-titles-test', },);
+
+/**
+ Roster the preparation started on.
+ */
+const ROSTER: readonly RosterModelId[] = [
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+];
+
+/**
+ Roster the hook hands every round.
+ */
+const RESEATED: readonly RosterModelId[] = [
+  SEAT_HYPER_ONLY,
+  SEAT_OPENROUTER_ONLY,
+];
+
+/**
+ Cache generation the preparation's caches are stamped with.
+ */
+const DIGEST = 'pass-prepare-page-titles-test' as PipelineDigest;
+
+/**
+ Archive rendering no heading, so the title stays unpaired.
+ */
+const ARCHIVE = 'The kitten sang.\n\nShe fell asleep.\n';
+
+/**
+ Directory one case owns for its entry caches, removed when the case ends.
+
+ @returns Directory beside how to remove it
+
+ @example
+ ```ts
+ await using cacheDir = await throwawayCacheDir();
+ ```
+ */
+async function throwawayCacheDir(): Promise<{ readonly dir: string; } & AsyncDisposable> {
+  /**
+   Directory this case owns.
+   */
+  const dir = await mkdtemp(join(
+    tmpdir(),
+    'pass-prepare-page-titles-',
+  ),);
+  return {
+    dir,
+    [Symbol.asyncDispose]: async () => {
+      await rm(
+        dir,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
+    },
+  };
+}
+
+/**
+ Builds a client rendering every title alike on the lexicon sheet, refusing
+ every other sheet, and recording the seats the lexicon asked.
+
+ @param lexiconAsked - sink for the seat of every lexicon call
+
+ @returns Client serving only structured calls
+
+ @example
+ ```ts
+ const client = lexiconClient({ lexiconAsked: [], },);
+ ```
+ */
+function lexiconClient({ lexiconAsked, }: { readonly lexiconAsked: RosterModelId[]; },): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText not used',);
+    },
+    chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> => {
+      if (request.responseFormat?.json_schema.name !== PAGE_TITLE_LEXICON_RESPONSE_FORMAT.json_schema.name)
+        return { kind: 'schema-mismatch', rawText: '{}', detail: 'fixture answers the lexicon only', };
+      lexiconAsked.push(request.modelId,);
+      /**
+       Every seat's rendering.
+       */
+      const value: unknown = { titles: [{ title: 1, rendering: 'Song of the Cat', },], };
+      return request.validate(value,)
+        ? { kind: 'ok', value, rawText: JSON.stringify(value,), }
+        : { kind: 'schema-mismatch', rawText: '{}', detail: 'fixture reply refused', };
+    },
+    quotas: async () => {
+      throw new Error('quotas not used',);
+    },
+  };
+}
+
+/**
+ Prepares an original against the fixture archive, the hook re-seating every round.
+
+ @param sourceText - original page
+
+ @returns Identity context, findings and the seats the lexicon asked
+
+ @example
+ ```ts
+ const run = await prepared({ sourceText: '## 猫之歌\n\n《猫之歌》\n', },);
+ ```
+ */
+async function prepared({ sourceText, }: { readonly sourceText: string; },) {
+  /**
+   Seat of every lexicon call.
+   */
+  const lexiconAsked: RosterModelId[] = [];
+  await using cacheDir = await throwawayCacheDir();
+  /**
+   The preparation.
+   */
+  const paired = await preparePassEntry({
+    client: lexiconClient({ lexiconAsked, },),
+    entryId: 'CatEntry',
+    entryCacheDir: cacheDir.dir,
+    pipelineDigest: DIGEST,
+    modelIds: ROSTER,
+    sourceText,
+    targetText: ARCHIVE,
+    signal: new AbortController().signal,
+    exchangeTimeoutMs: 5_000,
+    l,
+    beforeItem: async (): Promise<BenchSeating> => ({ modelIds: RESEATED, }),
+    readReferences: async () => '',
+  },);
+  return {
+    identityContext: paired.prepared.identityContext ?? '',
+    findings: paired.findings,
+    lexiconAsked,
+  };
+}
+
+await describe({
+  name: 'preparePassEntry settles the titles a page repeats (ledger H16)',
+  children: [
+    it({
+      name: 'CARRIES ONE SETTLED RENDERING OF A REPEATED UNPAIRED TITLE on every slice sheet\'s identity context, '
+        + 'asked of the roster the hook hands over',
+      fn: async () => {
+        /**
+         Preparation of a page repeating a title.
+         */
+        const repeating = await prepared({ sourceText: '## 猫之歌\n\n小猫唱了《猫之歌》。\n\n它睡着了。\n', },);
+        expect({
+          heading: repeating.identityContext.includes('TITLES THIS PAGE REPEATS THAT THE ARCHIVE DOES NOT RENDER',),
+          rendering: repeating.identityContext.includes('- 猫之歌 (2 places on the page): "Song of the Cat"',),
+          reported: repeating.findings.some(function reportsLexicon(finding,): boolean {
+            return finding.startsWith('page title lexicon settled 1 of 1',);
+          },),
+          askedAny: repeating.lexiconAsked.length > 0,
+          offReseated: repeating.lexiconAsked.filter(function outside(seat,): boolean {
+            return !RESEATED.includes(seat,);
+          },),
+        },).toEqual({
+          heading: true,
+          rendering: true,
+          reported: true,
+          askedAny: true,
+          offReseated: [],
+        },);
+      },
+    },),
+    it({
+      name: 'ASKS THE LEXICON NOTHING for a page repeating no title',
+      fn: async () => {
+        /**
+         Preparation of a page naming a title once.
+         */
+        const once = await prepared({ sourceText: '小猫唱了《猫之歌》。\n\n它睡着了。\n', },);
+        expect({
+          asked: once.lexiconAsked,
+          heading: once.identityContext.includes('TITLES THIS PAGE REPEATS',),
+        },).toEqual({
+          asked: [],
+          heading: false,
+        },);
+      },
+    },),
+  ],
+},);
