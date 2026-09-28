@@ -2,6 +2,7 @@ import { CANDIDATE_DECLARED_NAMES_RULES, } from './candidate-judge-rules.ts';
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import { SIZE_NOTE_POLICY, } from './contest-size-note.ts';
 import { JUDGE_POLICY_BLOCK, } from './house-policy.ts';
+import { continuesLatinWord, } from './latin-letters.ts';
 import {
   APPARATUS_KINDS,
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
@@ -235,14 +236,9 @@ function continuesWord(
     readonly at: number;
   },
 ): boolean {
-  /**
-   Case-folded character at that offset, empty past the end.
-   */
-  const folded = text
-    .charAt(at,)
-    .toLowerCase();
-  return (((folded >= 'a') && (folded <= 'z'))
-    || ((folded >= '0') && (folded <= '9')));
+  // A Latin letter, accented or not, a digit or a combining mark goes on with
+  // the name; the test took ASCII letters and digits only until ledger B18.
+  return continuesLatinWord({ character: text.charAt(at,), },);
 }
 
 /**

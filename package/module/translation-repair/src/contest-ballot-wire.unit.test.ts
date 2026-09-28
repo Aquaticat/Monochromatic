@@ -232,6 +232,16 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES a longer word whose next letter is accented, composed or combining, which an ASCII test '
+        + 'read as the end of the name (ledger B18)',
+      fn: async () => {
+        expect(readCandidateNames({
+          findings: [ 'tabbyé wording', 'calico\u{0301} wording', ],
+          names: NAMES,
+        },),).toEqual([],);
+      },
+    },),
+    it({
       name: 'ACCEPTS a finding naming nobody by blaming nobody',
       fn: async () => {
         expect(readCandidateNames({
