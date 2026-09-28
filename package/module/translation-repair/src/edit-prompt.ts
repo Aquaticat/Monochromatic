@@ -10,7 +10,10 @@ import {
 } from './declared-identity-rule.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 import { FOREIGN_PHRASE_NAME_TITLE_SCOPE, } from './foreign-phrase-scope.ts';
-import { MARKUP_ATOM_SHEET_NAMES, } from './markup-atom-scan.ts';
+import {
+  MARKUP_ATOM_SHEET_NAMES,
+  MARKUP_IDENTIFIER_KINDS,
+} from './markup-atom-scan.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { NAME_FORM_SCOPE_RULE, } from './name-form-policy.ts';
 import { selectFence, } from './prompt-fence.ts';
@@ -54,21 +57,55 @@ const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT AND MUST NOT BE EDITED. '
 const REGION_CONTEXT_CHARS = 40;
 
 /**
- Every markup kind the preservation gate refuses to lose, as the sheet names
- them, built from the gate's own kinds (ledger L4).
+ Joins sheet names into one English list, with "and" before the last.
+
+ @param names - names in sheet order, at least one
+
+ @returns The list as prose
+
+ @example
+ ```ts
+ const listed = listedNames({ names: ['tags', 'inline code',], },);
+ ```
  */
-const MARKUP_ATOM_NAMES: readonly string[] = Object.values(MARKUP_ATOM_SHEET_NAMES,);
+function listedNames({ names, }: { readonly names: readonly string[]; },): string {
+  return (names.length < 2)
+    ? names.join('',)
+    : `${names.slice(
+      0,
+      -1,
+    )
+      .join(', ',)} and ${names.at(-1,) ?? ''}`;
+}
 
 /**
- The markup rule: what an edit must carry through, and the one removal the
- gate licenses.
+ Sheet names of the identifier kinds, which an edit may move but never
+ change, built from the gate's own split (ledger L4).
  */
-const MARKUP_ATOM_RULE = `Preserve ${MARKUP_ATOM_NAMES.slice(
-  0,
-  -1,
-)
-  .join(', ',)} and ${MARKUP_ATOM_NAMES.at(-1,) ?? ''} character for character. `
-  + 'The one exception is markup inside text an accepted accuracy/addition issue quotes, '
+const IDENTIFIER_NAMES: readonly string[] = [...MARKUP_IDENTIFIER_KINDS,]
+  .map(function toName(kind,): string {
+    return MARKUP_ATOM_SHEET_NAMES[kind];
+  },);
+
+/**
+ Sheet names of the kinds the translation may have authored itself, which an
+ edit may correct but never drop: every other kind, in sheet order.
+ */
+const REMARKABLE_NAMES: readonly string[] = Object.values(MARKUP_ATOM_SHEET_NAMES,)
+  .filter(function isRemarkable(name,): boolean {
+    return !IDENTIFIER_NAMES.includes(name,);
+  },);
+
+/**
+ The markup rule, as the preservation gate enforces it: identifiers kept or
+ moved, markup the original carries kept, markup the translation wrote
+ correctable, and the one removal the gate licenses.
+ */
+const MARKUP_ATOM_RULE = `Keep ${listedNames({ names: IDENTIFIER_NAMES, },)} character for character; `
+  + 'one may move to the clause it belongs to, but never change or disappear. '
+  + `Keep ${listedNames({ names: REMARKABLE_NAMES, },)} character for character where the ORIGINAL carries them; `
+  + 'ones the TRANSLATION wrote itself may be corrected, for instance to the ORIGINAL\'s form, but never dropped. '
+  + 'The one removal allowed is markup inside text an accepted accuracy/addition issue quotes, '
   + 'which goes with the detail it carries.';
 
 /**

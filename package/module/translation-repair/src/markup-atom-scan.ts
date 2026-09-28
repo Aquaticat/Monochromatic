@@ -61,6 +61,22 @@ export const MARKUP_ATOM_SHEET_NAMES: Readonly<Record<MarkupAtomKind, string>> =
 };
 
 /**
+ Kinds whose atom is an identifier: a label or an address no checker judges,
+ which an edit may move but never re-mark (ledger L4). The gate reads it and
+ so does the editor sheet, so the two cannot disagree on which kinds these
+ are.
+
+ @example
+ ```ts
+ const isIdentifier = MARKUP_IDENTIFIER_KINDS.has('footnote-reference',);
+ ```
+ */
+export const MARKUP_IDENTIFIER_KINDS: ReadonlySet<MarkupAtomKind> = new Set([
+  'footnote-reference',
+  'link-destination',
+],);
+
+/**
  One markup atom, as the exact bytes that must survive.
 
  @example

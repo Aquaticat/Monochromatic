@@ -1,4 +1,5 @@
 import {
+  MARKUP_IDENTIFIER_KINDS,
   type MarkupAtom,
   type MarkupAtomKind,
   scanMarkupAtoms,
@@ -35,14 +36,6 @@ import {
  name contains.
  */
 const KEY_SEPARATOR = '\u0000';
-
-/**
- Kinds whose atom is an identifier, which no re-marking excuses.
- */
-const IDENTIFIER_KINDS: ReadonlySet<MarkupAtomKind> = new Set([
-  'footnote-reference',
-  'link-destination',
-],);
 
 /**
  What one edit did to the markup of its envelope.
@@ -224,7 +217,7 @@ export function markupDelta(
       /**
        Whether this loss can be re-marked at all.
        */
-      const authored = (!IDENTIFIER_KINDS.has(atom.kind,)) && (!sourceKeys.has(keyOf(atom,),));
+      const authored = (!MARKUP_IDENTIFIER_KINDS.has(atom.kind,)) && (!sourceKeys.has(keyOf(atom,),));
 
       /**
        Written atom of the same kind, -1 where none.
