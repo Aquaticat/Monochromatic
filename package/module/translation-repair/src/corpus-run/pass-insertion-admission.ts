@@ -201,14 +201,21 @@ export async function decidePassInsertionAdmission(
         .dropped
         .length;
 
-      if (beforeCandidate !== undefined)
-        await beforeCandidate();
+      // A CANDIDATE IS ASKED OF THE ROSTER ITS HOOK HANDS OVER (ledger X12,
+      // 2026-09-28): the admission read its roster once, with the lanes', so
+      // a dry-out inside it left every later candidate on the roster read
+      // before it.
+      /**
+       Seating the hook hands this candidate: a roster read under a hold, or
+       none, which keeps the one the admission started on.
+       */
+      const seating: CoverageSeating = (beforeCandidate === undefined) ? {} : await beforeCandidate();
       /**
        Roster verdict independent of pairing and shortfall.
        */
       const answer = await runCoverageStage({
         client,
-        modelIds,
+        modelIds: seating.modelIds ?? modelIds,
         sourcePassage: sourceText,
         translation: target,
         foreignRegions,

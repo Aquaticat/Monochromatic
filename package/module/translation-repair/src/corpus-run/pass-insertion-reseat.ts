@@ -8,8 +8,13 @@ import type { InsertionAdmission, } from '../insertion-admission.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { CoverageSeating, } from './insertion-admission-seating.ts';
 import { decidePassInsertionAdmission, } from './pass-insertion-admission.ts';
+import {
+  type Reseated,
+  reseatHookFor,
+} from './pass-reseat-hook.ts';
 import type { RunClient, } from './run-client-contract.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
+import type { JudgeSeats, } from './run-seats.ts';
 import type { SeatReadingClient, } from './run-seats-read.ts';
 
 //region Insertion admission re-seating
@@ -30,23 +35,40 @@ export type InsertionHooks = {
 };
 
 /**
- Seating that keeps the roster the admission started on.
+ What the insertion admission takes from a seat reading: the roster, as
+ `runPassEntry` seats it from the lanes' reading.
 
- @returns No roster, so the given one stands
+ @param seats - benches as of this candidate
+
+ @returns Roster the candidate is asked of, beside the line naming it
 
  @example
  ```ts
- const seating = await keepRoster();
+ const { seating, line, } = coverageSeatingOf({ seats, },);
  ```
  */
-function keepRoster(): Promise<CoverageSeating> {
-  return Promise.resolve({},);
+function coverageSeatingOf(
+  { seats, }: { readonly seats: JudgeSeats; },
+): Reseated<CoverageSeating> {
+  /**
+   Roster the candidate is asked of, for the line.
+   */
+  const roster = seats.roster
+    .join(',',);
+  return {
+    seating: { modelIds: seats.roster, },
+    line: `candidate re-seated under a hold: roster=${roster}`,
+  };
 }
 
 /**
  Builds the insertion admission's per-candidate hook.
 
- @param _ - run client, entry abort and entry logger the re-seating will read
+ @param client - run client whose dryness view and holds are the router's own
+
+ @param signal - entry abort the readings honour
+
+ @param l - entry logger
 
  @returns Per-candidate reader, handing each candidate the roster it is asked of
 
@@ -56,13 +78,26 @@ function keepRoster(): Promise<CoverageSeating> {
  ```
  */
 export function insertionHooksFor(
-  _: {
+  {
+    client,
+    signal,
+    l,
+  }: {
     readonly client: SeatReadingClient;
     readonly signal: AbortSignal;
     readonly l: Logger;
   },
 ): InsertionHooks {
-  return { beforeCandidate: keepRoster, };
+  return {
+    beforeCandidate: reseatHookFor<CoverageSeating>({
+      client,
+      signal,
+      phase: 'insertion admission',
+      unseated: {},
+      seatingOf: coverageSeatingOf,
+      l,
+    },),
+  };
 }
 
 /**
