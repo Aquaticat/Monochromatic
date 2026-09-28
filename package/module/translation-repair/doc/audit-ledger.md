@@ -1049,16 +1049,35 @@ Status: fixed in `87f95d62f` (no provider spelling for two roster models; the co
 
 ### E10: the page-name glossary reads raw documents
 
-Status: open, impact unmeasured.
+Status: fixed in `7a434cb1b` (guard `5640c50e7`).
 `page-name-glossary.ts` does no front-matter split and no comment or code-fence masking.
+Measured over the 92 pinned entries before the fix: 5 read differently.
+Four gained a pair only from an editor's comment or the front matter (two contributor links, two note lines read as headings),
+and windward0032 lost three real heading pairs because a heading-like line inside a comment broke the count alignment.
+The glossary now reads `visibleText` (`src/page-visible-text.ts`): the body with HTML comments, JSX comments and fenced code blanked.
+After it, raw and masked readings agree on all 92.
+Page-name lines are identity context, which every stage that shows them hashes, so only those entries re-key.
+A mutant reading the raw text fails the guard.
 
 ### E11: the retry-wait parser is case-sensitive and knows only h, m and s
 
-Status: open (latent).
+Status: fixed in `7a285b2f2` (guard `041e0a0d4`); latent.
+Every provider refusal in the run logs is Hyper's lower-case h/m/s form.
+The parser read the first letter after a number as the unit, so a glued "500ms" would have read as 500 minutes,
+and an existing case pinned "12 minutes" as no wait.
+Units are now whole letter runs (ms, s, m, h and their words), with decimals and joined parts,
+in `src/retry-stated-wait.ts`. A mutant dropping case folding fails the guard.
 
 ### E12: the English-original recognizer is a list of exact wordings
 
-Status: open (latent).
+Status: fixed in `f91f561b9` (guard `3d028c76b`); latent.
+The module comment promised that every note read is logged with its reading; no code logged one (the M20 family).
+A note naming an original and English in a wording no mark knows now reads `unmarked-original-claim`,
+seals nothing, since a guessed seal could decline a whole page, and is warned about by the pass
+(`entryArchiveOriginalOf`, which logs every note's reading).
+Over the 92 pinned entries every decision is unchanged, 61 notes are logged,
+and the one unmarked claim is hakureico's quotes note, which names no span and still seals nothing.
+A mutant that never reads the claim fails the guard.
 
 ### Process mistakes, classes 1 to 92 and before
 
