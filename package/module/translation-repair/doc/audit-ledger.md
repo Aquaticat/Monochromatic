@@ -2757,6 +2757,16 @@ Prevention: M25's pre-launch check lists every `*CACHE_VERSION` constant in `src
 and for each one runs `git log` since it last moved over every file its stage's sheet or floors import,
 the shared house rules and prose ranges included.
 
+The pre-launch check (task #395), 2026-09-28, run by `cache-account-audit.ts` over all six constants:
+translate 15 and consolidation 20 set in `66703994a` (22:56 on 2026-09-27), repair 33 in `f2cd70ece` (22:41),
+refine 5 in `30e66051e` (03:34 that morning), lane contest 6 and pairing 3 in `d614a0c1d` (00:30 on 2026-09-28).
+Every one was set after the newest slice-cache file under the agent runs (00:26 on 2026-09-27),
+and none has been written since: `find ... -newermt '2026-09-27 00:27'` gives 0, and its control at 00:20 gives 18.
+So no answer cached under an earlier question can be served under any current number, and no version moves.
+Of the 153 non-test source commits since the earliest of them, 116 are named in no account;
+37 are the fixes the accounts name, and most of the rest are docs, tests, logging, page assembly and the runs lock.
+They ride inside every version by the same fact, and each version's TSDoc now says so, dated.
+
 ### M29: a red guard asked a function that never reads the entry it guards
 
 Status: caught before the fix landed, 2026-09-28; the guard was rewritten in `357f534b7`.

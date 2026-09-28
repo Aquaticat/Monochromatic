@@ -380,6 +380,13 @@ import type { RepairModels, } from './repair-contract.ts';
  wrapper's claims (ledger P9, `7011d72cc`), which changes whose voices every
  round hears; checked on 2026-09-28: still no slice-cache file newer than
  00:26 on 2026-09-27.
+
+ THE PRE-LAUNCH CHECK OF 2026-09-28 (task #395, ledger M28): 33 was set
+ in `f2cd70ece` at 22:41 on 2026-09-27, after the newest slice-cache file under the
+ agent runs (00:26 on 2026-09-27), and no slice-cache file has been written
+ since, so no answer cached under an earlier question can be served under
+ this number. Every source commit since then rides inside it, those the
+ accounts above name and those they do not (listed in the ledger under M28).
  */
 export const SLICE_CACHE_VERSION = 33;
 /**

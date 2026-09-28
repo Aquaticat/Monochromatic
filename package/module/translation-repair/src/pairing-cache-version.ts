@@ -32,6 +32,13 @@
  round hears; checked on 2026-09-28: still no slice-cache file newer than
  00:26 on 2026-09-27.
 
+ THE PRE-LAUNCH CHECK OF 2026-09-28 (task #395, ledger M28): 3 was set
+ in `d614a0c1d` at 00:30 on 2026-09-28, after the newest slice-cache file under the
+ agent runs (00:26 on 2026-09-27), and no slice-cache file has been written
+ since, so no answer cached under an earlier question can be served under
+ this number. Every source commit since then rides inside it, those the
+ accounts above name and those they do not (listed in the ledger under M28).
+
  @example
  ```ts
  const material = [PAIRING_CACHE_VERSION, sourceText, targetText,];
