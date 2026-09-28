@@ -8,8 +8,11 @@
 //
 // THE ORDER IS THE POLICY. Synthetic is a flat subscription and costs nothing
 // at the margin; Charm Hyper is a prepaid balance the owner will not top up
-// again (2026-09-03: "I have no reason to re-charge Hyper"); OpenRouter is
-// paid per token and is where the owner would rather spend. So a call goes to
+// again (2026-09-03: Charm Hyper ended its bundle subsidization, so Hyper will
+// not be recharged from the usual subscription, as
+// `doc/decision/translation-repair-openrouter-fallback.md` records the owner's
+// answer); OpenRouter is paid per token and is where the owner would rather
+// spend. So a call goes to
 // the first provider in this order that serves its model and still has budget,
 // and the routing arithmetic in `budget-routing.ts` walks this list rather
 // than naming providers one by one.

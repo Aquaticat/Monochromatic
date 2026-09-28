@@ -22,8 +22,9 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
 // entry stopped INCOMPLETE after 24 minutes. A run-off of two cannot narrow,
 // so the class eighty-two loop had nothing left to ask.
 //
-// THE OWNER'S RULE IS "PREFER THE BEST VALID PROPOSAL, ELSE FAIL THE SLICE"
-// (2026-09-04): the failure is for a slice with no valid proposal, and here
+// THE OWNER'S RULE IS "PREFER THE BEST VALID PROPOSAL, ELSE FAIL THE SLICE AT
+// ONCE" (2026-09-04, `doc/decision/translation-repair-ineligible-standing.md`):
+// the failure is for a slice with no valid proposal, and here
 // every finalist is valid and the judges could not rank them, which is a
 // failure to rank rather than a rejection (`candidate-select-model.ts`). So a
 // challenge round tied across every candidate it asked about ships one by
