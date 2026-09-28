@@ -3,6 +3,10 @@ import {
   pairBoundFindings,
 } from './bilingual-pair-bound.ts';
 import { isIdeograph, } from './preservation-tokens.ts';
+import {
+  carriesContent,
+  pastQuoteMarkers,
+} from './quote-line.ts';
 import { withoutComments, } from './translate-address-drop.ts';
 
 //region Line structure guard
@@ -14,31 +18,6 @@ import { withoutComments, } from './translate-address-drop.ts';
 // whether a slice is governed, `line-structure-inherit.ts` decides which
 // slices inherit that from their chunk, and this refuses a rendering that
 // merged the lines the rule protects.
-/**
- Whether a line carries text, as against a blank line or a bare quote marker.
- 
- A LINE OF NOTHING BUT `>` SEPARATES QUOTED BLOCKS the way a blank line
- separates plain ones (class forty-seven, shi_Yumiaoya2, 2026-09-17: the
- original wrote three of them inside one farewell quote and the archive one,
- and the count read that as two merged lines).
- 
- @param line - one line of a passage
- 
- @returns Whether the line carries content
- 
- @example
- ```ts
- const counted = carriesContent({ line: '> 猫醒了。', },);
- ```
- */
-function carriesContent({ line, }: { readonly line: string; },): boolean {
-  for (const character of line) {
-    if ((character !== '>') && (character.trim() !== ''))
-      return true;
-  }
-  return false;
-}
-
 /**
  Lines of one passage that carry content, in order.
 
@@ -169,36 +148,6 @@ function bilingualPairs({ lines, }: { readonly lines: readonly string[]; },): re
 }
 
 /**
- Content of a line as a key for counting repeats: the quote markers and the
- surrounding whitespace off, the wording kept as written.
-
- @param line - one content line
-
- @returns Wording the line carries
-
- @example
- ```ts
- const key = lineKey({ line: '> From *The Cat Show*', },);
- ```
- */
-function lineKey({ line, }: { readonly line: string; },): string {
-  for (let start = 0; start < line.length; start += 1) {
-    /**
-     Character at the cursor.
-     */
-    const character = line.charAt(start,);
-    if ((character !== '>') && (character.trim() !== '')) {
-      /**
-       Wording from the first content character on.
-       */
-      const wording = line.slice(start,);
-      return wording.trim();
-    }
-  }
-  return '';
-}
-
-/**
  How many times each wording occurs among some lines.
 
  @param lines - content lines of one passage
@@ -219,7 +168,8 @@ function lineCounts({ lines, }: { readonly lines: readonly string[]; },): Readon
     /**
      Wording of this line.
      */
-    const key = lineKey({ line, },);
+    const key = pastQuoteMarkers({ line, },)
+      .trim();
     counts.set(
       key,
       (counts.get(key,) ?? 0) + 1,

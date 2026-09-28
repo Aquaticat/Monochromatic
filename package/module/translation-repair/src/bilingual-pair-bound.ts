@@ -1,3 +1,8 @@
+import {
+  carriesContent,
+  pastQuoteMarkers,
+} from './quote-line.ts';
+
 //region Bilingual pair bound
 // CLASS EIGHTY, SECOND ARM (shi_Yumiaoya11 and 12, 2026-09-22). The sheet
 // clause of `bilingual-line-clause.ts` reached the translators, the judges
@@ -92,51 +97,6 @@ function isQuoted({ line, }: { readonly line: string; },): boolean {
    */
   const lead = line.trimStart();
   return lead.startsWith('>',);
-}
-
-/**
- Whether a line carries content past its quote markers and whitespace.
-
- @param line - one raw line
-
- @returns True on the first content character
-
- @example
- ```ts
- hasContent({ line: '>', },); // false
- ```
- */
-function hasContent({ line, }: { readonly line: string; },): boolean {
-  for (const character of line) {
-    if ((character !== '>') && (character.trim() !== ''))
-      return true;
-  }
-  return false;
-}
-
-/**
- Line past its leading quote markers and whitespace.
-
- @param line - one raw line
-
- @returns Rest of the line from its first content character, empty when
- there is none
-
- @example
- ```ts
- pastQuoteMarkers({ line: '> > cat', },); // 'cat'
- ```
- */
-function pastQuoteMarkers({ line, }: { readonly line: string; },): string {
-  for (let at = 0; at < line.length; at += 1) {
-    /**
-     Character at the cursor.
-     */
-    const character = line.charAt(at,);
-    if ((character !== '>') && (character.trim() !== ''))
-      return line.slice(at,);
-  }
-  return '';
 }
 
 /**
@@ -239,7 +199,7 @@ function belongsToBlock(
     return isQuoted({ line, },);
   if (isQuoted({ line, },))
     return false;
-  return hasContent({ line, },);
+  return carriesContent({ line, },);
 }
 
 /**
@@ -377,7 +337,7 @@ function blockAround(
       end,
     )
     .filter(function carries(line,): boolean {
-      return hasContent({ line, },);
+      return carriesContent({ line, },);
     },);
   return {
     start,

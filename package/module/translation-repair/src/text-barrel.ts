@@ -4,5 +4,9 @@
 
 export { isHanCharacter, } from './han-only-text.ts';
 export { isIdeograph, } from './preservation-tokens.ts';
+export {
+  carriesContent,
+  pastQuoteMarkers,
+} from './quote-line.ts';
 
 //endregion Text barrel
