@@ -814,6 +814,59 @@ await describe({
     },),
 
     it({
+      name: 'COUNTS AN UNREADABLE ANSWER AS UNUSABLE on the run-wide tally (ledger P6): the tally sat inside the '
+        + 'prompt-uniqueness wrapper, which parses the reply itself, so every reply that arrived read as usable '
+        + '("SEAT inception/mercury-2.5 asked=1007 usable=1007 unusable=0" beside 40 schema losses)',
+      fn: async () => {
+        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
+        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
+        using _fresh = withFreshRunSeats();
+
+        /**
+         Transport answering the first provider with text no schema reads.
+         */
+        const { transport, } = recordingTransport();
+        await createRunClient({ transport, },).chatJson({
+          modelId: SHARED_SEAT,
+          messages: MESSAGES,
+          signal: new AbortController().signal,
+          responseFormat: {
+            type: 'json_schema',
+            json_schema: {
+              name: 'purr',
+              strict: true,
+              schema: {
+                type: 'object',
+                properties: { purr: { type: 'string', }, },
+                required: ['purr',],
+                additionalProperties: false,
+              },
+            },
+          },
+          validate: function isPurr(value: unknown,): value is { readonly purr: string; } {
+            return ((typeof value) === 'object') && (value !== null) && ('purr' in value);
+          },
+        },);
+
+        /**
+         Counts for the seat.
+         */
+        const counts = RUN_SEATS.counts().find(function isShared(count,): boolean {
+          return count.modelId === SHARED_SEAT;
+        },);
+        expect({
+          asked: counts?.asked,
+          usable: counts?.usable,
+          unusable: counts?.unusable,
+        },).toEqual({
+          asked: 1,
+          usable: 0,
+          unusable: 1,
+        },);
+      },
+    },),
+
+    it({
       name: 'REFUSES A SEAT THE OWNER CULLED without calling any provider (ledger P4): the cull held on every '
         + 'bench the run derives, and a path that named the seat itself, the recall benchmark\'s default '
         + 'judges, would have bought it; the refusal is the one a round reads as an unreachable seat',
