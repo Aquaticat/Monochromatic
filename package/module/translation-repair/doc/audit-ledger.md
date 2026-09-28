@@ -3729,6 +3729,69 @@ XingZ60's 10 against the archive's 6 pair nothing by the glossary's same-count r
 No page has a line of seven or more `#`, which `headingsOf` read as a heading and CommonMark does not,
 so the shared reader, which stops at six, reads the corpus as the old one did.
 
+## Recurring code families
+
+Audit area six: code kept in more than one place, which can drift until two parts of the pipeline
+read one page two ways.
+`~/temp/agent/audit-glossary-fix/duplicate-bodies.mjs` parses every non-test source file with rolldown's parser
+and groups function bodies with comments and whitespace removed;
+on 2026-09-28 it found 31 groups of 80 normalized characters or more spanning two or more files.
+`duplicate-triage.mjs` and `duplicate-texts.mjs` print each copy's full text and the module-level names it reads,
+so a copy whose body matches but whose constants differ shows up as such.
+
+The rule applied to each group:
+merge when both copies are live code that must agree;
+keep a copy that is an artifact generation's frozen rule, which the reader recomputes and refuses to disagree with,
+and say so where it stands.
+`artifact-two-lane-comparison.ts` states this for the lane verdict (`judgeTwoLaneSlice` beside `judgeSlice`).
+A reader of one artifact version never imports from a live stage;
+two readers of the same version may share.
+
+### B1: private Han tests and code-point counters, and two Han tests that read one page two ways
+
+Status: fixed in `67243edae`, `edb013f38`, red guard `58d1eefaf` and `37db4ae4b`, 2026-09-28.
+`page-name-glossary.ts`, `corpus-name-index.ts` and `handle-reading.ts` each kept a private copy of the
+U+4E00 to U+9FFF test `han-only-text.ts` exports, and two of them a code-point counter beside `codePointCount`.
+The floors' `isHanCharacter` read the unified block alone while the tokenizer's `isIdeograph` added Extension A;
+neither read the compatibility block or astral Han.
+`isHanCharacter` now covers Extension A, the unified block, the compatibility block and Extensions B to H,
+and `isIdeograph` delegates to it.
+No pinned page carries a character from the added blocks (Extension A, compatibility and astral counts all 0,
+against 210,475 unified-block characters), so no page reads differently.
+
+### B2: two quote-line readers
+
+Status: fixed in `43132653d`, 2026-09-28.
+The line structure guard and the bilingual pair bound each kept a copy of what a line carries past its `>` markers.
+`quote-line.ts` now holds `carriesContent` and `pastQuoteMarkers`, with its own unit test.
+
+### B3: three copies of whether a footnote relabel moves a note
+
+Status: fixed in `441e609ab`, 2026-09-28.
+The relabel planner (`archive-footnote-relabel.ts`), its closure (`archive-footnote-closure.ts`)
+and the pass that reports the relabel (`pass-footnote-relabel.ts`) each tested whether a from-to relation
+folds to another footnote.
+`relabelsFootnote` in `footnote-identifier.ts` now serves all three, with a unit test for respelling and moves.
+
+### B4: two copies of the page assembly's archive-repeat filter
+
+Status: fixed in `bb836ea31`, 2026-09-28.
+`guardPageAssembly` dropped rows repeating the archive's wording on its first read,
+and each round of `settlePageRounds` dropped them again before the footnote check, each with its own copy.
+`rowsChangingArchive` in `page-assembly-rounds.ts` now serves both.
+A mutant keeping every repeat fails 9 assertions across the guard and heading-collision tests; its control survives.
+
+### B5: two copies of the shipped-slice reading, one lane's call untested
+
+Status: fixed in `184b10cf9`, 2026-09-28.
+Both lanes built the per-slice list the adjacent-repetition check reads with their own copy of `shippedFor`;
+`shippedSliceTexts` in `assembly-invariant.ts` now serves both.
+Mutation found the translate lane's call untested:
+handing it no surviving rows, so every slice read as the archive, failed no test,
+because only the repair lane's twin (`repair-assemble-slice-match.unit.test.ts`) drove the reading.
+`translate-assemble-slice-match.unit.test.ts` now kills that mutant (2 failures)
+and an inverted slice match (3 failures); its control survives.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing, recorded for the prevention doc.
