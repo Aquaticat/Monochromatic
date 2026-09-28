@@ -1,7 +1,10 @@
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
-import { settlePageRounds, } from './page-assembly-rounds.ts';
+import {
+  rowsChangingArchive,
+  settlePageRounds,
+} from './page-assembly-rounds.ts';
 import { shippableReplacements, } from './publish-fixed.ts';
 import type { WouldShipSource, } from './would-ship-text.ts';
 
@@ -65,13 +68,12 @@ export function guardPageAssembly(
   },),);
   /**
    Replacements the page would write, less any that repeat the archive's own
-   wording: a content slice whose archive wording is blank and which ships
-   nothing reaches the assembler as an empty write, which is no change.
+   wording.
    */
-  const replacements = shippableReplacements({ artifact, },)
-    .filter(function changes(replacement,): boolean {
-      return replacement.replacementText !== incumbentBySlice.get(replacement.sliceIndex,);
-    },);
+  const replacements = rowsChangingArchive({
+    replacements: shippableReplacements({ artifact, },),
+    incumbentBySlice,
+  },);
   /**
    Rounds of the passes and the guard until one takes nothing back, each over
    the rows the ones before left (ledger K5).

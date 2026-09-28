@@ -85,6 +85,42 @@ export type PageAssemblyRound = {
 };
 
 /**
+ Rows that change the archive, less any that repeat its own wording at their
+ slice.
+
+ A REPEAT IS NO CHANGE FOR THE ASSEMBLER: a content slice whose archive
+ wording is blank and which ships nothing reaches it as an empty write, and a
+ restoration that brings a slice back to the archive's exact wording leaves
+ its override row saying what the page carries. The guard's first read and
+ every round's footnote check kept their own copy of this test (audit area
+ six, 2026-09-28); one copy now serves both.
+
+ @param replacements - lane rows as they stand
+
+ @param incumbentBySlice - archive text of every slice, by index
+
+ @returns Rows whose wording differs from the archive's at their slice
+
+ @example
+ ```ts
+ const changing = rowsChangingArchive({ replacements, incumbentBySlice, },);
+ ```
+ */
+export function rowsChangingArchive(
+  {
+    replacements,
+    incumbentBySlice,
+  }: {
+    readonly replacements: readonly SliceReplacement[];
+    readonly incumbentBySlice: ReadonlyMap<number, string>;
+  },
+): readonly SliceReplacement[] {
+  return replacements.filter(function changes(replacement,): boolean {
+    return replacement.replacementText !== incumbentBySlice.get(replacement.sliceIndex,);
+  },);
+}
+
+/**
  Runs one round over a set of lane rows.
 
  @param slices - preparation defining replacement spans
@@ -147,13 +183,10 @@ function assembleRound(
     guarded: guardFootnoteAssembly({
       targetText,
       slices,
-      replacements: passes.replacements
-        .filter(function stillChanges(replacement,): boolean {
-          // A restoration that brings a slice back to the archive's exact
-          // wording is no change for the assembler; its override row still
-          // says what the page carries.
-          return replacement.replacementText !== incumbentBySlice.get(replacement.sliceIndex,);
-        },),
+      replacements: rowsChangingArchive({
+        replacements: passes.replacements,
+        incumbentBySlice,
+      },),
     },),
   };
 }
