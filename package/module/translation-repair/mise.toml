@@ -115,6 +115,11 @@ description = "#210: read what a run cost from the SPEND lines its own log carri
 depends = ["build"]
 run = "node dist/final/node/spend-report.mjs"
 
+[tasks."cap-census"]
+description = "Ledger P10: re-read the completion cap rule over pass-run logs before a launch, per seat and provider, with how many capped calls ran to the cap and whether they carried content; flags a pooled placeholder with a distribution, a rule reading off the card, and cuts over one percent; SPENDS NO QUOTA (name log files or directories after --)"
+depends = ["build"]
+run = "node dist/final/node/cap-census.mjs"
+
 [tasks."ledger-report"]
 description = "#212: read the candidate ledger a run wrote, saying who produced what, how often it was chosen, and what judges said about it; pass --model <id> after -- to read one seat's candidates and its judges' verbatim reasons; SPENDS NO QUOTA (prints corpus wording when a model is named)"
 depends = ["build"]

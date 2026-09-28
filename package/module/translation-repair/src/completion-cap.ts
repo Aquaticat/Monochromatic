@@ -67,9 +67,26 @@ import {
 
 /**
  Pooled 90th percentile of completion tokens over every completed call in
- the measurement, the floor under a model's own cap.
+ the measurement, the floor under a model's own cap. Exported for the census
+ that re-reads the rule over later runs (`corpus-run/cap-census.ts`).
+
+ @example
+ ```ts
+ const floored = Math.max(p99, POOLED_P90,);
+ ```
  */
-const POOLED_P90 = 3_831;
+export const POOLED_P90 = 3_831;
+
+/**
+ Fewest completed calls a provider must hold of a model before its 99th
+ percentile counts toward that model's cap, as the 2026-09-09 table read it.
+
+ @example
+ ```ts
+ const counts = calls >= MIN_PROVIDER_CALLS;
+ ```
+ */
+export const MIN_PROVIDER_CALLS = 100;
 
 /**
  Existing pooled 99th percentile for a new model without its own completed-call distribution.

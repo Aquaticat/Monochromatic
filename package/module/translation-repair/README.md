@@ -229,7 +229,11 @@ none of which spends quota or calls a model:
   splitting each round into work and straggler waiting,
   and reports achieved rather than configured concurrency.
 - `spend-report` prices the metered seats against a rate table carrying its date,
-  and counts subscription seats without pricing them.
+  and counts subscription seats without pricing them;
+  a call written as a reckoning rather than reported by the wire is named per seat (ledger P14).
+- `cap-census` re-reads the completion cap rule over pass-run logs before a launch,
+  per seat and provider, with how many capped calls ran to the cap and whether they carried content,
+  and flags a card still on the pooled placeholder (ledger P10).
 - `ledger-report` says who produced each candidate and how often judges chose it.
   Its `--model` view prints corpus wording,
   so it must not be pasted anywhere.

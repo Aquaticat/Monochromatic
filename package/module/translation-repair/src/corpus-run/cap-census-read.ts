@@ -1,0 +1,275 @@
+import { STREAM_MARKER, } from './run-timing-parse.ts';
+import {
+  readSpendLine,
+  type SpendRecord,
+} from './spend-read.ts';
+
+//region Cap census read
+// THE COMPLETION CAP RULE, RE-READ OVER LATER RUNS (ledger P10). The caps were
+// measured once, on 2026-09-09 (`completion-cap.ts`), and a card that took the
+// pooled placeholder for want of calls kept it long after it had 67,353 of its
+// own. No unit test can see the run logs, and a test that failed on a date
+// would fail for the calendar, so the rule is re-read by this census before a
+// launch instead.
+//
+// TWO READINGS, BECAUSE THE CAP CENSORS WHAT IT MEASURES. The rule's own
+// reading (the highest provider 99th percentile over providers with enough
+// calls, floored at the pooled 90th) takes every completed call; the cut
+// reading takes the calls since the caps went on the wire and asks how many ran
+// to the card's cap and whether their streams carried content. A capped call
+// cannot show a longer answer, so a rule reading equal to the cap means "at
+// least one percent ran into it", and the cut reading says whether those were
+// answers or reasoning runaways.
+//
+// PAIRED BY LABEL AND CLOCK. A stream's completion line and its `SPEND` line
+// are written by the same exchange within milliseconds, so a `SPEND` line takes
+// the latest unpaired completion of the same served id within the window; one
+// with none is counted as unpaired, never guessed.
+//
+// NO PATTERNS AND NO WORDING. Both lines are this codebase's own, read by index
+// scans; the census carries ids and numbers only.
+
+/**
+ Value `indexOf` returns for text that is not there.
+ */
+const NOT_FOUND = -1;
+
+/**
+ Most milliseconds between a stream's completion line and its `SPEND` line.
+ */
+const PAIR_WINDOW_MS = 50;
+
+/**
+ Text a completed stream line carries after its label.
+ */
+const COMPLETED_FIELD = ': completed, ';
+
+/**
+ Field naming the content characters a stream delivered.
+ */
+const CONTENT_FIELD = ' content chars';
+
+/**
+ When every client began sending the cap as `max_tokens` (`completion-cap.ts`,
+ measured as of 16:20 UTC on 2026-09-09); calls after it are capped.
+ */
+export const CAPS_ON_WIRE_AT: number = Date.parse('2026-09-09T16:20:00Z',);
+
+/**
+ One completed call the census reads.
+
+ @example
+ ```ts
+ const sample: CapSample = { provider: 'hyper', model: 'kimi-k3', completion: 800, at: 0, content: 1_200, };
+ ```
+ */
+export type CapSample = {
+  /**
+   Provider that served the call.
+   */
+  readonly provider: SpendRecord['provider'];
+
+  /**
+   Model as that provider names it.
+   */
+  readonly model: string;
+
+  /**
+   Completion tokens the wire reported, thinking included.
+   */
+  readonly completion: number;
+
+  /**
+   Epoch milliseconds the `SPEND` line was written.
+   */
+  readonly at: number;
+
+  /**
+   Content characters the paired stream delivered, or that no stream line
+   paired with it.
+   */
+  readonly content: number | 'unpaired';
+};
+
+/**
+ Reads the epoch milliseconds a logged line was written at.
+
+ @param line - one log line, `[level] [iso] ...`
+
+ @returns Milliseconds, `NaN` for a line without the stamp
+
+ @example
+ ```ts
+ const at = stampOf({ line, },);
+ ```
+ */
+function stampOf({ line, }: { readonly line: string; },): number {
+  return Date.parse(line.split('] [',)[1] ?? '',);
+}
+
+/**
+ Reads a completed stream line's label and content characters.
+
+ @param line - one log line
+
+ @returns Label and content, or that the line is no completed stream
+
+ @example
+ ```ts
+ const stream = streamContentOf({ line, },);
+ ```
+ */
+function streamContentOf(
+  { line, }: { readonly line: string; },
+): {
+  readonly label: string;
+  readonly content: number
+} | 'other-line' {
+  /**
+   Where the stream payload starts.
+   */
+  const at = line.indexOf(STREAM_MARKER,);
+  if (at === NOT_FOUND)
+    return 'other-line';
+
+  /**
+   Payload after the marker: label, outcome, then the fields.
+   */
+  const payload = line.slice(at + STREAM_MARKER.length,);
+
+  /**
+   Where the label ends, on a completed stream only.
+   */
+  const labelEnd = payload.indexOf(COMPLETED_FIELD,);
+
+  /**
+   Where the content field's unit starts.
+   */
+  const contentAt = payload.indexOf(CONTENT_FIELD,);
+  if ((labelEnd === NOT_FOUND) || (contentAt === NOT_FOUND))
+    return 'other-line';
+
+  /**
+   Text ahead of the unit, whose last word is the count.
+   */
+  const before = payload.slice(
+    0,
+    contentAt,
+  );
+
+  /**
+   The count, read whole.
+   */
+  const content = Number(before.slice(before.lastIndexOf(' ',) + 1,),);
+  if (!Number.isSafeInteger(content,))
+    return 'other-line';
+  return {
+    label: payload.slice(
+      0,
+      labelEnd,
+    ),
+    content,
+  };
+}
+
+/**
+ Reads every completed call a pass-run log reports, each with what its stream
+ delivered.
+
+ @param lines - lines of one log, in order
+
+ @returns One sample per reported `SPEND` line with a completion count;
+ reckoned lines and unreported counts are left out, since neither is a length
+ the wire measured
+
+ @example
+ ```ts
+ const samples = capSamplesOf({ lines: text.split('\n',), },);
+ ```
+ */
+export function capSamplesOf(
+  { lines, }: { readonly lines: readonly string[]; },
+): readonly CapSample[] {
+  /**
+   Completed streams not yet paired, by label, oldest first.
+   */
+  const waiting = new Map<string, readonly {
+    readonly at: number;
+    readonly content: number
+  }[]>();
+
+  /**
+   Samples read so far.
+   */
+  const samples: CapSample[] = [];
+  for (const line of lines) {
+    /**
+     The line as a completed stream, if it is one.
+     */
+    const stream = streamContentOf({ line, },);
+    if (stream !== 'other-line') {
+      waiting.set(
+        stream.label,
+        [
+          ...(waiting.get(stream.label,) ?? []),
+          {
+            at: stampOf({ line, },),
+            content: stream.content,
+          },
+        ],
+      );
+      continue;
+    }
+
+    /**
+     The line as a spend record, if it is one.
+     */
+    const record = readSpendLine({ line, },);
+    if (((typeof record) !== 'object') || (record.reckoning !== 'reported')
+      || ((typeof record.completion) !== 'number'))
+      continue;
+
+    /**
+     When the spend line was written.
+     */
+    const at = stampOf({ line, },);
+
+    /**
+     Streams of this label still unpaired.
+     */
+    const queue = waiting.get(record.model,) ?? [];
+
+    /**
+     Latest of them within the window, or none.
+     */
+    const index = queue.findLastIndex(function inWindow(entry,): boolean {
+      return Math.abs(at - entry.at,) <= PAIR_WINDOW_MS;
+    },);
+
+    /**
+     The stream this line pairs with, taken off the queue, or that none does.
+     */
+    const paired = (index === NOT_FOUND) ? 'unpaired' : (queue[index]
+      ?.content
+      ?? 'unpaired');
+    if (index !== NOT_FOUND) {
+      waiting.set(
+        record.model,
+        queue.toSpliced(
+          index,
+          1,
+        ),
+      );
+    }
+    samples.push({
+      provider: record.provider,
+      model: record.model,
+      completion: record.completion,
+      at,
+      content: paired,
+    },);
+  }
+  return samples;
+}
+
+//endregion Cap census read

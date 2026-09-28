@@ -171,6 +171,23 @@ TODO | DONE
     any quality figure measured while a provider was dry
     rests on whoever was awake, which can be five of the ten seats.
 
+6.  Re-read the completion caps against the runs since the last launch.
+
+    ```sh
+    mise run //package/module/translation-repair:cap-census -- ~/temp/agent > ~/temp/agent/cap-census.log 2>&1
+    rg '^cap-census:|^[a-z].*: card cap|^  [A-Z]{4}' ~/temp/agent/cap-census.log
+    ```
+
+    Expected: a `cap-census:` summary line, then per seat its card cap and the rule's reading,
+    and any flags under it.
+    It reads ids and numbers only, and spends no quota.
+    `PLACEHOLDER WITH A DISTRIBUTION` means a card still names the pooled 99th percentile
+    though the rule can now read its own calls (ledger P10): write the measured cap on the card.
+    `RULE READS ... AGAINST THE CARD'S ...` and `CUTS OVER ONE PERCENT` are for reading, not for acting on at once:
+    a capped call cannot show a longer answer, and the log scope differs from the 2026-09-09 table,
+    so read each provider's cut columns (with content, with none, unpaired) in the full log before moving a cap,
+    as `completion-cap.ts` records for the 2026-09-28 reading.
+
 ## Steps
 
 Status:
