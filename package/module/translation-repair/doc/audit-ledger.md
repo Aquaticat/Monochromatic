@@ -841,16 +841,22 @@ so a false "quorum not met" skips the confirmation;
 
 ### E4: an empty standing with no valid lane text fails at publish, not at once
 
-Status: fixed in `d9cb910e4` (red guard `d2f0e07ef`).
-The `no-standing-text` exit in `consolidate-settle.ts` was the one exit keeping the standing
+Status: fixed, in two steps.
+First in `d9cb910e4` (red guard `d2f0e07ef`),
+which made the slice fail at once under the owner's rule of 2026-09-04;
+then the owner ruled the same day that such a slice keeps the archive and the page ships
+("Keep archive, ship", `doc/design-commitments.md`),
+fixed in `7f79ada48`, `002f21f43` and `e7d409fdd` (red guards `4acd8bd40`),
+recorded as the eighteenth addendum of `doc/decision/translation-repair-ineligible-standing.md` at the repo root.
+
+Found as:
+the `no-standing-text` exit in `consolidate-settle.ts` was the one exit keeping the standing
 that skipped `requireShippableTerminal`,
 so a slice with no valid proposal anywhere settled with no polish,
 and `assertFinalNaturalnessComplete` stopped the entry at persist
 after every later slice had been bought.
 XingZ60 lost about 3.0 hours that way on 2026-09-22 (slice 89),
-on the variant with a lane text on offer that class eighty-seven fixed;
-the variant without one now fails at once under the owner's rule of 2026-09-04,
-as the `incumbent-only` exit does.
+on the variant with a lane text on offer that class eighty-seven fixed.
 An empty standing passes the rule only over a blank original,
 which the pinned corpus never carves (0 of 1259 deterministic slices, 2026-09-27),
 and such a slice still keeps nothing.
@@ -858,11 +864,9 @@ Since the naturalness check of 2026-08-28,
 no stored artifact carries a `no-standing-text` slice;
 all 15 that do are from August.
 
-The same change fixed a vacuous check beside it:
+The first step also fixed a vacuous check beside it:
 the `incumbent-only` case read its served counter off a return a throw never delivers,
 so its "no judge bought" assertion held whatever was bought.
-`ConsolidationStandingIneligibleError` also stopped claiming the page would be refused at assembly,
-which the ruling that a settled page ships with its defects made untrue for most rules.
 
 ### E5: floor refusals and panel votes the log cannot explain
 

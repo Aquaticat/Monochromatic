@@ -748,7 +748,9 @@ which may carry the original script beside it (7 of the 14 such archives at the 
 and consolidation withholds a standing text the deterministic gate refused from its slate,
 failing the slice under `ConsolidationStandingIneligibleError` when nothing valid ships
 rather than letting the page guard refuse the entry after the run has been paid for
-(`doc/decision/translation-repair-ineligible-standing.md`).
+(`doc/decision/translation-repair-ineligible-standing.md`),
+until the owner ruled on 2026-09-27 that such a slice keeps the archive's wording
+and the page ships with it reported (that record's eighteenth addendum).
 Since `82888d43b` (2026-09-04,
 owner's decision after the re-run stopped at its first paragraph)
 a reference the archive rendered another way is owed once,

@@ -190,6 +190,50 @@ and the decline named `slate-declined-standing`.
 - Guard shown to fail first (`c6ec06788`),
     fixed in `adca69d4e`.
 
+## Addendum 2026-09-27, eighteenth: a slice with no valid wording keeps the archive, and the page ships
+
+Owner's answer of 2026-09-27 ("Keep archive, ship"),
+asked by the whole-package audit
+(`package/module/translation-repair/doc/audit-ledger.md`, E4)
+after the ruling that a run always ships.
+It replaces the "else fail the slice at once" half of the rule of 2026-09-04;
+the first half stands,
+so a valid proposal is still preferred wherever one exists.
+
+- A stopped entry left the archive's whole page live,
+    that slice included,
+    so stopping protected nothing the page did not already show
+    and discarded every other repair the entry had bought.
+- Measured before the answer:
+    18 real entries stopped on `ConsolidationStandingIneligibleError` from 2026-09-04 to 2026-09-27,
+    about 34.3 hours in all,
+    most on terminals later addenda had already turned into shipping the slate's choice;
+    on the build of the answer,
+    one real stop was of the kind still reachable
+    (yulianNyanner, `incumbent-only`, 0.48 hours).
+- Every exit that stopped the entry now keeps the archive:
+    the empty floor,
+    the missing standing text with no lane text (ledger E4),
+    a slate that reached the judges with nothing on it,
+    and a gate leaving the refused standing in place.
+    The settlement keeps its terminal,
+    is marked `archiveKept`,
+    records `no-valid-wording`,
+    runs no polish,
+    and is never cached.
+- The artifact's shipped kind `archive` carries no text:
+    the page reads the archive from the comparison row,
+    so a silent archive stays silent rather than an empty string written at an anchor.
+    It takes precedence over an incumbent that stood in,
+    since on a disputed slice the stand-in is the repair text the rule refused too.
+- The page ships with the slice on its `DEFECTS` line (`no-valid-wording`).
+- `ConsolidationStandingIneligibleError` and `requireShippableTerminal` are gone;
+    `nothingValidShips` and `keepTheArchive` (`consolidate-ineligible-standing.ts`) take their place.
+- Guards shown to fail first (`4acd8bd40`),
+    fixed in `7f79ada48` (settlement),
+    `002f21f43` (artifact and reading)
+    and `e7d409fdd` (report).
+
 ## Addendum 2026-09-27, seventeenth: the major-or-worse rule reads the panel's severity
 
 Owner's answer of 2026-09-27 ("Adjudicated"),

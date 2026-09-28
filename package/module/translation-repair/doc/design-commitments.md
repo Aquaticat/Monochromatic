@@ -290,4 +290,4 @@ Part of [the package README](../README.md).
   its first half stands, so a valid proposal is still preferred wherever one exists.
   Measured before the ruling: 18 real entries stopped on this refusal from 2026-09-04 to 2026-09-27,
   about 34.3 hours in all, most on terminals later rulings already turned into shipping the slate's choice;
-  on the build of the ruling, one real stop was of the kind still reachable (yuliannyanner2, `incumbent-only`, 0.48 hours).
+  on the build of the ruling, one real stop was of the kind still reachable (yulianNyanner, `incumbent-only`, 0.48 hours).

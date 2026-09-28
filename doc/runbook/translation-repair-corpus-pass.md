@@ -525,12 +525,29 @@ So `6` means read the line, `4` means fix the input, `5` means file a bug.
     and the source's that the page lacks.
     `dropped=0` on every line is the clean reading.
     A non-zero `dropped` is a finding rather than a failure:
-    the page is what both deciders approved,
-    and the addresses themselves are in the run log at `info`
-    under `publish: dropped destination`, never on stdout.
+    the page is what both deciders approved and it shipped,
+    and the addresses themselves are in the run log at `warn`,
+    one line each under `entry <id>: page drops source destination`, never on stdout.
     A trailing `destinations-mdx-downgraded (source)` or `(page)` says the strict grammar refused that side
     and the plain-markdown parse was read instead; the count still stands.
     A checkout that predates `#265` prints no such line, and a run made from it recorded nothing to read.
+
+    Then read the defect lines the same way:
+
+    ```sh
+    grep '^DEFECTS ' "${RUNDIR}.log"
+    ```
+
+    Expected: no output on a clean pass.
+    A line `DEFECTS <id> checks=<a>,<b>` names a page that shipped with those defects.
+    `archive-original`, `contributor-names`, `destinations`, `front-matter` and `headings`
+    are the publish-time content checks;
+    `no-valid-wording` names slices where no wording passed the deterministic rule,
+    so the archive's own wording stayed.
+    Each defect's message is in the run log at `warn` under `publish: shipping with defect`,
+    naming ids, counts and slice indices only.
+    A checkout that predates 2026-09-27 refused such entries instead,
+    so it prints no such line.
 
 3.  Read what the providers were doing while it ran.
 

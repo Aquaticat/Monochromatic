@@ -235,10 +235,24 @@ A source destination the archive rendered another way is not lacking when the pa
 (`doc/decision/translation-repair-rewritten-destination.md`):
 the line then ends with `destinations-archive-rendering`,
 and with `destinations-both-renderings` when the page carries the original's and the archive's for one reference.
-The addresses themselves go to the run log at info,
+The addresses themselves go to the run log at warn,
+one line per address reading `entry <id>: page drops source destination <address>`
+with the slices that carry it in the original, the archive and the shipped text,
 never to stdout.
 A dropped destination from a wording both deciders approved is a finding,
 not a late publish rewrite.
+
+A page that ships with a defect also prints `DEFECTS <id> checks=<a>,<b>` after its `DESTINATIONS` line.
+The page ships regardless (`doc/design-commitments.md`),
+and each check names what it found:
+`archive-original`, `contributor-names`, `destinations`, `front-matter` and `headings`
+are the publish-time content checks,
+and `no-valid-wording` names slices where no wording passed the deterministic rule,
+so the archive's own wording stayed.
+Each defect's message is in the run log at warn,
+under `publish: shipping with defect <check>:`,
+and names ids, counts and slice indices only.
+A page that does not parse still refuses.
 The neutral pronoun the sources write as `TA`,
 `Ta` or `ta` renders as singular they:
 the declared-identity pronoun line counts all three spellings (`identity-context.ts`),
