@@ -33,10 +33,14 @@ Record pipeline digest,
 corpus commit,
 and fixture provenance for each pass.
 
-Production `corpus-pass` currently has no pull-request input flag.
-Pull-request 386 procedure used uncommitted throwaway fork that changed corpus commit
-and exposed corpus clone location through `TRANSLATION_REPAIR_CORPUS_DIR`.
-Equivalent pull-request validation must use exact pull-request commit in isolated corpus clone or minimal Git fixture.
+Production `corpus-pass` has no pull-request input flag.
+It reads corpus clone and commit from `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` and `TRANSLATION_REPAIR_CORPUS_COMMIT`
+(package `doc/configuration.md`)
+and prints `CORPUS PIN OVERRIDDEN` at launch when either is set.
+Pull-request validation points them at exact pull-request commit in isolated corpus clone or minimal Git fixture.
+Pull-request 386 procedure of 2026-08-29 predates both variables (`b0a79eb66`, 2026-09-01);
+its uncommitted throwaway fork read a `TRANSLATION_REPAIR_CORPUS_DIR` of its own,
+which production never reads.
 Run `--plan --only <entry>` before spending quota.
 Provenance must name throwaway source changes,
 pull-request head,

@@ -411,8 +411,10 @@ because a run against the wrong corpus would record its conclusions as the pinne
 
 A settled artifact records the commit it read as `corpusSha` (`src/corpus-run/pass-entry-artifact.ts`),
 so an overridden run's artifacts name the commit they came from.
-No launch line prints which half came from the environment,
-so record both values with the run's provenance.
+When either half comes from the environment,
+`corpus-pass` prints a `CORPUS PIN OVERRIDDEN` line at launch naming the clone, the commit and where each came from
+(`corpusPinOverrideNote`, ledger D13);
+record both values with the run's provenance all the same.
 
 Production `corpus-pass` has no pull-request flag;
 these two variables replace the uncommitted source fork the 2026-08-29 pull-request runs needed.
