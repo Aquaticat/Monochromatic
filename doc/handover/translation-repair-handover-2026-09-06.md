@@ -4891,11 +4891,27 @@ each read off the pass log and the shipped page:
     immediately start/restart a costly run if you believe further fixes should be done before launching it.").
     NO RUN UNTIL THE AUDIT FIXES LAND. Next run when launched: TianqiChen666, read slice 9 ("Look inside the
     headpiece", no forced "for you"), 变娃娃 ("in kigurumi"), 被她治愈 ("healed", past tense).
+    STATE 2026-09-28 (the host crashed mid-suite and the session resumed; the worktree was clean at `bea8c8456`):
+    LANDED TODAY: ledger E10 to E12; the glossary entry content C3 to R16 (fix `357f534b7`, mutation checked
+    23 of 23 with a control); L7, the contest shown damage from a patch that lost (`3bed8241d`); L8, a ballot
+    with no usable verdict counted as heard (`abfc69393`); P2, the recovery round losing an early unreadable
+    seat (`005692e11`). Each rides inside the current cache versions with a written account, since no
+    slice-cache file under the agent runs is newer than 00:26 on 2026-09-27; #395 rechecks all six before launch.
+    OWNER QUESTIONS, TO ASK IN ONE BATCH once the unblocked run-affecting items land (ledger L3, L4, L11, P9
+    hold the measurements): L3, edits the checkers did not confirm shipping inside a winning patch (18 of 51
+    TianqiChen666 patches); L11, the naturalness rewrite of the archive after a lost patch shipping with no
+    checker round (106 of 125 TianqiChen666 refinements, 75 with accepted issues); L4, what the editor's
+    preservation gate should protect inside a licensed quote; P9, the cross-provider re-ask against prompt
+    uniqueness. NEXT, IN ORDER: P8 (a complete JSON value followed by more text is lost, about four voices per
+    TianqiChen666 run), P13's decision-seat context (30,203 of 32,000 tokens before `ce824d933` added the house
+    rules), P5, X6, H5, then L5, L10, L14, L12, L13 and the D series. DEFERRED PAST THE LAUNCH: L6 (task 401).
+    Probe scripts, the single-file runner (`run-files.ts`) and the mutation harness (`mutants.ts`, JSON spec)
+    live in `~/temp/agent/audit-glossary-fix/`, which survives a reboot; the scratchpad did not.
     AUDIT IN PROGRESS (owner 2026-09-27: "audit the whole translation-repair pkg for all the mistakes we've
     made and fix all of them", "Mistakes made, ever, for this pkg"): every finding, fix and status is in
     `package/module/translation-repair/doc/audit-ledger.md`; the planning doc section "Whole-package audit,
     2026-09-27" lists the owner's answers and the commits. The owner was told the 治愈 安慰 misquotation.
-    Open work is tracked as tasks 377 to 381 plus 369 (prevention doc) and 372 (glossary content).
+    Open work is tracked as tasks 363, 367 to 369, 381, 395 and 397 to 401 (as of 2026-09-28).
     LANDED SINCE (2026-09-27): the dispute rule reads the panel severity (L9, guard `b15ba5464`, fix
     `6a0f68cec`); a slate declined twice over wording that cannot ship ships by preference with its
     reasons to the polish, on the translate lane too (fifteenth addendum, guard `37128bf6c`); the
