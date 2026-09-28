@@ -217,15 +217,34 @@ function measuringRefiners(
 }
 
 /**
+ An issue the panel ruled on that `T1` does not resolve, which is every
+ accepted issue of a slice whose accuracy patch lost (ledger L11).
+ */
+type UnresolvedIssue = {
+  /**
+   Issue id.
+   */
+  readonly issueId: string;
+
+  /**
+   Panel's ruling, which decides whether the recheck owes it a round.
+   */
+  readonly status: 'accepted' | 'rejected' | 'needs-human';
+};
+
+/**
  Builds one settled accuracy outcome.
- 
+
  @param resolvedIssueIds - issues the checkers confirmed in `T1`
- 
+
  @param authorship - who wrote `T1`, which the phase must union with its
  own refiners on any slice where the rewrite ships
- 
+
+ @param unresolvedIssues - issues the panel ruled on that `T1` does not
+ resolve, none by default
+
  @returns Outcome the phase refines
- 
+
  @example
  ```ts
  const outcome = settledOutcome({ resolvedIssueIds: [], authorship, },);
@@ -235,24 +254,35 @@ function settledOutcome(
   {
     resolvedIssueIds,
     authorship,
+    unresolvedIssues = [],
   }: {
     readonly resolvedIssueIds: readonly string[];
     readonly authorship: IssueAuthorship;
+    readonly unresolvedIssues?: readonly UnresolvedIssue[];
   },
 ): ChunkRepairOutcome {
   return {
     sliceIndex: 0,
     repairedText: REPAIRED_TEXT,
     changed: false,
-    issues: resolvedIssueIds.map(function toIssue(issueId,) {
-      return {
-        issueId,
-        status: 'accepted' as const,
-        severity: 'major' as const,
-        claims: [],
-        tallies: {},
-      };
-    },),
+    issues: [
+      ...resolvedIssueIds.map(function toIssue(issueId,): UnresolvedIssue {
+        return {
+          issueId,
+          status: 'accepted',
+        };
+      },),
+      ...unresolvedIssues,
+    ]
+      .map(function toAdjudicated({ issueId, status, },) {
+        return {
+          issueId,
+          status,
+          severity: 'major' as const,
+          claims: [],
+          tallies: {},
+        };
+      },),
     resolvedIssueIds,
     candidateResolvedIssueIds: [],
     // No checker round in this fixture, so nothing was said about any issue.
@@ -275,12 +305,30 @@ function settledOutcome(
 }
 
 /**
+ One checker casting a verdict unlike the rest of the bench.
+ */
+type DissentingChecker = {
+  /**
+   Checker that dissents.
+   */
+  readonly modelId: RosterModelId;
+
+  /**
+   Verdict it casts on every issue.
+   */
+  readonly verdict: string;
+};
+
+/**
  Client scripting the rewriter, the judges, and the recheck.
- 
+
  @param checkerVerdict - verdict every checker casts during the recheck
- 
+
+ @param dissent - one checker casting another verdict, where a case needs a
+ split bench
+
  @returns Client usable by the phase
- 
+
  @example
  ```ts
  const client = scriptedPhase({ checkerVerdict: 'fixed', },);
@@ -289,8 +337,10 @@ function settledOutcome(
 function scriptedPhase(
   {
     checkerVerdict,
+    dissent,
   }: {
     readonly checkerVerdict: string;
+    readonly dissent?: DissentingChecker;
   },
 ): SyntheticClient {
   return {
@@ -357,7 +407,7 @@ function scriptedPhase(
             .map(function toCheck(index,) {
               return {
                 issue: index + 1,
-                verdict: checkerVerdict,
+                verdict: (request.modelId === dissent?.modelId) ? dissent.verdict : checkerVerdict,
               };
             },),
         };
@@ -385,9 +435,14 @@ function scriptedPhase(
  @param models - roster override, defaulting to the lane-on roster
  
  @param authorship - who wrote `T1`, defaulting to nobody
- 
+
+ @param unresolvedIssues - issues the panel ruled on that `T1` does not
+ resolve, none by default
+
+ @param dissent - one checker casting another verdict, none by default
+
  @returns Phase result
- 
+
  @example
  ```ts
  const phase = await runPhase({ resolvedIssueIds: [], checkerVerdict: 'fixed', },);
@@ -399,19 +454,26 @@ async function runPhase(
     checkerVerdict,
     models = MODELS,
     authorship = NO_MODEL_WROTE_THE_FIXTURE,
+    unresolvedIssues = [],
+    dissent,
   }: {
     readonly resolvedIssueIds: readonly string[];
     readonly checkerVerdict: string;
     readonly models?: RepairModels;
     readonly authorship?: IssueAuthorship;
+    readonly unresolvedIssues?: readonly UnresolvedIssue[];
+    readonly dissent?: DissentingChecker;
   },
 ) {
   return runRefinePhase({
     declaredNames: [],
-    client: scriptedPhase({ checkerVerdict, },),
+    client: scriptedPhase({
+      checkerVerdict,
+      ...((dissent === undefined) ? {} : { dissent, }),
+    },),
     targetText: REPAIRED_TEXT,
     slices: SLICES,
-    outcomes: [settledOutcome({ resolvedIssueIds, authorship, },),],
+    outcomes: [settledOutcome({ resolvedIssueIds, authorship, unresolvedIssues, },),],
     models,
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
@@ -541,6 +603,84 @@ await describe({
         },);
 
         // The rewrite still shipped; it simply had nothing to re-prove.
+        expect(phase.outcomes[0]?.repairedText,).toBe(SMOOTH_TEXT,);
+        expect(Object.keys(phase.outcomes[0]?.recheckReadings ?? {},).length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'RECHECKS A REWRITE OF THE ARCHIVE AFTER A LOST PATCH against the '
+        + 'slice\'s accepted issues, and a rewrite one checker votes worse keeps '
+        + 'the text before it (ledger L11, owner 2026-09-28): 1,218 of 2,144 '
+        + 'refined slices were such rewrites, 457 over accepted issues the '
+        + 'rewrite was never shown, and none had a checker round',
+      fn: async function aWorseRewriteOfTheArchiveRollsBack() {
+        const phase = await runPhase({
+          resolvedIssueIds: [],
+          unresolvedIssues: [{ issueId: 'adjudicated/open', status: 'accepted', },],
+          checkerVerdict: 'not-fixed',
+          dissent: { modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER, verdict: 'worse', },
+        },);
+        expect(phase.outcomes[0]?.repairedText,).toBe(REPAIRED_TEXT,);
+        expect(phase.outcomes[0]?.changed,).toBe(false,);
+        expect(
+          phase.findings
+            .some(function namesRollback(finding,) {
+              return finding.includes('refine-rolled-back',)
+                && finding.includes('adjudicated/open',);
+            },),
+        ).toBe(true,);
+
+        // The round that decided it is kept, as for a regressed confirmed issue.
+        const reading = phase.outcomes[0]?.recheckReadings['adjudicated/open'];
+        expect(reading?.ballots.length,).toBe(MODELS.checkerModelIds.length,);
+      },
+    },),
+
+    it({
+      name: 'SHIPS a rewrite of the archive the checkers find no worse, since a '
+        + 'not-fixed verdict on an issue the patch never fixed is the text as it '
+        + 'stood, and keeps that round\'s ballots',
+      fn: async function aNoWorseRewriteOfTheArchiveShips() {
+        const phase = await runPhase({
+          resolvedIssueIds: [],
+          unresolvedIssues: [{ issueId: 'adjudicated/open', status: 'accepted', },],
+          checkerVerdict: 'not-fixed',
+        },);
+        expect(phase.outcomes[0]?.repairedText,).toBe(SMOOTH_TEXT,);
+        expect(phase.findings,).toContain('refine-recheck-passed (1 issues)',);
+        const reading = phase.outcomes[0]?.recheckReadings['adjudicated/open'];
+        expect(reading?.ballots.length,).toBe(MODELS.checkerModelIds.length,);
+      },
+    },),
+
+    it({
+      name: 'CREDITS NOTHING to a rewrite the checkers call fixed on an issue the '
+        + 'patch never fixed: the recheck is a rollback gate, and a resolution it '
+        + 'recorded would rest on a round no panel or selection ever weighed',
+      fn: async function aFixedVoteOnTheRewriteIsNotAResolution() {
+        const phase = await runPhase({
+          resolvedIssueIds: [],
+          unresolvedIssues: [{ issueId: 'adjudicated/open', status: 'accepted', },],
+          checkerVerdict: 'fixed',
+        },);
+        expect(phase.outcomes[0]?.repairedText,).toBe(SMOOTH_TEXT,);
+        expect(phase.outcomes[0]?.resolvedIssueIds,).toStrictEqual([],);
+      },
+    },),
+
+    it({
+      name: 'BUYS NO RECHECK over issues the panel rejected or left to a human, '
+        + 'which describe no defect the slice is known to carry',
+      fn: async function unacceptedIssuesBuyNoRound() {
+        const phase = await runPhase({
+          resolvedIssueIds: [],
+          unresolvedIssues: [
+            { issueId: 'adjudicated/rejected', status: 'rejected', },
+            { issueId: 'adjudicated/human', status: 'needs-human', },
+          ],
+          checkerVerdict: 'worse',
+        },);
         expect(phase.outcomes[0]?.repairedText,).toBe(SMOOTH_TEXT,);
         expect(Object.keys(phase.outcomes[0]?.recheckReadings ?? {},).length,).toBe(0,);
       },
