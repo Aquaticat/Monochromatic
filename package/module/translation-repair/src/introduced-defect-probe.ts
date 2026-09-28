@@ -21,14 +21,18 @@ import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Introduced-defect probe stage
-// Asks whether the repair broke anything nobody had raised. Runs in SHADOW
-// MODE: the report reaches the outcome and the artifacts, and nothing reads it
-// to decide what ships. That is deliberate and is the whole point of this
-// revision. The stage's own failure mode, a prober re-reporting the defect the
-// edit was fixing, has no measured rate yet, and wiring an unmeasured stage
-// into selection would let one false claim discard every repair in a chunk
-// including the ones in other envelopes. Round three's artifacts plus the
-// human repair grades are what will measure it.
+// Asks whether the repair broke anything nobody had raised.
+//
+// OVER AN ACCURACY PATCH IT DECIDES NOTHING DIRECTLY: the report reaches the
+// outcome and the artifacts, and the lane contest weighs its admitted claims
+// as evidence (`repair-damage-evidence.ts`). A claim there would discard edits
+// fixing defects a panel confirmed, including ones in other envelopes, on a
+// signal a reading of every flagged region put at six of ten true.
+//
+// OVER A NATURALNESS REWRITE AN ADMITTED CLAIM ROLLS THE REWRITE BACK (ledger
+// L11, decided for quality 2026-09-28): what a rollback loses there is
+// fluency, and what comes back is text a checker round or the archive already
+// stood behind (`refine-slice-settle.ts`).
 
 /**
  Everything the probe stage produced for one chunk.
@@ -71,12 +75,15 @@ export type IntroducedDefectReport = {
  */
 type ClaimTotals = Readonly<{
   /**
-   Claims that a second prober confirmed as added damage.
+   Claims of added damage the differential bore out: the quote is in the
+   AFTER text and absent from BEFORE. One prober's claim suffices; no second
+   prober is asked to agree.
    */
   corroborated: number;
 
   /**
-   Claims that a second prober confirmed as dropped content.
+   Claims of dropped content the differential bore out: the quote is in the
+   BEFORE text and absent from AFTER.
    */
   removalCorroborated: number;
 

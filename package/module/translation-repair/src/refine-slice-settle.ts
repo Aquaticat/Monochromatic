@@ -7,6 +7,7 @@ import { runIntroducedDefectProbe, } from './introduced-defect-probe.ts';
 import { PRODUCTION_PRIOR_ISSUE_DISCLOSURE, } from './introduced-defect-wire.ts';
 import { parseDocument, } from './parse-document.ts';
 import { deriveRefinableEnvelopes, } from './refine-envelope.ts';
+import { admittedClaimCounts, } from './refine-probe-verdict.ts';
 import { runRefineStage, } from './refine-stage.ts';
 import type {
   ChunkRepairOutcome,
@@ -317,8 +318,9 @@ export async function settleRefinedSlice(
     };
 
   /**
-   Shadow-mode audit of damage the REWRITE caused.
-   
+   Audit of damage the REWRITE caused, which rolls it back on any claim the
+   screen admits (ledger L11, below).
+
    The accuracy probe already ran, but it compared the original translation
    with the repaired one and finished before this lane started, so it says
    nothing about the text this rewrite produced. Auditing one whole slice
@@ -347,9 +349,9 @@ export async function settleRefinedSlice(
     ],
     issues: outcome.issues,
     editKind: 'naturalness-refinement',
-    // The declared names (ledger H8). The report decides nothing that ships,
-    // as in the accuracy lane, but damage telemetry read without them would
-    // count a declared name kept as written as a defect.
+    // The declared names (ledger H8), since an admitted claim rolls the rewrite
+    // back, and a prober reading without them would count a declared name kept
+    // as written as a defect.
     identityContext: identityContext ?? '',
     // THE SAME WINDOW THE ACCURACY LANE'S PROBE GETS, which is what makes the
     // two lanes' damage telemetry comparable at all. Without it this auditor
@@ -378,6 +380,51 @@ export async function settleRefinedSlice(
     perCallTimeoutMs,
     l,
   },);
+
+  /**
+   Claims the screen admitted against the rewrite: damage it added, quoted
+   from the rewrite and absent before, and content it dropped, quoted from
+   the text before it and absent after.
+   */
+  const admitted = admittedClaimCounts({ report: refinementDefects, },);
+  if ((admitted.added + admitted.dropped) > 0) {
+    // LEDGER L11, decided for quality under the owner's standing directive
+    // (2026-09-28). 175 of 2,144 kept rewrites over every run carried an
+    // admitted claim, and a reading of every region with one (the roster
+    // calibration of 2026-09-03) found six of ten true, three false and one
+    // borderline: rolling back reverts more damaged rewrites than it costs
+    // fluent ones, and what comes back is text a checker round or the archive
+    // already stood behind. Requiring two claims would have caught 9.
+    //
+    // THE REPORT IS NOT ATTACHED. The lane contest reads `refinementDefects`
+    // as damage evidence against the repair candidate, whose text is `T1`
+    // again; the counts go to the findings.
+    /**
+     The rollback, in scorecard-stable wording.
+     */
+    const finding = `refine-rolled-back-by-probe (${String(admitted.added,)} added-damage and `
+      + `${String(admitted.dropped,)} removal claims admitted against the rewrite)`;
+    l.warn(`slice ${String(outcome.sliceIndex,)}: ${finding}; keeping the text before the rewrite`,);
+    return {
+      outcome: {
+        ...withRefineRounds,
+        // The recheck's ballots are kept on the rollback as on every path
+        // where it ran, since they read the rewrite a reader will not see.
+        recheckReadings: retained.readings,
+      },
+      findings: [
+        ...slice.findings,
+        ...refined.findings,
+        ...retained.findings,
+        ...refinementDefects.findings,
+        finding,
+      ],
+      asked,
+      // The rewrite was rolled back, so what ships is the text before it.
+      refinedBy: [],
+      refinersHeard: refined.heard,
+    };
+  }
 
   /**
    Whether the text this slice now returns differs from the archive's, which
