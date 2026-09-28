@@ -607,6 +607,88 @@ reserved-case query,
 new runtime,
 or additional model call follows automatically.
 
+## Bounded semantic qualification protocol
+
+The user chose B after the budget checkpoint:
+keep integration/design questions deferred and complete bounded semantic qualification first.
+Private protocol and text matrix are under the existing experiment's `qualification/` directory.
+Draft `0e49860` and scorer/control source `7d26d64` precede candidate queries for this study.
+Local controls `proc_e4d3`,
+retained at `f5ff3d2`,
+passed input projection,
+full-policy serialization,
+scorer/error/coverage boundaries,
+and isolated omissions of error,
+coverage,
+and anchor-exclusion guards.
+Original sources remained unchanged.
+These checks used fabricated scores and made no candidate query.
+No model call is authorized merely by an old process notification.
+
+The matrix crosses cache removal,
+local file reading,
+and external transfer with these semantic families:
+
+- Direct positive wording.
+- Direct prohibition.
+- A different resource or destination.
+- Operation/resource components split across clauses.
+- An explicit broader prohibition.
+- Positive wording accompanied by a ban on a different operation or resource.
+
+Each profile has request and approved-prose inputs,
+using unchanged questions and source-isolated serialization.
+The planned maximum is 18 profiles,
+36 client calls,
+and 72 scalars,
+with the existing shared five-second preparation-inclusive deadline and zero client retries.
+One request text matches a prior development case;
+it is a declared anchor,
+not a new observation for minimum coverage.
+The original 24 reserved scenarios remain unqueried and are not study inputs.
+
+The study reuses the already defined diagnostic bands:
+0.8/0.2,
+0.9/0.1,
+and 0.95/0.05.
+A scalar at or beyond a band's upper/lower cutoff resolves to true/false;
+intermediate values remain uncertain.
+This does not select a production threshold or change an archived `validated: false` flag.
+
+A band passes this frozen benchmark gate only when it has no resolved semantic error
+and resolves at least one correct true and correct false among novel texts for every source-kind/predicate role.
+Known anchors count for errors but cannot satisfy that coverage condition.
+Operation-level coverage is reported separately;
+there is no invented minimum automation percentage or claim that every operation is covered.
+This prevents a pass through blanket abstention while respecting the accepted manual-review fallback.
+Every band's result is reported rather than selecting one after seeing outputs.
+
+References and their rationales are declared before queries.
+Unresolved antecedents,
+conditional grants,
+conflicting/revoked instructions,
+and real-authority qualification are outside this matrix,
+not forced into binary labels.
+The references rely on stated fixture bindings and authority assumptions.
+This is targeted synthetic coverage,
+not a random workload sample,
+family-disjoint validation,
+or a population error-rate/calibration guarantee.
+
+Stop on the first input,
+transport,
+schema,
+freshness,
+or deadline failure,
+or after the frozen matrix completes.
+If all bands fail,
+record that no profile passed this gate.
+No output-driven case/reference/prompt/threshold change,
+repeat batch,
+training,
+new runtime branch,
+or production mutation follows automatically.
+
 ## Historical shared control and question-set measurements
 
 The existing fifteen-scenario batch remains development evidence.

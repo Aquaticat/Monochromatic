@@ -255,6 +255,40 @@ Semantic qualification remains a decision blocker;
 live authority and final policy behavior remain implementation/consumer gates.
 No adoption or production change follows.
 
+## Frozen semantic-study scope
+
+The user chose B:
+keep integration/design questions deferred and complete bounded Jev semantic qualification first.
+Task #38 reuses the existing questions,
+serializer,
+parser projection,
+and shared-budget assessor.
+Its fixed matrix covers 18 operation/family profiles and at most 36 selected-source calls,
+producing 72 scalars.
+The 36 texts include 35 novel texts relative to the previous tranche and one declared anchor.
+Original reserved scenarios remain unqueried.
+
+The existing diagnostic bands 0.8/0.2,
+0.9/0.1,
+and 0.95/0.05 are evaluated without selecting a production threshold.
+A band passes the fixed benchmark gate only with zero resolved semantic errors
+and at least one correct true and false among novel texts for every source-kind/predicate role.
+Anchors count for errors but cannot satisfy minimum new coverage.
+Operation coverage is reported separately without an invented automation-rate target.
+This is targeted synthetic coverage,
+not a population error-rate or calibration guarantee.
+
+Private draft `0e49860`,
+scorer/control source `7d26d64`,
+and local evidence `f5ff3d2` precede model calls.
+`proc_e4d3` passed input/serializer checks and fabricated-score controls,
+including isolated error-gate,
+coverage-gate,
+and anchor-exclusion omissions.
+The [qualification protocol](../planning/pi-auto-mode-jev-qualification.md)
+records scope exclusions and the finite stop rule.
+No new model query has occurred in this semantic study at this checkpoint.
+
 ## Candidate ledger
 
 ### Laya

@@ -546,6 +546,15 @@ keep integration/design questions deferred and complete a bounded Jev semantic-q
 Task #38 drafts that protocol under the existing semantic-control repository's `qualification/` directory.
 Draft `0e49860` defines a fixed semantic coverage matrix and reuses the existing diagnostic band catalog,
 without selecting a production threshold.
+Scorer/control source `7d26d64` and local results `f5ff3d2` passed in `proc_e4d3`.
+The protocol has 18 profiles,
+36 source texts,
+and 72 scalars;
+35 texts are novel relative to the prior tranche,
+and one is an explicitly declared anchor excluded from minimum new-coverage credit.
+It requires zero resolved semantic errors and some correct true/false coverage for every source/predicate role,
+while reporting operation-specific coverage without imposing an automation-rate target.
+No semantic-study model call has occurred yet.
 Freeze cases,
 reference labels,
 scoring,
