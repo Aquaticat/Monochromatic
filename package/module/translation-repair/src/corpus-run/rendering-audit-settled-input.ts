@@ -1,13 +1,11 @@
 import {
   readdir,
-  readFile,
 } from 'node:fs/promises';
 import {
   basename,
   join,
 } from 'node:path';
 
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 
 import {
   type CorpusPin,
@@ -27,7 +25,6 @@ import {
 import {
   identityOf,
   type SettledAuditSubject,
-  type SettledIdentity,
   subjectsOf,
 } from './rendering-audit-settled-subject.ts';
 

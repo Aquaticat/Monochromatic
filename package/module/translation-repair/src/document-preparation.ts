@@ -22,7 +22,6 @@ import {
 import type { BlockPair, } from './pair-blocks-wire.ts';
 import type { SectionPair, } from './pair-sections-wire.ts';
 import {
-  type SectionBlockPairing,
   sectionPairingsOf,
 } from './section-pairing.ts';
 import { parseDocument, } from './parse-document.ts';

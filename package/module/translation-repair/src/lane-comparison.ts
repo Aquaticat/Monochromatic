@@ -1,6 +1,5 @@
 import type {
   LaneSliceOutcome,
-  LaneSliceText,
 } from './lane-slice-text.ts';
 import type { PreparationIdentity, } from './preparation-identity.ts';
 import { assertDeliveryCoherent, } from './delivery-coherence.ts';

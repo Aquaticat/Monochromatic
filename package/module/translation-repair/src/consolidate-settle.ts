@@ -31,7 +31,6 @@ import type {
   ConsolidationPolish,
   ConsolidationPolishConfig,
 } from './consolidation-polish.ts';
-import type { SliceValidation, } from './translate-validate.ts';
 import { wrapConsolidationProposals, } from './consolidate-wrap.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import {

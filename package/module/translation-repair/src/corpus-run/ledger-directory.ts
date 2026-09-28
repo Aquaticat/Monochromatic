@@ -5,10 +5,8 @@ import { failureName, } from '../error-name.ts';
 import { refusalText, } from '../refusal-text.ts';
 import {
   readRunJson,
-  RunJsonUnreadableError,
 } from '../run-json-read.ts';
 import {
-  LedgerShapeError,
   parseLedgerRound,
   type ReadRound,
 } from './ledger-parse.ts';

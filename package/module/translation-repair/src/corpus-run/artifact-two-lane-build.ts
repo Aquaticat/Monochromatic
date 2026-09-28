@@ -16,11 +16,9 @@ import {
 } from './artifact-two-lane-contract.ts';
 import {
   assertDerivationsAgree,
-  compareLanes,
 } from './artifact-two-lane-comparison.ts';
 import {
   toArtifactComparisonRow,
-  toArtifactRow,
 } from './artifact-two-lane-project.ts';
 import {
   assertFindingsDescribePreparation,
@@ -28,7 +26,6 @@ import {
   assertResultCountsPreparation,
 } from './artifact-two-lane-verify.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
-import type { ArtifactDeliveryRow, } from './artifact-two-lane-vocabulary.ts';
 
 //region Artifact version 2 build
 // The one place a two-lane artifact is assembled.

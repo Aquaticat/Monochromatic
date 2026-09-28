@@ -36,7 +36,6 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatTextRequest,
-  type OcrReader,
   type PairedReading,
   type RosterModelId,
   type SyntheticClient,

@@ -1,7 +1,6 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import {
   bothHalvesInserted,
-  type ContainerHalfPair,
   containerHalfPairs,
 } from './container-half-pairs.ts';
 import type { SliceReplacement, } from './splice-slices.ts';

@@ -4,8 +4,6 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { contextRoot, } from './log-context.ts';
 import { armCallDeadline, } from './call-deadline.ts';
 import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
   ChatTextReply,
   ChatTextRequest,
   ModelCaller,

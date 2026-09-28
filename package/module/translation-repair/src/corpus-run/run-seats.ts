@@ -1,4 +1,3 @@
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   NO_PROVIDER,
@@ -7,10 +6,8 @@ import {
 import { holdSet, } from '../model-card-derive.ts';
 import { OPENROUTER_WITHHELD, } from '../openrouter-catalog.ts';
 import type { BudgetView, } from '../provider-budget.ts';
-import {
-  PROVIDER_ORDER,
-  type ProviderName,
-  providerRecord,
+import type {
+  ProviderName,
 } from '../provider-name.ts';
 import {
   assertCheckerIndependence,

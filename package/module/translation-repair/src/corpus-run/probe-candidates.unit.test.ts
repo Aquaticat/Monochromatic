@@ -27,7 +27,6 @@ import {
   readCandidatesAlone,
   ROSTER_MODEL_IDS,
   RUN_ROSTER,
-  SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';

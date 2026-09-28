@@ -3,8 +3,6 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import { contextRoot, } from './log-context.ts';
 import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
   ChatTextReply,
   ChatTextRequest,
   SyntheticClient,

@@ -13,7 +13,6 @@ import {
 } from './provider-name.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import {
-  type MeterRecord,
   type MeterState,
   readEveryMeter,
   routesAsDry,

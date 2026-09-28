@@ -8,7 +8,6 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import { blockPairingProtocol, } from './block-pairing-protocol.ts';
 import {
   type BlockPair,
-  type BlockPairingWire,
   type FreeOrderBlocks,
   isBlockPairingWire,
   type NumberedBlock,
@@ -18,7 +17,6 @@ import { assertPairingSeats, } from './pair-blocks-evidence-identity.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { shortBenchStageFinding, } from './stage-reachable-quorum.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
-import type { RoundOutcome, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Block pairing stage

@@ -9,8 +9,6 @@ import {
 import { buildAnthropicBody, } from './anthropic-request.ts';
 import { armCallDeadline, } from './call-deadline.ts';
 import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
   ChatTextReply,
   ChatTextRequest,
   ModelCaller,

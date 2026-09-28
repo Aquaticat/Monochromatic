@@ -2,7 +2,6 @@ import type { ChunkPair, } from '../chunk-document.ts';
 import {
   bothHalvesInserted,
   type ContainerHalf,
-  type ContainerHalfPair,
   containerHalfPairs,
 } from '../container-half-pairs.ts';
 import type { InsertionCoverageRow, } from './insertion-coverage-model.ts';

@@ -8,7 +8,6 @@ import { EMPTY_SLICE_SKELETON, } from './empty-slice-skeleton.ts';
 import { validateFrontMatterTranslation, } from './front-matter-translation.ts';
 import { compareLineCounts, } from './line-structure-guard.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
-import type { ProtectedAtom, } from './protected-atom.ts';
 import {
   sourceOnlyBreakFindings,
   substituteBreakFindings,

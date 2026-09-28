@@ -1,7 +1,6 @@
 import type { LaneSliceText, } from './lane-slice-text.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type {
-  TranslateAbsenceReason,
   UnfilledReason,
 } from './translate-absence.ts';
 import type { SliceAlignmentAssessment, } from './translate-alignment.ts';

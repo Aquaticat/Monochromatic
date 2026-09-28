@@ -38,7 +38,6 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
   TRANSLATE_LINE_STRUCTURE_CRITERION,
   TranslateAbsenceError,
-  TranslationRepairInterruptedError,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type IncumbentKind,

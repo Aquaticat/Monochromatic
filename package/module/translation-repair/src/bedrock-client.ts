@@ -25,8 +25,6 @@ import {
 import { armCallDeadline, } from './call-deadline.ts';
 import { armStreamBound, } from './stream-bound.ts';
 import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
   ChatTextReply,
   ChatTextRequest,
   ModelCaller,

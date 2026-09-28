@@ -2,7 +2,6 @@
 import { readRunJson, } from '../run-json-read.ts';
 import type { AdjudicatedIssue, } from '../adjudicate-model.ts';
 import { ArtifactParseError, } from '../artifact-guard.ts';
-import type { ChunkPair, } from '../chunk-document.ts';
 import {
   type CorpusPin,
   readCorpusFile,
