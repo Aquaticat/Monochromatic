@@ -351,7 +351,7 @@ and moved lane contest to 6 (M28).
 ### K8: small wrong rewrites
 
 Status: dates fixed in `e9065faef` and `2efc90630` (guards `68d86f733`);
-accented neighbours open under H14.
+accented neighbours fixed under H14.
 "5 May beetles",
 "the 4th May",
 "4 May2024",
@@ -826,7 +826,10 @@ Status: fixed in `992d6c984` (properties and named renderings, the owner's 药�
 
 ### H14: Freud's "id" becomes "ID"
 
-Status: open (latent).
+Status: fixed in `a17296fec` (guard `6527efaf2`), with its neighbours in `1873b23dc` (guards `8ef3bdaec`, `18c2bc00f`).
+A text naming the ego, the superego, Freud or psychoanalysis keeps a bare "id" as written;
+"id" inside a longer word ("idée", with a separate accent too), beside a digit or in a footnote label also stays.
+A mutant dropping the Freudian hold fails the guard.
 
 ### H15: fixtures carry corpus text
 
