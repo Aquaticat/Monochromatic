@@ -3,8 +3,8 @@ import {
   type Signature,
   signaturesOf,
 } from './attribution-line.ts';
+import { carriesHan, } from '../han-only-text.ts';
 import {
-  carriesHan,
   handleReading,
   withoutGloss,
 } from './handle-reading.ts';

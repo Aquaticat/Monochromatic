@@ -4,6 +4,8 @@ import {
   type DeclaredNamePair,
 } from './linked-title-declared-name.ts';
 import { visibleText, } from './page-visible-text.ts';
+import { carriesHan, } from './han-only-text.ts';
+import { codePointCount, } from './code-points.ts';
 
 //region Page name glossary
 // CLASS SEVENTY-ONE (mikaela_khara, 2026-09-19). The author's handle 铨铨
@@ -28,16 +30,6 @@ import { visibleText, } from './page-visible-text.ts';
  is a quoted sentence.
  */
 const LONGEST_NAME = 24;
-
-/**
- First Han character.
- */
-const HAN_FIRST = '\u{4E00}';
-
-/**
- Last Han character.
- */
-const HAN_LAST = '\u{9FFF}';
 
 /**
  Heading of the sheet block.
@@ -79,50 +71,6 @@ export type Link = {
    */
   readonly href: string;
 };
-
-/**
- Whether a text carries a Han character.
-
- @param text - text to scan
-
- @returns True on the first Han character
-
- @example
- ```ts
- hasHan({ text: '猫猫', },); // true
- ```
- */
-function hasHan({ text, }: { readonly text: string; },): boolean {
-  for (const character of text) {
-    if ((character >= HAN_FIRST) && (character <= HAN_LAST))
-      return true;
-  }
-  return false;
-}
-
-/**
- Count of code points in a text.
-
- @param text - text to count
-
- @returns Code points
-
- @example
- ```ts
- codePoints({ text: '猫', },); // 1
- ```
- */
-function codePoints({ text, }: { readonly text: string; },): number {
-  /**
-   Code points seen.
-   */
-  let count = 0;
-  for (const character of text) {
-    if (character !== '')
-      count += 1;
-  }
-  return count;
-}
 
 /**
  Inline links of a document, in order, by one linear scan.
@@ -248,9 +196,9 @@ function linkedTextPairs(
     const rendering = rendered.get(link.href,);
     if ((rendering === undefined) || (rendering === link.text))
       return [];
-    if (!hasHan({ text: link.text, },))
+    if (!carriesHan({ text: link.text, },))
       return [];
-    if (codePoints({ text: link.text, },) > LONGEST_NAME)
+    if (codePointCount({ text: link.text, },) > LONGEST_NAME)
       return [];
     return [{
       source: link.text,
@@ -311,7 +259,7 @@ function signaturePairs(
     const rendering = partner.name;
     if (rendering === signature.name)
       return [];
-    if (!hasHan({ text: signature.name, },))
+    if (!carriesHan({ text: signature.name, },))
       return [];
     return [{
       source: signature.name,
@@ -408,7 +356,7 @@ function headingPairs(
       return [];
     if ((rendering === '') || (rendering === heading))
       return [];
-    if (!hasHan({ text: heading, },))
+    if (!carriesHan({ text: heading, },))
       return [];
     return [{
       source: heading,

@@ -1,10 +1,12 @@
 import { signaturesOf, } from './corpus-run/attribution-line.ts';
 import {
-  carriesHan,
   handleReading,
   withoutGloss,
 } from './corpus-run/handle-reading.ts';
-import { isLatinLetter, } from './han-only-text.ts';
+import {
+  carriesHan,
+  isLatinLetter,
+} from './han-only-text.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 
 //region Signer handle floor

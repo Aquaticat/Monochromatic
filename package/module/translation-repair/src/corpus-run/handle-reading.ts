@@ -1,5 +1,7 @@
 import { pinyin, } from 'pinyin-pro';
 
+import { isHanCharacter, } from '../han-only-text.ts';
+
 //region Handle reading
 // CLASS EIGHTY-THREE (XingZ622, 2026-09-22). A signer the archive never
 // rendered shipped in Han: 锦心 in the Part Ten heading and signature, where
@@ -13,52 +15,6 @@ import { pinyin, } from 'pinyin-pro';
 // house policy; this module is the deterministic half the page assembly
 // applies where a rendering still carries Han: the reading of the handle,
 // and the tolerance for a rendering that carries its gloss.
-
-/**
- First character of the CJK unified ideographs.
- */
-const HAN_FIRST = '\u{4E00}';
-
-/**
- Last character of the CJK unified ideographs.
- */
-const HAN_LAST = '\u{9FFF}';
-
-/**
- Whether a character is a Han ideograph.
-
- @param character - one code point as a string
-
- @returns Whether it is in the CJK unified block
-
- @example
- ```ts
- isHan({ character: '锦', },); // true
- ```
- */
-function isHan({ character, }: { readonly character: string; },): boolean {
-  return (character >= HAN_FIRST) && (character <= HAN_LAST);
-}
-
-/**
- Whether a rendering still carries a Han ideograph.
-
- @param text - rendering as the page wrote it
-
- @returns Whether any character of it is Han
-
- @example
- ```ts
- carriesHan({ text: '锦心', },); // true
- ```
- */
-export function carriesHan({ text, }: { readonly text: string; },): boolean {
-  for (const character of text) {
-    if (isHan({ character, },))
-      return true;
-  }
-  return false;
-}
 
 /**
  Whether a character is a Latin letter or a digit, which a romanised run is
@@ -187,7 +143,7 @@ export function handleReading({ name, }: { readonly name: string; },): string {
    */
   let afterLatin = false;
   for (const character of name) {
-    if (isHan({ character, },)) {
+    if (isHanCharacter({ character, },)) {
       if ((run === '') && afterLatin)
         rendered += ' ';
       run += character;

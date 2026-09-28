@@ -6,6 +6,8 @@ import {
 } from './corpus-source.ts';
 import { splitFrontMatter, } from './front-matter.ts';
 import { extractDeclaredIdentity, } from './identity-context.ts';
+import { carriesHan, } from './han-only-text.ts';
+import { codePointCount, } from './code-points.ts';
 
 //region Corpus name index
 // CLASS SEVENTY-EIGHT (shi_Yumiaoya, 2026-09-22). Two people the page names
@@ -41,16 +43,6 @@ const LONGEST_NAME = 24;
  matches too much ordinary text to name anyone.
  */
 const SHORTEST_NAME = 2;
-
-/**
- First Han character.
- */
-const HAN_FIRST = '\u{4E00}';
-
-/**
- Last Han character.
- */
-const HAN_LAST = '\u{9FFF}';
 
 /**
  Separators the corpus joins aliases with: the ASCII comma the corpus itself
@@ -114,50 +106,6 @@ type CorpusEntryTexts = {
    */
   readonly targetText: string;
 };
-
-/**
- Whether a text carries a Han character.
-
- @param text - text to scan
-
- @returns True on the first Han character
-
- @example
- ```ts
- hasHan({ text: '猫猫', },); // true
- ```
- */
-function hasHan({ text, }: { readonly text: string; },): boolean {
-  for (const character of text) {
-    if ((character >= HAN_FIRST) && (character <= HAN_LAST))
-      return true;
-  }
-  return false;
-}
-
-/**
- Count of code points in a text.
-
- @param text - text to count
-
- @returns Code points
-
- @example
- ```ts
- codePoints({ text: '猫', },); // 1
- ```
- */
-function codePoints({ text, }: { readonly text: string; },): number {
-  /**
-   Code points seen.
-   */
-  let count = 0;
-  for (const character of text) {
-    if (character !== '')
-      count += 1;
-  }
-  return count;
-}
 
 /**
  Name and alias forms one document's front matter declares, in declaration
@@ -262,12 +210,12 @@ export function corpusNamesOf(
     return sourceForms.flatMap(function toName(form,): readonly CorpusName[] {
       if (seen.has(form,))
         return [];
-      if (!hasHan({ text: form, },))
+      if (!carriesHan({ text: form, },))
         return [];
       /**
        Length in code points.
        */
-      const length = codePoints({ text: form, },);
+      const length = codePointCount({ text: form, },);
       if ((length < SHORTEST_NAME) || (length > LONGEST_NAME))
         return [];
       seen.add(form,);
@@ -339,7 +287,7 @@ export function corpusNameLines(
      Form already kept for this entry.
      */
     const kept = carried.get(name.entryId,);
-    if ((kept === undefined) || (codePoints({ text: name.source, },) > codePoints({ text: kept.source, },)))
+    if ((kept === undefined) || (codePointCount({ text: name.source, },) > codePointCount({ text: kept.source, },)))
       carried.set(
         name.entryId,
         name,
