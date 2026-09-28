@@ -4,7 +4,6 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import { recordIssuesWithFilers, } from './claim-filers.ts';
 import { aggregateClaims, } from './aggregate-claims.ts';
-import { declaredNameRefusalReport, } from './declared-name-survival.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { runChunkCriticPhase, } from './chunk-critic-phase.ts';
 import {
@@ -25,16 +24,13 @@ import {
   assertCheckerBench,
   standingSeating,
 } from './repair-checker-reseat.ts';
-import { proveRepairedChunk, } from './repair-chunk-proof.ts';
+import { proveSheddingWorseVoted, } from './repair-worse-strip.ts';
 import { runEditorStage, } from './repair-editor-stage.ts';
 import { foldStageFindings, } from './repair-stage-findings.ts';
 import { runPanelStage, } from './repair-stages.ts';
 import { screenAttestedAdditions, } from './reference-attest-claims.ts';
 import type { AttestedDetail, } from './reference-attest-match.ts';
-import {
-  describeChunkSettlement,
-  settleChunkFromChecks,
-} from './repair-chunk-verdict.ts';
+import { settleShippedPatch, } from './repair-chunk-settle.ts';
 
 //region Chunk repair
 // One chunk pair through the whole loop: critics, aggregation, panel,
@@ -371,11 +367,11 @@ export async function repairChunk(
   }
 
   /**
-   What the applied envelopes bought: issues eligible to count toward the
-   patched candidate, and who wrote the text answering for them. See
+   What the whole patch's envelopes bought: issues eligible to count toward
+   the patched candidate, and who wrote the text answering for them. See
    `selectCreditableIssues` for why the rest are excluded.
    */
-  const appliedEnvelopes = readAppliedEnvelopes({
+  const wholeEnvelopes = readAppliedEnvelopes({
     acceptedIssues,
     envelopes,
     editor,
@@ -383,13 +379,20 @@ export async function repairChunk(
 
   /**
    Checker proof and the shadow probe over the patched candidate, on the
-   bench as seated at the stage (class one hundred nine).
+   bench as seated at the stage (class one hundred nine); an edit the
+   checkers did not confirm and one voted worse is stripped, and the reduced
+   patch proved once more (ledger L3, the owner's ruling of 2026-09-28).
    */
   const {
-    checker,
-    repairRegions,
-    introducedDefects,
-  } = await proveRepairedChunk({
+    editor: shipped,
+    appliedEnvelopes,
+    proof: {
+      checker,
+      repairRegions,
+      introducedDefects,
+    },
+    findings: shedFindings,
+  } = await proveSheddingWorseVoted({
     client,
     models,
     reseat,
@@ -398,59 +401,54 @@ export async function repairChunk(
     envelopes,
     editor,
     acceptedIssues,
-    authorship: appliedEnvelopes.authorship,
+    authorship: wholeEnvelopes.authorship,
     ...windowFragment,
     identityContext: identityContext ?? '',
     signal,
     perCallTimeoutMs,
     l,
   },);
+  if (shipped.patch
+    .applied
+    .length
+    === 0) {
+    l.info(`chunk ${String(sliceIndex,)}: every edit was stripped as worse-voted, unchanged`,);
+    return {
+      ...unchangedOutcome,
+      issues: recordedIssues,
+      rounds: editor.rounds,
+      findings: [
+        ...stageFindings,
+        ...editor.findings,
+        ...shedFindings,
+      ],
+    };
+  }
 
   /**
-   Which candidate won, whether the returned text moved at all, and which
-   issues the checkers confirmed.
-   
-   Several verdicts rather than one: a patch whose envelope operations cancel
-   can win selection and write no byte, and a patch that drops a declared name
-   is refused whatever it won. See `settleChunkFromChecks`.
+   Which candidate won, whether the returned text moved at all, which issues
+   the checkers confirmed, and the declared-name refusal the patch owes
+   (`repair-chunk-settle.ts`).
    */
   const {
     repairedText,
     patchSelected,
     changed,
-    droppedDeclaredNames,
     resolvedIssueIds,
-  } = settleChunkFromChecks({
+    refusal,
+  } = settleShippedPatch({
     sliceIndex,
     declaredNames,
-    incumbentText: targetText,
-    patchedText: editor.patch
-      .patchedText,
-    appliedOperations: editor.patch
-      .applied,
-    creditableIssues: appliedEnvelopes.creditableIssues,
+    targetText,
+    shipped,
+    appliedEnvelopes,
     tallies: checker.tallies,
     envelopes,
     targetDocument: documents.target,
-  },);
-  /**
-   What the declared-name refusal owes this slice's record and findings.
-   */
-  const refusal = declaredNameRefusalReport({
-    sliceIndex,
-    dropped: droppedDeclaredNames,
-  },);
-  for (const finding of refusal.findings)
-    l.warn(finding,);
-  l.info(describeChunkSettlement({
-    sliceIndex,
-    changed,
-    resolvedCount: resolvedIssueIds.length,
-    creditableCount: appliedEnvelopes.creditableIssues
-      .length,
     acceptedCount: acceptedIssues.length,
     unenvelopedCount: unenveloped.length,
-  },),);
+    l,
+  },);
 
   return {
     sliceIndex,
@@ -459,8 +457,9 @@ export async function repairChunk(
     issues: recordedIssues,
     resolvedIssueIds: changed ? resolvedIssueIds : [],
     checkerReadings: checker.readings,
-    // THE REPAIR LANE NEVER RECHECKS. Only the naturalness lane rewrites text
-    // that already passed a checker round, so only it can fill this.
+    // THE NATURALNESS LANE'S FIELD. It rewrites text that already passed a
+    // checker round; a worse-voted strip's recheck here (ledger L3) is the
+    // proof of the patch that ships, so it fills `checkerReadings` instead.
     recheckReadings: {},
     candidateResolvedIssueIds: candidateConfirmedIssueIds({
       acceptedIssues,
@@ -483,6 +482,7 @@ export async function repairChunk(
       ...stageFindings,
       ...editor.findings,
       ...checker.findings,
+      ...shedFindings,
       // The probe fans out to a roster like every other stage and loses voices
       // like every other stage, and its findings were dropped here. That is
       // the exact complaint of the prober calibration work: a quiet stage

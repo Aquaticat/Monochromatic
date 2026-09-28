@@ -1,0 +1,311 @@
+import type { AdjudicatedIssue, } from './adjudicate-model.ts';
+import { applyPatchOperations, } from './apply-patch.ts';
+import {
+  type AppliedEnvelopeReading,
+  readAppliedEnvelopes,
+} from './chunk-measure.ts';
+import type { EditableEnvelope, } from './patch-model.ts';
+import {
+  type ChunkProof,
+  proveRepairedChunk,
+} from './repair-chunk-proof.ts';
+import type { EditorStageResult, } from './repair-editor-stage.ts';
+import type { IssueResolutionTally, } from './tally-resolution.ts';
+
+//region Worse-voted strip
+// LEDGER L3, the owner's ruling of 2026-09-28 ("Revert worse-voted,
+// recheck"): a selected patch carried edits whose issues the checkers did not
+// confirm (345 of 2,148 patches over every run, 18 of 51 on TianqiChen666),
+// and TianqiChen66616 slice 3 shipped one a checker had voted worse. An edit
+// whose issue the checkers did not confirm and which drew at least one worse
+// ballot is stripped (58 issues in 31 patches over every run), and the
+// reduced patch faces one more checker round, and the introduced-defect
+// probe, before it ships. An unconfirmed edit with no worse ballot stays.
+//
+// ONE ROUND, NEVER A LADDER, as the recovery round is: the recheck's tallies
+// settle the chunk whatever they say, and nothing is stripped a second time.
+//
+// THE ENVELOPE IS THE UNIT. An edit replaces a whole envelope, and an
+// envelope serving a worse-voted issue beside a confirmed one goes whole: the
+// checker voted the text that edit wrote worse, whichever issue it answered.
+
+/**
+ Arguments of one proof, as the chunk hands them to the prover.
+ */
+type ProofRequest = Parameters<typeof proveRepairedChunk>[0];
+
+/**
+ What stripping worse-voted edits made of a patch.
+ */
+export type WorseStrip =
+  | {
+    /**
+     No unconfirmed edit drew a worse ballot; the patch stands whole.
+     */
+    readonly stripped: false;
+  }
+  | {
+    /**
+     At least one edit was stripped.
+     */
+    readonly stripped: true;
+
+    /**
+     Editor result with the reduced patch in place of the whole one.
+     */
+    readonly editor: EditorStageResult;
+
+    /**
+     Issues whose edits were stripped.
+     */
+    readonly issueIds: readonly string[];
+  };
+
+/**
+ Strips from a patch every envelope's edit that serves an issue the checkers
+ did not confirm and at least one checker voted worse.
+
+ @param editor - editor result whose patch the checkers judged
+
+ @param envelopes - envelopes the patch was written against
+
+ @param creditableIssues - accepted issues an applied envelope served
+
+ @param tallies - the checkers' verdicts by issue id
+
+ @param targetText - archive wording the patch applies to
+
+ @returns The patch as it stands, or reduced with the stripped issues named
+
+ @example
+ ```ts
+ const strip = stripWorseVotedEdits({ editor, envelopes, creditableIssues, tallies, targetText, },);
+ ```
+ */
+export function stripWorseVotedEdits(
+  {
+    editor,
+    envelopes,
+    creditableIssues,
+    tallies,
+    targetText,
+  }: {
+    readonly editor: EditorStageResult;
+    readonly envelopes: readonly EditableEnvelope[];
+    readonly creditableIssues: readonly AdjudicatedIssue[];
+    readonly tallies: Readonly<Record<string, IssueResolutionTally>>;
+    readonly targetText: string;
+  },
+): WorseStrip {
+  /**
+   Issues the checkers did not confirm and at least one voted worse.
+   */
+  const worseIssueIds = new Set(creditableIssues
+    .filter(function isWorseVoted(issue,): boolean {
+      /**
+       This issue's tally, absent where no checker was heard on it.
+       */
+      const tally = tallies[issue.issueId];
+      if (tally === undefined)
+        return false;
+      /**
+       What the checkers answered on it.
+       */
+      const {
+        resolved,
+        worse,
+      } = tally;
+      return (!resolved) && (worse > 0);
+    },)
+    .map(function toId(issue,): string {
+      return issue.issueId;
+    },),);
+  if (worseIssueIds.size === 0)
+    return { stripped: false, };
+  /**
+   Envelopes serving one of those issues, whose edits go.
+   */
+  const strippedEnvelopeIds = new Set(envelopes
+    .filter(function servesWorseVoted(envelope,): boolean {
+      return envelope.issueIds
+        .some(function isWorseVoted(issueId,): boolean {
+          return worseIssueIds.has(issueId,);
+        },);
+    },)
+    .map(function toId(envelope,): string {
+      return envelope.envelopeId;
+    },),);
+  /**
+   Applied edits that stay.
+   */
+  const kept = editor.patch
+    .applied
+    .filter(function stays(operation,): boolean {
+      return !strippedEnvelopeIds.has(operation.envelopeId,);
+    },);
+  /**
+   The reduced patch. THE GATE IS SKIPPED ON PURPOSE: every kept edit
+   passed it inside the whole patch, envelopes never overlap, and each edit
+   is judged on its own envelope, so re-applying a subset passes it again.
+   */
+  const reduced = applyPatchOperations({
+    targetText,
+    envelopes,
+    operations: kept,
+    preservation: { mode: 'skip', },
+  },);
+  return {
+    stripped: true,
+    editor: {
+      ...editor,
+      patch: {
+        ...reduced,
+        // The gate's refusals of the whole patch stay on the record; a
+        // stripped edit is not a refusal.
+        rejected: editor.patch
+          .rejected,
+      },
+    },
+    issueIds: [...worseIssueIds,],
+  };
+}
+
+/**
+ What the chunk ships on after the proof and any strip.
+ */
+export type ShedProof = {
+  /**
+   Editor result as it ships: the whole patch, or the reduced one.
+   */
+  readonly editor: EditorStageResult;
+
+  /**
+   What the shipped patch's envelopes bought.
+   */
+  readonly appliedEnvelopes: AppliedEnvelopeReading;
+
+  /**
+   Proof of the shipped patch: the first round's, or the recheck's.
+   */
+  readonly proof: ChunkProof;
+
+  /**
+   Findings the strip adds: the stripped issues and the first round's
+   checker findings, none when nothing was stripped.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
+ Proves the patch, strips its worse-voted unconfirmed edits, and proves the
+ reduced patch once more when any was stripped and any edit remains.
+
+ @param request - the proof as the chunk would ask it for the whole patch
+
+ @returns Editor result, envelope reading and proof the chunk settles on
+
+ @example
+ ```ts
+ const shed = await proveSheddingWorseVoted({ client, models, reseat, sourceText, targetText, envelopes, editor, acceptedIssues, authorship, identityContext, signal, perCallTimeoutMs, l, },);
+ ```
+ */
+export async function proveSheddingWorseVoted(request: ProofRequest,): Promise<ShedProof> {
+  /**
+   What the strip reads off the request.
+   */
+  const {
+    acceptedIssues,
+    envelopes,
+    editor,
+    targetText,
+    l,
+  } = request;
+  /**
+   Proof of the whole patch.
+   */
+  const first = await proveRepairedChunk(request,);
+  /**
+   What the whole patch's envelopes bought.
+   */
+  const whole = readAppliedEnvelopes({
+    acceptedIssues,
+    envelopes,
+    editor,
+  },);
+  /**
+   The patch with its worse-voted unconfirmed edits stripped, if any.
+   */
+  const strip = stripWorseVotedEdits({
+    editor,
+    envelopes,
+    creditableIssues: whole.creditableIssues,
+    tallies: first.checker
+      .tallies,
+    targetText,
+  },);
+  if (!strip.stripped) {
+    return {
+      editor,
+      appliedEnvelopes: whole,
+      proof: first,
+      findings: [],
+    };
+  }
+  /**
+   What the strip records, naming the issues rather than the slice, since
+   the record is stored and re-stamped by position.
+   */
+  const strippedList = strip.issueIds
+    .join(', ',);
+  /**
+   The line itself.
+   */
+  const finding = `repair-stripped-worse-voted (issues ${strippedList}: `
+    + 'unconfirmed by the checkers, with at least one worse ballot)';
+  l.warn(finding,);
+  /**
+   What the reduced patch's envelopes bought.
+   */
+  const reducedReading = readAppliedEnvelopes({
+    acceptedIssues,
+    envelopes,
+    editor: strip.editor,
+  },);
+  if (strip.editor
+    .patch
+    .applied
+    .length
+    === 0) {
+    l.info('every edit of the patch was stripped, so the chunk keeps its standing with no recheck',);
+    return {
+      editor: strip.editor,
+      appliedEnvelopes: reducedReading,
+      proof: first,
+      findings: [
+        finding,
+        ...first.checker
+          .findings,
+      ],
+    };
+  }
+  /**
+   Proof of the reduced patch: the one more checker round the ruling asks.
+   */
+  const recheck = await proveRepairedChunk({
+    ...request,
+    editor: strip.editor,
+    authorship: reducedReading.authorship,
+  },);
+  return {
+    editor: strip.editor,
+    appliedEnvelopes: reducedReading,
+    proof: recheck,
+    findings: [
+      finding,
+      ...first.checker
+        .findings,
+    ],
+  };
+}
+
+//endregion Worse-voted strip
